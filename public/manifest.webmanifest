@@ -1,0 +1,16 @@
+{
+  "name": "ORBIT — GNC Flight Academy",
+  "short_name": "ORBIT",
+  "description": "A local-first curriculum platform that takes a complete beginner to guidance, navigation and control engineering readiness.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#000208",
+  "theme_color": "#000208",
+  "categories": ["education", "productivity"],
+  "icons": [
+    { "src": "./icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "./icon-maskable.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}

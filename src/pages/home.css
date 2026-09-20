@@ -1,0 +1,487 @@
+/* ============================================================================
+   ORBIT — dashboard
+   ----------------------------------------------------------------------------
+   Metrics here are read off the reference layout. Where a number looks
+   arbitrary it is because it is measured, not chosen.
+   ========================================================================== */
+
+/* ── Hero ────────────────────────────────────────────────────────────────────
+   Full-bleed plate running edge to edge under the floating top bar. The
+   negative top margin pulls it up behind the bar; the matching padding pushes
+   its content back down, so the artwork reaches the very top of the viewport
+   while the greeting still clears the chrome. */
+.hero {
+  position: relative;
+  margin-top: calc(var(--topbar-h) * -1);
+  padding-top: var(--topbar-h);
+  min-height: 242px;
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.hero__art {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+}
+
+/* The hero copy does not line up with the cards below it — the reference
+   insets it a further 29px, and the bar bottoms out 38px above the first card.
+   Both are deliberate: the plate reads as sky, not as another column. */
+.hero__inner {
+  width: 100%;
+  max-width: var(--content-max);
+  margin: 0 auto;
+  padding: 0 calc(var(--gutter) + 29px) 38px;
+}
+
+.hero__greet {
+  font-size: 20px;
+  font-weight: 400;
+  color: var(--ink-2);
+  letter-spacing: -0.005em;
+}
+
+.hero__name {
+  font-size: 38px;
+  font-weight: 600;
+  letter-spacing: -0.026em;
+  line-height: 1.1;
+  color: #fff;
+  margin-top: 2px;
+  /* The name sits over the brightest part of the plate; a soft shadow keeps it
+     readable without a box behind it. */
+  text-shadow: 0 2px 24px rgba(0, 0, 0, 0.65);
+}
+
+.hero__tag {
+  font-size: 13.5px;
+  color: var(--ink-3);
+  margin-top: 9px;
+  letter-spacing: 0.005em;
+}
+
+.hero__bar {
+  width: 116px;
+  margin-top: 15px;
+}
+
+/* ── Mission progress ────────────────────────────────────────────────────────
+   Measured off the reference card, which spans y 243..530 (288px):
+     20px of padding, a 15px eyebrow, 20px down to the rows, four 44px rows on
+     a 56px pitch, 19px of floor. The rows stop well short of the ring — the
+     bars end at x 533 of a card that runs to 709 — so the row block is capped
+     rather than stretched, which is what leaves the ring its own quiet field. */
+.mission {
+  padding: 20px 15px 19px;
+}
+
+.mission__body {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.mission__rows {
+  flex: 1;
+  min-width: 0;
+  max-width: 72%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.mrow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  text-align: left;
+  border-radius: var(--r-md);
+  transition: transform var(--t-fast) var(--ease-out);
+}
+
+.mrow:hover {
+  transform: translateX(2px);
+}
+
+.mrow__label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--ink);
+  margin-bottom: 7px;
+  line-height: 1.2;
+}
+
+.mrow__pct {
+  width: 30px;
+  flex-shrink: 0;
+  text-align: right;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+}
+
+/* The ring rides 10px above the first row, tucked under its own label rather
+   than centred against the rows — exactly where the reference puts it. */
+.mission__ring {
+  margin-top: -10px;
+  margin-left: auto;
+  align-self: flex-start;
+  display: grid;
+  place-items: center;
+}
+
+/* ── Domain cards ────────────────────────────────────────────────────────── */
+/* Every number here is measured off the reference's Coding card, which spans
+   y 546..772 (227px) at x 202..724:
+     15px of padding, a 52px icon tile at x 218, the text column at x 288,
+     a three-line 15.5px blurb, five bullets on a 17.5px pitch, then 11px down
+     to a 26px Continue pill and 10px of floor. The 150x147 plate on the right
+     ends flush with the progress bar beneath it.                             */
+.dcard {
+  padding: 15px 15px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+}
+
+.dcard__body {
+  display: flex;
+  gap: 18px;
+  align-items: flex-start;
+}
+
+.dcard__text {
+  flex: 1;
+  min-width: 0;
+}
+
+/* 17px, not 19: the reference sets "Coding & Software" 145px wide, which is
+   Inter SemiBold at 17 with a hair of negative tracking. */
+.dcard__title {
+  font-size: 16.5px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: #f4f8ff;
+  line-height: 1.2;
+}
+
+/* The glyph in the tile is white in the reference, not tinted — the colour in
+   these cards comes from the rings and the bar, nothing else. */
+.dcard .tile {
+  color: #eef4ff;
+}
+
+.dcard .tile svg {
+  stroke-width: 1.6;
+}
+
+/* The reference's Continue pill is 26px tall and ~100px wide — noticeably
+   smaller than a standard button, which is what keeps the card at 227px. */
+.dcard__foot .btn {
+  height: 26px;
+  padding: 0 14px;
+  font-size: 11.5px;
+  gap: 6px;
+}
+
+/* Three lines, always. The reference holds every domain card to the same
+   height, and a blurb that ran to four would push one card out of step with
+   its neighbours — so the box is fixed at three lines and copy that overruns
+   is clamped rather than allowed to move the furniture. */
+.dcard__blurb {
+  font-size: 10px;
+  line-height: 1.55;
+  color: var(--ink-3);
+  margin: 4px 0 9px;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  overflow: hidden;
+  min-height: calc(10px * 1.55 * 3);
+}
+
+.dcard__thumb {
+  width: 150px;
+  height: 147px;
+  flex-shrink: 0;
+  border-radius: var(--r-sm);
+  overflow: hidden;
+  border: 1px solid var(--line);
+  position: relative;
+}
+
+.dcard__thumb svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* A thin inner highlight keeps the plate from reading as a cut-out hole. */
+.dcard__thumb::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.09);
+  pointer-events: none;
+}
+
+.dcard__foot {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.dcard__prog {
+  width: 193px;
+  padding-bottom: 2px;
+  flex-shrink: 0;
+}
+
+/* Muted steel blue, not the accent: in the reference this label sits back so
+   the bar underneath is the thing that reads. */
+.dcard__pct {
+  font-size: 8.5px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--steel);
+  margin-bottom: 5px;
+  text-align: left;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Quote plates ────────────────────────────────────────────────────────── */
+.quote {
+  position: relative;
+  min-height: 225px;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.quote__art {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -2;
+}
+
+/* A left-weighted scrim under the text only — the right half of the plate
+   stays clean so the artwork still reads. */
+.quote__scrim {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(
+    180deg,
+    rgba(4, 6, 12, 0.72) 0%,
+    rgba(4, 6, 12, 0.42) 45%,
+    rgba(4, 6, 12, 0.78) 100%
+  );
+}
+
+.quote__inner {
+  padding: 22px 24px;
+  width: 100%;
+}
+
+.quote__text {
+  font-size: 21.5px;
+  font-weight: 500;
+  line-height: 1.34;
+  letter-spacing: -0.015em;
+  color: #fff;
+  text-wrap: balance;
+}
+
+.quote__by {
+  margin-top: 13px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--accent);
+  letter-spacing: 0.01em;
+}
+
+/* The closing plate: a lighter opening line, then the emphasis line. */
+.quote--closing {
+  min-height: 209px;
+}
+
+.quote--closing .quote__text {
+  font-size: 17px;
+  font-weight: 400;
+  color: var(--ink-2);
+  letter-spacing: -0.008em;
+}
+
+.quote__emph {
+  display: block;
+  margin-top: 9px;
+  font-size: 20px;
+  font-weight: 600;
+  color: #fff;
+  letter-spacing: -0.02em;
+}
+
+.quote__mark {
+  position: absolute;
+  right: 20px;
+  bottom: 18px;
+  color: #cdd8e6;
+  opacity: 0.85;
+}
+
+/* ── Focus list ──────────────────────────────────────────────────────────── */
+/* Reference rows run on a 49px pitch: 8px of padding, a 12.5px title clamped
+   to one line, an 11px meta line, 7px of floor. */
+.focus__row {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 10px 17px;
+}
+
+.focus__row + .focus__row {
+  border-top: 1px solid var(--line-soft);
+}
+
+.focus__title {
+  font-size: 10.5px;
+  font-weight: 500;
+  color: var(--ink);
+  line-height: 1.3;
+  /* Module titles are longer than the reference's hand-written ones. One line
+     each keeps the four rows on the same pitch. */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition:
+    color var(--t-fast) var(--ease-out),
+    text-decoration-color var(--t-fast) var(--ease-out);
+}
+
+.focus__row[data-done='true'] .focus__title {
+  color: var(--ink-4);
+  text-decoration: line-through;
+  text-decoration-color: var(--ink-5);
+}
+
+.focus__meta {
+  font-size: 9.5px;
+  color: var(--ink-4);
+  margin-top: 2px;
+  line-height: 1.35;
+}
+
+.focus__foot {
+  padding: 11px 16px;
+}
+
+/* ── Right-rail rows ─────────────────────────────────────────────────────── */
+/* The tools list stops 6px short of the card's floor rather than running into
+   it — the reference leaves that sliver under the last row. */
+.tools {
+  padding-bottom: 6px;
+}
+
+.res__row {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  width: 100%;
+  padding: 5px 17px;
+  text-align: left;
+  font-size: 9.5px;
+  color: var(--ink-2);
+  transition:
+    color var(--t-fast) var(--ease-out),
+    background var(--t-fast) var(--ease-out);
+}
+
+.res__row:hover {
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.028);
+}
+
+.res__row svg {
+  color: var(--ink-4);
+  transition: color var(--t-fast) var(--ease-out);
+}
+
+.res__row:hover svg {
+  color: var(--accent);
+}
+
+.res__list {
+  padding: 4px 0 8px;
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .dcard__prog {
+    width: 150px;
+  }
+}
+
+@media (max-width: 760px) {
+  .hero {
+    min-height: 212px;
+  }
+
+  /* Both header labels wrap at this width and collide. The ring sits directly
+     beneath with its own number, so the second label is redundant here. */
+  .mission .eyebrow-dim {
+    display: none;
+  }
+
+  .hero__name {
+    font-size: 30px;
+  }
+
+  .hero__greet {
+    font-size: 15px;
+  }
+
+  .dcard__body {
+    flex-wrap: wrap;
+  }
+
+  .dcard__thumb {
+    width: 100%;
+    height: 116px;
+    order: 3;
+  }
+
+  .dcard__foot {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 13px;
+  }
+
+  .dcard__prog {
+    width: 100%;
+  }
+
+  .mission__body {
+    flex-direction: column-reverse;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .mission__rows {
+    width: 100%;
+  }
+}
