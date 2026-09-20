@@ -29,6 +29,29 @@
   z-index: -1;
 }
 
+/* The plate carries its own left-weighted scrim, which is sized for a wide
+   hero. On a phone the artwork is cropped to its right-hand side — the
+   brightest part — and the tagline ends up sitting on the atmospheric rim.
+   This second scrim is the fix, and it is off entirely on wide screens so it
+   cannot dull the artwork there. */
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 2, 8, 0.38) 0%,
+    rgba(0, 2, 8, 0.14) 34%,
+    rgba(0, 2, 8, 0.5) 62%,
+    rgba(0, 2, 8, 0.78) 88%,
+    rgba(0, 2, 8, 0.86) 100%
+  );
+  opacity: 0;
+  transition: opacity var(--t-mid) var(--ease-out);
+}
+
 /* The hero copy does not line up with the cards below it — the reference
    insets it a further 29px, and the bar bottoms out 38px above the first card.
    Both are deliberate: the plate reads as sky, not as another column. */
@@ -441,6 +464,16 @@
     min-height: 212px;
   }
 
+  .hero::before {
+    opacity: 1;
+  }
+
+  /* The hero copy is inset 29px on desktop so it reads as sky rather than as
+     another column. There is no room for that on a phone. */
+  .hero__inner {
+    padding: 0 var(--gutter) 22px;
+  }
+
   /* Both header labels wrap at this width and collide. The ring sits directly
      beneath with its own number, so the second label is redundant here. */
   .mission .eyebrow-dim {
@@ -453,6 +486,18 @@
 
   .hero__greet {
     font-size: 15px;
+  }
+
+  /* The limb passes straight through the greeting and the tagline at this
+     width. The headline already carries a shadow for the same reason; on a
+     phone the other two lines need one too. */
+  .hero__greet,
+  .hero__tag {
+    text-shadow: 0 1px 10px rgba(0, 2, 8, 0.95), 0 0 22px rgba(0, 2, 8, 0.8);
+  }
+
+  .hero__tag {
+    color: var(--ink-2);
   }
 
   .dcard__body {
@@ -481,7 +526,16 @@
     gap: 16px;
   }
 
+  /* Both of these are desktop geometry: the rows are capped so they stop short
+     of the ring, and the ring is pushed to the card's right edge and lifted to
+     sit under its own label. Stacked, neither applies. */
   .mission__rows {
     width: 100%;
+    max-width: 100%;
+  }
+
+  .mission__ring {
+    margin: 0 auto;
+    align-self: center;
   }
 }
