@@ -1,0 +1,714 @@
+/* ============================================================================
+   ORBIT — shared page furniture
+   ========================================================================== */
+
+.track-note {
+  margin: 34px auto 0;
+  max-width: 76ch;
+  font-size: 11.5px;
+  line-height: 1.75;
+  color: var(--ink-5);
+  text-align: center;
+}
+
+/* ── Two-column reading layout: prose left, metadata rail right ──────────── */
+.read {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 286px;
+  gap: var(--gap);
+  align-items: start;
+}
+
+@media (max-width: 1080px) {
+  .read {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* ── Section block inside a card ─────────────────────────────────────────── */
+.sect {
+  padding: 15px 17px;
+}
+
+.sect + .sect {
+  border-top: 1px solid var(--line-soft);
+}
+
+.sect__title {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--ink-4);
+  margin-bottom: 11px;
+}
+
+/* ── Topic / objective lists ─────────────────────────────────────────────── */
+.taglist {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.taglist span {
+  font-size: 11px;
+  padding: 4px 9px;
+  border-radius: var(--r-pill);
+  background: var(--raise);
+  border: 1px solid var(--line);
+  color: var(--ink-3);
+  line-height: 1.3;
+}
+
+.objlist {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.objlist li {
+  display: flex;
+  gap: 9px;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--ink-2);
+}
+
+.objlist svg {
+  color: var(--accent);
+  margin-top: 3px;
+}
+
+/* ── Resource rows ───────────────────────────────────────────────────────── */
+.rsrc {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+.rsrc + .rsrc {
+  border-top: 1px solid var(--line-soft);
+}
+
+.rsrc__title {
+  color: var(--ink);
+  font-weight: 500;
+}
+
+.rsrc a.rsrc__title:hover {
+  color: var(--accent);
+  text-decoration: underline;
+}
+
+.rsrc__by {
+  color: var(--ink-4);
+  font-size: 11.5px;
+  margin-top: 2px;
+}
+
+.rsrc__kind {
+  flex-shrink: 0;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-5);
+  padding-top: 3px;
+  width: 44px;
+}
+
+/* ── Review session ──────────────────────────────────────────────────────── */
+.review {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 26px var(--gutter) 60px;
+  min-height: calc(100vh - var(--topbar-h));
+  display: flex;
+  flex-direction: column;
+}
+
+.review__bar {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  margin-bottom: 22px;
+}
+
+.review__count {
+  font-size: 11px;
+  color: var(--ink-4);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* The card itself. Fixed min-height so the layout does not jump between a
+   one-line prompt and a six-line one — a moving answer button is a misclick
+   waiting to happen. */
+.rcard {
+  background: var(--panel-grad);
+  border: 1px solid var(--line);
+  border-radius: var(--r-xl);
+  box-shadow: var(--sh-pop);
+  padding: 34px 30px;
+  min-height: 268px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+
+.rcard::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.13), transparent);
+}
+
+.rcard__kicker {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-5);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rcard__prompt {
+  font-size: 21px;
+  font-weight: 500;
+  line-height: 1.42;
+  letter-spacing: -0.012em;
+  color: var(--ink);
+  text-wrap: pretty;
+}
+
+.rcard__prompt--formula {
+  font-family: var(--font-mono);
+  font-size: 18px;
+  letter-spacing: 0;
+}
+
+.rcard__answer {
+  margin-top: 22px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+  font-size: 15.5px;
+  line-height: 1.68;
+  color: var(--ink-2);
+  animation: fade-up var(--t-mid) var(--ease-out);
+}
+
+.rcard__answer--formula {
+  font-family: var(--font-mono);
+  font-size: 14.5px;
+  color: var(--cyan);
+}
+
+.rcard__hint {
+  margin-top: 14px;
+  font-size: 12.5px;
+  color: var(--ink-4);
+  line-height: 1.6;
+}
+
+/* ── Choices ─────────────────────────────────────────────────────────────── */
+.choices {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  margin-top: 22px;
+}
+
+.choice {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 13px 15px;
+  border-radius: var(--r-md);
+  background: var(--raise);
+  border: 1px solid var(--line);
+  text-align: left;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--ink-2);
+  transition:
+    border-color var(--t-fast) var(--ease-out),
+    background var(--t-fast) var(--ease-out),
+    color var(--t-fast) var(--ease-out);
+}
+
+.choice:hover:not(:disabled) {
+  border-color: var(--line-blue);
+  background: var(--lift);
+  color: var(--ink);
+}
+
+.choice__key {
+  width: 21px;
+  height: 21px;
+  border-radius: var(--r-xs);
+  background: var(--panel);
+  border: 1px solid var(--line-strong);
+  display: grid;
+  place-items: center;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--ink-4);
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+}
+
+.choice[data-state='correct'] {
+  border-color: rgba(52, 211, 153, 0.5);
+  background: rgba(52, 211, 153, 0.09);
+  color: var(--ink);
+}
+
+.choice[data-state='correct'] .choice__key {
+  background: var(--ok);
+  border-color: var(--ok);
+  color: #04120c;
+}
+
+.choice[data-state='wrong'] {
+  border-color: rgba(244, 97, 78, 0.5);
+  background: rgba(244, 97, 78, 0.09);
+}
+
+.choice[data-state='wrong'] .choice__key {
+  background: var(--bad);
+  border-color: var(--bad);
+  color: #1a0603;
+}
+
+.choice:disabled {
+  cursor: default;
+  opacity: 1;
+}
+
+/* ── Grade buttons ───────────────────────────────────────────────────────── */
+.grades {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 9px;
+  margin-top: 20px;
+}
+
+.grade {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 12px 6px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--line);
+  background: var(--raise);
+  transition:
+    border-color var(--t-fast) var(--ease-out),
+    background var(--t-fast) var(--ease-out),
+    transform var(--t-fast) var(--ease-out);
+}
+
+.grade:hover {
+  transform: translateY(-2px);
+  background: var(--lift);
+}
+
+.grade__label {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.grade__when {
+  font-size: 10px;
+  color: var(--ink-5);
+  font-variant-numeric: tabular-nums;
+}
+
+.grade__key {
+  position: absolute;
+  top: 5px;
+  right: 7px;
+  font-size: 9px;
+  color: var(--ink-5);
+  font-family: var(--font-mono);
+}
+
+.grade--again:hover {
+  border-color: rgba(244, 97, 78, 0.5);
+}
+.grade--hard:hover {
+  border-color: rgba(240, 168, 72, 0.5);
+}
+.grade--good:hover {
+  border-color: var(--line-blue-strong);
+}
+.grade--easy:hover {
+  border-color: rgba(52, 211, 153, 0.5);
+}
+
+.grade {
+  position: relative;
+}
+
+/* ── Confidence slider ───────────────────────────────────────────────────── */
+.conf {
+  margin-top: 20px;
+  padding: 15px 17px;
+  border-radius: var(--r-md);
+  background: var(--raise);
+  border: 1px solid var(--line);
+}
+
+.conf__label {
+  font-size: 11.5px;
+  color: var(--ink-3);
+  margin-bottom: 11px;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.conf__btns {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+}
+
+.conf__btn {
+  height: 32px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--line);
+  background: var(--panel);
+  font-size: 11.5px;
+  color: var(--ink-4);
+  font-variant-numeric: tabular-nums;
+  transition:
+    border-color var(--t-fast) var(--ease-out),
+    color var(--t-fast) var(--ease-out),
+    background var(--t-fast) var(--ease-out);
+}
+
+.conf__btn:hover {
+  color: var(--ink);
+  border-color: var(--line-blue);
+}
+
+.conf__btn[data-on='true'] {
+  background: var(--blue);
+  border-color: var(--blue);
+  color: #fff;
+}
+
+/* ── Session summary ─────────────────────────────────────────────────────── */
+.summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(118px, 1fr));
+  gap: var(--gap);
+  margin: 22px 0;
+}
+
+@media (max-width: 560px) {
+  .grades {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .rcard {
+    padding: 24px 20px;
+    min-height: 220px;
+  }
+
+  .rcard__prompt {
+    font-size: 18px;
+  }
+}
+
+/* ── Search field ────────────────────────────────────────────────────────── */
+.search {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  height: 35px;
+  padding: 0 12px;
+  min-width: 210px;
+  border-radius: var(--r-md);
+  background: var(--raise);
+  border: 1px solid var(--line);
+  color: var(--ink-4);
+  transition: border-color var(--t-fast) var(--ease-out);
+}
+
+.search:focus-within {
+  border-color: var(--line-blue-strong);
+  color: var(--accent);
+}
+
+.search input {
+  flex: 1;
+  min-width: 0;
+  font-size: 12.5px;
+  color: var(--ink);
+  background: none;
+  border: 0;
+  outline: none;
+}
+
+.search input::placeholder {
+  color: var(--ink-5);
+}
+
+.search button {
+  color: var(--ink-4);
+  display: grid;
+  place-items: center;
+}
+
+.search button:hover {
+  color: var(--ink);
+}
+
+/* ── Track legend ────────────────────────────────────────────────────────── */
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  justify-content: center;
+  margin-top: 34px;
+  padding-top: 22px;
+  border-top: 1px solid var(--line-soft);
+}
+
+.legend button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+  color: var(--ink-4);
+  transition: color var(--t-fast) var(--ease-out);
+}
+
+.legend button:hover {
+  color: var(--ink-2);
+}
+
+.legend span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  box-shadow: 0 0 8px currentColor;
+}
+
+/* ── Settings rows ───────────────────────────────────────────────────────── */
+.setting {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 15px 17px;
+  flex-wrap: wrap;
+}
+
+.setting + .setting {
+  border-top: 1px solid var(--line-soft);
+}
+
+.setting__label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.setting__help {
+  font-size: 11.5px;
+  color: var(--ink-4);
+  line-height: 1.6;
+  margin-top: 4px;
+  max-width: 56ch;
+}
+
+.setting__control {
+  margin-left: auto;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.input {
+  height: 34px;
+  padding: 0 12px;
+  border-radius: var(--r-sm);
+  background: var(--raise);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  font-size: 12.5px;
+  min-width: 90px;
+  outline: none;
+  transition: border-color var(--t-fast) var(--ease-out);
+}
+
+.input:focus {
+  border-color: var(--line-blue-strong);
+}
+
+.input--wide {
+  min-width: 210px;
+}
+
+/* Range input, restyled — the native track is unusable on a dark surface. */
+.range {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 160px;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--track);
+  outline: none;
+}
+
+.range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2px solid #081020;
+  box-shadow: 0 0 10px rgba(77, 155, 255, 0.6);
+  cursor: pointer;
+}
+
+.range::-moz-range-thumb {
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2px solid #081020;
+  cursor: pointer;
+}
+
+/* Toggle switch */
+.toggle {
+  width: 40px;
+  height: 22px;
+  border-radius: 999px;
+  background: var(--track);
+  border: 1px solid var(--line);
+  position: relative;
+  transition: background var(--t-fast) var(--ease-out), border-color var(--t-fast) var(--ease-out);
+  flex-shrink: 0;
+}
+
+.toggle::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #6b7688;
+  transition: transform var(--t-mid) var(--ease-spring), background var(--t-fast) var(--ease-out);
+}
+
+.toggle[data-on='true'] {
+  background: var(--blue);
+  border-color: var(--blue);
+}
+
+.toggle[data-on='true']::after {
+  transform: translateX(18px);
+  background: #fff;
+}
+
+/* ── Formula bank ────────────────────────────────────────────────────────── */
+.formula {
+  padding: 13px 0;
+}
+
+.formula + .formula {
+  border-top: 1px solid var(--line-soft);
+}
+
+.formula__name {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--ink);
+  line-height: 1.4;
+}
+
+/* Equations get the mono face and a slightly recessed slab, so a page of them
+   scans as a reference sheet rather than as prose. */
+.formula__body {
+  margin-top: 8px;
+  padding: 10px 13px;
+  border-radius: var(--r-sm);
+  background: #06090f;
+  border: 1px solid var(--line);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--cyan);
+  overflow-x: auto;
+  white-space: pre-wrap;
+}
+
+.formula__from {
+  margin-top: 7px;
+  font-size: 10.5px;
+  color: var(--ink-5);
+}
+
+/* ── Signals panel ───────────────────────────────────────────────────────────
+   The engine's own read on how things are going. It only renders when there is
+   something real to say — an empty "all good!" panel trains people to ignore
+   the space it occupies. */
+.signal {
+  display: flex;
+  gap: 11px;
+  padding: 13px 17px;
+  align-items: flex-start;
+}
+
+.signal + .signal {
+  border-top: 1px solid var(--line-soft);
+}
+
+.signal__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  margin-top: 5px;
+  flex-shrink: 0;
+  background: var(--warn);
+  box-shadow: 0 0 9px currentColor;
+}
+
+.signal__msg {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+
+.signal__action {
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--ink-4);
+  margin-top: 4px;
+}
+
+.signal__link {
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.signal__link:hover {
+  text-decoration: underline;
+}

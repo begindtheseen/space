@@ -1,0 +1,226 @@
+/* ============================================================================
+   ORBIT — editor shell
+   ========================================================================== */
+
+.editor {
+  border-radius: var(--r-md);
+  border: 1px solid var(--line);
+  overflow: hidden;
+  background: #06090f;
+}
+
+.editor:focus-within {
+  border-color: var(--line-blue-strong);
+  box-shadow: var(--glow-blue-soft);
+}
+
+.editor .cm-editor {
+  height: 100%;
+}
+
+/* ── Console ─────────────────────────────────────────────────────────────── */
+.console {
+  border-radius: var(--r-md);
+  border: 1px solid var(--line);
+  background: #05080e;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  line-height: 1.65;
+  max-height: 340px;
+  overflow: auto;
+  padding: 13px 15px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: #b9c8de;
+  min-height: 92px;
+}
+
+.console:empty::after {
+  content: 'Output appears here.';
+  color: var(--ink-5);
+  font-style: italic;
+}
+
+.console__err {
+  color: #ff9b8c;
+}
+
+.console__meta {
+  color: var(--ink-5);
+}
+
+.console__ok {
+  color: #6ee7b7;
+}
+
+.console__plot {
+  display: block;
+  margin: 12px 0;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--line);
+  max-width: 100%;
+}
+
+/* ── Result grid (SQL) ───────────────────────────────────────────────────── */
+.grid {
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  overflow: auto;
+  max-height: 340px;
+  background: #06090f;
+}
+
+.grid table {
+  border-collapse: collapse;
+  width: 100%;
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.grid th {
+  position: sticky;
+  top: 0;
+  background: #0b111c;
+  color: var(--accent-hi);
+  text-align: left;
+  font-weight: 600;
+  padding: 9px 13px;
+  border-bottom: 1px solid var(--line-strong);
+  white-space: nowrap;
+  z-index: 1;
+}
+
+.grid td {
+  padding: 8px 13px;
+  border-bottom: 1px solid var(--line-soft);
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+
+/* Zebra striping at 1.5% — enough to track a row across a wide table, not
+   enough to read as a second colour. */
+.grid tr:nth-child(even) td {
+  background: rgba(255, 255, 255, 0.015);
+}
+
+.grid td.null {
+  color: var(--ink-5);
+  font-style: italic;
+}
+
+.grid__caption {
+  padding: 7px 13px;
+  font-family: var(--font-sans);
+  font-size: 10.5px;
+  color: var(--ink-5);
+  border-bottom: 1px solid var(--line-soft);
+  background: #080d16;
+}
+
+/* ── Test outcomes ───────────────────────────────────────────────────────── */
+.tests {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.test {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 13px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--line);
+  background: var(--raise);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.test[data-status='pass'] {
+  border-color: rgba(52, 211, 153, 0.34);
+  background: rgba(52, 211, 153, 0.07);
+}
+
+.test[data-status='fail'],
+.test[data-status='error'] {
+  border-color: rgba(244, 97, 78, 0.34);
+  background: rgba(244, 97, 78, 0.07);
+}
+
+.test__icon {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.test[data-status='pass'] .test__icon {
+  color: var(--ok);
+}
+
+.test[data-status='fail'] .test__icon,
+.test[data-status='error'] .test__icon {
+  color: var(--bad);
+}
+
+.test__name {
+  color: var(--ink);
+  font-weight: 500;
+}
+
+.test__msg {
+  color: var(--ink-4);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  margin-top: 4px;
+  white-space: pre-wrap;
+}
+
+/* ── Playground layout ───────────────────────────────────────────────────── */
+.pg {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--gap);
+  align-items: start;
+}
+
+@media (max-width: 1000px) {
+  .pg {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.pg__toolbar {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-wrap: wrap;
+  padding: 11px 13px;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.pg__status {
+  font-size: 11px;
+  color: var(--ink-4);
+  font-variant-numeric: tabular-nums;
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.pg__spinner {
+  width: 12px;
+  height: 12px;
+  border: 1.5px solid rgba(77, 155, 255, 0.22);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.pg__note {
+  padding: 11px 15px;
+  font-size: 11.5px;
+  line-height: 1.65;
+  color: var(--ink-4);
+  border-top: 1px solid var(--line-soft);
+  background: rgba(255, 255, 255, 0.015);
+}

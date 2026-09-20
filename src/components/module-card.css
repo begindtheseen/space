@@ -1,0 +1,207 @@
+/* ============================================================================
+   ORBIT — module card
+   ========================================================================== */
+
+.mcard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 15px;
+  text-align: left;
+  width: 100%;
+  background: var(--panel-grad);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  box-shadow: var(--sh-card);
+  transition:
+    border-color var(--t-mid) var(--ease-out),
+    transform var(--t-mid) var(--ease-out),
+    box-shadow var(--t-mid) var(--ease-out),
+    opacity var(--t-mid) var(--ease-out);
+  animation: fade-up var(--t-slow) var(--ease-out) backwards;
+  animation-delay: calc(var(--i, 0) * 28ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mcard {
+    animation: none;
+  }
+}
+
+.mcard:hover {
+  border-color: var(--line-blue);
+  transform: translateY(-2px);
+  box-shadow: var(--sh-pop), var(--glow-blue-soft);
+}
+
+.mcard:active {
+  transform: translateY(0);
+}
+
+/* Locked cards recede but stay legible and clickable — the module page
+   explains what is in the way, which is the point of showing them. */
+.mcard[data-locked='true'] {
+  opacity: 0.56;
+}
+
+.mcard[data-locked='true']:hover {
+  opacity: 0.86;
+  border-color: var(--line-strong);
+  box-shadow: var(--sh-card);
+}
+
+/* A completed module gets a hairline in its accent along the top edge. */
+.mcard[data-done='true']::before {
+  content: '';
+  position: absolute;
+  inset: -1px -1px auto;
+  height: 2px;
+  border-radius: var(--r-lg) var(--r-lg) 0 0;
+  background: linear-gradient(90deg, transparent, var(--accent-local, var(--accent)), transparent);
+}
+
+.mcard__head {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.mcard__title {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ink);
+  line-height: 1.3;
+  letter-spacing: -0.008em;
+}
+
+.mcard__tier {
+  font-size: 10.5px;
+  color: var(--ink-5);
+  margin-top: 3px;
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+}
+
+.mcard__due {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 20px;
+  padding: 0 8px;
+  border-radius: var(--r-pill);
+  background: rgba(77, 155, 255, 0.14);
+  border: 1px solid var(--line-blue);
+  color: var(--accent-hi);
+  font-size: 10.5px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+.mcard__summary {
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--ink-3);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: 2.6em;
+}
+
+.mcard__stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  font-size: 10.5px;
+  color: var(--ink-5);
+  font-variant-numeric: tabular-nums;
+}
+
+.mcard__foot {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: auto;
+}
+
+.mcard__pct {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+  width: 32px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.mcard__locked {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: auto;
+  font-size: 10.5px;
+  color: var(--ink-5);
+  min-width: 0;
+}
+
+.mcard__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.mcard__badges:empty {
+  display: none;
+}
+
+/* ── Grid ────────────────────────────────────────────────────────────────── */
+.mgrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(258px, 1fr));
+  gap: 13px;
+}
+
+/* ── Tier heading ────────────────────────────────────────────────────────── */
+.tier {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  margin: 30px 0 14px;
+}
+
+.tier:first-of-type {
+  margin-top: 6px;
+}
+
+.tier__n {
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+  white-space: nowrap;
+}
+
+.tier__label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+
+.tier__rule {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, var(--line-strong), transparent);
+}
+
+.tier__meta {
+  font-size: 10.5px;
+  color: var(--ink-5);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
