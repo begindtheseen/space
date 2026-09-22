@@ -6,7 +6,7 @@ covers:
   - Correlated and time-varying noise; the Schmidt-Kalman consider filter
 ---
 
-Four assumptions closed the stochastic model in the stochastic-model lesson: $\mathbf{w}$ and $\mathbf{v}$ each white, the two mutually independent, and the initial state independent of both. Every lesson since has quietly relied on all four. This lesson removes two of them in turn — mutual independence, and whiteness — and then spends its last part on a filter built for a situation none of the last fourteen lessons has needed: a state you cannot safely ignore and should not try to estimate either.
+Four assumptions closed the stochastic-model lesson's model of the world: $\mathbf{w}$ and $\mathbf{v}$ each white, the two mutually independent, and the initial state independent of both. Every lesson since has quietly relied on all four. This lesson removes two of them in turn — mutual independence, and whiteness — and then spends its last part on a filter built for a situation none of the last fourteen lessons has needed: a state you cannot safely ignore and should not try to estimate either.
 
 ## When process and measurement noise share a cause
 

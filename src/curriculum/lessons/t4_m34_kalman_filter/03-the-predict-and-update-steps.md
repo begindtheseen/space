@@ -18,7 +18,7 @@ $$
 (\hat{\mathbf{x}}_{k-1}^+, \mathbf{P}_{k-1}^+) \ \xrightarrow{\text{predict}}\ (\hat{\mathbf{x}}_k^-, \mathbf{P}_k^-) \ \xrightarrow{\text{update}}\ (\hat{\mathbf{x}}_k^+, \mathbf{P}_k^+) \ \xrightarrow{\text{predict}}\ (\hat{\mathbf{x}}_{k+1}^-, \mathbf{P}_{k+1}^-) \ \xrightarrow{\text{update}} \cdots
 $$
 
-It has to start somewhere. Take whatever you know before any measurement — a pad survey, a previous filter's terminal estimate, an initial-orbit-determination solution — and call it $\hat{\mathbf{x}}_0^+ = \hat{\mathbf{x}}_0$, $\mathbf{P}_0^+ = \mathbf{P}_0$, the $\hat{\mathbf{x}}_0$ and $\mathbf{P}_0$ of the stochastic model in the stochastic-model lesson. Labelling it a "$+$" is a bookkeeping choice, not a claim that a measurement produced it: it says only that this is the state the recursion should *predict from* at step 1. Some authors instead start from a $\hat{\mathbf{x}}_0^-$ and immediately update it with a measurement at $k=0$; both conventions land on the same sequence of estimates, and the only real mistake is switching between them inside one derivation.
+It has to start somewhere. Take whatever you know before any measurement — a pad survey, a previous filter's terminal estimate, an initial-orbit-determination solution — and call it $\hat{\mathbf{x}}_0^+ = \hat{\mathbf{x}}_0$, $\mathbf{P}_0^+ = \mathbf{P}_0$, the $\hat{\mathbf{x}}_0$ and $\mathbf{P}_0$ of the stochastic-model lesson. Labelling it a "$+$" is a bookkeeping choice, not a claim that a measurement produced it: it says only that this is the state the recursion should *predict from* at step 1. Some authors instead start from a $\hat{\mathbf{x}}_0^-$ and immediately update it with a measurement at $k=0$; both conventions land on the same sequence of estimates, and the only real mistake is switching between them inside one derivation.
 
 ::: warning Minus and plus are a time, not a quality
 $\hat{\mathbf{x}}_k^-$ and $\hat{\mathbf{x}}_k^+$ carry the *same* time index $k$ — they are two estimates of $\mathbf{x}_k$, before and after $\mathbf{z}_k$, not an estimate of $\mathbf{x}_{k-1}$ and one of $\mathbf{x}_k$. A predict step advances the *time index* from $k-1$ to $k$; an update step leaves the time index alone and only removes the minus. Writing $\hat{\mathbf{x}}_{k+1}^+$ when you meant $\hat{\mathbf{x}}_k^+$ is the single most common indexing slip in a first implementation, and it is invisible in code until the filter's timing looks one step late.
@@ -26,7 +26,7 @@ $\hat{\mathbf{x}}_k^-$ and $\hat{\mathbf{x}}_k^+$ carry the *same* time index $k
 
 ## The predict step
 
-Between $k-1$ and $k$ the true state obeys the stochastic model exactly as the stochastic-model lesson wrote it: $\mathbf{x}_k = \mathbf{F}_{k-1}\mathbf{x}_{k-1} + \mathbf{G}_{k-1}\mathbf{u}_{k-1} + \mathbf{w}_{k-1}$. Define the prediction as the conditional mean given everything measured through step $k-1$, and expand using linearity of expectation:
+Between $k-1$ and $k$ the true state obeys the model exactly as the stochastic-model lesson wrote it: $\mathbf{x}_k = \mathbf{F}_{k-1}\mathbf{x}_{k-1} + \mathbf{G}_{k-1}\mathbf{u}_{k-1} + \mathbf{w}_{k-1}$. Define the prediction as the conditional mean given everything measured through step $k-1$, and expand using linearity of expectation:
 
 $$
 \hat{\mathbf{x}}_k^- = \mathbb{E}[\mathbf{x}_k \mid \mathbf{z}_1,\ldots,\mathbf{z}_{k-1}] = \mathbf{F}_{k-1}\hat{\mathbf{x}}_{k-1}^+ + \mathbf{G}_{k-1}\mathbf{u}_{k-1},
