@@ -1,7 +1,7 @@
 ---
 id: l06-wgs-84-geodetic-latitude-ned-and-enu
 title: WGS-84, geodetic latitude, NED and ENU
-minutes: 21
+minutes: 19
 covers:
   - geodetic vs geocentric latitude and the WGS-84 ellipsoid
   - NED and ENU local-level frames

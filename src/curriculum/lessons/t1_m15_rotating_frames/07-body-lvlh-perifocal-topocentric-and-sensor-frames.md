@@ -1,7 +1,7 @@
 ---
 id: l07-body-lvlh-perifocal-topocentric-and-sensor-frames
 title: Body, LVLH, perifocal, topocentric and sensor frames
-minutes: 22
+minutes: 24
 covers:
   - body, LVLH / RIC, perifocal, topocentric and sensor frames
 ---

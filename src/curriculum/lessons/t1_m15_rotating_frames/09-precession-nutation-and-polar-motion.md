@@ -1,7 +1,7 @@
 ---
 id: l09-precession-nutation-and-polar-motion
 title: Precession, nutation and polar motion
-minutes: 20
+minutes: 22
 covers:
   - precession, nutation, polar motion
 ---

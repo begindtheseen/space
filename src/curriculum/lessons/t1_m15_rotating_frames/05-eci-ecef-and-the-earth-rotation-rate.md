@@ -1,7 +1,7 @@
 ---
 id: l05-eci-ecef-and-the-earth-rotation-rate
 title: ECI, ECEF and the Earth rotation rate
-minutes: 19
+minutes: 21
 covers:
   - Earth rotation rate
   - ECI (J2000 / GCRF) and ECEF (ITRF)

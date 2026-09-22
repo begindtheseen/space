@@ -165,12 +165,12 @@ struct ThrustPoint { double t_s; double thrust_kN; };
 // Piecewise-linear lookup in a table sorted by time. O(log N) with std::lower_bound.
 double thrust_at(const std::array<ThrustPoint, 6>& table, double t) {
   assert(std::is_sorted(table.begin(), table.end(),
-                        [] (const ThrustPoint& a, const ThrustPoint& b) { return a.t_s < b.t_s; }));
+                        [](const ThrustPoint& a, const ThrustPoint& b) { return a.t_s < b.t_s; }));
   if (t <= table.front().t_s) return table.front().thrust_kN;
   if (t >= table.back().t_s) return table.back().thrust_kN;
   // First point whose time is not less than t.
   const auto hi = std::lower_bound(table.begin(), table.end(), t,
-                                   [] (const ThrustPoint& p, double time) { return p.t_s < time; });
+                                   [](const ThrustPoint& p, double time) { return p.t_s < time; });
   const auto lo = hi - 1;
   const double frac = (t - lo->t_s) / (hi->t_s - lo->t_s);
   return lo->thrust_kN + frac * (hi->thrust_kN - lo->thrust_kN);
@@ -212,23 +212,23 @@ int main() {
 
   std::array<double, 5> alt_m{};
   std::transform(alt_ft.begin(), alt_ft.end(), alt_m.begin(),
-                 [] (double ft) { return ft * 0.3048; });
+                 [](double ft) { return ft * 0.3048; });
 
   std::array<double, 5> sorted = alt_m;
   std::sort(sorted.begin(), sorted.end());
   const double median = sorted[2];
 
   const int outliers = static_cast<int>(std::count_if(alt_m.begin(), alt_m.end(),
-      [median] (double a) { return std::abs(a - median) > 50.0; }));
+      [median](double a) { return std::abs(a - median) > 50.0; }));
 
   const auto worst = std::max_element(alt_m.begin(), alt_m.end(),
-      [median] (double a, double b) { return std::abs(a - median) < std::abs(b - median); });
+      [median](double a, double b) { return std::abs(a - median) < std::abs(b - median); });
 
   const bool all_plausible = std::all_of(alt_m.begin(), alt_m.end(),
-      [] (double a) { return a > 0.0 && a < 50000.0; });
+      [](double a) { return a > 0.0 && a < 50000.0; });
 
   const double mean_good = std::accumulate(alt_m.begin(), alt_m.end(), 0.0,
-      [median] (double acc, double a) { return std::abs(a - median) > 50.0 ? acc : acc + a; })
+      [median](double acc, double a) { return std::abs(a - median) > 50.0 ? acc : acc + a; })
       / static_cast<double>(alt_m.size() - outliers);
 
   std::cout << "median          = " << median << " m\n";

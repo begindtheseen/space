@@ -920,7 +920,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-eci-ecef-and-the-earth-rotation-rate",
       "title": "ECI, ECEF and the Earth rotation rate",
-      "minutes": 19,
+      "minutes": 21,
       "covers": [
         "Earth rotation rate",
         "ECI (J2000 / GCRF) and ECEF (ITRF)"
@@ -930,7 +930,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-wgs-84-geodetic-latitude-ned-and-enu",
       "title": "WGS-84, geodetic latitude, NED and ENU",
-      "minutes": 21,
+      "minutes": 19,
       "covers": [
         "geodetic vs geocentric latitude and the WGS-84 ellipsoid",
         "NED and ENU local-level frames"
@@ -940,7 +940,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-body-lvlh-perifocal-topocentric-and-sensor-frames",
       "title": "Body, LVLH, perifocal, topocentric and sensor frames",
-      "minutes": 22,
+      "minutes": 24,
       "covers": [
         "body, LVLH / RIC, perifocal, topocentric and sensor frames"
       ],
@@ -949,7 +949,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-ut1-tai-gps-and-tt-time-scales",
       "title": "UT1, TAI, GPS and TT time scales",
-      "minutes": 21,
+      "minutes": 22,
       "covers": [
         "UT1, TAI, GPS and TT time scales"
       ],
@@ -958,7 +958,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-precession-nutation-and-polar-motion",
       "title": "Precession, nutation and polar motion",
-      "minutes": 20,
+      "minutes": 22,
       "covers": [
         "precession, nutation, polar motion"
       ],

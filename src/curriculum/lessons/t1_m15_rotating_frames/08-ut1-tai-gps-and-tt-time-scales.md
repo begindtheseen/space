@@ -1,7 +1,7 @@
 ---
 id: l08-ut1-tai-gps-and-tt-time-scales
 title: UT1, TAI, GPS and TT time scales
-minutes: 21
+minutes: 22
 covers:
   - UT1, TAI, GPS and TT time scales
 ---
