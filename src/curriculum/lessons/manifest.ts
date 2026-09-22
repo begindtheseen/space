@@ -4168,6 +4168,16 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Triple modular redundancy and voting; mid-value select; what a voter can and cannot detect"
       ],
       "file": "t6_m45_fsw_architecture/06-tmr-and-voting.md"
+    },
+    {
+      "id": "l07-byzantine-faults-and-determinism",
+      "title": "Byzantine faults and determinism",
+      "minutes": 20,
+      "covers": [
+        "Byzantine faults and why a majority vote does not handle an asymmetric liar",
+        "Determinism across redundant strings, and why a non-deterministic algorithm cannot be voted"
+      ],
+      "file": "t6_m45_fsw_architecture/07-byzantine-faults-and-determinism.md"
     }
   ],
   "t6_m46_6dof_simulation": [
@@ -4242,6 +4252,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Mass properties against time: propellant depletion, centre of mass migration, inertia tensor change"
       ],
       "file": "t6_m46_6dof_simulation/08-mass-properties-against-time.md"
+    },
+    {
+      "id": "l09-slosh-and-structural-flex",
+      "title": "Slosh and structural flex",
+      "minutes": 20,
+      "covers": [
+        "Slosh and structural flex models, and where they get inserted in the loop"
+      ],
+      "file": "t6_m46_6dof_simulation/09-slosh-and-structural-flex.md"
     }
   ],
   "t6_m47_vv_montecarlo": [
@@ -4310,6 +4329,25 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Where LinCov is valid and where nonlinearity, saturation and discrete logic force you back to Monte Carlo"
       ],
       "file": "t6_m47_vv_montecarlo/07-linear-covariance-analysis.md"
+    },
+    {
+      "id": "l08-three-sigma-is-not-the-99-73rd-percentile",
+      "title": "Three sigma is not the 99.73rd percentile",
+      "minutes": 17,
+      "covers": [
+        "Three sigma versus the 99.73rd percentile, and why they differ for anything non-Gaussian"
+      ],
+      "file": "t6_m47_vv_montecarlo/08-three-sigma-is-not-the-99-73rd-percentile.md"
+    },
+    {
+      "id": "l09-sensitivity-analysis-and-envelope-coverage",
+      "title": "Sensitivity analysis and flight-envelope coverage",
+      "minutes": 16,
+      "covers": [
+        "Sensitivity analysis and driver identification: regression on the dispersion inputs, and scatter plots you actually look at",
+        "Flight-envelope coverage and the difference between random coverage and designed coverage"
+      ],
+      "file": "t6_m47_vv_montecarlo/09-sensitivity-analysis-and-envelope-coverage.md"
     }
   ]
 }
@@ -4692,29 +4730,26 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t6_m45_fsw_architecture": {
-    "covered": 9,
+    "covered": 11,
     "total": 20,
     "complete": false,
     "missing": [
-      "Byzantine faults and why a majority vote does not handle an asymmetric liar",
       "Radiation effects: single-event upsets, latch-up, total ionising dose; EDAC and ECC memory; memory scrubbing",
       "Watchdog timers: what they catch, what they miss, and why a reset is a real-time decision",
       "Fault detection, isolation and recovery: residual monitors, hypothesis tests, persistence counters and hysteresis",
       "FMEA and fault trees; identifying the single points of failure a voter does not cover",
       "Safing modes and the rule that safe must be reachable, stable and exitable only by an explicit decision",
       "Abort logic and autonomous flight termination systems",
-      "Determinism across redundant strings, and why a non-deterministic algorithm cannot be voted",
       "Requirements traceability from a vehicle requirement to a line of code to a test",
       "Configuration management of gains, I-loads and tables separately from the executable",
       "In-flight software update: when it is the safer choice and when it is not"
     ]
   },
   "t6_m46_6dof_simulation": {
-    "covered": 8,
+    "covered": 9,
     "total": 18,
     "complete": false,
     "missing": [
-      "Slosh and structural flex models, and where they get inserted in the loop",
       "Staging and other discontinuous events; zero-crossing detection and bisection to the event time",
       "The flight-software-in-the-loop boundary: compiling the actual flight code into the sim rather than a Python re-implementation of it",
       "The SIL, PIL and HIL progression and what each step actually adds",
@@ -4727,13 +4762,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t6_m47_vv_montecarlo": {
-    "covered": 10,
+    "covered": 13,
     "total": 20,
     "complete": false,
     "missing": [
-      "Three sigma versus the 99.73rd percentile, and why they differ for anything non-Gaussian",
-      "Sensitivity analysis and driver identification: regression on the dispersion inputs, and scatter plots you actually look at",
-      "Flight-envelope coverage and the difference between random coverage and designed coverage",
       "Stability margin verification across the envelope: frozen-time linearisation, gain, phase and delay margin against flight time",
       "Code verification: unit, integration and regression tests; statement, branch and MC-DC coverage",
       "Static analysis and formal methods: Coverity, Polyspace, model checking with SPIN",
