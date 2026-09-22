@@ -43,7 +43,7 @@ for h in (500.0, 800.0, 1500.0, 20200.0, 35786.0):
 # h= 35786.0 km   rho =   8.742 deg
 ```
 
-At a typical low-Earth-orbit altitude, Earth fills nearly $70^\circ$ of half-angle — more than a third of the entire sky — and that disk sweeps across a wide arc of the field of view every orbit as the spacecraft moves. At geostationary altitude, Earth has shrunk to a disk under $9^\circ$ across (matching the commonly quoted "Earth spans about $17^\circ$ from geostationary orbit," twice this half-angle), and because a geostationary vehicle stays fixed relative to the ground, that disk barely moves at all. The two regimes call for different hardware: a LEO horizon sensor has to sweep or stare across a wide, fast-moving target, while a GEO horizon sensor can often get away with a small, fixed set of static detectors watching a disk that never goes anywhere.
+At a typical low-Earth-orbit altitude, Earth fills nearly $70^\circ$ of half-angle — more than a third of the entire sky — and that disk sweeps across a wide arc of the field of view every orbit as the spacecraft moves. At geostationary altitude, Earth has shrunk to a half-angle under $9^\circ$ (matching the commonly quoted "Earth spans about $17^\circ$ from geostationary orbit," twice this half-angle), and because a geostationary vehicle stays fixed relative to the ground, that disk barely moves at all. The two regimes call for different hardware: a LEO horizon sensor has to sweep or stare across a wide, fast-moving target, while a GEO horizon sensor can often get away with a small, fixed set of static detectors watching a disk that never goes anywhere.
 :::
 
 ## Scanning-sensor geometry: from two crossings to a nadir direction

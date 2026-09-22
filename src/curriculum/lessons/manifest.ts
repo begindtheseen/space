@@ -1012,6 +1012,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "std::string vs const char*; iostream and std::format"
       ],
       "file": "cod_cpp_01_basics/12-strings-and-formatted-output.md"
+    },
+    {
+      "id": "l13-assert-and-static-assert",
+      "title": "assert and static_assert",
+      "minutes": 17,
+      "covers": [
+        "assert and static_assert"
+      ],
+      "file": "cod_cpp_01_basics/13-assert-and-static-assert.md"
     }
   ],
   "cod_py_01_basics": [
@@ -6363,6 +6372,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Mode management across prelaunch, ascent, staging, coast, entry, landing and safe"
       ],
       "file": "t7_m48_capstone/07-mode-management.md"
+    },
+    {
+      "id": "l08-fdir",
+      "title": "FDIR: residual monitors, cross-checks and actuator health",
+      "minutes": 22,
+      "covers": [
+        "FDIR: residual monitors on the filter, sensor cross-checks, actuator health, and the response of each"
+      ],
+      "file": "t7_m48_capstone/08-fdir.md"
     }
   ],
   "t7_m49_interview_prep": [
@@ -6773,11 +6791,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t7_m48_capstone": {
-    "covered": 7,
+    "covered": 8,
     "total": 11,
     "complete": false,
     "missing": [
-      "FDIR: residual monitors on the filter, sensor cross-checks, actuator health, and the response of each",
       "C++ flight core with a Python analysis and plotting layer over it, sharing exactly one implementation of the algorithms",
       "Ten thousand dispersed cases in CI, with per-case seeding and bit-exact replay",
       "The written V&V report: requirements, evidence, margin plots, failure analysis and known limitations"
@@ -7104,12 +7121,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "cod_cpp_01_basics": {
-    "covered": 14,
+    "covered": 15,
     "total": 15,
-    "complete": false,
-    "missing": [
-      "assert and static_assert"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_cpp_02_memory": {
     "covered": 0,
