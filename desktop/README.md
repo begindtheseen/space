@@ -89,7 +89,12 @@ survives every bundle update.
    minimum time. Then the splash fades and closes.
 5. Failure during boot (`did-fail-load`, `render-process-gone`, or no `orbit:ready`
    within 15 s on a downloaded bundle): a downloaded bundle is quarantined and the app
-   relaunches; the built-in bundle shows an error and quits.
+   relaunches; the built-in bundle shows an error and quits. If quarantining itself
+   fails (nothing could be written under `bundles/`), the app shows an error naming
+   that folder and quits rather than relaunching into the same bundle again. The
+   renderer sends `orbit:ready` only after React's first commit, and never once its
+   error boundary has taken over, so a bundle that crashes in its first render is
+   caught by the watchdog too.
 6. A few seconds after boot the updater checks quietly (not in E2E mode).
 
 Active bundle resolution, synchronous at startup:
@@ -129,6 +134,10 @@ idle → checking → up-to-date | available | shell-required | error
 - **apply**: `current.json = { version: latest, previous: active }` → relaunch.
 - **rollback**: `current.json = { version: null }` → relaunch (the built-in bundle).
 - **quarantine(v)**: adds `v` to `bad.json` and points `current.json` at `previous`.
+  The two writes are independent (either alone keeps the next boot off `v`); it throws
+  only when neither could be written.
+- A failed **check** after a download keeps `ready` (with `error` set) as long as the
+  extracted bundle still validates, so an offline laptop can still restart into it.
 
 Release manifest (`orbit-manifest.json`, written by `scripts/make-bundle.mjs`):
 

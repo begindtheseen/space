@@ -166,6 +166,8 @@ export class FakeGitHub {
   readonly seen: SeenRequest[] = []
   /** Per-file status override, e.g. to simulate a missing asset. */
   readonly fileStatus = new Map<string, number>()
+  /** Files served without a Content-Length header (chunked transfer encoding). */
+  readonly chunked = new Set<string>()
   private server: Server | null = null
   private origin = ''
   private readonly repo: string
@@ -184,11 +186,12 @@ export class FakeGitHub {
     return this.origin
   }
 
-  async start(): Promise<string> {
+  /** Listens on `port` (default: any free port) — pass a previous port to come back at the same address. */
+  async start(port = 0): Promise<string> {
     this.server = createServer((req, res) => this.handle(req, res))
-    await new Promise<void>((resolve) => this.server!.listen(0, '127.0.0.1', resolve))
-    const { port } = this.server!.address() as AddressInfo
-    this.origin = `http://127.0.0.1:${port}`
+    await new Promise<void>((resolve) => this.server!.listen(port, '127.0.0.1', resolve))
+    const bound = (this.server!.address() as AddressInfo).port
+    this.origin = `http://127.0.0.1:${bound}`
     return this.origin
   }
 
@@ -263,7 +266,9 @@ export class FakeGitHub {
       if (override !== undefined) return this.json(res, override, { message: `status ${override}` })
       const body = this.files.get(name)
       if (!body) return this.json(res, 404, { message: 'Not Found' })
-      res.writeHead(200, { 'content-type': 'application/octet-stream', 'content-length': body.length })
+      const headers: Record<string, string | number> = { 'content-type': 'application/octet-stream' }
+      if (!this.chunked.has(name)) headers['content-length'] = body.length
+      res.writeHead(200, headers)
       // Chunked delivery so progress reporting sees several reads.
       let offset = 0
       const step = 64 * 1024

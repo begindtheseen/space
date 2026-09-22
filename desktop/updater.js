@@ -10,12 +10,19 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { createHash } from 'node:crypto'
 import * as semver from './semver.js'
-import { extractZip, ZipError } from './zip.js'
+import { extractZip, MAX_TOTAL_UNCOMPRESSED, ZipError } from './zip.js'
 
 export const MANIFEST_ASSET = 'orbit-manifest.json'
 export const BUNDLE_META = 'orbit-bundle.json'
+/**
+ * Largest bundle zip a manifest may declare. A zip cannot usefully be bigger
+ * than what zip.js lets it expand to, and without a cap the release author
+ * would decide how much disk the download may fill and how big a buffer
+ * readFile() must allocate (Node refuses past 2 GiB).
+ */
+export const MAX_BUNDLE_BYTES = MAX_TOTAL_UNCOMPRESSED
 const MAX_REDIRECTS = 5
-const MAX_MANIFEST_BYTES = 1024 * 1024
+export const MAX_MANIFEST_BYTES = 1024 * 1024
 const PROGRESS_INTERVAL_MS = 100
 const REDIRECT_STATUSES = new Set([301, 302, 303, 307, 308])
 const SHA256_RE = /^[0-9a-f]{64}$/i
@@ -176,6 +183,7 @@ function validateManifest(raw) {
   if (!isHttpsUrl(b.url)) throw bad('bundle url must be https')
   if (typeof b.sha256 !== 'string' || !SHA256_RE.test(b.sha256)) throw bad('bundle sha256 must be 64 hex characters')
   if (typeof b.size !== 'number' || !Number.isSafeInteger(b.size) || b.size <= 0) throw bad('bundle size must be a positive integer')
+  if (b.size > MAX_BUNDLE_BYTES) throw bad(`bundle size ${b.size} is over the ${MAX_BUNDLE_BYTES} byte limit`)
   if (!validVersion(b.minShell)) throw bad('bad bundle minShell')
 
   let shellDownloadUrl
@@ -208,6 +216,32 @@ function isHttpsUrl(value) {
   } catch {
     return false
   }
+}
+
+/**
+ * Reads a response body as UTF-8 text, giving up as soon as it passes `limit`
+ * bytes.
+ * @param {Response} res
+ * @param {number} limit
+ * @returns {Promise<string | null>} the text, or null when the body was larger than `limit`
+ */
+async function readTextBounded(res, limit) {
+  if (!res.body) return ''
+  const reader = res.body.getReader()
+  /** @type {Uint8Array[]} */
+  const chunks = []
+  let bytes = 0
+  for (;;) {
+    const { done, value } = await reader.read()
+    if (done) break
+    bytes += value.byteLength
+    if (bytes > limit) {
+      await reader.cancel().catch(() => {})
+      return null
+    }
+    chunks.push(value)
+  }
+  return Buffer.concat(chunks).toString('utf8')
 }
 
 export class Updater extends EventEmitter {
@@ -544,15 +578,21 @@ export class Updater extends EventEmitter {
       await res.body?.cancel().catch(() => {})
       throw new UpdateError(`Could not download ${MANIFEST_ASSET} (HTTP ${res.status}).`)
     }
+    const tooLarge = () => new UpdateError(`${MANIFEST_ASSET} is unreasonably large.`)
     const length = Number(res.headers.get('content-length'))
-    if (Number.isFinite(length) && length > MAX_MANIFEST_BYTES) throw new UpdateError(`${MANIFEST_ASSET} is unreasonably large.`)
+    if (Number.isFinite(length) && length > MAX_MANIFEST_BYTES) {
+      await res.body?.cancel().catch(() => {})
+      throw tooLarge()
+    }
     let text
     try {
-      text = await res.text()
+      // Content-Length is optional, so the limit has to hold while reading:
+      // res.text() would buffer a chunked body of any size first.
+      text = await readTextBounded(res, MAX_MANIFEST_BYTES)
     } catch (err) {
       throw new UpdateError(`Could not read ${MANIFEST_ASSET} (${describe(err)}).`, { cause: err })
     }
-    if (text.length > MAX_MANIFEST_BYTES) throw new UpdateError(`${MANIFEST_ASSET} is unreasonably large.`)
+    if (text === null) throw tooLarge()
     let json
     try {
       json = JSON.parse(text)
@@ -611,6 +651,15 @@ export class Updater extends EventEmitter {
       this.#checkedAt = new Date().toISOString()
     } catch (err) {
       this.#fail(err)
+      // A bundle downloaded and verified earlier is still worth restarting
+      // into when the check that would re-offer it fails (offline, rate
+      // limit, a bad manifest upstream): otherwise apply() is refused until a
+      // check succeeds, and the next boot's GC throws the download away. The
+      // failure stays in `error` for the card to show beside "Restart now".
+      if (this.#readyVersion && this.#latest?.version === this.#readyVersion && this.validateBundle(this.#readyVersion) === null) {
+        this.#status = 'ready'
+        this.log(`updater: keeping ${this.#readyVersion} ready to apply despite the failed check`)
+      }
     }
     this.#emit()
     return this.getState()
@@ -803,19 +852,43 @@ export class Updater extends EventEmitter {
    */
   quarantine(version) {
     if (!validVersion(version)) throw new TypeError(`Updater: invalid version ${JSON.stringify(version)}`)
+    // The two writes are independent: either one alone keeps the next boot
+    // off this bundle (resolveActive() refuses a quarantined version even when
+    // current.json still names it), so one failing must not skip the other.
+    /** @type {unknown[]} */
+    const failures = []
     const bad = this.#readBad()
-    if (!bad.includes(version)) this.#writeBad([...bad, version])
+    let blacklisted = bad.includes(version)
+    if (!blacklisted) {
+      try {
+        this.#writeBad([...bad, version])
+        blacklisted = true
+      } catch (err) {
+        failures.push(err)
+      }
+    }
 
     const current = normalizeCurrent(readJson(this.paths.current, this.log))
-    if (current.version === version) {
+    let selected = current.version === version
+    if (selected) {
       const previous = current.previous
       const next = previous && previous !== version && !bad.includes(previous) ? previous : null
-      writeJsonAtomic(this.paths.current, { version: next, previous: null })
+      try {
+        writeJsonAtomic(this.paths.current, { version: next, previous: null })
+        selected = false
+      } catch (err) {
+        failures.push(err)
+      }
     }
     if (this.#readyVersion === version) {
       this.#readyVersion = null
       if (this.#status === 'ready') this.#status = 'idle'
     }
+    if (selected && !blacklisted) {
+      // Nothing on disk changed: a relaunch would serve this bundle again.
+      throw new UpdateError(`Could not quarantine ${version} (${failures.map(describe).join('; ')}).`, { cause: failures[0] })
+    }
+    for (const err of failures) this.log(`updater: quarantined ${version} but a write failed`, describe(err))
     this.log(`updater: quarantined ${version}`)
   }
 }

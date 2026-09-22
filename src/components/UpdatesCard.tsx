@@ -164,6 +164,13 @@ export function UpdatesCard({ index }: { index?: number }) {
               Your progress lives in the app's own storage, not inside the bundle, so it comes along
               unchanged.
             </p>
+            {state?.error ? (
+              // A later check failed; the verified download stays applicable.
+              <div className="updates__status updates__status--bad">
+                <span className="signal__dot" />
+                <span>{state.error}</span>
+              </div>
+            ) : null}
           </div>
           <div className="setting__control">
             <Button

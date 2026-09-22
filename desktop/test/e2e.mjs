@@ -408,7 +408,7 @@ const STEPS = [
   [2, 'Launch: splash screenshot, main window, bridge versions, home screenshot'],
   [3, 'Settings: check → 9.9.9 → download → restart; bundle on disk; current.json'],
   [4, 'Relaunch on 9.9.9, roll back, relaunch on built-in'],
-  [5, 'Quarantine: bundle that never calls ready() is quit and blacklisted'],
+  [5, 'Quarantine: bundles that never call ready(), or crash in their first render, are quit and blacklisted'],
   [6, 'Token: Bearer sent to the API, dropped after the redirect'],
   [7, 'Every assertion passed'],
 ]
@@ -607,22 +607,59 @@ async function main() {
     // 5 ───────────────────────────────────────────────────────────────────────
     await runStep(5, async () => {
       const broken = path.join(bundlesDir, UPDATE_VERSION)
-      fs.rmSync(broken, { recursive: true, force: true })
-      fs.cpSync(fixture.dir, broken, { recursive: true })
-      fs.writeFileSync(
-        path.join(broken, 'index.html'),
-        '<!doctype html><html><head><meta charset="utf-8"><title>broken</title></head><body style="background:#000208;color:#fff">This bundle never calls window.orbit.ready().</body></html>\n',
-      )
-      fs.writeFileSync(currentFile, JSON.stringify({ version: UPDATE_VERSION, previous: null }, null, 2) + '\n')
-      assertEqual(readJson(currentFile).version, UPDATE_VERSION, 'current.json points at the broken bundle')
+      /** Reinstalls the fixture as the current bundle with its index.html rewritten by `mutate`. */
+      const installBroken = (what, mutate) => {
+        fs.rmSync(broken, { recursive: true, force: true })
+        fs.cpSync(fixture.dir, broken, { recursive: true })
+        const indexFile = path.join(broken, 'index.html')
+        fs.writeFileSync(indexFile, mutate(fs.readFileSync(indexFile, 'utf8')))
+        fs.rmSync(badFile, { force: true })
+        fs.writeFileSync(currentFile, JSON.stringify({ version: UPDATE_VERSION, previous: null }, null, 2) + '\n')
+        assertEqual(readJson(currentFile).version, UPDATE_VERSION, `current.json points at the ${what} bundle`)
+      }
+      const expectQuarantined = async (what) => {
+        const bad = readJson(badFile)
+        assert(Array.isArray(bad.versions) && bad.versions.includes(UPDATE_VERSION), `bad.json lists ${UPDATE_VERSION} after the ${what} bundle: ${JSON.stringify(bad)}`)
+        assertEqual(readJson(currentFile).version, null, `current.json.version reset by quarantining the ${what} bundle`)
+      }
 
-      const started = Date.now()
-      handle = await harness.launch('broken')
+      // (a) A page that never calls ready() at all.
+      installBroken(
+        'silent',
+        () =>
+          '<!doctype html><html><head><meta charset="utf-8"><title>broken</title></head><body style="background:#000208;color:#fff">This bundle never calls window.orbit.ready().</body></html>\n',
+      )
+      let started = Date.now()
+      handle = await harness.launch('broken-silent')
       await harness.expectExit(handle, 12_000, 'app quits on its own with a bundle that never reports ready')
       log(`  quit after ${Date.now() - started} ms`)
-      const bad = readJson(badFile)
-      assert(Array.isArray(bad.versions) && bad.versions.includes(UPDATE_VERSION), `bad.json lists ${UPDATE_VERSION}: ${JSON.stringify(bad)}`)
-      assertEqual(readJson(currentFile).version, null, 'current.json.version reset by quarantine')
+      await expectQuarantined('silent')
+
+      // (b) The real bundle, but its React tree throws during the first render:
+      // useRoute() parses location.hash with URLSearchParams synchronously, so
+      // sabotaging that constructor before the app's module script runs makes
+      // the first render throw. The boundary takes over the tree, so the page
+      // is not empty — ready() must still not be sent, and the watchdog must
+      // quarantine the bundle exactly as for (a).
+      installBroken('crashing', (html) => {
+        const sabotage = '<script>window.URLSearchParams = function () { throw new Error("e2e: sabotaged first render") }</script>'
+        assert(html.includes('<head>'), 'fixture index.html has a <head> to inject into')
+        return html.replace('<head>', `<head>${sabotage}`)
+      })
+      started = Date.now()
+      handle = await harness.launch('broken-crashing')
+      // Best effort: the hidden window's page exists once the navigation commits.
+      const crashPage = await harness.waitForPage(handle, (url) => url.startsWith('app://orbit/'), 'crashing bundle page', 8_000).catch(() => null)
+      if (crashPage) {
+        const crashShown = await crashPage
+          .waitForSelector('[data-orbit-crash]', { state: 'attached', timeout: 2_500 })
+          .then(() => true)
+          .catch(() => false)
+        log(`  crash screen rendered in the hidden window: ${crashShown}`)
+      }
+      await harness.expectExit(handle, 12_000, 'app quits on its own with a bundle whose first render throws')
+      log(`  quit after ${Date.now() - started} ms`)
+      await expectQuarantined('crashing')
 
       handle = await harness.launch('after-quarantine')
       page = await harness.waitForMain(handle)

@@ -2,7 +2,7 @@
 //
 // There is no Apple Developer ID behind ORBIT, so the app is signed with the
 // ad-hoc identity ("-"). That is what lets macOS run it once the user has
-// approved it (right-click → Open); an unsigned app is refused outright on
+// approved it (Privacy & Security → Open Anyway); an unsigned app is refused outright on
 // Apple silicon. On macOS the hook uses Apple's codesign. On Linux it uses
 // rcodesign (https://gregoryszorc.com/docs/apple-codesign/) when it is on
 // PATH or named by RCODESIGN, so a Linux box can still produce a runnable

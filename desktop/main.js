@@ -315,12 +315,28 @@ async function boot({ active, ipc, updater, windowOptions, startUrl }) {
     logError(`boot failed on ${active.builtIn ? 'built-in' : 'downloaded'} bundle ${active.version}: ${outcome.reason}`)
     if (!active.builtIn) {
       await splash.status('This update failed to start. Restoring the previous version…')
+      let quarantineError = null
       try {
         updater.quarantine(active.version)
       } catch (err) {
+        quarantineError = err
         logError('quarantine failed:', err)
       }
-      relaunch()
+      if (quarantineError === null) {
+        relaunch()
+        return
+      }
+      // Nothing on disk changed (full disk, unwritable bundles/ …), so a
+      // relaunch would pick the same bundle, hit the watchdog again and loop
+      // every 15 s. Stop and say how to recover instead.
+      const detail = quarantineError instanceof Error ? quarantineError.message : String(quarantineError)
+      const message = `Could not start ORBIT. The downloaded update ${active.version} failed to load, and ORBIT could not switch back to the previous version.`
+      await splash.error(message)
+      dialog.showErrorBox(
+        'Could not start ORBIT',
+        `${message}\n\nFree up some disk space and open ORBIT again. If that does not help, delete this folder and open ORBIT again:\n${updater.paths.bundles}\n\n${detail}\n${outcome.reason}`,
+      )
+      app.quit()
       return
     }
     const message = 'Could not start ORBIT. The built-in curriculum bundle failed to load; please reinstall the app.'

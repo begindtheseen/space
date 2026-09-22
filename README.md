@@ -46,15 +46,18 @@ ORBIT onto the Applications folder shown beside it. One app runs natively on App
 silicon and Intel; it needs macOS 12 (Monterey) or newer.
 
 The first launch takes one extra step. The app is signed ad hoc — there is no $99-a-year
-Apple Developer ID behind it, so it is not notarised — and Gatekeeper will say it
-"cannot be opened because Apple cannot check it for malicious software". Any one of
-these works:
+Apple Developer ID behind it, so it is not notarised — and Gatekeeper will refuse to open
+it the first time ("Apple could not verify ORBIT is free of malware", or on older
+systems "cannot be opened because Apple cannot check it for malicious software"):
 
-- In Applications, **right-click (or Control-click) `ORBIT.app` and choose Open**, then
-  Open again in the dialog.
-- Try to open it normally, then go to **System Settings → Privacy & Security**, scroll to
-  the message about ORBIT and click **Open Anyway**.
-- From Terminal: `xattr -dr com.apple.quarantine /Applications/ORBIT.app`
+1. Open ORBIT once normally and dismiss the dialog (Done).
+2. Go to **System Settings → Privacy & Security**, scroll down to the message about
+   ORBIT and click **Open Anyway**, then confirm.
+
+Alternatively, from Terminal: `xattr -dr com.apple.quarantine /Applications/ORBIT.app`.
+On macOS 14 (Sonoma) and earlier, right-clicking (or Control-clicking) `ORBIT.app` and
+choosing Open, then Open again, also works; macOS 15 (Sequoia) removed that shortcut for
+apps that are not notarised.
 
 macOS remembers the choice; every launch after that is ordinary. If you would rather
 have a zip than a disk image, `ORBIT-<version>-universal-mac.zip` holds the same app

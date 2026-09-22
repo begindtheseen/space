@@ -9,7 +9,7 @@
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest'
-import { Updater, type UpdateState } from '../updater.js'
+import { MAX_BUNDLE_BYTES, MAX_MANIFEST_BYTES, Updater, type UpdateState } from '../updater.js'
 import {
   FakeGitHub,
   REPO,
@@ -102,10 +102,10 @@ function makeUpdater(opts: { apiBase?: string; token?: string | null; shellVersi
   return { updater, states, relaunches, logs }
 }
 
-async function startGitHub(opts: FakeGitHubOptions & { manifest?: Record<string, unknown> | null; bundle?: Buffer | null } = {}) {
+async function startGitHub(opts: FakeGitHubOptions & { manifest?: Record<string, unknown> | null; bundle?: Buffer | null; port?: number } = {}) {
   const gh = new FakeGitHub(opts)
   servers.push(gh)
-  await gh.start()
+  await gh.start(opts.port)
   if (opts.manifest !== null) gh.addAsset('orbit-manifest.json', JSON.stringify(opts.manifest ?? makeManifest(NEW, bundleZip)))
   if (opts.bundle !== null) gh.addAsset(`orbit-bundle-${NEW}.zip`, opts.bundle ?? bundleZip)
   return gh
@@ -300,6 +300,50 @@ describe('quarantine', () => {
     expect(readCurrent()).toEqual({ version: NEW, previous: null })
     expect(() => updater.quarantine('latest')).toThrow(TypeError)
   })
+
+  // A directory sitting where writeJsonAtomic() wants its temp file makes the
+  // write throw (EISDIR) — the same shape as a full or read-only bundles/ dir,
+  // without needing a non-root user. Created after resolveActive(), whose GC
+  // would otherwise sweep the stray directories away.
+  const blockWrite = (name: string) => mkdirSync(path.join(bundlesDir(), `${name}.${process.pid}.tmp`))
+
+  it('throws, leaving current.json untouched, when neither bad.json nor current.json can be written', () => {
+    installBundle(NEW)
+    writeCurrent({ version: NEW, previous: null })
+    const { updater } = makeUpdater()
+    expect(updater.active?.version).toBe(NEW)
+    blockWrite('bad.json')
+    blockWrite('current.json')
+    expect(() => updater.quarantine(NEW)).toThrow(/Could not quarantine 9\.9\.9/)
+    expect(readCurrent()).toEqual({ version: NEW, previous: null })
+    expect(existsSync(path.join(bundlesDir(), 'bad.json'))).toBe(false)
+  })
+
+  it('still switches current.json away when only bad.json cannot be written', () => {
+    installBundle(NEW)
+    writeCurrent({ version: NEW, previous: null })
+    const { updater, logs } = makeUpdater()
+    blockWrite('bad.json')
+    expect(() => updater.quarantine(NEW)).not.toThrow()
+    expect(readCurrent()).toEqual({ version: null, previous: null })
+    expect(existsSync(path.join(bundlesDir(), 'bad.json'))).toBe(false)
+    expect(logs.some((l) => l.includes('a write failed'))).toBe(true)
+    expect(makeUpdater().updater.active?.builtIn).toBe(true)
+  })
+
+  it('still blacklists the version when only current.json cannot be written', () => {
+    installBundle(NEW)
+    writeCurrent({ version: NEW, previous: null })
+    const { updater } = makeUpdater()
+    blockWrite('current.json')
+    expect(() => updater.quarantine(NEW)).not.toThrow()
+    expect(readBad()).toEqual({ versions: [NEW] })
+    expect(readCurrent()).toEqual({ version: NEW, previous: null })
+    // The next boot refuses the quarantined bundle even though current.json still names it.
+    const next = makeUpdater()
+    expect(next.updater.active?.builtIn).toBe(true)
+    expect(next.logs.some((l) => l.includes('quarantined'))).toBe(true)
+  })
 })
 
 // ── check ──────────────────────────────────────────────────────────────
@@ -457,6 +501,7 @@ describe('check', () => {
     ['http bundle url', { bundle: { ...(makeManifest(NEW, Buffer.alloc(1)).bundle as object), url: 'http://github.com/x.zip' } }],
     ['short sha256', { bundle: { ...(makeManifest(NEW, Buffer.alloc(1)).bundle as object), sha256: 'abc' } }],
     ['zero size', { bundle: { ...(makeManifest(NEW, Buffer.alloc(1)).bundle as object), size: 0 } }],
+    ['oversized bundle', { bundle: { ...(makeManifest(NEW, Buffer.alloc(1)).bundle as object), size: MAX_BUNDLE_BYTES + 1 } }],
     ['bad minShell', { bundle: { ...(makeManifest(NEW, Buffer.alloc(1)).bundle as object), minShell: '1' } }],
     ['bundle name mismatch', { bundle: { ...(makeManifest(NEW, Buffer.alloc(1)).bundle as object), name: 'orbit-bundle-1.0.0.zip' } }],
     ['non-https dmg url', { shell: { dmgUrl: 'ftp://example/x.dmg' } }],
@@ -466,6 +511,39 @@ describe('check', () => {
     const state = await makeUpdater({ apiBase: gh.apiBase }).updater.check()
     expect(state.status).toBe('error')
     expect(state.error).toMatch(/release manifest is invalid/)
+  })
+
+  it('accepts a bundle size right at the cap', async () => {
+    const gh = await startGitHub({ manifest: makeManifest(NEW, bundleZip, { bundle: { ...(makeManifest(NEW, bundleZip).bundle as object), size: MAX_BUNDLE_BYTES } }) })
+    const state = await makeUpdater({ apiBase: gh.apiBase }).updater.check()
+    expect(state.status).toBe('available')
+    expect(state.latest?.size).toBe(MAX_BUNDLE_BYTES)
+  })
+
+  it('stops reading a manifest body that streams past the size limit without a Content-Length', async () => {
+    // Valid JSON, just padded past the cap; served chunked so the only defence is counting bytes while reading.
+    const manifest = makeManifest(NEW, bundleZip, { notes: 'x'.repeat(MAX_MANIFEST_BYTES) })
+    const gh = await startGitHub({ manifest })
+    gh.chunked.add('orbit-manifest.json')
+    const state = await makeUpdater({ apiBase: gh.apiBase }).updater.check()
+    expect(state.status).toBe('error')
+    expect(state.error).toMatch(/orbit-manifest\.json is unreasonably large/)
+  })
+
+  it('rejects a manifest whose Content-Length is over the limit without reading it', async () => {
+    const manifest = makeManifest(NEW, bundleZip, { notes: 'x'.repeat(MAX_MANIFEST_BYTES) })
+    const gh = await startGitHub({ manifest })
+    const state = await makeUpdater({ apiBase: gh.apiBase }).updater.check()
+    expect(state.status).toBe('error')
+    expect(state.error).toMatch(/orbit-manifest\.json is unreasonably large/)
+  })
+
+  it('still reads a chunked manifest under the limit', async () => {
+    const gh = await startGitHub()
+    gh.chunked.add('orbit-manifest.json')
+    const state = await makeUpdater({ apiBase: gh.apiBase }).updater.check()
+    expect(state.status).toBe('available')
+    expect(state.latest?.version).toBe(NEW)
   })
 
   it('rejects a manifest that is not JSON', async () => {
@@ -574,6 +652,57 @@ describe('download', () => {
     expect((await updater.check()).status).toBe('ready')
     expect((await updater.download()).status).toBe('ready')
     expect(gh.requests(`/files/orbit-bundle-${NEW}.zip`)).toHaveLength(1)
+  })
+
+  it('keeps a downloaded bundle ready to apply when a later check fails', async () => {
+    const gh = await startGitHub()
+    const { updater, relaunches, states } = makeUpdater({ apiBase: gh.apiBase })
+    await updater.check()
+    expect((await updater.download()).status).toBe('ready')
+
+    // Offline now (the laptop left the Wi-Fi): the check fails, but the
+    // verified download is still on disk and must stay applicable.
+    await gh.stop()
+    const state = await updater.check()
+    expect(state.status).toBe('ready')
+    expect(state.error).toMatch(/Could not reach/)
+    expect(state.latest?.version).toBe(NEW)
+    expect(states.at(-1)?.status).toBe('ready')
+    expect((await updater.download()).status).toBe('ready')
+
+    await updater.apply()
+    expect(readCurrent()).toEqual({ version: NEW, previous: BUILT_IN })
+    expect(relaunches).toEqual([{ reason: 'apply', version: NEW }])
+  })
+
+  it('clears the failed-check error once a check succeeds again, without downloading twice', async () => {
+    const gh = await startGitHub()
+    const { updater } = makeUpdater({ apiBase: gh.apiBase })
+    await updater.check()
+    await updater.download()
+    const port = Number(new URL(gh.apiBase).port)
+    await gh.stop()
+    expect(await updater.check()).toMatchObject({ status: 'ready', error: expect.stringMatching(/Could not reach/) })
+
+    // Back online at the same address.
+    const again = await startGitHub({ port })
+    const state = await updater.check()
+    expect(state.status).toBe('ready')
+    expect(state.error).toBeUndefined()
+    expect(state.latest?.version).toBe(NEW)
+    expect(again.requests(`/files/orbit-bundle-${NEW}.zip`)).toHaveLength(0)
+  })
+
+  it('drops the ready state on a failed check when the downloaded bundle has vanished', async () => {
+    const gh = await startGitHub()
+    const { updater } = makeUpdater({ apiBase: gh.apiBase })
+    await updater.check()
+    await updater.download()
+    rmSync(path.join(bundlesDir(), NEW), { recursive: true })
+    await gh.stop()
+    const state = await updater.check()
+    expect(state.status).toBe('error')
+    await expect(updater.apply()).rejects.toThrow(/No downloaded update is ready/)
   })
 
   it('rejects a sha256 mismatch and cleans up', async () => {
