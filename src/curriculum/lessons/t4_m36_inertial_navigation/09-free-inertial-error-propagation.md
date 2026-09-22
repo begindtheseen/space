@@ -1,7 +1,7 @@
 ---
 id: l09-free-inertial-error-propagation
 title: Free-inertial error propagation
-minutes: 26
+minutes: 17
 covers:
   - "Free-inertial error propagation: how position error grows with time from each error source"
 ---
@@ -148,7 +148,7 @@ For this module's tactical gyro and accelerometer, at what approximate time does
 :::
 
 ::: answer
-Solve $\tfrac12at^2=\sqrt{Q_{\mathrm{VRW}}}\,t^{3/2}/\sqrt3$ for $t$: $t^{1/2}=2\sqrt{Q_{\mathrm{VRW}}}/(a\sqrt3)$, so $t=4Q_{\mathrm{VRW}}/(3a^2)$. With $\sqrt{Q_{\mathrm{VRW}}}=\mathrm{VRW}_{\mathrm{si}}=9.8\times10^{-4}\,\mathrm{m/s}/\sqrt{\mathrm s}$ and $a=4.905\times10^{-4}\,\mathrm{m/s^2}$, $t=4\times(9.8\times10^{-4})^2/(3\times(4.905\times10^{-4})^2)\approx1.6\,\mathrm s$ — at this sensor grade the accelerometer bias overtakes velocity random walk almost immediately, consistent with the ten-second row already showing the bias term ahead.
+Solve $\tfrac12at^2=\sqrt{Q_{\mathrm{VRW}}}\,t^{3/2}/\sqrt3$ for $t$: $t^{1/2}=2\sqrt{Q_{\mathrm{VRW}}}/(a\sqrt3)$, so $t=4Q_{\mathrm{VRW}}/(3a^2)$. With $\sqrt{Q_{\mathrm{VRW}}}=\mathrm{VRW}_{\mathrm{si}}=9.8\times10^{-4}\,\mathrm{m/s}/\sqrt{\mathrm s}$ and $a=4.903\times10^{-4}\,\mathrm{m/s^2}$, $t=4\times(9.8\times10^{-4})^2/(3\times(4.903\times10^{-4})^2)\approx5.3\,\mathrm s$ — at this sensor grade the accelerometer bias overtakes velocity random walk within the first few seconds, consistent with the ten-second row already showing the bias term ahead.
 :::
 
 ::: check

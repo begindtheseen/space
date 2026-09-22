@@ -3132,6 +3132,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Why the UKF beats the EKF for strong nonlinearity, and the cost comparison"
       ],
       "file": "t4_m35_nonlinear_filters/05-why-the-ukf-beats-the-ekf.md"
+    },
+    {
+      "id": "l06-the-cubature-kalman-filter",
+      "title": "The cubature Kalman filter",
+      "minutes": 16,
+      "covers": [
+        "The cubature Kalman filter"
+      ],
+      "file": "t4_m35_nonlinear_filters/06-the-cubature-kalman-filter.md"
     }
   ],
   "t4_m36_inertial_navigation": [
@@ -3210,7 +3219,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-free-inertial-error-propagation",
       "title": "Free-inertial error propagation",
-      "minutes": 26,
+      "minutes": 17,
       "covers": [
         "Free-inertial error propagation: how position error grows with time from each error source"
       ],
@@ -3630,11 +3639,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t4_m35_nonlinear_filters": {
-    "covered": 5,
+    "covered": 6,
     "total": 14,
     "complete": false,
     "missing": [
-      "The cubature Kalman filter",
       "Particle filters: sequential importance sampling, resampling, degeneracy and sample impoverishment",
       "When a particle filter is genuinely required: multi-modal and non-Gaussian posteriors",
       "Gaussian sum filters",
