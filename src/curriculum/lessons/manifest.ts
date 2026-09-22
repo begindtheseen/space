@@ -890,6 +890,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Adams-Bashforth / Adams-Moulton multistep methods"
       ],
       "file": "t0_m10_numerical_methods/06-adams-multistep-methods.md"
+    },
+    {
+      "id": "l07-stiffness-backward-euler-bdf",
+      "title": "Stiffness, backward Euler and BDF",
+      "minutes": 28,
+      "covers": [
+        "stiffness and implicit methods: backward Euler, BDF"
+      ],
+      "file": "t0_m10_numerical_methods/07-stiffness-backward-euler-bdf.md"
     }
   ],
   "t0_m11_optimization": [
@@ -1673,11 +1682,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t0_m10_numerical_methods": {
-    "covered": 8,
+    "covered": 9,
     "total": 13,
     "complete": false,
     "missing": [
-      "stiffness and implicit methods: backward Euler, BDF",
       "interpolation: linear and cubic spline",
       "numerical differentiation and complex-step derivatives",
       "quadrature: Simpson, Gauss-Legendre",
