@@ -15,10 +15,11 @@
 import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import electronPath from 'electron'
 import { _electron } from 'playwright'
 
-const root = '/home/user/space'
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..')
 const userData = fs.mkdtempSync(path.join(os.tmpdir(), 'orbit-bridge-e2e-'))
 let failures = 0
 const check = (cond, msg) => {
