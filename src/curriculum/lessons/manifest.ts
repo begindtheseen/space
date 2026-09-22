@@ -646,6 +646,16 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "forced response and resonance"
       ],
       "file": "t0_m08_odes/05-forced-response-and-resonance.md"
+    },
+    {
+      "id": "l06-laplace-transform-partial-fractions",
+      "title": "The Laplace transform, partial fractions, and the value theorems",
+      "minutes": 22,
+      "covers": [
+        "Laplace transform, inverse transform, partial fractions",
+        "initial and final value theorems"
+      ],
+      "file": "t0_m08_odes/06-laplace-transform-partial-fractions.md"
     }
   ],
   "t0_m09_probability_stats": [
@@ -1026,6 +1036,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "principal axes and principal moments"
       ],
       "file": "t1_m14_rigid_body_dynamics/03-principal-axes-and-principal-moments.md"
+    },
+    {
+      "id": "l04-angular-momentum-h-equals-i-omega",
+      "title": "Angular momentum H = Iω and rotational kinetic energy",
+      "minutes": 16,
+      "covers": [
+        "angular momentum H = I omega"
+      ],
+      "file": "t1_m14_rigid_body_dynamics/04-angular-momentum-h-equals-i-omega.md"
     }
   ],
   "t1_m15_rotating_frames": [
@@ -1417,12 +1436,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t0_m08_odes": {
-    "covered": 6,
+    "covered": 8,
     "total": 12,
     "complete": false,
     "missing": [
-      "Laplace transform, inverse transform, partial fractions",
-      "initial and final value theorems",
       "transfer functions",
       "convolution and impulse response",
       "stability from pole locations",
@@ -1486,11 +1503,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t1_m14_rigid_body_dynamics": {
-    "covered": 3,
+    "covered": 4,
     "total": 12,
     "complete": false,
     "missing": [
-      "angular momentum H = I omega",
       "Euler rotational equations of motion",
       "torque-free motion, polhode and herpolhode",
       "major/minor axis spin stability and the intermediate axis theorem",
