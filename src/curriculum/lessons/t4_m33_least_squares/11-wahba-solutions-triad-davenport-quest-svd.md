@@ -80,8 +80,23 @@ def davenport_q(bs, rs, weights):
 Three body observations — sun sensor, magnetometer, star tracker, weighted $4:1:2$ by relative accuracy — against a known true attitude, noiseless:
 
 ```python
-# A_true built from a known axis-angle rotation; r1, r2, r3 realistic reference
-# directions; b_i = A_true @ r_i exactly (see the previous lesson's setup)
+def dcm_from_axis_angle(axis, angle):    # same construction as the previous lesson
+    axis = axis / np.linalg.norm(axis)
+    K = np.array([[0,-axis[2],axis[1]], [axis[2],0,-axis[0]], [-axis[1],axis[0],0]])
+    return np.eye(3) + np.sin(angle)*K + (1-np.cos(angle))*(K @ K)
+
+def dcm_to_quat(A):
+    tr = np.trace(A); S = np.sqrt(tr + 1.0) * 2
+    return np.array([0.25*S, (A[2,1]-A[1,2])/S, (A[0,2]-A[2,0])/S, (A[1,0]-A[0,1])/S])
+
+A_true = dcm_from_axis_angle(np.array([0.3, -0.5, 0.8]), np.radians(32.0))
+q_true = dcm_to_quat(A_true)
+r1 = np.array([0.7660, 0.6428, 0.0]); r1 /= np.linalg.norm(r1)     # sun direction
+r2 = np.array([0.2050, 0.1720, 0.9636]); r2 /= np.linalg.norm(r2)  # geomagnetic field
+r3 = np.array([-0.4, 0.3, 0.866]); r3 /= np.linalg.norm(r3)        # a tracked star
+b1, b2, b3 = A_true @ r1, A_true @ r2, A_true @ r3                 # noiseless body observations
+w = [4.0, 1.0, 2.0]                                                # sun : mag : star, by accuracy
+
 print("TRIAD  DCM error:     ", dcm_angle_error_deg(triad(b1, b2, r1, r2), A_true), "deg")
 print("SVD    DCM error:     ", dcm_angle_error_deg(wahba_svd([b1,b2,b3],[r1,r2,r3],w), A_true), "deg")
 print("Davenport q error:    ", quat_angle_error_deg(davenport_q([b1,b2,b3],[r1,r2,r3],w), q_true), "deg")
@@ -89,6 +104,8 @@ print("Davenport q error:    ", quat_angle_error_deg(davenport_q([b1,b2,b3],[r1,
 # SVD    DCM error:      0.0 deg
 # Davenport q error:     2.4e-06 deg   (eigensolver round-off)
 ```
+
+(`dcm_angle_error_deg` and `quat_angle_error_deg` compare two attitudes by the rotation angle between them — the standard $\arccos$ formulas, omitted here for brevity.)
 
 SVD and Davenport agree with the truth to machine precision; TRIAD, using only its two designated vectors, is a few millionths of a degree off from rounding alone. On noiseless data every method is, for practical purposes, exact.
 :::
