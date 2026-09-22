@@ -1,7 +1,7 @@
 ---
 id: l01-ascent-phases
 title: The phases of an ascent
-minutes: 24
+minutes: 20
 covers:
   - "Ascent phases: liftoff, pitch kick, gravity turn, max-Q, staging, exoatmospheric closed loop"
 ---

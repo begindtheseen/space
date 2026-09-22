@@ -1,7 +1,7 @@
 ---
 id: l06-iterative-guidance-mode
 title: Iterative Guidance Mode, Saturn V's explicit guidance
-minutes: 24
+minutes: 13
 covers:
   - Iterative Guidance Mode as flown on Saturn V
 ---

@@ -1,7 +1,7 @@
 ---
 id: l05-two-phase-throttle-structure
 title: The two-phase throttle structure
-minutes: 22
+minutes: 15
 covers:
   - "The two-phase throttle structure: constant thrust to a g-limit, then throttled constant acceleration"
 ---
@@ -54,7 +54,7 @@ Sampling the throttle setting through that final 49.4 seconds: full thrust (934 
 
 ## Why guidance has to know which phase it is in
 
-The time-to-go formula the previous lesson derived, $t_{go} = \tau(1 - e^{-\Delta v/v_e})$ with $\tau = m/\dot m$, assumes constant thrust and constant mass-flow rate for the remainder of the burn — exactly phase one's regime, and exactly wrong for phase two. During throttle-hold, acceleration itself is the fixed quantity, so the velocity gained over any interval is simply $a_{\lim}$ times the interval's duration, and the correct relation is the much simpler
+The time-to-go formula the previous lesson derived, $t_{go} = \tau(1 - e^{-\Delta v/v_e})$ with $\tau = m/\dot m$, assumes constant thrust and constant mass-flow rate for the remainder of the burn — exactly phase one's regime, and exactly wrong for phase two. During throttle-hold, acceleration itself is the fixed quantity, so the velocity gained over any interval is $a_{\lim}$ times the interval's duration, and the correct relation is the much simpler
 
 $$
 t_{go} = \frac{\Delta v_{\text{required}}}{a_{\lim}}.

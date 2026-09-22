@@ -1,7 +1,7 @@
 ---
 id: l02-open-loop-atmospheric-steering
 title: Open-loop steering and why the loop stays open in the atmosphere
-minutes: 22
+minutes: 15
 covers:
   - Open-loop atmospheric steering (the pitch program) and why closed-loop guidance is avoided in dense atmosphere
 ---
@@ -25,7 +25,7 @@ The atmospheric flight module's load indicator, $\bar q\alpha$ — dynamic press
 Put a number on it. At the max-Q point from the previous lesson's worked ascent — $\bar q = 44.6$ kPa, vehicle mass 375 t — take a representative normal-force slope $C_{N\alpha} = 4.0\ \mathrm{rad^{-1}}$ (a typical order of magnitude for a slender launcher; a real vehicle's own value comes from its aerodynamics database), giving $N_\alpha = \bar q\, S\, C_{N\alpha} = 44{,}610 \times 10.52 \times 4.0 = 1.877\ \mathrm{MN/rad}$.
 
 ::: example What a "small" correction actually demands
-Suppose closed-loop guidance, mid-max-Q, wants to null a trajectory error using a lateral acceleration of just $1.0\ \mathrm{m/s^2}$ — a modest ask; the vehicle's axial thrust acceleration at this point is over ten times that. The required angle of attack is
+Suppose closed-loop guidance, mid-max-Q, wants to null a trajectory error using a lateral acceleration of $1.0\ \mathrm{m/s^2}$ — a modest ask; the vehicle's axial thrust acceleration at this point is over ten times that. The required angle of attack is
 
 $$
 \alpha = \frac{a_{\text{lat}}\, m}{N_\alpha} = \frac{1.0 \times 375{,}125}{1.877 \times 10^6} = 0.1999\ \mathrm{rad} = 11.45^\circ,

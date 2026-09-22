@@ -1,7 +1,7 @@
 ---
 id: l11-day-of-launch-wind-updates
 title: Day-of-launch trajectory updates from measured winds
-minutes: 22
+minutes: 14
 covers:
   - Day-of-launch trajectory updates from measured winds
 ---

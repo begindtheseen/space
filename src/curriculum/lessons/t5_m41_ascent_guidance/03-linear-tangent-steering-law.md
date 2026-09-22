@@ -1,7 +1,7 @@
 ---
 id: l03-linear-tangent-steering-law
 title: The linear tangent steering law
-minutes: 26
+minutes: 16
 covers:
   - "Optimal exoatmospheric steering: the linear tangent law from Pontryagin and the calculus of variations"
 ---

@@ -1,7 +1,7 @@
 ---
 id: l04-powered-explicit-guidance
 title: Powered Explicit Guidance and UPFG
-minutes: 30
+minutes: 21
 covers:
   - Powered Explicit Guidance and Unified Powered Flight Guidance; why explicit guidance needs no reference trajectory
 ---
@@ -60,7 +60,7 @@ That reserve is not incidental — it is the margin this module draws on repeate
 
 ## Why it converges
 
-The mechanism is worth stating precisely, because "it just keeps trying" undersells it. Each cycle's steering solve uses a *local* approximation — constant gravity, flat space, over the remaining $t_{go}$ — exactly the assumption the previous lesson showed is exact only for uniform gravity and drops in accuracy as the arc it is applied over gets longer or higher. Early in the burn, $t_{go}$ is large (354 s) and the local approximation is at its worst; but the algorithm does not commit to that approximation for the whole burn, only for the next few seconds of it, after which it re-linearizes about the vehicle's *actual* new position, velocity and local gravity. The approximation error shrinks with $t_{go}$ because the arc it is being asked to be accurate over shrinks with $t_{go}$.
+The mechanism is worth stating precisely, because "it keeps trying until it works" undersells it. Each cycle's steering solve uses a *local* approximation — constant gravity, flat space, over the remaining $t_{go}$ — exactly the assumption the previous lesson showed is exact only for uniform gravity and drops in accuracy as the arc it is applied over gets longer or higher. Early in the burn, $t_{go}$ is large (354 s) and the local approximation is at its worst; but the algorithm does not commit to that approximation for the whole burn, only for the next few seconds of it, after which it re-linearizes about the vehicle's *actual* new position, velocity and local gravity. The approximation error shrinks with $t_{go}$ because the arc it is being asked to be accurate over shrinks with $t_{go}$.
 
 ::: example What happens if you do not close the loop
 Take the very first cycle's solved steering — $(A,B,t_{go}) = (6.4124,\, -0.020982,\, 354.09\ \mathrm{s})$ — and fly it open loop: commit to that pitch history for the entire burn, never re-solving. The local flat-gravity model that produced these numbers believes it will hit the target almost exactly, because that is what it was solved to do: tangential speed within 0.007 m/s, radial rate within 0.05 m/s, altitude gain within 1.6 km. Integrate the *true* nonlinear, curved-gravity equations of motion under that same fixed steering law for the same 354 s, and the vehicle actually arrives 163.8 km too high, 343.7 m/s short on tangential speed, and with 1238.7 m/s of residual radial velocity — nowhere near a circular orbit. The local model was not wrong about *itself*; it was wrong about how long its own assumptions stay valid. PEG never asks it to be right for 354 seconds. It asks it to be right for the next 5, discards the rest, and asks again.
@@ -85,10 +85,10 @@ Perturbing the stage-1 burnout state used above by $\pm 5\%$ in speed and $\pm 1
 | $+5\%$ speed, $-10\ \mathrm{km}$ | 83 | 2.19 m | $+5.38$ m/s |
 | $-5\%$ speed, $+10\ \mathrm{km}$ | 84 | 0.08 m | $+4.65$ m/s |
 
-Every case reaches the same orbit to within a few metres of radius and a few metres per second of speed — dispersions two orders of magnitude larger than the insertion error they produce — simply because each one re-solves from wherever it actually starts. Nothing about the algorithm needed to know a dispersion had occurred.
+Every case reaches the same orbit to within a few metres of radius and a few metres per second of speed — dispersions two orders of magnitude larger than the insertion error they produce — because each one re-solves from wherever it actually starts, not from where it was supposed to. Nothing about the algorithm needed to know a dispersion had occurred.
 :::
 
-A real dispersion is not always affordable, and the algorithm is honest about that too: each cycle also checks $t_{go}$ against how much burn time the remaining propellant can actually supply. If a shortfall makes the target genuinely unreachable, the check fails on the very first cycle it becomes true, cleanly and immediately — reducing usable stage-2 propellant by just 5% in the case above turns the 400 km target unreachable at cycle zero, before a single second of the burn, rather than producing a slow, undetected drift toward an answer that never arrives. What guidance does next — degrade to a lower, reachable target rather than diverge — is this module's next major subject, once the vehicle-level contingency logic around it has been built.
+A real dispersion is not always affordable, and the algorithm is honest about that too: each cycle also checks $t_{go}$ against how much burn time the remaining propellant can actually supply. If a shortfall makes the target genuinely unreachable, the check fails on the very first cycle it becomes true, cleanly and immediately — reducing usable stage-2 propellant by 5% in the case above turns the 400 km target unreachable at cycle zero, before a single second of the burn, rather than producing a slow, undetected drift toward an answer that never arrives. What guidance does next — degrade to a lower, reachable target rather than diverge — is this module's next major subject, once the vehicle-level contingency logic around it has been built.
 
 ## UPFG: the generalization
 

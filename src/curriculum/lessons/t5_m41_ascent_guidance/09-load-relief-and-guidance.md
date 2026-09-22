@@ -1,7 +1,7 @@
 ---
 id: l09-load-relief-and-guidance
 title: Load relief and its interaction with guidance
-minutes: 22
+minutes: 14
 covers:
   - Load relief and its interaction with guidance
 ---
@@ -10,7 +10,7 @@ The atmospheric flight module built the control law that runs through the high d
 
 ## What guidance actually receives
 
-At the moment closed-loop guidance activates — staging, or wherever this module's first lesson placed the handoff — load relief has been running for the whole high-$\bar q$ window, and whatever lateral velocity and lateral position it accumulated while holding the airframe's angle of attack inside its envelope is simply the vehicle's actual state at that instant. Guidance does not see "an error"; it sees a current position and velocity, exactly as it does for any dispersed initial condition, and — being the explicit algorithm this module built in detail — it re-solves toward the target from wherever that actually is. The question worth answering precisely is how expensive that re-solve turns out to be, and the answer depends on what *kind* of error load relief left behind.
+At the moment closed-loop guidance activates — staging, or wherever this module's first lesson placed the handoff — load relief has been running for the whole high-$\bar q$ window, and whatever lateral velocity and lateral position it accumulated while holding the airframe's angle of attack inside its envelope is the vehicle's actual state at that instant, nothing more and nothing less. Guidance does not see "an error"; it sees a current position and velocity, exactly as it does for any dispersed initial condition, and — being the explicit algorithm this module built in detail — it re-solves toward the target from wherever that actually is. The question worth answering precisely is how expensive that re-solve turns out to be, and the answer depends on what *kind* of error load relief left behind.
 
 ## A velocity-direction error is cheap
 
@@ -47,7 +47,7 @@ A lateral or radial *position* offset at the moment guidance takes over is not t
 From that lesson's dispersed-handoff table, holding speed at its nominal value: starting 10 km *higher* than planned left 6939.4 kg of stage-2 reserve at insertion, 1982.6 kg *more* than the nominal 4956.8 kg; starting 10 km *lower* left 3056.9 kg, 1899.9 kg *less*. Roughly two tonnes of propellant reserve, in either direction, for a 10 km position offset at the start of a burn with about 99 tonnes of propellant loaded — some 190 to 200 kg of reserve per kilometre of unplanned altitude, a cost three to four orders of magnitude larger, kilogram for kilogram of consequence, than the cross-range velocity error above.
 :::
 
-The reason is not that guidance handles the two cases differently — the same re-converging cycle handles both identically, as it must, being explicit. It is that the two disturbances are different in kind. A perpendicular velocity error is a small rotation of a vector that already has most of the right magnitude and direction; correcting it barely touches the trajectory's shape. A position offset changes the vehicle's *specific orbital energy relative to the target* at a *fixed remaining burn time* — guidance cannot simply wait longer to close a radius gap for free, because the terminal time is exactly what it is also solving for, and closing a larger gap in the time actually available demands a more aggressive, less gravity-loss-efficient trajectory shape. A velocity-direction error and a position error are not the same disturbance measured on different scales; they cost guidance in fundamentally different ways, and load relief, because it accumulates lateral drift *as* a position error over the time it acts, hands guidance the expensive kind, not the cheap kind — bounded, and generally modest for a well-designed load-relief gain, but real, and worth pricing rather than assuming away.
+The reason is not that guidance handles the two cases differently — the same re-converging cycle handles both identically, as it must, being explicit. It is that the two disturbances are different in kind. A perpendicular velocity error is a small rotation of a vector that already has most of the right magnitude and direction; correcting it barely touches the trajectory's shape. A position offset changes the vehicle's *specific orbital energy relative to the target* at a *fixed remaining burn time* — guidance has no option to wait longer and close a radius gap for free, because the terminal time is exactly what it is also solving for, and closing a larger gap in the time actually available demands a more aggressive, less gravity-loss-efficient trajectory shape. A velocity-direction error and a position error are not the same disturbance measured on different scales; they cost guidance in fundamentally different ways, and load relief, because it accumulates lateral drift *as* a position error over the time it acts, hands guidance the expensive kind, not the cheap kind — bounded, and generally modest for a well-designed load-relief gain, but real, and worth pricing rather than assuming away.
 
 ::: warning
 Do not conclude from the cross-range formula that load relief's cost to guidance is negligible in general. The formula above applies specifically to a *velocity*-direction error; the position error load relief accumulates over the same window is the costlier kind, and the number to reason about is the reserve a dispersed-start guidance run actually consumes, not a quick angle-based estimate.
@@ -55,7 +55,7 @@ Do not conclude from the cross-range formula that load relief's cost to guidance
 
 ## The handoff, precisely
 
-Nothing about this interaction requires load relief and guidance to communicate with each other in flight. Load relief runs, scheduled to the high-$\bar q$ window this module's second lesson defined, doing the best job it can at keeping $\bar q\alpha$ inside its envelope without any awareness that a guidance algorithm exists. Guidance activates afterward, reads the vehicle's actual state, and treats whatever that state is — on-nominal or displaced by a windy day's worth of load relief — as simply where the boundary-value problem starts. The interaction this lesson has been pricing is not a protocol between two control laws; it is the fact that one control law's leftover state is the other's entire input, and the cost of that handoff is measured, not designed away, by running the same explicit, re-converging guidance this module has built from the ground up on whatever state it is actually handed.
+Nothing about this interaction requires load relief and guidance to communicate with each other in flight. Load relief runs, scheduled to the high-$\bar q$ window this module's second lesson defined, doing the best job it can at keeping $\bar q\alpha$ inside its envelope without any awareness that a guidance algorithm exists. Guidance activates afterward, reads the vehicle's actual state, and treats whatever that state is — on-nominal or displaced by a windy day's worth of load relief — as where the boundary-value problem starts, full stop. The interaction this lesson has been pricing is not a protocol between two control laws; it is the fact that one control law's leftover state is the other's entire input, and the cost of that handoff is measured, not designed away, by running the same explicit, re-converging guidance this module has built from the ground up on whatever state it is actually handed.
 
 ## Check yourself
 
@@ -68,7 +68,7 @@ $\Delta v_{\text{penalty}} \approx \delta v_\perp^2/(2v) = 6^2/(2\times7700) = 3
 :::
 
 ::: check
-Explain why the cross-range velocity-error formula from this lesson cannot simply be reused, with $\delta v_\perp$ replaced by some equivalent quantity, to estimate the cost of a position offset.
+Explain why the cross-range velocity-error formula from this lesson cannot be reused as-is, with $\delta v_\perp$ replaced by some equivalent quantity, to estimate the cost of a position offset.
 :::
 
 ::: answer
@@ -92,11 +92,11 @@ Because guidance is explicit: it reads the vehicle's actual current state every 
 :::
 
 ::: check
-A vehicle's load-relief gain is retuned to cut its typical cross-range velocity error in half, at the cost of a somewhat larger typical position error (a real trade in load-relief design, since a stiffer attitude response reduces velocity drift but increases the aerodynamic loads that drove the trajectory off course a little longer before responding — the details are the atmospheric flight module's territory). Based on this lesson, is that trade obviously good for guidance's propellant budget?
+A vehicle's load-relief gain is retuned to cut its typical cross-range velocity error in half, at the cost of a somewhat larger typical position error (a real trade in load-relief design, since a stiffer attitude response reduces velocity drift but increases the aerodynamic loads that drove the trajectory off course a little longer before responding — the details are the atmospheric flight module's territory). Based on this lesson, is that trade clearly good for guidance's propellant budget?
 :::
 
 ::: answer
-Not obviously, and possibly the opposite of good. This lesson found velocity-direction errors are cheap for guidance (a fraction of a metre per second even for tens of metres per second of error) while position errors are the expensive kind (hundreds of kilograms of reserve per kilometre). A retune that shrinks the already-cheap error while growing the already-expensive one could easily cost guidance more propellant margin overall, even though it looks like an improvement measured in velocity terms. Evaluating it properly means pricing both changes in the currency that actually matters to guidance — reserve consumed — not assuming a smaller number is automatically a cheaper one.
+No — and it may well be the opposite of good. This lesson found velocity-direction errors are cheap for guidance (a fraction of a metre per second even for tens of metres per second of error) while position errors are the expensive kind (hundreds of kilograms of reserve per kilometre). A retune that shrinks the already-cheap error while growing the already-expensive one could easily cost guidance more propellant margin overall, even though it looks like an improvement measured in velocity terms. Evaluating it properly means pricing both changes in the currency that actually matters to guidance — reserve consumed — not assuming a smaller number is automatically a cheaper one.
 :::
 
 ## Summary

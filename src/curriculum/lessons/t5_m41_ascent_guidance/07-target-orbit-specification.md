@@ -1,7 +1,7 @@
 ---
 id: l07-target-orbit-specification
 title: Target orbit specification and the terminal constraint set
-minutes: 23
+minutes: 13
 covers:
   - Target orbit specification and the terminal constraint set
 ---
@@ -88,7 +88,7 @@ No. The achievable-inclination relation $\cos i = \cos\phi \sin A_z$ requires $|
 :::
 
 ::: check
-Two guidance targets are proposed for the same mission: one specified as $(r, v, \gamma, i, \Omega)$, the other as a full six-component target state (position and velocity vectors). Explain the practical problem with the second choice, beyond it simply being "more numbers than necessary."
+Two guidance targets are proposed for the same mission: one specified as $(r, v, \gamma, i, \Omega)$, the other as a full six-component target state (position and velocity vectors). Explain the practical problem with the second choice, beyond it being "more numbers than necessary."
 :::
 
 ::: answer

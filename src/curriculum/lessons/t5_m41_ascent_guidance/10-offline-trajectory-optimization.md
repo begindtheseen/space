@@ -1,7 +1,7 @@
 ---
 id: l10-offline-trajectory-optimization
 title: Ascent trajectory optimization as an offline problem
-minutes: 23
+minutes: 14
 covers:
   - Ascent trajectory optimization as an offline problem feeding onboard guidance
 ---
@@ -20,7 +20,7 @@ Offline optimization affords a full-fidelity vehicle and environment model, solv
 
 ## The constraint that actually decides the answer
 
-It is tempting to picture the offline problem as simply "minimize propellant" and stop there, but this module's own first lesson already showed that picture is incomplete: gravity loss falls and drag loss rises as the pitch-kick angle steepens, and somewhere in between sits whichever angle minimizes their sum. Finding that minimum properly — the way an offline optimizer actually would — shows something the four-point comparison in that first lesson could only hint at.
+It is tempting to picture the offline problem as "minimize propellant" alone and stop there, but this module's own first lesson already showed that picture is incomplete: gravity loss falls and drag loss rises as the pitch-kick angle steepens, and somewhere in between sits whichever angle minimizes their sum. Finding that minimum properly — the way an offline optimizer actually would — shows something the four-point comparison in that first lesson could only hint at.
 
 ::: example Where the loss-minimizing kick angle actually sits
 Scanning the same vehicle's total loss ($\Delta v_{\text{grav}} + \Delta v_{\text{drag}}$) finely across kick angle:
@@ -71,7 +71,7 @@ A design team wants to fly the $2.70^\circ$ kick angle from the worked example b
 :::
 
 ::: answer
-The 84.4 kPa maximum dynamic pressure at $2.70^\circ$, against a typical real-launcher structural range of 25–40 kPa. A propellant saving that requires flying at roughly double the dynamic pressure the vehicle's structure is sized for is not a saving available to the design at all — the vehicle would need to be substantially reinforced (at a mass cost likely exceeding the propellant saved) or the trajectory is simply not survivable as proposed.
+The 84.4 kPa maximum dynamic pressure at $2.70^\circ$, against a typical real-launcher structural range of 25–40 kPa. A propellant saving that requires flying at roughly double the dynamic pressure the vehicle's structure is sized for is not a saving available to the design at all — the vehicle would need to be substantially reinforced (at a mass cost likely exceeding the propellant saved) or the trajectory is not survivable as proposed at all.
 :::
 
 ::: check

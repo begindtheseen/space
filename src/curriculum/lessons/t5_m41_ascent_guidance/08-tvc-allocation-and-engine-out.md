@@ -1,7 +1,7 @@
 ---
 id: l08-tvc-allocation-and-engine-out
 title: Thrust vector control allocation and engine-out contingency
-minutes: 25
+minutes: 20
 covers:
   - Thrust vector control allocation and engine-out contingency
 ---
@@ -52,7 +52,7 @@ With $R = 1.5\ \mathrm{m}$ and an illustrative $L = 25\ \mathrm{m}$ (the center-
 Concentrating the correction on one engine uses a comfortably achievable gimbal angle at real, if small, thrust-vector cost, and leaves that one engine with less remaining gimbal authority for everything else it is simultaneously doing — steering, wind response, slosh and bending-mode damping. Spreading the same correction across every available engine needs a barely measurable half-degree each and leaves each engine's own margin almost untouched. Real allocation logic in a control system does the latter by default and concentrates only when an actuator's authority is otherwise exhausted.
 :::
 
-There is one geometric point worth being explicit about: an engine mounted *on* the centerline has $R=0$ and therefore contributes nothing to the static-imbalance mechanism above by sitting there un-gimbaled — a centerline engine cannot help null a ring engine's missing moment just by being present. It gimbals exactly like any other engine, using its own lever arm $L$ to the center of mass, and that mechanism works whether the engine is on the centerline or off it; what does not work for a centerline engine is producing a moment by thrusting straight back, because $R=0$ there. The two mechanisms — a static ring imbalance from thrust position, and an active gimbal correction from thrust direction — use different lever arms, and it is worth keeping them straight.
+There is one geometric point worth being explicit about: an engine mounted *on* the centerline has $R=0$, so it contributes nothing to the static-imbalance mechanism above by sitting there un-gimbaled — a centerline engine cannot null a ring engine's missing moment by presence alone. It gimbals exactly like any other engine, using its own lever arm $L$ to the center of mass, and that mechanism works whether the engine is on the centerline or off it; what does not work for a centerline engine is producing a moment by thrusting straight back, because $R=0$ there. The two mechanisms — a static ring imbalance from thrust position, and an active gimbal correction from thrust direction — use different lever arms, and it is worth keeping them straight.
 
 ::: warning
 Do not treat the allocation problem as solved once the moment is nulled. Every degree of gimbal spent on engine-out compensation is a degree not available for the vehicle's ordinary attitude and load-relief authority a moment later, and a design that leaves too little margin after a single failure has traded one problem for a smaller, deferred version of the same problem the next time a disturbance arrives.
@@ -99,7 +99,7 @@ Explain why a centerline engine's gimbal deflection can still help null an engin
 :::
 
 ::: answer
-The two mechanisms use different lever arms. An un-gimbaled engine's contribution to a *static* ring-imbalance moment scales with its radial mounting offset $R$, which is zero on the centerline — so simply having a centerline engine present does nothing for that specific imbalance. But a *gimbaled* engine's lateral thrust component produces a moment using the distance $L$ from the center of mass to the engine's gimbal plane, which is generally large and has nothing to do with $R$; a centerline engine gimbals and contributes to attitude control exactly as any other engine does, through $L$, not through $R$.
+The two mechanisms use different lever arms. An un-gimbaled engine's contribution to a *static* ring-imbalance moment scales with its radial mounting offset $R$, which is zero on the centerline — so a centerline engine's presence alone does nothing for that specific imbalance. But a *gimbaled* engine's lateral thrust component produces a moment using the distance $L$ from the center of mass to the engine's gimbal plane, which is generally large and has nothing to do with $R$; a centerline engine gimbals and contributes to attitude control exactly as any other engine does, through $L$, not through $R$.
 :::
 
 ::: check

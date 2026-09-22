@@ -3662,13 +3662,22 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Orbit accuracy metrics and covariance in the RIC (radial, in-track, cross-track) frame"
       ],
       "file": "t4_m39_orbit_determination/10-orbit-accuracy-ric-frame.md"
+    },
+    {
+      "id": "l11-conjunction-assessment-collision-probability",
+      "title": "Conjunction assessment and collision probability",
+      "minutes": 13,
+      "covers": [
+        "Conjunction assessment and collision probability"
+      ],
+      "file": "t4_m39_orbit_determination/11-conjunction-assessment-collision-probability.md"
     }
   ],
   "t5_m41_ascent_guidance": [
     {
       "id": "l01-ascent-phases",
       "title": "The phases of an ascent",
-      "minutes": 24,
+      "minutes": 20,
       "covers": [
         "Ascent phases: liftoff, pitch kick, gravity turn, max-Q, staging, exoatmospheric closed loop"
       ],
@@ -3677,7 +3686,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-open-loop-atmospheric-steering",
       "title": "Open-loop steering and why the loop stays open in the atmosphere",
-      "minutes": 22,
+      "minutes": 15,
       "covers": [
         "Open-loop atmospheric steering (the pitch program) and why closed-loop guidance is avoided in dense atmosphere"
       ],
@@ -3686,7 +3695,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-linear-tangent-steering-law",
       "title": "The linear tangent steering law",
-      "minutes": 26,
+      "minutes": 16,
       "covers": [
         "Optimal exoatmospheric steering: the linear tangent law from Pontryagin and the calculus of variations"
       ],
@@ -3695,7 +3704,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-powered-explicit-guidance",
       "title": "Powered Explicit Guidance and UPFG",
-      "minutes": 30,
+      "minutes": 21,
       "covers": [
         "Powered Explicit Guidance and Unified Powered Flight Guidance; why explicit guidance needs no reference trajectory"
       ],
@@ -3704,7 +3713,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-two-phase-throttle-structure",
       "title": "The two-phase throttle structure",
-      "minutes": 22,
+      "minutes": 15,
       "covers": [
         "The two-phase throttle structure: constant thrust to a g-limit, then throttled constant acceleration"
       ],
@@ -3713,7 +3722,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-iterative-guidance-mode",
       "title": "Iterative Guidance Mode, Saturn V's explicit guidance",
-      "minutes": 24,
+      "minutes": 13,
       "covers": [
         "Iterative Guidance Mode as flown on Saturn V"
       ],
@@ -3722,7 +3731,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-target-orbit-specification",
       "title": "Target orbit specification and the terminal constraint set",
-      "minutes": 23,
+      "minutes": 13,
       "covers": [
         "Target orbit specification and the terminal constraint set"
       ],
@@ -3731,7 +3740,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-tvc-allocation-and-engine-out",
       "title": "Thrust vector control allocation and engine-out contingency",
-      "minutes": 25,
+      "minutes": 20,
       "covers": [
         "Thrust vector control allocation and engine-out contingency"
       ],
@@ -3740,7 +3749,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-load-relief-and-guidance",
       "title": "Load relief and its interaction with guidance",
-      "minutes": 22,
+      "minutes": 14,
       "covers": [
         "Load relief and its interaction with guidance"
       ],
@@ -3749,7 +3758,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-offline-trajectory-optimization",
       "title": "Ascent trajectory optimization as an offline problem",
-      "minutes": 23,
+      "minutes": 14,
       "covers": [
         "Ascent trajectory optimization as an offline problem feeding onboard guidance"
       ],
@@ -3758,11 +3767,20 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-day-of-launch-wind-updates",
       "title": "Day-of-launch trajectory updates from measured winds",
-      "minutes": 22,
+      "minutes": 14,
       "covers": [
         "Day-of-launch trajectory updates from measured winds"
       ],
       "file": "t5_m41_ascent_guidance/11-day-of-launch-wind-updates.md"
+    },
+    {
+      "id": "l12-abort-modes",
+      "title": "Abort modes and the decision logic behind them",
+      "minutes": 15,
+      "covers": [
+        "Abort modes: RTLS, TAL, AOA and the decision logic"
+      ],
+      "file": "t5_m41_ascent_guidance/12-abort-modes.md"
     }
   ]
 }
@@ -4081,11 +4099,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t4_m39_orbit_determination": {
-    "covered": 10,
+    "covered": 11,
     "total": 13,
     "complete": false,
     "missing": [
-      "Conjunction assessment and collision probability",
       "Maneuver estimation and reconstruction",
       "Relative orbit determination for constellations; autonomous onboard orbit determination"
     ]
@@ -4110,12 +4127,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t5_m41_ascent_guidance": {
-    "covered": 11,
+    "covered": 12,
     "total": 12,
-    "complete": false,
-    "missing": [
-      "Abort modes: RTLS, TAL, AOA and the decision logic"
-    ]
+    "complete": true,
+    "missing": []
   },
   "t5_m42_trajectory_optimization": {
     "covered": 0,
