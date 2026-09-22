@@ -3709,6 +3709,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Open-loop vs closed-loop guidance; reference-trajectory following vs explicit guidance"
       ],
       "file": "t5_m40_guidance_fundamentals/02-open-loop-vs-closed-loop-guidance.md"
+    },
+    {
+      "id": "l03-line-of-sight-and-pursuit-guidance",
+      "title": "Line-of-sight and pursuit guidance",
+      "minutes": 20,
+      "covers": [
+        "Line-of-sight guidance and pursuit guidance"
+      ],
+      "file": "t5_m40_guidance_fundamentals/03-line-of-sight-and-pursuit-guidance.md"
     }
   ],
   "t5_m41_ascent_guidance": [
@@ -3852,7 +3861,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-shooting-and-brittleness",
       "title": "The two-point boundary value problem and why shooting is brittle",
-      "minutes": 24,
+      "minutes": 20,
       "covers": [
         "The two-point boundary value problem; single and multiple shooting; costate sensitivity and why indirect methods are brittle"
       ],
@@ -3868,6 +3877,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "The five-box decomposition: plant, sensors, GNC, actuators, environment — and why the interfaces between them are the whole design"
       ],
       "file": "t6_m46_6dof_simulation/01-the-five-box-decomposition.md"
+    },
+    {
+      "id": "l02-fixed-step-vs-variable-step-integration",
+      "title": "Fixed-step vs. variable-step integration",
+      "minutes": 19,
+      "covers": [
+        "Fixed-step vs variable-step integration, and why a closed loop with a digital controller wants a fixed step"
+      ],
+      "file": "t6_m46_6dof_simulation/02-fixed-step-vs-variable-step-integration.md"
     }
   ]
 }
@@ -4192,11 +4210,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t5_m40_guidance_fundamentals": {
-    "covered": 2,
+    "covered": 3,
     "total": 12,
     "complete": false,
     "missing": [
-      "Line-of-sight guidance and pursuit guidance",
       "Proportional navigation: derivation, the navigation constant N, and the LOS-rate nulling principle",
       "Why N between 3 and 5; augmented proportional navigation for manoeuvring targets",
       "True vs pure proportional navigation",
@@ -4318,11 +4335,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t6_m46_6dof_simulation": {
-    "covered": 1,
+    "covered": 2,
     "total": 18,
     "complete": false,
     "missing": [
-      "Fixed-step vs variable-step integration, and why a closed loop with a digital controller wants a fixed step",
       "Running the plant at a fine step while the flight software runs at its true rate, with zero-order hold between updates",
       "Frame and unit discipline: naming every vector by its frame, and the conventions that stop a sign error becoming a three-week debugging session",
       "Environment models: gravity field, atmosphere, wind and gust, magnetic field, ephemeris, solar radiation pressure",
