@@ -10,7 +10,7 @@ A script that only runs fixed commands is a list. The three constructs in this l
 
 Arrays are the part most people skip, and skipping them is why so many scripts build a command line by concatenating strings and then break on the first path with a space in it. An array is the only way bash has of saying "these are four separate arguments" and keeping that true through every later expansion.
 
-All output below was produced on this machine and pasted verbatim, with GNU bash 5.2.21 on Ubuntu 24.04.4, mawk 1.3.4, bc 1.07.1 and Python 3.11.15. The helper `bin/args.sh` is the same four-line argument printer as the previous lesson.
+All output below was produced on this machine and pasted verbatim, with GNU bash 5.2.21 on Ubuntu 24.04.4, GNU Awk 5.2.1, bc 1.07.1 and Python 3.11.15. The helper `bin/args.sh` is the same four-line argument printer as the previous lesson.
 
 ## Command substitution: `$( )`
 

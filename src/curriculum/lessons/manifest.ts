@@ -1779,10 +1779,11 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     },
     {
       "id": "l08-getopts-and-arguments",
-      "title": "getopts, positional arguments, and \"$@\"",
-      "minutes": 15,
+      "title": "A script's interface — getopts, arguments and here-docs",
+      "minutes": 18,
       "covers": [
-        "getopts for flags, positional args, \"$@\" vs \"$*\""
+        "getopts for flags, positional args, \"$@\" vs \"$*\"",
+        "Here-docs and here-strings"
       ],
       "file": "cod_lnx_02_scripting/08-getopts-and-arguments.md"
     },
@@ -1830,6 +1831,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "cron and systemd timers"
       ],
       "file": "cod_lnx_02_scripting/13-cron-and-systemd-timers.md"
+    },
+    {
+      "id": "l14-when-to-stop-writing-bash",
+      "title": "When to stop writing bash",
+      "minutes": 20,
+      "covers": [
+        "When to stop writing bash and switch to Python"
+      ],
+      "file": "cod_lnx_02_scripting/14-when-to-stop-writing-bash.md"
     }
   ],
   "cod_py_01_basics": [
@@ -7838,13 +7848,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_lnx_02_scripting": {
-    "covered": 12,
+    "covered": 14,
     "total": 14,
-    "complete": false,
-    "missing": [
-      "Here-docs and here-strings",
-      "When to stop writing bash and switch to Python"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_git_01_basics": {
     "covered": 0,

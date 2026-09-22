@@ -12,7 +12,7 @@ A sweep script makes a scratch directory, unpacks a few gigabytes into it, runs 
 
 It is worth being clear about why this matters more in engineering work than in ordinary scripting. A simulation driver is usually the thing that allocates the expensive resources: a scratch directory sized for a campaign, a licence checkout, a lock file that stops two sweeps writing the same output, a set of child processes each holding a core. All of those are released by the script and by nothing else. A script that leaks them on failure does not merely leave mess: it makes the *next* run fail, for a reason that has nothing to do with the next run, and the person debugging it will be looking at the wrong code.
 
-All output below was produced on this machine and pasted verbatim, with GNU bash 5.2.21 on Ubuntu 24.04.4.
+All output below was produced on this machine and pasted verbatim, with GNU bash 5.2.21, GNU coreutils 9.4, GNU Awk 5.2.1 and util-linux `flock` 2.39.3 on Ubuntu 24.04.4.
 
 ## The problem, and the one-line fix
 

@@ -298,7 +298,7 @@ You edit `/etc/systemd/system/telemetry.service` to change `ExecStart`, run `sys
 
 The sequence is always: edit the file, `systemctl daemon-reload`, then `systemctl restart NAME`. Note that nothing will necessarily warn you: on systemd 255 here, editing a unit file and then running `systemctl status` and `systemctl restart` produced no message at all, and the service came back with the old command. Some versions and some paths do print a "changed on disk" warning; do not rely on seeing it. `systemctl cat NAME` reads the file from disk rather than from systemd's memory, so it shows your edit either way — which makes it a poor check for whether the reload happened, and a good check for what the file now says.
 
-Related: prefer `systemctl edit NAME` for changing a packaged unit. It creates a drop-in under `/etc/systemd/system/NAME.d/override.conf` containing only your changes, runs the reload for you, and survives the package being upgraded.
+Related: prefer `systemctl edit NAME` for changing a packaged unit. It creates a drop-in under `/etc/systemd/system/NAME.d/override.conf` containing only your changes, runs the reload for you, and survives the package being upgraded. It is interactive by design — run without a terminal it refuses with `Cannot edit units if not on a tty.`, so a provisioning script writes the drop-in file itself and calls `systemctl daemon-reload`.
 :::
 
 ::: check
