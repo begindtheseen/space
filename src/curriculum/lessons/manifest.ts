@@ -125,6 +125,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "GNC Engineer, ADCS (Starlink and Starshield): attitude determination and control, reaction wheels, torque rods, momentum management"
       ],
       "file": "car_02_role_families/05-adcs-attitude-control-by-the-thousand.md"
+    },
+    {
+      "id": "l06-navigation-and-state-estimation",
+      "title": "Navigation and State Estimation: knowing where you actually are",
+      "minutes": 20,
+      "covers": [
+        "Navigation and State Estimation, Navigation and Orbit Determination, Precise Navigation Solutions (Starlink): star tracker and signals-based attitude determination, inertial propagation, GNSS, orbit determination"
+      ],
+      "file": "car_02_role_families/06-navigation-and-state-estimation.md"
     }
   ],
   "car_03_levels_and_quals": [
@@ -6979,11 +6988,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "car_02_role_families": {
-    "covered": 5,
+    "covered": 6,
     "total": 13,
     "complete": false,
     "missing": [
-      "Navigation and State Estimation, Navigation and Orbit Determination, Precise Navigation Solutions (Starlink): star tracker and signals-based attitude determination, inertial propagation, GNSS, orbit determination",
       "Starlink Controls and Embedded Controls: solar array actuators, antenna gimbals, active optics, Hall thruster fluid and power control",
       "Device Navigation and Beam Pointing, Beam Planning: user terminal pointing, RF and optical link pointing",
       "Software Engineer, GNC (Starship) and GNC Software Engineer, Operations Automation: analysis tools, pipelines, automation",

@@ -62,7 +62,7 @@ Read that against the checklist and every part is missing: no stated requirement
 
 **Strong version.** "Propagates a two-body Keplerian orbit given an initial state, accurate enough that specific orbital energy is conserved to better than $10^{-12}$ relative error over at least ten orbital periods, using a fixed-step RK4 integrator implemented from scratch (no `scipy.integrate` in the propagation path; `solve_ivp` is used only in `tests/cross_check.py` as an independent comparison). Assumptions: point-mass two-body dynamics only, no J2 or higher perturbations, no atmospheric drag — valid for propagation spans short enough that these are genuinely negligible, and not validated beyond that. Verification: for a 7000 km, $e=0.01$ orbit propagated for 20 orbital periods at a 1 s step, the specific energy computed from the state matches the closed-form value $\varepsilon = -\mu/2a$ to $3.6\times10^{-15}$ at $t=0$ and drifts to a maximum relative deviation of $3.9\times10^{-14}$ by the final step — see `tests/energy_conservation.py`. Known limitation: step sizes above roughly 30 s begin measurably degrading energy conservation for highly eccentric orbits ($e > 0.9$); RK4's fixed order does not adapt, and an adaptive-step method would be needed there."
 
-The second version answers "how do you know it's right?" before it is asked, states exactly what it does not cover, and tells a reviewer precisely which file to open to check the claim personally. Nothing about the underlying code changed between the two versions — only whether the five things a defensible project needs were written down.
+The second version answers "how do you know it's right?" before it is asked, states what it does not cover, and tells a reviewer exactly which file to open to check the claim personally. The underlying code did not change between versions — only whether the five things a defensible project needs were written down.
 :::
 
 ## What not to build
@@ -110,7 +110,7 @@ A candidate says their project "used `scipy.optimize` to solve the guidance prob
 :::
 
 ::: answer
-Missing is the statement of what the author did versus what the library did — the sentence as given is consistent with the author having done nothing but call a function with default arguments, and is equally consistent with substantial original work (deriving the problem formulation, choosing and verifying the discretization, setting up the constraints correctly) that happens to end with a library solver call. A working rewrite states the boundary explicitly: "I formulated the powered-descent problem as a linearly-constrained convex program following the lossless-convexification result, discretized it myself, and used `scipy.optimize.linprog` only to solve the resulting linear program — the formulation, discretization, and constraint verification are original; the LP solve itself is not." This tells a reviewer exactly where to direct a "why did you choose this approach" question versus a "how does this specific solver work" question.
+Missing is the author-versus-library statement — the sentence is equally consistent with calling a function with default arguments and with substantial original work (formulating the problem, choosing and verifying the discretization) that happens to end with a solver call. A working rewrite states the boundary: "I formulated the descent problem as a linearly-constrained convex program following the lossless-convexification result, discretized it myself, and used `scipy.optimize.linprog` only to solve the resulting linear program — the formulation and discretization are original; the LP solve itself is not." This tells a reviewer where to direct a "why this approach" question versus a "how does this solver work" one.
 :::
 
 ::: check
@@ -118,7 +118,7 @@ Explain, using the interview format rather than a general claim about effort, wh
 :::
 
 ::: answer
-The interview format spends most of its time on extended questioning about a small number of chosen projects, not on a broad survey of everything a candidate has built — so what gets tested is depth on the few projects actually discussed, and total hours invested across many shallow projects never becomes visible in that format. A candidate presenting one of the ten shallow projects runs out of real content by the second or third follow-up question, regardless of how many other shallow projects exist alongside it; the other nine cannot be called on to rescue that specific conversation. Three projects built deep enough to sustain an hour of questioning each directly match what the format actually measures, while ten shallow ones optimize for a property — breadth of a repository listing — that the format barely samples.
+The interview format spends most of its time on extended questioning about a small number of chosen projects, not a broad survey of everything built — so what gets tested is depth on the few projects actually discussed, and hours invested across many shallow projects never becomes visible. A candidate presenting one of the ten shallow projects runs out of real content by the second or third follow-up; the other nine cannot rescue that conversation. Three projects deep enough to sustain an hour each directly match what the format measures, while ten shallow ones optimize for a property — repository-listing breadth — the format barely samples.
 :::
 
 ::: check
@@ -126,7 +126,7 @@ A reviewer skims a candidate's profile, opens two of thirty repositories at rand
 :::
 
 ::: answer
-The reviewer is likely to stop looking rather than keep sampling for a better one, because each indefensible repository spends down the benefit of the doubt the next one would have received, and thirty repositories give a skeptical reviewer thirty chances to reach that stopping point before ever finding the strong ones. This makes profile size a liability rather than a neutral fact: it is not that a large profile is ignored evenly, it is that the probability of a reviewer's limited sample landing on your best work goes down as the ratio of shallow to deep projects goes up, so adding shallow repositories actively lowers the odds your strongest work gets seen at all.
+The reviewer is likely to stop looking rather than keep sampling for a better one, because each indefensible repository spends down the benefit of the doubt the next one would receive, and thirty repositories give a skeptical reviewer thirty chances to reach that stopping point before finding the strong ones. This makes size a liability, not a neutral fact: the probability of a limited sample landing on your best work falls as the ratio of shallow to deep projects rises, so adding shallow repositories actively lowers the odds your strongest work is ever seen.
 :::
 
 ## Summary

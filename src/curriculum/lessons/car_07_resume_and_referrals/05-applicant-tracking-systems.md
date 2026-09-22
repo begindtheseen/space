@@ -30,6 +30,10 @@ A headshot, a company or university logo, an icon used in place of a section hea
 
 This is the same underlying reason the proficiency-bar skills list from an earlier lesson in this module was a poor choice, restated here in its more general form: a graphic can look informative to a human skimming quickly while being entirely invisible to anything reading the document as text. The fix is the same fix in both cases — say it in words.
 
+::: key
+Anything conveyed only through an image — a headshot, a logo, an icon, a QR code, a proficiency-bar graphic — is invisible to a program reading the document as text, no matter how informative it looks to a person. State the same information in words instead.
+:::
+
 ## PDF, exported so the text stays text
 
 Export your final resume to PDF, but be precise about what that means. A PDF produced from a normal text-based document — a word processor file, a simple markup or typesetting source, an HTML page rendered to PDF — preserves its text as text: selectable, searchable, and extractable by any downstream system. A PDF produced by scanning a printed page, or by certain resume-builder templates that render the whole page as a single flattened image, can look visually identical to a person while containing no extractable text at all. To a person, both files look the same. To anything reading the document as text, one is a resume and the other is a blank page with a picture on it.

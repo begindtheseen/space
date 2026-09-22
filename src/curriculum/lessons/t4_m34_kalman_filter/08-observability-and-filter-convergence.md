@@ -45,7 +45,7 @@ Iterate the Riccati recursion from $\mathbf{P}_0 = \operatorname{diag}(4,4)$ for
 | $1$ | $4.00027$ | $0.00350$ | $0.059975$ |
 | $10$ | $4.00158$ | $0.00393$ | $0.058541$ |
 | $100$ | $4.01433$ | $0.00393$ | $0.058541$ |
-| $300$ | $4.04281$ | $0.00393$ | $0.058541$ |
+| $300$ | $4.04267$ | $0.00393$ | $0.058541$ |
 
 $P_{vv}$, the directly-measured state, settles quickly to $0.058541$ — this is an ordinary steady-state Kalman filter for velocity alone. $P_{pp}$ never stops climbing: by step $300$ it has grown from $4.0$ to $4.043$, and the per-step increase, measured at steps $50$, $100$, $200$ and $299$, is the identical $0.0001417$ every time — a perfectly linear, unbounded drift, the covariance equivalent of dead reckoning: without a direct fix, position uncertainty accumulates step after step no matter how long the filter runs, because velocity is the only quantity being corrected and position is only ever inferred by integrating it forward. Position is *not* fully cut off from the correction, though — the small but nonzero correlation $P_{pv} = 0.00393$, built by the coupling in $\mathbf{F}$, gives the update a tiny amount of leverage on position after all, which is exactly why the growth rate, $0.0001417$ per step, comes out a little *below* $Q_{pp}$ alone ($q\,\Delta t^3/3 = 1.667\times10^{-4}$): correlation with the observed state buys partial, incomplete mitigation, never a cure. Position is formally unobservable in the strict rank sense, and it still climbs without bound — the two facts are entirely consistent, because "unobservable" is about what a sequence of measurements can ever pin down exactly, not about whether nearby states leak it any information at all.
 
@@ -71,7 +71,7 @@ for k in range(1, 301):
     P = F @ (P - K @ H @ P) @ F.T + Q
 w, v = np.linalg.eigh(P)
 print(w, v[:, np.argmax(w)])
-# [0.05853712 4.00867153] [-0.9999995  -0.00099416]
+# [0.05853715 4.04267149] [-0.9999995  -0.00098567]
 ```
 
 ::: warning Unobservable is not the same as unstable
