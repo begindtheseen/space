@@ -30,6 +30,7 @@ jobs:
     outputs:
       version: ${{ steps.meta.outputs.version }}
       tag: ${{ steps.meta.outputs.tag }}
+      skip: ${{ steps.meta.outputs.skip }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -59,21 +60,33 @@ jobs:
               fi
             fi
             if git ls-remote --exit-code --tags origin "refs/tags/${tag}" >/dev/null 2>&1; then
-              echo "::error::${tag} already exists; bump the version in package.json (and RELEASE.txt) to publish a new release"
-              exit 1
+              # Already released. A merge that carries RELEASE.txt into another branch
+              # lands here too, so this is a no-op unless someone asked for it by hand.
+              if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]]; then
+                echo "::error::${tag} already exists; bump the version in package.json (and RELEASE.txt) to publish a new release"
+                exit 1
+              fi
+              echo "::notice::${tag} is already released; nothing to do. Bump the version in package.json and RELEASE.txt to publish a new one."
+              skip=true
+              echo "skip=true" >> "$GITHUB_OUTPUT"
             fi
           fi
           echo "version=${version}" >> "$GITHUB_OUTPUT"
           echo "tag=${tag}" >> "$GITHUB_OUTPUT"
-          echo "Releasing ${tag}"
+          [[ "${skip:-}" == "true" ]] || echo "Releasing ${tag}"
       - run: npm ci --legacy-peer-deps
+        if: steps.meta.outputs.skip != 'true'
       - name: Typecheck
+        if: steps.meta.outputs.skip != 'true'
         run: npx tsc -b
       - name: Unit tests
+        if: steps.meta.outputs.skip != 'true'
         run: npx vitest run
       - name: Build the bundle and manifest
+        if: steps.meta.outputs.skip != 'true'
         run: npm run bundle
       - uses: actions/upload-artifact@v4
+        if: steps.meta.outputs.skip != 'true'
         with:
           name: orbit-bundle
           path: release/orbit-*
@@ -82,6 +95,8 @@ jobs:
 
   mac:
     name: macOS app
+    needs: bundle
+    if: needs.bundle.outputs.skip != 'true'
     runs-on: macos-latest
     timeout-minutes: 45
     steps:
@@ -115,6 +130,7 @@ jobs:
   release:
     name: Publish the GitHub Release
     needs: [bundle, mac]
+    if: needs.bundle.outputs.skip != 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
