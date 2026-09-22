@@ -177,13 +177,13 @@ A sloshing tank has $R = 1.2\,\mathrm{m}$ and is filled to $h = 0.9\,\mathrm{m}$
 :::
 
 ::: answer
-$h/R = 0.75$, so $\xi_1 h/R = 1.8412\times 0.75 = 1.381$ and $\tanh(1.381) = 0.8814$. The acceleration is $a = 2\times 9.80665 = 19.613\,\mathrm{m/s^2}$, so
+$h/R = 0.75$, so $\xi_1 h/R = 1.8412\times 0.75 = 1.3809$ and $\tanh(1.3809) = 0.8812$. The acceleration is $a = 2\times 9.80665 = 19.613\,\mathrm{m/s^2}$, so
 
 $$
-\omega_s = \sqrt{\frac{1.8412\times 19.613}{1.2}\times 0.8814} = \sqrt{26.54} = 5.152\,\mathrm{rad/s},
+\omega_s = \sqrt{\frac{1.8412\times 19.613}{1.2}\times 0.8812} = \sqrt{26.52} = 5.149\,\mathrm{rad/s},
 $$
 
-that is $0.820\,\mathrm{Hz}$, a period of $1.22\,\mathrm{s}$. The equivalent pendulum length is $L = a/\omega_s^2 = 19.613/26.54 = 0.739\,\mathrm{m}$. (With a full deep tank it would have been $R/\xi_1 = 0.652\,\mathrm{m}$; the shallow fill lengthens the pendulum and lowers the frequency.)
+that is $0.820\,\mathrm{Hz}$, a period of $1.22\,\mathrm{s}$. The equivalent pendulum length is $L = a/\omega_s^2 = 19.613/26.52 = 0.740\,\mathrm{m}$. (With a full deep tank it would have been $R/\xi_1 = 0.652\,\mathrm{m}$; the shallow fill lengthens the pendulum and lowers the frequency.)
 :::
 
 ::: check

@@ -935,6 +935,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "numerical differentiation and complex-step derivatives"
       ],
       "file": "t0_m10_numerical_methods/09-numerical-differentiation-complex-step.md"
+    },
+    {
+      "id": "l10-quadrature-simpson-gauss-legendre",
+      "title": "Quadrature, Simpson and Gauss-Legendre",
+      "minutes": 28,
+      "covers": [
+        "quadrature: Simpson, Gauss-Legendre"
+      ],
+      "file": "t0_m10_numerical_methods/10-quadrature-simpson-gauss-legendre.md"
     }
   ],
   "t0_m11_optimization": [
@@ -1777,11 +1786,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t0_m10_numerical_methods": {
-    "covered": 11,
+    "covered": 12,
     "total": 13,
     "complete": false,
     "missing": [
-      "quadrature: Simpson, Gauss-Legendre",
       "conditioning and stability of linear solves, sparse matrices"
     ]
   },
