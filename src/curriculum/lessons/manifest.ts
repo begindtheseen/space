@@ -3718,6 +3718,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Line-of-sight guidance and pursuit guidance"
       ],
       "file": "t5_m40_guidance_fundamentals/03-line-of-sight-and-pursuit-guidance.md"
+    },
+    {
+      "id": "l04-proportional-navigation-derivation",
+      "title": "Proportional navigation, derived",
+      "minutes": 24,
+      "covers": [
+        "Proportional navigation: derivation, the navigation constant N, and the LOS-rate nulling principle"
+      ],
+      "file": "t5_m40_guidance_fundamentals/04-proportional-navigation-derivation.md"
     }
   ],
   "t5_m41_ascent_guidance": [
@@ -3868,6 +3877,18 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       "file": "t5_m42_trajectory_optimization/04-shooting-and-brittleness.md"
     }
   ],
+  "t5_m43_convex_guidance": [
+    {
+      "id": "l01-certification-and-the-problem",
+      "title": "Why powered-descent guidance must be convex",
+      "minutes": 20,
+      "covers": [
+        "The certification argument: why onboard guidance demands a solver with a convergence guarantee and a bounded iteration count, and why a general NLP cannot give one",
+        "The minimum-fuel powered descent problem and its four non-convexities: the lower thrust bound, mass-depletion dynamics, thrust pointing, and logic-triggered constraints"
+      ],
+      "file": "t5_m43_convex_guidance/01-the-certification-argument-and-the-problem.md"
+    }
+  ],
   "t6_m44_realtime_embedded": [
     {
       "id": "l01-hard-soft-firm-real-time",
@@ -3878,6 +3899,34 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Determinism, worst-case execution time, and jitter as the three things you actually measure"
       ],
       "file": "t6_m44_realtime_embedded/01-hard-soft-firm-real-time.md"
+    },
+    {
+      "id": "l02-rate-monotonic-and-edf",
+      "title": "Fixed-priority scheduling and earliest-deadline-first",
+      "minutes": 20,
+      "covers": [
+        "Fixed-priority scheduling: rate-monotonic priority assignment and the Liu-Layland utilisation bound",
+        "Earliest-deadline-first and why it achieves higher utilisation but degrades worse on overload"
+      ],
+      "file": "t6_m44_realtime_embedded/02-rate-monotonic-and-earliest-deadline-first.md"
+    },
+    {
+      "id": "l03-response-time-analysis",
+      "title": "Exact schedulability by response-time analysis",
+      "minutes": 18,
+      "covers": [
+        "Exact schedulability by response-time analysis, and why the utilisation bound is only sufficient"
+      ],
+      "file": "t6_m44_realtime_embedded/03-exact-schedulability-response-time-analysis.md"
+    },
+    {
+      "id": "l04-priority-inversion",
+      "title": "Priority inversion, priority inheritance and priority ceiling",
+      "minutes": 22,
+      "covers": [
+        "Priority inversion, priority inheritance and priority ceiling; the Mars Pathfinder failure and its fix"
+      ],
+      "file": "t6_m44_realtime_embedded/04-priority-inversion-and-inheritance.md"
     }
   ],
   "t6_m46_6dof_simulation": [
@@ -3907,6 +3956,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Running the plant at a fine step while the flight software runs at its true rate, with zero-order hold between updates"
       ],
       "file": "t6_m46_6dof_simulation/03-two-rate-simulation-and-the-zero-order-hold.md"
+    },
+    {
+      "id": "l04-frame-and-unit-discipline",
+      "title": "Frame and unit discipline",
+      "minutes": 24,
+      "covers": [
+        "Frame and unit discipline: naming every vector by its frame, and the conventions that stop a sign error becoming a three-week debugging session"
+      ],
+      "file": "t6_m46_6dof_simulation/04-frame-and-unit-discipline.md"
     }
   ]
 }
@@ -4231,11 +4289,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t5_m40_guidance_fundamentals": {
-    "covered": 3,
+    "covered": 4,
     "total": 12,
     "complete": false,
     "missing": [
-      "Proportional navigation: derivation, the navigation constant N, and the LOS-rate nulling principle",
       "Why N between 3 and 5; augmented proportional navigation for manoeuvring targets",
       "True vs pure proportional navigation",
       "Optimal guidance from an LQ formulation and how PN emerges from it",
@@ -4273,12 +4330,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t5_m43_convex_guidance": {
-    "covered": 0,
+    "covered": 2,
     "total": 21,
     "complete": false,
     "missing": [
-      "The certification argument: why onboard guidance demands a solver with a convergence guarantee and a bounded iteration count, and why a general NLP cannot give one",
-      "The minimum-fuel powered descent problem and its four non-convexities: the lower thrust bound, mass-depletion dynamics, thrust pointing, and logic-triggered constraints",
       "Why the thrust magnitude constraint rho_min <= ||T|| <= rho_max is non-convex — the feasible set is an annulus with the origin removed",
       "Lossless convexification: the slack variable Gamma with ||T|| <= Gamma and rho_min <= Gamma <= rho_max, and the proof sketch via the maximum principle that the relaxation is tight",
       "The change of variables u = T/m, sigma = Gamma/m, z = ln m, and how it makes the translational dynamics exactly linear",
@@ -4301,14 +4356,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t6_m44_realtime_embedded": {
-    "covered": 2,
+    "covered": 6,
     "total": 21,
     "complete": false,
     "missing": [
-      "Fixed-priority scheduling: rate-monotonic priority assignment and the Liu-Layland utilisation bound",
-      "Earliest-deadline-first and why it achieves higher utilisation but degrades worse on overload",
-      "Exact schedulability by response-time analysis, and why the utilisation bound is only sufficient",
-      "Priority inversion, priority inheritance and priority ceiling; the Mars Pathfinder failure and its fix",
       "RTOS primitives: tasks, semaphores, mutexes, message queues, and which of them can block unboundedly",
       "Real-time Linux: PREEMPT_RT, SCHED_FIFO and SCHED_DEADLINE, CPU isolation, IRQ affinity, mlockall",
       "Why a flight programme can fly Linux at all, and what it has to switch off to do so",
@@ -4354,11 +4405,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t6_m46_6dof_simulation": {
-    "covered": 3,
+    "covered": 4,
     "total": 18,
     "complete": false,
     "missing": [
-      "Frame and unit discipline: naming every vector by its frame, and the conventions that stop a sign error becoming a three-week debugging session",
       "Environment models: gravity field, atmosphere, wind and gust, magnetic field, ephemeris, solar radiation pressure",
       "Sensor models: noise, bias and bias instability, scale factor, misalignment, quantisation, latency, dropout, saturation, update rate",
       "Actuator models: thrust curves and start-up transients, TVC gimbal dynamics and rate limits, reaction wheel friction, thruster minimum impulse bit, valve delay",
