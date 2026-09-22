@@ -3181,7 +3181,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-the-multiplicative-ekf-for-attitude",
       "title": "The Multiplicative EKF for attitude",
-      "minutes": 27,
+      "minutes": 24,
       "covers": [
         "The Multiplicative EKF for attitude: the 3-parameter attitude error, covariance on the tangent space"
       ],

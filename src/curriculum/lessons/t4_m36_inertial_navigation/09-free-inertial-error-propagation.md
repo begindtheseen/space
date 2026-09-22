@@ -172,7 +172,7 @@ Scale the worked example: if the gyro bias were improved from $3^\circ/\mathrm h
 :::
 
 ::: answer
-The gyro-bias secular drift rate $bR_M$ scales linearly with $b$, so a hundred-fold smaller bias gives a hundred-fold smaller one-hour position error: roughly $4.05\,\mathrm{km}$ instead of $405\,\mathrm{km}$. That is still far larger than the accelerometer-bias term's $394\,\mathrm m$ or angle random walk's Schuler-restrained contribution, so at one hour the gyro bias remains dominant even after a hundred-fold improvement — only once it were pushed down to roughly the same $3\times10^{-3\,\circ}/\mathrm h$ region as the true navigation-grade table in this module's first lesson would the accelerometer bias term become the limiting factor for an hour-long unaided coast at this grade.
+The gyro-bias secular drift rate $bR_M$ scales linearly with $b$, so a hundred-fold smaller bias gives a hundred-fold smaller one-hour position error: roughly $4.05\,\mathrm{km}$ instead of $405\,\mathrm{km}$. That is still far larger than the accelerometer-bias term's $394\,\mathrm m$ or angle random walk's Schuler-restrained contribution, so at one hour the gyro bias remains dominant even after a hundred-fold improvement — only once it were pushed down to roughly the same $3\times10^{-3\,\circ}/\mathrm h$ region as the true navigation-grade table in the sensor-physics lesson would the accelerometer bias term become the limiting factor for an hour-long unaided coast at this grade.
 :::
 
 ## Summary

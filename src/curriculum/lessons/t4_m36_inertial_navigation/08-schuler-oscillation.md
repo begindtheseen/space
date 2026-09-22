@@ -22,7 +22,7 @@ An inertial navigator is not a pendulum, but its horizontal error loop turns out
 
 ## Deriving the loop from the mechanization already built
 
-Work with one horizontal channel at a time — north velocity error paired with an east-axis tilt error, the pairing this module's second and sixth lessons have already used. Let $\varepsilon_E$ be a small, uncorrected rotation of the computed platform away from true level about the east axis, and $\delta v_N$ the resulting north velocity error, both starting at zero.
+Work with one horizontal channel at a time — north velocity error paired with an east-axis tilt error, the natural NED pairing this module has used since the mechanization lessons. Let $\varepsilon_E$ be a small, uncorrected rotation of the computed platform away from true level about the east axis, and $\delta v_N$ the resulting north velocity error, both starting at zero.
 
 **Tilt leaks gravity into velocity.** A platform tilted by $\varepsilon_E$ resolves the accelerometer's true vertical reading partly into the horizontal channel: the velocity update's own $\mathbf C_b^n\mathbf f^b$ term, linearized about level attitude, gives $\dot{\delta v}_N = -g\,\varepsilon_E$ (the sign found by direct linearization of the mechanization's own equations; the numerical value is $g$ to full precision, since at $\varepsilon_E=0$ nothing else in the velocity equation depends on this tilt at first order). This is the same "bias-tilt equivalence" the error-model lesson used for accelerometers, now running the other way: a platform tilt behaves exactly like an accelerometer bias of size $g\varepsilon_E$.
 

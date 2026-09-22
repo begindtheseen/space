@@ -6,7 +6,7 @@ covers:
   - "Lever arm compensation, zero-velocity updates, vibration rectification"
 ---
 
-This module has built a strapdown navigator from the ground up: what the sensors measure, how their errors are named and characterized, how the mechanization turns their output into a trajectory, why that trajectory oscillates instead of diverging, how it is aligned and fused with GNSS. This last lesson closes three gaps a correct implementation cannot skip — where exactly on the vehicle "the position" is, how to exploit every stationary moment a mission actually offers rather than only the first one, and one error-model term the second lesson promised and deferred, the vibration-driven rectification a static bench test can never see.
+This module has built a strapdown navigator from the ground up: what the sensors measure, how their errors are named and characterized, how the mechanization turns their output into a trajectory, why that trajectory oscillates instead of diverging, how it is aligned and fused with GNSS. This last lesson closes three gaps a correct implementation cannot skip — where exactly on the vehicle "the position" is, how to exploit every stationary moment a mission actually offers rather than only the first one, and one error-model term the error-model lesson promised and deferred, the vibration-driven rectification a static bench test can never see.
 
 ## Lever arm compensation
 

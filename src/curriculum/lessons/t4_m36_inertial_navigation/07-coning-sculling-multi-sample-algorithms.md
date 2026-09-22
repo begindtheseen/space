@@ -118,7 +118,7 @@ A gyro reports two consecutive increments $\Delta\boldsymbol\theta_1=(2,0,0)\tim
 :::
 
 ::: answer
-$\Delta\boldsymbol\theta_1\times\Delta\boldsymbol\theta_2 = (0\cdot0-0\cdot3,\,0\cdot0-2\cdot0,\,2\cdot3-0\cdot0)\times10^{-6}=(0,0,6)\times10^{-6}\,\mathrm{rad}$, so the correction is $\tfrac23\times6\times10^{-6}=4\times10^{-6}\,\mathrm{rad}$ about $z$, giving $\boldsymbol\theta=(2.000,\,3.000,\,0.004)\times10^{-3}\,\mathrm{rad}$. The correction acts entirely on the axis neither raw increment touches — exactly the "third axis" the module's second lesson named, because the cross product of two vectors is always perpendicular to both.
+$\Delta\boldsymbol\theta_1\times\Delta\boldsymbol\theta_2 = (0\cdot0-0\cdot3,\,0\cdot0-2\cdot0,\,2\cdot3-0\cdot0)\times10^{-6}=(0,0,6)\times10^{-6}\,\mathrm{rad}$, so the correction is $\tfrac23\times6\times10^{-6}=4\times10^{-6}\,\mathrm{rad}$ about $z$, giving $\boldsymbol\theta=(2.000,\,3.000,\,0.004)\times10^{-3}\,\mathrm{rad}$. The correction acts entirely on the axis neither raw increment touches — exactly the "third axis" the error-model lesson named, because the cross product of two vectors is always perpendicular to both.
 :::
 
 ::: check

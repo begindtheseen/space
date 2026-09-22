@@ -1,7 +1,7 @@
 ---
 id: l11-the-multiplicative-ekf-for-attitude
 title: The Multiplicative EKF for attitude
-minutes: 27
+minutes: 24
 covers:
   - 'The Multiplicative EKF for attitude: the 3-parameter attitude error, covariance on the tangent space'
 ---
@@ -67,6 +67,16 @@ A full **quarter** of this filter's entire reported uncertainty sits in a direct
 ```python
 import numpy as np
 
+def qmul(a, b):
+    aw,ax,ay,az = a; bw,bx,by,bz = b
+    return np.array([aw*bw-ax*bx-ay*by-az*bz, aw*bx+ax*bw+ay*bz-az*by,
+                      aw*by-ax*bz+ay*bw+az*bx, aw*bz+ax*by-ay*bx+az*bw])
+
+def quat_from_rotvec(theta):
+    a = np.linalg.norm(theta)
+    if a < 1e-8: return np.array([1.0, *(0.5*theta)])
+    return np.array([np.cos(a/2), *(np.sin(a/2)*theta/a)])
+
 def left_mult_matrix(p):
     M = np.zeros((4,4))
     for i in range(4):
@@ -111,11 +121,21 @@ Sample the true error many times from $\mathbf P_{\text{old}}=\operatorname{diag
 $$
 \begin{pmatrix}0.010950 & -0.000150 & -0.000134\\ -0.000150 & 0.004902 & 0.000204\\ -0.000134 & 0.000204 & 0.007632\end{pmatrix}\ \mathrm{rad^2},
 $$
-against the analytic $\mathbf G\mathbf P_{\text{old}}\mathbf G^{\mathsf T}$ prediction, whose relative Frobenius error against this exact Monte Carlo result is $\mathbf{0.41\%}$. Skipping $\mathbf G$ entirely (using $\mathbf P_{\text{old}}$ unchanged, the additive-state shortcut the previous lesson used) gives a $2.86\%$ error; using the *wrong sign*, $\mathbf I+\operatorname{skew}(\tfrac12\boldsymbol\delta\hat\theta)$, gives $5.71\%$ — both several times worse than the correct formula, confirming both that the correction matters and that its sign is tied to a specific error-composition convention (body-frame, right-multiplicative, exactly as defined above) that an implementation must apply consistently.
+against the analytic $\mathbf G\mathbf P_{\text{old}}\mathbf G^{\mathsf T}$ prediction, whose relative Frobenius error against this exact Monte Carlo result is $\mathbf{0.41\%}$. Skipping $\mathbf G$ entirely (using $\mathbf P_{\text{old}}$ unchanged, the additive-state shortcut the previous lesson used) gives a $2.85\%$ error; using the *wrong sign*, $\mathbf I+\operatorname{skew}(\tfrac12\boldsymbol\delta\hat\theta)$, gives $5.71\%$ — both several times worse than the correct formula, confirming both that the correction matters and that its sign is tied to a specific error-composition convention (body-frame, right-multiplicative, exactly as defined above) that an implementation must apply consistently.
 :::
 
 ```python
 import numpy as np
+
+def qmul(a, b):
+    aw,ax,ay,az = a; bw,bx,by,bz = b
+    return np.array([aw*bw-ax*bx-ay*by-az*bz, aw*bx+ax*bw+ay*bz-az*by,
+                      aw*by-ax*bz+ay*bw+az*bx, aw*bz+ax*by-ay*bx+az*bw])
+
+def quat_from_rotvec(theta):
+    a = np.linalg.norm(theta)
+    if a < 1e-8: return np.array([1.0, *(0.5*theta)])
+    return np.array([np.cos(a/2), *(np.sin(a/2)*theta/a)])
 
 def qconj(q): return np.array([q[0], -q[1], -q[2], -q[3]])
 def skew(v): return np.array([[0,-v[2],v[1]],[v[2],0,-v[0]],[-v[1],v[0],0]])
@@ -139,9 +159,12 @@ for i in range(N):
 
 sample_cov = np.cov(new_errors.T)
 G = np.eye(3) - skew(0.5*dtheta_hat)
+G_wrong = np.eye(3) + skew(0.5*dtheta_hat)
 P_new = G@P_old@G.T
-print(np.linalg.norm(sample_cov-P_new)/np.linalg.norm(P_new)*100)
-# 0.41 (percent)
+P_new_wrong = G_wrong@P_old@G_wrong.T
+err = lambda P: np.linalg.norm(sample_cov-P)/np.linalg.norm(P_new)*100
+print(err(P_new), err(P_old), err(P_new_wrong))
+# 0.414  2.859  5.706  (percent)
 ```
 
 ## Updating from a vector measurement
@@ -171,6 +194,18 @@ Two vector measurements per cycle already cut the initial $26.9^\circ$ attitude 
 :::
 
 ```python
+import numpy as np
+
+def qmul(a, b):
+    aw,ax,ay,az = a; bw,bx,by,bz = b
+    return np.array([aw*bw-ax*bx-ay*by-az*bz, aw*bx+ax*bw+ay*bz-az*by,
+                      aw*by-ax*bz+ay*bw+az*bx, aw*bz+ax*by-ay*bx+az*bw])
+def qconj(q): return np.array([q[0], -q[1], -q[2], -q[3]])
+def quat_from_rotvec(theta):
+    a = np.linalg.norm(theta)
+    if a < 1e-8: return np.array([1.0, *(0.5*theta)])
+    return np.array([np.cos(a/2), *(np.sin(a/2)*theta/a)])
+def skew(v): return np.array([[0,-v[2],v[1]],[v[2],0,-v[0]],[-v[1],v[0],0]])
 def quat_to_dcm(q):
     w,x,y,z = q
     return np.array([[1-2*(y*y+z*z), 2*(x*y+w*z), 2*(x*z-w*y)],
@@ -196,6 +231,31 @@ def mekf_update(q, b, P, v_body, v_ref, R):
     b = b + dx[3:]
     G = np.eye(6); G[:3,:3] = np.eye(3) - skew(0.5*dx[:3])
     return q, b, G@P@G.T
+
+rng = np.random.default_rng(9)
+dt = 1.0
+arw_var = np.radians(0.05)**2
+rrw_var = np.radians(0.002)**2
+sigma_meas = np.radians(0.3)
+r_sun = np.array([1.0, 0.0, 0.0]); r_mag = np.array([0.0, 0.80, 0.60])
+R_meas = (sigma_meas**2)*np.eye(3)
+b_true = np.radians(np.array([0.5, -0.3, 0.2]))
+q_true = quat_from_rotvec(np.radians(np.array([10.0, -15.0, 20.0])))
+omega_true = np.radians(np.array([1.0, 0.5, -0.8]))
+q_nom = np.array([1.0, 0.0, 0.0, 0.0]); b_hat = np.zeros(3)
+P = np.zeros((6,6)); P[:3,:3] = np.eye(3)*np.radians(15.0)**2; P[3:,3:] = np.eye(3)*np.radians(1.0)**2
+
+for cycle in range(6):
+    q_true = qmul(q_true, quat_from_rotvec(omega_true*dt)); q_true /= np.linalg.norm(q_true)
+    omega_meas = omega_true + b_true + rng.normal(0, np.sqrt(arw_var/dt), 3)
+    q_nom, b_hat, P = mekf_propagate(q_nom, b_hat, P, omega_meas, dt, arw_var, rrw_var)
+    for r_ref in (r_sun, r_mag):
+        v_body = quat_to_dcm(q_true)@r_ref + rng.normal(0, sigma_meas, 3)
+        v_body /= np.linalg.norm(v_body)
+        q_nom, b_hat, P = mekf_update(q_nom, b_hat, P, v_body, r_ref, R_meas)
+    dq_err = qmul(qconj(q_nom), q_true)
+    ang_err = np.degrees(2*np.arccos(np.clip(np.abs(dq_err[0]), 0, 1)))
+    print(cycle, round(ang_err, 4), np.round(np.degrees(b_hat), 5))
 ```
 
 ::: warning Additive-quaternion covariance is not "a bit optimistic" — it is structurally dishonest
@@ -229,7 +289,7 @@ Explain why the reset Jacobian $\mathbf G=\mathbf I-\operatorname{skew}(\tfrac12
 :::
 
 ::: answer
-$\mathbf G$ itself is only first order in $\boldsymbol\delta\hat\theta$ (it is $\mathbf I$ plus a term linear in $\boldsymbol\delta\hat\theta$), but its *effect* on the covariance, $\mathbf G\mathbf P\mathbf G^{\mathsf T}-\mathbf P$, is second order, since it involves a product of two factors each carrying one power of $\boldsymbol\delta\hat\theta$. This means the correction shrinks quadratically as the injected correction shrinks — for a filter that is already tracking well and only ever injects tiny corrections, omitting $\mathbf G$ costs comparatively little per cycle, which is exactly why implementations that skip it often still run without visibly failing; the worked example's $8^\circ$ correction is large enough that the $2.86\%$-versus-$0.41\%$ gap is clearly measurable, and the gap would shrink for a filter injecting only fractions of a degree per cycle.
+$\mathbf G$ itself is only first order in $\boldsymbol\delta\hat\theta$ (it is $\mathbf I$ plus a term linear in $\boldsymbol\delta\hat\theta$), but its *effect* on the covariance, $\mathbf G\mathbf P\mathbf G^{\mathsf T}-\mathbf P$, is second order, since it involves a product of two factors each carrying one power of $\boldsymbol\delta\hat\theta$. This means the correction shrinks quadratically as the injected correction shrinks — for a filter that is already tracking well and only ever injects tiny corrections, omitting $\mathbf G$ costs comparatively little per cycle, which is exactly why implementations that skip it often still run without visibly failing; the worked example's $8^\circ$ correction is large enough that the $2.85\%$-versus-$0.41\%$ gap is clearly measurable, and the gap would shrink for a filter injecting only fractions of a degree per cycle.
 :::
 
 ::: check

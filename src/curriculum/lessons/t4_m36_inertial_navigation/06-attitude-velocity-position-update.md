@@ -10,7 +10,7 @@ The previous lesson wrote down what rotates a navigation frame relative to inert
 
 ## Attitude update: what the gyro output is missing
 
-The gyro measures $\boldsymbol\omega_{ib}^b$, body rate relative to inertial space, in body axes — the quantity the first lesson of this module defined. The attitude kinematics module's direction cosine kinematics, $\dot{\mathbf C}_b^n = \mathbf C_b^n[\boldsymbol\omega_{nb}^b\times]$, needs a different rate: body relative to the **navigation** frame, because that is the frame whose orientation $\mathbf C_b^n$ actually tracks. The two are related by simple addition of angular rates across nested frames, inertial to navigation to body:
+The gyro measures $\boldsymbol\omega_{ib}^b$, body rate relative to inertial space, in body axes — the quantity the sensor-physics lesson defined. The attitude kinematics module's direction cosine kinematics, $\dot{\mathbf C}_b^n = \mathbf C_b^n[\boldsymbol\omega_{nb}^b\times]$, needs a different rate: body relative to the **navigation** frame, because that is the frame whose orientation $\mathbf C_b^n$ actually tracks. The two are related by simple addition of angular rates across nested frames, inertial to navigation to body:
 
 $$
 \boldsymbol\omega_{ib}^b = \boldsymbol\omega_{in}^b + \boldsymbol\omega_{nb}^b \qquad\Longrightarrow\qquad \boldsymbol\omega_{nb}^b = \boldsymbol\omega_{ib}^b - \mathbf C_n^b\big(\boldsymbol\omega_{ie}^n+\boldsymbol\omega_{en}^n\big),
@@ -28,7 +28,7 @@ followed by the renormalization the attitude kinematics module described. This f
 
 ## Velocity update: gravity, finally supplied
 
-The specific force $\mathbf f^b$ the accelerometer reports rotates into the navigation frame through the newly updated attitude, $\mathbf f^n=\mathbf C_b^n\mathbf f^b$, and the previous lesson's velocity equation needs one more piece: $\mathbf g^n$, the gravity this module's first lesson insisted must be supplied analytically because no accelerometer senses it. WGS84 gives it as **normal gravity**, the gravitational plus centrifugal acceleration of a reference ellipsoid with the Earth's mass and rotation rate, by the closed-form Somigliana equation
+The specific force $\mathbf f^b$ the accelerometer reports rotates into the navigation frame through the newly updated attitude, $\mathbf f^n=\mathbf C_b^n\mathbf f^b$, and the previous lesson's velocity equation needs one more piece: $\mathbf g^n$, the gravity the sensor-physics lesson insisted must be supplied analytically because no accelerometer senses it. WGS84 gives it as **normal gravity**, the gravitational plus centrifugal acceleration of a reference ellipsoid with the Earth's mass and rotation rate, by the closed-form Somigliana equation
 
 $$
 g_0(\varphi) = g_e\,\frac{1+k\sin^2\varphi}{\sqrt{1-e^2\sin^2\varphi}}, \qquad g_e = 9.780\,325\,3359\,\mathrm{m/s^2},\ \ k=0.001\,931\,853,
@@ -114,7 +114,7 @@ The perfect gyro produces exactly zero velocity after ten minutes at rest, to fl
 :::
 
 ::: warning
-The attitude update in this lesson is first-order and uses one gyro sample per step. Read literally, that invites sampling the gyro once per attitude-update interval, however long that interval is — and doing so under any rotational vibration produces the systematic coning error this module's second lesson already named and the next lesson quantifies. The fix is not a better integrator for this equation; it is sub-sampling the gyro within each interval and combining the sub-samples with the coning correction before this update ever runs.
+The attitude update in this lesson is first-order and uses one gyro sample per step. Read literally, that invites sampling the gyro once per attitude-update interval, however long that interval is — and doing so under any rotational vibration produces the systematic coning error the error-model lesson already named and the next lesson quantifies. The fix is not a better integrator for this equation; it is sub-sampling the gyro within each interval and combining the sub-samples with the coning correction before this update ever runs.
 :::
 
 ## Check yourself
