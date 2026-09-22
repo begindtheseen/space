@@ -685,6 +685,27 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "verbal derivation discipline without a whiteboard: narrate the setup, name the variables, state assumptions"
       ],
       "file": "car_09_screens/06-verbal-derivation-discipline.md"
+    },
+    {
+      "id": "l07-clarifying-questions",
+      "title": "Clarifying questions before you answer",
+      "minutes": 20,
+      "covers": [
+        "asking clarifying questions before answering"
+      ],
+      "file": "car_09_screens/07-clarifying-questions.md"
+    }
+  ],
+  "car_10_past_project_presentation": [
+    {
+      "id": "l01-the-format-and-the-four-axes",
+      "title": "The format, and what the panel is actually scoring",
+      "minutes": 18,
+      "covers": [
+        "the format: submit roughly five topics, they choose one, 10 to 20 minutes to a panel of 5 to 10 engineers, then extensive Q and A",
+        "the four evaluation axes: technical depth, communication clarity, simplicity of design approach, and defending engineering decisions under direct questioning"
+      ],
+      "file": "car_10_past_project_presentation/01-the-format-and-the-four-axes.md"
     }
   ],
   "cod_cpp_01_basics": [
@@ -734,6 +755,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Integer promotion, signed/unsigned pitfalls, signed overflow as undefined behaviour"
       ],
       "file": "cod_cpp_01_basics/05-promotion-conversion-and-undefined-behaviour.md"
+    },
+    {
+      "id": "l06-values-references-and-python-names",
+      "title": "Values, references, and what a variable really is",
+      "minutes": 21,
+      "covers": [
+        "Values, references and the difference from Python names"
+      ],
+      "file": "cod_cpp_01_basics/06-values-references-and-python-names.md"
     }
   ],
   "cod_py_01_basics": [
@@ -754,6 +784,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "int, float, bool, str; f-strings; str methods"
       ],
       "file": "cod_py_01_basics/02-numbers-text-and-f-strings.md"
+    },
+    {
+      "id": "l03-lists-and-tuples",
+      "title": "Lists, tuples and slicing",
+      "minutes": 18,
+      "covers": [
+        "list, tuple, dict, set; slicing; truthiness; mutability"
+      ],
+      "file": "cod_py_01_basics/03-lists-and-tuples.md"
     }
   ],
   "t0_m01_algebra_precalc": [
@@ -6570,11 +6609,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "cod_py_01_basics": {
-    "covered": 2,
+    "covered": 3,
     "total": 12,
     "complete": false,
     "missing": [
-      "list, tuple, dict, set; slicing; truthiness; mutability",
       "if/elif/else; for, while, range, enumerate, zip; break/continue/else",
       "Functions: positional, keyword, default, *args, **kwargs",
       "Scope and LEGB; closures at a first-pass level",
@@ -6743,12 +6781,11 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "cod_cpp_01_basics": {
-    "covered": 7,
+    "covered": 8,
     "total": 15,
     "complete": false,
     "missing": [
       "const, constexpr, consteval, auto",
-      "Values, references and the difference from Python names",
       "Functions, overloading, default arguments",
       "Arrays vs std::array vs std::vector; range-based for",
       "enum class; struct and class; access specifiers; namespaces",
@@ -7438,12 +7475,11 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "car_09_screens": {
-    "covered": 6,
+    "covered": 7,
     "total": 12,
     "complete": false,
     "missing": [
       "reported topics: PD control, orbit determination, frequency-domain analysis",
-      "asking clarifying questions before answering",
       "recovering from a blank without bluffing",
       "the difference between I do not know and I do not know, here is how I would find out",
       "questions to ask the interviewing engineer",
@@ -7451,18 +7487,16 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "car_10_past_project_presentation": {
-    "covered": 0,
+    "covered": 2,
     "total": 13,
     "complete": false,
     "missing": [
-      "the format: submit roughly five topics, they choose one, 10 to 20 minutes to a panel of 5 to 10 engineers, then extensive Q and A",
       "choosing five topics so that every one is defensible and each shows a different competency",
       "the trap of listing a project you cannot defend in depth",
       "talk structure: problem, why it was hard, approach, the key decision and the alternatives rejected, verification, result, what you would do differently",
       "assertion-evidence slide design: a sentence headline that states the claim, a figure that proves it, no bullet dumps",
       "how many slides for 10 to 20 minutes, and why fewer is safer",
       "the backup-slide appendix for anticipated questions",
-      "the four evaluation axes: technical depth, communication clarity, simplicity of design approach, and defending engineering decisions under direct questioning",
       "presenting to a panel of 5 to 10: address the asker, then return to the room",
       "answering why did you not do X and what was your actual contribution",
       "saying I do not know, here is how I would find out",
