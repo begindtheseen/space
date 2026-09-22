@@ -91,7 +91,7 @@ Now break the model. Use $\hat{\mathbf{J}} = \mathrm{diag}(132, 90, 88)$, errors
 | $2\,\mathrm{s}$ | $(0.11036, -0.07358, 0.05518)$ | $(0.09776, -0.08045, 0.05706)$ |
 | $10\,\mathrm{s}$ | $(0.00202, -0.00135, 0.00101)$ | $(0.00118, -0.00219, 0.00076)$ |
 
-The largest deviation from the ideal exponential is $1.26\times10^{-2}\,\mathrm{rad/s}$, $3.2$ per cent of the initial rate magnitude. The loop is still stable and still converges — the leftover cross-axis term is small compared with the damping — but the exactness is gone, and it went as fast as the model did. Feedback linearization buys exactness at the price of depending on the model for it, which is why flight implementations combine a computed-torque feedforward with a feedback law that is proved stable *without* relying on cancellation, such as the quaternion law of this module.
+The largest deviation from the ideal exponential is $1.27\times10^{-2}\,\mathrm{rad/s}$, $3.2$ per cent of the initial rate magnitude. The loop is still stable and still converges — the leftover cross-axis term is small compared with the damping — but the exactness is gone, and it went as fast as the model did. Feedback linearization buys exactness at the price of depending on the model for it, which is why flight implementations combine a computed-torque feedforward with a feedback law that is proved stable *without* relying on cancellation, such as the quaternion law of this module.
 :::
 
 ::: example The output converges, the vehicle does not
@@ -117,7 +117,7 @@ Simulate from $\mathbf{x}(0) = (1, 0)$, so $y(0) = -1$, at $\Delta t = 0.1\,\mat
 | $1\,\mathrm{s}$ | $-1.3534\times10^{-1}$ | $1.857$ | $21.7$ |
 | $2\,\mathrm{s}$ | $-1.8316\times10^{-2}$ | $4.932$ | $59.1$ |
 | $5\,\mathrm{s}$ | $-4.5400\times10^{-5}$ | $98.94$ | $1.19\times10^{3}$ |
-| $10\,\mathrm{s}$ | $-2.07\times10^{-9}$ | $1.4684\times10^{4}$ | $1.76\times10^{5}$ |
+| $10\,\mathrm{s}$ | $-2.06\times10^{-9}$ | $1.4684\times10^{4}$ | $1.76\times10^{5}$ |
 
 The output follows $-e^{-2t}$ to five figures — a textbook first-order response, and exactly what a tracking-error plot would show. Meanwhile $x_1$ follows $\tfrac{1}{3}e^{-2t} + \tfrac{2}{3}e^{t}$, the analytic solution of $\dot{\eta} = \eta - e^{-2t}$ from $\eta(0) = 1$, reaching $1.47\times10^4$ at ten seconds while the control demand reaches $1.76\times10^5$. Any real actuator saturates within the first few seconds, at which point the cancellation stops and the loop is left with an unstable plant and no control authority.
 

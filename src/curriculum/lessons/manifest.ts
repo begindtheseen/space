@@ -2089,6 +2089,25 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "finite-burn and gravity losses"
       ],
       "file": "t2_m20_orbital_maneuvers/08-finite-burns-gravity-losses.md"
+    },
+    {
+      "id": "l09-low-thrust-transfers",
+      "title": "Low-thrust transfers: Edelbaum, spirals, electric propulsion",
+      "minutes": 22,
+      "covers": [
+        "low-thrust transfers: Edelbaum, spirals, electric propulsion"
+      ],
+      "file": "t2_m20_orbital_maneuvers/09-low-thrust-transfers.md"
+    },
+    {
+      "id": "l10-stationkeeping-constellations-deorbit",
+      "title": "Station-keeping, constellations and deorbit",
+      "minutes": 23,
+      "covers": [
+        "station-keeping for GEO and LEO",
+        "constellation management, drift orbits and deorbit"
+      ],
+      "file": "t2_m20_orbital_maneuvers/10-stationkeeping-constellations-deorbit.md"
     }
   ],
   "t2_m23_relative_motion_rpo": [
@@ -2174,6 +2193,26 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "passive safety and safety ellipses"
       ],
       "file": "t2_m23_relative_motion_rpo/09-vbar-rbar-passive-safety.md"
+    },
+    {
+      "id": "l10-corridors-keepout-and-aborts",
+      "title": "Approach corridors, keep-out spheres and abort trajectories",
+      "minutes": 19,
+      "covers": [
+        "approach corridors and keep-out spheres",
+        "abort trajectories and collision avoidance manoeuvres"
+      ],
+      "file": "t2_m23_relative_motion_rpo/10-corridors-keepout-and-aborts.md"
+    },
+    {
+      "id": "l11-docking-vs-berthing-iss-profile",
+      "title": "Docking vs berthing, and the ISS visiting-vehicle profile",
+      "minutes": 20,
+      "covers": [
+        "docking vs berthing",
+        "ISS visiting vehicle requirements"
+      ],
+      "file": "t2_m23_relative_motion_rpo/11-docking-vs-berthing-iss-profile.md"
     }
   ],
   "t3_m25_signals_systems": [
@@ -4273,6 +4312,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Scaling and conditioning: non-dimensionalising states, controls and constraints before you solve anything"
       ],
       "file": "t5_m42_trajectory_optimization/14-scaling-and-conditioning.md"
+    },
+    {
+      "id": "l15-warm-starting-homotopy-continuation",
+      "title": "Warm starting, homotopy and continuation",
+      "minutes": 18,
+      "covers": [
+        "Warm starting, homotopy and continuation from an easy problem to the real one"
+      ],
+      "file": "t5_m42_trajectory_optimization/15-warm-starting-homotopy-continuation.md"
     }
   ],
   "t5_m43_convex_guidance": [
@@ -4325,6 +4373,16 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Glideslope, velocity, and thrust-pointing constraints as cones"
       ],
       "file": "t5_m43_convex_guidance/05-glideslope-velocity-and-pointing-cones.md"
+    },
+    {
+      "id": "l06-flight-time-and-discretization",
+      "title": "Flight time and what discretization preserves",
+      "minutes": 22,
+      "covers": [
+        "Flight time as the one non-convex parameter, and solving it by a line search over an inner SOCP",
+        "Discrete-time lossless convexification and what survives discretisation"
+      ],
+      "file": "t5_m43_convex_guidance/06-flight-time-and-discretization.md"
     }
   ],
   "t6_m44_realtime_embedded": [
@@ -4919,13 +4977,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t2_m20_orbital_maneuvers": {
-    "covered": 8,
+    "covered": 11,
     "total": 13,
     "complete": false,
     "missing": [
-      "low-thrust transfers: Edelbaum, spirals, electric propulsion",
-      "station-keeping for GEO and LEO",
-      "constellation management, drift orbits and deorbit",
       "patched conics, sphere of influence, C3, gravity assists",
       "porkchop plots and launch windows"
     ]
@@ -4969,15 +5024,11 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t2_m23_relative_motion_rpo": {
-    "covered": 11,
+    "covered": 15,
     "total": 16,
     "complete": false,
     "missing": [
-      "approach corridors and keep-out spheres",
-      "docking vs berthing",
-      "ISS visiting vehicle requirements",
-      "relative navigation sensors: relative GPS, lidar, cameras, retroreflectors",
-      "abort trajectories and collision avoidance manoeuvres"
+      "relative navigation sensors: relative GPS, lidar, cameras, retroreflectors"
     ]
   },
   "t2_m24_edl": {
@@ -5108,22 +5159,19 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t5_m42_trajectory_optimization": {
-    "covered": 14,
+    "covered": 15,
     "total": 17,
     "complete": false,
     "missing": [
-      "Warm starting, homotopy and continuation from an easy problem to the real one",
       "Tooling: CasADi with IPOPT, GPOPS-II, PSOPT, Dymos/OpenMDAO, PyOMO, ACADO, trajax",
       "Failure modes: infeasible restoration, unbounded multipliers, mesh-induced control ringing, badly posed terminal constraints"
     ]
   },
   "t5_m43_convex_guidance": {
-    "covered": 10,
+    "covered": 12,
     "total": 21,
     "complete": false,
     "missing": [
-      "Flight time as the one non-convex parameter, and solving it by a line search over an inner SOCP",
-      "Discrete-time lossless convexification and what survives discretisation",
       "Successive convexification (SCvx): linearise about a reference, solve, update, repeat",
       "Trust regions and artificial unboundedness; virtual control (virtual buffers) and artificial infeasibility",
       "The convergence ratio rho and the accept/reject/resize rule",
