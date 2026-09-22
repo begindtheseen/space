@@ -3736,6 +3736,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Why N between 3 and 5; augmented proportional navigation for manoeuvring targets"
       ],
       "file": "t5_m40_guidance_fundamentals/05-navigation-constant-and-augmented-pn.md"
+    },
+    {
+      "id": "l06-true-vs-pure-proportional-navigation",
+      "title": "True versus pure proportional navigation",
+      "minutes": 20,
+      "covers": [
+        "True vs pure proportional navigation"
+      ],
+      "file": "t5_m40_guidance_fundamentals/06-true-vs-pure-proportional-navigation.md"
     }
   ],
   "t5_m41_ascent_guidance": [
@@ -3920,6 +3929,24 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Direct collocation: trapezoidal and Hermite-Simpson defect constraints"
       ],
       "file": "t5_m42_trajectory_optimization/08-trapezoidal-hermite-simpson-collocation.md"
+    },
+    {
+      "id": "l09-pseudospectral-nodes",
+      "title": "Pseudospectral methods: node families and the differentiation matrix",
+      "minutes": 15,
+      "covers": [
+        "Pseudospectral methods: Legendre-Gauss, Legendre-Gauss-Radau and Legendre-Gauss-Lobatto nodes"
+      ],
+      "file": "t5_m42_trajectory_optimization/09-pseudospectral-nodes.md"
+    },
+    {
+      "id": "l10-spectral-convergence-covector-mapping",
+      "title": "Spectral convergence and the covector mapping theorem",
+      "minutes": 16,
+      "covers": [
+        "Spectral convergence, the covector mapping theorem, and what pseudospectral costates buy you"
+      ],
+      "file": "t5_m42_trajectory_optimization/10-spectral-convergence-covector-mapping.md"
     }
   ],
   "t5_m43_convex_guidance": [
@@ -3942,6 +3969,17 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Lossless convexification: the slack variable Gamma with ||T|| <= Gamma and rho_min <= Gamma <= rho_max, and the proof sketch via the maximum principle that the relaxation is tight"
       ],
       "file": "t5_m43_convex_guidance/02-lossless-convexification-of-the-thrust-bound.md"
+    },
+    {
+      "id": "l03-change-of-variables-and-socp",
+      "title": "The change of variables, convex mass bounds, and the SOCP",
+      "minutes": 21,
+      "covers": [
+        "The change of variables u = T/m, sigma = Gamma/m, z = ln m, and how it makes the translational dynamics exactly linear",
+        "The second-order-expanded mass bounds that keep the transformed thrust bounds convex",
+        "SOCP standard form, the second-order cone, and mapping the powered-descent problem onto it"
+      ],
+      "file": "t5_m43_convex_guidance/03-change-of-variables-and-the-socp.md"
     }
   ],
   "t6_m44_realtime_embedded": [
@@ -4022,6 +4060,27 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Cache and branch-predictor effects on determinism; why the fastest code is not always the most predictable"
       ],
       "file": "t6_m44_realtime_embedded/08-no-heap-no-recursion-no-surprises.md"
+    },
+    {
+      "id": "l09-drivers-volatile-buses",
+      "title": "Device drivers, volatile, and buses",
+      "minutes": 17,
+      "covers": [
+        "Device drivers, memory-mapped I/O, and the volatile keyword",
+        "Buses: UART, SPI, I2C, CAN, RS-422, Ethernet/UDP, and time-triggered protocols"
+      ],
+      "file": "t6_m44_realtime_embedded/09-device-drivers-volatile-and-buses.md"
+    },
+    {
+      "id": "l10-time-sync-bare-metal-toolchains",
+      "title": "Time synchronisation, bare metal versus Linux, and the toolchain",
+      "minutes": 18,
+      "covers": [
+        "Time synchronisation: GPS pulse-per-second, PTP, and disciplined timestamping of every sample",
+        "Bare-metal microcontrollers vs embedded Linux, and where the boundary sits on a real vehicle",
+        "Cross-compilation, toolchains, bootloaders and firmware update"
+      ],
+      "file": "t6_m44_realtime_embedded/10-time-sync-bare-metal-vs-linux-and-toolchains.md"
     }
   ],
   "t6_m45_fsw_architecture": [
@@ -4034,6 +4093,24 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "NASA core Flight System as a public reference architecture: apps, the software bus, tables"
       ],
       "file": "t6_m45_fsw_architecture/01-architecture-layering-and-cfs.md"
+    },
+    {
+      "id": "l02-mode-management-state-machine",
+      "title": "Mode management as an explicit state machine",
+      "minutes": 20,
+      "covers": [
+        "Mode management as an explicit state machine, with guard conditions and an exit to safe from every state"
+      ],
+      "file": "t6_m45_fsw_architecture/02-mode-management-state-machine.md"
+    },
+    {
+      "id": "l03-command-and-telemetry",
+      "title": "Command and telemetry",
+      "minutes": 19,
+      "covers": [
+        "Command and telemetry: CCSDS packet structure, dictionaries, limit checking, and command authentication"
+      ],
+      "file": "t6_m45_fsw_architecture/03-command-and-telemetry.md"
     }
   ],
   "t6_m46_6dof_simulation": [
@@ -4090,6 +4167,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Sensor models: noise, bias and bias instability, scale factor, misalignment, quantisation, latency, dropout, saturation, update rate"
       ],
       "file": "t6_m46_6dof_simulation/06-sensor-models.md"
+    },
+    {
+      "id": "l07-actuator-models",
+      "title": "Actuator models",
+      "minutes": 24,
+      "covers": [
+        "Actuator models: thrust curves and start-up transients, TVC gimbal dynamics and rate limits, reaction wheel friction, thruster minimum impulse bit, valve delay"
+      ],
+      "file": "t6_m46_6dof_simulation/07-actuator-models.md"
     }
   ],
   "t6_m47_vv_montecarlo": [
@@ -4120,6 +4206,24 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Distributions and their justification; correlations between dispersed parameters and why ignoring them is not conservative"
       ],
       "file": "t6_m47_vv_montecarlo/03-correlated-dispersions.md"
+    },
+    {
+      "id": "l04-how-many-runs-buys-what-claim",
+      "title": "How many runs buys what claim",
+      "minutes": 19,
+      "covers": [
+        "Number of runs against the confidence in the claim; the zero-failure formula and its assumptions"
+      ],
+      "file": "t6_m47_vv_montecarlo/04-how-many-runs-buys-what-claim.md"
+    },
+    {
+      "id": "l05-defining-a-failed-case",
+      "title": "Defining a failed case",
+      "minutes": 18,
+      "covers": [
+        "Success criteria and scoring: defining what a failed case IS, before the campaign runs"
+      ],
+      "file": "t6_m47_vv_montecarlo/05-defining-a-failed-case.md"
     }
   ]
 }
@@ -4444,11 +4548,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t5_m40_guidance_fundamentals": {
-    "covered": 5,
+    "covered": 6,
     "total": 12,
     "complete": false,
     "missing": [
-      "True vs pure proportional navigation",
       "Optimal guidance from an LQ formulation and how PN emerges from it",
       "Zero-effort-miss and zero-effort-velocity guidance; the ZEM/ZEV feedback law for landing",
       "Miss-distance analysis and adjoint methods",
@@ -4464,12 +4567,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t5_m42_trajectory_optimization": {
-    "covered": 8,
+    "covered": 10,
     "total": 17,
     "complete": false,
     "missing": [
-      "Pseudospectral methods: Legendre-Gauss, Legendre-Gauss-Radau and Legendre-Gauss-Lobatto nodes",
-      "Spectral convergence, the covector mapping theorem, and what pseudospectral costates buy you",
       "Mesh refinement driven by an interpolated-defect error estimate",
       "Differential dynamic programming and iLQR as the shooting-flavoured alternative",
       "NLP sparsity structure, the Jacobian and Hessian block pattern, and why sparsity decides solve time",
@@ -4480,13 +4581,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t5_m43_convex_guidance": {
-    "covered": 4,
+    "covered": 7,
     "total": 21,
     "complete": false,
     "missing": [
-      "The change of variables u = T/m, sigma = Gamma/m, z = ln m, and how it makes the translational dynamics exactly linear",
-      "The second-order-expanded mass bounds that keep the transformed thrust bounds convex",
-      "SOCP standard form, the second-order cone, and mapping the powered-descent problem onto it",
       "G-FOLD (Guidance for Fuel-Optimal Large Diverts) and the two-stage minimum-landing-error then minimum-fuel solve",
       "The JPL/Masten Xombie flight demonstrations of G-FOLD and what they proved",
       "Glideslope, velocity, and thrust-pointing constraints as cones",
@@ -4504,26 +4602,19 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t6_m44_realtime_embedded": {
-    "covered": 14,
+    "covered": 19,
     "total": 21,
     "complete": false,
     "missing": [
-      "Device drivers, memory-mapped I/O, and the volatile keyword",
-      "Buses: UART, SPI, I2C, CAN, RS-422, Ethernet/UDP, and time-triggered protocols",
-      "Time synchronisation: GPS pulse-per-second, PTP, and disciplined timestamping of every sample",
-      "Bare-metal microcontrollers vs embedded Linux, and where the boundary sits on a real vehicle",
-      "Cross-compilation, toolchains, bootloaders and firmware update",
       "Logging and telemetry under a real-time budget: lock-free ring buffers and never blocking the control task",
       "Fixed-point arithmetic and when it is still the right answer"
     ]
   },
   "t6_m45_fsw_architecture": {
-    "covered": 2,
+    "covered": 4,
     "total": 20,
     "complete": false,
     "missing": [
-      "Mode management as an explicit state machine, with guard conditions and an exit to safe from every state",
-      "Command and telemetry: CCSDS packet structure, dictionaries, limit checking, and command authentication",
       "Redundancy architectures: cold, warm and hot standby; dual-dual; cross-strapping",
       "Triple modular redundancy and voting; mid-value select; what a voter can and cannot detect",
       "Byzantine faults and why a majority vote does not handle an asymmetric liar",
@@ -4543,11 +4634,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t6_m46_6dof_simulation": {
-    "covered": 6,
+    "covered": 7,
     "total": 18,
     "complete": false,
     "missing": [
-      "Actuator models: thrust curves and start-up transients, TVC gimbal dynamics and rate limits, reaction wheel friction, thruster minimum impulse bit, valve delay",
       "Mass properties against time: propellant depletion, centre of mass migration, inertia tensor change",
       "Slosh and structural flex models, and where they get inserted in the loop",
       "Staging and other discontinuous events; zero-crossing detection and bisection to the event time",
@@ -4562,12 +4652,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t6_m47_vv_montecarlo": {
-    "covered": 4,
+    "covered": 6,
     "total": 20,
     "complete": false,
     "missing": [
-      "Number of runs against the confidence in the claim; the zero-failure formula and its assumptions",
-      "Success criteria and scoring: defining what a failed case IS, before the campaign runs",
       "Extreme-value estimation and importance sampling when the failure probability is too small to sample directly",
       "Worst-case and corner-case analysis as a complement to, not a substitute for, Monte Carlo",
       "Linear covariance analysis as the fast complement: one run gives the covariance a thousand runs would estimate",
