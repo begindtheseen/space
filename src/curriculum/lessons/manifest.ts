@@ -2878,6 +2878,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Process noise tuning and the consequences of getting Q wrong"
       ],
       "file": "t4_m34_kalman_filter/06-process-noise-tuning-and-getting-q-wrong.md"
+    },
+    {
+      "id": "l07-the-steady-state-kalman-filter",
+      "title": "The steady-state Kalman filter",
+      "minutes": 19,
+      "covers": [
+        "The steady-state Kalman filter"
+      ],
+      "file": "t4_m34_kalman_filter/07-the-steady-state-kalman-filter.md"
     }
   ],
   "t4_m36_inertial_navigation": [
@@ -3242,11 +3251,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t4_m34_kalman_filter": {
-    "covered": 6,
+    "covered": 7,
     "total": 15,
     "complete": false,
     "missing": [
-      "The steady-state Kalman filter",
       "Observability and filter convergence",
       "Numerically stable formulations: Joseph form, square-root (Potter, Carlson), UD factorization (Bierman-Thornton)",
       "Filter divergence: causes and remedies (fading memory, Q inflation, covariance symmetrization)",
