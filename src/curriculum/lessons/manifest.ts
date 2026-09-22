@@ -453,7 +453,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-least-squares-normal-equations-qr-svd",
       "title": "Least squares: normal equations, QR and SVD",
-      "minutes": 24,
+      "minutes": 22,
       "covers": [
         "least squares: normal equations vs QR vs SVD"
       ],
@@ -1309,6 +1309,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "gyroscopic effects, nutation, precession"
       ],
       "file": "t1_m14_rigid_body_dynamics/09-gyroscopic-effects-nutation-and-precession.md"
+    },
+    {
+      "id": "l10-dual-spin-spacecraft",
+      "title": "Dual-spin spacecraft",
+      "minutes": 21,
+      "covers": [
+        "dual-spin spacecraft"
+      ],
+      "file": "t1_m14_rigid_body_dynamics/10-dual-spin-spacecraft.md"
     }
   ],
   "t1_m15_rotating_frames": [
@@ -1738,11 +1747,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t1_m14_rigid_body_dynamics": {
-    "covered": 9,
+    "covered": 10,
     "total": 12,
     "complete": false,
     "missing": [
-      "dual-spin spacecraft",
       "momentum wheels and control moment gyros",
       "introduction to flexible modes and propellant slosh"
     ]

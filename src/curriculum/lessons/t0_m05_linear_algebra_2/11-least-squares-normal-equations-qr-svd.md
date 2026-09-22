@@ -1,7 +1,7 @@
 ---
 id: l11-least-squares-normal-equations-qr-svd
 title: "Least squares: normal equations, QR and SVD"
-minutes: 24
+minutes: 22
 covers:
   - "least squares: normal equations vs QR vs SVD"
 ---
@@ -112,11 +112,11 @@ Here is the controlled experiment behind the rule. Fit a degree-$d$ polynomial i
 | $15$ | $2.31\times 10^{5}$ | $5.1\times 10^{-11}$ | $1.2\times 10^{-5}$ | $4.4\times 10^{-8}$ | $6.9\times 10^{-12}$ | $6.1\times 10^{-11}$ |
 | $20$ | $2.17\times 10^{7}$ | $4.8\times 10^{-9}$ | $1.0\times 10^{-1}$ | $5.2\times 10^{-3}$ | $3.3\times 10^{-10}$ | $1.1\times 10^{-8}$ |
 
-Read the columns. QR and the SVD track $\kappa\varepsilon$ across five orders of magnitude of conditioning, staying within a factor of a hundred of the bound and never worse. The normal equations track $\kappa^2\varepsilon$, landing a factor of ten or so below the worst case, which is typical: the bound is pessimistic but the *slope* is right. At degree $9$ all three are fine. At degree $15$ — the top of the range the module's least-squares exercise sweeps — the normal equations have about $7$ correct digits and QR about $11$. At degree $20$ the normal equations have lost everything past the second digit, a relative error of half a percent, while QR still has nine and a half digits.
+Read the columns. QR and the SVD track $\kappa\varepsilon$ across four orders of magnitude of conditioning, never straying more than a factor of a few from it in either direction. The normal equations track $\kappa^2\varepsilon$, landing one to two orders of magnitude below that worst-case bound, which is typical: the bound is pessimistic, but its *slope* is right. At degree $9$ all three are fine. At degree $15$ — the top of the range the module's least-squares exercise sweeps — the normal equations have about $7$ correct digits and QR about $11$. At degree $20$ the normal equations have lost everything past the second digit, a relative error of half a percent, while QR still has nine and a half digits.
 
 The residuals confirm it is not a tie. The QR fit misses the data by $7\times 10^{-15}$ at degree $20$; the normal-equations fit misses by $9\times 10^{-9}$, a million times worse. Least squares is supposed to minimise that number, and the normal equations did not.
 
-One honest qualification: QR and the SVD cannot beat $\kappa\varepsilon$ either. At degree $25$ this matrix has $\kappa = 2.5\times 10^{9}$ and every method returns a few correct digits at best. Conditioning is a property of the problem; a good algorithm refuses to make it worse, and nothing more.
+One honest qualification: QR and the SVD cannot beat $\kappa\varepsilon$ either. At degree $25$ this matrix has $\kappa = 2.5\times 10^{9}$, so $\kappa\varepsilon = 5.5\times 10^{-7}$ and even QR is down to six digits, while $\kappa^2\varepsilon = 1.4\times 10^{3}$ leaves the normal equations with none. Conditioning is a property of the problem; a good algorithm refuses to make it worse, and nothing more.
 :::
 
 ```python
@@ -151,7 +151,7 @@ with $\mathbf{R}$ the measurement noise covariance. Lesson 6 supplies the trick:
 A one-line check. Two independent measurements of one constant, $b_1 = 10.0\,\mathrm{m}$ with $\sigma_1 = 0.5\,\mathrm{m}$ and $b_2 = 12.0\,\mathrm{m}$ with $\sigma_2 = 2.0\,\mathrm{m}$, so $\mathbf{A} = (1, 1)^\mathsf{T}$ and $\mathbf{L} = \operatorname{diag}(0.5, 2.0)$. Whitened, $\tilde{\mathbf{A}} = (2, 0.5)^\mathsf{T}$ and $\tilde{\mathbf{b}} = (20, 6)^\mathsf{T}$, giving $x = (2\cdot 20 + 0.5\cdot 6)/(4 + 0.25) = 43/4.25 = 10.118\,\mathrm{m}$, with variance $1/4.25 = 0.235\,\mathrm{m^2}$ and $\sigma = 0.485\,\mathrm{m}$. That is the inverse-variance weighted mean, as it must be. The unweighted answer would have been $11.0\,\mathrm{m}$, dragged almost a metre by the measurement that deserved a sixteenth of the weight.
 
 ::: note Where each method lives in real GNC software
-The **normal equations** run wherever the matrix is huge and sparse or the data arrives incrementally: bundle adjustment, sequential batch filters, and the information form of a Kalman filter, all of which accumulate $\mathbf{A}^\mathsf{T}\mathbf{R}^{-1}\mathbf{A}$ directly. **QR** runs in square-root information filters, where the prior information array and the new whitened measurements are stacked and triangularised by Givens rotations each step; the filter never forms an information matrix, so its effective condition number is the square root of the covariance filter's. **SVD** runs offline and in problems where rank is the question: observability analysis, calibration with unexcited axes, and attitude determination, where Wahba's problem — find the rotation minimising $\sum_i w_i\lVert\mathbf{b}_i - \mathbf{A}\mathbf{r}_i\rVert^2$ over star vectors — is solved by taking the SVD of $\sum_i w_i\mathbf{b}_i\mathbf{r}_i^\mathsf{T}$.
+The **normal equations** run wherever the matrix is huge and sparse or the data arrives incrementally: bundle adjustment, sequential batch filters, and the information form of a Kalman filter, all of which accumulate $\mathbf{A}^\mathsf{T}\mathbf{R}^{-1}\mathbf{A}$ directly. **QR** runs in square-root information filters, where the prior information array and the new whitened measurements are stacked and triangularised by Givens rotations each step; the filter never forms an information matrix, so its effective condition number is the square root of the covariance filter's. **SVD** runs offline and in problems where rank is the question: observability analysis, calibration with unexcited axes, and attitude determination, where Wahba's problem — find the rotation $\mathbf{M}$ minimising $\sum_i w_i\lVert\mathbf{b}_i - \mathbf{M}\mathbf{r}_i\rVert^2$ over measured and catalogue star vectors — is solved by taking the SVD of $\sum_i w_i\mathbf{b}_i\mathbf{r}_i^\mathsf{T}$.
 :::
 
 ## Choosing
