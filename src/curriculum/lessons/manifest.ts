@@ -900,6 +900,78 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "talk structure: problem, why it was hard, approach, the key decision and the alternatives rejected, verification, result, what you would do differently"
       ],
       "file": "car_10_past_project_presentation/04-talk-structure-and-the-clock.md"
+    },
+    {
+      "id": "l05-assertion-evidence-slides",
+      "title": "Assertion-evidence: the headline makes the claim",
+      "minutes": 17,
+      "covers": [
+        "assertion-evidence slide design: a sentence headline that states the claim, a figure that proves it, no bullet dumps"
+      ],
+      "file": "car_10_past_project_presentation/05-assertion-evidence-slides.md"
+    },
+    {
+      "id": "l06-slide-count-and-the-carrying-diagram",
+      "title": "How many slides, and the one diagram that carries the talk",
+      "minutes": 20,
+      "covers": [
+        "how many slides for 10 to 20 minutes, and why fewer is safer"
+      ],
+      "file": "car_10_past_project_presentation/06-slide-count-and-the-carrying-diagram.md"
+    },
+    {
+      "id": "l07-the-backup-appendix",
+      "title": "The appendix that makes a hard question look expected",
+      "minutes": 16,
+      "covers": [
+        "the backup-slide appendix for anticipated questions"
+      ],
+      "file": "car_10_past_project_presentation/07-the-backup-appendix.md"
+    },
+    {
+      "id": "l08-the-room-of-eight",
+      "title": "A room of eight: address the asker, return to the room",
+      "minutes": 18,
+      "covers": [
+        "presenting to a panel of 5 to 10: address the asker, then return to the room"
+      ],
+      "file": "car_10_past_project_presentation/08-the-room-of-eight.md"
+    },
+    {
+      "id": "l09-why-not-x-and-your-contribution",
+      "title": "Why did you not do X, and what did you actually do",
+      "minutes": 26,
+      "covers": [
+        "answering why did you not do X and what was your actual contribution"
+      ],
+      "file": "car_10_past_project_presentation/09-why-not-x-and-your-contribution.md"
+    },
+    {
+      "id": "l10-saying-i-do-not-know",
+      "title": "I do not know — and here is how I would find out",
+      "minutes": 19,
+      "covers": [
+        "saying I do not know, here is how I would find out"
+      ],
+      "file": "car_10_past_project_presentation/10-saying-i-do-not-know.md"
+    },
+    {
+      "id": "l11-the-negative-result",
+      "title": "The talk about the thing that did not work",
+      "minutes": 17,
+      "covers": [
+        "talk structure: problem, why it was hard, approach, the key decision and the alternatives rejected, verification, result, what you would do differently"
+      ],
+      "file": "car_10_past_project_presentation/11-the-negative-result.md"
+    },
+    {
+      "id": "l12-rehearsal-protocol",
+      "title": "Rehearsal: record it, time it, and be attacked",
+      "minutes": 18,
+      "covers": [
+        "rehearsal protocol: record yourself, present to a hostile reviewer, time it, drill 30 anticipated questions"
+      ],
+      "file": "car_10_past_project_presentation/12-rehearsal-protocol.md"
     }
   ],
   "car_11_domain_round": [
@@ -6402,6 +6474,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "TVC attitude control with bending-mode and slosh notch or roll-off filtering, and gain scheduling against dynamic pressure and mass"
       ],
       "file": "t7_m48_capstone/09-the-integration-only-failure.md"
+    },
+    {
+      "id": "l10-flight-code-architecture",
+      "title": "One implementation, a C++ core and a Python layer",
+      "minutes": 20,
+      "covers": [
+        "C++ flight core with a Python analysis and plotting layer over it, sharing exactly one implementation of the algorithms"
+      ],
+      "file": "t7_m48_capstone/10-flight-code-architecture.md"
     }
   ],
   "t7_m49_interview_prep": [
@@ -6812,11 +6893,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t7_m48_capstone": {
-    "covered": 8,
+    "covered": 9,
     "total": 11,
     "complete": false,
     "missing": [
-      "C++ flight core with a Python analysis and plotting layer over it, sharing exactly one implementation of the algorithms",
       "Ten thousand dispersed cases in CI, with per-case seeding and bit-exact replay",
       "The written V&V report: requirements, evidence, margin plots, failure analysis and known limitations"
     ]
@@ -7821,18 +7901,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "car_10_past_project_presentation": {
-    "covered": 6,
+    "covered": 13,
     "total": 13,
-    "complete": false,
-    "missing": [
-      "assertion-evidence slide design: a sentence headline that states the claim, a figure that proves it, no bullet dumps",
-      "how many slides for 10 to 20 minutes, and why fewer is safer",
-      "the backup-slide appendix for anticipated questions",
-      "presenting to a panel of 5 to 10: address the asker, then return to the room",
-      "answering why did you not do X and what was your actual contribution",
-      "saying I do not know, here is how I would find out",
-      "rehearsal protocol: record yourself, present to a hostile reviewer, time it, drill 30 anticipated questions"
-    ]
+    "complete": true,
+    "missing": []
   },
   "car_11_domain_round": {
     "covered": 1,

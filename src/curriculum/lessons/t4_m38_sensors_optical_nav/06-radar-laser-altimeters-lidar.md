@@ -156,7 +156,7 @@ A lander's ranging sensor reads a slant range of $85\,\mathrm{m}$ while the vehi
 :::
 
 ::: answer
-$h=85\cos(18^\circ)=85\times0.9511=80.85\,\mathrm{m}$, so skipping the correction and using the raw slant range directly would overstate altitude by about $4.15\,\mathrm{m}$ — a guidance system commanding a burn timed off that number would start it late, closer to the ground than intended.
+$h=85\cos(18^\circ)=85\times0.9511=80.84\,\mathrm{m}$, so skipping the correction and using the raw slant range directly would overstate altitude by about $4.16\,\mathrm{m}$ — a guidance system commanding a burn timed off that number would start it late, closer to the ground than intended.
 :::
 
 ::: check
