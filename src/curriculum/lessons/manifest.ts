@@ -111,7 +111,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-dragon-rendezvous-and-human-rating",
       "title": "Dragon: rendezvous, docking, and flying people",
-      "minutes": 18,
+      "minutes": 20,
       "covers": [
         "GNC Engineer (Dragon): mission design, rendezvous and docking with the ISS, deorbit, reentry, abort"
       ],

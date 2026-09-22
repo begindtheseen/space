@@ -1,7 +1,7 @@
 ---
 id: l04-dragon-rendezvous-and-human-rating
 title: "Dragon: rendezvous, docking, and flying people"
-minutes: 18
+minutes: 20
 covers:
   - "GNC Engineer (Dragon): mission design, rendezvous and docking with the ISS, deorbit, reentry, abort"
 ---
@@ -41,7 +41,7 @@ Every stage in that sequence is a separate guidance and control problem, checked
 :::
 
 ::: example A sensor disagreement, and the logic that responds to it
-During final approach, two independent relative-navigation sensors — say, a set of cameras and a separate ranging sensor — begin reporting range estimates that disagree by more than their expected tolerance. Nothing about the vehicle's trajectory itself has obviously gone wrong; the disagreement could reflect a real sensor fault, lighting conditions confusing one of the sensors, or a transient glitch that will resolve itself in the next few samples.
+During final approach, two independent relative-navigation sensors — say, a set of cameras and a separate ranging sensor — begin reporting range estimates that disagree by more than their expected tolerance. Nothing about the vehicle's trajectory itself has visibly gone wrong; the disagreement could reflect a real sensor fault, lighting conditions confusing one of the sensors, or a transient glitch that will resolve itself in the next few samples.
 
 The abort logic does not wait to find out which. A disagreement beyond the defined tolerance between independent sensors, during this phase, is exactly the kind of trigger condition designed in advance to command an automatic abort to a safe retreat trajectory, moving the vehicle away from the station while the disagreement is investigated from a safe distance rather than resolved in real time at close range. The mission is delayed, not lost — the vehicle can attempt the approach again once the fault is understood — and that delay is the entire point of designing the logic this way: it converts a genuinely uncertain situation at close range into a bounded, recoverable one.
 :::
