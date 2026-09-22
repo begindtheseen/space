@@ -1512,7 +1512,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-the-heap",
       "title": "The heap: what the allocator does, how long it takes, and how it fragments",
-      "minutes": 19,
+      "minutes": 20,
       "covers": [
         "The heap: fragmentation, non-deterministic allocation time, allocator behaviour"
       ],
