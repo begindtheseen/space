@@ -5,6 +5,7 @@
   "version": "1.0.0",
   "type": "module",
   "description": "A local-first curriculum platform that takes a complete beginner to guidance, navigation and control engineering readiness.",
+  "author": "begindtheseen",
   "main": "desktop/main.js",
   "orbit": {
     "updates": {
@@ -27,7 +28,7 @@
     "desktop:icon": "node scripts/make-icon.mjs",
     "desktop:e2e": "node desktop/test/e2e.mjs"
   },
-  "dependencies": {
+  "devDependencies": {
     "@codemirror/autocomplete": "^6.20.3",
     "@codemirror/commands": "^6.11.1",
     "@codemirror/lang-cpp": "^6.0.3",
@@ -39,10 +40,6 @@
     "@codemirror/state": "^6.7.5",
     "@codemirror/view": "^6.43.12",
     "@lezer/highlight": "^1.2.3",
-    "react": "^19.2.8",
-    "react-dom": "^19.2.8"
-  },
-  "devDependencies": {
     "@types/node": "^24.13.3",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.7",
@@ -50,6 +47,8 @@
     "electron": "^44.4.3",
     "electron-builder": "^26.15.3",
     "playwright": "^1.63.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
     "typescript": "~6.0.2",
     "vite": "^8.3.0",
     "vitest": "^4.1.11"

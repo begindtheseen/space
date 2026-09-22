@@ -142,6 +142,12 @@ publishes all four as a GitHub Release. Installed apps see it on their next chec
 a `RELEASE_NOTES.md` in the repository before tagging to control the notes shown inside
 the app (Markdown); without one, the notes are generated from the commits.
 
+No terminal handy? The same pipeline runs from a file change instead of a tag: set
+`version` in `package.json` and write that version on the first line of `RELEASE.txt`,
+then commit and push (any branch, or edit both files on github.com). CI checks the two
+agree and that the tag does not exist yet, creates `v<version>` at that commit, and
+publishes the release. Both routes end in the same place.
+
 What needs what:
 
 | Change | Do | Ships as |
