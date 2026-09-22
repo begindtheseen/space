@@ -25,7 +25,7 @@ Lesson 12 counted the discretised landing problem at $N = 100$: about $1.7\times
 | $30$ | $560$ | $5.2\times10^5$ | $1.3\times10^7$ |
 | $50$ | $920$ | $8.5\times10^5$ | $2.1\times10^7$ |
 | $100$ | $1820$ | $1.7\times10^6$ | $4.2\times10^7$ |
-| $200$ | $3620$ | $3.4\times10^6$ | $8.4\times10^7$ |
+| $200$ | $3620$ | $3.3\times10^6$ | $8.4\times10^7$ |
 
 Now divide by a cycle. At $10\,\mathrm{Hz}$ the cycle is $100\,\mathrm{ms}$ and a $30\,\%$ solver share is $30\,\mathrm{ms}$; delivering $4.2\times10^7$ operations in that window needs a sustained $1.4\,\mathrm{GFLOP/s}$. At $N = 50$ it needs $709\,\mathrm{MFLOP/s}$, and at $N = 30$, $432\,\mathrm{MFLOP/s}$. Drop the guidance rate to $5\,\mathrm{Hz}$ and the same three cases need $701$, $355$ and $216\,\mathrm{MFLOP/s}$.
 

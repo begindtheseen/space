@@ -212,6 +212,10 @@ print(raw is baseline)    # False
 The habit worth building now: when a list crosses a boundary in your program — into a function, into a stored result, into something labelled "original" — decide explicitly whether the receiver gets the object or a copy. Lesson 8 shows the same mistake in its most famous form, where the shared object is a function's default argument.
 :::
 
+::: key
+Assignment binds a second name to the same object; it does not copy. After `a = [1,2,3]; b = a`, `b.append(4)` leaves `a` as `[1, 2, 3, 4]`. Use `list(a)`, `a[:]` or `copy.deepcopy` when you need independence, and `is` to ask whether two names are the same object.
+:::
+
 ## Tuples: a fixed record
 
 A tuple is written with commas, usually inside parentheses, and cannot be changed after it is made:
@@ -256,6 +260,10 @@ It is the comma that makes a tuple, not the parentheses, which leads to the one 
 The number of names must match the number of elements, or Python raises `ValueError`. A starred name absorbs whatever is left over, as `rest` does above. Unpacking is also why swapping two values needs no temporary variable: `a, b = b, a` builds a tuple on the right and unpacks it on the left.
 
 Use a tuple when the length is fixed by meaning rather than by data: a timestamp with three axis readings, a position triple, a return value carrying two related numbers. Use a list when the elements are the same kind of thing and there may be any number of them. The other reason to reach for a tuple is that its immutability makes it *hashable*, which is the property a dictionary key must have — the subject of the next lesson.
+
+::: key
+A tuple is required when the value must be hashable — used as a dictionary key or a set member — and wherever immutability is the contract you want. A tuple also signals a fixed-length heterogeneous record, `(t, ax, ay, az)`, while a list signals a homogeneous sequence of any length.
+:::
 
 ## A table is a list of tuples
 

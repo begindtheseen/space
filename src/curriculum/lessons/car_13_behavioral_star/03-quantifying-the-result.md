@@ -18,7 +18,7 @@ A number makes the story checkable and memorable. *Reduced the Monte Carlo campa
 
 ## What a number does that an adjective cannot
 
-**It is checkable.** A quantified result invites the question *how did you measure that?*, and a candidate who measured it has a one-sentence answer ready. That exchange is worth having: it converts an assertion into evidence in about ten seconds. An unquantified result cannot be checked, so it cannot be believed or disbelieved — it is simply set aside.
+**It is checkable.** A quantified result invites the question *how did you measure that?*, and a candidate who measured it has a one-sentence answer ready. That exchange is worth having: it converts an assertion into evidence in about ten seconds. An unquantified result cannot be checked, so it cannot be believed or disbelieved — it is set aside.
 
 **It is memorable.** Someone talking to several candidates retains specifics far better than qualities. Fourteen hours to forty minutes is a thing a person can repeat to a colleague afterwards. *Significantly faster* is not, and an answer nobody can repeat is an answer that does not travel past the room.
 
@@ -44,7 +44,7 @@ Most stories from real work were not instrumented at the time. This is normal an
 
 **Reconstruct it from the record.** More of it survives than you expect: commit timestamps, log files, the notebook where you first ran the thing, the write-up you produced for the portfolio module, the message where you told someone it was done. An afternoon in your own history will usually produce a defensible before-and-after for the two or three stories you most want to tell.
 
-**Measure it now.** This is available to you in a way it is not available to most candidates, because your strongest evidence is your own portfolio and the artefacts still exist and still run. If you claim a change made the campaign faster, check out the commit before it and time both. Reproducibility — one command, a fixed seed, pinned dependencies — is exactly what makes this cheap, which is one more reason the portfolio module insisted on it.
+**Measure it now.** This route is open whenever the artefact is your own, which for your strongest evidence it is: the portfolio projects still exist and still run. If you claim a change made the campaign faster, check out the commit before it and time both. Reproducibility — one command, a fixed seed, pinned dependencies — is exactly what makes this cheap, which is one more reason the portfolio module insisted on it.
 
 **Quantify the scope instead of the improvement.** If there is genuinely no before-and-after, a number describing the size of what you did is still checkable: five hundred dispersed cases, six states, four tracking stations, three weeks, two hundred lines of a review you took apart, a tolerance of one part in ten thousand. Scope numbers are weaker than outcome numbers, because they say how much rather than how well, but they are specific, and specific beats adjectival every time.
 

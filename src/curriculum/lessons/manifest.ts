@@ -986,7 +986,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     },
     {
       "id": "l02-when-you-do-not-know",
-      "title": "When you do not know: recovering out loud",
+      "title": "Rebuilding a result you cannot recall",
       "minutes": 23,
       "covers": [
         "the answering standard: state assumptions, write the equation, interpret physically, sanity check"
@@ -1029,6 +1029,70 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "the Kalman filter in linear form: the predict and update equations and what each term does"
       ],
       "file": "car_11_domain_round/06-the-linear-kalman-filter-from-memory.md"
+    },
+    {
+      "id": "l07-the-ekf-jacobians-and-divergence",
+      "title": "The EKF: Jacobians, where it fails, and how it diverges",
+      "minutes": 19,
+      "covers": [
+        "the extended Kalman filter: Jacobians, where linearisation fails, and divergence modes"
+      ],
+      "file": "car_11_domain_round/07-the-ekf-jacobians-and-divergence.md"
+    },
+    {
+      "id": "l08-the-ukf-sigma-points-and-cost",
+      "title": "The UKF: sigma points, and when it earns its cost",
+      "minutes": 18,
+      "covers": [
+        "the unscented Kalman filter: sigma points, why it exists and when it is worth the cost"
+      ],
+      "file": "car_11_domain_round/08-the-ukf-sigma-points-and-cost.md"
+    },
+    {
+      "id": "l09-tuning-and-consistency-nees-and-nis",
+      "title": "Tuning and consistency: Q, R, NEES and NIS",
+      "minutes": 20,
+      "covers": [
+        "filter tuning and consistency: process noise, measurement noise, NEES and NIS"
+      ],
+      "file": "car_11_domain_round/09-tuning-and-consistency-nees-and-nis.md"
+    },
+    {
+      "id": "l10-wahba-stated-and-solved",
+      "title": "Wahba's problem, stated and solved four ways",
+      "minutes": 18,
+      "covers": [
+        "attitude determination: Wahba’s problem stated formally",
+        "solutions to Wahba: Davenport’s q-method, the SVD method, QUEST, and TRIAD as the degenerate two-vector case"
+      ],
+      "file": "car_11_domain_round/10-wahba-stated-and-solved.md"
+    },
+    {
+      "id": "l11-the-multiplicative-quaternion-ekf",
+      "title": "The multiplicative quaternion EKF, and the three-dimensional error",
+      "minutes": 17,
+      "covers": [
+        "the multiplicative quaternion EKF and why the error state is three-dimensional"
+      ],
+      "file": "car_11_domain_round/11-the-multiplicative-quaternion-ekf.md"
+    },
+    {
+      "id": "l12-strapdown-imu-bias-states-and-gyro-propagation",
+      "title": "Strapdown IMU integration, bias states and gyro propagation",
+      "minutes": 19,
+      "covers": [
+        "strapdown IMU integration, bias states and gyro propagation"
+      ],
+      "file": "car_11_domain_round/12-strapdown-imu-bias-states-and-gyro-propagation.md"
+    },
+    {
+      "id": "l13-orbit-determination-at-the-whiteboard",
+      "title": "Orbit determination: observability, batch and sequential",
+      "minutes": 20,
+      "covers": [
+        "orbit determination: observability, batch least squares versus sequential filtering, measurement types"
+      ],
+      "file": "car_11_domain_round/13-orbit-determination-at-the-whiteboard.md"
     }
   ],
   "car_12_first_principles": [
@@ -1051,6 +1115,108 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "variable-mass Newtonian mechanics and the thrust term as momentum flux plus a pressure term"
       ],
       "file": "car_12_first_principles/02-variable-mass-and-thrust.md"
+    },
+    {
+      "id": "l03-tsiolkovsky",
+      "title": "Deriving Tsiolkovsky, and what it hides",
+      "minutes": 18,
+      "covers": [
+        "deriving Tsiolkovsky from the variable-mass equation"
+      ],
+      "file": "car_12_first_principles/03-tsiolkovsky.md"
+    },
+    {
+      "id": "l04-planar-powered-flight",
+      "title": "Planar powered flight in three degrees of freedom",
+      "minutes": 18,
+      "covers": [
+        "planar 3-DOF powered flight: the velocity, flight-path-angle, position and mass equations"
+      ],
+      "file": "car_12_first_principles/04-planar-powered-flight.md"
+    },
+    {
+      "id": "l05-the-gravity-turn",
+      "title": "The gravity turn",
+      "minutes": 17,
+      "covers": [
+        "the gravity turn as the zero-angle-of-attack special case"
+      ],
+      "file": "car_12_first_principles/05-the-gravity-turn.md"
+    },
+    {
+      "id": "l06-six-dof-and-the-gimbal-moment",
+      "title": "Six degrees of freedom and the gimbal moment",
+      "minutes": 18,
+      "covers": [
+        "extending to 6-DOF: Euler’s rotational equation and the moment from a gimballed thrust offset"
+      ],
+      "file": "car_12_first_principles/06-six-dof-and-the-gimbal-moment.md"
+    },
+    {
+      "id": "l07-dimensional-analysis",
+      "title": "Dimensional analysis as a live error check",
+      "minutes": 19,
+      "covers": [
+        "dimensional analysis as a live error check"
+      ],
+      "file": "car_12_first_principles/07-dimensional-analysis.md"
+    },
+    {
+      "id": "l08-the-fermi-method",
+      "title": "The Fermi method: decompose, bound, multiply, check",
+      "minutes": 22,
+      "covers": [
+        "Fermi estimation method: decompose, bound each factor, multiply, sanity check, state uncertainty"
+      ],
+      "file": "car_12_first_principles/08-the-fermi-method.md"
+    },
+    {
+      "id": "l09-worked-space-estimates",
+      "title": "Worked space estimates, and how to bound them",
+      "minutes": 24,
+      "covers": [
+        "worked space Fermi examples and how to bound them"
+      ],
+      "file": "car_12_first_principles/09-worked-space-estimates.md"
+    },
+    {
+      "id": "l10-when-the-number-is-absurd",
+      "title": "When the number comes out absurd",
+      "minutes": 23,
+      "covers": [
+        "Fermi estimation method: decompose, bound each factor, multiply, sanity check, state uncertainty",
+        "worked space Fermi examples and how to bound them"
+      ],
+      "file": "car_12_first_principles/10-when-the-number-is-absurd.md"
+    },
+    {
+      "id": "l11-physics-puzzles",
+      "title": "Attacking an unfamiliar physics puzzle",
+      "minutes": 22,
+      "covers": [
+        "physics puzzles and how to attack an unfamiliar one"
+      ],
+      "file": "car_12_first_principles/11-physics-puzzles.md"
+    },
+    {
+      "id": "l12-the-coding-rounds",
+      "title": "The coding rounds, narrated",
+      "minutes": 23,
+      "covers": [
+        "the coding rounds: 2 to 3 problems at medium to hard difficulty, C++ for avionics and embedded",
+        "coding round discipline: clarify, state the approach and complexity, write it, test the edges",
+        "thinking aloud as an explicitly evaluated skill"
+      ],
+      "file": "car_12_first_principles/12-the-coding-rounds.md"
+    },
+    {
+      "id": "l13-systems-and-architecture",
+      "title": "The systems and architecture round",
+      "minutes": 24,
+      "covers": [
+        "systems and architecture rounds: real-time considerations, embedded constraints, redundancy, fault management, sensor fusion architecture"
+      ],
+      "file": "car_12_first_principles/13-systems-and-architecture.md"
     }
   ],
   "car_13_behavioral_star": [
@@ -1090,6 +1256,80 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "the themes actually probed: a failure and what changed, conflict with a colleague, a decision with incomplete information, a missed deadline, a time you were wrong, ownership beyond your scope, teaching someone, working extended hours"
       ],
       "file": "car_13_behavioral_star/04-the-story-bank.md"
+    },
+    {
+      "id": "l05-the-failure-story",
+      "title": "The failure story, owned without performance",
+      "minutes": 23,
+      "covers": [
+        "the themes actually probed: a failure and what changed, conflict with a colleague, a decision with incomplete information, a missed deadline, a time you were wrong, ownership beyond your scope, teaching someone, working extended hours"
+      ],
+      "file": "car_13_behavioral_star/05-the-failure-story.md"
+    },
+    {
+      "id": "l06-disagreement-without-a-villain",
+      "title": "Disagreement without a villain",
+      "minutes": 23,
+      "covers": [
+        "the themes actually probed: a failure and what changed, conflict with a colleague, a decision with incomplete information, a missed deadline, a time you were wrong, ownership beyond your scope, teaching someone, working extended hours"
+      ],
+      "file": "car_13_behavioral_star/06-disagreement-without-a-villain.md"
+    },
+    {
+      "id": "l07-reported-red-flags",
+      "title": "The four reported red flags",
+      "minutes": 24,
+      "covers": [
+        "reported red flags: blaming others, vagueness, inflated contribution, inability to name a real failure"
+      ],
+      "file": "car_13_behavioral_star/07-reported-red-flags.md"
+    },
+    {
+      "id": "l08-gaps-and-missing-stories",
+      "title": "The story you do not have, and the background you do",
+      "minutes": 23,
+      "covers": [
+        "honesty about gaps, career changes and a self-taught background",
+        "what to do when you do not have a story for a theme"
+      ],
+      "file": "car_13_behavioral_star/08-gaps-and-missing-stories.md"
+    },
+    {
+      "id": "l09-the-extended-hours-question",
+      "title": "The extended-hours question, answered honestly",
+      "minutes": 22,
+      "covers": [
+        "the verbatim expectation of working extended hours and weekends when needed to meet critical deadlines, and how to answer it honestly"
+      ],
+      "file": "car_13_behavioral_star/09-the-extended-hours-question.md"
+    },
+    {
+      "id": "l10-intensity-pace-and-your-decision",
+      "title": "Intensity, pace, and the decision you are also making",
+      "minutes": 23,
+      "covers": [
+        "intensity and pace as a real tradeoff to evaluate before you accept, not after",
+        "cultural fit as a two-way assessment"
+      ],
+      "file": "car_13_behavioral_star/10-intensity-pace-and-your-decision.md"
+    },
+    {
+      "id": "l11-the-why-spacex-answer",
+      "title": "The why SpaceX answer, with information in it",
+      "minutes": 22,
+      "covers": [
+        "the why SpaceX answer that is not a recital of the mission statement"
+      ],
+      "file": "car_13_behavioral_star/11-the-why-spacex-answer.md"
+    },
+    {
+      "id": "l12-questions-that-prove-understanding",
+      "title": "Questions that prove you understand the work",
+      "minutes": 22,
+      "covers": [
+        "questions you ask that prove you understand the work"
+      ],
+      "file": "car_13_behavioral_star/12-questions-that-prove-understanding.md"
     }
   ],
   "cod_cpp_01_basics": [
@@ -1222,6 +1462,201 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Storage duration: automatic, static, thread-local, dynamic; lifetime and initialisation order"
       ],
       "file": "cod_cpp_02_memory/01-object-model-and-storage.md"
+    },
+    {
+      "id": "l02-pointers",
+      "title": "Pointers: holding an address, and the four places const can go",
+      "minutes": 20,
+      "covers": [
+        "Pointers: dereference, arithmetic, nullptr, pointer-to-const vs const pointer, void*, function pointers"
+      ],
+      "file": "cod_cpp_02_memory/02-pointers.md"
+    },
+    {
+      "id": "l03-pointer-arithmetic-and-decay",
+      "title": "Pointer arithmetic, and the length an array loses at a function boundary",
+      "minutes": 17,
+      "covers": [
+        "Pointers: dereference, arithmetic, nullptr, pointer-to-const vs const pointer, void*, function pointers",
+        "Array-to-pointer decay and why sizeof breaks at a function boundary"
+      ],
+      "file": "cod_cpp_02_memory/03-pointer-arithmetic-and-decay.md"
+    },
+    {
+      "id": "l04-references-and-temporaries",
+      "title": "References, value categories, and the lifetime of a temporary",
+      "minutes": 20,
+      "covers": [
+        "References: lvalue and rvalue, binding rules, lifetime extension of temporaries"
+      ],
+      "file": "cod_cpp_02_memory/04-references-and-temporaries.md"
+    },
+    {
+      "id": "l05-the-stack",
+      "title": "The stack: frames, overflow, and why flight code does not recurse",
+      "minutes": 20,
+      "covers": [
+        "The stack: frames, stack overflow, why deep recursion is banned in flight code"
+      ],
+      "file": "cod_cpp_02_memory/05-the-stack.md"
+    },
+    {
+      "id": "l06-new-delete-and-placement-new",
+      "title": "new and delete, the array forms, and placement new",
+      "minutes": 18,
+      "covers": [
+        "new/delete, new[]/delete[], placement new"
+      ],
+      "file": "cod_cpp_02_memory/06-new-delete-and-placement-new.md"
+    },
+    {
+      "id": "l07-the-heap",
+      "title": "The heap: what the allocator does, how long it takes, and how it fragments",
+      "minutes": 19,
+      "covers": [
+        "The heap: fragmentation, non-deterministic allocation time, allocator behaviour"
+      ],
+      "file": "cod_cpp_02_memory/07-the-heap.md"
+    },
+    {
+      "id": "l08-the-five-memory-bugs",
+      "title": "Five ways to use memory you do not own",
+      "minutes": 21,
+      "covers": [
+        "Dangling pointers, use-after-free, double free, buffer overrun, uninitialised reads"
+      ],
+      "file": "cod_cpp_02_memory/08-the-five-memory-bugs.md"
+    },
+    {
+      "id": "l09-addresssanitizer",
+      "title": "AddressSanitizer: how it works, how to read it, what it misses",
+      "minutes": 22,
+      "covers": [
+        "AddressSanitizer as the daily tool for this material",
+        "Dangling pointers, use-after-free, double free, buffer overrun, uninitialised reads"
+      ],
+      "file": "cod_cpp_02_memory/09-addresssanitizer.md"
+    },
+    {
+      "id": "l10-alignment-and-struct-layout",
+      "title": "Alignment, padding, and the real size of a struct",
+      "minutes": 17,
+      "covers": [
+        "Alignment, alignas, struct padding, offsetof, packing and wire formats"
+      ],
+      "file": "cod_cpp_02_memory/10-alignment-and-struct-layout.md"
+    },
+    {
+      "id": "l11-endianness-and-serialising-telemetry",
+      "title": "Endianness and putting telemetry on the wire",
+      "minutes": 21,
+      "covers": [
+        "Endianness and serialising telemetry"
+      ],
+      "file": "cod_cpp_02_memory/11-endianness-and-serialising-telemetry.md"
+    },
+    {
+      "id": "l12-strict-aliasing-and-volatile",
+      "title": "Strict aliasing, bit_cast, and what volatile really promises",
+      "minutes": 20,
+      "covers": [
+        "Strict aliasing; memcpy and std::bit_cast as the legal reinterpretation",
+        "volatile: what it does (memory-mapped I/O) and does not do (threads)"
+      ],
+      "file": "cod_cpp_02_memory/12-strict-aliasing-and-volatile.md"
+    },
+    {
+      "id": "l13-value-semantics-and-the-rules",
+      "title": "Value semantics, reference semantics, and the rule of zero",
+      "minutes": 21,
+      "covers": [
+        "Value semantics vs reference semantics; the rule of zero, three and five"
+      ],
+      "file": "cod_cpp_02_memory/13-value-semantics-and-the-rules.md"
+    },
+    {
+      "id": "l14-smart-pointers",
+      "title": "unique_ptr, shared_ptr, and why sharing is not the default",
+      "minutes": 25,
+      "covers": [
+        "unique_ptr, make_unique, shared_ptr and its control block, weak_ptr and cycles"
+      ],
+      "file": "cod_cpp_02_memory/14-smart-pointers.md"
+    }
+  ],
+  "cod_lnx_01_shell": [
+    {
+      "id": "l01-the-filesystem-and-getting-around",
+      "title": "The filesystem, paths, and moving things about",
+      "minutes": 21,
+      "covers": [
+        "Filesystem hierarchy, absolute vs relative paths, ~ . ..",
+        "ls cd cp mv rm mkdir ln (hard vs symbolic links)"
+      ],
+      "file": "cod_lnx_01_shell/01-the-filesystem-and-getting-around.md"
+    },
+    {
+      "id": "l02-reading-files-without-an-editor",
+      "title": "Reading files without an editor",
+      "minutes": 18,
+      "covers": [
+        "cat less head tail -f wc"
+      ],
+      "file": "cod_lnx_01_shell/02-reading-files-without-an-editor.md"
+    },
+    {
+      "id": "l03-permissions-ownership-and-umask",
+      "title": "Permissions, ownership and umask",
+      "minutes": 22,
+      "covers": [
+        "Permissions: chmod octal and symbolic, chown, umask"
+      ],
+      "file": "cod_lnx_01_shell/03-permissions-ownership-and-umask.md"
+    },
+    {
+      "id": "l04-processes-signals-and-job-control",
+      "title": "Processes, signals and job control",
+      "minutes": 22,
+      "covers": [
+        "Processes: ps, top/htop, kill, SIGTERM vs SIGKILL, job control, nohup"
+      ],
+      "file": "cod_lnx_01_shell/04-processes-signals-and-job-control.md"
+    },
+    {
+      "id": "l05-pipes-redirection-and-xargs",
+      "title": "Pipes, redirection and xargs",
+      "minutes": 21,
+      "covers": [
+        "Pipes and redirection: | > >> 2> 2>&1 /dev/null, here-docs, tee, xargs"
+      ],
+      "file": "cod_lnx_01_shell/05-pipes-redirection-and-xargs.md"
+    },
+    {
+      "id": "l06-grep-regex-and-the-text-toolkit",
+      "title": "grep, regular expressions, and the text toolkit",
+      "minutes": 22,
+      "covers": [
+        "grep and regular expressions, cut, sort, uniq -c, tr, find -exec"
+      ],
+      "file": "cod_lnx_01_shell/06-grep-regex-and-the-text-toolkit.md"
+    },
+    {
+      "id": "l07-diffs-archives-and-moving-data",
+      "title": "Diffs, archives and moving data between machines",
+      "minutes": 20,
+      "covers": [
+        "diff/patch, tar, gzip, zstd, rsync, scp"
+      ],
+      "file": "cod_lnx_01_shell/07-diffs-archives-and-moving-data.md"
+    },
+    {
+      "id": "l08-ssh-keys-config-and-tunnels",
+      "title": "SSH keys, config and tunnels",
+      "minutes": 22,
+      "covers": [
+        "ssh keys, ~/.ssh/config, agent forwarding, port forwarding"
+      ],
+      "file": "cod_lnx_01_shell/08-ssh-keys-config-and-tunnels.md"
     }
   ],
   "cod_py_01_basics": [
@@ -1255,7 +1690,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-dicts-sets-and-truthiness",
       "title": "Dictionaries, sets and truthiness",
-      "minutes": 17,
+      "minutes": 18,
       "covers": [
         "list, tuple, dict, set; slicing; truthiness; mutability"
       ],
@@ -1341,6 +1776,125 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Virtual environments with venv, pip, requirements and pyproject.toml"
       ],
       "file": "cod_py_01_basics/13-virtual-environments-and-packaging.md"
+    }
+  ],
+  "cod_py_02_idiomatic": [
+    {
+      "id": "l01-comprehensions",
+      "title": "Comprehensions: saying what the result is",
+      "minutes": 17,
+      "covers": [
+        "List, dict and set comprehensions; generator expressions"
+      ],
+      "file": "cod_py_02_idiomatic/01-comprehensions.md"
+    },
+    {
+      "id": "l02-generators-and-laziness",
+      "title": "Generators, yield and laziness",
+      "minutes": 16,
+      "covers": [
+        "Generators and yield; the iterator protocol; laziness and memory"
+      ],
+      "file": "cod_py_02_idiomatic/02-generators-and-laziness.md"
+    },
+    {
+      "id": "l03-keys-lambdas-and-sorting",
+      "title": "Keys, lambdas and sorting",
+      "minutes": 17,
+      "covers": [
+        "lambda, map, filter, sorted with key="
+      ],
+      "file": "cod_py_02_idiomatic/03-keys-lambdas-and-sorting.md"
+    },
+    {
+      "id": "l04-classes",
+      "title": "Classes: state, behaviour and properties",
+      "minutes": 16,
+      "covers": [
+        "Classes: __init__, attributes vs methods, @property, @staticmethod, @classmethod"
+      ],
+      "file": "cod_py_02_idiomatic/04-classes.md"
+    },
+    {
+      "id": "l05-dunder-methods",
+      "title": "Dunder methods: behaving like a built-in type",
+      "minutes": 16,
+      "covers": [
+        "Dunder methods: __repr__, __eq__, __add__, __mul__, __len__, __iter__"
+      ],
+      "file": "cod_py_02_idiomatic/05-dunder-methods.md"
+    },
+    {
+      "id": "l06-dataclasses",
+      "title": "Dataclasses and value semantics",
+      "minutes": 16,
+      "covers": [
+        "dataclasses and frozen dataclasses"
+      ],
+      "file": "cod_py_02_idiomatic/06-dataclasses.md"
+    },
+    {
+      "id": "l07-inheritance-composition-protocols",
+      "title": "Inheritance, composition and Protocols",
+      "minutes": 16,
+      "covers": [
+        "Inheritance vs composition; duck typing and Protocols"
+      ],
+      "file": "cod_py_02_idiomatic/07-inheritance-composition-protocols.md"
+    },
+    {
+      "id": "l08-context-managers",
+      "title": "Context managers: release on every path",
+      "minutes": 15,
+      "covers": [
+        "Context managers: with, __enter__/__exit__, contextlib"
+      ],
+      "file": "cod_py_02_idiomatic/08-context-managers.md"
+    },
+    {
+      "id": "l09-decorators",
+      "title": "Decorators, wraps and caching",
+      "minutes": 15,
+      "covers": [
+        "Decorators, functools.wraps, functools.lru_cache"
+      ],
+      "file": "cod_py_02_idiomatic/09-decorators.md"
+    },
+    {
+      "id": "l10-type-annotations-and-mypy",
+      "title": "Type annotations and mypy",
+      "minutes": 17,
+      "covers": [
+        "Type annotations, Optional, Sequence, npt.NDArray, and mypy"
+      ],
+      "file": "cod_py_02_idiomatic/10-type-annotations-and-mypy.md"
+    },
+    {
+      "id": "l11-logging",
+      "title": "Logging instead of print",
+      "minutes": 15,
+      "covers": [
+        "logging instead of print; levels and handlers"
+      ],
+      "file": "cod_py_02_idiomatic/11-logging.md"
+    },
+    {
+      "id": "l12-argparse",
+      "title": "Command-line tools with argparse",
+      "minutes": 15,
+      "covers": [
+        "argparse for command-line tools"
+      ],
+      "file": "cod_py_02_idiomatic/12-argparse.md"
+    },
+    {
+      "id": "l13-package-layout",
+      "title": "Package layout and relative imports",
+      "minutes": 17,
+      "covers": [
+        "Package layout: src/ layout, __init__.py, relative imports"
+      ],
+      "file": "cod_py_02_idiomatic/13-package-layout.md"
     }
   ],
   "t0_m01_algebra_precalc": [
@@ -7105,20 +7659,11 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_lnx_01_shell": {
-    "covered": 0,
+    "covered": 9,
     "total": 15,
     "complete": false,
     "missing": [
-      "Filesystem hierarchy, absolute vs relative paths, ~ . ..",
-      "ls cd cp mv rm mkdir ln (hard vs symbolic links)",
-      "cat less head tail -f wc",
-      "Permissions: chmod octal and symbolic, chown, umask",
-      "Processes: ps, top/htop, kill, SIGTERM vs SIGKILL, job control, nohup",
       "systemd: systemctl, journalctl",
-      "Pipes and redirection: | > >> 2> 2>&1 /dev/null, here-docs, tee, xargs",
-      "grep and regular expressions, cut, sort, uniq -c, tr, find -exec",
-      "diff/patch, tar, gzip, zstd, rsync, scp",
-      "ssh keys, ~/.ssh/config, agent forwarding, port forwarding",
       "tmux sessions, windows, panes, detach/attach",
       "Environment variables, PATH, .bashrc vs .bash_profile",
       "Package management (apt/dnf) and building from source",
@@ -7254,24 +7799,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_py_02_idiomatic": {
-    "covered": 0,
+    "covered": 13,
     "total": 13,
-    "complete": false,
-    "missing": [
-      "List, dict and set comprehensions; generator expressions",
-      "Generators and yield; the iterator protocol; laziness and memory",
-      "lambda, map, filter, sorted with key=",
-      "Classes: __init__, attributes vs methods, @property, @staticmethod, @classmethod",
-      "Dunder methods: __repr__, __eq__, __add__, __mul__, __len__, __iter__",
-      "dataclasses and frozen dataclasses",
-      "Inheritance vs composition; duck typing and Protocols",
-      "Context managers: with, __enter__/__exit__, contextlib",
-      "Decorators, functools.wraps, functools.lru_cache",
-      "Type annotations, Optional, Sequence, npt.NDArray, and mypy",
-      "logging instead of print; levels and handlers",
-      "argparse for command-line tools",
-      "Package layout: src/ layout, __init__.py, relative imports"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_py_03_numpy": {
     "covered": 0,
@@ -7416,25 +7947,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_cpp_02_memory": {
-    "covered": 1,
+    "covered": 15,
     "total": 15,
-    "complete": false,
-    "missing": [
-      "Pointers: dereference, arithmetic, nullptr, pointer-to-const vs const pointer, void*, function pointers",
-      "References: lvalue and rvalue, binding rules, lifetime extension of temporaries",
-      "Array-to-pointer decay and why sizeof breaks at a function boundary",
-      "new/delete, new[]/delete[], placement new",
-      "The stack: frames, stack overflow, why deep recursion is banned in flight code",
-      "The heap: fragmentation, non-deterministic allocation time, allocator behaviour",
-      "Dangling pointers, use-after-free, double free, buffer overrun, uninitialised reads",
-      "Alignment, alignas, struct padding, offsetof, packing and wire formats",
-      "Endianness and serialising telemetry",
-      "Strict aliasing; memcpy and std::bit_cast as the legal reinterpretation",
-      "volatile: what it does (memory-mapped I/O) and does not do (threads)",
-      "Value semantics vs reference semantics; the rule of zero, three and five",
-      "unique_ptr, make_unique, shared_ptr and its control block, weak_ptr and cycles",
-      "AddressSanitizer as the daily tool for this material"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_cpp_03_raii": {
     "covered": 0,
@@ -8094,51 +8610,21 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "car_11_domain_round": {
-    "covered": 6,
+    "covered": 14,
     "total": 14,
-    "complete": false,
-    "missing": [
-      "the extended Kalman filter: Jacobians, where linearisation fails, and divergence modes",
-      "the unscented Kalman filter: sigma points, why it exists and when it is worth the cost",
-      "filter tuning and consistency: process noise, measurement noise, NEES and NIS",
-      "attitude determination: Wahba’s problem stated formally",
-      "solutions to Wahba: Davenport’s q-method, the SVD method, QUEST, and TRIAD as the degenerate two-vector case",
-      "the multiplicative quaternion EKF and why the error state is three-dimensional",
-      "strapdown IMU integration, bias states and gyro propagation",
-      "orbit determination: observability, batch least squares versus sequential filtering, measurement types"
-    ]
+    "complete": true,
+    "missing": []
   },
   "car_12_first_principles": {
-    "covered": 4,
+    "covered": 15,
     "total": 15,
-    "complete": false,
-    "missing": [
-      "deriving Tsiolkovsky from the variable-mass equation",
-      "planar 3-DOF powered flight: the velocity, flight-path-angle, position and mass equations",
-      "the gravity turn as the zero-angle-of-attack special case",
-      "extending to 6-DOF: Euler’s rotational equation and the moment from a gimballed thrust offset",
-      "dimensional analysis as a live error check",
-      "Fermi estimation method: decompose, bound each factor, multiply, sanity check, state uncertainty",
-      "worked space Fermi examples and how to bound them",
-      "physics puzzles and how to attack an unfamiliar one",
-      "the coding rounds: 2 to 3 problems at medium to hard difficulty, C++ for avionics and embedded",
-      "coding round discipline: clarify, state the approach and complexity, write it, test the edges",
-      "systems and architecture rounds: real-time considerations, embedded constraints, redundancy, fault management, sensor fusion architecture"
-    ]
+    "complete": true,
+    "missing": []
   },
   "car_13_behavioral_star": {
-    "covered": 4,
+    "covered": 12,
     "total": 12,
-    "complete": false,
-    "missing": [
-      "the verbatim expectation of working extended hours and weekends when needed to meet critical deadlines, and how to answer it honestly",
-      "intensity and pace as a real tradeoff to evaluate before you accept, not after",
-      "the why SpaceX answer that is not a recital of the mission statement",
-      "questions you ask that prove you understand the work",
-      "reported red flags: blaming others, vagueness, inflated contribution, inability to name a real failure",
-      "honesty about gaps, career changes and a self-taught background",
-      "what to do when you do not have a story for a theme",
-      "cultural fit as a two-way assessment"
-    ]
+    "complete": true,
+    "missing": []
   }
 }

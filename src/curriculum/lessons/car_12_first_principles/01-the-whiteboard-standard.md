@@ -30,9 +30,9 @@ Two more rounds sit alongside these — a coding round and a systems and archite
 
 The three clauses of the stated standard are each more specific than they look.
 
-**State assumptions fast.** Not *state assumptions* — every candidate eventually states assumptions, usually after four minutes of hedging. The word doing the work is *fast*. The first assumption should be on the board inside the first minute, and the full assumption list inside the first two or three. Speed here is not a display of confidence; it is what makes the rest of the round possible. An interviewer who can see your model can correct your model. An interviewer who cannot see it has to sit through a derivation whose premises they are reconstructing in their head, and if your premise was wrong they find out at the same time you do, at the end.
+**State assumptions fast.** Not *state assumptions* — every candidate eventually states assumptions, usually after four minutes of hedging. The word doing the work is *fast*. The first assumption belongs on the board inside the first minute and the full list inside the first three. Speed here is not a display of confidence; it is what makes the rest of the round possible. An interviewer who can see your model can correct it. One who cannot has to reconstruct your premises in their head, and if a premise was wrong they find out when you do — at the end.
 
-**Work through the math without drift.** Drift is the specific failure of starting a calculation, abandoning it mid-line, changing notation, restarting from a different place, and arriving somewhere that may or may not be related to the question. It is not the same as being slow, and it is not the same as making a mistake. A clean derivation with one sign error in it reads far better than a meandering one that happens to end at the right number. Drift is visible from across the room: the board fills with disconnected fragments, and arrows start appearing between them.
+**Work through the math without drift.** Drift is starting a calculation, abandoning it mid-line, changing notation, restarting elsewhere, and arriving somewhere that may or may not answer the question. It is not the same as being slow or as making a mistake: a clean derivation with one sign error reads far better than a meandering one that happens to end at the right number. It is visible from across the room — the board fills with disconnected fragments and arrows start appearing between them.
 
 **Sanity check at the end.** A result that arrives without a check is a claim. A result that arrives with a check is an engineering answer. The check is a specific, sayable act — units, a limiting case, an order-of-magnitude comparison against something you know — and it takes fifteen seconds. Lesson 7 builds the units check into a reflex; lesson 10 does the magnitude check.
 
@@ -44,9 +44,9 @@ The standard interviewers describe for this round: state assumptions fast, work 
 
 Both failure modes have the same root, and seeing that makes them easier to avoid than treating them as two separate bad habits. The interviewer has half an hour and has to leave the room able to write down a judgement about how you think. What they can write down is limited to what they could follow; everything else, however correct it was inside your head, does not exist for scoring purposes.
 
-**Stalling** produces nothing to follow. Twenty seconds of silence at a whiteboard is a long time; forty seconds is very long; two minutes of visible thinking with nothing written and nothing said is the single most damaging thing you can do in this round, and it is common, because the natural response to an unfamiliar problem is to look for the answer internally before speaking. That instinct is correct in a library and wrong here.
+**Stalling** produces nothing to follow. Twenty seconds of silence at a whiteboard is a long time; two minutes of visible thinking with nothing written and nothing said is the most damaging thing you can do in this round. It is common, because the natural response to an unfamiliar problem is to look for the answer internally before speaking — an instinct that is correct in a library and wrong here.
 
-**Rambling** produces too much to follow, with no structure. It usually happens after a stall, as a correction: having been silent, the candidate over-compensates and narrates every association the problem triggers — a related project, a caveat, a second possible model, a half-memory of a paper. The interviewer cannot tell which of these is the load-bearing thought and which is noise, so none of it can be scored.
+**Rambling** produces too much to follow, with no structure. It usually follows a stall, as over-correction: the candidate narrates every association the problem triggers — a related project, a caveat, a second possible model, a half-memory of a paper. The interviewer cannot tell which is the load-bearing thought and which is noise, so none of it can be scored.
 
 The cure for both is the same and it is structural rather than temperamental: **have a fixed method you apply to every problem in this round, and announce which step of it you are on.** A method converts an open-ended problem into a sequence of small, closed problems, each of which you can do. It also gives you something true to say during a silence, which is what kills the stall: *"I am deciding whether to model this as a surface or a volume"* is a sentence available to you at any moment, and it is worth more than the thirty seconds of quiet it replaces.
 
@@ -75,7 +75,7 @@ Six steps, the same every time: restate and bound; declare the model and assumpt
 
 The previous module taught narrating a derivation on a call with no shared surface. At a whiteboard you have a surface, and that changes the mechanics rather than the principle. Three board-specific habits carry most of it.
 
-**Divide the board before you write on it.** Assumptions top-left, working in the main body, results and checks bottom-right or on a separate panel. Drawing those divisions takes eight seconds and it buys two things: the interviewer always knows what kind of statement they are looking at, and you can never lose the assumption list under the algebra. Erasing your own assumptions to make room is a common and entirely avoidable self-inflicted wound.
+**Divide the board before you write on it.** Assumptions top-left, working in the main body, results and checks bottom-right. Drawing those divisions takes eight seconds and buys two things: the interviewer always knows what kind of statement they are looking at, and you can never lose the assumption list under the algebra. Erasing your own assumptions to make room is a common and avoidable self-inflicted wound.
 
 **Talk while you write, not between writing.** Writing in silence and then explaining what you wrote doubles the time and halves the bandwidth. The sentence and the symbol should land together: *"…so the momentum flux term, m-dot times exhaust velocity…"* as you write it.
 
@@ -86,9 +86,9 @@ There is one more, which matters most when something goes wrong: **narrate reaso
 ::: example The first ninety seconds, three ways
 The problem: *"Estimate the power a Starlink satellite radiates."*
 
-**Stalled.** The candidate writes "Starlink" on the board, underlines it, and goes quiet for ninety seconds, trying to remember whether they once read a number for the bus power. They have not, so at the end of the ninety seconds they are exactly where they started, and the interviewer has ninety seconds of nothing.
+**Stalled.** The candidate writes "Starlink" on the board, underlines it, and goes quiet for ninety seconds, trying to remember whether they once read a figure for the bus power. They have not, so they end where they started and the interviewer has ninety seconds of nothing.
 
-**Rambling.** *"OK so Starlink, these are the LEO satellites, there are a lot of them, I think they are at 550 kilometres, and they use Ku-band for the user links and Ka for the gateways, I think, and there is also laser crosslinks on the later ones — actually the power will depend a lot on which generation, and the newer ones are much bigger, so maybe I should — do you want the RF power or the total? Because those are very different. I guess I would start by thinking about the solar panels, but I do not know how big they are…"* Everything in that is true and some of it is even the right instinct, but nothing has been decided and nothing is on the board.
+**Rambling.** *"OK so Starlink, these are the LEO satellites, I think they are at 550 kilometres, and they use Ku-band for the user links — actually the power depends a lot on which generation, and the newer ones are much bigger, so maybe I should — do you want the RF power or the total? Those are very different. I guess I would start from the solar panels, but I do not know how big they are…"* Everything in that is true and some of it is the right instinct, but nothing has been decided and nothing is on the board.
 
 **To standard.** *"Two readings, and they differ by about an order of magnitude, so let me pick one: radiated radio-frequency power, or total power radiated as electromagnetic energy including waste heat? I will do both — the second is easier and I will use it to bound the first.*
 
@@ -174,7 +174,7 @@ The method's last step is "state the uncertainty". For the room-air estimate abo
 ::: answer
 The volume. Air density at ordinary room conditions is known to a few per cent — it varies with temperature and pressure but not by much over the range a room spans. The dimensions, paced out by eye, are good to perhaps ten per cent each, and three of them multiply, so the volume carries roughly twenty to thirty per cent.
 
-At the edges: a room $5 \times 7 \times 2.7$ gives $94.5\,\mathrm{m^3}$ and about $113\,\mathrm{kg}$; a room $7 \times 9 \times 3.3$ gives $207.9\,\mathrm{m^3}$ and about $250\,\mathrm{kg}$. So the honest statement is "somewhere between about 110 and 250 kilograms, most likely around 170", and the sentence that earns the point is *the dimensions dominate, not the density*.
+At the edges: $5 \times 7 \times 2.7$ gives $94.5\,\mathrm{m^3}$, about $113\,\mathrm{kg}$; $7 \times 9 \times 3.3$ gives $207.9\,\mathrm{m^3}$, about $250\,\mathrm{kg}$. The honest statement is "between about 110 and 250 kilograms, most likely around 170", and the sentence that earns the point is *the dimensions dominate, not the density*.
 :::
 
 ## Summary

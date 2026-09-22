@@ -29,7 +29,7 @@ Since the free response is a sum of modes and the coefficients $c_i$ can be made
 Stability of a continuous-time LTI system from its poles (eigenvalues of $\mathbf{A}$, roots of the characteristic polynomial): **asymptotically stable if and only if every pole has $\operatorname{Re}s < 0$** — all poles strictly inside the open left half plane. If any pole has $\operatorname{Re}s > 0$ the system is unstable. Poles exactly on the imaginary axis ($\operatorname{Re}s = 0$) give marginal stability when they are simple and instability when they are repeated. Zeros have no effect on stability.
 :::
 
-The words "strictly" and "open" are load-bearing. The boundary $\operatorname{Re}s = 0$ is not stable: a pole at $-10^{-6}$ is stable with a time constant of eleven days, a pole at $0$ is marginal, a pole at $+10^{-6}$ is unstable, and the three are indistinguishable on any plot. In practice a designer requires a margin — every pole to the left of some line $\operatorname{Re}s = -\sigma_{\min}$, or inside some damping-ratio ray — and the control track quantifies those margins.
+The words "strictly" and "open" are load-bearing. The boundary $\operatorname{Re}s = 0$ is not stable: a pole at $-10^{-6}$ is stable with a time constant of twelve days, a pole at $0$ is marginal, a pole at $+10^{-6}$ is unstable, and the three are indistinguishable on any plot. In practice a designer requires a margin — every pole to the left of some line $\operatorname{Re}s = -\sigma_{\min}$, or inside some damping-ratio ray — and the control track quantifies those margins.
 
 Three familiar systems sit on the axis. The integrator $1/s$ has a simple pole at the origin: released with an initial value it holds it forever, bounded but not returning to zero — marginally stable. The undamped oscillator $\omega_n^2/(s^2 + \omega_n^2)$, poles $\pm j\omega_n$, rings at constant amplitude — marginally stable. The rigid body $1/(Is^2)$ has a *double* pole at the origin, modes $1$ and $t$: give it a rate and its attitude grows linearly forever — unstable, in the strict sense, even though nothing is blowing up exponentially. Every spacecraft is unstable in this sense until its attitude loop is closed.
 
@@ -68,7 +68,7 @@ Lesson 7 found the characteristic polynomial of the PD satellite ($I = 50\,\math
 | 0.5 | $-1.23$ | $-0.386 \pm 0.709j$ | 0.48 | stable, more overshoot |
 | 1.0 | $-0.685$ | $-0.158 \pm 0.748j$ | 0.21 | stable, rings for $4/0.158 = 25\,\mathrm{s}$ |
 | 2.0 | $-0.500$ | $\pm 0.632j$ | 0 | marginal: sustained oscillation at $0.632\,\mathrm{rad/s}$ |
-| 3.0 | $-0.432$ | $+0.049 \pm 0.554j$ | — | unstable, amplitude doubles every $14\,\mathrm{s}$ |
+| 3.0 | $-0.431$ | $+0.049 \pm 0.554j$ | — | unstable, amplitude doubles every $14\,\mathrm{s}$ |
 
 The boundary frequency agrees with $\sqrt{a_0/a_2} = \sqrt{20/50} = 0.632\,\mathrm{rad/s}$, a period of $9.9\,\mathrm{s}$. The mechanism is phase: the lag delays the corrective torque, and once the delay is a large fraction of the loop's period the "damping" torque arrives late enough to add energy instead of removing it.
 :::
@@ -128,7 +128,7 @@ Release the PD satellite from $\theta = 0.1\,\mathrm{rad}$ at rest: $\mathbf{x}(
 | $t$ (s) | 0 | 1 | 2 | 3 | 4 | 5 | 6.41 | 8 | 12.8 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | $\theta$ (rad) | 0.100 | 0.085 | 0.056 | 0.028 | 0.008 | $-0.003$ | $-0.0077$ | $-0.005$ | 0.0006 |
-| $\dot{\theta}$ (rad/s) | 0 | $-0.026$ | $-0.031$ | $-0.025$ | $-0.015$ | $-0.007$ | 0 | 0.002 | 0 |
+| $\dot{\theta}$ (rad/s) | 0 | $-0.026$ | $-0.030$ | $-0.024$ | $-0.015$ | $-0.007$ | 0 | 0.002 | 0 |
 
 The point leaves the axis vertically downward (the torque is negative, the rate becomes negative), swings clockwise through the lower half plane with its most negative rate $-0.031\,\mathrm{rad/s}$ at $t = 1.8\,\mathrm{s}$, crosses the negative $\theta$-axis vertically at $t = \pi/\omega_d = 6.41\,\mathrm{s}$ — half a ringing period — at $\theta = -0.0077\,\mathrm{rad}$, and returns to the positive axis at $12.8\,\mathrm{s}$ at $0.0006\,\mathrm{rad}$. Each half turn shrinks the radius by $e^{-\sigma\pi/\omega_d} = e^{-2.57} = 0.077$: a spiral whose successive axis crossings are $0.1$, $-0.0077$, $0.0006$, … The spiral's tightness is $\zeta$: with $\zeta = 0.63$ the trajectory makes less than one full turn before it is within 1% of the origin, whereas the bending mode of lesson 3, with $\zeta = 0.005$, would circle some thirty times and look like a centre to the eye. In the phase plane, damping ratio is how fast the spiral winds in per turn, and natural frequency is how fast the point moves along it.
 :::

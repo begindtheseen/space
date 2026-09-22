@@ -53,7 +53,7 @@ The thing that satisfies both constraints at once is *precise attribution*: say 
 Here is a practical method that takes about twenty minutes per story.
 
 1. Write the Action out in prose, however it comes.
-2. Rewrite every sentence to start with *I*. Some of them will simply work. Some will feel like a lie.
+2. Rewrite every sentence to start with *I*. Some of them will work as they stand. Some will feel like a lie.
 3. For each sentence that felt like a lie, work out which of two things is true: either you do not remember precisely what you did, or the work was genuinely shared.
 4. For the first case, go and look. Your own commit history, your notes, the write-up from the portfolio module — the record exists and is worth twenty minutes, because a vague memory becomes a vague sentence.
 5. For the second case, narrow the claim until it is exactly true, and attribute the rest. "I did not write the solver interface — that was my project partner. What I owned was the constraint-checking layer, and the reason it exists is that I did not trust an *optimal* status flag to mean the returned trajectory actually satisfied the glide-slope constraint."

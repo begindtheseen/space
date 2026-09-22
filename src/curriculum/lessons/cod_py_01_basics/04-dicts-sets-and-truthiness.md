@@ -1,7 +1,7 @@
 ---
 id: l04-dicts-sets-and-truthiness
 title: Dictionaries, sets and truthiness
-minutes: 17
+minutes: 18
 covers:
   - list, tuple, dict, set; slicing; truthiness; mutability
 ---
@@ -104,6 +104,10 @@ TypeError: unhashable type: 'list'
 You could keep limits as a list of `(name, value)` tuples and search it. The difference is what happens as the table grows. A dictionary computes one hash and looks in one place: the work does not depend on how many entries there are, which is written $O(1)$. Searching a list means comparing entries one at a time until you find the match, $O(n)$ — on average half the table, and the whole table when the answer is "not present".
 
 With four channels, nobody can measure the difference. With ten thousand channels, and a lookup performed once per sample for a million samples, the list version does about five billion comparisons and the dictionary version does a million hashes. The rule is simple enough to apply without measuring: **if you are searching a list for a match on some field, you wanted a dictionary keyed by that field**.
+
+::: key
+A dictionary lookup is $O(1)$ on average — one hash, one probe, independent of size — while scanning a list for a match is $O(n)$. For a channel lookup table keyed by id, the dictionary is the right structure, and the difference becomes visible at a few hundred entries.
+:::
 
 ::: example A limits table for a hot fire
 The test procedure sets a limit per channel; the run reports a peak per channel. The check is a lookup, not a search.

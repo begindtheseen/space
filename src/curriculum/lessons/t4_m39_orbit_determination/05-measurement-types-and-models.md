@@ -27,7 +27,7 @@ $$
 the last from differentiating $\hat{\boldsymbol\rho}\cdot\dot{\boldsymbol\rho}$ and using $\partial\hat{\boldsymbol\rho}/\partial\mathbf r=(\mathbf I-\hat{\boldsymbol\rho}\hat{\boldsymbol\rho}^\mathsf T)/\rho$. Range and range-rate together give a $2\times6$ block, $\mathbf H=\begin{pmatrix}\hat{\boldsymbol\rho}^\mathsf T & \mathbf 0\\ (\dot{\boldsymbol\rho}/\rho-\dot\rho\hat{\boldsymbol\rho}/\rho)^\mathsf T & \hat{\boldsymbol\rho}^\mathsf T\end{pmatrix}$, exactly what fed the batch and sequential normal equations of the last two lessons.
 
 ::: example Checking the range-rate partial against a finite difference
-For a $420\,\mathrm{km}$ LEO state and a mid-latitude station at an observation time when the range is $\approx6862\,\mathrm{km}$:
+For a $420\,\mathrm{km}$ LEO state and a mid-latitude station at an observation time when the range is $\approx1162\,\mathrm{km}$:
 
 ```python
 import numpy as np
@@ -93,7 +93,7 @@ $$
 later, to the extent the spacecraft is far enough away that the wavefront is locally planar across the baseline — the far-field (plane-wave) approximation. This is a projection of the baseline onto the line of sight, divided by the speed of light, and it depends on $\hat{\boldsymbol\rho}$ — direction only — not on $\rho$ itself.
 
 ::: example VLBI delay: an angle measurement, verified against the exact geometry
-Two stations $8226\,\mathrm{km}$ apart (Goldstone- and Effelsberg-like) tracking a target at interplanetary distance ($0.2\,\mathrm{AU}\approx3.0\times10^7\,\mathrm{km}$):
+Two stations $8623\,\mathrm{km}$ apart (Goldstone- and Effelsberg-like) tracking a target at interplanetary distance ($0.2\,\mathrm{AU}\approx3.0\times10^7\,\mathrm{km}$):
 
 ```python
 import numpy as np
@@ -116,9 +116,9 @@ approx = delay_planewave(r_target, R1, R2)
 print(f"exact delay:  {exact*1e9:.3f} ns")
 print(f"plane-wave:   {approx*1e9:.3f} ns")
 print(f"relative error: {abs(exact-approx)/abs(exact):.2e}")
-# exact delay:  -25816813.902 ns
-# plane-wave:   -25817246.752 ns
-# relative error: 1.68e-05
+# exact delay:  -26794470.369 ns
+# plane-wave:   -26795018.080 ns
+# relative error: 2.04e-05
 ```
 
 At this distance the plane-wave delay is accurate to about five significant figures, and shifting the target $1\,\mathrm{km}$ purely in range (holding direction fixed) changes the plane-wave delay by less than a picosecond, confirmed directly — VLBI is an angle measurement, and an extremely precise one, because a baseline of thousands of kilometres acts as an enormous angular aperture compared with a single antenna. It is the tool of choice for deep-space and geostationary tracking, where a single site's angular precision alone is not enough and there is no return signal strong enough, or no cooperative transponder present, for high-precision ranging.

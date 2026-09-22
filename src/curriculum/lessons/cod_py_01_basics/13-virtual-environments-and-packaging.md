@@ -123,7 +123,7 @@ cat requirements.txt
 
 A colleague — or you, on a new machine — rebuilds the environment in two commands:
 
-```text
+```bash
 python3 -m venv .venv && source .venv/bin/activate
 python -m pip install -r requirements.txt
 ```

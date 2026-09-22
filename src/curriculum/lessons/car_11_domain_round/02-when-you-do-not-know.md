@@ -1,6 +1,6 @@
 ---
 id: l02-when-you-do-not-know
-title: "When you do not know: recovering out loud"
+title: "Rebuilding a result you cannot recall"
 minutes: 23
 covers:
   - "the answering standard: state assumptions, write the equation, interpret physically, sanity check"
@@ -11,6 +11,8 @@ The domain round samples a wide surface — margins, three flavours of Kalman fi
 So the skill is not avoiding the gap. It is what happens in the twenty seconds after the gap opens. Those twenty seconds are assessed, they are assessed deliberately, and they discriminate between candidates far more sharply than the recall questions do — because almost everyone can recite the Kalman gain, and very few people can reconstruct a result they have half-forgotten while saying out loud which half they are unsure of.
 
 This lesson gives you a sequence for that. It is the same four moves as the previous lesson with one extra move at the front, and the extra move is the one that makes the rest of it credible.
+
+One boundary first, because two earlier modules already cover neighbouring ground. The screens module treats not knowing as a conversational problem — what to say, how to avoid bluffing, how to offer a route to the answer — and the past-project module treats not knowing about your *own* work, which is a different and more awkward case. Neither of those is this. Here the missing thing is a **technical result**: an equation, a definition, a derivation you have met and cannot currently produce. That case has something the others do not, which is that the result is often recoverable on the spot from something you *do* have. Most of this lesson is about how.
 
 ## Three honest positions, and a fourth that is not
 

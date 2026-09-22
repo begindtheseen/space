@@ -87,7 +87,7 @@ descent
 0.30000000000000004
 ```
 
-The quotes in the second line are the REPL telling you "this is a string of seven characters", not part of the string. For numbers there is no difference — `repr` and `str` of a float have been the same shortest text that reads back exactly since Python 3.1 — which is why the last two lines agree, and incidentally why one tenth plus two tenths is not three tenths. That result is not a mistake in Python and it is not a mistake in your machine; lesson 12 takes it apart properly.
+The quotes in the second line are the REPL telling you "this is a string of seven characters", not part of the string. For numbers there is no difference — `repr` and `str` of a float are both the shortest text that reads back as exactly the same number — which is why the last two lines agree, and incidentally why one tenth plus two tenths is not three tenths. That result is not a mistake in Python and it is not a mistake in your machine; lesson 12 takes it apart properly.
 
 ::: key
 The REPL prints `repr(value)` after every expression you type, and prints nothing after a statement such as an assignment. A script prints nothing at all unless you call `print`. `repr` is the programmer-facing form (`'descent'`, with quotes); `str` is the plain form (`descent`), and `print` writes the plain form.
