@@ -2828,6 +2828,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "GNSS constellation and signal structure: L1/L2/L5, C/A and P(Y) codes, CDMA, the navigation message"
       ],
       "file": "t4_m37_gnss/01-constellation-and-signal-structure.md"
+    },
+    {
+      "id": "l02-the-pseudorange-and-its-error-budget",
+      "title": "The pseudorange and its error budget",
+      "minutes": 24,
+      "covers": [
+        "The pseudorange measurement and its error budget"
+      ],
+      "file": "t4_m37_gnss/02-the-pseudorange-and-its-error-budget.md"
     }
   ]
 }
@@ -3196,11 +3205,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t4_m37_gnss": {
-    "covered": 1,
+    "covered": 2,
     "total": 14,
     "complete": false,
     "missing": [
-      "The pseudorange measurement and its error budget",
       "Receiver clock bias as the fourth unknown",
       "The navigation solution by iterative least squares / Newton iteration",
       "Dilution of precision: GDOP, PDOP, HDOP, VDOP, TDOP, and what geometry makes each bad",
