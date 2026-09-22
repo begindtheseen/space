@@ -194,7 +194,7 @@ Sketch what happens to the pendulum's truncation-error table if $\delta\theta_0$
 :::
 
 ::: answer
-The dominant, leading-order part of the truncation error scales with $\delta\theta_0^2$ for a generic (non-symmetric) perturbation direction, since it is the first term the linearization drops in the Taylor expansion. Halving $\delta\theta_0$ should therefore cut every entry in the truncation-error column by roughly a factor of four, while the *ratio* between entries at different $\theta_0$ — driven entirely by how much $\sin\theta$ curves at each point, not by the size of the perturbation — stays close to what it was, so $\theta_0=90^\circ$ should still show an error on the order of several hundred times that at $\theta_0=5^\circ$.
+The dominant, leading-order part of the truncation error scales with $\delta\theta_0^2$ for a generic (non-symmetric) perturbation direction, since it is the first term the linearization drops in the Taylor expansion. Halving $\delta\theta_0$ should therefore cut every entry in the truncation-error column by roughly a factor of four, while the *ratio* between entries at different $\theta_0$ — driven entirely by how much $\sin\theta$ curves at each point, not by the size of the perturbation — stays close to what it was, so $\theta_0=90^\circ$ should still show an error roughly $93$ times larger than at $\theta_0=30^\circ$ (the $\theta_0=5^\circ$ entry is already so close to zero that its exact ratio to the others is not the stable part of the comparison).
 :::
 
 ## Summary
