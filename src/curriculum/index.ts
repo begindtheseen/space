@@ -10,16 +10,22 @@ import { CODING } from './coding'
 import { GNC_ADVANCED } from './gnc-advanced'
 import { GNC_CORE } from './gnc-core'
 import { GNC_FOUNDATIONS } from './gnc-foundations'
+import { lessonsFor } from './lessons'
 import { CAREER } from './tracks-aux'
 import type { Module, TrackId } from './types'
 
+// Lessons are authored as files and attached here from the generated manifest,
+// so the module sources stay about structure and the prose stays in prose.
 export const MODULES: Module[] = [
   ...GNC_FOUNDATIONS,
   ...GNC_CORE,
   ...GNC_ADVANCED,
   ...CODING,
   ...CAREER,
-]
+].map((m) => {
+  const lessons = lessonsFor(m.id)
+  return lessons.length > 0 ? { ...m, lessons } : m
+})
 
 let cachedDag: Dag | null = null
 
@@ -104,4 +110,6 @@ export function searchModules(query: string, limit = 20): Module[] {
 }
 
 export { TRACKS, TRACK_ORDER, trackDef } from './tracks'
+export { lessonKey, loadLessonBody, lessonsFor } from './lessons'
+export type { LessonMeta } from './lessons'
 export type { Module, TrackDef, TrackId } from './types'

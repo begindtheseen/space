@@ -282,11 +282,13 @@ export function Guide() {
               exercises, code that runs in the browser, and questions with worked explanations.
             </p>
             <p>
-              It is <strong>not a textbook</strong>. No module has written lessons. Each one points
-              at the best free material on its subject — Khan Academy, OpenStax, MIT
-              OpenCourseWare, Paul’s Online Math Notes, NASA technical reports and their like — and
-              then holds you to it with flashcards, questions and exercises. ORBIT links; it never
-              reproduces.
+              It is becoming a <strong>textbook as well</strong>. Modules carry written lessons
+              — derivations, worked examples and check-yourself questions, written for this app and
+              rendered with real mathematics — and they are arriving track by track, Foundations
+              first. Where a module has them, they are the Learn step and the cited material
+              (Khan Academy, OpenStax, MIT OpenCourseWare, NASA technical reports and their like)
+              becomes further reading. Where a module does not yet, the page says so and points at
+              the best free material until its lessons land.
             </p>
           </div>
           <div className="sect">
@@ -490,10 +492,13 @@ export function Guide() {
               because an exercise is where you find out whether the reading landed.
             </p>
             <p>
-              <strong>There are no built-in lessons, and that is deliberate.</strong> A paraphrase
-              of a good textbook is a worse textbook. Each module names the best free material for
-              its objectives, marks the one to start with, and adds only what a source cannot: the
-              notes, the exercises, the questions and the schedule.
+              <strong>Lessons are written to be enough on their own.</strong> Every lesson names
+              the module topics it covers, and a module’s lessons together must cover every topic
+              the module lists — that is checked, not hoped for. Each one teaches from the ground
+              up, derives what it asks you to remember, works numbers through, and ends with
+              questions whose answers fold open. Read them in order; each marks itself read as you
+              go, and the last one marks the module studied. The Notes below the lessons are the
+              flashcards laid out to read, and the resources are there for depth.
             </p>
             <p>
               <strong>Mark as studied</strong> is how you tell ORBIT the Learn step is done. It is

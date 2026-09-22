@@ -44,10 +44,11 @@ memory model and a dependency graph, and it shows its working:
 Open a track, start its first module, and work the module page top to bottom. Every
 module runs the same three steps:
 
-1. **Learn.** Read the objectives, work through the curated resources in order (free
-   ones first), then skim the Notes — the module's flashcards laid out to read. ORBIT
-   has no lessons of its own; it links the best free material rather than paraphrasing
-   it. Press **Mark as studied** when you are done.
+1. **Learn.** Read the objectives, then the lessons in order — written for the app,
+   with derivations, worked examples and check-yourself questions, and required to cover
+   every topic the module lists. Lessons are arriving track by track (Foundations first);
+   a module without them yet says so and points at the best free material instead. Skim
+   the Notes — the flashcards laid out to read — and press **Mark as studied**.
 2. **Practice.** The exercises. Code ones open in the playground with tests; derivations
    and analyses are done on paper and checked against the solution afterwards.
 3. **Recall.** The flashcards and questions as a spaced-repetition session. Questions

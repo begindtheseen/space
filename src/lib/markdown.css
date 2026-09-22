@@ -165,3 +165,141 @@
 .md em {
   color: var(--ink-2);
 }
+
+/* ── Mathematics ─────────────────────────────────────────────────────────── */
+.md__math .katex {
+  font-size: 1.06em;
+}
+
+.md__mathblock {
+  margin: 6px 0 17px;
+  padding: 2px 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.md__mathblock .katex-display {
+  margin: 0.4em 0;
+}
+
+.md__math--display .katex-display > .katex {
+  text-align: left;
+}
+
+/* ── Tables ──────────────────────────────────────────────────────────────── */
+.md__tablewrap {
+  margin: 0 0 17px;
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+}
+
+.md__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.md__table th,
+.md__table td {
+  padding: 8px 12px;
+  vertical-align: top;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.md__table th {
+  color: var(--ink);
+  font-weight: 600;
+  font-size: 11.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: var(--raise);
+}
+
+.md__table tr:last-child td {
+  border-bottom: 0;
+}
+
+/* ── Callout boxes ───────────────────────────────────────────────────────── */
+.md__box {
+  --box: var(--accent);
+  margin: 4px 0 17px;
+  padding: 12px 15px 4px;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--box);
+  border-radius: var(--r-md);
+  background: var(--raise);
+}
+
+.md__box--example {
+  --box: var(--d-foundations, #22d3ee);
+}
+
+.md__box--key {
+  --box: var(--accent);
+}
+
+.md__box--check {
+  --box: var(--warn);
+}
+
+.md__box--warning {
+  --box: var(--bad);
+}
+
+.md__box--note {
+  --box: var(--steel);
+}
+
+.md__box--answer {
+  --box: var(--ok);
+  padding-bottom: 12px;
+}
+
+.md__box__label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--box);
+  margin-bottom: 8px;
+}
+
+.md__box--answer > summary {
+  cursor: pointer;
+  list-style: none;
+  margin-bottom: 0;
+}
+
+.md__box--answer > summary::-webkit-details-marker {
+  display: none;
+}
+
+.md__box--answer > summary::before {
+  content: '▸ ';
+  color: var(--box);
+}
+
+.md__box--answer[open] > summary::before {
+  content: '▾ ';
+}
+
+.md__box--answer[open] > summary {
+  margin-bottom: 10px;
+}
+
+.md__box__body > :last-child {
+  margin-bottom: 0;
+}
+
+.md__box .md__p {
+  margin-bottom: 11px;
+}
+
+.md__ul ul,
+.md__ul ol,
+.md__ol ul,
+.md__ol ol {
+  margin: 7px 0 0;
+}

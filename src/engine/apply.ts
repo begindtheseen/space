@@ -231,6 +231,25 @@ export function markRead(state: LearnerState, moduleId: string, now: Date = new 
   }
 }
 
+/**
+ * Marks one lesson as read, keyed `<moduleId>::<lessonId>`. When that was the
+ * last unread lesson of the module, the module itself is marked studied too.
+ */
+export function markLessonRead(
+  state: LearnerState,
+  moduleId: string,
+  lessonId: string,
+  allLessonIds: readonly string[],
+  now: Date = new Date(),
+): LearnerState {
+  const key = `${moduleId}::${lessonId}`
+  if (state.read[key]) return state
+  const read = { ...state.read, [key]: now.toISOString() }
+  const every = allLessonIds.length > 0 && allLessonIds.every((id) => !!read[`${moduleId}::${id}`])
+  if (every && !read[moduleId]) read[moduleId] = now.toISOString()
+  return { ...state, read, updatedAt: now.toISOString() }
+}
+
 /** Records that the first-run welcome has been read or dismissed. */
 export function setOnboarded(state: LearnerState, now: Date = new Date()): LearnerState {
   if (state.settings.onboarded) return state
