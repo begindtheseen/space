@@ -9,7 +9,7 @@
    otherwise produce a syntax error and report as a mysterious failure.
    ========================================================================== */
 import { describe, expect, it } from 'vitest'
-import { LANGS, buildTestProgram, checkOutput, parseTestOutput } from './runtimes'
+import { LANGS, buildTestProgram, capabilityOf, checkOutput, parseTestOutput } from './runtimes'
 
 describe('checkOutput', () => {
   it('accepts an exact match', () => {
@@ -126,5 +126,53 @@ describe('language modes', () => {
     for (const l of Object.values(LANGS)) {
       expect(l.note.length, `${l.id} needs a note`).toBeGreaterThan(20)
     }
+  })
+})
+
+describe('capabilityOf', () => {
+  const clang = {
+    cpp: { lang: 'cpp', label: 'C++', available: true, bin: 'clang++', version: 'clang 18.1.3' },
+  }
+  const noClang = {
+    cpp: { lang: 'cpp', label: 'C++', available: false, install: 'Run `xcode-select --install`.' },
+  }
+
+  it('leaves Python and SQL executing regardless of the shell', () => {
+    expect(capabilityOf('python', null, false).mode).toBe('execute')
+    expect(capabilityOf('sql', null, false).mode).toBe('execute')
+  })
+
+  it('executes C++ for real when a compiler is installed', () => {
+    const cap = capabilityOf('cpp', clang, true)
+    expect(cap.mode).toBe('execute')
+    expect(cap.toolchain).toBe('clang 18.1.3')
+    expect(cap.missing).toBeUndefined()
+    expect(cap.note).toContain('Runs for real')
+  })
+
+  it('falls back to comparison and names the fix when the compiler is missing', () => {
+    const cap = capabilityOf('cpp', noClang, true)
+    expect(cap.mode).toBe('check')
+    expect(cap.missing?.install).toContain('xcode-select')
+    // The note must not imply the code ran.
+    expect(cap.note).not.toContain('Runs for real')
+  })
+
+  it('says where to run it when there is no shell at all', () => {
+    const cap = capabilityOf('cpp', null, false)
+    expect(cap.mode).toBe('check')
+    expect(cap.note).toContain('desktop app')
+    expect(cap.missing).toBeUndefined()
+  })
+
+  it('does not claim anything is missing before detection has answered', () => {
+    const cap = capabilityOf('cpp', null, true)
+    expect(cap.missing).toBeUndefined()
+    expect(cap.note).toContain('Checking')
+  })
+
+  it('leaves languages with nothing to execute alone', () => {
+    expect(capabilityOf('simulink', clang, true).mode).toBe('reference')
+    expect(capabilityOf('text', clang, true).mode).toBe('reference')
   })
 })

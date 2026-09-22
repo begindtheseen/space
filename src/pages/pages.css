@@ -1097,3 +1097,32 @@
     padding: 16px 14px 18px;
   }
 }
+
+/* Playground: the missing-toolchain prompt. Shown only when a language could
+   run for real here but the compiler is not installed yet — the one thing
+   standing between a comparison and an actual test run. */
+.pg__install {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  margin-top: 10px;
+  padding: 10px 12px;
+  border: 1px solid rgba(255, 196, 92, 0.28);
+  border-radius: 8px;
+  background: rgba(255, 196, 92, 0.06);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.pg__install p {
+  margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.pg__install code {
+  font-family: var(--mono, ui-monospace, monospace);
+  font-size: 12px;
+}

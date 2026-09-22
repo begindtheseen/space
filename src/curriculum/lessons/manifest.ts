@@ -335,6 +335,24 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "templates and generic programming"
       ],
       "file": "t0_m12_cpp/05-templates-and-generic-programming.md"
+    },
+    {
+      "id": "l06-stl-containers-algorithms-iterators",
+      "title": "The STL: containers, algorithms and iterators",
+      "minutes": 24,
+      "covers": [
+        "the STL: containers, algorithms, iterators"
+      ],
+      "file": "t0_m12_cpp/06-stl-containers-algorithms-iterators.md"
+    },
+    {
+      "id": "l07-constexpr-compile-time",
+      "title": "constexpr and compile-time computation",
+      "minutes": 26,
+      "covers": [
+        "constexpr and compile-time computation"
+      ],
+      "file": "t0_m12_cpp/07-constexpr-compile-time.md"
     }
   ],
   "t1_m13_classical_mechanics": [
@@ -397,6 +415,46 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       "file": "t1_m15_rotating_frames/03-velocity-and-acceleration-in-rotating-frames.md"
     }
   ],
+  "t1_m18_atmospheric_flight": [
+    {
+      "id": "l01-standard-atmosphere",
+      "title": "The standard atmosphere",
+      "minutes": 20,
+      "covers": [
+        "standard atmosphere models: US Standard 1976, exponential, NRLMSISE-00",
+        "density, pressure and temperature vs altitude"
+      ],
+      "file": "t1_m18_atmospheric_flight/01-standard-atmosphere.md"
+    },
+    {
+      "id": "l02-dynamic-pressure-and-max-q",
+      "title": "Dynamic pressure and max-Q",
+      "minutes": 19,
+      "covers": [
+        "dynamic pressure and max-Q"
+      ],
+      "file": "t1_m18_atmospheric_flight/02-dynamic-pressure-and-max-q.md"
+    },
+    {
+      "id": "l03-mach-regimes-and-drag",
+      "title": "Mach number, flow regimes and the drag coefficient",
+      "minutes": 18,
+      "covers": [
+        "Mach number and the subsonic / transonic / supersonic / hypersonic regimes",
+        "drag coefficient vs Mach"
+      ],
+      "file": "t1_m18_atmospheric_flight/03-mach-regimes-and-drag.md"
+    },
+    {
+      "id": "l04-angle-of-attack-and-wind-frame",
+      "title": "Angle of attack, sideslip and the wind frame",
+      "minutes": 17,
+      "covers": [
+        "angle of attack and sideslip; body vs wind frame"
+      ],
+      "file": "t1_m18_atmospheric_flight/04-angle-of-attack-and-wind-frame.md"
+    }
+  ],
   "t2_m19_two_body": [
     {
       "id": "l01-two-body-equation",
@@ -452,6 +510,43 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "classical orbital elements and equinoctial alternatives"
       ],
       "file": "t2_m19_two_body/06-classical-elements.md"
+    },
+    {
+      "id": "l07-state-vector-conversions",
+      "title": "State vector to orbital elements and back",
+      "minutes": 21,
+      "covers": [
+        "state vector to orbital element conversion, both directions"
+      ],
+      "file": "t2_m19_two_body/07-state-vector-conversions.md"
+    },
+    {
+      "id": "l08-anomalies-kepler-equation",
+      "title": "True, eccentric and mean anomaly, and Kepler's equation",
+      "minutes": 21,
+      "covers": [
+        "true, eccentric and mean anomaly",
+        "Kepler equation: elliptic, hyperbolic and parabolic (Barker)"
+      ],
+      "file": "t2_m19_two_body/08-anomalies-kepler-equation.md"
+    },
+    {
+      "id": "l09-solving-kepler",
+      "title": "Solving Kepler's equation robustly",
+      "minutes": 20,
+      "covers": [
+        "Kepler equation: elliptic, hyperbolic and parabolic (Barker)"
+      ],
+      "file": "t2_m19_two_body/09-solving-kepler.md"
+    },
+    {
+      "id": "l10-time-of-flight",
+      "title": "Time of flight and analytic propagation",
+      "minutes": 20,
+      "covers": [
+        "time of flight"
+      ],
+      "file": "t2_m19_two_body/10-time-of-flight.md"
     }
   ]
 }
@@ -638,14 +733,12 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t0_m12_cpp": {
-    "covered": 6,
+    "covered": 8,
     "total": 17,
     "complete": false,
     "missing": [
-      "the STL: containers, algorithms, iterators",
       "Eigen, including the Geometry module",
       "memory layout, cache behaviour, allocation-free hot loops",
-      "constexpr and compile-time computation",
       "error handling without exceptions",
       "CMake, with Bazel awareness",
       "GoogleTest",
@@ -702,15 +795,27 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
       "geodetic vs geocentric latitude and the WGS-84 ellipsoid"
     ]
   },
-  "t2_m19_two_body": {
-    "covered": 7,
+  "t1_m18_atmospheric_flight": {
+    "covered": 6,
     "total": 15,
     "complete": false,
     "missing": [
-      "state vector to orbital element conversion, both directions",
-      "Kepler equation: elliptic, hyperbolic and parabolic (Barker)",
-      "true, eccentric and mean anomaly",
-      "time of flight",
+      "normal force, centre of pressure vs centre of gravity, static margin",
+      "aerodynamic instability of a boosting rocket",
+      "the q-alpha load indicator and load relief control",
+      "wind profiles and gust models (Dryden, von Karman), wind shear",
+      "bending modes, flexible body dynamics and structural filter design",
+      "propellant slosh as a pendulum or mass-spring",
+      "control-structure interaction",
+      "grid fins and aerodynamic control surfaces",
+      "ballistic coefficient and lift-to-drag ratio in entry"
+    ]
+  },
+  "t2_m19_two_body": {
+    "covered": 11,
+    "total": 15,
+    "complete": false,
+    "missing": [
       "universal variables and the Stumpff functions",
       "Lagrange f and g coefficients",
       "ground tracks and orbit types: LEO, MEO, GEO, GTO, SSO, Molniya, frozen",

@@ -28,6 +28,10 @@ import { saveCode } from '@/engine/apply'
 import {
   LANGS,
   buildTestProgram,
+  capabilityOf,
+  detectToolchains,
+  runAgainstSolution,
+  runNative,
   parseTestOutput,
   python,
   runSql,
@@ -35,6 +39,7 @@ import {
   type SqlResult,
   type TestOutcome,
 } from '@/lib/runtimes'
+import type { ToolchainInfo } from '@/lib/desktop'
 import { Markdown } from '@/lib/markdown'
 import { useLearner } from '@/hooks/useLearner'
 import { navigate, useRoute } from '@/lib/router'
@@ -131,6 +136,7 @@ export function Playground() {
   const [pyOut, setPyOut] = useState<RunOutput | null>(null)
   const [sqlOut, setSqlOut] = useState<SqlResult | null>(null)
   const [outcomes, setOutcomes] = useState<TestOutcome[] | null>(null)
+  const [toolchains, setToolchains] = useState<Record<string, ToolchainInfo> | null>(null)
   const [showSolution, setShowSolution] = useState(false)
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -155,6 +161,25 @@ export function Playground() {
   useEffect(() => {
     if (lang === 'python' && !python.isBooted) python.preload(setStatus)
   }, [lang])
+
+  /* What the machine can compile. Asked once on open; `refresh` re-probes
+     after she installs something without needing a restart. */
+  useEffect(() => {
+    let alive = true
+    void detectToolchains().then((t) => {
+      if (alive) setToolchains(t)
+    })
+    return () => {
+      alive = false
+    }
+  }, [])
+
+  const refreshToolchains = useCallback(async () => {
+    setToolchains(await detectToolchains(true))
+  }, [])
+
+  // What this language can do at this moment, on this machine.
+  const capability = useMemo(() => capabilityOf(lang, toolchains), [lang, toolchains])
 
   const onCodeChange = useCallback(
     (next: string) => {
@@ -197,7 +222,28 @@ export function Playground() {
         return
       }
 
-      // Everything else is reference-only; the note under the toolbar says so.
+      // Everything else compiles and runs through the shell when the machine
+      // has the toolchain for it. When it does not, this stays a comparison
+      // against the expected output and the toolbar says so plainly.
+      if (capability.mode === 'execute') {
+        // With a reference solution to compare against, running it is a real
+        // grade: both programs actually execute and their output is compared.
+        if (exercise?.solution) {
+          const graded = await runAgainstSolution(lang, code, exercise.solution)
+          setPyOut(graded.yours)
+          setOutcomes([
+            {
+              name: 'Matches the reference solution',
+              status: graded.pass ? 'pass' : 'fail',
+              message: graded.detail,
+            },
+          ])
+          return
+        }
+        setPyOut(await runNative(lang, code))
+        return
+      }
+
       setPyOut({
         stdout: '',
         stderr: '',
@@ -210,7 +256,7 @@ export function Playground() {
       setRunning(false)
       setStatus('')
     }
-  }, [lang, code, exercise])
+  }, [lang, code, exercise, capability.mode])
 
   const reset = () => {
     const starter = exercise?.starter ?? SCRATCH[lang] ?? ''
@@ -272,7 +318,7 @@ export function Playground() {
             right={
               <div style={{ display: 'flex', gap: 6 }}>
                 <Chip tone="blue">{info.label}</Chip>
-                <Chip ghost>{info.mode}</Chip>
+                <Chip ghost>{capability.mode}</Chip>
               </div>
             }
             divided
@@ -289,7 +335,7 @@ export function Playground() {
           <div className="pg__toolbar">
             <Button variant="primary" size="sm" onClick={() => void run()} disabled={running}>
               <IconPlay size={13} />
-              {info.mode === 'execute' ? 'Run' : 'Check'}
+              {capability.mode === 'execute' ? 'Run' : 'Check'}
             </Button>
             {running && lang === 'python' ? (
               <Button variant="ghost" size="sm" onClick={() => python.cancel()}>
@@ -323,9 +369,23 @@ export function Playground() {
           />
 
           <div className="pg__note">
-            {info.mode === 'execute' ? <IconCheck size={11} style={inlineIcon} /> : <IconWarn size={11} style={inlineIcon} />}
-            {info.note}
+            {capability.mode === 'execute' ? <IconCheck size={11} style={inlineIcon} /> : <IconWarn size={11} style={inlineIcon} />}
+            {capability.note}
           </div>
+
+          {/* One missing compiler is the difference between a real test run
+              and a string comparison, so the fix is offered here rather than
+              left for her to go and find. */}
+          {capability.missing ? (
+            <div className="pg__install">
+              <p>
+                <strong>{capability.missing.label} is not installed.</strong> {capability.missing.install}
+              </p>
+              <button className="btn btn--quiet btn--sm" onClick={() => void refreshToolchains()} type="button">
+                Check again
+              </button>
+            </div>
+          ) : null}
         </Card>
 
         {/* ── output ────────────────────────────────────────────────────── */}
@@ -361,7 +421,7 @@ export function Playground() {
           ) : null}
 
           {sqlOut ? <SqlOutput result={sqlOut} /> : null}
-          {pyOut ? <PythonOutput out={pyOut} mode={info.mode} /> : null}
+          {pyOut ? <PythonOutput out={pyOut} mode={capability.mode} /> : null}
 
           {showSolution && exercise?.solution ? (
             <Card index={4}>

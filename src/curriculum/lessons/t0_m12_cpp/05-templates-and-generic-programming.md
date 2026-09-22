@@ -14,7 +14,7 @@ The cost is paid at compile time and in code size, and the error messages take p
 
 ## Function templates
 
-A function template is a recipe with type parameters. `template <typename T>` introduces a parameter `T`, which the body then uses as a type. When you call the function, the compiler *deduces* `T` from the argument types, *instantiates* a concrete function with that `T` substituted everywhere, and compiles it like any other function.
+A function template is a recipe with type parameters. The header line `template` followed by `typename T` in angle brackets introduces a parameter `T`, which the body then uses as a type. When you call the function, the compiler *deduces* `T` from the argument types, *instantiates* a concrete function with that `T` substituted everywhere, and compiles it like any other function.
 
 ::: example One clamp for every numeric type
 ```cpp
@@ -83,8 +83,8 @@ class StaticVector {
     return true;
   }
 
-  const T& operator[](std::size_t i) const noexcept { return data_[i]; }
-  T& operator[](std::size_t i) noexcept { return data_[i]; }
+  const T& operator[] (std::size_t i) const noexcept { return data_[i]; }
+  T& operator[] (std::size_t i) noexcept { return data_[i]; }
 
  private:
   std::array<T, N> data_{};
@@ -131,7 +131,7 @@ A non-type template parameter such as `std::size_t N` makes a size part of the t
 
 ## Callables as template parameters
 
-A *lambda* is an anonymous function object: `[omega](double t, const State2& s) { return ...; }` captures `omega` by value and can be called like a function. Every lambda has its own unique type, which you cannot name but the compiler knows exactly. If a function takes its callable as a template parameter, the compiler instantiates the function for that exact lambda type, sees straight through the call, and inlines the body. That is how a generic integrator can call a user-supplied derivative with zero overhead.
+A *lambda* is an anonymous function object: `[omega] (double t, const State2& s) { return ...; }` captures `omega` by value and can be called like a function. Every lambda has its own unique type, which you cannot name but the compiler knows exactly. If a function takes its callable as a template parameter, the compiler instantiates the function for that exact lambda type, sees straight through the call, and inlines the body. That is how a generic integrator can call a user-supplied derivative with zero overhead.
 
 ::: example A generic RK4 step with an inlined derivative
 The classical fourth-order Runge–Kutta step for $\dot{\mathbf{x}} = \mathbf{f}(t, \mathbf{x})$ evaluates the derivative four times and combines the results:
@@ -172,7 +172,7 @@ State rk4_step(const State& x, double t, double dt, Deriv&& f) {
 
 int main() {
   const double omega = 1.0;                                // rad/s
-  auto oscillator = [omega](double, const State2& s) {     // x'' = -omega^2 x
+  auto oscillator = [omega] (double, const State2& s) {     // x'' = -omega^2 x
     return State2{s.v, -omega * omega * s.x};
   };
 
@@ -208,7 +208,7 @@ double apply_template(F&& f, double e) { return f(e); }
 
 double apply_erased(const std::function<double(double)>& f, double e) { return f(e); }
 
-// with a global operator new that counts calls, and law = [g](double e) { return g.k[0] * e; }:
+// with a global operator new that counts calls, and law = [g] (double e) { return g.k[0] * e; }:
 // template call:      result 3, allocations 0
 // std::function call: result 3, allocations 1
 // sizeof(std::function) = 32, sizeof(law) = 64
@@ -217,7 +217,7 @@ double apply_erased(const std::function<double(double)>& f, double e) { return f
 The 64-byte lambda does not fit in the 32-byte `std::function`, so constructing the wrapper allocates. In a control loop that is one heap allocation per cycle, which lesson 9 explains is disqualifying. The template parameter costs nothing and is the idiom for passing callables in numerical code.
 
 ::: key
-Pass a callable to numerical code as a template parameter (`template <typename F> ... F&& f`), not as `std::function` or a function pointer. The compiler instantiates the function for the lambda's exact type and inlines the call; `std::function` adds an indirect call and may allocate on the heap when the callable exceeds its small buffer.
+Pass a callable to numerical code as a template parameter (a `typename F` template parameter with an `F&& f` argument), not as `std::function` or a function pointer. The compiler instantiates the function for the lambda's exact type and inlines the call; `std::function` adds an indirect call and may allocate on the heap when the callable exceeds its small buffer.
 :::
 
 ## Concepts: saying what a template needs
@@ -265,7 +265,7 @@ int main() {
 // half(5.0) = 2.5
 ```
 
-The `requires` expression lists operations that must compile, with `->` naming the type each must yield. `template <StateVector S>` then constrains the parameter, and `std::floating_point` is one of the many concepts the standard library ships (`std::integral`, `std::invocable`, `std::convertible_to` are others). The three `static_assert` lines document, and enforce, which types the codebase considers state vectors. Uncomment `half(5)` and the error is short and on point:
+The `requires` expression lists operations that must compile, with `->` naming the type each must yield. Writing `StateVector S` in place of `typename S` in the template header then constrains the parameter, and `std::floating_point` is one of the many concepts the standard library ships (`std::integral`, `std::invocable`, `std::convertible_to` are others). The three `static_assert` lines document, and enforce, which types the codebase considers state vectors. Uncomment `half(5)` and the error is short and on point:
 
 ```text
 cerr.cpp:3:42: error: no matching function for call to 'half(int)'
@@ -276,7 +276,7 @@ note: the expression 'is_floating_point_v<_Tp> [with _Tp = int]' evaluated to 'f
 Compare that to an unconstrained template failing somewhere in the middle of an Eigen expression, and the value of concepts in a large codebase is clear.
 :::
 
-Two shorthand forms are common. A `requires` clause can follow the parameter list — `template <typename T> T half(T x) requires std::floating_point<T>` — and a parameter declared with `auto` makes the function a template without the `template` line at all: `double norm(const auto& v)`.
+Two shorthand forms are common. A `requires` clause can follow the parameter list instead of constraining the header — `T half(T x) requires std::floating_point` applied to `T` — and a parameter declared with `auto` makes the function a template without the `template` line at all: `double norm(const auto& v)`.
 
 ## Where templates live, and choosing between static and dynamic
 
@@ -352,12 +352,12 @@ A template is instantiated only where its definition is visible. The files that 
 
 | Item | Meaning |
 | --- | --- |
-| `template <typename T>` | a function or class parameterised by a type; instantiated per distinct set of arguments |
+| `template` header with `typename T` | a function or class parameterised by a type; instantiated per distinct set of arguments |
 | deduction | `T` inferred from the call's arguments; no conversions to reconcile conflicting deductions |
-| explicit arguments | `f<double>(...)` states the type instead of deducing it |
+| explicit arguments | the type written in angle brackets after the function name instead of deduced |
 | non-type parameter `std::size_t N` | a compile-time value in the type; inline `std::array` storage, `constexpr capacity()` |
 | `static_assert` in a template | checked for every instantiation |
-| lambda `[captures](params) { body }` | a function object with a unique type; pass it as a template parameter |
+| lambda `[captures] (params) { body }` | a function object with a unique type; pass it as a template parameter |
 | `Deriv&& f` | forwarding reference; binds temporaries and named callables alike |
 | `std::function` | type-erased callable; indirect call, may heap-allocate; not for hot loops |
 | `concept`, `requires` | state a template's requirements; errors move to the call site |

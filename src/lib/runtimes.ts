@@ -6,18 +6,26 @@
 
      Python  real execution, Pyodide in a module worker, full scientific stack
      SQL     real execution, SQLite compiled to WebAssembly
-     C++     no client-side compiler exists that is worth 95MB of download, so
-             submissions are checked against expected output
-     Rust    there is no rustc-in-WASM at all; same treatment
-     MATLAB  proprietary and never going to run here; taught with a NumPy
-             equivalence bridge so the ideas transfer even though the syntax
-             cannot execute
+     C, C++  no browser compiler is worth tens of megabytes of download, but
+             the desktop shell has the machine underneath it: clang or gcc is
+             used when installed, and the exercise really compiles and runs
+     Rust    no rustc-in-WASM exists at all; rustc is used the same way
+     Shell   run by the machine's own bash
+     MATLAB  proprietary, but Octave runs the same language and is free, so
+             Octave is used when installed; the NumPy bridge stays for when
+             it is not
+     JS      run by the shell's own Node
 
-   The UI says which mode an exercise is in. Pretending a C++ exercise ran when
-   it was string-compared would be worse than useless — a learner would trust a
-   green tick that means nothing.
+   Everything but Python and SQL therefore depends on the desktop shell and on
+   what is installed. `capabilityOf` answers that per language at the moment
+   she presses run, and the UI states the answer rather than guessing.
+
+   The rule underneath all of it: never show a green tick that does not mean
+   what it appears to mean. An exercise that was string-compared says so, and
+   a missing compiler says which one and how to install it.
    ========================================================================== */
 import type { Lang } from '@/curriculum/types'
+import { getOrbit, isDesktop, type RunRequest, type RunResult, type ToolchainInfo } from './desktop'
 
 export type RunMode = 'execute' | 'check' | 'reference'
 
@@ -46,19 +54,19 @@ export const LANGS: Record<Lang, LangInfo> = {
     id: 'cpp',
     label: 'C++',
     mode: 'check',
-    note: 'Not compiled here — no browser-side C++ toolchain is small enough to ship. Your output is compared against the expected result, and the reference solution is one click away.',
+    note: 'Compiled and run for real by the compiler on this Mac. Without one installed, your output is compared against the expected result instead.',
   },
   rust: {
     id: 'rust',
     label: 'Rust',
     mode: 'check',
-    note: 'Not compiled here — there is no Rust compiler that runs in a browser. Your output is compared against the expected result.',
+    note: 'Compiled and run for real by rustc on this Mac. Without it installed, your output is compared against the expected result instead.',
   },
   matlab: {
     id: 'matlab',
     label: 'MATLAB',
     mode: 'reference',
-    note: 'MATLAB is proprietary and cannot run in a browser. Every MATLAB exercise ships a NumPy equivalent you can run side by side — the operations map almost one to one.',
+    note: 'Run for real by GNU Octave when it is installed — same language, no licence. Otherwise every MATLAB exercise ships a NumPy equivalent you can run side by side.',
   },
   simulink: {
     id: 'simulink',
@@ -70,7 +78,7 @@ export const LANGS: Record<Lang, LangInfo> = {
     id: 'bash',
     label: 'Shell',
     mode: 'check',
-    note: 'Not executed — shell exercises are checked against expected output.',
+    note: 'Run for real by this machine\u2019s own bash, in a scratch directory that is thrown away afterwards.',
   },
   text: {
     id: 'text',
@@ -78,6 +86,196 @@ export const LANGS: Record<Lang, LangInfo> = {
     mode: 'reference',
     note: 'Free-form notes — nothing here is executed or checked. Use it for derivations, working and anything you want to keep with the module.',
   },
+}
+
+/* ── What can actually run, right now ────────────────────────────────────── */
+
+/**
+ * Which language ids the desktop runner knows how to build and execute. The
+ * key is the app's `Lang`; `simulink` and `text` are absent because neither is
+ * a thing you execute.
+ */
+export const NATIVE_LANGS: Partial<Record<Lang, string>> = {
+  cpp: 'cpp',
+  rust: 'rust',
+  bash: 'bash',
+  matlab: 'matlab',
+}
+
+export interface Capability {
+  mode: RunMode
+  /** Shown under the run button. Always true of what just happened. */
+  note: string
+  /** The compiler that will be used, when there is one. */
+  toolchain?: string
+  /** Set when execution is possible in principle but the tool is missing. */
+  missing?: { label: string; install: string }
+}
+
+/**
+ * What this language can do at this moment, on this machine.
+ *
+ * Python and SQL are settled: they execute in the renderer and always have.
+ * The rest depend on the shell being present and a compiler being installed,
+ * so the answer is computed rather than declared, and it changes the moment
+ * she installs something and presses refresh.
+ */
+export function capabilityOf(
+  lang: Lang,
+  toolchains: Record<string, ToolchainInfo> | null,
+  desktop: boolean = isDesktop,
+): Capability {
+  const info = LANGS[lang]
+  if (info.mode === 'execute') return { mode: 'execute', note: info.note }
+
+  const key = NATIVE_LANGS[lang]
+  if (!key) return { mode: info.mode, note: info.note }
+
+  if (!desktop) {
+    return {
+      mode: info.mode,
+      note: `${info.label} runs in the ORBIT desktop app, which uses the compiler on your machine. In a browser there is nowhere to compile it, so your output is compared against the expected result.`,
+    }
+  }
+
+  const tool = toolchains?.[key]
+  if (tool?.available) {
+    return {
+      mode: 'execute',
+      note: `Runs for real — compiled and executed by ${tool.version ?? tool.bin} on this machine, in a scratch directory that is thrown away afterwards.`,
+      toolchain: tool.version ?? tool.bin,
+    }
+  }
+
+  // Undetected is not the same as missing: detection may not have run yet.
+  if (!toolchains) return { mode: info.mode, note: 'Checking what is installed…' }
+
+  return {
+    mode: info.mode,
+    note: `${tool?.label ?? info.label} is not installed yet, so your output is compared against the expected result rather than actually run.`,
+    missing: {
+      label: tool?.label ?? info.label,
+      install: tool?.install ?? `Install ${info.label} to run these exercises for real.`,
+    },
+  }
+}
+
+/**
+ * Asks the shell what is installed. Returns null in a browser, where the
+ * question has no answer, so callers can tell "not applicable" apart from
+ * "nothing installed".
+ */
+export async function detectToolchains(refresh = false): Promise<Record<string, ToolchainInfo> | null> {
+  const orbit = getOrbit()
+  if (!orbit?.run) return null
+  try {
+    return await orbit.run.detect(refresh)
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Compiles and runs through the shell, and reshapes the result into the same
+ * `RunOutput` the Python runtime produces so the playground has one shape to
+ * render regardless of language.
+ */
+export async function runNative(lang: Lang, source: string, stdin?: string): Promise<RunOutput> {
+  const started = Date.now()
+  const empty = (error: string): RunOutput => ({
+    stdout: '',
+    stderr: '',
+    plots: [],
+    result: null,
+    error,
+    ms: Date.now() - started,
+  })
+
+  const key = NATIVE_LANGS[lang]
+  const orbit = getOrbit()
+  if (!key) return empty(`${LANGS[lang].label} cannot be executed.`)
+  if (!orbit?.run) return empty('Running this language needs the ORBIT desktop app.')
+
+  let res: RunResult | null
+  try {
+    const request: RunRequest = { lang: key, source, ...(stdin === undefined ? {} : { stdin }) }
+    res = await orbit.run.exec(request)
+  } catch (err) {
+    return empty(err instanceof Error ? err.message : String(err))
+  }
+  if (!res) return empty('The shell did not answer the run request.')
+
+  // A compile error belongs in the error slot rather than buried in stderr:
+  // it is the thing she needs to read, and the playground highlights it.
+  const error =
+    res.ok || res.stage === 'run'
+      ? res.timedOut
+        ? (res.reason ?? 'It was still running and was stopped.')
+        : null
+      : (res.reason ?? 'It did not run.')
+
+  return {
+    stdout: res.stdout,
+    stderr: res.stderr,
+    plots: [],
+    result: null,
+    error,
+    ms: res.ms,
+  }
+}
+
+export interface SolutionCheck {
+  /** Whether her program produced the same output as the reference. */
+  pass: boolean
+  detail: string
+  yours: RunOutput
+  /** Absent when the reference itself failed to build or run. */
+  reference?: RunOutput
+}
+
+/**
+ * Grades a whole-program exercise by running it against the reference.
+ *
+ * The compiled-language exercises are complete programs that print a result,
+ * and they ship a reference solution. So the grade does not need an expected
+ * string authored alongside them and kept in sync: compile and run both, and
+ * compare what they actually printed. Both really execute, so a pass means
+ * her program produced that output on this machine — not that its text
+ * resembled something.
+ *
+ * A reference that will not build is reported as such rather than failing her:
+ * that is the curriculum's bug, and telling her she is wrong for it would be
+ * the worst possible outcome.
+ */
+export async function runAgainstSolution(
+  lang: Lang,
+  code: string,
+  solution: string,
+  stdin?: string,
+): Promise<SolutionCheck> {
+  const yours = await runNative(lang, code, stdin)
+  if (yours.error) {
+    return { pass: false, detail: yours.error, yours }
+  }
+
+  const reference = await runNative(lang, solution, stdin)
+  if (reference.error) {
+    return {
+      pass: false,
+      detail:
+        'Your program ran, but the reference solution for this exercise did not build here, so there is nothing to compare against. That is a fault in the exercise, not in your code.',
+      yours,
+      reference,
+    }
+  }
+
+  const check = checkOutput(yours.stdout, reference.stdout)
+  return {
+    pass: check.pass,
+    detail: check.pass ? 'Your output matches the reference solution exactly.' : check.detail,
+    yours,
+    reference,
+  }
 }
 
 /* ── Python ──────────────────────────────────────────────────────────────── */

@@ -46,6 +46,10 @@ const bridge = {
     write: (json) => ipcRenderer.invoke('orbit:backup:write', String(json)),
     read: () => ipcRenderer.invoke('orbit:backup:read'),
   },
+  run: {
+    detect: (refresh) => ipcRenderer.invoke('orbit:run:detect', refresh === true),
+    exec: (request) => ipcRenderer.invoke('orbit:run:exec', request),
+  },
   openExternal: (url) => ipcRenderer.invoke('orbit:open-external', String(url)),
   onNavigate: (cb) => subscribe('orbit:navigate', cb),
 }

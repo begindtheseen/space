@@ -3,6 +3,7 @@
 // than rejecting, so a broken updater never surfaces as a raw IPC exception.
 import { BrowserWindow, ipcMain, shell } from 'electron'
 import { readBackup, writeBackup } from './backup.js'
+import { detectToolchains, runCode } from './runner.js'
 import { TOKEN_RE, TOKEN_RULE } from './config.js'
 
 const STATE_CHANNEL = 'orbit:updates:state'
@@ -157,6 +158,38 @@ export function registerIpc({ updater, config, versions, repo, allowedOrigins, l
   ipcMain.handle('orbit:backup:read', (event) => {
     if (!isTrusted(event)) return null
     return readBackup(log)
+  })
+
+  // Running her code. Both handlers resolve rather than reject, so a missing
+  // compiler reaches the page as something explainable instead of a raw IPC
+  // exception the playground would have to guess at.
+  ipcMain.handle('orbit:run:detect', async (event, refresh) => {
+    if (!isTrusted(event)) return {}
+    try {
+      return await detectToolchains(refresh === true)
+    } catch (err) {
+      log('toolchain detect failed:', errorMessage(err))
+      return {}
+    }
+  })
+
+  ipcMain.handle('orbit:run:exec', async (event, request) => {
+    if (!isTrusted(event)) return null
+    try {
+      return await runCode(request, log)
+    } catch (err) {
+      return {
+        ok: false,
+        stage: 'run',
+        reason: errorMessage(err),
+        stdout: '',
+        stderr: '',
+        exitCode: null,
+        timedOut: false,
+        truncated: false,
+        ms: 0,
+      }
+    }
   })
 
   return {
