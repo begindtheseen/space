@@ -123,17 +123,17 @@ int main() {
 `record_descent` has three exits and no `fclose`. The `LogFile` destructor closes the file on all three; when the open fails, the destructor finds a null handle and does nothing, so there is no need for a special case in the caller. The two `= delete` lines forbid copying a `LogFile`: a copy would produce two objects holding the same handle, and two `fclose` calls on one handle is undefined behaviour. Deleting the copy operations is how a class states "exactly one owner".
 :::
 
-The standard library is built from RAII types. `std::lock_guard` locks a mutex in its constructor and unlocks in its destructor, so a mutex can never be left locked by an early return. `std::vector` owns a heap buffer and frees it in its destructor. `std::fstream` owns a file. When you find yourself writing a matching pair of acquire and release calls — enable and disable, claim and release, begin and end — wrap the pair in a small class and let scope do the rest. Lesson 13 uses exactly this to build a `ScopedTimer` that prints its elapsed time when it is destroyed.
+The standard library is built from RAII types. `std::lock_guard` locks a mutex in its constructor and unlocks in its destructor, so an early return can never leave a mutex held; `std::vector` owns a heap buffer and frees it in its destructor; `std::fstream` owns a file. When you find yourself writing a matching acquire and release pair — enable and disable, claim and release — wrap the pair in a small class and let scope do the rest. Lesson 13 uses exactly this for a `ScopedTimer` that prints its elapsed time when destroyed.
 
 Flight code compiles with exceptions disabled (lesson 8), which removes one of RAII's motivations but not the main one: fault checks return early constantly, and every early return is a path a hand-written release call can miss.
 
 ## Ownership on the heap
 
-`new T(args)` allocates an object on the heap and returns a pointer; `delete p` destroys it and frees the memory. Between the two lie the three classic bugs of manual memory management — the leak (never deleted), the double delete, and the use after free — and all three come from the same ambiguity: when several pointers refer to one heap object, *which* of them is responsible for deleting it? Modern C++ resolves the ambiguity by making the owner a type. You never write `new` or `delete` in application code; you write one of two smart pointers.
+`new T(args)` allocates an object on the heap and returns a pointer; `delete p` destroys it and frees the memory. Between the two lie the three classic bugs of manual memory management — the leak, the double delete and the use after free — and all three come from one ambiguity: when several pointers refer to one heap object, *which* is responsible for deleting it? Modern C++ makes the owner a type. You never write `new` or `delete` in application code; you write one of two smart pointers.
 
 `std::unique_ptr` expresses exclusive ownership. Exactly one `unique_ptr` refers to the object; when it is destroyed or reset, the object is deleted. It has no run-time overhead beyond a raw pointer — it *is* one pointer wide, and its destructor is a single `delete` — and it cannot be copied, because a copy would mean two owners. It can be *moved*, which transfers ownership. Create one with `std::make_unique`, which allocates and constructs in one step, and lend the object to others as a raw pointer from `.get()` or as a reference, neither of which owns anything.
 
-`std::shared_ptr` expresses shared ownership. It carries a second pointer to a control block holding a reference count; copying increments the count atomically, destroying decrements it, and the last owner deletes the object. It costs sixteen bytes rather than eight, an extra allocation for the control block (avoided by `std::make_shared`, which allocates object and block together), and an atomic operation on every copy. Use it only when ownership genuinely is shared — several long-lived subsystems that must each keep a configuration object alive, say. In practice that is rare in flight code and common in tooling. Cycles of `shared_ptr` never reach zero and leak; `std::weak_ptr` breaks them.
+`std::shared_ptr` expresses shared ownership. It carries a second pointer to a control block holding a reference count; copying increments the count atomically, destroying decrements it, and the last owner deletes the object. It costs sixteen bytes rather than eight, a control-block allocation (`std::make_shared` folds it into the object's) and an atomic operation per copy. Use it only when ownership genuinely is shared, which is rare in flight code and common in tooling. Cycles of `shared_ptr` never reach zero and leak; `std::weak_ptr` breaks them.
 
 ::: example unique_ptr, shared_ptr and the transfer of ownership
 ```cpp
@@ -184,9 +184,7 @@ int main() {
 // Imu destroyed
 ```
 
-Follow the first `Imu`. `make_unique` creates it; `imu` owns it. `install` takes a `unique_ptr` *by value*, which is how a function declares that it takes ownership, and the caller must write `std::move(imu)` to hand it over. Inside `install` the parameter is the owner, so when `install` returns, the `Imu` is destroyed — before `main` even prints its next line — and the caller's `imu` has been left null. Try replacing `std::move(imu)` with plain `imu` and the compiler refuses with `use of deleted function ... unique_ptr(const unique_ptr&)`: copying a `unique_ptr` is not a run-time error, it is not a program.
-
-The `static_assert` is a compile-time check; the program does not build if the condition is false. It documents the zero-overhead claim in the code itself, and lesson 7 makes heavy use of the same tool.
+Follow the first `Imu`. `make_unique` creates it and `imu` owns it. `install` takes a `unique_ptr` *by value*, which is how a function declares that it takes ownership, so the caller must write `std::move(imu)` to hand it over; when `install` returns, its parameter — now the owner — is destroyed and the `Imu` with it, before `main` prints its next line. Replace `std::move(imu)` with plain `imu` and the compiler refuses with `use of deleted function ... unique_ptr(const unique_ptr&)`: copying a `unique_ptr` is not a run-time error, it is not a program. The `static_assert` is a compile-time check that documents the zero-overhead claim in the code itself; lesson 7 uses the same tool heavily.
 :::
 
 ::: key
@@ -318,12 +316,10 @@ int main() {
 // free  1000
 ```
 
-Read the output against the code. `SampleBuffer b = a;` copies: `a` is an lvalue that is still in use. `SampleBuffer c = std::move(a);` moves: 1000 doubles change owner without a single one being copied, and `a` is left empty. `make_buffer` returns a local by value, and no copy and no move is printed at all — the compiler constructed `b` directly in `d`'s storage, an optimisation called *copy elision*, which C++17 guarantees for temporaries and which compilers perform for named locals whenever they can. Had elision not applied, the return would have moved, not copied, because a local being returned is treated as an rvalue automatically. Pushing into the vector moves as well; each `move` line is the vector taking over a buffer. And `std::move(frozen)` on a `const` object prints `copy 10`: the move constructor cannot bind to a `const` source, so the copy constructor is chosen with no warning.
-
-The destruction order at the end is the reverse of construction: `e`, then `frozen`, then the vector's two elements, then `c`, then `b`. `a` and `d` were moved from, hold null pointers, and print nothing.
+Read the output against the code. `SampleBuffer b = a;` copies, because `a` is an lvalue still in use. `SampleBuffer c = std::move(a);` moves: 1000 doubles change owner without one being copied, and `a` is left empty. `make_buffer` returns a local by value and prints neither `copy` nor `move` — the compiler built `b` directly in `d`'s storage, an optimisation called *copy elision*, guaranteed by C++17 for temporaries and performed for named locals whenever the compiler can; had it not applied, the return would have moved, since a returned local is treated as an rvalue automatically. Each `move` line under the vector is it taking over a buffer. And `std::move(frozen)` on a `const` object prints `copy 10`: the move constructor cannot bind to a `const` source, so the copy constructor is chosen without a warning. Destruction at the end runs in reverse — `e`, `frozen`, the vector's two elements, `c`, `b` — while `a` and `d`, moved from and holding null, print nothing.
 :::
 
-Two details of the class deserve a note. The move operations are marked `noexcept`. `std::vector` reallocates by moving its elements only if their move constructor promises not to throw; otherwise it copies them to preserve its exception guarantee, and a class that forgets `noexcept` on its move constructor gets copied everywhere it expected to be moved. And the copy assignment uses *copy-and-swap*: build the copy first, then swap it into place, so that if the allocation fails the object is unchanged.
+Two details of the class matter. The move operations are `noexcept`: `std::vector` reallocates by moving its elements only if their move constructor promises not to throw, and otherwise copies them, so a class that forgets `noexcept` gets copied everywhere it expected to be moved. And copy assignment uses *copy-and-swap* — build the copy, then swap it into place — so a failed allocation leaves the object unchanged.
 
 ::: warning
 Do not write `return std::move(local);`. A local returned by value is already treated as an rvalue, and the explicit `std::move` prevents the compiler from eliding the construction altogether — you turn a free operation into a move. Write `return local;`. The one time `std::move` belongs in a return is when returning a *member* or a parameter that was passed by rvalue reference.
@@ -335,7 +331,7 @@ After `install(std::move(imu));`, `imu` is null. Reading through a moved-from `u
 
 ## Where this shows up in GNC code
 
-Inside a control loop, almost nothing in this lesson happens. The state is a small fixed-size value copied by value; buffers were allocated at boot and are reached through references; nothing is created or destroyed at 400 Hz. Ownership and moves live at the edges: the initialisation code that builds the sensor drivers with `make_unique` and hands them to the estimator; the simulation harness that generates ten thousand trajectories and moves each one into a results vector; the telemetry recorder that fills a buffer and moves it into an output queue. Getting these right is what lets the loop itself be so plain.
+Inside a control loop, almost nothing in this lesson happens: the state is a small value copied by value, buffers were allocated at boot and are reached through references, and nothing is created or destroyed at 400 Hz. Ownership and moves live at the edges — the initialisation code that builds sensor drivers with `make_unique` and hands them to the estimator, the simulation harness that moves ten thousand trajectories into a results vector, the recorder that moves a full telemetry buffer into an output queue.
 
 ## Check yourself
 
@@ -348,7 +344,7 @@ In `main` you declare `Tracer a("a"); Tracer b("b"); { Tracer c("c"); } Tracer d
 :::
 
 ::: check
-`void configure(std::unique_ptr<Imu> imu);` is called as `auto imu = std::make_unique<Imu>(0.002); configure(imu);`. Why does this fail to compile, how do you fix it, and what is `imu` afterwards?
+A function `configure` takes a `std::unique_ptr` to an `Imu` by value. A caller creates `imu` with `std::make_unique` and writes `configure(imu);`. Why does this fail to compile, how do you fix it, and what is `imu` afterwards?
 :::
 
 ::: answer
@@ -360,7 +356,7 @@ A class holds a `double* data_` allocated with `new[]` and defines only a destru
 :::
 
 ::: answer
-The compiler generates a copy constructor that copies the pointer, so `a` and `b` refer to the same array. At scope exit both destructors run and `delete[]` is called twice on one allocation: undefined behaviour, typically a crash or heap corruption. The rule of five says that a class managing a raw resource must define or delete all five of destructor, copy constructor, copy assignment, move constructor and move assignment. Either implement a deep copy and a stealing move (as `SampleBuffer` does), or write `Buffer(const Buffer&) = delete;` and its assignment twin so that the copy is a compile error. Better still, hold the array in a `std::vector` or `std::unique_ptr` and follow the rule of zero.
+The compiler generates a copy constructor that copies the pointer, so `a` and `b` refer to the same array. At scope exit both destructors run and `delete[]` is called twice on one allocation: undefined behaviour, typically a crash or heap corruption. The rule of five says a class managing a raw resource must define or delete all five special members. Either implement a deep copy and a stealing move as `SampleBuffer` does, or write `Buffer(const Buffer&) = delete;` and its assignment twin so the copy is a compile error. Better still, hold the array in a `std::vector` or `std::unique_ptr` and follow the rule of zero.
 :::
 
 ::: check

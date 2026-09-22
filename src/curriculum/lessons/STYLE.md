@@ -116,3 +116,34 @@ Fix until it passes. It checks the header, numbering, topic coverage, length, th
 required sections and blocks, the markdown subset, and that KaTeX can render every
 formula. It does not check correctness — that is on you: compute the numbers, check
 each derivation step, and read the lesson once as the learner it is written for.
+
+## Video
+
+A lesson may embed video where seeing the thing beats reading about it — a
+gimbal moving, a landing burn, a proof drawn out by hand. Use it when it
+genuinely teaches, not as decoration or as a break in the text.
+
+```
+::: video dQw4w9WgXcQ
+Title of the video · Channel name · 12 min
+:::
+```
+
+The id after `video` is the YouTube id, exactly eleven URL-safe base64
+characters. The body is the caption: title, who made it, running time. The
+validator rejects a malformed id, so a typo fails the build rather than
+rendering a dead panel in the middle of a lesson.
+
+Nothing is downloaded until the learner presses play, and the position is
+remembered, so a long video resumes where she stopped.
+
+Rules:
+
+- The lesson must stand on its own without the video. Someone offline, or
+  someone who does not want to watch anything, must still learn the topic in
+  full from the prose. A video supplements; it never carries a topic alone.
+- Link only videos that are publicly available and likely to stay so. Prefer
+  university lectures, agency footage and long-standing channels over a
+  one-off upload.
+- At most two or three per lesson. More than that and the lesson is a playlist.
+- Put it near the section it illustrates, not in a block at the end.

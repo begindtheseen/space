@@ -293,7 +293,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-from-python-to-compiled-cpp",
       "title": "From Python to compiled C++",
-      "minutes": 22,
+      "minutes": 21,
       "covers": [
         "C++17/20 core language"
       ],
@@ -326,6 +326,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "classes, inheritance, virtual dispatch and its cost"
       ],
       "file": "t0_m12_cpp/04-classes-inheritance-virtual-dispatch.md"
+    },
+    {
+      "id": "l05-templates-and-generic-programming",
+      "title": "Templates and generic programming",
+      "minutes": 27,
+      "covers": [
+        "templates and generic programming"
+      ],
+      "file": "t0_m12_cpp/05-templates-and-generic-programming.md"
     }
   ],
   "t1_m13_classical_mechanics": [
@@ -434,6 +443,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "circular, elliptical, parabolic and hyperbolic orbits"
       ],
       "file": "t2_m19_two_body/05-orbit-families.md"
+    },
+    {
+      "id": "l06-classical-elements",
+      "title": "The classical orbital elements and equinoctial alternatives",
+      "minutes": 19,
+      "covers": [
+        "classical orbital elements and equinoctial alternatives"
+      ],
+      "file": "t2_m19_two_body/06-classical-elements.md"
     }
   ]
 }
@@ -620,11 +638,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t0_m12_cpp": {
-    "covered": 5,
+    "covered": 6,
     "total": 17,
     "complete": false,
     "missing": [
-      "templates and generic programming",
       "the STL: containers, algorithms, iterators",
       "Eigen, including the Geometry module",
       "memory layout, cache behaviour, allocation-free hot loops",
@@ -686,11 +703,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t2_m19_two_body": {
-    "covered": 6,
+    "covered": 7,
     "total": 15,
     "complete": false,
     "missing": [
-      "classical orbital elements and equinoctial alternatives",
       "state vector to orbital element conversion, both directions",
       "Kepler equation: elliptic, hyperbolic and parabolic (Barker)",
       "true, eccentric and mean anomaly",

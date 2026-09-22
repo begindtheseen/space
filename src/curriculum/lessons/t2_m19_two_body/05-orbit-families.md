@@ -31,6 +31,14 @@ At $7.0\,\mathrm{km/s}$ the point is *apogee*: the orbit dips to $r_p = a(1 - e)
 
 The lesson to draw: speed at a fixed radius is the only dial. Direction of the velocity changes *which* ellipse of a given $a$ you are on (its $e$ and where its perigee lies), but the size $a$ and the classification are set by $\lVert \mathbf{v} \rVert$ alone through vis-viva.
 
+### When the velocity is not horizontal
+
+Tilt the velocity by a flight-path angle $\gamma$ at the same $r$ and $v$. Vis-viva does not care: $a$ and $\varepsilon$ are unchanged. But $h = rv\cos\gamma$ shrinks, and with it $p$; from $e^2 = 1 + 2\varepsilon h^2/\mu^2$ the eccentricity grows, and the burn point is no longer an apsis. Take $v = 9.0\,\mathrm{km/s}$ at $300\,\mathrm{km}$ with $\gamma = 20^\circ$. Then $h = 6678.137 \times 9.0 \times \cos 20^\circ = 56\,479\,\mathrm{km^2/s}$, while $\varepsilon = -19.19\,\mathrm{km^2/s^2}$ and $a = 10\,387\,\mathrm{km}$ exactly as in the table. The eccentricity, however, is
+$$
+e^2 = 1 + \frac{2(-19.187)(56\,479)^2}{(398\,600.4418)^2} = 0.2296, \qquad e = 0.479,
+$$
+instead of $0.357$, and the perigee is $r_p = a(1 - e) = 5410\,\mathrm{km}$ – $968\,\mathrm{km}$ *below* the surface. The same speed that gave a healthy orbit with a $14\,096\,\mathrm{km}$ apogee now gives one that re-enters within a revolution. The burn point sits at $\nu = 65.5^\circ$ on this orbit (from $r = p/(1 + e\cos\nu)$ with $p = h^2/\mu = 8003\,\mathrm{km}$), on the climbing side; the spacecraft rises to an apogee of $15\,364\,\mathrm{km}$ and then comes back down through the atmosphere. Launch guidance spends much of its effort driving $\gamma$ to zero at insertion for exactly this reason: at a given speed, the horizontal direction is the one that keeps perigee highest.
+
 ## Circular orbits
 
 A circular orbit has $e = 0$, $r = a = p$ everywhere, and every point is simultaneously periapsis and apoapsis – which is why the argument of periapsis will turn out to be undefined for it. The velocity is everywhere horizontal and of constant magnitude:
@@ -99,6 +107,10 @@ b = \frac{r_p v_p}{v_\infty} = r_p\sqrt{1 + \frac{2\mu}{r_p v_\infty^2}}.
 $$
 
 The aiming radius is always larger than the periapsis radius: gravity pulls the trajectory inward, so a spacecraft aimed to miss the centre by $b$ passes closer, at $r_p$. This is the *gravitational focusing* that makes planets bigger targets than their physical size.
+
+::: note Why mission designers quote C3 rather than speed
+A launch vehicle's performance to escape is published as payload mass against $C_3$, not against speed, because $C_3$ is frame-independent in the sense that matters: it is twice the energy per unit mass the vehicle must supply above escape, whatever the departure altitude. A trajectory analyst hands the launch provider a required $C_3$ and a direction for $\mathbf{v}_\infty$; the provider chooses the parking orbit and burn. Typical values: $C_3 \approx 0$ for a lunar transfer, $10$ to $16\,\mathrm{km^2/s^2}$ for Mars, $80$ and above for Jupiter without gravity assists.
+:::
 
 ::: example A departure hyperbola for Mars
 A Mars-bound spacecraft leaves from a $300\,\mathrm{km}$ circular parking orbit ($r = 6678.137\,\mathrm{km}$, $v_c = 7.726\,\mathrm{km/s}$) on a hyperbola with $C_3 = 12.0\,\mathrm{km^2/s^2}$, so $v_\infty = 3.464\,\mathrm{km/s}$. The perigee speed is

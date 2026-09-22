@@ -65,6 +65,10 @@ $$
 
 For $e < 1$ this is the standard ellipse with centre at $x = -ae$, semi-major axis $a$ along $x$, and semi-minor axis $b = a\sqrt{1 - e^2}$ along $y$. The focus (the central body) sits a distance $c = ae$ from the centre – which is the geometric definition of eccentricity, $e = c/a$, recovered from the dynamics. For $e > 1$, $a$ is negative and $a^2(1 - e^2)$ is negative too, so the $y^2$ term changes sign and the curve is the hyperbola $(x + ae)^2/a^2 - y^2/b^2 = 1$ with $b^2 = a^2(e^2 - 1)$. The single formula $a = p/(1 - e^2)$ therefore serves all three shapes, with the sign of $a$ tracking the sign of the energy.
 
+::: note The focus–directrix reading
+The classical definition of a conic is the set of points whose distance from a focus is $e$ times their distance from a fixed line, the directrix. The orbit equation says exactly this. Rearranged, $r = e\,(p/e - r\cos\nu)$, and $p/e - r\cos\nu$ is the horizontal distance from the point $(r\cos\nu,\ r\sin\nu)$ to the vertical line $x = p/e$. So the directrix stands a distance $p/e$ from the focus on the far side from periapsis, and every point of the orbit is $e$ times as far from the focus as from that line. For the GTO worked below, the directrix is $11\,455.5/0.7283 = 15\,729\,\mathrm{km}$ from Earth's centre in the anti-perigee direction. Nothing physical sits there; the reading is useful because it makes the role of $e$ visible. When $e < 1$ the orbit must stay closer to the focus than to the line, which bounds it; when $e > 1$ it can run away from both, which is why the hyperbola is open.
+:::
+
 ## The ellipse
 
 For a closed orbit the quantities you will use constantly are the apsidal radii. From the orbit equation,
@@ -80,6 +84,8 @@ a = \frac{r_p + r_a}{2}, \qquad e = \frac{r_a - r_p}{r_a + r_p}.
 $$
 
 The semi-major axis is the mean of the extreme radii, which is also obvious from the picture: perigee and apogee lie at opposite ends of the major axis of length $2a$, with the focus between them. The eccentricity is the asymmetry of the two radii. Given any two of $\{a, e, r_p, r_a, p\}$ you can find the rest, and mission requirements are almost always stated as a perigee and an apogee altitude.
+
+In guidance code these relations run in both directions many times a second. A launch vehicle's insertion target is typically a perigee radius and an apogee radius; the guidance converts them to $a$ and $e$, then to the energy $-\mu/(2a)$ and angular momentum $\sqrt{\mu a(1 - e^2)}$ it must achieve at cutoff, and steers on those two scalars because they are what the engine can change. Conversely, an onboard navigation solution delivers $a$ and $e$, and the operators want to know the apogee and perigee altitudes – the same formulas, inverted, with $R = 6378.137\,\mathrm{km}$ subtracted.
 
 ::: key Apsides from a and e
 $$

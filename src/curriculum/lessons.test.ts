@@ -26,7 +26,9 @@ const moduleDirs = fs
 
 const MIN_WORDS = 600
 const MAX_WORDS = 7000
-const KINDS = ['example', 'key', 'check', 'answer', 'note', 'warning']
+const KINDS = ['example', 'key', 'check', 'answer', 'note', 'warning', 'video']
+// `::: video <id>` — 11 URL-safe base64 characters, as the provider issues them.
+const VIDEO_ID_RE = /^[A-Za-z0-9_-]{11}$/
 
 function mathSpans(body: string): { tex: string; display: boolean }[] {
   const out: { tex: string; display: boolean }[] = []
@@ -137,6 +139,12 @@ describe.each(moduleDirs)('lessons for %s', (moduleId) => {
       for (const l of openers) {
         const kind = /^\s*:::\s*([a-z]+)/.exec(l)![1]!
         expect(KINDS, `unknown callout kind "${kind}"`).toContain(kind)
+        if (kind === 'video') {
+          // A mistyped id renders a dead panel in the middle of a lesson, and
+          // nothing downstream would catch it, so it is caught here.
+          const id = /^\s*:::\s*video\s+(\S+)/.exec(l)?.[1] ?? ''
+          expect(id, `"::: video" needs a video id: "${l.trim()}"`).toMatch(VIDEO_ID_RE)
+        }
       }
       // Code first: `# comment` opens a Python line and `<T>` is a template
       // parameter. Neither is markdown, and both are common in these lessons.
@@ -153,7 +161,9 @@ describe.each(moduleDirs)('lessons for %s', (moduleId) => {
       expect(noMath.match(/\\\(|\\\[|\\begin\{equation/g) ?? [], 'math uses $ and $$ delimiters only').toEqual([])
       const dollars = (p.body.replace(/```[\s\S]*?```/g, '').match(/\$\$/g) ?? []).length
       expect(dollars % 2, 'balanced $$').toBe(0)
-      for (const m of p.body.matchAll(/\]\(([^)]+)\)/g)) {
+      // Against the code-free text: a C++ lambda written inline, `[omega](double
+      // t)`, has a link's exact shape and is not a link.
+      for (const m of noMath.matchAll(/\]\(([^)]+)\)/g)) {
         expect(m[1], 'links are https or in-app').toMatch(/^(https:\/\/|#\/)/)
       }
     })

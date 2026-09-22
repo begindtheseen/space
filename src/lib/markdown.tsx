@@ -13,6 +13,7 @@
    display `$$…$$` math, and `::: kind` callout blocks (example, key, check,
    answer, note, warning). Everything else is plain text.
    ========================================================================== */
+import { VideoEmbed } from '@/components/VideoEmbed'
 import { useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 import './markdown.css'
 
@@ -148,6 +149,21 @@ function renderBlocks(src: string): ReactNode[] {
         i++
       }
       i++ // closing :::
+
+      // `::: video <id>` — the container's body is the caption, not prose to
+      // render, so it is handled before the callout shapes below.
+      if (kind === 'video') {
+        const videoId = (title ?? '').trim().split(/\s+/)[0] ?? ''
+        out.push(
+          <VideoEmbed
+            key={key++}
+            videoId={videoId}
+            caption={body.join(' ').replace(/\s+/g, ' ').trim() || undefined}
+          />,
+        )
+        continue
+      }
+
       const label = title || BOX_LABELS[kind] || kind
       out.push(
         kind === 'answer' ? (

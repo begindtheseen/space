@@ -66,6 +66,14 @@ The period depends on the semi-major axis alone – not on eccentricity.
 
 Kepler's own statement had the constant the same for all planets. That is true only to the extent that $\mu = G(M_\odot + m)$ is the same for all of them, which it is to about one part in a thousand (Jupiter's mass). Newton's form, with $G(M + m)$, explains the tiny discrepancies; the restricted form with $\mu = GM$ is what you use for artificial satellites.
 
+::: note Newton's form, and the third law as a measuring instrument
+With $\mu = G(M + m)$ the third law reads $T^2 = 4\pi^2 a^3/\big(G(M + m)\big)$, and Kepler's "constant" differs slightly from planet to planet. Earth's orbital period computed from $a = 1\,\mathrm{AU} = 1.495\,978\,707 \times 10^{8}\,\mathrm{km}$ with the Sun's $\mu$ alone is $365.2569\,\mathrm{days}$; including Earth's own $\mu$ in the sum shortens it by $47\,\mathrm{s}$, to $365.2563\,\mathrm{days}$. The law also runs backwards, and that is how gravitational parameters are measured. From the Moon's mean distance $384\,400\,\mathrm{km}$ and sidereal period $27.3217\,\mathrm{days}$,
+$$
+\mu = \frac{4\pi^2 a^3}{T^2} = \frac{4\pi^2 (384\,400)^3}{(2.3606 \times 10^{6})^2} = 4.024 \times 10^{5}\,\mathrm{km^3/s^2},
+$$
+within 0.3 % of the true $\mu_{\text{Earth}} + \mu_{\text{Moon}} = 403\,503\,\mathrm{km^3/s^2}$ – the residual is the Sun's perturbation of the lunar orbit. A tracked artificial satellite, unperturbed by anything so large, gives Earth's $\mu$ to ten figures the same way.
+:::
+
 ::: example The geostationary radius
 A geostationary satellite must complete one orbit while Earth turns once relative to the stars: one sidereal day, $T = 86\,164.09\,\mathrm{s}$ (not the $86\,400\,\mathrm{s}$ solar day, which includes Earth's daily progress around the Sun). Invert the third law:
 $$
