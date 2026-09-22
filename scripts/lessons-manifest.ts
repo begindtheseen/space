@@ -68,10 +68,20 @@ export function buildManifest(): Record<string, ManifestEntry[]> {
 export function buildCoverage(
   manifest: Record<string, ManifestEntry[]> = buildManifest(),
 ): Record<string, CoverageEntry> {
+  /*
+   * Every module in the curriculum gets an entry, including the ones with no
+   * lessons at all.
+   *
+   * That is the whole point. Reporting only the modules that happen to have a
+   * directory on disk means a module nobody has written yet is indistinguishable
+   * from one that needs no lessons, and the app then shows her a page full of
+   * objectives with no hint that the teaching is missing. A learner cannot plan
+   * around a gap she cannot see. An entry reading nought of thirteen is the
+   * honest answer and the UI can say so plainly.
+   */
   const out: Record<string, CoverageEntry> = {}
-  for (const [moduleId, lessons] of Object.entries(manifest)) {
-    const topics = TOPICS.get(moduleId)
-    if (!topics) continue
+  for (const [moduleId, topics] of TOPICS) {
+    const lessons = manifest[moduleId] ?? []
     const covered = new Set<string>()
     for (const l of lessons) for (const c of l.covers) if (topics.includes(c)) covered.add(c)
     const missing = topics.filter((t) => !covered.has(t))
@@ -114,11 +124,17 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   const coverage = buildCoverage(manifest)
   const target = path.join(dir, 'manifest.ts')
   fs.writeFileSync(target, renderManifest(manifest, coverage))
-  const modules = Object.keys(manifest).length
   const lessons = Object.values(manifest).reduce((a, l) => a + l.length, 0)
-  const done = Object.values(coverage).filter((c) => c.complete).length
+  const all = Object.values(coverage)
+  const done = all.filter((c) => c.complete).length
+  const untouched = all.filter((c) => c.covered === 0).length
+  const topics = all.reduce((a, c) => a + c.covered, 0)
+  const totalTopics = all.reduce((a, c) => a + c.total, 0)
+  // Reported against the whole curriculum rather than against the folders that
+  // happen to exist, so the number never flatters the state of the work.
   console.log(
-    `lessons-manifest: ${lessons} lessons across ${modules} modules ` +
-      `(${done} fully covered, ${modules - done} still being written) → ${path.relative(root, target)}`,
+    `lessons-manifest: ${lessons} lessons · ${done}/${all.length} modules fully taught · ` +
+      `${topics}/${totalTopics} topics · ${untouched} modules not started ` +
+      `→ ${path.relative(root, target)}`,
   )
 }

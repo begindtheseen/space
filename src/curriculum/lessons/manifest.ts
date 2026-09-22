@@ -1549,6 +1549,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "the double cover and the shortest-path sign convention"
       ],
       "file": "t1_m16_attitude_representations/07-the-double-cover-and-the-shortest-path-sign.md"
+    },
+    {
+      "id": "l08-slerp",
+      "title": "SLERP, spherical linear interpolation of attitude",
+      "minutes": 18,
+      "covers": [
+        "SLERP"
+      ],
+      "file": "t1_m16_attitude_representations/08-slerp.md"
     }
   ],
   "t1_m17_attitude_kinematics": [
@@ -1587,6 +1596,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "combining kinematics with Euler dynamics into a 6-state rotational system"
       ],
       "file": "t1_m17_attitude_kinematics/04-the-six-state-rotational-system.md"
+    },
+    {
+      "id": "l05-external-disturbance-torques",
+      "title": "External torques — gravity gradient, aerodynamic, SRP and magnetic",
+      "minutes": 22,
+      "covers": [
+        "external torques: gravity gradient, aerodynamic, solar radiation pressure, residual magnetic dipole"
+      ],
+      "file": "t1_m17_attitude_kinematics/05-external-disturbance-torques.md"
     }
   ],
   "t1_m18_atmospheric_flight": [
@@ -1886,6 +1904,24 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Dominant poles and model order reduction by inspection"
       ],
       "file": "t3_m25_signals_systems/06-dominant-poles-and-model-reduction.md"
+    },
+    {
+      "id": "l07-zeros-and-right-half-plane-zeros",
+      "title": "Added zeros, non-minimum phase and right-half-plane zeros",
+      "minutes": 17,
+      "covers": [
+        "Added zeros, non-minimum-phase zeros, and right-half-plane zeros"
+      ],
+      "file": "t3_m25_signals_systems/07-zeros-and-right-half-plane-zeros.md"
+    },
+    {
+      "id": "l08-time-delay-and-pade",
+      "title": "Time delay and the Padé approximation",
+      "minutes": 17,
+      "covers": [
+        "Time delay and the Pade approximation"
+      ],
+      "file": "t3_m25_signals_systems/08-time-delay-and-pade.md"
     }
   ],
   "t3_m26_classical_control": [
@@ -1933,6 +1969,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Root locus construction rules and root-locus design"
       ],
       "file": "t3_m26_classical_control/05-root-locus.md"
+    },
+    {
+      "id": "l06-nyquist",
+      "title": "The Nyquist plot and the Nyquist stability criterion",
+      "minutes": 23,
+      "covers": [
+        "The Nyquist plot and the Nyquist stability criterion"
+      ],
+      "file": "t3_m26_classical_control/06-nyquist.md"
     }
   ],
   "t3_m27_digital_control": [
@@ -1989,6 +2034,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Computational delay and where it shows up in the loop"
       ],
       "file": "t3_m27_digital_control/06-computational-delay-in-the-loop.md"
+    },
+    {
+      "id": "l07-choosing-a-sample-rate",
+      "title": "Choosing a sample rate",
+      "minutes": 22,
+      "covers": [
+        "Choosing a sample rate: the 20-40x bandwidth rule of thumb and what drives the ends of that range"
+      ],
+      "file": "t3_m27_digital_control/07-choosing-a-sample-rate.md"
     }
   ],
   "t3_m28_state_space": [
@@ -2036,6 +2090,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Observability and duality; stabilizability and detectability"
       ],
       "file": "t3_m28_state_space/05-observability-duality-stabilizability-detectability.md"
+    },
+    {
+      "id": "l06-pole-placement",
+      "title": "Pole placement — Ackermann, Bass-Gura and robust eigenstructure",
+      "minutes": 18,
+      "covers": [
+        "Pole placement: Ackermann, Bass-Gura, and robust (eigenstructure) pole placement"
+      ],
+      "file": "t3_m28_state_space/06-pole-placement.md"
     }
   ],
   "t3_m29_optimal_control_lqr": [
@@ -2074,6 +2137,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Choosing Q and R: Bryson rule, physical scaling, iterating against an effort budget"
       ],
       "file": "t3_m29_optimal_control_lqr/04-choosing-q-and-r.md"
+    },
+    {
+      "id": "l05-lqr-margins-and-why-lqg-loses-them",
+      "title": "The guaranteed margins of LQR, and why LQG loses them",
+      "minutes": 22,
+      "covers": [
+        "The guaranteed margins of full-state-feedback LQR and why LQG loses them"
+      ],
+      "file": "t3_m29_optimal_control_lqr/05-lqr-margins-and-why-lqg-loses-them.md"
     }
   ],
   "t3_m30_robust_control": [
@@ -2112,6 +2184,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "H-infinity synthesis: mixed sensitivity S/KS/T weighting, the two-Riccati (DGKF) solution"
       ],
       "file": "t3_m30_robust_control/04-hinf-synthesis-mixed-sensitivity.md"
+    },
+    {
+      "id": "l05-structured-singular-value-mu",
+      "title": "The structured singular value and D-K iteration",
+      "minutes": 18,
+      "covers": [
+        "The structured singular value mu and mu-synthesis by D-K iteration"
+      ],
+      "file": "t3_m30_robust_control/05-structured-singular-value-mu.md"
     }
   ],
   "t3_m31_nonlinear_control": [
@@ -2292,11 +2373,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t1_m16_attitude_representations": {
-    "covered": 7,
+    "covered": 8,
     "total": 13,
     "complete": false,
     "missing": [
-      "SLERP",
       "classical and modified Rodrigues parameters, and the MRP shadow set",
       "conversions between every representation",
       "active vs passive rotation (operator vs coordinate transformation)",
@@ -2305,11 +2385,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t1_m17_attitude_kinematics": {
-    "covered": 4,
+    "covered": 5,
     "total": 10,
     "complete": false,
     "missing": [
-      "external torques: gravity gradient, aerodynamic, solar radiation pressure, residual magnetic dipole",
       "reaction wheel and CMG dynamics and momentum coupling",
       "thruster attitude control and minimum impulse bit",
       "thrust vector control gimbal dynamics for launch vehicles",
@@ -2329,13 +2408,117 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "complete": true,
     "missing": []
   },
+  "t2_m20_orbital_maneuvers": {
+    "covered": 0,
+    "total": 13,
+    "complete": false,
+    "missing": [
+      "the impulsive approximation and its validity limits",
+      "Hohmann transfer and its optimality",
+      "bi-elliptic transfer and the crossover ratio",
+      "one-tangent burns",
+      "plane change and combined plane-change-plus-raise optimisation",
+      "apsidal rotation",
+      "phasing manoeuvres and rendezvous phasing",
+      "finite-burn and gravity losses",
+      "low-thrust transfers: Edelbaum, spirals, electric propulsion",
+      "station-keeping for GEO and LEO",
+      "constellation management, drift orbits and deorbit",
+      "patched conics, sphere of influence, C3, gravity assists",
+      "porkchop plots and launch windows"
+    ]
+  },
+  "t2_m21_perturbations": {
+    "covered": 0,
+    "total": 14,
+    "complete": false,
+    "missing": [
+      "perturbation sources ranked by magnitude in LEO and GEO",
+      "non-spherical gravity, spherical harmonics, J2 and higher zonals",
+      "J2 secular effects: nodal regression and apsidal rotation",
+      "sun-synchronous orbits",
+      "atmospheric drag, ballistic coefficient and density model uncertainty",
+      "solar radiation pressure and eclipse modelling",
+      "third-body lunar and solar perturbations",
+      "tides and relativistic corrections",
+      "general vs special perturbations",
+      "Cowell and Encke methods",
+      "Gauss variational equations and Lagrange planetary equations",
+      "mean vs osculating elements",
+      "SGP4/SDP4 and why TLEs are theory-specific",
+      "long-term orbit evolution and lifetime estimation"
+    ]
+  },
+  "t2_m22_lambert_targeting": {
+    "covered": 0,
+    "total": 10,
+    "complete": false,
+    "missing": [
+      "Lambert's problem statement and Lambert's theorem",
+      "solution methods: Gauss, universal variables / Battin, Izzo",
+      "multi-revolution solutions and their multiplicity",
+      "convergence and singular geometries near a 180 degree transfer",
+      "targeting and differential correction",
+      "the state transition matrix and its use in targeting",
+      "B-plane targeting",
+      "porkchop plots from repeated Lambert solutions",
+      "trajectory correction manoeuvres",
+      "linear covariance analysis of targeting errors"
+    ]
+  },
+  "t2_m23_relative_motion_rpo": {
+    "covered": 0,
+    "total": 16,
+    "complete": false,
+    "missing": [
+      "relative motion frames: LVLH, Hill, RIC",
+      "derivation of the Clohessy-Wiltshire equations",
+      "the CW state transition matrix",
+      "secular in-track drift and why it dominates",
+      "football and drifting relative orbits",
+      "V-bar and R-bar approaches and their safety properties",
+      "natural motion circumnavigation",
+      "passive safety and safety ellipses",
+      "two-impulse CW rendezvous targeting",
+      "Tschauner-Hempel equations for eccentric reference orbits",
+      "glideslope algorithms",
+      "approach corridors and keep-out spheres",
+      "docking vs berthing",
+      "ISS visiting vehicle requirements",
+      "relative navigation sensors: relative GPS, lidar, cameras, retroreflectors",
+      "abort trajectories and collision avoidance manoeuvres"
+    ]
+  },
+  "t2_m24_edl": {
+    "covered": 0,
+    "total": 18,
+    "complete": false,
+    "missing": [
+      "entry interface conditions",
+      "ballistic entry and the Allen-Eggers solution",
+      "peak deceleration and peak heating relations",
+      "ballistic coefficient and its effect on the trajectory",
+      "the entry corridor: undershoot and overshoot boundaries",
+      "skip entry",
+      "lifting entry and bank-angle modulation",
+      "Apollo entry guidance and its descendants",
+      "Shuttle drag-vs-energy entry guidance",
+      "aerothermodynamics: convective and radiative heating, Sutton-Graves",
+      "thermal protection systems, heat rate vs heat load",
+      "hypersonic aerodynamics and the transonic transition",
+      "propulsive descent: entry burn, aerodynamic guidance, landing burn",
+      "divert capability and the landing ellipse",
+      "terminal descent sensors: radar altimeter, lidar, terrain relative navigation",
+      "landing burn timing and the hoverslam problem",
+      "Mars EDL: thin atmosphere, supersonic parachutes, sky crane",
+      "reusable booster return modes: RTLS vs droneship, boostback burns"
+    ]
+  },
   "t3_m25_signals_systems": {
-    "covered": 6,
+    "covered": 8,
     "total": 12,
     "complete": false,
     "missing": [
-      "Added zeros, non-minimum-phase zeros, and right-half-plane zeros",
-      "Time delay and the Pade approximation",
       "Frequency response: magnitude and phase; Bode plot construction by hand",
       "Block diagram algebra, reduction, and the Mason gain formula",
       "Open-loop vs closed-loop transfer functions",
@@ -2343,11 +2526,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t3_m26_classical_control": {
-    "covered": 5,
+    "covered": 6,
     "total": 13,
     "complete": false,
     "missing": [
-      "The Nyquist plot and the Nyquist stability criterion",
       "Gain margin, phase margin, delay margin, and the modulus (vector) margin",
       "Why margins can lie: MIMO coupling, nonlinearity, simultaneous perturbations",
       "Lead, lag and lead-lag compensators",
@@ -2358,11 +2540,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t3_m27_digital_control": {
-    "covered": 6,
+    "covered": 7,
     "total": 11,
     "complete": false,
     "missing": [
-      "Choosing a sample rate: the 20-40x bandwidth rule of thumb and what drives the ends of that range",
       "Quantization, finite word length, and fixed-point implementation",
       "Discrete PID realization forms (direct, parallel, delta) and their numerical conditioning",
       "Biquad sections for discrete filters and notches",
@@ -2370,11 +2551,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t3_m28_state_space": {
-    "covered": 5,
+    "covered": 6,
     "total": 11,
     "complete": false,
     "missing": [
-      "Pole placement: Ackermann, Bass-Gura, and robust (eigenstructure) pole placement",
       "Luenberger observers and the estimation error dynamics",
       "The separation principle and the exact conditions under which it holds",
       "Integral action in state feedback: servo and augmented-state design",
@@ -2383,11 +2563,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t3_m29_optimal_control_lqr": {
-    "covered": 4,
+    "covered": 5,
     "total": 14,
     "complete": false,
     "missing": [
-      "The guaranteed margins of full-state-feedback LQR and why LQG loses them",
       "Infinite-horizon vs finite-horizon LQR",
       "LQR with integral action",
       "Cheap control and the asymptotic (Kalman) root locus",
@@ -2400,11 +2579,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t3_m30_robust_control": {
-    "covered": 4,
+    "covered": 5,
     "total": 12,
     "complete": false,
     "missing": [
-      "The structured singular value mu and mu-synthesis by D-K iteration",
       "Robust stability vs robust performance",
       "Singular values of MIMO transfer matrices and input/output directionality",
       "MIMO stability margins, disk margins, and why per-loop SISO margins mislead",
@@ -2445,6 +2623,1594 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
       "Real-time onboard MPC: warm starting, solver choice, worst-case iteration bounds, certifiable solve time",
       "Embedded QP solvers (OSQP, qpOASES, HPIPM) and code generation",
       "MPC vs LQR trade; MPC for powered descent, rendezvous and constrained attitude control"
+    ]
+  },
+  "t4_m33_least_squares": {
+    "covered": 0,
+    "total": 12,
+    "complete": false,
+    "missing": [
+      "The linear least squares problem; normal equations, QR, and SVD solutions",
+      "Weighted least squares and the information matrix",
+      "Minimum variance and BLUE: the Gauss-Markov theorem",
+      "Maximum likelihood and its equivalence to WLS under Gaussian noise",
+      "Maximum a posteriori estimation",
+      "Nonlinear least squares: Gauss-Newton and Levenberg-Marquardt",
+      "Recursive least squares and the bridge to the Kalman filter",
+      "The normal matrix condition number as an observability metric",
+      "Residual analysis, outlier rejection, and robust estimation (Huber loss, RANSAC)",
+      "The Wahba problem: find the rotation best aligning two sets of vector observations",
+      "Wahba solutions: TRIAD, Davenport q-method, QUEST, ESOQ, and the SVD method",
+      "Covariance of an attitude solution and the effect of sensor geometry"
+    ]
+  },
+  "t4_m34_kalman_filter": {
+    "covered": 0,
+    "total": 15,
+    "complete": false,
+    "missing": [
+      "The stochastic state-space model: process noise Q and measurement noise R",
+      "Three derivations of the Kalman filter: minimum variance/orthogonality, Bayesian Gaussian conditioning, recursive least squares",
+      "The predict and update steps",
+      "The Kalman gain as a trust ratio between prediction and measurement",
+      "Covariance propagation and the discrete Riccati equation",
+      "Process noise tuning and the consequences of getting Q wrong",
+      "The steady-state Kalman filter",
+      "Observability and filter convergence",
+      "Numerically stable formulations: Joseph form, square-root (Potter, Carlson), UD factorization (Bierman-Thornton)",
+      "Filter divergence: causes and remedies (fading memory, Q inflation, covariance symmetrization)",
+      "Consistency testing: innovation whiteness, NEES and NIS chi-square tests, innovation autocorrelation",
+      "Sequential vs batch measurement updates; measurement editing and gating",
+      "The Rauch-Tung-Striebel smoother",
+      "The information filter form and its use in sensor fusion",
+      "Correlated and time-varying noise; the Schmidt-Kalman consider filter"
+    ]
+  },
+  "t4_m35_nonlinear_filters": {
+    "covered": 0,
+    "total": 14,
+    "complete": false,
+    "missing": [
+      "The Extended Kalman Filter: linearization about the current estimate, Jacobians F and H, first-order truncation error",
+      "Continuous-discrete EKF and the iterated EKF",
+      "When and why the EKF diverges",
+      "The Unscented Kalman Filter: the unscented transform, sigma point selection (alpha, beta, kappa), the square-root UKF",
+      "Why the UKF beats the EKF for strong nonlinearity, and the cost comparison",
+      "The cubature Kalman filter",
+      "Particle filters: sequential importance sampling, resampling, degeneracy and sample impoverishment",
+      "When a particle filter is genuinely required: multi-modal and non-Gaussian posteriors",
+      "Gaussian sum filters",
+      "The error-state (indirect) Kalman filter: why the error state is small and nearly linear, injection and reset, the Jacobian of the reset",
+      "The Multiplicative EKF for attitude: the 3-parameter attitude error, covariance on the tangent space",
+      "On-manifold and invariant EKF (IEKF), equivariant filtering",
+      "Consider states and bias augmentation",
+      "Multiple-model and IMM filters"
+    ]
+  },
+  "t4_m36_inertial_navigation": {
+    "covered": 0,
+    "total": 13,
+    "complete": false,
+    "missing": [
+      "Accelerometer and gyroscope physics: MEMS, fiber optic, ring laser, hemispherical resonator",
+      "IMU error models: turn-on and in-run bias, scale factor, non-orthogonality and misalignment, g-sensitivity, quantization",
+      "Angle random walk, velocity random walk, rate random walk, and bias instability",
+      "Allan variance for IMU characterization; temperature effects and calibration",
+      "Strapdown mechanization in ECI, ECEF and local-level (NED) frames",
+      "Attitude update, velocity update with Coriolis and gravity, position update",
+      "Coning and sculling corrections and multi-sample algorithms",
+      "The Schuler oscillation and why it bounds unaided INS horizontal error",
+      "Free-inertial error propagation: how position error grows with time from each error source",
+      "Initial alignment: coarse leveling, gyrocompassing, fine alignment via Kalman filter, transfer and in-flight alignment",
+      "INS/GNSS integration architectures: loosely, tightly, and ultra-tightly (deeply) coupled",
+      "Error-state filter formulation for INS: the 15-state and 21-state models",
+      "Lever arm compensation, zero-velocity updates, vibration rectification"
+    ]
+  },
+  "t4_m37_gnss": {
+    "covered": 0,
+    "total": 14,
+    "complete": false,
+    "missing": [
+      "GNSS constellation and signal structure: L1/L2/L5, C/A and P(Y) codes, CDMA, the navigation message",
+      "The pseudorange measurement and its error budget",
+      "Receiver clock bias as the fourth unknown",
+      "The navigation solution by iterative least squares / Newton iteration",
+      "Dilution of precision: GDOP, PDOP, HDOP, VDOP, TDOP, and what geometry makes each bad",
+      "Ionospheric and tropospheric delay, their models, and the dual-frequency ionosphere-free combination",
+      "Multipath; ephemeris and satellite clock errors",
+      "Carrier phase measurements, cycle slips, integer ambiguity resolution with LAMBDA",
+      "Differential GNSS, RTK, and precise point positioning",
+      "Space-based GNSS: use above the constellation, side-lobe reception, high-dynamics tracking, Doppler",
+      "GNSS in a launch vehicle environment: acceleration, jerk, vibration, plume attenuation, antenna switching",
+      "Jamming and spoofing; RAIM and integrity monitoring",
+      "Receiver tracking loops (DLL, PLL, FLL) and the bandwidth/dynamics trade",
+      "Vector tracking and deep coupling"
+    ]
+  },
+  "t4_m38_sensors_optical_nav": {
+    "covered": 0,
+    "total": 12,
+    "complete": false,
+    "missing": [
+      "Star trackers: optics, centroiding, star catalogs, lost-in-space identification (triangle and pyramid algorithms), tracking mode",
+      "Star tracker accuracy: cross-boresight vs about-boresight, update rate, exclusion angles, stray light",
+      "Sun sensors: coarse analog and fine digital, field of view, albedo error",
+      "Magnetometers, the IGRF and WMM field models, residual dipole, hard-iron and soft-iron calibration",
+      "Earth and horizon sensors",
+      "Radar altimeters, laser altimeters and lidar",
+      "Cameras for optical navigation: the pinhole model, intrinsics and extrinsics, distortion",
+      "Feature detection and tracking; terrain relative navigation; crater and landmark matching",
+      "Hazard detection and avoidance; visual-inertial odometry basics",
+      "Relative navigation sensors for docking: retroreflector tracking and pattern recognition",
+      "Sensor fusion architectures and per-sensor measurement models",
+      "Sensor calibration, alignment estimation, and fault detection"
+    ]
+  },
+  "t4_m39_orbit_determination": {
+    "covered": 0,
+    "total": 13,
+    "complete": false,
+    "missing": [
+      "Initial orbit determination: angles-only (Gauss, Laplace, double-r), three position vectors (Gibbs, Herrick-Gibbs), range and range-rate methods",
+      "Batch least-squares orbit determination with the state transition matrix",
+      "The variational equations and computing the STM by integration",
+      "Sequential orbit determination with EKF and UKF",
+      "Measurement types and models: range, range-rate/Doppler, angles, GNSS, VLBI, inter-satellite links",
+      "Station and tracking geometry and its effect on observability",
+      "Process noise for orbit determination: Gauss-Markov acceleration and dynamic model compensation",
+      "Consider-covariance analysis",
+      "Residual editing and data weighting",
+      "Orbit accuracy metrics and covariance in the RIC (radial, in-track, cross-track) frame",
+      "Conjunction assessment and collision probability",
+      "Maneuver estimation and reconstruction",
+      "Relative orbit determination for constellations; autonomous onboard orbit determination"
+    ]
+  },
+  "t5_m40_guidance_fundamentals": {
+    "covered": 0,
+    "total": 12,
+    "complete": false,
+    "missing": [
+      "The guidance / navigation / control decomposition and the loop rate of each",
+      "Open-loop vs closed-loop guidance; reference-trajectory following vs explicit guidance",
+      "Line-of-sight guidance and pursuit guidance",
+      "Proportional navigation: derivation, the navigation constant N, and the LOS-rate nulling principle",
+      "Why N between 3 and 5; augmented proportional navigation for manoeuvring targets",
+      "True vs pure proportional navigation",
+      "Optimal guidance from an LQ formulation and how PN emerges from it",
+      "Zero-effort-miss and zero-effort-velocity guidance; the ZEM/ZEV feedback law for landing",
+      "Miss-distance analysis and adjoint methods",
+      "Time-to-go estimation and why it is the critical quantity",
+      "Gravity turn ascent and zero-lift trajectories; the pitch program and open-loop pitch kick",
+      "Terminal vs midcourse guidance; guidance under actuator limits"
+    ]
+  },
+  "t5_m41_ascent_guidance": {
+    "covered": 0,
+    "total": 12,
+    "complete": false,
+    "missing": [
+      "Ascent phases: liftoff, pitch kick, gravity turn, max-Q, staging, exoatmospheric closed loop",
+      "Open-loop atmospheric steering (the pitch program) and why closed-loop guidance is avoided in dense atmosphere",
+      "Optimal exoatmospheric steering: the linear tangent law from Pontryagin and the calculus of variations",
+      "Powered Explicit Guidance and Unified Powered Flight Guidance; why explicit guidance needs no reference trajectory",
+      "The two-phase throttle structure: constant thrust to a g-limit, then throttled constant acceleration",
+      "Iterative Guidance Mode as flown on Saturn V",
+      "Target orbit specification and the terminal constraint set",
+      "Thrust vector control allocation and engine-out contingency",
+      "Load relief and its interaction with guidance",
+      "Ascent trajectory optimization as an offline problem feeding onboard guidance",
+      "Day-of-launch trajectory updates from measured winds",
+      "Abort modes: RTLS, TAL, AOA and the decision logic"
+    ]
+  },
+  "t5_m42_trajectory_optimization": {
+    "covered": 0,
+    "total": 17,
+    "complete": false,
+    "missing": [
+      "The general optimal control problem in Bolza, Mayer and Lagrange form, and how to convert between them",
+      "Indirect methods: the Hamiltonian, the Euler-Lagrange conditions, costates as shadow prices",
+      "Pontryagin's Minimum Principle, the stationarity condition, and transversality conditions",
+      "The two-point boundary value problem; single and multiple shooting; costate sensitivity and why indirect methods are brittle",
+      "Bang-bang control, the switching function, and singular arcs",
+      "Direct transcription: converting an infinite-dimensional problem into a finite NLP",
+      "Direct single shooting vs direct multiple shooting, and the conditioning difference between them",
+      "Direct collocation: trapezoidal and Hermite-Simpson defect constraints",
+      "Pseudospectral methods: Legendre-Gauss, Legendre-Gauss-Radau and Legendre-Gauss-Lobatto nodes",
+      "Spectral convergence, the covector mapping theorem, and what pseudospectral costates buy you",
+      "Mesh refinement driven by an interpolated-defect error estimate",
+      "Differential dynamic programming and iLQR as the shooting-flavoured alternative",
+      "NLP sparsity structure, the Jacobian and Hessian block pattern, and why sparsity decides solve time",
+      "Scaling and conditioning: non-dimensionalising states, controls and constraints before you solve anything",
+      "Warm starting, homotopy and continuation from an easy problem to the real one",
+      "Tooling: CasADi with IPOPT, GPOPS-II, PSOPT, Dymos/OpenMDAO, PyOMO, ACADO, trajax",
+      "Failure modes: infeasible restoration, unbounded multipliers, mesh-induced control ringing, badly posed terminal constraints"
+    ]
+  },
+  "t5_m43_convex_guidance": {
+    "covered": 0,
+    "total": 21,
+    "complete": false,
+    "missing": [
+      "The certification argument: why onboard guidance demands a solver with a convergence guarantee and a bounded iteration count, and why a general NLP cannot give one",
+      "The minimum-fuel powered descent problem and its four non-convexities: the lower thrust bound, mass-depletion dynamics, thrust pointing, and logic-triggered constraints",
+      "Why the thrust magnitude constraint rho_min <= ||T|| <= rho_max is non-convex — the feasible set is an annulus with the origin removed",
+      "Lossless convexification: the slack variable Gamma with ||T|| <= Gamma and rho_min <= Gamma <= rho_max, and the proof sketch via the maximum principle that the relaxation is tight",
+      "The change of variables u = T/m, sigma = Gamma/m, z = ln m, and how it makes the translational dynamics exactly linear",
+      "The second-order-expanded mass bounds that keep the transformed thrust bounds convex",
+      "SOCP standard form, the second-order cone, and mapping the powered-descent problem onto it",
+      "G-FOLD (Guidance for Fuel-Optimal Large Diverts) and the two-stage minimum-landing-error then minimum-fuel solve",
+      "The JPL/Masten Xombie flight demonstrations of G-FOLD and what they proved",
+      "Glideslope, velocity, and thrust-pointing constraints as cones",
+      "Flight time as the one non-convex parameter, and solving it by a line search over an inner SOCP",
+      "Discrete-time lossless convexification and what survives discretisation",
+      "Successive convexification (SCvx): linearise about a reference, solve, update, repeat",
+      "Trust regions and artificial unboundedness; virtual control (virtual buffers) and artificial infeasibility",
+      "The convergence ratio rho and the accept/reject/resize rule",
+      "Free-final-time formulation by time dilation, and the notation clash with the thrust slack",
+      "6-DoF powered descent with quaternion attitude inside the optimization",
+      "State-triggered constraints for logic in the loop, and compound STCs",
+      "GuSTO and the broader sequential convex programming convergence theory",
+      "Real-time implementation: solver code generation, iteration bounds, warm starting, and fixed-point considerations",
+      "How all of this maps onto a Falcon 9 entry burn / aero phase / landing burn architecture, and onto Starship landing"
+    ]
+  },
+  "t6_m44_realtime_embedded": {
+    "covered": 0,
+    "total": 21,
+    "complete": false,
+    "missing": [
+      "Hard vs soft vs firm real-time, and why \"fast\" and \"real-time\" are unrelated properties",
+      "Determinism, worst-case execution time, and jitter as the three things you actually measure",
+      "Fixed-priority scheduling: rate-monotonic priority assignment and the Liu-Layland utilisation bound",
+      "Earliest-deadline-first and why it achieves higher utilisation but degrades worse on overload",
+      "Exact schedulability by response-time analysis, and why the utilisation bound is only sufficient",
+      "Priority inversion, priority inheritance and priority ceiling; the Mars Pathfinder failure and its fix",
+      "RTOS primitives: tasks, semaphores, mutexes, message queues, and which of them can block unboundedly",
+      "Real-time Linux: PREEMPT_RT, SCHED_FIFO and SCHED_DEADLINE, CPU isolation, IRQ affinity, mlockall",
+      "Why a flight programme can fly Linux at all, and what it has to switch off to do so",
+      "Interrupt handling, interrupt latency, and the split between the handler and the deferred half",
+      "No dynamic allocation after initialisation: static pools, fixed-capacity containers, and placement construction",
+      "Bounded loops, no recursion, and the rest of the Power of Ten rules",
+      "Memory protection with an MMU or MPU; stack sizing and stack-overflow detection",
+      "Cache and branch-predictor effects on determinism; why the fastest code is not always the most predictable",
+      "Device drivers, memory-mapped I/O, and the volatile keyword",
+      "Buses: UART, SPI, I2C, CAN, RS-422, Ethernet/UDP, and time-triggered protocols",
+      "Time synchronisation: GPS pulse-per-second, PTP, and disciplined timestamping of every sample",
+      "Bare-metal microcontrollers vs embedded Linux, and where the boundary sits on a real vehicle",
+      "Cross-compilation, toolchains, bootloaders and firmware update",
+      "Logging and telemetry under a real-time budget: lock-free ring buffers and never blocking the control task",
+      "Fixed-point arithmetic and when it is still the right answer"
+    ]
+  },
+  "t6_m45_fsw_architecture": {
+    "covered": 0,
+    "total": 20,
+    "complete": false,
+    "missing": [
+      "Layering: hardware abstraction, device managers, the GNC application, the mode manager, telemetry and command",
+      "Mode management as an explicit state machine, with guard conditions and an exit to safe from every state",
+      "Command and telemetry: CCSDS packet structure, dictionaries, limit checking, and command authentication",
+      "Redundancy architectures: cold, warm and hot standby; dual-dual; cross-strapping",
+      "Triple modular redundancy and voting; mid-value select; what a voter can and cannot detect",
+      "Byzantine faults and why a majority vote does not handle an asymmetric liar",
+      "Commodity multi-core computers running Linux with redundant flight strings and voted output, as publicly described for modern launch and crew vehicles",
+      "Radiation effects: single-event upsets, latch-up, total ionising dose; EDAC and ECC memory; memory scrubbing",
+      "Watchdog timers: what they catch, what they miss, and why a reset is a real-time decision",
+      "Fault detection, isolation and recovery: residual monitors, hypothesis tests, persistence counters and hysteresis",
+      "FMEA and fault trees; identifying the single points of failure a voter does not cover",
+      "Safing modes and the rule that safe must be reachable, stable and exitable only by an explicit decision",
+      "Abort logic and autonomous flight termination systems",
+      "Data integrity: CRCs, checksums, sequence counts and staleness checks on every input",
+      "Determinism across redundant strings, and why a non-deterministic algorithm cannot be voted",
+      "Time management, epochs, leap seconds and monotonic vs wall-clock time",
+      "NASA core Flight System as a public reference architecture: apps, the software bus, tables",
+      "Requirements traceability from a vehicle requirement to a line of code to a test",
+      "Configuration management of gains, I-loads and tables separately from the executable",
+      "In-flight software update: when it is the safer choice and when it is not"
+    ]
+  },
+  "t6_m46_6dof_simulation": {
+    "covered": 0,
+    "total": 18,
+    "complete": false,
+    "missing": [
+      "The five-box decomposition: plant, sensors, GNC, actuators, environment — and why the interfaces between them are the whole design",
+      "Fixed-step vs variable-step integration, and why a closed loop with a digital controller wants a fixed step",
+      "Running the plant at a fine step while the flight software runs at its true rate, with zero-order hold between updates",
+      "Frame and unit discipline: naming every vector by its frame, and the conventions that stop a sign error becoming a three-week debugging session",
+      "Environment models: gravity field, atmosphere, wind and gust, magnetic field, ephemeris, solar radiation pressure",
+      "Sensor models: noise, bias and bias instability, scale factor, misalignment, quantisation, latency, dropout, saturation, update rate",
+      "Actuator models: thrust curves and start-up transients, TVC gimbal dynamics and rate limits, reaction wheel friction, thruster minimum impulse bit, valve delay",
+      "Mass properties against time: propellant depletion, centre of mass migration, inertia tensor change",
+      "Slosh and structural flex models, and where they get inserted in the loop",
+      "Staging and other discontinuous events; zero-crossing detection and bisection to the event time",
+      "The flight-software-in-the-loop boundary: compiling the actual flight code into the sim rather than a Python re-implementation of it",
+      "The SIL, PIL and HIL progression and what each step actually adds",
+      "Real-time hardware-in-the-loop: flight processors, motion tables, IMU stimulation, GNSS signal simulators, camera and altimeter stimulation",
+      "Validation against analytic solutions, conservation laws, and eventually flight data",
+      "Regression testing and golden-file comparison; what to do when a legitimate model improvement breaks every golden file",
+      "Determinism and reproducibility: seeded random number streams, per-case seeds, and bit-exact replay of a single case out of a campaign",
+      "Performance: vectorisation, parallelism over cases rather than within a case, and why Monte Carlo runs on a cluster",
+      "Configuration management of the sim: models, parameters and scenarios versioned separately from the code"
+    ]
+  },
+  "t6_m47_vv_montecarlo": {
+    "covered": 0,
+    "total": 20,
+    "complete": false,
+    "missing": [
+      "Requirements, verification and validation; the verification matrix that maps every requirement to its evidence",
+      "Verification by analysis, test, inspection and demonstration, and choosing correctly between them",
+      "Building a dispersion set: mass properties, aerodynamic coefficients, propulsion performance, winds, sensor and actuator errors, initial conditions, atmosphere",
+      "Distributions and their justification; correlations between dispersed parameters and why ignoring them is not conservative",
+      "Number of runs against the confidence in the claim; the zero-failure formula and its assumptions",
+      "Success criteria and scoring: defining what a failed case IS, before the campaign runs",
+      "Extreme-value estimation and importance sampling when the failure probability is too small to sample directly",
+      "Worst-case and corner-case analysis as a complement to, not a substitute for, Monte Carlo",
+      "Linear covariance analysis as the fast complement: one run gives the covariance a thousand runs would estimate",
+      "Where LinCov is valid and where nonlinearity, saturation and discrete logic force you back to Monte Carlo",
+      "Three sigma versus the 99.73rd percentile, and why they differ for anything non-Gaussian",
+      "Sensitivity analysis and driver identification: regression on the dispersion inputs, and scatter plots you actually look at",
+      "Flight-envelope coverage and the difference between random coverage and designed coverage",
+      "Stability margin verification across the envelope: frozen-time linearisation, gain, phase and delay margin against flight time",
+      "Code verification: unit, integration and regression tests; statement, branch and MC-DC coverage",
+      "Static analysis and formal methods: Coverity, Polyspace, model checking with SPIN",
+      "Requirements-based testing, and why coverage without requirements-based tests proves very little",
+      "Continuous integration for flight and simulation software: what runs on every commit, what runs nightly, what runs before a release",
+      "Test-as-you-fly, and the risk taken every time you deviate from it",
+      "Anomaly investigation, flight data reconstruction, and closing the loop by updating the models"
+    ]
+  },
+  "t7_m48_capstone": {
+    "covered": 0,
+    "total": 11,
+    "complete": false,
+    "missing": [
+      "System decomposition and the interface contracts between navigation, guidance, control and the vehicle",
+      "Error budgeting: allocating a landing-accuracy requirement across navigation, guidance and control",
+      "Rate architecture: navigation at IMU rate, control at 100 Hz or faster, guidance re-solved at 1 to 2 Hz, mode management at a low rate",
+      "A multiplicative extended Kalman filter on IMU, GNSS and radar altimeter, with error-state formulation and attitude error as a three-parameter local perturbation",
+      "Convex powered-descent guidance in the loop: re-solve cadence, warm starting, deadline policy and the closed-form fallback",
+      "TVC attitude control with bending-mode and slosh notch or roll-off filtering, and gain scheduling against dynamic pressure and mass",
+      "Mode management across prelaunch, ascent, staging, coast, entry, landing and safe",
+      "FDIR: residual monitors on the filter, sensor cross-checks, actuator health, and the response of each",
+      "C++ flight core with a Python analysis and plotting layer over it, sharing exactly one implementation of the algorithms",
+      "Ten thousand dispersed cases in CI, with per-case seeding and bit-exact replay",
+      "The written V&V report: requirements, evidence, margin plots, failure analysis and known limitations"
+    ]
+  },
+  "t7_m49_interview_prep": {
+    "covered": 0,
+    "total": 14,
+    "complete": false,
+    "missing": [
+      "The project presentation: choosing five topics, building a 10 to 20 minute talk for each, and rehearsing the defence rather than the delivery",
+      "Answering \"what would you do differently\" and \"what was the hardest bug\" without either arrogance or apology",
+      "Whiteboard derivations under time pressure: the rocket equation, rigid-body equations of motion under thrust, the Kalman filter update, proportional navigation, Euler equations, the Clohessy-Wiltshire equations",
+      "Deriving out loud: narrating assumptions, stating what you are about to do before doing it, and recovering visibly from an error",
+      "C++ coding rounds: the standard algorithmic problems plus embedded-flavoured ones — ring buffers, fixed-point arithmetic, bit manipulation, memory-constrained algorithms, no allocation in the hot path",
+      "Explaining a design decision in terms of a trade rather than a preference",
+      "Systems and architecture rounds: design a GNC flight software stack, a Monte Carlo pipeline, an FDIR scheme, a sensor suite for a given mission",
+      "Fermi estimation drills with vehicle numbers you should already know",
+      "Controls, estimation and dynamics rounds: the questions that recur, and the follow-ups that separate memorisation from understanding",
+      "Behavioural and STAR stories emphasising ownership, speed, and recovery from failure",
+      "Framing self-taught projects as engineering results with numbers: RMSE, margins, run counts, solve times, not adjectives",
+      "Resume and portfolio construction around artefacts that can be read: repositories, reports, plots",
+      "Work authorisation and export-control eligibility documentation, handled early rather than at offer stage",
+      "Adjacent entry roles — simulation, GNC software, site reliability for GNC infrastructure — as realistic vectors into the field"
+    ]
+  },
+  "cod_lnx_01_shell": {
+    "covered": 0,
+    "total": 15,
+    "complete": false,
+    "missing": [
+      "Filesystem hierarchy, absolute vs relative paths, ~ . ..",
+      "ls cd cp mv rm mkdir ln (hard vs symbolic links)",
+      "cat less head tail -f wc",
+      "Permissions: chmod octal and symbolic, chown, umask",
+      "Processes: ps, top/htop, kill, SIGTERM vs SIGKILL, job control, nohup",
+      "systemd: systemctl, journalctl",
+      "Pipes and redirection: | > >> 2> 2>&1 /dev/null, here-docs, tee, xargs",
+      "grep and regular expressions, cut, sort, uniq -c, tr, find -exec",
+      "diff/patch, tar, gzip, zstd, rsync, scp",
+      "ssh keys, ~/.ssh/config, agent forwarding, port forwarding",
+      "tmux sessions, windows, panes, detach/attach",
+      "Environment variables, PATH, .bashrc vs .bash_profile",
+      "Package management (apt/dnf) and building from source",
+      "df du lsblk ip ss curl strace lsof dmesg",
+      "vim survival: modes, motions, :wq"
+    ]
+  },
+  "cod_lnx_02_scripting": {
+    "covered": 0,
+    "total": 14,
+    "complete": false,
+    "missing": [
+      "Shebang lines and executable scripts",
+      "set -euo pipefail and what each flag actually does",
+      "Variables, quoting, word splitting, glob expansion",
+      "Command substitution $( ), arithmetic $(( )), arrays",
+      "if / for / while / case, test [[ ]] vs [ ]",
+      "Functions, return values, exit codes, $?",
+      "trap for cleanup on EXIT/INT/TERM",
+      "getopts for flags, positional args, \"$@\" vs \"$*\"",
+      "Here-docs and here-strings",
+      "sed substitution and addressing; awk fields, patterns, BEGIN/END, arrays",
+      "jq for JSON, column/paste/join for tabular text",
+      "shellcheck as a mandatory linter",
+      "cron and systemd timers",
+      "When to stop writing bash and switch to Python"
+    ]
+  },
+  "cod_git_01_basics": {
+    "covered": 0,
+    "total": 12,
+    "complete": false,
+    "missing": [
+      "Blobs, trees, commits, refs, HEAD and the commit DAG",
+      "The three areas: working tree, index/staging, repository",
+      "init, clone, add, status, diff, diff --staged, commit",
+      "log --oneline --graph --all, show, blame",
+      "Branches as pointers; checkout/switch; detached HEAD",
+      "Fast-forward vs true merge; resolving a conflict",
+      "reset --soft/--mixed/--hard vs revert vs restore",
+      "stash and reflog as the undo net",
+      ".gitignore, .gitattributes, Git LFS for large binary artefacts",
+      "Commit message craft: imperative subject, why-not-what body",
+      "Tags and semantic versioning",
+      "bisect for regression hunting"
+    ]
+  },
+  "cod_git_02_collab": {
+    "covered": 0,
+    "total": 12,
+    "complete": false,
+    "missing": [
+      "Merge vs rebase and the golden rule about shared history",
+      "Interactive rebase: squash, fixup, reword, drop, reorder",
+      "cherry-pick and backporting a fix to a release branch",
+      "Conflict resolution strategy; rerere",
+      "Remotes: fetch vs pull, pull --rebase, upstream tracking",
+      "push --force-with-lease vs --force",
+      "Trunk-based development vs GitFlow vs forking workflows",
+      "Pull requests: small diffs, draft PRs, required checks, CODEOWNERS",
+      "Release branches, tags, semantic versioning, changelogs",
+      "Submodules vs subtrees vs vendoring",
+      "Reviewing a diff: correctness, tests, interfaces, units and frames",
+      "Binary-file pain: model locking for Simulink and CAD assets"
+    ]
+  },
+  "cod_ops_01_docker": {
+    "covered": 0,
+    "total": 13,
+    "complete": false,
+    "missing": [
+      "Images vs containers; layers and the union filesystem",
+      "Dockerfile: FROM RUN COPY WORKDIR ENV ARG ENTRYPOINT CMD USER HEALTHCHECK",
+      "Layer caching and instruction ordering for fast rebuilds",
+      "Multi-stage builds: compile fat, ship slim",
+      ".dockerignore and build context size",
+      "Base-image choice: debian-slim vs alpine and the musl trap for scientific Python",
+      "Volumes and bind mounts, networks, port publishing",
+      "docker compose for sim + database + dashboard stacks",
+      "Registries, tagging discipline, never :latest in a pipeline",
+      "Digest pinning and lockfiles for true reproducibility",
+      "Dev Containers for onboarding",
+      "Kubernetes literacy: pods, deployments, services",
+      "Alternatives: Podman, Nix, Spack, conda-lock, uv"
+    ]
+  },
+  "cod_ops_02_ci": {
+    "covered": 0,
+    "total": 13,
+    "complete": false,
+    "missing": [
+      "What CI buys a simulation team, stated as failure modes it prevents",
+      "GitHub Actions: workflows, events, jobs, steps, runners",
+      "Matrix builds across OS, compiler and interpreter version",
+      "Caching pip, cargo and ccache; artefacts; secrets; environments",
+      "Reusable workflows and composite actions",
+      "Self-hosted runners for licensed tools and special hardware",
+      "GitLab CI and Jenkins, still common in defence and aerospace",
+      "A GNC pipeline: lint, static analysis, unit tests, coverage gate, Debug+ASan and Release builds, regression sims with tolerances, benchmark thresholds, docs, artefacts",
+      "Golden-file regression comparison with numerical tolerance",
+      "Nightly and scheduled long-running Monte Carlo jobs",
+      "MATLAB and Simulink in CI: setup-matlab, headless Simulink Test, licence servers",
+      "Flaky-test policy; quarantine rather than retry-until-green",
+      "Branch protection, required checks, release automation"
+    ]
+  },
+  "cod_dbg_01_gdb": {
+    "covered": 0,
+    "total": 15,
+    "complete": false,
+    "missing": [
+      "The scientific method of debugging; minimal reproducers",
+      "gdb: break, conditional breakpoints, watchpoints, run, bt, frame, up/down",
+      "info args, info locals, info registers, print, p *ptr@n, x/16xb",
+      "step vs next vs finish vs until; tbreak; display; set var",
+      "Attaching to a running process; gdb -p",
+      "Core dumps: ulimit -c unlimited, gdb ./bin ./core, thread apply all bt",
+      "TUI mode, .gdbinit, pretty-printers for STL and Eigen",
+      "gdbserver and remote/embedded debugging; rr for reverse debugging",
+      "Python: pdb, breakpoint(), py-spy for a live process",
+      "AddressSanitizer, UBSan, ThreadSanitizer, LeakSanitizer",
+      "Valgrind memcheck, helgrind, callgrind and when to prefer it over ASan",
+      "perf stat (IPC, cache misses, branch misses), perf record/report, flame graphs",
+      "hyperfine for wall clock, Google Benchmark for microbenchmarks",
+      "Logging strategy: levels, structured logs, flight-side ring buffers",
+      "Post-flight anomaly investigation: one dataset, no reruns"
+    ]
+  },
+  "cod_py_01_basics": {
+    "covered": 0,
+    "total": 12,
+    "complete": false,
+    "missing": [
+      "Interpreter, REPL, running scripts, the difference between them",
+      "int, float, bool, str; f-strings; str methods",
+      "list, tuple, dict, set; slicing; truthiness; mutability",
+      "if/elif/else; for, while, range, enumerate, zip; break/continue/else",
+      "Functions: positional, keyword, default, *args, **kwargs",
+      "Scope and LEGB; closures at a first-pass level",
+      "Modules, import, packages, the if __name__ == \"__main__\" guard",
+      "Files, pathlib, csv and json",
+      "Exceptions: try/except/else/finally, raising, custom exception types",
+      "The mutable default argument trap",
+      "Virtual environments with venv, pip, requirements and pyproject.toml",
+      "Floating point: why 0.1 + 0.2 != 0.3 and what to do about it"
+    ]
+  },
+  "cod_py_02_idiomatic": {
+    "covered": 0,
+    "total": 13,
+    "complete": false,
+    "missing": [
+      "List, dict and set comprehensions; generator expressions",
+      "Generators and yield; the iterator protocol; laziness and memory",
+      "lambda, map, filter, sorted with key=",
+      "Classes: __init__, attributes vs methods, @property, @staticmethod, @classmethod",
+      "Dunder methods: __repr__, __eq__, __add__, __mul__, __len__, __iter__",
+      "dataclasses and frozen dataclasses",
+      "Inheritance vs composition; duck typing and Protocols",
+      "Context managers: with, __enter__/__exit__, contextlib",
+      "Decorators, functools.wraps, functools.lru_cache",
+      "Type annotations, Optional, Sequence, npt.NDArray, and mypy",
+      "logging instead of print; levels and handlers",
+      "argparse for command-line tools",
+      "Package layout: src/ layout, __init__.py, relative imports"
+    ]
+  },
+  "cod_py_03_numpy": {
+    "covered": 0,
+    "total": 12,
+    "complete": false,
+    "missing": [
+      "ndarray: dtype, shape, ndim, strides, itemsize",
+      "Creation: zeros, ones, full, arange, linspace, eye, default_rng",
+      "Indexing and slicing; views vs copies; base; fancy indexing and boolean masks",
+      "Broadcasting rules, newaxis, and when shapes are incompatible",
+      "Axis semantics in reductions: sum, mean, std, min, argmax with axis=",
+      "reshape, ravel, transpose, stack, concatenate, C vs Fortran order",
+      "Linear algebra: solve, lstsq, eig, svd, norm, cond, and why not inv",
+      "matmul and @, dot, cross, einsum",
+      "Float pitfalls: allclose, catastrophic cancellation, float32 vs float64",
+      "Random numbers: default_rng, seeding, reproducibility",
+      "save, load, npz, memmap for big telemetry",
+      "Vectorisation as the default, and when it genuinely does not apply"
+    ]
+  },
+  "cod_py_04_scipy": {
+    "covered": 0,
+    "total": 11,
+    "complete": false,
+    "missing": [
+      "scipy.optimize: brentq, root, fsolve, newton",
+      "scipy.optimize: minimize, least_squares, curve_fit, differential_evolution",
+      "Residuals, Jacobians, scaling and why conditioning of decision variables matters",
+      "scipy.linalg: cholesky, qr, expm, solve_continuous_are and solve_discrete_are",
+      "scipy.signal: butter, filtfilt vs lfilter, welch, bode, tf2ss, cont2discrete",
+      "scipy.interpolate: interp1d, CubicSpline, RegularGridInterpolator for aero tables",
+      "scipy.spatial.transform.Rotation: from_quat, as_quat, from_euler, as_matrix, slerp",
+      "The scalar-last quaternion convention in SciPy and the scalar-first convention elsewhere",
+      "scipy.stats: distributions, rvs, fit, percentile-based reporting for Monte Carlo",
+      "scipy.constants and dimensional sanity",
+      "Choosing a solver from the structure of the problem"
+    ]
+  },
+  "cod_py_05_plotting": {
+    "covered": 0,
+    "total": 13,
+    "complete": false,
+    "missing": [
+      "Figure and Axes object API versus the pyplot state machine",
+      "subplots, shared axes, twin axes, gridspec, constrained layout",
+      "Line, scatter, step, stem, errorbar, fill_between for sigma envelopes",
+      "Log and semilog axes; annotated Bode, pole-zero and root-locus plots",
+      "Ticks, locators, formatters, datetime axes",
+      "Colour: colourblind-safe cycles, sequential vs diverging, when colour carries data",
+      "Text, annotation, legends outside axes, units in every axis label",
+      "Saving: vector formats, dpi, font embedding, figure size for a slide vs a report",
+      "Animation and interactive review; Plotly for exploratory telemetry",
+      "pandas: DataFrame, Series, DatetimeIndex, read_csv, read_parquet",
+      "resample, rolling, interpolate, groupby and agg",
+      "merge and merge_asof for aligning a 200 Hz IMU stream to 1 Hz GPS",
+      "Downsampling for plotting without hiding transients (min/max decimation)"
+    ]
+  },
+  "cod_py_06_testing": {
+    "covered": 0,
+    "total": 13,
+    "complete": false,
+    "missing": [
+      "pytest discovery rules, plain assert, and the rewritten assertion output",
+      "pytest.approx and its rel/abs semantics; the 1e-6 relative default",
+      "numpy.testing assert_allclose and assert_array_equal",
+      "parametrize for tables of cases; ids for readable failures",
+      "Fixtures, scopes, conftest.py, tmp_path, monkeypatch",
+      "Markers, -k, -x, --lf, and keeping the fast suite fast",
+      "Property-based testing with Hypothesis; invariants over examples",
+      "Golden-file regression tests with explicit tolerances",
+      "Testing numerical code: invariants, convergence order, conservation laws",
+      "Test doubles: fakes and mocks for sensors and hardware interfaces",
+      "Coverage with pytest-cov, and why coverage is a floor not a goal",
+      "ruff, black, mypy and pre-commit hooks",
+      "Docstrings in NumPy style and doctest"
+    ]
+  },
+  "cod_py_07_integration": {
+    "covered": 0,
+    "total": 12,
+    "complete": false,
+    "missing": [
+      "The initial value problem and local versus global truncation error",
+      "Euler, RK2, classic RK4 implemented by hand; order verification by step halving",
+      "Embedded pairs and adaptive step size control",
+      "solve_ivp methods: RK45, RK23, DOP853, Radau, BDF, LSODA",
+      "rtol and atol: what each controls and how to choose them from the state magnitudes",
+      "t_eval versus dense_output",
+      "Events: terminal, direction, apogee and impact detection",
+      "Stiffness: how to recognise it and when to switch to an implicit method",
+      "Energy and Jacobi-constant drift as an independent accuracy check",
+      "Symplectic integrators and long-horizon propagation",
+      "Discontinuities: staging, thrust cutoff and why you restart the solver",
+      "Fixed-step integration for real-time and code generation"
+    ]
+  },
+  "cod_py_08_performance": {
+    "covered": 0,
+    "total": 13,
+    "complete": false,
+    "missing": [
+      "Measure first: timeit, cProfile, pstats, snakeviz, line_profiler, memory_profiler",
+      "Algorithmic complexity before micro-optimisation",
+      "Vectorisation as the default; when it costs more memory than it saves time",
+      "Numba njit: nopython mode, supported subset, cache=True, parallel and prange",
+      "Why an njit function can be slower: compile time, object mode fallback, unsupported types",
+      "Cython and pybind11; calling a C++ simulation core from a Python harness",
+      "The GIL: what it does and does not block",
+      "Threads for I/O and released-GIL numerics, processes for CPU-bound Python",
+      "multiprocessing, concurrent.futures and joblib for embarrassingly parallel Monte Carlo",
+      "Serialisation cost and why passing large arrays between processes can dominate",
+      "numpy.memmap, chunking and Parquet for telemetry larger than memory",
+      "Caching and precomputation: lookup tables, interpolators built once",
+      "Benchmark methodology: warmup, repetitions, frequency scaling, noise"
+    ]
+  },
+  "cod_py_09_packaging": {
+    "covered": 0,
+    "total": 13,
+    "complete": false,
+    "missing": [
+      "The src layout and why it prevents accidental local imports",
+      "pyproject.toml: project metadata, dependencies, optional-dependencies, build-system",
+      "Build backends: setuptools, hatchling, flit",
+      "Editable installs and what they actually do",
+      "Wheels versus source distributions; manylinux",
+      "Console entry points for command-line tools",
+      "__init__.py, package versus namespace package, relative imports",
+      "Version pinning: exact pins for applications, ranges for libraries, lockfiles for both",
+      "Semantic versioning and how to decide a bump",
+      "Dependency resolution, extras, and the scientific-stack ABI problem",
+      "venv, pip, uv, conda and when each is the right answer",
+      "Sphinx and NumPy-style docstrings; README that lets a stranger run it",
+      "Publishing internally versus on PyPI; private indexes"
+    ]
+  },
+  "cod_cpp_01_basics": {
+    "covered": 0,
+    "total": 15,
+    "complete": false,
+    "missing": [
+      "Preprocess, compile, assemble, link: what each stage consumes and emits",
+      "Translation units, headers vs sources, include guards and pragma once",
+      "g++ and clang++ invocation; -Wall -Wextra -Wpedantic -Werror; -g; -O0 to -O3; -std=c++20",
+      "Reading a linker error: undefined reference, multiple definition",
+      "Fundamental types; fixed-width types from cstdint; size_t",
+      "Integer promotion, signed/unsigned pitfalls, signed overflow as undefined behaviour",
+      "const, constexpr, consteval, auto",
+      "Values, references and the difference from Python names",
+      "Functions, overloading, default arguments",
+      "Arrays vs std::array vs std::vector; range-based for",
+      "enum class; struct and class; access specifiers; namespaces",
+      "Declaration vs definition, the one-definition rule, inline, internal linkage",
+      "Scope, lifetime, and stack vs heap vs static storage",
+      "std::string vs const char*; iostream and std::format",
+      "assert and static_assert"
+    ]
+  },
+  "cod_cpp_02_memory": {
+    "covered": 0,
+    "total": 15,
+    "complete": false,
+    "missing": [
+      "Storage duration: automatic, static, thread-local, dynamic; lifetime and initialisation order",
+      "Pointers: dereference, arithmetic, nullptr, pointer-to-const vs const pointer, void*, function pointers",
+      "References: lvalue and rvalue, binding rules, lifetime extension of temporaries",
+      "Array-to-pointer decay and why sizeof breaks at a function boundary",
+      "new/delete, new[]/delete[], placement new",
+      "The stack: frames, stack overflow, why deep recursion is banned in flight code",
+      "The heap: fragmentation, non-deterministic allocation time, allocator behaviour",
+      "Dangling pointers, use-after-free, double free, buffer overrun, uninitialised reads",
+      "Alignment, alignas, struct padding, offsetof, packing and wire formats",
+      "Endianness and serialising telemetry",
+      "Strict aliasing; memcpy and std::bit_cast as the legal reinterpretation",
+      "volatile: what it does (memory-mapped I/O) and does not do (threads)",
+      "Value semantics vs reference semantics; the rule of zero, three and five",
+      "unique_ptr, make_unique, shared_ptr and its control block, weak_ptr and cycles",
+      "AddressSanitizer as the daily tool for this material"
+    ]
+  },
+  "cod_cpp_03_raii": {
+    "covered": 0,
+    "total": 16,
+    "complete": false,
+    "missing": [
+      "Constructors: default, parameterised, delegating, converting, explicit",
+      "Member initialiser lists and the actual initialisation order (declaration order, not list order)",
+      "Destructors; virtual destructors for polymorphic bases",
+      "Copy constructor and copy assignment; deep versus shallow",
+      "Move constructor and move assignment; noexcept on moves and why containers check it",
+      "= default and = delete; the special-member generation rules",
+      "Rule of five and rule of zero; copy-and-swap",
+      "const member functions and mutable",
+      "static members; friend functions",
+      "Operator overloading: arithmetic, comparison and the spaceship operator, subscript, call, stream",
+      "Inheritance, virtual, override, final; pure virtual and abstract classes",
+      "vtables and the real cost of dynamic dispatch",
+      "Object slicing and how to prevent it",
+      "Composition over inheritance; CRTP for static polymorphism",
+      "std::variant plus std::visit as a closed-set alternative to virtual dispatch",
+      "PIMPL for compilation firewalls"
+    ]
+  },
+  "cod_cpp_04_stl": {
+    "covered": 0,
+    "total": 17,
+    "complete": false,
+    "missing": [
+      "array, vector (size vs capacity, reserve, iterator invalidation), deque, list",
+      "map and set (red-black tree, ordered, node-based, cache-hostile)",
+      "unordered_map and unordered_set: hashing, load factor, worst case",
+      "span and string_view: non-owning views, and the dangling-view hazard",
+      "optional, variant, tuple, pair, bitset",
+      "Iterators and their categories; per-container invalidation rules",
+      "Algorithms: sort, stable_sort, nth_element, lower_bound, binary_search, find_if",
+      "transform, accumulate, reduce, copy_if, all_of/any_of/none_of, clamp, rotate, unique",
+      "The erase-remove idiom and C++20 std::erase_if",
+      "numeric: iota, inner_product, partial_sum",
+      "Execution policies and parallel algorithms",
+      "Lambdas: capture by value and reference, init-capture, mutable, generic lambdas",
+      "std::function versus templates versus function pointers, and its allocation",
+      "chrono: steady_clock for intervals, system_clock for wall time, never mixed",
+      "random: engines, distributions, reproducible seeding for Monte Carlo",
+      "C++20 ranges and views",
+      "Error handling: exceptions, error_code, expected, and why flight code disables exceptions"
+    ]
+  },
+  "cod_cpp_05_templates": {
+    "covered": 0,
+    "total": 14,
+    "complete": false,
+    "missing": [
+      "Function and class templates; argument deduction; explicit and partial specialisation",
+      "Non-type template parameters: the key to Matrix<double,3,3>",
+      "Variadic templates, parameter packs, fold expressions",
+      "typename vs class; dependent names and the typename/template disambiguators",
+      "Two-phase name lookup",
+      "SFINAE and enable_if, and the C++20 replacement: concepts and requires",
+      "Type traits: is_same, is_floating_point, conditional, decay, remove_cvref",
+      "constexpr functions, consteval, constinit, compile-time computation",
+      "if constexpr for compile-time branching",
+      "CRTP revisited for static polymorphism",
+      "Expression templates and lazy evaluation; how Eigen removes temporaries",
+      "Template instantiation cost, build-time blow-up, extern template",
+      "Policy-based design and when it beats inheritance",
+      "Reading a template error message without despair"
+    ]
+  },
+  "cod_cpp_06_modern": {
+    "covered": 0,
+    "total": 11,
+    "complete": false,
+    "missing": [
+      "C++11: auto, range-for, lambdas, move semantics, nullptr, enum class, constexpr, smart pointers, thread, override/final, std::array, chrono",
+      "C++14: generic lambdas, return type deduction, make_unique, variable templates",
+      "C++17: structured bindings, if/switch init statements, if constexpr, fold expressions, optional/variant/any, string_view, filesystem, parallel algorithms, guaranteed copy elision, CTAD",
+      "C++20: concepts, ranges, span, format, three-way comparison, designated initialisers, constinit/consteval, modules, coroutines, atomic_ref",
+      "C++23 highlights: expected, mdspan, print",
+      "Uniform initialisation and the initializer_list gotcha",
+      "Guaranteed copy elision and what it means for returning big objects",
+      "Why modules adoption is slow and what it will change",
+      "Why coroutines are rare in flight code",
+      "The flight subset: typically C++11/14/17 core, no exceptions, no RTTI, no dynamic allocation after init, restricted standard library",
+      "Modernising legacy code: what to change first and how to justify each change"
+    ]
+  },
+  "cod_cpp_07_concurrency": {
+    "covered": 0,
+    "total": 17,
+    "complete": false,
+    "missing": [
+      "Processes vs threads; std::thread and jthread; join and detach",
+      "Data races as undefined behaviour, not merely a wrong answer",
+      "mutex, lock_guard, unique_lock, scoped_lock, shared_mutex, recursive_mutex",
+      "Deadlock: the four conditions, lock ordering, std::lock and scoped_lock",
+      "condition_variable and spurious wakeups; the predicate form of wait",
+      "std::atomic and memory orderings: relaxed, acquire/release, seq_cst",
+      "The C++ memory model; is_lock_free; atomic_ref",
+      "future, promise, packaged_task, async, and thread pools",
+      "Lock-free single-producer single-consumer ring buffers for telemetry",
+      "Lock-free is not wait-free; progress guarantees",
+      "False sharing and hardware_destructive_interference_size",
+      "Hard, firm and soft real time; WCET and why average latency is irrelevant",
+      "Priority inversion and priority inheritance; the Mars Pathfinder case",
+      "RTOS landscape: FreeRTOS, RTEMS, VxWorks, Linux PREEMPT_RT",
+      "Rate-monotonic scheduling and utilisation bounds",
+      "sched_setscheduler, SCHED_FIFO, CPU pinning, mlockall",
+      "The SpaceX triple-redundancy architecture as a case study"
+    ]
+  },
+  "cod_cpp_08_realtime": {
+    "covered": 0,
+    "total": 15,
+    "complete": false,
+    "missing": [
+      "Worst-case execution time: measurement, static analysis and their limits",
+      "Static memory: pools, arenas, fixed-capacity containers, placement new at init",
+      "Stack-depth analysis and static stack bounding; no recursion",
+      "Bounded loops and why every loop needs a provable upper bound",
+      "Watchdogs, heartbeats and health monitoring",
+      "Fault detection, isolation and recovery; safe modes",
+      "Radiation effects: SEU, SEL, TID, and the software mitigations (voting, checksums, scrubbing, resets)",
+      "Interrupt service routines: what you may and may not do inside one",
+      "Cross-compiling to an embedded target with a CMake toolchain file",
+      "Linker scripts and memory regions; why you would move a function into RAM",
+      "Fixed-point arithmetic where floating point is unavailable or unqualified",
+      "Determinism and bit-exact reproducibility across compilers and platforms",
+      "The NASA/JPL Power of Ten rules",
+      "MISRA C++:2023, which absorbs AUTOSAR C++14; JSF++ AV and its F-35 origin",
+      "Static analysis: clang-tidy, cppcheck, Polyspace, LDRA, Helix QAC"
+    ]
+  },
+  "cod_cpp_09_eigen": {
+    "covered": 0,
+    "total": 16,
+    "complete": false,
+    "missing": [
+      "Matrix<Scalar, Rows, Cols>; Vector3d, Matrix3d, Quaterniond typedefs; Dynamic sizing",
+      "Why fixed-size types allocate nothing and unroll their loops",
+      "Storage order; Map for wrapping an external buffer with no copy",
+      "Block operations: block, head, tail, segment, row, col",
+      "Coefficient-wise operations via .array() versus matrix operations",
+      "Reductions and broadcasting",
+      "Decompositions: LLT and LDLT (Cholesky, the covariance workhorse), PartialPivLU, HouseholderQR, ColPivHouseholderQR, JacobiSVD, BDCSVD, SelfAdjointEigenSolver",
+      "Solving Ax=b with ldlt().solve(b) rather than inverting",
+      "The Geometry module: Quaterniond, AngleAxis, Translation, Isometry3d, Transform, slerp",
+      "The Quaterniond(w,x,y,z) constructor versus coeffs() returning x,y,z,w",
+      "Alignment, fixed-size vectorizable types and EIGEN_MAKE_ALIGNED_OPERATOR_NEW",
+      "Expression templates, lazy evaluation, aliasing, eval() and noalias()",
+      "Proving no allocation with EIGEN_RUNTIME_NO_MALLOC and set_is_malloc_allowed",
+      "Eigen to NumPy mental mapping",
+      "Neighbours: Sophus for Lie groups, Ceres and GTSAM for least squares and factor graphs, SymForce for generated C++",
+      "IEEE-754 in practice: fma, Kahan summation, condition number, reproducibility"
+    ]
+  },
+  "cod_cpp_10_cmake": {
+    "covered": 0,
+    "total": 14,
+    "complete": false,
+    "missing": [
+      "cmake_minimum_required, project, and why a modern minimum matters",
+      "add_library and add_executable; INTERFACE, STATIC and SHARED",
+      "target_link_libraries with PUBLIC, PRIVATE and INTERFACE, and what each propagates",
+      "target_include_directories, target_compile_features, target_compile_options, target_compile_definitions",
+      "Generator expressions and per-configuration settings",
+      "find_package and config packages; FetchContent versus submodules versus Conan or vcpkg",
+      "CMakePresets.json for reproducible configure and build commands",
+      "Out-of-source builds and CMAKE_BUILD_TYPE",
+      "Toolchain files for cross-compiling to an embedded target",
+      "install and export so downstream projects can find_package you",
+      "ctest and test registration",
+      "Canonical layout: apps, cmake, extern, include, src, tests",
+      "Sanitizer and coverage build configurations",
+      "ccache and build-time hygiene"
+    ]
+  },
+  "cod_cpp_11_gtest": {
+    "covered": 0,
+    "total": 14,
+    "complete": false,
+    "missing": [
+      "TEST and TEST_F; test suites and fixtures; SetUp and TearDown",
+      "ASSERT_* versus EXPECT_* and when a fatal assertion is correct",
+      "Floating-point assertions: EXPECT_NEAR, EXPECT_DOUBLE_EQ, and choosing the tolerance",
+      "TEST_P parameterised tests and value generators",
+      "Typed and type-parameterised tests for template code",
+      "Death tests for contract violations",
+      "GoogleMock: mocking an ISensor or HAL interface; EXPECT_CALL, matchers, cardinalities",
+      "NiceMock, StrictMock and what an uninteresting call means",
+      "Dependency injection as the precondition for mockability",
+      "gtest_discover_tests, CTest registration, test filters and labels",
+      "Catch2 as the alternative and what it trades",
+      "Coverage with gcov, lcov and llvm-cov; interpreting an uncovered branch",
+      "Sanitizer builds in the test matrix",
+      "Testing numerical kernels: invariants, convergence, golden data"
+    ]
+  },
+  "cod_mat_01_core": {
+    "covered": 0,
+    "total": 17,
+    "complete": false,
+    "missing": [
+      "The desktop, Command Window, Workspace, Editor and Live Editor",
+      "Everything is a matrix; the colon operator, linspace, zeros, ones, eye",
+      "One-based indexing, end, logical indexing, find",
+      "Element-wise .* ./ .^ versus matrix * / ^ (the single most common beginner error)",
+      "Backslash mldivide and why A\\b beats inv(A)*b",
+      "Concatenation, reshape, size, length, numel",
+      "struct, cell, table, categorical, string versus char",
+      "Control flow: if, switch, for, while, break, continue",
+      "Preallocation and why growing an array in a loop is fatal",
+      "fprintf, sprintf, disp; save/load and .mat files; readtable and writetable",
+      "Scripts versus functions and the base workspace: a classic interview question",
+      "Local, nested and anonymous functions; function handles; closures",
+      "nargin, nargout, varargin; arguments blocks and validateattributes",
+      "MATLAB OOP: classdef, handle versus value semantics",
+      "The Profiler, tic/toc, vectorisation, parfor",
+      "Plotting: plot, tiledlayout, yyaxis, semilogx, exportgraphics",
+      "timetable, synchronize and retime as the merge_asof equivalent"
+    ]
+  },
+  "cod_mat_02_gnc_toolboxes": {
+    "covered": 0,
+    "total": 17,
+    "complete": false,
+    "missing": [
+      "tf, zpk, ss, frd; series, parallel, feedback, connect, sumblk",
+      "step, impulse, lsim, initial, stepinfo",
+      "bode, nyquist, nichols, margin, allmargin, sigma",
+      "rlocus, pzmap, damp, pole, zero",
+      "c2d and d2c with zoh, tustin and prewarp; c2dOptions",
+      "ctrb, obsv, gram; place, acker; lqr, dlqr, lqi; kalman, lqg",
+      "minreal, balred, modred for model reduction",
+      "Control System Designer and PID Tuner; pidtune",
+      "Gain scheduling across a flight envelope; arrays of LTI models",
+      "Aerospace frames: ECI, ECEF, NED, ENU, body, wind, stability",
+      "dcm2angle, angle2dcm, dcm2quat, quat2dcm, quatmultiply, quatrotate",
+      "The scalar-first quaternion convention in MathWorks Aerospace products",
+      "Atmosphere models: atmosisa, atmoscoesa (valid to 86 km), atmosnrlmsise00",
+      "Gravity and magnetic models: gravitywgs84, gravitysphericalharmonic, wrldmagm",
+      "Dryden and von Karman turbulence; wind shear",
+      "Unit conversion helpers: convang, convvel, convforce, convmass, convlength",
+      "satelliteScenario for orbits, access and ground tracks"
+    ]
+  },
+  "cod_slk_01_models": {
+    "covered": 0,
+    "total": 14,
+    "complete": false,
+    "missing": [
+      "The Simulink Editor, Library Browser and block search",
+      "Signals and lines; Constant, Gain, Sum, Product, Integrator",
+      "Why the Derivative block is a trap in a feedback loop",
+      "Transfer Fcn and State-Space blocks",
+      "Sources: Step, Ramp, Sine Wave, Clock, Signal Editor",
+      "Sinks: Scope, Display, To Workspace; the Simulation Data Inspector",
+      "Mux versus Bus Creator, and never using Mux for dissimilar signals",
+      "Selector and Demux",
+      "Nonlinear blocks: Saturation, Rate Limiter, Dead Zone, Quantizer, Switch, Relay, MinMax",
+      "Lookup Table (n-D) for aerodynamic and engine data",
+      "MATLAB Function block (code-generation-compatible subset) versus Interpreted MATLAB Function",
+      "Model parameters in the base workspace versus mask parameters",
+      "The Diagnostic Viewer and reading a model error",
+      "Comparing a model result to an analytic solution as the first habit"
+    ]
+  },
+  "cod_slk_02_solvers": {
+    "covered": 0,
+    "total": 13,
+    "complete": false,
+    "missing": [
+      "Variable-step versus fixed-step: error control and zero-crossing detection versus determinism",
+      "Continuous solvers: ode45 (Dormand-Prince, the default starting point), ode23, ode113",
+      "Stiff solvers: ode15s, ode23s, ode23t, ode23tb; daessc",
+      "Fixed-step solvers: ode1 (Euler), ode2, ode4 (classic RK4), ode5, ode8, ode14x, ode1be",
+      "RelTol and AbsTol; max step size and when to constrain it",
+      "Solver reset method Fast versus Robust",
+      "Zero-crossing detection: how it works, chattering, adaptive versus non-adaptive, the consecutive-crossing limit",
+      "Fixed-step zero-crossing for real-time: bounded, deterministic event cost",
+      "Sample times: continuous, discrete, inherited, constant; colour coding",
+      "Multirate models and Rate Transition blocks; data integrity versus determinism options",
+      "Algebraic loops: what creates them, the Algebraic Constraint block, breaking them with a unit delay and its phase cost",
+      "The Solver Profiler",
+      "The golden rule for deployable models: fixed-step, cleanly multirate, no algebraic loops"
+    ]
+  },
+  "cod_slk_03_architecture": {
+    "covered": 0,
+    "total": 18,
+    "complete": false,
+    "missing": [
+      "Virtual versus atomic subsystems: execution ordering and code-generation consequences",
+      "Enabled, triggered and function-call subsystems; If and Switch Case action subsystems; For Each",
+      "Masking: parameters, icons, callbacks, self-documenting blocks",
+      "Simulink.Bus objects as interface contracts; Bus Creator, Selector, Assignment; nested buses",
+      "Virtual versus non-virtual buses, and why non-virtual buses become C structs",
+      "Model reference: separate compilation, incremental build, interface checking, accelerator modes",
+      "convertToModelReference and the objects it generates",
+      "Variant subsystems, variant models and variant source/sink for flight versus test builds",
+      "Data dictionaries (.sldd) versus the base workspace; per-subsystem dictionaries",
+      "Simulink.Parameter, Simulink.Signal and storage classes",
+      "Libraries and linked blocks; Simulink Projects under source control",
+      "Stateflow: states, hierarchy, transitions, junctions, default transitions",
+      "entry, during and exit actions; condition actions versus transition actions",
+      "Parallel (AND) versus exclusive (OR) decomposition",
+      "Temporal logic: after, before, every, at, duration",
+      "Events versus conditions, and why flight teams often ban events",
+      "Transition evaluation order and guaranteeing mutual exclusivity",
+      "A launch-vehicle mode sequencer and FDIR/safe-mode logic"
+    ]
+  },
+  "cod_slk_04_codegen": {
+    "covered": 0,
+    "total": 21,
+    "complete": false,
+    "missing": [
+      "The MIL to SIL to PIL to HIL progression and what each step proves",
+      "Simulink Test: harnesses, test sequences, assessments, baseline and equivalence tests, headless CI runs",
+      "Simulink Coverage: decision, condition, MC/DC, lookup-table, signal-range and relational-boundary coverage",
+      "Interpreting missing coverage as a missing test or as dead logic",
+      "Requirements Toolbox: authoring, linking to blocks and tests, traceability matrices, change tracking",
+      "Model Advisor with MAB and JMAAB guidelines and the high-integrity check packs",
+      "Polyspace Bug Finder and Code Prover: proving absence of run-time errors without test cases",
+      "Simulink Coder versus Embedded Coder; the ert.tlc system target file",
+      "Hardware implementation settings: word sizes, endianness, target CPU",
+      "Solver constraints for code generation: fixed-step, discrete, no algebraic loops",
+      "Storage classes and the data interface: ExportedGlobal, ImportedExtern, Volatile, custom classes",
+      "Code mappings: step, initialize and terminate entry points; reusable and reentrant code",
+      "Tunable versus inlined parameters; Fixed-Point Designer for MCU targets",
+      "Code replacement libraries for vendor intrinsics",
+      "Traceability: generated C comments and the HTML report linking back to blocks",
+      "Code metrics: RAM, ROM and stack; the Code Profile Analyzer",
+      "SIL and PIL as Model block simulation modes; equivalence testing against the model",
+      "Integrating generated code with a hand-written C++ application",
+      "S-functions and the Legacy Code Tool for wrapping existing C",
+      "DO Qualification Kit and what qualifying a tool means",
+      "Real-time targets and HIL: Speedgoat, dSPACE, OPAL-RT; RCP versus HIL; fault injection"
+    ]
+  },
+  "cod_rs_01_basics": {
+    "covered": 0,
+    "total": 15,
+    "complete": false,
+    "missing": [
+      "rustup, toolchains, editions; cargo new, build, run, test, doc, clippy, fmt",
+      "Cargo.toml, dev and release profiles, workspaces, semver and feature flags",
+      "Variables, mut, shadowing; scalar and compound types",
+      "Integer overflow: panics in debug, wraps in release; checked, wrapping and saturating operations",
+      "String versus &str",
+      "Control flow; loop, while let, for",
+      "Pattern matching and match exhaustiveness",
+      "struct, enum as real sum types, impl blocks",
+      "Modules, pub, paths, use",
+      "Slices and arrays; Vec, HashMap, BTreeMap",
+      "Option and Result, the absence of null, and the ? operator",
+      "Iterators and adapters and their zero-cost nature",
+      "Closures: Fn, FnMut, FnOnce",
+      "derive macros; cfg attributes; doc tests",
+      "clippy as a teaching tool"
+    ]
+  },
+  "cod_rs_02_ownership": {
+    "covered": 0,
+    "total": 16,
+    "complete": false,
+    "missing": [
+      "The three ownership rules; move by default and Copy types",
+      "Borrowing: shared &T versus exclusive &mut T",
+      "Aliasing XOR mutability and why it removes data races and iterator invalidation by construction",
+      "Reading borrow-checker errors instead of fighting them",
+      "Lifetimes: elision rules, explicit annotations, lifetimes in structs, static",
+      "Interior mutability: Cell, RefCell and its runtime panics, Rc, Arc, Mutex, RwLock, OnceLock",
+      "Send and Sync: thread safety as a type-system property",
+      "Box and Pin (awareness); Drop as Rust RAII",
+      "unsafe: the five superpowers, and the discipline of wrapping it in a safe abstraction with documented invariants",
+      "Traits: definition, default methods, associated types versus generic parameters, where clauses, blanket impls, the orphan rule",
+      "Static dispatch (impl Trait, generics) versus dynamic dispatch (dyn Trait, fat pointers)",
+      "Operator traits, From/Into, TryFrom, Display, Debug, Default, Iterator, Deref",
+      "Error handling: custom error enums, thiserror for libraries, anyhow for applications",
+      "panic versus recoverable errors; unwrap and expect discipline; panic = abort",
+      "Testing: #[test], integration tests, criterion benchmarks, proptest, cargo-fuzz, miri",
+      "Mapping each concept back to its C++ equivalent"
+    ]
+  },
+  "cod_rs_03_aerospace": {
+    "covered": 0,
+    "total": 16,
+    "complete": false,
+    "missing": [
+      "no_std and no_main; core versus alloc versus std",
+      "Panic handlers; cortex-m and cortex-m-rt; the entry attribute, vector tables, memory.x",
+      "embedded-hal 1.0 as the driver ecosystem contract; PACs from svd2rust; HAL crates",
+      "Embassy as the async-first embedded framework family, and RTIC for static-priority hard real time",
+      "Hubris (Oxide) and Tock as all-Rust microcontroller operating systems",
+      "defmt logging, probe-rs, cargo-embed, rtt-target",
+      "heapless collections: Vec, String and spsc::Queue with static capacity",
+      "critical-section and static_assertions",
+      "FFI both directions: extern C, no_mangle, bindgen, cbindgen, and Rust modules inside an existing C or C++ flight codebase",
+      "nalgebra: type-level dimensions, SMatrix versus DMatrix, and when it allocates",
+      "nalgebra geometry: UnitQuaternion, Rotation3, Isometry3, slerp; no_std support",
+      "Neighbouring crates: ndarray, argmin, nyx-space, hifitime, micromath, libm",
+      "Certification: DO-178C DAL levels, structural coverage, DO-330 tool qualification, ECSS-Q-ST-80C",
+      "Ferrocene: the qualified Rust toolchain and exactly what its qualification covers",
+      "ESA activity: cRustacea in Space (DLR), the armv7-rtems-eabihf target, ADCSS 2024",
+      "What the evidence actually supports about Rust at SpaceX, and the fabricated claims to reject"
+    ]
+  },
+  "cod_sql_01_select": {
+    "covered": 0,
+    "total": 10,
+    "complete": false,
+    "missing": [
+      "Relations, rows, columns and domains; primary and foreign keys",
+      "NULL and three-valued logic; the = NULL trap; IS NULL and IS NOT NULL",
+      "SELECT, FROM, WHERE; comparison, BETWEEN, IN, LIKE",
+      "ORDER BY, LIMIT and OFFSET; DISTINCT",
+      "Expressions and CASE WHEN",
+      "Data types: INTEGER, NUMERIC versus REAL, and why timestamps and money never use floats",
+      "TIMESTAMPTZ versus TIMESTAMP, intervals, and why aerospace stores UTC",
+      "COALESCE, NULLIF, CAST",
+      "Logical versus physical query order: FROM, WHERE, GROUP BY, HAVING, SELECT, ORDER BY, LIMIT",
+      "Reading a schema you did not write"
+    ]
+  },
+  "cod_sql_02_joins": {
+    "covered": 0,
+    "total": 13,
+    "complete": false,
+    "missing": [
+      "INNER, LEFT, RIGHT and FULL OUTER joins; CROSS join; self-joins",
+      "ON versus USING; why NATURAL JOIN is a trap",
+      "Join cardinality reasoning and the fan-out trap when aggregating after a one-to-many join",
+      "GROUP BY and HAVING; the difference between WHERE and HAVING",
+      "COUNT(*) versus COUNT(col); SUM, AVG, MIN, MAX",
+      "STRING_AGG and ARRAY_AGG; PERCENTILE_CONT",
+      "FILTER (WHERE ...) for conditional aggregation",
+      "GROUPING SETS, ROLLUP and CUBE",
+      "Scalar, row and table subqueries; correlated subqueries",
+      "EXISTS versus IN versus JOIN, and their NULL semantics",
+      "Common table expressions and chained CTEs for readability",
+      "Recursive CTEs for hierarchies and for gap-filling a time series",
+      "UNION, UNION ALL, INTERSECT and EXCEPT"
+    ]
+  },
+  "cod_sql_03_windows": {
+    "covered": 0,
+    "total": 12,
+    "complete": false,
+    "missing": [
+      "OVER (PARTITION BY ... ORDER BY ...) and how a window differs from a group",
+      "Ranking: ROW_NUMBER, RANK, DENSE_RANK, NTILE, PERCENT_RANK",
+      "Offsets: LAG and LEAD, FIRST_VALUE, LAST_VALUE, NTH_VALUE",
+      "Aggregate windows: running totals and moving averages",
+      "Frames: ROWS BETWEEN n PRECEDING AND CURRENT ROW versus RANGE BETWEEN an interval",
+      "The default frame and the classic LAST_VALUE surprise",
+      "Deduplication with ROW_NUMBER filtered to 1",
+      "Gaps and islands: detecting contiguous runs",
+      "Sessionisation of event streams",
+      "DISTINCT ON in PostgreSQL for latest-per-key",
+      "Downsampling and binning with date_trunc or time_bucket",
+      "When a window function beats a self-join, and when it does not"
+    ]
+  },
+  "cod_sql_04_schema": {
+    "covered": 0,
+    "total": 18,
+    "complete": false,
+    "missing": [
+      "Normalisation to third normal form and deliberate denormalisation for analytics",
+      "Star and snowflake schemas; surrogate versus natural keys",
+      "Constraints: NOT NULL, UNIQUE, CHECK, foreign keys with ON DELETE",
+      "Transactions and ACID; isolation levels; deadlocks",
+      "Index types: B-tree, hash, GIN and GiST, and BRIN for append-only time-ordered data",
+      "Composite indexes and the left-prefix rule; covering indexes and index-only scans",
+      "Partial indexes; why a low-cardinality index is usually useless",
+      "Index maintenance cost on a write-heavy ingest path",
+      "EXPLAIN and EXPLAIN ANALYZE: sequential versus index versus bitmap heap scan; nested loop versus hash versus merge join",
+      "Estimated versus actual rows as the tell for stale statistics",
+      "SARGability: why wrapping an indexed column in a function kills the index",
+      "Range partitioning by time; clustering; materialised views and continuous aggregates",
+      "Columnar storage and Parquet; batch versus streaming ingest",
+      "Upserts and idempotent ingest for duplicated downlink frames",
+      "The telemetry lifecycle: vehicle, downlink, decommutation, time-series store, analysis, report",
+      "Time-series stores: InfluxDB, TimescaleDB, ClickHouse; the reported Starlink stack of Kafka, HBase, HDFS on Docker and Kubernetes",
+      "Data quality: gap detection, out-of-order packets, vehicle-to-ground clock skew, duplicate frames",
+      "Export control and retention for flight data; reproducibility of every published plot"
+    ]
+  },
+  "cod_cad_01_drawings": {
+    "covered": 0,
+    "total": 15,
+    "complete": false,
+    "missing": [
+      "Orthographic projection; third-angle (US) versus first-angle (ISO) and the symbol that identifies which",
+      "Views: front, top, right, auxiliary, section (full, half, offset, broken-out), detail, isometric",
+      "Line types: visible, hidden, centre, phantom, section; line weights",
+      "Scales and their notation",
+      "Title block, revision block, revision letters and change bars",
+      "The drawing as the legal definition of the part",
+      "Bills of material, item balloons and find numbers",
+      "General notes and flag notes",
+      "Surface finish symbols; weld symbols",
+      "Tolerances: limit, plus/minus, bilateral and unilateral",
+      "Tolerance stack-up: worst case versus root-sum-square",
+      "Fits: clearance, transition, interference",
+      "Fastener and thread callouts; materials and specifications",
+      "ASME Y14.100 drawing practices, Y14.24 drawing types, Y14.41 model-based definition",
+      "Export-control markings on aerospace drawings"
+    ]
+  },
+  "cod_cad_02_gdt": {
+    "covered": 0,
+    "total": 15,
+    "complete": false,
+    "missing": [
+      "Why GD&T exists: coordinate tolerancing makes square zones and ambiguous setups",
+      "Anatomy of a feature control frame",
+      "Datums, datum features, the datum reference frame, the 3-2-1 rule and degrees of freedom",
+      "Datum targets and datum precedence",
+      "Form: flatness, straightness, circularity, cylindricity",
+      "Orientation: perpendicularity, angularity, parallelism",
+      "Location: position, concentricity, symmetry",
+      "Profile of a line and profile of a surface, increasingly dominant in aerostructures",
+      "Runout: circular and total",
+      "Material condition modifiers MMC, LMC and RFS; bonus tolerance",
+      "Virtual condition; composite position tolerance; projected tolerance zone",
+      "Free-state variation for thin-wall aerospace parts",
+      "Tolerance stack-up with geometric controls",
+      "CMM inspection and how GD&T maps onto measurement",
+      "PMI annotation in a model-based-definition workflow"
+    ]
+  },
+  "cod_cad_03_tools": {
+    "covered": 0,
+    "total": 19,
+    "complete": false,
+    "missing": [
+      "AutoCAD: the command line as the real interface; absolute, relative and polar coordinate entry",
+      "Object snaps, ortho and polar tracking",
+      "Draw and modify: line, polyline, arc, offset, trim, extend, fillet, array, stretch",
+      "Layers as the core discipline: name, colour, linetype, lineweight, plot state, freeze versus off",
+      "Blocks, attributes, dynamic blocks and external references",
+      "Annotation: text styles, dimension styles, multileaders, annotative scaling",
+      "Model space versus paper space; layouts, viewports and viewport scale; plot styles; sheet sets",
+      "Templates, standards files, DWG versus DXF",
+      "Where AutoCAD genuinely lives in aerospace: facility and site layouts, ground support equipment, test-stand drawings, electrical and harness schematics, P&IDs, tooling layouts",
+      "Parametric feature-based modelling: sketches, constraints, fully defined sketches",
+      "Features: extrude, revolve, sweep, loft, fillet, shell, rib, draft, hole wizard, patterns, configurations",
+      "The feature tree, parent-child relationships, design intent, robust versus fragile modelling",
+      "Assemblies: mates, sub-assemblies, in-context design and its dangers, interference detection",
+      "Mass properties: where the mass, centre of gravity and inertia tensor for a 6-DOF simulation come from",
+      "Drawings from models; PMI and model-based definition",
+      "Sheet metal, weldments and surfacing (awareness); outer mould line",
+      "Interchange formats: STEP, IGES, Parasolid, JT, and translation fidelity",
+      "The landscape: NX plus Teamcenter at SpaceX; CATIA at Boeing and Airbus; Creo in defence; SolidWorks at suppliers and startups; Onshape and Fusion as cloud-native newcomers",
+      "PLM concepts: part numbers, revisions versus versions, effectivity, ECO and ECR, as-designed versus as-built versus as-flown"
+    ]
+  },
+  "cod_int_01_algorithms": {
+    "covered": 0,
+    "total": 12,
+    "complete": false,
+    "missing": [
+      "The honest calibration: medium level, not the main event, with real-world framing preferred",
+      "Preparing in C++ if targeting flight software; Python for the take-home",
+      "High-yield patterns: arrays and two pointers, sliding window, hash maps, binary search including on the answer",
+      "Sorting and intervals; stacks and queues; linked lists",
+      "Trees and BFS/DFS; graphs including topological sort; heaps; prefix sums; light dynamic programming; bit manipulation",
+      "What to skip: exotic dynamic programming, advanced graph theory, segment trees",
+      "Complexity analysis you can say out loud, including the space term",
+      "The engineering variants: binary protocol decommutation, telemetry dropout detection, two-rate time alignment, ring buffer, PID with anti-windup, running median over a stream",
+      "struct, endianness and checksums in Python; bit twiddling in C++",
+      "Talking while solving: restate, clarify, state the approach and its complexity, then code",
+      "Testing your own solution before saying you are done",
+      "Roughly 120 to 150 problems is sufficient, grouped by pattern and timed"
+    ]
+  },
+  "cod_int_02_onsite": {
+    "covered": 0,
+    "total": 13,
+    "complete": false,
+    "missing": [
+      "The reported process: recruiter screen, a two to four hour take-home or timed challenge, technical rounds, a day-long onsite of four to six rounds, behavioural throughout",
+      "US person status under ITAR as a hard gate for essentially all roles",
+      "Systems C++ round: pointers and memory, double delete, RAII, rule of five, unique_ptr versus shared_ptr, virtual destructors, vtable layout, move semantics, undefined behaviour, static and const and volatile, data races, cache effects",
+      "Live debugging: here is code that crashes or leaks, find it",
+      "Engineering system design: GNC simulation infrastructure for a constellation; a telemetry pipeline for six thousand satellites; how you would verify this flight software; how you would architect a fault-tolerant flight computer",
+      "Knowing the SpaceX answer: three dual-core x86 flight strings, per-string core cross-check, PowerPC actuator controllers judging three commands",
+      "Domain rounds for GNC roles: PD control, orbit determination, frequency domain, aerodynamic drag with real examples",
+      "The technical presentation: about twelve minutes of slides and twenty-plus minutes of debate",
+      "Behavioural themes: mission alignment, extreme ownership, operating with ambiguity and speed, intellectual honesty about failure",
+      "Saying what you personally modelled, coded, analysed, tuned, tested or debugged versus what the team did",
+      "Fermi and order-of-magnitude estimation out loud",
+      "Building six to eight STAR stories from the capstones, each with a number in it",
+      "Questions to ask that show you understand the work"
+    ]
+  },
+  "car_01_itar_gate": {
+    "covered": 0,
+    "total": 10,
+    "complete": false,
+    "missing": [
+      "why launch vehicles and spacecraft are ITAR-controlled under the US Munitions List",
+      "the four eligible statuses named verbatim in SpaceX postings",
+      "what being eligible to obtain authorization from the US Department of State does and does not mean",
+      "deemed exports: why physical location does not cure the problem",
+      "where in the pipeline eligibility is confirmed",
+      "roles that additionally require obtaining and maintaining a Top Secret clearance",
+      "pre-employment and random drug and alcohol testing",
+      "the stated expectation of extended hours and weekends to meet critical deadlines",
+      "what a non-US-person can realistically target instead: non-ITAR employers, European, UK, Canadian, Australian and Japanese space sectors, academia, and a long-horizon immigration path",
+      "the difference between an ITAR restriction and an employer preference"
+    ]
+  },
+  "car_02_role_families": {
+    "covered": 0,
+    "total": 13,
+    "complete": false,
+    "missing": [
+      "the GNC org as SpaceX describes it: vehicle design, trajectory design and optimization, high-fidelity vehicle simulation, software and control algorithm development, plus launch and on-orbit operations support across multiple vehicle programs",
+      "GNC Engineer (Starship): ascent, entry and landing control, 6-DOF simulation, flight control of the largest vehicle ever flown",
+      "GNC Engineer and Sr. GNC Software Engineer (Falcon): booster entry, descent and landing, and reuse",
+      "GNC Engineer (Dragon): mission design, rendezvous and docking with the ISS, deorbit, reentry, abort",
+      "GNC Engineer, ADCS (Starlink and Starshield): attitude determination and control, reaction wheels, torque rods, momentum management",
+      "Navigation and State Estimation, Navigation and Orbit Determination, Precise Navigation Solutions (Starlink): star tracker and signals-based attitude determination, inertial propagation, GNSS, orbit determination",
+      "Starlink Controls and Embedded Controls: solar array actuators, antenna gimbals, active optics, Hall thruster fluid and power control",
+      "Device Navigation and Beam Pointing, Beam Planning: user terminal pointing, RF and optical link pointing",
+      "Software Engineer, GNC (Starship) and GNC Software Engineer, Operations Automation: analysis tools, pipelines, automation",
+      "Site Reliability Engineer, GNC: HPC Monte Carlo infrastructure, CI for rocket and simulation software",
+      "GNC Engineer (Starfall): reentry and recovery of a returnable payload capsule, first flight June 2026",
+      "newer programs seen in 2026 postings: Starfall, Starmind (Embedded Controls, AI Satellites), Starshield",
+      "how family choice changes what you must be able to demonstrate"
+    ]
+  },
+  "car_03_levels_and_quals": {
+    "covered": 0,
+    "total": 10,
+    "complete": false,
+    "missing": [
+      "BASIC versus PREFERRED qualifications: hard filter versus ranking signal",
+      "New Graduate Engineer, GNC (26/27, Starlink, Redmond WA): required and preferred",
+      "GNC Engineer Level I to II: the 2+ years line and the Dragon 1+ years variant",
+      "the full preferred list for GNC Engineer and what each item signals",
+      "Sr. GNC Engineer: 5+ years, or 7+ years in lieu of a degree, or a postgraduate degree",
+      "specialist roles requiring a Master’s or PhD",
+      "Site Reliability Engineer, GNC: the verbatim 4+ years in lieu of a degree line",
+      "what capable of solving complex problems with little to no supervision is testing",
+      "how recruiters map your experience onto a level, and why level is set before the offer",
+      "honest self-assessment against each list"
+    ]
+  },
+  "car_04_degree_reality": {
+    "covered": 0,
+    "total": 10,
+    "complete": false,
+    "missing": [
+      "why the basic-qualification line is enforced at the recruiter stage rather than at interview",
+      "what this platform can do and what it cannot: it builds capability, not a credential",
+      "Path 1, degree-parallel: use the curriculum to be the strongest candidate in a graduating cohort, because the real differentiator is demonstrated shipped 6-DOF, estimation and guidance work that almost no new grad has",
+      "accredited routes that fit alongside work: ABET-accredited part-time and online bachelor’s programmes, community college transfer, competency-based models",
+      "Path 2, side door then transfer: SRE GNC allows 4+ years of professional software or SRE experience in lieu of a degree and sits inside the GNC org; GNC Software Engineer and simulation and tools roles weight software skill heavily; internal transfer at SpaceX is common",
+      "Path 3, NewSpace ladder: Varda, Stoke, Firefly, Astra, True Anomaly, Impulse, Relativity and Intuitive Machines hire GNC with looser credential gates, and 2 to 3 years there converts to 5+ years professional GNC experience or 7+ years in lieu of a degree at SpaceX senior level",
+      "realistic timelines for each path, stated in years",
+      "the two failure modes: believing a portfolio replaces the degree, and believing nothing but the degree matters",
+      "sunk-cost traps and how to choose deliberately rather than by default",
+      "what to do if you are already mid-career in another field"
+    ]
+  },
+  "car_05_tooling_reality": {
+    "covered": 0,
+    "total": 13,
+    "complete": false,
+    "missing": [
+      "the verbatim expectation: implementation, validation, unit testing, and deployment of production software primarily in C++",
+      "GNC engineers write flight code themselves rather than handing prototypes to a software team",
+      "Python for analysis, tooling, pipelines and test infrastructure",
+      "MATLAB and Simulink as secondary skills and why the curriculum is not MATLAB-first",
+      "flight computers: embedded Linux, a roughly 3.2 series kernel with real-time patches, on Dragon, Falcon and Starship primary flight computers",
+      "determinism, fixed-step integration and bounded execution time in a flight control loop",
+      "why dynamic allocation, unbounded loops and exceptions are avoided in the control path",
+      "redundancy, voting and fault management as first-class design concerns",
+      "6-DOF simulation stacks and what high fidelity actually means",
+      "Monte Carlo dispersion campaigns across tens of thousands of CPUs and what they are used to prove",
+      "infrastructure: Linux, Docker, Kubernetes, Ansible, Puppet, Terraform, Bazel-class build systems",
+      "continuous integration for rocket and simulation software",
+      "version control, code review and what production-quality means at senior level"
+    ]
+  },
+  "car_06_portfolio": {
+    "covered": 0,
+    "total": 13,
+    "complete": false,
+    "missing": [
+      "portfolio principles: few, deep, documented, defensible, reproducible",
+      "anchor project A — 6-DOF launch vehicle simulation with a real atmosphere model and dispersion campaign",
+      "anchor project B — powered descent guidance with a landing accuracy Monte Carlo",
+      "anchor project C — multiplicative quaternion EKF fusing IMU and star tracker, with NEES and NIS consistency checks",
+      "anchor project D — batch least-squares orbit determination fitted to real GNSS or TLE-derived data",
+      "anchor project E — ADCS momentum management with reaction wheels and magnetorquers",
+      "hardware-adjacent work: a real IMU, a thrust-vector-control testbed, a balancing robot, to evidence sensor reality",
+      "the write-up structure: problem, model, assumptions, verification, validation, results, limitations",
+      "stating how you know the result is right: analytic cases, conservation checks, convergence, cross-comparison",
+      "reproducibility: seeded, one-command, CI, pinned dependencies",
+      "open-sourcing, licensing, and what to do about prior-employer intellectual property",
+      "what not to build: tutorial follow-alongs, notebooks without validation, thirty shallow repositories",
+      "how the portfolio feeds the past-project presentation round"
+    ]
+  },
+  "car_07_resume_and_referrals": {
+    "covered": 0,
+    "total": 13,
+    "complete": false,
+    "missing": [
+      "one page, reverse chronological, and what belongs in the top third",
+      "encoding the basic qualifications so a keyword scan finds them: control systems, orbital mechanics, classical dynamics, aerodynamics, sensors and actuators, modeling and simulation, C++ and Python",
+      "quantified bullets: what you did, how, and the measured result",
+      "the projects section as the primary section for candidates without industry GNC experience",
+      "skills sections without proficiency bar graphics",
+      "applicant tracking system parsing: no tables, no multi-column layouts, no images, standard headings, PDF",
+      "tailoring to one role family rather than submitting one generic resume everywhere",
+      "the cover letter question and when it is worth the time",
+      "applying directly at spacex.com/careers and what happens next",
+      "referrals: who can refer, how to ask, and what to give the referrer to make it easy",
+      "community and conferences: AIAA and AAS Space Flight Mechanics, SmallSat, university seminars, open-source contribution",
+      "recruiter outreach on LinkedIn done well and done badly",
+      "reapplication cadence and what must change between attempts"
+    ]
+  },
+  "car_08_pipeline": {
+    "covered": 0,
+    "total": 12,
+    "complete": false,
+    "missing": [
+      "overall timeline: 5 to 8 weeks, up to roughly nine touchpoints",
+      "stage 1 — recruiter screen, 20 to 30 minutes: background, motivation, ITAR confirmation",
+      "stage 2 — technical phone screen, 30 minutes and sometimes 60 to 90, with a team engineer or the hiring manager",
+      "stage 3 — take-home exercise for some software and firmware roles",
+      "stage 4 — full-day onsite: 5 to 7 back-to-back interviews, often 8+ hours, sometimes with a facility tour",
+      "onsite composition: past-project presentation, 2 to 3 coding rounds, 1 to 2 systems and architecture rounds, 1+ domain-knowledge round, abstract problem solving, physics puzzles and Fermi estimation",
+      "stage 5 — behavioural and culture, using STAR",
+      "debrief and decision; how a hiring committee weighs mixed signals",
+      "Glassdoor difficulty rating of 2.8 out of 5 for GNC Engineer, and what that really indicates",
+      "logistics and stamina: sleep, food, water, breaks, and how to ask for one",
+      "what to ask at each stage, and what not to ask yet",
+      "handling rejection and the path back in"
+    ]
+  },
+  "car_09_screens": {
+    "covered": 0,
+    "total": 12,
+    "complete": false,
+    "missing": [
+      "recruiter screen structure and the questions actually asked: background, motivation, export-control eligibility, location and relocation, timeline, compensation expectations",
+      "the 90-second background narrative and how to end it on a specific role family",
+      "answering the compensation question early without anchoring yourself low",
+      "the technical phone screen: 30 minutes, an engineer on the team or the hiring manager",
+      "reported topics: PD control, orbit determination, frequency-domain analysis",
+      "resume depth: expect to be asked to go deeper on any line you wrote",
+      "verbal derivation discipline without a whiteboard: narrate the setup, name the variables, state assumptions",
+      "asking clarifying questions before answering",
+      "recovering from a blank without bluffing",
+      "the difference between I do not know and I do not know, here is how I would find out",
+      "questions to ask the interviewing engineer",
+      "follow-up etiquette and timelines"
+    ]
+  },
+  "car_10_past_project_presentation": {
+    "covered": 0,
+    "total": 13,
+    "complete": false,
+    "missing": [
+      "the format: submit roughly five topics, they choose one, 10 to 20 minutes to a panel of 5 to 10 engineers, then extensive Q and A",
+      "choosing five topics so that every one is defensible and each shows a different competency",
+      "the trap of listing a project you cannot defend in depth",
+      "talk structure: problem, why it was hard, approach, the key decision and the alternatives rejected, verification, result, what you would do differently",
+      "assertion-evidence slide design: a sentence headline that states the claim, a figure that proves it, no bullet dumps",
+      "how many slides for 10 to 20 minutes, and why fewer is safer",
+      "the backup-slide appendix for anticipated questions",
+      "the four evaluation axes: technical depth, communication clarity, simplicity of design approach, and defending engineering decisions under direct questioning",
+      "presenting to a panel of 5 to 10: address the asker, then return to the room",
+      "answering why did you not do X and what was your actual contribution",
+      "saying I do not know, here is how I would find out",
+      "rehearsal protocol: record yourself, present to a hostile reviewer, time it, drill 30 anticipated questions",
+      "intellectual property and export-control hygiene about a previous employer’s work"
+    ]
+  },
+  "car_11_domain_round": {
+    "covered": 0,
+    "total": 14,
+    "complete": false,
+    "missing": [
+      "stability margins: gain margin, phase margin and delay margin, what each means physically and why you need all three",
+      "reading margins from a Bode plot and from a Nyquist plot; the Nyquist criterion",
+      "why a large gain margin with a small phase margin is still a fragile design",
+      "the Kalman filter in linear form: the predict and update equations and what each term does",
+      "the extended Kalman filter: Jacobians, where linearisation fails, and divergence modes",
+      "the unscented Kalman filter: sigma points, why it exists and when it is worth the cost",
+      "filter tuning and consistency: process noise, measurement noise, NEES and NIS",
+      "attitude determination: Wahba’s problem stated formally",
+      "solutions to Wahba: Davenport’s q-method, the SVD method, QUEST, and TRIAD as the degenerate two-vector case",
+      "the multiplicative quaternion EKF and why the error state is three-dimensional",
+      "strapdown IMU integration, bias states and gyro propagation",
+      "PID structure, integral windup and anti-windup, derivative filtering, and a defensible tuning approach",
+      "orbit determination: observability, batch least squares versus sequential filtering, measurement types",
+      "the answering standard: state assumptions, write the equation, interpret physically, sanity check"
+    ]
+  },
+  "car_12_first_principles": {
+    "covered": 0,
+    "total": 15,
+    "complete": false,
+    "missing": [
+      "the standard interviewers describe: state assumptions fast, work through the math without drift, sanity check at the end",
+      "why candidates who ramble or stall lose this round even when they know the material",
+      "variable-mass Newtonian mechanics and the thrust term as momentum flux plus a pressure term",
+      "deriving Tsiolkovsky from the variable-mass equation",
+      "planar 3-DOF powered flight: the velocity, flight-path-angle, position and mass equations",
+      "the gravity turn as the zero-angle-of-attack special case",
+      "extending to 6-DOF: Euler’s rotational equation and the moment from a gimballed thrust offset",
+      "dimensional analysis as a live error check",
+      "Fermi estimation method: decompose, bound each factor, multiply, sanity check, state uncertainty",
+      "worked space Fermi examples and how to bound them",
+      "physics puzzles and how to attack an unfamiliar one",
+      "the coding rounds: 2 to 3 problems at medium to hard difficulty, C++ for avionics and embedded",
+      "coding round discipline: clarify, state the approach and complexity, write it, test the edges",
+      "systems and architecture rounds: real-time considerations, embedded constraints, redundancy, fault management, sensor fusion architecture",
+      "thinking aloud as an explicitly evaluated skill"
+    ]
+  },
+  "car_13_behavioral_star": {
+    "covered": 0,
+    "total": 12,
+    "complete": false,
+    "missing": [
+      "STAR structure: Situation, Task, Action, Result, and the common failure of spending most of the answer on Situation",
+      "building a bank of ten to twelve stories, each roughly 90 seconds",
+      "the themes actually probed: a failure and what changed, conflict with a colleague, a decision with incomplete information, a missed deadline, a time you were wrong, ownership beyond your scope, teaching someone, working extended hours",
+      "quantifying the Result so the story is checkable",
+      "the verbatim expectation of working extended hours and weekends when needed to meet critical deadlines, and how to answer it honestly",
+      "intensity and pace as a real tradeoff to evaluate before you accept, not after",
+      "the why SpaceX answer that is not a recital of the mission statement",
+      "questions you ask that prove you understand the work",
+      "reported red flags: blaming others, vagueness, inflated contribution, inability to name a real failure",
+      "honesty about gaps, career changes and a self-taught background",
+      "what to do when you do not have a story for a theme",
+      "cultural fit as a two-way assessment"
     ]
   }
 }

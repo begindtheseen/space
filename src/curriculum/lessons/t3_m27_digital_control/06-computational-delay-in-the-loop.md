@@ -161,7 +161,7 @@ A loop has $38^\circ$ of phase margin at a crossover of $3\,\mathrm{Hz}$ and run
 ::: answer
 Delay margin: $\tau_{\text{DM}} = \phi_m/\omega_c = (38 \times \pi/180)/(2\pi \times 3) = 0.6632/18.850 = 35.2\,\mathrm{ms}$, which at $T = 10\,\mathrm{ms}$ is $3.52$ frames.
 
-One extra frame costs $360^\circ \times 3 \times 0.01 = 10.8^\circ$, so the margin falls from $38^\circ$ to $27.2^\circ$. That is still positive and the loop still flies, but $27^\circ$ gives a closed-loop resonant peak near $6.7\,\mathrm{dB}$ and a step response with roughly $45\%$ overshoot, which on a launch vehicle shows up as attitude ringing after every guidance update.
+One extra frame costs $360^\circ \times 3 \times 0.01 = 10.8^\circ$, so the margin falls from $38^\circ$ to $27.2^\circ$. That is still positive and the loop still flies, but $27^\circ$ gives a closed-loop resonant peak near $6.6\,\mathrm{dB}$ and a step response with roughly $40\%$ overshoot, which on a launch vehicle shows up as attitude ringing after every guidance update.
 
 The useful framing for the discussion that follows is the delay-margin number: $3.52$ frames total, one of them already spent, so the software has about two and a half frames of slack and every additional frame costs $10.8^\circ$.
 :::

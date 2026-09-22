@@ -374,15 +374,32 @@ function Learn({
           written module can never be mistaken for the finished article and she
           knows to use the reading below for the rest. */}
       {coverage && !coverage.complete ? (
-        <div className="coverage-note">
+        <div className="coverage-note" data-empty={coverage.covered === 0}>
           <p className="coverage-note__head">
-            <strong>
-              These lessons cover {coverage.covered} of this module&rsquo;s {coverage.total} topics.
-            </strong>{' '}
-            The rest are still being written. Until they land, use the reading below for them.
+            {coverage.covered === 0 ? (
+              <>
+                <strong>
+                  None of this module&rsquo;s {coverage.total} topics are taught in the app yet.
+                </strong>{' '}
+                The lessons are being written. Everything below — the objectives, the topic list,
+                the exercises and the reading — is real and usable in the meantime.
+              </>
+            ) : (
+              <>
+                <strong>
+                  These lessons cover {coverage.covered} of this module&rsquo;s {coverage.total}{' '}
+                  topics.
+                </strong>{' '}
+                The rest are still being written. Until they land, use the reading below for them.
+              </>
+            )}
           </p>
           <details>
-            <summary>Topics not yet written up</summary>
+            <summary>
+                {coverage.covered === 0
+                  ? 'What this module will teach'
+                  : 'Topics not yet written up'}
+              </summary>
             <ul>
               {coverage.missing.map((t) => (
                 <li key={t}>{t}</li>

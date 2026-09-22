@@ -169,9 +169,41 @@ await step('a lesson shows how much is left, and it tracks the scroll', async ()
   console.log(`        fill ${start.toFixed(2)} -> ${end.toFixed(2)}`)
 })
 
+/* ── Honesty about what is not written yet ───────────────────────────────── */
+
+await step('a module with no lessons says so plainly', async () => {
+  await page.goto(base + '#/module/t4_m34_kalman_filter', { waitUntil: 'load' })
+  await page.waitForTimeout(1400)
+  const note = await page.$('.coverage-note')
+  if (!note) throw new Error('an untaught module shows no notice at all')
+  const text = await page.$eval('.coverage-note', (el) => el.textContent)
+  if (!/none of this module/i.test(text)) throw new Error('wrong copy: ' + text.slice(0, 120))
+  // It must not claim a count it cannot back up.
+  if (/\b0 of\b/.test(text)) throw new Error('reads as "0 of N", which sounds broken')
+  const empty = await page.$eval('.coverage-note', (el) => el.dataset.empty)
+  if (empty !== 'true') throw new Error('notice is not flagged as an empty module')
+})
+
+await step('it still lists what that module will teach', async () => {
+  const summary = await page.textContent('.coverage-note summary')
+  if (!/will teach/i.test(summary)) throw new Error('no forward-looking topic list: ' + summary)
+  await page.click('.coverage-note summary')
+  await page.waitForTimeout(250)
+  const items = await page.$$eval('.coverage-note li', (l) => l.length)
+  if (items < 5) throw new Error('topic list has only ' + items + ' entries')
+  console.log('        lists ' + items + ' topics it will cover')
+})
+
 /* ── Read aloud ──────────────────────────────────────────────────────────── */
 
 await step('a lesson offers to read itself aloud', async () => {
+  // Navigate explicitly rather than inheriting whatever page the previous
+  // step left open: a step that only passes because of its neighbours is a
+  // step that will lie the moment the order changes.
+  await page.goto(base + '#/module/t1_m14_rigid_body_dynamics?lesson=l08-energy-dissipation-and-the-flat-spin-instability', {
+    waitUntil: 'load',
+  })
+  await page.waitForTimeout(2200)
   await page.waitForSelector('.raloud', { timeout: 8000 })
   const label = await page.textContent('.raloud__btn--go')
   if (!/read aloud/i.test(label)) throw new Error('no read-aloud control: ' + label)
