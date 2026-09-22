@@ -14,7 +14,7 @@ The reader is assumed to know the two-body equation, orbital elements, and the v
 
 ## Why an interface at all
 
-The atmosphere has no edge. Density falls off smoothly and keeps falling for hundreds of kilometres – by 400 km, where many satellites orbit, it is still nonzero, just small enough that drag takes months or years to matter rather than seconds. There is no altitude at which "no atmosphere" flips to "atmosphere." What there is, is an altitude below which the two-body model's silence about drag becomes a bad approximation on the timescale the mission cares about – and that altitude is a convention, chosen so that everyone building and testing an entry vehicle uses the same starting line.
+The atmosphere has no edge. Density falls off smoothly and keeps falling for hundreds of kilometres – by 400 km, where many satellites orbit, it is still nonzero, small enough only that drag takes months or years to matter rather than seconds. There is no altitude at which "no atmosphere" flips to "atmosphere." What there is, is an altitude below which the two-body model's silence about drag becomes a bad approximation on the timescale the mission cares about – and that altitude is a convention, chosen so that everyone building and testing an entry vehicle uses the same starting line.
 
 The convention this module uses, and the one most entry documentation uses for Earth, is $400{,}000$ feet:
 
@@ -76,7 +76,7 @@ When a mission document quotes an "entry velocity," check which one it means. A 
 
 ## How fast: entry speeds across this module's missions
 
-Three entry-speed regimes recur throughout this module, and it is worth fixing their numbers now so later lessons can simply use them.
+Three entry-speed regimes recur throughout this module, and it is worth fixing their numbers now so later lessons can use them directly.
 
 A **low Earth orbit deorbit** enters close to local circular speed. At $400\ \mathrm{km}$ altitude, $v_c = \sqrt{\mu/r} = \sqrt{398{,}600.4418 / 6778.137} = 7.669\ \mathrm{km/s}$; after the deorbit burn lowers perigee into the atmosphere, the vehicle reaches the $120\ \mathrm{km}$ interface still near this speed, typically quoted as about $7.8\ \mathrm{km/s}$ once the small speed gain from the remaining fall is included. This module uses $7800\ \mathrm{m/s}$ as the representative LEO-return entry speed.
 

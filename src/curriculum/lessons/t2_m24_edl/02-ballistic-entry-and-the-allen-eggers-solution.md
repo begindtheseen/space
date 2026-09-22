@@ -30,7 +30,7 @@ $$
 \dot v = -\frac{\rho v^2}{2\beta}.
 $$
 
-A heavy, slender, low-drag body has large $\beta$ and resists deceleration; a light, blunt one has small $\beta$ and decelerates readily. This module returns to what $\beta$ does to a trajectory in detail in lesson 5 — for now it is simply the one vehicle parameter this equation contains.
+A heavy, slender, low-drag body has large $\beta$ and resists deceleration; a light, blunt one has small $\beta$ and decelerates readily. This module returns to what $\beta$ does to a trajectory in detail in lesson 5 — for now it is the one vehicle parameter this equation contains.
 
 The flight-path angle $\gamma$ (negative while descending, per lesson 1's convention) relates the rate of altitude loss to speed through $\dot h = v \sin\gamma$. Allen and Eggers' central simplifying assumption is that, for a sufficiently steep, sufficiently fast entry, $\gamma$ stays close to its entry value $\gamma_E$ throughout the deceleration pulse — the trajectory is close enough to a straight line at fixed angle that treating $\gamma$ as a constant is a good approximation. A second assumption, equally important, is that gravity's direct contribution to $\dot v$ is small next to the drag term above — reasonable when the deceleration reaches tens or hundreds of $g_0$, utterly unreasonable right at the top of the atmosphere where drag has barely begun. Both assumptions are examined quantitatively in the next lesson; here, take them as the price of admission for a closed form.
 
