@@ -92,22 +92,28 @@ The compiler generated the copy constructor, and it copied `data_` — the point
 
 ```text
 b.front() = -9.80
+=================================================================
 ==22338==ERROR: AddressSanitizer: heap-use-after-free on address 0x503000000040 at pc 0x556c5477d62a bp 0x7ffc8b44ffa0 sp 0x7ffc8b44ff90
 READ of size 8 at 0x503000000040 thread T0
     #0 0x556c5477d629 in SampleBuffer::front() const l13-rule-of-three.cpp:12
     #1 0x556c5477d629 in main l13-rule-of-three.cpp:26
+    ...
 
 0x503000000040 is located 0 bytes inside of 32-byte region [0x503000000040,0x503000000060)
 freed by thread T0 here:
-    #0 ... in operator delete[](void*)
+    #0 0x7f7614cff1f8 in operator delete[](void*) ../../../../src/libsanitizer/asan/asan_new_delete.cpp:155
     #1 0x556c5477d5c5 in SampleBuffer::~SampleBuffer() l13-rule-of-three.cpp:11
     #2 0x556c5477d5c5 in main l13-rule-of-three.cpp:25
 
 previously allocated by thread T0 here:
-    #0 ... in operator new[](unsigned long)
+    #0 0x7f7614cfe6c8 in operator new[](unsigned long) ../../../../src/libsanitizer/asan/asan_new_delete.cpp:98
     #1 0x556c5477d431 in SampleBuffer::SampleBuffer(int) l13-rule-of-three.cpp:8
     #2 0x556c5477d431 in main l13-rule-of-three.cpp:21
+
+SUMMARY: AddressSanitizer: heap-use-after-free l13-rule-of-three.cpp:12 in SampleBuffer::front() const
 ```
+
+(The `...` is the library tail below `main`, cut as in lesson 09.)
 
 Three lines again, and they read as a story: the constructor at line 8 allocated, the destructor at line 11 freed it when `b` went out of scope at line 25, and `front()` at line 12 read it at line 26. Had `a` also gone out of scope, the second `~SampleBuffer` would have produced `attempting double-free` instead.
 

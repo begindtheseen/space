@@ -113,16 +113,19 @@ about to dereference one past the end
 ==13347==ERROR: AddressSanitizer: stack-buffer-overflow on address 0x7faec9600040 at pc 0x559b69f124cb bp 0x7ffc7cac9100 sp 0x7ffc7cac90f0
 READ of size 8 at 0x7faec9600040 thread T0
     #0 0x559b69f124ca in main l03-oob.cpp:13
+    ...
 
 Address 0x7faec9600040 is located in stack of thread T0 at offset 64 in frame
     #0 0x559b69f12298 in main l03-oob.cpp:4
 
   This frame has 1 object(s):
     [32, 64) 'telemetry' (line 6) <== Memory access at offset 64 overflows this variable
+HINT: this may be a false positive if your program uses some custom stack unwind mechanism, swapcontext or vfork
+      (longjmp and C++ exceptions *are* supported)
 SUMMARY: AddressSanitizer: stack-buffer-overflow l03-oob.cpp:13 in main
 ```
 
-(The library frames below `main` are cut here, and the process id in `==13347==` and every address differ on each run.)
+(A line of `...` marks frames cut here — below `main` come three library frames, `__libc_start_call_main`, `__libc_start_main_impl` and `_start`, in every one of these reports. The process id in `==13347==` and every address differ on each run, and the report continues with a shadow-memory dump that lesson 09 explains.)
 
 Read what the report gave you and notice how much it is. The kind of error: `stack-buffer-overflow`, so the object is a local, not a heap block. The operation: `READ of size 8`, which is one `double`. The source line of the bad access: line 13. The object that was overrun, **by name**: `telemetry`, declared on line 6, occupying stack offsets 32 to 64 — thirty-two bytes, which is the four doubles — and the access was at offset 64, exactly one element past. That last line is the diagnosis written out for you.
 

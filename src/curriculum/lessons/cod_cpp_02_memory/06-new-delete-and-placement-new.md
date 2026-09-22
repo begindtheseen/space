@@ -99,15 +99,20 @@ AddressSanitizer names it precisely at run time:
 
 ```text
 buf[0] = -9.81
+=================================================================
 ==21369==ERROR: AddressSanitizer: alloc-dealloc-mismatch (operator new [] vs operator delete) on 0x503000000040
-    #0 ... in operator delete(void*, unsigned long)
+    #0 0x7fecf54ff5e8 in operator delete(void*, unsigned long) ../../../../src/libsanitizer/asan/asan_new_delete.cpp:164
     #1 0x55698473432b in main l06-mismatch.cpp:9
+    ...
 
 0x503000000040 is located 0 bytes inside of 32-byte region [0x503000000040,0x503000000060)
 allocated by thread T0 here:
-    #0 ... in operator new[](unsigned long)
+    #0 0x7fecf54fe6c8 in operator new[](unsigned long) ../../../../src/libsanitizer/asan/asan_new_delete.cpp:98
     #1 0x5569847342c0 in main l06-mismatch.cpp:6
+    ...
 ```
+
+(`...` marks the three library frames below `main` that every one of these traces ends with; addresses and the process id differ on every run.)
 
 The report gives both ends: the line that deallocated wrongly and the line that allocated, with the two function names in the header so you can see the pair that did not match.
 

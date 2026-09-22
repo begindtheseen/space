@@ -49,18 +49,23 @@ reading after release
 ==7355==ERROR: AddressSanitizer: heap-use-after-free on address 0x502000000010 at pc 0x55df04b5037e bp 0x7fff287c48d0 sp 0x7fff287c48c0
 READ of size 8 at 0x502000000010 thread T0
     #0 0x55df04b5037d in main l09-report.cpp:14
+    ...
 
 0x502000000010 is located 0 bytes inside of 16-byte region [0x502000000010,0x502000000020)
 freed by thread T0 here:
-    #0 ... in operator delete(void*, unsigned long)
+    #0 0x7f8b74aff5e8 in operator delete(void*, unsigned long) ../../../../src/libsanitizer/asan/asan_new_delete.cpp:164
     #1 0x55df04b502dc in release(Frame*) l09-report.cpp:7
+    ...
 
 previously allocated by thread T0 here:
-    #0 ... in operator new(unsigned long)
+    #0 0x7f8b74afe548 in operator new(unsigned long) ../../../../src/libsanitizer/asan/asan_new_delete.cpp:95
     #1 0x55df04b5027a in acquire() l09-report.cpp:6
+    ...
 
 SUMMARY: AddressSanitizer: heap-use-after-free l09-report.cpp:14 in main
 ```
+
+(Each `...` stands for the library frames the trace ends with — `__libc_start_call_main`, `__libc_start_main_impl`, `_start` — and the report continues below the summary with the shadow dump shown in the next section.)
 
 Field by field:
 
@@ -151,9 +156,10 @@ done
 ==3596==ERROR: LeakSanitizer: detected memory leaks
 
 Direct leak of 384 byte(s) in 3 object(s) allocated from:
-    #0 ... in operator new(unsigned long)
+    #0 0x7f746d2fe548 in operator new(unsigned long) ../../../../src/libsanitizer/asan/asan_new_delete.cpp:95
     #1 0x55e74bef827a in make_frame() l09-leak.cpp:6
     #2 0x55e74bef8357 in main l09-leak.cpp:11
+    ...
 
 SUMMARY: AddressSanitizer: 384 byte(s) leaked in 3 allocation(s).
 ```
@@ -179,9 +185,12 @@ int main() {
 Neither g++ 13.3.0 nor clang++ 18.1.3 warns about this shape — the address escapes through a global rather than through a `return`, which is exactly the case lesson 11 of the previous module flagged as the one compilers miss. ASan does not miss it:
 
 ```text
+reading a dead frame
+=================================================================
 ==5268==ERROR: AddressSanitizer: stack-use-after-return on address 0x7f95f5200020 at pc 0x55cac06c74c5 bp 0x7ffdb46d6ef0 sp 0x7ffdb46d6ee0
 READ of size 8 at 0x7f95f5200020 thread T0
     #0 0x55cac06c74c4 in main l09-uar.cpp:15
+    ...
 
 Address 0x7f95f5200020 is located in stack of thread T0 at offset 32 in frame
     #0 0x55cac06c7298 in publish() l09-uar.cpp:6
@@ -198,10 +207,20 @@ It names the dead frame's function, the variable inside it, and the line it was 
 ::: example Measured on a matrix multiply
 A 220×220 double matrix multiply repeated 8 times — about 850 million multiply-adds over three matrices totalling 1.13 MB, so almost every instruction is a load or a store.
 
+Three runs of `g++ -std=c++20 -O2 -g`:
+
 ```text
-plain   g++ -O2          22 ms, 27 ms, 24 ms     peak RSS 4660, 4648, 4700 KB
-ASan    g++ -O2 -fsanitize=address
-                        135 ms, 110 ms, 99 ms    peak RSS 8792, 8764, 8824 KB
+c[0] = 10592.0   time = 22 ms   peak RSS = 4660 KB
+c[0] = 10592.0   time = 27 ms   peak RSS = 4648 KB
+c[0] = 10592.0   time = 24 ms   peak RSS = 4700 KB
+```
+
+and three of the same source with `-fsanitize=address` added:
+
+```text
+c[0] = 10592.0   time = 135 ms   peak RSS = 8792 KB
+c[0] = 10592.0   time = 110 ms   peak RSS = 8764 KB
+c[0] = 10592.0   time = 99 ms   peak RSS = 8824 KB
 ```
 
 Time: about 4.5 times slower. Memory: about 1.9 times the peak resident set.

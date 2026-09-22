@@ -207,12 +207,20 @@ Three properties make the iterative version certifiable. The stack has a capacit
 
 The other way to exhaust a stack is one frame, not many. A `std::array<double, 200000>` local is 1,600,000 bytes — about 1.53 MiB — and it compiles without a word at `-Wall -Wextra -Wpedantic`. Two flags catch it:
 
+With `-Wstack-usage=16384`:
+
 ```text
+chk-bigframe.cpp: In function 'double mean_of_window()':
 chk-bigframe.cpp:3:8: warning: stack usage is 1600080 bytes [-Wstack-usage=]
-chk-bigframe.cpp:9:1: warning: the frame size of 1600064 bytes is larger than 16384 bytes [-Wframe-larger-than=]
 ```
 
-produced by `-Wstack-usage=16384` and `-Wframe-larger-than=16384` respectively. Set them to your task's budget and the build tells you when a frame grows past it. Neither is enabled by any of `-Wall`, `-Wextra` or `-Wpedantic`: you have to ask.
+and with `-Wframe-larger-than=16384`:
+
+```text
+chk-bigframe.cpp: In function 'double mean_of_window()':
+chk-bigframe.cpp:9:1: warning: the frame size of 1600064 bytes is larger than 16384 bytes [-Wframe-larger-than=]
+```
+ Set them to your task's budget and the build tells you when a frame grows past it. Neither is enabled by any of `-Wall`, `-Wextra` or `-Wpedantic`: you have to ask.
 
 ::: key
 A stack frame holds a call's return address, saved registers, parameters and locals, and its size is a compile-time constant for a function without variable-length arrays. Measure it with `-fstack-usage`; bound it with `-Wframe-larger-than=`. Stack overflow is undefined behaviour with no diagnostic from the language. Recursion makes worst-case depth data-dependent and so unprovable, which is why *Power of Ten* rule 1 forbids it; replace it with an explicit stack of fixed capacity and a defined behaviour when that capacity is reached.

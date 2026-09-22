@@ -1675,6 +1675,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Environment variables, PATH, .bashrc vs .bash_profile"
       ],
       "file": "cod_lnx_01_shell/10-environment-path-and-startup-files.md"
+    },
+    {
+      "id": "l11-packages-and-building-from-source",
+      "title": "Packages, and building from source",
+      "minutes": 19,
+      "covers": [
+        "Package management (apt/dnf) and building from source"
+      ],
+      "file": "cod_lnx_01_shell/11-packages-and-building-from-source.md"
     }
   ],
   "cod_py_01_basics": [
@@ -7677,12 +7686,11 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_lnx_01_shell": {
-    "covered": 11,
+    "covered": 12,
     "total": 15,
     "complete": false,
     "missing": [
       "systemd: systemctl, journalctl",
-      "Package management (apt/dnf) and building from source",
       "df du lsblk ip ss curl strace lsof dmesg",
       "vim survival: modes, motions, :wq"
     ]

@@ -44,6 +44,8 @@ _Z16reading_or_errorPKi:
 	ret
 ```
 
+(Both listings here have the assembler's `.cfi` unwind directives and internal labels filtered out; every instruction is as emitted.)
+
 Two instructions. The null check is gone — not because the optimiser is hostile, but because the code said, one line earlier, that the pointer is valid. This is why "I added a check and it still crashed" happens, and why the honest description of undefined behaviour is not "it might do anything at run time" but "the code you wrote may not be the code that runs".
 
 ::: key
@@ -84,19 +86,25 @@ The shell reports `Aborted` and exit status 134.
 ```text
 allocated
 deleted once
+=================================================================
 ==1132==ERROR: AddressSanitizer: attempting double-free on 0x503000000040 in thread T0:
-    #0 ... in operator delete(void*, unsigned long)
+    #0 0x7f3edbeff5e8 in operator delete(void*, unsigned long) ../../../../src/libsanitizer/asan/asan_new_delete.cpp:164
     #1 0x5610d3f1537f in main l08-doublefree.cpp:12
+    ...
 
 0x503000000040 is located 0 bytes inside of 32-byte region [0x503000000040,0x503000000060)
 freed by thread T0 here:
-    #0 ... in operator delete(void*, unsigned long)
+    #0 0x7f3edbeff5e8 in operator delete(void*, unsigned long) ../../../../src/libsanitizer/asan/asan_new_delete.cpp:164
     #1 0x5610d3f1535a in main l08-doublefree.cpp:10
+    ...
 
 previously allocated by thread T0 here:
-    #0 ... in operator new(unsigned long)
+    #0 0x7f3edbefe548 in operator new(unsigned long) ../../../../src/libsanitizer/asan/asan_new_delete.cpp:95
     #1 0x5610d3f152c0 in main l08-doublefree.cpp:8
+    ...
 ```
+
+(A `...` line marks the three library frames — `__libc_start_call_main`, `__libc_start_main_impl`, `_start` — that end every trace in these reports. The process id and all addresses differ on each run.)
 
 Exit status 1, and three line numbers: where the second `delete` was (12), where the first one was (10), and where the block came from (8).
 
@@ -126,18 +134,24 @@ std::printf("%.2f\n", az[0]);
 before: -9.81, capacity 1
 after push_back: capacity 16
 about to write through the stale reference
+=================================================================
 ==1176==ERROR: AddressSanitizer: heap-use-after-free on address 0x502000000010 at pc 0x5570faee6715 bp 0x7fff6ba7bb40 sp 0x7fff6ba7bb30
 WRITE of size 8 at 0x502000000010 thread T0
     #0 0x5570faee6714 in main l08-uaf.cpp:15
+    ...
 
 0x502000000010 is located 0 bytes inside of 8-byte region [0x502000000010,0x502000000018)
 freed by thread T0 here:
-    #0 ... in operator delete(void*, unsigned long)
-    #1 ... in std::_Vector_base<double, …>::_M_deallocate(double*, unsigned long)
-    #2 ... in std::vector<double, …>::_M_realloc_insert<double>(…)
-    #3 ... in std::vector<double, …>::push_back(double&&)
-    #4 0x5570faee669d in main l08-uaf.cpp:12
+    #0 0x7f411e8ff5e8 in operator delete(void*, unsigned long) ../../../../src/libsanitizer/asan/asan_new_delete.cpp:164
+    ...
+    #4 0x55d273b8abb2 in std::_Vector_base<double, std::allocator<double> >::_M_deallocate(double*, unsigned long) /usr/include/c++/13/bits/stl_vector.h:390
+    ...
+    #7 0x55d273b8ab31 in std::vector<double, std::allocator<double> >::push_back(double&&) /usr/include/c++/13/bits/stl_vector.h:1299
+    #8 0x55d273b8a69d in main l08-uaf.cpp:12
+    ...
 ```
+
+(Nine frames; four of them, and the library tail, are cut at the `...` lines. The frame numbers are the report's own, so `#4` really is the fifth frame.)
 
 The capacity went from 1 to 16, which is the whole story: the vector could not fit nine elements in a buffer sized for one, so it allocated a new buffer, copied the elements, and freed the old one. `first` still points into the old one. Nothing in the source says `delete`, and the "free" frame in the report is inside `push_back`, which is precisely why the report's deallocation trace is worth reading rather than skipping — it names `_M_realloc_insert`, and the line it attributes to your code is line 12, the `push_back`.
 
@@ -161,14 +175,18 @@ for (int i = 0; i <= kCapacity; ++i) {      // <= : one too many
 g++ 13.3.0 compiled that without a warning at `-Wall -Wextra -Wpedantic`, and the unsanitized build printed `filled` and exited 0. AddressSanitizer:
 
 ```text
+=================================================================
 ==1154==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x506000000060 at pc 0x5588b001f32a bp 0x7ffe5995af00 sp 0x7ffe5995aef0
 WRITE of size 8 at 0x506000000060 thread T0
     #0 0x5588b001f329 in main l08-overrun.cpp:9
+    ...
 
 0x506000000060 is located 0 bytes after 64-byte region [0x506000000020,0x506000000060)
 allocated by thread T0 here:
-    #0 ... in operator new[](unsigned long)
+    #0 0x7fe3e16fe6c8 in operator new[](unsigned long) ../../../../src/libsanitizer/asan/asan_new_delete.cpp:98
     #1 0x5588b001f2c7 in main l08-overrun.cpp:7
+    ...
+
 SUMMARY: AddressSanitizer: heap-buffer-overflow l08-overrun.cpp:9 in main
 ```
 
@@ -218,6 +236,10 @@ Valgrind's memcheck, on the `-O0` build:
 ```text
 ==2003== Conditional jump or move depends on uninitialised value(s)
 ==2003==    at 0x48C4181: __printf_fp_buffer_1.isra.0 (printf_fp.c:230)
+==2003==    by 0x48C635B: __printf_fp_l_buffer (printf_fp.c:1122)
+==2003==    by 0x48CD6C4: __printf_fp_spec (vfprintf-internal.c:266)
+==2003==    by 0x48CD6C4: __printf_buffer (vfprintf-internal.c:999)
+==2003==    by 0x48CE73A: __vfprintf_internal (vfprintf-internal.c:1544)
 ==2003==    by 0x48C31B2: printf (printf.c:33)
 ==2003==    by 0x1091D2: main (l08-uninit.cpp:14)
 ==2003==  Uninitialised value was created by a stack allocation
