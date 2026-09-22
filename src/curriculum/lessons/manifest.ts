@@ -3700,6 +3700,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "The guidance / navigation / control decomposition and the loop rate of each"
       ],
       "file": "t5_m40_guidance_fundamentals/01-guidance-navigation-control-decomposition.md"
+    },
+    {
+      "id": "l02-open-loop-vs-closed-loop-guidance",
+      "title": "Open-loop, reference-following and explicit guidance",
+      "minutes": 20,
+      "covers": [
+        "Open-loop vs closed-loop guidance; reference-trajectory following vs explicit guidance"
+      ],
+      "file": "t5_m40_guidance_fundamentals/02-open-loop-vs-closed-loop-guidance.md"
     }
   ],
   "t5_m41_ascent_guidance": [
@@ -4174,11 +4183,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t5_m40_guidance_fundamentals": {
-    "covered": 1,
+    "covered": 2,
     "total": 12,
     "complete": false,
     "missing": [
-      "Open-loop vs closed-loop guidance; reference-trajectory following vs explicit guidance",
       "Line-of-sight guidance and pursuit guidance",
       "Proportional navigation: derivation, the navigation constant N, and the LOS-rate nulling principle",
       "Why N between 3 and 5; augmented proportional navigation for manoeuvring targets",

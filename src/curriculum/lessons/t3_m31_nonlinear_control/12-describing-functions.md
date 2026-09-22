@@ -83,21 +83,27 @@ $$
 L(s) = \frac{1}{Js(1+\tau s)^2} .
 $$
 
-Its phase is exactly $-180^\circ$ where $2\arctan(\omega\tau)=90^\circ$, i.e. at $\omega_0=1/\tau=1\,\mathrm{rad/s}$ — independent of $J$ — where $L(j\omega_0) = -1/(2J) = -0.005$. Relay amplitude $M=5\,\mathrm{N\,m}$: setting $-1/N(A) = -\pi A/(4M) = -0.005$ gives
+Its phase is exactly $-180^\circ$ where $2\arctan(\omega\tau)=90^\circ$, i.e. at $\omega_0=1/\tau=1\,\mathrm{rad/s}$ — independent of $J$ — where $L(j\omega_0) = -\tau/(2J)$, which is $-0.005$ here because $\tau=1$. Relay amplitude $M=5\,\mathrm{N\,m}$: setting $-1/N(A) = -\pi A/(4M) = -0.005$ gives
 
 $$
-A = \frac{2M}{J\pi} = \frac{2(5)}{100\pi} = 0.031831\,\mathrm{rad/s}, \qquad \omega_0 = 1\,\mathrm{rad/s}\ (\text{period } 6.2832\,\mathrm{s}) .
+A = \frac{2M\tau}{\pi J} = \frac{2(5)(1)}{\pi(100)} = 0.031831\,\mathrm{rad/s}, \qquad \omega_0 = 1\,\mathrm{rad/s}\ (\text{period } 6.2832\,\mathrm{s}) .
 $$
 
 Simulating the actual closed loop (relay in negative feedback around $L(s)$, integrated at $\Delta t=1\,\mathrm{ms}$) from rest, the rate settles into a clean, repeatable oscillation — the same amplitude from three different initial conditions ranging over three orders of magnitude — of amplitude $0.032918\,\mathrm{rad/s}$ and period $6.424\,\mathrm{s}$: **3.4% high in amplitude, 2.2% high in period**. For a method that keeps exactly one harmonic, that is a good prediction, and it came from an arcsine-free two-line calculation rather than a simulation campaign.
 :::
 
 ::: example The same plant with a saturating actuator instead of a relay
-Same $L(s)$, same $\omega_0=1\,\mathrm{rad/s}$ (it is a property of $L$ alone). Saturation with $k=250$, $a=0.02$: solving $N(A)=2J=200$ numerically (bisection on the closed form) gives $A=0.029110\,\mathrm{rad/s}$, again at $\omega_0=1\,\mathrm{rad/s}$.
+Same $L(s)$, same $\omega_0=1\,\mathrm{rad/s}$ (it is a property of $L$ alone). Saturation with $k=250$, $a=0.02$: solving $N(A)=2J/\tau=200$ numerically (bisection on the closed form) gives $A=0.029110\,\mathrm{rad/s}$, again at $\omega_0=1\,\mathrm{rad/s}$.
 
-Simulated from a large initial condition, the loop settles at amplitude $0.029097\,\mathrm{rad/s}$, period $6.225\,\mathrm{s}$: **0.05% error in amplitude, 0.9% in period** — better than the relay, because saturation's output is closer to sinusoidal than a square wave is, so less energy sits in the harmonics the method discards.
+Simulated from a large initial condition, the loop settles at amplitude $0.029283\,\mathrm{rad/s}$, period $6.3054\,\mathrm{s}$: **0.6% high in amplitude, 0.4% high in period** — better than the relay, because saturation's output is closer to sinusoidal than a square wave is, so less energy sits in the harmonics the method discards.
 
-Started instead from a small initial condition ($y_0=0.0005$), the same loop reaches only $0.000072\,\mathrm{rad/s}$ of amplitude after $80\,\mathrm{s}$ — apparently a totally different, much smaller oscillation. It is not: linearizing the closed loop *inside* the linear region ($u=-ky$) gives eigenvalues $-2.093$ and $0.0465\pm1.092j$. The complex pair has **positive** real part — the small-signal loop is itself unstable, growing at an e-folding time of $1/0.0465\approx21.5\,\mathrm{s}$ — so a trajectory released near zero takes several e-foldings, on the order of two minutes, before the amplitude is large enough for saturation to matter and the true limit cycle to appear. The describing function predicts the destination correctly; it says nothing about how long the journey takes, and a short simulation started near the origin can look like it disagrees with the prediction when it has not finished yet.
+Started instead from a small initial condition ($y_0=0.0005\,\mathrm{rad/s}$, a sixtieth of the predicted ring), the loop takes a long time to get there, and a simulation cut short reads as a disagreement. Linearizing the closed loop *inside* the linear region ($u=-ky$) gives the characteristic polynomial $s^3+2s^2+s+2.5$, with eigenvalues $-2.0929$ and $0.0465\pm1.0919j$. The complex pair has **positive** real part — the small-signal loop is itself unstable, growing with an e-folding time of $1/0.0465\approx21.5\,\mathrm{s}$. Measuring the peak of $|y|$ over the seven seconds before each mark:
+
+| $t$ (s) | 20 | 40 | 60 | 80 | 100 | 150 |
+| --- | --- | --- | --- | --- | --- | --- |
+| peak $\lvert y\rvert$ (rad/s) | 0.000991 | 0.002527 | 0.006442 | 0.016423 | 0.028873 | 0.029283 |
+
+The envelope between $t=20$ and $t=40$ grows by a factor of $2.550$, which is $e^{0.0468\times20}$ — a measured growth rate of $0.0468\,\mathrm{s^{-1}}$ against the eigenvalue's $0.0465$. The trajectory then arrives at the predicted amplitude and stays there. So the small-amplitude start does not contradict the prediction; it is the same prediction seen before it has finished. Stopping this run at $30\,\mathrm{s}$ would have shown a barely-moving loop at a thousandth of a radian per second, and concluded there was no limit cycle at all. The describing function names the destination; it says nothing whatever about the journey, and that is worth knowing before anyone reads a short simulation as evidence of safety.
 :::
 
 ## When the prediction is trustworthy
@@ -139,7 +145,7 @@ For the plant $L(s)=1/[Js(1+\tau s)^2]$, if $\tau$ were doubled with $J$ unchang
 :::
 
 ::: answer
-The crossing frequency is $\omega_0=1/\tau$, so doubling $\tau$ halves the predicted frequency to $0.5\,\mathrm{rad/s}$. The crossing value $L(j\omega_0)=-1/(2J)$ does not involve $\tau$ at all, so the predicted amplitude $A=2M/(J\pi)$ is unchanged. A slower actuator or filter, on this plant, buys a slower ring at no change in how large it gets — which is a real, checkable design lever, not a coincidence of this particular transfer function.
+The crossing frequency is $\omega_0=1/\tau$, so doubling $\tau$ halves the predicted frequency to $0.5\,\mathrm{rad/s}$. The amplitude moves too, and it is worth doing the algebra rather than assuming the crossing value is fixed: at $\omega_0=1/\tau$ the double lag contributes $(1+j)^2=2j$, so $L(j\omega_0)=1/(J\,j\omega_0\cdot 2j)=-1/(2J\omega_0)=-\tau/(2J)$ — proportional to $\tau$. Feeding that into $-\pi A/(4M)=L(j\omega_0)$ gives $A=2M\tau/(\pi J)$, so doubling $\tau$ **doubles** the predicted amplitude, from $0.031831$ to $0.063662\,\mathrm{rad/s}$. Simulating the doubled-$\tau$ loop confirms it: amplitude $0.065842\,\mathrm{rad/s}$ at a period of $12.85\,\mathrm{s}$, the same few per cent high as before. A slower actuator or filter, on this plant, buys a slower ring *and* a larger one — you pay twice for the lag, which is the opposite of the comfortable answer.
 :::
 
 ::: check
