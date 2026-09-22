@@ -1758,6 +1758,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "if / for / while / case, test [[ ]] vs [ ]"
       ],
       "file": "cod_lnx_02_scripting/05-control-flow-and-tests.md"
+    },
+    {
+      "id": "l06-functions-and-exit-codes",
+      "title": "Functions, return values and exit codes",
+      "minutes": 17,
+      "covers": [
+        "Functions, return values, exit codes, $?"
+      ],
+      "file": "cod_lnx_02_scripting/06-functions-and-exit-codes.md"
     }
   ],
   "cod_py_01_basics": [
@@ -7766,11 +7775,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_lnx_02_scripting": {
-    "covered": 5,
+    "covered": 6,
     "total": 14,
     "complete": false,
     "missing": [
-      "Functions, return values, exit codes, $?",
       "trap for cleanup on EXIT/INT/TERM",
       "getopts for flags, positional args, \"$@\" vs \"$*\"",
       "Here-docs and here-strings",

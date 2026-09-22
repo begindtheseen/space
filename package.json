@@ -27,6 +27,7 @@
     "desktop:zip": "node scripts/make-mac-zip.mjs",
     "desktop:icon": "node scripts/make-icon.mjs",
     "desktop:e2e": "node desktop/test/e2e.mjs",
+    "desktop:bridge": "node desktop/test/bridge-e2e.mjs",
     "lessons:manifest": "node scripts/lessons-manifest.ts",
     "lessons:check": "LESSONS_STRICT=1 vitest run src/curriculum/lessons.test.ts",
     "smoke:focus": "node scripts/focus-smoke.mjs"
