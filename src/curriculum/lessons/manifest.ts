@@ -1372,6 +1372,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "momentum wheels and control moment gyros"
       ],
       "file": "t1_m14_rigid_body_dynamics/11-momentum-wheels-and-control-moment-gyros.md"
+    },
+    {
+      "id": "l12-flexible-modes-and-propellant-slosh",
+      "title": "Flexible modes and propellant slosh",
+      "minutes": 23,
+      "covers": [
+        "introduction to flexible modes and propellant slosh"
+      ],
+      "file": "t1_m14_rigid_body_dynamics/12-flexible-modes-and-propellant-slosh.md"
     }
   ],
   "t1_m15_rotating_frames": [
@@ -1795,12 +1804,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t1_m14_rigid_body_dynamics": {
-    "covered": 11,
+    "covered": 12,
     "total": 12,
-    "complete": false,
-    "missing": [
-      "introduction to flexible modes and propellant slosh"
-    ]
+    "complete": true,
+    "missing": []
   },
   "t1_m15_rotating_frames": {
     "covered": 11,
