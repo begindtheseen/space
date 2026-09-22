@@ -124,12 +124,12 @@ print("recovered bias:", np.round(b, 1), " true:", bias_true, " error (nT):", ro
 cal = (A @ (m - b).T).T
 r_cal = np.linalg.norm(cal, axis=1)
 print("calibrated radius spread, std/mean:", np.std(r_cal) / np.mean(r_cal))
-# raw radius spread, std/mean: 0.0443
+# raw radius spread, std/mean: 0.0368
 # recovered bias: [ 900.  -650.8 1097.8]  true: [ 900. -650. 1100.]  error (nT): 2.3
 # calibrated radius spread, std/mean: 0.000986
 ```
 
-The raw data spreads over more than $4\%$ of its own radius — visibly not a sphere. The fit recovers the hard-iron bias to within about $2\,\mathrm{nT}$ of its true value out of a $1442\,\mathrm{nT}$ offset, and the calibrated radius spread collapses to a tenth of a percent, essentially the injected sensor noise and nothing else: the soft-iron distortion has been undone along with the offset.
+The raw data spreads over nearly $3.7\%$ of its own radius — visibly not a sphere. The fit recovers the hard-iron bias to within about $2\,\mathrm{nT}$ of its true value out of a $1442\,\mathrm{nT}$ offset, and the calibrated radius spread collapses to a tenth of a percent, essentially the injected sensor noise and nothing else: the soft-iron distortion has been undone along with the offset.
 
 One thing the fit did *not* do: nothing above used $B_{\text{true}}=42{,}000\,\mathrm{nT}$. The calibrated data lies on a sphere, but the radius of that sphere is set by the arbitrary "$=1$" normalization chosen to make the fit linear, not by the true local field strength — a magnetometer tumbling in place measures only the *shape* of its own distortion, never an absolute scale, because multiplying $\mathbf{A}$ by any constant and dividing the true field magnitude by the same constant produces identical data. Closing that gap needs one external number: the local field magnitude the IGRF or WMM predicts for the calibration site and epoch.
 

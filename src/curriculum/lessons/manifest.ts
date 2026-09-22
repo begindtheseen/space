@@ -3516,6 +3516,24 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Radar altimeters, laser altimeters and lidar"
       ],
       "file": "t4_m38_sensors_optical_nav/06-radar-laser-altimeters-lidar.md"
+    },
+    {
+      "id": "l07-cameras-pinhole-intrinsics-extrinsics-distortion",
+      "title": "Cameras for optical navigation: the pinhole model, intrinsics, extrinsics, distortion",
+      "minutes": 19,
+      "covers": [
+        "Cameras for optical navigation: the pinhole model, intrinsics and extrinsics, distortion"
+      ],
+      "file": "t4_m38_sensors_optical_nav/07-cameras-pinhole-intrinsics-extrinsics-distortion.md"
+    },
+    {
+      "id": "l08-feature-tracking-terrain-relative-navigation-crater-matching",
+      "title": "Feature detection and tracking, terrain relative navigation, and crater matching",
+      "minutes": 21,
+      "covers": [
+        "Feature detection and tracking; terrain relative navigation; crater and landmark matching"
+      ],
+      "file": "t4_m38_sensors_optical_nav/08-feature-tracking-terrain-relative-navigation-crater-matching.md"
     }
   ],
   "t4_m39_orbit_determination": [
@@ -3857,12 +3875,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t4_m38_sensors_optical_nav": {
-    "covered": 6,
+    "covered": 8,
     "total": 12,
     "complete": false,
     "missing": [
-      "Cameras for optical navigation: the pinhole model, intrinsics and extrinsics, distortion",
-      "Feature detection and tracking; terrain relative navigation; crater and landmark matching",
       "Hazard detection and avoidance; visual-inertial odometry basics",
       "Relative navigation sensors for docking: retroreflector tracking and pattern recognition",
       "Sensor fusion architectures and per-sensor measurement models",
