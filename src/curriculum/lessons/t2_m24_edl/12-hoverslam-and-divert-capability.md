@@ -70,7 +70,7 @@ Now repeat this at the same starting altitude but a range of descent speeds, and
 
 The window widens, peaks near $-225\ \mathrm{m/s}$, then narrows sharply and closes entirely by about $v_{y0} \approx -324\ \mathrm{m/s}$ — found by bisecting on window existence, holding $y_0 = 2000\ \mathrm{m}$ fixed. Past that descent speed, **no burn duration exists for which the smooth, minimum-effort guidance law respects both the throttle ceiling and the throttle floor at once.** This is not a small numerical inconvenience; it is a hard boundary. A vehicle arriving at the landing-burn ignition point faster than this threshold cannot fly the ZEM/ZEV law as derived above at all — it must either arrive slower (meaning the aerodynamic phase upstream, lesson 10, has to deliver it below this speed) or fly a different strategy entirely, such as burning at fixed maximum throttle for part of the descent before switching to a terminal-guidance law only once the remaining problem is feasible.
 
-::: key A minimum-throttle constraint does not just shrink margin, it can eliminate the solution
+::: key A minimum-throttle constraint does more than shrink margin — it can eliminate the solution entirely
 Because the throttle floor exceeds $g_0$, the guidance problem is not "fly the smooth law, accepting a rougher ride near the limits" — outside the feasible window, the smooth law's required thrust literally leaves $[a_{T,\min}, a_{T,\max}]$, and there is no way to fly it at all. This is precisely why the hoverslam problem is a single-shot problem: the feasible set of burns is a bounded, sometimes narrow, sometimes empty window, not a continuum with graceful degradation at its edges.
 :::
 
@@ -88,7 +88,7 @@ $$
 x_{0,\text{thrust-limited}} \approx 1506\ \mathrm{m},
 $$
 
-with the pointing constraint never binding in this range (the required thrust vector never tips past $16^\circ$ or so from vertical here, well short of horizontal). But the vehicle does not have unlimited propellant, and that is very often the tighter limit.
+with the pointing constraint never binding in this range (the required thrust vector tips as far as about $52^\circ$ from vertical at that point, well short of the $90^\circ$ horizontal limit). But the vehicle does not have unlimited propellant, and that is very often the tighter limit.
 
 ::: example Propellant budget for the combined burn
 Take a representative kerosene/LOX landing engine, $I_{sp} = 283\ \mathrm{s}$, giving effective exhaust velocity $v_e = I_{sp}\,g_0 = 2775.3\ \mathrm{m/s}$. With $5500\ \mathrm{kg}$ of usable propellant available for the terminal phase (wet mass at ignition $m_0 = 30{,}500\ \mathrm{kg}$, dry-plus-reserve mass $m_f = 25{,}000\ \mathrm{kg}$), the total $\Delta v$ budget is
@@ -97,7 +97,7 @@ $$
 \Delta v_{\mathrm{budget}} = v_e\ln\frac{m_0}{m_f} = 2775.3\,\ln\frac{30{,}500}{25{,}000} = 551.9\ \mathrm{m/s}.
 $$
 
-The mandatory vertical burn from the worked example above costs $\Delta v_{\mathrm{vertical}} = \int_0^T a_{\mathrm{thrust},y}\,dt = 401.5\ \mathrm{m/s}$ — most of it fighting gravity for the full $18\ \mathrm{s}$ duration, not just killing the initial $225\ \mathrm{m/s}$ of descent rate. That leaves
+The mandatory vertical burn from the worked example above costs $\Delta v_{\mathrm{vertical}} = \int_0^T a_{\mathrm{thrust},y}\,dt = 401.5\ \mathrm{m/s}$ — most of it fighting gravity for the full $18\ \mathrm{s}$ duration, not only killing the initial $225\ \mathrm{m/s}$ of descent rate. That leaves
 
 $$
 \Delta v_{\mathrm{remaining}} = 551.9 - 401.5 = 150.3\ \mathrm{m/s}
