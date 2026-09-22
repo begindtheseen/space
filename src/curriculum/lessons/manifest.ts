@@ -926,6 +926,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "interpolation: linear and cubic spline"
       ],
       "file": "t0_m10_numerical_methods/08-interpolation-linear-and-cubic-spline.md"
+    },
+    {
+      "id": "l09-numerical-differentiation-complex-step",
+      "title": "Numerical differentiation and complex-step derivatives",
+      "minutes": 28,
+      "covers": [
+        "numerical differentiation and complex-step derivatives"
+      ],
+      "file": "t0_m10_numerical_methods/09-numerical-differentiation-complex-step.md"
     }
   ],
   "t0_m11_optimization": [
@@ -1028,6 +1037,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "nonlinear programming solvers (IPOPT, SNOPT)"
       ],
       "file": "t0_m11_optimization/11-nonlinear-programming-solvers.md"
+    },
+    {
+      "id": "l12-modelling-languages-and-solvers",
+      "title": "Modelling languages and solvers: CVXPY, ECOS, SCS, OSQP, Clarabel",
+      "minutes": 30,
+      "covers": [
+        "modelling languages and solvers: CVXPY, ECOS, SCS, OSQP, Clarabel"
+      ],
+      "file": "t0_m11_optimization/12-modelling-languages-and-solvers.md"
     }
   ],
   "t0_m12_cpp": [
@@ -1336,6 +1354,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "dual-spin spacecraft"
       ],
       "file": "t1_m14_rigid_body_dynamics/10-dual-spin-spacecraft.md"
+    },
+    {
+      "id": "l11-momentum-wheels-and-control-moment-gyros",
+      "title": "Momentum wheels and control moment gyros",
+      "minutes": 26,
+      "covers": [
+        "momentum wheels and control moment gyros"
+      ],
+      "file": "t1_m14_rigid_body_dynamics/11-momentum-wheels-and-control-moment-gyros.md"
     }
   ],
   "t1_m15_rotating_frames": [
@@ -1732,21 +1759,19 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t0_m10_numerical_methods": {
-    "covered": 10,
+    "covered": 11,
     "total": 13,
     "complete": false,
     "missing": [
-      "numerical differentiation and complex-step derivatives",
       "quadrature: Simpson, Gauss-Legendre",
       "conditioning and stability of linear solves, sparse matrices"
     ]
   },
   "t0_m11_optimization": {
-    "covered": 12,
+    "covered": 13,
     "total": 14,
     "complete": false,
     "missing": [
-      "modelling languages and solvers: CVXPY, ECOS, SCS, OSQP, Clarabel",
       "real-time embedded convex solvers and code generation"
     ]
   },
@@ -1763,11 +1788,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t1_m14_rigid_body_dynamics": {
-    "covered": 10,
+    "covered": 11,
     "total": 12,
     "complete": false,
     "missing": [
-      "momentum wheels and control moment gyros",
       "introduction to flexible modes and propellant slosh"
     ]
   },
