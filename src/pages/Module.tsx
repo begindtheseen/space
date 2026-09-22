@@ -1,9 +1,21 @@
 /* ============================================================================
    ORBIT — module page
    ----------------------------------------------------------------------------
-   Everything about one module, and the one decision it has to make well: if
-   this is locked, say so plainly and point upstream instead of letting someone
-   grind against material they do not have the prerequisites for.
+   Everything about one module, organised as the study path a learner actually
+   walks: Learn (objectives, the curated resources, and the flashcards read as
+   notes), Practice (exercises), then Recall (the scheduled flashcards and
+   questions). The order is the pedagogy — recall comes last because it holds
+   you to what the first two steps taught — and the page leads with whichever
+   step is next, so a first visit never opens on a quiz.
+
+   Modules carry no written lessons on purpose: ORBIT links to the best free
+   material rather than paraphrasing it. The Learn step has to make that
+   explicit, or a beginner reads the flashcards as a test they were never
+   taught for.
+
+   The one other decision this page has to make well: if the module is locked,
+   say so plainly and point upstream instead of letting someone grind against
+   material they do not have the prerequisites for.
    ========================================================================== */
 import { useMemo, useState } from 'react'
 import {
@@ -11,7 +23,7 @@ import {
   IconBook,
   IconCheck,
   IconChevronLeft,
-  IconClock,
+  IconFlame,
   IconLink,
   IconLock,
   IconRecall,
@@ -21,34 +33,30 @@ import {
   IconTerminal,
   IconWarn,
 } from '@/components/icons'
-import { Bar, Button, Card, CardHead, Chip, Empty, Ring, Segmented, Tile } from '@/components/ui'
+import { Bar, Button, Card, CardHead, Chip, Empty, Ring, Tile } from '@/components/ui'
 import { TRACKS, moduleById } from '@/curriculum'
-import type { Exercise, Module, Resource } from '@/curriculum/types'
-import { togglePin } from '@/engine/apply'
+import type { Exercise, Flashcard, Module, Resource } from '@/curriculum/types'
+import { markRead, togglePin } from '@/engine/apply'
 import { atomsOf, dueAtoms } from '@/engine/scheduler'
 import { diagnoseModule } from '@/engine/diagnose'
-import { getItem } from '@/engine/state'
+import { getItem, type LearnerState } from '@/engine/state'
 import { currentR } from '@/engine/fsrs'
 import { useLearner } from '@/hooks/useLearner'
+import { formatDate } from '@/lib/format'
 import { Markdown } from '@/lib/markdown'
 import { navigate, useRoute } from '@/lib/router'
 import './pages.css'
 
-type Tab = 'overview' | 'lessons' | 'practice' | 'items'
+type Step = 'learn' | 'practice' | 'recall'
+
+const STEP_ORDER: Step[] = ['learn', 'practice', 'recall']
+
+function isStep(v: string | undefined): v is Step {
+  return v === 'learn' || v === 'practice' || v === 'recall'
+}
 
 export function ModulePage({ id }: { id: string }) {
-  const { state, dag, mastery, setState } = useLearner()
-  const route = useRoute()
   const module = moduleById(id)
-  const [tab, setTab] = useState<Tab>(route.query.ex ? 'practice' : 'overview')
-  const now = useMemo(() => new Date(), [])
-
-  // Every hook has to run before the not-found branch below, or navigating
-  // from a real module to a bad id changes the hook count between renders.
-  const findings = useMemo(
-    () => (module ? diagnoseModule(state, dag, module, now) : []),
-    [state, dag, module, now],
-  )
 
   if (!module) {
     return (
@@ -67,33 +75,94 @@ export function ModulePage({ id }: { id: string }) {
     )
   }
 
+  // Keyed so moving between modules starts on the right step for the new one
+  // rather than inheriting whichever step was open on the last.
+  return <ModuleView key={module.id} module={module} />
+}
+
+/* ── Derived status for the study path ───────────────────────────────────── */
+
+interface Status {
+  atoms: number
+  cards: number
+  quiz: number
+  seen: number
+  due: number
+  read: string | undefined
+  exercises: number
+  /** Code exercises with a saved playground buffer. */
+  started: number
+}
+
+function statusOf(state: LearnerState, module: Module, now: Date): Status {
+  const atoms = atomsOf(module)
+  const exercises = module.exercises ?? []
+  return {
+    atoms: atoms.length,
+    cards: module.cards?.length ?? 0,
+    quiz: module.quiz?.length ?? 0,
+    seen: atoms.filter((a) => (state.items[a.id]?.memory.reps ?? 0) > 0).length,
+    due: dueAtoms(state, [module], now).length,
+    read: state.read[module.id],
+    exercises: exercises.length,
+    started: exercises.filter((e) => e.kind === 'code' && !!state.code[e.id]).length,
+  }
+}
+
+/**
+ * Which step to open on. Learn until the learner says they have done it and
+ * has never recalled anything; Recall whenever something is due or right after
+ * marking Learn done; otherwise Practice if there is any, else back to Learn.
+ */
+function suggestStep(s: Status): Step {
+  if (s.due > 0) return 'recall'
+  if (s.seen === 0 && !s.read) return 'learn'
+  if (s.seen === 0 && s.read) return 'recall'
+  if (s.exercises > 0 && s.started < s.exercises) return 'practice'
+  return 'learn'
+}
+
+/* ── The page proper ─────────────────────────────────────────────────────── */
+
+function ModuleView({ module }: { module: Module }) {
+  const { state, dag, mastery, setState } = useLearner()
+  const route = useRoute()
+  const now = useMemo(() => new Date(), [])
+  const status = useMemo(() => statusOf(state, module, now), [state, module, now])
+  const [step, setStep] = useState<Step>(() => {
+    if (route.query.ex) return 'practice'
+    if (isStep(route.query.step)) return route.query.step
+    return suggestStep(status)
+  })
+
+  const findings = useMemo(() => diagnoseModule(state, dag, module, now), [state, dag, module, now])
+
   const track = TRACKS[module.track]
   const mast = mastery.get(module.id) ?? 0
   const blockerIds = dag.blockers(module.id, mastery)
   const locked = blockerIds.length > 0
-  const due = dueAtoms(state, [module], now).length
-  const atoms = atomsOf(module)
-  const seen = atoms.filter((a) => (state.items[a.id]?.memory.reps ?? 0) > 0).length
   const pinned = state.pinned.includes(module.id)
 
-  const tabs: { value: Tab; label: string }[] = [
-    { value: 'overview', label: 'Overview' },
-    ...((module.lessons?.length ?? 0) > 0 ? [{ value: 'lessons' as Tab, label: 'Lessons' }] : []),
-    ...((module.exercises?.length ?? 0) > 0 ? [{ value: 'practice' as Tab, label: 'Practice' }] : []),
-    { value: 'items', label: `Items (${atoms.length})` },
-  ]
+  const startRecall = () => navigate(`/review?module=${module.id}`)
+  const markStudied = () => setState((s) => markRead(s, module.id, new Date()))
 
   return (
     <div className="page page--padtop">
-      <button
-        className="btn btn--quiet btn--sm"
-        onClick={() => navigate(trackPath(module.track))}
-        style={{ marginTop: 14, paddingLeft: 6 }}
-        type="button"
-      >
-        <IconChevronLeft size={14} />
-        {track.title}
-      </button>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 14 }}>
+        <button
+          className="btn btn--quiet btn--sm"
+          onClick={() => navigate(trackPath(module.track))}
+          style={{ paddingLeft: 6 }}
+          type="button"
+        >
+          <IconChevronLeft size={14} />
+          {track.title}
+        </button>
+        <Button variant="quiet" size="sm" onClick={() => setState((s) => togglePin(s, module.id))}>
+          <IconStar size={14} />
+          {pinned ? 'Pinned' : 'Pin'}
+        </Button>
+      </div>
 
       <div className="page-head" style={{ paddingTop: 12 }}>
         <div style={{ minWidth: 0 }}>
@@ -129,33 +198,26 @@ export function ModulePage({ id }: { id: string }) {
         </Card>
       ) : null}
 
-      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 'var(--gap)' }}>
-        <Button
-          variant="primary"
-          size="lg"
-          onClick={() => navigate(`/review?module=${module.id}`)}
-          disabled={atoms.length === 0}
-        >
-          <IconRecall size={15} />
-          {due > 0 ? `Review ${due} due` : seen === 0 ? 'Start studying' : 'Study this module'}
-          <IconArrowRight size={15} />
-        </Button>
-        <Button variant="ghost" size="lg" onClick={() => setState((s) => togglePin(s, module.id))}>
-          <IconStar size={15} />
-          {pinned ? 'Pinned' : 'Pin'}
-        </Button>
-      </div>
-
-      <div style={{ marginBottom: 'var(--gap)' }}>
-        <Segmented value={tab} options={tabs} onChange={setTab} />
-      </div>
+      <StudyPath step={step} status={status} onChange={setStep} />
 
       <div className="read">
         <div className="stack">
-          {tab === 'overview' ? <Overview module={module} /> : null}
-          {tab === 'lessons' ? <Lessons module={module} /> : null}
-          {tab === 'practice' ? <Practice module={module} highlight={route.query.ex} /> : null}
-          {tab === 'items' ? <Items module={module} /> : null}
+          {step === 'learn' ? (
+            <Learn
+              module={module}
+              status={status}
+              onMark={() => {
+                markStudied()
+                setStep('recall')
+              }}
+              onMarkAndRecall={() => {
+                markStudied()
+                startRecall()
+              }}
+            />
+          ) : null}
+          {step === 'practice' ? <Practice module={module} highlight={route.query.ex} /> : null}
+          {step === 'recall' ? <Recall module={module} status={status} onStart={startRecall} /> : null}
         </div>
 
         <div className="stack">
@@ -173,25 +235,497 @@ export function ModulePage({ id }: { id: string }) {
                 </span>
               </div>
               <div style={{ marginTop: 13, fontSize: 11.5, color: 'var(--ink-4)', lineHeight: 1.8 }}>
+                <div>{status.read ? `Studied ${formatDate(status.read) ?? ''}` : 'Not yet marked as studied'}</div>
                 <div>
-                  {seen} of {atoms.length} items seen
+                  {status.seen} of {status.atoms} items seen in recall
                 </div>
-                <div>{due} due for review now</div>
-                <div>{module.resources.length} resources</div>
+                <div>{status.due} due for review now</div>
+                <div>
+                  {status.exercises} exercise{status.exercises === 1 ? '' : 's'}
+                  {status.started > 0 ? ` · ${status.started} started` : ''}
+                </div>
               </div>
             </div>
           </Card>
 
           <PrereqCard dag={dag} module={module} mastery={mastery} />
           <UnlocksCard dag={dag} module={module} />
-          <ResourceCard resources={module.resources} />
         </div>
       </div>
     </div>
   )
 }
 
-/* ── Panels ──────────────────────────────────────────────────────────────── */
+/* ── Study path strip ────────────────────────────────────────────────────── */
+
+function StudyPath({
+  step,
+  status,
+  onChange,
+}: {
+  step: Step
+  status: Status
+  onChange: (s: Step) => void
+}) {
+  const meta: Record<Step, string> = {
+    learn: status.read
+      ? `Studied ${formatDate(status.read) ?? ''}`
+      : `${status.cards} note${status.cards === 1 ? '' : 's'} · resources first`,
+    practice:
+      status.exercises === 0
+        ? 'No exercises'
+        : `${status.exercises} exercise${status.exercises === 1 ? '' : 's'}${
+            status.started > 0 ? ` · ${status.started} started` : ''
+          }`,
+    recall:
+      status.atoms === 0
+        ? 'Nothing to recall'
+        : status.due > 0
+          ? `${status.due} due now`
+          : status.seen === 0
+            ? `${status.cards} cards · ${status.quiz} questions`
+            : `${status.seen} of ${status.atoms} seen`,
+  }
+  const label: Record<Step, string> = { learn: 'Learn', practice: 'Practice', recall: 'Recall' }
+  const done: Record<Step, boolean> = {
+    learn: !!status.read,
+    practice: status.exercises > 0 && status.started >= status.exercises,
+    recall: status.atoms > 0 && status.seen === status.atoms && status.due === 0,
+  }
+
+  return (
+    <div className="path" role="tablist" aria-label="Study path">
+      {STEP_ORDER.map((s, i) => (
+        <button
+          key={s}
+          className="path__step"
+          data-on={s === step}
+          data-done={done[s]}
+          onClick={() => onChange(s)}
+          role="tab"
+          aria-selected={s === step}
+          type="button"
+        >
+          <span className="path__num">{done[s] ? <IconCheck size={13} /> : i + 1}</span>
+          <span className="path__body">
+            <span className="path__label">{label[s]}</span>
+            <span className="path__meta">{meta[s]}</span>
+          </span>
+        </button>
+      ))}
+    </div>
+  )
+}
+
+/* ── Learn ───────────────────────────────────────────────────────────────── */
+
+function Learn({
+  module,
+  status,
+  onMark,
+  onMarkAndRecall,
+}: {
+  module: Module
+  status: Status
+  onMark: () => void
+  onMarkAndRecall: () => void
+}) {
+  const cards = module.cards ?? []
+  // Free first — the whole point is that this is studiable without spending.
+  const resources = [...module.resources].sort((a, b) => Number(b.free) - Number(a.free))
+  const startHere = resources[0]
+
+  return (
+    <>
+      {!status.read ? (
+        <Card index={0}>
+          <CardHead icon={<IconRoute size={15} />} title="How to study this module" divided />
+          <div className="sect">
+            <ol className="steps">
+              <li>
+                <span className="steps__num">1</span>
+                <span>
+                  <strong>Read the objectives.</strong> They are the exam: everything below exists
+                  to get you to them.
+                </span>
+              </li>
+              <li>
+                <span className="steps__num">2</span>
+                <span>
+                  <strong>Work through the resources, in order.</strong> ORBIT has no lessons of
+                  its own — it links the best free material rather than paraphrasing it.
+                  {startHere ? (
+                    <>
+                      {' '}
+                      Start with <em>{startHere.title}</em>
+                      {startHere.author ? ` (${startHere.author})` : ''}.
+                    </>
+                  ) : null}
+                </span>
+              </li>
+              <li>
+                <span className="steps__num">3</span>
+                <span>
+                  <strong>Skim the notes,</strong> then mark the module studied and move on to
+                  Recall. The notes are this module’s flashcards laid out to read; the questions
+                  stay hidden until Recall, because trying them cold is what makes them stick.
+                </span>
+              </li>
+            </ol>
+          </div>
+        </Card>
+      ) : null}
+
+      <Card index={1}>
+        <CardHead icon={<IconTarget size={15} />} title="What you will be able to do" divided />
+        <div className="sect">
+          <ul className="objlist">
+            {module.objectives.map((o, i) => (
+              <li key={i}>
+                <IconCheck size={14} />
+                <span>{o}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </Card>
+
+      <Card index={2}>
+        <CardHead
+          icon={<IconBook size={15} />}
+          title={`Resources (${resources.length})`}
+          right={<span className="eyebrow-dim">free first</span>}
+          divided
+        />
+        <div className="sect">
+          {resources.length === 0 ? (
+            <p style={{ fontSize: 12, color: 'var(--ink-4)' }}>
+              None cited yet. Work from the objectives and the exercises.
+            </p>
+          ) : (
+            resources.map((r, i) => <ResourceRow key={i} resource={r} startHere={i === 0} />)
+          )}
+        </div>
+      </Card>
+
+      <Card index={3}>
+        <CardHead icon={<IconBook size={15} />} title={`Topics (${module.topics.length})`} divided />
+        <div className="sect">
+          <div className="taglist">
+            {module.topics.map((t) => (
+              <span key={t}>{t}</span>
+            ))}
+          </div>
+        </div>
+      </Card>
+
+      <Card index={4}>
+        <CardHead
+          icon={<IconRecall size={15} />}
+          title={`Notes (${cards.length})`}
+          right={<span className="eyebrow-dim">the flashcards, laid out to read</span>}
+          divided
+        />
+        <div className="sect">
+          {cards.length === 0 ? (
+            <p style={{ fontSize: 12, color: 'var(--ink-4)' }}>
+              No flashcards in this module; the resources carry it.
+            </p>
+          ) : (
+            <div className="notes">
+              {cards.map((c) => (
+                <Note key={c.id} card={c} />
+              ))}
+            </div>
+          )}
+          {module.quiz?.length ? (
+            <p className="track-note" style={{ marginTop: 16 }}>
+              {module.quiz.length} question{module.quiz.length === 1 ? '' : 's'} are held back for
+              Recall. Answer explanations appear after each attempt, not before.
+            </p>
+          ) : null}
+        </div>
+      </Card>
+
+      <Card index={5}>
+        <div className="sect" style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+          {status.read ? (
+            <>
+              <Chip tone="ok">
+                <IconCheck size={11} style={{ display: 'inline', verticalAlign: '-1px', marginRight: 4 }} />
+                Studied {formatDate(status.read) ?? ''}
+              </Chip>
+              <span className="grow" />
+              <Button variant="primary" size="md" onClick={onMarkAndRecall} disabled={status.atoms === 0}>
+                <IconRecall size={15} />
+                {status.due > 0 ? `Review ${status.due} due` : status.seen === 0 ? 'Start recall' : 'Recall again'}
+                <IconArrowRight size={15} />
+              </Button>
+            </>
+          ) : (
+            <>
+              <span style={{ fontSize: 12, color: 'var(--ink-3)', lineHeight: 1.55 }} className="grow">
+                Done with the resources and the notes? Say so, and Recall takes over the
+                scheduling from here.
+              </span>
+              <Button variant="ghost" size="md" onClick={onMark}>
+                <IconCheck size={15} />
+                Mark as studied
+              </Button>
+              <Button variant="primary" size="md" onClick={onMarkAndRecall} disabled={status.atoms === 0}>
+                <IconRecall size={15} />
+                Mark as studied and start recall
+                <IconArrowRight size={15} />
+              </Button>
+            </>
+          )}
+        </div>
+      </Card>
+    </>
+  )
+}
+
+function ResourceRow({ resource: r, startHere }: { resource: Resource; startHere: boolean }) {
+  return (
+    <div className="rsrc">
+      <span className="rsrc__kind">{r.kind}</span>
+      <div className="grow">
+        <div style={{ display: 'flex', gap: 8, alignItems: 'baseline', flexWrap: 'wrap' }}>
+          {r.url ? (
+            <a
+              className="rsrc__title"
+              href={r.url}
+              target="_blank"
+              rel="noreferrer noopener"
+              style={{ display: 'inline-block' }}
+            >
+              {r.title}
+            </a>
+          ) : (
+            <span className="rsrc__title">{r.title}</span>
+          )}
+          {startHere ? <Chip tone="blue">Start here</Chip> : null}
+        </div>
+        <div className="rsrc__by">
+          {r.author ? `${r.author} · ` : ''}
+          {r.free ? 'free' : 'paid'}
+          {r.note ? ` · ${r.note}` : ''}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function Note({ card }: { card: Flashcard }) {
+  return (
+    <div className="note">
+      <div className="note__front">{card.front}</div>
+      <div className={`note__back${card.formula ? ' note__back--formula' : ''}`}>{card.back}</div>
+    </div>
+  )
+}
+
+/* ── Practice ────────────────────────────────────────────────────────────── */
+
+function Practice({ module, highlight }: { module: Module; highlight?: string }) {
+  const exercises = module.exercises ?? []
+  if (exercises.length === 0) {
+    return (
+      <Empty
+        icon={<IconTerminal size={28} />}
+        title="No exercises in this module"
+        body="The resources and Recall carry this one. Move on to Recall when you have studied."
+      />
+    )
+  }
+  return (
+    <>
+      <p className="track-note" style={{ marginTop: 0 }}>
+        Exercises are where understanding meets reality. Code exercises open in the playground
+        with tests; derivations and analyses are done on paper, and the solution is there to check
+        against afterwards, not to read first.
+      </p>
+      {exercises.map((ex, i) => (
+        <ExerciseCard key={ex.id} exercise={ex} index={i} highlighted={ex.id === highlight} />
+      ))}
+    </>
+  )
+}
+
+function ExerciseCard({
+  exercise,
+  index,
+  highlighted,
+}: {
+  exercise: Exercise
+  index: number
+  highlighted: boolean
+}) {
+  const { state } = useLearner()
+  const [showSolution, setShowSolution] = useState(false)
+  const runnable = exercise.kind === 'code' && !!exercise.lang
+  const started = !!state.code[exercise.id]
+
+  return (
+    <Card
+      index={index}
+      style={highlighted ? { borderColor: 'var(--line-blue-strong)' } : undefined}
+    >
+      <CardHead
+        icon={<IconTerminal size={15} />}
+        title={exercise.title}
+        right={
+          <div style={{ display: 'flex', gap: 6 }}>
+            {started ? <Chip tone="ok">started</Chip> : null}
+            <Chip ghost>{exercise.kind}</Chip>
+            {exercise.lang ? <Chip tone="blue">{exercise.lang}</Chip> : null}
+            {exercise.hours ? <Chip ghost>{exercise.hours}h</Chip> : null}
+          </div>
+        }
+        divided
+      />
+      <div className="sect">
+        <Markdown>{exercise.prompt}</Markdown>
+
+        <div style={{ display: 'flex', gap: 9, marginTop: 15, flexWrap: 'wrap' }}>
+          {runnable ? (
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => navigate(`/playground?ex=${encodeURIComponent(exercise.id)}`)}
+            >
+              <IconTerminal size={14} />
+              {started ? 'Continue in playground' : 'Open in playground'}
+            </Button>
+          ) : null}
+          {exercise.solution ? (
+            <Button variant="ghost" size="sm" onClick={() => setShowSolution((s) => !s)}>
+              {showSolution ? 'Hide solution' : 'Show solution'}
+            </Button>
+          ) : null}
+        </div>
+
+        {showSolution && exercise.solution ? (
+          <div style={{ marginTop: 15 }}>
+            <Markdown>{'```' + (exercise.lang ?? '') + '\n' + exercise.solution + '\n```'}</Markdown>
+          </div>
+        ) : null}
+      </div>
+    </Card>
+  )
+}
+
+/* ── Recall ──────────────────────────────────────────────────────────────── */
+
+function Recall({ module, status, onStart }: { module: Module; status: Status; onStart: () => void }) {
+  const { state } = useLearner()
+  const now = new Date()
+  const cards = module.cards ?? []
+  const quiz = module.quiz ?? []
+
+  const cta =
+    status.atoms === 0
+      ? 'Nothing to recall'
+      : status.due > 0
+        ? `Review ${status.due} due`
+        : status.seen === 0
+          ? `Start recall · ${status.atoms} items`
+          : 'Recall again'
+
+  return (
+    <>
+      <Card index={0}>
+        <CardHead
+          icon={<IconRecall size={15} />}
+          title="Recall"
+          right={
+            status.due > 0 ? (
+              <Chip tone="warn">{status.due} due</Chip>
+            ) : status.seen > 0 ? (
+              <Chip tone="ok">{status.seen} seen</Chip>
+            ) : null
+          }
+          divided
+        />
+        <div className="sect">
+          <p style={{ fontSize: 12.5, color: 'var(--ink-2)', lineHeight: 1.6, margin: 0 }}>
+            The flashcards and questions of this module, scheduled by spaced repetition. You see a
+            prompt, try to answer, reveal, and grade yourself; the grade sets when it comes back.
+            New items are introduced a few at a time, so a first session is short and later ones
+            are mostly review.
+          </p>
+          {!status.read && status.seen === 0 ? (
+            <p className="track-note" style={{ marginTop: 12 }}>
+              <IconFlame size={11} style={{ display: 'inline', verticalAlign: '-1px', marginRight: 5 }} />
+              You have not marked the Learn step done. Recall works best once you have been through
+              the resources — it tests, it does not teach.
+            </p>
+          ) : null}
+          <div style={{ marginTop: 15 }}>
+            <Button variant="primary" size="lg" onClick={onStart} disabled={status.atoms === 0}>
+              <IconRecall size={15} />
+              {cta}
+              <IconArrowRight size={15} />
+            </Button>
+          </div>
+        </div>
+      </Card>
+
+      <Card index={1}>
+        <CardHead icon={<IconRecall size={15} />} title={`Flashcards (${cards.length})`} divided />
+        <div className="sect">
+          {cards.length === 0 ? (
+            <p style={{ fontSize: 12, color: 'var(--ink-4)' }}>None yet.</p>
+          ) : (
+            cards.map((c) => {
+              const it = getItem(state, `${module.id}::card::${c.id}`)
+              const r = it.memory.reps > 0 ? currentR(it.memory, now) : null
+              return (
+                <div className="rsrc" key={c.id}>
+                  <span className="rsrc__kind">{r == null ? 'new' : `${Math.round(r * 100)}%`}</span>
+                  <div className="grow">
+                    <div className="rsrc__title">{c.front}</div>
+                    <div className="rsrc__by">
+                      {r == null ? 'not yet recalled' : 'chance you still know it right now'}
+                    </div>
+                  </div>
+                </div>
+              )
+            })
+          )}
+        </div>
+      </Card>
+
+      <Card index={2}>
+        <CardHead icon={<IconTarget size={15} />} title={`Questions (${quiz.length})`} divided />
+        <div className="sect">
+          {quiz.length === 0 ? (
+            <p style={{ fontSize: 12, color: 'var(--ink-4)' }}>None yet.</p>
+          ) : (
+            quiz.map((q) => {
+              const it = getItem(state, `${module.id}::quiz::${q.id}`)
+              const acc = it.attempts > 0 ? it.correct / it.attempts : null
+              return (
+                <div className="rsrc" key={q.id}>
+                  <span className="rsrc__kind">{acc == null ? 'new' : `${Math.round(acc * 100)}%`}</span>
+                  <div className="grow">
+                    <div className="rsrc__title">{acc == null ? 'Hidden until you attempt it' : q.q}</div>
+                    <div className="rsrc__by">
+                      {q.bloom ?? 'recall'} · difficulty {(q.b ?? 0).toFixed(1)}
+                      {acc == null ? '' : ` · ${it.attempts} attempt${it.attempts === 1 ? '' : 's'}`}
+                    </div>
+                  </div>
+                </div>
+              )
+            })
+          )}
+        </div>
+      </Card>
+    </>
+  )
+}
+
+/* ── Shared panels ───────────────────────────────────────────────────────── */
 
 function LockedBanner({ dag, blockerIds }: { dag: ReturnType<typeof useLearner>['dag']; blockerIds: string[] }) {
   return (
@@ -226,199 +760,6 @@ function LockedBanner({ dag, blockerIds }: { dag: ReturnType<typeof useLearner>[
         </div>
       </div>
     </Card>
-  )
-}
-
-function Overview({ module }: { module: Module }) {
-  return (
-    <>
-      <Card index={0}>
-        <CardHead icon={<IconTarget size={15} />} title="What you will be able to do" divided />
-        <div className="sect">
-          <ul className="objlist">
-            {module.objectives.map((o, i) => (
-              <li key={i}>
-                <IconCheck size={14} />
-                <span>{o}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </Card>
-
-      <Card index={1}>
-        <CardHead icon={<IconBook size={15} />} title={`Topics (${module.topics.length})`} divided />
-        <div className="sect">
-          <div className="taglist">
-            {module.topics.map((t) => (
-              <span key={t}>{t}</span>
-            ))}
-          </div>
-        </div>
-      </Card>
-    </>
-  )
-}
-
-function Lessons({ module }: { module: Module }) {
-  const lessons = module.lessons ?? []
-  if (lessons.length === 0) {
-    return <Empty icon={<IconBook size={28} />} title="No written lessons yet" body="Work from the resources and exercises instead." />
-  }
-  return (
-    <>
-      {lessons.map((l, i) => (
-        <Card key={l.id} index={i}>
-          <CardHead
-            icon={<IconBook size={15} />}
-            title={l.title}
-            right={
-              <span className="eyebrow-dim">
-                <IconClock size={11} style={{ display: 'inline', verticalAlign: '-1px' }} /> {l.minutes}m
-              </span>
-            }
-            divided
-          />
-          <div className="sect">
-            <Markdown>{l.body}</Markdown>
-          </div>
-        </Card>
-      ))}
-    </>
-  )
-}
-
-function Practice({ module, highlight }: { module: Module; highlight?: string }) {
-  const exercises = module.exercises ?? []
-  if (exercises.length === 0) {
-    return <Empty icon={<IconTerminal size={28} />} title="No exercises in this module" />
-  }
-  return (
-    <>
-      {exercises.map((ex, i) => (
-        <ExerciseCard key={ex.id} exercise={ex} index={i} highlighted={ex.id === highlight} />
-      ))}
-    </>
-  )
-}
-
-function ExerciseCard({
-  exercise,
-  index,
-  highlighted,
-}: {
-  exercise: Exercise
-  index: number
-  highlighted: boolean
-}) {
-  const [showSolution, setShowSolution] = useState(false)
-  const runnable = exercise.kind === 'code' && !!exercise.lang
-
-  return (
-    <Card
-      index={index}
-      style={highlighted ? { borderColor: 'var(--line-blue-strong)' } : undefined}
-    >
-      <CardHead
-        icon={<IconTerminal size={15} />}
-        title={exercise.title}
-        right={
-          <div style={{ display: 'flex', gap: 6 }}>
-            <Chip ghost>{exercise.kind}</Chip>
-            {exercise.lang ? <Chip tone="blue">{exercise.lang}</Chip> : null}
-          </div>
-        }
-        divided
-      />
-      <div className="sect">
-        <Markdown>{exercise.prompt}</Markdown>
-
-        <div style={{ display: 'flex', gap: 9, marginTop: 15, flexWrap: 'wrap' }}>
-          {runnable ? (
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={() => navigate(`/playground?ex=${encodeURIComponent(exercise.id)}`)}
-            >
-              <IconTerminal size={14} />
-              Open in playground
-            </Button>
-          ) : null}
-          {exercise.solution ? (
-            <Button variant="ghost" size="sm" onClick={() => setShowSolution((s) => !s)}>
-              {showSolution ? 'Hide solution' : 'Show solution'}
-            </Button>
-          ) : null}
-        </div>
-
-        {showSolution && exercise.solution ? (
-          <div style={{ marginTop: 15 }}>
-            <Markdown>{'```' + (exercise.lang ?? '') + '\n' + exercise.solution + '\n```'}</Markdown>
-          </div>
-        ) : null}
-      </div>
-    </Card>
-  )
-}
-
-function Items({ module }: { module: Module }) {
-  const { state } = useLearner()
-  const now = new Date()
-  const cards = module.cards ?? []
-  const quiz = module.quiz ?? []
-
-  return (
-    <>
-      <Card index={0}>
-        <CardHead icon={<IconRecall size={15} />} title={`Flashcards (${cards.length})`} divided />
-        <div className="sect">
-          {cards.length === 0 ? (
-            <p style={{ fontSize: 12, color: 'var(--ink-4)' }}>None yet.</p>
-          ) : (
-            cards.map((c) => {
-              const it = getItem(state, `${module.id}::card::${c.id}`)
-              const r = it.memory.reps > 0 ? currentR(it.memory, now) : null
-              return (
-                <div className="rsrc" key={c.id}>
-                  <span className="rsrc__kind">{r == null ? 'new' : `${Math.round(r * 100)}%`}</span>
-                  <div className="grow">
-                    <div className="rsrc__title">{c.front}</div>
-                    <div className="rsrc__by">{c.back}</div>
-                  </div>
-                </div>
-              )
-            })
-          )}
-        </div>
-      </Card>
-
-      <Card index={1}>
-        <CardHead icon={<IconTarget size={15} />} title={`Questions (${quiz.length})`} divided />
-        <div className="sect">
-          {quiz.length === 0 ? (
-            <p style={{ fontSize: 12, color: 'var(--ink-4)' }}>None yet.</p>
-          ) : (
-            quiz.map((q) => {
-              const it = getItem(state, `${module.id}::quiz::${q.id}`)
-              const acc = it.attempts > 0 ? it.correct / it.attempts : null
-              return (
-                <div className="rsrc" key={q.id}>
-                  <span className="rsrc__kind">
-                    {acc == null ? 'new' : `${Math.round(acc * 100)}%`}
-                  </span>
-                  <div className="grow">
-                    <div className="rsrc__title">{q.q}</div>
-                    <div className="rsrc__by">
-                      {q.bloom ?? 'recall'} · difficulty {(q.b ?? 0).toFixed(1)}
-                    </div>
-                  </div>
-                </div>
-              )
-            })
-          )}
-        </div>
-      </Card>
-    </>
   )
 }
 
@@ -502,45 +843,6 @@ function UnlocksCard({ dag, module }: { dag: ReturnType<typeof useLearner>['dag'
             …and {total - direct.length} further downstream.
           </p>
         ) : null}
-      </div>
-    </Card>
-  )
-}
-
-function ResourceCard({ resources }: { resources: Resource[] }) {
-  if (resources.length === 0) return null
-  // Free first — the whole point is that this is studiable without spending.
-  const sorted = [...resources].sort((a, b) => Number(b.free) - Number(a.free))
-
-  return (
-    <Card index={3}>
-      <CardHead icon={<IconBook size={15} />} title={`Resources (${resources.length})`} divided />
-      <div className="sect">
-        {sorted.map((r, i) => (
-          <div className="rsrc" key={i}>
-            <span className="rsrc__kind">{r.kind}</span>
-            <div className="grow">
-              {r.url ? (
-                <a
-                  className="rsrc__title"
-                  href={r.url}
-                  target="_blank"
-                  rel="noreferrer noopener"
-                  style={{ display: 'inline-block' }}
-                >
-                  {r.title}
-                </a>
-              ) : (
-                <span className="rsrc__title">{r.title}</span>
-              )}
-              <div className="rsrc__by">
-                {r.author ? `${r.author} · ` : ''}
-                {r.free ? 'free' : 'paid'}
-                {r.note ? ` · ${r.note}` : ''}
-              </div>
-            </div>
-          </div>
-        ))}
       </div>
     </Card>
   )
