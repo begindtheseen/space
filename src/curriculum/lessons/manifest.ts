@@ -902,6 +902,17 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       "file": "car_10_past_project_presentation/04-talk-structure-and-the-clock.md"
     }
   ],
+  "car_11_domain_round": [
+    {
+      "id": "l01-the-answering-standard",
+      "title": "The answering standard: four moves, ninety seconds",
+      "minutes": 22,
+      "covers": [
+        "the answering standard: state assumptions, write the equation, interpret physically, sanity check"
+      ],
+      "file": "car_11_domain_round/01-the-answering-standard.md"
+    }
+  ],
   "cod_cpp_01_basics": [
     {
       "id": "l01-the-build-pipeline",
@@ -6381,6 +6392,16 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "FDIR: residual monitors on the filter, sensor cross-checks, actuator health, and the response of each"
       ],
       "file": "t7_m48_capstone/08-fdir.md"
+    },
+    {
+      "id": "l09-the-integration-only-failure",
+      "title": "The failure that only appears integrated",
+      "minutes": 23,
+      "covers": [
+        "A multiplicative extended Kalman filter on IMU, GNSS and radar altimeter, with error-state formulation and attitude error as a three-parameter local perturbation",
+        "TVC attitude control with bending-mode and slosh notch or roll-off filtering, and gain scheduling against dynamic pressure and mass"
+      ],
+      "file": "t7_m48_capstone/09-the-integration-only-failure.md"
     }
   ],
   "t7_m49_interview_prep": [
@@ -7814,7 +7835,7 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "car_11_domain_round": {
-    "covered": 0,
+    "covered": 1,
     "total": 14,
     "complete": false,
     "missing": [
@@ -7830,8 +7851,7 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
       "the multiplicative quaternion EKF and why the error state is three-dimensional",
       "strapdown IMU integration, bias states and gyro propagation",
       "PID structure, integral windup and anti-windup, derivative filtering, and a defensible tuning approach",
-      "orbit determination: observability, batch least squares versus sequential filtering, measurement types",
-      "the answering standard: state assumptions, write the equation, interpret physically, sanity check"
+      "orbit determination: observability, batch least squares versus sequential filtering, measurement types"
     ]
   },
   "car_12_first_principles": {
