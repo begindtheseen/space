@@ -2515,6 +2515,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "hypersonic aerodynamics and the transonic transition"
       ],
       "file": "t2_m24_edl/09-hypersonic-aerodynamics-and-transonic-transition.md"
+    },
+    {
+      "id": "l10-propulsive-descent-phases",
+      "title": "Propulsive descent — entry burn, aerodynamic guidance, landing burn",
+      "minutes": 14,
+      "covers": [
+        "propulsive descent: entry burn, aerodynamic guidance, landing burn"
+      ],
+      "file": "t2_m24_edl/10-propulsive-descent-phases.md"
     }
   ],
   "t3_m25_signals_systems": [
@@ -5545,11 +5554,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t2_m24_edl": {
-    "covered": 12,
+    "covered": 13,
     "total": 18,
     "complete": false,
     "missing": [
-      "propulsive descent: entry burn, aerodynamic guidance, landing burn",
       "divert capability and the landing ellipse",
       "terminal descent sensors: radar altimeter, lidar, terrain relative navigation",
       "landing burn timing and the hoverslam problem",
