@@ -109,11 +109,19 @@ PEG's steering solve takes the vehicle's current mass, thrust and state as input
 :::
 
 ::: check
-Why does the time-to-go formula $t_{go} = \tau(1 - e^{-\Delta v/v_e})$ become very sensitive to $\Delta v$ specifically when propellant is nearly exhausted, rather than uniformly sensitive throughout the burn?
+Differentiate $t_{go} = \tau(1 - e^{-\Delta v/v_e})$ with respect to $\Delta v$. Does an error in the required $\Delta v$ translate into a *larger* time-to-go error late in a burn than early in one? And if not, what is it about running low on propellant that a guidance system still has to notice quickly?
 :::
 
 ::: answer
-As $\Delta v$ approaches the vehicle's remaining ideal delta-v capability ($v_e \ln(m/m_{\text{dry}})$), the exponential $e^{-\Delta v/v_e}$ falls toward the value corresponding to burning essentially all remaining propellant, and $\tau = m/\dot m$ is itself shrinking as mass depletes. Small changes in the required $\Delta v$ near that limit correspond to a large fractional change in how much of the dwindling propellant supply is needed, so $t_{go}$'s sensitivity grows sharply — which is exactly the regime (close to running out) where a guidance system most needs to notice a shortfall quickly.
+$\partial t_{go}/\partial\Delta v = (\tau/v_e)\,e^{-\Delta v/v_e}$, which *falls* as $\Delta v$ grows — the opposite of the intuition that late in a burn everything gets twitchier. It is worth pushing the algebra one step further, because the result is cleaner than it looks. At the moment the remaining requirement exactly equals the remaining capability, $\Delta v = v_e\ln(m/m_{\text{dry}})$, the exponential is $m_{\text{dry}}/m$ and $\tau = m/\dot m$, so the two $m$ values cancel:
+
+$$
+\left.\frac{\partial t_{go}}{\partial\Delta v}\right|_{\Delta v = \Delta v_{\max}} = \frac{m_{\text{dry}}}{\dot m\,v_e},
+$$
+
+a constant. For a stage with $m_{\text{dry}}=10\,000\,\mathrm{kg}$, $\dot m = 250\,\mathrm{kg/s}$ and $v_e = 3400\,\mathrm{m/s}$ it is $0.0118\,\mathrm{s}$ per $\mathrm{m/s}$, and it is the same number one second into the burn as it is with fifteen seconds of propellant left. Time-to-go is not the sensitive quantity.
+
+What does grow sharply is the *margin*. Express the answer as the fraction of the propellant still aboard that the burn will consume: with $y = m_{\text{dry}}/m$ that fraction is $(1-e^{-\Delta v/v_e})/(1-y)$, whose derivative at the same commitment point is $y/\big(v_e(1-y)\big)$. Early in the burn $y$ is small and this is tiny; as the tanks empty $y\to1$ and the denominator collapses. For the stage above it rises from $3.3\times10^{-5}$ to $2.4\times10^{-3}$ per $\mathrm{m/s}$ over the burn — a factor of seventy-two. So the same $\Delta v$ error costs the same handful of seconds throughout, but those seconds are a growing share of what is left to give. That is the thing to notice early: not that the estimate degrades, but that the room to absorb it does.
 :::
 
 ::: check

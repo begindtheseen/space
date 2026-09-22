@@ -3727,6 +3727,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Proportional navigation: derivation, the navigation constant N, and the LOS-rate nulling principle"
       ],
       "file": "t5_m40_guidance_fundamentals/04-proportional-navigation-derivation.md"
+    },
+    {
+      "id": "l05-navigation-constant-and-augmented-pn",
+      "title": "Choosing N, and proportional navigation for a maneuvering target",
+      "minutes": 22,
+      "covers": [
+        "Why N between 3 and 5; augmented proportional navigation for manoeuvring targets"
+      ],
+      "file": "t5_m40_guidance_fundamentals/05-navigation-constant-and-augmented-pn.md"
     }
   ],
   "t5_m41_ascent_guidance": [
@@ -3893,6 +3902,24 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Direct transcription: converting an infinite-dimensional problem into a finite NLP"
       ],
       "file": "t5_m42_trajectory_optimization/06-direct-transcription.md"
+    },
+    {
+      "id": "l07-direct-single-vs-multiple-shooting",
+      "title": "Direct single shooting vs direct multiple shooting",
+      "minutes": 17,
+      "covers": [
+        "Direct single shooting vs direct multiple shooting, and the conditioning difference between them"
+      ],
+      "file": "t5_m42_trajectory_optimization/07-direct-single-vs-multiple-shooting.md"
+    },
+    {
+      "id": "l08-trapezoidal-hermite-simpson-collocation",
+      "title": "Direct collocation: trapezoidal and Hermite-Simpson defects",
+      "minutes": 16,
+      "covers": [
+        "Direct collocation: trapezoidal and Hermite-Simpson defect constraints"
+      ],
+      "file": "t5_m42_trajectory_optimization/08-trapezoidal-hermite-simpson-collocation.md"
     }
   ],
   "t5_m43_convex_guidance": [
@@ -3964,6 +3991,49 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "RTOS primitives: tasks, semaphores, mutexes, message queues, and which of them can block unboundedly"
       ],
       "file": "t6_m44_realtime_embedded/05-rtos-primitives.md"
+    },
+    {
+      "id": "l06-real-time-linux",
+      "title": "Real-time Linux, and why a flight programme can run it",
+      "minutes": 22,
+      "covers": [
+        "Real-time Linux: PREEMPT_RT, SCHED_FIFO and SCHED_DEADLINE, CPU isolation, IRQ affinity, mlockall",
+        "Why a flight programme can fly Linux at all, and what it has to switch off to do so"
+      ],
+      "file": "t6_m44_realtime_embedded/06-real-time-linux.md"
+    },
+    {
+      "id": "l07-interrupts-and-memory-protection",
+      "title": "Interrupts, latency and memory protection",
+      "minutes": 17,
+      "covers": [
+        "Interrupt handling, interrupt latency, and the split between the handler and the deferred half",
+        "Memory protection with an MMU or MPU; stack sizing and stack-overflow detection"
+      ],
+      "file": "t6_m44_realtime_embedded/07-interrupts-and-memory-protection.md"
+    },
+    {
+      "id": "l08-no-heap-no-recursion",
+      "title": "No heap, no recursion, and the limits of predictable hardware",
+      "minutes": 24,
+      "covers": [
+        "No dynamic allocation after initialisation: static pools, fixed-capacity containers, and placement construction",
+        "Bounded loops, no recursion, and the rest of the Power of Ten rules",
+        "Cache and branch-predictor effects on determinism; why the fastest code is not always the most predictable"
+      ],
+      "file": "t6_m44_realtime_embedded/08-no-heap-no-recursion-no-surprises.md"
+    }
+  ],
+  "t6_m45_fsw_architecture": [
+    {
+      "id": "l01-architecture-layering-and-cfs",
+      "title": "Architecture layering, and NASA cFS as a reference",
+      "minutes": 18,
+      "covers": [
+        "Layering: hardware abstraction, device managers, the GNC application, the mode manager, telemetry and command",
+        "NASA core Flight System as a public reference architecture: apps, the software bus, tables"
+      ],
+      "file": "t6_m45_fsw_architecture/01-architecture-layering-and-cfs.md"
     }
   ],
   "t6_m46_6dof_simulation": [
@@ -4011,6 +4081,45 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Environment models: gravity field, atmosphere, wind and gust, magnetic field, ephemeris, solar radiation pressure"
       ],
       "file": "t6_m46_6dof_simulation/05-environment-models.md"
+    },
+    {
+      "id": "l06-sensor-models",
+      "title": "Sensor models",
+      "minutes": 25,
+      "covers": [
+        "Sensor models: noise, bias and bias instability, scale factor, misalignment, quantisation, latency, dropout, saturation, update rate"
+      ],
+      "file": "t6_m46_6dof_simulation/06-sensor-models.md"
+    }
+  ],
+  "t6_m47_vv_montecarlo": [
+    {
+      "id": "l01-verification-validation-and-the-matrix",
+      "title": "Verification, validation, and the verification matrix",
+      "minutes": 20,
+      "covers": [
+        "Requirements, verification and validation; the verification matrix that maps every requirement to its evidence",
+        "Verification by analysis, test, inspection and demonstration, and choosing correctly between them"
+      ],
+      "file": "t6_m47_vv_montecarlo/01-verification-validation-and-the-matrix.md"
+    },
+    {
+      "id": "l02-building-a-dispersion-set",
+      "title": "Building a dispersion set",
+      "minutes": 19,
+      "covers": [
+        "Building a dispersion set: mass properties, aerodynamic coefficients, propulsion performance, winds, sensor and actuator errors, initial conditions, atmosphere"
+      ],
+      "file": "t6_m47_vv_montecarlo/02-building-a-dispersion-set.md"
+    },
+    {
+      "id": "l03-correlated-dispersions",
+      "title": "Distributions, their justification, and correlated dispersions",
+      "minutes": 17,
+      "covers": [
+        "Distributions and their justification; correlations between dispersed parameters and why ignoring them is not conservative"
+      ],
+      "file": "t6_m47_vv_montecarlo/03-correlated-dispersions.md"
     }
   ]
 }
@@ -4335,11 +4444,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t5_m40_guidance_fundamentals": {
-    "covered": 4,
+    "covered": 5,
     "total": 12,
     "complete": false,
     "missing": [
-      "Why N between 3 and 5; augmented proportional navigation for manoeuvring targets",
       "True vs pure proportional navigation",
       "Optimal guidance from an LQ formulation and how PN emerges from it",
       "Zero-effort-miss and zero-effort-velocity guidance; the ZEM/ZEV feedback law for landing",
@@ -4356,12 +4464,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t5_m42_trajectory_optimization": {
-    "covered": 6,
+    "covered": 8,
     "total": 17,
     "complete": false,
     "missing": [
-      "Direct single shooting vs direct multiple shooting, and the conditioning difference between them",
-      "Direct collocation: trapezoidal and Hermite-Simpson defect constraints",
       "Pseudospectral methods: Legendre-Gauss, Legendre-Gauss-Radau and Legendre-Gauss-Lobatto nodes",
       "Spectral convergence, the covector mapping theorem, and what pseudospectral costates buy you",
       "Mesh refinement driven by an interpolated-defect error estimate",
@@ -4398,17 +4504,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t6_m44_realtime_embedded": {
-    "covered": 7,
+    "covered": 14,
     "total": 21,
     "complete": false,
     "missing": [
-      "Real-time Linux: PREEMPT_RT, SCHED_FIFO and SCHED_DEADLINE, CPU isolation, IRQ affinity, mlockall",
-      "Why a flight programme can fly Linux at all, and what it has to switch off to do so",
-      "Interrupt handling, interrupt latency, and the split between the handler and the deferred half",
-      "No dynamic allocation after initialisation: static pools, fixed-capacity containers, and placement construction",
-      "Bounded loops, no recursion, and the rest of the Power of Ten rules",
-      "Memory protection with an MMU or MPU; stack sizing and stack-overflow detection",
-      "Cache and branch-predictor effects on determinism; why the fastest code is not always the most predictable",
       "Device drivers, memory-mapped I/O, and the volatile keyword",
       "Buses: UART, SPI, I2C, CAN, RS-422, Ethernet/UDP, and time-triggered protocols",
       "Time synchronisation: GPS pulse-per-second, PTP, and disciplined timestamping of every sample",
@@ -4419,11 +4518,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t6_m45_fsw_architecture": {
-    "covered": 0,
+    "covered": 2,
     "total": 20,
     "complete": false,
     "missing": [
-      "Layering: hardware abstraction, device managers, the GNC application, the mode manager, telemetry and command",
       "Mode management as an explicit state machine, with guard conditions and an exit to safe from every state",
       "Command and telemetry: CCSDS packet structure, dictionaries, limit checking, and command authentication",
       "Redundancy architectures: cold, warm and hot standby; dual-dual; cross-strapping",
@@ -4439,18 +4537,16 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
       "Data integrity: CRCs, checksums, sequence counts and staleness checks on every input",
       "Determinism across redundant strings, and why a non-deterministic algorithm cannot be voted",
       "Time management, epochs, leap seconds and monotonic vs wall-clock time",
-      "NASA core Flight System as a public reference architecture: apps, the software bus, tables",
       "Requirements traceability from a vehicle requirement to a line of code to a test",
       "Configuration management of gains, I-loads and tables separately from the executable",
       "In-flight software update: when it is the safer choice and when it is not"
     ]
   },
   "t6_m46_6dof_simulation": {
-    "covered": 5,
+    "covered": 6,
     "total": 18,
     "complete": false,
     "missing": [
-      "Sensor models: noise, bias and bias instability, scale factor, misalignment, quantisation, latency, dropout, saturation, update rate",
       "Actuator models: thrust curves and start-up transients, TVC gimbal dynamics and rate limits, reaction wheel friction, thruster minimum impulse bit, valve delay",
       "Mass properties against time: propellant depletion, centre of mass migration, inertia tensor change",
       "Slosh and structural flex models, and where they get inserted in the loop",
@@ -4466,14 +4562,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t6_m47_vv_montecarlo": {
-    "covered": 0,
+    "covered": 4,
     "total": 20,
     "complete": false,
     "missing": [
-      "Requirements, verification and validation; the verification matrix that maps every requirement to its evidence",
-      "Verification by analysis, test, inspection and demonstration, and choosing correctly between them",
-      "Building a dispersion set: mass properties, aerodynamic coefficients, propulsion performance, winds, sensor and actuator errors, initial conditions, atmosphere",
-      "Distributions and their justification; correlations between dispersed parameters and why ignoring them is not conservative",
       "Number of runs against the confidence in the claim; the zero-failure formula and its assumptions",
       "Success criteria and scoring: defining what a failed case IS, before the campaign runs",
       "Extreme-value estimation and importance sampling when the failure probability is too small to sample directly",
