@@ -3534,6 +3534,33 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Feature detection and tracking; terrain relative navigation; crater and landmark matching"
       ],
       "file": "t4_m38_sensors_optical_nav/08-feature-tracking-terrain-relative-navigation-crater-matching.md"
+    },
+    {
+      "id": "l09-hazard-detection-visual-inertial-odometry",
+      "title": "Hazard detection and avoidance; visual-inertial odometry basics",
+      "minutes": 16,
+      "covers": [
+        "Hazard detection and avoidance; visual-inertial odometry basics"
+      ],
+      "file": "t4_m38_sensors_optical_nav/09-hazard-detection-visual-inertial-odometry.md"
+    },
+    {
+      "id": "l10-relative-navigation-docking-retroreflectors",
+      "title": "Relative navigation for docking: retroreflectors and the closing error ellipse",
+      "minutes": 17,
+      "covers": [
+        "Relative navigation sensors for docking: retroreflector tracking and pattern recognition"
+      ],
+      "file": "t4_m38_sensors_optical_nav/10-relative-navigation-docking-retroreflectors.md"
+    },
+    {
+      "id": "l11-sensor-fusion-architectures-measurement-models",
+      "title": "Sensor fusion architectures and per-sensor measurement models",
+      "minutes": 15,
+      "covers": [
+        "Sensor fusion architectures and per-sensor measurement models"
+      ],
+      "file": "t4_m38_sensors_optical_nav/11-sensor-fusion-architectures-measurement-models.md"
     }
   ],
   "t4_m39_orbit_determination": [
@@ -3563,6 +3590,44 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "The variational equations and computing the STM by integration"
       ],
       "file": "t4_m39_orbit_determination/03-variational-equations-stm-integration.md"
+    },
+    {
+      "id": "l04-sequential-orbit-determination-ekf-ukf",
+      "title": "Sequential orbit determination with EKF and UKF",
+      "minutes": 16,
+      "covers": [
+        "Sequential orbit determination with EKF and UKF"
+      ],
+      "file": "t4_m39_orbit_determination/04-sequential-orbit-determination-ekf-ukf.md"
+    },
+    {
+      "id": "l05-measurement-types-and-models",
+      "title": "Measurement types and models: range, range-rate, angles, GNSS, VLBI, ISL",
+      "minutes": 13,
+      "covers": [
+        "Measurement types and models: range, range-rate/Doppler, angles, GNSS, VLBI, inter-satellite links"
+      ],
+      "file": "t4_m39_orbit_determination/05-measurement-types-and-models.md"
+    }
+  ],
+  "t5_m41_ascent_guidance": [
+    {
+      "id": "l01-ascent-phases",
+      "title": "The phases of an ascent",
+      "minutes": 24,
+      "covers": [
+        "Ascent phases: liftoff, pitch kick, gravity turn, max-Q, staging, exoatmospheric closed loop"
+      ],
+      "file": "t5_m41_ascent_guidance/01-ascent-phases.md"
+    },
+    {
+      "id": "l02-open-loop-atmospheric-steering",
+      "title": "Open-loop steering and why the loop stays open in the atmosphere",
+      "minutes": 22,
+      "covers": [
+        "Open-loop atmospheric steering (the pitch program) and why closed-loop guidance is avoided in dense atmosphere"
+      ],
+      "file": "t5_m41_ascent_guidance/02-open-loop-atmospheric-steering.md"
     }
   ]
 }
@@ -3875,23 +3940,18 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t4_m38_sensors_optical_nav": {
-    "covered": 8,
+    "covered": 11,
     "total": 12,
     "complete": false,
     "missing": [
-      "Hazard detection and avoidance; visual-inertial odometry basics",
-      "Relative navigation sensors for docking: retroreflector tracking and pattern recognition",
-      "Sensor fusion architectures and per-sensor measurement models",
       "Sensor calibration, alignment estimation, and fault detection"
     ]
   },
   "t4_m39_orbit_determination": {
-    "covered": 3,
+    "covered": 5,
     "total": 13,
     "complete": false,
     "missing": [
-      "Sequential orbit determination with EKF and UKF",
-      "Measurement types and models: range, range-rate/Doppler, angles, GNSS, VLBI, inter-satellite links",
       "Station and tracking geometry and its effect on observability",
       "Process noise for orbit determination: Gauss-Markov acceleration and dynamic model compensation",
       "Consider-covariance analysis",
@@ -3922,12 +3982,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t5_m41_ascent_guidance": {
-    "covered": 0,
+    "covered": 2,
     "total": 12,
     "complete": false,
     "missing": [
-      "Ascent phases: liftoff, pitch kick, gravity turn, max-Q, staging, exoatmospheric closed loop",
-      "Open-loop atmospheric steering (the pitch program) and why closed-loop guidance is avoided in dense atmosphere",
       "Optimal exoatmospheric steering: the linear tangent law from Pontryagin and the calculus of variations",
       "Powered Explicit Guidance and Unified Powered Flight Guidance; why explicit guidance needs no reference trajectory",
       "The two-phase throttle structure: constant thrust to a g-limit, then throttled constant acceleration",
