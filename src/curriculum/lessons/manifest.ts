@@ -80,6 +80,17 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       "file": "car_01_itar_gate/08-academia-and-the-long-path.md"
     }
   ],
+  "car_02_role_families": [
+    {
+      "id": "l01-the-gnc-org-and-the-family-map",
+      "title": "The GNC org: why one title hides many jobs",
+      "minutes": 19,
+      "covers": [
+        "the GNC org as SpaceX describes it: vehicle design, trajectory design and optimization, high-fidelity vehicle simulation, software and control algorithm development, plus launch and on-orbit operations support across multiple vehicle programs"
+      ],
+      "file": "car_02_role_families/01-the-gnc-org-and-the-family-map.md"
+    }
+  ],
   "car_04_degree_reality": [
     {
       "id": "l01-the-line-stated-plainly",
@@ -89,6 +100,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "why the basic-qualification line is enforced at the recruiter stage rather than at interview"
       ],
       "file": "car_04_degree_reality/01-the-line-stated-plainly.md"
+    },
+    {
+      "id": "l02-what-self-study-builds",
+      "title": "What self-study builds, and what it cannot buy",
+      "minutes": 18,
+      "covers": [
+        "what this platform can do and what it cannot: it builds capability, not a credential"
+      ],
+      "file": "car_04_degree_reality/02-what-self-study-builds.md"
     }
   ],
   "t0_m01_algebra_precalc": [
@@ -6727,11 +6747,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "car_02_role_families": {
-    "covered": 0,
+    "covered": 1,
     "total": 13,
     "complete": false,
     "missing": [
-      "the GNC org as SpaceX describes it: vehicle design, trajectory design and optimization, high-fidelity vehicle simulation, software and control algorithm development, plus launch and on-orbit operations support across multiple vehicle programs",
       "GNC Engineer (Starship): ascent, entry and landing control, 6-DOF simulation, flight control of the largest vehicle ever flown",
       "GNC Engineer and Sr. GNC Software Engineer (Falcon): booster entry, descent and landing, and reuse",
       "GNC Engineer (Dragon): mission design, rendezvous and docking with the ISS, deorbit, reentry, abort",
@@ -6764,11 +6783,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "car_04_degree_reality": {
-    "covered": 1,
+    "covered": 2,
     "total": 10,
     "complete": false,
     "missing": [
-      "what this platform can do and what it cannot: it builds capability, not a credential",
       "Path 1, degree-parallel: use the curriculum to be the strongest candidate in a graduating cohort, because the real differentiator is demonstrated shipped 6-DOF, estimation and guidance work that almost no new grad has",
       "accredited routes that fit alongside work: ABET-accredited part-time and online bachelor’s programmes, community college transfer, competency-based models",
       "Path 2, side door then transfer: SRE GNC allows 4+ years of professional software or SRE experience in lieu of a degree and sits inside the GNC org; GNC Software Engineer and simulation and tools roles weight software skill heavily; internal transfer at SpaceX is common",
