@@ -1,7 +1,7 @@
 ---
 id: l01-the-verbatim-expectation
 title: "The verbatim expectation: you write the flight code"
-minutes: 16
+minutes: 19
 covers:
   - "the verbatim expectation: implementation, validation, unit testing, and deployment of production software primarily in C++"
   - GNC engineers write flight code themselves rather than handing prototypes to a software team

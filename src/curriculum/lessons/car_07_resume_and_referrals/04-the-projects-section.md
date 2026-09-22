@@ -1,7 +1,7 @@
 ---
 id: l04-the-projects-section
 title: "The projects section: the primary evidence, placed and labeled honestly"
-minutes: 20
+minutes: 17
 covers:
   - the projects section as the primary section for candidates without industry GNC experience
 ---
@@ -30,11 +30,11 @@ Each entry needs its own short header: a project title that names the artifact p
 
 Here is the specific problem this lesson exists to solve: how do you describe work that had no employer, no assigned team, and no external deadline, without either inflating it into something it was not or shrinking it into something apologetic. The honest answer sits in one place, and it is worth being precise about both edges.
 
-Do not borrow employment framing that was not there. Do not give yourself a job title like "Simulation Engineer" for a project you built alone with no employer; do not imply a team, a client, or an organizational sponsor that did not exist. A reader who later asks a direct question in an interview — who else worked on this, who was it for — and gets an answer that contradicts the resume's framing loses trust in everything else on the page, not just that one line.
+Do not borrow employment framing that was not there. Do not give yourself a job title like "Simulation Engineer" for a project you built alone with no employer; do not imply a team, a client, or an organizational sponsor that did not exist. A reader who later asks a direct question in an interview — who else worked on this, who was it for — and gets an answer that contradicts the resume's framing loses trust in everything else on the page, well beyond that single line.
 
 Do state plainly what the work actually was, and let real, checkable signals of rigor do the work that an inflated title would otherwise be trying to do. "Independent project" or "self-directed project" is accurate and carries no penalty by itself — what actually persuades a reader is not the label but the content underneath it: a public repository, a stated verification method, a CI pipeline that runs on every change, a reproducible one-command setup. Every one of these is a fact a reader can check for herself, which is a stronger form of credibility than any title you could give the entry.
 
-Do not undersell it either. Apologetic language — "just a small simulation I built for fun," "a simple project for practice" — actively works against your strongest section by signaling, before the reader has read a single bullet, that you do not consider the work significant. If a project used a real method, was verified against a real reference, and produced a real measured result, describe it with the same direct, factual confidence the bullet formula from the previous lesson already gives you. The problem-method-result structure itself is what establishes seriousness; it needs no adjectives added on top, and it needs no apology underneath.
+Do not undersell it either. Apologetic language — "only a small simulation I built for fun," "a simple project for practice" — actively works against your strongest section by signaling, before the reader has read a single bullet, that you do not consider the work significant. If a project used a real method, was verified against a real reference, and produced a real measured result, describe it with the same direct, factual confidence the bullet formula from the previous lesson already gives you. The problem-method-result structure itself is what establishes seriousness; it needs no adjectives added on top, and it needs no apology underneath.
 
 ::: key
 Label self-directed work plainly — "independent project" or "self-directed project" — without borrowed employment framing and without apologetic hedging. The credibility comes from checkable content underneath the label: a public repository, a stated verification method, a reproducible setup, and results a reader can weigh, not from the label itself.
@@ -63,7 +63,7 @@ Nothing about any individual entry changes between the two versions — every bu
 ## Check yourself
 
 ::: check
-A candidate has a part-time retail job with two years of tenure and one strong, verified 6-DOF simulation project. Explain why the project belongs above the retail job in the top third, rather than the job leading simply because it is "real" paid employment.
+A candidate has a part-time retail job with two years of tenure and one strong, verified 6-DOF simulation project. Explain why the project belongs above the retail job in the top third, rather than the job leading merely because it is "real" paid employment.
 :::
 
 ::: answer
@@ -87,7 +87,7 @@ This borrows the framing of paid employment — a job title and an implied emplo
 :::
 
 ::: check
-A project entry opens with "Just a small simulation I put together for fun, nothing too serious." Identify what is wrong with this framing and explain why it counts as underselling rather than an honest description.
+A project entry opens with "Only a small simulation I put together for fun, nothing too serious." Identify what is wrong with this framing and explain why it counts as underselling rather than an honest description.
 :::
 
 ::: answer

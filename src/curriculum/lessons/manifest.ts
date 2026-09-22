@@ -173,6 +173,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "specialist roles requiring a Master’s or PhD"
       ],
       "file": "car_03_levels_and_quals/05-senior-and-specialist.md"
+    },
+    {
+      "id": "l06-site-reliability-engineer",
+      "title": "Site Reliability Engineer, GNC: the other in-lieu door",
+      "minutes": 17,
+      "covers": [
+        "Site Reliability Engineer, GNC: the verbatim 4+ years in lieu of a degree line"
+      ],
+      "file": "car_03_levels_and_quals/06-site-reliability-engineer.md"
     }
   ],
   "car_04_degree_reality": [
@@ -247,12 +256,24 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-the-verbatim-expectation",
       "title": "The verbatim expectation: you write the flight code",
-      "minutes": 16,
+      "minutes": 19,
       "covers": [
         "the verbatim expectation: implementation, validation, unit testing, and deployment of production software primarily in C++",
         "GNC engineers write flight code themselves rather than handing prototypes to a software team"
       ],
       "file": "car_05_tooling_reality/01-the-verbatim-expectation.md"
+    }
+  ],
+  "car_06_portfolio": [
+    {
+      "id": "l01-portfolio-principles",
+      "title": "Portfolio principles: few, deep, and defensible",
+      "minutes": 21,
+      "covers": [
+        "portfolio principles: few, deep, documented, defensible, reproducible",
+        "what not to build: tutorial follow-alongs, notebooks without validation, thirty shallow repositories"
+      ],
+      "file": "car_06_portfolio/01-portfolio-principles.md"
     }
   ],
   "car_07_resume_and_referrals": [
@@ -287,7 +308,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-the-projects-section",
       "title": "The projects section: the primary evidence, placed and labeled honestly",
-      "minutes": 20,
+      "minutes": 17,
       "covers": [
         "the projects section as the primary section for candidates without industry GNC experience"
       ],
@@ -6945,11 +6966,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "car_03_levels_and_quals": {
-    "covered": 6,
+    "covered": 7,
     "total": 10,
     "complete": false,
     "missing": [
-      "Site Reliability Engineer, GNC: the verbatim 4+ years in lieu of a degree line",
       "what capable of solving complex problems with little to no supervision is testing",
       "how recruiters map your experience onto a level, and why level is set before the offer",
       "honest self-assessment against each list"
@@ -6980,11 +7000,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "car_06_portfolio": {
-    "covered": 0,
+    "covered": 2,
     "total": 13,
     "complete": false,
     "missing": [
-      "portfolio principles: few, deep, documented, defensible, reproducible",
       "anchor project A — 6-DOF launch vehicle simulation with a real atmosphere model and dispersion campaign",
       "anchor project B — powered descent guidance with a landing accuracy Monte Carlo",
       "anchor project C — multiplicative quaternion EKF fusing IMU and star tracker, with NEES and NIS consistency checks",
@@ -6995,7 +7014,6 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
       "stating how you know the result is right: analytic cases, conservation checks, convergence, cross-comparison",
       "reproducibility: seeded, one-command, CI, pinned dependencies",
       "open-sourcing, licensing, and what to do about prior-employer intellectual property",
-      "what not to build: tutorial follow-alongs, notebooks without validation, thirty shallow repositories",
       "how the portfolio feeds the past-project presentation round"
     ]
   },
