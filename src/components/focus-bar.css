@@ -49,6 +49,45 @@
   border-top-color: rgba(52, 211, 153, 0.4);
 }
 
+/* ── The dial ────────────────────────────────────────────────────────────── */
+.fbar__dial {
+  flex-shrink: 0;
+  /* Twelve o'clock, and draining clockwise. */
+  transform: rotate(-90deg);
+}
+
+.fbar__dial-track {
+  fill: none;
+  stroke: var(--track);
+  stroke-width: 3;
+}
+
+.fbar__dial-arc {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 3;
+  stroke-linecap: round;
+  /* One second per tick, so the arc is redrawn a second at a time. Easing it
+     over most of that second turns the step into a sweep without the arc ever
+     lagging far enough behind to disagree with the digits beside it. */
+  transition: stroke-dashoffset 850ms linear, stroke var(--t-mid) var(--ease-out);
+}
+
+.fbar__dial[data-paused='true'] .fbar__dial-arc {
+  stroke: var(--ink-4);
+  transition: stroke var(--t-mid) var(--ease-out);
+}
+
+.fbar__dial[data-done='true'] .fbar__dial-arc {
+  stroke: var(--ok);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fbar__dial-arc {
+    transition: none;
+  }
+}
+
 /* ── Time ────────────────────────────────────────────────────────────────── */
 .fbar__time {
   display: flex;

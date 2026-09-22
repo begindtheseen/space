@@ -120,7 +120,56 @@ await step('the block is still banked after a reload', async () => {
   if (!/done/i.test(done)) throw new Error('summary lost across reload')
 })
 
-if (process.env.SHOT) /* ── The sidebar gets out of the way ─────────────────────────────────────── */
+/* ── The countdown dial ──────────────────────────────────────────────────── */
+
+await step('the block dial drains as the clock runs', async () => {
+  await page.goto(base + '#/focus', { waitUntil: 'load' })
+  await page.waitForTimeout(700)
+  await page.click('.focus-start .btn, .focus-start button')
+  await page.waitForSelector('.fbar__dial-arc', { timeout: 8000 })
+  const read = () => page.$eval('.fbar__dial-arc', (el) => Number(el.getAttribute('stroke-dashoffset')))
+  const a = await read()
+  await page.waitForTimeout(2600)
+  const b = await read()
+  if (!(b > a)) throw new Error(`dial did not drain: ${a} -> ${b}`)
+  console.log(`        dashoffset ${a.toFixed(1)} -> ${b.toFixed(1)}`)
+})
+
+await step('pausing stops the dial too', async () => {
+  await page.click('.fbar__btn:has-text("Pause")')
+  await page.waitForTimeout(300)
+  const a = await page.$eval('.fbar__dial-arc', (el) => Number(el.getAttribute('stroke-dashoffset')))
+  await page.waitForTimeout(2200)
+  const b = await page.$eval('.fbar__dial-arc', (el) => Number(el.getAttribute('stroke-dashoffset')))
+  if (a !== b) throw new Error(`paused dial moved: ${a} -> ${b}`)
+  await page.click('.fbar__btn:has-text("I\'m done")')
+  await page.waitForTimeout(800)
+})
+
+/* ── Reading progress ────────────────────────────────────────────────────── */
+
+await step('a lesson shows how much is left, and it tracks the scroll', async () => {
+  await page.goto(base + '#/module/t0_m01_algebra_precalc?lesson=l01-signed-numbers-and-fractions', {
+    waitUntil: 'load',
+  })
+  await page.waitForTimeout(2500)
+  const bar = await page.$('.rprog')
+  if (!bar) throw new Error('no reading progress bar in the reader')
+  const scale = () =>
+    page.$eval('.rprog__fill', (el) => {
+      const m = getComputedStyle(el).transform
+      if (m === 'none') return 0
+      return Number(m.match(/matrix\(([-\d.]+)/)?.[1] ?? 0)
+    })
+  const start = await scale()
+  await page.evaluate(() => document.querySelector('.scroll')?.scrollTo({ top: 99999 }))
+  await page.waitForTimeout(900)
+  const end = await scale()
+  if (!(end > start + 0.5)) throw new Error(`bar did not fill: ${start} -> ${end}`)
+  console.log(`        fill ${start.toFixed(2)} -> ${end.toFixed(2)}`)
+})
+
+/* ── The sidebar gets out of the way ─────────────────────────────────────── */
 
 await step('the rail is hidden at rest', async () => {
   await page.goto(base + '#/', { waitUntil: 'load' })
@@ -158,7 +207,7 @@ await step('the content uses the full width while it is hidden', async () => {
   if (gap > 4) throw new Error('content still indented by ' + gap + 'px')
 })
 
-await page.screenshot({ path: process.env.SHOT })
+if (process.env.SHOT) await page.screenshot({ path: process.env.SHOT })
 await browser.close()
 server.close()
 

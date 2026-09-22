@@ -65,6 +65,8 @@ function Strip({
 
   return (
     <div className="fbar" data-done={done} role="region" aria-label="Focus block">
+      <Dial run={run} left={left} done={done} />
+
       <div className="fbar__time">
         <span className="fbar__clock num" aria-live="off">
           {done ? 'Done' : clock(left)}
@@ -149,4 +151,44 @@ function clock(ms: number): string {
   const m = Math.floor(total / 60)
   const s = total % 60
   return `${m}:${String(s).padStart(2, '0')}`
+}
+
+/* ── The dial ────────────────────────────────────────────────────────────────
+   The digits already say how long is left, so the ring is not there to tell
+   her the number again. It is there so that the amount remaining is legible
+   without reading anything — a shape she can take in from the corner of her
+   eye while she is in the middle of a sentence, which is exactly when she
+   should not be doing arithmetic about her own study session.
+
+   It empties rather than fills. A ring that fills celebrates elapsed time; a
+   ring that empties shows a thing getting smaller, which is the honest and
+   the more reassuring picture of a block she committed to. */
+
+const DIAL_R = 15
+const DIAL_C = 2 * Math.PI * DIAL_R
+
+function Dial({ run, left, done }: { run: FocusRun; left: number; done: boolean }) {
+  const total = run.minutes * 60_000
+  const remaining = total > 0 ? Math.min(1, Math.max(0, left / total)) : 0
+  return (
+    <svg
+      className="fbar__dial"
+      width="36"
+      height="36"
+      viewBox="0 0 36 36"
+      data-done={done}
+      data-paused={!!run.pausedAt}
+      aria-hidden="true"
+    >
+      <circle className="fbar__dial-track" cx="18" cy="18" r={DIAL_R} />
+      <circle
+        className="fbar__dial-arc"
+        cx="18"
+        cy="18"
+        r={DIAL_R}
+        strokeDasharray={DIAL_C}
+        strokeDashoffset={DIAL_C * (1 - remaining)}
+      />
+    </svg>
+  )
 }
