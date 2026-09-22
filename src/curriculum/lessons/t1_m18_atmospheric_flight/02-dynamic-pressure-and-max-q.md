@@ -198,7 +198,7 @@ A trajectory file gives $(h, v)$ pairs every 5 s: (8.0 km, 370 m/s), (10.3 km, 4
 :::
 
 ::: answer
-Densities: $1.225 e^{-8000/8500} = 0.478$, $1.225 e^{-10300/8500} = 0.365$, $1.225 e^{-12500/8500} = 0.282\ \mathrm{kg/m^3}$. Dynamic pressures: $\tfrac{1}{2} \times 0.478 \times 370^2 = 32.7$, $\tfrac{1}{2} \times 0.365 \times 426^2 = 33.1$, $\tfrac{1}{2} \times 0.282 \times 488^2 = 33.5\ \mathrm{kPa}$. The third sample is largest, and since the values are still rising the true peak lies at or beyond 12.5 km on this coarse grid — you would need the next sample (or a finer grid) to bracket it. Note that the exponential fit with $H = 8.5$ km puts the peak higher than the standard atmosphere does, because it overestimates density above the tropopause.
+Densities: $1.225 e^{-8000/8500} = 0.478$, $1.225 e^{-10300/8500} = 0.365$, $1.225 e^{-12500/8500} = 0.282\ \mathrm{kg/m^3}$. Dynamic pressures, in pascals: $\tfrac{1}{2} \times 0.478 \times 370^2 = 3.27 \times 10^4$, $\tfrac{1}{2} \times 0.365 \times 426^2 = 3.31 \times 10^4$, $\tfrac{1}{2} \times 0.282 \times 488^2 = 3.36 \times 10^4\ \mathrm{Pa}$ — that is $32.7$, $33.1$ and $33.6\ \mathrm{kPa}$. The third sample is largest, and since the values are still rising the true peak lies at or beyond 12.5 km on this coarse grid — you would need the next sample (or a finer grid) to bracket it. Note that the exponential fit with $H = 8.5$ km puts the peak higher than the standard atmosphere does, because it overestimates density above the tropopause.
 :::
 
 ## Summary

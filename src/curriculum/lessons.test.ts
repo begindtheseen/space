@@ -55,6 +55,158 @@ function mathSpans(body: string): { tex: string; display: boolean }[] {
   return out
 }
 
+/* ----------------------------------------------------------------------------
+   Closed arithmetic
+   ----------------------------------------------------------------------------
+   When a lesson writes $1.578 \times 9600 = +1.51 \times 10^4$, both sides are
+   numbers and the claim is either true or false. A reader checking the step on
+   a calculator is the person who finds out, and by then she has spent ten
+   minutes doubting her own algebra. These are the cheapest defects in the
+   corpus to find and the most corrosive to leave: a lesson that is wrong about
+   arithmetic teaches her not to trust the lessons.
+
+   So every math span whose sides are purely numeric is re-evaluated here.
+   Anything with a symbol, a unit, an unbound function or a construct without
+   one unambiguous numeric reading is skipped rather than guessed at — this
+   check exists to find real errors, not to argue about notation.
+
+   Comparison is at the precision the lesson itself prints. A lesson that says
+   "= 27" claims 27 to the two figures it shows, not 27.000000, so the
+   tolerance is half a unit in the last displayed place; a trailing-zero
+   integer like 950 is read as two significant figures, per the usual
+   convention; and \approx buys an order of magnitude more slack than =.
+   -------------------------------------------------------------------------- */
+
+/** A scientific-notation literal is one number. `0.05/2.5 \times 10^{-5}` is a
+ *  division by 2.5e-5, not a division by 2.5 followed by a multiplication. */
+function foldSciNotation(s: string): string {
+  return s.replace(/(\d+(?:\.\d+)?)\s*(?:\\times|\\cdot)\s*10\s*\^\s*\{?\s*(-?\d+)\s*\}?/g, '($1e$2)')
+}
+
+function texToExpr(tex: string): string {
+  let s = tex
+  s = s.replace(/\\(?:,|;|!|quad|qquad|displaystyle|left|right|tfrac|dfrac)\b/g, (m) =>
+    m === '\\tfrac' || m === '\\dfrac' ? '\\frac' : ' ',
+  )
+  s = s.replace(/\\(?:text|mathrm|mathbf|operatorname)\s*\{[^{}]*\}/g, ' UNIT ')
+  s = foldSciNotation(s)
+  for (let i = 0; i < 6; i++) {
+    const next = s.replace(/\\frac\s*\{([^{}]*)\}\s*\{([^{}]*)\}/g, '(($1)/($2))')
+    if (next === s) break
+    s = next
+  }
+  for (let i = 0; i < 4; i++) {
+    const next = s.replace(/\\sqrt\s*\{([^{}]*)\}/g, 'Math.sqrt($1)')
+    if (next === s) break
+    s = next
+  }
+  s = s.replace(/\\times|\\cdot/g, '*').replace(/\\div/g, '/')
+  s = s.replace(/\^\s*\{([^{}]*)\}/g, '**($1)').replace(/\^\s*(-?\d+(?:\.\d+)?)/g, '**($1)')
+  s = s.replace(/[{}]/g, (c) => (c === '{' ? '(' : ')'))
+  s = s.replace(/(\d),(?=\d\d\d(?!\d))/g, '$1')
+  return s
+}
+
+/** Only expressions built from digits, operators, parentheses and Math.sqrt. */
+const NUMERIC_ONLY = /^[\d\s.+\-*/()e]*$/
+function isNumericOnly(expr: string): boolean {
+  const stripped = expr.replace(/Math\.sqrt/g, '').replace(/\*\*/g, '*')
+  return NUMERIC_ONLY.test(stripped) && /\d/.test(stripped)
+}
+
+function evalExpr(expr: string): number | null {
+  if (!isNumericOnly(expr)) return null
+  try {
+    // Safe: the whitelist above admits digits, operators and Math.sqrt only.
+    const v = new Function('Math', `"use strict"; return (${expr});`)(Math)
+    return typeof v === 'number' && Number.isFinite(v) ? v : null
+  } catch {
+    return null
+  }
+}
+
+/** `10**(3.88)` is pinned by its exponent's last place, not its mantissa's. */
+function powerOfTenTolerance(shown: string, value: number): number | null {
+  const m = /^\s*\(?\s*10\s*\*\*\s*\(\s*(-?\d+\.(\d+))\s*\)\s*\)?\s*$/.exec(shown)
+  if (!m) return null
+  const halfUlp = 0.5 * 10 ** -m[2]!.length
+  return Math.abs(value) * (10 ** halfUlp - 1)
+}
+
+/** Half a unit in the last place the text actually displays. */
+function shownTolerance(shown: string): number | null {
+  const t = shown.trim().replace(/\s+/g, '')
+  const m = /(-?\d+(?:\.\d+)?)(?:e(-?\d+))?/.exec(t)
+  if (!m) return null
+  const [, mantissa, expPart] = m
+  const exp = expPart ? Number(expPart) : 0
+  const dot = mantissa!.indexOf('.')
+  if (dot >= 0) return 0.5 * 10 ** (-(mantissa!.length - dot - 1) + exp)
+  // An integer written with trailing zeros carries only the figures before
+  // them: 950 is two significant figures, so its last place is the tens.
+  const trailing = /0*$/.exec(mantissa!)![0].length
+  const significant = mantissa!.replace('-', '').length - trailing
+  return 0.5 * 10 ** (trailing + exp) * (significant === 0 ? 1 : 1)
+}
+
+function arithmeticMismatches(body: string): { tex: string; detail: string }[] {
+  const out: { tex: string; detail: string }[] = []
+  for (const { tex } of mathSpans(body)) {
+    if (!tex.includes('=')) continue
+    const approx = /\\approx/.test(tex)
+    const expr = texToExpr(tex).replace(/\\approx/g, '=')
+    const parts = expr.split('=').filter((p) => p.trim())
+    if (parts.length < 2) continue
+    if (!parts.every(isNumericOnly)) continue
+    const vals = parts.map(evalExpr)
+    if (vals.some((v) => v === null)) continue
+    for (let i = 0; i < vals.length - 1; i++) {
+      const a = vals[i]!
+      const b = vals[i + 1]!
+      if (a === b) continue
+      if (Math.max(Math.abs(a), Math.abs(b)) < 1e-9) continue // residue around zero
+      let tol = 0
+      for (const [v, shown] of [[a, parts[i]!], [b, parts[i + 1]!]] as const) {
+        const t = powerOfTenTolerance(shown, v) ?? shownTolerance(shown)
+        if (t !== null) tol = Math.max(tol, t)
+      }
+      if (approx) tol *= 10
+      if (Math.abs(a - b) > tol * 1.0001) {
+        out.push({ tex, detail: `${tex.slice(0, 90)}  →  ${a} vs ${b}` })
+        break
+      }
+    }
+  }
+  return out
+}
+
+/*
+ * Spans this check reads wrongly, adjudicated by hand and kept here so the
+ * suite stays green and the reasoning is not lost. Matched on the exact TeX,
+ * so an edit to any of these lessons brings the span back for review.
+ */
+const ARITHMETIC_EXCEPTIONS = new Map<string, string>([
+  ['-1 = 4', 'a deliberately false line, shown to demonstrate an equation with no solution'],
+  [
+    'N \\ge (1.96 \\times 7.86/0.5)^2 = 950',
+    'two significant figures: 949.33 rounds to 950',
+  ],
+  ['(76.7/3.40)^2 = 510', 'two significant figures: 508.9 rounds to 510'],
+  [
+    '(1 + 3.046\\times 10^{-8})^{30000} = 1.00091427',
+    'the exponent base is displayed rounded; computed from the full 3.04617e-8 the printed result is exact',
+  ],
+  [
+    '\\sqrt{0.333333+0.333333+0.111111} = \\sqrt{0.777778} = 0.881917',
+    'thirds displayed rounded; the printed result matches the exact sqrt(7)/3',
+  ],
+  ['0.86603 + 0.86603 = 1.73205', 'the printed sum is sqrt(3) to six figures, not the sum of its two rounded halves'],
+  [
+    '-0.00357/\\sqrt{0.1310\\times 1.43\\times 10^{-4}} = -0.826',
+    'every input is displayed to three figures; their rounding alone spans the 0.0012 gap to the printed result',
+  ],
+])
+
 // The manifest is regenerated by the orchestrator after a batch of lessons
 // lands, so a single-module run (LESSON_MODULE set) does not check it.
 if (!only) {
@@ -228,6 +380,19 @@ describe.each(moduleDirs)('lessons for %s', (moduleId) => {
       for (const m of noMath.matchAll(/\]\(([^)]+)\)/g)) {
         expect(m[1], 'links are https or in-app').toMatch(/^(https:\/\/|#\/)/)
       }
+    })
+
+
+    it('gets its arithmetic right', () => {
+      const bad = arithmeticMismatches(p.body)
+        .filter((m) => !ARITHMETIC_EXCEPTIONS.has(m.tex.trim()))
+        .map((m) => m.detail)
+      expect(
+        bad,
+        'every calculation whose two sides are both numbers must hold at the precision shown. ' +
+          'If the checker is the one that is wrong — a rounded intermediate, a notation it reads ' +
+          'differently — add the exact TeX to ARITHMETIC_EXCEPTIONS with the reason.',
+      ).toEqual([])
     })
 
     it('has mathematics KaTeX can render', () => {

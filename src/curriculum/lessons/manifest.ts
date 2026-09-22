@@ -404,6 +404,25 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "continuous integration for rocket and simulation software"
       ],
       "file": "car_05_tooling_reality/09-tickets-traceability-and-the-unglamorous-majority.md"
+    },
+    {
+      "id": "l10-version-control-and-code-review",
+      "title": "Version control, code review, and what a reviewer is checking",
+      "minutes": 18,
+      "covers": [
+        "version control, code review and what production-quality means at senior level"
+      ],
+      "file": "car_05_tooling_reality/10-version-control-and-code-review.md"
+    },
+    {
+      "id": "l11-what-to-practice-now",
+      "title": "What to practice now, alone, that actually transfers",
+      "minutes": 17,
+      "covers": [
+        "6-DOF simulation stacks and what high fidelity actually means",
+        "version control, code review and what production-quality means at senior level"
+      ],
+      "file": "car_05_tooling_reality/11-what-to-practice-now.md"
     }
   ],
   "car_06_portfolio": [
@@ -443,6 +462,33 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "anchor project A — 6-DOF launch vehicle simulation with a real atmosphere model and dispersion campaign"
       ],
       "file": "car_06_portfolio/04-anchor-a-6dof-simulation.md"
+    },
+    {
+      "id": "l05-anchor-b-powered-descent",
+      "title": "Anchor B: powered-descent guidance and its Monte Carlo",
+      "minutes": 20,
+      "covers": [
+        "anchor project B — powered descent guidance with a landing accuracy Monte Carlo"
+      ],
+      "file": "car_06_portfolio/05-anchor-b-powered-descent.md"
+    },
+    {
+      "id": "l06-anchor-c-quaternion-ekf",
+      "title": "Anchor C: the quaternion EKF, proved consistent",
+      "minutes": 22,
+      "covers": [
+        "anchor project C — multiplicative quaternion EKF fusing IMU and star tracker, with NEES and NIS consistency checks"
+      ],
+      "file": "car_06_portfolio/06-anchor-c-quaternion-ekf.md"
+    },
+    {
+      "id": "l07-anchor-d-orbit-determination",
+      "title": "Anchor D: batch orbit determination from real data",
+      "minutes": 20,
+      "covers": [
+        "anchor project D — batch least-squares orbit determination fitted to real GNSS or TLE-derived data"
+      ],
+      "file": "car_06_portfolio/07-anchor-d-orbit-determination.md"
     }
   ],
   "car_07_resume_and_referrals": [
@@ -7194,21 +7240,16 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "car_05_tooling_reality": {
-    "covered": 12,
+    "covered": 13,
     "total": 13,
-    "complete": false,
-    "missing": [
-      "version control, code review and what production-quality means at senior level"
-    ]
+    "complete": true,
+    "missing": []
   },
   "car_06_portfolio": {
-    "covered": 5,
+    "covered": 8,
     "total": 13,
     "complete": false,
     "missing": [
-      "anchor project B — powered descent guidance with a landing accuracy Monte Carlo",
-      "anchor project C — multiplicative quaternion EKF fusing IMU and star tracker, with NEES and NIS consistency checks",
-      "anchor project D — batch least-squares orbit determination fitted to real GNSS or TLE-derived data",
       "anchor project E — ADCS momentum management with reaction wheels and magnetorquers",
       "hardware-adjacent work: a real IMU, a thrust-vector-control testbed, a balancing robot, to evidence sensor reality",
       "reproducibility: seeded, one-command, CI, pinned dependencies",
