@@ -2831,6 +2831,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Minimum variance and BLUE: the Gauss-Markov theorem"
       ],
       "file": "t4_m33_least_squares/03-minimum-variance-blue-gauss-markov.md"
+    },
+    {
+      "id": "l04-maximum-likelihood-equivalence-wls-gaussian",
+      "title": "Maximum likelihood and its equivalence to WLS under Gaussian noise",
+      "minutes": 17,
+      "covers": [
+        "Maximum likelihood and its equivalence to WLS under Gaussian noise"
+      ],
+      "file": "t4_m33_least_squares/04-maximum-likelihood-equivalence-wls-gaussian.md"
     }
   ],
   "t4_m34_kalman_filter": [
@@ -2905,6 +2914,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Observability and filter convergence"
       ],
       "file": "t4_m34_kalman_filter/08-observability-and-filter-convergence.md"
+    },
+    {
+      "id": "l09-numerically-stable-formulations",
+      "title": "Numerically stable formulations: Joseph form, square-root, and UD factorization",
+      "minutes": 24,
+      "covers": [
+        "Numerically stable formulations: Joseph form, square-root (Potter, Carlson), UD factorization (Bierman-Thornton)"
+      ],
+      "file": "t4_m34_kalman_filter/09-numerically-stable-formulations.md"
     }
   ],
   "t4_m36_inertial_navigation": [
@@ -3252,11 +3270,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t4_m33_least_squares": {
-    "covered": 3,
+    "covered": 4,
     "total": 12,
     "complete": false,
     "missing": [
-      "Maximum likelihood and its equivalence to WLS under Gaussian noise",
       "Maximum a posteriori estimation",
       "Nonlinear least squares: Gauss-Newton and Levenberg-Marquardt",
       "Recursive least squares and the bridge to the Kalman filter",
@@ -3268,11 +3285,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t4_m34_kalman_filter": {
-    "covered": 8,
+    "covered": 9,
     "total": 15,
     "complete": false,
     "missing": [
-      "Numerically stable formulations: Joseph form, square-root (Potter, Carlson), UD factorization (Bierman-Thornton)",
       "Filter divergence: causes and remedies (fading memory, Q inflation, covariance symmetrization)",
       "Consistency testing: innovation whiteness, NEES and NIS chi-square tests, innovation autocorrelation",
       "Sequential vs batch measurement updates; measurement editing and gating",
