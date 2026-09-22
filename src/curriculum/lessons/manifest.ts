@@ -3159,6 +3159,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "When a particle filter is genuinely required: multi-modal and non-Gaussian posteriors"
       ],
       "file": "t4_m35_nonlinear_filters/08-when-a-particle-filter-is-required.md"
+    },
+    {
+      "id": "l09-gaussian-sum-filters",
+      "title": "Gaussian sum filters",
+      "minutes": 17,
+      "covers": [
+        "Gaussian sum filters"
+      ],
+      "file": "t4_m35_nonlinear_filters/09-gaussian-sum-filters.md"
     }
   ],
   "t4_m36_inertial_navigation": [
@@ -3260,6 +3269,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "INS/GNSS integration architectures: loosely, tightly, and ultra-tightly (deeply) coupled"
       ],
       "file": "t4_m36_inertial_navigation/11-ins-gnss-integration-architectures.md"
+    },
+    {
+      "id": "l12-error-state-filter-15-21-state",
+      "title": "The error-state filter for INS",
+      "minutes": 15,
+      "covers": [
+        "Error-state filter formulation for INS: the 15-state and 21-state models"
+      ],
+      "file": "t4_m36_inertial_navigation/12-error-state-filter-15-21-state.md"
     }
   ],
   "t4_m37_gnss": [
@@ -3693,11 +3711,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t4_m35_nonlinear_filters": {
-    "covered": 8,
+    "covered": 9,
     "total": 14,
     "complete": false,
     "missing": [
-      "Gaussian sum filters",
       "The error-state (indirect) Kalman filter: why the error state is small and nearly linear, injection and reset, the Jacobian of the reset",
       "The Multiplicative EKF for attitude: the 3-parameter attitude error, covariance on the tangent space",
       "On-manifold and invariant EKF (IEKF), equivariant filtering",
@@ -3706,11 +3723,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t4_m36_inertial_navigation": {
-    "covered": 11,
+    "covered": 12,
     "total": 13,
     "complete": false,
     "missing": [
-      "Error-state filter formulation for INS: the 15-state and 21-state models",
       "Lever arm compensation, zero-velocity updates, vibration rectification"
     ]
   },

@@ -123,6 +123,10 @@ $$
 A receiver above the constellation facing a cold reacquisition — no prior estimate of its own Doppler — is fifteen times slower to lock, or needs fifteen times the correlator hardware to hold the same reacquisition time, than a ground receiver with an identical search algorithm, and it is doing that search on signals that started $15$ to $20\,\mathrm{dB}$ weaker to begin with. Neither factor is small on its own; together they are why a receiver designed only against a ground Doppler and power budget can lose lock above the constellation and never find it again.
 :::
 
+::: warning
+A receiver's acquisition search window and minimum tracking $C/N_0$ threshold are firmware and hardware choices, not laws of physics — carrying a ground receiver's $\pm4.9\,\mathrm{kHz}$ search window and open-sky sensitivity budget into a space application unchanged is a design error this lesson's numbers make precise, not a minor oversight. A receiver built only against ground assumptions will search too narrow a Doppler range to find satellites it can, in principle, see, and will demand more signal than side-lobe reception above the constellation can ever supply.
+:::
+
 Nothing about the search geometry changes this on its own — what changes it is *not searching blindly*: if the receiver's own velocity is known even approximately, from orbit propagation or from an inertial measurement, the Doppler search window collapses from the full $\pm74\,\mathrm{kHz}$ span to a band around the predicted value, and the same fifteen-fold penalty shrinks with it. That is precisely what vector tracking and deep coupling, taken up at the end of this module, are built to exploit, and it is also why a spacecraft's attitude and orbit determination system and its GNSS receiver are rarely designed in isolation from each other.
 
 ## Check yourself

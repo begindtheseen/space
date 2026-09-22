@@ -67,7 +67,13 @@ Deep coupling shares one error-state filter between the inertial navigator and e
 
 ## What deep coupling costs
 
-None of this is free. A loosely coupled architecture — GNSS fixes going into a navigation filter as independent measurements, the way the inertial navigation module's own filter consumes them — keeps a clean boundary: a bad GNSS fix can be rejected, down-weighted, or ignored by the outer filter without touching the inertial solution's own integrity. Deep coupling erases that boundary on purpose, which is exactly what buys the sensitivity and reacquisition gains above, and it means a fault the previous lesson's slope analysis showed a residual test cannot see does not stay confined to a position estimate the vehicle could otherwise fall back on inertial navigation to override — it can work its way into the shared state the inertial solution itself now depends on. A deeply coupled system needs its own integrity monitoring designed with that coupling in mind, not the RAIM machinery built for a standalone GNSS fix, and needs tight, well-characterised time synchronisation between the inertial measurements and the GNSS observables to combine them correctly at all. The complexity is real; so, for a vehicle that actually faces the dynamics, weak signals and outages this module has spent fourteen lessons quantifying, is the payoff.
+None of this is free. A loosely coupled architecture — GNSS fixes going into a navigation filter as independent measurements, the way the inertial navigation module's own filter consumes them — keeps a clean boundary: a bad GNSS fix can be rejected, down-weighted, or ignored by the outer filter without touching the inertial solution's own integrity. Deep coupling erases that boundary on purpose, which is exactly what buys the sensitivity and reacquisition gains above.
+
+::: warning
+Do not treat deep coupling as a strictly better version of loose coupling with no downside. Erasing the boundary between GNSS and inertial estimation means a fault the previous lesson's slope analysis showed a residual test cannot see does not stay confined to a position estimate the vehicle could otherwise fall back on inertial navigation to override — it can work its way into the shared state the inertial solution itself now depends on. A deeply coupled system needs its own integrity monitoring designed with that coupling in mind, not the RAIM machinery built for a standalone GNSS fix, and needs tight, well-characterised time synchronisation between the inertial measurements and the GNSS observables to combine them correctly at all.
+:::
+
+The complexity is real; so, for a vehicle that actually faces the dynamics, weak signals and outages this module has spent fourteen lessons quantifying, is the payoff.
 
 ## Check yourself
 
