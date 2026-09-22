@@ -1,7 +1,7 @@
 ---
 id: l07-rounds-on-how-you-think
 title: "The onsite rounds on how you think"
-minutes: 19
+minutes: 18
 covers:
   - "onsite composition: past-project presentation, 2 to 3 coding rounds, 1 to 2 systems and architecture rounds, 1+ domain-knowledge round, abstract problem solving, physics puzzles and Fermi estimation"
 ---

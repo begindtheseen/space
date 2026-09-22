@@ -1,7 +1,7 @@
 ---
 id: l08-pd-control-out-loud
 title: "PD control, out loud"
-minutes: 26
+minutes: 22
 covers:
   - reported topics: PD control, orbit determination, frequency-domain analysis
 ---

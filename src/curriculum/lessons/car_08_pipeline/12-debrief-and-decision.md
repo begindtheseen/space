@@ -1,7 +1,7 @@
 ---
 id: l12-debrief-and-decision
 title: "The debrief, and how mixed signals get weighed"
-minutes: 17
+minutes: 18
 covers:
   - "debrief and decision; how a hiring committee weighs mixed signals"
 ---

@@ -1,7 +1,7 @@
 ---
 id: l01-the-shape-of-the-process
 title: "The shape of the process, end to end"
-minutes: 16
+minutes: 19
 covers:
   - "overall timeline: 5 to 8 weeks, up to roughly nine touchpoints"
 ---

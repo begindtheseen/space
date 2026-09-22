@@ -1,7 +1,7 @@
 ---
 id: l13-rejection-and-the-path-back
 title: "Rejection, and the path back in"
-minutes: 18
+minutes: 19
 covers:
   - "handling rejection and the path back in"
 ---

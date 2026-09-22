@@ -635,7 +635,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-the-shape-of-the-process",
       "title": "The shape of the process, end to end",
-      "minutes": 16,
+      "minutes": 19,
       "covers": [
         "overall timeline: 5 to 8 weeks, up to roughly nine touchpoints"
       ],
@@ -644,7 +644,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-the-recruiter-screen",
       "title": "Stage 1: the recruiter screen",
-      "minutes": 16,
+      "minutes": 17,
       "covers": [
         "stage 1 — recruiter screen, 20 to 30 minutes: background, motivation, ITAR confirmation"
       ],
@@ -662,7 +662,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-the-take-home",
       "title": "Stage 3: the take-home exercise",
-      "minutes": 16,
+      "minutes": 17,
       "covers": [
         "stage 3 — take-home exercise for some software and firmware roles"
       ],
@@ -689,7 +689,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-rounds-on-how-you-think",
       "title": "The onsite rounds on how you think",
-      "minutes": 19,
+      "minutes": 18,
       "covers": [
         "onsite composition: past-project presentation, 2 to 3 coding rounds, 1 to 2 systems and architecture rounds, 1+ domain-knowledge round, abstract problem solving, physics puzzles and Fermi estimation"
       ],
@@ -716,7 +716,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-stamina-and-logistics",
       "title": "Logistics and stamina for an eight-hour day",
-      "minutes": 17,
+      "minutes": 18,
       "covers": [
         "logistics and stamina: sleep, food, water, breaks, and how to ask for one"
       ],
@@ -734,7 +734,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-debrief-and-decision",
       "title": "The debrief, and how mixed signals get weighed",
-      "minutes": 17,
+      "minutes": 18,
       "covers": [
         "debrief and decision; how a hiring committee weighs mixed signals"
       ],
@@ -743,7 +743,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l13-rejection-and-the-path-back",
       "title": "Rejection, and the path back in",
-      "minutes": 18,
+      "minutes": 19,
       "covers": [
         "handling rejection and the path back in"
       ],
@@ -817,7 +817,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-pd-control-out-loud",
       "title": "PD control, out loud",
-      "minutes": 26,
+      "minutes": 22,
       "covers": [
         "reported topics: PD control, orbit determination, frequency-domain analysis"
       ],
@@ -920,6 +920,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "const, constexpr, consteval, auto"
       ],
       "file": "cod_cpp_01_basics/07-const-constexpr-consteval-auto.md"
+    },
+    {
+      "id": "l08-functions-overloading-default-arguments",
+      "title": "Functions, overloading and default arguments",
+      "minutes": 17,
+      "covers": [
+        "Functions, overloading, default arguments"
+      ],
+      "file": "cod_cpp_01_basics/08-functions-overloading-default-arguments.md"
     }
   ],
   "cod_py_01_basics": [
@@ -6199,6 +6208,17 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       "file": "t6_m47_vv_montecarlo/12-continuous-integration-and-closing-the-loop.md"
     }
   ],
+  "t7_m48_capstone": [
+    {
+      "id": "l01-system-decomposition-and-interfaces",
+      "title": "System decomposition and interface contracts",
+      "minutes": 21,
+      "covers": [
+        "System decomposition and the interface contracts between navigation, guidance, control and the vehicle"
+      ],
+      "file": "t7_m48_capstone/01-system-decomposition-and-interfaces.md"
+    }
+  ],
   "t7_m49_interview_prep": [
     {
       "id": "l01-five-talks-and-the-defence",
@@ -6607,11 +6627,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t7_m48_capstone": {
-    "covered": 0,
+    "covered": 1,
     "total": 11,
     "complete": false,
     "missing": [
-      "System decomposition and the interface contracts between navigation, guidance, control and the vehicle",
       "Error budgeting: allocating a landing-accuracy requirement across navigation, guidance and control",
       "Rate architecture: navigation at IMU rate, control at 100 Hz or faster, guidance re-solved at 1 to 2 Hz, mode management at a low rate",
       "A multiplicative extended Kalman filter on IMU, GNSS and radar altimeter, with error-state formulation and attitude error as a three-parameter local perturbation",
@@ -6946,11 +6965,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "cod_cpp_01_basics": {
-    "covered": 9,
+    "covered": 10,
     "total": 15,
     "complete": false,
     "missing": [
-      "Functions, overloading, default arguments",
       "Arrays vs std::array vs std::vector; range-based for",
       "enum class; struct and class; access specifiers; namespaces",
       "Scope, lifetime, and stack vs heap vs static storage",

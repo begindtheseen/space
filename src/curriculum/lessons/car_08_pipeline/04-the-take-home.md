@@ -1,7 +1,7 @@
 ---
 id: l04-the-take-home
 title: "Stage 3: the take-home exercise"
-minutes: 16
+minutes: 17
 covers:
   - "stage 3 — take-home exercise for some software and firmware roles"
 ---

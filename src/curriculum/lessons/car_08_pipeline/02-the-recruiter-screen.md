@@ -1,7 +1,7 @@
 ---
 id: l02-the-recruiter-screen
 title: "Stage 1: the recruiter screen"
-minutes: 16
+minutes: 17
 covers:
   - "stage 1 — recruiter screen, 20 to 30 minutes: background, motivation, ITAR confirmation"
 ---

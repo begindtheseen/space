@@ -1,7 +1,7 @@
 ---
 id: l10-stamina-and-logistics
 title: "Logistics and stamina for an eight-hour day"
-minutes: 17
+minutes: 18
 covers:
   - "logistics and stamina: sleep, food, water, breaks, and how to ask for one"
 ---
