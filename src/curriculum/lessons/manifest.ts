@@ -3727,6 +3727,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Thrust vector control allocation and engine-out contingency"
       ],
       "file": "t5_m41_ascent_guidance/08-tvc-allocation-and-engine-out.md"
+    },
+    {
+      "id": "l09-load-relief-and-guidance",
+      "title": "Load relief and its interaction with guidance",
+      "minutes": 22,
+      "covers": [
+        "Load relief and its interaction with guidance"
+      ],
+      "file": "t5_m41_ascent_guidance/09-load-relief-and-guidance.md"
     }
   ]
 }
@@ -4075,11 +4084,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t5_m41_ascent_guidance": {
-    "covered": 8,
+    "covered": 9,
     "total": 12,
     "complete": false,
     "missing": [
-      "Load relief and its interaction with guidance",
       "Ascent trajectory optimization as an offline problem feeding onboard guidance",
       "Day-of-launch trajectory updates from measured winds",
       "Abort modes: RTLS, TAL, AOA and the decision logic"
