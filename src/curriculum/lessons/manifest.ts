@@ -2681,6 +2681,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Sliding mode control: sliding surface design, reaching phase, chattering, boundary layers, higher-order sliding modes"
       ],
       "file": "t3_m31_nonlinear_control/08-sliding-mode-control.md"
+    },
+    {
+      "id": "l09-backstepping",
+      "title": "Backstepping",
+      "minutes": 20,
+      "covers": [
+        "Backstepping"
+      ],
+      "file": "t3_m31_nonlinear_control/09-backstepping.md"
     }
   ],
   "t3_m32_mpc": [
@@ -2815,6 +2824,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "The stochastic state-space model: process noise Q and measurement noise R"
       ],
       "file": "t4_m34_kalman_filter/01-the-stochastic-state-space-model.md"
+    },
+    {
+      "id": "l02-three-derivations-of-the-kalman-filter",
+      "title": "Three derivations of the Kalman filter",
+      "minutes": 24,
+      "covers": [
+        "Three derivations of the Kalman filter: minimum variance/orthogonality, Bayesian Gaussian conditioning, recursive least squares"
+      ],
+      "file": "t4_m34_kalman_filter/02-three-derivations-of-the-kalman-filter.md"
     }
   ],
   "t4_m36_inertial_navigation": [
@@ -3116,11 +3134,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t3_m31_nonlinear_control": {
-    "covered": 8,
+    "covered": 9,
     "total": 14,
     "complete": false,
     "missing": [
-      "Backstepping",
       "Passivity-based control and energy shaping",
       "Nonlinear spacecraft attitude control: quaternion feedback laws, the unwinding problem, MRP-based control, Lyapunov-derived tracking laws with proof",
       "Describing functions for limit-cycle prediction",
@@ -3152,11 +3169,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t4_m34_kalman_filter": {
-    "covered": 1,
+    "covered": 2,
     "total": 15,
     "complete": false,
     "missing": [
-      "Three derivations of the Kalman filter: minimum variance/orthogonality, Bayesian Gaussian conditioning, recursive least squares",
       "The predict and update steps",
       "The Kalman gain as a trust ratio between prediction and measurement",
       "Covariance propagation and the discrete Riccati equation",
