@@ -6,7 +6,7 @@ covers:
   - The cubature Kalman filter
 ---
 
-The unscented transform's three tuning parameters buy flexibility, but flexibility is exactly what a filter designer sometimes does not want: a parameter with no obviously correct value is a parameter someone can get wrong, and $\alpha=10^{-3}$'s enormous cancelling weights showed that the wrong choice has real numerical consequences, not just cosmetic ones. The **cubature Kalman filter (CKF)** answers the same underlying problem — how to push a Gaussian through a nonlinear function without a Jacobian — with a point set that has no tuning parameters at all, derives from a different piece of mathematics (numerical integration of a Gaussian-weighted integral, rather than matching Taylor moments), and turns out, this lesson shows with exact numbers, to be very close relatives with the UKF rather than a genuinely different technique.
+The unscented transform's three tuning parameters buy flexibility, but flexibility is exactly what a filter designer sometimes does not want: a parameter with no clearly correct value is a parameter someone can get wrong, and $\alpha=10^{-3}$'s enormous cancelling weights showed that the wrong choice has real numerical consequences, not only cosmetic ones. The **cubature Kalman filter (CKF)** answers the same underlying problem — how to push a Gaussian through a nonlinear function without a Jacobian — with a point set that has no tuning parameters at all, derives from a different piece of mathematics (numerical integration of a Gaussian-weighted integral, rather than matching Taylor moments), and turns out, this lesson shows with exact numbers, to be very close relatives with the UKF rather than a genuinely different technique.
 
 ## The cubature rule
 

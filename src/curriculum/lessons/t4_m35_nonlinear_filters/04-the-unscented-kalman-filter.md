@@ -150,7 +150,7 @@ The linear Kalman filter's Joseph-form update is a sum of terms each manifestly 
 :::
 
 ::: check
-A colleague proposes fixing the negative-eigenvalue failure by simply clipping any negative eigenvalue of $\mathbf P$ to a small positive number after each update, rather than adopting the square-root form. What does this fix, and what does it not fix?
+A colleague proposes fixing the negative-eigenvalue failure by clipping any negative eigenvalue of $\mathbf P$ to a small positive number after each update, rather than adopting the square-root form. What does this fix, and what does it not fix?
 :::
 
 ::: answer

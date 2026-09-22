@@ -76,7 +76,7 @@ for ang in attitudes_deg:
 
 ## What a naive (non-invariant) tangent-space error looks like instead
 
-The state-independence above is not automatic just because *some* tangent-space error was chosen — it is a consequence of choosing the *invariant* (body-frame, group-multiplicative) one specifically. A naive choice — treat the quaternion's own four components as an ordinary vector and linearize its propagation directly, exactly the additive parameterization the Multiplicative EKF lesson opened by rejecting — has no such property.
+The state-independence above is not automatic merely because *some* tangent-space error was chosen — it is a consequence of choosing the *invariant* (body-frame, group-multiplicative) one specifically. A naive choice — treat the quaternion's own four components as an ordinary vector and linearize its propagation directly, exactly the additive parameterization the Multiplicative EKF lesson opened by rejecting — has no such property.
 
 ::: example The same four attitudes, the naive parameterization's Jacobian
 Repeat the identical exercise, but linearize the raw $4$-vector propagation $\mathbf q_{k+1}=\mathbf q_k\otimes\exp(\boldsymbol\omega\Delta t)$ directly with respect to $\mathbf q_k$'s own components, instead of the invariant body-frame error:
@@ -133,7 +133,7 @@ for ang in attitudes_deg:
 Not every state a filter cares about is naturally a matrix Lie group, even when it has real, exploitable symmetry. **Equivariant filtering** generalizes the idea one step further: rather than requiring the state to literally be a matrix group element, it asks only that some symmetry group act on the state space in a way that the system's dynamics and measurements respect — commute with, in the technical sense — and builds the filter's error and its propagation directly from that action, whether or not the state space itself has a group multiplication of its own. The attitude and inertial-navigation cases this module and its prerequisites cover are the concrete, matrix-Lie-group special case; equivariant filtering is the statement that the same underlying idea — build the error from the symmetry the physical problem actually has, not from whatever coordinates happen to be convenient — extends past that special case.
 
 ::: warning Group-affine is a real condition, not a label to apply hopefully
-Not every state-and-dynamics pair is group-affine, and the payoff this lesson demonstrated — an error Jacobian with no dependence on the current estimate — is not available just by wishing a system onto a Lie group. A system with dynamics that do not have the affine structure Barrau and Bonnabel's condition requires will, even after being written as a nominal-plus-invariant-error filter, still end up with a state-dependent error Jacobian; the benefit demonstrated here is earned by systems that actually satisfy the condition; the attitude kinematics this module has used throughout happen to be one of the clean, practically important cases that do.
+Not every state-and-dynamics pair is group-affine, and the payoff this lesson demonstrated — an error Jacobian with no dependence on the current estimate — is not available by wishing a system onto a Lie group alone. A system with dynamics that do not have the affine structure Barrau and Bonnabel's condition requires will, even after being written as a nominal-plus-invariant-error filter, still end up with a state-dependent error Jacobian; the benefit demonstrated here is earned by systems that actually satisfy the condition; the attitude kinematics this module has used throughout happen to be one of the clean, practically important cases that do.
 :::
 
 ::: warning State-independence of the Jacobian is not the same claim as immunity to divergence
@@ -171,7 +171,7 @@ Suppose a state's dynamics were group-affine only under the *left*-invariant err
 :::
 
 ::: answer
-The filter would lose the state-independence property this lesson demonstrated — the whole point of the group-affine condition is that it holds for a *specific* choice of invariant error (left or right, depending on the system), and using the other one is no longer guaranteed to produce input-only error dynamics. The resulting filter would still be a valid multiplicative error-state filter, with all of the previous two lessons' injection-and-reset machinery still applicable, but its propagated Jacobian could once again depend on the current estimate, giving up the specific benefit this lesson is about without necessarily being obviously broken in any other respect.
+The filter would lose the state-independence property this lesson demonstrated — the whole point of the group-affine condition is that it holds for a *specific* choice of invariant error (left or right, depending on the system), and using the other one is no longer guaranteed to produce input-only error dynamics. The resulting filter would still be a valid multiplicative error-state filter, with all of the previous two lessons' injection-and-reset machinery still applicable, but its propagated Jacobian could once again depend on the current estimate, giving up the specific benefit this lesson is about without necessarily being visibly broken in any other respect.
 :::
 
 ::: check

@@ -6,7 +6,7 @@ covers:
   - 'When a particle filter is genuinely required: multi-modal and non-Gaussian posteriors'
 ---
 
-Nothing in the last two modules' worth of filters — EKF, UKF, CKF — can represent two competing hypotheses at once. Each one collapses the posterior into exactly one mean and one covariance every cycle, no matter how the mean or covariance gets there. That is a real limitation, not a minor stylistic one, and this lesson pins down exactly when it stops being tolerable: when the true posterior is genuinely multi-modal or heavy-tailed enough that squeezing it into one Gaussian throws away information the filter needs, not merely accuracy it can spare. It also states, with a real computed number rather than a slogan, the one practical fact that keeps particle filters from simply replacing every Gaussian filter in this module: the number of particles a filter needs grows brutally fast with the dimension of the state it has to resolve.
+Nothing in the last two modules' worth of filters — EKF, UKF, CKF — can represent two competing hypotheses at once. Each one collapses the posterior into exactly one mean and one covariance every cycle, no matter how the mean or covariance gets there. That is a real limitation, not a minor stylistic one, and this lesson pins down exactly when it stops being tolerable: when the true posterior is genuinely multi-modal or heavy-tailed enough that squeezing it into one Gaussian throws away information the filter needs, not merely accuracy it can spare. It also states, with a real computed number rather than a slogan, the one practical fact that keeps particle filters from replacing every Gaussian filter in this module: the number of particles a filter needs grows brutally fast with the dimension of the state it has to resolve.
 
 ## What "genuinely multi-modal" costs a Gaussian filter
 
@@ -148,7 +148,7 @@ How does Rao-Blackwellization change what the "dimension" in the curse-of-dimens
 :::
 
 ::: answer
-It shrinks the dimension the particle weighting has to discriminate against down to only the genuinely ambiguous or strongly nonlinear subset of the state, while the remaining, well-behaved states are tracked by an analytic (Kalman-family) filter conditioned on each particle rather than by additional particle dimensions at all. The curse-of-dimensionality argument still applies in full force to whatever dimension is left in the particle part — Rao-Blackwellization does not repeal it, it simply reduces the number the argument has to be applied to.
+It shrinks the dimension the particle weighting has to discriminate against down to only the genuinely ambiguous or strongly nonlinear subset of the state, while the remaining, well-behaved states are tracked by an analytic (Kalman-family) filter conditioned on each particle rather than by additional particle dimensions at all. The curse-of-dimensionality argument still applies in full force to whatever dimension is left in the particle part — Rao-Blackwellization does not repeal it, it reduces the number the argument has to be applied to.
 :::
 
 ::: check

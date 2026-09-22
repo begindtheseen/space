@@ -8,7 +8,7 @@ covers:
 
 The Kalman filter module's filter-divergence lesson already showed a *linear* filter diverging, and the cause there was entirely about tuning: $\mathbf Q$ set too small relative to the truth, or an unmodeled acceleration the filter's dynamics model never accounted for. Fix the tuning, and that filter's divergence goes away completely — the update equations themselves were never at fault. This lesson is about a different, and in some ways more unsettling, kind of divergence: one that can occur even when $\mathbf Q$ and $\mathbf R$ are exactly right, the dynamics model is exact, and the only thing "wrong" is that the Extended Kalman Filter has to linearize $\mathbf H$ at its own current estimate, and that estimate is not yet the truth.
 
-The mechanism is precise enough to demonstrate with real numbers, not just describe qualitatively, and that is what this lesson does: one bearings-only tracking run, correctly tuned in every respect the Kalman filter module would check, in which the EKF's covariance collapses by more than two orders of magnitude in a single update and never recovers — reporting, for the rest of the run, that it knows its position to within a couple of meters while it is actually wrong by twenty. The unscented Kalman filter lesson later in this module returns to this exact scenario and shows what changes when the linearization is replaced.
+The mechanism is precise enough to demonstrate with real numbers rather than describe qualitatively, and that is what this lesson does: one bearings-only tracking run, correctly tuned in every respect the Kalman filter module would check, in which the EKF's covariance collapses by more than two orders of magnitude in a single update and never recovers — reporting, for the rest of the run, that it knows its position to within a couple of meters while it is actually wrong by twenty. The unscented Kalman filter lesson later in this module returns to this exact scenario and shows what changes when the linearization is replaced.
 
 ## The mechanism, precisely
 
@@ -90,17 +90,17 @@ The Kalman filter module's process-noise-tuning and filter-divergence lessons sh
 :::
 
 ::: warning A covariance collapse looks, briefly, like great filter performance
-Immediately after the step-27 update in the worked example, $\operatorname{tr}\mathbf P$ fell to $2.5$ — read in isolation, on a dashboard with no ground truth available, that looks like a filter that has just nailed down the target's position with unusual confidence. Distinguishing "the filter just got much better information" from "the filter just linearized somewhere it should not have" from telemetry alone is exactly why the consistency-testing lesson's NIS test — built entirely from quantities a real flight computer has, no truth required — exists; a sudden, large drop in reported covariance is a moment to check NIS, not a moment to celebrate.
+Immediately after the step-27 update in the worked example, $\operatorname{tr}\mathbf P$ fell to $2.5$ — read in isolation, on a dashboard with no ground truth available, that looks like a filter that has recently nailed down the target's position with unusual confidence. Distinguishing "the filter got much better information" from "the filter linearized somewhere it should not have" from telemetry alone is exactly why the consistency-testing lesson's NIS test — built entirely from quantities a real flight computer has, no truth required — exists; a sudden, large drop in reported covariance is a moment to check NIS, not a moment to celebrate.
 :::
 
 ## Check yourself
 
 ::: check
-Explain, using the specific numbers from the worked example, why the update at step 26 produced an *overshoot* rather than simply a correction of the right size.
+Explain, using the specific numbers from the worked example, why the update at step 26 produced an *overshoot* rather than a correction of the right size.
 :::
 
 ::: answer
-At step 26 the predicted position was about twice as far from the observer as the truth, with $\operatorname{tr}\mathbf P\approx1643$ still fairly large; the resulting gain, computed from $\mathbf H$ at that still-moderate range, was large enough to move the estimate a long way in one step — and it moved it past the observer entirely, to a predicted range of only $6.76\,\mathrm m$ for the next step, rather than landing near the true range of $25.53\,\mathrm m$. The update was reacting correctly, in linear-model terms, to a real innovation; it simply had no way to know that the correction it computed, applied to a genuinely curved measurement function, would carry the estimate into a region where that same linear model becomes a much worse approximation than it was where the correction was computed.
+At step 26 the predicted position was about twice as far from the observer as the truth, with $\operatorname{tr}\mathbf P\approx1643$ still fairly large; the resulting gain, computed from $\mathbf H$ at that still-moderate range, was large enough to move the estimate a long way in one step — and it moved it past the observer entirely, to a predicted range of only $6.76\,\mathrm m$ for the next step, rather than landing near the true range of $25.53\,\mathrm m$. The update was reacting correctly, in linear-model terms, to a real innovation; it had no way to know that the correction it computed, applied to a genuinely curved measurement function, would carry the estimate into a region where that same linear model becomes a much worse approximation than it was where the correction was computed.
 :::
 
 ::: check

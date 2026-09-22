@@ -34,7 +34,7 @@ Take the pendulum of the previous lesson, $L=1\,\mathrm m$, continuous process n
 | $45^\circ$ | $0.015728$ | $0.014565$ | $-7.40\%$ |
 | $80^\circ$ | $0.011908$ | $0.011255$ | $-5.49\%$ |
 
-At $5^\circ$ the pendulum is nearly linear and freezing $\mathbf F$ costs almost nothing. At $45^\circ$ the frozen approximation understates the true propagated variance by $7.4\%$ over a single half-second step — not catastrophic on its own, but compounding every cycle of a filter that runs for minutes. The error does not increase monotonically with $\theta_0$ (it is smaller again at $80^\circ$ than at $45^\circ$ here) precisely because $\mathbf F$'s time history over the *whole* interval matters, not just its value at the interval's start; $\cos\theta$ is heading toward zero as $\theta_0$ grows past $45^\circ$, so the frozen value happens to be closer to the interval's time-average in that region. The lesson is not "errors grow monotonically with amplitude" — it is that freezing $\mathbf F$ silently substitutes one instant's curvature for the whole interval's, and how much that costs depends on the trajectory, not on a simple rule of thumb.
+At $5^\circ$ the pendulum is nearly linear and freezing $\mathbf F$ costs almost nothing. At $45^\circ$ the frozen approximation understates the true propagated variance by $7.4\%$ over a single half-second step — not catastrophic on its own, but compounding every cycle of a filter that runs for minutes. The error does not increase monotonically with $\theta_0$ (it is smaller again at $80^\circ$ than at $45^\circ$ here) precisely because $\mathbf F$'s time history over the *whole* interval matters, not only its value at the interval's start; $\cos\theta$ is heading toward zero as $\theta_0$ grows past $45^\circ$, so the frozen value happens to be closer to the interval's time-average in that region. The lesson is not "errors grow monotonically with amplitude" — it is that freezing $\mathbf F$ silently substitutes one instant's curvature for the whole interval's, and how much that costs depends on the trajectory, not on a simple rule of thumb.
 :::
 
 ```python
@@ -150,7 +150,7 @@ Iterating removes the *linearization* error of a single update — it does not t
 :::
 
 ::: warning Continuous-discrete propagation needs an actual ODE integrator, not a bigger discrete step
-A common shortcut for "continuous dynamics" is simply to shrink $\Delta t$ and reuse the ordinary discrete EKF's one-Jacobian-per-step recipe many times across the interval. That converges to the continuous-discrete result as $\Delta t\to0$, but for a fixed, practical step count it is doing the same frozen-$\mathbf F$ approximation this lesson's example measured, just chopped into smaller pieces — better than one big frozen step, still not the same as integrating $\mathbf F(t)$ continuously along the true trajectory with a real integrator.
+A common shortcut for "continuous dynamics" is to shrink $\Delta t$ and reuse the ordinary discrete EKF's one-Jacobian-per-step recipe many times across the interval. That converges to the continuous-discrete result as $\Delta t\to0$, but for a fixed, practical step count it is doing the same frozen-$\mathbf F$ approximation this lesson's example measured, chopped into smaller pieces — better than one big frozen step, still not the same as integrating $\mathbf F(t)$ continuously along the true trajectory with a real integrator.
 :::
 
 ## Check yourself
@@ -192,7 +192,7 @@ Suppose a filter uses a fixed $\Delta t=0.5\,\mathrm s$ discrete EKF (no continu
 :::
 
 ::: answer
-The single-interval relative errors measured were $-0.08\%$ at $5^\circ$, $-7.40\%$ at $45^\circ$, and $-5.49\%$ at $80^\circ$ — the worst single-step error in this data was at $45^\circ$, not at the largest amplitude, because the frozen Jacobian's mismatch depends on how much $\mathbf F(t)$ changes across the *specific* interval, not simply on how large $\theta_0$ is. A filter whose swings vary between $5^\circ$ and $45^\circ$ would be expected to accumulate more error per cycle, on this evidence, than one sitting consistently near $80^\circ$ — a reminder that "more nonlinear region" and "worse frozen-Jacobian error" are correlated but not the same statement, and the only reliable way to know is to check the specific trajectory, as this lesson's table did.
+The single-interval relative errors measured were $-0.08\%$ at $5^\circ$, $-7.40\%$ at $45^\circ$, and $-5.49\%$ at $80^\circ$ — the worst single-step error in this data was at $45^\circ$, not at the largest amplitude, because the frozen Jacobian's mismatch depends on how much $\mathbf F(t)$ changes across the *specific* interval, not on how large $\theta_0$ is alone. A filter whose swings vary between $5^\circ$ and $45^\circ$ would be expected to accumulate more error per cycle, on this evidence, than one sitting consistently near $80^\circ$ — a reminder that "more nonlinear region" and "worse frozen-Jacobian error" are correlated but not the same statement, and the only reliable way to know is to check the specific trajectory, as this lesson's table did.
 :::
 
 ## Summary

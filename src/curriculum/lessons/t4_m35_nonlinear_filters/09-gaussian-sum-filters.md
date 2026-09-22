@@ -75,7 +75,7 @@ for k in range(70):
 # 30 1.000000 0.000000  9.280 17.298
 ```
 
-## Why not just collapse it to one Gaussian?
+## Why not collapse it to one Gaussian?
 
 If a single downstream number is needed — an autopilot that wants one position, not a weighted pair — the obvious move is moment-matching: replace the mixture with the one Gaussian that has the same mean and covariance,
 $$
@@ -136,7 +136,7 @@ A Gaussian sum filter is built with three components for a problem that, unknown
 :::
 
 ::: answer
-It reweights among the three components it has, optimally with respect to those three, but it has no mechanism to represent or discover the fourth mode at all — the data consistent with it will simply be explained, imperfectly, by whichever of the three existing components fits best, and the filter's reported weights will reflect confidence among the wrong set of alternatives without any built-in signal that something is missing. This is exactly the limitation the key block states: correctness restricted to the hypotheses actually provided.
+It reweights among the three components it has, optimally with respect to those three, but it has no mechanism to represent or discover the fourth mode at all — the data consistent with it will be explained, imperfectly, by whichever of the three existing components fits best, and the filter's reported weights will reflect confidence among the wrong set of alternatives without any built-in signal that something is missing. This is exactly the limitation the key block states: correctness restricted to the hypotheses actually provided.
 :::
 
 ::: check

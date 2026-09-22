@@ -21,7 +21,7 @@ $$
 followed by normalizing $w_k^{(i)}$ so the weights sum to one. Both $\mathbf f$ and the measurement likelihood $p(\mathbf z_k\mid\mathbf x_k^{(i)})$ are the true, unmodified functions — nothing here is linearized, and $p(\mathbf z_k\mid\mathbf x_k^{(i)})$ need not even be Gaussian.
 :::
 
-Every particle is propagated through the *actual* nonlinear $\mathbf f$, with its own independent noise realization — there is no linearized covariance to propagate at all, because there is no single Gaussian to describe. Each particle's new weight measures how consistent that particle's own predicted measurement is with what was actually observed; particles whose predictions land far from $\mathbf z_k$ lose weight, particles that land close gain it, relative to the other particles in the cloud. Summed and normalized across all $N$ particles, the weighted cloud is the filter's entire representation of the posterior — its mean, if wanted, is just $\sum_i w_k^{(i)}\mathbf x_k^{(i)}$, but the cloud itself carries far more information than that one summary number, which is the entire point.
+Every particle is propagated through the *actual* nonlinear $\mathbf f$, with its own independent noise realization — there is no linearized covariance to propagate at all, because there is no single Gaussian to describe. Each particle's new weight measures how consistent that particle's own predicted measurement is with what was actually observed; particles whose predictions land far from $\mathbf z_k$ lose weight, particles that land close gain it, relative to the other particles in the cloud. Summed and normalized across all $N$ particles, the weighted cloud is the filter's entire representation of the posterior — its mean, if wanted, is $\sum_i w_k^{(i)}\mathbf x_k^{(i)}$, but the cloud itself carries far more information than that one summary number, which is the entire point.
 
 ::: example A particle filter resolving a genuinely ambiguous position
 A vehicle flies at a known, roughly constant altitude and airspeed along a track with a radar altimeter reading height above ground. The terrain has two valleys of nearly identical shape and depth, $80\,\mathrm m$ deep, centered $8\,\mathrm{km}$ apart, so a single altimeter reading taken near either valley is genuinely ambiguous about which one produced it. The vehicle's true along-track position starts inside the first valley's basin; $2000$ particles are seeded uniformly across a $14\,\mathrm{km}$ window spanning both valleys, with no prior bias toward either.
@@ -93,7 +93,7 @@ $$
 $N_{\text{eff}}=N$ exactly when every weight is equal ($1/N$); $N_{\text{eff}}=1$ exactly when a single particle carries all the weight, regardless of how many particles are nominally in the cloud. $N_{\text{eff}}$ depends only on the *shape* of the weight distribution, not its overall scale — multiplying every unnormalized weight by the same constant leaves it unchanged.
 :::
 
-$N_\text{eff}$ falling well below $N$ is the standard, quantitative signal of degeneracy — in the terrain example, it fell to $70.8$ (from an initial $2000$) after just the first measurement, reflecting how strongly that first altimeter reading already discriminated between plausible and implausible positions. The fix is **resampling**: draw a new set of $N$ particles from the current weighted cloud, with particles carrying more weight more likely to be drawn (possibly several times), and reset every weight to $1/N$. This does not create new information — it redistributes the computational effort of the next cycle toward the particles that currently matter, and discards effort on the particles that do not.
+$N_\text{eff}$ falling well below $N$ is the standard, quantitative signal of degeneracy — in the terrain example, it fell to $70.8$ (from an initial $2000$) after only the first measurement, reflecting how strongly that first altimeter reading already discriminated between plausible and implausible positions. The fix is **resampling**: draw a new set of $N$ particles from the current weighted cloud, with particles carrying more weight more likely to be drawn (possibly several times), and reset every weight to $1/N$. This does not create new information — it redistributes the computational effort of the next cycle toward the particles that currently matter, and discards effort on the particles that do not.
 
 ## Resampling and its own failure mode
 
@@ -102,7 +102,7 @@ Resampling looks, at first, like an unambiguous improvement: weights are equal a
 ::: example Impoverishment, counted directly
 Estimate a fixed, unknown range $r=500\,\mathrm m$ from repeated noisy measurements, $\sigma_z=5\,\mathrm m$, with $500$ particles and **systematic resampling every single cycle**, no added jitter. Track the number of *distinct* particle values surviving, not merely $N_\text{eff}$:
 
-| cycle | $N_\text{eff}$ just before resampling | distinct particle values remaining |
+| cycle | $N_\text{eff}$ immediately before resampling | distinct particle values remaining |
 | --- | --- | --- |
 | $0$ | $158.9$ | $202$ |
 | $8$ | $389.5$ | $69$ |
@@ -111,7 +111,7 @@ Estimate a fixed, unknown range $r=500\,\mathrm m$ from repeated noisy measureme
 | $32$ | $379.0$ | $36$ |
 | $39$ | $497.7$ | $35$ |
 
-$N_\text{eff}$ just before each resample stays in a perfectly reasonable range throughout — never collapsing toward $1$ the way true degeneracy would show it — because each cycle only applies *one* likelihood update to an already-equal-weight population, which rarely peaks sharply enough to look degenerate on its own. Meanwhile the population's actual diversity is bleeding out underneath that healthy-looking number: from $500$ initial particles down to $35$ surviving distinct ancestral values after forty cycles, entirely invisible to $N_\text{eff}$ because $N_\text{eff}$ is recomputed fresh from equal weights every time and has no memory of which particles are, underneath, exact copies of one another. Adding a small amount of independent jitter after each resample — **roughening**, $0.4\,\mathrm m$ standard deviation here — is a complete fix on this problem: with roughening, all $500$ values remain distinct at every one of the same forty cycles.
+$N_\text{eff}$ immediately before each resample stays in a perfectly reasonable range throughout — never collapsing toward $1$ the way true degeneracy would show it — because each cycle applies only *one* likelihood update to an already-equal-weight population, which rarely peaks sharply enough to look degenerate on its own. Meanwhile the population's actual diversity is bleeding out underneath that healthy-looking number: from $500$ initial particles down to $35$ surviving distinct ancestral values after forty cycles, entirely invisible to $N_\text{eff}$ because $N_\text{eff}$ is recomputed fresh from equal weights every time and has no memory of which particles are, underneath, exact copies of one another. Adding a small amount of independent jitter after each resample — **roughening**, $0.4\,\mathrm m$ standard deviation here — is a complete fix on this problem: with roughening, all $500$ values remain distinct at every one of the same forty cycles.
 :::
 
 ```python
@@ -199,7 +199,7 @@ Suppose roughening is added, but its standard deviation is chosen far too large 
 :::
 
 ::: answer
-Roughening adds noise to the particle values independent of what the data actually supports, so choosing its scale far larger than the measurement precision would spread the particles out well beyond where the true posterior actually concentrates, degrading the filter's accuracy and inflating its effective uncertainty even though the *diversity* problem (impoverishment) would indeed be solved. Roughening's scale is a real tuning choice with a genuine trade-off — too little and impoverishment returns, too much and the filter's own added noise starts to dominate the very information the measurements were supposed to provide — not a parameter with an obviously safe, large default.
+Roughening adds noise to the particle values independent of what the data actually supports, so choosing its scale far larger than the measurement precision would spread the particles out well beyond where the true posterior actually concentrates, degrading the filter's accuracy and inflating its effective uncertainty even though the *diversity* problem (impoverishment) would indeed be solved. Roughening's scale is a real tuning choice with a genuine trade-off — too little and impoverishment returns, too much and the filter's own added noise starts to dominate the very information the measurements were supposed to provide — not a parameter with a self-evidently safe, large default.
 :::
 
 ## Summary
@@ -213,4 +213,4 @@ Roughening adds noise to the particle values independent of what the data actual
 | Standard practice | Resample only when $N_\text{eff}$ falls below a threshold (often $N/2$), and add roughening after every resample that does fire |
 | Demonstrated | Terrain example: genuine early ambiguity ($30\%$–$70\%$ split), correctly resolved once distinguishing data arrived. Impoverishment example: $500\to35$ distinct values over $40$ unconditional resamples with no roughening; $500\to500$ with it |
 
-This lesson showed a particle filter succeeding at a problem a single-Gaussian filter is structurally unable to represent honestly. The next lesson makes precise exactly when that gap is worth the cost — and names the specific, practical limitation that keeps particle filters from simply replacing the EKF and UKF everywhere.
+This lesson showed a particle filter succeeding at a problem a single-Gaussian filter is structurally unable to represent honestly. The next lesson makes precise exactly when that gap is worth the cost — and names the specific, practical limitation that keeps particle filters from replacing the EKF and UKF everywhere.

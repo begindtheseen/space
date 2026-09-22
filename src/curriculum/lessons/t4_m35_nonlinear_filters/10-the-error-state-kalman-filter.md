@@ -19,7 +19,7 @@ $$
 with $\oplus$ the appropriate composition (ordinary addition for a vector state). The nominal $\bar{\mathbf x}$ carries all of the large-scale, genuinely nonlinear motion and needs no linear approximation anywhere; the Kalman filter estimates only $\delta\mathbf x$, which — provided the filter keeps doing its job — stays small.
 :::
 
-Why would this ever be better than just running an ordinary EKF on the full state directly? Because "provided the filter keeps doing its job, $\delta\mathbf x$ stays small" is not an accident — it is the entire point of the architecture, and it buys exactly the thing the first lesson in this module identified as the EKF's central weakness: the size of the quantity a linearization has to describe. An ordinary EKF's Jacobian has to be a good local description of $\mathbf f$ across whatever spread the *full state's* uncertainty has — which can be large if the vehicle itself has moved a long way, turned sharply, or is otherwise doing something genuinely nonlinear. An error-state filter's Jacobian only has to describe the dynamics of a *perturbation*, which — because the nominal is doing all the large-scale, exactly-integrated work — stays small regardless of how far or how sharply the vehicle itself has actually moved.
+Why would this ever be better than running an ordinary EKF on the full state directly? Because "provided the filter keeps doing its job, $\delta\mathbf x$ stays small" is not an accident — it is the entire point of the architecture, and it buys exactly the thing the first lesson in this module identified as the EKF's central weakness: the size of the quantity a linearization has to describe. An ordinary EKF's Jacobian has to be a good local description of $\mathbf f$ across whatever spread the *full state's* uncertainty has — which can be large if the vehicle itself has moved a long way, turned sharply, or is otherwise doing something genuinely nonlinear. An error-state filter's Jacobian only has to describe the dynamics of a *perturbation*, which — because the nominal is doing all the large-scale, exactly-integrated work — stays small regardless of how far or how sharply the vehicle itself has actually moved.
 
 ::: example A small error state tracks well; an uncorrected one does not
 Take the pendulum from earlier in this module as a stand-in for "genuinely nonlinear vehicle motion," and run two identical error-state filters side by side for twenty half-second cycles: propagate the nominal exactly (numerical integration of the true nonlinear ODE), propagate a $2\times2$ error covariance via the linearized $\mathbf F(\bar\theta)$ each cycle, and update from a noisy angle measurement every cycle. The **only** difference between the two filters: one folds its estimated correction back into the nominal and resets the error state to zero every cycle (**with reset**); the other never folds the correction back in, letting the error state itself carry the correction forward, uncorrected, cycle after cycle (**without reset**).
@@ -117,7 +117,7 @@ Take the first cycle of the "with reset" run above. Before this cycle, $\bar\the
 :::
 
 ::: warning An additive reset's simplicity is the exception, not the rule
-The reason this lesson could get away with $\mathbf P\leftarrow\mathbf P$ unchanged through the reset is specific to an additive state living in an ordinary vector space. A state that lives on a curved space — the set of unit quaternions describing an attitude, most importantly for this module — does not have this property: the tangent space at one attitude is not the same coordinate system as the tangent space at a different attitude, so moving the nominal by injecting a correction genuinely does change what the error's coordinates *mean*, and carrying $\mathbf P$ through unchanged would be wrong. The next lesson makes this precise, with a reset Jacobian that is not simply the identity.
+The reason this lesson could get away with $\mathbf P\leftarrow\mathbf P$ unchanged through the reset is specific to an additive state living in an ordinary vector space. A state that lives on a curved space — the set of unit quaternions describing an attitude, most importantly for this module — does not have this property: the tangent space at one attitude is not the same coordinate system as the tangent space at a different attitude, so moving the nominal by injecting a correction genuinely does change what the error's coordinates *mean*, and carrying $\mathbf P$ through unchanged would be wrong. The next lesson makes this precise, with a reset Jacobian that is not the identity.
 :::
 
 ::: warning The error state's smallness is a consequence, not an assumption to rely on blindly
@@ -135,7 +135,7 @@ The nominal is propagated by direct numerical integration of the true nonlinear 
 :::
 
 ::: check
-In the worked example, why does skipping the reset degrade the true tracking error, given that the *total* estimate $\bar{\mathbf x}\oplus\delta\hat{\mathbf x}$ is mathematically the same sum either way at the instant just after an update?
+In the worked example, why does skipping the reset degrade the true tracking error, given that the *total* estimate $\bar{\mathbf x}\oplus\delta\hat{\mathbf x}$ is mathematically the same sum either way at the instant immediately after an update?
 :::
 
 ::: answer
@@ -155,7 +155,7 @@ Why is $\mathbf P\leftarrow\mathbf P$ (unchanged) the correct reset rule for the
 :::
 
 ::: answer
-For an ordinary vector state, the tangent space — the coordinates a small perturbation is measured in — is identical everywhere in the space; a $1^\circ$ error near $\bar\theta=10^\circ$ is described by exactly the same number, in exactly the same sense, as a $1^\circ$ error near $\bar\theta=80^\circ$, so moving the nominal changes nothing about what the error's own coordinates mean, and the covariance describing those coordinates needs no adjustment. An attitude represented as a unit quaternion does not have this property — its tangent space genuinely depends on which attitude it is attached to — so the same "just move the nominal" reset has to carry the covariance through a coordinate change as well, which is precisely the reset Jacobian the next lesson derives.
+For an ordinary vector state, the tangent space — the coordinates a small perturbation is measured in — is identical everywhere in the space; a $1^\circ$ error near $\bar\theta=10^\circ$ is described by exactly the same number, in exactly the same sense, as a $1^\circ$ error near $\bar\theta=80^\circ$, so moving the nominal changes nothing about what the error's own coordinates mean, and the covariance describing those coordinates needs no adjustment. An attitude represented as a unit quaternion does not have this property — its tangent space genuinely depends on which attitude it is attached to — so the same "move the nominal" reset has to carry the covariance through a coordinate change as well, which is precisely the reset Jacobian the next lesson derives.
 :::
 
 ::: check
