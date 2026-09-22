@@ -832,6 +832,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Monte Carlo methods and convergence rates"
       ],
       "file": "t0_m09_probability_stats/12-monte-carlo-methods-and-convergence-rates.md"
+    },
+    {
+      "id": "l13-chi-square-and-filter-consistency",
+      "title": "The chi-square distribution and filter consistency testing",
+      "minutes": 26,
+      "covers": [
+        "the chi-square distribution and filter consistency testing"
+      ],
+      "file": "t0_m09_probability_stats/13-chi-square-and-filter-consistency.md"
     }
   ],
   "t0_m10_numerical_methods": [
@@ -1674,12 +1683,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t0_m09_probability_stats": {
-    "covered": 12,
+    "covered": 13,
     "total": 13,
-    "complete": false,
-    "missing": [
-      "the chi-square distribution and filter consistency testing"
-    ]
+    "complete": true,
+    "missing": []
   },
   "t0_m10_numerical_methods": {
     "covered": 9,
