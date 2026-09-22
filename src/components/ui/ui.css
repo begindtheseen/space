@@ -646,3 +646,25 @@
   font-weight: 500;
   font-variant-numeric: tabular-nums;
 }
+
+/* ── desktop updates ─────────────────────────────────────────────────────── */
+/* The avatar's update dot lives here rather than in pages.css because the
+   shell is on screen before any page stylesheet has loaded. Only the desktop
+   build ever renders the dot, so the browser's avatar is untouched. */
+.avatar:has(> .avatar__dot) {
+  position: relative;
+}
+
+.avatar__dot {
+  position: absolute;
+  top: 1px;
+  right: 1px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--warn);
+  /* The dark ring lifts the dot off the avatar's own border. */
+  box-shadow:
+    0 0 0 2px var(--void),
+    0 0 8px rgba(240, 168, 72, 0.55);
+}

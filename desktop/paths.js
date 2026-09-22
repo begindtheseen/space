@@ -28,7 +28,3 @@ export function configFile() {
 export function windowFile() {
   return path.join(userDataDir(), 'window.json')
 }
-
-export function bundlesDir() {
-  return path.join(userDataDir(), 'bundles')
-}

@@ -19,6 +19,7 @@ import {
   IconWarn,
 } from '@/components/icons'
 import { Button, Card, CardHead, Chip } from '@/components/ui'
+import { UpdatesCard } from '@/components/UpdatesCard'
 import { corpusStats } from '@/curriculum'
 import { DEFAULT_W } from '@/engine/fsrs'
 import { newLearnerState } from '@/engine/state'
@@ -31,6 +32,8 @@ import {
   type StorageEstimate,
 } from '@/engine/store'
 import { useLearner } from '@/hooks/useLearner'
+import { isDesktop } from '@/lib/desktop'
+import { formatBytes } from '@/lib/format'
 import './pages.css'
 
 export function Settings() {
@@ -185,6 +188,9 @@ export function Settings() {
               ) : null}
             </div>
           </Card>
+
+          {/* ── updates (desktop shell only) ──────────────────────────── */}
+          {isDesktop ? <UpdatesCard index={1} /> : null}
 
           {/* ── scheduling ────────────────────────────────────────────── */}
           <Card index={1}>
@@ -543,11 +549,4 @@ function clampInt(v: string, lo: number, hi: number): number {
   const n = Math.round(Number(v))
   if (!Number.isFinite(n)) return lo
   return Math.min(Math.max(n, lo), hi)
-}
-
-function formatBytes(n: number): string {
-  if (n <= 0) return '0 B'
-  const units = ['B', 'KB', 'MB', 'GB']
-  const i = Math.min(units.length - 1, Math.floor(Math.log(n) / Math.log(1024)))
-  return `${(n / Math.pow(1024, i)).toFixed(i === 0 ? 0 : 1)} ${units[i]}`
 }

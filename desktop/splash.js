@@ -73,7 +73,6 @@ export function createSplash({ shell, bundle, minimumMs, credit = '', log = () =
   }
 
   return {
-    window: win,
     status: (text) => call('status', text),
     error: (text) => call('error', text),
     /** Resolves once the splash has been visible for `minimumMs` (or was closed). */
