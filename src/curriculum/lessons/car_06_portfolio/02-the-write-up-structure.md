@@ -8,7 +8,7 @@ covers:
 
 The previous lesson named "documented" as one of the five words a portfolio project is judged by, and defined defensibility as five things that have to exist in writing. This lesson gives that writing an actual shape. A reviewer who opens your repository has, realistically, ninety seconds before deciding whether to keep reading — and a write-up that makes them work to find the requirement, the result, or the catch is a write-up that loses that ninety seconds before your strongest work is even seen. The fix is not more writing. It is a fixed structure, applied consistently, so a reader always knows where the next fact lives.
 
-That structure has seven parts — problem, model, assumptions, verification, validation, results, limitations — and this lesson covers each one, plus where it lives in your repository and what a reader actually does with the first screen of it. The next lesson covers the technical content of verification specifically: what evidence actually earns the label. Here, the question is narrower and just as important: given that evidence exists, how do you arrange it so a stranger finds it in the order they need it?
+That structure has seven parts — problem, model, assumptions, verification, validation, results, limitations — and this lesson covers each one, plus where it lives in your repository and what a reader actually does with the first screen of it. The next lesson covers the technical content of verification specifically: what evidence actually earns the label. Here, the question is narrower and equally important: given that evidence exists, how do you arrange it so a stranger finds it in the order they need it?
 
 ## The seven parts, and what belongs in each
 

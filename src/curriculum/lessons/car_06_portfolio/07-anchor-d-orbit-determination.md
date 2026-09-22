@@ -12,7 +12,7 @@ A batch orbit-determination project fit only to measurements you generated yours
 
 The Gauss-Newton iteration itself — linearize the measurement model, solve the normal equations $\mathbf H(\mathbf x_k)^{\mathsf T}\mathbf H(\mathbf x_k)\,\Delta\mathbf x=\mathbf H(\mathbf x_k)^{\mathsf T}\mathbf r(\mathbf x_k)$, step, and repeat — is developed in full in this curriculum's estimation material, alongside Levenberg-Marquardt for when Gauss-Newton's step is too aggressive to trust. This project's job is not to re-derive that machinery; it is to run it against real tracking data and report, honestly, what happened: whether it converged, to what tolerance, and whether the reported covariance actually means what it claims to.
 
-Three things distinguish a credible version of this project. First, real data — a fit to GNSS pseudoranges or to positions derived from public two-line element sets, not exclusively self-generated synthetic measurements, because real data carries correlated errors, gaps, and outliers a synthetic Gaussian noise model does not. Second, a reported observability or conditioning check — the normal matrix $\mathbf H^{\mathsf T}\mathbf H$ can be near-singular for a genuinely bad tracking geometry, and a fit that converges without that check being reported has not shown it converged to a trustworthy answer rather than an accidental one. Third, a validated covariance — the formal covariance the fit reports, $\hat{\mathbf P}=\sigma^2(\mathbf H^{\mathsf T}\mathbf H)^{-1}$, checked against something independent of the single fit that produced it, not simply quoted.
+Three things distinguish a credible version of this project. First, real data — a fit to GNSS pseudoranges or to positions derived from public two-line element sets, not exclusively self-generated synthetic measurements, because real data carries correlated errors, gaps, and outliers a synthetic Gaussian noise model does not. Second, a reported observability or conditioning check — the normal matrix $\mathbf H^{\mathsf T}\mathbf H$ can be near-singular for a genuinely poor tracking geometry, and a fit that converges without that check being reported has not shown it converged to a trustworthy answer rather than an accidental one. Third, a validated covariance — the formal covariance the fit reports, $\hat{\mathbf P}=\sigma^2(\mathbf H^{\mathsf T}\mathbf H)^{-1}$, checked against something independent of the single fit that produced it, not quoted on its own.
 
 ## Geometry can break convergence before noise does: a real failure, diagnosed
 
@@ -27,7 +27,7 @@ The lesson is not "more stations are better" as a vague intuition — it is that
 :::
 
 ::: warning
-A batch fit that converges is not, by itself, evidence the geometry was adequate — a badly conditioned problem can still converge to *a* answer, just one with enormous, easily overlooked uncertainty in a poorly observed direction. Report the condition number or an equivalent observability diagnostic alongside every fit, not only when something visibly goes wrong.
+A batch fit that converges is not, by itself, evidence the geometry was adequate — a badly conditioned problem can still converge to *a* answer, one carrying enormous, easily overlooked uncertainty in a poorly observed direction. Report the condition number or an equivalent observability diagnostic alongside every fit, not only when something visibly goes wrong.
 :::
 
 ## Does the reported covariance mean what it claims?
@@ -63,7 +63,7 @@ Adding three more tracking stations dropped the condition number from roughly $1
 :::
 
 ::: answer
-A single station observes range along one changing line of sight over the arc, which for a nearly straight-line trajectory leaves position and velocity along that line of sight poorly distinguished from each other — the geometry does not provide enough independent directions of information to separate the four state components. Stations at different bearings each contribute a line-of-sight direction pointed a different way, so the combined measurement Jacobian spans more independent directions in state space; it is the diversity of geometry, not simply the count of measurements, that restores observability. A fifth measurement from the same single station would not have fixed the underlying degeneracy the way a differently-positioned station did.
+A single station observes range along one changing line of sight over the arc, which for a nearly straight-line trajectory leaves position and velocity along that line of sight poorly distinguished from each other — the geometry does not provide enough independent directions of information to separate the four state components. Stations at different bearings each contribute a line-of-sight direction pointed a different way, so the combined measurement Jacobian spans more independent directions in state space; it is the diversity of geometry, not only the count of measurements, that restores observability. A fifth measurement from the same single station would not have fixed the underlying degeneracy the way a differently-positioned station did.
 :::
 
 ::: check

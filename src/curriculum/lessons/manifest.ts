@@ -649,6 +649,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "the 90-second background narrative and how to end it on a specific role family"
       ],
       "file": "car_09_screens/02-the-ninety-second-narrative.md"
+    },
+    {
+      "id": "l03-the-compensation-question",
+      "title": "Answering the compensation question early",
+      "minutes": 24,
+      "covers": [
+        "answering the compensation question early without anchoring yourself low"
+      ],
+      "file": "car_09_screens/03-the-compensation-question.md"
     }
   ],
   "cod_cpp_01_basics": [
@@ -7368,11 +7377,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "car_09_screens": {
-    "covered": 2,
+    "covered": 3,
     "total": 12,
     "complete": false,
     "missing": [
-      "answering the compensation question early without anchoring yourself low",
       "the technical phone screen: 30 minutes, an engineer on the team or the hiring manager",
       "reported topics: PD control, orbit determination, frequency-domain analysis",
       "resume depth: expect to be asked to go deeper on any line you wrote",

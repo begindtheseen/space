@@ -35,7 +35,7 @@ Running a $300$-run, $180$-step Monte Carlo of the six-state error model above (
 
 **Deliberately overconfident.** Re-running the identical Monte Carlo with the filter's assumed process noise cut to one hundredth of the true value — the filter believes its own state is far better known than it is — gives mean NEES of $404.9$, more than $63$ times the band's ceiling of $6.398$, and mean NIS of $32.3$, about $9.8$ times its ceiling. Both sit outside their band at every single step checked.
 
-The second run is not a mistake to be corrected before reporting; it is included deliberately, because a consistency test that only ever reports "passed" on a filter you already believe is consistent tells a reviewer nothing about whether the test itself would have caught a real problem. Showing that a known, injected fault produces exactly the inconsistency the theory predicts — and by how much — is evidence the test has power, not just that it ran.
+The second run is not a mistake to be corrected before reporting; it is included deliberately, because a consistency test that only ever reports "passed" on a filter you already believe is consistent tells a reviewer nothing about whether the test itself would have caught a real problem. Showing that a known, injected fault produces exactly the inconsistency the theory predicts — and by how much — is evidence the test has power, not only that it ran.
 :::
 
 ::: warning
