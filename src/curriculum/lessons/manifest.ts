@@ -1803,6 +1803,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "sed substitution and addressing; awk fields, patterns, BEGIN/END, arrays"
       ],
       "file": "cod_lnx_02_scripting/10-awk.md"
+    },
+    {
+      "id": "l11-jq-and-tabular-text",
+      "title": "jq for JSON, and lining up tabular text",
+      "minutes": 19,
+      "covers": [
+        "jq for JSON, column/paste/join for tabular text"
+      ],
+      "file": "cod_lnx_02_scripting/11-jq-and-tabular-text.md"
     }
   ],
   "cod_py_01_basics": [
@@ -7811,12 +7820,11 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_lnx_02_scripting": {
-    "covered": 9,
+    "covered": 10,
     "total": 14,
     "complete": false,
     "missing": [
       "Here-docs and here-strings",
-      "jq for JSON, column/paste/join for tabular text",
       "shellcheck as a mandatory linter",
       "cron and systemd timers",
       "When to stop writing bash and switch to Python"
