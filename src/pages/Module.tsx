@@ -1008,7 +1008,7 @@ function LessonReader({ module, lesson }: { module: Module; lesson: LessonMeta }
 
   return (
     <div className="page page--padtop reader">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 14 }}>
+      <div className="reader__top" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 14 }}>
         <button
           className="btn btn--quiet btn--sm"
           onClick={() => navigate(`/module/${module.id}?step=learn`)}

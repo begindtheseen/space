@@ -1072,8 +1072,25 @@
   padding: 22px 26px 26px;
 }
 
+/*
+ * Align the lesson's title block with the lesson's own text.
+ *
+ * The header sat at the page edge while the prose it introduced began a
+ * further 180px in, so the title did not line up with a single word of what
+ * it was titling. Matching the measure and centring it the same way puts the
+ * whole lesson on one axis, which is most of what "considered" looks like.
+ */
+.reader .page-head,
+.reader__top {
+  max-width: 66ch;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+}
+
+/* The prose sets its own 66ch measure; this only centres it. The 72ch here
+   used to override that and left the column wider than the type was set for. */
 .reader__md {
-  max-width: 72ch;
   margin: 0 auto;
 }
 

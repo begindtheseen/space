@@ -1,19 +1,34 @@
 /* ============================================================================
    ORBIT — prose
    ----------------------------------------------------------------------------
-   Reading copy is set narrower and lighter than UI copy: 15px at 1.75 over a
-   65ch measure, which is where technical prose stops being work to read.
+   These lessons are two to three thousand words each and she will read them
+   for an hour at a time, so this is set as a reading surface rather than as
+   interface text: 16px over a 66-character measure, with the vertical rhythm
+   built from the line height so paragraphs and headings sit on a consistent
+   beat instead of at arbitrary gaps.
+
+   Type sizes step by a clear ratio. At 14.5px body and 17px h2 the heading was
+   only two and a half pixels larger than the text under it, which reads as
+   emphasis rather than as structure; in a lesson with eight sections that is
+   the difference between something you can skim and something you cannot.
    ========================================================================== */
 
 .md {
-  font-size: 14.5px;
-  line-height: 1.75;
+  /* 16px at 1.7 gives a 27px line, and the spacing below is a multiple of it. */
+  font-size: 16px;
+  line-height: 1.7;
   color: var(--ink-2);
-  max-width: 68ch;
+  max-width: 66ch;
+  /* Kerning and common ligatures. Off by default in most browsers below 20px,
+     and their absence is a large part of why text can look unconsidered. */
+  text-rendering: optimizeLegibility;
+  font-kerning: normal;
+  font-variant-ligatures: common-ligatures;
 }
 
 .md__p {
-  margin: 0 0 15px;
+  /* A full line between paragraphs: less than that and they run together. */
+  margin: 0 0 1.7em;
 }
 
 .md__p:last-child {
@@ -23,9 +38,14 @@
 .md__h {
   color: var(--ink);
   font-weight: 600;
-  letter-spacing: -0.012em;
-  line-height: 1.3;
-  margin: 28px 0 11px;
+  /* Tighter as the size grows, which is what optical sizing would do. */
+  letter-spacing: -0.014em;
+  line-height: 1.25;
+  /* Space above a heading belongs to the heading, not to the paragraph that
+     ended: roughly two lines before, half a line after, so each section reads
+     as one block rather than as a heading floating between two. */
+  margin: 2.2em 0 0.55em;
+  text-wrap: balance;
 }
 
 .md__h:first-child {
@@ -33,21 +53,20 @@
 }
 
 .md__h1 {
-  font-size: 21px;
+  font-size: 26px;
 }
 
 .md__h2 {
-  font-size: 17px;
+  font-size: 20px;
 }
 
 .md__h3,
 .md__h4 {
-  font-size: 14.5px;
   color: var(--ink-2);
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  font-size: 11.5px;
-  margin-top: 24px;
+  font-size: 12px;
+  margin-top: 1.8em;
 }
 
 .md__ul,
