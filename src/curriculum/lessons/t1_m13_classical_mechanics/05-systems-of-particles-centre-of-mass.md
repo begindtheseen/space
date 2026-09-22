@@ -164,7 +164,7 @@ Everything in this lesson has been about a system of *fixed* membership: the sam
 What does apply is the theorem for the fixed system consisting of the vehicle *plus all the propellant it will expel*. That system has no thrust acting on it — thrust is an internal force between the vehicle and its exhaust — and its centre of mass moves under gravity and aerodynamics alone. The vehicle accelerates forward because the exhaust goes backward, and the two motions are related by the requirement that the centre of mass of the pair does what the external forces say. Lesson 6 turns this observation into the equation of motion.
 
 ::: warning
-The centre-of-mass theorem needs the *same* collection of matter throughout. It does not say that the vehicle's centre of mass, computed from whatever is on board at each instant, obeys $M\ddot{\mathbf{R}} = \mathbf{F}_{\mathrm{ext}}$ — for a rocket it does not, and the discrepancy is the thrust. Nor does it say the parts move simply: only the centre of mass does. Reading a clean centre-of-mass trajectory as evidence that the vehicle is not tumbling is a mistake with a long history.
+The centre-of-mass theorem needs the *same* collection of matter throughout. It does not say that the vehicle's centre of mass, computed from whatever is on board at each instant, obeys $M\ddot{\mathbf{R}} = \mathbf{F}_{\mathrm{ext}}$ — for a rocket it does not, and the discrepancy is the thrust. Nor does it say the parts move that way: only the centre of mass does. Reading a clean centre-of-mass trajectory as evidence that the vehicle is not tumbling is a mistake with a long history.
 :::
 
 ## Check yourself

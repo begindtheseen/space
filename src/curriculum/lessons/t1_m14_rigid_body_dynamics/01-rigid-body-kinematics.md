@@ -141,7 +141,7 @@ $$
 The first sum is what an observer riding the body sees change — the derivative of the components. The second is the contribution of the frame's own rotation. This is the transport theorem in its simplest form; the module on rotating frames builds the Coriolis and centrifugal accelerations from it. Here it does two jobs. Applied to $\boldsymbol{\omega}$ itself, it shows that $\dot{\boldsymbol{\omega}}$ is the same in both frames, because $\boldsymbol{\omega}\times\boldsymbol{\omega} = 0$. Applied to angular momentum in lesson 5, it produces Euler's equations.
 
 ::: key Derivative of a vector seen from the body
-For any vector $\mathbf{A}$, its inertial rate of change equals its rate of change as seen in the body plus $\boldsymbol{\omega}\times\mathbf{A}$. A body-fixed vector has zero body-frame derivative, so it simply obeys $\dot{\mathbf{A}} = \boldsymbol{\omega}\times\mathbf{A}$; its length is constant because $\mathbf{A}\cdot(\boldsymbol{\omega}\times\mathbf{A}) = 0$.
+For any vector $\mathbf{A}$, its inertial rate of change equals its rate of change as seen in the body plus $\boldsymbol{\omega}\times\mathbf{A}$. A body-fixed vector has zero body-frame derivative, so it obeys $\dot{\mathbf{A}} = \boldsymbol{\omega}\times\mathbf{A}$; its length is constant because $\mathbf{A}\cdot(\boldsymbol{\omega}\times\mathbf{A}) = 0$.
 :::
 
 ::: example The Space Station's angular velocity

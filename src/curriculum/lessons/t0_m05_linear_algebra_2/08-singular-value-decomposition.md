@@ -135,7 +135,7 @@ Explain, using the SVD, why $\mathbf{A}^\mathsf{T}\mathbf{A}$ and $\mathbf{A}\ma
 :::
 
 ::: answer
-$\mathbf{A}^\mathsf{T}\mathbf{A} = \mathbf{V}\boldsymbol{\Sigma}^\mathsf{T}\mathbf{U}^\mathsf{T}\mathbf{U}\boldsymbol{\Sigma}\mathbf{V}^\mathsf{T} = \mathbf{V}(\boldsymbol{\Sigma}^\mathsf{T}\boldsymbol{\Sigma})\mathbf{V}^\mathsf{T}$ and $\mathbf{A}\mathbf{A}^\mathsf{T} = \mathbf{U}(\boldsymbol{\Sigma}\boldsymbol{\Sigma}^\mathsf{T})\mathbf{U}^\mathsf{T}$. Both are spectral decompositions. $\boldsymbol{\Sigma}^\mathsf{T}\boldsymbol{\Sigma}$ is $n\times n$ and $\boldsymbol{\Sigma}\boldsymbol{\Sigma}^\mathsf{T}$ is $m\times m$, but both are diagonal with the entries $\sigma_1^2, \dots, \sigma_r^2$ followed by zeros — the larger one simply has more zeros. So the nonzero eigenvalues agree, with eigenvectors $\mathbf{v}_i$ for one and $\mathbf{u}_i$ for the other, and the extra eigenvalues of the bigger matrix are all zero.
+$\mathbf{A}^\mathsf{T}\mathbf{A} = \mathbf{V}\boldsymbol{\Sigma}^\mathsf{T}\mathbf{U}^\mathsf{T}\mathbf{U}\boldsymbol{\Sigma}\mathbf{V}^\mathsf{T} = \mathbf{V}(\boldsymbol{\Sigma}^\mathsf{T}\boldsymbol{\Sigma})\mathbf{V}^\mathsf{T}$ and $\mathbf{A}\mathbf{A}^\mathsf{T} = \mathbf{U}(\boldsymbol{\Sigma}\boldsymbol{\Sigma}^\mathsf{T})\mathbf{U}^\mathsf{T}$. Both are spectral decompositions. $\boldsymbol{\Sigma}^\mathsf{T}\boldsymbol{\Sigma}$ is $n\times n$ and $\boldsymbol{\Sigma}\boldsymbol{\Sigma}^\mathsf{T}$ is $m\times m$, but both are diagonal with the entries $\sigma_1^2, \dots, \sigma_r^2$ followed by zeros — the larger one has more zeros. So the nonzero eigenvalues agree, with eigenvectors $\mathbf{v}_i$ for one and $\mathbf{u}_i$ for the other, and the extra eigenvalues of the bigger matrix are all zero.
 :::
 
 ::: check

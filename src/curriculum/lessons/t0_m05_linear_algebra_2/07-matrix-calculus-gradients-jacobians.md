@@ -126,7 +126,7 @@ The number $\sqrt{\mu/r^3} = 1.131\times 10^{-3}\,\mathrm{rad/s}$ is the orbital
 
 ## Checking a Jacobian numerically
 
-Analytic Jacobians are where sign errors, dropped terms and wrong frames hide, and the filter will not tell you: it will simply be a little inconsistent, or diverge a week later. The defence is mechanical. Column $j$ of $\mathbf{J}$ is the derivative of $\mathbf{f}$ along $\mathbf{e}_j$, so
+Analytic Jacobians are where sign errors, dropped terms and wrong frames hide, and the filter will not tell you: it will quietly be a little inconsistent, or diverge a week later. The defence is mechanical. Column $j$ of $\mathbf{J}$ is the derivative of $\mathbf{f}$ along $\mathbf{e}_j$, so
 
 $$\mathbf{J}\mathbf{e}_j \approx \frac{\mathbf{f}(\mathbf{x} + h\mathbf{e}_j) - \mathbf{f}(\mathbf{x} - h\mathbf{e}_j)}{2h},$$
 

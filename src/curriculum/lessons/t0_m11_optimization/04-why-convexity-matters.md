@@ -95,7 +95,7 @@ A 1-D lander with $g = 9.80665\,\mathrm{m/s^2}$ and thrust-acceleration bounds $
 
 Now start from $v_0 = -21\,\mathrm{m/s}$. The velocity equations require $T_0 + T_1 = 21 + 19.61 = 40.6$, and the certificate is the multiplier vector that combines them with the bounds: add the two equalities (multiplier $1$ each) to get $T_0 + T_1 = 40.6$; add the two upper bounds $T_0 \le 20$ and $T_1 \le 20$ (multiplier $1$ each) to get $T_0 + T_1 \le 40$. Together: $40.6 \le 40$, a contradiction, so no feasible thrust history exists. Four multipliers, all equal to one, prove that the vehicle cannot stop in time regardless of what any solver might try.
 
-This is what a landing algorithm does with an infeasible return: the certificate is the signal to switch modes – extend the horizon, relax a constraint, or divert – and it arrives in the same bounded number of iterations as a solution would have. A nonconvex solver that fails to converge cannot tell you whether the problem was infeasible or whether it simply got stuck.
+This is what a landing algorithm does with an infeasible return: the certificate is the signal to switch modes – extend the horizon, relax a constraint, or divert – and it arrives in the same bounded number of iterations as a solution would have. A nonconvex solver that fails to converge cannot tell you whether the problem was infeasible or whether it merely got stuck.
 :::
 
 ::: key Three things convexity buys you

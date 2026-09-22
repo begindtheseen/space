@@ -274,7 +274,7 @@ A component's tensor is known about its own centre of mass at point $P$, and you
 :::
 
 ::: answer
-The parallel axis theorem's cross terms vanish only because one reference point is the centre of mass, so it cannot be applied directly between two arbitrary points. The correct route passes through the centre of mass $C$: first recover $\mathbf{I}_C = \mathbf{I}_P - m(\lVert\mathbf{d}_P\rVert^2\mathbf{I}_3 - \mathbf{d}_P\mathbf{d}_P^\top)$ with $\mathbf{d}_P$ from $C$ to $P$, then add the correction for $\mathbf{d}_Q$ from $C$ to $Q$. The colleague's formula overstates the result whenever $P \ne C$, because the correction terms do not simply add along a chain of points.
+The parallel axis theorem's cross terms vanish only because one reference point is the centre of mass, so it cannot be applied directly between two arbitrary points. The correct route passes through the centre of mass $C$: first recover $\mathbf{I}_C = \mathbf{I}_P - m(\lVert\mathbf{d}_P\rVert^2\mathbf{I}_3 - \mathbf{d}_P\mathbf{d}_P^\top)$ with $\mathbf{d}_P$ from $C$ to $P$, then add the correction for $\mathbf{d}_Q$ from $C$ to $Q$. The colleague's formula overstates the result whenever $P \ne C$, because the correction terms do not accumulate along a chain of points.
 :::
 
 ::: check

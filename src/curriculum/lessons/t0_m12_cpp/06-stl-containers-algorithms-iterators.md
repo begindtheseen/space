@@ -127,7 +127,7 @@ Any operation that can reallocate a `std::vector` — `push_back`, `insert`, `re
 
 ## Iterators
 
-An iterator is a generalised pointer: it refers to an element, `*it` reads or writes the element, and `++it` moves to the next one. Every container provides `begin()`, referring to the first element, and `end()`, referring to *one past* the last. The range is half-open, $[\text{begin}, \text{end})$, which is what makes an empty container simply one with `begin() == end()` and lets `end() - begin()` be the size. Range-for is sugar over this:
+An iterator is a generalised pointer: it refers to an element, `*it` reads or writes the element, and `++it` moves to the next one. Every container provides `begin()`, referring to the first element, and `end()`, referring to *one past* the last. The range is half-open, $[\text{begin}, \text{end})$, which is what makes an empty container one with `begin() == end()` and lets `end() - begin()` be the size. Range-for is sugar over this:
 
 ```cpp
 std::array<int, 5> ids{4, 8, 15, 16, 23};

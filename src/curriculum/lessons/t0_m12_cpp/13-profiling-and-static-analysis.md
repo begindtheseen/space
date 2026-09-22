@@ -261,7 +261,7 @@ clang-tidy reports `performance-unnecessary-value-param` on the by-value `sample
 :::
 
 ::: answer
-`consume` only reads `samples`, so take it by `const` reference to the vector, and no copy of the thousand elements is made (lesson 2, passing large objects you only read by `const T&`). The use after move is fixed by not reading `buffer` after `std::move(buffer)`: read the size before the move, or ask the callee, or simply drop the line; a moved-from object is valid but unspecified and the only sensible operations are assignment and destruction (lesson 3). If a project has `WarningsAsErrors` naming `bugprone-use-after-move`, the second finding fails the build until it is fixed.
+`consume` only reads `samples`, so take it by `const` reference to the vector, and no copy of the thousand elements is made (lesson 2, passing large objects you only read by `const T&`). The use after move is fixed by not reading `buffer` after `std::move(buffer)`: read the size before the move, or ask the callee, or drop the line; a moved-from object is valid but unspecified and the only sensible operations are assignment and destruction (lesson 3). If a project has `WarningsAsErrors` naming `bugprone-use-after-move`, the second finding fails the build until it is fixed.
 :::
 
 ::: check

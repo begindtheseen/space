@@ -136,7 +136,7 @@ $$
 \int_{r_0}^{r} \left(-\frac{\mu m}{r'^2}\right) dr' = \mu m \left(\frac{1}{r} - \frac{1}{r_0}\right).
 $$
 
-Lesson 4 will name this quantity minus the change in potential energy; for now it is simply the work gravity does along a radial path. The uniform-gravity approximation $m g h$ is its first-order version and is good to about 6 % for a 400 km climb — check the Oberth example's cousin below.
+Lesson 4 will name this quantity minus the change in potential energy; for now it is the work gravity does along a radial path. The uniform-gravity approximation $m g h$ is its first-order version and is good to about 6 % for a 400 km climb — check the Oberth example's cousin below.
 
 ::: example Lifting a payload to orbit altitude
 How much work does gravity do on a $1000\,\mathrm{kg}$ payload raised from the surface ($r_0 = 6378\,\mathrm{km}$) to 400 km altitude ($r = 6778\,\mathrm{km}$), and how does that compare with the payload's kinetic energy once it is in circular orbit there?

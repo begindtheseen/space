@@ -25,7 +25,7 @@ $$
 
 It is a linear function of time and nothing else. It is not a geometric angle you could measure on the orbit; it is time in disguise, measured in radians, and one full period corresponds to $M$ advancing by $2\pi$.
 
-The *eccentric anomaly* $E$ is the bridge between them: a geometric angle, defined on an auxiliary circle, that relates algebraically to $\nu$ and transcendentally-but-simply to $M$. The whole art is that $\nu \leftrightarrow E$ is closed-form trigonometry and $E \leftrightarrow M$ is Kepler's equation.
+The *eccentric anomaly* $E$ is the bridge between them: a geometric angle, defined on an auxiliary circle, that relates algebraically to $\nu$ and transcendentally but tractably to $M$. The whole art is that $\nu \leftrightarrow E$ is closed-form trigonometry and $E \leftrightarrow M$ is Kepler's equation.
 
 ## The eccentric anomaly
 
