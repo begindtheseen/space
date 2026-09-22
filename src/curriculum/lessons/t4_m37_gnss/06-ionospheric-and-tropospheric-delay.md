@@ -8,7 +8,7 @@ covers:
 
 The pseudorange lesson put two numbers into the error budget without justifying either: an ionosphere that costs $2$ to $30\,\mathrm{m}$ on L1, and a troposphere that costs $2.3\,\mathrm{m}$ at the zenith and far more near the horizon. Both are the same underlying fact — the signal does not travel through vacuum for the last few hundred kilometres of its path — but they behave so differently that they need two separate treatments and, as this lesson shows, only one of them can be removed by using a second frequency.
 
-The distinction is worth getting exactly right, because it decides how a receiver is engineered. A single-frequency receiver has no choice but to model the ionosphere and hope; a dual-frequency one can measure its way out of the ionosphere entirely, at a real cost in noise this lesson derives rather than asserts. Neither buys anything against the troposphere, which every receiver, however many frequencies it carries, must model. By the end of this lesson you will be able to compute both delays from first principles, not just quote their sizes.
+The distinction is worth getting exactly right, because it decides how a receiver is engineered. A single-frequency receiver has no choice but to model the ionosphere and hope; a dual-frequency one can measure its way out of the ionosphere entirely, at a real cost in noise this lesson derives rather than asserts. Neither buys anything against the troposphere, which every receiver, however many frequencies it carries, must model. By the end of this lesson you will be able to compute both delays from first principles, not only quote their sizes.
 
 ## The ionosphere: a dispersive plasma
 
@@ -97,7 +97,7 @@ $$
 \rho_1 = R + I_1 + \varepsilon_1, \qquad \rho_2 = R + I_2 + \varepsilon_2,
 $$
 
-with $R$ the common (frequency-independent) geometric-plus-clock range and $I_1, I_2$ the ionospheric delays on each frequency, related by the dispersive scaling just derived: $I_2 = I_1\,(f_1/f_2)^2$. Look for a linear combination $\rho_{\mathrm{IF}} = c_1\rho_1 + c_2\rho_2$ that reproduces $R$ exactly. Two conditions pin down $c_1$ and $c_2$: the combination must leave $R$ unscaled, $c_1+c_2=1$, and it must cancel the ionosphere, $c_1 I_1 + c_2 I_2 = 0$. Substituting $I_2 = I_1(f_1/f_2)^2$ into the second condition gives $c_1 = -c_2(f_1/f_2)^2$; combining with the first,
+with $R$ the common (frequency-independent) geometric-plus-clock range and $I_1, I_2$ the ionospheric delays on each frequency, related by the dispersive scaling derived above: $I_2 = I_1\,(f_1/f_2)^2$. Look for a linear combination $\rho_{\mathrm{IF}} = c_1\rho_1 + c_2\rho_2$ that reproduces $R$ exactly. Two conditions pin down $c_1$ and $c_2$: the combination must leave $R$ unscaled, $c_1+c_2=1$, and it must cancel the ionosphere, $c_1 I_1 + c_2 I_2 = 0$. Substituting $I_2 = I_1(f_1/f_2)^2$ into the second condition gives $c_1 = -c_2(f_1/f_2)^2$; combining with the first,
 
 $$
 c_2\left(1 - \frac{f_1^2}{f_2^2}\right) = 1 \implies c_2 = \frac{-f_2^2}{f_1^2-f_2^2}, \qquad c_1 = 1-c_2 = \frac{f_1^2}{f_1^2-f_2^2},
@@ -152,7 +152,7 @@ Ionosphere-free combination: $\rho_{\mathrm{IF}} = (f_1^2\rho_1 - f_2^2\rho_2)/(
 
 ## The troposphere: not dispersive, must be modelled
 
-The neutral atmosphere below the ionosphere — the troposphere and stratosphere together, conventionally just called "the troposphere" in GNSS — also slows the signal, but for a completely different reason: refraction by neutral gas molecules and water vapour, not by free electrons. At radio frequencies this refractivity does not depend on frequency, so $I_1 = I_2$ and the ionosphere-free combination's whole trick — subtracting two measurements that disagree because of a $1/f^2$ term — has nothing to work with. **Dual-frequency operation does nothing for the troposphere.** It must be modelled, exactly as the single-frequency ionosphere is, but there is no cheap alternative to modelling available to any receiver, however many frequencies it carries.
+The neutral atmosphere below the ionosphere — the troposphere and stratosphere together, conventionally called "the troposphere" in GNSS — also slows the signal, but for a completely different reason: refraction by neutral gas molecules and water vapour, not by free electrons. At radio frequencies this refractivity does not depend on frequency, so $I_1 = I_2$ and the ionosphere-free combination's whole trick — subtracting two measurements that disagree because of a $1/f^2$ term — has nothing to work with. **Dual-frequency operation does nothing for the troposphere.** It must be modelled, exactly as the single-frequency ionosphere is, but there is no cheap alternative to modelling available to any receiver, however many frequencies it carries.
 
 The Saastamoinen model splits the zenith delay into a **hydrostatic** (dry) part, from the bulk of the atmosphere's mass and accurately predictable from surface pressure alone, and a **wet** part, from water vapour, poorly correlated with any single surface measurement because water vapour is patchy and does not follow a simple scale height. The hydrostatic zenith delay is
 

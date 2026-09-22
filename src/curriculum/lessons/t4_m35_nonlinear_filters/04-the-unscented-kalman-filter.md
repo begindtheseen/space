@@ -94,10 +94,23 @@ one eigenvalue is a large **negative** number. $\mathbf P$ is no longer a valid 
 :::
 
 ```python
-# eig(P_post) computed from a real, otherwise well-behaved UKF run, seed
-# and scenario as in the divergence lesson, at the update just after a
-# 5.75 m closest approach:
-# [-12055.499, 0.0523, 1.8353, 9.0982]
+import numpy as np
+
+# Pm and K exactly as computed by a real UKF update, taken from a scenario
+# and seed identical to the divergence lesson's, at the update immediately
+# after a 5.75 m closest approach to the sensor.
+Pm = np.array([[2311.08070, 763.792606, 37.3242880, 22.4192304],
+               [763.792606, 262.144289, 10.8200812, 7.97395352],
+               [37.3242880, 10.8200812, 2.61190903, 0.717172430],
+               [22.4192304, 7.97395352, 0.717172430, 0.417271918]])
+K = np.array([-69.67653628, -23.24181258, -1.09186787, -0.68836662])
+Pzz = 2.7092214208096266
+
+P_post = Pm - np.outer(K, K)*Pzz
+print(np.linalg.eigvalsh(Pm))
+print(np.linalg.eigvalsh(P_post))
+# [5.23037707e-02 1.83524572e+00 9.08949668e+00 2.56527712e+03]
+# [-1.20554990e+04  5.23037743e-02  1.83525378e+00  9.09815052e+00]
 ```
 
 The fix is architectural, not a patch: instead of propagating $\mathbf P$ itself and hoping the update stays positive definite, the **square-root UKF** propagates a matrix square root $\mathbf S$ directly (so $\mathbf P=\mathbf S\mathbf S^{\mathsf T}$ is positive semi-definite *by construction*, for any $\mathbf S$ at all) and updates $\mathbf S$ using numerically stable rank-one Cholesky updates and downdates instead of ever reassembling $\mathbf P$ from a sum that could go negative. This costs a little more bookkeeping per cycle and removes the failure mode in the example above entirely — the same reasoning, and largely the same tools (QR and Cholesky factor updates), that the numerically-stable-formulations lesson used to motivate square-root and $\mathbf U\mathbf D\mathbf U^{\mathsf T}$ forms for the linear Kalman filter. The trigger is different here — extreme UKF weights rather than a poorly-conditioned $\mathbf H$ — but the remedy is the same family of idea: never let the algorithm depend on a subtraction that arithmetic alone is trusted to keep positive.

@@ -158,7 +158,7 @@ Show algebraically why a bias vector of the form $\mathbf{G}\boldsymbol\delta$ p
 :::
 
 ::: answer
-The residual projector is $\mathbf{P}=\mathbf{I}-\mathbf{G}(\mathbf{G}^{\mathsf T}\mathbf{G})^{-1}\mathbf{G}^{\mathsf T}$. Applying it to $\mathbf{G}\boldsymbol\delta$: $\mathbf{P}\mathbf{G}\boldsymbol\delta = \big[\mathbf{G}-\mathbf{G}(\mathbf{G}^{\mathsf T}\mathbf{G})^{-1}\mathbf{G}^{\mathsf T}\mathbf{G}\big]\boldsymbol\delta = \big[\mathbf{G}-\mathbf{G}(\mathbf{G}^{\mathsf T}\mathbf{G})^{-1}(\mathbf{G}^{\mathsf T}\mathbf{G})\big]\boldsymbol\delta = [\mathbf{G}-\mathbf{G}]\boldsymbol\delta = \mathbf{0}$, using $(\mathbf{G}^{\mathsf T}\mathbf{G})^{-1}(\mathbf{G}^{\mathsf T}\mathbf{G})=\mathbf{I}$. This holds for every $\mathbf{G}$ and every $\boldsymbol\delta$, not just for a particular geometry or bias size — it is a structural fact about least squares, not a property that better redundancy or a tighter threshold can work around.
+The residual projector is $\mathbf{P}=\mathbf{I}-\mathbf{G}(\mathbf{G}^{\mathsf T}\mathbf{G})^{-1}\mathbf{G}^{\mathsf T}$. Applying it to $\mathbf{G}\boldsymbol\delta$: $\mathbf{P}\mathbf{G}\boldsymbol\delta = \big[\mathbf{G}-\mathbf{G}(\mathbf{G}^{\mathsf T}\mathbf{G})^{-1}\mathbf{G}^{\mathsf T}\mathbf{G}\big]\boldsymbol\delta = \big[\mathbf{G}-\mathbf{G}(\mathbf{G}^{\mathsf T}\mathbf{G})^{-1}(\mathbf{G}^{\mathsf T}\mathbf{G})\big]\boldsymbol\delta = [\mathbf{G}-\mathbf{G}]\boldsymbol\delta = \mathbf{0}$, using $(\mathbf{G}^{\mathsf T}\mathbf{G})^{-1}(\mathbf{G}^{\mathsf T}\mathbf{G})=\mathbf{I}$. This holds for every $\mathbf{G}$ and every $\boldsymbol\delta$, not only for a particular geometry or bias size — it is a structural fact about least squares, not a property that better redundancy or a tighter threshold can work around.
 :::
 
 ::: check
@@ -170,11 +170,11 @@ Path loss at $2\,\mathrm{km}$: $L=20\log_{10}(4\pi\times2000/0.1903)=102.4\,\mat
 :::
 
 ::: check
-Why does a receiver that has just lost lock to a jammer know something is wrong, while a receiver being fed a competent spoof typically does not?
+Why does a receiver that has recently lost lock to a jammer know something is wrong, while a receiver being fed a competent spoof typically does not?
 :::
 
 ::: answer
-Jamming raises the noise floor until the correlator peaks a tracking loop depends on simply disappear, so the receiver's own carrier-to-noise measurements and loss-of-lock indicators report the problem directly — there is no signal to hide behind. A competent spoofer supplies a strong, internally consistent signal that the tracking loops lock onto normally and that, if crafted as a coordinated bias in the column space of the geometry matrix, produces a residual identical to a genuine fix; every ordinary receiver health check, built from the same pseudoranges the spoof controls, has nothing to disagree with.
+Jamming raises the noise floor until the correlator peaks a tracking loop depends on disappear outright, so the receiver's own carrier-to-noise measurements and loss-of-lock indicators report the problem directly — there is no signal to hide behind. A competent spoofer supplies a strong, internally consistent signal that the tracking loops lock onto normally and that, if crafted as a coordinated bias in the column space of the geometry matrix, produces a residual identical to a genuine fix; every ordinary receiver health check, built from the same pseudoranges the spoof controls, has nothing to disagree with.
 :::
 
 ## Summary

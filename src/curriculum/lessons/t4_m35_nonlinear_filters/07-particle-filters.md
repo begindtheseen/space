@@ -35,7 +35,7 @@ A vehicle flies at a known, roughly constant altitude and airspeed along a track
 | $20$ | $1.000$ | $0.000$ | $1885.9$ |
 | $30$ | $1.000$ | $0.000$ | $1244.5$ |
 
-For the first fifteen seconds, weight is spread across both hypotheses — at $t=10\,\mathrm s$ the filter actually favors the *wrong* valley, $75\%$ to $25\%$, which is exactly the honest behavior a genuinely ambiguous measurement should produce, not a bug. A small feature in the terrain unique to the true valley's side (absent near the other valley) breaks the tie once the vehicle has flown far enough to reach it: by $t=20\,\mathrm s$ every particle consistent with the wrong valley has been weighted essentially to zero, and the filter has correctly resolved which valley it was in without ever having been forced, the way a single-Gaussian filter would be, to commit to one hypothesis before the data justified it.
+For the first fifteen seconds, weight is spread across both hypotheses — at $t=10\,\mathrm s$ the filter actually favors the *wrong* valley, $75\%$ to $25\%$, which is exactly the honest behavior a genuinely ambiguous measurement should produce, not a bug. A small feature in the terrain unique to the true valley's side (absent near the other valley) breaks the tie once the vehicle has flown far enough to reach it: by $t=20\,\mathrm s$ every particle consistent with the wrong valley has been weighted essentially to zero, and the filter has correctly resolved which valley it was in without ever having been forced, the way a single-Gaussian filter would be, to commit to one hypothesis before the data justified it. (This run resamples whenever $N_\text{eff}$ falls below $N/2$ — the standard practice the rest of this lesson explains — which is why $N_\text{eff}$ never collapses toward $1$ even while the cloud is genuinely representing two live hypotheses.)
 :::
 
 ```python
@@ -45,6 +45,11 @@ def terrain(s):
     s = np.asarray(s, dtype=float)
     dmin = np.minimum(np.abs(s-6.0), np.abs(s-14.0))
     return 500.0 - 80.0*np.exp(-(dmin**2)/(2*0.6**2)) + 15.0*np.exp(-((s-8.5)**2)/(2*0.4**2))
+
+def systematic_resample(w, u):
+    N = len(w); positions = (np.arange(N)+u)/N
+    cumsum = np.cumsum(w); cumsum[-1] = 1.0
+    return np.searchsorted(cumsum, positions)
 
 rng = np.random.default_rng(11)
 N, A0, v, dt = 2000, 1000.0, 0.1, 1.0
@@ -60,10 +65,15 @@ for k in range(70):
     resid = z - (A0 - terrain(particles))
     w_unnorm = np.exp(-0.5*(resid/sigma_alt)**2) * weights
     weights = w_unnorm/np.sum(w_unnorm)
+    ess = 1.0/np.sum(weights**2)
     ref1, ref2 = 6.0+v*t, 14.0+v*t
     near1 = np.abs(particles-ref1) < np.abs(particles-ref2)
     if t in (1, 5, 10, 15, 20, 30):
-        print(t, weights[near1].sum(), weights[~near1].sum(), 1.0/np.sum(weights**2))
+        print(t, weights[near1].sum(), weights[~near1].sum(), ess)
+    if ess < N/2:                       # resample only when needed -- see below
+        idx = systematic_resample(weights, rng.uniform())
+        particles = particles[idx]
+        weights = np.full(N, 1.0/N)
 # 1  0.3786 0.6214  70.8
 # 5  0.3140 0.6860  1277.7
 # 10 0.2480 0.7520  1986.7

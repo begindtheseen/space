@@ -25,17 +25,7 @@ Recall the mechanism from the divergence lesson: at step 26 the EKF's predicted 
 The UKF is not magically more accurate at every instant — at step 27 its point error ($28.49\,\mathrm m$) is actually larger than the EKF's ($6.44\,\mathrm m$), because the sigma points genuinely sample a wide, honestly-uncertain region near a sharp measurement nonlinearity and the resulting update is more cautious. What never happens, at any step, is a collapse: $\operatorname{tr}\mathbf P$ for the UKF stays in the hundreds to low thousands throughout, and NEES never exceeds about $3$ across this entire window — against an ideal value of $4$ for a four-state filter, essentially perfect. By step 40 the UKF's position error has fallen to $8.34\,\mathrm m$, continuing to improve as more data arrives, while the EKF remains stuck near $26\,\mathrm m$, unable to use later measurements because its own gain has been throttled by the covariance it wrongly collapsed thirteen steps earlier.
 :::
 
-```python
-# Same scenario, F, Q, H, R as the divergence lesson; UKF sigma points as in
-# the previous lesson. Selected rows, printed directly from the run:
-# step  r_true  err_ekf  err_ukf   NEES_ekf  NEES_ukf   trP_ekf  trP_ukf
-#   25   35.88    31.74    48.90      1.13      1.42     1587.1   2697.1
-#   26   25.53    16.50     2.66      3.94      2.73      965.5   2088.6
-#   27   15.53     6.44    28.49    519.29      2.39        2.5   1325.5
-#   30   19.64     4.33    19.64    184.56      1.75        0.7    561.0
-#   35   71.66    15.94    10.42    137.98      2.75        3.3    173.7
-#   40  122.70    26.42     8.34     97.38      1.15       11.7    334.7
-```
+The EKF and UKF implementations, and the $\mathbf F,\mathbf Q,\mathbf H,\mathbf R$ they share, are exactly the ones the divergence and unscented-transform lessons already gave in full; this lesson only changes which sequence of measurements both filters are pointed at, and both are pointed at the identical one.
 
 ## The characteristic that decides
 

@@ -108,7 +108,7 @@ What is the main integrity risk deep coupling introduces that a loosely coupled 
 :::
 
 ::: answer
-In a loosely coupled system, a bad GNSS fix is just one more input to an outer filter, which can down-weight, reject, or ignore it while the inertial solution continues independently — a clean firewall. Deep coupling removes that firewall by design, folding GNSS measurements directly into the same state the inertial solution depends on, so a fault the integrity lesson's slope analysis showed produces little or no residual — precisely the kind of fault ordinary consistency checks cannot catch — is no longer confined to a position estimate the vehicle could fall back on inertial navigation to override; it can corrupt the shared state the inertial solution itself is now built from.
+In a loosely coupled system, a bad GNSS fix is one more input to an outer filter, which can down-weight, reject, or ignore it while the inertial solution continues independently — a clean firewall. Deep coupling removes that firewall by design, folding GNSS measurements directly into the same state the inertial solution depends on, so a fault the integrity lesson's slope analysis showed produces little or no residual — precisely the kind of fault ordinary consistency checks cannot catch — is no longer confined to a position estimate the vehicle could fall back on inertial navigation to override; it can corrupt the shared state the inertial solution itself is now built from.
 :::
 
 ## Summary

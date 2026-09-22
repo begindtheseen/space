@@ -66,7 +66,7 @@ $$
 At a solid $C/N_0=35\,\mathrm{dB\text{-}Hz}$ and $T=20\,\mathrm{ms}$, PLL jitter climbs from $2.29^\circ$ at $B_n=5\,\mathrm{Hz}$ to $5.11^\circ$ at $B_n=25\,\mathrm{Hz}$; at a weaker $C/N_0=30\,\mathrm{dB\text{-}Hz}$, from $4.10^\circ$ to $9.17^\circ$ over the same range. On the code side, at $C/N_0=45\,\mathrm{dB\text{-}Hz}$ and a standard one-chip correlator, DLL jitter runs $0.82\,\mathrm{m}$ at $B_n=0.5\,\mathrm{Hz}$ to $1.65\,\mathrm{m}$ at $B_n=2\,\mathrm{Hz}$ — consistent with the pseudorange lesson's "$0.1$ to $1\,\mathrm{m}$" receiver-noise entry at the narrower end. Narrowing the correlator to $d=0.1\,\mathrm{chip}$, exactly the narrow-correlator change the multipath lesson credited with a ten-fold multipath reduction, *also* buys a $\sqrt{10}=3.16$-fold reduction in this thermal term: $0.26\,\mathrm{m}$ instead of $0.82\,\mathrm{m}$ at $B_n=0.5\,\mathrm{Hz}$. A narrow correlator is close to a free lunch against both multipath and noise; a wide loop bandwidth is not free against anything — it always trades one error source for another.
 :::
 
-Put the two effects together and the trade is exact, not just qualitative: too narrow a bandwidth and a jerk transient like the one above blows through lock; too wide and ordinary thermal noise, worse still on a weak or side-lobe signal, dominates the error budget and can itself push a marginal link past its own lock threshold. Choosing $\omega_n$ (and its associated $B_n$) is choosing a point on this curve for the worst dynamics and the weakest signal the receiver is actually expected to survive at the same time — a launch vehicle's receiver, needing both the high $\omega_n$ this lesson's jerk example demands and enough margin against the weak, plume-affected signal the launch-vehicle lesson described, is choosing from a noticeably harder region of that trade than a static ground receiver ever has to.
+Put the two effects together and the trade is exact, not only qualitative: too narrow a bandwidth and a jerk transient like the one above blows through lock; too wide and ordinary thermal noise, worse still on a weak or side-lobe signal, dominates the error budget and can itself push a marginal link past its own lock threshold. Choosing $\omega_n$ (and its associated $B_n$) is choosing a point on this curve for the worst dynamics and the weakest signal the receiver is actually expected to survive at the same time — a launch vehicle's receiver, needing both the high $\omega_n$ this lesson's jerk example demands and enough margin against the weak, plume-affected signal the launch-vehicle lesson described, is choosing from a noticeably harder region of that trade than a static ground receiver ever has to.
 
 ::: key
 Third-order loop steady-state jerk error: $\theta_e=J/\omega_n^3$, $J=2\pi\,\ddot f_d$. PLL thermal jitter $\sigma_{\mathrm{PLL}}=\sqrt{(B_n/(C/N_0))(1+1/(2T\,C/N_0))}$; DLL jitter $\sigma_{\mathrm{DLL}}=\sqrt{B_n d/(2\,C/N_0)}$ chips. Widening bandwidth shrinks dynamic stress error and grows thermal noise, in both loops, always — there is no bandwidth that minimises both at once.
@@ -103,7 +103,7 @@ $\sigma_{\mathrm{PLL}}=\sqrt{(8/10^{3.3})(1+1/(2\times0.02\times10^{3.3}))}$ rad
 :::
 
 ::: check
-Explain, without further calculation, why there is no single loop bandwidth that is simply "best" for a tracking loop.
+Explain, without further calculation, why there is no single loop bandwidth that is unconditionally "best" for a tracking loop.
 :::
 
 ::: answer

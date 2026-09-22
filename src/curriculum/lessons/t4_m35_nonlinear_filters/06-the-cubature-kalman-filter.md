@@ -75,6 +75,15 @@ has a Frobenius error against the five-million-sample Monte Carlo truth of $1553
 :::
 
 ```python
+import numpy as np
+
+def cubature_points(x, P):
+    n = len(x); S = np.linalg.cholesky(n*P)
+    pts = np.zeros((2*n, n))
+    for i in range(n):
+        pts[i] = x+S[:, i]; pts[n+i] = x-S[:, i]
+    return pts, np.full(2*n, 1.0/(2*n))
+
 def polar_to_cart(rt):
     r, th = rt
     return np.array([r*np.cos(th), r*np.sin(th)])

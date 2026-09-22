@@ -63,7 +63,7 @@ print("main-lobe-illuminated (<=30 deg):", len(main_lobe), " side-lobe:", len(si
 
 Using $30^\circ$ as a rough stand-in for the edge of a GPS antenna's main coverage beam (a few degrees more generous than the bare $13.9^\circ$ Earth-disk angle, in the spirit of the real margin built into the design), only $4$ of the $23$ visible satellites fall inside it. The other $19$ are reachable only through the antenna's side lobes — by design, tens of decibels weaker than the main beam, the "roughly $15$ to $20\,\mathrm{dB}$" figure this module has attached to space-based GNSS from the start.
 
-::: example Why a high-sensitivity receiver needs the side lobes, not just tolerates them
+::: example Why a high-sensitivity receiver needs the side lobes, not only tolerates them
 Compute dilution of precision, exactly as the DOP lesson defined it, for both populations:
 
 ```python
@@ -114,13 +114,13 @@ $74.2\,\mathrm{kHz}$ at GTO perigee, fifteen times the ground receiver's design 
 
 ## The reacquisition problem
 
-Wider Doppler and weaker signal compound where a receiver needs speed most: reacquiring lock after losing it, whether from an attitude manoeuvre that swings the antenna away from the constellation, an eclipse, or simply flying through a patch of sky with too few usable satellites. Acquisition is a search over two dimensions, code phase and Doppler frequency, and the number of cells to search scales with the *span* of each. A ground receiver searching $\pm4.9\,\mathrm{kHz}$ in $500\,\mathrm{Hz}$ bins (a resolution set by roughly a millisecond of coherent integration) covers about $20$ Doppler bins per code-phase hypothesis; a receiver at GTO perigee searching $\pm74.2\,\mathrm{kHz}$ at the same resolution covers close to $300$ — a search space fifteen times larger, at the same per-cell dwell time, for the same number of parallel correlators.
+Wider Doppler and weaker signal compound where a receiver needs speed most: reacquiring lock after losing it, whether from an attitude manoeuvre that swings the antenna away from the constellation, an eclipse, or flying through a patch of sky with too few usable satellites. Acquisition is a search over two dimensions, code phase and Doppler frequency, and the number of cells to search scales with the *span* of each. A ground receiver searching $\pm4.9\,\mathrm{kHz}$ in $500\,\mathrm{Hz}$ bins (a resolution set by roughly a millisecond of coherent integration) covers about $20$ Doppler bins per code-phase hypothesis; a receiver at GTO perigee searching $\pm74.2\,\mathrm{kHz}$ at the same resolution covers close to $300$ — a search space fifteen times larger, at the same per-cell dwell time, for the same number of parallel correlators.
 
 ::: example Fifteen times the search, at a lower starting signal
 $$
 \frac{2\times74.2\,\mathrm{kHz}}{2\times4.9\,\mathrm{kHz}} = 15.1.
 $$
-A receiver above the constellation facing a cold reacquisition — no prior estimate of its own Doppler — is fifteen times slower to lock, or needs fifteen times the correlator hardware to hold the same reacquisition time, than a ground receiver with an identical search algorithm, and it is doing that search on signals that started $15$ to $20\,\mathrm{dB}$ weaker to begin with. Neither factor is small on its own; together they are why a receiver designed only against a ground Doppler and power budget can lose lock above the constellation and simply never find it again.
+A receiver above the constellation facing a cold reacquisition — no prior estimate of its own Doppler — is fifteen times slower to lock, or needs fifteen times the correlator hardware to hold the same reacquisition time, than a ground receiver with an identical search algorithm, and it is doing that search on signals that started $15$ to $20\,\mathrm{dB}$ weaker to begin with. Neither factor is small on its own; together they are why a receiver designed only against a ground Doppler and power budget can lose lock above the constellation and never find it again.
 :::
 
 Nothing about the search geometry changes this on its own — what changes it is *not searching blindly*: if the receiver's own velocity is known even approximately, from orbit propagation or from an inertial measurement, the Doppler search window collapses from the full $\pm74\,\mathrm{kHz}$ span to a band around the predicted value, and the same fifteen-fold penalty shrinks with it. That is precisely what vector tracking and deep coupling, taken up at the end of this module, are built to exploit, and it is also why a spacecraft's attitude and orbit determination system and its GNSS receiver are rarely designed in isolation from each other.

@@ -48,7 +48,7 @@ $$
 \delta\mathbf{x} = \tau\,\boldsymbol\omega_e \times \mathbf{x}_r = \omega_e\tau\,(-y_r,\ x_r,\ 0).
 $$
 
-Moving the receiver by $\delta\mathbf{x}$ changes the range to satellite $i$, to first order, by $-\mathbf{e}_i \cdot \delta\mathbf{x}$ — the same linearisation just derived, applied to a displacement of the receiver instead of the satellite. Carrying out the dot product,
+Moving the receiver by $\delta\mathbf{x}$ changes the range to satellite $i$, to first order, by $-\mathbf{e}_i \cdot \delta\mathbf{x}$ — the same linearisation derived above, applied to a displacement of the receiver instead of the satellite. Carrying out the dot product,
 
 $$
 -\mathbf{e}_i\cdot\delta\mathbf{x} = -\frac{\omega_e\tau}{\rho_i}\Big[-y_r(x_{s,i}-x_r) + x_r(y_{s,i}-y_r)\Big] = \frac{\omega_e\tau}{\rho_i}\big(x_{s,i}\,y_r - y_{s,i}\,x_r\big),
