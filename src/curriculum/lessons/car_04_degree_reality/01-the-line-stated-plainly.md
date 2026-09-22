@@ -1,7 +1,7 @@
 ---
 id: l01-the-line-stated-plainly
 title: "The degree line, stated plainly"
-minutes: 17
+minutes: 21
 covers:
   - "why the basic-qualification line is enforced at the recruiter stage rather than at interview"
 ---
@@ -34,7 +34,7 @@ Three different things: what a posting states (the printed line); what that line
 
 A typical hiring pipeline runs, after an application lands, through a recruiter screen, one or more technical conversations with engineers from the actual team, and eventually a hiring decision. Every stage after the first consumes time from people who are not screening resumes for a living — an engineer reading a take-home submission, a panel blocking out an afternoon, a hiring manager weighing a final call. That time is a real cost, paid whether or not the candidate is eventually hired.
 
-A degree-field requirement is, among the things a resume can be checked against, unusually cheap and unambiguous to check. It requires no judgment about the quality of a project or the fit of a candidate's experience to a team's current problems — only reading one line and comparing it to a short list of acceptable fields. That combination — cheap, unambiguous, and stated as a firm requirement rather than a preference — is exactly the profile of a criterion applied first, before the genuinely expensive stages, for any role that carries it. This is not a claim about any one company's software; it is the ordinary economics of screening at volume, the same reasoning behind confirming other basic logistics early rather than after two technical rounds. Asking late means paying the cost of the stages in between for every candidate who does not meet the line. Asking early means that cost is paid only for candidates who could actually receive an offer.
+A degree-field requirement is unusually cheap and unambiguous to check against a resume. It requires no judgment about a project's quality or a candidate's fit to a team's problems — only reading one line and comparing it to a short list of fields. That combination — cheap, unambiguous, stated as a requirement rather than a preference — is exactly the profile of a criterion applied first, before the genuinely expensive stages, for any role that carries it. This is not a claim about one company's software; it is the ordinary economics of screening at volume. Asking late means paying for the stages in between on every candidate who does not meet the line. Asking early means that cost falls only on candidates who could actually receive an offer.
 
 The direct consequence for you is this: for a role with a bachelor's degree stated as a basic qualification and no in-lieu clause, the degree line is very unlikely to be the thing that comes up in an interview, because a resume that does not clear it is very unlikely to produce an interview in the first place. The place to solve this problem is not "prepare a better answer for when it's asked." It is earlier than that.
 
@@ -75,7 +75,7 @@ A candidate reasons: "the posting says 'engineering discipline,' and my degree i
 :::
 
 ::: answer
-The reasoning conflates what the posting states with what an individual might decide to do with a borderline case. Whether "my degree is technically an engineering discipline" holds up depends on how closely the actual degree title and content match the field language the posting uses, and a screener working through volume applies the printed line rather than making a case-by-case judgment call for every borderline title. The reasoning would be wrong in practice whenever the degree's actual name or content sits far enough from the posting's named fields that a screener reading quickly does not recognize it as a match — which is a real risk for genuinely adjacent but differently named fields, and not something the word "technically" resolves on its own.
+The reasoning conflates what the posting states with what an individual might decide to do with a borderline case. Whether "technically an engineering discipline" holds up depends on how closely the degree's actual title matches the posting's field language, and a screener working through volume applies the printed line rather than making a case-by-case judgment call for every borderline title. It would be wrong in practice whenever the degree's name sits far enough from the posting's named fields that a screener reading quickly does not recognize it as a match — a real risk for genuinely adjacent but differently named fields, not something the word "technically" resolves on its own.
 :::
 
 ::: check

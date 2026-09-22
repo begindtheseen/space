@@ -84,7 +84,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-the-line-stated-plainly",
       "title": "The degree line, stated plainly",
-      "minutes": 17,
+      "minutes": 21,
       "covers": [
         "why the basic-qualification line is enforced at the recruiter stage rather than at interview"
       ],
