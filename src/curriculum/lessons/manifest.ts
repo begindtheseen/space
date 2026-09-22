@@ -3709,6 +3709,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Target orbit specification and the terminal constraint set"
       ],
       "file": "t5_m41_ascent_guidance/07-target-orbit-specification.md"
+    },
+    {
+      "id": "l08-tvc-allocation-and-engine-out",
+      "title": "Thrust vector control allocation and engine-out contingency",
+      "minutes": 25,
+      "covers": [
+        "Thrust vector control allocation and engine-out contingency"
+      ],
+      "file": "t5_m41_ascent_guidance/08-tvc-allocation-and-engine-out.md"
     }
   ]
 }
@@ -4058,11 +4067,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t5_m41_ascent_guidance": {
-    "covered": 7,
+    "covered": 8,
     "total": 12,
     "complete": false,
     "missing": [
-      "Thrust vector control allocation and engine-out contingency",
       "Load relief and its interaction with guidance",
       "Ascent trajectory optimization as an offline problem feeding onboard guidance",
       "Day-of-launch trajectory updates from measured winds",
