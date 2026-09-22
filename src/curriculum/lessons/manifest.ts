@@ -3691,6 +3691,17 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       "file": "t4_m39_orbit_determination/13-relative-od-and-autonomous-onboard-od.md"
     }
   ],
+  "t5_m40_guidance_fundamentals": [
+    {
+      "id": "l01-guidance-navigation-control-decomposition",
+      "title": "The guidance, navigation and control decomposition",
+      "minutes": 20,
+      "covers": [
+        "The guidance / navigation / control decomposition and the loop rate of each"
+      ],
+      "file": "t5_m40_guidance_fundamentals/01-guidance-navigation-control-decomposition.md"
+    }
+  ],
   "t5_m41_ascent_guidance": [
     {
       "id": "l01-ascent-phases",
@@ -3828,6 +3839,17 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Pontryagin's Minimum Principle, the stationarity condition, and transversality conditions"
       ],
       "file": "t5_m42_trajectory_optimization/03-pontryagin-transversality.md"
+    }
+  ],
+  "t6_m46_6dof_simulation": [
+    {
+      "id": "l01-five-box-decomposition",
+      "title": "The five-box decomposition",
+      "minutes": 20,
+      "covers": [
+        "The five-box decomposition: plant, sensors, GNC, actuators, environment — and why the interfaces between them are the whole design"
+      ],
+      "file": "t6_m46_6dof_simulation/01-the-five-box-decomposition.md"
     }
   ]
 }
@@ -4152,11 +4174,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t5_m40_guidance_fundamentals": {
-    "covered": 0,
+    "covered": 1,
     "total": 12,
     "complete": false,
     "missing": [
-      "The guidance / navigation / control decomposition and the loop rate of each",
       "Open-loop vs closed-loop guidance; reference-trajectory following vs explicit guidance",
       "Line-of-sight guidance and pursuit guidance",
       "Proportional navigation: derivation, the navigation constant N, and the LOS-rate nulling principle",
@@ -4281,11 +4302,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t6_m46_6dof_simulation": {
-    "covered": 0,
+    "covered": 1,
     "total": 18,
     "complete": false,
     "missing": [
-      "The five-box decomposition: plant, sensors, GNC, actuators, environment — and why the interfaces between them are the whole design",
       "Fixed-step vs variable-step integration, and why a closed loop with a digital controller wants a fixed step",
       "Running the plant at a fine step while the flight software runs at its true rate, with zero-order hold between updates",
       "Frame and unit discipline: naming every vector by its frame, and the conventions that stop a sign error becoming a three-week debugging session",
