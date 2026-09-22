@@ -662,6 +662,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Declaration vs definition, the one-definition rule, inline, internal linkage"
       ],
       "file": "cod_cpp_01_basics/02-translation-units-and-the-odr.md"
+    },
+    {
+      "id": "l03-reading-linker-errors-and-make",
+      "title": "Reading a linker error, and a Makefile that prevents them",
+      "minutes": 20,
+      "covers": [
+        "Reading a linker error: undefined reference, multiple definition"
+      ],
+      "file": "cod_cpp_01_basics/03-reading-linker-errors-and-make.md"
     }
   ],
   "t0_m01_algebra_precalc": [
@@ -6653,11 +6662,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "cod_cpp_01_basics": {
-    "covered": 4,
+    "covered": 5,
     "total": 15,
     "complete": false,
     "missing": [
-      "Reading a linker error: undefined reference, multiple definition",
       "Fundamental types; fixed-width types from cstdint; size_t",
       "Integer promotion, signed/unsigned pitfalls, signed overflow as undefined behaviour",
       "const, constexpr, consteval, auto",
