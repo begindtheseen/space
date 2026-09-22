@@ -307,7 +307,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-the-determinant",
       "title": "The determinant and what it measures",
-      "minutes": 18,
+      "minutes": 19,
       "covers": [
         "determinant and its geometric meaning"
       ],
@@ -316,7 +316,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-orthogonality-gram-schmidt-qr",
       "title": "Orthogonality, Gram–Schmidt and QR",
-      "minutes": 23,
+      "minutes": 19,
       "covers": [
         "orthogonality, Gram-Schmidt, QR"
       ],
@@ -415,6 +415,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "the definite integral and the fundamental theorem of calculus"
       ],
       "file": "t0_m06_calculus_single/08-definite-integral-fundamental-theorem.md"
+    },
+    {
+      "id": "l09-substitution-and-integration-by-parts",
+      "title": "Substitution and integration by parts",
+      "minutes": 23,
+      "covers": [
+        "integration by parts and substitution"
+      ],
+      "file": "t0_m06_calculus_single/09-substitution-and-integration-by-parts.md"
     }
   ],
   "t0_m07_calculus_multi": [
@@ -481,6 +490,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "line and surface integrals"
       ],
       "file": "t0_m07_calculus_multi/07-line-and-surface-integrals.md"
+    },
+    {
+      "id": "l08-div-curl-laplacian",
+      "title": "Divergence, curl and the Laplacian",
+      "minutes": 25,
+      "covers": [
+        "divergence, curl, Laplacian"
+      ],
+      "file": "t0_m07_calculus_multi/08-div-curl-laplacian.md"
     }
   ],
   "t0_m08_odes": [
@@ -744,7 +762,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-ascent-losses-gravity-turn",
       "title": "Gravity, drag and steering losses on ascent",
-      "minutes": 22,
+      "minutes": 21,
       "covers": [
         "variable-mass systems and the rocket equation done properly"
       ],
@@ -1122,21 +1140,19 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t0_m06_calculus_single": {
-    "covered": 7,
+    "covered": 8,
     "total": 10,
     "complete": false,
     "missing": [
-      "integration by parts and substitution",
       "improper integrals",
       "separable first-order ODEs"
     ]
   },
   "t0_m07_calculus_multi": {
-    "covered": 7,
+    "covered": 8,
     "total": 10,
     "complete": false,
     "missing": [
-      "divergence, curl, Laplacian",
       "divergence and Stokes theorems",
       "conservative fields and potential functions"
     ]

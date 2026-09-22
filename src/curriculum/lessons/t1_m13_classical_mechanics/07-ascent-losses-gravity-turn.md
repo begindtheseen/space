@@ -1,7 +1,7 @@
 ---
 id: l07-ascent-losses-gravity-turn
 title: Gravity, drag and steering losses on ascent
-minutes: 22
+minutes: 21
 covers:
   - variable-mass systems and the rocket equation done properly
 ---

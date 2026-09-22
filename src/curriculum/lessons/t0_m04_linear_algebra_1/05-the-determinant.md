@@ -1,7 +1,7 @@
 ---
 id: l05-the-determinant
 title: The determinant and what it measures
-minutes: 18
+minutes: 19
 covers:
   - determinant and its geometric meaning
 ---

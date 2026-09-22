@@ -1,7 +1,7 @@
 ---
 id: l06-orthogonality-gram-schmidt-qr
 title: Orthogonality, Gram–Schmidt and QR
-minutes: 23
+minutes: 19
 covers:
   - orthogonality, Gram-Schmidt, QR
 ---
