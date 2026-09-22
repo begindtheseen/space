@@ -3105,6 +3105,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "IMU error models: turn-on and in-run bias, scale factor, non-orthogonality and misalignment, g-sensitivity, quantization"
       ],
       "file": "t4_m36_inertial_navigation/02-imu-error-models.md"
+    },
+    {
+      "id": "l03-random-walk-bias-instability-rate-random-walk",
+      "title": "Random walk, bias instability, and rate random walk",
+      "minutes": 17,
+      "covers": [
+        "Angle random walk, velocity random walk, rate random walk, and bias instability"
+      ],
+      "file": "t4_m36_inertial_navigation/03-random-walk-bias-instability-rate-random-walk.md"
     }
   ],
   "t4_m37_gnss": [
@@ -3460,11 +3469,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t4_m36_inertial_navigation": {
-    "covered": 2,
+    "covered": 3,
     "total": 13,
     "complete": false,
     "missing": [
-      "Angle random walk, velocity random walk, rate random walk, and bias instability",
       "Allan variance for IMU characterization; temperature effects and calibration",
       "Strapdown mechanization in ECI, ECEF and local-level (NED) frames",
       "Attitude update, velocity update with Coriolis and gravity, position update",
