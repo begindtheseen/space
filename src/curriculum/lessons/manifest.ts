@@ -353,6 +353,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "constexpr and compile-time computation"
       ],
       "file": "t0_m12_cpp/07-constexpr-compile-time.md"
+    },
+    {
+      "id": "l08-error-handling-without-exceptions",
+      "title": "Error handling without exceptions",
+      "minutes": 24,
+      "covers": [
+        "error handling without exceptions"
+      ],
+      "file": "t0_m12_cpp/08-error-handling-without-exceptions.md"
     }
   ],
   "t1_m13_classical_mechanics": [
@@ -733,13 +742,12 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t0_m12_cpp": {
-    "covered": 8,
+    "covered": 9,
     "total": 17,
     "complete": false,
     "missing": [
       "Eigen, including the Geometry module",
       "memory layout, cache behaviour, allocation-free hot loops",
-      "error handling without exceptions",
       "CMake, with Bazel awareness",
       "GoogleTest",
       "profiling and sanitizers: perf, valgrind, ASan/UBSan",
