@@ -120,9 +120,17 @@ Assignment and casts convert too, and here the destination's signedness decides 
 
 Neither of these is an error, and by default neither warns. `-Wconversion` makes g++ speak up:
 
-```text
-warning: conversion from 'int' to 'int8_t' {aka 'signed char'} changes value from '200' to '-56' [-Wconversion]
+```bash
+g++ -std=c++20 -Wall -Wextra -Wconversion -c narrow.cpp -o /dev/null
 ```
+
+```text
+narrow.cpp:4:21: warning: conversion from 'int' to 'int8_t' {aka 'signed char'} changes value from '200' to '-56' [-Wconversion]
+    4 |     std::int8_t x = 200;
+      |                     ^~~
+```
+
+(Add `-Wpedantic` to that command and g++ 13.3.0 reports the same fact under a different name, `overflow in conversion ... [-Woverflow]`. Warning categories are not as stable as the flag names suggest, which is one more reason to read your own build's output rather than a remembered message.)
 
 clang++ 18.1.3 reports the same thing under `-Wall` alone, as `-Wconstant-conversion`, with its own wording. And there is a cheaper defence than any warning flag: **braces**. Initialise with `{}` and a narrowing conversion of a constant is a hard error in both compilers:
 

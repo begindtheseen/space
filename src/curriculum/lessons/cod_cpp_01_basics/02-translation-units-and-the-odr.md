@@ -313,13 +313,16 @@ struct ImuSample { std::uint32_t t_ms; float ax, ay, az; };
 struct ImuSample { std::uint32_t t_ms; float temp_c; float ax, ay, az; };
 ```
 
-`a.cpp` builds an `ImuSample` and passes it to a function defined in `b.cpp`. Both files compile without a warning. The link succeeds — a type is not a symbol, so there is nothing for the linker to compare. With g++ 13.3.0 at `-O2` the program ran and printed
+`a.cpp` builds an `ImuSample` and passes it to a function defined in `b.cpp`. Both files compile without a warning. The link succeeds — a type is not a symbol, so there is nothing for the linker to compare. The program then runs, and this is one binary, built once with g++ 13.3.0 at `-O2`, run four times in a row:
 
 ```text
-t=100 ax=-0.01 az=-2292883456.00
+t=100 ax=-0.01 az=0.00
+t=100 ax=-0.01 az=503697.50
+t=100 ax=-0.01 az=-84416.75
+t=100 ax=-0.01 az=0.00
 ```
 
-That number is not a fact about C++; it is what one build did with one memory layout. The program is ill-formed and the standard requires no diagnostic, so another compiler, another optimisation level or another day could print anything at all. What it will never do is tell you it is broken.
+`t` is right because `t_ms` is at offset 0 in both versions. `ax` reads the wrong field, because `b.cpp` thinks there is a `temp_c` before it. And `az` reads past the end of the object `a.cpp` actually made, so it is whatever the stack happens to hold — different on every run of the same executable. None of those numbers is a fact about C++; the program is ill-formed, the standard requires no diagnostic, and what you get is whatever this run's memory contained. What it will never do is tell you it is broken.
 
 There is one tool that catches it. Ask for link-time optimisation, which gives the compiler all translation units at once, and g++ compares the definitions:
 

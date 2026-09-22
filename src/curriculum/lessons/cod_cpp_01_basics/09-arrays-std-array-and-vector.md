@@ -151,11 +151,11 @@ first = 0.0;              // may write to freed memory
 The `buffer moved: yes` lines above are exactly the moments where `first` would become dangling. Built with `-fsanitize=address`, a read past the end of a vector's buffer reports:
 
 ```text
-==16134==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x503000000068
+ERROR: AddressSanitizer: heap-buffer-overflow on address 0x503000000068
 READ of size 8 at 0x503000000068 thread T0
 ```
 
-with the source line of the access. Run your tests under ASan; it is the tool that finds this class of bug.
+followed by a stack trace naming the source line of the access. (Each of those lines really begins with the process id, as `==16134==`, which differs on every run; the addresses were stable across runs on this machine but are not something to rely on.) Run your tests under ASan; it is the tool that finds this class of bug.
 :::
 
 ## Bounds checking when you want it

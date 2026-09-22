@@ -93,10 +93,10 @@ $$
 \frac{dv}{dm} = -\frac{v_e}{m} \quad\Longrightarrow\quad \int_{0}^{\Delta v} dv = -v_e \int_{m_0}^{m_f} \frac{dm}{m} \quad\Longrightarrow\quad \Delta v = v_e \ln\frac{m_0}{m_f}.
 $$
 
-Here the independent variable is mass rather than time; the method does not care. For a Falcon 9 first stage with sea-level specific impulse $I_{sp} \approx 282\,\mathrm{s}$, the exhaust speed is $v_e = I_{sp}\,g_0 = 282 \times 9.80665 = 2770\,\mathrm{m/s}$. The vehicle lifts off at about $m_0 = 549{,}000\,\mathrm{kg}$ and the first stage burns about $411{,}000\,\mathrm{kg}$ of propellant, leaving $m_f = 138{,}000\,\mathrm{kg}$. The ideal velocity gain is
+Here the independent variable is mass rather than time; the method does not care. For a Falcon 9 first stage with sea-level specific impulse $I_{sp} \approx 282\,\mathrm{s}$, the exhaust speed is $v_e = I_{sp}\,g_0 = 282 \times 9.80665 = 2765\,\mathrm{m/s}$. The vehicle lifts off at about $m_0 = 549{,}000\,\mathrm{kg}$ and the first stage burns about $411{,}000\,\mathrm{kg}$ of propellant, leaving $m_f = 138{,}000\,\mathrm{kg}$. The ideal velocity gain is
 
 $$
-\Delta v = 2770 \times \ln\frac{549{,}000}{138{,}000} = 2770 \times 1.381 \approx 3820\,\mathrm{m/s}.
+\Delta v = 2765 \times \ln\frac{549{,}000}{138{,}000} = 2765 \times 1.381 \approx 3820\,\mathrm{m/s}.
 $$
 
 The real stage delivers less, because gravity and drag act during the burn — additional terms that make the equation no longer separable, and that a trajectory program integrates numerically.

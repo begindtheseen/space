@@ -175,7 +175,7 @@ Both come from `<cstddef>`. `printf` prints a `size_t` with `%zu` — not `%d`, 
 The important property of `size_t` is that it is **unsigned**, and that is the source of the single most common loop bug in C++. `v.size() - 1` on an empty container is not $-1$; it is
 
 ```text
-empty v.size() - 1 = 18446744073709551615
+empty v.size()-1  = 18446744073709551615
 ```
 
 which is $2^{64}-1$. Unsigned arithmetic is defined to wrap, so nothing is undefined here and nothing warns — the value is simply enormous, and a loop condition like `i >= 0` on an unsigned type is true forever. Lesson 05 takes this apart properly; for now, note that the type you must use to index containers is the type that does this.

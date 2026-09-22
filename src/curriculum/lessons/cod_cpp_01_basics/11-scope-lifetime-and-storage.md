@@ -227,10 +227,11 @@ Three ways this goes wrong, all undefined behaviour:
 AddressSanitizer finds the second and third immediately. A `delete` followed by a read:
 
 ```text
-==18842==ERROR: AddressSanitizer: heap-use-after-free on address 0x502000000010
+ERROR: AddressSanitizer: heap-use-after-free on address 0x502000000010
 READ of size 8 at 0x502000000010 thread T0
-    #0 ... in main uaf.cpp:8
 ```
+
+followed by a stack trace whose first frame names `main` and the line of the read. (Each line really begins with the process id, as `==18842==`, which differs on every run.)
 
 The reasons flight code avoids the heap are the ones from lesson 09, sharpened. Allocation time is not bounded, because a general allocator's work depends on the heap's history. The heap can fragment, so a request can fail after hours of successful operation. And failure has nowhere to go: there is no operator to ask for more memory at 30 km. The usual rule is that all allocation happens during initialisation, before the control loop starts, and nothing is allocated or freed after that.
 

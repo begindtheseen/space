@@ -116,7 +116,7 @@ format : t=123456 az=-9.810 mode=2
 format :    COAST | ARMED    | 0x0064
 ```
 
-Read the second line. `mode=` is followed by *nothing visible*, because `std::uint8_t` is an alias for `unsigned char` (lesson 04), `iostream` treats every character type as text, and the byte 2 is a control character. This is the single most common surprise in printing telemetry, and the fix is the unary `+` on the next line, which promotes the byte to `int` before it reaches the stream.
+Read the second line. `mode=` is followed by *nothing visible* — the program really did write a byte there, and `od -c` on the output shows it as `d   e   =  002`, the byte 2 — because `std::uint8_t` is an alias for `unsigned char` (lesson 04), `iostream` treats every character type as text, and 2 is an unprintable control character. This is the single most common surprise in printing telemetry, and the fix is the unary `+` on the next line, which promotes the byte to `int` before it reaches the stream.
 
 ### `printf`
 

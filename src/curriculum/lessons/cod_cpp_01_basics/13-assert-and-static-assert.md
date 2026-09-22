@@ -101,11 +101,7 @@ Calling it with `n == 0` in a debug build:
 a1: a1.cpp:7: double mean_az(const double*, std::size_t): Assertion `n > 0 && "mean_az requires at least one sample"' failed.
 ```
 
-```text
-(exit 134)
-```
-
-The message names the program, the file, the line, the enclosing function and the condition as written. Exit status 134 is 128 + 6, signal 6, `SIGABRT`. The `&& "message"` idiom works because a non-empty string literal is always true, so it does not change the condition and does appear in the printed text.
+and the shell reports exit status 134. The message names the program, the file, the line, the enclosing function and the condition as written. Exit status 134 is 128 + 6, signal 6, `SIGABRT`. The `&& "message"` idiom works because a non-empty string literal is always true, so it does not change the condition and does appear in the printed text.
 
 One detail from that run worth knowing: the program had already printed a line to `stdout` before the assertion fired, and **that line never appeared**. `abort()` does not flush `stdout`, which is block-buffered when it is not a terminal, so the buffer is lost. The assertion message survives because `stderr` is unbuffered. When you are debugging a crash and the last thing you expected to see is missing, that is usually why — print to `stderr`, or flush.
 
@@ -118,10 +114,9 @@ Build the same program with `-DNDEBUG`:
 ```text
 -9.8100
 -nan
-(exit 0)
 ```
 
-No abort. The division by zero in the mean produced a NaN, the program printed it, and exited successfully. That is the contract: assertions catch *programmer* errors during development and are gone in the build you ship, so anything that must be checked in flight has to be checked by real code.
+with exit status 0. No abort. The division by zero in the mean produced a NaN, the program printed it, and exited successfully. That is the contract: assertions catch *programmer* errors during development and are gone in the build you ship, so anything that must be checked in flight has to be checked by real code.
 
 ::: warning
 Because `assert` disappears, an expression with a side effect inside one disappears with it. This is a real defect, not a stylistic point:
@@ -132,10 +127,13 @@ int arm_sensor() { ++g_samples_armed; return 0; }   // 0 means success
 assert(arm_sensor() == 0);          // the call itself vanishes under NDEBUG
 ```
 
+```bash
+g++ -std=c++20 -Wall -Wextra -O0 -g side.cpp -o side   && ./side
+g++ -std=c++20 -Wall -Wextra -O2 -DNDEBUG side.cpp -o siden && ./siden
+```
+
 ```text
---- debug build ---
 g_samples_armed = 1
---- NDEBUG build ---
 g_samples_armed = 0
 ```
 

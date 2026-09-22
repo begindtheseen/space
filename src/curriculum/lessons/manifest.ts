@@ -983,6 +983,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "the answering standard: state assumptions, write the equation, interpret physically, sanity check"
       ],
       "file": "car_11_domain_round/01-the-answering-standard.md"
+    },
+    {
+      "id": "l02-when-you-do-not-know",
+      "title": "When you do not know: recovering out loud",
+      "minutes": 23,
+      "covers": [
+        "the answering standard: state assumptions, write the equation, interpret physically, sanity check"
+      ],
+      "file": "car_11_domain_round/02-when-you-do-not-know.md"
     }
   ],
   "cod_cpp_01_basics": [
@@ -6483,6 +6492,16 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "C++ flight core with a Python analysis and plotting layer over it, sharing exactly one implementation of the algorithms"
       ],
       "file": "t7_m48_capstone/10-flight-code-architecture.md"
+    },
+    {
+      "id": "l11-monte-carlo-campaign-and-vv-report",
+      "title": "The Monte Carlo campaign and the V&V report",
+      "minutes": 28,
+      "covers": [
+        "Ten thousand dispersed cases in CI, with per-case seeding and bit-exact replay",
+        "The written V&V report: requirements, evidence, margin plots, failure analysis and known limitations"
+      ],
+      "file": "t7_m48_capstone/11-monte-carlo-campaign-and-vv-report.md"
     }
   ],
   "t7_m49_interview_prep": [
@@ -6893,13 +6912,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t7_m48_capstone": {
-    "covered": 9,
+    "covered": 11,
     "total": 11,
-    "complete": false,
-    "missing": [
-      "Ten thousand dispersed cases in CI, with per-case seeding and bit-exact replay",
-      "The written V&V report: requirements, evidence, margin plots, failure analysis and known limitations"
-    ]
+    "complete": true,
+    "missing": []
   },
   "t7_m49_interview_prep": {
     "covered": 14,

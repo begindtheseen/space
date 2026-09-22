@@ -214,7 +214,7 @@ Solve $\ddot{y} + 6\dot{y} + 9y = 0$ with $y(0) = 2$ and $\dot{y}(0) = -1$.
 :::
 
 ::: answer
-$s^2 + 6s + 9 = (s + 3)^2$: a repeated root at $-3$, so $y = (C_1 + C_2t)e^{-3t}$. Then $y(0) = C_1 = 2$ and $\dot{y} = (C_2 - 3C_1 - 3C_2t)e^{-3t}$ gives $\dot{y}(0) = C_2 - 6 = -1$, so $C_2 = 5$. The solution is $y = (2 + 5t)e^{-3t}$. It rises briefly (the initial slope is $-1$ but $5t$ soon dominates? No — check: $\dot{y}(0) = -1 < 0$, so it starts downward) and decays to zero without oscillating, as a repeated negative root always does.
+$s^2 + 6s + 9 = (s + 3)^2$: a repeated root at $-3$, so $y = (C_1 + C_2t)e^{-3t}$. Then $y(0) = C_1 = 2$ and $\dot{y} = (C_2 - 3C_1 - 3C_2t)e^{-3t}$ gives $\dot{y}(0) = C_2 - 6 = -1$, so $C_2 = 5$. The solution is $y = (2 + 5t)e^{-3t}$, and $\dot{y}(t) = (-1 - 15t)e^{-3t}$ is negative for every $t \ge 0$: unlike the hinge example, this one never rises at all. It decays to zero monotonically without oscillating, as a repeated negative root always does.
 :::
 
 ::: check
