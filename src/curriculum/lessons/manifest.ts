@@ -89,6 +89,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "the GNC org as SpaceX describes it: vehicle design, trajectory design and optimization, high-fidelity vehicle simulation, software and control algorithm development, plus launch and on-orbit operations support across multiple vehicle programs"
       ],
       "file": "car_02_role_families/01-the-gnc-org-and-the-family-map.md"
+    },
+    {
+      "id": "l02-starship-ascent-entry-and-landing",
+      "title": "Starship: ascent, entry, and landing control",
+      "minutes": 18,
+      "covers": [
+        "GNC Engineer (Starship): ascent, entry and landing control, 6-DOF simulation, flight control of the largest vehicle ever flown"
+      ],
+      "file": "car_02_role_families/02-starship-ascent-entry-and-landing.md"
     }
   ],
   "car_04_degree_reality": [
@@ -6747,11 +6756,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "car_02_role_families": {
-    "covered": 1,
+    "covered": 2,
     "total": 13,
     "complete": false,
     "missing": [
-      "GNC Engineer (Starship): ascent, entry and landing control, 6-DOF simulation, flight control of the largest vehicle ever flown",
       "GNC Engineer and Sr. GNC Software Engineer (Falcon): booster entry, descent and landing, and reuse",
       "GNC Engineer (Dragon): mission design, rendezvous and docking with the ISS, deorbit, reentry, abort",
       "GNC Engineer, ADCS (Starlink and Starshield): attitude determination and control, reaction wheels, torque rods, momentum management",
