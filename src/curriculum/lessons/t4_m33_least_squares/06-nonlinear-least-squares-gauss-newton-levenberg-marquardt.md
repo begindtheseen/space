@@ -118,7 +118,7 @@ Every starting point that defeated undamped Gauss-Newton — including $a_0=-5$,
 
 ## What damping does not fix: a spurious minimum
 
-Levenberg-Marquardt guards against one specific failure — trusting a step further than the linearization deserves. It is not a global optimizer, and it will not rescue a starting point that is simply in the wrong basin of attraction for a cost surface with more than one local minimum.
+Levenberg-Marquardt guards against one specific failure — trusting a step further than the linearization deserves. It is not a global optimizer, and it will not rescue a starting point already in the wrong basin of attraction for a cost surface with more than one local minimum.
 
 ::: example Validating the covariance
 Four ground stations track an unknown position by slant range alone: $\mathbf{s}_1=(0,0,0)$, $\mathbf{s}_2=(8000,0,0)$, $\mathbf{s}_3=(0,9000,0)$, $\mathbf{s}_4=(3000,3000,7000)\,\mathrm{m}$, true position $\mathbf{x}=(2500,3500,10000)\,\mathrm{m}$, range noise $\sigma=2\,\mathrm{m}$. With $h_i(\mathbf{x})=\lVert\mathbf{x}-\mathbf{s}_i\rVert$, the Jacobian row is the unit line-of-sight vector $(\mathbf{x}-\mathbf{s}_i)/\lVert\mathbf{x}-\mathbf{s}_i\rVert$ — the same object lesson one used to build $\mathbf{H}$ for a linearized range fit, here exact rather than linearized about a nominal point. Starting from a reasonable but inexact guess $(3000,3000,8000)\,\mathrm{m}$, Gauss-Newton converges in $6$–$8$ iterations on every one of $2000$ independent noise draws. The analytic covariance at the true position and the sample covariance of the $2000$ estimates:

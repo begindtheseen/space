@@ -3548,7 +3548,7 @@ Write a short note explaining what physical situations in navigation create near
       {
         id: 'c_m33_davenport',
         front: 'Davenport q-method',
-        back: 'Build K = [[trace(B), z.T], [z, B + B.T - trace(B)*I]] where z = [B23-B32, B31-B13, B12-B21]. The optimal quaternion is the eigenvector of the LARGEST eigenvalue of K.',
+        back: 'Build K = [[trace(B), z.T], [z, B + B.T - trace(B)*I]] where z = [B32-B23, B13-B31, B21-B12]. The optimal quaternion is the eigenvector of the LARGEST eigenvalue of K. That sign of z is the one matching the convention used here (b = A r, with A(q) v = q (x) v (x) q*); flipping it returns the transpose.',
         formula: true,
       },
       {

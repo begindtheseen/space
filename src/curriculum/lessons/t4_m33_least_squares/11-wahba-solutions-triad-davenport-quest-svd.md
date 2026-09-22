@@ -18,7 +18,7 @@ $$
 \mathbf{t}_1 = \mathbf{r}_1, \qquad \mathbf{t}_2 = \frac{\mathbf{r}_1\times\mathbf{r}_2}{\lVert\mathbf{r}_1\times\mathbf{r}_2\rVert}, \qquad \mathbf{t}_3 = \mathbf{t}_1\times\mathbf{t}_2
 $$
 
-and the same construction on $\mathbf{b}_1,\mathbf{b}_2$ for $\mathbf{s}_1,\mathbf{s}_2,\mathbf{s}_3$. Both $\mathbf{M}_r=(\mathbf{t}_1\,\mathbf{t}_2\,\mathbf{t}_3)$ and $\mathbf{M}_b=(\mathbf{s}_1\,\mathbf{s}_2\,\mathbf{s}_3)$ are orthonormal by construction, and $\mathbf{A}=\mathbf{M}_b\mathbf{M}_r^\mathsf{T}$ is the rotation taking one triad to the other — since $\mathbf{M}_r^\mathsf{T}\mathbf{M}_r=\mathbf{I}$, $\mathbf{A}\mathbf{t}_i=\mathbf{s}_i$ for each axis, in particular $\mathbf{A}\mathbf{r}_1=\mathbf{b}_1$ exactly. TRIAD uses no weights, no iteration, and exactly two vectors; a third is simply discarded.
+and the same construction on $\mathbf{b}_1,\mathbf{b}_2$ for $\mathbf{s}_1,\mathbf{s}_2,\mathbf{s}_3$. Both $\mathbf{M}_r=(\mathbf{t}_1\,\mathbf{t}_2\,\mathbf{t}_3)$ and $\mathbf{M}_b=(\mathbf{s}_1\,\mathbf{s}_2\,\mathbf{s}_3)$ are orthonormal by construction, and $\mathbf{A}=\mathbf{M}_b\mathbf{M}_r^\mathsf{T}$ is the rotation taking one triad to the other — since $\mathbf{M}_r^\mathsf{T}\mathbf{M}_r=\mathbf{I}$, $\mathbf{A}\mathbf{t}_i=\mathbf{s}_i$ for each axis, in particular $\mathbf{A}\mathbf{r}_1=\mathbf{b}_1$ exactly. TRIAD uses no weights, no iteration, and exactly two vectors; a third is discarded outright.
 
 ```python
 import numpy as np

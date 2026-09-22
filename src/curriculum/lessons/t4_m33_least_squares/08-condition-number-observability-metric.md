@@ -81,7 +81,7 @@ Adding geometry is not always available — a ground network cannot always be mo
 **Regularize.** Lesson five's MAP estimate is the general version of "drop a parameter": rather than fixing a poorly observed direction outright, add prior information to it specifically, $\mathbf{P}_0^{-1}$, and the posterior information matrix $\mathbf{P}_0^{-1}+\boldsymbol{\Lambda}$ has no small eigenvalues left to worry about, however small $\boldsymbol{\Lambda}$'s were. This is the least drastic of the three: it costs bias only in proportion to how wrong the prior turns out to be, concentrated in exactly the direction the data could not have corrected it anyway.
 
 ::: warning A large condition number is a symptom, not a verdict
-$\kappa(\boldsymbol{\Lambda})=10^{8}$ says a direction in state space is nearly unobserved by this data; it does not by itself say whether that is a flaw in the experiment (fixable by better geometry), an artifact of units (fixable by rescaling), an over-parameterized model (fixable by dropping a state), or simply the truth about what a short tracking arc or a compact sensor network can determine. Compute $\mathbf{v}_{\min}$ and look at what physical combination of states it corresponds to before choosing a fix — the remedy for a units mismatch does nothing for a genuine geometric blind spot, and vice versa.
+$\kappa(\boldsymbol{\Lambda})=10^{8}$ says a direction in state space is nearly unobserved by this data; it does not by itself say whether that is a flaw in the experiment (fixable by better geometry), an artifact of units (fixable by rescaling), an over-parameterized model (fixable by dropping a state), or the truth about what a short tracking arc or a compact sensor network can determine. Compute $\mathbf{v}_{\min}$ and look at what physical combination of states it corresponds to before choosing a fix — the remedy for a units mismatch does nothing for a genuine geometric blind spot, and vice versa.
 :::
 
 ## Check yourself
@@ -115,7 +115,7 @@ A design matrix has two columns in kilometres and one column in a drag coefficie
 :::
 
 ::: answer
-Whether the huge condition number is simply the units: a column whose entries are all around $10^{-3}$ next to columns around $10^{3}$ gives $\mathbf{H}$ a large spread in column norms for reasons that have nothing to do with how well the data constrain the corresponding directions. Rescaling each column by a characteristic size for that variable and recomputing $\kappa$ separates an artificial, unit-driven condition number from a genuine geometric one; only the latter calls for a geometry, parameterization, or prior-based fix.
+Whether the huge condition number reflects nothing more than the units: a column whose entries are all around $10^{-3}$ next to columns around $10^{3}$ gives $\mathbf{H}$ a large spread in column norms for reasons that have nothing to do with how well the data constrain the corresponding directions. Rescaling each column by a characteristic size for that variable and recomputing $\kappa$ separates an artificial, unit-driven condition number from a genuine geometric one; only the latter calls for a geometry, parameterization, or prior-based fix.
 :::
 
 ::: check

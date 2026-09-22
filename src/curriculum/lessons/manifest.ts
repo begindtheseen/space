@@ -2939,6 +2939,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Wahba solutions: TRIAD, Davenport q-method, QUEST, ESOQ, and the SVD method"
       ],
       "file": "t4_m33_least_squares/11-wahba-solutions-triad-davenport-quest-svd.md"
+    },
+    {
+      "id": "l12-attitude-covariance-sensor-geometry",
+      "title": "Covariance of an attitude solution and the effect of sensor geometry",
+      "minutes": 18,
+      "covers": [
+        "Covariance of an attitude solution and the effect of sensor geometry"
+      ],
+      "file": "t4_m33_least_squares/12-attitude-covariance-sensor-geometry.md"
     }
   ],
   "t4_m34_kalman_filter": [
@@ -3418,12 +3427,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t4_m33_least_squares": {
-    "covered": 11,
+    "covered": 12,
     "total": 12,
-    "complete": false,
-    "missing": [
-      "Covariance of an attitude solution and the effect of sensor geometry"
-    ]
+    "complete": true,
+    "missing": []
   },
   "t4_m34_kalman_filter": {
     "covered": 15,
