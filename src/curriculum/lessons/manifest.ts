@@ -2506,6 +2506,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Shuttle drag-vs-energy entry guidance"
       ],
       "file": "t2_m24_edl/08-apollo-and-shuttle-entry-guidance.md"
+    },
+    {
+      "id": "l09-hypersonic-aerodynamics-and-transonic-transition",
+      "title": "Hypersonic aerodynamics and the transonic transition",
+      "minutes": 15,
+      "covers": [
+        "hypersonic aerodynamics and the transonic transition"
+      ],
+      "file": "t2_m24_edl/09-hypersonic-aerodynamics-and-transonic-transition.md"
     }
   ],
   "t3_m25_signals_systems": [
@@ -5536,11 +5545,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t2_m24_edl": {
-    "covered": 11,
+    "covered": 12,
     "total": 18,
     "complete": false,
     "missing": [
-      "hypersonic aerodynamics and the transonic transition",
       "propulsive descent: entry burn, aerodynamic guidance, landing burn",
       "divert capability and the landing ellipse",
       "terminal descent sensors: radar altimeter, lidar, terrain relative navigation",

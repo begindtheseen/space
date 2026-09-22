@@ -54,7 +54,7 @@ Every other perturbation in this module's tables is present throughout this deca
 :::
 
 ::: warning A perturbation hierarchy learned at one altitude does not transfer
-The single most common mistake this module's own examples were built to prevent: internalising "$J_2$ dominates, everything else is a footnote" from low-orbit experience and carrying that assumption unexamined into a geostationary or high-apogee analysis, where it is simply false. Every force-model decision — which perturbations to include, which to neglect, which uncertainty to carry forward into a lifetime or conjunction estimate — has to be re-justified for the specific orbit regime in front of you, using a table like the one this lesson builds, not a rule of thumb inherited from a different altitude.
+The single most common mistake this module's own examples were built to prevent: internalising "$J_2$ dominates, everything else is a footnote" from low-orbit experience and carrying that assumption unexamined into a geostationary or high-apogee analysis, where it is false. Every force-model decision — which perturbations to include, which to neglect, which uncertainty to carry forward into a lifetime or conjunction estimate — has to be re-justified for the specific orbit regime in front of you, using a table like the one this lesson builds, not a rule of thumb inherited from a different altitude.
 :::
 
 ## Check yourself
@@ -64,7 +64,7 @@ A GEO satellite's operator reports spending far more propellant on inclination (
 :::
 
 ::: answer
-Lunisolar third-body attraction, which drives out-of-plane drift, is comparable in size to $J_2$ at geostationary altitude (within about $4\%$ in this lesson's table) and is not something a geostationary mission can design around the way a low-orbit mission designs around $J_2$'s predictable nodal regression. At $400\,\mathrm{km}$, the same lunisolar terms are three orders of magnitude smaller than $J_2$, so they contribute negligibly to a low-orbit mission's propellant budget by comparison; there, $J_2$-driven drift is either accepted by design (as in a sun-synchronous orbit) or is simply too small a secular effect on $a$ and $e$ to need active correction in the first place.
+Lunisolar third-body attraction, which drives out-of-plane drift, is comparable in size to $J_2$ at geostationary altitude (within about $4\%$ in this lesson's table) and is not something a geostationary mission can design around the way a low-orbit mission designs around $J_2$'s predictable nodal regression. At $400\,\mathrm{km}$, the same lunisolar terms are three orders of magnitude smaller than $J_2$, so they contribute negligibly to a low-orbit mission's propellant budget by comparison; there, $J_2$-driven drift is either accepted by design (as in a sun-synchronous orbit) or is too small a secular effect on $a$ and $e$ to need active correction in the first place.
 :::
 
 ::: check

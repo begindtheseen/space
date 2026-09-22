@@ -75,7 +75,7 @@ Those resonance and third-body effects matter on the timescale a slow, high-alti
 :::
 
 ::: check
-Explain why $B^*$ cannot simply be plugged into the ballistic-coefficient drag formula from the atmospheric drag lesson as $1/B$.
+Explain why $B^*$ cannot be directly plugged into the ballistic-coefficient drag formula from the atmospheric drag lesson as $1/B$.
 :::
 
 ::: answer
@@ -87,7 +87,7 @@ A satellite operator has a very precise numerically integrated (Cowell) ephemeri
 :::
 
 ::: answer
-No. SGP4 will apply its own periodic corrections to whatever elements it is given, on the assumption that they are already SGP4-theory mean elements; feeding it osculating elements from a different theory reintroduces the same theory-mismatch error this lesson describes, just in the opposite direction from the TLE-into-Cowell mistake. Publishing a usable TLE requires fitting SGP4's own mean-element theory to the trajectory (or to observations of it), not simply relabelling a different theory's elements.
+No. SGP4 will apply its own periodic corrections to whatever elements it is given, on the assumption that they are already SGP4-theory mean elements; feeding it osculating elements from a different theory reintroduces the same theory-mismatch error this lesson describes, just in the opposite direction from the TLE-into-Cowell mistake. Publishing a usable TLE requires fitting SGP4's own mean-element theory to the trajectory (or to observations of it), not merely relabelling a different theory's elements.
 :::
 
 ::: check

@@ -92,7 +92,7 @@ It is tempting to read the $3\times10^{-6}$ ratio above and conclude relativity 
 ## Check yourself
 
 ::: check
-Explain, in one sentence, why $\mathbf{a}_3$ is written as a *difference* of two terms rather than simply the Moon's direct gravitational pull on the spacecraft.
+Explain, in one sentence, why $\mathbf{a}_3$ is written as a *difference* of two terms rather than only the Moon's direct gravitational pull on the spacecraft.
 :::
 
 ::: answer

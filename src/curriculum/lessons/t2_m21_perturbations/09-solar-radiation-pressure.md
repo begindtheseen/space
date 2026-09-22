@@ -16,7 +16,7 @@ $$
 P_{\text{SR}} = \frac{1361\,\mathrm{W/m^2}}{299\,792\,458\,\mathrm{m/s}} = 4.56\times10^{-6}\,\mathrm{N/m^2}\quad\text{at }1\,\mathrm{AU} .
 $$
 
-A surface that fully absorbs incident light receives this pressure directly; a surface that reflects it specularly receives up to twice as much, because the photon's momentum reverses rather than simply stopping. Real spacecraft surfaces are a mix of absorptive, diffusely reflective, and specular materials, summarised by a single reflectivity coefficient $C_r$ ranging from $1$ (fully absorbing) to $2$ (perfectly reflecting), so the acceleration is
+A surface that fully absorbs incident light receives this pressure directly; a surface that reflects it specularly receives up to twice as much, because the photon's momentum reverses rather than only stopping. Real spacecraft surfaces are a mix of absorptive, diffusely reflective, and specular materials, summarised by a single reflectivity coefficient $C_r$ ranging from $1$ (fully absorbing) to $2$ (perfectly reflecting), so the acceleration is
 
 $$
 \mathbf{a}_{\text{SRP}} = P_{\text{SR}}\,C_r\,\frac{A}{m}\,\hat{\mathbf{s}} ,
@@ -82,7 +82,7 @@ Two otherwise-identical spacecraft differ only in $C_r$: one is painted matte bl
 :::
 
 ::: answer
-The mirrored spacecraft feels about twice the acceleration. A perfectly absorbing surface receives the photon momentum once; a perfectly reflecting surface receives it twice, because the photon's momentum reverses direction rather than simply stopping, transferring momentum $2p$ instead of $p$. Since $\mathbf{a}_{\text{SRP}}\propto C_r$, doubling $C_r$ from $1$ to $2$ doubles the acceleration.
+The mirrored spacecraft feels about twice the acceleration. A perfectly absorbing surface receives the photon momentum once; a perfectly reflecting surface receives it twice, because the photon's momentum reverses direction rather than only stopping, transferring momentum $2p$ instead of $p$. Since $\mathbf{a}_{\text{SRP}}\propto C_r$, doubling $C_r$ from $1$ to $2$ doubles the acceleration.
 :::
 
 ::: check
