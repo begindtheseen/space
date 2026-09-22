@@ -1,0 +1,159 @@
+/* ============================================================================
+   ORBIT — Focus page
+   ========================================================================== */
+
+/* The one line she reads after finishing. Green because it is a result, not a
+   notification, and green is the only colour in the app that means "done". */
+.focus-done {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: var(--gap);
+  padding: 10px 14px;
+  border: 1px solid rgba(52, 211, 153, 0.3);
+  border-radius: var(--r-md);
+  background: rgba(52, 211, 153, 0.06);
+  color: var(--ok);
+  font-size: 12.5px;
+  font-weight: 500;
+}
+
+/* ── The pick ────────────────────────────────────────────────────────────── */
+.focus-pick__title {
+  font-family: var(--font-display);
+  font-size: 23px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  line-height: 1.25;
+  color: var(--ink);
+  text-wrap: balance;
+}
+
+.focus-why {
+  margin-top: 8px;
+  max-width: 62ch;
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--ink-3);
+}
+
+/* ── Block length ────────────────────────────────────────────────────────── */
+.focus-len {
+  display: flex;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.focus-len__opt {
+  padding: 9px 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--panel-2);
+  color: var(--ink-4);
+  font-size: 12.5px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  transition: color var(--t-fast) var(--ease-out), border-color var(--t-fast) var(--ease-out),
+    background var(--t-fast) var(--ease-out);
+}
+
+.focus-len__opt:hover {
+  color: var(--ink-2);
+  border-color: var(--line-strong);
+}
+
+.focus-len__opt[data-on='true'] {
+  color: var(--ink);
+  border-color: var(--line-blue-strong);
+  background: var(--lift);
+}
+
+/* ── Starting ────────────────────────────────────────────────────────────── */
+.focus-start {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: 20px;
+}
+
+/* The promise that makes the button pressable. It is small because it is
+   reassurance, not an instruction. */
+.focus-start__note {
+  font-size: 11.5px;
+  color: var(--ink-5);
+}
+
+/* ── Alternatives ────────────────────────────────────────────────────────── */
+.focus-alts {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.focus-alt {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 11px 14px;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--r-md);
+  background: var(--panel-2);
+  text-align: left;
+  transition: border-color var(--t-fast) var(--ease-out), background var(--t-fast) var(--ease-out);
+}
+
+.focus-alt:hover {
+  border-color: var(--line-strong);
+  background: var(--raise);
+}
+
+.focus-alt__label {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink-2);
+}
+
+.focus-alt__sub {
+  font-size: 11.5px;
+  color: var(--ink-5);
+}
+
+/* ── Parked ──────────────────────────────────────────────────────────────── */
+.focus-parked {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.focus-parked__item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 12px;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--r-sm);
+  background: var(--panel-2);
+}
+
+.focus-parked__text {
+  flex: 1;
+  min-width: 0;
+  font-size: 12.5px;
+  color: var(--ink-2);
+  overflow-wrap: anywhere;
+}
+
+.focus-parked__drop {
+  flex-shrink: 0;
+  display: inline-flex;
+  padding: 5px;
+  border-radius: var(--r-xs);
+  color: var(--ink-5);
+  transition: color var(--t-fast) var(--ease-out), background var(--t-fast) var(--ease-out);
+}
+
+.focus-parked__drop:hover {
+  color: var(--ok);
+  background: var(--raise);
+}

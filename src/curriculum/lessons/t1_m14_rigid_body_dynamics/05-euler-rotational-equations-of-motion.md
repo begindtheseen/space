@@ -1,7 +1,7 @@
 ---
 id: l05-euler-rotational-equations-of-motion
 title: Euler's rotational equations of motion
-minutes: 18
+minutes: 19
 covers:
   - Euler rotational equations of motion
 ---

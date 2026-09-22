@@ -8,6 +8,7 @@ import {
   IconBriefcase,
   IconPlay,
   IconCode,
+  IconClock,
   IconCompass,
   IconGear,
   IconHome,
@@ -37,6 +38,7 @@ export interface NavDef {
 
 export const NAV: NavDef[] = [
   { id: 'home', label: 'Home', path: '/', Icon: IconHome },
+  { id: 'focus', label: 'Focus', path: '/focus', Icon: IconClock },
   { id: 'learning', label: 'Learning', path: '/learning', Icon: IconBook, also: ['/review', '/lesson'] },
   { id: 'foundations', label: 'Foundations', path: '/foundations', Icon: IconSigma },
   { id: 'coding', label: 'Coding', path: '/coding', Icon: IconCode, also: ['/playground'] },

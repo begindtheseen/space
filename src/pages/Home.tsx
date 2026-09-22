@@ -14,6 +14,7 @@ import {
   IconBars,
   IconBook,
   IconBriefcase,
+  IconClock,
   IconCalendar,
   IconCode,
   IconCompass,
@@ -31,11 +32,13 @@ import {
 import { Bar, Bullets, Button, Card, CardHead, Check, Ring, RowItem, Tile } from '@/components/ui'
 import { TRACKS, TRACK_ORDER } from '@/curriculum'
 import type { TrackId } from '@/curriculum/types'
-import { setOnboarded, toggleTask } from '@/engine/apply'
+import { setOnboarded, startFocus, toggleTask } from '@/engine/apply'
+import { DEFAULT_BLOCK } from '@/engine/focus'
 import type { ResumePoint } from '@/engine/resume'
 import { dailyPlan } from '@/engine/scheduler'
 import { streak } from '@/engine/state'
 import { useLearner } from '@/hooks/useLearner'
+import { nextUp } from '@/lib/nextUp'
 import { navigate } from '@/lib/router'
 import './home.css'
 
@@ -78,6 +81,8 @@ export function Home() {
         ) : null}
 
         <ResumeCard point={state.resume} onDismiss={() => setResume(null)} />
+
+        <StartBlock />
 
         <div className="grid-2">
           {/* ── left column ─────────────────────────────────────────────── */}
@@ -600,4 +605,60 @@ function whenWord(iso: string): string {
   if (days === 1) return 'Where you left off yesterday'
   if (days < 7) return `Where you left off ${days} days ago`
   return 'Where you left off'
+}
+
+/* ── Start a block ───────────────────────────────────────────────────────────
+   The single most important control on the page, and the only one that is not
+   a choice. Everything else on Home is information; this is the thing to press
+   when she does not want to read any of it. It sits directly under the hero so
+   that on a bad day the first thing she sees is one button with one sentence
+   under it, and she never has to scroll into the menu at all. */
+
+function StartBlock() {
+  const { state, dag, setState } = useLearner()
+  const pick = useMemo(() => nextUp(state, dag), [state, dag])
+
+  if (state.focus) {
+    return (
+      <Card className="startblock" index={0}>
+        <div className="startblock__body">
+          <div className="startblock__text">
+            <div className="startblock__kicker">Block running</div>
+            <div className="startblock__title">{state.focus.pick.title}</div>
+          </div>
+          <Button variant="primary" size="md" onClick={() => navigate(state.focus!.pick.href)}>
+            Back to it
+            <IconArrowRight size={15} />
+          </Button>
+        </div>
+      </Card>
+    )
+  }
+
+  return (
+    <Card className="startblock" index={0}>
+      <div className="startblock__body">
+        <div className="startblock__text">
+          <div className="startblock__kicker">Start here</div>
+          <div className="startblock__title">{pick.title}</div>
+          <p className="startblock__why">{pick.why}</p>
+        </div>
+        <div className="startblock__acts">
+          <Button
+            variant="primary"
+            size="md"
+            onClick={() => {
+              setState((s) => startFocus(s, pick, DEFAULT_BLOCK))
+              navigate(pick.href)
+            }}
+          >
+            <IconClock size={14} /> Start {DEFAULT_BLOCK} minutes
+          </Button>
+          <button className="startblock__alt" onClick={() => navigate('/focus')}>
+            Longer, or something else
+          </button>
+        </div>
+      </div>
+    </Card>
+  )
 }

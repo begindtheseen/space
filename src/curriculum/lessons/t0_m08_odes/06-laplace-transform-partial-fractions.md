@@ -1,7 +1,7 @@
 ---
 id: l06-laplace-transform-partial-fractions
 title: The Laplace transform, partial fractions, and the value theorems
-minutes: 22
+minutes: 18
 covers:
   - "Laplace transform, inverse transform, partial fractions"
   - initial and final value theorems

@@ -422,6 +422,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "matrix calculus: gradients and Jacobians"
       ],
       "file": "t0_m05_linear_algebra_2/07-matrix-calculus-gradients-jacobians.md"
+    },
+    {
+      "id": "l08-singular-value-decomposition",
+      "title": "The singular value decomposition",
+      "minutes": 22,
+      "covers": [
+        "singular value decomposition"
+      ],
+      "file": "t0_m05_linear_algebra_2/08-singular-value-decomposition.md"
     }
   ],
   "t0_m06_calculus_single": [
@@ -659,7 +668,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-forced-response-and-resonance",
       "title": "Forced response and resonance",
-      "minutes": 19,
+      "minutes": 18,
       "covers": [
         "forced response and resonance"
       ],
@@ -668,7 +677,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-laplace-transform-partial-fractions",
       "title": "The Laplace transform, partial fractions, and the value theorems",
-      "minutes": 22,
+      "minutes": 18,
       "covers": [
         "Laplace transform, inverse transform, partial fractions",
         "initial and final value theorems"
@@ -684,6 +693,16 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "convolution and impulse response"
       ],
       "file": "t0_m08_odes/07-transfer-functions-convolution-impulse.md"
+    },
+    {
+      "id": "l08-stability-from-poles-and-phase-plane",
+      "title": "Stability from pole locations, and the phase plane",
+      "minutes": 24,
+      "covers": [
+        "stability from pole locations",
+        "phase-plane basics"
+      ],
+      "file": "t0_m08_odes/08-stability-from-poles-and-phase-plane.md"
     }
   ],
   "t0_m09_probability_stats": [
@@ -768,6 +787,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "power spectral density and autocorrelation"
       ],
       "file": "t0_m09_probability_stats/09-autocorrelation-and-power-spectral-density.md"
+    },
+    {
+      "id": "l10-maximum-likelihood-estimation",
+      "title": "Maximum likelihood estimation",
+      "minutes": 26,
+      "covers": [
+        "maximum likelihood estimation"
+      ],
+      "file": "t0_m09_probability_stats/10-maximum-likelihood-estimation.md"
     }
   ],
   "t0_m10_numerical_methods": [
@@ -807,6 +835,16 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "adaptive step-size control"
       ],
       "file": "t0_m10_numerical_methods/04-adaptive-step-size-control.md"
+    },
+    {
+      "id": "l05-symplectic-integrators-and-energy-drift",
+      "title": "Symplectic integrators and energy drift",
+      "minutes": 32,
+      "covers": [
+        "symplectic integrators for long orbit propagation",
+        "energy drift as a correctness check"
+      ],
+      "file": "t0_m10_numerical_methods/05-symplectic-integrators-and-energy-drift.md"
     }
   ],
   "t0_m11_optimization": [
@@ -855,6 +893,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "linear and quadratic programming"
       ],
       "file": "t0_m11_optimization/05-linear-and-quadratic-programming.md"
+    },
+    {
+      "id": "l06-second-order-cone-programming",
+      "title": "Second-order cone programming and the convex landing problem",
+      "minutes": 30,
+      "covers": [
+        "second-order cone programming"
+      ],
+      "file": "t0_m11_optimization/06-second-order-cone-programming.md"
     }
   ],
   "t0_m12_cpp": [
@@ -1113,11 +1160,20 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-euler-rotational-equations-of-motion",
       "title": "Euler's rotational equations of motion",
-      "minutes": 18,
+      "minutes": 19,
       "covers": [
         "Euler rotational equations of motion"
       ],
       "file": "t1_m14_rigid_body_dynamics/05-euler-rotational-equations-of-motion.md"
+    },
+    {
+      "id": "l06-torque-free-motion-polhode-and-herpolhode",
+      "title": "Torque-free motion, the polhode and the herpolhode",
+      "minutes": 19,
+      "covers": [
+        "torque-free motion, polhode and herpolhode"
+      ],
+      "file": "t1_m14_rigid_body_dynamics/06-torque-free-motion-polhode-and-herpolhode.md"
     }
   ],
   "t1_m15_rotating_frames": [
@@ -1484,11 +1540,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t0_m05_linear_algebra_2": {
-    "covered": 7,
+    "covered": 8,
     "total": 11,
     "complete": false,
     "missing": [
-      "singular value decomposition",
       "pseudoinverse and rank deficiency",
       "condition number",
       "least squares: normal equations vs QR vs SVD"
@@ -1507,34 +1562,28 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t0_m08_odes": {
-    "covered": 10,
+    "covered": 12,
     "total": 12,
-    "complete": false,
-    "missing": [
-      "stability from pole locations",
-      "phase-plane basics"
-    ]
+    "complete": true,
+    "missing": []
   },
   "t0_m09_probability_stats": {
-    "covered": 9,
+    "covered": 10,
     "total": 13,
     "complete": false,
     "missing": [
-      "maximum likelihood estimation",
       "confidence intervals and hypothesis testing",
       "Monte Carlo methods and convergence rates",
       "the chi-square distribution and filter consistency testing"
     ]
   },
   "t0_m10_numerical_methods": {
-    "covered": 5,
+    "covered": 7,
     "total": 13,
     "complete": false,
     "missing": [
       "Adams-Bashforth / Adams-Moulton multistep methods",
       "stiffness and implicit methods: backward Euler, BDF",
-      "symplectic integrators for long orbit propagation",
-      "energy drift as a correctness check",
       "interpolation: linear and cubic spline",
       "numerical differentiation and complex-step derivatives",
       "quadrature: Simpson, Gauss-Legendre",
@@ -1542,11 +1591,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t0_m11_optimization": {
-    "covered": 6,
+    "covered": 7,
     "total": 14,
     "complete": false,
     "missing": [
-      "second-order cone programming",
       "semidefinite programming",
       "duality and the dual problem",
       "interior-point methods",
@@ -1569,11 +1617,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t1_m14_rigid_body_dynamics": {
-    "covered": 5,
+    "covered": 6,
     "total": 12,
     "complete": false,
     "missing": [
-      "torque-free motion, polhode and herpolhode",
       "major/minor axis spin stability and the intermediate axis theorem",
       "energy dissipation and the flat-spin instability",
       "gyroscopic effects, nutation, precession",

@@ -1,7 +1,7 @@
 ---
 id: l05-forced-response-and-resonance
 title: Forced response and resonance
-minutes: 19
+minutes: 18
 covers:
   - forced response and resonance
 ---

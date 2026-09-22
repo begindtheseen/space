@@ -17,6 +17,7 @@ const ModulePage = lazy(() => import('@/pages/Module').then((m) => ({ default: m
 const Review = lazy(() => import('@/pages/Review').then((m) => ({ default: m.Review })))
 const Track = lazy(() => import('@/pages/Track').then((m) => ({ default: m.Track })))
 const Playground = lazy(() => import('@/pages/Playground').then((m) => ({ default: m.Playground })))
+const Focus = lazy(() => import('@/pages/Focus').then((m) => ({ default: m.Focus })))
 const Bench = lazy(() => import('@/pages/Bench').then((m) => ({ default: m.Bench })))
 const Jobs = lazy(() => import('@/pages/Jobs').then((m) => ({ default: m.Jobs })))
 const Progress = lazy(() => import('@/pages/Progress').then((m) => ({ default: m.Progress })))
@@ -85,6 +86,8 @@ function Page({ path, segments }: { path: string; segments: string[] }) {
       return <Learning />
     case 'module':
       return <ModulePage id={rest} />
+    case 'focus':
+      return <Focus />
     case 'review':
       return <Review />
     case 'foundations':
