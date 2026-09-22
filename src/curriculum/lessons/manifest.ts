@@ -3507,6 +3507,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Earth and horizon sensors"
       ],
       "file": "t4_m38_sensors_optical_nav/05-earth-and-horizon-sensors.md"
+    },
+    {
+      "id": "l06-radar-laser-altimeters-lidar",
+      "title": "Radar altimeters, laser altimeters and lidar",
+      "minutes": 18,
+      "covers": [
+        "Radar altimeters, laser altimeters and lidar"
+      ],
+      "file": "t4_m38_sensors_optical_nav/06-radar-laser-altimeters-lidar.md"
     }
   ],
   "t4_m39_orbit_determination": [
@@ -3527,6 +3536,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Batch least-squares orbit determination with the state transition matrix"
       ],
       "file": "t4_m39_orbit_determination/02-batch-least-squares-orbit-determination.md"
+    },
+    {
+      "id": "l03-variational-equations-stm-integration",
+      "title": "The variational equations and computing the STM by integration",
+      "minutes": 16,
+      "covers": [
+        "The variational equations and computing the STM by integration"
+      ],
+      "file": "t4_m39_orbit_determination/03-variational-equations-stm-integration.md"
     }
   ]
 }
@@ -3839,11 +3857,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t4_m38_sensors_optical_nav": {
-    "covered": 5,
+    "covered": 6,
     "total": 12,
     "complete": false,
     "missing": [
-      "Radar altimeters, laser altimeters and lidar",
       "Cameras for optical navigation: the pinhole model, intrinsics and extrinsics, distortion",
       "Feature detection and tracking; terrain relative navigation; crater and landmark matching",
       "Hazard detection and avoidance; visual-inertial odometry basics",
@@ -3853,11 +3870,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t4_m39_orbit_determination": {
-    "covered": 2,
+    "covered": 3,
     "total": 13,
     "complete": false,
     "missing": [
-      "The variational equations and computing the STM by integration",
       "Sequential orbit determination with EKF and UKF",
       "Measurement types and models: range, range-rate/Doppler, angles, GNSS, VLBI, inter-satellite links",
       "Station and tracking geometry and its effect on observability",
