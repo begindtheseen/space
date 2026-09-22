@@ -1785,6 +1785,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "getopts for flags, positional args, \"$@\" vs \"$*\""
       ],
       "file": "cod_lnx_02_scripting/08-getopts-and-arguments.md"
+    },
+    {
+      "id": "l09-sed",
+      "title": "sed — substitution and addressing",
+      "minutes": 16,
+      "covers": [
+        "sed substitution and addressing; awk fields, patterns, BEGIN/END, arrays"
+      ],
+      "file": "cod_lnx_02_scripting/09-sed.md"
     }
   ],
   "cod_py_01_basics": [
@@ -7793,12 +7802,11 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_lnx_02_scripting": {
-    "covered": 8,
+    "covered": 9,
     "total": 14,
     "complete": false,
     "missing": [
       "Here-docs and here-strings",
-      "sed substitution and addressing; awk fields, patterns, BEGIN/END, arrays",
       "jq for JSON, column/paste/join for tabular text",
       "shellcheck as a mandatory linter",
       "cron and systemd timers",
