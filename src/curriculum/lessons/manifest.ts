@@ -3561,6 +3561,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Sensor fusion architectures and per-sensor measurement models"
       ],
       "file": "t4_m38_sensors_optical_nav/11-sensor-fusion-architectures-measurement-models.md"
+    },
+    {
+      "id": "l12-sensor-calibration-alignment-fault-detection",
+      "title": "Sensor calibration, alignment estimation, and fault detection",
+      "minutes": 14,
+      "covers": [
+        "Sensor calibration, alignment estimation, and fault detection"
+      ],
+      "file": "t4_m38_sensors_optical_nav/12-sensor-calibration-alignment-fault-detection.md"
     }
   ],
   "t4_m39_orbit_determination": [
@@ -3608,6 +3617,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Measurement types and models: range, range-rate/Doppler, angles, GNSS, VLBI, inter-satellite links"
       ],
       "file": "t4_m39_orbit_determination/05-measurement-types-and-models.md"
+    },
+    {
+      "id": "l06-tracking-geometry-and-observability",
+      "title": "Station and tracking geometry and its effect on observability",
+      "minutes": 14,
+      "covers": [
+        "Station and tracking geometry and its effect on observability"
+      ],
+      "file": "t4_m39_orbit_determination/06-tracking-geometry-and-observability.md"
     }
   ],
   "t5_m41_ascent_guidance": [
@@ -3628,6 +3646,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Open-loop atmospheric steering (the pitch program) and why closed-loop guidance is avoided in dense atmosphere"
       ],
       "file": "t5_m41_ascent_guidance/02-open-loop-atmospheric-steering.md"
+    },
+    {
+      "id": "l03-linear-tangent-steering-law",
+      "title": "The linear tangent steering law",
+      "minutes": 26,
+      "covers": [
+        "Optimal exoatmospheric steering: the linear tangent law from Pontryagin and the calculus of variations"
+      ],
+      "file": "t5_m41_ascent_guidance/03-linear-tangent-steering-law.md"
     }
   ]
 }
@@ -3940,19 +3967,16 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t4_m38_sensors_optical_nav": {
-    "covered": 11,
+    "covered": 12,
     "total": 12,
-    "complete": false,
-    "missing": [
-      "Sensor calibration, alignment estimation, and fault detection"
-    ]
+    "complete": true,
+    "missing": []
   },
   "t4_m39_orbit_determination": {
-    "covered": 5,
+    "covered": 6,
     "total": 13,
     "complete": false,
     "missing": [
-      "Station and tracking geometry and its effect on observability",
       "Process noise for orbit determination: Gauss-Markov acceleration and dynamic model compensation",
       "Consider-covariance analysis",
       "Residual editing and data weighting",
@@ -3982,11 +4006,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t5_m41_ascent_guidance": {
-    "covered": 2,
+    "covered": 3,
     "total": 12,
     "complete": false,
     "missing": [
-      "Optimal exoatmospheric steering: the linear tangent law from Pontryagin and the calculus of variations",
       "Powered Explicit Guidance and Unified Powered Flight Guidance; why explicit guidance needs no reference trajectory",
       "The two-phase throttle structure: constant thrust to a g-limit, then throttled constant acceleration",
       "Iterative Guidance Mode as flown on Saturn V",
