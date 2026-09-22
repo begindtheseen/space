@@ -1863,6 +1863,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "The z-transform and discrete transfer functions"
       ],
       "file": "t3_m27_digital_control/03-the-z-transform-and-discrete-transfer-functions.md"
+    },
+    {
+      "id": "l04-s-plane-to-z-plane",
+      "title": "Mapping the s-plane to the z-plane",
+      "minutes": 20,
+      "covers": [
+        "Mapping the s-plane to the z-plane; the unit circle as the stability boundary"
+      ],
+      "file": "t3_m27_digital_control/04-s-plane-to-z-plane-and-the-unit-circle.md"
     }
   ],
   "t3_m28_state_space": [
@@ -1923,6 +1932,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Modelling uncertainty: additive, multiplicative (input and output), parametric, unstructured"
       ],
       "file": "t3_m30_robust_control/01-modelling-uncertainty.md"
+    },
+    {
+      "id": "l02-small-gain-theorem",
+      "title": "The small gain theorem",
+      "minutes": 21,
+      "covers": [
+        "The small gain theorem and its exact hypotheses"
+      ],
+      "file": "t3_m30_robust_control/02-small-gain-theorem.md"
     }
   ],
   "t3_m31_nonlinear_control": [
@@ -2144,11 +2162,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t3_m27_digital_control": {
-    "covered": 3,
+    "covered": 4,
     "total": 11,
     "complete": false,
     "missing": [
-      "Mapping the s-plane to the z-plane; the unit circle as the stability boundary",
       "Discretization methods: forward and backward Euler, Tustin, Tustin with prewarping, ZOH equivalence, matched pole-zero",
       "Computational delay and where it shows up in the loop",
       "Choosing a sample rate: the 20-40x bandwidth rule of thumb and what drives the ends of that range",
@@ -2193,11 +2210,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t3_m30_robust_control": {
-    "covered": 1,
+    "covered": 2,
     "total": 12,
     "complete": false,
     "missing": [
-      "The small gain theorem and its exact hypotheses",
       "The H2 and H-infinity norms and what each one measures",
       "H-infinity synthesis: mixed sensitivity S/KS/T weighting, the two-Riccati (DGKF) solution",
       "The structured singular value mu and mu-synthesis by D-K iteration",
