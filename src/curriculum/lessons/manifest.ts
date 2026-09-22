@@ -628,6 +628,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "matrix exponential solution"
       ],
       "file": "t0_m08_odes/04-state-space-and-matrix-exponential.md"
+    },
+    {
+      "id": "l05-forced-response-and-resonance",
+      "title": "Forced response and resonance",
+      "minutes": 19,
+      "covers": [
+        "forced response and resonance"
+      ],
+      "file": "t0_m08_odes/05-forced-response-and-resonance.md"
     }
   ],
   "t0_m09_probability_stats": [
@@ -1381,11 +1390,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t0_m08_odes": {
-    "covered": 5,
+    "covered": 6,
     "total": 12,
     "complete": false,
     "missing": [
-      "forced response and resonance",
       "Laplace transform, inverse transform, partial fractions",
       "initial and final value theorems",
       "transfer functions",
