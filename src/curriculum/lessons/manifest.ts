@@ -992,6 +992,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "interior-point methods"
       ],
       "file": "t0_m11_optimization/09-interior-point-methods.md"
+    },
+    {
+      "id": "l10-sequential-quadratic-programming",
+      "title": "Sequential quadratic programming",
+      "minutes": 30,
+      "covers": [
+        "sequential quadratic programming"
+      ],
+      "file": "t0_m11_optimization/10-sequential-quadratic-programming.md"
     }
   ],
   "t0_m12_cpp": [
@@ -1700,11 +1709,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t0_m11_optimization": {
-    "covered": 10,
+    "covered": 11,
     "total": 14,
     "complete": false,
     "missing": [
-      "sequential quadratic programming",
       "nonlinear programming solvers (IPOPT, SNOPT)",
       "modelling languages and solvers: CVXPY, ECOS, SCS, OSQP, Clarabel",
       "real-time embedded convex solvers and code generation"
