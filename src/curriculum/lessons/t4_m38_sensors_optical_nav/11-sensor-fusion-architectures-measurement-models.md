@@ -8,7 +8,7 @@ covers:
 
 Every lesson in this module has ended in the same place: a measurement $\mathbf{z}$, a prediction $h(\mathbf{x})$ built from the current state estimate, and a noise level that says how much the difference between them should be trusted. That is exactly the form the Kalman filter module's update step consumes, $\boldsymbol{\nu}=\mathbf{z}-h(\hat{\mathbf{x}}^-)$, and every sensor this module has built is, underneath, a specific $h(\cdot)$ and a specific noise model waiting to be plugged into that one equation. This lesson gathers them in one place, and then asks the question a flight software architecture actually has to answer: when a vehicle carries several of these sensors at once, how do their measurements actually get combined, and what happens when that combination is done carelessly.
 
-The honest answer is that combining sensors well is not simply "use all of them." Two entirely reasonable-looking fusion strategies can produce different answers from the identical data, and one of the most common mistakes — treating two locally fused estimates as independent when they secretly share information — makes a filter report itself more confident than it has any right to be. This lesson builds that mistake with real numbers, alongside the fix, and closes with what this module's own sensor accuracies say about when adding a sensor is actually worth the complexity.
+The honest answer is that combining sensors well is not the same as "use all of them." Two entirely reasonable-looking fusion strategies can produce different answers from the identical data, and one of the most common mistakes — treating two locally fused estimates as independent when they secretly share information — makes a filter report itself more confident than it has any right to be. This lesson builds that mistake with real numbers, alongside the fix, and closes with what this module's own sensor accuracies say about when adding a sensor is actually worth the complexity.
 
 ## Per-sensor measurement models, gathered in one place
 
@@ -107,7 +107,7 @@ print("naive federated (wrong): x=%.4f  P=%.4f  -- double-counts 1/P0=%.4f exact
 
 The naive combination's reported information, $1/P_{\text{naive}}-1/P_{\text{central}}$, equals $1/P_0$ to four decimal places — not approximately, exactly, because each local posterior already carries the shared prior's information once, and combining them as independent counts it a second time. The naive filter reports itself more confident than the data justify, which is the worst kind of estimation error: not merely wrong, but wrong while claiming to know it is right.
 
-**Covariance Intersection** is the standard, provably safe answer when the correlation between two estimates is unknown rather than simply ignored: fuse with $1/P_{\text{CI}}=\omega/P_A+(1-\omega)/P_B$ for whichever $\omega\in[0,1]$ minimizes $P_{\text{CI}}$, guaranteed never to be smaller than the truly correct fused covariance, however the two inputs are correlated.
+**Covariance Intersection** is the standard, provably safe answer when the correlation between two estimates is unknown rather than assumed away: fuse with $1/P_{\text{CI}}=\omega/P_A+(1-\omega)/P_B$ for whichever $\omega\in[0,1]$ minimizes $P_{\text{CI}}$, guaranteed never to be smaller than the truly correct fused covariance, however the two inputs are correlated.
 
 ```python
 # in one dimension, 1/P_CI(w) is linear in w, so its minimum P_CI sits at one of the two endpoints
@@ -119,7 +119,7 @@ print("consistent (P_ci >= P_central)?", P_ci >= P_central, "   naive was overco
 # consistent (P_ci >= P_central)?  True    naive was overconfident (P_naive < P_central)?  True
 ```
 
-In this one-dimensional case Covariance Intersection reduces to simply trusting whichever local estimate already had the smaller variance and discarding the other outright, since blending in a less precise scalar source can only widen a purely one-dimensional interval — its real value appears in multiple dimensions, where two sources can be strong along different axes and a careful blend keeps more of both while remaining provably safe against whatever correlation the shared prior introduced. Either way, $P_{\text{CI}}\ge P_{\text{central}}$: it costs some efficiency, in exchange for never reporting confidence the data did not earn.
+In this one-dimensional case Covariance Intersection reduces to trusting whichever local estimate already had the smaller variance and discarding the other outright, since blending in a less precise scalar source can only widen a purely one-dimensional interval — its real value appears in multiple dimensions, where two sources can be strong along different axes and a careful blend keeps more of both while remaining provably safe against whatever correlation the shared prior introduced. Either way, $P_{\text{CI}}\ge P_{\text{central}}$: it costs some efficiency, in exchange for never reporting confidence the data did not earn.
 :::
 
 ::: key Fusion architectures
@@ -153,11 +153,11 @@ Each local posterior's information is $1/P_A=1/P_0+1/R_A$ and $1/P_B=1/P_0+1/R_B
 :::
 
 ::: check
-Why does Covariance Intersection in this lesson's one-dimensional example reduce to simply picking the more precise of the two local estimates, rather than blending them?
+Why does Covariance Intersection in this lesson's one-dimensional example reduce to picking the more precise of the two local estimates outright, rather than blending them?
 :::
 
 ::: answer
-Covariance Intersection searches over $\omega\in[0,1]$ for the value that minimizes the fused variance $P_{\text{CI}}(\omega)$, and in one dimension $1/P_{\text{CI}}(\omega)=\omega/P_A+(1-\omega)/P_B$ is a linear function of $\omega$. A linear function on a bounded interval always reaches its extreme values at the interval's endpoints, so the maximum of $1/P_{\text{CI}}$ — equivalently, the minimum of $P_{\text{CI}}$ — is always achieved at $\omega=0$ or $\omega=1$, meaning the "fused" estimate is always just one of the two original inputs, whichever already had the smaller variance. Genuine blending only emerges once there is more than one dimension for the two sources to trade strength across.
+Covariance Intersection searches over $\omega\in[0,1]$ for the value that minimizes the fused variance $P_{\text{CI}}(\omega)$, and in one dimension $1/P_{\text{CI}}(\omega)=\omega/P_A+(1-\omega)/P_B$ is a linear function of $\omega$. A linear function on a bounded interval always reaches its extreme values at the interval's endpoints, so the maximum of $1/P_{\text{CI}}$ — equivalently, the minimum of $P_{\text{CI}}$ — is always achieved at $\omega=0$ or $\omega=1$, meaning the "fused" estimate is always exactly one of the two original inputs, whichever already had the smaller variance. Genuine blending only emerges once there is more than one dimension for the two sources to trade strength across.
 :::
 
 ::: check

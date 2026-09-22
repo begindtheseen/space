@@ -6,7 +6,7 @@ covers:
   - 'Relative navigation sensors for docking: retroreflector tracking and pattern recognition'
 ---
 
-Every sensor so far in this module measures against something that cooperates by simply existing — a star's catalog position, a field model, a map surveyed in advance. Docking asks a sharper question of a target that may not cooperate at all: a spacecraft's hull is not built to be tracked, and depending on its material and the sun angle at the moment, it can return almost no usable signal to a ranging sensor no matter how much power the sensor puts out. This lesson opens with why that happens and how a docking target is built to stop it happening, then follows the resulting measurement — range and bearing to a small, deliberately engineered pattern — through the one geometric fact every docking approach has to plan around: the shape of the position uncertainty it delivers is not fixed, it flips as the range closes.
+Every sensor so far in this module measures against something that cooperates by its own existence — a star's catalog position, a field model, a map surveyed in advance. Docking asks a sharper question of a target that may not cooperate at all: a spacecraft's hull is not built to be tracked, and depending on its material and the sun angle at the moment, it can return almost no usable signal to a ranging sensor no matter how much power the sensor puts out. This lesson opens with why that happens and how a docking target is built to stop it happening, then follows the resulting measurement — range and bearing to a small, deliberately engineered pattern — through the one geometric fact every docking approach has to plan around: the shape of the position uncertainty it delivers is not fixed, it flips as the range closes.
 
 ## Why docking targets carry retroreflectors
 
@@ -149,7 +149,7 @@ Reflecting off $\hat{\mathbf{x}}=(1,0,0)$: $(d_x,d_y,d_z)-2d_x(1,0,0)=(-d_x,d_y,
 :::
 
 ::: check
-Explain why a specular target surface is, in a specific sense, a harder failure mode for a ranging sensor than a dark diffuse one, rather than simply a weaker version of the same problem.
+Explain why a specular target surface is, in a specific sense, a harder failure mode for a ranging sensor than a dark diffuse one, rather than only a weaker version of the same problem.
 :::
 
 ::: answer

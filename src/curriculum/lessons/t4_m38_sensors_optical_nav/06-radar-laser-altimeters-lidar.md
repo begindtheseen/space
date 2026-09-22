@@ -172,7 +172,7 @@ Why is the final phase of a powered landing the hardest for both radar and lidar
 :::
 
 ::: answer
-Radar's advantage over lidar rests on ordinary atmospheric dust and cloud particles being far smaller than its wavelength, deep in the Rayleigh regime; a landing engine's plume in the final seconds is a much denser, often partially ionized cloud of combustion products and lofted surface debris that can be thick and energetic enough to scatter and attenuate even a radar return, not only degrade a lidar's. Both instruments lose the specific physical advantage that protects them from ordinary dust at exactly the moment — final approach to touchdown — when a wrong or missing range reading is least recoverable, which is why missions manage this phase by timing, descent-profile design, and inertial fallback rather than by trusting either sensor to simply keep working through it.
+Radar's advantage over lidar rests on ordinary atmospheric dust and cloud particles being far smaller than its wavelength, deep in the Rayleigh regime; a landing engine's plume in the final seconds is a much denser, often partially ionized cloud of combustion products and lofted surface debris that can be thick and energetic enough to scatter and attenuate even a radar return, not only degrade a lidar's. Both instruments lose the specific physical advantage that protects them from ordinary dust at exactly the moment — final approach to touchdown — when a wrong or missing range reading is least recoverable, which is why missions manage this phase by timing, descent-profile design, and inertial fallback rather than by trusting either sensor to keep working unaided through it.
 :::
 
 ## Summary

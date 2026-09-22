@@ -3655,6 +3655,24 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Optimal exoatmospheric steering: the linear tangent law from Pontryagin and the calculus of variations"
       ],
       "file": "t5_m41_ascent_guidance/03-linear-tangent-steering-law.md"
+    },
+    {
+      "id": "l04-powered-explicit-guidance",
+      "title": "Powered Explicit Guidance and UPFG",
+      "minutes": 30,
+      "covers": [
+        "Powered Explicit Guidance and Unified Powered Flight Guidance; why explicit guidance needs no reference trajectory"
+      ],
+      "file": "t5_m41_ascent_guidance/04-powered-explicit-guidance.md"
+    },
+    {
+      "id": "l05-two-phase-throttle-structure",
+      "title": "The two-phase throttle structure",
+      "minutes": 22,
+      "covers": [
+        "The two-phase throttle structure: constant thrust to a g-limit, then throttled constant acceleration"
+      ],
+      "file": "t5_m41_ascent_guidance/05-two-phase-throttle-structure.md"
     }
   ]
 }
@@ -4006,12 +4024,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t5_m41_ascent_guidance": {
-    "covered": 3,
+    "covered": 5,
     "total": 12,
     "complete": false,
     "missing": [
-      "Powered Explicit Guidance and Unified Powered Flight Guidance; why explicit guidance needs no reference trajectory",
-      "The two-phase throttle structure: constant thrust to a g-limit, then throttled constant acceleration",
       "Iterative Guidance Mode as flown on Saturn V",
       "Target orbit specification and the terminal constraint set",
       "Thrust vector control allocation and engine-out contingency",
