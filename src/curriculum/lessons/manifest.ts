@@ -863,6 +863,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "energy drift as a correctness check"
       ],
       "file": "t0_m10_numerical_methods/05-symplectic-integrators-and-energy-drift.md"
+    },
+    {
+      "id": "l06-adams-multistep-methods",
+      "title": "Adams-Bashforth and Adams-Moulton multistep methods",
+      "minutes": 28,
+      "covers": [
+        "Adams-Bashforth / Adams-Moulton multistep methods"
+      ],
+      "file": "t0_m10_numerical_methods/06-adams-multistep-methods.md"
     }
   ],
   "t0_m11_optimization": [
@@ -1621,11 +1630,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t0_m10_numerical_methods": {
-    "covered": 7,
+    "covered": 8,
     "total": 13,
     "complete": false,
     "missing": [
-      "Adams-Bashforth / Adams-Moulton multistep methods",
       "stiffness and implicit methods: backward Euler, BDF",
       "interpolation: linear and cubic spline",
       "numerical differentiation and complex-step derivatives",
