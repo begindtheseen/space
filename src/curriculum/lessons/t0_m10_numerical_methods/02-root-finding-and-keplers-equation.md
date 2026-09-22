@@ -229,7 +229,7 @@ For an orbit with $e = 0.3$, the fixed-point iteration $E_{k+1} = M + e\sin E_k$
 :::
 
 ::: answer
-The fixed-point map $g(E) = M + e\sin E$ has $g'(E) = e\cos E$, so the error shrinks by $C = e|\cos E^*| \le 0.3$ per step; worst case $C = 0.3$. Steps needed: $\log(10^{-12})/\log(0.3) = 22.9$, so 23 iterations, each with one sine. Newton from $E_0 = M + e\sin M$ at this eccentricity reaches $10^{-12}$ in about four steps, each with a sine and a cosine: eight trigonometric evaluations against 23. Newton is cheaper even counting the derivative, and at higher $e$ the gap widens because the fixed-point rate $e$ approaches 1.
+The fixed-point map $g(E) = M + e\sin E$ has $g'(E) = e\cos E$, so the error shrinks by $C = e|\cos E^*| \le 0.3$ per step; worst case $C = 0.3$. Steps needed: $\log(10^{-12})/\log(0.3) = 22.9$, so 23 iterations, each with one sine. Newton from $E_0 = M + e\sin M$ at this eccentricity reaches $10^{-12}$ in about three steps, each with a sine and a cosine: six trigonometric evaluations against 23. Newton is cheaper even counting the derivative, and at higher $e$ the gap widens because the fixed-point rate $e$ approaches 1.
 :::
 
 ::: check

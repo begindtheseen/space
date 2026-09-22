@@ -243,6 +243,18 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       "file": "car_04_degree_reality/07-choosing-and-starting-midcareer.md"
     }
   ],
+  "car_05_tooling_reality": [
+    {
+      "id": "l01-the-verbatim-expectation",
+      "title": "The verbatim expectation: you write the flight code",
+      "minutes": 16,
+      "covers": [
+        "the verbatim expectation: implementation, validation, unit testing, and deployment of production software primarily in C++",
+        "GNC engineers write flight code themselves rather than handing prototypes to a software team"
+      ],
+      "file": "car_05_tooling_reality/01-the-verbatim-expectation.md"
+    }
+  ],
   "car_07_resume_and_referrals": [
     {
       "id": "l01-one-page-and-the-top-third",
@@ -271,6 +283,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "quantified bullets: what you did, how, and the measured result"
       ],
       "file": "car_07_resume_and_referrals/03-quantified-bullets.md"
+    },
+    {
+      "id": "l04-the-projects-section",
+      "title": "The projects section: the primary evidence, placed and labeled honestly",
+      "minutes": 20,
+      "covers": [
+        "the projects section as the primary section for candidates without industry GNC experience"
+      ],
+      "file": "car_07_resume_and_referrals/04-the-projects-section.md"
     }
   ],
   "t0_m01_algebra_precalc": [
@@ -6941,12 +6962,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "car_05_tooling_reality": {
-    "covered": 0,
+    "covered": 2,
     "total": 13,
     "complete": false,
     "missing": [
-      "the verbatim expectation: implementation, validation, unit testing, and deployment of production software primarily in C++",
-      "GNC engineers write flight code themselves rather than handing prototypes to a software team",
       "Python for analysis, tooling, pipelines and test infrastructure",
       "MATLAB and Simulink as secondary skills and why the curriculum is not MATLAB-first",
       "flight computers: embedded Linux, a roughly 3.2 series kernel with real-time patches, on Dragon, Falcon and Starship primary flight computers",
@@ -6981,11 +7000,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "car_07_resume_and_referrals": {
-    "covered": 4,
+    "covered": 5,
     "total": 13,
     "complete": false,
     "missing": [
-      "the projects section as the primary section for candidates without industry GNC experience",
       "applicant tracking system parsing: no tables, no multi-column layouts, no images, standard headings, PDF",
       "tailoring to one role family rather than submitting one generic resume everywhere",
       "the cover letter question and when it is worth the time",
