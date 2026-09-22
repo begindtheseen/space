@@ -3498,6 +3498,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Magnetometers, the IGRF and WMM field models, residual dipole, hard-iron and soft-iron calibration"
       ],
       "file": "t4_m38_sensors_optical_nav/04-magnetometers-igrf-wmm-hard-soft-iron-calibration.md"
+    },
+    {
+      "id": "l05-earth-and-horizon-sensors",
+      "title": "Earth and horizon sensors",
+      "minutes": 14,
+      "covers": [
+        "Earth and horizon sensors"
+      ],
+      "file": "t4_m38_sensors_optical_nav/05-earth-and-horizon-sensors.md"
     }
   ],
   "t4_m39_orbit_determination": [
@@ -3830,11 +3839,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t4_m38_sensors_optical_nav": {
-    "covered": 4,
+    "covered": 5,
     "total": 12,
     "complete": false,
     "missing": [
-      "Earth and horizon sensors",
       "Radar altimeters, laser altimeters and lidar",
       "Cameras for optical navigation: the pinhole model, intrinsics and extrinsics, distortion",
       "Feature detection and tracking; terrain relative navigation; crater and landmark matching",
