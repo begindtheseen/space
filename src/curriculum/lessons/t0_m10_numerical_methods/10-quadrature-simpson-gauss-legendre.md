@@ -63,7 +63,7 @@ Continuing the construction with more equally spaced nodes gives the Newton–Co
 | Simpson 3/8 | 4 | $\tfrac38, \tfrac98, \tfrac98, \tfrac38$ | 3 | $-\frac{3h^5}{80}f^{(4)}$ |
 | Boole | 5 | $\tfrac{14}{45}, \tfrac{64}{45}, \tfrac{8}{15}, \tfrac{64}{45}, \tfrac{14}{45}$ | 5 | $-\frac{8h^7}{945}f^{(6)}$ |
 
-The family does not continue usefully. At nine nodes the weights first go negative — the eight-interval rule has weights proportional to $3956, 23552, -3712, 41984, -3632\cdot 5, \ldots$ over $14175$ — and negative weights mean the rule can amplify round-off and can return a negative value for a positive integrand. The underlying cause is the Runge phenomenon from the interpolation lesson: the rules are built by integrating a high-degree interpolant through equally spaced points, and that interpolant oscillates. Stop at Boole, and get more accuracy by refining the grid (composite rules) rather than raising the degree.
+The family does not continue usefully. At nine nodes the weights first go negative — the eight-interval rule has weights proportional to $3956, 23552, -3712, 41984, -18160, \ldots$ over $14175$ — and negative weights mean the rule can amplify round-off and can return a negative value for a positive integrand. The underlying cause is the Runge phenomenon from the interpolation lesson: the rules are built by integrating a high-degree interpolant through equally spaced points, and that interpolant oscillates. Stop at Boole, and get more accuracy by refining the grid (composite rules) rather than raising the degree.
 
 ## Gauss–Legendre: choose the nodes too
 
@@ -159,7 +159,7 @@ Kepler gives $E = 1.2580296049\,\mathrm{rad}$ and $t = 4{,}067.87449645\,\mathrm
 | 9 | $4{,}069.24698\,\mathrm{s}$ | $1.37\,\mathrm{s}$ | $4{,}067.87450\,\mathrm{s}$ | $8.1\times10^{-7}\,\mathrm{s}$ |
 | 17 | $4{,}067.95841\,\mathrm{s}$ | $0.0839\,\mathrm{s}$ | $4{,}067.87450\,\mathrm{s}$ | $1.8\times10^{-12}\,\mathrm{s}$ |
 
-Simpson's errors fall by 15.3 then 16.3 — fourth order, confirmed. Gauss with nine nodes already has the answer to a microsecond, which on a $9.2\,\mathrm{km/s}$ perigee speed is nine millimetres of along-track position. Nine evaluations of a rational function, against Kepler's equation and its Newton iteration: for some applications this is the cheaper route to a time of flight, and for a *partial* arc that stops at an arbitrary true anomaly it generalises to perturbed motion where Kepler's equation does not.
+Simpson's errors fall by 15.3 then 16.3 — fourth order, confirmed. Gauss with nine nodes already has the answer to a microsecond, which on a $9.2\,\mathrm{km/s}$ perigee speed is seven millimetres of along-track position. Nine evaluations of a rational function, against Kepler's equation and its Newton iteration: for some applications this is the cheaper route to a time of flight, and for a *partial* arc that stops at an arbitrary true anomaly it generalises to perturbed motion where Kepler's equation does not.
 :::
 
 ## When you cannot choose the nodes
@@ -226,7 +226,7 @@ A *periodic* integrand over a whole period reverses the usual ranking. Integrate
 
 Gauss–Legendre nodes appear in two places you will meet again, and both are the same idea applied to a differential equation rather than an integral.
 
-An **implicit Runge–Kutta method** whose stage nodes are the Gauss–Legendre points of $[0,1]$ attains order $2s$ with $s$ stages — the maximum possible — and is both A-stable and symplectic. The one-stage member is the implicit midpoint rule, $\mathbf{y}_{n+1} = \mathbf{y}_n + h\,\mathbf{f}(t_n + h/2, (\mathbf{y}_n + \mathbf{y}_{n+1})/2)$, second order, and it is the only method in this module that is simultaneously A-stable in the sense of the stiffness lesson and symplectic in the sense of the orbit lesson. The Radau methods mentioned as stiff solvers are the same construction with a different node family, trading symplecticity for L-stability.
+An **implicit Runge–Kutta method** whose stage nodes are the Gauss–Legendre points of $[0,1]$ attains order $2s$ with $s$ stages — the maximum possible — and is both A-stable and symplectic. The one-stage member is the implicit midpoint rule, $\mathbf{y}_{n+1} = \mathbf{y}_n + h\,\mathbf{f}(t_n + h/2, (\mathbf{y}_n + \mathbf{y}_{n+1})/2)$, second order, and like every member of that family it is both A-stable in the sense of the stiffness lesson and symplectic in the sense of the orbit lesson. The Radau methods mentioned as stiff solvers are the same construction with a different node family, trading symplecticity for L-stability.
 
 **Direct collocation**, the workhorse of trajectory optimisation, discretises a trajectory by enforcing the dynamics at a set of nodes and letting an optimiser choose the states and controls there. Putting those nodes at Legendre–Gauss or Legendre–Gauss–Lobatto points rather than on a uniform grid is what makes a *pseudospectral* method: the same exponential convergence seen in the tables above, now in the accuracy of a whole trajectory for a given number of decision variables. It is the reason a landing or orbit-transfer problem can be solved to high accuracy with a few dozen nodes instead of a few thousand.
 
@@ -253,7 +253,7 @@ An accelerometer logs specific force at 100 Hz during a 140 s burn, and you want
 :::
 
 ::: answer
-Simpson, on the 14,001 samples as they arrive: the nodes are fixed by the sensor, so Gauss–Legendre is not available without interpolating first, which would add the interpolant's error for no benefit at this sample density. With $h = 0.01\,\mathrm{s}$ the Simpson truncation error is utterly negligible — $(b-a)h^4/180$ is $4\times10^{-11}$ times $\max|f^{(4)}|$ — so truncation is not what limits you. What limits you is the data: sensor noise (which the sum averages down, roughly as $1/\sqrt{N}$, so it is benign), sensor bias (which does *not* average down: a $100\,\mathrm{\mu g}$ bias over 140 s is $0.14\,\mathrm{m/s}$ of $\Delta v$ error, and no quadrature rule can help), quantisation, and any dropped or time-tagged-wrong samples. This is the usual situation with measured integrands: the rule stops mattering long before the data does.
+Simpson, on the 14,001 samples as they arrive: the nodes are fixed by the sensor, so Gauss–Legendre is not available without interpolating first, which would add the interpolant's error for no benefit at this sample density. With $h = 0.01\,\mathrm{s}$ the Simpson truncation error is utterly negligible — $(b-a)h^4/180$ is $7.8\times10^{-9}$ times $\max|f^{(4)}|$ — so truncation is not what limits you. What limits you is the data: sensor noise (which the sum averages down, roughly as $1/\sqrt{N}$, so it is benign), sensor bias (which does *not* average down: a $100\,\mathrm{\mu g}$ bias over 140 s is $0.14\,\mathrm{m/s}$ of $\Delta v$ error, and no quadrature rule can help), quantisation, and any dropped or time-tagged-wrong samples. This is the usual situation with measured integrands: the rule stops mattering long before the data does.
 :::
 
 ::: check
