@@ -1046,6 +1046,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "modelling languages and solvers: CVXPY, ECOS, SCS, OSQP, Clarabel"
       ],
       "file": "t0_m11_optimization/12-modelling-languages-and-solvers.md"
+    },
+    {
+      "id": "l13-real-time-embedded-convex-solvers",
+      "title": "Real-time embedded convex solvers and code generation",
+      "minutes": 32,
+      "covers": [
+        "real-time embedded convex solvers and code generation"
+      ],
+      "file": "t0_m11_optimization/13-real-time-embedded-convex-solvers.md"
     }
   ],
   "t0_m12_cpp": [
@@ -1768,12 +1777,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t0_m11_optimization": {
-    "covered": 13,
+    "covered": 14,
     "total": 14,
-    "complete": false,
-    "missing": [
-      "real-time embedded convex solvers and code generation"
-    ]
+    "complete": true,
+    "missing": []
   },
   "t0_m12_cpp": {
     "covered": 17,

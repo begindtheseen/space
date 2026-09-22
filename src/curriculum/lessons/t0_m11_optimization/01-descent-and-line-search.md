@@ -10,7 +10,7 @@ Almost every guidance and control computation on a spacecraft is an optimisation
 
 This module builds the mathematics that lets you recognise which of these problems are easy, which are hard, and what "easy" buys you when an algorithm has to run onboard with a hard deadline. The destination is convex optimisation and the interior-point solvers that fly on landing vehicles. The starting point is the simplest question of all: given a smooth function of several variables, how do you find a point where it is smallest, and how quickly can you get there?
 
-This lesson covers the unconstrained problem – no side conditions at all – and the two ideas every later algorithm reuses: a direction in which the function decreases, and a step length along it that is neither timid nor reckless. The next lesson adds curvature information (Newton, quasi-Newton, trust regions). The rest of the module adds constraints.
+This lesson covers the unconstrained problem – no side conditions at all – and the two ideas every later algorithm reuses: a direction in which the function decreases, and a step length along it that is neither timid nor reckless. Lesson 10 adds curvature information (Newton, quasi-Newton, trust regions), building it on top of the constrained machinery the rest of the module develops first.
 
 ## The standard form of an optimisation problem
 
@@ -76,7 +76,7 @@ $$
 \nabla f(\mathbf{x}_k)^\top \mathbf{p}_k < 0 .
 $$
 
-Such a $\mathbf{p}_k$ is a **descent direction**. Among all unit vectors the most negative directional derivative is achieved by $\mathbf{p} = -\nabla f / \|\nabla f\|$ (Cauchy–Schwarz), which is why $\mathbf{p}_k = -\nabla f(\mathbf{x}_k)$ is called the steepest-descent direction. Any $\mathbf{p}_k = -\mathbf{B}_k^{-1}\nabla f(\mathbf{x}_k)$ with $\mathbf{B}_k \succ 0$ is also a descent direction, since then $\nabla f^\top \mathbf{p} = -\nabla f^\top \mathbf{B}_k^{-1}\nabla f < 0$. Newton's method takes $\mathbf{B}_k = \nabla^2 f(\mathbf{x}_k)$; quasi-Newton methods build an approximation; gradient descent uses $\mathbf{B}_k = \mathbf{I}$. The direction family is the whole story of unconstrained optimisation, and the next lesson is about choosing $\mathbf{B}_k$ well.
+Such a $\mathbf{p}_k$ is a **descent direction**. Among all unit vectors the most negative directional derivative is achieved by $\mathbf{p} = -\nabla f / \|\nabla f\|$ (Cauchy–Schwarz), which is why $\mathbf{p}_k = -\nabla f(\mathbf{x}_k)$ is called the steepest-descent direction. Any $\mathbf{p}_k = -\mathbf{B}_k^{-1}\nabla f(\mathbf{x}_k)$ with $\mathbf{B}_k \succ 0$ is also a descent direction, since then $\nabla f^\top \mathbf{p} = -\nabla f^\top \mathbf{B}_k^{-1}\nabla f < 0$. Newton's method takes $\mathbf{B}_k = \nabla^2 f(\mathbf{x}_k)$; quasi-Newton methods build an approximation; gradient descent uses $\mathbf{B}_k = \mathbf{I}$. The direction family is the whole story of unconstrained optimisation, and lesson 10 is about choosing $\mathbf{B}_k$ well.
 
 ## Line search: choosing the step length
 
@@ -91,7 +91,7 @@ $$
 
 The right-hand side is a line through $f(\mathbf{x}_k)$ with a fraction $c_1$ of the initial slope. Any step that lands below that line has achieved a decrease proportional to the step length and the slope – it is not merely "some decrease", which could shrink to nothing and let the iterates stall. Backtracking starts at $\alpha = 1$ (the natural scale for Newton-type steps) and multiplies by a contraction factor $\rho \in (0, 1)$ until the condition holds. Typical values are $c_1 = 10^{-4}$ and $\rho = 0.5$. Because $\mathbf{p}_k$ is a descent direction the condition holds for all sufficiently small $\alpha$, so the loop terminates.
 
-A complete line search also asks the step not to be too short. The **Wolfe curvature condition** requires the slope at the new point to be less negative than a fraction $c_2 \in (c_1, 1)$ of the starting slope, $\nabla f(\mathbf{x}_k + \alpha\mathbf{p}_k)^\top\mathbf{p}_k \ge c_2\,\nabla f(\mathbf{x}_k)^\top\mathbf{p}_k$, with $c_2 = 0.9$ common. Backtracking from $\alpha = 1$ usually satisfies it automatically, which is why simple codes skip it; quasi-Newton methods need it, for a reason the next lesson explains.
+A complete line search also asks the step not to be too short. The **Wolfe curvature condition** requires the slope at the new point to be less negative than a fraction $c_2 \in (c_1, 1)$ of the starting slope, $\nabla f(\mathbf{x}_k + \alpha\mathbf{p}_k)^\top\mathbf{p}_k \ge c_2\,\nabla f(\mathbf{x}_k)^\top\mathbf{p}_k$, with $c_2 = 0.9$ common. Backtracking from $\alpha = 1$ usually satisfies it automatically, which is why simple codes skip it; quasi-Newton methods need it, for a reason lesson 10 explains.
 
 ::: example Backtracking on Rosenbrock's first step
 Start gradient descent at $\mathbf{x}_0 = (-1.2, 1.0)$, the standard starting point. There $f = 24.2$ and the gradient is $\nabla f = (-215.6, -88.0)$, with norm 232.9. The steepest-descent direction is $\mathbf{p}_0 = (215.6, 88.0)$ and the initial slope is $\nabla f^\top\mathbf{p}_0 = -232.9^2 = -54{,}227$.
@@ -125,7 +125,7 @@ For a general smooth $f$ the same conclusion holds near the minimiser, with $\ka
 ::: example Steepest descent on an ill-conditioned quadratic
 Take $f(x_1, x_2) = \tfrac{1}{2}(x_1^2 + \kappa\,x_2^2)$, a stand-in for an LQR cost in which one state is weighted $\kappa$ times more heavily than another. Start from $(\kappa, 1)$ and use exact line search until $f$ has fallen by a factor $10^{6}$.
 
-For $\kappa = 10$ the contraction factor per iteration in $f$ is $\left(\frac{9}{11}\right)^2 = 0.669$ and the run takes 35 iterations (the bound predicts $\ln(10^{-6})/\ln 0.669 = 34.4$). For $\kappa = 100$ the factor is $0.9608$ and the run takes 346 iterations. For $\kappa = 1000$ it is $0.99601$ and the run takes 3,454 iterations. Ten times the condition number costs ten times the iterations – linear convergence with a rate that degrades linearly in $\kappa$. The Rosenbrock valley has $\kappa \approx 2{,}500$ at the solution and worse further out, which is why gradient descent on it needs tens of thousands of iterations: from $(-1.2, 1.0)$ with backtracking ($c_1 = 10^{-4}$, $\rho = 0.5$) it takes 19,435 iterations to bring $\|\nabla f\|$ below $10^{-8}$. Newton's method, next lesson, does it in 21.
+For $\kappa = 10$ the contraction factor per iteration in $f$ is $\left(\frac{9}{11}\right)^2 = 0.669$ and the run takes 35 iterations (the bound predicts $\ln(10^{-6})/\ln 0.669 = 34.4$). For $\kappa = 100$ the factor is $0.9608$ and the run takes 346 iterations. For $\kappa = 1000$ it is $0.99601$ and the run takes 3,454 iterations. Ten times the condition number costs ten times the iterations – linear convergence with a rate that degrades linearly in $\kappa$. The Rosenbrock valley has $\kappa \approx 2{,}500$ at the solution and worse further out, which is why gradient descent on it needs tens of thousands of iterations: from $(-1.2, 1.0)$ with backtracking ($c_1 = 10^{-4}$, $\rho = 0.5$) it takes 19,435 iterations to bring $\|\nabla f\|$ below $10^{-8}$. Newton's method, in lesson 10, does it in 21.
 :::
 
 ::: key Gradient descent
@@ -201,7 +201,7 @@ Why does gradient descent on a function with badly mixed units behave as if the 
 :::
 
 ::: answer
-The Hessian's eigenvalues carry the units of the variables. If one variable is a position in metres and another an angle in radians, a "unit" change in each has wildly different physical significance, and the second derivatives with respect to each can differ by many orders of magnitude for no physical reason. The condition number, and hence the iteration count, reflects that arbitrary choice. Rescaling each variable by a typical magnitude (so that a change of 1 in each scaled variable is comparably important) is a change of variables $\mathbf{x} = \mathbf{D}\tilde{\mathbf{x}}$ that transforms the Hessian to $\mathbf{D}\nabla^2 f\,\mathbf{D}$ and can shrink $\kappa$ dramatically. Newton's method, next lesson, is invariant to such rescalings, which is one of its great virtues.
+The Hessian's eigenvalues carry the units of the variables. If one variable is a position in metres and another an angle in radians, a "unit" change in each has wildly different physical significance, and the second derivatives with respect to each can differ by many orders of magnitude for no physical reason. The condition number, and hence the iteration count, reflects that arbitrary choice. Rescaling each variable by a typical magnitude (so that a change of 1 in each scaled variable is comparably important) is a change of variables $\mathbf{x} = \mathbf{D}\tilde{\mathbf{x}}$ that transforms the Hessian to $\mathbf{D}\nabla^2 f\,\mathbf{D}$ and can shrink $\kappa$ dramatically. Newton's method, in lesson 10, is invariant to such rescalings, which is one of its great virtues.
 :::
 
 ## Summary
@@ -218,4 +218,4 @@ The Hessian's eigenvalues carry the units of the variables. If one variable is a
 | $\kappa = \lambda_{\max}/\lambda_{\min}$ | Condition number of the Hessian |
 | Rosenbrock $(1-x)^2 + 100(y-x^2)^2$ | Test function; $\kappa \approx 2{,}500$ at $(1,1)$ |
 
-The next lesson replaces the identity in $\mathbf{p} = -\mathbf{B}^{-1}\nabla f$ with the Hessian or an approximation of it. That removes the dependence on $\kappa$ and turns tens of thousands of iterations into tens.
+Lesson 10 replaces the identity in $\mathbf{p} = -\mathbf{B}^{-1}\nabla f$ with the Hessian or an approximation of it. That removes the dependence on $\kappa$ and turns tens of thousands of iterations into tens.
