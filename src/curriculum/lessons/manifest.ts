@@ -3105,6 +3105,33 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Continuous-discrete EKF and the iterated EKF"
       ],
       "file": "t4_m35_nonlinear_filters/02-continuous-discrete-and-iterated-ekf.md"
+    },
+    {
+      "id": "l03-when-and-why-the-ekf-diverges",
+      "title": "When and why the EKF diverges",
+      "minutes": 19,
+      "covers": [
+        "When and why the EKF diverges"
+      ],
+      "file": "t4_m35_nonlinear_filters/03-when-and-why-the-ekf-diverges.md"
+    },
+    {
+      "id": "l04-the-unscented-kalman-filter",
+      "title": "The Unscented Kalman Filter",
+      "minutes": 22,
+      "covers": [
+        "The Unscented Kalman Filter: the unscented transform, sigma point selection (alpha, beta, kappa), the square-root UKF"
+      ],
+      "file": "t4_m35_nonlinear_filters/04-the-unscented-kalman-filter.md"
+    },
+    {
+      "id": "l05-why-the-ukf-beats-the-ekf",
+      "title": "Why the UKF beats the EKF for strong nonlinearity, and the cost",
+      "minutes": 20,
+      "covers": [
+        "Why the UKF beats the EKF for strong nonlinearity, and the cost comparison"
+      ],
+      "file": "t4_m35_nonlinear_filters/05-why-the-ukf-beats-the-ekf.md"
     }
   ],
   "t4_m36_inertial_navigation": [
@@ -3179,6 +3206,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "The Schuler oscillation and why it bounds unaided INS horizontal error"
       ],
       "file": "t4_m36_inertial_navigation/08-schuler-oscillation.md"
+    },
+    {
+      "id": "l09-free-inertial-error-propagation",
+      "title": "Free-inertial error propagation",
+      "minutes": 26,
+      "covers": [
+        "Free-inertial error propagation: how position error grows with time from each error source"
+      ],
+      "file": "t4_m36_inertial_navigation/09-free-inertial-error-propagation.md"
     }
   ],
   "t4_m37_gnss": [
@@ -3280,6 +3316,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "GNSS in a launch vehicle environment: acceleration, jerk, vibration, plume attenuation, antenna switching"
       ],
       "file": "t4_m37_gnss/11-gnss-in-the-launch-vehicle-environment.md"
+    },
+    {
+      "id": "l12-integrity-jamming-and-spoofing",
+      "title": "Integrity, jamming and spoofing",
+      "minutes": 24,
+      "covers": [
+        "Jamming and spoofing; RAIM and integrity monitoring"
+      ],
+      "file": "t4_m37_gnss/12-integrity-jamming-and-spoofing.md"
     }
   ],
   "t4_m38_sensors_optical_nav": [
@@ -3585,13 +3630,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t4_m35_nonlinear_filters": {
-    "covered": 2,
+    "covered": 5,
     "total": 14,
     "complete": false,
     "missing": [
-      "When and why the EKF diverges",
-      "The Unscented Kalman Filter: the unscented transform, sigma point selection (alpha, beta, kappa), the square-root UKF",
-      "Why the UKF beats the EKF for strong nonlinearity, and the cost comparison",
       "The cubature Kalman filter",
       "Particle filters: sequential importance sampling, resampling, degeneracy and sample impoverishment",
       "When a particle filter is genuinely required: multi-modal and non-Gaussian posteriors",
@@ -3604,11 +3646,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t4_m36_inertial_navigation": {
-    "covered": 8,
+    "covered": 9,
     "total": 13,
     "complete": false,
     "missing": [
-      "Free-inertial error propagation: how position error grows with time from each error source",
       "Initial alignment: coarse leveling, gyrocompassing, fine alignment via Kalman filter, transfer and in-flight alignment",
       "INS/GNSS integration architectures: loosely, tightly, and ultra-tightly (deeply) coupled",
       "Error-state filter formulation for INS: the 15-state and 21-state models",
@@ -3616,11 +3657,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t4_m37_gnss": {
-    "covered": 11,
+    "covered": 12,
     "total": 14,
     "complete": false,
     "missing": [
-      "Jamming and spoofing; RAIM and integrity monitoring",
       "Receiver tracking loops (DLL, PLL, FLL) and the bandwidth/dynamics trade",
       "Vector tracking and deep coupling"
     ]
