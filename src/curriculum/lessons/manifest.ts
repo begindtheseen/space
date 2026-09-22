@@ -1731,6 +1731,33 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "set -euo pipefail and what each flag actually does"
       ],
       "file": "cod_lnx_02_scripting/02-set-euo-pipefail.md"
+    },
+    {
+      "id": "l03-variables-quoting-and-expansion",
+      "title": "Variables, quoting, word splitting and globs",
+      "minutes": 18,
+      "covers": [
+        "Variables, quoting, word splitting, glob expansion"
+      ],
+      "file": "cod_lnx_02_scripting/03-variables-quoting-and-expansion.md"
+    },
+    {
+      "id": "l04-substitution-arithmetic-and-arrays",
+      "title": "Command substitution, arithmetic and arrays",
+      "minutes": 17,
+      "covers": [
+        "Command substitution $( ), arithmetic $(( )), arrays"
+      ],
+      "file": "cod_lnx_02_scripting/04-substitution-arithmetic-and-arrays.md"
+    },
+    {
+      "id": "l05-control-flow-and-tests",
+      "title": "Control flow, and the two kinds of bracket",
+      "minutes": 18,
+      "covers": [
+        "if / for / while / case, test [[ ]] vs [ ]"
+      ],
+      "file": "cod_lnx_02_scripting/05-control-flow-and-tests.md"
     }
   ],
   "cod_py_01_basics": [
@@ -7739,13 +7766,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_lnx_02_scripting": {
-    "covered": 2,
+    "covered": 5,
     "total": 14,
     "complete": false,
     "missing": [
-      "Variables, quoting, word splitting, glob expansion",
-      "Command substitution $( ), arithmetic $(( )), arrays",
-      "if / for / while / case, test [[ ]] vs [ ]",
       "Functions, return values, exit codes, $?",
       "trap for cleanup on EXIT/INT/TERM",
       "getopts for flags, positional args, \"$@\" vs \"$*\"",
