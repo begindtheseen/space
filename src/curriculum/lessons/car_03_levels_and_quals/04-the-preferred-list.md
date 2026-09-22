@@ -1,7 +1,7 @@
 ---
 id: l04-the-preferred-list
 title: "The GNC Engineer preferred list, item by item"
-minutes: 18
+minutes: 19
 covers:
   - the full preferred list for GNC Engineer and what each item signals
 ---

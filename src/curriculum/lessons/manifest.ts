@@ -149,7 +149,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-the-preferred-list",
       "title": "The GNC Engineer preferred list, item by item",
-      "minutes": 18,
+      "minutes": 19,
       "covers": [
         "the full preferred list for GNC Engineer and what each item signals"
       ],
@@ -233,6 +233,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "skills sections without proficiency bar graphics"
       ],
       "file": "car_07_resume_and_referrals/02-keywords-and-the-skills-section.md"
+    },
+    {
+      "id": "l03-quantified-bullets",
+      "title": "Bullets that name a problem, a method, and a result",
+      "minutes": 24,
+      "covers": [
+        "quantified bullets: what you did, how, and the measured result"
+      ],
+      "file": "car_07_resume_and_referrals/03-quantified-bullets.md"
     }
   ],
   "t0_m01_algebra_precalc": [
@@ -6949,11 +6958,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "car_07_resume_and_referrals": {
-    "covered": 3,
+    "covered": 4,
     "total": 13,
     "complete": false,
     "missing": [
-      "quantified bullets: what you did, how, and the measured result",
       "the projects section as the primary section for candidates without industry GNC experience",
       "applicant tracking system parsing: no tables, no multi-column layouts, no images, standard headings, PDF",
       "tailoring to one role family rather than submitting one generic resume everywhere",
