@@ -1657,6 +1657,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "ssh keys, ~/.ssh/config, agent forwarding, port forwarding"
       ],
       "file": "cod_lnx_01_shell/08-ssh-keys-config-and-tunnels.md"
+    },
+    {
+      "id": "l09-tmux-sessions-windows-and-panes",
+      "title": "tmux — sessions, windows and panes",
+      "minutes": 19,
+      "covers": [
+        "tmux sessions, windows, panes, detach/attach"
+      ],
+      "file": "cod_lnx_01_shell/09-tmux-sessions-windows-and-panes.md"
     }
   ],
   "cod_py_01_basics": [
@@ -7659,12 +7668,11 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_lnx_01_shell": {
-    "covered": 9,
+    "covered": 10,
     "total": 15,
     "complete": false,
     "missing": [
       "systemd: systemctl, journalctl",
-      "tmux sessions, windows, panes, detach/attach",
       "Environment variables, PATH, .bashrc vs .bash_profile",
       "Package management (apt/dnf) and building from source",
       "df du lsblk ip ss curl strace lsof dmesg",
