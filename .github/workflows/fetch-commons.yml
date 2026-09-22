@@ -1,0 +1,66 @@
+# One-off helper: fetch public-domain / CC0 images from Wikimedia Commons on a
+# GitHub runner and push them to an orphan branch. Used to source the desktop
+# splash photo from an environment that cannot reach Commons directly.
+name: Fetch Commons assets
+
+on:
+  workflow_dispatch:
+    inputs:
+      titles:
+        description: 'Commons file titles, one per line (no "File:" prefix)'
+        required: true
+        type: string
+      branch:
+        description: 'Orphan branch to push the files into'
+        default: assets/splash-candidates
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch files and metadata
+        env:
+          TITLES: ${{ inputs.titles }}
+        run: |
+          python3 - <<'PY'
+          import json, os, urllib.request, urllib.parse
+          titles = [t.strip() for t in os.environ['TITLES'].splitlines() if t.strip()]
+          UA = {'User-Agent': 'orbit-splash-fetch/1.0 (GitHub Actions; one-off asset fetch)'}
+          os.makedirs('out', exist_ok=True)
+          meta = []
+          for i, t in enumerate(titles):
+              q = urllib.parse.urlencode({
+                  'action': 'query', 'titles': 'File:' + t, 'prop': 'imageinfo',
+                  'iiprop': 'url|size|extmetadata|sha1', 'format': 'json', 'formatversion': '2'})
+              req = urllib.request.Request('https://commons.wikimedia.org/w/api.php?' + q, headers=UA)
+              page = json.loads(urllib.request.urlopen(req).read())['query']['pages'][0]
+              if page.get('missing') or not page.get('imageinfo'):
+                  meta.append({'title': t, 'missing': True}); print('MISSING', t); continue
+              ii = page['imageinfo'][0]; ext = ii.get('extmetadata', {})
+              g = lambda k: ext.get(k, {}).get('value')
+              url = ii['url']
+              fn = f"{i:02d}-" + os.path.basename(urllib.parse.unquote(url))
+              data = urllib.request.urlopen(urllib.request.Request(url, headers=UA)).read()
+              open('out/' + fn, 'wb').write(data)
+              meta.append({'title': t, 'file': fn, 'license': g('LicenseShortName'), 'licenseUrl': g('LicenseUrl'),
+                           'artist': g('Artist'), 'credit': g('Credit'), 'date': g('DateTimeOriginal'),
+                           'width': ii['width'], 'height': ii['height'], 'bytes': len(data),
+                           'url': url, 'descriptionurl': ii['descriptionurl'], 'sha1': ii['sha1']})
+              print('OK', fn, ii['width'], ii['height'], len(data), g('LicenseShortName'))
+          json.dump(meta, open('out/meta.json', 'w'), indent=2)
+          PY
+      - name: Push to orphan branch
+        env:
+          BRANCH: ${{ inputs.branch }}
+          TOKEN: ${{ github.token }}
+        run: |
+          cd out
+          git init -q
+          git checkout -q -b "$BRANCH"
+          git add -A
+          git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" commit -qm "Commons asset candidates"
+          git push -f "https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "$BRANCH"
