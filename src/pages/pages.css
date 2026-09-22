@@ -1077,12 +1077,23 @@
  *
  * The header sat at the page edge while the prose it introduced began a
  * further 180px in, so the title did not line up with a single word of what
- * it was titling. Matching the measure and centring it the same way puts the
- * whole lesson on one axis, which is most of what "considered" looks like.
+ * it was titling. Putting the whole lesson on one axis is most of what
+ * "considered" looks like.
+ *
+ * The width is a length rather than `66ch` because `ch` resolves against each
+ * element's own font size: the same `66ch` on a heading and on body copy gives
+ * two different widths, which is exactly the misalignment being fixed. One
+ * shared value keeps them identical. Both containers are symmetrically padded,
+ * so centring each in its own parent puts them on the same centre line.
  */
+.reader {
+  --reader-measure: 665px;
+}
+
 .reader .page-head,
-.reader__top {
-  max-width: 66ch;
+.reader__top,
+.reader__md.md {
+  max-width: var(--reader-measure);
   margin-left: auto;
   margin-right: auto;
   width: 100%;
