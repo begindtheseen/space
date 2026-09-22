@@ -3653,6 +3653,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Residual editing and data weighting"
       ],
       "file": "t4_m39_orbit_determination/09-residual-editing-and-data-weighting.md"
+    },
+    {
+      "id": "l10-orbit-accuracy-ric-frame",
+      "title": "Orbit accuracy metrics and covariance in the RIC frame",
+      "minutes": 13,
+      "covers": [
+        "Orbit accuracy metrics and covariance in the RIC (radial, in-track, cross-track) frame"
+      ],
+      "file": "t4_m39_orbit_determination/10-orbit-accuracy-ric-frame.md"
     }
   ],
   "t5_m41_ascent_guidance": [
@@ -3736,6 +3745,24 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Load relief and its interaction with guidance"
       ],
       "file": "t5_m41_ascent_guidance/09-load-relief-and-guidance.md"
+    },
+    {
+      "id": "l10-offline-trajectory-optimization",
+      "title": "Ascent trajectory optimization as an offline problem",
+      "minutes": 23,
+      "covers": [
+        "Ascent trajectory optimization as an offline problem feeding onboard guidance"
+      ],
+      "file": "t5_m41_ascent_guidance/10-offline-trajectory-optimization.md"
+    },
+    {
+      "id": "l11-day-of-launch-wind-updates",
+      "title": "Day-of-launch trajectory updates from measured winds",
+      "minutes": 22,
+      "covers": [
+        "Day-of-launch trajectory updates from measured winds"
+      ],
+      "file": "t5_m41_ascent_guidance/11-day-of-launch-wind-updates.md"
     }
   ]
 }
@@ -4054,11 +4081,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t4_m39_orbit_determination": {
-    "covered": 9,
+    "covered": 10,
     "total": 13,
     "complete": false,
     "missing": [
-      "Orbit accuracy metrics and covariance in the RIC (radial, in-track, cross-track) frame",
       "Conjunction assessment and collision probability",
       "Maneuver estimation and reconstruction",
       "Relative orbit determination for constellations; autonomous onboard orbit determination"
@@ -4084,12 +4110,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t5_m41_ascent_guidance": {
-    "covered": 9,
+    "covered": 11,
     "total": 12,
     "complete": false,
     "missing": [
-      "Ascent trajectory optimization as an offline problem feeding onboard guidance",
-      "Day-of-launch trajectory updates from measured winds",
       "Abort modes: RTLS, TAL, AOA and the decision logic"
     ]
   },
