@@ -154,6 +154,25 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Site Reliability Engineer, GNC: HPC Monte Carlo infrastructure, CI for rocket and simulation software"
       ],
       "file": "car_02_role_families/08-software-and-infrastructure-families.md"
+    },
+    {
+      "id": "l09-newer-programs-starfall-and-what-comes-next",
+      "title": "Starfall, Starmind, and what a new program changes",
+      "minutes": 18,
+      "covers": [
+        "GNC Engineer (Starfall): reentry and recovery of a returnable payload capsule, first flight June 2026",
+        "newer programs seen in 2026 postings: Starfall, Starmind (Embedded Controls, AI Satellites), Starshield"
+      ],
+      "file": "car_02_role_families/09-newer-programs-starfall-and-what-comes-next.md"
+    },
+    {
+      "id": "l10-choosing-a-family-and-proving-it",
+      "title": "Choosing a family, and proving you belong in it",
+      "minutes": 21,
+      "covers": [
+        "how family choice changes what you must be able to demonstrate"
+      ],
+      "file": "car_02_role_families/10-choosing-a-family-and-proving-it.md"
     }
   ],
   "car_03_levels_and_quals": [
@@ -349,6 +368,42 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "redundancy, voting and fault management as first-class design concerns"
       ],
       "file": "car_05_tooling_reality/05-redundancy-voting-and-fault-management.md"
+    },
+    {
+      "id": "l06-monte-carlo-dispersion-campaigns",
+      "title": "Monte Carlo dispersion campaigns: what they actually prove",
+      "minutes": 18,
+      "covers": [
+        "Monte Carlo dispersion campaigns across tens of thousands of CPUs and what they are used to prove"
+      ],
+      "file": "car_05_tooling_reality/06-monte-carlo-dispersion-campaigns.md"
+    },
+    {
+      "id": "l07-infrastructure-behind-the-simulations",
+      "title": "Infrastructure: the stack that keeps the fleet running",
+      "minutes": 17,
+      "covers": [
+        "infrastructure: Linux, Docker, Kubernetes, Ansible, Puppet, Terraform, Bazel-class build systems"
+      ],
+      "file": "car_05_tooling_reality/07-infrastructure-behind-the-simulations.md"
+    },
+    {
+      "id": "l08-data-discipline-telemetry-time-units-and-frames",
+      "title": "Data discipline: telemetry, time, units and frames",
+      "minutes": 21,
+      "covers": [
+        "Python for analysis, tooling, pipelines and test infrastructure"
+      ],
+      "file": "car_05_tooling_reality/08-data-discipline-telemetry-time-units-and-frames.md"
+    },
+    {
+      "id": "l09-tickets-traceability-and-the-unglamorous-majority",
+      "title": "Tickets, traceability, and the unglamorous majority of the work",
+      "minutes": 16,
+      "covers": [
+        "continuous integration for rocket and simulation software"
+      ],
+      "file": "car_05_tooling_reality/09-tickets-traceability-and-the-unglamorous-majority.md"
     }
   ],
   "car_06_portfolio": [
@@ -370,6 +425,24 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "the write-up structure: problem, model, assumptions, verification, validation, results, limitations"
       ],
       "file": "car_06_portfolio/02-the-write-up-structure.md"
+    },
+    {
+      "id": "l03-verification-toolkit",
+      "title": "How you know the result is right: the verification toolkit",
+      "minutes": 21,
+      "covers": [
+        "stating how you know the result is right: analytic cases, conservation checks, convergence, cross-comparison"
+      ],
+      "file": "car_06_portfolio/03-verification-toolkit.md"
+    },
+    {
+      "id": "l04-anchor-a-6dof-simulation",
+      "title": "Anchor A: the 6-DOF launch vehicle simulation",
+      "minutes": 20,
+      "covers": [
+        "anchor project A — 6-DOF launch vehicle simulation with a real atmosphere model and dispersion campaign"
+      ],
+      "file": "car_06_portfolio/04-anchor-a-6dof-simulation.md"
     }
   ],
   "car_07_resume_and_referrals": [
@@ -441,11 +514,30 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-referrals",
       "title": "Referrals: what they do, and how to earn one",
-      "minutes": 22,
+      "minutes": 18,
       "covers": [
         "referrals: who can refer, how to ask, and what to give the referrer to make it easy"
       ],
       "file": "car_07_resume_and_referrals/08-referrals.md"
+    },
+    {
+      "id": "l09-community-and-conferences",
+      "title": "Community and conferences: building the presence a referral needs",
+      "minutes": 17,
+      "covers": [
+        "community and conferences: AIAA and AAS Space Flight Mechanics, SmallSat, university seminars, open-source contribution"
+      ],
+      "file": "car_07_resume_and_referrals/09-community-and-conferences.md"
+    },
+    {
+      "id": "l10-outreach-and-reapplying",
+      "title": "LinkedIn outreach, and knowing when to reapply",
+      "minutes": 19,
+      "covers": [
+        "recruiter outreach on LinkedIn done well and done badly",
+        "reapplication cadence and what must change between attempts"
+      ],
+      "file": "car_07_resume_and_referrals/10-outreach-and-reapplying.md"
     }
   ],
   "t0_m01_algebra_precalc": [
@@ -7084,14 +7176,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "car_02_role_families": {
-    "covered": 10,
+    "covered": 13,
     "total": 13,
-    "complete": false,
-    "missing": [
-      "GNC Engineer (Starfall): reentry and recovery of a returnable payload capsule, first flight June 2026",
-      "newer programs seen in 2026 postings: Starfall, Starmind (Embedded Controls, AI Satellites), Starshield",
-      "how family choice changes what you must be able to demonstrate"
-    ]
+    "complete": true,
+    "missing": []
   },
   "car_03_levels_and_quals": {
     "covered": 10,
@@ -7106,42 +7194,33 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "car_05_tooling_reality": {
-    "covered": 9,
+    "covered": 12,
     "total": 13,
     "complete": false,
     "missing": [
-      "Monte Carlo dispersion campaigns across tens of thousands of CPUs and what they are used to prove",
-      "infrastructure: Linux, Docker, Kubernetes, Ansible, Puppet, Terraform, Bazel-class build systems",
-      "continuous integration for rocket and simulation software",
       "version control, code review and what production-quality means at senior level"
     ]
   },
   "car_06_portfolio": {
-    "covered": 3,
+    "covered": 5,
     "total": 13,
     "complete": false,
     "missing": [
-      "anchor project A — 6-DOF launch vehicle simulation with a real atmosphere model and dispersion campaign",
       "anchor project B — powered descent guidance with a landing accuracy Monte Carlo",
       "anchor project C — multiplicative quaternion EKF fusing IMU and star tracker, with NEES and NIS consistency checks",
       "anchor project D — batch least-squares orbit determination fitted to real GNSS or TLE-derived data",
       "anchor project E — ADCS momentum management with reaction wheels and magnetorquers",
       "hardware-adjacent work: a real IMU, a thrust-vector-control testbed, a balancing robot, to evidence sensor reality",
-      "stating how you know the result is right: analytic cases, conservation checks, convergence, cross-comparison",
       "reproducibility: seeded, one-command, CI, pinned dependencies",
       "open-sourcing, licensing, and what to do about prior-employer intellectual property",
       "how the portfolio feeds the past-project presentation round"
     ]
   },
   "car_07_resume_and_referrals": {
-    "covered": 10,
+    "covered": 13,
     "total": 13,
-    "complete": false,
-    "missing": [
-      "community and conferences: AIAA and AAS Space Flight Mechanics, SmallSat, university seminars, open-source contribution",
-      "recruiter outreach on LinkedIn done well and done badly",
-      "reapplication cadence and what must change between attempts"
-    ]
+    "complete": true,
+    "missing": []
   },
   "car_08_pipeline": {
     "covered": 0,

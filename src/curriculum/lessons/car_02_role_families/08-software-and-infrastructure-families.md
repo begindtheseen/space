@@ -35,6 +35,10 @@ Every dispersion campaign referenced in this module so far — the Starship tail
 
 What makes this family's reasoning genuinely different from general-purpose software engineering is what the infrastructure is shared by and what a failure of it actually costs. A Starship dispersion campaign and a Falcon dispersion campaign can both want the same cluster at the same time in the days before their respective flight readiness reviews, and deciding how to allocate a finite, contended resource fairly and effectively across competing teams' real deadlines is a genuine, recurring engineering judgment call, not a solved problem you configure once. A continuous-integration pipeline that gates changes to flight or simulation software is not a convenience either — when it breaks, it can block an entire team's progress until it is fixed, which is a materially higher-stakes failure than a broken build blocking one engineer's afternoon.
 
+::: key
+Site Reliability Engineer, GNC: running the HPC cluster of tens of thousands of CPUs for large-scale Monte Carlo, plus continuous integration for rocket and simulation software, GNC analysis infrastructure, and vehicle configuration verification tools.
+:::
+
 ::: warning "Done" here does not mean "shipped once"
 Unlike a design that is finished once it clears a review, this family's work is closer to the continuous, no-clean-finish-line character the ADCS family showed several lessons back. A cluster that was correctly provisioned last month and a CI pipeline that passed its own tests once are not automatically still serving their purpose today. Capacity, reliability, and correctness here are standards to keep meeting, not boxes to check once.
 :::

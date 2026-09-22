@@ -6,7 +6,7 @@ covers:
   - the full preferred list for GNC Engineer and what each item signals
 ---
 
-The previous lesson took the Level I to II posting's basic qualifications apart and left its preferred qualifications untouched. This lesson picks those up, and treats them differently than the last three lessons treated any preferred list so far: not as a quick aside about what a signal does versus a filter, but as the thing itself, read line by line, because this particular list is unusually specific, and specificity is exactly what makes a preferred list worth studying rather than skimming.
+The previous lesson took the Level I to II posting's basic qualifications apart and left its preferred qualifications untouched. This lesson picks those up, and treats them differently than the earlier lessons treated a preferred list in passing: not as a quick aside about what a signal does versus a filter, but as the thing itself, read line by line, because this particular list is unusually specific, and specificity is exactly what makes a preferred list worth studying rather than skimming.
 
 The stated preferred qualifications are:
 

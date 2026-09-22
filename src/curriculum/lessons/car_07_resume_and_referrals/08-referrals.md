@@ -1,7 +1,7 @@
 ---
 id: l08-referrals
 title: "Referrals: what they do, and how to earn one"
-minutes: 22
+minutes: 18
 covers:
   - "referrals: who can refer, how to ask, and what to give the referrer to make it easy"
 ---
@@ -17,6 +17,10 @@ A referral moves your application into a channel a specific person is likely to 
 A referral does not waive a qualification the posting states directly. If a role requires a specific degree, a specific certification, or any other requirement stated plainly in the posting text, a referral does not make that requirement optional for the referred candidate — it gets the application read by someone with a reason to read it carefully, and a careful read of an application that does not meet a stated requirement is still an application that does not meet it. A referral does not set your level or your compensation, and it does not guarantee an interview, let alone an offer — it improves the odds your application is actually looked at, which is a real but bounded thing.
 
 There is a further, less comfortable point worth stating plainly: a referral from someone who cannot actually speak to your work — a distant acquaintance, a friend of a friend, someone you exchanged a handful of messages with once — carries little real weight, because the referrer has nothing genuine to vouch for beyond your own say-so. It can also cost you something you may not expect: asking someone to stake their own name on work they have never seen puts them in an uncomfortable position, and declining or agreeing reluctantly is not a strong foundation for whatever relationship you had before you asked.
+
+::: warning A referral is not a finish line
+Treating a referral as the goal itself, rather than as one way of getting a strong application read more attentively, leads candidates to under-invest in the resume and evidence the referral was always going to be judged against. The referral changes how promptly and carefully your application is read; it never changes what your application needs to say for itself.
+:::
 
 ::: key
 A referral moves an application into a channel a specific person reads and attaches that person's standing to it. It does not waive a stated qualification, does not set level or compensation, and does not guarantee an interview — and a referral from someone who has never seen your actual work carries little real weight regardless of how it was obtained.

@@ -45,7 +45,7 @@ $$
 = 1.578\,\big[(-0.020)(600^2) + (0.40)(2)(600)(20)\big] .
 $$
 
-The two terms are $1.578 \times (-7200) = -1.14 \times 10^4$ and $1.578 \times 9600 = +1.52 \times 10^4$, so $\dot D \approx +3.8 \times 10^3\,\mathrm{N/s}$. The thinning air is pulling drag down at $11.4\,\mathrm{kN/s}$ and the rising speed is pushing it up at $15.2\,\mathrm{kN/s}$; the speed wins for now, and drag is still growing at $3.8\,\mathrm{kN/s}$. Later in the ascent the density term dominates and drag falls off — the peak is "max Q" in launch commentary.
+The two terms are $1.578 \times (-7200) = -1.14 \times 10^4$ and $1.578 \times 9600 = +1.51 \times 10^4$, so $\dot D \approx +3.8 \times 10^3\,\mathrm{N/s}$. The thinning air is pulling drag down at $11.4\,\mathrm{kN/s}$ and the rising speed is pushing it up at $15.1\,\mathrm{kN/s}$; the speed wins for now, and drag is still growing at $3.8\,\mathrm{kN/s}$. Later in the ascent the density term dominates and drag falls off — the peak is "max Q" in launch commentary.
 :::
 
 ## The chain rule

@@ -33,6 +33,10 @@ Once a satellite knows its own position and orientation — the previous lesson'
 
 Pointing accuracy is not free, and different links demand wildly different budgets. An RF link's beamwidth is comparatively wide, tolerant of pointing error measured in a meaningful fraction of a degree. An optical or laser inter-satellite link has an extremely narrow beam divergence by comparison, and its pointing tolerance is correspondingly far tighter — routinely measured in millionths of a radian rather than degrees. This is exactly why active optics, from the previous section, exists as its own line item rather than being folded into "gimbal pointing": a coarse gimbal can aim an optical terminal roughly in the right direction, but closing the last, much smaller gap to the precision an optical link actually needs requires a separate, faster, finer-grained steering mechanism.
 
+::: key
+Device Navigation and Beam Pointing, Beam Planning: user terminal pointing, RF and optical link pointing. Pointing needs to know where the satellite is and where the terminal is, and keep a beam on target through motion and changing geometry; Beam Planning is the constellation-level scheduling version, deciding which satellite serves which terminal as both move.
+:::
+
 ::: example A pointing budget, combined honestly
 Consider three independent contributors to a satellite antenna's total pointing error: attitude knowledge error of $0.05^{\circ}$ from the navigation solution, mechanical gimbal alignment error of $0.03^{\circ}$, and actuator pointing resolution of $0.02^{\circ}$. Because these are independent error sources, they do not add directly; their variances add, which means the combined standard deviation is the root-sum-square:
 

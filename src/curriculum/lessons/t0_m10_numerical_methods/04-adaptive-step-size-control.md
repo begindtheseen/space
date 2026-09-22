@@ -166,7 +166,7 @@ A Runge–Kutta pair of orders 8 and 7, such as the Dormand–Prince 8(7) pair u
 :::
 
 ::: answer
-The error estimate is the local error of the lower-order member, order $p = 7$, which is $O(h^{8})$, so the exponent is $1/(p+1) = 1/8$. With safety 0.9, the proposed ratio is $0.9 \times (1/500)^{1/8} = 0.9 \times 0.4597 = 0.41$. High-order pairs respond even more gently than fifth-order ones, because their error depends even more steeply on $h$.
+The error estimate is the local error of the lower-order member, order $p = 7$, which is $O(h^{8})$, so the exponent is $1/(p+1) = 1/8$. With safety 0.9, the proposed ratio is $0.9 \times (1/500)^{1/8} = 0.9 \times 0.4599 = 0.41$. High-order pairs respond even more gently than fifth-order ones, because their error depends even more steeply on $h$.
 :::
 
 ::: check

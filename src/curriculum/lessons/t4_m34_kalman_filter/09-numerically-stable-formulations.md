@@ -36,13 +36,13 @@ The Joseph form is guaranteed symmetric and positive *semi*-definite — it can 
 The derivation is a direct manipulation of the update already proven correct. With $\mathbf{P}^- = \mathbf{S}^-(\mathbf{S}^-)^{\mathsf{T}}$ and a scalar measurement ($\mathbf{H}$ a single row, $R$ a scalar), stack a **pre-array**:
 
 $$
-\mathbf{M} = \begin{pmatrix}\sqrt{R} & \mathbf{H}\mathbf{S}^- \\ \mathbf{0} & (\mathbf{S}^-)^{\mathsf{T}}\end{pmatrix},
+\mathbf{M} = \begin{pmatrix}\sqrt{R} & \mathbf{H}\mathbf{S}^- \\ \mathbf{0} & \mathbf{S}^-\end{pmatrix},
 $$
 
 an $(n+1)\times(n+1)$ matrix, and apply *any* orthogonal transformation $\mathbf{T}$ (from the right, acting on $\mathbf{M}^{\mathsf{T}}$, equivalently a sequence of row operations on $\mathbf{M}$) that triangularizes it into a lower-triangular **post-array** $\mathbf{L} = \mathbf{M}\mathbf{T}$. Because $\mathbf{T}$ is orthogonal, $\mathbf{L}\mathbf{L}^{\mathsf{T}} = \mathbf{M}\mathbf{M}^{\mathsf{T}}$ — the triangularization changes nothing about the quantity that matters. Multiplying out $\mathbf{M}\mathbf{M}^{\mathsf{T}}$ directly gives $\begin{pmatrix}R + \mathbf{H}\mathbf{P}^-\mathbf{H}^{\mathsf{T}} & \mathbf{H}\mathbf{P}^-\\ \mathbf{P}^-\mathbf{H}^{\mathsf{T}} & \mathbf{P}^-\end{pmatrix}$, exactly the block matrix whose Schur complement is the Joseph-form $\mathbf{P}^+$ — so reading $\mathbf{L}$'s blocks off directly hands you the whole update at once:
 
 ::: key The square-root array update
-Triangularize $\mathbf{M} = \begin{pmatrix}\sqrt{R} & \mathbf{H}\mathbf{S}^-\\ \mathbf{0} & (\mathbf{S}^-)^{\mathsf{T}}\end{pmatrix}$ into lower-triangular $\mathbf{L} = \begin{pmatrix}\sqrt{\alpha} & \mathbf{0}\\ \mathbf{c} & (\mathbf{S}^+)^{\mathsf{T}}\end{pmatrix}$. Then $\alpha = \mathbf{H}\mathbf{P}^-\mathbf{H}^{\mathsf{T}}+R$ (the innovation variance), $\mathbf{S}^+$ is the updated square root, and $\mathbf{K} = \mathbf{c}/\sqrt{\alpha}$ is the Kalman gain — all three read directly out of one triangularization.
+Triangularize $\mathbf{M} = \begin{pmatrix}\sqrt{R} & \mathbf{H}\mathbf{S}^-\\ \mathbf{0} & \mathbf{S}^-\end{pmatrix}$ into lower-triangular $\mathbf{L} = \begin{pmatrix}\sqrt{\alpha} & \mathbf{0}\\ \mathbf{c} & \mathbf{S}^+\end{pmatrix}$. Then $\alpha = \mathbf{H}\mathbf{P}^-\mathbf{H}^{\mathsf{T}}+R$ (the innovation variance), $\mathbf{S}^+$ is the updated square root, and $\mathbf{K} = \mathbf{c}/\sqrt{\alpha}$ is the Kalman gain — all three read directly out of one triangularization.
 :::
 
 ::: example The array update, checked against Joseph form directly
@@ -57,7 +57,7 @@ def sqrt_update(S_minus, H, R):
     S_minus: lower-triangular Cholesky factor of P_minus (n x n).
     H: 1 x n. R: 1 x 1. Returns (S_plus, K, sqrt_alpha)."""
     n = S_minus.shape[0]
-    M = np.block([[np.sqrt(R), H @ S_minus], [np.zeros((n, 1)), S_minus.T]])
+    M = np.block([[np.sqrt(R), H @ S_minus], [np.zeros((n, 1)), S_minus]])
     Q, Rtri = np.linalg.qr(M.T)
     signs = np.sign(np.diag(Rtri)); signs[signs == 0] = 1
     L = (Rtri * signs[:, None]).T   # lower-triangular post-array, M @ Q with consistent signs
@@ -176,7 +176,7 @@ Guarantee is not the only cost that matters: Joseph form is roughly twice the fl
 | --- | --- |
 | Joseph form's limit | Guarantees symmetric PSD for any gain, but can still reach the boundary; a $4\%$ gain error with a singular $\mathbf{Q}$ made the simplified form produce a negative eigenvalue on the first update, while Joseph stayed valid on the identical data |
 | Square-root update | Propagate $\mathbf{S}$ with $\mathbf{P}=\mathbf{S}\mathbf{S}^{\mathsf{T}}$; $\mathbf{S}\mathbf{S}^{\mathsf{T}}$ is PSD for any $\mathbf{S}$, by construction, always |
-| Array algorithm | Triangularize $\begin{pmatrix}\sqrt{R}&\mathbf{H}\mathbf{S}^-\\\mathbf{0}&(\mathbf{S}^-)^{\mathsf{T}}\end{pmatrix}$; reads off $\sqrt{\alpha}$, $\mathbf{K}$, and $\mathbf{S}^+$ together |
+| Array algorithm | Triangularize $\begin{pmatrix}\sqrt{R}&\mathbf{H}\mathbf{S}^-\\\mathbf{0}&\mathbf{S}^-\end{pmatrix}$; reads off $\sqrt{\alpha}$, $\mathbf{K}$, and $\mathbf{S}^+$ together |
 | Potter / Carlson | Potter: closed-form scalar version, $\mathbf{S}^+=\mathbf{S}^-(\mathbf{I}-\gamma\boldsymbol\phi\boldsymbol\phi^{\mathsf{T}})$, $\gamma=1/(\alpha+\sqrt{\alpha R})$. Carlson: the same triangularization by hand-computable rotations, built for Apollo-era flight computers |
 | UD factorization | $\mathbf{P}=\mathbf{U}\mathbf{D}\mathbf{U}^{\mathsf{T}}$, no square roots anywhere; rank-one downdate via $d_k'=d_k(1-p_k)/(1-p_{k-1})$, $p_k=p_{k-1}+y_k^2/d_k$ |
 | Cost vs. guarantee | Simplified (cheapest, weakest) → Joseph (2x, PSD for any gain) → square-root / UD (more, PSD by construction, halved dynamic range) |
