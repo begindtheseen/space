@@ -3446,7 +3446,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l13-receiver-tracking-loops",
       "title": "Receiver tracking loops",
-      "minutes": 24,
+      "minutes": 17,
       "covers": [
         "Receiver tracking loops (DLL, PLL, FLL) and the bandwidth/dynamics trade"
       ],
@@ -3800,6 +3800,35 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       ],
       "file": "t5_m41_ascent_guidance/12-abort-modes.md"
     }
+  ],
+  "t5_m42_trajectory_optimization": [
+    {
+      "id": "l01-bolza-mayer-lagrange",
+      "title": "The Bolza, Mayer and Lagrange cost forms",
+      "minutes": 16,
+      "covers": [
+        "The general optimal control problem in Bolza, Mayer and Lagrange form, and how to convert between them"
+      ],
+      "file": "t5_m42_trajectory_optimization/01-bolza-mayer-lagrange.md"
+    },
+    {
+      "id": "l02-euler-lagrange-costates",
+      "title": "The Euler-Lagrange conditions and costates as shadow prices",
+      "minutes": 17,
+      "covers": [
+        "Indirect methods: the Hamiltonian, the Euler-Lagrange conditions, costates as shadow prices"
+      ],
+      "file": "t5_m42_trajectory_optimization/02-euler-lagrange-costates.md"
+    },
+    {
+      "id": "l03-pontryagin-transversality",
+      "title": "Pontryagin's Minimum Principle: why minimise, and transversality in full",
+      "minutes": 18,
+      "covers": [
+        "Pontryagin's Minimum Principle, the stationarity condition, and transversality conditions"
+      ],
+      "file": "t5_m42_trajectory_optimization/03-pontryagin-transversality.md"
+    }
   ]
 }
 
@@ -4148,13 +4177,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t5_m42_trajectory_optimization": {
-    "covered": 0,
+    "covered": 3,
     "total": 17,
     "complete": false,
     "missing": [
-      "The general optimal control problem in Bolza, Mayer and Lagrange form, and how to convert between them",
-      "Indirect methods: the Hamiltonian, the Euler-Lagrange conditions, costates as shadow prices",
-      "Pontryagin's Minimum Principle, the stationarity condition, and transversality conditions",
       "The two-point boundary value problem; single and multiple shooting; costate sensitivity and why indirect methods are brittle",
       "Bang-bang control, the switching function, and singular arcs",
       "Direct transcription: converting an infinite-dimensional problem into a finite NLP",

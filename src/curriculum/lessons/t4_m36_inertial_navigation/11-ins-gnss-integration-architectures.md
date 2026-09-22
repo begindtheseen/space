@@ -92,6 +92,14 @@ Explain, in terms of the covariance example, why adding a second satellite at a 
 A single satellite's measurement only constrains the one direction along its own line of sight, leaving the perpendicular direction exactly as uncertain as before — the worked example's perpendicular variance did not move at all. A second satellite at a genuinely different angle constrains a *different* direction, so together the two collapse uncertainty in both dimensions rather than one. A second satellite nearly aligned with the first mostly re-measures the same direction the first one already constrained well, adding little beyond averaging down that one direction's already-small residual noise — the geometric spread between satellites, not merely their count, is what determines how much of the position uncertainty actually shrinks, the same geometric idea the GNSS module's dilution-of-precision treatment quantifies in full.
 :::
 
+::: check
+A loosely coupled filter is fed a position fix that the receiver itself computed with an internal Kalman filter, and the outer filter models that fix as a measurement corrupted by white noise. What goes wrong, and why does tight coupling largely escape it?
+:::
+
+::: answer
+A receiver's internal filter smooths its solution over time, so successive fixes are not independent draws — their errors are strongly correlated from one epoch to the next, often over tens of seconds. An outer filter told those errors are white treats each arriving fix as fresh information about a quantity it has not measured before, and so keeps shrinking its covariance on what is largely the same information counted again. The reported uncertainty then drops below the true error: the filter becomes overconfident, its innovations look smaller than they are, and it starts rejecting inertial data that was in fact correct. This is the cascaded-filter problem, and it is a failure of the error model rather than of the arithmetic, which is what makes it hard to see — nothing diverges loudly, the covariance simply looks better than the navigation actually is. Tight coupling escapes most of it because a raw pseudorange from one channel is far closer to a white measurement than a smoothed fix is: the receiver has done no cross-epoch filtering on it. The escape is not total, since multipath and residual ionospheric delay are themselves time-correlated, and a filter that cares about those models them as coloured states rather than pretending they are white.
+:::
+
 ## Summary
 
 | Architecture | Fuses | Needs at minimum | Fails how |

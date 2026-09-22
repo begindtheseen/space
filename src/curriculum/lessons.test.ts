@@ -158,6 +158,41 @@ describe.each(moduleDirs)('lessons for %s', (moduleId) => {
       expect(p.body, 'a Summary section').toMatch(/^##\s+Summary/m)
     })
 
+    /*
+     * A question with no answer behind it is a dead end: she reads the check,
+     * thinks, opens nothing, and has no way to find out whether she was right.
+     * That is worse than no question at all, because it costs her the attempt
+     * and gives her nothing back. The counts are what catch it — a missing
+     * `::: answer` is invisible in the rendered page until you click.
+     */
+    it('answers every question it asks', () => {
+      const checks = (p.body.match(/^:::\s*check/gm) ?? []).length
+      const answers = (p.body.match(/^:::\s*answer/gm) ?? []).length
+      expect(answers, `${checks} check questions but ${answers} answers`).toBe(checks)
+      expect(checks, 'at least three check questions').toBeGreaterThanOrEqual(3)
+    })
+
+    /*
+     * `minutes` is not decoration: the focus planner budgets a session from
+     * it, so a number invented rather than counted either strands her
+     * mid-lesson or leaves her sitting on a finished one. The house estimate
+     * is words/180 plus two minutes per worked example. The window here is
+     * wide on purpose — the whole written corpus falls inside 0.87 to 1.65 of
+     * that estimate, and this is meant to catch a number nobody counted at
+     * all, not to referee a writer's judgement about a dense derivation.
+     */
+    it('claims a plausible reading time', () => {
+      const est =
+        proseWordCount(p.body) / 180 + 2 * (p.body.match(/^:::\s*example/gm) ?? []).length
+      const ratio = p.header.minutes / est
+      expect(
+        ratio,
+        `minutes: ${p.header.minutes} against an estimated ${est.toFixed(1)} ` +
+          `(${proseWordCount(p.body)} words / 180 + 2 per example)`,
+      ).toBeGreaterThan(0.5)
+      expect(ratio, `minutes: ${p.header.minutes} against an estimated ${est.toFixed(1)}`).toBeLessThan(2.5)
+    })
+
     it('uses only the markdown the renderer supports', () => {
       const lines = p.body.split('\n')
       const openers = lines.filter((l) => /^\s*:::\s*[a-z]+/.test(l))

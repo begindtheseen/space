@@ -1,7 +1,7 @@
 ---
 id: l13-receiver-tracking-loops
 title: Receiver tracking loops
-minutes: 24
+minutes: 17
 covers:
   - Receiver tracking loops (DLL, PLL, FLL) and the bandwidth/dynamics trade
 ---
