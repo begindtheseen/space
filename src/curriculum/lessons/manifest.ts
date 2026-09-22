@@ -658,6 +658,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "answering the compensation question early without anchoring yourself low"
       ],
       "file": "car_09_screens/03-the-compensation-question.md"
+    },
+    {
+      "id": "l04-the-technical-phone-screen",
+      "title": "The technical phone screen: format and frame",
+      "minutes": 22,
+      "covers": [
+        "the technical phone screen: 30 minutes, an engineer on the team or the hiring manager"
+      ],
+      "file": "car_09_screens/04-the-technical-phone-screen.md"
     }
   ],
   "cod_cpp_01_basics": [
@@ -689,6 +698,26 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Reading a linker error: undefined reference, multiple definition"
       ],
       "file": "cod_cpp_01_basics/03-reading-linker-errors-and-make.md"
+    },
+    {
+      "id": "l04-fundamental-and-fixed-width-types",
+      "title": "Fundamental types, cstdint and size_t",
+      "minutes": 19,
+      "covers": [
+        "Fundamental types; fixed-width types from cstdint; size_t"
+      ],
+      "file": "cod_cpp_01_basics/04-fundamental-and-fixed-width-types.md"
+    }
+  ],
+  "cod_py_01_basics": [
+    {
+      "id": "l01-interpreter-repl-and-scripts",
+      "title": "The interpreter, the REPL and your first script",
+      "minutes": 15,
+      "covers": [
+        "Interpreter, REPL, running scripts, the difference between them"
+      ],
+      "file": "cod_py_01_basics/01-interpreter-repl-and-scripts.md"
     }
   ],
   "t0_m01_algebra_precalc": [
@@ -6505,11 +6534,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "cod_py_01_basics": {
-    "covered": 0,
+    "covered": 1,
     "total": 12,
     "complete": false,
     "missing": [
-      "Interpreter, REPL, running scripts, the difference between them",
       "int, float, bool, str; f-strings; str methods",
       "list, tuple, dict, set; slicing; truthiness; mutability",
       "if/elif/else; for, while, range, enumerate, zip; break/continue/else",
@@ -6680,11 +6708,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "cod_cpp_01_basics": {
-    "covered": 5,
+    "covered": 6,
     "total": 15,
     "complete": false,
     "missing": [
-      "Fundamental types; fixed-width types from cstdint; size_t",
       "Integer promotion, signed/unsigned pitfalls, signed overflow as undefined behaviour",
       "const, constexpr, consteval, auto",
       "Values, references and the difference from Python names",
@@ -7377,11 +7404,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "car_09_screens": {
-    "covered": 3,
+    "covered": 4,
     "total": 12,
     "complete": false,
     "missing": [
-      "the technical phone screen: 30 minutes, an engineer on the team or the hiring manager",
       "reported topics: PD control, orbit determination, frequency-domain analysis",
       "resume depth: expect to be asked to go deeper on any line you wrote",
       "verbal derivation discipline without a whiteboard: narrate the setup, name the variables, state assumptions",

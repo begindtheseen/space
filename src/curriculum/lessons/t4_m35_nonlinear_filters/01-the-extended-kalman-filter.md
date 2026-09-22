@@ -131,12 +131,12 @@ Truncation error does not only grow with the *size* of the perturbation — it a
 
 | $\theta_0$ | true $\Delta\theta$ after 1 s | linear-STM prediction | truncation error |
 | --- | --- | --- | --- |
-| $5^\circ$ | $-1.99974^\circ$ | $-1.99980^\circ$ | $0.054\ \mathrm{mdeg}$ |
-| $30^\circ$ | $-1.98045^\circ$ | $-1.98264^\circ$ | $2.195\ \mathrm{mdeg}$ |
-| $60^\circ$ | $-1.76284^\circ$ | $-1.77705^\circ$ | $14.204\ \mathrm{mdeg}$ |
-| $90^\circ$ | $-0.97634^\circ$ | $-1.01651^\circ$ | $40.174\ \mathrm{mdeg}$ |
+| $5^\circ$ | $-1.99974^\circ$ | $-1.99974^\circ$ | $0.001\ \mathrm{mdeg}$ |
+| $30^\circ$ | $-1.98045^\circ$ | $-1.94853^\circ$ | $31.913\ \mathrm{mdeg}$ |
+| $60^\circ$ | $-1.76284^\circ$ | $-1.20008^\circ$ | $562.766\ \mathrm{mdeg}$ |
+| $90^\circ$ | $-0.97634^\circ$ | $2.00000^\circ$ | $2976.335\ \mathrm{mdeg}$ |
 
-For exactly the same $2^\circ$ nudge, the linearization error is $40.174/0.054\approx744$ times larger at $\theta_0=90^\circ$ than at $\theta_0=5^\circ$. Nothing about the perturbation changed; only the curvature of $\sin\theta$ at the point being linearized about did. This is the mechanism to hold onto for the rest of this module: an EKF is not "accurate" or "inaccurate" in the abstract — it is accurate near where its own Jacobian was evaluated, and the size of that region shrinks wherever the true dynamics or measurement curve sharply.
+At $\theta_0=5^\circ$ the frozen linear model is nearly exact — the truncation is a fraction of a thousandth of a degree. For exactly the same $2^\circ$ nudge, the linearization error is already $2976.335/31.913\approx93$ times larger at $\theta_0=90^\circ$ than at $\theta_0=30^\circ$, and by $\theta_0=90^\circ$ — where $F_{21}=0$ makes the frozen STM predict *no* restoring effect at all — the error has grown to nearly $3^\circ$, on the order of the perturbation itself: the frozen linear model has lost essentially all predictive value there. Nothing about the perturbation changed; only the curvature of $\sin\theta$ at the point being linearized about did. This is the mechanism to hold onto for the rest of this module: an EKF is not "accurate" or "inaccurate" in the abstract — it is accurate near where its own Jacobian was evaluated, and the size of that region shrinks wherever the true dynamics or measurement curve sharply.
 :::
 
 ::: key First-order truncation error
