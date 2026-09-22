@@ -2699,6 +2699,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Passivity-based control and energy shaping"
       ],
       "file": "t3_m31_nonlinear_control/10-passivity-based-control.md"
+    },
+    {
+      "id": "l11-spacecraft-attitude-control",
+      "title": "Nonlinear spacecraft attitude control: unwinding, MRPs, and tracking",
+      "minutes": 34,
+      "covers": [
+        "Nonlinear spacecraft attitude control: quaternion feedback laws, the unwinding problem, MRP-based control, Lyapunov-derived tracking laws with proof"
+      ],
+      "file": "t3_m31_nonlinear_control/11-spacecraft-attitude-control.md"
     }
   ],
   "t3_m32_mpc": [
@@ -2840,6 +2849,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Maximum likelihood and its equivalence to WLS under Gaussian noise"
       ],
       "file": "t4_m33_least_squares/04-maximum-likelihood-equivalence-wls-gaussian.md"
+    },
+    {
+      "id": "l05-maximum-a-posteriori-estimation",
+      "title": "Maximum a posteriori estimation",
+      "minutes": 19,
+      "covers": [
+        "Maximum a posteriori estimation"
+      ],
+      "file": "t4_m33_least_squares/05-maximum-a-posteriori-estimation.md"
     }
   ],
   "t4_m34_kalman_filter": [
@@ -2923,6 +2941,33 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Numerically stable formulations: Joseph form, square-root (Potter, Carlson), UD factorization (Bierman-Thornton)"
       ],
       "file": "t4_m34_kalman_filter/09-numerically-stable-formulations.md"
+    },
+    {
+      "id": "l10-filter-divergence-causes-and-remedies",
+      "title": "Filter divergence: causes and remedies",
+      "minutes": 23,
+      "covers": [
+        "Filter divergence: causes and remedies (fading memory, Q inflation, covariance symmetrization)"
+      ],
+      "file": "t4_m34_kalman_filter/10-filter-divergence-causes-and-remedies.md"
+    },
+    {
+      "id": "l11-consistency-testing",
+      "title": "Consistency testing: innovation whiteness, NEES and NIS",
+      "minutes": 25,
+      "covers": [
+        "Consistency testing: innovation whiteness, NEES and NIS chi-square tests, innovation autocorrelation"
+      ],
+      "file": "t4_m34_kalman_filter/11-consistency-testing.md"
+    },
+    {
+      "id": "l12-sequential-vs-batch-updates-and-gating",
+      "title": "Sequential vs batch measurement updates; measurement editing and gating",
+      "minutes": 21,
+      "covers": [
+        "Sequential vs batch measurement updates; measurement editing and gating"
+      ],
+      "file": "t4_m34_kalman_filter/12-sequential-vs-batch-updates-and-gating.md"
     }
   ],
   "t4_m36_inertial_navigation": [
@@ -3253,11 +3298,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t3_m31_nonlinear_control": {
-    "covered": 10,
+    "covered": 11,
     "total": 14,
     "complete": false,
     "missing": [
-      "Nonlinear spacecraft attitude control: quaternion feedback laws, the unwinding problem, MRP-based control, Lyapunov-derived tracking laws with proof",
       "Describing functions for limit-cycle prediction",
       "Control of underactuated systems",
       "Bang-bang and on-off thruster control: Schmitt trigger and pulse-width pulse-frequency modulation"
@@ -3270,11 +3314,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t4_m33_least_squares": {
-    "covered": 4,
+    "covered": 5,
     "total": 12,
     "complete": false,
     "missing": [
-      "Maximum a posteriori estimation",
       "Nonlinear least squares: Gauss-Newton and Levenberg-Marquardt",
       "Recursive least squares and the bridge to the Kalman filter",
       "The normal matrix condition number as an observability metric",
@@ -3285,13 +3328,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t4_m34_kalman_filter": {
-    "covered": 9,
+    "covered": 12,
     "total": 15,
     "complete": false,
     "missing": [
-      "Filter divergence: causes and remedies (fading memory, Q inflation, covariance symmetrization)",
-      "Consistency testing: innovation whiteness, NEES and NIS chi-square tests, innovation autocorrelation",
-      "Sequential vs batch measurement updates; measurement editing and gating",
       "The Rauch-Tung-Striebel smoother",
       "The information filter form and its use in sensor fusion",
       "Correlated and time-varying noise; the Schmidt-Kalman consider filter"
