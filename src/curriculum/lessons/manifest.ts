@@ -3626,6 +3626,24 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Station and tracking geometry and its effect on observability"
       ],
       "file": "t4_m39_orbit_determination/06-tracking-geometry-and-observability.md"
+    },
+    {
+      "id": "l07-process-noise-gauss-markov-dmc",
+      "title": "Process noise for orbit determination: Gauss-Markov acceleration and DMC",
+      "minutes": 16,
+      "covers": [
+        "Process noise for orbit determination: Gauss-Markov acceleration and dynamic model compensation"
+      ],
+      "file": "t4_m39_orbit_determination/07-process-noise-gauss-markov-dmc.md"
+    },
+    {
+      "id": "l08-consider-covariance-analysis",
+      "title": "Consider-covariance analysis",
+      "minutes": 12,
+      "covers": [
+        "Consider-covariance analysis"
+      ],
+      "file": "t4_m39_orbit_determination/08-consider-covariance-analysis.md"
     }
   ],
   "t5_m41_ascent_guidance": [
@@ -3673,6 +3691,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "The two-phase throttle structure: constant thrust to a g-limit, then throttled constant acceleration"
       ],
       "file": "t5_m41_ascent_guidance/05-two-phase-throttle-structure.md"
+    },
+    {
+      "id": "l06-iterative-guidance-mode",
+      "title": "Iterative Guidance Mode, Saturn V's explicit guidance",
+      "minutes": 24,
+      "covers": [
+        "Iterative Guidance Mode as flown on Saturn V"
+      ],
+      "file": "t5_m41_ascent_guidance/06-iterative-guidance-mode.md"
     }
   ]
 }
@@ -3991,12 +4018,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t4_m39_orbit_determination": {
-    "covered": 6,
+    "covered": 8,
     "total": 13,
     "complete": false,
     "missing": [
-      "Process noise for orbit determination: Gauss-Markov acceleration and dynamic model compensation",
-      "Consider-covariance analysis",
       "Residual editing and data weighting",
       "Orbit accuracy metrics and covariance in the RIC (radial, in-track, cross-track) frame",
       "Conjunction assessment and collision probability",
@@ -4024,11 +4049,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t5_m41_ascent_guidance": {
-    "covered": 5,
+    "covered": 6,
     "total": 12,
     "complete": false,
     "missing": [
-      "Iterative Guidance Mode as flown on Saturn V",
       "Target orbit specification and the terminal constraint set",
       "Thrust vector control allocation and engine-out contingency",
       "Load relief and its interaction with guidance",
