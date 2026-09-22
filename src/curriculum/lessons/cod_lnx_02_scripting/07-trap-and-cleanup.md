@@ -1,7 +1,7 @@
 ---
 id: l07-trap-and-cleanup
 title: trap, and cleaning up on every exit path
-minutes: 17
+minutes: 14
 covers:
   - trap for cleanup on EXIT/INT/TERM
 ---
@@ -265,6 +265,102 @@ main "$@"
 Why it is in this order: `tmp` is declared empty before the trap so that `cleanup` can test it, which means the trap is safe to register before the directory exists. `cleanup` saves `$?` on its first line, because every later command overwrites it. It ends with `return 0` so that a failed `rm` cannot change the script's exit status. `-E` makes the `ERR` trap fire inside `main` as well as at the top level. And `main "$@"` at the bottom means nothing executes while bash is still reading the file — so a truncated download or a half-written edit fails to parse rather than running half a script.
 :::
 
+## What else needs cleaning up
+
+A scratch directory is the obvious resource. Three others come up in campaign work and each has a shape worth knowing.
+
+### Child processes
+
+A driver that starts cases in the background owns them. Killing the driver does not kill them: a child whose parent dies is re-parented to pid 1 and carries on, still using cores and still writing into the output directory of a job everybody believes has stopped.
+
+```bash
+./bin/children_bad.sh & P=$!
+sleep 1; echo "cases running: $(count)"
+kill -TERM $P; wait $P; sleep 1
+echo "after killing the driver: $(count)"
+```
+
+```text
+started 3 cases
+cases running: 4
+after killing the driver: 4
+```
+
+Four processes — three background cases plus the driver's own foreground one — and all four are still running after the driver has gone. With a handler that records the pids and kills them:
+
+```bash
+cleanup() {
+  (( ${#pids[@]} )) || return 0
+  echo "  [stopping ${#pids[@]} child cases]" >&2
+  kill "${pids[@]}" 2>/dev/null || true
+  wait "${pids[@]}" 2>/dev/null || true
+  return 0
+}
+trap cleanup EXIT
+for i in 1 2 3; do sleep 1234 & pids+=("$!"); done
+```
+
+```text
+started 3 cases
+cases running: 4
+  [stopping 3 child cases]
+driver exit=143
+after killing the driver: 1
+```
+
+Three of the four are gone and the driver exited 143. The one that survived is the driver's own foreground process, which the handler never recorded — a precise illustration of the limit of this approach: it cleans up exactly what you remembered to put in the array. `kill 0`, which signals the entire process group, catches everything including things you did not start yourself, and is the blunter alternative.
+
+`2>/dev/null || true` on the `kill` matters: by the time the handler runs, some children may have finished on their own, and `kill` on a dead pid is an error that would otherwise abort the handler under `set -e`.
+
+### Partial output files
+
+A run that dies halfway through writing `summary.csv` leaves a file that exists, is readable, and is wrong. Anything downstream will load it. The fix is not a trap but the same discipline: write to a temporary name in the same directory and rename at the end, because `rename()` within one filesystem is atomic — the file either has its old contents or its new ones, never half.
+
+```bash
+out="out/summary.csv"
+tmp="$(mktemp "${out}.XXXXXX")"
+trap 'rm -f "$tmp"' EXIT
+printf 'chan,mean\n' > "$tmp"
+awk -F'[= ]' '{s[$4]+=$6; c[$4]++} END{for (k in c) printf "%s,%.3f\n", k, s[k]/c[k]}' logs/run.log | sort >> "$tmp"
+mv -- "$tmp" "$out"
+```
+
+```text
+wrote out/summary.csv
+```
+
+```text
+chan,mean
+BUS_VOLTS,27.990
+GYRO_X_DPS,0.154
+TANK_PSI,310.664
+WHEEL_RPM,4208.206
+```
+
+If the `awk` fails, the trap removes the temporary file and `out/summary.csv` keeps whatever it had — the previous run's results, or nothing at all, both of which are honest. The temporary file is created *beside* the output rather than in `/tmp`, because `mv` across filesystems is a copy-and-delete and is not atomic.
+
+### Locks
+
+Two sweeps writing the same output directory is a class of failure that produces plausible, wrong numbers. `flock` on a file descriptor is the cheap guard, and it needs no cleanup at all: the kernel releases the lock when the process exits, whatever killed it.
+
+```bash
+lock=out/.sweep.lock
+exec 9>"$lock"
+if ! flock -n 9; then
+  echo "another sweep already holds $lock" >&2
+  exit 75
+fi
+```
+
+```text
+lock acquired by pid 32600
+another sweep already holds out/.sweep.lock
+second attempt exit=75
+releasing
+```
+
+The first invocation took the lock and the second, started a second later, was refused and exited 75. `-n` means "do not wait"; without it the second would block until the first finished, which is what you want for a queue and not for an interactive command. Because the lock lives on the open file descriptor rather than on the file's existence, there is no stale lock file to clean up after a crash — which is exactly the failure mode that hand-rolled `if [[ -e lockfile ]]` schemes have.
+
 ::: key
 `trap 'cmd' EXIT` runs on every exit path the shell controls: the end of the script, an explicit `exit`, and a failure under `set -e` — which is exactly the path a trailing `rm -rf` misses. Single-quote the handler so variables expand when it fires. `SIGKILL` cannot be trapped, so 137 leaves the scratch behind. For `INT` and `TERM`, clean up, `trap - SIG`, then `kill -s SIG "$$"` so the status is still 128 + N.
 :::
@@ -355,5 +451,8 @@ Three ways to avoid it. Keep exactly one `EXIT` handler, at the top level, which
 | `trap -p [SIG]` | show the installed handler | confirms what a sourced library did |
 | `trap … ERR` with `set -E` | report where the script died | `$LINENO` and `$BASH_COMMAND` |
 | one handler per signal | a second `trap` replaces the first | collect paths in an array instead |
+| record child pids, `kill "${pids[@]}"` | otherwise they are re-parented to pid 1 and keep running | `kill 0` signals the whole process group |
+| write to `mktemp "$out.XXXXXX"`, then `mv` | an atomic replace within one filesystem | a crash leaves the old file, not half a new one |
+| `exec 9>lock; flock -n 9` | a lock the kernel releases on exit | nothing stale to clean up after a crash |
 
 Lesson 08 gives the script an interface: `getopts` for flags, the positional arguments behind them, and the difference between `"$@"` and `"$*"` that decides whether those arguments survive being passed on.

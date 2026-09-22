@@ -1771,11 +1771,20 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-trap-and-cleanup",
       "title": "trap, and cleaning up on every exit path",
-      "minutes": 17,
+      "minutes": 14,
       "covers": [
         "trap for cleanup on EXIT/INT/TERM"
       ],
       "file": "cod_lnx_02_scripting/07-trap-and-cleanup.md"
+    },
+    {
+      "id": "l08-getopts-and-arguments",
+      "title": "getopts, positional arguments, and \"$@\"",
+      "minutes": 15,
+      "covers": [
+        "getopts for flags, positional args, \"$@\" vs \"$*\""
+      ],
+      "file": "cod_lnx_02_scripting/08-getopts-and-arguments.md"
     }
   ],
   "cod_py_01_basics": [
@@ -7784,11 +7793,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_lnx_02_scripting": {
-    "covered": 7,
+    "covered": 8,
     "total": 14,
     "complete": false,
     "missing": [
-      "getopts for flags, positional args, \"$@\" vs \"$*\"",
       "Here-docs and here-strings",
       "sed substitution and addressing; awk fields, patterns, BEGIN/END, arrays",
       "jq for JSON, column/paste/join for tabular text",
