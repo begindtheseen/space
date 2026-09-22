@@ -107,6 +107,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "GNC Engineer and Sr. GNC Software Engineer (Falcon): booster entry, descent and landing, and reuse"
       ],
       "file": "car_02_role_families/03-falcon-reuse-and-the-software-split.md"
+    },
+    {
+      "id": "l04-dragon-rendezvous-and-human-rating",
+      "title": "Dragon: rendezvous, docking, and flying people",
+      "minutes": 18,
+      "covers": [
+        "GNC Engineer (Dragon): mission design, rendezvous and docking with the ISS, deorbit, reentry, abort"
+      ],
+      "file": "car_02_role_families/04-dragon-rendezvous-and-human-rating.md"
     }
   ],
   "car_03_levels_and_quals": [
@@ -127,6 +136,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "New Graduate Engineer, GNC (26/27, Starlink, Redmond WA): required and preferred"
       ],
       "file": "car_03_levels_and_quals/02-new-graduate-engineer.md"
+    },
+    {
+      "id": "l03-level-one-to-two",
+      "title": "GNC Engineer, Level I to II: the years line",
+      "minutes": 18,
+      "covers": [
+        "GNC Engineer Level I to II: the 2+ years line and the Dragon 1+ years variant"
+      ],
+      "file": "car_03_levels_and_quals/03-level-one-to-two.md"
     }
   ],
   "car_04_degree_reality": [
@@ -6834,11 +6852,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "car_02_role_families": {
-    "covered": 3,
+    "covered": 4,
     "total": 13,
     "complete": false,
     "missing": [
-      "GNC Engineer (Dragon): mission design, rendezvous and docking with the ISS, deorbit, reentry, abort",
       "GNC Engineer, ADCS (Starlink and Starshield): attitude determination and control, reaction wheels, torque rods, momentum management",
       "Navigation and State Estimation, Navigation and Orbit Determination, Precise Navigation Solutions (Starlink): star tracker and signals-based attitude determination, inertial propagation, GNSS, orbit determination",
       "Starlink Controls and Embedded Controls: solar array actuators, antenna gimbals, active optics, Hall thruster fluid and power control",
@@ -6851,11 +6868,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "car_03_levels_and_quals": {
-    "covered": 2,
+    "covered": 3,
     "total": 10,
     "complete": false,
     "missing": [
-      "GNC Engineer Level I to II: the 2+ years line and the Dragon 1+ years variant",
       "the full preferred list for GNC Engineer and what each item signals",
       "Sr. GNC Engineer: 5+ years, or 7+ years in lieu of a degree, or a postgraduate degree",
       "specialist roles requiring a Master’s or PhD",
