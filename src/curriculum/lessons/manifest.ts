@@ -516,6 +516,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "reproducibility: seeded, one-command, CI, pinned dependencies"
       ],
       "file": "car_06_portfolio/10-reproducibility.md"
+    },
+    {
+      "id": "l11-licensing-and-prior-employer-ip",
+      "title": "Licensing, and what to do about prior-employer IP",
+      "minutes": 18,
+      "covers": [
+        "open-sourcing, licensing, and what to do about prior-employer intellectual property"
+      ],
+      "file": "car_06_portfolio/11-licensing-and-prior-employer-ip.md"
     }
   ],
   "car_07_resume_and_referrals": [
@@ -7291,11 +7300,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "car_06_portfolio": {
-    "covered": 11,
+    "covered": 12,
     "total": 13,
     "complete": false,
     "missing": [
-      "open-sourcing, licensing, and what to do about prior-employer intellectual property",
       "how the portfolio feeds the past-project presentation round"
     ]
   },
