@@ -18,6 +18,7 @@ import {
   IconBriefcase,
   IconBulb,
   IconCalendar,
+  IconClock,
   IconCode,
   IconCompass,
   IconDoc,
@@ -73,6 +74,12 @@ const MASTERY: SectionDef = {
   Icon: IconTarget,
 }
 const DAY: SectionDef = { id: 'day', label: 'Your day', title: 'Your day', Icon: IconCalendar }
+const BLOCK: SectionDef = {
+  id: 'block',
+  label: 'Focus blocks',
+  title: 'Focus blocks, for the days you do not want to',
+  Icon: IconClock,
+}
 const PRACTICE: SectionDef = {
   id: 'practice',
   label: 'Practice',
@@ -82,7 +89,18 @@ const PRACTICE: SectionDef = {
 const PAGES: SectionDef = { id: 'pages', label: 'Other pages', title: 'The other pages', Icon: IconGrid }
 const FAQ: SectionDef = { id: 'faq', label: 'Questions', title: 'Questions people ask', Icon: IconInfo }
 
-const SECTIONS: SectionDef[] = [WHAT, START, MODULE, RECALL, MASTERY, DAY, PRACTICE, PAGES, FAQ]
+const SECTIONS: SectionDef[] = [
+  WHAT,
+  START,
+  MODULE,
+  RECALL,
+  MASTERY,
+  DAY,
+  BLOCK,
+  PRACTICE,
+  PAGES,
+  FAQ,
+]
 
 const anchorId = (id: string) => `guide-${id}`
 const titleId = (id: string) => `guide-${id}-title`
@@ -779,7 +797,36 @@ export function Guide() {
         </Section>
 
         {/* ── 7. Practice ─────────────────────────────────────────────────── */}
-        <Section def={PRACTICE} index={7}>
+        <Section def={BLOCK} index={7}>
+          <div className="sect guide-prose">
+            <p>
+              Choosing is the expensive part. Seventeen modules, a review queue and a playground is
+              a menu, and a menu at the end of a tired day is a reason to close the laptop. A focus
+              block removes the menu. <strong>Start here</strong> on the dashboard picks one thing,
+              says why it picked that one, and starts a fifteen-minute block on a single click.
+            </p>
+            <p>
+              Fifteen minutes is the default because it is the smallest promise still worth keeping.
+              You are not being asked to study all evening; you are being asked for a quarter of an
+              hour with a visible end. Most blocks run past it, because starting was the only hard
+              part.
+            </p>
+            <p>
+              The timer sits at the bottom of the window and follows you into the lesson, so the
+              block survives going and doing the thing. While it runs there is a box to{' '}
+              <strong>park a thought</strong> — the email, the bill, the thing to look up — so an
+              interruption has somewhere to go that is not stopping. Parked notes wait for you on
+              the Focus page.
+            </p>
+            <p>
+              Stopping early costs nothing. Every block that is ended is credited with the time it
+              really ran, and a finished block counts as showing up even if it banked under a
+              minute. Nothing here will ever tell you that you fell short.
+            </p>
+          </div>
+        </Section>
+
+        <Section def={PRACTICE} index={8}>
           <div className="sect">
             <ul className="guide-list guide-list--kinds">
               {EXERCISE_KINDS.map((k) => (
@@ -834,7 +881,7 @@ export function Guide() {
         </Section>
 
         {/* ── 8. Other pages ──────────────────────────────────────────────── */}
-        <Section def={PAGES} index={8}>
+        <Section def={PAGES} index={9}>
           <div className="sect" style={{ paddingTop: 6, paddingBottom: 6 }}>
             <PageRow
               icon={<IconBook size={17} />}
@@ -871,7 +918,7 @@ export function Guide() {
         </Section>
 
         {/* ── 9. FAQ ──────────────────────────────────────────────────────── */}
-        <Section def={FAQ} index={9}>
+        <Section def={FAQ} index={10}>
           <div className="sect">
             <div className="guide-faq">
               <Faq q="I pressed Start and got a quiz. Where is the lesson?">

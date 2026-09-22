@@ -1174,6 +1174,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "torque-free motion, polhode and herpolhode"
       ],
       "file": "t1_m14_rigid_body_dynamics/06-torque-free-motion-polhode-and-herpolhode.md"
+    },
+    {
+      "id": "l07-spin-stability-and-the-intermediate-axis-theorem",
+      "title": "Spin stability and the intermediate axis theorem",
+      "minutes": 18,
+      "covers": [
+        "major/minor axis spin stability and the intermediate axis theorem"
+      ],
+      "file": "t1_m14_rigid_body_dynamics/07-spin-stability-and-the-intermediate-axis-theorem.md"
     }
   ],
   "t1_m15_rotating_frames": [
@@ -1617,11 +1626,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t1_m14_rigid_body_dynamics": {
-    "covered": 6,
+    "covered": 7,
     "total": 12,
     "complete": false,
     "missing": [
-      "major/minor axis spin stability and the intermediate axis theorem",
       "energy dissipation and the flat-spin instability",
       "gyroscopic effects, nutation, precession",
       "dual-spin spacecraft",
