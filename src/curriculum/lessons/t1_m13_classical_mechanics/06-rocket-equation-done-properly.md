@@ -1,7 +1,7 @@
 ---
 id: l06-rocket-equation-done-properly
 title: Variable mass and the rocket equation, done properly
-minutes: 26
+minutes: 23
 covers:
   - variable-mass systems and the rocket equation done properly
 ---

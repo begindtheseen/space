@@ -84,6 +84,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "inequalities"
       ],
       "file": "t0_m01_algebra_precalc/09-inequalities.md"
+    },
+    {
+      "id": "l10-units-and-dimensional-analysis",
+      "title": "Units, conversions and dimensional analysis",
+      "minutes": 19,
+      "covers": [
+        "units and dimensional analysis"
+      ],
+      "file": "t0_m01_algebra_precalc/10-units-and-dimensional-analysis.md"
     }
   ],
   "t0_m02_trigonometry": [
@@ -150,6 +159,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "polar and spherical coordinates"
       ],
       "file": "t0_m02_trigonometry/07-polar-and-spherical-coordinates.md"
+    },
+    {
+      "id": "l08-conic-sections",
+      "title": "Conic sections and the shape of orbits",
+      "minutes": 19,
+      "covers": [
+        "conic sections in geometric and polar form"
+      ],
+      "file": "t0_m02_trigonometry/08-conic-sections.md"
     }
   ],
   "t0_m03_python_scicomp": [
@@ -644,7 +662,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-rocket-equation-done-properly",
       "title": "Variable mass and the rocket equation, done properly",
-      "minutes": 26,
+      "minutes": 23,
       "covers": [
         "variable-mass systems and the rocket equation done properly"
       ],
@@ -793,6 +811,34 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "bending modes, flexible body dynamics and structural filter design"
       ],
       "file": "t1_m18_atmospheric_flight/09-bending-modes-and-structural-filters.md"
+    },
+    {
+      "id": "l10-propellant-slosh",
+      "title": "Propellant slosh as a pendulum or mass-spring",
+      "minutes": 18,
+      "covers": [
+        "propellant slosh as a pendulum or mass-spring"
+      ],
+      "file": "t1_m18_atmospheric_flight/10-propellant-slosh.md"
+    },
+    {
+      "id": "l11-control-structure-interaction",
+      "title": "Control-structure interaction",
+      "minutes": 18,
+      "covers": [
+        "control-structure interaction"
+      ],
+      "file": "t1_m18_atmospheric_flight/11-control-structure-interaction.md"
+    },
+    {
+      "id": "l12-grid-fins-and-entry",
+      "title": "Grid fins, control surfaces and entry aerodynamics",
+      "minutes": 20,
+      "covers": [
+        "grid fins and aerodynamic control surfaces",
+        "ballistic coefficient and lift-to-drag ratio in entry"
+      ],
+      "file": "t1_m18_atmospheric_flight/12-grid-fins-and-entry.md"
     }
   ],
   "t2_m19_two_body": [
@@ -937,21 +983,19 @@ export interface LessonCoverage {
 
 export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
   "t0_m01_algebra_precalc": {
-    "covered": 9,
+    "covered": 10,
     "total": 12,
     "complete": false,
     "missing": [
-      "units and dimensional analysis",
       "scientific notation and significant figures",
       "order-of-magnitude (Fermi) estimation"
     ]
   },
   "t0_m02_trigonometry": {
-    "covered": 8,
+    "covered": 9,
     "total": 10,
     "complete": false,
     "missing": [
-      "conic sections in geometric and polar form",
       "complex numbers and Euler formula"
     ]
   },
@@ -1135,15 +1179,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t1_m18_atmospheric_flight": {
-    "covered": 11,
+    "covered": 15,
     "total": 15,
-    "complete": false,
-    "missing": [
-      "propellant slosh as a pendulum or mass-spring",
-      "control-structure interaction",
-      "grid fins and aerodynamic control surfaces",
-      "ballistic coefficient and lift-to-drag ratio in entry"
-    ]
+    "complete": true,
+    "missing": []
   },
   "t2_m19_two_body": {
     "covered": 15,
