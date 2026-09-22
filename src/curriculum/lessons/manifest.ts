@@ -2844,6 +2844,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Accelerometer and gyroscope physics: MEMS, fiber optic, ring laser, hemispherical resonator"
       ],
       "file": "t4_m36_inertial_navigation/01-what-an-imu-measures-accelerometer-and-gyro-physics.md"
+    },
+    {
+      "id": "l02-imu-error-models",
+      "title": "IMU error models",
+      "minutes": 24,
+      "covers": [
+        "IMU error models: turn-on and in-run bias, scale factor, non-orthogonality and misalignment, g-sensitivity, quantization"
+      ],
+      "file": "t4_m36_inertial_navigation/02-imu-error-models.md"
     }
   ],
   "t4_m37_gnss": [
@@ -2864,6 +2873,26 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "The pseudorange measurement and its error budget"
       ],
       "file": "t4_m37_gnss/02-the-pseudorange-and-its-error-budget.md"
+    },
+    {
+      "id": "l03-receiver-clock-bias-the-fourth-unknown",
+      "title": "The receiver clock as the fourth unknown",
+      "minutes": 18,
+      "covers": [
+        "Receiver clock bias as the fourth unknown"
+      ],
+      "file": "t4_m37_gnss/03-receiver-clock-bias-the-fourth-unknown.md"
+    }
+  ],
+  "t4_m38_sensors_optical_nav": [
+    {
+      "id": "l01-star-trackers-photons-to-quaternion",
+      "title": "Star trackers: from photons to a quaternion",
+      "minutes": 24,
+      "covers": [
+        "Star trackers: optics, centroiding, star catalogs, lost-in-space identification (triangle and pyramid algorithms), tracking mode"
+      ],
+      "file": "t4_m38_sensors_optical_nav/01-star-trackers-photons-to-quaternion.md"
     }
   ]
 }
@@ -3210,11 +3239,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t4_m36_inertial_navigation": {
-    "covered": 1,
+    "covered": 2,
     "total": 13,
     "complete": false,
     "missing": [
-      "IMU error models: turn-on and in-run bias, scale factor, non-orthogonality and misalignment, g-sensitivity, quantization",
       "Angle random walk, velocity random walk, rate random walk, and bias instability",
       "Allan variance for IMU characterization; temperature effects and calibration",
       "Strapdown mechanization in ECI, ECEF and local-level (NED) frames",
@@ -3229,11 +3257,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t4_m37_gnss": {
-    "covered": 2,
+    "covered": 3,
     "total": 14,
     "complete": false,
     "missing": [
-      "Receiver clock bias as the fourth unknown",
       "The navigation solution by iterative least squares / Newton iteration",
       "Dilution of precision: GDOP, PDOP, HDOP, VDOP, TDOP, and what geometry makes each bad",
       "Ionospheric and tropospheric delay, their models, and the dual-frequency ionosphere-free combination",
@@ -3248,11 +3275,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t4_m38_sensors_optical_nav": {
-    "covered": 0,
+    "covered": 1,
     "total": 12,
     "complete": false,
     "missing": [
-      "Star trackers: optics, centroiding, star catalogs, lost-in-space identification (triangle and pyramid algorithms), tracking mode",
       "Star tracker accuracy: cross-boresight vs about-boresight, update rate, exclusion angles, stray light",
       "Sun sensors: coarse analog and fine digital, field of view, albedo error",
       "Magnetometers, the IGRF and WMM field models, residual dipole, hard-iron and soft-iron calibration",
