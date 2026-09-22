@@ -2488,6 +2488,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "The Hamiltonian and the Pontryagin minimum principle as the general frame"
       ],
       "file": "t3_m29_optimal_control_lqr/13-pontryagin-minimum-principle.md"
+    },
+    {
+      "id": "l14-ilqr-and-ddp",
+      "title": "iLQR and DDP, the nonlinear extension",
+      "minutes": 20,
+      "covers": [
+        "iLQR and DDP as the nonlinear extension"
+      ],
+      "file": "t3_m29_optimal_control_lqr/14-ilqr-and-ddp.md"
     }
   ],
   "t3_m30_robust_control": [
@@ -2776,6 +2785,17 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       ],
       "file": "t3_m32_mpc/11-mpc-vs-lqr-and-applications.md"
     }
+  ],
+  "t4_m37_gnss": [
+    {
+      "id": "l01-constellation-and-signal-structure",
+      "title": "The constellation and the signal",
+      "minutes": 26,
+      "covers": [
+        "GNSS constellation and signal structure: L1/L2/L5, C/A and P(Y) codes, CDMA, the navigation message"
+      ],
+      "file": "t4_m37_gnss/01-constellation-and-signal-structure.md"
+    }
   ]
 }
 
@@ -3033,12 +3053,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t3_m29_optimal_control_lqr": {
-    "covered": 13,
+    "covered": 14,
     "total": 14,
-    "complete": false,
-    "missing": [
-      "iLQR and DDP as the nonlinear extension"
-    ]
+    "complete": true,
+    "missing": []
   },
   "t3_m30_robust_control": {
     "covered": 12,
@@ -3148,11 +3166,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t4_m37_gnss": {
-    "covered": 0,
+    "covered": 1,
     "total": 14,
     "complete": false,
     "missing": [
-      "GNSS constellation and signal structure: L1/L2/L5, C/A and P(Y) codes, CDMA, the navigation message",
       "The pseudorange measurement and its error budget",
       "Receiver clock bias as the fourth unknown",
       "The navigation solution by iterative least squares / Newton iteration",
