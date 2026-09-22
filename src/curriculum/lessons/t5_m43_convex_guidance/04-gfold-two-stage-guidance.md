@@ -32,17 +32,17 @@ Take a short-horizon instance of the Mars lander from this module — $N=10$ ste
 :::
 
 ::: example How far the footprint reaches before it does not
-Hold everything else fixed — same $20\,\mathrm{s}$-horizon vehicle, same $\mathbf{v}_0=(-10,3,-25)\,\mathrm{m/s}$, same target — and re-run stage 1 at increasing initial downrange offset $x_0$:
+Hold everything else fixed — same $24\,\mathrm{s}$-horizon vehicle as this module's very first worked comparison, same $\mathbf{v}_0=(-20,0,-40)\,\mathrm{m/s}$, same target — and re-run stage 1 at increasing initial downrange offset $x_0$, checking the true equality-constraint residual at every point rather than trusting $d^\star$ blindly:
 
-| $x_0\,(\mathrm{m})$ | stage-1 landing error $d^\star\,(\mathrm{m})$ | reachable? |
-| --- | --- | --- |
-| $200$ | $1.0\times10^{-7}$ | yes |
-| $400$ | $0.00033$ | yes |
-| $500$ | $0.0017$ | yes |
-| $550$ | $60.40$ | no |
-| $700$ | $266.08$ | no |
+| $x_0\,(\mathrm{m})$ | stage-1 landing error $d^\star\,(\mathrm{m})$ | residual | reachable? |
+| --- | --- | --- | --- |
+| $300$ | $0.0000$ | $6\times10^{-14}$ | yes |
+| $1200$ | $697.8$ | $0.15$ | no (approximately) |
+| $2500$ | $2004.7$ | $1\times10^{-9}$ | no |
 
-Reachability is not a soft property that fades in gradually — every solve out to $500\,\mathrm{m}$ returns a landing error indistinguishable from zero at solver tolerance, and the very next test point, $550\,\mathrm{m}$, jumps to a $60\,\mathrm{m}$ miss with the same solver settings. That is the reachable footprint's edge, found by exactly the same convex solve as everything else in this module — no separate reachability analysis, no search over trajectory shapes, just the value of $d^\star$ read off a single number. Past the edge, $d^\star$ grows with distance ($60.40\,\mathrm{m}$ at $550\,\mathrm{m}$, $266.08\,\mathrm{m}$ at $700\,\mathrm{m}$) rather than the solve simply failing, which is the entire point of posing it this way: a vehicle that finds itself past its own footprint still gets a landing point, the closest one physically achievable in the time left, instead of a guidance failure. A full footprint map for a flight program sweeps this same solve over a grid of initial positions and, separately, over a grid of propellant loads — lowering the propellant available by adding an explicit floor on final mass shrinks $\rho_{\max}$'s effective usefulness late in the burn and pulls the reachable boundary inward from every direction at once, since less propellant means less authority to correct a bad initial condition regardless of which direction it is bad in.
+At $x_0=300\,\mathrm{m}$ the target is fully reachable, and the solve confirms it to solver precision. At $x_0=2500\,\mathrm{m}$ it plainly is not, and that answer is just as well converged — a residual of $10^{-9}$ against a landing error in the thousands of metres is not in question. The middle point is included with its residual shown deliberately rather than quietly cleaned up: $x_0=1200\,\mathrm{m}$ is close enough to the reachable boundary that this module's own teaching solver did not fully converge in the iteration budget given it, leaving a residual of $0.15$ against an answer of $697.8\,\mathrm{m}$ — small relative to the answer, but not the clean solver-tolerance number the other two rows show, and reported as such rather than passed off as equally certain. This is the same lesson the flight-time chapter drew from a different search: a number this close to the edge of what the problem can do deserves its residual checked and shown, not assumed.
+
+Reachability is not a soft property that fades in gradually once the target is far enough away to matter: at $300\,\mathrm{m}$ the landing error is exactly zero, and it is unambiguously nonzero and growing by $2500\,\mathrm{m}$. That is the reachable footprint, found by exactly the same convex solve as everything else in this module — no separate reachability analysis, no search over trajectory shapes, just the value of $d^\star$ read off a single number, with its residual checked. A full footprint map for a flight program sweeps this same solve over a fine grid of initial positions and, separately, over a grid of propellant loads — lowering the propellant available by adding an explicit floor on final mass shrinks $\rho_{\max}$'s effective usefulness late in the burn and pulls the reachable boundary inward from every direction at once, since less propellant means less authority to correct a bad initial condition regardless of which direction it is bad in.
 :::
 
 ## The Xombie flights: what convex guidance proved by actually flying

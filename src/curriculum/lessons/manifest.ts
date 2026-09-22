@@ -2543,6 +2543,16 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "divert capability and the landing ellipse"
       ],
       "file": "t2_m24_edl/12-hoverslam-and-divert-capability.md"
+    },
+    {
+      "id": "l13-mars-edl-and-reusable-booster-return",
+      "title": "Mars EDL and reusable booster return modes",
+      "minutes": 16,
+      "covers": [
+        "Mars EDL: thin atmosphere, supersonic parachutes, sky crane",
+        "reusable booster return modes: RTLS vs droneship, boostback burns"
+      ],
+      "file": "t2_m24_edl/13-mars-edl-and-reusable-booster-return.md"
     }
   ],
   "t3_m25_signals_systems": [
@@ -5573,13 +5583,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t2_m24_edl": {
-    "covered": 16,
+    "covered": 18,
     "total": 18,
-    "complete": false,
-    "missing": [
-      "Mars EDL: thin atmosphere, supersonic parachutes, sky crane",
-      "reusable booster return modes: RTLS vs droneship, boostback burns"
-    ]
+    "complete": true,
+    "missing": []
   },
   "t3_m25_signals_systems": {
     "covered": 12,
