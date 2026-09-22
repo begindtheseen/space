@@ -9,7 +9,7 @@ covers:
 
 Without a degree behind you, the portfolio is not supporting evidence for your candidacy — it is the candidacy. A transcript tells a hiring panel that someone else certified your competence over four years of coursework they trust the shape of; you do not have that. What you have instead is a small number of things you built, and the only question that matters is whether those things hold up once a competent engineer starts asking about them. Most self-taught portfolios do not fail because the work is bad. They fail because the work was built to be shown, and the interview format does not show work — it interrogates it.
 
-That is the whole idea this module is organized around, stated plainly in its title: a portfolio that survives questioning. Not one that looks impressive in a thirty-second scroll through a GitHub profile, and not one that produces a smooth demo video, but one that keeps giving correct, specific answers after the fifth follow-up question from someone who has debugged the exact class of problem you are describing and knows precisely where it usually breaks. This lesson sets the standard the rest of the module measures every project against: five words that describe what a portfolio should be, a five-part test for whether any single project passes it, and the specific things not to build because they cannot pass that test no matter how much time goes into them.
+That is the whole idea this module is organized around, stated plainly in its title: a portfolio that survives questioning. Not one that looks impressive in a thirty-second scroll through a GitHub profile, but one that keeps giving correct, specific answers after the fifth follow-up from someone who has debugged the exact class of problem you are describing and knows where it usually breaks. This lesson sets the standard the rest of the module measures every project against: five words describing what a portfolio should be, a five-part test for whether a project passes it, and the specific things not to build because they cannot pass no matter how much time goes into them.
 
 The projects that come later in this module — a 6-DOF simulation, a powered-descent guidance solver, an attitude-estimation filter, an orbit-determination fit, a momentum-management study — are chosen because they are technically substantial and because this curriculum already teaches the material behind each one. Choosing the right project is only half the problem; the other half, where most self-taught engineers slip first, is documenting it so it survives the conversation that follows.
 
@@ -25,17 +25,17 @@ Few and deep exist because of the interview format, not as a style preference: a
 
 ## Defensible: the five things a project needs
 
-"Defensible" is the word that does the most work in this module, worth being precise about rather than treating as a synonym for "good." A defensible project is one where five specific things exist, in writing, and can be pointed at when asked about. Their absence, not the quality of the underlying code, is what turns strong engineering into something that collapses under a second question.
+"Defensible" does the most work in this module, worth being precise about rather than treating as a synonym for "good." A defensible project is one where five specific things exist, in writing, and can be pointed at when asked about. Their absence, not the quality of the underlying code, turns strong engineering into something that collapses under a second question.
 
-**A stated requirement it was built against.** Every real engineering project starts from a requirement — land within some error budget, estimate attitude to some accuracy, converge within some time bound — and the requirement is what turns a number into an engineering result rather than an arbitrary fact. "My filter's RMS error is 0.3 degrees" means nothing alone; "my filter needed to hold attitude knowledge to 0.5 degrees 1-sigma for a star-tracker handoff, and achieved 0.3" is a claim a reviewer can evaluate, because it has a bar to clear. No stated requirement invites the most damaging question in the whole defence: good compared to what?
+**A stated requirement it was built against.** Every real engineering project starts from a requirement — land within some error budget, estimate attitude to some accuracy, converge within some time bound — and it is what turns a number into an engineering result rather than an arbitrary fact. "My filter's RMS error is 0.3 degrees" means nothing alone; "my filter needed to hold attitude knowledge to 0.5 degrees 1-sigma for a star-tracker handoff, and achieved 0.3" is a claim a reviewer can evaluate, because it has a bar to clear. No stated requirement invites the most damaging question in the whole defence: good compared to what?
 
-**A model whose assumptions are written down.** Every simulation, filter, or guidance law rests on assumptions — rigid body, point mass, linear measurement model, uncorrelated noise — and these are not a weakness to hide; they are the boundary of what the result means. Stating them explicitly demonstrates you know exactly what the model does and does not capture; leaving them implicit forces a reviewer to guess, and an experienced reviewer's guess about an unstated assumption is rarely generous.
+**A model whose assumptions are written down.** Every simulation, filter, or guidance law rests on assumptions — rigid body, point mass, linear measurement, uncorrelated noise — and these are not a weakness to hide; they are the boundary of what the result means. Stating them shows you know what the model does and does not capture; leaving them implicit forces a reviewer to guess, and an experienced reviewer's guess about an unstated assumption is rarely generous.
 
-**Verification evidence that is not "it ran."** This is the largest gap between a hobbyist project and an engineering one, and later lessons spend real time on it. "The simulation completed without crashing" and "the trajectory looked plausible" are both consistent with a serious, invisible defect — a sign error in a cross product, a covariance silently wrong by a factor of ten — because a program can be free of crashes and still compute the wrong answer with complete confidence. A defensible project states specifically how correctness was established: an analytic case reproduced to a stated tolerance, a conserved quantity that stayed conserved, a convergence rate that behaved as the numerical method predicts.
+**Verification evidence that is not "it ran."** This is the largest gap between a hobbyist project and an engineering one, and later lessons spend real time on it. "The simulation completed without crashing" and "the trajectory looked plausible" are both consistent with a serious, invisible defect — a sign error in a cross product, a covariance silently wrong by a factor of ten — since a program can be free of crashes and still compute the wrong answer confidently. A defensible project states specifically how correctness was established: an analytic case reproduced to a stated tolerance, a conserved quantity that stayed conserved, a convergence rate that behaved as the numerical method predicts.
 
-**A known-failure section.** Every real project has a case that broke, a tolerance that had to be loosened, or a regime where the result stops being trustworthy. Naming that case in writing, rather than letting a reviewer discover it by asking, is the most efficient way to demonstrate judgment, because it proves you know where your result stops being valid rather than hoping nobody asks. No stated limitation reads as either "not examined closely enough to find one" or "found one and left it out" — a reviewer cannot tell which, so both readings work against you.
+**A known-failure section.** Every real project has a case that broke, a tolerance that had to be loosened, or a regime where the result stops being trustworthy. Naming it in writing, rather than letting a reviewer discover it by asking, proves you know where your result stops being valid rather than hoping nobody asks. No stated limitation reads as either "not examined closely enough to find one" or "found one and left it out" — a reviewer cannot tell which, so both readings work against you.
 
-**A clear statement of what you did versus what a library did.** A project that calls `scipy.integrate.solve_ivp` and reports a trajectory has demonstrated you can call a library function. One that derives the equations of motion, implements its own integrator, and uses `solve_ivp` only as an independent cross-check has demonstrated something else entirely — and the difference is invisible unless you say which one you did. That one sentence answers, before it is asked, the question every experienced reviewer eventually asks: which parts of this are yours?
+**A clear statement of what you did versus what a library did.** A project calling `scipy.integrate.solve_ivp` and reporting a trajectory has demonstrated you can call a library function. One that derives the equations of motion, implements its own integrator, and uses `solve_ivp` only as an independent cross-check has demonstrated something else entirely — and the difference is invisible unless you say which one you did. That one sentence answers, before it is asked, the question every experienced reviewer eventually asks: which parts of this are yours?
 
 ::: key
 Defensible means five things exist in writing: a stated requirement, written-down model assumptions, verification evidence beyond "it ran," a named known-failure case, and an explicit statement of what the author built versus what a library provided. A project missing any one of these is not incomplete — it is exactly as strong as its weakest of the five, because that is the one a competent question finds first.
@@ -43,11 +43,11 @@ Defensible means five things exist in writing: a stated requirement, written-dow
 
 ## Documented and reproducible: for the stranger who does not trust you yet
 
-The last two words are shorter to state, and get full treatment later in this module, but belong in the same list because they answer the same problem as "defensible": a reviewer who has never met you starts from zero trust, and everything about the project either builds that trust or spends it.
+The last two words are shorter to state, and get full treatment later, but belong in the same list because they answer the same problem as "defensible": a reviewer who has never met you starts from zero trust, and everything about the project either builds that trust or spends it.
 
-Documented means the five things above are written somewhere a stranger can find in minutes, not reconstructed from commit messages or explained only in person. A verification result that exists only in your memory is not evidence to anyone but you; written down in a README or a short report, it becomes something a reviewer can check on their own schedule, which is the entire value of writing it down. The next lesson builds that structure in full.
+Documented means the five things above are written where a stranger can find them in minutes, not reconstructed from commit messages or explained only in person. A verification result that exists only in your memory is evidence to nobody but you; written down, it becomes something a reviewer can check on their own schedule. The next lesson builds that structure in full.
 
-Reproducible means a stranger can get your result themselves, from your repository, without asking you anything. A claim that cannot be independently reproduced is a claim about your machine at a moment in the past, not a fact a reviewer can verify — and the two are worth very different amounts in a technical defence. A later lesson covers what reproducibility requires in practice; the point to hold onto here is that it sits at the same level as defensibility itself, not layered on top of it as a nicety.
+Reproducible means a stranger can get your result themselves, from your repository, without asking you anything. A claim that cannot be independently reproduced is a claim about your machine at a moment in the past, not a fact a reviewer can verify — worth a very different amount in a technical defence. A later lesson covers what this requires in practice; here, the point is that it sits at the same level as defensibility, not layered on top of it as a nicety.
 
 ## Weak versus strong: the same project, told two ways
 
@@ -69,9 +69,9 @@ Three shapes of project show up constantly in self-taught portfolios, and all th
 
 **Tutorial follow-alongs.** Working through someone else's blog post, course, or textbook example line by line demonstrates you can follow instructions, not engineering judgment, because every decision in it — which filter, which discretization, which tolerance — was already made by the tutorial's author. The tell is in the questions: "why an EKF over a UKF here" has no real answer beyond "the tutorial used one." A project is not disqualified for resembling a well-known problem; what disqualifies it is that the decisions inside it are not yours.
 
-**Notebooks without validation.** A notebook full of plots that look reasonable is evidence code ran and produced numbers, not evidence the numbers are correct — the anti-pattern verification exists to fix. It shows up constantly because a smooth-looking plot is genuinely persuasive to the person who made it, and smoothness is not correctness: a sign error or a wrongly-scaled covariance can produce a perfectly smooth, perfectly wrong plot. A notebook becomes defensible the moment it gains a stated requirement and evidence, beyond "it looks right," that the requirement was met.
+**Notebooks without validation.** A notebook full of reasonable-looking plots is evidence code ran and produced numbers, not evidence the numbers are correct — the anti-pattern verification exists to fix. It shows up constantly because a smooth plot is genuinely persuasive to whoever made it, and smoothness is not correctness: a sign error or a wrongly-scaled covariance can produce a perfectly smooth, perfectly wrong plot. A notebook becomes defensible the moment it gains a stated requirement and evidence, beyond "it looks right," that the requirement was met.
 
-**Thirty shallow repositories.** A profile with dozens of small, demo-quality repositories reads as evidence of activity rather than depth, and costs you the benefit of the doubt a curated profile would get, because a reviewer who opens three at random and finds none defensible reasonably stops looking. Quantity does not average out against depth here; a shallow repository next to your anchor projects does not add evidence, it dilutes attention away from the parts that would hold up.
+**Thirty shallow repositories.** A profile with dozens of small, demo-quality repositories reads as activity rather than depth, and costs the benefit of the doubt a curated profile would get, because a reviewer who opens three at random and finds none defensible reasonably stops looking. Quantity does not average out against depth here; a shallow repository next to your anchor projects dilutes attention away from the parts that would hold up.
 
 A few more traps get full treatment later: a filter tuned by eye until its plot looks smooth, with no statistical consistency test behind that judgment; a controller demonstrated only against the exact plant it was tuned on, proving the tuning closed a loop and nothing about robustness; numbers with no units or uncertainty; work a reviewer cannot run; a README describing intent rather than measured results. Each fails the five-part test from a different angle.
 
@@ -96,7 +96,7 @@ Few: a project defended an hour under questioning beats several defended two min
 :::
 
 ::: check
-List the five things a defensible project needs, in your own words, and explain briefly why a project missing its known-failure section is weaker than one that has never been asked about failure modes at all.
+List the five things a defensible project needs, and explain briefly why a project missing its known-failure section is weaker than one never asked about failure modes at all.
 :::
 
 ::: answer
@@ -112,7 +112,7 @@ Missing is the author-versus-library statement — the sentence is equally consi
 :::
 
 ::: check
-Explain, using the interview format rather than a general claim about effort, why ten repositories built to a shallow standard are worth less than three built to a deep one — even when the ten collectively took more total hours to produce.
+Using the interview format rather than a general claim about effort, explain why ten shallow repositories are worth less than three deep ones, even when the ten took more total hours to produce.
 :::
 
 ::: answer
@@ -120,7 +120,7 @@ The interview format spends most of its time on extended questioning about a sma
 :::
 
 ::: check
-A reviewer skims a candidate's profile, opens two of thirty repositories at random, and finds neither defensible by the five-part test. What does this lesson say the reviewer is likely to do next, and why does that make the size of the profile itself a liability rather than a neutral fact?
+A reviewer opens two of a candidate's thirty repositories at random and finds neither defensible. What is the reviewer likely to do next, and why does that make profile size itself a liability rather than a neutral fact?
 :::
 
 ::: answer
@@ -139,4 +139,4 @@ The reviewer is likely to stop looking rather than keep sampling for a better on
 | Weak vs strong example | Same code, two READMEs — the strong one answers "how do you know it's right" before it is asked |
 | What not to build | Tutorial follow-alongs, notebooks without validation, thirty shallow repositories, and their kin |
 
-The next lesson takes "documented" and builds it into a full write-up structure — problem, model, assumptions, verification, validation, results, limitations — the specific shape a defensible project's documentation should take, and what a busy reviewer actually reads in the first ninety seconds.
+The next lesson takes "documented" and builds it into a full write-up structure — problem, model, assumptions, verification, validation, results, limitations — and what a busy reviewer actually reads in the first ninety seconds.

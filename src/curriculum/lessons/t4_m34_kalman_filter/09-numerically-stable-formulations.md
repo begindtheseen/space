@@ -19,7 +19,7 @@ Take the constant-velocity model in single-precision (float32) arithmetic — co
 
 | Form | $\mathbf{P}^+$ at the very first update | Smallest eigenvalue |
 | --- | --- | --- |
-| Simplified, $(\mathbf{I}-\mathbf{K}\mathbf{H})\mathbf{P}^-$ | $\begin{pmatrix}0.5367 & 0.4053\\ 0.4053 & 0.6621\end{pmatrix}$ | $-0.03847$ |
+| Simplified, $(\mathbf{I}-\mathbf{K}\mathbf{H})\mathbf{P}^-$ | $\begin{pmatrix}-0.0385 & -0.0038\\ -0.0038 & 99.0595\end{pmatrix}$ | $-0.03847$ |
 | Joseph | (a different, valid matrix) | $4.0014$ |
 
 The simplified form reports a covariance with a **negative eigenvalue on the very first update** — a direction in which the filter claims a negative variance, a number with no meaning at all — while the Joseph form, fed the identical data and the identical wrong gain, stays comfortably positive definite. With the same $4\%$ error but the *exact*, non-singular $\mathbf{Q}$ from the stochastic-model lesson instead of the short-step approximation, neither form fails over thousands of steps: it is specifically the combination of an already-thin margin (the singular $\mathbf{Q}$) and a non-optimal gain that collapses the simplified form, precisely the double failure the stochastic-model lesson's warning and this module's running emphasis on exact process noise were both anticipating. Scanning the gain error from $1\%$ up to $4\%$ against the singular $\mathbf{Q}$ shows the smallest eigenvalue falling smoothly from $2.88$ to $0.45$ and then, between $3.5\%$ and $4\%$, crossing zero — not a gradual erosion but a sharp threshold, on the very first step, that a filter watching only its own reported diagonal variances would have no way to anticipate.

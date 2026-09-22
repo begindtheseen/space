@@ -1,7 +1,7 @@
 ---
 id: l06-tailoring-and-the-cover-letter
 title: "Tailoring to one role family, and the cover letter question"
-minutes: 23
+minutes: 21
 covers:
   - tailoring to one role family rather than submitting one generic resume everywhere
   - the cover letter question and when it is worth the time
@@ -100,7 +100,7 @@ A posting's application system includes an optional text field for a cover lette
 :::
 
 ::: answer
-Whether she has something specific to say that her resume's bullet-point format cannot say as well — a concrete reason this particular role family fits her, a brief explanation of an unusual path, or genuinely time-sensitive context. If what she would write is simply a paragraph-form restatement of content the resume already states more efficiently as bullets, leaving the field blank or brief serves the reader better than filling it with restated content.
+Whether she has something specific to say that her resume's bullet-point format cannot say as well — a concrete reason this particular role family fits her, a brief explanation of an unusual path, or genuinely time-sensitive context. If what she would write is only a paragraph-form restatement of content the resume already states more efficiently as bullets, leaving the field blank or brief serves the reader better than filling it with restated content.
 :::
 
 ::: check
@@ -116,7 +116,7 @@ A candidate describes her 6-DOF simulation project's software-engineering rigor 
 :::
 
 ::: answer
-This is tailoring, not dishonesty, because both descriptions are true simultaneously and neither version denies or contradicts what the other states — the project genuinely has both a rigorous engineering process and real dispersion results, and each version simply leads with whichever true fact is most relevant to that specific reader's posting. It would only become dishonest if one version claimed something the underlying project does not actually have, or if the two versions could not both be true about the same project at once.
+This is tailoring, not dishonesty, because both descriptions are true simultaneously and neither version denies or contradicts what the other states — the project genuinely has both a rigorous engineering process and real dispersion results, and each version only leads with whichever true fact is most relevant to that specific reader's posting. It would only become dishonest if one version claimed something the underlying project does not actually have, or if the two versions could not both be true about the same project at once.
 :::
 
 ## Summary

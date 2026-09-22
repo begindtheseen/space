@@ -166,7 +166,7 @@ The test problem is tame because its solution decays. An orbit does not: the sta
 
 Local orders again: halving $h$ divides Euler's error by 4 ($h^2$), Heun's by 8 ($h^3$), RK4's by 32 ($h^5$). Euler's 15 km error after one minute is almost entirely radial and outward, $r_1 - r_0 = +15.1\,\mathrm{km}$: the Euler step moves the vehicle along its velocity, tangent to the circle, and the tangent leaves the circle by $(v_0 h)^2/(2r_0) = (456.8)^2/(2 \times 6{,}878) = 15.2\,\mathrm{km}$. Every Euler step does this, always outward, which is the spiral you will meet two lessons from now.
 
-After one full revolution at $h \approx 60\,\mathrm{s}$ (95 steps) the position errors are: Euler $16{,}000\,\mathrm{km}$ — the vehicle is not in orbit any more — Heun $277\,\mathrm{km}$, RK4 $26\,\mathrm{m}$. At $h \approx 30\,\mathrm{s}$ RK4 gives $1.4\,\mathrm{m}$, a ratio of 18, consistent with fourth order. A 30 s step is a coarse step for RK4 on a LEO orbit; a typical simulator uses 1 to 10 s and gets millimetres per revolution, at which point force-model error, not integration error, limits the answer.
+After one full revolution at $h \approx 60\,\mathrm{s}$ (95 steps) the position errors are: Euler $16{,}000\,\mathrm{km}$ — the vehicle is not in orbit any more — Heun $280\,\mathrm{km}$, RK4 $26.6\,\mathrm{m}$. At $h \approx 30\,\mathrm{s}$ RK4 gives $1.4\,\mathrm{m}$, a ratio of 18, consistent with fourth order. A 30 s step is a coarse step for RK4 on a LEO orbit; a typical simulator uses 1 to 10 s and gets millimetres per revolution, at which point force-model error, not integration error, limits the answer.
 
 ::: warning
 Do not confuse the order with the accuracy. Order says how the error *scales* with $h$; the constant in front depends on the problem. An RK4 step of 60 s on a LEO orbit is accurate to 7 cm; the same step on a Molniya orbit near perigee, where the acceleration changes far faster, is accurate to nothing. The way to choose a fixed step is to halve it until the answer stops changing at the level you care about, then keep a margin. The way to avoid the question altogether is the adaptive control of the next lesson.
@@ -226,11 +226,11 @@ When $\mathbf{f}$ does not depend on $\mathbf{y}$ the intermediate states are ir
 :::
 
 ::: check
-For the 500 km circular orbit, RK4 with $h = 60\,\mathrm{s}$ gives a position error of about $26\,\mathrm{m}$ per revolution. Estimate the error per revolution at $h = 10\,\mathrm{s}$, and the number of function evaluations per revolution.
+For the 500 km circular orbit, RK4 with $h = 60\,\mathrm{s}$ gives a position error of about $26.6\,\mathrm{m}$ per revolution. Estimate the error per revolution at $h = 10\,\mathrm{s}$, and the number of function evaluations per revolution.
 :::
 
 ::: answer
-Global error scales as $h^4$, so reducing $h$ by a factor of 6 reduces the error by $6^4 = 1{,}296$: about $26/1{,}296 = 0.020\,\mathrm{m}$, two centimetres per revolution. Steps per revolution: $5{,}677/10 = 568$, at four evaluations each, about $2{,}270$ evaluations. The measured ratio from 60 s to 30 s was 18 rather than 16, so expect the true figure to be somewhat smaller than 2 cm; either way it is below the level at which atmospheric drag uncertainty dominates.
+Global error scales as $h^4$, so reducing $h$ by a factor of 6 reduces the error by $6^4 = 1{,}296$: about $26.6/1{,}296 = 0.021\,\mathrm{m}$, two centimetres per revolution. Steps per revolution: $5{,}677/10 = 568$, at four evaluations each, about $2{,}270$ evaluations. The measured ratio from 60 s to 30 s was 18 rather than 16, so expect the true figure to be somewhat smaller than 2 cm; either way it is below the level at which atmospheric drag uncertainty dominates.
 :::
 
 ## Summary

@@ -134,6 +134,16 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Navigation and State Estimation, Navigation and Orbit Determination, Precise Navigation Solutions (Starlink): star tracker and signals-based attitude determination, inertial propagation, GNSS, orbit determination"
       ],
       "file": "car_02_role_families/06-navigation-and-state-estimation.md"
+    },
+    {
+      "id": "l07-embedded-controls-and-beam-pointing",
+      "title": "Embedded Controls and Beam Pointing: actuators and aim",
+      "minutes": 19,
+      "covers": [
+        "Starlink Controls and Embedded Controls: solar array actuators, antenna gimbals, active optics, Hall thruster fluid and power control",
+        "Device Navigation and Beam Pointing, Beam Planning: user terminal pointing, RF and optical link pointing"
+      ],
+      "file": "car_02_role_families/07-embedded-controls-and-beam-pointing.md"
     }
   ],
   "car_03_levels_and_quals": [
@@ -309,6 +319,26 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "6-DOF simulation stacks and what high fidelity actually means"
       ],
       "file": "car_05_tooling_reality/03-reading-someone-elses-simulation.md"
+    },
+    {
+      "id": "l04-the-machine-the-deadline-and-the-forbidden-list",
+      "title": "The machine, the deadline, and why the loop forbids the heap",
+      "minutes": 22,
+      "covers": [
+        "flight computers: embedded Linux, a roughly 3.2 series kernel with real-time patches, on Dragon, Falcon and Starship primary flight computers",
+        "determinism, fixed-step integration and bounded execution time in a flight control loop",
+        "why dynamic allocation, unbounded loops and exceptions are avoided in the control path"
+      ],
+      "file": "car_05_tooling_reality/04-the-machine-the-deadline-and-the-forbidden-list.md"
+    },
+    {
+      "id": "l05-redundancy-voting-and-fault-management",
+      "title": "Redundancy, voting, and fault management",
+      "minutes": 18,
+      "covers": [
+        "redundancy, voting and fault management as first-class design concerns"
+      ],
+      "file": "car_05_tooling_reality/05-redundancy-voting-and-fault-management.md"
     }
   ],
   "car_06_portfolio": [
@@ -373,12 +403,21 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-tailoring-and-the-cover-letter",
       "title": "Tailoring to one role family, and the cover letter question",
-      "minutes": 23,
+      "minutes": 21,
       "covers": [
         "tailoring to one role family rather than submitting one generic resume everywhere",
         "the cover letter question and when it is worth the time"
       ],
       "file": "car_07_resume_and_referrals/06-tailoring-and-the-cover-letter.md"
+    },
+    {
+      "id": "l07-applying-directly",
+      "title": "Applying directly, and what happens after you submit",
+      "minutes": 18,
+      "covers": [
+        "applying directly at spacex.com/careers and what happens next"
+      ],
+      "file": "car_07_resume_and_referrals/07-applying-directly.md"
     }
   ],
   "t0_m01_algebra_precalc": [
@@ -7017,12 +7056,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "car_02_role_families": {
-    "covered": 6,
+    "covered": 8,
     "total": 13,
     "complete": false,
     "missing": [
-      "Starlink Controls and Embedded Controls: solar array actuators, antenna gimbals, active optics, Hall thruster fluid and power control",
-      "Device Navigation and Beam Pointing, Beam Planning: user terminal pointing, RF and optical link pointing",
       "Software Engineer, GNC (Starship) and GNC Software Engineer, Operations Automation: analysis tools, pipelines, automation",
       "Site Reliability Engineer, GNC: HPC Monte Carlo infrastructure, CI for rocket and simulation software",
       "GNC Engineer (Starfall): reentry and recovery of a returnable payload capsule, first flight June 2026",
@@ -7043,14 +7080,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "car_05_tooling_reality": {
-    "covered": 5,
+    "covered": 9,
     "total": 13,
     "complete": false,
     "missing": [
-      "flight computers: embedded Linux, a roughly 3.2 series kernel with real-time patches, on Dragon, Falcon and Starship primary flight computers",
-      "determinism, fixed-step integration and bounded execution time in a flight control loop",
-      "why dynamic allocation, unbounded loops and exceptions are avoided in the control path",
-      "redundancy, voting and fault management as first-class design concerns",
       "Monte Carlo dispersion campaigns across tens of thousands of CPUs and what they are used to prove",
       "infrastructure: Linux, Docker, Kubernetes, Ansible, Puppet, Terraform, Bazel-class build systems",
       "continuous integration for rocket and simulation software",
@@ -7076,11 +7109,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "car_07_resume_and_referrals": {
-    "covered": 8,
+    "covered": 9,
     "total": 13,
     "complete": false,
     "missing": [
-      "applying directly at spacex.com/careers and what happens next",
       "referrals: who can refer, how to ask, and what to give the referrer to make it easy",
       "community and conferences: AIAA and AAS Space Flight Mechanics, SmallSat, university seminars, open-source contribution",
       "recruiter outreach on LinkedIn done well and done badly",
