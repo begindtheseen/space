@@ -210,4 +210,4 @@ The tangent-line upper bound lies below the convex function $e^{-z}$ on both sid
 | Size at $N = 100$ | $1107$ variables, $713$ equalities, $401$ cones of dimension $\le 4$ |
 | Final time | Not a convex variable; outer line search over $t_f$ |
 
-The next lesson climbs one more rung – the semidefinite program, in which the cone is the set of positive semidefinite matrices – and shows where SOCP sits in the hierarchy of conic problems. After that, duality gives the certificates, and interior-point methods give the algorithm that solves the SOCP built here.
+The next lesson develops duality, which supplies the certificates promised in lesson 4 and the language in which a conic solver reports its progress. The lesson after it climbs one more rung – the semidefinite program, in which the cone is the set of positive semidefinite matrices – and shows where SOCP sits in the hierarchy of conic problems. Then interior-point methods give the algorithm that solves the SOCP built here.
