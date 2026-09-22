@@ -6,7 +6,7 @@ covers:
   - the 90-second background narrative and how to end it on a specific role family
 ---
 
-Of everything in this module, the ninety-second narrative is the piece with the widest reach. You will give some version of it at the recruiter screen, again at the start of the technical phone screen when the engineer says *so, tell me about your background*, again at the onsite to five or six people in a row, and, in compressed form, every time you introduce yourself to someone at the company for the rest of the process. It is the single most-reused ninety seconds of the entire job search, and it is almost always the least-prepared.
+Of everything in this module, the ninety-second narrative is the piece with the widest reach. You will give some version of it at the recruiter screen, again at the start of the technical phone screen when the engineer says *so, tell me about your background*, again at the onsite to five or six people in a row, and, in compressed form, every time you introduce yourself to someone at the company for the rest of the process. It is the single most-reused ninety seconds of the entire job search, and it is the one most easily left unprepared.
 
 It is also, for an engineer who has done real work, the most annoying thing to write. The material is not the problem — you have the material. The problem is that the format punishes everything engineers are trained to do: qualify, enumerate, give context, establish scope, cover the edge cases. Ninety seconds does not have room for any of that, and an attempt to fit it in produces the characteristic failure, which is a narrative that is entirely true, entirely complete, and completely unmemorable.
 

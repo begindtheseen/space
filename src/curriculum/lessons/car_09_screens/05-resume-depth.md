@@ -8,7 +8,7 @@ covers:
 
 The rule is simple enough to state in one sentence: anything you wrote on your résumé is fair game, and you should expect to be taken at least three questions deep on any line the interviewer picks. Not the line you hoped they would pick. Any line.
 
-That rule has a consequence most candidates do not follow through on. If every line is subject to a three-question interrogation, then the résumé is not a list of things you have been near — it is a list of commitments, each of which you have undertaken to defend under questioning, out loud, without notes, from an engineer who has done the same work. A line you cannot defend is not neutral. It is a trap you set for yourself and handed to the interviewer, who will walk straight into it, because interviewers are drawn to the lines that sound impressive, and an impressive-sounding line you cannot defend is exactly the one that sounds most impressive.
+That rule has a consequence most candidates do not follow through on. If every line is subject to a three-question interrogation, then the résumé is not a list of things you have been near — it is a list of commitments, each of which you have undertaken to defend under questioning, out loud, without notes, from an engineer who has done the same work. A line you cannot defend is not neutral. It is a trap you set for yourself and handed to the interviewer, and this module's own exercise states the outcome plainly: an interviewer will pick exactly that line. The mechanism is not mysterious — with limited time, the line most worth testing is the one that claims the most, and a line written aspirationally was usually written to claim a lot.
 
 This lesson gives you the three questions, what a good answer to each looks like, how to run the interrogation on yourself, and what to do with the lines that fail.
 
@@ -87,7 +87,7 @@ Then act on the result. A failed line has three possible fates, and only one of 
 - **Go and close the gap**, if the line describes something you genuinely want to claim. This is the expensive option and sometimes the right one.
 
 ::: note Lines that attract the probe
-Two kinds of line draw interrogation disproportionately. The first is a named, heavy technique — an unscented filter, model predictive control, convex guidance — because naming one is a claim about depth and it is cheap to test. The second is a line with an impressive quantity in it: a percentage improvement, a margin, a runtime. Both are worth having *if they are true and you own them*, and both are expensive if they are decorative. Know which of your lines are in these two categories before the call, because those are the ones you will be asked about.
+Two kinds of line are worth identifying in advance as likely probe targets — not because anyone has measured which lines get asked about, but because of what each one offers an interviewer with limited time. The first is a named, heavy technique — an unscented filter, model predictive control, convex guidance — because naming one is a claim about depth and it is cheap to test. The second is a line with an impressive quantity in it: a percentage improvement, a margin, a runtime. Both are worth having *if they are true and you own them*, and both are expensive if they are decorative. Know which of your lines are in these two categories before the call, because those are the ones most worth rehearsing first.
 :::
 
 ## Three lines, interrogated
@@ -179,11 +179,11 @@ For two reasons. It is evidence of accuracy: someone inflating their contributio
 :::
 
 ::: check
-Which two kinds of résumé line attract interrogation out of proportion to their length, and what follows for how you prepare?
+Which two kinds of résumé line are worth treating as likely probe targets, and what follows for how you prepare?
 :::
 
 ::: answer
-Lines naming a heavy, specific technique — an unscented filter, model predictive control, convex guidance — because naming one is a claim about depth and it is cheap for an interviewer to test. And lines carrying an impressive quantity, such as a percentage improvement or a margin, because a number invites the question of how it was measured. What follows is that these lines should be identified before the call and rehearsed first, and that any such line which is decorative rather than owned should come off the page: its expected cost, given how reliably it draws the probe, exceeds whatever it adds at the screening stage.
+Lines naming a heavy, specific technique — an unscented filter, model predictive control, convex guidance — because naming one is a claim about depth and it is cheap for an interviewer to test. And lines carrying an impressive quantity, such as a percentage improvement or a margin, because a number invites the question of how it was measured. What follows is that these lines should be identified before the call and rehearsed first, and that any such line which is decorative rather than owned should come off the page: a claim you cannot defend is worth less than the airtime it costs when it is tested.
 :::
 
 ::: check

@@ -1003,6 +1003,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Scope, lifetime, and stack vs heap vs static storage"
       ],
       "file": "cod_cpp_01_basics/11-scope-lifetime-and-storage.md"
+    },
+    {
+      "id": "l12-strings-and-formatted-output",
+      "title": "Strings and formatted output",
+      "minutes": 18,
+      "covers": [
+        "std::string vs const char*; iostream and std::format"
+      ],
+      "file": "cod_cpp_01_basics/12-strings-and-formatted-output.md"
     }
   ],
   "cod_py_01_basics": [
@@ -6345,6 +6354,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "TVC attitude control with bending-mode and slosh notch or roll-off filtering, and gain scheduling against dynamic pressure and mass"
       ],
       "file": "t7_m48_capstone/06-control-meets-vehicle.md"
+    },
+    {
+      "id": "l07-mode-management",
+      "title": "Mode management and the transition boundary",
+      "minutes": 22,
+      "covers": [
+        "Mode management across prelaunch, ascent, staging, coast, entry, landing and safe"
+      ],
+      "file": "t7_m48_capstone/07-mode-management.md"
     }
   ],
   "t7_m49_interview_prep": [
@@ -6755,11 +6773,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t7_m48_capstone": {
-    "covered": 6,
+    "covered": 7,
     "total": 11,
     "complete": false,
     "missing": [
-      "Mode management across prelaunch, ascent, staging, coast, entry, landing and safe",
       "FDIR: residual monitors on the filter, sensor cross-checks, actuator health, and the response of each",
       "C++ flight core with a Python analysis and plotting layer over it, sharing exactly one implementation of the algorithms",
       "Ten thousand dispersed cases in CI, with per-case seeding and bit-exact replay",
@@ -7087,11 +7104,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "cod_cpp_01_basics": {
-    "covered": 13,
+    "covered": 14,
     "total": 15,
     "complete": false,
     "missing": [
-      "std::string vs const char*; iostream and std::format",
       "assert and static_assert"
     ]
   },
