@@ -2054,7 +2054,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-what-feedback-buys",
       "title": "What feedback buys, and what it costs",
-      "minutes": 20,
+      "minutes": 16,
       "covers": [
         "Feedback fundamentals: disturbance rejection, noise attenuation, insensitivity to plant variation"
       ],
@@ -2063,7 +2063,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-pid-and-the-filtered-derivative",
       "title": "PID, term by term, and the derivative you can actually build",
-      "minutes": 21,
+      "minutes": 17,
       "covers": [
         "PID control: the physical meaning of each term, ideal vs practical form, derivative filtering"
       ],
@@ -2072,7 +2072,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-windup-anti-windup-and-mode-changes",
       "title": "Windup, anti-windup, bumpless transfer and setpoint weighting",
-      "minutes": 22,
+      "minutes": 20,
       "covers": [
         "Integrator windup, anti-windup schemes, bumpless transfer, setpoint weighting"
       ],
@@ -2081,7 +2081,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-three-ways-to-tune-a-pid",
       "title": "Three ways to tune a PID, and what each one optimises",
-      "minutes": 22,
+      "minutes": 19,
       "covers": [
         "PID tuning: Ziegler-Nichols, loop shaping, pole placement"
       ],
@@ -2090,7 +2090,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-root-locus",
       "title": "The root locus, and designing with it",
-      "minutes": 23,
+      "minutes": 20,
       "covers": [
         "Root locus construction rules and root-locus design"
       ],
@@ -2099,7 +2099,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-nyquist",
       "title": "The Nyquist plot and the Nyquist stability criterion",
-      "minutes": 23,
+      "minutes": 19,
       "covers": [
         "The Nyquist plot and the Nyquist stability criterion"
       ],
@@ -2108,7 +2108,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-the-four-margins",
       "title": "Gain, phase, delay and modulus margins",
-      "minutes": 22,
+      "minutes": 17,
       "covers": [
         "Gain margin, phase margin, delay margin, and the modulus (vector) margin"
       ],
@@ -2117,7 +2117,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-why-margins-can-lie",
       "title": "Why margins can lie",
-      "minutes": 24,
+      "minutes": 22,
       "covers": [
         "Why margins can lie: MIMO coupling, nonlinearity, simultaneous perturbations"
       ],
@@ -2126,7 +2126,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-lead-lag-compensators",
       "title": "Lead, lag and lead-lag compensators",
-      "minutes": 21,
+      "minutes": 15,
       "covers": [
         "Lead, lag and lead-lag compensators"
       ],
@@ -2135,7 +2135,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-notches-and-bending-modes",
       "title": "Notch filters, and gain versus phase stabilization",
-      "minutes": 25,
+      "minutes": 20,
       "covers": [
         "Notch filters for structural bending modes; gain stabilization vs phase stabilization"
       ],
@@ -2144,7 +2144,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-gain-phase-and-the-waterbed",
       "title": "The gain-phase relationship and the waterbed effect",
-      "minutes": 24,
+      "minutes": 19,
       "covers": [
         "The Bode gain-phase relationship, the Bode sensitivity integral, and the waterbed effect"
       ],
@@ -2153,11 +2153,20 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-cascade-rate-inside-attitude",
       "title": "Cascade control — a fast rate loop inside a slower attitude loop",
-      "minutes": 22,
+      "minutes": 18,
       "covers": [
         "Cascade architecture: a fast rate loop inside a slower attitude loop"
       ],
       "file": "t3_m26_classical_control/12-cascade-rate-inside-attitude.md"
+    },
+    {
+      "id": "l13-feedforward-and-gain-scheduling",
+      "title": "Feedforward, two-degree-of-freedom control, and gain scheduling",
+      "minutes": 19,
+      "covers": [
+        "Feedforward and 2-DOF control; gain scheduling across flight regimes"
+      ],
+      "file": "t3_m26_classical_control/13-feedforward-and-gain-scheduling.md"
     }
   ],
   "t3_m27_digital_control": [
@@ -2470,6 +2479,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Discrete-time LQR and the DARE"
       ],
       "file": "t3_m29_optimal_control_lqr/12-discrete-time-lqr-and-the-dare.md"
+    },
+    {
+      "id": "l13-pontryagin-minimum-principle",
+      "title": "The Hamiltonian and the Pontryagin minimum principle",
+      "minutes": 20,
+      "covers": [
+        "The Hamiltonian and the Pontryagin minimum principle as the general frame"
+      ],
+      "file": "t3_m29_optimal_control_lqr/13-pontryagin-minimum-principle.md"
     }
   ],
   "t3_m30_robust_control": [
@@ -2645,6 +2663,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Feedback linearization (input-state and input-output), relative degree, internal and zero dynamics"
       ],
       "file": "t3_m31_nonlinear_control/07-feedback-linearization-and-zero-dynamics.md"
+    },
+    {
+      "id": "l08-sliding-mode-control",
+      "title": "Sliding mode control, chattering and boundary layers",
+      "minutes": 24,
+      "covers": [
+        "Sliding mode control: sliding surface design, reaching phase, chattering, boundary layers, higher-order sliding modes"
+      ],
+      "file": "t3_m31_nonlinear_control/08-sliding-mode-control.md"
     }
   ],
   "t3_m32_mpc": [
@@ -2988,12 +3015,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t3_m26_classical_control": {
-    "covered": 12,
+    "covered": 13,
     "total": 13,
-    "complete": false,
-    "missing": [
-      "Feedforward and 2-DOF control; gain scheduling across flight regimes"
-    ]
+    "complete": true,
+    "missing": []
   },
   "t3_m27_digital_control": {
     "covered": 11,
@@ -3008,11 +3033,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t3_m29_optimal_control_lqr": {
-    "covered": 12,
+    "covered": 13,
     "total": 14,
     "complete": false,
     "missing": [
-      "The Hamiltonian and the Pontryagin minimum principle as the general frame",
       "iLQR and DDP as the nonlinear extension"
     ]
   },
@@ -3023,11 +3047,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t3_m31_nonlinear_control": {
-    "covered": 7,
+    "covered": 8,
     "total": 14,
     "complete": false,
     "missing": [
-      "Sliding mode control: sliding surface design, reaching phase, chattering, boundary layers, higher-order sliding modes",
       "Backstepping",
       "Passivity-based control and energy shaping",
       "Nonlinear spacecraft attitude control: quaternion feedback laws, the unwinding problem, MRP-based control, Lyapunov-derived tracking laws with proof",

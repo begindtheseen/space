@@ -1,7 +1,7 @@
 ---
 id: l01-what-feedback-buys
 title: What feedback buys, and what it costs
-minutes: 20
+minutes: 16
 covers:
   - 'Feedback fundamentals: disturbance rejection, noise attenuation, insensitivity to plant variation'
 ---

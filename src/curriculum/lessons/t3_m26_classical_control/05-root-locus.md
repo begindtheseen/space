@@ -1,7 +1,7 @@
 ---
 id: l05-root-locus
 title: The root locus, and designing with it
-minutes: 23
+minutes: 20
 covers:
   - Root locus construction rules and root-locus design
 ---

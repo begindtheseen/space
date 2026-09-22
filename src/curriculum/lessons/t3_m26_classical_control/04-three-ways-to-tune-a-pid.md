@@ -1,7 +1,7 @@
 ---
 id: l04-three-ways-to-tune-a-pid
 title: Three ways to tune a PID, and what each one optimises
-minutes: 22
+minutes: 19
 covers:
   - 'PID tuning: Ziegler-Nichols, loop shaping, pole placement'
 ---

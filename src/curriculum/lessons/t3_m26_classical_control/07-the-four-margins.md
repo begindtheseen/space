@@ -1,7 +1,7 @@
 ---
 id: l07-the-four-margins
 title: Gain, phase, delay and modulus margins
-minutes: 22
+minutes: 17
 covers:
   - 'Gain margin, phase margin, delay margin, and the modulus (vector) margin'
 ---

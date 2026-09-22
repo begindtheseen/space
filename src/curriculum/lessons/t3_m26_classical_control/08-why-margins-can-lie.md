@@ -1,7 +1,7 @@
 ---
 id: l08-why-margins-can-lie
 title: Why margins can lie
-minutes: 24
+minutes: 22
 covers:
   - 'Why margins can lie: MIMO coupling, nonlinearity, simultaneous perturbations'
 ---
@@ -201,4 +201,4 @@ The disk margin answers the same question as gain and phase margin — how much 
 | Relay | $N(A) = 4M/(\pi A)$; limit cycle at $\omega_{pc}$ with $A = 4M\lvert G(j\omega_{pc})\rvert/\pi$ |
 | Robust tools | disk margins, mixed-sensitivity $H_\infty$, structured singular value $\mu$, dispersion analysis |
 
-The next three lessons go back to design, with the compensators that buy phase where you need it and take gain away where you do not.
+The next lessons go back to design, with the compensators that buy phase where you need it and take gain away where you do not.

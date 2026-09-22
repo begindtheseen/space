@@ -1,7 +1,7 @@
 ---
 id: l11-gain-phase-and-the-waterbed
 title: The gain-phase relationship and the waterbed effect
-minutes: 24
+minutes: 19
 covers:
   - 'The Bode gain-phase relationship, the Bode sensitivity integral, and the waterbed effect'
 ---

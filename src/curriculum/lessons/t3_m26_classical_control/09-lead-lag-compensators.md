@@ -1,7 +1,7 @@
 ---
 id: l09-lead-lag-compensators
 title: Lead, lag and lead-lag compensators
-minutes: 21
+minutes: 15
 covers:
   - Lead, lag and lead-lag compensators
 ---

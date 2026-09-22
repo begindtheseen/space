@@ -1,7 +1,7 @@
 ---
 id: l10-notches-and-bending-modes
 title: Notch filters, and gain versus phase stabilization
-minutes: 25
+minutes: 20
 covers:
   - 'Notch filters for structural bending modes; gain stabilization vs phase stabilization'
 ---

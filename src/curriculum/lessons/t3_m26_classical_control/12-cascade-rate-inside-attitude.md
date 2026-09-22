@@ -1,7 +1,7 @@
 ---
 id: l12-cascade-rate-inside-attitude
 title: Cascade control — a fast rate loop inside a slower attitude loop
-minutes: 22
+minutes: 18
 covers:
   - 'Cascade architecture: a fast rate loop inside a slower attitude loop'
 ---

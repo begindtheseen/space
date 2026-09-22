@@ -1,7 +1,7 @@
 ---
 id: l02-pid-and-the-filtered-derivative
 title: PID, term by term, and the derivative you can actually build
-minutes: 21
+minutes: 17
 covers:
   - 'PID control: the physical meaning of each term, ideal vs practical form, derivative filtering'
 ---

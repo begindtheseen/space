@@ -1,7 +1,7 @@
 ---
 id: l03-windup-anti-windup-and-mode-changes
 title: Windup, anti-windup, bumpless transfer and setpoint weighting
-minutes: 22
+minutes: 20
 covers:
   - 'Integrator windup, anti-windup schemes, bumpless transfer, setpoint weighting'
 ---

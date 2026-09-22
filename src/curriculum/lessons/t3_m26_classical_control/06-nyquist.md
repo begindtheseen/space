@@ -1,7 +1,7 @@
 ---
 id: l06-nyquist
 title: The Nyquist plot and the Nyquist stability criterion
-minutes: 23
+minutes: 19
 covers:
   - The Nyquist plot and the Nyquist stability criterion
 ---
