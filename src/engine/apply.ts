@@ -15,6 +15,15 @@
    ========================================================================== */
 import type { Module } from '@/curriculum/types'
 import { parseItemId } from '@/curriculum/types'
+import {
+  minutesSpent,
+  parkNote,
+  pauseRun,
+  resumeRun,
+  startRun,
+  unparkNote,
+  type FocusPick,
+} from './focus'
 import { DEFAULT_CONFIG, review, type FsrsConfig, type Grade } from './fsrs'
 import { bktParams, bktUpdate, eloUpdate } from './mastery'
 import { retentionForDeadline } from './scheduler'
@@ -322,4 +331,82 @@ export function markJobsSeen(
   const jobsSeen = { ...state.jobsSeen }
   for (const id of fresh) jobsSeen[id] = iso
   return { ...state, jobsSeen, jobsCheckedAt: iso }
+}
+
+/* ── Focus blocks ─────────────────────────────────────────────────────────────
+   The block is persisted the moment it starts, not when it ends. A block that
+   only exists in a React ref is a block the power cut can erase, and erasing
+   it would mean she did the work and the app forgot. */
+
+export function startFocus(
+  state: LearnerState,
+  pick: FocusPick,
+  minutes: number,
+  now: Date = new Date(),
+): LearnerState {
+  return { ...state, focus: startRun(pick, minutes, now), updatedAt: now.toISOString() }
+}
+
+export function pauseFocus(state: LearnerState, now: Date = new Date()): LearnerState {
+  if (!state.focus) return state
+  return { ...state, focus: pauseRun(state.focus, now), updatedAt: now.toISOString() }
+}
+
+export function resumeFocus(state: LearnerState, now: Date = new Date()): LearnerState {
+  if (!state.focus) return state
+  return { ...state, focus: resumeRun(state.focus, now), updatedAt: now.toISOString() }
+}
+
+/**
+ * Ends the running block and banks what it was worth.
+ *
+ * Every block that is ended is credited, including one stopped early. The
+ * alternative — crediting only blocks that ran the full length — would mean
+ * that stopping at twelve minutes records the same as never starting, and the
+ * lesson she would learn from that is to not start.
+ */
+export function endFocus(state: LearnerState, now: Date = new Date()): LearnerState {
+  const run = state.focus
+  if (!run) return state
+  const key = dayKey(now)
+  const prev = state.days[key] ?? {
+    date: key,
+    reviews: 0,
+    correct: 0,
+    newItems: 0,
+    minutes: 0,
+    readiness: 0,
+  }
+  const { focus: _ended, ...rest } = state
+  return {
+    ...rest,
+    days: {
+      ...state.days,
+      [key]: {
+        ...prev,
+        minutes: prev.minutes + minutesSpent(run, now),
+        blocks: (prev.blocks ?? 0) + 1,
+      },
+    },
+    updatedAt: now.toISOString(),
+  }
+}
+
+/** Drops a block without crediting it. For a mis-start, not for giving up. */
+export function discardFocus(state: LearnerState, now: Date = new Date()): LearnerState {
+  if (!state.focus) return state
+  const { focus: _dropped, ...rest } = state
+  return { ...rest, updatedAt: now.toISOString() }
+}
+
+export function park(state: LearnerState, text: string, now: Date = new Date()): LearnerState {
+  const parked = parkNote(state.parked, text, now)
+  if (parked === state.parked) return state
+  return { ...state, parked, updatedAt: now.toISOString() }
+}
+
+export function unpark(state: LearnerState, at: string, now: Date = new Date()): LearnerState {
+  const parked = unparkNote(state.parked, at)
+  if (parked.length === state.parked.length) return state
+  return { ...state, parked, updatedAt: now.toISOString() }
 }

@@ -7,6 +7,7 @@
    ========================================================================== */
 import type { Memory } from './fsrs'
 import { newCard } from './fsrs'
+import { coerceParked, coerceRun, type FocusRun, type ParkedNote } from './focus'
 import {
   coerceLive,
   coerceMedia,
@@ -66,6 +67,11 @@ export interface DaySnapshot {
   minutes: number
   /** Overall readiness at the end of that day, for the trend chart. */
   readiness: number
+  /**
+   * Focus blocks finished that day. Optional because it arrived after the
+   * first release and older day records simply do not have it.
+   */
+  blocks?: number
 }
 
 export interface Goals {
@@ -167,6 +173,16 @@ export interface LearnerState {
   jobsSeen: Record<string, string>
   /** ISO time of the last successful check of the job board. */
   jobsCheckedAt?: string
+  /**
+   * A focus block that was running. Persisted so that closing the lid does not
+   * silently end a block she was half-way through.
+   */
+  focus?: FocusRun
+  /**
+   * Thoughts parked during a block, newest first. The point is that an
+   * intruding thought has somewhere to go that is not "stop studying".
+   */
+  parked: ParkedNote[]
 }
 
 export const ATTEMPT_LOG_LIMIT = 4000
@@ -209,6 +225,7 @@ export function newLearnerState(now: Date = new Date()): LearnerState {
     place: {},
     bench: {},
     jobsSeen: {},
+    parked: [],
   }
 }
 
@@ -243,6 +260,7 @@ export function migrateState(raw: unknown, now: Date = new Date()): LearnerState
     place: coercePlace(r.place),
     bench: isRecordOf(r.bench, 'string') ? { ...r.bench } : {},
     jobsSeen: isRecordOf(r.jobsSeen, 'string') ? { ...r.jobsSeen } : {},
+    parked: coerceParked(r.parked),
     version: STATE_VERSION,
   }
 
@@ -253,6 +271,8 @@ export function migrateState(raw: unknown, now: Date = new Date()): LearnerState
   if (resume) out.resume = resume
   const live = coerceLive(r.live)
   if (live) out.live = live
+  const focus = coerceRun(r.focus)
+  if (focus) out.focus = focus
   if (r.media && typeof r.media === 'object') {
     for (const [k, v] of Object.entries(r.media)) {
       const m = coerceMedia(v)
@@ -334,7 +354,10 @@ export function streak(state: LearnerState, now: Date = new Date()): number {
 
 function hasActivity(state: LearnerState, key: string): boolean {
   const d = state.days[key]
-  return !!d && (d.reviews > 0 || d.newItems > 0 || d.minutes > 0)
+  // A finished focus block counts even when it banked under a minute. She
+  // showed up and finished what she committed to, and a streak that punishes
+  // that is a streak that teaches her not to bother on a bad day.
+  return !!d && (d.reviews > 0 || d.newItems > 0 || d.minutes > 0 || (d.blocks ?? 0) > 0)
 }
 
 export function minutesThisWeek(state: LearnerState, now: Date = new Date()): number {
@@ -428,6 +451,7 @@ function coerceDay(v: unknown, key: string): DaySnapshot | null {
     newItems: Math.max(0, Math.round(num(d.newItems, 0, 0, 1e6))),
     minutes: Math.max(0, num(d.minutes, 0, 0, 1440)),
     readiness: num(d.readiness, 0, 0, 1),
+    blocks: Math.max(0, Math.round(num(d.blocks, 0, 0, 1000))),
   }
 }
 

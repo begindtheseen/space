@@ -665,6 +665,16 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "initial and final value theorems"
       ],
       "file": "t0_m08_odes/06-laplace-transform-partial-fractions.md"
+    },
+    {
+      "id": "l07-transfer-functions-convolution-impulse",
+      "title": "Transfer functions, impulse response and convolution",
+      "minutes": 22,
+      "covers": [
+        "transfer functions",
+        "convolution and impulse response"
+      ],
+      "file": "t0_m08_odes/07-transfer-functions-convolution-impulse.md"
     }
   ],
   "t0_m09_probability_stats": [
@@ -740,6 +750,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "white noise, random walk, Gauss-Markov processes"
       ],
       "file": "t0_m09_probability_stats/08-gauss-markov-and-imu-error-models.md"
+    },
+    {
+      "id": "l09-autocorrelation-and-power-spectral-density",
+      "title": "Autocorrelation and power spectral density",
+      "minutes": 25,
+      "covers": [
+        "power spectral density and autocorrelation"
+      ],
+      "file": "t0_m09_probability_stats/09-autocorrelation-and-power-spectral-density.md"
     }
   ],
   "t0_m10_numerical_methods": [
@@ -770,6 +789,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "local vs global truncation error"
       ],
       "file": "t0_m10_numerical_methods/03-euler-heun-rk4.md"
+    },
+    {
+      "id": "l04-adaptive-step-size-control",
+      "title": "Adaptive step-size control",
+      "minutes": 26,
+      "covers": [
+        "adaptive step-size control"
+      ],
+      "file": "t0_m10_numerical_methods/04-adaptive-step-size-control.md"
     }
   ],
   "t0_m11_optimization": [
@@ -1072,6 +1100,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "angular momentum H = I omega"
       ],
       "file": "t1_m14_rigid_body_dynamics/04-angular-momentum-h-equals-i-omega.md"
+    },
+    {
+      "id": "l05-euler-rotational-equations-of-motion",
+      "title": "Euler's rotational equations of motion",
+      "minutes": 18,
+      "covers": [
+        "Euler rotational equations of motion"
+      ],
+      "file": "t1_m14_rigid_body_dynamics/05-euler-rotational-equations-of-motion.md"
     }
   ],
   "t1_m15_rotating_frames": [
@@ -1462,22 +1499,19 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t0_m08_odes": {
-    "covered": 8,
+    "covered": 10,
     "total": 12,
     "complete": false,
     "missing": [
-      "transfer functions",
-      "convolution and impulse response",
       "stability from pole locations",
       "phase-plane basics"
     ]
   },
   "t0_m09_probability_stats": {
-    "covered": 8,
+    "covered": 9,
     "total": 13,
     "complete": false,
     "missing": [
-      "power spectral density and autocorrelation",
       "maximum likelihood estimation",
       "confidence intervals and hypothesis testing",
       "Monte Carlo methods and convergence rates",
@@ -1485,11 +1519,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t0_m10_numerical_methods": {
-    "covered": 4,
+    "covered": 5,
     "total": 13,
     "complete": false,
     "missing": [
-      "adaptive step-size control",
       "Adams-Bashforth / Adams-Moulton multistep methods",
       "stiffness and implicit methods: backward Euler, BDF",
       "symplectic integrators for long orbit propagation",
@@ -1528,11 +1561,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t1_m14_rigid_body_dynamics": {
-    "covered": 4,
+    "covered": 5,
     "total": 12,
     "complete": false,
     "missing": [
-      "Euler rotational equations of motion",
       "torque-free motion, polhode and herpolhode",
       "major/minor axis spin stability and the intermediate axis theorem",
       "energy dissipation and the flat-spin instability",
