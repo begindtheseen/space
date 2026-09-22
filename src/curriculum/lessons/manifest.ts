@@ -2887,6 +2887,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "The steady-state Kalman filter"
       ],
       "file": "t4_m34_kalman_filter/07-the-steady-state-kalman-filter.md"
+    },
+    {
+      "id": "l08-observability-and-filter-convergence",
+      "title": "Observability and filter convergence",
+      "minutes": 16,
+      "covers": [
+        "Observability and filter convergence"
+      ],
+      "file": "t4_m34_kalman_filter/08-observability-and-filter-convergence.md"
     }
   ],
   "t4_m36_inertial_navigation": [
@@ -3251,11 +3260,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t4_m34_kalman_filter": {
-    "covered": 7,
+    "covered": 8,
     "total": 15,
     "complete": false,
     "missing": [
-      "Observability and filter convergence",
       "Numerically stable formulations: Joseph form, square-root (Potter, Carlson), UD factorization (Bierman-Thornton)",
       "Filter divergence: causes and remedies (fading memory, Q inflation, covariance symmetrization)",
       "Consistency testing: innovation whiteness, NEES and NIS chi-square tests, innovation autocorrelation",
