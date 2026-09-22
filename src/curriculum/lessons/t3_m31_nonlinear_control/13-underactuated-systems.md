@@ -57,7 +57,7 @@ $$
 
 against the simulated $0.020289\,\mathrm{rad/s}$ — a $1.4\%$ match from a two-line estimate. Repeating the identical maneuver with $J_x=J_y=100\,\mathrm{kg\,m^2}$ (a body symmetric about the unactuated axis) gives $\omega_z = -9\times10^{-19}\,\mathrm{rad/s}$ after one full cycle — zero to machine precision. The mechanism needs the asymmetry; take it away and the third axis is, correctly, unreachable.
 
-The vehicle's attitude does not stay confined to a clean rotation about $z$ during this — $x$ and $y$ swing through real excursions along the way, even though their *rates* return to zero — so this is a source of controlled angular momentum in the unactuated axis, not by itself a finished three-axis pointing maneuver. It is the raw mechanism a full underactuated attitude controller is built on top of, the way the reaching law was the raw mechanism sliding mode built a full design around.
+The vehicle's attitude does not stay confined to a clean rotation about $z$ during this — $x$ and $y$ swing through real excursions along the way, even though their *rates* return to zero — so this is a source of controlled angular momentum in the unactuated axis, not by itself a finished three-axis pointing maneuver. It is the raw mechanism a full underactuated attitude controller is built on top of, the way the reaching law was the raw mechanism that sliding mode built a full design around.
 :::
 
 ## Brockett's obstruction

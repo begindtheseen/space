@@ -2930,6 +2930,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "The Wahba problem: find the rotation best aligning two sets of vector observations"
       ],
       "file": "t4_m33_least_squares/10-wahba-problem.md"
+    },
+    {
+      "id": "l11-wahba-solutions-triad-davenport-quest-svd",
+      "title": "Wahba solutions: TRIAD, Davenport, QUEST, ESOQ, and SVD",
+      "minutes": 20,
+      "covers": [
+        "Wahba solutions: TRIAD, Davenport q-method, QUEST, ESOQ, and the SVD method"
+      ],
+      "file": "t4_m33_least_squares/11-wahba-solutions-triad-davenport-quest-svd.md"
     }
   ],
   "t4_m34_kalman_filter": [
@@ -3409,11 +3418,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t4_m33_least_squares": {
-    "covered": 10,
+    "covered": 11,
     "total": 12,
     "complete": false,
     "missing": [
-      "Wahba solutions: TRIAD, Davenport q-method, QUEST, ESOQ, and the SVD method",
       "Covariance of an attitude solution and the effect of sensor geometry"
     ]
   },
