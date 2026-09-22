@@ -47,7 +47,7 @@ new double[n]          min    34  median    40  p99     72  p99.9     193  max  
 
 Read the first row first, because it is the honest floor: two calls to `steady_clock::now()` with *nothing between them* cost 26 ns at the median. Everything else is measured on top of that.
 
-Against that floor, the arena allocation is invisible — same minimum, same median — because a bump allocation is an add, a mask, a compare and a store, and that is below what this timer can resolve. `new double[n]` costs about 14 ns more than the floor at the median, and about 137 ns more at the 99.9th percentile. So the allocator's typical cost is small, its tail is roughly ten times its median, and both of those are facts you could have guessed.
+Against that floor, the arena allocation is invisible — same minimum, same median — because a bump allocation is an add, a mask, a compare and a store, and that is below what this timer can resolve. `new double[n]` costs about 14 ns more than the floor at the median in this run. Across six runs the medians were stable (26, 26, 37 to 40 ns for the three rows) while the 99.9th percentiles moved about: 42 to 56 ns for the empty region, 48 to 58 for the arena, and 87 to 193 for the heap. So the allocator's typical cost is a handful of nanoseconds and its 99.9th percentile is two to five times its median — both facts you could have guessed, and neither of them the one you need.
 
 Now the row that matters: the maximum. It is 58 µs for the **empty region**, 18 µs for the arena, 32 µs for `new`. An empty region cannot take 58 µs of work, so those maxima are not allocator behaviour at all — they are this process being descheduled by the operating system in the middle of a measurement. Three repeat runs gave heap maxima of 32 µs, 98 µs and 36 µs, and arena maxima of 18 µs, 48 µs and 44 µs, with no consistent ordering between them.
 
@@ -71,13 +71,15 @@ after freeing every other    live   6.10 MiB   free-in-heap   6.98 MiB   rss  18
 after 1500 x 4096 B          live  11.96 MiB   free-in-heap   6.89 MiB   rss  24.06 MiB
 ```
 
+(The `live` and `free-in-heap` columns repeat exactly across runs; the resident figures move by about 0.01 MiB.)
+
 Line two is a heap holding **6.98 MiB of free space**. Line three asks for $1500 \times 4096 = 6\,144\,000$ bytes, which is 5.86 MiB — comfortably less than what is free.
 
 It did not use it. Free space in the heap fell by only 0.09 MiB, while resident memory rose from 18.17 to 24.06 MiB, an increase of 5.89 MiB — almost exactly the amount requested. The allocator took new memory from the kernel for essentially every one of those 1,500 blocks.
 
 The reason is that the 6.98 MiB is not one piece. Freeing 50,000 blocks raised free-in-heap from 0.12 MiB to 6.98 MiB, a rise of 6.86 MiB, which is $6.86 \times 1048576/50000 = 144$ bytes per freed block — a 128-byte request plus the allocator's per-block bookkeeping. So the free space is **50,000 separate holes of 144 bytes**, each one walled in by a block that is still live, so none of them can merge with a neighbour. Not one can hold 4,096 bytes. This is *external fragmentation*: free bytes that no single request can use.
 
-The numbers repeat to the second decimal across runs, because the pattern is deterministic. Real workloads are not, which makes this worse rather than better: the state a real heap reaches depends on the exact sequence of requests over the whole mission, so it is not reproducible in test and not predictable in advance.
+The live and free-in-heap figures repeat exactly across runs, because the allocation pattern is deterministic. Real workloads are not, which makes this worse rather than better: the state a real heap reaches depends on the exact sequence of requests over the whole mission, so it is not reproducible in test and not predictable in advance.
 :::
 
 Two consequences follow, and they are the ones to be able to state.

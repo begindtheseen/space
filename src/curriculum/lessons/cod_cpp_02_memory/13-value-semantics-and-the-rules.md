@@ -194,7 +194,9 @@ The class is also shorter, and every line of it is about sample buffers rather t
 
 Two cases remain.
 
-**The resource has no ready-made owner.** A file descriptor, a mutex handle, a DMA channel. Then you write exactly one small class whose only job is to own that one resource — with all five members, or with the copy pair deleted if copying is meaningless — and every other class holds it as a member and writes none. This is RAII, and it is the next module's subject.
+**The resource has no ready-made owner.** A file descriptor, a mutex handle, a DMA channel. Then you write exactly one small class whose only job is to own that one resource — with all five members, or with the copy pair deleted if copying is meaningless — and every other class holds it as a member and writes none.
+
+That pattern has a name, and it is worth being able to state in three sentences. **Every resource is owned by an object. Acquisition happens in the constructor and release in the destructor. Because destructors run automatically at scope exit, including during exception propagation, the resource cannot leak.** That is RAII — resource acquisition is initialisation — and it is what the rule of zero is standing on: the reason a `std::vector` member needs no help from you is that `std::vector` is an RAII class someone else already wrote. The next module builds several of them.
 
 **The type has identity.** An `ImuDriver` is not copyable in any sense, so you write `= delete` for the copy pair. Whether to allow moving is a separate question: moving a driver is meaningful if the object can be handed to another owner, and meaningless if a fixed subsystem holds it for the program's life. Deleting copy does not delete move, and leaving both out is the honest statement that the object stays where it was created.
 
@@ -263,6 +265,7 @@ The member does. `std::vector<double> data_;` has a destructor that frees its bu
 | `= default` | still user-declared; suppresses the implicit moves just as a body does |
 | rule of zero | need none of them: let members own their resources |
 | observed | the `std::vector` version deep-copied, moved without copying, and passed ASan |
+| RAII | every resource owned by an object; acquire in the constructor, release in the destructor; scope exit, including by exception, cannot leak it |
 | when you cannot | one small RAII class per raw resource; every other class holds it and writes nothing |
 
 Lesson 14 supplies the owners the rule of zero depends on: `unique_ptr` for exclusive ownership at no runtime cost, and `shared_ptr` with its control block, its atomic counter and the two reasons not to reach for it in a control loop.

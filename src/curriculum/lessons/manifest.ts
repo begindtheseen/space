@@ -1702,6 +1702,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "df du lsblk ip ss curl strace lsof dmesg"
       ],
       "file": "cod_lnx_01_shell/13-diagnosing-a-machine.md"
+    },
+    {
+      "id": "l14-vim-survival",
+      "title": "vim survival",
+      "minutes": 21,
+      "covers": [
+        "vim survival: modes, motions, :wq"
+      ],
+      "file": "cod_lnx_01_shell/14-vim-survival.md"
     }
   ],
   "cod_py_01_basics": [
@@ -7704,12 +7713,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_lnx_01_shell": {
-    "covered": 14,
+    "covered": 15,
     "total": 15,
-    "complete": false,
-    "missing": [
-      "vim survival: modes, motions, :wq"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_lnx_02_scripting": {
     "covered": 0,

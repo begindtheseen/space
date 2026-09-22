@@ -45,7 +45,11 @@ const VIDEO_ID_RE = /^[A-Za-z0-9_-]{11}$/
 
 function mathSpans(body: string): { tex: string; display: boolean }[] {
   const out: { tex: string; display: boolean }[] = []
-  const noCode = body.replace(/```[\s\S]*?```/g, '')
+  // Inline code can hold a bare $ — a vim lesson naming the end-of-line motion
+  // has several — and two of them on one line pair into a math span that never
+  // was one. Code spans come out before the math is found, the same way fenced
+  // blocks already do.
+  const noCode = body.replace(/```[\s\S]*?```/g, '').replace(/`[^`\n]*`/g, ' ')
   const display = /\$\$([\s\S]*?)\$\$/g
   let m: RegExpExecArray | null
   while ((m = display.exec(noCode)) !== null) out.push({ tex: m[1]!.trim(), display: true })
