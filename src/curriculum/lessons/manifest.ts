@@ -2315,6 +2315,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "MIMO systems, transmission zeros, and the relative gain array"
       ],
       "file": "t3_m28_state_space/10-mimo-transmission-zeros-rga.md"
+    },
+    {
+      "id": "l11-model-reduction-balanced-truncation",
+      "title": "Model reduction — balanced truncation and Hankel singular values",
+      "minutes": 21,
+      "covers": [
+        "Model reduction: balanced truncation and Hankel singular values"
+      ],
+      "file": "t3_m28_state_space/11-model-reduction-balanced-truncation.md"
     }
   ],
   "t3_m29_optimal_control_lqr": [
@@ -2843,12 +2852,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t3_m28_state_space": {
-    "covered": 10,
+    "covered": 11,
     "total": 11,
-    "complete": false,
-    "missing": [
-      "Model reduction: balanced truncation and Hankel singular values"
-    ]
+    "complete": true,
+    "missing": []
   },
   "t3_m29_optimal_control_lqr": {
     "covered": 8,

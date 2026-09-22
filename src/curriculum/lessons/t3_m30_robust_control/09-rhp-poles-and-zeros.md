@@ -69,7 +69,7 @@ Suppose the zero sits at $z = 2.5\,\mathrm{rad/s}$. Then
 
 $$\lVert S\rVert_\infty \ \ge\ \frac{2.5 + 0.477}{2.5 - 0.477} = \frac{2.977}{2.023} = 1.472 = 3.36\,\mathrm{dB},$$
 
-and $z/p = 5.24$, above four. The bandwidth window is $2p = 0.955\,\mathrm{rad/s}$ to $z/2 = 1.25\,\mathrm{rad/s}$ — narrow, but not empty, so a design exists and the achievable sensitivity peak is at least $1.47$, which corresponds to a balanced disk margin no better than about $\pm 5\,\mathrm{dB}$ and $\pm 32^\circ$ once the bound is attained.
+and $z/p = 5.24$, above four. The bandwidth window is $2p = 0.955\,\mathrm{rad/s}$ to $z/2 = 1.25\,\mathrm{rad/s}$ — narrow, but not empty, so a design exists and the achievable sensitivity peak is at least $1.47$. Since $\lVert S - \tfrac{1}{2}\mathbf{I}\rVert_\infty \ge \lVert S\rVert_\infty - \tfrac{1}{2}$, the balanced disk margin obeys $\alpha \le 1/(1.472 - 0.5) = 1.029$, so no controller can give this vehicle better than $\pm 9.88\,\mathrm{dB}$ and $\pm 54.4^\circ$.
 
 Now move the sensor forward, which moves the zero down to $z = 1.5\,\mathrm{rad/s}$. The bound becomes $1.977/1.023 = 1.934 = 5.73\,\mathrm{dB}$, and $z/p = 3.14$. The window is now $0.955$ to $0.750\,\mathrm{rad/s}$: **empty**. There is no controller. The vehicle cannot be both stabilised against its aerodynamic divergence and kept insensitive through that sensor, and the trade must be made in the vehicle, not the software — move the accelerometer aft, blend it with an inertial measurement that has no such zero, or reduce $\mu_\alpha$ by shifting the centre of gravity.
 
@@ -168,7 +168,7 @@ A plant has an unstable pole at $p = 2$ and a right-half-plane zero at $z = 6$. 
 :::
 
 ::: answer
-$\lVert S\rVert_\infty \ge \lvert 6+2\rvert/\lvert 6-2\rvert = 8/4 = 2$, a sensitivity peak of at least $6.02\,\mathrm{dB}$, and the same bound applies to $\lVert T\rVert_\infty$. The bandwidth window is $\omega_B > 2p = 4\,\mathrm{rad/s}$ from the unstable pole and $\omega_B < z/2 = 3\,\mathrm{rad/s}$ from the zero: empty. The ratio $z/p = 3$ is below the working threshold of four. Verdict: the plant is stabilisable — a right-half-plane zero does not prevent stabilisation — but no design will have acceptable sensitivity or margins, since a peak of $2$ alone corresponds to a balanced disk margin of roughly $\pm 4\,\mathrm{dB}$ and $\pm 27^\circ$. The engineering answer is to change the plant.
+$\lVert S\rVert_\infty \ge \lvert 6+2\rvert/\lvert 6-2\rvert = 8/4 = 2$, a sensitivity peak of at least $6.02\,\mathrm{dB}$, and the same bound applies to $\lVert T\rVert_\infty$. The bandwidth window is $\omega_B > 2p = 4\,\mathrm{rad/s}$ from the unstable pole and $\omega_B < z/2 = 3\,\mathrm{rad/s}$ from the zero: empty. The ratio $z/p = 3$ is below the working threshold of four. Verdict: the plant is stabilisable — a right-half-plane zero does not prevent stabilisation — but no design will have acceptable sensitivity or margins, since $\alpha \le 1/(\lVert S\rVert_\infty - \tfrac{1}{2}) = 1/1.5 = 0.667$ caps the balanced disk margin at $\pm 6.02\,\mathrm{dB}$ and $\pm 36.9^\circ$, before any actuator lag or unmodelled mode is added. The engineering answer is to change the plant.
 :::
 
 ::: check
