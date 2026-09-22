@@ -84,6 +84,10 @@ A tone below $f_N$ maps to itself, as it must. Above it, the frequency axis fold
 
 Two features of that table matter operationally. Content immediately below a multiple of $f_s$ lands at a very *low* frequency — the $47\,\mathrm{Hz}$ row is the dangerous one, because $47$ is close to $50$ and the difference is small. And halving the sample rate does not halve the problem, it moves it: $60\,\mathrm{Hz}$ went from $40\,\mathrm{Hz}$, safely above a typical control band, to $10\,\mathrm{Hz}$, inside one.
 
+::: key
+**Aliased frequency after sampling.** A tone at $f$ sampled at $f_s$ appears at $f_a = \lvert f - \mathrm{round}(f/f_s)\,f_s\rvert$. $60\,\mathrm{Hz}$ at $100\,\mathrm{Hz}$ sampling shows up at $40\,\mathrm{Hz}$. The fix must be an *analog* filter before the sampler; software cannot undo it.
+:::
+
 ::: example A 47 Hz bending mode in a 50 Hz attitude loop
 A launch vehicle's first lateral bending mode sits at $47\,\mathrm{Hz}$. The rate gyro is bolted to the forward skirt, where the mode has good observability, and the attitude control task runs at $f_s = 50\,\mathrm{Hz}$, so $f_N = 25\,\mathrm{Hz}$.
 
