@@ -36,7 +36,7 @@ $$
 
 and its CDF is the regularised lower incomplete gamma function $P(k/2,\ x/2)$, which every numerical library provides and which the code below computes in ten lines. Two special cases are worth holding: $k = 1$ gives the density of a single squared normal, infinite at the origin and heavily skewed, and $k = 2$ gives an exponential with mean $2$, so $P(\chi^2_2 \leq x) = 1 - e^{-x/2}$ exactly — the only case with a clean closed form, and the reason the two-dimensional ellipse containments come out as round numbers.
 
-The shape changes with $k$. At small $k$ it is strongly right-skewed with its mode below the mean; as $k$ grows the skewness falls as $\sqrt{8/k}$ and the distribution approaches $\mathcal{N}(k, 2k)$, since it is a sum of $k$ independent pieces. That Gaussian approximation is poor until $k$ is large: at $k = 100$ it puts the $97.5\%$ point at $100 + 1.96\sqrt{200} = 127.7$ against the true $129.6$. The **Wilson–Hilferty** approximation, which says $(\chi^2_k/k)^{1/3}$ is approximately normal with mean $1 - 2/(9k)$ and variance $2/(9k)$, gives $129.56$ — accurate enough to use by hand.
+The shape changes with $k$: strongly right-skewed at small $k$, with the skewness falling as $\sqrt{8/k}$ toward $\mathcal{N}(k, 2k)$. That Gaussian limit is poor until $k$ is large, putting the $97.5\%$ point of $\chi^2_{100}$ at $100 + 1.96\sqrt{200} = 127.7$ against the true $129.6$; the **Wilson–Hilferty** approximation, that $(\chi^2_k/k)^{1/3}$ is normal with mean $1 - 2/(9k)$ and variance $2/(9k)$, gives $129.56$ and is accurate enough to use by hand.
 
 | $k$ | $2.5\%$ | median | $95\%$ | $97.5\%$ |
 | --- | --- | --- | --- | --- |
@@ -49,7 +49,7 @@ The shape changes with $k$. At small $k$ it is strongly right-skewed with its mo
 | $100$ | $74.222$ | $99.334$ | $124.342$ | $129.561$ |
 | $200$ | $162.728$ | $199.334$ | $233.994$ | $241.058$ |
 
-Notice how the band tightens in relative terms as $k$ grows. At $k = 1$ the middle $95\%$ spans a factor of five thousand; at $k = 200$ it spans $162.7$ to $241.1$, only $\pm 20\%$ around the mean. That is the whole reason consistency tests average over many steps or many runs: a single normalised error tells you almost nothing, and two hundred of them tell you a great deal.
+Notice how the band tightens in relative terms as $k$ grows. At $k = 1$ the middle $95\%$ spans a factor of five thousand; at $k = 200$ it runs from $162.7$ to $241.1$, only $\pm 20\%$ about the mean. That is why consistency tests average over many steps or runs: one normalised error tells you almost nothing, two hundred tell you a great deal.
 
 ## Three places it has already appeared
 
@@ -61,7 +61,7 @@ Notice how the band tightens in relative terms as $k$ grows. At $k = 1$ the midd
 | $2$ | $39.35\%$ | $86.47\%$ | $98.89\%$ |
 | $3$ | $19.87\%$ | $73.85\%$ | $97.07\%$ |
 
-The $3\sigma$ ellipsoid of a three-dimensional position covariance holds $97.07\%$, not $99.73\%$. To enclose $99.73\%$ in three dimensions you need $\sqrt{\chi^2_{3,\,0.9973}} = 3.76\sigma$, and in two dimensions $3.44\sigma$. A requirement written as "the $3\sigma$ position ellipsoid shall lie within the corridor" therefore means something different in one, two and three dimensions, and the difference is not small.
+The $3\sigma$ ellipsoid of a three-dimensional position covariance holds $97.07\%$, not $99.73\%$; to enclose $99.73\%$ you need $\sqrt{\chi^2_{3,\,0.9973}} = 3.76\sigma$ in three dimensions and $3.44\sigma$ in two. A requirement reading "the $3\sigma$ position ellipsoid shall lie within the corridor" therefore means something different in one, two and three dimensions.
 
 **The sample variance.** For $N$ independent Gaussian samples, $(N-1)s^2/\sigma^2 \sim \chi^2_{N-1}$. The single degree of freedom lost to estimating the mean is exactly the Bessel correction of the expectation lesson, seen from the other side. Inverting the statement gives a confidence interval for the variance:
 
@@ -69,7 +69,7 @@ $$
 \left[\frac{(N-1)s^2}{\chi^2_{N-1,\,1-\alpha/2}},\ \frac{(N-1)s^2}{\chi^2_{N-1,\,\alpha/2}}\right].
 $$
 
-**The least-squares residual.** The maximum likelihood lesson fitted $n$ parameters to $m$ weighted measurements and left a residual cost $J = \hat{\mathbf{v}}^{\mathsf{T}}\mathbf{R}^{-1}\hat{\mathbf{v}}$. The residuals are $m$ whitened Gaussians constrained by $n$ fitted parameters, so $J \sim \chi^2_{m-n}$: the **chi-square goodness-of-fit test** for a model. The rate-table fit gave $J = 3.18$ with $m - n = 3$, and $P(\chi^2_3 > 3.18) = 0.36$ — an entirely ordinary value, so the straight-line model with $\sigma = 0.05\,^\circ/\mathrm{s}$ describes the data. A $J$ of $30$ on three degrees of freedom would have meant the model is wrong or $\sigma$ was understated; a $J$ of $0.05$ would have meant $\sigma$ was overstated or the model has too many parameters.
+**The least-squares residual.** The maximum likelihood lesson fitted $n$ parameters to $m$ weighted measurements and left a residual cost $J = \hat{\mathbf{v}}^{\mathsf{T}}\mathbf{R}^{-1}\hat{\mathbf{v}}$. The residuals are $m$ whitened Gaussians constrained by $n$ fitted parameters, so $J \sim \chi^2_{m-n}$: the **chi-square goodness-of-fit test**. The rate-table fit gave $J = 3.18$ with $m - n = 3$ and $P(\chi^2_3 > 3.18) = 0.36$, entirely ordinary, so the straight-line model with $\sigma = 0.05\,^\circ/\mathrm{s}$ describes the data. A $J$ of $30$ would have meant the model is wrong or $\sigma$ understated; a $J$ of $0.05$, that $\sigma$ was overstated.
 
 ::: example Is the gyro really a 0.2 °/h sensor?
 The eight-sample bench test gave $s = 0.187\,^\circ/\mathrm{h}$, so $s^2 = 0.0351\,(^\circ/\mathrm{h})^2$ and $(N-1)s^2 = 7 \times 0.0351 = 0.2458$. With $\nu = 7$ the chi-square quantiles are $\chi^2_{7,\,0.025} = 1.690$ and $\chi^2_{7,\,0.975} = 16.013$, so the $95\%$ interval for the variance is
@@ -83,7 +83,7 @@ and for the standard deviation, $[0.124,\ 0.381]\,^\circ/\mathrm{h}$. Eight samp
 
 ## The innovation and its covariance
 
-A Kalman filter repeats two steps. It **predicts**, carrying the estimate and covariance forward through the dynamics, $\hat{\mathbf{x}}_k^- = \mathbf{F}_{k-1}\hat{\mathbf{x}}_{k-1}^+$ and $\mathbf{P}_k^- = \mathbf{F}_{k-1}\mathbf{P}_{k-1}^+\mathbf{F}_{k-1}^{\mathsf{T}} + \mathbf{Q}_{k-1}$, which is the covariance propagation of the linear-transformations lesson with the process noise added because variances of independent terms add. It then **updates** with a measurement $\mathbf{z}_k = \mathbf{H}_k\mathbf{x}_k + \mathbf{v}_k$, $\mathbf{v}_k \sim \mathcal{N}(\mathbf{0}, \mathbf{R}_k)$. The superscripts mark before and after the update.
+A Kalman filter repeats two steps. It **predicts**, $\hat{\mathbf{x}}_k^- = \mathbf{F}_{k-1}\hat{\mathbf{x}}_{k-1}^+$ and $\mathbf{P}_k^- = \mathbf{F}_{k-1}\mathbf{P}_{k-1}^+\mathbf{F}_{k-1}^{\mathsf{T}} + \mathbf{Q}_{k-1}$, the covariance propagation of the linear-transformations lesson with process noise added because variances of independent terms add. It then **updates** with $\mathbf{z}_k = \mathbf{H}_k\mathbf{x}_k + \mathbf{v}_k$, $\mathbf{v}_k \sim \mathcal{N}(\mathbf{0}, \mathbf{R}_k)$; the superscripts mark before and after the update.
 
 The quantity the whole update turns on is the **innovation**, the part of the measurement the filter did not already predict:
 
@@ -103,7 +103,7 @@ $$
 \mathbf{S}_k = \operatorname{Cov}(\tilde{\mathbf{y}}_k) = \mathbf{H}_k\mathbf{P}_k^-\mathbf{H}_k^{\mathsf{T}} + \mathbf{R}_k.
 $$
 
-This is the **innovation covariance**: the filter's own prediction of how large the next measurement residual should be, combining what it does not know about the state with what it does not know about the sensor. The gain is $\mathbf{K}_k = \mathbf{P}_k^-\mathbf{H}_k^{\mathsf{T}}\mathbf{S}_k^{-1}$, and the update is $\hat{\mathbf{x}}_k^+ = \hat{\mathbf{x}}_k^- + \mathbf{K}_k\tilde{\mathbf{y}}_k$.
+This is the **innovation covariance**: the filter's own prediction of how large the next residual should be, combining what it does not know about the state with what it does not know about the sensor. The gain is $\mathbf{K}_k = \mathbf{P}_k^-\mathbf{H}_k^{\mathsf{T}}\mathbf{S}_k^{-1}$ and the update $\hat{\mathbf{x}}_k^+ = \hat{\mathbf{x}}_k^- + \mathbf{K}_k\tilde{\mathbf{y}}_k$.
 
 For a correctly modelled linear-Gaussian system, the innovation sequence has three properties, and each one is a test.
 
@@ -119,11 +119,11 @@ $$
 \epsilon_k = \tilde{\mathbf{y}}_k^{\mathsf{T}}\,\mathbf{S}_k^{-1}\,\tilde{\mathbf{y}}_k.
 $$
 
-This is the **normalised innovation squared**, or NIS, and for a consistent filter it is $\chi^2_m$ with $m$ the dimension of the measurement. Its expected value is $m$, whatever the units, whatever the sensor, at every time step.
+This is the **normalised innovation squared**, or NIS, and for a consistent filter it is $\chi^2_m$ with $m$ the dimension of the measurement. Its expected value is $m$ at every step, whatever the units and whatever the sensor.
 
-The decisive practical point is that NIS needs no truth. It is built from the measurement, the filter's own prediction and the filter's own $\mathbf{S}$, all available on board. It is the only consistency test you can run in flight, and it is computed inside the update step of essentially every production Kalman filter.
+The decisive practical point is that NIS needs no truth: it is built from the measurement, the filter's own prediction and the filter's own $\mathbf{S}$, all available on board. It is the only consistency test you can run in flight, and it sits inside the update step of essentially every production Kalman filter.
 
-**Single-step gating.** Because a single $\epsilon_k$ is $\chi^2_m$, an unusually large one flags a measurement that does not fit. Rejecting a measurement when $\epsilon_k$ exceeds a chi-square quantile is the standard **innovation gate** or measurement editor:
+**Single-step gating.** A single large $\epsilon_k$ flags a measurement that does not fit, and rejecting on $\epsilon_k$ above a chi-square quantile is the standard **innovation gate**, or measurement editor:
 
 | $m$ | $95\%$ gate | $99\%$ gate | $99.7\%$ gate |
 | --- | --- | --- | --- |
@@ -131,7 +131,7 @@ The decisive practical point is that NIS needs no truth. It is built from the me
 | $2$ | $5.991$ | $9.210$ | $11.618$ |
 | $3$ | $7.815$ | $11.345$ | $13.931$ |
 
-**Time averaging.** A single $\epsilon_k$ is far too noisy to judge the tuning — at $m = 1$ its middle $95\%$ runs from $0.001$ to $5.024$. Average over $N$ steps. Because the innovations of a consistent filter are independent, the sum is chi-square with $Nm$ degrees of freedom, so
+**Time averaging.** One $\epsilon_k$ is far too noisy to judge tuning: at $m = 1$ its middle $95\%$ runs from $0.001$ to $5.024$. Average over $N$ steps; the innovations of a consistent filter are independent, so the sum is chi-square with $Nm$ degrees of freedom and
 
 $$
 \bar{\epsilon} = \frac{1}{N}\sum_{k=1}^{N}\epsilon_k \quad\text{lies in}\quad
@@ -215,18 +215,18 @@ Run $M = 100$ Monte Carlo trajectories of $K = 200$ steps, initialising each fil
 | $\mathbf{R}$ four times too small | $5.33$ | $0/200$ | $3.87$ | $1/200$ | $-0.009$ | $-0.039$ |
 | Unmodelled $2\,\mathrm{m/s^2}$ | $11.61$ | $3/200$ | $1.71$ | $23/200$ | $+0.892$ | $-0.003$ |
 
-The correctly tuned filter sits where it should: NEES $2.05$ against an expected $2$, NIS $1.01$ against an expected $1$, and $195$ and $189$ of the $200$ steps inside their $95\%$ bands, which is about the $190$ you would expect. Its actual RMS errors over the steady-state portion are $0.741\,\mathrm{m}$ and $0.798\,\mathrm{m/s}$ against a reported $\sqrt{P_{11}} = 0.745\,\mathrm{m}$ and $\sqrt{P_{22}} = 0.803\,\mathrm{m/s}$. The covariance is telling the truth to within half a per cent.
+The correctly tuned filter sits where it should: NEES $2.05$ against an expected $2$, NIS $1.01$ against an expected $1$, and $195$ and $189$ of the $200$ steps inside their bands, about the $190$ you would expect. Its actual RMS errors over the steady-state portion are $0.741\,\mathrm{m}$ and $0.798\,\mathrm{m/s}$ against a reported $\sqrt{P_{11}} = 0.745\,\mathrm{m}$ and $\sqrt{P_{22}} = 0.803\,\mathrm{m/s}$: the covariance is telling the truth to within half a per cent.
 
-Each fault leaves a different fingerprint. With $\mathbf{Q}$ ten times too small the NEES is $9.5$ against an expected $2$: the filter reports $0.341\,\mathrm{m/s}$ of velocity uncertainty while actually carrying $0.947\,\mathrm{m/s}$ of error, over-confident by a factor of $2.8$. Yet its NIS is $1.16$ and sits inside the band at three-quarters of the steps — because the position channel's prediction uncertainty is small next to the $2\,\mathrm{m}$ measurement noise, so $\mathbf{S} \approx \mathbf{R}$ and the innovations barely notice. The signature that does catch it is the lag-one autocorrelation of the normalised innovations, $+0.109$, which for a pooled average over $100$ runs has a standard error of $0.008$ and is therefore thirteen standard errors from zero: an over-stiff filter lags the truth, so its residuals repeat themselves.
+Each fault leaves a different fingerprint. With $\mathbf{Q}$ ten times too small the NEES is $9.5$: the filter reports $0.341\,\mathrm{m/s}$ of velocity uncertainty while actually carrying $0.947\,\mathrm{m/s}$ of error, over-confident by a factor of $2.8$. Yet its NIS is $1.16$ and inside the band at three-quarters of the steps, because the position channel's prediction uncertainty is small next to the $2\,\mathrm{m}$ measurement noise, so $\mathbf{S} \approx \mathbf{R}$ and the innovations barely notice. What catches it is the lag-one autocorrelation of $+0.109$, thirteen standard errors from zero for a pooled average over $100$ runs: an over-stiff filter lags the truth, so its residuals repeat themselves.
 
-With $\mathbf{R}$ four times too small both tests fire, NEES $5.33$ and NIS $3.87$, and NIS is out of band at $199$ of $200$ steps. That is the easy case and the reason to trust NIS when it does speak: an understated $\mathbf{R}$ enters $\mathbf{S}$ directly. With an unmodelled $2\,\mathrm{m/s^2}$ acceleration the NEES is $11.6$ and the NIS $1.71$, but the diagnostic that identifies the cause is the mean normalised innovation of $+0.892$ against a standard error of $0.008$: the residuals are not scattered about zero, they are *biased*, which is what an unmodelled input looks like and what neither squared statistic on its own would tell you.
+With $\mathbf{R}$ four times too small both tests fire, NEES $5.33$ and NIS $3.87$, the latter out of band at $199$ of $200$ steps — the easy case, and the reason to trust NIS when it does speak, since an understated $\mathbf{R}$ enters $\mathbf{S}$ directly. With an unmodelled $2\,\mathrm{m/s^2}$ acceleration the NEES is $11.6$ and the NIS $1.71$, but the diagnostic that names the cause is the mean normalised innovation of $+0.892$ against a standard error of $0.008$: the residuals are not scattered about zero, they are *biased*, which is what an unmodelled input looks like and what neither squared statistic would tell you.
 :::
 
 ## Reading the verdict
 
 The test returns one of three answers.
 
-**Inside the band.** The filter's covariance is a fair description of its error at the tested level. This is necessary, not sufficient: a filter can be consistent and still be worse than another consistent filter, because consistency says the error matches the claim, not that the error is small. Compare designs on the error itself, and use consistency to decide whether the comparison is meaningful.
+**Inside the band.** The covariance is a fair description of the error. This is necessary, not sufficient: consistency says the error matches the claim, not that the error is small, so compare designs on the error itself and use consistency to decide whether that comparison means anything.
 
 **Above the band: over-confident.** $\mathbf{P}$ is too small for the errors actually occurring. The usual causes, in the order they are usually found: $\mathbf{Q}$ too small; $\mathbf{R}$ too small; an unmodelled state, such as a sensor bias or a lever arm, absorbing error the filter has nowhere to put; measurement noise correlated in time but modelled as white, which is what an unmodelled Gauss-Markov bias does; measurements timestamped wrong; and, in an extended filter, linearisation error across an uncertainty too large for the Jacobian to describe. This is the dangerous direction, because an over-confident filter gates out the measurements that would fix it and diverges quietly.
 
@@ -266,7 +266,7 @@ against an expectation of $m = 3$ and a $99.7\%$ gate of $13.93$. The measuremen
 
 A later fix has $\tilde{\mathbf{y}} = (1.0,\ 2.0,\ 22.0)\,\mathrm{m}$, giving $\epsilon = 0.27 + 0.89 + 28.74 = 29.9$, with $P(\chi^2_3 > 29.9) = 1.4 \times 10^{-6}$. It is rejected: a multipath return or a cycle slip, not navigation information.
 
-Two numbers govern the gate. A $99.7\%$ threshold discards $0.3\%$ of perfectly good measurements, which at $1\,\mathrm{Hz}$ is one every five and a half minutes — acceptable, and it must be budgeted for rather than treated as an anomaly. And the gate must be computed against $\mathbf{S}$, never against $\mathbf{R}$ alone: using $\mathbf{R}$ ignores the filter's own uncertainty, makes the gate too tight exactly when the filter is least certain, and produces the classic divergence trap in which an over-confident $\mathbf{P}^-$ shrinks $\mathbf{S}$, rejects the corrections, and shrinks $\mathbf{P}^-$ further.
+Two numbers govern the gate. A $99.7\%$ threshold discards $0.3\%$ of perfectly good measurements, one every five and a half minutes at $1\,\mathrm{Hz}$, which must be budgeted for rather than treated as an anomaly. And the gate must be computed against $\mathbf{S}$, never $\mathbf{R}$ alone: using $\mathbf{R}$ ignores the filter's own uncertainty, tightens the gate exactly when the filter is least certain, and produces the classic divergence trap in which an over-confident $\mathbf{P}^-$ shrinks $\mathbf{S}$, rejects the corrections, and shrinks further.
 :::
 
 ## Check yourself
@@ -327,4 +327,4 @@ It has told you that the filter's covariance is an honest description of its err
 | Gate $\epsilon_k > \chi^2_{m,\,1-\alpha}$ | Innovation gate: $8.81$, $11.62$, $13.93$ at $99.7\%$ for $m = 1, 2, 3$ |
 | Above band $\Rightarrow$ $\mathbf{P}$ too small; below $\Rightarrow$ too large | Over-confident versus conservative, and which knob to move |
 
-That closes the module. You began with sample spaces and a coin, and you end with a quantitative decision procedure for whether a flight navigation filter deserves to be believed. Everything in between is load-bearing: the covariance sandwich propagates $\mathbf{P}$, the multivariate Gaussian gives the Mahalanobis distance, the central limit theorem justifies the Gaussian assumption, the noise-process lessons supply $\mathbf{Q}$ and $\mathbf{R}$, maximum likelihood produces the gain, the confidence interval puts an error bar on every tuning parameter, and Monte Carlo generates the runs the consistency test consumes. The estimation track that follows builds the Kalman filter itself; the statistics that tell you whether it is working are already in hand.
+That closes the module. You began with sample spaces and end with a quantitative decision procedure for whether a flight navigation filter deserves to be believed, and everything in between is load-bearing: the covariance sandwich propagates $\mathbf{P}$, the multivariate Gaussian gives the Mahalanobis distance, the noise-process lessons supply $\mathbf{Q}$ and $\mathbf{R}$, maximum likelihood produces the gain, the confidence interval puts an error bar on every tuning parameter, and Monte Carlo generates the runs the consistency test consumes. The estimation track that follows builds the Kalman filter itself; the statistics that say whether it is working are already in hand.
