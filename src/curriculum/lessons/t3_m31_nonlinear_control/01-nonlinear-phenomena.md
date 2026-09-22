@@ -51,10 +51,10 @@ Now watch superposition fail. Integrating the exact equation $\ddot{\theta} = -k
 | --- | --- |
 | $5^\circ$ | $4399\,\mathrm{s}$ (73.3 min) |
 | $30^\circ$ | $4712\,\mathrm{s}$ (78.5 min) |
-| $60^\circ$ | $6028\,\mathrm{s}$ (100.5 min) |
+| $60^\circ$ | $6027\,\mathrm{s}$ (100.5 min) |
 | $85^\circ$ | $10710\,\mathrm{s}$ (178.5 min) |
 
-A linear model would give $73.2\,\mathrm{min}$ for every one of them. The $5^\circ$ case agrees to a tenth of a per cent; the $85^\circ$ case is off by a factor of $2.4$, because the restoring torque $\sin 2\theta$ weakens as $\theta$ approaches the saddle and the satellite dawdles there. Period depending on amplitude is a nonlinear fingerprint — no linear system does it.
+A linear model would give $73.2\,\mathrm{min}$ for every one of them. The $5^\circ$ case agrees to two tenths of a per cent; the $85^\circ$ case is off by a factor of $2.4$, because the restoring torque $\sin 2\theta$ weakens as $\theta$ approaches the saddle and the satellite dawdles there. Period depending on amplitude is a nonlinear fingerprint — no linear system does it.
 :::
 
 ## Limit cycles
@@ -142,7 +142,7 @@ $$
 T = \frac{1.3110}{0.0500\sqrt{2.222}} = 17.59\,\mathrm{s} .
 $$
 
-Runge–Kutta at $\Delta t = 0.1\,\mathrm{ms}$ agrees and shows the shape of the run: $3.29^\circ$ at $5\,\mathrm{s}$, $5.12^\circ$ at $10\,\mathrm{s}$, $14.9^\circ$ at $15\,\mathrm{s}$, $21.9^\circ$ at $15.83\,\mathrm{s}$, $218^\circ$ at $17.41\,\mathrm{s}$, $2184^\circ$ at $17.57\,\mathrm{s}$. Two-thirds of the escape time is spent under $4^\circ$.
+Runge–Kutta at $\Delta t = 0.1\,\mathrm{ms}$ agrees and shows the shape of the run: $3.29^\circ$ at $5\,\mathrm{s}$, $5.12^\circ$ at $10\,\mathrm{s}$, $14.8^\circ$ at $15\,\mathrm{s}$, $21.8^\circ$ at $15.83\,\mathrm{s}$, $214^\circ$ at $17.41\,\mathrm{s}$, $1992^\circ$ at $17.57\,\mathrm{s}$. Under half the escape time — about $7.7\,\mathrm{s}$ of the $17.6\,\mathrm{s}$ — is spent under $4^\circ$.
 
 The model stops describing a real vehicle long before $17.59\,\mathrm{s}$ — no airframe has a cubic moment out to $200^\circ$. That is the correct reading of a finite escape time: not "the incidence becomes infinite" but "these equations have nothing to say after $T$, and the vehicle is somewhere your model never went."
 :::

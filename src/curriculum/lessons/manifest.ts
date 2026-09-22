@@ -3745,6 +3745,24 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "True vs pure proportional navigation"
       ],
       "file": "t5_m40_guidance_fundamentals/06-true-vs-pure-proportional-navigation.md"
+    },
+    {
+      "id": "l07-optimal-guidance-lq-formulation",
+      "title": "Optimal guidance from a linear-quadratic formulation",
+      "minutes": 22,
+      "covers": [
+        "Optimal guidance from an LQ formulation and how PN emerges from it"
+      ],
+      "file": "t5_m40_guidance_fundamentals/07-optimal-guidance-lq-formulation.md"
+    },
+    {
+      "id": "l08-zem-zev-guidance",
+      "title": "Zero-effort-miss and zero-effort-velocity guidance",
+      "minutes": 23,
+      "covers": [
+        "Zero-effort-miss and zero-effort-velocity guidance; the ZEM/ZEV feedback law for landing"
+      ],
+      "file": "t5_m40_guidance_fundamentals/08-zem-zev-guidance.md"
     }
   ],
   "t5_m41_ascent_guidance": [
@@ -4081,6 +4099,16 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Cross-compilation, toolchains, bootloaders and firmware update"
       ],
       "file": "t6_m44_realtime_embedded/10-time-sync-bare-metal-vs-linux-and-toolchains.md"
+    },
+    {
+      "id": "l11-logging-and-fixed-point",
+      "title": "Logging under a real-time budget, and fixed-point arithmetic",
+      "minutes": 17,
+      "covers": [
+        "Logging and telemetry under a real-time budget: lock-free ring buffers and never blocking the control task",
+        "Fixed-point arithmetic and when it is still the right answer"
+      ],
+      "file": "t6_m44_realtime_embedded/11-logging-ring-buffers-and-fixed-point.md"
     }
   ],
   "t6_m45_fsw_architecture": [
@@ -4111,6 +4139,26 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Command and telemetry: CCSDS packet structure, dictionaries, limit checking, and command authentication"
       ],
       "file": "t6_m45_fsw_architecture/03-command-and-telemetry.md"
+    },
+    {
+      "id": "l04-data-integrity-and-time",
+      "title": "Data integrity and time management",
+      "minutes": 20,
+      "covers": [
+        "Data integrity: CRCs, checksums, sequence counts and staleness checks on every input",
+        "Time management, epochs, leap seconds and monotonic vs wall-clock time"
+      ],
+      "file": "t6_m45_fsw_architecture/04-data-integrity-and-time.md"
+    },
+    {
+      "id": "l05-redundancy-architectures",
+      "title": "Redundancy architectures, classical and modern",
+      "minutes": 20,
+      "covers": [
+        "Redundancy architectures: cold, warm and hot standby; dual-dual; cross-strapping",
+        "Commodity multi-core computers running Linux with redundant flight strings and voted output, as publicly described for modern launch and crew vehicles"
+      ],
+      "file": "t6_m45_fsw_architecture/05-redundancy-architectures.md"
     }
   ],
   "t6_m46_6dof_simulation": [
@@ -4176,6 +4224,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Actuator models: thrust curves and start-up transients, TVC gimbal dynamics and rate limits, reaction wheel friction, thruster minimum impulse bit, valve delay"
       ],
       "file": "t6_m46_6dof_simulation/07-actuator-models.md"
+    },
+    {
+      "id": "l08-mass-properties-against-time",
+      "title": "Mass properties against time",
+      "minutes": 21,
+      "covers": [
+        "Mass properties against time: propellant depletion, centre of mass migration, inertia tensor change"
+      ],
+      "file": "t6_m46_6dof_simulation/08-mass-properties-against-time.md"
     }
   ],
   "t6_m47_vv_montecarlo": [
@@ -4224,6 +4281,26 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Success criteria and scoring: defining what a failed case IS, before the campaign runs"
       ],
       "file": "t6_m47_vv_montecarlo/05-defining-a-failed-case.md"
+    },
+    {
+      "id": "l06-tail-risk-importance-sampling-and-worst-case",
+      "title": "Tail risk, extreme-value estimation, and worst-case analysis",
+      "minutes": 19,
+      "covers": [
+        "Extreme-value estimation and importance sampling when the failure probability is too small to sample directly",
+        "Worst-case and corner-case analysis as a complement to, not a substitute for, Monte Carlo"
+      ],
+      "file": "t6_m47_vv_montecarlo/06-tail-risk-importance-sampling-and-worst-case.md"
+    },
+    {
+      "id": "l07-linear-covariance-analysis",
+      "title": "Linear covariance analysis, and where it breaks",
+      "minutes": 17,
+      "covers": [
+        "Linear covariance analysis as the fast complement: one run gives the covariance a thousand runs would estimate",
+        "Where LinCov is valid and where nonlinearity, saturation and discrete logic force you back to Monte Carlo"
+      ],
+      "file": "t6_m47_vv_montecarlo/07-linear-covariance-analysis.md"
     }
   ]
 }
@@ -4548,12 +4625,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t5_m40_guidance_fundamentals": {
-    "covered": 6,
+    "covered": 8,
     "total": 12,
     "complete": false,
     "missing": [
-      "Optimal guidance from an LQ formulation and how PN emerges from it",
-      "Zero-effort-miss and zero-effort-velocity guidance; the ZEM/ZEV feedback law for landing",
       "Miss-distance analysis and adjoint methods",
       "Time-to-go estimation and why it is the critical quantity",
       "Gravity turn ascent and zero-lift trajectories; the pitch program and open-loop pitch kick",
@@ -4602,43 +4677,35 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t6_m44_realtime_embedded": {
-    "covered": 19,
+    "covered": 21,
     "total": 21,
-    "complete": false,
-    "missing": [
-      "Logging and telemetry under a real-time budget: lock-free ring buffers and never blocking the control task",
-      "Fixed-point arithmetic and when it is still the right answer"
-    ]
+    "complete": true,
+    "missing": []
   },
   "t6_m45_fsw_architecture": {
-    "covered": 4,
+    "covered": 8,
     "total": 20,
     "complete": false,
     "missing": [
-      "Redundancy architectures: cold, warm and hot standby; dual-dual; cross-strapping",
       "Triple modular redundancy and voting; mid-value select; what a voter can and cannot detect",
       "Byzantine faults and why a majority vote does not handle an asymmetric liar",
-      "Commodity multi-core computers running Linux with redundant flight strings and voted output, as publicly described for modern launch and crew vehicles",
       "Radiation effects: single-event upsets, latch-up, total ionising dose; EDAC and ECC memory; memory scrubbing",
       "Watchdog timers: what they catch, what they miss, and why a reset is a real-time decision",
       "Fault detection, isolation and recovery: residual monitors, hypothesis tests, persistence counters and hysteresis",
       "FMEA and fault trees; identifying the single points of failure a voter does not cover",
       "Safing modes and the rule that safe must be reachable, stable and exitable only by an explicit decision",
       "Abort logic and autonomous flight termination systems",
-      "Data integrity: CRCs, checksums, sequence counts and staleness checks on every input",
       "Determinism across redundant strings, and why a non-deterministic algorithm cannot be voted",
-      "Time management, epochs, leap seconds and monotonic vs wall-clock time",
       "Requirements traceability from a vehicle requirement to a line of code to a test",
       "Configuration management of gains, I-loads and tables separately from the executable",
       "In-flight software update: when it is the safer choice and when it is not"
     ]
   },
   "t6_m46_6dof_simulation": {
-    "covered": 7,
+    "covered": 8,
     "total": 18,
     "complete": false,
     "missing": [
-      "Mass properties against time: propellant depletion, centre of mass migration, inertia tensor change",
       "Slosh and structural flex models, and where they get inserted in the loop",
       "Staging and other discontinuous events; zero-crossing detection and bisection to the event time",
       "The flight-software-in-the-loop boundary: compiling the actual flight code into the sim rather than a Python re-implementation of it",
@@ -4652,14 +4719,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t6_m47_vv_montecarlo": {
-    "covered": 6,
+    "covered": 10,
     "total": 20,
     "complete": false,
     "missing": [
-      "Extreme-value estimation and importance sampling when the failure probability is too small to sample directly",
-      "Worst-case and corner-case analysis as a complement to, not a substitute for, Monte Carlo",
-      "Linear covariance analysis as the fast complement: one run gives the covariance a thousand runs would estimate",
-      "Where LinCov is valid and where nonlinearity, saturation and discrete logic force you back to Monte Carlo",
       "Three sigma versus the 99.73rd percentile, and why they differ for anything non-Gaussian",
       "Sensitivity analysis and driver identification: regression on the dispersion inputs, and scatter plots you actually look at",
       "Flight-envelope coverage and the difference between random coverage and designed coverage",

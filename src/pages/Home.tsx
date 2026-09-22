@@ -157,11 +157,43 @@ function greeting(d: Date = new Date()): string {
 
 /* ── First-run welcome ───────────────────────────────────────────────────── */
 
-const WELCOME_STEPS = [
-  'Pick a track and open its first module',
-  'Learn, then practice, then recall',
-  'Come back when reviews are due — the planner tells you',
+/*
+ * The eligibility step is first on purpose, and it is a link rather than a
+ * sentence because the answer is one click away and worth having before
+ * anything else here is worth starting. Nothing in the wording assumes which
+ * side of that gate anyone falls on: the module is as useful to someone who
+ * clears it on day one as to someone who needs a different plan, and the
+ * technical preparation is the same either way.
+ */
+export const WELCOME_STEPS: { text: string; to?: string; linkText?: string }[] = [
+  {
+    text: 'Start with the eligibility question — it decides which employers are reachable',
+    to: '/module/car_01_itar_gate',
+    linkText: 'eligibility question',
+  },
+  { text: 'Pick a track and open its first module' },
+  { text: 'Learn, then practice, then recall' },
+  { text: 'Come back when reviews are due — the planner tells you' },
 ]
+
+/** Renders a step, linking the phrase named by `linkText` if there is one. */
+function StepText({ step }: { step: (typeof WELCOME_STEPS)[number] }) {
+  if (!step.to || !step.linkText || !step.text.includes(step.linkText)) return <>{step.text}</>
+  const [before, after] = step.text.split(step.linkText) as [string, string]
+  return (
+    <>
+      {before}
+      <a
+        href={`#${step.to}`}
+        onClick={(e) => e.stopPropagation()}
+        style={{ color: 'var(--accent)', textDecoration: 'underline', textUnderlineOffset: 2 }}
+      >
+        {step.linkText}
+      </a>
+      {after}
+    </>
+  )
+}
 
 /**
  * Shown until the guide has been opened or the card dismissed. Kept to one
@@ -213,7 +245,7 @@ function Welcome({ onDismiss }: { onDismiss: () => void }) {
             >
               {WELCOME_STEPS.map((step, i) => (
                 <li
-                  key={step}
+                  key={step.text}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -239,7 +271,7 @@ function Welcome({ onDismiss }: { onDismiss: () => void }) {
                   >
                     {i + 1}
                   </span>
-                  {step}
+                  <StepText step={step} />
                 </li>
               ))}
             </ol>
