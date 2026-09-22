@@ -3114,6 +3114,33 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Angle random walk, velocity random walk, rate random walk, and bias instability"
       ],
       "file": "t4_m36_inertial_navigation/03-random-walk-bias-instability-rate-random-walk.md"
+    },
+    {
+      "id": "l04-allan-deviation-temperature-and-calibration",
+      "title": "The Allan deviation, temperature effects, and calibration",
+      "minutes": 20,
+      "covers": [
+        "Allan variance for IMU characterization; temperature effects and calibration"
+      ],
+      "file": "t4_m36_inertial_navigation/04-allan-deviation-temperature-and-calibration.md"
+    },
+    {
+      "id": "l05-strapdown-mechanization-eci-ecef-ned",
+      "title": "Strapdown mechanization in ECI, ECEF, and the local-level frame",
+      "minutes": 16,
+      "covers": [
+        "Strapdown mechanization in ECI, ECEF and local-level (NED) frames"
+      ],
+      "file": "t4_m36_inertial_navigation/05-strapdown-mechanization-eci-ecef-ned.md"
+    },
+    {
+      "id": "l06-attitude-velocity-position-update",
+      "title": "The mechanization loop: attitude, velocity, and position update",
+      "minutes": 20,
+      "covers": [
+        "Attitude update, velocity update with Coriolis and gravity, position update"
+      ],
+      "file": "t4_m36_inertial_navigation/06-attitude-velocity-position-update.md"
     }
   ],
   "t4_m37_gnss": [
@@ -3152,6 +3179,42 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "The navigation solution by iterative least squares / Newton iteration"
       ],
       "file": "t4_m37_gnss/04-the-navigation-solution-by-least-squares.md"
+    },
+    {
+      "id": "l05-dilution-of-precision",
+      "title": "Dilution of precision",
+      "minutes": 19,
+      "covers": [
+        "Dilution of precision: GDOP, PDOP, HDOP, VDOP, TDOP, and what geometry makes each bad"
+      ],
+      "file": "t4_m37_gnss/05-dilution-of-precision.md"
+    },
+    {
+      "id": "l06-ionospheric-and-tropospheric-delay",
+      "title": "Ionospheric and tropospheric delay",
+      "minutes": 24,
+      "covers": [
+        "Ionospheric and tropospheric delay, their models, and the dual-frequency ionosphere-free combination"
+      ],
+      "file": "t4_m37_gnss/06-ionospheric-and-tropospheric-delay.md"
+    },
+    {
+      "id": "l07-multipath-ephemeris-and-clock-errors",
+      "title": "Multipath, ephemeris and clock errors",
+      "minutes": 24,
+      "covers": [
+        "Multipath; ephemeris and satellite clock errors"
+      ],
+      "file": "t4_m37_gnss/07-multipath-ephemeris-and-clock-errors.md"
+    },
+    {
+      "id": "l08-carrier-phase-and-integer-ambiguity",
+      "title": "Carrier phase and integer ambiguity resolution",
+      "minutes": 22,
+      "covers": [
+        "Carrier phase measurements, cycle slips, integer ambiguity resolution with LAMBDA"
+      ],
+      "file": "t4_m37_gnss/08-carrier-phase-and-integer-ambiguity.md"
     }
   ],
   "t4_m38_sensors_optical_nav": [
@@ -3478,13 +3541,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t4_m36_inertial_navigation": {
-    "covered": 3,
+    "covered": 6,
     "total": 13,
     "complete": false,
     "missing": [
-      "Allan variance for IMU characterization; temperature effects and calibration",
-      "Strapdown mechanization in ECI, ECEF and local-level (NED) frames",
-      "Attitude update, velocity update with Coriolis and gravity, position update",
       "Coning and sculling corrections and multi-sample algorithms",
       "The Schuler oscillation and why it bounds unaided INS horizontal error",
       "Free-inertial error propagation: how position error grows with time from each error source",
@@ -3495,14 +3555,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t4_m37_gnss": {
-    "covered": 4,
+    "covered": 8,
     "total": 14,
     "complete": false,
     "missing": [
-      "Dilution of precision: GDOP, PDOP, HDOP, VDOP, TDOP, and what geometry makes each bad",
-      "Ionospheric and tropospheric delay, their models, and the dual-frequency ionosphere-free combination",
-      "Multipath; ephemeris and satellite clock errors",
-      "Carrier phase measurements, cycle slips, integer ambiguity resolution with LAMBDA",
       "Differential GNSS, RTK, and precise point positioning",
       "Space-based GNSS: use above the constellation, side-lobe reception, high-dynamics tracking, Doppler",
       "GNSS in a launch vehicle environment: acceleration, jerk, vibration, plume attenuation, antenna switching",
