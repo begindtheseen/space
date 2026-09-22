@@ -2833,6 +2833,42 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Three derivations of the Kalman filter: minimum variance/orthogonality, Bayesian Gaussian conditioning, recursive least squares"
       ],
       "file": "t4_m34_kalman_filter/02-three-derivations-of-the-kalman-filter.md"
+    },
+    {
+      "id": "l03-the-predict-and-update-steps",
+      "title": "The predict and update steps",
+      "minutes": 17,
+      "covers": [
+        "The predict and update steps"
+      ],
+      "file": "t4_m34_kalman_filter/03-the-predict-and-update-steps.md"
+    },
+    {
+      "id": "l04-the-kalman-gain-as-a-trust-ratio",
+      "title": "The Kalman gain as a trust ratio between prediction and measurement",
+      "minutes": 18,
+      "covers": [
+        "The Kalman gain as a trust ratio between prediction and measurement"
+      ],
+      "file": "t4_m34_kalman_filter/04-the-kalman-gain-as-a-trust-ratio.md"
+    },
+    {
+      "id": "l05-covariance-propagation-and-the-discrete-riccati-equation",
+      "title": "Covariance propagation and the discrete Riccati equation",
+      "minutes": 14,
+      "covers": [
+        "Covariance propagation and the discrete Riccati equation"
+      ],
+      "file": "t4_m34_kalman_filter/05-covariance-propagation-and-the-discrete-riccati-equation.md"
+    },
+    {
+      "id": "l06-process-noise-tuning-and-getting-q-wrong",
+      "title": "Process noise tuning and the consequences of getting Q wrong",
+      "minutes": 19,
+      "covers": [
+        "Process noise tuning and the consequences of getting Q wrong"
+      ],
+      "file": "t4_m34_kalman_filter/06-process-noise-tuning-and-getting-q-wrong.md"
     }
   ],
   "t4_m36_inertial_navigation": [
@@ -3198,14 +3234,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t4_m34_kalman_filter": {
-    "covered": 2,
+    "covered": 6,
     "total": 15,
     "complete": false,
     "missing": [
-      "The predict and update steps",
-      "The Kalman gain as a trust ratio between prediction and measurement",
-      "Covariance propagation and the discrete Riccati equation",
-      "Process noise tuning and the consequences of getting Q wrong",
       "The steady-state Kalman filter",
       "Observability and filter convergence",
       "Numerically stable formulations: Joseph form, square-root (Potter, Carlson), UD factorization (Bierman-Thornton)",
