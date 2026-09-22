@@ -3848,6 +3848,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Pontryagin's Minimum Principle, the stationarity condition, and transversality conditions"
       ],
       "file": "t5_m42_trajectory_optimization/03-pontryagin-transversality.md"
+    },
+    {
+      "id": "l04-shooting-and-brittleness",
+      "title": "The two-point boundary value problem and why shooting is brittle",
+      "minutes": 24,
+      "covers": [
+        "The two-point boundary value problem; single and multiple shooting; costate sensitivity and why indirect methods are brittle"
+      ],
+      "file": "t5_m42_trajectory_optimization/04-shooting-and-brittleness.md"
     }
   ],
   "t6_m46_6dof_simulation": [
@@ -4206,11 +4215,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t5_m42_trajectory_optimization": {
-    "covered": 3,
+    "covered": 4,
     "total": 17,
     "complete": false,
     "missing": [
-      "The two-point boundary value problem; single and multiple shooting; costate sensitivity and why indirect methods are brittle",
       "Bang-bang control, the switching function, and singular arcs",
       "Direct transcription: converting an infinite-dimensional problem into a finite NLP",
       "Direct single shooting vs direct multiple shooting, and the conditioning difference between them",
