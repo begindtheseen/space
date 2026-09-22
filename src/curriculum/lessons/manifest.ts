@@ -667,6 +667,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "the technical phone screen: 30 minutes, an engineer on the team or the hiring manager"
       ],
       "file": "car_09_screens/04-the-technical-phone-screen.md"
+    },
+    {
+      "id": "l05-resume-depth",
+      "title": "Three questions deep on every line",
+      "minutes": 27,
+      "covers": [
+        "resume depth: expect to be asked to go deeper on any line you wrote"
+      ],
+      "file": "car_09_screens/05-resume-depth.md"
     }
   ],
   "cod_cpp_01_basics": [
@@ -7404,12 +7413,11 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "car_09_screens": {
-    "covered": 4,
+    "covered": 5,
     "total": 12,
     "complete": false,
     "missing": [
       "reported topics: PD control, orbit determination, frequency-domain analysis",
-      "resume depth: expect to be asked to go deeper on any line you wrote",
       "verbal derivation discipline without a whiteboard: narrate the setup, name the variables, state assumptions",
       "asking clarifying questions before answering",
       "recovering from a blank without bluffing",
