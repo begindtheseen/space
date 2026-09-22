@@ -55,7 +55,7 @@ for tau in (0.20, 0.50, 1.00, 2.00, 4.00, 7.00, 10.00):
 Every value matches to six decimal places — seven independent forward simulations, each a full integration of the closed-loop system, all reproduced from the single backward run that produced $h(\tau)$.
 :::
 
-The shape $h(\tau)$ traces out is worth reading, not just checking. Sensitivity is small for a disturbance injected early ($\tau=10$: $0.0168$) — plenty of flight time remains for the loop to correct it. It is small again for a disturbance injected essentially at intercept ($\tau=0.1$: $0.0478$, smaller than the peak) — there is simply too little time left for even a large kick in $x_2$ to accumulate into much position error before $t_f$ arrives. Between those two extremes it **peaks** around $\tau\approx0.5\,\mathrm{s}$ (sensitivity $0.130$, nearly eight times the early-flight value) and even changes sign near $\tau\approx1$–$2\,\mathrm{s}$ — a disturbance at exactly the wrong late moment, when the lag has too little time to correct it but there is still enough flight left for the error to grow, costs several times more miss than the same disturbance almost anywhere else in the flight. No amount of staring at the closed-form gains alone predicts this peak; it falls out only once the lag is in the model and the adjoint run is done.
+The shape $h(\tau)$ traces out is worth reading, not only checking. Sensitivity is small for a disturbance injected early ($\tau=10$: $0.0168$) — plenty of flight time remains for the loop to correct it. It is small again for a disturbance injected essentially at intercept ($\tau=0.1$: $0.0478$, smaller than the peak) — there is too little time left for even a large kick in $x_2$ to accumulate into much position error before $t_f$ arrives. Between those two extremes it **peaks** around $\tau\approx0.5\,\mathrm{s}$ (sensitivity $0.130$, nearly eight times the early-flight value) and even changes sign near $\tau\approx1$–$2\,\mathrm{s}$ — a disturbance at exactly the wrong late moment, when the lag has too little time to correct it but there is still enough flight left for the error to grow, costs several times more miss than the same disturbance almost anywhere else in the flight. No amount of staring at the closed-form gains alone predicts this peak; it falls out only once the lag is in the model and the adjoint run is done.
 
 ::: warning A negative sensitivity is not a smaller effect — it is an opposite one
 $h(\tau)$ changed sign in the example above. A negative value does not mean "this disturbance matters less"; it means a disturbance there pushes the final miss the *opposite* direction from a disturbance at a $\tau$ where $h$ is positive. Two disturbances of the same sign at times where $h$ has opposite signs can partially cancel in the total miss — which is exactly the kind of structure a miss-distance budget needs to get right, and exactly what a table of magnitudes alone would hide.
@@ -63,7 +63,7 @@ $h(\tau)$ changed sign in the example above. A negative value does not mean "thi
 
 ## The real payoff: any disturbance history, still one run
 
-Because the underlying system is linear, $h(\tau)$ is not just a table of impulse responses — it is a Green's function. The final miss caused by *any* disturbance history $w(t)$, not only an idealized impulse, is the convolution
+Because the underlying system is linear, $h(\tau)$ is not only a table of impulse responses — it is a Green's function. The final miss caused by *any* disturbance history $w(t)$, not only an idealized impulse, is the convolution
 
 $$
 x_1(t_f) = \int_0^{t_f} h(t_f - t)\,w(t)\,dt,
@@ -92,7 +92,7 @@ Sensor noise is not a single deterministic disturbance but a random process, usu
 :::
 
 ::: warning Linearity is what makes any of this valid
-Both the impulse-response identity and the convolution integral above depend on the system being linear — superposition has to hold, or "the response to two disturbances is the sum of the responses to each" is simply false. The engagement here was linearized exactly the way earlier lessons' small-heading-error, near-collision-course arguments did; a guidance loop analyzed far from that regime, or one with a genuinely nonlinear element (a hard acceleration limit, say), does not get this shortcut for free, and the next lesson's actuator-limit discussion is exactly where that boundary starts to matter.
+Both the impulse-response identity and the convolution integral above depend on the system being linear — superposition has to hold, or "the response to two disturbances is the sum of the responses to each" does not hold. The engagement here was linearized exactly the way earlier lessons' small-heading-error, near-collision-course arguments did; a guidance loop analyzed far from that regime, or one with a genuinely nonlinear element (a hard acceleration limit, say), does not get this shortcut for free, and the next lesson's actuator-limit discussion is exactly where that boundary starts to matter.
 :::
 
 ## Check yourself
@@ -110,7 +110,7 @@ Why does introducing an autopilot lag reveal a non-trivial sensitivity curve, wh
 :::
 
 ::: answer
-Without lag, the commanded acceleration is achieved instantly, and PN's gains grow without bound as $t_{go}\to0$ — an idealization with effectively infinite authority to correct anything, however late, given the earlier lessons' own convergence result. A lag caps how fast achieved acceleration can actually follow the command, so there genuinely exist disturbance timings the loop cannot fully correct in the time available: too early, and ordinary correction handles it; too close to intercept, and there simply is not enough remaining flight for even an uncorrected disturbance to grow into much miss; in between, the lag prevents full correction while enough flight time remains for the residual to matter, producing the peak the worked example found.
+Without lag, the commanded acceleration is achieved instantly, and PN's gains grow without bound as $t_{go}\to0$ — an idealization with effectively infinite authority to correct anything, however late, given the earlier lessons' own convergence result. A lag caps how fast achieved acceleration can actually follow the command, so there genuinely exist disturbance timings the loop cannot fully correct in the time available: too early, and ordinary correction handles it; too close to intercept, and there is not enough remaining flight for even an uncorrected disturbance to grow into much miss; in between, the lag prevents full correction while enough flight time remains for the residual to matter, producing the peak the worked example found.
 :::
 
 ::: check
@@ -126,7 +126,7 @@ A miss-distance budget lists three disturbance sources with their RMS miss contr
 :::
 
 ::: answer
-Missing the sign and timing of each contribution's $h(\tau)$ means the budget cannot say whether the sources add or partially cancel — three sources each contributing what looks like a comparable RMS miss could combine to a much larger total (if their effective signs align) or a much smaller one (if they oppose), and a magnitude-only table cannot distinguish the two. Since the adjoint sensitivity curve can change sign within a single flight, as the worked example showed, even a single source evaluated at two different candidate disturbance times can contribute with opposite sign to two different failure scenarios; a complete budget has to carry the sensitivity function, not just a magnitude, to combine sources correctly.
+Missing the sign and timing of each contribution's $h(\tau)$ means the budget cannot say whether the sources add or partially cancel — three sources each contributing what looks like a comparable RMS miss could combine to a much larger total (if their effective signs align) or a much smaller one (if they oppose), and a magnitude-only table cannot distinguish the two. Since the adjoint sensitivity curve can change sign within a single flight, as the worked example showed, even a single source evaluated at two different candidate disturbance times can contribute with opposite sign to two different failure scenarios; a complete budget has to carry the sensitivity function, not only a magnitude, to combine sources correctly.
 :::
 
 ::: check
@@ -134,7 +134,7 @@ Why can the same single adjoint run answer questions about an impulsive disturba
 :::
 
 ::: answer
-All three are just different choices of $w(t)$ fed into the same linear system, and $h(\tau) = \boldsymbol\psi(\tau)^\top\mathbf{G}$ depends only on the system's own dynamics $\mathbf{F}(t)$ and $\mathbf{G}$, not on what particular disturbance is applied. An impulse reads $h(\tau)$ off directly; a sustained history convolves $h$ against $w(t)$; a random process, being fully characterized by a spectral description of how its energy is distributed over time, combines with $h(\tau)$ through an integral in the same spirit as the deterministic convolution. The adjoint solution is a property of the guidance loop, not of any one disturbance, which is exactly why computing it once suffices for all of them.
+All three are only different choices of $w(t)$ fed into the same linear system, and $h(\tau) = \boldsymbol\psi(\tau)^\top\mathbf{G}$ depends only on the system's own dynamics $\mathbf{F}(t)$ and $\mathbf{G}$, not on what particular disturbance is applied. An impulse reads $h(\tau)$ off directly; a sustained history convolves $h$ against $w(t)$; a random process, being fully characterized by a spectral description of how its energy is distributed over time, combines with $h(\tau)$ through an integral in the same spirit as the deterministic convolution. The adjoint solution is a property of the guidance loop, not of any one disturbance, which is exactly why computing it once suffices for all of them.
 :::
 
 ## Summary

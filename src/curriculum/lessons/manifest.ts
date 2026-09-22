@@ -40,6 +40,26 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "deemed exports: why physical location does not cure the problem"
       ],
       "file": "car_01_itar_gate/04-deemed-exports.md"
+    },
+    {
+      "id": "l05-the-recruiter-screen",
+      "title": "Where eligibility actually gets confirmed",
+      "minutes": 17,
+      "covers": [
+        "where in the pipeline eligibility is confirmed"
+      ],
+      "file": "car_01_itar_gate/05-the-recruiter-screen.md"
+    },
+    {
+      "id": "l06-clearance-testing-and-hours",
+      "title": "Beyond the ITAR gate: clearance, testing, and hours",
+      "minutes": 19,
+      "covers": [
+        "roles that additionally require obtaining and maintaining a Top Secret clearance",
+        "pre-employment and random drug and alcohol testing",
+        "the stated expectation of extended hours and weekends to meet critical deadlines"
+      ],
+      "file": "car_01_itar_gate/06-clearance-testing-and-hours.md"
     }
   ],
   "t0_m01_algebra_precalc": [
@@ -2001,11 +2021,20 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-bielliptic-transfer",
       "title": "The bi-elliptic transfer and the crossover ratio",
-      "minutes": 24,
+      "minutes": 17,
       "covers": [
         "bi-elliptic transfer and the crossover ratio"
       ],
       "file": "t2_m20_orbital_maneuvers/03-bielliptic-transfer.md"
+    },
+    {
+      "id": "l04-one-tangent-transfers",
+      "title": "One-tangent transfers",
+      "minutes": 18,
+      "covers": [
+        "one-tangent burns"
+      ],
+      "file": "t2_m20_orbital_maneuvers/04-one-tangent-transfers.md"
     }
   ],
   "t2_m23_relative_motion_rpo": [
@@ -2030,11 +2059,20 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-cw-state-transition-matrix",
       "title": "Solving CW — closed-form motion and the state transition matrix",
-      "minutes": 21,
+      "minutes": 17,
       "covers": [
         "the CW state transition matrix"
       ],
       "file": "t2_m23_relative_motion_rpo/03-cw-state-transition-matrix.md"
+    },
+    {
+      "id": "l04-cw-validity-and-tschauner-hempel",
+      "title": "How good is CW? Validity limits and the eccentric-orbit break",
+      "minutes": 22,
+      "covers": [
+        "Tschauner-Hempel equations for eccentric reference orbits"
+      ],
+      "file": "t2_m23_relative_motion_rpo/04-cw-validity-and-tschauner-hempel.md"
     }
   ],
   "t3_m25_signals_systems": [
@@ -4125,6 +4163,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "NLP sparsity structure, the Jacobian and Hessian block pattern, and why sparsity decides solve time"
       ],
       "file": "t5_m42_trajectory_optimization/13-nlp-sparsity.md"
+    },
+    {
+      "id": "l14-scaling-and-conditioning",
+      "title": "Scaling and conditioning: non-dimensionalise before you solve anything",
+      "minutes": 18,
+      "covers": [
+        "Scaling and conditioning: non-dimensionalising states, controls and constraints before you solve anything"
+      ],
+      "file": "t5_m42_trajectory_optimization/14-scaling-and-conditioning.md"
     }
   ],
   "t5_m43_convex_guidance": [
@@ -4168,6 +4215,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "The JPL/Masten Xombie flight demonstrations of G-FOLD and what they proved"
       ],
       "file": "t5_m43_convex_guidance/04-gfold-two-stage-guidance.md"
+    },
+    {
+      "id": "l05-glideslope-velocity-pointing-cones",
+      "title": "Glideslope, velocity, and pointing as cones",
+      "minutes": 24,
+      "covers": [
+        "Glideslope, velocity, and thrust-pointing constraints as cones"
+      ],
+      "file": "t5_m43_convex_guidance/05-glideslope-velocity-and-pointing-cones.md"
     }
   ],
   "t6_m44_realtime_embedded": [
@@ -4489,6 +4545,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Staging and other discontinuous events; zero-crossing detection and bisection to the event time"
       ],
       "file": "t6_m46_6dof_simulation/10-staging-events-and-zero-crossing-detection.md"
+    },
+    {
+      "id": "l11-flight-software-in-the-loop-boundary",
+      "title": "The flight-software-in-the-loop boundary",
+      "minutes": 20,
+      "covers": [
+        "The flight-software-in-the-loop boundary: compiling the actual flight code into the sim rather than a Python re-implementation of it"
+      ],
+      "file": "t6_m46_6dof_simulation/11-the-flight-software-in-the-loop-boundary.md"
     }
   ],
   "t6_m47_vv_montecarlo": [
@@ -4735,11 +4800,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t2_m20_orbital_maneuvers": {
-    "covered": 3,
+    "covered": 4,
     "total": 13,
     "complete": false,
     "missing": [
-      "one-tangent burns",
       "plane change and combined plane-change-plus-raise optimisation",
       "apsidal rotation",
       "phasing manoeuvres and rendezvous phasing",
@@ -4790,7 +4854,7 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t2_m23_relative_motion_rpo": {
-    "covered": 3,
+    "covered": 4,
     "total": 16,
     "complete": false,
     "missing": [
@@ -4800,7 +4864,6 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
       "natural motion circumnavigation",
       "passive safety and safety ellipses",
       "two-impulse CW rendezvous targeting",
-      "Tschauner-Hempel equations for eccentric reference orbits",
       "glideslope algorithms",
       "approach corridors and keep-out spheres",
       "docking vs berthing",
@@ -4937,22 +5000,20 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t5_m42_trajectory_optimization": {
-    "covered": 13,
+    "covered": 14,
     "total": 17,
     "complete": false,
     "missing": [
-      "Scaling and conditioning: non-dimensionalising states, controls and constraints before you solve anything",
       "Warm starting, homotopy and continuation from an easy problem to the real one",
       "Tooling: CasADi with IPOPT, GPOPS-II, PSOPT, Dymos/OpenMDAO, PyOMO, ACADO, trajax",
       "Failure modes: infeasible restoration, unbounded multipliers, mesh-induced control ringing, badly posed terminal constraints"
     ]
   },
   "t5_m43_convex_guidance": {
-    "covered": 9,
+    "covered": 10,
     "total": 21,
     "complete": false,
     "missing": [
-      "Glideslope, velocity, and thrust-pointing constraints as cones",
       "Flight time as the one non-convex parameter, and solving it by a line search over an inner SOCP",
       "Discrete-time lossless convexification and what survives discretisation",
       "Successive convexification (SCvx): linearise about a reference, solve, update, repeat",
@@ -4979,11 +5040,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t6_m46_6dof_simulation": {
-    "covered": 10,
+    "covered": 11,
     "total": 18,
     "complete": false,
     "missing": [
-      "The flight-software-in-the-loop boundary: compiling the actual flight code into the sim rather than a Python re-implementation of it",
       "The SIL, PIL and HIL progression and what each step actually adds",
       "Real-time hardware-in-the-loop: flight processors, motion tables, IMU stimulation, GNSS signal simulators, camera and altimeter stimulation",
       "Validation against analytic solutions, conservation laws, and eventually flight data",
@@ -5998,14 +6058,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "car_01_itar_gate": {
-    "covered": 5,
+    "covered": 9,
     "total": 10,
     "complete": false,
     "missing": [
-      "where in the pipeline eligibility is confirmed",
-      "roles that additionally require obtaining and maintaining a Top Secret clearance",
-      "pre-employment and random drug and alcohol testing",
-      "the stated expectation of extended hours and weekends to meet critical deadlines",
       "what a non-US-person can realistically target instead: non-ITAR employers, European, UK, Canadian, Australian and Japanese space sectors, academia, and a long-horizon immigration path"
     ]
   },

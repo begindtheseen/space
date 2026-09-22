@@ -1,7 +1,7 @@
 ---
 id: l03-bielliptic-transfer
 title: The bi-elliptic transfer and the crossover ratio
-minutes: 24
+minutes: 17
 covers:
   - bi-elliptic transfer and the crossover ratio
 ---
@@ -45,7 +45,7 @@ Take the limit $r_b \to \infty$ first – the most generous possible intermediat
 
 Now look at the *other* end of the $r_b$ range: $r_b$ only barely larger than $r_2$, an intermediate apoapsis you barely overshoot. Whether nudging $r_b$ up from $r_2$ helps or hurts, at the margin, is a question about the slope of the bi-elliptic cost right at the Hohmann limit. Solving numerically for the ratio at which that marginal nudge stops hurting and starts helping gives $R = 15.5817$. Above this ratio, *any* $r_b > r_2$, however modest, already beats Hohmann, and pushing $r_b$ further out only helps more.
 
-Between the two thresholds, the two behaviours coexist for the same $R$: a modest $r_b$ (just past $r_2$) still costs more than Hohmann, but a sufficiently generous $r_b$ eventually overtakes it. At $R = 13$, for instance, $r_b = 1.5\,r_2$ costs about $18\,\mathrm{m/s}$ more than Hohmann, but $r_b = 5\,r_2$ already costs about $9\,\mathrm{m/s}$ less; the crossover for this particular $R$ falls at $r_b \approx 3.76\,r_2$. This is the "it depends" band: no rule fixed by $R$ alone tells you which side you are on without also picking $r_b$.
+Between the two thresholds, the two behaviours coexist for the same $R$: a modest $r_b$ (just past $r_2$) still costs more than Hohmann, but a sufficiently generous $r_b$ eventually overtakes it. At $R = 13$, for instance, $r_b = 1.5\,r_2$ costs about $18\,\mathrm{m/s}$ more than Hohmann, but $r_b = 5\,r_2$ already costs about $8.5\,\mathrm{m/s}$ less; the crossover for this particular $R$ falls at $r_b \approx 3.76\,r_2$. This is the "it depends" band: no rule fixed by $R$ alone tells you which side you are on without also picking $r_b$.
 
 ::: key The three regimes
 $$

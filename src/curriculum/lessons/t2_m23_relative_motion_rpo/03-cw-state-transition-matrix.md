@@ -1,7 +1,7 @@
 ---
 id: l03-cw-state-transition-matrix
 title: Solving CW — closed-form motion and the state transition matrix
-minutes: 21
+minutes: 17
 covers:
   - the CW state transition matrix
 ---
@@ -83,6 +83,16 @@ $$
 with $s=\sin nt$, $c=\cos nt$ shorthand and the bottom three rows obtained by differentiating the top three with respect to $t$. This is the Clohessy-Wiltshire state transition matrix. Reading off any entry answers a specific question: $\Phi_{02}$, the $(x,z)$ entry, is zero everywhere because a cross-track offset alone never produces a radial one — in-plane and out-of-plane motion never mix, a direct consequence of $z$ decoupling from $x,y$ back in the original equations.
 
 Two structural facts about $\boldsymbol\Phi(t)$ are worth carrying forward, and both are checkable in code as soon as you implement it. First, $\boldsymbol\Phi(0) = \mathbf{I}$ — set $t=0$ ($s=0,c=1$) in the matrix above and every entry reduces to the identity, as it must: propagating for zero time changes nothing. Second, $\det\boldsymbol\Phi(t) = 1$ for every $t$, not approximately but exactly. The CW equations, like the underlying two-body problem they were linearized from, describe a Hamiltonian flow, and Hamiltonian flows are **symplectic**: they preserve six-dimensional phase-space volume rather than expanding or contracting it. A unit determinant is a strong, easy correctness check on any implementation of $\boldsymbol\Phi(t)$ — an error in a single sign or coefficient almost always breaks it.
+
+It is often convenient to partition $\boldsymbol\Phi(t)$ into four $3\times3$ blocks that separate position from velocity:
+
+$$
+\boldsymbol\Phi(t) = \begin{bmatrix} \boldsymbol\Phi_{rr}(t) & \boldsymbol\Phi_{rv}(t) \\ \boldsymbol\Phi_{vr}(t) & \boldsymbol\Phi_{vv}(t) \end{bmatrix},
+\qquad
+\boldsymbol\rho(t) = \boldsymbol\Phi_{rr}(t)\boldsymbol\rho_0 + \boldsymbol\Phi_{rv}(t)\dot{\boldsymbol\rho}_0.
+$$
+
+$\boldsymbol\Phi_{rv}(t)$ — the top-right block, position at time $t$ as a function of *initial velocity* — turns out to be exactly the block you need to invert when you know where you are and where you want to be, and must solve for the velocity that gets you there. That is precisely the two-impulse rendezvous-targeting problem several lessons ahead; the partition is introduced here because the matrix itself does not change between now and then, only which piece of it you read off.
 
 ::: example Building and checking the STM
 For this module's reference orbit, $n = 1.1282\times10^{-3}\,\mathrm{rad/s}$, evaluate $\boldsymbol\Phi(t)$ at $t=1000\,\mathrm{s}$ ($nt = 1.1282\,\mathrm{rad}$, $s=0.90280$, $c=0.43012$... rounding aside, $s=0.9026$, $c=0.4283$ to four figures):

@@ -16,7 +16,7 @@ $$
 t_{go} = \frac{R}{V_c}.
 $$
 
-This is exact — not approximate — for a genuine constant-velocity collision course, because that is exactly the scenario $V_c$ and $R$ describe when neither party maneuvers further. It is the estimate every worked example so far has simply assumed.
+This is exact — not approximate — for a genuine constant-velocity collision course, because that is exactly the scenario $V_c$ and $R$ describe when neither party maneuvers further. It is the estimate every worked example so far has assumed outright.
 
 ## Why it drifts once the path curves
 
@@ -84,7 +84,7 @@ Any ZEM-form or LQ-optimal guidance law has gains scaling as $1/t_{go}^2$ and $1
 :::
 
 ::: warning A confident-looking t_go is not the same as a correct one
-Nothing about $R/V_c$ or the refined series correction *announces* when it is wrong — both simply return a number, and a guidance loop will use whatever number it is given without complaint. The failure mode is silent: a badly estimated $t_{go}$ produces a badly scaled command that looks like ordinary guidance output right up until the terminal acceleration saturates the actuators or the vehicle arrives with an unacceptable residual velocity. Treat $t_{go}$ as a quantity to validate — cross-check $R/V_c$ against the refined estimate, watch for a commanded acceleration that is growing faster than the geometry alone explains — not as a number to trust because a formula produced it.
+Nothing about $R/V_c$ or the refined series correction *announces* when it is wrong — both return a number regardless, and a guidance loop will use whatever number it is given without complaint. The failure mode is silent: a badly estimated $t_{go}$ produces a badly scaled command that looks like ordinary guidance output right up until the terminal acceleration saturates the actuators or the vehicle arrives with an unacceptable residual velocity. Treat $t_{go}$ as a quantity to validate — cross-check $R/V_c$ against the refined estimate, watch for a commanded acceleration that is growing faster than the geometry alone explains — not as a number to trust because a formula produced it.
 :::
 
 ## Check yourself
@@ -137,7 +137,7 @@ Clamping the output treats the symptom — an over-large command — without cor
 | Refined estimate | $t_{go} = (R/V_c)\big[1+\theta_L^2/(2(2N-1))\big]$; corrects most of the curvature error |
 | Powered-descent seed | No natural closing rate exists; solve a self-consistency condition (e.g. against a thrust limit) instead |
 | Why it is critical | Every ZEM-form and LQ-optimal gain scales as $1/t_{go}$ or $1/t_{go}^2$; a $t_{go}$ error is a direct gain error |
-| Near-intercept amplification | True commands there are often a near-cancellation of large terms; a $t_{go}$ error disrupts the cancellation, not just the gain magnitude |
+| Near-intercept amplification | True commands there are often a near-cancellation of large terms; a $t_{go}$ error disrupts the cancellation, not only the gain magnitude |
 | Mandatory guard | A floor on $t_{go}$, or a switch to a terminal-hold law, near $t_{go}=0$ |
 
 Every guidance law this module has built assumed the vehicle is free to command whatever acceleration the law produces. The next lesson turns to the ascent problem, where that assumption is only sometimes true, before this module's final lesson takes on what changes when it is not.

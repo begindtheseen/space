@@ -8,7 +8,7 @@ covers:
 
 A soft landing asks for something proportional navigation never had to deliver: arriving not merely *at* the target but *at rest* there. A lander that reaches zero altitude at forty metres per second has not landed; it has crashed precisely on target. This lesson derives the guidance law built for exactly that harder requirement — both terminal position and terminal velocity pinned — and the two quantities, zero-effort miss and zero-effort velocity, that make the law as easy to compute in flight as proportional navigation's line-of-sight rate was.
 
-The name answers the question the law is built around: if I stopped commanding thrust *right now* and simply coasted under gravity alone for the time remaining, where would I end up, and how fast would I be going? Those two predictions — the zero-effort miss and the zero-effort velocity — are cheap to compute from the current state alone, and the feedback law this lesson derives is nothing more than the minimum-energy correction that drives both of them to zero by touchdown.
+The name answers the question the law is built around: if I stopped commanding thrust *right now* and coasted unpowered under gravity alone for the time remaining, where would I end up, and how fast would I be going? Those two predictions — the zero-effort miss and the zero-effort velocity — are cheap to compute from the current state alone, and the feedback law this lesson derives is nothing more than the minimum-energy correction that drives both of them to zero by touchdown.
 
 ## Zero-effort miss and zero-effort velocity, defined
 
@@ -26,7 +26,7 @@ $$
 
 Both are computed from the current state alone — no stored reference trajectory, exactly the explicit-guidance pattern from earlier in this module — and both vanish exactly when the vehicle is already, unpowered, on a trajectory that lands it softly on time: a direct, checkable statement of "no further effort is required."
 
-The closed form above is specific to constant gravity, but the *principle* is not: $\mathbf{r}_{coast},\mathbf{v}_{coast}$ are nothing but the state that propagating the true uncontrolled dynamics — whatever they are — produces after $t_{go}$. With drag, a varying gravity field, or any other force the vehicle cannot simply switch off, the same definitions still make sense; only the closed form changes to a numerical propagation. That is why zero-effort miss and velocity, not a fixed formula, are the quantities every powered-descent guidance implementation actually carries forward — the formula above is the special case dense enough to derive a feedback law from in closed form.
+The closed form above is specific to constant gravity, but the *principle* is not: $\mathbf{r}_{coast},\mathbf{v}_{coast}$ are nothing but the state that propagating the true uncontrolled dynamics — whatever they are — produces after $t_{go}$. With drag, a varying gravity field, or any other force the vehicle cannot switch off on command, the same definitions still make sense; only the closed form changes to a numerical propagation. That is why zero-effort miss and velocity, not a fixed formula, are the quantities every powered-descent guidance implementation actually carries forward — the formula above is the special case dense enough to derive a feedback law from in closed form.
 
 ## The feedback law, derived
 
@@ -104,7 +104,7 @@ Flown closed-loop to touchdown, the result is the same story at Mars's roughly $
 The $6/t_{go}^2$ and $-2/t_{go}$ coefficients are not a different idea from proportional navigation's $3/t_{go}^2$ — they are what the same infinite-terminal-weight construction from the last lesson produces once *both* terminal states are weighted instead of one. Posing the analogous soft-constraint problem with $\mathbf{Q}_f = \operatorname{diag}(q_f, q_f)$ (both position and velocity priced, not position alone) and solving its Riccati equation gives a two-parameter family of gains that converges, as $q_f\to\infty$, to exactly $6/t_{go}^2$ and $-2/t_{go}$ — the same limit construction as before, applied to a richer terminal cost. The extra constraint is what changes the numbers: pinning velocity as well as position removes a degree of freedom the earlier problem had left free, and the optimizer pays for closing it with larger gains close to $t_{go}=0$, which is exactly the steep late growth in commanded acceleration both worked examples above show.
 
 ::: warning ZEM/ZEV needs t_go from somewhere else
-Every quantity in this law — $ZEM$, $ZEV$, the $1/t_{go}^2$ and $1/t_{go}$ gains — depends on knowing $t_{go}$, and nothing in this lesson derived where that number comes from. Both worked examples above simply specified it. A later lesson in this module takes on exactly that question, and it matters more here than almost anywhere else in this module: the gains blow up as $t_{go}\to0$, so a wrong $t_{go}$ near touchdown is not a small error.
+Every quantity in this law — $ZEM$, $ZEV$, the $1/t_{go}^2$ and $1/t_{go}$ gains — depends on knowing $t_{go}$, and nothing in this lesson derived where that number comes from. Both worked examples above specified it outright, without deriving it. A later lesson in this module takes on exactly that question, and it matters more here than almost anywhere else in this module: the gains blow up as $t_{go}\to0$, so a wrong $t_{go}$ near touchdown is not a small error.
 :::
 
 ## Check yourself
@@ -114,7 +114,7 @@ Define zero-effort miss and zero-effort velocity in one sentence each, without r
 :::
 
 ::: answer
-Zero-effort miss is the position error you would have at the planned arrival time if you applied no further control from this instant on — the gap between the target position and where coasting under the true, uncontrolled dynamics would actually leave you. Zero-effort velocity is the same idea applied to velocity: the gap between the target velocity and the velocity coasting would leave you with. Neither definition mentions gravity specifically, because the idea is "propagate the uncontrolled dynamics, whatever they are" — the constant-gravity formula is just the closed form that particular propagation happens to have.
+Zero-effort miss is the position error you would have at the planned arrival time if you applied no further control from this instant on — the gap between the target position and where coasting under the true, uncontrolled dynamics would actually leave you. Zero-effort velocity is the same idea applied to velocity: the gap between the target velocity and the velocity coasting would leave you with. Neither definition mentions gravity specifically, because the idea is "propagate the uncontrolled dynamics, whatever they are" — the constant-gravity formula is only the closed form that particular propagation happens to have.
 :::
 
 ::: check
@@ -160,4 +160,4 @@ It is not guaranteed in general — the law's gains depend on $t_{go}$ and the c
 | Relation to PN | Same infinite-terminal-weight construction, applied to a terminal cost that weights both states instead of one |
 | Generalizes beyond constant $g$ | Yes — propagate the true uncontrolled dynamics for $ZEM,ZEV$; only the closed form is gravity-specific |
 
-Both worked landings above simply assumed a value for $t_{go}$. Every gain in this law depends on it, and getting it right — or handling it when it is wrong — is significant enough a question to earn its own lesson later in this module, after a look at how sensitive a guidance loop's miss is to disturbances in the first place.
+Both worked landings above assumed a value for $t_{go}$ outright, without deriving it. Every gain in this law depends on it, and getting it right — or handling it when it is wrong — is significant enough a question to earn its own lesson later in this module, after a look at how sensitive a guidance loop's miss is to disturbances in the first place.
