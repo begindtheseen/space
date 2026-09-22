@@ -525,6 +525,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "open-sourcing, licensing, and what to do about prior-employer intellectual property"
       ],
       "file": "car_06_portfolio/11-licensing-and-prior-employer-ip.md"
+    },
+    {
+      "id": "l12-feeding-the-past-project-defence",
+      "title": "How the portfolio feeds the past-project defence",
+      "minutes": 18,
+      "covers": [
+        "how the portfolio feeds the past-project presentation round"
+      ],
+      "file": "car_06_portfolio/12-feeding-the-past-project-defence.md"
     }
   ],
   "car_07_resume_and_referrals": [
@@ -620,6 +629,17 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "reapplication cadence and what must change between attempts"
       ],
       "file": "car_07_resume_and_referrals/10-outreach-and-reapplying.md"
+    }
+  ],
+  "car_09_screens": [
+    {
+      "id": "l01-the-recruiter-screen",
+      "title": "What the recruiter screen is actually confirming",
+      "minutes": 20,
+      "covers": [
+        "recruiter screen structure and the questions actually asked: background, motivation, export-control eligibility, location and relocation, timeline, compensation expectations"
+      ],
+      "file": "car_09_screens/01-the-recruiter-screen.md"
     }
   ],
   "cod_cpp_01_basics": [
@@ -7300,12 +7320,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "car_06_portfolio": {
-    "covered": 12,
+    "covered": 13,
     "total": 13,
-    "complete": false,
-    "missing": [
-      "how the portfolio feeds the past-project presentation round"
-    ]
+    "complete": true,
+    "missing": []
   },
   "car_07_resume_and_referrals": {
     "covered": 13,
@@ -7333,11 +7351,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "car_09_screens": {
-    "covered": 0,
+    "covered": 1,
     "total": 12,
     "complete": false,
     "missing": [
-      "recruiter screen structure and the questions actually asked: background, motivation, export-control eligibility, location and relocation, timeline, compensation expectations",
       "the 90-second background narrative and how to end it on a specific role family",
       "answering the compensation question early without anchoring yourself low",
       "the technical phone screen: 30 minutes, an engineer on the team or the hiring manager",
