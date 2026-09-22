@@ -1767,6 +1767,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Functions, return values, exit codes, $?"
       ],
       "file": "cod_lnx_02_scripting/06-functions-and-exit-codes.md"
+    },
+    {
+      "id": "l07-trap-and-cleanup",
+      "title": "trap, and cleaning up on every exit path",
+      "minutes": 17,
+      "covers": [
+        "trap for cleanup on EXIT/INT/TERM"
+      ],
+      "file": "cod_lnx_02_scripting/07-trap-and-cleanup.md"
     }
   ],
   "cod_py_01_basics": [
@@ -7775,11 +7784,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_lnx_02_scripting": {
-    "covered": 6,
+    "covered": 7,
     "total": 14,
     "complete": false,
     "missing": [
-      "trap for cleanup on EXIT/INT/TERM",
       "getopts for flags, positional args, \"$@\" vs \"$*\"",
       "Here-docs and here-strings",
       "sed substitution and addressing; awk fields, patterns, BEGIN/END, arrays",
