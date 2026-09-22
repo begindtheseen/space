@@ -6,7 +6,7 @@ covers:
   - Station and tracking geometry and its effect on observability
 ---
 
-The batch lesson found $\boldsymbol\Lambda$ badly conditioned in kilometres and seconds, and non-dimensionalising fixed it completely — the same converged answer, computed on firmer numerical ground. This lesson is about a different, deeper kind of ill-conditioning that no change of units touches: the case where the tracking data itself, however precisely measured and however carefully scaled, simply does not constrain some direction of the state. That is what observability means for orbit determination, and it is exactly the condition-number language the least-squares module built for its own static-estimation problems, now applied to an arc of moving geometry instead of a fixed one.
+The batch lesson found $\boldsymbol\Lambda$ badly conditioned in kilometres and seconds, and non-dimensionalising fixed it completely — the same converged answer, computed on firmer numerical ground. This lesson is about a different, deeper kind of ill-conditioning that no change of units touches: the case where the tracking data itself, however precisely measured and however carefully scaled, does not constrain some direction of the state. That is what observability means for orbit determination, and it is exactly the condition-number language the least-squares module built for its own static-estimation problems, now applied to an arc of moving geometry instead of a fixed one.
 
 ## Observability is a property of the geometry, not the noise
 
@@ -26,12 +26,12 @@ Using the same $420\,\mathrm{km}$ orbit and station as the earlier lessons, buil
 # three passes spread over 12 h           111       4.51e+03
 ```
 
-Extending a single continuous pass from $60\,\mathrm s$ to its full $360\,\mathrm s$ improves conditioning by only about two orders of magnitude; adding one *more* pass, separated in time rather than merely longer, improves it by five. Within one pass the tracking geometry changes only gradually — closely related to why a short-arc Gibbs or Gauss solution in the initial-orbit-determination lesson struggled: not enough of the orbit's curvature has been sampled for the data to distinguish nearby true states. A second pass, hours later, is nearly a different vantage point in time entirely, and resolves combinations of the state the first pass's near-linear stretch of data could not touch. For $\boldsymbol\Lambda$ itself, $\operatorname{cond}(\boldsymbol\Lambda)\approx\operatorname{cond}(\widetilde{\mathbf H})^2$ from the batch lesson turns the $60\,\mathrm s$ arc's already-enormous $1.6\times10^{11}$ into roughly $2.6\times10^{22}$ — a number no 64-bit float can represent as a matrix at all, which is why attempting to solve the normal equations directly from an arc this short does not just give an imprecise answer; it can fail outright from round-off, not merely from noise.
+Extending a single continuous pass from $60\,\mathrm s$ to its full $360\,\mathrm s$ improves conditioning by only about two orders of magnitude; adding one *more* pass, separated in time rather than merely longer, improves it by five. Within one pass the tracking geometry changes only gradually — closely related to why a short-arc Gibbs or Gauss solution in the initial-orbit-determination lesson struggled: not enough of the orbit's curvature has been sampled for the data to distinguish nearby true states. A second pass, hours later, is nearly a different vantage point in time entirely, and resolves combinations of the state the first pass's near-linear stretch of data could not touch. For $\boldsymbol\Lambda$ itself, $\operatorname{cond}(\boldsymbol\Lambda)\approx\operatorname{cond}(\widetilde{\mathbf H})^2$ from the batch lesson turns the $60\,\mathrm s$ arc's already-enormous $1.6\times10^{11}$ into roughly $2.6\times10^{22}$ — a number no 64-bit float can represent as a matrix at all, which is why attempting to solve the normal equations directly from an arc this short does not only give an imprecise answer; it can fail outright from round-off, not only from noise.
 :::
 
 ## The covariance ellipsoid, read off directly
 
-$\mathbf P=\boldsymbol\Lambda^{-1}$ is an ellipsoid in the (non-dimensional) state space, and its shape — not just its overall size — is what "observable in some directions, not others" looks like as a number rather than a claim.
+$\mathbf P=\boldsymbol\Lambda^{-1}$ is an ellipsoid in the (non-dimensional) state space, and its shape — not only its overall size — is what "observable in some directions, not others" looks like as a number rather than a claim.
 
 ::: example The worst- and best-observed directions, computed
 Taking the right singular vectors of $\widetilde{\mathbf H}$ (equivalently, the eigenvectors of $\mathbf P$) for the $60\,\mathrm s$ single-pass arc and the full three-pass, twelve-hour arc:
@@ -51,7 +51,7 @@ Taking the right singular vectors of $\widetilde{\mathbf H}$ (equivalently, the 
 In the short arc, the least-observed combination of position and velocity is left with a formal uncertainty *eleven orders of magnitude* larger than the best-observed one — for all practical purposes, entirely unconstrained, while another combination is already known to extraordinary precision from the same seven points. In the twelve-hour arc the spread has narrowed to about $4500$-to-$1$: still highly anisotropic — an ellipsoid, never a sphere, is the normal shape for an orbit determination covariance — but no longer catastrophically so. Neither the worst- nor best-observed direction, written in raw inertial $(x,y,z,v_x,v_y,v_z)$ components, is easy to read by eye; turning that mixture into a direction with physical meaning — radial, along-track, cross-track — is exactly what the RIC-frame lesson later in this module does with this same kind of result.
 :::
 
-## Multiple stations: geometry, not just more data
+## Multiple stations: geometry, not only more data
 
 Adding observations does not automatically improve conditioning if they repeat information the arc already has. Comparing three passes seen by one station against two passes from that station plus one pass from a station on almost the opposite side of the Earth:
 
@@ -61,14 +61,14 @@ Adding observations does not automatically improve conditioning if they repeat i
 #   a station near the antipode:              N=79   cond(H~)=3.33e+03
 ```
 
-The second configuration has *fewer* total observations and still conditions better, because a station near the antipode sees the spacecraft from a genuinely different geometric angle rather than a repeated variation on the first station's view. This is the same principle behind dilution of precision in the GNSS module — a receiver's position fix improves more from satellites spread across the sky than from the same number of satellites clustered together — applied here to ground-station geometry instead of satellite geometry. A tracking network's value is in how differently its sites see the object, not simply in how many looks it accumulates.
+The second configuration has *fewer* total observations and still conditions better, because a station near the antipode sees the spacecraft from a genuinely different geometric angle rather than a repeated variation on the first station's view. This is the same principle behind dilution of precision in the GNSS module — a receiver's position fix improves more from satellites spread across the sky than from the same number of satellites clustered together — applied here to ground-station geometry instead of satellite geometry. A tracking network's value is in how differently its sites see the object, not in how many looks it accumulates.
 
 ::: key Observability is about direction, conditioning is about degree
-A short or repetitive arc does not fail loudly — the normal equations still solve, and without checking $\operatorname{cond}(\widetilde{\mathbf H})$ or examining $\mathbf P$'s eigenstructure, a poorly observed direction looks like any other number in the output. It reveals itself only as an enormous formal uncertainty along some combination of state components (or, in the numerically extreme case, as the solver failing outright), never as an explicit warning. Reading the covariance ellipsoid — not just its trace or its largest entry — is the only way to see which directions the data actually constrained.
+A short or repetitive arc does not fail loudly — the normal equations still solve, and without checking $\operatorname{cond}(\widetilde{\mathbf H})$ or examining $\mathbf P$'s eigenstructure, a poorly observed direction looks like any other number in the output. It reveals itself only as an enormous formal uncertainty along some combination of state components (or, in the numerically extreme case, as the solver failing outright), never as an explicit warning. Reading the covariance ellipsoid — not only its trace or its largest entry — is the only way to see which directions the data actually constrained.
 :::
 
 ::: warning A well-conditioned fit from a short arc is still a short-arc fit
-Adding a loose a priori, or simply proceeding because the normal equations happened to solve without complaint, does not manufacture observability that the geometry does not contain. A regularized or Bayesian-looking answer from a single short pass reports *a* covariance, but the direction with the largest formal uncertainty in that covariance is telling the truth: the data barely touched it, and the estimate along it is close to whatever the prior said, not something the tracking data itself determined.
+Adding a loose a priori, or proceeding only because the normal equations happened to solve without complaint, does not manufacture observability that the geometry does not contain. A regularized or Bayesian-looking answer from a single short pass reports *a* covariance, but the direction with the largest formal uncertainty in that covariance is telling the truth: the data barely touched it, and the estimate along it is close to whatever the prior said, not something the tracking data itself determined.
 :::
 
 ## Check yourself
@@ -110,7 +110,7 @@ The two-station plan, generally — not because it has more data (in the module'
 | Symbol or formula | Meaning |
 | --- | --- |
 | $\operatorname{cond}(\widetilde{\mathbf H})$, via SVD | The numerically sound observability metric; avoid forming $\boldsymbol\Lambda$ directly when this is already large |
-| $\operatorname{cond}(\boldsymbol\Lambda)\approx\operatorname{cond}(\widetilde{\mathbf H})^2$ | Why a marginal arc's normal equations can fail from round-off, not just noise |
+| $\operatorname{cond}(\boldsymbol\Lambda)\approx\operatorname{cond}(\widetilde{\mathbf H})^2$ | Why a marginal arc's normal equations can fail from round-off, not only from noise |
 | Extending one pass | Improves conditioning slowly — the geometry changes only gradually within a pass |
 | A second, separated pass | Improves conditioning dramatically — a genuinely different vantage point in time |
 | Eigenvectors of $\mathbf P=\boldsymbol\Lambda^{-1}$ | The actual best- and worst-observed directions; not physically readable until rotated into RIC |

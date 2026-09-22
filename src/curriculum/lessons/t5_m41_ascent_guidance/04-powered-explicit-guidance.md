@@ -43,7 +43,7 @@ Time-to-go: with $\tau = m/\dot m$, $t_{go} = \tau\left(1 - e^{-\Delta v_{\text{
 Take the two-stage vehicle from the first lesson of this module through staging: stage 1's gravity turn ends at $t = 151.5\ \mathrm{s}$, $h = 60.4\ \mathrm{km}$, with velocity components $v_r = 758.6\ \mathrm{m/s}$ (radial) and $v_t = 3527.5\ \mathrm{m/s}$ (tangential) — comfortably past max-Q, dynamic pressure already down to about a thousandth of a kilopascal. From here stage 2 ignites — a single 934 kN, 348 s $I_{sp}$ engine on 112.4 t of stage and payload — and PEG takes over, targeting a 400 km circular orbit: terminal radius $r_{\text{target}}$, terminal tangential speed $v_{\text{circ}}(r_{\text{target}}) = 7668.56\ \mathrm{m/s}$, terminal radial rate zero.
 
 ::: example Convergence, cycle by cycle
-Running the cycle above every 5 seconds (finer near cutoff, as the last section explains why), the steering coefficients and time-to-go evolve as:
+Running the cycle above every 5 seconds, the steering coefficients and time-to-go evolve as:
 
 | $t$ (s) | $A$ | $B$ | $t_{go}$ (s) | pitch (deg) | vehicle mass (kg) |
 | --- | --- | --- | --- | --- | --- |
@@ -51,7 +51,7 @@ Running the cycle above every 5 seconds (finer near cutoff, as the last section 
 | 5 | 6.1671 | $-0.020578$ | 348.36 | 80.79 | 111,032 |
 | 65 | 3.8277 | $-0.016647$ | 280.80 | 75.36 | 94,611 |
 | 200 | (steering continues to evolve smoothly through the middle of the burn) | | | | |
-| 340 | 0.5847 | $-0.020197$ | 3.32 | 30.32 | 19,348 |
+| 300 | $-0.7240$ | $0.017853$ | 39.58 | $-35.90$ | 30,295 |
 
 $t_{go}$ falls steadily and close to linearly with elapsed time — it is not a fixed countdown timer, but the *outcome* of re-solving the same problem from a state that is, each cycle, a little closer to the target. By $t = 343.3\ \mathrm{s}$ the cycle reports $t_{go}$ effectively zero and cuts the engine off. The vehicle arrives at $400.000\ \mathrm{km}$ altitude (0.25 m off target), with a tangential speed 0.36 m/s from the exact circular value and a residual radial rate of 2.40 m/s — insertion errors small enough to be well within any real orbit-determination noise floor — having used 93,943 kg of the 98,900 kg of stage-2 propellant loaded, leaving 4957 kg, about 5.0%, as reserve.
 :::

@@ -6,7 +6,7 @@ covers:
   - Consider-covariance analysis
 ---
 
-The previous lesson ended with a third option for an uncertain parameter, after solving for it directly and absorbing it generically with process noise: leave it out of the state entirely, but do not pretend it is perfectly known either. A station's range bias, an unmodelled fraction of the drag coefficient, a gravity field coefficient truncated from the force model — any of these can be too poorly observed by a given arc to solve for sensibly, or simply not worth the extra state for a routine fit, without being zero. Consider-covariance analysis is the honest middle ground: the estimate does not change, but the reported covariance does, by exactly the amount the unconsidered parameter's own uncertainty deserves.
+The previous lesson ended with a third option for an uncertain parameter, after solving for it directly and absorbing it generically with process noise: leave it out of the state entirely, but do not pretend it is perfectly known either. A station's range bias, an unmodelled fraction of the drag coefficient, a gravity field coefficient truncated from the force model — any of these can be too poorly observed by a given arc to solve for sensibly, or not worth the extra state for a routine fit, without being zero. Consider-covariance analysis is the honest middle ground: the estimate does not change, but the reported covariance does, by exactly the amount the unconsidered parameter's own uncertainty deserves.
 
 ## Where the naive covariance goes wrong
 
@@ -46,7 +46,7 @@ The same three-pass, twelve-hour tracking arc as the batch lesson, with a statio
 The consider covariance predicts the Monte Carlo result to within a few percent everywhere; the naive covariance understates the true scatter in every component, by as much as $40\,\%$ in one velocity component. The estimate itself does not move — the Monte Carlo trials use the exact same estimator, with the exact same $\mathbf H_x$, that produced the naive covariance in the first place — only the *honest description of how much that estimate actually varies* changes, because a real, uncertain bias was present in the data and never accounted for.
 :::
 
-## When the unconsidered parameter is dynamical, not just a bias
+## When the unconsidered parameter is dynamical, not only a bias
 
 A parameter entering through the *dynamics* rather than a fixed measurement offset works exactly the same way, with $\mathbf H_c$ built from the sensitivity of the state to that parameter — $\partial\mathbf x(t)/\partial c$, propagated alongside the trajectory the same way $\boldsymbol\Phi$ is — instead of a constant column.
 
@@ -68,7 +68,7 @@ Nothing about $\sigma_c$ being modest guarantees $\mathbf S\mathbf P_{cc}\mathbf
 
 ## Consider covariance does not change the answer, only its honesty
 
-It is worth being precise about what considering a parameter does and does not do. It does not improve the estimate — $\hat{\mathbf x}$ is bit-for-bit whatever plain WLS on $\mathbf H_x$ alone produces, considered or not. It does not require guessing the parameter's *value* — only a prior on its *uncertainty*, $\mathbf P_{cc}$, is needed, and if that prior is wrong the consider covariance is wrong in the same proportion. What it buys is a covariance that will not silently understate risk: a conjunction-probability calculation or a downstream filter that consumes $\boldsymbol\Lambda^{-1}$ alone is trusting a number that assumed every unconsidered parameter in the force and measurement models is perfectly known, which is never quite true, and the drag example above shows just how badly that assumption can fail even when every individual parameter's own uncertainty looks unremarkable.
+It is worth being precise about what considering a parameter does and does not do. It does not improve the estimate — $\hat{\mathbf x}$ is bit-for-bit whatever plain WLS on $\mathbf H_x$ alone produces, considered or not. It does not require guessing the parameter's *value* — only a prior on its *uncertainty*, $\mathbf P_{cc}$, is needed, and if that prior is wrong the consider covariance is wrong in the same proportion. What it buys is a covariance that will not silently understate risk: a conjunction-probability calculation or a downstream filter that consumes $\boldsymbol\Lambda^{-1}$ alone is trusting a number that assumed every unconsidered parameter in the force and measurement models is perfectly known, which is never quite true, and the drag example above shows how badly that assumption can fail even when every individual parameter's own uncertainty looks unremarkable.
 
 ## Check yourself
 
@@ -114,4 +114,4 @@ When $\mathbf P_{cc}=\mathbf 0$ — that is, when the "unconsidered" parameter i
 | Estimate unchanged | Considering a parameter never alters $\hat{\mathbf x}$, only the reported uncertainty around it |
 | Small $\sigma_c$ does not imply small correction | The correction depends on $\mathbf S$ as much as $\mathbf P_{cc}$; a well-aliased small uncertainty can dominate |
 
-Solve for it, absorb it with process noise, or consider it — this module has now built all three answers to an uncertain parameter. The next lesson turns to the data itself: what a fit does when some of the observations feeding it are simply wrong.
+Solve for it, absorb it with process noise, or consider it — this module has now built all three answers to an uncertain parameter. The next lesson turns to the data itself: what a fit does when some of the observations feeding it are wrong outright.

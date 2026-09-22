@@ -24,7 +24,7 @@ $$
 \dot{\boldsymbol\Phi}(t,t_0) = \mathbf A(t)\,\boldsymbol\Phi(t,t_0), \qquad \boldsymbol\Phi(t_0,t_0)=\mathbf I,
 $$
 
-the **variational equations**. The initial condition follows because $\mathbf x(t_0;\mathbf x_0)=\mathbf x_0$ identically, so its Jacobian with respect to $\mathbf x_0$ is the identity. This is a linear, time-varying, matrix ODE — linear in $\boldsymbol\Phi$ even though the underlying dynamics $\mathbf f$ is not linear in $\mathbf x$ — and $\mathbf A(t)$ is just the Jacobian of whatever force model is already being integrated, taken along the same trajectory.
+the **variational equations**. The initial condition follows because $\mathbf x(t_0;\mathbf x_0)=\mathbf x_0$ identically, so its Jacobian with respect to $\mathbf x_0$ is the identity. This is a linear, time-varying, matrix ODE — linear in $\boldsymbol\Phi$ even though the underlying dynamics $\mathbf f$ is not linear in $\mathbf x$ — and $\mathbf A(t)$ is the Jacobian of whatever force model is already being integrated, taken along the same trajectory.
 
 ## The two-body $\mathbf A(t)$, derived in full
 
@@ -79,7 +79,7 @@ $\boldsymbol\Phi$'s own ODE has $36$ scalar components — too many to integrate
 
 That last point is worth demonstrating, because finite-differencing the propagator — perturb $\mathbf x_0$ in one direction, integrate twice, subtract, divide — is the obvious alternative and it has a real cost: the result depends on a step size $h$ that trades two competing errors.
 
-::: example Why not just finite-difference the propagator?
+::: example Why not finite-difference the propagator instead?
 Perturbing only the $x$-position by $\pm h$ and re-propagating one hour, then comparing the resulting column of the finite-difference Jacobian against the one obtained by integrating the variational equations directly:
 
 ```python
@@ -94,7 +94,7 @@ Perturbing only the $x$-position by $\pm h$ and re-propagating one hour, then co
 #  1e-07        4.04e-05
 ```
 
-Large $h$ leaves truncation error from the quadratic (and higher) terms the finite difference throws away; small $h$ leaves floating-point cancellation error, since $\mathbf x(\mathbf x_0+h)$ and $\mathbf x(\mathbf x_0-h)$ become nearly equal numbers whose difference loses precision. The error bottoms out somewhere in between — here around $h\approx10^{-2}\,\mathrm{km}$ — and that optimum shifts with the propagation time, the orbit, and even which state component is perturbed, so there is no single $h$ that is simply correct. Integrating the variational equations sidesteps the trade-off entirely: as an independent check, differencing $\boldsymbol\Phi$ at $t=1799\,\mathrm s$ and $t=1801\,\mathrm s$ to estimate $\dot{\boldsymbol\Phi}$ by a *time*-central-difference and comparing to $\mathbf A(1800\,\mathrm s)\boldsymbol\Phi(1800\,\mathrm s)$ agrees to $1.3\times10^{-6}$ — confirming the integrated $\boldsymbol\Phi$ genuinely satisfies its own defining equation, not merely that the code ran.
+Large $h$ leaves truncation error from the quadratic (and higher) terms the finite difference throws away; small $h$ leaves floating-point cancellation error, since $\mathbf x(\mathbf x_0+h)$ and $\mathbf x(\mathbf x_0-h)$ become nearly equal numbers whose difference loses precision. The error bottoms out somewhere in between — here around $h\approx10^{-2}\,\mathrm{km}$ — and that optimum shifts with the propagation time, the orbit, and even which state component is perturbed, so there is no single $h$ that is correct outright. Integrating the variational equations sidesteps the trade-off entirely: as an independent check, differencing $\boldsymbol\Phi$ at $t=1799\,\mathrm s$ and $t=1801\,\mathrm s$ to estimate $\dot{\boldsymbol\Phi}$ by a *time*-central-difference and comparing to $\mathbf A(1800\,\mathrm s)\boldsymbol\Phi(1800\,\mathrm s)$ agrees to $1.3\times10^{-6}$ — confirming the integrated $\boldsymbol\Phi$ genuinely satisfies its own defining equation, not merely that the code ran.
 :::
 
 ## A free correctness check: $\det\boldsymbol\Phi$
@@ -107,7 +107,7 @@ A determinant of exactly $1$ under two-body or J2 dynamics is strong evidence th
 
 ## Extending to a real force model
 
-Nothing about the variational-equation machinery changes when the dynamics gain the perturbations the perturbations module introduced — J2, drag, third-body, solar radiation pressure. Only $\mathbf A(t)$ grows a corresponding correction: the top-right block stays $\mathbf I$ (velocity always feeds position the same way), and for any perturbation that depends only on position, like J2 or a smooth third-body term, the bottom-right block stays exactly zero and only the gravity-gradient block $\mathbf G$ picks up extra terms. Atmospheric drag is different in one structural respect: because it depends on velocity relative to a corotating atmosphere, $\partial\dot{\mathbf v}/\partial\mathbf v$ is no longer zero, and the bottom-right block of $\mathbf A$ becomes genuinely nonzero for the first time — consistent with drag being the term that also breaks $\det\boldsymbol\Phi=1$. Whether a given correction to $\mathbf A$ is obtained by extending the analytic derivation above or by a local finite difference of just that one extra force term (cheap and safe when only a small piece of $\mathbf f$ is not in closed form) is a matter of convenience; the ODE for $\boldsymbol\Phi$, the augmented-state integration, and the correctness checks above apply unchanged either way. This is also exactly the STM a Cowell-method propagator — numerically integrating the full, unsimplified equations of motion, the perturbations module's own numerical-integration approach — produces alongside its trajectory, which is why Cowell integration and batch orbit determination pair so naturally.
+Nothing about the variational-equation machinery changes when the dynamics gain the perturbations the perturbations module introduced — J2, drag, third-body, solar radiation pressure. Only $\mathbf A(t)$ grows a corresponding correction: the top-right block stays $\mathbf I$ (velocity always feeds position the same way), and for any perturbation that depends only on position, like J2 or a smooth third-body term, the bottom-right block stays exactly zero and only the gravity-gradient block $\mathbf G$ picks up extra terms. Atmospheric drag is different in one structural respect: because it depends on velocity relative to a corotating atmosphere, $\partial\dot{\mathbf v}/\partial\mathbf v$ is no longer zero, and the bottom-right block of $\mathbf A$ becomes genuinely nonzero for the first time — consistent with drag being the term that also breaks $\det\boldsymbol\Phi=1$. Whether a given correction to $\mathbf A$ is obtained by extending the analytic derivation above or by a local finite difference of only that one extra force term (cheap and safe when only a small piece of $\mathbf f$ is not in closed form) is a matter of convenience; the ODE for $\boldsymbol\Phi$, the augmented-state integration, and the correctness checks above apply unchanged either way. This is also exactly the STM a Cowell-method propagator — numerically integrating the full, unsimplified equations of motion, the perturbations module's own numerical-integration approach — produces alongside its trajectory, which is why Cowell integration and batch orbit determination pair so naturally.
 
 ::: example Drag breaks the free-flight symmetry of $\mathbf A$
 Two-body and J2 both leave $\partial\dot{\mathbf v}/\partial\mathbf v=\mathbf 0$, so a small velocity error at one instant produces no *immediate* change in acceleration — it only matters once it has had time to move the position. With drag included, $\mathbf A$'s bottom-right block is nonzero: a velocity error immediately changes the relative-wind speed the drag force depends on, and hence the acceleration, in the same instant. This is a real physical difference, not a numerical artifact of one force model versus another; it is also, concretely, why $\det\boldsymbol\Phi$ stops being exactly $1$ the moment drag enters the dynamics.
@@ -120,7 +120,7 @@ Derive the initial condition $\boldsymbol\Phi(t_0,t_0)=\mathbf I$ directly from 
 :::
 
 ::: answer
-At $t=t_0$, the solution $\mathbf x(t;\mathbf x_0)$ evaluated at $t=t_0$ is, by the definition of an initial-value problem, just $\mathbf x_0$ itself: $\mathbf x(t_0;\mathbf x_0)=\mathbf x_0$ for every $\mathbf x_0$. Differentiating both sides of this identity with respect to $\mathbf x_0$ gives $\partial\mathbf x(t_0;\mathbf x_0)/\partial\mathbf x_0 = \partial\mathbf x_0/\partial\mathbf x_0=\mathbf I$, which is exactly $\boldsymbol\Phi(t_0,t_0)$.
+At $t=t_0$, the solution $\mathbf x(t;\mathbf x_0)$ evaluated at $t=t_0$ is, by the definition of an initial-value problem, $\mathbf x_0$ itself: $\mathbf x(t_0;\mathbf x_0)=\mathbf x_0$ for every $\mathbf x_0$. Differentiating both sides of this identity with respect to $\mathbf x_0$ gives $\partial\mathbf x(t_0;\mathbf x_0)/\partial\mathbf x_0 = \partial\mathbf x_0/\partial\mathbf x_0=\mathbf I$, which is exactly $\boldsymbol\Phi(t_0,t_0)$.
 :::
 
 ::: check
@@ -132,7 +132,7 @@ $-\mu\mathbf r/r^3$ is the gradient of the scalar potential $-\mu/r$, so $\mathb
 :::
 
 ::: check
-A finite-difference STM computed with $h=10^{-6}\,\mathrm{km}$ is less accurate than one computed with $h=10^{-2}\,\mathrm{km}$, on the same propagation. Explain why smaller is not simply better here, using the two error sources named in this lesson.
+A finite-difference STM computed with $h=10^{-6}\,\mathrm{km}$ is less accurate than one computed with $h=10^{-2}\,\mathrm{km}$, on the same propagation. Explain why smaller is not automatically better here, using the two error sources named in this lesson.
 :::
 
 ::: answer

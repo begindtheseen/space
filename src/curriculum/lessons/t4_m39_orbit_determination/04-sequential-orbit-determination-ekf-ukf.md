@@ -43,7 +43,7 @@ Both the actual error and the filter's own reported uncertainty fall by roughly 
 
 ## Where a sequential filter can fail and batch does not
 
-Batch least squares can start from a genuinely rough guess — the previous lessons started three kilometres and $2.7\,\mathrm{m/s}$ off — because it iterates the *entire* arc together: a bad first linearization simply produces a large correction, and the next iteration re-propagates and re-linearizes from a better point. A sequential filter gets no such second chance at each step; it commits to a correction based on the linearization available *at that instant* and moves on.
+Batch least squares can start from a genuinely rough guess — the previous lessons started three kilometres and $2.7\,\mathrm{m/s}$ off — because it iterates the *entire* arc together: a bad first linearization only produces a large correction, and the next iteration re-propagates and re-linearizes from a better point. A sequential filter gets no such second chance at each step; it commits to a correction based on the linearization available *at that instant* and moves on.
 
 ::: example The same rough starting guess can break a plain EKF
 Feeding the identical EKF above the batch lesson's actual starting error — three kilometres in position, $2.7\,\mathrm{m/s}$ in velocity, uncorrected across the nearly two full orbits of blind coast before the first observation — does not converge to a rough-but-usable answer the way it did with a $105\,\mathrm m$ start:

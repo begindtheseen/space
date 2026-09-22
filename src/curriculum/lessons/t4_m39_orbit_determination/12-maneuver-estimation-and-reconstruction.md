@@ -19,7 +19,7 @@ The same three-pass tracking arc as earlier lessons, with a genuine $50\,\mathrm
 # |error| / |sigma|, worst component: about 14,500
 ```
 
-The fit converges — nothing about the iteration signals distress — to an epoch state that is *kilometres* wrong, while its own formal covariance claims sub-metre, sub-millimetre-per-second precision. This is the module's own flashcard warning made concrete with real numbers: an undetected manoeuvre is a textbook cause of a covariance that is not just optimistic but wrong by four orders of magnitude, because the fit is doing exactly what least squares does with a systematic model error it cannot see — quietly biasing the whole-arc epoch state to compromise between dynamics that fit the early data and dynamics that fit the late data, and reporting a covariance that only reflects random measurement noise, never the possibility that the dynamics themselves are wrong.
+The fit converges — nothing about the iteration signals distress — to an epoch state that is *kilometres* wrong, while its own formal covariance claims sub-metre, sub-millimetre-per-second precision. This is the module's own flashcard warning made concrete with real numbers: an undetected manoeuvre is a textbook cause of a covariance that is not only optimistic but wrong by four orders of magnitude, because the fit is doing exactly what least squares does with a systematic model error it cannot see — quietly biasing the whole-arc epoch state to compromise between dynamics that fit the early data and dynamics that fit the late data, and reporting a covariance that only reflects random measurement noise, never the possibility that the dynamics themselves are wrong.
 :::
 
 ## Solving for the manoeuvre directly
@@ -57,7 +57,7 @@ Solve directly for an impulsive $\Delta\mathbf v$ at a known or suspected epoch 
 ## Check yourself
 
 ::: check
-Explain why the sensitivity of a post-manoeuvre measurement to $\Delta\mathbf v$ is $\mathbf H(t)\,\boldsymbol\Phi(t,t_m)\begin{pmatrix}\mathbf 0\\\mathbf I\end{pmatrix}$ rather than simply $\mathbf H(t)\,\boldsymbol\Phi(t,t_m)$.
+Explain why the sensitivity of a post-manoeuvre measurement to $\Delta\mathbf v$ is $\mathbf H(t)\,\boldsymbol\Phi(t,t_m)\begin{pmatrix}\mathbf 0\\\mathbf I\end{pmatrix}$ rather than $\mathbf H(t)\,\boldsymbol\Phi(t,t_m)$ alone.
 :::
 
 ::: answer
@@ -85,7 +85,7 @@ A team suspects a satellite manoeuvred at some point during a data gap but does 
 :::
 
 ::: answer
-First fit the arc as a whole with ordinary dynamics and look at the residual pattern the way the residual-editing lesson did: a rising, time-concentrated edit rate or a persistent trend after some point is the signature to look for, and it narrows down roughly when the event happened even before anything is solved for explicitly. With that rough window, either extend the state with a solve-for $\Delta\mathbf v$ at a trial epoch within it (robust even if data is sparse on one side, as this lesson showed) or, if there is enough independent data on both sides of a candidate split, use arc-splitting to both locate the timing more precisely and cross-check the solve-for result — checking, in either case, that the post-fit residuals actually whiten once the manoeuvre is accounted for, not just that the iteration converged.
+First fit the arc as a whole with ordinary dynamics and look at the residual pattern the way the residual-editing lesson did: a rising, time-concentrated edit rate or a persistent trend after some point is the signature to look for, and it narrows down roughly when the event happened even before anything is solved for explicitly. With that rough window, either extend the state with a solve-for $\Delta\mathbf v$ at a trial epoch within it (robust even if data is sparse on one side, as this lesson showed) or, if there is enough independent data on both sides of a candidate split, use arc-splitting to both locate the timing more precisely and cross-check the solve-for result — checking, in either case, that the post-fit residuals actually whiten once the manoeuvre is accounted for, not only that the iteration converged.
 :::
 
 ## Summary

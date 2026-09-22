@@ -125,7 +125,7 @@ The drag coefficient that the batch lesson briefly extended the state with, the 
 ## Check yourself
 
 ::: check
-Why does the first-order Gauss-Markov model use $\dot a=-a/\tau+w$ rather than simply $\dot a=w$ (pure white-noise acceleration) to represent an unmodelled force like drag?
+Why does the first-order Gauss-Markov model use $\dot a=-a/\tau+w$ rather than $\dot a=w$ alone (pure white-noise acceleration) to represent an unmodelled force like drag?
 :::
 
 ::: answer
@@ -164,7 +164,7 @@ The Kalman gain is built from the ratio of predicted-state uncertainty to measur
 | $\sigma_a^2=q\tau/2$ | Steady-state variance from the spectral density $q$ |
 | $\boldsymbol\Xi=\begin{pmatrix}-\mathbf A&\mathbf L\mathbf Q_c\mathbf L^\mathsf T\\\mathbf 0&\mathbf A^\mathsf T\end{pmatrix}\Delta t$, $\mathbf Q_d=\boldsymbol\Phi\boldsymbol\Psi_{12}$ | Van Loan's method: exact discrete process noise from a continuous model |
 | DMC | Full form: 3-axis Gauss-Markov acceleration as extra filter states. Simplified form: inject $\mathbf Q_{vv}\approx q\Delta t\,\mathbf I$ directly |
-| Residual structure | A non-zero mean or a visible trend in post-fit residuals is the signature of unmodelled dynamics, not just noise |
+| Residual structure | A non-zero mean or a visible trend in post-fit residuals is the signature of unmodelled dynamics, not only noise |
 | Solve-for / DMC / consider | Estimate a known physical parameter directly / absorb an unknown or varying force generically / acknowledge uncertainty without estimating it |
 
 DMC absorbed an unmodelled force by letting the filter itself estimate (or generically soak up) its effect. The next lesson handles the parameters that are not solved for at all — accounted for honestly in the covariance, without ever entering the state.

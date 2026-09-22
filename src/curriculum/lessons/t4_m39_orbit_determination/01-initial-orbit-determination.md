@@ -275,7 +275,7 @@ The angles-only methods (and Gibbs/Herrick-Gibbs, in the time domain) all extrac
 :::
 
 ::: check
-A colleague proposes skipping Gauss's iterative refinement step and just using the truncated-series first guess, since "it's already close." Using the numbers in the worked example, argue for or against this for the good arc case.
+A colleague proposes skipping Gauss's iterative refinement step and using only the truncated-series first guess, since "it's already close." Using the numbers in the worked example, argue for or against this for the good arc case.
 :::
 
 ::: answer

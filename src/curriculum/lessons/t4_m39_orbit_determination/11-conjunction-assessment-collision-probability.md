@@ -45,7 +45,7 @@ Comparing the closed form against a direct, exact numerical integral (`scipy.int
 #     20        40       1.471e-35          3.318e-34            9.6e-01
 ```
 
-While $R_{\text{hb}}/\sigma$ stays under about $0.07$, the closed form is accurate to four significant figures or better. Once the hard body becomes a non-negligible fraction of $\sigma$ — a very tight orbit solution meeting a physically large object, or a very close approach — the approximation degrades badly, understating $P_c$ by up to two orders of magnitude at $R_{\text{hb}}/\sigma\approx0.5$. Knowing this failure mode, not just the formula, is what tells an analyst when the closed form can be trusted and when the exact integral (or at minimum, a numerical check like this one) is required.
+While $R_{\text{hb}}/\sigma$ stays under about $0.07$, the closed form is accurate to four significant figures or better. Once the hard body becomes a non-negligible fraction of $\sigma$ — a very tight orbit solution meeting a physically large object, or a very close approach — the approximation degrades badly, understating $P_c$ by up to two orders of magnitude at $R_{\text{hb}}/\sigma\approx0.5$. Knowing this failure mode, not only the formula, is what tells an analyst when the closed form can be trusted and when the exact integral (or at minimum, a numerical check like this one) is required.
 :::
 
 ## The dilution peak

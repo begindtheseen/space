@@ -6,7 +6,7 @@ covers:
   - "Relative orbit determination for constellations; autonomous onboard orbit determination"
 ---
 
-Every estimator this module has built treats one object at a time: an epoch state, a covariance, tracked from the ground. Two situations break that framing. A constellation or formation cares less about each member's absolute position than about its position *relative to its neighbours*, and that relative state can be determined far more precisely than either member's absolute state alone. And a spacecraft that has to know where it is without waiting for a ground-based fit — deep space, or simply operating faster than a ground loop can keep up with — needs orbit determination running onboard, with its own constraints. This closing lesson covers both, building on the whole module rather than introducing a new estimator.
+Every estimator this module has built treats one object at a time: an epoch state, a covariance, tracked from the ground. Two situations break that framing. A constellation or formation cares less about each member's absolute position than about its position *relative to its neighbours*, and that relative state can be determined far more precisely than either member's absolute state alone. And a spacecraft that has to know where it is without waiting for a ground-based fit — deep space, or operating faster than a ground loop can keep up with — needs orbit determination running onboard, with its own constraints. This closing lesson covers both, building on the whole module rather than introducing a new estimator.
 
 ## Why relative accuracy can beat absolute accuracy
 
@@ -60,7 +60,7 @@ A filter running without ground oversight cannot lean on an analyst noticing a r
 
 ## Where this module leaves you
 
-Recovering an orbit from a handful of noisy measurements, the task this module opened with, turned out to need nearly everything built across it: closed-form methods to get started with nothing, the state transition matrix to turn one epoch state into a fit against measurements spread over days, sequential filtering for when the answer has to update in real time, honest accounting for every force and parameter the model does not solve for outright, and a discipline of checking — residuals, edit rates, RIC-frame shape, overlap comparisons — for the difference between a fit that converged and a fit that is correct. None of that discipline is specific to a single object tracked from the ground; it is the same discipline this lesson has just applied to a pair of spacecraft, and to a spacecraft determining its own orbit with nobody watching at all.
+Recovering an orbit from a handful of noisy measurements, the task this module opened with, turned out to need nearly everything built across it: closed-form methods to get started with nothing, the state transition matrix to turn one epoch state into a fit against measurements spread over days, sequential filtering for when the answer has to update in real time, honest accounting for every force and parameter the model does not solve for outright, and a discipline of checking — residuals, edit rates, RIC-frame shape, overlap comparisons — for the difference between a fit that converged and a fit that is correct. None of that discipline is specific to a single object tracked from the ground; it is the same discipline this lesson has applied to a pair of spacecraft, and to a spacecraft determining its own orbit with nobody watching at all.
 
 ## Check yourself
 
@@ -69,7 +69,7 @@ Explain why the "naive" relative-covariance column in the worked example grows p
 :::
 
 ::: answer
-The naive column simply adds the two satellites' absolute covariances, $\operatorname{Cov}(\hat{\mathbf x}_A)+\operatorname{Cov}(\hat{\mathbf x}_B)$, both of which include the full consider-covariance contribution from the shared bias and therefore both grow with $\sigma_{\text{bias}}$; adding two growing quantities gives a growing sum regardless of any relationship between them. The correct relative covariance additionally subtracts $2\operatorname{Cov}(\hat{\mathbf x}_A,\hat{\mathbf x}_B)=2\mathbf S_A\mathbf P_{cc}\mathbf S_B^\mathsf T$, and because $\mathbf S_A$ and $\mathbf S_B$ are similar (the same station affects both satellites in nearly the same way), this cross term grows at almost the same rate as the two diagonal terms, so the growing parts very nearly cancel, leaving only the (bias-independent) measurement-noise contribution behind.
+The naive column adds the two satellites' absolute covariances, $\operatorname{Cov}(\hat{\mathbf x}_A)+\operatorname{Cov}(\hat{\mathbf x}_B)$, both of which include the full consider-covariance contribution from the shared bias and therefore both grow with $\sigma_{\text{bias}}$; adding two growing quantities gives a growing sum regardless of any relationship between them. The correct relative covariance additionally subtracts $2\operatorname{Cov}(\hat{\mathbf x}_A,\hat{\mathbf x}_B)=2\mathbf S_A\mathbf P_{cc}\mathbf S_B^\mathsf T$, and because $\mathbf S_A$ and $\mathbf S_B$ are similar (the same station affects both satellites in nearly the same way), this cross term grows at almost the same rate as the two diagonal terms, so the growing parts very nearly cancel, leaving only the (bias-independent) measurement-noise contribution behind.
 :::
 
 ::: check
@@ -85,7 +85,7 @@ An autonomous onboard filter loses its GNSS signal for an extended period. Which
 :::
 
 ::: answer
-The sequential-filtering architecture (predict/update with $\boldsymbol\Phi$ and $\mathbf Q$) continues to run on whatever measurements remain — crosslink ranges, star-tracker angles, or simply dead-reckoning through the dynamics model with growing process-noise-driven uncertainty if no measurements are available at all. The tracking-geometry lesson's observability argument applies exactly as before: whatever measurements remain will constrain some combinations of the state far better than others (an angles-only sensor, for instance, contributes no range information at all, echoing the initial-orbit-determination lesson), so the resulting covariance should be expected to grow anisotropically, not uniformly, during the outage.
+The sequential-filtering architecture (predict/update with $\boldsymbol\Phi$ and $\mathbf Q$) continues to run on whatever measurements remain — crosslink ranges, star-tracker angles, or, at the least, dead-reckoning through the dynamics model with growing process-noise-driven uncertainty if no measurements are available at all. The tracking-geometry lesson's observability argument applies exactly as before: whatever measurements remain will constrain some combinations of the state far better than others (an angles-only sensor, for instance, contributes no range information at all, echoing the initial-orbit-determination lesson), so the resulting covariance should be expected to grow anisotropically, not uniformly, during the outage.
 :::
 
 ::: check
@@ -106,4 +106,4 @@ Not in general — the dramatic relative accuracy in this lesson's example came 
 | Hill / Clohessy-Wiltshire equations | Standard linearized relative-motion dynamics for tight formations (name only; out of scope here) |
 | Onboard OD | The same predict/update architecture, run on GNSS, crosslink, or optical measurements, with less oversight, not less discipline |
 
-This module set out to recover an orbit from a handful of noisy measurements and to be honest about what that orbit, and its covariance, actually mean. Every lesson after the first built one more piece of that honesty — in the estimator, in the dynamics, in the frame the answer is read in, and in the judgement of a team that checks its own work rather than trusting a fit simply because it converged.
+This module set out to recover an orbit from a handful of noisy measurements and to be honest about what that orbit, and its covariance, actually mean. Every lesson after the first built one more piece of that honesty — in the estimator, in the dynamics, in the frame the answer is read in, and in the judgement of a team that checks its own work rather than trusting a fit only because it converged.
