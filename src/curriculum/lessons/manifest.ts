@@ -3087,6 +3087,26 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       "file": "t4_m34_kalman_filter/15-correlated-time-varying-noise-and-the-schmidt-kalman-filter.md"
     }
   ],
+  "t4_m35_nonlinear_filters": [
+    {
+      "id": "l01-the-extended-kalman-filter",
+      "title": "The Extended Kalman Filter — linearizing about the estimate",
+      "minutes": 21,
+      "covers": [
+        "The Extended Kalman Filter: linearization about the current estimate, Jacobians F and H, first-order truncation error"
+      ],
+      "file": "t4_m35_nonlinear_filters/01-the-extended-kalman-filter.md"
+    },
+    {
+      "id": "l02-continuous-discrete-and-iterated-ekf",
+      "title": "The continuous-discrete EKF and the iterated EKF",
+      "minutes": 20,
+      "covers": [
+        "Continuous-discrete EKF and the iterated EKF"
+      ],
+      "file": "t4_m35_nonlinear_filters/02-continuous-discrete-and-iterated-ekf.md"
+    }
+  ],
   "t4_m36_inertial_navigation": [
     {
       "id": "l01-what-an-imu-measures-accelerometer-and-gyro-physics",
@@ -3150,6 +3170,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Coning and sculling corrections and multi-sample algorithms"
       ],
       "file": "t4_m36_inertial_navigation/07-coning-sculling-multi-sample-algorithms.md"
+    },
+    {
+      "id": "l08-schuler-oscillation",
+      "title": "The Schuler oscillation",
+      "minutes": 18,
+      "covers": [
+        "The Schuler oscillation and why it bounds unaided INS horizontal error"
+      ],
+      "file": "t4_m36_inertial_navigation/08-schuler-oscillation.md"
     }
   ],
   "t4_m37_gnss": [
@@ -3242,6 +3271,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Space-based GNSS: use above the constellation, side-lobe reception, high-dynamics tracking, Doppler"
       ],
       "file": "t4_m37_gnss/10-gnss-above-the-constellation.md"
+    },
+    {
+      "id": "l11-gnss-in-the-launch-vehicle-environment",
+      "title": "GNSS in the launch vehicle environment",
+      "minutes": 21,
+      "covers": [
+        "GNSS in a launch vehicle environment: acceleration, jerk, vibration, plume attenuation, antenna switching"
+      ],
+      "file": "t4_m37_gnss/11-gnss-in-the-launch-vehicle-environment.md"
     }
   ],
   "t4_m38_sensors_optical_nav": [
@@ -3547,12 +3585,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t4_m35_nonlinear_filters": {
-    "covered": 0,
+    "covered": 2,
     "total": 14,
     "complete": false,
     "missing": [
-      "The Extended Kalman Filter: linearization about the current estimate, Jacobians F and H, first-order truncation error",
-      "Continuous-discrete EKF and the iterated EKF",
       "When and why the EKF diverges",
       "The Unscented Kalman Filter: the unscented transform, sigma point selection (alpha, beta, kappa), the square-root UKF",
       "Why the UKF beats the EKF for strong nonlinearity, and the cost comparison",
@@ -3568,11 +3604,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t4_m36_inertial_navigation": {
-    "covered": 7,
+    "covered": 8,
     "total": 13,
     "complete": false,
     "missing": [
-      "The Schuler oscillation and why it bounds unaided INS horizontal error",
       "Free-inertial error propagation: how position error grows with time from each error source",
       "Initial alignment: coarse leveling, gyrocompassing, fine alignment via Kalman filter, transfer and in-flight alignment",
       "INS/GNSS integration architectures: loosely, tightly, and ultra-tightly (deeply) coupled",
@@ -3581,11 +3616,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t4_m37_gnss": {
-    "covered": 10,
+    "covered": 11,
     "total": 14,
     "complete": false,
     "missing": [
-      "GNSS in a launch vehicle environment: acceleration, jerk, vibration, plume attenuation, antenna switching",
       "Jamming and spoofing; RAIM and integrity monitoring",
       "Receiver tracking loops (DLL, PLL, FLL) and the bandwidth/dynamics trade",
       "Vector tracking and deep coupling"
