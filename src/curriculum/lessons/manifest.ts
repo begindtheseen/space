@@ -4159,6 +4159,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Commodity multi-core computers running Linux with redundant flight strings and voted output, as publicly described for modern launch and crew vehicles"
       ],
       "file": "t6_m45_fsw_architecture/05-redundancy-architectures.md"
+    },
+    {
+      "id": "l06-tmr-and-voting",
+      "title": "Triple modular redundancy and voting",
+      "minutes": 20,
+      "covers": [
+        "Triple modular redundancy and voting; mid-value select; what a voter can and cannot detect"
+      ],
+      "file": "t6_m45_fsw_architecture/06-tmr-and-voting.md"
     }
   ],
   "t6_m46_6dof_simulation": [
@@ -4683,11 +4692,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t6_m45_fsw_architecture": {
-    "covered": 8,
+    "covered": 9,
     "total": 20,
     "complete": false,
     "missing": [
-      "Triple modular redundancy and voting; mid-value select; what a voter can and cannot detect",
       "Byzantine faults and why a majority vote does not handle an asymmetric liar",
       "Radiation effects: single-event upsets, latch-up, total ionising dose; EDAC and ECC memory; memory scrubbing",
       "Watchdog timers: what they catch, what they miss, and why a reset is a real-time decision",
