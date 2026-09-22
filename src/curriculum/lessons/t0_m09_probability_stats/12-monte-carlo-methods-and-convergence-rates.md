@@ -83,7 +83,7 @@ and median $\sigma\sqrt{2\ln 2} = 1.177\sigma = 14.13\,\mathrm{m}$, the **circul
 
 Each factor of four in runs halves the error, exactly as the theory says. So $2000$ runs estimate the mean miss with a standard error of $7.86/\sqrt{2000} = 0.18\,\mathrm{m}$, or $\pm 0.34\,\mathrm{m}$ at $95\%$ confidence — excellent. Pinning the mean to $\pm 0.5\,\mathrm{m}$ at $95\%$ takes $(1.96 \times 7.86/0.5)^2 = 950$ runs; to $\pm 0.1\,\mathrm{m}$ takes $23\,700$.
 
-Now the tail. The true probability of exceeding $50\,\mathrm{m}$ is $\exp(-c^2/2\sigma^2) = \exp(-2500/288) = 1.70 \times 10^{-4}$. In $2000$ runs the expected number of exceedances is $0.34$: most campaigns see none at all, and the honest conclusion from a clean campaign is the rule of three, $p < 3/2000 = 1.5 \times 10^{-3}$ at $95\%$ confidence — a bound nine times above the truth. The same campaign that nails the mean to four per cent is useless on the tail, and no amount of staring at the worst of the $2000$ outcomes changes that.
+Now the tail. The true probability of exceeding $50\,\mathrm{m}$ is $\exp(-c^2/2\sigma^2) = \exp(-2500/288) = 1.70 \times 10^{-4}$. In $2000$ runs the expected number of exceedances is $0.34$: most campaigns see none at all, and the honest conclusion from a clean campaign is the rule of three, $p < 3/2000 = 1.5 \times 10^{-3}$ at $95\%$ confidence — a bound nine times above the truth. The same campaign that nails the mean to two per cent is useless on the tail, and no amount of staring at the worst of the $2000$ outcomes changes that.
 :::
 
 ## Generating the samples
