@@ -116,6 +116,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "GNC Engineer (Dragon): mission design, rendezvous and docking with the ISS, deorbit, reentry, abort"
       ],
       "file": "car_02_role_families/04-dragon-rendezvous-and-human-rating.md"
+    },
+    {
+      "id": "l05-adcs-attitude-control-by-the-thousand",
+      "title": "ADCS: attitude control across a fleet, not a flight",
+      "minutes": 19,
+      "covers": [
+        "GNC Engineer, ADCS (Starlink and Starshield): attitude determination and control, reaction wheels, torque rods, momentum management"
+      ],
+      "file": "car_02_role_families/05-adcs-attitude-control-by-the-thousand.md"
     }
   ],
   "car_03_levels_and_quals": [
@@ -154,6 +163,16 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "the full preferred list for GNC Engineer and what each item signals"
       ],
       "file": "car_03_levels_and_quals/04-the-preferred-list.md"
+    },
+    {
+      "id": "l05-senior-and-specialist",
+      "title": "Senior and specialist: two different ways the bar changes",
+      "minutes": 19,
+      "covers": [
+        "Sr. GNC Engineer: 5+ years, or 7+ years in lieu of a degree, or a postgraduate degree",
+        "specialist roles requiring a Master’s or PhD"
+      ],
+      "file": "car_03_levels_and_quals/05-senior-and-specialist.md"
     }
   ],
   "car_04_degree_reality": [
@@ -212,6 +231,16 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "the two failure modes: believing a portfolio replaces the degree, and believing nothing but the degree matters"
       ],
       "file": "car_04_degree_reality/06-timelines-and-two-failure-modes.md"
+    },
+    {
+      "id": "l07-choosing-and-starting-midcareer",
+      "title": "Choosing without sunk cost, and starting mid-career",
+      "minutes": 22,
+      "covers": [
+        "sunk-cost traps and how to choose deliberately rather than by default",
+        "what to do if you are already mid-career in another field"
+      ],
+      "file": "car_04_degree_reality/07-choosing-and-starting-midcareer.md"
     }
   ],
   "car_07_resume_and_referrals": [
@@ -6880,11 +6909,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "car_02_role_families": {
-    "covered": 4,
+    "covered": 5,
     "total": 13,
     "complete": false,
     "missing": [
-      "GNC Engineer, ADCS (Starlink and Starshield): attitude determination and control, reaction wheels, torque rods, momentum management",
       "Navigation and State Estimation, Navigation and Orbit Determination, Precise Navigation Solutions (Starlink): star tracker and signals-based attitude determination, inertial propagation, GNSS, orbit determination",
       "Starlink Controls and Embedded Controls: solar array actuators, antenna gimbals, active optics, Hall thruster fluid and power control",
       "Device Navigation and Beam Pointing, Beam Planning: user terminal pointing, RF and optical link pointing",
@@ -6896,12 +6924,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "car_03_levels_and_quals": {
-    "covered": 4,
+    "covered": 6,
     "total": 10,
     "complete": false,
     "missing": [
-      "Sr. GNC Engineer: 5+ years, or 7+ years in lieu of a degree, or a postgraduate degree",
-      "specialist roles requiring a Master’s or PhD",
       "Site Reliability Engineer, GNC: the verbatim 4+ years in lieu of a degree line",
       "what capable of solving complex problems with little to no supervision is testing",
       "how recruiters map your experience onto a level, and why level is set before the offer",
@@ -6909,13 +6935,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "car_04_degree_reality": {
-    "covered": 8,
+    "covered": 10,
     "total": 10,
-    "complete": false,
-    "missing": [
-      "sunk-cost traps and how to choose deliberately rather than by default",
-      "what to do if you are already mid-career in another field"
-    ]
+    "complete": true,
+    "missing": []
   },
   "car_05_tooling_reality": {
     "covered": 0,
