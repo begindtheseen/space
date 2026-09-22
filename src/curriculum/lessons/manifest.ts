@@ -3204,6 +3204,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Consider states and bias augmentation"
       ],
       "file": "t4_m35_nonlinear_filters/13-consider-states-and-bias-augmentation.md"
+    },
+    {
+      "id": "l14-multiple-model-and-imm-filters",
+      "title": "Multiple-model and IMM filters",
+      "minutes": 19,
+      "covers": [
+        "Multiple-model and IMM filters"
+      ],
+      "file": "t4_m35_nonlinear_filters/14-multiple-model-and-imm-filters.md"
     }
   ],
   "t4_m36_inertial_navigation": [
@@ -3756,12 +3765,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t4_m35_nonlinear_filters": {
-    "covered": 13,
+    "covered": 14,
     "total": 14,
-    "complete": false,
-    "missing": [
-      "Multiple-model and IMM filters"
-    ]
+    "complete": true,
+    "missing": []
   },
   "t4_m36_inertial_navigation": {
     "covered": 13,
