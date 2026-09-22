@@ -54,7 +54,20 @@ Read the first line again. Two `uint8_t` values added gave **300**, not 44. The 
 The wrap happens on the way back. Storing 260 into a `uint8_t` keeps the value modulo 256, giving 4; storing 130 into an `int8_t` gives $130 - 256 = -126$. So a narrow type has two distinct moments where a value can change, and they follow different rules: the *operation* happens in `int`, and the *conversion back* is what truncates.
 
 ::: warning
-This is why `std::uint16_t crc = crc * 31 + byte;` can be wrong in a way that `std::uint32_t` arithmetic is not. Both operands promote to `int`, the multiplication is done in 32-bit signed arithmetic, and if the intermediate exceeds `INT_MAX` that is signed overflow — undefined behaviour — even though every variable in sight is unsigned. Write `crc = static_cast<std::uint16_t>(crc * 31U + byte)` so that the arithmetic happens in `unsigned int`, where it is defined to wrap.
+Promotion can turn unsigned arithmetic into signed arithmetic, and with it introduce undefined behaviour into code where no signed type appears:
+
+```cpp
+std::uint16_t a = 50000;              // an unsigned value
+std::uint32_t sq = a * a;             // but the multiply happens in int
+```
+
+Both operands promote to `int`, so the product is computed in 32-bit *signed* arithmetic, and $50000^2 = 2\,500\,000\,000$ exceeds `INT_MAX` = 2 147 483 647. That is signed overflow. g++ 13.3.0 with `-Wall -Wextra` says nothing; UBSan says:
+
+```text
+sq.cpp:6:26: runtime error: signed integer overflow: 50000 * 50000 cannot be represented in type 'int'
+```
+
+Write `static_cast<std::uint32_t>(a) * a` so the multiplication happens in a type wide enough — and unsigned, where wrap would at least be defined.
 :::
 
 ## The usual arithmetic conversions
@@ -85,9 +98,12 @@ uint8_t from -1   = 255
 g++ 13.3.0 with `-Wall -Wextra` flags the dangerous ones and stays quiet about the safe one:
 
 ```text
-warning: comparison of integer expressions of different signedness: 'int' and 'unsigned int' [-Wsign-compare]
+conversions.cpp:7:47: warning: comparison of integer expressions of different signedness: 'int' and 'unsigned int' [-Wsign-compare]
     7 |     std::printf("-1 < 1u           %s\n", (-1 < 1u) ? "true" : "false");
       |                                            ~~~^~~~
+conversions.cpp:8:47: warning: comparison of integer expressions of different signedness: 'int' and 'long unsigned int' [-Wsign-compare]
+    8 |     std::printf("-1 < 1ul          %s\n", (-1 < 1ul) ? "true" : "false");
+      |                                            ~~~^~~~~
 ```
 
 ::: key

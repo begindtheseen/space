@@ -676,6 +676,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "resume depth: expect to be asked to go deeper on any line you wrote"
       ],
       "file": "car_09_screens/05-resume-depth.md"
+    },
+    {
+      "id": "l06-verbal-derivation-discipline",
+      "title": "Deriving out loud with no whiteboard",
+      "minutes": 24,
+      "covers": [
+        "verbal derivation discipline without a whiteboard: narrate the setup, name the variables, state assumptions"
+      ],
+      "file": "car_09_screens/06-verbal-derivation-discipline.md"
     }
   ],
   "cod_cpp_01_basics": [
@@ -7429,12 +7438,11 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "car_09_screens": {
-    "covered": 5,
+    "covered": 6,
     "total": 12,
     "complete": false,
     "missing": [
       "reported topics: PD control, orbit determination, frequency-domain analysis",
-      "verbal derivation discipline without a whiteboard: narrate the setup, name the variables, state assumptions",
       "asking clarifying questions before answering",
       "recovering from a blank without bluffing",
       "the difference between I do not know and I do not know, here is how I would find out",
