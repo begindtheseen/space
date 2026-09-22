@@ -1812,6 +1812,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "jq for JSON, column/paste/join for tabular text"
       ],
       "file": "cod_lnx_02_scripting/11-jq-and-tabular-text.md"
+    },
+    {
+      "id": "l12-shellcheck",
+      "title": "shellcheck as a mandatory linter",
+      "minutes": 18,
+      "covers": [
+        "shellcheck as a mandatory linter"
+      ],
+      "file": "cod_lnx_02_scripting/12-shellcheck.md"
     }
   ],
   "cod_py_01_basics": [
@@ -7820,12 +7829,11 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_lnx_02_scripting": {
-    "covered": 10,
+    "covered": 11,
     "total": 14,
     "complete": false,
     "missing": [
       "Here-docs and here-strings",
-      "shellcheck as a mandatory linter",
       "cron and systemd timers",
       "When to stop writing bash and switch to Python"
     ]
