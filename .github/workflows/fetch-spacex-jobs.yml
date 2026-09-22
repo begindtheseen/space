@@ -1,0 +1,51 @@
+# One-off helper: sample SpaceX's public Greenhouse job board from a GitHub
+# runner (blocked from the authoring sandbox) so the in-app jobs feed can be
+# built against the real schema. Pushes the JSON to an orphan branch.
+name: Fetch SpaceX jobs sample
+
+on:
+  push:
+    branches: ['claude/spacex-gnc-curriculum-platform-hl8n5p']
+    paths: ['.github/workflows/fetch-spacex-jobs.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch board, departments and offices
+        run: |
+          mkdir -p out
+          UA='orbit-jobs-sample/1.0 (GitHub Actions; one-off schema sample)'
+          curl -sSf -A "$UA" 'https://boards-api.greenhouse.io/v1/boards/spacex/jobs?content=true' -o out/jobs.json
+          curl -sSf -A "$UA" 'https://boards-api.greenhouse.io/v1/boards/spacex/departments' -o out/departments.json
+          curl -sSf -A "$UA" 'https://boards-api.greenhouse.io/v1/boards/spacex/offices' -o out/offices.json
+          curl -sS -D out/headers.txt -o /dev/null -A "$UA" -H 'Origin: app://orbit' 'https://boards-api.greenhouse.io/v1/boards/spacex/jobs?content=false' || true
+          python3 - <<'PY'
+          import json, collections
+          d = json.load(open('out/jobs.json'))
+          jobs = d['jobs']
+          print('jobs:', len(jobs))
+          locs = collections.Counter(j['location']['name'] for j in jobs)
+          print('top locations:', locs.most_common(12))
+          meta = collections.Counter()
+          for j in jobs:
+              for m in j.get('metadata') or []:
+                  meta[(m.get('name'), str(m.get('value'))[:40])] += 1
+          print('metadata (name,value) counts:', meta.most_common(40))
+          print('sample job keys:', sorted(jobs[0].keys()))
+          print('sample:', json.dumps({k: v for k, v in jobs[0].items() if k != 'content'}, indent=1)[:1500])
+          PY
+      - name: Push to orphan branch
+        env:
+          TOKEN: ${{ github.token }}
+        run: |
+          cd out
+          git init -q
+          git checkout -q -b assets/spacex-jobs-sample
+          git add -A
+          git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" commit -qm "SpaceX Greenhouse board sample"
+          git push -f "https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}.git" assets/spacex-jobs-sample
