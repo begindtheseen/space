@@ -1821,6 +1821,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "shellcheck as a mandatory linter"
       ],
       "file": "cod_lnx_02_scripting/12-shellcheck.md"
+    },
+    {
+      "id": "l13-cron-and-systemd-timers",
+      "title": "cron and systemd timers",
+      "minutes": 19,
+      "covers": [
+        "cron and systemd timers"
+      ],
+      "file": "cod_lnx_02_scripting/13-cron-and-systemd-timers.md"
     }
   ],
   "cod_py_01_basics": [
@@ -7829,12 +7838,11 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_lnx_02_scripting": {
-    "covered": 11,
+    "covered": 12,
     "total": 14,
     "complete": false,
     "missing": [
       "Here-docs and here-strings",
-      "cron and systemd timers",
       "When to stop writing bash and switch to Python"
     ]
   },
