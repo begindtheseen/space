@@ -4,11 +4,14 @@
 name: Fetch Commons assets
 
 on:
+  push:
+    branches: ['claude/spacex-gnc-curriculum-platform-hl8n5p']
+    paths: ['.github/workflows/fetch-commons.yml']
   workflow_dispatch:
     inputs:
       titles:
         description: 'Commons file titles, one per line (no "File:" prefix)'
-        required: true
+        required: false
         type: string
       branch:
         description: 'Orphan branch to push the files into'
@@ -18,13 +21,33 @@ on:
 permissions:
   contents: write
 
+env:
+  DEFAULT_TITLES: |
+    Falcon_Heavy_Side_Boosters_landing_on_LZ1_and_LZ2_-_2018_(25254688767).jpg
+    Falcon_Heavy_Demo_Mission_(40126461851).jpg
+    Falcon_Heavy_Demo_Mission_(39337245145).jpg
+    Falcon_Heavy_Demo_Mission_(40126461411).jpg
+    First_Launch_of_SpaceX_Falcon_Heavy.jpg
+    Plume_from_SpaceX_Launch_of_Iridium-4_Falcon_9_Flight_46.jpg
+    Iridium-4_Mission_(38571300315).jpg
+    Iridium-1_Launch_(32312419215).jpg
+    CRS-8_(26239020092).jpg
+    SpaceX_Starship_booster_landing_approach_IFT-5.jpg
+    ORBCOMM-2_(23282658734).jpg
+    Falcon_9_Flight_20_Launch_(23803406330).jpg
+    Crew_Dragon_Demo-2_Launch_(NHQ202005300044).jpg
+    SpaceX_Demo-2_Launch_(NHQ202005300044).jpg
+    Starship_SN8_launch.jpg
+    SpaceX_Starship_IFT-4_launch.jpg
+
 jobs:
   fetch:
     runs-on: ubuntu-latest
     steps:
       - name: Fetch files and metadata
         env:
-          TITLES: ${{ inputs.titles }}
+          TITLES: |
+            ${{ inputs.titles || env.DEFAULT_TITLES }}
         run: |
           python3 - <<'PY'
           import json, os, urllib.request, urllib.parse
@@ -55,7 +78,7 @@ jobs:
           PY
       - name: Push to orphan branch
         env:
-          BRANCH: ${{ inputs.branch }}
+          BRANCH: ${{ inputs.branch || 'assets/splash-candidates' }}
           TOKEN: ${{ github.token }}
         run: |
           cd out
