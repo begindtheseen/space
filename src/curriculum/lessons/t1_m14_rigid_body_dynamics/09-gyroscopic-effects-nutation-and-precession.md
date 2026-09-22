@@ -1,7 +1,7 @@
 ---
 id: l09-gyroscopic-effects-nutation-and-precession
 title: Gyroscopic effects, nutation and precession
-minutes: 21
+minutes: 22
 covers:
   - gyroscopic effects, nutation, precession
 ---

@@ -69,7 +69,7 @@ $$
 Every point of the central path carries its own certificate, and the certificate improves in exact proportion to $t$. Want six digits on a problem with $m = 600$ inequalities? Take $t = 6\times10^8$ and stop.
 
 ::: example The central path of a one-variable problem
-Minimise $x$ subject to $0 \le x \le 1$; obviously $p^\star = 0$ at $x = 0$, and $m = 2$. The barrier problem is $\text{minimise } tx - \log x - \log(1-x)$, and setting the derivative to zero,
+Minimise $x$ subject to $0 \le x \le 1$, where $p^\star = 0$ at $x = 0$ and $m = 2$. The barrier problem is $\text{minimise } tx - \log x - \log(1-x)$, and setting the derivative to zero,
 
 $$
 t - \frac{1}{x} + \frac{1}{1-x} = 0 \quad\Longrightarrow\quad t x^2 - (t+2)x + 1 = 0 \quad\Longrightarrow\quad x^\star(t) = \frac{(t+2) - \sqrt{t^2+4}}{2t},

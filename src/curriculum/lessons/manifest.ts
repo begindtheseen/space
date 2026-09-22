@@ -845,7 +845,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l13-chi-square-and-filter-consistency",
       "title": "The chi-square distribution and filter consistency testing",
-      "minutes": 26,
+      "minutes": 24,
       "covers": [
         "the chi-square distribution and filter consistency testing"
       ],
@@ -917,6 +917,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "stiffness and implicit methods: backward Euler, BDF"
       ],
       "file": "t0_m10_numerical_methods/07-stiffness-backward-euler-bdf.md"
+    },
+    {
+      "id": "l08-interpolation-linear-and-cubic-spline",
+      "title": "Interpolation, linear and cubic spline",
+      "minutes": 28,
+      "covers": [
+        "interpolation: linear and cubic spline"
+      ],
+      "file": "t0_m10_numerical_methods/08-interpolation-linear-and-cubic-spline.md"
     }
   ],
   "t0_m11_optimization": [
@@ -1010,6 +1019,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "sequential quadratic programming"
       ],
       "file": "t0_m11_optimization/10-sequential-quadratic-programming.md"
+    },
+    {
+      "id": "l11-nonlinear-programming-solvers",
+      "title": "Nonlinear programming solvers: IPOPT and SNOPT",
+      "minutes": 28,
+      "covers": [
+        "nonlinear programming solvers (IPOPT, SNOPT)"
+      ],
+      "file": "t0_m11_optimization/11-nonlinear-programming-solvers.md"
     }
   ],
   "t0_m12_cpp": [
@@ -1304,7 +1322,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-gyroscopic-effects-nutation-and-precession",
       "title": "Gyroscopic effects, nutation and precession",
-      "minutes": 21,
+      "minutes": 22,
       "covers": [
         "gyroscopic effects, nutation, precession"
       ],
@@ -1313,7 +1331,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-dual-spin-spacecraft",
       "title": "Dual-spin spacecraft",
-      "minutes": 21,
+      "minutes": 22,
       "covers": [
         "dual-spin spacecraft"
       ],
@@ -1714,22 +1732,20 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t0_m10_numerical_methods": {
-    "covered": 9,
+    "covered": 10,
     "total": 13,
     "complete": false,
     "missing": [
-      "interpolation: linear and cubic spline",
       "numerical differentiation and complex-step derivatives",
       "quadrature: Simpson, Gauss-Legendre",
       "conditioning and stability of linear solves, sparse matrices"
     ]
   },
   "t0_m11_optimization": {
-    "covered": 11,
+    "covered": 12,
     "total": 14,
     "complete": false,
     "missing": [
-      "nonlinear programming solvers (IPOPT, SNOPT)",
       "modelling languages and solvers: CVXPY, ECOS, SCS, OSQP, Clarabel",
       "real-time embedded convex solvers and code generation"
     ]

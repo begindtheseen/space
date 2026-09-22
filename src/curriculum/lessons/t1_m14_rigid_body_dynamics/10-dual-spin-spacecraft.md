@@ -1,7 +1,7 @@
 ---
 id: l10-dual-spin-spacecraft
 title: Dual-spin spacecraft
-minutes: 21
+minutes: 22
 covers:
   - dual-spin spacecraft
 ---
