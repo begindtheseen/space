@@ -1,7 +1,7 @@
 ---
 id: l05-orbit-families
 title: Circular, elliptical, parabolic and hyperbolic orbits
-minutes: 18
+minutes: 16
 covers:
   - circular, elliptical, parabolic and hyperbolic orbits
 ---

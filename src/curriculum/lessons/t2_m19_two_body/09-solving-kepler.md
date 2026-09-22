@@ -1,7 +1,7 @@
 ---
 id: l09-solving-kepler
 title: Solving Kepler's equation robustly
-minutes: 20
+minutes: 19
 covers:
   - Kepler equation: elliptic, hyperbolic and parabolic (Barker)
 ---
@@ -165,7 +165,7 @@ print(solve_kepler(0.1, 0.99))   # 0.8316604237910568
 Twelve lines, two guards, and it has never been observed to fail. The exercise for this module asks you to build this and its hyperbolic sibling, and to plot iteration counts against $e$ for each starting-point strategy – do it; the plot makes the flat-derivative failure unforgettable.
 
 ::: warning Loosening the tolerance is not a fix
-If the solver "fails to converge" at $e = 0.995$, relaxing the tolerance from $10^{-12}$ to $10^{-6}$ will make the failure message go away and leave you with an anomaly that is wrong by whatever the last wild Newton step happened to be. Divergence is a starting-point problem, not a precision problem, and double-double arithmetic would not help either. Fix the start or add the bracket.
+If the solver "fails to converge" at $e = 0.995$, relaxing the tolerance from $10^{-12}$ to $10^{-6}$ will make the failure message go away and leave you with an anomaly that is wrong by whatever the last wild Newton step happened to be. Divergence is a starting-point problem, not a precision problem. Fix the start or add the bracket.
 :::
 
 ::: warning Wrap M first, and use the right equation

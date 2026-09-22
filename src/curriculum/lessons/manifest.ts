@@ -48,6 +48,42 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "systems of equations"
       ],
       "file": "t0_m01_algebra_precalc/05-systems-of-equations.md"
+    },
+    {
+      "id": "l06-functions",
+      "title": "Functions, domain, range, composition and inverses",
+      "minutes": 21,
+      "covers": [
+        "functions: domain, range, composition, inverses"
+      ],
+      "file": "t0_m01_algebra_precalc/06-functions.md"
+    },
+    {
+      "id": "l07-exponentials-and-logarithms",
+      "title": "Exponentials, logarithms and the rocket equation",
+      "minutes": 17,
+      "covers": [
+        "exponentials and logarithms"
+      ],
+      "file": "t0_m01_algebra_precalc/07-exponentials-and-logarithms.md"
+    },
+    {
+      "id": "l08-sequences-and-series",
+      "title": "Sequences, series and sigma notation",
+      "minutes": 15,
+      "covers": [
+        "sequences, series, and sigma notation"
+      ],
+      "file": "t0_m01_algebra_precalc/08-sequences-and-series.md"
+    },
+    {
+      "id": "l09-inequalities",
+      "title": "Inequalities and design constraints",
+      "minutes": 19,
+      "covers": [
+        "inequalities"
+      ],
+      "file": "t0_m01_algebra_precalc/09-inequalities.md"
     }
   ],
   "t0_m02_trigonometry": [
@@ -78,6 +114,42 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "atan2 and quadrant correctness"
       ],
       "file": "t0_m02_trigonometry/03-atan2-quadrants-wrapping.md"
+    },
+    {
+      "id": "l04-trig-identities",
+      "title": "Trigonometric identities",
+      "minutes": 16,
+      "covers": [
+        "identities: Pythagorean, sum/difference, double-angle"
+      ],
+      "file": "t0_m02_trigonometry/04-trig-identities.md"
+    },
+    {
+      "id": "l05-law-of-sines-and-cosines",
+      "title": "The law of sines and the law of cosines",
+      "minutes": 19,
+      "covers": [
+        "law of sines and law of cosines"
+      ],
+      "file": "t0_m02_trigonometry/05-law-of-sines-and-cosines.md"
+    },
+    {
+      "id": "l06-small-angle-approximations",
+      "title": "Small-angle approximations",
+      "minutes": 17,
+      "covers": [
+        "small-angle approximations"
+      ],
+      "file": "t0_m02_trigonometry/06-small-angle-approximations.md"
+    },
+    {
+      "id": "l07-polar-and-spherical-coordinates",
+      "title": "Polar, spherical and geodetic coordinates",
+      "minutes": 19,
+      "covers": [
+        "polar and spherical coordinates"
+      ],
+      "file": "t0_m02_trigonometry/07-polar-and-spherical-coordinates.md"
     }
   ],
   "t0_m03_python_scicomp": [
@@ -109,6 +181,34 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "git and GitHub"
       ],
       "file": "t0_m03_python_scicomp/03-workbench.md"
+    },
+    {
+      "id": "l04-classes-and-pytest",
+      "title": "Classes and pytest: a tested Vec3 and Quaternion",
+      "minutes": 20,
+      "covers": [
+        "Python syntax, control flow, functions, classes",
+        "pytest and test-driven numerical code"
+      ],
+      "file": "t0_m03_python_scicomp/04-classes-and-pytest.md"
+    },
+    {
+      "id": "l05-numpy-arrays",
+      "title": "NumPy: arrays, broadcasting and vectorised thinking",
+      "minutes": 22,
+      "covers": [
+        "NumPy arrays, broadcasting, vectorisation, dtypes, float64 semantics"
+      ],
+      "file": "t0_m03_python_scicomp/05-numpy-arrays.md"
+    },
+    {
+      "id": "l06-floating-point",
+      "title": "Floating point: machine epsilon and catastrophic cancellation",
+      "minutes": 20,
+      "covers": [
+        "floating-point pitfalls: catastrophic cancellation, machine epsilon"
+      ],
+      "file": "t0_m03_python_scicomp/06-floating-point.md"
     }
   ],
   "t0_m04_linear_algebra_1": [
@@ -120,6 +220,35 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "vectors, dot and cross products, norms, projections"
       ],
       "file": "t0_m04_linear_algebra_1/01-vectors-norms-dot-product.md"
+    },
+    {
+      "id": "l02-matrices-as-linear-maps",
+      "title": "Matrices as linear maps",
+      "minutes": 21,
+      "covers": [
+        "matrix multiplication as composition of maps",
+        "identity, inverse, transpose"
+      ],
+      "file": "t0_m04_linear_algebra_1/02-matrices-as-linear-maps.md"
+    },
+    {
+      "id": "l03-gaussian-elimination-and-lu",
+      "title": "Gaussian elimination and LU factorisation",
+      "minutes": 18,
+      "covers": [
+        "Gaussian elimination and LU factorisation"
+      ],
+      "file": "t0_m04_linear_algebra_1/03-gaussian-elimination-and-lu.md"
+    },
+    {
+      "id": "l04-independence-rank-and-null-space",
+      "title": "Independence, basis, rank and null space",
+      "minutes": 22,
+      "covers": [
+        "linear independence and basis",
+        "rank, null space, column space"
+      ],
+      "file": "t0_m04_linear_algebra_1/04-independence-rank-and-null-space.md"
     }
   ],
   "t0_m05_linear_algebra_2": [
@@ -178,6 +307,33 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "implicit differentiation and related rates"
       ],
       "file": "t0_m06_calculus_single/04-implicit-differentiation-related-rates.md"
+    },
+    {
+      "id": "l05-maxima-minima-optimisation",
+      "title": "Maxima, minima and optimising a scalar function",
+      "minutes": 24,
+      "covers": [
+        "maxima, minima and optimisation of a scalar function"
+      ],
+      "file": "t0_m06_calculus_single/05-maxima-minima-optimisation.md"
+    },
+    {
+      "id": "l06-linearisation-and-differentials",
+      "title": "Linearisation and differentials",
+      "minutes": 25,
+      "covers": [
+        "linearisation and differentials"
+      ],
+      "file": "t0_m06_calculus_single/06-linearisation-and-differentials.md"
+    },
+    {
+      "id": "l07-taylor-series-truncation-error",
+      "title": "Taylor series and truncation error",
+      "minutes": 26,
+      "covers": [
+        "Taylor series and truncation error"
+      ],
+      "file": "t0_m06_calculus_single/07-taylor-series-truncation-error.md"
     }
   ],
   "t0_m07_calculus_multi": [
@@ -207,6 +363,34 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Jacobian and Hessian"
       ],
       "file": "t0_m07_calculus_multi/03-jacobian.md"
+    },
+    {
+      "id": "l04-chain-rule-hessian",
+      "title": "The chain rule for vector functions, and the Hessian",
+      "minutes": 26,
+      "covers": [
+        "chain rule for vector functions",
+        "Jacobian and Hessian"
+      ],
+      "file": "t0_m07_calculus_multi/04-chain-rule-hessian.md"
+    },
+    {
+      "id": "l05-curves-and-rotating-frames",
+      "title": "Trajectories as vector functions of time",
+      "minutes": 26,
+      "covers": [
+        "vector-valued functions of time, arc length, curvature"
+      ],
+      "file": "t0_m07_calculus_multi/05-curves-and-rotating-frames.md"
+    },
+    {
+      "id": "l06-multiple-integrals",
+      "title": "Double and triple integrals",
+      "minutes": 25,
+      "covers": [
+        "multiple integrals"
+      ],
+      "file": "t0_m07_calculus_multi/06-multiple-integrals.md"
     }
   ],
   "t0_m08_odes": [
@@ -371,6 +555,35 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "memory layout, cache behaviour, allocation-free hot loops"
       ],
       "file": "t0_m12_cpp/09-memory-cache-hot-loops.md"
+    },
+    {
+      "id": "l10-eigen-and-geometry",
+      "title": "Eigen, including the Geometry module",
+      "minutes": 28,
+      "covers": [
+        "Eigen, including the Geometry module"
+      ],
+      "file": "t0_m12_cpp/10-eigen-and-geometry.md"
+    },
+    {
+      "id": "l11-cmake-and-googletest",
+      "title": "Building with CMake and testing with GoogleTest",
+      "minutes": 28,
+      "covers": [
+        "CMake, with Bazel awareness",
+        "GoogleTest"
+      ],
+      "file": "t0_m12_cpp/11-cmake-and-googletest.md"
+    },
+    {
+      "id": "l12-undefined-behaviour-and-sanitizers",
+      "title": "Undefined behaviour, and the sanitizers that catch it",
+      "minutes": 26,
+      "covers": [
+        "undefined behaviour",
+        "profiling and sanitizers: perf, valgrind, ASan/UBSan"
+      ],
+      "file": "t0_m12_cpp/12-undefined-behaviour-and-sanitizers.md"
     }
   ],
   "t1_m13_classical_mechanics": [
@@ -391,6 +604,42 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "force, momentum, impulse"
       ],
       "file": "t1_m13_classical_mechanics/02-force-momentum-impulse.md"
+    },
+    {
+      "id": "l03-work-energy-theorem",
+      "title": "Work, kinetic energy and power",
+      "minutes": 21,
+      "covers": [
+        "the work-energy theorem"
+      ],
+      "file": "t1_m13_classical_mechanics/03-work-energy-theorem.md"
+    },
+    {
+      "id": "l04-conservative-forces-potential-energy",
+      "title": "Conservative forces and potential energy",
+      "minutes": 20,
+      "covers": [
+        "conservative forces and potential energy"
+      ],
+      "file": "t1_m13_classical_mechanics/04-conservative-forces-potential-energy.md"
+    },
+    {
+      "id": "l05-systems-of-particles-centre-of-mass",
+      "title": "Systems of particles and the centre of mass",
+      "minutes": 23,
+      "covers": [
+        "systems of particles and the centre of mass"
+      ],
+      "file": "t1_m13_classical_mechanics/05-systems-of-particles-centre-of-mass.md"
+    },
+    {
+      "id": "l06-rocket-equation-done-properly",
+      "title": "Variable mass and the rocket equation, done properly",
+      "minutes": 26,
+      "covers": [
+        "variable-mass systems and the rocket equation done properly"
+      ],
+      "file": "t1_m13_classical_mechanics/06-rocket-equation-done-properly.md"
     }
   ],
   "t1_m14_rigid_body_dynamics": [
@@ -431,6 +680,25 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "velocity and acceleration in rotating frames"
       ],
       "file": "t1_m15_rotating_frames/03-velocity-and-acceleration-in-rotating-frames.md"
+    },
+    {
+      "id": "l04-coriolis-centrifugal-and-euler-terms",
+      "title": "Coriolis, centrifugal and Euler terms",
+      "minutes": 20,
+      "covers": [
+        "Coriolis, centrifugal and Euler acceleration terms"
+      ],
+      "file": "t1_m15_rotating_frames/04-coriolis-centrifugal-and-euler-terms.md"
+    },
+    {
+      "id": "l05-eci-ecef-and-the-earth-rotation-rate",
+      "title": "ECI, ECEF and the Earth rotation rate",
+      "minutes": 19,
+      "covers": [
+        "Earth rotation rate",
+        "ECI (J2000 / GCRF) and ECEF (ITRF)"
+      ],
+      "file": "t1_m15_rotating_frames/05-eci-ecef-and-the-earth-rotation-rate.md"
     }
   ],
   "t1_m18_atmospheric_flight": [
@@ -480,6 +748,42 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "normal force, centre of pressure vs centre of gravity, static margin"
       ],
       "file": "t1_m18_atmospheric_flight/05-normal-force-and-static-margin.md"
+    },
+    {
+      "id": "l06-unstable-booster-and-tvc",
+      "title": "The aerodynamically unstable booster and its TVC loop",
+      "minutes": 18,
+      "covers": [
+        "aerodynamic instability of a boosting rocket"
+      ],
+      "file": "t1_m18_atmospheric_flight/06-unstable-booster-and-tvc.md"
+    },
+    {
+      "id": "l07-q-alpha-and-load-relief",
+      "title": "The q-alpha load indicator and load relief",
+      "minutes": 18,
+      "covers": [
+        "the q-alpha load indicator and load relief control"
+      ],
+      "file": "t1_m18_atmospheric_flight/07-q-alpha-and-load-relief.md"
+    },
+    {
+      "id": "l08-winds-gusts-and-shear",
+      "title": "Wind profiles, gusts and wind shear",
+      "minutes": 17,
+      "covers": [
+        "wind profiles and gust models (Dryden, von Karman), wind shear"
+      ],
+      "file": "t1_m18_atmospheric_flight/08-winds-gusts-and-shear.md"
+    },
+    {
+      "id": "l09-bending-modes-and-structural-filters",
+      "title": "Bending modes, flexible-body dynamics and structural filters",
+      "minutes": 20,
+      "covers": [
+        "bending modes, flexible body dynamics and structural filter design"
+      ],
+      "file": "t1_m18_atmospheric_flight/09-bending-modes-and-structural-filters.md"
     }
   ],
   "t2_m19_two_body": [
@@ -504,7 +808,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-orbit-equation-conics",
       "title": "The orbit equation and conic sections",
-      "minutes": 18,
+      "minutes": 17,
       "covers": [
         "the orbit equation and conic sections"
       ],
@@ -513,7 +817,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-kepler-laws-vis-viva",
       "title": "Kepler's three laws and the vis-viva equation",
-      "minutes": 19,
+      "minutes": 16,
       "covers": [
         "Kepler three laws, derived",
         "vis-viva"
@@ -523,7 +827,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-orbit-families",
       "title": "Circular, elliptical, parabolic and hyperbolic orbits",
-      "minutes": 18,
+      "minutes": 16,
       "covers": [
         "circular, elliptical, parabolic and hyperbolic orbits"
       ],
@@ -532,7 +836,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-classical-elements",
       "title": "The classical orbital elements and equinoctial alternatives",
-      "minutes": 19,
+      "minutes": 16,
       "covers": [
         "classical orbital elements and equinoctial alternatives"
       ],
@@ -541,7 +845,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-state-vector-conversions",
       "title": "State vector to orbital elements and back",
-      "minutes": 21,
+      "minutes": 17,
       "covers": [
         "state vector to orbital element conversion, both directions"
       ],
@@ -550,7 +854,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-anomalies-kepler-equation",
       "title": "True, eccentric and mean anomaly, and Kepler's equation",
-      "minutes": 21,
+      "minutes": 17,
       "covers": [
         "true, eccentric and mean anomaly",
         "Kepler equation: elliptic, hyperbolic and parabolic (Barker)"
@@ -560,7 +864,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-solving-kepler",
       "title": "Solving Kepler's equation robustly",
-      "minutes": 20,
+      "minutes": 19,
       "covers": [
         "Kepler equation: elliptic, hyperbolic and parabolic (Barker)"
       ],
@@ -569,7 +873,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-time-of-flight",
       "title": "Time of flight and analytic propagation",
-      "minutes": 20,
+      "minutes": 19,
       "covers": [
         "time of flight"
       ],
@@ -578,7 +882,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-universal-variables",
       "title": "Universal variables and the Stumpff functions",
-      "minutes": 22,
+      "minutes": 17,
       "covers": [
         "universal variables and the Stumpff functions"
       ],
@@ -587,7 +891,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-lagrange-coefficients",
       "title": "The Lagrange f and g coefficients",
-      "minutes": 21,
+      "minutes": 15,
       "covers": [
         "Lagrange f and g coefficients"
       ],
@@ -606,55 +910,39 @@ export interface LessonCoverage {
 
 export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
   "t0_m01_algebra_precalc": {
-    "covered": 5,
+    "covered": 9,
     "total": 12,
     "complete": false,
     "missing": [
-      "functions: domain, range, composition, inverses",
-      "exponentials and logarithms",
-      "sequences, series, and sigma notation",
-      "inequalities",
       "units and dimensional analysis",
       "scientific notation and significant figures",
       "order-of-magnitude (Fermi) estimation"
     ]
   },
   "t0_m02_trigonometry": {
-    "covered": 4,
+    "covered": 8,
     "total": 10,
     "complete": false,
     "missing": [
-      "identities: Pythagorean, sum/difference, double-angle",
-      "law of sines and law of cosines",
-      "small-angle approximations",
-      "polar and spherical coordinates",
       "conic sections in geometric and polar form",
       "complex numbers and Euler formula"
     ]
   },
   "t0_m03_python_scicomp": {
-    "covered": 4,
+    "covered": 7,
     "total": 10,
     "complete": false,
     "missing": [
-      "NumPy arrays, broadcasting, vectorisation, dtypes, float64 semantics",
       "SciPy: integrate.solve_ivp, optimize, linalg, signal, stats",
       "matplotlib and publication-grade plots",
-      "pytest and test-driven numerical code",
-      "reading and plotting CSV / HDF5 telemetry",
-      "floating-point pitfalls: catastrophic cancellation, machine epsilon"
+      "reading and plotting CSV / HDF5 telemetry"
     ]
   },
   "t0_m04_linear_algebra_1": {
-    "covered": 1,
+    "covered": 6,
     "total": 10,
     "complete": false,
     "missing": [
-      "matrix multiplication as composition of maps",
-      "identity, inverse, transpose",
-      "Gaussian elimination and LU factorisation",
-      "rank, null space, column space",
-      "linear independence and basis",
       "determinant and its geometric meaning",
       "change of basis between reference frames",
       "orthogonality, Gram-Schmidt, QR",
@@ -678,13 +966,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t0_m06_calculus_single": {
-    "covered": 3,
+    "covered": 6,
     "total": 10,
     "complete": false,
     "missing": [
-      "linearisation and differentials",
-      "Taylor series and truncation error",
-      "maxima, minima and optimisation of a scalar function",
       "the definite integral and the fundamental theorem of calculus",
       "integration by parts and substitution",
       "improper integrals",
@@ -692,17 +977,14 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t0_m07_calculus_multi": {
-    "covered": 3,
+    "covered": 6,
     "total": 10,
     "complete": false,
     "missing": [
-      "chain rule for vector functions",
-      "multiple integrals",
       "line and surface integrals",
       "divergence, curl, Laplacian",
       "divergence and Stokes theorems",
-      "conservative fields and potential functions",
-      "vector-valued functions of time, arc length, curvature"
+      "conservative fields and potential functions"
     ]
   },
   "t0_m08_odes": {
@@ -778,28 +1060,19 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t0_m12_cpp": {
-    "covered": 10,
+    "covered": 15,
     "total": 17,
     "complete": false,
     "missing": [
-      "Eigen, including the Geometry module",
-      "CMake, with Bazel awareness",
-      "GoogleTest",
-      "profiling and sanitizers: perf, valgrind, ASan/UBSan",
       "pybind11 bindings over a C++ simulation core",
-      "undefined behaviour",
       "static analysis: clang-tidy, cppcheck"
     ]
   },
   "t1_m13_classical_mechanics": {
-    "covered": 2,
+    "covered": 6,
     "total": 9,
     "complete": false,
     "missing": [
-      "the work-energy theorem",
-      "conservative forces and potential energy",
-      "systems of particles and the centre of mass",
-      "variable-mass systems and the rocket equation done properly",
       "constraints and generalised coordinates",
       "Lagrangian mechanics and the Euler-Lagrange equation",
       "Hamilton principle"
@@ -824,29 +1097,22 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t1_m15_rotating_frames": {
-    "covered": 3,
+    "covered": 6,
     "total": 11,
     "complete": false,
     "missing": [
-      "Coriolis, centrifugal and Euler acceleration terms",
-      "ECI (J2000 / GCRF) and ECEF (ITRF)",
       "NED and ENU local-level frames",
       "body, LVLH / RIC, perifocal, topocentric and sensor frames",
-      "Earth rotation rate",
       "precession, nutation, polar motion",
       "UT1, TAI, GPS and TT time scales",
       "geodetic vs geocentric latitude and the WGS-84 ellipsoid"
     ]
   },
   "t1_m18_atmospheric_flight": {
-    "covered": 7,
+    "covered": 11,
     "total": 15,
     "complete": false,
     "missing": [
-      "aerodynamic instability of a boosting rocket",
-      "the q-alpha load indicator and load relief control",
-      "wind profiles and gust models (Dryden, von Karman), wind shear",
-      "bending modes, flexible body dynamics and structural filter design",
       "propellant slosh as a pendulum or mass-spring",
       "control-structure interaction",
       "grid fins and aerodynamic control surfaces",

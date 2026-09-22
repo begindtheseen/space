@@ -286,3 +286,20 @@ export function logMinutes(state: LearnerState, minutes: number, now: Date = new
     updatedAt: now.toISOString(),
   }
 }
+
+/**
+ * Records that a workbench task is passing.
+ *
+ * Note what this does not touch: no topic posterior, no item schedule, no
+ * attempt log, no day snapshot. The workbench is deliberately outside the
+ * engine — see the note on `LearnerState.bench`. It only ever records the
+ * first time a task passed, so re-running a solved task cannot reset it.
+ */
+export function markBenchSolved(
+  state: LearnerState,
+  taskId: string,
+  now: Date = new Date(),
+): LearnerState {
+  if (state.bench[taskId]) return state
+  return { ...state, bench: { ...state.bench, [taskId]: now.toISOString() } }
+}

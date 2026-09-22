@@ -1,7 +1,7 @@
 ---
 id: l07-state-vector-conversions
 title: State vector to orbital elements and back
-minutes: 21
+minutes: 17
 covers:
   - state vector to orbital element conversion, both directions
 ---
@@ -94,6 +94,12 @@ $$
 
 Document which angle you returned. A function that silently puts $u$ where the caller expects $\nu$ is as dangerous as one that returns `NaN`.
 
+A word on the tolerance itself. Test dimensionless quantities. The eccentricity is already dimensionless, but $n = \lVert \mathbf{n} \rVert$ has units of $\mathrm{km^2/s}$ and its size depends on the orbit: since $\mathbf{n} = \hat{\mathbf{K}} \times \mathbf{h}$ has magnitude $h\sin i$, the natural test is $n/h = \sin i < \epsilon_{\text{tol}}$, which asks whether the inclination is below about $\epsilon_{\text{tol}}$ radians regardless of whether the orbit is LEO or GEO or in metres or kilometres. With $\epsilon_{\text{tol}} = 10^{-8}$ an orbit is called equatorial only below $6 \times 10^{-7}$ degrees of inclination – tighter than any real orbit determination can resolve, so in practice the branch fires for exactly the synthetic test cases it was written for. Some libraries deliberately use a looser threshold such as $10^{-6}$ so that near-degenerate orbits from noisy data are reported with the stable replacement angles; either is defensible, provided it is written down.
+
+::: key The conversion in one breath
+From $\mathbf{r}, \mathbf{v}$: form $\mathbf{h} = \mathbf{r} \times \mathbf{v}$, $\mathbf{n} = \hat{\mathbf{K}} \times \mathbf{h}$ and $\mathbf{e}$; then $a = 1/(2/r - v^2/\mu)$, $i = \arccos(h_z/h)$, $\Omega = \operatorname{atan2}(n_y, n_x)$, $\omega$ from $\mathbf{n}$ to $\mathbf{e}$ (flip if $e_z < 0$), $\nu$ from $\mathbf{e}$ to $\mathbf{r}$ (flip if $\mathbf{r} \cdot \mathbf{v} < 0$). If $e \approx 0$ return $u = \omega + \nu$; if $\sin i \approx 0$ return $\varpi = \Omega + \omega$; if both, return $l = \Omega + \omega + \nu$. Back: build $\mathbf{r}_{PQW}, \mathbf{v}_{PQW}$ and rotate by $\mathbf{R}_3(-\Omega)\mathbf{R}_1(-i)\mathbf{R}_3(-\omega)$.
+:::
+
 ::: example A general orbit, with both quadrant flips firing
 Given, in ECI, $\mathbf{r} = (7408.900,\; 3378.656,\; -1279.858)\,\mathrm{km}$ and $\mathbf{v} = (-3.0312,\; 1.9918,\; -5.8080)\,\mathrm{km/s}$.
 
@@ -144,8 +150,8 @@ For the degenerate cases the same formula works if you feed it consistent inputs
 ::: example The round trip
 Feed the elements from the first example back in: $p = 7999.93\,(1 - 0.15^2) = 7819.93\,\mathrm{km}$, $r = 7819.93/(1 + 0.15\cos 249.996^\circ) = 7819.93/0.94869 = 8242.88\,\mathrm{km}$, $\sqrt{\mu/p} = 7.1395\,\mathrm{km/s}$,
 $$
-\mathbf{r}_{PQW} = (-2819.2,\; -7745.6,\; 0)\,\mathrm{km}, \qquad
-\mathbf{v}_{PQW} = 7.1395\,(0.93970,\; -0.19212,\; 0) = (6.7090,\; -1.3716,\; 0)\,\mathrm{km/s},
+\mathbf{r}_{PQW} = (-2819.7,\; -7745.6,\; 0)\,\mathrm{km}, \qquad
+\mathbf{v}_{PQW} = 7.1395\,(0.93967,\; -0.19208,\; 0) = (6.7088,\; -1.3711,\; 0)\,\mathrm{km/s},
 $$
 and after rotating by $\mathbf{Q}(200^\circ, 63.4^\circ, 300.004^\circ)$ the inertial state is $(7408.900,\; 3378.656,\; -1279.858)\,\mathrm{km}$ and $(-3.0312,\; 1.9918,\; -5.8080)\,\mathrm{km/s}$ – the input, to $10^{-12}\,\mathrm{km}$ in position and $10^{-15}\,\mathrm{km/s}$ in velocity in double precision. A round-trip test at this level, on a handful of orbits including the degenerate ones and a retrograde one, is the minimum acceptance test for the pair of routines.
 :::
@@ -200,7 +206,7 @@ print(els[0], els[1], np.degrees(els[2:]))  # 7999.93 0.15000 [63.400 200.000 30
 The degenerate branches of Step 7 go in front of the `argp` and `nu` lines, keyed on `e < tol` and `np.linalg.norm(n) < tol`; writing them is the exercise. The module's exercise also checks your implementation against a textbook state vector with a retrograde inclination near $153^\circ$, which exercises the sign of $h_z$ – if your inclination comes out near $27^\circ$ instead, you have lost a sign in the cross product or taken an absolute value you should not have.
 
 ::: warning NaN from a near-circular orbit
-When $e \approx 0$ the argument of periapsis is computed from a vector whose direction is pure round-off, and the arccosine form divides by $e$: the result is `NaN` or garbage. The angular momentum is *not* the problem – it is largest, not smallest, for a circular orbit – and clamping the arccosine argument does not help, because the failure is in the geometry, not the round-off. The fix is to detect $e < \epsilon_{\text{tol}}$ and return the argument of latitude $u = \omega + \nu$, or to switch to equinoctial elements altogether.
+When $e \approx 0$ the argument of periapsis is computed from a vector whose direction is pure round-off, and the arccosine form divides by $e$: the result is `NaN` or garbage. This is a failure of geometry, not of arithmetic – there is no periapsis for $\omega$ to point at – so extra precision cannot cure it. Detect $e < \epsilon_{\text{tol}}$ and return the argument of latitude $u = \omega + \nu$, or switch to equinoctial elements altogether.
 :::
 
 ::: warning atan2 argument order

@@ -1,7 +1,7 @@
 ---
 id: l12-lagrange-coefficients
 title: The Lagrange f and g coefficients
-minutes: 21
+minutes: 15
 covers:
   - Lagrange f and g coefficients
 ---
@@ -198,6 +198,24 @@ $$
 $$
 Identity: $f\dot{g} - \dot{f}g = 0.36853 + 0.63148 = 1.00001$, unity to the rounding of the printed digits (the code gives $1.0000000000$). Both $f$ and $\dot{g}$ are negative because the spacecraft has moved $233^\circ$ around, to the far side of the orbit; $g$ is negative because the new position projects backwards onto $\mathbf{v}_0$.
 :::
+
+## Running the relation backwards
+
+Because the expansion is linear in $\mathbf{r}_0$ and $\mathbf{v}_0$, it can be solved for whichever vector is unknown. The most useful case has two positions and the time between them but no velocity – the orbit-determination setting, and Lambert's problem. From $\mathbf{r} = f\mathbf{r}_0 + g\mathbf{v}_0$,
+
+$$
+\mathbf{v}_0 = \frac{\mathbf{r} - f\,\mathbf{r}_0}{g}, \qquad \mathbf{v} = \dot{f}\,\mathbf{r}_0 + \dot{g}\,\mathbf{v}_0 = \frac{\dot{g}\,\mathbf{r} - \mathbf{r}_0}{g},
+$$
+
+the second form using the identity $f\dot{g} - \dot{f}g = 1$ to eliminate $\dot{f}$. So if the coefficients are known, both velocities follow from the two positions by vector arithmetic. The catch is that $f$ and $g$ depend on the orbit through $h$ (in the $\Delta\nu$ form) or through $\alpha$ and $\chi$ (in the universal form), and the orbit is what you are trying to find. Lambert's problem is the one-dimensional search that closes this loop: guess the orbit parameter, evaluate the time of flight the coefficients imply, compare with the required time, adjust. Everything in that loop is material from this module, and the targeting module assembles it.
+
+The relation also runs backwards in time trivially: $\mathbf{r}_0 = \dot{g}\,\mathbf{r} - g\,\mathbf{v}$ and $\mathbf{v}_0 = -\dot{f}\,\mathbf{r} + f\,\mathbf{v}$, which you can verify by substituting the forward relations and using the identity. The inverse of the coefficient matrix is its adjugate, because its determinant is one – a compact restatement of $f\dot{g} - \dot{f}g = 1$.
+
+## Which form to use when
+
+The two forms of the coefficients are exact and equivalent, but they are conditioned differently. The $\Delta\nu$ form is the natural one when the geometry is given – a transfer through a specified angle, a position fix at a known true anomaly – and it costs no iteration at all. Its weakness is very small angles: $1 - \cos\Delta\nu$ and $\sin\Delta\nu$ both go to zero, $\dot{f}$ divides one by the other, and for $\Delta\nu$ of a few arcseconds the coefficients carry several fewer significant digits than the inputs. The universal form is the natural one when *time* is given, which is the propagation problem; it needs the Newton solution for $\chi$ but is uniformly well conditioned, including at $\Delta t \to 0$ where the series branches of $C$ and $S$ take over. In practice a propagator uses the universal form, a Lambert solver uses both (the $\Delta\nu$ form to relate positions to $p$, the universal form to relate $p$ to time), and orbit determination from angles uses the $\Delta\nu$ form.
+
+There is also a conceptual payoff in seeing the coefficients as the two-body problem's answer to a question that a linear system answers with a matrix exponential. For a linear ODE $\dot{\mathbf{x}} = \mathbf{A}\mathbf{x}$ the state at time $t$ is $e^{\mathbf{A}t}\mathbf{x}_0$; the two-body problem is nonlinear, yet within one orbit plane the position and velocity at time $t$ are still *linear* in the initial position and velocity, with a $2 \times 2$ block matrix of coefficients $f, g, \dot{f}, \dot{g}$ that depends on the initial state only through $r_0$, $\sigma_0$ and $\alpha$. That is a strong statement about the structure of Keplerian motion, and it is why the state transition matrix of a Kepler orbit can be written in closed form.
 
 ## Where the coefficients appear next
 

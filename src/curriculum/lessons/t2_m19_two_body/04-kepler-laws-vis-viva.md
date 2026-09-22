@@ -1,7 +1,7 @@
 ---
 id: l04-kepler-laws-vis-viva
 title: Kepler's three laws and the vis-viva equation
-minutes: 19
+minutes: 16
 covers:
   - Kepler three laws, derived
   - vis-viva
@@ -200,11 +200,11 @@ Same $a$ means the same period: $T = 2\pi\sqrt{10\,000^3/398\,600.4418} = 9952\,
 :::
 
 ::: check
-State the chain of reasoning that derives vis-viva, in order, and say where the geometry of the ellipse enters.
+Compare the GTO's speed at perigee and at apogee with the circular speed at each of those radii, and interpret the two comparisons.
 :::
 
 ::: answer
-Energy $\varepsilon = v^2/2 - \mu/r$ is constant because gravity is conservative. Evaluate it at periapsis and apoapsis, where the velocity is perpendicular to the radius, so angular momentum gives $r_p v_p = r_a v_a$ with no angle. Eliminate $v_a$, cancel the common factor $(r_a - r_p)$, and use $r_p + r_a = 2a$ – this is where the geometry enters – to find $v_p^2 = \mu r_a/(a r_p)$ and then $\varepsilon = -\mu/(2a)$. Setting this equal to $v^2/2 - \mu/r$ at an arbitrary point gives $v^2 = \mu(2/r - 1/a)$.
+At perigee, $r_p = 6628.137\,\mathrm{km}$: $v_p = 10.195\,\mathrm{km/s}$ against $v_c = \sqrt{\mu/r_p} = 7.755\,\mathrm{km/s}$ – the spacecraft is moving $2.44\,\mathrm{km/s}$ too fast to stay at that radius, so it climbs. At apogee, $r_a = 42\,164.137\,\mathrm{km}$: $v_a = 1.603\,\mathrm{km/s}$ against $v_c = 3.075\,\mathrm{km/s}$ – it is moving $1.47\,\mathrm{km/s}$ too slowly to stay there, so it falls back. From vis-viva, $v^2 - v_c^2 = \mu(1/r - 1/a)$, which is positive wherever $r < a$ and negative wherever $r > a$: inside the semi-major-axis radius an orbit is always faster than circular, outside it always slower. The two deficits are exactly the two Hohmann burns that would circularise the orbit at either end.
 :::
 
 ::: check

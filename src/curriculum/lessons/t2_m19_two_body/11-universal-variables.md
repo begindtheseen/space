@@ -1,7 +1,7 @@
 ---
 id: l11-universal-variables
 title: Universal variables and the Stumpff functions
-minutes: 22
+minutes: 17
 covers:
   - universal variables and the Stumpff functions
 ---
@@ -192,6 +192,22 @@ Take the $e = 1.5$ hyperbola with $r_p = 6678.137\,\mathrm{km}$ at periapsis, in
 
 ::: example The parabola with the same periapsis
 Replace the periapsis speed by the escape speed $\sqrt{2\mu/r_p} = 10.9259\,\mathrm{km/s}$, so $\alpha = 0$ exactly and $z = 0$ throughout: $C = \tfrac{1}{2}$, $S = \tfrac{1}{6}$ on every iteration and the equation is the cubic $\tfrac{1}{6}\chi^3 + r_0\chi = \sqrt{\mu}\Delta t$. Newton from $\chi_0 = 0$ for $\Delta t = 3600\,\mathrm{s}$ converges in eight evaluations to $\chi = 184.247$, and $r = 23\,651.5\,\mathrm{km}$. Check: Barker's equation gave $\tan(\nu/2) = 1.59425$ one hour after periapsis, and $\sqrt{p}\,\tau = \sqrt{13\,356.27} \times 1.59425 = 184.25$. The same function, with the same starting rule, handled $\alpha > 0$, $\alpha < 0$ and $\alpha = 0$ without a single branch on the conic type – only the Stumpff functions branched, on the sign of $z$.
+:::
+
+## Where the universal formulation pays off
+
+The three worked cases show that one function handles all conics, but the formulation earns its place for reasons beyond tidiness.
+
+The first is the near-parabolic regime. Consider an orbit with $e = 0.9999$ – a lunar free-return, or a comet – near periapsis, where $E = 0.01\,\mathrm{rad}$. Kepler's equation computes $M = E - e\sin E = 0.010\,000\,000 - 0.009\,998\,833 = 1.1666 \times 10^{-6}$: the two terms agree to four digits, so four of the sixteen digits of double precision are gone before the propagation begins, and the elliptic formulas for $f$ and $g$ in the next lesson suffer the same loss in $1 - \cos\Delta E$. In the universal formulation the same orbit has $\alpha \approx 10^{-8}\,\mathrm{km^{-1}}$, $z$ is tiny, and $C$ and $S$ are evaluated from their series with no cancellation at all; the quantity $\chi^3 S(z)$ is computed directly rather than as a difference. The parabola itself, $\alpha = 0$, is not an exceptional branch but the centre of the series' domain of validity.
+
+The second is the trajectory optimiser. A search for the best Earth-departure trajectory may sweep candidate orbits from bound ellipses through escape to hyperbolas as it varies the burn. A cost function that switches between three formula sets has discontinuous derivatives at the switch, which defeats gradient-based optimisation; the universal formulation is one smooth function of the state, and its derivatives with respect to the initial conditions are smooth too. This is why Lambert solvers – which must consider elliptic and hyperbolic transfers on equal terms – are almost always written in universal variables, as the targeting module will show.
+
+The third is bookkeeping. The elliptic recipe needs $a$, $e$, $E_0$ and the perifocal orientation; the universal recipe needs three scalars from the initial state, $r_0$, $\sigma_0$ and $\alpha$, and never computes an eccentricity or an angle. That makes it both faster and less error-prone, and it means the propagated state comes out in the same inertial frame the initial state was given in, with no rotation matrix in between.
+
+One practical limit: for a hyperbola with a very long time step, $\sqrt{-z} = \sqrt{-\alpha}\,\chi$ can exceed about $710$, at which point $\cosh$ overflows in double precision. Such steps correspond to positions many thousands of Earth radii away, well outside any planet's sphere of influence, and are better handled by switching to heliocentric elements than by rescuing the arithmetic; a check on $\lvert z \rvert$ with a clear error message is enough.
+
+::: note Names and history
+The regularising substitution $dt = r\,ds$ is due to Sundman (1912), who used it to tame the collision singularity of the three-body problem; the functions $C$ and $S$ are two of Karl Stumpff's $c_k(z)$ family (1947), $c_2$ and $c_3$ in his numbering, with $c_0 = \cos\sqrt{z}$ and $c_1 = \sin\sqrt{z}/\sqrt{z}$; and the universal Kepler equation in the form used here is Bate, Mueller and White's (1971), building on Herrick and Battin. Battin's book develops the whole two-body problem in this language, including the Lagrange coefficients of the next lesson and the Lambert problem.
 :::
 
 ## Implementation

@@ -803,10 +803,25 @@ export function Guide() {
               runs for real against{' '}
               <ExternalLink href="https://sql.js.org">SQLite compiled to WebAssembly</ExternalLink>,
               each exercise on a fresh in-memory database. {exerciseCounts.tested} exercises carry
-              tests you can pass. C++, Rust and shell are not compiled here — no browser toolchain
-              is small enough to ship — so you write them in the editor, compare against the
-              reference solution, and run them locally; MATLAB and Simulink exercises ship a NumPy
-              equivalent instead. The header always says which of these applies.
+              tests you can pass. In the desktop app, C, C++, Rust and shell are compiled and run
+              for real using the toolchain already on your Mac, and those exercises are graded by
+              running your program and the reference solution and comparing what they actually
+              printed. MATLAB runs through GNU Octave when it is installed, and still ships a NumPy
+              equivalent when it is not. Where a compiler is missing, the header says which one and
+              gives you the command that installs it, and falls back to comparing against the
+              expected output until then. It always says which of these just happened, because a
+              green tick on a string comparison would be worth less than nothing.
+            </p>
+            <p>
+              <strong>The workbench</strong> is the other place code runs, and it is deliberately
+              outside everything else. It holds small pieces of the actual job — retune a rate loop
+              until it meets its margins, find the sign error in a frame transform, size a landing
+              burn, stop a filter diverging. Your code runs against a real scenario and you get a
+              margin report back rather than a mark: not &ldquo;correct&rdquo; but &ldquo;gain
+              margin 4.2 dB, you need 6&rdquo;. None of it counts towards your mastery, readiness,
+              review queue or daily plan, on purpose. It is the thing to open on a day when the
+              curriculum feels like homework, and it would stop being that the moment it started
+              counting.
             </p>
             <p>
               The first time you open the playground it downloads the runtime — several megabytes,

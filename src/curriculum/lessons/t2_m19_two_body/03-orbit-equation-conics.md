@@ -1,7 +1,7 @@
 ---
 id: l03-orbit-equation-conics
 title: The orbit equation and conic sections
-minutes: 18
+minutes: 17
 covers:
   - the orbit equation and conic sections
 ---

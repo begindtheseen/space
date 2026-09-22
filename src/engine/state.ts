@@ -147,6 +147,15 @@ export interface LearnerState {
   media: Record<string, MediaProgress>
   /** Position within a lesson, 0-1, keyed `moduleId::lessonId`. */
   place: Record<string, number>
+  /**
+   * Workbench tasks she has got passing, task id to ISO time.
+   *
+   * Kept apart from `topics` and `items` on purpose. Nothing here reaches
+   * mastery, readiness, the review queue or the daily plan: the workbench is
+   * the thing she can do when she cannot face the thing that counts, and it
+   * stops being that the moment it starts counting.
+   */
+  bench: Record<string, string>
 }
 
 export const ATTEMPT_LOG_LIMIT = 4000
@@ -187,6 +196,7 @@ export function newLearnerState(now: Date = new Date()): LearnerState {
     settings: { ...DEFAULT_SETTINGS },
     media: {},
     place: {},
+    bench: {},
   }
 }
 
@@ -219,6 +229,7 @@ export function migrateState(raw: unknown, now: Date = new Date()): LearnerState
     settings: { ...base.settings, ...pickSettings(r.settings) },
     media: {},
     place: coercePlace(r.place),
+    bench: isRecordOf(r.bench, 'string') ? { ...r.bench } : {},
     version: STATE_VERSION,
   }
 

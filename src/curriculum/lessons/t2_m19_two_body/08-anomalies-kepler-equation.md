@@ -1,7 +1,7 @@
 ---
 id: l08-anomalies-kepler-equation
 title: True, eccentric and mean anomaly, and Kepler's equation
-minutes: 21
+minutes: 17
 covers:
   - true, eccentric and mean anomaly
   - Kepler equation: elliptic, hyperbolic and parabolic (Barker)
@@ -128,6 +128,22 @@ M = E - e\sin E .
 $$
 
 Given $E$, it hands you the time in one line. Given the time, it must be solved for $E$ – there is no closed form, because $E$ appears both bare and inside a sine – and that inverse problem is the subject of the next lesson. The equation confirms the intuition about pace: since $M$ and $E$ agree at periapsis and apoapsis, and $E - M = e\sin E > 0$ on the outbound half, the eccentric anomaly runs ahead of the mean anomaly after periapsis and behind it after apoapsis; the true anomaly runs further ahead still, and for small $e$ the lead is $\nu - M \approx 2e\sin M$.
+
+### How far apart the three anomalies get
+
+At periapsis and apoapsis all three anomalies coincide; between them they spread out by an amount governed by $e$. For small eccentricity, expand Kepler's equation and the anomaly relation in powers of $e$: to first order $E \approx M + e\sin M$ and $\nu \approx E + e\sin E$, so
+
+$$
+\nu - M \approx 2e\sin M + \tfrac{5}{4}e^2\sin 2M + \cdots ,
+$$
+
+the classical *equation of the centre*. For the ISS, $2e = 0.0012\,\mathrm{rad} = 0.069^\circ$: the true position leads or lags the uniformly moving fictitious body by at most a fifteenth of a degree, about $8\,\mathrm{km}$ along the orbit, which is why circular approximations serve it so well. For the GTO the series is useless – the spread $\nu - M$ reaches $90.7^\circ$ at $\nu = 126.5^\circ$ – and the exact relations are the only option. A quick way to keep the ordering straight: on the outbound half ($0 < \nu < 180^\circ$) the true position is *ahead* of the mean position, $\nu > E > M$, because the spacecraft sprinted through periapsis and is now coasting; on the inbound half the inequalities reverse, and the mean position catches up exactly at periapsis.
+
+The eccentric anomaly is also the natural parameter for *drawing* an orbit. Sampling $E$ uniformly and plotting $(a(\cos E - e),\ a\sqrt{1 - e^2}\sin E)$ gives points evenly spaced around the auxiliary circle, so the ellipse is drawn with no crowding at apoapsis or gaps at periapsis; sampling $\nu$ uniformly crowds the far side, and sampling $M$ uniformly – which is what a fixed time step does – crowds it even more, since that is where the spacecraft spends its time.
+
+### Which anomaly to store
+
+An element set needs one number to fix the position at the epoch, and the three anomalies are interchangeable for that purpose; the time of periapsis passage $t_p$ is a fourth option. Published element sets and ephemeris formats almost always store $M$, and there is a reason: $M$ advances linearly, so updating an element set to a new epoch is a multiplication, and the average rate $n$ that appears alongside it is the quantity a perturbation theory corrects most directly. The true anomaly is what you want at the end of a computation, when you need a position; the eccentric anomaly is what you want in the middle, when you need time and radius together; the mean anomaly is what you want to write down.
 
 ::: note The area derivation
 Kepler's own route used his second law. The area swept from periapsis by the focal radius is $(b/a)$ times the corresponding area on the auxiliary circle, which is the circular sector $\tfrac{1}{2}a^2 E$ minus the triangle between the centre, the focus and the circle point, $\tfrac{1}{2}(ae)(a\sin E)$. So the swept area is $\tfrac{1}{2}ab\,(E - e\sin E)$. Since area accrues at the constant rate $\pi ab/T$, dividing gives $2\pi(t - t_p)/T = E - e\sin E$ – the same equation.

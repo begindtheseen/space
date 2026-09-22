@@ -1,7 +1,7 @@
 ---
 id: l10-time-of-flight
 title: Time of flight and analytic propagation
-minutes: 20
+minutes: 19
 covers:
   - time of flight
 ---
@@ -61,6 +61,12 @@ The recipe run backwards is a propagator. Given $\mathbf{r}_0, \mathbf{v}_0$ at 
 3. $M = M_0 + n\,\Delta t$, wrapped to $[0, 2\pi)$.
 4. Solve Kepler's equation for $E$; convert $E \to \nu$.
 5. Convert $(a, e, i, \Omega, \omega, \nu)$ back to $\mathbf{r}, \mathbf{v}$.
+
+### Backwards, forwards and far ahead
+
+Nothing in the recipe assumes $\Delta t > 0$. A negative time step subtracts from $M$, and the same five steps return the state at an earlier time – useful for tracing an observed object back to a manoeuvre or a launch. Nor is there any limit on how far ahead you may look, but one detail deserves care when $\Delta t$ is large. After ten years an ISS-like satellite has completed about $57\,000$ revolutions and $n\,\Delta t$ is about $3.6 \times 10^{5}\,\mathrm{rad}$; double precision represents that to about $5 \times 10^{-11}\,\mathrm{rad}$, which is a tenth of a millimetre along the orbit, so a single multiplication and one wrap are harmless. Accumulating the same result by adding $n\,\delta t$ a million times is not: the rounding error of each addition compounds into metres. Compute $M$ from the elapsed time in one step, and keep the epoch mean anomaly $M_0$ and the elapsed time as separate numbers until the last moment.
+
+When the time of flight is to a given *radius* rather than a given time, the sign of the anomaly must be chosen by hand. $\cos E = (1 - r/a)/e$ has two solutions, $\pm E$, for the outbound and inbound crossings of that radius; a spacecraft descending toward periapsis is at $-E$ (equivalently $2\pi - E$), and its time to periapsis is $(2\pi - M)/n$ measured forward or $M/n$ measured backward. Confusing the two branches gives a time of flight that is wrong by exactly the time spent above that radius.
 
 Only step 4 involves iteration, and it converges to machine precision. The result is the exact two-body state at $t_0 + \Delta t$, limited only by floating-point round-off – around $10^{-12}$ relative, or a micrometre on a $7000\,\mathrm{km}$ orbit. Nothing accumulates with $\Delta t$: propagating a year ahead costs the same and is as accurate as propagating a minute ahead, as long as $M$ is computed in a way that does not lose precision when it grows large (keep $\Delta t$ and $n$ in double precision and wrap once).
 

@@ -1,7 +1,7 @@
 ---
 id: l06-classical-elements
 title: The classical orbital elements and equinoctial alternatives
-minutes: 19
+minutes: 16
 covers:
   - classical orbital elements and equinoctial alternatives
 ---
