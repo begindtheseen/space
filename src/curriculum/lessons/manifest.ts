@@ -1011,6 +1011,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "why a large gain margin with a small phase margin is still a fragile design"
       ],
       "file": "car_11_domain_round/04-reading-margins-and-the-nyquist-criterion.md"
+    },
+    {
+      "id": "l05-pid-windup-and-a-defensible-tuning-story",
+      "title": "PID: structure, windup, filtered derivative, and a tuning story",
+      "minutes": 21,
+      "covers": [
+        "PID structure, integral windup and anti-windup, derivative filtering, and a defensible tuning approach"
+      ],
+      "file": "car_11_domain_round/05-pid-windup-and-a-defensible-tuning-story.md"
     }
   ],
   "car_12_first_principles": [
@@ -8031,7 +8040,7 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "car_11_domain_round": {
-    "covered": 4,
+    "covered": 5,
     "total": 14,
     "complete": false,
     "missing": [
@@ -8043,7 +8052,6 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
       "solutions to Wahba: Davenport’s q-method, the SVD method, QUEST, and TRIAD as the degenerate two-vector case",
       "the multiplicative quaternion EKF and why the error state is three-dimensional",
       "strapdown IMU integration, bias states and gyro propagation",
-      "PID structure, integral windup and anti-windup, derivative filtering, and a defensible tuning approach",
       "orbit determination: observability, batch least squares versus sequential filtering, measurement types"
     ]
   },
