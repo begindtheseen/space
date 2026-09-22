@@ -1,7 +1,7 @@
 ---
 id: l10-eigen-and-geometry
 title: Eigen, including the Geometry module
-minutes: 28
+minutes: 24
 covers:
   - Eigen, including the Geometry module
 ---

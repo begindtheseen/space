@@ -1,7 +1,7 @@
 ---
 id: l07-constexpr-compile-time
 title: constexpr and compile-time computation
-minutes: 26
+minutes: 25
 covers:
   - constexpr and compile-time computation
 ---

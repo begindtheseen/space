@@ -6,11 +6,7 @@ covers:
   - floating-point pitfalls: catastrophic cancellation, machine epsilon
 ---
 
-<<<<<<< Updated upstream
 In February 1991 a Patriot battery in Dhahran failed to intercept a Scud because its clock had drifted. The system counted time in tenths of a second, stored the tenth as a 24-bit binary fraction, and 0.1 has no finite binary expansion, so every tick carried a truncation error of a little under $10^{-7}\,\mathrm{s}$. After a hundred hours of continuous operation — $3.6 \times 10^{6}$ ticks — the inquiry put the accumulated error at about a third of a second, and a target moving at $1.7\,\mathrm{km/s}$ was several hundred metres from where the radar looked for it. Nothing in the software raised an exception. The arithmetic did exactly what floating point always does.
-=======
-In February 1991 a Patriot battery in Dhahran failed to intercept a Scud because its clock had drifted. The system counted time in tenths of a second, stored the tenth as a 24-bit binary fraction, and 0.1 has no finite binary expansion, so every tick carried a rounding error of about $10^{-7}\,\mathrm{s}$. After a hundred hours of continuous operation the accumulated error was about a third of a second, and a target moving at $1.7\,\mathrm{km/s}$ was several hundred metres from where the radar looked for it. Nothing in the software raised an exception. The arithmetic did exactly what floating point always does.
->>>>>>> Stashed changes
 
 Every number your propagators, filters and controllers touch is a float64, and float64 is not the real line. It is a finite set of about $1.8 \times 10^{19}$ points, spaced unevenly, with rules for rounding onto them. This lesson makes those rules precise enough that you can predict when they matter — most of the time they do not — and recognise the two situations where they do: a long accumulation of tiny errors, and a single subtraction that erases every digit you had.
 
@@ -45,12 +41,8 @@ Machine epsilon for IEEE-754 float64 is $\varepsilon \approx 2.22 \times 10^{-16
 :::
 
 ```python
-<<<<<<< Updated upstream
 import sys, math
 import numpy as np
-=======
-import sys, numpy as np
->>>>>>> Stashed changes
 print(sys.float_info.epsilon)        # 2.220446049250313e-16
 print(np.finfo(np.float64).eps)      # 2.220446049250313e-16
 print(1.0 + 2**-53 == 1.0)           # True   (half an epsilon rounds away)
@@ -166,11 +158,7 @@ Down to $10^{-8}$ the error falls in step with $h$; below that, rounding takes o
 
 - **Absolute time.** Seconds since the J2000 epoch are about $8 \times 10^8$; the float64 ulp there is $1.2 \times 10^{-7}\,\mathrm{s}$, tolerable, but in float32 it is $64\,\mathrm{s}$. Store time as an integer count of ticks plus a float fraction, or as seconds since a recent epoch.
 - **Large offsets.** Two positions of magnitude $7 \times 10^6\,\mathrm{m}$ that differ by a metre are fine in float64 (spacing $10^{-9}\,\mathrm{m}$) and hopeless in float32 (spacing $0.5\,\mathrm{m}$). Relative-motion problems are formulated in a frame centred on the target for exactly this reason.
-<<<<<<< Updated upstream
 - **Energy and eccentricity.** Specific orbital energy $v^2/2 - \mu/r$ subtracts two terms of about $6 \times 10^7\,\mathrm{J/kg}$ that nearly cancel for a near-parabolic orbit; $e = \sqrt{1 - h^2/(\mu a)}$ loses digits for near-circular orbits. Equinoctial elements exist to avoid these.
-=======
-- **Energy and eccentricity.** Specific orbital energy $v^2/2 - \mu/r$ subtracts two terms of about $3 \times 10^7\,\mathrm{J/kg}$ that nearly cancel for near-parabolic orbits; $e = \sqrt{1 - h^2/(\mu a)}$ loses digits for near-circular orbits. Equinoctial elements exist to avoid these.
->>>>>>> Stashed changes
 - **Covariance updates.** $\mathbf{P} - \mathbf{K}\mathbf{H}\mathbf{P}$ subtracts nearly equal matrices when a measurement is very accurate; the Joseph form and square-root filters are the algebraic rearrangements that fix it.
 - **Comparisons.** `if x == y` on computed floats is almost always a bug. Use `math.isclose(x, y, rel_tol=1e-9, abs_tol=1e-12)` or `np.isclose`, and choose the tolerances from the arithmetic that produced `x` and `y`.
 
@@ -201,11 +189,7 @@ Explain, in terms of absolute and relative error, why $\sqrt{1 + x} - 1$ for $x 
 :::
 
 ::: answer
-<<<<<<< Updated upstream
 $1 + x$ rounds to a float with absolute error up to $\varepsilon/2 \approx 1.1 \times 10^{-16}$; the square root inherits about that much. The true result is $5 \times 10^{-13}$, so an absolute error of a few times $10^{-17}$ is a relative error of about $10^{-4}$ — four digits survive of sixteen. The conjugate form $\sqrt{1+x} - 1 = \dfrac{x}{\sqrt{1+x} + 1}$ divides an exact $x$ by a sum near 2 and is accurate to full precision. (Equivalently, for tiny $x$, the series $x/2 - x^2/8$.)
-=======
-$1 + x$ rounds to a float with absolute error up to $\varepsilon/2 \approx 1.1 \times 10^{-16}$; the square root inherits about that much. The true result is $5 \times 10^{-13}$, so an absolute error of $10^{-16}$ is a relative error of $2 \times 10^{-4}$ — four digits survive of sixteen. The conjugate form $\sqrt{1+x} - 1 = \dfrac{x}{\sqrt{1+x} + 1}$ divides an exact $x$ by a sum near 2 and is accurate to full precision. (Equivalently, for tiny $x$, the series $x/2 - x^2/8$.)
->>>>>>> Stashed changes
 :::
 
 ::: check

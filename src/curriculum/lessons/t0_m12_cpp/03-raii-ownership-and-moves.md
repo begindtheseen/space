@@ -1,7 +1,7 @@
 ---
 id: l03-raii-ownership-and-moves
 title: RAII, ownership, smart pointers and moves
-minutes: 28
+minutes: 25
 covers:
   - RAII, ownership, smart pointers
   - move semantics

@@ -1,20 +1,20 @@
 ---
 id: l01-from-python-to-compiled-cpp
 title: From Python to compiled C++
-minutes: 21
+minutes: 24
 covers:
   - C++17/20 core language
 ---
 
 Every GNC algorithm you have written so far ran in Python: a NumPy propagator, a SciPy fit, a notebook plot. None of it will fly. The computer that closes the loop on a launch vehicle runs compiled code inside a fixed memory budget, with a hard deadline every few milliseconds, and in modern flight software that code is C++. The Python you know does not go away — it becomes the analysis layer that drives the C++ core, runs the Monte Carlo and draws the plots — but the core itself is compiled, statically typed and allocation-free.
 
-This module teaches you to write that core. This first lesson covers the language you need before any of the flight-specific material makes sense: how a C++ program is built, how its types behave, how control flow and functions differ from Python, and which parts of C++17 and C++20 you will lean on. Compile every example yourself. Whenever you catch yourself thinking "Python did this for me", that is the right reaction: C++ makes you state what Python guessed, and flight software wants that explicitness, because anything the language guesses is something a reviewer cannot check.
+This module teaches you to write that core. This first lesson covers the language you need before the flight-specific material makes sense: how a C++ program is built, how its types behave, how control flow and functions differ from Python, and which parts of C++17 and C++20 you will lean on. Compile every example yourself. Whenever you think "Python did this for me", that is the right reaction: C++ makes you state what Python guessed, and flight software wants that, because anything the language guesses is something a reviewer cannot check.
 
 ## Why flight software is written in C++
 
 Three properties matter on a flight computer. **Determinism**: the same inputs must produce the same outputs in the same amount of time, cycle after cycle, so that a scheduler can prove every task meets its deadline. **Bounded resources**: memory is sized at boot and never grows, and there is no garbage collector that may pause the program at an inconvenient moment. **Direct hardware access**: sensor registers, DMA buffers and timers are addresses in memory, and the language must be able to read and write them.
 
-C gives you all three and is still what you find in bootloaders and drivers. C++ gives you the same three plus the abstractions — classes, templates, a standard library — that keep a large GNC codebase readable and testable, and a mature toolchain (CMake, GoogleTest, sanitizers, clang-tidy, pybind11) that this module teaches. Python decides types at run time, allocates on almost every operation and stops the world when its garbage collector runs: fine for analysis, unacceptable in a 400 Hz control loop. You will keep both languages; the last lesson binds them together.
+C gives you all three and is still what you find in bootloaders and drivers. C++ adds the abstractions — classes, templates, a standard library — that keep a large GNC codebase readable and testable, and a mature toolchain that this module teaches. Python decides types at run time, allocates on almost every operation and stops the world when its garbage collector runs: fine for analysis, unacceptable in a 400 Hz control loop. You will keep both languages; the last lesson binds them together.
 
 ## The compiled model
 
@@ -26,7 +26,7 @@ A Python program is text that an interpreter reads while the program runs. A C++
 2. The **compiler** turns each source file — each *translation unit* — into an object file of machine code, checking every type on the way. Errors at this stage are compile errors, and you fix them before anything runs.
 3. The **linker** combines object files and libraries into one executable, resolving every function call to an address. An "undefined reference" error is the linker telling you that something was declared but never defined anywhere it can see.
 
-Two consequences shape how you work. The compiler sees one translation unit at a time, so anything used from two files must be *declared* in a header that both include and *defined* in exactly one place. And a large class of mistakes — wrong argument types, misspelled names, a missing return — is caught before the program exists. Python finds the same mistakes only when the offending line executes, which for a rarely taken abort branch may be never.
+Two consequences follow. The compiler sees one translation unit at a time, so anything used from two files must be *declared* in a header that both include and *defined* in exactly one place. And a large class of mistakes — wrong argument types, misspelled names, a missing return — is caught before the program exists, where Python finds them only when the offending line executes, which for a rarely taken abort branch may be never.
 
 ### Compiling and running
 
@@ -37,7 +37,7 @@ $ g++ -std=c++20 -Wall -Wextra -O2 orbit.cpp -o orbit
 $ ./orbit
 ```
 
-`-std=c++20` selects the language version. `-Wall -Wextra` turn on the warnings a professional build always uses; flight projects add `-Werror` so that a warning stops the build, which is one of the Power of Ten rules you will meet in lesson 9. `-O2` asks for optimisation; use `-O0 -g` while debugging so that the machine code follows your source line by line. `-o` names the output.
+`-std=c++20` selects the language version. `-Wall -Wextra` turn on the warnings a professional build always uses; flight projects add `-Werror` so that a warning stops the build, a Power of Ten rule you will meet in lesson 9. `-O2` asks for optimisation; use `-O0 -g` while debugging. `-o` names the output.
 
 ::: example Circular orbital speed, compiled
 A first complete program. It computes the speed and period of a circular orbit at 400 km altitude, using $v = \sqrt{\mu / r}$ and $T = 2\pi\sqrt{r^3/\mu}$ with $\mu = 3.986 \times 10^{14}\,\mathrm{m^3/s^2}$.
@@ -77,7 +77,7 @@ int main() {
 // T = 5553.6 s = 92.56 min
 ```
 
-The `#include` lines bring in the maths library, C++20's `std::format` (which works like a Python f-string) and the output stream. `constexpr double` declares a constant the compiler knows at compile time. Each function states the type of every parameter and of its result; there is no way to call `circular_speed` with a string. `std::` is the namespace of the standard library — the equivalent of an `import` prefix, resolved at compile time.
+The `#include` lines bring in the maths library, C++20's `std::format` (which works like a Python f-string) and the output stream. `constexpr double` declares a constant the compiler knows at compile time. Each function states the type of every parameter and of its result, so there is no way to call `circular_speed` with a string. `std::` is the namespace of the standard library, an `import` prefix resolved at compile time.
 :::
 
 ## Types are static and sized
@@ -93,11 +93,11 @@ In Python you can write `x = 3` and later `x = "three"`. In C++ a variable has o
 | `float` | 4 bytes | IEEE single precision, about 7 significant digits |
 | `double` | 8 bytes | IEEE double precision, about 16 significant digits |
 
-The standard guarantees only minimum sizes for `int` and `long`. That is unacceptable for anything that crosses a wire or a register, so flight code uses the fixed-width types from the `cstdint` header: `std::int8_t`, `std::uint8_t`, `std::int16_t`, `std::uint16_t`, `std::int32_t`, `std::uint32_t`, `std::int64_t` and `std::uint64_t`. A telemetry packet declared with these has the same layout on your laptop and on the flight processor. For sizes and indices the standard library uses `std::size_t`, an unsigned type wide enough to hold any object size.
+The standard guarantees only minimum sizes for `int` and `long`. That is unacceptable for anything that crosses a wire or a register, so flight code uses the fixed-width types from the `cstdint` header: `std::int8_t`, `std::uint8_t`, `std::int16_t`, `std::uint16_t`, `std::int32_t`, `std::uint32_t`, `std::int64_t` and `std::uint64_t`. A telemetry packet declared with these has the same layout on your laptop and on the flight processor. Sizes and indices use `std::size_t`, an unsigned type wide enough for any object size.
 
 ### Integer arithmetic
 
-Integer division truncates toward zero, and the sign of `%` follows the dividend. Python's `//` floors instead, so `-7 // 2` is `-4` in Python but `-7 / 2` is `-3` in C++. Unsigned arithmetic wraps modulo $2^N$, which is fully defined and exactly what a telemetry sequence counter wants: after 255 an 8-bit counter reads 0. Signed overflow is *undefined behaviour*: the standard says nothing about what happens, and the compiler is allowed to assume it never does, which lets it delete checks that look to you like safety code. Lesson 12 returns to this; for now, treat a signed counter that can reach its limit as a bug.
+Integer division truncates toward zero, and the sign of `%` follows the dividend; Python's `//` floors instead, so `-7 // 2` is `-4` in Python but `-7 / 2` is `-3` in C++. Unsigned arithmetic wraps modulo $2^N$, which is fully defined and exactly what a telemetry sequence counter wants: after 255 an 8-bit counter reads 0. Signed overflow is *undefined behaviour*: the standard says nothing about what happens, and the compiler may assume it never does, which lets it delete checks that look like safety code. Lesson 12 returns to this; for now, a signed counter that can reach its limit is a bug.
 
 ::: example Integers behaving like integers
 ```cpp
@@ -146,20 +146,20 @@ The literal `1000.0` makes the second division a floating-point one, because whe
 
 ### Floating point, and the fixed-point alternative
 
-`double` is the default for GNC mathematics, and everything you learned about machine epsilon and cancellation in the Python module carries over: a `double` is the same IEEE 754 number that NumPy's `float64` is. `float` costs half the memory and on many flight processors runs faster, but it carries only about seven significant digits. Stored as a `float`, an Earth-centred position of magnitude $6.4 \times 10^6\,\mathrm{m}$ has a resolution of about $0.5\,\mathrm{m}$; as a `double`, about $10^{-9}\,\mathrm{m}$. Choosing `float` for a state vector is a design decision, not a default. Literals carry their type — `1.0` is a `double`, `1.0f` a `float`, `1` an `int` — and mixing them promotes toward the wider floating type.
+`double` is the default for GNC mathematics, and everything you learned about machine epsilon and cancellation in the Python module carries over: a `double` is the same IEEE 754 number as NumPy's `float64`. `float` costs half the memory and on many flight processors runs faster, but carries only about seven significant digits: stored as a `float`, an Earth-centred position of magnitude $6.4 \times 10^6\,\mathrm{m}$ has a resolution of about $0.5\,\mathrm{m}$; as a `double`, about $10^{-9}\,\mathrm{m}$. Choosing `float` for a state vector is a design decision, not a default. Literals carry their type — `1.0` is a `double`, `1.0f` a `float`, `1` an `int` — and mixing them promotes toward the wider floating type.
 
-There is a third option, older than both. **Fixed point** stores a real number as an integer with an implied scale: a gyro register that reports angular rate in counts of $0.01^\circ/\mathrm{s}$ holds $12.34^\circ/\mathrm{s}$ as the integer 1234. Flight computers without a floating-point unit did all their control mathematics this way, and fixed point survives at the sensor interface, in FPGA logic and in some actuator commands. The rule in a modern flight codebase is to convert register values into engineering units in `double` once, at the boundary, and never mix the two representations inside an algorithm. Lesson 7 builds a fixed-point type whose scale the compiler tracks for you.
+There is a third option, older than both. **Fixed point** stores a real number as an integer with an implied scale: a gyro register reporting angular rate in counts of $0.01^\circ/\mathrm{s}$ holds $12.34^\circ/\mathrm{s}$ as the integer 1234. Flight computers without a floating-point unit did all their control mathematics this way, and fixed point survives at the sensor interface, in FPGA logic and in some actuator commands. A modern flight codebase converts register values into engineering units in `double` once, at the boundary, and never mixes the two representations inside an algorithm. Lesson 7 builds a fixed-point type whose scale the compiler tracks.
 
 ### Initialisation and conversions
 
-A local variable declared without an initialiser holds an indeterminate value, and reading it is undefined behaviour. Python has no equivalent because every name is bound when it is created. Initialise everything: `double bias = 0.0;` or the brace form `double bias{};`, which zero-initialises. The brace form has a second virtue: it rejects *narrowing* conversions. `std::int8_t small{300};` is a compile error, while `std::int8_t small = 300;` compiles with, at most, a warning:
+A local variable declared without an initialiser holds an indeterminate value, and reading it is undefined behaviour; Python has no equivalent because every name is bound when created. Initialise everything: `double bias = 0.0;` or the brace form `double bias{};`, which zero-initialises and has a second virtue: it rejects *narrowing* conversions. `std::int8_t small{300};` is a compile error, while `std::int8_t small = 300;` compiles with, at most, a warning:
 
 ```text
 narrow.cpp:5:21: error: narrowing conversion of '300' from 'int' to 'int8_t'
     {aka 'signed char'} [-Wnarrowing]
 ```
 
-When you do mean to convert, say so with `static_cast`, naming the target type in angle brackets as the example above does. It is greppable, reviewable and never does anything beyond the one conversion it names. The C-style cast `(int)x` can silently perform several unrelated conversions and has no place in new code.
+When you do mean to convert, say so with `static_cast`, naming the target type in angle brackets as the example above does: greppable, reviewable, and never more than the one conversion it names. The C-style cast `(int)x` can silently perform several unrelated conversions and has no place in new code.
 
 ::: warning
 `g++ -Wall` warns `'bias' is used uninitialized` when it can see the read, but it cannot see every read — pass the variable to a function in another translation unit and the warning disappears while the bug stays. Rely on the habit of initialising at the point of declaration, not on the warning.
@@ -180,15 +180,15 @@ for (const auto& sample : samples) { total += sample; }   // range-for, like Pyt
 while (!converged) { iterate(); }
 ```
 
-Always write the braces, even for a one-line body; the classic C bug of a second statement silently falling outside an `if` disappears. C++17 lets an `if` declare a variable scoped to itself: `if (auto status = read_sensor(); status.ok()) { ... }`. `switch` selects on an integer or an enumeration; each `case` runs until a `break`, so a missing `break` falls through into the next case. Every loop in flight code has an upper bound visible in the source, for reasons lesson 9 makes precise. `goto` exists and is banned.
+Always write the braces, even for a one-line body; the classic C bug of a second statement silently falling outside an `if` disappears. C++17 lets an `if` declare a variable scoped to itself: `if (auto status = read_sensor(); status.ok()) { ... }`. `switch` selects on an integer or an enumeration, and each `case` runs until a `break`. Every loop in flight code has an upper bound visible in the source, for reasons lesson 9 makes precise. `goto` exists and is banned.
 
 ## Functions
 
-A function has a *declaration* — its name, parameter types and return type — and a *definition*, which adds the body. The declaration goes in a header so that every translation unit that calls the function sees the same signature; the definition goes in exactly one `.cpp` file. Two functions may share a name if their parameter types differ, and the compiler chooses by the arguments you pass: *overloading*, which is how `norm(v)` can serve a 3-vector and a 6-vector without a suffix on each name. Parameters may have defaults, filled in from the right. A function whose return value must not be ignored is marked `[[nodiscard]]`, and the compiler warns wherever the result is dropped. To return several values, return a `struct`; C++17 structured bindings unpack it at the call site: `auto [speed, period] = circular_orbit(r);`. Recursion is legal in the language and forbidden by flight coding rules, because its stack depth cannot be bounded by inspection.
+A function has a *declaration* — name, parameter types, return type — and a *definition*, which adds the body. The declaration goes in a header so that every translation unit that calls the function sees the same signature; the definition goes in exactly one `.cpp` file. Two functions may share a name if their parameter types differ, and the compiler chooses by the arguments: *overloading*, which is how `norm(v)` serves a 3-vector and a 6-vector without a suffix on each name. Parameters may have defaults, filled in from the right. A function whose return value must not be ignored is marked `[[nodiscard]]`, and the compiler warns wherever the result is dropped. To return several values, return a `struct`; C++17 structured bindings unpack it: `auto [speed, period] = circular_orbit(r);`. Recursion is legal in the language and forbidden by flight coding rules, because its stack depth cannot be bounded by inspection.
 
 ## Structs, enums and namespaces
 
-A `struct` groups named members into one value, and C++20 designated initialisers name the members as you fill them, exactly as keyword arguments would. An `enum class` is a strongly typed set of named constants: unlike Python's plain integers or C's old `enum`, a `FlightMode` will not silently convert to an `int`, and you may pick its underlying type — `std::uint8_t` here — so that it packs into a telemetry word. A `namespace` groups names the way a Python module does; `gnc::propagate` is the function `propagate` inside `namespace gnc`. Never write `using namespace std;` in a header — it injects hundreds of names into every file that includes you.
+A `struct` groups named members into one value, and C++20 designated initialisers name the members as you fill them, like keyword arguments. An `enum class` is a strongly typed set of named constants: unlike Python's plain integers or C's old `enum`, a `FlightMode` will not silently convert to an `int`, and you may pick its underlying type — `std::uint8_t` here — so that it packs into a telemetry word. A `namespace` groups names the way a Python module does; `gnc::propagate` is `propagate` inside `namespace gnc`. Never write `using namespace std;` in a header — it injects hundreds of names into every file that includes you.
 
 ::: example A flight-mode state machine
 ```cpp
@@ -240,7 +240,7 @@ int main() {
 // 4.5 km  LANDING
 ```
 
-`mode_name` has no `default:` case on purpose. Because the `switch` covers an `enum class`, `-Wall` includes `-Wswitch`, which warns if a new enumerator is added and a case is forgotten; a `default:` would silence that warning and hide the omission. The `return "UNKNOWN";` after the switch exists because the language cannot prove that no other value is possible — an enumeration's underlying integer can, through a cast, hold a value with no name. `std::string_view` is a non-owning view of characters that lives as long as the string literal it refers to, which for a literal is the whole program. `const VehicleState&` is a reference: the function looks at the caller's struct without copying it, which is the subject of lesson 2.
+`mode_name` has no `default:` case on purpose. Because the `switch` covers an `enum class`, `-Wall` includes `-Wswitch`, which warns if a new enumerator is added and a case forgotten; a `default:` would silence that warning and hide the omission. The `return "UNKNOWN";` after the switch exists because the language cannot prove no other value is possible — an enumeration's underlying integer can, through a cast, hold a value with no name. `std::string_view` is a non-owning view of characters, here of a string literal that lives for the whole program. `const VehicleState&` is a reference: the function looks at the caller's struct without copying it, the subject of lesson 2.
 :::
 
 ::: warning
@@ -254,18 +254,14 @@ The language you will write is called "modern C++" to distinguish it from the C-
 - **C++17**: `if` with an initialiser, structured bindings, `if constexpr` (lesson 7), `std::optional` (lesson 8), `std::string_view`, `std::variant`, `[[nodiscard]]` and `[[fallthrough]]`, and guaranteed copy elision when returning a temporary (lesson 3).
 - **C++20**: concepts and `requires` clauses (lesson 5), ranges, `std::span` (lesson 6), designated initialisers, `consteval` and `constinit` (lesson 7), `std::format`, the three-way comparison `<=>`, and `constexpr` versions of much more of the standard library. Coroutines and modules also arrived; this module does not use them, because their support in embedded toolchains is still uneven.
 
-Which standard a flight project compiles with is a project decision. Many are on C++17 with a shortlist of approved C++20 features, because the compiler qualified for the flight processor lags the desktop compilers by a few years. Everything here compiles with `-std=c++20` on GCC 13 and Clang 18.
+Many flight projects are on C++17 with a shortlist of approved C++20 features, because the compiler qualified for the flight processor lags the desktop compilers by a few years. Everything here compiles with `-std=c++20` on GCC 13 and Clang 18.
 
 ::: key
 A C++ program is preprocessed, compiled one translation unit at a time into object files, and linked into an executable. Declarations live in headers and are shared; each definition lives in exactly one place. Compile errors come from the compiler, "undefined reference" errors from the linker.
 :::
 
 ::: key
-Every variable has one static type with a known `sizeof`. Use the fixed-width types `std::int32_t`, `std::uint8_t` and friends for anything that crosses a wire or a register. Integer division truncates toward zero, unsigned arithmetic wraps modulo $2^N$ by definition, and signed overflow is undefined behaviour.
-:::
-
-::: key
-Initialise every variable at its declaration. Brace initialisation `T x{value};` rejects narrowing conversions at compile time, and `static_cast` is the only cast you write by hand.
+Every variable has one static type with a known `sizeof`; initialise it at its declaration, and use brace initialisation `T x{value};` to reject narrowing at compile time. Use the fixed-width types `std::int32_t`, `std::uint8_t` and friends for anything that crosses a wire or a register. Integer division truncates toward zero, unsigned arithmetic wraps modulo $2^N$ by definition, signed overflow is undefined behaviour, and `static_cast` is the only cast you write by hand.
 :::
 
 ## Check yourself

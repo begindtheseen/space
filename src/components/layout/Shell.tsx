@@ -41,6 +41,7 @@ export const NAV: NavDef[] = [
   { id: 'gnc', label: 'GNC Prep', path: '/gnc', Icon: IconTarget },
   { id: 'career', label: 'Career', path: '/career', Icon: IconBriefcase },
   { id: 'bench', label: 'Workbench', path: '/bench', Icon: IconPlay },
+  { id: 'jobs', label: 'Hawthorne', path: '/jobs', Icon: IconBriefcase },
   { id: 'progress', label: 'Progress', path: '/progress', Icon: IconBars },
   { id: 'resources', label: 'Resources', path: '/resources', Icon: IconDoc },
   { id: 'guide', label: 'Guide', path: '/guide', Icon: IconCompass },

@@ -156,6 +156,17 @@ export interface LearnerState {
    * stops being that the moment it starts counting.
    */
   bench: Record<string, string>
+  /**
+   * Hawthorne temporary postings she has already been shown, id to the ISO
+   * time it was first noticed.
+   *
+   * Kept so that "new since you last looked" survives a restart. Ids rather
+   * than titles: SpaceX reposts the same title regularly and a reposted
+   * requisition is a genuinely new chance to apply.
+   */
+  jobsSeen: Record<string, string>
+  /** ISO time of the last successful check of the job board. */
+  jobsCheckedAt?: string
 }
 
 export const ATTEMPT_LOG_LIMIT = 4000
@@ -197,6 +208,7 @@ export function newLearnerState(now: Date = new Date()): LearnerState {
     media: {},
     place: {},
     bench: {},
+    jobsSeen: {},
   }
 }
 
@@ -230,8 +242,12 @@ export function migrateState(raw: unknown, now: Date = new Date()): LearnerState
     media: {},
     place: coercePlace(r.place),
     bench: isRecordOf(r.bench, 'string') ? { ...r.bench } : {},
+    jobsSeen: isRecordOf(r.jobsSeen, 'string') ? { ...r.jobsSeen } : {},
     version: STATE_VERSION,
   }
+
+  const jobsCheckedAt = str(r.jobsCheckedAt)
+  if (jobsCheckedAt) out.jobsCheckedAt = jobsCheckedAt
 
   const resume = coerceResume(r.resume)
   if (resume) out.resume = resume

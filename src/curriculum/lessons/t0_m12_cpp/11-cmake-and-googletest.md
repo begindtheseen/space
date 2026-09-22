@@ -1,7 +1,7 @@
 ---
 id: l11-cmake-and-googletest
 title: Building with CMake and testing with GoogleTest
-minutes: 28
+minutes: 24
 covers:
   - CMake, with Bazel awareness
   - GoogleTest

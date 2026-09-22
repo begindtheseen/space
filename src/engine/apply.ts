@@ -303,3 +303,23 @@ export function markBenchSolved(
   if (state.bench[taskId]) return state
   return { ...state, bench: { ...state.bench, [taskId]: now.toISOString() } }
 }
+
+/**
+ * Records that these postings have been shown, and when the board was checked.
+ *
+ * Called after she has actually seen the list, not when it is fetched: the
+ * point of the record is "has she been told", and marking on fetch would let a
+ * posting go unseen because the app happened to refresh in the background.
+ */
+export function markJobsSeen(
+  state: LearnerState,
+  ids: string[],
+  now: Date = new Date(),
+): LearnerState {
+  const iso = now.toISOString()
+  const fresh = ids.filter((id) => !state.jobsSeen[id])
+  if (fresh.length === 0 && state.jobsCheckedAt === iso) return state
+  const jobsSeen = { ...state.jobsSeen }
+  for (const id of fresh) jobsSeen[id] = iso
+  return { ...state, jobsSeen, jobsCheckedAt: iso }
+}

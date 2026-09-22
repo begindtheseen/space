@@ -18,6 +18,7 @@ const Review = lazy(() => import('@/pages/Review').then((m) => ({ default: m.Rev
 const Track = lazy(() => import('@/pages/Track').then((m) => ({ default: m.Track })))
 const Playground = lazy(() => import('@/pages/Playground').then((m) => ({ default: m.Playground })))
 const Bench = lazy(() => import('@/pages/Bench').then((m) => ({ default: m.Bench })))
+const Jobs = lazy(() => import('@/pages/Jobs').then((m) => ({ default: m.Jobs })))
 const Progress = lazy(() => import('@/pages/Progress').then((m) => ({ default: m.Progress })))
 const Resources = lazy(() => import('@/pages/Resources').then((m) => ({ default: m.Resources })))
 const Settings = lazy(() => import('@/pages/Settings').then((m) => ({ default: m.Settings })))
@@ -82,6 +83,8 @@ function Page({ path, segments }: { path: string; segments: string[] }) {
       return <Playground />
     case 'bench':
       return <Bench />
+    case 'jobs':
+      return <Jobs />
     case 'progress':
       return <Progress />
     case 'resources':

@@ -1,7 +1,7 @@
 ---
 id: l14-pybind11-simulation-core
 title: pybind11 bindings over a C++ simulation core
-minutes: 27
+minutes: 26
 covers:
   - pybind11 bindings over a C++ simulation core
 ---

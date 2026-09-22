@@ -1,7 +1,7 @@
 ---
 id: l04-classes-inheritance-virtual-dispatch
 title: Classes, inheritance and the cost of virtual dispatch
-minutes: 25
+minutes: 24
 covers:
   - classes, inheritance, virtual dispatch and its cost
 ---

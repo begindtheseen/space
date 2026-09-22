@@ -1,0 +1,112 @@
+/* Hawthorne watch. Usually empty, which is why the empty state is written as
+   carefully as the populated one. */
+
+.jobs-new {
+  margin-bottom: 18px;
+  padding: 12px 14px;
+  border: 1px solid rgba(142, 230, 176, 0.32);
+  border-left-width: 2px;
+  border-radius: 8px;
+  background: rgba(142, 230, 176, 0.06);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.jobs-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.jobs-item {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.jobs-item:last-child {
+  border-bottom: 0;
+}
+
+.jobs-item.is-new {
+  /* A quiet marker rather than a colour wash: the Chip already says "New". */
+  box-shadow: inset 2px 0 0 #8ee6b0;
+  padding-left: 12px;
+}
+
+.jobs-item__body {
+  min-width: 0;
+  flex: 1 1 280px;
+}
+
+.jobs-item__top {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 7px;
+}
+
+.jobs-item__disc {
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-dim, #98a2b3);
+}
+
+.jobs-item__title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  overflow-wrap: anywhere;
+}
+
+.jobs-item__meta {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--text-dim, #98a2b3);
+}
+
+.jobs-item__nolink {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--text-dim, #98a2b3);
+}
+
+.jobs-none p {
+  margin: 0 0 8px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.jobs-none__sub {
+  color: var(--text-dim, #98a2b3);
+  font-size: 13px !important;
+}
+
+.jobs-empty,
+.jobs-error {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-dim, #98a2b3);
+}
+
+.jobs-error {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  color: #ffc45c;
+}
+
+.jobs-foot {
+  margin: 14px 0 0;
+  font-size: 12px;
+  color: var(--text-dim, #98a2b3);
+}

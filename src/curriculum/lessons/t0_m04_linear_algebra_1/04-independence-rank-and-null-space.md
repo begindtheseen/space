@@ -140,11 +140,7 @@ $$
 \mathbf{H} = \begin{pmatrix} 1 & 0 & 0 \\ 0.6 & 0.8 & 0 \\ 0.8 & 0.6 & 0 \end{pmatrix}, \qquad \mathbf{y} = \mathbf{H}\mathbf{f} .
 $$
 
-<<<<<<< Updated upstream
 The third column is entirely zero, so $\mathbf{H}\mathbf{e}_3 = \mathbf{0}$: the direction $(0, 0, 1)^T$ is in the null space. Elimination confirms the rank is 2 — column 1 has pivot $1$ with multipliers $0.6$ and $0.8$, after which row 2 is $(0, 0.8, 0)$ and row 3 is $(0, 0.6, 0)$; column 2 has pivot $0.8$, and subtracting $0.75$ times row 2 from row 3 leaves $(0, 0, 0)$ — so $\dim N(\mathbf{H}) = 3 - 2 = 1$ and the null space is exactly the line along $\hat{\mathbf{z}}$. All three axes lie in the body $xy$-plane, and no combination of in-plane readings can sense a force normal to that plane. The third sensor added redundancy, not geometry.
-=======
-The third column is entirely zero, so $\mathbf{H}\mathbf{e}_3 = \mathbf{0}$: the direction $(0, 0, 1)^T$ is in the null space. Elimination confirms the rank is 2 — column 1 pivot $1$; column 2 pivot $0.8$ after clearing, with row 3 becoming $(0, 0.6 - 0.8 \times 0.6, 0) = (0, 0.12, 0)$ and then zero after subtracting $0.15$ times row 2 — so $\dim N(\mathbf{H}) = 3 - 2 = 1$ and the null space is exactly the line along $\hat{\mathbf{z}}$. All three axes lie in the body $xy$-plane, and no combination of in-plane readings can sense a force normal to that plane. The third sensor added redundancy, not geometry.
->>>>>>> Stashed changes
 
 The column space is two-dimensional, so the three readings are not free to take any values. Row 3 is a combination of rows 1 and 2: solving $0.8 = a + 0.6b$ and $0.6 = 0.8b$ gives $b = 0.75$ and $a = 0.35$, so every noise-free measurement satisfies $y_3 = 0.35\,y_1 + 0.75\,y_2$. For $\mathbf{f} = (100, -40, 250)^T$ m/s² (deliberately including a large $z$ component), the readings are $\mathbf{y} = (100, 28, 56)^T$ m/s², and $0.35 \times 100 + 0.75 \times 28 = 56$ as predicted. The $250$ has vanished without trace. A residual $y_3 - 0.35y_1 - 0.75y_2$ that departs from zero would indicate a sensor fault, but no residual could ever reveal $f_z$. Tilting the third axis to $(0.8, 0, 0.6)^T$ would make the rank 3 and the null space $\{\mathbf{0}\}$, with three sensors doing three sensors' work.
 :::

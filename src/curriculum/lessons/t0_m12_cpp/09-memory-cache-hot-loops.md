@@ -8,7 +8,7 @@ covers:
 
 A control loop has one job that matters more than any other: finish on time, every cycle, for the whole flight. Two things break that promise in ways that no amount of algorithmic cleverness repairs. The first is touching the heap — an allocation whose duration nobody can bound. The second is touching memory the processor's cache does not hold, which turns a one-nanosecond load into a hundred-nanosecond stall, and does it thousands of times when the data layout is wrong. This lesson is about both: where C++ objects live, how they are laid out in bytes, how the cache sees them, and the rules a flight codebase imposes so that the loop's worst case is a number rather than a hope.
 
-The rules have a name. In 2006 Gerard Holzmann of NASA's Jet Propulsion Laboratory distilled JPL's flight-software experience into ten rules that fit on four pages, *The Power of Ten*. They were written for C, they are the backbone of most C++ flight coding standards since, and several of them are precisely about memory: no allocation after initialisation, every loop bounded, no more than one level of pointer indirection. You will read all ten here, and you will meet them in interviews.
+The rules have a name. In 2006 Gerard Holzmann of NASA's Jet Propulsion Laboratory distilled JPL's flight-software experience into ten rules on four pages, *The Power of Ten*. Written for C, they are the backbone of most C++ flight coding standards since, and several are precisely about memory: no allocation after initialisation, every loop bounded, one level of pointer indirection at most. You will read all ten here, and meet them in interviews.
 
 The Python module never asked these questions, because Python answers them for you — badly, from a real-time point of view. Every object on the heap, every list resizable, every attribute a hash lookup: convenient, and the reason a Python control loop cannot promise anything about its worst cycle.
 
@@ -16,11 +16,11 @@ The Python module never asked these questions, because Python answers them for y
 
 C++ gives an object one of three storage durations, and each has a cost model.
 
-**Automatic storage** is the stack. A local variable exists from its declaration to the end of its scope; allocating it is a subtraction from the stack pointer and freeing it is the reverse, both free in practice, both perfectly predictable. The limit is the stack's size — a flight task typically has a few tens of kilobytes — so large arrays and any recursion are the risks, and a stack overflow is not an error you can catch.
+**Automatic storage** is the stack. A local variable exists from its declaration to the end of its scope; allocating it is a subtraction from the stack pointer and freeing it the reverse, both free and perfectly predictable. The limit is the stack's size — a flight task typically has a few tens of kilobytes — so large arrays and recursion are the risks, and a stack overflow is not an error you can catch.
 
 **Static storage** is memory that exists for the whole program: globals, `static` locals, `constinit` variables. It is laid out in the binary before the program starts, costs nothing to "allocate", and is where flight software puts everything it wants to exist forever — the telemetry ring buffer, the sensor drivers, the state of the estimator.
 
-**Dynamic storage** is the heap, reached through `new` and `malloc`. The allocator has to find a free block of a suitable size, possibly split one, possibly coalesce neighbours when freeing, possibly take a lock because another thread is allocating too, possibly ask the operating system for more pages. None of these has a bounded duration; the allocation can fail; and over a long mission the heap fragments, so that a request that succeeded on day one fails on day ninety. This is why Power of Ten rule 3 reads *no dynamic memory allocation after initialisation*. Flight code allocates during start-up, where time is plentiful and failure can abort the boot, and then never again.
+**Dynamic storage** is the heap, reached through `new` and `malloc`. The allocator must find a free block of a suitable size, perhaps split one, perhaps coalesce neighbours when freeing, perhaps take a lock because another thread is allocating too, perhaps ask the operating system for pages. None of these has a bounded duration; the allocation can fail; and over a long mission the heap fragments, so a request that succeeded on day one fails on day ninety. Hence Power of Ten rule 3: *no dynamic memory allocation after initialisation*. Flight code allocates during start-up, where time is plentiful and failure can abort the boot, and never again.
 
 ## Layout: alignment and padding
 
@@ -78,7 +78,7 @@ Compiler-specific `#pragma pack` and `[[gnu::packed]]` remove padding by permitt
 
 ## The cache
 
-The processor does not read memory a byte at a time. It reads *cache lines* of 64 bytes into a hierarchy of small fast memories: a level-one cache of a few tens of kilobytes that answers in about a nanosecond, a level-two of a few hundred kilobytes at three or four nanoseconds, a shared level-three of several megabytes at ten to twenty, and finally main memory at sixty to a hundred nanoseconds. A load that misses every level costs roughly a hundred times a load that hits the first. The hierarchy also *prefetches*: when it sees consecutive lines being read, it fetches the next ones before they are asked for, so a sequential sweep through memory runs near the speed of the fastest cache no matter how large the data.
+The processor does not read memory a byte at a time. It reads *cache lines* of 64 bytes into a hierarchy of small fast memories: a level-one cache of a few tens of kilobytes answering in about a nanosecond, a level-two of a few hundred kilobytes at three or four, a shared level-three of several megabytes at ten to twenty, and main memory at sixty to a hundred. A load that misses every level costs roughly a hundred times one that hits the first. The hierarchy also *prefetches*: seeing consecutive lines read, it fetches the next before they are asked for, so a sequential sweep runs near the speed of the fastest cache however large the data.
 
 Two consequences follow. Reading one `double` out of every line and skipping the rest wastes seven-eighths of every fetch and defeats the prefetcher. And any data structure that follows pointers — a linked list, a `std::map`, an array of pointers to objects scattered on the heap — pays a potential miss at every hop.
 
@@ -115,7 +115,7 @@ int main() {
 // row-major sweep 22.9 ms, column sweep 213.9 ms, ratio 9.3x (same 16777216 additions, sum 16777216)
 ```
 
-Both loops perform 16.8 million additions on the same numbers. The row-major sweep reads consecutive addresses: every fetched line contributes eight doubles and the prefetcher stays ahead. The column walk jumps 32 KiB between consecutive reads, so every single addition fetches a fresh line, uses eight of its 64 bytes, and gets no help from the prefetcher. The ratio of about ten is the cost of ignoring layout. `volatile double sink` exists so that the optimiser cannot discard a sum it can see is never used.
+Both loops perform 16.8 million additions on the same numbers. The row-major sweep reads consecutive addresses, so every fetched line contributes eight doubles and the prefetcher stays ahead. The column walk jumps 32 KiB between reads, so every addition fetches a fresh line, uses eight of its 64 bytes, and gets no help from the prefetcher. The ratio of about ten is the cost of ignoring layout; `volatile double sink` exists so that the optimiser cannot discard a sum it can see is never used.
 :::
 
 ### Array of structs or struct of arrays
@@ -149,7 +149,7 @@ struct CasesSoA {
 // sizeof(Case) = 64 bytes = one 64-byte cache line
 ```
 
-Summing the mass over every case is seven times faster in the struct-of-arrays layout. Each `Case` is exactly one cache line, so the array-of-structs loop fetches a full line to use eight bytes of it, while the struct-of-arrays loop uses all 64 bytes of every line and, because consecutive `double`s are consecutive in memory, the compiler vectorises the sum. When the loop touches every field of a case — the simulation itself rather than the statistics — the gap narrows, because the array-of-structs layout now uses its whole line too; the residual factor here comes from the eight separate streams prefetching well, and on other machines the two layouts are close to even in that pattern. The choice is made by the access pattern, and a Monte Carlo post-processor sweeps one field at a time.
+Summing the mass over every case is seven times faster in the struct-of-arrays layout. Each `Case` is exactly one cache line, so the array-of-structs loop fetches a full line to use eight bytes of it, while the struct-of-arrays loop uses all 64 bytes of every line and, with consecutive `double`s consecutive in memory, the compiler vectorises the sum. When the loop touches every field of a case — the simulation rather than the statistics — the gap narrows, because the array-of-structs layout now uses its whole line too; the residual factor here comes from eight streams prefetching well, and on other machines the layouts are close to even in that pattern. The access pattern decides, and a Monte Carlo post-processor sweeps one field at a time.
 :::
 
 ::: key
@@ -166,7 +166,7 @@ The set of things a hard-real-time loop must not do follows from one criterion: 
 Three things forbidden in a hard-real-time hot loop, and why: dynamic allocation (unbounded, non-deterministic latency, can fail); exceptions and unbounded recursion (unbounded stack and unwinding time); unbounded loops or blocking calls such as I/O, locks and logging (no provable worst-case execution time).
 :::
 
-Allocation hides. `std::vector::push_back` at capacity, `std::string` construction or concatenation, a `std::function` holding a lambda larger than its buffer (lesson 5), `std::make_shared`, an insertion into a `std::map`, formatting through an `iostream`, and every operation on an Eigen dynamic-size type (lesson 10) all reach the heap, and none of them looks like `new`. Logging is the classic trap: a `printf` to a console or a write to a file blocks for an unbounded time, so flight code writes fixed-size records into a preallocated ring buffer — the module's exercise — and a lower-priority task drains it.
+Allocation hides. `std::vector::push_back` at capacity, `std::string` construction or concatenation, a `std::function` holding a lambda larger than its buffer (lesson 5), `std::make_shared`, an insertion into a `std::map`, formatting through an `iostream`, and every operation on an Eigen dynamic-size type (lesson 10) all reach the heap, and none looks like `new`. Logging is the classic trap: a `printf` to a console or a write to a file blocks for an unbounded time, so flight code writes fixed-size records into a preallocated ring buffer — the module's exercise — and a lower-priority task drains it.
 
 You find hidden allocations by making allocation visible. Replacing the global `operator new` is legal C++, and a test build that does so can count every allocation and, while the loop is running, treat one as fatal.
 
@@ -278,10 +278,10 @@ int main(int argc, char**) {
 // Aborted
 ```
 
-`step_naive` allocates once per step even though its `std::string` is optimised away — the six-element `std::vector` is enough. `step_fixed` does the same arithmetic in a `std::array` and allocates nothing, which the guard proves rather than asserts. In a GoogleTest suite (lesson 11) the count becomes an `EXPECT_EQ(g_allocations, 0)` around the propagator, which is the "custom allocator that aborts" the exercise asks for; `valgrind --tool=massif` in lesson 13 is the other way to demonstrate it.
+`step_naive` allocates once per step even though its `std::string` is optimised away — the six-element `std::vector` is enough. `step_fixed` does the same arithmetic in a `std::array` and allocates nothing, which the guard proves rather than asserts. In a GoogleTest suite (lesson 11) the count becomes `EXPECT_EQ(g_allocations, 0)` around the propagator — the "custom allocator that aborts" the exercise asks for; `valgrind --tool=massif` in lesson 13 is the other demonstration.
 :::
 
-Loops need the same discipline as allocations. Every loop in the flight code has an upper bound a reader can see in the source — a fixed array size, a `kMaxIterations` on an iterative solver with a convergence `break` inside it — because a loop whose iteration count depends on data is a loop whose worst case nobody can write down. The one deliberate exception is the scheduler's outer loop, which is meant to run until power-off and is marked as such so that a checking tool can tell intent from bug.
+Loops need the same discipline. Every loop in flight code has an upper bound a reader can see in the source — a fixed array size, a `kMaxIterations` on an iterative solver with a convergence `break` inside — because a loop whose count depends on data has a worst case nobody can write down. The one deliberate exception is the scheduler's outer loop, meant to run until power-off and marked as such so that a checking tool can tell intent from bug.
 
 ::: key
 The Power of Ten requires every loop to have a fixed upper bound because a statically provable bound makes termination checkable by a static analyser and gives a finite worst-case execution time for the real-time scheduler. A runaway loop in flight software is a missed deadline, not a slow program.
@@ -299,7 +299,7 @@ The Power of Ten rules: (1) no complex control flow — no `goto`, no `setjmp`/`
 
 Read the ten as an engineering argument rather than a list. Rules 1 and 2 make the control flow of every function analysable by a tool. Rule 3 makes the memory footprint fixed. Rules 4 and 6 keep every function small enough to review completely. Rules 5 and 7 catch the errors that do occur, at the point they occur, as lesson 8 described. Rules 8 and 9 remove the two features of C that most defeat static analysis. Rule 10 hands the enforcement of everything else to the compiler and the analysers, which is where lessons 12 and 13 go.
 
-Modern C++ meets the rules more comfortably than C did. RAII is not dynamic allocation; templates and `constexpr` are compile-time and analysable; `std::array`, `std::span` and references replace most pointer arithmetic; `-Werror` is rule 10 in one flag. Two points of friction remain. Virtual functions are function pointers in a table, and projects decide individually whether rule 9 permits them at module boundaries (most do, with the restrictions lesson 4 described). And exceptions are hidden control flow that rules 1 and 7 cannot accommodate, which is one more reason they are switched off.
+Modern C++ meets the rules more comfortably than C did: RAII is not dynamic allocation; templates and `constexpr` are compile-time and analysable; `std::array`, `std::span` and references replace most pointer arithmetic; `-Werror` is rule 10 in one flag. Two frictions remain. Virtual functions are function pointers in a table, and projects decide whether rule 9 permits them at module boundaries (most do, with lesson 4's restrictions). And exceptions are hidden control flow that rules 1 and 7 cannot accommodate — one more reason they are switched off.
 
 ::: warning
 "It ran fast on my laptop" is not a bound. A desktop processor has a large cache, an aggressive prefetcher and no other tasks contending for the core; the flight processor has none of these to the same degree. Bound the loop by construction — fixed sizes, fixed iteration counts, no heap — and then confirm with timing on the target, recording the worst cycle.
@@ -320,7 +320,7 @@ A Monte Carlo has two phases: propagating each case through a full trajectory, a
 :::
 
 ::: answer
-The propagation touches every field of one case together, many times, before moving to the next case, so an array-of-structs layout keeps each case's fields on one or two cache lines and is the natural fit. The statistics sweep one field across all cases, so a struct-of-arrays layout makes each sweep a contiguous read that uses every byte of every line and vectorises — the measured factor of about seven. Many codebases store the results in struct-of-arrays form precisely because the post-processing dominates; when both phases matter, convert between layouts once, at the boundary, rather than paying the wrong layout in one of them.
+The propagation touches every field of one case together, many times, before moving to the next case, so an array-of-structs layout keeps each case's fields on one or two cache lines and is the natural fit. The statistics sweep one field across all cases, so a struct-of-arrays layout makes each sweep a contiguous read that uses every byte of every line and vectorises — the measured factor of about seven. Many codebases store results in struct-of-arrays form because the post-processing dominates; when both phases matter, convert between layouts once, at the boundary.
 :::
 
 ::: check

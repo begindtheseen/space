@@ -1,0 +1,175 @@
+{
+  "jobs": [
+    {
+      "id": 8648202002,
+      "title": "Material Handler (Starshield) - Temporary Position",
+      "absolute_url": "https://boards.greenhouse.io/spacex/jobs/8648202002?gh_jid=8648202002",
+      "first_published": "2026-07-24T19:44:35-04:00",
+      "updated_at": "2026-09-11T17:04:20-04:00",
+      "location": {
+        "name": "Hawthorne, CA"
+      },
+      "metadata": [
+        {
+          "id": 4010460002,
+          "name": "Employment Type",
+          "value": "Temporary",
+          "value_type": "single_select"
+        },
+        {
+          "id": 4026103002,
+          "name": "Discipline",
+          "value": "Supply Chain & Logistics - Materials Management & Warehouse",
+          "value_type": "single_select"
+        }
+      ]
+    },
+    {
+      "id": 8753556002,
+      "title": "Recruiting Coordinator- Temporary (Hawthorne)   ",
+      "absolute_url": "https://boards.greenhouse.io/spacex/jobs/8753556002?gh_jid=8753556002",
+      "first_published": "2026-08-28T14:28:00-04:00",
+      "updated_at": "2026-09-01T19:48:33-04:00",
+      "location": {
+        "name": "Hawthorne, CA"
+      },
+      "metadata": [
+        {
+          "id": 4010460002,
+          "name": "Employment Type",
+          "value": "Temporary",
+          "value_type": "single_select"
+        },
+        {
+          "id": 4026103002,
+          "name": "Discipline",
+          "value": "Corporate - Human Resources",
+          "value_type": "single_select"
+        }
+      ]
+    },
+    {
+      "id": 8533131002,
+      "title": "Barista - Temporary (Bastrop)",
+      "absolute_url": "https://boards.greenhouse.io/spacex/jobs/8533131002?gh_jid=8533131002",
+      "first_published": "2026-05-05T14:24:56-04:00",
+      "updated_at": "2026-09-16T11:41:12-04:00",
+      "location": {
+        "name": "Bastrop, TX"
+      },
+      "metadata": [
+        {
+          "id": 4010460002,
+          "name": "Employment Type",
+          "value": "Temporary",
+          "value_type": "single_select"
+        },
+        {
+          "id": 4026103002,
+          "name": "Discipline",
+          "value": "Operations - Food Services",
+          "value_type": "single_select"
+        }
+      ]
+    },
+    {
+      "id": 8654606002,
+      "title": "Barista - Temporary (Cape Canaveral)",
+      "absolute_url": "https://boards.greenhouse.io/spacex/jobs/8654606002?gh_jid=8654606002",
+      "first_published": "2026-07-29T20:48:17-04:00",
+      "updated_at": "2026-09-16T11:42:10-04:00",
+      "location": {
+        "name": "Cape Canaveral, FL"
+      },
+      "metadata": [
+        {
+          "id": 4010460002,
+          "name": "Employment Type",
+          "value": "Temporary",
+          "value_type": "single_select"
+        },
+        {
+          "id": 4026103002,
+          "name": "Discipline",
+          "value": "Operations - Food Services",
+          "value_type": "single_select"
+        }
+      ]
+    },
+    {
+      "id": 8643277002,
+      "title": "Accountant",
+      "absolute_url": "https://boards.greenhouse.io/spacex/jobs/8643277002?gh_jid=8643277002",
+      "first_published": "2026-07-21T19:49:28-04:00",
+      "updated_at": "2026-09-16T20:45:53-04:00",
+      "location": {
+        "name": "Hawthorne, CA"
+      },
+      "metadata": [
+        {
+          "id": 4010460002,
+          "name": "Employment Type",
+          "value": "Regular",
+          "value_type": "single_select"
+        },
+        {
+          "id": 4026103002,
+          "name": "Discipline",
+          "value": "Corporate - Finance & Accounting",
+          "value_type": "single_select"
+        }
+      ]
+    },
+    {
+      "id": 8585061002,
+      "title": "Account Lead, Starlink Strategic Connectivity",
+      "absolute_url": "https://boards.greenhouse.io/spacex/jobs/8585061002?gh_jid=8585061002",
+      "first_published": "2026-06-09T21:01:44-04:00",
+      "updated_at": "2026-09-01T19:48:33-04:00",
+      "location": {
+        "name": "Hawthorne, CA"
+      },
+      "metadata": [
+        {
+          "id": 4010460002,
+          "name": "Employment Type",
+          "value": "Regular",
+          "value_type": "single_select"
+        },
+        {
+          "id": 4026103002,
+          "name": "Discipline",
+          "value": "Corporate - Sales & Business Operations",
+          "value_type": "single_select"
+        }
+      ]
+    },
+    {
+      "id": 8621770002,
+      "title": "Spring 2027 Business Operations Internship/Co-op",
+      "absolute_url": "https://boards.greenhouse.io/spacex/jobs/8621770002?gh_jid=8621770002",
+      "first_published": "2026-08-03T13:40:16-04:00",
+      "updated_at": "2026-09-01T19:48:33-04:00",
+      "location": {
+        "name": "Flexible - Any SpaceX Site"
+      },
+      "metadata": [
+        {
+          "id": 4010460002,
+          "name": "Employment Type",
+          "value": "Intern",
+          "value_type": "single_select"
+        },
+        {
+          "id": 4026103002,
+          "name": "Discipline",
+          "value": "College and University - Internships and Co-Ops",
+          "value_type": "single_select"
+        }
+      ]
+    }
+  ],
+  "meta": {
+    "total": 2522
+  }
+}

@@ -120,6 +120,20 @@ describe.each(moduleDirs)('lessons for %s', (moduleId) => {
       expect(p.header.minutes).toBeLessThanOrEqual(90)
     })
 
+    /*
+     * A merge or a stash that went wrong leaves these markers in the prose,
+     * and every other rule here passes straight over them: the word count is
+     * fine, the blocks balance, the maths parses. It happened, it shipped, and
+     * the only reason it was caught is that a writer mentioned it. So it is a
+     * rule now.
+     */
+    it('carries no leftover conflict markers', () => {
+      const markers = p.src
+        .split('\n')
+        .filter((l) => /^(<{7}|={7}|>{7})(\s|$)/.test(l))
+      expect(markers, 'unresolved merge or stash conflict in the lesson').toEqual([])
+    })
+
     it('is a full lesson, not a stub', () => {
       const words = proseWordCount(p.body)
       expect(words, `prose words (min ${MIN_WORDS})`).toBeGreaterThanOrEqual(MIN_WORDS)

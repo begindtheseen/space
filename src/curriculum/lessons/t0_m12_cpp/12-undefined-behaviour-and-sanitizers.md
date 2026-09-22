@@ -1,7 +1,7 @@
 ---
 id: l12-undefined-behaviour-and-sanitizers
 title: Undefined behaviour, and the sanitizers that catch it
-minutes: 26
+minutes: 25
 covers:
   - undefined behaviour
   - profiling and sanitizers: perf, valgrind, ASan/UBSan
@@ -52,7 +52,7 @@ int main() {
 // would_overflow(INT_MAX) = true
 ```
 
-The programmer reasoned: if `x + 1` wraps around to a negative number, the comparison catches it. The compiler reasoned: `x + 1` cannot overflow, because overflow is undefined and the program has no undefined behaviour; therefore `x + 1 > x` for every `x`; therefore the function returns `false` unconditionally, and the addition need not even be performed. GCC makes that simplification at every optimisation level, so the check is gone from the binary the tests ran. Under UndefinedBehaviorSanitizer the addition is instrumented: the report names the file, line, operation and values, and the function then returns the answer the programmer expected. The correct check compares before adding — `x == INT_MAX`, or the compiler builtin `__builtin_add_overflow`, or arithmetic in a wider or unsigned type.
+The programmer reasoned: if `x + 1` wraps around to a negative number, the comparison catches it. The compiler reasoned: `x + 1` cannot overflow, because overflow is undefined and the program has no undefined behaviour; therefore `x + 1 > x` for every `x`; therefore the function returns `false` unconditionally, and the addition need not even be performed. The GCC 13 used here made that simplification even at `-O0`, so the check was gone from the binary the tests ran. Under UndefinedBehaviorSanitizer the addition is instrumented: the report names the file, line, operation and values, and the function then returns the answer the programmer expected. The correct check compares before adding — `x == INT_MAX`, or the compiler builtin `__builtin_add_overflow`, or arithmetic in a wider or unsigned type.
 :::
 
 The same reasoning removes a null check placed *after* a dereference (the dereference "proves" the pointer was not null), turns a loop whose signed counter would overflow into an infinite one, and lets the compiler read past the end of an array without any check because a valid program would never have asked it to. Nothing here is a compiler bug. The language grants the licence because that licence is what makes C++ fast: no bounds checks on every index, signed counters that can be widened to machine registers, memory accesses reordered freely. Removing undefined behaviour from the language would remove most of its optimisations with it. Instead, the language keeps the licence and the toolchain supplies detectors.
@@ -181,7 +181,7 @@ Do not "fix" a sanitizer report by making the symptom go away. If ASan reports a
 :::
 
 ::: answer
-The compiler is entitled to assume `x + 1` never overflows, since overflow is undefined; under that assumption `x + 1 < x` is false for every `x`, and GCC folds the comparison to a constant during its earliest simplification passes, which run even at `-O0`. Under UBSan the addition is instrumented: the instrumentation reports the overflow and the comparison is then performed on the wrapped value, which is negative and less than `x`, giving `true` — the naive expectation, plus a diagnostic. A correct check never performs the overflowing operation: `if (x == INT_MAX) { /* would overflow */ }`, or `int r; if (__builtin_add_overflow(x, 1, &r)) { ... }`, or compute in `std::int64_t` and range-check the result.
+The compiler is entitled to assume `x + 1` never overflows, since overflow is undefined; under that assumption `x + 1 < x` is false for every `x`, and GCC folded the comparison to a constant in its earliest simplification passes, which here ran even at `-O0`. Under UBSan the addition is instrumented: the instrumentation reports the overflow and the comparison is then performed on the wrapped value, which is negative and less than `x`, giving `true` — the naive expectation, plus a diagnostic. A correct check never performs the overflowing operation: `if (x == INT_MAX) { /* would overflow */ }`, or `int r; if (__builtin_add_overflow(x, 1, &r)) { ... }`, or compute in `std::int64_t` and range-check the result.
 :::
 
 ::: check

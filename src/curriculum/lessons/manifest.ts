@@ -348,6 +348,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "change of basis between reference frames"
       ],
       "file": "t0_m04_linear_algebra_1/07-change-of-basis-between-frames.md"
+    },
+    {
+      "id": "l08-skew-symmetric-cross-product-matrix",
+      "title": "Skew-symmetric matrices and the cross-product matrix",
+      "minutes": 23,
+      "covers": [
+        "skew-symmetric matrices and the cross-product matrix"
+      ],
+      "file": "t0_m04_linear_algebra_1/08-skew-symmetric-cross-product-matrix.md"
     }
   ],
   "t0_m05_linear_algebra_2": [
@@ -460,6 +469,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "improper integrals"
       ],
       "file": "t0_m06_calculus_single/10-improper-integrals.md"
+    },
+    {
+      "id": "l11-separable-first-order-odes",
+      "title": "Separable first-order ODEs and the rocket equation",
+      "minutes": 26,
+      "covers": [
+        "separable first-order ODEs"
+      ],
+      "file": "t0_m06_calculus_single/11-separable-first-order-odes.md"
     }
   ],
   "t0_m07_calculus_multi": [
@@ -544,6 +562,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "divergence and Stokes theorems"
       ],
       "file": "t0_m07_calculus_multi/09-divergence-and-stokes-theorems.md"
+    },
+    {
+      "id": "l10-conservative-fields",
+      "title": "Conservative fields, potentials and orbital energy",
+      "minutes": 27,
+      "covers": [
+        "conservative fields and potential functions"
+      ],
+      "file": "t0_m07_calculus_multi/10-conservative-fields.md"
     }
   ],
   "t0_m08_odes": [
@@ -630,7 +657,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-from-python-to-compiled-cpp",
       "title": "From Python to compiled C++",
-      "minutes": 21,
+      "minutes": 24,
       "covers": [
         "C++17/20 core language"
       ],
@@ -648,7 +675,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-raii-ownership-and-moves",
       "title": "RAII, ownership, smart pointers and moves",
-      "minutes": 28,
+      "minutes": 25,
       "covers": [
         "RAII, ownership, smart pointers",
         "move semantics"
@@ -658,7 +685,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-classes-inheritance-virtual-dispatch",
       "title": "Classes, inheritance and the cost of virtual dispatch",
-      "minutes": 25,
+      "minutes": 24,
       "covers": [
         "classes, inheritance, virtual dispatch and its cost"
       ],
@@ -667,7 +694,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-templates-and-generic-programming",
       "title": "Templates and generic programming",
-      "minutes": 27,
+      "minutes": 25,
       "covers": [
         "templates and generic programming"
       ],
@@ -685,7 +712,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-constexpr-compile-time",
       "title": "constexpr and compile-time computation",
-      "minutes": 26,
+      "minutes": 25,
       "covers": [
         "constexpr and compile-time computation"
       ],
@@ -712,7 +739,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-eigen-and-geometry",
       "title": "Eigen, including the Geometry module",
-      "minutes": 28,
+      "minutes": 24,
       "covers": [
         "Eigen, including the Geometry module"
       ],
@@ -721,7 +748,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-cmake-and-googletest",
       "title": "Building with CMake and testing with GoogleTest",
-      "minutes": 28,
+      "minutes": 24,
       "covers": [
         "CMake, with Bazel awareness",
         "GoogleTest"
@@ -731,7 +758,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-undefined-behaviour-and-sanitizers",
       "title": "Undefined behaviour, and the sanitizers that catch it",
-      "minutes": 26,
+      "minutes": 25,
       "covers": [
         "undefined behaviour",
         "profiling and sanitizers: perf, valgrind, ASan/UBSan"
@@ -751,7 +778,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l14-pybind11-simulation-core",
       "title": "pybind11 bindings over a C++ simulation core",
-      "minutes": 27,
+      "minutes": 26,
       "covers": [
         "pybind11 bindings over a C++ simulation core"
       ],
@@ -830,6 +857,16 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "constraints and generalised coordinates"
       ],
       "file": "t1_m13_classical_mechanics/08-constraints-generalised-coordinates.md"
+    },
+    {
+      "id": "l09-lagrangian-mechanics-hamilton-principle",
+      "title": "Lagrangian mechanics and Hamilton's principle",
+      "minutes": 23,
+      "covers": [
+        "Lagrangian mechanics and the Euler-Lagrange equation",
+        "Hamilton principle"
+      ],
+      "file": "t1_m13_classical_mechanics/09-lagrangian-mechanics-hamilton-principle.md"
     }
   ],
   "t1_m14_rigid_body_dynamics": [
@@ -908,6 +945,24 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "body, LVLH / RIC, perifocal, topocentric and sensor frames"
       ],
       "file": "t1_m15_rotating_frames/07-body-lvlh-perifocal-topocentric-and-sensor-frames.md"
+    },
+    {
+      "id": "l08-ut1-tai-gps-and-tt-time-scales",
+      "title": "UT1, TAI, GPS and TT time scales",
+      "minutes": 21,
+      "covers": [
+        "UT1, TAI, GPS and TT time scales"
+      ],
+      "file": "t1_m15_rotating_frames/08-ut1-tai-gps-and-tt-time-scales.md"
+    },
+    {
+      "id": "l09-precession-nutation-and-polar-motion",
+      "title": "Precession, nutation and polar motion",
+      "minutes": 20,
+      "covers": [
+        "precession, nutation, polar motion"
+      ],
+      "file": "t1_m15_rotating_frames/09-precession-nutation-and-polar-motion.md"
     }
   ],
   "t1_m18_atmospheric_flight": [
@@ -1183,12 +1238,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t0_m04_linear_algebra_1": {
-    "covered": 9,
+    "covered": 10,
     "total": 10,
-    "complete": false,
-    "missing": [
-      "skew-symmetric matrices and the cross-product matrix"
-    ]
+    "complete": true,
+    "missing": []
   },
   "t0_m05_linear_algebra_2": {
     "covered": 2,
@@ -1207,20 +1260,16 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t0_m06_calculus_single": {
-    "covered": 9,
+    "covered": 10,
     "total": 10,
-    "complete": false,
-    "missing": [
-      "separable first-order ODEs"
-    ]
+    "complete": true,
+    "missing": []
   },
   "t0_m07_calculus_multi": {
-    "covered": 9,
+    "covered": 10,
     "total": 10,
-    "complete": false,
-    "missing": [
-      "conservative fields and potential functions"
-    ]
+    "complete": true,
+    "missing": []
   },
   "t0_m08_odes": {
     "covered": 2,
@@ -1301,13 +1350,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t1_m13_classical_mechanics": {
-    "covered": 7,
+    "covered": 9,
     "total": 9,
-    "complete": false,
-    "missing": [
-      "Lagrangian mechanics and the Euler-Lagrange equation",
-      "Hamilton principle"
-    ]
+    "complete": true,
+    "missing": []
   },
   "t1_m14_rigid_body_dynamics": {
     "covered": 1,
@@ -1328,13 +1374,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t1_m15_rotating_frames": {
-    "covered": 9,
+    "covered": 11,
     "total": 11,
-    "complete": false,
-    "missing": [
-      "precession, nutation, polar motion",
-      "UT1, TAI, GPS and TT time scales"
-    ]
+    "complete": true,
+    "missing": []
   },
   "t1_m18_atmospheric_flight": {
     "covered": 15,

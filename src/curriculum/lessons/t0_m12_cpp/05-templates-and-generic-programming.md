@@ -1,7 +1,7 @@
 ---
 id: l05-templates-and-generic-programming
 title: Templates and generic programming
-minutes: 27
+minutes: 25
 covers:
   - templates and generic programming
 ---
