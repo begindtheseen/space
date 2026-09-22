@@ -26,8 +26,17 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 
-/** Wall clock for one compile or one run. */
-const COMPILE_TIMEOUT_MS = 30_000
+/**
+ * Wall clock for one compile or one run.
+ *
+ * Compiling gets two minutes because a cold toolchain is slow in a way a warm
+ * one never suggests: a first rustc after boot has to fault in its own
+ * libraries and a linker before it does any work, and thirty seconds was not
+ * enough for it on a CI runner. The ceiling is there to stop a runaway
+ * compile, not to referee how cold the machine is — telling her "the compiler
+ * took too long" when it was about to succeed is the worse failure.
+ */
+const COMPILE_TIMEOUT_MS = 120_000
 const RUN_TIMEOUT_MS = 10_000
 /** Past this much stdout+stderr the program is not teaching her anything. */
 const MAX_OUTPUT_BYTES = 256 * 1024
