@@ -164,11 +164,11 @@ $\lVert S\rVert_\infty \ge \lvert z+p\rvert/\lvert z-p\rvert$ contains no contro
 ## Check yourself
 
 ::: check
-A plant has an unstable pole at $p = 2$ and a right-half-plane zero at $z = 6$. Give the sensitivity peak bound, the bandwidth window, and the verdict.
+A vehicle has an unstable pole at $p = 1.5\,\mathrm{rad/s}$ and a right-half-plane zero at $z = 4\,\mathrm{rad/s}$ from its current sensor location. Relocating the sensor would move the zero to $9\,\mathrm{rad/s}$. Quantify what the relocation buys.
 :::
 
 ::: answer
-$\lVert S\rVert_\infty \ge \lvert 6+2\rvert/\lvert 6-2\rvert = 8/4 = 2$, a sensitivity peak of at least $6.02\,\mathrm{dB}$, and the same bound applies to $\lVert T\rVert_\infty$. The bandwidth window is $\omega_B > 2p = 4\,\mathrm{rad/s}$ from the unstable pole and $\omega_B < z/2 = 3\,\mathrm{rad/s}$ from the zero: empty. The ratio $z/p = 3$ is below the working threshold of four. Verdict: the plant is stabilisable — a right-half-plane zero does not prevent stabilisation — but no design will have acceptable sensitivity or margins, since $\alpha \le 1/(\lVert S\rVert_\infty - \tfrac{1}{2}) = 1/1.5 = 0.667$ caps the balanced disk margin at $\pm 6.02\,\mathrm{dB}$ and $\pm 36.9^\circ$, before any actuator lag or unmodelled mode is added. The engineering answer is to change the plant.
+Before: $\lVert S\rVert_\infty \ge (4 + 1.5)/(4 - 1.5) = 5.5/2.5 = 2.200$, that is $6.85\,\mathrm{dB}$, with $z/p = 2.67$ and a bandwidth window running from $2p = 3\,\mathrm{rad/s}$ down to $z/2 = 2\,\mathrm{rad/s}$ — empty, so no acceptable design exists at all. After: $\lVert S\rVert_\infty \ge (9 + 1.5)/(9 - 1.5) = 10.5/7.5 = 1.400$, that is $2.92\,\mathrm{dB}$, with $z/p = 6.0$ and a window from $3$ to $4.5\,\mathrm{rad/s}$ — narrow but usable. The relocation converts an infeasible problem into a feasible one and cuts the unavoidable sensitivity peak by $3.93\,\mathrm{dB}$. Because the peak bound also caps the balanced disk margin through $\alpha \le 1/(\lVert S\rVert_\infty - \tfrac{1}{2})$, the best achievable margin rises from $\alpha \le 0.588$ to $\alpha \le 1.111$, that is from $\pm 5.26\,\mathrm{dB}$ and $\pm 32.8^\circ$ to $\pm 10.88\,\mathrm{dB}$ and $\pm 58.1^\circ$. This is the calculation that justifies a hardware change to a programme: arithmetic on two numbers, and no amount of control design substitutes for it.
 :::
 
 ::: check

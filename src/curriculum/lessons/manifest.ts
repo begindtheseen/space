@@ -2553,6 +2553,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Adaptive control (MRAC, L1 adaptive) and its use and abuse in aerospace"
       ],
       "file": "t3_m30_robust_control/11-adaptive-control.md"
+    },
+    {
+      "id": "l12-flight-qualification-metrics",
+      "title": "Flight qualification metrics",
+      "minutes": 23,
+      "covers": [
+        "Flight qualification metrics: stability margin requirements across the envelope, discrete-time mu analysis, handling-qualities criteria"
+      ],
+      "file": "t3_m30_robust_control/12-flight-qualification-metrics.md"
     }
   ],
   "t3_m31_nonlinear_control": [
@@ -2712,6 +2721,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Embedded QP solvers (OSQP, qpOASES, HPIPM) and code generation"
       ],
       "file": "t3_m32_mpc/10-real-time-onboard-mpc.md"
+    },
+    {
+      "id": "l11-mpc-vs-lqr-and-applications",
+      "title": "MPC against LQR, and where MPC flies",
+      "minutes": 21,
+      "covers": [
+        "MPC vs LQR trade; MPC for powered descent, rendezvous and constrained attitude control"
+      ],
+      "file": "t3_m32_mpc/11-mpc-vs-lqr-and-applications.md"
     }
   ]
 }
@@ -2983,12 +3001,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t3_m30_robust_control": {
-    "covered": 11,
+    "covered": 12,
     "total": 12,
-    "complete": false,
-    "missing": [
-      "Flight qualification metrics: stability margin requirements across the envelope, discrete-time mu analysis, handling-qualities criteria"
-    ]
+    "complete": true,
+    "missing": []
   },
   "t3_m31_nonlinear_control": {
     "covered": 7,
@@ -3005,12 +3021,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t3_m32_mpc": {
-    "covered": 12,
+    "covered": 13,
     "total": 13,
-    "complete": false,
-    "missing": [
-      "MPC vs LQR trade; MPC for powered descent, rendezvous and constrained attitude control"
-    ]
+    "complete": true,
+    "missing": []
   },
   "t4_m33_least_squares": {
     "covered": 0,

@@ -130,7 +130,7 @@ Near the origin no constraint is active, so the receding-horizon law is a linear
 | $20$ | $2.0$ | $[\,2.430\ \ 3.391\,]$ | $0.9053$ |
 | $40$ | $4.0$ | $[\,2.583\ \ 3.443\,]$ | $0.8993$ |
 
-The short-horizon gains are stabilising here but weak: at $N = 1$ the slowest closed-loop mode has magnitude $0.9947$ per sample, a time constant of $0.1/(-\ln 0.9947) = 18.9\,\mathrm{s}$, against $1.0\,\mathrm{s}$ for the $N = 40$ gain. A one-step-ahead optimiser sees almost no benefit in pushing the position error down, because the position barely moves in $0.1\,\mathrm{s}$; it therefore does almost nothing about it. By $N = 40$ the gain agrees with LQR to three decimals, which is the equivalence to remember: the receding horizon converges to the infinite-horizon answer as the horizon grows. Stability at short horizons, though, is luck here rather than law — and buying it back with a terminal cost instead of with horizon length is exactly what the terminal ingredients do.
+The short-horizon gains are stabilising here but weak: at $N = 1$ the slowest closed-loop mode has magnitude $0.9947$ per sample, a time constant of $0.1/(-\ln 0.9947) = 18.8\,\mathrm{s}$, against $0.94\,\mathrm{s}$ for the $N = 40$ gain. A one-step-ahead optimiser sees almost no benefit in pushing the position error down, because the position barely moves in $0.1\,\mathrm{s}$; it therefore does almost nothing about it. By $N = 40$ the gain agrees with LQR to three decimals, which is the equivalence to remember: the receding horizon converges to the infinite-horizon answer as the horizon grows. Stability at short horizons, though, is luck here rather than law — and buying it back with a terminal cost instead of with horizon length is exactly what the terminal ingredients do.
 :::
 
 ## Receding, or shrinking
@@ -200,7 +200,7 @@ At $20\,\mathrm{Hz}$ the sample becomes $50\,\mathrm{ms}$, so $N = 40$ is now on
 | Open vs closed | Unmodelled $0.05\,\mathrm{m/s^2}$: open-loop plan ends $0.816\,\mathrm{m}$ off at $6\,\mathrm{s}$, re-solving ends $0.028\,\mathrm{m}$ off |
 | Offset | No integral action: steady error $0.0193\,\mathrm{m}$, predicted by $(\mathbf{I} - \mathbf{A} + \mathbf{B}\mathbf{K})^{-1}\mathbf{B}w$ |
 | Time consistency | With the Riccati terminal cost the re-solved plan equals the discarded tail; with a truncated cost it does not |
-| Horizon effect | $\mathbf{K}_{\text{rh}} \to \mathbf{K}_{\text{lqr}} = [\,2.586\ \ 3.443\,]$ as $N$ grows; $N = 1$ gives a $18.8\,\mathrm{s}$ time constant |
+| Horizon effect | $\mathbf{K}_{\text{rh}} \to \mathbf{K}_{\text{lqr}} = [\,2.586\ \ 3.443\,]$ as $N$ grows; $N = 1$ gives an $18.8\,\mathrm{s}$ time constant |
 | Receding vs shrinking | Receding: fixed $N$, no natural end. Shrinking: $N_k = N_{\text{total}} - k$ toward a fixed epoch, time-varying law |
 | Computational delay | Solve from $\mathbf{A}\hat{\mathbf{x}}_k + \mathbf{B}\mathbf{u}_{k-1}$ and apply at the next frame: a modelled delay instead of an unmodelled one |
 

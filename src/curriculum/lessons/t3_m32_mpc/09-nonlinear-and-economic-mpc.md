@@ -20,7 +20,7 @@ Both are used in flight, both cost guarantees, and in both cases the engineering
 The honest way to decide whether a linear model is adequate is to measure its error over the horizon you intend to use, against a propagation you trust.
 
 ::: example How wrong Clohessy-Wiltshire gets
-The Clohessy–Wiltshire equations linearise relative orbital motion about a circular reference orbit, and they are the standard model for rendezvous MPC. Take a target on a circular orbit at $a = 6778\,\mathrm{km}$ (about $400\,\mathrm{km}$ altitude, period $92.6\,\mathrm{min}$) and a chaser displaced along-track. Propagate both vehicles for one full orbit with a two-body integrator and express the chaser in the target's local frame, then compare against the CW state-transition matrix applied to the same initial relative state:
+The Clohessy–Wiltshire equations linearise relative orbital motion about a circular reference orbit, and they are the standard model for rendezvous MPC; their derivation and state transition matrix are the business of the relative motion and proximity operations module. Take a target on a circular orbit at $a = 6778\,\mathrm{km}$ (about $400\,\mathrm{km}$ altitude, period $92.6\,\mathrm{min}$) and a chaser displaced along-track. Propagate both vehicles for one full orbit with a two-body integrator and express the chaser in the target's local frame, then compare against the CW state-transition matrix applied to the same initial relative state:
 
 | along-track offset | CW prediction | two-body truth | position error | error as a fraction of the offset |
 | --- | --- | --- | --- | --- |
