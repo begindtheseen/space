@@ -138,7 +138,7 @@ Why does $\alpha=10^{-3}$ produce sigma-point weights on the order of $\pm10^6$ 
 :::
 
 ::: answer
-The non-central weights are $W_i^{(m)}=1/(2(n+\lambda))$ with $n+\lambda=\alpha^2(n+\kappa)$; for $n=4$, $\kappa=0$, $\alpha=10^{-3}$, this is $1/(2\times1.6\times10^{-5})\approx31{,}250$ times a factor that works out to roughly $10^5$-scale weights, with the central weight $W_0^{(m)}=\lambda/(n+\lambda)$ taking a correspondingly large negative value so that all $2n+1$ weights still sum to exactly $1$. This is not an error — it is required for the transform to retain its accuracy guarantees even when the sigma points themselves are clustered very close to the mean — but it does mean the final answer is being computed as a difference of large numbers, which is a legitimate numerical-conditioning concern distinct from whether the underlying statistics are correct.
+The non-central weights are $W_i^{(m)}=1/(2(n+\lambda))$ with $n+\lambda=\alpha^2(n+\kappa)$; for $n=4$, $\kappa=0$, $\alpha=10^{-3}$, $n+\lambda=4\times10^{-6}$, so $W_i^{(m)}=1/(2\times4\times10^{-6})=125{,}000$, with the central weight $W_0^{(m)}=\lambda/(n+\lambda)\approx-1{,}000{,}000$ taking a correspondingly large negative value so that all $2n+1$ weights still sum to exactly $1$. This is not an error — it is required for the transform to retain its accuracy guarantees even when the sigma points themselves are clustered very close to the mean — but it does mean the final answer is being computed as a difference of large numbers, which is a legitimate numerical-conditioning concern distinct from whether the underlying statistics are correct.
 :::
 
 ::: check

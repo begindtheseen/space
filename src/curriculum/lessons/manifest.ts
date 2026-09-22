@@ -716,6 +716,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Fundamental types; fixed-width types from cstdint; size_t"
       ],
       "file": "cod_cpp_01_basics/04-fundamental-and-fixed-width-types.md"
+    },
+    {
+      "id": "l05-promotion-conversion-and-undefined-behaviour",
+      "title": "Integer promotion, signed versus unsigned, and undefined behaviour",
+      "minutes": 21,
+      "covers": [
+        "Integer promotion, signed/unsigned pitfalls, signed overflow as undefined behaviour"
+      ],
+      "file": "cod_cpp_01_basics/05-promotion-conversion-and-undefined-behaviour.md"
     }
   ],
   "cod_py_01_basics": [
@@ -727,6 +736,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Interpreter, REPL, running scripts, the difference between them"
       ],
       "file": "cod_py_01_basics/01-interpreter-repl-and-scripts.md"
+    },
+    {
+      "id": "l02-numbers-text-and-f-strings",
+      "title": "Numbers, text and f-strings",
+      "minutes": 18,
+      "covers": [
+        "int, float, bool, str; f-strings; str methods"
+      ],
+      "file": "cod_py_01_basics/02-numbers-text-and-f-strings.md"
     }
   ],
   "t0_m01_algebra_precalc": [
@@ -6543,11 +6561,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "cod_py_01_basics": {
-    "covered": 1,
+    "covered": 2,
     "total": 12,
     "complete": false,
     "missing": [
-      "int, float, bool, str; f-strings; str methods",
       "list, tuple, dict, set; slicing; truthiness; mutability",
       "if/elif/else; for, while, range, enumerate, zip; break/continue/else",
       "Functions: positional, keyword, default, *args, **kwargs",
@@ -6717,11 +6734,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "cod_cpp_01_basics": {
-    "covered": 6,
+    "covered": 7,
     "total": 15,
     "complete": false,
     "missing": [
-      "Integer promotion, signed/unsigned pitfalls, signed overflow as undefined behaviour",
       "const, constexpr, consteval, auto",
       "Values, references and the difference from Python names",
       "Functions, overloading, default arguments",
