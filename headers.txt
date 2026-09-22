@@ -1,0 +1,23 @@
+HTTP/2 200 
+content-type: application/json
+content-length: 2568583
+date: Tue, 22 Sep 2026 04:20:05 GMT
+x-download-options: noopen
+vary: Accept-Encoding
+vary: Origin
+access-control-allow-origin: *
+access-control-allow-methods: GET
+access-control-expose-headers: 
+access-control-max-age: 7200
+x-farm-id: us
+etag: W/"2a53ac344d09df3099eea6845e884d1f"
+cache-control: max-age=0, private, must-revalidate
+x-request-id: f08d31e8502ff4a8599eb56b8a682c19
+x-runtime: 0.039364
+strict-transport-security: max-age=31536000; includeSubDomains
+x-xss-protection: 1; mode=block
+x-cache: Miss from cloudfront
+via: 1.1 956a660116c60441ab5d60c261d60fcc.cloudfront.net (CloudFront)
+x-amz-cf-pop: ORD58-P16
+x-amz-cf-id: PwJBrMvVdx2poyDYQVgPgXsf5lIIK5KGyy9Z6SO3YrApFVdZ5hXyAQ==
+
