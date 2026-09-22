@@ -1,7 +1,7 @@
 ---
 id: l02-starship-ascent-entry-and-landing
 title: "Starship: ascent, entry, and landing control"
-minutes: 18
+minutes: 20
 covers:
   - "GNC Engineer (Starship): ascent, entry and landing control, 6-DOF simulation, flight control of the largest vehicle ever flown"
 ---
@@ -31,7 +31,7 @@ During entry, the vehicle's body flaps are the dominant control effectors, and t
 Get the timing wrong in one direction — flip too early, while the flaps still have authority to lose and the burn is not yet needed — and the vehicle bleeds altitude it cannot recover. Get it wrong in the other direction — flip too late — and the vehicle runs out of authority and altitude at the same time, with no effector strong enough yet to arrest the situation. The control law has to reason about both actuators' authority as a function of the trajectory itself, not as a fixed property of the vehicle, which is exactly the kind of nonlinear, trajectory-coupled control problem this curriculum's nonlinear-control and powered-descent-guidance modules are built to prepare you to reason about correctly rather than by intuition alone.
 
 ::: warning Entry aerodynamics do not transfer from a subsonic control course
-A control law tuned against a linearized, subsonic aerodynamic model will not tell you anything trustworthy about hypersonic or transonic entry behavior, where the aerodynamic coefficients themselves are strong, nonlinear functions of Mach number and angle of attack. Treat entry as its own regime with its own aerodynamic database, not as "the same control problem, just faster."
+A control law tuned against a linearized, subsonic aerodynamic model will not tell you anything trustworthy about hypersonic or transonic entry behavior, where the aerodynamic coefficients themselves are strong, nonlinear functions of Mach number and angle of attack. Treat entry as its own regime with its own aerodynamic database, not as "the same control problem, only faster."
 :::
 
 ## A week in this seat, and what it produces
@@ -65,7 +65,7 @@ None of that makes the family closed to you. It changes what counts as convincin
 ## Check yourself
 
 ::: check
-Name the three flight phases this lesson organizes Starship GNC work around, and state in one sentence what makes entry different in kind, not just in difficulty, from ascent.
+Name the three flight phases this lesson organizes Starship GNC work around, and state in one sentence what makes entry different in kind, not only in difficulty, from ascent.
 :::
 
 ::: answer
@@ -73,7 +73,7 @@ Ascent, entry, and landing. Ascent is the most conventional of the three — ord
 :::
 
 ::: check
-Explain why the landing flip is specifically a control-allocation problem, and not just "a rotation the vehicle has to perform."
+Explain why the landing flip is specifically a control-allocation problem, and not merely "a rotation the vehicle has to perform."
 :::
 
 ::: answer

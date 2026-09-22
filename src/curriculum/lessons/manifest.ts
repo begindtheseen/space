@@ -93,11 +93,22 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-starship-ascent-entry-and-landing",
       "title": "Starship: ascent, entry, and landing control",
-      "minutes": 18,
+      "minutes": 20,
       "covers": [
         "GNC Engineer (Starship): ascent, entry and landing control, 6-DOF simulation, flight control of the largest vehicle ever flown"
       ],
       "file": "car_02_role_families/02-starship-ascent-entry-and-landing.md"
+    }
+  ],
+  "car_03_levels_and_quals": [
+    {
+      "id": "l01-basic-vs-preferred",
+      "title": "Basic versus preferred: which lines can end an application",
+      "minutes": 19,
+      "covers": [
+        "BASIC versus PREFERRED qualifications: hard filter versus ranking signal"
+      ],
+      "file": "car_03_levels_and_quals/01-basic-vs-preferred.md"
     }
   ],
   "car_04_degree_reality": [
@@ -118,6 +129,27 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "what this platform can do and what it cannot: it builds capability, not a credential"
       ],
       "file": "car_04_degree_reality/02-what-self-study-builds.md"
+    },
+    {
+      "id": "l03-path-one-degree-parallel",
+      "title": "Path 1: the degree, taken parallel",
+      "minutes": 20,
+      "covers": [
+        "Path 1, degree-parallel: use the curriculum to be the strongest candidate in a graduating cohort, because the real differentiator is demonstrated shipped 6-DOF, estimation and guidance work that almost no new grad has",
+        "accredited routes that fit alongside work: ABET-accredited part-time and online bachelor’s programmes, community college transfer, competency-based models"
+      ],
+      "file": "car_04_degree_reality/03-path-one-degree-parallel.md"
+    }
+  ],
+  "car_07_resume_and_referrals": [
+    {
+      "id": "l01-one-page-and-the-top-third",
+      "title": "One page, reverse chronological: what goes in the top third",
+      "minutes": 15,
+      "covers": [
+        "one page, reverse chronological, and what belongs in the top third"
+      ],
+      "file": "car_07_resume_and_referrals/01-one-page-and-the-top-third.md"
     }
   ],
   "t0_m01_algebra_precalc": [
@@ -6774,11 +6806,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "car_03_levels_and_quals": {
-    "covered": 0,
+    "covered": 1,
     "total": 10,
     "complete": false,
     "missing": [
-      "BASIC versus PREFERRED qualifications: hard filter versus ranking signal",
       "New Graduate Engineer, GNC (26/27, Starlink, Redmond WA): required and preferred",
       "GNC Engineer Level I to II: the 2+ years line and the Dragon 1+ years variant",
       "the full preferred list for GNC Engineer and what each item signals",
@@ -6791,12 +6822,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "car_04_degree_reality": {
-    "covered": 2,
+    "covered": 4,
     "total": 10,
     "complete": false,
     "missing": [
-      "Path 1, degree-parallel: use the curriculum to be the strongest candidate in a graduating cohort, because the real differentiator is demonstrated shipped 6-DOF, estimation and guidance work that almost no new grad has",
-      "accredited routes that fit alongside work: ABET-accredited part-time and online bachelor’s programmes, community college transfer, competency-based models",
       "Path 2, side door then transfer: SRE GNC allows 4+ years of professional software or SRE experience in lieu of a degree and sits inside the GNC org; GNC Software Engineer and simulation and tools roles weight software skill heavily; internal transfer at SpaceX is common",
       "Path 3, NewSpace ladder: Varda, Stoke, Firefly, Astra, True Anomaly, Impulse, Relativity and Intuitive Machines hire GNC with looser credential gates, and 2 to 3 years there converts to 5+ years professional GNC experience or 7+ years in lieu of a degree at SpaceX senior level",
       "realistic timelines for each path, stated in years",
@@ -6846,11 +6875,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "car_07_resume_and_referrals": {
-    "covered": 0,
+    "covered": 1,
     "total": 13,
     "complete": false,
     "missing": [
-      "one page, reverse chronological, and what belongs in the top third",
       "encoding the basic qualifications so a keyword scan finds them: control systems, orbital mechanics, classical dynamics, aerodynamics, sensors and actuators, modeling and simulation, C++ and Python",
       "quantified bullets: what you did, how, and the measured result",
       "the projects section as the primary section for candidates without industry GNC experience",
