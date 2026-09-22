@@ -4755,7 +4755,7 @@ export const CODING: Module[] = [
         starter:
           '#include <cstdint>\n#include <cstdio>\n#include <cstddef>\n\nint main() {\n    // TODO: print the four values described in the prompt, one per line\n    return 0;\n}\n',
         solution:
-          '#include <cstdint>\n#include <cstdio>\n#include <cstddef>\n\nint main() {\n    std::int8_t a = static_cast<std::int8_t>(200);   // implementation-defined narrowing\n    std::printf("%d\\n", static_cast<int>(a));        // -56 on two-s-complement\n    std::printf("%d\\n", static_cast<int>(static_cast<std::uint8_t>(-1)));  // 255\n    std::printf("%s\\n", (-1 < 1u) ? "true" : "false");  // false: -1 converts to a huge unsigned\n    std::printf("%zu\\n", sizeof(std::size_t));       // 8 on LP64\n    return 0;\n}\n',
+          '#include <cstdint>\n#include <cstdio>\n#include <cstddef>\n\nint main() {\n    std::int8_t a = static_cast<std::int8_t>(200);   // C++20: wraps modulo 2^8, and is defined\n    std::printf("%d\\n", static_cast<int>(a));        // -56\n    std::printf("%d\\n", static_cast<int>(static_cast<std::uint8_t>(-1)));  // 255\n    // The next line warns under -Wall (-Wsign-compare), which is the point of\n    // it. Build without -Werror, read the warning, then work out the fix.\n    std::printf("%s\\n", (-1 < 1u) ? "true" : "false");  // false: -1 converts to a huge unsigned\n    std::printf("%zu\\n", sizeof(std::size_t));       // 8 on LP64\n    return 0;\n}\n',
         hours: 1.5,
       },
       {
@@ -4801,7 +4801,7 @@ export const CODING: Module[] = [
         id: 'cpp01_c5',
         front: 'int8_t x = 200; what happens?',
         back:
-          'The value does not fit, so it is converted; in practice on two-complement hardware x holds -56, and with -Wconversion the compiler warns. The lesson is to pick a type wide enough for the range, which is why flight code uses explicit fixed-width types.',
+          'The value does not fit, so it is converted; since C++20 the conversion is defined as the value modulo 2^8, so x holds -56, and with -Wconversion the compiler warns. The lesson is to pick a type wide enough for the range, which is why flight code uses explicit fixed-width types.',
       },
       {
         id: 'cpp01_c6',

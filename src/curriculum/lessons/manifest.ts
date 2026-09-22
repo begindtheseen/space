@@ -1013,6 +1013,19 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       "file": "car_11_domain_round/04-reading-margins-and-the-nyquist-criterion.md"
     }
   ],
+  "car_12_first_principles": [
+    {
+      "id": "l01-the-whiteboard-standard",
+      "title": "The whiteboard round and its standard",
+      "minutes": 22,
+      "covers": [
+        "the standard interviewers describe: state assumptions fast, work through the math without drift, sanity check at the end",
+        "why candidates who ramble or stall lose this round even when they know the material",
+        "thinking aloud as an explicitly evaluated skill"
+      ],
+      "file": "car_12_first_principles/01-the-whiteboard-standard.md"
+    }
+  ],
   "car_13_behavioral_star": [
     {
       "id": "l01-the-round-and-star",
@@ -1022,6 +1035,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "STAR structure: Situation, Task, Action, Result, and the common failure of spending most of the answer on Situation"
       ],
       "file": "car_13_behavioral_star/01-the-round-and-star.md"
+    },
+    {
+      "id": "l02-the-action-section",
+      "title": "The Action section, in the first person singular",
+      "minutes": 22,
+      "covers": [
+        "STAR structure: Situation, Task, Action, Result, and the common failure of spending most of the answer on Situation"
+      ],
+      "file": "car_13_behavioral_star/02-the-action-section.md"
     }
   ],
   "cod_cpp_01_basics": [
@@ -8026,12 +8048,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "car_12_first_principles": {
-    "covered": 0,
+    "covered": 3,
     "total": 15,
     "complete": false,
     "missing": [
-      "the standard interviewers describe: state assumptions fast, work through the math without drift, sanity check at the end",
-      "why candidates who ramble or stall lose this round even when they know the material",
       "variable-mass Newtonian mechanics and the thrust term as momentum flux plus a pressure term",
       "deriving Tsiolkovsky from the variable-mass equation",
       "planar 3-DOF powered flight: the velocity, flight-path-angle, position and mass equations",
@@ -8043,8 +8063,7 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
       "physics puzzles and how to attack an unfamiliar one",
       "the coding rounds: 2 to 3 problems at medium to hard difficulty, C++ for avionics and embedded",
       "coding round discipline: clarify, state the approach and complexity, write it, test the edges",
-      "systems and architecture rounds: real-time considerations, embedded constraints, redundancy, fault management, sensor fusion architecture",
-      "thinking aloud as an explicitly evaluated skill"
+      "systems and architecture rounds: real-time considerations, embedded constraints, redundancy, fault management, sensor fusion architecture"
     ]
   },
   "car_13_behavioral_star": {
