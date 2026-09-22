@@ -3680,6 +3680,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Maneuver estimation and reconstruction"
       ],
       "file": "t4_m39_orbit_determination/12-maneuver-estimation-and-reconstruction.md"
+    },
+    {
+      "id": "l13-relative-od-and-autonomous-onboard-od",
+      "title": "Relative orbit determination and autonomous onboard OD",
+      "minutes": 14,
+      "covers": [
+        "Relative orbit determination for constellations; autonomous onboard orbit determination"
+      ],
+      "file": "t4_m39_orbit_determination/13-relative-od-and-autonomous-onboard-od.md"
     }
   ],
   "t5_m41_ascent_guidance": [
@@ -4108,12 +4117,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t4_m39_orbit_determination": {
-    "covered": 12,
+    "covered": 13,
     "total": 13,
-    "complete": false,
-    "missing": [
-      "Relative orbit determination for constellations; autonomous onboard orbit determination"
-    ]
+    "complete": true,
+    "missing": []
   },
   "t5_m40_guidance_fundamentals": {
     "covered": 0,

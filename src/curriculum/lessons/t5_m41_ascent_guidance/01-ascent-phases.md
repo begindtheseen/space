@@ -47,19 +47,19 @@ The kick angle is small on purpose. It sets the entire character of the ascent t
 Once tipped, the vehicle flies zero angle of attack and lets the equations above do the steering: gravity's component perpendicular to the velocity rotates the flight-path angle down, smoothly, with no attitude command beyond "point along the velocity vector." This is the **gravity turn**, and it is the default atmospheric steering law for exactly the reason the previous lesson's forced choice implies: flying any nonzero, commanded angle of attack through dense air multiplies dynamic pressure by that angle and produces a bending load, a subject the next lesson develops in full. Zero AoA is not chosen because it is convenient for guidance — it is chosen because the atmosphere punishes the alternative.
 
 ::: example A full nominal ascent
-Take the two-stage vehicle this module uses throughout: stage 1 reuses the atmospheric flight module's Falcon-9-class booster (549 t liftoff mass, 411 t of stage-1 propellant, 9 engines totalling 7.607 MN at sea level and 8.227 MN in vacuum, $I_{sp}$ 282 s sea level and 311 s vacuum, 3.66 m diameter), with a stage 2 of 4.5 t dry mass, a single 934 kN, 348 s $I_{sp}$ vacuum engine, and a 9 t payload. Fly it from the pad at $2^\circ$ pitch kick, injected once the climb rate reaches 50 m/s, then zero angle of attack for the rest of stage 1, integrating the full spherical equations above against the layered atmosphere:
+Take the two-stage vehicle this module uses throughout: stage 1 reuses the atmospheric flight module's Falcon-9-class booster (549 t liftoff mass, 411 t of stage-1 propellant, 9 engines totalling 7.607 MN at sea level and 8.227 MN in vacuum, $I_{sp}$ 282 s sea level and 311 s vacuum, 3.66 m diameter), with a stage 2 of 4.5 t dry mass, a single 934 kN, 348 s $I_{sp}$ vacuum engine, and a 9 t payload. Fly it from the pad at $2^\circ$ pitch kick, injected once the climb rate reaches 50 m/s, then zero angle of attack for the rest of stage 1, integrating the full spherical equations above against the layered atmosphere. Speed and flight-path angle below are relative to the air, which is what governs $\bar q$ and what the gravity-turn equations actually steer on:
 
-| $t$ (s) | phase | $h$ (km) | $v$ (m/s) | $\gamma$ (deg) | $\bar q$ (kPa) |
+| $t$ (s) | phase | $h$ (km) | $v$ (m/s, air-rel.) | $\gamma$ (deg, air-rel.) | $\bar q$ (kPa) |
 | --- | --- | --- | --- | --- | --- |
-| 0.0 | vertical rise | 0.00 | 0 (+465 corotation) | 90.0 | 0.0 |
-| 11.1 | pitch kick | 0.26 | 468 (air-relative 50) | 88.0 | 1.5 |
-| 30.0 | gravity turn | 2.20 | 529 | 83.2 | 6.9 |
-| 63.6 | **max-Q** | 11.0 | 880 (air-rel.) | 66$^\ast$ | **44.6** |
-| 90.0 | gravity turn | 106.3$^\dagger$ | 1450 | 54.2 | 6.0 |
-| 120.0 | gravity turn | 39.1 | 2227 | 40.9 | 0.5 |
-| 151.5 | **staging** | 60.4 | 3608 | 12.1 | 0.001 |
+| 0.0 | vertical rise | 0.00 | 0 | 90.0 | 0.0 |
+| 11.1 | pitch kick | 0.27 | 50 | $90.0 \to 88.0$ | 1.5 |
+| 30.1 | gravity turn | 2.20 | 162 | 75.9 | 13.0 |
+| 63.6 | **max-Q** | 11.0 | 495 | 47.2 | **44.6** |
+| 90.1 | gravity turn | 22.5 | 964 | 31.0 | 27.5 |
+| 120.1 | gravity turn | 39.1 | 1781 | 20.1 | 6.9 |
+| 151.5 | **staging** | 60.4 | 3151 | 13.9 | 1.4 |
 
-($^\ast$ the flight-path angle at max-Q, read from the full run; $^\dagger$ a coarser reporting grid would misplace this row — the table samples every 30 s except near max-Q, so treat intermediate figures as illustrative of the trend rather than a literal fifth data point.) Reading down the $\bar q$ column: it rises from nothing, peaks at 44.6 kPa at $t = 63.6$ s, $h = 11.0$ km, Mach 1.68 — in the same range the atmospheric flight module found for a similar vehicle — and by staging has fallen to about a thousandth of a kilopascal, three orders of magnitude below the peak. The gravity turn, entirely open loop, has carried the vehicle from vertical to $12.1^\circ$ above the horizon while dynamic pressure rose and fell beneath it, using no attitude command beyond zero angle of attack the entire way.
+Reading down the $\bar q$ column: it rises from nothing, peaks at 44.6 kPa at $t = 63.6$ s, $h = 11.0$ km, Mach 1.68 — in the same range the atmospheric flight module found for a similar vehicle — then falls back to 1.4 kPa by staging, a factor of 32 below the peak. The gravity turn, entirely open loop, carries the vehicle from vertical to $13.9^\circ$ above the local horizon (air-relative) while dynamic pressure rises and falls beneath it, using no attitude command beyond zero angle of attack the entire way. Converted to the inertial frame stage 2's guidance actually works in — folding in the roughly 465 m/s of eastward speed the launch site carries from Earth's rotation — the staging state is $v_r = 758.6\ \mathrm{m/s}$, $v_t = 3527.5\ \mathrm{m/s}$, $\gamma = 12.1^\circ$: the number this module uses from here on whenever staging feeds the next phase.
 :::
 
 ## Gravity loss and drag loss: a trade neither extreme wins
