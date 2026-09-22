@@ -17,14 +17,8 @@ import { IconCheck, IconClock, IconPlay, IconX } from '@/components/icons'
 import { Button, Card, CardHead, Empty } from '@/components/ui'
 import { dag as buildDag } from '@/curriculum'
 import { startFocus, unpark } from '@/engine/apply'
-import {
-  blockSummary,
-  blocksToday,
-  BLOCK_MINUTES,
-  DEFAULT_BLOCK,
-  type FocusPick,
-} from '@/engine/focus'
-import { dayKey } from '@/engine/state'
+import { blockSummary, BLOCK_MINUTES, DEFAULT_BLOCK, type FocusPick } from '@/engine/focus'
+import { blocksToday, dayKey } from '@/engine/state'
 import { useLearner } from '@/hooks/useLearner'
 import { navigate } from '@/lib/router'
 import { nextUp } from '@/lib/nextUp'

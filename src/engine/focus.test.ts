@@ -20,7 +20,7 @@ import {
   type FocusInputs,
   type FocusPick,
 } from './focus'
-import { newLearnerState, streak } from './state'
+import { blocksToday, newLearnerState, streak } from './state'
 
 const at = (iso: string) => new Date(iso)
 const T0 = at('2026-03-02T10:00:00.000Z')
@@ -289,5 +289,26 @@ describe('what she is told afterwards', () => {
     expect(blockSummary(1, 15)).toBe('15 minutes done. That was the hard part.')
     expect(blockSummary(3, 25)).toBe('25 minutes done. 3 blocks today.')
     expect(blockSummary(1, 1)).toContain('1 minute done')
+  })
+})
+
+describe('the module boundary', () => {
+  it('imports nothing from state at runtime', () => {
+    // state.ts calls coerceParked and coerceRun while building a fresh state.
+    // A value import back the other way would close a cycle, and which of the
+    // two modules finished evaluating first would then decide whether
+    // newLearnerState sees a function or undefined. Types are erased and are
+    // fine; anything else is not.
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const fs = require('node:fs') as typeof import('node:fs')
+    const src = fs.readFileSync(new URL('./focus.ts', import.meta.url), 'utf8')
+    const imports = src.match(/^import .*from '\.\/state'/gm) ?? []
+    for (const line of imports) expect(line.startsWith('import type ')).toBe(true)
+  })
+
+  it('counts the day\'s blocks off the day record', () => {
+    const s0 = startFocus(newLearnerState(T0), pick, 15, T0)
+    expect(blocksToday(s0, T0)).toBe(0)
+    expect(blocksToday(endFocus(s0, at('2026-03-02T10:15:00.000Z')), T0)).toBe(1)
   })
 })

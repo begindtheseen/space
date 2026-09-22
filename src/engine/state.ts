@@ -352,6 +352,15 @@ export function streak(state: LearnerState, now: Date = new Date()): number {
   return n
 }
 
+/** Focus blocks finished on a given day. */
+export function blocksOn(state: LearnerState, day: string): number {
+  return state.days[day]?.blocks ?? 0
+}
+
+export function blocksToday(state: LearnerState, now: Date = new Date()): number {
+  return blocksOn(state, dayKey(now))
+}
+
 function hasActivity(state: LearnerState, key: string): boolean {
   const d = state.days[key]
   // A finished focus block counts even when it banked under a minute. She

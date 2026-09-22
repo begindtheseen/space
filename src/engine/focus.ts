@@ -29,11 +29,17 @@
    4. Stopping feels like failure. A block that ends is a block that was
       completed, and the app says so. Nothing here ever reports a shortfall.
 
-   Everything in this file is pure: it takes state and a clock and returns new
+   Everything in this file is pure: it takes values and a clock and returns new
    values. The clock is always a parameter so the behaviour can be tested at a
    specific moment rather than whenever the suite happens to run.
+
+   Nothing here imports the learner state at runtime — only its types, which
+   are erased. State imports this file to coerce what comes off disk, so a
+   value import in the other direction would close a cycle, and a cycle between
+   these two modules would decide at load order whether `newLearnerState` sees
+   a defined `coerceParked`. Counting blocks per day therefore lives in
+   state.ts, next to the day records it reads.
    ========================================================================== */
-import { dayKey, type LearnerState } from './state'
 import type { LiveSession } from './resume'
 
 /**
@@ -307,14 +313,6 @@ export function coerceRun(raw: unknown): FocusRun | undefined {
 }
 
 /* ── Counting blocks ──────────────────────────────────────────────────────── */
-
-export function blocksOn(state: LearnerState, day: string): number {
-  return state.days[day]?.blocks ?? 0
-}
-
-export function blocksToday(state: LearnerState, now: Date = new Date()): number {
-  return blocksOn(state, dayKey(now))
-}
 
 /**
  * How a finished block is described back to her.
