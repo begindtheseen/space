@@ -125,7 +125,7 @@ Both describe a split between what a control law directly commands and what is l
 :::
 
 ::: check
-Why is passive gyroscopic stiffening not simply "free" performance recovery, and what does a mission accept in exchange for it?
+Why is passive gyroscopic stiffening not "free" performance recovery, and what does a mission accept in exchange for it?
 :::
 
 ::: answer

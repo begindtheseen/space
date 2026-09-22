@@ -2726,6 +2726,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Control of underactuated systems"
       ],
       "file": "t3_m31_nonlinear_control/13-underactuated-systems.md"
+    },
+    {
+      "id": "l14-bang-bang-and-pwpf",
+      "title": "Bang-bang and on-off thruster control: Schmitt trigger and PWPF",
+      "minutes": 26,
+      "covers": [
+        "Bang-bang and on-off thruster control: Schmitt trigger and pulse-width pulse-frequency modulation"
+      ],
+      "file": "t3_m31_nonlinear_control/14-bang-bang-and-pwpf.md"
     }
   ],
   "t3_m32_mpc": [
@@ -3388,12 +3397,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t3_m31_nonlinear_control": {
-    "covered": 13,
+    "covered": 14,
     "total": 14,
-    "complete": false,
-    "missing": [
-      "Bang-bang and on-off thruster control: Schmitt trigger and pulse-width pulse-frequency modulation"
-    ]
+    "complete": true,
+    "missing": []
   },
   "t3_m32_mpc": {
     "covered": 13,
