@@ -14,7 +14,7 @@ The state-space module's observability test is a statement about the *dynamics a
 
 Recall the state-space module's rank test: the pair $(\mathbf{F},\mathbf{H})$ is observable if the observability matrix $\mathcal{O} = \begin{pmatrix}\mathbf{H}\\ \mathbf{H}\mathbf{F}\\ \vdots \\ \mathbf{H}\mathbf{F}^{n-1}\end{pmatrix}$ has full column rank $n$. When it does not, its null space — every vector $\mathbf{v}$ with $\mathbf{H}\mathbf{F}^j\mathbf{v} = \mathbf{0}$ for $j = 0,\ldots,n-1$ — is the **unobservable subspace**: a set of directions in state space that no sequence of measurements, however long, could ever distinguish from zero. This subspace has a property worth naming because everything below depends on it: it is **$\mathbf{F}$-invariant**. If $\mathbf{v}$ is unobservable, so is $\mathbf{F}\mathbf{v}$ — the dynamics can move a state within the unobservable subspace, but can never carry it out into a direction the sensor would notice, and this is precisely why the subspace, once entered, is a trap a measurement cannot spring.
 
-Translate that into what the Kalman gain does. $\mathbf{K}_k = \mathbf{P}_k^-\mathbf{H}^{\mathsf{T}}\mathbf{S}_k^{-1}$ has a nonzero row for a given state only if $\mathbf{H}^{\mathsf{T}}$, or the correlation $\mathbf{P}_k^-$ carries into it, is nonzero there. Along a direction with zero correlation to anything $\mathbf{H}$ can see, the update simply cannot act — not because it chooses not to, but because the formula has nothing to act on. What the last lesson called "detectability" as an abstract hypothesis, this lesson makes concrete: an unobservable direction is a direction the update step is structurally blind to, forever.
+Translate that into what the Kalman gain does. $\mathbf{K}_k = \mathbf{P}_k^-\mathbf{H}^{\mathsf{T}}\mathbf{S}_k^{-1}$ has a nonzero row for a given state only if $\mathbf{H}^{\mathsf{T}}$, or the correlation $\mathbf{P}_k^-$ carries into it, is nonzero there. Along a direction with zero correlation to anything $\mathbf{H}$ can see, the update cannot act at all — not because it chooses not to, but because the formula has nothing to act on. What the last lesson called "detectability" as an abstract hypothesis, this lesson makes concrete: an unobservable direction is a direction the update step is structurally blind to, forever.
 
 ## The clean case: a direction fully decoupled from the sensor
 
@@ -75,14 +75,14 @@ print(w, v[:, np.argmax(w)])
 ```
 
 ::: warning Unobservable is not the same as unstable
-The two examples above both had an unobservable direction whose own dynamics were, at best, neutral — a random walk, or a state fed only by an integrated velocity that is itself only ever approximately known. If the unobservable direction is instead genuinely *contractive* — recall the mean-reverting gyro-bias exception from the predict-and-update lesson — its covariance does not climb even without any measurement help; it settles to its own stationary spread and simply never improves beyond that, forever uncorrected but also never unbounded. Unobservable only forces unbounded growth when the unobservable subspace is also unstable or marginal; the steady-state lesson's detectability hypothesis was exactly the requirement that this combination never occurs.
+The two examples above both had an unobservable direction whose own dynamics were, at best, neutral — a random walk, or a state fed only by an integrated velocity that is itself only ever approximately known. If the unobservable direction is instead genuinely *contractive* — recall the mean-reverting gyro-bias exception from the predict-and-update lesson — its covariance does not climb even without any measurement help; it settles to its own stationary spread and never improves beyond that, forever uncorrected but also never unbounded. Unobservable only forces unbounded growth when the unobservable subspace is also unstable or marginal; the steady-state lesson's detectability hypothesis was exactly the requirement that this combination never occurs.
 :::
 
 ## Detectability, understood rather than cited
 
 The last lesson stated detectability of $(\mathbf{F},\mathbf{H})$ as a hypothesis for a bounded steady state to exist, and promised this lesson would make it concrete. It now can be, in one sentence: an unstable-or-marginal, unobservable direction is exactly a direction whose covariance the Riccati recursion has no mechanism to bound, because the update term is structurally zero there and the predict term, along an unstable or neutral eigenvalue, does not shrink it either. Detectability is the precise condition ruling this combination out — it permits an unobservable direction to exist (as both examples above show, quite ordinarily) but requires that any such direction be dynamically stable on its own, so that the absence of correction is survivable rather than fatal.
 
-This is also, in practice, the single most common real cause of the "confidently wrong" filter this module has returned to since the process-noise lesson: not always a badly tuned $\mathbf{Q}$, but a $\mathbf{Q}$ tuned reasonably for a state that the sensor suite, as configured, simply cannot see — the covariance grows exactly as designed, and if nothing downstream checks it against the observability structure of the actual sensor set, the growth can go unnoticed for a very long time. Two of the divergence causes this module studies next — an unobservable direction driven by nonzero $\mathbf{Q}$, and the general remedy of augmenting or removing a state rather than trusting $\mathbf{Q}$ to cover for it — are this lesson's content, one step further down the line.
+This is also, in practice, the single most common real cause of the "confidently wrong" filter this module has returned to since the process-noise lesson: not always a badly tuned $\mathbf{Q}$, but a $\mathbf{Q}$ tuned reasonably for a state that the sensor suite, as configured, cannot see at all — the covariance grows exactly as designed, and if nothing downstream checks it against the observability structure of the actual sensor set, the growth can go unnoticed for a very long time. Two of the divergence causes this module studies next — an unobservable direction driven by nonzero $\mathbf{Q}$, and the general remedy of augmenting or removing a state rather than trusting $\mathbf{Q}$ to cover for it — are this lesson's content, one step further down the line.
 
 ## Check yourself
 
@@ -99,7 +99,7 @@ In the Doppler-only example, why is $\mathbf{H}\mathbf{F}$ exactly equal to $\ma
 :::
 
 ::: answer
-$\mathbf{H}\mathbf{F} = (0\ \ 1)\begin{pmatrix}1 & \Delta t\\0&1\end{pmatrix} = (0\cdot1 + 1\cdot0,\ \ 0\cdot\Delta t + 1\cdot1) = (0\ \ 1) = \mathbf{H}$, because the velocity row of $\mathbf{F}$ is itself $(0\ \ 1)$ — velocity in a constant-velocity model does not depend on position at all, so measuring velocity after one step of dynamics tells you nothing beyond what measuring it immediately already told you. With $\mathbf{H}\mathbf{F}=\mathbf{H}$, the observability matrix's two rows are identical, so its null space is simply the null space of $\mathbf{H}$ alone: every vector $(v_p, 0)^{\mathsf{T}}$, i.e. pure position, found without needing to compute a single matrix product.
+$\mathbf{H}\mathbf{F} = (0\ \ 1)\begin{pmatrix}1 & \Delta t\\0&1\end{pmatrix} = (0\cdot1 + 1\cdot0,\ \ 0\cdot\Delta t + 1\cdot1) = (0\ \ 1) = \mathbf{H}$, because the velocity row of $\mathbf{F}$ is itself $(0\ \ 1)$ — velocity in a constant-velocity model does not depend on position at all, so measuring velocity after one step of dynamics tells you nothing beyond what measuring it immediately already told you. With $\mathbf{H}\mathbf{F}=\mathbf{H}$, the observability matrix's two rows are identical, so its null space is exactly the null space of $\mathbf{H}$ alone: every vector $(v_p, 0)^{\mathsf{T}}$, i.e. pure position, found without needing to compute a single matrix product.
 :::
 
 ::: check
@@ -111,7 +111,7 @@ $P_{pv}$ is jointly shaped by the predict step, which mixes in a contribution fr
 :::
 
 ::: check
-A colleague proposes "fixing" the unaided-bias example by simply setting $Q_b = 0$ once the filter has run for a while, reasoning that the bias is "close enough" and further growth should stop. Evaluate this reasoning.
+A colleague proposes "fixing" the unaided-bias example by setting $Q_b = 0$ once the filter has run for a while, reasoning that the bias is "close enough" and further growth should stop. Evaluate this reasoning.
 :::
 
 ::: answer

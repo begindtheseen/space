@@ -95,7 +95,7 @@ Where, precisely, does the derivation use the Markov property of the state proce
 :::
 
 ::: answer
-It is used to justify $p(\mathbf{x}_k\mid\mathbf{x}_{k+1},\mathbf{z}_{1:N}) = p(\mathbf{x}_k\mid\mathbf{x}_{k+1},\mathbf{z}_{1:k})$ — that conditioning on $\mathbf{x}_{k+1}$ screens off every measurement that came after it. If $\mathbf{w}_k$ were not white, the process would not be Markov: $\mathbf{x}_{k+1}$ would no longer summarize everything about the state's evolution, some memory of earlier disturbances would persist independently, and future measurements could carry information about $\mathbf{x}_k$ that is *not* fully captured by $\mathbf{x}_{k+1}$ alone — the conditional-independence step, and with it the entire single backward recursion, would no longer hold, and a correct smoother would need to condition on more than just the adjacent state.
+It is used to justify $p(\mathbf{x}_k\mid\mathbf{x}_{k+1},\mathbf{z}_{1:N}) = p(\mathbf{x}_k\mid\mathbf{x}_{k+1},\mathbf{z}_{1:k})$ — that conditioning on $\mathbf{x}_{k+1}$ screens off every measurement that came after it. If $\mathbf{w}_k$ were not white, the process would not be Markov: $\mathbf{x}_{k+1}$ would no longer summarize everything about the state's evolution, some memory of earlier disturbances would persist independently, and future measurements could carry information about $\mathbf{x}_k$ that is *not* fully captured by $\mathbf{x}_{k+1}$ alone — the conditional-independence step, and with it the entire single backward recursion, would no longer hold, and a correct smoother would need to condition on more than the adjacent state alone.
 :::
 
 ::: check
@@ -107,7 +107,7 @@ $\mathbf{C}_k$ comes from conditioning the joint distribution of $(\mathbf{x}_k,
 :::
 
 ::: check
-A colleague suggests approximating the smoother by simply averaging $\hat{\mathbf{x}}_k^+$ with a second filter run *backward* in time, rather than computing $\mathbf{C}_k$ properly. What is likely to go wrong with an unweighted average?
+A colleague suggests approximating the smoother by averaging $\hat{\mathbf{x}}_k^+$ with a second filter run *backward* in time, rather than computing $\mathbf{C}_k$ properly. What is likely to go wrong with an unweighted average?
 :::
 
 ::: answer
@@ -133,4 +133,4 @@ The smoother's guarantee, $\mathbf{P}_k^s \preceq \mathbf{P}_k^+$, is relative t
 | Boundary | $\hat{\mathbf{x}}_N^s=\hat{\mathbf{x}}_N^+$, $\mathbf{P}_N^s=\mathbf{P}_N^+$ |
 | Guarantee | $\mathbf{P}_k^s \preceq \mathbf{P}_k^+$ everywhere, by backward induction from the boundary; demonstrated $47\%$ RMS reduction in position, $83\%$ in the never-directly-measured velocity |
 
-The smoother improved every estimate using data the filter already had, just not yet. The next lesson changes what the filter stores in the first place — propagating information directly rather than covariance — a form built for a different kind of abundance: not more time, but more sensors reporting at once.
+The smoother improved every estimate using data the filter already had — data that had not arrived yet the first time the filter ran. The next lesson changes what the filter stores in the first place — propagating information directly rather than covariance — a form built for a different kind of abundance: not more time, but more sensors reporting at once.

@@ -6,7 +6,7 @@ covers:
   - Sequential vs batch measurement updates; measurement editing and gating
 ---
 
-Every update so far has treated $\mathbf{z}_k$ as a single vector, processed in one matrix formula, and has quietly assumed every entry of that vector deserves to be trusted. Neither assumption survives contact with a real sensor suite. A vehicle in flight often has several measurements arriving at effectively the same instant — several stars from a tracker, several range returns from a lidar, a GPS fix and a barometric reading in the same cycle — and processing them as one large vector update is a choice, not a requirement. And any one of those measurements can simply be wrong: a bad return, a dropped bit, a sensor glitch, exactly the outlier the divergence lesson showed corrupting a filter that accepted it without question. This lesson answers both questions the last several lessons deferred: how to process several measurements efficiently, and how to decide whether a given measurement should be processed at all.
+Every update so far has treated $\mathbf{z}_k$ as a single vector, processed in one matrix formula, and has quietly assumed every entry of that vector deserves to be trusted. Neither assumption survives contact with a real sensor suite. A vehicle in flight often has several measurements arriving at effectively the same instant — several stars from a tracker, several range returns from a lidar, a GPS fix and a barometric reading in the same cycle — and processing them as one large vector update is a choice, not a requirement. And any one of those measurements can also be wrong: a bad return, a dropped bit, a sensor glitch, exactly the outlier the divergence lesson showed corrupting a filter that accepted it without question. This lesson answers both questions the last several lessons deferred: how to process several measurements efficiently, and how to decide whether a given measurement should be processed at all.
 
 ## Sequential processing: information adds, in any order
 
@@ -45,7 +45,7 @@ Accept a measurement only if $\boldsymbol{\nu}^{\mathsf{T}}\mathbf{S}^{-1}\bolds
 The scalar "gamma equals nine" result is a coincidence of $m=1$: a $\chi^2_1$ threshold at probability $p$ is, by definition, the square of the corresponding normal quantile, so "three sigma" and "the $\chi^2_1$ value at $p=0.9973$" are the same number by construction. For $m>1$ there is no single universal "sigma," only the $\chi^2_m$ quantile at whatever confidence level the mission chooses — $\chi^2_2$ at that same $99.73\%$ probability is $11.83$, $\chi^2_4$ is $16.25$, each a genuinely different threshold, not a reuse of "$9$."
 
 ::: example Gating rescues exactly the outlier the divergence lesson let through
-Return to that lesson's scenario precisely: a settled filter, $\mathbf{P} = \operatorname{diag}(0.580, 0.659)$, hit with a single measurement $50\sigma$ from truth. Its NIS is $2432.3$ against a gate of $\gamma \approx 9$ — rejected without any ambiguity, by four orders of magnitude. Skipping the update entirely for this cycle (predicting forward and simply not incorporating $z$) leaves the state at $(2281.5,\ -70.38)$, tracking the true trajectory closely; accepting the same measurement without gating, as the earlier lesson did, left the estimate $8.75\,\mathrm{m}$ off and took ten further good measurements to even half-recover. The entire difference between those two outcomes is one comparison against a precomputed number.
+Return to that lesson's scenario precisely: a settled filter, $\mathbf{P} = \operatorname{diag}(0.580, 0.659)$, hit with a single measurement $50\sigma$ from truth. Its NIS is $2432.3$ against a gate of $\gamma \approx 9$ — rejected without any ambiguity, by four orders of magnitude. Skipping the update entirely for this cycle (predicting forward and not incorporating $z$ at all) leaves the state at $(2281.5,\ -70.38)$, tracking the true trajectory closely; accepting the same measurement without gating, as the earlier lesson did, left the estimate $8.75\,\mathrm{m}$ off and took ten further good measurements to even half-recover. The entire difference between those two outcomes is one comparison against a precomputed number.
 :::
 
 ## The other failure mode: gating a filter that was already wrong
@@ -90,7 +90,7 @@ The equivalence proved in this lesson depends entirely on the measurements being
 :::
 
 ::: check
-Why does the "gamma equals nine" figure not simply generalize to "gamma equals sixteen" for a two-dimensional measurement by an analogous four-sigma argument?
+Why does the "gamma equals nine" figure not generalize directly to "gamma equals sixteen" for a two-dimensional measurement by an analogous four-sigma argument?
 :::
 
 ::: answer

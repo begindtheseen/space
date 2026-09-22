@@ -80,7 +80,7 @@ A distributed fusion architecture has four sensors reporting at slightly differe
 :::
 
 ::: answer
-The information-form update is a running sum, $\mathbf{Y}^+ = \mathbf{Y}^- + \sum_i \mathbf{H}_i^{\mathsf{T}}R_i^{-1}\mathbf{H}_i$, and each term can be added the moment that sensor's report arrives, in whatever order, with no term needed from a sensor that did not report at all — dropping sensor five simply means one fewer term in the sum, nothing else in the formula changes. A batch update needs to assemble one $\mathbf{H}$ stacking every expected sensor's row before it can run, which means either waiting for every sensor (defeating the purpose of processing sensors as they arrive) or rebuilding the stacked matrix's dimensions every time a sensor is late or missing.
+The information-form update is a running sum, $\mathbf{Y}^+ = \mathbf{Y}^- + \sum_i \mathbf{H}_i^{\mathsf{T}}R_i^{-1}\mathbf{H}_i$, and each term can be added the moment that sensor's report arrives, in whatever order, with no term needed from a sensor that did not report at all — dropping sensor five means one fewer term in the sum and nothing else, since nothing else in the formula changes. A batch update needs to assemble one $\mathbf{H}$ stacking every expected sensor's row before it can run, which means either waiting for every sensor (defeating the purpose of processing sensors as they arrive) or rebuilding the stacked matrix's dimensions every time a sensor is late or missing.
 :::
 
 ::: check
@@ -104,7 +104,7 @@ Restate, in the information filter's own language, what the observability lesson
 :::
 
 ::: answer
-An unobservable direction is exactly a direction along which $\mathbf{H}^{\mathsf{T}}R^{-1}\mathbf{H}$ contributes nothing, for every measurement the sensor suite can ever produce — the update sum in this lesson's key formula simply never adds anything to $\mathbf{Y}$ along that direction, so $\mathbf{Y}$ stays exactly as informative (or uninformative) there as the predict step alone leaves it, forever. This is the same fact the observability lesson proved in covariance language — the update is structurally blind along that direction — restated as: the information the update sum can ever accumulate there is exactly zero, term after term, no matter how many measurements arrive.
+An unobservable direction is exactly a direction along which $\mathbf{H}^{\mathsf{T}}R^{-1}\mathbf{H}$ contributes nothing, for every measurement the sensor suite can ever produce — the update sum in this lesson's key formula never adds anything to $\mathbf{Y}$ along that direction at all, so $\mathbf{Y}$ stays exactly as informative (or uninformative) there as the predict step alone leaves it, forever. This is the same fact the observability lesson proved in covariance language — the update is structurally blind along that direction — restated as: the information the update sum can ever accumulate there is exactly zero, term after term, no matter how many measurements arrive.
 :::
 
 ## Summary

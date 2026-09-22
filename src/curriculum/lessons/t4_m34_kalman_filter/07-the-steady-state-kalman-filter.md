@@ -8,7 +8,7 @@ covers:
 
 The last lesson left a question open on purpose. The covariance sequence in the running example fell fast at first, then more and more slowly — by step four it looked settled near $2.2\,\mathrm{m^2}$, barely moving step to step. "Barely moving" is not the same claim as "arrived," and this lesson exists because the difference between those two turns out to matter: the sequence above was still a very long way from where it actually ends up, and knowing that difference is what separates a filter design that is merely plausible from one you can defend with a number.
 
-This lesson answers three questions in order. Does the Riccati recursion of the last lesson converge at all, and under what conditions? What does it converge *to*, exactly, and how do you compute that limit directly rather than iterating toward it? And once you have it, what is it good for — beyond, as it turns out, telling you that a large part of a real flight filter's computation can simply be deleted.
+This lesson answers three questions in order. Does the Riccati recursion of the last lesson converge at all, and under what conditions? What does it converge *to*, exactly, and how do you compute that limit directly rather than iterating toward it? And once you have it, what is it good for — beyond, as it turns out, telling you that a large part of a real flight filter's computation can be deleted outright.
 
 ## The scalar steady state, solved exactly
 
@@ -93,7 +93,7 @@ Return to the number that opened this lesson: by step $4$, $P^-_{pp}$ had reache
 
 ## The payoff: a gain you can hardwire — once it has settled
 
-The practical reason any of this is worth computing offline is that $\mathbf{K}_{ss}$ does not change, so a flight computer can skip the matrix inversion in $\mathbf{K}_k = \mathbf{P}_k^-\mathbf{H}^{\mathsf{T}}\mathbf{S}_k^{-1}$ every cycle and simply multiply the innovation by a stored constant. Whether that shortcut is safe to take from the very first cycle is a separate question, and the answer is a clean no.
+The practical reason any of this is worth computing offline is that $\mathbf{K}_{ss}$ does not change, so a flight computer can skip the matrix inversion in $\mathbf{K}_k = \mathbf{P}_k^-\mathbf{H}^{\mathsf{T}}\mathbf{S}_k^{-1}$ every cycle and multiply the innovation by a stored constant instead. Whether that shortcut is safe to take from the very first cycle is a separate question, and the answer is a clean no.
 
 ::: example Hardwiring K_ss from the start costs accuracy exactly where the transient is largest
 Run the descending-booster filter two ways over $200$ steps against the same simulated flight: the ordinary time-varying filter of the earlier lessons, and a second filter that uses the constant $\mathbf{K}_{ss}$ computed above from step $1$ onward, never touching $\mathbf{P}$ at all.

@@ -167,7 +167,7 @@ In the eight-step example, $K_{1,v} = 0.0240$ is small but not zero, even though
 :::
 
 ::: answer
-The gain is $\mathbf{K}_1 = \mathbf{P}_1^-\mathbf{H}^{\mathsf{T}}\mathbf{S}_1^{-1}$, and with $\mathbf{H} = (1\ \ 0)$, $\mathbf{P}_1^-\mathbf{H}^{\mathsf{T}}$ is just the first column of $\mathbf{P}_1^- = \begin{pmatrix}100.250 & 2.503\\ 2.503 & 25.050\end{pmatrix}$, namely $(100.250,\ 2.503)^{\mathsf{T}}$. The velocity row is nonzero, $2.503$, because a single predict step from an uncorrelated $\mathbf{P}_0^+ = \operatorname{diag}(100,25)$ already mixes the two states through $\mathbf{F}\mathbf{P}_0^+\mathbf{F}^{\mathsf{T}}$ and through the off-diagonal entry of $\mathbf{Q}$ itself. Dividing by $S_1 = 104.25$ gives $K_{1,v} = 2.503/104.25 = 0.0240$: a small but real correction to velocity from a position-only measurement, driven entirely by the correlation the dynamics created.
+The gain is $\mathbf{K}_1 = \mathbf{P}_1^-\mathbf{H}^{\mathsf{T}}\mathbf{S}_1^{-1}$, and with $\mathbf{H} = (1\ \ 0)$, $\mathbf{P}_1^-\mathbf{H}^{\mathsf{T}}$ is exactly the first column of $\mathbf{P}_1^- = \begin{pmatrix}100.250 & 2.503\\ 2.503 & 25.050\end{pmatrix}$, namely $(100.250,\ 2.503)^{\mathsf{T}}$. The velocity row is nonzero, $2.503$, because a single predict step from an uncorrelated $\mathbf{P}_0^+ = \operatorname{diag}(100,25)$ already mixes the two states through $\mathbf{F}\mathbf{P}_0^+\mathbf{F}^{\mathsf{T}}$ and through the off-diagonal entry of $\mathbf{Q}$ itself. Dividing by $S_1 = 104.25$ gives $K_{1,v} = 2.503/104.25 = 0.0240$: a small but real correction to velocity from a position-only measurement, driven entirely by the correlation the dynamics created.
 :::
 
 ::: check

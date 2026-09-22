@@ -124,7 +124,7 @@ Explain why the over-tuned filter's NIS verdict ($36\%$ of steps below band) was
 :::
 
 ::: answer
-NEES compares the *true* error directly against $\mathbf{P}_k^+$, so an over-large $\mathbf{P}_k^+$ shows up immediately and completely — the true error is simply smaller than the (inflated) covariance claims, every time. NIS compares the innovation against $\mathbf{S}_k = \mathbf{H}\mathbf{P}_k^-\mathbf{H}^{\mathsf{T}}+\mathbf{R}$, which includes $\mathbf{R}$, a fixed quantity the mistuned $\mathbf{Q}$ never touched; a large $\mathbf{Q}$ inflates $\mathbf{P}_k^-$ and hence $\mathbf{S}_k$, but $\mathbf{R}$'s unchanged contribution dilutes the effect on the combined quantity NIS actually measures, making the same underlying problem show up more faintly in a test that, unlike NEES, has to work without ever seeing $\mathbf{P}_k^+$ or the true error directly.
+NEES compares the *true* error directly against $\mathbf{P}_k^+$, so an over-large $\mathbf{P}_k^+$ shows up immediately and completely — the true error is smaller than the (inflated) covariance claims, every time. NIS compares the innovation against $\mathbf{S}_k = \mathbf{H}\mathbf{P}_k^-\mathbf{H}^{\mathsf{T}}+\mathbf{R}$, which includes $\mathbf{R}$, a fixed quantity the mistuned $\mathbf{Q}$ never touched; a large $\mathbf{Q}$ inflates $\mathbf{P}_k^-$ and hence $\mathbf{S}_k$, but $\mathbf{R}$'s unchanged contribution dilutes the effect on the combined quantity NIS actually measures, making the same underlying problem show up more faintly in a test that, unlike NEES, has to work without ever seeing $\mathbf{P}_k^+$ or the true error directly.
 :::
 
 ::: check

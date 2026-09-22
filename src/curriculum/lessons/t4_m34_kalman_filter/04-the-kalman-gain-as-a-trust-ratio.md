@@ -46,7 +46,7 @@ $$
 \rho_{\mathrm{baro}} = \frac{25}{900} = 0.0278.
 $$
 
-The DGPS gain is $K = 62{,}500/62{,}501 = 0.999984$: the update all but discards the prior and adopts the measurement, leaving $P^+ = (1-K)P^- = 4.00\times10^{-4}\,\mathrm{m^2}$ — the posterior inherits the sensor's own variance, because there was nothing left of the prior worth keeping. The barometric gain is $K = 0.0278/1.0278 = 0.02703$: the update moves the estimate only $2.7\%$ of the way toward the reading, and $P^+ = 24.32\,\mathrm{m^2}$, $\sigma^+ = 4.93\,\mathrm{m}$ — barely improved over the $5\,\mathrm{m}$ prior, because the altimeter simply is not telling the filter much it did not already believe. Same prior, same physical update equations, a gain that differs by four orders of magnitude, because the trust ratio differs by the same four orders of magnitude.
+The DGPS gain is $K = 62{,}500/62{,}501 = 0.999984$: the update all but discards the prior and adopts the measurement, leaving $P^+ = (1-K)P^- = 4.00\times10^{-4}\,\mathrm{m^2}$ — the posterior inherits the sensor's own variance, because there was nothing left of the prior worth keeping. The barometric gain is $K = 0.0278/1.0278 = 0.02703$: the update moves the estimate only $2.7\%$ of the way toward the reading, and $P^+ = 24.32\,\mathrm{m^2}$, $\sigma^+ = 4.93\,\mathrm{m}$ — barely improved over the $5\,\mathrm{m}$ prior, because the altimeter is not telling the filter much it did not already believe. Same prior, same physical update equations, a gain that differs by four orders of magnitude, because the trust ratio differs by the same four orders of magnitude.
 :::
 
 ## The general gain: a map into measurement space, then a rescale
@@ -76,12 +76,12 @@ The velocity-row gain is $1.485$ — a one-metre innovation moves the velocity e
 :::
 
 ::: warning Do not read an individual gain entry as a probability
-Because the scalar gain lives in $(0,1)$, it is tempting to expect every entry of a gain matrix to as well, and to treat an entry near $1$ as "full trust" and near $0$ as "no trust." Only the gain for a state that is *itself* directly and uncorrelatedly measured behaves that simply. Any correlated, unmeasured state can carry a gain entry above $1$ or below $0$ (a negative correlation flips the sign of the correction), and neither is a bug. What the trust-ratio intuition gets right without qualification is monotonicity: shrinking $\mathbf{R}$, or growing $\mathbf{P}^-$ in a direction the measurement can see, can only move the gain toward trusting the measurement more, never less.
+Because the scalar gain lives in $(0,1)$, it is tempting to expect every entry of a gain matrix to as well, and to treat an entry near $1$ as "full trust" and near $0$ as "no trust." Only the gain for a state that is *itself* directly and uncorrelatedly measured behaves that cleanly. Any correlated, unmeasured state can carry a gain entry above $1$ or below $0$ (a negative correlation flips the sign of the correction), and neither is a bug. What the trust-ratio intuition gets right without qualification is monotonicity: shrinking $\mathbf{R}$, or growing $\mathbf{P}^-$ in a direction the measurement can see, can only move the gain toward trusting the measurement more, never less.
 :::
 
 ## The two failure directions of trust
 
-Every gain lives between two extremes, and both have a name worth attaching now, ahead of the divergence lesson later in the module that studies them as failures rather than limits. A gain pinned near zero **for a reason the model does not actually justify** — a prior that is more confident than it has earned the right to be — means the filter has stopped listening to correct data, and no measurement, however good, can fix an estimate the filter refuses to move. A gain pinned near one for a poorly-characterised sensor means the filter is chasing noise it should be smoothing out, trading a stable estimate for a jumpy one. Both are visible in the same place: watch $\mathbf{K}$, not just the state estimate, and a filter that has quietly stopped trusting its measurements announces itself long before its output looks obviously wrong.
+Every gain lives between two extremes, and both have a name worth attaching now, ahead of the divergence lesson later in the module that studies them as failures rather than limits. A gain pinned near zero **for a reason the model does not actually justify** — a prior that is more confident than it has earned the right to be — means the filter has stopped listening to correct data, and no measurement, however good, can fix an estimate the filter refuses to move. A gain pinned near one for a poorly-characterised sensor means the filter is chasing noise it should be smoothing out, trading a stable estimate for a jumpy one. Both are visible in the same place: watch $\mathbf{K}$, not just the state estimate, and a filter that has quietly stopped trusting its measurements announces itself long before its output looks wrong to the eye.
 
 ## Check yourself
 
@@ -114,7 +114,7 @@ Using $\mathbf{K} = \mathbf{P}^+\mathbf{H}^{\mathsf{T}}\mathbf{R}^{-1}$, explain
 :::
 
 ::: answer
-$\mathbf{P}^+$ is the uncertainty that would remain *after* the very update whose gain is being computed, so a state already pinned down has a small $\mathbf{P}^+$ regardless of how precise the incoming measurement is, and a small $\mathbf{P}^+$ multiplying even a large $\mathbf{R}^{-1}$ can still give a small product. Concretely, in the scalar case $K = P^+/R = \big[(1-K)P^-\big]/R$, and solving this for $K$ returns exactly $P^-/(P^-+R)$: a state with tiny $P^-$ has tiny $K$ no matter how small $R$ also is, because there is simply very little left for even a perfect sensor to correct. Precision in the sensor cannot manufacture uncertainty in the state that is not already there.
+$\mathbf{P}^+$ is the uncertainty that would remain *after* the very update whose gain is being computed, so a state already pinned down has a small $\mathbf{P}^+$ regardless of how precise the incoming measurement is, and a small $\mathbf{P}^+$ multiplying even a large $\mathbf{R}^{-1}$ can still give a small product. Concretely, in the scalar case $K = P^+/R = \big[(1-K)P^-\big]/R$, and solving this for $K$ returns exactly $P^-/(P^-+R)$: a state with tiny $P^-$ has tiny $K$ no matter how small $R$ also is, because there is very little left for even a perfect sensor to correct. Precision in the sensor cannot manufacture uncertainty in the state that is not already there.
 :::
 
 ::: check

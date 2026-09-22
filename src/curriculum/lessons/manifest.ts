@@ -2903,6 +2903,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "The normal matrix condition number as an observability metric"
       ],
       "file": "t4_m33_least_squares/08-condition-number-observability-metric.md"
+    },
+    {
+      "id": "l09-residual-analysis-outlier-rejection-robust-estimation",
+      "title": "Residual analysis, outlier rejection, and robust estimation",
+      "minutes": 19,
+      "covers": [
+        "Residual analysis, outlier rejection, and robust estimation (Huber loss, RANSAC)"
+      ],
+      "file": "t4_m33_least_squares/09-residual-analysis-outlier-rejection-robust-estimation.md"
     }
   ],
   "t4_m34_kalman_filter": [
@@ -3031,6 +3040,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "The information filter form and its use in sensor fusion"
       ],
       "file": "t4_m34_kalman_filter/14-the-information-filter-form.md"
+    },
+    {
+      "id": "l15-correlated-time-varying-noise-and-the-schmidt-kalman-filter",
+      "title": "Correlated and time-varying noise; the Schmidt-Kalman consider filter",
+      "minutes": 24,
+      "covers": [
+        "Correlated and time-varying noise; the Schmidt-Kalman consider filter"
+      ],
+      "file": "t4_m34_kalman_filter/15-correlated-time-varying-noise-and-the-schmidt-kalman-filter.md"
     }
   ],
   "t4_m36_inertial_navigation": [
@@ -3375,23 +3393,20 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t4_m33_least_squares": {
-    "covered": 8,
+    "covered": 9,
     "total": 12,
     "complete": false,
     "missing": [
-      "Residual analysis, outlier rejection, and robust estimation (Huber loss, RANSAC)",
       "The Wahba problem: find the rotation best aligning two sets of vector observations",
       "Wahba solutions: TRIAD, Davenport q-method, QUEST, ESOQ, and the SVD method",
       "Covariance of an attitude solution and the effect of sensor geometry"
     ]
   },
   "t4_m34_kalman_filter": {
-    "covered": 14,
+    "covered": 15,
     "total": 15,
-    "complete": false,
-    "missing": [
-      "Correlated and time-varying noise; the Schmidt-Kalman consider filter"
-    ]
+    "complete": true,
+    "missing": []
   },
   "t4_m35_nonlinear_filters": {
     "covered": 0,
