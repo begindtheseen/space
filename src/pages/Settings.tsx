@@ -261,6 +261,15 @@ export function Settings() {
               }
             />
 
+            <Toggle
+              label="Keep the menu on screen"
+              help="The navigation rail hides itself and comes back when you move the pointer to the left edge of the window. It is hidden by default so that the nearest way out of a lesson is the back link at the top of it, rather than a list of everywhere else you could be. Turn this on to keep the rail in view the whole time."
+              value={state.settings.pinSidebar === true}
+              onChange={(v) =>
+                setState((s) => ({ ...s, settings: { ...s.settings, pinSidebar: v } }))
+              }
+            />
+
             {custom ? (
               <div className="setting">
                 <div className="grow">

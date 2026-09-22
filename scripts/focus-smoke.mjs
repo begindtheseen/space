@@ -120,7 +120,45 @@ await step('the block is still banked after a reload', async () => {
   if (!/done/i.test(done)) throw new Error('summary lost across reload')
 })
 
-if (process.env.SHOT) await page.screenshot({ path: process.env.SHOT })
+if (process.env.SHOT) /* ── The sidebar gets out of the way ─────────────────────────────────────── */
+
+await step('the rail is hidden at rest', async () => {
+  await page.goto(base + '#/', { waitUntil: 'load' })
+  await page.waitForTimeout(900)
+  const box = await page.$eval('.side', (el) => el.getBoundingClientRect().right)
+  if (box > 4) throw new Error('rail is on screen at rest; right edge at ' + box)
+})
+
+await step('moving to the left edge brings it back', async () => {
+  await page.mouse.move(4, 400)
+  await page.waitForTimeout(600)
+  const box = await page.$eval('.side', (el) => el.getBoundingClientRect().right)
+  if (box < 100) throw new Error('rail did not reveal; right edge at ' + box)
+})
+
+await step('moving away hides it again', async () => {
+  await page.mouse.move(900, 400)
+  await page.waitForTimeout(1200)
+  const box = await page.$eval('.side', (el) => el.getBoundingClientRect().right)
+  if (box > 4) throw new Error('rail stayed out; right edge at ' + box)
+})
+
+await step('a brush past the edge does not snap it shut instantly', async () => {
+  await page.mouse.move(4, 400)
+  await page.waitForTimeout(400)
+  await page.mouse.move(900, 400)
+  await page.waitForTimeout(120)
+  const box = await page.$eval('.side', (el) => el.getBoundingClientRect().right)
+  if (box <= 4) throw new Error('rail vanished before the grace period elapsed')
+  await page.waitForTimeout(1000)
+})
+
+await step('the content uses the full width while it is hidden', async () => {
+  const gap = await page.$eval('.main', (el) => el.getBoundingClientRect().left)
+  if (gap > 4) throw new Error('content still indented by ' + gap + 'px')
+})
+
+await page.screenshot({ path: process.env.SHOT })
 await browser.close()
 server.close()
 

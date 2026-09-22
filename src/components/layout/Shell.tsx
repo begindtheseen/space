@@ -1,7 +1,7 @@
 /* ============================================================================
    ORBIT — application shell: sidebar, top bar, scroll container
    ========================================================================== */
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import {
   IconBars,
   IconBook,
@@ -26,6 +26,12 @@ import { useLearner } from '@/hooks/useLearner'
 import { useUpdates } from '@/hooks/useUpdates'
 import { navigate, useRoute, useScrollReset } from '@/lib/router'
 import './shell.css'
+
+/**
+ * How long the rail waits before sliding away once the pointer leaves it.
+ * Long enough to survive a clipped corner, short enough not to linger.
+ */
+const HIDE_DELAY_MS = 420
 
 export interface NavDef {
   id: string
@@ -80,14 +86,36 @@ export function Shell({
   const route = useRoute()
   const { state } = useLearner()
   const focus = state.focus
+  const pinned = state.settings.pinSidebar === true
   const [drawer, setDrawer] = useState(false)
+  const [peek, setPeek] = useState(false)
   const [stuck, setStuck] = useState(false)
   const scrollRef = useRef<HTMLDivElement | null>(null)
+  const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  /* The rail is revealed by moving toward the left edge and hidden again on
+     the way out. The delay on the way out is the part that matters: without
+     it, clipping the corner of the rail on the way to something else snaps it
+     shut mid-reach, which reads as the interface fighting her. */
+  const reveal = useCallback(() => {
+    if (hideTimer.current) clearTimeout(hideTimer.current)
+    setPeek(true)
+  }, [])
+
+  const scheduleHide = useCallback(() => {
+    if (hideTimer.current) clearTimeout(hideTimer.current)
+    hideTimer.current = setTimeout(() => setPeek(false), HIDE_DELAY_MS)
+  }, [])
+
+  useEffect(() => () => void (hideTimer.current && clearTimeout(hideTimer.current)), [])
 
   useScrollReset(route.path, scrollRef)
 
-  // Close the drawer on navigation and on Escape.
-  useEffect(() => setDrawer(false), [route.path])
+  // Close the drawer and the hover reveal on navigation and on Escape.
+  useEffect(() => {
+    setDrawer(false)
+    setPeek(false)
+  }, [route.path])
   useEffect(() => {
     if (!drawer) return
     const onKey = (e: KeyboardEvent) => {
@@ -116,9 +144,26 @@ export function Shell({
     }
   }, [])
 
+  const open = drawer || peek || pinned
+
   return (
-    <div className="shell" data-focus={!!focus}>
-      <Sidebar current={route.path} open={drawer} dueCount={dueCount} />
+    <div className="shell" data-focus={!!focus} data-autohide={!pinned}>
+      {/* A strip of nothing along the very edge of the window. Entering it is
+          what brings the rail back, so getting to the menu costs a deliberate
+          move to the side rather than a glance. */}
+      {!pinned ? (
+        <div className="edge-zone" onMouseEnter={reveal} aria-hidden="true" />
+      ) : null}
+
+      <Sidebar
+        current={route.path}
+        open={open}
+        dueCount={dueCount}
+        onMouseEnter={!pinned ? reveal : undefined}
+        onMouseLeave={!pinned ? scheduleHide : undefined}
+        onFocusCapture={!pinned ? reveal : undefined}
+        onBlurCapture={!pinned ? scheduleHide : undefined}
+      />
       {drawer ? <div className="scrim" onClick={() => setDrawer(false)} /> : null}
 
       <div className="main">
@@ -141,13 +186,18 @@ function Sidebar({
   current,
   open,
   dueCount,
+  ...handlers
 }: {
   current: string
   open: boolean
   dueCount: number
+  onMouseEnter?: () => void
+  onMouseLeave?: () => void
+  onFocusCapture?: () => void
+  onBlurCapture?: () => void
 }) {
   return (
-    <aside className="side" data-open={open}>
+    <aside className="side" data-open={open} {...handlers}>
       <div className="side__brand">
         <a href="#/" aria-label="ORBIT — home">
           <Wordmark height={15} />

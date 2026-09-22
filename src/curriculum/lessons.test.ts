@@ -19,9 +19,22 @@ import { parseLesson, proseWordCount } from './lessons/parse'
 
 const dir = fileURLToPath(new URL('./lessons', import.meta.url))
 const only = process.env.LESSON_MODULE
+/*
+ * A module directory holding no lesson yet is skipped rather than failed.
+ *
+ * Git cannot commit an empty directory, so such a directory never reaches CI
+ * and never reaches a reader — it exists only on the machine of whoever is
+ * part-way through writing that module, in the window between creating the
+ * folder and saving the first lesson into it. Failing on it means every
+ * writing run reports a red suite for a state that cannot ship, which trains
+ * whoever is watching to ignore red. Nothing is lost by skipping: a module
+ * that is genuinely missing its lessons is caught by the coverage check,
+ * which reads the module's topic list rather than the folder.
+ */
 const moduleDirs = fs
   .readdirSync(dir)
   .filter((d) => fs.statSync(path.join(dir, d)).isDirectory() && (!only || d === only))
+  .filter((d) => fs.readdirSync(path.join(dir, d)).some((f) => f.endsWith('.md')))
   .sort()
 
 const MIN_WORDS = 600

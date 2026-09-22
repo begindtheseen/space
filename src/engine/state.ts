@@ -108,6 +108,18 @@ export interface Settings {
   weights?: number[]
   /** Set once the first-run welcome has been read or dismissed. */
   onboarded?: boolean
+  /**
+   * Keep the sidebar on screen permanently.
+   *
+   * Off by default, and the default is the point. A navigation rail in view
+   * the whole time she is reading is a standing invitation to go somewhere
+   * else, and going somewhere else is the failure mode this app exists to
+   * prevent. Hidden, the nearest way out of a lesson is the back control at
+   * the top of it, which returns her to the module she was working through
+   * rather than to a menu of everything else she could be doing. Anyone who
+   * finds that irritating can turn the rail back on.
+   */
+  pinSidebar?: boolean
 }
 
 export interface LearnerState {
@@ -492,5 +504,6 @@ function pickSettings(v: unknown): Partial<Settings> {
     // Only ever true: spreading an explicit `undefined` over the defaults
     // would still produce a key, and the flag is absent until it is set.
     ...(s.onboarded === true ? { onboarded: true } : {}),
+    ...(s.pinSidebar === true ? { pinSidebar: true } : {}),
   }
 }

@@ -1486,6 +1486,28 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       "file": "t1_m15_rotating_frames/09-precession-nutation-and-polar-motion.md"
     }
   ],
+  "t1_m16_attitude_representations": [
+    {
+      "id": "l01-the-direction-cosine-matrix-and-so3",
+      "title": "The direction cosine matrix and SO(3)",
+      "minutes": 19,
+      "covers": [
+        "the direction cosine matrix and SO(3)"
+      ],
+      "file": "t1_m16_attitude_representations/01-the-direction-cosine-matrix-and-so3.md"
+    }
+  ],
+  "t1_m17_attitude_kinematics": [
+    {
+      "id": "l01-kinematic-differential-equations",
+      "title": "Kinematic differential equations for DCM, quaternion, Euler angles and MRP",
+      "minutes": 17,
+      "covers": [
+        "kinematic differential equations for DCM, quaternion, Euler angles and MRP"
+      ],
+      "file": "t1_m17_attitude_kinematics/01-kinematic-differential-equations.md"
+    }
+  ],
   "t1_m18_atmospheric_flight": [
     {
       "id": "l01-standard-atmosphere",
@@ -1728,6 +1750,72 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       ],
       "file": "t2_m19_two_body/14-tle-sgp4.md"
     }
+  ],
+  "t3_m25_signals_systems": [
+    {
+      "id": "l01-lti-systems-and-superposition",
+      "title": "LTI systems, linearity, time invariance and superposition",
+      "minutes": 18,
+      "covers": [
+        "LTI systems: linearity, time invariance, and why they buy you superposition"
+      ],
+      "file": "t3_m25_signals_systems/01-lti-systems-and-superposition.md"
+    }
+  ],
+  "t3_m26_classical_control": [
+    {
+      "id": "l01-what-feedback-buys",
+      "title": "What feedback buys, and what it costs",
+      "minutes": 20,
+      "covers": [
+        "Feedback fundamentals: disturbance rejection, noise attenuation, insensitivity to plant variation"
+      ],
+      "file": "t3_m26_classical_control/01-what-feedback-buys.md"
+    }
+  ],
+  "t3_m27_digital_control": [
+    {
+      "id": "l01-sampling-aliasing-anti-alias",
+      "title": "Sampling, aliasing and the anti-alias filter",
+      "minutes": 24,
+      "covers": [
+        "Sampling and the Nyquist-Shannon theorem; aliasing and anti-alias filtering"
+      ],
+      "file": "t3_m27_digital_control/01-sampling-aliasing-and-anti-alias-filtering.md"
+    }
+  ],
+  "t3_m29_optimal_control_lqr": [
+    {
+      "id": "l01-quadratic-cost-functional",
+      "title": "The linear quadratic cost functional",
+      "minutes": 18,
+      "covers": [
+        "The linear quadratic cost functional and what Q, R and the cross term weight"
+      ],
+      "file": "t3_m29_optimal_control_lqr/01-quadratic-cost-functional.md"
+    }
+  ],
+  "t3_m31_nonlinear_control": [
+    {
+      "id": "l01-nonlinear-phenomena",
+      "title": "Four things a linear model cannot do",
+      "minutes": 19,
+      "covers": [
+        "Nonlinear phenomena: multiple equilibria, limit cycles, finite escape time, bifurcation"
+      ],
+      "file": "t3_m31_nonlinear_control/01-nonlinear-phenomena.md"
+    }
+  ],
+  "t3_m32_mpc": [
+    {
+      "id": "l01-the-receding-horizon-principle",
+      "title": "The receding horizon principle",
+      "minutes": 20,
+      "covers": [
+        "The receding horizon principle"
+      ],
+      "file": "t3_m32_mpc/01-the-receding-horizon-principle.md"
+    }
   ]
 }
 
@@ -1830,6 +1918,41 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "complete": true,
     "missing": []
   },
+  "t1_m16_attitude_representations": {
+    "covered": 1,
+    "total": 13,
+    "complete": false,
+    "missing": [
+      "Euler angles, the twelve sequences, the 3-2-1 aerospace sequence",
+      "gimbal lock and its mathematical cause",
+      "Euler rotation theorem, principal rotation axis and angle",
+      "quaternions: Hamilton vs JPL, scalar-first vs scalar-last",
+      "quaternion multiplication, conjugate, inverse, unit-norm constraint",
+      "the double cover and the shortest-path sign convention",
+      "SLERP",
+      "classical and modified Rodrigues parameters, and the MRP shadow set",
+      "conversions between every representation",
+      "active vs passive rotation (operator vs coordinate transformation)",
+      "attitude error representations",
+      "introduction to SO(3), so(3) and the exp/log maps"
+    ]
+  },
+  "t1_m17_attitude_kinematics": {
+    "covered": 1,
+    "total": 10,
+    "complete": false,
+    "missing": [
+      "numerical integration of attitude with re-normalisation",
+      "quaternion integration schemes and norm drift",
+      "combining kinematics with Euler dynamics into a 6-state rotational system",
+      "external torques: gravity gradient, aerodynamic, solar radiation pressure, residual magnetic dipole",
+      "reaction wheel and CMG dynamics and momentum coupling",
+      "thruster attitude control and minimum impulse bit",
+      "thrust vector control gimbal dynamics for launch vehicles",
+      "actuator saturation and rate limits",
+      "coning motion and coning correction"
+    ]
+  },
   "t1_m18_atmospheric_flight": {
     "covered": 15,
     "total": 15,
@@ -1841,5 +1964,118 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "total": 15,
     "complete": true,
     "missing": []
+  },
+  "t3_m25_signals_systems": {
+    "covered": 1,
+    "total": 12,
+    "complete": false,
+    "missing": [
+      "Impulse response, step response, and convolution",
+      "The Laplace transform and the transfer function",
+      "Poles, zeros, and DC gain",
+      "First- and second-order response: rise time, peak time, overshoot and settling time as functions of zeta and omega-n",
+      "Dominant poles and model order reduction by inspection",
+      "Added zeros, non-minimum-phase zeros, and right-half-plane zeros",
+      "Time delay and the Pade approximation",
+      "Frequency response: magnitude and phase; Bode plot construction by hand",
+      "Block diagram algebra, reduction, and the Mason gain formula",
+      "Open-loop vs closed-loop transfer functions",
+      "Sensitivity S and complementary sensitivity T, and the identity S + T = 1"
+    ]
+  },
+  "t3_m26_classical_control": {
+    "covered": 1,
+    "total": 13,
+    "complete": false,
+    "missing": [
+      "PID control: the physical meaning of each term, ideal vs practical form, derivative filtering",
+      "Integrator windup, anti-windup schemes, bumpless transfer, setpoint weighting",
+      "PID tuning: Ziegler-Nichols, loop shaping, pole placement",
+      "Root locus construction rules and root-locus design",
+      "The Nyquist plot and the Nyquist stability criterion",
+      "Gain margin, phase margin, delay margin, and the modulus (vector) margin",
+      "Why margins can lie: MIMO coupling, nonlinearity, simultaneous perturbations",
+      "Lead, lag and lead-lag compensators",
+      "Notch filters for structural bending modes; gain stabilization vs phase stabilization",
+      "The Bode gain-phase relationship, the Bode sensitivity integral, and the waterbed effect",
+      "Cascade architecture: a fast rate loop inside a slower attitude loop",
+      "Feedforward and 2-DOF control; gain scheduling across flight regimes"
+    ]
+  },
+  "t3_m27_digital_control": {
+    "covered": 1,
+    "total": 11,
+    "complete": false,
+    "missing": [
+      "The zero-order hold and its half-sample phase penalty",
+      "The z-transform and discrete transfer functions",
+      "Mapping the s-plane to the z-plane; the unit circle as the stability boundary",
+      "Discretization methods: forward and backward Euler, Tustin, Tustin with prewarping, ZOH equivalence, matched pole-zero",
+      "Computational delay and where it shows up in the loop",
+      "Choosing a sample rate: the 20-40x bandwidth rule of thumb and what drives the ends of that range",
+      "Quantization, finite word length, and fixed-point implementation",
+      "Discrete PID realization forms (direct, parallel, delta) and their numerical conditioning",
+      "Biquad sections for discrete filters and notches",
+      "Multi-rate systems, jitter, and their effect on stability"
+    ]
+  },
+  "t3_m29_optimal_control_lqr": {
+    "covered": 1,
+    "total": 14,
+    "complete": false,
+    "missing": [
+      "LQR derived via dynamic programming (HJB) and via calculus of variations",
+      "The algebraic and differential Riccati equations",
+      "Choosing Q and R: Bryson rule, physical scaling, iterating against an effort budget",
+      "The guaranteed margins of full-state-feedback LQR and why LQG loses them",
+      "Infinite-horizon vs finite-horizon LQR",
+      "LQR with integral action",
+      "Cheap control and the asymptotic (Kalman) root locus",
+      "Time-varying LQR along a nominal trajectory for trajectory stabilization",
+      "LQG = LQR + Kalman filter, and the stochastic separation principle",
+      "Loop transfer recovery and what it actually costs",
+      "Discrete-time LQR and the DARE",
+      "The Hamiltonian and the Pontryagin minimum principle as the general frame",
+      "iLQR and DDP as the nonlinear extension"
+    ]
+  },
+  "t3_m31_nonlinear_control": {
+    "covered": 1,
+    "total": 14,
+    "complete": false,
+    "missing": [
+      "Phase-plane analysis and equilibrium classification",
+      "Linearization and the Lyapunov indirect method, including its failure cases",
+      "The Lyapunov direct method, Lyapunov functions, LaSalle invariance principle",
+      "Region of attraction estimation, including sum-of-squares approaches",
+      "Input-to-state stability",
+      "Feedback linearization (input-state and input-output), relative degree, internal and zero dynamics",
+      "Sliding mode control: sliding surface design, reaching phase, chattering, boundary layers, higher-order sliding modes",
+      "Backstepping",
+      "Passivity-based control and energy shaping",
+      "Nonlinear spacecraft attitude control: quaternion feedback laws, the unwinding problem, MRP-based control, Lyapunov-derived tracking laws with proof",
+      "Describing functions for limit-cycle prediction",
+      "Control of underactuated systems",
+      "Bang-bang and on-off thruster control: Schmitt trigger and pulse-width pulse-frequency modulation"
+    ]
+  },
+  "t3_m32_mpc": {
+    "covered": 1,
+    "total": 13,
+    "complete": false,
+    "missing": [
+      "The finite-horizon constrained optimal control problem",
+      "Linear MPC as a quadratic program; condensed vs sparse formulations",
+      "State and input constraints; soft constraints and slack variables",
+      "Terminal cost and terminal constraint set for stability guarantees",
+      "Feasibility, recursive feasibility, and the maximal control invariant set",
+      "Explicit MPC and multi-parametric programming",
+      "Nonlinear MPC",
+      "Robust MPC: tube MPC and min-max formulations",
+      "Economic MPC",
+      "Real-time onboard MPC: warm starting, solver choice, worst-case iteration bounds, certifiable solve time",
+      "Embedded QP solvers (OSQP, qpOASES, HPIPM) and code generation",
+      "MPC vs LQR trade; MPC for powered descent, rendezvous and constrained attitude control"
+    ]
   }
 }
