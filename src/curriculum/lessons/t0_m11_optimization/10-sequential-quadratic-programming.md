@@ -63,13 +63,13 @@ $$
 with $\mathbf{W}_k = \nabla^2_{\mathbf{xx}}\mathcal{L}(\mathbf{x}_k, \boldsymbol{\lambda}_k)$. Set $\mathbf{x}_{k+1} = \mathbf{x}_k + \alpha_k\mathbf{d}_k$ and take $\boldsymbol{\lambda}_{k+1}$ from the QP's multipliers. Near a solution at which the second-order sufficient conditions and LICQ hold, full steps $\alpha_k = 1$ converge quadratically and the QP's active set matches the true one.
 :::
 
-Two details in that statement earn their place. First, the Hessian is that of the **Lagrangian**, not of the objective. The constraint curvature matters: a step that looks good against a linear model of a curved constraint will leave the feasible surface, and the $\sum_j\lambda_j\nabla^2 c_j$ term is precisely the correction that accounts for it. Using $\nabla^2 f$ alone destroys the quadratic convergence. Second, the QP's inequality constraints let the method choose an active set each iteration; near the solution it identifies the correct one and stops changing it, after which SQP is just Newton on the equality-constrained system.
+Two details in that statement earn their place. First, the Hessian is that of the **Lagrangian**, not of the objective. The constraint curvature matters: a step that looks good against a linear model of a curved constraint will leave the feasible surface, and the $\sum_j\lambda_j\nabla^2 c_j$ term is precisely the correction that accounts for it. Dropping it destroys the quadratic convergence. Second, the QP's inequality constraints let the method choose an active set each iteration; near the solution it identifies the correct one and stops changing it, after which SQP is Newton on the equality-constrained system and nothing more.
 
 ## Making it converge from a bad guess
 
 Pure Newton steps are excellent near the answer and unreliable far from it. Four mechanisms turn the local method into a usable algorithm.
 
-**A merit function.** Unlike unconstrained minimisation, there is no single quantity that a constrained step is supposed to decrease – reducing $f$ may worsen feasibility and vice versa. A **merit function** combines them, most simply the $\ell_1$ form
+**A merit function.** Unlike unconstrained minimisation, there is no single quantity that a constrained step is supposed to decrease – reducing $f$ may worsen feasibility and vice versa. A **merit function** combines them, in the simplest case the $\ell_1$ form
 
 $$
 \phi(\mathbf{x};\eta) = f(\mathbf{x}) + \eta\,\|\mathbf{c}(\mathbf{x})\|_1 ,
@@ -77,7 +77,7 @@ $$
 
 and the step length $\alpha_k$ is chosen by backtracking until $\phi$ decreases sufficiently (the Armijo condition of lesson 1, applied to $\phi$). The penalty weight $\eta$ must exceed the largest multiplier magnitude, or the merit function will happily trade feasibility for objective and the method will walk away from the constraints; practical codes set $\eta \ge \|\boldsymbol{\lambda}\|_\infty + \text{margin}$ and increase it when needed.
 
-**A trust region, or a modified Hessian.** The Lagrangian Hessian $\mathbf{W}_k$ is generally **indefinite** away from the solution, and a QP with an indefinite Hessian is nonconvex and may be unbounded. Two cures: restrict the step to a region $\|\mathbf{d}\| \le \Delta_k$ in which the model is trusted, which makes even an indefinite QP well posed and shrinks $\Delta_k$ when the step disappoints; or convexify, replacing $\mathbf{W}_k$ by $\mathbf{W}_k + \sigma\mathbf{I}$ with $\sigma$ just large enough to make it positive definite on the null space of the active constraint Jacobian. The second is what the worked example below does, and the value of $\sigma$ it needs at the first iterate is not small.
+**A trust region, or a modified Hessian.** The Lagrangian Hessian $\mathbf{W}_k$ is generally **indefinite** away from the solution, and a QP with an indefinite Hessian is nonconvex and may be unbounded. Two cures: restrict the step to a region $\|\mathbf{d}\| \le \Delta_k$ in which the model is trusted, which makes even an indefinite QP well posed and shrinks $\Delta_k$ when the step disappoints; or convexify, replacing $\mathbf{W}_k$ by $\mathbf{W}_k + \sigma\mathbf{I}$ with the smallest $\sigma$ that makes it positive definite on the null space of the active constraint Jacobian. The second is what the worked example below does, and the value of $\sigma$ it needs at the first iterate is not small.
 
 **A filter, instead of a merit function.** A filter accepts a step if it improves either the objective or the constraint violation relative to every previously accepted pair $(f, \|\mathbf{c}\|)$ – a two-objective acceptance test that avoids having to pick $\eta$ at all. IPOPT's line search is a filter; SNOPT uses an augmented-Lagrangian merit function.
 
@@ -100,7 +100,7 @@ $$
 \nabla\mathbf{c} = \begin{bmatrix} 6 & 6 & 3.193 \\ 54 & 18 & -77.68\end{bmatrix} .
 $$
 
-With $\boldsymbol{\lambda}_0 = \mathbf{0}$ the Lagrangian Hessian is just $\nabla^2 f$, which has a zero diagonal and $\tfrac{1}{2}$ in the $(a_i, T)$ positions; its eigenvalues are $0$ and $\pm 0.707$ – **indefinite**, so the raw QP is nonconvex. Adding $\sigma\mathbf{I}$ with $\sigma = 1$ gives leading minors $1$, $1$ and $0.5$: positive definite, and the QP is now well posed. Solving it gives
+With $\boldsymbol{\lambda}_0 = \mathbf{0}$ the Lagrangian Hessian is $\nabla^2 f$ alone, which has a zero diagonal and $\tfrac{1}{2}$ in the $(a_i, T)$ positions; its eigenvalues are $0$ and $\pm 0.707$ – **indefinite**, so the raw QP is nonconvex. Adding $\sigma\mathbf{I}$ with $\sigma = 1$ gives leading minors $1$, $1$ and $0.5$: positive definite, and the QP is now well posed. Solving it gives
 
 $$
 \mathbf{d}_0 = (-1.819,\ 2.524,\ 2.332), \qquad \|\mathbf{d}_0\| = 3.89,
@@ -111,7 +111,7 @@ with QP multipliers $(-1.977, 0.1206)$. Check what the step does: it satisfies t
 
 ## Quasi-Newton: BFGS in place of the Hessian
 
-Forming $\nabla^2_{\mathbf{xx}}\mathcal{L}$ means second derivatives of every constraint – for a trajectory problem, second derivatives of the dynamics at every node. Often these are unavailable, expensive, or simply not worth the trouble, and a **quasi-Newton** approximation is used instead. The standard one is BFGS.
+Forming $\nabla^2_{\mathbf{xx}}\mathcal{L}$ means second derivatives of every constraint – for a trajectory problem, second derivatives of the dynamics at every node. Often these are unavailable, expensive, or not worth the trouble, and a **quasi-Newton** approximation is used instead. The standard one is BFGS.
 
 Let $\mathbf{s}_k = \mathbf{x}_{k+1} - \mathbf{x}_k$ and $\mathbf{y}_k = \nabla_{\mathbf{x}}\mathcal{L}(\mathbf{x}_{k+1}, \boldsymbol{\lambda}_{k+1}) - \nabla_{\mathbf{x}}\mathcal{L}(\mathbf{x}_k, \boldsymbol{\lambda}_{k+1})$, the change in the Lagrangian gradient at fixed multipliers. A true Hessian would satisfy the **secant condition** $\mathbf{W}\mathbf{s}_k \approx \mathbf{y}_k$, so require the approximation to satisfy it exactly and change as little as possible otherwise. The unique such symmetric rank-two update is
 
@@ -178,7 +178,7 @@ In the worked example the Lagrangian Hessian at the first iterate is indefinite.
 :::
 
 ::: answer
-An indefinite $\mathbf{W}$ makes the subproblem a nonconvex QP: lesson 5 noted that such a problem is NP-hard in general, and here, concretely, the objective can be driven to $-\infty$ along a direction of negative curvature that stays within the linearised constraints, so the "step" is unbounded or meaningless. The fixes: (1) add a multiple of the identity, $\mathbf{W} + \sigma\mathbf{I}$, with $\sigma$ just large enough for positive definiteness on the null space of the active constraint Jacobian – in the example $\sigma = 1$ sufficed, giving leading minors $1, 1, 0.5$; (2) impose a trust region $\|\mathbf{d}\| \le \Delta$, which bounds the subproblem regardless of the curvature and additionally gives a principled way to shrink the step when the model proves unreliable. Quasi-Newton SQP sidesteps the issue entirely, since damped BFGS keeps $\mathbf{B}_k$ positive definite by construction.
+An indefinite $\mathbf{W}$ makes the subproblem a nonconvex QP: lesson 5 noted that such a problem is NP-hard in general, and here, concretely, the objective can be driven to $-\infty$ along a direction of negative curvature that stays within the linearised constraints, so the "step" is unbounded or meaningless. The fixes: (1) add a multiple of the identity, $\mathbf{W} + \sigma\mathbf{I}$, with the smallest $\sigma$ that gives positive definiteness on the null space of the active constraint Jacobian – in the example $\sigma = 1$ sufficed, giving leading minors $1, 1, 0.5$; (2) impose a trust region $\|\mathbf{d}\| \le \Delta$, which bounds the subproblem regardless of the curvature and additionally gives a principled way to shrink the step when the model proves unreliable. Quasi-Newton SQP sidesteps the issue entirely, since damped BFGS keeps $\mathbf{B}_k$ positive definite by construction.
 :::
 
 ::: check
@@ -186,7 +186,7 @@ A colleague's SQP converges in twelve iterations from one initial guess and stal
 :::
 
 ::: answer
-First, the derivatives: compare the analytic Jacobian and gradient with central finite differences at the stalling iterate. A wrong derivative is by far the most common cause and it is cheap to rule out. Second, scaling: if the variables differ by many orders of magnitude – metres beside radians beside seconds – the QP is badly conditioned and the merit function's units are dominated by one group; rescale so a unit change in each variable is comparably significant. Third, whether the stall is a Maratos effect: if unit steps are being rejected while the KKT residual is small, add a second-order correction or switch to a filter. Fourth, whether the linearised subproblem is infeasible at that point, which needs elastic mode rather than a better step. Fifth, and only then, whether the second guess is simply in the basin of a different, worse, or nonexistent solution – which is not a bug but the nature of a nonconvex problem.
+First, the derivatives: compare the analytic Jacobian and gradient with central finite differences at the stalling iterate. A wrong derivative is by far the most common cause and it is cheap to rule out. Second, scaling: if the variables differ by many orders of magnitude – metres beside radians beside seconds – the QP is badly conditioned and the merit function's units are dominated by one group; rescale so a unit change in each variable is comparably significant. Third, whether the stall is a Maratos effect: if unit steps are being rejected while the KKT residual is small, add a second-order correction or switch to a filter. Fourth, whether the linearised subproblem is infeasible at that point, which needs elastic mode rather than a better step. Fifth, and only then, whether the second guess is in the basin of a different, worse, or nonexistent solution – which is not a bug but the nature of a nonconvex problem.
 :::
 
 ::: check

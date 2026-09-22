@@ -248,4 +248,4 @@ The nominal case is one point in a large state envelope, and the iteration count
 | Landing SOCP | $\nu = 902$, $\sqrt{\nu} = 30.0$; bound $\approx 415$ iterations at $\epsilon = 10^{-6}$, observed $15$ to $30$ |
 | Limitations | Converges to the analytic centre of a flat optimal face; warm starting is of little help |
 
-The next lesson leaves the convex world. When the problem cannot be written as a cone program – a fixed-magnitude thrust, an aerodynamic model, a free final time that multiplies the controls – the method of choice is sequential quadratic programming, which solves a quadratic model of the problem at each step and gives up, in exchange for generality, every guarantee this lesson just established.
+The next lesson leaves the convex world. When the problem cannot be written as a cone program – a fixed-magnitude thrust, an aerodynamic model, a free final time that multiplies the controls – the method of choice is sequential quadratic programming, which solves a quadratic model of the problem at each step and gives up, in exchange for generality, every guarantee this lesson has established.

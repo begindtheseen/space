@@ -22,7 +22,7 @@ $$
 \mathbf{z}^\top\big(\theta\mathbf{X} + (1-\theta)\mathbf{Y}\big)\mathbf{z} = \theta\,\mathbf{z}^\top\mathbf{X}\mathbf{z} + (1-\theta)\,\mathbf{z}^\top\mathbf{Y}\mathbf{z} \ge 0 .
 $$
 
-Scaling by a positive number clearly preserves the property, so the set is a cone. Read the definition again and notice what makes it work: $\mathbf{X} \succeq 0$ is an infinite family of *linear* inequalities in the entries of $\mathbf{X}$, one for each $\mathbf{z}$. A convex set defined as an intersection of halfspaces – just infinitely many of them, which is why its boundary is curved rather than flat.
+Scaling by a positive number clearly preserves the property, so the set is a cone. Read the definition again and notice what makes it work: $\mathbf{X} \succeq 0$ is an infinite family of *linear* inequalities in the entries of $\mathbf{X}$, one for each $\mathbf{z}$. A convex set defined as an intersection of halfspaces – though infinitely many of them, which is why its boundary is curved rather than flat.
 
 The natural inner product on $\mathbb{S}^n$ is $\langle \mathbf{X}, \mathbf{Y}\rangle = \operatorname{tr}(\mathbf{X}\mathbf{Y}) = \sum_{i,j} X_{ij}Y_{ij}$. In it, the PSD cone is **self-dual**, exactly like the nonnegative orthant and the second-order cone of lesson 7. The forward direction: if $\mathbf{X} \succeq 0$ and $\mathbf{Y} \succeq 0$, factor $\mathbf{X} = \mathbf{X}^{1/2}\mathbf{X}^{1/2}$ with $\mathbf{X}^{1/2}$ symmetric, and use the cyclic property of the trace,
 
