@@ -8,10 +8,17 @@
    Locked modules are shown rather than hidden. Seeing that powered-descent
    guidance exists and needs four things first is motivating; discovering it
    only once it unlocks is not.
+
+   The same honesty applies to how much of a module is actually written. The
+   corpus is still being filled in, and a browse page that shows a hundred
+   identical cards hides which of them she can sit down and study tonight. The
+   card says so here, so she can plan around a gap without opening every one
+   to find it.
    ========================================================================== */
 import type { CSSProperties } from 'react'
 import type { Module } from '@/curriculum/types'
 import { moduleStats } from '@/curriculum/types'
+import { lessonCoverage, lessonsFor } from '@/curriculum/lessons'
 import { Bar, Chip, Tile } from '@/components/ui'
 import { IconCheck, IconLock, IconRecall, IconRoute, IconClock } from '@/components/icons'
 import { navigate } from '@/lib/router'
@@ -43,6 +50,8 @@ export function ModuleCard({
   const done = mastery >= 0.9
   const stats = moduleStats(module)
   const pct = Math.round(mastery * 100)
+  const lessons = lessonsFor(module.id).length
+  const coverage = lessonCoverage(module.id)
 
   return (
     <button
@@ -84,6 +93,7 @@ export function ModuleCard({
         {stats.cards > 0 ? <span>{stats.cards} cards</span> : null}
         {stats.quiz > 0 ? <span>{stats.quiz} questions</span> : null}
         {stats.exercises > 0 ? <span>{stats.exercises} exercises</span> : null}
+        {lessons > 0 ? <span>{lessons} lessons</span> : null}
       </div>
 
       {locked ? (
@@ -102,6 +112,18 @@ export function ModuleCard({
       )}
 
       <div className="mcard__badges">
+        {/* Taught end to end, partly written, or not started. The last of these
+            is the one that matters most: it is the difference between a module
+            she can begin now and a title with the teaching still to come. */}
+        {coverage?.complete ? (
+          <Chip tone="ok">taught</Chip>
+        ) : coverage && coverage.covered > 0 ? (
+          <Chip ghost>
+            {coverage.covered}/{coverage.total} taught
+          </Chip>
+        ) : coverage ? (
+          <Chip ghost>lessons coming</Chip>
+        ) : null}
         {unlocks > 0 ? (
           <Chip ghost>
             <IconRoute size={10} />

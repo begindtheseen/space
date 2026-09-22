@@ -3875,6 +3875,24 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "The two-point boundary value problem; single and multiple shooting; costate sensitivity and why indirect methods are brittle"
       ],
       "file": "t5_m42_trajectory_optimization/04-shooting-and-brittleness.md"
+    },
+    {
+      "id": "l05-bang-bang-singular-arcs",
+      "title": "Bang-bang control, the switching function, and singular arcs",
+      "minutes": 16,
+      "covers": [
+        "Bang-bang control, the switching function, and singular arcs"
+      ],
+      "file": "t5_m42_trajectory_optimization/05-bang-bang-singular-arcs.md"
+    },
+    {
+      "id": "l06-direct-transcription",
+      "title": "Direct transcription: from a continuous problem to a finite NLP",
+      "minutes": 18,
+      "covers": [
+        "Direct transcription: converting an infinite-dimensional problem into a finite NLP"
+      ],
+      "file": "t5_m42_trajectory_optimization/06-direct-transcription.md"
     }
   ],
   "t5_m43_convex_guidance": [
@@ -3887,6 +3905,16 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "The minimum-fuel powered descent problem and its four non-convexities: the lower thrust bound, mass-depletion dynamics, thrust pointing, and logic-triggered constraints"
       ],
       "file": "t5_m43_convex_guidance/01-the-certification-argument-and-the-problem.md"
+    },
+    {
+      "id": "l02-lossless-convexification-thrust-bound",
+      "title": "Lossless convexification of the thrust bound",
+      "minutes": 22,
+      "covers": [
+        "Why the thrust magnitude constraint rho_min <= ||T|| <= rho_max is non-convex — the feasible set is an annulus with the origin removed",
+        "Lossless convexification: the slack variable Gamma with ||T|| <= Gamma and rho_min <= Gamma <= rho_max, and the proof sketch via the maximum principle that the relaxation is tight"
+      ],
+      "file": "t5_m43_convex_guidance/02-lossless-convexification-of-the-thrust-bound.md"
     }
   ],
   "t6_m44_realtime_embedded": [
@@ -3927,6 +3955,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Priority inversion, priority inheritance and priority ceiling; the Mars Pathfinder failure and its fix"
       ],
       "file": "t6_m44_realtime_embedded/04-priority-inversion-and-inheritance.md"
+    },
+    {
+      "id": "l05-rtos-primitives",
+      "title": "RTOS primitives and which of them can block unboundedly",
+      "minutes": 17,
+      "covers": [
+        "RTOS primitives: tasks, semaphores, mutexes, message queues, and which of them can block unboundedly"
+      ],
+      "file": "t6_m44_realtime_embedded/05-rtos-primitives.md"
     }
   ],
   "t6_m46_6dof_simulation": [
@@ -3965,6 +4002,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Frame and unit discipline: naming every vector by its frame, and the conventions that stop a sign error becoming a three-week debugging session"
       ],
       "file": "t6_m46_6dof_simulation/04-frame-and-unit-discipline.md"
+    },
+    {
+      "id": "l05-environment-models",
+      "title": "Environment models",
+      "minutes": 21,
+      "covers": [
+        "Environment models: gravity field, atmosphere, wind and gust, magnetic field, ephemeris, solar radiation pressure"
+      ],
+      "file": "t6_m46_6dof_simulation/05-environment-models.md"
     }
   ]
 }
@@ -4310,12 +4356,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t5_m42_trajectory_optimization": {
-    "covered": 4,
+    "covered": 6,
     "total": 17,
     "complete": false,
     "missing": [
-      "Bang-bang control, the switching function, and singular arcs",
-      "Direct transcription: converting an infinite-dimensional problem into a finite NLP",
       "Direct single shooting vs direct multiple shooting, and the conditioning difference between them",
       "Direct collocation: trapezoidal and Hermite-Simpson defect constraints",
       "Pseudospectral methods: Legendre-Gauss, Legendre-Gauss-Radau and Legendre-Gauss-Lobatto nodes",
@@ -4330,12 +4374,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t5_m43_convex_guidance": {
-    "covered": 2,
+    "covered": 4,
     "total": 21,
     "complete": false,
     "missing": [
-      "Why the thrust magnitude constraint rho_min <= ||T|| <= rho_max is non-convex — the feasible set is an annulus with the origin removed",
-      "Lossless convexification: the slack variable Gamma with ||T|| <= Gamma and rho_min <= Gamma <= rho_max, and the proof sketch via the maximum principle that the relaxation is tight",
       "The change of variables u = T/m, sigma = Gamma/m, z = ln m, and how it makes the translational dynamics exactly linear",
       "The second-order-expanded mass bounds that keep the transformed thrust bounds convex",
       "SOCP standard form, the second-order cone, and mapping the powered-descent problem onto it",
@@ -4356,11 +4398,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t6_m44_realtime_embedded": {
-    "covered": 6,
+    "covered": 7,
     "total": 21,
     "complete": false,
     "missing": [
-      "RTOS primitives: tasks, semaphores, mutexes, message queues, and which of them can block unboundedly",
       "Real-time Linux: PREEMPT_RT, SCHED_FIFO and SCHED_DEADLINE, CPU isolation, IRQ affinity, mlockall",
       "Why a flight programme can fly Linux at all, and what it has to switch off to do so",
       "Interrupt handling, interrupt latency, and the split between the handler and the deferred half",
@@ -4405,11 +4446,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t6_m46_6dof_simulation": {
-    "covered": 4,
+    "covered": 5,
     "total": 18,
     "complete": false,
     "missing": [
-      "Environment models: gravity field, atmosphere, wind and gust, magnetic field, ephemeris, solar radiation pressure",
       "Sensor models: noise, bias and bias instability, scale factor, misalignment, quantisation, latency, dropout, saturation, update rate",
       "Actuator models: thrust curves and start-up transients, TVC gimbal dynamics and rate limits, reaction wheel friction, thruster minimum impulse bit, valve delay",
       "Mass properties against time: propellant depletion, centre of mass migration, inertia tensor change",
