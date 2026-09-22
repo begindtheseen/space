@@ -47,7 +47,7 @@ Before: "Developed a Kalman filter for spacecraft attitude estimation."
 
 After: "Implemented a multiplicative quaternion extended Kalman filter fusing simulated IMU and star-tracker measurements; ran a 200-case Monte Carlo against known truth trajectories and verified filter consistency with NEES and NIS statistics inside their chi-squared bounds at the 95% level, after diagnosing and correcting an initially overconfident covariance traced to an under-tuned gyro-bias process-noise term."
 
-The problem here is sharper than "estimate attitude" — it is "prove the filter's reported uncertainty can be trusted," which is a materially harder and more senior question than simply getting a filter to run. The method names the specific filter formulation, not just "a Kalman filter." The result does two things a weak bullet never does: it reports a defined statistical test against a defined bound, and it names a real problem that was found and fixed along the way, which is stronger evidence of understanding than a filter that happened to work on the first attempt.
+The problem here is sharper than "estimate attitude" — it is "prove the filter's reported uncertainty can be trusted," which is a materially harder and more senior question than getting a filter to run at all. The method names the specific filter formulation, rather than the generic phrase "a Kalman filter." The result does two things a weak bullet never does: it reports a defined statistical test against a defined bound, and it names a real problem that was found and fixed along the way, which is stronger evidence of understanding than a filter that happened to work on the first attempt.
 :::
 
 ::: example Rewrite three: powered-descent guidance with a landing Monte Carlo
@@ -55,7 +55,7 @@ Before: "Implemented a powered descent guidance algorithm."
 
 After: "Implemented convex powered-descent guidance via lossless convexification, posed as a second-order cone program and solved in Python; ran a 5,000-case Monte Carlo over dispersed initial position, velocity and mass, and reported a 99th-percentile landing-position error under 12 meters with a propellant margin retained above the fuel-optimal solution."
 
-The problem — landing accurately under real uncertainty in initial conditions, not just landing once in a nominal case — only becomes visible once the result reports a percentile over a dispersion campaign rather than a single run. The method names the actual formulation, which is itself informative to a reader who knows the field: lossless convexification is a real, specific technique, not a generic phrase. The result closes the loop with two numbers that matter to an actual descent-guidance reader: an accuracy figure and a propellant margin, because a landing solution that ignores fuel cost is not a complete answer to the problem.
+The problem — landing accurately under real uncertainty in initial conditions, rather than landing once in a single nominal case — only becomes visible once the result reports a percentile over a dispersion campaign rather than a single run. The method names the actual formulation, which is itself informative to a reader who knows the field: lossless convexification is a real, specific technique, not a generic phrase. The result closes the loop with two numbers that matter to an actual descent-guidance reader: an accuracy figure and a propellant margin, because a landing solution that ignores fuel cost is not a complete answer to the problem.
 :::
 
 ::: example Rewrite four: batch least-squares orbit determination
@@ -109,7 +109,7 @@ State the "defensibility test" for a resume bullet in your own words, and explai
 :::
 
 ::: answer
-The defensibility test: only include a number you can explain, in one or two sentences and without notes, if someone asks how you obtained it. An impressive but indefensible number is worse than a modest true one because the impressiveness invites exactly the scrutiny the candidate cannot survive — a reader or interviewer will ask how, and an inability to answer reveals that the number was not really earned, which damages trust in every other claim on the page, not just that one bullet.
+The defensibility test: only include a number you can explain, in one or two sentences and without notes, if someone asks how you obtained it. An impressive but indefensible number is worse than a modest true one because the impressiveness invites exactly the scrutiny the candidate cannot survive — a reader or interviewer will ask how, and an inability to answer reveals that the number was not really earned, which damages trust in every other claim on the page, well beyond that single bullet.
 :::
 
 ::: check
@@ -117,7 +117,7 @@ Take the bullet "Implemented a Kalman filter for state estimation." Using the th
 :::
 
 ::: answer
-It needs a result that tests whether the filter's estimate, and specifically its reported uncertainty, can be trusted — for example, a consistency check such as NEES or NIS statistics compared against their expected statistical bounds over a Monte Carlo of trials, or an estimation error compared against a known truth trajectory. The result should state what was checked, over how many trials or against what reference, and whether the outcome fell inside or outside the expected bound — not simply that the filter "performed well."
+It needs a result that tests whether the filter's estimate, and specifically its reported uncertainty, can be trusted — for example, a consistency check such as NEES or NIS statistics compared against their expected statistical bounds over a Monte Carlo of trials, or an estimation error compared against a known truth trajectory. The result should state what was checked, over how many trials or against what reference, and whether the outcome fell inside or outside the expected bound, rather than a bare assertion that the filter "performed well."
 :::
 
 ::: check

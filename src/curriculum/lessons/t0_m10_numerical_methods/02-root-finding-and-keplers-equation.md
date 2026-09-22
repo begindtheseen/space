@@ -205,7 +205,7 @@ Newton's iteration for $\sqrt{a}$ is $x_{k+1} = \tfrac12(x_k + a/x_k)$. Derive i
 :::
 
 ::: answer
-Apply Newton to $f(x) = x^2 - a$ with $f' = 2x$: $x_{k+1} = x_k - (x_k^2 - a)/(2x_k) = \tfrac12(x_k + a/x_k)$. From $x_0 = 1$: $1.5$, $1.416667$, $1.4142157$, $1.41421356237469$, $1.4142135623730951$. Errors against $\sqrt{2}$: $4.1 \times 10^{-1}$, $8.6 \times 10^{-2}$, $2.5 \times 10^{-3}$, $2.1 \times 10^{-6}$, $1.6 \times 10^{-12}$, then round-off. Digits: 0, 1, 3, 6, 12 — doubling, so quadratic. The constant $|f''|/(2|f'|) = 2/(4\sqrt 2) = 0.354$ predicts $e_4 \approx 0.354 \times (2.1 \times 10^{-6})^2 = 1.6 \times 10^{-12}$, as observed.
+Apply Newton to $f(x) = x^2 - a$ with $f' = 2x$: $x_{k+1} = x_k - (x_k^2 - a)/(2x_k) = \tfrac12(x_k + a/x_k)$. From $x_0 = 1$: $1.5$, $1.416667$, $1.4142157$, $1.41421356237469$, $1.414213562373095$. Errors against $\sqrt{2}$: $8.6 \times 10^{-2}$, $2.5 \times 10^{-3}$, $2.1 \times 10^{-6}$, $1.6 \times 10^{-12}$, $2.2 \times 10^{-16}$ — the last a single ulp, the round-off floor. Digits: 1, 3, 6, 12, 16 — doubling until it hits the 53-bit limit, so quadratic. The constant $|f''|/(2|f'|) = 2/(4\sqrt 2) = 0.354$ predicts $e_4 \approx 0.354 \times (2.1 \times 10^{-6})^2 = 1.6 \times 10^{-12}$, as observed.
 :::
 
 ::: check
