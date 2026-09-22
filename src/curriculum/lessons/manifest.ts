@@ -3150,6 +3150,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Particle filters: sequential importance sampling, resampling, degeneracy and sample impoverishment"
       ],
       "file": "t4_m35_nonlinear_filters/07-particle-filters.md"
+    },
+    {
+      "id": "l08-when-a-particle-filter-is-required",
+      "title": "When a particle filter is genuinely required",
+      "minutes": 20,
+      "covers": [
+        "When a particle filter is genuinely required: multi-modal and non-Gaussian posteriors"
+      ],
+      "file": "t4_m35_nonlinear_filters/08-when-a-particle-filter-is-required.md"
     }
   ],
   "t4_m36_inertial_navigation": [
@@ -3666,11 +3675,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t4_m35_nonlinear_filters": {
-    "covered": 7,
+    "covered": 8,
     "total": 14,
     "complete": false,
     "missing": [
-      "When a particle filter is genuinely required: multi-modal and non-Gaussian posteriors",
       "Gaussian sum filters",
       "The error-state (indirect) Kalman filter: why the error state is small and nearly linear, injection and reset, the Jacobian of the reset",
       "The Multiplicative EKF for attitude: the 3-parameter attitude error, covariance on the tangent space",
