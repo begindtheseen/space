@@ -796,6 +796,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "maximum likelihood estimation"
       ],
       "file": "t0_m09_probability_stats/10-maximum-likelihood-estimation.md"
+    },
+    {
+      "id": "l11-confidence-intervals-and-hypothesis-testing",
+      "title": "Confidence intervals and hypothesis testing",
+      "minutes": 27,
+      "covers": [
+        "confidence intervals and hypothesis testing"
+      ],
+      "file": "t0_m09_probability_stats/11-confidence-intervals-and-hypothesis-testing.md"
     }
   ],
   "t0_m10_numerical_methods": [
@@ -1577,11 +1586,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t0_m09_probability_stats": {
-    "covered": 10,
+    "covered": 11,
     "total": 13,
     "complete": false,
     "missing": [
-      "confidence intervals and hypothesis testing",
       "Monte Carlo methods and convergence rates",
       "the chi-square distribution and filter consistency testing"
     ]

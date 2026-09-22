@@ -322,7 +322,16 @@ export function coerceRun(raw: unknown): FocusRun | undefined {
  * is; later ones are counted without commentary.
  */
 export function blockSummary(blocksTodayCount: number, minutes: number): string {
+  // A block shorter than a minute floors to zero, and "0 minutes done" is the
+  // exact sentence this function exists to prevent. The block still happened,
+  // so it is still reported — without the number that makes it read as a
+  // failure.
+  if (minutes < 1) {
+    return blocksTodayCount <= 1
+      ? 'Block done. That was the hard part.'
+      : `Block done. ${blocksTodayCount} today.`
+  }
   const time = `${minutes} minute${minutes === 1 ? '' : 's'}`
   if (blocksTodayCount <= 1) return `${time} done. That was the hard part.`
-  return `${time} done. ${blocksTodayCount} blocks today.`
+  return `${time} today, across ${blocksTodayCount} blocks.`
 }

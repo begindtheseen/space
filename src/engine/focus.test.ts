@@ -287,8 +287,21 @@ describe('recording a block', () => {
 describe('what she is told afterwards', () => {
   it('never reports a shortfall', () => {
     expect(blockSummary(1, 15)).toBe('15 minutes done. That was the hard part.')
-    expect(blockSummary(3, 25)).toBe('25 minutes done. 3 blocks today.')
+    expect(blockSummary(3, 25)).toBe('25 minutes today, across 3 blocks.')
     expect(blockSummary(1, 1)).toContain('1 minute done')
+  })
+
+  it('never says zero minutes', () => {
+    // A block ended after forty seconds is still a block that happened. This
+    // was found by walking the real flow in a browser, where a short block
+    // reported "0 minutes done. That was the hard part."
+    expect(blockSummary(1, 0)).toBe('Block done. That was the hard part.')
+    expect(blockSummary(4, 0)).toBe('Block done. 4 today.')
+    for (const blocks of [0, 1, 2, 9]) {
+      for (const minutes of [0, 1, 7, 240]) {
+        expect(blockSummary(blocks, minutes)).not.toMatch(/\b0 minutes?\b/)
+      }
+    }
   })
 })
 
