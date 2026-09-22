@@ -182,6 +182,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Site Reliability Engineer, GNC: the verbatim 4+ years in lieu of a degree line"
       ],
       "file": "car_03_levels_and_quals/06-site-reliability-engineer.md"
+    },
+    {
+      "id": "l07-solving-complex-problems",
+      "title": "What 'little to no supervision' is actually testing",
+      "minutes": 17,
+      "covers": [
+        "what capable of solving complex problems with little to no supervision is testing"
+      ],
+      "file": "car_03_levels_and_quals/07-solving-complex-problems.md"
     }
   ],
   "car_04_degree_reality": [
@@ -6966,11 +6975,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "car_03_levels_and_quals": {
-    "covered": 7,
+    "covered": 8,
     "total": 10,
     "complete": false,
     "missing": [
-      "what capable of solving complex problems with little to no supervision is testing",
       "how recruiters map your experience onto a level, and why level is set before the offer",
       "honest self-assessment against each list"
     ]

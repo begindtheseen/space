@@ -22,7 +22,7 @@ A wider category of roles supports the GNC mission through software rather than 
 
 ## Why internal transfer is a different game
 
-An external application is evaluated by strangers, working from a resume, which is precisely why the previous lessons spent so much time on the basic-qualifications filter: strangers need a fast, cheap, reliable check, and the degree line is built to be exactly that. An internal transfer candidate is not a stranger. They are evaluated by people who already have an actual track record to look at — code reviewed over months, systems kept running under real incidents, technical judgment demonstrated in real meetings — which is a fundamentally richer and more direct form of evidence than anything a resume can carry. This module's own material states plainly that internal transfer is common inside this organization, and the reason is exactly this: a company that already trusts an employee's demonstrated performance has far less need for the credential-as-proxy-for-a-stranger that a resume-based filter exists to provide.
+An external application is evaluated by strangers, working from a resume, which is precisely why the previous lessons spent so much time on the basic-qualifications filter: strangers need a fast, cheap, reliable check, and the degree line is built to be exactly that. An internal transfer candidate is not a stranger. They are evaluated by people who already have an actual track record to look at — code reviewed over months, systems kept running under real incidents, technical judgment demonstrated in real meetings — which is a fundamentally richer and more direct form of evidence than anything a resume can carry. This module's own material states plainly that internal transfer is common at SpaceX, and the reason is exactly this: a company that already trusts an employee's demonstrated performance has far less need for the credential-as-proxy-for-a-stranger that a resume-based filter exists to provide.
 
 This does not mean the degree line simply stops applying once you are inside. Internal-transfer policy specifics are not something this module can state with confidence, and you should not assume tenure alone triggers a move — the transfer still has to be pursued, usually through genuine relationship-building, demonstrated interest in the target team's actual problems, and continued technical growth in the specific direction the target role needs, which for GNC work means the same demonstrated capability this curriculum builds, developed on your own time while the entry role builds the software and infrastructure side. Path 2 does not solve "am I actually good at GNC" by itself; it buys you proximity and a track record, and you still have to spend that proximity building toward the thing you actually want.
 
@@ -39,7 +39,7 @@ GNC Software Engineer and simulation/tools roles are not verified to waive the d
 :::
 
 ::: key
-Internal transfer works differently from an external application because it is evaluated on an actual track record rather than a resume-based filter built for strangers. It is common, but not automatic — it requires deliberately building toward the target team, not merely waiting inside the organization.
+Internal transfer works differently from an external application because it is evaluated on an actual track record rather than a resume-based filter built for strangers. It is common, but not automatic — it requires deliberately building toward the target team, not merely waiting inside the company.
 :::
 
 ::: example Checking one candidate against SRE, GNC's basic qualifications, line by line
@@ -103,7 +103,7 @@ Path 2's entry roles are evaluated on software and infrastructure competence, an
 | SRE, GNC in-lieu branch | 4+ years professional SRE/DevOps software experience, in lieu of a degree | Does not waive the 1+ year Linux or Python lines |
 | SRE, GNC role itself | HPC cluster maintenance, Monte Carlo infrastructure, CI, GNC tooling | Not control-law design or estimation work |
 | GNC Software Engineer / tools roles | Weight demonstrated software skill heavily | Not verified to waive the degree line itself |
-| Internal transfer | Evaluated on an actual track record, common at this organization | Not automatic, and not triggered by tenure alone |
+| Internal transfer | Evaluated on an actual track record, common at SpaceX | Not automatic, and not triggered by tenure alone |
 | Years toward Sr. GNC's 7-year branch | Accumulate across employers and adjacent roles | Do not compress simply from proximity to GNC work |
 
 The next lesson turns to Path 3 — building the same kind of professional GNC experience directly, at companies whose credential gate is looser than an established prime's, and what that experience converts into later.

@@ -118,4 +118,4 @@ No. Enrolling addresses the credential half of Path 1, but the previous lesson e
 | Postgraduate conversion route | Satisfies Sr. GNC Engineer's degree line from any prior field | Does not supply GNC-relevant professional experience |
 | This curriculum, run in parallel | The demonstrated-work differentiator against your cohort | Does not, alone, satisfy the degree-field line |
 
-The next lesson turns to Path 2 — entering through a role the degree line treats differently, and moving toward GNC work from inside the organization rather than through its front door.
+The next lesson turns to Path 2 — entering through a role the degree line treats differently, and moving toward GNC work from inside SpaceX rather than through its front door.

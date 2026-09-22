@@ -137,7 +137,7 @@ The order is a testable prediction, and testing it is how you find out whether a
 | 0.2 | $4.02 \times 10^{-2}$ | — | $2.86 \times 10^{-3}$ | — | $5.80 \times 10^{-6}$ | — |
 | 0.1 | $1.92 \times 10^{-2}$ | 2.09 | $6.62 \times 10^{-4}$ | 4.32 | $3.33 \times 10^{-7}$ | 17.4 |
 | 0.05 | $9.39 \times 10^{-3}$ | 2.04 | $1.59 \times 10^{-4}$ | 4.16 | $2.00 \times 10^{-8}$ | 16.7 |
-| 0.025 | $4.65 \times 10^{-3}$ | 2.02 | $3.91 \times 10^{-5}$ | 4.08 | $1.22 \times 10^{-9}$ | 16.3 |
+| 0.025 | $4.65 \times 10^{-3}$ | 2.02 | $3.90 \times 10^{-5}$ | 4.08 | $1.22 \times 10^{-9}$ | 16.3 |
 | 0.0125 | $2.31 \times 10^{-3}$ | 2.01 | $9.67 \times 10^{-6}$ | 4.04 | $7.56 \times 10^{-11}$ | 16.2 |
 
 The ratios approach $2^1$, $2^2$ and $2^4$ from above as $h$ shrinks and the higher-order terms fade. On a log–log plot of error against $h$ the three methods are straight lines of slope 1, 2 and 4. This is the plot the module's first exercise asks for, and it is the acceptance test for any integrator you write: a measured RK4 ratio near 8 instead of 16 means a stage is wrong — a common slip is using $\mathbf{k}_1$ instead of $\mathbf{k}_2$ when forming $\mathbf{k}_3$, which silently demotes the method to third order.
