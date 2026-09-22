@@ -7,6 +7,7 @@ import {
   IconBook,
   IconBriefcase,
   IconCode,
+  IconCompass,
   IconGear,
   IconHome,
   IconMenu,
@@ -40,6 +41,7 @@ export const NAV: NavDef[] = [
   { id: 'career', label: 'Career', path: '/career', Icon: IconBriefcase },
   { id: 'progress', label: 'Progress', path: '/progress', Icon: IconBars },
   { id: 'resources', label: 'Resources', path: '/resources', Icon: IconDoc },
+  { id: 'guide', label: 'Guide', path: '/guide', Icon: IconCompass },
   { id: 'settings', label: 'Settings', path: '/settings', Icon: IconGear },
 ]
 

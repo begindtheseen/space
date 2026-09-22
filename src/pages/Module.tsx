@@ -105,7 +105,8 @@ function statusOf(state: LearnerState, module: Module, now: Date): Status {
     due: dueAtoms(state, [module], now).length,
     read: state.read[module.id],
     exercises: exercises.length,
-    started: exercises.filter((e) => e.kind === 'code' && !!state.code[e.id]).length,
+    // The playground keys saved buffers as `ex:<exercise id>`.
+    started: exercises.filter((e) => e.kind === 'code' && !!state.code[`ex:${e.id}`]).length,
   }
 }
 
@@ -564,7 +565,7 @@ function ExerciseCard({
   const { state } = useLearner()
   const [showSolution, setShowSolution] = useState(false)
   const runnable = exercise.kind === 'code' && !!exercise.lang
-  const started = !!state.code[exercise.id]
+  const started = !!state.code[`ex:${exercise.id}`]
 
   return (
     <Card

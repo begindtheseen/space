@@ -1,5 +1,16 @@
 // Application menu. Full macOS layout; the same items minus the app menu elsewhere.
-import { app, Menu } from 'electron'
+import { app, BrowserWindow, Menu } from 'electron'
+
+/**
+ * Lands the renderer on a route the same way "Check for Updates…" lands on Settings:
+ * the preload's `onNavigate` listens on this channel (ipc.js, `NAVIGATE_CHANNEL`).
+ * With no window open there is nothing to land on, and the click is a no-op.
+ */
+function navigate(path) {
+  for (const win of BrowserWindow.getAllWindows()) {
+    if (!win.isDestroyed() && !win.webContents.isDestroyed()) win.webContents.send('orbit:navigate', path)
+  }
+}
 
 /**
  * @param {{
@@ -63,6 +74,8 @@ export function buildMenu({ repo, versions, onCheckForUpdates, openExternal }) {
     {
       role: 'help',
       submenu: [
+        { label: 'How to use ORBIT', click: () => navigate('/guide') },
+        { type: 'separator' },
         ...(isMac ? [] : [checkItem, { type: 'separator' }]),
         { label: 'ORBIT on GitHub', click: () => openExternal(repoUrl) },
         { label: 'Releases', click: () => openExternal(`${repoUrl}/releases`) },

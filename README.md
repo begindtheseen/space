@@ -30,11 +30,49 @@ memory model and a dependency graph, and it shows its working:
   letting you grind against material you are not ready for.
 - **Real code execution.** Python runs for real (CPython 3.14 via Pyodide, with NumPy,
   SciPy, SymPy, pandas and Matplotlib), and SQL runs against SQLite compiled to
-  WebAssembly. C++, Rust and MATLAB are checked against expected output — and the app
-  says so rather than pretending otherwise.
+  WebAssembly. C++, Rust and shell exercises are written in the editor and compared
+  against the reference solution — nothing compiles in the browser, and the app says so
+  rather than pretending otherwise. MATLAB exercises ship a NumPy equivalent you can run.
 - **Honest numbers.** The Progress page shows your predicted retention over a year,
   your review workload ahead, and a reliability diagram of how well-calibrated your own
   confidence turns out to be. Completion estimates are given as a range, never a date.
+
+---
+
+## How to use it
+
+Open a track, start its first module, and work the module page top to bottom. Every
+module runs the same three steps:
+
+1. **Learn.** Read the objectives, work through the curated resources in order (free
+   ones first), then skim the Notes — the module's flashcards laid out to read. ORBIT
+   has no lessons of its own; it links the best free material rather than paraphrasing
+   it. Press **Mark as studied** when you are done.
+2. **Practice.** The exercises. Code ones open in the playground with tests; derivations
+   and analyses are done on paper and checked against the solution afterwards.
+3. **Recall.** The flashcards and questions as a spaced-repetition session. Questions
+   are held back until here on purpose — attempting one cold is what makes it stick.
+
+**Where to start.** A complete beginner starts in Foundations & Math with Algebra &
+Precalculus, which assumes nothing. If the maths is already comfortable, go to Learning
+→ Open now for the modules whose prerequisites you have met. If you are here for the
+job, read the Career track first, starting with the ITAR gate.
+
+**Grading recall.** Prompt, optional confidence rating, reveal, grade. Again (1) means
+you did not get it and brings the item back within minutes; Hard (2), Good (3) and Easy
+(4) all count as a recall and set progressively longer intervals, and every button shows
+the interval it will set. "Nothing due right now" is the scheduler working, not a bug.
+
+**Mastery and unlocking.** Every module has a mastery percentage built from its recall
+items. A prerequisite at 70% unlocks the modules that rest on it; 90% counts as
+mastered. Gated modules are shown, not hidden, and the gate is advice — you can study
+one anyway, it will just be harder than it needs to be.
+
+**Back up your data.** Everything lives on this device; there is no account and no sync.
+Settings → Export writes a JSON backup. Keep it somewhere else and refresh it regularly.
+
+The full guide lives in the app under **Guide** (`#/guide`) and reads its numbers from the
+curriculum and the scheduler as you look at it.
 
 ---
 

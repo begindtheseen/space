@@ -20,6 +20,7 @@ const Playground = lazy(() => import('@/pages/Playground').then((m) => ({ defaul
 const Progress = lazy(() => import('@/pages/Progress').then((m) => ({ default: m.Progress })))
 const Resources = lazy(() => import('@/pages/Resources').then((m) => ({ default: m.Resources })))
 const Settings = lazy(() => import('@/pages/Settings').then((m) => ({ default: m.Settings })))
+const Guide = lazy(() => import('@/pages/Guide').then((m) => ({ default: m.Guide })))
 
 export function App() {
   return (
@@ -84,6 +85,8 @@ function Page({ path, segments }: { path: string; segments: string[] }) {
       return <Resources />
     case 'settings':
       return <Settings />
+    case 'guide':
+      return <Guide />
     default:
       return <NotFound path={path} />
   }
