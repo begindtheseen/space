@@ -1,7 +1,7 @@
 ---
 id: l01-constellation-and-signal-structure
 title: The constellation and the signal
-minutes: 26
+minutes: 23
 covers:
   - "GNSS constellation and signal structure: L1/L2/L5, C/A and P(Y) codes, CDMA, the navigation message"
 ---

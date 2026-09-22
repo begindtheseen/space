@@ -1,7 +1,7 @@
 ---
 id: l02-the-pseudorange-and-its-error-budget
 title: The pseudorange and its error budget
-minutes: 24
+minutes: 19
 covers:
   - The pseudorange measurement and its error budget
 ---
@@ -154,7 +154,7 @@ The broadcast clock polynomial for a satellite has $a_{f0} = -1.8 \times 10^{-4}
 :::
 
 ::: answer
-$\delta t_{sat} = -1.8 \times 10^{-4} + 2.0 \times 10^{-12} \times 3600 = -180{,}000\,\mathrm{ns} + 7.2\,\mathrm{ns} = -179{,}992.8\,\mathrm{ns}$, which is $-53{,}961.7\,\mathrm{m}$. The model has $-c\,\delta t_{sat}$ in the pseudorange, so the correction adds $c\,\delta t_{sat}$: the pseudorange is shortened by $53.96\,\mathrm{km}$. A satellite clock that runs slow makes the signal appear to have left earlier, so the raw pseudorange was too long.
+$\delta t_{sat} = -1.8 \times 10^{-4} + 2.0 \times 10^{-12} \times 3600 = -180{,}000\,\mathrm{ns} + 7.2\,\mathrm{ns} = -179{,}992.8\,\mathrm{ns}$, which is $-53{,}960.5\,\mathrm{m}$. The model has $-c\,\delta t_{sat}$ in the pseudorange, so the correction adds $c\,\delta t_{sat}$: the pseudorange is shortened by $53.96\,\mathrm{km}$. A satellite clock that runs slow makes the signal appear to have left earlier, so the raw pseudorange was too long.
 :::
 
 ::: check

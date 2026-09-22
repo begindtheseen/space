@@ -2795,6 +2795,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "The linear least squares problem; normal equations, QR, and SVD solutions"
       ],
       "file": "t4_m33_least_squares/01-linear-least-squares-normal-equations-qr-svd.md"
+    },
+    {
+      "id": "l02-weighted-least-squares-and-the-information-matrix",
+      "title": "Weighted least squares and the information matrix",
+      "minutes": 21,
+      "covers": [
+        "Weighted least squares and the information matrix"
+      ],
+      "file": "t4_m33_least_squares/02-weighted-least-squares-and-the-information-matrix.md"
     }
   ],
   "t4_m34_kalman_filter": [
@@ -2823,7 +2832,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-constellation-and-signal-structure",
       "title": "The constellation and the signal",
-      "minutes": 26,
+      "minutes": 23,
       "covers": [
         "GNSS constellation and signal structure: L1/L2/L5, C/A and P(Y) codes, CDMA, the navigation message"
       ],
@@ -2832,7 +2841,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-the-pseudorange-and-its-error-budget",
       "title": "The pseudorange and its error budget",
-      "minutes": 24,
+      "minutes": 19,
       "covers": [
         "The pseudorange measurement and its error budget"
       ],
@@ -3126,11 +3135,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t4_m33_least_squares": {
-    "covered": 1,
+    "covered": 2,
     "total": 12,
     "complete": false,
     "missing": [
-      "Weighted least squares and the information matrix",
       "Minimum variance and BLUE: the Gauss-Markov theorem",
       "Maximum likelihood and its equivalence to WLS under Gaussian noise",
       "Maximum a posteriori estimation",
