@@ -377,6 +377,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "the matrix exponential and the state transition matrix"
       ],
       "file": "t0_m05_linear_algebra_2/02-matrix-exponential.md"
+    },
+    {
+      "id": "l03-similarity-transforms-modes-stability",
+      "title": "Similarity transforms, modal coordinates and stability",
+      "minutes": 21,
+      "covers": [
+        "similarity transforms"
+      ],
+      "file": "t0_m05_linear_algebra_2/03-similarity-transforms-modes-stability.md"
     }
   ],
   "t0_m06_calculus_single": [
@@ -591,6 +600,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "second-order linear constant-coefficient ODEs and the characteristic equation"
       ],
       "file": "t0_m08_odes/02-second-order-characteristic-equation.md"
+    },
+    {
+      "id": "l03-damped-oscillator-zeta-omega-n",
+      "title": "The damped oscillator, natural frequency and damping ratio",
+      "minutes": 22,
+      "covers": [
+        "the damped oscillator: natural frequency and damping ratio"
+      ],
+      "file": "t0_m08_odes/03-damped-oscillator-zeta-omega-n.md"
     }
   ],
   "t0_m09_probability_stats": [
@@ -640,6 +658,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "floating-point representation, machine epsilon, catastrophic cancellation"
       ],
       "file": "t0_m10_numerical_methods/01-floating-point.md"
+    },
+    {
+      "id": "l02-root-finding-and-keplers-equation",
+      "title": "Root finding and Kepler's equation",
+      "minutes": 26,
+      "covers": [
+        "root finding: bisection, Newton-Raphson, secant, and convergence rates"
+      ],
+      "file": "t0_m10_numerical_methods/02-root-finding-and-keplers-equation.md"
     }
   ],
   "t0_m11_optimization": [
@@ -1254,11 +1281,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t0_m05_linear_algebra_2": {
-    "covered": 2,
+    "covered": 3,
     "total": 11,
     "complete": false,
     "missing": [
-      "similarity transforms",
       "symmetric matrices and the spectral theorem",
       "positive definiteness and quadratic forms",
       "singular value decomposition",
@@ -1282,11 +1308,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t0_m08_odes": {
-    "covered": 2,
+    "covered": 3,
     "total": 12,
     "complete": false,
     "missing": [
-      "the damped oscillator: natural frequency and damping ratio",
       "forced response and resonance",
       "systems of first-order ODEs and state-space form",
       "matrix exponential solution",
@@ -1315,11 +1340,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t0_m10_numerical_methods": {
-    "covered": 1,
+    "covered": 2,
     "total": 13,
     "complete": false,
     "missing": [
-      "root finding: bisection, Newton-Raphson, secant, and convergence rates",
       "numerical ODE integration: Euler, Heun, RK4, RK45 / Dormand-Prince",
       "adaptive step-size control",
       "Adams-Bashforth / Adams-Moulton multistep methods",
