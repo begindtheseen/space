@@ -651,6 +651,16 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "unconstrained optimisation: gradient descent, Newton, BFGS, line search, trust region"
       ],
       "file": "t0_m11_optimization/01-descent-and-line-search.md"
+    },
+    {
+      "id": "l02-lagrange-and-kkt",
+      "title": "Constrained optimisation: Lagrange multipliers and the KKT conditions",
+      "minutes": 26,
+      "covers": [
+        "constrained optimisation and Lagrange multipliers",
+        "KKT conditions"
+      ],
+      "file": "t0_m11_optimization/02-lagrange-and-kkt.md"
     }
   ],
   "t0_m12_cpp": [
@@ -1324,12 +1334,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t0_m11_optimization": {
-    "covered": 1,
+    "covered": 3,
     "total": 14,
     "complete": false,
     "missing": [
-      "constrained optimisation and Lagrange multipliers",
-      "KKT conditions",
       "convex sets and convex functions",
       "why convexity matters: global optimum, polynomial time, certificates",
       "linear and quadratic programming",

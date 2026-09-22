@@ -107,6 +107,11 @@ export interface OrbitBridge {
   readonly versions: Readonly<OrbitVersions>
   /** Tells the shell the renderer has painted; it then swaps the splash for the window. */
   ready(): void
+  /**
+   * Names the boot step in progress so the splash can show it. Fire and
+   * forget: the shell drops these once the splash is gone.
+   */
+  bootStatus(text: string): void
   readonly updates: {
     getState(): Promise<UpdateState>
     check(): Promise<UpdateState>

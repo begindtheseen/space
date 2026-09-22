@@ -33,6 +33,10 @@ const bridge = {
   ready() {
     ipcRenderer.send('orbit:ready')
   },
+  /** Reports a boot step so the splash can show what is being done. */
+  bootStatus(text) {
+    ipcRenderer.send('orbit:boot-status', String(text))
+  },
   updates: {
     getState: () => ipcRenderer.invoke('orbit:updates:get-state'),
     check: () => ipcRenderer.invoke('orbit:updates:check'),

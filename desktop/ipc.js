@@ -10,6 +10,9 @@ const STATE_CHANNEL = 'orbit:updates:state'
 const NAVIGATE_CHANNEL = 'orbit:navigate'
 const MAX_URL_LENGTH = 2048
 
+/** @type {Set<(text: string, sender: Electron.WebContents) => void>} */
+const bootStatusListeners = new Set()
+
 /**
  * Opens https:/mailto: links in the system browser/mail client. Anything else is dropped.
  * @returns {boolean} whether the URL was accepted
@@ -150,6 +153,14 @@ export function registerIpc({ updater, config, versions, repo, allowedOrigins, l
   // The progress mirror. Both handlers swallow their own failures: the
   // renderer's IndexedDB copy is the working one, and a disk problem must
   // degrade the safety net rather than interrupt a study session.
+  // Boot progress from the renderer, forwarded to whoever is showing the
+  // splash. Dropped silently once the splash is gone.
+  ipcMain.on('orbit:boot-status', (event, text) => {
+    if (!isTrusted(event)) return
+    if (typeof text !== 'string' || text.length > 200) return
+    for (const listener of bootStatusListeners) listener(text, event.sender)
+  })
+
   ipcMain.handle('orbit:backup:write', (event, json) => {
     if (!isTrusted(event)) return false
     return writeBackup(json, log)
@@ -193,6 +204,11 @@ export function registerIpc({ updater, config, versions, repo, allowedOrigins, l
   })
 
   return {
+    /** @param {(text: string, sender: Electron.WebContents) => void} listener */
+    onBootStatus(listener) {
+      bootStatusListeners.add(listener)
+      return () => bootStatusListeners.delete(listener)
+    },
     /** @param {(sender: Electron.WebContents) => void} listener */
     onReady(listener) {
       readyListeners.add(listener)
