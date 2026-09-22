@@ -2552,7 +2552,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-robust-mpc-tubes-and-min-max",
       "title": "Robust MPC, tubes and min-max",
-      "minutes": 22,
+      "minutes": 19,
       "covers": [
         "Robust MPC: tube MPC and min-max formulations"
       ],

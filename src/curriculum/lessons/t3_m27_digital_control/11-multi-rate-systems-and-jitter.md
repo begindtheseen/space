@@ -14,11 +14,9 @@ The remedies are opposite. Multi-rate latency is a fixed, known delay, so you mo
 
 ## Rate groups
 
-Flight software is organised into **rate groups**: sets of tasks that run at the same frequency, dispatched from one timer, with the slower rates as exact integer submultiples of the fastest. A $400\,\mathrm{Hz}$ base rate with groups at $400$, $200$, $100$, $50$, $20$ and $10\,\mathrm{Hz}$ is typical; every group's period is an integer number of base frames, every group's start instant is a known offset from a base frame boundary, and the whole schedule repeats on a **major frame** whose length is the least common multiple of the periods.
+Flight software is organised into **rate groups**: sets of tasks running at the same frequency, dispatched from one timer, with the slower rates as exact integer submultiples of the fastest. A $400\,\mathrm{Hz}$ base rate with groups at $400$, $200$, $100$, $50$, $20$ and $10\,\mathrm{Hz}$ is typical; every group's start instant is a known offset from a base frame boundary, and the schedule repeats on a **major frame** whose length is the least common multiple of the periods.
 
-Making the ratios integers and the phases fixed is not an aesthetic preference. It is what turns the rate transitions into constant delays rather than varying ones, which is the difference between something you can put in a model and something you can only bound.
-
-The allocation is the sample-rate lesson applied to each loop separately: the inner rate loop is fast because its crossover is high, the outer attitude loop is slower because its crossover is lower, and guidance is slowest because trajectory corrections happen on the scale of seconds.
+Integer ratios and fixed phases are not an aesthetic preference. They are what turns rate transitions into constant delays rather than varying ones — the difference between something you can put in a model and something you can only bound. The allocation itself is the sample-rate lesson applied to each loop separately.
 
 ## What a rate transition costs
 
@@ -28,9 +26,7 @@ Data crossing from one group to another picks up latency, and which kind depends
 
 **Fast to slow** — a fast measurement decimated for a slow loop — is a decimation, and it needs an anti-alias filter in the digital domain before the rate is reduced, for exactly the reasons of the first lesson. Content between the slow loop's Nyquist frequency and the fast rate's folds when you throw samples away. A decimation filter's group delay then sits in the slow loop.
 
-**Skew** is the offset between when the producer writes and when the consumer reads. With a fixed phase relationship it is a constant, and it adds to the delay budget like any other constant. Without one — two tasks dispatched from unrelated timers, or a task whose start slides with system load — the data age varies from frame to frame, and that is jitter rather than delay.
-
-The unpleasant case is a non-integer rate ratio, which produces a varying age even when everything is perfectly periodic.
+**Skew** is the offset between when the producer writes and when the consumer reads. With a fixed phase relationship it is a constant and adds to the delay budget like any other. Without one — unrelated timers, or a task whose start slides with system load — the data age varies frame to frame, and that is jitter. The unpleasant case is a non-integer rate ratio, which produces a varying age even when everything is perfectly periodic.
 
 ::: example A 100 Hz sensor read by a 150 Hz task
 The sensor latches a new value every $10\,\mathrm{ms}$. The control task samples every $6.667\,\mathrm{ms}$. Both are perfectly regular, and both clocks are perfect. Tabulate the age of the value the task reads:
@@ -177,11 +173,9 @@ An outer loop at $25\,\mathrm{Hz}$ commands an inner loop at $250\,\mathrm{Hz}$.
 :::
 
 ::: answer
-With a fixed phase relationship, two constant contributions. The outer command is held for a whole outer frame, contributing the outer loop's zero-order hold, $T_{\text{slow}}/2 = 20\,\mathrm{ms}$, which at $0.8\,\mathrm{Hz}$ is $360 \times 0.8 \times 0.020 = 5.76^\circ$. And the inner loop picks the command up at the next inner frame boundary, an average of half an inner frame, $2\,\mathrm{ms}$, which is $0.58^\circ$. Total $6.34^\circ$, all of it constant and all of it modellable.
+With a fixed phase relationship, two constant contributions. The outer command is held for a whole outer frame — the outer loop's zero-order hold, $T_{\text{slow}}/2 = 20\,\mathrm{ms}$, which at $0.8\,\mathrm{Hz}$ is $360 \times 0.8 \times 0.020 = 5.76^\circ$. The inner loop then picks it up at the next inner frame boundary, an average of half an inner frame, $2\,\mathrm{ms}$, or $0.58^\circ$. Total $6.34^\circ$, constant and modellable.
 
-With unrelated timers the second term is no longer constant. The pickup offset drifts through the whole $4\,\mathrm{ms}$ inner frame as the two oscillators wander against each other, so the loop carries a delay varying over $4\,\mathrm{ms}$ peak to peak — jitter, not delay. The size is the same; what is lost is the ability to put it in the model. It now has to be covered by the jitter bound, and the drift is slow, so the loop will look fine for minutes at a time and then look different, which is the hardest kind of problem to reproduce.
-
-The fix costs nothing at design time and is close to impossible to retrofit: dispatch every rate group from one timebase.
+With unrelated timers the second term stops being constant: the pickup offset drifts through the whole $4\,\mathrm{ms}$ inner frame as the oscillators wander against each other, so the loop carries a delay varying over $4\,\mathrm{ms}$ peak to peak. The size is the same; what is lost is the ability to put it in the model, and the drift is slow, so the loop looks fine for minutes and then looks different — the hardest kind of problem to reproduce. The fix costs nothing at design time and is close to impossible to retrofit: dispatch every rate group from one timebase.
 :::
 
 ::: check
@@ -205,13 +199,9 @@ Why does sampling jitter hurt more on a vehicle with high-frequency vibration, a
 :::
 
 ::: answer
-The error from a timing offset $\varepsilon$ is $\dot{x}\,\varepsilon$ — the signal's slope times the offset. A signal with a $10\,\mathrm{Hz}$ vibration component of amplitude $A$ has slope up to $A\omega = 62.8A$; at $100\,\mathrm{Hz}$ the same amplitude gives ten times the slope, and therefore ten times the error from the same jitter. Jitter converts vibration into measurement noise, with a conversion factor proportional to frequency.
+The error from a timing offset $\varepsilon$ is $\dot{x}\,\varepsilon$ — the signal's slope times the offset. A $10\,\mathrm{Hz}$ component of amplitude $A$ has slope up to $A\omega = 62.8A$; at $100\,\mathrm{Hz}$ the same amplitude gives ten times the slope and ten times the error from the same jitter. Jitter converts vibration into measurement noise with a conversion factor proportional to frequency.
 
-Three things help, in order of effectiveness. Reduce the jitter itself: latch the sample in hardware, triggered by a timer, rather than in software at the top of the task — the converter's sample-and-hold then fires at a deterministic instant regardless of what the processor is doing, and the software reads a value acquired earlier. This is the standard arrangement and it removes sampling jitter almost entirely.
-
-Second, filter the vibration before it reaches the sampler, which is the anti-alias filter of the first lesson doing a second job: content it removes cannot be converted into jitter noise either.
-
-Third, accept it and account for it as measurement noise in the estimator, with the variance computed as above. That is honest but it is the weakest of the three, because the noise it adds is proportional to the vibration environment, which is the thing you know least accurately.
+Three things help, in order of effectiveness. Reduce the jitter itself: latch the sample in hardware from a timer rather than in software at the top of the task, so the converter's sample-and-hold fires at a deterministic instant whatever the processor is doing and the software reads a value acquired earlier. This is the standard arrangement and it removes sampling jitter almost entirely. Second, filter the vibration before it reaches the sampler — the anti-alias filter of the first lesson doing a second job, since content it removes cannot become jitter noise either. Third, account for it as measurement noise in the estimator with the variance computed above; honest, but the weakest of the three, because the noise it adds is proportional to the vibration environment, which is what you know least accurately.
 :::
 
 ::: check

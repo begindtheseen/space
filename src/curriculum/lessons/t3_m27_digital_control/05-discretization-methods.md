@@ -140,7 +140,7 @@ Every row is predictable from the theory above.
 
 Forward Euler fails the criterion by a wide margin: $\omega_m T = 376.99 \times 0.005 = 1.885$ against $2\zeta_d = 0.4$. The poles come out at radius $1.949$ and the filter diverges, roughly doubling in amplitude every sample. This is a filter whose continuous version is unconditionally stable, made unstable by the act of writing it down as a difference equation.
 
-Backward Euler is stable, as advertised, and useless: the notch is now $1.75\,\mathrm{dB}$ deep instead of $20$. A bending mode passing through it is attenuated by $18\%$ rather than by $90\%$. Nothing in a stability check catches this — the filter runs, the loop is stable, and the mode is not suppressed.
+Backward Euler is stable, as advertised, and useless: the notch is now $1.75\,\mathrm{dB}$ deep instead of $20$, so a bending mode passing through it is attenuated by $18\%$ rather than $90\%$. No stability check catches this.
 
 Plain Tustin preserves the shape exactly, including the $-20\,\mathrm{dB}$ depth, and puts it at the wrong frequency. The warping formula predicts it: the notch designed at $376.99\,\mathrm{rad/s}$ appears at $(2/T)\arctan(\omega_m T/2) = 400 \times \arctan(0.94248) = 302.32\,\mathrm{rad/s} = 48.12\,\mathrm{Hz}$. A $60\,\mathrm{Hz}$ mode meets this filter at $60\,\mathrm{Hz}$, where the response has already climbed back to nearly unity, and is not attenuated at all. Meanwhile the loop has paid the notch's full phase cost, and paid it in the wrong place.
 
@@ -156,7 +156,7 @@ whose DC gain $\sum b/\sum a = 1.000000$ confirms the coefficients are consisten
 
 Matched pole-zero gets the centre right too, and its depth comes out $0.08\,\mathrm{dB}$ deeper than asked, which is within anyone's tolerance.
 
-One caution about the table: none of this is visible from a stability check or a step response. The forward-Euler row announces itself immediately, but the backward-Euler and plain-Tustin rows produce filters that run happily forever and do not do the job. The test that catches them is to sweep the *discrete* filter around the unit circle and plot what you actually built — never to assume the discretization delivered the design.
+One caution about the table. The forward-Euler row announces itself immediately, but the backward-Euler and plain-Tustin rows produce filters that run happily forever and do not do the job. The test that catches them is to sweep the *discrete* filter around the unit circle and plot what you actually built, never to assume the discretization delivered the design.
 :::
 
 ## ZOH equivalence: exact, and for the plant
@@ -213,11 +213,11 @@ with no sampling zero at all and a full $z^{-1}$ of delay, because relative degr
 
 The last method is the most direct reading of the previous lesson: since poles map by $z = e^{sT}$, map them that way and be done.
 
-The recipe: map every finite pole $p_i$ to $e^{p_i T}$ and every finite zero $q_i$ to $e^{q_i T}$; if the continuous system has more poles than zeros, add that many zeros at $z = -1$ (or all but one at $z=-1$, if you want a frame of delay for computation); then scale the whole thing by a constant so the DC gains match, $H(1) = G(0)$.
+The recipe: map every finite pole $p_i$ to $e^{p_i T}$ and every finite zero $q_i$ to $e^{q_i T}$; if there are more poles than zeros, add that many zeros at $z = -1$ (or all but one, if you want a frame of delay for computation); then scale by a constant so the DC gains match, $H(1) = G(0)$.
 
-The zeros at $z = -1$ deserve an explanation. A continuous system with more poles than zeros rolls off to zero at infinite frequency; the discrete band ends at Nyquist, where $z = -1$, so putting the surplus zeros there reproduces the roll-off. It is the same reasoning that gave the ZOH equivalent of $1/s^2$ a zero at $z = -1$.
+The zeros at $z = -1$ reproduce the roll-off: a continuous system with surplus poles falls to zero at infinite frequency, and the discrete band ends at Nyquist, where $z = -1$. It is the same reasoning that gave the ZOH equivalent of $1/s^2$ a zero there.
 
-Matched pole-zero is exact in pole locations by construction, which is its appeal for filters whose pole placement *is* the specification — notches, lead networks, simple lags. It is awkward when the system is improper, when a delay is present, or when the zeros matter more than the poles, and it has no claim to exactness in between the mapped points. In the notch table it performed as well as prewarped Tustin.
+Matched pole-zero is exact in pole locations by construction, which is its appeal for filters whose pole placement *is* the specification — notches, lead networks, simple lags. It is awkward for improper or delay-bearing systems, and it has no claim to exactness between the mapped points. In the notch table it performed as well as prewarped Tustin.
 
 ::: key
 **Matched pole-zero discretization.** Map every continuous pole and zero by $z = e^{sT}$ and rescale for DC gain. Preserves pole locations exactly; good for simple filters, awkward for improper or delay-bearing systems.

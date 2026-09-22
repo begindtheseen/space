@@ -130,9 +130,9 @@ Now the same filter at $f_s = 2\,\mathrm{kHz}$, where $a_1 = -1.994534$ and $a_2
 | 16-bit | centre $3.0497\,\mathrm{Hz}$ — $6.5\%$ high — and $\zeta_d = 0.281$ |
 | 12-bit | denominator becomes $z^2 - 1.994629z + 0.994629$, whose roots are $z = 1$ and $z = 0.994629$ |
 
-Read the last row carefully. Rounding to twelve bits made $a_1$ and $a_2$ satisfy $1 + a_1 + a_2 = 0$ exactly, which puts a root at $z = 1$. The notch is now an *integrator*: infinite DC gain, and a filter that ramps without bound on any constant input. The complex pole pair did not merely move — it collided with the real axis and split, and one half landed on the stability boundary.
+Read the last row carefully. Rounding to twelve bits made $a_1$ and $a_2$ satisfy $1 + a_1 + a_2 = 0$ exactly, which puts a root at $z = 1$. The notch is now an *integrator*: infinite DC gain, ramping without bound on any constant input. The complex pair did not merely move — it collided with the real axis and split, and one half landed on the stability boundary.
 
-Nothing about the design changed between the two tables. The filter is the same filter, the coefficients came from the same formula, and the only difference is that at $2\,\mathrm{kHz}$ the information distinguishing this notch from an integrator lives below the twelfth bit. That is what "the coefficients cluster near $z = 1$ and lose precision" means in practice, and it is why the realization form of the next lesson exists.
+Nothing about the design changed between the two tables. The only difference is that at $2\,\mathrm{kHz}$ the information distinguishing this notch from an integrator lives below the twelfth bit. That is what "the coefficients cluster near $z = 1$ and lose precision" means in practice, and it is why the realization form of the next lesson exists.
 :::
 
 ## Fixed-point arithmetic
