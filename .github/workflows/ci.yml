@@ -39,6 +39,17 @@ jobs:
         run: npm run build:bundle
       - name: Desktop end-to-end
         run: xvfb-run -a npm run desktop:e2e
+      # Nothing here covered the compiled languages, which is why they could be
+      # dead in the shipped app without a red build. This launches the real
+      # Electron app with the PATH launchd gives a Mac app from the Dock and
+      # runs code through window.orbit.run. Only C++ and shell are required:
+      # the runner has a compiler and a shell, and a language it does not have
+      # is reported as a skip rather than failing the build. The detection
+      # table is printed either way, so a lookup that regresses is visible.
+      - name: Playground bridge end-to-end
+        run: xvfb-run -a npm run desktop:bridge
+        env:
+          ORBIT_BRIDGE_REQUIRE: cpp
       - name: Upload e2e screenshots
         if: always()
         uses: actions/upload-artifact@v4
