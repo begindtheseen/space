@@ -30,7 +30,7 @@ That enumeration is an illustration, not an itinerary. Nobody publishes a defini
 
 ### Why the elapsed time is almost entirely waiting
 
-Add up the time you actually spend being interviewed. A recruiter screen of twenty to thirty minutes, plus a technical phone screen of thirty minutes, comes to under an hour. Add the onsite — one day, often more than eight hours — and the total live evaluation time is on the order of a single long working day. That day is spread across five to eight weeks.
+Add up the time you actually spend being interviewed. A recruiter screen of twenty to thirty minutes, plus a technical phone screen of thirty minutes, comes to an hour at the outside. Add the onsite — one day, often more than eight hours — and the total live evaluation time is on the order of a single long working day. That day is spread across five to eight weeks.
 
 The gap is not mysterious and it is not a judgment about you. Every stage after the recruiter screen needs an engineer's calendar, not a recruiter's, and engineers on a launch or spacecraft program are doing the actual work the rest of the time. The onsite is the extreme case: it needs five to seven of those calendars aligned on a single day, in a single place, which is a scheduling problem that grows much harder than linearly with the number of people involved. Most of the five to eight weeks is that problem being solved, not you being deliberated over.
 

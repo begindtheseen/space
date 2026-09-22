@@ -53,7 +53,7 @@ Yours and theirs. Yours: when you could start, and whether you are in process el
 Often, though not always, at the screening stage. This is the subject of lesson three, and it has exactly one rule worth stating this early: do not volunteer a number below the posted band. Everything else is technique.
 
 ::: warning The recruiter screen is a screen, not a conversation
-Because it is friendly and low-pressure, it is easy to treat it as a chat where nothing is being evaluated. Things are being evaluated — just not the things you prepared for. Vagueness on logistics, an answer that does not land anywhere, or a number volunteered carelessly all have consequences, and they have them at the cheapest stage of the process to lose.
+Because it is friendly and low-pressure, it is easy to treat it as a chat where nothing is being evaluated. Things are being evaluated, though not the things you prepared for. Vagueness on logistics, an answer that does not land anywhere, or a number volunteered carelessly all have consequences, and they have them at the cheapest stage of the process to lose.
 :::
 
 ## What you should be getting out of it

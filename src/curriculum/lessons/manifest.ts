@@ -822,6 +822,44 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "reported topics: PD control, orbit determination, frequency-domain analysis"
       ],
       "file": "car_09_screens/08-pd-control-out-loud.md"
+    },
+    {
+      "id": "l09-frequency-domain-out-loud",
+      "title": "Phase margin, explained out loud",
+      "minutes": 23,
+      "covers": [
+        "reported topics: PD control, orbit determination, frequency-domain analysis"
+      ],
+      "file": "car_09_screens/09-frequency-domain-out-loud.md"
+    },
+    {
+      "id": "l10-orbit-determination-out-loud",
+      "title": "Orbit determination, out loud",
+      "minutes": 27,
+      "covers": [
+        "reported topics: PD control, orbit determination, frequency-domain analysis"
+      ],
+      "file": "car_09_screens/10-orbit-determination-out-loud.md"
+    },
+    {
+      "id": "l11-not-knowing-out-loud",
+      "title": "Not knowing, out loud, without bluffing",
+      "minutes": 26,
+      "covers": [
+        "recovering from a blank without bluffing",
+        "the difference between I do not know and I do not know, here is how I would find out"
+      ],
+      "file": "car_09_screens/11-not-knowing-out-loud.md"
+    },
+    {
+      "id": "l12-questions-and-follow-up",
+      "title": "Questions to ask, and what happens after",
+      "minutes": 28,
+      "covers": [
+        "questions to ask the interviewing engineer",
+        "follow-up etiquette and timelines"
+      ],
+      "file": "car_09_screens/12-questions-and-follow-up.md"
     }
   ],
   "car_10_past_project_presentation": [
@@ -938,6 +976,33 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Functions, overloading, default arguments"
       ],
       "file": "cod_cpp_01_basics/08-functions-overloading-default-arguments.md"
+    },
+    {
+      "id": "l09-arrays-std-array-and-vector",
+      "title": "Raw arrays, std::array, std::vector and range-based for",
+      "minutes": 19,
+      "covers": [
+        "Arrays vs std::array vs std::vector; range-based for"
+      ],
+      "file": "cod_cpp_01_basics/09-arrays-std-array-and-vector.md"
+    },
+    {
+      "id": "l10-enums-structs-classes-namespaces",
+      "title": "enum class, struct and class, access and namespaces",
+      "minutes": 18,
+      "covers": [
+        "enum class; struct and class; access specifiers; namespaces"
+      ],
+      "file": "cod_cpp_01_basics/10-enums-structs-classes-namespaces.md"
+    },
+    {
+      "id": "l11-scope-lifetime-and-storage",
+      "title": "Scope, lifetime, and where objects live",
+      "minutes": 19,
+      "covers": [
+        "Scope, lifetime, and stack vs heap vs static storage"
+      ],
+      "file": "cod_cpp_01_basics/11-scope-lifetime-and-storage.md"
     }
   ],
   "cod_py_01_basics": [
@@ -6244,6 +6309,42 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Error budgeting: allocating a landing-accuracy requirement across navigation, guidance and control"
       ],
       "file": "t7_m48_capstone/02-error-budgeting.md"
+    },
+    {
+      "id": "l03-rate-architecture",
+      "title": "Rate architecture for the integrated stack",
+      "minutes": 19,
+      "covers": [
+        "Rate architecture: navigation at IMU rate, control at 100 Hz or faster, guidance re-solved at 1 to 2 Hz, mode management at a low rate"
+      ],
+      "file": "t7_m48_capstone/03-rate-architecture.md"
+    },
+    {
+      "id": "l04-navigation-meets-guidance",
+      "title": "Navigation in the loop: the multiplicative EKF meets guidance",
+      "minutes": 24,
+      "covers": [
+        "A multiplicative extended Kalman filter on IMU, GNSS and radar altimeter, with error-state formulation and attitude error as a three-parameter local perturbation"
+      ],
+      "file": "t7_m48_capstone/04-navigation-meets-guidance.md"
+    },
+    {
+      "id": "l05-guidance-meets-control",
+      "title": "Guidance in the loop: convex descent guidance meets control",
+      "minutes": 24,
+      "covers": [
+        "Convex powered-descent guidance in the loop: re-solve cadence, warm starting, deadline policy and the closed-form fallback"
+      ],
+      "file": "t7_m48_capstone/05-guidance-meets-control.md"
+    },
+    {
+      "id": "l06-control-meets-vehicle",
+      "title": "Control in the loop: TVC, gain scheduling and saturation",
+      "minutes": 25,
+      "covers": [
+        "TVC attitude control with bending-mode and slosh notch or roll-off filtering, and gain scheduling against dynamic pressure and mass"
+      ],
+      "file": "t7_m48_capstone/06-control-meets-vehicle.md"
     }
   ],
   "t7_m49_interview_prep": [
@@ -6654,14 +6755,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t7_m48_capstone": {
-    "covered": 2,
+    "covered": 6,
     "total": 11,
     "complete": false,
     "missing": [
-      "Rate architecture: navigation at IMU rate, control at 100 Hz or faster, guidance re-solved at 1 to 2 Hz, mode management at a low rate",
-      "A multiplicative extended Kalman filter on IMU, GNSS and radar altimeter, with error-state formulation and attitude error as a three-parameter local perturbation",
-      "Convex powered-descent guidance in the loop: re-solve cadence, warm starting, deadline policy and the closed-form fallback",
-      "TVC attitude control with bending-mode and slosh notch or roll-off filtering, and gain scheduling against dynamic pressure and mass",
       "Mode management across prelaunch, ascent, staging, coast, entry, landing and safe",
       "FDIR: residual monitors on the filter, sensor cross-checks, actuator health, and the response of each",
       "C++ flight core with a Python analysis and plotting layer over it, sharing exactly one implementation of the algorithms",
@@ -6990,13 +7087,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "cod_cpp_01_basics": {
-    "covered": 10,
+    "covered": 13,
     "total": 15,
     "complete": false,
     "missing": [
-      "Arrays vs std::array vs std::vector; range-based for",
-      "enum class; struct and class; access specifiers; namespaces",
-      "Scope, lifetime, and stack vs heap vs static storage",
       "std::string vs const char*; iostream and std::format",
       "assert and static_assert"
     ]
@@ -7669,15 +7763,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "car_09_screens": {
-    "covered": 8,
+    "covered": 12,
     "total": 12,
-    "complete": false,
-    "missing": [
-      "recovering from a blank without bluffing",
-      "the difference between I do not know and I do not know, here is how I would find out",
-      "questions to ask the interviewing engineer",
-      "follow-up etiquette and timelines"
-    ]
+    "complete": true,
+    "missing": []
   },
   "car_10_past_project_presentation": {
     "covered": 6,

@@ -83,11 +83,80 @@ function foldSciNotation(s: string): string {
   return s.replace(/(\d+(?:\.\d+)?)\s*(?:\\times|\\cdot)\s*10\s*\^\s*\{?\s*(-?\d+)\s*\}?/g, '($1e$2)')
 }
 
+/*
+ * A unit at the end of a side cancels against the same unit on the other side,
+ * so "3.33 - 3.03 \\approx 0.31\\,\\mathrm m" is a closed claim about 0.31 and is
+ * checkable. Different units on the two sides are a conversion — "1\\,\\mathrm{ft}
+ * = 0.3048\\,\\mathrm m" is true and would read as 1 = 0.3048 — so those spans
+ * are skipped. Ignoring units altogether was the earlier behaviour and it hid a
+ * wrong dynamic-pressure figure for as long as the unit sat beside it.
+ */
+const TRAILING_UNIT = /\\(?:text|mathrm|operatorname)\s*(?:\{[^{}]*\}|[A-Za-z]+)\s*$/
+const TRAILING_UNIT_G = /\\(?:text|mathrm|operatorname)\s*(?:\{[^{}]*\}|[A-Za-z]+)\s*(?=$|=)/g
+
+function trailingUnits(tex: string): string[] {
+  return tex
+    .split('=')
+    .map((side) => TRAILING_UNIT.exec(side.replace(/\\approx/g, '='))?.[0]?.replace(/\s+/g, '') ?? '')
+}
+
+function unitsAgree(tex: string): boolean {
+  const units = trailingUnits(tex).filter(Boolean)
+  return units.length < 2 || units.every((u) => u === units[0])
+}
+
+/*
+ * When only one side names a unit, the other side's unit is unstated, and the
+ * commonest reason for a clean factor of ten between them is that the working
+ * is in base SI and the answer is given with a prefix — pascals computed,
+ * kilopascals reported. That is a unit change, not a wrong number, and it is
+ * what a calculation "=\u00a042\u202fms" beside a value of 0.0417 actually means. A
+ * genuine error of exactly a factor of ten, with a unit attached, is possible
+ * and would be missed here; between the two, letting that one through beats
+ * flagging every prefixed answer in the corpus.
+ */
+function isUnitPrefixChange(a: number, b: number, oneSidedUnit: boolean): boolean {
+  if (!oneSidedUnit || a === 0 || b === 0) return false
+  const ratio = Math.abs(b / a)
+  const decades = Math.log10(ratio)
+  if (Math.abs(decades - Math.round(decades)) < 0.01 && Math.round(decades) !== 0) return true
+  // The other conversions this curriculum actually writes across an equals
+  // sign with the unit named only once: radians to degrees or arcseconds, and
+  // a ratio to decibels in either the amplitude or the power convention.
+  for (const f of [180 / Math.PI, Math.PI / 180, 648000 / Math.PI, Math.PI / 648000]) {
+    if (Math.abs(ratio / f - 1) < 0.005) return true
+  }
+  for (const k of [20, 10]) {
+    if (Math.abs(b - k * Math.log10(Math.abs(a))) < 0.05) return true
+  }
+  return false
+}
+
+/** A bare value, as opposed to a calculation whose rounded inputs carry error. */
+function isBareValue(expr: string): boolean {
+  const t = expr.trim().replace(/^[+-]/, '').replace(/[()\s]/g, '')
+  return !/[+\-*/]/.test(t.replace(/e-?\d+/gi, ''))
+}
+
 function texToExpr(tex: string): string {
   let s = tex
-  s = s.replace(/\\(?:,|;|!|quad|qquad|displaystyle|left|right|tfrac|dfrac)\b/g, (m) =>
-    m === '\\tfrac' || m === '\\dfrac' ? '\\frac' : ' ',
-  )
+  // The thin-space spacers are punctuation, so a trailing \b never matches
+  // after them and they have to be their own alternation. Leaving \, in place
+  // made every span that used one unreadable, and therefore unchecked.
+  s = s.replace(/\\(?:quad|qquad|displaystyle|left|right)\b/g, ' ')
+  s = s.replace(/\\(?:tfrac|dfrac)\b/g, '\\frac')
+  s = s.replace(/\\[,;!:]/g, ' ')
+  /*
+   * A unit on the end of a value does not change the value: "0.31\\,\\mathrm{m}"
+   * claims 0.31, and the claim is checkable. Treating the unit as an opaque
+   * token instead made the whole span unreadable, so a statement like
+   * "3.33 - 3.03 \\approx 0.31\\,\\mathrm{m}" was skipped rather than checked —
+   * which is exactly how a wrong figure stayed in a dynamic-pressure example
+   * until it was found by hand. Units are therefore dropped where they sit at
+   * the end of a side, and only a unit in the middle of an expression, where
+   * it might be a symbol rather than a unit, still stops the check.
+   */
+  s = s.replace(TRAILING_UNIT_G, ' ')
   s = s.replace(/\\(?:text|mathrm|mathbf|operatorname)\s*\{[^{}]*\}/g, ' UNIT ')
   s = foldSciNotation(s)
   for (let i = 0; i < 6; i++) {
@@ -153,6 +222,7 @@ function arithmeticMismatches(body: string): { tex: string; detail: string }[] {
   const out: { tex: string; detail: string }[] = []
   for (const { tex } of mathSpans(body)) {
     if (!tex.includes('=')) continue
+    if (!unitsAgree(tex)) continue
     const approx = /\\approx/.test(tex)
     const expr = texToExpr(tex).replace(/\\approx/g, '=')
     const parts = expr.split('=').filter((p) => p.trim())
@@ -164,13 +234,33 @@ function arithmeticMismatches(body: string): { tex: string; detail: string }[] {
       const a = vals[i]!
       const b = vals[i + 1]!
       if (a === b) continue
+      // Neither side is the stated result: both are calculations built from
+      // inputs the lesson printed rounded, so any gap between them is that
+      // rounding, not a claim. The stated result is checked on its own pass.
+      if (!isBareValue(parts[i]!) && !isBareValue(parts[i + 1]!)) continue
+      const named = trailingUnits(tex).filter(Boolean).length
+      if (isUnitPrefixChange(a, b, named === 1)) continue
       if (Math.max(Math.abs(a), Math.abs(b)) < 1e-9) continue // residue around zero
       let tol = 0
       for (const [v, shown] of [[a, parts[i]!], [b, parts[i + 1]!]] as const) {
         const t = powerOfTenTolerance(shown, v) ?? shownTolerance(shown)
         if (t !== null) tol = Math.max(tol, t)
       }
-      if (approx) tol *= 10
+      /*
+       * \approx usually marks a rounding, not a loose claim: "\approx 0.31"
+       * still asserts the value rounds to 0.31 at the precision shown, so it
+       * buys no extra slack. A blanket multiplier here let a figure through
+       * that was a full unit out in its last place. The one case that really
+       * is loose is an order-of-magnitude claim against a bare power of ten,
+       * and that is worth naming rather than approximating with a fudge
+       * factor: "of order 10^n" means within half an order of magnitude.
+       */
+      if (approx) {
+        for (const shown of [parts[i]!, parts[i + 1]!]) {
+          const m = /^\s*\(?\s*10\s*\*\*\s*\(?\s*(-?\d+)\s*\)?\s*\)?\s*$/.exec(shown)
+          if (m) tol = Math.max(tol, 10 ** Number(m[1]) * (Math.sqrt(10) - 1))
+        }
+      }
       if (Math.abs(a - b) > tol * 1.0001) {
         out.push({ tex, detail: `${tex.slice(0, 90)}  →  ${a} vs ${b}` })
         break
@@ -201,6 +291,10 @@ const ARITHMETIC_EXCEPTIONS = new Map<string, string>([
     'thirds displayed rounded; the printed result matches the exact sqrt(7)/3',
   ],
   ['0.86603 + 0.86603 = 1.73205', 'the printed sum is sqrt(3) to six figures, not the sum of its two rounded halves'],
+  [
+    '10.2/0.05 = 205\\,\\mathrm{rad/s}',
+    'the momentum is displayed as 10.2 but computed from 10.24, which gives 204.8',
+  ],
   [
     '-0.00357/\\sqrt{0.1310\\times 1.43\\times 10^{-4}} = -0.826',
     'every input is displayed to three figures; their rounding alone spans the 0.0012 gap to the printed result',

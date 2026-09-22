@@ -91,7 +91,7 @@ If the interviewer declines to specify, choose, say the choice out loud, and pro
 
 **Strong opening:** "Two things before I start, because they change the answer quite a lot.
 
-First, which phase — inside the atmosphere or after the air is gone? I ask because in atmospheric flight the aerodynamic moment is the dominant term and the whole design is about dynamic pressure, so the gains get scheduled against it; in vacuum that term is simply absent and the plant is close to a double integrator.
+First, which phase — inside the atmosphere or after the air is gone? I ask because in atmospheric flight the aerodynamic moment is the dominant term and the whole design is about dynamic pressure, so the gains get scheduled against it; in vacuum that term is absent entirely and the plant is close to a double integrator.
 
 Second, rigid body, or do I need to worry about the first bending mode? If it is rigid I will talk about the rigid-body loop only. If it is not, then where the first mode sits relative to the bandwidth I am aiming for is the design driver, and the interesting part of the answer becomes the filter rather than the controller."
 

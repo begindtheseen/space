@@ -46,6 +46,10 @@ That language expectation is not a stylistic preference of the interviewers. Thi
 
 The discipline that addresses those failure modes is a fixed routine, and it is the same one in every round: clarify the problem before writing anything; state your approach and its complexity out loud; then write it; then test the edges deliberately rather than hoping. The first-principles module of this track drills that routine and the problems it applies to. What matters at map level is that it is a routine — something you execute the same way every time — rather than a set of tips to remember under pressure.
 
+::: note Two books this module points at for these rounds
+McDowell's *Cracking the Coding Interview* is worth reading as much for its chapters on how to conduct yourself in a round as for its problems — the routine above is the thing to take from it. Aziz, Lee and Prakash's *Elements of Programming Interviews in C++* sits at the right difficulty level and in the right language for avionics and embedded work, which makes it the better source of practice problems for this particular day.
+:::
+
 ## The systems and architecture rounds
 
 One to two rounds covering real-time considerations, embedded constraints, redundancy, fault management and sensor fusion architecture.

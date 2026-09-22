@@ -101,11 +101,11 @@ No — independence is a claim about the underlying random variables, not about 
 :::
 
 ::: check
-In the navigation sub-budget, IMU bias-driven drift is allocated $1.6\,\mathrm m$ against a $2.2\,\mathrm m$ navigation total. Compute what fraction of the navigation sub-budget's *variance* this one term consumes, and explain why that fraction matters more than its fraction of the linear allocation.
+In the navigation sub-budget, IMU bias-driven drift is allocated $1.6\,\mathrm m$ against a $2.05\,\mathrm m$ combined sub-total. Compute what fraction of the sub-budget's *variance* this one term consumes, and use it to explain why halving this specific term is a better use of effort than halving any of the other three.
 :::
 
 ::: answer
-The term contributes $1.6^2=2.56\,\mathrm{m^2}$ out of the sub-budget's total $4.20\,\mathrm{m^2}$, which is $2.56/4.20\approx61\%$ — well over its $1.6/2.05\approx78\%$... the linear share looks large already, but the *variance* share is what actually determines how much improving this one term helps, because root-sum-square combination means the total shrinks in proportion to how much a change in one squared term changes the sum under the square root; a term holding the majority of the variance is the one where effort spent buys the most reduction in the combined total, which is exactly the lever this lesson identifies for halving it.
+The term contributes $1.6^2=2.56\,\mathrm{m^2}$ out of the sub-total's $4.20\,\mathrm{m^2}$, which is $2.56/4.20\approx61\%$ of the *variance* — more than the other three drivers combined, even though its linear share ($1.6$ of $2.05\,\mathrm m$, about $78\%$) already looked dominant on its own. Because root-sum-square combination sums squares, shrinking the single largest squared term removes more from that sum than shrinking any smaller term by the same absolute amount: halving this one driver to $0.8\,\mathrm m$ drops the combined total from $2.05\,\mathrm m$ to about $1.51\,\mathrm m$, a bigger reduction than halving the $0.8\,\mathrm m$ altimeter or latency terms could produce, precisely because it started as the largest contributor to the sum under the square root.
 :::
 
 ::: check

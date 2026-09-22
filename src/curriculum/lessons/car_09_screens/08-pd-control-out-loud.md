@@ -201,7 +201,7 @@ One: an ideal derivative is improper, with unbounded gain at high frequency, so 
 :::
 
 ::: check
-An interviewer asks why you would not simply use a PID controller for every attitude loop. Give the answer.
+An interviewer asks why you would not use a PID controller by default for every attitude loop. Give the answer.
 :::
 
 ::: answer

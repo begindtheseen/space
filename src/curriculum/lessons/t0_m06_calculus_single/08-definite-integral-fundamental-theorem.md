@@ -140,7 +140,7 @@ $$
 \Delta v = 2923 \ln 4.270 = 4243\,\mathrm{m/s}.
 $$
 
-A midpoint Riemann sum with a thousand steps gives $4243.3\,\mathrm{m/s}$, confirming the antiderivative. Had you assumed the initial acceleration $T/m_0 = 13.8\,\mathrm{m/s^2}$ held throughout, you would get $13.8 \times 162 = 2239\,\mathrm{m/s}$, barely half the truth; the acceleration climbs to $T/m_f = 59.0\,\mathrm{m/s^2}$ at cutoff, and the average is $\Delta v/t_b = 26.2\,\mathrm{m/s^2}$. You have derived the ideal rocket equation, $\Delta v = v_e\ln(m_0/m_f)$, by integrating the thrust acceleration; the final lesson of this module derives it again from momentum conservation and adds gravity.
+A midpoint Riemann sum with a thousand steps gives $4243.3\,\mathrm{m/s}$, confirming the antiderivative. Had you assumed the initial acceleration $T/m_0 = 13.8\,\mathrm{m/s^2}$ held throughout, you would get $13.8 \times 162 \approx 2240\,\mathrm{m/s}$, barely half the truth; the acceleration climbs to $T/m_f = 59.0\,\mathrm{m/s^2}$ at cutoff, and the average is $\Delta v/t_b = 26.2\,\mathrm{m/s^2}$. You have derived the ideal rocket equation, $\Delta v = v_e\ln(m_0/m_f)$, by integrating the thrust acceleration; the final lesson of this module derives it again from momentum conservation and adds gravity.
 :::
 
 ::: example Gravity loss over a pitch programme

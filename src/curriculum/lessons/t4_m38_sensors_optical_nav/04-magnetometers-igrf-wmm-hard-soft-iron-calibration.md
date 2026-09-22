@@ -171,7 +171,7 @@ Using $B_{\text{eq}}=B_0(R_\oplus/r)^3$ for the dipole field magnitude at the ma
 :::
 
 ::: answer
-With $r=6378+800=7178\,\mathrm{km}$, $B_{\text{eq}}=30000\times(6378/7178)^3=30000\times0.7028=21{,}084\,\mathrm{nT}$, noticeably weaker than the $23{,}921\,\mathrm{nT}$ at $500\,\mathrm{km}$: the dipole field falls off as $1/r^3$, so even a modest altitude increase measurably weakens the already-weak signal a magnetometer has to work with, on top of the accuracy penalty every sensor in this module pays for less signal.
+With $r=6378+800=7178\,\mathrm{km}$, $B_{\text{eq}}=30000\times(6378/7178)^3=30000\times0.7015=21{,}046\,\mathrm{nT}$, noticeably weaker than the $23{,}921\,\mathrm{nT}$ at $500\,\mathrm{km}$: the dipole field falls off as $1/r^3$, so even a modest altitude increase measurably weakens the already-weak signal a magnetometer has to work with, on top of the accuracy penalty every sensor in this module pays for less signal.
 :::
 
 ::: check

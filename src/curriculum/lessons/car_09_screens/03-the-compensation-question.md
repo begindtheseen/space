@@ -123,11 +123,11 @@ Because of how offers are constructed. Compensation is attached to a level as a 
 :::
 
 ::: check
-Why is the redirect answer stronger than simply refusing to discuss compensation until an offer exists?
+Why is the redirect answer stronger than refusing outright to discuss compensation until an offer exists?
 :::
 
 ::: answer
-Because the recruiter has a legitimate need at this stage: they are checking compatibility between your expectations and a band that was fixed before you applied, and finding an incompatibility late wastes everyone's time. A flat refusal blocks that check, reads as obstructive at a screening call, and does not even protect you, since the topic simply returns later under worse conditions. The redirect answers the underlying question — are we in the same range? — using the employer's own published number, which gives the recruiter what they need while committing you to nothing.
+Because the recruiter has a legitimate need at this stage: they are checking compatibility between your expectations and a band that was fixed before you applied, and finding an incompatibility late wastes everyone's time. A flat refusal blocks that check, reads as obstructive at a screening call, and does not even protect you, since the topic returns later under worse conditions. The redirect answers the underlying question — are we in the same range? — using the employer's own published number, which gives the recruiter what they need while committing you to nothing.
 :::
 
 ::: check

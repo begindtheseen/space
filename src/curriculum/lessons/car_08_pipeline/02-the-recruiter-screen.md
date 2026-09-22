@@ -22,7 +22,7 @@ Three things get established. The module names them directly: **background, moti
 
 You will be asked to account for yourself: who you are, what you have built, how you arrived at applying for this requisition. This is not the resume read aloud. The recruiter has the resume; what the recruiter does not have is the thread connecting its items to this specific role, and supplying that thread is the whole task.
 
-The compact version of this — a short, rehearsed, spoken account that ends on a specific role family rather than trailing off — is developed properly in the next module, which treats it as its own skill with its own drills. What matters at map level is that it is a prepared artefact, not an improvisation, and that the module after this one gives you a length target for it. A candidate who has never once said this out loud before the call will produce a five-minute meander, and five minutes is a sixth of the call.
+The compact version of this — a short, rehearsed, spoken account that ends on a specific role family rather than trailing off — is developed properly in the next module, which treats it as its own skill, with its own drills and a working target of about ninety seconds. What matters at map level is that it is a prepared artefact rather than an improvisation. A candidate who has never once said this out loud before the call will produce a five-minute meander, and on a twenty-to-thirty-minute call that is between a sixth and a quarter of the time available.
 
 ### Motivation
 
