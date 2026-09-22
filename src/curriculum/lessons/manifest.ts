@@ -404,6 +404,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "positive definiteness and quadratic forms"
       ],
       "file": "t0_m05_linear_algebra_2/05-positive-definiteness-quadratic-forms.md"
+    },
+    {
+      "id": "l06-cholesky-factorisation",
+      "title": "The Cholesky factorisation",
+      "minutes": 21,
+      "covers": [
+        "Cholesky factorisation"
+      ],
+      "file": "t0_m05_linear_algebra_2/06-cholesky-factorisation.md"
     }
   ],
   "t0_m06_calculus_single": [
@@ -722,6 +731,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "white noise, random walk, Gauss-Markov processes"
       ],
       "file": "t0_m09_probability_stats/07-random-processes-white-noise-brownian.md"
+    },
+    {
+      "id": "l08-gauss-markov-and-imu-error-models",
+      "title": "Gauss-Markov processes and IMU error models",
+      "minutes": 28,
+      "covers": [
+        "white noise, random walk, Gauss-Markov processes"
+      ],
+      "file": "t0_m09_probability_stats/08-gauss-markov-and-imu-error-models.md"
     }
   ],
   "t0_m10_numerical_methods": [
@@ -791,6 +809,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "why convexity matters: global optimum, polynomial time, certificates"
       ],
       "file": "t0_m11_optimization/04-why-convexity-matters.md"
+    },
+    {
+      "id": "l05-linear-and-quadratic-programming",
+      "title": "Linear and quadratic programming",
+      "minutes": 27,
+      "covers": [
+        "linear and quadratic programming"
+      ],
+      "file": "t0_m11_optimization/05-linear-and-quadratic-programming.md"
     }
   ],
   "t0_m12_cpp": [
@@ -1411,7 +1438,7 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t0_m05_linear_algebra_2": {
-    "covered": 5,
+    "covered": 6,
     "total": 11,
     "complete": false,
     "missing": [
@@ -1419,7 +1446,6 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
       "pseudoinverse and rank deficiency",
       "condition number",
       "least squares: normal equations vs QR vs SVD",
-      "Cholesky factorisation",
       "matrix calculus: gradients and Jacobians"
     ]
   },
@@ -1475,11 +1501,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t0_m11_optimization": {
-    "covered": 5,
+    "covered": 6,
     "total": 14,
     "complete": false,
     "missing": [
-      "linear and quadratic programming",
       "second-order cone programming",
       "semidefinite programming",
       "duality and the dual problem",
