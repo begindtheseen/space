@@ -11,7 +11,7 @@
     "updates": {
       "repo": "begindtheseen/space"
     },
-    "minShell": "1.0.0"
+    "minShell": "1.0.3"
   },
   "scripts": {
     "dev": "vite",

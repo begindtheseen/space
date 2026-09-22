@@ -33,6 +33,179 @@ const RUN_TIMEOUT_MS = 10_000
 const MAX_OUTPUT_BYTES = 256 * 1024
 const MAX_SOURCE_BYTES = 1024 * 1024
 
+/* ── Where the tools actually are ────────────────────────────────────────── */
+
+// A GUI application does not inherit her shell's PATH. Launched from Finder or
+// the Dock, a Mac app gets what launchd hands it — /usr/bin:/bin:/usr/sbin:/sbin
+// and nothing more. Homebrew (/opt/homebrew/bin), rustup (~/.cargo/bin) and
+// MacPorts all sit outside that, so `rustc --version` answers instantly in her
+// Terminal while the app insists Rust is not installed. That one difference is
+// the most common way this whole feature looks broken.
+//
+// So the search path is built rather than inherited: the process PATH, then
+// whatever her login shell reports (the only way to find a toolchain in a
+// custom prefix), then the places these tools actually install themselves.
+
+const HOME = os.homedir()
+
+// [directory to scan, bundle name pattern, the bin directory inside it]
+const APP_BUNDLES = [
+  ['/Applications', /^Octave.*\.app$/i, 'Contents/Resources/usr/bin'],
+  ['/Applications', /^MATLAB.*\.app$/i, 'bin'],
+]
+
+/**
+ * Octave and MATLAB keep their binaries inside an application bundle rather
+ * than anywhere on PATH, and the directory name carries the version, so it has
+ * to be looked up instead of hard-coded.
+ */
+function appBundleBins() {
+  const out = []
+  for (const [root, pattern, inner] of APP_BUNDLES) {
+    let entries
+    try {
+      entries = fs.readdirSync(root)
+    } catch {
+      continue // no /Applications, i.e. not a Mac
+    }
+    for (const name of entries) {
+      if (pattern.test(name)) out.push(path.join(root, name, inner))
+    }
+  }
+  return out
+}
+
+/** Directories a toolchain is likely to be in, whatever PATH says. */
+function wellKnownDirs() {
+  const dirs =
+    process.platform === 'darwin'
+      ? ['/opt/homebrew/bin', '/opt/homebrew/sbin', '/usr/local/bin', '/usr/local/sbin', '/opt/local/bin']
+      : ['/usr/local/bin', '/usr/local/sbin']
+  dirs.push(
+    path.join(HOME, '.cargo', 'bin'), // rustup
+    path.join(HOME, '.local', 'bin'),
+    '/usr/bin',
+    '/bin',
+    '/usr/sbin',
+    '/sbin',
+  )
+  dirs.push(...appBundleBins())
+  return dirs
+}
+
+/**
+ * Her login shell's PATH — the only way to find a toolchain in a prefix nobody
+ * could have guessed (asdf, a hand-built compiler, a custom rustup root).
+ * Best effort: a shell that hangs, greets or does not exist costs four seconds
+ * once and is then ignored.
+ */
+function loginShellPath() {
+  if (process.platform === 'win32') return Promise.resolve([])
+  const shell = process.env.SHELL || (process.platform === 'darwin' ? '/bin/zsh' : '/bin/bash')
+  return new Promise((resolve) => {
+    execFile(
+      shell,
+      ['-ilc', 'printf "<<ORBIT_PATH>>%s<<END>>" "$PATH"'],
+      { timeout: 4000, windowsHide: true, env: { ...process.env, TERM: 'dumb' } },
+      (_err, stdout) => {
+        // The markers matter: an rc file that prints a greeting would otherwise
+        // have its banner parsed as directory names.
+        const text = String(stdout || '')
+        const start = text.indexOf('<<ORBIT_PATH>>')
+        const end = text.indexOf('<<END>>', start)
+        if (start < 0 || end < 0) {
+          resolve([])
+          return
+        }
+        resolve(text.slice(start + '<<ORBIT_PATH>>'.length, end).split(path.delimiter))
+      },
+    )
+  })
+}
+
+let searchPathPromise = null
+
+/** Forget the built path, so the next lookup rebuilds it. */
+export function refreshSearchPath() {
+  searchPathPromise = null
+}
+
+/** Every directory a toolchain might live in, in priority order, no repeats. */
+function searchPath() {
+  if (!searchPathPromise) {
+    searchPathPromise = (async () => {
+      const seen = new Set()
+      const dirs = []
+      const add = (dir) => {
+        if (typeof dir !== 'string' || dir === '') return
+        const abs = path.resolve(dir)
+        if (seen.has(abs)) return
+        seen.add(abs)
+        dirs.push(abs)
+      }
+      for (const dir of String(process.env.PATH ?? '').split(path.delimiter)) add(dir)
+      for (const dir of await loginShellPath()) add(dir)
+      for (const dir of wellKnownDirs()) add(dir)
+      return dirs
+    })()
+  }
+  return searchPathPromise
+}
+
+function isExecutableFile(candidate) {
+  try {
+    if (!fs.statSync(candidate).isFile()) return false
+    fs.accessSync(candidate, fs.constants.X_OK)
+    return true
+  } catch {
+    return false
+  }
+}
+
+/**
+ * Every absolute path `bin` resolves to, in search order — not just the first.
+ *
+ * The first one is not always the working one. A broken or stubbed binary
+ * earlier on the path would otherwise shadow the real compiler sitting two
+ * directories along, and the app would report the language as unavailable with
+ * a perfectly good toolchain installed.
+ */
+export async function whichAll(bin) {
+  if (bin.includes(path.sep)) return isExecutableFile(bin) ? [bin] : []
+  const out = []
+  for (const dir of await searchPath()) {
+    const candidate = path.join(dir, bin)
+    if (isExecutableFile(candidate)) out.push(candidate)
+  }
+  return out
+}
+
+/** The first absolute path `bin` resolves to, or null. */
+export async function which(bin) {
+  return (await whichAll(bin))[0] ?? null
+}
+
+/**
+ * The environment a compiler or program runs in. PATH is the built one, not
+ * the inherited one, because these tools shell out to their own helpers:
+ * Octave to gnuplot and mkoctfile, a Homebrew gcc to its own assembler,
+ * rustc to a linker driver. Locating the front end and then handing it the
+ * stripped PATH would only move the failure one step later.
+ */
+export async function childEnv() {
+  return {
+    ...process.env,
+    PATH: (await searchPath()).join(path.delimiter),
+    TERM: 'dumb',
+    NO_COLOR: '1',
+  }
+}
+
+/** MATLAB proper rather than Octave, which needs different flags and far longer. */
+function isMatlabProper(bin) {
+  return path.basename(bin, path.extname(bin)).toLowerCase() === 'matlab'
+}
+
 /**
  * What each language needs, and how to build and run it.
  *
@@ -72,17 +245,29 @@ const TOOLCHAINS = {
     label: 'Shell',
     source: 'script.sh',
     candidates: ['bash', 'sh'],
-    probeArgs: ['--version'],
+    // Not `--version`: dash, which is /bin/sh on most Linux boxes, rejects it
+    // and exits non-zero. This prints bash's version where there is one and
+    // "POSIX sh" where there is not, and exits 0 in both.
+    probeArgs: ['-c', 'printf %s "${BASH_VERSION:-POSIX sh}"'],
     run: (_exe, bin, src) => [bin, [src]],
     install: 'Every Mac ships with bash, so this one should never be missing.',
   },
   matlab: {
     label: 'MATLAB / Octave',
     source: 'script.m',
-    // MATLAB itself is licensed per seat; Octave runs the same language and is free.
-    candidates: ['octave-cli', 'octave'],
+    // Octave runs the same language, is free and starts in well under a
+    // second, so it is tried first. Real MATLAB is used when it is installed
+    // and Octave is not — the curriculum is MATLAB, after all.
+    candidates: ['octave-cli', 'octave', 'matlab'],
     probeArgs: ['--version'],
-    run: (_exe, bin, src) => [bin, ['--quiet', '--no-gui', src]],
+    run: (_exe, bin, src) =>
+      isMatlabProper(bin)
+        // -batch runs a script by name, non-interactively, and exits with its
+        // status. The file is script.m in the scratch directory we cd into.
+        ? [bin, ['-batch', path.basename(src, path.extname(src))]]
+        : [bin, ['--quiet', '--no-gui', src]],
+    // MATLAB takes tens of seconds just to start. Ten would fail every time.
+    runTimeoutFor: (bin) => (isMatlabProper(bin) ? 180_000 : RUN_TIMEOUT_MS),
     install: 'Install GNU Octave (`brew install octave`) to run MATLAB code locally.',
   },
   node: {
@@ -101,10 +286,16 @@ export const RUNNABLE_LANGS = Object.keys(TOOLCHAINS)
 
 const detectCache = new Map()
 
-function probe(bin, args) {
+export function probe(bin, args, env) {
   return new Promise((resolve) => {
-    execFile(bin, args, { timeout: 5000, windowsHide: true }, (err, stdout, stderr) => {
-      if (err && !stdout && !stderr) {
+    execFile(bin, args, { timeout: 5000, windowsHide: true, env }, (err, stdout, stderr) => {
+      // Exit status is the test, not whether anything was printed. A Mac with
+      // no command line tools installed still has /usr/bin/clang++: it is a
+      // stub that writes "xcode-select: note: no developer tools were found"
+      // to stderr and exits non-zero. Counting printed output as proof made
+      // the app announce a working C++ compiler and then fail every build with
+      // that same note as the diagnostic.
+      if (err) {
         resolve(null)
         return
       }
@@ -119,7 +310,11 @@ function probe(bin, args) {
  * @param {boolean} refresh ignore the cache — used after she installs something
  */
 export async function detectToolchains(refresh = false) {
+  // A refresh happens after she installs something, which may well have created
+  // the directory it lives in, so the path list is rebuilt too.
+  if (refresh) refreshSearchPath()
   const out = {}
+  const env = await childEnv()
   for (const [lang, spec] of Object.entries(TOOLCHAINS)) {
     if (!refresh && detectCache.has(lang)) {
       out[lang] = detectCache.get(lang)
@@ -127,9 +322,13 @@ export async function detectToolchains(refresh = false) {
     }
     let found = null
     for (const candidate of spec.candidates) {
-      // eslint-disable-next-line no-await-in-loop -- first hit wins; probing the
-      // rest would be wasted work and slows the Settings page down.
-      found = await probe(candidate, spec.probeArgs)
+      // eslint-disable-next-line no-await-in-loop -- first working hit wins;
+      // probing the rest is wasted work and slows the Settings page down.
+      for (const resolved of await whichAll(candidate)) {
+        // eslint-disable-next-line no-await-in-loop
+        found = await probe(resolved, spec.probeArgs, env)
+        if (found) break
+      }
       if (found) break
     }
     const entry = found
@@ -143,7 +342,7 @@ export async function detectToolchains(refresh = false) {
 
 /* ── Execution ───────────────────────────────────────────────────────────── */
 
-function runProcess(bin, args, { cwd, stdin, timeoutMs }) {
+function runProcess(bin, args, { cwd, stdin, timeoutMs, env }) {
   return new Promise((resolve) => {
     let child
     try {
@@ -153,7 +352,7 @@ function runProcess(bin, args, { cwd, stdin, timeoutMs }) {
         // that spawns a linker, a script that spawns a subshell.
         detached: process.platform !== 'win32',
         windowsHide: true,
-        env: { ...process.env, TERM: 'dumb', NO_COLOR: '1' },
+        env,
       })
     } catch (err) {
       resolve({ code: null, stdout: '', stderr: String(err?.message ?? err), timedOut: false })
@@ -285,9 +484,13 @@ export async function runCode(request, log = () => {}) {
     fs.writeFileSync(srcPath, source, 'utf8')
     const exePath = path.join(dir, 'program')
 
+    // Every child gets the built PATH, for the reason childEnv explains: these
+    // tools shell out to helpers that live beside them.
+    const env = await childEnv()
+
     if (spec.compile) {
       const [bin, args] = spec.compile(tool.bin, srcPath, exePath)
-      const compiled = await runProcess(bin, args, { cwd: dir, timeoutMs: COMPILE_TIMEOUT_MS })
+      const compiled = await runProcess(bin, args, { cwd: dir, timeoutMs: COMPILE_TIMEOUT_MS, env })
       if (compiled.timedOut) {
         return fail('compile', 'The compiler took too long and was stopped.', { toolchain: tool.version })
       }
@@ -313,13 +516,14 @@ export async function runCode(request, log = () => {}) {
     const [runBin, runArgs] = spec.compile
       ? spec.run(exePath)
       : spec.run(exePath, tool.bin, srcPath)
-    const ran = await runProcess(runBin, runArgs, { cwd: dir, stdin, timeoutMs: RUN_TIMEOUT_MS })
+    const runTimeoutMs = spec.runTimeoutFor?.(tool.bin) ?? RUN_TIMEOUT_MS
+    const ran = await runProcess(runBin, runArgs, { cwd: dir, stdin, timeoutMs: runTimeoutMs, env })
 
     return {
       ok: ran.code === 0 && !ran.timedOut,
       stage: 'run',
       reason: ran.timedOut
-        ? `It was still running after ${RUN_TIMEOUT_MS / 1000} seconds and was stopped. An infinite loop is the usual cause.`
+        ? `It was still running after ${Math.round(runTimeoutMs / 1000)} seconds and was stopped. An infinite loop is the usual cause.`
         : undefined,
       stdout: scrubPaths(ran.stdout, dir, spec.source),
       stderr: scrubPaths(ran.stderr, dir, spec.source),

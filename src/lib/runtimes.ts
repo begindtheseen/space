@@ -25,7 +25,7 @@
    a missing compiler says which one and how to install it.
    ========================================================================== */
 import type { Lang } from '@/curriculum/types'
-import { getOrbit, isDesktop, type RunRequest, type RunResult, type ToolchainInfo } from './desktop'
+import { getOrbit, hasNativeRunner, isDesktop, type RunRequest, type RunResult, type ToolchainInfo } from './desktop'
 
 export type RunMode = 'execute' | 'check' | 'reference'
 
@@ -124,6 +124,7 @@ export function capabilityOf(
   lang: Lang,
   toolchains: Record<string, ToolchainInfo> | null,
   desktop: boolean = isDesktop,
+  runner: boolean = hasNativeRunner,
 ): Capability {
   const info = LANGS[lang]
   if (info.mode === 'execute') return { mode: 'execute', note: info.note }
@@ -135,6 +136,20 @@ export function capabilityOf(
     return {
       mode: info.mode,
       note: `${info.label} runs in the ORBIT desktop app, which uses the compiler on your machine. In a browser there is nowhere to compile it, so your output is compared against the expected result.`,
+    }
+  }
+
+  // In the app, but in a shell older than the curriculum it is showing. Saying
+  // "this needs the desktop app" to someone who is looking at the desktop app
+  // is the least useful thing we could tell her.
+  if (!runner) {
+    return {
+      mode: info.mode,
+      note: `This copy of the ORBIT app is older than the lessons inside it, so it cannot reach a compiler and your output is compared against the expected result instead. Settings has the new app; installing it keeps your progress.`,
+      missing: {
+        label: 'a newer ORBIT app',
+        install: 'Open Settings and install the new ORBIT app. Your progress stays exactly where it is.',
+      },
     }
   }
 
@@ -194,7 +209,13 @@ export async function runNative(lang: Lang, source: string, stdin?: string): Pro
   const key = NATIVE_LANGS[lang]
   const orbit = getOrbit()
   if (!key) return empty(`${LANGS[lang].label} cannot be executed.`)
-  if (!orbit?.run) return empty('Running this language needs the ORBIT desktop app.')
+  if (!orbit?.run) {
+    return empty(
+      isDesktop
+        ? 'This copy of the ORBIT app is older than the lessons inside it, so it cannot compile code. Install the new app from Settings — your progress stays where it is.'
+        : 'Running this language needs the ORBIT desktop app.',
+    )
+  }
 
   let res: RunResult | null
   try {

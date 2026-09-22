@@ -143,7 +143,7 @@ describe('capabilityOf', () => {
   })
 
   it('executes C++ for real when a compiler is installed', () => {
-    const cap = capabilityOf('cpp', clang, true)
+    const cap = capabilityOf('cpp', clang, true, true)
     expect(cap.mode).toBe('execute')
     expect(cap.toolchain).toBe('clang 18.1.3')
     expect(cap.missing).toBeUndefined()
@@ -151,7 +151,7 @@ describe('capabilityOf', () => {
   })
 
   it('falls back to comparison and names the fix when the compiler is missing', () => {
-    const cap = capabilityOf('cpp', noClang, true)
+    const cap = capabilityOf('cpp', noClang, true, true)
     expect(cap.mode).toBe('check')
     expect(cap.missing?.install).toContain('xcode-select')
     // The note must not imply the code ran.
@@ -166,13 +166,35 @@ describe('capabilityOf', () => {
   })
 
   it('does not claim anything is missing before detection has answered', () => {
-    const cap = capabilityOf('cpp', null, true)
+    const cap = capabilityOf('cpp', null, true, true)
     expect(cap.missing).toBeUndefined()
     expect(cap.note).toContain('Checking')
   })
 
+  it('blames the old app, not the missing desktop, inside an old app', () => {
+    // A bundle updates itself and the app around it does not, so a shell from
+    // before the runner existed shows a current curriculum it cannot compile.
+    // Telling her to go get the desktop app while she is looking at it is the
+    // one answer that leaves her with nowhere to go.
+    const cap = capabilityOf('cpp', null, true, false)
+    expect(cap.mode).toBe('check')
+    expect(cap.note).toContain('older than the lessons')
+    expect(cap.note).not.toContain('Checking')
+    expect(cap.missing?.install).toContain('Settings')
+  })
+
+  it('never says a language runs for real when the shell cannot reach a compiler', () => {
+    for (const lang of ['cpp', 'rust', 'matlab', 'bash'] as const) {
+      // Even handed a full set of toolchains: without the bridge, none of them
+      // are reachable, and a green "runs for real" would be a lie.
+      const cap = capabilityOf(lang, clang, true, false)
+      expect(cap.mode, lang).not.toBe('execute')
+      expect(cap.note, lang).not.toContain('Runs for real')
+    }
+  })
+
   it('leaves languages with nothing to execute alone', () => {
-    expect(capabilityOf('simulink', clang, true).mode).toBe('reference')
-    expect(capabilityOf('text', clang, true).mode).toBe('reference')
+    expect(capabilityOf('simulink', clang, true, true).mode).toBe('reference')
+    expect(capabilityOf('text', clang, true, true).mode).toBe('reference')
   })
 })

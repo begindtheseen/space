@@ -176,6 +176,19 @@ export function getOrbit(): OrbitBridge | undefined {
 
 export const isDesktop = !!getOrbit()
 
+/**
+ * Whether this shell can compile and run native code.
+ *
+ * A bundle updates itself; the app around it does not. Someone running a shell
+ * from before the runner existed ends up with a current curriculum inside an
+ * app whose bridge has no `run` on it, and every compiled language quietly
+ * falls back to comparing strings. `orbit.minShell` in package.json is what
+ * stops a bundle activating on a shell too old for it; this is what lets the
+ * playground say why, rather than claiming she needs the desktop app while she
+ * is sitting in it.
+ */
+export const hasNativeRunner = !!getOrbit()?.run
+
 const STATUSES: ReadonlySet<string> = new Set<UpdateStatus>([
   'idle',
   'checking',
