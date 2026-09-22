@@ -1,7 +1,7 @@
 ---
 id: l02-zero-order-hold
 title: The zero-order hold and its half-sample phase penalty
-minutes: 21
+minutes: 18
 covers:
   - The zero-order hold and its half-sample phase penalty
 ---

@@ -1,7 +1,7 @@
 ---
 id: l07-choosing-a-sample-rate
 title: Choosing a sample rate
-minutes: 22
+minutes: 20
 covers:
   - 'Choosing a sample rate: the 20-40x bandwidth rule of thumb and what drives the ends of that range'
 ---
@@ -111,7 +111,7 @@ At $100\,\mathrm{Hz}$ the loop is unstable, with closed-loop poles at radius $1.
 
 At $50\,\mathrm{Hz}$, poles at radius $1.357$: the amplitude grows by $36\%$ every frame, a factor of four million in one second. That one announces itself.
 
-The moral is narrower than "sample faster". The continuous design was never wrong; it was simply never a design for a digital loop. A controller intended for a $100\,\mathrm{Hz}$ loop would have been tuned against the discrete model, would have crossed over lower, and would have flown. The failure here is not the sample rate in isolation, it is a continuous design handed across an interface with no phase budget attached.
+The moral is narrower than "sample faster". The continuous design was never wrong; it was never a design for a digital loop. A controller intended for a $100\,\mathrm{Hz}$ loop would have been tuned against the discrete model, would have crossed over lower, and would have flown. The failure here is not the sample rate in isolation, it is a continuous design handed across an interface with no phase budget attached.
 :::
 
 ::: example Setting the rate for three vehicles

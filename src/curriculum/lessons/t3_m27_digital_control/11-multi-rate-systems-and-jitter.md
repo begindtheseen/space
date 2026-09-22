@@ -1,7 +1,7 @@
 ---
 id: l11-multi-rate-and-jitter
 title: Multi-rate systems and jitter
-minutes: 23
+minutes: 24
 covers:
   - Multi-rate systems, jitter, and their effect on stability
 ---
@@ -140,11 +140,9 @@ Four frames sounds generous until you look at where jitter comes from. A general
 :::
 
 ::: warning
-Do not compensate jitter by measuring the actual elapsed time and adjusting the controller coefficients each frame. It is an appealing idea and it makes things worse in two ways.
+Do not compensate jitter by measuring the actual elapsed time and adjusting the controller coefficients each frame. The coefficients were computed for the nominal $T$, and recomputing them per frame turns a linear time-invariant filter into a time-varying one, whose stability is not implied by the stability of any of the frozen-time versions it passes through — and the recomputation has a data-dependent cost, which adds jitter.
 
-The filter coefficients were computed for the nominal $T$; recomputing them per frame turns a linear time-invariant filter into a time-varying one, whose stability is not implied by the stability of any of the frozen-time versions it passes through. And the recomputation itself has a data-dependent cost, which adds jitter.
-
-There is one exception, and it is the integrator. Accumulating $I \mathrel{+}= k_i\,\Delta t\,e$ with the *measured* $\Delta t$ is correct, because integration of a held value over a measured interval is exactly what the integrator is supposed to do, and the operation is one multiply. Everything else — filters, notches, derivatives — uses the nominal $T$ and treats the deviation as a bounded error.
+There is one exception: the integrator. Accumulating $I \mathrel{+}= k_i\,\Delta t\,e$ with the *measured* $\Delta t$ is correct, because integrating a held value over a measured interval is what the integrator is for, and it costs one multiply. Everything else — filters, notches, derivatives — uses the nominal $T$ and treats the deviation as a bounded error.
 
 The real remedy is upstream: a hardware-timed frame, a deterministic executive, a measured worst-case execution time inside the frame, and a fixed actuation instant driven by a timer rather than by the completion of the code.
 :::
@@ -211,13 +209,11 @@ A $100\,\mathrm{Hz}$ control task occasionally exceeds its $10\,\mathrm{ms}$ bud
 ::: answer
 Two failure modes, with different signatures.
 
-**Late output.** The task is preempted or runs long, and the command is written after its intended instant. The actuation delay that frame is larger than nominal by the overrun, which is a time-varying delay: it eats phase margin, it cannot be compensated, and it injects jitter noise. If the overrun is a full frame or more, it is well outside the jitter budget of most loops.
+**Late output.** The task is preempted or runs long and the command is written after its intended instant. The actuation delay that frame exceeds nominal by the overrun — a time-varying delay, which eats phase margin, cannot be compensated, and injects jitter noise. A full frame or more is well outside the jitter budget of most loops.
 
-**Dropped frame.** The frame is abandoned. The previous command is held, so the zero-order hold acts at half the nominal rate for that interval and its lag doubles. The integrator misses an update, the filters miss a sample, and every filter state is now out of step with elapsed time.
+**Dropped frame.** The frame is abandoned. The previous command is held, so the zero-order hold acts at half the nominal rate for that interval and its lag doubles; the integrator misses an update and every filter state falls out of step with elapsed time.
 
-The handling has four parts. **Detect** the overrun at the hardware level, from the timer that starts the next frame finding the previous one incomplete. **Contain** it deterministically: hold the last valid output, or run a degraded path whose execution time is bounded by construction, and never let a late frame's output overwrite a newer one. **Count** it, with a per-rate-group overrun counter and the worst-case frame margin in telemetry, because an event that is rare on the pad is common over a flight. **Escalate** on repeats, according to a policy written in the failure-modes analysis — a mode change, a switch to a redundant string, or a watchdog reset.
-
-Underneath all of it: the worst-case execution time is bounded by design and verified by measurement on the target, with margin. The runtime handling is the last line of defence, not the plan.
+The handling has four parts: **detect** the overrun at the hardware level, from the timer that starts the next frame finding the previous one incomplete; **contain** it deterministically, holding the last valid output or running a degraded path whose execution time is bounded by construction; **count** it per rate group in telemetry, because an event that is rare on the pad is common over a flight; and **escalate** on repeats according to the failure-modes analysis. Underneath all of it, the worst-case execution time is bounded by design and verified on the target, with margin.
 :::
 
 ::: check

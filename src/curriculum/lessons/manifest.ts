@@ -1677,6 +1677,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "thrust vector control gimbal dynamics for launch vehicles"
       ],
       "file": "t1_m17_attitude_kinematics/08-thrust-vector-control-gimbal-dynamics.md"
+    },
+    {
+      "id": "l09-actuator-saturation-and-rate-limits",
+      "title": "Actuator saturation and rate limits",
+      "minutes": 22,
+      "covers": [
+        "actuator saturation and rate limits"
+      ],
+      "file": "t1_m17_attitude_kinematics/09-actuator-saturation-and-rate-limits.md"
     }
   ],
   "t1_m18_atmospheric_flight": [
@@ -2104,13 +2113,22 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Why margins can lie: MIMO coupling, nonlinearity, simultaneous perturbations"
       ],
       "file": "t3_m26_classical_control/08-why-margins-can-lie.md"
+    },
+    {
+      "id": "l09-lead-lag-compensators",
+      "title": "Lead, lag and lead-lag compensators",
+      "minutes": 21,
+      "covers": [
+        "Lead, lag and lead-lag compensators"
+      ],
+      "file": "t3_m26_classical_control/09-lead-lag-compensators.md"
     }
   ],
   "t3_m27_digital_control": [
     {
       "id": "l01-sampling-aliasing-anti-alias",
       "title": "Sampling, aliasing and the anti-alias filter",
-      "minutes": 24,
+      "minutes": 22,
       "covers": [
         "Sampling and the Nyquist-Shannon theorem; aliasing and anti-alias filtering"
       ],
@@ -2119,7 +2137,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-zero-order-hold",
       "title": "The zero-order hold and its half-sample phase penalty",
-      "minutes": 21,
+      "minutes": 18,
       "covers": [
         "The zero-order hold and its half-sample phase penalty"
       ],
@@ -2128,7 +2146,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-z-transform-discrete-tf",
       "title": "The z-transform and discrete transfer functions",
-      "minutes": 20,
+      "minutes": 17,
       "covers": [
         "The z-transform and discrete transfer functions"
       ],
@@ -2137,7 +2155,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-s-plane-to-z-plane",
       "title": "Mapping the s-plane to the z-plane",
-      "minutes": 20,
+      "minutes": 16,
       "covers": [
         "Mapping the s-plane to the z-plane; the unit circle as the stability boundary"
       ],
@@ -2146,7 +2164,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-discretization-methods",
       "title": "Discretization methods",
-      "minutes": 25,
+      "minutes": 22,
       "covers": [
         "Discretization methods: forward and backward Euler, Tustin, Tustin with prewarping, ZOH equivalence, matched pole-zero"
       ],
@@ -2164,7 +2182,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-choosing-a-sample-rate",
       "title": "Choosing a sample rate",
-      "minutes": 22,
+      "minutes": 20,
       "covers": [
         "Choosing a sample rate: the 20-40x bandwidth rule of thumb and what drives the ends of that range"
       ],
@@ -2173,7 +2191,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-quantization-fixed-point",
       "title": "Quantization, finite word length and fixed point",
-      "minutes": 24,
+      "minutes": 22,
       "covers": [
         "Quantization, finite word length, and fixed-point implementation"
       ],
@@ -2182,7 +2200,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-discrete-pid-realization-forms",
       "title": "Discrete PID realization forms",
-      "minutes": 23,
+      "minutes": 20,
       "covers": [
         "Discrete PID realization forms (direct, parallel, delta) and their numerical conditioning"
       ],
@@ -2191,7 +2209,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-biquad-sections",
       "title": "Biquad sections for discrete filters and notches",
-      "minutes": 21,
+      "minutes": 19,
       "covers": [
         "Biquad sections for discrete filters and notches"
       ],
@@ -2200,7 +2218,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-multi-rate-and-jitter",
       "title": "Multi-rate systems and jitter",
-      "minutes": 23,
+      "minutes": 24,
       "covers": [
         "Multi-rate systems, jitter, and their effect on stability"
       ],
@@ -2445,6 +2463,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "MIMO stability margins, disk margins, and why per-loop SISO margins mislead"
       ],
       "file": "t3_m30_robust_control/08-mimo-margins-and-disk-margins.md"
+    },
+    {
+      "id": "l09-rhp-poles-and-zeros",
+      "title": "What right-half-plane poles and zeros forbid",
+      "minutes": 21,
+      "covers": [
+        "Performance limitations imposed by right-half-plane poles and zeros"
+      ],
+      "file": "t3_m30_robust_control/09-rhp-poles-and-zeros.md"
     }
   ],
   "t3_m31_nonlinear_control": [
@@ -2667,11 +2694,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t1_m17_attitude_kinematics": {
-    "covered": 8,
+    "covered": 9,
     "total": 10,
     "complete": false,
     "missing": [
-      "actuator saturation and rate limits",
       "coning motion and coning correction"
     ]
   },
@@ -2800,11 +2826,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t3_m26_classical_control": {
-    "covered": 8,
+    "covered": 9,
     "total": 13,
     "complete": false,
     "missing": [
-      "Lead, lag and lead-lag compensators",
       "Notch filters for structural bending modes; gain stabilization vs phase stabilization",
       "The Bode gain-phase relationship, the Bode sensitivity integral, and the waterbed effect",
       "Cascade architecture: a fast rate loop inside a slower attitude loop",
@@ -2839,11 +2864,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t3_m30_robust_control": {
-    "covered": 8,
+    "covered": 9,
     "total": 12,
     "complete": false,
     "missing": [
-      "Performance limitations imposed by right-half-plane poles and zeros",
       "Linear parameter-varying control and gain scheduling with guarantees",
       "Adaptive control (MRAC, L1 adaptive) and its use and abuse in aerospace",
       "Flight qualification metrics: stability margin requirements across the envelope, discrete-time mu analysis, handling-qualities criteria"

@@ -1,7 +1,7 @@
 ---
 id: l03-z-transform-discrete-tf
 title: The z-transform and discrete transfer functions
-minutes: 20
+minutes: 17
 covers:
   - The z-transform and discrete transfer functions
 ---

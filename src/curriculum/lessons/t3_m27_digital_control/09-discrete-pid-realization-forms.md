@@ -1,7 +1,7 @@
 ---
 id: l09-discrete-pid-realization-forms
 title: Discrete PID realization forms
-minutes: 23
+minutes: 20
 covers:
   - Discrete PID realization forms (direct, parallel, delta) and their numerical conditioning
 ---
@@ -113,7 +113,7 @@ for k in range(4000):
 # t=0.001 s  theta= 0.00000 rad  u=  1326.80 N m  I=     0.80
 # t=0.100 s  theta= 0.01190 rad  u=   795.81 N m  I=    76.73
 # t=0.500 s  theta= 0.12275 rad  u=  -507.08 N m  I=   171.96
-# t=2.000 s  theta= 0.10490 rad  u=   -27.87 N m  I=     40.02
+# t=2.000 s  theta= 0.10490 rad  u=   -27.87 N m  I=    40.02
 # t=4.000 s  theta= 0.10078 rad  u=     0.73 N m  I=     9.61
 ```
 

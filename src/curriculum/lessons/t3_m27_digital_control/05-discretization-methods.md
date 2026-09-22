@@ -1,7 +1,7 @@
 ---
 id: l05-discretization-methods
 title: Discretization methods
-minutes: 25
+minutes: 22
 covers:
   - 'Discretization methods: forward and backward Euler, Tustin, Tustin with prewarping, ZOH equivalence, matched pole-zero'
 ---
@@ -198,7 +198,7 @@ $$
 P(z) = \frac{T^3}{6}\,\frac{z^2 + 4z + 1}{(z-1)^3},
 $$
 
-with zeros at $z = -0.2679$ and $z = -3.7321$. The second is *outside* the unit circle: a discrete non-minimum-phase zero, manufactured purely by sampling a perfectly minimum-phase continuous plant. This is a general result — a plant with relative degree three or more acquires unstable sampling zeros as $T$ shrinks — and it is the reason you cannot simply invert a discretized plant, and the reason model-inversion controllers are built on the continuous model and discretized afterwards rather than the other way round.
+with zeros at $z = -0.2679$ and $z = -3.7321$. The second is *outside* the unit circle: a discrete non-minimum-phase zero, manufactured purely by sampling a perfectly minimum-phase continuous plant. This is a general result — a plant with relative degree three or more acquires unstable sampling zeros as $T$ shrinks — and it is the reason you cannot invert a discretized plant, and the reason model-inversion controllers are built on the continuous model and discretized afterwards rather than the other way round.
 
 For comparison, a first-order lag $1/(\tau s + 1)$ discretizes to
 

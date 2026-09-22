@@ -1,7 +1,7 @@
 ---
 id: l04-s-plane-to-z-plane
 title: Mapping the s-plane to the z-plane
-minutes: 20
+minutes: 16
 covers:
   - 'Mapping the s-plane to the z-plane; the unit circle as the stability boundary'
 ---

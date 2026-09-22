@@ -1,7 +1,7 @@
 ---
 id: l08-quantization-fixed-point
 title: Quantization, finite word length and fixed point
-minutes: 24
+minutes: 22
 covers:
   - Quantization, finite word length, and fixed-point implementation
 ---

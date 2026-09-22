@@ -1,7 +1,7 @@
 ---
 id: l10-biquad-sections
 title: Biquad sections for discrete filters and notches
-minutes: 21
+minutes: 19
 covers:
   - Biquad sections for discrete filters and notches
 ---
@@ -198,7 +198,7 @@ Now round every coefficient, in both representations, to a $16$-bit fixed-point 
 
 The cascade reproduces every pole to six decimal places. The single polynomial is *unstable*, with a pole pair $12\%$ outside the unit circle, growing by that much every millisecond — a factor of $10^{48}$ per second. Its other poles are wrong too: the exact set is $\{0.9411, 0.9411, 0.9565, 0.9565, 0.9839, 0.9839\}$ and the quantized set is $\{0.8236, 0.8236, 0.9626, 0.9626, 1.1171, 1.1171\}$, which is not a perturbed version of the filter, it is a different filter.
 
-Nothing exotic happened. The coefficients are ordinary numbers, the rounding is to sixteen bits, and the filter is a textbook Butterworth. The polynomial simply has six roots packed into a region of radius $0.05$ around $z = 0.96$, and the sensitivity formula says what that costs.
+Nothing exotic happened. The coefficients are ordinary numbers, the rounding is to sixteen bits, and the filter is a textbook Butterworth. The polynomial has six roots packed into a region of radius $0.05$ around $z = 0.96$, and the sensitivity formula says what that costs.
 :::
 
 ## Practicalities of a cascade

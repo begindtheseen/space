@@ -1,7 +1,7 @@
 ---
 id: l01-sampling-aliasing-anti-alias
 title: Sampling, aliasing and the anti-alias filter
-minutes: 24
+minutes: 22
 covers:
   - 'Sampling and the Nyquist-Shannon theorem; aliasing and anti-alias filtering'
 ---
@@ -82,7 +82,7 @@ A tone below $f_N$ maps to itself, as it must. Above it, the frequency axis fold
 | $47\,\mathrm{Hz}$ | $50\,\mathrm{Hz}$ | $3\,\mathrm{Hz}$ |
 | $250\,\mathrm{Hz}$ | $200\,\mathrm{Hz}$ | $50\,\mathrm{Hz}$ |
 
-Two features of that table matter operationally. Content just below a multiple of $f_s$ lands at a very *low* frequency — the $47\,\mathrm{Hz}$ row is the dangerous one, because $47$ is close to $50$ and the difference is small. And halving the sample rate does not halve the problem, it moves it: $60\,\mathrm{Hz}$ went from $40\,\mathrm{Hz}$, safely above a typical control band, to $10\,\mathrm{Hz}$, inside one.
+Two features of that table matter operationally. Content immediately below a multiple of $f_s$ lands at a very *low* frequency — the $47\,\mathrm{Hz}$ row is the dangerous one, because $47$ is close to $50$ and the difference is small. And halving the sample rate does not halve the problem, it moves it: $60\,\mathrm{Hz}$ went from $40\,\mathrm{Hz}$, safely above a typical control band, to $10\,\mathrm{Hz}$, inside one.
 
 ::: example A 47 Hz bending mode in a 50 Hz attitude loop
 A launch vehicle's first lateral bending mode sits at $47\,\mathrm{Hz}$. The rate gyro is bolted to the forward skirt, where the mode has good observability, and the attitude control task runs at $f_s = 50\,\mathrm{Hz}$, so $f_N = 25\,\mathrm{Hz}$.
@@ -100,7 +100,7 @@ t = n / fs
 mode = np.sin(2 * np.pi * 47.0 * t)      # 47 Hz bending mode at the gyro
 fold = -np.sin(2 * np.pi * 3.0 * t)      # what the flight computer sees
 
-print(np.max(np.abs(mode - fold)))       # 5.4956e-15
+print(np.max(np.abs(mode - fold)))       # 5.495603971894525e-15
 print(np.round(mode, 4))
 # [ 0.     -0.3681 -0.6845 -0.9048 -0.998  -0.9511 -0.7705 -0.4818 -0.1253
 #   0.2487  0.5878  0.8443]
