@@ -82,7 +82,7 @@ Both runs use the identical controller and the identical sensor readings; the on
 Plant, environment, sensors, GNC, actuators. Keep them separable with explicit interfaces so each can be swapped, dispersed or replaced by hardware independently. GNC only ever sees what a sensor produced; the plant only ever feels what an actuator produced. Every shortcut across either boundary deletes something the simulation exists to test.
 :::
 
-::: warning Peeking at truth "just for now"
+::: warning Peeking at truth "temporarily"
 Wiring a controller or a navigation filter straight to plant truth during a debugging session is tempting — it isolates whether the algorithm itself is correct, without sensor noise in the way. The danger is not doing it once; it is forgetting to remove it. A controller tuned or accepted against truth has never been tested against the sensors it will actually fly with, and a gain margin computed that way describes a vehicle that does not exist. If you need to isolate the algorithm, do it with a unit test that calls the algorithm directly, not by rewiring the simulation.
 :::
 

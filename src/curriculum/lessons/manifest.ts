@@ -2120,6 +2120,203 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       "file": "t2_m20_orbital_maneuvers/11-patched-conics-launch-windows.md"
     }
   ],
+  "t2_m21_perturbations": [
+    {
+      "id": "l01-perturbations-overview",
+      "title": "The perturbed two-body problem",
+      "minutes": 24,
+      "covers": [
+        "perturbation sources ranked by magnitude in LEO and GEO",
+        "general vs special perturbations"
+      ],
+      "file": "t2_m21_perturbations/01-perturbations-overview.md"
+    },
+    {
+      "id": "l02-geopotential-harmonics",
+      "title": "The geopotential, spherical harmonics, and J2",
+      "minutes": 18,
+      "covers": [
+        "non-spherical gravity, spherical harmonics, J2 and higher zonals"
+      ],
+      "file": "t2_m21_perturbations/02-geopotential-harmonics.md"
+    },
+    {
+      "id": "l03-gauss-variational-equations",
+      "title": "The Gauss variational and Lagrange planetary equations",
+      "minutes": 18,
+      "covers": [
+        "Gauss variational equations and Lagrange planetary equations"
+      ],
+      "file": "t2_m21_perturbations/03-gauss-variational-equations.md"
+    },
+    {
+      "id": "l04-j2-secular-effects",
+      "title": "J2 secular effects — nodal regression and apsidal rotation",
+      "minutes": 20,
+      "covers": [
+        "J2 secular effects: nodal regression and apsidal rotation"
+      ],
+      "file": "t2_m21_perturbations/04-j2-secular-effects.md"
+    },
+    {
+      "id": "l05-sun-synchronous-orbits",
+      "title": "Designing a sun-synchronous orbit",
+      "minutes": 15,
+      "covers": [
+        "sun-synchronous orbits"
+      ],
+      "file": "t2_m21_perturbations/05-sun-synchronous-orbits.md"
+    },
+    {
+      "id": "l06-mean-vs-osculating-elements",
+      "title": "Mean vs osculating elements",
+      "minutes": 20,
+      "covers": [
+        "mean vs osculating elements"
+      ],
+      "file": "t2_m21_perturbations/06-mean-vs-osculating-elements.md"
+    },
+    {
+      "id": "l07-atmospheric-drag",
+      "title": "Atmospheric drag, ballistic coefficient, and density uncertainty",
+      "minutes": 17,
+      "covers": [
+        "atmospheric drag, ballistic coefficient and density model uncertainty"
+      ],
+      "file": "t2_m21_perturbations/07-atmospheric-drag.md"
+    },
+    {
+      "id": "l08-third-body-tides-relativity",
+      "title": "Third-body attraction, tides, and relativistic corrections",
+      "minutes": 17,
+      "covers": [
+        "third-body lunar and solar perturbations",
+        "tides and relativistic corrections"
+      ],
+      "file": "t2_m21_perturbations/08-third-body-tides-relativity.md"
+    },
+    {
+      "id": "l09-solar-radiation-pressure",
+      "title": "Solar radiation pressure and eclipse modelling",
+      "minutes": 15,
+      "covers": [
+        "solar radiation pressure and eclipse modelling"
+      ],
+      "file": "t2_m21_perturbations/09-solar-radiation-pressure.md"
+    },
+    {
+      "id": "l10-cowell-encke-methods",
+      "title": "Cowell's method and Encke's method",
+      "minutes": 19,
+      "covers": [
+        "Cowell and Encke methods"
+      ],
+      "file": "t2_m21_perturbations/10-cowell-encke-methods.md"
+    },
+    {
+      "id": "l11-sgp4-tle",
+      "title": "SGP4/SDP4 and why TLEs are theory-specific",
+      "minutes": 19,
+      "covers": [
+        "SGP4/SDP4 and why TLEs are theory-specific"
+      ],
+      "file": "t2_m21_perturbations/11-sgp4-tle.md"
+    },
+    {
+      "id": "l12-long-term-evolution-lifetime",
+      "title": "Long-term orbit evolution and lifetime estimation",
+      "minutes": 18,
+      "covers": [
+        "long-term orbit evolution and lifetime estimation",
+        "perturbation sources ranked by magnitude in LEO and GEO"
+      ],
+      "file": "t2_m21_perturbations/12-long-term-evolution-lifetime.md"
+    }
+  ],
+  "t2_m22_lambert_targeting": [
+    {
+      "id": "l01-lamberts-problem-and-theorem",
+      "title": "Lambert's problem and Lambert's theorem",
+      "minutes": 20,
+      "covers": [
+        "Lambert's problem statement and Lambert's theorem"
+      ],
+      "file": "t2_m22_lambert_targeting/01-lamberts-problem-and-theorem.md"
+    },
+    {
+      "id": "l02-universal-variable-solver",
+      "title": "Solving Lambert's problem: Gauss, universal variables, and Izzo",
+      "minutes": 22,
+      "covers": [
+        "solution methods: Gauss, universal variables / Battin, Izzo"
+      ],
+      "file": "t2_m22_lambert_targeting/02-universal-variable-solver.md"
+    },
+    {
+      "id": "l03-branches-short-long-multirev",
+      "title": "Branches, honestly: short way, long way, and multiple revolutions",
+      "minutes": 21,
+      "covers": [
+        "multi-revolution solutions and their multiplicity"
+      ],
+      "file": "t2_m22_lambert_targeting/03-branches-short-long-multirev.md"
+    },
+    {
+      "id": "l04-the-180-degree-singularity",
+      "title": "The 180-degree singularity",
+      "minutes": 20,
+      "covers": [
+        "convergence and singular geometries near a 180 degree transfer"
+      ],
+      "file": "t2_m22_lambert_targeting/04-the-180-degree-singularity.md"
+    },
+    {
+      "id": "l05-the-state-transition-matrix",
+      "title": "The state transition matrix for two-body motion",
+      "minutes": 21,
+      "covers": [
+        "the state transition matrix and its use in targeting"
+      ],
+      "file": "t2_m22_lambert_targeting/05-the-state-transition-matrix.md"
+    },
+    {
+      "id": "l06-differential-correction",
+      "title": "Targeting and differential correction",
+      "minutes": 22,
+      "covers": [
+        "targeting and differential correction"
+      ],
+      "file": "t2_m22_lambert_targeting/06-differential-correction.md"
+    },
+    {
+      "id": "l07-b-plane-targeting",
+      "title": "B-plane targeting",
+      "minutes": 19,
+      "covers": [
+        "B-plane targeting"
+      ],
+      "file": "t2_m22_lambert_targeting/07-b-plane-targeting.md"
+    },
+    {
+      "id": "l08-porkchop-plots",
+      "title": "Porkchop plots from repeated Lambert solutions",
+      "minutes": 20,
+      "covers": [
+        "porkchop plots from repeated Lambert solutions"
+      ],
+      "file": "t2_m22_lambert_targeting/08-porkchop-plots.md"
+    },
+    {
+      "id": "l09-tcm-and-linear-covariance",
+      "title": "Trajectory correction manoeuvres and linear covariance analysis",
+      "minutes": 24,
+      "covers": [
+        "trajectory correction manoeuvres",
+        "linear covariance analysis of targeting errors"
+      ],
+      "file": "t2_m22_lambert_targeting/09-tcm-and-linear-covariance.md"
+    }
+  ],
   "t2_m23_relative_motion_rpo": [
     {
       "id": "l01-relative-motion-frames",
@@ -2232,6 +2429,83 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "relative navigation sensors: relative GPS, lidar, cameras, retroreflectors"
       ],
       "file": "t2_m23_relative_motion_rpo/12-relative-navigation-sensors.md"
+    }
+  ],
+  "t2_m24_edl": [
+    {
+      "id": "l01-entry-interface-conditions",
+      "title": "The entry interface and the entry state",
+      "minutes": 18,
+      "covers": [
+        "entry interface conditions"
+      ],
+      "file": "t2_m24_edl/01-entry-interface-conditions.md"
+    },
+    {
+      "id": "l02-ballistic-entry-and-the-allen-eggers-solution",
+      "title": "Ballistic entry and the Allen-Eggers solution",
+      "minutes": 14,
+      "covers": [
+        "ballistic entry and the Allen-Eggers solution"
+      ],
+      "file": "t2_m24_edl/02-ballistic-entry-and-the-allen-eggers-solution.md"
+    },
+    {
+      "id": "l03-peak-deceleration-and-peak-heating",
+      "title": "Peak deceleration and peak heating, derived and then measured",
+      "minutes": 18,
+      "covers": [
+        "peak deceleration and peak heating relations"
+      ],
+      "file": "t2_m24_edl/03-peak-deceleration-and-peak-heating.md"
+    },
+    {
+      "id": "l04-aerothermodynamics-and-thermal-protection",
+      "title": "Aerothermodynamics and thermal protection",
+      "minutes": 17,
+      "covers": [
+        "aerothermodynamics: convective and radiative heating, Sutton-Graves",
+        "thermal protection systems, heat rate vs heat load"
+      ],
+      "file": "t2_m24_edl/04-aerothermodynamics-and-thermal-protection.md"
+    },
+    {
+      "id": "l05-ballistic-coefficient-and-trajectory-shape",
+      "title": "Ballistic coefficient and the shape of the trajectory",
+      "minutes": 14,
+      "covers": [
+        "ballistic coefficient and its effect on the trajectory"
+      ],
+      "file": "t2_m24_edl/05-ballistic-coefficient-and-trajectory-shape.md"
+    },
+    {
+      "id": "l06-the-entry-corridor",
+      "title": "The entry corridor: undershoot and overshoot",
+      "minutes": 17,
+      "covers": [
+        "the entry corridor: undershoot and overshoot boundaries"
+      ],
+      "file": "t2_m24_edl/06-the-entry-corridor.md"
+    },
+    {
+      "id": "l07-skip-entry-and-lifting-entry",
+      "title": "Skip entry and lifting entry",
+      "minutes": 16,
+      "covers": [
+        "skip entry",
+        "lifting entry and bank-angle modulation"
+      ],
+      "file": "t2_m24_edl/07-skip-entry-and-lifting-entry.md"
+    },
+    {
+      "id": "l08-apollo-and-shuttle-entry-guidance",
+      "title": "Apollo and Shuttle entry guidance",
+      "minutes": 16,
+      "covers": [
+        "Apollo entry guidance and its descendants",
+        "Shuttle drag-vs-energy entry guidance"
+      ],
+      "file": "t2_m24_edl/08-apollo-and-shuttle-entry-guidance.md"
     }
   ],
   "t3_m25_signals_systems": [
@@ -4349,6 +4623,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Tooling: CasADi with IPOPT, GPOPS-II, PSOPT, Dymos/OpenMDAO, PyOMO, ACADO, trajax"
       ],
       "file": "t5_m42_trajectory_optimization/16-tooling.md"
+    },
+    {
+      "id": "l17-failure-modes",
+      "title": "Failure modes: infeasibility, multipliers, ringing and bad constraints",
+      "minutes": 20,
+      "covers": [
+        "Failure modes: infeasible restoration, unbounded multipliers, mesh-induced control ringing, badly posed terminal constraints"
+      ],
+      "file": "t5_m42_trajectory_optimization/17-failure-modes.md"
     }
   ],
   "t5_m43_convex_guidance": [
@@ -4429,6 +4712,53 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Trust regions and artificial unboundedness; virtual control (virtual buffers) and artificial infeasibility"
       ],
       "file": "t5_m43_convex_guidance/08-trust-regions-and-virtual-control.md"
+    },
+    {
+      "id": "l09-scvx-algorithm-free-final-time",
+      "title": "Assembling SCvx, and free final time by dilation",
+      "minutes": 21,
+      "covers": [
+        "The convergence ratio rho and the accept/reject/resize rule",
+        "Free-final-time formulation by time dilation, and the notation clash with the thrust slack"
+      ],
+      "file": "t5_m43_convex_guidance/09-the-scvx-algorithm-and-free-final-time.md"
+    },
+    {
+      "id": "l10-6dof-powered-descent",
+      "title": "A 6-DoF powered descent, run end to end",
+      "minutes": 24,
+      "covers": [
+        "6-DoF powered descent with quaternion attitude inside the optimization"
+      ],
+      "file": "t5_m43_convex_guidance/10-6dof-powered-descent.md"
+    },
+    {
+      "id": "l11-state-triggered-constraints",
+      "title": "State-triggered constraints",
+      "minutes": 20,
+      "covers": [
+        "State-triggered constraints for logic in the loop, and compound STCs"
+      ],
+      "file": "t5_m43_convex_guidance/11-state-triggered-constraints.md"
+    },
+    {
+      "id": "l12-gusto-real-time-scvx",
+      "title": "GuSTO, and running SCvx in real time",
+      "minutes": 22,
+      "covers": [
+        "GuSTO and the broader sequential convex programming convergence theory",
+        "Real-time implementation: solver code generation, iteration bounds, warm starting, and fixed-point considerations"
+      ],
+      "file": "t5_m43_convex_guidance/12-gusto-and-real-time-scvx.md"
+    },
+    {
+      "id": "l13-falcon9-starship-architecture",
+      "title": "Where this flies — Falcon 9 and Starship",
+      "minutes": 19,
+      "covers": [
+        "How all of this maps onto a Falcon 9 entry burn / aero phase / landing burn architecture, and onto Starship landing"
+      ],
+      "file": "t5_m43_convex_guidance/13-falcon-9-and-starship-guidance-architecture.md"
     }
   ],
   "t6_m44_realtime_embedded": [
@@ -4786,6 +5116,42 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Validation against analytic solutions, conservation laws, and eventually flight data"
       ],
       "file": "t6_m46_6dof_simulation/14-validation-analytic-solutions-and-conservation-laws.md"
+    },
+    {
+      "id": "l15-regression-testing-and-golden-files",
+      "title": "Regression testing and golden files",
+      "minutes": 19,
+      "covers": [
+        "Regression testing and golden-file comparison; what to do when a legitimate model improvement breaks every golden file"
+      ],
+      "file": "t6_m46_6dof_simulation/15-regression-testing-and-golden-files.md"
+    },
+    {
+      "id": "l16-determinism-and-reproducibility",
+      "title": "Determinism and reproducibility",
+      "minutes": 19,
+      "covers": [
+        "Determinism and reproducibility: seeded random number streams, per-case seeds, and bit-exact replay of a single case out of a campaign"
+      ],
+      "file": "t6_m46_6dof_simulation/16-determinism-and-reproducibility.md"
+    },
+    {
+      "id": "l17-performance-and-parallelism",
+      "title": "Performance and parallelism",
+      "minutes": 19,
+      "covers": [
+        "Performance: vectorisation, parallelism over cases rather than within a case, and why Monte Carlo runs on a cluster"
+      ],
+      "file": "t6_m46_6dof_simulation/17-performance-and-parallelism.md"
+    },
+    {
+      "id": "l18-configuration-management-of-the-simulation",
+      "title": "Configuration management of the simulation",
+      "minutes": 19,
+      "covers": [
+        "Configuration management of the sim: models, parameters and scenarios versioned separately from the code"
+      ],
+      "file": "t6_m46_6dof_simulation/18-configuration-management-of-the-simulation.md"
     }
   ],
   "t6_m47_vv_montecarlo": [
@@ -4904,6 +5270,120 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Anomaly investigation, flight data reconstruction, and closing the loop by updating the models"
       ],
       "file": "t6_m47_vv_montecarlo/12-continuous-integration-and-closing-the-loop.md"
+    }
+  ],
+  "t7_m49_interview_prep": [
+    {
+      "id": "l01-five-talks-and-the-defence",
+      "title": "The five-talk system, and rehearsing the defence",
+      "minutes": 22,
+      "covers": [
+        "The project presentation: choosing five topics, building a 10 to 20 minute talk for each, and rehearsing the defence rather than the delivery"
+      ],
+      "file": "t7_m49_interview_prep/01-five-talks-and-the-defence.md"
+    },
+    {
+      "id": "l02-star-stories-and-hard-questions",
+      "title": "Behavioural rounds: STAR stories, and the two questions that sting",
+      "minutes": 20,
+      "covers": [
+        "Behavioural and STAR stories emphasising ownership, speed, and recovery from failure",
+        "Answering \"what would you do differently\" and \"what was the hardest bug\" without either arrogance or apology"
+      ],
+      "file": "t7_m49_interview_prep/02-star-stories-and-hard-questions.md"
+    },
+    {
+      "id": "l03-fermi-estimation-drills",
+      "title": "Fermi estimation, worked at interview pace",
+      "minutes": 25,
+      "covers": [
+        "Fermi estimation drills with vehicle numbers you should already know"
+      ],
+      "file": "t7_m49_interview_prep/03-fermi-estimation-drills.md"
+    },
+    {
+      "id": "l04-rocket-equation-and-variable-mass",
+      "title": "The rocket equation and the variable-mass equations of motion, derived cold",
+      "minutes": 17,
+      "covers": [
+        "Whiteboard derivations under time pressure: the rocket equation, rigid-body equations of motion under thrust, the Kalman filter update, proportional navigation, Euler equations, the Clohessy-Wiltshire equations"
+      ],
+      "file": "t7_m49_interview_prep/04-rocket-equation-and-variable-mass.md"
+    },
+    {
+      "id": "l05-kalman-gain-and-proportional-navigation",
+      "title": "The Kalman gain and proportional navigation, derived cold",
+      "minutes": 15,
+      "covers": [
+        "Whiteboard derivations under time pressure: the rocket equation, rigid-body equations of motion under thrust, the Kalman filter update, proportional navigation, Euler equations, the Clohessy-Wiltshire equations"
+      ],
+      "file": "t7_m49_interview_prep/05-kalman-gain-and-proportional-navigation.md"
+    },
+    {
+      "id": "l06-euler-equations-and-clohessy-wiltshire",
+      "title": "Euler's equations and the Clohessy-Wiltshire equations, derived cold",
+      "minutes": 16,
+      "covers": [
+        "Whiteboard derivations under time pressure: the rocket equation, rigid-body equations of motion under thrust, the Kalman filter update, proportional navigation, Euler equations, the Clohessy-Wiltshire equations"
+      ],
+      "file": "t7_m49_interview_prep/06-euler-equations-and-clohessy-wiltshire.md"
+    },
+    {
+      "id": "l07-deriving-out-loud-and-being-wrong-well",
+      "title": "Deriving out loud, and how to be wrong well",
+      "minutes": 25,
+      "covers": [
+        "Deriving out loud: narrating assumptions, stating what you are about to do before doing it, and recovering visibly from an error"
+      ],
+      "file": "t7_m49_interview_prep/07-deriving-out-loud-and-being-wrong-well.md"
+    },
+    {
+      "id": "l08-embedded-cpp-coding-rounds",
+      "title": "The embedded-flavoured C++ coding round",
+      "minutes": 20,
+      "covers": [
+        "C++ coding rounds: the standard algorithmic problems plus embedded-flavoured ones — ring buffers, fixed-point arithmetic, bit manipulation, memory-constrained algorithms, no allocation in the hot path"
+      ],
+      "file": "t7_m49_interview_prep/08-embedded-cpp-coding-rounds.md"
+    },
+    {
+      "id": "l09-systems-rounds-and-arguing-from-a-trade",
+      "title": "Systems and architecture rounds, and arguing from a trade",
+      "minutes": 19,
+      "covers": [
+        "Systems and architecture rounds: design a GNC flight software stack, a Monte Carlo pipeline, an FDIR scheme, a sensor suite for a given mission",
+        "Explaining a design decision in terms of a trade rather than a preference"
+      ],
+      "file": "t7_m49_interview_prep/09-systems-rounds-and-arguing-from-a-trade.md"
+    },
+    {
+      "id": "l10-controls-estimation-dynamics-questions",
+      "title": "Controls, estimation and dynamics rounds: the questions that recur",
+      "minutes": 19,
+      "covers": [
+        "Controls, estimation and dynamics rounds: the questions that recur, and the follow-ups that separate memorisation from understanding"
+      ],
+      "file": "t7_m49_interview_prep/10-controls-estimation-dynamics-questions.md"
+    },
+    {
+      "id": "l11-numbers-resume-and-portfolio",
+      "title": "Framing your work with numbers: talks, resume and portfolio",
+      "minutes": 15,
+      "covers": [
+        "Framing self-taught projects as engineering results with numbers: RMSE, margins, run counts, solve times, not adjectives",
+        "Resume and portfolio construction around artefacts that can be read: repositories, reports, plots"
+      ],
+      "file": "t7_m49_interview_prep/11-numbers-resume-and-portfolio.md"
+    },
+    {
+      "id": "l12-authorization-adjacent-roles-and-the-mock-loop",
+      "title": "Work authorisation, adjacent roles, and the full mock loop",
+      "minutes": 17,
+      "covers": [
+        "Work authorisation and export-control eligibility documentation, handled early rather than at offer stage",
+        "Adjacent entry roles — simulation, GNC software, site reliability for GNC infrastructure — as realistic vectors into the field"
+      ],
+      "file": "t7_m49_interview_prep/12-authorization-adjacent-roles-and-the-mock-loop.md"
     }
   ]
 }
@@ -5038,42 +5518,16 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t2_m21_perturbations": {
-    "covered": 0,
+    "covered": 14,
     "total": 14,
-    "complete": false,
-    "missing": [
-      "perturbation sources ranked by magnitude in LEO and GEO",
-      "non-spherical gravity, spherical harmonics, J2 and higher zonals",
-      "J2 secular effects: nodal regression and apsidal rotation",
-      "sun-synchronous orbits",
-      "atmospheric drag, ballistic coefficient and density model uncertainty",
-      "solar radiation pressure and eclipse modelling",
-      "third-body lunar and solar perturbations",
-      "tides and relativistic corrections",
-      "general vs special perturbations",
-      "Cowell and Encke methods",
-      "Gauss variational equations and Lagrange planetary equations",
-      "mean vs osculating elements",
-      "SGP4/SDP4 and why TLEs are theory-specific",
-      "long-term orbit evolution and lifetime estimation"
-    ]
+    "complete": true,
+    "missing": []
   },
   "t2_m22_lambert_targeting": {
-    "covered": 0,
+    "covered": 10,
     "total": 10,
-    "complete": false,
-    "missing": [
-      "Lambert's problem statement and Lambert's theorem",
-      "solution methods: Gauss, universal variables / Battin, Izzo",
-      "multi-revolution solutions and their multiplicity",
-      "convergence and singular geometries near a 180 degree transfer",
-      "targeting and differential correction",
-      "the state transition matrix and its use in targeting",
-      "B-plane targeting",
-      "porkchop plots from repeated Lambert solutions",
-      "trajectory correction manoeuvres",
-      "linear covariance analysis of targeting errors"
-    ]
+    "complete": true,
+    "missing": []
   },
   "t2_m23_relative_motion_rpo": {
     "covered": 16,
@@ -5082,21 +5536,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t2_m24_edl": {
-    "covered": 0,
+    "covered": 11,
     "total": 18,
     "complete": false,
     "missing": [
-      "entry interface conditions",
-      "ballistic entry and the Allen-Eggers solution",
-      "peak deceleration and peak heating relations",
-      "ballistic coefficient and its effect on the trajectory",
-      "the entry corridor: undershoot and overshoot boundaries",
-      "skip entry",
-      "lifting entry and bank-angle modulation",
-      "Apollo entry guidance and its descendants",
-      "Shuttle drag-vs-energy entry guidance",
-      "aerothermodynamics: convective and radiative heating, Sutton-Graves",
-      "thermal protection systems, heat rate vs heat load",
       "hypersonic aerodynamics and the transonic transition",
       "propulsive descent: entry burn, aerodynamic guidance, landing burn",
       "divert capability and the landing ellipse",
@@ -5209,26 +5652,16 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t5_m42_trajectory_optimization": {
-    "covered": 16,
+    "covered": 17,
     "total": 17,
-    "complete": false,
-    "missing": [
-      "Failure modes: infeasible restoration, unbounded multipliers, mesh-induced control ringing, badly posed terminal constraints"
-    ]
+    "complete": true,
+    "missing": []
   },
   "t5_m43_convex_guidance": {
-    "covered": 14,
+    "covered": 21,
     "total": 21,
-    "complete": false,
-    "missing": [
-      "The convergence ratio rho and the accept/reject/resize rule",
-      "Free-final-time formulation by time dilation, and the notation clash with the thrust slack",
-      "6-DoF powered descent with quaternion attitude inside the optimization",
-      "State-triggered constraints for logic in the loop, and compound STCs",
-      "GuSTO and the broader sequential convex programming convergence theory",
-      "Real-time implementation: solver code generation, iteration bounds, warm starting, and fixed-point considerations",
-      "How all of this maps onto a Falcon 9 entry burn / aero phase / landing burn architecture, and onto Starship landing"
-    ]
+    "complete": true,
+    "missing": []
   },
   "t6_m44_realtime_embedded": {
     "covered": 21,
@@ -5243,15 +5676,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t6_m46_6dof_simulation": {
-    "covered": 14,
+    "covered": 18,
     "total": 18,
-    "complete": false,
-    "missing": [
-      "Regression testing and golden-file comparison; what to do when a legitimate model improvement breaks every golden file",
-      "Determinism and reproducibility: seeded random number streams, per-case seeds, and bit-exact replay of a single case out of a campaign",
-      "Performance: vectorisation, parallelism over cases rather than within a case, and why Monte Carlo runs on a cluster",
-      "Configuration management of the sim: models, parameters and scenarios versioned separately from the code"
-    ]
+    "complete": true,
+    "missing": []
   },
   "t6_m47_vv_montecarlo": {
     "covered": 20,
@@ -5278,25 +5706,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t7_m49_interview_prep": {
-    "covered": 0,
+    "covered": 14,
     "total": 14,
-    "complete": false,
-    "missing": [
-      "The project presentation: choosing five topics, building a 10 to 20 minute talk for each, and rehearsing the defence rather than the delivery",
-      "Answering \"what would you do differently\" and \"what was the hardest bug\" without either arrogance or apology",
-      "Whiteboard derivations under time pressure: the rocket equation, rigid-body equations of motion under thrust, the Kalman filter update, proportional navigation, Euler equations, the Clohessy-Wiltshire equations",
-      "Deriving out loud: narrating assumptions, stating what you are about to do before doing it, and recovering visibly from an error",
-      "C++ coding rounds: the standard algorithmic problems plus embedded-flavoured ones — ring buffers, fixed-point arithmetic, bit manipulation, memory-constrained algorithms, no allocation in the hot path",
-      "Explaining a design decision in terms of a trade rather than a preference",
-      "Systems and architecture rounds: design a GNC flight software stack, a Monte Carlo pipeline, an FDIR scheme, a sensor suite for a given mission",
-      "Fermi estimation drills with vehicle numbers you should already know",
-      "Controls, estimation and dynamics rounds: the questions that recur, and the follow-ups that separate memorisation from understanding",
-      "Behavioural and STAR stories emphasising ownership, speed, and recovery from failure",
-      "Framing self-taught projects as engineering results with numbers: RMSE, margins, run counts, solve times, not adjectives",
-      "Resume and portfolio construction around artefacts that can be read: repositories, reports, plots",
-      "Work authorisation and export-control eligibility documentation, handled early rather than at offer stage",
-      "Adjacent entry roles — simulation, GNC software, site reliability for GNC infrastructure — as realistic vectors into the field"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_lnx_01_shell": {
     "covered": 0,

@@ -6,7 +6,7 @@ covers:
   - Staging and other discontinuous events; zero-crossing detection and bisection to the event time
 ---
 
-Every model built so far in this module changes smoothly: mass depletes continuously, the centre of mass migrates continuously, even a slosh mode's frequency drifts continuously over a burn. Staging does not. A stage separates, an engine cuts off, a parachute deploys, a fairing releases — at each of these, some part of the state or the equations of motion themselves changes discontinuously, at a time the simulation does not know in advance and has to find. This lesson is about finding that time precisely, and about why an integrator that simply steps past it produces an error unlike any this module has discussed so far — not a truncation error that shrinks with the step, but a fixed, case-dependent error that does not.
+Every model built so far in this module changes smoothly: mass depletes continuously, the centre of mass migrates continuously, even a slosh mode's frequency drifts continuously over a burn. Staging does not. A stage separates, an engine cuts off, a parachute deploys, a fairing releases — at each of these, some part of the state or the equations of motion themselves changes discontinuously, at a time the simulation does not know in advance and has to find. This lesson is about finding that time precisely, and about why an integrator that steps straight past it produces an error unlike any this module has discussed so far — not a truncation error that shrinks with the step, but a fixed, case-dependent error that does not.
 
 ## What an event is
 
@@ -57,9 +57,16 @@ Forty-odd iterations of bisection find the event to $4.1\times10^{-11}\,\mathrm{
 :::
 
 ::: example What grid quantisation actually costs
-Contrast bisection with the common shortcut of simply checking for the event at each fixed step and applying the discontinuity at the first grid point past it — "close enough for a step this small." Take the extra time the naive method spends still thrusting, at the post-depletion acceleration $F/m_{\text{dry}} = 800{,}000/4{,}000 = 200\,\mathrm{m/s^2}$, against the $-g_0$ it should have been coasting under:
+Contrast bisection with the common shortcut of only checking for the event at each fixed step and applying the discontinuity at the first grid point past it — "close enough for a step this small." Take the extra time the naive method spends still thrusting, at the post-depletion acceleration $F/m_{\text{dry}} = 800{,}000/4{,}000 = 200\,\mathrm{m/s^2}$, against the $-g_0$ it should have been coasting under:
 
 ```python
+import numpy as np
+
+g0, F, Isp = 9.80665, 800000.0, 320.0
+mdot = F/(Isp*g0)
+m_dry, m_prop0 = 4000.0, 25000.0
+t_burn_true = m_prop0/mdot
+
 print("naive fixed-step grid quantisation:")
 for dt in [0.5, 0.2, 0.1, 0.05]:
     t_detected = np.ceil(t_burn_true/dt)*dt
@@ -80,17 +87,17 @@ Watch a scalar event function $g(t)$ at every step; on a sign change, bisect the
 :::
 
 ::: warning "The step is already small, quantisation must be negligible"
-The example above shows quantisation error is bounded by roughly (acceleration change) $\times$ (step size), not by some fraction of it — there is no regime where it becomes automatically negligible just because the step feels small. Making it small enough by brute force means using a step far finer than accuracy alone would ever require, everywhere in the simulation, for the entire run, purely to protect against an error that bisection removes for the cost of a few extra function evaluations exactly when needed. The quantisation floor scales with the step size used for the *entire* simulation; bisection's cost scales only with how precisely you ask it to find one event.
+The example above shows quantisation error is bounded by roughly (acceleration change) $\times$ (step size), not by some fraction of it — there is no regime where it becomes automatically negligible on the strength of the step feeling small. Making it small enough by brute force means using a step far finer than accuracy alone would ever require, everywhere in the simulation, for the entire run, purely to protect against an error that bisection removes for the cost of a few extra function evaluations exactly when needed. The quantisation floor scales with the step size used for the *entire* simulation; bisection's cost scales only with how precisely you ask it to find one event.
 :::
 
 ::: warning Interpolating across the step instead of restarting
-Once a step has been taken that overshoots an event, it is tempting to use the step's own dense-output interpolant to estimate the state at the event time, apply the discontinuity there, and simply carry on from the next nominal grid point — skipping a genuine restart. This can be a reasonable way to *locate* the crossing more cheaply than repeated bisection, but the interpolated trajectory up to that point is only trustworthy if the whole step it came from was integrated under one consistent set of dynamics — which is exactly what does not hold once the true event lies inside that step. The safe version of this shortcut still requires stepping the integrator to the event exactly and restarting fresh from there; what it saves is re-deriving the crossing time from scratch, not the restart itself.
+Once a step has been taken that overshoots an event, it is tempting to use the step's own dense-output interpolant to estimate the state at the event time, apply the discontinuity there, and carry on from the next nominal grid point — skipping a genuine restart. This can be a reasonable way to *locate* the crossing more cheaply than repeated bisection, but the interpolated trajectory up to that point is only trustworthy if the whole step it came from was integrated under one consistent set of dynamics — which is exactly what does not hold once the true event lies inside that step. The safe version of this shortcut still requires stepping the integrator to the event exactly and restarting fresh from there; what it saves is re-deriving the crossing time from scratch, not the restart itself.
 :::
 
 ## Check yourself
 
 ::: check
-What specifically distinguishes an event's timing error from ordinary integrator truncation error, and why does simply shrinking the nominal step size not reliably fix it?
+What specifically distinguishes an event's timing error from ordinary integrator truncation error, and why does shrinking the nominal step size on its own not reliably fix it?
 :::
 
 ::: answer
@@ -98,7 +105,7 @@ Truncation error is a smooth, predictable function of step size — it shrinks b
 :::
 
 ::: check
-Why must the integrator be restarted cleanly after an event, rather than simply continuing with its normal step sequence once the discontinuity has been applied?
+Why must the integrator be restarted cleanly after an event, rather than continuing with its normal step sequence once the discontinuity has been applied?
 :::
 
 ::: answer
@@ -110,7 +117,7 @@ The bisection example converged to an event time accurate to about $4\times10^{-
 :::
 
 ::: answer
-The precision itself costs very little — a few extra evaluations of a cheap scalar function — so there is little reason not to take it, but the *point* of bisection is not that this exact tolerance is required; it is that the achievable error is driven down to a level where it is negligible compared to every other error source in the simulation, removing event timing as a concern entirely. A tolerance of, say, a microsecond would very likely be just as adequate physically; the cost difference between a microsecond and $4\times10^{-11}\,\mathrm{s}$ is a handful of bisection iterations, not worth debating against the near-order-of-magnitude cost difference between quantisation at a coarse and a fine fixed step.
+The precision itself costs very little — a few extra evaluations of a cheap scalar function — so there is little reason not to take it, but the *point* of bisection is not that this exact tolerance is required; it is that the achievable error is driven down to a level where it is negligible compared to every other error source in the simulation, removing event timing as a concern entirely. A tolerance of, say, a microsecond would very likely be equally adequate physically; the cost difference between a microsecond and $4\times10^{-11}\,\mathrm{s}$ is a handful of bisection iterations, not worth debating against the near-order-of-magnitude cost difference between quantisation at a coarse and a fine fixed step.
 :::
 
 ::: check

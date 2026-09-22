@@ -18,38 +18,39 @@ Take the exact quaternion kinematics this module's frame-discipline lesson verif
 ```python
 import numpy as np
 
-def quat_mult(q, p):
-    q0,q1,q2,q3 = q; p0,p1,p2,p3 = p
-    return np.array([
-        q0*p0-q1*p1-q2*p2-q3*p3, q0*p1+q1*p0+q2*p3-q3*p2,
-        q0*p2-q1*p3+q2*p0+q3*p1, q0*p3+q1*p2-q2*p1+q3*p0,
-    ], dtype=q.dtype)
-
-def rk4_step(q, w, h):
-    def qdot(q):
-        return 0.5*quat_mult(q, np.array([0.0, *w], dtype=q.dtype))
-    k1 = qdot(q); k2 = qdot(q + h*0.5*k1)
-    k3 = qdot(q + h*0.5*k2); k4 = qdot(q + h*k3)
-    q_new = q + (h/6.0)*(k1 + 2*k2 + 2*k3 + k4)
-    return (q_new/np.linalg.norm(q_new)).astype(q.dtype)
-
 def run(dtype, n_steps, h=0.01):
-    w = np.array([0.0, 0.0, 2.0], dtype=dtype)
-    q = np.array([1.0, 0.0, 0.0, 0.0], dtype=dtype)
+    wx, wy, wz = dtype(0.0), dtype(0.0), dtype(2.0)
+    q0, q1, q2, q3 = dtype(1.0), dtype(0.0), dtype(0.0), dtype(0.0)
+    half, hh = dtype(0.5), dtype(h)
     for _ in range(n_steps):
-        q = rk4_step(q, w, dtype(h))
-    return q
+        def qdot(q0, q1, q2, q3):
+            return (half*(-q1*wx - q2*wy - q3*wz), half*(q0*wx + q2*wz - q3*wy),
+                    half*(q0*wy - q1*wz + q3*wx), half*(q0*wz + q1*wy - q2*wx))
+        k1 = qdot(q0, q1, q2, q3)
+        a = (q0+hh*half*k1[0], q1+hh*half*k1[1], q2+hh*half*k1[2], q3+hh*half*k1[3])
+        k2 = qdot(*a)
+        a = (q0+hh*half*k2[0], q1+hh*half*k2[1], q2+hh*half*k2[2], q3+hh*half*k2[3])
+        k3 = qdot(*a)
+        a = (q0+hh*k3[0], q1+hh*k3[1], q2+hh*k3[2], q3+hh*k3[3])
+        k4 = qdot(*a)
+        q0 = q0 + hh/dtype(6.0)*(k1[0]+2*k2[0]+2*k3[0]+k4[0])
+        q1 = q1 + hh/dtype(6.0)*(k1[1]+2*k2[1]+2*k3[1]+k4[1])
+        q2 = q2 + hh/dtype(6.0)*(k1[2]+2*k2[2]+2*k3[2]+k4[2])
+        q3 = q3 + hh/dtype(6.0)*(k1[3]+2*k2[3]+2*k3[3]+k4[3])
+        norm = (q0*q0+q1*q1+q2*q2+q3*q3)**dtype(0.5)     # renormalise every step, as lesson 4 taught
+        q0, q1, q2, q3 = q0/norm, q1/norm, q2/norm, q3/norm
+    return np.array([q0, q1, q2, q3], dtype=np.float64)
 
-for n_steps, label in [(2000, "20 s"), (2000000, "20,000 s (5.6 h)")]:
+for n_steps, label in [(2000, "20 s"), (500000, "5,000 s (1.39 h)")]:
     q64 = run(np.float64, n_steps)
-    q32 = run(np.float32, n_steps).astype(np.float64)
+    q32 = run(np.float32, n_steps)
     angle = np.degrees(2*np.arccos(np.clip(abs(np.dot(q64, q32)), -1, 1)))
     print(f"{label}: attitude difference between float64 and float32 = {angle:.4f} deg")
 # 20 s: attitude difference between float64 and float32 = 0.0000 deg
-# 20,000 s (5.6 h): attitude difference between float64 and float32 = 0.1006 deg
+# 5,000 s (1.39 h): attitude difference between float64 and float32 = 0.0392 deg
 ```
 
-After 20 seconds the two are indistinguishable. After 5.6 hours of continuous operation, the two attitudes have drifted $0.1006^\circ$ apart — not because either one is wrong, but because every single rounding decision along the way was made slightly differently, and those tiny differences accumulate into a visible one given enough time. This is the *best case*: identical code, identical math, differing only in how many bits represent each number. A genuinely independent reimplementation — different variable ordering, different library calls for trigonometric functions, different compiler optimisations reordering floating-point operations — has no reason to do better, and every reason to diverge faster.
+After 20 seconds the two are indistinguishable. After 1.39 hours of continuous operation, the two attitudes have drifted $0.0392^\circ$ apart — not because either one is wrong, but because every single rounding decision along the way was made slightly differently, and those tiny differences accumulate into a visible one given enough time. This is the *best case*: identical code, identical math, differing only in how many bits represent each number. A genuinely independent reimplementation — different variable ordering, different library calls for trigonometric functions, different compiler optimisations reordering floating-point operations — has no reason to do better, and every reason to diverge faster.
 :::
 
 ## When "equivalent" quietly stops being true
@@ -89,7 +90,7 @@ print("days of continuous 5000 RPM spin to reach this angle:", big/w/86400)
 # days of continuous 5000 RPM spin to reach this angle: 2.21048534800921
 ```
 
-Every ordinary-sized test angle agrees exactly. Feed both functions an angle of $10^8\,\mathrm{rad}$ — the kind of number a reaction wheel's *cumulative* rotation counter reaches after about $2.2$ days of continuous spin at $5{,}000\,\mathrm{RPM}$, a completely unremarkable amount of time for a wheel on an operating spacecraft — and the two functions disagree by $0.186^\circ$. Neither implementation has a logic bug in the ordinary sense; both are internally consistent and each is a defensible way to wrap an angle. They simply stop agreeing once the input magnitude is large enough that floating-point precision loss in representing the raw angle at all becomes the dominant effect, and nobody testing with angles of a few radians would ever see it. A simulation using `wrap_modulo` while the real flight software uses `wrap_loop`, or vice versa, is testing a controller against inputs that its actual onboard counterpart will not agree with once the mission has run long enough — silently, and only once the vehicle has been flying for days.
+Every ordinary-sized test angle agrees exactly. Feed both functions an angle of $10^8\,\mathrm{rad}$ — the kind of number a reaction wheel's *cumulative* rotation counter reaches after about $2.2$ days of continuous spin at $5{,}000\,\mathrm{RPM}$, a completely unremarkable amount of time for a wheel on an operating spacecraft — and the two functions disagree by $0.186^\circ$. Neither implementation has a logic bug in the ordinary sense; both are internally consistent and each is a defensible way to wrap an angle. They stop agreeing once the input magnitude is large enough that floating-point precision loss in representing the raw angle at all becomes the dominant effect, and nobody testing with angles of a few radians would ever see it. A simulation using `wrap_modulo` while the real flight software uses `wrap_loop`, or vice versa, is testing a controller against inputs that its actual onboard counterpart will not agree with once the mission has run long enough — silently, and only once the vehicle has been flying for days.
 :::
 
 ## The boundary, and what actually crosses it
@@ -113,11 +114,11 @@ Early in a programme, before flight code exists or compiles cleanly into a simul
 ## Check yourself
 
 ::: check
-The float32-versus-float64 quaternion example showed no measurable difference at 20 seconds but a $0.1^\circ$ difference at 5.6 hours. Does this mean the float32 integration is "wrong" and the float64 one "right"?
+The float32-versus-float64 quaternion example showed no measurable difference at 20 seconds but a $0.0392^\circ$ difference at 1.39 hours. Does this mean the float32 integration is "wrong" and the float64 one "right"?
 :::
 
 ::: answer
-Neither is simply wrong. Both are internally consistent numerical solutions to the same equation, each accurate to the precision it carries; the divergence is the accumulated effect of each one rounding slightly differently at every step, not an error in either one individually. The point is not that one answer is correct and the other is not — it is that two implementations that are "the same algorithm" are not the same program, and will disagree measurably given enough time, even in the total absence of any logic difference between them.
+Neither one is wrong. Both are internally consistent numerical solutions to the same equation, each accurate to the precision it carries; the divergence is the accumulated effect of each one rounding slightly differently at every step, not an error in either one individually. The point is not that one answer is correct and the other is not — it is that two implementations that are "the same algorithm" are not the same program, and will disagree measurably given enough time, even in the total absence of any logic difference between them.
 :::
 
 ::: check
@@ -125,7 +126,7 @@ Why did the two angle-wrapping functions in the second example agree exactly for
 :::
 
 ::: answer
-For small angles, both the modulo operation and the repeated-subtraction loop reduce the input in a small number of well-conditioned operations, and floating-point rounding is negligible either way. At $10^8\,\mathrm{rad}$, the raw input itself can only be represented with limited precision relative to its own huge magnitude, and the two methods lose that precision differently as they reduce the angle — one in a single modulo operation, the other through roughly sixteen million individual subtractions, each with its own tiny rounding step. Both losses are real; they simply do not cancel the same way.
+For small angles, both the modulo operation and the repeated-subtraction loop reduce the input in a small number of well-conditioned operations, and floating-point rounding is negligible either way. At $10^8\,\mathrm{rad}$, the raw input itself can only be represented with limited precision relative to its own huge magnitude, and the two methods lose that precision differently as they reduce the angle — one in a single modulo operation, the other through roughly sixteen million individual subtractions, each with its own tiny rounding step. Both losses are real; they do not cancel the same way.
 :::
 
 ::: check
@@ -164,7 +165,7 @@ A harness mistake is local and structural — it corrupts the data crossing a we
 
 | Item | Statement |
 | --- | --- |
-| The risk of re-implementation | Two codebases for "the same" algorithm can diverge from floating-point width alone, with no logic error anywhere — measured $0.1^\circ$ after 5.6 hours from `float64` vs `float32` |
+| The risk of re-implementation | Two codebases for "the same" algorithm can diverge from floating-point width alone, with no logic error anywhere — measured $0.0392^\circ$ after 1.39 hours from `float64` vs `float32` |
 | "Equivalent" is not permanent | Two defensible implementations of the same function can agree on every ordinary test case and disagree substantially on a realistic large input — measured $0.186^\circ$ at an angle a reaction wheel's counter reaches within $2.2$ days |
 | What crosses the boundary | The actual compiled flight binary, called through a thin, explicitly-reviewed harness that mimics the real onboard data interface |
 | What is allowed to be new | Only the harness — never the algorithm |

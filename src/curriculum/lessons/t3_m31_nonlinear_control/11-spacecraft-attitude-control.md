@@ -41,7 +41,7 @@ Integrating at $\Delta t = 2\,\mathrm{ms}$:
 | --- | --- | --- | --- |
 | $\mathbf{q}_{\text{short}}$ | any | $\to 1$ | $5.000^\circ$ total |
 | $\mathbf{q}_{\text{long}}$ | $0$ | $-0.99905$ | $0^\circ$ |
-| $\mathbf{q}_{\text{long}}$ | $30\,\mathrm{s}$ | $-0.60712$ | $100.237^\circ$ |
+| $\mathbf{q}_{\text{long}}$ | $30\,\mathrm{s}$ | $-0.60713$ | $100.236^\circ$ |
 | $\mathbf{q}_{\text{long}}$ | $60\,\mathrm{s}$ | $0.99854$ | $348.802^\circ$ |
 | $\mathbf{q}_{\text{long}}$ | $150\,\mathrm{s}$ | $1.00000000$ | $355.000^\circ$ |
 

@@ -74,11 +74,11 @@ The $100\,\mathrm{N}$ solution is a roughly two-orbit trajectory; the $3\,\mathr
 :::
 
 ::: check
-Why is checking whether a smaller step size fixes a failed continuation step a genuine diagnostic, rather than just a thing to try?
+Why is checking whether a smaller step size fixes a failed continuation step a genuine diagnostic, rather than merely one more thing to try?
 :::
 
 ::: answer
-It distinguishes two structurally different failure causes that would otherwise look identical (a non-converged solve at some parameter value). If the previous solution was simply too far from the next problem's basin — an ordinary step-size issue — inserting an intermediate parameter value and re-solving in two smaller steps should succeed, because each smaller step stays inside the local-convergence regime the larger one overshot. If the failure is instead caused by a bifurcation — the optimal trajectory's qualitative structure genuinely changing at that point in the parameter family — no amount of step refinement helps, because there is no continuous path connecting the two sides for a smaller step to trace; the solve keeps failing (or converges to a solution that is discontinuously different in character) no matter how finely the approach is subdivided, and that persistence under refinement is the signature that distinguishes a real structural break from an ordinary too-large step.
+It distinguishes two structurally different failure causes that would otherwise look identical (a non-converged solve at some parameter value). If the previous solution was merely too far from the next problem's basin — an ordinary step-size issue — inserting an intermediate parameter value and re-solving in two smaller steps should succeed, because each smaller step stays inside the local-convergence regime the larger one overshot. If the failure is instead caused by a bifurcation — the optimal trajectory's qualitative structure genuinely changing at that point in the parameter family — no amount of step refinement helps, because there is no continuous path connecting the two sides for a smaller step to trace; the solve keeps failing (or converges to a solution that is discontinuously different in character) no matter how finely the approach is subdivided, and that persistence under refinement is the signature that distinguishes a real structural break from an ordinary too-large step.
 :::
 
 ## Summary

@@ -77,7 +77,7 @@ $$
 \Delta\alpha \approx \arctan\!\left(\frac{V_{\text{gust}}}{V_{\text{vehicle}}}\right) = \arctan\!\left(\frac{9.14}{300}\right) = 1.745^\circ .
 $$
 
-At the altitude and speed where dynamic pressure $q = \tfrac12\rho v^2$ is largest, a small $\Delta\alpha$ produces the largest possible aerodynamic side load the Atmospheric Flight module's force equations can generate — which is exactly why this gust is specified to be encountered at max-Q in the requirements, not at an arbitrary point in the flight. A gust of the same $9.14\,\mathrm{m/s}$ encountered at low dynamic pressure, just after liftoff or high in the thinning atmosphere, produces the same $\Delta\alpha$ but a much smaller load, because $q$ is what turns an angle of attack into a force.
+At the altitude and speed where dynamic pressure $q = \tfrac12\rho v^2$ is largest, a small $\Delta\alpha$ produces the largest possible aerodynamic side load the Atmospheric Flight module's force equations can generate — which is exactly why this gust is specified to be encountered at max-Q in the requirements, not at an arbitrary point in the flight. A gust of the same $9.14\,\mathrm{m/s}$ encountered at low dynamic pressure, soon after liftoff or high in the thinning atmosphere, produces the same $\Delta\alpha$ but a much smaller load, because $q$ is what turns an angle of attack into a force.
 :::
 
 A full stochastic turbulence model — the Dryden or von Kármán spectra, which describe wind as a filtered random process with a specified power spectral density rather than a single deterministic pulse — belongs in the same box and is what a Monte Carlo dispersion campaign draws a different realisation of on every case; the deterministic gust above is the worst-case design point, the stochastic model is what a statistical loads or controllability assessment needs instead.
@@ -158,7 +158,7 @@ Aerodynamic load scales with dynamic pressure $q = \tfrac12\rho v^2$ as well as 
 :::
 
 ::: check
-Why does solar radiation pressure modelling require the same ephemeris data that third-body gravitational perturbation needs, beyond simply knowing the Sun is "somewhere up there"?
+Why does solar radiation pressure modelling require the same ephemeris data that third-body gravitational perturbation needs, beyond knowing the Sun is "somewhere up there"?
 :::
 
 ::: answer
@@ -170,7 +170,7 @@ A dipole model of Earth's magnetic field is judged adequate for a disturbance-to
 :::
 
 ::: answer
-A disturbance-torque budget needs the field's order of magnitude, to a factor of two or so, to bound how much control authority the actuators must provide against it over an orbit — the dipole is accurate enough for that. A magnetometer-based filter is trying to extract attitude information from the field's fine structure at the vehicle's specific position, and the dipole simply does not contain that structure; using it would mean feeding the filter a field the real magnetometer will never actually measure, understating the filter's real error.
+A disturbance-torque budget needs the field's order of magnitude, to a factor of two or so, to bound how much control authority the actuators must provide against it over an orbit — the dipole is accurate enough for that. A magnetometer-based filter is trying to extract attitude information from the field's fine structure at the vehicle's specific position, and the dipole does not contain that structure at all; using it would mean feeding the filter a field the real magnetometer will never actually measure, understating the filter's real error.
 :::
 
 ::: check

@@ -83,7 +83,7 @@ Why does folding a Bolza cost into pure Mayer form (the first lesson of this mod
 :::
 
 ::: answer
-On paper, $\phi + \int L\,dt$ and an augmented $\tilde\phi$ are just two notations for the same number, and nothing forces a choice. Inside a transcription, the running cost has to be *evaluated* by some rule, and if it is not folded into a state, it needs a separate quadrature scheme — its own set of weights, possibly its own consistency questions — bolted onto a program that already has one quadrature scheme built into the defects. Augmenting the cost into a state means the objective is just $\tilde\phi(\mathbf{x}_N)$, a plain function of the last node, integrated by the exact same defects as every other state, with no second scheme to keep consistent with the first — a direct, practical payoff for a decision that looked like a formality when it was first introduced.
+On paper, $\phi + \int L\,dt$ and an augmented $\tilde\phi$ are two notations for the same number, and nothing forces a choice. Inside a transcription, the running cost has to be *evaluated* by some rule, and if it is not folded into a state, it needs a separate quadrature scheme — its own set of weights, possibly its own consistency questions — bolted onto a program that already has one quadrature scheme built into the defects. Augmenting the cost into a state means the objective is $\tilde\phi(\mathbf{x}_N)$ alone, a plain function of the last node, integrated by the exact same defects as every other state, with no second scheme to keep consistent with the first — a direct, practical payoff for a decision that looked like a formality when it was first introduced.
 :::
 
 ::: check

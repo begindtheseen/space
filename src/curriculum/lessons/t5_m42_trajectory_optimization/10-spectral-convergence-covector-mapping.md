@@ -48,7 +48,7 @@ Every non-smooth feature a real trajectory can have — a thrust switching on or
 
 ## The covector mapping theorem
 
-A direct transcription's Lagrange multipliers are not decoration — the optimizer computing $\mathbf{z}^\star$ produces them as a side effect of satisfying the KKT conditions of the NLP, the same finite-dimensional theory the optimization module covers for any constrained problem. Multipliers exist on the defect constraints, the boundary constraints, everything. The **covector mapping theorem** says that, for the right node family and with the right scaling, those multipliers converge to the continuous costate, sampled at the corresponding nodes — turning them from an implementation detail into a check against the whole Pontryagin apparatus of the early lessons, computed *after* a direct solve rather than guessed *before* an indirect one. The mapping is not simply "the multiplier is the costate" — the precise scaling involves the quadrature weights associated with the node family, which is exactly why the theorem needed a proof rather than being definitional — but the practical content is that the two objects, derived from completely different theories, land on the same numbers.
+A direct transcription's Lagrange multipliers are not decoration — the optimizer computing $\mathbf{z}^\star$ produces them as a side effect of satisfying the KKT conditions of the NLP, the same finite-dimensional theory the optimization module covers for any constrained problem. Multipliers exist on the defect constraints, the boundary constraints, everything. The **covector mapping theorem** says that, for the right node family and with the right scaling, those multipliers converge to the continuous costate, sampled at the corresponding nodes — turning them from an implementation detail into a check against the whole Pontryagin apparatus of the early lessons, computed *after* a direct solve rather than guessed *before* an indirect one. The mapping is not the bare identity "the multiplier is the costate" — the precise scaling involves the quadrature weights associated with the node family, which is exactly why the theorem needed a proof rather than being definitional — but the practical content is that the two objects, derived from completely different theories, land on the same numbers.
 
 ::: example Checking a direct solve against a shooting-derived costate
 The minimum-time orbit transfer solved by Hermite-Simpson collocation two lessons ago has, on the NLP, a multiplier on its initial-condition constraint $r_0 = 7000\,\mathrm{km}$ — and standard nonlinear-programming sensitivity theory says that multiplier equals $\partial J^\star_{\text{NLP}}/\partial r_0$, the rate at which the optimal cost changes if the boundary data itself moves, exactly the shadow-price relationship derived by hand for the costate in an earlier lesson. Rather than dig the multiplier out of the solver's internals, compute that sensitivity the direct way: re-solve the identical collocation NLP with $r_0$ perturbed by $\pm10^{-4}$ (nondimensional units) and take the central difference of the optimal flight time,
@@ -89,7 +89,7 @@ A staging event is a genuine discontinuity — mass, and usually the achievable 
 :::
 
 ::: check
-Why is "the multiplier converges to the costate" not simply true by definition, but a theorem that needed proving?
+Why is "the multiplier converges to the costate" not true by definition, but a theorem that needed proving?
 :::
 
 ::: answer

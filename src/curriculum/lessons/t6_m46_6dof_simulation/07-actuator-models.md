@@ -52,11 +52,11 @@ This is exactly why rate-limit-induced oscillation is the disturbance "nobody pr
 
 ## Thrust curves and start-up transients
 
-A thruster does not switch instantly from zero thrust to full thrust. Solid motors have an ignition transient set by propellant grain geometry, burning to a shape-determined curve over the burn; liquid engines have a start-up transient set by valve opening, ignition sequencing and chamber pressure build-up, typically tens to a few hundred milliseconds before reaching rated thrust, and a comparable tail-off at shutdown as residual propellant burns down. A simulation that switches thrust on and off as a step function gets staging events and abort timing wrong by exactly the duration of that transient, and gets the *loads* wrong more severely still, because the transient's shape — not just its duration — determines the peak rate of change of thrust the structure and the control loop actually see. The right source for this curve is measured hot-fire data, not an assumed shape; where no data exists yet, a smooth transition (a raised-cosine or a first-order lag with a measured or bounded time constant) is a defensible placeholder, clearly labelled as one, rather than a silent step.
+A thruster does not switch instantly from zero thrust to full thrust. Solid motors have an ignition transient set by propellant grain geometry, burning to a shape-determined curve over the burn; liquid engines have a start-up transient set by valve opening, ignition sequencing and chamber pressure build-up, typically tens to a few hundred milliseconds before reaching rated thrust, and a comparable tail-off at shutdown as residual propellant burns down. A simulation that switches thrust on and off as a step function gets staging events and abort timing wrong by exactly the duration of that transient, and gets the *loads* wrong more severely still, because the transient's shape — not only its duration — determines the peak rate of change of thrust the structure and the control loop actually see. The right source for this curve is measured hot-fire data, not an assumed shape; where no data exists yet, a smooth transition (a raised-cosine or a first-order lag with a measured or bounded time constant) is a defensible placeholder, clearly labelled as one, rather than a silent step.
 
 ## Reaction wheel friction and the small-command dead zone
 
-A reaction wheel's bearings resist motion with both a roughly rate-independent **Coulomb** component and a rate-proportional **viscous** component: $\tau_{\text{actual}} = \tau_{\text{cmd}} - \tau_{\text{coulomb}}\,\mathrm{sign}(\omega_{\text{wheel}}) - b_{\text{visc}}\,\omega_{\text{wheel}}$. The Coulomb term matters most for small commands: a wheel with $\tau_{\text{coulomb}} = 1.0\,\mathrm{mN\,m}$ commanded to produce $0.5\,\mathrm{mN\,m}$ — half the friction floor — delivers no net change in wheel speed at all until the command exceeds the floor, because static friction simply holds against anything smaller. A fine-pointing controller issuing a stream of small corrections below this threshold is not gently trimming the attitude; it is doing nothing, silently, every single tick, and the attitude error it thinks it is correcting persists unchanged until a large enough command — or an external disturbance — breaks the wheel loose.
+A reaction wheel's bearings resist motion with both a roughly rate-independent **Coulomb** component and a rate-proportional **viscous** component: $\tau_{\text{actual}} = \tau_{\text{cmd}} - \tau_{\text{coulomb}}\,\mathrm{sign}(\omega_{\text{wheel}}) - b_{\text{visc}}\,\omega_{\text{wheel}}$. The Coulomb term matters most for small commands: a wheel with $\tau_{\text{coulomb}} = 1.0\,\mathrm{mN\,m}$ commanded to produce $0.5\,\mathrm{mN\,m}$ — half the friction floor — delivers no net change in wheel speed at all until the command exceeds the floor, because static friction holds firm against anything smaller. A fine-pointing controller issuing a stream of small corrections below this threshold is not gently trimming the attitude; it is doing nothing, silently, every single tick, and the attitude error it thinks it is correcting persists unchanged until a large enough command — or an external disturbance — breaks the wheel loose.
 
 ::: example A thruster that cannot deliver the correction it is asked for
 A small monopropellant thruster rated at $22\,\mathrm{N}$ has a minimum controllable valve-open time of $20\,\mathrm{ms}$ — shorter pulses are not reliably repeatable, so the minimum impulse bit is
@@ -100,7 +100,7 @@ Why does a rate limit escape detection by a standard linear frequency-domain sta
 :::
 
 ::: answer
-A deflection limit is a fixed bound independent of how fast anything is moving, so its effect — the command simply cannot exceed it — is easy to state and check directly. A rate limit's effect depends on both the amplitude and the frequency of the command through it, and a linear transfer function has no amplitude dependence at all: the same Bode plot and phase margin apply regardless of signal size. The rate limit is invisible to that analysis specifically because the analysis has no concept of "how big" a signal is, only "what frequency."
+A deflection limit is a fixed bound independent of how fast anything is moving, so its effect — the command cannot exceed it, full stop — is easy to state and check directly. A rate limit's effect depends on both the amplitude and the frequency of the command through it, and a linear transfer function has no amplitude dependence at all: the same Bode plot and phase margin apply regardless of signal size. The rate limit is invisible to that analysis specifically because the analysis has no concept of "how big" a signal is, only "what frequency."
 :::
 
 ::: check
@@ -112,15 +112,15 @@ $\rho = R/(A\omega)$, and halving — here, thirding — the amplitude $A$ tripl
 :::
 
 ::: check
-A reaction wheel has a Coulomb friction floor of $1.0\,\mathrm{mN\,m}$. A fine-pointing controller issues a steady stream of $0.3\,\mathrm{mN\,m}$ corrections. What does the wheel actually do, and why is this worse than the controller simply being "a bit slow" to correct the error?
+A reaction wheel has a Coulomb friction floor of $1.0\,\mathrm{mN\,m}$. A fine-pointing controller issues a steady stream of $0.3\,\mathrm{mN\,m}$ corrections. What does the wheel actually do, and why is this worse than the controller merely being "a bit slow" to correct the error?
 :::
 
 ::: answer
-The wheel does nothing: $0.3\,\mathrm{mN\,m}$ is below the $1.0\,\mathrm{mN\,m}$ static friction floor, so no net torque is delivered and the wheel's speed does not change. This is not slowness — a slow but nonzero response still eventually corrects the error. Here the error simply persists, unchanged, for as long as the commanded correction stays below the floor, which a controller unaware of the dead zone has no way to detect from its own commanded value alone.
+The wheel does nothing: $0.3\,\mathrm{mN\,m}$ is below the $1.0\,\mathrm{mN\,m}$ static friction floor, so no net torque is delivered and the wheel's speed does not change. This is not slowness — a slow but nonzero response still eventually corrects the error. Here the error persists unchanged for as long as the commanded correction stays below the floor, which a controller unaware of the dead zone has no way to detect from its own commanded value alone.
 :::
 
 ::: check
-Why does a thruster's minimum impulse bit constitute a "quantisation floor on the output side," structurally similar to a sensor's ADC quantisation, rather than just being a slightly less precise actuator?
+Why does a thruster's minimum impulse bit constitute a "quantisation floor on the output side," structurally similar to a sensor's ADC quantisation, rather than being, on its own, a slightly less precise actuator?
 :::
 
 ::: answer

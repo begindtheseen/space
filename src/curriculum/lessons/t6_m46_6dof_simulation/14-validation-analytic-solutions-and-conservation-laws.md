@@ -102,7 +102,7 @@ for label, w0, axis in [("minor (I1)", np.array([0.10, eps, eps]), 0),
     print(f"spin about {label:18s} axis: transverse rate {start:.1e} -> peak {peak:.4e} rad/s "
           f"(x{peak/start:.1f})   H rel dev over 600 s: {abs(Hf-H0)/H0:.2e}")
 # spin about minor (I1)         axis: transverse rate 1.4e-04 -> peak 2.1344e-04 rad/s (x1.5)   H rel dev over 600 s: 1.22e-14
-# spin about intermediate (I2)  axis: transverse rate 1.4e-04 -> peak 1.0308e-01 rad/s (x728.9)  H rel dev over 600 s: 1.25e-14
+# spin about intermediate (I2)  axis: transverse rate 1.4e-04 -> peak 1.0308e-01 rad/s (x728.9)   H rel dev over 600 s: 1.25e-14
 # spin about major (I3)         axis: transverse rate 1.4e-04 -> peak 1.5100e-04 rad/s (x1.1)   H rel dev over 600 s: 2.46e-14
 ```
 
@@ -118,7 +118,7 @@ Conservation laws only ever confirm the code against itself. Confirming the *mod
 Every check so far would pass on a simulation with a serious defect, as long as the defect happened not to touch the specific quantity being checked. Here is a defect that does not stay hidden — but only if you know to look at the right thing.
 
 ::: example A frame bug the trajectory does not show, and the energy check that catches it in seconds
-Suppose gravity is computed correctly in body-frame components — exactly the quantity an accelerometer model legitimately needs, from this module's sensor-models lesson — and that value is then used directly as the inertial-frame gravity in the plant's translational equation of motion, with the rotation back into inertial frame simply missing. Exactly the "adjacent frame labels do not cancel" bug the frame-discipline lesson warned about, now embedded in a working simulation rather than a single line.
+Suppose gravity is computed correctly in body-frame components — exactly the quantity an accelerometer model legitimately needs, from this module's sensor-models lesson — and that value is then used directly as the inertial-frame gravity in the plant's translational equation of motion, with the rotation back into inertial frame left out entirely. Exactly the "adjacent frame labels do not cancel" bug the frame-discipline lesson warned about, now embedded in a working simulation rather than a single line.
 
 The vehicle is on the same $500\,\mathrm{km}$ orbit as before, additionally tumbling — a plausible derelict or coasting stage, its rotation unrelated to its orbit — at the same $\boldsymbol\omega_0 = (0.02, 0, 0.10)\,\mathrm{rad/s}$ used throughout this module.
 
@@ -184,13 +184,9 @@ print(f"        (true-physics run: {abs(eps_true-eps0)/abs(eps0):.2e})")
 # t=20 s: position deviation = 0.6957 km (0.0101% of orbital radius)
 # t=20 s: specific-energy relative deviation = 2.5428%
 #         (true-physics run: 3.19e-15)
-```
 
-Twenty seconds in, the buggy trajectory has drifted from the true one by $0.6957\,\mathrm{km}$ — one part in ten thousand of the orbital radius, invisible on any plot anyone would actually look at, and well within the kind of dispersion a real mission tolerates from a dozen mundane causes. The specific energy, meanwhile, has already moved by $2.54\%$ — against a true-physics baseline conserved to three parts in $10^{15}$. Nothing about the position or velocity trace would make anyone stop and look twice. The conservation check is already screaming.
-
-That still leaves one honest question: is $2.54\%$ truncation error from the integrator, or a real defect? The Numerical Methods module's answer is the scaling test — halve the step and see whether the drift shrinks the way truncation error must. Reusing the exact `run` function above:
-
-```python
+# is this truncation error or a real defect? halve the step and see whether the
+# drift shrinks the way truncation error must (the Numerical Methods module's test)
 for dt2 in [5.0, 2.5, 1.25]:
     _, eps_b2 = run(dt2, 50.0, buggy=True)
     print(f"  dt={dt2:5.2f} s   energy drift = {abs(eps_b2-eps0)/abs(eps0):.4%}")
@@ -199,7 +195,11 @@ for dt2 in [5.0, 2.5, 1.25]:
 # dt= 1.25 s   energy drift = 1.8453%
 ```
 
-A quartering of the step size changed the drift by barely $15\%$, nowhere near RK4's expected order-of-magnitude collapse. This is not truncation error behaving badly; it is a real force in the equations of motion that is not the force the physics actually has. Two lines of evidence — a conservation law violated by percent when the true physics holds it to $10^{-15}$, and a drift that refuses to shrink with the step — together prove there is a genuine bug, at a point in the simulation's life when the trajectory itself gave no reason to suspect one.
+Twenty seconds in, the buggy trajectory has drifted from the true one by $0.6957\,\mathrm{km}$ — one part in ten thousand of the orbital radius, invisible on any plot anyone would actually look at, and well within the kind of dispersion a real mission tolerates from a dozen mundane causes. The specific energy, meanwhile, has already moved by $2.54\%$ — against a true-physics baseline conserved to three parts in $10^{15}$. Nothing about the position or velocity trace would make anyone stop and look twice. The conservation check is already screaming.
+
+That still leaves one honest question: is $2.54\%$ truncation error from the integrator, or a real defect? The scaling test above answers it, the way the Numerical Methods module's own diagnostic works: quartering the step size (two halvings) should shrink genuine RK4 truncation error by a factor on the order of $4^5 \approx 1{,}000$.
+
+Quartering the step size instead changed the drift by barely $15\%$, nowhere near that order-of-magnitude collapse. This is not truncation error behaving badly; it is a real force in the equations of motion that is not the force the physics actually has. Two lines of evidence — a conservation law violated by percent when the true physics holds it to $10^{-15}$, and a drift that refuses to shrink with the step — together prove there is a genuine bug, at a point in the simulation's life when the trajectory itself gave no reason to suspect one.
 :::
 
 ::: key Verification vs validation
@@ -229,7 +229,7 @@ No. Energy conservation on a ballistic coast checks the translational equations 
 :::
 
 ::: check
-Why does the frame-bug example check specific energy rather than simply plotting position and velocity against a reference trajectory?
+Why does the frame-bug example check specific energy rather than only plotting position and velocity against a reference trajectory?
 :::
 
 ::: answer
@@ -261,7 +261,7 @@ Verify first: show the vacuum analytic case, energy and angular-momentum conserv
 :::
 
 ::: check
-Why does the text insist on stating the exact tolerance each verification check achieved ("$1.74\times10^{-12}$", "$5.64\times10^{-16}$") rather than simply reporting that each check "passed"?
+Why does the text insist on stating the exact tolerance each verification check achieved ("$1.74\times10^{-12}$", "$5.64\times10^{-16}$") rather than reporting only that each check "passed"?
 :::
 
 ::: answer

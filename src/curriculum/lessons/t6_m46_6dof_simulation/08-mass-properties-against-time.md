@@ -10,7 +10,7 @@ The Rigid Body Dynamics module's derivation of Euler's equations assumed a const
 
 ## Propellant depletion
 
-Mass flow follows directly from thrust and specific impulse, exactly the relationship propulsion sizing already uses: $\dot m = -F/(I_{sp}g_0)$, with $g_0 = 9.80665\,\mathrm{m/s^2}$ the standard reference used to define $I_{sp}$ in seconds regardless of where the vehicle actually is. Integrating a constant $\dot m$ gives $m(t) = m_0 - |\dot m|\,t$ for a constant-thrust burn; a throttling engine simply makes $\dot m(t)$ itself a function of the commanded thrust, evaluated the same way at every step. This is the simplest of the three quantities in this lesson, and it drives the other two.
+Mass flow follows directly from thrust and specific impulse, exactly the relationship propulsion sizing already uses: $\dot m = -F/(I_{sp}g_0)$, with $g_0 = 9.80665\,\mathrm{m/s^2}$ the standard reference used to define $I_{sp}$ in seconds regardless of where the vehicle actually is. Integrating a constant $\dot m$ gives $m(t) = m_0 - |\dot m|\,t$ for a constant-thrust burn; a throttling engine makes $\dot m(t)$ itself a function of the commanded thrust, evaluated the same way at every step. This is the simplest of the three quantities in this lesson, and it drives the other two.
 
 ## Centre of mass migration
 
@@ -61,7 +61,7 @@ Over the $98.07\,\mathrm{s}$ burn, the vehicle sheds $25{,}000\,\mathrm{kg}$, th
 
 ## Recomputing the inertia tensor, not rescaling it
 
-The inertia tensor Euler's equations need is the tensor *about the current centre of mass*, in body axes. Because the centre of mass moves, this is not a single tensor that shrinks in place — it has to be recomputed from scratch at every step: take each piece of the vehicle (propellant, treated for now as a rigid, frozen mass — lesson 9 removes exactly this assumption — plus dry structure, plus anything else with its own known inertia about its own centre of mass), apply the parallel axis theorem to shift each piece's contribution to the *current* vehicle centre of mass, and sum. A tensor computed once about the *initial* centre of mass, and simply scaled down as mass is lost, silently accumulates a parallel-axis error that grows with exactly the $0.862\,\mathrm{m}$ of migration the example above computed — the same kind of reference-point bookkeeping error the frame-discipline lesson warned about, now hiding in a scalar rather than a rotation.
+The inertia tensor Euler's equations need is the tensor *about the current centre of mass*, in body axes. Because the centre of mass moves, this is not a single tensor that shrinks in place — it has to be recomputed from scratch at every step: take each piece of the vehicle (propellant, treated for now as a rigid, frozen mass — lesson 9 removes exactly this assumption — plus dry structure, plus anything else with its own known inertia about its own centre of mass), apply the parallel axis theorem to shift each piece's contribution to the *current* vehicle centre of mass, and sum. A tensor computed once about the *initial* centre of mass, and merely scaled down as mass is lost, silently accumulates a parallel-axis error that grows with exactly the $0.862\,\mathrm{m}$ of migration the example above computed — the same kind of reference-point bookkeeping error the frame-discipline lesson warned about, now hiding in a scalar rather than a rotation.
 
 The full rotational equation of motion, as the Rigid Body Dynamics module noted without deriving it further, gains a term when $\mathbf{I}$ is not constant:
 
@@ -75,6 +75,23 @@ Whether $\dot{\mathbf{I}}\boldsymbol\omega$ is negligible next to $\mathbf{I}\do
 Using the finite difference of the inertia curve above at $t = 15\,\mathrm{s}$, and representative ascent values $\omega = 0.02\,\mathrm{rad/s}$, $\dot\omega = 0.001\,\mathrm{rad/s^2}$:
 
 ```python
+import numpy as np
+
+g0, F, Isp = 9.80665, 800000.0, 320.0
+mdot = F / (Isp * g0)
+m_dry, x_dry, I_dry_cm = 4000.0, 5.0, 12000.0
+m_prop0, x_bot, L_tank, r_tank = 25000.0, 2.0, 8.0, 1.5
+
+def state(t):                                       # exactly as in the example above
+    m_prop = max(m_prop0 - mdot*t, 0.0)
+    h = L_tank * (m_prop/m_prop0)
+    x_prop_cg = x_bot + h/2.0
+    m_total = m_dry + m_prop
+    x_cg = (m_dry*x_dry + m_prop*x_prop_cg) / m_total
+    I_prop = m_prop*(3*r_tank**2 + h**2)/12.0 + m_prop*(x_prop_cg - x_cg)**2
+    I_dry = I_dry_cm + m_dry*(x_dry - x_cg)**2
+    return m_total, x_cg, I_prop + I_dry
+
 dt = 0.01
 t_mid = 15.0
 Idot = (state(t_mid+dt)[2] - state(t_mid-dt)[2]) / (2*dt)
@@ -118,11 +135,11 @@ More significant. $|\mathbf{I}\dot{\boldsymbol\omega}|$ halves to about $52.7\,\
 :::
 
 ::: check
-A simulation computes the inertia tensor once at the start of a burn, about the centre of mass at that instant, and then simply multiplies every component by $m(t)/m(0)$ as propellant depletes, without recomputing the centre of mass or reapplying the parallel axis theorem. What specifically is wrong with this shortcut?
+A simulation computes the inertia tensor once at the start of a burn, about the centre of mass at that instant, and then multiplies every component by $m(t)/m(0)$ as propellant depletes, without recomputing the centre of mass or reapplying the parallel axis theorem. What specifically is wrong with this shortcut?
 :::
 
 ::: answer
-Scaling by the mass ratio only correctly captures the shrinking of each piece's own inertia if every piece's distance from the centre of mass stayed the same — but the centre of mass itself moves as the tank drains, so the correct parallel-axis distances for every remaining piece change continuously, not just their masses. The shortcut silently keeps using the burn-start centre of mass as the implicit reference, producing a tensor that is not about the vehicle's actual current centre of mass at any time after the first instant, and the error grows with exactly the centre-of-mass migration the example computed.
+Scaling by the mass ratio only correctly captures the shrinking of each piece's own inertia if every piece's distance from the centre of mass stayed the same — but the centre of mass itself moves as the tank drains, so the correct parallel-axis distances for every remaining piece change continuously, not only their masses. The shortcut silently keeps using the burn-start centre of mass as the implicit reference, producing a tensor that is not about the vehicle's actual current centre of mass at any time after the first instant, and the error grows with exactly the centre-of-mass migration the example computed.
 :::
 
 ::: check

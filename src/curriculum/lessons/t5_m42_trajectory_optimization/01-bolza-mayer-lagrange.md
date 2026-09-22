@@ -51,7 +51,7 @@ $$
 J = \phi\big(\mathbf{x}(t_f), t_f\big) + x_{n+1}(t_f) = \tilde\phi\big(\tilde{\mathbf{x}}(t_f), t_f\big), \qquad \tilde{\mathbf{x}} = \begin{pmatrix}\mathbf{x} \\ x_{n+1}\end{pmatrix},
 $$
 
-a pure Mayer cost on the augmented state $\tilde{\mathbf{x}} \in \mathbb{R}^{n+1}$. Nothing about the trajectory changes — $x_{n+1}(t)$ is just running fuel-spent, or accumulated squared control effort, or elapsed time, sitting alongside altitude and velocity as one more number the dynamics carry forward. The augmented dynamics $\tilde{\mathbf{f}} = (\mathbf{f}, L)$ are exactly as smooth as $\mathbf{f}$ and $L$ were.
+a pure Mayer cost on the augmented state $\tilde{\mathbf{x}} \in \mathbb{R}^{n+1}$. Nothing about the trajectory changes — $x_{n+1}(t)$ is running fuel-spent, or accumulated squared control effort, or elapsed time, sitting alongside altitude and velocity as one more number the dynamics carry forward. The augmented dynamics $\tilde{\mathbf{f}} = (\mathbf{f}, L)$ are exactly as smooth as $\mathbf{f}$ and $L$ were.
 
 This is not a bookkeeping curiosity. A numerical solver that transcribes the dynamics into defect constraints — the subject of several lessons ahead — already has machinery for integrating a state equation to whatever order its quadrature rule provides. Handing it a *running cost* as a second, separate quadrature (Simpson's rule for the cost, a different scheme for the dynamics, evaluated on a different mesh) is an invitation for the two to disagree. Handing it an *extra state* means the cost is integrated by the exact same defect constraints, to the exact same order, on the exact same mesh, as everything else. Every direct-transcription code either performs this augmentation internally or expects you to have done it, which is the practical reason Mayer form, not the Bolza form the problem started in, is what actually reaches the solver.
 
@@ -64,7 +64,7 @@ $$
 J_L = \frac{6000}{2206.50} \times 31.9063 = 86.7609\,\mathrm{kg}.
 $$
 
-Posed in Mayer form on the augmented mass state — which is just the ordinary rocket equation, $\dot m = -T/c$ integrated as a state rather than treated as a separate cost integral — the propellant used is $m(0) - m(\Delta t)$. Integrating $\dot m = -T_{\max}/c$ over the same burn gives $m(\Delta t) = m_0 - (T_{\max}/c)\Delta t = 1000 - 86.7609 = 913.2391\,\mathrm{kg}$, so
+Posed in Mayer form on the augmented mass state — which is the ordinary rocket equation, $\dot m = -T/c$ integrated as a state rather than treated as a separate cost integral — the propellant used is $m(0) - m(\Delta t)$. Integrating $\dot m = -T_{\max}/c$ over the same burn gives $m(\Delta t) = m_0 - (T_{\max}/c)\Delta t = 1000 - 86.7609 = 913.2391\,\mathrm{kg}$, so
 
 $$
 J_M = m(0) - m(\Delta t) = 1000 - 913.2391 = 86.7609\,\mathrm{kg}.
@@ -124,7 +124,7 @@ The Mars descent example gave $J_L = J_M = 86.7609\,\mathrm{kg}$ for the burn ph
 :::
 
 ::: answer
-No — they are the same computation performed two ways, not two independent calculations that happened to agree. Writing $\dot x_{n+1} = T/c$ with $x_{n+1}(0)=0$ gives $x_{n+1}(t_f) = \int_0^{t_f}(T/c)\,dt$ by definition, which is $J_L$. But $\dot m = -T/c$ is the *same* differential equation up to a sign, so $x_{n+1}(t) \equiv m(0) - m(t)$ for all $t$, exactly. $J_M = m(0)-m(t_f)$ is therefore identically $x_{n+1}(t_f) = J_L$; no cancellation of independently-computed quantities is involved, just one integral written in two notations.
+No — they are the same computation performed two ways, not two independent calculations that happened to agree. Writing $\dot x_{n+1} = T/c$ with $x_{n+1}(0)=0$ gives $x_{n+1}(t_f) = \int_0^{t_f}(T/c)\,dt$ by definition, which is $J_L$. But $\dot m = -T/c$ is the *same* differential equation up to a sign, so $x_{n+1}(t) \equiv m(0) - m(t)$ for all $t$, exactly. $J_M = m(0)-m(t_f)$ is therefore identically $x_{n+1}(t_f) = J_L$; no cancellation of independently-computed quantities is involved, only one integral written in two notations.
 :::
 
 ::: check

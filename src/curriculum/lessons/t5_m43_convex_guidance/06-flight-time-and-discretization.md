@@ -57,10 +57,21 @@ print(xstar, n, f(xstar))
 Twelve function evaluations narrow a $60$-unit bracket to within $0.5$ and land on $x^\star=26.99$ against the true minimiser $27$ — the discrepancy is exactly the requested tolerance, not solver error. The same twelve lines of search logic, with `f` replaced by a function that builds and solves the SOCP at a given $t_f$ and returns the optimal propellant, is the entire outer loop this lesson needs.
 :::
 
-::: example The real cost curve, from actual SOCP solves
-[[TF_TABLE]]
+::: example Running the search for real, and catching it being misled
+Build a small landing problem — $\mathbf{r}_0=(400,0,600)\,\mathrm{m}$, $\mathbf{v}_0=(-20,5,-30)\,\mathrm{m/s}$, $N=6$ steps, the same Mars-lander constants as every other worked example in this module — and solve it at a sequence of candidate $t_f$ values, checking the true terminal position-and-velocity residual at every single one rather than trusting the reported cost blindly:
 
-[[TF_DISCUSSION]]
+| $t_f\,(\mathrm{s})$ | propellant $(\mathrm{kg})$ | terminal residual | trust this point? |
+| --- | --- | --- | --- |
+| $16.0$ | $95.74$ | $\approx10^{-12}$ | yes |
+| $19.8$ | $118.22$ | $8.12$ | **no** |
+| $21.2$ | $102.60$ | $\approx10^{-16}$ | yes |
+| $22.1$ | $99.72$ | $\approx10^{-17}$ | yes |
+| $22.5$ | $99.47$ | $\approx10^{-21}$ | yes |
+| $23.6$ | $101.77$ | $\approx10^{-22}$ | yes |
+| $25.9$ | $108.03$ | $\approx10^{-24}$ | yes |
+| $32.0$ | $125.62$ | $\approx10^{-12}$ | yes |
+
+Run golden-section search over the bracket $[16,32]$ against this same cost function and it converges, honestly and correctly *given the numbers it was handed*, to $t_f^\star\approx22.5\,\mathrm{s}$ at a cost of $99.47\,\mathrm{kg}$ — a clean local minimum, every point supporting it well converged. But read the full table: $t_f=16.0\,\mathrm{s}$, itself fully converged with a trustworthy residual, costs only $95.74\,\mathrm{kg}$ — *lower* than the "minimum" the search reported. The search was not wrong about the shape it was shown; the one candidate at $t_f=19.8\,\mathrm{s}$ that might have revealed a second, deeper dip between $16$ and $21$ returned from a solve that had not actually converged (a terminal residual of $8.12$, orders of magnitude worse than every neighbouring point), and golden section had no way to know that number was not to be trusted. This is the previous warning made concrete: unimodality was assumed, one bad function evaluation was enough to hide a cheaper region entirely, and only checking the residual at every point — not just admiring the search's own convergence — caught it.
 :::
 
 ::: warning The inner solve's guarantees do not transfer to the outer search

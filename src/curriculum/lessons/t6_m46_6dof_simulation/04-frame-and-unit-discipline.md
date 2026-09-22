@@ -124,7 +124,7 @@ The magnitude here is tiny over 1,000 s of an idealised, constant-rate test. It 
 
 ## Unit discipline
 
-Frame errors hide in direction; unit errors hide in magnitude, and they are just as capable of producing a plausible-looking number, because a value that is off by a clean factor — a thousand for km versus m, $57.3$ for radians versus degrees, $4.448$ for pound-force versus newton — is still just a number, with no dimension attached to flag it as wrong. Carry SI units throughout the simulation's internal state, exactly as the rest of this curriculum has, and treat every boundary where a number enters or leaves that convention — a hardware interface specified in different units, a ground-supplied file, a legacy component's documentation — as a place a conversion must be written down explicitly and tested, never assumed.
+Frame errors hide in direction; unit errors hide in magnitude, and they are equally capable of producing a plausible-looking number, because a value that is off by a clean factor — a thousand for km versus m, $57.3$ for radians versus degrees, $4.448$ for pound-force versus newton — is still an ordinary-looking number, with no dimension attached to flag it as wrong. Carry SI units throughout the simulation's internal state, exactly as the rest of this curriculum has, and treat every boundary where a number enters or leaves that convention — a hardware interface specified in different units, a ground-supplied file, a legacy component's documentation — as a place a conversion must be written down explicitly and tested, never assumed.
 
 ::: example The unit bug that ended a Mars mission, reproduced in miniature
 A ground-supplied trajectory correction is specified as an impulse of $100\,\mathrm{lbf\cdot s}$ (pound-force-seconds) — a real unit pairing that shows up at the interface between a vendor's tooling and a metric flight system, and the specific pairing implicated in the loss of the Mars Climate Orbiter. If the receiving software's unit conversion is missing and it treats the number $100$ as newton-seconds directly:
@@ -199,7 +199,7 @@ The number was measured under an idealised, best-case assumption — a perfectly
 :::
 
 ::: check
-A vendor delivers a thruster's total impulse rating in pound-force-seconds. What is the one engineering practice that would have prevented the Mars Climate Orbiter-style error reproduced in this lesson's example, beyond simply "remembering to convert"?
+A vendor delivers a thruster's total impulse rating in pound-force-seconds. What is the one engineering practice that would have prevented the Mars Climate Orbiter-style error reproduced in this lesson's example, beyond "remembering to convert"?
 :::
 
 ::: answer
@@ -218,4 +218,4 @@ Carrying the unit explicitly in the variable's name or type at the point the val
 | Fix | Renormalise $q \leftarrow q/\lVert q\rVert$ every step — a projection, not an approximation, and cheap |
 | Unit discipline | SI throughout; every boundary conversion (lbf·s vs N·s, km vs m, deg vs rad) written down and tested, never assumed — a factor-of-4.448 miss reproduced above |
 
-With the clock and the bookkeeping both in place, the next lesson turns to what actually drives the plant: the environment models — gravity, atmosphere, wind, magnetic field, radiation pressure — that the frame and unit discipline just built has to be applied to correctly on every single one of them.
+With the clock and the bookkeeping both in place, the next lesson turns to what actually drives the plant: the environment models — gravity, atmosphere, wind, magnetic field, radiation pressure — that this lesson's frame and unit discipline has to be applied to correctly on every single one of them.

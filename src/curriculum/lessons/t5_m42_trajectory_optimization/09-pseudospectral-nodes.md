@@ -8,7 +8,7 @@ covers:
 
 Trapezoidal and Hermite-Simpson collocation buy accuracy the same way every fixed-order numerical method does: add more segments. The polynomial degree on each segment never changes — linear, or cubic — so the only knob is $h$, and the previous lesson's order analysis, $O(h^2)$ or $O(h^4)$ globally, is the ceiling on how fast that knob can improve things. A **pseudospectral** method takes the opposite strategy: keep the whole trajectory as a *single* segment, and add accuracy by raising the *degree* of one global polynomial fit through it. Done carelessly this fails spectacularly; done with the right choice of node locations, it converges faster than any fixed power of $1/N$, for exactly the same nonlinear vehicle dynamics this module has been working throughout. This lesson builds the node families that make it possible; the next takes up the convergence rate itself.
 
-## Why not just use more, equally-spaced points
+## Why more, equally spaced points are not enough
 
 A single high-degree polynomial through $N+1$ **equally spaced** points is a well-known numerical disaster — the interpolant oscillates wildly near the ends of the interval as $N$ grows, a phenomenon named for Carl Runge, who first analysed it.
 
@@ -29,7 +29,7 @@ The fix has a name because it recurs everywhere polynomial interpolation is push
 
 Let $P_n$ denote the degree-$n$ Legendre polynomial on $[-1,1]$.
 
-**Legendre-Gauss (LG).** The $N$ nodes are simply the roots of $P_N$ — no endpoints included at all. These are the classical Gauss quadrature nodes, exact for polynomials of degree up to $2N-1$ when used for integration, and they cluster toward $\pm1$ without ever touching them.
+**Legendre-Gauss (LG).** The $N$ nodes are the roots of $P_N$ — no endpoints included at all. These are the classical Gauss quadrature nodes, exact for polynomials of degree up to $2N-1$ when used for integration, and they cluster toward $\pm1$ without ever touching them.
 
 **Legendre-Gauss-Lobatto (LGL).** Both endpoints, $-1$ and $1$, are included by construction, and the $N-1$ interior nodes are the roots of $P_N'$ (the derivative of the Legendre polynomial) — the points where $P_N$ itself is stationary. Including both endpoints is convenient when both the initial and final states genuinely need to be collocation nodes.
 
@@ -60,7 +60,7 @@ Every entry $D_{kj}$ is generally nonzero — differentiating the interpolant at
 ## Check yourself
 
 ::: check
-Why does the Runge phenomenon get *worse* as $N$ increases for equally spaced nodes, rather than the interpolation simply failing to improve?
+Why does the Runge phenomenon get *worse* as $N$ increases for equally spaced nodes, rather than the interpolation merely failing to improve?
 :::
 
 ::: answer
@@ -72,7 +72,7 @@ A Legendre-Gauss-Lobatto scheme with $N=20$ segments has a dense $21\times21$ di
 :::
 
 ::: answer
-A pseudospectral defect at one node involves all $21$ entries of that row of $\mathbf{D}$, so up to $21$ nonzero couplings per equation. A Hermite-Simpson defect touches only $\mathbf{x}_k$, $\mathbf{x}_{k+1}$, $\mathbf{u}_k$, $\mathbf{u}_{k+1}$ (and the midpoint values built from exactly those) — four node values, regardless of how many total segments the mesh has. The pseudospectral Jacobian block is therefore dense and grows with $N$; the collocation Jacobian block is a fixed, small size, banded across the whole mesh no matter how large $N$ gets — the trade-off named in the warning above, visible directly in the sparsity pattern rather than just asserted.
+A pseudospectral defect at one node involves all $21$ entries of that row of $\mathbf{D}$, so up to $21$ nonzero couplings per equation. A Hermite-Simpson defect touches only $\mathbf{x}_k$, $\mathbf{x}_{k+1}$, $\mathbf{u}_k$, $\mathbf{u}_{k+1}$ (and the midpoint values built from exactly those) — four node values, regardless of how many total segments the mesh has. The pseudospectral Jacobian block is therefore dense and grows with $N$; the collocation Jacobian block is a fixed, small size, banded across the whole mesh no matter how large $N$ gets — the trade-off named in the warning above, visible directly in the sparsity pattern rather than only claimed.
 :::
 
 ::: check

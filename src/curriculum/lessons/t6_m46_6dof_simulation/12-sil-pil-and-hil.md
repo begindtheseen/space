@@ -6,7 +6,7 @@ covers:
   - The SIL, PIL and HIL progression and what each step actually adds
 ---
 
-The previous lesson established that the GNC box should run the genuine flight binary, not a re-implementation. It did not say *where* that binary runs, and the answer turns out to have three increasingly demanding versions, each one exposing a class of defect the version before it structurally cannot. This lesson names them precisely — software-in-the-loop, processor-in-the-loop, hardware-in-the-loop — and, for each step up, asks what specifically becomes possible to find that was not possible before, with a number behind the answer rather than just the name.
+The previous lesson established that the GNC box should run the genuine flight binary, not a re-implementation. It did not say *where* that binary runs, and the answer turns out to have three increasingly demanding versions, each one exposing a class of defect the version before it structurally cannot. This lesson names them precisely — software-in-the-loop, processor-in-the-loop, hardware-in-the-loop — and, for each step up, asks what specifically becomes possible to find that was not possible before, with a number behind the answer, not only the name.
 
 ## SIL: the algorithm, on a workstation
 
@@ -64,7 +64,9 @@ print(f"full cycle, flight-representative processor: {cycle_flight_us/1000:.2f} 
 # full cycle, flight-representative processor: 11.24 ms (112.4% of budget)
 ```
 
-On the workstation, this cycle's worth of work costs $321\,\mathrm{\mu s}$, a comfortable $3.2\%$ of a $10\,\mathrm{ms}$ control period — nothing here would ever raise a concern in a SIL run, however many times it were repeated. Scaled to a processor two orders of magnitude slower, the same work is estimated at $11.24\,\mathrm{ms}$ — over the budget before the tick even finishes. The scaling here is a crude clock-ratio estimate, not a substitute for real timing analysis on the actual target — cache behaviour, pipelining and instruction mix all matter too, which is exactly why PIL exists rather than a spreadsheet doing this multiplication being considered sufficient. But the direction of the result is the point: a margin that is invisible from a workstation can already be gone on the real processor, and only running the real binary on the real (or cycle-accurate) processor tells you which side of the line you are actually on.
+(This is a wall-clock measurement — running it again, on this machine or another, will give a different absolute number; the comparison against the budget is the point, not the exact microsecond figure.)
+
+On the workstation, this cycle's worth of work costs about $321\,\mathrm{\mu s}$, a comfortable $3.2\%$ of a $10\,\mathrm{ms}$ control period — nothing here would ever raise a concern in a SIL run, however many times it were repeated. Scaled to a processor two orders of magnitude slower, the same work is estimated at $11.24\,\mathrm{ms}$ — over the budget before the tick even finishes. The scaling here is a crude clock-ratio estimate, not a substitute for real timing analysis on the actual target — cache behaviour, pipelining and instruction mix all matter too, which is exactly why PIL exists rather than a spreadsheet doing this multiplication being considered sufficient. But the direction of the result is the point: a margin that is invisible from a workstation can already be gone on the real processor, and only running the real binary on the real (or cycle-accurate) processor tells you which side of the line you are actually on.
 :::
 
 ## HIL: real hardware, real time, real interfaces
@@ -97,7 +99,7 @@ print("SIL/PIL: stale-command ticks = 0 (every overrun above is invisible by con
 # SIL/PIL: stale-command ticks = 0 (every overrun above is invisible by construction)
 ```
 
-Out of ten thousand cycles, $121$ — about $1.2\%$ — exceed the $10\,\mathrm{ms}$ budget, one reaching $15.4\,\mathrm{ms}$. Running under HIL, with a real clock enforcing real deadlines, each of those $121$ cycles is a tick where the actuator held a stale command one cycle longer than intended — exactly the kind of intermittent, statistically rare timing defect a flight anomaly investigation looks for. Running the identical flight binary against the identical simulated dynamics under SIL or PIL, with the simulated tick simply advancing once each computation finishes, produces *zero* stale-command ticks, not because the underlying computation is any different, but because nothing about SIL or PIL's clock can be late.
+Out of ten thousand cycles, $121$ — about $1.2\%$ — exceed the $10\,\mathrm{ms}$ budget, one reaching $15.4\,\mathrm{ms}$. Running under HIL, with a real clock enforcing real deadlines, each of those $121$ cycles is a tick where the actuator held a stale command one cycle longer than intended — exactly the kind of intermittent, statistically rare timing defect a flight anomaly investigation looks for. Running the identical flight binary against the identical simulated dynamics under SIL or PIL, with the simulated tick advancing only once each computation finishes, produces *zero* stale-command ticks, not because the underlying computation is any different, but because nothing about SIL or PIL's clock can be late.
 :::
 
 ::: key What each step actually adds
@@ -119,7 +121,7 @@ Why is SIL, despite being the least representative of the three stages, where th
 :::
 
 ::: answer
-SIL is fast and cheap to run — thousands of cases in the time a single HIL run takes — and gives complete visibility into every internal signal, which makes it the right tool for finding algorithmic defects: a wrong sign, a mishandled edge case, a logic error in the guidance or control law. It simply cannot find defects that only exist because of real processor timing or real hardware behaviour, which is exactly why PIL and HIL exist as separate, later stages rather than SIL being expected to catch everything.
+SIL is fast and cheap to run — thousands of cases in the time a single HIL run takes — and gives complete visibility into every internal signal, which makes it the right tool for finding algorithmic defects: a wrong sign, a mishandled edge case, a logic error in the guidance or control law. It has no way to find defects that only exist because of real processor timing or real hardware behaviour, which is exactly why PIL and HIL exist as separate, later stages rather than SIL being expected to catch everything.
 :::
 
 ::: check
@@ -143,7 +145,7 @@ A programme runs extensive PIL testing, confirming the flight binary always fini
 :::
 
 ::: answer
-PIL confirms timing and computation on the real processor, but sensor and actuator data are still simulated, so PIL says nothing about real bus timing, real driver behaviour under real interrupt load, real sensor electrical interfaces and their genuine failure modes, or real power transients during actuator commutation — all of which require real hardware, not just a real processor, to be present at all. Confirming the algorithm finishes in time on the real chip is a necessary condition for a working system, not a substitute for testing the hardware interfaces the chip actually has to talk to.
+PIL confirms timing and computation on the real processor, but sensor and actuator data are still simulated, so PIL says nothing about real bus timing, real driver behaviour under real interrupt load, real sensor electrical interfaces and their genuine failure modes, or real power transients during actuator commutation — all of which require real hardware, not only a real processor, to be present at all. Confirming the algorithm finishes in time on the real chip is a necessary condition for a working system, not a substitute for testing the hardware interfaces the chip actually has to talk to.
 :::
 
 ::: check

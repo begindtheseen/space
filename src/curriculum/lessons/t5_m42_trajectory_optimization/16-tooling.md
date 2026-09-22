@@ -82,7 +82,7 @@ No — it means the *labour* of implementing node generation and refinement loop
 :::
 
 ::: check
-Why would ACADO's code-generation approach be a poor fit for the pseudospectral, hp-adaptive mesh refinement GPOPS-II specializes in, even though both are optimal-control software?
+Why would ACADO's code-generation approach be a poor fit for the pseudospectral, hp-adaptive mesh refinement GPOPS-II specialises in, even though both are optimal-control software?
 :::
 
 ::: answer

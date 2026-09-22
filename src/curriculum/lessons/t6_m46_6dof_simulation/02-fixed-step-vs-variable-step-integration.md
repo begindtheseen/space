@@ -143,7 +143,7 @@ Not entirely. The corruption is specific to calling stateful flight code from in
 :::
 
 ::: check
-Why is it not enough to simply reduce the adaptive integrator's `rtol` and `atol` until the corruption becomes small?
+Why is it not enough to reduce the adaptive integrator's `rtol` and `atol` until the corruption becomes small?
 :::
 
 ::: answer

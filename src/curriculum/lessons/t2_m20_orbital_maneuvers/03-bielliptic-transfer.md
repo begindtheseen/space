@@ -90,7 +90,7 @@ A mission designer proposes $r_1 = 6678\,\mathrm{km}$, $r_2 = 60\,102\,\mathrm{k
 :::
 
 ::: answer
-No. $R = 9$ is below the lower threshold of $11.94$, and below that threshold Hohmann wins for *every* choice of $r_b$, including arbitrarily large ones – the best a bi-elliptic transfer can do as $r_b \to \infty$ still falls short. Proposing an enormous $r_b$ does not change which regime $R$ falls into; it only adds years to the transit time for no Δv benefit at this ratio.
+No. $R = 9$ is below the lower threshold of $11.94$, and below that threshold Hohmann wins for *every* choice of $r_b$. It is worth seeing why that is not merely an empirical rule. As $r_b \to r_2$ the bi-elliptic transfer degenerates into the Hohmann transfer itself — the second ellipse collapses onto the circle at $r_2$, the third burn goes to zero, and the cost is Hohmann's exactly. So bi-elliptic *contains* Hohmann as a limiting case, and the only question is which way the cost moves as $r_b$ is pushed outward from there. Below the threshold it moves the wrong way and keeps moving: at $R=8$ it is already 7.4 % worse at $r_b = 10r_2$ and 7.8 % worse in the limit. That also settles what "best possible bi-elliptic" means below the threshold — it is a tie, achieved by not doing a bi-elliptic at all. Proposing an enormous $r_b$ does not change which regime $R$ falls into; it only adds years to the transit time for no benefit at this ratio.
 :::
 
 ::: check
@@ -127,7 +127,7 @@ Fix $r_1$, and for a range of candidate ratios $R$, compute the Hohmann total Δ
 | $R = r_2/r_1 < 11.94$ | Hohmann wins for every $r_b$ |
 | $R > 15.58$ | Bi-elliptic wins for every $r_b > r_2$ |
 | $11.94 < R < 15.58$ | Depends on $r_b$: small overshoot can lose, generous overshoot can win |
-| Case A ($R=8$) | Best possible bi-elliptic still 7.8 % worse than Hohmann's 4.0191 km/s |
+| Case A ($R=8$) | No $r_b$ beats Hohmann's 4.0191 km/s; pushing $r_b$ out costs 7.4 % at $10r_2$ and 7.8 % in the limit |
 | Case B ($R=25$, $r_b=3r_2$) | Saves 3.5 % of Δv, costs about 12$\times$ the transit time |
 | Verdict | Real but small Δv savings, large and unavoidable time cost |
 

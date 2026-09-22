@@ -139,7 +139,7 @@ Same numbers, $k = 0.6$, released from the bottom with a small $0.05\,\mathrm{ra
 | $6\,\mathrm{s}$ | $13.69$ | $4.1686$ | $3.96661$ | $0.03339$ | $0.0835$ |
 | $10\,\mathrm{s}$ | $-97.38$ | $-2.7566$ | $3.96667$ | $0.03333$ | $-0.0551$ |
 | $20\,\mathrm{s}$ | $-69.63$ | $3.4402$ | $3.96667$ | $0.03333$ | $0.0688$ |
-| $30\,\mathrm{s}$ | $155.54$ | $-0.8061$ | $3.96667$ | $0.03333$ | $-0.0161$ |
+| $30\,\mathrm{s}$ | $155.49$ | $-0.8079$ | $3.96667$ | $0.03333$ | $-0.0162$ |
 
 Energy climbs from essentially nothing to $99.17\,\%$ of $E_d = 4.0\,\mathrm{J}$ by $t = 6\,\mathrm{s}$, using at most $u_{\max} = 1.2\,\mathrm{N\,m}$ — less than the $1.97\,\mathrm{N\,m}$ the direct push had already spent to get less than half as far. It then holds at $E = 3.96667\,\mathrm{J}$ rather than $4.0\,\mathrm{J}$ exactly, because the small physical damping $b$, ignored in the idealised proof, bleeds off on average exactly what the law pumps in once $\theta$ dithers around the top. At that energy the pendulum cannot quite clear $\theta = 180^\circ$ — reaching there at zero rate needs $E \ge 2mgl = 4.0\,\mathrm{J}$ exactly — and the simulation shows it: after settling, the swing reverses at $\theta = \pm169.5247^\circ$, every cycle, with a period of $3.59\,\mathrm{s}$ between reversals. The value predicted from the energy alone, $\arccos(1 - E/mgl) = \arccos(1 - 3.96667/2) = 169.5252^\circ$, agrees with the simulated peak to five figures. The controller delivered exactly what the proof promised — energy converging to $E_d$ — and exactly the gap the proof warned about: a pendulum endlessly grazing the inverted equilibrium is not a pendulum balanced on it.
 :::

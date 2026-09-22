@@ -6,7 +6,7 @@ covers:
   - "Real-time hardware-in-the-loop: flight processors, motion tables, IMU stimulation, GNSS signal simulators, camera and altimeter stimulation"
 ---
 
-The previous lesson established what HIL adds in principle: real hardware, real electrical interfaces, and a real clock nothing in the simulation controls. This lesson is about what that actually requires in equipment, and about a fact the previous lesson's framing left implicit: making the *flight computer's* clock real is not enough. Every piece of hardware on a HIL bench — the simulation host computing truth, the table moving the IMU, the box generating GNSS signals — now shares that same real clock, and every one of them has to keep up with it, not just the unit under test.
+The previous lesson established what HIL adds in principle: real hardware, real electrical interfaces, and a real clock nothing in the simulation controls. This lesson is about what that actually requires in equipment, and about a fact the previous lesson's framing left implicit: making the *flight computer's* clock real is not enough. Every piece of hardware on a HIL bench — the simulation host computing truth, the table moving the IMU, the box generating GNSS signals — now shares that same real clock, and every one of them has to keep up with it, not only the unit under test.
 
 ## The simulation host has to be real-time too
 
@@ -19,8 +19,39 @@ Measure the cost of one fine-step evaluation of this module's own models bundled
 import time
 import numpy as np
 
-# (rigid-body, flex-mode, J2 gravity, sensor and actuator models exactly as in
-#  the earlier lessons of this module, omitted here for length)
+I3 = np.array([1200.0, 1500.0, 2000.0])
+def euler_deriv(w, M):
+    return np.array([((I3[1]-I3[2])*w[1]*w[2]+M[0])/I3[0], ((I3[2]-I3[0])*w[2]*w[0]+M[1])/I3[1],
+                      ((I3[0]-I3[1])*w[0]*w[1]+M[2])/I3[2]])
+w = np.array([0.02, 0.0, 0.10])
+
+I_hub, sigma, wn, zeta = 105450.1, 0.04, 2*np.pi*6.0, 0.005
+delta = np.sqrt(sigma*I_hub)
+Ainv = np.linalg.inv(np.array([[I_hub, delta], [delta, 1.0]]))
+def flex_deriv(state, M):
+    theta, thetadot, eta, etadot = state
+    Q = 2*zeta*wn*etadot + wn**2*eta
+    return Ainv @ np.array([M, -Q])
+state = np.array([0.01, 0.0, 0.001, 0.0])
+
+mu, RE, J2 = 398600.4418, 6378.137, 1.08262668e-3
+r_I = np.array([6878.137*np.cos(0.7), 0.0, 6878.137*np.sin(0.7)])
+def gravity_j2(r):
+    r_mag = np.linalg.norm(r)
+    a_pm = -mu*r/r_mag**3
+    factor = -1.5*J2*mu*RE**2/r_mag**5
+    zr2 = (r[2]/r_mag)**2
+    return a_pm + factor*np.array([r[0]*(1-5*zr2), r[1]*(1-5*zr2), r[2]*(3-5*zr2)])
+
+sf, bias, quantum = np.array([0.005]*3), np.array([3e-5,-2e-5,1e-5]), 1e-5
+def sense(a_true):
+    return np.round(((1+sf)*a_true + bias)/quantum)*quantum
+a_true = np.array([0.1, -0.2, 9.81])
+
+tau_max = 0.2
+def actuator(u_cmd):
+    return np.clip(u_cmd, -tau_max, tau_max)
+u_cmd = np.array([0.3, -0.1, 0.05])
 
 def full_step():
     _ = euler_deriv(w, np.zeros(3))
@@ -38,14 +69,16 @@ per_call_us = (t1 - t0)/n_trials*1e6
 print("bundled per-step model evaluation:", per_call_us, "us")
 for budget_us in [1000, 200, 100, 50]:
     print(f"  budget {budget_us} us -> fraction used: {per_call_us/budget_us:.1%}")
-# bundled per-step model evaluation: 18.400980890000938 us
-# budget 1000 us -> fraction used: 1.8%
-# budget 200 us -> fraction used: 9.2%
-# budget 100 us -> fraction used: 18.4%
-# budget 50 us -> fraction used: 36.8%
+# bundled per-step model evaluation: 14.607339690010122 us
+# budget 1000 us -> fraction used: 1.5%
+# budget 200 us -> fraction used: 7.3%
+# budget 100 us -> fraction used: 14.6%
+# budget 50 us -> fraction used: 29.2%
 ```
 
-Even bundled, this module's physics costs only $18.4\,\mathrm{\mu s}$ per evaluation — comfortable against a $1\,\mathrm{ms}$ budget, still workable against a demanding $50\,\mathrm{\mu s}$ budget needed to resolve content up into the low kilohertz. That comfort is specific to how cheap these particular closed-form models are; it is not a general licence to run the truth host in an interpreted language. A real HIL host still has to command a motion table, generate a synchronised RF signal, update a projected scene, and log every channel — all inside the same cycle — which is exactly why production real-time truth hosts run compiled, carefully budgeted code rather than Python: not because the physics in this lesson is expensive, but because everything *else* the cycle has to do is competing for the same real microseconds, and nothing on this bench gets to ask the clock to wait.
+(Wall-clock measurements like this vary from run to run and machine to machine — expect a different absolute number if you run it yourself, though the qualitative picture should hold.)
+
+Even bundled, this module's physics costs only about $14.6\,\mathrm{\mu s}$ per evaluation — comfortable against a $1\,\mathrm{ms}$ budget, still workable against a demanding $50\,\mathrm{\mu s}$ budget needed to resolve content up into the low kilohertz. That comfort is specific to how cheap these particular closed-form models are; it is not a general licence to run the truth host in an interpreted language. A real HIL host still has to command a motion table, generate a synchronised RF signal, update a projected scene, and log every channel — all inside the same cycle — which is exactly why production real-time truth hosts run compiled, carefully budgeted code rather than Python: not because the physics in this lesson is expensive, but because everything *else* the cycle has to do is competing for the same real microseconds, and nothing on this bench gets to ask the clock to wait.
 :::
 
 ## Motion tables: real inertial stimulation, with a rate and bandwidth of their own
@@ -60,7 +93,7 @@ Electronic IMU stimulation injects a signal directly into the sensor's interface
 
 ## GNSS signal simulators: a timing requirement six orders of magnitude tighter
 
-A GNSS signal simulator generates realistic RF signals — correct Doppler shift, correct code phase, correct power level, sometimes correct multipath — fed into the real receiver's antenna port, so the receiver's actual acquisition and tracking hardware and firmware are exercised, not just its output data interface. What makes this specific stimulation unusually demanding is that GNSS ranging is fundamentally a timing measurement: the receiver infers distance from signal travel time, so any timing error the simulator introduces between the truth trajectory and the RF signal it generates becomes a ranging error at the speed of light.
+A GNSS signal simulator generates realistic RF signals — correct Doppler shift, correct code phase, correct power level, sometimes correct multipath — fed into the real receiver's antenna port, so the receiver's actual acquisition and tracking hardware and firmware are exercised, not only its output data interface. What makes this specific stimulation unusually demanding is that GNSS ranging is fundamentally a timing measurement: the receiver infers distance from signal travel time, so any timing error the simulator introduces between the truth trajectory and the RF signal it generates becomes a ranging error at the speed of light.
 
 ::: example What GNSS stimulation timing actually requires
 Ranging accuracy and required timing synchronisation are related by $\Delta t = \Delta r / c$:
@@ -102,7 +135,7 @@ Why does a HIL truth host have to be real-time in a way that a SIL or PIL simula
 :::
 
 ::: answer
-In SIL and PIL, the simulated clock advances only once the current computation has finished, so there is nothing for the host to fall behind — the timeline simply waits. On a HIL bench, every piece of equipment shares one real, un-pausable clock; if the host computing truth cannot produce a fresh state every cycle at the real rate the rest of the bench expects, it is the one missing deadlines, corrupting the timeline for the flight computer and every stimulator downstream of it exactly the way an overrun corrupts the flight computer's own cycle.
+In SIL and PIL, the simulated clock advances only once the current computation has finished, so there is nothing for the host to fall behind — the timeline waits for it, every time. On a HIL bench, every piece of equipment shares one real, un-pausable clock; if the host computing truth cannot produce a fresh state every cycle at the real rate the rest of the bench expects, it is the one missing deadlines, corrupting the timeline for the flight computer and every stimulator downstream of it exactly the way an overrun corrupts the flight computer's own cycle.
 :::
 
 ::: check
@@ -142,14 +175,14 @@ Why is it misleading to describe HIL as "testing the flight computer with real h
 :::
 
 ::: answer
-Every piece of equipment on the bench — the truth host, the motion table, the IMU stimulator, the GNSS simulator, the camera or altimeter stimulator — has to meet its own real-time and fidelity requirements simultaneously, and a failure in any one of them (the host missing its cycle budget, the table's bandwidth being exceeded, the GNSS timing drifting by more than a few nanoseconds) corrupts the test just as thoroughly as a defect in the flight computer itself would. HIL validates the flight computer only to the extent that everything else on the bench is also behaving correctly, which is why this lesson spent as much time on the stimulation equipment's own limits as on the flight computer being tested.
+Every piece of equipment on the bench — the truth host, the motion table, the IMU stimulator, the GNSS simulator, the camera or altimeter stimulator — has to meet its own real-time and fidelity requirements simultaneously, and a failure in any one of them (the host missing its cycle budget, the table's bandwidth being exceeded, the GNSS timing drifting by more than a few nanoseconds) corrupts the test every bit as thoroughly as a defect in the flight computer itself would. HIL validates the flight computer only to the extent that everything else on the bench is also behaving correctly, which is why this lesson spent as much time on the stimulation equipment's own limits as on the flight computer being tested.
 :::
 
 ## Summary
 
 | Component | Purpose | Its own limiting factor |
 | --- | --- | --- |
-| Real-time truth host | Produces fresh truth every cycle at the real rate | Must complete physics, I/O and logging inside the real budget — $18.4\,\mathrm{\mu s}$ for this module's bundled physics alone, before any I/O |
+| Real-time truth host | Produces fresh truth every cycle at the real rate | Must complete physics, I/O and logging inside the real budget — about $14.6\,\mathrm{\mu s}$ for this module's bundled physics alone, before any I/O |
 | Motion table | Genuine physical inertial stimulation | Rate and bandwidth limited by its own inertia — roughly low tens of hertz at best with real payload |
 | Electronic IMU stimulation | High-frequency content beyond table bandwidth | Never exercises the physical sensing element |
 | GNSS signal simulator | Realistic RF stimulation of the real receiver | Timing synchronisation to the truth trajectory: $33.4\,\mathrm{ns}$ for $10\,\mathrm{m}$ ranging, $3.3\,\mathrm{ns}$ for $1\,\mathrm{m}$ |

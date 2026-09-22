@@ -71,7 +71,7 @@ By $t=3.38\,\mathrm{s}$, the true optimal thrust has already been at its maximum
 :::
 
 ::: check
-A colleague proposes skipping the interpolated-defect check entirely and just re-solving on a uniformly doubled mesh every time, comparing the cost to the previous solve as the stopping criterion. What does this lose compared to the estimate-driven approach in this lesson?
+A colleague proposes skipping the interpolated-defect check entirely and instead re-solving on a uniformly doubled mesh every time, comparing the cost to the previous solve as the stopping criterion. What does this lose compared to the estimate-driven approach in this lesson?
 :::
 
 ::: answer
