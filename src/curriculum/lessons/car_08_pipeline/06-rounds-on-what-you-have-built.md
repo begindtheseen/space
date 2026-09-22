@@ -3,7 +3,7 @@ id: l06-rounds-on-what-you-have-built
 title: "The onsite rounds on what you have already built"
 minutes: 19
 covers:
-  - PLACEHOLDER
+  - "onsite composition: past-project presentation, 2 to 3 coding rounds, 1 to 2 systems and architecture rounds, 1+ domain-knowledge round, abstract problem solving, physics puzzles and Fermi estimation"
 ---
 
 The onsite's five to seven rounds are not five to seven versions of the same interview. They divide into two kinds, and the division is useful because the two kinds reward completely different preparation.

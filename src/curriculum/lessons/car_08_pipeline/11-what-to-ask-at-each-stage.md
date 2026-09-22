@@ -3,7 +3,7 @@ id: l11-what-to-ask-at-each-stage
 title: "What to ask at each stage, and what not to ask yet"
 minutes: 18
 covers:
-  - PLACEHOLDER
+  - "what to ask at each stage, and what not to ask yet"
 ---
 
 Nearly every conversation in this process ends the same way: the person you are speaking to asks whether you have any questions for them. Candidates treat this as the moment the interview ends. It is not — it is a part of the interview with two jobs, and the second one is easy to miss.

@@ -3,7 +3,7 @@ id: l10-stamina-and-logistics
 title: "Logistics and stamina for an eight-hour day"
 minutes: 17
 covers:
-  - PLACEHOLDER
+  - "logistics and stamina: sleep, food, water, breaks, and how to ask for one"
 ---
 
 This is the lesson in the module that looks least like engineering, and it has the highest return per hour of effort in the whole thing. Nothing in it is difficult. Most of it costs nothing. And it addresses a failure mode that reaches candidates who have prepared thoroughly for every round and then lose two of them to something entirely outside the technical material.

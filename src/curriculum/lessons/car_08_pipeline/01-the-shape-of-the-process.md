@@ -3,7 +3,7 @@ id: l01-the-shape-of-the-process
 title: "The shape of the process, end to end"
 minutes: 16
 covers:
-  - PLACEHOLDER
+  - "overall timeline: 5 to 8 weeks, up to roughly nine touchpoints"
 ---
 
 Seven modules of this track have brought you to the moment you press Submit. You know which legal gate stands in front of an export-controlled role and where it is checked; you know the GNC role families and which one your evidence actually fits; you know how a level is read off a posting and how to assess yourself honestly against one; you know what the tooling really is; you have built a portfolio and a resume that put the strongest evidence where a fast reader looks. All of that is preparation for an application. None of it tells you what happens after the application exists.

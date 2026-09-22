@@ -3,7 +3,7 @@ id: l04-the-take-home
 title: "Stage 3: the take-home exercise"
 minutes: 16
 covers:
-  - PLACEHOLDER
+  - "stage 3 — take-home exercise for some software and firmware roles"
 ---
 
 The third stage is the only one in the pipeline that is conditional on the role rather than on you. A take-home exercise is used for **some software and firmware roles**, rather than universally, and whether it appears in your process is a property of the requisition you are running against. A candidate who never sees one has not skipped anything and is not on a lesser track.

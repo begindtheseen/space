@@ -3,7 +3,7 @@ id: l07-rounds-on-how-you-think
 title: "The onsite rounds on how you think"
 minutes: 19
 covers:
-  - PLACEHOLDER
+  - "onsite composition: past-project presentation, 2 to 3 coding rounds, 1 to 2 systems and architecture rounds, 1+ domain-knowledge round, abstract problem solving, physics puzzles and Fermi estimation"
 ---
 
 The second kind of onsite round is not about what you have built. It is about what you do when a problem is put in front of you that you have not seen before, and there is nowhere to look it up.

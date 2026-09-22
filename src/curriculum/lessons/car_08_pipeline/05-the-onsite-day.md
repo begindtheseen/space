@@ -3,7 +3,7 @@ id: l05-the-onsite-day
 title: "Stage 4: the full-day onsite"
 minutes: 17
 covers:
-  - PLACEHOLDER
+  - "stage 4 — full-day onsite: 5 to 7 back-to-back interviews, often 8+ hours, sometimes with a facility tour"
 ---
 
 The onsite is the centre of gravity of the whole process. It is **five to seven back-to-back interviews, often running more than eight hours**, and sometimes it includes a tour of the facility. Everything before it is a filter; this is the evaluation.

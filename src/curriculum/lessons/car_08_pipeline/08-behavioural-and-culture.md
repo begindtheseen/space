@@ -3,7 +3,7 @@ id: l08-behavioural-and-culture
 title: "Stage 5: behavioural and culture"
 minutes: 18
 covers:
-  - PLACEHOLDER
+  - "stage 5 — behavioural and culture, using STAR"
 ---
 
 The fifth stage is the one with no equations in it. You will be asked about things that have already happened to you — a failure, a disagreement, a decision made without enough information — and you will be expected to answer in a particular shape.

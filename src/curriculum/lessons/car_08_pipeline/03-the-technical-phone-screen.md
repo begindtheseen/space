@@ -3,7 +3,7 @@ id: l03-the-technical-phone-screen
 title: "Stage 2: the technical phone screen"
 minutes: 17
 covers:
-  - PLACEHOLDER
+  - "stage 2 — technical phone screen, 30 minutes and sometimes 60 to 90, with a team engineer or the hiring manager"
 ---
 
 The second stage is the first one where an engineer is on the other end. It runs thirty minutes in the typical case, with some reports of sixty to ninety, and it is conducted by an engineer on the team you would join or by the hiring manager. There is no whiteboard, no shared document you can be sure of, and no screen between you and the question. You talk, and what you say is the entire artefact.

@@ -637,7 +637,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       "title": "The shape of the process, end to end",
       "minutes": 16,
       "covers": [
-        "PLACEHOLDER"
+        "overall timeline: 5 to 8 weeks, up to roughly nine touchpoints"
       ],
       "file": "car_08_pipeline/01-the-shape-of-the-process.md"
     },
@@ -646,7 +646,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       "title": "Stage 1: the recruiter screen",
       "minutes": 16,
       "covers": [
-        "PLACEHOLDER"
+        "stage 1 — recruiter screen, 20 to 30 minutes: background, motivation, ITAR confirmation"
       ],
       "file": "car_08_pipeline/02-the-recruiter-screen.md"
     },
@@ -655,7 +655,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       "title": "Stage 2: the technical phone screen",
       "minutes": 17,
       "covers": [
-        "PLACEHOLDER"
+        "stage 2 — technical phone screen, 30 minutes and sometimes 60 to 90, with a team engineer or the hiring manager"
       ],
       "file": "car_08_pipeline/03-the-technical-phone-screen.md"
     },
@@ -664,7 +664,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       "title": "Stage 3: the take-home exercise",
       "minutes": 16,
       "covers": [
-        "PLACEHOLDER"
+        "stage 3 — take-home exercise for some software and firmware roles"
       ],
       "file": "car_08_pipeline/04-the-take-home.md"
     },
@@ -673,7 +673,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       "title": "Stage 4: the full-day onsite",
       "minutes": 17,
       "covers": [
-        "PLACEHOLDER"
+        "stage 4 — full-day onsite: 5 to 7 back-to-back interviews, often 8+ hours, sometimes with a facility tour"
       ],
       "file": "car_08_pipeline/05-the-onsite-day.md"
     },
@@ -682,7 +682,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       "title": "The onsite rounds on what you have already built",
       "minutes": 19,
       "covers": [
-        "PLACEHOLDER"
+        "onsite composition: past-project presentation, 2 to 3 coding rounds, 1 to 2 systems and architecture rounds, 1+ domain-knowledge round, abstract problem solving, physics puzzles and Fermi estimation"
       ],
       "file": "car_08_pipeline/06-rounds-on-what-you-have-built.md"
     },
@@ -691,7 +691,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       "title": "The onsite rounds on how you think",
       "minutes": 19,
       "covers": [
-        "PLACEHOLDER"
+        "onsite composition: past-project presentation, 2 to 3 coding rounds, 1 to 2 systems and architecture rounds, 1+ domain-knowledge round, abstract problem solving, physics puzzles and Fermi estimation"
       ],
       "file": "car_08_pipeline/07-rounds-on-how-you-think.md"
     },
@@ -700,7 +700,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       "title": "Stage 5: behavioural and culture",
       "minutes": 18,
       "covers": [
-        "PLACEHOLDER"
+        "stage 5 — behavioural and culture, using STAR"
       ],
       "file": "car_08_pipeline/08-behavioural-and-culture.md"
     },
@@ -709,7 +709,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       "title": "What a 2.8 out of 5 difficulty rating indicates",
       "minutes": 17,
       "covers": [
-        "PLACEHOLDER"
+        "Glassdoor difficulty rating of 2.8 out of 5 for GNC Engineer, and what that really indicates"
       ],
       "file": "car_08_pipeline/09-reading-the-difficulty-rating.md"
     },
@@ -718,7 +718,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       "title": "Logistics and stamina for an eight-hour day",
       "minutes": 17,
       "covers": [
-        "PLACEHOLDER"
+        "logistics and stamina: sleep, food, water, breaks, and how to ask for one"
       ],
       "file": "car_08_pipeline/10-stamina-and-logistics.md"
     },
@@ -727,7 +727,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       "title": "What to ask at each stage, and what not to ask yet",
       "minutes": 18,
       "covers": [
-        "PLACEHOLDER"
+        "what to ask at each stage, and what not to ask yet"
       ],
       "file": "car_08_pipeline/11-what-to-ask-at-each-stage.md"
     },
@@ -736,9 +736,18 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       "title": "The debrief, and how mixed signals get weighed",
       "minutes": 17,
       "covers": [
-        "PLACEHOLDER"
+        "debrief and decision; how a hiring committee weighs mixed signals"
       ],
       "file": "car_08_pipeline/12-debrief-and-decision.md"
+    },
+    {
+      "id": "l13-rejection-and-the-path-back",
+      "title": "Rejection, and the path back in",
+      "minutes": 18,
+      "covers": [
+        "handling rejection and the path back in"
+      ],
+      "file": "car_08_pipeline/13-rejection-and-the-path-back.md"
     }
   ],
   "car_09_screens": [
@@ -835,6 +844,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "the trap of listing a project you cannot defend in depth"
       ],
       "file": "car_10_past_project_presentation/02-choosing-the-five.md"
+    },
+    {
+      "id": "l03-ip-and-export-hygiene",
+      "title": "What is yours to present, and what is not",
+      "minutes": 18,
+      "covers": [
+        "intellectual property and export-control hygiene about a previous employer’s work"
+      ],
+      "file": "car_10_past_project_presentation/03-ip-and-export-hygiene.md"
     }
   ],
   "cod_cpp_01_basics": [
@@ -7602,23 +7620,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "car_08_pipeline": {
-    "covered": 0,
+    "covered": 12,
     "total": 12,
-    "complete": false,
-    "missing": [
-      "overall timeline: 5 to 8 weeks, up to roughly nine touchpoints",
-      "stage 1 — recruiter screen, 20 to 30 minutes: background, motivation, ITAR confirmation",
-      "stage 2 — technical phone screen, 30 minutes and sometimes 60 to 90, with a team engineer or the hiring manager",
-      "stage 3 — take-home exercise for some software and firmware roles",
-      "stage 4 — full-day onsite: 5 to 7 back-to-back interviews, often 8+ hours, sometimes with a facility tour",
-      "onsite composition: past-project presentation, 2 to 3 coding rounds, 1 to 2 systems and architecture rounds, 1+ domain-knowledge round, abstract problem solving, physics puzzles and Fermi estimation",
-      "stage 5 — behavioural and culture, using STAR",
-      "debrief and decision; how a hiring committee weighs mixed signals",
-      "Glassdoor difficulty rating of 2.8 out of 5 for GNC Engineer, and what that really indicates",
-      "logistics and stamina: sleep, food, water, breaks, and how to ask for one",
-      "what to ask at each stage, and what not to ask yet",
-      "handling rejection and the path back in"
-    ]
+    "complete": true,
+    "missing": []
   },
   "car_09_screens": {
     "covered": 8,
@@ -7632,7 +7637,7 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "car_10_past_project_presentation": {
-    "covered": 4,
+    "covered": 5,
     "total": 13,
     "complete": false,
     "missing": [
@@ -7643,8 +7648,7 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
       "presenting to a panel of 5 to 10: address the asker, then return to the room",
       "answering why did you not do X and what was your actual contribution",
       "saying I do not know, here is how I would find out",
-      "rehearsal protocol: record yourself, present to a hostile reviewer, time it, drill 30 anticipated questions",
-      "intellectual property and export-control hygiene about a previous employer’s work"
+      "rehearsal protocol: record yourself, present to a hostile reviewer, time it, drill 30 anticipated questions"
     ]
   },
   "car_11_domain_round": {

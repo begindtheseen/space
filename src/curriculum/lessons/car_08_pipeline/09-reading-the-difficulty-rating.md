@@ -3,7 +3,7 @@ id: l09-reading-the-difficulty-rating
 title: "What a 2.8 out of 5 difficulty rating indicates"
 minutes: 17
 covers:
-  - PLACEHOLDER
+  - "Glassdoor difficulty rating of 2.8 out of 5 for GNC Engineer, and what that really indicates"
 ---
 
 One number gets quoted about this process more than any other: a Glassdoor interview difficulty rating of **2.8 out of 5** for GNC Engineer. It is quoted by candidates talking themselves into applying and by candidates talking themselves out of preparing, which is a good sign that it is being misread in both directions.

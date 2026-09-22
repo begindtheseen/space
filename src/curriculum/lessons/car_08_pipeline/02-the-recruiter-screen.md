@@ -3,7 +3,7 @@ id: l02-the-recruiter-screen
 title: "Stage 1: the recruiter screen"
 minutes: 16
 covers:
-  - PLACEHOLDER
+  - "stage 1 — recruiter screen, 20 to 30 minutes: background, motivation, ITAR confirmation"
 ---
 
 The first live conversation in the process is a call with a recruiter lasting twenty to thirty minutes. It is short, it is not technical, and it is the single most commonly underprepared stage in the whole pipeline — precisely because it is short and not technical, which candidates reliably read as meaning it does not count.

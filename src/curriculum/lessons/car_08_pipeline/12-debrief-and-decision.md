@@ -3,7 +3,7 @@ id: l12-debrief-and-decision
 title: "The debrief, and how mixed signals get weighed"
 minutes: 17
 covers:
-  - PLACEHOLDER
+  - "debrief and decision; how a hiring committee weighs mixed signals"
 ---
 
 There is one stage of this process you do not attend. After the onsite, the separate reports produced by five to seven interviewers are brought together, a decision is reached, and you are told the outcome. The module's term for the body that does this is a hiring committee, and the interesting question is how such a body handles the situation it almost always faces: signals that do not agree.
