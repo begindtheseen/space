@@ -3233,6 +3233,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Differential GNSS, RTK, and precise point positioning"
       ],
       "file": "t4_m37_gnss/09-differential-gnss-rtk-and-ppp.md"
+    },
+    {
+      "id": "l10-gnss-above-the-constellation",
+      "title": "GNSS above the constellation",
+      "minutes": 22,
+      "covers": [
+        "Space-based GNSS: use above the constellation, side-lobe reception, high-dynamics tracking, Doppler"
+      ],
+      "file": "t4_m37_gnss/10-gnss-above-the-constellation.md"
     }
   ],
   "t4_m38_sensors_optical_nav": [
@@ -3572,11 +3581,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t4_m37_gnss": {
-    "covered": 9,
+    "covered": 10,
     "total": 14,
     "complete": false,
     "missing": [
-      "Space-based GNSS: use above the constellation, side-lobe reception, high-dynamics tracking, Doppler",
       "GNSS in a launch vehicle environment: acceleration, jerk, vibration, plume attenuation, antenna switching",
       "Jamming and spoofing; RAIM and integrity monitoring",
       "Receiver tracking loops (DLL, PLL, FLL) and the bandwidth/dynamics trade",
