@@ -408,7 +408,7 @@ WHEEL_RPM    n=100  mean=4208.206
 
 Four things in it are worth naming. `IFS= read -r line` reads a whole line untouched — `IFS=` stops leading and trailing whitespace being stripped, `-r` stops backslashes being eaten. `${line#*chan=}` and `${chan%% *}` are parameter expansions that trim a prefix and a suffix, which is faster than calling `cut` four hundred times. `${count[$chan]:-0}` supplies a zero for a key seen for the first time, which is what keeps `set -u` happy. And the whole thing passes `shellcheck` with no warnings.
 
-It is also, honestly, at the edge of what bash should be doing. Four hundred lines means four hundred `awk` processes for the sums; the same job as a single `awk` program is one process and about four lines, which lesson 10 writes. Use bash to decide *which* programs run, and a real language to do arithmetic in a loop.
+It is also, honestly, at the edge of what bash should be doing. Four hundred lines means four hundred `awk` processes for the sums, one per input line; a single `awk` program would make one pass in one process, and lesson 10 shows how its arrays work. Use bash to decide *which* programs run, and a language with real arithmetic to do the arithmetic.
 :::
 
 ::: key

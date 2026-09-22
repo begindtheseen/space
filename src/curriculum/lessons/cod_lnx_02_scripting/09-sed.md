@@ -1,7 +1,7 @@
 ---
 id: l09-sed
 title: sed — substitution and addressing
-minutes: 16
+minutes: 19
 covers:
   - sed substitution and addressing; awk fields, patterns, BEGIN/END, arrays
 ---
@@ -175,6 +175,63 @@ seed    = 100000
 A range between two patterns is the tool for pulling one run's block out of a combined log — from the line matching `sim start case=0417` to the next matching `sim end`.
 
 `sed -n '10000,10020p' huge.log` is also the fast way to look at a specific place in a very large file, and `sed -n '10020q; 10000,10020p'` stops reading once it has what it needs rather than scanning to the end.
+
+::: example Pulling one run out of a combined campaign log
+Five hundred cases writing to one file, and you want the block for case 0417 — which `grep` cannot give you, because the lines you need do not all contain the case id.
+
+```text
+2026-04-02T08:00:00Z INFO  sim start case=0416 seed=100416
+2026-04-02T08:00:10Z INFO  t=  20.0 alt_m=9900.0
+2026-04-02T08:00:20Z INFO  sim end case=0416 status=OK
+2026-04-02T08:01:00Z INFO  sim start case=0417 seed=100417
+2026-04-02T08:01:10Z WARN  solver iteration limit reached
+2026-04-02T08:01:20Z ERROR divergence detected, residual=1.8e+03
+2026-04-02T08:01:30Z INFO  sim end case=0417 status=DIVERGED
+2026-04-02T08:02:00Z INFO  sim start case=0418 seed=100418
+```
+
+```bash
+sed -n '/sim start case=0417/,/sim end/p' logs/combined.log
+```
+
+```text
+2026-04-02T08:01:00Z INFO  sim start case=0417 seed=100417
+2026-04-02T08:01:10Z WARN  solver iteration limit reached
+2026-04-02T08:01:20Z ERROR divergence detected, residual=1.8e+03
+2026-04-02T08:01:30Z INFO  sim end case=0417 status=DIVERGED
+```
+
+Exactly the four lines of that run, including the two that mention no case id at all. The range starts at the first line matching the opening pattern and ends at the next line matching the closing one — and note that the closing line *is* included, which is what you usually want and occasionally not:
+
+```bash
+sed -n '/sim start case=0417/,/sim end/{/sim end/q;p}' logs/combined.log
+```
+
+```text
+2026-04-02T08:01:00Z INFO  sim start case=0417 seed=100417
+2026-04-02T08:01:10Z WARN  solver iteration limit reached
+2026-04-02T08:01:20Z ERROR divergence detected, residual=1.8e+03
+```
+
+The braces group two commands under the range: quit on the end marker, otherwise print. `q` also means `sed` stops reading the file there, so this is cheap on a log of ten million lines.
+
+Chaining a second `sed` strips the timestamps, which is what you want before diffing two runs against each other:
+
+```bash
+sed -n '/sim start case=0417/,/sim end/p' logs/combined.log | sed -E 's/^[0-9T:-]+Z +//'
+```
+
+```text
+INFO  sim start case=0417 seed=100417
+WARN  solver iteration limit reached
+ERROR divergence detected, residual=1.8e+03
+INFO  sim end case=0417 status=DIVERGED
+```
+
+Two runs reduced this way and passed to `diff` show what actually differed, rather than showing that every line has a different time. That is the standard technique for "case 0417 diverged and case 0416 did not — what changed?"
+
+One caution about ranges: if the closing pattern never matches, the range runs to the end of the file. A truncated log therefore prints everything from the start marker onward, which looks like a bug in your command and is a fact about the data.
+:::
 
 Deleting is the complement, and the negation `!` lets you write either:
 

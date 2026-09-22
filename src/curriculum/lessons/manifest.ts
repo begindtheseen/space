@@ -1789,7 +1789,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-sed",
       "title": "sed — substitution and addressing",
-      "minutes": 16,
+      "minutes": 19,
       "covers": [
         "sed substitution and addressing; awk fields, patterns, BEGIN/END, arrays"
       ],
