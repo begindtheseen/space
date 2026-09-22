@@ -3480,6 +3480,44 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Star tracker accuracy: cross-boresight vs about-boresight, update rate, exclusion angles, stray light"
       ],
       "file": "t4_m38_sensors_optical_nav/02-star-tracker-accuracy-boresight-update-rate-stray-light.md"
+    },
+    {
+      "id": "l03-sun-sensors-coarse-fine-albedo-error",
+      "title": "Sun sensors: coarse and fine, and the Earth-albedo error",
+      "minutes": 27,
+      "covers": [
+        "Sun sensors: coarse analog and fine digital, field of view, albedo error"
+      ],
+      "file": "t4_m38_sensors_optical_nav/03-sun-sensors-coarse-fine-albedo-error.md"
+    },
+    {
+      "id": "l04-magnetometers-igrf-wmm-hard-soft-iron-calibration",
+      "title": "Magnetometers: the IGRF/WMM field model and hard- and soft-iron calibration",
+      "minutes": 20,
+      "covers": [
+        "Magnetometers, the IGRF and WMM field models, residual dipole, hard-iron and soft-iron calibration"
+      ],
+      "file": "t4_m38_sensors_optical_nav/04-magnetometers-igrf-wmm-hard-soft-iron-calibration.md"
+    }
+  ],
+  "t4_m39_orbit_determination": [
+    {
+      "id": "l01-initial-orbit-determination",
+      "title": "Initial orbit determination: Gibbs, Herrick-Gibbs and Gauss angles-only",
+      "minutes": 27,
+      "covers": [
+        "Initial orbit determination: angles-only (Gauss, Laplace, double-r), three position vectors (Gibbs, Herrick-Gibbs), range and range-rate methods"
+      ],
+      "file": "t4_m39_orbit_determination/01-initial-orbit-determination.md"
+    },
+    {
+      "id": "l02-batch-least-squares-orbit-determination",
+      "title": "Batch least-squares orbit determination with the state transition matrix",
+      "minutes": 16,
+      "covers": [
+        "Batch least-squares orbit determination with the state transition matrix"
+      ],
+      "file": "t4_m39_orbit_determination/02-batch-least-squares-orbit-determination.md"
     }
   ]
 }
@@ -3792,12 +3830,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t4_m38_sensors_optical_nav": {
-    "covered": 2,
+    "covered": 4,
     "total": 12,
     "complete": false,
     "missing": [
-      "Sun sensors: coarse analog and fine digital, field of view, albedo error",
-      "Magnetometers, the IGRF and WMM field models, residual dipole, hard-iron and soft-iron calibration",
       "Earth and horizon sensors",
       "Radar altimeters, laser altimeters and lidar",
       "Cameras for optical navigation: the pinhole model, intrinsics and extrinsics, distortion",
@@ -3809,12 +3845,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t4_m39_orbit_determination": {
-    "covered": 0,
+    "covered": 2,
     "total": 13,
     "complete": false,
     "missing": [
-      "Initial orbit determination: angles-only (Gauss, Laplace, double-r), three position vectors (Gibbs, Herrick-Gibbs), range and range-rate methods",
-      "Batch least-squares orbit determination with the state transition matrix",
       "The variational equations and computing the STM by integration",
       "Sequential orbit determination with EKF and UKF",
       "Measurement types and models: range, range-rate/Doppler, angles, GNSS, VLBI, inter-satellite links",
