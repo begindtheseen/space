@@ -38,6 +38,15 @@ export class LessonFormatError extends Error {}
 
 const HEADER_RE = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?/
 
+/** Removes one matching pair of outer quotes. A lone quote is left alone. */
+function unquote(v: string): string {
+  if (v.length >= 2) {
+    const first = v[0]
+    if ((first === '"' || first === "'") && v[v.length - 1] === first) return v.slice(1, -1)
+  }
+  return v
+}
+
 export function parseLesson(source: string, where = 'lesson'): ParsedLesson {
   const m = HEADER_RE.exec(source)
   if (!m) throw new LessonFormatError(`${where}: missing the --- header block`)
@@ -47,7 +56,10 @@ export function parseLesson(source: string, where = 'lesson'): ParsedLesson {
     const line = raw.replace(/\s+$/, '')
     if (!line.trim()) continue
     if (inCovers && /^\s+-\s+/.test(line)) {
-      header.covers.push(line.replace(/^\s+-\s+/, '').trim())
+      // Topics routinely contain colons and commas, so quoting one is the
+      // natural thing to write. Matching outer quotes are a wrapper, not part
+      // of the topic, and a topic must match the module's string verbatim.
+      header.covers.push(unquote(line.replace(/^\s+-\s+/, '').trim()))
       continue
     }
     inCovers = false
@@ -59,7 +71,7 @@ export function parseLesson(source: string, where = 'lesson'): ParsedLesson {
         header.id = value!.trim()
         break
       case 'title':
-        header.title = value!.trim().replace(/^["']|["']$/g, '')
+        header.title = unquote(value!.trim())
         break
       case 'minutes':
         header.minutes = Number(value)

@@ -2,4 +2,663 @@
 // Lesson metadata for every module that has lessons on disk; bodies load lazily.
 import type { LessonMeta } from './types'
 
-export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {}
+export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
+  "t0_m01_algebra_precalc": [
+    {
+      "id": "l01-signed-numbers-and-fractions",
+      "title": "Signed numbers, fractions and ratios",
+      "minutes": 16,
+      "covers": [
+        "arithmetic with signed numbers and fractions"
+      ],
+      "file": "t0_m01_algebra_precalc/01-signed-numbers-and-fractions.md"
+    },
+    {
+      "id": "l02-exponents-and-radicals",
+      "title": "Exponents, radicals and scaling laws",
+      "minutes": 16,
+      "covers": [
+        "exponents and radicals"
+      ],
+      "file": "t0_m01_algebra_precalc/02-exponents-and-radicals.md"
+    },
+    {
+      "id": "l03-polynomials-and-factoring",
+      "title": "Polynomials, expanding and factoring",
+      "minutes": 16,
+      "covers": [
+        "polynomial manipulation and factoring"
+      ],
+      "file": "t0_m01_algebra_precalc/03-polynomials-and-factoring.md"
+    },
+    {
+      "id": "l04-linear-and-quadratic-equations",
+      "title": "Linear and quadratic equations",
+      "minutes": 16,
+      "covers": [
+        "linear and quadratic equations"
+      ],
+      "file": "t0_m01_algebra_precalc/04-linear-and-quadratic-equations.md"
+    },
+    {
+      "id": "l05-systems-of-equations",
+      "title": "Systems of equations",
+      "minutes": 14,
+      "covers": [
+        "systems of equations"
+      ],
+      "file": "t0_m01_algebra_precalc/05-systems-of-equations.md"
+    }
+  ],
+  "t0_m02_trigonometry": [
+    {
+      "id": "l01-angles-radians-unit-circle",
+      "title": "Angles, radians and the unit circle",
+      "minutes": 20,
+      "covers": [
+        "radians vs degrees",
+        "the unit circle"
+      ],
+      "file": "t0_m02_trigonometry/01-angles-radians-unit-circle.md"
+    },
+    {
+      "id": "l02-sin-cos-tan-inverses",
+      "title": "Sine, cosine, tangent and their inverses",
+      "minutes": 20,
+      "covers": [
+        "sin, cos, tan and their inverses"
+      ],
+      "file": "t0_m02_trigonometry/02-sin-cos-tan-inverses.md"
+    },
+    {
+      "id": "l03-atan2-quadrants-wrapping",
+      "title": "atan2, quadrants and angle wrapping",
+      "minutes": 20,
+      "covers": [
+        "atan2 and quadrant correctness"
+      ],
+      "file": "t0_m02_trigonometry/03-atan2-quadrants-wrapping.md"
+    }
+  ],
+  "t0_m03_python_scicomp": [
+    {
+      "id": "l01-python-basics",
+      "title": "Python from zero: values, names and control flow",
+      "minutes": 20,
+      "covers": [
+        "Python syntax, control flow, functions, classes"
+      ],
+      "file": "t0_m03_python_scicomp/01-python-basics.md"
+    },
+    {
+      "id": "l02-functions-modules",
+      "title": "Functions, errors and modules",
+      "minutes": 20,
+      "covers": [
+        "Python syntax, control flow, functions, classes"
+      ],
+      "file": "t0_m03_python_scicomp/02-functions-modules.md"
+    },
+    {
+      "id": "l03-workbench",
+      "title": "The workbench: environments, pip, notebooks and git",
+      "minutes": 22,
+      "covers": [
+        "virtual environments and pip",
+        "Jupyter notebooks",
+        "git and GitHub"
+      ],
+      "file": "t0_m03_python_scicomp/03-workbench.md"
+    }
+  ],
+  "t0_m04_linear_algebra_1": [
+    {
+      "id": "l01-vectors-norms-dot-product",
+      "title": "Vectors, norms and the dot product",
+      "minutes": 19,
+      "covers": [
+        "vectors, dot and cross products, norms, projections"
+      ],
+      "file": "t0_m04_linear_algebra_1/01-vectors-norms-dot-product.md"
+    }
+  ],
+  "t0_m05_linear_algebra_2": [
+    {
+      "id": "l01-eigenvalues-and-diagonalisation",
+      "title": "Eigenvalues, eigenvectors and diagonalisation",
+      "minutes": 20,
+      "covers": [
+        "eigenvalues, eigenvectors, diagonalisation"
+      ],
+      "file": "t0_m05_linear_algebra_2/01-eigenvalues-and-diagonalisation.md"
+    },
+    {
+      "id": "l02-matrix-exponential",
+      "title": "The matrix exponential and the state transition matrix",
+      "minutes": 22,
+      "covers": [
+        "the matrix exponential and the state transition matrix"
+      ],
+      "file": "t0_m05_linear_algebra_2/02-matrix-exponential.md"
+    }
+  ],
+  "t0_m06_calculus_single": [
+    {
+      "id": "l01-limits-and-continuity",
+      "title": "Limits and continuity",
+      "minutes": 22,
+      "covers": [
+        "limits and continuity"
+      ],
+      "file": "t0_m06_calculus_single/01-limits-and-continuity.md"
+    },
+    {
+      "id": "l02-the-derivative",
+      "title": "The derivative from first principles",
+      "minutes": 24,
+      "covers": [
+        "the derivative: definition, chain, product and quotient rules"
+      ],
+      "file": "t0_m06_calculus_single/02-the-derivative.md"
+    },
+    {
+      "id": "l03-differentiation-rules",
+      "title": "The product, quotient and chain rules",
+      "minutes": 25,
+      "covers": [
+        "the derivative: definition, chain, product and quotient rules"
+      ],
+      "file": "t0_m06_calculus_single/03-differentiation-rules.md"
+    },
+    {
+      "id": "l04-implicit-differentiation-related-rates",
+      "title": "Implicit differentiation and related rates",
+      "minutes": 22,
+      "covers": [
+        "implicit differentiation and related rates"
+      ],
+      "file": "t0_m06_calculus_single/04-implicit-differentiation-related-rates.md"
+    }
+  ],
+  "t0_m07_calculus_multi": [
+    {
+      "id": "l01-partial-derivatives",
+      "title": "Functions of several variables and partial derivatives",
+      "minutes": 20,
+      "covers": [
+        "partial derivatives"
+      ],
+      "file": "t0_m07_calculus_multi/01-partial-derivatives.md"
+    },
+    {
+      "id": "l02-gradient",
+      "title": "The gradient and the directional derivative",
+      "minutes": 21,
+      "covers": [
+        "gradient and directional derivative"
+      ],
+      "file": "t0_m07_calculus_multi/02-gradient.md"
+    },
+    {
+      "id": "l03-jacobian",
+      "title": "The Jacobian and the measurement matrix",
+      "minutes": 22,
+      "covers": [
+        "Jacobian and Hessian"
+      ],
+      "file": "t0_m07_calculus_multi/03-jacobian.md"
+    }
+  ],
+  "t0_m08_odes": [
+    {
+      "id": "l01-first-order-odes",
+      "title": "First-order ODEs and the actuator lag",
+      "minutes": 20,
+      "covers": [
+        "first-order ODEs: separable, linear, integrating factor"
+      ],
+      "file": "t0_m08_odes/01-first-order-odes.md"
+    },
+    {
+      "id": "l02-second-order-characteristic-equation",
+      "title": "Second-order equations and the characteristic equation",
+      "minutes": 20,
+      "covers": [
+        "second-order linear constant-coefficient ODEs and the characteristic equation"
+      ],
+      "file": "t0_m08_odes/02-second-order-characteristic-equation.md"
+    }
+  ],
+  "t0_m09_probability_stats": [
+    {
+      "id": "l01-probability-and-bayes",
+      "title": "Sample spaces, conditional probability and Bayes' theorem",
+      "minutes": 20,
+      "covers": [
+        "sample spaces, conditional probability, Bayes theorem"
+      ],
+      "file": "t0_m09_probability_stats/01-probability-and-bayes.md"
+    },
+    {
+      "id": "l02-random-variables-pdf-cdf",
+      "title": "Random variables, PDF and CDF",
+      "minutes": 21,
+      "covers": [
+        "random variables, PDF and CDF"
+      ],
+      "file": "t0_m09_probability_stats/02-random-variables-pdf-cdf.md"
+    },
+    {
+      "id": "l03-expectation-variance-moments",
+      "title": "Expectation, variance and moments",
+      "minutes": 21,
+      "covers": [
+        "expectation, variance, moments"
+      ],
+      "file": "t0_m09_probability_stats/03-expectation-variance-moments.md"
+    },
+    {
+      "id": "l04-gaussian-and-covariance",
+      "title": "The Gaussian, covariance matrices and error ellipsoids",
+      "minutes": 23,
+      "covers": [
+        "the Gaussian and multivariate Gaussian, covariance matrices, correlation"
+      ],
+      "file": "t0_m09_probability_stats/04-gaussian-and-covariance.md"
+    }
+  ],
+  "t0_m10_numerical_methods": [
+    {
+      "id": "l01-floating-point",
+      "title": "Floating point in flight software",
+      "minutes": 18,
+      "covers": [
+        "floating-point representation, machine epsilon, catastrophic cancellation"
+      ],
+      "file": "t0_m10_numerical_methods/01-floating-point.md"
+    }
+  ],
+  "t0_m11_optimization": [
+    {
+      "id": "l01-descent-and-line-search",
+      "title": "Unconstrained optimisation I: optimality conditions, gradient descent and line search",
+      "minutes": 20,
+      "covers": [
+        "unconstrained optimisation: gradient descent, Newton, BFGS, line search, trust region"
+      ],
+      "file": "t0_m11_optimization/01-descent-and-line-search.md"
+    }
+  ],
+  "t0_m12_cpp": [
+    {
+      "id": "l01-from-python-to-compiled-cpp",
+      "title": "From Python to compiled C++",
+      "minutes": 22,
+      "covers": [
+        "C++17/20 core language"
+      ],
+      "file": "t0_m12_cpp/01-from-python-to-compiled-cpp.md"
+    },
+    {
+      "id": "l02-values-references-const",
+      "title": "Value semantics, references and const",
+      "minutes": 22,
+      "covers": [
+        "value semantics, references, const-correctness"
+      ],
+      "file": "t0_m12_cpp/02-values-references-const.md"
+    },
+    {
+      "id": "l03-raii-ownership-and-moves",
+      "title": "RAII, ownership, smart pointers and moves",
+      "minutes": 28,
+      "covers": [
+        "RAII, ownership, smart pointers",
+        "move semantics"
+      ],
+      "file": "t0_m12_cpp/03-raii-ownership-and-moves.md"
+    }
+  ],
+  "t1_m13_classical_mechanics": [
+    {
+      "id": "l01-newton-laws-inertial-frames",
+      "title": "Newton's laws and inertial frames",
+      "minutes": 21,
+      "covers": [
+        "Newton laws and inertial frames"
+      ],
+      "file": "t1_m13_classical_mechanics/01-newton-laws-inertial-frames.md"
+    },
+    {
+      "id": "l02-force-momentum-impulse",
+      "title": "Force, momentum and impulse",
+      "minutes": 20,
+      "covers": [
+        "force, momentum, impulse"
+      ],
+      "file": "t1_m13_classical_mechanics/02-force-momentum-impulse.md"
+    }
+  ],
+  "t1_m14_rigid_body_dynamics": [
+    {
+      "id": "l01-rigid-body-kinematics",
+      "title": "Rigid body kinematics and the angular velocity vector",
+      "minutes": 18,
+      "covers": [
+        "rigid body kinematics and the angular velocity vector"
+      ],
+      "file": "t1_m14_rigid_body_dynamics/01-rigid-body-kinematics.md"
+    }
+  ],
+  "t1_m15_rotating_frames": [
+    {
+      "id": "l01-frames-coordinates-and-rotation-matrices",
+      "title": "Frames, coordinates and rotation matrices",
+      "minutes": 18,
+      "covers": [
+        "frame transformation chains and notation discipline"
+      ],
+      "file": "t1_m15_rotating_frames/01-frames-coordinates-and-rotation-matrices.md"
+    },
+    {
+      "id": "l02-the-transport-theorem",
+      "title": "The transport theorem",
+      "minutes": 16,
+      "covers": [
+        "the transport theorem"
+      ],
+      "file": "t1_m15_rotating_frames/02-the-transport-theorem.md"
+    }
+  ],
+  "t2_m19_two_body": [
+    {
+      "id": "l01-two-body-equation",
+      "title": "Newton's gravitation and the two-body equation",
+      "minutes": 16,
+      "covers": [
+        "Newton law of gravitation and the restricted two-body equation"
+      ],
+      "file": "t2_m19_two_body/01-two-body-equation.md"
+    },
+    {
+      "id": "l02-constants-of-motion",
+      "title": "Constants of motion – angular momentum, energy and the eccentricity vector",
+      "minutes": 16,
+      "covers": [
+        "constants of motion: specific angular momentum, eccentricity vector, specific energy"
+      ],
+      "file": "t2_m19_two_body/02-constants-of-motion.md"
+    }
+  ]
+}
+
+/** Derived: how much of each module its lessons actually teach. */
+export interface LessonCoverage {
+  covered: number
+  total: number
+  complete: boolean
+  missing: string[]
+}
+
+export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
+  "t0_m01_algebra_precalc": {
+    "covered": 5,
+    "total": 12,
+    "complete": false,
+    "missing": [
+      "functions: domain, range, composition, inverses",
+      "exponentials and logarithms",
+      "sequences, series, and sigma notation",
+      "inequalities",
+      "units and dimensional analysis",
+      "scientific notation and significant figures",
+      "order-of-magnitude (Fermi) estimation"
+    ]
+  },
+  "t0_m02_trigonometry": {
+    "covered": 4,
+    "total": 10,
+    "complete": false,
+    "missing": [
+      "identities: Pythagorean, sum/difference, double-angle",
+      "law of sines and law of cosines",
+      "small-angle approximations",
+      "polar and spherical coordinates",
+      "conic sections in geometric and polar form",
+      "complex numbers and Euler formula"
+    ]
+  },
+  "t0_m03_python_scicomp": {
+    "covered": 4,
+    "total": 10,
+    "complete": false,
+    "missing": [
+      "NumPy arrays, broadcasting, vectorisation, dtypes, float64 semantics",
+      "SciPy: integrate.solve_ivp, optimize, linalg, signal, stats",
+      "matplotlib and publication-grade plots",
+      "pytest and test-driven numerical code",
+      "reading and plotting CSV / HDF5 telemetry",
+      "floating-point pitfalls: catastrophic cancellation, machine epsilon"
+    ]
+  },
+  "t0_m04_linear_algebra_1": {
+    "covered": 1,
+    "total": 10,
+    "complete": false,
+    "missing": [
+      "matrix multiplication as composition of maps",
+      "identity, inverse, transpose",
+      "Gaussian elimination and LU factorisation",
+      "rank, null space, column space",
+      "linear independence and basis",
+      "determinant and its geometric meaning",
+      "change of basis between reference frames",
+      "orthogonality, Gram-Schmidt, QR",
+      "skew-symmetric matrices and the cross-product matrix"
+    ]
+  },
+  "t0_m05_linear_algebra_2": {
+    "covered": 2,
+    "total": 11,
+    "complete": false,
+    "missing": [
+      "similarity transforms",
+      "symmetric matrices and the spectral theorem",
+      "positive definiteness and quadratic forms",
+      "singular value decomposition",
+      "pseudoinverse and rank deficiency",
+      "condition number",
+      "least squares: normal equations vs QR vs SVD",
+      "Cholesky factorisation",
+      "matrix calculus: gradients and Jacobians"
+    ]
+  },
+  "t0_m06_calculus_single": {
+    "covered": 3,
+    "total": 10,
+    "complete": false,
+    "missing": [
+      "linearisation and differentials",
+      "Taylor series and truncation error",
+      "maxima, minima and optimisation of a scalar function",
+      "the definite integral and the fundamental theorem of calculus",
+      "integration by parts and substitution",
+      "improper integrals",
+      "separable first-order ODEs"
+    ]
+  },
+  "t0_m07_calculus_multi": {
+    "covered": 3,
+    "total": 10,
+    "complete": false,
+    "missing": [
+      "chain rule for vector functions",
+      "multiple integrals",
+      "line and surface integrals",
+      "divergence, curl, Laplacian",
+      "divergence and Stokes theorems",
+      "conservative fields and potential functions",
+      "vector-valued functions of time, arc length, curvature"
+    ]
+  },
+  "t0_m08_odes": {
+    "covered": 2,
+    "total": 12,
+    "complete": false,
+    "missing": [
+      "the damped oscillator: natural frequency and damping ratio",
+      "forced response and resonance",
+      "systems of first-order ODEs and state-space form",
+      "matrix exponential solution",
+      "Laplace transform, inverse transform, partial fractions",
+      "initial and final value theorems",
+      "transfer functions",
+      "convolution and impulse response",
+      "stability from pole locations",
+      "phase-plane basics"
+    ]
+  },
+  "t0_m09_probability_stats": {
+    "covered": 4,
+    "total": 13,
+    "complete": false,
+    "missing": [
+      "linear transformations of random vectors",
+      "sums of random variables and the central limit theorem",
+      "white noise, random walk, Gauss-Markov processes",
+      "power spectral density and autocorrelation",
+      "stochastic processes and Brownian motion",
+      "maximum likelihood estimation",
+      "confidence intervals and hypothesis testing",
+      "Monte Carlo methods and convergence rates",
+      "the chi-square distribution and filter consistency testing"
+    ]
+  },
+  "t0_m10_numerical_methods": {
+    "covered": 1,
+    "total": 13,
+    "complete": false,
+    "missing": [
+      "root finding: bisection, Newton-Raphson, secant, and convergence rates",
+      "numerical ODE integration: Euler, Heun, RK4, RK45 / Dormand-Prince",
+      "adaptive step-size control",
+      "Adams-Bashforth / Adams-Moulton multistep methods",
+      "stiffness and implicit methods: backward Euler, BDF",
+      "symplectic integrators for long orbit propagation",
+      "local vs global truncation error",
+      "energy drift as a correctness check",
+      "interpolation: linear and cubic spline",
+      "numerical differentiation and complex-step derivatives",
+      "quadrature: Simpson, Gauss-Legendre",
+      "conditioning and stability of linear solves, sparse matrices"
+    ]
+  },
+  "t0_m11_optimization": {
+    "covered": 1,
+    "total": 14,
+    "complete": false,
+    "missing": [
+      "constrained optimisation and Lagrange multipliers",
+      "KKT conditions",
+      "convex sets and convex functions",
+      "why convexity matters: global optimum, polynomial time, certificates",
+      "linear and quadratic programming",
+      "second-order cone programming",
+      "semidefinite programming",
+      "duality and the dual problem",
+      "interior-point methods",
+      "sequential quadratic programming",
+      "nonlinear programming solvers (IPOPT, SNOPT)",
+      "modelling languages and solvers: CVXPY, ECOS, SCS, OSQP, Clarabel",
+      "real-time embedded convex solvers and code generation"
+    ]
+  },
+  "t0_m12_cpp": {
+    "covered": 4,
+    "total": 17,
+    "complete": false,
+    "missing": [
+      "templates and generic programming",
+      "the STL: containers, algorithms, iterators",
+      "classes, inheritance, virtual dispatch and its cost",
+      "Eigen, including the Geometry module",
+      "memory layout, cache behaviour, allocation-free hot loops",
+      "constexpr and compile-time computation",
+      "error handling without exceptions",
+      "CMake, with Bazel awareness",
+      "GoogleTest",
+      "profiling and sanitizers: perf, valgrind, ASan/UBSan",
+      "pybind11 bindings over a C++ simulation core",
+      "undefined behaviour",
+      "static analysis: clang-tidy, cppcheck"
+    ]
+  },
+  "t1_m13_classical_mechanics": {
+    "covered": 2,
+    "total": 9,
+    "complete": false,
+    "missing": [
+      "the work-energy theorem",
+      "conservative forces and potential energy",
+      "systems of particles and the centre of mass",
+      "variable-mass systems and the rocket equation done properly",
+      "constraints and generalised coordinates",
+      "Lagrangian mechanics and the Euler-Lagrange equation",
+      "Hamilton principle"
+    ]
+  },
+  "t1_m14_rigid_body_dynamics": {
+    "covered": 1,
+    "total": 12,
+    "complete": false,
+    "missing": [
+      "the moment of inertia tensor, products of inertia, parallel axis theorem",
+      "principal axes and principal moments",
+      "angular momentum H = I omega",
+      "Euler rotational equations of motion",
+      "torque-free motion, polhode and herpolhode",
+      "major/minor axis spin stability and the intermediate axis theorem",
+      "energy dissipation and the flat-spin instability",
+      "gyroscopic effects, nutation, precession",
+      "dual-spin spacecraft",
+      "momentum wheels and control moment gyros",
+      "introduction to flexible modes and propellant slosh"
+    ]
+  },
+  "t1_m15_rotating_frames": {
+    "covered": 2,
+    "total": 11,
+    "complete": false,
+    "missing": [
+      "velocity and acceleration in rotating frames",
+      "Coriolis, centrifugal and Euler acceleration terms",
+      "ECI (J2000 / GCRF) and ECEF (ITRF)",
+      "NED and ENU local-level frames",
+      "body, LVLH / RIC, perifocal, topocentric and sensor frames",
+      "Earth rotation rate",
+      "precession, nutation, polar motion",
+      "UT1, TAI, GPS and TT time scales",
+      "geodetic vs geocentric latitude and the WGS-84 ellipsoid"
+    ]
+  },
+  "t2_m19_two_body": {
+    "covered": 2,
+    "total": 15,
+    "complete": false,
+    "missing": [
+      "the orbit equation and conic sections",
+      "Kepler three laws, derived",
+      "circular, elliptical, parabolic and hyperbolic orbits",
+      "classical orbital elements and equinoctial alternatives",
+      "state vector to orbital element conversion, both directions",
+      "Kepler equation: elliptic, hyperbolic and parabolic (Barker)",
+      "true, eccentric and mean anomaly",
+      "time of flight",
+      "universal variables and the Stumpff functions",
+      "Lagrange f and g coefficients",
+      "vis-viva",
+      "ground tracks and orbit types: LEO, MEO, GEO, GTO, SSO, Molniya, frozen",
+      "TLE format and SGP4"
+    ]
+  }
+}
