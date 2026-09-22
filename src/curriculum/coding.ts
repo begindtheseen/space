@@ -5025,7 +5025,7 @@ export const CODING: Module[] = [
         id: 'cpp02_ex1',
         title: 'StaticVector with no heap allocation',
         prompt:
-          'Implement StaticVector<T, N>: fixed capacity N in a member buffer with no dynamic allocation, supporting push_back (returning false when full), pop_back, size, capacity, empty, operator[] and begin/end. Objects must be constructed in place and destroyed exactly once. Demonstrate correctness with a type whose constructor and destructor print, so the program prints the exact construct and destroy sequence. Expected output for pushing three elements then destroying the container: three ctor lines followed by three dtor lines in reverse order, and no leaked or double-destroyed element.',
+          'Implement StaticVector<T, N>: fixed capacity N in a member buffer with no dynamic allocation, supporting push_back (returning false when full), pop_back, size, capacity, empty, operator[] and begin/end. Objects must be constructed in place and destroyed exactly once. Demonstrate correctness with a type whose constructor and destructor print, so the program prints the exact construct and destroy sequence. Note that push_back takes const T& and copies, so give the tracer a printing copy constructor too and count it. Expected output for pushing three named objects then destroying the container: three copy lines as they go in, then three dtor lines in reverse order as the container dies, and no leaked or double-destroyed element.',
         kind: 'code',
         lang: 'cpp',
         starter:
