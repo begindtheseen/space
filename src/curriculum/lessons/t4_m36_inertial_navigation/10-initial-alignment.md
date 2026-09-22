@@ -1,7 +1,7 @@
 ---
 id: l10-initial-alignment
 title: Initial alignment
-minutes: 22
+minutes: 17
 covers:
   - "Initial alignment: coarse leveling, gyrocompassing, fine alignment via Kalman filter, transfer and in-flight alignment"
 ---
@@ -109,6 +109,7 @@ for n_updates in [1, 6, 30, 60, 150]:
     print(f"t={n_updates*dt:6.0f}s  sigma_tilt={np.degrees(s[0])*3600:8.2f} arcsec  "
           f"sigma_bias={np.degrees(s[2])*3600:7.4f} deg/h")
 # t=    10s  sigma_tilt=  116.58 arcsec  sigma_bias= 9.9990 deg/h
+# t=    60s  sigma_tilt=   64.11 arcsec  sigma_bias= 1.7656 deg/h
 # t=   300s  sigma_tilt=    6.87 arcsec  sigma_bias= 0.0365 deg/h
 # t=   600s  sigma_tilt=    2.44 arcsec  sigma_bias= 0.0065 deg/h
 # t=  1500s  sigma_tilt=    0.55 arcsec  sigma_bias= 0.0006 deg/h

@@ -3237,7 +3237,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-initial-alignment",
       "title": "Initial alignment",
-      "minutes": 22,
+      "minutes": 17,
       "covers": [
         "Initial alignment: coarse leveling, gyrocompassing, fine alignment via Kalman filter, transfer and in-flight alignment"
       ],
