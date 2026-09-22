@@ -920,6 +920,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "second-order cone programming"
       ],
       "file": "t0_m11_optimization/06-second-order-cone-programming.md"
+    },
+    {
+      "id": "l07-duality-and-the-dual-problem",
+      "title": "Duality and the dual problem",
+      "minutes": 28,
+      "covers": [
+        "duality and the dual problem"
+      ],
+      "file": "t0_m11_optimization/07-duality-and-the-dual-problem.md"
     }
   ],
   "t0_m12_cpp": [
@@ -1201,6 +1210,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "major/minor axis spin stability and the intermediate axis theorem"
       ],
       "file": "t1_m14_rigid_body_dynamics/07-spin-stability-and-the-intermediate-axis-theorem.md"
+    },
+    {
+      "id": "l08-energy-dissipation-and-the-flat-spin-instability",
+      "title": "Energy dissipation and the flat-spin instability",
+      "minutes": 19,
+      "covers": [
+        "energy dissipation and the flat-spin instability"
+      ],
+      "file": "t1_m14_rigid_body_dynamics/08-energy-dissipation-and-the-flat-spin-instability.md"
     }
   ],
   "t1_m15_rotating_frames": [
@@ -1616,12 +1634,11 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t0_m11_optimization": {
-    "covered": 7,
+    "covered": 8,
     "total": 14,
     "complete": false,
     "missing": [
       "semidefinite programming",
-      "duality and the dual problem",
       "interior-point methods",
       "sequential quadratic programming",
       "nonlinear programming solvers (IPOPT, SNOPT)",
@@ -1642,11 +1659,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t1_m14_rigid_body_dynamics": {
-    "covered": 7,
+    "covered": 8,
     "total": 12,
     "complete": false,
     "missing": [
-      "energy dissipation and the flat-spin instability",
       "gyroscopic effects, nutation, precession",
       "dual-spin spacecraft",
       "momentum wheels and control moment gyros",

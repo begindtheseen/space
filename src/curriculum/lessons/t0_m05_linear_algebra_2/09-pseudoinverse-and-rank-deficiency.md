@@ -48,7 +48,7 @@ because $\operatorname{diag}(\sigma_i^{-2})\boldsymbol{\Sigma}^\mathsf{T}$ has e
 $\mathbf{A}^+$ is the unique matrix $\mathbf{X}$ satisfying $\mathbf{A}\mathbf{X}\mathbf{A} = \mathbf{A}$, $\mathbf{X}\mathbf{A}\mathbf{X} = \mathbf{X}$, $(\mathbf{A}\mathbf{X})^\mathsf{T} = \mathbf{A}\mathbf{X}$ and $(\mathbf{X}\mathbf{A})^\mathsf{T} = \mathbf{X}\mathbf{A}$ — the Moore–Penrose conditions. The first two say $\mathbf{X}$ inverts $\mathbf{A}$ as far as it can; the last two say the two products are orthogonal projectors rather than oblique ones. You will not often check them, but they are why $\mathbf{A}^+$ is *the* pseudoinverse and not *a* generalised inverse: many matrices satisfy the first condition alone.
 :::
 
-## What $\mathbf{x} = \mathbf{A}^+\mathbf{b}$ actually solves
+## What a pseudoinverse solution optimises
 
 Work in the singular bases, where everything decouples. Expand the data in the left singular vectors, $\mathbf{b} = \sum_{i=1}^{m}\beta_i\mathbf{u}_i$ with $\beta_i = \mathbf{u}_i^\mathsf{T}\mathbf{b}$, and the unknown in the right singular vectors, $\mathbf{x} = \sum_{j=1}^{n}\xi_j\mathbf{v}_j$. Since $\mathbf{A}\mathbf{v}_j = \sigma_j\mathbf{u}_j$ and $\sigma_j = 0$ beyond $r$,
 
