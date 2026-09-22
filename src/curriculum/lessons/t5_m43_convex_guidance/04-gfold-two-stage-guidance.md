@@ -32,9 +32,17 @@ Take a short-horizon instance of the Mars lander from this module — $N=10$ ste
 :::
 
 ::: example How far the footprint reaches before it does not
-Hold everything fixed except the initial downrange offset and re-run stage 1 at increasing distance, on the same $20\,\mathrm{s}$-horizon vehicle: [[FOOTPRINT_TABLE]]
+Hold everything else fixed — same $20\,\mathrm{s}$-horizon vehicle, same $\mathbf{v}_0=(-10,3,-25)\,\mathrm{m/s}$, same target — and re-run stage 1 at increasing initial downrange offset $x_0$:
 
-[[FOOTPRINT_DISCUSSION]]
+| $x_0\,(\mathrm{m})$ | stage-1 landing error $d^\star\,(\mathrm{m})$ | reachable? |
+| --- | --- | --- |
+| $200$ | $1.0\times10^{-7}$ | yes |
+| $400$ | $0.00033$ | yes |
+| $500$ | $0.0017$ | yes |
+| $550$ | $60.40$ | no |
+| $700$ | $266.08$ | no |
+
+Reachability is not a soft property that fades in gradually — every solve out to $500\,\mathrm{m}$ returns a landing error indistinguishable from zero at solver tolerance, and the very next test point, $550\,\mathrm{m}$, jumps to a $60\,\mathrm{m}$ miss with the same solver settings. That is the reachable footprint's edge, found by exactly the same convex solve as everything else in this module — no separate reachability analysis, no search over trajectory shapes, just the value of $d^\star$ read off a single number. Past the edge, $d^\star$ grows with distance ($60.40\,\mathrm{m}$ at $550\,\mathrm{m}$, $266.08\,\mathrm{m}$ at $700\,\mathrm{m}$) rather than the solve simply failing, which is the entire point of posing it this way: a vehicle that finds itself past its own footprint still gets a landing point, the closest one physically achievable in the time left, instead of a guidance failure. A full footprint map for a flight program sweeps this same solve over a grid of initial positions and, separately, over a grid of propellant loads — lowering the propellant available by adding an explicit floor on final mass shrinks $\rho_{\max}$'s effective usefulness late in the burn and pulls the reachable boundary inward from every direction at once, since less propellant means less authority to correct a bad initial condition regardless of which direction it is bad in.
 :::
 
 ## The Xombie flights: what convex guidance proved by actually flying

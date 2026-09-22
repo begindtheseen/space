@@ -8,7 +8,7 @@ covers:
 
 Triple modular redundancy — three independent channels computing or measuring the same quantity, with a voter reconciling them into one answer used downstream — is the single most recognizable pattern in fault-tolerant flight software, and it is also the pattern most often trusted to do more than it actually does. A voter is a precisely limited piece of logic: it can tell you when the three channels disagree, and it can produce a sensible output when exactly one of them is wrong in an obvious way. It cannot tell you that a value is *correct*. Those are different claims, and the gap between them is where real failures live.
 
-This lesson builds a voter, shows it correctly doing the job it is good at, and then shows the specific way it fails that a working GNC engineer has to be able to state precisely, not just gesture at: when all three channels are wrong in the same way, a voter reports full health on a value that is wrong. Lesson 7 adds a second, structurally different failure mode — a channel that lies differently to different listeners — that defeats a vote even without every channel being wrong.
+This lesson builds a voter, shows it correctly doing the job it is good at, and then shows the specific way it fails that a working GNC engineer has to be able to state precisely, not merely gesture at: when all three channels are wrong in the same way, a voter reports full health on a value that is wrong. Lesson 7 adds a second, structurally different failure mode — a channel that lies differently to different listeners — that defeats a vote even without every channel being wrong.
 
 ## Two ways to reconcile three channels
 
@@ -39,7 +39,7 @@ Both are instances of the same pattern this module calls triple modular redundan
 
 ## What a voter is good at: masking a hard failure
 
-Take three redundant strings reporting the same body pitch rate, in degrees per second, and let one of them fail hard — stuck, or wildly out of family, the kind of failure that is obviously wrong the moment you look at it next to the other two.
+Take three redundant strings reporting the same body pitch rate, in degrees per second, and let one of them fail hard — stuck, or wildly out of family, the kind of failure that is unmistakably wrong the moment you look at it next to the other two.
 
 ::: example Correctly masking a hard-over failure
 ```python

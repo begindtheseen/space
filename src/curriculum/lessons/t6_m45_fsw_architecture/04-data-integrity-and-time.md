@@ -122,7 +122,7 @@ print(f"age, no step: {age(sample_wall, 1000.05):.3f} s")
 print(f"age, after a -0.30 s wall-clock step between sample and check: {age(sample_wall, 999.80):.3f} s")
 # age, after a -0.30 s wall-clock step between sample and check: -0.200 s
 ```
-A wall-clock correction applied between when a value was sampled and when its age is checked produces a negative age — the earlier staleness example's "impossible future timestamp" bug, except now self-inflicted by the clock rather than by a corrupted field. A monotonic clock, used for every interval measurement in flight software — staleness ages, watchdog timeouts, persistence counters, control-loop timing — cannot be stepped by anything, so this failure mode cannot occur from timing logic alone. The wall clock (and a GPS- or UTC-tagged epoch) is still needed for *when in history* an event happened, for the ground and for time-tagged logs; it is simply the wrong tool for measuring *how long*.
+A wall-clock correction applied between when a value was sampled and when its age is checked produces a negative age — the earlier staleness example's "impossible future timestamp" bug, except now self-inflicted by the clock rather than by a corrupted field. A monotonic clock, used for every interval measurement in flight software — staleness ages, watchdog timeouts, persistence counters, control-loop timing — cannot be stepped by anything, so this failure mode cannot occur from timing logic alone. The wall clock (and a GPS- or UTC-tagged epoch) is still needed for *when in history* an event happened, for the ground and for time-tagged logs; it is the wrong tool for measuring *how long*.
 :::
 
 ::: key

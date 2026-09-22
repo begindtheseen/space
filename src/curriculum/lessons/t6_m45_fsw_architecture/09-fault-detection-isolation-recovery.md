@@ -166,7 +166,7 @@ for gap in [0.0, 1.0, 2.0]:
 # gap=1.0 (declare=3.5, clear=2.5): mean flips over 2000 samples = 241.4
 # gap=2.0 (declare=3.5, clear=1.5): mean flips over 2000 samples = 44.6
 ```
-With no gap at all, a residual sitting right at the boundary flips state about once every four samples — a fault flag chattering essentially continuously. Separating the clear threshold from the declare threshold by two sigma cuts that more than tenfold, because the residual now has to travel meaningfully further from where it just was before the state changes again. The right gap size, like the right $N$, is chosen against how much chattering the downstream logic (a mode transition, an isolation decision) can tolerate — not fixed by convention.
+With no gap at all, a residual sitting right at the boundary flips state about once every four samples — a fault flag chattering essentially continuously. Separating the clear threshold from the declare threshold by two sigma cuts that more than tenfold, because the residual now has to travel meaningfully further from its previous position before the state changes again. The right gap size, like the right $N$, is chosen against how much chattering the downstream logic (a mode transition, an isolation decision) can tolerate — not fixed by convention.
 :::
 
 ## FDIR as a pipeline, not a single check

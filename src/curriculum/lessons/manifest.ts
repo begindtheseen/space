@@ -60,6 +60,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "the stated expectation of extended hours and weekends to meet critical deadlines"
       ],
       "file": "car_01_itar_gate/06-clearance-testing-and-hours.md"
+    },
+    {
+      "id": "l07-the-international-alternative",
+      "title": "If the gate is closed, part one: non-ITAR and international employers",
+      "minutes": 21,
+      "covers": [
+        "what a non-US-person can realistically target instead: non-ITAR employers, European, UK, Canadian, Australian and Japanese space sectors, academia, and a long-horizon immigration path"
+      ],
+      "file": "car_01_itar_gate/07-the-international-alternative.md"
     }
   ],
   "t0_m01_algebra_precalc": [
@@ -2035,6 +2044,24 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "one-tangent burns"
       ],
       "file": "t2_m20_orbital_maneuvers/04-one-tangent-transfers.md"
+    },
+    {
+      "id": "l05-plane-changes",
+      "title": "Plane changes and combined manoeuvres",
+      "minutes": 24,
+      "covers": [
+        "plane change and combined plane-change-plus-raise optimisation"
+      ],
+      "file": "t2_m20_orbital_maneuvers/05-plane-changes.md"
+    },
+    {
+      "id": "l06-apsidal-rotation",
+      "title": "Apsidal rotation",
+      "minutes": 18,
+      "covers": [
+        "apsidal rotation"
+      ],
+      "file": "t2_m20_orbital_maneuvers/06-apsidal-rotation.md"
     }
   ],
   "t2_m23_relative_motion_rpo": [
@@ -2073,6 +2100,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Tschauner-Hempel equations for eccentric reference orbits"
       ],
       "file": "t2_m23_relative_motion_rpo/04-cw-validity-and-tschauner-hempel.md"
+    },
+    {
+      "id": "l05-secular-drift-and-the-counterintuitive-burn",
+      "title": "Secular drift and the counterintuitive burn",
+      "minutes": 18,
+      "covers": [
+        "secular in-track drift and why it dominates"
+      ],
+      "file": "t2_m23_relative_motion_rpo/05-secular-drift-and-the-counterintuitive-burn.md"
     }
   ],
   "t3_m25_signals_systems": [
@@ -4800,12 +4836,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t2_m20_orbital_maneuvers": {
-    "covered": 4,
+    "covered": 6,
     "total": 13,
     "complete": false,
     "missing": [
-      "plane change and combined plane-change-plus-raise optimisation",
-      "apsidal rotation",
       "phasing manoeuvres and rendezvous phasing",
       "finite-burn and gravity losses",
       "low-thrust transfers: Edelbaum, spirals, electric propulsion",
@@ -4854,11 +4888,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t2_m23_relative_motion_rpo": {
-    "covered": 4,
+    "covered": 5,
     "total": 16,
     "complete": false,
     "missing": [
-      "secular in-track drift and why it dominates",
       "football and drifting relative orbits",
       "V-bar and R-bar approaches and their safety properties",
       "natural motion circumnavigation",
@@ -6058,12 +6091,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "car_01_itar_gate": {
-    "covered": 9,
+    "covered": 10,
     "total": 10,
-    "complete": false,
-    "missing": [
-      "what a non-US-person can realistically target instead: non-ITAR employers, European, UK, Canadian, Australian and Japanese space sectors, academia, and a long-horizon immigration path"
-    ]
+    "complete": true,
+    "missing": []
   },
   "car_02_role_families": {
     "covered": 0,

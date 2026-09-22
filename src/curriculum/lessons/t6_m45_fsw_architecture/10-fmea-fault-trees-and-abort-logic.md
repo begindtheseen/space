@@ -17,7 +17,7 @@ An FMEA is a table, one row per failure mode, with columns that force a specific
 | --- | --- | --- | --- | --- | --- | --- |
 | Gyro total loss (no output) | Channel silent | One of three rate sources gone | Data-integrity check (lesson 4): no packets, sequence counter stalls | Trivial — the silent channel | Continue on remaining two channels, flag | Low — loss is self-announcing |
 | Gyro stuck-at-plausible (frozen, in-family value) | Channel reports a fixed value indistinguishable from a real, static rate | Filter may weight a frozen input as valid | Cross-check against the other two channels (lesson 6's voter) | Voter isolates it once the vehicle actually rotates and the frozen channel diverges | Exclude, continue on remaining two | High until the vehicle maneuvers enough to separate the frozen value from truth |
-| Slow bias drift, within valid range | Gradually growing error, never obviously out of family | Filter incorporates a slowly-wrong measurement | Residual monitor (lesson 9) against the other channels' consensus | Persistence counter attributes the drift once it exceeds threshold | Exclude once declared; degraded to two channels until then | High during the drift's early phase — this is lesson 9's ramp-versus-step result directly |
+| Slow bias drift, within valid range | Gradually growing error, never clearly out of family | Filter incorporates a slowly-wrong measurement | Residual monitor (lesson 9) against the other channels' consensus | Persistence counter attributes the drift once it exceeds threshold | Exclude once declared; degraded to two channels until then | High during the drift's early phase — this is lesson 9's ramp-versus-step result directly |
 | Shared calibration constant wrong in all three channels | All three agree, all three wrong | Filter incorporates a confidently-wrong measurement | **None** among the three channels themselves (lesson 6's common-mode result) | Not possible from these three channels alone | Requires an independent measurement principle, outside this triad | Full — this is the row with no answer in this triad |
 | Bus delivers correct data late, past its staleness bound | Value is right, timing is wrong | A control loop or filter using an old value as current | Staleness check (lesson 4) | Trivial — the late packet's own timestamp | Reject, hold last valid or fall back | Low if the staleness bound was set correctly for this signal |
 
@@ -50,7 +50,7 @@ print("dominant contributor:", "AND gate" if p_and_gate > p_no_cross_check_axis 
 # P(top event) = 1.060e-06
 # dominant contributor: missing cross-check
 ```
-The AND gate's probability, $6.0\times10^{-8}$, is the product of two independent, already-small probabilities — this is the arithmetic reason AND gates are where redundancy earns its keep, since making any single term smaller shrinks the whole product. The OR term, a flat $1.0\times10^{-6}$ probability that the cross-check is simply unavailable for this axis, is more than an order of magnitude larger than the AND gate despite each individual number looking small, and it dominates the top event's total probability. A fault tree makes this kind of comparison explicit and numeric rather than a matter of impression — here, the single largest lever on the top event is making sure the independent cross-check is *available* on every axis, not further improving a detection scheme that, when present, already works well.
+The AND gate's probability, $6.0\times10^{-8}$, is the product of two independent, already-small probabilities — this is the arithmetic reason AND gates are where redundancy earns its keep, since making any single term smaller shrinks the whole product. The OR term, a flat $1.0\times10^{-6}$ probability that the cross-check is unavailable for this axis at all, is more than an order of magnitude larger than the AND gate despite each individual number looking small, and it dominates the top event's total probability. A fault tree makes this kind of comparison explicit and numeric rather than a matter of impression — here, the single largest lever on the top event is making sure the independent cross-check is *available* on every axis, not further improving a detection scheme that, when present, already works well.
 :::
 
 ## Abort logic: the same pattern, at the highest stakes
@@ -129,7 +129,7 @@ No, not by anywhere near a factor of ten overall, because the top event is now d
 :::
 
 ::: check
-Explain why the rule table in `evaluate_abort_rules` is described as running in "bounded time," and what property of the code — not just its typical behavior — makes that true.
+Explain why the rule table in `evaluate_abort_rules` is described as running in "bounded time," and what property of the code — not only its typical behavior — makes that true.
 :::
 
 ::: answer

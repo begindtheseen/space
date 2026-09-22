@@ -186,7 +186,7 @@ so the initial state is inside the certified region. Integrating with fourth-ord
 | $10\,\mathrm{s}$ | $4.7832$ | $51.77^\circ$ | $1.27\times10^{-1}$ |
 | $20\,\mathrm{s}$ | $0.2560$ | $11.75^\circ$ | $3.12\times10^{-2}$ |
 | $40\,\mathrm{s}$ | $5.86\times10^{-4}$ | $0.564^\circ$ | $1.49\times10^{-3}$ |
-| $100\,\mathrm{s}$ | $1\times10^{-9}$ | $0.0001^\circ$ | $1.87\times10^{-7}$ |
+| $100\,\mathrm{s}$ | $9.39\times10^{-12}$ | $0.0001^\circ$ | $1.87\times10^{-7}$ |
 | $200\,\mathrm{s}$ | $\lt 10^{-13}$ | $0.0000^\circ$ | $7.4\times10^{-14}$ |
 
 $V$ decreases at every step of the $60000$-step run — the largest change is $-4.2\times10^{-10}$, never positive. And the identity itself is checkable: computing $\boldsymbol{\omega}^\mathsf{T}\mathbf{J}\dot{\boldsymbol{\omega}} - 2K\dot{q}_0$ from the simulated derivatives and comparing with $-\boldsymbol{\omega}^\mathsf{T}\mathbf{P}\boldsymbol{\omega}$ gives $-0.11200000$ against $-0.11200000$ at $t = 0$, $-2.46963488$ against $-2.46963488$ at $t = 1.5\,\mathrm{s}$, and so on. The algebra above is what the simulation does.

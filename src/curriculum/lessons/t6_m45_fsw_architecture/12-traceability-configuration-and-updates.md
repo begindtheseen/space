@@ -99,20 +99,20 @@ for label, margin in [("coast phase, 40 minutes remaining", 2400.0),
 The update's own requirements — ninety-five seconds at bare minimum, before any margin — do not change between the two phases; what changes is how much of the vehicle's remaining time in that phase can absorb them. A long coast phase easily absorbs the update with margin to spare for a rollback if something goes wrong. Forty-five seconds of terminal descent cannot, and the same update that was a comfortable, low-risk choice in the first phase would be reckless in the second — not because the update itself changed, but because there was no longer room in the flight profile to recover if it did not go as planned.
 :::
 
-The rollback path this calculation reserves time for is not incidental — it is what turns an in-flight update from a one-way commitment into a recoverable action, in exactly the sense lesson 5's warm standby was recoverable: the previous, already-flight-proven build has to remain available and quickly restorable, not simply overwritten in place the moment the new one uploads. An update strategy that skips reserving that time, or that discards the old build to save storage, has converted a decision that could have been made conservatively into one that cannot be undone if the new build turns out to have a problem the validation campaign missed.
+The rollback path this calculation reserves time for is not incidental — it is what turns an in-flight update from a one-way commitment into a recoverable action, in exactly the sense lesson 5's warm standby was recoverable: the previous, already-flight-proven build has to remain available and quickly restorable, rather than overwritten in place the moment the new one uploads. An update strategy that skips reserving that time, or that discards the old build to save storage, has converted a decision that could have been made conservatively into one that cannot be undone if the new build turns out to have a problem the validation campaign missed.
 
 ::: warning
-"We have time to upload the update" is not the same question as "we have time to upload the update, confirm it, and still roll back if it is wrong." Budget for the rollback explicitly, with margin, rather than treating it as a step that only happens in the unlikely case something goes wrong — the whole value of reserving that margin is that it is available precisely when the unlikely case is the one that just happened.
+"We have time to upload the update" is not the same question as "we have time to upload the update, confirm it, and still roll back if it is wrong." Budget for the rollback explicitly, with margin, rather than treating it as a step that only happens in the unlikely case something goes wrong — the whole value of reserving that margin is that it is available precisely when the unlikely case is the one that has occurred.
 :::
 
 ## Closing the module
 
-This module opened by separating a vehicle's software into layers, each with a narrow, typed interface to the next. Everything since has been about what happens at the edges of those layers when something goes wrong: a mode manager whose safing property had to be proven rather than assumed, a voter whose guarantees turned out to be exactly as strong as its assumptions about independence and determinism and no stronger, a watchdog that answers one question precisely and no other, a residual monitor whose false-alarm and missed-detection rates trade against each other by design, and an FMEA whose most valuable row is the one with nothing in the detection column. This final lesson's three practices are what keep all of that engineering true after the vehicle that carries it has already left the pad: a trace from every requirement to the code and the test that back it, tunable data managed and validated on its own track, and a deliberate, time-budgeted answer to the question of whether an update makes the vehicle safer or simply different.
+This module opened by separating a vehicle's software into layers, each with a narrow, typed interface to the next. Everything since has been about what happens at the edges of those layers when something goes wrong: a mode manager whose safing property had to be proven rather than assumed, a voter whose guarantees turned out to be exactly as strong as its assumptions about independence and determinism and no stronger, a watchdog that answers one question precisely and no other, a residual monitor whose false-alarm and missed-detection rates trade against each other by design, and an FMEA whose most valuable row is the one with nothing in the detection column. This final lesson's three practices are what keep all of that engineering true after the vehicle that carries it has already left the pad: a trace from every requirement to the code and the test that back it, tunable data managed and validated on its own track, and a deliberate, time-budgeted answer to the question of whether an update makes the vehicle safer or only different.
 
 ## Check yourself
 
 ::: check
-A traceability matrix shows a piece of flight code with no requirement tracing to it. Why is this worth investigating, rather than assuming the code is simply implementing something obvious that didn't need a written requirement?
+A traceability matrix shows a piece of flight code with no requirement tracing to it. Why is this worth investigating, rather than assuming the code is implementing something self-evident that didn't need a written requirement?
 :::
 
 ::: answer
@@ -124,7 +124,7 @@ This lesson's traceability example explicitly records, in the test column, that 
 :::
 
 ::: answer
-Leaving the row out entirely does not make the limitation disappear — it only removes the documented record of it, so a later engineer reviewing the matrix sees no mention of common-mode failure at all and has no way to tell whether it was considered and accepted as a residual risk, or simply never thought about. Recording it explicitly turns a silent gap into a documented, traceable decision: it is visible in exactly the place someone would look when reasoning about what this requirement does and does not cover, which is what a trustworthy trace is for.
+Leaving the row out entirely does not make the limitation disappear — it only removes the documented record of it, so a later engineer reviewing the matrix sees no mention of common-mode failure at all and has no way to tell whether it was considered and accepted as a residual risk, or never thought about at all. Recording it explicitly turns a silent gap into a documented, traceable decision: it is visible in exactly the place someone would look when reasoning about what this requirement does and does not cover, which is what a trustworthy trace is for.
 :::
 
 ::: check
@@ -136,11 +136,11 @@ Configuration management changes which verification track a piece of data travel
 :::
 
 ::: check
-A team argues that because their in-flight update was "just a table change, not a code change," it does not need any reserved rollback margin. Is a table update exempt from the reasoning in this lesson's update-timing example?
+A team argues that because their in-flight update was "only a table change, not a code change," it does not need any reserved rollback margin. Is a table update exempt from the reasoning in this lesson's update-timing example?
 :::
 
 ::: answer
-No. The update-timing calculation cares about validate, upload, activate, and rollback time, none of which depend on whether the changed artifact is a table or an executable — a bad gain table loaded in place of a good one can misbehave the vehicle just as an executable defect can, as this lesson's load-time checks exist specifically to catch. A table update genuinely may need a shorter validation step than a full executable rebuild, which can shrink the "bare need" term in the calculation, but it does not remove the need to budget rollback margin against the specific phase the update is happening in.
+No. The update-timing calculation cares about validate, upload, activate, and rollback time, none of which depend on whether the changed artifact is a table or an executable — a bad gain table loaded in place of a good one can misbehave the vehicle as readily as an executable defect can, as this lesson's load-time checks exist specifically to catch. A table update genuinely may need a shorter validation step than a full executable rebuild, which can shrink the "bare need" term in the calculation, but it does not remove the need to budget rollback margin against the specific phase the update is happening in.
 :::
 
 ::: check

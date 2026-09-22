@@ -127,7 +127,7 @@ A vehicle uses dual-dual redundancy — two computers, two sensor buses — but 
 :::
 
 ::: answer
-The failure of the one bus that computer is wired to. Without cross-strapping, a computer's ability to do useful work depends entirely on the health of the single bus it can reach, so a bus failure removes a healthy computer from service just as surely as a failure of the computer itself would — the "dual-dual" redundancy at the sensor-bus level buys nothing for that computer unless it can actually reach the surviving bus.
+The failure of the one bus that computer is wired to. Without cross-strapping, a computer's ability to do useful work depends entirely on the health of the single bus it can reach, so a bus failure removes a healthy computer from service as surely as a failure of the computer itself would — the "dual-dual" redundancy at the sensor-bus level buys nothing for that computer unless it can actually reach the surviving bus.
 :::
 
 ::: check
@@ -167,4 +167,4 @@ Because the architecture recovers the reliability that radiation-hardened silico
 | Lockstep pair | Two cores executing identically; disagreement withdraws that computer from the vote entirely |
 | Commodity multi-core + voting | Trades higher per-part upset rate for far more compute per watt, recovered via replication and checking |
 
-The next two lessons build the voting step this lesson has referred to but not yet defined precisely: what a three-way vote can correctly mask, and — just as important — the two specific ways it can be fooled into agreeing on a wrong answer.
+The next two lessons build the voting step this lesson has referred to but not yet defined precisely: what a three-way vote can correctly mask, and — equally important — the two specific ways it can be fooled into agreeing on a wrong answer.

@@ -138,7 +138,7 @@ The two conditions are: every state has a path to `SAFE` (reachability), and `SA
 :::
 
 ::: check
-A different engineer proposes fixing the `CALIBRATE` bug not by adding an edge back to `STANDBY`, but by adding a direct edge `CALIBRATE -> SAFE` and leaving `CAL_VERIFY` untouched. Does this fix the reachability property for both new states? Check by reasoning through the search rather than just the rule you already know.
+A different engineer proposes fixing the `CALIBRATE` bug not by adding an edge back to `STANDBY`, but by adding a direct edge `CALIBRATE -> SAFE` and leaving `CAL_VERIFY` untouched. Does this fix the reachability property for both new states? Check by reasoning through the search rather than by the rule alone.
 :::
 
 ::: answer
@@ -153,6 +153,6 @@ No, not fully: adding `CALIBRATE -> SAFE` gives `CALIBRATE` a path to safety, so
 | Reverse-reachability search | Build the reversed graph, breadth-first search from `SAFE`; nodes found have a forward path to `SAFE` |
 | Exitability | `SAFE`'s outgoing edges are all tagged as requiring an explicit command; no autonomous exit exists |
 | A diff is not the graph | Individually valid new edges can still leave a new subgraph disconnected from safety |
-| Automated, not occasional | The search is cheap enough to run on every change; re-run after every proposed fix, not just once |
+| Automated, not occasional | The search is cheap enough to run on every change; re-run after every proposed fix, not only the first time |
 
 This closes the module's second demonstration: a mode manager designed with a safing property, and a search that proves the property holds rather than assumes it — the same discipline, applied to a different structure, as lessons 6 and 7's proof that a voter's guarantees are exactly as strong as its assumptions and no stronger. The final lesson turns from what the software does at runtime to how the organization around it keeps that software trustworthy as it changes over a program's life: tracing a requirement to the code that implements it and the test that exercises it, keeping tunable data under configuration management separately from the executable, and deciding when updating flight software in flight is the safer choice rather than the riskier one.

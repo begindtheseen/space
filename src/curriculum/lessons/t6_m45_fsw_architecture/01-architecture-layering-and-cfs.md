@@ -162,7 +162,7 @@ Why does cFS run each app as a separate process rather than as a function called
 :::
 
 ::: answer
-Running apps as separate processes means a fault inside one app — a crash, a hang, memory corruption — cannot directly corrupt another app's memory, because they do not share an address space; the operating system's process boundary enforces the isolation that a shared-loop design could only enforce by convention. It also means Executive Services can detect a failed app (through the OS or a heartbeat) and restart just that app, rather than the fault taking down or requiring a restart of the entire flight computer. The message-passing overhead is the price paid for fault containment and for the reuse property described earlier in this lesson — an app's only contract with the rest of the system is its published and subscribed message identifiers, which is what lets it be dropped into a different mission's build.
+Running apps as separate processes means a fault inside one app — a crash, a hang, memory corruption — cannot directly corrupt another app's memory, because they do not share an address space; the operating system's process boundary enforces the isolation that a shared-loop design could only enforce by convention. It also means Executive Services can detect a failed app (through the OS or a heartbeat) and restart only that app, rather than the fault taking down or requiring a restart of the entire flight computer. The message-passing overhead is the price paid for fault containment and for the reuse property described earlier in this lesson — an app's only contract with the rest of the system is its published and subscribed message identifiers, which is what lets it be dropped into a different mission's build.
 :::
 
 ::: check
