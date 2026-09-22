@@ -63,7 +63,7 @@ Notice how the band tightens in relative terms as $k$ grows. At $k = 1$ the midd
 
 The $3\sigma$ ellipsoid of a three-dimensional position covariance holds $97.07\%$, not $99.73\%$; to enclose $99.73\%$ you need $\sqrt{\chi^2_{3,\,0.9973}} = 3.76\sigma$ in three dimensions and $3.44\sigma$ in two. A requirement reading "the $3\sigma$ position ellipsoid shall lie within the corridor" therefore means something different in one, two and three dimensions.
 
-**The sample variance.** For $N$ independent Gaussian samples, $(N-1)s^2/\sigma^2 \sim \chi^2_{N-1}$. The single degree of freedom lost to estimating the mean is exactly the Bessel correction of the expectation lesson, seen from the other side. Inverting the statement gives a confidence interval for the variance:
+**The sample variance.** For $N$ independent Gaussian samples, $(N-1)s^2/\sigma^2 \sim \chi^2_{N-1}$; the degree of freedom lost to estimating the mean is Bessel's correction seen from the other side. Inverting gives a confidence interval for the variance:
 
 $$
 \left[\frac{(N-1)s^2}{\chi^2_{N-1,\,1-\alpha/2}},\ \frac{(N-1)s^2}{\chi^2_{N-1,\,\alpha/2}}\right].
@@ -228,7 +228,7 @@ The test returns one of three answers.
 
 **Inside the band.** The covariance is a fair description of the error. This is necessary, not sufficient: consistency says the error matches the claim, not that the error is small, so compare designs on the error itself and use consistency to decide whether that comparison means anything.
 
-**Above the band: over-confident.** $\mathbf{P}$ is too small for the errors actually occurring. The usual causes, in the order they are usually found: $\mathbf{Q}$ too small; $\mathbf{R}$ too small; an unmodelled state, such as a sensor bias or a lever arm, absorbing error the filter has nowhere to put; measurement noise correlated in time but modelled as white, which is what an unmodelled Gauss-Markov bias does; measurements timestamped wrong; and, in an extended filter, linearisation error across an uncertainty too large for the Jacobian to describe. This is the dangerous direction, because an over-confident filter gates out the measurements that would fix it and diverges quietly.
+**Above the band: over-confident.** $\mathbf{P}$ is too small for the errors actually occurring. The usual causes, in the order they are found: $\mathbf{Q}$ too small; $\mathbf{R}$ too small; an unmodelled state such as a sensor bias or lever arm, absorbing error the filter has nowhere to put; measurement noise correlated in time but modelled as white, which is what an unmodelled Gauss-Markov bias does; wrong time tags; and, in an extended filter, linearisation error. This is the dangerous direction, because an over-confident filter gates out the measurements that would fix it and diverges quietly.
 
 **Below the band: conservative.** $\mathbf{P}$ is larger than the errors warrant, usually from an inflated $\mathbf{Q}$ or $\mathbf{R}$. The estimate is safe but sluggish: information is being thrown away, gains are too low, and a real anomaly is harder to detect against the widened bounds. Engineers habitually tune slightly to this side, which is defensible as long as it is deliberate.
 
@@ -240,14 +240,14 @@ A filter can pass an aggregate NEES test while one of its states is badly incons
 
 The procedure, in the order it is actually done.
 
-1. **Set $\mathbf{R}$ from measurement data, not from the tuning knob.** The sensor's noise is measurable on a bench: the Allan deviation and the power spectral density of a static record give the white-noise level, and maximum likelihood gives the fit and its error bar. $\mathbf{R}$ is a physical quantity, and treating it as free is how tuning becomes guesswork.
-2. **Set $\mathbf{Q}$ from the physics, then accept that it is also a fudge factor.** Part of $\mathbf{Q}$ is real — driving noise, quantisation, the discretised acceleration PSD above. The rest is the honest admission that the dynamics model is imperfect, and that part is tuned.
-3. **Run a truth-model Monte Carlo.** Fifty to a hundred runs is usually enough, since the band at $M = 100$ and $n = 2$ is already $[1.63,\ 2.41]$. Plot $\bar\epsilon_x(k)$ against the band for the whole trajectory, including the initialisation transient, and plot the per-state normalised errors.
-4. **Adjust $\mathbf{Q}$ and iterate.** The ratio is a usable first correction: a NEES sitting at $3n$ means the covariance is roughly three times too small somewhere. It is not exactly proportional, because $\mathbf{P}$ depends on $\mathbf{Q}$ through the Riccati recursion, so iterate two or three times rather than solving once.
+1. **Set $\mathbf{R}$ from measurement data, not from the tuning knob.** The sensor's noise is measurable on a bench: the Allan deviation and the PSD of a static record give the white-noise level, and maximum likelihood gives the fit and its error bar. $\mathbf{R}$ is a physical quantity, and treating it as free is how tuning becomes guesswork.
+2. **Set $\mathbf{Q}$ from the physics, then accept that it is also a fudge factor.** Part of $\mathbf{Q}$ is real — driving noise, quantisation, the discretised acceleration PSD above. The rest admits that the dynamics model is imperfect, and that part is tuned.
+3. **Run a truth-model Monte Carlo.** Fifty to a hundred runs is usually enough, since the band at $M = 100$, $n = 2$ is already $[1.63,\ 2.41]$. Plot $\bar\epsilon_x(k)$ against it for the whole trajectory, including the initialisation transient, and plot the per-state normalised errors.
+4. **Adjust $\mathbf{Q}$ and iterate.** A NEES sitting at $3n$ means the covariance is roughly three times too small somewhere. The correction is not exactly proportional, because $\mathbf{P}$ depends on $\mathbf{Q}$ through the Riccati recursion, so iterate two or three times rather than solving once.
 5. **Check the innovations, not only their squares.** Mean, whiteness, per-channel. A zero-mean, white, correctly scaled innovation sequence is the complete statement that the filter has extracted everything the measurements contain.
-6. **Move to hardware-in-the-loop and flight data, where only NIS exists.** Run the time-averaged test over windows of a few hundred steps and watch it across flight phases: a filter consistent in cruise and inconsistent during a manoeuvre is telling you which part of the dynamics model is inadequate. Keep the gate, size it from the chi-square quantile, and log every rejection, because a rising rejection rate is often the first symptom of a developing fault.
+6. **Move to hardware-in-the-loop and flight data, where only NIS exists.** Run the time-averaged test over windows of a few hundred steps and watch it across flight phases: a filter consistent in cruise and inconsistent in a manoeuvre is naming the part of the dynamics model that is inadequate. Keep the gate, size it from the chi-square quantile, and log every rejection, because a rising rejection rate is often the first symptom of a developing fault.
 
-Then re-run the tests after *every* model change, because a $\mathbf{Q}$ tuned for one trajectory is not tuned for another, and keep them in the regression suite: NEES and NIS are cheap, automatable and quantitative, which makes them the rare engineering check a build server can enforce.
+Then re-run the tests after *every* model change, because a $\mathbf{Q}$ tuned for one trajectory is not tuned for another, and keep them in the regression suite: NEES and NIS are cheap, automatable and quantitative, the rare engineering check a build server can enforce.
 
 ::: example Gating a GNSS update in flight
 A filter carrying a local-level position state predicts with $\mathbf{P}^-$ giving position standard deviations of $1.2$, $1.5$ and $2.8\,\mathrm{m}$ on the three axes, and receives a GNSS fix with $\mathbf{R} = \operatorname{diag}(1.5^2, 1.5^2, 3.0^2)\,\mathrm{m^2}$. With $\mathbf{H}$ selecting position and the axes uncorrelated,
@@ -276,7 +276,7 @@ A filter has $n = 6$ states and is tested over $M = 50$ Monte Carlo runs. The ru
 :::
 
 ::: answer
-The band for the average is $[253.9/50,\ 349.9/50] = [5.08,\ 7.00]$, and the expected value is $n = 6$. The observed $8.4$ is above the upper limit, so the filter is inconsistent and **over-confident**: the actual state errors are larger than the covariance it reports, by a factor of roughly $\sqrt{8.4/6} = 1.18$ in standard deviation. The first thing to try is increasing $\mathbf{Q}$; the things to check are an unmodelled state, a mis-timestamped measurement and, in an extended filter, linearisation error.
+The band for the average is $[253.9/50,\ 349.9/50] = [5.08,\ 7.00]$ about an expected $n = 6$. The observed $8.4$ is above the upper limit, so the filter is **over-confident**: its errors exceed the covariance it reports by roughly $\sqrt{8.4/6} = 1.18$ in standard deviation. Try increasing $\mathbf{Q}$ first; then check for an unmodelled state, a mis-timestamped measurement and, in an extended filter, linearisation error.
 :::
 
 ::: check
@@ -284,7 +284,7 @@ Why can NIS be computed in flight while NEES cannot, and what does that cost you
 :::
 
 ::: answer
-NIS is built from $\tilde{\mathbf{y}} = \mathbf{z} - \mathbf{H}\hat{\mathbf{x}}^-$ and $\mathbf{S} = \mathbf{H}\mathbf{P}^-\mathbf{H}^{\mathsf{T}} + \mathbf{R}$, all of which the filter already has. NEES needs $\mathbf{x} - \hat{\mathbf{x}}$, and the true state is available only in simulation. The cost is sensitivity and scope. NIS sees only the error that projects into the measurement, and only relative to $\mathbf{R}$: in the worked example a filter with $\mathbf{Q}$ ten times too small had a NEES of $9.5$ against an expected $2$ while its NIS stayed at $1.16$, inside the band. Unobserved states can be badly inconsistent without NIS reacting at all, which is why the simulation campaign is where tuning is done and flight NIS is a monitor rather than a substitute.
+NIS is built from $\tilde{\mathbf{y}}$ and $\mathbf{S} = \mathbf{H}\mathbf{P}^-\mathbf{H}^{\mathsf{T}} + \mathbf{R}$, which the filter already has; NEES needs $\mathbf{x} - \hat{\mathbf{x}}$, and the truth exists only in simulation. The cost is sensitivity. NIS sees only the error that projects into the measurement, and only relative to $\mathbf{R}$: in the worked example a filter with $\mathbf{Q}$ ten times too small had a NEES of $9.5$ against an expected $2$ while its NIS stayed at $1.16$, inside the band. Unobserved states can be badly inconsistent without NIS reacting, which is why tuning is done in simulation and flight NIS is a monitor rather than a substitute.
 :::
 
 ::: check
@@ -292,7 +292,7 @@ A filter's time-averaged NIS over $400$ steps of a three-dimensional measurement
 :::
 
 ::: answer
-The expected value is $m = 3$ and the observed $2.1$ is well below the lower limit of $2.76$, so the filter is **conservative**: its innovations are smaller than the $\mathbf{S}$ it predicts, by a factor of about $\sqrt{3/2.1} = 1.20$ in standard deviation. Either $\mathbf{R}$ is set larger than the sensor's true noise or $\mathbf{P}^-$ is inflated by an over-large $\mathbf{Q}$. The filter is safe but sluggish, with gains lower than optimal and more error than it needs to carry. Measure $\mathbf{R}$ from static sensor data first, since that is a physical quantity, and only then reduce $\mathbf{Q}$; and re-check with the state-error test in simulation, because reducing $\mathbf{Q}$ is exactly the change that creates over-confidence.
+The expected value is $m = 3$ and the observed $2.1$ is well below the lower limit of $2.76$, so the filter is **conservative**: its innovations are smaller than the $\mathbf{S}$ it predicts, by about $\sqrt{3/2.1} = 1.20$ in standard deviation. Either $\mathbf{R}$ exceeds the sensor's true noise or $\mathbf{P}^-$ is inflated by an over-large $\mathbf{Q}$, and the filter is safe but sluggish, carrying more error than it needs. Measure $\mathbf{R}$ from static sensor data first, since that is a physical quantity, then reduce $\mathbf{Q}$ and re-check in simulation, because reducing $\mathbf{Q}$ is exactly the change that creates over-confidence.
 :::
 
 ::: check
@@ -300,7 +300,7 @@ The normalised innovations of a filter have mean $+0.6$, a variance close to one
 :::
 
 ::: answer
-The zero-mean property has failed while the scaling and the whiteness are fine. A persistent offset in the residuals means the filter is systematically predicting the measurement wrong in one direction, which is the signature of an unmodelled deterministic effect: a sensor bias with no corresponding state, a lever arm or mounting misalignment not accounted for, an unmodelled acceleration such as drag or a thrust tail-off, or a time-tag offset. Increasing $\mathbf{Q}$ would widen the covariance enough to bring a squared statistic back into band while leaving the bias untouched, so it hides the symptom rather than fixing the cause. The fix is to add the missing state or the missing term.
+The zero-mean property has failed while the scaling and the whiteness are fine. A persistent offset means the filter is predicting the measurement wrong in one direction, the signature of an unmodelled deterministic effect: a sensor bias with no state, an unaccounted lever arm or misalignment, an unmodelled acceleration such as drag or a thrust tail-off, or a time-tag offset. Increasing $\mathbf{Q}$ would widen the covariance enough to bring a squared statistic back into band while leaving the bias untouched, hiding the symptom. The fix is to add the missing state or term.
 :::
 
 ::: check
@@ -308,7 +308,7 @@ Your NEES test passes comfortably, but the filter's position error is twice as l
 :::
 
 ::: answer
-It has told you that the filter's covariance is an honest description of its error: when it reports $\sigma$, it really is wrong by about $\sigma$. That is exactly what consistency means, and it means the reported covariance can be trusted by everything downstream. It has told you nothing about whether the error is small enough. Consistency is about honesty, performance is about magnitude, and improving performance needs better sensors, a better dynamics model, more measurements or better observability — not retuning. Retuning $\mathbf{Q}$ to make $\mathbf{P}$ smaller would only trade an honest filter for an over-confident one.
+It has told you that the covariance is an honest description of the error: when the filter reports $\sigma$, it really is wrong by about $\sigma$, so everything downstream can trust it. It has told you nothing about whether the error is small enough. Consistency is about honesty, performance is about magnitude, and better performance needs better sensors, a better dynamics model, more measurements or better observability. Retuning $\mathbf{Q}$ to shrink $\mathbf{P}$ would only trade an honest filter for an over-confident one.
 :::
 
 ## Summary

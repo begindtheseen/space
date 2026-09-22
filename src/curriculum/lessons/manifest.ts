@@ -449,6 +449,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "condition number"
       ],
       "file": "t0_m05_linear_algebra_2/10-condition-number.md"
+    },
+    {
+      "id": "l11-least-squares-normal-equations-qr-svd",
+      "title": "Least squares: normal equations, QR and SVD",
+      "minutes": 24,
+      "covers": [
+        "least squares: normal equations vs QR vs SVD"
+      ],
+      "file": "t0_m05_linear_algebra_2/11-least-squares-normal-equations-qr-svd.md"
     }
   ],
   "t0_m06_calculus_single": [
@@ -1666,12 +1675,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t0_m05_linear_algebra_2": {
-    "covered": 10,
+    "covered": 11,
     "total": 11,
-    "complete": false,
-    "missing": [
-      "least squares: normal equations vs QR vs SVD"
-    ]
+    "complete": true,
+    "missing": []
   },
   "t0_m06_calculus_single": {
     "covered": 10,
