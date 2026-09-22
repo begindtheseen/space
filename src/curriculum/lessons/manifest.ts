@@ -97,7 +97,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-scientific-notation-and-significant-figures",
       "title": "Scientific notation and significant figures",
-      "minutes": 16,
+      "minutes": 19,
       "covers": [
         "scientific notation and significant figures"
       ],
@@ -106,7 +106,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-fermi-estimation",
       "title": "Order-of-magnitude estimation",
-      "minutes": 18,
+      "minutes": 20,
       "covers": [
         "order-of-magnitude (Fermi) estimation"
       ],
@@ -339,6 +339,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "orthogonality, Gram-Schmidt, QR"
       ],
       "file": "t0_m04_linear_algebra_1/06-orthogonality-gram-schmidt-qr.md"
+    },
+    {
+      "id": "l07-change-of-basis-between-frames",
+      "title": "Change of basis between reference frames",
+      "minutes": 25,
+      "covers": [
+        "change of basis between reference frames"
+      ],
+      "file": "t0_m04_linear_algebra_1/07-change-of-basis-between-frames.md"
     }
   ],
   "t0_m05_linear_algebra_2": [
@@ -517,6 +526,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "divergence, curl, Laplacian"
       ],
       "file": "t0_m07_calculus_multi/08-div-curl-laplacian.md"
+    },
+    {
+      "id": "l09-divergence-and-stokes-theorems",
+      "title": "The divergence theorem and Stokes' theorem",
+      "minutes": 25,
+      "covers": [
+        "divergence and Stokes theorems"
+      ],
+      "file": "t0_m07_calculus_multi/09-divergence-and-stokes-theorems.md"
     }
   ],
   "t0_m08_odes": [
@@ -794,6 +812,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "variable-mass systems and the rocket equation done properly"
       ],
       "file": "t1_m13_classical_mechanics/07-ascent-losses-gravity-turn.md"
+    },
+    {
+      "id": "l08-constraints-generalised-coordinates",
+      "title": "Constraints and generalised coordinates",
+      "minutes": 24,
+      "covers": [
+        "constraints and generalised coordinates"
+      ],
+      "file": "t1_m13_classical_mechanics/08-constraints-generalised-coordinates.md"
     }
   ],
   "t1_m14_rigid_body_dynamics": [
@@ -1147,11 +1174,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t0_m04_linear_algebra_1": {
-    "covered": 8,
+    "covered": 9,
     "total": 10,
     "complete": false,
     "missing": [
-      "change of basis between reference frames",
       "skew-symmetric matrices and the cross-product matrix"
     ]
   },
@@ -1181,11 +1207,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t0_m07_calculus_multi": {
-    "covered": 8,
+    "covered": 9,
     "total": 10,
     "complete": false,
     "missing": [
-      "divergence and Stokes theorems",
       "conservative fields and potential functions"
     ]
   },
@@ -1268,11 +1293,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t1_m13_classical_mechanics": {
-    "covered": 6,
+    "covered": 7,
     "total": 9,
     "complete": false,
     "missing": [
-      "constraints and generalised coordinates",
       "Lagrangian mechanics and the Euler-Lagrange equation",
       "Hamilton principle"
     ]

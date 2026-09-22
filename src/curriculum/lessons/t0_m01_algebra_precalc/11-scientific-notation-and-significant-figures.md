@@ -1,7 +1,7 @@
 ---
 id: l11-scientific-notation-and-significant-figures
 title: Scientific notation and significant figures
-minutes: 16
+minutes: 19
 covers:
   - scientific notation and significant figures
 ---

@@ -6,7 +6,7 @@ covers:
   - units and dimensional analysis
 ---
 
-In September 1999 the Mars Climate Orbiter flew into the Martian atmosphere and was lost because one piece of software reported thruster impulse in pound-force seconds and the piece that consumed it expected newton seconds. Every number was computed correctly. The factor of $4.45$ between the two units was simply never applied, and over months of small corrections the trajectory drifted by more than a hundred kilometres. The mission had cost hundreds of millions of dollars. That is the reason this lesson exists, and it is why the module's coding exercise asks for a converter that *refuses* to convert a force into a mass.
+In September 1999 the Mars Climate Orbiter flew into the Martian atmosphere and was lost because one piece of software reported thruster impulse in pound-force seconds and the piece that consumed it expected newton seconds. Every number was computed correctly. The factor of $4.45$ between the two units was never applied, and over months of small corrections the trajectory drifted by more than a hundred kilometres. The mission had cost hundreds of millions of dollars. That is the reason this lesson exists, and it is why the module's coding exercise asks for a converter that *refuses* to convert a force into a mass.
 
 Aerospace lives in two unit systems at once. Engine thrust is quoted in pounds-force in one document and kilonewtons in the next; tank pressures come in psi; ranges in nautical miles; altitudes in feet; densities in slugs per cubic foot when the aerodynamics reference is American and in kilograms per cubic metre when it is not. You cannot avoid the second system, so you must be able to move between them mechanically and to notice when a number is in the wrong one. The method is the same algebra you have been doing all module — units are symbols that multiply, divide and cancel — plus a small table of exactly defined factors.
 
@@ -98,7 +98,7 @@ The vehicle's lift-off mass is $549\,\mathrm{t} = 5.49 \times 10^5\,\mathrm{kg}$
 
 ## Dimensional homogeneity
 
-An equation relates physical quantities, and it can be true only if both sides — and every term added or subtracted within a side — have the same dimensions. You cannot add a length to a time, and $3\,\mathrm{m} + 2\,\mathrm{s}$ is not a quantity. This requirement is **dimensional homogeneity**, and it has a second part that is less obvious and just as strict: the argument of an exponential, logarithm, sine or cosine must be dimensionless. $e^{x}$ is $1 + x + x^2/2 + \cdots$, a sum of powers of $x$, which is homogeneous only if $x$ has no dimensions; the same holds for $\ln$, $\sin$ and $\cos$. That is why $e^{-h/H}$ divides an altitude by a scale height (length over length), why $\ln(m_0/m_f)$ is a ratio of masses, and why a frequency multiplies a time inside $\sin(\omega t)$.
+An equation relates physical quantities, and it can be true only if both sides — and every term added or subtracted within a side — have the same dimensions. You cannot add a length to a time, and $3\,\mathrm{m} + 2\,\mathrm{s}$ is not a quantity. This requirement is **dimensional homogeneity**, and it has a second part that is less obvious and equally strict: the argument of an exponential, logarithm, sine or cosine must be dimensionless. $e^{x}$ is $1 + x + x^2/2 + \cdots$, a sum of powers of $x$, which is homogeneous only if $x$ has no dimensions; the same holds for $\ln$, $\sin$ and $\cos$. That is why $e^{-h/H}$ divides an altitude by a scale height (length over length), why $\ln(m_0/m_f)$ is a ratio of masses, and why a frequency multiplies a time inside $\sin(\omega t)$.
 
 Run the check on the formulas of this module. $T = 2\pi\sqrt{r^3/\mu}$: inside the root, $\mathsf{L}^3 / (\mathsf{L}^3\mathsf{T}^{-2}) = \mathsf{T}^2$, whose root is $\mathsf{T}$. A time — correct. $\Delta v = v_e \ln(m_0/m_f)$: the logarithm's argument is $\mathsf{M}/\mathsf{M}$, dimensionless as required, and the result has the dimensions of $v_e$, a speed. $q = \tfrac{1}{2}\rho v^2$: $\mathsf{M}\mathsf{L}^{-3} \times \mathsf{L}^2\mathsf{T}^{-2} = \mathsf{M}\mathsf{L}^{-1}\mathsf{T}^{-2}$, a pressure, which is why dynamic pressure is quoted in pascals. $h = 100 + 20t - 4.903t^2$ works only because the $20$ carries $\mathrm{m/s}$ and the $4.903$ carries $\mathrm{m/s^2}$; written with bare numbers it is a formula with hidden units, which is legal but dangerous, and you should at least write the units in a comment.
 
@@ -150,7 +150,7 @@ def convert(value, frm, to):
     return value * k_from / k_to
 
 print(convert(1.0, "nmi", "km"))     # 1.852
-print(convert(300.0, "psi", "Pa"))   # 2068427.19
+print(convert(50.0, "psi", "Pa"))    # 344737.86
 ```
 
 The multiply-then-divide is exactly the fraction-equal-to-one method: `value * k_from` is the quantity in SI, and dividing by `k_to` re-expresses it. The dimension check is homogeneity, enforced by the machine instead of by hope. A converter built this way cannot turn $\mathrm{lbf}$ into $\mathrm{kg}$ no matter how the call is written, which is the property that would have saved the orbiter.

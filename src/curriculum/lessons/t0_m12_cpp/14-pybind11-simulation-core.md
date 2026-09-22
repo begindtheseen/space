@@ -152,14 +152,16 @@ try:
     gnc_core.propagate(x0, -1.0, 10)
 except ValueError as e:
     print("C++ exception became a Python", type(e).__name__, "->", e)
+```
 
-# Output:
-# shape (5555, 6), dtype float64, C-contiguous True
-# max |cpp - numpy| over the trajectory: 4.547e-13 m
-# relative: 6.709e-20
-# energy drift 1.77e-15
-# C++ 1.5 ms, NumPy 91.4 ms, speedup 62x  (5554 steps)
-# C++ exception became a Python ValueError -> dt must be positive
+```text
+Output:
+shape (5555, 6), dtype float64, C-contiguous True
+max |cpp - numpy| over the trajectory: 4.547e-13 m
+relative: 6.709e-20
+energy drift 1.77e-15
+C++ 1.5 ms, NumPy 91.4 ms, speedup 62x  (5554 steps)
+C++ exception became a Python ValueError -> dt must be positive
 ```
 
 Four results, each worth a sentence. The two implementations agree to $4.5 \times 10^{-13}\,\mathrm{m}$ over a full orbit of a $6.8 \times 10^6\,\mathrm{m}$ radius — a relative $7 \times 10^{-20}$, below double precision's $2 \times 10^{-16}$, which means the trajectories are bit-for-bit identical almost everywhere. That is not luck: both perform the same IEEE operations in the same order, and it is the exercise's "identical to $10^{-12}$" requirement met with room to spare. Reorder the arithmetic, or compile the C++ with `-ffast-math`, and the agreement collapses to $10^{-9}$ or so — which is why flight-representative code is never built with fast-math. The energy drift of $1.8 \times 10^{-15}$ is rounding. The speedup of about sixty is the interpreter's per-step overhead: each NumPy step is a dozen calls on six-element arrays, roughly 16 µs of dispatch around a few hundred nanoseconds of arithmetic, and the steps are sequential, so there is nothing for NumPy to vectorise across. And the `ValueError` shows the exception translation: the C++ `std::invalid_argument` arrived in Python as the exception a Python programmer expects, with its message intact.
@@ -196,11 +198,13 @@ for workers in (1, 2, 4):
     with ThreadPoolExecutor(max_workers=workers) as pool:
         results = list(pool.map(run, cases))
     print(f"{workers} thread(s): {time.perf_counter() - t:.2f} s for {len(cases)} cases  (checksum {sum(results):.1f})")
+```
 
-# Output on a four-core machine:
-# 1 thread(s): 0.30 s for 64 cases  (checksum -348941526.4)
-# 2 thread(s): 0.14 s for 64 cases  (checksum -348941526.4)
-# 4 thread(s): 0.08 s for 64 cases  (checksum -348941526.4)
+```text
+Output on a four-core machine:
+1 thread(s): 0.30 s for 64 cases  (checksum -348941526.4)
+2 thread(s): 0.14 s for 64 cases  (checksum -348941526.4)
+4 thread(s): 0.08 s for 64 cases  (checksum -348941526.4)
 ```
 
 Sixty-four dispersed cases of 20 000 steps each take 0.30 s on one thread, 0.14 s on two and 0.08 s on four: nearly linear, because the GIL is released for the whole compute loop and the four threads genuinely run at once. The identical checksums say the result does not depend on the scheduling — determinism preserved. Scale the numbers: at 4.7 ms per case, a 10 000-case Monte Carlo is 47 s on one core and about 12 s on four; the pure-NumPy version, sixty times slower per case, would take close to fifty minutes. This is the shape of the third exercise, and the dispersions — mass, drag, winds, initial state — are generated in NumPy exactly as `cases` is here.
@@ -282,7 +286,7 @@ Returning an Eigen matrix by value makes pybind11 allocate a NumPy array and *co
 :::
 
 ::: check
-A colleague moves the `py::array_t<double> out({n_steps + 1, 6});` line inside the `py::gil_scoped_release` scope "so that the allocation runs in parallel too". What is wrong?
+A colleague moves the line that allocates the output array, `out`, inside the `py::gil_scoped_release` scope "so that the allocation runs in parallel too". What is wrong?
 :::
 
 ::: answer

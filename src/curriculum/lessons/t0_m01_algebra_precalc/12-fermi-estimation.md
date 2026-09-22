@@ -1,7 +1,7 @@
 ---
 id: l12-fermi-estimation
 title: Order-of-magnitude estimation
-minutes: 18
+minutes: 20
 covers:
   - order-of-magnitude (Fermi) estimation
 ---
@@ -85,9 +85,9 @@ A large kerosene–oxygen first stage is $10.1\,\mathrm{m}$ in diameter and $42\
 
 Decompose: $m_p = (\text{tank volume}) \times (\text{mean propellant density})$, and tank volume $= (\text{fraction of stage length that is tank}) \times (\text{cylinder volume})$. Units: $\mathrm{m^3 \times kg/m^3 = kg}$.
 
-*Cylinder volume:* $\tfrac{\pi}{4} d^2 L = 0.785 \times 102 \times 42 = 3.35 \times 10^{3}\,\mathrm{m^3}$.
+*Cylinder volume:* $\tfrac{\pi}{4} d^2 L = 0.785 \times 102 \times 42 = 3.37 \times 10^{3}\,\mathrm{m^3}$.
 
-*Tank fraction:* engines, thrust structure, the intertank section and the forward skirt take up length that holds no propellant. Bracket between $0.6$ (a lot of structure) and $0.8$ (a very tank-dominated stage); geometric mean $\sqrt{0.48} = 0.69$, call it $0.7$. Tank volume $\approx 2.35 \times 10^{3}\,\mathrm{m^3}$.
+*Tank fraction:* engines, thrust structure, the intertank section and the forward skirt take up length that holds no propellant. Bracket between $0.6$ (a lot of structure) and $0.8$ (a very tank-dominated stage); geometric mean $\sqrt{0.48} = 0.69$, call it $0.7$. Tank volume $\approx 2.36 \times 10^{3}\,\mathrm{m^3}$.
 
 *Mean density:* the tanks hold kerosene at $810\,\mathrm{kg/m^3}$ and oxygen at $1141\,\mathrm{kg/m^3}$ in a mixture ratio of $2.27{:}1$ by mass. For every $1\,\mathrm{kg}$ of fuel there are $2.27\,\mathrm{kg}$ of oxidizer, total mass $3.27\,\mathrm{kg}$, occupying $\frac{1}{810} + \frac{2.27}{1141} = 1.235 \times 10^{-3} + 1.990 \times 10^{-3} = 3.22 \times 10^{-3}\,\mathrm{m^3}$. The mean density is
 
@@ -97,9 +97,9 @@ $$
 
 almost exactly water. (The same formula with the module exercise's $2.3{:}1$ gives $1.02 \times 10^{3}$.)
 
-*Product:* $m_p \approx 2.35 \times 10^{3} \times 1.01 \times 10^{3} = 2.4 \times 10^{6}\,\mathrm{kg} = 2400\,\mathrm{t}$.
+*Product:* $m_p \approx 2.36 \times 10^{3} \times 1.01 \times 10^{3} = 2.4 \times 10^{6}\,\mathrm{kg} = 2400\,\mathrm{t}$.
 
-The stage described is the Saturn V first stage, whose published propellant load is about $2150\,\mathrm{t}$. The estimate is $11\%$ high — well inside a factor of $1.5$. Dominant assumption: the tank fraction. At $0.6$ the estimate is $2040\,\mathrm{t}$; at $0.8$ it is $2720\,\mathrm{t}$; the whole plausible range of that one guess spans $\pm 15\%$, while the density is known to a percent and the cylinder volume to a few. If I wanted a better answer, I would spend all my effort on the tank fraction — looking at a photograph of the stage and measuring where the tanks end — and none on the density. That the estimate came out high says the true tank fraction is nearer $0.63$, and indeed the domed tank ends and the intertank on that stage take more length than a $0.7$ guess allows.
+The stage described is the Saturn V first stage, whose published propellant load is about $2150\,\mathrm{t}$. The estimate is $11\%$ high — well inside a factor of $1.5$. Dominant assumption: the tank fraction. At $0.6$ the estimate is $2050\,\mathrm{t}$; at $0.8$ it is $2730\,\mathrm{t}$; the whole plausible range of that one guess spans $\pm 15\%$, while the density is known to a percent and the cylinder volume to a few. If I wanted a better answer, I would spend all my effort on the tank fraction — looking at a photograph of the stage and measuring where the tanks end — and none on the density. That the estimate came out high says the true tank fraction is nearer $0.63$, and indeed the domed tank ends and the intertank on that stage take more length than a $0.7$ guess allows.
 :::
 
 ::: warning Do not tune the estimate to the answer
@@ -155,7 +155,7 @@ In $\log_{10}$: the three good factors contribute $\pm 0.04$ each, the factor-of
 :::
 
 ::: check
-Bracket the mass of a small liquid-fuelled upper stage's engine between "obviously too light" and "obviously too heavy" and give a Fermi value. Then state what you would look for to tighten it.
+Bracket the mass of a small liquid-fuelled upper stage's engine between "certainly too light" and "certainly too heavy" and give a Fermi value. Then state what you would look for to tighten it.
 :::
 
 ::: answer

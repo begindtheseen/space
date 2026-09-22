@@ -202,7 +202,7 @@ int main() {
 // tidy_demo.cpp:22:24: warning: 'buffer' used after it was moved [bugprone-use-after-move]
 ```
 
-Every finding is a lesson from this module caught mechanically. The empty constructor leaves two members indeterminate (lesson 1: initialise at the declaration — `double gain = 0.0;` and `Config() = default;`). The `int counts = volts * ...` narrows a `double` silently (lesson 1: `static_cast` after a range check, or brace initialisation to make it an error). `consume` copies a thousand doubles it only reads (lesson 2: `const std::vector<double>&`). And `buffer.size()` after `std::move(buffer)` reads a moved-from object (lesson 3). The program compiles without a single warning from `g++ -Wall -Wextra`; the analyser found all four without running it.
+Every finding is a lesson from this module caught mechanically. The empty constructor leaves two members indeterminate (lesson 1: initialise at the declaration — `double gain = 0.0;` and `Config() = default;`). The `int counts = volts * ...` narrows a `double` silently (lesson 1: `static_cast` after a range check, or brace initialisation to make it an error). `consume` copies a thousand doubles it only reads (lesson 2: take a `const` reference to the vector). And `buffer.size()` after `std::move(buffer)` reads a moved-from object (lesson 3). The program compiles without a single warning from `g++ -Wall -Wextra`; the analyser found all four without running it.
 
 With a repository `.clang-tidy` that enables the broader families and promotes one check to an error —
 
@@ -261,7 +261,7 @@ clang-tidy reports `performance-unnecessary-value-param` on `void consume(std::v
 :::
 
 ::: answer
-`consume` only reads `samples`, so take it by `const` reference — `const std::vector<double>& samples` — and no copy of the thousand elements is made (lesson 2, passing large objects you only read by `const T&`). The use after move is fixed by not reading `buffer` after `std::move(buffer)`: read the size before the move, or ask the callee, or simply drop the line; a moved-from object is valid but unspecified and the only sensible operations are assignment and destruction (lesson 3). If a project has `WarningsAsErrors` naming `bugprone-use-after-move`, the second finding fails the build until it is fixed.
+`consume` only reads `samples`, so take it by `const` reference to the vector, and no copy of the thousand elements is made (lesson 2, passing large objects you only read by `const T&`). The use after move is fixed by not reading `buffer` after `std::move(buffer)`: read the size before the move, or ask the callee, or simply drop the line; a moved-from object is valid but unspecified and the only sensible operations are assignment and destruction (lesson 3). If a project has `WarningsAsErrors` naming `bugprone-use-after-move`, the second finding fails the build until it is fixed.
 :::
 
 ::: check
