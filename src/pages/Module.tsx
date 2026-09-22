@@ -36,7 +36,7 @@ import {
   IconWarn,
 } from '@/components/icons'
 import { Bar, Button, Card, CardHead, Chip, Empty, Ring, Tile } from '@/components/ui'
-import { TRACKS, lessonKey, loadLessonBody, moduleById } from '@/curriculum'
+import { TRACKS, lessonCoverage, lessonKey, loadLessonBody, moduleById } from '@/curriculum'
 import type { Exercise, Flashcard, Lesson as LessonMeta, Module, Resource } from '@/curriculum/types'
 import { markLessonRead, markRead, togglePin } from '@/engine/apply'
 import { atomsOf, dueAtoms } from '@/engine/scheduler'
@@ -363,9 +363,33 @@ function Learn({
   const startHere = resources[0]
   const hasLessons = lessons.length > 0
   const firstUnread = lessons.find((l) => !state.read[lessonKey(module.id, l.id)])
+  const coverage = lessonCoverage(module.id)
 
   return (
     <>
+      {/* The corpus is still being written. A module that teaches four of its
+          eleven topics says so here, with the missing ones named, so a partly
+          written module can never be mistaken for the finished article and she
+          knows to use the reading below for the rest. */}
+      {coverage && !coverage.complete ? (
+        <div className="coverage-note">
+          <p className="coverage-note__head">
+            <strong>
+              These lessons cover {coverage.covered} of this module&rsquo;s {coverage.total} topics.
+            </strong>{' '}
+            The rest are still being written. Until they land, use the reading below for them.
+          </p>
+          <details>
+            <summary>Topics not yet written up</summary>
+            <ul>
+              {coverage.missing.map((t) => (
+                <li key={t}>{t}</li>
+              ))}
+            </ul>
+          </details>
+        </div>
+      ) : null}
+
       {!status.read ? (
         <Card index={0}>
           <CardHead icon={<IconRoute size={15} />} title="How to study this module" divided />

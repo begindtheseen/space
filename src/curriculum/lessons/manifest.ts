@@ -362,6 +362,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "error handling without exceptions"
       ],
       "file": "t0_m12_cpp/08-error-handling-without-exceptions.md"
+    },
+    {
+      "id": "l09-memory-cache-hot-loops",
+      "title": "Memory layout, the cache, and allocation-free hot loops",
+      "minutes": 27,
+      "covers": [
+        "memory layout, cache behaviour, allocation-free hot loops"
+      ],
+      "file": "t0_m12_cpp/09-memory-cache-hot-loops.md"
     }
   ],
   "t1_m13_classical_mechanics": [
@@ -462,6 +471,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "angle of attack and sideslip; body vs wind frame"
       ],
       "file": "t1_m18_atmospheric_flight/04-angle-of-attack-and-wind-frame.md"
+    },
+    {
+      "id": "l05-normal-force-and-static-margin",
+      "title": "Normal force, centre of pressure and static margin",
+      "minutes": 17,
+      "covers": [
+        "normal force, centre of pressure vs centre of gravity, static margin"
+      ],
+      "file": "t1_m18_atmospheric_flight/05-normal-force-and-static-margin.md"
     }
   ],
   "t2_m19_two_body": [
@@ -556,6 +574,24 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "time of flight"
       ],
       "file": "t2_m19_two_body/10-time-of-flight.md"
+    },
+    {
+      "id": "l11-universal-variables",
+      "title": "Universal variables and the Stumpff functions",
+      "minutes": 22,
+      "covers": [
+        "universal variables and the Stumpff functions"
+      ],
+      "file": "t2_m19_two_body/11-universal-variables.md"
+    },
+    {
+      "id": "l12-lagrange-coefficients",
+      "title": "The Lagrange f and g coefficients",
+      "minutes": 21,
+      "covers": [
+        "Lagrange f and g coefficients"
+      ],
+      "file": "t2_m19_two_body/12-lagrange-coefficients.md"
     }
   ]
 }
@@ -742,12 +778,11 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t0_m12_cpp": {
-    "covered": 9,
+    "covered": 10,
     "total": 17,
     "complete": false,
     "missing": [
       "Eigen, including the Geometry module",
-      "memory layout, cache behaviour, allocation-free hot loops",
       "CMake, with Bazel awareness",
       "GoogleTest",
       "profiling and sanitizers: perf, valgrind, ASan/UBSan",
@@ -804,11 +839,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t1_m18_atmospheric_flight": {
-    "covered": 6,
+    "covered": 7,
     "total": 15,
     "complete": false,
     "missing": [
-      "normal force, centre of pressure vs centre of gravity, static margin",
       "aerodynamic instability of a boosting rocket",
       "the q-alpha load indicator and load relief control",
       "wind profiles and gust models (Dryden, von Karman), wind shear",
@@ -820,12 +854,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t2_m19_two_body": {
-    "covered": 11,
+    "covered": 13,
     "total": 15,
     "complete": false,
     "missing": [
-      "universal variables and the Stumpff functions",
-      "Lagrange f and g coefficients",
       "ground tracks and orbit types: LEO, MEO, GEO, GTO, SSO, Molniya, frozen",
       "TLE format and SGP4"
     ]

@@ -290,7 +290,7 @@ Range-for takes `samples.begin()` and `samples.end()` once, before the loop. The
 :::
 
 ::: check
-Why does `mean` take a `std::span` of `const double` rather than `const std::vector<double>&`? Name two callers that the span version accepts and the vector version rejects.
+Why does `mean` take a `std::span` of `const double` rather than a `const` reference to a `std::vector` of `double`? Name two callers that the span version accepts and the vector version rejects.
 :::
 
 ::: answer

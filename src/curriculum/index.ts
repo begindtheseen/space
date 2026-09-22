@@ -110,6 +110,7 @@ export function searchModules(query: string, limit = 20): Module[] {
 }
 
 export { TRACKS, TRACK_ORDER, trackDef } from './tracks'
-export { lessonKey, loadLessonBody, lessonsFor } from './lessons'
+export { lessonCoverage, lessonKey, loadLessonBody, lessonsFor } from './lessons'
+export type { LessonCoverage } from './lessons'
 export type { LessonMeta } from './lessons'
 export type { Module, TrackDef, TrackId } from './types'

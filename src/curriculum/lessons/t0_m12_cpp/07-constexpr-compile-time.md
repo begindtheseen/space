@@ -406,7 +406,7 @@ For a fixed-size Eigen type the size is a compile-time constant, so `static_asse
 | compile-time table | `constexpr auto t = make_table();` — literal data in read-only memory |
 | CRC-32 check value | `crc32("123456789") == 0xCBF43926` |
 | `Quantity<L, T, M>` | exponents in the type; `*` adds, `/` subtracts, `+` requires equality |
-| `Fixed<FracBits>` | fixed point with resolution $2^{-\text{FracBits}}$ in the type |
+| `Fixed` with a `FracBits` parameter | fixed point with resolution $2^{-\text{FracBits}}$ in the type |
 | compile-time floating point | IEEE rounding applies; compare with a tolerance |
 
 The next lesson is about what happens when a value cannot be known at compile time and is wrong at run time — how flight code reports and handles errors without the exception machinery Python relies on.

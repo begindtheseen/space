@@ -6,7 +6,7 @@
    own lazily fetched asset; the manifest carries the metadata the module page
    needs up front, and a body is fetched the first time someone opens it.
    ========================================================================== */
-import { LESSON_MANIFEST } from './manifest'
+import { LESSON_COVERAGE, LESSON_MANIFEST, type LessonCoverage } from './manifest'
 import { parseLesson } from './parse'
 import type { LessonMeta } from './types'
 
@@ -19,6 +19,20 @@ const files = import.meta.glob('./*/*.md', { query: '?raw', import: 'default' })
 
 export function lessonsFor(moduleId: string): LessonMeta[] {
   return LESSON_MANIFEST[moduleId] ?? []
+}
+
+export type { LessonCoverage } from './manifest'
+
+/**
+ * How much of a module its written lessons actually teach, or null for a
+ * module that has none yet.
+ *
+ * Generated from the files, so it cannot drift from them. The module page
+ * reads it to say plainly that a module is still being written rather than
+ * presenting a partly-taught module as the finished article.
+ */
+export function lessonCoverage(moduleId: string): LessonCoverage | null {
+  return LESSON_COVERAGE[moduleId] ?? null
 }
 
 export function lessonKey(moduleId: string, lessonId: string): string {

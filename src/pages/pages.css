@@ -1126,3 +1126,40 @@
   font-family: var(--mono, ui-monospace, monospace);
   font-size: 12px;
 }
+
+/* The corpus is written module by module, so a module can be partly taught.
+   Saying which topics are not written up yet is the difference between an
+   honest gap and a silent one — she can see what to read elsewhere instead. */
+.coverage-note {
+  margin-bottom: 18px;
+  padding: 12px 14px;
+  border: 1px solid rgba(120, 170, 255, 0.24);
+  border-left-width: 2px;
+  border-radius: 8px;
+  background: rgba(120, 170, 255, 0.05);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.coverage-note__head {
+  margin: 0;
+}
+
+.coverage-note details {
+  margin-top: 8px;
+}
+
+.coverage-note summary {
+  cursor: pointer;
+  color: var(--text-dim, #98a2b3);
+}
+
+.coverage-note ul {
+  margin: 8px 0 0;
+  padding-left: 20px;
+  color: var(--text-dim, #98a2b3);
+}
+
+.coverage-note li {
+  margin: 3px 0;
+}
