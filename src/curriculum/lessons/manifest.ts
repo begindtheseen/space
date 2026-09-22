@@ -118,6 +118,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "BASIC versus PREFERRED qualifications: hard filter versus ranking signal"
       ],
       "file": "car_03_levels_and_quals/01-basic-vs-preferred.md"
+    },
+    {
+      "id": "l02-new-graduate-engineer",
+      "title": "The New Graduate Engineer, GNC posting",
+      "minutes": 16,
+      "covers": [
+        "New Graduate Engineer, GNC (26/27, Starlink, Redmond WA): required and preferred"
+      ],
+      "file": "car_03_levels_and_quals/02-new-graduate-engineer.md"
     }
   ],
   "car_04_degree_reality": [
@@ -148,6 +157,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "accredited routes that fit alongside work: ABET-accredited part-time and online bachelor’s programmes, community college transfer, competency-based models"
       ],
       "file": "car_04_degree_reality/03-path-one-degree-parallel.md"
+    },
+    {
+      "id": "l04-path-two-the-side-door",
+      "title": "Path 2: the side door, and the transfer inside",
+      "minutes": 19,
+      "covers": [
+        "Path 2, side door then transfer: SRE GNC allows 4+ years of professional software or SRE experience in lieu of a degree and sits inside the GNC org; GNC Software Engineer and simulation and tools roles weight software skill heavily; internal transfer at SpaceX is common"
+      ],
+      "file": "car_04_degree_reality/04-path-two-the-side-door.md"
     }
   ],
   "car_07_resume_and_referrals": [
@@ -6814,11 +6832,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "car_03_levels_and_quals": {
-    "covered": 1,
+    "covered": 2,
     "total": 10,
     "complete": false,
     "missing": [
-      "New Graduate Engineer, GNC (26/27, Starlink, Redmond WA): required and preferred",
       "GNC Engineer Level I to II: the 2+ years line and the Dragon 1+ years variant",
       "the full preferred list for GNC Engineer and what each item signals",
       "Sr. GNC Engineer: 5+ years, or 7+ years in lieu of a degree, or a postgraduate degree",
@@ -6830,11 +6847,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "car_04_degree_reality": {
-    "covered": 4,
+    "covered": 5,
     "total": 10,
     "complete": false,
     "missing": [
-      "Path 2, side door then transfer: SRE GNC allows 4+ years of professional software or SRE experience in lieu of a degree and sits inside the GNC org; GNC Software Engineer and simulation and tools roles weight software skill heavily; internal transfer at SpaceX is common",
       "Path 3, NewSpace ladder: Varda, Stoke, Firefly, Astra, True Anomaly, Impulse, Relativity and Intuitive Machines hire GNC with looser credential gates, and 2 to 3 years there converts to 5+ years professional GNC experience or 7+ years in lieu of a degree at SpaceX senior level",
       "realistic timelines for each path, stated in years",
       "the two failure modes: believing a portfolio replaces the degree, and believing nothing but the degree matters",
