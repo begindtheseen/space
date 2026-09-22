@@ -1,7 +1,7 @@
 ---
 id: l10-real-time-onboard-mpc
 title: Real-time onboard MPC and embedded QP solvers
-minutes: 26
+minutes: 25
 covers:
   - 'Real-time onboard MPC: warm starting, solver choice, worst-case iteration bounds, certifiable solve time'
   - Embedded QP solvers (OSQP, qpOASES, HPIPM) and code generation
@@ -9,7 +9,7 @@ covers:
 
 The optimization module established what an embedded convex solver has to be: statically allocated, free of runtime branching on data, with a fixed elimination ordering, a fixed iteration count rather than a tolerance test, and two certified outcomes per cycle. Those rules are not repeated here — they apply to an MPC solver exactly as they apply to a landing guidance solver.
 
-What is specific to MPC is the shape of the workload. The same quadratic program is re-solved every cycle with a slightly different state, so successive problems are nearly identical; the problem has a banded structure that a general solver cannot see; the horizon is a design parameter that trades directly against solve time; and the controller runs at the control loop's rate rather than a guidance rate, so the frame is milliseconds rather than tenths of a second. Those four facts drive everything in this lesson: which solver family to choose, how much warm starting actually buys, what a worst-case bound looks like, and what you tell a review board when they ask whether an optimiser belongs in a flight control loop.
+What is specific to MPC is the shape of the workload: the same quadratic program re-solved every cycle from a slightly different state, a banded structure a general solver cannot see, a horizon that trades directly against solve time, and a frame measured in milliseconds because the controller runs at the control rate rather than a guidance rate. Those four facts drive this lesson — which solver family to choose, how much warm starting buys, what a worst-case bound looks like, and what you tell a review board that asks whether an optimiser belongs in a flight control loop.
 
 ## The frame budget
 
@@ -120,7 +120,7 @@ The uncomfortable case looks like the $100\,\mathrm{MFLOP/s}$ row — a radiatio
 
 The QP-formulation lesson showed that for a time-invariant problem the Hessian and every constraint matrix are build-time constants, and only two vectors change per cycle: the linear cost term $\mathbf{f} = \mathbf{F}\mathbf{x}$ and the state-dependent constraint right-hand sides. That is exactly the structure a code generator wants.
 
-The workflow mirrors the one the optimization module set out. Define the problem once with the state, reference and bounds as parameters; confirm it is convex and, for CVXPY-based tools, parameter-affine; run the dispersion campaign in the high-level environment to choose the horizon, the tolerances and the iteration cap; then generate C in which the sparsity pattern, the elimination ordering, every loop bound and the workspace size are compile-time constants. Re-run the whole campaign against the generated code and account for every discrepancy. Measure worst-case execution time on the target with the cap in place. Then freeze: the horizon, the cap and the workspace are configuration items, not tuning knobs.
+The workflow mirrors the one the optimization module set out: define the problem once with the state, reference and bounds as parameters; run the dispersion campaign in the high-level environment to fix the horizon, the tolerances and the iteration cap; generate C in which the sparsity pattern, the elimination ordering, every loop bound and the workspace size are compile-time constants; re-run the campaign against the generated code and account for every discrepancy; measure worst-case execution time on the target with the cap in place; then freeze, because the horizon, the cap and the workspace are configuration items rather than tuning knobs.
 
 The MPC-specific tools are OSQP's code generator, CVXPYgen for CVXPY models, and `acados`, which generates the whole real-time-iteration loop around HPIPM for nonlinear as well as linear problems. All of them produce a solve function with no dynamic allocation and no library dependencies, which is the property that makes the rest of the argument possible.
 
@@ -130,9 +130,9 @@ The MPC-specific tools are OSQP's code generator, CVXPYgen for CVXPY models, and
 Never let a control cycle depend on a solver succeeding. Cap iterations, keep the last feasible plan, and carry a certified simple fallback law with a deterministic switch and a telemetry counter.
 :::
 
-In practice this is three mechanisms working together. The **shifted previous plan** is held in memory; if this cycle's solve fails or times out, its next input is applied, which is feasible by the recursive-feasibility argument as long as the disturbance was inside the design set. The **fallback law** — a saturated LQR, or the explicit solution of a reduced problem with its computed region of attraction — runs when the shifted plan is exhausted or when the state is outside the region where the plan is trustworthy. The **switch** is deterministic, based on the solver's status, the residual check on the returned plan and the state's membership of a verified set, and every transition increments a counter that reaches the ground.
+Three mechanisms make it work. The **shifted previous plan**, held in memory, supplies the input when this cycle's solve fails or times out, and it is feasible by the recursive-feasibility argument as long as the disturbance stayed inside the design set. The **fallback law** — a saturated LQR, or the explicit solution of a reduced problem with its computed region of attraction — runs when the shifted plan is exhausted or the state leaves the region where the plan is trustworthy. The **switch** is deterministic, driven by the solver status, the residual check on the returned plan and membership of a verified set, and every transition increments a telemetry counter.
 
-Two details separate a design that works from one that looks like it works. The fallback must be *tested in the loop*, with the solver deliberately failed on random cycles across the campaign, because a fallback that has never actually been entered in simulation is an assumption rather than a mechanism. And the switching logic needs hysteresis: a controller that alternates between the optimiser and the fallback every other cycle is worse than either alone.
+Two details separate a design that works from one that looks like it works. The fallback must be tested in the loop, with the solver deliberately failed on random cycles across the campaign, because a fallback never entered in simulation is an assumption rather than a mechanism. And the switching logic needs hysteresis, since a controller alternating between optimiser and fallback every other cycle is worse than either alone.
 
 ::: note What to write in the design review
 The paragraph a review board wants has five sentences in it, and every one needs a number. The control period and the fraction allocated to the solver. The horizon and the resulting problem size, with the formulation named. The iteration cap, where it came from, and what the solver returns if it is reached. The worst-case execution time measured on the flight processor with caches and interrupts in their worst configuration, and the margin against the allocation. And the fallback: what it is, when it engages, what its region of attraction is, and how often it engaged across the campaign. If any of the five is missing, the answer to "can we fly this?" is not yet available — and if all five are present, the discussion becomes an engineering trade rather than an argument about whether optimisers belong in flight software.

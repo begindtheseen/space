@@ -1,7 +1,7 @@
 ---
 id: l09-nonlinear-and-economic-mpc
 title: Nonlinear MPC and economic MPC
-minutes: 24
+minutes: 25
 covers:
   - Nonlinear MPC
   - Economic MPC
@@ -46,6 +46,10 @@ With the true dynamics $\mathbf{x}_{k+1} = \mathbf{f}(\mathbf{x}_k, \mathbf{u}_k
 
 The solvers are the ones the optimization module covered: sequential quadratic programming, which solves a QP approximation at each iteration, and interior-point methods for nonlinear programs. What is specific to MPC is that the problem at this cycle is a small perturbation of the problem at the last one, which motivates the **real-time iteration** scheme of Diehl and co-workers: perform exactly *one* SQP iteration per sample, warm-started from the previous solution, and apply its first input. The controller never solves the NLP to convergence; it tracks the moving solution with one Newton step per cycle. The scheme has a contraction argument behind it — the tracking error stays bounded if the solution moves slowly enough relative to the Newton contraction — and it is what makes nonlinear MPC run at kilohertz rates in the `acados` and ACADO implementations.
 
+::: key Nonlinear MPC
+Replace the linear model by $\mathbf{x}_{k+1} = \mathbf{f}(\mathbf{x}_k,\mathbf{u}_k)$ and the finite-horizon problem becomes a nonlinear program, solved by SQP or an interior-point NLP method — in flight, usually by one warm-started SQP iteration per sample (the real-time iteration). You keep the prediction accuracy and give up global optimality, the optimality and infeasibility certificates, and the a priori iteration bound.
+:::
+
 ::: warning What nonlinear MPC gives up
 Four guarantees go at once, and it is worth naming them so nobody is surprised in a review. **Global optimality**: the solver returns a local minimum, and which one depends on the initial guess. **The certificate**: a convex solver returns a proof of optimality or of infeasibility; a nonlinear solver returns neither, so "infeasible" may mean "this solver did not find a point" rather than "no point exists". **The iteration bound**: SQP iteration counts vary by an order of magnitude with the initial guess, which destroys the worst-case timing argument that certification needs. **Feasibility of intermediate iterates**: an SQP iterate may violate constraints, so an early-terminated solve can return a plan that is not flyable, unless the formulation is arranged to keep iterates feasible.
 
@@ -87,6 +91,10 @@ for some positive definite $\rho$. When it holds, the **rotated cost** $\tilde{\
 **The turnpike property.** Optimal economic trajectories spend the bulk of a long horizon near $(\mathbf{x}_s,\mathbf{u}_s)$, departing only at the ends. That is what makes economic MPC behave sensibly at all: the optimal plan is "leave the current state, sit at the economic optimum, do something specific at the end", and the receding horizon keeps re-deciding the leaving part.
 
 When dissipativity fails, the honest conclusion is that the economic optimum is not a steady state — it is a **cycle**, and it can beat every steady state. That is not a pathology to be tuned away; for many aerospace problems it is the right answer.
+
+::: key Economic MPC
+The stage cost is the mission objective — propellant, energy, money — not a distance from a setpoint, so $V_N^0$ is not automatically a Lyapunov function. Under strict dissipativity with respect to the supply rate $\ell(\mathbf{x},\mathbf{u}) - \ell(\mathbf{x}_s,\mathbf{u}_s)$, the rotated cost $\tilde{\ell} = \ell - \ell(\mathbf{x}_s,\mathbf{u}_s) + \lambda(\mathbf{x}) - \lambda(\mathbf{x}^+)$ is positive definite about the best steady state, the two problems have the same minimisers, and the standard stability theory applies to the rotated one.
+:::
 
 ::: example Station keeping: propellant against precision
 A single axis with a known periodic disturbance acceleration of amplitude $0.002\,\mathrm{m/s^2}$ and period $200\,\mathrm{s}$ — the shape of a gravity-gradient or solar-pressure cycle — a dead-band of $|x_1| \le 1\,\mathrm{m}$, a thruster limited to $0.05\,\mathrm{m/s^2}$, $T_s = 1\,\mathrm{s}$ and a $40$-step horizon with the disturbance previewed over it. Left uncontrolled the vehicle would oscillate with amplitude $a/\omega^2 = 2.03\,\mathrm{m}$, so the dead-band cannot be held for free.

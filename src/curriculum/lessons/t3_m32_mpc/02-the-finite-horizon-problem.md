@@ -111,7 +111,7 @@ Take the tracked output to be position, $\mathbf{C} = [\,1\ \ 0\,]$, and a known
 
 Running the loop in deviation variables with $r = 0$ from $\mathbf{x} = (2, 0)$, the vehicle settles at $\mathbf{x} = (0, 0)$ to eight decimal places with $u = -0.0500\,\mathrm{m/s^2}$ — the $19.3\,\mathrm{mm}$ offset of the previous lesson is gone, because the optimiser is now penalising the deviation from an input that already carries the disturbance.
 
-The same machinery does setpoint changes. Commanding $r = -5\,\mathrm{m}$ from rest at the origin, with the input constraint shifted to $-0.95 \le \delta u \le 1.05$, the loop accelerates at the $1\,\mathrm{m/s^2}$ limit for about $2.1\,\mathrm{s}$, coasts through a peak speed near $2\,\mathrm{m/s}$, brakes at the limit, and is within $0.8\,\mathrm{mm}$ of the target at $t = 10\,\mathrm{s}$. The command profile is bang-bang at both ends and smooth in between — the signature of a quadratic cost meeting a box constraint, exactly as the optimization module's treatment of quadratic programs predicts.
+The same machinery does setpoint changes. Commanding $r = -5\,\mathrm{m}$ from rest at the origin, with the input constraint shifted to $-0.95 \le \delta u \le 1.05$, the loop accelerates at the $1\,\mathrm{m/s^2}$ limit for the first $2.1\,\mathrm{s}$, peaks at $2.05\,\mathrm{m/s}$, switches sign between $t = 2.1$ and $2.2\,\mathrm{s}$, brakes back at the limit, and is within $0.8\,\mathrm{mm}$ of the target at $t = 10\,\mathrm{s}$. The command profile is bang-bang at both ends and smooth in between — the signature of a quadratic cost meeting a box constraint, exactly as the optimization module's treatment of quadratic programs predicts.
 :::
 
 ## Is the problem well posed?

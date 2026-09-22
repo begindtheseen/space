@@ -1,7 +1,7 @@
 ---
 id: l03-linear-mpc-as-a-quadratic-program
 title: Linear MPC as a quadratic program
-minutes: 18
+minutes: 16
 covers:
   - Linear MPC as a quadratic program; condensed vs sparse formulations
 ---

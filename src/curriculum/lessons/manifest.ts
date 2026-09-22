@@ -2149,6 +2149,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "The Bode gain-phase relationship, the Bode sensitivity integral, and the waterbed effect"
       ],
       "file": "t3_m26_classical_control/11-gain-phase-and-the-waterbed.md"
+    },
+    {
+      "id": "l12-cascade-rate-inside-attitude",
+      "title": "Cascade control — a fast rate loop inside a slower attitude loop",
+      "minutes": 22,
+      "covers": [
+        "Cascade architecture: a fast rate loop inside a slower attitude loop"
+      ],
+      "file": "t3_m26_classical_control/12-cascade-rate-inside-attitude.md"
     }
   ],
   "t3_m27_digital_control": [
@@ -2452,6 +2461,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Loop transfer recovery and what it actually costs"
       ],
       "file": "t3_m29_optimal_control_lqr/11-loop-transfer-recovery.md"
+    },
+    {
+      "id": "l12-discrete-time-lqr-and-the-dare",
+      "title": "Discrete-time LQR and the DARE",
+      "minutes": 18,
+      "covers": [
+        "Discrete-time LQR and the DARE"
+      ],
+      "file": "t3_m29_optimal_control_lqr/12-discrete-time-lqr-and-the-dare.md"
     }
   ],
   "t3_m30_robust_control": [
@@ -2651,7 +2669,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-linear-mpc-as-a-quadratic-program",
       "title": "Linear MPC as a quadratic program",
-      "minutes": 18,
+      "minutes": 16,
       "covers": [
         "Linear MPC as a quadratic program; condensed vs sparse formulations"
       ],
@@ -2705,7 +2723,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-nonlinear-and-economic-mpc",
       "title": "Nonlinear MPC and economic MPC",
-      "minutes": 24,
+      "minutes": 25,
       "covers": [
         "Nonlinear MPC",
         "Economic MPC"
@@ -2715,7 +2733,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-real-time-onboard-mpc",
       "title": "Real-time onboard MPC and embedded QP solvers",
-      "minutes": 26,
+      "minutes": 25,
       "covers": [
         "Real-time onboard MPC: warm starting, solver choice, worst-case iteration bounds, certifiable solve time",
         "Embedded QP solvers (OSQP, qpOASES, HPIPM) and code generation"
@@ -2970,11 +2988,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t3_m26_classical_control": {
-    "covered": 11,
+    "covered": 12,
     "total": 13,
     "complete": false,
     "missing": [
-      "Cascade architecture: a fast rate loop inside a slower attitude loop",
       "Feedforward and 2-DOF control; gain scheduling across flight regimes"
     ]
   },
@@ -2991,11 +3008,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t3_m29_optimal_control_lqr": {
-    "covered": 11,
+    "covered": 12,
     "total": 14,
     "complete": false,
     "missing": [
-      "Discrete-time LQR and the DARE",
       "The Hamiltonian and the Pontryagin minimum principle as the general frame",
       "iLQR and DDP as the nonlinear extension"
     ]

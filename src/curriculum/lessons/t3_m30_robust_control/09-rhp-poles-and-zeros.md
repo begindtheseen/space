@@ -88,7 +88,7 @@ $$\int_0^\infty\ln\lvert S(j\omega)\rvert\,d\omega = \pi\sum_i\operatorname{Re}(
 For a stable open loop the right side is zero: every decibel of disturbance rejection bought below crossover is paid for in amplification above it. An unstable pole adds a fixed positive area that must be paid whatever the design.
 :::
 
-The integral is exact and is worth verifying numerically once, because the constant is easy to misremember. For the booster loop with its proportional-derivative controller and a second-order gimbal actuator — relative degree three — numerical integration of $\ln\lvert S\rvert$ over frequency returns $1.50009$, against $\pi p = \pi\times 0.4775 = 1.50009$.
+The integral is exact and is worth verifying numerically once, because the constant is easy to misremember. For the booster loop with its proportional-derivative controller and a second-order gimbal actuator — relative degree three — numerical integration of $\ln\lvert S\rvert$ over frequency returns $1.50009$, against $\pi p = \pi\sqrt{0.228} = 1.50009$.
 
 ::: example What the waterbed costs the booster
 The mandatory area is $\pi p = 1.500\,\mathrm{rad/s}$ in natural-log units. Suppose the disturbance-rejection requirement is $\lvert S\rvert \le 0.1$ below $0.5\,\mathrm{rad/s}$. That band contributes $\ln(0.1)\times 0.5 = -1.151$ to the integral, so the remaining frequencies must supply $1.500 + 1.151 = 2.651$ of positive area.
