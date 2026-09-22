@@ -28,7 +28,7 @@ $$
 \mathrm{ZEM} \equiv r_f - (r_0 + v_0\,t_{go}), \qquad \mathrm{ZEV} \equiv v_f - v_0,
 $$
 
-the **zero-effort miss** (where the vehicle would end up if it simply coasted at $v_0$ for the remaining time) and **zero-effort velocity error** (how far current velocity is from the target). Solving gives
+the **zero-effort miss** (where the vehicle would end up if it coasted at $v_0$ for the remaining time, applying no further correction) and **zero-effort velocity error** (how far current velocity is from the target). Solving gives
 
 $$
 A = \frac{6\,\mathrm{ZEM}}{t_{go}^2} - \frac{2\,\mathrm{ZEV}}{t_{go}}, \qquad

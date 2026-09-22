@@ -87,7 +87,7 @@ An inertial navigation solution has been coasting, uncorrected, for $300\ \mathr
 :::
 
 ::: answer
-The error scales linearly with $b$, so doubling the bias doubles the accumulated position error: from $4.50\ \mathrm{m}$ to $9.00\ \mathrm{m}$ at $t = 300\ \mathrm{s}$. Because the error also grows with the *square* of elapsed time, the same doubled bias would produce an even larger relative penalty over a longer coast — reinforcing why the time since the last external fix, not just instrument quality, sets how much a terminal sensor suite has to correct.
+The error scales linearly with $b$, so doubling the bias doubles the accumulated position error: from $4.50\ \mathrm{m}$ to $9.00\ \mathrm{m}$ at $t = 300\ \mathrm{s}$. Because the error also grows with the *square* of elapsed time, the same doubled bias would produce an even larger relative penalty over a longer coast — reinforcing why the time since the last external fix, not instrument quality alone, sets how much a terminal sensor suite has to correct.
 :::
 
 ## Summary

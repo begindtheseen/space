@@ -16,7 +16,7 @@ $$
 s_{\mathrm{downrange}} = \int_0^{t_f} v\cos\gamma\, dt,
 $$
 
-evaluated along the numerically integrated trajectory from lesson 3 (the closed-form Allen-Eggers solution does not reduce this integral to anything as clean as the heat-load result of lesson 4 — the $1/v$ weighting here has no matching power of $\rho$ to make the substitution tidy, so this module answers it numerically rather than forcing an ugly closed form). **Entry duration** $t_f$ is simply the time from the $120\ \mathrm{km}$ interface to ground level, $h=0$, read directly off the same integration.
+evaluated along the numerically integrated trajectory from lesson 3 (the closed-form Allen-Eggers solution does not reduce this integral to anything as clean as the heat-load result of lesson 4 — the $1/v$ weighting here has no matching power of $\rho$ to make the substitution tidy, so this module answers it numerically rather than forcing an ugly closed form). **Entry duration** $t_f$ is the time from the $120\ \mathrm{km}$ interface to ground level, $h=0$, read directly off the same integration.
 
 ## The sweep
 
