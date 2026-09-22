@@ -440,6 +440,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "pseudoinverse and rank deficiency"
       ],
       "file": "t0_m05_linear_algebra_2/09-pseudoinverse-and-rank-deficiency.md"
+    },
+    {
+      "id": "l10-condition-number",
+      "title": "The condition number",
+      "minutes": 23,
+      "covers": [
+        "condition number"
+      ],
+      "file": "t0_m05_linear_algebra_2/10-condition-number.md"
     }
   ],
   "t0_m06_calculus_single": [
@@ -956,6 +965,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "semidefinite programming"
       ],
       "file": "t0_m11_optimization/08-semidefinite-programming.md"
+    },
+    {
+      "id": "l09-interior-point-methods",
+      "title": "Interior-point methods",
+      "minutes": 30,
+      "covers": [
+        "interior-point methods"
+      ],
+      "file": "t0_m11_optimization/09-interior-point-methods.md"
     }
   ],
   "t0_m12_cpp": [
@@ -1246,6 +1264,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "energy dissipation and the flat-spin instability"
       ],
       "file": "t1_m14_rigid_body_dynamics/08-energy-dissipation-and-the-flat-spin-instability.md"
+    },
+    {
+      "id": "l09-gyroscopic-effects-nutation-and-precession",
+      "title": "Gyroscopic effects, nutation and precession",
+      "minutes": 21,
+      "covers": [
+        "gyroscopic effects, nutation, precession"
+      ],
+      "file": "t1_m14_rigid_body_dynamics/09-gyroscopic-effects-nutation-and-precession.md"
     }
   ],
   "t1_m15_rotating_frames": [
@@ -1612,11 +1639,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t0_m05_linear_algebra_2": {
-    "covered": 9,
+    "covered": 10,
     "total": 11,
     "complete": false,
     "missing": [
-      "condition number",
       "least squares: normal equations vs QR vs SVD"
     ]
   },
@@ -1659,11 +1685,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t0_m11_optimization": {
-    "covered": 9,
+    "covered": 10,
     "total": 14,
     "complete": false,
     "missing": [
-      "interior-point methods",
       "sequential quadratic programming",
       "nonlinear programming solvers (IPOPT, SNOPT)",
       "modelling languages and solvers: CVXPY, ECOS, SCS, OSQP, Clarabel",
@@ -1683,11 +1708,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t1_m14_rigid_body_dynamics": {
-    "covered": 8,
+    "covered": 9,
     "total": 12,
     "complete": false,
     "missing": [
-      "gyroscopic effects, nutation, precession",
       "dual-spin spacecraft",
       "momentum wheels and control moment gyros",
       "introduction to flexible modes and propellant slosh"
