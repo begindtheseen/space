@@ -271,6 +271,16 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "GNC engineers write flight code themselves rather than handing prototypes to a software team"
       ],
       "file": "car_05_tooling_reality/01-the-verbatim-expectation.md"
+    },
+    {
+      "id": "l02-languages-and-the-model-boundary",
+      "title": "Where each language lives, and the model-to-flight-code boundary",
+      "minutes": 18,
+      "covers": [
+        "Python for analysis, tooling, pipelines and test infrastructure",
+        "MATLAB and Simulink as secondary skills and why the curriculum is not MATLAB-first"
+      ],
+      "file": "car_05_tooling_reality/02-languages-and-the-model-boundary.md"
     }
   ],
   "car_06_portfolio": [
@@ -322,6 +332,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "the projects section as the primary section for candidates without industry GNC experience"
       ],
       "file": "car_07_resume_and_referrals/04-the-projects-section.md"
+    },
+    {
+      "id": "l05-applicant-tracking-systems",
+      "title": "Formatting so a parser reads it correctly",
+      "minutes": 16,
+      "covers": [
+        "applicant tracking system parsing: no tables, no multi-column layouts, no images, standard headings, PDF"
+      ],
+      "file": "car_07_resume_and_referrals/05-applicant-tracking-systems.md"
     }
   ],
   "t0_m01_algebra_precalc": [
@@ -6990,12 +7009,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "car_05_tooling_reality": {
-    "covered": 2,
+    "covered": 4,
     "total": 13,
     "complete": false,
     "missing": [
-      "Python for analysis, tooling, pipelines and test infrastructure",
-      "MATLAB and Simulink as secondary skills and why the curriculum is not MATLAB-first",
       "flight computers: embedded Linux, a roughly 3.2 series kernel with real-time patches, on Dragon, Falcon and Starship primary flight computers",
       "determinism, fixed-step integration and bounded execution time in a flight control loop",
       "why dynamic allocation, unbounded loops and exceptions are avoided in the control path",
@@ -7026,11 +7043,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "car_07_resume_and_referrals": {
-    "covered": 5,
+    "covered": 6,
     "total": 13,
     "complete": false,
     "missing": [
-      "applicant tracking system parsing: no tables, no multi-column layouts, no images, standard headings, PDF",
       "tailoring to one role family rather than submitting one generic resume everywhere",
       "the cover letter question and when it is worth the time",
       "applying directly at spacex.com/careers and what happens next",
