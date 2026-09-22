@@ -2,6 +2,7 @@
 // validated; every invoke handler resolves (with an error-shaped state) rather
 // than rejecting, so a broken updater never surfaces as a raw IPC exception.
 import { BrowserWindow, ipcMain, shell } from 'electron'
+import { readBackup, writeBackup } from './backup.js'
 import { TOKEN_RE, TOKEN_RULE } from './config.js'
 
 const STATE_CHANNEL = 'orbit:updates:state'
@@ -143,6 +144,19 @@ export function registerIpc({ updater, config, versions, repo, allowedOrigins, l
   ipcMain.handle('orbit:open-external', (event, url) => {
     if (!isTrusted(event)) return
     if (!openExternal(url, log)) log('open-external: rejected', typeof url === 'string' ? url.slice(0, 120) : typeof url)
+  })
+
+  // The progress mirror. Both handlers swallow their own failures: the
+  // renderer's IndexedDB copy is the working one, and a disk problem must
+  // degrade the safety net rather than interrupt a study session.
+  ipcMain.handle('orbit:backup:write', (event, json) => {
+    if (!isTrusted(event)) return false
+    return writeBackup(json, log)
+  })
+
+  ipcMain.handle('orbit:backup:read', (event) => {
+    if (!isTrusted(event)) return null
+    return readBackup(log)
   })
 
   return {

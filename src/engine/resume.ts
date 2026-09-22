@@ -120,8 +120,10 @@ export function coerceResume(v: unknown): ResumePoint | undefined {
   const label = s(r.label, 200)
   const at = s(r.at, 40)
   if (!path || !label || !at) return undefined
-  // Only in-app routes: a resume point must never become an open-redirect.
-  if (!path.startsWith('/')) return undefined
+  // Only in-app routes: a resume point is followed automatically on launch, so
+  // it must never become an open redirect. `//host` is protocol-relative and
+  // would leave the app, so a single leading slash is required.
+  if (!path.startsWith('/') || path.startsWith('//')) return undefined
   return {
     kind: KINDS.has(r.kind as string) ? (r.kind as ResumeKind) : 'module',
     path,

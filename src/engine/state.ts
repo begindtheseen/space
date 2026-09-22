@@ -7,6 +7,15 @@
    ========================================================================== */
 import type { Memory } from './fsrs'
 import { newCard } from './fsrs'
+import {
+  coerceLive,
+  coerceMedia,
+  coercePlace,
+  coerceResume,
+  type LiveSession,
+  type MediaProgress,
+  type ResumePoint,
+} from './resume'
 
 export const STATE_VERSION = 1
 
@@ -124,6 +133,20 @@ export interface LearnerState {
   read: Record<string, string>
   goals: Goals
   settings: Settings
+  /**
+   * Where she was when the app last closed — for any reason, including the
+   * power going out. Read by the "pick up where you left off" card.
+   */
+  resume?: ResumePoint
+  /**
+   * A session that was still running. Restoring it puts her back on the same
+   * question with the same text still in the box.
+   */
+  live?: LiveSession
+  /** Playback position per video, keyed by video id. */
+  media: Record<string, MediaProgress>
+  /** Position within a lesson, 0-1, keyed `moduleId::lessonId`. */
+  place: Record<string, number>
 }
 
 export const ATTEMPT_LOG_LIMIT = 4000
@@ -162,6 +185,8 @@ export function newLearnerState(now: Date = new Date()): LearnerState {
     read: {},
     goals: { ...DEFAULT_GOALS },
     settings: { ...DEFAULT_SETTINGS },
+    media: {},
+    place: {},
   }
 }
 
@@ -192,7 +217,20 @@ export function migrateState(raw: unknown, now: Date = new Date()): LearnerState
     read: isRecordOf(r.read, 'string') ? { ...r.read } : {},
     goals: { ...base.goals, ...pickGoals(r.goals) },
     settings: { ...base.settings, ...pickSettings(r.settings) },
+    media: {},
+    place: coercePlace(r.place),
     version: STATE_VERSION,
+  }
+
+  const resume = coerceResume(r.resume)
+  if (resume) out.resume = resume
+  const live = coerceLive(r.live)
+  if (live) out.live = live
+  if (r.media && typeof r.media === 'object') {
+    for (const [k, v] of Object.entries(r.media)) {
+      const m = coerceMedia(v)
+      if (m) out.media[k] = m
+    }
   }
 
   if (r.items && typeof r.items === 'object') {

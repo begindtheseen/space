@@ -80,6 +80,16 @@ export interface OrbitBridge {
     setToken(token: string | null): Promise<UpdateState>
     onState(cb: (state: UpdateState) => void): () => void
   }
+  /**
+   * The progress mirror on disk. Survives the shell's browser storage being
+   * cleared or rebuilt, which IndexedDB does not; see desktop/backup.js.
+   */
+  readonly backup: {
+    /** Atomic write. Resolves false when the file could not be written. */
+    write(json: string): Promise<boolean>
+    /** The stored JSON, or null when there is no mirror yet. */
+    read(): Promise<string | null>
+  }
   /** https: and mailto: only; the shell drops anything else. */
   openExternal(url: string): Promise<void>
   /** Menu-driven navigation, e.g. "Check for Updates…" lands on '/settings'. */

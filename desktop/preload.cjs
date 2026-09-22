@@ -42,6 +42,10 @@ const bridge = {
     setToken: (token) => ipcRenderer.invoke('orbit:updates:set-token', token === null ? null : String(token)),
     onState: (cb) => subscribe('orbit:updates:state', cb),
   },
+  backup: {
+    write: (json) => ipcRenderer.invoke('orbit:backup:write', String(json)),
+    read: () => ipcRenderer.invoke('orbit:backup:read'),
+  },
   openExternal: (url) => ipcRenderer.invoke('orbit:open-external', String(url)),
   onNavigate: (cb) => subscribe('orbit:navigate', cb),
 }

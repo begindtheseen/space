@@ -317,6 +317,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "move semantics"
       ],
       "file": "t0_m12_cpp/03-raii-ownership-and-moves.md"
+    },
+    {
+      "id": "l04-classes-inheritance-virtual-dispatch",
+      "title": "Classes, inheritance and the cost of virtual dispatch",
+      "minutes": 25,
+      "covers": [
+        "classes, inheritance, virtual dispatch and its cost"
+      ],
+      "file": "t0_m12_cpp/04-classes-inheritance-virtual-dispatch.md"
     }
   ],
   "t1_m13_classical_mechanics": [
@@ -368,6 +377,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "the transport theorem"
       ],
       "file": "t1_m15_rotating_frames/02-the-transport-theorem.md"
+    },
+    {
+      "id": "l03-velocity-and-acceleration-in-rotating-frames",
+      "title": "Velocity and acceleration in rotating frames",
+      "minutes": 17,
+      "covers": [
+        "velocity and acceleration in rotating frames"
+      ],
+      "file": "t1_m15_rotating_frames/03-velocity-and-acceleration-in-rotating-frames.md"
     }
   ],
   "t2_m19_two_body": [
@@ -388,6 +406,25 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "constants of motion: specific angular momentum, eccentricity vector, specific energy"
       ],
       "file": "t2_m19_two_body/02-constants-of-motion.md"
+    },
+    {
+      "id": "l03-orbit-equation-conics",
+      "title": "The orbit equation and conic sections",
+      "minutes": 18,
+      "covers": [
+        "the orbit equation and conic sections"
+      ],
+      "file": "t2_m19_two_body/03-orbit-equation-conics.md"
+    },
+    {
+      "id": "l04-kepler-laws-vis-viva",
+      "title": "Kepler's three laws and the vis-viva equation",
+      "minutes": 19,
+      "covers": [
+        "Kepler three laws, derived",
+        "vis-viva"
+      ],
+      "file": "t2_m19_two_body/04-kepler-laws-vis-viva.md"
     }
   ]
 }
@@ -574,13 +611,12 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t0_m12_cpp": {
-    "covered": 4,
+    "covered": 5,
     "total": 17,
     "complete": false,
     "missing": [
       "templates and generic programming",
       "the STL: containers, algorithms, iterators",
-      "classes, inheritance, virtual dispatch and its cost",
       "Eigen, including the Geometry module",
       "memory layout, cache behaviour, allocation-free hot loops",
       "constexpr and compile-time computation",
@@ -626,11 +662,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t1_m15_rotating_frames": {
-    "covered": 2,
+    "covered": 3,
     "total": 11,
     "complete": false,
     "missing": [
-      "velocity and acceleration in rotating frames",
       "Coriolis, centrifugal and Euler acceleration terms",
       "ECI (J2000 / GCRF) and ECEF (ITRF)",
       "NED and ENU local-level frames",
@@ -642,12 +677,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t2_m19_two_body": {
-    "covered": 2,
+    "covered": 5,
     "total": 15,
     "complete": false,
     "missing": [
-      "the orbit equation and conic sections",
-      "Kepler three laws, derived",
       "circular, elliptical, parabolic and hyperbolic orbits",
       "classical orbital elements and equinoctial alternatives",
       "state vector to orbital element conversion, both directions",
@@ -656,7 +689,6 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
       "time of flight",
       "universal variables and the Stumpff functions",
       "Lagrange f and g coefficients",
-      "vis-viva",
       "ground tracks and orbit types: LEO, MEO, GEO, GTO, SSO, Molniya, frozen",
       "TLE format and SGP4"
     ]
