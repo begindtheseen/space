@@ -6,12 +6,12 @@ covers:
   - Why the UKF beats the EKF for strong nonlinearity, and the cost comparison
 ---
 
-The divergence lesson left a filter in a bad state: an EKF, correctly tuned in every respect, that overshot past a bearing sensor and reported a covariance forty times smaller than its actual error for the rest of a forty-step run. This lesson takes the identical scenario — same true trajectory, same measurements, same process and measurement noise, same starting point — and runs the Unscented Kalman Filter on it instead, cycle for cycle, to see precisely what changes and what does not. Then it prices the difference: the UKF's advantage was never free, and this lesson states exactly what it costs in function evaluations, so the choice between the two filters can be made on evidence rather than on reputation.
+The EKF-diverges lesson left a filter in a bad state: an EKF, correctly tuned in every respect, that overshot past a bearing sensor and reported a covariance forty times smaller than its actual error for the rest of a forty-step run. This lesson takes the identical scenario — same true trajectory, same measurements, same process and measurement noise, same starting point — and runs the Unscented Kalman Filter on it instead, cycle for cycle, to see precisely what changes and what does not. Then it prices the difference: the UKF's advantage was never free, and this lesson states exactly what it costs in function evaluations, so the choice between the two filters can be made on evidence rather than on reputation.
 
 ## The same collapse, replayed with the UKF
 
 ::: example Same data, two filters, at the moment that mattered
-Recall the mechanism from the divergence lesson: at step 26 the EKF's predicted position overshot past the sensor, landing step 27's linearization point at a range of only $6.76\,\mathrm m$, where $\mathbf H$'s magnitude is roughly nine times what it was one step earlier. Run the UKF (scaled unscented transform, $\alpha=10^{-3}$, $\beta=2$, $\kappa=0$, as this module's exercises specify) through the identical sequence of measurements:
+Recall the mechanism from the EKF-diverges lesson: at step 26 the EKF's predicted position overshot past the sensor, landing step 27's linearization point at a range of only $6.76\,\mathrm m$, where $\mathbf H$'s magnitude is roughly nine times what it was one step earlier. Run the UKF (scaled unscented transform, $\alpha=10^{-3}$, $\beta=2$, $\kappa=0$, as this module's exercises specify) through the identical sequence of measurements:
 
 | step | $r_{\text{true}}\,(\mathrm m)$ | EKF error $(\mathrm m)$ | UKF error $(\mathrm m)$ | EKF NEES | UKF NEES | EKF $\operatorname{tr}\mathbf P$ | UKF $\operatorname{tr}\mathbf P$ |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -25,7 +25,7 @@ Recall the mechanism from the divergence lesson: at step 26 the EKF's predicted 
 The UKF is not magically more accurate at every instant — at step 27 its point error ($28.49\,\mathrm m$) is actually larger than the EKF's ($6.44\,\mathrm m$), because the sigma points genuinely sample a wide, honestly-uncertain region near a sharp measurement nonlinearity and the resulting update is more cautious. What never happens, at any step, is a collapse: $\operatorname{tr}\mathbf P$ for the UKF stays in the hundreds to low thousands throughout, and NEES never exceeds about $3$ across this entire window — against an ideal value of $4$ for a four-state filter, essentially perfect. By step 40 the UKF's position error has fallen to $8.34\,\mathrm m$, continuing to improve as more data arrives, while the EKF remains stuck near $26\,\mathrm m$, unable to use later measurements because its own gain has been throttled by the covariance it wrongly collapsed thirteen steps earlier.
 :::
 
-The EKF and UKF implementations, and the $\mathbf F,\mathbf Q,\mathbf H,\mathbf R$ they share, are exactly the ones the divergence and unscented-transform lessons already gave in full; this lesson only changes which sequence of measurements both filters are pointed at, and both are pointed at the identical one.
+The EKF and UKF implementations, and the $\mathbf F,\mathbf Q,\mathbf H,\mathbf R$ they share, are exactly the ones the EKF-diverges and unscented-transform lessons already gave in full; this lesson only changes which sequence of measurements both filters are pointed at, and both are pointed at the identical one.
 
 ## The characteristic that decides
 
@@ -38,7 +38,7 @@ The deciding question is how well a single linear approximation, taken at the cu
 ## What the statistics say across many trials
 
 ::: example Fifty trials, and an honest reading of the advantage
-Repeat the identical scenario across fifty independent noise realizations (the same batch the divergence lesson used, one trial excluded because its ordinary-form UKF covariance went briefly indefinite at an unusually close approach — precisely the square-root-UKF motivation from the previous lesson):
+Repeat the identical scenario across fifty independent noise realizations (the same batch the EKF-diverges lesson used, one trial excluded because its ordinary-form UKF covariance went briefly indefinite at an unusually close approach — precisely the square-root-UKF motivation from the previous lesson):
 
 | | EKF | UKF |
 | --- | --- | --- |
@@ -49,7 +49,7 @@ Repeat the identical scenario across fifty independent noise realizations (the s
 | final-position RMSE | $26.30\,\mathrm m$ | $12.72\,\mathrm m$ |
 | final-position median error | $11.70\,\mathrm m$ | $11.29\,\mathrm m$ |
 
-Read the median rows first: $3.83$ against $3.40$ NEES, $11.70\,\mathrm m$ against $11.29\,\mathrm m$ final error — on a *typical* run, the two filters are close, and the UKF's edge is modest. Read the worst-case row next: $1813.58$ against $9.35$ — on the trials that go badly, the two filters are not close at all. The UKF's real advantage in this scenario is not that it tracks noticeably better on an easy day; it is that it does not have the EKF's rare, catastrophic failure mode at all. That is precisely why the mean NEES ($48.68$ against $3.80$) and the mean RMSE ($26.30\,\mathrm m$ against $12.72\,\mathrm m$) look far more dramatic than the median figures — both means are being pulled by the handful of EKF collapses, exactly as the divergence lesson's own fifty-trial statistic was.
+Read the median rows first: $3.83$ against $3.40$ NEES, $11.70\,\mathrm m$ against $11.29\,\mathrm m$ final error — on a *typical* run, the two filters are close, and the UKF's edge is modest. Read the worst-case row next: $1813.58$ against $9.35$ — on the trials that go badly, the two filters are not close at all. The UKF's real advantage in this scenario is not that it tracks noticeably better on an easy day; it is that it does not have the EKF's rare, catastrophic failure mode at all. That is precisely why the mean NEES ($48.68$ against $3.80$) and the mean RMSE ($26.30\,\mathrm m$ against $12.72\,\mathrm m$) look far more dramatic than the median figures — both means are being pulled by the handful of EKF collapses, exactly as the EKF-diverges lesson's own fifty-trial statistic was.
 :::
 
 ## Pricing the difference
@@ -85,7 +85,7 @@ Explain, using the median-versus-mean figures from the fifty-trial table, why su
 :::
 
 ::: answer
-The mean final-position RMSE ($26.30\,\mathrm m$ EKF against $12.72\,\mathrm m$ UKF) suggests a filter that fails by roughly a factor of two on a typical run, but the median figures ($11.70\,\mathrm m$ against $11.29\,\mathrm m$) show the two filters performing almost identically on the majority of trials; the mean is dominated by a small number of EKF runs with very large errors (the same collapse mechanism the divergence lesson demonstrated), and reporting only the mean would misrepresent a rare, severe failure mode as if it were the filters' typical relative performance.
+The mean final-position RMSE ($26.30\,\mathrm m$ EKF against $12.72\,\mathrm m$ UKF) suggests a filter that fails by roughly a factor of two on a typical run, but the median figures ($11.70\,\mathrm m$ against $11.29\,\mathrm m$) show the two filters performing almost identically on the majority of trials; the mean is dominated by a small number of EKF runs with very large errors (the same collapse mechanism the EKF-diverges lesson demonstrated), and reporting only the mean would misrepresent a rare, severe failure mode as if it were the filters' typical relative performance.
 :::
 
 ::: check
@@ -116,7 +116,7 @@ Less likely, on the mechanism this module has established: the EKF's covariance 
 
 | Item | Statement |
 | --- | --- |
-| Same-scenario replay | On the divergence lesson's exact trajectory and measurements, the UKF never collapsed: $\operatorname{tr}\mathbf P$ stayed in the hundreds throughout, NEES stayed near $1$–$3$, and final error reached $8.34\,\mathrm m$ against the EKF's stuck $26.42\,\mathrm m$ |
+| Same-scenario replay | On the EKF-diverges lesson's exact trajectory and measurements, the UKF never collapsed: $\operatorname{tr}\mathbf P$ stayed in the hundreds throughout, NEES stayed near $1$–$3$, and final error reached $8.34\,\mathrm m$ against the EKF's stuck $26.42\,\mathrm m$ |
 | Deciding factor | How well one linearization, taken at the estimate, represents the true function across the *whole* covariance spread — not merely at the estimate itself |
 | Fifty-trial statistics | Median performance close between the two filters ($3.83$ vs $3.40$ NEES); mean performance dominated by the EKF's rare catastrophic trials ($48.68$ vs $3.80$ mean NEES) |
 | Cost | $2n+1$ evaluations of $\mathbf f$ or $\mathbf h$ and no Jacobian, against $1$ evaluation plus a Jacobian; for $n=4$, nine against one |

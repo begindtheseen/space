@@ -97,7 +97,7 @@ one eigenvalue is a large **negative** number. $\mathbf P$ is no longer a valid 
 import numpy as np
 
 # Pm and K exactly as computed by a real UKF update, taken from a scenario
-# and seed identical to the divergence lesson's, at the update immediately
+# and seed identical to the EKF-diverges lesson's, at the update immediately
 # after a 5.75 m closest approach to the sensor.
 Pm = np.array([[2311.08070, 763.792606, 37.3242880, 22.4192304],
                [763.792606, 262.144289, 10.8200812, 7.97395352],
@@ -168,4 +168,4 @@ Clipping restores a positive-definite matrix immediately, which keeps the filter
 | Cost of small $\alpha$ | Weights scale like $1/\alpha^2$ in magnitude and must cancel to sum to $1$; a real, verified case produced a posterior eigenvalue of $-12{,}055$ from otherwise sensible inputs |
 | Square-root UKF | Propagate a Cholesky factor $\mathbf S$ of $\mathbf P$ directly via rank-one updates, guaranteeing positive semi-definiteness by construction rather than by hoping cancellation behaves |
 
-This lesson built the machinery; it has not yet asked, on a real filtering problem run over time rather than a single transform, whether the extra cost buys a result the EKF genuinely could not reach. The next lesson returns to the same bearings-only scenario the divergence lesson used and runs the UKF on it, measurement for measurement, against the filter that collapsed.
+This lesson built the machinery; it has not yet asked, on a real filtering problem run over time rather than a single transform, whether the extra cost buys a result the EKF genuinely could not reach. The next lesson returns to the same bearings-only scenario the EKF-diverges lesson used and runs the UKF on it, measurement for measurement, against the filter that collapsed.
