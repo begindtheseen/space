@@ -3186,6 +3186,24 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "The Multiplicative EKF for attitude: the 3-parameter attitude error, covariance on the tangent space"
       ],
       "file": "t4_m35_nonlinear_filters/11-the-multiplicative-ekf-for-attitude.md"
+    },
+    {
+      "id": "l12-invariant-and-on-manifold-ekf",
+      "title": "On-manifold and invariant EKF, equivariant filtering",
+      "minutes": 20,
+      "covers": [
+        "On-manifold and invariant EKF (IEKF), equivariant filtering"
+      ],
+      "file": "t4_m35_nonlinear_filters/12-invariant-and-on-manifold-ekf.md"
+    },
+    {
+      "id": "l13-consider-states-and-bias-augmentation",
+      "title": "Consider states and bias augmentation",
+      "minutes": 18,
+      "covers": [
+        "Consider states and bias augmentation"
+      ],
+      "file": "t4_m35_nonlinear_filters/13-consider-states-and-bias-augmentation.md"
     }
   ],
   "t4_m36_inertial_navigation": [
@@ -3738,12 +3756,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t4_m35_nonlinear_filters": {
-    "covered": 11,
+    "covered": 13,
     "total": 14,
     "complete": false,
     "missing": [
-      "On-manifold and invariant EKF (IEKF), equivariant filtering",
-      "Consider states and bias augmentation",
       "Multiple-model and IMM filters"
     ]
   },

@@ -4749,8 +4749,9 @@ def naive_sum(d1: np.ndarray, d2: np.ndarray) -> np.ndarray:
 def true_coning_rate(amp_deg: float = CONING_AMP_DEG, f_hz: float = CONING_FREQ_HZ) -> float:
     """Analytic drift rate of this motion about the third axis, rad/s.
 
-    TODO: for small amplitude it is amp^2 * omega. Note the SQUARE — halving
-    the cone angle cuts the drift by four.
+    TODO: for small amplitude it is amp^2 * omega / 2, the small-angle form of
+    the exact omega * (1 - cos(amp)). Note the SQUARE — halving the cone angle
+    cuts the drift by four.
     """
     raise NotImplementedError
 
@@ -4792,7 +4793,7 @@ assert corr[2] > 0.0`,
             name: 'and linearly in frequency',
             assert: `assert abs(true_coning_rate(1.0, 40.0)/true_coning_rate(1.0, 20.0) - 2.0) < 1e-9
 a, w = np.deg2rad(1.0), 2*np.pi*20.0
-assert abs(true_coning_rate(1.0, 20.0) - a*a*w) < 1e-12`,
+assert abs(true_coning_rate(1.0, 20.0) - a*a*w/2) < 1e-12`,
             hidden: true,
           },
         ],
