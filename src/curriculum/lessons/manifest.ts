@@ -1558,6 +1558,24 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "SLERP"
       ],
       "file": "t1_m16_attitude_representations/08-slerp.md"
+    },
+    {
+      "id": "l09-rodrigues-parameters-and-the-mrp-shadow-set",
+      "title": "Classical and modified Rodrigues parameters, and the MRP shadow set",
+      "minutes": 19,
+      "covers": [
+        "classical and modified Rodrigues parameters, and the MRP shadow set"
+      ],
+      "file": "t1_m16_attitude_representations/09-rodrigues-parameters-and-the-mrp-shadow-set.md"
+    },
+    {
+      "id": "l10-conversions-between-every-representation",
+      "title": "Conversions between every representation",
+      "minutes": 20,
+      "covers": [
+        "conversions between every representation"
+      ],
+      "file": "t1_m16_attitude_representations/10-conversions-between-every-representation.md"
     }
   ],
   "t1_m17_attitude_kinematics": [
@@ -1917,11 +1935,20 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-time-delay-and-pade",
       "title": "Time delay and the Padé approximation",
-      "minutes": 17,
+      "minutes": 16,
       "covers": [
         "Time delay and the Pade approximation"
       ],
       "file": "t3_m25_signals_systems/08-time-delay-and-pade.md"
+    },
+    {
+      "id": "l09-frequency-response-and-bode-plots",
+      "title": "Frequency response and Bode plot construction by hand",
+      "minutes": 18,
+      "covers": [
+        "Frequency response: magnitude and phase; Bode plot construction by hand"
+      ],
+      "file": "t3_m25_signals_systems/09-frequency-response-and-bode-plots.md"
     }
   ],
   "t3_m26_classical_control": [
@@ -2043,6 +2070,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Choosing a sample rate: the 20-40x bandwidth rule of thumb and what drives the ends of that range"
       ],
       "file": "t3_m27_digital_control/07-choosing-a-sample-rate.md"
+    },
+    {
+      "id": "l08-quantization-fixed-point",
+      "title": "Quantization, finite word length and fixed point",
+      "minutes": 24,
+      "covers": [
+        "Quantization, finite word length, and fixed-point implementation"
+      ],
+      "file": "t3_m27_digital_control/08-quantization-and-fixed-point.md"
     }
   ],
   "t3_m28_state_space": [
@@ -2099,6 +2135,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Pole placement: Ackermann, Bass-Gura, and robust (eigenstructure) pole placement"
       ],
       "file": "t3_m28_state_space/06-pole-placement.md"
+    },
+    {
+      "id": "l07-luenberger-observers",
+      "title": "Luenberger observers and the estimation error dynamics",
+      "minutes": 20,
+      "covers": [
+        "Luenberger observers and the estimation error dynamics"
+      ],
+      "file": "t3_m28_state_space/07-luenberger-observers.md"
     }
   ],
   "t3_m29_optimal_control_lqr": [
@@ -2146,6 +2191,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "The guaranteed margins of full-state-feedback LQR and why LQG loses them"
       ],
       "file": "t3_m29_optimal_control_lqr/05-lqr-margins-and-why-lqg-loses-them.md"
+    },
+    {
+      "id": "l06-finite-versus-infinite-horizon",
+      "title": "Infinite-horizon and finite-horizon LQR",
+      "minutes": 19,
+      "covers": [
+        "Infinite-horizon vs finite-horizon LQR"
+      ],
+      "file": "t3_m29_optimal_control_lqr/06-finite-versus-infinite-horizon.md"
     }
   ],
   "t3_m30_robust_control": [
@@ -2193,6 +2247,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "The structured singular value mu and mu-synthesis by D-K iteration"
       ],
       "file": "t3_m30_robust_control/05-structured-singular-value-mu.md"
+    },
+    {
+      "id": "l06-robust-stability-vs-performance",
+      "title": "Robust stability versus robust performance",
+      "minutes": 18,
+      "covers": [
+        "Robust stability vs robust performance"
+      ],
+      "file": "t3_m30_robust_control/06-robust-stability-vs-performance.md"
     }
   ],
   "t3_m31_nonlinear_control": [
@@ -2269,6 +2332,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "State and input constraints; soft constraints and slack variables"
       ],
       "file": "t3_m32_mpc/04-constraints-and-slack-variables.md"
+    },
+    {
+      "id": "l05-terminal-cost-and-terminal-set",
+      "title": "Terminal cost and terminal set",
+      "minutes": 22,
+      "covers": [
+        "Terminal cost and terminal constraint set for stability guarantees"
+      ],
+      "file": "t3_m32_mpc/05-terminal-cost-and-terminal-set.md"
     }
   ]
 }
@@ -2373,12 +2445,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t1_m16_attitude_representations": {
-    "covered": 8,
+    "covered": 10,
     "total": 13,
     "complete": false,
     "missing": [
-      "classical and modified Rodrigues parameters, and the MRP shadow set",
-      "conversions between every representation",
       "active vs passive rotation (operator vs coordinate transformation)",
       "attitude error representations",
       "introduction to SO(3), so(3) and the exp/log maps"
@@ -2515,11 +2585,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t3_m25_signals_systems": {
-    "covered": 8,
+    "covered": 9,
     "total": 12,
     "complete": false,
     "missing": [
-      "Frequency response: magnitude and phase; Bode plot construction by hand",
       "Block diagram algebra, reduction, and the Mason gain formula",
       "Open-loop vs closed-loop transfer functions",
       "Sensitivity S and complementary sensitivity T, and the identity S + T = 1"
@@ -2540,22 +2609,20 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t3_m27_digital_control": {
-    "covered": 7,
+    "covered": 8,
     "total": 11,
     "complete": false,
     "missing": [
-      "Quantization, finite word length, and fixed-point implementation",
       "Discrete PID realization forms (direct, parallel, delta) and their numerical conditioning",
       "Biquad sections for discrete filters and notches",
       "Multi-rate systems, jitter, and their effect on stability"
     ]
   },
   "t3_m28_state_space": {
-    "covered": 6,
+    "covered": 7,
     "total": 11,
     "complete": false,
     "missing": [
-      "Luenberger observers and the estimation error dynamics",
       "The separation principle and the exact conditions under which it holds",
       "Integral action in state feedback: servo and augmented-state design",
       "MIMO systems, transmission zeros, and the relative gain array",
@@ -2563,11 +2630,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t3_m29_optimal_control_lqr": {
-    "covered": 5,
+    "covered": 6,
     "total": 14,
     "complete": false,
     "missing": [
-      "Infinite-horizon vs finite-horizon LQR",
       "LQR with integral action",
       "Cheap control and the asymptotic (Kalman) root locus",
       "Time-varying LQR along a nominal trajectory for trajectory stabilization",
@@ -2579,11 +2645,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t3_m30_robust_control": {
-    "covered": 5,
+    "covered": 6,
     "total": 12,
     "complete": false,
     "missing": [
-      "Robust stability vs robust performance",
       "Singular values of MIMO transfer matrices and input/output directionality",
       "MIMO stability margins, disk margins, and why per-loop SISO margins mislead",
       "Performance limitations imposed by right-half-plane poles and zeros",
@@ -2610,11 +2675,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t3_m32_mpc": {
-    "covered": 4,
+    "covered": 5,
     "total": 13,
     "complete": false,
     "missing": [
-      "Terminal cost and terminal constraint set for stability guarantees",
       "Feasibility, recursive feasibility, and the maximal control invariant set",
       "Explicit MPC and multi-parametric programming",
       "Nonlinear MPC",

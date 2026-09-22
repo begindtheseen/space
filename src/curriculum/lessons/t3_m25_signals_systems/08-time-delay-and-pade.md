@@ -1,7 +1,7 @@
 ---
 id: l08-time-delay-and-pade
 title: Time delay and the Padé approximation
-minutes: 17
+minutes: 16
 covers:
   - "Time delay and the Pade approximation"
 ---
