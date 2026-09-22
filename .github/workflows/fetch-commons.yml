@@ -50,30 +50,45 @@ jobs:
             ${{ inputs.titles || env.DEFAULT_TITLES }}
         run: |
           python3 - <<'PY'
-          import json, os, urllib.request, urllib.parse
+          import json, os, time, urllib.request, urllib.parse, urllib.error
           titles = [t.strip() for t in os.environ['TITLES'].splitlines() if t.strip()]
           UA = {'User-Agent': 'orbit-splash-fetch/1.0 (GitHub Actions; one-off asset fetch)'}
           os.makedirs('out', exist_ok=True)
+
+          def get(url):
+              for attempt in range(6):
+                  try:
+                      return urllib.request.urlopen(urllib.request.Request(url, headers=UA), timeout=60).read()
+                  except urllib.error.HTTPError as e:
+                      if e.code == 429 and attempt < 5:
+                          time.sleep(4 * (attempt + 1)); continue
+                      raise
+
           meta = []
           for i, t in enumerate(titles):
-              q = urllib.parse.urlencode({
-                  'action': 'query', 'titles': 'File:' + t, 'prop': 'imageinfo',
-                  'iiprop': 'url|size|extmetadata|sha1', 'format': 'json', 'formatversion': '2'})
-              req = urllib.request.Request('https://commons.wikimedia.org/w/api.php?' + q, headers=UA)
-              page = json.loads(urllib.request.urlopen(req).read())['query']['pages'][0]
-              if page.get('missing') or not page.get('imageinfo'):
-                  meta.append({'title': t, 'missing': True}); print('MISSING', t); continue
-              ii = page['imageinfo'][0]; ext = ii.get('extmetadata', {})
-              g = lambda k: ext.get(k, {}).get('value')
-              url = ii['url']
-              fn = f"{i:02d}-" + os.path.basename(urllib.parse.unquote(url))
-              data = urllib.request.urlopen(urllib.request.Request(url, headers=UA)).read()
-              open('out/' + fn, 'wb').write(data)
-              meta.append({'title': t, 'file': fn, 'license': g('LicenseShortName'), 'licenseUrl': g('LicenseUrl'),
-                           'artist': g('Artist'), 'credit': g('Credit'), 'date': g('DateTimeOriginal'),
-                           'width': ii['width'], 'height': ii['height'], 'bytes': len(data),
-                           'url': url, 'descriptionurl': ii['descriptionurl'], 'sha1': ii['sha1']})
-              print('OK', fn, ii['width'], ii['height'], len(data), g('LicenseShortName'))
+              time.sleep(1.5)
+              try:
+                  q = urllib.parse.urlencode({
+                      'action': 'query', 'titles': 'File:' + t, 'prop': 'imageinfo',
+                      'iiprop': 'url|size|extmetadata|sha1', 'format': 'json', 'formatversion': '2'})
+                  page = json.loads(get('https://commons.wikimedia.org/w/api.php?' + q))['query']['pages'][0]
+                  if page.get('missing') or not page.get('imageinfo'):
+                      meta.append({'title': t, 'missing': True}); print('MISSING', t); continue
+                  ii = page['imageinfo'][0]; ext = ii.get('extmetadata', {})
+                  g = lambda k: ext.get(k, {}).get('value')
+                  url = ii['url']
+                  clean = urllib.parse.urlparse(url).path
+                  fn = f"{i:02d}-" + os.path.basename(urllib.parse.unquote(clean))
+                  time.sleep(1.5)
+                  data = get(url)
+                  open('out/' + fn, 'wb').write(data)
+                  meta.append({'title': t, 'file': fn, 'license': g('LicenseShortName'), 'licenseUrl': g('LicenseUrl'),
+                               'artist': g('Artist'), 'credit': g('Credit'), 'date': g('DateTimeOriginal'),
+                               'width': ii['width'], 'height': ii['height'], 'bytes': len(data),
+                               'url': url, 'descriptionurl': ii['descriptionurl'], 'sha1': ii['sha1']})
+                  print('OK', fn, ii['width'], ii['height'], len(data), g('LicenseShortName'))
+              except Exception as e:
+                  meta.append({'title': t, 'error': str(e)}); print('ERROR', t, e)
           json.dump(meta, open('out/meta.json', 'w'), indent=2)
           PY
       - name: Push to orphan branch
