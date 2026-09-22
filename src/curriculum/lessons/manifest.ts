@@ -3671,6 +3671,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Conjunction assessment and collision probability"
       ],
       "file": "t4_m39_orbit_determination/11-conjunction-assessment-collision-probability.md"
+    },
+    {
+      "id": "l12-maneuver-estimation-and-reconstruction",
+      "title": "Maneuver estimation and reconstruction",
+      "minutes": 12,
+      "covers": [
+        "Maneuver estimation and reconstruction"
+      ],
+      "file": "t4_m39_orbit_determination/12-maneuver-estimation-and-reconstruction.md"
     }
   ],
   "t5_m41_ascent_guidance": [
@@ -4099,11 +4108,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t4_m39_orbit_determination": {
-    "covered": 11,
+    "covered": 12,
     "total": 13,
     "complete": false,
     "missing": [
-      "Maneuver estimation and reconstruction",
       "Relative orbit determination for constellations; autonomous onboard orbit determination"
     ]
   },

@@ -36,8 +36,10 @@ $$
 
 This holds regardless of how $\lambda_m$ or $T(t)$ behave — the direction question separates cleanly from the throttle question, which is exactly why the primer vector is worth naming on its own.
 
+The primer vector's *magnitude*, not only its direction, carries real information: for a bounded-thrust problem where the running cost is proportional to propellant burned, the optimal control module's minimum principle lesson showed the Hamiltonian is linear in throttle magnitude too, so the optimal throttle is bang-bang, switching between off and full thrust on the sign of a switching function built from $\lVert\boldsymbol\lambda_v\rVert$ and $\lambda_m$. A continuously-thrusting ascent burn, with no coast arc inserted, is simply the case where that switching function never changes sign — thrust stays commanded on throughout, and $\lVert\boldsymbol\lambda_v\rVert$ never needs to fall far enough to flip it. The two-phase throttle structure this module derives in a later lesson is a different mechanism again, driven by an active acceleration *constraint* rather than a fuel-optimal switching decision, and the two should not be conflated even though both answer "what should the throttle be doing."
+
 ::: key
-Primer vector: $\boldsymbol\lambda_v$, the costate of velocity. Pontryagin's minimum condition makes the optimal thrust direction point exactly opposite it, $\hat{\mathbf u}^\star = -\boldsymbol\lambda_v/\lVert\boldsymbol\lambda_v\rVert$, independent of the throttle or mass bookkeeping.
+Primer vector: $\boldsymbol\lambda_v$, the costate of velocity. Pontryagin's minimum condition makes the optimal thrust direction point exactly opposite it, $\hat{\mathbf u}^\star = -\boldsymbol\lambda_v/\lVert\boldsymbol\lambda_v\rVert$, independent of the throttle or mass bookkeeping — and its magnitude $\lVert\boldsymbol\lambda_v\rVert$ is what determines the throttle switching structure for a bounded-thrust, minimum-propellant problem.
 :::
 
 Now find how $\boldsymbol\lambda_v$ evolves. The costate equations are $\dot{\boldsymbol\lambda} = -\partial H/\partial(\text{state})$. Neither $v_x$ nor $v_z$ appears in $H$ except through the terminal cost (there is no running cost that depends on velocity here), so to first order in the interior of the burn,
