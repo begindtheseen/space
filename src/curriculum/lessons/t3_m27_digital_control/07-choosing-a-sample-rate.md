@@ -45,7 +45,7 @@ A word on what "bandwidth" means here, because the factor of two hiding in it is
 
 Phase at crossover is not the only thing pushing the rate up. If the loop has to do something deliberate about a structural mode, the sample rate has to be high enough to do it.
 
-A mode you intend to **notch** must be well below Nyquist, because a notch is a feature of the discrete filter's response and there is no response above $f_s/2$ to shape. Worse, the warping of the previous lesson compresses the band near Nyquist, so a notch placed above about a quarter of the sample rate comes out asymmetric even when prewarped. A working rule is $f_s \ge 8$ to $10$ times the highest modal frequency you must actively notch.
+A mode you intend to **notch** must be well below Nyquist, because a notch is a feature of the discrete filter's response and there is no response above $f_s/2$ to shape. Worse, the Tustin warping of the discretization lesson compresses the band near Nyquist, so a notch placed above about a quarter of the sample rate comes out asymmetric even when prewarped. A working rule is $f_s \ge 8$ to $10$ times the highest modal frequency you must actively notch.
 
 A mode you intend to **phase stabilise** — keeping its gain and arranging the phase so the Nyquist encirclements are unchanged, as the classical control module set out — needs more, because phase stabilisation requires an accurate model of the phase at that frequency, and the hold and computational delay contribute $540^\circ f_m/f_s$ there too. At $f_s = 10 f_m$ that is $54^\circ$ of implementation lag sitting on top of the modal phase you were trying to control.
 

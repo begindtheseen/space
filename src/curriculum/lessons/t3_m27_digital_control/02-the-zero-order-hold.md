@@ -83,7 +83,7 @@ $$
 
 The shortcut gives the same thing at sight: $-180^\circ \times 5/100 = -9.00^\circ$. The magnitude at that frequency is $\sin(0.15708)/0.15708 = 0.99589$, which is $-0.036\,\mathrm{dB}$ and changes nothing.
 
-Now put it in context. The computational delay of the next lesson typically costs one more sample, $-180^\circ \times 5/100 \times 2 = -18^\circ$, for $-27^\circ$ total from digital implementation alone. If the sensor sits behind the second-order anti-alias filter sized in the previous lesson, add several degrees more. A continuous design carrying $35^\circ$ of phase margin has, after implementation, well under $10^\circ$ — which is not a margin, it is a resonant peak in the closed-loop response and an overshoot the vehicle will show you on the first flight. This is the arithmetic behind the standard advice to design continuous loops with $50$ to $60^\circ$ of phase margin when you know they will be flown digitally.
+Now put it in context. The computational delay, which a later lesson in this module treats in full, typically costs one more sample, $-180^\circ \times 5/100 \times 2 = -18^\circ$, for $-27^\circ$ total from digital implementation alone. If the sensor sits behind the second-order anti-alias filter sized in the previous lesson, add several degrees more. A continuous design carrying $35^\circ$ of phase margin has, after implementation, well under $10^\circ$ — which is not a margin, it is a resonant peak in the closed-loop response and an overshoot the vehicle will show you on the first flight. This is the arithmetic behind the standard advice to design continuous loops with $50$ to $60^\circ$ of phase margin when you know they will be flown digitally.
 :::
 
 ## What the staircase does on the way out

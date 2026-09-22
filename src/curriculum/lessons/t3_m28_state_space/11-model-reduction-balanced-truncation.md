@@ -130,8 +130,10 @@ print("balanced Wc diagonal  :", np.round(np.diag(lyap(Ab, Bb @ Bb.T)), 6))
 for r in (4, 2):
     print(f"r={r}: bound = {2 * sig[r:].sum():.5f},  kept eigenvalues "
           f"{np.round(np.linalg.eigvals(Ab[:r, :r]), 4)}")
-# Hankel singular values: [10.39072  10.287331  0.005048  0.004928  0.001969  0.001938]
-# balanced Wc diagonal  : [10.39072  10.287331  0.005048  0.004928  0.001969  0.001938]
+# Hankel singular values: [1.0390720e+01 1.0287331e+01 5.0480000e-03 4.9280000e-03
+#  1.9690000e-03 1.9380000e-03]
+# balanced Wc diagonal  : [1.0390720e+01 1.0287331e+01 5.0480000e-03 4.9280000e-03
+#  1.9690000e-03 1.9380000e-03]
 # r=4: bound = 0.00781,  kept eigenvalues [-0.011 +2.1991j -0.011 -2.1991j -0.3469+28.8987j -0.3469-28.8987j]
 # r=2: bound = 0.02777,  kept eigenvalues [-0.011+2.1991j -0.011-2.1991j]
 ```

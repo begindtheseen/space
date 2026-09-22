@@ -28,9 +28,11 @@ Put numbers on the consequence. Asking for $\Delta C_m = -0.01$ with $\Delta C_L
 
 A SISO zero is a root of the numerator, and its meaning is that the plant blocks a signal at that frequency. Take the meaning as the definition and it generalises.
 
-> $\lambda$ is a **transmission zero** of $(\mathbf{A},\mathbf{B},\mathbf{C},\mathbf{D})$ if the **Rosenbrock system matrix**
-> $$\mathbf{P}(\lambda) = \begin{pmatrix}\mathbf{A}-\lambda\mathbf{I} & \mathbf{B}\\ \mathbf{C} & \mathbf{D}\end{pmatrix}$$
-> drops below its normal rank.
+Build the **Rosenbrock system matrix**
+
+$$\mathbf{P}(\lambda) = \begin{pmatrix}\mathbf{A}-\lambda\mathbf{I} & \mathbf{B}\\ \mathbf{C} & \mathbf{D}\end{pmatrix},$$
+
+an $(n+p)\times(n+m)$ matrix, and call $\lambda$ a **transmission zero** of $(\mathbf{A},\mathbf{B},\mathbf{C},\mathbf{D})$ when $\mathbf{P}(\lambda)$ drops below its normal rank — the rank it has for all but finitely many $\lambda$.
 
 The blocking property follows in four lines. Suppose $\mathbf{P}(\lambda)$ loses rank, so there is a non-zero $(\mathbf{x}_0, \mathbf{u}_0)$ with $(\mathbf{A}-\lambda\mathbf{I})\mathbf{x}_0 + \mathbf{B}\mathbf{u}_0 = \mathbf{0}$ and $\mathbf{C}\mathbf{x}_0 + \mathbf{D}\mathbf{u}_0 = \mathbf{0}$. Start the plant at $\mathbf{x}(0) = \mathbf{x}_0$ and apply $\mathbf{u}(t) = \mathbf{u}_0e^{\lambda t}$. Then $\mathbf{x}(t) = \mathbf{x}_0e^{\lambda t}$ satisfies the state equation, because $\dot{\mathbf{x}} = \lambda\mathbf{x}_0e^{\lambda t} = (\mathbf{A}\mathbf{x}_0 + \mathbf{B}\mathbf{u}_0)e^{\lambda t}$, and the output is
 

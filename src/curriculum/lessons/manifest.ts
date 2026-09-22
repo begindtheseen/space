@@ -2398,6 +2398,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Cheap control and the asymptotic (Kalman) root locus"
       ],
       "file": "t3_m29_optimal_control_lqr/08-cheap-control-and-the-symmetric-root-locus.md"
+    },
+    {
+      "id": "l09-time-varying-lqr",
+      "title": "Time-varying LQR for trajectory stabilization",
+      "minutes": 17,
+      "covers": [
+        "Time-varying LQR along a nominal trajectory for trajectory stabilization"
+      ],
+      "file": "t3_m29_optimal_control_lqr/09-time-varying-lqr.md"
     }
   ],
   "t3_m30_robust_control": [
@@ -2593,6 +2602,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Robust MPC: tube MPC and min-max formulations"
       ],
       "file": "t3_m32_mpc/07-robust-mpc-tubes-and-min-max.md"
+    },
+    {
+      "id": "l08-explicit-mpc",
+      "title": "Explicit MPC and multi-parametric programming",
+      "minutes": 20,
+      "covers": [
+        "Explicit MPC and multi-parametric programming"
+      ],
+      "file": "t3_m32_mpc/08-explicit-mpc.md"
     }
   ]
 }
@@ -2858,11 +2876,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t3_m29_optimal_control_lqr": {
-    "covered": 8,
+    "covered": 9,
     "total": 14,
     "complete": false,
     "missing": [
-      "Time-varying LQR along a nominal trajectory for trajectory stabilization",
       "LQG = LQR + Kalman filter, and the stochastic separation principle",
       "Loop transfer recovery and what it actually costs",
       "Discrete-time LQR and the DARE",
@@ -2897,11 +2914,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t3_m32_mpc": {
-    "covered": 7,
+    "covered": 8,
     "total": 13,
     "complete": false,
     "missing": [
-      "Explicit MPC and multi-parametric programming",
       "Nonlinear MPC",
       "Economic MPC",
       "Real-time onboard MPC: warm starting, solver choice, worst-case iteration bounds, certifiable solve time",

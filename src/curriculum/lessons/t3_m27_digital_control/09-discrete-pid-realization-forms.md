@@ -34,7 +34,7 @@ $$
 \end{aligned}
 $$
 
-All three put the pole exactly at $z = 1$, which is the one thing that matters most — an integrator must integrate exactly, and here even forward Euler is exact in pole location, because $s = 0$ maps to $z = 1$ under every method in the previous lesson. What differs is the phase. At $f = 2\,\mathrm{Hz}$ in a $100\,\mathrm{Hz}$ loop, against the ideal $-90.00^\circ$:
+All three put the pole exactly at $z = 1$, which is the one thing that matters most — an integrator must integrate exactly, and here even forward Euler is exact in pole location, because $s = 0$ maps to $z = 1$ under every discretization method in this module. What differs is the phase. At $f = 2\,\mathrm{Hz}$ in a $100\,\mathrm{Hz}$ loop, against the ideal $-90.00^\circ$:
 
 | Discretization | Phase | Gain relative to ideal |
 | --- | --- | --- |

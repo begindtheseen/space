@@ -155,7 +155,7 @@ $$
 \angle H = -\arctan\frac{\sqrt2 \cdot 0.10514}{1 - 0.10514^2} = -8.55^\circ .
 $$
 
-The magnitude is untouched — four nines — and the phase costs $8.55^\circ$. That is not a rounding error. Against a design target of $45^\circ$ phase margin it is a fifth of the budget, spent before the zero-order hold and the computational delay of the next two lessons have taken their share.
+The magnitude is untouched — four nines — and the phase costs $8.55^\circ$. That is not a rounding error. Against a design target of $45^\circ$ phase margin it is a fifth of the budget, spent before the zero-order hold and the computational delay, taken up in the lessons that follow, have had their share.
 
 The instinct is to buy the phase back with a sharper filter, since a higher-order filter meets the same $60\,\mathrm{Hz}$ spec with a higher corner. Work it out. Each order is sized so that $|H(60\,\mathrm{Hz})| = 0.1$ exactly, then evaluated at $2\,\mathrm{Hz}$:
 
