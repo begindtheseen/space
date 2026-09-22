@@ -17,7 +17,7 @@ import {
   IconX,
 } from '@/components/icons'
 import { Button, Card, CardHead, Empty, Segmented, Stat } from '@/components/ui'
-import { MODULES, TRACKS, corpusStats, searchModules } from '@/curriculum'
+import { MODULES, TRACKS, corpusStats, searchLessonsIn, searchModules } from '@/curriculum'
 import type { Module, TrackId } from '@/curriculum/types'
 import { dueAtoms, rankFrontier } from '@/engine/scheduler'
 import { useLearner } from '@/hooks/useLearner'
@@ -48,6 +48,12 @@ export function Learning() {
   )
 
   const results = useMemo(() => (query.trim() ? searchModules(query, 40) : null), [query])
+
+  /* Lessons are searched alongside modules because past a certain size the
+     module is the wrong unit of answer. Someone looking for the thing about
+     the intermediate axis wants that lesson, not the twelve-lesson module it
+     lives in. */
+  const lessonHits = useMemo(() => (query.trim() ? searchLessonsIn(query, 12) : []), [query])
 
   const shown: Module[] = useMemo(() => {
     if (results) return results
@@ -141,7 +147,7 @@ export function Learning() {
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search modules, topics, tags…"
+            placeholder="Search lessons, modules, topics…"
             aria-label="Search the curriculum"
           />
           {query ? (
@@ -152,8 +158,34 @@ export function Learning() {
         </label>
       </div>
 
+      {/* ── lessons that match ────────────────────────────────────────────── */}
+      {lessonHits.length > 0 ? (
+        <div className="lhits">
+          <div className="lhits__head">
+            {lessonHits.length} lesson{lessonHits.length === 1 ? '' : 's'} match
+          </div>
+          <ul className="lhits__list">
+            {lessonHits.map((h) => (
+              <li key={`${h.moduleId}::${h.lesson.id}`}>
+                <button
+                  className="lhits__item"
+                  onClick={() => navigate(`/module/${h.moduleId}?lesson=${h.lesson.id}`)}
+                >
+                  <span className="lhits__title">{h.lesson.title}</span>
+                  <span className="lhits__where">
+                    {h.moduleTitle}
+                    {h.matchedTopic ? ` · ${h.matchedTopic}` : ''}
+                  </span>
+                  <span className="lhits__mins num">{h.lesson.minutes}m</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+
       {/* ── results ───────────────────────────────────────────────────────── */}
-      {shown.length === 0 ? (
+      {shown.length === 0 && lessonHits.length === 0 ? (
         <Empty
           icon={view === 'pinned' ? <IconStar size={28} /> : <IconBook size={28} />}
           title={
@@ -169,7 +201,7 @@ export function Learning() {
               : 'Try a different filter or search term.'
           }
         />
-      ) : (
+      ) : shown.length === 0 ? null : (
         <>
           {results ? (
             <p style={{ fontSize: 11.5, color: 'var(--ink-4)', marginBottom: 12 }}>

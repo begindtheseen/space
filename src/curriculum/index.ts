@@ -10,7 +10,7 @@ import { CODING } from './coding'
 import { GNC_ADVANCED } from './gnc-advanced'
 import { GNC_CORE } from './gnc-core'
 import { GNC_FOUNDATIONS } from './gnc-foundations'
-import { lessonsFor } from './lessons'
+import { lessonsFor, searchLessons } from './lessons'
 import { CAREER } from './tracks-aux'
 import type { Module, TrackId } from './types'
 
@@ -111,6 +111,15 @@ export function searchModules(query: string, limit = 20): Module[] {
 
 export { TRACKS, TRACK_ORDER, trackDef } from './tracks'
 export { lessonCoverage, lessonKey, loadLessonBody, lessonsFor } from './lessons'
+export type { LessonHit } from './lessons'
+
+/**
+ * Lesson search, with the module titles supplied from here so the lesson
+ * loader keeps knowing nothing about the module list.
+ */
+export function searchLessonsIn(query: string, limit = 24) {
+  return searchLessons(query, (id) => moduleById(id)?.title, limit)
+}
 export type { LessonCoverage } from './lessons'
 export type { LessonMeta } from './lessons'
 export type { Module, TrackDef, TrackId } from './types'

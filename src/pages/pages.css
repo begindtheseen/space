@@ -1199,3 +1199,72 @@
   margin: 10px auto 0;
   width: 100%;
 }
+
+/* ── Lessons matching a search ───────────────────────────────────────────────
+   Shown above the module grid, because when a lesson matches by name it is
+   almost always the thing she was actually looking for. */
+.lhits {
+  margin-bottom: var(--gap);
+  border: 1px solid var(--line-blue);
+  border-radius: var(--r-md);
+  background: var(--panel-2);
+  overflow: hidden;
+}
+
+.lhits__head {
+  padding: 9px 14px;
+  border-bottom: 1px solid var(--line-soft);
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.lhits__list {
+  display: flex;
+  flex-direction: column;
+}
+
+.lhits__item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas: 'title mins' 'where mins';
+  gap: 1px 12px;
+  width: 100%;
+  padding: 10px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--line-soft);
+  transition: background var(--t-fast) var(--ease-out);
+}
+
+.lhits__list li:last-child .lhits__item {
+  border-bottom: 0;
+}
+
+.lhits__item:hover {
+  background: var(--raise);
+}
+
+.lhits__title {
+  grid-area: title;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink-2);
+}
+
+.lhits__where {
+  grid-area: where;
+  font-size: 11px;
+  color: var(--ink-5);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lhits__mins {
+  grid-area: mins;
+  align-self: center;
+  font-size: 11px;
+  color: var(--ink-5);
+}

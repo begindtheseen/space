@@ -1576,6 +1576,24 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "conversions between every representation"
       ],
       "file": "t1_m16_attitude_representations/10-conversions-between-every-representation.md"
+    },
+    {
+      "id": "l11-active-versus-passive-rotation",
+      "title": "Active against passive rotation, operator against coordinate transformation",
+      "minutes": 18,
+      "covers": [
+        "active vs passive rotation (operator vs coordinate transformation)"
+      ],
+      "file": "t1_m16_attitude_representations/11-active-versus-passive-rotation.md"
+    },
+    {
+      "id": "l12-attitude-error-representations",
+      "title": "Attitude error representations",
+      "minutes": 20,
+      "covers": [
+        "attitude error representations"
+      ],
+      "file": "t1_m16_attitude_representations/12-attitude-error-representations.md"
     }
   ],
   "t1_m17_attitude_kinematics": [
@@ -1623,6 +1641,24 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "external torques: gravity gradient, aerodynamic, solar radiation pressure, residual magnetic dipole"
       ],
       "file": "t1_m17_attitude_kinematics/05-external-disturbance-torques.md"
+    },
+    {
+      "id": "l06-reaction-wheels-cmgs-and-momentum-coupling",
+      "title": "Reaction wheels, CMGs and momentum coupling",
+      "minutes": 23,
+      "covers": [
+        "reaction wheel and CMG dynamics and momentum coupling"
+      ],
+      "file": "t1_m17_attitude_kinematics/06-reaction-wheels-cmgs-and-momentum-coupling.md"
+    },
+    {
+      "id": "l07-thruster-control-and-minimum-impulse-bit",
+      "title": "Thruster attitude control and the minimum impulse bit",
+      "minutes": 21,
+      "covers": [
+        "thruster attitude control and minimum impulse bit"
+      ],
+      "file": "t1_m17_attitude_kinematics/07-thruster-control-and-minimum-impulse-bit.md"
     }
   ],
   "t1_m18_atmospheric_flight": [
@@ -1949,6 +1985,24 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Frequency response: magnitude and phase; Bode plot construction by hand"
       ],
       "file": "t3_m25_signals_systems/09-frequency-response-and-bode-plots.md"
+    },
+    {
+      "id": "l10-block-diagram-algebra-and-mason",
+      "title": "Block diagram algebra, reduction and the Mason gain formula",
+      "minutes": 17,
+      "covers": [
+        "Block diagram algebra, reduction, and the Mason gain formula"
+      ],
+      "file": "t3_m25_signals_systems/10-block-diagram-algebra-and-mason.md"
+    },
+    {
+      "id": "l11-open-loop-vs-closed-loop",
+      "title": "Open-loop and closed-loop transfer functions",
+      "minutes": 16,
+      "covers": [
+        "Open-loop vs closed-loop transfer functions"
+      ],
+      "file": "t3_m25_signals_systems/11-open-loop-vs-closed-loop.md"
     }
   ],
   "t3_m26_classical_control": [
@@ -2005,6 +2059,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "The Nyquist plot and the Nyquist stability criterion"
       ],
       "file": "t3_m26_classical_control/06-nyquist.md"
+    },
+    {
+      "id": "l07-the-four-margins",
+      "title": "Gain, phase, delay and modulus margins",
+      "minutes": 22,
+      "covers": [
+        "Gain margin, phase margin, delay margin, and the modulus (vector) margin"
+      ],
+      "file": "t3_m26_classical_control/07-the-four-margins.md"
     }
   ],
   "t3_m27_digital_control": [
@@ -2079,6 +2142,24 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Quantization, finite word length, and fixed-point implementation"
       ],
       "file": "t3_m27_digital_control/08-quantization-and-fixed-point.md"
+    },
+    {
+      "id": "l09-discrete-pid-realization-forms",
+      "title": "Discrete PID realization forms",
+      "minutes": 23,
+      "covers": [
+        "Discrete PID realization forms (direct, parallel, delta) and their numerical conditioning"
+      ],
+      "file": "t3_m27_digital_control/09-discrete-pid-realization-forms.md"
+    },
+    {
+      "id": "l10-biquad-sections",
+      "title": "Biquad sections for discrete filters and notches",
+      "minutes": 21,
+      "covers": [
+        "Biquad sections for discrete filters and notches"
+      ],
+      "file": "t3_m27_digital_control/10-biquad-sections-for-filters-and-notches.md"
     }
   ],
   "t3_m28_state_space": [
@@ -2144,6 +2225,24 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Luenberger observers and the estimation error dynamics"
       ],
       "file": "t3_m28_state_space/07-luenberger-observers.md"
+    },
+    {
+      "id": "l08-the-separation-principle",
+      "title": "The separation principle and exactly when it holds",
+      "minutes": 19,
+      "covers": [
+        "The separation principle and the exact conditions under which it holds"
+      ],
+      "file": "t3_m28_state_space/08-the-separation-principle.md"
+    },
+    {
+      "id": "l09-integral-action-servo-design",
+      "title": "Integral action in state feedback — servo and augmented-state design",
+      "minutes": 19,
+      "covers": [
+        "Integral action in state feedback: servo and augmented-state design"
+      ],
+      "file": "t3_m28_state_space/09-integral-action-servo-design.md"
     }
   ],
   "t3_m29_optimal_control_lqr": [
@@ -2200,6 +2299,24 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Infinite-horizon vs finite-horizon LQR"
       ],
       "file": "t3_m29_optimal_control_lqr/06-finite-versus-infinite-horizon.md"
+    },
+    {
+      "id": "l07-lqr-with-integral-action",
+      "title": "LQR with integral action",
+      "minutes": 18,
+      "covers": [
+        "LQR with integral action"
+      ],
+      "file": "t3_m29_optimal_control_lqr/07-lqr-with-integral-action.md"
+    },
+    {
+      "id": "l08-cheap-control-and-the-symmetric-root-locus",
+      "title": "Cheap control and the asymptotic (Kalman) root locus",
+      "minutes": 19,
+      "covers": [
+        "Cheap control and the asymptotic (Kalman) root locus"
+      ],
+      "file": "t3_m29_optimal_control_lqr/08-cheap-control-and-the-symmetric-root-locus.md"
     }
   ],
   "t3_m30_robust_control": [
@@ -2256,6 +2373,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Robust stability vs robust performance"
       ],
       "file": "t3_m30_robust_control/06-robust-stability-vs-performance.md"
+    },
+    {
+      "id": "l07-mimo-singular-values-directionality",
+      "title": "Singular values of a transfer matrix and directionality",
+      "minutes": 19,
+      "covers": [
+        "Singular values of MIMO transfer matrices and input/output directionality"
+      ],
+      "file": "t3_m30_robust_control/07-mimo-singular-values-directionality.md"
     }
   ],
   "t3_m31_nonlinear_control": [
@@ -2294,6 +2420,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "The Lyapunov direct method, Lyapunov functions, LaSalle invariance principle"
       ],
       "file": "t3_m31_nonlinear_control/04-lyapunov-direct-method-and-lasalle.md"
+    },
+    {
+      "id": "l05-region-of-attraction-estimation",
+      "title": "Estimating the region of attraction",
+      "minutes": 22,
+      "covers": [
+        "Region of attraction estimation, including sum-of-squares approaches"
+      ],
+      "file": "t3_m31_nonlinear_control/05-region-of-attraction-estimation.md"
     }
   ],
   "t3_m32_mpc": [
@@ -2445,22 +2580,18 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t1_m16_attitude_representations": {
-    "covered": 10,
+    "covered": 12,
     "total": 13,
     "complete": false,
     "missing": [
-      "active vs passive rotation (operator vs coordinate transformation)",
-      "attitude error representations",
       "introduction to SO(3), so(3) and the exp/log maps"
     ]
   },
   "t1_m17_attitude_kinematics": {
-    "covered": 5,
+    "covered": 7,
     "total": 10,
     "complete": false,
     "missing": [
-      "reaction wheel and CMG dynamics and momentum coupling",
-      "thruster attitude control and minimum impulse bit",
       "thrust vector control gimbal dynamics for launch vehicles",
       "actuator saturation and rate limits",
       "coning motion and coning correction"
@@ -2585,21 +2716,18 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t3_m25_signals_systems": {
-    "covered": 9,
+    "covered": 11,
     "total": 12,
     "complete": false,
     "missing": [
-      "Block diagram algebra, reduction, and the Mason gain formula",
-      "Open-loop vs closed-loop transfer functions",
       "Sensitivity S and complementary sensitivity T, and the identity S + T = 1"
     ]
   },
   "t3_m26_classical_control": {
-    "covered": 6,
+    "covered": 7,
     "total": 13,
     "complete": false,
     "missing": [
-      "Gain margin, phase margin, delay margin, and the modulus (vector) margin",
       "Why margins can lie: MIMO coupling, nonlinearity, simultaneous perturbations",
       "Lead, lag and lead-lag compensators",
       "Notch filters for structural bending modes; gain stabilization vs phase stabilization",
@@ -2609,33 +2737,27 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t3_m27_digital_control": {
-    "covered": 8,
+    "covered": 10,
     "total": 11,
     "complete": false,
     "missing": [
-      "Discrete PID realization forms (direct, parallel, delta) and their numerical conditioning",
-      "Biquad sections for discrete filters and notches",
       "Multi-rate systems, jitter, and their effect on stability"
     ]
   },
   "t3_m28_state_space": {
-    "covered": 7,
+    "covered": 9,
     "total": 11,
     "complete": false,
     "missing": [
-      "The separation principle and the exact conditions under which it holds",
-      "Integral action in state feedback: servo and augmented-state design",
       "MIMO systems, transmission zeros, and the relative gain array",
       "Model reduction: balanced truncation and Hankel singular values"
     ]
   },
   "t3_m29_optimal_control_lqr": {
-    "covered": 6,
+    "covered": 8,
     "total": 14,
     "complete": false,
     "missing": [
-      "LQR with integral action",
-      "Cheap control and the asymptotic (Kalman) root locus",
       "Time-varying LQR along a nominal trajectory for trajectory stabilization",
       "LQG = LQR + Kalman filter, and the stochastic separation principle",
       "Loop transfer recovery and what it actually costs",
@@ -2645,11 +2767,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t3_m30_robust_control": {
-    "covered": 6,
+    "covered": 7,
     "total": 12,
     "complete": false,
     "missing": [
-      "Singular values of MIMO transfer matrices and input/output directionality",
       "MIMO stability margins, disk margins, and why per-loop SISO margins mislead",
       "Performance limitations imposed by right-half-plane poles and zeros",
       "Linear parameter-varying control and gain scheduling with guarantees",
@@ -2658,11 +2779,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t3_m31_nonlinear_control": {
-    "covered": 4,
+    "covered": 5,
     "total": 14,
     "complete": false,
     "missing": [
-      "Region of attraction estimation, including sum-of-squares approaches",
       "Input-to-state stability",
       "Feedback linearization (input-state and input-output), relative degree, internal and zero dynamics",
       "Sliding mode control: sliding surface design, reaching phase, chattering, boundary layers, higher-order sliding modes",

@@ -51,3 +51,57 @@ export function loadLessonBody(meta: LessonMeta): Promise<string> {
   bodies.set(meta.file, p)
   return p
 }
+
+/** A lesson found by search, with enough context to show and open it. */
+export interface LessonHit {
+  moduleId: string
+  moduleTitle: string
+  lesson: LessonMeta
+  /** The module topic that matched, when it was a topic rather than the title. */
+  matchedTopic?: string
+}
+
+/**
+ * Finds individual lessons by title or by the topic they teach.
+ *
+ * Module search alone stops being enough once a module has a dozen lessons in
+ * it. Someone who half-remembers a thing about the intermediate axis should
+ * land on the lesson that explains it, not on a module page with twelve
+ * entries to read through — the second of those is the kind of small friction
+ * that ends a study session.
+ *
+ * Only titles and topic strings are searched, both of which are already in
+ * the manifest, so this costs nothing at runtime. Lesson bodies are loaded
+ * lazily and searching them would mean fetching the entire corpus.
+ */
+export function searchLessons(
+  query: string,
+  titleOf: (moduleId: string) => string | undefined,
+  limit = 24,
+): LessonHit[] {
+  const q = query.trim().toLowerCase()
+  if (q.length < 2) return []
+
+  const scored: { hit: LessonHit; score: number }[] = []
+  for (const [moduleId, lessons] of Object.entries(LESSON_MANIFEST)) {
+    const moduleTitle = titleOf(moduleId)
+    if (!moduleTitle) continue
+    for (const lesson of lessons) {
+      let score = 0
+      let matchedTopic: string | undefined
+      const title = lesson.title.toLowerCase()
+      if (title === q) score += 20
+      else if (title.includes(q)) score += 10
+      for (const c of lesson.covers) {
+        if (c.toLowerCase().includes(q)) {
+          score += 5
+          matchedTopic ??= c
+        }
+      }
+      if (score > 0) scored.push({ hit: { moduleId, moduleTitle, lesson, matchedTopic }, score })
+    }
+  }
+
+  scored.sort((a, b) => b.score - a.score || a.hit.lesson.id.localeCompare(b.hit.lesson.id))
+  return scored.slice(0, limit).map((s) => s.hit)
+}

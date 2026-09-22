@@ -169,6 +169,29 @@ await step('a lesson shows how much is left, and it tracks the scroll', async ()
   console.log(`        fill ${start.toFixed(2)} -> ${end.toFixed(2)}`)
 })
 
+/* ── Finding a lesson ────────────────────────────────────────────────────── */
+
+await step('searching finds individual lessons, not only modules', async () => {
+  await page.goto(base + '#/learning', { waitUntil: 'load' })
+  await page.waitForTimeout(1200)
+  const box = await page.$('.search input')
+  if (!box) throw new Error('no search box on the learning page')
+  await box.fill('intermediate axis')
+  await page.waitForTimeout(700)
+  await page.waitForSelector('.lhits__item', { timeout: 6000 })
+  const title = await page.textContent('.lhits__title')
+  if (!/intermediate axis/i.test(title)) throw new Error('wrong lesson surfaced: ' + title)
+  console.log('        found "' + title.trim() + '"')
+})
+
+await step('clicking a lesson result opens that lesson', async () => {
+  await page.click('.lhits__item')
+  await page.waitForTimeout(1800)
+  const hash = await page.evaluate(() => location.hash)
+  if (!/\?lesson=/.test(hash)) throw new Error('did not open a lesson: ' + hash)
+  await page.waitForSelector('.reader__md', { timeout: 8000 })
+})
+
 /* ── Honesty about what is not written yet ───────────────────────────────── */
 
 await step('a module with no lessons says so plainly', async () => {
