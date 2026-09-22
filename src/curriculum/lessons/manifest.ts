@@ -3143,6 +3143,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Receiver clock bias as the fourth unknown"
       ],
       "file": "t4_m37_gnss/03-receiver-clock-bias-the-fourth-unknown.md"
+    },
+    {
+      "id": "l04-the-navigation-solution-by-least-squares",
+      "title": "The navigation solution by least squares",
+      "minutes": 20,
+      "covers": [
+        "The navigation solution by iterative least squares / Newton iteration"
+      ],
+      "file": "t4_m37_gnss/04-the-navigation-solution-by-least-squares.md"
     }
   ],
   "t4_m38_sensors_optical_nav": [
@@ -3486,11 +3495,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t4_m37_gnss": {
-    "covered": 3,
+    "covered": 4,
     "total": 14,
     "complete": false,
     "missing": [
-      "The navigation solution by iterative least squares / Newton iteration",
       "Dilution of precision: GDOP, PDOP, HDOP, VDOP, TDOP, and what geometry makes each bad",
       "Ionospheric and tropospheric delay, their models, and the dual-frequency ionosphere-free combination",
       "Multipath; ephemeris and satellite clock errors",
