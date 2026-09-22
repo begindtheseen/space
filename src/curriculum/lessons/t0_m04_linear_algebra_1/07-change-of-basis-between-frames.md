@@ -1,7 +1,7 @@
 ---
 id: l07-change-of-basis-between-frames
 title: Change of basis between reference frames
-minutes: 25
+minutes: 21
 covers:
   - change of basis between reference frames
 ---
@@ -163,7 +163,7 @@ $$
 
 Each elementary matrix is "previous frame from next frame", each step rotates about an axis of the frame it starts from, and the inner labels cancel in order. This is the `R3(yaw) @ R2(pitch) @ R1(roll)` of the exercise, and it converts body components to inertial components: $\mathbf{r}^I = \mathbf{R}_I^B\,\mathbf{r}^B$. Its transpose, $\mathbf{R}_B^I = \mathbf{R}_1(-\phi)\,\mathbf{R}_2(-\theta)\,\mathbf{R}_3(-\psi)$, converts the other way.
 
-The order is not negotiable. Rotations in three dimensions do not commute: $\mathbf{R}_3(30°)\,\mathbf{R}_2(10°)$ has first column $(0.8529, 0.4924, -0.1736)^T$ while $\mathbf{R}_2(10°)\,\mathbf{R}_3(30°)$ has first column $(0.8529, 0.5, -0.1504)^T$ — both unit vectors, both plausible, pointing $2°$ apart. A yaw followed by a pitch is a different attitude from a pitch followed by a yaw, and the notation is what keeps the sequence straight.
+The order is not negotiable. Rotations in three dimensions do not commute: $\mathbf{R}_3(30°)\,\mathbf{R}_2(10°)$ has first column $(0.8529, 0.4924, -0.1736)^T$ while $\mathbf{R}_2(10°)\,\mathbf{R}_3(30°)$ has first column $(0.8529, 0.5, -0.1504)^T$ — both unit vectors, both plausible, pointing $1.4°$ apart. A yaw followed by a pitch is a different attitude from a pitch followed by a yaw, and the notation is what keeps the sequence straight.
 
 ::: example Building and reading a body-to-inertial matrix
 A vehicle has yaw $\psi = 30°$, pitch $\theta = 10°$ and roll $\phi = 5°$ in a 3-2-1 sequence. With $\cos 30° = 0.8660$, $\sin 30° = 0.5$, $\cos 10° = 0.9848$, $\sin 10° = 0.1736$, $\cos 5° = 0.9962$ and $\sin 5° = 0.0872$, first form $\mathbf{R}_3(\psi)\,\mathbf{R}_2(\theta)$:

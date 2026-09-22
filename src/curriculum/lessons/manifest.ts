@@ -343,7 +343,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-change-of-basis-between-frames",
       "title": "Change of basis between reference frames",
-      "minutes": 25,
+      "minutes": 21,
       "covers": [
         "change of basis between reference frames"
       ],
@@ -451,6 +451,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "integration by parts and substitution"
       ],
       "file": "t0_m06_calculus_single/09-substitution-and-integration-by-parts.md"
+    },
+    {
+      "id": "l10-improper-integrals",
+      "title": "Improper integrals",
+      "minutes": 22,
+      "covers": [
+        "improper integrals"
+      ],
+      "file": "t0_m06_calculus_single/10-improper-integrals.md"
     }
   ],
   "t0_m07_calculus_multi": [
@@ -1198,11 +1207,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t0_m06_calculus_single": {
-    "covered": 8,
+    "covered": 9,
     "total": 10,
     "complete": false,
     "missing": [
-      "improper integrals",
       "separable first-order ODEs"
     ]
   },
