@@ -1020,6 +1020,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "PID structure, integral windup and anti-windup, derivative filtering, and a defensible tuning approach"
       ],
       "file": "car_11_domain_round/05-pid-windup-and-a-defensible-tuning-story.md"
+    },
+    {
+      "id": "l06-the-linear-kalman-filter-from-memory",
+      "title": "The linear Kalman filter, from memory",
+      "minutes": 17,
+      "covers": [
+        "the Kalman filter in linear form: the predict and update equations and what each term does"
+      ],
+      "file": "car_11_domain_round/06-the-linear-kalman-filter-from-memory.md"
     }
   ],
   "car_12_first_principles": [
@@ -1071,6 +1080,16 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "quantifying the Result so the story is checkable"
       ],
       "file": "car_13_behavioral_star/03-quantifying-the-result.md"
+    },
+    {
+      "id": "l04-the-story-bank",
+      "title": "The story bank and the themes it has to cover",
+      "minutes": 25,
+      "covers": [
+        "building a bank of ten to twelve stories, each roughly 90 seconds",
+        "the themes actually probed: a failure and what changed, conflict with a colleague, a decision with incomplete information, a missed deadline, a time you were wrong, ownership beyond your scope, teaching someone, working extended hours"
+      ],
+      "file": "car_13_behavioral_star/04-the-story-bank.md"
     }
   ],
   "cod_cpp_01_basics": [
@@ -1198,7 +1217,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-object-model-and-storage",
       "title": "The object model: storage, lifetime, and the address of a thing",
-      "minutes": 17,
+      "minutes": 22,
       "covers": [
         "Storage duration: automatic, static, thread-local, dynamic; lifetime and initialisation order"
       ],
@@ -1209,7 +1228,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-interpreter-repl-and-scripts",
       "title": "The interpreter, the REPL and your first script",
-      "minutes": 15,
+      "minutes": 18,
       "covers": [
         "Interpreter, REPL, running scripts, the difference between them"
       ],
@@ -1227,7 +1246,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-lists-and-tuples",
       "title": "Lists, tuples and slicing",
-      "minutes": 18,
+      "minutes": 17,
       "covers": [
         "list, tuple, dict, set; slicing; truthiness; mutability"
       ],
@@ -1236,7 +1255,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-dicts-sets-and-truthiness",
       "title": "Dictionaries, sets and truthiness",
-      "minutes": 18,
+      "minutes": 17,
       "covers": [
         "list, tuple, dict, set; slicing; truthiness; mutability"
       ],
@@ -1245,7 +1264,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-control-flow",
       "title": "Choosing and repeating: if, for, while",
-      "minutes": 21,
+      "minutes": 17,
       "covers": [
         "if/elif/else; for, while, range, enumerate, zip; break/continue/else"
       ],
@@ -1254,7 +1273,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-functions",
       "title": "Functions, arguments and return values",
-      "minutes": 20,
+      "minutes": 17,
       "covers": [
         "Functions: positional, keyword, default, *args, **kwargs"
       ],
@@ -1263,7 +1282,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-scope-legb-and-closures",
       "title": "Scope, the LEGB rule and closures",
-      "minutes": 18,
+      "minutes": 17,
       "covers": [
         "Scope and LEGB; closures at a first-pass level"
       ],
@@ -1272,7 +1291,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-mutable-default-arguments",
       "title": "The mutable default argument, identity and copying",
-      "minutes": 17,
+      "minutes": 16,
       "covers": [
         "The mutable default argument trap"
       ],
@@ -1281,7 +1300,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-modules-packages-and-the-main-guard",
       "title": "Modules, imports, packages and the main guard",
-      "minutes": 19,
+      "minutes": 18,
       "covers": [
         "Modules, import, packages, the if __name__ == \"__main__\" guard"
       ],
@@ -1290,7 +1309,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-exceptions",
       "title": "Exceptions: raising, catching and designing failure",
-      "minutes": 20,
+      "minutes": 16,
       "covers": [
         "Exceptions: try/except/else/finally, raising, custom exception types"
       ],
@@ -1299,7 +1318,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-files-pathlib-csv-and-json",
       "title": "Files, paths, CSV and JSON",
-      "minutes": 20,
+      "minutes": 16,
       "covers": [
         "Files, pathlib, csv and json"
       ],
@@ -1308,7 +1327,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-floating-point",
       "title": "Floating point, and why 0.1 + 0.2 is not 0.3",
-      "minutes": 20,
+      "minutes": 19,
       "covers": [
         "Floating point: why 0.1 + 0.2 != 0.3 and what to do about it"
       ],
@@ -1317,7 +1336,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l13-virtual-environments-and-packaging",
       "title": "Virtual environments, pip and pyproject.toml",
-      "minutes": 19,
+      "minutes": 16,
       "covers": [
         "Virtual environments with venv, pip, requirements and pyproject.toml"
       ],
@@ -8075,11 +8094,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "car_11_domain_round": {
-    "covered": 5,
+    "covered": 6,
     "total": 14,
     "complete": false,
     "missing": [
-      "the Kalman filter in linear form: the predict and update equations and what each term does",
       "the extended Kalman filter: Jacobians, where linearisation fails, and divergence modes",
       "the unscented Kalman filter: sigma points, why it exists and when it is worth the cost",
       "filter tuning and consistency: process noise, measurement noise, NEES and NIS",
@@ -8109,12 +8127,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "car_13_behavioral_star": {
-    "covered": 2,
+    "covered": 4,
     "total": 12,
     "complete": false,
     "missing": [
-      "building a bank of ten to twelve stories, each roughly 90 seconds",
-      "the themes actually probed: a failure and what changed, conflict with a colleague, a decision with incomplete information, a missed deadline, a time you were wrong, ownership beyond your scope, teaching someone, working extended hours",
       "the verbatim expectation of working extended hours and weekends when needed to meet critical deadlines, and how to answer it honestly",
       "intensity and pace as a real tradeoff to evaluate before you accept, not after",
       "the why SpaceX answer that is not a recital of the mission statement",

@@ -1,7 +1,7 @@
 ---
 id: l04-dicts-sets-and-truthiness
 title: Dictionaries, sets and truthiness
-minutes: 18
+minutes: 17
 covers:
   - list, tuple, dict, set; slicing; truthiness; mutability
 ---
@@ -286,6 +286,7 @@ A function receives `rate`, which is either a float or `None` when the sensor di
 | `set` | `{"ax", "ay"}`; unique, unordered, hashable members; empty set is `set()`, not `{}` |
 | Set operators | `-` difference, `&` intersection, `\|` union, `^` in exactly one |
 | Set display | Order is arbitrary and varies between runs; print `sorted(s)` |
+| Mutability | `list`, `dict` and `set` are mutable; `str` and `tuple` are immutable, and only immutable values can be keys or set members |
 | Falsy values | `False`, `None`, `0`, `0.0`, `""`, `[]`, `()`, `{}`, `set()`. Everything else is true |
 | Optional values | Test `x is None`, not `not x`, because `0.0` is a real measurement |
 

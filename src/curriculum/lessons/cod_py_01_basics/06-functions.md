@@ -1,7 +1,7 @@
 ---
 id: l06-functions
 title: Functions, arguments and return values
-minutes: 20
+minutes: 17
 covers:
   - Functions: positional, keyword, default, *args, **kwargs
 ---
@@ -190,7 +190,7 @@ print(rss(3.0, 4.0))            # 5.0
 print(rss())                    # 0.0
 ```
 
-`rss(0.02, -0.41, 9.79)` is the magnitude of a three-axis acceleration, $9.7986\,\mathrm{m/s^2}$, and the same function does the two-component case without a second definition. With no arguments at all, `components` is the empty tuple, the loop body never runs, and the result is `0.0` — think about whether that is the answer you want, because for a magnitude it is, and for a mean it would be a division by zero.
+`rss(0.02, -0.41, 9.79)` is the magnitude of a three-axis acceleration, $9.7986\,\mathrm{m/s^2}$, and the same function does the two-component case without a second definition. Its close relative, the *root mean square* of a sequence — the square root of the mean of the squares, $\sqrt{\frac{1}{n}\sum x_i^2}$ — is the number a vibration or noise report quotes, and differs only in dividing by the count before taking the root. With no arguments at all, `components` is the empty tuple, the loop body never runs, and the result is `0.0` — think about whether that is the answer you want, because for a magnitude it is, and for a mean it would be a division by zero.
 
 A parameter written `**name` collects all remaining *keyword* arguments into a dictionary, in the order they were given:
 

@@ -1,7 +1,7 @@
 ---
 id: l05-control-flow
 title: Choosing and repeating: if, for, while
-minutes: 21
+minutes: 17
 covers:
   - if/elif/else; for, while, range, enumerate, zip; break/continue/else
 ---

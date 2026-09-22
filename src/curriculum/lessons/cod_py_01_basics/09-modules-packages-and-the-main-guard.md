@@ -1,7 +1,7 @@
 ---
 id: l09-modules-packages-and-the-main-guard
 title: Modules, imports, packages and the main guard
-minutes: 19
+minutes: 18
 covers:
   - Modules, import, packages, the if __name__ == "__main__" guard
 ---
@@ -232,6 +232,10 @@ You have one file that reads a record, cleans it, computes statistics and prints
 `report.py` keeps its actions under `if __name__ == "__main__":` too, so that a third script can one day import `report` for one of its formatting helpers without printing a report as a side effect. The rule generalises: **every file should be importable without doing anything**.
 
 The test for whether you have it right is one command. If `python3 -c "import report"` prints nothing and takes no measurable time, the file is safe to import. If it prints a report, the file is a script pretending to be a module, and the next person to want one function out of it will copy that function instead — which is how a codebase ends up with three versions of a conversion.
+:::
+
+::: note
+A Jupyter notebook is not a module. Its cells can be executed in any order, so the state a result depended on may be unreproducible from the file; it is stored as JSON with the outputs embedded, so a one-character change can produce a diff of thousands of lines and no reviewer can read it; and it cannot be imported or run under a test runner as it stands. Notebooks are excellent for exploring — load a file once, try a dozen plots against it — and the working rule is the same as this lesson's: anything worth keeping moves into a `.py` module that the notebook imports, and the notebook is restarted and run top to bottom before any result from it is believed.
 :::
 
 ## Two naming traps

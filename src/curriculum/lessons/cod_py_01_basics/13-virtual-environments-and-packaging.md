@@ -1,7 +1,7 @@
 ---
 id: l13-virtual-environments-and-packaging
 title: Virtual environments, pip and pyproject.toml
-minutes: 19
+minutes: 16
 covers:
   - Virtual environments with venv, pip, requirements and pyproject.toml
 ---
@@ -152,6 +152,11 @@ rm -rf .venv
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install -r requirements.txt
+```
+
+and then ask the rebuilt environment what it has:
+
+```bash
 python -c "import numpy; print(numpy.__version__)"
 # 2.4.6
 ```

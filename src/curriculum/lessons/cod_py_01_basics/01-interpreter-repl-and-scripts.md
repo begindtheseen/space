@@ -1,7 +1,7 @@
 ---
 id: l01-interpreter-repl-and-scripts
 title: The interpreter, the REPL and your first script
-minutes: 15
+minutes: 18
 covers:
   - Interpreter, REPL, running scripts, the difference between them
 ---

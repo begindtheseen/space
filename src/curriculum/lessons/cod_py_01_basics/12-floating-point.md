@@ -1,7 +1,7 @@
 ---
 id: l12-floating-point
 title: Floating point, and why 0.1 + 0.2 is not 0.3
-minutes: 20
+minutes: 19
 covers:
   - Floating point: why 0.1 + 0.2 != 0.3 and what to do about it
 ---

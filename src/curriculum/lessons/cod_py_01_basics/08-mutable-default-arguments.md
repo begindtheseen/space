@@ -1,7 +1,7 @@
 ---
 id: l08-mutable-default-arguments
 title: The mutable default argument, identity and copying
-minutes: 17
+minutes: 16
 covers:
   - The mutable default argument trap
 ---

@@ -1,7 +1,7 @@
 ---
 id: l03-lists-and-tuples
 title: Lists, tuples and slicing
-minutes: 18
+minutes: 17
 covers:
   - list, tuple, dict, set; slicing; truthiness; mutability
 ---

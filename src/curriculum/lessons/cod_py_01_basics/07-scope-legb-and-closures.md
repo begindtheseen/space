@@ -1,7 +1,7 @@
 ---
 id: l07-scope-legb-and-closures
 title: Scope, the LEGB rule and closures
-minutes: 18
+minutes: 17
 covers:
   - Scope and LEGB; closures at a first-pass level
 ---

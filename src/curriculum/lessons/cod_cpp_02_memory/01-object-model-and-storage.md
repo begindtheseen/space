@@ -1,7 +1,7 @@
 ---
 id: l01-object-model-and-storage
 title: The object model: storage, lifetime, and the address of a thing
-minutes: 17
+minutes: 22
 covers:
   - 'Storage duration: automatic, static, thread-local, dynamic; lifetime and initialisation order'
 ---

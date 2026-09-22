@@ -1,7 +1,7 @@
 ---
 id: l11-files-pathlib-csv-and-json
 title: Files, paths, CSV and JSON
-minutes: 20
+minutes: 16
 covers:
   - Files, pathlib, csv and json
 ---

@@ -1,7 +1,7 @@
 ---
 id: l10-exceptions
 title: Exceptions: raising, catching and designing failure
-minutes: 20
+minutes: 16
 covers:
   - Exceptions: try/except/else/finally, raising, custom exception types
 ---
