@@ -3471,6 +3471,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Star trackers: optics, centroiding, star catalogs, lost-in-space identification (triangle and pyramid algorithms), tracking mode"
       ],
       "file": "t4_m38_sensors_optical_nav/01-star-trackers-photons-to-quaternion.md"
+    },
+    {
+      "id": "l02-star-tracker-accuracy-boresight-update-rate-stray-light",
+      "title": "Star tracker accuracy: boresight geometry, update rate, and stray light",
+      "minutes": 28,
+      "covers": [
+        "Star tracker accuracy: cross-boresight vs about-boresight, update rate, exclusion angles, stray light"
+      ],
+      "file": "t4_m38_sensors_optical_nav/02-star-tracker-accuracy-boresight-update-rate-stray-light.md"
     }
   ]
 }
@@ -3783,11 +3792,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t4_m38_sensors_optical_nav": {
-    "covered": 1,
+    "covered": 2,
     "total": 12,
     "complete": false,
     "missing": [
-      "Star tracker accuracy: cross-boresight vs about-boresight, update rate, exclusion angles, stray light",
       "Sun sensors: coarse analog and fine digital, field of view, albedo error",
       "Magnetometers, the IGRF and WMM field models, residual dipole, hard-iron and soft-iron calibration",
       "Earth and horizon sensors",
