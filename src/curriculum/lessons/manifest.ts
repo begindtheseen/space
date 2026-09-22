@@ -98,6 +98,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "GNC Engineer (Starship): ascent, entry and landing control, 6-DOF simulation, flight control of the largest vehicle ever flown"
       ],
       "file": "car_02_role_families/02-starship-ascent-entry-and-landing.md"
+    },
+    {
+      "id": "l03-falcon-reuse-and-the-software-split",
+      "title": "Falcon: reuse, and why one title became two",
+      "minutes": 18,
+      "covers": [
+        "GNC Engineer and Sr. GNC Software Engineer (Falcon): booster entry, descent and landing, and reuse"
+      ],
+      "file": "car_02_role_families/03-falcon-reuse-and-the-software-split.md"
     }
   ],
   "car_03_levels_and_quals": [
@@ -145,7 +154,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-one-page-and-the-top-third",
       "title": "One page, reverse chronological: what goes in the top third",
-      "minutes": 15,
+      "minutes": 19,
       "covers": [
         "one page, reverse chronological, and what belongs in the top third"
       ],
@@ -6788,11 +6797,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "car_02_role_families": {
-    "covered": 2,
+    "covered": 3,
     "total": 13,
     "complete": false,
     "missing": [
-      "GNC Engineer and Sr. GNC Software Engineer (Falcon): booster entry, descent and landing, and reuse",
       "GNC Engineer (Dragon): mission design, rendezvous and docking with the ISS, deorbit, reentry, abort",
       "GNC Engineer, ADCS (Starlink and Starshield): attitude determination and control, reaction wheels, torque rods, momentum management",
       "Navigation and State Estimation, Navigation and Orbit Determination, Precise Navigation Solutions (Starlink): star tracker and signals-based attitude determination, inertial propagation, GNSS, orbit determination",

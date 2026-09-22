@@ -1,7 +1,7 @@
 ---
 id: l01-one-page-and-the-top-third
 title: "One page, reverse chronological: what goes in the top third"
-minutes: 15
+minutes: 19
 covers:
   - one page, reverse chronological, and what belongs in the top third
 ---
@@ -87,7 +87,7 @@ Define "the top third" precisely. Why is it not the same thing as "whatever sect
 :::
 
 ::: answer
-The top third is the header block, a one-line identity statement, and the beginning of the single strongest section — the specific band of the page a reader's attention lands on before she decides whether to keep reading. It is not just "whatever comes first" because that framing treats section order as arbitrary; the top third is a deliberate claim about which section carries the most evidentiary weight for this reader, specifically, and puts that section there on purpose, rather than by habit or by the order sections are conventionally listed elsewhere.
+The top third is the header block, a one-line identity statement, and the beginning of the single strongest section — the specific band of the page a reader's attention lands on before she decides whether to keep reading. It is not the same as "whatever comes first," because that framing treats section order as arbitrary; the top third is a deliberate claim about which section carries the most evidentiary weight for this reader, specifically, and puts that section there on purpose, rather than by habit or by the order sections are conventionally listed elsewhere.
 :::
 
 ::: check
