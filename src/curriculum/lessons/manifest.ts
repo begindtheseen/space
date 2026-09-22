@@ -1713,6 +1713,26 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       "file": "cod_lnx_01_shell/14-vim-survival.md"
     }
   ],
+  "cod_lnx_02_scripting": [
+    {
+      "id": "l01-shebangs-and-executable-scripts",
+      "title": "Shebang lines and executable scripts",
+      "minutes": 19,
+      "covers": [
+        "Shebang lines and executable scripts"
+      ],
+      "file": "cod_lnx_02_scripting/01-shebangs-and-executable-scripts.md"
+    },
+    {
+      "id": "l02-set-euo-pipefail",
+      "title": "set -euo pipefail, and what each flag protects against",
+      "minutes": 18,
+      "covers": [
+        "set -euo pipefail and what each flag actually does"
+      ],
+      "file": "cod_lnx_02_scripting/02-set-euo-pipefail.md"
+    }
+  ],
   "cod_py_01_basics": [
     {
       "id": "l01-interpreter-repl-and-scripts",
@@ -7719,12 +7739,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_lnx_02_scripting": {
-    "covered": 0,
+    "covered": 2,
     "total": 14,
     "complete": false,
     "missing": [
-      "Shebang lines and executable scripts",
-      "set -euo pipefail and what each flag actually does",
       "Variables, quoting, word splitting, glob expansion",
       "Command substitution $( ), arithmetic $(( )), arrays",
       "if / for / while / case, test [[ ]] vs [ ]",
