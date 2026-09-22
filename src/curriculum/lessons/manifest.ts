@@ -676,6 +676,16 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "root finding: bisection, Newton-Raphson, secant, and convergence rates"
       ],
       "file": "t0_m10_numerical_methods/02-root-finding-and-keplers-equation.md"
+    },
+    {
+      "id": "l03-euler-heun-rk4",
+      "title": "Euler, Heun and RK4",
+      "minutes": 28,
+      "covers": [
+        "numerical ODE integration: Euler, Heun, RK4, RK45 / Dormand-Prince",
+        "local vs global truncation error"
+      ],
+      "file": "t0_m10_numerical_methods/03-euler-heun-rk4.md"
     }
   ],
   "t0_m11_optimization": [
@@ -1357,16 +1367,14 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t0_m10_numerical_methods": {
-    "covered": 2,
+    "covered": 4,
     "total": 13,
     "complete": false,
     "missing": [
-      "numerical ODE integration: Euler, Heun, RK4, RK45 / Dormand-Prince",
       "adaptive step-size control",
       "Adams-Bashforth / Adams-Moulton multistep methods",
       "stiffness and implicit methods: backward Euler, BDF",
       "symplectic integrators for long orbit propagation",
-      "local vs global truncation error",
       "energy drift as a correctness check",
       "interpolation: linear and cubic spline",
       "numerical differentiation and complex-step derivatives",

@@ -35,13 +35,13 @@ Two operations preserve convexity and let you build up complicated feasible sets
 **Union does not preserve convexity.** Two discs that do not overlap have a nonconvex union. Neither does complement: the outside of a ball is not convex.
 
 ::: warning Lower bounds on norms
-The constraint $\|\mathbf{u}\|_2 \le u_{\max}$ is convex – a ball. The constraint $\|\mathbf{u}\|_2 \ge u_{\min}$ with $u_{\min} > 0$ is not – it is the complement of an open ball, and the midpoint of the two feasible thrust vectors $(u_{\min}, 0, 0)$ and $(-u_{\min}, 0, 0)$ is the origin, which has norm zero and is infeasible. A liquid engine cannot throttle below some minimum, so the physically honest landing problem contains exactly this nonconvex constraint. Lesson 6 shows how the lower bound is handled without giving up convexity.
+The constraint $\|\mathbf{u}\|_2 \le u_{\max}$ is convex – a ball. The constraint $\|\mathbf{u}\|_2 \ge u_{\min}$ with $u_{\min} > 0$ is not – it is the complement of an open ball, and the midpoint of the two feasible thrust vectors $(u_{\min}, 0, 0)$ and $(-u_{\min}, 0, 0)$ is the origin, which has norm zero and is infeasible. A liquid engine cannot throttle below some minimum, so the physically honest landing problem contains exactly this nonconvex constraint. The second-order cone programming lesson shows how the lower bound is handled without giving up convexity.
 :::
 
 ::: example Which parts of a landing feasible set are convex?
 A lander at position $\mathbf{r} = (r_x, r_y, r_z)$ (with $r_z$ altitude above the pad at the origin) and thrust acceleration $\mathbf{u}$ is subject to four constraints. Classify each.
 
-1. **Glide slope**: $\sqrt{r_x^2 + r_y^2} \le r_z\tan\gamma$ with $\gamma = 4^\circ$ the half-angle measured from... no, measured from the vertical: the vehicle must stay inside a narrow cone above the pad. With $\tan 4^\circ = 0.0699$ this reads $\|(r_x, r_y)\|_2 \le 0.0699\,r_z$: a second-order cone in $(r_x, r_y, r_z)$, convex. At 100 m altitude the allowed horizontal offset is $6.99\,\mathrm{m}$.
+1. **Glide slope**: $\sqrt{r_x^2 + r_y^2} \le r_z\tan\gamma$ with $\gamma = 4^\circ$ the cone half-angle measured from the vertical: the vehicle must stay inside a narrow cone above the pad. With $\tan 4^\circ = 0.0699$ this reads $\|(r_x, r_y)\|_2 \le 0.0699\,r_z$: a second-order cone in $(r_x, r_y, r_z)$, convex. At 100 m altitude the allowed horizontal offset is $6.99\,\mathrm{m}$.
 2. **Thrust upper bound**: $\|\mathbf{u}\|_2 \le 3g_0 = 29.4\,\mathrm{m/s^2}$. A Euclidean ball, convex.
 3. **Thrust pointing**: the thrust vector must stay within $45^\circ$ of vertical, $u_z \ge \|\mathbf{u}\|_2\cos 45^\circ$, i.e. $\|\mathbf{u}\|_2 \le u_z/\cos 45^\circ = 1.414\,u_z$. A second-order cone with axis along $u_z$, convex.
 4. **Thrust lower bound**: $\|\mathbf{u}\|_2 \ge 0.4 \times 29.4 = 11.8\,\mathrm{m/s^2}$. Take $\mathbf{u}_1 = (0, 0, 11.8)$ and $\mathbf{u}_2 = (0, 11.8, 0)$ – both feasible, at norm exactly $11.8$. Their midpoint is $(0, 5.9, 5.9)$ with norm $8.34 < 11.8$: infeasible. Not convex.
@@ -51,10 +51,13 @@ Three of four constraints are convex, and their intersection is convex. The four
 
 ## Convex functions
 
-> A function $f : \mathbb{R}^n \to \mathbb{R}$ is **convex** if its domain is a convex set and for all $\mathbf{x}, \mathbf{y}$ in the domain and $\theta \in [0, 1]$,
-> $$
-> f(\theta\mathbf{x} + (1-\theta)\mathbf{y}) \le \theta f(\mathbf{x}) + (1-\theta) f(\mathbf{y}) .
-> $$
+> A function $f : \mathbb{R}^n \to \mathbb{R}$ is **convex** if its domain is a convex set and for all $\mathbf{x}, \mathbf{y}$ in the domain and $\theta \in [0, 1]$, $f(\theta\mathbf{x} + (1-\theta)\mathbf{y}) \le \theta f(\mathbf{x}) + (1-\theta) f(\mathbf{y})$.
+
+Written out on its own line, the defining inequality is
+
+$$
+f(\theta\mathbf{x} + (1-\theta)\mathbf{y}) \le \theta f(\mathbf{x}) + (1-\theta) f(\mathbf{y}) .
+$$
 
 The right-hand side is the chord between $(\mathbf{x}, f(\mathbf{x}))$ and $(\mathbf{y}, f(\mathbf{y}))$; the left is the graph beneath it. Convex means the graph lies on or below every chord – the bowl shape. If the inequality is strict whenever $\mathbf{x} \ne \mathbf{y}$ and $\theta \in (0,1)$ the function is **strictly convex**. A function $f$ is **concave** if $-f$ is convex; the graph lies above its chords. An affine function $\mathbf{a}^\top\mathbf{x} + b$ is both convex and concave, since the inequality holds with equality.
 
