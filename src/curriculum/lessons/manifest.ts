@@ -507,6 +507,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "hardware-adjacent work: a real IMU, a thrust-vector-control testbed, a balancing robot, to evidence sensor reality"
       ],
       "file": "car_06_portfolio/09-hardware-adjacent-work.md"
+    },
+    {
+      "id": "l10-reproducibility",
+      "title": "Reproducibility: seeded, one command, pinned, CI",
+      "minutes": 18,
+      "covers": [
+        "reproducibility: seeded, one-command, CI, pinned dependencies"
+      ],
+      "file": "car_06_portfolio/10-reproducibility.md"
     }
   ],
   "car_07_resume_and_referrals": [
@@ -614,6 +623,16 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "g++ and clang++ invocation; -Wall -Wextra -Wpedantic -Werror; -g; -O0 to -O3; -std=c++20"
       ],
       "file": "cod_cpp_01_basics/01-the-build-pipeline.md"
+    },
+    {
+      "id": "l02-translation-units-and-the-odr",
+      "title": "Translation units, headers and the one-definition rule",
+      "minutes": 20,
+      "covers": [
+        "Translation units, headers vs sources, include guards and pragma once",
+        "Declaration vs definition, the one-definition rule, inline, internal linkage"
+      ],
+      "file": "cod_cpp_01_basics/02-translation-units-and-the-odr.md"
     }
   ],
   "t0_m01_algebra_precalc": [
@@ -6605,11 +6624,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "cod_cpp_01_basics": {
-    "covered": 2,
+    "covered": 4,
     "total": 15,
     "complete": false,
     "missing": [
-      "Translation units, headers vs sources, include guards and pragma once",
       "Reading a linker error: undefined reference, multiple definition",
       "Fundamental types; fixed-width types from cstdint; size_t",
       "Integer promotion, signed/unsigned pitfalls, signed overflow as undefined behaviour",
@@ -6618,7 +6636,6 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
       "Functions, overloading, default arguments",
       "Arrays vs std::array vs std::vector; range-based for",
       "enum class; struct and class; access specifiers; namespaces",
-      "Declaration vs definition, the one-definition rule, inline, internal linkage",
       "Scope, lifetime, and stack vs heap vs static storage",
       "std::string vs const char*; iostream and std::format",
       "assert and static_assert"
@@ -7274,11 +7291,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "car_06_portfolio": {
-    "covered": 10,
+    "covered": 11,
     "total": 13,
     "complete": false,
     "missing": [
-      "reproducibility: seeded, one-command, CI, pinned dependencies",
       "open-sourcing, licensing, and what to do about prior-employer intellectual property",
       "how the portfolio feeds the past-project presentation round"
     ]
