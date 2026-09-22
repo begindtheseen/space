@@ -53,7 +53,23 @@ function Routed() {
             the empty pre-hydration state and show a learner nothing to do.
             IndexedDB resolves in a few milliseconds; the spinner is rarely
             seen and is far better than a wrong empty state. */}
-        {loaded ? <Page path={route.path} segments={route.segments} /> : <PageSpinner />}
+        {loaded ? (
+          /*
+           * Keyed on the path so React remounts on navigation and the entrance
+           * animation replays. Without the key the tree is reconciled in place
+           * and the new page simply appears, which reads as a jump cut.
+           *
+           * Deliberately an entrance only, with no exit: an exit animation
+           * would hold the old page on screen while she waits for the one she
+           * asked for, which is the opposite of responsive. The page she
+           * wanted is drawn immediately and settles.
+           */
+          <div className="route" key={route.path}>
+            <Page path={route.path} segments={route.segments} />
+          </div>
+        ) : (
+          <PageSpinner />
+        )}
       </Suspense>
     </Shell>
   )

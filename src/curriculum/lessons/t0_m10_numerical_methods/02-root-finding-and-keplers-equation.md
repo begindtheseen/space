@@ -3,7 +3,7 @@ id: l02-root-finding-and-keplers-equation
 title: Root finding and Kepler's equation
 minutes: 26
 covers:
-  - "root finding: bisection, Newton-Raphson, secant, and convergence rates"
+  - root finding: bisection, Newton-Raphson, secant, and convergence rates
 ---
 
 Half of the equations a GNC engineer meets cannot be solved by rearranging them. Kepler's equation, $E - e\sin E = M$, tells you where a satellite is on its ellipse at a given time, and no algebra isolates $E$. The time at which a re-entry vehicle reaches a target altitude, the throttle setting that trims a lander against gravity, the burn duration that delivers a given $\Delta v$ with a changing mass — all of these are statements of the form "find $x$ such that $f(x) = 0$", and all are solved the same way: guess, evaluate, correct, repeat.

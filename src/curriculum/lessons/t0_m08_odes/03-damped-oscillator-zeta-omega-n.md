@@ -1,7 +1,7 @@
 ---
 id: l03-damped-oscillator-zeta-omega-n
 title: The damped oscillator, natural frequency and damping ratio
-minutes: 22
+minutes: 19
 covers:
   - "the damped oscillator: natural frequency and damping ratio"
 ---

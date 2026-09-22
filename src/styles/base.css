@@ -304,3 +304,32 @@ html[data-reduce-motion='true'] *::after {
   transition-duration: 0.001ms !important;
   scroll-behavior: auto !important;
 }
+
+/* ── Route entrance ──────────────────────────────────────────────────────── */
+/* Navigation settles rather than cutting. Short and slight on purpose: this
+   sits under every page in the app, so anything longer becomes a tax she pays
+   on every click, and anything larger competes with the content for attention.
+   The card stagger inside the page layers on top of it. */
+.route {
+  animation: route-in var(--t-mid) var(--ease-out) backwards;
+}
+
+@keyframes route-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* No local reduced-motion rule needed: the sledgehammer above covers the
+   in-app toggle, and the media query below removes the animation for a system
+   preference, which the 0ms tokens alone would leave as a flicker. */
+@media (prefers-reduced-motion: reduce) {
+  .route {
+    animation: none;
+  }
+}

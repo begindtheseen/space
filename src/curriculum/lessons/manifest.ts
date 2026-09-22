@@ -604,7 +604,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-damped-oscillator-zeta-omega-n",
       "title": "The damped oscillator, natural frequency and damping ratio",
-      "minutes": 22,
+      "minutes": 19,
       "covers": [
         "the damped oscillator: natural frequency and damping ratio"
       ],
@@ -647,6 +647,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "the Gaussian and multivariate Gaussian, covariance matrices, correlation"
       ],
       "file": "t0_m09_probability_stats/04-gaussian-and-covariance.md"
+    },
+    {
+      "id": "l05-linear-transformations",
+      "title": "Linear transformations of random vectors",
+      "minutes": 24,
+      "covers": [
+        "linear transformations of random vectors"
+      ],
+      "file": "t0_m09_probability_stats/05-linear-transformations.md"
     }
   ],
   "t0_m10_numerical_methods": [
@@ -688,6 +697,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "KKT conditions"
       ],
       "file": "t0_m11_optimization/02-lagrange-and-kkt.md"
+    },
+    {
+      "id": "l03-convex-sets-and-functions",
+      "title": "Convex sets and convex functions",
+      "minutes": 25,
+      "covers": [
+        "convex sets and convex functions"
+      ],
+      "file": "t0_m11_optimization/03-convex-sets-and-functions.md"
     }
   ],
   "t0_m12_cpp": [
@@ -1324,11 +1342,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t0_m09_probability_stats": {
-    "covered": 4,
+    "covered": 5,
     "total": 13,
     "complete": false,
     "missing": [
-      "linear transformations of random vectors",
       "sums of random variables and the central limit theorem",
       "white noise, random walk, Gauss-Markov processes",
       "power spectral density and autocorrelation",
@@ -1358,11 +1375,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t0_m11_optimization": {
-    "covered": 3,
+    "covered": 4,
     "total": 14,
     "complete": false,
     "missing": [
-      "convex sets and convex functions",
       "why convexity matters: global optimum, polynomial time, certificates",
       "linear and quadratic programming",
       "second-order cone programming",
