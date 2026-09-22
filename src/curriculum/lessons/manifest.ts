@@ -69,6 +69,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "what a non-US-person can realistically target instead: non-ITAR employers, European, UK, Canadian, Australian and Japanese space sectors, academia, and a long-horizon immigration path"
       ],
       "file": "car_01_itar_gate/07-the-international-alternative.md"
+    },
+    {
+      "id": "l08-academia-and-the-long-path",
+      "title": "If the gate is closed, part two: academia, immigration, and what transfers",
+      "minutes": 22,
+      "covers": [
+        "what a non-US-person can realistically target instead: non-ITAR employers, European, UK, Canadian, Australian and Japanese space sectors, academia, and a long-horizon immigration path"
+      ],
+      "file": "car_01_itar_gate/08-academia-and-the-long-path.md"
     }
   ],
   "t0_m01_algebra_precalc": [
@@ -2109,6 +2118,16 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "secular in-track drift and why it dominates"
       ],
       "file": "t2_m23_relative_motion_rpo/05-secular-drift-and-the-counterintuitive-burn.md"
+    },
+    {
+      "id": "l06-football-orbits-and-circumnavigation",
+      "title": "Football orbits and natural motion circumnavigation",
+      "minutes": 22,
+      "covers": [
+        "football and drifting relative orbits",
+        "natural motion circumnavigation"
+      ],
+      "file": "t2_m23_relative_motion_rpo/06-football-orbits-and-circumnavigation.md"
     }
   ],
   "t3_m25_signals_systems": [
@@ -4590,6 +4609,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "The flight-software-in-the-loop boundary: compiling the actual flight code into the sim rather than a Python re-implementation of it"
       ],
       "file": "t6_m46_6dof_simulation/11-the-flight-software-in-the-loop-boundary.md"
+    },
+    {
+      "id": "l12-sil-pil-and-hil",
+      "title": "SIL, PIL and HIL",
+      "minutes": 19,
+      "covers": [
+        "The SIL, PIL and HIL progression and what each step actually adds"
+      ],
+      "file": "t6_m46_6dof_simulation/12-sil-pil-and-hil.md"
     }
   ],
   "t6_m47_vv_montecarlo": [
@@ -4888,13 +4916,11 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t2_m23_relative_motion_rpo": {
-    "covered": 5,
+    "covered": 7,
     "total": 16,
     "complete": false,
     "missing": [
-      "football and drifting relative orbits",
       "V-bar and R-bar approaches and their safety properties",
-      "natural motion circumnavigation",
       "passive safety and safety ellipses",
       "two-impulse CW rendezvous targeting",
       "glideslope algorithms",
@@ -5073,11 +5099,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t6_m46_6dof_simulation": {
-    "covered": 11,
+    "covered": 12,
     "total": 18,
     "complete": false,
     "missing": [
-      "The SIL, PIL and HIL progression and what each step actually adds",
       "Real-time hardware-in-the-loop: flight processors, motion tables, IMU stimulation, GNSS signal simulators, camera and altimeter stimulation",
       "Validation against analytic solutions, conservation laws, and eventually flight data",
       "Regression testing and golden-file comparison; what to do when a legitimate model improvement breaks every golden file",
