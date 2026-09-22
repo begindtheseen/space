@@ -11,6 +11,9 @@ on:
   push:
     tags: ['v*']
   workflow_dispatch:
+  # Called by release-request.yml when the RELEASE file changes, so a release
+  # can be cut from a plain branch push (no tag needed).
+  workflow_call:
 
 permissions:
   contents: read
@@ -40,9 +43,25 @@ jobs:
           set -euo pipefail
           version="$(node -p "require('./package.json').version")"
           tag="v${version}"
-          if [[ "$GITHUB_REF_TYPE" == "tag" && "$GITHUB_REF_NAME" != "$tag" ]]; then
-            echo "::error::tag ${GITHUB_REF_NAME} does not match package.json version ${version} (expected ${tag})"
-            exit 1
+          if [[ "$GITHUB_REF_TYPE" == "tag" ]]; then
+            if [[ "$GITHUB_REF_NAME" != "$tag" ]]; then
+              echo "::error::tag ${GITHUB_REF_NAME} does not match package.json version ${version} (expected ${tag})"
+              exit 1
+            fi
+          else
+            # Branch push (RELEASE file) or manual run: the tag is created by the
+            # release job, so it must not exist yet, and RELEASE must agree.
+            if [[ -f RELEASE ]]; then
+              requested="$(head -n1 RELEASE | tr -d '[:space:]')"
+              if [[ "$requested" != "$version" ]]; then
+                echo "::error::RELEASE asks for ${requested} but package.json version is ${version}; make them match"
+                exit 1
+              fi
+            fi
+            if git ls-remote --exit-code --tags origin "refs/tags/${tag}" >/dev/null 2>&1; then
+              echo "::error::${tag} already exists; bump the version in package.json (and RELEASE) to publish a new release"
+              exit 1
+            fi
           fi
           echo "version=${version}" >> "$GITHUB_OUTPUT"
           echo "tag=${tag}" >> "$GITHUB_OUTPUT"
