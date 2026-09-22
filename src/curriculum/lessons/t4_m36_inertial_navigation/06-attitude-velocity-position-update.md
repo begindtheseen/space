@@ -1,7 +1,7 @@
 ---
 id: l06-attitude-velocity-position-update
 title: The mechanization loop: attitude, velocity, and position update
-minutes: 20
+minutes: 13
 covers:
   - "Attitude update, velocity update with Coriolis and gravity, position update"
 ---
@@ -42,7 +42,7 @@ $$
 
 ::: example Gravity from the equator to the pole, and the cost of ignoring height
 
-Evaluating $g_0$ gives $9.7803\,\mathrm{m/s^2}$ at the equator, $9.7921\,\mathrm{m/s^2}$ at $28.5^\circ$, $9.8062\,\mathrm{m/s^2}$ at $45^\circ$, and $9.8322\,\mathrm{m/s^2}$ at the pole — a $0.53\%$ swing from equator to pole, entirely from the combination of the Earth's flattening and the weaker centrifugal relief at high latitude. The height gradient $2g_0/a$ evaluates to $3.075\times10^{-6}\,\mathrm{s^{-2}}$ per metre near $45^\circ$ — commonly quoted in geodesy as about $3.086\times10^{-6}\,\mathrm{s^{-2}}$ per metre once the flattening terms this first-order formula dropped are restored, close enough for every purpose this module has. Flying at $10\,\mathrm{km}$ without the height correction overstates gravity by $3.075\times10^{-6}\times10\,000 = 0.0308\,\mathrm{m/s^2}$, thirty-one milli-$g$ — larger than a whole navigation-grade accelerometer's bias budget from the error-model lesson, misread as vertical acceleration and, through the coupling every INS has between its vertical channel and its horizontal one, eventually as horizontal error too.
+Evaluating $g_0$ gives $9.7803\,\mathrm{m/s^2}$ at the equator, $9.7921\,\mathrm{m/s^2}$ at $28.5^\circ$, $9.8062\,\mathrm{m/s^2}$ at $45^\circ$, and $9.8322\,\mathrm{m/s^2}$ at the pole — a $0.53\%$ swing from equator to pole, entirely from the combination of the Earth's flattening and the weaker centrifugal relief at high latitude. The height gradient $2g_0/a$ evaluates to $3.075\times10^{-6}\,\mathrm{s^{-2}}$ per metre near $45^\circ$ — commonly quoted in geodesy as about $3.086\times10^{-6}\,\mathrm{s^{-2}}$ per metre once the flattening terms this first-order formula dropped are restored, close enough for every purpose this module has. Flying at $10\,\mathrm{km}$ without the height correction overstates gravity by $3.075\times10^{-6}\times10\,000 = 0.0308\,\mathrm{m/s^2}$, about $3.1$ milli-$g$ — more than thirty times a whole navigation-grade accelerometer's bias budget from the error-model lesson, misread as vertical acceleration and, through the coupling every INS has between its vertical channel and its horizontal one, eventually as horizontal error too.
 :::
 
 ::: key The velocity update, assembled
@@ -107,10 +107,10 @@ for bias_deg_h, label in [(0.0, "perfect"), (1.0, "1 deg/h north bias")]:
         C, v, lat, lon, h = mechanize(C, v, lat, lon, h, f_b, w_ib_b, dt)
     print(label, "-> |v| after 600 s:", np.linalg.norm(v), "m/s")
 # perfect -> |v| after 600 s: 0.0 m/s
-# 1 deg/h north bias -> |v| after 600 s: 0.11361315932603988 m/s (north), 8.153286 (east)
+# 1 deg/h north bias -> |v| after 600 s: 8.157008012245978 m/s
 ```
 
-The perfect gyro produces exactly zero velocity after ten minutes at rest, to floating-point precision — the mechanization equations are self-consistent, and nothing here injects numerical drift on its own. The biased gyro produces an eastward velocity that reaches $8.15\,\mathrm{m/s}$ by $t=600\,\mathrm s$, and its growth is instructive: from $t=10\,\mathrm s$ to $t=60\,\mathrm s$, a six-fold increase in time, the velocity grows $36.1$-fold, matching $6^2=36$ almost exactly — a north-axis tilt rate, uncorrected, leaks gravity into the horizontal channel at a rate proportional to $t$, and integrating that once gives a velocity error growing as $t^2$. But push on to $t=600\,\mathrm s$: a further ten-fold increase in time from $t=60\,\mathrm s$ produces only a $95.5$-fold increase in velocity, short of the $100$-fold a clean $t^2$ law would give. Something is already bending this curve away from the runaway growth the quadratic law predicts, within the first ten minutes of a one-degree-per-hour bias — the first visible hint of a mechanism a later lesson of this module names and explains in full.
+The perfect gyro produces exactly zero velocity after ten minutes at rest, to floating-point precision — the mechanization equations are self-consistent, and nothing here injects numerical drift on its own. The biased gyro produces a velocity magnitude, almost entirely eastward, that reaches $8.16\,\mathrm{m/s}$ by $t=600\,\mathrm s$ (up from $|\mathbf v|=0.00236\,\mathrm{m/s}$ at $t=10\,\mathrm s$ and $0.0853\,\mathrm{m/s}$ at $t=60\,\mathrm s$), and its growth is instructive: from $t=10\,\mathrm s$ to $t=60\,\mathrm s$, a six-fold increase in time, the velocity grows $36.1$-fold, matching $6^2=36$ almost exactly — a north-axis tilt rate, uncorrected, leaks gravity into the horizontal channel at a rate proportional to $t$, and integrating that once gives a velocity error growing as $t^2$. But push on to $t=600\,\mathrm s$: a further ten-fold increase in time from $t=60\,\mathrm s$ produces only a $95.6$-fold increase in velocity, short of the $100$-fold a clean $t^2$ law would give. Something is already bending this curve away from the runaway growth the quadratic law predicts, within the first ten minutes of a one-degree-per-hour bias — the first visible hint of a mechanism a later lesson of this module names and explains in full.
 :::
 
 ::: warning

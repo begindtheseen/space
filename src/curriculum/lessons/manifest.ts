@@ -3136,7 +3136,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-attitude-velocity-position-update",
       "title": "The mechanization loop: attitude, velocity, and position update",
-      "minutes": 20,
+      "minutes": 13,
       "covers": [
         "Attitude update, velocity update with Coriolis and gravity, position update"
       ],
@@ -3215,6 +3215,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Carrier phase measurements, cycle slips, integer ambiguity resolution with LAMBDA"
       ],
       "file": "t4_m37_gnss/08-carrier-phase-and-integer-ambiguity.md"
+    },
+    {
+      "id": "l09-differential-gnss-rtk-and-ppp",
+      "title": "Differential GNSS, RTK and precise point positioning",
+      "minutes": 22,
+      "covers": [
+        "Differential GNSS, RTK, and precise point positioning"
+      ],
+      "file": "t4_m37_gnss/09-differential-gnss-rtk-and-ppp.md"
     }
   ],
   "t4_m38_sensors_optical_nav": [
@@ -3555,11 +3564,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t4_m37_gnss": {
-    "covered": 8,
+    "covered": 9,
     "total": 14,
     "complete": false,
     "missing": [
-      "Differential GNSS, RTK, and precise point positioning",
       "Space-based GNSS: use above the constellation, side-lobe reception, high-dynamics tracking, Doppler",
       "GNSS in a launch vehicle environment: acceleration, jerk, vibration, plume attenuation, antenna switching",
       "Jamming and spoofing; RAIM and integrity monitoring",
