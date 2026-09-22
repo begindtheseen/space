@@ -2708,6 +2708,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Nonlinear spacecraft attitude control: quaternion feedback laws, the unwinding problem, MRP-based control, Lyapunov-derived tracking laws with proof"
       ],
       "file": "t3_m31_nonlinear_control/11-spacecraft-attitude-control.md"
+    },
+    {
+      "id": "l12-describing-functions",
+      "title": "Describing functions for limit-cycle prediction",
+      "minutes": 24,
+      "covers": [
+        "Describing functions for limit-cycle prediction"
+      ],
+      "file": "t3_m31_nonlinear_control/12-describing-functions.md"
     }
   ],
   "t3_m32_mpc": [
@@ -2858,6 +2867,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Maximum a posteriori estimation"
       ],
       "file": "t4_m33_least_squares/05-maximum-a-posteriori-estimation.md"
+    },
+    {
+      "id": "l06-nonlinear-least-squares-gauss-newton-levenberg-marquardt",
+      "title": "Nonlinear least squares: Gauss-Newton and Levenberg-Marquardt",
+      "minutes": 20,
+      "covers": [
+        "Nonlinear least squares: Gauss-Newton and Levenberg-Marquardt"
+      ],
+      "file": "t4_m33_least_squares/06-nonlinear-least-squares-gauss-newton-levenberg-marquardt.md"
     }
   ],
   "t4_m34_kalman_filter": [
@@ -2968,6 +2986,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Sequential vs batch measurement updates; measurement editing and gating"
       ],
       "file": "t4_m34_kalman_filter/12-sequential-vs-batch-updates-and-gating.md"
+    },
+    {
+      "id": "l13-the-rauch-tung-striebel-smoother",
+      "title": "The Rauch-Tung-Striebel smoother",
+      "minutes": 20,
+      "covers": [
+        "The Rauch-Tung-Striebel smoother"
+      ],
+      "file": "t4_m34_kalman_filter/13-the-rauch-tung-striebel-smoother.md"
     }
   ],
   "t4_m36_inertial_navigation": [
@@ -3298,11 +3325,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t3_m31_nonlinear_control": {
-    "covered": 11,
+    "covered": 12,
     "total": 14,
     "complete": false,
     "missing": [
-      "Describing functions for limit-cycle prediction",
       "Control of underactuated systems",
       "Bang-bang and on-off thruster control: Schmitt trigger and pulse-width pulse-frequency modulation"
     ]
@@ -3314,11 +3340,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t4_m33_least_squares": {
-    "covered": 5,
+    "covered": 6,
     "total": 12,
     "complete": false,
     "missing": [
-      "Nonlinear least squares: Gauss-Newton and Levenberg-Marquardt",
       "Recursive least squares and the bridge to the Kalman filter",
       "The normal matrix condition number as an observability metric",
       "Residual analysis, outlier rejection, and robust estimation (Huber loss, RANSAC)",
@@ -3328,11 +3353,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t4_m34_kalman_filter": {
-    "covered": 12,
+    "covered": 13,
     "total": 15,
     "complete": false,
     "missing": [
-      "The Rauch-Tung-Striebel smoother",
       "The information filter form and its use in sensor fusion",
       "Correlated and time-varying noise; the Schmidt-Kalman consider filter"
     ]
