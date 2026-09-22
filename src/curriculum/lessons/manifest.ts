@@ -2690,6 +2690,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Backstepping"
       ],
       "file": "t3_m31_nonlinear_control/09-backstepping.md"
+    },
+    {
+      "id": "l10-passivity-based-control",
+      "title": "Passivity-based control and energy shaping",
+      "minutes": 24,
+      "covers": [
+        "Passivity-based control and energy shaping"
+      ],
+      "file": "t3_m31_nonlinear_control/10-passivity-based-control.md"
     }
   ],
   "t3_m32_mpc": [
@@ -3199,11 +3208,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t3_m31_nonlinear_control": {
-    "covered": 9,
+    "covered": 10,
     "total": 14,
     "complete": false,
     "missing": [
-      "Passivity-based control and energy shaping",
       "Nonlinear spacecraft attitude control: quaternion feedback laws, the unwinding problem, MRP-based control, Lyapunov-derived tracking laws with proof",
       "Describing functions for limit-cycle prediction",
       "Control of underactuated systems",
