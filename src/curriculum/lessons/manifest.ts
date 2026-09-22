@@ -2876,6 +2876,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Nonlinear least squares: Gauss-Newton and Levenberg-Marquardt"
       ],
       "file": "t4_m33_least_squares/06-nonlinear-least-squares-gauss-newton-levenberg-marquardt.md"
+    },
+    {
+      "id": "l07-recursive-least-squares-kalman-bridge",
+      "title": "Recursive least squares and the bridge to the Kalman filter",
+      "minutes": 15,
+      "covers": [
+        "Recursive least squares and the bridge to the Kalman filter"
+      ],
+      "file": "t4_m33_least_squares/07-recursive-least-squares-kalman-bridge.md"
     }
   ],
   "t4_m34_kalman_filter": [
@@ -2995,6 +3004,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "The Rauch-Tung-Striebel smoother"
       ],
       "file": "t4_m34_kalman_filter/13-the-rauch-tung-striebel-smoother.md"
+    },
+    {
+      "id": "l14-the-information-filter-form",
+      "title": "The information filter form and its use in sensor fusion",
+      "minutes": 22,
+      "covers": [
+        "The information filter form and its use in sensor fusion"
+      ],
+      "file": "t4_m34_kalman_filter/14-the-information-filter-form.md"
     }
   ],
   "t4_m36_inertial_navigation": [
@@ -3340,11 +3358,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t4_m33_least_squares": {
-    "covered": 6,
+    "covered": 7,
     "total": 12,
     "complete": false,
     "missing": [
-      "Recursive least squares and the bridge to the Kalman filter",
       "The normal matrix condition number as an observability metric",
       "Residual analysis, outlier rejection, and robust estimation (Huber loss, RANSAC)",
       "The Wahba problem: find the rotation best aligning two sets of vector observations",
@@ -3353,11 +3370,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t4_m34_kalman_filter": {
-    "covered": 13,
+    "covered": 14,
     "total": 15,
     "complete": false,
     "missing": [
-      "The information filter form and its use in sensor fusion",
       "Correlated and time-varying noise; the Schmidt-Kalman consider filter"
     ]
   },
