@@ -75,7 +75,7 @@ The general method behind that example scales to a much bigger codebase: start f
 
 ## Why the first useful contribution is usually a test
 
-Joining a stack like this, the temptation is to start by changing something — fixing what looks like an obvious bug, adding the feature you were actually asked for. Resist that temptation for the first contribution, for a concrete reason rather than a rule of thumb: you do not yet have enough context to know what depends on the current behavior, and a change to unfamiliar code is exactly the kind of change most likely to break something you cannot see. A test does not have that problem. A test that reproduces a known result — an analytic case for verification, a comparison against a trusted output for validation, or simply a characterization of what a specific function currently does — is low-risk in the specific sense that matters here: if it is wrong, it fails loudly and harms nothing, whereas a wrong change to model behavior can ship silently.
+Joining a stack like this, the temptation is to start by changing something — fixing what looks like an obvious bug, adding the feature you were actually asked for. Resist that temptation for the first contribution, for a concrete reason rather than a rule of thumb: you do not yet have enough context to know what depends on the current behavior, and a change to unfamiliar code is exactly the kind of change most likely to break something you cannot see. A test does not have that problem. A test that reproduces a known result — an analytic case for verification, a comparison against a trusted output for validation, or a characterization of what a specific function currently does — is low-risk in the specific sense that matters here: if it is wrong, it fails loudly and harms nothing, whereas a wrong change to model behavior can ship silently.
 
 Writing that first test also forces the exact reading you need to do anyway. To write a test that pins down what `atmosphere_1976.density` should return at a given altitude, you have to actually trace how it is called, what units its caller expects, and what a correct answer looks like — which is precisely the understanding you would need before making any real change to it. The test is not a detour from understanding the code; writing it is how the understanding gets built, and it leaves something behind that the next person — quite possibly you, months later — benefits from directly.
 
@@ -130,7 +130,7 @@ Search first to find every candidate function by name, which only tells you the 
 :::
 
 ::: check
-Explain why writing a test is a good first contribution to an unfamiliar simulation codebase, beyond simply being a safe convention to follow.
+Explain why writing a test is a good first contribution to an unfamiliar simulation codebase, beyond being a safe convention to follow.
 :::
 
 ::: answer

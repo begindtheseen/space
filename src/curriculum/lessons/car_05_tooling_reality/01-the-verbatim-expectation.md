@@ -70,7 +70,7 @@ print(clamp_command_buggy(-9.4))
 
 ## "It ran and printed a number" is not evidence
 
-The most common habit that self-study builds, and that this module exists partly to un-build, is treating a script that runs to completion and prints a plausible-looking number as if that were the same thing as a correct result. It is not, and the gap between the two is exactly where real defects live, because a wrong number is not usually obviously wrong — it looks like a number.
+The most common habit that self-study builds, and that this module exists partly to un-build, is treating a script that runs to completion and prints a plausible-looking number as if that were the same thing as a correct result. It is not, and the gap between the two is exactly where real defects live, because a wrong number does not usually look wrong — it looks like a number.
 
 ::: example A silent wrong answer versus a caught one
 A quick delta-v check for a burn uses the rocket equation, $\Delta v = I_{sp}\, g_0 \ln\!\left(\dfrac{m_0}{m_f}\right)$, where $I_{sp}$ is the specific impulse in seconds, $g_0 = 9.80665\ \mathrm{m/s^2}$, $m_0$ is the wet mass and $m_f$ the mass after the burn:
@@ -87,7 +87,7 @@ print(delta_v(100_000.0, 10_000.0))   # 7903.2   correct: m0 > mf
 print(delta_v(10_000.0, 100_000.0))   # -7903.2  arguments swapped
 ```
 
-Swapping the two arguments is an easy slip once this function is called from three other places in a larger script. The correct call and the swapped call return numbers of exactly the same magnitude, so a glance at "does this look like a reasonable delta-v" will not catch it — a negative number can even look intentional to someone skimming a printout, as if it meant a retrograde burn. Nothing about running the swapped call throws an error or looks obviously broken.
+Swapping the two arguments is an easy slip once this function is called from three other places in a larger script. The correct call and the swapped call return numbers of exactly the same magnitude, so a glance at "does this look like a reasonable delta-v" will not catch it — a negative number can even look intentional to someone skimming a printout, as if it meant a retrograde burn. Nothing about running the swapped call throws an error or looks broken.
 
 A validated version of the same function checks its own precondition instead of trusting the caller:
 
@@ -137,7 +137,7 @@ In the rocket-equation example, `delta_v(10_000.0, 100_000.0)` returns a number 
 :::
 
 ::: answer
-It is more dangerous because a returned number looks like a valid result — it is negative, but a negative delta-v is not obviously nonsensical on a quick read, so nothing about the output signals that anything went wrong. A crash, by contrast, stops exactly where the mistake happened and says so. Adding a precondition check — `if not (m0 > mf > 0): raise ValueError(...)` — turns the silent wrong answer into an immediate, specific exception at the call site where the arguments were actually swapped, rather than a wrong number that has to be traced back through however many downstream calculations use it before anyone notices.
+It is more dangerous because a returned number looks like a valid result — it is negative, but a negative delta-v does not read as nonsensical on a quick look, so nothing about the output signals that anything went wrong. A crash, by contrast, stops exactly where the mistake happened and says so. Adding a precondition check — `if not (m0 > mf > 0): raise ValueError(...)` — turns the silent wrong answer into an immediate, specific exception at the call site where the arguments were actually swapped, rather than a wrong number that has to be traced back through however many downstream calculations use it before anyone notices.
 :::
 
 ::: check

@@ -17,7 +17,7 @@ A concrete way to build this now: take a small-to-medium simulation, numerical, 
 
 ## Write the test before the fix — on your own code too
 
-The single most concrete, most immediately practicable habit from this entire module is characterization testing: before changing a function you did not just write — including your own code from a month ago, which by then is functionally unfamiliar — record what it currently does on a handful of representative inputs, as an executable test, before touching anything.
+The single most concrete, most immediately practicable habit from this entire module is characterization testing: before changing a function you did not recently write — including your own code from a month ago, which by then is functionally unfamiliar — record what it currently does on a handful of representative inputs, as an executable test, before touching anything.
 
 ::: example Characterizing an actuator-lag filter before changing it
 A first-order lag filter — the kind of simple actuator or sensor dynamics model you might find inside an unfamiliar 6-DOF stack's actuator block — smooths a sequence of commanded values:

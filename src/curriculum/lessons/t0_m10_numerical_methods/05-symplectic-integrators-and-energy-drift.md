@@ -232,7 +232,7 @@ A propagator uses explicit Euler at $h = 10\,\mathrm{s}$ on the circular 500 km 
 :::
 
 ::: answer
-$\theta = hn = 10 \times 1.1068 \times 10^{-3} = 0.011068$; per-step factor $1 + \theta^2 = 1.0001225$; steps per revolution $5{,}677/10 = 567.7$; per-revolution factor $1.0001225^{567.7} = 1.072$, a 7.2% gain. Doubling needs $\ln 2/\ln 1.072 = 10$ revolutions. Compare $h = 60\,\mathrm{s}$: 52% per revolution. The gain per revolution scales as $\theta^2 \times (T/h) \propto h$, so reducing the step from 60 to 10 s reduced it by about 6 — first order, and never zero.
+$\theta = hn = 10 \times 1.1068 \times 10^{-3} = 0.011068$; per-step factor $1 + \theta^2 = 1.0001225$; steps per revolution $5{,}677/10 = 567.7$; per-revolution factor $1.0001225^{567.7} = 1.072$, a 7.2% gain. Doubling needs $\ln 2/\ln 1.072 = 10$ revolutions. Compare $h = 60\,\mathrm{s}$: 52% per revolution. The gain per revolution scales as $\theta^2 \times (T/h) \propto h$, so reducing the step from 60 to 10 s reduced it by about 7 — first order, and never zero.
 :::
 
 ::: check

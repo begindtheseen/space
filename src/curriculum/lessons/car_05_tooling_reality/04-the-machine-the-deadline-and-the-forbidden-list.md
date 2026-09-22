@@ -68,7 +68,7 @@ for y0 in ([2.0, 0.0], [0.5, 0.0], [3.5, 1.0]):
 # [3.5, 1.0]  -> steps: 20000
 ```
 
-Every starting condition produces exactly 20,000 steps, because the number of steps was fixed by `dt` and the duration, not derived from the solution. That is the property a control loop actually needs: the amount of work per cycle can be bounded once, by inspection, and holds for every possible input, not just the inputs someone happened to test.
+Every starting condition produces exactly 20,000 steps, because the number of steps was fixed by `dt` and the duration, not derived from the solution. That is the property a control loop actually needs: the amount of work per cycle can be bounded once, by inspection, and holds for every possible input, not only the inputs someone happened to test.
 :::
 
 ## Why the control path forbids dynamic allocation and unbounded loops
@@ -77,7 +77,7 @@ Both of these turn out to be the same underlying problem: work whose amount depe
 
 A loop whose bound is a fixed, compile-time constant — `for i in range(64)` — always does exactly 64 iterations' worth of work, and you can compute exactly how long that takes and prove it will never take longer. A loop whose bound depends on runtime data — "keep going until converged," or a bound taken from a sensor reading — might finish quickly nearly every time, and then, on some input nobody happened to test, take far longer, because nothing in the code limits how long it can run.
 
-Dynamic memory allocation has exactly the same shape of problem, for a slightly different reason: how long an allocation takes depends on the current state of the heap, which depends on the entire history of allocations and frees that came before it, which is not something you can determine by reading the function in isolation. On top of that timing problem, allocation is one of very few operations in ordinary code that can simply fail outright at runtime — returning a null pointer or throwing, depending on the language and configuration — and a control loop has no acceptable response to "there was no more memory this cycle." And because a flight computer runs for the length of an entire mission rather than restarting every few minutes, a slow, gradual fragmentation of the heap can make the worst case measurably worse hours into a flight than it was in the first minute of testing, which is a failure mode that a short test run will never show you.
+Dynamic memory allocation has exactly the same shape of problem, for a slightly different reason: how long an allocation takes depends on the current state of the heap, which depends on the entire history of allocations and frees that came before it, which is not something you can determine by reading the function in isolation. On top of that timing problem, allocation is one of very few operations in ordinary code that can fail outright at runtime — returning a null pointer or throwing, depending on the language and configuration — and a control loop has no acceptable response to "there was no more memory this cycle." And because a flight computer runs for the length of an entire mission rather than restarting every few minutes, a slow, gradual fragmentation of the heap can make the worst case measurably worse hours into a flight than it was in the first minute of testing, which is a failure mode that a short test run will never show you.
 
 ::: example Why "we timed it and it was fast" does not establish a worst case
 A function whose work scales with a runtime-supplied count `n` has no fixed worst-case time, however fast it looked on the inputs you tried:
@@ -126,7 +126,7 @@ n           bounded, cap=1000 (ms)
 8,000,000   0.179
 ```
 
-The timings stay in a narrow band regardless of `n` — because the function does exactly `CAP` units of work every time, full stop, and simply declines to process input beyond that cap rather than growing to meet it. That is what "bounded by construction" means in practice: not that the function is fast, but that its worst case is knowable in advance and does not depend on what data eventually shows up. The equivalent idea in C++ looks like this:
+The timings stay in a narrow band regardless of `n` — because the function does exactly `CAP` units of work every time, full stop, and declines to process input beyond that cap rather than growing to meet it. That is what "bounded by construction" means in practice: not that the function is fast, but that its worst case is knowable in advance and does not depend on what data eventually shows up. The equivalent idea in C++ looks like this:
 
 ```cpp
 constexpr int kMaxSamples = 64;
@@ -181,7 +181,7 @@ The `process_unbounded` timing data shows the function ran in well under a milli
 :::
 
 ::: answer
-The timings show the function's cost grows in proportion to `n`, from 0.006 ms at `n=10` to 503.9 ms at `n=8,000,000` — there is no ceiling in the data, only a range that was tried. If `n` is ever set by a runtime value rather than chosen by whoever ran the test, nothing in the function limits how large `n` can become, so no finite worst-case time can be stated with confidence; a value of `n` larger than any tried would simply take proportionally longer, with no bound derivable from the timing data alone.
+The timings show the function's cost grows in proportion to `n`, from 0.006 ms at `n=10` to 503.9 ms at `n=8,000,000` — there is no ceiling in the data, only a range that was tried. If `n` is ever set by a runtime value rather than chosen by whoever ran the test, nothing in the function limits how large `n` can become, so no finite worst-case time can be stated with confidence; a value of `n` larger than any tried would take proportionally longer still, with no bound derivable from the timing data alone.
 :::
 
 ::: check

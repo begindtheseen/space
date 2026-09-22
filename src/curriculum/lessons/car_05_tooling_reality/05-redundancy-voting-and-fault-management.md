@@ -38,7 +38,7 @@ for s1, s2, s3 in readings:
 # s3= 126.500  median= 118.432  average= 121.113
 ```
 
-Across the full run, the median's worst error against the true value of 118.4 is 0.12 — essentially just the ordinary sensor noise. The plain average's worst error is 2.713, more than twenty times larger, and it keeps growing as the faulted sensor drifts further, because the average has no mechanism for recognizing that one of its three inputs has stopped being trustworthy. The median does not know anything about sensor 3 specifically — it never inspects which sensor is which — it simply reflects whichever value two of the three sources agree on, which is exactly the property that makes it robust to a single bad input.
+Across the full run, the median's worst error against the true value of 118.4 is 0.12 — about the size of the ordinary sensor noise itself. The plain average's worst error is 2.713, more than twenty times larger, and it keeps growing as the faulted sensor drifts further, because the average has no mechanism for recognizing that one of its three inputs has stopped being trustworthy. The median does not know anything about sensor 3 specifically — it never inspects which sensor is which — it reflects whichever value two of the three sources agree on, which is exactly the property that makes it robust to a single bad input.
 :::
 
 Voting like this is only one shape of the idea — some architectures compare all sources pairwise and explicitly flag whichever one disagrees with the rest, rather than only computing a median — but the underlying principle is the same: with enough independent sources and a rule that favors agreement over any single input, one faulted source stops being able to corrupt the system's answer by itself.

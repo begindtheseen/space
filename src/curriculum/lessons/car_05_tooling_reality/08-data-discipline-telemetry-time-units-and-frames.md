@@ -14,7 +14,7 @@ This lesson is a second lesson on Python's role in this field, specifically the 
 
 Raw telemetry from real hardware is commonly packed binary — every byte doing work, decoded according to a format specification, often called an interface control document, that maps byte offsets to physical quantities, each with a stated unit and scale factor. Ground-test data and simulation output more often arrive as row-per-sample text, commonly comma-separated, which is easy to read by eye but wasteful of space and slow to parse at scale. Large scientific datasets frequently use a structured binary format built for exactly this problem — organized so that a program can read one slice of a large file, a specific time window or a specific channel, without reading the entire file into memory first.
 
-That last property matters because telemetry files get large fast: a single test or flight, logging dozens of channels at a few hundred hertz for an hour, produces tens of millions of samples. Reading an entire multi-gigabyte file into memory at once, the way a small script naturally tends to, can fail outright on a machine without enough memory, or simply be far slower than the analysis needs — most questions asked of a large log only need one channel, or one time window, not the whole file. The alternative is to read in chunks, read only the columns or time range actually needed, or use a format that supports reading a slice directly, rather than loading everything and filtering afterward.
+That last property matters because telemetry files get large fast: a single test or flight, logging dozens of channels at a few hundred hertz for an hour, produces tens of millions of samples. Reading an entire multi-gigabyte file into memory at once, the way a small script naturally tends to, can fail outright on a machine without enough memory, or be far slower than the analysis needs — most questions asked of a large log only need one channel, or one time window, not the whole file. The alternative is to read in chunks, read only the columns or time range actually needed, or use a format that supports reading a slice directly, rather than loading everything and filtering afterward.
 
 ## Time bases: three clocks that are not the same clock
 
@@ -57,7 +57,7 @@ print(round(true_impulse_Ns, 1), round(true_dv, 2), round(nav_believed_dv, 2))
 # 3780988.4   1718.63   386.36
 ```
 
-The burn actually delivers 3,780,988 N·s of impulse — 1,718.6 m/s of real velocity change to the vehicle. The navigation system, never having converted the unit, believes only 386.4 m/s was delivered. The vehicle's actual state and the navigation system's belief about its own state are now 1,332.3 m/s apart, and nothing about either number looks obviously wrong in isolation — 386 m/s is a perfectly plausible-looking delta-v for many burns, which is exactly what makes this class of error dangerous rather than merely inconvenient. This is the same shape of error, worked with clean invented numbers here, behind one of the most widely documented public case studies in this field: a 1999 NASA interplanetary mission lost because ground software produced values in pound-force-seconds that navigation software consumed as newton-seconds, a mismatch that survived undetected through months of otherwise successful operation.
+The burn actually delivers 3,780,988 N·s of impulse — 1,718.6 m/s of real velocity change to the vehicle. The navigation system, never having converted the unit, believes only 386.4 m/s was delivered. The vehicle's actual state and the navigation system's belief about its own state are now 1,332.3 m/s apart, and nothing about either number looks wrong in isolation — 386 m/s is a perfectly plausible-looking delta-v for many burns, which is exactly what makes this class of error dangerous rather than merely inconvenient. This is the same shape of error, worked with clean invented numbers here, behind one of the most widely documented public case studies in this field: a 1999 NASA interplanetary mission lost because ground software produced values in pound-force-seconds that navigation software consumed as newton-seconds, a mismatch that survived undetected through months of otherwise successful operation.
 :::
 
 ## Frames: a direction error with a size that hides from a magnitude check
@@ -141,7 +141,7 @@ Explain why loading an entire multi-gigabyte telemetry file into memory before d
 :::
 
 ::: answer
-A long, high-rate log can reach tens of millions of samples across many channels, and most analysis questions only need one channel or one time window rather than the entire file; loading everything first can exceed available memory outright or simply waste significant time reading data that will immediately be discarded. A concrete alternative is reading the file in chunks, or reading only the specific columns or time range needed — directly, if the file format supports doing so — rather than loading the whole file and filtering afterward.
+A long, high-rate log can reach tens of millions of samples across many channels, and most analysis questions only need one channel or one time window rather than the entire file; loading everything first can exceed available memory outright or waste significant time reading data that will immediately be discarded. A concrete alternative is reading the file in chunks, or reading only the specific columns or time range needed — directly, if the file format supports doing so — rather than loading the whole file and filtering afterward.
 :::
 
 ::: check
@@ -160,6 +160,6 @@ For the units bug: naming the interface value explicitly, such as `impulse_lbf_s
 | Large files | Loading more data than needed, or than memory allows | Chunked, sliced, or format-native partial reads |
 | Time base | Combining timestamps from different clocks without converting | Explicit conversion (for example, GPS time is 18 s ahead of UTC) before any differencing |
 | Units | A value crossing an interface in the wrong unit, wrong by a clean factor | Explicit unit-labeled names and a magnitude-focused boundary test |
-| Frames | A vector used in the wrong reference frame, direction wrong, magnitude often unchanged | A test that checks direction against a known rotation, not just magnitude |
+| Frames | A vector used in the wrong reference frame, direction wrong, magnitude often unchanged | A test that checks direction against a known rotation, not only magnitude |
 
 The next lesson turns from getting data right to the less glamorous, far more common daily work of catching a mistake before it ships: regression suites, build breakages, and reproducing someone else's result.

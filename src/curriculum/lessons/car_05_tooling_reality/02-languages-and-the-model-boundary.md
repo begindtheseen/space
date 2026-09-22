@@ -100,7 +100,7 @@ for ti, yi in zip(t, y):
 # t=5.00  y=1.002170
 ```
 
-If a control engineer builds this system as a block diagram to design it, and a separate C++ function later implements the same transfer function in the flight code, the diagram is not the specification in any sense that excuses the C++ implementation from being checked — the numbers above are the specification. Whatever tool produced them, the flight implementation is required to reproduce them, and disagreement at, say, $t = 2\,\mathrm{s}$ means one of the two is wrong, not that "the model and the code are just different representations."
+If a control engineer builds this system as a block diagram to design it, and a separate C++ function later implements the same transfer function in the flight code, the diagram is not the specification in any sense that excuses the C++ implementation from being checked — the numbers above are the specification. Whatever tool produced them, the flight implementation is required to reproduce them, and disagreement at, say, $t = 2\,\mathrm{s}$ means one of the two is wrong, not that "the model and the code are different representations, so agreement is not required."
 :::
 
 ## Check yourself
@@ -126,7 +126,7 @@ Explain what a "golden value" is and how the quaternion normalization example us
 :::
 
 ::: answer
-A golden value is a recorded output of a trusted reference implementation on a specific, fixed input, kept so that any other implementation of the same computation can be checked against it. In the quaternion example, the Python `normalize_q` function is run on three representative quaternions and its outputs are recorded to eight decimal places; a C++ implementation of the same normalization is considered to correctly cross the model-to-flight-code boundary only once it reproduces those same three outputs, within a stated numerical tolerance, rather than being trusted simply because it compiles or reads as a faithful translation.
+A golden value is a recorded output of a trusted reference implementation on a specific, fixed input, kept so that any other implementation of the same computation can be checked against it. In the quaternion example, the Python `normalize_q` function is run on three representative quaternions and its outputs are recorded to eight decimal places; a C++ implementation of the same normalization is considered to correctly cross the model-to-flight-code boundary only once it reproduces those same three outputs, within a stated numerical tolerance, rather than being trusted because it compiles or reads as a faithful translation.
 :::
 
 ::: check

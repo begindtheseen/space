@@ -489,6 +489,24 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "anchor project D — batch least-squares orbit determination fitted to real GNSS or TLE-derived data"
       ],
       "file": "car_06_portfolio/07-anchor-d-orbit-determination.md"
+    },
+    {
+      "id": "l08-anchor-e-adcs-momentum-management",
+      "title": "Anchor E: ADCS momentum management",
+      "minutes": 19,
+      "covers": [
+        "anchor project E — ADCS momentum management with reaction wheels and magnetorquers"
+      ],
+      "file": "car_06_portfolio/08-anchor-e-adcs-momentum-management.md"
+    },
+    {
+      "id": "l09-hardware-adjacent-work",
+      "title": "Hardware-adjacent work: meeting real sensor reality",
+      "minutes": 20,
+      "covers": [
+        "hardware-adjacent work: a real IMU, a thrust-vector-control testbed, a balancing robot, to evidence sensor reality"
+      ],
+      "file": "car_06_portfolio/09-hardware-adjacent-work.md"
     }
   ],
   "car_07_resume_and_referrals": [
@@ -584,6 +602,18 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "reapplication cadence and what must change between attempts"
       ],
       "file": "car_07_resume_and_referrals/10-outreach-and-reapplying.md"
+    }
+  ],
+  "cod_cpp_01_basics": [
+    {
+      "id": "l01-the-build-pipeline",
+      "title": "From source to executable: the four build stages",
+      "minutes": 18,
+      "covers": [
+        "Preprocess, compile, assemble, link: what each stage consumes and emits",
+        "g++ and clang++ invocation; -Wall -Wextra -Wpedantic -Werror; -g; -O0 to -O3; -std=c++20"
+      ],
+      "file": "cod_cpp_01_basics/01-the-build-pipeline.md"
     }
   ],
   "t0_m01_algebra_precalc": [
@@ -6575,13 +6605,11 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "cod_cpp_01_basics": {
-    "covered": 0,
+    "covered": 2,
     "total": 15,
     "complete": false,
     "missing": [
-      "Preprocess, compile, assemble, link: what each stage consumes and emits",
       "Translation units, headers vs sources, include guards and pragma once",
-      "g++ and clang++ invocation; -Wall -Wextra -Wpedantic -Werror; -g; -O0 to -O3; -std=c++20",
       "Reading a linker error: undefined reference, multiple definition",
       "Fundamental types; fixed-width types from cstdint; size_t",
       "Integer promotion, signed/unsigned pitfalls, signed overflow as undefined behaviour",
@@ -7246,12 +7274,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "car_06_portfolio": {
-    "covered": 8,
+    "covered": 10,
     "total": 13,
     "complete": false,
     "missing": [
-      "anchor project E — ADCS momentum management with reaction wheels and magnetorquers",
-      "hardware-adjacent work: a real IMU, a thrust-vector-control testbed, a balancing robot, to evidence sensor reality",
       "reproducibility: seeded, one-command, CI, pinned dependencies",
       "open-sourcing, licensing, and what to do about prior-employer intellectual property",
       "how the portfolio feeds the past-project presentation round"

@@ -34,7 +34,7 @@ A reviewer of flight or simulation code checks correctness against a traceable r
 
 ## What "production quality" means at senior level, stated concretely
 
-"Production quality" is easy to nod along with and hard to pin down, so it is worth stating in a form specific enough to actually check against: code that has been reviewed by someone other than its author, that carries unit tests covering its boundary and sign cases, that behaves deterministically within a bounded execution time if it sits anywhere near the control path, that is documented well enough for a different engineer to modify correctly during a real anomaly at two in the morning without first tracking down the original author, and that runs somewhere a defect cannot simply be fixed by restarting the process and hoping for the best.
+"Production quality" is easy to nod along with and hard to pin down, so it is worth stating in a form specific enough to actually check against: code that has been reviewed by someone other than its author, that carries unit tests covering its boundary and sign cases, that behaves deterministically within a bounded execution time if it sits anywhere near the control path, that is documented well enough for a different engineer to modify correctly during a real anomaly at two in the morning without first tracking down the original author, and that runs somewhere a defect cannot be fixed by restarting the process and hoping for the best.
 
 That last clause is doing real work and is worth dwelling on. A huge amount of ordinary software tolerates a defect because the cost of failure is a restart — a web server that crashes gets relaunched by its supervisor process, a script that throws gets rerun. A vehicle in flight is not running anywhere you can restart it into a better state; whatever the code does in the moment a fault occurs is, for practical purposes, what actually happens. That single difference is why every constraint elsewhere in this module — bounded execution time, no dynamic allocation in the control path, explicit fault handling instead of exceptions, redundancy and voting — is not excess caution. It is the direct consequence of "we cannot restart our way out of a bad moment," applied consistently across the whole system.
 
@@ -63,7 +63,7 @@ The function reports no valid sensor at all, despite one genuinely being availab
 ::: example Two reviewers, one pull request
 A change adds a new sensor-fusion path and includes a short description, passing tests, and a diff of moderate size. One reviewer reads the diff top to bottom, confirms it compiles, confirms the included tests pass, and approves it within a few minutes. A second reviewer, looking at the same change, asks three specific questions before approving anything: which requirement does this satisfy, and is that stated in the ticket the change references; does the included test cover the case where the new sensor disagrees with the existing ones, not only the case where it agrees; and does anything in the new path allocate memory or use an unbounded loop, given that this function sits inside the same control loop discussed earlier in this module.
 
-The first review is not worthless — a broken build or an obviously wrong diff would still be caught — but it checks only what is visible from reading the change as prose. The second review checks exactly the things that do not announce themselves on a casual read: traceability to a requirement, coverage of the case most likely to reveal a real defect, and the resource-bound constraints this field's flight code actually has to satisfy. The difference between the two is not effort in some vague sense; it is a specific, learnable list of questions, most of which this module has already given you by name.
+The first review is not worthless — a broken build or a clearly wrong diff would still be caught — but it checks only what is visible from reading the change as prose. The second review checks exactly the things that do not announce themselves on a casual read: traceability to a requirement, coverage of the case most likely to reveal a real defect, and the resource-bound constraints this field's flight code actually has to satisfy. The difference between the two is not effort in some vague sense; it is a specific, learnable list of questions, most of which this module has already given you by name.
 :::
 
 ## Check yourself
@@ -85,7 +85,7 @@ The exposing question was a direct boundary check: what happens if only the last
 :::
 
 ::: check
-State the concrete definition of "production quality at senior level" given in this lesson, and explain why "cannot simply be fixed by a restart" is the right property to contrast it against.
+State the concrete definition of "production quality at senior level" given in this lesson, and explain why "cannot be fixed by a restart" is the right property to contrast it against.
 :::
 
 ::: answer
@@ -97,7 +97,7 @@ Explain specifically why a reviewer asks "does this change include the test that
 :::
 
 ::: answer
-"Does this fix the bug" can be answered by the author simply trying the specific case they noticed and confirming it now behaves correctly, which demonstrates the fix works for that one case but leaves no durable, checkable evidence and no protection against the same defect being silently reintroduced later. A test that fails against the old code and passes against the fix is evidence anyone can rerun at any point in the future, and it becomes a permanent part of the regression suite discussed in the previous lesson, turning a one-time claim into a standing, automatically enforced check.
+"Does this fix the bug" can be answered by the author trying the specific case they noticed and confirming it now behaves correctly, which demonstrates the fix works for that one case but leaves no durable, checkable evidence and no protection against the same defect being silently reintroduced later. A test that fails against the old code and passes against the fix is evidence anyone can rerun at any point in the future, and it becomes a permanent part of the regression suite discussed in the previous lesson, turning a one-time claim into a standing, automatically enforced check.
 :::
 
 ::: check
@@ -105,7 +105,7 @@ Explain how the version-control practice of keeping changes small and focused co
 :::
 
 ::: answer
-Every check this lesson describes — tracing correctness to a requirement, confirming a fix's test actually covers the bug, checking resource bounds, checking units and frames, judging whether the result is maintainable — requires the reviewer to genuinely understand the change, and a person can hold a small, focused change in their head well enough to check all of that, but cannot do the same for a large change mixing several unrelated concerns at once. A sprawling change does not just take longer to review; past a certain size it defeats careful review entirely, regardless of the reviewer's diligence, which is why small, single-purpose changes are a review practice and not merely a version-control tidiness preference.
+Every check this lesson describes — tracing correctness to a requirement, confirming a fix's test actually covers the bug, checking resource bounds, checking units and frames, judging whether the result is maintainable — requires the reviewer to genuinely understand the change, and a person can hold a small, focused change in their head well enough to check all of that, but cannot do the same for a large change mixing several unrelated concerns at once. A sprawling change does not only take longer to review; past a certain size it defeats careful review entirely, regardless of the reviewer's diligence, which is why small, single-purpose changes are a review practice and not merely a version-control tidiness preference.
 :::
 
 ## Summary

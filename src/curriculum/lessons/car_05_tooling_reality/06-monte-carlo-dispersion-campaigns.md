@@ -51,7 +51,7 @@ for name, miss in (("seed=1001", miss_a), ("seed=7", miss_c)):
 
 Two different seeds produce two different sets of 5,000 individual outcomes, but statistically similar percentiles — which is the correct behavior: the seed controls exactly which 5,000 points from the underlying distribution you happened to sample, not the shape of the distribution itself. Run with the *same* seed, the campaign reproduces exactly, down to the last digit.
 
-That last property is not a curiosity, it is load-bearing. If a case near the worst observed value looks concerning and needs deeper investigation, a reproducible campaign lets you rerun exactly that case with extra logging turned on; an irreproducible one leaves you unable to get back to the exact scenario that worried you. If a design change is proposed to fix a marginal result, comparing "before" and "after" only means something if both campaigns sampled the same underlying cases — otherwise an apparent improvement might just be a luckier random draw, not a real fix. And when a reviewer asks to see the result reproduced independently, "run it again with the stated seed and configuration" has to actually produce the same answer, or the original result was never solid evidence to begin with.
+That last property is not a curiosity, it is load-bearing. If a case near the worst observed value looks concerning and needs deeper investigation, a reproducible campaign lets you rerun exactly that case with extra logging turned on; an irreproducible one leaves you unable to get back to the exact scenario that worried you. If a design change is proposed to fix a marginal result, comparing "before" and "after" only means something if both campaigns sampled the same underlying cases — otherwise an apparent improvement might be nothing more than a luckier random draw, not a real fix. And when a reviewer asks to see the result reproduced independently, "run it again with the stated seed and configuration" has to actually produce the same answer, or the original result was never solid evidence to begin with.
 :::
 
 ## What the result actually claims, and what it does not
@@ -115,7 +115,7 @@ Using the seeded-campaign example, give two concrete, different reasons why bein
 :::
 
 ::: answer
-First, if a specific case near the worst observed outcome needs deeper investigation, reproducibility lets you rerun exactly that case with additional logging or diagnostics turned on, rather than being unable to recreate the scenario that produced it. Second, when comparing a design change's effect on the result, the comparison is only meaningful if both the "before" and "after" campaigns sampled the same underlying cases; without a fixed, reproducible seed, an apparent improvement could simply be a luckier random draw rather than a real effect of the change.
+First, if a specific case near the worst observed outcome needs deeper investigation, reproducibility lets you rerun exactly that case with additional logging or diagnostics turned on, rather than being unable to recreate the scenario that produced it. Second, when comparing a design change's effect on the result, the comparison is only meaningful if both the "before" and "after" campaigns sampled the same underlying cases; without a fixed, reproducible seed, an apparent improvement could be nothing more than a luckier random draw rather than a real effect of the change.
 :::
 
 ::: check

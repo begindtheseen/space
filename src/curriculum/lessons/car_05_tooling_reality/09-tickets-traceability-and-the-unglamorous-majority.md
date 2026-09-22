@@ -12,7 +12,7 @@ Most working days in this field are not spent deriving a new control law. They a
 
 Continuous integration, in its plainest form, is an automated system that builds the codebase and runs some or all of its test suite automatically whenever a change is proposed, rather than waiting for a person to remember to do it. Paired with a build system that knows the dependency graph, as the earlier lesson on infrastructure described, this means every proposed change gets checked against exactly the tests it could plausibly affect, automatically, within minutes — instead of a defect surviving until someone happens to run the right test by hand, which might be days or weeks later, long after the change that caused it has been forgotten.
 
-The reason this matters more here than in a lot of software is the cost curve on the other side of a missed defect. In flight software the cost is obvious. It is just as real, if less immediately dramatic, in simulation software: a wrong result from a simulation with an undetected bug does not announce itself as a crash — it produces a plausible-looking number that becomes the basis for a design decision, and by the time anyone discovers the bug, real engineering choices may already have been made on top of it. Both cases share the same lesson from earlier in this module — a plausible-looking result is not evidence of correctness — applied at the scale of an entire test suite instead of a single function.
+The reason this matters more here than in a lot of software is the cost curve on the other side of a missed defect. In flight software the cost is immediate and unambiguous. It is equally real, if less immediately dramatic, in simulation software: a wrong result from a simulation with an undetected bug does not announce itself as a crash — it produces a plausible-looking number that becomes the basis for a design decision, and by the time anyone discovers the bug, real engineering choices may already have been made on top of it. Both cases share the same lesson from earlier in this module — a plausible-looking result is not evidence of correctness — applied at the scale of an entire test suite instead of a single function.
 
 A build that fails — turns "red" — is treated as urgent specifically because of what accumulating red builds costs later. If failures are allowed to pile up, nobody can tell, days afterward, which of several intervening changes actually caused which failure; the entire value of running tests on every change, which is precisely being able to attribute a new failure to a specific, recent, identifiable cause, is lost the moment more than one unexamined change sits on top of a known-broken build. This is why the norm in most serious engineering organizations is to treat a red build as the team's most urgent open problem, not as one item in a backlog.
 
@@ -105,7 +105,7 @@ A result that only its author can explain, because the specific inputs and confi
 ## Check yourself
 
 ::: check
-Explain what a "red" continuous integration build means and why merging further changes on top of a known-red build is specifically harmful, not just generally sloppy.
+Explain what a "red" continuous integration build means and why merging further changes on top of a known-red build is specifically harmful, not only generally sloppy.
 :::
 
 ::: answer
