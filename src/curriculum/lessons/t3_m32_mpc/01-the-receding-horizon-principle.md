@@ -110,10 +110,8 @@ for name, P_term in (("terminal cost P (LQR)", P), ("terminal cost Q", Q)):
     print(f"{name:22s} plan {np.round(U0, 5)} tail {np.round(U0[1:], 5)} "
           f"re-solve {np.round(U1, 5)}")
 
-# terminal cost P (LQR)  plan [-0.51714 -0.33238 -0.20026] tail [-0.33238 -0.20026]
-#                        re-solve [-0.33238 -0.20026 -0.10675]
-# terminal cost Q        plan [-0.06524 -0.02208 -0.00106] tail [-0.02208 -0.00106]
-#                        re-solve [-0.05126 -0.01359  0.00291]
+# terminal cost P (LQR)  plan [-0.51714 -0.33238 -0.20026] tail [-0.33238 -0.20026] re-solve [-0.33238 -0.20026 -0.10675]
+# terminal cost Q        plan [-0.06524 -0.02208 -0.00106] tail [-0.02208 -0.00106] re-solve [-0.05126 -0.01359  0.00291]
 ```
 
 With the Riccati terminal cost the re-solved plan starts with exactly the discarded tail, to every digit printed. With $\mathbf{Q}$ used as a terminal cost the re-solve disagrees with the tail in the first element by $0.029$, about $44\,\%$ of that element — a three-step horizon with no terminal cost barely looks past its own nose, so a step of extra lookahead changes its mind. Both loops are still feedback laws; one of them is a much better approximation to the infinite-horizon answer than the other.

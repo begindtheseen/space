@@ -76,9 +76,9 @@ for x in (np.array([0.05, 0.0]), np.array([0.3, 0.2]), np.array([-0.5, 0.0])):
 
 # unconstrained gain Krh = [2.585701 3.443436]
 # region boundaries: Krh . x = +-1
-# x = [0.05 0.  ]  explicit u = -0.129285 (no constraint active )  grid search u = -0.129285
-# x = [0.3 0.2]    explicit u = -1.000000 (lower bound active   )  grid search u = -1.000000
-# x = [-0.5  0. ]  explicit u = +1.000000 (upper bound active   )  grid search u = +1.000000
+# x = [0.05 0.  ]  explicit u = -0.129285 (no constraint active)  grid search u = -0.129285
+# x = [0.3 0.2]  explicit u = -1.000000 (lower bound active  )  grid search u = -1.000000
+# x = [-0.5  0. ]  explicit u = +1.000000 (upper bound active  )  grid search u = +1.000000
 ```
 
 Three regions, checked against brute-force minimisation over a grid of $400{,}001$ candidate inputs. The explicit law for a one-step horizon with an input bound is the *saturated* unconstrained law — and with the Riccati terminal cost the unconstrained gain is the LQR gain to six decimals, so this particular explicit MPC is clipped LQR. That equivalence is exactly the reason the module keeps returning to the question of when MPC earns its complexity: at $N = 1$ with only input bounds, it does not.
