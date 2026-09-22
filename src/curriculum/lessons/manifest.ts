@@ -2533,6 +2533,16 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "terminal descent sensors: radar altimeter, lidar, terrain relative navigation"
       ],
       "file": "t2_m24_edl/11-terminal-descent-sensors.md"
+    },
+    {
+      "id": "l12-hoverslam-and-divert-capability",
+      "title": "The hoverslam problem, divert capability, and propellant margin",
+      "minutes": 17,
+      "covers": [
+        "landing burn timing and the hoverslam problem",
+        "divert capability and the landing ellipse"
+      ],
+      "file": "t2_m24_edl/12-hoverslam-and-divert-capability.md"
     }
   ],
   "t3_m25_signals_systems": [
@@ -5563,12 +5573,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t2_m24_edl": {
-    "covered": 14,
+    "covered": 16,
     "total": 18,
     "complete": false,
     "missing": [
-      "divert capability and the landing ellipse",
-      "landing burn timing and the hoverslam problem",
       "Mars EDL: thin atmosphere, supersonic parachutes, sky crane",
       "reusable booster return modes: RTLS vs droneship, boostback burns"
     ]
