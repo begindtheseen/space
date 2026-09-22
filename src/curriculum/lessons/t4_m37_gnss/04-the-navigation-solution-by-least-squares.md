@@ -131,6 +131,26 @@ Six iterations, and the step sizes tell the story of Gauss-Newton convergence: $
 Add two more satellites to the sky — $(10^\circ, 75^\circ)$, nearly overhead, and $(200^\circ, 15^\circ)$, low and on the opposite side — and give every pseudorange independent Gaussian noise with $\sigma = 3\,\mathrm{m}$, in the middle of the single-frequency budgets the pseudorange lesson worked out. Six measurements, four unknowns, two degrees of freedom of redundancy:
 
 ```python
+import numpy as np
+
+C, OMEGA_E = 299792458.0, 7.292e-5
+x_true = np.array([914936.61, -5526684.03, 3049186.55])
+b_true = 18500.0
+sats = np.array([
+    [11350562.41, -23441217.26, 5206502.33],
+    [15228615.04, -6538895.01, 20754896.68],
+    [-11200404.28, -23485162.13, -5332138.78],
+    [-8420060.43, -15461050.49, 19886983.18],
+])
+
+
+def model(sats, x, b):
+    los = sats - x
+    rng_ = np.linalg.norm(los, axis=1)
+    sagnac = (OMEGA_E / C) * (sats[:, 0] * x[1] - sats[:, 1] * x[0])
+    return rng_ + sagnac + b
+
+
 sats6 = np.vstack([sats, [
     [4231690.58, -19962286.90, 17000985.17],    # az  10 deg, el 75 deg
     [-4355633.71, -22609494.10, -13239064.60],  # az 200 deg, el 15 deg

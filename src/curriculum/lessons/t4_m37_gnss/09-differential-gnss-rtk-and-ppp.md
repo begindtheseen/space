@@ -45,15 +45,26 @@ Single difference (two receivers, one satellite) cancels the satellite clock; $\
 A reference station at a precisely surveyed location computes, for each satellite, the pseudorange its own known position predicts, and compares that to what it actually measured. The difference — the *correction* — absorbs the satellite clock error, the ephemeris error, and (over a short enough baseline) most of the atmosphere, exactly the terms a single difference cancels; broadcasting it to a rover and adding it to the rover's own raw pseudorange is single-differencing implemented as a communication protocol rather than a simultaneous computation.
 
 ::: example A correction shrinking a four-metre error to decimetres
-A base station and a rover $5.4\,\mathrm{km}$ apart both see a satellite carrying a shared clock-plus-ephemeris-plus-atmosphere error of $4.6\,\mathrm{m}$, plus $\sigma=0.5\,\mathrm{m}$ of independent code noise and multipath at each site:
+A base station and a rover $5.4\,\mathrm{km}$ apart, both seeing a satellite at true ranges of $20{,}844{,}346.9\,\mathrm{m}$ and $20{,}843{,}278.3\,\mathrm{m}$, carrying a shared clock-plus-ephemeris-plus-atmosphere error of $4.6\,\mathrm{m}$, plus $\sigma=0.5\,\mathrm{m}$ of independent code noise and multipath at each site:
 
 ```python
+import numpy as np
+
+rng = np.random.default_rng(5)
+true_range_A, true_range_B = 20_844_346.9, 20_843_278.3
+common_err = 4.6
+sigma_code = 0.5
+
+rho_A = true_range_A + common_err + rng.normal(0, sigma_code)
+rho_B_raw = true_range_B + common_err + rng.normal(0, sigma_code)
+
 correction = true_range_A - rho_A          # base broadcasts this
 rho_B_corrected = rho_B_raw + correction
-print(rho_B_raw - true_range_B)            # uncorrected rover error
-print(rho_B_corrected - true_range_B)      # corrected rover error
-# 3.94  (uncorrected)
-# -0.26 (corrected)
+
+print("uncorrected rover error (m):", round(rho_B_raw - true_range_B, 2))
+print("DGNSS-corrected rover error (m):", round(rho_B_corrected - true_range_B, 2))
+# uncorrected rover error (m): 3.94
+# DGNSS-corrected rover error (m): -0.26
 ```
 
 The shared $4.6\,\mathrm{m}$ error is gone; what is left is only the independent noise at each receiver, which does not cancel because it was never common to begin with. This is exactly the "metre to decimetre" figure attached to differential GNSS: it removes what two receivers share and leaves what they do not.
@@ -73,6 +84,37 @@ Real-time kinematic positioning runs the identical double-difference machinery, 
 Six satellites, the well-spread geometry used throughout the module, a $5.4\,\mathrm{km}$ baseline, per-receiver carrier noise of $3\,\mathrm{mm}$, a shared (short-baseline) error of up to several metres per satellite that cancels in the double difference exactly as in the DGNSS example, and two different, unresolved receiver clock biases that also cancel:
 
 ```python
+import numpy as np
+
+x_A = np.array([914936.61, -5526684.03, 3049186.55])         # base, ECEF, m
+baseline_true = np.array([4778.13, 1751.28, 1761.41])          # rover minus base, m
+x_B_true = x_A + baseline_true
+
+sats = np.array([                                               # the module's six-satellite geometry
+    [11350562.41, -23441217.26, 5206502.33],
+    [15228615.04, -6538895.01, 20754896.68],
+    [-11200404.28, -23485162.13, -5332138.78],
+    [-8420060.43, -15461050.49, 19886983.18],
+    [4231690.58, -19962286.90, 17000985.17],
+    [-4355633.71, -22609494.10, -13239064.60],
+])
+s_ref, sats_dd = sats[0], sats[1:]
+
+rng = np.random.default_rng(77)
+common_err = rng.normal(0, 5.0, size=6)                          # shared error, up to several metres
+b_A, b_B = 18500.0, -7340.0                                       # different receiver clocks, m
+sigma_phi = 0.003                                                 # 3 mm carrier noise, resolved ambiguities
+
+
+def phase(sats, x, b, common):
+    return np.linalg.norm(sats - x, axis=1) + b + common
+
+
+rA = phase(sats, x_A, b_A, common_err) + rng.normal(0, sigma_phi, 6)
+rB = phase(sats, x_B_true, b_B, common_err) + rng.normal(0, sigma_phi, 6)
+DD_obs = ((rA - rB) - (rA - rB)[0])[1:]                            # double difference vs satellite 0
+
+
 def dd_model_and_jac(baseline, sats_dd, s_ref, x_A):
     x_B = x_A + baseline
     e_dd = (sats_dd - x_B) / np.linalg.norm(sats_dd - x_B, axis=1)[:, None]
@@ -88,8 +130,11 @@ for it in range(10):
     baseline_est += step
     if np.linalg.norm(step) < 1e-8:
         break
-print(it + 1, (baseline_est - baseline_true) * 1000)
-# 4 [-1.13  7.94 -5.47]   (mm)
+
+print(it + 1, np.round((baseline_est - baseline_true) * 1000, 2))
+print("error magnitude (mm):", round(np.linalg.norm(baseline_est - baseline_true) * 1000, 2))
+# 4 [-1.13  7.94 -5.47]
+# error magnitude (mm): 9.71
 ```
 
 Four iterations, and the recovered baseline is within $9.7\,\mathrm{mm}$ of the truth in three dimensions — from millimetre-noise measurements, a metres-scale common error that vanished entirely, and no clock unknown at all. This is what "resolve the ambiguity and you have centimetre positioning" means concretely: the same Gauss-Newton machinery the navigation-solution lesson built, applied to a measurement with three orders of magnitude less noise and one fewer unknown to solve for.

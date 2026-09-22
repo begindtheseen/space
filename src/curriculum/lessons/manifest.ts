@@ -3141,6 +3141,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Attitude update, velocity update with Coriolis and gravity, position update"
       ],
       "file": "t4_m36_inertial_navigation/06-attitude-velocity-position-update.md"
+    },
+    {
+      "id": "l07-coning-sculling-multi-sample-algorithms",
+      "title": "Coning and sculling corrections",
+      "minutes": 17,
+      "covers": [
+        "Coning and sculling corrections and multi-sample algorithms"
+      ],
+      "file": "t4_m36_inertial_navigation/07-coning-sculling-multi-sample-algorithms.md"
     }
   ],
   "t4_m37_gnss": [
@@ -3550,11 +3559,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t4_m36_inertial_navigation": {
-    "covered": 6,
+    "covered": 7,
     "total": 13,
     "complete": false,
     "missing": [
-      "Coning and sculling corrections and multi-sample algorithms",
       "The Schuler oscillation and why it bounds unaided INS horizontal error",
       "Free-inertial error propagation: how position error grows with time from each error source",
       "Initial alignment: coarse leveling, gyrocompassing, fine alignment via Kalman filter, transfer and in-flight alignment",

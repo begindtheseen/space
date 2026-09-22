@@ -115,17 +115,24 @@ exactly the closed form the pseudorange lesson's error-budget table used without
 Take a true range $R=21{,}000{,}000\,\mathrm{m}$ and $40\,\mathrm{TECU}$ vertical TEC at $\mathrm{el}=60^\circ$ ($F=1.136$, slant $\mathrm{TEC}=45.4\,\mathrm{TECU}$):
 
 ```python
+import numpy as np
+
+Re, h_ion = 6378e3, 350e3
+el = np.radians(60)
+F = 1 / np.sqrt(1 - (Re / (Re + h_ion) * np.cos(el)) ** 2)   # obliquity, as derived above
+
 f1, f2 = 1575.42e6, 1227.60e6
 c1 = f1**2 / (f1**2 - f2**2)
 c2 = -f2**2 / (f1**2 - f2**2)
 
 R = 21_000_000.0
-I1 = 40.3 * (45.4e16) / f1**2      # L1 ionospheric delay, m
-I2 = I1 * (f1 / f2)**2              # L2 ionospheric delay, m
+TEC_vert = 40.0                              # TECU
+I1 = 40.3 * (TEC_vert * F * 1e16) / f1**2      # L1 ionospheric delay, m
+I2 = I1 * (f1 / f2)**2                          # L2 ionospheric delay, m
 rho1, rho2 = R + I1, R + I2
 rho_IF = c1 * rho1 + c2 * rho2
-print(I1, I2, rho_IF - R)
-# 7.376118296... 12.148057050... -7.450580596923828e-09
+print(round(I1, 3), round(I2, 3), rho_IF - R)
+# 7.376 12.148 -7.450580596923828e-09
 ```
 
 $I_1=7.38\,\mathrm{m}$, $I_2=12.15\,\mathrm{m}$ — larger on the lower frequency, as the $1/f^2$ scaling demands — and $\rho_{\mathrm{IF}}$ recovers $R$ to nine decimal places, the residue pure floating-point arithmetic rather than anything physical. Now add independent code noise of $\sigma=0.3\,\mathrm{m}$ to each frequency and propagate it: $\mathrm{Var}(\rho_{\mathrm{IF}}) = c_1^2\sigma^2 + c_2^2\sigma^2$, since the two measurements' noise is independent, so

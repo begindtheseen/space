@@ -46,8 +46,9 @@ phase = R / lam + 15_342_871 + rng.normal(0, 0.01, size=len(t))   # cycles
 phase[5:] += 37                              # a cycle slip at epoch 5
 
 d2 = np.diff(phase, 2)                       # second difference, cycles
-print(np.round(d2, 3))
-# [-0.015 -0.016  0.02  37.    -36.987 -0.017  0.014 -0.034]
+np.set_printoptions(suppress=True, precision=3)
+print(d2)
+# [ -0.015  -0.016   0.019  36.996 -36.987  -0.017   0.014  -0.034]
 ```
 
 Every second difference away from the slip sits at the $0.01$–$0.03$-cycle noise floor; the slip produces a sharp doublet of nearly $+37$ then $-37$ cycles — the unmistakable signature of a single-epoch step discontinuity under double differencing, thresholded in practice at a handful of cycles, far above anything ordinary noise or real range curvature produces. Once flagged, the receiver either resolves a fresh ambiguity from that epoch onward or, if enough redundant information survives (a second frequency, for instance, whose geometry-free combination isolates ambiguity and ionosphere from the shared geometric range), estimates the slip's exact integer size and repairs the count without losing continuity.
