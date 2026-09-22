@@ -431,6 +431,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "singular value decomposition"
       ],
       "file": "t0_m05_linear_algebra_2/08-singular-value-decomposition.md"
+    },
+    {
+      "id": "l09-pseudoinverse-and-rank-deficiency",
+      "title": "The pseudoinverse and rank deficiency",
+      "minutes": 23,
+      "covers": [
+        "pseudoinverse and rank deficiency"
+      ],
+      "file": "t0_m05_linear_algebra_2/09-pseudoinverse-and-rank-deficiency.md"
     }
   ],
   "t0_m06_calculus_single": [
@@ -800,7 +809,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-confidence-intervals-and-hypothesis-testing",
       "title": "Confidence intervals and hypothesis testing",
-      "minutes": 27,
+      "minutes": 23,
       "covers": [
         "confidence intervals and hypothesis testing"
       ],
@@ -1558,11 +1567,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t0_m05_linear_algebra_2": {
-    "covered": 8,
+    "covered": 9,
     "total": 11,
     "complete": false,
     "missing": [
-      "pseudoinverse and rank deficiency",
       "condition number",
       "least squares: normal equations vs QR vs SVD"
     ]

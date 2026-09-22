@@ -1,7 +1,7 @@
 ---
 id: l11-confidence-intervals-and-hypothesis-testing
 title: Confidence intervals and hypothesis testing
-minutes: 27
+minutes: 23
 covers:
   - confidence intervals and hypothesis testing
 ---
