@@ -1,7 +1,7 @@
 ---
 id: l08-explicit-mpc
 title: Explicit MPC and multi-parametric programming
-minutes: 20
+minutes: 17
 covers:
   - Explicit MPC and multi-parametric programming
 ---
