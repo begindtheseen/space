@@ -6,15 +6,15 @@ covers:
   - energy dissipation and the flat-spin instability
 ---
 
-The previous lesson proved that a rigid body spins stably about its major axis and equally stably about its minor axis. On 1 February 1958 the United States put its first satellite into orbit spinning about its minor axis, and within a few hours it was tumbling. Explorer 1 was a pencil — 2.03 m long, 15.2 cm across — spun at about 750 rpm about its long axis for gyroscopic stiffness, exactly as a rifle bullet is. Telemetry from its temperature sensors and the sun-angle history showed that it had gone into a **flat spin**: rotating slowly end over end about an axis perpendicular to its length. The rigid-body theory that had been used to design it said this was impossible.
+The previous lesson proved that a rigid body spins stably about its major axis and equally stably about its minor axis. On 1 February 1958 the United States put its first satellite into orbit spinning about its minor axis, and within a few hours it was tumbling. Explorer 1 was a pencil — 2.03 m long, 15.2 cm across — spun at about 750 rpm about its long axis for gyroscopic stiffness, exactly as a rifle bullet is. Telemetry showed that it had gone into a **flat spin**: rotating slowly end over end about an axis perpendicular to its length. The rigid-body theory used to design it said that was impossible.
 
 The resolution is one sentence long. No spacecraft is rigid. Explorer 1 carried four flexible whip antennas, and a flexing antenna dissipates energy as heat. Internal dissipation cannot change the body's angular momentum — nothing internal can — but it steadily removes rotational kinetic energy. At fixed angular momentum, the lowest-energy rotation is a spin about the axis of *largest* inertia, so that is where the motion ends up. For a long, thin body that means a flat spin.
 
-This lesson makes that argument precise. It shows why $\lVert\mathbf{H}\rVert$ is untouchable and $T$ is not, derives the energy of a spin at fixed momentum, builds a small energy-sink model you can integrate alongside Euler's equations, and gets a time constant out of it. The result — the **major-axis rule** — is the single most consequential piece of engineering guidance in this module: every passively spin-stabilised spacecraft ever flown has been a major-axis spinner, and the ones that were not, learned the hard way.
+This lesson makes that argument precise: why $\lVert\mathbf{H}\rVert$ is untouchable and $T$ is not, what the energy of a spin at fixed momentum is, and how to get a time constant out of a small energy-sink model you can integrate alongside Euler's equations. The result — the **major-axis rule** — is the most consequential piece of engineering guidance in this module: every passively spin-stabilised spacecraft ever flown has been a major-axis spinner.
 
 ## Internal dissipation at constant angular momentum
 
-Take the spacecraft to be a closed system with no external torque: a body plus whatever moves inside it — flexing antennas, propellant sloshing in a tank, a ball rolling in an oil-filled tube, the electrons in a shorted coil. The total angular momentum about the centre of mass obeys
+Take the spacecraft to be a closed system with no external torque: a body plus whatever moves inside it — flexing antennas, propellant in a tank, a ball rolling in an oil-filled tube. The total angular momentum about the centre of mass obeys
 
 $$
 \frac{d\mathbf{H}}{dt}\bigg|_N = \mathbf{M}_{\mathrm{ext}} = 0 ,
@@ -22,7 +22,7 @@ $$
 
 so $\mathbf{H}$ is constant in inertial space, in direction and magnitude, no matter what the internal parts do. Internal forces come in equal and opposite pairs acting along the line between the two masses, so their moments cancel exactly. A damper can shuffle momentum between the structure and the fluid inside it, but the sum never moves.
 
-Energy is different. The total energy of the closed system is conserved too, but not the *rotational kinetic energy of the bulk motion*. Flexing a boom converts some of it into strain energy, and internal friction converts strain energy into heat, which is radiated away or simply stored as a temperature rise. Either way it has left the rotational bookkeeping. So the correct statement of the constraint is:
+Energy is different. The total energy of the closed system is conserved too, but not the *rotational kinetic energy of the bulk motion*. Flexing a boom converts some of it into strain energy, and internal friction converts that into heat. Either way it has left the rotational bookkeeping. So the constraint is:
 
 > Under zero external torque, $\lVert\mathbf{H}\rVert$ is exactly constant and $T$ can only decrease.
 
@@ -42,7 +42,7 @@ $$
 \frac{H^2}{2I_3} \le T \le \frac{H^2}{2I_1} .
 $$
 
-Every rotation with that angular momentum has an energy between those bounds; the lower bound is attained only by a pure major-axis spin and the upper bound only by a pure minor-axis spin. Since dissipation drives $T$ down and $T$ cannot go below $H^2/(2I_3)$, the motion must approach a spin about the major axis. There is nowhere else for it to go.
+The lower bound is attained only by a pure major-axis spin and the upper bound only by a pure minor-axis spin. Since dissipation drives $T$ down and $T$ cannot go below $H^2/(2I_3)$, the motion must approach a spin about the major axis. There is nowhere else for it to go.
 
 ::: key The major-axis rule
 With $\mathbf{H}$ fixed, the kinetic energy of a spin about a principal axis is $T = H^2/(2I)$, which is minimised by the *largest* $I$. Internal energy dissipation drives $T$ monotonically down toward that minimum, so the spin migrates to the major axis and stays there. A passively stabilised spinner must be a major-axis spinner.
@@ -54,7 +54,7 @@ $$
 \Delta T = \frac{H^2}{2I_1} - \frac{H^2}{2I_3} = \frac{H^2}{2I_1}\left(1 - \frac{I_1}{I_3}\right) = T_0\left(1 - \frac{I_1}{I_3}\right),
 $$
 
-a fraction $1 - I_1/I_3$ of what it started with. For a slender body, where $I_1/I_3$ is a per cent or two, essentially all of the rotational kinetic energy is destroyed, and the final spin rate $H/I_3$ is smaller than the initial $H/I_1$ by the same inertia ratio. The body ends up rotating far more slowly, in a completely different direction, having converted the difference into heat in its own structure.
+a fraction $1 - I_1/I_3$ of what it started with. For a slender body, where $I_1/I_3$ is a per cent or two, essentially all of the rotational kinetic energy is destroyed, and the final spin rate $H/I_3$ is smaller than the initial $H/I_1$ by the same ratio. The body ends up rotating far more slowly, about a different axis, having converted the difference into heat in its own structure.
 
 ::: warning Nothing internal can change the angular momentum
 The most common wrong intuition is that a damper "takes momentum out" of the spin. It does not. Dampers, wheels, flexing structure, moving crew — all are internal, and internal forces and torques cancel in pairs. Only an external torque changes $\mathbf{H}$. What a damper changes is how that fixed $\mathbf{H}$ is distributed among the body's axes, and the direction it pushes that redistribution is always downhill in $T$. If a simulation shows $\lVert\mathbf{H}\rVert$ falling while the only modelled effect is internal damping, the model is wrong.
@@ -62,7 +62,7 @@ The most common wrong intuition is that a damper "takes momentum out" of the spi
 
 ## A model energy sink you can integrate
 
-The argument above says where the motion ends; it says nothing about the path or the time scale. For that you need the dissipation in the equations of motion. Modelling a real damper means adding degrees of freedom — a sprung mass, a fluid ring, a flexible appendage — and lesson 12 does that. A much simpler device captures the essential behaviour and is exactly what the module's coding exercise asks for.
+The argument above says where the motion ends, not how it gets there or how long it takes. For that the dissipation has to be in the equations of motion. Modelling a real damper means adding degrees of freedom — a sprung mass, a fluid ring, a flexible appendage — and lesson 12 does that. A much simpler device captures the essential behaviour.
 
 Write the body-frame unit vector along the angular momentum as
 
@@ -77,7 +77,7 @@ $$
 \qquad k > 0 .
 $$
 
-The bracket is the component of $\boldsymbol{\omega}$ perpendicular to $\mathbf{H}$, so the torque damps the part of the rotation that is not aligned with the angular momentum, and vanishes when $\boldsymbol{\omega}$ and $\mathbf{H}$ are parallel — that is, at a pure principal-axis spin. The constant $k$ has units of $\mathrm{N\,m\,s}$: torque per unit angular rate.
+The bracket is the component of $\boldsymbol{\omega}$ perpendicular to $\mathbf{H}$, so the torque damps the part of the rotation not aligned with the angular momentum and vanishes at a pure principal-axis spin. The constant $k$ has units of $\mathrm{N\,m\,s}$: torque per unit angular rate.
 
 Two properties make it the right stand-in. First, it does not change $\lVert\mathbf{H}\rVert$. From lesson 5, $\tfrac{d}{dt}\tfrac{1}{2}H^2 = \mathbf{H}\cdot\mathbf{M}$, and
 
@@ -92,7 +92,7 @@ $$
 \dot{T} = -k\left[\lVert\boldsymbol{\omega}\rVert^2 - (\boldsymbol{\omega}\cdot\hat{\mathbf{h}})^2\right] \le 0 ,
 $$
 
-because the bracket is the squared length of the component of $\boldsymbol{\omega}$ perpendicular to a unit vector. It is zero only when $\boldsymbol{\omega}$ lies along $\mathbf{H}$. So the model reproduces the two facts the physics demands — constant $\lVert\mathbf{H}\rVert$, monotonically falling $T$ — and does it in three lines of code.
+because the bracket is the squared length of the component of $\boldsymbol{\omega}$ perpendicular to a unit vector, zero only when $\boldsymbol{\omega}$ lies along $\mathbf{H}$. The model reproduces the two facts the physics demands — constant $\lVert\mathbf{H}\rVert$, monotonically falling $T$ — in three lines of code.
 
 ```python
 import math

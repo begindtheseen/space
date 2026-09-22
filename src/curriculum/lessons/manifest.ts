@@ -867,7 +867,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-adams-multistep-methods",
       "title": "Adams-Bashforth and Adams-Moulton multistep methods",
-      "minutes": 28,
+      "minutes": 26,
       "covers": [
         "Adams-Bashforth / Adams-Moulton multistep methods"
       ],

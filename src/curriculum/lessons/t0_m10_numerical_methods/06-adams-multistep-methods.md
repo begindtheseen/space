@@ -1,7 +1,7 @@
 ---
 id: l06-adams-multistep-methods
 title: Adams-Bashforth and Adams-Moulton multistep methods
-minutes: 28
+minutes: 26
 covers:
   - Adams-Bashforth / Adams-Moulton multistep methods
 ---
@@ -279,7 +279,7 @@ A PECE step of an AB4–AM4 propagator gives a predictor–corrector difference 
 :::
 
 ::: answer
-Milne's device gives the corrector's local error as $\frac{19}{270} \times 4.0 \times 10^{-4} = 2.81 \times 10^{-5}\,\mathrm{km}$, about 28 mm. The local error is $O(h^5)$, so the required ratio is $h_{\text{new}}/h = (10^{-6}/2.81 \times 10^{-5})^{1/5} = (0.0356)^{0.2} = 0.512$, giving $h_{\text{new}} = 30.7\,\mathrm{s}$. With the usual safety factor of 0.9 a controller would propose about $27.6\,\mathrm{s}$ — and, since this is a multistep method, would then have to rebuild its history at the new spacing rather than reuse the old derivative values.
+Milne's device gives the corrector's local error as $\frac{19}{270} \times 4.0 \times 10^{-4} = 2.81 \times 10^{-5}\,\mathrm{km}$, about 28 mm. The local error is $O(h^5)$, so the required ratio is $h_{\text{new}}/h = (10^{-6}/2.81 \times 10^{-5})^{1/5} = (0.0355)^{0.2} = 0.513$, giving $h_{\text{new}} = 30.8\,\mathrm{s}$. With the usual safety factor of 0.9 a controller would propose about $27.7\,\mathrm{s}$ — and, since this is a multistep method, would then have to rebuild its history at the new spacing rather than reuse the old derivative values.
 :::
 
 ::: check
