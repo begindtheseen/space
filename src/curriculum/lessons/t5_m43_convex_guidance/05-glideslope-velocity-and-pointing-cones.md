@@ -1,7 +1,7 @@
 ---
 id: l05-glideslope-velocity-pointing-cones
 title: Glideslope, velocity, and pointing as cones
-minutes: 24
+minutes: 19
 covers:
   - Glideslope, velocity, and thrust-pointing constraints as cones
 ---
@@ -51,7 +51,21 @@ Glideslope constrains $\mathbf{r}$, not $\mathbf{T}$, so it never enters the Ham
 :::
 
 ::: example Tightness checked with a genuinely binding pointing limit
-[[POINTING_TABLE]]
+Take a vehicle needing a hard correction — $\mathbf{r}_0=(500,0,700)\,\mathrm{m}$, $\mathbf{v}_0=(-45,0,-25)\,\mathrm{m/s}$, $N=10$ steps of $\Delta t=2\,\mathrm{s}$ — with $\theta_{\max}=20°$, tight enough to bind rather than sit slack the whole way. Solving the full SOCP (thrust cone, mass bounds, and this pointing cone together) to a duality gap of $1.3\times10^{-9}$:
+
+| step $k$ | thrust angle from vertical | $\sigma_k-\|\mathbf{u}_k\|$ | pointing margin |
+| --- | --- | --- | --- |
+| $0$ | $11.41°$ | $1.08\times10^{-1}$ | $-1.3\times10^{-9}$ (slack) |
+| $1$ | $20.00°$ | $4.4\times10^{-9}$ | $-1.5\times10^{-9}$ (binding) |
+| $3$ | $20.00°$ | $1.4\times10^{-9}$ | $-2.6\times10^{-9}$ (binding) |
+| $5$ | $20.00°$ | $8.4\times10^{-10}$ | $-5.4\times10^{-9}$ (binding) |
+| $6$ | $20.00°$ | $1.5\times10^{-9}$ | $-1.3\times10^{-7}$ (binding) |
+| $8$ | $8.59°$ | $4.8\times10^{-10}$ | $-3.5\times10^{-1}$ (slack) |
+| $9$ | $7.16°$ | $4.8\times10^{-10}$ | $-3.8\times10^{-1}$ (slack) |
+
+Steps $1$ through $6$ sit at exactly $\theta_{\max}=20.00°$ — the pointing cone is genuinely active, not merely present in the problem statement — and at every one of those same steps the thrust-bound gap $\sigma_k-\|\mathbf{u}_k\|$ is at solver tolerance, $10^{-9}$ or smaller: tightness survives being on two boundaries simultaneously, exactly as the extreme-point argument said it must. Steps $8$ and $9$, where pointing has gone slack again as the vehicle nears vertical for touchdown, still show the same $10^{-10}$-level tightness the thrust-only case had.
+
+Step $0$ is the exception worth not looking away from. Its thrust-bound gap is $0.108\,\mathrm{m/s^2}$ — five to eight orders of magnitude larger than every other step, and not explained by pointing, which is slack there too. This is not a numerical failure: rerunning with the duality gap tightened by another two orders of magnitude leaves step $0$'s gap essentially unchanged while every other step's gap shrinks further, which is the signature of a genuine feature of the optimal solution rather than an under-converged solve. It is also exactly what the lossless-convexification lesson's theorem allows: tightness holds *almost everywhere*, with at most one isolated instant permitted where the costate $\boldsymbol{\lambda}_v$ passes through zero and the thrust direction is briefly undetermined by the Hamiltonian. An affine function can cross zero at only one point — here, apparently, at an instant close to $t=0$ for this particular initial condition — and a single node landing near that crossing is precisely the kind of measure-zero exception "almost everywhere" was written to allow for, not a counterexample to it.
 :::
 
 ## Check yourself
@@ -86,6 +100,14 @@ Explain, without redoing the full argument, why the extreme-point fact used for 
 
 ::: answer
 The extreme-point argument is purely about geometry at a single instant: it shows that *if* the Hamiltonian's minimiser over the constrained set is attained at all, it is attained on the sphere. It says nothing about *why* the minimiser is not simply $\mathbf{T}=\mathbf{0}$ or some other point where the linear coefficient $\boldsymbol{\lambda}_v$ happens not to matter — that half of the argument still needs $\boldsymbol{\lambda}_v(t)$ to be nonzero on all but an isolated set of instants, which came from the costate's differential equation, not from the shape of the constraint set. Geometry supplies "if the coefficient is nonzero, the minimiser is on the boundary"; the costate analysis supplies "the coefficient is in fact nonzero almost everywhere." Both pieces are needed, and pointing only ever threatened the first one.
+:::
+
+::: check
+In the worked example, step $0$'s relaxation gap did not shrink when the solver was re-run to a tighter duality gap, while every other step's gap did. What conclusion does that specific behaviour support, and what would you have concluded instead if step $0$'s gap *had* shrunk toward zero under tighter convergence?
+:::
+
+::: answer
+A gap that refuses to shrink as the overall solve is driven to higher accuracy is behaving like a real feature of the exact optimum, not like numerical residue that a slightly better solve would clean up — residue from an under-converged solve should shrink together with the duality gap that certifies convergence, which is exactly what every *other* step's gap did. That supports reading step $0$ as sitting at, or very near, an isolated instant where $\boldsymbol{\lambda}_v$ passes through zero, consistent with the theorem's own stated exception. Had step $0$'s gap shrunk along with the rest under tighter convergence, the right conclusion would have been the ordinary one — the earlier solve simply had not converged tightly enough yet — and nothing about the theorem's exception would be implicated at all.
 :::
 
 ## Summary

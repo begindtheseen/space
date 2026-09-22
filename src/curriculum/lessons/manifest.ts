@@ -2071,6 +2071,24 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "apsidal rotation"
       ],
       "file": "t2_m20_orbital_maneuvers/06-apsidal-rotation.md"
+    },
+    {
+      "id": "l07-phasing-rendezvous",
+      "title": "Phasing manoeuvres and rendezvous phasing",
+      "minutes": 19,
+      "covers": [
+        "phasing manoeuvres and rendezvous phasing"
+      ],
+      "file": "t2_m20_orbital_maneuvers/07-phasing-rendezvous.md"
+    },
+    {
+      "id": "l08-finite-burns-gravity-losses",
+      "title": "Finite burns and gravity losses",
+      "minutes": 20,
+      "covers": [
+        "finite-burn and gravity losses"
+      ],
+      "file": "t2_m20_orbital_maneuvers/08-finite-burns-gravity-losses.md"
     }
   ],
   "t2_m23_relative_motion_rpo": [
@@ -2128,6 +2146,34 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "natural motion circumnavigation"
       ],
       "file": "t2_m23_relative_motion_rpo/06-football-orbits-and-circumnavigation.md"
+    },
+    {
+      "id": "l07-two-impulse-cw-targeting",
+      "title": "Two-impulse CW rendezvous targeting",
+      "minutes": 17,
+      "covers": [
+        "two-impulse CW rendezvous targeting"
+      ],
+      "file": "t2_m23_relative_motion_rpo/07-two-impulse-cw-targeting.md"
+    },
+    {
+      "id": "l08-glideslope-algorithms",
+      "title": "Glideslope algorithms",
+      "minutes": 18,
+      "covers": [
+        "glideslope algorithms"
+      ],
+      "file": "t2_m23_relative_motion_rpo/08-glideslope-algorithms.md"
+    },
+    {
+      "id": "l09-vbar-rbar-passive-safety",
+      "title": "V-bar and R-bar approaches and passive safety",
+      "minutes": 23,
+      "covers": [
+        "V-bar and R-bar approaches and their safety properties",
+        "passive safety and safety ellipses"
+      ],
+      "file": "t2_m23_relative_motion_rpo/09-vbar-rbar-passive-safety.md"
     }
   ],
   "t3_m25_signals_systems": [
@@ -4264,7 +4310,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-gfold-two-stage-guidance",
       "title": "G-FOLD: the two-stage guidance law, and its flight",
-      "minutes": 24,
+      "minutes": 18,
       "covers": [
         "G-FOLD (Guidance for Fuel-Optimal Large Diverts) and the two-stage minimum-landing-error then minimum-fuel solve",
         "The JPL/Masten Xombie flight demonstrations of G-FOLD and what they proved"
@@ -4274,7 +4320,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-glideslope-velocity-pointing-cones",
       "title": "Glideslope, velocity, and pointing as cones",
-      "minutes": 24,
+      "minutes": 19,
       "covers": [
         "Glideslope, velocity, and thrust-pointing constraints as cones"
       ],
@@ -4618,6 +4664,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "The SIL, PIL and HIL progression and what each step actually adds"
       ],
       "file": "t6_m46_6dof_simulation/12-sil-pil-and-hil.md"
+    },
+    {
+      "id": "l13-real-time-hardware-in-the-loop",
+      "title": "Real-time hardware-in-the-loop",
+      "minutes": 20,
+      "covers": [
+        "Real-time hardware-in-the-loop: flight processors, motion tables, IMU stimulation, GNSS signal simulators, camera and altimeter stimulation"
+      ],
+      "file": "t6_m46_6dof_simulation/13-real-time-hardware-in-the-loop.md"
     }
   ],
   "t6_m47_vv_montecarlo": [
@@ -4864,12 +4919,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t2_m20_orbital_maneuvers": {
-    "covered": 6,
+    "covered": 8,
     "total": 13,
     "complete": false,
     "missing": [
-      "phasing manoeuvres and rendezvous phasing",
-      "finite-burn and gravity losses",
       "low-thrust transfers: Edelbaum, spirals, electric propulsion",
       "station-keeping for GEO and LEO",
       "constellation management, drift orbits and deorbit",
@@ -4916,14 +4969,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t2_m23_relative_motion_rpo": {
-    "covered": 7,
+    "covered": 11,
     "total": 16,
     "complete": false,
     "missing": [
-      "V-bar and R-bar approaches and their safety properties",
-      "passive safety and safety ellipses",
-      "two-impulse CW rendezvous targeting",
-      "glideslope algorithms",
       "approach corridors and keep-out spheres",
       "docking vs berthing",
       "ISS visiting vehicle requirements",
@@ -5099,11 +5148,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t6_m46_6dof_simulation": {
-    "covered": 12,
+    "covered": 13,
     "total": 18,
     "complete": false,
     "missing": [
-      "Real-time hardware-in-the-loop: flight processors, motion tables, IMU stimulation, GNSS signal simulators, camera and altimeter stimulation",
       "Validation against analytic solutions, conservation laws, and eventually flight data",
       "Regression testing and golden-file comparison; what to do when a legitimate model improvement breaks every golden file",
       "Determinism and reproducibility: seeded random number streams, per-case seeds, and bit-exact replay of a single case out of a campaign",

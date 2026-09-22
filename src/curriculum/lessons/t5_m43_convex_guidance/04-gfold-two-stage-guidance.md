@@ -1,7 +1,7 @@
 ---
 id: l04-gfold-two-stage-guidance
 title: "G-FOLD: the two-stage guidance law, and its flight"
-minutes: 24
+minutes: 18
 covers:
   - G-FOLD (Guidance for Fuel-Optimal Large Diverts) and the two-stage minimum-landing-error then minimum-fuel solve
   - The JPL/Masten Xombie flight demonstrations of G-FOLD and what they proved
