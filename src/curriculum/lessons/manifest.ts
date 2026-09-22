@@ -425,6 +425,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "vis-viva"
       ],
       "file": "t2_m19_two_body/04-kepler-laws-vis-viva.md"
+    },
+    {
+      "id": "l05-orbit-families",
+      "title": "Circular, elliptical, parabolic and hyperbolic orbits",
+      "minutes": 18,
+      "covers": [
+        "circular, elliptical, parabolic and hyperbolic orbits"
+      ],
+      "file": "t2_m19_two_body/05-orbit-families.md"
     }
   ]
 }
@@ -677,11 +686,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t2_m19_two_body": {
-    "covered": 5,
+    "covered": 6,
     "total": 15,
     "complete": false,
     "missing": [
-      "circular, elliptical, parabolic and hyperbolic orbits",
       "classical orbital elements and equinoctial alternatives",
       "state vector to orbital element conversion, both directions",
       "Kepler equation: elliptic, hyperbolic and parabolic (Barker)",

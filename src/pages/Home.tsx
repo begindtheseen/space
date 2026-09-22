@@ -32,6 +32,7 @@ import { Bar, Bullets, Button, Card, CardHead, Check, Ring, RowItem, Tile } from
 import { TRACKS, TRACK_ORDER } from '@/curriculum'
 import type { TrackId } from '@/curriculum/types'
 import { setOnboarded, toggleTask } from '@/engine/apply'
+import type { ResumePoint } from '@/engine/resume'
 import { dailyPlan } from '@/engine/scheduler'
 import { streak } from '@/engine/state'
 import { useLearner } from '@/hooks/useLearner'
@@ -61,7 +62,7 @@ const TRACK_PATH: Record<TrackId, string> = {
 }
 
 export function Home() {
-  const { state, dag, mastery, trackReadiness, readiness, setState } = useLearner()
+  const { state, dag, mastery, trackReadiness, readiness, setState, setResume } = useLearner()
   const now = useMemo(() => new Date(), [])
 
   const plan = useMemo(() => dailyPlan(state, dag, now), [state, dag, now])
@@ -75,6 +76,8 @@ export function Home() {
         {!state.settings.onboarded ? (
           <Welcome onDismiss={() => setState((s) => setOnboarded(s))} />
         ) : null}
+
+        <ResumeCard point={state.resume} onDismiss={() => setResume(null)} />
 
         <div className="grid-2">
           {/* ── left column ─────────────────────────────────────────────── */}
@@ -546,4 +549,55 @@ function countMastered(mastery: Map<string, number>): number {
   let n = 0
   for (const v of mastery.values()) if (v >= 0.9) n += 1
   return n
+}
+
+/* ── Pick up where you left off ──────────────────────────────────────────── */
+
+/**
+ * The single most important control on this page for someone who struggles to
+ * start. Opening the app and facing a dashboard is a decision; opening it and
+ * finding one button that says "keep reading Kepler's laws, you were 60%
+ * through" is not. It appears only when there is somewhere real to go back to,
+ * and it can be dismissed when she would rather choose for herself.
+ */
+function ResumeCard({ point, onDismiss }: { point?: ResumePoint; onDismiss: () => void }) {
+  if (!point) return null
+
+  const pct = point.progress !== undefined ? Math.round(point.progress * 100) : null
+  const verb = point.kind === 'lesson' ? 'Keep reading' : point.kind === 'video' ? 'Keep watching' : 'Pick up'
+
+  return (
+    <section className="card resume-card">
+      <div className="resume-card__body">
+        <p className="eyebrow-dim">{whenWord(point.at)}</p>
+        <h2 className="resume-card__title">{point.label}</h2>
+        {point.detail ? <p className="resume-card__detail">{point.detail}</p> : null}
+        {pct !== null && pct > 2 ? (
+          <div className="resume-card__bar" aria-hidden="true">
+            <span style={{ width: `${Math.min(100, pct)}%` }} />
+          </div>
+        ) : null}
+      </div>
+      <div className="resume-card__actions">
+        <button className="btn btn--primary" onClick={() => navigate(point.path)} type="button">
+          {verb}
+          {pct !== null && pct > 2 ? ` · ${pct}%` : ''}
+        </button>
+        <button className="btn btn--quiet btn--sm" onClick={onDismiss} type="button">
+          Not now
+        </button>
+      </div>
+    </section>
+  )
+}
+
+/** "Yesterday", "3 days ago" — vaguer the further back, and never a scolding. */
+function whenWord(iso: string): string {
+  const then = new Date(iso).getTime()
+  if (!Number.isFinite(then)) return 'Where you left off'
+  const days = Math.floor((Date.now() - then) / 86_400_000)
+  if (days <= 0) return 'Where you left off'
+  if (days === 1) return 'Where you left off yesterday'
+  if (days < 7) return `Where you left off ${days} days ago`
+  return 'Where you left off'
 }

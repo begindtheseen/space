@@ -43,6 +43,7 @@ import { atomsOf, dueAtoms } from '@/engine/scheduler'
 import { diagnoseModule } from '@/engine/diagnose'
 import { getItem, type LearnerState } from '@/engine/state'
 import { currentR } from '@/engine/fsrs'
+import { useReadingPlace } from '@/hooks/useReadingPlace'
 import { useLearner } from '@/hooks/useLearner'
 import { formatDate } from '@/lib/format'
 import { Markdown } from '@/lib/markdown'
@@ -948,11 +949,25 @@ function LessonReader({ module, lesson }: { module: Module; lesson: LessonMeta }
         if (alive) setError(err instanceof Error ? err.message : String(err))
       })
     // A new lesson is a new page; the shell only resets scroll on path changes.
+    // useReadingPlace restores a saved position after this, on the next frame.
     document.querySelector('.scroll')?.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior })
     return () => {
       alive = false
     }
   }, [lesson])
+
+  useReadingPlace({
+    placeKey: lessonKey(module.id, lesson.id),
+    ready: body !== null,
+    resume: {
+      kind: 'lesson',
+      path: `/module/${module.id}?lesson=${lesson.id}`,
+      label: module.title,
+      detail: `${lesson.title} · lesson ${index + 1} of ${lessons.length}`,
+      moduleId: module.id,
+      lessonId: lesson.id,
+    },
+  })
 
   const markDone = () =>
     setState((s) =>

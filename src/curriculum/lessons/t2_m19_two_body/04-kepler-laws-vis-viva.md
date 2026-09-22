@@ -69,7 +69,7 @@ Kepler's own statement had the constant the same for all planets. That is true o
 ::: example The geostationary radius
 A geostationary satellite must complete one orbit while Earth turns once relative to the stars: one sidereal day, $T = 86\,164.09\,\mathrm{s}$ (not the $86\,400\,\mathrm{s}$ solar day, which includes Earth's daily progress around the Sun). Invert the third law:
 $$
-a = \left(\frac{\mu T^2}{4\pi^2}\right)^{1/3} = \left(\frac{398\,600.4418 \times 86\,164.09^2}{4\pi^2}\right)^{1/3} = \left(7.4964 \times 10^{13}\right)^{1/3} = 42\,164.2\,\mathrm{km}.
+a = \left(\frac{\mu T^2}{4\pi^2}\right)^{1/3} = \left(\frac{398\,600.4418 \times 86\,164.09^2}{4\pi^2}\right)^{1/3} = \left(7.4960 \times 10^{13}\right)^{1/3} = 42\,164.2\,\mathrm{km}.
 $$
 The altitude is $42\,164.2 - 6378.1 = 35\,786\,\mathrm{km}$ and the circular speed is $v = 2\pi a/T = \sqrt{\mu/a} = 3.0747\,\mathrm{km/s}$. The mean motion $n = 7.2921 \times 10^{-5}\,\mathrm{rad/s}$ is exactly Earth's rotation rate, as designed. Every GEO number you will ever quote comes from this one calculation.
 :::
@@ -204,7 +204,7 @@ A spacecraft in a $400\,\mathrm{km}$ circular orbit fires its engine to raise it
 :::
 
 ::: answer
-$r = 6778.137\,\mathrm{km}$, $v_c = \sqrt{398\,600.4418/6778.137} = 7.669\,\mathrm{km/s}$, new speed $v = 10.169\,\mathrm{km/s}$. From vis-viva, $1/a = 2/r - v^2/\mu = 2.9507 \times 10^{-4} - 103.41/398\,600.4418 = 2.9507 \times 10^{-4} - 2.5943 \times 10^{-4} = 3.564 \times 10^{-5}\,\mathrm{km^{-1}}$, so $a = 28\,060\,\mathrm{km}$. The burn point is the new perigee (the velocity stayed horizontal), so $r_a = 2a - r_p = 56\,120 - 6778 = 49\,342\,\mathrm{km}$: apogee altitude about $42\,960\,\mathrm{km}$, beyond GEO.
+$r = 6778.137\,\mathrm{km}$, $v_c = \sqrt{398\,600.4418/6778.137} = 7.6686\,\mathrm{km/s}$, new speed $v = 10.1686\,\mathrm{km/s}$. From vis-viva, $1/a = 2/r - v^2/\mu = 2.9507 \times 10^{-4} - 103.40/398\,600.4418 = 2.9507 \times 10^{-4} - 2.5941 \times 10^{-4} = 3.566 \times 10^{-5}\,\mathrm{km^{-1}}$, so $a = 28\,043\,\mathrm{km}$. The burn point is the new perigee (the velocity stayed horizontal), so $r_a = 2a - r_p = 56\,086 - 6778 = 49\,308\,\mathrm{km}$: apogee altitude about $42\,930\,\mathrm{km}$, beyond GEO.
 :::
 
 ::: check

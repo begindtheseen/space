@@ -1,22 +1,20 @@
 ---
 id: l01-from-python-to-compiled-cpp
 title: From Python to compiled C++
-minutes: 22
+minutes: 21
 covers:
   - C++17/20 core language
 ---
 
 Every GNC algorithm you have written so far ran in Python: a NumPy propagator, a SciPy fit, a notebook plot. None of it will fly. The computer that closes the loop on a launch vehicle runs compiled code inside a fixed memory budget, with a hard deadline every few milliseconds, and in modern flight software that code is C++. The Python you know does not go away — it becomes the analysis layer that drives the C++ core, runs the Monte Carlo and draws the plots — but the core itself is compiled, statically typed and allocation-free.
 
-This module teaches you to write that core. This first lesson covers the language you need before any of the flight-specific material makes sense: how a C++ program is built, how its types behave, how control flow and functions differ from Python, and which parts of C++17 and C++20 you will lean on. Compile every example yourself; reading C++ without a compiler open is like learning orbital mechanics without ever plotting an orbit.
-
-Whenever you catch yourself thinking "Python did this for me", that is the right reaction. C++ makes you state what Python guessed — the type of each value, when memory is acquired and released, what an integer does when it overflows — and flight software wants exactly that explicitness, because anything the language guesses is something a reviewer cannot check.
+This module teaches you to write that core. This first lesson covers the language you need before any of the flight-specific material makes sense: how a C++ program is built, how its types behave, how control flow and functions differ from Python, and which parts of C++17 and C++20 you will lean on. Compile every example yourself. Whenever you catch yourself thinking "Python did this for me", that is the right reaction: C++ makes you state what Python guessed, and flight software wants that explicitness, because anything the language guesses is something a reviewer cannot check.
 
 ## Why flight software is written in C++
 
 Three properties matter on a flight computer. **Determinism**: the same inputs must produce the same outputs in the same amount of time, cycle after cycle, so that a scheduler can prove every task meets its deadline. **Bounded resources**: memory is sized at boot and never grows, and there is no garbage collector that may pause the program at an inconvenient moment. **Direct hardware access**: sensor registers, DMA buffers and timers are addresses in memory, and the language must be able to read and write them.
 
-C gives you all three and is still what you find in bootloaders and device drivers. C++ gives you the same three plus the abstractions — classes, templates, a standard library — that keep a large GNC codebase readable and testable, and a mature toolchain (CMake, GoogleTest, sanitizers, clang-tidy, pybind11) that this module teaches. Python, by contrast, decides types at run time, allocates on almost every operation and stops the world when its garbage collector runs: fine for analysis, unacceptable in a 400 Hz control loop. You will keep both languages; the last lesson binds them together so a Python Monte Carlo can drive a C++ propagator.
+C gives you all three and is still what you find in bootloaders and drivers. C++ gives you the same three plus the abstractions — classes, templates, a standard library — that keep a large GNC codebase readable and testable, and a mature toolchain (CMake, GoogleTest, sanitizers, clang-tidy, pybind11) that this module teaches. Python decides types at run time, allocates on almost every operation and stops the world when its garbage collector runs: fine for analysis, unacceptable in a 400 Hz control loop. You will keep both languages; the last lesson binds them together.
 
 ## The compiled model
 
@@ -143,12 +141,12 @@ int main() {
 // sizeof(int64_t)  = 8
 ```
 
-Two details deserve attention. The literal `1000.0` makes the second division a floating-point one, because when an `int` meets a `double` the `int` is promoted. And `std::uint8_t` is an alias for `unsigned char`, so the stream would print it as a character; the `static_cast` to `int` asks for the number instead.
+The literal `1000.0` makes the second division a floating-point one, because when an `int` meets a `double` the `int` is promoted. And `std::uint8_t` is an alias for `unsigned char`, so the stream would print it as a character; the `static_cast` to `int` asks for the number instead.
 :::
 
 ### Floating point, and the fixed-point alternative
 
-`double` is the default for GNC mathematics, and everything you learned about machine epsilon and cancellation in the Python module carries over unchanged: a `double` is the same IEEE 754 number that NumPy's `float64` is. `float` costs half the memory and on many flight processors runs faster, but it carries only about seven significant digits. Stored as a `float`, an Earth-centred position of magnitude $6.4 \times 10^6\,\mathrm{m}$ has a resolution of about $0.5\,\mathrm{m}$; as a `double`, about $10^{-9}\,\mathrm{m}$. Choosing `float` for a state vector is a design decision, not a default. Literals carry their type — `1.0` is a `double`, `1.0f` a `float`, `1` an `int` — and mixing them promotes toward the wider floating type.
+`double` is the default for GNC mathematics, and everything you learned about machine epsilon and cancellation in the Python module carries over: a `double` is the same IEEE 754 number that NumPy's `float64` is. `float` costs half the memory and on many flight processors runs faster, but it carries only about seven significant digits. Stored as a `float`, an Earth-centred position of magnitude $6.4 \times 10^6\,\mathrm{m}$ has a resolution of about $0.5\,\mathrm{m}$; as a `double`, about $10^{-9}\,\mathrm{m}$. Choosing `float` for a state vector is a design decision, not a default. Literals carry their type — `1.0` is a `double`, `1.0f` a `float`, `1` an `int` — and mixing them promotes toward the wider floating type.
 
 There is a third option, older than both. **Fixed point** stores a real number as an integer with an implied scale: a gyro register that reports angular rate in counts of $0.01^\circ/\mathrm{s}$ holds $12.34^\circ/\mathrm{s}$ as the integer 1234. Flight computers without a floating-point unit did all their control mathematics this way, and fixed point survives at the sensor interface, in FPGA logic and in some actuator commands. The rule in a modern flight codebase is to convert register values into engineering units in `double` once, at the boundary, and never mix the two representations inside an algorithm. Lesson 7 builds a fixed-point type whose scale the compiler tracks for you.
 
@@ -169,7 +167,7 @@ When you do mean to convert, say so with `static_cast`, naming the target type i
 
 ### `auto`
 
-`auto x = expression;` gives `x` the type of the expression. It is a convenience for long iterator types and a necessity for lambdas. Use it when the type is evident from the right-hand side or irrelevant to the reader, and write the type out when a number's type matters: `auto n = 7 / 2;` is an `int` holding 3, and a reader skimming for a bug will not see that. Lesson 10 shows a case — Eigen expressions — where `auto` is dangerous rather than merely unclear.
+`auto x = expression;` gives `x` the type of the expression. Use it when the type is evident from the right-hand side or irrelevant to the reader — long iterator types, lambdas — and write the type out when a number's type matters: `auto n = 7 / 2;` is an `int` holding 3, and a reader skimming for a bug will not see that. Lesson 10 shows a case, Eigen expressions, where `auto` is dangerous rather than merely unclear.
 
 ## Control flow
 
@@ -186,13 +184,11 @@ Always write the braces, even for a one-line body; the classic C bug of a second
 
 ## Functions
 
-A function has a *declaration* — its name, parameter types and return type — and a *definition*, which adds the body. The declaration goes in a header so that every translation unit that calls the function sees the same signature; the definition goes in exactly one `.cpp` file. Two functions may share a name if their parameter types differ; the compiler chooses by the arguments you pass. This is *overloading*, and it is how `norm(v)` can serve a 3-vector and a 6-vector without a suffix on each name.
-
-Parameters may have defaults, filled in from the right. A function whose return value must not be ignored is marked `[[nodiscard]]`, and the compiler warns wherever the result is dropped. To return several values, return a `struct`; C++17 structured bindings unpack it at the call site: `auto [speed, period] = circular_orbit(r);`. Recursion is legal in the language and forbidden by flight coding rules, because its stack depth cannot be bounded by inspection.
+A function has a *declaration* — its name, parameter types and return type — and a *definition*, which adds the body. The declaration goes in a header so that every translation unit that calls the function sees the same signature; the definition goes in exactly one `.cpp` file. Two functions may share a name if their parameter types differ, and the compiler chooses by the arguments you pass: *overloading*, which is how `norm(v)` can serve a 3-vector and a 6-vector without a suffix on each name. Parameters may have defaults, filled in from the right. A function whose return value must not be ignored is marked `[[nodiscard]]`, and the compiler warns wherever the result is dropped. To return several values, return a `struct`; C++17 structured bindings unpack it at the call site: `auto [speed, period] = circular_orbit(r);`. Recursion is legal in the language and forbidden by flight coding rules, because its stack depth cannot be bounded by inspection.
 
 ## Structs, enums and namespaces
 
-A `struct` groups named members into one value. C++20 designated initialisers name the members as you fill them, exactly as keyword arguments would. An `enum class` is a strongly typed set of named constants: unlike Python's plain integers or C's old `enum`, a `FlightMode` will not silently convert to an `int`, and you may pick its underlying type — `std::uint8_t` here — so that it packs into a telemetry word. A `namespace` groups names the way a Python module does; `gnc::propagate` is the function `propagate` inside `namespace gnc`. Bring individual names in with `using gnc::propagate;` when it helps, but never write `using namespace std;` in a header — it injects hundreds of names into every file that includes you.
+A `struct` groups named members into one value, and C++20 designated initialisers name the members as you fill them, exactly as keyword arguments would. An `enum class` is a strongly typed set of named constants: unlike Python's plain integers or C's old `enum`, a `FlightMode` will not silently convert to an `int`, and you may pick its underlying type — `std::uint8_t` here — so that it packs into a telemetry word. A `namespace` groups names the way a Python module does; `gnc::propagate` is the function `propagate` inside `namespace gnc`. Never write `using namespace std;` in a header — it injects hundreds of names into every file that includes you.
 
 ::: example A flight-mode state machine
 ```cpp
@@ -255,10 +251,10 @@ int main() {
 
 The language you will write is called "modern C++" to distinguish it from the C-with-classes style of the 1990s. The features this module leans on, by the standard that introduced them:
 
-- **C++17**: `if` with an initialiser, structured bindings, `if constexpr` (compile-time branches, lesson 7), `std::optional` (a value or nothing, lesson 8), `std::string_view`, `std::variant`, `[[nodiscard]]` and `[[fallthrough]]`, and guaranteed copy elision when returning a temporary (lesson 3).
-- **C++20**: concepts and `requires` clauses that state what a template parameter must support (lesson 5), ranges, `std::span` (a view over contiguous memory, lesson 6), designated initialisers, `consteval` and `constinit` (lesson 7), `std::format`, the three-way comparison operator `<=>`, and `constexpr` versions of much more of the standard library. Coroutines and modules also arrived in C++20; this module does not use them, because their support in embedded toolchains is still uneven.
+- **C++17**: `if` with an initialiser, structured bindings, `if constexpr` (lesson 7), `std::optional` (lesson 8), `std::string_view`, `std::variant`, `[[nodiscard]]` and `[[fallthrough]]`, and guaranteed copy elision when returning a temporary (lesson 3).
+- **C++20**: concepts and `requires` clauses (lesson 5), ranges, `std::span` (lesson 6), designated initialisers, `consteval` and `constinit` (lesson 7), `std::format`, the three-way comparison `<=>`, and `constexpr` versions of much more of the standard library. Coroutines and modules also arrived; this module does not use them, because their support in embedded toolchains is still uneven.
 
-Which standard a flight project compiles with is a project decision. Many are on C++17 with a shortlist of approved C++20 features, because the compiler qualified for the flight processor lags the desktop compilers by a few years. Everything in these lessons compiles with `-std=c++20` on GCC 13 and Clang 18.
+Which standard a flight project compiles with is a project decision. Many are on C++17 with a shortlist of approved C++20 features, because the compiler qualified for the flight processor lags the desktop compilers by a few years. Everything here compiles with `-std=c++20` on GCC 13 and Clang 18.
 
 ::: key
 A C++ program is preprocessed, compiled one translation unit at a time into object files, and linked into an executable. Declarations live in headers and are shared; each definition lives in exactly one place. Compile errors come from the compiler, "undefined reference" errors from the linker.
@@ -279,7 +275,7 @@ A colleague's build fails with `undefined reference to 'gnc::propagate(State con
 :::
 
 ::: answer
-The linker. The compiler was satisfied — it saw a declaration of `gnc::propagate` in a header and compiled the call — but no object file it was given contains the definition. Either the `.cpp` file that defines `propagate` was not compiled and linked into this target, or the definition's signature differs from the declaration (a `double` declared, a `float` defined), so the symbol the linker is looking for was never produced.
+The linker. The compiler was satisfied — it saw a declaration of `gnc::propagate` in a header and compiled the call — but no object file it was given contains the definition. Either the `.cpp` file that defines `propagate` was not compiled and linked into this target, or the definition's signature differs from the declaration (a `double` declared, a `float` defined), so the symbol the linker wants was never produced.
 :::
 
 ::: check
@@ -287,7 +283,7 @@ A telemetry packet is declared as a struct with an `int` sequence counter and a 
 :::
 
 ::: answer
-The sizes of `int` and `long` are only guaranteed as minimums and differ between platforms — `long` is 8 bytes on Linux and 4 on Windows. A packet layout that changes with the compiler cannot be decoded by the ground station. Use fixed-width types: `std::uint32_t` (or `std::uint16_t`) for the counter and `std::uint64_t` or `std::int64_t` for the timestamp, so the layout is identical on the laptop, the simulator and the flight processor.
+The sizes of `int` and `long` are only guaranteed as minimums and differ between platforms — `long` is 8 bytes on Linux and 4 on Windows. A packet layout that changes with the compiler cannot be decoded by the ground station. Use fixed-width types, `std::uint32_t` for the counter and `std::uint64_t` for the timestamp, so the layout is identical on the laptop, the simulator and the flight processor.
 :::
 
 ::: check
@@ -295,7 +291,7 @@ What value does `n` hold after `int n = 7 / 2 * 2.0;`, and why?
 :::
 
 ::: answer
-`6`. Evaluation goes left to right: `7 / 2` is integer division, giving the `int` 3. Then `3 * 2.0` promotes 3 to `double` and gives `6.0`. Assigning `6.0` to an `int` truncates to `6`. The `2.0` arrived too late to make the division a floating-point one. Writing `7.0 / 2 * 2.0` gives `7.0`, and `int n{7.0 / 2 * 2.0}` would not compile at all, because braces reject the narrowing `double`-to-`int` conversion.
+`6`. Evaluation goes left to right: `7 / 2` is integer division, giving the `int` 3. Then `3 * 2.0` promotes 3 to `double` and gives `6.0`, which is truncated to `6` on assignment to an `int`. The `2.0` arrived too late to make the division a floating-point one. Writing `7.0 / 2 * 2.0` gives `7.0`, and `int n{7.0 / 2 * 2.0}` would not compile at all, because braces reject the narrowing conversion.
 :::
 
 ::: check
@@ -303,7 +299,7 @@ What value does `n` hold after `int n = 7 / 2 * 2.0;`, and why?
 :::
 
 ::: answer
-`c` holds `4`: unsigned arithmetic wraps modulo $2^8 = 256$, and $260 - 256 = 4$, all well defined. `s` holds `-126`, and that is also well defined, for a subtler reason. Both operands of `s + 10` are promoted to `int` before the addition, so the sum 130 is computed in `int` without overflow. Converting 130 back to `std::int8_t` on assignment gives the value congruent to 130 modulo 256 within the type's range, $130 - 256 = -126$; since C++20 that modular result is guaranteed. Signed overflow would occur only if the addition itself exceeded the range of `int`.
+`c` holds `4`: unsigned arithmetic wraps modulo $2^8 = 256$, and $260 - 256 = 4$, all well defined. `s` holds `-126`, also well defined, for a subtler reason. Both operands of `s + 10` are promoted to `int` before the addition, so the sum 130 is computed in `int` without overflow. Converting 130 back to `std::int8_t` gives the value congruent to 130 modulo 256 within the type's range, $130 - 256 = -126$; since C++20 that modular result is guaranteed. Signed overflow would occur only if the addition itself exceeded the range of `int`.
 :::
 
 ::: check

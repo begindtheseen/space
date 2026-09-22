@@ -539,3 +539,64 @@
     align-self: center;
   }
 }
+
+/* ── Pick up where you left off ──────────────────────────────────────────── */
+/* Deliberately the widest, quietest thing above the grid: one obvious way back
+   in, so opening the app is not a decision about what to do next. */
+.resume-card {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px;
+  margin-bottom: 18px;
+  border-left: 2px solid var(--accent, #5b8cff);
+}
+
+.resume-card__body {
+  min-width: 0;
+  flex: 1 1 260px;
+}
+
+.resume-card__title {
+  margin: 4px 0 0;
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.resume-card__detail {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--text-dim, #98a2b3);
+  overflow-wrap: anywhere;
+}
+
+.resume-card__bar {
+  margin-top: 12px;
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.resume-card__bar > span {
+  display: block;
+  height: 100%;
+  border-radius: 2px;
+  background: var(--accent, #5b8cff);
+}
+
+.resume-card__actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .resume-card__bar > span {
+    transition: width 240ms ease-out;
+  }
+}
