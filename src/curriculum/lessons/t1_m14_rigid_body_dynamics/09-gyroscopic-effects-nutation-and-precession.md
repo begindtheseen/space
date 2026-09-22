@@ -130,7 +130,7 @@ The inertial precession rate is $\dot{\psi} = H/I_t = 6286.4/2000 = 3.1432\,\mat
 
 Integrating Euler's equations together with the attitude matrix confirms it. Over a four-second run the body 3 axis goes round $\mathbf{H}$ at a measured $3.14318\,\mathrm{rad/s}$ against the predicted $3.14318$; the inertial $\mathbf{H}$ holds at $(200.0, 0.0, 6283.2)\,\mathrm{N\,m\,s}$; and $\theta$ stays at $1.8232^\circ$ to four decimals.
 
-The space cone half-angle is $\beta = |1.823 - 0.912| = 0.911^\circ$, and because the body is prolate the two cones touch externally, the body cone rolling around the outside of the space cone. What an observer on the ground sees is the stage's nose tracing a $1.8^\circ$ circle twice a second while the vehicle spins at once a second — a wobble at roughly twice the spin frequency, which is exactly the signature that makes nutation easy to spot in tracking data.
+The space cone half-angle is $\beta = |1.823 - 0.912| = 0.911^\circ$, and because the body is prolate the two cones touch externally, the body cone rolling around the outside of the space cone. What an observer on the ground sees is the stage's nose tracing a $1.8^\circ$ circle once every two seconds while the vehicle itself spins once a second — a wobble at half the spin frequency, which is the signature that makes nutation easy to spot in tracking data.
 :::
 
 ::: example An oblate drum, and why the rates differ so much
@@ -200,7 +200,7 @@ You need a spinning upper stage, $H = 6000\,\mathrm{N\,m\,s}$, to reorient its s
 :::
 
 ::: answer
-Use $\dot{\hat{\mathbf{s}}} = M/H$. The required rate is $\Omega = 30^\circ/600\,\mathrm{s} = 0.5236\,\mathrm{rad}/600\,\mathrm{s} = 8.727\times 10^{-4}\,\mathrm{rad/s}$, so $M = H\Omega = 6000\times 8.727\times 10^{-4} = 5.24\,\mathrm{N\,m}$, held for the whole ten minutes and directed $90^\circ$ from the direction you want the axis to move. The naive estimate would use $M = I_t\ddot{\vartheta}$ with the transverse inertia and a slew profile, giving a number smaller by roughly $I_t\Omega/H$ — for $I_t = 2000\,\mathrm{kg\,m^2}$ that factor is $2000\times 8.727\times 10^{-4}/6000 = 2.9\times 10^{-4}$, so the naive answer is about three thousand times too small, and points the thruster ninety degrees away from where it belongs.
+Use $\dot{\hat{\mathbf{s}}} = M/H$. The required rate is $\Omega = 0.5236\,\mathrm{rad}/600\,\mathrm{s} = 8.727\times 10^{-4}\,\mathrm{rad/s}$, so $M = H\Omega = 6000\times 8.727\times 10^{-4} = 5.24\,\mathrm{N\,m}$, held for the whole ten minutes and directed $90^\circ$ from the direction you want the axis to move. The naive estimate treats the stage as a non-spinning body slewed rest to rest: with constant acceleration for half the time and deceleration for the other half, $\ddot{\vartheta} = 4\Delta\vartheta/t^2 = 5.82\times 10^{-6}\,\mathrm{rad/s^2}$ and $M = I_t\ddot{\vartheta} = 2000\times 5.82\times 10^{-6} = 0.0116\,\mathrm{N\,m}$, some $450$ times too small — and aimed ninety degrees from where the thruster belongs. Spin does not make reorientation easier; it makes it expensive and sideways.
 :::
 
 ::: check
@@ -216,7 +216,7 @@ A spacecraft carries two identical momentum wheels, one storing $+25\,\mathrm{N\
 :::
 
 ::: answer
-The stored momenta cancel: $\mathbf{h} = (0, 0, 25) + (0, 0, -25) = \mathbf{0}$, so $\boldsymbol{\omega}\times\mathbf{h} = \mathbf{0}$ and there is no coupling torque at all. With a single wheel the coupling would be $(0.02, 0, 0)\times(0, 0, 25) = (0, 0.5, 0)$, that is $0.5\,\mathrm{N\,m}$ about $y$. What is gained is a vehicle that behaves like a plain rigid body during slews and that can still exert control torques by running the two wheels differentially. What is lost is the gyroscopic stiffness itself: a zero-momentum system has no passive pointing reference, so all attitude stability must now come from the control loop. This trade — momentum bias against zero momentum — is one of the first architectural choices in an attitude control design, and lesson 10 shows the intermediate option.
+The stored momenta cancel: $\mathbf{h} = (0, 0, 25) + (0, 0, -25) = \mathbf{0}$, so $\boldsymbol{\omega}\times\mathbf{h} = \mathbf{0}$ and there is no coupling torque at all. With a single wheel the coupling would be $(0.02, 0, 0)\times(0, 0, 25) = (0, -0.5, 0)$, that is $0.5\,\mathrm{N\,m}$ about $y$. What is gained is a vehicle that behaves like a plain rigid body during slews and that can still exert control torques by running the two wheels differentially. What is lost is the gyroscopic stiffness itself: a zero-momentum system has no passive pointing reference, so all attitude stability must now come from the control loop. This trade — momentum bias against zero momentum — is one of the first architectural choices in an attitude control design, and lesson 10 shows the intermediate option.
 :::
 
 ## Summary
