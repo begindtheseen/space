@@ -129,7 +129,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-navigation-and-state-estimation",
       "title": "Navigation and State Estimation: knowing where you actually are",
-      "minutes": 20,
+      "minutes": 19,
       "covers": [
         "Navigation and State Estimation, Navigation and Orbit Determination, Precise Navigation Solutions (Starlink): star tracker and signals-based attitude determination, inertial propagation, GNSS, orbit determination"
       ],
@@ -200,6 +200,16 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "what capable of solving complex problems with little to no supervision is testing"
       ],
       "file": "car_03_levels_and_quals/07-solving-complex-problems.md"
+    },
+    {
+      "id": "l08-level-and-self-assessment",
+      "title": "Which level to target, and an honest self-assessment",
+      "minutes": 22,
+      "covers": [
+        "how recruiters map your experience onto a level, and why level is set before the offer",
+        "honest self-assessment against each list"
+      ],
+      "file": "car_03_levels_and_quals/08-level-and-self-assessment.md"
     }
   ],
   "car_04_degree_reality": [
@@ -7002,13 +7012,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "car_03_levels_and_quals": {
-    "covered": 8,
+    "covered": 10,
     "total": 10,
-    "complete": false,
-    "missing": [
-      "how recruiters map your experience onto a level, and why level is set before the offer",
-      "honest self-assessment against each list"
-    ]
+    "complete": true,
+    "missing": []
   },
   "car_04_degree_reality": {
     "covered": 10,

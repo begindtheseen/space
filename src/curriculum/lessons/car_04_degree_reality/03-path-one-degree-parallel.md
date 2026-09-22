@@ -96,7 +96,7 @@ Why does this lesson claim that almost no new graduate arrives at an interview w
 :::
 
 ::: answer
-Ordinary coursework is typically structured as problem sets, labs, and assignments graded in isolation from each other, rather than as one integrated system carried from a blank start to a validated, working result — the kind of thing this curriculum's exercises specifically ask for. Because that kind of integrated, self-directed project is rarely assigned, most graduates simply are not asked to produce it, which is why a candidate who has one is unusual in the applicant pool rather than merely somewhat ahead of it.
+Ordinary coursework is typically structured as problem sets, labs, and assignments graded in isolation from each other, rather than as one integrated system carried from a blank start to a validated, working result — the kind of thing this curriculum's exercises specifically ask for. Because that kind of integrated, self-directed project is rarely assigned, most graduates are not asked to produce it at all, which is why a candidate who has one is unusual in the applicant pool rather than merely somewhat ahead of it.
 :::
 
 ::: check

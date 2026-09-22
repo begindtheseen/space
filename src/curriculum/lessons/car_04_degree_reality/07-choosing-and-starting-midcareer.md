@@ -74,7 +74,7 @@ A sunk cost is time or money already spent that cannot be recovered regardless o
 :::
 
 ::: check
-Explain why stating a switching condition before starting a path is a more effective defense against the sunk-cost trap than simply "trying to be objective" once already partway through.
+Explain why stating a switching condition before starting a path is a more effective defense against the sunk-cost trap than trying to "be objective" once already partway through.
 :::
 
 ::: answer
@@ -94,7 +94,7 @@ Explain precisely why Site Reliability Engineer, GNC's in-lieu-of-a-degree branc
 :::
 
 ::: answer
-The 4-year in-lieu branch states a requirement on years and kind of experience — professional software development with site reliability or DevOps experience — and, unlike the degree-and-experience branch beside it, states no requirement on what field a prior degree is in, or that one exists at all. For a reader whose existing degree is in a genuinely non-qualifying field such as business or biology, this is the one door in the whole module where that degree's field is simply not part of what is being checked, making it worth naming explicitly rather than leaving this reader to assume every route requires re-earning a qualifying bachelor's first.
+The 4-year in-lieu branch states a requirement on years and kind of experience — professional software development with site reliability or DevOps experience — and, unlike the degree-and-experience branch beside it, states no requirement on what field a prior degree is in, or that one exists at all. For a reader whose existing degree is in a genuinely non-qualifying field such as business or biology, this is the one door in the whole module where that degree's field is not part of what is being checked at all, making it worth naming explicitly rather than leaving this reader to assume every route requires re-earning a qualifying bachelor's first.
 :::
 
 ::: check
@@ -110,7 +110,7 @@ Why does this module treat "never choosing any of the three paths while continui
 :::
 
 ::: answer
-Every one of the three paths takes years, as the previous lesson established in detail, and years spent without committing to one of them are years during which none of the three actually advances — the credential is not being earned, the qualifying experience is not accumulating, and the internal track record is not being built. That feels safer than choosing because no specific plan can be judged as the wrong one, but it is not neutral: it is a choice with the same kind of real, unrecoverable time cost as choosing badly, simply less visible because no single decision appears to have caused it.
+Every one of the three paths takes years, as the previous lesson established in detail, and years spent without committing to one of them are years during which none of the three actually advances — the credential is not being earned, the qualifying experience is not accumulating, and the internal track record is not being built. That feels safer than choosing because no specific plan can be judged as the wrong one, but it is not neutral: it is a choice with the same kind of real, unrecoverable time cost as choosing badly, only less visible because no single decision appears to have caused it.
 :::
 
 ## Summary

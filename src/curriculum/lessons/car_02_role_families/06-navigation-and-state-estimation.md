@@ -1,7 +1,7 @@
 ---
 id: l06-navigation-and-state-estimation
 title: "Navigation and State Estimation: knowing where you actually are"
-minutes: 20
+minutes: 19
 covers:
   - "Navigation and State Estimation, Navigation and Orbit Determination, Precise Navigation Solutions (Starlink): star tracker and signals-based attitude determination, inertial propagation, GNSS, orbit determination"
 ---
