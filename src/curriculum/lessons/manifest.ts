@@ -2717,6 +2717,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Describing functions for limit-cycle prediction"
       ],
       "file": "t3_m31_nonlinear_control/12-describing-functions.md"
+    },
+    {
+      "id": "l13-underactuated-systems",
+      "title": "Control of underactuated systems",
+      "minutes": 25,
+      "covers": [
+        "Control of underactuated systems"
+      ],
+      "file": "t3_m31_nonlinear_control/13-underactuated-systems.md"
     }
   ],
   "t3_m32_mpc": [
@@ -2885,6 +2894,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Recursive least squares and the bridge to the Kalman filter"
       ],
       "file": "t4_m33_least_squares/07-recursive-least-squares-kalman-bridge.md"
+    },
+    {
+      "id": "l08-condition-number-observability-metric",
+      "title": "The normal matrix condition number as an observability metric",
+      "minutes": 16,
+      "covers": [
+        "The normal matrix condition number as an observability metric"
+      ],
+      "file": "t4_m33_least_squares/08-condition-number-observability-metric.md"
     }
   ],
   "t4_m34_kalman_filter": [
@@ -3343,11 +3361,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t3_m31_nonlinear_control": {
-    "covered": 12,
+    "covered": 13,
     "total": 14,
     "complete": false,
     "missing": [
-      "Control of underactuated systems",
       "Bang-bang and on-off thruster control: Schmitt trigger and pulse-width pulse-frequency modulation"
     ]
   },
@@ -3358,11 +3375,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t4_m33_least_squares": {
-    "covered": 7,
+    "covered": 8,
     "total": 12,
     "complete": false,
     "missing": [
-      "The normal matrix condition number as an observability metric",
       "Residual analysis, outlier rejection, and robust estimation (Huber loss, RANSAC)",
       "The Wahba problem: find the rotation best aligning two sets of vector observations",
       "Wahba solutions: TRIAD, Davenport q-method, QUEST, ESOQ, and the SVD method",
