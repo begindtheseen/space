@@ -60,19 +60,23 @@ The first answer is self-contradictory on its face — the function returned `*f
 
 ```text
 _Z15scale_then_readPfPj:
-	movss	xmm0, DWORD PTR .LC0[rip]     ; xmm0 = 1.0f
-	movss	DWORD PTR [rdi], xmm0         ; *f = 1.0f
-	mov	DWORD PTR [rsi], 2139095040   ; *u = 0x7F800000
-	ret                                   ; return xmm0, still 1.0f
+	endbr64
+	movss	xmm0, DWORD PTR .LC0[rip]
+	movss	DWORD PTR [rdi], xmm0
+	mov	DWORD PTR [rsi], 2139095040
+	ret
 ```
+
+`xmm0` is loaded with the constant 1.0f, stored through `f` (in `rdi`), the integer 2139095040 — which is `0x7F800000` — is stored through `u` (in `rsi`), and the function returns with `xmm0` **unchanged**: still 1.0f.
 
 At `-O2 -fno-strict-aliasing`:
 
 ```text
 _Z15scale_then_readPfPj:
+	endbr64
 	mov	DWORD PTR [rdi], 0x3f800000
 	mov	DWORD PTR [rsi], 2139095040
-	movss	xmm0, DWORD PTR [rdi]         ; reload *f
+	movss	xmm0, DWORD PTR [rdi]
 	ret
 ```
 

@@ -126,7 +126,7 @@ std::printf("%.2f\n", az[0]);
 before: -9.81, capacity 1
 after push_back: capacity 16
 about to write through the stale reference
-==1176==ERROR: AddressSanitizer: heap-use-after-free on address 0x502000000010 at pc 0x5570faee6715
+==1176==ERROR: AddressSanitizer: heap-use-after-free on address 0x502000000010 at pc 0x5570faee6715 bp 0x7fff6ba7bb40 sp 0x7fff6ba7bb30
 WRITE of size 8 at 0x502000000010 thread T0
     #0 0x5570faee6714 in main l08-uaf.cpp:15
 
@@ -161,7 +161,7 @@ for (int i = 0; i <= kCapacity; ++i) {      // <= : one too many
 g++ 13.3.0 compiled that without a warning at `-Wall -Wextra -Wpedantic`, and the unsanitized build printed `filled` and exited 0. AddressSanitizer:
 
 ```text
-==1154==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x506000000060 at pc 0x5588b001f32a
+==1154==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x506000000060 at pc 0x5588b001f32a bp 0x7ffe5995af00 sp 0x7ffe5995aef0
 WRITE of size 8 at 0x506000000060 thread T0
     #0 0x5588b001f329 in main l08-overrun.cpp:9
 

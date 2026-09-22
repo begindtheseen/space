@@ -92,7 +92,7 @@ The compiler generated the copy constructor, and it copied `data_` — the point
 
 ```text
 b.front() = -9.80
-==22338==ERROR: AddressSanitizer: heap-use-after-free on address 0x503000000040
+==22338==ERROR: AddressSanitizer: heap-use-after-free on address 0x503000000040 at pc 0x556c5477d62a bp 0x7ffc8b44ffa0 sp 0x7ffc8b44ff90
 READ of size 8 at 0x503000000040 thread T0
     #0 0x556c5477d629 in SampleBuffer::front() const l13-rule-of-three.cpp:12
     #1 0x556c5477d629 in main l13-rule-of-three.cpp:26

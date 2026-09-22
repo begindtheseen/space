@@ -1666,6 +1666,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "tmux sessions, windows, panes, detach/attach"
       ],
       "file": "cod_lnx_01_shell/09-tmux-sessions-windows-and-panes.md"
+    },
+    {
+      "id": "l10-environment-path-and-startup-files",
+      "title": "The environment, PATH, and startup files",
+      "minutes": 20,
+      "covers": [
+        "Environment variables, PATH, .bashrc vs .bash_profile"
+      ],
+      "file": "cod_lnx_01_shell/10-environment-path-and-startup-files.md"
     }
   ],
   "cod_py_01_basics": [
@@ -7668,12 +7677,11 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_lnx_01_shell": {
-    "covered": 10,
+    "covered": 11,
     "total": 15,
     "complete": false,
     "missing": [
       "systemd: systemctl, journalctl",
-      "Environment variables, PATH, .bashrc vs .bash_profile",
       "Package management (apt/dnf) and building from source",
       "df du lsblk ip ss curl strace lsof dmesg",
       "vim survival: modes, motions, :wq"

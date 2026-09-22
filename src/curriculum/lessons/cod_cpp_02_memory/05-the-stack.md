@@ -22,6 +22,7 @@ You do not have to guess the size. g++ writes it out with `-fstack-usage`, which
 Three nested functions, each with an eight-element `double` scratch array, each recording the address of its first local.
 
 ```cpp
+#include <cstddef>
 #include <cstdio>
 
 const char* outer_marker = nullptr;

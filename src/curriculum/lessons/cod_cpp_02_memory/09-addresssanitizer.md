@@ -179,7 +179,7 @@ int main() {
 Neither g++ 13.3.0 nor clang++ 18.1.3 warns about this shape — the address escapes through a global rather than through a `return`, which is exactly the case lesson 11 of the previous module flagged as the one compilers miss. ASan does not miss it:
 
 ```text
-==5268==ERROR: AddressSanitizer: stack-use-after-return on address 0x7f95f5200020
+==5268==ERROR: AddressSanitizer: stack-use-after-return on address 0x7f95f5200020 at pc 0x55cac06c74c5 bp 0x7ffdb46d6ef0 sp 0x7ffdb46d6ee0
 READ of size 8 at 0x7f95f5200020 thread T0
     #0 0x55cac06c74c4 in main l09-uar.cpp:15
 
