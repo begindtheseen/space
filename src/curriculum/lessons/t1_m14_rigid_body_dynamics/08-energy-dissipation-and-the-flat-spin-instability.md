@@ -145,7 +145,7 @@ The end state is a clean major-axis spin. At $t = 2000\,\mathrm{s}$, $\boldsymbo
 
 ## How fast: the nutation time constant
 
-Take the axisymmetric case, $\mathbf{I} = \mathrm{diag}(I_t, I_t, I_3)$, because it gives a closed-form answer and because spinners are built nearly axisymmetric. Let $\theta$ be the nutation angle of lesson 6 — the angle between the symmetry axis and the fixed $\mathbf{H}$. Resolve $\mathbf{H}$ into axial and transverse parts, $H_3 = H\cos\theta$ and $H_t = H\sin\theta$, and the kinetic energy is
+Take the axisymmetric case, $\mathbf{I} = \mathrm{diag}(I_t, I_t, I_3)$: it gives a closed-form answer, and spinners are built nearly axisymmetric. Let $\theta$ be the nutation angle of lesson 6, the angle between the symmetry axis and the fixed $\mathbf{H}$. Resolve $\mathbf{H}$ into axial and transverse parts, $H_3 = H\cos\theta$ and $H_t = H\sin\theta$:
 
 $$
 T = \frac{H_3^2}{2I_3} + \frac{H_t^2}{2I_t}
@@ -158,7 +158,7 @@ $$
 \frac{dT}{d\theta} = \frac{H^2}{2}\sin 2\theta \left(\frac{1}{I_t} - \frac{1}{I_3}\right).
 $$
 
-For a **prolate** body ($I_3 < I_t$, the pencil) the bracket is negative, so $T$ decreases as $\theta$ grows: dissipation pushes the nutation angle *up*, toward $\theta = 90^\circ$, which is the flat spin. For an **oblate** body ($I_3 > I_t$, the disc) the bracket is positive and dissipation pushes $\theta$ *down*, toward zero: the wobble damps out and the spin settles onto the symmetry axis. Same physics, opposite consequence, decided entirely by which side of $I_t$ the axial moment sits on.
+For a **prolate** body ($I_3 < I_t$, the pencil) the bracket is negative, so $T$ decreases as $\theta$ grows: dissipation pushes the nutation angle *up*, toward the flat spin at $\theta = 90^\circ$. For an **oblate** body ($I_3 > I_t$, the disc) the bracket is positive and dissipation pushes $\theta$ *down* toward zero, so the wobble damps out and the spin settles onto the symmetry axis. Same physics, opposite consequence, decided by which side of $I_t$ the axial moment sits on.
 
 The rate follows from $\dot{\theta} = \dot{T}/(dT/d\theta)$. Put the energy-sink model into the numerator and expand both for small $\theta$. Writing $\Delta = 1/I_t - 1/I_3$, the numerator is $\dot{T} = -kH^2\theta^2\Delta^2$ and the denominator is $H^2\theta\Delta$, so
 
@@ -168,7 +168,7 @@ $$
 \tau = \frac{I_3 I_t}{k\,(I_t - I_3)} .
 $$
 
-The nutation angle grows or decays exponentially with time constant $|\tau|$, and $H$ has dropped out entirely: the time scale does not depend on how fast the body is spinning, only on its inertias and on how lossy it is. Engineers call $|\tau|$ the **nutation time constant**. It is negative — damping — for an oblate body and positive — divergence — for a prolate one.
+The nutation angle grows or decays exponentially with time constant $|\tau|$, and $H$ has dropped out: the time scale does not depend on how fast the body spins, only on its inertias and on how lossy it is. Engineers call $|\tau|$ the **nutation time constant**; it is negative — damping — for an oblate body and positive — divergence — for a prolate one.
 
 ::: key Nutation time constant of an axisymmetric body
 For $\mathbf{I} = \mathrm{diag}(I_t, I_t, I_3)$ with a linear internal energy sink of coefficient $k$, the nutation angle obeys $\dot{\theta} = \theta/\tau$ with $\tau = I_3I_t/[k(I_t - I_3)]$. An oblate body ($I_3 > I_t$) has $\tau < 0$ and its wobble decays; a prolate body ($I_3 < I_t$) has $\tau > 0$ and its wobble grows exponentially into a flat spin. The time scale is independent of the spin rate.
@@ -186,16 +186,14 @@ Read the practical message: the stage was released spinning at 60 rpm about its 
 
 ## Explorer 1, and what it cost to learn
 
-Explorer 1 was built at the Jet Propulsion Laboratory around an Army Redstone-derived fourth stage. The satellite plus its burnt-out stage was about $14\,\mathrm{kg}$, $2.03\,\mathrm{m}$ long and $0.152\,\mathrm{m}$ in diameter, and the whole upper cluster was spun on the launcher to about $750\,\mathrm{rpm}$ to hold its orientation during the burn. Four flexible whip antennas, each roughly half a metre long, projected from the body to radiate the telemetry.
-
-Model it as a uniform cylinder. With $m = 13.97\,\mathrm{kg}$, $R = 0.076\,\mathrm{m}$ and $L = 2.03\,\mathrm{m}$, the table of lesson 2 gives
+Explorer 1 was built at the Jet Propulsion Laboratory around a Redstone-derived fourth stage. Satellite plus burnt-out stage came to about $14\,\mathrm{kg}$, $2.03\,\mathrm{m}$ long and $0.152\,\mathrm{m}$ across, and the upper cluster was spun on the launcher to about $750\,\mathrm{rpm}$ to hold its orientation through the burn. Four flexible whip antennas radiated the telemetry. Model it as a uniform cylinder: with $m = 13.97\,\mathrm{kg}$, $R = 0.076\,\mathrm{m}$ and $L = 2.03\,\mathrm{m}$, the table of lesson 2 gives
 
 $$
 I_3 = \tfrac{1}{2}mR^2 = 0.0403\,\mathrm{kg\,m^2}, \qquad
 I_t = \tfrac{1}{12}m(3R^2 + L^2) = 4.82\,\mathrm{kg\,m^2},
 $$
 
-a ratio of 119. This is about as prolate as a spacecraft gets, and that ratio is exactly the factor by which everything changes when it flips.
+a ratio of 119 — about as prolate as a spacecraft gets, and exactly the factor by which everything changes when it flips.
 
 ::: example Explorer 1's energy budget
 At $750\,\mathrm{rpm}$, $n = 78.54\,\mathrm{rad/s}$, so $H = I_3 n = 0.0403\times 78.54 = 3.17\,\mathrm{N\,m\,s}$ and $T_0 = \tfrac{1}{2}I_3n^2 = 124\,\mathrm{J}$.
@@ -217,16 +215,16 @@ Explorer 1 (1958) was spun about its minor axis — its long, slender direction 
 
 ## What dissipation does and does not change
 
-Dissipation breaks the major–minor symmetry of the intermediate axis theorem, and that is all it does. Three consequences are worth stating separately, because they are easy to run together.
+Dissipation breaks the major–minor symmetry of the intermediate axis theorem, and that is all it does. Three consequences are easy to run together, so state them separately.
 
-**Minor-axis spin goes from stable to unstable.** For a rigid body, a minor-axis spin sits at the top of the energy range and small perturbations oscillate. Add any loss and it becomes the energetic maximum of a system that only goes downhill: it is now an unstable equilibrium, with a growth rate $1/\tau$ that is set by the damping rather than by the spin rate. This is the reverse of the usual engineering intuition that damping helps.
+**Minor-axis spin goes from stable to unstable.** For a rigid body it sits at the top of the energy range and small perturbations merely oscillate. Add any loss and it becomes the energetic maximum of a system that only goes downhill: an unstable equilibrium, with growth rate $1/\tau$ set by the damping rather than by the spin rate. This reverses the usual intuition that damping helps.
 
-**Major-axis spin goes from stable to asymptotically stable.** A rigid major-axis spinner that is disturbed keeps its perturbation forever as a bounded polhode loop. A dissipative one drives that loop to zero, since the major-axis spin is the strict energy minimum at fixed $H$. Damping is now a genuine benefit, and it is deliberately added: an oblate spinner carries a **nutation damper**, usually a tube of viscous fluid or a spring-mounted mass tuned to the nutation frequency, precisely to shorten $|\tau|$. For the oblate body $I_3 = 1500$, $I_t = 1000\,\mathrm{kg\,m^2}$ with the same $k = 20\,\mathrm{N\,m\,s}$, $\tau = -150\,\mathrm{s}$ and a wobble decays by $1/e$ every $150\,\mathrm{s}$.
+**Major-axis spin goes from stable to asymptotically stable.** A disturbed rigid spinner keeps its perturbation forever as a bounded polhode loop; a dissipative one drives that loop to zero, since major-axis spin is the strict energy minimum at fixed $H$. Damping is now a benefit, and it is deliberately added: an oblate spinner carries a **nutation damper**, a tube of viscous fluid or a spring-mounted mass, precisely to shorten $|\tau|$. For an oblate body with $I_3 = 1500$, $I_t = 1000\,\mathrm{kg\,m^2}$ and $k = 20\,\mathrm{N\,m\,s}$, $\tau = -150\,\mathrm{s}$: a wobble decays by $1/e$ every $150\,\mathrm{s}$.
 
-**The intermediate axis stays unstable.** Dissipation does nothing for it. An intermediate-axis spin is unstable already, on the rigid-body time scale $\sigma^{-1}$ of lesson 7, which is normally far shorter than $|\tau|$; adding damping merely means the tumble it decays into eventually settles on the major axis instead of flipping periodically forever.
+**The intermediate axis stays unstable.** It is unstable already, on the rigid-body time scale $\sigma^{-1}$ of lesson 7, normally far shorter than $|\tau|$. Adding damping only means the resulting tumble eventually settles on the major axis instead of flipping periodically forever.
 
 ::: warning The energy-sink torque is a stand-in, not a real torque
-$\mathbf{M} = -k[\boldsymbol{\omega} - \hat{\mathbf{h}}(\boldsymbol{\omega}\cdot\hat{\mathbf{h}})]$ conserves $\lVert\mathbf{H}\rVert$ exactly, which is what the physics needs, but it is written as an external torque, so in a simulation that also propagates attitude the inertial *direction* of $\mathbf{H}$ will drift slowly. A true internal damper keeps that direction fixed as well. The model is fine for the questions this lesson asks — end state, energy budget, time constant — and wrong if you need the inertial pointing history during the transition. For that, model the damper as an extra degree of freedom, as lesson 12 does.
+The model conserves $\lVert\mathbf{H}\rVert$ exactly, which is what the physics needs, but it is written as an external torque, so in a simulation that also propagates attitude the inertial *direction* of $\mathbf{H}$ drifts slowly. A true internal damper holds that direction fixed too. The model is right for the questions this lesson asks — end state, energy budget, time constant — and wrong if you need the inertial pointing history through the transition. For that, give the damper its own degree of freedom, as lesson 12 does.
 :::
 
 ::: warning Integrator drift looks exactly like dissipation
@@ -234,7 +232,7 @@ A torque-free run with a sloppy integrator also shows $T$ falling. Before readin
 :::
 
 ::: note Why the antennas, and not the structure
-Any hysteretic loss works — structural damping in a joint, eddy currents in a conducting shell moving through the geomagnetic field, propellant sliding in a tank, a bolt shifting in its hole. What matters is only that the loss is driven by the periodic strain that nutation produces, so a body with no nutation has no loss. Explorer 1's antennas were simply by far its most compliant parts, and therefore did the most flexing per degree of nutation angle.
+Any hysteretic loss works — structural damping in a joint, eddy currents in a conducting shell moving through the geomagnetic field, propellant sliding in a tank, a bolt shifting in its hole. What matters is that the loss is driven by the periodic strain nutation produces, so a body with no nutation has no loss. Explorer 1's antennas were by far its most compliant parts, so they flexed most per degree of nutation angle.
 :::
 
 ## Check yourself
