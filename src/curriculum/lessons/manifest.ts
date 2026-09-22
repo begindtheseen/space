@@ -3704,7 +3704,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-linear-tangent-steering-law",
       "title": "The linear tangent steering law",
-      "minutes": 16,
+      "minutes": 17,
       "covers": [
         "Optimal exoatmospheric steering: the linear tangent law from Pontryagin and the calculus of variations"
       ],
