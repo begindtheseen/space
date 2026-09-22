@@ -3868,6 +3868,18 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       "file": "t5_m42_trajectory_optimization/04-shooting-and-brittleness.md"
     }
   ],
+  "t6_m44_realtime_embedded": [
+    {
+      "id": "l01-hard-soft-firm-real-time",
+      "title": "Hard, soft and firm real-time; determinism, WCET and jitter",
+      "minutes": 21,
+      "covers": [
+        "Hard vs soft vs firm real-time, and why \"fast\" and \"real-time\" are unrelated properties",
+        "Determinism, worst-case execution time, and jitter as the three things you actually measure"
+      ],
+      "file": "t6_m44_realtime_embedded/01-hard-soft-firm-real-time.md"
+    }
+  ],
   "t6_m46_6dof_simulation": [
     {
       "id": "l01-five-box-decomposition",
@@ -3886,6 +3898,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Fixed-step vs variable-step integration, and why a closed loop with a digital controller wants a fixed step"
       ],
       "file": "t6_m46_6dof_simulation/02-fixed-step-vs-variable-step-integration.md"
+    },
+    {
+      "id": "l03-two-rate-simulation-and-zoh",
+      "title": "Two rates and the zero-order hold",
+      "minutes": 18,
+      "covers": [
+        "Running the plant at a fine step while the flight software runs at its true rate, with zero-order hold between updates"
+      ],
+      "file": "t6_m46_6dof_simulation/03-two-rate-simulation-and-the-zero-order-hold.md"
     }
   ]
 }
@@ -4280,12 +4301,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t6_m44_realtime_embedded": {
-    "covered": 0,
+    "covered": 2,
     "total": 21,
     "complete": false,
     "missing": [
-      "Hard vs soft vs firm real-time, and why \"fast\" and \"real-time\" are unrelated properties",
-      "Determinism, worst-case execution time, and jitter as the three things you actually measure",
       "Fixed-priority scheduling: rate-monotonic priority assignment and the Liu-Layland utilisation bound",
       "Earliest-deadline-first and why it achieves higher utilisation but degrades worse on overload",
       "Exact schedulability by response-time analysis, and why the utilisation bound is only sufficient",
@@ -4335,11 +4354,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t6_m46_6dof_simulation": {
-    "covered": 2,
+    "covered": 3,
     "total": 18,
     "complete": false,
     "missing": [
-      "Running the plant at a fine step while the flight software runs at its true rate, with zero-order hold between updates",
       "Frame and unit discipline: naming every vector by its frame, and the conventions that stop a sign error becoming a three-week debugging session",
       "Environment models: gravity field, atmosphere, wind and gust, magnetic field, ephemeris, solar radiation pressure",
       "Sensor models: noise, bias and bias instability, scale factor, misalignment, quantisation, latency, dropout, saturation, update rate",
