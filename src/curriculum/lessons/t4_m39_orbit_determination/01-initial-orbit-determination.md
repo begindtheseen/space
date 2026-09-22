@@ -89,8 +89,8 @@ v2 = gibbs(r1, r2, r3)
 print("v2 (Gibbs) =", v2, "m/s")
 print("v2 (truth) =", v2_true, "m/s")
 print("error =", np.linalg.norm(v2 - v2_true), "m/s")
-# v2 (Gibbs) = [-2103.5  -6339.6  -3779.3] m/s
-# v2 (truth) = [-2103.5  -6339.6  -3779.3] m/s
+# v2 (Gibbs) = [-2103.4  -6339.6  -3779.3] m/s
+# v2 (truth) = [-2103.4  -6339.6  -3779.3] m/s
 # error = 7.25e-09 m/s
 ```
 

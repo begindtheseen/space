@@ -1001,6 +1001,27 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "stability margins: gain margin, phase margin and delay margin, what each means physically and why you need all three"
       ],
       "file": "car_11_domain_round/03-gain-phase-and-delay-margin.md"
+    },
+    {
+      "id": "l04-reading-margins-and-the-nyquist-criterion",
+      "title": "Reading margins off a plot, and when the numbers lie",
+      "minutes": 21,
+      "covers": [
+        "reading margins from a Bode plot and from a Nyquist plot; the Nyquist criterion",
+        "why a large gain margin with a small phase margin is still a fragile design"
+      ],
+      "file": "car_11_domain_round/04-reading-margins-and-the-nyquist-criterion.md"
+    }
+  ],
+  "car_13_behavioral_star": [
+    {
+      "id": "l01-the-round-and-star",
+      "title": "What the behavioural round is asking for",
+      "minutes": 23,
+      "covers": [
+        "STAR structure: Situation, Task, Action, Result, and the common failure of spending most of the answer on Situation"
+      ],
+      "file": "car_13_behavioral_star/01-the-round-and-star.md"
     }
   ],
   "cod_cpp_01_basics": [
@@ -1223,6 +1244,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Files, pathlib, csv and json"
       ],
       "file": "cod_py_01_basics/11-files-pathlib-csv-and-json.md"
+    },
+    {
+      "id": "l12-floating-point",
+      "title": "Floating point, and why 0.1 + 0.2 is not 0.3",
+      "minutes": 20,
+      "covers": [
+        "Floating point: why 0.1 + 0.2 != 0.3 and what to do about it"
+      ],
+      "file": "cod_py_01_basics/12-floating-point.md"
     }
   ],
   "t0_m01_algebra_precalc": [
@@ -7130,12 +7160,11 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "cod_py_01_basics": {
-    "covered": 10,
+    "covered": 11,
     "total": 12,
     "complete": false,
     "missing": [
-      "Virtual environments with venv, pip, requirements and pyproject.toml",
-      "Floating point: why 0.1 + 0.2 != 0.3 and what to do about it"
+      "Virtual environments with venv, pip, requirements and pyproject.toml"
     ]
   },
   "cod_py_02_idiomatic": {
@@ -7980,12 +8009,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "car_11_domain_round": {
-    "covered": 2,
+    "covered": 4,
     "total": 14,
     "complete": false,
     "missing": [
-      "reading margins from a Bode plot and from a Nyquist plot; the Nyquist criterion",
-      "why a large gain margin with a small phase margin is still a fragile design",
       "the Kalman filter in linear form: the predict and update equations and what each term does",
       "the extended Kalman filter: Jacobians, where linearisation fails, and divergence modes",
       "the unscented Kalman filter: sigma points, why it exists and when it is worth the cost",
@@ -8021,11 +8048,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "car_13_behavioral_star": {
-    "covered": 0,
+    "covered": 1,
     "total": 12,
     "complete": false,
     "missing": [
-      "STAR structure: Situation, Task, Action, Result, and the common failure of spending most of the answer on Situation",
       "building a bank of ten to twelve stories, each roughly 90 seconds",
       "the themes actually probed: a failure and what changed, conflict with a colleague, a decision with incomplete information, a missed deadline, a time you were wrong, ownership beyond your scope, teaching someone, working extended hours",
       "quantifying the Result so the story is checkable",
