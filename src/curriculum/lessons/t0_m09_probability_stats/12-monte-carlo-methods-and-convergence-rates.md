@@ -1,7 +1,7 @@
 ---
 id: l12-monte-carlo-methods-and-convergence-rates
 title: Monte Carlo methods and convergence rates
-minutes: 25
+minutes: 21
 covers:
   - Monte Carlo methods and convergence rates
 ---
@@ -81,7 +81,7 @@ and median $\sigma\sqrt{2\ln 2} = 1.177\sigma = 14.13\,\mathrm{m}$, the **circul
 | $6400$ | $0.092\,\mathrm{m}$ | $0.098\,\mathrm{m}$ |
 | $25\,600$ | $0.051\,\mathrm{m}$ | $0.049\,\mathrm{m}$ |
 
-Each factor of four in runs halves the error, exactly as the theory says. So $2000$ runs estimate the mean miss to about $\pm 0.34\,\mathrm{m}$ of standard error, or $\pm 0.69\,\mathrm{m}$ at $95\%$ confidence — excellent. Pinning the mean to $\pm 0.5\,\mathrm{m}$ at $95\%$ takes $(1.96 \times 7.86/0.5)^2 = 950$ runs; to $\pm 0.1\,\mathrm{m}$ takes $23\,700$.
+Each factor of four in runs halves the error, exactly as the theory says. So $2000$ runs estimate the mean miss with a standard error of $7.86/\sqrt{2000} = 0.18\,\mathrm{m}$, or $\pm 0.34\,\mathrm{m}$ at $95\%$ confidence — excellent. Pinning the mean to $\pm 0.5\,\mathrm{m}$ at $95\%$ takes $(1.96 \times 7.86/0.5)^2 = 950$ runs; to $\pm 0.1\,\mathrm{m}$ takes $23\,700$.
 
 Now the tail. The true probability of exceeding $50\,\mathrm{m}$ is $\exp(-c^2/2\sigma^2) = \exp(-2500/288) = 1.70 \times 10^{-4}$. In $2000$ runs the expected number of exceedances is $0.34$: most campaigns see none at all, and the honest conclusion from a clean campaign is the rule of three, $p < 3/2000 = 1.5 \times 10^{-3}$ at $95\%$ confidence — a bound nine times above the truth. The same campaign that nails the mean to four per cent is useless on the tail, and no amount of staring at the worst of the $2000$ outcomes changes that.
 :::
@@ -92,14 +92,15 @@ A Monte Carlo campaign needs a stream of numbers that behave like independent un
 
 **The generator.** A pseudorandom generator is a deterministic recursion whose output passes statistical tests for independence and uniformity. Modern default choices — the Mersenne Twister, PCG, Philox — all have periods far beyond any campaign. Two rules matter in practice. Record the **seed** with the results, so that any run can be reproduced exactly when it needs investigating; a Monte Carlo finding you cannot reproduce is not a finding. And give independent tasks independent streams rather than letting parallel workers share or re-seed a single generator, since overlapping streams silently correlate runs and shrink the effective sample size without any warning.
 
-**Uniform to anything.** Two constructions do nearly all the work.
+**Uniform to anything.** Two constructions do nearly all the work. The first is **inverse transform sampling** from the random-variable lesson: if $U$ is uniform then $X = F^{-1}(U)$ has CDF $F$, since $P(X \leq x) = P(U \leq F(x)) = F(x)$. This gives exponential waiting times as $-\ln(U)/\lambda$, and it handles any tabulated or empirical distribution.
 
-- **Inverse transform.** If $U$ is uniform then $X = F^{-1}(U)$ has CDF $F$, since $P(X \leq x) = P(U \leq F(x)) = F(x)$. This gives exponential waiting times as $-\ln(U)/\lambda$, and it handles any tabulated or empirical distribution.
-- **Box–Muller.** For Gaussians there is no closed-form $F^{-1}$, so use the polar trick: with $U_1, U_2$ independent uniforms,
-  $$
-  Z_1 = \sqrt{-2\ln U_1}\,\cos(2\pi U_2), \qquad Z_2 = \sqrt{-2\ln U_1}\,\sin(2\pi U_2)
-  $$
-  are independent standard normals. The reason is that $-2\ln U_1$ is exponential with mean $2$, which is exactly the distribution of $Z_1^2 + Z_2^2$, and $2\pi U_2$ spreads that radius uniformly in angle, which is the circular symmetry of a two-dimensional standard Gaussian.
+The second is the **Box–Muller transform**, because the Gaussian has no closed-form $F^{-1}$. With $U_1$ and $U_2$ independent uniforms,
+
+$$
+Z_1 = \sqrt{-2\ln U_1}\,\cos(2\pi U_2), \qquad Z_2 = \sqrt{-2\ln U_1}\,\sin(2\pi U_2)
+$$
+
+are independent standard normals. The reason is that $-2\ln U_1$ is exponential with mean $2$, which is exactly the distribution of $Z_1^2 + Z_2^2$, and $2\pi U_2$ spreads that radius uniformly in angle, which is the circular symmetry of a two-dimensional standard Gaussian.
 
 **Correlated dispersions.** Real dispersion sets are correlated: a heavy vehicle is usually also a high-drag vehicle. The linear-transformations lesson supplies the machinery. Factor the covariance as $\mathbf{P} = \mathbf{L}\mathbf{L}^{\mathsf{T}}$ with $\mathbf{L}$ the Cholesky factor, draw a vector $\mathbf{z}$ of independent standard normals, and set $\mathbf{x} = \boldsymbol{\mu} + \mathbf{L}\mathbf{z}$, which has mean $\boldsymbol{\mu}$ and covariance $\mathbf{L}\mathbf{L}^{\mathsf{T}} = \mathbf{P}$ by the sandwich formula. For a non-Gaussian marginal, draw the correlated Gaussians, map each through $\Phi$ to a uniform and then through the desired $F^{-1}$; this preserves the rank correlation, which is usually what the dispersion table meant anyway.
 
@@ -139,7 +140,7 @@ The largest outcome in $N$ runs is not a bound and is not a $3\sigma$ value. It 
 
 Variance reduction changes the constant $\sigma_g$ rather than the exponent in $\sigma_g/\sqrt{N}$, and the constants available are large enough to decide whether a campaign is possible.
 
-**Antithetic variates.** For each draw $\mathbf{z}$, also run $-\mathbf{z}$, and average the pair. The pair average has variance $\tfrac{1}{2}\big[\operatorname{Var}(g) + \operatorname{Cov}(g(\mathbf{z}), g(-\mathbf{z}))\big]$, against $\tfrac{1}{2}\operatorname{Var}(g)$ for two independent draws, so the technique wins whenever the covariance is negative — that is, whenever $g$ is monotone in the inputs, so that a favourable draw is paired with an unfavourable one. It costs nothing but the pairing, and it fails, mildly, for a response that is symmetric in its inputs, where the covariance is positive.
+**Antithetic variates.** For each draw $\mathbf{z}$, also run $-\mathbf{z}$, and average the pair. The pair average has variance $\tfrac{1}{2}\big[\operatorname{Var}(g) + \operatorname{Cov}(g(\mathbf{z}), g(-\mathbf{z}))\big]$, against $\tfrac{1}{2}\operatorname{Var}(g)$ for two independent draws, so the technique wins whenever the covariance is negative — that is, whenever $g$ is monotone in the inputs, so that a favourable draw is paired with an unfavourable one. Take a propellant-use model $m_p = 1150\exp(0.06 z_1 + 0.03 z_2)\,\mathrm{kg}$, with mean $1152.6\,\mathrm{kg}$ and standard deviation $77.4\,\mathrm{kg}$, which is nearly linear across the range its dispersions explore. The antithetic pair average has variance $13.5\,\mathrm{kg^2}$ against $2996\,\mathrm{kg^2}$ for two independent draws — a factor of $223$, confirmed at $217$ by direct simulation, and equivalent to running two hundred times as many trajectories. It costs nothing but the pairing, and it fails, mildly, for a response that is symmetric in its inputs, where the covariance is positive.
 
 **Common random numbers.** When comparing two designs, fly both on the *same* draws. The estimate of the difference then has variance $\operatorname{Var}(A) + \operatorname{Var}(B) - 2\operatorname{Cov}(A, B)$, and since the two designs respond to the same wind and the same mass error almost identically, that covariance is large. For equal variances $\sigma^2$ and a correlation of $0.95$, the variance of the difference is $2\sigma^2(1 - 0.95) = 0.1\sigma^2$ instead of $2\sigma^2$: a twentyfold reduction, for free, by reusing seeds. This is why a design comparison must never be run against fresh dispersions for each candidate.
 
@@ -165,7 +166,7 @@ $$
 w = \frac{f(x)f(y)}{q(x)q(y)} = \frac{s^2}{\sigma^2}\exp\!\left[-\frac{x^2 + y^2}{2}\left(\frac{1}{\sigma^2} - \frac{1}{s^2}\right)\right].
 $$
 
-The per-run relative standard deviation is a function of $s$ alone, and evaluating it gives $17.2$ at $s = 15\,\mathrm{m}$, $6.13$ at $20$, $4.14$ at $25$, $3.55$ at $30$, $3.40$ at $35$ and $3.42$ at $40$. The optimum is broad and sits near $s = 35\,\mathrm{m}$, roughly where the threshold divided by the number of effective dimensions puts most of the proposal's mass just inside the failure region. At that setting the per-run variance is $(76.7/3.40)^2 = 510$ times smaller than direct sampling: the campaign gets the same answer for a five-hundredth of the compute.
+The per-run relative standard deviation is a function of $s$ alone, and evaluating it gives $17.2$ at $s = 15\,\mathrm{m}$, $6.13$ at $20$, $4.14$ at $25$, $3.55$ at $30$, $3.40$ at $35$ and $3.42$ at $40$. The optimum is broad and sits near $s = 35\,\mathrm{m}$, which is where the proposal's own radial distribution straddles the threshold: a Rayleigh with $s = 35\,\mathrm{m}$ has mean $43.9\,\mathrm{m}$ and puts $36\%$ of its draws beyond $50\,\mathrm{m}$, so a third of the runs are informative instead of one in six thousand. At that setting the per-run variance is $(76.7/3.40)^2 = 510$ times smaller than direct sampling: the campaign gets the same answer for a five-hundredth of the compute.
 
 Running it for real, $20\,000$ importance-sampled trajectories give $\hat{p} = 1.691 \times 10^{-4}$ with a standard error of $4.07 \times 10^{-6}$, that is $\pm 2.4\%$, against the exact $1.6986 \times 10^{-4}$. Twenty thousand runs have done the work of ten million.
 

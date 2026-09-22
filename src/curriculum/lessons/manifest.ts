@@ -818,7 +818,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-monte-carlo-methods-and-convergence-rates",
       "title": "Monte Carlo methods and convergence rates",
-      "minutes": 25,
+      "minutes": 21,
       "covers": [
         "Monte Carlo methods and convergence rates"
       ],
@@ -947,6 +947,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "duality and the dual problem"
       ],
       "file": "t0_m11_optimization/07-duality-and-the-dual-problem.md"
+    },
+    {
+      "id": "l08-semidefinite-programming",
+      "title": "Semidefinite programming",
+      "minutes": 28,
+      "covers": [
+        "semidefinite programming"
+      ],
+      "file": "t0_m11_optimization/08-semidefinite-programming.md"
     }
   ],
   "t0_m12_cpp": [
@@ -1650,11 +1659,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t0_m11_optimization": {
-    "covered": 8,
+    "covered": 9,
     "total": 14,
     "complete": false,
     "missing": [
-      "semidefinite programming",
       "interior-point methods",
       "sequential quadratic programming",
       "nonlinear programming solvers (IPOPT, SNOPT)",
