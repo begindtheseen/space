@@ -1,7 +1,7 @@
 ---
 id: l08-thrust-vector-control-gimbal-dynamics
 title: Thrust vector control — gimbal dynamics for launch vehicles
-minutes: 22
+minutes: 21
 covers:
   - thrust vector control gimbal dynamics for launch vehicles
 ---

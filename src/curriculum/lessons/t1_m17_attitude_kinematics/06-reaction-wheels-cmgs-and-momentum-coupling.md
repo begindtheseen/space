@@ -1,7 +1,7 @@
 ---
 id: l06-reaction-wheels-cmgs-and-momentum-coupling
 title: Reaction wheels, CMGs and momentum coupling
-minutes: 23
+minutes: 22
 covers:
   - reaction wheel and CMG dynamics and momentum coupling
 ---

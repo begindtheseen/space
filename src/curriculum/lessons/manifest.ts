@@ -1645,7 +1645,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-external-disturbance-torques",
       "title": "External torques — gravity gradient, aerodynamic, SRP and magnetic",
-      "minutes": 22,
+      "minutes": 21,
       "covers": [
         "external torques: gravity gradient, aerodynamic, solar radiation pressure, residual magnetic dipole"
       ],
@@ -1654,7 +1654,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-reaction-wheels-cmgs-and-momentum-coupling",
       "title": "Reaction wheels, CMGs and momentum coupling",
-      "minutes": 23,
+      "minutes": 22,
       "covers": [
         "reaction wheel and CMG dynamics and momentum coupling"
       ],
@@ -1672,7 +1672,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-thrust-vector-control-gimbal-dynamics",
       "title": "Thrust vector control — gimbal dynamics for launch vehicles",
-      "minutes": 22,
+      "minutes": 21,
       "covers": [
         "thrust vector control gimbal dynamics for launch vehicles"
       ],
@@ -1686,6 +1686,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "actuator saturation and rate limits"
       ],
       "file": "t1_m17_attitude_kinematics/09-actuator-saturation-and-rate-limits.md"
+    },
+    {
+      "id": "l10-coning-motion-and-coning-correction",
+      "title": "Coning motion and coning correction",
+      "minutes": 20,
+      "covers": [
+        "coning motion and coning correction"
+      ],
+      "file": "t1_m17_attitude_kinematics/10-coning-motion-and-coning-correction.md"
     }
   ],
   "t1_m18_atmospheric_flight": [
@@ -2122,6 +2131,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Lead, lag and lead-lag compensators"
       ],
       "file": "t3_m26_classical_control/09-lead-lag-compensators.md"
+    },
+    {
+      "id": "l10-notches-and-bending-modes",
+      "title": "Notch filters, and gain versus phase stabilization",
+      "minutes": 25,
+      "covers": [
+        "Notch filters for structural bending modes; gain stabilization vs phase stabilization"
+      ],
+      "file": "t3_m26_classical_control/10-notches-and-bending-modes.md"
     }
   ],
   "t3_m27_digital_control": [
@@ -2407,6 +2425,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Time-varying LQR along a nominal trajectory for trajectory stabilization"
       ],
       "file": "t3_m29_optimal_control_lqr/09-time-varying-lqr.md"
+    },
+    {
+      "id": "l10-lqg-and-the-separation-principle",
+      "title": "LQG and the stochastic separation principle",
+      "minutes": 19,
+      "covers": [
+        "LQG = LQR + Kalman filter, and the stochastic separation principle"
+      ],
+      "file": "t3_m29_optimal_control_lqr/10-lqg-and-the-separation-principle.md"
     }
   ],
   "t3_m30_robust_control": [
@@ -2490,6 +2517,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Performance limitations imposed by right-half-plane poles and zeros"
       ],
       "file": "t3_m30_robust_control/09-rhp-poles-and-zeros.md"
+    },
+    {
+      "id": "l10-lpv-and-gain-scheduling",
+      "title": "Gain scheduling with guarantees, and LPV control",
+      "minutes": 21,
+      "covers": [
+        "Linear parameter-varying control and gain scheduling with guarantees"
+      ],
+      "file": "t3_m30_robust_control/10-lpv-and-gain-scheduling.md"
     }
   ],
   "t3_m31_nonlinear_control": [
@@ -2537,6 +2573,24 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Region of attraction estimation, including sum-of-squares approaches"
       ],
       "file": "t3_m31_nonlinear_control/05-region-of-attraction-estimation.md"
+    },
+    {
+      "id": "l06-input-to-state-stability",
+      "title": "Input-to-state stability",
+      "minutes": 18,
+      "covers": [
+        "Input-to-state stability"
+      ],
+      "file": "t3_m31_nonlinear_control/06-input-to-state-stability.md"
+    },
+    {
+      "id": "l07-feedback-linearization-and-zero-dynamics",
+      "title": "Feedback linearization, relative degree and zero dynamics",
+      "minutes": 21,
+      "covers": [
+        "Feedback linearization (input-state and input-output), relative degree, internal and zero dynamics"
+      ],
+      "file": "t3_m31_nonlinear_control/07-feedback-linearization-and-zero-dynamics.md"
     }
   ],
   "t3_m32_mpc": [
@@ -2611,6 +2665,16 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Explicit MPC and multi-parametric programming"
       ],
       "file": "t3_m32_mpc/08-explicit-mpc.md"
+    },
+    {
+      "id": "l09-nonlinear-and-economic-mpc",
+      "title": "Nonlinear MPC and economic MPC",
+      "minutes": 24,
+      "covers": [
+        "Nonlinear MPC",
+        "Economic MPC"
+      ],
+      "file": "t3_m32_mpc/09-nonlinear-and-economic-mpc.md"
     }
   ]
 }
@@ -2721,12 +2785,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t1_m17_attitude_kinematics": {
-    "covered": 9,
+    "covered": 10,
     "total": 10,
-    "complete": false,
-    "missing": [
-      "coning motion and coning correction"
-    ]
+    "complete": true,
+    "missing": []
   },
   "t1_m18_atmospheric_flight": {
     "covered": 15,
@@ -2853,11 +2915,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t3_m26_classical_control": {
-    "covered": 9,
+    "covered": 10,
     "total": 13,
     "complete": false,
     "missing": [
-      "Notch filters for structural bending modes; gain stabilization vs phase stabilization",
       "The Bode gain-phase relationship, the Bode sensitivity integral, and the waterbed effect",
       "Cascade architecture: a fast rate loop inside a slower attitude loop",
       "Feedforward and 2-DOF control; gain scheduling across flight regimes"
@@ -2876,11 +2937,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t3_m29_optimal_control_lqr": {
-    "covered": 9,
+    "covered": 10,
     "total": 14,
     "complete": false,
     "missing": [
-      "LQG = LQR + Kalman filter, and the stochastic separation principle",
       "Loop transfer recovery and what it actually costs",
       "Discrete-time LQR and the DARE",
       "The Hamiltonian and the Pontryagin minimum principle as the general frame",
@@ -2888,22 +2948,19 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t3_m30_robust_control": {
-    "covered": 9,
+    "covered": 10,
     "total": 12,
     "complete": false,
     "missing": [
-      "Linear parameter-varying control and gain scheduling with guarantees",
       "Adaptive control (MRAC, L1 adaptive) and its use and abuse in aerospace",
       "Flight qualification metrics: stability margin requirements across the envelope, discrete-time mu analysis, handling-qualities criteria"
     ]
   },
   "t3_m31_nonlinear_control": {
-    "covered": 5,
+    "covered": 7,
     "total": 14,
     "complete": false,
     "missing": [
-      "Input-to-state stability",
-      "Feedback linearization (input-state and input-output), relative degree, internal and zero dynamics",
       "Sliding mode control: sliding surface design, reaching phase, chattering, boundary layers, higher-order sliding modes",
       "Backstepping",
       "Passivity-based control and energy shaping",
@@ -2914,12 +2971,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t3_m32_mpc": {
-    "covered": 8,
+    "covered": 10,
     "total": 13,
     "complete": false,
     "missing": [
-      "Nonlinear MPC",
-      "Economic MPC",
       "Real-time onboard MPC: warm starting, solver choice, worst-case iteration bounds, certifiable solve time",
       "Embedded QP solvers (OSQP, qpOASES, HPIPM) and code generation",
       "MPC vs LQR trade; MPC for powered descent, rendezvous and constrained attitude control"

@@ -1,7 +1,7 @@
 ---
 id: l05-external-disturbance-torques
 title: External torques — gravity gradient, aerodynamic, SRP and magnetic
-minutes: 22
+minutes: 21
 covers:
   - 'external torques: gravity gradient, aerodynamic, solar radiation pressure, residual magnetic dipole'
 ---
