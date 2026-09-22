@@ -1,7 +1,7 @@
 ---
 id: l12-grid-fins-and-entry
 title: Grid fins, control surfaces and entry aerodynamics
-minutes: 20
+minutes: 22
 covers:
   - grid fins and aerodynamic control surfaces
   - ballistic coefficient and lift-to-drag ratio in entry
@@ -149,7 +149,7 @@ The reference area in $\beta$ is the drag reference area for the attitude actual
 ## Check yourself
 
 ::: check
-Why can a planar fin large enough to control a booster at 10 km not simply be scaled up to control it at 50 km, and what does the vehicle use instead?
+Why can a planar fin large enough to control a booster at 10 km not be scaled up to control it at 50 km, and what does the vehicle use instead?
 :::
 
 ::: answer

@@ -67,11 +67,7 @@ Cosine: $P_3 = 1 - 0.034270 = 0.965731$, against $\cos 15^\circ = 0.965926$. Err
 | $60^\circ$ | $1.02 \times 10^{-2}$ | $1.05 \times 10^{-2}$ | $4.83 \times 10^{-2}$ | $5.01 \times 10^{-2}$ |
 | $90^\circ$ | $7.5 \times 10^{-2}$ | $8.0 \times 10^{-2}$ | $2.34 \times 10^{-1}$ | $2.54 \times 10^{-1}$ |
 
-<<<<<<< Updated upstream
 Going from $15^\circ$ to $30^\circ$ multiplies the sine error by $32 = 2^5$ and the cosine error by $16 = 2^4$, the orders in action. At $90^\circ$ the cubic cosine is wrong by a quarter, and no one should use it there. The same error at $1\,\mathrm{mrad}$ — a typical attitude-error scale in a filter — is $8 \times 10^{-18}$ for sine and $4 \times 10^{-14}$ for cosine, below double-precision round-off, which is why filters linearise attitude without a second thought.
-=======
-Going from $15^\circ$ to $30^\circ$ multiplies the sine error by $32 = 2^5$ and the cosine error by $16 = 2^4$, the orders in action. At $90^\circ$ the cubic cosine is wrong by a quarter, and no one should use it there. The same error at $1\,\mathrm{mrad}$ — a typical attitude-error scale in a filter — is $10^{-16}$ for sine and $4 \times 10^{-14}$ for cosine, below double-precision round-off, which is why filters linearise attitude without a second thought.
->>>>>>> Stashed changes
 :::
 
 ## The standard series
@@ -128,11 +124,7 @@ The remainder after degree $n$ is $R_n = \dfrac{e^\xi}{(n+1)!}(0.5)^{n+1}$ with 
 | 6 | $1.6487196$ | $1.7 \times 10^{-6}$ | $2.6 \times 10^{-6}$ |
 | 7 | $1.6487212$ | $1.0 \times 10^{-7}$ | $1.6 \times 10^{-7}$ |
 
-<<<<<<< Updated upstream
 Degree $7$ — eight terms — is the first that meets $10^{-6}$, and the bound predicted it without knowing the answer. Each extra term divides the bound by $(n+2)/0.5 = 2(n+2)$, so the series accelerates as it goes. For $x = 5$ the same series needs more than twenty terms and suffers cancellation; software instead uses $e^x = (e^{x/2^s})^{2^s}$, shrinking the argument until a short series suffices and then squaring $s$ times. That "scaling and squaring" is exactly how the matrix exponential is computed in the numerical-methods module.
-=======
-Degree $7$ — eight terms — is the first that meets $10^{-6}$, and the bound predicted it without knowing the answer. Each extra term divides the error by roughly $(n+1)/0.5$, so the series accelerates as it goes. For $x = 5$ the same series needs more than twenty terms and suffers cancellation; software instead uses $e^x = (e^{x/2^s})^{2^s}$, shrinking the argument until a short series suffices and then squaring $s$ times. That "scaling and squaring" is exactly how the matrix exponential is computed in the numerical-methods module.
->>>>>>> Stashed changes
 :::
 
 ## Truncation error in finite differences

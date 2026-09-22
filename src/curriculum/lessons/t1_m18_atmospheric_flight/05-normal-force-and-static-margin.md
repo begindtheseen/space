@@ -1,7 +1,7 @@
 ---
 id: l05-normal-force-and-static-margin
 title: Normal force, centre of pressure and static margin
-minutes: 17
+minutes: 19
 covers:
   - normal force, centre of pressure vs centre of gravity, static margin
 ---

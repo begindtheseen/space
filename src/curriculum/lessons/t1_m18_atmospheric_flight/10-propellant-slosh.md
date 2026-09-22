@@ -1,7 +1,7 @@
 ---
 id: l10-propellant-slosh
 title: Propellant slosh as a pendulum or mass-spring
-minutes: 18
+minutes: 21
 covers:
   - propellant slosh as a pendulum or mass-spring
 ---
@@ -18,7 +18,7 @@ $$
 g_{\text{eff}} = \frac{T - D}{m},
 $$
 
-directed along the body axis toward the tail. For the Falcon-9-class vehicle of Lesson 2 it is $13.7\ \mathrm{m/s^2}$ just after lift-off (thrust-to-weight 1.4), about $21\ \mathrm{m/s^2}$ at max-Q and $35$–$40\ \mathrm{m/s^2}$ near first-stage burnout as the tanks empty. In coasting flight it is essentially zero, the free surface has no restoring force, and the liquid wanders — the reason upper stages use settling thrusters before an engine restart. Everything below uses $g_{\text{eff}}$ where an equation on the ground would use $g$.
+directed along the body axis toward the tail. For the Falcon-9-class vehicle of Lesson 2 it is $13.7\ \mathrm{m/s^2}$ immediately after lift-off (thrust-to-weight 1.4), about $21\ \mathrm{m/s^2}$ at max-Q and $35$–$40\ \mathrm{m/s^2}$ near first-stage burnout as the tanks empty. In coasting flight it is essentially zero, the free surface has no restoring force, and the liquid wanders — the reason upper stages use settling thrusters before an engine restart. Everything below uses $g_{\text{eff}}$ where an equation on the ground would use $g$.
 
 ## The free-surface problem in a cylindrical tank
 

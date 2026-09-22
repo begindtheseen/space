@@ -1,7 +1,7 @@
 ---
 id: l09-bending-modes-and-structural-filters
 title: Bending modes, flexible-body dynamics and structural filters
-minutes: 20
+minutes: 21
 covers:
   - bending modes, flexible body dynamics and structural filter design
 ---

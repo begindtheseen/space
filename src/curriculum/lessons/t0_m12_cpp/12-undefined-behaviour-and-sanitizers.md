@@ -91,7 +91,7 @@ misc.cpp:6:39: runtime error: shift exponent 32 is too large for 32-bit type 'un
 ub.cpp:5:26: runtime error: index 4 out of bounds for type 'int [4]'
 ```
 
-The overhead is modest, typically a few tens of percent, so an entire test suite runs under it comfortably. Add `-fno-sanitize-recover=undefined` to make the first report fatal, so that a continuous-integration job fails rather than scrolling diagnostics past. Some checks are not in the default group and are named explicitly: `-fsanitize=float-cast-overflow` catches the out-of-range `double`-to-`int` conversion, which the default set does not — the `static_cast<int>(3.0e9)` in the shift example passed silently and produced `-2147483648`, the processor's "indefinite integer" result, with no diagnostic until that flag was added.
+The overhead is modest, typically a few tens of percent, so an entire test suite runs under it comfortably. Add `-fno-sanitize-recover=undefined` to make the first report fatal, so that a continuous-integration job fails rather than scrolling diagnostics past. Some checks are not in the default group and are named explicitly: `-fsanitize=float-cast-overflow` catches the out-of-range `double`-to-`int` conversion, which the default set does not — the `static_cast` of `3.0e9` to `int` in the shift example passed silently and produced `-2147483648`, the processor's "indefinite integer" result, with no diagnostic until that flag was added.
 
 ## AddressSanitizer
 
@@ -185,11 +185,11 @@ The compiler is entitled to assume `x + 1` never overflows, since overflow is un
 :::
 
 ::: check
-Classify each as defined or undefined: `1.0 / 0.0`; `1 / 0`; `static_cast<int>(3.0e9)`; `std::uint32_t{1} << 32`; `std::uint8_t{250} + std::uint8_t{10}` assigned to a `std::uint8_t`.
+Classify each as defined or undefined: `1.0 / 0.0`; `1 / 0`; a `static_cast` of `3.0e9` to `int`; `std::uint32_t{1} << 32`; `std::uint8_t{250} + std::uint8_t{10}` assigned to a `std::uint8_t`.
 :::
 
 ::: answer
-`1.0 / 0.0` is defined: IEEE 754 gives positive infinity. `1 / 0` is undefined: integer division by zero. `static_cast<int>(3.0e9)` is undefined: the value is outside the range of `int`, and UBSan needs `-fsanitize=float-cast-overflow` to report it. `std::uint32_t{1} << 32` is undefined: the shift amount equals the width of the type. The last is defined: both operands promote to `int`, the sum 260 is computed exactly, and converting it to `std::uint8_t` wraps modulo 256 to 4 by the rules for unsigned conversion.
+`1.0 / 0.0` is defined: IEEE 754 gives positive infinity. `1 / 0` is undefined: integer division by zero. Converting `3.0e9` to `int` is undefined: the value is outside the range of `int`, and UBSan needs `-fsanitize=float-cast-overflow` to report it. `std::uint32_t{1} << 32` is undefined: the shift amount equals the width of the type. The last is defined: both operands promote to `int`, the sum 260 is computed exactly, and converting it to `std::uint8_t` wraps modulo 256 to 4 by the rules for unsigned conversion.
 :::
 
 ::: check

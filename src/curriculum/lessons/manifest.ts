@@ -88,11 +88,20 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-units-and-dimensional-analysis",
       "title": "Units, conversions and dimensional analysis",
-      "minutes": 19,
+      "minutes": 17,
       "covers": [
         "units and dimensional analysis"
       ],
       "file": "t0_m01_algebra_precalc/10-units-and-dimensional-analysis.md"
+    },
+    {
+      "id": "l11-scientific-notation-and-significant-figures",
+      "title": "Scientific notation and significant figures",
+      "minutes": 16,
+      "covers": [
+        "scientific notation and significant figures"
+      ],
+      "file": "t0_m01_algebra_precalc/11-scientific-notation-and-significant-figures.md"
     }
   ],
   "t0_m02_trigonometry": [
@@ -163,11 +172,20 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-conic-sections",
       "title": "Conic sections and the shape of orbits",
-      "minutes": 19,
+      "minutes": 17,
       "covers": [
         "conic sections in geometric and polar form"
       ],
       "file": "t0_m02_trigonometry/08-conic-sections.md"
+    },
+    {
+      "id": "l09-complex-numbers-and-euler",
+      "title": "Complex numbers and the Euler formula",
+      "minutes": 18,
+      "covers": [
+        "complex numbers and Euler formula"
+      ],
+      "file": "t0_m02_trigonometry/09-complex-numbers-and-euler.md"
     }
   ],
   "t0_m03_python_scicomp": [
@@ -236,6 +254,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "SciPy: integrate.solve_ivp, optimize, linalg, signal, stats"
       ],
       "file": "t0_m03_python_scicomp/07-scipy.md"
+    },
+    {
+      "id": "l08-matplotlib",
+      "title": "matplotlib: figures a design review will accept",
+      "minutes": 21,
+      "covers": [
+        "matplotlib and publication-grade plots"
+      ],
+      "file": "t0_m03_python_scicomp/08-matplotlib.md"
     }
   ],
   "t0_m04_linear_algebra_1": [
@@ -276,6 +303,24 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "rank, null space, column space"
       ],
       "file": "t0_m04_linear_algebra_1/04-independence-rank-and-null-space.md"
+    },
+    {
+      "id": "l05-the-determinant",
+      "title": "The determinant and what it measures",
+      "minutes": 18,
+      "covers": [
+        "determinant and its geometric meaning"
+      ],
+      "file": "t0_m04_linear_algebra_1/05-the-determinant.md"
+    },
+    {
+      "id": "l06-orthogonality-gram-schmidt-qr",
+      "title": "Orthogonality, Gram–Schmidt and QR",
+      "minutes": 23,
+      "covers": [
+        "orthogonality, Gram-Schmidt, QR"
+      ],
+      "file": "t0_m04_linear_algebra_1/06-orthogonality-gram-schmidt-qr.md"
     }
   ],
   "t0_m05_linear_algebra_2": [
@@ -361,6 +406,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Taylor series and truncation error"
       ],
       "file": "t0_m06_calculus_single/07-taylor-series-truncation-error.md"
+    },
+    {
+      "id": "l08-definite-integral-fundamental-theorem",
+      "title": "The definite integral and the fundamental theorem of calculus",
+      "minutes": 24,
+      "covers": [
+        "the definite integral and the fundamental theorem of calculus"
+      ],
+      "file": "t0_m06_calculus_single/08-definite-integral-fundamental-theorem.md"
     }
   ],
   "t0_m07_calculus_multi": [
@@ -418,6 +472,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "multiple integrals"
       ],
       "file": "t0_m07_calculus_multi/06-multiple-integrals.md"
+    },
+    {
+      "id": "l07-line-and-surface-integrals",
+      "title": "Line integrals and surface integrals",
+      "minutes": 25,
+      "covers": [
+        "line and surface integrals"
+      ],
+      "file": "t0_m07_calculus_multi/07-line-and-surface-integrals.md"
     }
   ],
   "t0_m08_odes": [
@@ -611,6 +674,16 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "profiling and sanitizers: perf, valgrind, ASan/UBSan"
       ],
       "file": "t0_m12_cpp/12-undefined-behaviour-and-sanitizers.md"
+    },
+    {
+      "id": "l13-profiling-and-static-analysis",
+      "title": "Profiling and static analysis: perf, valgrind, clang-tidy and cppcheck",
+      "minutes": 26,
+      "covers": [
+        "profiling and sanitizers: perf, valgrind, ASan/UBSan",
+        "static analysis: clang-tidy, cppcheck"
+      ],
+      "file": "t0_m12_cpp/13-profiling-and-static-analysis.md"
     }
   ],
   "t1_m13_classical_mechanics": [
@@ -667,6 +740,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "variable-mass systems and the rocket equation done properly"
       ],
       "file": "t1_m13_classical_mechanics/06-rocket-equation-done-properly.md"
+    },
+    {
+      "id": "l07-ascent-losses-gravity-turn",
+      "title": "Gravity, drag and steering losses on ascent",
+      "minutes": 22,
+      "covers": [
+        "variable-mass systems and the rocket equation done properly"
+      ],
+      "file": "t1_m13_classical_mechanics/07-ascent-losses-gravity-turn.md"
     }
   ],
   "t1_m14_rigid_body_dynamics": [
@@ -726,13 +808,23 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "ECI (J2000 / GCRF) and ECEF (ITRF)"
       ],
       "file": "t1_m15_rotating_frames/05-eci-ecef-and-the-earth-rotation-rate.md"
+    },
+    {
+      "id": "l06-wgs-84-geodetic-latitude-ned-and-enu",
+      "title": "WGS-84, geodetic latitude, NED and ENU",
+      "minutes": 21,
+      "covers": [
+        "geodetic vs geocentric latitude and the WGS-84 ellipsoid",
+        "NED and ENU local-level frames"
+      ],
+      "file": "t1_m15_rotating_frames/06-wgs-84-geodetic-latitude-ned-and-enu.md"
     }
   ],
   "t1_m18_atmospheric_flight": [
     {
       "id": "l01-standard-atmosphere",
       "title": "The standard atmosphere",
-      "minutes": 20,
+      "minutes": 18,
       "covers": [
         "standard atmosphere models: US Standard 1976, exponential, NRLMSISE-00",
         "density, pressure and temperature vs altitude"
@@ -742,7 +834,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-dynamic-pressure-and-max-q",
       "title": "Dynamic pressure and max-Q",
-      "minutes": 19,
+      "minutes": 17,
       "covers": [
         "dynamic pressure and max-Q"
       ],
@@ -751,7 +843,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-mach-regimes-and-drag",
       "title": "Mach number, flow regimes and the drag coefficient",
-      "minutes": 18,
+      "minutes": 20,
       "covers": [
         "Mach number and the subsonic / transonic / supersonic / hypersonic regimes",
         "drag coefficient vs Mach"
@@ -761,7 +853,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-angle-of-attack-and-wind-frame",
       "title": "Angle of attack, sideslip and the wind frame",
-      "minutes": 17,
+      "minutes": 18,
       "covers": [
         "angle of attack and sideslip; body vs wind frame"
       ],
@@ -770,7 +862,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-normal-force-and-static-margin",
       "title": "Normal force, centre of pressure and static margin",
-      "minutes": 17,
+      "minutes": 19,
       "covers": [
         "normal force, centre of pressure vs centre of gravity, static margin"
       ],
@@ -779,7 +871,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-unstable-booster-and-tvc",
       "title": "The aerodynamically unstable booster and its TVC loop",
-      "minutes": 18,
+      "minutes": 19,
       "covers": [
         "aerodynamic instability of a boosting rocket"
       ],
@@ -797,7 +889,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-winds-gusts-and-shear",
       "title": "Wind profiles, gusts and wind shear",
-      "minutes": 17,
+      "minutes": 19,
       "covers": [
         "wind profiles and gust models (Dryden, von Karman), wind shear"
       ],
@@ -806,7 +898,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-bending-modes-and-structural-filters",
       "title": "Bending modes, flexible-body dynamics and structural filters",
-      "minutes": 20,
+      "minutes": 21,
       "covers": [
         "bending modes, flexible body dynamics and structural filter design"
       ],
@@ -815,7 +907,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-propellant-slosh",
       "title": "Propellant slosh as a pendulum or mass-spring",
-      "minutes": 18,
+      "minutes": 21,
       "covers": [
         "propellant slosh as a pendulum or mass-spring"
       ],
@@ -824,7 +916,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-control-structure-interaction",
       "title": "Control-structure interaction",
-      "minutes": 18,
+      "minutes": 20,
       "covers": [
         "control-structure interaction"
       ],
@@ -833,7 +925,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-grid-fins-and-entry",
       "title": "Grid fins, control surfaces and entry aerodynamics",
-      "minutes": 20,
+      "minutes": 22,
       "covers": [
         "grid fins and aerodynamic control surfaces",
         "ballistic coefficient and lift-to-drag ratio in entry"
@@ -983,39 +1075,33 @@ export interface LessonCoverage {
 
 export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
   "t0_m01_algebra_precalc": {
-    "covered": 10,
+    "covered": 11,
     "total": 12,
     "complete": false,
     "missing": [
-      "scientific notation and significant figures",
       "order-of-magnitude (Fermi) estimation"
     ]
   },
   "t0_m02_trigonometry": {
+    "covered": 10,
+    "total": 10,
+    "complete": true,
+    "missing": []
+  },
+  "t0_m03_python_scicomp": {
     "covered": 9,
     "total": 10,
     "complete": false,
     "missing": [
-      "complex numbers and Euler formula"
-    ]
-  },
-  "t0_m03_python_scicomp": {
-    "covered": 8,
-    "total": 10,
-    "complete": false,
-    "missing": [
-      "matplotlib and publication-grade plots",
       "reading and plotting CSV / HDF5 telemetry"
     ]
   },
   "t0_m04_linear_algebra_1": {
-    "covered": 6,
+    "covered": 8,
     "total": 10,
     "complete": false,
     "missing": [
-      "determinant and its geometric meaning",
       "change of basis between reference frames",
-      "orthogonality, Gram-Schmidt, QR",
       "skew-symmetric matrices and the cross-product matrix"
     ]
   },
@@ -1036,22 +1122,20 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t0_m06_calculus_single": {
-    "covered": 6,
+    "covered": 7,
     "total": 10,
     "complete": false,
     "missing": [
-      "the definite integral and the fundamental theorem of calculus",
       "integration by parts and substitution",
       "improper integrals",
       "separable first-order ODEs"
     ]
   },
   "t0_m07_calculus_multi": {
-    "covered": 6,
+    "covered": 7,
     "total": 10,
     "complete": false,
     "missing": [
-      "line and surface integrals",
       "divergence, curl, Laplacian",
       "divergence and Stokes theorems",
       "conservative fields and potential functions"
@@ -1130,12 +1214,11 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t0_m12_cpp": {
-    "covered": 15,
+    "covered": 16,
     "total": 17,
     "complete": false,
     "missing": [
-      "pybind11 bindings over a C++ simulation core",
-      "static analysis: clang-tidy, cppcheck"
+      "pybind11 bindings over a C++ simulation core"
     ]
   },
   "t1_m13_classical_mechanics": {
@@ -1167,15 +1250,13 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t1_m15_rotating_frames": {
-    "covered": 6,
+    "covered": 8,
     "total": 11,
     "complete": false,
     "missing": [
-      "NED and ENU local-level frames",
       "body, LVLH / RIC, perifocal, topocentric and sensor frames",
       "precession, nutation, polar motion",
-      "UT1, TAI, GPS and TT time scales",
-      "geodetic vs geocentric latitude and the WGS-84 ellipsoid"
+      "UT1, TAI, GPS and TT time scales"
     ]
   },
   "t1_m18_atmospheric_flight": {

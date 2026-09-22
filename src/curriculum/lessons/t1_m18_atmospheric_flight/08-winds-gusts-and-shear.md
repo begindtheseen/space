@@ -1,7 +1,7 @@
 ---
 id: l08-winds-gusts-and-shear
 title: Wind profiles, gusts and wind shear
-minutes: 17
+minutes: 19
 covers:
   - wind profiles and gust models (Dryden, von Karman), wind shear
 ---
@@ -24,7 +24,7 @@ Suppose the steering were *not* updated and the vehicle flew its nominal gravity
 
 ## Wind shear
 
-**Wind shear** is the rate of change of wind velocity with altitude, $\partial \mathbf{w}/\partial h$. A vehicle climbing at $\dot h$ experiences a shear layer as a *time* rate of change of the relative wind, $\dot{\mathbf{w}} = (\partial\mathbf{w}/\partial h)\,\dot h$, and therefore as a ramp in angle of attack. Design shears are usually specified as the change in wind speed across a layer of given thickness — the strongest shears occur just below the jet core, where the wind builds up over a kilometre or two — and a change of 20 to 30 m/s across 1 km is within the design envelope at the Cape, with the exercise's 30 m/s per kilometre representing a severe case.
+**Wind shear** is the rate of change of wind velocity with altitude, $\partial \mathbf{w}/\partial h$. A vehicle climbing at $\dot h$ experiences a shear layer as a *time* rate of change of the relative wind, $\dot{\mathbf{w}} = (\partial\mathbf{w}/\partial h)\,\dot h$, and therefore as a ramp in angle of attack. Design shears are usually specified as the change in wind speed across a layer of given thickness — the strongest shears occur immediately below the jet core, where the wind builds up over a kilometre or two — and a change of 20 to 30 m/s across 1 km is within the design envelope at the Cape, with the exercise's 30 m/s per kilometre representing a severe case.
 
 What makes shear dangerous is speed. At 70 s in the Lesson 2 trajectory the vehicle climbs at $\dot h = 418 \sin 54^\circ = 338\ \mathrm{m/s}$, so it crosses a 1 km layer in 3.0 s. A 30 m/s change in the perpendicular wind at 420 m/s airspeed is
 

@@ -3,7 +3,7 @@ id: l07-scipy
 title: "SciPy: integrating, solving, filtering and fitting"
 minutes: 24
 covers:
-  - "SciPy: integrate.solve_ivp, optimize, linalg, signal, stats"
+  - SciPy: integrate.solve_ivp, optimize, linalg, signal, stats
 ---
 
 Almost every question a GNC engineer asks a computer is one of five: where will this state be at a later time, for what input does this function equal zero (or reach its minimum), what solves this linear system, what does this noisy signal look like without the noise, and how likely is this outcome. SciPy answers all five. It is a library of numerical routines — Runge–Kutta integrators, Brent's root finder, LAPACK factorisations, digital filters, probability distributions — wrapped so that each is a single call on NumPy arrays.
@@ -151,7 +151,7 @@ y_causal = signal.lfilter(b, a, y_noisy)      # causal: what a flight computer c
 For frequency content, `f, Pxx = signal.welch(y, fs=fs, nperseg=1024)` estimates the power spectral density — the plot that shows you a $27\,\mathrm{Hz}$ structural mode sitting under your control bandwidth. `signal.detrend` removes a linear drift before a spectrum, `signal.savgol_filter` smooths and differentiates (a good way to get rates from positions), `signal.find_peaks` locates maxima, and `signal.cont2discrete((A, B, C, D), dt)` discretises a state-space model at a sample period — the same job as `expm` on the augmented matrix. The `signal.StateSpace` and `signal.TransferFunction` classes with `signal.lsim`, `signal.step` and `signal.bode` simulate linear systems directly; the controls modules use them constantly.
 
 ::: warning Filter delay is not zero
-A causal low-pass filter delays the signal by roughly $N / (4 f_c)$ seconds for a Butterworth of order $N$. A fourth-order $5\,\mathrm{Hz}$ filter lags by about $0.2\,\mathrm{s}$; put it in a feedback loop without accounting for that and the phase margin evaporates. Use `filtfilt` in analysis, and design real-time filters with their delay budgeted.
+A causal low-pass filter delays the signal. For a Butterworth of order $N$ the low-frequency group delay is $\sum_k \cos\theta_k / (2\pi f_c)$ over the pole angles $\theta_k$, which for $N = 4$ is about $0.42 / f_c$: a fourth-order $5\,\mathrm{Hz}$ filter lags by about $0.08\,\mathrm{s}$ at low frequency and more near the cutoff. Put it in a feedback loop without accounting for that and the phase margin evaporates. Use `filtfilt` in analysis, and design real-time filters with their delay budgeted.
 :::
 
 ## `scipy.stats`: distributions
@@ -233,7 +233,7 @@ Why does `filtfilt` produce a filtered signal with no phase lag while `lfilter` 
 :::
 
 ::: answer
-`lfilter` is causal: each output sample depends on present and past inputs only, and every causal low-pass filter delays the signal. `filtfilt` runs the filter forward and then runs it again backwards over the result; the second pass imposes the same delay in the opposite direction, and the two cancel, at the cost of using future samples. For post-flight analysis you have the whole record, so `filtfilt` is right — the touchdown spike will appear at the true time rather than $N/(4f_c)$ seconds late. On the vehicle itself only `lfilter` is possible, and the delay must be accounted for.
+`lfilter` is causal: each output sample depends on present and past inputs only, and every causal low-pass filter delays the signal. `filtfilt` runs the filter forward and then runs it again backwards over the result; the second pass imposes the same delay in the opposite direction, and the two cancel, at the cost of using future samples. For post-flight analysis you have the whole record, so `filtfilt` is right — the touchdown spike will appear at the true time rather than tens of milliseconds late. On the vehicle itself only `lfilter` is possible, and the delay must be accounted for.
 :::
 
 ::: check

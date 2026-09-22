@@ -1,7 +1,7 @@
 ---
 id: l08-conic-sections
 title: Conic sections and the shape of orbits
-minutes: 19
+minutes: 17
 covers:
   - conic sections in geometric and polar form
 ---

@@ -1,7 +1,7 @@
 ---
 id: l02-dynamic-pressure-and-max-q
 title: Dynamic pressure and max-Q
-minutes: 19
+minutes: 17
 covers:
   - dynamic pressure and max-Q
 ---
@@ -156,7 +156,7 @@ $\bar{q}$ is not the pressure the airframe feels everywhere. It is the scale for
 :::
 
 ::: warning
-Do not compute the Mach number at max-Q with the sea-level speed of sound. At 11 km the sound speed is 295 m/s, not 340 m/s, so 447 m/s is Mach 1.52 rather than 1.31. Max-Q sits in the transonic-to-low-supersonic drag rise partly because the cold tropopause air lowers the speed of sound just as the vehicle passes through it.
+Do not compute the Mach number at max-Q with the sea-level speed of sound. At 11 km the sound speed is 295 m/s, not 340 m/s, so 447 m/s is Mach 1.52 rather than 1.31. Max-Q sits in the transonic-to-low-supersonic drag rise partly because the cold tropopause air lowers the speed of sound at the moment the vehicle passes through it.
 :::
 
 ## Check yourself
@@ -214,4 +214,4 @@ Densities: $1.225 e^{-8000/8500} = 0.478$, $1.225 e^{-10300/8500} = 0.365$, $1.2
 | Simulated Falcon-9-class ascent | 36.4 kPa at 61.8 s, 11.0 km, 447 m/s, Mach 1.52, unthrottled |
 | Throttle bucket | $\bar{q}_{\max} \propto a$, so throttling to ~70 % trims the peak at the cost of gravity loss |
 
-The next lesson takes the Mach number that appeared in the table and explains why the drag coefficient rises so sharply just as dynamic pressure peaks — and what subsonic, transonic, supersonic and hypersonic flow do to a slender body.
+The next lesson takes the Mach number that appeared in the table and explains why the drag coefficient rises so sharply exactly as dynamic pressure peaks — and what subsonic, transonic, supersonic and hypersonic flow do to a slender body.

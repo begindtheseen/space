@@ -1,7 +1,7 @@
 ---
 id: l11-control-structure-interaction
 title: Control-structure interaction
-minutes: 18
+minutes: 20
 covers:
   - control-structure interaction
 ---
@@ -39,10 +39,10 @@ is where the gimbal stops being able to push the vehicle sideways at all: for a 
 Launch-vehicle programmes state their stability requirements in gain and phase margin, separately for the rigid body and for each flexible mode, evaluated across the whole flight:
 
 - **Rigid body**: at least 6 dB of gain margin and 30° of phase margin, with the gain margin required in *both* directions because the plant is aerodynamically unstable — the low-gain margin of Lesson 6 as well as the usual high-gain one.
-- **Gain-stabilised modes**: the loop gain at the mode's peak at least 6–8 dB below 0 dB (some programmes demand more), with the mode's frequency dispersed over its uncertainty band and its damping taken at the low end of what was measured.
+- **Gain-stabilised modes**: the loop gain at the mode's peak at least 6–8 dB below 0 dB, with the mode's frequency dispersed over its uncertainty band and its damping taken at the low end of what was measured.
 - **Phase-stabilised modes**: at least 30–45° of phase margin at each of the mode's gain crossovers, over the same dispersions plus the actuator's phase uncertainty and the delay budget.
 
-The dispersions are not small. Ground vibration tests and finite-element models predict bending frequencies to $\pm 10$–20 % and modal gains to perhaps $\pm 50$ %; damping is uncertain by a factor of two; slosh parameters move with fill level and $g_{\text{eff}}$; the actuator's bandwidth changes with load and temperature. Verification therefore means sweeping the flight time in steps, at each step running the linear analysis over the corner cases and a Monte Carlo over the dispersions, and confirming the margins hold everywhere. Flight data closes the loop: spectral analysis of the gyro and gimbal signals from every flight confirms where the modes actually sat and how much the loop excited them, and the first flight of a new vehicle is the test the Delta III failed.
+The dispersions are not small. Ground vibration tests and finite-element models predict bending frequencies to $\pm 10$–20 % and modal gains to perhaps $\pm 50$ %; damping is uncertain by a factor of two; slosh parameters move with fill level and $g_{\text{eff}}$; the actuator's bandwidth changes with load and temperature. Verification therefore means sweeping the flight time in steps, at each step running the linear analysis over the corner cases and a Monte Carlo over the dispersions, and confirming the margins hold everywhere. Flight data closes the loop: spectral analysis of gyro and gimbal signals from every flight confirms where the modes actually sat.
 
 ## Gain stabilisation and phase stabilisation
 
@@ -72,13 +72,13 @@ None of these is free; the exercise asks you to pick one and defend it.
 
 Because a gyro senses the local mode slope $\phi_n'(x_g)$ and an accelerometer the local deflection $\phi_n(x_a)$, sensor location is a design variable of the same rank as a filter. A gyro at a point where the first mode's slope is zero — mid-body for a uniform free-free beam — does not see that mode at all. But mode shapes are only approximately known, slope nulls move as propellant drains, and a station that is a null for one mode is a maximum for another (mid-body is where the second mode's slope peaks).
 
-**Blending** two sensors exploits the mode shapes' symmetry. For the uniform free-free beam, the first mode's slope at $0.15L$ and $0.85L$ is $\mp 4.4/L$ — equal and opposite — while the second mode's slope at those stations is $-6.3/L$ at both. Average two gyros there and the first mode cancels exactly while the rigid rate is preserved; the second mode passes at full strength, and would need its own filter. Difference the same two gyros and the roles reverse. Real vehicles use weighted blends tuned to the finite-element mode shapes, and re-tune them when the shapes change between flights.
+**Blending** two sensors exploits the mode shapes' symmetry. For the uniform free-free beam, the first mode's slope at $0.15L$ and $0.85L$ is $\mp 4.4/L$ — equal and opposite — while the second mode's slope at those stations is $-6.3/L$ at both. Average two gyros there and the first mode cancels exactly while the rigid rate is preserved; the second mode passes at full strength, and would need its own filter. Difference the same two gyros and the roles reverse. Real vehicles use weighted blends tuned to the finite-element mode shapes.
 
 Collocation matters too. A gyro near the engine sees the bending the engine excites with the sign the engine excites it, which tends to make modes phase-stable — the actuator and sensor "agree" — while a gyro far forward may see the opposite sign. The "positive sign in the feedback path" the exercise specifies is exactly this sign, and half of phase stabilisation is knowing it with confidence.
 
 ## Beyond fixed filters
 
-A fixed notch sized for a $\pm 20$ % frequency band costs phase over the whole flight. Two developments reduce that cost. **Scheduling** the filter centres with flight time follows the modes as propellant depletes and the frequencies rise, so each notch can be narrower. **Adaptive augmenting control**, flown on the Space Launch System, monitors the spectral content of the attitude error: when it detects growing power at frequencies above the rigid-body band — the signature of a mode being pumped — it reduces the loop gain, and when the rigid-body error demands more authority it raises the gain back toward, but not beyond, a bounded multiple of the nominal. It does not replace the fixed design; it recovers margin when the vehicle turns out to differ from the model, which is the situation the Delta III was in.
+A fixed notch sized for a $\pm 20$ % frequency band costs phase over the whole flight. Two developments reduce that cost. **Scheduling** the filter centres with flight time follows the modes as propellant depletes and the frequencies rise, so each notch can be narrower. **Adaptive augmenting control**, flown on the Space Launch System, monitors the spectral content of the attitude error: when it detects growing power at frequencies above the rigid-body band — the signature of a mode being pumped — it reduces the loop gain, and when the rigid-body error demands more authority it raises the gain back toward, but not beyond, a bounded multiple of the nominal. It does not replace the fixed design; it recovers margin when the vehicle differs from the model.
 
 ::: warning
 Gain stabilisation is robust to *phase* but not to *gain*. A mode attenuated to $-8\ \mathrm{dB}$ becomes unstable if its modal gain is 8 dB larger than predicted, and modal gains are the least certain numbers in the model. Size the attenuation on the upper bound of the modal gain and the lower bound of the damping, not on the nominal.

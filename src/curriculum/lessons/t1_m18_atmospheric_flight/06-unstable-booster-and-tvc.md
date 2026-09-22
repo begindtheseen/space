@@ -1,7 +1,7 @@
 ---
 id: l06-unstable-booster-and-tvc
 title: The aerodynamically unstable booster and its TVC loop
-minutes: 18
+minutes: 19
 covers:
   - aerodynamic instability of a boosting rocket
 ---

@@ -1,13 +1,13 @@
 ---
 id: l03-mach-regimes-and-drag
 title: Mach number, flow regimes and the drag coefficient
-minutes: 18
+minutes: 20
 covers:
   - Mach number and the subsonic / transonic / supersonic / hypersonic regimes
   - drag coefficient vs Mach
 ---
 
-The max-Q table in the last lesson had a column you were asked to take on trust: the Mach number. The drag coefficient that turned dynamic pressure into a force depended on it, rising by a factor of two between Mach 0.8 and Mach 1.2 and then decaying. A launch vehicle crosses that band at almost exactly the moment dynamic pressure peaks, which is why the drag force peaks there too and why the aerodynamic centre of pressure shifts just when the controller least wants surprises.
+The max-Q table in the last lesson had a column you were asked to take on trust: the Mach number. The drag coefficient that turned dynamic pressure into a force depended on it, rising by a factor of two between Mach 0.8 and Mach 1.2 and then decaying. A launch vehicle crosses that band at almost exactly the moment dynamic pressure peaks, which is why the drag force peaks there too and why the aerodynamic centre of pressure shifts at the moment the controller least wants surprises.
 
 The Mach number is the ratio of the vehicle's airspeed to the local speed of sound. It measures how compressible the flow is — how much the air's density changes as it is pushed aside — and it sorts flight into four regimes with qualitatively different physics: subsonic, transonic, supersonic and hypersonic. A booster experiences all four on the way up, and a returning stage experiences them again in reverse on the way down.
 
@@ -105,7 +105,7 @@ Add these up for a slender core with a conical-ogive fairing and you get a curve
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | $C_D$ | 0.30 | 0.33 | 0.45 | 0.58 | 0.60 | 0.55 | 0.45 | 0.34 | 0.26 | 0.22 |
 
-The subsonic plateau near 0.3, the doubling through the transonic band with the peak just above Mach 1, and the slow supersonic decay toward a hypersonic asymptote are common to every slender launcher. The exact numbers are not: they depend on fairing bluntness, on strap-on boosters, on protuberances, on power-on versus power-off, and on Reynolds number, and a real vehicle's table comes from wind-tunnel tests and CFD, tabulated against both $M$ and angle of attack. Treat this table as an honest sketch, and the exercise's use of it as a stand-in for the vehicle's own data.
+The subsonic plateau near 0.3, the doubling through the transonic band with the peak a little above Mach 1, and the slow supersonic decay toward a hypersonic asymptote are common to every slender launcher. The exact numbers are not: they depend on fairing bluntness, on strap-on boosters, on protuberances, on power-on versus power-off, and on Reynolds number, and a real vehicle's table comes from wind-tunnel tests and CFD, tabulated against both $M$ and angle of attack. Treat this table as an honest sketch, and the exercise's use of it as a stand-in for the vehicle's own data.
 
 ::: example Drag force and drag deceleration at max-Q
 At the simulated max-Q, $\bar{q} = 36.4\ \mathrm{kPa}$, $M = 1.52$ and the table gives $C_D = 0.55$. With $S = 10.52\ \mathrm{m^2}$,
@@ -172,7 +172,7 @@ Estimate the ideal stagnation temperature on a vehicle at Mach 8 in air at 216.6
 :::
 
 ::: answer
-$T_0/T = 1 + 0.2 \times 64 = 13.8$, so $T_0 = 13.8 \times 216.65 = 2\,990\ \mathrm{K}$. At that temperature oxygen is substantially dissociated and vibrational modes are fully excited, so energy goes into breaking bonds and internal modes rather than translational temperature; the effective $\gamma$ drops below 1.4 and the real stagnation temperature is lower, roughly 2\,300–2\,500 K. This is the real-gas effect that defines the hypersonic regime.
+$T_0/T = 1 + 0.2 \times 64 = 13.8$, so $T_0 = 13.8 \times 216.65 = 2\,990\ \mathrm{K}$. At that temperature oxygen is substantially dissociated and vibrational modes are fully excited, so energy goes into breaking bonds and internal modes rather than translational temperature; the effective $\gamma$ drops below 1.4 and the real stagnation temperature is lower, roughly 2300–2500 K. This is the real-gas effect that defines the hypersonic regime.
 :::
 
 ## Summary

@@ -1,7 +1,7 @@
 ---
 id: l04-angle-of-attack-and-wind-frame
 title: Angle of attack, sideslip and the wind frame
-minutes: 17
+minutes: 18
 covers:
   - angle of attack and sideslip; body vs wind frame
 ---

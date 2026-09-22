@@ -1,12 +1,12 @@
 ---
 id: l10-units-and-dimensional-analysis
 title: Units, conversions and dimensional analysis
-minutes: 19
+minutes: 17
 covers:
   - units and dimensional analysis
 ---
 
-In September 1999 the Mars Climate Orbiter flew into the Martian atmosphere and was lost because one piece of software reported thruster impulse in pound-force seconds and the piece that consumed it expected newton seconds. Every number was computed correctly. The factor of $4.45$ between the two units was simply never applied, and over months of small corrections the trajectory drifted by about a hundred kilometres. The vehicle was worth a third of a billion dollars. That is the reason this lesson exists, and it is why the module's coding exercise asks for a converter that *refuses* to convert a force into a mass.
+In September 1999 the Mars Climate Orbiter flew into the Martian atmosphere and was lost because one piece of software reported thruster impulse in pound-force seconds and the piece that consumed it expected newton seconds. Every number was computed correctly. The factor of $4.45$ between the two units was simply never applied, and over months of small corrections the trajectory drifted by more than a hundred kilometres. The mission had cost hundreds of millions of dollars. That is the reason this lesson exists, and it is why the module's coding exercise asks for a converter that *refuses* to convert a force into a mass.
 
 Aerospace lives in two unit systems at once. Engine thrust is quoted in pounds-force in one document and kilonewtons in the next; tank pressures come in psi; ranges in nautical miles; altitudes in feet; densities in slugs per cubic foot when the aerodynamics reference is American and in kilograms per cubic metre when it is not. You cannot avoid the second system, so you must be able to move between them mechanically and to notice when a number is in the wrong one. The method is the same algebra you have been doing all module — units are symbols that multiply, divide and cancel — plus a small table of exactly defined factors.
 

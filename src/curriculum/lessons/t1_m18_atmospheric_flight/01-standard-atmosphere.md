@@ -1,7 +1,7 @@
 ---
 id: l01-standard-atmosphere
 title: The standard atmosphere
-minutes: 20
+minutes: 18
 covers:
   - "standard atmosphere models: US Standard 1976, exponential, NRLMSISE-00"
   - density, pressure and temperature vs altitude
@@ -172,7 +172,7 @@ Exponential atmosphere: $\rho = \rho_0 e^{-h/H}$ with $\rho_0 = 1.225\ \mathrm{k
 :::
 
 ::: warning
-The exponential model is a density model. Do not derive a temperature from it and do not feed it to the speed of sound. Below the tropopause the isothermal assumption behind $\rho_0 e^{-h/H}$ is simply false — temperature drops 71.5 K over 11 km — and the speed of sound, which depends on temperature alone, drops with it.
+The exponential model is a density model. Do not derive a temperature from it and do not feed it to the speed of sound. Below the tropopause the isothermal assumption behind $\rho_0 e^{-h/H}$ is false — temperature drops 71.5 K over 11 km — and the speed of sound, which depends on temperature alone, drops with it.
 :::
 
 ## The speed of sound
