@@ -3644,6 +3644,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Consider-covariance analysis"
       ],
       "file": "t4_m39_orbit_determination/08-consider-covariance-analysis.md"
+    },
+    {
+      "id": "l09-residual-editing-and-data-weighting",
+      "title": "Residual editing and data weighting",
+      "minutes": 14,
+      "covers": [
+        "Residual editing and data weighting"
+      ],
+      "file": "t4_m39_orbit_determination/09-residual-editing-and-data-weighting.md"
     }
   ],
   "t5_m41_ascent_guidance": [
@@ -4036,11 +4045,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t4_m39_orbit_determination": {
-    "covered": 8,
+    "covered": 9,
     "total": 13,
     "complete": false,
     "missing": [
-      "Residual editing and data weighting",
       "Orbit accuracy metrics and covariance in the RIC (radial, in-track, cross-track) frame",
       "Conjunction assessment and collision probability",
       "Maneuver estimation and reconstruction",
