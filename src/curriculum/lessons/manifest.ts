@@ -300,6 +300,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "MATLAB and Simulink as secondary skills and why the curriculum is not MATLAB-first"
       ],
       "file": "car_05_tooling_reality/02-languages-and-the-model-boundary.md"
+    },
+    {
+      "id": "l03-reading-someone-elses-simulation",
+      "title": "Reading a simulation someone else built",
+      "minutes": 19,
+      "covers": [
+        "6-DOF simulation stacks and what high fidelity actually means"
+      ],
+      "file": "car_05_tooling_reality/03-reading-someone-elses-simulation.md"
     }
   ],
   "car_06_portfolio": [
@@ -360,6 +369,16 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "applicant tracking system parsing: no tables, no multi-column layouts, no images, standard headings, PDF"
       ],
       "file": "car_07_resume_and_referrals/05-applicant-tracking-systems.md"
+    },
+    {
+      "id": "l06-tailoring-and-the-cover-letter",
+      "title": "Tailoring to one role family, and the cover letter question",
+      "minutes": 23,
+      "covers": [
+        "tailoring to one role family rather than submitting one generic resume everywhere",
+        "the cover letter question and when it is worth the time"
+      ],
+      "file": "car_07_resume_and_referrals/06-tailoring-and-the-cover-letter.md"
     }
   ],
   "t0_m01_algebra_precalc": [
@@ -7024,7 +7043,7 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "car_05_tooling_reality": {
-    "covered": 4,
+    "covered": 5,
     "total": 13,
     "complete": false,
     "missing": [
@@ -7032,7 +7051,6 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
       "determinism, fixed-step integration and bounded execution time in a flight control loop",
       "why dynamic allocation, unbounded loops and exceptions are avoided in the control path",
       "redundancy, voting and fault management as first-class design concerns",
-      "6-DOF simulation stacks and what high fidelity actually means",
       "Monte Carlo dispersion campaigns across tens of thousands of CPUs and what they are used to prove",
       "infrastructure: Linux, Docker, Kubernetes, Ansible, Puppet, Terraform, Bazel-class build systems",
       "continuous integration for rocket and simulation software",
@@ -7058,12 +7076,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "car_07_resume_and_referrals": {
-    "covered": 6,
+    "covered": 8,
     "total": 13,
     "complete": false,
     "missing": [
-      "tailoring to one role family rather than submitting one generic resume everywhere",
-      "the cover letter question and when it is worth the time",
       "applying directly at spacex.com/careers and what happens next",
       "referrals: who can refer, how to ask, and what to give the referrer to make it easy",
       "community and conferences: AIAA and AAS Space Flight Mechanics, SmallSat, university seminars, open-source contribution",
