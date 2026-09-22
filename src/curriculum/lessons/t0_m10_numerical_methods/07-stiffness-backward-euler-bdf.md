@@ -107,7 +107,7 @@ Run the reaction-wheel system for 200 s. The exact body rate at $t = 200\,\mathr
 | $1.0\,\mathrm{s}$ | $1.905199\times10^{-5}$ | $4.03\times10^{-2}$ | $1.830311\times10^{-5}$ | $6.2\times10^{-4}$ |
 | $5.0\,\mathrm{s}$ | $2.209376\times10^{-5}$ | $2.06\times10^{-1}$ | $1.823413\times10^{-5}$ | $4.4\times10^{-3}$ |
 
-At $h = 1\,\mathrm{s}$ — a step five hundred times the fast time constant, which no explicit method could survive — both methods produce a usable answer in 200 steps, against RK4's 287,220 evaluations. Backward Euler's error halves when the step halves (first order); trapezoidal's falls by four (second order) and is 65 times smaller at every step. Neither ever becomes unstable, however large the step.
+At $h = 1\,\mathrm{s}$ — a step five hundred times the fast time constant, which no explicit method could survive — both methods produce a usable answer in 200 steps, against RK4's 287,220 evaluations. Backward Euler's error halves when the step halves (first order); trapezoidal's falls by four (second order): at $h = 1\,\mathrm{s}$ it is 65 times smaller, and the gap widens as the step shrinks. Neither ever becomes unstable, however large the step.
 :::
 
 ## Trapezoidal: A-stable is not enough
