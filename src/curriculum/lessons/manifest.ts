@@ -3700,6 +3700,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Iterative Guidance Mode as flown on Saturn V"
       ],
       "file": "t5_m41_ascent_guidance/06-iterative-guidance-mode.md"
+    },
+    {
+      "id": "l07-target-orbit-specification",
+      "title": "Target orbit specification and the terminal constraint set",
+      "minutes": 23,
+      "covers": [
+        "Target orbit specification and the terminal constraint set"
+      ],
+      "file": "t5_m41_ascent_guidance/07-target-orbit-specification.md"
     }
   ]
 }
@@ -4049,11 +4058,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t5_m41_ascent_guidance": {
-    "covered": 6,
+    "covered": 7,
     "total": 12,
     "complete": false,
     "missing": [
-      "Target orbit specification and the terminal constraint set",
       "Thrust vector control allocation and engine-out contingency",
       "Load relief and its interaction with guidance",
       "Ascent trajectory optimization as an offline problem feeding onboard guidance",

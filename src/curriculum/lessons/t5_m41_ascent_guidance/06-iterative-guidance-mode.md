@@ -90,15 +90,15 @@ A stage has $m_0 = 15{,}000$ kg, $\dot m = 200$ kg/s, $v_e = 3000$ m/s, and burn
 :::
 
 ::: answer
-$m_f = 15{,}000 - 200\times20 = 11{,}000\ \mathrm{kg}$. $L = 3000\ln(15{,}000/11{,}000) = 3000\times0.31015 = 930.45\ \mathrm{m/s}$. $J = (3000/200)\left[15{,}000\ln(15{,}000/11{,}000) - (15{,}000-11{,}000)\right] = 15\left[15{,}000\times0.31015 - 4000\right] = 15\left[4652.25-4000\right] = 15\times652.25 = 9783.75\ \mathrm{m}$.
+$m_f = 15{,}000 - 200\times20 = 11{,}000\ \mathrm{kg}$. $L = 3000\ln(15{,}000/11{,}000) = 3000\times0.310155 = 930.46\ \mathrm{m/s}$. $J = (3000/200)\left[15{,}000\ln(15{,}000/11{,}000) - (15{,}000-11{,}000)\right] = 15\left[15{,}000\times0.310155 - 4000\right] = 15\left[4652.33-4000\right] = 15\times652.33 = 9784.86\ \mathrm{m}$.
 :::
 
 ::: check
-Using $L = 930.45\ \mathrm{m/s}$ from the previous question, and initial velocity components $v_{x0}=7200$ m/s, $v_{z0}=0$, find the constant pitch angle that reaches $v_x(t_f) = 7950$ m/s exactly, and state what $v_z(t_f)$ comes out to if $g = 9.5\ \mathrm{m/s^2}$ (a lower local value, illustrating that $g$ need not be exactly $g_0$) over the 20 s burn.
+Using $L = 930.46\ \mathrm{m/s}$ from the previous question, and initial velocity components $v_{x0}=7200$ m/s, $v_{z0}=0$, find the constant pitch angle that reaches $v_x(t_f) = 7950$ m/s exactly, and state what $v_z(t_f)$ comes out to if $g = 9.5\ \mathrm{m/s^2}$ (a lower local value, illustrating that $g$ need not be exactly $g_0$) over the 20 s burn.
 :::
 
 ::: answer
-$\cos\beta = (7950-7200)/930.45 = 0.80605$, so $\beta = 36.29^\circ$ and $\sin\beta = 0.59185$. Then $v_z(t_f) = v_{z0} + L\sin\beta - g t_f = 0 + 930.45\times0.59185 - 9.5\times20 = 550.75 - 190.0 = 360.75\ \mathrm{m/s}$ — nonzero, because only $v_x$ was constrained by this single-parameter solve.
+$\cos\beta = (7950-7200)/930.46 = 0.80605$, so $\beta = 36.29^\circ$ and $\sin\beta = 0.59185$. Then $v_z(t_f) = v_{z0} + L\sin\beta - g t_f = 0 + 930.46\times0.59185 - 9.5\times20 = 550.70 - 190.0 = 360.70\ \mathrm{m/s}$ — nonzero, because only $v_x$ was constrained by this single-parameter solve.
 :::
 
 ::: check
