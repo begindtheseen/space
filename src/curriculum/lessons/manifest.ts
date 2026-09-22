@@ -209,6 +209,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "floating-point pitfalls: catastrophic cancellation, machine epsilon"
       ],
       "file": "t0_m03_python_scicomp/06-floating-point.md"
+    },
+    {
+      "id": "l07-scipy",
+      "title": "SciPy: integrating, solving, filtering and fitting",
+      "minutes": 24,
+      "covers": [
+        "SciPy: integrate.solve_ivp, optimize, linalg, signal, stats"
+      ],
+      "file": "t0_m03_python_scicomp/07-scipy.md"
     }
   ],
   "t0_m04_linear_algebra_1": [
@@ -896,6 +905,24 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Lagrange f and g coefficients"
       ],
       "file": "t2_m19_two_body/12-lagrange-coefficients.md"
+    },
+    {
+      "id": "l13-ground-tracks-orbit-types",
+      "title": "Ground tracks and the named orbit types",
+      "minutes": 18,
+      "covers": [
+        "ground tracks and orbit types: LEO, MEO, GEO, GTO, SSO, Molniya, frozen"
+      ],
+      "file": "t2_m19_two_body/13-ground-tracks-orbit-types.md"
+    },
+    {
+      "id": "l14-tle-sgp4",
+      "title": "The TLE format and SGP4",
+      "minutes": 19,
+      "covers": [
+        "TLE format and SGP4"
+      ],
+      "file": "t2_m19_two_body/14-tle-sgp4.md"
     }
   ]
 }
@@ -929,11 +956,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t0_m03_python_scicomp": {
-    "covered": 7,
+    "covered": 8,
     "total": 10,
     "complete": false,
     "missing": [
-      "SciPy: integrate.solve_ivp, optimize, linalg, signal, stats",
       "matplotlib and publication-grade plots",
       "reading and plotting CSV / HDF5 telemetry"
     ]
@@ -1120,12 +1146,9 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t2_m19_two_body": {
-    "covered": 13,
+    "covered": 15,
     "total": 15,
-    "complete": false,
-    "missing": [
-      "ground tracks and orbit types: LEO, MEO, GEO, GTO, SSO, Molniya, frozen",
-      "TLE format and SGP4"
-    ]
+    "complete": true,
+    "missing": []
   }
 }
