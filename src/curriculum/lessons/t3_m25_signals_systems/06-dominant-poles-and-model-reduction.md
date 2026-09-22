@@ -119,11 +119,13 @@ There are systematic alternatives to inspection when the model is large. Balance
 ## Check yourself
 
 ::: check
-A system has poles at $-1 \pm 2j$ and at $-40$, and no zeros. Describe the step response: shape, overshoot, settling time, and what the third pole does.
+A fourth-order closed loop has poles at $-0.8 \pm 1.5j$, $-6$ and $-55$, and a zero at $-5.8$, with unit DC gain. Rank the modes and write down the model you would carry into a design review.
 :::
 
 ::: answer
-The complex pair has $\omega_n = \sqrt{1 + 4} = \sqrt{5} = 2.24\,\mathrm{rad/s}$ and $\zeta = 1/\sqrt{5} = 0.447$, so the response is roughly second order: about 20.8% overshoot, a peak at $t_p = \pi/2 = 1.57\,\mathrm{s}$, and 2% settling in $t_s \approx 4/(\zeta\omega_n) = 4/1 = 4\,\mathrm{s}$. The pole at $-40$ is forty times further left; its mode decays with a $25\,\mathrm{ms}$ time constant and is finished in $100\,\mathrm{ms}$, and its residue-weighted contribution is under 1% of the pair's. Its only visible effect is a small delay at the start of the rise. For design purposes the system is the complex pair; for a margin calculation with crossover anywhere near $10\,\mathrm{rad/s}$ it is not.
+Take the residue-weighted contributions $\lvert r_i/p_i\rvert$. Writing $G = 164.4(s + 5.8)/\left[(s^2 + 1.6s + 2.89)(s + 6)(s + 55)\right]$, which has $G(0) = 1$, the numbers are $0.5736$ for each member of the complex pair, $0.0038$ for the pole at $-6$ and $0.0010$ for the one at $-55$. The pair carries 150 times what the pole at $-6$ carries and 560 times what the pole at $-55$ carries.
+
+Two different reasons for the two rejections. The pole at $-55$ is fast: 69 times further left than the pair, well past the five-times rule. The pole at $-6$ is *not* especially fast — only 7.5 times further left — but the zero at $-5.8$ sits almost on top of it and guts its residue. The model to carry is therefore $2.89/(s^2 + 1.6s + 2.89)$, with $\omega_n = 1.70\,\mathrm{rad/s}$, $\zeta = 0.471$, about 18.7% overshoot, $t_p = \pi/1.5 = 2.09\,\mathrm{s}$ and 2% settling in $4/0.8 = 5.0\,\mathrm{s}$ — and a note in the margin that the near-cancellation at $-6$ is exact only at nominal parameters.
 :::
 
 ::: check

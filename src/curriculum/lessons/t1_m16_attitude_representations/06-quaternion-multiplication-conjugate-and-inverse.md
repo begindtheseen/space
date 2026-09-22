@@ -181,7 +181,7 @@ w = np.array([0.0, np.deg2rad(2.0), 0.0])
 q = np.array([1.0, 0.0, 0.0, 0.0])
 for _ in range(60000):                       # 600 s at dt = 0.01 s
     q = q + 0.01 * 0.5 * qmul(q, np.array([0.0, *w]))
-print(np.linalg.norm(q) - 1.0)               # 0.0009142699368035...
+print(np.linalg.norm(q) - 1.0)               # 0.0009142699356297079
 q /= np.linalg.norm(q)                       # the entire repair
 ```
 :::

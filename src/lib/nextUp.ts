@@ -36,15 +36,35 @@ export function focusInputs(state: LearnerState, dag: Dag, now: Date = new Date(
     }
   }
 
+  /*
+   * The frontier is ranked by what she should learn next. What she can
+   * actually read next is a smaller set, because most of the curriculum is
+   * still being written.
+   *
+   * Sending her to the top-ranked module regardless would mean the one button
+   * the whole focus design rests on can open a page with nothing on it. A
+   * block that begins by finding nothing to do is worse than no block, so the
+   * pick walks down the ranking to the best module that has a lesson she has
+   * not read. Only if nothing at all is readable does it fall back to the top
+   * of the ranking, and then the module page's own notice explains why the
+   * page is thin.
+   */
   const mastery = masteryMap(state, modules, now)
-  const top = rankFrontier(state, dag, mastery, now)[0]
+  const ranked = rankFrontier(state, dag, mastery, now)
+
+  const unread = (moduleId: string) =>
+    lessonsFor(moduleId).find((l) => !state.read[lessonKey(moduleId, l.id)])
+
+  const readable = ranked.find((c) => unread(c.module.id))
+  const top = readable ?? ranked.find((c) => lessonsFor(c.module.id).length > 0) ?? ranked[0]
+
   if (top) {
     inp.module = {
       id: top.module.id,
       title: top.module.title,
       started: top.mastery > 0.05 || !!state.read[top.module.id],
     }
-    const next = lessonsFor(top.module.id).find((l) => !state.read[lessonKey(top.module.id, l.id)])
+    const next = unread(top.module.id)
     if (next) inp.lesson = { id: next.id, title: next.title, minutes: next.minutes }
   }
 

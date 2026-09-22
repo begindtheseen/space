@@ -175,7 +175,7 @@ A telemetry stream carries four doubles per attitude sample. One sample reads $(
 :::
 
 ::: answer
-The last component is within $3\times 10^{-5}$ of $1$ and the first three are of order $10^{-3}$, so this is scalar-last: $w = 0.99997$, $\mathbf{v} = (0.0038, -0.0012, 0.0071)$. The vector part has norm $\sqrt{0.0038^2+0.0012^2+0.0071^2} = \sqrt{1.444\times 10^{-5} + 1.44\times 10^{-6} + 5.041\times 10^{-5}} = 8.08\times 10^{-3}$, so $\Phi = 2\arcsin(0.00808) = 0.01616\,\mathrm{rad} = 0.926^\circ$. The layout is settled; the algebra is not. Scalar-last correlates with JPL but does not imply it, so you still have to compose two known rotations before trusting the sign of anything.
+The last component is within $3\times 10^{-5}$ of $1$ and the first three are of order $10^{-3}$, so this is scalar-last: $w = 0.99997$, $\mathbf{v} = (0.0038, -0.0012, 0.0071)$. The vector part has norm $\sqrt{0.0038^2+0.0012^2+0.0071^2} = \sqrt{1.444\times 10^{-5} + 1.44\times 10^{-6} + 5.041\times 10^{-5}} = 8.142\times 10^{-3}$, so $\Phi = 2\arcsin(0.008142) = 0.016284\,\mathrm{rad} = 0.933^\circ$. The layout is settled; the algebra is not. Scalar-last correlates with JPL but does not imply it, so you still have to compose two known rotations before trusting the sign of anything.
 :::
 
 ::: check

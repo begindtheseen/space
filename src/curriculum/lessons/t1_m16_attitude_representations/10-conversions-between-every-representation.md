@@ -201,7 +201,7 @@ Conversions are the part of an attitude library where property tests pay for the
 1. **Round trip, up to sign.** For random unit $q$ with $w\ge 0$, `quat_from_dcm(dcm_from_quat(q))` must return $q$. The canonicalisation is what makes this testable at all; without it, half the results differ by an overall sign that is not an error.
 2. **Structural validity of every generated matrix.** $\mathbf{C}^\top\mathbf{C} = \mathbf{I}_3$ to $10^{-12}$ and $\lvert\det\mathbf{C}-1\rvert < 10^{-12}$, for random inputs.
 3. **Composition consistency.** $\mathbf{C}(q_1\otimes q_2) = \mathbf{C}(q_1)\mathbf{C}(q_2)$ to $10^{-10}$. This is the one that catches a convention mismatch, because it tests the algebra rather than any single conversion.
-4. **Deliberate edge cases.** The identity; $180^\circ$ about each coordinate axis and about a general axis; $\Phi$ at $10^{-8}$; pitch at $\pm 90^\circ$ for the Euler routines; $\lVert\boldsymbol{\sigma}\rVert$ just above and just below $1$.
+4. **Deliberate edge cases.** The identity; $180^\circ$ about each coordinate axis and about a general axis; $\Phi$ at $10^{-8}$; pitch at $\pm 90^\circ$ for the Euler routines; $\lVert\boldsymbol{\sigma}\rVert$ slightly above and slightly below $1$.
 
 Random testing alone will not find the $180^\circ$ problem: a uniformly distributed rotation lands within $0.01^\circ$ of a half turn about once in $10^{7}$ draws, which is why the naive formula's worst error over $20{,}000$ samples was a tolerable $1.25\times 10^{-9}$ rather than the catastrophic $0.889$ the deliberate case produced.
 

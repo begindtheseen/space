@@ -159,7 +159,7 @@ Two attitude samples have $q_0\cdot q_1 = 0.9962$. What is the rotation between 
 :::
 
 ::: answer
-The dot product is positive so no sign guard is needed. $\Omega = \arccos(0.9962) = 0.0872\,\mathrm{rad} = 4.997^\circ$, so the principal angle is $\Phi = 2\Omega = 9.99^\circ$. Over $0.25\,\mathrm{s}$ that is a mean rate of $9.99/0.25 = 39.98^\circ/\mathrm{s}$. Note how sensitive this is: a dot product of $0.9963$ instead would give $\Phi = 9.86^\circ$ and $39.4^\circ/\mathrm{s}$, a $1.4\%$ change from a change of $10^{-4}$ in the input. Near $q_0\cdot q_1 = 1$ the $\arccos$ is ill-conditioned exactly as in lesson 04, which is the other reason for the small-angle fallback.
+The dot product is positive so no sign guard is needed. $\Omega = \arccos(0.9962) = 0.0872\,\mathrm{rad} = 4.997^\circ$, so the principal angle is $\Phi = 2\Omega = 9.99^\circ$. Over $0.25\,\mathrm{s}$ that is a mean rate of $9.99/0.25 = 39.98^\circ/\mathrm{s}$. Note how sensitive this is: a dot product of $0.9963$ instead would give $\Phi = 9.86^\circ$ and $39.44^\circ/\mathrm{s}$, a $1.33\%$ change from a change of $10^{-4}$ in the input. Near $q_0\cdot q_1 = 1$ the $\arccos$ is ill-conditioned exactly as in lesson 04, which is the other reason for the small-angle fallback.
 :::
 
 ::: check

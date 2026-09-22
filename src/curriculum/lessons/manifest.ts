@@ -1594,6 +1594,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "attitude error representations"
       ],
       "file": "t1_m16_attitude_representations/12-attitude-error-representations.md"
+    },
+    {
+      "id": "l13-so3-so3-algebra-and-the-exp-log-maps",
+      "title": "Introduction to SO(3), so(3) and the exp and log maps",
+      "minutes": 21,
+      "covers": [
+        "introduction to SO(3), so(3) and the exp/log maps"
+      ],
+      "file": "t1_m16_attitude_representations/13-so3-so3-algebra-and-the-exp-log-maps.md"
     }
   ],
   "t1_m17_attitude_kinematics": [
@@ -1659,6 +1668,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "thruster attitude control and minimum impulse bit"
       ],
       "file": "t1_m17_attitude_kinematics/07-thruster-control-and-minimum-impulse-bit.md"
+    },
+    {
+      "id": "l08-thrust-vector-control-gimbal-dynamics",
+      "title": "Thrust vector control — gimbal dynamics for launch vehicles",
+      "minutes": 22,
+      "covers": [
+        "thrust vector control gimbal dynamics for launch vehicles"
+      ],
+      "file": "t1_m17_attitude_kinematics/08-thrust-vector-control-gimbal-dynamics.md"
     }
   ],
   "t1_m18_atmospheric_flight": [
@@ -2003,6 +2021,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Open-loop vs closed-loop transfer functions"
       ],
       "file": "t3_m25_signals_systems/11-open-loop-vs-closed-loop.md"
+    },
+    {
+      "id": "l12-sensitivity-and-complementary-sensitivity",
+      "title": "Sensitivity, complementary sensitivity and S + T = 1",
+      "minutes": 16,
+      "covers": [
+        "Sensitivity S and complementary sensitivity T, and the identity S + T = 1"
+      ],
+      "file": "t3_m25_signals_systems/12-sensitivity-and-complementary-sensitivity.md"
     }
   ],
   "t3_m26_classical_control": [
@@ -2068,6 +2095,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Gain margin, phase margin, delay margin, and the modulus (vector) margin"
       ],
       "file": "t3_m26_classical_control/07-the-four-margins.md"
+    },
+    {
+      "id": "l08-why-margins-can-lie",
+      "title": "Why margins can lie",
+      "minutes": 24,
+      "covers": [
+        "Why margins can lie: MIMO coupling, nonlinearity, simultaneous perturbations"
+      ],
+      "file": "t3_m26_classical_control/08-why-margins-can-lie.md"
     }
   ],
   "t3_m27_digital_control": [
@@ -2160,6 +2196,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Biquad sections for discrete filters and notches"
       ],
       "file": "t3_m27_digital_control/10-biquad-sections-for-filters-and-notches.md"
+    },
+    {
+      "id": "l11-multi-rate-and-jitter",
+      "title": "Multi-rate systems and jitter",
+      "minutes": 23,
+      "covers": [
+        "Multi-rate systems, jitter, and their effect on stability"
+      ],
+      "file": "t3_m27_digital_control/11-multi-rate-systems-and-jitter.md"
     }
   ],
   "t3_m28_state_space": [
@@ -2243,6 +2288,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Integral action in state feedback: servo and augmented-state design"
       ],
       "file": "t3_m28_state_space/09-integral-action-servo-design.md"
+    },
+    {
+      "id": "l10-mimo-transmission-zeros-rga",
+      "title": "MIMO systems, transmission zeros and the relative gain array",
+      "minutes": 22,
+      "covers": [
+        "MIMO systems, transmission zeros, and the relative gain array"
+      ],
+      "file": "t3_m28_state_space/10-mimo-transmission-zeros-rga.md"
     }
   ],
   "t3_m29_optimal_control_lqr": [
@@ -2382,6 +2436,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Singular values of MIMO transfer matrices and input/output directionality"
       ],
       "file": "t3_m30_robust_control/07-mimo-singular-values-directionality.md"
+    },
+    {
+      "id": "l08-mimo-margins-and-disk-margins",
+      "title": "MIMO margins and the disk margin",
+      "minutes": 22,
+      "covers": [
+        "MIMO stability margins, disk margins, and why per-loop SISO margins mislead"
+      ],
+      "file": "t3_m30_robust_control/08-mimo-margins-and-disk-margins.md"
     }
   ],
   "t3_m31_nonlinear_control": [
@@ -2476,6 +2539,24 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Terminal cost and terminal constraint set for stability guarantees"
       ],
       "file": "t3_m32_mpc/05-terminal-cost-and-terminal-set.md"
+    },
+    {
+      "id": "l06-recursive-feasibility-and-invariant-sets",
+      "title": "Feasibility, recursive feasibility and invariant sets",
+      "minutes": 21,
+      "covers": [
+        "Feasibility, recursive feasibility, and the maximal control invariant set"
+      ],
+      "file": "t3_m32_mpc/06-recursive-feasibility-and-invariant-sets.md"
+    },
+    {
+      "id": "l07-robust-mpc-tubes-and-min-max",
+      "title": "Robust MPC, tubes and min-max",
+      "minutes": 22,
+      "covers": [
+        "Robust MPC: tube MPC and min-max formulations"
+      ],
+      "file": "t3_m32_mpc/07-robust-mpc-tubes-and-min-max.md"
     }
   ]
 }
@@ -2580,19 +2661,16 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t1_m16_attitude_representations": {
-    "covered": 12,
+    "covered": 13,
     "total": 13,
-    "complete": false,
-    "missing": [
-      "introduction to SO(3), so(3) and the exp/log maps"
-    ]
+    "complete": true,
+    "missing": []
   },
   "t1_m17_attitude_kinematics": {
-    "covered": 7,
+    "covered": 8,
     "total": 10,
     "complete": false,
     "missing": [
-      "thrust vector control gimbal dynamics for launch vehicles",
       "actuator saturation and rate limits",
       "coning motion and coning correction"
     ]
@@ -2716,19 +2794,16 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t3_m25_signals_systems": {
-    "covered": 11,
+    "covered": 12,
     "total": 12,
-    "complete": false,
-    "missing": [
-      "Sensitivity S and complementary sensitivity T, and the identity S + T = 1"
-    ]
+    "complete": true,
+    "missing": []
   },
   "t3_m26_classical_control": {
-    "covered": 7,
+    "covered": 8,
     "total": 13,
     "complete": false,
     "missing": [
-      "Why margins can lie: MIMO coupling, nonlinearity, simultaneous perturbations",
       "Lead, lag and lead-lag compensators",
       "Notch filters for structural bending modes; gain stabilization vs phase stabilization",
       "The Bode gain-phase relationship, the Bode sensitivity integral, and the waterbed effect",
@@ -2737,19 +2812,16 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t3_m27_digital_control": {
+    "covered": 11,
+    "total": 11,
+    "complete": true,
+    "missing": []
+  },
+  "t3_m28_state_space": {
     "covered": 10,
     "total": 11,
     "complete": false,
     "missing": [
-      "Multi-rate systems, jitter, and their effect on stability"
-    ]
-  },
-  "t3_m28_state_space": {
-    "covered": 9,
-    "total": 11,
-    "complete": false,
-    "missing": [
-      "MIMO systems, transmission zeros, and the relative gain array",
       "Model reduction: balanced truncation and Hankel singular values"
     ]
   },
@@ -2767,11 +2839,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t3_m30_robust_control": {
-    "covered": 7,
+    "covered": 8,
     "total": 12,
     "complete": false,
     "missing": [
-      "MIMO stability margins, disk margins, and why per-loop SISO margins mislead",
       "Performance limitations imposed by right-half-plane poles and zeros",
       "Linear parameter-varying control and gain scheduling with guarantees",
       "Adaptive control (MRAC, L1 adaptive) and its use and abuse in aerospace",
@@ -2795,14 +2866,12 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t3_m32_mpc": {
-    "covered": 5,
+    "covered": 7,
     "total": 13,
     "complete": false,
     "missing": [
-      "Feasibility, recursive feasibility, and the maximal control invariant set",
       "Explicit MPC and multi-parametric programming",
       "Nonlinear MPC",
-      "Robust MPC: tube MPC and min-max formulations",
       "Economic MPC",
       "Real-time onboard MPC: warm starting, solver choice, worst-case iteration bounds, certifiable solve time",
       "Embedded QP solvers (OSQP, qpOASES, HPIPM) and code generation",

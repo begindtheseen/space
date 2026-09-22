@@ -175,11 +175,13 @@ The Padé model gets the frequency response right and the very early time respon
 ## Check yourself
 
 ::: check
-A pure time delay of $T$ seconds appears in a loop. What does it do to the Bode plot, and what is the phase at $12\,\mathrm{rad/s}$ for $T = 30\,\mathrm{ms}$?
+A loop crosses over at $6\,\mathrm{rad/s}$. Two proposals arrive: one adds $15\,\mathrm{ms}$ of transport delay, the other a first-order filter with $\tau = 15\,\mathrm{ms}$. Compare their effect at crossover and at $60\,\mathrm{rad/s}$, and say which you would rather have.
 :::
 
 ::: answer
-The magnitude plot is unchanged — $\lvert e^{-j\omega T}\rvert = 1$ at every frequency — and the phase falls linearly and without bound, $\phi = -\omega T$ radians. At $\omega = 12\,\mathrm{rad/s}$ and $T = 0.03\,\mathrm{s}$: $\phi = -0.36\,\mathrm{rad} = -20.6^\circ$. Nothing about this is recoverable by gain adjustment; reducing the gain lowers $\omega_c$, which lowers $\omega_cT$, but the delay element itself is untouched. This is why delay is so corrosive: it eats phase margin fastest exactly where your crossover is, and only a slower loop fixes it.
+At crossover the two are almost identical. The delay gives $\phi = -57.3(6)(0.015) = -5.16^\circ$ with no change in magnitude; the filter gives $-\arctan(0.09) = -5.14^\circ$ and $-0.035\,\mathrm{dB}$. If crossover were all that mattered you could not tell them apart, which is the "group delay" bookkeeping of the section above.
+
+At $60\,\mathrm{rad/s}$ they part company completely. The delay gives $-51.6^\circ$ and still $0\,\mathrm{dB}$; the filter gives $-42.0^\circ$ and $-2.58\,\mathrm{dB}$. Take the filter. It costs slightly less phase and, more importantly, it *attenuates* — which is what you need above crossover, where structural modes and sensor noise live. The delay leaves the gain at full value while removing phase without bound, so it can hand you a second gain crossover with no margin at all. The general rule: given a choice between lag and latency for the same phase penalty at crossover, always take the lag.
 :::
 
 ::: check

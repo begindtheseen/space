@@ -126,10 +126,10 @@ $$
 \end{bmatrix}.
 $$
 
-It is a perfectly valid DCM — orthonormal, determinant $+1$ — and it is a different attitude. The relative rotation between the two results, $\mathbf{C}_{321}\mathbf{C}_{123}^{\top}$, has trace $2.90728$, so the principal angle between them is
+It is a perfectly valid DCM — orthonormal, determinant $+1$ — and it is a different attitude. The relative rotation between the two results, $\mathbf{C}_{321}\mathbf{C}_{123}^{\top}$, has trace $2.907028$, so the principal angle between them is
 
 $$
-\Phi = \arccos\frac{2.90728 - 1}{2} = 17.54^\circ .
+\Phi = \arccos\frac{2.907028 - 1}{2} = 17.54^\circ .
 $$
 
 Seventeen and a half degrees of pointing error from reading three numbers in the wrong order. And the error is not detectable from the numbers: read the 1-2-3 matrix with the 3-2-1 extraction formulas and you get $(23.75^\circ, 45.61^\circ, 27.44^\circ)$, a plausible-looking attitude with no sign that anything is wrong. This is why every interface that carries Euler angles must carry the sequence with them.

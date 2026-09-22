@@ -136,11 +136,13 @@ Other right-half-plane zeros you will meet. An aircraft's altitude response to e
 ## Check yourself
 
 ::: check
-A plant has a zero at $s = +2\,\mathrm{rad/s}$. What does that do to the step response, and what limit does it place on the closed-loop design?
+An aircraft's altitude response to elevator has a right-half-plane zero at $0.8\,\mathrm{rad/s}$. A colleague proposes an altitude-hold loop crossing over at $1.0\,\mathrm{rad/s}$ and says the initial sink can be tuned out with more derivative gain. Assess both claims with numbers.
 :::
 
 ::: answer
-The step response starts in the wrong direction: with $Y(2) = G(2)/2 = 0$ and $e^{-2t} > 0$, the response must take both signs, and since it ends with the sign of $G(0)$ it began with the other. On a Bode plot the zero adds $+20\,\mathrm{dB}$ per decade of magnitude above $2\,\mathrm{rad/s}$ while *removing* phase, $-\arctan(\omega/2)$, in contrast to the lead a left-half-plane zero would give. The closed loop must therefore cross over well below the zero — the working rule is $\omega_c < z/2 = 1\,\mathrm{rad/s}$, and $0.5$–$0.7\,\mathrm{rad/s}$ in practice — because at $\omega_c = z/2$ the all-pass part alone costs $53^\circ$ of phase. It cannot be cancelled: a controller pole at $+2$ is an unstable controller. This is a fundamental limitation of the plant and its instrumentation, not a tuning problem.
+The crossover claim fails on phase. At $\omega_c = 1.0\,\mathrm{rad/s}$ the ratio $\omega_c/z = 1.25$, so the all-pass factor alone contributes $-2\arctan(1.25) = -102.7^\circ$. Added to the $-90^\circ$ or more that the altitude integration and the airframe already supply, the phase is past $-180^\circ$ before any controller phase is counted, and no lead network recovers that much. The working limit is $\omega_c < z/2 = 0.4\,\mathrm{rad/s}$, and a sober design would sit nearer $0.2$–$0.3\,\mathrm{rad/s}$.
+
+The tuning claim fails on principle. The right-half-plane zero of the plant is also a zero of the closed loop from command to altitude, so $\int_0^\infty y(t)e^{-0.8t}dt = 0$ for the closed-loop step response whatever the controller does, and $y$ must therefore change sign. Derivative gain changes the shape and the timing of the dip, not its existence — and by speeding the loop up it makes the dip deeper, because the positive area arrives earlier, while $e^{-0.8t}$ is still large, and must be balanced by more negative area.
 :::
 
 ::: check
