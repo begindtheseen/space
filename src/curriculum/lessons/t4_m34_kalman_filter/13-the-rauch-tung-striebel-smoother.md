@@ -12,7 +12,7 @@ The **Rauch-Tung-Striebel (RTS) smoother** is exactly the correction: a backward
 
 ## The idea: the future reaches the past only through the present
 
-The derivation leans on one structural fact, and it is worth stating precisely before doing any algebra. Because the state process is Markov — the first lesson's whiteness assumption, again — $\mathbf{x}_k$ and the future measurements $\mathbf{z}_{k+1},\ldots,\mathbf{z}_N$ are **conditionally independent given $\mathbf{x}_{k+1}$**: once $\mathbf{x}_{k+1}$ is known, nothing further about $\mathbf{x}_k$ can be learned from data that came after it, because everything the future measurements could reveal about $\mathbf{x}_k$ is already fully mediated by the one state that sits between them, $\mathbf{x}_{k+1}$. In symbols, $p(\mathbf{x}_k \mid \mathbf{x}_{k+1}, \mathbf{z}_{1:N}) = p(\mathbf{x}_k \mid \mathbf{x}_{k+1}, \mathbf{z}_{1:k})$ — the future measurements drop out entirely once $\mathbf{x}_{k+1}$ is conditioned on. This is the entire mechanism that makes a backward *recursion* possible at all, rather than needing to re-run a full batch solve centered on every single $k$.
+The derivation leans on one structural fact, and it is worth stating precisely before doing any algebra. Because the state process is Markov — the stochastic-model lesson's whiteness assumption, again — $\mathbf{x}_k$ and the future measurements $\mathbf{z}_{k+1},\ldots,\mathbf{z}_N$ are **conditionally independent given $\mathbf{x}_{k+1}$**: once $\mathbf{x}_{k+1}$ is known, nothing further about $\mathbf{x}_k$ can be learned from data that came after it, because everything the future measurements could reveal about $\mathbf{x}_k$ is already fully mediated by the one state that sits between them, $\mathbf{x}_{k+1}$. In symbols, $p(\mathbf{x}_k \mid \mathbf{x}_{k+1}, \mathbf{z}_{1:N}) = p(\mathbf{x}_k \mid \mathbf{x}_{k+1}, \mathbf{z}_{1:k})$ — the future measurements drop out entirely once $\mathbf{x}_{k+1}$ is conditioned on. This is the entire mechanism that makes a backward *recursion* possible at all, rather than needing to re-run a full batch solve centered on every single $k$.
 
 ## Deriving the backward recursion
 
@@ -22,7 +22,7 @@ $$
 \begin{pmatrix}\mathbf{P}_k^+ & \mathbf{P}_k^+\mathbf{F}^{\mathsf{T}}\\ \mathbf{F}\mathbf{P}_k^+ & \mathbf{P}_{k+1}^-\end{pmatrix},
 $$
 
-the cross-covariance following directly from $\operatorname{Cov}(\mathbf{x}_k, \mathbf{x}_{k+1}) = \operatorname{Cov}(\mathbf{x}_k, \mathbf{F}\mathbf{x}_k+\mathbf{w}_k) = \mathbf{P}_k^+\mathbf{F}^{\mathsf{T}}$. Applying the probability module's Gaussian-conditioning rule — the exact tool the Bayesian derivation used, two lessons after the model itself — to condition $\mathbf{x}_k$ on $\mathbf{x}_{k+1}$ within this joint distribution gives
+the cross-covariance following directly from $\operatorname{Cov}(\mathbf{x}_k, \mathbf{x}_{k+1}) = \operatorname{Cov}(\mathbf{x}_k, \mathbf{F}\mathbf{x}_k+\mathbf{w}_k) = \mathbf{P}_k^+\mathbf{F}^{\mathsf{T}}$. Applying the probability module's Gaussian-conditioning rule — the exact tool the Bayesian derivation used in the three-derivations lesson — to condition $\mathbf{x}_k$ on $\mathbf{x}_{k+1}$ within this joint distribution gives
 
 $$
 p(\mathbf{x}_k\mid\mathbf{x}_{k+1},\mathbf{z}_{1:k}):\quad \text{mean } \hat{\mathbf{x}}_k^+ + \mathbf{C}_k(\mathbf{x}_{k+1}-\hat{\mathbf{x}}_{k+1}^-), \qquad \mathbf{C}_k = \mathbf{P}_k^+\mathbf{F}^{\mathsf{T}}(\mathbf{P}_{k+1}^-)^{-1}.

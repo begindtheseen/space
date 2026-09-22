@@ -14,15 +14,15 @@ None of this is museum-piece history, though it started as exactly that: the squ
 
 The minimum-variance lesson proved $\mathbf{P}^+ = (\mathbf{I}-\mathbf{K}\mathbf{H})\mathbf{P}^-$ only at the exactly optimal $\mathbf{K}$, and that the Joseph form $\mathbf{P}^+ = (\mathbf{I}-\mathbf{K}\mathbf{H})\mathbf{P}^-(\mathbf{I}-\mathbf{K}\mathbf{H})^{\mathsf{T}} + \mathbf{K}\mathbf{R}\mathbf{K}^{\mathsf{T}}$ holds for *any* gain, symmetric and positive semi-definite by construction because it is a sum of two matrices each of that form. What that lesson left untested is how much a gain has to be wrong before the simplified form's guarantee actually collapses.
 
-::: example A four percent gain error, on the exact singular Q lesson one warned about
-Take the constant-velocity model in single-precision (float32) arithmetic — comparable to older flight-computer word lengths — with the **short-step approximate** process noise from the first lesson, $\mathbf{Q} = \operatorname{diag}(0,\ q\Delta t)$, flagged there as exactly singular and margin-removing. Deliberately use a gain $4\%$ too large, $\mathbf{K}_{\mathrm{used}} = 1.04\,\mathbf{K}$, of the kind a stale gain table or a rounding error could easily produce. Run one predict/update cycle from $\mathbf{P}_0 = \operatorname{diag}(100,100)$:
+::: example A four percent gain error, on the exact singular Q the stochastic-model lesson warned about
+Take the constant-velocity model in single-precision (float32) arithmetic — comparable to older flight-computer word lengths — with the **short-step approximate** process noise from the stochastic-model lesson, $\mathbf{Q} = \operatorname{diag}(0,\ q\Delta t)$, flagged there as exactly singular and margin-removing. Deliberately use a gain $4\%$ too large, $\mathbf{K}_{\mathrm{used}} = 1.04\,\mathbf{K}$, of the kind a stale gain table or a rounding error could easily produce. Run one predict/update cycle from $\mathbf{P}_0 = \operatorname{diag}(100,100)$:
 
 | Form | $\mathbf{P}^+$ at the very first update | Smallest eigenvalue |
 | --- | --- | --- |
 | Simplified, $(\mathbf{I}-\mathbf{K}\mathbf{H})\mathbf{P}^-$ | $\begin{pmatrix}0.5367 & 0.4053\\ 0.4053 & 0.6621\end{pmatrix}$ | $-0.03847$ |
 | Joseph | (a different, valid matrix) | $4.0014$ |
 
-The simplified form reports a covariance with a **negative eigenvalue on the very first update** — a direction in which the filter claims a negative variance, a number with no meaning at all — while the Joseph form, fed the identical data and the identical wrong gain, stays comfortably positive definite. With the same $4\%$ error but the *exact*, non-singular $\mathbf{Q}$ from the first lesson instead of the short-step approximation, neither form fails over thousands of steps: it is specifically the combination of an already-thin margin (the singular $\mathbf{Q}$) and a non-optimal gain that collapses the simplified form, precisely the double failure the first lesson's warning and this module's running emphasis on exact process noise were both anticipating. Scanning the gain error from $1\%$ up to $4\%$ against the singular $\mathbf{Q}$ shows the smallest eigenvalue falling smoothly from $2.88$ to $0.45$ and then, between $3.5\%$ and $4\%$, crossing zero — not a gradual erosion but a sharp threshold, on the very first step, that a filter watching only its own reported diagonal variances would have no way to anticipate.
+The simplified form reports a covariance with a **negative eigenvalue on the very first update** — a direction in which the filter claims a negative variance, a number with no meaning at all — while the Joseph form, fed the identical data and the identical wrong gain, stays comfortably positive definite. With the same $4\%$ error but the *exact*, non-singular $\mathbf{Q}$ from the stochastic-model lesson instead of the short-step approximation, neither form fails over thousands of steps: it is specifically the combination of an already-thin margin (the singular $\mathbf{Q}$) and a non-optimal gain that collapses the simplified form, precisely the double failure the stochastic-model lesson's warning and this module's running emphasis on exact process noise were both anticipating. Scanning the gain error from $1\%$ up to $4\%$ against the singular $\mathbf{Q}$ shows the smallest eigenvalue falling smoothly from $2.88$ to $0.45$ and then, between $3.5\%$ and $4\%$, crossing zero — not a gradual erosion but a sharp threshold, on the very first step, that a filter watching only its own reported diagonal variances would have no way to anticipate.
 :::
 
 ::: warning A small error is not automatically a safe one
@@ -139,7 +139,7 @@ For any vector $\mathbf{v}$, $\mathbf{v}^{\mathsf{T}}(\mathbf{S}\mathbf{S}^{\mat
 :::
 
 ::: check
-The worked example found failure between $3.5\%$ and $4\%$ gain error with the singular $\mathbf{Q}$, but no failure at all up to $4\%$ with the exact $\mathbf{Q}$. Explain why the singular case is more fragile, referring to the first lesson's warning.
+The worked example found failure between $3.5\%$ and $4\%$ gain error with the singular $\mathbf{Q}$, but no failure at all up to $4\%$ with the exact $\mathbf{Q}$. Explain why the singular case is more fragile, referring to the stochastic-model lesson's warning.
 :::
 
 ::: answer

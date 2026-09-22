@@ -58,7 +58,7 @@ This is the remedy the flashcard lists first for a reason: it is the only one of
 
 ## Remedy: fade memory when you cannot augment
 
-Augmentation needs a hypothesis about what is missing. Sometimes there is no time to form one, or the missing effect genuinely is not a single identifiable state — and the recursive-least-squares lesson two lessons back already named the blunt instrument for this case: a **forgetting factor**, here called **fading memory**, that inflates the predicted covariance a little beyond what $\mathbf{Q}$ alone would give, so the filter never becomes too certain of a model it should keep doubting.
+Augmentation needs a hypothesis about what is missing. Sometimes there is no time to form one, or the missing effect genuinely is not a single identifiable state — and the three-derivations lesson's recursive-least-squares argument already named the blunt instrument for this case: a **forgetting factor**, here called **fading memory**, that inflates the predicted covariance a little beyond what $\mathbf{Q}$ alone would give, so the filter never becomes too certain of a model it should keep doubting.
 
 ::: key Fading-memory prediction
 $$

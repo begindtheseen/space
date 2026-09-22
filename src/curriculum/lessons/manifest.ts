@@ -2912,6 +2912,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Residual analysis, outlier rejection, and robust estimation (Huber loss, RANSAC)"
       ],
       "file": "t4_m33_least_squares/09-residual-analysis-outlier-rejection-robust-estimation.md"
+    },
+    {
+      "id": "l10-wahba-problem",
+      "title": "The Wahba problem: aligning two sets of vector observations",
+      "minutes": 15,
+      "covers": [
+        "The Wahba problem: find the rotation best aligning two sets of vector observations"
+      ],
+      "file": "t4_m33_least_squares/10-wahba-problem.md"
     }
   ],
   "t4_m34_kalman_filter": [
@@ -3393,11 +3402,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t4_m33_least_squares": {
-    "covered": 9,
+    "covered": 10,
     "total": 12,
     "complete": false,
     "missing": [
-      "The Wahba problem: find the rotation best aligning two sets of vector observations",
       "Wahba solutions: TRIAD, Davenport q-method, QUEST, ESOQ, and the SVD method",
       "Covariance of an attitude solution and the effect of sensor geometry"
     ]

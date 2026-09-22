@@ -12,7 +12,7 @@ The result is more than a algebraic convenience. It is why a flight computer can
 
 ## Covariance propagation between measurements
 
-Start with the simpler case: no updates at all, only $N$ predict steps in a row, coasting on the dynamics alone — a filter with a missed measurement, an occulted GPS fix, or the multi-second gap between star-tracker readings the first lesson's gyro example described. Unroll the predict step,
+Start with the simpler case: no updates at all, only $N$ predict steps in a row, coasting on the dynamics alone — a filter with a missed measurement, an occulted GPS fix, or the multi-second gap between star-tracker readings the stochastic-model lesson's gyro example described. Unroll the predict step,
 
 $$
 \mathbf{P}_1 = \mathbf{F}\mathbf{P}_0\mathbf{F}^{\mathsf{T}} + \mathbf{Q}, \qquad
@@ -35,7 +35,7 @@ $$
 \mathbf{P}_5 = \begin{pmatrix}106.271 & 12.563\\ 12.563 & 25.250\end{pmatrix}.
 $$
 
-Evaluating the closed form directly — $\mathbf{F}^5\mathbf{P}_0(\mathbf{F}^5)^{\mathsf{T}}$ plus the five-term sum $\sum_{j=0}^{4}\mathbf{F}^j\mathbf{Q}(\mathbf{F}^j)^{\mathsf{T}}$ — gives the identical matrix to within $3\times10^{-14}$, floating-point round-off. This is the same fact the first lesson noticed in passing (a hundred $0.1\,\mathrm{s}$ steps compose into one $10\,\mathrm{s}$ step) written as a general rule for *any* linear model, not only the constant-velocity one where the composed sum happens to have a clean closed form of its own.
+Evaluating the closed form directly — $\mathbf{F}^5\mathbf{P}_0(\mathbf{F}^5)^{\mathsf{T}}$ plus the five-term sum $\sum_{j=0}^{4}\mathbf{F}^j\mathbf{Q}(\mathbf{F}^j)^{\mathsf{T}}$ — gives the identical matrix to within $3\times10^{-14}$, floating-point round-off. This is the same fact the stochastic-model lesson noticed in passing (a hundred $0.1\,\mathrm{s}$ steps compose into one $10\,\mathrm{s}$ step) written as a general rule for *any* linear model, not only the constant-velocity one where the composed sum happens to have a clean closed form of its own.
 :::
 
 ## Two steps, one recursion

@@ -6,7 +6,7 @@ covers:
   - The Kalman gain as a trust ratio between prediction and measurement
 ---
 
-You can recite $\mathbf{K} = \mathbf{P}^-\mathbf{H}^{\mathsf{T}}(\mathbf{H}\mathbf{P}^-\mathbf{H}^{\mathsf{T}} + \mathbf{R})^{-1}$ from the derivation two lessons back without having any feel for what a particular gain *means* when you see one printed out of a running filter. That feel is what an interviewer is checking for when they ask "your gain just dropped to near zero — what does that tell you?", and it is what you need at 2 a.m. when a real filter's telemetry looks wrong and the gain matrix is the only clue on the screen. This lesson builds that feel by treating $\mathbf{K}$ not as the output of a minimization but as a ratio: how much the filter believed its own prediction, divided by how much total disagreement it saw once the measurement came in.
+You can recite $\mathbf{K} = \mathbf{P}^-\mathbf{H}^{\mathsf{T}}(\mathbf{H}\mathbf{P}^-\mathbf{H}^{\mathsf{T}} + \mathbf{R})^{-1}$ from the three-derivations lesson without having any feel for what a particular gain *means* when you see one printed out of a running filter. That feel is what an interviewer is checking for when they ask "your gain just dropped to near zero — what does that tell you?", and it is what you need at 2 a.m. when a real filter's telemetry looks wrong and the gain matrix is the only clue on the screen. This lesson builds that feel by treating $\mathbf{K}$ not as the output of a minimization but as a ratio: how much the filter believed its own prediction, divided by how much total disagreement it saw once the measurement came in.
 
 The scalar case makes the ratio literal. The general case complicates it in one specific, learnable way — trust is not spent evenly across a correlated state — and breaks the "ratio never exceeds one" intuition in a way worth knowing before it surprises you in someone else's code.
 
@@ -53,7 +53,7 @@ The DGPS gain is $K = 62{,}500/62{,}501 = 0.999984$: the update all but discards
 
 The vector formula does two conceptually separate things, and it is worth pulling them apart. $\mathbf{P}^-\mathbf{H}^{\mathsf{T}}$ is the covariance between the *full state error* and the *predicted measurement error* — it takes the state-space uncertainty and reports how much of it lines up with what the sensor can see, mapping an $n\times n$ object into an $n\times m$ one. Then $\mathbf{S}^{-1} = (\mathbf{H}\mathbf{P}^-\mathbf{H}^{\mathsf{T}} + \mathbf{R})^{-1}$ rescales that cross-covariance by the *total* uncertainty in the measurement's own space — prediction uncertainty as seen through $\mathbf{H}$, plus sensor uncertainty. The product is the trust ratio's exact generalization: correlation with the measurement, divided by how much total disagreement that measurement can produce.
 
-The alternate form derived as a check-yourself answer two lessons back makes the same point differently and is worth having at hand for this lesson specifically:
+The alternate form derived as a check-yourself answer in the three-derivations lesson makes the same point differently and is worth having at hand for this lesson specifically:
 
 $$
 \mathbf{K} = \mathbf{P}^+\mathbf{H}^{\mathsf{T}}\mathbf{R}^{-1}.

@@ -6,7 +6,7 @@ covers:
   - Correlated and time-varying noise; the Schmidt-Kalman consider filter
 ---
 
-Four assumptions closed the stochastic model in the first lesson: $\mathbf{w}$ and $\mathbf{v}$ each white, the two mutually independent, and the initial state independent of both. Every lesson since has quietly relied on all four. This lesson removes two of them in turn — mutual independence, and whiteness — and then spends its last part on a filter built for a situation none of the last fourteen lessons has needed: a state you cannot safely ignore and should not try to estimate either.
+Four assumptions closed the stochastic model in the stochastic-model lesson: $\mathbf{w}$ and $\mathbf{v}$ each white, the two mutually independent, and the initial state independent of both. Every lesson since has quietly relied on all four. This lesson removes two of them in turn — mutual independence, and whiteness — and then spends its last part on a filter built for a situation none of the last fourteen lessons has needed: a state you cannot safely ignore and should not try to estimate either.
 
 ## When process and measurement noise share a cause
 
@@ -39,7 +39,7 @@ The corrected filter sits close to the ideal value of $2$; the naive filter sits
 The first lesson's rule for a correlated (colored) noise source was direct: it is not noise, it is a state, and it belongs in $\mathbf{x}$ with its own Gauss-Markov dynamics driven by genuinely white noise. That rule needs no new derivation here — only a demonstration that skipping it produces exactly the symptom the consistency-testing lesson built a tool for.
 
 ::: example A colored measurement bias, caught by its own innovations
-A slowly wandering bias $b$ (correlation time $5$ steps, stationary standard deviation $2.0$) corrupts a position measurement alongside genuine white noise, $R_v=0.5$: $z = x + b + v$. One common shortcut folds $b$'s *stationary* variance into $R$ as though it were extra white noise, $R_{\mathrm{naive}} = R_v + \sigma_b^2 = 2.5$, and ignores $b$ entirely. The correct treatment augments $b$ as an explicit Gauss-Markov state, exactly as the first lesson's gyro-bias example did.
+A slowly wandering bias $b$ (correlation time $5$ steps, stationary standard deviation $2.0$) corrupts a position measurement alongside genuine white noise, $R_v=0.5$: $z = x + b + v$. One common shortcut folds $b$'s *stationary* variance into $R$ as though it were extra white noise, $R_{\mathrm{naive}} = R_v + \sigma_b^2 = 2.5$, and ignores $b$ entirely. The correct treatment augments $b$ as an explicit Gauss-Markov state, exactly as the stochastic-model lesson's gyro-bias example did.
 
 Sample innovation autocorrelation over $400$ steps, band $\pm1.96/\sqrt{400}=0.098$:
 
@@ -129,7 +129,7 @@ Yes — the Joseph form's guarantee holds for *any* gain matrix at all, which is
 | Item | Statement |
 | --- | --- |
 | Correlated $\mathbf{w},\mathbf{v}$ | Update at step $k$ unchanged; predict gains a term $\mathbf{M}\mathbf{S}_k^{-1}\boldsymbol{\nu}_k$; ignoring a real $\mathbf{M}$ costs calibration, direction depending on $\mathbf{M}$'s sign |
-| Colored noise | Still the first lesson's rule: give it a state and Gauss-Markov dynamics; folding its variance into $R$ leaves a diagnosable autocorrelation signature in the innovations |
+| Colored noise | Still the stochastic-model lesson's rule: give it a state and Gauss-Markov dynamics; folding its variance into $R$ leaves a diagnosable autocorrelation signature in the innovations |
 | Consider filter | Gain $\mathbf{K}_{\mathrm{consider}}=(\mathbf{K}_x;\mathbf{0})$ in the Joseph form; $\mathbf{y}$'s uncertainty inflates $\mathbf{P}_x$ correctly without ever updating $\hat{\mathbf{y}}$ |
 | Consider vs. ignore | Similar point-estimate accuracy for $\mathbf{x}$; consider reports uncertainty honestly (NEES-style ratio $2.4$ vs. $50.7$ for ignoring) |
 | Consider vs. full estimation | Full estimation is more accurate when its model of the nuisance parameter is trustworthy; consider trades that potential accuracy for immunity to a badly wrong bet on a weakly observable state |
