@@ -1,0 +1,26 @@
+# Publish a release without touching git tags: bump "version" in package.json,
+# write the same version on the first line of RELEASE.txt, commit and push (any
+# branch). This hands off to release.yml, which builds the bundle and the Mac
+# app, creates the v<version> tag at this commit and publishes the GitHub
+# Release. `npm version patch && git push --follow-tags` still works as well.
+# (The file has an extension because electron-builder writes to release/, and
+# macOS filesystems treat RELEASE and release as the same name.)
+name: Release (RELEASE.txt)
+
+on:
+  push:
+    # A push trigger with no branches/tags filter fires for tag pushes as well,
+    # and path filters are not evaluated for tags — so without this every
+    # `git push --follow-tags` would run the release pipeline a second time
+    # (via release.yml's own `tags: ['v*']`) against the same tag. `**`
+    # matches every branch and, per the GitHub docs, excludes tags.
+    branches: ['**']
+    paths: ['RELEASE.txt']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    uses: ./.github/workflows/release.yml
+    secrets: inherit

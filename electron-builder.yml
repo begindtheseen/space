@@ -1,0 +1,66 @@
+# electron-builder configuration for the ORBIT macOS app.
+# The shell is desktop/ + package.json inside app.asar; the built web bundle
+# (dist/, produced by `npm run build:bundle`) travels beside it as an extra
+# resource so the updater can swap in newer bundles without touching the app.
+appId: com.begindtheseen.orbit
+productName: ORBIT
+
+directories:
+  output: release
+  buildResources: desktop/icon
+
+# Only the shell goes into app.asar. The package.json "dependencies" (React,
+# CodeMirror — web-only, already compiled into dist/) never match these
+# positive patterns, so electron-builder leaves node_modules out entirely.
+files:
+  - desktop/**/*
+  - '!desktop/test/**'
+  - '!desktop/README.md'
+  - package.json
+
+extraResources:
+  - from: dist
+    to: dist
+
+asar: true
+npmRebuild: false
+nodeGypRebuild: false
+electronLanguages:
+  - en
+
+mac:
+  target:
+    - target: dmg
+      arch:
+        - universal
+    - target: zip
+      arch:
+        - universal
+  category: public.app-category.education
+  icon: desktop/icon/icon.png
+  # No Apple Developer ID: the app is ad-hoc signed by scripts/after-pack.cjs,
+  # which is why hardened runtime, Gatekeeper assessment and notarisation are
+  # all off. See README "Install on a Mac" for the first-launch step.
+  identity: null
+  hardenedRuntime: false
+  gatekeeperAssess: false
+  notarize: false
+  darkModeSupport: true
+  minimumSystemVersion: '12.0'
+  artifactName: 'ORBIT-${version}-${arch}.${ext}'
+
+dmg:
+  title: Install ORBIT
+  sign: false
+  contents:
+    - x: 140
+      y: 200
+    - x: 400
+      y: 200
+      type: link
+      path: /Applications
+  window:
+    width: 540
+    height: 400
+
+afterPack: scripts/after-pack.cjs

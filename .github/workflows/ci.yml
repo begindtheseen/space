@@ -1,0 +1,49 @@
+# Every push and pull request: typecheck, unit tests, a stamped web bundle, and
+# the desktop end-to-end run (real Electron under xvfb against a fake GitHub
+# API). Screenshots from the e2e run are kept as an artifact either way.
+name: CI
+
+on:
+  push:
+    branches: ['main']
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Typecheck, test, build, desktop e2e
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+      - name: Install xvfb
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends xvfb
+      - run: npm ci --legacy-peer-deps
+      - name: Typecheck
+        run: npx tsc -b
+      - name: Unit tests
+        run: npx vitest run
+      - name: Build and stamp the web bundle
+        run: npm run build:bundle
+      - name: Desktop end-to-end
+        run: xvfb-run -a npm run desktop:e2e
+      - name: Upload e2e screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-screenshots
+          path: release/e2e/*.png
+          if-no-files-found: ignore
+          retention-days: 14

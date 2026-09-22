@@ -1,0 +1,189 @@
+# Cuts a GitHub Release from a version tag (or by hand from the Actions tab):
+#   bundle (Linux)  the curriculum bundle zip + orbit-manifest.json that
+#                   installed apps download from Settings → Updates
+#   mac (macOS)     the universal DMG and drag-install zip, ad-hoc signed
+#   release         publishes all four; fails if any of them is missing
+# The tag must equal "v" + package.json version, because the manifest's
+# download URLs are built from that tag.
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+  # Called by release-request.yml when RELEASE.txt changes, so a release
+  # can be cut from a plain branch push (no tag needed).
+  workflow_call:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  bundle:
+    name: Curriculum bundle
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    outputs:
+      version: ${{ steps.meta.outputs.version }}
+      tag: ${{ steps.meta.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+      - name: Read the version and check it against the tag
+        id: meta
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="$(node -p "require('./package.json').version")"
+          tag="v${version}"
+          if [[ "$GITHUB_REF_TYPE" == "tag" ]]; then
+            if [[ "$GITHUB_REF_NAME" != "$tag" ]]; then
+              echo "::error::tag ${GITHUB_REF_NAME} does not match package.json version ${version} (expected ${tag})"
+              exit 1
+            fi
+          else
+            # Branch push (RELEASE.txt) or manual run: the tag is created by the
+            # release job, so it must not exist yet, and RELEASE.txt must agree.
+            if [[ -f RELEASE.txt ]]; then
+              requested="$(head -n1 RELEASE.txt | tr -d '[:space:]')"
+              if [[ "$requested" != "$version" ]]; then
+                echo "::error::RELEASE.txt asks for ${requested} but package.json version is ${version}; make them match"
+                exit 1
+              fi
+            fi
+            if git ls-remote --exit-code --tags origin "refs/tags/${tag}" >/dev/null 2>&1; then
+              echo "::error::${tag} already exists; bump the version in package.json (and RELEASE.txt) to publish a new release"
+              exit 1
+            fi
+          fi
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          echo "tag=${tag}" >> "$GITHUB_OUTPUT"
+          echo "Releasing ${tag}"
+      - run: npm ci --legacy-peer-deps
+      - name: Typecheck
+        run: npx tsc -b
+      - name: Unit tests
+        run: npx vitest run
+      - name: Build the bundle and manifest
+        run: npm run bundle
+      - uses: actions/upload-artifact@v4
+        with:
+          name: orbit-bundle
+          path: release/orbit-*
+          if-no-files-found: error
+          retention-days: 7
+
+  mac:
+    name: macOS app
+    runs-on: macos-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+      - run: npm ci --legacy-peer-deps
+      - name: Build and stamp the web bundle
+        run: npm run build:bundle
+      - name: Package the universal app (DMG + zip, ad-hoc signed)
+        run: npx electron-builder --mac --universal --publish never
+        env:
+          # No Developer ID certificate exists; stop electron-builder looking
+          # for one in the keychain. scripts/after-pack.cjs ad-hoc signs.
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      - name: Make the drag-install zip
+        run: npm run desktop:zip
+      - name: Verify the ad-hoc signature
+        run: codesign --verify --deep --strict release/mac-universal/ORBIT.app
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mac-app
+          path: |
+            release/*.dmg
+            release/*-mac.zip
+          if-no-files-found: error
+          retention-days: 7
+
+  release:
+    name: Publish the GitHub Release
+    needs: [bundle, mac]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    env:
+      VERSION: ${{ needs.bundle.outputs.version }}
+      TAG: ${{ needs.bundle.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: orbit-bundle
+          path: release
+      - uses: actions/download-artifact@v4
+        with:
+          name: mac-app
+          path: release
+      - name: Check every asset is present and the manifest matches the bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+          missing=0
+          for f in \
+            "release/orbit-manifest.json" \
+            "release/orbit-bundle-${VERSION}.zip" \
+            "release/ORBIT-${VERSION}-universal.dmg" \
+            "release/ORBIT-${VERSION}-universal-mac.zip"; do
+            if [[ -f "$f" ]]; then echo "ok   $f ($(stat -c %s "$f") bytes)"; else echo "::error::missing release asset: $f"; missing=1; fi
+          done
+          [[ "$missing" == 0 ]] || exit 1
+          node - "$VERSION" <<'JS'
+          const fs = require('node:fs')
+          const { createHash } = require('node:crypto')
+          const version = process.argv[2]
+          const manifest = JSON.parse(fs.readFileSync('release/orbit-manifest.json', 'utf8'))
+          const zip = `release/orbit-bundle-${version}.zip`
+          const sha256 = createHash('sha256').update(fs.readFileSync(zip)).digest('hex')
+          const size = fs.statSync(zip).size
+          const problems = []
+          if (manifest.version !== version) problems.push(`manifest version ${manifest.version} is not ${version}`)
+          if (manifest.bundle?.name !== `orbit-bundle-${version}.zip`) problems.push(`manifest bundle name is ${manifest.bundle?.name}`)
+          if (manifest.bundle?.sha256 !== sha256) problems.push('manifest sha256 does not match the bundle zip')
+          if (manifest.bundle?.size !== size) problems.push(`manifest size ${manifest.bundle?.size} is not ${size}`)
+          if (!String(manifest.bundle?.url).endsWith(`/v${version}/orbit-bundle-${version}.zip`)) problems.push(`manifest bundle url ${manifest.bundle?.url} is not for tag v${version}`)
+          if (problems.length) { for (const p of problems) console.error(`::error::${p}`); process.exit(1) }
+          console.log(`manifest ok: ${manifest.bundle.name}, ${size} bytes, sha256 ${sha256}, minShell ${manifest.bundle.minShell}`)
+          JS
+      - name: Pick up RELEASE_NOTES.md when there is one
+        id: notes
+        shell: bash
+        run: |
+          if [[ -f RELEASE_NOTES.md ]]; then
+            echo "path=RELEASE_NOTES.md" >> "$GITHUB_OUTPUT"
+            echo "Using RELEASE_NOTES.md"
+          else
+            echo "No RELEASE_NOTES.md; the notes will be generated from commits"
+          fi
+      - name: Create the release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.TAG }}
+          name: ORBIT ${{ env.VERSION }}
+          target_commitish: ${{ github.sha }}
+          body_path: ${{ steps.notes.outputs.path }}
+          generate_release_notes: true
+          prerelease: ${{ contains(env.VERSION, '-') }}
+          fail_on_unmatched_files: true
+          files: |
+            release/orbit-manifest.json
+            release/orbit-bundle-${{ env.VERSION }}.zip
+            release/ORBIT-${{ env.VERSION }}-universal.dmg
+            release/ORBIT-${{ env.VERSION }}-universal-mac.zip

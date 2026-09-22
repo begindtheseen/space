@@ -712,3 +712,115 @@
 .signal__link:hover {
   text-decoration: underline;
 }
+
+/* ── desktop updates ─────────────────────────────────────────────────────── */
+/* Release notes are help text here, not reading copy: the prose sizes from
+   markdown.css are pulled down to sit beside .setting__help. */
+.updates__notes {
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--ink-3);
+  max-width: 56ch;
+  max-height: 220px;
+  overflow-y: auto;
+  margin-top: 6px;
+  padding-right: 6px;
+}
+
+.updates__notes .md__p,
+.updates__notes .md__ul,
+.updates__notes .md__ol {
+  margin-bottom: 8px;
+}
+
+.updates__notes .md__h {
+  margin: 12px 0 5px;
+}
+
+.updates__notes .md__h1,
+.updates__notes .md__h2 {
+  font-size: 12.5px;
+}
+
+.updates__notes .md__h3,
+.updates__notes .md__h4 {
+  margin-top: 10px;
+  font-size: 10.5px;
+}
+
+.updates__notes .md__ul li,
+.updates__notes .md__ol li {
+  margin-bottom: 3px;
+}
+
+.updates__notes .md__ul li::before {
+  top: 8px;
+}
+
+.updates__notes .md__pre {
+  margin: 8px 0;
+  font-size: 11px;
+}
+
+.updates__meta {
+  margin-top: 6px;
+  font-size: 11px;
+  color: var(--ink-5);
+  font-variant-numeric: tabular-nums;
+}
+
+.updates__progress {
+  margin-top: 9px;
+  max-width: 420px;
+}
+
+/* A one-line status with a coloured dot — the .signal idea without its own
+   padding, so it can sit under a setting label. */
+.updates__status {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin-top: 6px;
+  max-width: 56ch;
+  font-size: 11.5px;
+  line-height: 1.6;
+  color: var(--ink-3);
+}
+
+.updates__status .signal__dot {
+  margin-top: 6px;
+}
+
+.updates__status--bad .signal__dot {
+  background: var(--bad);
+}
+
+.updates__status--warn .signal__dot {
+  background: var(--warn);
+}
+
+.updates__link {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-color: rgba(77, 155, 255, 0.4);
+  transition: text-decoration-color var(--t-fast) var(--ease-out);
+}
+
+.updates__link:hover {
+  text-decoration-color: var(--accent);
+}
+
+.updates__form {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.updates__foot {
+  padding: 11px 17px;
+  border-top: 1px solid var(--line-soft);
+  font-size: 10.5px;
+  color: var(--ink-5);
+  font-variant-numeric: tabular-nums;
+}

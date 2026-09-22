@@ -1,8 +1,8 @@
 # ORBIT — GNC Flight Academy
 
 A local-first learning platform that takes a complete beginner to guidance, navigation
-and control engineering readiness. It runs entirely in a browser tab: no account, no
-server, no telemetry. Everything you do is stored on your device.
+and control engineering readiness. It runs entirely in a browser tab, or as a Mac app:
+no account, no server, no telemetry. Everything you do is stored on your device.
 
 > **Not affiliated with, endorsed by, or connected to SpaceX.** This is an independent
 > personal study tool. Job requirements, compensation figures and interview details are
@@ -38,6 +38,62 @@ memory model and a dependency graph, and it shows its working:
 
 ---
 
+## Install on a Mac
+
+Download `ORBIT-<version>-universal.dmg` from the
+[Releases](https://github.com/begindtheseen/space/releases) page, open it, and drag
+ORBIT onto the Applications folder shown beside it. One app runs natively on Apple
+silicon and Intel; it needs macOS 12 (Monterey) or newer.
+
+The first launch takes one extra step. The app is signed ad hoc — there is no $99-a-year
+Apple Developer ID behind it, so it is not notarised — and Gatekeeper will refuse to open
+it the first time ("Apple could not verify ORBIT is free of malware", or on older
+systems "cannot be opened because Apple cannot check it for malicious software"):
+
+1. Open ORBIT once normally and dismiss the dialog (Done).
+2. Go to **System Settings → Privacy & Security**, scroll down to the message about
+   ORBIT and click **Open Anyway**, then confirm.
+
+Alternatively, from Terminal: `xattr -dr com.apple.quarantine /Applications/ORBIT.app`.
+On macOS 14 (Sonoma) and earlier, right-clicking (or Control-clicking) `ORBIT.app` and
+choosing Open, then Open again, also works; macOS 15 (Sequoia) removed that shortcut for
+apps that are not notarised.
+
+macOS remembers the choice; every launch after that is ordinary. If you would rather
+have a zip than a disk image, `ORBIT-<version>-universal-mac.zip` holds the same app
+with an Applications shortcut and the same instructions in a text file.
+
+Your progress lives in `~/Library/Application Support/ORBIT/` and survives updates,
+reinstalls and moving the app. The backup in Settings is still the copy to keep
+somewhere else.
+
+---
+
+## Updates
+
+The Mac app is two things: a thin Electron shell, and the curriculum bundle — this
+site's `dist/` — carried inside it. Almost every change ships as a new bundle, and a
+bundle update does not need a new app: **Settings → Updates → Check for updates** asks
+GitHub for the latest release, downloads the bundle zip (a few megabytes, seconds),
+checks its SHA-256, and switches to it on the next restart. The app also checks quietly
+a few seconds after launch and marks the avatar in the top bar when something is
+waiting. If a downloaded bundle fails to start, the app quarantines it and goes back to
+the last good one on its own; **Roll back** in the same card does the same by hand.
+
+While this repository is private, GitHub answers an anonymous request with 404 and the
+card says so. Create a fine-grained personal access token with read-only **Contents**
+permission for `begindtheseen/space` and paste it into the Access token row. It is
+stored encrypted by macOS (`safeStorage`, backed by the login keychain) and is only
+ever sent to `api.github.com` and the release download it redirects to. Two ways to
+need no token at all: make the repository public, or publish releases from a separate
+public repository and point `orbit.updates.repo` in `package.json` at it.
+
+Changes to the shell itself — anything under `desktop/`, or a new Electron — need a
+new DMG. The card says "This update needs a newer ORBIT app" and links to it; nothing
+is downloaded that the installed app cannot run.
+
+---
+
 ## Running it
 
 ```bash
@@ -48,24 +104,80 @@ npm run dev       # http://localhost:5173
 ```bash
 npm run build     # static output in dist/
 npm run preview   # serve the built output
-npm test          # engine + curriculum integrity tests
+npm test          # engine + curriculum integrity tests (+ the desktop updater's)
 npx tsc -b        # typecheck
 ```
 
-Node 20+ required. The build output is a plain static site — drop `dist/` on GitHub
-Pages, Vercel, Netlify, Cloudflare Pages or any static host.
+```bash
+npm run desktop        # build the bundle and run it in the Electron shell
+npm run desktop:pack   # build the Mac app into release/ (DMG needs macOS)
+npm run desktop:e2e    # end-to-end: real Electron against a fake GitHub API
+```
 
-### Deploying
-
-`.github/workflows/deploy.yml` typechecks, tests and builds on every push and pull
-request, then publishes `main` to GitHub Pages. Enable it under
-**Settings → Pages → Build and deployment → Source: GitHub Actions**.
-
-For a subpath deploy, set `BASE_PATH` (the workflow does this automatically for Pages):
+Node 22 required. The build output is a plain static site — drop `dist/` on Vercel,
+Netlify, Cloudflare Pages or any static host. For a subpath deploy, set `BASE_PATH`:
 
 ```bash
 BASE_PATH=/space/ npm run build
 ```
+
+### CI
+
+`.github/workflows/ci.yml` typechecks, tests, builds the bundle and runs the desktop
+end-to-end suite under xvfb on every push and pull request, keeping the e2e screenshots
+as an artifact. Releases are a separate workflow — see the next section.
+
+---
+
+## Publishing an update (the back door)
+
+Releases are cut by CI from a version tag; nothing is built or uploaded by hand.
+
+```bash
+npm version patch          # or minor / major: bumps package.json and creates the tag
+git push --follow-tags
+```
+
+`.github/workflows/release.yml` then checks that the tag equals `package.json`'s
+version, typechecks and tests, builds the bundle zip and `orbit-manifest.json` on
+Linux, builds the ad-hoc-signed universal DMG and drag-install zip on macOS, and
+publishes all four as a GitHub Release. Installed apps see it on their next check. Put
+a `RELEASE_NOTES.md` in the repository before tagging to control the notes shown inside
+the app (Markdown); without one, the notes are generated from the commits.
+
+No terminal handy? The same pipeline runs from a file change instead of a tag: set
+`version` in `package.json` and write that version on the first line of `RELEASE.txt`,
+then commit and push (any branch, or edit both files on github.com). CI checks the two
+agree and that the tag does not exist yet, creates `v<version>` at that commit, and
+publishes the release. Both routes end in the same place.
+
+What needs what:
+
+| Change | Do | Ships as |
+| --- | --- | --- |
+| Curriculum, engine, pages — anything under `src/` or `public/` | `npm version patch` (or minor) | A bundle. Every installed app updates in place. |
+| Anything under `desktop/`, or the Electron version | The same, **and** set `orbit.minShell` in `package.json` to the new version | A new DMG. Older apps are told to download it instead of a bundle they cannot run. |
+
+`minShell` is the contract between bundle and shell: a bundle is only ever activated by
+a shell at least that new, so an old app never ends up running a bundle that expects an
+IPC channel it does not have. The manifest carries it, the bundle carries it, and the
+shell checks it at both download and startup.
+
+---
+
+## Where things live
+
+| What | Where |
+| --- | --- |
+| The curriculum | `src/curriculum/gnc-*.ts` (tiers 0–7), `coding.ts`, `tracks-aux.ts`; `types.ts` is the schema |
+| The engine | `src/engine/` — FSRS, mastery, graph, scheduler, persistence |
+| The Mac app shell | `desktop/` — Electron main process, `app://` server, updater, splash. Architecture in `desktop/README.md` |
+| Build helpers | `scripts/` — bundle stamping and zipping, app icon, drag-install zips, the signing hook |
+| Packaging config | `electron-builder.yml`; versions, `orbit.updates.repo` and `orbit.minShell` in `package.json` |
+| A built bundle | `dist/` after `npm run build:bundle` (with `dist/orbit-bundle.json` stamped in) |
+| Release artefacts | `release/` — bundle zip, manifest, DMG, zips; git-ignored |
+| Your data (browser) | IndexedDB for the site's origin; export a backup from Settings |
+| Your data (Mac app) | `~/Library/Application Support/ORBIT/` — IndexedDB under the `app://orbit` origin, `bundles/` for downloaded updates, `config.json` (encrypted token), `window.json` |
 
 ---
 
@@ -137,6 +249,8 @@ src/
   lib/            router, markdown, language runtimes
   pages/          dashboard, tracks, module, review, playground, progress, …
   workers/        Pyodide worker
+desktop/          the Mac app: Electron shell, app:// server, updater, splash (desktop/README.md)
+scripts/          build helpers: bundle stamp + zip, app icon, drag-install zips, signing hook
 ```
 
 ---

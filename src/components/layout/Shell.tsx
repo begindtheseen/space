@@ -18,6 +18,7 @@ import {
   Wordmark,
   type IconProps,
 } from '@/components/icons'
+import { useUpdates } from '@/hooks/useUpdates'
 import { navigate, useRoute, useScrollReset } from '@/lib/router'
 import './shell.css'
 
@@ -194,6 +195,11 @@ function TopBar({
   stuck: boolean
   onMenu: () => void
 }) {
+  // Desktop only: a bundle update waiting on the Settings page. In a browser
+  // the hook never subscribes and `state` stays null.
+  const updateStatus = useUpdates().state?.status
+  const updateWaiting = updateStatus === 'available' || updateStatus === 'ready'
+
   return (
     <header className="topbar" data-stuck={stuck}>
       <button className="topbar__burger" onClick={onMenu} aria-label="Open navigation" type="button">
@@ -214,10 +220,11 @@ function TopBar({
       <button
         className="avatar"
         onClick={() => navigate('/settings')}
-        aria-label="Account and settings"
+        aria-label={updateWaiting ? 'Account and settings — update available' : 'Account and settings'}
         type="button"
       >
         <IconUser size={17} />
+        {updateWaiting ? <span className="avatar__dot" /> : null}
       </button>
     </header>
   )

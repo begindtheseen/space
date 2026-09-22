@@ -1,18 +1,34 @@
 {
   "name": "orbit-gnc",
+  "productName": "ORBIT",
   "private": true,
-  "version": "0.1.0",
+  "version": "1.0.1",
   "type": "module",
   "description": "A local-first curriculum platform that takes a complete beginner to guidance, navigation and control engineering readiness.",
+  "author": "begindtheseen",
+  "main": "desktop/main.js",
+  "orbit": {
+    "updates": {
+      "repo": "begindtheseen/space"
+    },
+    "minShell": "1.0.0"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "typecheck": "tsc -b",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "build:bundle": "BASE_PATH=./ npm run build && node scripts/stamp-bundle.mjs",
+    "bundle": "npm run build:bundle && node scripts/make-bundle.mjs",
+    "desktop": "npm run build:bundle && electron .",
+    "desktop:pack": "npm run build:bundle && electron-builder --mac --publish never",
+    "desktop:zip": "node scripts/make-mac-zip.mjs",
+    "desktop:icon": "node scripts/make-icon.mjs",
+    "desktop:e2e": "node desktop/test/e2e.mjs"
   },
-  "dependencies": {
+  "devDependencies": {
     "@codemirror/autocomplete": "^6.20.3",
     "@codemirror/commands": "^6.11.1",
     "@codemirror/lang-cpp": "^6.0.3",
@@ -24,10 +40,6 @@
     "@codemirror/state": "^6.7.5",
     "@codemirror/view": "^6.43.12",
     "@lezer/highlight": "^1.2.3",
-    "react": "^19.2.8",
-    "react-dom": "^19.2.8"
-  },
-  "devDependencies": {
     "@types/node": "^24.13.3",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.7",
@@ -35,6 +47,8 @@
     "electron": "^44.4.3",
     "electron-builder": "^26.15.3",
     "playwright": "^1.63.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
     "typescript": "~6.0.2",
     "vite": "^8.3.0",
     "vitest": "^4.1.11"
