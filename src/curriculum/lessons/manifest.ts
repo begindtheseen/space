@@ -2524,6 +2524,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "propulsive descent: entry burn, aerodynamic guidance, landing burn"
       ],
       "file": "t2_m24_edl/10-propulsive-descent-phases.md"
+    },
+    {
+      "id": "l11-terminal-descent-sensors",
+      "title": "Terminal descent sensors",
+      "minutes": 14,
+      "covers": [
+        "terminal descent sensors: radar altimeter, lidar, terrain relative navigation"
+      ],
+      "file": "t2_m24_edl/11-terminal-descent-sensors.md"
     }
   ],
   "t3_m25_signals_systems": [
@@ -5554,12 +5563,11 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t2_m24_edl": {
-    "covered": 13,
+    "covered": 14,
     "total": 18,
     "complete": false,
     "missing": [
       "divert capability and the landing ellipse",
-      "terminal descent sensors: radar altimeter, lidar, terrain relative navigation",
       "landing burn timing and the hoverslam problem",
       "Mars EDL: thin atmosphere, supersonic parachutes, sky crane",
       "reusable booster return modes: RTLS vs droneship, boostback burns"

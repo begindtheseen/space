@@ -50,22 +50,15 @@ Slicing the ball $\|\mathbf{T}\|\le\Gamma$ with the pointing halfspace $\hat{\ma
 Glideslope constrains $\mathbf{r}$, not $\mathbf{T}$, so it never enters the Hamiltonian's $\mathbf{T}$-minimisation step at all — the extreme-point argument above has nothing to say about it, because there is nothing to say. What glideslope *does* change, as a check-yourself question in the lossless-convexification lesson already flagged, is the costate equation $\dot{\boldsymbol{\lambda}}_v=-\boldsymbol{\lambda}_r$: once $\mathbf{r}$ appears in an active constraint, $\boldsymbol{\lambda}_r$ is no longer forced constant, so $\boldsymbol{\lambda}_v(t)$ is no longer exactly affine on that arc, and the clean "at most one zero" bookkeeping needs re-deriving arc by arc rather than being read off directly. The two additions are not interchangeable, and mixing up which one threatens which half of the tightness argument is an easy way to either over-worry about glideslope or under-worry about pointing.
 :::
 
-::: example Tightness checked with a genuinely binding pointing limit
-Take a vehicle needing a hard correction — $\mathbf{r}_0=(500,0,700)\,\mathrm{m}$, $\mathbf{v}_0=(-45,0,-25)\,\mathrm{m/s}$, $N=10$ steps of $\Delta t=2\,\mathrm{s}$ — with $\theta_{\max}=20°$, tight enough to bind rather than sit slack the whole way. Solving the full SOCP (thrust cone, mass bounds, and this pointing cone together) to a duality gap of $1.3\times10^{-9}$:
+::: example The instant-by-instant claim, checked directly
+The extreme-point argument above makes a claim about one instant: minimising a linear functional $\boldsymbol{\lambda}_v\!\cdot\!\mathbf{T}$ over $\{\|\mathbf{T}\|\le\Gamma\}\cap\{\hat{\mathbf{n}}^\top\mathbf{T}\ge\Gamma\cos\theta_{\max}\}$ lands on $\|\mathbf{T}\|=\Gamma$ even when the pointing constraint is the one holding it there. Check it directly rather than trusting the geometry alone: fix $\hat{\mathbf{n}}=(0,0,1)$, $\theta_{\max}=20°$, and minimise $\boldsymbol{\lambda}_v\!\cdot\!\mathbf{T}$ over that exact set for a costate direction whose unconstrained optimum (ignoring pointing) would sit nowhere near the cone.
 
-| step $k$ | thrust angle from vertical | $\sigma_k-\|\mathbf{u}_k\|$ | pointing margin |
-| --- | --- | --- | --- |
-| $0$ | $11.41°$ | $1.08\times10^{-1}$ | $-1.3\times10^{-9}$ (slack) |
-| $1$ | $20.00°$ | $4.4\times10^{-9}$ | $-1.5\times10^{-9}$ (binding) |
-| $3$ | $20.00°$ | $1.4\times10^{-9}$ | $-2.6\times10^{-9}$ (binding) |
-| $5$ | $20.00°$ | $8.4\times10^{-10}$ | $-5.4\times10^{-9}$ (binding) |
-| $6$ | $20.00°$ | $1.5\times10^{-9}$ | $-1.3\times10^{-7}$ (binding) |
-| $8$ | $8.59°$ | $4.8\times10^{-10}$ | $-3.5\times10^{-1}$ (slack) |
-| $9$ | $7.16°$ | $4.8\times10^{-10}$ | $-3.8\times10^{-1}$ (slack) |
+| $\Gamma\,(\mathrm{N})$ | $\boldsymbol{\lambda}_v$ direction | angle without pointing | constrained $\|\mathbf{T}^\star\|$ | constrained angle |
+| --- | --- | --- | --- | --- |
+| $6000$ | $(0.30,-0.10,-0.05)$ | $81.02°$ | $6000.000000$ | $20.000000°$ |
+| $8500$ | $(0.60,0.40,-0.20)$ | $74.50°$ | $8500.000000$ | $20.000000°$ |
 
-Steps $1$ through $6$ sit at exactly $\theta_{\max}=20.00°$ — the pointing cone is genuinely active, not merely present in the problem statement — and at every one of those same steps the thrust-bound gap $\sigma_k-\|\mathbf{u}_k\|$ is at solver tolerance, $10^{-9}$ or smaller: tightness survives being on two boundaries simultaneously, exactly as the extreme-point argument said it must. Steps $8$ and $9$, where pointing has gone slack again as the vehicle nears vertical for touchdown, still show the same $10^{-10}$-level tightness the thrust-only case had.
-
-Step $0$ is the exception worth not looking away from. Its thrust-bound gap is $0.108\,\mathrm{m/s^2}$ — five to eight orders of magnitude larger than every other step, and not explained by pointing, which is slack there too. This is not a numerical failure: rerunning with the duality gap tightened by another two orders of magnitude leaves step $0$'s gap essentially unchanged while every other step's gap shrinks further, which is the signature of a genuine feature of the optimal solution rather than an under-converged solve. It is also exactly what the lossless-convexification lesson's theorem allows: tightness holds *almost everywhere*, with at most one isolated instant permitted where the costate $\boldsymbol{\lambda}_v$ passes through zero and the thrust direction is briefly undetermined by the Hamiltonian. An affine function can cross zero at only one point — here, apparently, at an instant close to $t=0$ for this particular initial condition — and a single node landing near that crossing is precisely the kind of measure-zero exception "almost everywhere" was written to allow for, not a counterexample to it.
+In both cases, minimising $\boldsymbol{\lambda}_v\!\cdot\!\mathbf{T}$ with no pointing limit would point the thrust $75$–$81°$ from vertical — nowhere close to satisfying a $20°$ cone — so the pointing constraint is genuinely the one deciding the answer, not a spectator. With pointing enforced, the constrained minimiser lands at $\|\mathbf{T}^\star\|=\Gamma$ **exactly**, to every displayed digit, and at exactly $\theta_{\max}=20.000000°$ — on both the sphere and the pointing boundary simultaneously, precisely where the extreme-point argument said the optimum of a ball sliced by a halfspace has to sit. This isolates the claim this lesson is making from everything else a full trajectory solve would also be doing at the same time — dynamics, mass bounds, boundary conditions — and confirms it on its own terms: tightness is not disturbed by an active pointing constraint because the geometry of *where a linear function is minimised on a sliced ball* does not care what sliced it.
 :::
 
 ## Check yourself
@@ -103,11 +96,11 @@ The extreme-point argument is purely about geometry at a single instant: it show
 :::
 
 ::: check
-In the worked example, step $0$'s relaxation gap did not shrink when the solver was re-run to a tighter duality gap, while every other step's gap did. What conclusion does that specific behaviour support, and what would you have concluded instead if step $0$'s gap *had* shrunk toward zero under tighter convergence?
+In the worked example, both costate directions were chosen so the *unconstrained* pointing-free optimum sits $75$–$81°$ from vertical, well outside the $20°$ cone. Why was that choice necessary to make the check a genuine test of the claim, rather than choosing $\boldsymbol{\lambda}_v$ so the unconstrained optimum already happened to satisfy pointing?
 :::
 
 ::: answer
-A gap that refuses to shrink as the overall solve is driven to higher accuracy is behaving like a real feature of the exact optimum, not like numerical residue that a slightly better solve would clean up — residue from an under-converged solve should shrink together with the duality gap that certifies convergence, which is exactly what every *other* step's gap did. That supports reading step $0$ as sitting at, or very near, an isolated instant where $\boldsymbol{\lambda}_v$ passes through zero, consistent with the theorem's own stated exception. Had step $0$'s gap shrunk along with the rest under tighter convergence, the right conclusion would have been the ordinary one — the earlier solve simply had not converged tightly enough yet — and nothing about the theorem's exception would be implicated at all.
+If the unconstrained optimum already sat inside the $20°$ cone, adding the pointing constraint would change nothing — the minimiser over the ball alone already satisfies it, so the pointing halfspace would never bind and the check would only be re-confirming the ordinary, no-pointing tightness result from the lossless-convexification lesson. Choosing $\boldsymbol{\lambda}_v$ so the unconstrained answer is far outside the cone forces the constrained minimiser onto the pointing boundary itself, which is the only way to test whether tightness survives *while pointing is actively deciding the answer* rather than sitting unused in the background. A check that cannot fail to look successful is not a check.
 :::
 
 ## Summary
