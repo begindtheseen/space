@@ -91,7 +91,7 @@ $$
 which is about $9.5$ samples for $r = 0.9$, $19.5$ for $r = 0.95$ and $99.5$ for $r = 0.99$. And curves of constant damping in the $z$ plane are logarithmic spirals, $r = e^{-\theta\zeta/\sqrt{1-\zeta^2}}$, obtained by eliminating $T$ between the two expressions above. They start at $z = 1$ for $\theta = 0$ and wind inward, which is why a pole that looks comfortably inside the circle can still be poorly damped if its angle is small: for $\theta = 0.1$ and $\zeta = 0.2$, the spiral sits at $r = e^{-0.0204} = 0.980$, hard against the boundary.
 
 ::: warning
-Distance from the unit circle is *not* damping, and reading a $z$-plane plot as though it were is the most common error in discrete design reviews. A pole at $z = 0.98 + 0.02j$ and a pole at $z = 0.70 + 0.70j$ have similar-looking gaps to the circle, but at $T = 10\,\mathrm{ms}$ the first is $\zeta = 0.71$ at $0.36\,\mathrm{Hz}$ and the second is $\zeta = 0.11$ at $12.5\,\mathrm{Hz}$. Compute $\zeta$ from $-\ln r/\sqrt{(\ln r)^2 + \theta^2}$ rather than eyeballing the gap. The eye is reliable for one question only: whether the pole is inside the circle at all.
+Distance from the unit circle is *not* damping, and reading a $z$-plane plot as though it were is the most common error in discrete design reviews. A pole at $z = 0.98 + 0.02j$ and a pole at $z = 0.70 + 0.70j$ have similar-looking gaps to the circle, but at $T = 10\,\mathrm{ms}$ the first is $\zeta = 0.700$ at $\omega_n = 0.455\,\mathrm{Hz}$ and the second is $\zeta = 0.013$ at $\omega_n = 12.5\,\mathrm{Hz}$. Compute $\zeta$ from $-\ln r/\sqrt{(\ln r)^2 + \theta^2}$ rather than eyeballing the gap. The eye is reliable for one question only: whether the pole is inside the circle at all.
 :::
 
 ::: example One continuous pole pair, three sample rates
@@ -171,7 +171,7 @@ Stable: $|z| = 0.85 < 1$.
 
 Its angle is $\theta = \pi$, so $\omega_d = \pi/T = \pi/0.02 = 157.08\,\mathrm{rad/s} = 25\,\mathrm{Hz}$ — exactly the Nyquist frequency. The mode is $(-0.85)^n$, which alternates sign every sample while decaying by $15\%$ per step: two samples per cycle, the fastest oscillation the sample rate can represent.
 
-The continuous interpretation needs care because of the many-to-one map. The pole corresponds to $\sigma = \ln(0.85)/0.02 = -8.124\,\mathrm{s^{-1}}$ and $\omega_d = 25\,\mathrm{Hz}$ within the primary strip, but also to $25 + 50 = 75\,\mathrm{Hz}$, $125\,\mathrm{Hz}$, and so on. Damping works out to $\zeta = 8.124/\sqrt{8.124^2 + 157.08^2} = 0.0517$ if you take the primary-strip reading. In practice a real negative pole like this is almost never a sampled physical mode — it is usually the signature of a discretisation problem, most often forward Euler applied at too low a rate, which the next lesson covers.
+The continuous interpretation needs care because of the many-to-one map. The pole corresponds to $\sigma = \ln(0.85)/0.02 = -8.126\,\mathrm{s^{-1}}$ and $\omega_d = 25\,\mathrm{Hz}$ within the primary strip, but also to $25 + 50 = 75\,\mathrm{Hz}$, $125\,\mathrm{Hz}$, and so on. Damping works out to $\zeta = 8.126/\sqrt{8.126^2 + 157.08^2} = 0.0517$ if you take the primary-strip reading. In practice a real negative pole like this is almost never a sampled physical mode — it is usually the signature of a discretisation problem, most often forward Euler applied at too low a rate, which the next lesson covers.
 :::
 
 ::: check
@@ -179,13 +179,13 @@ Two closed-loop poles from a $400\,\mathrm{Hz}$ loop are $z = 0.985 \pm 0.060j$.
 :::
 
 ::: answer
-$r = \sqrt{0.985^2 + 0.060^2} = \sqrt{0.970225 + 0.0036} = \sqrt{0.973825} = 0.98682$, and $\theta = \arctan(0.060/0.985) = 0.060854\,\mathrm{rad}$.
+$r = \sqrt{0.985^2 + 0.060^2} = \sqrt{0.970225 + 0.0036} = \sqrt{0.973825} = 0.98683$, and $\theta = \arctan(0.060/0.985) = 0.060839\,\mathrm{rad}$.
 
-$\ln r = -0.013266$, so with $T = 0.0025\,\mathrm{s}$: $\sigma = -5.3064\,\mathrm{s^{-1}}$, $\omega_d = 24.342\,\mathrm{rad/s} = 3.874\,\mathrm{Hz}$.
+$\ln r = -0.013261$, so with $T = 0.0025\,\mathrm{s}$: $\sigma = -5.3047\,\mathrm{s^{-1}}$, $\omega_d = 24.335\,\mathrm{rad/s} = 3.873\,\mathrm{Hz}$.
 
-$\sqrt{(\ln r)^2 + \theta^2} = \sqrt{0.00017599 + 0.0037032} = \sqrt{0.0038792} = 0.062284$, so $\omega_n = 24.914\,\mathrm{rad/s} = 3.965\,\mathrm{Hz}$ and $\zeta = 0.013266/0.062284 = 0.213$.
+$\sqrt{(\ln r)^2 + \theta^2} = \sqrt{0.00017585 + 0.00370139} = \sqrt{0.00387724} = 0.062267$, so $\omega_n = 24.907\,\mathrm{rad/s} = 3.964\,\mathrm{Hz}$ and $\zeta = 0.013261/0.062267 = 0.213$.
 
-Settling: $4/(\zeta\omega_n) = 4/5.3064 = 0.7538\,\mathrm{s}$, which is $0.7538/0.0025 = 302$ frames. The lesson in the numbers: poles that sit at radius $0.987$ and look almost on top of $z = 1$ describe a lightly damped $4\,\mathrm{Hz}$ oscillation lasting three hundred frames. At high sample rates every interesting pole crowds into a small neighbourhood of $z = 1$, which is both a readability problem and, as the realization-forms lesson shows, a numerical one.
+Settling: $4/(\zeta\omega_n) = 4/5.3047 = 0.7540\,\mathrm{s}$, which is $0.7540/0.0025 = 302$ frames. The lesson in the numbers: poles that sit at radius $0.987$ and look almost on top of $z = 1$ describe a lightly damped $4\,\mathrm{Hz}$ oscillation lasting three hundred frames. At high sample rates every interesting pole crowds into a small neighbourhood of $z = 1$, which is both a readability problem and, as the realization-forms lesson shows, a numerical one.
 :::
 
 ::: check
@@ -215,9 +215,9 @@ A colleague computes discrete poles at $z = 0.999 \pm 0.001j$ for a $1\,\mathrm{
 :::
 
 ::: answer
-The gap to the circle is not the measure. Compute: $r = \sqrt{0.999^2 + 0.001^2} = 0.9990005$, so $\ln r = -0.0009996$ and with $T = 0.001\,\mathrm{s}$, $\sigma = -0.9996\,\mathrm{s^{-1}}$. The angle is $\theta = 0.0010010\,\mathrm{rad}$, so $\omega_d = 1.001\,\mathrm{rad/s}$.
+The gap to the circle is not the measure. Compute: $r = \sqrt{0.999^2 + 0.001^2} = 0.9990005$, so $\ln r = -0.00099993$ and with $T = 0.001\,\mathrm{s}$, $\sigma = -0.99999\,\mathrm{s^{-1}}$. The angle is $\theta = 0.0010010\,\mathrm{rad}$, so $\omega_d = 1.001\,\mathrm{rad/s}$.
 
-Then $\omega_n = \sqrt{0.0009996^2 + 0.001001^2}/0.001 = 1.414\,\mathrm{rad/s} = 0.225\,\mathrm{Hz}$ and $\zeta = 0.0009996/0.0014145 = 0.707$. The damping is fine, but the *bandwidth* is a quarter of a hertz and the settling time is $4/0.9996 = 4.0\,\mathrm{s}$ — four thousand frames. A $1\,\mathrm{kHz}$ loop whose dominant mode takes four seconds to settle is either far slower than intended or is running much faster than its dynamics require.
+Then $\omega_n = \sqrt{0.00099993^2 + 0.0010010^2}/0.001 = 1.4149\,\mathrm{rad/s} = 0.225\,\mathrm{Hz}$ and $\zeta = 0.00099993/0.0014149 = 0.707$. The damping is fine, but the *bandwidth* is a quarter of a hertz and the settling time is $4/0.99999 = 4.0\,\mathrm{s}$ — four thousand frames. A $1\,\mathrm{kHz}$ loop whose dominant mode takes four seconds to settle is either far slower than intended or is running much faster than its dynamics require.
 
 The deeper point is that at $1\,\mathrm{kHz}$ every pole of any reasonably paced loop lands within a thousandth of $z = 1$, so "well inside the circle" is not available as a description. Convert to $\zeta$ and $\omega_n$ before saying anything about a discrete pole.
 :::

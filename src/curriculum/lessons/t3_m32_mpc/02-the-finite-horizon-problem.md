@@ -1,7 +1,7 @@
 ---
 id: l02-the-finite-horizon-problem
 title: The finite-horizon constrained optimal control problem
-minutes: 20
+minutes: 19
 covers:
   - The finite-horizon constrained optimal control problem
 ---

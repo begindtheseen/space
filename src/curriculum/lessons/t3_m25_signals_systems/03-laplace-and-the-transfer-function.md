@@ -1,7 +1,7 @@
 ---
 id: l03-laplace-and-the-transfer-function
 title: The Laplace transform and the transfer function
-minutes: 20
+minutes: 16
 covers:
   - "The Laplace transform and the transfer function"
 ---

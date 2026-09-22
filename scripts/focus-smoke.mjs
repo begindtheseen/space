@@ -169,6 +169,53 @@ await step('a lesson shows how much is left, and it tracks the scroll', async ()
   console.log(`        fill ${start.toFixed(2)} -> ${end.toFixed(2)}`)
 })
 
+/* ── Read aloud ──────────────────────────────────────────────────────────── */
+
+await step('a lesson offers to read itself aloud', async () => {
+  await page.waitForSelector('.raloud', { timeout: 8000 })
+  const label = await page.textContent('.raloud__btn--go')
+  if (!/read aloud/i.test(label)) throw new Error('no read-aloud control: ' + label)
+})
+
+await step('it speaks prose, not LaTeX', async () => {
+  // Capture what is handed to the synthesiser rather than trusting the
+  // preparation code: this is the assertion that matters, because a voice
+  // reading "backslash frac" is the whole failure mode.
+  const said = await page.evaluate(async () => {
+    const spoken = []
+    const real = window.speechSynthesis.speak.bind(window.speechSynthesis)
+    window.speechSynthesis.speak = (u) => {
+      spoken.push(u.text)
+      // Fire the end event so the chain advances without waiting for audio.
+      setTimeout(() => u.onend && u.onend(new Event('end')), 5)
+    }
+    document.querySelector('.raloud__btn--go').click()
+    await new Promise((r) => setTimeout(r, 900))
+    window.speechSynthesis.speak = real
+    return spoken
+  })
+  if (said.length < 5) throw new Error('only ' + said.length + ' sentences were spoken')
+  const joined = said.join(' ')
+  for (const bad of ['\\frac', '\\omega', '$$', '```', 'backslash']) {
+    if (joined.includes(bad)) throw new Error('spoke raw markup: ' + bad)
+  }
+  console.log('        spoke ' + said.length + ' sentences, e.g. "' + said[3].slice(0, 90) + '"')
+})
+
+await step('it offers a choice of speed', async () => {
+  const rates = await page.$$eval('.raloud__rate option', (o) => o.map((x) => x.value))
+  if (rates.length < 4) throw new Error('too few speeds offered: ' + rates.join(','))
+})
+
+await step('reaching the end puts the control back to the start', async () => {
+  // The stub in the previous step ran the whole lesson through in under a
+  // second, so by now the player should have finished of its own accord and
+  // collapsed back to the offer rather than sitting on a dead pause button.
+  await page.waitForSelector('.raloud__btn--go', { timeout: 6000 })
+  const on = await page.$eval('.raloud', (el) => el.dataset.on)
+  if (on !== 'false') throw new Error('player still reports itself running')
+})
+
 /* ── The sidebar gets out of the way ─────────────────────────────────────── */
 
 await step('the rail is hidden at rest', async () => {

@@ -1,0 +1,68 @@
+/* ============================================================================
+   ORBIT — read-aloud controls
+   ========================================================================== */
+.raloud {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.raloud__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--panel-2);
+  color: var(--ink-3);
+  font-size: 11.5px;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: color var(--t-fast) var(--ease-out), border-color var(--t-fast) var(--ease-out);
+}
+
+.raloud__btn:hover {
+  color: var(--ink);
+  border-color: var(--line-strong);
+}
+
+.raloud__btn--go {
+  border-color: var(--line-blue);
+  color: var(--ink-2);
+}
+
+.raloud[data-on='true'] .raloud__btn--go,
+.raloud[data-on='true'] {
+  color: var(--ink-2);
+}
+
+.raloud__at {
+  font-size: 11px;
+  color: var(--ink-5);
+  font-variant-numeric: tabular-nums;
+  padding: 0 2px;
+}
+
+.raloud__voice,
+.raloud__rate {
+  padding: 5px 8px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--panel-2);
+  color: var(--ink-3);
+  font-size: 11.5px;
+  max-width: 190px;
+}
+
+.raloud__voice:hover,
+.raloud__rate:hover {
+  border-color: var(--line-strong);
+}
+
+@media (max-width: 620px) {
+  .raloud__voice {
+    max-width: 120px;
+  }
+}

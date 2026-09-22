@@ -43,6 +43,7 @@ import { atomsOf, dueAtoms } from '@/engine/scheduler'
 import { diagnoseModule } from '@/engine/diagnose'
 import { getItem, type LearnerState } from '@/engine/state'
 import { currentR } from '@/engine/fsrs'
+import { ReadAloud } from '@/components/ReadAloud'
 import { ReadingProgress } from '@/components/ReadingProgress'
 import { useReadingPlace } from '@/hooks/useReadingPlace'
 import { useLearner } from '@/hooks/useLearner'
@@ -1010,6 +1011,9 @@ function LessonReader({ module, lesson }: { module: Module; lesson: LessonMeta }
   return (
     <div className="page page--padtop reader">
       <ReadingProgress active={body !== null} />
+      <div className="reader__aloud">
+        <ReadAloud markdown={body} />
+      </div>
       <div className="reader__top" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 14 }}>
         <button
           className="btn btn--quiet btn--sm"

@@ -120,6 +120,10 @@ export interface Settings {
    * finds that irritating can turn the rail back on.
    */
   pinSidebar?: boolean
+  /** Chosen read-aloud voice, by system name. Absent means "best available". */
+  voiceName?: string
+  /** Read-aloud speed multiplier. */
+  speechRate?: number
 }
 
 export interface LearnerState {
@@ -505,5 +509,9 @@ function pickSettings(v: unknown): Partial<Settings> {
     // would still produce a key, and the flag is absent until it is set.
     ...(s.onboarded === true ? { onboarded: true } : {}),
     ...(s.pinSidebar === true ? { pinSidebar: true } : {}),
+    ...(typeof s.voiceName === 'string' && s.voiceName ? { voiceName: s.voiceName.slice(0, 120) } : {}),
+    ...(typeof s.speechRate === 'number' && Number.isFinite(s.speechRate)
+      ? { speechRate: Math.min(2, Math.max(0.5, s.speechRate)) }
+      : {}),
   }
 }

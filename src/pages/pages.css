@@ -1191,3 +1191,11 @@
 .coverage-note li {
   margin: 3px 0;
 }
+
+/* Read-aloud sits with the reader's own measure so it lines up with the text
+   it reads rather than with the edge of the window. */
+.reader .reader__aloud {
+  max-width: var(--reader-measure);
+  margin: 10px auto 0;
+  width: 100%;
+}

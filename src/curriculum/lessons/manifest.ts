@@ -1513,6 +1513,33 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "gimbal lock and its mathematical cause"
       ],
       "file": "t1_m16_attitude_representations/03-gimbal-lock-and-its-mathematical-cause.md"
+    },
+    {
+      "id": "l04-euler-rotation-theorem-and-the-principal-axis",
+      "title": "Euler rotation theorem, principal rotation axis and angle",
+      "minutes": 19,
+      "covers": [
+        "Euler rotation theorem, principal rotation axis and angle"
+      ],
+      "file": "t1_m16_attitude_representations/04-euler-rotation-theorem-and-the-principal-axis.md"
+    },
+    {
+      "id": "l05-quaternion-conventions-hamilton-and-jpl",
+      "title": "Quaternions: Hamilton against JPL, scalar-first against scalar-last",
+      "minutes": 20,
+      "covers": [
+        "quaternions: Hamilton vs JPL, scalar-first vs scalar-last"
+      ],
+      "file": "t1_m16_attitude_representations/05-quaternion-conventions-hamilton-and-jpl.md"
+    },
+    {
+      "id": "l06-quaternion-multiplication-conjugate-and-inverse",
+      "title": "Quaternion multiplication, conjugate, inverse and the unit-norm constraint",
+      "minutes": 20,
+      "covers": [
+        "quaternion multiplication, conjugate, inverse, unit-norm constraint"
+      ],
+      "file": "t1_m16_attitude_representations/06-quaternion-multiplication-conjugate-and-inverse.md"
     }
   ],
   "t1_m17_attitude_kinematics": [
@@ -1533,6 +1560,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "numerical integration of attitude with re-normalisation"
       ],
       "file": "t1_m17_attitude_kinematics/02-numerical-integration-and-renormalisation.md"
+    },
+    {
+      "id": "l03-quaternion-integration-schemes-and-norm-drift",
+      "title": "Quaternion integration schemes and norm drift",
+      "minutes": 21,
+      "covers": [
+        "quaternion integration schemes and norm drift"
+      ],
+      "file": "t1_m17_attitude_kinematics/03-quaternion-integration-schemes-and-norm-drift.md"
     }
   ],
   "t1_m18_atmospheric_flight": [
@@ -1800,11 +1836,38 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-laplace-and-the-transfer-function",
       "title": "The Laplace transform and the transfer function",
-      "minutes": 20,
+      "minutes": 16,
       "covers": [
         "The Laplace transform and the transfer function"
       ],
       "file": "t3_m25_signals_systems/03-laplace-and-the-transfer-function.md"
+    },
+    {
+      "id": "l04-poles-zeros-and-dc-gain",
+      "title": "Poles, zeros and DC gain",
+      "minutes": 18,
+      "covers": [
+        "Poles, zeros, and DC gain"
+      ],
+      "file": "t3_m25_signals_systems/04-poles-zeros-and-dc-gain.md"
+    },
+    {
+      "id": "l05-first-and-second-order-response",
+      "title": "First- and second-order response metrics",
+      "minutes": 14,
+      "covers": [
+        "First- and second-order response: rise time, peak time, overshoot and settling time as functions of zeta and omega-n"
+      ],
+      "file": "t3_m25_signals_systems/05-first-and-second-order-response.md"
+    },
+    {
+      "id": "l06-dominant-poles-and-model-reduction",
+      "title": "Dominant poles and model order reduction by inspection",
+      "minutes": 18,
+      "covers": [
+        "Dominant poles and model order reduction by inspection"
+      ],
+      "file": "t3_m25_signals_systems/06-dominant-poles-and-model-reduction.md"
     }
   ],
   "t3_m26_classical_control": [
@@ -1834,6 +1897,24 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Integrator windup, anti-windup schemes, bumpless transfer, setpoint weighting"
       ],
       "file": "t3_m26_classical_control/03-windup-anti-windup-and-mode-changes.md"
+    },
+    {
+      "id": "l04-three-ways-to-tune-a-pid",
+      "title": "Three ways to tune a PID, and what each one optimises",
+      "minutes": 22,
+      "covers": [
+        "PID tuning: Ziegler-Nichols, loop shaping, pole placement"
+      ],
+      "file": "t3_m26_classical_control/04-three-ways-to-tune-a-pid.md"
+    },
+    {
+      "id": "l05-root-locus",
+      "title": "The root locus, and designing with it",
+      "minutes": 23,
+      "covers": [
+        "Root locus construction rules and root-locus design"
+      ],
+      "file": "t3_m26_classical_control/05-root-locus.md"
     }
   ],
   "t3_m27_digital_control": [
@@ -1872,6 +1953,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Mapping the s-plane to the z-plane; the unit circle as the stability boundary"
       ],
       "file": "t3_m27_digital_control/04-s-plane-to-z-plane-and-the-unit-circle.md"
+    },
+    {
+      "id": "l05-discretization-methods",
+      "title": "Discretization methods",
+      "minutes": 25,
+      "covers": [
+        "Discretization methods: forward and backward Euler, Tustin, Tustin with prewarping, ZOH equivalence, matched pole-zero"
+      ],
+      "file": "t3_m27_digital_control/05-discretization-methods.md"
     }
   ],
   "t3_m28_state_space": [
@@ -1892,6 +1982,24 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Similarity transformations and what is invariant under them"
       ],
       "file": "t3_m28_state_space/02-similarity-transformations-and-invariants.md"
+    },
+    {
+      "id": "l03-solving-the-state-equation-and-discretisation",
+      "title": "Solving the state equation, and the model your computer runs",
+      "minutes": 18,
+      "covers": [
+        "Solution of xdot = Ax + Bu via the matrix exponential; the discrete-time equivalent"
+      ],
+      "file": "t3_m28_state_space/03-solving-the-state-equation-and-discretisation.md"
+    },
+    {
+      "id": "l04-controllability-rank-gramian-pbh",
+      "title": "Controllability — the rank test, the Gramian and PBH",
+      "minutes": 19,
+      "covers": [
+        "Controllability: the Kalman rank test, the controllability Gramian, the PBH test"
+      ],
+      "file": "t3_m28_state_space/04-controllability-rank-gramian-pbh.md"
     }
   ],
   "t3_m29_optimal_control_lqr": [
@@ -1921,6 +2029,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "The algebraic and differential Riccati equations"
       ],
       "file": "t3_m29_optimal_control_lqr/03-riccati-equations.md"
+    },
+    {
+      "id": "l04-choosing-q-and-r",
+      "title": "Choosing Q and R: Bryson's rule, scaling, and the effort budget",
+      "minutes": 19,
+      "covers": [
+        "Choosing Q and R: Bryson rule, physical scaling, iterating against an effort budget"
+      ],
+      "file": "t3_m29_optimal_control_lqr/04-choosing-q-and-r.md"
     }
   ],
   "t3_m30_robust_control": [
@@ -1941,6 +2058,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "The small gain theorem and its exact hypotheses"
       ],
       "file": "t3_m30_robust_control/02-small-gain-theorem.md"
+    },
+    {
+      "id": "l03-h2-and-hinf-norms",
+      "title": "The H2 and H-infinity norms",
+      "minutes": 17,
+      "covers": [
+        "The H2 and H-infinity norms and what each one measures"
+      ],
+      "file": "t3_m30_robust_control/03-h2-and-hinf-norms.md"
     }
   ],
   "t3_m31_nonlinear_control": [
@@ -1961,6 +2087,24 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Phase-plane analysis and equilibrium classification"
       ],
       "file": "t3_m31_nonlinear_control/02-phase-plane-and-equilibrium-classification.md"
+    },
+    {
+      "id": "l03-linearization-and-the-indirect-method",
+      "title": "Linearization and the Lyapunov indirect method",
+      "minutes": 19,
+      "covers": [
+        "Linearization and the Lyapunov indirect method, including its failure cases"
+      ],
+      "file": "t3_m31_nonlinear_control/03-linearization-and-the-indirect-method.md"
+    },
+    {
+      "id": "l04-lyapunov-direct-method-and-lasalle",
+      "title": "The direct method, Lyapunov functions and LaSalle",
+      "minutes": 26,
+      "covers": [
+        "The Lyapunov direct method, Lyapunov functions, LaSalle invariance principle"
+      ],
+      "file": "t3_m31_nonlinear_control/04-lyapunov-direct-method-and-lasalle.md"
     }
   ],
   "t3_m32_mpc": [
@@ -1976,11 +2120,29 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-the-finite-horizon-problem",
       "title": "The finite-horizon constrained optimal control problem",
-      "minutes": 20,
+      "minutes": 19,
       "covers": [
         "The finite-horizon constrained optimal control problem"
       ],
       "file": "t3_m32_mpc/02-the-finite-horizon-problem.md"
+    },
+    {
+      "id": "l03-linear-mpc-as-a-quadratic-program",
+      "title": "Linear MPC as a quadratic program",
+      "minutes": 18,
+      "covers": [
+        "Linear MPC as a quadratic program; condensed vs sparse formulations"
+      ],
+      "file": "t3_m32_mpc/03-linear-mpc-as-a-quadratic-program.md"
+    },
+    {
+      "id": "l04-constraints-and-slack-variables",
+      "title": "State and input constraints, softening and slacks",
+      "minutes": 21,
+      "covers": [
+        "State and input constraints; soft constraints and slack variables"
+      ],
+      "file": "t3_m32_mpc/04-constraints-and-slack-variables.md"
     }
   ]
 }
@@ -2085,13 +2247,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t1_m16_attitude_representations": {
-    "covered": 3,
+    "covered": 6,
     "total": 13,
     "complete": false,
     "missing": [
-      "Euler rotation theorem, principal rotation axis and angle",
-      "quaternions: Hamilton vs JPL, scalar-first vs scalar-last",
-      "quaternion multiplication, conjugate, inverse, unit-norm constraint",
       "the double cover and the shortest-path sign convention",
       "SLERP",
       "classical and modified Rodrigues parameters, and the MRP shadow set",
@@ -2102,11 +2261,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t1_m17_attitude_kinematics": {
-    "covered": 2,
+    "covered": 3,
     "total": 10,
     "complete": false,
     "missing": [
-      "quaternion integration schemes and norm drift",
       "combining kinematics with Euler dynamics into a 6-state rotational system",
       "external torques: gravity gradient, aerodynamic, solar radiation pressure, residual magnetic dipole",
       "reaction wheel and CMG dynamics and momentum coupling",
@@ -2129,13 +2287,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t3_m25_signals_systems": {
-    "covered": 3,
+    "covered": 6,
     "total": 12,
     "complete": false,
     "missing": [
-      "Poles, zeros, and DC gain",
-      "First- and second-order response: rise time, peak time, overshoot and settling time as functions of zeta and omega-n",
-      "Dominant poles and model order reduction by inspection",
       "Added zeros, non-minimum-phase zeros, and right-half-plane zeros",
       "Time delay and the Pade approximation",
       "Frequency response: magnitude and phase; Bode plot construction by hand",
@@ -2145,12 +2300,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t3_m26_classical_control": {
-    "covered": 3,
+    "covered": 5,
     "total": 13,
     "complete": false,
     "missing": [
-      "PID tuning: Ziegler-Nichols, loop shaping, pole placement",
-      "Root locus construction rules and root-locus design",
       "The Nyquist plot and the Nyquist stability criterion",
       "Gain margin, phase margin, delay margin, and the modulus (vector) margin",
       "Why margins can lie: MIMO coupling, nonlinearity, simultaneous perturbations",
@@ -2162,11 +2315,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t3_m27_digital_control": {
-    "covered": 4,
+    "covered": 5,
     "total": 11,
     "complete": false,
     "missing": [
-      "Discretization methods: forward and backward Euler, Tustin, Tustin with prewarping, ZOH equivalence, matched pole-zero",
       "Computational delay and where it shows up in the loop",
       "Choosing a sample rate: the 20-40x bandwidth rule of thumb and what drives the ends of that range",
       "Quantization, finite word length, and fixed-point implementation",
@@ -2176,12 +2328,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t3_m28_state_space": {
-    "covered": 2,
+    "covered": 4,
     "total": 11,
     "complete": false,
     "missing": [
-      "Solution of xdot = Ax + Bu via the matrix exponential; the discrete-time equivalent",
-      "Controllability: the Kalman rank test, the controllability Gramian, the PBH test",
       "Observability and duality; stabilizability and detectability",
       "Pole placement: Ackermann, Bass-Gura, and robust (eigenstructure) pole placement",
       "Luenberger observers and the estimation error dynamics",
@@ -2192,11 +2342,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t3_m29_optimal_control_lqr": {
-    "covered": 3,
+    "covered": 4,
     "total": 14,
     "complete": false,
     "missing": [
-      "Choosing Q and R: Bryson rule, physical scaling, iterating against an effort budget",
       "The guaranteed margins of full-state-feedback LQR and why LQG loses them",
       "Infinite-horizon vs finite-horizon LQR",
       "LQR with integral action",
@@ -2210,11 +2359,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t3_m30_robust_control": {
-    "covered": 2,
+    "covered": 3,
     "total": 12,
     "complete": false,
     "missing": [
-      "The H2 and H-infinity norms and what each one measures",
       "H-infinity synthesis: mixed sensitivity S/KS/T weighting, the two-Riccati (DGKF) solution",
       "The structured singular value mu and mu-synthesis by D-K iteration",
       "Robust stability vs robust performance",
@@ -2227,12 +2375,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t3_m31_nonlinear_control": {
-    "covered": 2,
+    "covered": 4,
     "total": 14,
     "complete": false,
     "missing": [
-      "Linearization and the Lyapunov indirect method, including its failure cases",
-      "The Lyapunov direct method, Lyapunov functions, LaSalle invariance principle",
       "Region of attraction estimation, including sum-of-squares approaches",
       "Input-to-state stability",
       "Feedback linearization (input-state and input-output), relative degree, internal and zero dynamics",
@@ -2246,12 +2392,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t3_m32_mpc": {
-    "covered": 2,
+    "covered": 4,
     "total": 13,
     "complete": false,
     "missing": [
-      "Linear MPC as a quadratic program; condensed vs sparse formulations",
-      "State and input constraints; soft constraints and slack variables",
       "Terminal cost and terminal constraint set for stability guarantees",
       "Feasibility, recursive feasibility, and the maximal control invariant set",
       "Explicit MPC and multi-parametric programming",
