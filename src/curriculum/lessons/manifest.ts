@@ -3251,6 +3251,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Initial alignment: coarse leveling, gyrocompassing, fine alignment via Kalman filter, transfer and in-flight alignment"
       ],
       "file": "t4_m36_inertial_navigation/10-initial-alignment.md"
+    },
+    {
+      "id": "l11-ins-gnss-integration-architectures",
+      "title": "INS/GNSS integration architectures",
+      "minutes": 14,
+      "covers": [
+        "INS/GNSS integration architectures: loosely, tightly, and ultra-tightly (deeply) coupled"
+      ],
+      "file": "t4_m36_inertial_navigation/11-ins-gnss-integration-architectures.md"
     }
   ],
   "t4_m37_gnss": [
@@ -3370,6 +3379,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Receiver tracking loops (DLL, PLL, FLL) and the bandwidth/dynamics trade"
       ],
       "file": "t4_m37_gnss/13-receiver-tracking-loops.md"
+    },
+    {
+      "id": "l14-vector-tracking-and-deep-coupling",
+      "title": "Vector tracking and deep coupling",
+      "minutes": 22,
+      "covers": [
+        "Vector tracking and deep coupling"
+      ],
+      "file": "t4_m37_gnss/14-vector-tracking-and-deep-coupling.md"
     }
   ],
   "t4_m38_sensors_optical_nav": [
@@ -3688,22 +3706,19 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t4_m36_inertial_navigation": {
-    "covered": 10,
+    "covered": 11,
     "total": 13,
     "complete": false,
     "missing": [
-      "INS/GNSS integration architectures: loosely, tightly, and ultra-tightly (deeply) coupled",
       "Error-state filter formulation for INS: the 15-state and 21-state models",
       "Lever arm compensation, zero-velocity updates, vibration rectification"
     ]
   },
   "t4_m37_gnss": {
-    "covered": 13,
+    "covered": 14,
     "total": 14,
-    "complete": false,
-    "missing": [
-      "Vector tracking and deep coupling"
-    ]
+    "complete": true,
+    "missing": []
   },
   "t4_m38_sensors_optical_nav": {
     "covered": 1,

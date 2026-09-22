@@ -101,7 +101,7 @@ until $\|\mathbf x^{(i+1)}-\mathbf x^{(i)}\|$ is negligible; then $\hat{\mathbf 
 This is not a new idea invented for filtering — it is **Gauss-Newton**, the exact algorithm the nonlinear least-squares lesson derived, applied to the cost function $J(\mathbf x)=\tfrac12(\mathbf x-\hat{\mathbf x}_k^-)^{\mathsf T}(\mathbf P_k^-)^{-1}(\mathbf x-\hat{\mathbf x}_k^-)+\tfrac12(\mathbf z_k-\mathbf h(\mathbf x))^{\mathsf T}\mathbf R_k^{-1}(\mathbf z_k-\mathbf h(\mathbf x))$ — the negative log-posterior for a Gaussian prior and a Gaussian-noise nonlinear measurement, exactly the maximum-a-posteriori cost that lesson's MAP treatment wrote down for a static parameter. A single EKF update *is* one Gauss-Newton step from $\hat{\mathbf x}_k^-$; the iterated EKF is Gauss-Newton carried to convergence, and what it converges to is the local maximum of the true posterior, the *mode* — not merely the endpoint of one linear approximation to it. Where the ordinary Gauss-Newton lesson had no prior term (or an implicit flat one), the extra $(\mathbf P_k^-)^{-1}$ term here is exactly the prior-information matrix the recursive-least-squares/Kalman-bridge lesson identified as $\mathbf P^{-1}$, doing precisely the regularizing job it did there.
 
 ::: example One-shot against iterated against the true MAP, on a single bearing
-Take a prior $\hat{\mathbf x}_k^-=(200,\,200)\,\mathrm m$ (position only, for a static single-update illustration), $\mathbf P_k^-=\operatorname{diag}(80^2,80^2)\,\mathrm m^2$, and one very precise, noiseless bearing measurement $z=\operatorname{atan2}(y,x)$ generated from a true position $(80,\,260)\,\mathrm m$, giving $z=72.8973^\circ$ (the prior itself implies a bearing of only $45.000^\circ$ — a large, genuinely nonlinear correction is needed).
+Take a prior $\hat{\mathbf x}_k^-=(200,\,200)\,\mathrm m$ (position only, for a static single-update illustration), $\mathbf P_k^-=\operatorname{diag}(80^2,80^2)\,\mathrm m^2$, and one very precise bearing measurement, $\sigma_\theta=0.5^\circ$, $z=\operatorname{atan2}(y,x)$ generated from a true position $(80,\,260)\,\mathrm m$, giving $z=72.8973^\circ$ (the prior itself implies a bearing of only $45.000^\circ$ — a large, genuinely nonlinear correction is needed).
 
 **One-shot EKF**: $\mathbf H=(-0.0025,\ 0.0025)$ at the prior, innovation $27.897^\circ$, gain $\mathbf K=(-199.81,\ 199.81)$, giving $\hat{\mathbf x}^+=(102.71,\,297.29)\,\mathrm m$.
 
@@ -119,26 +119,30 @@ def Hjac(x):
     r2 = x[0]**2 + x[1]**2
     return np.array([-x[1]/r2, x[0]/r2])
 
+def wrap(a): return (a+np.pi) % (2*np.pi) - np.pi
+
 x0m = np.array([200.0, 200.0]); P0 = np.diag([80.0**2, 80.0**2])
+sigma_th = np.radians(0.5); R = sigma_th**2
 x_true = np.array([80.0, 260.0]); z = h(x_true)
 P0inv = np.linalg.inv(P0)
 
 x_iter = x0m.copy()
 for i in range(6):
     Hi = Hjac(x_iter)
-    Si = Hi@P0@Hi.T + 0.0   # noiseless measurement for this illustration
+    Si = Hi@P0@Hi.T + R
     Ki = P0@Hi.T/Si
-    resid = (z - h(x_iter) - Hi@(x0m-x_iter))
+    resid = wrap(z - h(x_iter) - Hi@(x0m-x_iter))
     x_iter = x0m + Ki*resid
 
 def cost(x):
     dx = x-x0m
-    return 0.5*dx@P0inv@dx if True else 0  # (measurement term omitted: noiseless -> hard constraint)
+    rz = wrap(z - h(x))
+    return 0.5*dx@P0inv@dx + 0.5*rz**2/R
 
-res = minimize(lambda x: 1e12*(z-h(x))**2 + 0.5*(x-x0m)@P0inv@(x-x0m), x0m, method='Nelder-Mead',
-                options=dict(xatol=1e-10, fatol=1e-14, maxiter=20000))
+res = minimize(cost, x0m, method='Nelder-Mead',
+                options=dict(xatol=1e-12, fatol=1e-16, maxiter=50000, maxfev=50000))
 print(x_iter, res.x, np.linalg.norm(x_iter-res.x))
-# [ 73.6228315  238.93972163] [ 73.6228299  238.93971622] 6e-06
+# [ 73.6228315  238.93972163] [ 73.6228299  238.93971622] 5.6e-06
 ```
 
 ::: warning The iterated EKF still uses a single Gaussian

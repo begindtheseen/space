@@ -65,39 +65,42 @@ Draw $20{,}000$ samples from a proposal $\mathcal N(\mathbf 0,\mathbf I_n)$, wei
 
 | $n$ (dimensions) | mean $N_\text{eff}/N$ | mean $N_\text{eff}$ |
 | --- | --- | --- |
-| $1$ | $0.778$ | $15{,}569$ |
-| $5$ | $0.290$ | $5{,}801$ |
-| $10$ | $0.091$ | $1{,}829$ |
-| $20$ | $0.017$ | $334$ |
+| $1$ | $0.778$ | $15{,}568$ |
+| $5$ | $0.292$ | $5{,}830$ |
+| $10$ | $0.088$ | $1{,}766$ |
+| $20$ | $0.017$ | $342$ |
 | $30$ | $0.0054$ | $108$ |
-| $50$ | $0.0015$ | $30$ |
-| $80$ | $0.00059$ | $12$ |
-| $120$ | $0.00042$ | $8$ |
+| $50$ | $0.0012$ | $24$ |
+| $80$ | $0.00057$ | $11$ |
+| $120$ | $0.00028$ | $6$ |
 
-Nothing about the *size* of the mismatch changed anywhere in this table — every axis carries exactly the same, modest, half-a-sigma offset the whole way across. What changed is only how many axes are being resolved simultaneously. Twenty thousand particles, comfortably large for a low-dimensional problem, are functionally down to about eight or twelve *effective* samples by $n=80$–$120$: nearly all of the weight has piled onto a vanishingly small subset of the cloud, and the rest are, for practical purposes, dead weight being propagated and evaluated every cycle for nothing.
+Nothing about the *size* of the mismatch changed anywhere in this table — every axis carries exactly the same, modest, half-a-sigma offset the whole way across. What changed is only how many axes are being resolved simultaneously. Twenty thousand particles, comfortably large for a low-dimensional problem, are functionally down to about six or eleven *effective* samples by $n=80$–$120$: nearly all of the weight has piled onto a vanishingly small subset of the cloud, and the rest are, for practical purposes, dead weight being propagated and evaluated every cycle for nothing.
 :::
 
 ```python
 import numpy as np
 
 rng = np.random.default_rng(21)
-N, m = 20000, 0.5
+N, m, trials = 20000, 0.5, 20
 for n in [1, 5, 10, 20, 30, 50, 80, 120]:
-    x = rng.standard_normal((N, n))
-    mu = np.full(n, m)
-    logw = x @ mu - 0.5*np.dot(mu, mu)
-    logw -= logw.max()
-    w = np.exp(logw); w /= w.sum()
-    ess = 1.0/np.sum(w**2)
+    ratios = []
+    for _ in range(trials):
+        x = rng.standard_normal((N, n))
+        mu = np.full(n, m)
+        logw = x @ mu - 0.5*np.dot(mu, mu)
+        logw -= logw.max()
+        w = np.exp(logw); w /= w.sum()
+        ratios.append(1.0/np.sum(w**2))
+    ess = np.mean(ratios)
     print(n, ess/N, ess)
-# 1   0.778  15569
-# 5   0.290  5801
-# 10  0.091  1829
-# 20  0.017  334
-# 30  0.0054 108
-# 50  0.0015 30
-# 80  0.00059 12
-# 120 0.00042 8
+# 1   0.7784  15568.5
+# 5   0.2915   5830.1
+# 10  0.0883   1765.7
+# 20  0.0171    341.7
+# 30  0.0054    108.1
+# 50  0.0012     24.3
+# 80  0.00057    11.5
+# 120 0.00028     5.5
 ```
 
 ::: key The practical killer of particle filters
@@ -161,7 +164,7 @@ No — a measurable depth difference gives even a single altimeter reading near 
 | Item | Statement |
 | --- | --- |
 | Genuine multi-modality | Terrain-matching EKF (one Gaussian): $76/200$ trials never confidently committed; of the $124$ that did, $64$ ($52\%$) committed to the wrong hypothesis, with no warning in the reported covariance |
-| Curse of dimensionality | $N_\text{eff}/N$ measured directly against dimension, fixed per-axis mismatch: $0.778$ at $n=1$, falling to $0.00042$ by $n=120$ — a purely dimension-driven collapse |
+| Curse of dimensionality | $N_\text{eff}/N$ measured directly against dimension, fixed per-axis mismatch: $0.778$ at $n=1$, falling to $0.00028$ by $n=120$ — a purely dimension-driven collapse |
 | The practical killer | Particle count needed grows explosively with the dimension the weighting must resolve, independent of how mild any single axis's mismatch is |
 | Standard remedy | Rao-Blackwellize: keep particles only for the genuinely ambiguous, low-dimensional subset of the state; track the rest analytically, conditioned on each particle |
 | When a particle filter is the right call | The posterior is genuinely multi-modal or strongly non-Gaussian **and** the ambiguous part of the state is low-dimensional — both conditions, not either alone |

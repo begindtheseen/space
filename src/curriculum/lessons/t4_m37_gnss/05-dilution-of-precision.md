@@ -67,6 +67,7 @@ The previous lesson's second worked example used six satellites at Cape Canavera
 ```python
 import numpy as np
 
+
 def dop(sats, x, east, north, up):
     los = sats - x
     e = los / np.linalg.norm(los, axis=1)[:, None]
@@ -81,12 +82,26 @@ def dop(sats, x, east, north, up):
     vdop = np.sqrt(Qenu[2, 2])
     return gdop, pdop, hdop, vdop, tdop
 
-# east, north, up at Cape Canaveral (28.56 N, 80.60 W); sats as in the previous lesson
+
+x_true = np.array([914936.61, -5526684.03, 3049186.55])    # Cape Canaveral, ECEF, m
+sats6 = np.array([                                            # the six satellites used throughout
+    [11350562.41, -23441217.26, 5206502.33],
+    [15228615.04, -6538895.01, 20754896.68],
+    [-11200404.28, -23485162.13, -5332138.78],
+    [-8420060.43, -15461050.49, 19886983.18],
+    [4231690.58, -19962286.90, 17000985.17],
+    [-4355633.71, -22609494.10, -13239064.60],
+])
+lat, lon = np.radians(28.56), np.radians(-80.60)               # local ENU basis, Cape Canaveral
+east = np.array([-np.sin(lon), np.cos(lon), 0.0])
+north = np.array([-np.sin(lat) * np.cos(lon), -np.sin(lat) * np.sin(lon), np.cos(lat)])
+up = np.array([np.cos(lat) * np.cos(lon), np.cos(lat) * np.sin(lon), np.sin(lat)])
+
 gdop, pdop, hdop, vdop, tdop = dop(sats6, x_true, east, north, up)
 print(f"GDOP={gdop:.4f} PDOP={pdop:.4f} HDOP={hdop:.4f} VDOP={vdop:.4f} TDOP={tdop:.4f}")
 # GDOP=2.6642 PDOP=2.3268 HDOP=1.3266 VDOP=1.9117 TDOP=1.2976
 print("check:", pdop**2 + tdop**2, "vs", gdop**2, " | ", hdop**2 + vdop**2, "vs", pdop**2)
-# check: 7.0980300067940965 vs 7.0980300067940965  |  5.414181363049652 vs 5.414181363049653
+# check: 7.098030005998015 vs 7.098030005998015  |  5.41418136237961 vs 5.41418136237961
 ```
 
 Both identities check to machine precision. Notice $\mathrm{VDOP}=1.9117$ against $\mathrm{HDOP}=1.3266$ — the vertical is already the weaker axis even for a well-spread constellation like this one, for a reason worked out below.
