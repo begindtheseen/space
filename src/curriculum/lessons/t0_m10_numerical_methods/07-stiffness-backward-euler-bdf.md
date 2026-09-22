@@ -58,7 +58,7 @@ Now apply the stability intervals from the previous lessons. Along the negative 
 | AB4 | $0.300\,\mathrm{ms}$ | 666,654 | 666,654 |
 | Backward Euler, $h = 1\,\mathrm{s}$ | unlimited | 200 | 200 solves |
 
-Nothing in that table is about accuracy. RK4 at $h = 2.785\,\mathrm{ms}$ resolves the slow mode to about $10^{-15}$ — twelve digits more than anyone wants — and takes 287,220 force evaluations to do it. Note also that AB4, which won the cost comparison in the previous lesson, is now the *worst* of the three: its stability interval is nine times shorter than RK4's, and on a stability-limited problem that is what decides.
+Nothing in that table is about accuracy. RK4 at $h = 2.785\,\mathrm{ms}$ resolves the slow mode far below the level that round-off lets you see at all — many digits more than anyone wants — and takes 287,220 force evaluations to do it. Note also that AB4, which won the cost comparison in the previous lesson, is now the *worst* of the three: its stability interval is nine times shorter than RK4's, and on a stability-limited problem that is what decides.
 
 ::: example Explicit Euler crossing the line
 Integrate the system above from $\omega_b = 10^{-3}\,\mathrm{rad/s}$, $i = 0$ for 0.1 s with explicit Euler. The exact answer at $t = 0.1\,\mathrm{s}$ is $\omega_b = 9.98022\times10^{-4}\,\mathrm{rad/s}$ and $i = 0.199608\,\mathrm{A}$; the fast transient died a hundred time constants ago.
