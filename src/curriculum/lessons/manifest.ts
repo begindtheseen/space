@@ -2822,6 +2822,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Weighted least squares and the information matrix"
       ],
       "file": "t4_m33_least_squares/02-weighted-least-squares-and-the-information-matrix.md"
+    },
+    {
+      "id": "l03-minimum-variance-blue-gauss-markov",
+      "title": "Minimum variance and BLUE: the Gauss-Markov theorem",
+      "minutes": 19,
+      "covers": [
+        "Minimum variance and BLUE: the Gauss-Markov theorem"
+      ],
+      "file": "t4_m33_least_squares/03-minimum-variance-blue-gauss-markov.md"
     }
   ],
   "t4_m34_kalman_filter": [
@@ -3243,11 +3252,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t4_m33_least_squares": {
-    "covered": 2,
+    "covered": 3,
     "total": 12,
     "complete": false,
     "missing": [
-      "Minimum variance and BLUE: the Gauss-Markov theorem",
       "Maximum likelihood and its equivalence to WLS under Gaussian noise",
       "Maximum a posteriori estimation",
       "Nonlinear least squares: Gauss-Newton and Levenberg-Marquardt",
