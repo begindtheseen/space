@@ -145,6 +145,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "GNC Engineer Level I to II: the 2+ years line and the Dragon 1+ years variant"
       ],
       "file": "car_03_levels_and_quals/03-level-one-to-two.md"
+    },
+    {
+      "id": "l04-the-preferred-list",
+      "title": "The GNC Engineer preferred list, item by item",
+      "minutes": 18,
+      "covers": [
+        "the full preferred list for GNC Engineer and what each item signals"
+      ],
+      "file": "car_03_levels_and_quals/04-the-preferred-list.md"
     }
   ],
   "car_04_degree_reality": [
@@ -193,6 +202,16 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Path 3, NewSpace ladder: Varda, Stoke, Firefly, Astra, True Anomaly, Impulse, Relativity and Intuitive Machines hire GNC with looser credential gates, and 2 to 3 years there converts to 5+ years professional GNC experience or 7+ years in lieu of a degree at SpaceX senior level"
       ],
       "file": "car_04_degree_reality/05-path-three-the-newspace-ladder.md"
+    },
+    {
+      "id": "l06-timelines-and-two-failure-modes",
+      "title": "Timelines, and the two ways to waste them",
+      "minutes": 22,
+      "covers": [
+        "realistic timelines for each path, stated in years",
+        "the two failure modes: believing a portfolio replaces the degree, and believing nothing but the degree matters"
+      ],
+      "file": "car_04_degree_reality/06-timelines-and-two-failure-modes.md"
     }
   ],
   "car_07_resume_and_referrals": [
@@ -6868,11 +6887,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "car_03_levels_and_quals": {
-    "covered": 3,
+    "covered": 4,
     "total": 10,
     "complete": false,
     "missing": [
-      "the full preferred list for GNC Engineer and what each item signals",
       "Sr. GNC Engineer: 5+ years, or 7+ years in lieu of a degree, or a postgraduate degree",
       "specialist roles requiring a Master’s or PhD",
       "Site Reliability Engineer, GNC: the verbatim 4+ years in lieu of a degree line",
@@ -6882,12 +6900,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "car_04_degree_reality": {
-    "covered": 6,
+    "covered": 8,
     "total": 10,
     "complete": false,
     "missing": [
-      "realistic timelines for each path, stated in years",
-      "the two failure modes: believing a portfolio replaces the degree, and believing nothing but the degree matters",
       "sunk-cost traps and how to choose deliberately rather than by default",
       "what to do if you are already mid-career in another field"
     ]
