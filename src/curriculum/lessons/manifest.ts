@@ -998,6 +998,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "the moment of inertia tensor, products of inertia, parallel axis theorem"
       ],
       "file": "t1_m14_rigid_body_dynamics/02-inertia-tensor-and-parallel-axis-theorem.md"
+    },
+    {
+      "id": "l03-principal-axes-and-principal-moments",
+      "title": "Principal axes and principal moments",
+      "minutes": 17,
+      "covers": [
+        "principal axes and principal moments"
+      ],
+      "file": "t1_m14_rigid_body_dynamics/03-principal-axes-and-principal-moments.md"
     }
   ],
   "t1_m15_rotating_frames": [
@@ -1461,11 +1470,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t1_m14_rigid_body_dynamics": {
-    "covered": 2,
+    "covered": 3,
     "total": 12,
     "complete": false,
     "missing": [
-      "principal axes and principal moments",
       "angular momentum H = I omega",
       "Euler rotational equations of motion",
       "torque-free motion, polhode and herpolhode",
