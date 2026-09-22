@@ -640,6 +640,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "recruiter screen structure and the questions actually asked: background, motivation, export-control eligibility, location and relocation, timeline, compensation expectations"
       ],
       "file": "car_09_screens/01-the-recruiter-screen.md"
+    },
+    {
+      "id": "l02-the-ninety-second-narrative",
+      "title": "The ninety-second background narrative",
+      "minutes": 23,
+      "covers": [
+        "the 90-second background narrative and how to end it on a specific role family"
+      ],
+      "file": "car_09_screens/02-the-ninety-second-narrative.md"
     }
   ],
   "cod_cpp_01_basics": [
@@ -7359,11 +7368,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "car_09_screens": {
-    "covered": 1,
+    "covered": 2,
     "total": 12,
     "complete": false,
     "missing": [
-      "the 90-second background narrative and how to end it on a specific role family",
       "answering the compensation question early without anchoring yourself low",
       "the technical phone screen: 30 minutes, an engineer on the team or the hiring manager",
       "reported topics: PD control, orbit determination, frequency-domain analysis",

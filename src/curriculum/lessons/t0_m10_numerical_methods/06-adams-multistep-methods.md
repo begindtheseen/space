@@ -188,7 +188,7 @@ def propagate(f, t0, y0, h, n_steps, start):
     return t, y
 ```
 
-On $\dot y = -y$ from $y_0 = 1$ with $h = 0.1$ and exact starting values, `propagate` returns $y(1) = 0.36787826631967274$ against $e^{-1} = 0.36787944117144233$: an error of $-1.17 \times 10^{-6}$ from 20 evaluations of $\mathbf{f}$.
+On $\dot y = -y$ from $y_0 = 1$ with $h = 0.1$ and exact starting values, `propagate` returns $y(1) = 0.36787826631967274$ against $e^{-1} = 0.36787944117144233$: an error of $-1.17 \times 10^{-6}$ from 18 evaluations of $\mathbf{f}$.
 
 ## Stability: the price of the free evaluations
 

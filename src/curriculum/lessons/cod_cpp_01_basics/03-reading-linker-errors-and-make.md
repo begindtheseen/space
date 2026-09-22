@@ -72,7 +72,7 @@ The signature is where the information is. `mean_az(ImuSample const*, unsigned l
 **3. The name is in the wrong namespace or class.** A header declares `namespace gnc { double clamp_throttle(double); }` and the source defines `double clamp_throttle(double)` at global scope. Two unrelated functions:
 
 ```text
-/usr/bin/ld: ns/main.o: in function `main':
+/usr/bin/ld: main.o: in function `main':
 main.cpp:(.text+0x15): undefined reference to `gnc::clamp_throttle(double)'
 ```
 
@@ -142,8 +142,8 @@ Both files compile without a single diagnostic. The link:
 
 ```text
 /usr/bin/ld: main.o: in function `clamp_throttle(float)':
-main.cpp:(.text+0x0): multiple definition of `clamp_throttle(float)';
-control.o:control.cpp:(.text+0x0): first defined here
+main.cpp:(.text+0x0): multiple definition of `clamp_throttle(float)'; control.o:control.cpp:(.text+0x0): first defined here
+collect2: error: ld returned 1 exit status
 ```
 
 The message names both offenders, and the order is worth noticing: the file it complains about is the *second* one it saw, and "first defined here" points at the first. Neither is more wrong than the other.
@@ -159,8 +159,8 @@ Three causes and their fixes:
 The third looks unlikely until two people independently write a `log_event` helper in their own source files. The linker is unambiguous about it:
 
 ```text
-/usr/bin/ld: b.cpp:(.text+0x0): multiple definition of `log_event(int)';
-a.cpp:(.text+0x0): first defined here
+/usr/bin/ld: b.o: in function `log_event(int)':
+b.cpp:(.text+0x0): multiple definition of `log_event(int)'; a.o:a.cpp:(.text+0x0): first defined here
 ```
 
 `inline` fixes the first two because it makes the definitions weak, as lesson 02 showed with `nm`: `W` instead of `T`, and the linker keeps one. An anonymous namespace fixes the third, by making each file's helper a private symbol that the linker never compares.

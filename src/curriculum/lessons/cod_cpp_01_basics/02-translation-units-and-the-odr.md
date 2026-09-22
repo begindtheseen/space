@@ -176,22 +176,22 @@ A header that defines a type will eventually be included twice in one translatio
 Here is the error, with `sample.hpp` left unguarded and included both directly and through `filter.hpp`. g++ 13.3.0:
 
 ```text
-In file included from err/d/filter.hpp:2,
-                 from err/d/main.cpp:2:
-err/d/sample.hpp:4:8: error: redefinition of 'struct ImuSample'
+In file included from filter.hpp:2,
+                 from main.cpp:2:
+sample.hpp:4:8: error: redefinition of 'struct ImuSample'
     4 | struct ImuSample {
       |        ^~~~~~~~~
-In file included from err/d/main.cpp:1:
-err/d/sample.hpp:4:8: note: previous definition of 'struct ImuSample'
+In file included from main.cpp:1:
+sample.hpp:4:8: note: previous definition of 'struct ImuSample'
 ```
 
 clang++ 18.1.3 on the same files:
 
 ```text
-err/d/sample.hpp:4:8: error: redefinition of 'ImuSample'
-err/d/main.cpp:1:10: note: 'err/d/sample.hpp' included multiple times, additional include site here
-err/d/filter.hpp:2:10: note: 'err/d/sample.hpp' included multiple times, additional include site here
-err/d/sample.hpp:4:8: note: unguarded header; consider using #ifdef guards or #pragma once
+./sample.hpp:4:8: error: redefinition of 'ImuSample'
+main.cpp:1:10: note: './sample.hpp' included multiple times, additional include site here
+./filter.hpp:2:10: note: './sample.hpp' included multiple times, additional include site here
+./sample.hpp:4:8: note: unguarded header; consider using #ifdef guards or #pragma once
 ```
 
 Both compilers report the same error at the same place. Only clang++ names the cause. This is a concrete case of the habit from lesson 01: when a diagnostic tells you what but not why, try the other compiler before you start guessing.
