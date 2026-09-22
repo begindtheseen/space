@@ -1599,7 +1599,7 @@ assert np.allclose(P, P.T, atol=1e-10) and np.all(np.linalg.eigvalsh(P) > 0), "P
 A = np.array([[0.0, 1.0], [0.0, 0.0]])
 B = np.array([[0.0], [1.0]])
 K, P = lqr_gain(A, B, np.eye(2), np.array([[1.0]]))
-assert np.allclose(K.ravel(), [1.0, np.sqrt(2.0)], atol=1e-6), "expected K = [1, sqrt(2)], got %r" % (K,)`,
+assert np.allclose(K.ravel(), [1.0, np.sqrt(3.0)], atol=1e-6), "expected K = [1, sqrt(3)], got %r" % (K,)`,
           },
           {
             name: 'backward DRE converges to the CARE solution',

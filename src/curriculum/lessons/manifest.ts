@@ -2786,6 +2786,39 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       "file": "t3_m32_mpc/11-mpc-vs-lqr-and-applications.md"
     }
   ],
+  "t4_m33_least_squares": [
+    {
+      "id": "l01-linear-least-squares-normal-equations-qr-svd",
+      "title": "The linear least squares problem",
+      "minutes": 22,
+      "covers": [
+        "The linear least squares problem; normal equations, QR, and SVD solutions"
+      ],
+      "file": "t4_m33_least_squares/01-linear-least-squares-normal-equations-qr-svd.md"
+    }
+  ],
+  "t4_m34_kalman_filter": [
+    {
+      "id": "l01-the-stochastic-state-space-model",
+      "title": "The stochastic state-space model, process noise Q and measurement noise R",
+      "minutes": 20,
+      "covers": [
+        "The stochastic state-space model: process noise Q and measurement noise R"
+      ],
+      "file": "t4_m34_kalman_filter/01-the-stochastic-state-space-model.md"
+    }
+  ],
+  "t4_m36_inertial_navigation": [
+    {
+      "id": "l01-what-an-imu-measures-accelerometer-and-gyro-physics",
+      "title": "What an IMU measures, and how the sensors work",
+      "minutes": 26,
+      "covers": [
+        "Accelerometer and gyroscope physics: MEMS, fiber optic, ring laser, hemispherical resonator"
+      ],
+      "file": "t4_m36_inertial_navigation/01-what-an-imu-measures-accelerometer-and-gyro-physics.md"
+    }
+  ],
   "t4_m37_gnss": [
     {
       "id": "l01-constellation-and-signal-structure",
@@ -3084,11 +3117,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t4_m33_least_squares": {
-    "covered": 0,
+    "covered": 1,
     "total": 12,
     "complete": false,
     "missing": [
-      "The linear least squares problem; normal equations, QR, and SVD solutions",
       "Weighted least squares and the information matrix",
       "Minimum variance and BLUE: the Gauss-Markov theorem",
       "Maximum likelihood and its equivalence to WLS under Gaussian noise",
@@ -3103,11 +3135,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t4_m34_kalman_filter": {
-    "covered": 0,
+    "covered": 1,
     "total": 15,
     "complete": false,
     "missing": [
-      "The stochastic state-space model: process noise Q and measurement noise R",
       "Three derivations of the Kalman filter: minimum variance/orthogonality, Bayesian Gaussian conditioning, recursive least squares",
       "The predict and update steps",
       "The Kalman gain as a trust ratio between prediction and measurement",
@@ -3146,11 +3177,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t4_m36_inertial_navigation": {
-    "covered": 0,
+    "covered": 1,
     "total": 13,
     "complete": false,
     "missing": [
-      "Accelerometer and gyroscope physics: MEMS, fiber optic, ring laser, hemispherical resonator",
       "IMU error models: turn-on and in-run bias, scale factor, non-orthogonality and misalignment, g-sensitivity, quantization",
       "Angle random walk, velocity random walk, rate random walk, and bias instability",
       "Allan variance for IMU characterization; temperature effects and calibration",
