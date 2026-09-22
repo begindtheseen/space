@@ -171,7 +171,7 @@ python3 azimuth.py
 
 Everything after a `#` on a line is a *comment*: the interpreter ignores it. Comments explain why, not what — `# Hz, the guidance frame rate` earns its place; `# multiply speed by time` does not. This module also uses comments to show you what a line prints, as in the examples above.
 
-One naming rule, now, because it costs a beginner an hour when it bites. Do not name a file after a module you intend to import. A file of your own called `math.py` sitting in the working directory is found before the standard library's `math`, and `import math` then imports your file. The error that follows says something like `AttributeError: module 'math' has no attribute 'radians'`, which points nowhere near the actual problem. Lesson 9 explains the search order that causes this.
+One naming rule, now, because it costs a beginner an hour when it bites. Do not name a file after a module you intend to import. A file of your own called `random.py` sitting in the directory you run from is found *before* the standard library's `random`, so `import random` imports your file, and the first use of it fails with `AttributeError: module 'random' has no attribute 'uniform'` — a message that points nowhere near the actual problem. Lesson 9 explains the search order that causes this, and why a file called `math.py` happens to escape it while `csv.py`, `json.py` and `random.py` do not.
 
 ## Two kinds of error, and when each is found
 

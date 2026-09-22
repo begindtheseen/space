@@ -116,7 +116,7 @@ A linear correlation coefficient measures how well a *continuous* dispersed para
 :::
 
 ::: check
-Explain what "bit-exact replay" specifically buys an engineer investigating one of this campaign's $32$ touchdown-speed failures, beyond simply knowing that case's final reported numbers.
+Explain what "bit-exact replay" specifically buys an engineer investigating one of this campaign's $32$ touchdown-speed failures, beyond merely knowing that case's final reported numbers.
 :::
 
 ::: answer

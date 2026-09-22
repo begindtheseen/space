@@ -74,7 +74,7 @@ Flying the held branch or the fallback branch is not a failure state to be avoid
 ## Check yourself
 
 ::: check
-Explain why the ZEM/ZEV closed-form law is not simply a cheaper approximation to the same problem the convex solve solves.
+Explain why the ZEM/ZEV closed-form law is not merely a cheaper approximation to the same problem the convex solve solves.
 :::
 
 ::: answer

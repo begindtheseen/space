@@ -345,6 +345,7 @@ A script pairs timestamps with samples using `zip(times, values)` and reports th
 Rewrite this using `enumerate`, and say what breaks in the original if a `continue` is added at the top of the loop body.
 
 ```python
+ax = [0.02, 12.06, 12.71]
 i = 0
 for a in ax:
     print(i, a)

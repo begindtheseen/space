@@ -97,7 +97,7 @@ A radar altimeter freezes on its last good reading rather than failing outright 
 :::
 
 ::: answer
-A frozen reading, repeated every cycle, produces an innovation that looks like ordinary, correlated sensor behavior rather than an obvious outlier — especially once the vehicle's true altitude has moved only a little from where the sensor froze, the innovation can sit comfortably inside the filter's expected noise band for several cycles before the accumulating disagreement is large enough to trip NIS. A cross-check comparing the raw reading directly against an independently propagated altitude catches the freeze immediately, because it does not rely on the filter's own noise model finding the reading implausible — it only needs the two values to disagree by more than the sized threshold, which a frozen reading eventually and reliably does.
+A frozen reading, repeated every cycle, produces an innovation that looks like ordinary, correlated sensor behavior rather than a stark outlier — especially once the vehicle's true altitude has moved only a little from where the sensor froze, the innovation can sit comfortably inside the filter's expected noise band for several cycles before the accumulating disagreement is large enough to trip NIS. A cross-check comparing the raw reading directly against an independently propagated altitude catches the freeze immediately, because it does not rely on the filter's own noise model finding the reading implausible — it only needs the two values to disagree by more than the sized threshold, which a frozen reading eventually and reliably does.
 :::
 
 ::: check

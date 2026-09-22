@@ -221,7 +221,10 @@ function shownTolerance(shown: string): number | null {
 function arithmeticMismatches(body: string): { tex: string; detail: string }[] {
   const out: { tex: string; detail: string }[] = []
   for (const { tex } of mathSpans(body)) {
-    if (!tex.includes('=')) continue
+    // \approx is a relation too, and testing for a literal '=' before it was
+    // translated skipped every span that only ever used one — which is a large
+    // share of them in a corpus that rounds as often as this one does.
+    if (!/=|\\approx/.test(tex)) continue
     if (!unitsAgree(tex)) continue
     const approx = /\\approx/.test(tex)
     const expr = texToExpr(tex).replace(/\\approx/g, '=')

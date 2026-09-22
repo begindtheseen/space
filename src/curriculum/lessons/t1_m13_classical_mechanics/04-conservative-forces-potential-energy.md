@@ -193,7 +193,7 @@ The energy equation with a non-conservative term is a diagnostic tool, not only 
 ::: example Drag power on a space station
 A $420\,\mathrm{t}$ station at $r = 6791\,\mathrm{km}$ (about 413 km altitude) loses roughly $100\,\mathrm{m}$ of altitude per day to drag. What average drag power does that represent, and what is the mean drag force?
 
-The specific energy is $\varepsilon = -\mu / 2r$ for a near-circular orbit, so $d\varepsilon / dr = \mu / (2 r^2) = 3.986 \times 10^{14} / (2 \times (6.791 \times 10^{6})^2) \approx 4.32\,\mathrm{J/kg}$ per metre. Losing $100\,\mathrm{m}$ of radius costs $432\,\mathrm{J/kg}$, or $432 \times 4.2 \times 10^{5} \approx 1.82 \times 10^{8}\,\mathrm{J}$ per day for the whole station. Divided by $86{,}400\,\mathrm{s}$, the drag power is about $2.1\,\mathrm{kW}$ — the output of a domestic kettle, removing energy from a 420-tonne vehicle.
+The specific energy is $\varepsilon = -\mu / 2r$ for a near-circular orbit, so $d\varepsilon / dr = \mu / (2 r^2) = 3.986 \times 10^{14} / (2 \times (6.791 \times 10^{6})^2) \approx 4.32\,\mathrm{J/kg}$ per metre. Losing $100\,\mathrm{m}$ of radius costs $432\,\mathrm{J/kg}$, or $432 \times 4.2 \times 10^{5} \approx 1.81 \times 10^{8}\,\mathrm{J}$ per day for the whole station. Divided by $86{,}400\,\mathrm{s}$, the drag power is about $2.1\,\mathrm{kW}$ — the output of a domestic kettle, removing energy from a 420-tonne vehicle.
 
 Since $dE/dt = -D v$ with $v \approx \sqrt{\mu / r} \approx 7661\,\mathrm{m/s}$, the mean drag force is $D \approx 2100 / 7661 \approx 0.27\,\mathrm{N}$. A quarter of a newton, continuously, is what brings the station down a few kilometres a month and has to be made up by periodic reboost burns.
 :::

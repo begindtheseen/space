@@ -7,7 +7,7 @@ covers:
   - 'TVC attitude control with bending-mode and slosh notch or roll-off filtering, and gain scheduling against dynamic pressure and mass'
 ---
 
-The navigation-meets-guidance lesson in this module showed a correlated estimate error costing touchdown accuracy once guidance was in the loop to consume it. That was a failure with a clear address: it appeared in miss distance, guidance's own output, and guidance's assumption of exact current state was the obvious place to look. This lesson builds a harder case, deliberately, because it is the one this module has been building toward from its opening lesson: two components, navigation and control, each one passing its own test exactly as specified, and a closed loop that still performs measurably worse than either test predicted — not because either test is wrong, but because the thing that fails lives in neither test's field of view, and only appears once the two components are actually running together.
+The navigation-meets-guidance lesson in this module showed a correlated estimate error costing touchdown accuracy once guidance was in the loop to consume it. That was a failure with a clear address: it appeared in miss distance, guidance's own output, and guidance's assumption of exact current state was the natural place to look. This lesson builds a harder case, deliberately, because it is the one this module has been building toward from its opening lesson: two components, navigation and control, each one passing its own test exactly as specified, and a closed loop that still performs measurably worse than either test predicted — not because either test is wrong, but because the thing that fails lives in neither test's field of view, and only appears once the two components are actually running together.
 
 ## Two tests, both passing
 
@@ -91,7 +91,7 @@ A near-white process spreads its energy across a very wide range of frequencies,
 :::
 
 ::: check
-A colleague proposes catching this failure mode earlier by simply tightening the navigation accuracy requirement, so that even the worst-case jitter row falls under some fixed limit. Evaluate this fix against what this lesson's diagnosis procedure actually found.
+A colleague proposes catching this failure mode earlier by tightening the navigation accuracy requirement alone, so that even the worst-case jitter row falls under some fixed limit. Evaluate this fix against what this lesson's diagnosis procedure actually found.
 :::
 
 ::: answer

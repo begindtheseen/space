@@ -93,7 +93,7 @@ The windup table shows conditional integration performing better than naive but 
 :::
 
 ::: answer
-Conditional integration freezes the integrator's accumulation while saturated but does nothing to drive it toward the value that actually corresponds to what the actuator is delivering — it simply stops digging the hole deeper without filling it back in. For a command this much larger than the actuator's authority, the integrator is pinned at whatever value it reached the instant saturation began, which can still be far from the value that would let the loop respond cleanly once the error starts to fall — exactly the "freezes wherever it happened to be, an accident of timing" weakness the classical-control module named, made more consequential here because the saturation this command produces lasts far longer than in that module's own gentler example.
+Conditional integration freezes the integrator's accumulation while saturated but does nothing to drive it toward the value that actually corresponds to what the actuator is delivering — it stops digging the hole deeper without filling it back in. For a command this much larger than the actuator's authority, the integrator is pinned at whatever value it reached the instant saturation began, which can still be far from the value that would let the loop respond cleanly once the error starts to fall — exactly the "freezes wherever it happened to be, an accident of timing" weakness the classical-control module named, made more consequential here because the saturation this command produces lasts far longer than in that module's own gentler example.
 :::
 
 ::: check

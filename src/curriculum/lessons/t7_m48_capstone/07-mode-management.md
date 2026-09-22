@@ -60,7 +60,7 @@ At $4$ and $6^\circ/\mathrm s$ the actuator never reaches its $5^\circ$ limit at
 :::
 
 ::: warning A shaped reference is a mode-manager decision, not a control-loop afterthought
-It is tempting to treat reference shaping as one more control-loop tuning knob, added wherever a control engineer happens to notice the saturation. It belongs in the mode manager specifically, because *only* the mode manager knows a transition is about to happen — the control loop, receiving whatever reference it is handed each cycle, has no way to distinguish "guidance's ordinary re-solve moved the target a little" from "the mode just changed and the reference just jumped." Putting the shaping logic at the boundary, where the transition is actually detected, is what makes it apply exactly when it is needed and nowhere else.
+It is tempting to treat reference shaping as one more control-loop tuning knob, added wherever a control engineer happens to notice the saturation. It belongs in the mode manager specifically, because *only* the mode manager knows a transition is about to happen — the control loop, receiving whatever reference it is handed each cycle, has no way to distinguish "guidance's ordinary re-solve moved the target a little" from "the mode changed this cycle and the reference jumped with it." Putting the shaping logic at the boundary, where the transition is actually detected, is what makes it apply exactly when it is needed and nowhere else.
 :::
 
 ::: warning Bumpless transfer for a gain change is not the same problem as bumpless transfer for a guidance-law change

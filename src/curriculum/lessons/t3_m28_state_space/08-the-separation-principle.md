@@ -179,7 +179,7 @@ The separation principle holds exactly, and yet the pointing jitter triples when
 :::
 
 ::: answer
-No. The principle constrains eigenvalue locations and nothing else. Moving the observer poles changes $\mathbf{L}$, and $\mathbf{L}$ multiplies measurement noise into the estimate, from which $-\mathbf{K}\hat{\mathbf{x}}$ carries it into the actuator; Lesson 7's numbers give a factor of $10^{3/2} \approx 3.2$ in rate-estimate noise between those two choices, which matches the observed tripling. Poles are a property of the homogeneous system; jitter is a property of the system driven by noise, and the two are answered by different calculations — eigenvalues for the first, a Lyapunov equation or a covariance propagation for the second.
+No. The principle constrains eigenvalue locations and nothing else. Moving the observer poles changes $\mathbf{L}$, and $\mathbf{L}$ multiplies measurement noise into the estimate, from which $-\mathbf{K}\hat{\mathbf{x}}$ carries it into the actuator; Lesson 7's numbers give a factor of $(10/4)^{3/2} \approx 4$ in rate-estimate noise between those two choices — $r = 4$ and $r = 10$ on that lesson's speed-ratio scale, where rate-estimate noise grows as $r^{3/2}$ — which is the size of the jitter increase observed. Poles are a property of the homogeneous system; jitter is a property of the system driven by noise, and the two are answered by different calculations — eigenvalues for the first, a Lyapunov equation or a covariance propagation for the second.
 :::
 
 ::: check

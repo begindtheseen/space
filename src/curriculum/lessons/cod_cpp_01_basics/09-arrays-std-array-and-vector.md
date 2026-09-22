@@ -1,7 +1,7 @@
 ---
 id: l09-arrays-std-array-and-vector
 title: Raw arrays, std::array, std::vector and range-based for
-minutes: 19
+minutes: 18
 covers:
   - Arrays vs std::array vs std::vector; range-based for
 ---

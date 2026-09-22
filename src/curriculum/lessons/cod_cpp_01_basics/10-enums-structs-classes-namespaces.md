@@ -1,7 +1,7 @@
 ---
 id: l10-enums-structs-classes-namespaces
 title: enum class, struct and class, access and namespaces
-minutes: 18
+minutes: 17
 covers:
   - enum class; struct and class; access specifiers; namespaces
 ---

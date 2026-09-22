@@ -50,7 +50,7 @@ $$
 \sigma_{\text{alloc}} = \sqrt{4.84+2.25+1.44+0.64} = \sqrt{9.17} \approx 3.03\,\mathrm m,
 $$
 
-against the $3.33\,\mathrm m$ requirement — a margin of $3.33-3.03\approx0.31\,\mathrm m$, about $9\%$ of the total budget, held in reserve rather than spent. Navigation gets the largest single share because, as the next lesson in this module shows directly, it is the contributor every other one depends on: guidance solves from the navigation estimate, and control tracks a target guidance built on it.
+against the $3.33\,\mathrm m$ requirement — a margin of $3.333-3.028\approx0.305\,\mathrm m$, about $9\%$ of the total budget, held in reserve rather than spent. Navigation gets the largest single share because, as the next lesson in this module shows directly, it is the contributor every other one depends on: guidance solves from the navigation estimate, and control tracks a target guidance built on it.
 :::
 
 ## Pushing one allocation down to its drivers
@@ -75,7 +75,7 @@ against the $2.2\,\mathrm m$ navigation allocation — another $0.15\,\mathrm m$
 This is also where the biggest single lever usually appears, and it is worth asking the question explicitly rather than leaving it implicit: of the four navigation drivers above, IMU bias-driven drift dominates the sub-budget, contributing $2.56$ of the $4.20\,\mathrm{m^2}$ total — over $60\%$ of the *variance*, from one term. Halving that one contributor, to $0.8\,\mathrm m$, would shrink the navigation sub-total from $2.05\,\mathrm m$ to $\sqrt{0.64+0.64+0.36+0.64}=\sqrt{2.28}\approx1.51\,\mathrm m$ — a bigger improvement than halving any of the other three terms individually, because root-sum-square combination means effort spent on the dominant contributor buys more than the same effort spent anywhere else.
 
 ::: warning A budget that has never been verified is a guess wearing a spreadsheet
-Every number in the two tables above was chosen, not measured — a legitimate first pass, but only a first pass. The Monte-Carlo lesson later in this module runs the whole stack and measures each contributor's actual, empirical spread, and the honest next step, once that campaign exists, is to compare the measured numbers against this chapter's allocation and investigate every place they disagree. A budget nobody ever checks against a real campaign is not wrong in any way you can detect — it is simply never tested, which is a different and in some ways worse problem.
+Every number in the two tables above was chosen, not measured — a legitimate first pass, but only a first pass. The Monte-Carlo lesson later in this module runs the whole stack and measures each contributor's actual, empirical spread, and the honest next step, once that campaign exists, is to compare the measured numbers against this chapter's allocation and investigate every place they disagree. A budget nobody ever checks against a real campaign is not wrong in any way you can detect — it is never tested, which is a different and in some ways worse problem.
 :::
 
 ::: warning This budget answers one question, and only one
@@ -131,7 +131,7 @@ Root-sum-square combination is a statement about variances of independent random
 | Requirement | $10\,\mathrm m$ radius at $99.87\%$ ($3\sigma$) |
 | One-sigma total | $\sigma_{\text{total}} = R_{\text{req}}/3 \approx 3.33\,\mathrm m$ |
 | Combination rule | $\sigma_{\text{total}}^2=\sum_i\sigma_i^2$ for independent contributors — variances add, not standard deviations |
-| Top-level allocation | nav $2.2\,\mathrm m$, guidance $1.5\,\mathrm m$, control $1.2\,\mathrm m$, site $0.8\,\mathrm m$; RSS $\approx3.03\,\mathrm m$, margin $\approx0.31\,\mathrm m$ |
+| Top-level allocation | nav $2.2\,\mathrm m$, guidance $1.5\,\mathrm m$, control $1.2\,\mathrm m$, site $0.8\,\mathrm m$; RSS $\approx3.03\,\mathrm m$, margin $\approx0.305\,\mathrm m$ |
 | Navigation pushed down | IMU $1.6$, altimeter $0.8$, lever-arm $0.6$, latency $0.8\,\mathrm m$; RSS $\approx2.05\,\mathrm m$ |
 | Independence caveat | Nav and control errors correlate through a shared disturbance (e.g. wind) — the RSS assumption is explicit, not exact |
 | What the budget does not cover | Touchdown velocity, propellant margin, and any failure mode this budget's four terms were never asked about |

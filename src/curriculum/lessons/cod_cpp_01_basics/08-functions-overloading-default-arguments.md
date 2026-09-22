@@ -1,7 +1,7 @@
 ---
 id: l08-functions-overloading-default-arguments
 title: Functions, overloading and default arguments
-minutes: 17
+minutes: 16
 covers:
   - Functions, overloading, default arguments
 ---

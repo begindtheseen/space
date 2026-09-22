@@ -99,7 +99,7 @@ Effective exhaust velocity: $v_e = I_{sp} g_0 = 282 \times 9.80665 \approx 2766\
 
 Mass flow: $\dot{m} = T / v_e = 8.45 \times 10^5 / 2766 \approx 306\,\mathrm{kg/s}$. Nine engines therefore consume about $2750\,\mathrm{kg/s}$, which is how a stage carrying about 410 t of propellant empties in roughly $150\,\mathrm{s}$.
 
-Total impulse over 150 s: $I_t = T t_b = 8.45 \times 10^5 \times 150 \approx 1.27 \times 10^8\,\mathrm{N\,s}$. Propellant consumed: $m_p = \dot{m} t_b \approx 306 \times 150 \approx 4.58 \times 10^4\,\mathrm{kg}$, weighing $4.58 \times 10^4 \times 9.80665 \approx 4.50 \times 10^5\,\mathrm{N}$. Dividing, $I_{sp} = 1.27 \times 10^8 / 4.50 \times 10^5 \approx 282\,\mathrm{s}$, closing the loop on the definition.
+Total impulse over 150 s: $I_t = T t_b = 8.45 \times 10^5 \times 150 \approx 1.27 \times 10^8\,\mathrm{N\,s}$. Propellant consumed: $m_p = \dot{m} t_b \approx 306 \times 150 \approx 4.58 \times 10^4\,\mathrm{kg}$, weighing $4.58 \times 10^4 \times 9.80665 \approx 4.49 \times 10^5\,\mathrm{N}$. Dividing, $I_{sp} = 1.27 \times 10^8 / 4.50 \times 10^5 \approx 282\,\mathrm{s}$, closing the loop on the definition.
 
 In vacuum the same engine gives about $914\,\mathrm{kN}$ at $311\,\mathrm{s}$, so $v_e \approx 3050\,\mathrm{m/s}$ while $\dot{m}$ stays at about $300\,\mathrm{kg/s}$: the propellant flow is set upstream by the pumps and injector, and the extra thrust in vacuum comes from the nozzle. Lesson 6 explains exactly how.
 :::

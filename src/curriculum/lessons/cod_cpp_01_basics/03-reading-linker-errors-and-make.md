@@ -1,7 +1,7 @@
 ---
 id: l03-reading-linker-errors-and-make
 title: Reading a linker error, and a Makefile that prevents them
-minutes: 20
+minutes: 19
 covers:
   - 'Reading a linker error: undefined reference, multiple definition'
 ---

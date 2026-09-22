@@ -992,6 +992,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "the answering standard: state assumptions, write the equation, interpret physically, sanity check"
       ],
       "file": "car_11_domain_round/02-when-you-do-not-know.md"
+    },
+    {
+      "id": "l03-gain-phase-and-delay-margin",
+      "title": "Gain, phase and delay margin",
+      "minutes": 17,
+      "covers": [
+        "stability margins: gain margin, phase margin and delay margin, what each means physically and why you need all three"
+      ],
+      "file": "car_11_domain_round/03-gain-phase-and-delay-margin.md"
     }
   ],
   "cod_cpp_01_basics": [
@@ -1018,7 +1027,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-reading-linker-errors-and-make",
       "title": "Reading a linker error, and a Makefile that prevents them",
-      "minutes": 20,
+      "minutes": 19,
       "covers": [
         "Reading a linker error: undefined reference, multiple definition"
       ],
@@ -1063,7 +1072,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-functions-overloading-default-arguments",
       "title": "Functions, overloading and default arguments",
-      "minutes": 17,
+      "minutes": 16,
       "covers": [
         "Functions, overloading, default arguments"
       ],
@@ -1072,7 +1081,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-arrays-std-array-and-vector",
       "title": "Raw arrays, std::array, std::vector and range-based for",
-      "minutes": 19,
+      "minutes": 18,
       "covers": [
         "Arrays vs std::array vs std::vector; range-based for"
       ],
@@ -1081,7 +1090,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-enums-structs-classes-namespaces",
       "title": "enum class, struct and class, access and namespaces",
-      "minutes": 18,
+      "minutes": 17,
       "covers": [
         "enum class; struct and class; access specifiers; namespaces"
       ],
@@ -1108,7 +1117,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l13-assert-and-static-assert",
       "title": "assert and static_assert",
-      "minutes": 17,
+      "minutes": 19,
       "covers": [
         "assert and static_assert"
       ],
@@ -1160,6 +1169,60 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "if/elif/else; for, while, range, enumerate, zip; break/continue/else"
       ],
       "file": "cod_py_01_basics/05-control-flow.md"
+    },
+    {
+      "id": "l06-functions",
+      "title": "Functions, arguments and return values",
+      "minutes": 20,
+      "covers": [
+        "Functions: positional, keyword, default, *args, **kwargs"
+      ],
+      "file": "cod_py_01_basics/06-functions.md"
+    },
+    {
+      "id": "l07-scope-legb-and-closures",
+      "title": "Scope, the LEGB rule and closures",
+      "minutes": 18,
+      "covers": [
+        "Scope and LEGB; closures at a first-pass level"
+      ],
+      "file": "cod_py_01_basics/07-scope-legb-and-closures.md"
+    },
+    {
+      "id": "l08-mutable-default-arguments",
+      "title": "The mutable default argument, identity and copying",
+      "minutes": 17,
+      "covers": [
+        "The mutable default argument trap"
+      ],
+      "file": "cod_py_01_basics/08-mutable-default-arguments.md"
+    },
+    {
+      "id": "l09-modules-packages-and-the-main-guard",
+      "title": "Modules, imports, packages and the main guard",
+      "minutes": 19,
+      "covers": [
+        "Modules, import, packages, the if __name__ == \"__main__\" guard"
+      ],
+      "file": "cod_py_01_basics/09-modules-packages-and-the-main-guard.md"
+    },
+    {
+      "id": "l10-exceptions",
+      "title": "Exceptions: raising, catching and designing failure",
+      "minutes": 20,
+      "covers": [
+        "Exceptions: try/except/else/finally, raising, custom exception types"
+      ],
+      "file": "cod_py_01_basics/10-exceptions.md"
+    },
+    {
+      "id": "l11-files-pathlib-csv-and-json",
+      "title": "Files, paths, CSV and JSON",
+      "minutes": 20,
+      "covers": [
+        "Files, pathlib, csv and json"
+      ],
+      "file": "cod_py_01_basics/11-files-pathlib-csv-and-json.md"
     }
   ],
   "t0_m01_algebra_precalc": [
@@ -7067,16 +7130,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "cod_py_01_basics": {
-    "covered": 4,
+    "covered": 10,
     "total": 12,
     "complete": false,
     "missing": [
-      "Functions: positional, keyword, default, *args, **kwargs",
-      "Scope and LEGB; closures at a first-pass level",
-      "Modules, import, packages, the if __name__ == \"__main__\" guard",
-      "Files, pathlib, csv and json",
-      "Exceptions: try/except/else/finally, raising, custom exception types",
-      "The mutable default argument trap",
       "Virtual environments with venv, pip, requirements and pyproject.toml",
       "Floating point: why 0.1 + 0.2 != 0.3 and what to do about it"
     ]
@@ -7923,11 +7980,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "car_11_domain_round": {
-    "covered": 1,
+    "covered": 2,
     "total": 14,
     "complete": false,
     "missing": [
-      "stability margins: gain margin, phase margin and delay margin, what each means physically and why you need all three",
       "reading margins from a Bode plot and from a Nyquist plot; the Nyquist criterion",
       "why a large gain margin with a small phase margin is still a fragile design",
       "the Kalman filter in linear form: the predict and update equations and what each term does",

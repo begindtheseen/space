@@ -1,7 +1,7 @@
 ---
 id: l13-assert-and-static-assert
 title: assert and static_assert
-minutes: 17
+minutes: 19
 covers:
   - assert and static_assert
 ---

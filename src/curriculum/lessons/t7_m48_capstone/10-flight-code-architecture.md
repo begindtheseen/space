@@ -42,7 +42,7 @@ A Python analysis script calling `capstone_core.zem_zev_accel(r, v, r_f, v_f, g,
 
 ## What a second implementation actually costs, measured
 
-The risk of two implementations is not hypothetical, and it does not require a large or obvious mistake to matter. A single physical constant, rounded slightly differently in two places, is enough.
+The risk of two implementations is not hypothetical, and it does not require a large or dramatic mistake to matter. A single physical constant, rounded slightly differently in two places, is enough.
 
 ::: example A rounding difference small enough to hide in every test's tolerance
 Flying this module's reference landing burn with the standard gravitational constant $g_0=9.80665\,\mathrm{m/s^2}$ throughout, against an otherwise identical run using a second implementation that rounds the same constant to $g_0=9.81\,\mathrm{m/s^2}$ — a difference of $0.0034\%$, the kind of rounding a well-meaning engineer might introduce without a second thought while transcribing a formula — the two runs' touchdown states diverge by about $0.23\,\mathrm{cm}$ in position and $68\,\mathrm{mm/s}$ in vertical velocity. Both numbers are small enough to vanish inside almost any reasonable unit-test tolerance on their own. That smallness is exactly the danger, not a reassurance: a discrepancy too small for any single test to flag is also too small for a code reviewer skimming a diff to notice, and it costs nothing to introduce, compounding silently with every other such difference two independently maintained copies accumulate over a programme's lifetime.
@@ -51,21 +51,21 @@ Flying this module's reference landing burn with the standard gravitational cons
 The same category of accidental discrepancy does not always stay small, and nothing about how the mistake is introduced predicts which kind it will be.
 
 ::: example The same category of mistake, with a very different size
-Converting a commanded thrust acceleration into a pointing angle uses `atan2`, and `atan2` takes its two arguments in a specific order — $\operatorname{atan2}(a_x, a_z)$ for the convention this module uses throughout. Swapping the argument order, $\operatorname{atan2}(a_z, a_x)$ instead — a change indistinguishable at a glance from the correct call, and exactly the kind of transcription slip a second, independently typed implementation is free to make — turns this module's own $-15.12^\circ$ ignition-time commanded angle into $+105.12^\circ$, a difference of $120.2^\circ$. The two mistakes in this lesson's two examples are the same *kind* of error — one line, differing between two copies of the same function, introduced without any intent to change behaviour — and one of them costs a fraction of a millimetre per second while the other points the vehicle in a direction that shares almost nothing with where it should be pointed. A reviewer who has learned to relax around "it's just a rounding difference" has learned exactly the wrong lesson from the first example to protect against the second.
+Converting a commanded thrust acceleration into a pointing angle uses `atan2`, and `atan2` takes its two arguments in a specific order — $\operatorname{atan2}(a_x, a_z)$ for the convention this module uses throughout. Swapping the argument order, $\operatorname{atan2}(a_z, a_x)$ instead — a change indistinguishable at a glance from the correct call, and exactly the kind of transcription slip a second, independently typed implementation is free to make — turns this module's own $-15.12^\circ$ ignition-time commanded angle into $+105.12^\circ$, a difference of $120.2^\circ$. The two mistakes in this lesson's two examples are the same *kind* of error — one line, differing between two copies of the same function, introduced without any intent to change behaviour — and one of them costs a fraction of a millimetre per second while the other points the vehicle in a direction that shares almost nothing with where it should be pointed. A reviewer who has learned to relax around "it's only a rounding difference" has learned exactly the wrong lesson from the first example to protect against the second.
 :::
 
 ::: warning A binding does not remove the need for the C++ core itself to be correct
 This lesson's rule prevents the Python layer from becoming a second, drifting implementation. It does nothing at all to verify that the single implementation binding replaces is correct in the first place — that is the entire job of the unit, integration and Monte-Carlo verification this module builds elsewhere. One implementation that is wrong is still only one bug to find and fix; two implementations, one of them wrong, is a bug that first has to be noticed as a *disagreement* before anyone can even start asking which side is right.
 :::
 
-::: warning "The Python version is just for plots" is where this usually starts
+::: warning "The Python version is only for plots" is where this usually starts
 Nobody sets out to build two competing implementations of a guidance law. It starts with a Python function written to make a plot look right for one meeting, kept because it was convenient, extended the next time a similar plot was needed, and eventually trusted for a campaign result without anyone deciding, at any single point, "we now maintain two implementations of this algorithm." The discipline this lesson argues for is deciding, once, structurally, that the Python layer never owns an algorithm at all — not a policy to be re-applied by judgement every time a quick script would be easier to write from scratch.
 :::
 
 ## Check yourself
 
 ::: check
-Explain, in terms of what actually executes, why a pybind11 binding is not simply a faster or more convenient version of writing the same algorithm twice.
+Explain, in terms of what actually executes, why a pybind11 binding is not merely a faster or more convenient version of writing the same algorithm twice.
 :::
 
 ::: answer
@@ -73,11 +73,11 @@ A binding does not contain a second expression of the algorithm at all — it ex
 :::
 
 ::: check
-This lesson's two divergence examples both came from a single, small, plausible one-line difference between two implementations. Why does the lesson treat the small-consequence example ($g_0$ rounding) as just as important a warning as the large-consequence one (the swapped `atan2` arguments), rather than the more dramatic one alone?
+This lesson's two divergence examples both came from a single, small, plausible one-line difference between two implementations. Why does the lesson treat the small-consequence example ($g_0$ rounding) as an equally important warning to the large-consequence one (the swapped `atan2` arguments), rather than dwelling on the more dramatic one alone?
 :::
 
 ::: answer
-The two examples are meant to show that the *size* of an accidental discrepancy's consequence cannot be predicted from how the mistake looks on the page — both are a single, innocuous-looking one-line change, and nothing about reading either line in isolation reveals which category of consequence it belongs to. A warning built only around the dramatic example risks teaching the lesson "watch out for big, obviously wrong-looking changes," which is exactly the wrong lesson, since the small, easy-to-dismiss discrepancy is the one most likely to survive a casual review precisely because it looks harmless.
+The two examples are meant to show that the *size* of an accidental discrepancy's consequence cannot be predicted from how the mistake looks on the page — both are a single, innocuous-looking one-line change, and nothing about reading either line in isolation reveals which category of consequence it belongs to. A warning built only around the dramatic example risks teaching the lesson "watch out for big, visibly wrong-looking changes," which is exactly the wrong lesson, since the small, easy-to-dismiss discrepancy is the one most likely to survive a casual review precisely because it looks harmless.
 :::
 
 ::: check
@@ -113,6 +113,6 @@ Under the one-implementation architecture this lesson builds, the Python analysi
 | Small divergence, measured | A $0.0034\%$ difference in $g_0$ (`9.80665` vs `9.81`) costs $\approx0.23\,\mathrm{cm}$ miss, $\approx68\,\mathrm{mm/s}$ touchdown velocity — small enough to hide in most test tolerances |
 | Large divergence, same category of mistake | A swapped `atan2` argument order costs $120.2^\circ$ of pointing error from one otherwise-identical line |
 | What binding does not do | Verify the single implementation is correct — that is the job of the rest of this module's verification |
-| Where it usually starts | A Python function written "just for a plot," kept, reused, and eventually trusted without anyone deciding to trust it |
+| Where it usually starts | A Python function written "only for a plot," kept, reused, and eventually trusted without anyone deciding to trust it |
 
 The architecture in this lesson is what makes every number in the rest of this module honest: when the final lesson's Monte-Carlo campaign reports a result, it is a result about the one implementation that is actually going to fly, not a result about a Python approximation of it. That campaign, and the written report built from it, is where this module closes.

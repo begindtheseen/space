@@ -207,7 +207,7 @@ Twelve bytes, and every offset is a multiple of the field's own size, so the com
 - `seq_count` is *designed* to wrap; unsigned wrap is defined behaviour, so `++seq` on a `uint16_t` is correct and needs no special case. $65536$ packets at 10 Hz is about 1.8 hours between rollovers, and the ground station reconstructs the high bits.
 - `t_ms` as `uint32_t` covers $2^{32}$ ms = 49.7 days. Ample for a launch, wrong for a station module: an ISS payload wants `uint64_t` microseconds. State the mission duration when you justify a time field.
 - `mode` and `flags` are one byte each because the mode enumeration has fewer than 256 values and flags are bits. Lesson 10 shows how to keep the enumeration and the byte in step.
-- `payload_len` as `uint16_t` caps a packet at 65,535 bytes, which is also the CCSDS limit. The type encodes the protocol's constraint.
+- `payload_len` as `uint16_t` caps a packet at 65,535 bytes, which is the same order as the CCSDS packet-length limit — check your project's interface control document for the exact figure. The point is that the type encodes the protocol's constraint rather than leaving it to a comment.
 
 Now write the same struct with `int`, `long` and `bool` instead. It compiles, it runs, and it is 24 bytes here and a different number on the ground station's Windows build, so the first field the decoder reads after `t_ms` is garbage. Nothing warns, because nothing is wrong as far as either compiler can see. This is the whole argument for `<cstdint>` in one paragraph.
 :::
