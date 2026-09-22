@@ -1015,7 +1015,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-pid-windup-and-a-defensible-tuning-story",
       "title": "PID: structure, windup, filtered derivative, and a tuning story",
-      "minutes": 21,
+      "minutes": 22,
       "covers": [
         "PID structure, integral windup and anti-windup, derivative filtering, and a defensible tuning approach"
       ],
@@ -1033,6 +1033,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "thinking aloud as an explicitly evaluated skill"
       ],
       "file": "car_12_first_principles/01-the-whiteboard-standard.md"
+    },
+    {
+      "id": "l02-variable-mass-and-thrust",
+      "title": "Variable-mass mechanics and the thrust equation",
+      "minutes": 18,
+      "covers": [
+        "variable-mass Newtonian mechanics and the thrust term as momentum flux plus a pressure term"
+      ],
+      "file": "car_12_first_principles/02-variable-mass-and-thrust.md"
     }
   ],
   "car_13_behavioral_star": [
@@ -1053,6 +1062,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "STAR structure: Situation, Task, Action, Result, and the common failure of spending most of the answer on Situation"
       ],
       "file": "car_13_behavioral_star/02-the-action-section.md"
+    },
+    {
+      "id": "l03-quantifying-the-result",
+      "title": "Quantifying the Result so it can be checked",
+      "minutes": 22,
+      "covers": [
+        "quantifying the Result so the story is checkable"
+      ],
+      "file": "car_13_behavioral_star/03-quantifying-the-result.md"
     }
   ],
   "cod_cpp_01_basics": [
@@ -1176,6 +1194,17 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       "file": "cod_cpp_01_basics/13-assert-and-static-assert.md"
     }
   ],
+  "cod_cpp_02_memory": [
+    {
+      "id": "l01-object-model-and-storage",
+      "title": "The object model: storage, lifetime, and the address of a thing",
+      "minutes": 17,
+      "covers": [
+        "Storage duration: automatic, static, thread-local, dynamic; lifetime and initialisation order"
+      ],
+      "file": "cod_cpp_02_memory/01-object-model-and-storage.md"
+    }
+  ],
   "cod_py_01_basics": [
     {
       "id": "l01-interpreter-repl-and-scripts",
@@ -1284,6 +1313,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Floating point: why 0.1 + 0.2 != 0.3 and what to do about it"
       ],
       "file": "cod_py_01_basics/12-floating-point.md"
+    },
+    {
+      "id": "l13-virtual-environments-and-packaging",
+      "title": "Virtual environments, pip and pyproject.toml",
+      "minutes": 19,
+      "covers": [
+        "Virtual environments with venv, pip, requirements and pyproject.toml"
+      ],
+      "file": "cod_py_01_basics/13-virtual-environments-and-packaging.md"
     }
   ],
   "t0_m01_algebra_precalc": [
@@ -7191,12 +7229,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "cod_py_01_basics": {
-    "covered": 11,
+    "covered": 12,
     "total": 12,
-    "complete": false,
-    "missing": [
-      "Virtual environments with venv, pip, requirements and pyproject.toml"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_py_02_idiomatic": {
     "covered": 0,
@@ -7361,11 +7397,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_cpp_02_memory": {
-    "covered": 0,
+    "covered": 1,
     "total": 15,
     "complete": false,
     "missing": [
-      "Storage duration: automatic, static, thread-local, dynamic; lifetime and initialisation order",
       "Pointers: dereference, arithmetic, nullptr, pointer-to-const vs const pointer, void*, function pointers",
       "References: lvalue and rvalue, binding rules, lifetime extension of temporaries",
       "Array-to-pointer decay and why sizeof breaks at a function boundary",
@@ -8056,11 +8091,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "car_12_first_principles": {
-    "covered": 3,
+    "covered": 4,
     "total": 15,
     "complete": false,
     "missing": [
-      "variable-mass Newtonian mechanics and the thrust term as momentum flux plus a pressure term",
       "deriving Tsiolkovsky from the variable-mass equation",
       "planar 3-DOF powered flight: the velocity, flight-path-angle, position and mass equations",
       "the gravity turn as the zero-angle-of-attack special case",
@@ -8075,13 +8109,12 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "car_13_behavioral_star": {
-    "covered": 1,
+    "covered": 2,
     "total": 12,
     "complete": false,
     "missing": [
       "building a bank of ten to twelve stories, each roughly 90 seconds",
       "the themes actually probed: a failure and what changed, conflict with a colleague, a decision with incomplete information, a missed deadline, a time you were wrong, ownership beyond your scope, teaching someone, working extended hours",
-      "quantifying the Result so the story is checkable",
       "the verbatim expectation of working extended hours and weekends when needed to meet critical deadlines, and how to answer it honestly",
       "intensity and pace as a real tradeoff to evaluate before you accept, not after",
       "the why SpaceX answer that is not a recital of the mission statement",

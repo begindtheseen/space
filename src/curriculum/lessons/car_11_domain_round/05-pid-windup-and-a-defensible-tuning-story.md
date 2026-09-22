@@ -1,7 +1,7 @@
 ---
 id: l05-pid-windup-and-a-defensible-tuning-story
 title: "PID: structure, windup, filtered derivative, and a tuning story"
-minutes: 21
+minutes: 22
 covers:
   - "PID structure, integral windup and anti-windup, derivative filtering, and a defensible tuning approach"
 ---
