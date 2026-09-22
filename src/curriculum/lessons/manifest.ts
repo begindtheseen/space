@@ -3141,6 +3141,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "The cubature Kalman filter"
       ],
       "file": "t4_m35_nonlinear_filters/06-the-cubature-kalman-filter.md"
+    },
+    {
+      "id": "l07-particle-filters",
+      "title": "Particle filters — sequential importance sampling and resampling",
+      "minutes": 23,
+      "covers": [
+        "Particle filters: sequential importance sampling, resampling, degeneracy and sample impoverishment"
+      ],
+      "file": "t4_m35_nonlinear_filters/07-particle-filters.md"
     }
   ],
   "t4_m36_inertial_navigation": [
@@ -3224,6 +3233,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Free-inertial error propagation: how position error grows with time from each error source"
       ],
       "file": "t4_m36_inertial_navigation/09-free-inertial-error-propagation.md"
+    },
+    {
+      "id": "l10-initial-alignment",
+      "title": "Initial alignment",
+      "minutes": 22,
+      "covers": [
+        "Initial alignment: coarse leveling, gyrocompassing, fine alignment via Kalman filter, transfer and in-flight alignment"
+      ],
+      "file": "t4_m36_inertial_navigation/10-initial-alignment.md"
     }
   ],
   "t4_m37_gnss": [
@@ -3334,6 +3352,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Jamming and spoofing; RAIM and integrity monitoring"
       ],
       "file": "t4_m37_gnss/12-integrity-jamming-and-spoofing.md"
+    },
+    {
+      "id": "l13-receiver-tracking-loops",
+      "title": "Receiver tracking loops",
+      "minutes": 24,
+      "covers": [
+        "Receiver tracking loops (DLL, PLL, FLL) and the bandwidth/dynamics trade"
+      ],
+      "file": "t4_m37_gnss/13-receiver-tracking-loops.md"
     }
   ],
   "t4_m38_sensors_optical_nav": [
@@ -3639,11 +3666,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t4_m35_nonlinear_filters": {
-    "covered": 6,
+    "covered": 7,
     "total": 14,
     "complete": false,
     "missing": [
-      "Particle filters: sequential importance sampling, resampling, degeneracy and sample impoverishment",
       "When a particle filter is genuinely required: multi-modal and non-Gaussian posteriors",
       "Gaussian sum filters",
       "The error-state (indirect) Kalman filter: why the error state is small and nearly linear, injection and reset, the Jacobian of the reset",
@@ -3654,22 +3680,20 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t4_m36_inertial_navigation": {
-    "covered": 9,
+    "covered": 10,
     "total": 13,
     "complete": false,
     "missing": [
-      "Initial alignment: coarse leveling, gyrocompassing, fine alignment via Kalman filter, transfer and in-flight alignment",
       "INS/GNSS integration architectures: loosely, tightly, and ultra-tightly (deeply) coupled",
       "Error-state filter formulation for INS: the 15-state and 21-state models",
       "Lever arm compensation, zero-velocity updates, vibration rectification"
     ]
   },
   "t4_m37_gnss": {
-    "covered": 12,
+    "covered": 13,
     "total": 14,
     "complete": false,
     "missing": [
-      "Receiver tracking loops (DLL, PLL, FLL) and the bandwidth/dynamics trade",
       "Vector tracking and deep coupling"
     ]
   },
