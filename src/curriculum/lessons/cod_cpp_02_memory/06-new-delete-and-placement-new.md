@@ -21,7 +21,7 @@ This lesson takes the two halves apart, shows each one happening, and then shows
 void* operator new(std::size_t n) {
     void* p = std::malloc(n);
     if (!p) throw std::bad_alloc{};
-    std::printf("  operator new(%zu)\n", n);
+    std::printf("  operator new(%zu) -> %s\n", n, p ? "ok" : "null");
     return p;
 }
 void operator delete(void* p, std::size_t n) noexcept {

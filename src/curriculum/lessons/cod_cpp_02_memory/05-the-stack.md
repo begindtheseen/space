@@ -131,6 +131,8 @@ Rebuild with `-fsanitize=address -fno-sanitize-recover=all` and the same program
 SUMMARY: AddressSanitizer: stack-overflow l05-depth.cpp:4 in deeper(int)
 ```
 
+(The topmost frame varies between runs: four of six runs here named `deeper(int)` as above, and the other two ran out of stack inside the sanitizer's own runtime and named a frame in `asan_fake_stack.cpp`. What never varies is the wall of identical `deeper(int)` frames below it.)
+
 Two details worth keeping. The trace is hundreds of identical frames, which is the signature of runaway recursion and tells you the function's name immediately. And the sanitized build overflowed *sooner* — last depth about 6540 rather than 7810 — because AddressSanitizer inserts redzones around stack objects, so each frame is effectively about $8\,388\,608/6540 = 1283$ bytes. A program that fits its stack with 20% to spare in a normal build can overflow under the sanitizer, which is a reason to give sanitized test runs a larger stack rather than to conclude the code is broken.
 :::
 

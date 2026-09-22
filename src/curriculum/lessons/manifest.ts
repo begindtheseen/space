@@ -1693,6 +1693,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "systemd: systemctl, journalctl"
       ],
       "file": "cod_lnx_01_shell/12-systemd-services-and-the-journal.md"
+    },
+    {
+      "id": "l13-diagnosing-a-machine",
+      "title": "Diagnosing a machine — disk, network, syscalls, kernel",
+      "minutes": 23,
+      "covers": [
+        "df du lsblk ip ss curl strace lsof dmesg"
+      ],
+      "file": "cod_lnx_01_shell/13-diagnosing-a-machine.md"
     }
   ],
   "cod_py_01_basics": [
@@ -7695,11 +7704,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_lnx_01_shell": {
-    "covered": 13,
+    "covered": 14,
     "total": 15,
     "complete": false,
     "missing": [
-      "df du lsblk ip ss curl strace lsof dmesg",
       "vim survival: modes, motions, :wq"
     ]
   },

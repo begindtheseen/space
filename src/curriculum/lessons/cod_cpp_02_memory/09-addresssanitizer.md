@@ -147,12 +147,21 @@ ASan cannot be combined with ThreadSanitizer or MemorySanitizer — one shadow-m
 **A leak.** Three allocations, no `delete`:
 
 ```cpp
+#include <cstdio>
+
 struct Frame { double v[16]; };
+
 Frame* make_frame() { return new Frame{}; }
 
 int main() {
-    for (int i = 0; i < 3; ++i) { Frame* f = make_frame(); f->v[0] = i; }
+    std::setvbuf(stdout, nullptr, _IONBF, 0);
+    for (int i = 0; i < 3; ++i) {
+        Frame* f = make_frame();
+        f->v[0] = i;
+        // no delete: one leak per iteration
+    }
     std::printf("done\n");
+    return 0;
 }
 ```
 

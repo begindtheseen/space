@@ -33,7 +33,8 @@ dump("double -9.81:", &az, sizeof az);
 
 std::uint64_t bits;
 std::memcpy(&bits, &az, sizeof bits);
-std::printf("its IEEE-754 pattern: 0x%016llX\n", static_cast<unsigned long long>(bits));
+std::printf("%-26s 0x%016llX\n", "its IEEE-754 pattern:",
+            static_cast<unsigned long long>(bits));
 ```
 
 ```text

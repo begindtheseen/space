@@ -66,19 +66,22 @@ The function signature says all of this. `void takes_ownership(std::unique_ptr<S
 ::: example The same function, two ways, identical instructions
 ```cpp
 struct Sensor { int id; double last; };     // trivial destructor
-void use(Sensor* s);
 
-void with_raw(int id) {
+void use(Sensor* s);                        // defined in another translation unit
+
+__attribute__((noinline)) void with_raw(int id) {
     Sensor* s = new Sensor{id, 0.0};
     use(s);
     delete s;
 }
 
-void with_unique(int id) {
+__attribute__((noinline)) void with_unique(int id) {
     std::unique_ptr<Sensor> s(new Sensor{id, 0.0});
     use(s.get());
 }
 ```
+
+The `noinline` attributes only stop the compiler from folding these two into `main`, so that both bodies appear in the listing.
 
 Compiled with `g++ -std=c++20 -O2 -fno-exceptions` (with `use` defined in another translation unit, so the optimiser cannot see into it), both functions produce the same instruction sequence — the listing below is the two of them one after the other, with the assembler's `.cfi` and `.size` directives filtered out:
 
@@ -200,11 +203,25 @@ Reference counting cannot collect a cycle. If A holds a `shared_ptr` to B and B 
 
 ::: example A controller and an estimator that point at each other
 ```cpp
-struct Controller { std::shared_ptr<Estimator> est; ~Controller(); };
-struct Estimator  { std::shared_ptr<Controller> ctl; ~Estimator(); };   // the cycle
+struct Controller {
+    std::shared_ptr<Estimator> est;                 // owns the estimator
+    ~Controller() { std::printf("  ~Controller\n"); }
+};
 
-struct ControllerW { std::shared_ptr<EstimatorWeak> est; ~ControllerW(); };
-struct EstimatorWeak { std::weak_ptr<ControllerW> ctl; ~EstimatorWeak(); };  // observes
+struct Estimator {
+    std::shared_ptr<Controller> ctl;                // and points back: a cycle
+    ~Estimator() { std::printf("  ~Estimator\n"); }
+};
+
+struct ControllerW {
+    std::shared_ptr<EstimatorWeak> est;
+    ~ControllerW() { std::printf("  ~ControllerW\n"); }
+};
+
+struct EstimatorWeak {
+    std::weak_ptr<ControllerW> ctl;                 // observes, does not own
+    ~EstimatorWeak() { std::printf("  ~EstimatorWeak\n"); }
+};
 ```
 
 Both pairs are created with `make_shared`, wired to each other, and dropped at the end of a block. Under `-fsanitize=address -fno-sanitize-recover=all`:
