@@ -20,6 +20,8 @@ import {
   Wordmark,
   type IconProps,
 } from '@/components/icons'
+import { FocusBar } from '@/components/FocusBar'
+import { useLearner } from '@/hooks/useLearner'
 import { useUpdates } from '@/hooks/useUpdates'
 import { navigate, useRoute, useScrollReset } from '@/lib/router'
 import './shell.css'
@@ -74,6 +76,8 @@ export function Shell({
   phase?: Phase
 }) {
   const route = useRoute()
+  const { state } = useLearner()
+  const focus = state.focus
   const [drawer, setDrawer] = useState(false)
   const [stuck, setStuck] = useState(false)
   const scrollRef = useRef<HTMLDivElement | null>(null)
@@ -111,7 +115,7 @@ export function Shell({
   }, [])
 
   return (
-    <div className="shell">
+    <div className="shell" data-focus={!!focus}>
       <Sidebar current={route.path} open={drawer} dueCount={dueCount} />
       {drawer ? <div className="scrim" onClick={() => setDrawer(false)} /> : null}
 
@@ -125,6 +129,8 @@ export function Shell({
           {children}
         </div>
       </div>
+
+      <FocusBar />
     </div>
   )
 }

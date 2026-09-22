@@ -413,6 +413,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Cholesky factorisation"
       ],
       "file": "t0_m05_linear_algebra_2/06-cholesky-factorisation.md"
+    },
+    {
+      "id": "l07-matrix-calculus-gradients-jacobians",
+      "title": "Matrix calculus, gradients and Jacobians",
+      "minutes": 21,
+      "covers": [
+        "matrix calculus: gradients and Jacobians"
+      ],
+      "file": "t0_m05_linear_algebra_2/07-matrix-calculus-gradients-jacobians.md"
     }
   ],
   "t0_m06_calculus_single": [
@@ -1475,15 +1484,14 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t0_m05_linear_algebra_2": {
-    "covered": 6,
+    "covered": 7,
     "total": 11,
     "complete": false,
     "missing": [
       "singular value decomposition",
       "pseudoinverse and rank deficiency",
       "condition number",
-      "least squares: normal equations vs QR vs SVD",
-      "matrix calculus: gradients and Jacobians"
+      "least squares: normal equations vs QR vs SVD"
     ]
   },
   "t0_m06_calculus_single": {
