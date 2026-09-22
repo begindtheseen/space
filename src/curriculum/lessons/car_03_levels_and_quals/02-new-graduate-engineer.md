@@ -83,7 +83,7 @@ Explain why this posting's degree clause, which names four specific fields, func
 :::
 
 ::: answer
-An enumerated list removes the interpretation problem a vaguer clause creates. "Or related" asks the reader to judge, without guidance, whether their field counts as close enough to aerospace — a judgment call with no stated boundary. Naming computer science, aerospace, physics, and "an engineering discipline" directly answers the question for the large majority of candidates by simply listing what counts, leaving genuine ambiguity only at the true edges of "an engineering discipline" rather than across an entire unstated category.
+An enumerated list removes the interpretation problem a vaguer clause creates. "Or related" asks the reader to judge, without guidance, whether their field counts as close enough to aerospace — a judgment call with no stated boundary. Naming computer science, aerospace, physics, and "an engineering discipline" directly answers the question for the large majority of candidates by listing what counts, leaving genuine ambiguity only at the true edges of "an engineering discipline" rather than across an entire unstated category.
 :::
 
 ::: check

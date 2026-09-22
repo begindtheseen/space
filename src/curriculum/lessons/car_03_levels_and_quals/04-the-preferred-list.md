@@ -34,7 +34,7 @@ Showing depth in all five is not expected of one candidate — these are, in a r
 
 ## Software: software development
 
-Listing "software development" as its own preferred item, alongside a set of deeply domain-specific technical areas, is a deliberate signal in its own right. It tells you that strong software engineering practice — not just the ability to derive a control law or a filter equation on a whiteboard, but the ability to write software that is correct, tested, and maintainable — is treated as its own axis of strength, not an assumed byproduct of technical depth elsewhere. This is consistent with the two languages, C++ and Python, already appearing explicitly in this posting family's basic qualifications: the work is understood, throughout this role family, to be as much a software engineering job as a domain-theory job.
+Listing "software development" as its own preferred item, alongside a set of deeply domain-specific technical areas, is a deliberate signal in its own right. It tells you that strong software engineering practice — not only the ability to derive a control law or a filter equation on a whiteboard, but the ability to write software that is correct, tested, and maintainable — is treated as its own axis of strength, not an assumed byproduct of technical depth elsewhere. This is consistent with the two languages, C++ and Python, already appearing explicitly in this posting family's basic qualifications: the work is understood, throughout this role family, to be as much a software engineering job as a domain-theory job.
 
 ## Sensors: inertial, optical, ranging and GPS sensor systems
 

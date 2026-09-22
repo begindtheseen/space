@@ -30,7 +30,7 @@ Sr. GNC Engineer — basic qualifications: bachelor's in computer science, aeros
 :::
 
 ::: warning "A related field" in branch three is not a blank check
-It is tempting to read branch three as though any graduate degree at all satisfies it, since no explicit list narrows it the way other clauses in this module do. The word "related" is still doing real work in the sentence — it is a qualifier, not a formality — and a graduate degree with no plausible technical connection to GNC work is not obviously covered just because the clause does not spell out an exclusion list. Where the connection is not obvious, treat the question as open rather than resolved in your favor.
+It is tempting to read branch three as though any graduate degree at all satisfies it, since no explicit list narrows it the way other clauses in this module do. The word "related" is still doing real work in the sentence — it is a qualifier, not a formality — and a graduate degree with no plausible technical connection to GNC work is not clearly covered merely because the clause does not spell out an exclusion list. Where the connection is not evident, treat the question as open rather than resolved in your favor.
 :::
 
 ## What "senior" adds beyond a bigger number
@@ -55,7 +55,7 @@ Navigation and State Estimation, and Operations Automation — basic qualificati
 
 ## Comparing the two moves
 
-Put side by side, Sr. GNC Engineer and the specialist postings are doing opposite things to the same underlying idea. Sr. GNC Engineer adds a door: a candidate who cannot show a matching bachelor's degree still has two other stated paths available, one built on extra years and one built on a different kind of degree entirely. The specialist postings close a door: no bachelor's-plus-experience alternative is stated at all, and the graduate degree is not one option among several but the stated floor itself. Neither move makes one posting simply "harder" than the other in some single-dimensional sense — they are testing for different things. Seniority is a claim about accumulated ownership and judgment that years of experience, or a long professional record without a degree, can plausibly demonstrate. Specialist depth is a claim about a specific, deep theoretical or technical background that these postings treat as most reliably shown by exactly the kind of formal training a graduate program provides.
+Put side by side, Sr. GNC Engineer and the specialist postings are doing opposite things to the same underlying idea. Sr. GNC Engineer adds a door: a candidate who cannot show a matching bachelor's degree still has two other stated paths available, one built on extra years and one built on a different kind of degree entirely. The specialist postings close a door: no bachelor's-plus-experience alternative is stated at all, and the graduate degree is not one option among several but the stated floor itself. Neither move makes one posting straightforwardly "harder" than the other in some single-dimensional sense — they are testing for different things. Seniority is a claim about accumulated ownership and judgment that years of experience, or a long professional record without a degree, can plausibly demonstrate. Specialist depth is a claim about a specific, deep theoretical or technical background that these postings treat as most reliably shown by exactly the kind of formal training a graduate program provides.
 
 ::: warning A specialist posting is not "one level above" Sr. GNC Engineer
 It is easy to assume these two categories stack, since specialist roles ask for more formal education than even Sr. GNC Engineer's most degree-heavy branch requires. They do not stack. Specialist postings sit on a different axis entirely — depth of formal training in a specific sub-discipline — not a further rung on the same seniority ladder this module has been climbing lesson by lesson. A specialist candidate and a Sr. GNC Engineer candidate are shaped by genuinely different postings, not by the same posting at two different heights.
@@ -108,7 +108,7 @@ A Master's or PhD in an engineering discipline, computer science or physics, plu
 :::
 
 ::: check
-Why is it a mistake to think of a specialist posting as simply one level above Sr. GNC Engineer?
+Why is it a mistake to think of a specialist posting as one level above Sr. GNC Engineer?
 :::
 
 ::: answer

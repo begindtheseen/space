@@ -24,7 +24,7 @@ This sentence bundles an "or" inside a larger, implicit "and," and misreading wh
 
 Conditions two and three are not inside the "or" — they apply regardless of which branch of condition one a candidate satisfies. A candidate who clears the degree-plus-two-years branch comfortably but has never touched Linux does not meet this posting's basic qualifications, because the Linux clause sits outside the choice the "or" offers, not folded into it.
 
-The degree list in the first branch — computer science, information systems/IT, engineering, math, or a scientific discipline — is the broadest degree clause anywhere in this module, and that breadth is not incidental. It fits a role defined by infrastructure and software-reliability work rather than by domain-specific physics, where a mathematics or general science background is just as plausible a foundation as an engineering one.
+The degree list in the first branch — computer science, information systems/IT, engineering, math, or a scientific discipline — is the broadest degree clause anywhere in this module, and that breadth is not incidental. It fits a role defined by infrastructure and software-reliability work rather than by domain-specific physics, where a mathematics or general science background is as plausible a foundation as an engineering one.
 
 ::: key
 Site Reliability Engineer, GNC — basic qualifications: bachelor's degree in computer science, information systems/IT, engineering, math, or scientific discipline and 2+ years of software development experience OR 4+ years of professional experience building software with site reliability or DevOps in lieu of a degree; 1+ years of experience with Linux operating systems; 1+ years of experience with Python and Python based development frameworks.

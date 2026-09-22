@@ -144,6 +144,16 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Device Navigation and Beam Pointing, Beam Planning: user terminal pointing, RF and optical link pointing"
       ],
       "file": "car_02_role_families/07-embedded-controls-and-beam-pointing.md"
+    },
+    {
+      "id": "l08-software-and-infrastructure-families",
+      "title": "Software Engineer, GNC and Site Reliability Engineer, GNC",
+      "minutes": 20,
+      "covers": [
+        "Software Engineer, GNC (Starship) and GNC Software Engineer, Operations Automation: analysis tools, pipelines, automation",
+        "Site Reliability Engineer, GNC: HPC Monte Carlo infrastructure, CI for rocket and simulation software"
+      ],
+      "file": "car_02_role_families/08-software-and-infrastructure-families.md"
     }
   ],
   "car_03_levels_and_quals": [
@@ -351,6 +361,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "what not to build: tutorial follow-alongs, notebooks without validation, thirty shallow repositories"
       ],
       "file": "car_06_portfolio/01-portfolio-principles.md"
+    },
+    {
+      "id": "l02-the-write-up-structure",
+      "title": "The write-up: structure, and the ninety-second read",
+      "minutes": 19,
+      "covers": [
+        "the write-up structure: problem, model, assumptions, verification, validation, results, limitations"
+      ],
+      "file": "car_06_portfolio/02-the-write-up-structure.md"
     }
   ],
   "car_07_resume_and_referrals": [
@@ -418,6 +437,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "applying directly at spacex.com/careers and what happens next"
       ],
       "file": "car_07_resume_and_referrals/07-applying-directly.md"
+    },
+    {
+      "id": "l08-referrals",
+      "title": "Referrals: what they do, and how to earn one",
+      "minutes": 22,
+      "covers": [
+        "referrals: who can refer, how to ask, and what to give the referrer to make it easy"
+      ],
+      "file": "car_07_resume_and_referrals/08-referrals.md"
     }
   ],
   "t0_m01_algebra_precalc": [
@@ -7056,12 +7084,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "car_02_role_families": {
-    "covered": 8,
+    "covered": 10,
     "total": 13,
     "complete": false,
     "missing": [
-      "Software Engineer, GNC (Starship) and GNC Software Engineer, Operations Automation: analysis tools, pipelines, automation",
-      "Site Reliability Engineer, GNC: HPC Monte Carlo infrastructure, CI for rocket and simulation software",
       "GNC Engineer (Starfall): reentry and recovery of a returnable payload capsule, first flight June 2026",
       "newer programs seen in 2026 postings: Starfall, Starmind (Embedded Controls, AI Satellites), Starshield",
       "how family choice changes what you must be able to demonstrate"
@@ -7091,7 +7117,7 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "car_06_portfolio": {
-    "covered": 2,
+    "covered": 3,
     "total": 13,
     "complete": false,
     "missing": [
@@ -7101,7 +7127,6 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
       "anchor project D — batch least-squares orbit determination fitted to real GNSS or TLE-derived data",
       "anchor project E — ADCS momentum management with reaction wheels and magnetorquers",
       "hardware-adjacent work: a real IMU, a thrust-vector-control testbed, a balancing robot, to evidence sensor reality",
-      "the write-up structure: problem, model, assumptions, verification, validation, results, limitations",
       "stating how you know the result is right: analytic cases, conservation checks, convergence, cross-comparison",
       "reproducibility: seeded, one-command, CI, pinned dependencies",
       "open-sourcing, licensing, and what to do about prior-employer intellectual property",
@@ -7109,11 +7134,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "car_07_resume_and_referrals": {
-    "covered": 9,
+    "covered": 10,
     "total": 13,
     "complete": false,
     "missing": [
-      "referrals: who can refer, how to ask, and what to give the referrer to make it easy",
       "community and conferences: AIAA and AAS Space Flight Mechanics, SmallSat, university seminars, open-source contribution",
       "recruiter outreach on LinkedIn done well and done badly",
       "reapplication cadence and what must change between attempts"

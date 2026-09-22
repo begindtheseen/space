@@ -8,7 +8,7 @@ covers:
 
 This is the posting most people mean when they picture "an ordinary GNC engineering job" — not the new-graduate program from the previous lesson, and not the senior role two lessons ahead, but the mainline requisition for someone who has already spent some real time doing this kind of work and is ready to do more of it as a full engineer. It is also, for most readers of this module, the posting where "Engineer II — 2+ years' experience, BS in Aerospace or related" stops being a hypothetical example and becomes the actual sentence they are reading on a real careers page, with a real number in it and a real degree clause to check themselves against.
 
-This lesson takes that sentence apart the way the previous two lessons took apart the New Graduate posting, with two things added that make this one worth its own lesson: a years-of-experience threshold, which is the single most negotiated-over number in this whole module, and a title — "Level I to II" — that names something this module has not yet explained: a posted floor that can land a candidate at either of two internal levels, not just one.
+This lesson takes that sentence apart the way the previous two lessons took apart the New Graduate posting, with two things added that make this one worth its own lesson: a years-of-experience threshold, which is the single most negotiated-over number in this whole module, and a title — "Level I to II" — that names something this module has not yet explained: a posted floor that can land a candidate at either of two internal levels, not only one.
 
 ## The exact line, and what "Level I to II" means
 
