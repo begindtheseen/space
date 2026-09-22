@@ -1,7 +1,7 @@
 ---
 id: l08-energy-dissipation-and-the-flat-spin-instability
 title: Energy dissipation and the flat-spin instability
-minutes: 19
+minutes: 22
 covers:
   - energy dissipation and the flat-spin instability
 ---
@@ -20,13 +20,13 @@ $$
 \frac{d\mathbf{H}}{dt}\bigg|_N = \mathbf{M}_{\mathrm{ext}} = 0 ,
 $$
 
-so $\mathbf{H}$ is constant in inertial space, in direction and magnitude, no matter what the internal parts do. Internal forces come in equal and opposite pairs acting along the line between the two masses, so their moments cancel exactly. A damper can shuffle momentum between the structure and the fluid inside it, but the sum never moves.
+so $\mathbf{H}$ is constant in inertial space, in direction and magnitude, whatever the internal parts do: internal forces come in equal and opposite pairs along the line between the two masses, so their moments cancel exactly. A damper can shuffle momentum between the structure and the fluid inside it, but the sum never moves.
 
 Energy is different. The total energy of the closed system is conserved too, but not the *rotational kinetic energy of the bulk motion*. Flexing a boom converts some of it into strain energy, and internal friction converts that into heat. Either way it has left the rotational bookkeeping. So the constraint is:
 
 > Under zero external torque, $\lVert\mathbf{H}\rVert$ is exactly constant and $T$ can only decrease.
 
-That asymmetry is the whole of the flat-spin instability. Lesson 6 built a picture from the pair $(H^2, T)$: the body-frame angular momentum lives on the intersection of a sphere of radius $H$ and an ellipsoid set by $T$. Freeze the sphere and shrink the ellipsoid, and the polhode is no longer a closed curve — it drifts from one polhode to the next, always in the direction of smaller $T$. The motion spirals across the momentum sphere until it reaches the point where $T$ is as small as it can be for that $H$.
+That asymmetry is the whole of the flat-spin instability. Lesson 6 built a picture from the pair $(H^2, T)$: the body-frame angular momentum lives on the intersection of a sphere of radius $H$ and an ellipsoid set by $T$. Freeze the sphere and shrink the ellipsoid, and the motion is no longer confined to one closed polhode — it drifts from one to the next, always toward smaller $T$, spiralling across the sphere until $T$ is as small as it can be for that $H$.
 
 ## The energy of a spin at fixed momentum
 
@@ -36,7 +36,7 @@ $$
 T = \tfrac{1}{2}I_k\omega_k^2 = \frac{H^2}{2I_k} .
 $$
 
-At a given $H$ this is a decreasing function of $I_k$. Among the three pure spins available to the body, the one about the largest moment has the least energy and the one about the smallest moment the most. For the general (non-principal) motion the same conclusion follows from the inequality of lesson 6, $2TI_1 \le H^2 \le 2TI_3$, read the other way round:
+At a given $H$ this decreases with $I_k$: of the three pure spins available, the one about the largest moment has the least energy and the one about the smallest the most. For general, non-principal motion the same conclusion follows from lesson 6's inequality $2TI_1 \le H^2 \le 2TI_3$, read the other way round:
 
 $$
 \frac{H^2}{2I_3} \le T \le \frac{H^2}{2I_1} .
@@ -160,7 +160,7 @@ $$
 
 For a **prolate** body ($I_3 < I_t$, the pencil) the bracket is negative, so $T$ decreases as $\theta$ grows: dissipation pushes the nutation angle *up*, toward the flat spin at $\theta = 90^\circ$. For an **oblate** body ($I_3 > I_t$, the disc) the bracket is positive and dissipation pushes $\theta$ *down* toward zero, so the wobble damps out and the spin settles onto the symmetry axis. Same physics, opposite consequence, decided by which side of $I_t$ the axial moment sits on.
 
-The rate follows from $\dot{\theta} = \dot{T}/(dT/d\theta)$. Put the energy-sink model into the numerator and expand both for small $\theta$. Writing $\Delta = 1/I_t - 1/I_3$, the numerator is $\dot{T} = -kH^2\theta^2\Delta^2$ and the denominator is $H^2\theta\Delta$, so
+The rate follows from $\dot{\theta} = \dot{T}/(dT/d\theta)$. Put the energy-sink model into the numerator and expand both for small $\theta$. With $\Delta = 1/I_t - 1/I_3$, the numerator is $\dot{T} = -kH^2\theta^2\Delta^2$ and the denominator $H^2\theta\Delta$, so
 
 $$
 \dot{\theta} = -k\,\theta\,\Delta = k\,\theta\left(\frac{1}{I_3} - \frac{1}{I_t}\right)
@@ -206,7 +206,7 @@ $$
 k = \frac{I_3I_t}{\tau\,(I_t - I_3)} = \frac{0.0403\times 4.818}{2400\times 4.777} = 1.7\times 10^{-5}\,\mathrm{N\,m\,s} .
 $$
 
-That is a minute amount of damping — a torque of $17\,\mathrm{\mu N\,m}$ at $1\,\mathrm{rad/s}$ of transverse rate. Four springy wires waving at 12.5 revolutions per second supply it easily. The lesson is not that Explorer 1 was badly built; it is that $\tau$ depends on $k$ in inverse proportion and on nothing else large, so a *negligible* loss mechanism still gives a finite time constant, and a positive time constant means the flat spin is certain — only the schedule is in question.
+That is a minute amount of damping — a torque of $17\,\mathrm{\mu N\,m}$ at $1\,\mathrm{rad/s}$ of transverse rate. Four springy wires waving at 12.5 revolutions per second supply it easily. The point is not that Explorer 1 was badly built. It is that $\tau$ is inversely proportional to $k$, so a *negligible* loss mechanism still gives a finite time constant — and a positive time constant makes the flat spin certain. Only the schedule was in question.
 :::
 
 ::: key Explorer 1 and the origin of the major-axis rule
@@ -228,7 +228,7 @@ The model conserves $\lVert\mathbf{H}\rVert$ exactly, which is what the physics 
 :::
 
 ::: warning Integrator drift looks exactly like dissipation
-A torque-free run with a sloppy integrator also shows $T$ falling. Before reading any energy history as physics, rerun the same initial condition with $k = 0$ and confirm that $T$ and $\lVert\mathbf{H}\rVert$ hold to round-off, then rerun with $k$ set and confirm that $\lVert\mathbf{H}\rVert$ *still* holds to round-off while $T$ falls. Physical dissipation has that signature; numerical error does not, because it degrades both.
+A sloppy integrator also shows $T$ falling. Before reading any energy history as physics, rerun the same initial condition with $k = 0$ and confirm $T$ and $\lVert\mathbf{H}\rVert$ hold to round-off; then rerun with $k$ set and confirm $\lVert\mathbf{H}\rVert$ *still* holds while $T$ falls. Physical dissipation has that signature; numerical error degrades both.
 :::
 
 ::: note Why the antennas, and not the structure
@@ -250,7 +250,7 @@ Your simulation of a damped body reports that $\lVert\mathbf{H}\rVert$ has falle
 :::
 
 ::: answer
-No. Internal dissipation cannot change $\lVert\mathbf{H}\rVert$ at all, so a three per cent loss is a bug, not physics. The two candidates are an integrator that is not conserving (check by rerunning with the damping switched off: if $\lVert\mathbf{H}\rVert$ still drifts, it is the integrator or the step size) or a damping model that is not orthogonal to $\mathbf{H}$ — for instance a plain $\mathbf{M} = -k\boldsymbol{\omega}$, which is a perfectly good energy sink but also a brake on the angular momentum, and therefore models an external drag rather than an internal damper. The $40$ per cent energy loss may well be right; it is the momentum that condemns the run.
+No. Internal dissipation cannot change $\lVert\mathbf{H}\rVert$ at all, so a three per cent loss is a bug. Two candidates: an integrator that is not conserving (rerun with the damping off — if $\lVert\mathbf{H}\rVert$ still drifts, it is the integrator or the step size), or a damping model that is not orthogonal to $\mathbf{H}$, such as a plain $\mathbf{M} = -k\boldsymbol{\omega}$, which is a fine energy sink but also a brake on angular momentum and so models external drag, not an internal damper. The energy loss may well be right; it is the momentum that condemns the run.
 :::
 
 ::: check
@@ -266,7 +266,7 @@ Explain, using $T$ and $H$ only, why a rigid body released about its minor axis 
 :::
 
 ::: answer
-Both conserve $\mathbf{H}$. The rigid body also conserves $T$ exactly, so its state is pinned to the intersection of the momentum sphere and one fixed energy ellipsoid — a single closed polhode, which for a near-minor-axis release is a small loop around the minor axis. It cannot leave that curve, so the perturbation stays bounded: stability. The dissipative body keeps the sphere but shrinks the ellipsoid, so it is not confined to any one polhode; it drifts through the family in the direction of decreasing $T$. Since a minor-axis spin is the *maximum* of $T$ at fixed $H$, every direction of drift leads away from it, and the drift only stops at the minimum, $T = H^2/(2I_3)$, on the major axis.
+Both conserve $\mathbf{H}$. The rigid body also conserves $T$ exactly, so its state is pinned to the intersection of the momentum sphere and one fixed energy ellipsoid — a single closed polhode, for a near-minor-axis release a small loop around the minor axis. It cannot leave that curve, so the perturbation stays bounded: stability. The dissipative body keeps the sphere but shrinks the ellipsoid, so it is confined to no one polhode and drifts through the family toward smaller $T$. A minor-axis spin is the *maximum* of $T$ at fixed $H$, so every direction of drift leads away from it, and the drift stops only at the minimum $T = H^2/(2I_3)$, on the major axis.
 :::
 
 ::: check
@@ -292,4 +292,4 @@ The body is oblate, $I_3 > I_t$, so $\tau = I_3I_t/[k(I_t - I_3)] = 600\times 35
 | Explorer 1 | $I_3 = 0.0403$, $I_t = 4.82\,\mathrm{kg\,m^2}$; 750 rpm to 6.3 rpm, $124\,\mathrm{J}$ to $1.04\,\mathrm{J}$ |
 | Unit body $\mathrm{diag}(1,2,3)$, $k = 0.01$ | Minor-axis release crosses the separatrix at $731\,\mathrm{s}$, settles at $0.334\,\mathrm{rad/s}$ on axis 3 |
 
-Dissipation decided *which* steady spin a body ends on. The next lesson goes back to the motion itself and works out the inertial picture in detail — the rate at which a nutating body's axis sweeps around $\mathbf{H}$, the gyroscopic torque a spinning body exerts when you try to turn it, and the distinction between nutation and forced precession that this module has so far only gestured at.
+Dissipation decides *which* steady spin a body ends on. The next lesson returns to the motion itself and works out the inertial picture — the rate at which a nutating body's axis sweeps around $\mathbf{H}$, the gyroscopic torque a spinning body exerts when you try to turn it, and the distinction between nutation and forced precession.

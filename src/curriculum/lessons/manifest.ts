@@ -814,6 +814,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "confidence intervals and hypothesis testing"
       ],
       "file": "t0_m09_probability_stats/11-confidence-intervals-and-hypothesis-testing.md"
+    },
+    {
+      "id": "l12-monte-carlo-methods-and-convergence-rates",
+      "title": "Monte Carlo methods and convergence rates",
+      "minutes": 25,
+      "covers": [
+        "Monte Carlo methods and convergence rates"
+      ],
+      "file": "t0_m09_probability_stats/12-monte-carlo-methods-and-convergence-rates.md"
     }
   ],
   "t0_m10_numerical_methods": [
@@ -1223,7 +1232,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-energy-dissipation-and-the-flat-spin-instability",
       "title": "Energy dissipation and the flat-spin instability",
-      "minutes": 19,
+      "minutes": 22,
       "covers": [
         "energy dissipation and the flat-spin instability"
       ],
@@ -1621,11 +1630,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t0_m09_probability_stats": {
-    "covered": 11,
+    "covered": 12,
     "total": 13,
     "complete": false,
     "missing": [
-      "Monte Carlo methods and convergence rates",
       "the chi-square distribution and filter consistency testing"
     ]
   },
