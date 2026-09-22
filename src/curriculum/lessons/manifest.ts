@@ -80,6 +80,17 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       "file": "car_01_itar_gate/08-academia-and-the-long-path.md"
     }
   ],
+  "car_04_degree_reality": [
+    {
+      "id": "l01-the-line-stated-plainly",
+      "title": "The degree line, stated plainly",
+      "minutes": 17,
+      "covers": [
+        "why the basic-qualification line is enforced at the recruiter stage rather than at interview"
+      ],
+      "file": "car_04_degree_reality/01-the-line-stated-plainly.md"
+    }
+  ],
   "t0_m01_algebra_precalc": [
     {
       "id": "l01-signed-numbers-and-fractions",
@@ -6753,11 +6764,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "car_04_degree_reality": {
-    "covered": 0,
+    "covered": 1,
     "total": 10,
     "complete": false,
     "missing": [
-      "why the basic-qualification line is enforced at the recruiter stage rather than at interview",
       "what this platform can do and what it cannot: it builds capability, not a credential",
       "Path 1, degree-parallel: use the curriculum to be the strongest candidate in a graduating cohort, because the real differentiator is demonstrated shipped 6-DOF, estimation and guidance work that almost no new grad has",
       "accredited routes that fit alongside work: ABET-accredited part-time and online bachelor’s programmes, community college transfer, competency-based models",

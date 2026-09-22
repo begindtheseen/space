@@ -143,10 +143,10 @@ $$
 h^* = -H\ln\frac{\rho^*}{\rho_0} = H\ln\frac{\rho_0 H}{\beta s}.
 $$
 
-A larger $\beta$ makes $\rho^* = \beta s/H$ larger, and a larger required density is reached lower in the atmosphere, where $\rho(h)$ is bigger. So a higher ballistic coefficient pushes the peak deeper into the atmosphere, by $H\ln(\beta_2/\beta_1)$ for two vehicles compared at the same $\gamma_E$ — exactly the direction the worked example below confirms numerically. The velocity at the peak, read directly off $v(h) = v_E e^{-c\rho}$ at the condition $c\rho^* = 1$ that defines the peak, is a fixed fraction of entry speed regardless of $\beta$ or $\gamma_E$:
+A larger $\beta$ makes $\rho^* = \beta s/H$ larger, and a larger required density is reached lower in the atmosphere, where $\rho(h)$ is bigger. So a higher ballistic coefficient pushes the peak deeper into the atmosphere, by $H\ln(\beta_2/\beta_1)$ for two vehicles compared at the same $\gamma_E$ — exactly the direction the worked example below confirms numerically. The velocity at the peak needs one moment of care, because velocity and deceleration do not decay at the same rate in $\rho$. The deceleration carries $e^{-c\rho}$ because it is proportional to $v^2$; the velocity itself carries half that exponent, $v = v_E e^{-c\rho/2}$, which is the solution written at the top of this lesson with $c = H/(\beta s)$ substituted in. Evaluating it at the condition $c\rho^* = 1$ that defines the peak gives a fixed fraction of entry speed, regardless of $\beta$ or $\gamma_E$:
 
 $$
-v^* = v_E\, e^{-c\rho^*} = v_E\, e^{-1} = 0.3679\, v_E.
+v^* = v_E\, e^{-c\rho^*/2} = v_E\, e^{-1/2} = 0.6065\, v_E.
 $$
 
 ::: key Peak deceleration: independent of the vehicle
@@ -154,9 +154,9 @@ $$
 a_{\max} = \frac{v_E^2\, |\sin\gamma_E|}{2eH}, \qquad
 \rho^* = \frac{\beta\,|\sin\gamma_E|}{H}, \qquad
 h^* = H\ln\frac{\rho_0 H}{\beta\,|\sin\gamma_E|}, \qquad
-v^* = v_E/e = 0.368\,v_E.
+v^* = v_E/\sqrt{e} = 0.607\,v_E.
 $$
-$a_{\max}$ depends only on entry speed and entry angle. $\beta$ sets *where* (altitude) the peak occurs, not *how large* it is. The speed at the peak is always $1/e$ of entry speed, for every ballistic entry in this model.
+$a_{\max}$ depends only on entry speed and entry angle. $\beta$ sets *where* (altitude) the peak occurs, not *how large* it is. The speed at the peak is always $1/\sqrt{e}$ of entry speed, for every ballistic entry in this model — the square root is there because the deceleration goes as $v^2$, so it peaks when the velocity has fallen by half an e-folding, not a whole one.
 :::
 
 ::: example Peak deceleration for the lunar-return case
@@ -204,7 +204,7 @@ At the altitude of peak deceleration, what fraction of the entry speed remains, 
 :::
 
 ::: answer
-$v^* = v_E/e = 0.368\,v_E$, independent of both $\beta$ and $\gamma_E$. This falls directly out of the condition $c\rho^*=1$ that defines the peak, substituted back into $v(h)=v_Ee^{-c\rho}$: every ballistic entry in this model, regardless of vehicle or angle, has shed exactly $63.2\ \mathrm{percent}$ of its entry speed by the moment of peak deceleration.
+$v^* = v_E/\sqrt{e} = 0.607\,v_E$, independent of both $\beta$ and $\gamma_E$. This falls out of the condition $c\rho^*=1$ that defines the peak, substituted into the velocity solution $v = v_E e^{-c\rho/2}$ — half the exponent the deceleration carries, because $a \propto v^2$. Every ballistic entry in this model, regardless of vehicle or angle, has shed $39.3\ \mathrm{percent}$ of its entry speed by the moment of peak deceleration, and still carries nearly two thirds of it.
 :::
 
 ::: check
@@ -225,6 +225,6 @@ $\beta$ fixes the altitude $h^*$ at which the (identical) peak load is reached, 
 | $a_{\max} = v_E^2 s/(2eH)$ | Peak deceleration — depends only on entry speed and angle, not on $\beta$ |
 | $\rho^* = \beta s/H$ | Density at which the peak occurs |
 | $h^* = H\ln[\rho_0 H/(\beta s)]$ | Altitude of peak deceleration — depends on $\beta$; higher $\beta$ gives lower $h^*$ |
-| $v^* = v_E/e = 0.368\,v_E$ | Speed remaining at the peak — universal fraction, independent of $\beta$ and $\gamma_E$ |
+| $v^* = v_E/\sqrt{e} = 0.607\,v_E$ | Speed remaining at the peak — universal fraction, independent of $\beta$ and $\gamma_E$ |
 
 Every result here rests on assumptions stated but not tested: constant $\gamma$, negligible gravity, an idealised single-scale-height atmosphere. The next lesson builds a numerically integrated entry that keeps the physics those assumptions drop, compares it point by point against the formulas above, and identifies exactly which assumption breaks first as the entry gets shallower.
