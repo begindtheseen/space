@@ -2140,6 +2140,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Notch filters for structural bending modes; gain stabilization vs phase stabilization"
       ],
       "file": "t3_m26_classical_control/10-notches-and-bending-modes.md"
+    },
+    {
+      "id": "l11-gain-phase-and-the-waterbed",
+      "title": "The gain-phase relationship and the waterbed effect",
+      "minutes": 24,
+      "covers": [
+        "The Bode gain-phase relationship, the Bode sensitivity integral, and the waterbed effect"
+      ],
+      "file": "t3_m26_classical_control/11-gain-phase-and-the-waterbed.md"
     }
   ],
   "t3_m27_digital_control": [
@@ -2434,6 +2443,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "LQG = LQR + Kalman filter, and the stochastic separation principle"
       ],
       "file": "t3_m29_optimal_control_lqr/10-lqg-and-the-separation-principle.md"
+    },
+    {
+      "id": "l11-loop-transfer-recovery",
+      "title": "Loop transfer recovery and what it costs",
+      "minutes": 18,
+      "covers": [
+        "Loop transfer recovery and what it actually costs"
+      ],
+      "file": "t3_m29_optimal_control_lqr/11-loop-transfer-recovery.md"
     }
   ],
   "t3_m30_robust_control": [
@@ -2526,6 +2544,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Linear parameter-varying control and gain scheduling with guarantees"
       ],
       "file": "t3_m30_robust_control/10-lpv-and-gain-scheduling.md"
+    },
+    {
+      "id": "l11-adaptive-control",
+      "title": "Adaptive control and its use and abuse",
+      "minutes": 22,
+      "covers": [
+        "Adaptive control (MRAC, L1 adaptive) and its use and abuse in aerospace"
+      ],
+      "file": "t3_m30_robust_control/11-adaptive-control.md"
     }
   ],
   "t3_m31_nonlinear_control": [
@@ -2675,6 +2702,16 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Economic MPC"
       ],
       "file": "t3_m32_mpc/09-nonlinear-and-economic-mpc.md"
+    },
+    {
+      "id": "l10-real-time-onboard-mpc",
+      "title": "Real-time onboard MPC and embedded QP solvers",
+      "minutes": 26,
+      "covers": [
+        "Real-time onboard MPC: warm starting, solver choice, worst-case iteration bounds, certifiable solve time",
+        "Embedded QP solvers (OSQP, qpOASES, HPIPM) and code generation"
+      ],
+      "file": "t3_m32_mpc/10-real-time-onboard-mpc.md"
     }
   ]
 }
@@ -2915,11 +2952,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t3_m26_classical_control": {
-    "covered": 10,
+    "covered": 11,
     "total": 13,
     "complete": false,
     "missing": [
-      "The Bode gain-phase relationship, the Bode sensitivity integral, and the waterbed effect",
       "Cascade architecture: a fast rate loop inside a slower attitude loop",
       "Feedforward and 2-DOF control; gain scheduling across flight regimes"
     ]
@@ -2937,22 +2973,20 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t3_m29_optimal_control_lqr": {
-    "covered": 10,
+    "covered": 11,
     "total": 14,
     "complete": false,
     "missing": [
-      "Loop transfer recovery and what it actually costs",
       "Discrete-time LQR and the DARE",
       "The Hamiltonian and the Pontryagin minimum principle as the general frame",
       "iLQR and DDP as the nonlinear extension"
     ]
   },
   "t3_m30_robust_control": {
-    "covered": 10,
+    "covered": 11,
     "total": 12,
     "complete": false,
     "missing": [
-      "Adaptive control (MRAC, L1 adaptive) and its use and abuse in aerospace",
       "Flight qualification metrics: stability margin requirements across the envelope, discrete-time mu analysis, handling-qualities criteria"
     ]
   },
@@ -2971,12 +3005,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t3_m32_mpc": {
-    "covered": 10,
+    "covered": 12,
     "total": 13,
     "complete": false,
     "missing": [
-      "Real-time onboard MPC: warm starting, solver choice, worst-case iteration bounds, certifiable solve time",
-      "Embedded QP solvers (OSQP, qpOASES, HPIPM) and code generation",
       "MPC vs LQR trade; MPC for powered descent, rendezvous and constrained attitude control"
     ]
   },
