@@ -231,7 +231,13 @@ Archived and active journals take up 8.0M in the file system.
 Most useful in practice is `journalctl -u sim-sweep -f` during a deployment, and `journalctl -u sim-sweep --since "-1 h" -p warning` afterwards.
 
 ::: warning
-The journal is not necessarily persistent. If `/var/log/journal/` does not exist, systemd keeps the journal in `/run`, a tmpfs, and **everything is lost on reboot** — so the logs explaining why the machine rebooted are gone, which is exactly when you wanted them. `journalctl -b -1` returning "Specified boot ID or offset does not exist" is the symptom. The fix is `mkdir -p /var/log/journal` and `systemctl restart systemd-journald`, or `Storage=persistent` in `/etc/systemd/journald.conf`. Check it on any machine you care about *before* you need it.
+The journal is not necessarily persistent. If `/var/log/journal/` does not exist, systemd keeps the journal in `/run`, a tmpfs, and **everything is lost on reboot** — so the logs explaining why the machine rebooted are gone, which is exactly when you wanted them. The symptom is `journalctl -b -1` answering
+
+```text
+No journal boot entry found from the specified boot offset (-1).
+```
+
+with exit status 1. The fix is `mkdir -p /var/log/journal` and `systemctl restart systemd-journald`, or `Storage=persistent` in `/etc/systemd/journald.conf`. Check it on any machine you care about *before* you need it.
 :::
 
 ::: example Finding what is broken on a machine you were just given
@@ -290,7 +296,7 @@ You edit `/etc/systemd/system/telemetry.service` to change `ExecStart`, run `sys
 ::: answer
 `systemctl daemon-reload`. systemd parses unit files once and keeps them in memory; `restart` stops and starts the unit *as systemd currently understands it*, which is the version from before your edit. The file on disk and the running configuration have simply diverged.
 
-The sequence is always: edit the file, `systemctl daemon-reload`, then `systemctl restart NAME`. `systemctl cat NAME` afterwards shows what systemd now has, including any drop-in files, and is the way to confirm the change landed. Newer systemd versions notice and print a warning — "Warning: The unit file, source configuration file or drop-ins of NAME changed on disk. Run 'systemctl daemon-reload'" — but do not rely on seeing it.
+The sequence is always: edit the file, `systemctl daemon-reload`, then `systemctl restart NAME`. Note that nothing will necessarily warn you: on systemd 255 here, editing a unit file and then running `systemctl status` and `systemctl restart` produced no message at all, and the service came back with the old command. Some versions and some paths do print a "changed on disk" warning; do not rely on seeing it. `systemctl cat NAME` reads the file from disk rather than from systemd's memory, so it shows your edit either way — which makes it a poor check for whether the reload happened, and a good check for what the file now says.
 
 Related: prefer `systemctl edit NAME` for changing a packaged unit. It creates a drop-in under `/etc/systemd/system/NAME.d/override.conf` containing only your changes, runs the reload for you, and survives the package being upgraded.
 :::
@@ -304,7 +310,15 @@ It is crash-looping. The unit has `Restart=always` or `Restart=on-failure`, the 
 
 Look at the journal for the unit rather than at `status`, because `status` shows only the last few lines and you need the pattern: `journalctl -u ingest -n 100` will show repeated `Started` / `Main process exited` / `Scheduled restart job` cycles, and between each pair the program's own last words, which are the actual cause.
 
-systemd has a rate limiter for exactly this: `StartLimitIntervalSec` and `StartLimitBurst` (by default 5 starts in 10 seconds) after which it gives up with "start request repeated too quickly" and leaves the unit failed. Seeing that message means the loop has been running long enough to be stopped, and `systemctl reset-failed ingest` is needed before it will start again.
+systemd has a rate limiter for exactly this. `systemctl show NAME -p StartLimitIntervalUSec -p StartLimitBurst` reports the defaults — `10s` and `5` on systemd 255 — and once that many starts happen inside that window it gives up and leaves the unit failed. The journal says so in as many words:
+
+```text
+Sep 22 21:06:12 vm systemd[1]: sim-loop.service: Scheduled restart job, restart counter is at 5.
+Sep 22 21:06:12 vm systemd[1]: sim-loop.service: Start request repeated too quickly.
+Sep 22 21:06:12 vm systemd[1]: Failed to start sim-loop.service - Crash-looping sweep.
+```
+
+The `restart counter` line is the one to look for: it tells you how many times it has already tried. After that, `systemctl reset-failed ingest` is needed before it will start again.
 :::
 
 ::: check

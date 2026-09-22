@@ -89,12 +89,14 @@ Every report ends with a dump of the shadow map around the address, and a legend
 
 ```text
 Shadow bytes around the buggy address:
+  ...
   0x501fffffff80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 =>0x502000000000: fa fa[fd]fd fa fa fa fa fa fa fa fa fa fa fa fa
   0x502000000080: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  ...
 Shadow byte legend (one shadow byte represents 8 application bytes):
   Addressable:           00
-  Partially addressable: 01 02 03 04 05 06 07
+  Partially addressable: 01 02 03 04 05 06 07 
   Heap left redzone:       fa
   Freed heap region:       fd
   Stack left redzone:      f1
@@ -103,9 +105,14 @@ Shadow byte legend (one shadow byte represents 8 application bytes):
   Stack after return:      f5
   Stack use after scope:   f8
   Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
   Container overflow:      fc
   Array cookie:            ac
   Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
 ```
 
 The `=>` marks the line containing the address, and the square brackets mark the exact shadow byte. It is `fd`: *freed heap region*. Next to it is a second `fd`, because the 16-byte `Frame` needs two shadow bytes, and around them are `fa` bytes — heap left redzone — which is the padding ASan put between blocks.

@@ -1684,6 +1684,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Package management (apt/dnf) and building from source"
       ],
       "file": "cod_lnx_01_shell/11-packages-and-building-from-source.md"
+    },
+    {
+      "id": "l12-systemd-services-and-the-journal",
+      "title": "systemd services and the journal",
+      "minutes": 20,
+      "covers": [
+        "systemd: systemctl, journalctl"
+      ],
+      "file": "cod_lnx_01_shell/12-systemd-services-and-the-journal.md"
     }
   ],
   "cod_py_01_basics": [
@@ -7686,11 +7695,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_lnx_01_shell": {
-    "covered": 12,
+    "covered": 13,
     "total": 15,
     "complete": false,
     "missing": [
-      "systemd: systemctl, journalctl",
       "df du lsblk ip ss curl strace lsof dmesg",
       "vim survival: modes, motions, :wq"
     ]
