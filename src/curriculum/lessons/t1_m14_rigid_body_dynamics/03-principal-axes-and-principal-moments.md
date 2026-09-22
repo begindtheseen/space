@@ -1,7 +1,7 @@
 ---
 id: l03-principal-axes-and-principal-moments
 title: Principal axes and principal moments
-minutes: 17
+minutes: 20
 covers:
   - principal axes and principal moments
 ---

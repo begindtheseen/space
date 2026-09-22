@@ -395,6 +395,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "symmetric matrices and the spectral theorem"
       ],
       "file": "t0_m05_linear_algebra_2/04-symmetric-matrices-spectral-theorem.md"
+    },
+    {
+      "id": "l05-positive-definiteness-quadratic-forms",
+      "title": "Positive definiteness and quadratic forms",
+      "minutes": 22,
+      "covers": [
+        "positive definiteness and quadratic forms"
+      ],
+      "file": "t0_m05_linear_algebra_2/05-positive-definiteness-quadratic-forms.md"
     }
   ],
   "t0_m06_calculus_single": [
@@ -693,6 +702,16 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "sums of random variables and the central limit theorem"
       ],
       "file": "t0_m09_probability_stats/06-sums-and-central-limit-theorem.md"
+    },
+    {
+      "id": "l07-random-processes-white-noise-brownian",
+      "title": "Random processes, white noise and Brownian motion",
+      "minutes": 26,
+      "covers": [
+        "stochastic processes and Brownian motion",
+        "white noise, random walk, Gauss-Markov processes"
+      ],
+      "file": "t0_m09_probability_stats/07-random-processes-white-noise-brownian.md"
     }
   ],
   "t0_m10_numerical_methods": [
@@ -1002,7 +1021,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-principal-axes-and-principal-moments",
       "title": "Principal axes and principal moments",
-      "minutes": 17,
+      "minutes": 20,
       "covers": [
         "principal axes and principal moments"
       ],
@@ -1373,11 +1392,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t0_m05_linear_algebra_2": {
-    "covered": 4,
+    "covered": 5,
     "total": 11,
     "complete": false,
     "missing": [
-      "positive definiteness and quadratic forms",
       "singular value decomposition",
       "pseudoinverse and rank deficiency",
       "condition number",
@@ -1412,13 +1430,11 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t0_m09_probability_stats": {
-    "covered": 6,
+    "covered": 8,
     "total": 13,
     "complete": false,
     "missing": [
-      "white noise, random walk, Gauss-Markov processes",
       "power spectral density and autocorrelation",
-      "stochastic processes and Brownian motion",
       "maximum likelihood estimation",
       "confidence intervals and hypothesis testing",
       "Monte Carlo methods and convergence rates",
