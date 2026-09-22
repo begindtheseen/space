@@ -3168,6 +3168,24 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Gaussian sum filters"
       ],
       "file": "t4_m35_nonlinear_filters/09-gaussian-sum-filters.md"
+    },
+    {
+      "id": "l10-the-error-state-kalman-filter",
+      "title": "The error-state (indirect) Kalman filter",
+      "minutes": 19,
+      "covers": [
+        "The error-state (indirect) Kalman filter: why the error state is small and nearly linear, injection and reset, the Jacobian of the reset"
+      ],
+      "file": "t4_m35_nonlinear_filters/10-the-error-state-kalman-filter.md"
+    },
+    {
+      "id": "l11-the-multiplicative-ekf-for-attitude",
+      "title": "The Multiplicative EKF for attitude",
+      "minutes": 27,
+      "covers": [
+        "The Multiplicative EKF for attitude: the 3-parameter attitude error, covariance on the tangent space"
+      ],
+      "file": "t4_m35_nonlinear_filters/11-the-multiplicative-ekf-for-attitude.md"
     }
   ],
   "t4_m36_inertial_navigation": [
@@ -3278,6 +3296,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Error-state filter formulation for INS: the 15-state and 21-state models"
       ],
       "file": "t4_m36_inertial_navigation/12-error-state-filter-15-21-state.md"
+    },
+    {
+      "id": "l13-lever-arm-zupt-vibration-rectification",
+      "title": "Lever arm compensation, zero-velocity updates, and vibration rectification",
+      "minutes": 16,
+      "covers": [
+        "Lever arm compensation, zero-velocity updates, vibration rectification"
+      ],
+      "file": "t4_m36_inertial_navigation/13-lever-arm-zupt-vibration-rectification.md"
     }
   ],
   "t4_m37_gnss": [
@@ -3711,24 +3738,20 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t4_m35_nonlinear_filters": {
-    "covered": 9,
+    "covered": 11,
     "total": 14,
     "complete": false,
     "missing": [
-      "The error-state (indirect) Kalman filter: why the error state is small and nearly linear, injection and reset, the Jacobian of the reset",
-      "The Multiplicative EKF for attitude: the 3-parameter attitude error, covariance on the tangent space",
       "On-manifold and invariant EKF (IEKF), equivariant filtering",
       "Consider states and bias augmentation",
       "Multiple-model and IMM filters"
     ]
   },
   "t4_m36_inertial_navigation": {
-    "covered": 12,
+    "covered": 13,
     "total": 13,
-    "complete": false,
-    "missing": [
-      "Lever arm compensation, zero-velocity updates, vibration rectification"
-    ]
+    "complete": true,
+    "missing": []
   },
   "t4_m37_gnss": {
     "covered": 14,

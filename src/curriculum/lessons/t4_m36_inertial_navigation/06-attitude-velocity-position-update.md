@@ -28,7 +28,7 @@ followed by the renormalization the attitude kinematics module described. This f
 
 ## Velocity update: gravity, finally supplied
 
-The specific force $\mathbf f^b$ the accelerometer reports rotates into the navigation frame through the attitude just updated, $\mathbf f^n=\mathbf C_b^n\mathbf f^b$, and the previous lesson's velocity equation needs one more piece: $\mathbf g^n$, the gravity this module's first lesson insisted must be supplied analytically because no accelerometer senses it. WGS84 gives it as **normal gravity**, the gravitational plus centrifugal acceleration of a reference ellipsoid with the Earth's mass and rotation rate, by the closed-form Somigliana equation
+The specific force $\mathbf f^b$ the accelerometer reports rotates into the navigation frame through the newly updated attitude, $\mathbf f^n=\mathbf C_b^n\mathbf f^b$, and the previous lesson's velocity equation needs one more piece: $\mathbf g^n$, the gravity this module's first lesson insisted must be supplied analytically because no accelerometer senses it. WGS84 gives it as **normal gravity**, the gravitational plus centrifugal acceleration of a reference ellipsoid with the Earth's mass and rotation rate, by the closed-form Somigliana equation
 
 $$
 g_0(\varphi) = g_e\,\frac{1+k\sin^2\varphi}{\sqrt{1-e^2\sin^2\varphi}}, \qquad g_e = 9.780\,325\,3359\,\mathrm{m/s^2},\ \ k=0.001\,931\,853,

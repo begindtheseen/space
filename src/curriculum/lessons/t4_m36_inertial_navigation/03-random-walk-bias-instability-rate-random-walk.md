@@ -78,7 +78,7 @@ Bias instability and rate random walk are frequently confused because both descr
 | Bias instability | $\dot b = -b/T + w$ | saturates at $B$ | $^\circ/\mathrm{h}$, $\mu g$ | $0$ (floor) |
 | Rate random walk | $\dot b = w_r$ | $\sigma_b \propto \sqrt{t}$, $\sigma_\theta \propto t^{3/2}$ | $^\circ/\mathrm{h}/\sqrt{\mathrm{h}}$ | $+\tfrac12$ |
 
-Two more processes bound this family at either end — quantization, whose $-1$ slope the error-model lesson already met, and a deterministic rate ramp with slope $+1$ — and the next lesson places all five on one plot and shows why the slope is diagnostic rather than incidental. Everything in this lesson is a statement about one axis of one sensor; the three axes of a triad are modelled as independent unless a calibration explicitly says otherwise, so their variances simply add when you need a vector error, exactly as independent variances always do.
+Two more processes bound this family at either end — quantization, whose $-1$ slope the error-model lesson already met, and a deterministic rate ramp with slope $+1$ — and the next lesson places all five on one plot and shows why the slope is diagnostic rather than incidental. Everything in this lesson is a statement about one axis of one sensor; the three axes of a triad are modelled as independent unless a calibration explicitly says otherwise, so their variances add when you need a vector error, exactly as independent variances always do.
 
 ::: example A tactical gyro left to coast
 
@@ -135,7 +135,7 @@ for t in [10.0, 60.0, 3600.0]:
 # t=  3600s  VRW=0.058800 m/s  bias-instab=0.689959 m/s  RSS=0.692460 m/s
 ```
 
-Here bias instability overtakes velocity random walk almost immediately — the crossover works out to about $4\,\mathrm{s}$ — and by an hour it is more than eleven times larger. The accelerometer's bias term dominates far earlier than the gyro's did, for the same reason the error-model lesson flagged: bias instability integrates once into velocity, exactly as white noise does, so the two random-walk-shaped curves race on equal footing in their time exponent, and the one with the larger coefficient at short times simply stays ahead. There is nothing here yet about *position* — velocity error still has to be integrated once more, which is where the next lessons' cubic and quadratic growth laws come from — but the ranking of the two velocity terms already tells you which one a filter needs to estimate first.
+Here bias instability overtakes velocity random walk almost immediately — the crossover works out to about $4\,\mathrm{s}$ — and by an hour it is more than eleven times larger. The accelerometer's bias term dominates far earlier than the gyro's did, for the same reason the error-model lesson flagged: bias instability integrates once into velocity, exactly as white noise does, so the two random-walk-shaped curves race on equal footing in their time exponent, and the one with the larger coefficient at short times stays ahead throughout. There is nothing here yet about *position* — velocity error still has to be integrated once more, which is where the next lessons' cubic and quadratic growth laws come from — but the ranking of the two velocity terms already tells you which one a filter needs to estimate first.
 :::
 
 ## Check yourself
@@ -177,7 +177,7 @@ Why does the accelerometer's bias instability overtake its velocity random walk 
 :::
 
 ::: answer
-Both crossovers are races between a $\sqrt t$ curve and a curve that starts at zero, grows roughly linearly for $t \ll T$, and saturates afterward — the shape is identical in both cases. What differs is the ratio of the coefficients at short time: for the accelerometer, the bias instability's initial slope ($\sigma_a/1$, using $\sigma_a = 4.905\times10^{-4}\,\mathrm{m/s^2}$) is large relative to $\mathrm{VRW}=0.0588\,\mathrm m/\mathrm s/\sqrt{\mathrm h}$, while for the gyro the corresponding ratio is smaller. A shorter correlation time also pulls the crossover earlier, and $T_a = 300\,\mathrm s$ for the accelerometer is not vastly different from $T_b=100\,\mathrm s$ for the gyro, so the dominant effect is the size of the bias-instability coefficient itself relative to the random-walk coefficient — the accelerometer's is simply the larger of the two ratios.
+Both crossovers are races between a $\sqrt t$ curve and a curve that starts at zero, grows roughly linearly for $t \ll T$, and saturates afterward — the shape is identical in both cases. What differs is the ratio of the coefficients at short time: for the accelerometer, the bias instability's initial slope ($\sigma_a/1$, using $\sigma_a = 4.905\times10^{-4}\,\mathrm{m/s^2}$) is large relative to $\mathrm{VRW}=0.0588\,\mathrm m/\mathrm s/\sqrt{\mathrm h}$, while for the gyro the corresponding ratio is smaller. A shorter correlation time also pulls the crossover earlier, and $T_a = 300\,\mathrm s$ for the accelerometer is not vastly different from $T_b=100\,\mathrm s$ for the gyro, so the dominant effect is the size of the bias-instability coefficient itself relative to the random-walk coefficient — the accelerometer's is the larger of the two ratios.
 :::
 
 ## Summary

@@ -6,9 +6,9 @@ covers:
   - "Initial alignment: coarse leveling, gyrocompassing, fine alignment via Kalman filter, transfer and in-flight alignment"
 ---
 
-Every mechanization equation this module has built assumes the loop already has somewhere to start: an initial $\mathbf C_b^n$, an initial velocity, an initial position. None of that arrives for free. A strapdown system knows none of its own orientation at power-up — unlike a gimbaled platform, there is no mechanical gyroscope holding a reference the electronics can simply read off — and the entire attitude, from level to heading, has to be built from the same six numbers this module opened with: three accelerometer readings and three gyro readings, taken while the vehicle does whatever it is doing at the moment it is told to start navigating.
+Every mechanization equation this module has built assumes the loop already has somewhere to start: an initial $\mathbf C_b^n$, an initial velocity, an initial position. None of that arrives for free. A strapdown system knows none of its own orientation at power-up — unlike a gimbaled platform, there is no mechanical gyroscope holding a reference the electronics can read off directly — and the entire attitude, from level to heading, has to be built from the same six numbers this module opened with: three accelerometer readings and three gyro readings, taken while the vehicle does whatever it is doing at the moment it is told to start navigating.
 
-This lesson works through how that happens, in the order accuracy demands it: **coarse leveling** finds roll and pitch directly from gravity in a few seconds; **gyrocompassing** finds heading from the Earth's own rotation, at a cost in time and latitude this lesson prices exactly; **fine alignment** refines both with a Kalman filter built on the same Schuler-loop dynamics the last two lessons derived; and **transfer** and **in-flight alignment** cover the cases where the vehicle cannot simply sit still and wait.
+This lesson works through how that happens, in the order accuracy demands it: **coarse leveling** finds roll and pitch directly from gravity in a few seconds; **gyrocompassing** finds heading from the Earth's own rotation, at a cost in time and latitude this lesson prices exactly; **fine alignment** refines both with a Kalman filter built on the same Schuler-loop dynamics the last two lessons derived; and **transfer** and **in-flight alignment** cover the cases where the vehicle has no chance to sit still and wait.
 
 ## Coarse leveling: gravity finds the horizon
 
@@ -76,7 +76,7 @@ for label, sigma in [("tactical", 3.0), ("navigation", 0.01), ("strategic", 0.00
 # strategic  b= 0.001 deg/h -> psi=0.0043 deg = 0.26 arcmin
 ```
 
-This module's running tactical gyro, $3^\circ/\mathrm h$, gyrocompasses to only $13^\circ$ of heading — worthless, which is exactly why tactical-grade systems never attempt it and instead take heading from a magnetometer, a GNSS course-over-ground solution, or a known launch azimuth. A navigation-grade gyro at $0.01^\circ/\mathrm h$ reaches $2.6$ arcminutes, good enough for most aircraft and marine navigation, and this is precisely the capability that separates "navigation grade" from "tactical grade" as a practical matter, not just a datasheet distinction. A strategic-grade submarine gyro pushes below half an arcminute — the accuracy a submarine's inertial navigator actually needs, since it may run for weeks with no other heading reference at all.
+This module's running tactical gyro, $3^\circ/\mathrm h$, gyrocompasses to only $13^\circ$ of heading — worthless, which is exactly why tactical-grade systems never attempt it and instead take heading from a magnetometer, a GNSS course-over-ground solution, or a known launch azimuth. A navigation-grade gyro at $0.01^\circ/\mathrm h$ reaches $2.6$ arcminutes, good enough for most aircraft and marine navigation, and this is precisely the capability that separates "navigation grade" from "tactical grade" as a practical matter, not only as a datasheet distinction. A strategic-grade submarine gyro pushes below half an arcminute — the accuracy a submarine's inertial navigator actually needs, since it may run for weeks with no other heading reference at all.
 :::
 
 ## Fine alignment: a Kalman filter on the Schuler loop
@@ -115,7 +115,7 @@ for n_updates in [1, 6, 30, 60, 150]:
 # t=  1500s  sigma_tilt=    0.55 arcsec  sigma_bias= 0.0006 deg/h
 ```
 
-In twenty-five minutes the tilt uncertainty falls from a coarse-level-scale $117$ arcseconds to half an arcsecond, and the bias uncertainty from $10^\circ/\mathrm h$ to six ten-thousandths of a degree per hour — fine alignment does not just sharpen the attitude, it simultaneously calibrates the gyro bias for free, using nothing but the vehicle sitting still and the same dynamics that make the Schuler oscillation what it is. This is also why fine alignment takes minutes rather than seconds: the filter needs the $\varepsilon$-$\delta v$ coupling to actually swing through enough of its dynamics to separate a bias (which keeps pushing) from a tilt (whose free response only oscillates), and that separation improves with time on the same schedule the Schuler period sets.
+In twenty-five minutes the tilt uncertainty falls from a coarse-level-scale $117$ arcseconds to half an arcsecond, and the bias uncertainty from $10^\circ/\mathrm h$ to six ten-thousandths of a degree per hour — fine alignment does not only sharpen the attitude, it simultaneously calibrates the gyro bias for free, using nothing but the vehicle sitting still and the same dynamics that make the Schuler oscillation what it is. This is also why fine alignment takes minutes rather than seconds: the filter needs the $\varepsilon$-$\delta v$ coupling to actually swing through enough of its dynamics to separate a bias (which keeps pushing) from a tilt (whose free response only oscillates), and that separation improves with time on the same schedule the Schuler period sets.
 :::
 
 ::: warning
@@ -143,7 +143,7 @@ A ship's navigation-grade gyrocompass ($0.01^\circ/\mathrm h$) works fine in por
 :::
 
 ::: answer
-$\psi\approx b/(\omega_{ie}\cos\varphi)$, and $\cos85^\circ=0.0872$, a ninth of $\cos28.5^\circ$, so the achievable heading accuracy is roughly nine times worse near the pole for the same gyro. Push further, toward $\varphi=90^\circ$, and $\cos\varphi\to0$ while $\psi\to\infty$: the horizontal component of Earth rate that gyrocompassing depends on vanishes at the pole entirely, so there is no signal left to null regardless of gyro quality, and a system correctly refuses to trust a "solution" that is really just amplified noise.
+$\psi\approx b/(\omega_{ie}\cos\varphi)$, and $\cos85^\circ=0.0872$, a ninth of $\cos28.5^\circ$, so the achievable heading accuracy is roughly nine times worse near the pole for the same gyro. Push further, toward $\varphi=90^\circ$, and $\cos\varphi\to0$ while $\psi\to\infty$: the horizontal component of Earth rate that gyrocompassing depends on vanishes at the pole entirely, so there is no signal left to null regardless of gyro quality, and a system correctly refuses to trust a "solution" that is really nothing more than amplified noise.
 :::
 
 ::: check

@@ -74,7 +74,7 @@ The linearised pseudorange Jacobian row is $[-\mathbf{e}_i^{\mathsf T},\ 1]$, wi
 
 ## A four-satellite fix, converged to the nanometre
 
-Reuse the four satellites from the previous lesson's example — Cape Canaveral, $(\text{az}, \text{el})$ of $(135^\circ,60^\circ)$, $(45^\circ,30^\circ)$, $(225^\circ,25^\circ)$ and $(315^\circ,45^\circ)$ at the GPS orbital radius — with a true clock bias of $b = 18{,}500\,\mathrm{m}$ ($61.7\,\mathrm{\mu s}$). The code below builds the corrected-pseudorange model with the Sagnac term included, generates noise-free pseudoranges from the true position, and iterates the Gauss-Newton step from the centre of the Earth:
+Reuse the four satellites from the previous lesson's example — Cape Canaveral, $(\text{az}, \text{el})$ of $(135^\circ,60^\circ)$, $(45^\circ,30^\circ)$, $(225^\circ,25^\circ)$ and $(315^\circ,45^\circ)$ at the GPS orbital radius — with a true clock bias of $b = 18{,}500\,\mathrm{m}$ ($61.7\,\mathrm{\mu s}$). The code below builds the corrected-pseudorange model with the Sagnac term included, generates noise-free pseudoranges from the true position, and iterates the Gauss-Newton step from the centre of the Earth. It holds each satellite's ECEF position fixed rather than re-evaluating the ephemeris at each satellite's own transmit time — the pseudorange lesson's other transit-time effect, worth roughly $270\,\mathrm{m}$ of along-track satellite motion if ignored, folded in the same way the Sagnac term is: computed once per satellite from the broadcast ephemeris at $t_{tx}=t_{rx}-\rho/c$ before the position solve begins, not re-derived here.
 
 ```python
 import numpy as np

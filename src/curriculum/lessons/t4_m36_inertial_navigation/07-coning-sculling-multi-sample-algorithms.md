@@ -138,7 +138,7 @@ The sculling term collapses to zero whenever $\Delta\boldsymbol\theta_1\approx\D
 :::
 
 ::: check
-Explain why a two-sample coning algorithm running at $200\,\mathrm{Hz}$ handles a $20\,\mathrm{Hz}$ vibration far better than the same algorithm would handle a $90\,\mathrm{Hz}$ vibration on the same hardware, in terms of this lesson's derivation rather than just "higher frequency is worse."
+Explain why a two-sample coning algorithm running at $200\,\mathrm{Hz}$ handles a $20\,\mathrm{Hz}$ vibration far better than the same algorithm would handle a $90\,\mathrm{Hz}$ vibration on the same hardware, in terms of this lesson's derivation rather than the shorthand "higher frequency is worse."
 :::
 
 ::: answer
