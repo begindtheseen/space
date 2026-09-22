@@ -1,7 +1,7 @@
 ---
 id: l03-quaternion-integration-schemes-and-norm-drift
 title: Quaternion integration schemes and norm drift
-minutes: 21
+minutes: 20
 covers:
   - quaternion integration schemes and norm drift
 ---

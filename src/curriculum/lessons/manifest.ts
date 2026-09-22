@@ -1540,6 +1540,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "quaternion multiplication, conjugate, inverse, unit-norm constraint"
       ],
       "file": "t1_m16_attitude_representations/06-quaternion-multiplication-conjugate-and-inverse.md"
+    },
+    {
+      "id": "l07-the-double-cover-and-the-shortest-path-sign",
+      "title": "The double cover and the shortest-path sign convention",
+      "minutes": 18,
+      "covers": [
+        "the double cover and the shortest-path sign convention"
+      ],
+      "file": "t1_m16_attitude_representations/07-the-double-cover-and-the-shortest-path-sign.md"
     }
   ],
   "t1_m17_attitude_kinematics": [
@@ -1564,11 +1573,20 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-quaternion-integration-schemes-and-norm-drift",
       "title": "Quaternion integration schemes and norm drift",
-      "minutes": 21,
+      "minutes": 20,
       "covers": [
         "quaternion integration schemes and norm drift"
       ],
       "file": "t1_m17_attitude_kinematics/03-quaternion-integration-schemes-and-norm-drift.md"
+    },
+    {
+      "id": "l04-the-six-state-rotational-system",
+      "title": "Coupling kinematics to Euler dynamics — the rotational 6-state",
+      "minutes": 18,
+      "covers": [
+        "combining kinematics with Euler dynamics into a 6-state rotational system"
+      ],
+      "file": "t1_m17_attitude_kinematics/04-the-six-state-rotational-system.md"
     }
   ],
   "t1_m18_atmospheric_flight": [
@@ -1962,6 +1980,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Discretization methods: forward and backward Euler, Tustin, Tustin with prewarping, ZOH equivalence, matched pole-zero"
       ],
       "file": "t3_m27_digital_control/05-discretization-methods.md"
+    },
+    {
+      "id": "l06-computational-delay",
+      "title": "Computational delay and where it shows up in the loop",
+      "minutes": 21,
+      "covers": [
+        "Computational delay and where it shows up in the loop"
+      ],
+      "file": "t3_m27_digital_control/06-computational-delay-in-the-loop.md"
     }
   ],
   "t3_m28_state_space": [
@@ -2000,6 +2027,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Controllability: the Kalman rank test, the controllability Gramian, the PBH test"
       ],
       "file": "t3_m28_state_space/04-controllability-rank-gramian-pbh.md"
+    },
+    {
+      "id": "l05-observability-duality-stabilizability-detectability",
+      "title": "Observability, duality, stabilizability and detectability",
+      "minutes": 21,
+      "covers": [
+        "Observability and duality; stabilizability and detectability"
+      ],
+      "file": "t3_m28_state_space/05-observability-duality-stabilizability-detectability.md"
     }
   ],
   "t3_m29_optimal_control_lqr": [
@@ -2067,6 +2103,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "The H2 and H-infinity norms and what each one measures"
       ],
       "file": "t3_m30_robust_control/03-h2-and-hinf-norms.md"
+    },
+    {
+      "id": "l04-hinf-synthesis-mixed-sensitivity",
+      "title": "H-infinity synthesis and mixed sensitivity",
+      "minutes": 18,
+      "covers": [
+        "H-infinity synthesis: mixed sensitivity S/KS/T weighting, the two-Riccati (DGKF) solution"
+      ],
+      "file": "t3_m30_robust_control/04-hinf-synthesis-mixed-sensitivity.md"
     }
   ],
   "t3_m31_nonlinear_control": [
@@ -2247,11 +2292,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t1_m16_attitude_representations": {
-    "covered": 6,
+    "covered": 7,
     "total": 13,
     "complete": false,
     "missing": [
-      "the double cover and the shortest-path sign convention",
       "SLERP",
       "classical and modified Rodrigues parameters, and the MRP shadow set",
       "conversions between every representation",
@@ -2261,11 +2305,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t1_m17_attitude_kinematics": {
-    "covered": 3,
+    "covered": 4,
     "total": 10,
     "complete": false,
     "missing": [
-      "combining kinematics with Euler dynamics into a 6-state rotational system",
       "external torques: gravity gradient, aerodynamic, solar radiation pressure, residual magnetic dipole",
       "reaction wheel and CMG dynamics and momentum coupling",
       "thruster attitude control and minimum impulse bit",
@@ -2315,11 +2358,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t3_m27_digital_control": {
-    "covered": 5,
+    "covered": 6,
     "total": 11,
     "complete": false,
     "missing": [
-      "Computational delay and where it shows up in the loop",
       "Choosing a sample rate: the 20-40x bandwidth rule of thumb and what drives the ends of that range",
       "Quantization, finite word length, and fixed-point implementation",
       "Discrete PID realization forms (direct, parallel, delta) and their numerical conditioning",
@@ -2328,11 +2370,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t3_m28_state_space": {
-    "covered": 4,
+    "covered": 5,
     "total": 11,
     "complete": false,
     "missing": [
-      "Observability and duality; stabilizability and detectability",
       "Pole placement: Ackermann, Bass-Gura, and robust (eigenstructure) pole placement",
       "Luenberger observers and the estimation error dynamics",
       "The separation principle and the exact conditions under which it holds",
@@ -2359,11 +2400,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t3_m30_robust_control": {
-    "covered": 3,
+    "covered": 4,
     "total": 12,
     "complete": false,
     "missing": [
-      "H-infinity synthesis: mixed sensitivity S/KS/T weighting, the two-Riccati (DGKF) solution",
       "The structured singular value mu and mu-synthesis by D-K iteration",
       "Robust stability vs robust performance",
       "Singular values of MIMO transfer matrices and input/output directionality",
