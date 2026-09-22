@@ -49,7 +49,7 @@ $$
 so $V_c = V_M\cos\theta_L - \hat{\mathbf{r}}\cdot\mathbf{v}_T$ shrinks relative to $V_M$ as $\theta_L$ grows, pulling TPN's multiplier away from PPN's. Near a collision course — exactly where a converging engagement with $N>2$ spends nearly all of its time, by the last two lessons' own result — $\theta_L \approx 0$, $\cos\theta_L\approx 1$, and the two laws are, to first order, the same law. Away from it, they are not.
 
 ::: example Small heading error: the two laws agree almost exactly
-A pursuer at the origin, speed $V_M = 90\,\mathrm{m/s}$, is launched just $2^\circ$ off a direct line to a target at $(4000,0,0)\,\mathrm{m}$ closing at $(-30,0,0)\,\mathrm{m/s}$. Flying $N=4$:
+A pursuer at the origin, speed $V_M = 90\,\mathrm{m/s}$, is launched only $2^\circ$ off a direct line to a target at $(4000,0,0)\,\mathrm{m}$ closing at $(-30,0,0)\,\mathrm{m/s}$. Flying $N=4$:
 
 ```python
 # TPN: a_c = N*Vc*(lambda_dot x r_hat); PPN: chi_dot = N*lambda_dot
@@ -112,7 +112,7 @@ $V_M\cos\theta_L = 70\cos35^\circ = 70 \times 0.8192 = 57.34\,\mathrm{m/s}$ — 
 :::
 
 ::: check
-In the $60^\circ$ heading-error example, PPN intercepted in roughly half the time TPN did. Does this mean PPN is simply the better law?
+In the $60^\circ$ heading-error example, PPN intercepted in roughly half the time TPN did. Does this mean PPN is the better law outright?
 :::
 
 ::: answer

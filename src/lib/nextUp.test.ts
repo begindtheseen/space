@@ -35,14 +35,14 @@ describe('what the app offers to start', () => {
     }
   })
 
-  it('stops naming a lesson once they have all been read', () => {
+  it('never offers a lesson she has already read', () => {
     /*
-     * Reading every lesson in a module does not open the next one — the graph
-     * unlocks on demonstrated mastery, not on pages turned — so the offer
-     * correctly stays on the same module. What must change is that it no
-     * longer promises a lesson, because there is not one left. Promising a
-     * lesson that does not exist is the failure this whole picker guards
-     * against; the module page it opens instead is where practice lives.
+     * The picker walks down the ranking to the best module with something
+     * unread in it, so reading out the top module does not end the offer —
+     * it moves it to the next module that still has pages. That is the
+     * intended behaviour and it becomes the normal case as the corpus fills
+     * in. What must never happen, at any point along that walk, is being
+     * offered a lesson that is already read or that does not exist.
      */
     let state: LearnerState = newLearnerState(now)
     const first = focusInputs(state, dag, now).module!.id
@@ -50,12 +50,41 @@ describe('what the app offers to start', () => {
     for (const id of ids) state = markLessonRead(state, first, id, ids, now)
 
     const after = focusInputs(state, dag, now)
-    expect(after.lesson, 'must not offer a lesson that is already read').toBeUndefined()
+    if (after.lesson) {
+      const mod = after.module!.id
+      expect(
+        lessonsFor(mod).map((l) => l.id),
+        `offered a lesson that is not in ${mod}`,
+      ).toContain(after.lesson.id)
+      expect(
+        state.read[lessonKey(mod, after.lesson.id)],
+        'offered a lesson that is already read',
+      ).toBeFalsy()
+    }
+  })
+
+  it('stops naming a lesson once every lesson in the corpus is read', () => {
+    /*
+     * The exhaustion case the picker exists to survive. Reading everything
+     * does not unlock anything — the graph turns on demonstrated mastery, not
+     * on pages turned — so the offer stays on a module and must stop
+     * promising a lesson, because there is not one left anywhere. Promising a
+     * lesson that does not exist is the failure this whole picker guards
+     * against, and it is the one the module page cannot paper over.
+     */
+    let state: LearnerState = newLearnerState(now)
+    for (const mod of dag.all()) {
+      const ids = lessonsFor(mod.id).map((l) => l.id)
+      for (const id of ids) state = markLessonRead(state, mod.id, id, ids, now)
+    }
+
+    const after = focusInputs(state, dag, now)
+    expect(after.lesson, 'must not offer a lesson when none is unread').toBeUndefined()
 
     const pick = nextUp(state, dag, now)
     expect(pick.kind).toBe('continue-module')
-    expect(pick.href).toBe(`/module/${first}`)
     expect(pick.href).not.toContain('?lesson=')
+    expect(pick.href).toMatch(/^\/module\/[^?]+$/)
   })
 
   it('still offers something when the whole corpus has been read', () => {

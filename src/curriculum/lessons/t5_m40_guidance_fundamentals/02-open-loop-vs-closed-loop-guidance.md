@@ -87,7 +87,7 @@ print(v_req_new - v_req_old)
 # [0.    0.008 0.   ]
 ```
 
-Explicit guidance's required velocity changes by only $(0,\ 0.008,\ 0)\,\mathrm{m/s}$ — a trivial correction, applied on the very next cycle, because the law was never computing anything about port A specifically; it was always computing "the velocity that gets me from here to the current aimpoint," and the aimpoint is just an input. Reference-trajectory following has no such input: a deviation-nulling law built around a path ending at port A keeps driving toward port A. Left unreplanned, it misses the reassignment by the full $\lVert\mathbf{r}_{aim,new} - \mathbf{r}_{aim,old}\rVert = 12.0\,\mathrm{m}$ — not because the feedback is weak, but because it is nulling a deviation from the wrong thing entirely.
+Explicit guidance's required velocity changes by only $(0,\ 0.008,\ 0)\,\mathrm{m/s}$ — a trivial correction, applied on the very next cycle, because the law was never computing anything about port A specifically; it was always computing "the velocity that gets me from here to the current aimpoint," and the aimpoint is only an input. Reference-trajectory following has no such input: a deviation-nulling law built around a path ending at port A keeps driving toward port A. Left unreplanned, it misses the reassignment by the full $\lVert\mathbf{r}_{aim,new} - \mathbf{r}_{aim,old}\rVert = 12.0\,\mathrm{m}$ — not because the feedback is weak, but because it is nulling a deviation from the wrong thing entirely.
 :::
 
 That responsiveness is not free. Required-velocity targeting is the simplest possible explicit law, valid only for unpowered coasting between two points in a straight line; a real terminal guidance law has to solve the remaining boundary value problem under the vehicle's actual dynamics — gravity, thrust limits, a maneuvering target — every single cycle, in whatever time the guidance loop rate allows. That is only practical when the remaining problem has a closed-form or fast-converging solution, which is exactly why so much of this module is the derivation of such solutions: proportional navigation is the closed form for driving an intercept's miss to zero, zero-effort-miss and zero-effort-velocity guidance are the closed form for a soft landing, and Powered Explicit Guidance, built in the ascent guidance module on top of this one, is the closed form for reaching a target orbit. Explicit guidance also forfeits the offline-verified-path property: what actually flies is a different realized trajectory on every flight, generated online, so certifying it means certifying the *law* across the whole space of states it might see rather than inspecting one fixed path.
@@ -111,7 +111,7 @@ A vehicle experiences a constant disturbance acceleration $a_d = 0.2\,\mathrm{m/
 :::
 
 ::: answer
-With no correction, $\ddot y = a_d$ from rest, so $y(T) = \tfrac12 a_d T^2 = \tfrac12 (0.2)(12)^2 = 14.4\,\mathrm{m}$. Nothing in an open-loop law senses this drift or reduces it — the number is simply the free response of the vehicle to the disturbance over the time it acts.
+With no correction, $\ddot y = a_d$ from rest, so $y(T) = \tfrac12 a_d T^2 = \tfrac12 (0.2)(12)^2 = 14.4\,\mathrm{m}$. Nothing in an open-loop law senses this drift or reduces it — the number is the free response of the vehicle to the disturbance over the time it acts, undiminished.
 :::
 
 ::: check

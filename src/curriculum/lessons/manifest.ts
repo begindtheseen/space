@@ -3,6 +3,45 @@
 import type { LessonMeta } from './types'
 
 export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
+  "car_01_itar_gate": [
+    {
+      "id": "l01-why-space-is-controlled",
+      "title": "Why launch vehicles and spacecraft are export-controlled",
+      "minutes": 17,
+      "covers": [
+        "why launch vehicles and spacecraft are ITAR-controlled under the US Munitions List"
+      ],
+      "file": "car_01_itar_gate/01-why-space-is-controlled.md"
+    },
+    {
+      "id": "l02-who-is-a-us-person",
+      "title": "Who is a US person: the four eligible statuses",
+      "minutes": 19,
+      "covers": [
+        "the four eligible statuses named verbatim in SpaceX postings"
+      ],
+      "file": "car_01_itar_gate/02-who-is-a-us-person.md"
+    },
+    {
+      "id": "l03-regulation-versus-preference",
+      "title": "The residual clause, and regulation versus employer preference",
+      "minutes": 19,
+      "covers": [
+        "what being eligible to obtain authorization from the US Department of State does and does not mean",
+        "the difference between an ITAR restriction and an employer preference"
+      ],
+      "file": "car_01_itar_gate/03-regulation-versus-preference.md"
+    },
+    {
+      "id": "l04-deemed-exports",
+      "title": "Deemed exports: why being in the room does not cure it",
+      "minutes": 18,
+      "covers": [
+        "deemed exports: why physical location does not cure the problem"
+      ],
+      "file": "car_01_itar_gate/04-deemed-exports.md"
+    }
+  ],
   "t0_m01_algebra_precalc": [
     {
       "id": "l01-signed-numbers-and-fractions",
@@ -1940,6 +1979,64 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       "file": "t2_m19_two_body/14-tle-sgp4.md"
     }
   ],
+  "t2_m20_orbital_maneuvers": [
+    {
+      "id": "l01-impulsive-approximation",
+      "title": "Impulsive Δv and when the instantaneous-burn model holds",
+      "minutes": 20,
+      "covers": [
+        "the impulsive approximation and its validity limits"
+      ],
+      "file": "t2_m20_orbital_maneuvers/01-impulsive-approximation.md"
+    },
+    {
+      "id": "l02-hohmann-transfer",
+      "title": "The Hohmann transfer",
+      "minutes": 19,
+      "covers": [
+        "Hohmann transfer and its optimality"
+      ],
+      "file": "t2_m20_orbital_maneuvers/02-hohmann-transfer.md"
+    },
+    {
+      "id": "l03-bielliptic-transfer",
+      "title": "The bi-elliptic transfer and the crossover ratio",
+      "minutes": 24,
+      "covers": [
+        "bi-elliptic transfer and the crossover ratio"
+      ],
+      "file": "t2_m20_orbital_maneuvers/03-bielliptic-transfer.md"
+    }
+  ],
+  "t2_m23_relative_motion_rpo": [
+    {
+      "id": "l01-relative-motion-frames",
+      "title": "Relative motion frames: LVLH, Hill and RIC",
+      "minutes": 18,
+      "covers": [
+        "relative motion frames: LVLH, Hill, RIC"
+      ],
+      "file": "t2_m23_relative_motion_rpo/01-relative-motion-frames.md"
+    },
+    {
+      "id": "l02-deriving-clohessy-wiltshire",
+      "title": "Deriving the Clohessy-Wiltshire equations",
+      "minutes": 19,
+      "covers": [
+        "derivation of the Clohessy-Wiltshire equations"
+      ],
+      "file": "t2_m23_relative_motion_rpo/02-deriving-clohessy-wiltshire.md"
+    },
+    {
+      "id": "l03-cw-state-transition-matrix",
+      "title": "Solving CW — closed-form motion and the state transition matrix",
+      "minutes": 21,
+      "covers": [
+        "the CW state transition matrix"
+      ],
+      "file": "t2_m23_relative_motion_rpo/03-cw-state-transition-matrix.md"
+    }
+  ],
   "t3_m25_signals_systems": [
     {
       "id": "l01-lti-systems-and-superposition",
@@ -3763,6 +3860,42 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Zero-effort-miss and zero-effort-velocity guidance; the ZEM/ZEV feedback law for landing"
       ],
       "file": "t5_m40_guidance_fundamentals/08-zem-zev-guidance.md"
+    },
+    {
+      "id": "l09-miss-distance-and-adjoint-methods",
+      "title": "Miss-distance analysis and the adjoint method",
+      "minutes": 24,
+      "covers": [
+        "Miss-distance analysis and adjoint methods"
+      ],
+      "file": "t5_m40_guidance_fundamentals/09-miss-distance-and-adjoint-methods.md"
+    },
+    {
+      "id": "l10-time-to-go-estimation",
+      "title": "Time-to-go estimation",
+      "minutes": 23,
+      "covers": [
+        "Time-to-go estimation and why it is the critical quantity"
+      ],
+      "file": "t5_m40_guidance_fundamentals/10-time-to-go-estimation.md"
+    },
+    {
+      "id": "l11-gravity-turn-ascent",
+      "title": "The gravity turn",
+      "minutes": 24,
+      "covers": [
+        "Gravity turn ascent and zero-lift trajectories; the pitch program and open-loop pitch kick"
+      ],
+      "file": "t5_m40_guidance_fundamentals/11-gravity-turn-ascent.md"
+    },
+    {
+      "id": "l12-terminal-midcourse-and-actuator-limits",
+      "title": "Terminal versus midcourse guidance, and actuator limits",
+      "minutes": 23,
+      "covers": [
+        "Terminal vs midcourse guidance; guidance under actuator limits"
+      ],
+      "file": "t5_m40_guidance_fundamentals/12-terminal-midcourse-and-actuator-limits.md"
     }
   ],
   "t5_m41_ascent_guidance": [
@@ -3965,6 +4098,33 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Spectral convergence, the covector mapping theorem, and what pseudospectral costates buy you"
       ],
       "file": "t5_m42_trajectory_optimization/10-spectral-convergence-covector-mapping.md"
+    },
+    {
+      "id": "l11-mesh-refinement",
+      "title": "Mesh refinement from an interpolated-defect error estimate",
+      "minutes": 16,
+      "covers": [
+        "Mesh refinement driven by an interpolated-defect error estimate"
+      ],
+      "file": "t5_m42_trajectory_optimization/11-mesh-refinement.md"
+    },
+    {
+      "id": "l12-ilqr-shooting-flavoured",
+      "title": "iLQR and DDP as the shooting-flavoured alternative",
+      "minutes": 18,
+      "covers": [
+        "Differential dynamic programming and iLQR as the shooting-flavoured alternative"
+      ],
+      "file": "t5_m42_trajectory_optimization/12-ilqr-shooting-flavoured.md"
+    },
+    {
+      "id": "l13-nlp-sparsity",
+      "title": "NLP sparsity: the Jacobian and Hessian block pattern",
+      "minutes": 17,
+      "covers": [
+        "NLP sparsity structure, the Jacobian and Hessian block pattern, and why sparsity decides solve time"
+      ],
+      "file": "t5_m42_trajectory_optimization/13-nlp-sparsity.md"
     }
   ],
   "t5_m43_convex_guidance": [
@@ -3998,6 +4158,16 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "SOCP standard form, the second-order cone, and mapping the powered-descent problem onto it"
       ],
       "file": "t5_m43_convex_guidance/03-change-of-variables-and-the-socp.md"
+    },
+    {
+      "id": "l04-gfold-two-stage-guidance",
+      "title": "G-FOLD: the two-stage guidance law, and its flight",
+      "minutes": 24,
+      "covers": [
+        "G-FOLD (Guidance for Fuel-Optimal Large Diverts) and the two-stage minimum-landing-error then minimum-fuel solve",
+        "The JPL/Masten Xombie flight demonstrations of G-FOLD and what they proved"
+      ],
+      "file": "t5_m43_convex_guidance/04-gfold-two-stage-guidance.md"
     }
   ],
   "t6_m44_realtime_embedded": [
@@ -4178,6 +4348,55 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Determinism across redundant strings, and why a non-deterministic algorithm cannot be voted"
       ],
       "file": "t6_m45_fsw_architecture/07-byzantine-faults-and-determinism.md"
+    },
+    {
+      "id": "l08-radiation-and-watchdogs",
+      "title": "Radiation effects and watchdog timers",
+      "minutes": 22,
+      "covers": [
+        "Radiation effects: single-event upsets, latch-up, total ionising dose; EDAC and ECC memory; memory scrubbing",
+        "Watchdog timers: what they catch, what they miss, and why a reset is a real-time decision"
+      ],
+      "file": "t6_m45_fsw_architecture/08-radiation-and-watchdogs.md"
+    },
+    {
+      "id": "l09-fault-detection-isolation-recovery",
+      "title": "Fault detection, isolation and recovery",
+      "minutes": 24,
+      "covers": [
+        "Fault detection, isolation and recovery: residual monitors, hypothesis tests, persistence counters and hysteresis"
+      ],
+      "file": "t6_m45_fsw_architecture/09-fault-detection-isolation-recovery.md"
+    },
+    {
+      "id": "l10-fmea-fault-trees-abort",
+      "title": "FMEA, fault trees, and the abort decision",
+      "minutes": 22,
+      "covers": [
+        "FMEA and fault trees; identifying the single points of failure a voter does not cover",
+        "Abort logic and autonomous flight termination systems"
+      ],
+      "file": "t6_m45_fsw_architecture/10-fmea-fault-trees-and-abort-logic.md"
+    },
+    {
+      "id": "l11-safing-reachability",
+      "title": "Safing modes: proving safe is reachable",
+      "minutes": 17,
+      "covers": [
+        "Safing modes and the rule that safe must be reachable, stable and exitable only by an explicit decision"
+      ],
+      "file": "t6_m45_fsw_architecture/11-safing-and-reachability-proof.md"
+    },
+    {
+      "id": "l12-traceability-config-updates",
+      "title": "Traceability, configuration management, and in-flight updates",
+      "minutes": 21,
+      "covers": [
+        "Requirements traceability from a vehicle requirement to a line of code to a test",
+        "Configuration management of gains, I-loads and tables separately from the executable",
+        "In-flight software update: when it is the safer choice and when it is not"
+      ],
+      "file": "t6_m45_fsw_architecture/12-traceability-configuration-and-updates.md"
     }
   ],
   "t6_m46_6dof_simulation": [
@@ -4261,6 +4480,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Slosh and structural flex models, and where they get inserted in the loop"
       ],
       "file": "t6_m46_6dof_simulation/09-slosh-and-structural-flex.md"
+    },
+    {
+      "id": "l10-staging-events-and-zero-crossing-detection",
+      "title": "Staging events and zero-crossing detection",
+      "minutes": 19,
+      "covers": [
+        "Staging and other discontinuous events; zero-crossing detection and bisection to the event time"
+      ],
+      "file": "t6_m46_6dof_simulation/10-staging-events-and-zero-crossing-detection.md"
     }
   ],
   "t6_m47_vv_montecarlo": [
@@ -4348,6 +4576,37 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Flight-envelope coverage and the difference between random coverage and designed coverage"
       ],
       "file": "t6_m47_vv_montecarlo/09-sensitivity-analysis-and-envelope-coverage.md"
+    },
+    {
+      "id": "l10-stability-margins-across-the-envelope",
+      "title": "Stability margins across the envelope",
+      "minutes": 16,
+      "covers": [
+        "Stability margin verification across the envelope: frozen-time linearisation, gain, phase and delay margin against flight time"
+      ],
+      "file": "t6_m47_vv_montecarlo/10-stability-margins-across-the-envelope.md"
+    },
+    {
+      "id": "l11-code-verification-and-static-analysis",
+      "title": "Code verification and static analysis",
+      "minutes": 18,
+      "covers": [
+        "Code verification: unit, integration and regression tests; statement, branch and MC-DC coverage",
+        "Static analysis and formal methods: Coverity, Polyspace, model checking with SPIN",
+        "Requirements-based testing, and why coverage without requirements-based tests proves very little"
+      ],
+      "file": "t6_m47_vv_montecarlo/11-code-verification-and-static-analysis.md"
+    },
+    {
+      "id": "l12-continuous-integration-and-closing-the-loop",
+      "title": "Continuous integration and closing the loop",
+      "minutes": 19,
+      "covers": [
+        "Continuous integration for flight and simulation software: what runs on every commit, what runs nightly, what runs before a release",
+        "Test-as-you-fly, and the risk taken every time you deviate from it",
+        "Anomaly investigation, flight data reconstruction, and closing the loop by updating the models"
+      ],
+      "file": "t6_m47_vv_montecarlo/12-continuous-integration-and-closing-the-loop.md"
     }
   ]
 }
@@ -4476,13 +4735,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t2_m20_orbital_maneuvers": {
-    "covered": 0,
+    "covered": 3,
     "total": 13,
     "complete": false,
     "missing": [
-      "the impulsive approximation and its validity limits",
-      "Hohmann transfer and its optimality",
-      "bi-elliptic transfer and the crossover ratio",
       "one-tangent burns",
       "plane change and combined plane-change-plus-raise optimisation",
       "apsidal rotation",
@@ -4534,13 +4790,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t2_m23_relative_motion_rpo": {
-    "covered": 0,
+    "covered": 3,
     "total": 16,
     "complete": false,
     "missing": [
-      "relative motion frames: LVLH, Hill, RIC",
-      "derivation of the Clohessy-Wiltshire equations",
-      "the CW state transition matrix",
       "secular in-track drift and why it dominates",
       "football and drifting relative orbits",
       "V-bar and R-bar approaches and their safety properties",
@@ -4672,15 +4925,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t5_m40_guidance_fundamentals": {
-    "covered": 8,
+    "covered": 12,
     "total": 12,
-    "complete": false,
-    "missing": [
-      "Miss-distance analysis and adjoint methods",
-      "Time-to-go estimation and why it is the critical quantity",
-      "Gravity turn ascent and zero-lift trajectories; the pitch program and open-loop pitch kick",
-      "Terminal vs midcourse guidance; guidance under actuator limits"
-    ]
+    "complete": true,
+    "missing": []
   },
   "t5_m41_ascent_guidance": {
     "covered": 12,
@@ -4689,13 +4937,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t5_m42_trajectory_optimization": {
-    "covered": 10,
+    "covered": 13,
     "total": 17,
     "complete": false,
     "missing": [
-      "Mesh refinement driven by an interpolated-defect error estimate",
-      "Differential dynamic programming and iLQR as the shooting-flavoured alternative",
-      "NLP sparsity structure, the Jacobian and Hessian block pattern, and why sparsity decides solve time",
       "Scaling and conditioning: non-dimensionalising states, controls and constraints before you solve anything",
       "Warm starting, homotopy and continuation from an easy problem to the real one",
       "Tooling: CasADi with IPOPT, GPOPS-II, PSOPT, Dymos/OpenMDAO, PyOMO, ACADO, trajax",
@@ -4703,12 +4948,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t5_m43_convex_guidance": {
-    "covered": 7,
+    "covered": 9,
     "total": 21,
     "complete": false,
     "missing": [
-      "G-FOLD (Guidance for Fuel-Optimal Large Diverts) and the two-stage minimum-landing-error then minimum-fuel solve",
-      "The JPL/Masten Xombie flight demonstrations of G-FOLD and what they proved",
       "Glideslope, velocity, and thrust-pointing constraints as cones",
       "Flight time as the one non-convex parameter, and solving it by a line search over an inner SOCP",
       "Discrete-time lossless convexification and what survives discretisation",
@@ -4730,27 +4973,16 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t6_m45_fsw_architecture": {
-    "covered": 11,
+    "covered": 20,
     "total": 20,
-    "complete": false,
-    "missing": [
-      "Radiation effects: single-event upsets, latch-up, total ionising dose; EDAC and ECC memory; memory scrubbing",
-      "Watchdog timers: what they catch, what they miss, and why a reset is a real-time decision",
-      "Fault detection, isolation and recovery: residual monitors, hypothesis tests, persistence counters and hysteresis",
-      "FMEA and fault trees; identifying the single points of failure a voter does not cover",
-      "Safing modes and the rule that safe must be reachable, stable and exitable only by an explicit decision",
-      "Abort logic and autonomous flight termination systems",
-      "Requirements traceability from a vehicle requirement to a line of code to a test",
-      "Configuration management of gains, I-loads and tables separately from the executable",
-      "In-flight software update: when it is the safer choice and when it is not"
-    ]
+    "complete": true,
+    "missing": []
   },
   "t6_m46_6dof_simulation": {
-    "covered": 9,
+    "covered": 10,
     "total": 18,
     "complete": false,
     "missing": [
-      "Staging and other discontinuous events; zero-crossing detection and bisection to the event time",
       "The flight-software-in-the-loop boundary: compiling the actual flight code into the sim rather than a Python re-implementation of it",
       "The SIL, PIL and HIL progression and what each step actually adds",
       "Real-time hardware-in-the-loop: flight processors, motion tables, IMU stimulation, GNSS signal simulators, camera and altimeter stimulation",
@@ -4762,18 +4994,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t6_m47_vv_montecarlo": {
-    "covered": 13,
+    "covered": 20,
     "total": 20,
-    "complete": false,
-    "missing": [
-      "Stability margin verification across the envelope: frozen-time linearisation, gain, phase and delay margin against flight time",
-      "Code verification: unit, integration and regression tests; statement, branch and MC-DC coverage",
-      "Static analysis and formal methods: Coverity, Polyspace, model checking with SPIN",
-      "Requirements-based testing, and why coverage without requirements-based tests proves very little",
-      "Continuous integration for flight and simulation software: what runs on every commit, what runs nightly, what runs before a release",
-      "Test-as-you-fly, and the risk taken every time you deviate from it",
-      "Anomaly investigation, flight data reconstruction, and closing the loop by updating the models"
-    ]
+    "complete": true,
+    "missing": []
   },
   "t7_m48_capstone": {
     "covered": 0,
@@ -5774,20 +5998,15 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "car_01_itar_gate": {
-    "covered": 0,
+    "covered": 5,
     "total": 10,
     "complete": false,
     "missing": [
-      "why launch vehicles and spacecraft are ITAR-controlled under the US Munitions List",
-      "the four eligible statuses named verbatim in SpaceX postings",
-      "what being eligible to obtain authorization from the US Department of State does and does not mean",
-      "deemed exports: why physical location does not cure the problem",
       "where in the pipeline eligibility is confirmed",
       "roles that additionally require obtaining and maintaining a Top Secret clearance",
       "pre-employment and random drug and alcohol testing",
       "the stated expectation of extended hours and weekends to meet critical deadlines",
-      "what a non-US-person can realistically target instead: non-ITAR employers, European, UK, Canadian, Australian and Japanese space sectors, academia, and a long-horizon immigration path",
-      "the difference between an ITAR restriction and an employer preference"
+      "what a non-US-person can realistically target instead: non-ITAR employers, European, UK, Canadian, Australian and Japanese space sectors, academia, and a long-horizon immigration path"
     ]
   },
   "car_02_role_families": {

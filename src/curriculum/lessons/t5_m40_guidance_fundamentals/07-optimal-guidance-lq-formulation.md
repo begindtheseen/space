@@ -69,7 +69,7 @@ for qf in (10, 1e3, 1e6, 1e10):
 # 10000000000.0 0.333333...   0.3333333333333333
 ```
 
-The same convergence holds at every $\tau$, not just this one — this problem's Riccati equation, solved directly as a matrix differential equation the way the optimal control module solves any finite-horizon LQR problem, reproduces this exact closed form and the exact same $q_f\to\infty$ limit, confirming the algebra above two independent ways.
+The same convergence holds at every $\tau$, not only this one — this problem's Riccati equation, solved directly as a matrix differential equation the way the optimal control module solves any finite-horizon LQR problem, reproduces this exact closed form and the exact same $q_f\to\infty$ limit, confirming the algebra above two independent ways.
 :::
 
 ## What a finite weight buys
@@ -101,7 +101,7 @@ Write the general LQ guidance cost this lesson poses, and explain what the two l
 :::
 
 ::: answer
-$J = \tfrac12\int_0^{t_{go}}u^2\,d\tau + \tfrac12 q_f x_1(t_{go})^2$. As $q_f\to0$, a terminal miss costs nothing at all, so the minimum-energy answer is to apply no control whatsoever and simply coast — the gains $k_1,k_2\to0$ confirm this directly. As $q_f\to\infty$, any nonzero terminal miss is infinitely costly, which is exactly a hard constraint "hit the target regardless of effort," and the gains converge to $3/\tau^2,\ 3/\tau$ — proportional navigation with $N=3$.
+$J = \tfrac12\int_0^{t_{go}}u^2\,d\tau + \tfrac12 q_f x_1(t_{go})^2$. As $q_f\to0$, a terminal miss costs nothing at all, so the minimum-energy answer is to apply no control whatsoever and coast unpowered — the gains $k_1,k_2\to0$ confirm this directly. As $q_f\to\infty$, any nonzero terminal miss is infinitely costly, which is exactly a hard constraint "hit the target regardless of effort," and the gains converge to $3/\tau^2,\ 3/\tau$ — proportional navigation with $N=3$.
 :::
 
 ::: check

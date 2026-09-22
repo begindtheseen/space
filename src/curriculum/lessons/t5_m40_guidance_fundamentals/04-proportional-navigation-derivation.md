@@ -103,7 +103,7 @@ The closed form matches the full nonlinear simulation to within $0.1\%$ across t
 :::
 
 ::: warning $N > 2$ is necessary, not sufficient, and not the whole story
-This lesson's derivation shows $N > 2$ is what makes proportional navigation *converge* at all — below it, PN inherits pursuit's own divergence, just scaled by how far below $2$ the constant sits. It does not yet say why real systems use $3$ to $5$ rather than, say, $2.1$: convergence is a much weaker requirement than good performance under lag, noise, and a target that maneuvers, and the next lesson is entirely about that gap.
+This lesson's derivation shows $N > 2$ is what makes proportional navigation *converge* at all — below it, PN inherits pursuit's own divergence, scaled by how far below $2$ the constant sits. It does not yet say why real systems use $3$ to $5$ rather than, say, $2.1$: convergence is a much weaker requirement than good performance under lag, noise, and a target that maneuvers, and the next lesson is entirely about that gap.
 :::
 
 ::: note This derivation assumed a non-maneuvering target

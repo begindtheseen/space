@@ -68,7 +68,7 @@ Take $\dot{x} = -x^3$ with $x_0 = 0.1\,\mathrm{rad}$ — say an attitude error u
 | $1000\,\mathrm{s}$ | $0.02182$ |
 | $4950\,\mathrm{s}$ | $0.01000$ |
 
-Runge–Kutta at $\Delta t = 10\,\mathrm{ms}$ reproduces the last row to eleven digits. Solving $x(t) = x_1$ gives $t = \tfrac{1}{2}(x_1^{-2} - x_0^{-2})$, so reaching $0.01\,\mathrm{rad}$ takes $4950\,\mathrm{s}$ and reaching $0.001\,\mathrm{rad}$ takes $499\,950\,\mathrm{s}$ — five and a half days. Each factor of ten in accuracy costs a factor of a hundred in time.
+Runge–Kutta at $\Delta t = 10\,\mathrm{ms}$ reproduces the last row to eleven digits. Solving $x(t) = x_1$ gives $t = \tfrac{1}{2}(x_1^{-2} - x_0^{-2})$, so reaching $0.01\,\mathrm{rad}$ takes $4950\,\mathrm{s}$ and reaching $0.001\,\mathrm{rad}$ takes $499\,950\,\mathrm{s}$ — about $5.8$ days. Each factor of ten in accuracy costs a factor of a hundred in time.
 
 Contrast the linear $\dot{x} = -x$, which covers the same first decade in $\ln 10 = 2.30\,\mathrm{s}$ and every subsequent decade in another $2.30\,\mathrm{s}$. "Asymptotically stable" is a true description of both. Only one of them points a telescope.
 

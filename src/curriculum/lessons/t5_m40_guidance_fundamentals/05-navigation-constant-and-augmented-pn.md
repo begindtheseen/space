@@ -6,7 +6,7 @@ covers:
   - Why N between 3 and 5; augmented proportional navigation for manoeuvring targets
 ---
 
-The last lesson showed that any $N > 2$ makes proportional navigation converge — the line-of-sight rate collapses toward zero as intercept approaches, however slowly. That leaves a wide-open question: given that $N=2.1$ and $N=8$ both converge, what actually decides where a real system sets $N$? The answer has three separate pieces — one value is provably optimal in a precise sense, real hardware pushes away from it in one direction, and a maneuvering target changes the law itself rather than just the constant. This lesson derives all three.
+The last lesson showed that any $N > 2$ makes proportional navigation converge — the line-of-sight rate collapses toward zero as intercept approaches, however slowly. That leaves a wide-open question: given that $N=2.1$ and $N=8$ both converge, what actually decides where a real system sets $N$? The answer has three separate pieces — one value is provably optimal in a precise sense, real hardware pushes away from it in one direction, and a maneuvering target changes the law itself rather than the constant alone. This lesson derives all three.
 
 ## The minimum-energy derivation of N = 3
 

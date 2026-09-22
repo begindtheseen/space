@@ -196,7 +196,7 @@ Ask for the distance to the nearest basin boundary, in the states the pilot or t
 | Poincaré–Bendixson | Bounded planar trajectory avoiding equilibria converges to a periodic orbit |
 | Bendixson: $\nabla\cdot\mathbf{f}$ one sign | No closed orbit in that hole-free region |
 | Index | A closed orbit encloses indices summing to $+1$; never a lone saddle |
-| Damped gravity gradient, $\zeta = 0.3$ | Focus at $0, \pi$ ($-4.29\times10^{-4} \pm 1.365\times10^{-3}j$); saddles at $\pm\pi/2$ ($+1.065\times10^{-3}$, $-1.924\times10^{-3}$) |
+| Damped gravity gradient, $\zeta = 0.3$ | Focus at $0, \pi$ ($-4.29\times10^{-4} \pm 1.365\times10^{-3}j$); saddles at $\pm\pi/2$ ($+1.065\times10^{-3}$, $-1.923\times10^{-3}$) |
 | Capture limit $0.1363\,^\circ\mathrm{/s}$ | Release rate at nadir beyond which the bus settles $180^\circ$ over |
 | Pitch model at $\delta = 4.8^\circ$ | Saddle $-25.44^\circ$, focus $+10.08^\circ$ ($\zeta = 0.386$), saddle $+15.36^\circ$; basin $1.54^\circ$ to $15.36^\circ$ from rest |
 | $\theta + \dot{\theta}\lvert\dot{\theta}\rvert/(2u_{\max}) = 0$ | Switching curve for minimum-time control of $\ddot{\theta} = u$ |
