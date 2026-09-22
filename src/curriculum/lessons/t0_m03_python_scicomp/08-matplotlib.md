@@ -40,6 +40,10 @@ plt.show()
 
 A quantity axis carries a label with the unit in brackets: `"altitude  [m]"`, `"speed  [m/s]"`, `"time since liftoff  [s]"`. The title, or a caption, states the case: initial conditions, model, tolerance, seed. Where several curves share an axis, each `ax.plot` call gets a `label=` and the axes gets `ax.legend()`. A grid (`ax.grid(True)`, or `ax.grid(True, which="both")` on a log axis) lets the reader read values. These four calls are the difference between a sketch and a figure, and they take ten seconds.
 
+::: key
+Every axis in a reviewable figure carries: a label with the unit in brackets (`ax.set_xlabel("time  [s]")`), a title or caption stating the case and its initial conditions, a legend when more than one curve is drawn, and a grid. Geometric plots use `ax.set_aspect("equal")`; quantities spanning decades use a log scale; the analytic value the curve should reach is drawn as a reference line.
+:::
+
 Limits and scales come next. `ax.set_xlim(0, 15)` and `ax.set_ylim(bottom=0)` control the window; matplotlib's automatic limits pad the data by 5 %, which is right for a time history and wrong for a plot that should start at zero. `ax.set_yscale("log")` is for anything spanning decades — an integrator's error against its tolerance, a power spectral density — and `ax.set_aspect("equal")` for anything geometric: a ground track, an orbit in the plane, a landing footprint. A circle drawn on unequal axes is an ellipse, and an orbit that looks eccentric because the axes are not equal has misled more than one reviewer.
 
 ```python
@@ -124,6 +128,10 @@ plt.rcParams.update({
 })
 ```
 
+::: key
+A publication-grade figure is produced by a function in a `.py` script, with `figsize` set to the final printed width in inches, saved with `fig.savefig(path, dpi=200, bbox_inches="tight")` — PNG for slides, PDF or SVG for print — and regenerated identically on every run.
+:::
+
 Two rules make the output reproducible. First, the figure is made by a function in a `.py` file — `def make_trajectory_figure(sol) -> plt.Figure:` — that a script calls and saves; the workbench lesson explained why a notebook cell is not a record. Second, the function draws only from its arguments and the seed is fixed, so running the script twice gives the same file byte for byte. When a figure changes between commits, `git diff` on the script tells you why.
 
 ::: warning `plt.show()` in a script that also saves
@@ -152,11 +160,13 @@ def make_figure(sol):
         setter(m - span / 2, m + span / 2)
     ax3.set_title("3-DOF ballistic trajectory")
 
-    right = fig.add_gridspec(3, 2)[:, 1].subgridspec(3, 1, hspace=0.05)
-    axs = right.subplots(sharex=True)
+    axs = [fig.add_subplot(3, 2, 2)]
+    axs += [fig.add_subplot(3, 2, k, sharex=axs[0]) for k in (4, 6)]
     for ax, ch, lab in zip(axs, (z, speed, gamma),
                            ("altitude  [m]", "speed  [m/s]", "flight-path angle  [deg]")):
         ax.plot(t, ch, color="C0"); ax.set_ylabel(lab); ax.grid(True)
+    for ax in axs[:-1]:
+        ax.tick_params(labelbottom=False)         # time labels on the bottom panel only
     axs[0].axhline(254.93, color="0.5", ls="--", lw=1, label="analytic apex 254.9 m")
     axs[0].legend(loc="lower center")
     axs[2].axhline(0.0, color="0.5", lw=1)

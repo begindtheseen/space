@@ -102,6 +102,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "scientific notation and significant figures"
       ],
       "file": "t0_m01_algebra_precalc/11-scientific-notation-and-significant-figures.md"
+    },
+    {
+      "id": "l12-fermi-estimation",
+      "title": "Order-of-magnitude estimation",
+      "minutes": 18,
+      "covers": [
+        "order-of-magnitude (Fermi) estimation"
+      ],
+      "file": "t0_m01_algebra_precalc/12-fermi-estimation.md"
     }
   ],
   "t0_m02_trigonometry": [
@@ -263,6 +272,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "matplotlib and publication-grade plots"
       ],
       "file": "t0_m03_python_scicomp/08-matplotlib.md"
+    },
+    {
+      "id": "l09-telemetry-csv-hdf5",
+      "title": "Telemetry files: reading and plotting CSV and HDF5",
+      "minutes": 21,
+      "covers": [
+        "reading and plotting CSV / HDF5 telemetry"
+      ],
+      "file": "t0_m03_python_scicomp/09-telemetry-csv-hdf5.md"
     }
   ],
   "t0_m04_linear_algebra_1": [
@@ -702,6 +720,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "static analysis: clang-tidy, cppcheck"
       ],
       "file": "t0_m12_cpp/13-profiling-and-static-analysis.md"
+    },
+    {
+      "id": "l14-pybind11-simulation-core",
+      "title": "pybind11 bindings over a C++ simulation core",
+      "minutes": 27,
+      "covers": [
+        "pybind11 bindings over a C++ simulation core"
+      ],
+      "file": "t0_m12_cpp/14-pybind11-simulation-core.md"
     }
   ],
   "t1_m13_classical_mechanics": [
@@ -836,6 +863,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "NED and ENU local-level frames"
       ],
       "file": "t1_m15_rotating_frames/06-wgs-84-geodetic-latitude-ned-and-enu.md"
+    },
+    {
+      "id": "l07-body-lvlh-perifocal-topocentric-and-sensor-frames",
+      "title": "Body, LVLH, perifocal, topocentric and sensor frames",
+      "minutes": 22,
+      "covers": [
+        "body, LVLH / RIC, perifocal, topocentric and sensor frames"
+      ],
+      "file": "t1_m15_rotating_frames/07-body-lvlh-perifocal-topocentric-and-sensor-frames.md"
     }
   ],
   "t1_m18_atmospheric_flight": [
@@ -1093,12 +1129,10 @@ export interface LessonCoverage {
 
 export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
   "t0_m01_algebra_precalc": {
-    "covered": 11,
+    "covered": 12,
     "total": 12,
-    "complete": false,
-    "missing": [
-      "order-of-magnitude (Fermi) estimation"
-    ]
+    "complete": true,
+    "missing": []
   },
   "t0_m02_trigonometry": {
     "covered": 10,
@@ -1107,12 +1141,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t0_m03_python_scicomp": {
-    "covered": 9,
+    "covered": 10,
     "total": 10,
-    "complete": false,
-    "missing": [
-      "reading and plotting CSV / HDF5 telemetry"
-    ]
+    "complete": true,
+    "missing": []
   },
   "t0_m04_linear_algebra_1": {
     "covered": 8,
@@ -1230,12 +1262,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t0_m12_cpp": {
-    "covered": 16,
+    "covered": 17,
     "total": 17,
-    "complete": false,
-    "missing": [
-      "pybind11 bindings over a C++ simulation core"
-    ]
+    "complete": true,
+    "missing": []
   },
   "t1_m13_classical_mechanics": {
     "covered": 6,
@@ -1266,11 +1296,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t1_m15_rotating_frames": {
-    "covered": 8,
+    "covered": 9,
     "total": 11,
     "complete": false,
     "missing": [
-      "body, LVLH / RIC, perifocal, topocentric and sensor frames",
       "precession, nutation, polar motion",
       "UT1, TAI, GPS and TT time scales"
     ]
