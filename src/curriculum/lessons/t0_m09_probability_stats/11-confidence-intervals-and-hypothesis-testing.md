@@ -168,7 +168,7 @@ $$
 N \geq \left(\frac{(z_{\alpha/2} + z_\beta)\,\sigma}{\Delta}\right)^{\!2}.
 $$
 
-With $\alpha = 0.05$ and power $0.90$ the bracket multiplier is $1.960 + 1.282 = 3.242$. For the gyro with $\sigma = 0.187\,^\circ/\mathrm{h}$ per one-second sample, detecting a bias shift of $\Delta = 0.1\,^\circ/\mathrm{h}$ needs $N \geq (3.242 \times 0.187/0.1)^2 = 37$ samples; detecting $\Delta = 0.05\,^\circ/\mathrm{h}$ needs $147$. Sample count scales as $1/\Delta^2$: resolving an effect half as large costs four times the data, the same square-root law that governs every averaging problem in this module. Turn it around and the eight-sample test has power of only $33\%$ against a $0.1\,^\circ/\mathrm{h}$ shift — it would miss such a shift two times in three, which is why "the test came back clean" from a short run means very little.
+With $\alpha = 0.05$ and power $0.90$ the bracket multiplier is $1.960 + 1.282 = 3.242$. For the gyro with $\sigma = 0.187\,^\circ/\mathrm{h}$ per one-second sample, detecting a bias shift of $\Delta = 0.1\,^\circ/\mathrm{h}$ needs $N \geq (3.242 \times 0.187/0.1)^2 = 37$ samples; detecting $\Delta = 0.05\,^\circ/\mathrm{h}$ needs $147$. Sample count scales as $1/\Delta^2$: resolving an effect half as large costs four times the data, the same square-root law that governs every averaging problem in this module. Turn it around and the eight-sample t test has power of only about $26\%$ against a $0.1\,^\circ/\mathrm{h}$ shift — it would miss such a shift three times in four, which is why "the test came back clean" from a short run means very little.
 
 ## Intervals for a probability
 
