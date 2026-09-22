@@ -166,6 +166,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Path 2, side door then transfer: SRE GNC allows 4+ years of professional software or SRE experience in lieu of a degree and sits inside the GNC org; GNC Software Engineer and simulation and tools roles weight software skill heavily; internal transfer at SpaceX is common"
       ],
       "file": "car_04_degree_reality/04-path-two-the-side-door.md"
+    },
+    {
+      "id": "l05-path-three-the-newspace-ladder",
+      "title": "Path 3: the NewSpace ladder",
+      "minutes": 19,
+      "covers": [
+        "Path 3, NewSpace ladder: Varda, Stoke, Firefly, Astra, True Anomaly, Impulse, Relativity and Intuitive Machines hire GNC with looser credential gates, and 2 to 3 years there converts to 5+ years professional GNC experience or 7+ years in lieu of a degree at SpaceX senior level"
+      ],
+      "file": "car_04_degree_reality/05-path-three-the-newspace-ladder.md"
     }
   ],
   "car_07_resume_and_referrals": [
@@ -6857,11 +6866,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "car_04_degree_reality": {
-    "covered": 5,
+    "covered": 6,
     "total": 10,
     "complete": false,
     "missing": [
-      "Path 3, NewSpace ladder: Varda, Stoke, Firefly, Astra, True Anomaly, Impulse, Relativity and Intuitive Machines hire GNC with looser credential gates, and 2 to 3 years there converts to 5+ years professional GNC experience or 7+ years in lieu of a degree at SpaceX senior level",
       "realistic timelines for each path, stated in years",
       "the two failure modes: believing a portfolio replaces the degree, and believing nothing but the degree matters",
       "sunk-cost traps and how to choose deliberately rather than by default",
