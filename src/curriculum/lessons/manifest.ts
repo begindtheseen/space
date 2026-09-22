@@ -1794,6 +1794,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "sed substitution and addressing; awk fields, patterns, BEGIN/END, arrays"
       ],
       "file": "cod_lnx_02_scripting/09-sed.md"
+    },
+    {
+      "id": "l10-awk",
+      "title": "awk — fields, patterns and arrays",
+      "minutes": 20,
+      "covers": [
+        "sed substitution and addressing; awk fields, patterns, BEGIN/END, arrays"
+      ],
+      "file": "cod_lnx_02_scripting/10-awk.md"
     }
   ],
   "cod_py_01_basics": [
