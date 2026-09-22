@@ -16,6 +16,7 @@ import {
   IconBriefcase,
   IconCalendar,
   IconCode,
+  IconCompass,
   IconDatabase,
   IconDoc,
   IconRecall,
@@ -30,7 +31,7 @@ import {
 import { Bar, Bullets, Button, Card, CardHead, Check, Ring, RowItem, Tile } from '@/components/ui'
 import { TRACKS, TRACK_ORDER } from '@/curriculum'
 import type { TrackId } from '@/curriculum/types'
-import { toggleTask } from '@/engine/apply'
+import { setOnboarded, toggleTask } from '@/engine/apply'
 import { dailyPlan } from '@/engine/scheduler'
 import { streak } from '@/engine/state'
 import { useLearner } from '@/hooks/useLearner'
@@ -71,6 +72,10 @@ export function Home() {
       <Hero name={state.settings.displayName} readiness={readiness} streakDays={days} />
 
       <div className="page">
+        {!state.settings.onboarded ? (
+          <Welcome onDismiss={() => setState((s) => setOnboarded(s))} />
+        ) : null}
+
         <div className="grid-2">
           {/* ── left column ─────────────────────────────────────────────── */}
           <div className="stack">
@@ -140,6 +145,111 @@ function greeting(d: Date = new Date()): string {
   if (h < 12) return 'Good morning'
   if (h < 18) return 'Good afternoon'
   return 'Good evening'
+}
+
+/* ── First-run welcome ───────────────────────────────────────────────────── */
+
+const WELCOME_STEPS = [
+  'Pick a track and open its first module',
+  'Learn, then practice, then recall',
+  'Come back when reviews are due — the planner tells you',
+]
+
+/**
+ * Shown until the guide has been opened or the card dismissed. Kept to one
+ * short band above the grid: it has to be impossible to miss on a first visit
+ * and impossible to resent on the second.
+ */
+function Welcome({ onDismiss }: { onDismiss: () => void }) {
+  return (
+    <Card index={0} style={{ marginBottom: 'var(--gap)' }}>
+      <div style={{ padding: '15px 17px 14px', display: 'flex', gap: 14, alignItems: 'flex-start' }}>
+        <Tile size={40} radius={11} color="var(--accent)" lit>
+          <IconCompass size={19} />
+        </Tile>
+
+        <div className="grow">
+          <div className="eyebrow-dim" style={{ color: 'var(--accent)' }}>
+            Welcome to ORBIT
+          </div>
+          <h2
+            style={{
+              marginTop: 4,
+              fontSize: 15.5,
+              fontWeight: 600,
+              letterSpacing: '-0.01em',
+              lineHeight: 1.25,
+              color: 'var(--ink)',
+            }}
+          >
+            New here? Here is how this works.
+          </h2>
+
+          <div
+            style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              alignItems: 'center',
+              gap: '12px 18px',
+              marginTop: 11,
+            }}
+          >
+            <ol
+              style={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                gap: '6px 18px',
+                flex: '1 1 400px',
+                minWidth: 0,
+              }}
+            >
+              {WELCOME_STEPS.map((step, i) => (
+                <li
+                  key={step}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    fontSize: 12,
+                    lineHeight: 1.5,
+                    color: 'var(--ink-2)',
+                  }}
+                >
+                  <span
+                    style={{
+                      flex: 'none',
+                      width: 18,
+                      height: 18,
+                      borderRadius: '50%',
+                      display: 'grid',
+                      placeItems: 'center',
+                      background: 'rgba(86, 150, 248, 0.14)',
+                      color: 'var(--accent)',
+                      fontSize: 10,
+                      fontWeight: 600,
+                    }}
+                  >
+                    {i + 1}
+                  </span>
+                  {step}
+                </li>
+              ))}
+            </ol>
+
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+              <Button variant="primary" size="md" onClick={() => navigate('/guide')}>
+                Read the guide
+                <IconArrowRight size={15} />
+              </Button>
+              <Button variant="ghost" size="md" onClick={onDismiss}>
+                Dismiss
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Card>
+  )
 }
 
 /* ── Mission progress ────────────────────────────────────────────────────── */
@@ -344,6 +454,7 @@ function formatMinutes(m: number): string {
 /* ── Quick tools ─────────────────────────────────────────────────────────── */
 
 const TOOLS: { icon: (p: IconProps) => ReactNode; title: string; sub: string; href: string }[] = [
+  { icon: IconCompass, title: 'How ORBIT Works', sub: 'Where to start and how the loop runs', href: '#/guide' },
   { icon: IconTerminal, title: 'Code Playground', sub: 'Run Python and SQL in the browser', href: '#/playground' },
   { icon: IconRecall, title: 'Review Session', sub: 'Clear what is scheduled today', href: '#/review' },
   { icon: IconWave, title: 'Forgetting Curve', sub: 'What you will still know in a year', href: '#/progress' },

@@ -824,3 +824,174 @@
   color: var(--ink-5);
   font-variant-numeric: tabular-nums;
 }
+
+/* ── Module study path ───────────────────────────────────────────────────── */
+/* Three numbered steps that double as tabs. Reads as a route, not a menu:
+   the active step is lit, finished ones carry a check, the rest wait. */
+.path {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: var(--gap);
+}
+
+.path__step {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-width: 0;
+  padding: 11px 13px;
+  text-align: left;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  color: var(--ink-3);
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+
+.path__step:hover {
+  border-color: var(--line-strong, var(--line));
+  color: var(--ink-2);
+}
+
+.path__step[data-on='true'] {
+  background: var(--raise);
+  border-color: var(--line-blue-strong);
+  color: var(--ink);
+}
+
+.path__num {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  font-family: var(--font-display, inherit);
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.path__step[data-on='true'] .path__num {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.path__step[data-done='true'] .path__num {
+  border-color: var(--ok);
+  color: var(--ok);
+}
+
+.path__body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.path__label {
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: inherit;
+}
+
+.path__meta {
+  font-size: 10.5px;
+  color: var(--ink-4);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 640px) {
+  .path {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Numbered how-to list on the Learn step. */
+.steps {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.steps li {
+  display: flex;
+  gap: 11px;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--ink-2);
+}
+
+.steps strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.steps em {
+  color: var(--ink);
+  font-style: normal;
+  font-weight: 500;
+}
+
+.steps__num {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  margin-top: 1px;
+  border-radius: 50%;
+  background: var(--accent-soft, rgba(86, 150, 248, 0.14));
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* Flashcards rendered as readable notes. */
+.notes {
+  display: flex;
+  flex-direction: column;
+}
+
+.note {
+  padding: 11px 0;
+}
+
+.note + .note {
+  border-top: 1px solid var(--line-soft);
+}
+
+.note__front {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--ink);
+  line-height: 1.5;
+}
+
+.note__back {
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--ink-3);
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.note__back--formula {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 11.5px;
+  color: var(--ink-2);
+}

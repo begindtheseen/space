@@ -151,10 +151,21 @@ export function Review() {
           title="Nothing due right now"
           body="Your scheduled reviews are clear. Start a new module and the planner will space it for you automatically — coming back early buys almost nothing."
           action={
-            <Button variant="primary" size="md" onClick={() => navigate('/learning')}>
-              Browse modules
-              <IconArrowRight size={15} />
-            </Button>
+            route.query.module ? (
+              <Button
+                variant="primary"
+                size="md"
+                onClick={() => navigate(`/module/${route.query.module}?step=recall`)}
+              >
+                Back to the module
+                <IconArrowRight size={15} />
+              </Button>
+            ) : (
+              <Button variant="primary" size="md" onClick={() => navigate('/learning')}>
+                Browse modules
+                <IconArrowRight size={15} />
+              </Button>
+            )
           }
         />
       </div>
@@ -162,7 +173,7 @@ export function Review() {
   }
 
   if (cursor >= queue.length) {
-    return <SessionSummary tally={tally} total={queue.length} />
+    return <SessionSummary tally={tally} total={queue.length} moduleId={route.query.module} />
   }
 
   if (!current || !resolved) {
@@ -176,7 +187,12 @@ export function Review() {
   return (
     <div className="review">
       <div className="review__bar">
-        <Button variant="quiet" size="icon" onClick={() => navigate('/')} aria-label="Leave session">
+        <Button
+          variant="quiet"
+          size="icon"
+          onClick={() => navigate(route.query.module ? `/module/${route.query.module}?step=recall` : '/')}
+          aria-label="Leave session"
+        >
           <IconChevronLeft size={17} />
         </Button>
         <Bar value={progress} height={4} />
@@ -374,7 +390,8 @@ function ConfidencePicker({
 
 /* ── Summary ─────────────────────────────────────────────────────────────── */
 
-function SessionSummary({ tally, total }: { tally: Tally; total: number }) {
+function SessionSummary({ tally, total, moduleId }: { tally: Tally; total: number; moduleId?: string }) {
+  const module = moduleId ? moduleById(moduleId) : undefined
   const minutes = Math.max(1, Math.round((Date.now() - tally.startedAt) / 60000))
   const recalled = tally.hard + tally.good + tally.easy
   const accuracy = tally.seen > 0 ? recalled / tally.seen : 0
@@ -416,6 +433,11 @@ function SessionSummary({ tally, total }: { tally: Tally; total: number }) {
           <IconRecall size={15} />
           Another round
         </Button>
+        {module ? (
+          <Button variant="ghost" size="lg" onClick={() => navigate(`/module/${module.id}?step=recall`)}>
+            Back to {module.title}
+          </Button>
+        ) : null}
         <Button variant="ghost" size="lg" onClick={() => navigate('/')}>
           Back to dashboard
         </Button>

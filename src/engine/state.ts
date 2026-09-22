@@ -91,6 +91,8 @@ export interface Settings {
   reduceMotion: boolean
   /** Personalised FSRS weights, once enough history exists to fit them. */
   weights?: number[]
+  /** Set once the first-run welcome has been read or dismissed. */
+  onboarded?: boolean
 }
 
 export interface LearnerState {
@@ -114,6 +116,12 @@ export interface LearnerState {
   suspended: string[]
   /** Bookmarked module ids. */
   pinned: string[]
+  /**
+   * Module ids whose Learn step the learner has marked as worked through, with
+   * the ISO time they did so. Purely a progress marker for the module page's
+   * study path; nothing in the scheduler reads it.
+   */
+  read: Record<string, string>
   goals: Goals
   settings: Settings
 }
@@ -151,6 +159,7 @@ export function newLearnerState(now: Date = new Date()): LearnerState {
     code: {},
     suspended: [],
     pinned: [],
+    read: {},
     goals: { ...DEFAULT_GOALS },
     settings: { ...DEFAULT_SETTINGS },
   }
@@ -180,6 +189,7 @@ export function migrateState(raw: unknown, now: Date = new Date()): LearnerState
     code: isRecordOf(r.code, 'string') ? { ...r.code } : {},
     suspended: Array.isArray(r.suspended) ? r.suspended.filter((s) => typeof s === 'string') : [],
     pinned: Array.isArray(r.pinned) ? r.pinned.filter((s) => typeof s === 'string') : [],
+    read: isRecordOf(r.read, 'string') ? { ...r.read } : {},
     goals: { ...base.goals, ...pickGoals(r.goals) },
     settings: { ...base.settings, ...pickSettings(r.settings) },
     version: STATE_VERSION,
@@ -381,5 +391,8 @@ function pickSettings(v: unknown): Partial<Settings> {
     fuzz: bool(s.fuzz, DEFAULT_SETTINGS.fuzz),
     reduceMotion: bool(s.reduceMotion, DEFAULT_SETTINGS.reduceMotion),
     weights: Array.isArray(s.weights) && s.weights.every((x) => typeof x === 'number') ? s.weights : undefined,
+    // Only ever true: spreading an explicit `undefined` over the defaults
+    // would still produce a key, and the flag is absent until it is set.
+    ...(s.onboarded === true ? { onboarded: true } : {}),
   }
 }

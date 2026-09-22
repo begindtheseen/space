@@ -218,6 +218,29 @@ export function togglePin(state: LearnerState, moduleId: string): LearnerState {
   }
 }
 
+/**
+ * Marks a module's Learn step as worked through. Idempotent: the first time
+ * stands, so the module page can show when the material was first studied.
+ */
+export function markRead(state: LearnerState, moduleId: string, now: Date = new Date()): LearnerState {
+  if (state.read[moduleId]) return state
+  return {
+    ...state,
+    read: { ...state.read, [moduleId]: now.toISOString() },
+    updatedAt: now.toISOString(),
+  }
+}
+
+/** Records that the first-run welcome has been read or dismissed. */
+export function setOnboarded(state: LearnerState, now: Date = new Date()): LearnerState {
+  if (state.settings.onboarded) return state
+  return {
+    ...state,
+    settings: { ...state.settings, onboarded: true },
+    updatedAt: now.toISOString(),
+  }
+}
+
 export function saveCode(state: LearnerState, exerciseId: string, code: string): LearnerState {
   return {
     ...state,

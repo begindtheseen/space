@@ -8,7 +8,7 @@
    ========================================================================== */
 import { describe, expect, it } from 'vitest'
 import type { Module } from '@/curriculum/types'
-import { applyAttempt, isCorrect, logMinutes, toggleSuspend, toggleTask } from './apply'
+import { applyAttempt, isCorrect, logMinutes, markRead, setOnboarded, toggleSuspend, toggleTask } from './apply'
 import { LEECH_LAPSES, diagnoseModule } from './diagnose'
 import { Dag, MASTERY_THRESHOLD, PREREQ_THRESHOLD, findGraphProblems } from './graph'
 import {
@@ -649,5 +649,46 @@ describe('migrateState — the untrusted boundary', () => {
       correct: true,
     }))
     expect(migrateState({ attempts }).attempts.length).toBeLessThanOrEqual(4000)
+  })
+})
+
+describe('study-path markers', () => {
+  const now = new Date('2026-09-22T10:00:00Z')
+
+  it('records the first time a module is marked studied and keeps it', () => {
+    let s = newLearnerState(now)
+    expect(s.read).toEqual({})
+    s = markRead(s, 'root', now)
+    expect(s.read.root).toBe(now.toISOString())
+    const later = markRead(s, 'root', new Date(now.getTime() + 86_400_000))
+    expect(later).toBe(s)
+    expect(later.read.root).toBe(now.toISOString())
+  })
+
+  it('does not mutate the state it was given', () => {
+    const before = newLearnerState(now)
+    markRead(before, 'root', now)
+    expect(before.read).toEqual({})
+  })
+
+  it('sets the onboarding flag once', () => {
+    const s = setOnboarded(newLearnerState(now), now)
+    expect(s.settings.onboarded).toBe(true)
+    expect(setOnboarded(s, now)).toBe(s)
+  })
+
+  it('round-trips both markers through migration and drops malformed ones', () => {
+    const s = setOnboarded(markRead(newLearnerState(now), 'root', now), now)
+    const back = migrateState(JSON.parse(JSON.stringify(s)), now)
+    expect(back.read).toEqual({ root: now.toISOString() })
+    expect(back.settings.onboarded).toBe(true)
+
+    const dirty = migrateState({ read: { root: 42 }, settings: { onboarded: 'yes' } }, now)
+    expect(dirty.read).toEqual({})
+    expect(dirty.settings.onboarded).toBeUndefined()
+
+    const legacy = migrateState({ version: 1, items: {}, pinned: ['x'] }, now)
+    expect(legacy.read).toEqual({})
+    expect(legacy.pinned).toEqual(['x'])
   })
 })
