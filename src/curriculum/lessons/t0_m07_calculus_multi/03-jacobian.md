@@ -68,7 +68,7 @@ $$
 = \begin{bmatrix} \cos\theta & -r\sin\theta \\ \sin\theta & r\cos\theta \end{bmatrix}.
 $$
 
-Read the columns: the first, $[\cos\theta, \sin\theta]^\top$, is the direction you move when $r$ increases — a unit radial vector. The second, $[-r\sin\theta, r\cos\theta]^\top$, is the direction you move when $\theta$ increases, tangential and of length $r$: a change $d\theta$ moves you $r\,d\theta$. At $r = 2$, $\theta = 30^\circ$ the matrix is $[[0.866, -1.000], [0.500, 1.732]]$ and its determinant is $\cos^2\theta \cdot r + r\sin^2\theta = r = 2$. The determinant is the factor by which the map scales small areas, which is why $dA = r\,dr\,d\theta$ in Lesson 7.
+Read the columns: the first, $[\cos\theta, \sin\theta]^\top$, is the direction you move when $r$ increases — a unit radial vector. The second, $[-r\sin\theta, r\cos\theta]^\top$, is the direction you move when $\theta$ increases, tangential and of length $r$: a change $d\theta$ moves you $r\,d\theta$. At $r = 2$, $\theta = 30^\circ$ the matrix is $[[0.866, -1.000], [0.500, 1.732]]$ and its determinant is $\cos^2\theta \cdot r + r\sin^2\theta = r = 2$. The determinant is the factor by which the map scales small areas, which is why $dA = r\,dr\,d\theta$ in Lesson 6.
 
 For spherical coordinates $(r, \theta, \varphi) \mapsto (r\sin\theta\cos\varphi,\ r\sin\theta\sin\varphi,\ r\cos\theta)$ the same computation gives a $3 \times 3$ Jacobian whose columns are the radial, polar and azimuthal tangent vectors, with lengths $1$, $r$ and $r\sin\theta$, and whose determinant is $r^2 \sin\theta$. Numerically, at $r = 2$, $\theta = 0.7$, $\varphi = 0.3$ the determinant is $2.577$, equal to $r^2\sin\theta = 4 \times 0.6442$.
 :::
@@ -111,7 +111,7 @@ $$
 \dot\rho = \frac{\Delta\mathbf{r} \cdot \Delta\mathbf{v}}{\rho} = \hat{\mathbf{u}} \cdot \Delta\mathbf{v} .
 $$
 
-Lesson 5 will confirm by the chain rule that this is indeed $d\rho/dt$. Differentiate first with respect to velocity, which appears linearly with $\Delta\mathbf{r}$ and $\rho$ held fixed:
+Lesson 4 will confirm by the chain rule that this is indeed $d\rho/dt$. Differentiate first with respect to velocity, which appears linearly with $\Delta\mathbf{r}$ and $\rho$ held fixed:
 
 $$
 \frac{\partial \dot\rho}{\partial \mathbf{v}} = \frac{\Delta\mathbf{r}^\top}{\rho} = \hat{\mathbf{u}}^\top .

@@ -386,6 +386,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "similarity transforms"
       ],
       "file": "t0_m05_linear_algebra_2/03-similarity-transforms-modes-stability.md"
+    },
+    {
+      "id": "l04-symmetric-matrices-spectral-theorem",
+      "title": "Symmetric matrices and the spectral theorem",
+      "minutes": 21,
+      "covers": [
+        "symmetric matrices and the spectral theorem"
+      ],
+      "file": "t0_m05_linear_algebra_2/04-symmetric-matrices-spectral-theorem.md"
     }
   ],
   "t0_m06_calculus_single": [
@@ -609,6 +618,16 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "the damped oscillator: natural frequency and damping ratio"
       ],
       "file": "t0_m08_odes/03-damped-oscillator-zeta-omega-n.md"
+    },
+    {
+      "id": "l04-state-space-and-matrix-exponential",
+      "title": "State-space form and the matrix exponential",
+      "minutes": 18,
+      "covers": [
+        "systems of first-order ODEs and state-space form",
+        "matrix exponential solution"
+      ],
+      "file": "t0_m08_odes/04-state-space-and-matrix-exponential.md"
     }
   ],
   "t0_m09_probability_stats": [
@@ -656,6 +675,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "linear transformations of random vectors"
       ],
       "file": "t0_m09_probability_stats/05-linear-transformations.md"
+    },
+    {
+      "id": "l06-sums-and-central-limit-theorem",
+      "title": "Sums of random variables and the central limit theorem",
+      "minutes": 24,
+      "covers": [
+        "sums of random variables and the central limit theorem"
+      ],
+      "file": "t0_m09_probability_stats/06-sums-and-central-limit-theorem.md"
     }
   ],
   "t0_m10_numerical_methods": [
@@ -716,6 +744,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "convex sets and convex functions"
       ],
       "file": "t0_m11_optimization/03-convex-sets-and-functions.md"
+    },
+    {
+      "id": "l04-why-convexity-matters",
+      "title": "Why convexity matters: global optimum, polynomial time, certificates",
+      "minutes": 24,
+      "covers": [
+        "why convexity matters: global optimum, polynomial time, certificates"
+      ],
+      "file": "t0_m11_optimization/04-why-convexity-matters.md"
     }
   ],
   "t0_m12_cpp": [
@@ -943,6 +980,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "rigid body kinematics and the angular velocity vector"
       ],
       "file": "t1_m14_rigid_body_dynamics/01-rigid-body-kinematics.md"
+    },
+    {
+      "id": "l02-inertia-tensor-and-parallel-axis-theorem",
+      "title": "The inertia tensor and the parallel axis theorem",
+      "minutes": 20,
+      "covers": [
+        "the moment of inertia tensor, products of inertia, parallel axis theorem"
+      ],
+      "file": "t1_m14_rigid_body_dynamics/02-inertia-tensor-and-parallel-axis-theorem.md"
     }
   ],
   "t1_m15_rotating_frames": [
@@ -1309,11 +1355,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t0_m05_linear_algebra_2": {
-    "covered": 3,
+    "covered": 4,
     "total": 11,
     "complete": false,
     "missing": [
-      "symmetric matrices and the spectral theorem",
       "positive definiteness and quadratic forms",
       "singular value decomposition",
       "pseudoinverse and rank deficiency",
@@ -1336,13 +1381,11 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t0_m08_odes": {
-    "covered": 3,
+    "covered": 5,
     "total": 12,
     "complete": false,
     "missing": [
       "forced response and resonance",
-      "systems of first-order ODEs and state-space form",
-      "matrix exponential solution",
       "Laplace transform, inverse transform, partial fractions",
       "initial and final value theorems",
       "transfer functions",
@@ -1352,11 +1395,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t0_m09_probability_stats": {
-    "covered": 5,
+    "covered": 6,
     "total": 13,
     "complete": false,
     "missing": [
-      "sums of random variables and the central limit theorem",
       "white noise, random walk, Gauss-Markov processes",
       "power spectral density and autocorrelation",
       "stochastic processes and Brownian motion",
@@ -1383,11 +1425,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t0_m11_optimization": {
-    "covered": 4,
+    "covered": 5,
     "total": 14,
     "complete": false,
     "missing": [
-      "why convexity matters: global optimum, polynomial time, certificates",
       "linear and quadratic programming",
       "second-order cone programming",
       "semidefinite programming",
@@ -1412,11 +1453,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t1_m14_rigid_body_dynamics": {
-    "covered": 1,
+    "covered": 2,
     "total": 12,
     "complete": false,
     "missing": [
-      "the moment of inertia tensor, products of inertia, parallel axis theorem",
       "principal axes and principal moments",
       "angular momentum H = I omega",
       "Euler rotational equations of motion",

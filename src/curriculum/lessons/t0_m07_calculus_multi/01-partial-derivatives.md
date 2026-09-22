@@ -114,7 +114,7 @@ $$
 
 where the subscript order says which derivative was taken first. A function of $n$ variables has $n^2$ second partial derivatives, which in Lesson 4 you will arrange into the Hessian matrix.
 
-The order of mixed differentiation does not matter for any function you will meet in this course. This is **Schwarz's theorem** (also called Clairaut's theorem): if the second partial derivatives of $f$ exist and are continuous near a point, then $f_{xy} = f_{yx}$ there. Every polynomial, exponential, trigonometric function and every gravitational potential away from the mass satisfies the hypothesis. The symmetry is what makes the Hessian a symmetric matrix and what makes the curl of a gradient vanish (Lesson 9), so it is worth seeing it once in a concrete case.
+The order of mixed differentiation does not matter for any function you will meet in this course. This is **Schwarz's theorem** (also called Clairaut's theorem): if the second partial derivatives of $f$ exist and are continuous near a point, then $f_{xy} = f_{yx}$ there. Every polynomial, exponential, trigonometric function and every gravitational potential away from the mass satisfies the hypothesis. The symmetry is what makes the Hessian a symmetric matrix and what makes the curl of a gradient vanish (Lesson 8), so it is worth seeing it once in a concrete case.
 
 Take $f(x, y) = x^2 y + e^{xy}$. The first partials are $f_x = 2xy + y e^{xy}$ and $f_y = x^2 + x e^{xy}$. Differentiating $f_x$ with respect to $y$ needs the product rule on $y e^{xy}$:
 
@@ -143,7 +143,7 @@ $$
 \frac{\partial^2 (1/r)}{\partial x^2} = \frac{3 - 9}{243} = -0.0247, \qquad \frac{\partial^2 (1/r)}{\partial y^2} = \frac{12 - 9}{243} = 0.0123, \qquad \frac{\partial^2 (1/r)}{\partial z^2} = 0.0123.
 $$
 
-Their sum is exactly zero, and not only at this point: adding the three general expressions gives $(3x^2 + 3y^2 + 3z^2 - 3r^2)/r^5 = 0$ for every $\mathbf{r} \neq \mathbf{0}$. This sum is the Laplacian of $1/r$, and its vanishing is Laplace's equation, the reason the exterior gravity field can be built from spherical harmonics. You will meet it properly in Lesson 9; for now, notice that a plain partial-derivative computation already contains it.
+Their sum is exactly zero, and not only at this point: adding the three general expressions gives $(3x^2 + 3y^2 + 3z^2 - 3r^2)/r^5 = 0$ for every $\mathbf{r} \neq \mathbf{0}$. This sum is the Laplacian of $1/r$, and its vanishing is Laplace's equation, the reason the exterior gravity field can be built from spherical harmonics. You will meet it properly in Lesson 8; for now, notice that a plain partial-derivative computation already contains it.
 :::
 
 ## Linear approximation and the total differential

@@ -10,7 +10,7 @@ Lesson 1 gave you the partial derivatives of a scalar field one at a time. This 
 
 A GNC engineer meets the gradient in two costumes. As a force: the gravitational acceleration is minus the gradient of the potential, which is why gravity points straight down through every equipotential surface and why the plumb line is perpendicular to the geoid. As a search direction: every trajectory optimiser, every least-squares orbit fit and every training loop for a learned controller moves downhill along a negative gradient. The rate at which a cost changes when you push a design variable is a directional derivative.
 
-This lesson also derives the first half of the multivariable chain rule — how a scalar field changes along a moving point — because the proof that the gradient is normal to level sets needs it. Lesson 5 will generalise it to vector functions.
+This lesson also derives the first half of the multivariable chain rule — how a scalar field changes along a moving point — because the proof that the gradient is normal to level sets needs it. Lesson 4 will generalise it to vector functions.
 
 ## From partials to a vector
 
@@ -101,7 +101,7 @@ $$
 
 The gradient is perpendicular to the velocity of every curve that stays in the level set — to every tangent vector of the level set. That is what "normal to the level set" means.
 
-Two consequences follow at once. First, the **tangent plane** to a surface given implicitly by $F(x, y, z) = c$ at a point $\mathbf{x}_0$ is the set of points $\mathbf{x}$ with $\nabla F(\mathbf{x}_0) \cdot (\mathbf{x} - \mathbf{x}_0) = 0$, and the unit normal to the surface is $\nabla F/\lVert \nabla F \rVert$. Second, since gravity is $\mathbf{g} = -\nabla U$ for a potential $U$ (Lesson 11 develops this), gravity is perpendicular to every equipotential surface. The geoid is an equipotential, so a plumb line — which hangs along $\mathbf{g}$ — is normal to the geoid, and "level" means "perpendicular to gravity".
+Two consequences follow at once. First, the **tangent plane** to a surface given implicitly by $F(x, y, z) = c$ at a point $\mathbf{x}_0$ is the set of points $\mathbf{x}$ with $\nabla F(\mathbf{x}_0) \cdot (\mathbf{x} - \mathbf{x}_0) = 0$, and the unit normal to the surface is $\nabla F/\lVert \nabla F \rVert$. Second, since gravity is $\mathbf{g} = -\nabla U$ for a potential $U$ (Lesson 10 develops this), gravity is perpendicular to every equipotential surface. The geoid is an equipotential, so a plumb line — which hangs along $\mathbf{g}$ — is normal to the geoid, and "level" means "perpendicular to gravity".
 
 ::: example The normal to the reference ellipsoid and geodetic latitude
 Earth's reference ellipsoid (WGS84) is the level set

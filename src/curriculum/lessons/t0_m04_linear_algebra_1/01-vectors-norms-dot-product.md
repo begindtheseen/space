@@ -150,7 +150,7 @@ $$
 \cos\theta = \frac{\mathbf{a}\cdot\mathbf{b}}{\|\mathbf{a}\|\,\|\mathbf{b}\|}, \qquad 0 \le \theta \le \pi .
 $$
 
-In code, round-off can push the quotient to $1.0000000002$, and the inverse cosine of that is not a number. Either clamp the quotient to $[-1, 1]$ before taking the inverse cosine or, better, compute the angle with the two-argument arctangent once you have the cross product from the next lesson.
+In code, round-off can push the quotient to $1.0000000002$, and the inverse cosine of that is not a number. Either clamp the quotient to $[-1, 1]$ before taking the inverse cosine or, better, compute the angle with the two-argument arctangent once you have the cross product, which Lesson 8 defines.
 
 The dot product with a unit vector has a special reading. Since $\|\hat{\mathbf{u}}\| = 1$,
 
@@ -194,7 +194,7 @@ $$
 \sin\gamma = \frac{804}{52\,497} = 0.01532, \qquad \gamma = 0.878° .
 $$
 
-For comparison, a circular orbit at this radius would need $\sqrt{\mu / r} = \sqrt{3.986 \times 10^5 / 6897.8} = 7.602$ km/s. The vehicle is a little faster than that, so it is on a slightly elliptical orbit heading up toward apoapsis. The unit position vector, which you will need next lesson, is $\hat{\mathbf{r}} = \mathbf{r} / 6897.8 = (-0.3900, 0.7713, 0.5031)^T$.
+For comparison, a circular orbit at this radius would need $\sqrt{\mu / r} = \sqrt{3.986 \times 10^5 / 6897.8} = 7.602$ km/s. The vehicle is a little faster than that, so it is on a slightly elliptical orbit heading up toward apoapsis. The unit position vector, which the frame and projection lessons later reuse, is $\hat{\mathbf{r}} = \mathbf{r} / 6897.8 = (-0.3900, 0.7713, 0.5031)^T$.
 :::
 
 ::: example A star-tracker keep-out check
@@ -270,4 +270,4 @@ The reading is the component along the axis: $\mathbf{f}\cdot\hat{\mathbf{u}} = 
 | $\mathbf{a}\cdot\hat{\mathbf{u}}$ | Component of $\mathbf{a}$ along $\hat{\mathbf{u}}$: what a single-axis sensor reads |
 | $\sin\gamma = \mathbf{r}\cdot\mathbf{v} / (\lVert\mathbf{r}\rVert\,\lVert\mathbf{v}\rVert)$ | Flight-path angle from a state vector |
 
-The next lesson uses the dot product to split a vector into the part along a direction and the part across it — the projection — and introduces the cross product, which produces the direction perpendicular to two given vectors and underlies angular momentum, torque and rotation.
+The next lesson turns from vectors to the matrices that act on them. Two loose ends from this one are picked up later in the module: Lesson 6 uses the dot product to split a vector into the part along a direction and the part across it, the projection; and Lesson 8 introduces the cross product, which produces the direction perpendicular to two given vectors and underlies angular momentum, torque and rotation.
