@@ -288,8 +288,10 @@ $$
 
 ```text
 u1 = 12.005000   integral = 0.010000
-u2 = 1.629500   integral = 0.018000
+u2 = -0.391000   integral = 0.018000
 ```
+
+The second call, with $e = 0.8$, gives $I = 0.01 + 0.8 \times 0.01 = 0.018$ and $D = (0.8 - 1.0)/0.01 = -20$, so $u = 1.6 + 0.009 - 2.0 = -0.391$: the derivative term dominates and reverses the sign of the command.
 
 Note the design choices that the signature makes visible. `const Gains&` says the gains are read and not modified. `double& integral` and `double& prev_error` are non-const references, which is the signature's way of announcing that this function has state the caller owns — and that two controllers cannot accidentally share it. And the defaults sit in the header, once, so `pid_step(g, e, I, ep)` at a call site means the 100 Hz loop without the reader having to look anything up.
 

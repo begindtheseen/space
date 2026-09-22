@@ -14,7 +14,7 @@ What can be reasoned about, without inventing anything, is the *structure of the
 
 ## The inputs
 
-The onsite deliberately does not have one interviewer see everything. Five to seven people each get roughly an hour, each examines a different dimension, and each writes something down. Nobody in the process has observed your whole day.
+The onsite does not have one interviewer see everything. Five to seven people each get roughly an hour, each examines a different dimension, and each writes something down. Nobody in the process has observed your whole day.
 
 Two consequences follow immediately.
 

@@ -853,6 +853,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "intellectual property and export-control hygiene about a previous employer’s work"
       ],
       "file": "car_10_past_project_presentation/03-ip-and-export-hygiene.md"
+    },
+    {
+      "id": "l04-talk-structure-and-the-clock",
+      "title": "Seven parts, and what each one gets of the clock",
+      "minutes": 20,
+      "covers": [
+        "talk structure: problem, why it was hard, approach, the key decision and the alternatives rejected, verification, result, what you would do differently"
+      ],
+      "file": "car_10_past_project_presentation/04-talk-structure-and-the-clock.md"
     }
   ],
   "cod_cpp_01_basics": [
@@ -967,6 +976,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "list, tuple, dict, set; slicing; truthiness; mutability"
       ],
       "file": "cod_py_01_basics/04-dicts-sets-and-truthiness.md"
+    },
+    {
+      "id": "l05-control-flow",
+      "title": "Choosing and repeating: if, for, while",
+      "minutes": 21,
+      "covers": [
+        "if/elif/else; for, while, range, enumerate, zip; break/continue/else"
+      ],
+      "file": "cod_py_01_basics/05-control-flow.md"
     }
   ],
   "t0_m01_algebra_precalc": [
@@ -6217,6 +6235,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "System decomposition and the interface contracts between navigation, guidance, control and the vehicle"
       ],
       "file": "t7_m48_capstone/01-system-decomposition-and-interfaces.md"
+    },
+    {
+      "id": "l02-error-budgeting",
+      "title": "Error budgeting for a landing-accuracy requirement",
+      "minutes": 20,
+      "covers": [
+        "Error budgeting: allocating a landing-accuracy requirement across navigation, guidance and control"
+      ],
+      "file": "t7_m48_capstone/02-error-budgeting.md"
     }
   ],
   "t7_m49_interview_prep": [
@@ -6627,11 +6654,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t7_m48_capstone": {
-    "covered": 1,
+    "covered": 2,
     "total": 11,
     "complete": false,
     "missing": [
-      "Error budgeting: allocating a landing-accuracy requirement across navigation, guidance and control",
       "Rate architecture: navigation at IMU rate, control at 100 Hz or faster, guidance re-solved at 1 to 2 Hz, mode management at a low rate",
       "A multiplicative extended Kalman filter on IMU, GNSS and radar altimeter, with error-state formulation and attitude error as a three-parameter local perturbation",
       "Convex powered-descent guidance in the loop: re-solve cadence, warm starting, deadline policy and the closed-form fallback",
@@ -6793,11 +6819,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "cod_py_01_basics": {
-    "covered": 3,
+    "covered": 4,
     "total": 12,
     "complete": false,
     "missing": [
-      "if/elif/else; for, while, range, enumerate, zip; break/continue/else",
       "Functions: positional, keyword, default, *args, **kwargs",
       "Scope and LEGB; closures at a first-pass level",
       "Modules, import, packages, the if __name__ == \"__main__\" guard",
@@ -7655,11 +7680,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "car_10_past_project_presentation": {
-    "covered": 5,
+    "covered": 6,
     "total": 13,
     "complete": false,
     "missing": [
-      "talk structure: problem, why it was hard, approach, the key decision and the alternatives rejected, verification, result, what you would do differently",
       "assertion-evidence slide design: a sentence headline that states the claim, a figure that proves it, no bullet dumps",
       "how many slides for 10 to 20 minutes, and why fewer is safer",
       "the backup-slide appendix for anticipated questions",

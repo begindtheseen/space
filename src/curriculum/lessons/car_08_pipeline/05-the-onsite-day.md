@@ -14,7 +14,7 @@ This lesson is about the day as a structure — its arithmetic, how the rounds r
 
 ## The arithmetic of eight hours
 
-Work the numbers from the stated shape and the day stops being vague. Individual interview rounds in a process like this typically run on the order of forty-five minutes to an hour. Six rounds at forty-five minutes is four and a half hours of interviewing. Seven rounds at an hour is seven.
+Work the numbers from the stated shape and the day stops being vague. This module's own day-simulation exercise builds its rounds as forty-five-minute blocks — the presentation with questions, each coding session, the systems, domain and behavioural rounds — so take a round at somewhere between forty-five minutes and an hour. Six rounds at forty-five minutes is four and a half hours of interviewing. Seven rounds at an hour is seven.
 
 Neither of those reaches eight, and yet eight-plus is what gets reported. The difference is everything that is not an interview: handoffs between rooms, an interviewer running five minutes late, a break, something to eat, and — where it happens — a tour. Those are not padding. They are where the day's elapsed time comes from, and they are also the only moments in which you will not be being asked something.
 
