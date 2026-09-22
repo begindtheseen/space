@@ -1,7 +1,7 @@
 ---
 id: l06-values-references-and-python-names
 title: Values, references, and what a variable really is
-minutes: 21
+minutes: 17
 covers:
   - Values, references and the difference from Python names
 ---

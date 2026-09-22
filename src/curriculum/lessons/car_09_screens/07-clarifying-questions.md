@@ -1,7 +1,7 @@
 ---
 id: l07-clarifying-questions
 title: "Clarifying questions before you answer"
-minutes: 20
+minutes: 21
 covers:
   - asking clarifying questions before answering
 ---

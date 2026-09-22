@@ -631,6 +631,116 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       "file": "car_07_resume_and_referrals/10-outreach-and-reapplying.md"
     }
   ],
+  "car_08_pipeline": [
+    {
+      "id": "l01-the-shape-of-the-process",
+      "title": "The shape of the process, end to end",
+      "minutes": 16,
+      "covers": [
+        "PLACEHOLDER"
+      ],
+      "file": "car_08_pipeline/01-the-shape-of-the-process.md"
+    },
+    {
+      "id": "l02-the-recruiter-screen",
+      "title": "Stage 1: the recruiter screen",
+      "minutes": 16,
+      "covers": [
+        "PLACEHOLDER"
+      ],
+      "file": "car_08_pipeline/02-the-recruiter-screen.md"
+    },
+    {
+      "id": "l03-the-technical-phone-screen",
+      "title": "Stage 2: the technical phone screen",
+      "minutes": 17,
+      "covers": [
+        "PLACEHOLDER"
+      ],
+      "file": "car_08_pipeline/03-the-technical-phone-screen.md"
+    },
+    {
+      "id": "l04-the-take-home",
+      "title": "Stage 3: the take-home exercise",
+      "minutes": 16,
+      "covers": [
+        "PLACEHOLDER"
+      ],
+      "file": "car_08_pipeline/04-the-take-home.md"
+    },
+    {
+      "id": "l05-the-onsite-day",
+      "title": "Stage 4: the full-day onsite",
+      "minutes": 17,
+      "covers": [
+        "PLACEHOLDER"
+      ],
+      "file": "car_08_pipeline/05-the-onsite-day.md"
+    },
+    {
+      "id": "l06-rounds-on-what-you-have-built",
+      "title": "The onsite rounds on what you have already built",
+      "minutes": 19,
+      "covers": [
+        "PLACEHOLDER"
+      ],
+      "file": "car_08_pipeline/06-rounds-on-what-you-have-built.md"
+    },
+    {
+      "id": "l07-rounds-on-how-you-think",
+      "title": "The onsite rounds on how you think",
+      "minutes": 19,
+      "covers": [
+        "PLACEHOLDER"
+      ],
+      "file": "car_08_pipeline/07-rounds-on-how-you-think.md"
+    },
+    {
+      "id": "l08-behavioural-and-culture",
+      "title": "Stage 5: behavioural and culture",
+      "minutes": 18,
+      "covers": [
+        "PLACEHOLDER"
+      ],
+      "file": "car_08_pipeline/08-behavioural-and-culture.md"
+    },
+    {
+      "id": "l09-reading-the-difficulty-rating",
+      "title": "What a 2.8 out of 5 difficulty rating indicates",
+      "minutes": 17,
+      "covers": [
+        "PLACEHOLDER"
+      ],
+      "file": "car_08_pipeline/09-reading-the-difficulty-rating.md"
+    },
+    {
+      "id": "l10-stamina-and-logistics",
+      "title": "Logistics and stamina for an eight-hour day",
+      "minutes": 17,
+      "covers": [
+        "PLACEHOLDER"
+      ],
+      "file": "car_08_pipeline/10-stamina-and-logistics.md"
+    },
+    {
+      "id": "l11-what-to-ask-at-each-stage",
+      "title": "What to ask at each stage, and what not to ask yet",
+      "minutes": 18,
+      "covers": [
+        "PLACEHOLDER"
+      ],
+      "file": "car_08_pipeline/11-what-to-ask-at-each-stage.md"
+    },
+    {
+      "id": "l12-debrief-and-decision",
+      "title": "The debrief, and how mixed signals get weighed",
+      "minutes": 17,
+      "covers": [
+        "PLACEHOLDER"
+      ],
+      "file": "car_08_pipeline/12-debrief-and-decision.md"
+    }
+  ],
   "car_09_screens": [
     {
       "id": "l01-the-recruiter-screen",
@@ -689,11 +799,20 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-clarifying-questions",
       "title": "Clarifying questions before you answer",
-      "minutes": 20,
+      "minutes": 21,
       "covers": [
         "asking clarifying questions before answering"
       ],
       "file": "car_09_screens/07-clarifying-questions.md"
+    },
+    {
+      "id": "l08-pd-control-out-loud",
+      "title": "PD control, out loud",
+      "minutes": 26,
+      "covers": [
+        "reported topics: PD control, orbit determination, frequency-domain analysis"
+      ],
+      "file": "car_09_screens/08-pd-control-out-loud.md"
     }
   ],
   "car_10_past_project_presentation": [
@@ -706,6 +825,16 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "the four evaluation axes: technical depth, communication clarity, simplicity of design approach, and defending engineering decisions under direct questioning"
       ],
       "file": "car_10_past_project_presentation/01-the-format-and-the-four-axes.md"
+    },
+    {
+      "id": "l02-choosing-the-five",
+      "title": "Choosing five topics you would be content to be handed",
+      "minutes": 19,
+      "covers": [
+        "choosing five topics so that every one is defensible and each shows a different competency",
+        "the trap of listing a project you cannot defend in depth"
+      ],
+      "file": "car_10_past_project_presentation/02-choosing-the-five.md"
     }
   ],
   "cod_cpp_01_basics": [
@@ -759,11 +888,20 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-values-references-and-python-names",
       "title": "Values, references, and what a variable really is",
-      "minutes": 21,
+      "minutes": 17,
       "covers": [
         "Values, references and the difference from Python names"
       ],
       "file": "cod_cpp_01_basics/06-values-references-and-python-names.md"
+    },
+    {
+      "id": "l07-const-constexpr-consteval-auto",
+      "title": "const, constexpr, consteval and auto",
+      "minutes": 16,
+      "covers": [
+        "const, constexpr, consteval, auto"
+      ],
+      "file": "cod_cpp_01_basics/07-const-constexpr-consteval-auto.md"
     }
   ],
   "cod_py_01_basics": [
@@ -793,6 +931,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "list, tuple, dict, set; slicing; truthiness; mutability"
       ],
       "file": "cod_py_01_basics/03-lists-and-tuples.md"
+    },
+    {
+      "id": "l04-dicts-sets-and-truthiness",
+      "title": "Dictionaries, sets and truthiness",
+      "minutes": 18,
+      "covers": [
+        "list, tuple, dict, set; slicing; truthiness; mutability"
+      ],
+      "file": "cod_py_01_basics/04-dicts-sets-and-truthiness.md"
     }
   ],
   "t0_m01_algebra_precalc": [
@@ -6781,11 +6928,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "cod_cpp_01_basics": {
-    "covered": 8,
+    "covered": 9,
     "total": 15,
     "complete": false,
     "missing": [
-      "const, constexpr, consteval, auto",
       "Functions, overloading, default arguments",
       "Arrays vs std::array vs std::vector; range-based for",
       "enum class; struct and class; access specifiers; namespaces",
@@ -7475,11 +7621,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "car_09_screens": {
-    "covered": 7,
+    "covered": 8,
     "total": 12,
     "complete": false,
     "missing": [
-      "reported topics: PD control, orbit determination, frequency-domain analysis",
       "recovering from a blank without bluffing",
       "the difference between I do not know and I do not know, here is how I would find out",
       "questions to ask the interviewing engineer",
@@ -7487,12 +7632,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "car_10_past_project_presentation": {
-    "covered": 2,
+    "covered": 4,
     "total": 13,
     "complete": false,
     "missing": [
-      "choosing five topics so that every one is defensible and each shows a different competency",
-      "the trap of listing a project you cannot defend in depth",
       "talk structure: problem, why it was hard, approach, the key decision and the alternatives rejected, verification, result, what you would do differently",
       "assertion-evidence slide design: a sentence headline that states the claim, a figure that proves it, no bullet dumps",
       "how many slides for 10 to 20 minutes, and why fewer is safer",
