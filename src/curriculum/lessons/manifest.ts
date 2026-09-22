@@ -177,6 +177,16 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "one page, reverse chronological, and what belongs in the top third"
       ],
       "file": "car_07_resume_and_referrals/01-one-page-and-the-top-third.md"
+    },
+    {
+      "id": "l02-keywords-and-the-skills-section",
+      "title": "Encoding the basic qualifications: keywords and the skills section",
+      "minutes": 18,
+      "covers": [
+        "encoding the basic qualifications so a keyword scan finds them: control systems, orbital mechanics, classical dynamics, aerodynamics, sensors and actuators, modeling and simulation, C++ and Python",
+        "skills sections without proficiency bar graphics"
+      ],
+      "file": "car_07_resume_and_referrals/02-keywords-and-the-skills-section.md"
     }
   ],
   "t0_m01_algebra_precalc": [
@@ -6899,14 +6909,12 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "car_07_resume_and_referrals": {
-    "covered": 1,
+    "covered": 3,
     "total": 13,
     "complete": false,
     "missing": [
-      "encoding the basic qualifications so a keyword scan finds them: control systems, orbital mechanics, classical dynamics, aerodynamics, sensors and actuators, modeling and simulation, C++ and Python",
       "quantified bullets: what you did, how, and the measured result",
       "the projects section as the primary section for candidates without industry GNC experience",
-      "skills sections without proficiency bar graphics",
       "applicant tracking system parsing: no tables, no multi-column layouts, no images, standard headings, PDF",
       "tailoring to one role family rather than submitting one generic resume everywhere",
       "the cover letter question and when it is worth the time",

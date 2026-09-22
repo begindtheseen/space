@@ -3,7 +3,7 @@ id: l01-basic-vs-preferred
 title: "Basic versus preferred: which lines can end an application"
 minutes: 19
 covers:
-  - BASIC versus PREFERRED qualifications: hard filter versus ranking signal
+  - "BASIC versus PREFERRED qualifications: hard filter versus ranking signal"
 ---
 
 Take a sentence like "Engineer II — 2+ years' experience, BS in Aerospace or related." Whoever wrote it folded three different kinds of claim into one line and did not tell you which is which: a condition that ends your application the moment it is unmet, a condition that only ever compares you against other candidates who already passed, and a condition a specific hiring manager might quietly read with some latitude if the rest of your case is strong. Treating all three the same way — as one undifferentiated wish list to feel discouraged by — is the single most common misreading of a job posting, and it costs people applications they would otherwise have won.
