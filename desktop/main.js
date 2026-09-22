@@ -27,10 +27,23 @@ const env = Object.freeze({
 const timing = Object.freeze({
   splashMinimumMs: env.e2e ? 300 : 1400,
   watchdogMs: env.e2e ? 3000 : 15000,
+  /*
+   * How long the splash may stay up after the renderer reports ready, while it
+   * warms its caches (src/lib/boot.ts). Deliberately separate from the
+   * watchdog: ready() still arrives at first commit, so a bundle that boots is
+   * never quarantined for doing this work, and a renderer that never finishes
+   * its warm-up only costs the wait below.
+   */
+  bootWarmupMs: env.e2e ? 400 : 6000,
   // Built-in bundles predating the ready() call are trusted after did-finish-load.
   finishLoadGraceMs: 300,
   autoCheckDelayMs: 4000,
 })
+
+/** The renderer sends this through the boot-status channel when warm-up ends. */
+const BOOT_DONE = '\u0000boot-done'
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
 const log = (...args) => console.log('[orbit]', ...args)
 const logError = (...args) => console.error('[orbit]', ...args)
@@ -261,6 +274,14 @@ async function boot({ active, ipc, updater, windowOptions, startUrl }) {
   })
   const wc = win.webContents
 
+  // Resolved when the renderer says its warm-up is finished. Never awaited on
+  // its own — always raced against a cap, so a renderer that never sends it
+  // cannot hold the window closed.
+  let resolveBootDone = () => {}
+  const bootDone = new Promise((resolve) => {
+    resolveBootDone = resolve
+  })
+
   const outcome = await new Promise((resolve) => {
     let settled = false
     const cleanup = []
@@ -273,6 +294,17 @@ async function boot({ active, ipc, updater, windowOptions, startUrl }) {
     const fail = (reason) => settle({ ok: false, reason })
 
     cleanup.push(ipc.onReady((sender) => sender === wc && settle({ ok: true, how: 'ready' })))
+
+    // The renderer warms its caches before reporting ready and names each step
+    // as it goes, so the splash says what is being done rather than sitting on
+    // a fixed message. See src/lib/boot.ts.
+    cleanup.push(
+      ipc.onBootStatus((text, sender) => {
+        if (sender !== wc) return
+        if (text === BOOT_DONE) resolveBootDone()
+        else void splash.status(text)
+      }),
+    )
 
     const onFinish = () => {
       if (!active.builtIn) return
@@ -347,6 +379,9 @@ async function boot({ active, ipc, updater, windowOptions, startUrl }) {
   }
 
   log(`renderer ready (${outcome.how})`)
+  // Hold the splash while the renderer warms its caches, but never past the
+  // cap: a missing boot-done must delay the window, not withhold it.
+  await Promise.race([bootDone, sleep(timing.bootWarmupMs)])
   await splash.waitMinimum()
   if (quitting || win.isDestroyed()) {
     splash.close()

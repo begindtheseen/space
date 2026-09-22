@@ -995,3 +995,276 @@
   font-size: 11.5px;
   color: var(--ink-2);
 }
+
+/* ── Lessons ─────────────────────────────────────────────────────────────── */
+.lesson {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 2px;
+  text-align: left;
+  background: none;
+  border: 0;
+  border-top: 1px solid var(--line-soft);
+  color: inherit;
+  cursor: pointer;
+}
+
+.lesson:first-child {
+  border-top: 0;
+}
+
+.lesson:hover .lesson__title {
+  color: var(--accent);
+}
+
+.lesson__num {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.lesson[data-done='true'] .lesson__num {
+  border-color: var(--ok);
+  color: var(--ok);
+}
+
+.lesson[data-next='true'] .lesson__num {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.lesson__title {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--ink);
+  line-height: 1.4;
+  transition: color 0.15s ease;
+}
+
+.lesson[data-done='true'] .lesson__title {
+  color: var(--ink-3);
+}
+
+.lesson__meta {
+  display: block;
+  margin-top: 2px;
+  font-size: 11px;
+  color: var(--ink-4);
+}
+
+.reader .h-page {
+  max-width: 30ch;
+}
+
+.reader__body {
+  padding: 22px 26px 26px;
+}
+
+/*
+ * Align the lesson's title block with the lesson's own text.
+ *
+ * The header sat at the page edge while the prose it introduced began a
+ * further 180px in, so the title did not line up with a single word of what
+ * it was titling. Putting the whole lesson on one axis is most of what
+ * "considered" looks like.
+ *
+ * The width is a length rather than `66ch` because `ch` resolves against each
+ * element's own font size: the same `66ch` on a heading and on body copy gives
+ * two different widths, which is exactly the misalignment being fixed. One
+ * shared value keeps them identical. Both containers are symmetrically padded,
+ * so centring each in its own parent puts them on the same centre line.
+ */
+.reader {
+  --reader-measure: 665px;
+}
+
+.reader .page-head,
+.reader__top,
+.reader__md.md {
+  max-width: var(--reader-measure);
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+}
+
+/* The prose sets its own 66ch measure; this only centres it. The 72ch here
+   used to override that and left the column wider than the type was set for. */
+.reader__md {
+  margin: 0 auto;
+}
+
+.reader__loading {
+  padding: 40px 0;
+  text-align: center;
+  font-size: 12px;
+  color: var(--ink-4);
+}
+
+.reader__nav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: var(--gap);
+  flex-wrap: wrap;
+}
+
+@media (max-width: 640px) {
+  .reader__body {
+    padding: 16px 14px 18px;
+  }
+}
+
+/* Playground: the missing-toolchain prompt. Shown only when a language could
+   run for real here but the compiler is not installed yet — the one thing
+   standing between a comparison and an actual test run. */
+.pg__install {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  margin-top: 10px;
+  padding: 10px 12px;
+  border: 1px solid rgba(255, 196, 92, 0.28);
+  border-radius: 8px;
+  background: rgba(255, 196, 92, 0.06);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.pg__install p {
+  margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.pg__install code {
+  font-family: var(--mono, ui-monospace, monospace);
+  font-size: 12px;
+}
+
+/* The corpus is written module by module, so a module can be partly taught.
+   Saying which topics are not written up yet is the difference between an
+   honest gap and a silent one — she can see what to read elsewhere instead. */
+.coverage-note {
+  margin-bottom: 18px;
+  padding: 12px 14px;
+  border: 1px solid rgba(120, 170, 255, 0.24);
+  border-left-width: 2px;
+  border-radius: 8px;
+  background: rgba(120, 170, 255, 0.05);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.coverage-note__head {
+  margin: 0;
+}
+
+.coverage-note details {
+  margin-top: 8px;
+}
+
+.coverage-note summary {
+  cursor: pointer;
+  color: var(--text-dim, #98a2b3);
+}
+
+.coverage-note ul {
+  margin: 8px 0 0;
+  padding-left: 20px;
+  color: var(--text-dim, #98a2b3);
+}
+
+.coverage-note li {
+  margin: 3px 0;
+}
+
+/* Read-aloud sits with the reader's own measure so it lines up with the text
+   it reads rather than with the edge of the window. */
+.reader .reader__aloud {
+  max-width: var(--reader-measure);
+  margin: 10px auto 0;
+  width: 100%;
+}
+
+/* ── Lessons matching a search ───────────────────────────────────────────────
+   Shown above the module grid, because when a lesson matches by name it is
+   almost always the thing she was actually looking for. */
+.lhits {
+  margin-bottom: var(--gap);
+  border: 1px solid var(--line-blue);
+  border-radius: var(--r-md);
+  background: var(--panel-2);
+  overflow: hidden;
+}
+
+.lhits__head {
+  padding: 9px 14px;
+  border-bottom: 1px solid var(--line-soft);
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.lhits__list {
+  display: flex;
+  flex-direction: column;
+}
+
+.lhits__item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas: 'title mins' 'where mins';
+  gap: 1px 12px;
+  width: 100%;
+  padding: 10px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--line-soft);
+  transition: background var(--t-fast) var(--ease-out);
+}
+
+.lhits__list li:last-child .lhits__item {
+  border-bottom: 0;
+}
+
+.lhits__item:hover {
+  background: var(--raise);
+}
+
+.lhits__title {
+  grid-area: title;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink-2);
+}
+
+.lhits__where {
+  grid-area: where;
+  font-size: 11px;
+  color: var(--ink-5);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lhits__mins {
+  grid-area: mins;
+  align-self: center;
+  font-size: 11px;
+  color: var(--ink-5);
+}

@@ -7,6 +7,16 @@
    ========================================================================== */
 import type { Memory } from './fsrs'
 import { newCard } from './fsrs'
+import { coerceParked, coerceRun, type FocusRun, type ParkedNote } from './focus'
+import {
+  coerceLive,
+  coerceMedia,
+  coercePlace,
+  coerceResume,
+  type LiveSession,
+  type MediaProgress,
+  type ResumePoint,
+} from './resume'
 
 export const STATE_VERSION = 1
 
@@ -57,6 +67,11 @@ export interface DaySnapshot {
   minutes: number
   /** Overall readiness at the end of that day, for the trend chart. */
   readiness: number
+  /**
+   * Focus blocks finished that day. Optional because it arrived after the
+   * first release and older day records simply do not have it.
+   */
+  blocks?: number
 }
 
 export interface Goals {
@@ -93,6 +108,22 @@ export interface Settings {
   weights?: number[]
   /** Set once the first-run welcome has been read or dismissed. */
   onboarded?: boolean
+  /**
+   * Keep the sidebar on screen permanently.
+   *
+   * Off by default, and the default is the point. A navigation rail in view
+   * the whole time she is reading is a standing invitation to go somewhere
+   * else, and going somewhere else is the failure mode this app exists to
+   * prevent. Hidden, the nearest way out of a lesson is the back control at
+   * the top of it, which returns her to the module she was working through
+   * rather than to a menu of everything else she could be doing. Anyone who
+   * finds that irritating can turn the rail back on.
+   */
+  pinSidebar?: boolean
+  /** Chosen read-aloud voice, by system name. Absent means "best available". */
+  voiceName?: string
+  /** Read-aloud speed multiplier. */
+  speechRate?: number
 }
 
 export interface LearnerState {
@@ -124,6 +155,50 @@ export interface LearnerState {
   read: Record<string, string>
   goals: Goals
   settings: Settings
+  /**
+   * Where she was when the app last closed — for any reason, including the
+   * power going out. Read by the "pick up where you left off" card.
+   */
+  resume?: ResumePoint
+  /**
+   * A session that was still running. Restoring it puts her back on the same
+   * question with the same text still in the box.
+   */
+  live?: LiveSession
+  /** Playback position per video, keyed by video id. */
+  media: Record<string, MediaProgress>
+  /** Position within a lesson, 0-1, keyed `moduleId::lessonId`. */
+  place: Record<string, number>
+  /**
+   * Workbench tasks she has got passing, task id to ISO time.
+   *
+   * Kept apart from `topics` and `items` on purpose. Nothing here reaches
+   * mastery, readiness, the review queue or the daily plan: the workbench is
+   * the thing she can do when she cannot face the thing that counts, and it
+   * stops being that the moment it starts counting.
+   */
+  bench: Record<string, string>
+  /**
+   * Hawthorne temporary postings she has already been shown, id to the ISO
+   * time it was first noticed.
+   *
+   * Kept so that "new since you last looked" survives a restart. Ids rather
+   * than titles: SpaceX reposts the same title regularly and a reposted
+   * requisition is a genuinely new chance to apply.
+   */
+  jobsSeen: Record<string, string>
+  /** ISO time of the last successful check of the job board. */
+  jobsCheckedAt?: string
+  /**
+   * A focus block that was running. Persisted so that closing the lid does not
+   * silently end a block she was half-way through.
+   */
+  focus?: FocusRun
+  /**
+   * Thoughts parked during a block, newest first. The point is that an
+   * intruding thought has somewhere to go that is not "stop studying".
+   */
+  parked: ParkedNote[]
 }
 
 export const ATTEMPT_LOG_LIMIT = 4000
@@ -162,6 +237,11 @@ export function newLearnerState(now: Date = new Date()): LearnerState {
     read: {},
     goals: { ...DEFAULT_GOALS },
     settings: { ...DEFAULT_SETTINGS },
+    media: {},
+    place: {},
+    bench: {},
+    jobsSeen: {},
+    parked: [],
   }
 }
 
@@ -192,7 +272,28 @@ export function migrateState(raw: unknown, now: Date = new Date()): LearnerState
     read: isRecordOf(r.read, 'string') ? { ...r.read } : {},
     goals: { ...base.goals, ...pickGoals(r.goals) },
     settings: { ...base.settings, ...pickSettings(r.settings) },
+    media: {},
+    place: coercePlace(r.place),
+    bench: isRecordOf(r.bench, 'string') ? { ...r.bench } : {},
+    jobsSeen: isRecordOf(r.jobsSeen, 'string') ? { ...r.jobsSeen } : {},
+    parked: coerceParked(r.parked),
     version: STATE_VERSION,
+  }
+
+  const jobsCheckedAt = str(r.jobsCheckedAt)
+  if (jobsCheckedAt) out.jobsCheckedAt = jobsCheckedAt
+
+  const resume = coerceResume(r.resume)
+  if (resume) out.resume = resume
+  const live = coerceLive(r.live)
+  if (live) out.live = live
+  const focus = coerceRun(r.focus)
+  if (focus) out.focus = focus
+  if (r.media && typeof r.media === 'object') {
+    for (const [k, v] of Object.entries(r.media)) {
+      const m = coerceMedia(v)
+      if (m) out.media[k] = m
+    }
   }
 
   if (r.items && typeof r.items === 'object') {
@@ -267,9 +368,21 @@ export function streak(state: LearnerState, now: Date = new Date()): number {
   return n
 }
 
+/** Focus blocks finished on a given day. */
+export function blocksOn(state: LearnerState, day: string): number {
+  return state.days[day]?.blocks ?? 0
+}
+
+export function blocksToday(state: LearnerState, now: Date = new Date()): number {
+  return blocksOn(state, dayKey(now))
+}
+
 function hasActivity(state: LearnerState, key: string): boolean {
   const d = state.days[key]
-  return !!d && (d.reviews > 0 || d.newItems > 0 || d.minutes > 0)
+  // A finished focus block counts even when it banked under a minute. She
+  // showed up and finished what she committed to, and a streak that punishes
+  // that is a streak that teaches her not to bother on a bad day.
+  return !!d && (d.reviews > 0 || d.newItems > 0 || d.minutes > 0 || (d.blocks ?? 0) > 0)
 }
 
 export function minutesThisWeek(state: LearnerState, now: Date = new Date()): number {
@@ -363,6 +476,7 @@ function coerceDay(v: unknown, key: string): DaySnapshot | null {
     newItems: Math.max(0, Math.round(num(d.newItems, 0, 0, 1e6))),
     minutes: Math.max(0, num(d.minutes, 0, 0, 1440)),
     readiness: num(d.readiness, 0, 0, 1),
+    blocks: Math.max(0, Math.round(num(d.blocks, 0, 0, 1000))),
   }
 }
 
@@ -394,5 +508,10 @@ function pickSettings(v: unknown): Partial<Settings> {
     // Only ever true: spreading an explicit `undefined` over the defaults
     // would still produce a key, and the flag is absent until it is set.
     ...(s.onboarded === true ? { onboarded: true } : {}),
+    ...(s.pinSidebar === true ? { pinSidebar: true } : {}),
+    ...(typeof s.voiceName === 'string' && s.voiceName ? { voiceName: s.voiceName.slice(0, 120) } : {}),
+    ...(typeof s.speechRate === 'number' && Number.isFinite(s.speechRate)
+      ? { speechRate: Math.min(2, Math.max(0.5, s.speechRate)) }
+      : {}),
   }
 }

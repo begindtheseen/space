@@ -33,6 +33,10 @@ const bridge = {
   ready() {
     ipcRenderer.send('orbit:ready')
   },
+  /** Reports a boot step so the splash can show what is being done. */
+  bootStatus(text) {
+    ipcRenderer.send('orbit:boot-status', String(text))
+  },
   updates: {
     getState: () => ipcRenderer.invoke('orbit:updates:get-state'),
     check: () => ipcRenderer.invoke('orbit:updates:check'),
@@ -41,6 +45,14 @@ const bridge = {
     rollback: () => ipcRenderer.invoke('orbit:updates:rollback'),
     setToken: (token) => ipcRenderer.invoke('orbit:updates:set-token', token === null ? null : String(token)),
     onState: (cb) => subscribe('orbit:updates:state', cb),
+  },
+  backup: {
+    write: (json) => ipcRenderer.invoke('orbit:backup:write', String(json)),
+    read: () => ipcRenderer.invoke('orbit:backup:read'),
+  },
+  run: {
+    detect: (refresh) => ipcRenderer.invoke('orbit:run:detect', refresh === true),
+    exec: (request) => ipcRenderer.invoke('orbit:run:exec', request),
   },
   openExternal: (url) => ipcRenderer.invoke('orbit:open-external', String(url)),
   onNavigate: (cb) => subscribe('orbit:navigate', cb),

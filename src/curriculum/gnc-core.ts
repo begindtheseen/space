@@ -1599,7 +1599,7 @@ assert np.allclose(P, P.T, atol=1e-10) and np.all(np.linalg.eigvalsh(P) > 0), "P
 A = np.array([[0.0, 1.0], [0.0, 0.0]])
 B = np.array([[0.0], [1.0]])
 K, P = lqr_gain(A, B, np.eye(2), np.array([[1.0]]))
-assert np.allclose(K.ravel(), [1.0, np.sqrt(2.0)], atol=1e-6), "expected K = [1, sqrt(2)], got %r" % (K,)`,
+assert np.allclose(K.ravel(), [1.0, np.sqrt(3.0)], atol=1e-6), "expected K = [1, sqrt(3)], got %r" % (K,)`,
           },
           {
             name: 'backward DRE converges to the CARE solution',
@@ -3548,7 +3548,7 @@ Write a short note explaining what physical situations in navigation create near
       {
         id: 'c_m33_davenport',
         front: 'Davenport q-method',
-        back: 'Build K = [[trace(B), z.T], [z, B + B.T - trace(B)*I]] where z = [B23-B32, B31-B13, B12-B21]. The optimal quaternion is the eigenvector of the LARGEST eigenvalue of K.',
+        back: 'Build K = [[trace(B), z.T], [z, B + B.T - trace(B)*I]] where z = [B32-B23, B13-B31, B21-B12]. The optimal quaternion is the eigenvector of the LARGEST eigenvalue of K. That sign of z is the one matching the convention used here (b = A r, with A(q) v = q (x) v (x) q*); flipping it returns the transpose.',
         formula: true,
       },
       {
@@ -4749,8 +4749,9 @@ def naive_sum(d1: np.ndarray, d2: np.ndarray) -> np.ndarray:
 def true_coning_rate(amp_deg: float = CONING_AMP_DEG, f_hz: float = CONING_FREQ_HZ) -> float:
     """Analytic drift rate of this motion about the third axis, rad/s.
 
-    TODO: for small amplitude it is amp^2 * omega. Note the SQUARE — halving
-    the cone angle cuts the drift by four.
+    TODO: for small amplitude it is amp^2 * omega / 2, the small-angle form of
+    the exact omega * (1 - cos(amp)). Note the SQUARE — halving the cone angle
+    cuts the drift by four.
     """
     raise NotImplementedError
 
@@ -4792,7 +4793,7 @@ assert corr[2] > 0.0`,
             name: 'and linearly in frequency',
             assert: `assert abs(true_coning_rate(1.0, 40.0)/true_coning_rate(1.0, 20.0) - 2.0) < 1e-9
 a, w = np.deg2rad(1.0), 2*np.pi*20.0
-assert abs(true_coning_rate(1.0, 20.0) - a*a*w) < 1e-12`,
+assert abs(true_coning_rate(1.0, 20.0) - a*a*w/2) < 1e-12`,
             hidden: true,
           },
         ],

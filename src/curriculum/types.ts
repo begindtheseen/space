@@ -10,6 +10,8 @@
      · every id in the whole corpus must be unique
    ========================================================================== */
 
+import type { LessonMeta } from './lessons/types'
+
 /** The four pillars shown on the dashboard. */
 export type TrackId = 'foundations' | 'coding' | 'gnc' | 'career'
 
@@ -89,17 +91,13 @@ export interface Flashcard {
   formula?: boolean
 }
 
-export interface Lesson {
-  id: string
-  title: string
-  /**
-   * Lightweight markdown: #/##/### headings, **bold**, *italic*, `code`,
-   * ```fenced blocks```, - lists, 1. ordered lists, > callouts, and $math$
-   * left as literal text. Rendered by `lib/markdown.ts`.
-   */
-  body: string
-  minutes: number
-}
+/**
+ * Written lessons live as markdown files under `curriculum/lessons/<moduleId>/`
+ * and are attached to modules from the generated manifest; only metadata is
+ * carried here and bodies load on demand. See `lessons/parse.ts` for the file
+ * format and `lessons/STYLE.md` for how they are written.
+ */
+export type { LessonMeta as Lesson } from './lessons/types'
 
 export interface Module {
   id: string
@@ -116,7 +114,7 @@ export interface Module {
   topics: string[]
   objectives: string[]
   resources: Resource[]
-  lessons?: Lesson[]
+  lessons?: LessonMeta[]
   exercises?: Exercise[]
   cards?: Flashcard[]
   quiz?: QuizItem[]

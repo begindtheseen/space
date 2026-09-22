@@ -2,11 +2,16 @@
 // validated; every invoke handler resolves (with an error-shaped state) rather
 // than rejecting, so a broken updater never surfaces as a raw IPC exception.
 import { BrowserWindow, ipcMain, shell } from 'electron'
+import { readBackup, writeBackup } from './backup.js'
+import { detectToolchains, runCode } from './runner.js'
 import { TOKEN_RE, TOKEN_RULE } from './config.js'
 
 const STATE_CHANNEL = 'orbit:updates:state'
 const NAVIGATE_CHANNEL = 'orbit:navigate'
 const MAX_URL_LENGTH = 2048
+
+/** @type {Set<(text: string, sender: Electron.WebContents) => void>} */
+const bootStatusListeners = new Set()
 
 /**
  * Opens https:/mailto: links in the system browser/mail client. Anything else is dropped.
@@ -145,7 +150,65 @@ export function registerIpc({ updater, config, versions, repo, allowedOrigins, l
     if (!openExternal(url, log)) log('open-external: rejected', typeof url === 'string' ? url.slice(0, 120) : typeof url)
   })
 
+  // The progress mirror. Both handlers swallow their own failures: the
+  // renderer's IndexedDB copy is the working one, and a disk problem must
+  // degrade the safety net rather than interrupt a study session.
+  // Boot progress from the renderer, forwarded to whoever is showing the
+  // splash. Dropped silently once the splash is gone.
+  ipcMain.on('orbit:boot-status', (event, text) => {
+    if (!isTrusted(event)) return
+    if (typeof text !== 'string' || text.length > 200) return
+    for (const listener of bootStatusListeners) listener(text, event.sender)
+  })
+
+  ipcMain.handle('orbit:backup:write', (event, json) => {
+    if (!isTrusted(event)) return false
+    return writeBackup(json, log)
+  })
+
+  ipcMain.handle('orbit:backup:read', (event) => {
+    if (!isTrusted(event)) return null
+    return readBackup(log)
+  })
+
+  // Running her code. Both handlers resolve rather than reject, so a missing
+  // compiler reaches the page as something explainable instead of a raw IPC
+  // exception the playground would have to guess at.
+  ipcMain.handle('orbit:run:detect', async (event, refresh) => {
+    if (!isTrusted(event)) return {}
+    try {
+      return await detectToolchains(refresh === true)
+    } catch (err) {
+      log('toolchain detect failed:', errorMessage(err))
+      return {}
+    }
+  })
+
+  ipcMain.handle('orbit:run:exec', async (event, request) => {
+    if (!isTrusted(event)) return null
+    try {
+      return await runCode(request, log)
+    } catch (err) {
+      return {
+        ok: false,
+        stage: 'run',
+        reason: errorMessage(err),
+        stdout: '',
+        stderr: '',
+        exitCode: null,
+        timedOut: false,
+        truncated: false,
+        ms: 0,
+      }
+    }
+  })
+
   return {
+    /** @param {(text: string, sender: Electron.WebContents) => void} listener */
+    onBootStatus(listener) {
+      bootStatusListeners.add(listener)
+      return () => bootStatusListeners.delete(listener)
+    },
     /** @param {(sender: Electron.WebContents) => void} listener */
     onReady(listener) {
       readyListeners.add(listener)

@@ -53,8 +53,32 @@ const tick = () => {
   }
   dismissSpinner()
   orbit?.ready()
+  void warmUp()
 }
 requestAnimationFrame(tick)
+
+/**
+ * Work the app was going to do anyway, done while the splash is still up.
+ *
+ * Deliberately started *after* ready(): the shell's watchdog quarantines a
+ * bundle that never reports ready, so the warm-up must never be able to delay
+ * that signal. The shell holds the splash for this separately and caps how
+ * long it will wait, so a warm-up that stalls costs a moment, never a launch.
+ */
+async function warmUp() {
+  try {
+    const [{ runBoot, BOOT_DONE_SIGNAL }, { loadState }] = await Promise.all([
+      import('@/lib/boot'),
+      import('@/engine/store'),
+    ])
+    const state = await loadState()
+    await runBoot(state, (label) => orbit?.bootStatus(label))
+    orbit?.bootStatus(BOOT_DONE_SIGNAL)
+  } catch {
+    // A failed warm-up is a cold cache, nothing more. Release the splash.
+    orbit?.bootStatus('\u0000boot-done')
+  }
+}
 
 // Menu items ("Check for Updates…") land on a route through the shell.
 orbit?.onNavigate((path) => {

@@ -8,21 +8,23 @@
    you to what the first two steps taught — and the page leads with whichever
    step is next, so a first visit never opens on a quiz.
 
-   Modules carry no written lessons on purpose: ORBIT links to the best free
-   material rather than paraphrasing it. The Learn step has to make that
-   explicit, or a beginner reads the flashcards as a test they were never
-   taught for.
+   Lessons are being written module by module. Where they exist, the Learn
+   step leads with them and the cited resources become further reading; where
+   they do not yet, the Learn step says so plainly and points at the resources,
+   or a beginner reads the flashcards as a test they were never taught for.
 
    The one other decision this page has to make well: if the module is locked,
    say so plainly and point upstream instead of letting someone grind against
    material they do not have the prerequisites for.
    ========================================================================== */
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   IconArrowRight,
   IconBook,
   IconCheck,
   IconChevronLeft,
+  IconChevronRight,
+  IconClock,
   IconFlame,
   IconLink,
   IconLock,
@@ -34,13 +36,16 @@ import {
   IconWarn,
 } from '@/components/icons'
 import { Bar, Button, Card, CardHead, Chip, Empty, Ring, Tile } from '@/components/ui'
-import { TRACKS, moduleById } from '@/curriculum'
-import type { Exercise, Flashcard, Module, Resource } from '@/curriculum/types'
-import { markRead, togglePin } from '@/engine/apply'
+import { TRACKS, lessonCoverage, lessonKey, loadLessonBody, moduleById } from '@/curriculum'
+import type { Exercise, Flashcard, Lesson as LessonMeta, Module, Resource } from '@/curriculum/types'
+import { markLessonRead, markRead, togglePin } from '@/engine/apply'
 import { atomsOf, dueAtoms } from '@/engine/scheduler'
 import { diagnoseModule } from '@/engine/diagnose'
 import { getItem, type LearnerState } from '@/engine/state'
 import { currentR } from '@/engine/fsrs'
+import { ReadAloud } from '@/components/ReadAloud'
+import { ReadingProgress } from '@/components/ReadingProgress'
+import { useReadingPlace } from '@/hooks/useReadingPlace'
 import { useLearner } from '@/hooks/useLearner'
 import { formatDate } from '@/lib/format'
 import { Markdown } from '@/lib/markdown'
@@ -92,12 +97,19 @@ interface Status {
   exercises: number
   /** Code exercises with a saved playground buffer. */
   started: number
+  lessons: number
+  lessonsRead: number
+  lessonMinutes: number
 }
 
 function statusOf(state: LearnerState, module: Module, now: Date): Status {
   const atoms = atomsOf(module)
   const exercises = module.exercises ?? []
+  const lessons = module.lessons ?? []
   return {
+    lessons: lessons.length,
+    lessonsRead: lessons.filter((l) => !!state.read[lessonKey(module.id, l.id)]).length,
+    lessonMinutes: lessons.reduce((a, l) => a + l.minutes, 0),
     atoms: atoms.length,
     cards: module.cards?.length ?? 0,
     quiz: module.quiz?.length ?? 0,
@@ -146,6 +158,13 @@ function ModuleView({ module }: { module: Module }) {
 
   const startRecall = () => navigate(`/review?module=${module.id}`)
   const markStudied = () => setState((s) => markRead(s, module.id, new Date()))
+
+  const openLesson = route.query.lesson
+    ? (module.lessons ?? []).find((l) => l.id === route.query.lesson)
+    : undefined
+  if (openLesson) {
+    return <LessonReader module={module} lesson={openLesson} />
+  }
 
   return (
     <div className="page page--padtop">
@@ -236,6 +255,11 @@ function ModuleView({ module }: { module: Module }) {
                 </span>
               </div>
               <div style={{ marginTop: 13, fontSize: 11.5, color: 'var(--ink-4)', lineHeight: 1.8 }}>
+                {status.lessons > 0 ? (
+                  <div>
+                    {status.lessonsRead} of {status.lessons} lessons read
+                  </div>
+                ) : null}
                 <div>{status.read ? `Studied ${formatDate(status.read) ?? ''}` : 'Not yet marked as studied'}</div>
                 <div>
                   {status.seen} of {status.atoms} items seen in recall
@@ -271,7 +295,9 @@ function StudyPath({
   const meta: Record<Step, string> = {
     learn: status.read
       ? `Studied ${formatDate(status.read) ?? ''}`
-      : `${status.cards} note${status.cards === 1 ? '' : 's'} · resources first`,
+      : status.lessons > 0
+        ? `${status.lessonsRead} of ${status.lessons} lessons · ${formatMinutes(status.lessonMinutes)}`
+        : `${status.cards} note${status.cards === 1 ? '' : 's'} · resources first`,
     practice:
       status.exercises === 0
         ? 'No exercises'
@@ -331,13 +357,58 @@ function Learn({
   onMark: () => void
   onMarkAndRecall: () => void
 }) {
+  const { state } = useLearner()
   const cards = module.cards ?? []
+  const lessons = module.lessons ?? []
   // Free first — the whole point is that this is studiable without spending.
   const resources = [...module.resources].sort((a, b) => Number(b.free) - Number(a.free))
   const startHere = resources[0]
+  const hasLessons = lessons.length > 0
+  const firstUnread = lessons.find((l) => !state.read[lessonKey(module.id, l.id)])
+  const coverage = lessonCoverage(module.id)
 
   return (
     <>
+      {/* The corpus is still being written. A module that teaches four of its
+          eleven topics says so here, with the missing ones named, so a partly
+          written module can never be mistaken for the finished article and she
+          knows to use the reading below for the rest. */}
+      {coverage && !coverage.complete ? (
+        <div className="coverage-note" data-empty={coverage.covered === 0}>
+          <p className="coverage-note__head">
+            {coverage.covered === 0 ? (
+              <>
+                <strong>
+                  None of this module&rsquo;s {coverage.total} topics are taught in the app yet.
+                </strong>{' '}
+                The lessons are being written. Everything below — the objectives, the topic list,
+                the exercises and the reading — is real and usable in the meantime.
+              </>
+            ) : (
+              <>
+                <strong>
+                  These lessons cover {coverage.covered} of this module&rsquo;s {coverage.total}{' '}
+                  topics.
+                </strong>{' '}
+                The rest are still being written. Until they land, use the reading below for them.
+              </>
+            )}
+          </p>
+          <details>
+            <summary>
+                {coverage.covered === 0
+                  ? 'What this module will teach'
+                  : 'Topics not yet written up'}
+              </summary>
+            <ul>
+              {coverage.missing.map((t) => (
+                <li key={t}>{t}</li>
+              ))}
+            </ul>
+          </details>
+        </div>
+      ) : null}
+
       {!status.read ? (
         <Card index={0}>
           <CardHead icon={<IconRoute size={15} />} title="How to study this module" divided />
@@ -352,17 +423,25 @@ function Learn({
               </li>
               <li>
                 <span className="steps__num">2</span>
-                <span>
-                  <strong>Work through the resources, in order.</strong> ORBIT has no lessons of
-                  its own — it links the best free material rather than paraphrasing it.
-                  {startHere ? (
-                    <>
-                      {' '}
-                      Start with <em>{startHere.title}</em>
-                      {startHere.author ? ` (${startHere.author})` : ''}.
-                    </>
-                  ) : null}
-                </span>
+                {hasLessons ? (
+                  <span>
+                    <strong>Work through the lessons, in order.</strong> They teach everything the
+                    recall items test, with derivations and worked examples; the resources
+                    underneath are optional depth, not required reading.
+                  </span>
+                ) : (
+                  <span>
+                    <strong>Work through the resources, in order.</strong> This module’s written
+                    lessons are still on their way, so for now it links the best free material.
+                    {startHere ? (
+                      <>
+                        {' '}
+                        Start with <em>{startHere.title}</em>
+                        {startHere.author ? ` (${startHere.author})` : ''}.
+                      </>
+                    ) : null}
+                  </span>
+                )}
               </li>
               <li>
                 <span className="steps__num">3</span>
@@ -377,7 +456,47 @@ function Learn({
         </Card>
       ) : null}
 
-      <Card index={1}>
+      {hasLessons ? (
+        <Card index={1}>
+          <CardHead
+            icon={<IconBook size={15} />}
+            title={`Lessons (${lessons.length})`}
+            right={
+              <span className="eyebrow-dim">
+                {status.lessonsRead} of {lessons.length} read · {formatMinutes(status.lessonMinutes)}
+              </span>
+            }
+            divided
+          />
+          <div className="sect" style={{ paddingTop: 6, paddingBottom: 6 }}>
+            {lessons.map((l, i) => {
+              const done = !!state.read[lessonKey(module.id, l.id)]
+              return (
+                <button
+                  key={l.id}
+                  className="lesson"
+                  data-done={done}
+                  data-next={!done && firstUnread?.id === l.id}
+                  onClick={() => navigate(`/module/${module.id}?lesson=${l.id}`)}
+                  type="button"
+                >
+                  <span className="lesson__num">{done ? <IconCheck size={13} /> : i + 1}</span>
+                  <span className="grow" style={{ minWidth: 0 }}>
+                    <span className="lesson__title">{l.title}</span>
+                    <span className="lesson__meta">
+                      {l.minutes} min
+                      {!done && firstUnread?.id === l.id ? ' · up next' : done ? ' · read' : ''}
+                    </span>
+                  </span>
+                  <IconChevronRight size={14} style={{ color: 'var(--ink-5)', flex: 'none' }} />
+                </button>
+              )
+            })}
+          </div>
+        </Card>
+      ) : null}
+
+      <Card index={hasLessons ? 2 : 1}>
         <CardHead icon={<IconTarget size={15} />} title="What you will be able to do" divided />
         <div className="sect">
           <ul className="objlist">
@@ -391,10 +510,10 @@ function Learn({
         </div>
       </Card>
 
-      <Card index={2}>
+      <Card index={hasLessons ? 3 : 2}>
         <CardHead
           icon={<IconBook size={15} />}
-          title={`Resources (${resources.length})`}
+          title={`${hasLessons ? 'Further reading' : 'Resources'} (${resources.length})`}
           right={<span className="eyebrow-dim">free first</span>}
           divided
         />
@@ -404,7 +523,7 @@ function Learn({
               None cited yet. Work from the objectives and the exercises.
             </p>
           ) : (
-            resources.map((r, i) => <ResourceRow key={i} resource={r} startHere={i === 0} />)
+            resources.map((r, i) => <ResourceRow key={i} resource={r} startHere={!hasLessons && i === 0} />)
           )}
         </div>
       </Card>
@@ -847,6 +966,166 @@ function UnlocksCard({ dag, module }: { dag: ReturnType<typeof useLearner>['dag'
       </div>
     </Card>
   )
+}
+
+/* ── Lesson reader ───────────────────────────────────────────────────────── */
+
+function LessonReader({ module, lesson }: { module: Module; lesson: LessonMeta }) {
+  const { state, setState } = useLearner()
+  const lessons = module.lessons ?? []
+  const index = lessons.findIndex((l) => l.id === lesson.id)
+  const prev = index > 0 ? lessons[index - 1] : undefined
+  const next = index >= 0 && index < lessons.length - 1 ? lessons[index + 1] : undefined
+  const done = !!state.read[lessonKey(module.id, lesson.id)]
+  const [body, setBody] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    let alive = true
+    setBody(null)
+    setError(null)
+    loadLessonBody(lesson)
+      .then((b) => {
+        if (alive) setBody(b)
+      })
+      .catch((err: unknown) => {
+        if (alive) setError(err instanceof Error ? err.message : String(err))
+      })
+    // A new lesson is a new page; the shell only resets scroll on path changes.
+    // useReadingPlace restores a saved position after this, on the next frame.
+    document.querySelector('.scroll')?.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior })
+    return () => {
+      alive = false
+    }
+  }, [lesson])
+
+  useReadingPlace({
+    placeKey: lessonKey(module.id, lesson.id),
+    ready: body !== null,
+    resume: {
+      kind: 'lesson',
+      path: `/module/${module.id}?lesson=${lesson.id}`,
+      label: module.title,
+      detail: `${lesson.title} · lesson ${index + 1} of ${lessons.length}`,
+      moduleId: module.id,
+      lessonId: lesson.id,
+    },
+  })
+
+  const markDone = () =>
+    setState((s) =>
+      markLessonRead(
+        s,
+        module.id,
+        lesson.id,
+        lessons.map((l) => l.id),
+        new Date(),
+      ),
+    )
+  const go = (l: LessonMeta | undefined) =>
+    navigate(l ? `/module/${module.id}?lesson=${l.id}` : `/module/${module.id}?step=learn`)
+
+  return (
+    <div className="page page--padtop reader">
+      <ReadingProgress active={body !== null} />
+      <div className="reader__aloud">
+        <ReadAloud markdown={body} />
+      </div>
+      <div className="reader__top" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 14 }}>
+        <button
+          className="btn btn--quiet btn--sm"
+          onClick={() => navigate(`/module/${module.id}?step=learn`)}
+          style={{ paddingLeft: 6 }}
+          type="button"
+        >
+          <IconChevronLeft size={14} />
+          {module.title}
+        </button>
+        <span className="eyebrow-dim">
+          Lesson {index + 1} of {lessons.length}
+        </span>
+      </div>
+
+      <div className="page-head" style={{ paddingTop: 12 }}>
+        <div style={{ minWidth: 0 }}>
+          <div className="page-head__kicker" style={{ color: TRACKS[module.track].accent }}>
+            <IconClock size={13} />
+            {lesson.minutes} min read
+            {done ? (
+              <span style={{ marginLeft: 6 }}>
+                <Chip tone="ok">read</Chip>
+              </span>
+            ) : null}
+          </div>
+          <h1 className="h-page">{lesson.title}</h1>
+        </div>
+      </div>
+
+      <Card index={0}>
+        <div className="sect reader__body">
+          {error ? (
+            <Empty
+              icon={<IconWarn size={28} />}
+              title="This lesson could not be loaded"
+              body={error}
+              action={
+                <Button variant="ghost" size="md" onClick={() => go(undefined)}>
+                  Back to the module
+                </Button>
+              }
+            />
+          ) : body === null ? (
+            <div className="reader__loading">Loading lesson…</div>
+          ) : (
+            <Markdown className="reader__md">{body}</Markdown>
+          )}
+        </div>
+      </Card>
+
+      <div className="reader__nav">
+        <Button variant="ghost" size="md" onClick={() => go(prev)} disabled={!prev}>
+          <IconChevronLeft size={15} />
+          {prev ? prev.title : 'Previous'}
+        </Button>
+        <span className="grow" />
+        {done ? (
+          <Button variant="primary" size="md" onClick={() => go(next)}>
+            {next ? 'Next lesson' : 'Back to the module'}
+            <IconArrowRight size={15} />
+          </Button>
+        ) : (
+          <Button
+            variant="primary"
+            size="md"
+            onClick={() => {
+              markDone()
+              go(next)
+            }}
+            disabled={body === null}
+          >
+            <IconCheck size={15} />
+            {next ? 'Mark as read · next lesson' : 'Mark as read · back to the module'}
+          </Button>
+        )}
+      </div>
+      {next ? (
+        <p className="track-note">
+          Up next: {next.title} · {next.minutes} min
+        </p>
+      ) : (
+        <p className="track-note">
+          That is the last lesson. Skim the notes on the module page, then move on to Recall.
+        </p>
+      )}
+    </div>
+  )
+}
+
+function formatMinutes(m: number): string {
+  if (m < 60) return `${Math.round(m)} min`
+  const h = Math.floor(m / 60)
+  const r = Math.round(m % 60)
+  return r === 0 ? `${h} h` : `${h} h ${r} min`
 }
 
 function trackPath(track: Module['track']): string {

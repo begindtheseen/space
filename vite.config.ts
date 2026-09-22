@@ -13,11 +13,11 @@ export default defineConfig({
   },
   build: {
     target: 'es2022',
-    // The curriculum chunk is legitimately ~600KB gzipped: it is the entire
-    // corpus, and the dashboard cannot compute readiness without every
-    // module's prereqs and item ids. It is fetched once and then served from
-    // the service worker, so the cost is paid on first visit only. Splitting
-    // the light metadata from the heavy card/quiz bodies is the next real win
+    // The curriculum chunk carries the whole corpus of module definitions,
+    // because the dashboard cannot compute readiness without every module's
+    // prereqs and item ids. It is fetched once and then served from the
+    // service worker, so the cost is paid on first visit only. Splitting the
+    // light metadata from the heavy card/quiz bodies is the next real win
     // here, and wants a build step rather than a manualChunks tweak.
     chunkSizeWarningLimit: 2000,
     rollupOptions: {
@@ -30,6 +30,17 @@ export default defineConfig({
           if (id.includes('node_modules/react') || id.includes('node_modules/scheduler')) {
             return 'react'
           }
+          /*
+           * Lesson bodies live under src/curriculum/lessons/<module>/*.md and
+           * are pulled in by a lazy import.meta.glob precisely so they load
+           * one at a time, when opened. A path test that matched them swept
+           * every lesson into this chunk and silently undid that: the corpus
+           * went from a few hundred kilobytes to twelve megabytes, all of it
+           * fetched and parsed before the dashboard could paint, and growing
+           * with every lesson written. Markdown is excluded by extension so
+           * the dynamic imports split the way the loader documents.
+           */
+          if (/\.md(\?|$)/.test(id)) return undefined
           if (id.includes('/src/curriculum/')) return 'curriculum'
           if (id.includes('/src/engine/')) return 'engine'
           return undefined

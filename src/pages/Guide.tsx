@@ -18,6 +18,7 @@ import {
   IconBriefcase,
   IconBulb,
   IconCalendar,
+  IconClock,
   IconCode,
   IconCompass,
   IconDoc,
@@ -73,6 +74,12 @@ const MASTERY: SectionDef = {
   Icon: IconTarget,
 }
 const DAY: SectionDef = { id: 'day', label: 'Your day', title: 'Your day', Icon: IconCalendar }
+const BLOCK: SectionDef = {
+  id: 'block',
+  label: 'Focus blocks',
+  title: 'Focus blocks, for the days you do not want to',
+  Icon: IconClock,
+}
 const PRACTICE: SectionDef = {
   id: 'practice',
   label: 'Practice',
@@ -82,7 +89,18 @@ const PRACTICE: SectionDef = {
 const PAGES: SectionDef = { id: 'pages', label: 'Other pages', title: 'The other pages', Icon: IconGrid }
 const FAQ: SectionDef = { id: 'faq', label: 'Questions', title: 'Questions people ask', Icon: IconInfo }
 
-const SECTIONS: SectionDef[] = [WHAT, START, MODULE, RECALL, MASTERY, DAY, PRACTICE, PAGES, FAQ]
+const SECTIONS: SectionDef[] = [
+  WHAT,
+  START,
+  MODULE,
+  RECALL,
+  MASTERY,
+  DAY,
+  BLOCK,
+  PRACTICE,
+  PAGES,
+  FAQ,
+]
 
 const anchorId = (id: string) => `guide-${id}`
 const titleId = (id: string) => `guide-${id}-title`
@@ -282,11 +300,13 @@ export function Guide() {
               exercises, code that runs in the browser, and questions with worked explanations.
             </p>
             <p>
-              It is <strong>not a textbook</strong>. No module has written lessons. Each one points
-              at the best free material on its subject — Khan Academy, OpenStax, MIT
-              OpenCourseWare, Paul’s Online Math Notes, NASA technical reports and their like — and
-              then holds you to it with flashcards, questions and exercises. ORBIT links; it never
-              reproduces.
+              It is becoming a <strong>textbook as well</strong>. Modules carry written lessons
+              — derivations, worked examples and check-yourself questions, written for this app and
+              rendered with real mathematics — and they are arriving track by track, Foundations
+              first. Where a module has them, they are the Learn step and the cited material
+              (Khan Academy, OpenStax, MIT OpenCourseWare, NASA technical reports and their like)
+              becomes further reading. Where a module does not yet, the page says so and points at
+              the best free material until its lessons land.
             </p>
           </div>
           <div className="sect">
@@ -490,10 +510,13 @@ export function Guide() {
               because an exercise is where you find out whether the reading landed.
             </p>
             <p>
-              <strong>There are no built-in lessons, and that is deliberate.</strong> A paraphrase
-              of a good textbook is a worse textbook. Each module names the best free material for
-              its objectives, marks the one to start with, and adds only what a source cannot: the
-              notes, the exercises, the questions and the schedule.
+              <strong>Lessons are written to be enough on their own.</strong> Every lesson names
+              the module topics it covers, and a module’s lessons together must cover every topic
+              the module lists — that is checked, not hoped for. Each one teaches from the ground
+              up, derives what it asks you to remember, works numbers through, and ends with
+              questions whose answers fold open. Read them in order; each marks itself read as you
+              go, and the last one marks the module studied. The Notes below the lessons are the
+              flashcards laid out to read, and the resources are there for depth.
             </p>
             <p>
               <strong>Mark as studied</strong> is how you tell ORBIT the Learn step is done. It is
@@ -774,7 +797,36 @@ export function Guide() {
         </Section>
 
         {/* ── 7. Practice ─────────────────────────────────────────────────── */}
-        <Section def={PRACTICE} index={7}>
+        <Section def={BLOCK} index={7}>
+          <div className="sect guide-prose">
+            <p>
+              Choosing is the expensive part. Seventeen modules, a review queue and a playground is
+              a menu, and a menu at the end of a tired day is a reason to close the laptop. A focus
+              block removes the menu. <strong>Start here</strong> on the dashboard picks one thing,
+              says why it picked that one, and starts a fifteen-minute block on a single click.
+            </p>
+            <p>
+              Fifteen minutes is the default because it is the smallest promise still worth keeping.
+              You are not being asked to study all evening; you are being asked for a quarter of an
+              hour with a visible end. Most blocks run past it, because starting was the only hard
+              part.
+            </p>
+            <p>
+              The timer sits at the bottom of the window and follows you into the lesson, so the
+              block survives going and doing the thing. While it runs there is a box to{' '}
+              <strong>park a thought</strong> — the email, the bill, the thing to look up — so an
+              interruption has somewhere to go that is not stopping. Parked notes wait for you on
+              the Focus page.
+            </p>
+            <p>
+              Stopping early costs nothing. Every block that is ended is credited with the time it
+              really ran, and a finished block counts as showing up even if it banked under a
+              minute. Nothing here will ever tell you that you fell short.
+            </p>
+          </div>
+        </Section>
+
+        <Section def={PRACTICE} index={8}>
           <div className="sect">
             <ul className="guide-list guide-list--kinds">
               {EXERCISE_KINDS.map((k) => (
@@ -798,10 +850,25 @@ export function Guide() {
               runs for real against{' '}
               <ExternalLink href="https://sql.js.org">SQLite compiled to WebAssembly</ExternalLink>,
               each exercise on a fresh in-memory database. {exerciseCounts.tested} exercises carry
-              tests you can pass. C++, Rust and shell are not compiled here — no browser toolchain
-              is small enough to ship — so you write them in the editor, compare against the
-              reference solution, and run them locally; MATLAB and Simulink exercises ship a NumPy
-              equivalent instead. The header always says which of these applies.
+              tests you can pass. In the desktop app, C, C++, Rust and shell are compiled and run
+              for real using the toolchain already on your Mac, and those exercises are graded by
+              running your program and the reference solution and comparing what they actually
+              printed. MATLAB runs through GNU Octave when it is installed, and still ships a NumPy
+              equivalent when it is not. Where a compiler is missing, the header says which one and
+              gives you the command that installs it, and falls back to comparing against the
+              expected output until then. It always says which of these just happened, because a
+              green tick on a string comparison would be worth less than nothing.
+            </p>
+            <p>
+              <strong>The workbench</strong> is the other place code runs, and it is deliberately
+              outside everything else. It holds small pieces of the actual job — retune a rate loop
+              until it meets its margins, find the sign error in a frame transform, size a landing
+              burn, stop a filter diverging. Your code runs against a real scenario and you get a
+              margin report back rather than a mark: not &ldquo;correct&rdquo; but &ldquo;gain
+              margin 4.2 dB, you need 6&rdquo;. None of it counts towards your mastery, readiness,
+              review queue or daily plan, on purpose. It is the thing to open on a day when the
+              curriculum feels like homework, and it would stop being that the moment it started
+              counting.
             </p>
             <p>
               The first time you open the playground it downloads the runtime — several megabytes,
@@ -814,7 +881,7 @@ export function Guide() {
         </Section>
 
         {/* ── 8. Other pages ──────────────────────────────────────────────── */}
-        <Section def={PAGES} index={8}>
+        <Section def={PAGES} index={9}>
           <div className="sect" style={{ paddingTop: 6, paddingBottom: 6 }}>
             <PageRow
               icon={<IconBook size={17} />}
@@ -851,7 +918,7 @@ export function Guide() {
         </Section>
 
         {/* ── 9. FAQ ──────────────────────────────────────────────────────── */}
-        <Section def={FAQ} index={9}>
+        <Section def={FAQ} index={10}>
           <div className="sect">
             <div className="guide-faq">
               <Faq q="I pressed Start and got a quiz. Where is the lesson?">

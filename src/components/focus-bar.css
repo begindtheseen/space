@@ -1,0 +1,233 @@
+/* ============================================================================
+   ORBIT — the focus block strip
+   ----------------------------------------------------------------------------
+   Anchored to the bottom rather than the top: the top bar is already sticky
+   and carries the mission phase, and a second bar up there would push every
+   page down and fight the hero artwork for the first thing she sees. The
+   bottom is also where the eye is not, which is right for something that must
+   stay available without demanding attention every second it is on screen.
+   ========================================================================== */
+.fbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 18px;
+  background: linear-gradient(180deg, rgba(4, 16, 31, 0.97) 0%, rgba(1, 9, 19, 0.99) 100%);
+  border-top: 1px solid var(--line-blue);
+  /* Lifts the strip off the page without a drop shadow pointing the wrong way. */
+  box-shadow: 0 -1px 0 rgba(86, 150, 248, 0.08), 0 -14px 34px rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(14px);
+}
+
+/* Above the drawer breakpoint the sidebar holds its own column, so the strip
+   starts beside it rather than lying across it. */
+@media (min-width: 981px) {
+  .fbar {
+    left: var(--sidebar-w);
+  }
+}
+
+/* The strip is fixed, so it would otherwise sit on top of the last thing on
+   the page. The scroll container gives back exactly its height while a block
+   is running, and nothing at all when one is not. */
+.shell[data-focus='true'] .scroll {
+  padding-bottom: 76px;
+}
+
+@media (max-width: 760px) {
+  .shell[data-focus='true'] .scroll {
+    padding-bottom: 116px;
+  }
+}
+
+.fbar[data-done='true'] {
+  border-top-color: rgba(52, 211, 153, 0.4);
+}
+
+/* ── The dial ────────────────────────────────────────────────────────────── */
+.fbar__dial {
+  flex-shrink: 0;
+  /* Twelve o'clock, and draining clockwise. */
+  transform: rotate(-90deg);
+}
+
+.fbar__dial-track {
+  fill: none;
+  stroke: var(--track);
+  stroke-width: 3;
+}
+
+.fbar__dial-arc {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 3;
+  stroke-linecap: round;
+  /* One second per tick, so the arc is redrawn a second at a time. Easing it
+     over most of that second turns the step into a sweep without the arc ever
+     lagging far enough behind to disagree with the digits beside it. */
+  transition: stroke-dashoffset 850ms linear, stroke var(--t-mid) var(--ease-out);
+}
+
+.fbar__dial[data-paused='true'] .fbar__dial-arc {
+  stroke: var(--ink-4);
+  transition: stroke var(--t-mid) var(--ease-out);
+}
+
+.fbar__dial[data-done='true'] .fbar__dial-arc {
+  stroke: var(--ok);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fbar__dial-arc {
+    transition: none;
+  }
+}
+
+/* ── Time ────────────────────────────────────────────────────────────────── */
+.fbar__time {
+  display: flex;
+  flex-direction: column;
+  min-width: 92px;
+}
+
+.fbar__clock {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.fbar[data-done='true'] .fbar__clock {
+  color: var(--ok);
+}
+
+.fbar__label {
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--ink-4);
+  margin-top: 2px;
+}
+
+/* ── The task ────────────────────────────────────────────────────────────── */
+.fbar__task {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+  padding: 7px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--raise);
+  text-align: left;
+  transition: border-color var(--t-fast) var(--ease-out), background var(--t-fast) var(--ease-out);
+}
+
+.fbar__task:hover {
+  border-color: var(--line-blue-strong);
+  background: var(--lift);
+}
+
+.fbar__task-title {
+  flex: 1;
+  min-width: 0;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--ink-2);
+}
+
+.fbar__task-go {
+  flex-shrink: 0;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+/* ── Actions ─────────────────────────────────────────────────────────────── */
+.fbar__acts,
+.fbar__park {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.fbar__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 11px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--panel-2);
+  color: var(--ink-3);
+  font-size: 11.5px;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: color var(--t-fast) var(--ease-out), border-color var(--t-fast) var(--ease-out);
+}
+
+.fbar__btn:hover {
+  color: var(--ink);
+  border-color: var(--line-strong);
+}
+
+.fbar__btn--end {
+  border-color: var(--line-blue);
+  color: var(--ink-2);
+}
+
+.fbar[data-done='true'] .fbar__btn--end {
+  border-color: rgba(52, 211, 153, 0.45);
+  color: var(--ok);
+}
+
+.fbar__note {
+  width: 260px;
+  padding: 7px 11px;
+  border: 1px solid var(--line-blue-strong);
+  border-radius: var(--r-md);
+  background: var(--abyss);
+  color: var(--ink);
+  font-size: 12px;
+}
+
+.fbar__note::placeholder {
+  color: var(--ink-5);
+}
+
+/* ── Narrow ──────────────────────────────────────────────────────────────── */
+@media (max-width: 760px) {
+  .fbar {
+    gap: 10px;
+    padding: 8px 12px;
+    flex-wrap: wrap;
+  }
+
+  .fbar__task {
+    order: 3;
+    flex-basis: 100%;
+  }
+
+  /* The words go; the icons and the clock stay, and those are the parts that
+     matter when there is no room. */
+  .fbar__btn span {
+    display: none;
+  }
+
+  .fbar__note {
+    width: 150px;
+  }
+}

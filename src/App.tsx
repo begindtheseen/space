@@ -17,6 +17,9 @@ const ModulePage = lazy(() => import('@/pages/Module').then((m) => ({ default: m
 const Review = lazy(() => import('@/pages/Review').then((m) => ({ default: m.Review })))
 const Track = lazy(() => import('@/pages/Track').then((m) => ({ default: m.Track })))
 const Playground = lazy(() => import('@/pages/Playground').then((m) => ({ default: m.Playground })))
+const Focus = lazy(() => import('@/pages/Focus').then((m) => ({ default: m.Focus })))
+const Bench = lazy(() => import('@/pages/Bench').then((m) => ({ default: m.Bench })))
+const Jobs = lazy(() => import('@/pages/Jobs').then((m) => ({ default: m.Jobs })))
 const Progress = lazy(() => import('@/pages/Progress').then((m) => ({ default: m.Progress })))
 const Resources = lazy(() => import('@/pages/Resources').then((m) => ({ default: m.Resources })))
 const Settings = lazy(() => import('@/pages/Settings').then((m) => ({ default: m.Settings })))
@@ -51,7 +54,23 @@ function Routed() {
             the empty pre-hydration state and show a learner nothing to do.
             IndexedDB resolves in a few milliseconds; the spinner is rarely
             seen and is far better than a wrong empty state. */}
-        {loaded ? <Page path={route.path} segments={route.segments} /> : <PageSpinner />}
+        {loaded ? (
+          /*
+           * Keyed on the path so React remounts on navigation and the entrance
+           * animation replays. Without the key the tree is reconciled in place
+           * and the new page simply appears, which reads as a jump cut.
+           *
+           * Deliberately an entrance only, with no exit: an exit animation
+           * would hold the old page on screen while she waits for the one she
+           * asked for, which is the opposite of responsive. The page she
+           * wanted is drawn immediately and settles.
+           */
+          <div className="route" key={route.path}>
+            <Page path={route.path} segments={route.segments} />
+          </div>
+        ) : (
+          <PageSpinner />
+        )}
       </Suspense>
     </Shell>
   )
@@ -67,6 +86,8 @@ function Page({ path, segments }: { path: string; segments: string[] }) {
       return <Learning />
     case 'module':
       return <ModulePage id={rest} />
+    case 'focus':
+      return <Focus />
     case 'review':
       return <Review />
     case 'foundations':
@@ -79,6 +100,10 @@ function Page({ path, segments }: { path: string; segments: string[] }) {
       return <Track track="career" />
     case 'playground':
       return <Playground />
+    case 'bench':
+      return <Bench />
+    case 'jobs':
+      return <Jobs />
     case 'progress':
       return <Progress />
     case 'resources':

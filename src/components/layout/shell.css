@@ -360,6 +360,78 @@
   animation: fade-in var(--t-mid) var(--ease-out);
 }
 
+/* ── The rail gets out of the way ────────────────────────────────────────────
+   The sidebar is hidden by default and comes back when the pointer moves to
+   the left edge. This is a focus decision, not a space-saving one. A list of
+   eleven destinations parked beside a lesson is a standing offer to abandon
+   it, and the offer gets taken on exactly the days this app is for. Out of
+   sight, the nearest way out of a lesson is the back control at the top of
+   it, which leads back into the work rather than away from it.
+
+   Settings has a switch to pin the rail open for anyone who would rather
+   have it, and below the drawer breakpoint none of this applies — there the
+   rail is already an overlay driven by the menu button. */
+@media (min-width: 821px) {
+  .shell[data-autohide='true'] .side {
+    position: fixed;
+    inset: 0 auto 0 0;
+    transform: translateX(-100%);
+    transition: transform var(--t-mid) var(--ease-out);
+    box-shadow: var(--sh-pop);
+    z-index: 45;
+  }
+
+  .shell[data-autohide='true'] .side[data-open='true'] {
+    transform: none;
+  }
+
+  /* The strip that listens for the pointer. It has no width worth seeing and
+     carries the only visible hint that anything is there. */
+  .edge-zone {
+    position: fixed;
+    inset: 0 auto 0 0;
+    width: 16px;
+    z-index: 44;
+  }
+
+  /* A short seam of light at the vertical centre of the edge: enough to read
+     as "something lives here", not enough to be furniture. */
+  .edge-zone::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    width: 2px;
+    height: 68px;
+    transform: translateY(-50%);
+    border-radius: 0 2px 2px 0;
+    background: linear-gradient(
+      180deg,
+      transparent,
+      rgba(86, 150, 248, 0.5),
+      transparent
+    );
+    transition: background var(--t-mid) var(--ease-out), height var(--t-mid) var(--ease-out);
+  }
+
+  .edge-zone:hover::after {
+    height: 120px;
+    background: linear-gradient(180deg, transparent, rgba(125, 184, 255, 0.85), transparent);
+  }
+
+  /* With the rail out of flow the block strip owns the full width. */
+  .shell[data-autohide='true'] .fbar {
+    left: 0;
+  }
+}
+
+/* Below the breakpoint the edge strip would sit under a thumb, so it goes. */
+@media (max-width: 820px) {
+  .edge-zone {
+    display: none;
+  }
+}
+
 /* ── Responsive ──────────────────────────────────────────────────────────────
    Three states:
      ≥1180px  full rail + right column

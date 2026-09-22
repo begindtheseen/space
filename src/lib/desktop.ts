@@ -64,11 +64,54 @@ export interface OrbitVersions {
   electron: string
 }
 
+export interface ToolchainInfo {
+  lang: string
+  label: string
+  available: boolean
+  /** The executable that will be used, e.g. `clang++`. */
+  bin?: string
+  /** First line of its `--version` output. */
+  version?: string
+  /** Shown when it is missing: the one command that installs it. */
+  install?: string
+}
+
+export interface RunRequest {
+  lang: string
+  source: string
+  /** Fed to the program on stdin. */
+  stdin?: string
+}
+
+export interface RunResult {
+  ok: boolean
+  /** Where it got to: `request`, `toolchain`, `setup`, `compile` or `run`. */
+  stage: string
+  stdout: string
+  stderr: string
+  exitCode: number | null
+  timedOut: boolean
+  /** Output was cut off at the cap. */
+  truncated: boolean
+  ms: number
+  /** The compiler that was used, for the record shown under the output. */
+  toolchain?: string
+  /** Why it did not run, in a sentence, when `ok` is false. */
+  reason?: string
+  /** How to install the missing toolchain, when that is the reason. */
+  install?: string
+}
+
 export interface OrbitBridge {
   readonly platform: 'darwin' | 'win32' | 'linux'
   readonly versions: Readonly<OrbitVersions>
   /** Tells the shell the renderer has painted; it then swaps the splash for the window. */
   ready(): void
+  /**
+   * Names the boot step in progress so the splash can show it. Fire and
+   * forget: the shell drops these once the splash is gone.
+   */
+  bootStatus(text: string): void
   readonly updates: {
     getState(): Promise<UpdateState>
     check(): Promise<UpdateState>
@@ -79,6 +122,26 @@ export interface OrbitBridge {
     rollback(): Promise<void>
     setToken(token: string | null): Promise<UpdateState>
     onState(cb: (state: UpdateState) => void): () => void
+  }
+  /**
+   * The progress mirror on disk. Survives the shell's browser storage being
+   * cleared or rebuilt, which IndexedDB does not; see desktop/backup.js.
+   */
+  readonly backup: {
+    /** Atomic write. Resolves false when the file could not be written. */
+    write(json: string): Promise<boolean>
+    /** The stored JSON, or null when there is no mirror yet. */
+    read(): Promise<string | null>
+  }
+  /**
+   * Compiling and running code the browser cannot run — C, C++, Rust, shell,
+   * Octave, Node — using whatever toolchain the machine already has. See
+   * desktop/runner.js.
+   */
+  readonly run: {
+    /** What is installed. Pass true to re-probe after installing something. */
+    detect(refresh?: boolean): Promise<Record<string, ToolchainInfo>>
+    exec(request: RunRequest): Promise<RunResult | null>
   }
   /** https: and mailto: only; the shell drops anything else. */
   openExternal(url: string): Promise<void>

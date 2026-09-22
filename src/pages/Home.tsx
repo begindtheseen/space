@@ -14,6 +14,7 @@ import {
   IconBars,
   IconBook,
   IconBriefcase,
+  IconClock,
   IconCalendar,
   IconCode,
   IconCompass,
@@ -31,10 +32,13 @@ import {
 import { Bar, Bullets, Button, Card, CardHead, Check, Ring, RowItem, Tile } from '@/components/ui'
 import { TRACKS, TRACK_ORDER } from '@/curriculum'
 import type { TrackId } from '@/curriculum/types'
-import { setOnboarded, toggleTask } from '@/engine/apply'
+import { setOnboarded, startFocus, toggleTask } from '@/engine/apply'
+import { DEFAULT_BLOCK } from '@/engine/focus'
+import type { ResumePoint } from '@/engine/resume'
 import { dailyPlan } from '@/engine/scheduler'
 import { streak } from '@/engine/state'
 import { useLearner } from '@/hooks/useLearner'
+import { nextUp } from '@/lib/nextUp'
 import { navigate } from '@/lib/router'
 import './home.css'
 
@@ -61,7 +65,7 @@ const TRACK_PATH: Record<TrackId, string> = {
 }
 
 export function Home() {
-  const { state, dag, mastery, trackReadiness, readiness, setState } = useLearner()
+  const { state, dag, mastery, trackReadiness, readiness, setState, setResume } = useLearner()
   const now = useMemo(() => new Date(), [])
 
   const plan = useMemo(() => dailyPlan(state, dag, now), [state, dag, now])
@@ -75,6 +79,10 @@ export function Home() {
         {!state.settings.onboarded ? (
           <Welcome onDismiss={() => setState((s) => setOnboarded(s))} />
         ) : null}
+
+        <ResumeCard point={state.resume} onDismiss={() => setResume(null)} />
+
+        <StartBlock />
 
         <div className="grid-2">
           {/* ── left column ─────────────────────────────────────────────── */}
@@ -149,11 +157,43 @@ function greeting(d: Date = new Date()): string {
 
 /* ── First-run welcome ───────────────────────────────────────────────────── */
 
-const WELCOME_STEPS = [
-  'Pick a track and open its first module',
-  'Learn, then practice, then recall',
-  'Come back when reviews are due — the planner tells you',
+/*
+ * The eligibility step is first on purpose, and it is a link rather than a
+ * sentence because the answer is one click away and worth having before
+ * anything else here is worth starting. Nothing in the wording assumes which
+ * side of that gate anyone falls on: the module is as useful to someone who
+ * clears it on day one as to someone who needs a different plan, and the
+ * technical preparation is the same either way.
+ */
+export const WELCOME_STEPS: { text: string; to?: string; linkText?: string }[] = [
+  {
+    text: 'Start with the eligibility question — it decides which employers are reachable',
+    to: '/module/car_01_itar_gate',
+    linkText: 'eligibility question',
+  },
+  { text: 'Pick a track and open its first module' },
+  { text: 'Learn, then practice, then recall' },
+  { text: 'Come back when reviews are due — the planner tells you' },
 ]
+
+/** Renders a step, linking the phrase named by `linkText` if there is one. */
+function StepText({ step }: { step: (typeof WELCOME_STEPS)[number] }) {
+  if (!step.to || !step.linkText || !step.text.includes(step.linkText)) return <>{step.text}</>
+  const [before, after] = step.text.split(step.linkText) as [string, string]
+  return (
+    <>
+      {before}
+      <a
+        href={`#${step.to}`}
+        onClick={(e) => e.stopPropagation()}
+        style={{ color: 'var(--accent)', textDecoration: 'underline', textUnderlineOffset: 2 }}
+      >
+        {step.linkText}
+      </a>
+      {after}
+    </>
+  )
+}
 
 /**
  * Shown until the guide has been opened or the card dismissed. Kept to one
@@ -205,7 +245,7 @@ function Welcome({ onDismiss }: { onDismiss: () => void }) {
             >
               {WELCOME_STEPS.map((step, i) => (
                 <li
-                  key={step}
+                  key={step.text}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -231,7 +271,7 @@ function Welcome({ onDismiss }: { onDismiss: () => void }) {
                   >
                     {i + 1}
                   </span>
-                  {step}
+                  <StepText step={step} />
                 </li>
               ))}
             </ol>
@@ -546,4 +586,111 @@ function countMastered(mastery: Map<string, number>): number {
   let n = 0
   for (const v of mastery.values()) if (v >= 0.9) n += 1
   return n
+}
+
+/* ── Pick up where you left off ──────────────────────────────────────────── */
+
+/**
+ * The single most important control on this page for someone who struggles to
+ * start. Opening the app and facing a dashboard is a decision; opening it and
+ * finding one button that says "keep reading Kepler's laws, you were 60%
+ * through" is not. It appears only when there is somewhere real to go back to,
+ * and it can be dismissed when she would rather choose for herself.
+ */
+function ResumeCard({ point, onDismiss }: { point?: ResumePoint; onDismiss: () => void }) {
+  if (!point) return null
+
+  const pct = point.progress !== undefined ? Math.round(point.progress * 100) : null
+  const verb = point.kind === 'lesson' ? 'Keep reading' : point.kind === 'video' ? 'Keep watching' : 'Pick up'
+
+  return (
+    <section className="card resume-card">
+      <div className="resume-card__body">
+        <p className="eyebrow-dim">{whenWord(point.at)}</p>
+        <h2 className="resume-card__title">{point.label}</h2>
+        {point.detail ? <p className="resume-card__detail">{point.detail}</p> : null}
+        {pct !== null && pct > 2 ? (
+          <div className="resume-card__bar" aria-hidden="true">
+            <span style={{ width: `${Math.min(100, pct)}%` }} />
+          </div>
+        ) : null}
+      </div>
+      <div className="resume-card__actions">
+        <button className="btn btn--primary" onClick={() => navigate(point.path)} type="button">
+          {verb}
+          {pct !== null && pct > 2 ? ` · ${pct}%` : ''}
+        </button>
+        <button className="btn btn--quiet btn--sm" onClick={onDismiss} type="button">
+          Not now
+        </button>
+      </div>
+    </section>
+  )
+}
+
+/** "Yesterday", "3 days ago" — vaguer the further back, and never a scolding. */
+function whenWord(iso: string): string {
+  const then = new Date(iso).getTime()
+  if (!Number.isFinite(then)) return 'Where you left off'
+  const days = Math.floor((Date.now() - then) / 86_400_000)
+  if (days <= 0) return 'Where you left off'
+  if (days === 1) return 'Where you left off yesterday'
+  if (days < 7) return `Where you left off ${days} days ago`
+  return 'Where you left off'
+}
+
+/* ── Start a block ───────────────────────────────────────────────────────────
+   The single most important control on the page, and the only one that is not
+   a choice. Everything else on Home is information; this is the thing to press
+   when she does not want to read any of it. It sits directly under the hero so
+   that on a bad day the first thing she sees is one button with one sentence
+   under it, and she never has to scroll into the menu at all. */
+
+function StartBlock() {
+  const { state, dag, setState } = useLearner()
+  const pick = useMemo(() => nextUp(state, dag), [state, dag])
+
+  if (state.focus) {
+    return (
+      <Card className="startblock" index={0}>
+        <div className="startblock__body">
+          <div className="startblock__text">
+            <div className="startblock__kicker">Block running</div>
+            <div className="startblock__title">{state.focus.pick.title}</div>
+          </div>
+          <Button variant="primary" size="md" onClick={() => navigate(state.focus!.pick.href)}>
+            Back to it
+            <IconArrowRight size={15} />
+          </Button>
+        </div>
+      </Card>
+    )
+  }
+
+  return (
+    <Card className="startblock" index={0}>
+      <div className="startblock__body">
+        <div className="startblock__text">
+          <div className="startblock__kicker">Start here</div>
+          <div className="startblock__title">{pick.title}</div>
+          <p className="startblock__why">{pick.why}</p>
+        </div>
+        <div className="startblock__acts">
+          <Button
+            variant="primary"
+            size="md"
+            onClick={() => {
+              setState((s) => startFocus(s, pick, DEFAULT_BLOCK))
+              navigate(pick.href)
+            }}
+          >
+            <IconClock size={14} /> Start {DEFAULT_BLOCK} minutes
+          </Button>
+          <button className="startblock__alt" onClick={() => navigate('/focus')}>
+            Longer, or something else
+          </button>
+        </div>
+      </div>
+    </Card>
+  )
 }

@@ -15,6 +15,15 @@
    ========================================================================== */
 import type { Module } from '@/curriculum/types'
 import { parseItemId } from '@/curriculum/types'
+import {
+  minutesSpent,
+  parkNote,
+  pauseRun,
+  resumeRun,
+  startRun,
+  unparkNote,
+  type FocusPick,
+} from './focus'
 import { DEFAULT_CONFIG, review, type FsrsConfig, type Grade } from './fsrs'
 import { bktParams, bktUpdate, eloUpdate } from './mastery'
 import { retentionForDeadline } from './scheduler'
@@ -231,6 +240,25 @@ export function markRead(state: LearnerState, moduleId: string, now: Date = new 
   }
 }
 
+/**
+ * Marks one lesson as read, keyed `<moduleId>::<lessonId>`. When that was the
+ * last unread lesson of the module, the module itself is marked studied too.
+ */
+export function markLessonRead(
+  state: LearnerState,
+  moduleId: string,
+  lessonId: string,
+  allLessonIds: readonly string[],
+  now: Date = new Date(),
+): LearnerState {
+  const key = `${moduleId}::${lessonId}`
+  if (state.read[key]) return state
+  const read = { ...state.read, [key]: now.toISOString() }
+  const every = allLessonIds.length > 0 && allLessonIds.every((id) => !!read[`${moduleId}::${id}`])
+  if (every && !read[moduleId]) read[moduleId] = now.toISOString()
+  return { ...state, read, updatedAt: now.toISOString() }
+}
+
 /** Records that the first-run welcome has been read or dismissed. */
 export function setOnboarded(state: LearnerState, now: Date = new Date()): LearnerState {
   if (state.settings.onboarded) return state
@@ -266,4 +294,119 @@ export function logMinutes(state: LearnerState, minutes: number, now: Date = new
     days: { ...state.days, [key]: { ...prev, minutes: prev.minutes + minutes } },
     updatedAt: now.toISOString(),
   }
+}
+
+/**
+ * Records that a workbench task is passing.
+ *
+ * Note what this does not touch: no topic posterior, no item schedule, no
+ * attempt log, no day snapshot. The workbench is deliberately outside the
+ * engine — see the note on `LearnerState.bench`. It only ever records the
+ * first time a task passed, so re-running a solved task cannot reset it.
+ */
+export function markBenchSolved(
+  state: LearnerState,
+  taskId: string,
+  now: Date = new Date(),
+): LearnerState {
+  if (state.bench[taskId]) return state
+  return { ...state, bench: { ...state.bench, [taskId]: now.toISOString() } }
+}
+
+/**
+ * Records that these postings have been shown, and when the board was checked.
+ *
+ * Called after she has actually seen the list, not when it is fetched: the
+ * point of the record is "has she been told", and marking on fetch would let a
+ * posting go unseen because the app happened to refresh in the background.
+ */
+export function markJobsSeen(
+  state: LearnerState,
+  ids: string[],
+  now: Date = new Date(),
+): LearnerState {
+  const iso = now.toISOString()
+  const fresh = ids.filter((id) => !state.jobsSeen[id])
+  if (fresh.length === 0 && state.jobsCheckedAt === iso) return state
+  const jobsSeen = { ...state.jobsSeen }
+  for (const id of fresh) jobsSeen[id] = iso
+  return { ...state, jobsSeen, jobsCheckedAt: iso }
+}
+
+/* ── Focus blocks ─────────────────────────────────────────────────────────────
+   The block is persisted the moment it starts, not when it ends. A block that
+   only exists in a React ref is a block the power cut can erase, and erasing
+   it would mean she did the work and the app forgot. */
+
+export function startFocus(
+  state: LearnerState,
+  pick: FocusPick,
+  minutes: number,
+  now: Date = new Date(),
+): LearnerState {
+  return { ...state, focus: startRun(pick, minutes, now), updatedAt: now.toISOString() }
+}
+
+export function pauseFocus(state: LearnerState, now: Date = new Date()): LearnerState {
+  if (!state.focus) return state
+  return { ...state, focus: pauseRun(state.focus, now), updatedAt: now.toISOString() }
+}
+
+export function resumeFocus(state: LearnerState, now: Date = new Date()): LearnerState {
+  if (!state.focus) return state
+  return { ...state, focus: resumeRun(state.focus, now), updatedAt: now.toISOString() }
+}
+
+/**
+ * Ends the running block and banks what it was worth.
+ *
+ * Every block that is ended is credited, including one stopped early. The
+ * alternative — crediting only blocks that ran the full length — would mean
+ * that stopping at twelve minutes records the same as never starting, and the
+ * lesson she would learn from that is to not start.
+ */
+export function endFocus(state: LearnerState, now: Date = new Date()): LearnerState {
+  const run = state.focus
+  if (!run) return state
+  const key = dayKey(now)
+  const prev = state.days[key] ?? {
+    date: key,
+    reviews: 0,
+    correct: 0,
+    newItems: 0,
+    minutes: 0,
+    readiness: 0,
+  }
+  const { focus: _ended, ...rest } = state
+  return {
+    ...rest,
+    days: {
+      ...state.days,
+      [key]: {
+        ...prev,
+        minutes: prev.minutes + minutesSpent(run, now),
+        blocks: (prev.blocks ?? 0) + 1,
+      },
+    },
+    updatedAt: now.toISOString(),
+  }
+}
+
+/** Drops a block without crediting it. For a mis-start, not for giving up. */
+export function discardFocus(state: LearnerState, now: Date = new Date()): LearnerState {
+  if (!state.focus) return state
+  const { focus: _dropped, ...rest } = state
+  return { ...rest, updatedAt: now.toISOString() }
+}
+
+export function park(state: LearnerState, text: string, now: Date = new Date()): LearnerState {
+  const parked = parkNote(state.parked, text, now)
+  if (parked === state.parked) return state
+  return { ...state, parked, updatedAt: now.toISOString() }
+}
+
+export function unpark(state: LearnerState, at: string, now: Date = new Date()): LearnerState {
+  const parked = unparkNote(state.parked, at)
+  if (parked.length === state.parked.length) return state
+  return { ...state, parked, updatedAt: now.toISOString() }
 }

@@ -1,0 +1,39 @@
+/* ============================================================================
+   ORBIT — reading progress hairline
+   ========================================================================== */
+.rprog {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  z-index: 60;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--t-mid) var(--ease-out);
+}
+
+.rprog[data-on='true'] {
+  opacity: 1;
+}
+
+.rprog__fill {
+  height: 100%;
+  width: 100%;
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  background: var(--fill);
+  /* Follows the scroll directly rather than easing toward it: a bar that
+     drifts to catch up reads as lag in the scrolling itself. The short
+     transition only smooths the jump when the page height changes. */
+  transition: transform 90ms linear;
+  will-change: transform;
+}
+
+/* The bar is a readout of where she is, not decoration, so it stays under a
+   reduced-motion preference. Only the easing goes. */
+@media (prefers-reduced-motion: reduce) {
+  .rprog__fill {
+    transition: none;
+  }
+}

@@ -1,0 +1,262 @@
+/* The workbench. Quieter than the curriculum pages on purpose — this is the
+   room you come to when the main path feels like homework, so it should not
+   look like another obligation. */
+
+.bench-note {
+  margin-bottom: 20px;
+  padding: 12px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.02);
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text-dim, #98a2b3);
+}
+
+.bench-note strong {
+  color: var(--text, #e7ecf5);
+}
+
+.bench-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 14px;
+}
+
+.bench-card {
+  display: block;
+  width: 100%;
+  padding: 16px;
+  text-align: left;
+  background: none;
+  border: 0;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.bench-card__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.bench-card__meta {
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-dim, #98a2b3);
+}
+
+.bench-card__title {
+  margin: 0 0 6px;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.bench-card__brief {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text-dim, #98a2b3);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.bench-card__solved {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 10px;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #8ee6b0;
+}
+
+/* ── one task ────────────────────────────────────────────────────────────── */
+
+.bench-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+
+.bench-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+/* The report follows you down the page: you read the spec, write code, run it,
+   and want the numbers without scrolling back up to find them. */
+.bench-split > .stack:last-child {
+  position: sticky;
+  top: 16px;
+}
+
+@media (max-width: 1100px) {
+  .bench-split {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .bench-split > .stack:last-child {
+    position: static;
+  }
+}
+
+.bench-spec {
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.bench-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 12px 16px 16px;
+}
+
+.bench-status {
+  font-size: 12px;
+  color: var(--text-dim, #98a2b3);
+}
+
+.bench-hint {
+  margin: 0 16px 16px;
+  padding: 11px 13px;
+  border-left: 2px solid rgba(255, 196, 92, 0.5);
+  border-radius: 0 6px 6px 0;
+  background: rgba(255, 196, 92, 0.06);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+/* ── the report ──────────────────────────────────────────────────────────── */
+
+.bench-empty {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-dim, #98a2b3);
+}
+
+.bench-verdict {
+  margin: 0 0 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #ffb4a6;
+}
+
+.bench-verdict--pass {
+  color: #8ee6b0;
+}
+
+.bench-incomplete {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  margin: 0 0 12px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: #ffc45c;
+}
+
+.bench-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.bench-table td {
+  padding: 7px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  vertical-align: top;
+}
+
+.bench-table__name {
+  color: var(--text-dim, #98a2b3);
+  white-space: nowrap;
+  padding-right: 12px !important;
+}
+
+/* Tabular figures so a column of measurements lines up and can be scanned. */
+.bench-table__value {
+  font-variant-numeric: tabular-nums;
+  width: 100%;
+}
+
+.bench-table__mark {
+  padding-left: 10px !important;
+  text-align: right;
+  color: #8ee6b0;
+}
+
+.bench-table tr.is-fail .bench-table__mark {
+  color: #ffb4a6;
+}
+
+.bench-checks {
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 13px;
+}
+
+.bench-checks li {
+  padding: 4px 0;
+  color: #8ee6b0;
+}
+
+.bench-checks li.is-fail {
+  color: #ffb4a6;
+}
+
+.bench-notes {
+  margin-top: 12px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-dim, #98a2b3);
+}
+
+.bench-notes p {
+  margin: 6px 0;
+}
+
+.bench-outlabel {
+  margin-top: 16px;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-dim, #98a2b3);
+}
+
+.bench-out,
+.bench-stderr {
+  margin: 6px 0 0;
+  padding: 10px 12px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.35);
+  font-family: var(--mono, ui-monospace, monospace);
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-height: 260px;
+  overflow: auto;
+}
+
+.bench-stderr {
+  margin-top: 12px;
+  color: #ffb4a6;
+}
