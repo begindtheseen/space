@@ -2108,6 +2108,16 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "constellation management, drift orbits and deorbit"
       ],
       "file": "t2_m20_orbital_maneuvers/10-stationkeeping-constellations-deorbit.md"
+    },
+    {
+      "id": "l11-patched-conics-launch-windows",
+      "title": "Patched conics and interplanetary trajectory design",
+      "minutes": 24,
+      "covers": [
+        "patched conics, sphere of influence, C3, gravity assists",
+        "porkchop plots and launch windows"
+      ],
+      "file": "t2_m20_orbital_maneuvers/11-patched-conics-launch-windows.md"
     }
   ],
   "t2_m23_relative_motion_rpo": [
@@ -2213,6 +2223,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "ISS visiting vehicle requirements"
       ],
       "file": "t2_m23_relative_motion_rpo/11-docking-vs-berthing-iss-profile.md"
+    },
+    {
+      "id": "l12-relative-navigation-sensors",
+      "title": "Relative navigation sensors",
+      "minutes": 19,
+      "covers": [
+        "relative navigation sensors: relative GPS, lidar, cameras, retroreflectors"
+      ],
+      "file": "t2_m23_relative_motion_rpo/12-relative-navigation-sensors.md"
     }
   ],
   "t3_m25_signals_systems": [
@@ -4321,6 +4340,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Warm starting, homotopy and continuation from an easy problem to the real one"
       ],
       "file": "t5_m42_trajectory_optimization/15-warm-starting-homotopy-continuation.md"
+    },
+    {
+      "id": "l16-tooling",
+      "title": "Tooling: automatic differentiation and the trajectory-optimisation stack",
+      "minutes": 17,
+      "covers": [
+        "Tooling: CasADi with IPOPT, GPOPS-II, PSOPT, Dymos/OpenMDAO, PyOMO, ACADO, trajax"
+      ],
+      "file": "t5_m42_trajectory_optimization/16-tooling.md"
     }
   ],
   "t5_m43_convex_guidance": [
@@ -4383,6 +4411,24 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Discrete-time lossless convexification and what survives discretisation"
       ],
       "file": "t5_m43_convex_guidance/06-flight-time-and-discretization.md"
+    },
+    {
+      "id": "l07-successive-convexification",
+      "title": "Successive convexification: the idea and its price",
+      "minutes": 21,
+      "covers": [
+        "Successive convexification (SCvx): linearise about a reference, solve, update, repeat"
+      ],
+      "file": "t5_m43_convex_guidance/07-successive-convexification.md"
+    },
+    {
+      "id": "l08-trust-regions-virtual-control",
+      "title": "Trust regions and virtual control",
+      "minutes": 22,
+      "covers": [
+        "Trust regions and artificial unboundedness; virtual control (virtual buffers) and artificial infeasibility"
+      ],
+      "file": "t5_m43_convex_guidance/08-trust-regions-and-virtual-control.md"
     }
   ],
   "t6_m44_realtime_embedded": [
@@ -4731,6 +4777,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Real-time hardware-in-the-loop: flight processors, motion tables, IMU stimulation, GNSS signal simulators, camera and altimeter stimulation"
       ],
       "file": "t6_m46_6dof_simulation/13-real-time-hardware-in-the-loop.md"
+    },
+    {
+      "id": "l14-validation-analytic-solutions-and-conservation-laws",
+      "title": "Validation: analytic solutions, conservation laws and flight data",
+      "minutes": 30,
+      "covers": [
+        "Validation against analytic solutions, conservation laws, and eventually flight data"
+      ],
+      "file": "t6_m46_6dof_simulation/14-validation-analytic-solutions-and-conservation-laws.md"
     }
   ],
   "t6_m47_vv_montecarlo": [
@@ -4977,13 +5032,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t2_m20_orbital_maneuvers": {
-    "covered": 11,
+    "covered": 13,
     "total": 13,
-    "complete": false,
-    "missing": [
-      "patched conics, sphere of influence, C3, gravity assists",
-      "porkchop plots and launch windows"
-    ]
+    "complete": true,
+    "missing": []
   },
   "t2_m21_perturbations": {
     "covered": 0,
@@ -5024,12 +5076,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "t2_m23_relative_motion_rpo": {
-    "covered": 15,
+    "covered": 16,
     "total": 16,
-    "complete": false,
-    "missing": [
-      "relative navigation sensors: relative GPS, lidar, cameras, retroreflectors"
-    ]
+    "complete": true,
+    "missing": []
   },
   "t2_m24_edl": {
     "covered": 0,
@@ -5159,21 +5209,18 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t5_m42_trajectory_optimization": {
-    "covered": 15,
+    "covered": 16,
     "total": 17,
     "complete": false,
     "missing": [
-      "Tooling: CasADi with IPOPT, GPOPS-II, PSOPT, Dymos/OpenMDAO, PyOMO, ACADO, trajax",
       "Failure modes: infeasible restoration, unbounded multipliers, mesh-induced control ringing, badly posed terminal constraints"
     ]
   },
   "t5_m43_convex_guidance": {
-    "covered": 12,
+    "covered": 14,
     "total": 21,
     "complete": false,
     "missing": [
-      "Successive convexification (SCvx): linearise about a reference, solve, update, repeat",
-      "Trust regions and artificial unboundedness; virtual control (virtual buffers) and artificial infeasibility",
       "The convergence ratio rho and the accept/reject/resize rule",
       "Free-final-time formulation by time dilation, and the notation clash with the thrust slack",
       "6-DoF powered descent with quaternion attitude inside the optimization",
@@ -5196,11 +5243,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "t6_m46_6dof_simulation": {
-    "covered": 13,
+    "covered": 14,
     "total": 18,
     "complete": false,
     "missing": [
-      "Validation against analytic solutions, conservation laws, and eventually flight data",
       "Regression testing and golden-file comparison; what to do when a legitimate model improvement breaks every golden file",
       "Determinism and reproducibility: seeded random number streams, per-case seeds, and bit-exact replay of a single case out of a campaign",
       "Performance: vectorisation, parallelism over cases rather than within a case, and why Monte Carlo runs on a cluster",

@@ -112,7 +112,7 @@ A systems engineer proposes budgeting a flat 2 % margin on every impulsive Δv i
 :::
 
 ::: answer
-It is reasonable when every burn in the mission is flown at a comparable thrust-to-weight, at or above roughly 0.7–1 (this lesson's 1–2 % loss band), since the actual loss for each burn will cluster near the flat margin regardless of the details. It breaks down for a mission that mixes burn types — a high-thrust chemical apogee kick alongside a much lower thrust-to-weight burn elsewhere — because the table in this lesson shows loss is a steep, nonlinear function of thrust-to-weight: a burn at $T/W_0=0.2$ loses over twenty times what a 2 % flat margin would cover, while a burn at $T/W_0=2$ needs almost none of it. A single flat number either strands the low-thrust burn or wastes margin on the high-thrust one.
+It is reasonable when every burn in the mission is flown at a comparable thrust-to-weight, at or above roughly 0.7–1 (this lesson's 1–2 % loss band), since the actual loss for each burn will cluster near the flat margin regardless of the details. It breaks down for a mission that mixes burn types — a high-thrust chemical apogee kick alongside a much lower thrust-to-weight burn elsewhere — because the table in this lesson shows loss is a steep, nonlinear function of thrust-to-weight: a burn at $T/W_0=0.2$ loses about eleven times what a 2 % flat margin would cover (22.1 % against 2 %), while a burn at $T/W_0=2$ needs almost none of it. A single flat number either strands the low-thrust burn or wastes margin on the high-thrust one.
 :::
 
 ## Summary

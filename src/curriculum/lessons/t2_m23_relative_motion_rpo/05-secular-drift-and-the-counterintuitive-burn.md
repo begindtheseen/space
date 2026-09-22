@@ -16,7 +16,7 @@ $$
 y(t) = 6(\sin nt - nt)\,x_0 + y_0 - \frac{2}{n}(1-\cos nt)\,\dot x_0 + \frac{1}{n}(4\sin nt - 3nt)\,\dot y_0.
 $$
 
-Every term here is bounded except two: $-6nt\,x_0$, hiding inside $6(\sin nt-nt)x_0$, and $-3t\,\dot y_0$, hiding inside $(4\sin nt-3nt)\dot y_0/n$. Both grow without bound as $t\to\infty$, while $\sin nt$ and $\cos nt$ stay within $[-1,1]$ forever. Collect just these two terms:
+Every term here is bounded except two: $-6nt\,x_0$, hiding inside $6(\sin nt-nt)x_0$, and $-3t\,\dot y_0$, hiding inside $(4\sin nt-3nt)\dot y_0/n$. Both grow without bound as $t\to\infty$, while $\sin nt$ and $\cos nt$ stay within $[-1,1]$ forever. Collect these two terms:
 
 $$
 y_{\text{secular}}(t) = -\big(6n x_0 + 3\dot y_0\big)\,t = -3\big(\dot y_0 + 2n x_0\big)\,t.
@@ -144,4 +144,4 @@ Drift per *orbit* is $-3\pi\,\delta a$, the same for both since it depends only 
 | Drift rate from $\dot y_0$ alone | $-3\dot y_0$, independent of $n$ |
 | Drift rate from $x_0$ alone | $-6nx_0$, proportional to $n$ |
 
-The next lesson uses the drift-free condition constructively: instead of avoiding drift, it builds closed relative orbits on purpose — the football orbit and its three-dimensional cousin, natural motion circumnavigation — and shows exactly which burn produces a bounded loop and which produces the drift this lesson just explained.
+The next lesson uses the drift-free condition constructively: instead of avoiding drift, it builds closed relative orbits on purpose — the football orbit and its three-dimensional cousin, natural motion circumnavigation — and shows exactly which burn produces a bounded loop and which produces the drift this lesson explained.

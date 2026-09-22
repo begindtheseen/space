@@ -71,7 +71,7 @@ $$
 
 where $\mathbf{R}$ is the $3\times 3$ matrix with the LVLH unit vectors as its columns (so $\mathbf{R}$ rotates LVLH components into inertial components, and $\mathbf{R}^\mathsf{T} = \mathbf{R}^{-1}$ does the reverse). Write $\boldsymbol\rho = (x,y,z)$ for its components.
 
-The relative *velocity* is not simply $\mathbf{R}^\mathsf{T}(\mathbf{v}_c - \mathbf{v}_t)$. Two observers disagree about the rate of change of a rotating vector: an inertial observer sees the frame's own spin contribute to the apparent velocity. The correct relation, from the transport theorem, is
+The relative *velocity* is not $\mathbf{R}^\mathsf{T}(\mathbf{v}_c - \mathbf{v}_t)$ on its own. Two observers disagree about the rate of change of a rotating vector: an inertial observer sees the frame's own spin contribute to the apparent velocity. The correct relation, from the transport theorem, is
 
 $$
 \dot{\boldsymbol\rho} = \mathbf{R}^\mathsf{T}\Big[(\mathbf{v}_c - \mathbf{v}_t) - \boldsymbol\omega \times (\mathbf{r}_c - \mathbf{r}_t)\Big],
@@ -133,10 +133,10 @@ Notice the chaser's speed, $7.661310\,\mathrm{km/s}$, is barely different from t
 
 ## Why bother with a rotating frame at all
 
-An alternative would be to track $\mathbf{r}_c - \mathbf{r}_t$ directly in the inertial frame and skip LVLH entirely. Two things make that impractical. First, a GNC system on the chaser measures range and bearing to the target with its own sensors — lidar, cameras, relative GPS — and those measurements are naturally in a frame tied to the target, not to some arbitrary inertial direction. Second, and more importantly, the relative *dynamics* — how $\boldsymbol\rho$ evolves under gravity — take a strikingly simple closed form in LVLH coordinates for a circular reference orbit, the Clohessy-Wiltshire equations of the next lesson. That simplicity is a property of the rotating frame; expressed in inertial coordinates the same physics is just two ordinary orbits, offering no particular insight into how close they are to each other.
+An alternative would be to track $\mathbf{r}_c - \mathbf{r}_t$ directly in the inertial frame and skip LVLH entirely. Two things make that impractical. First, a GNC system on the chaser measures range and bearing to the target with its own sensors — lidar, cameras, relative GPS — and those measurements are naturally in a frame tied to the target, not to some arbitrary inertial direction. Second, and more importantly, the relative *dynamics* — how $\boldsymbol\rho$ evolves under gravity — take a strikingly simple closed form in LVLH coordinates for a circular reference orbit, the Clohessy-Wiltshire equations of the next lesson. That simplicity is a property of the rotating frame; expressed in inertial coordinates the same physics is two ordinary orbits, offering no particular insight into how close they are to each other.
 
 ::: warning Not an inertial frame
-Because LVLH rotates, $\ddot{\boldsymbol\rho}$ is not simply "force over mass" the way it would be in an inertial frame — fictitious Coriolis and centrifugal terms appear, exactly as they do for weather on a rotating Earth. The next lesson derives them explicitly. Do not apply $\mathbf{F} = m\mathbf{a}$ directly to $\boldsymbol\rho$ without them.
+Because LVLH rotates, $\ddot{\boldsymbol\rho}$ is not "force over mass" the way it would be in an inertial frame — fictitious Coriolis and centrifugal terms appear, exactly as they do for weather on a rotating Earth. The next lesson derives them explicitly. Do not apply $\mathbf{F} = m\mathbf{a}$ directly to $\boldsymbol\rho$ without them.
 :::
 
 ## Check yourself

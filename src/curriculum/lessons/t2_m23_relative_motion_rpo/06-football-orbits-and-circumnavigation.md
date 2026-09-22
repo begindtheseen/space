@@ -18,7 +18,7 @@ x(t) = x_0\cos nt + \frac{\dot x_0}{n}\sin nt, \qquad
 y(t) - y_c = -2\left(x_0\sin nt - \frac{\dot x_0}{n}\cos nt\right), \qquad y_c \equiv y_0 - \frac{2\dot x_0}{n}.
 $$
 
-Both $x(t)$ and $y(t)-y_c$ are sums of $\sin nt$ and $\cos nt$ at the same frequency $n$, so each traces a sinusoid with amplitude $A=\sqrt{x_0^2+(\dot x_0/n)^2}$ — but the in-track amplitude is *exactly twice* the radial one, since $y(t)-y_c$ is $-2$ times the same combination that gives $x(t)$. Eliminating $t$ between the two (or simply noting that $x/A$ and $-(y-y_c)/2A$ trace out $\cos$ and $\sin$ of the same angle) gives the ellipse equation directly:
+Both $x(t)$ and $y(t)-y_c$ are sums of $\sin nt$ and $\cos nt$ at the same frequency $n$, so each traces a sinusoid with amplitude $A=\sqrt{x_0^2+(\dot x_0/n)^2}$ — but the in-track amplitude is *exactly twice* the radial one, since $y(t)-y_c$ is $-2$ times the same combination that gives $x(t)$. Eliminating $t$ between the two (or noting directly that $x/A$ and $-(y-y_c)/2A$ trace out $\cos$ and $\sin$ of the same angle) gives the ellipse equation:
 
 $$
 \frac{x^2}{A^2} + \frac{(y-y_c)^2}{(2A)^2} = 1.
@@ -57,7 +57,7 @@ Contrast this directly with the previous lesson's along-track burn of the same $
 
 ## Natural motion circumnavigation
 
-The football orbit above is tangent to the target — it swings back to $(0,0)$ once per orbit, which is not a comfortable way to inspect something at close range. Shifting where the loop is *centred*, without giving up on being drift-free, fixes that. The centre $y_c=y_0-2\dot x_0/n$ can be placed anywhere just by choosing $y_0$; setting $y_0=2\dot x_0/n$ (instead of $y_0=0$) centres the ellipse exactly on the target.
+The football orbit above is tangent to the target — it swings back to $(0,0)$ once per orbit, which is not a comfortable way to inspect something at close range. Shifting where the loop is *centred*, without giving up on being drift-free, fixes that. The centre $y_c=y_0-2\dot x_0/n$ can be placed anywhere by choosing $y_0$ alone; setting $y_0=2\dot x_0/n$ (instead of $y_0=0$) centres the ellipse exactly on the target.
 
 ::: example A centred inspection loop
 Use the same $\dot x_0=0.1\,\mathrm{m/s}$ radial-velocity driver as before, but start from $y_0=2\dot x_0/n=177.28\,\mathrm{m}$ ahead of the target instead of co-located with it (still $x_0=0$, so still drift-free with $\dot y_0=0$). The resulting loop is centred exactly on the target: minimum range $88.64\,\mathrm{m}$ (at the ellipse's minor-axis points, $x=\pm A$, $y=0$), maximum range $177.28\,\mathrm{m}$ (at the major-axis points, $x=0$, $y=y_c\pm2A$), closed and exactly periodic — confirmed by propagating a full period and finding the state returns to its start to machine precision. The chaser now circles the target at a bounded range between roughly 89 and 177 m, forever, on a single burn.

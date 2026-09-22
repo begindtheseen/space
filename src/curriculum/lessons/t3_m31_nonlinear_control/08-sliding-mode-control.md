@@ -85,7 +85,7 @@ Simulating the plant at $\Delta t = 10\,\mu\mathrm{s}$, $s$ first crosses zero a
 | $2\,\mathrm{s}$ | $0.046095$ | $0.04625$ |
 | $4\,\mathrm{s}$ | $0.009235$ | $0.00933$ |
 
-Agreement to about one per cent, the residual being the chattering about the surface. The switching gain corresponds to $J\eta = 60\,\mathrm{N\,m}$ of authority set aside purely for rejecting disturbance, and the total demand never exceeds $J(\Lambda|\omega| + \eta) = 79.2\,\mathrm{N\,m}$ over the manoeuvre.
+Agreement to about one per cent, the residual being the chattering about the surface. The switching gain corresponds to $J\eta = 60\,\mathrm{N\,m}$ of authority set aside purely for rejecting disturbance, and the total demand never exceeds $J(\Lambda|\omega| + \eta) = 73.6\,\mathrm{N\,m}$ over the manoeuvre.
 :::
 
 ## Chattering, measured
@@ -129,7 +129,7 @@ $$
 
 With $|d| = 5\,\mathrm{N\,m}$ and $\phi = 0.01$ this predicts $5(0.01)/(120\times0.5\times0.8) = 1.04\times10^{-3}\,\mathrm{rad} = 59.7\,\mathrm{mdeg}$, against the measured $56.1\,\mathrm{mdeg}$ and a design bound $\phi/\Lambda = 1.25\times10^{-2}\,\mathrm{rad} = 716\,\mathrm{mdeg}$. Use $\phi/\Lambda$ for the guarantee and the second expression for the expectation.
 
-The effective gains explain why boundary-layer sliding mode is worth the trouble. At $\phi = 0.01$ the law inside the layer is a PD with $k_p = 4800\,\mathrm{N\,m/rad}$ and $k_d = 6096\,\mathrm{N\,m\,s}$, and a simulation of that linear PD reproduces the sliding-mode error exactly: $0.0561^\circ$. But that PD demands $k_p \times 0.2 = 960\,\mathrm{N\,m}$ at the start of a $0.2\,\mathrm{rad}$ manoeuvre, while the sliding-mode law demands $79.2\,\mathrm{N\,m}$, because the saturation clips it. A conventional PD sized for that torque limit, $k_p = k_d = 96$, leaves a peak error of $3.20^\circ$ under the same disturbance — fifty-seven times worse. Sliding mode is how you get high-gain disturbance rejection out of a bounded actuator.
+The effective gains explain why boundary-layer sliding mode is worth the trouble. At $\phi = 0.01$ the law inside the layer is a PD with $k_p = 4800\,\mathrm{N\,m/rad}$ and $k_d = 6096\,\mathrm{N\,m\,s}$, and a simulation of that linear PD reproduces the sliding-mode error exactly: $0.0561^\circ$. But that PD demands $k_p \times 0.2 = 960\,\mathrm{N\,m}$ at the start of a $0.2\,\mathrm{rad}$ manoeuvre, while the sliding-mode law demands $73.6\,\mathrm{N\,m}$, because the saturation clips it. A conventional PD sized for that torque limit, $k_p = k_d = 96$, leaves a peak error of $3.19^\circ$ under the same disturbance — fifty-seven times worse. Sliding mode is how you get high-gain disturbance rejection out of a bounded actuator.
 
 ## Higher-order sliding modes
 

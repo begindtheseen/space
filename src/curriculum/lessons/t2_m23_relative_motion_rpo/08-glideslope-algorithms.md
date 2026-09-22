@@ -92,7 +92,7 @@ $t_{\text{close}}=(1/b)\ln(1+br_0/a)$ is a decreasing function of $a$ (a larger 
 :::
 
 ::: check
-Why are hold points placed at specific ranges (like 250 m, 30 m, 10 m) rather than simply flying one continuous glideslope from far range straight to contact?
+Why are hold points placed at specific ranges (like 250 m, 30 m, 10 m) rather than flying one continuous glideslope from far range straight to contact?
 :::
 
 ::: answer
@@ -104,7 +104,7 @@ A mission wants the final approach to arrive at contact carrying no more than $3
 :::
 
 ::: answer
-The arrival rate equals $a$ exactly, so the constraint is simply $a\le0.03\,\mathrm{m/s}$; take $a=0.03\,\mathrm{m/s}$ at the limit. Time to close: $t_{\text{close}}=(1/0.0015)\ln(1+0.0015\times10/0.03) = 666.7\ln(1.5)=666.7\times0.4055=270.4\,\mathrm{s}$, about 4.5 minutes for this final segment.
+The arrival rate equals $a$ exactly, so the constraint reads $a\le0.03\,\mathrm{m/s}$ directly; take $a=0.03\,\mathrm{m/s}$ at the limit. Time to close: $t_{\text{close}}=(1/0.0015)\ln(1+0.0015\times10/0.03) = 666.7\ln(1.5)=666.7\times0.4055=270.4\,\mathrm{s}$, about 4.5 minutes for this final segment.
 :::
 
 ## Summary

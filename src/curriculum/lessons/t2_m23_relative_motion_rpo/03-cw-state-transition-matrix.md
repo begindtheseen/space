@@ -109,7 +109,7 @@ $$
 \end{bmatrix}
 $$
 
-(units: the position-vs-position block is dimensionless, position-vs-velocity entries carry seconds, velocity-vs-position entries carry $\mathrm{s^{-1}}$). Its determinant, computed to twelve decimal places, is $1.000000000000$ — confirming the implementation before it is trusted for anything else. Applying it at $t=0$, $t=T/4=1392.36\,\mathrm{s}$ and $t=T/2=2784.72\,\mathrm{s}$ (the standing reference orbit's quarter- and half-periods) gives $\det\boldsymbol\Phi = 1$ at every one, as it must for every $t$, not just these three.
+(units: the position-vs-position block is dimensionless, position-vs-velocity entries carry seconds, velocity-vs-position entries carry $\mathrm{s^{-1}}$). Its determinant, computed to twelve decimal places, is $1.000000000000$ — confirming the implementation before it is trusted for anything else. Applying it at $t=0$, $t=T/4=1392.36\,\mathrm{s}$ and $t=T/2=2784.72\,\mathrm{s}$ (the standing reference orbit's quarter- and half-periods) gives $\det\boldsymbol\Phi = 1$ at every one, as it must for every $t$, not only these three.
 :::
 
 ::: example STM propagation against direct numerical integration
@@ -137,7 +137,7 @@ The cross-track equation $\ddot z+n^2z=0$ is completely decoupled from $x$, $y$ 
 :::
 
 ::: check
-Without recomputing the full matrix, state $\boldsymbol\Phi(0)$ from the structural fact given in the lesson, and explain why that fact must hold for any correctly-derived state transition matrix, not just this one.
+Without recomputing the full matrix, state $\boldsymbol\Phi(0)$ from the structural fact given in the lesson, and explain why that fact must hold for any correctly-derived state transition matrix, not only this one.
 :::
 
 ::: answer

@@ -89,7 +89,7 @@ Why is $\boldsymbol\Phi_{rv}(T)$, specifically, the block that must be inverted 
 :::
 
 ::: answer
-$\boldsymbol\Phi_{rv}(T)$ is the block multiplying the one free unknown, $\mathbf{v}_0$, in the equation for final position — the quantity being targeted. $\boldsymbol\Phi_{rr}(T)$ multiplies the already-known $\boldsymbol\rho_0$ and simply gets moved to the other side as a known offset; it is never inverted because nothing about it is unknown.
+$\boldsymbol\Phi_{rv}(T)$ is the block multiplying the one free unknown, $\mathbf{v}_0$, in the equation for final position — the quantity being targeted. $\boldsymbol\Phi_{rr}(T)$ multiplies the already-known $\boldsymbol\rho_0$ and moves to the other side as a known offset; it is never inverted because nothing about it is unknown.
 :::
 
 ::: check

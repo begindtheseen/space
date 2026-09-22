@@ -92,7 +92,7 @@ Compute the two Hohmann burns and the time of flight for a transfer from a 500 k
 :::
 
 ::: answer
-$v_1 = \sqrt{398\,600.4418/6878.137} = 7.6127\,\mathrm{km/s}$, $v_2=\sqrt{398\,600.4418/7878.137}=7.1148\,\mathrm{km/s}$. $a_t = (6878.137+7878.137)/2 = 7378.137\,\mathrm{km}$. $v_p = \sqrt{398\,600.4418(2/6878.137-1/7378.137)} = 7.7986\,\mathrm{km/s}$, $v_a=\sqrt{398\,600.4418(2/7878.137-1/7378.137)}=6.8144\,\mathrm{km/s}$. $\Delta v_1 = 7.7986-7.6127=0.1859\,\mathrm{km/s}$, $\Delta v_2=7.1148-6.8144=0.3004\,\mathrm{km/s}$, total $0.4863\,\mathrm{km/s}$. Time of flight: $t=\pi\sqrt{7378.137^3/398\,600.4418}=3181\,\mathrm{s}=53.0\,\mathrm{min}$.
+$v_1 = \sqrt{398\,600.4418/6878.137} = 7.6126\,\mathrm{km/s}$, $v_2=\sqrt{398\,600.4418/7878.137}=7.1131\,\mathrm{km/s}$. $a_t = (6878.137+7878.137)/2 = 7378.137\,\mathrm{km}$. $v_p = \sqrt{398\,600.4418(2/6878.137-1/7378.137)} = 7.8663\,\mathrm{km/s}$, $v_a=\sqrt{398\,600.4418(2/7878.137-1/7378.137)}=6.8678\,\mathrm{km/s}$. $\Delta v_1 = 7.8663-7.6126=0.2537\,\mathrm{km/s}$, $\Delta v_2=7.1131-6.8678=0.2452\,\mathrm{km/s}$, total $0.4989\,\mathrm{km/s}$. Time of flight: $t=\pi\sqrt{7378.137^3/398\,600.4418}=3153.6\,\mathrm{s}=52.6\,\mathrm{min}$.
 :::
 
 ::: check

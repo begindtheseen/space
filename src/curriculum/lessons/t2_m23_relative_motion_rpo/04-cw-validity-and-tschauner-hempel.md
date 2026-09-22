@@ -54,7 +54,7 @@ Everything above holds the reference orbit circular — the second CW assumption
 | 0.75 | 1.37 | 3046 |
 | 1.00 | 1.39 | 3343 |
 
-At the same 1 km separation and the same quarter-orbit, an eccentricity of just 0.05 turns a 30 cm error into a 274 m error — roughly a **thousand-fold** increase from a reference orbit that never strays more than $\pm 340\,\mathrm{km}$ from its mean radius ($a e = 340\,\mathrm{km}$ out of $a=6791\,\mathrm{km}$, about 5%). Separation was never the problem here; the circular-orbit assumption was, and it fails far harder than the small-separation assumption does. A reference orbit "close enough to circular by eye" is not the same claim as "close enough to circular for CW."
+At the same 1 km separation and the same quarter-orbit, an eccentricity of only 0.05 turns a 30 cm error into a 274 m error — roughly a **thousand-fold** increase from a reference orbit that never strays more than $\pm 340\,\mathrm{km}$ from its mean radius ($a e = 340\,\mathrm{km}$ out of $a=6791\,\mathrm{km}$, about 5%). Separation was never the problem here; the circular-orbit assumption was, and it fails far harder than the small-separation assumption does. A reference orbit "close enough to circular by eye" is not the same claim as "close enough to circular for CW."
 
 ## The Tschauner-Hempel equations
 
@@ -89,7 +89,7 @@ Integrate the time-varying linear system above directly — feeding it the targe
 Restoring the correct, time-varying reference-orbit rate cuts the error by a factor of 250 to over 1000 across this range, bringing it back down to the same order of magnitude as the circular-reference, separation-only error from the first table. The eccentricity error and the separation-linearization error are two independent effects; fixing the first does not touch the second, but it removes the effect that was three orders of magnitude larger here.
 :::
 
-::: warning Eccentricity, not just "small e"
+::: warning Eccentricity is not "small e"
 $e=0.05$ sounds negligible — most people would call that orbit "basically circular" on sight. The thousand-fold error growth above shows that intuition does not transfer to relative-motion accuracy: CW's error from eccentricity does not scale gently with $e$, because the coefficient CW freezes, $\dot\theta$, itself varies by a factor of $\big(\tfrac{1+e}{1-e}\big)^2 \approx 1.22$ between periapsis and apoapsis at $e=0.05$ alone, and that mismatch compounds over an orbit rather than averaging out. Check the target's eccentricity before reaching for CW, not after the result looks strange.
 :::
 

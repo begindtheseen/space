@@ -134,7 +134,7 @@ A student writes the radial equation as $\ddot x - n^2 x - 2n\dot y = 0$ (missin
 :::
 
 ::: answer
-The centrifugal term alone (one factor of $n^2$) has been kept, but the linearized gravity-gradient (tidal) contribution — the fact that gravity itself is weaker at $x>0$ and stronger at $x<0$ than at the target's own radius — has been dropped. That tidal effect contributes the other $2n^2x$, twice the size of the centrifugal piece, so omitting it does not just shrink the coefficient a little; it more than triples the restoring (or in this case destabilizing) effect that is actually present.
+The centrifugal term alone (one factor of $n^2$) has been kept, but the linearized gravity-gradient (tidal) contribution — the fact that gravity itself is weaker at $x>0$ and stronger at $x<0$ than at the target's own radius — has been dropped. That tidal effect contributes the other $2n^2x$, twice the size of the centrifugal piece, so omitting it more than triples the true restoring (or here destabilizing) effect — the coefficient is not shrinking by a small amount, it is missing most of its size.
 :::
 
 ::: check

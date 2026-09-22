@@ -102,7 +102,7 @@ At $r_b$ just past $r_2$, burn 2 (the small correction at apoapsis) is doing alm
 :::
 
 ::: check
-A transfer with $R = 25$ using $r_b = 3r_2$ saves about 3.5 % of Δv over Hohmann but takes about thirteen times as long. Under what mission circumstances would that trade actually be worth taking?
+A transfer with $R = 25$ using $r_b = 3r_2$ saves about 3.5 % of Δv over Hohmann but takes about twelve and a half times as long. Under what mission circumstances would that trade actually be worth taking?
 :::
 
 ::: answer

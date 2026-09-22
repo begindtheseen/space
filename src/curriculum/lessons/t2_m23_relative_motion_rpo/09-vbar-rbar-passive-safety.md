@@ -7,7 +7,7 @@ covers:
   - passive safety and safety ellipses
 ---
 
-Every approach line a chaser could fly toward a target is, geometrically, just a choice of direction in the LVLH frame. Two of those directions dominate real rendezvous design: straight in along the velocity vector, and straight in along the local vertical. They look interchangeable on a diagram — both just "a line to the target" — and they behave completely differently the moment a burn is missed. This lesson works out exactly how differently, with real numbers, and arrives at the single idea that shapes every keep-out zone and approach corridor in operational use: an approach is only as good as what happens when the next planned burn simply does not fire.
+Every approach line a chaser could fly toward a target is, geometrically, a choice of direction in the LVLH frame. Two of those directions dominate real rendezvous design: straight in along the velocity vector, and straight in along the local vertical. They look interchangeable on a diagram — each, on paper, no more than "a line to the target" — and they behave completely differently the moment a burn is missed. This lesson works out exactly how differently, with real numbers, and arrives at the single idea that shapes every keep-out zone and approach corridor in operational use: an approach is only as good as what happens when the next planned burn does not fire.
 
 ## V-bar and R-bar
 
@@ -64,7 +64,7 @@ Repeating the V-bar case at three closing rates, same 200 m start:
 | 0.050 m/s | 180.0 m |
 | 0.020 m/s | 191.7 m |
 
-Halving the closing rate roughly halves the penetration depth; a factor of five reduction (0.1 to 0.02 m/s) cuts the penetration from 37.8 m to 8.3 m. R-bar shows the same trend but from a much smaller base — at 0.05 m/s its minimum range is already $198.4\,\mathrm{m}$, just 1.6 m of penetration. This is the direct, quantitative reason approach glideslopes taper closing rate down near a keep-out boundary rather than holding a constant speed all the way to it: the rate itself is a passive-safety lever, not only a schedule.
+Halving the closing rate roughly halves the penetration depth; a factor of five reduction (0.1 to 0.02 m/s) cuts the penetration from 37.8 m to 8.3 m. R-bar shows the same trend but from a much smaller base — at 0.05 m/s its minimum range is already $198.4\,\mathrm{m}$, only 1.6 m of penetration. This is the direct, quantitative reason approach glideslopes taper closing rate down near a keep-out boundary rather than holding a constant speed all the way to it: the rate itself is a passive-safety lever, not only a schedule.
 :::
 
 ::: example A small bias changes the outcome, and the direction matters
@@ -83,7 +83,7 @@ Biasing the approach slightly *outward* (positive $x$, away from Earth) measurab
 
 ## A collision avoidance manoeuvre is not automatically effective either
 
-A natural instinct when a burn is missed is to fire whatever thrusters remain immediately — a collision avoidance manoeuvre, covered formally two lessons ahead. It is worth previewing here that not all CAM directions are equally good. Adding an instantaneous radially-outward kick to the V-bar missed-burn state above, at increasing size, improves the minimum range only gradually: $0.05\,\mathrm{m/s}$ of extra radial $\Delta v$ raises the minimum from 162.2 m to 178.0 m; $0.10\,\mathrm{m/s}$ only reaches 186.0 m — still short of the original 200 m boundary. A *retrograde* burn of the same $0.10\,\mathrm{m/s}$, simply cancelling the closing rate outright, restores the minimum range to exactly $200.0\,\mathrm{m}$ — the full boundary, with no penetration at all. The most propellant-efficient response to a missed V-bar burn, at least for this geometry, is not to push away but to stop closing.
+A natural instinct when a burn is missed is to fire whatever thrusters remain immediately — a collision avoidance manoeuvre, covered formally two lessons ahead. It is worth previewing here that not all CAM directions are equally good. Adding an instantaneous radially-outward kick to the V-bar missed-burn state above, at increasing size, improves the minimum range only gradually: $0.05\,\mathrm{m/s}$ of extra radial $\Delta v$ raises the minimum from 162.2 m to 178.0 m; $0.10\,\mathrm{m/s}$ only reaches 186.0 m — still short of the original 200 m boundary. A *retrograde* burn of the same $0.10\,\mathrm{m/s}$, cancelling the closing rate outright, restores the minimum range to exactly $200.0\,\mathrm{m}$ — the full boundary, with no penetration at all. The most propellant-efficient response to a missed V-bar burn, at least for this geometry, is not to push away but to stop closing.
 
 ::: warning R-bar is safer, not safe
 R-bar's $6.5\,\mathrm{m}$ penetration in the worked example is smaller than V-bar's $37.8\,\mathrm{m}$, but it is not zero. At a higher closing rate, or starting from a smaller range, an R-bar approach can still be driven inside a keep-out boundary before its natural deceleration takes over. Passive safety is a property of a specific state — range, closing rate, bias, all together — verified by propagating from that exact state, never a label attached permanently to "R-bar" or "V-bar" as a category. This is exactly why the exercises attached to this module ask you to check passive safety at *every* point along a planned approach, not once at the start.
@@ -112,7 +112,7 @@ Two identical missed-burn V-bar states are compared: one gets no further action,
 :::
 
 ::: answer
-The retrograde-burn case reaches the larger minimum range — in the worked comparison, exactly 200.0 m (no penetration) against 162.2 m with no action. A retrograde in-track impulse directly cancels the closing velocity that was carrying the chaser toward the target; with zero remaining closing rate the chaser is simply left with its unchanged radial offset, which (from the secular-drift lesson) drifts monotonically away rather than continuing to close, so the "minimum range" is simply the starting range itself.
+The retrograde-burn case reaches the larger minimum range — in the worked comparison, exactly 200.0 m (no penetration) against 162.2 m with no action. A retrograde in-track impulse directly cancels the closing velocity that was carrying the chaser toward the target; with zero remaining closing rate the chaser is left with only its unchanged radial offset, which (from the secular-drift lesson) drifts monotonically away rather than continuing to close, so the "minimum range" is the starting range itself.
 :::
 
 ::: check
@@ -128,7 +128,7 @@ Why does biasing a V-bar approach slightly outward (positive $x$) reduce penetra
 :::
 
 ::: answer
-While the *instantaneous* acceleration at $t=0$ does not depend on $x_0$, the full trajectory does — $x_0$ enters the complete CW solution for $x(t)$ and $y(t)$ (through the $(4-3\cos nt)x_0$ and $6(\sin nt-nt)x_0$ terms), not just the initial acceleration. Starting already displaced in the direction the dynamics are pushing means the trajectory needs less additional radial travel to reach the same off-axis distance, so the moment of closest in-track approach occurs with more radial separation already built in — the bias does not change the initial push, but it does change where the whole subsequent path sits relative to the target.
+While the *instantaneous* acceleration at $t=0$ does not depend on $x_0$, the full trajectory does — $x_0$ enters the complete CW solution for $x(t)$ and $y(t)$ (through the $(4-3\cos nt)x_0$ and $6(\sin nt-nt)x_0$ terms), not only the initial acceleration. Starting already displaced in the direction the dynamics are pushing means the trajectory needs less additional radial travel to reach the same off-axis distance, so the moment of closest in-track approach occurs with more radial separation already built in — the bias does not change the initial push, but it does change where the whole subsequent path sits relative to the target.
 :::
 
 ## Summary
