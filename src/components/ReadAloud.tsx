@@ -11,11 +11,12 @@
 import { IconPause, IconPlay, IconX } from '@/components/icons'
 import { useLearner } from '@/hooks/useLearner'
 import { useReadAloud } from '@/hooks/useReadAloud'
+import { DEFAULT_SPEECH_RATE, speechRateOptions } from '@/lib/speech'
 import './read-aloud.css'
 
 export function ReadAloud({ markdown }: { markdown: string | null }) {
   const { state: learner, setState } = useLearner()
-  const rate = learner.settings.speechRate ?? 1
+  const rate = learner.settings.speechRate ?? DEFAULT_SPEECH_RATE
   const player = useReadAloud({
     markdown,
     voiceName: learner.settings.voiceName,
@@ -66,10 +67,9 @@ export function ReadAloud({ markdown }: { markdown: string | null }) {
           aria-label="Voice"
           onChange={(e) => {
             const name = e.target.value || undefined
+            // Recorded only; the player re-says the current sentence in the new
+            // voice once the choice settles, for the same reason as the speed.
             setState((s) => ({ ...s, settings: { ...s.settings, voiceName: name } }))
-            // Re-say the current sentence in the new voice rather than making
-            // her stop, choose, and find her place again.
-            if (!idle) setTimeout(() => player.start(Math.max(0, player.at)), 0)
           }}
         >
           <option value="">Best available</option>
@@ -87,11 +87,14 @@ export function ReadAloud({ markdown }: { markdown: string | null }) {
         aria-label="Reading speed"
         onChange={(e) => {
           const next = Number(e.target.value)
+          // Only record the choice. The player picks it up itself: restarting
+          // from here used the `start` of the render before the change, which
+          // still carried the old speed, so the sentence came back at exactly
+          // the speed she had just moved away from.
           setState((s) => ({ ...s, settings: { ...s.settings, speechRate: next } }))
-          if (!idle) setTimeout(() => player.start(Math.max(0, player.at)), 0)
         }}
       >
-        {[0.8, 0.9, 1, 1.1, 1.25, 1.5].map((r) => (
+        {speechRateOptions(rate).map((r) => (
           <option key={r} value={String(r)}>
             {r}×
           </option>

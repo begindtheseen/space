@@ -14,13 +14,29 @@
      - `getVoices()` is empty on first call in several browsers and fills in
        later, so the list is read again on `voiceschanged`.
      - `cancel()` sometimes fires an error event on the utterance in flight,
-       which must not be reported as a failure.
+       which must not be reported as a failure. It arrives asynchronously, so
+       a boolean set and cleared around the cancel call is already false by the
+       time it lands: the cancelled utterance then looks like a real error,
+       advances the index, and a second chain starts speaking alongside the
+       first. Every chain therefore carries the epoch it was started in, and a
+       callback from a superseded epoch does nothing.
+     - `pause()` and `resume()` are not guaranteed to land. A resume that does
+       not leaves the synthesiser paused while this hook still believes it is
+       speaking, which reads as the whole player freezing.
    ========================================================================== */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { prepare, usableVoices, type VoiceLike } from '@/lib/speech'
 
 /** How often to nudge Chromium so it does not fall silent mid-lesson. */
 const KEEPALIVE_MS = 10_000
+
+/**
+ * How long a speed or voice change is left to settle before the sentence in
+ * flight is spoken again with it. Long enough that stepping through the list
+ * restarts once at the end rather than at every value, short enough that the
+ * control still feels like it did something.
+ */
+const SETTLE_MS = 260
 
 export type ReadState = 'idle' | 'speaking' | 'paused'
 
@@ -57,7 +73,25 @@ export function useReadAloud({ markdown, voiceName, rate = 1 }: ReadAloudOptions
   // The index is held in a ref as well so the chain can advance without the
   // callback closing over a stale value.
   const atRef = useRef(-1)
-  const stopping = useRef(false)
+
+  /**
+   * Which run of the player a callback belongs to. Bumped by every start and
+   * every stop, so an `onend` or `onerror` from a cancelled utterance — which
+   * arrives after the call that cancelled it has returned — can tell that it
+   * has been superseded and stay quiet.
+   */
+  const epochRef = useRef(0)
+
+  // Speed and voice are read at the moment each sentence is spoken rather than
+  // captured when playback started. Without this the whole lesson keeps the
+  // settings it began with: the chain is built from callbacks that closed over
+  // the values of one render, so changing the speed changed nothing at all.
+  const rateRef = useRef(rate)
+  const voiceNameRef = useRef(voiceName)
+  useEffect(() => {
+    rateRef.current = rate
+    voiceNameRef.current = voiceName
+  }, [rate, voiceName])
 
   useEffect(() => {
     if (!supported) return
@@ -70,15 +104,16 @@ export function useReadAloud({ markdown, voiceName, rate = 1 }: ReadAloudOptions
   const pickVoice = useCallback((): SpeechSynthesisVoice | null => {
     if (!supported) return null
     const all = window.speechSynthesis.getVoices()
-    const wanted = voiceName && all.find((v) => v.name === voiceName)
+    const wanted = voiceNameRef.current && all.find((v) => v.name === voiceNameRef.current)
     if (wanted) return wanted
     const best = usableVoices(all)[0]
     return best ? (all.find((v) => v.name === best.name) ?? null) : null
-  }, [supported, voiceName])
+  }, [supported])
 
   const speakFrom = useCallback(
-    (index: number) => {
+    (index: number, epoch: number) => {
       if (!supported) return
+      if (epoch !== epochRef.current) return
       if (index < 0 || index >= utterances.length) {
         atRef.current = -1
         setAt(-1)
@@ -95,50 +130,55 @@ export function useReadAloud({ markdown, voiceName, rate = 1 }: ReadAloudOptions
         // Some engines ignore the voice unless the language agrees with it.
         u.lang = voice.lang
       }
-      u.rate = rate
+      // Read now, not when this chain started, so a speed chosen mid-lesson
+      // applies to every sentence after it.
+      u.rate = rateRef.current
       u.onend = () => {
-        if (stopping.current) return
-        speakFrom(atRef.current + 1)
+        if (epoch !== epochRef.current) return
+        speakFrom(atRef.current + 1, epoch)
       }
       u.onerror = () => {
-        // `cancel()` raises this on the utterance in flight. Anything else is
-        // a real failure of one sentence, and skipping it beats stopping.
-        if (stopping.current) return
-        speakFrom(atRef.current + 1)
+        // `cancel()` raises this on the utterance in flight, and it lands after
+        // the caller has moved on — the epoch is what tells the two apart.
+        // Anything else is a real failure of one sentence, and skipping it
+        // beats stopping.
+        if (epoch !== epochRef.current) return
+        speakFrom(atRef.current + 1, epoch)
       }
       window.speechSynthesis.speak(u)
       setState('speaking')
     },
-    [supported, utterances, pickVoice, rate],
+    [supported, utterances, pickVoice],
   )
 
   const stop = useCallback(() => {
     if (!supported) return
-    stopping.current = true
+    epochRef.current += 1
     window.speechSynthesis.cancel()
     atRef.current = -1
     setAt(-1)
     setState('idle')
-    // Released on the next tick so the cancel-triggered error event, which
-    // arrives asynchronously, is still recognised as ours.
-    setTimeout(() => {
-      stopping.current = false
-    }, 0)
   }, [supported])
 
   const start = useCallback(
     (from = 0) => {
       if (!supported || utterances.length === 0) return
-      stopping.current = true
+      // Bumping first orphans anything the cancel below is about to interrupt,
+      // so the outgoing utterance's error event cannot start a rival chain.
+      epochRef.current += 1
+      const epoch = epochRef.current
       window.speechSynthesis.cancel()
-      stopping.current = false
-      speakFrom(Math.max(0, Math.min(from, utterances.length - 1)))
+      speakFrom(Math.max(0, Math.min(from, utterances.length - 1)), epoch)
     },
     [supported, utterances.length, speakFrom],
   )
 
   const pause = useCallback(() => {
     if (!supported) return
+    // Only claim paused if there is something to pause. Saying so when the
+    // synthesiser is idle leaves the controls offering a resume that can never
+    // do anything.
+    if (!window.speechSynthesis.speaking) return
     window.speechSynthesis.pause()
     setState('paused')
   }, [supported])
@@ -158,6 +198,42 @@ export function useReadAloud({ markdown, voiceName, rate = 1 }: ReadAloudOptions
     [utterances.length, start],
   )
 
+  // Applying a change made while she is listening.
+  //
+  // Doing nothing would be smooth and useless: the sentence in flight can run
+  // for twenty seconds, so a speed she just chose appears not to work.
+  // Restarting on every keystroke of a drag is the opposite — a stutter per
+  // step. So the change is settled first and then the current sentence is
+  // spoken again from its start, which is the shortest restart available:
+  // sentences are capped when the lesson is prepared, so it re-reads a clause,
+  // not a paragraph.
+  const speakFromRef = useRef(speakFrom)
+  const stateRef = useRef(state)
+  useEffect(() => {
+    speakFromRef.current = speakFrom
+    stateRef.current = state
+  }, [speakFrom, state])
+
+  const settledOnce = useRef(false)
+  useEffect(() => {
+    if (!supported) return
+    // The first pass is the mount, where there is nothing playing to adjust.
+    if (!settledOnce.current) {
+      settledOnce.current = true
+      return
+    }
+    if (stateRef.current !== 'speaking') return
+    const id = setTimeout(() => {
+      const index = atRef.current
+      if (index < 0 || stateRef.current !== 'speaking') return
+      epochRef.current += 1
+      const epoch = epochRef.current
+      window.speechSynthesis.cancel()
+      speakFromRef.current(index, epoch)
+    }, SETTLE_MS)
+    return () => clearTimeout(id)
+  }, [supported, rate, voiceName])
+
   // The Chromium keepalive. A pause immediately followed by a resume is a
   // no-op to the listener and resets the watchdog that would otherwise cut
   // the voice off.
@@ -165,10 +241,17 @@ export function useReadAloud({ markdown, voiceName, rate = 1 }: ReadAloudOptions
     if (!supported || state !== 'speaking') return
     const id = setInterval(() => {
       const s = window.speechSynthesis
-      if (s.speaking && !s.paused) {
-        s.pause()
+      if (!s.speaking) return
+      if (s.paused) {
+        // We believe we are speaking and it is paused, which means an earlier
+        // resume did not land. The old guard skipped this case, so one missed
+        // resume silenced the rest of the lesson while the controls went on
+        // showing it as playing.
         s.resume()
+        return
       }
+      s.pause()
+      s.resume()
     }, KEEPALIVE_MS)
     return () => clearInterval(id)
   }, [supported, state])
@@ -178,7 +261,7 @@ export function useReadAloud({ markdown, voiceName, rate = 1 }: ReadAloudOptions
   useEffect(() => {
     if (!supported) return
     return () => {
-      stopping.current = true
+      epochRef.current += 1
       window.speechSynthesis.cancel()
     }
   }, [supported, markdown])

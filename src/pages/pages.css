@@ -558,6 +558,31 @@
   border-color: var(--line-blue-strong);
 }
 
+/* A dropdown on a settings row. Shares the .input geometry so a select and a
+   text field on adjacent rows line up, and keeps the native arrow rather than
+   drawing one, which is the only version that stays correct in both themes and
+   at every platform's own zoom. */
+.select {
+  height: 34px;
+  padding: 0 8px;
+  border-radius: var(--r-sm);
+  background: var(--raise);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  font-size: 12.5px;
+  min-width: 90px;
+  outline: none;
+  transition: border-color var(--t-fast) var(--ease-out);
+}
+
+.select:hover {
+  border-color: var(--line-strong);
+}
+
+.select:focus {
+  border-color: var(--line-blue-strong);
+}
+
 .input--wide {
   min-width: 210px;
 }

@@ -134,6 +134,34 @@ function rewrite(
  * aloud for anything else, which is the right failure: a slightly clumsy
  * sentence is recoverable, a stream of backslashes is not.
  */
+/**
+ * The reading speeds offered anywhere in the app.
+ *
+ * One list, because there are two controls: the picker above a lesson and the
+ * row in Settings. If they offered different values, choosing 1.75 in Settings
+ * would leave the lesson picker showing nothing, since a select cannot display
+ * a value that is not one of its options. The range matches the clamp in
+ * engine/state.ts, so every speed here survives being saved and reloaded.
+ */
+export const SPEECH_RATES = [0.5, 0.75, 0.8, 0.9, 1, 1.1, 1.25, 1.5, 1.75, 2] as const
+
+/** What a learner who has never touched the control hears. */
+export const DEFAULT_SPEECH_RATE = 1
+
+/**
+ * The speeds to offer, given the one currently saved.
+ *
+ * A select cannot show a value that is not one of its options: it renders
+ * blank instead. So a speed saved before this list existed — or before it last
+ * changed — is folded in rather than silently losing the setting the moment
+ * she opens the menu.
+ */
+export function speechRateOptions(current: number): number[] {
+  const all = new Set<number>(SPEECH_RATES)
+  if (Number.isFinite(current)) all.add(current)
+  return [...all].sort((a, b) => a - b)
+}
+
 export function mathToWords(tex: string): string {
   let s = tex
 

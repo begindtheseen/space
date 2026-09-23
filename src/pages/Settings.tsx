@@ -34,6 +34,7 @@ import {
 import { useLearner } from '@/hooks/useLearner'
 import { isDesktop } from '@/lib/desktop'
 import { formatBytes } from '@/lib/format'
+import { DEFAULT_SPEECH_RATE, speechRateOptions } from '@/lib/speech'
 import './pages.css'
 
 export function Settings() {
@@ -269,6 +270,38 @@ export function Settings() {
                 setState((s) => ({ ...s, settings: { ...s.settings, pinSidebar: v } }))
               }
             />
+
+            <div className="setting">
+              <div className="grow">
+                <div className="setting__label">
+                  Reading speed — {state.settings.speechRate ?? DEFAULT_SPEECH_RATE}×
+                </div>
+                <p className="setting__help">
+                  How fast a lesson is read aloud. The same picker sits above any lesson that can
+                  be read, and whichever you set last is the one you keep — it is remembered
+                  between sessions rather than starting over at normal speed each time.
+                </p>
+              </div>
+              <div className="setting__control">
+                <select
+                  className="select"
+                  value={String(state.settings.speechRate ?? DEFAULT_SPEECH_RATE)}
+                  aria-label="Reading speed"
+                  onChange={(e) =>
+                    setState((s) => ({
+                      ...s,
+                      settings: { ...s.settings, speechRate: Number(e.target.value) },
+                    }))
+                  }
+                >
+                  {speechRateOptions(state.settings.speechRate ?? DEFAULT_SPEECH_RATE).map((r) => (
+                    <option key={r} value={String(r)}>
+                      {r}×
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
 
             {custom ? (
               <div className="setting">
