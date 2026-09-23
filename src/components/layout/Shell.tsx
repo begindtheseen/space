@@ -22,6 +22,7 @@ import {
   type IconProps,
 } from '@/components/icons'
 import { FocusBar } from '@/components/FocusBar'
+import { Search } from '@/components/Search'
 import { useLearner } from '@/hooks/useLearner'
 import { useUpdates } from '@/hooks/useUpdates'
 import { navigate, useRoute, useScrollReset } from '@/lib/router'
@@ -268,6 +269,8 @@ function TopBar({
       <button className="topbar__burger" onClick={onMenu} aria-label="Open navigation" type="button">
         <IconMenu size={19} />
       </button>
+
+      <Search />
 
       <div className="phases" title="Your current mission phase">
         {PHASES.map((p, i) => (

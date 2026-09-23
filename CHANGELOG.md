@@ -8,6 +8,15 @@ the entry for the one you are running is what Settings shows you afterwards.
 Newest first. Each heading is exactly `## <version>` so both readers can find
 it.
 
+## 1.0.7
+
+**A search box.** It sits at the top of every page. Type two letters and it
+finds lessons, modules, tracks, pages and the settings that are easy to lose —
+reading speed, backups, the update check. Enter takes the first result.
+
+It matches plainly: names that contain what you typed, with names that start
+with it first. Nothing clever, so nothing surprising.
+
 ## 1.0.6
 
 **Reading speed now has a setting.** It sits in Settings under Scheduling, and
