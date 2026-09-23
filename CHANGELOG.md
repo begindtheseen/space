@@ -8,6 +8,24 @@ the entry for the one you are running is what Settings shows you afterwards.
 Newest first. Each heading is exactly `## <version>` so both readers can find
 it.
 
+## 1.0.7
+
+**A search box.** It sits at the top of every page. Type two letters and it
+finds lessons, modules, tracks, pages and the settings that are easy to lose —
+reading speed, backups, the update check. Enter takes the first result.
+
+It matches plainly: names that contain what you typed, with names that start
+with it first. Nothing clever, so nothing surprising.
+
+**A bell beside the profile button.** Everything waiting on you in one place:
+reviews that have come due, a lesson you stopped halfway through, and an
+update ready to install. Each line goes straight to the thing itself. A dot
+appears when there is something, red when it is overdue or blocking.
+
+**You get told when a new temporary role goes up at Hawthorne.** They do not
+stay posted long, so a new one sits at the top of the bell. It clears once you
+have looked at the Jobs page.
+
 ## 1.0.6
 
 **Reading speed now has a setting.** It sits in Settings under Scheduling, and

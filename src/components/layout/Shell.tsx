@@ -22,6 +22,8 @@ import {
   type IconProps,
 } from '@/components/icons'
 import { FocusBar } from '@/components/FocusBar'
+import { Notifications } from '@/components/Notifications'
+import { Search } from '@/components/Search'
 import { useLearner } from '@/hooks/useLearner'
 import { useUpdates } from '@/hooks/useUpdates'
 import { navigate, useRoute, useScrollReset } from '@/lib/router'
@@ -269,6 +271,8 @@ function TopBar({
         <IconMenu size={19} />
       </button>
 
+      <Search />
+
       <div className="phases" title="Your current mission phase">
         {PHASES.map((p, i) => (
           <span key={p.id} style={{ display: 'contents' }}>
@@ -279,6 +283,8 @@ function TopBar({
           </span>
         ))}
       </div>
+
+      <Notifications />
 
       <button
         className="avatar"

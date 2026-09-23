@@ -147,6 +147,13 @@ export const IconUser = (p: IconProps) => (
   </Svg>
 )
 
+export const IconBell = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M6.4 9.6a5.6 5.6 0 0 1 11.2 0c0 4 1.4 5.6 1.4 5.6H5s1.4-1.6 1.4-5.6Z" />
+    <path d="M10.2 18.6a2 2 0 0 0 3.6 0" />
+  </Svg>
+)
+
 export const IconMenu = (p: IconProps) => (
   <Svg {...p}>
     <path d="M3.6 6.6h16.8M3.6 12h16.8M3.6 17.4h16.8" />

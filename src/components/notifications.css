@@ -1,0 +1,90 @@
+/* The bell beside the profile button, and the list it drops. */
+
+.notif {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.notif__bell {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--panel-2);
+  color: var(--ink-2);
+  cursor: pointer;
+  transition: border-color var(--t-fast) var(--ease-out);
+}
+
+.notif__bell:hover {
+  border-color: var(--line-strong);
+}
+
+/* Amber for something waiting, red once it is overdue or blocking. */
+.notif__dot {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--amber, #e0a33e);
+  border: 1.5px solid var(--panel-2);
+}
+
+.notif__dot[data-urgent='true'] {
+  background: var(--danger, #f4614e);
+}
+
+.notif__out {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 40;
+  width: min(330px, calc(100vw - 32px));
+  max-height: 360px;
+  overflow-y: auto;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--panel);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.34);
+}
+
+.notif__item {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  width: 100%;
+  padding: 9px 10px;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.notif__item:hover,
+.notif__item:focus-visible {
+  background: var(--raise);
+}
+
+.notif__title {
+  color: var(--ink);
+  font-size: 12.5px;
+}
+
+.notif__detail {
+  color: var(--ink-3);
+  font-size: 11.5px;
+  line-height: 1.5;
+}
+
+.notif__none {
+  padding: 12px 10px;
+  color: var(--ink-3);
+  font-size: 12.5px;
+}
