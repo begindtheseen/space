@@ -35,6 +35,7 @@ import {
   parseTestOutput,
   python,
   runSql,
+  type Capability,
   type RunOutput,
   type SqlResult,
   type TestOutcome,
@@ -421,7 +422,7 @@ export function Playground() {
           ) : null}
 
           {sqlOut ? <SqlOutput result={sqlOut} /> : null}
-          {pyOut ? <PythonOutput out={pyOut} mode={capability.mode} /> : null}
+          {pyOut ? <PythonOutput out={pyOut} capability={capability} /> : null}
 
           {showSolution && exercise?.solution ? (
             <Card index={4}>
@@ -456,15 +457,25 @@ export function Playground() {
 
 /* ── Output panels ───────────────────────────────────────────────────────── */
 
-function PythonOutput({ out, mode }: { out: RunOutput; mode: string }) {
-  if (mode !== 'execute') {
+function PythonOutput({ out, capability }: { out: RunOutput; capability: Capability }) {
+  if (capability.mode !== 'execute') {
     return (
       <Card index={3}>
         <CardHead icon={<IconWarn size={15} />} title="Not executed" divided />
         <div className="sect" style={{ fontSize: 12.5, color: 'var(--ink-3)', lineHeight: 1.7 }}>
-          This language does not run in a browser. Compare your work against the reference
-          solution, and run it locally with a real toolchain — installing that toolchain is part of
-          what the curriculum teaches.
+          {/* The reason has to be the real one. This panel used to say the language
+              "does not run in a browser" whatever the actual cause was, which is the
+              wrong sentence inside the desktop app: it made a compiler she has not
+              installed yet look like a limitation of ORBIT, and hid the one line that
+              says which compiler and how to get it. */}
+          {capability.note}
+          {capability.missing ? (
+            <div style={{ marginTop: 10 }}>
+              <strong>{capability.missing.label} is not installed.</strong>{' '}
+              {capability.missing.install} Use the refresh button above once it is, so ORBIT looks
+              again without a restart.
+            </div>
+          ) : null}
         </div>
       </Card>
     )
