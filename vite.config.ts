@@ -1,11 +1,17 @@
+import { readFileSync } from 'node:fs'
 import { fileURLToPath, URL } from 'node:url'
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
+
+// The version the app is running, so it can show what this build changed.
+// package.json is the one place it is written down.
+const version: string = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8')).version
 
 // Static, dependency-light build: the whole platform is client-side, so the
 // output of `vite build` can be dropped on any static host (GitHub Pages,
 // Vercel, Cloudflare Pages) with no server behind it.
 export default defineConfig({
+  define: { __APP_VERSION__: JSON.stringify(version) },
   base: process.env.BASE_PATH ?? '/',
   plugins: [react()],
   resolve: {

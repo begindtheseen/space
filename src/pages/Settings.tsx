@@ -33,7 +33,9 @@ import {
 } from '@/engine/store'
 import { useLearner } from '@/hooks/useLearner'
 import { isDesktop } from '@/lib/desktop'
+import { CHANGELOG, notesForVersion } from '@/lib/changelog'
 import { formatBytes } from '@/lib/format'
+import { Markdown } from '@/lib/markdown'
 import { DEFAULT_SPEECH_RATE, speechRateOptions } from '@/lib/speech'
 import './pages.css'
 
@@ -192,6 +194,8 @@ export function Settings() {
 
           {/* ── updates (desktop shell only) ──────────────────────────── */}
           {isDesktop ? <UpdatesCard index={1} /> : null}
+
+          <WhatsNew index={isDesktop ? 2 : 1} />
 
           {/* ── scheduling ────────────────────────────────────────────── */}
           <Card index={1}>
@@ -591,4 +595,51 @@ function clampInt(v: string, lo: number, hi: number): number {
   const n = Math.round(Number(v))
   if (!Number.isFinite(n)) return lo
   return Math.min(Math.max(n, lo), hi)
+}
+
+/**
+ * What the version she is running changed.
+ *
+ * The update panel above answers this for a version she has not installed
+ * yet. This answers it for the one she has — which is the half that was
+ * missing, and the half that matters once the update is done and the panel
+ * has gone back to saying she is up to date.
+ */
+function WhatsNew({ index }: { index: number }) {
+  const version = __APP_VERSION__
+  const current = notesForVersion(version)
+  const earlier = CHANGELOG.filter((e) => e.version !== version).slice(0, 3)
+  const [open, setOpen] = useState(false)
+
+  return (
+    <Card index={index}>
+      <CardHead icon={<IconCheck size={15} />} title={`What's new in ${version}`} divided />
+      <div className="sect">
+        {current ? (
+          <Markdown className="updates__notes">{current}</Markdown>
+        ) : (
+          <p className="setting__help">
+            Nothing was written down for this version. That is a gap in the changelog rather than a
+            version that changed nothing.
+          </p>
+        )}
+      </div>
+
+      {earlier.length ? (
+        <div className="sect">
+          <Button variant="ghost" size="md" onClick={() => setOpen((v) => !v)}>
+            {open ? 'Hide earlier versions' : `Earlier versions (${earlier.length})`}
+          </Button>
+          {open
+            ? earlier.map((e) => (
+                <div key={e.version} style={{ marginTop: 14 }}>
+                  <div className="setting__label">{e.version}</div>
+                  <Markdown className="updates__notes">{e.notes}</Markdown>
+                </div>
+              ))
+            : null}
+        </div>
+      ) : null}
+    </Card>
+  )
 }
