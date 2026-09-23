@@ -27,6 +27,7 @@ import { Search } from '@/components/Search'
 import { useLearner } from '@/hooks/useLearner'
 import { useUpdates } from '@/hooks/useUpdates'
 import { navigate, useRoute, useScrollReset } from '@/lib/router'
+import { startUpdateWatch } from '@/lib/updateWatch'
 import './shell.css'
 
 /**
@@ -94,6 +95,11 @@ export function Shell({
   const [stuck, setStuck] = useState(false)
   const scrollRef = useRef<HTMLDivElement | null>(null)
   const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  /* The shell asks for updates once at launch and never again, so an app left
+     open all day never hears about a release that lands while it is running.
+     Started here because the shell is mounted for the life of the app. */
+  useEffect(() => startUpdateWatch(), [])
 
   /* The rail is revealed by moving toward the left edge and hidden again on
      the way out. The delay on the way out is the part that matters: without

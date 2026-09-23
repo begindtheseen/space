@@ -8,6 +8,15 @@ the entry for the one you are running is what Settings shows you afterwards.
 Newest first. Each heading is exactly `## <version>` so both readers can find
 it.
 
+## 1.0.10
+
+**The app notices an update while you are using it.** It used to ask GitHub
+once, a few seconds after launch, and then never again — so a release that
+went up while ORBIT was already open stayed invisible, and Settings kept
+saying you were up to date, because the last time it asked, you were. It now
+asks again every half hour, and when you come back to the window after being
+away. Nothing else changes: the bell lights the same way it always did.
+
 ## 1.0.9
 
 **The search box looks like part of the app now.** Every result carries its
