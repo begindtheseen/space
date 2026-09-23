@@ -202,3 +202,69 @@ describe('choosing a voice', () => {
     expect(usableVoices([])).toEqual([])
   })
 })
+
+/* ── Regressions found by listening to a real derivation ─────────────────── */
+
+describe('a rate is never read as the quantity', () => {
+  // `\dot R` and `\dot\lambda` are how this curriculum writes range rate and
+  // line-of-sight rate. The argument reader required a brace, so both fell
+  // through to "drop the command" and the dot vanished: closing speed was
+  // read as range, and the rate PN is proportional to as the angle itself.
+  it('keeps the dot on an unbraced argument', () => {
+    expect(mathToWords('\\dot R')).toBe('R dot')
+    expect(mathToWords('\\dot\\lambda')).toBe('lambda dot')
+    expect(mathToWords('\\ddot x')).toBe('x double dot')
+    expect(mathToWords('\\hat n')).toBe('n hat')
+  })
+
+  it('still handles the braced form it always did', () => {
+    expect(mathToWords('\\dot{m}')).toBe('m dot')
+    expect(mathToWords('\\dot{\\mathbf{r}}_{rel}')).toContain('r dot')
+  })
+
+  it('says the sign of a term that opens with a minus', () => {
+    expect(mathToWords('V_c \\equiv -\\dot R')).toBe('V sub c is identical to minus R dot')
+    expect(mathToWords('-v\\dot{m}')).toBe('minus v m dot')
+  })
+})
+
+describe('quotients and units', () => {
+  it('reads a slash between terms as a division', () => {
+    expect(mathToWords('t = R/V_c')).toBe('t equals R divided by V sub c')
+    expect(mathToWords('m_0/m_f')).toBe('m sub nought divided by m sub f')
+  })
+
+  it('leaves the slash inside a unit alone', () => {
+    // "1000 m divided by s" is an algebraic quotient; the text means a speed.
+    expect(mathToWords('u = 1000\\ \\text{m/s}')).toBe('u equals 1000 metres per second')
+    expect(mathToWords('2750\\ \\text{kg/s}')).toBe('2750 kilograms per second')
+    expect(mathToWords('9.81\\ \\text{m/s}^2')).toBe('9.81 metres per second squared')
+  })
+
+  it('speaks escaped punctuation instead of its backslash', () => {
+    expect(mathToWords('19\\%')).toBe('19 percent')
+    expect(mathToWords('(-20,\\ 10,\\ 0)')).not.toContain('\\')
+  })
+})
+
+describe('sentence closing', () => {
+  it('gives every utterance an ending the voice can hear', () => {
+    const out = toUtterances('A heading\n\nSome prose that stops\n\nMore here.')
+    expect(out.length).toBeGreaterThan(0)
+    for (const u of out) expect(u, u).toMatch(/[.!?,;:]$/)
+  })
+
+  it('keeps a continuing mark on a piece split for length', () => {
+    const long = `${'word '.repeat(70)}, ${'more '.repeat(70)}.`
+    const out = toUtterances(long)
+    expect(out.length).toBeGreaterThan(1)
+    expect(out[0]).toMatch(/,$/)
+  })
+
+  it('keeps a displayed equation in the sentence that introduces it', () => {
+    // Two paragraphs made two utterances, so the voice stopped dead on "is".
+    const out = toUtterances(speakableFromMarkdown('The move is\n\n$$F = ma$$\n\nand that is wrong.'))
+    expect(out.some((u) => /The move is F equals ma/.test(u))).toBe(true)
+    expect(out.some((u) => u.trim() === 'The move is.')).toBe(false)
+  })
+})
