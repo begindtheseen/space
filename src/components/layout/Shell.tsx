@@ -22,6 +22,7 @@ import {
   type IconProps,
 } from '@/components/icons'
 import { FocusBar } from '@/components/FocusBar'
+import { Notifications } from '@/components/Notifications'
 import { Search } from '@/components/Search'
 import { useLearner } from '@/hooks/useLearner'
 import { useUpdates } from '@/hooks/useUpdates'
@@ -282,6 +283,8 @@ function TopBar({
           </span>
         ))}
       </div>
+
+      <Notifications />
 
       <button
         className="avatar"

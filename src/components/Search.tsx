@@ -40,6 +40,7 @@ const PLACES: Hit[] = [
   { label: 'Resources', where: 'Page', href: '/resources' },
   { label: 'Guide', where: 'Page', href: '/guide' },
   { label: 'Settings', where: 'Page', href: '/settings' },
+  { label: 'Reviews due', where: 'Page', href: '/review' },
   { label: 'Foundations & Math', where: 'Track', href: '/foundations' },
   { label: 'GNC Preparation', where: 'Track', href: '/gnc' },
   { label: 'Coding & Software', where: 'Track', href: '/coding' },

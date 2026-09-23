@@ -17,6 +17,11 @@ reading speed, backups, the update check. Enter takes the first result.
 It matches plainly: names that contain what you typed, with names that start
 with it first. Nothing clever, so nothing surprising.
 
+**A bell beside the profile button.** Everything waiting on you in one place:
+reviews that have come due, a lesson you stopped halfway through, and an
+update ready to install. Each line goes straight to the thing itself. A dot
+appears when there is something, red when it is overdue or blocking.
+
 ## 1.0.6
 
 **Reading speed now has a setting.** It sits in Settings under Scheduling, and
