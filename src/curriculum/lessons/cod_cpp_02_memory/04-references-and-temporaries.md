@@ -195,8 +195,11 @@ about to read a destroyed object
 READ of size 4 at 0x7f78f2d00020 thread T0
     #0 0x562bc06f2624 in Tracer::value() const l04-noextend.cpp:8
     #1 0x562bc06f244d in main l04-noextend.cpp:21
-SUMMARY: AddressSanitizer: stack-use-after-scope l04-noextend.cpp:15 in Tracer::value() const
+    ...
+SUMMARY: AddressSanitizer: stack-use-after-scope l04-noextend.cpp:8 in Tracer::value() const
 ```
+
+(Here and below, `...` marks lines cut from the report: the library frames under `main`, and the frame description and `HINT` paragraph before the `SUMMARY`.)
 
 Look at the ordering in the output: `dtor Tracer(7)` printed *before* the read. The destructor had already run; the read happened afterwards. That is a use-after-scope written out in the program's own tracing, and it is why putting a print in a destructor is a reasonable first debugging move.
 

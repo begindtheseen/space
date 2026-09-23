@@ -45,7 +45,11 @@ const VIDEO_ID_RE = /^[A-Za-z0-9_-]{11}$/
 
 function mathSpans(body: string): { tex: string; display: boolean }[] {
   const out: { tex: string; display: boolean }[] = []
-  const noCode = body.replace(/```[\s\S]*?```/g, '')
+  // Inline code can hold a bare $ — a vim lesson naming the end-of-line motion
+  // has several — and two of them on one line pair into a math span that never
+  // was one. Code spans come out before the math is found, the same way fenced
+  // blocks already do.
+  const noCode = body.replace(/```[\s\S]*?```/g, '').replace(/`[^`\n]*`/g, ' ')
   const display = /\$\$([\s\S]*?)\$\$/g
   let m: RegExpExecArray | null
   while ((m = display.exec(noCode)) !== null) out.push({ tex: m[1]!.trim(), display: true })
@@ -464,13 +468,15 @@ describe.each(moduleDirs)('lessons for %s', (moduleId) => {
         noCode.split('\n').filter((l) => /^#\s/.test(l)),
         'no # headings (the title is the h1)',
       ).toEqual([])
-      const noMath = noCode
-        .replace(/\$\$[\s\S]*?\$\$/g, '')
-        .replace(/\$[^$\n]+\$/g, '')
-        .replace(/`[^`\n]+`/g, '')
+      // Inline code goes before anything counts delimiters. A shell lesson is
+      // full of `$?`, `$$` and `${tmp:?}`, and a C++ one of `$` in no context
+      // at all; none of it is math, and counting it made the shell-scripting
+      // lessons fail a check about display equations.
+      const noSpans = noCode.replace(/`[^`\n]*`/g, '')
+      const noMath = noSpans.replace(/\$\$[\s\S]*?\$\$/g, '').replace(/\$[^$\n]+\$/g, '')
       expect(noMath.match(/<[a-z][a-z0-9-]*[\s>/]/gi) ?? [], 'no raw HTML').toEqual([])
       expect(noMath.match(/\\\(|\\\[|\\begin\{equation/g) ?? [], 'math uses $ and $$ delimiters only').toEqual([])
-      const dollars = (p.body.replace(/```[\s\S]*?```/g, '').match(/\$\$/g) ?? []).length
+      const dollars = (noSpans.match(/\$\$/g) ?? []).length
       expect(dollars % 2, 'balanced $$').toBe(0)
       // Against the code-free text: a C++ lambda written inline, `[omega](double
       // t)`, has a link's exact shape and is not a link.

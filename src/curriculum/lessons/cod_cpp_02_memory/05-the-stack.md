@@ -22,6 +22,7 @@ You do not have to guess the size. g++ writes it out with `-fstack-usage`, which
 Three nested functions, each with an eight-element `double` scratch array, each recording the address of its first local.
 
 ```cpp
+#include <cstddef>
 #include <cstdio>
 
 const char* outer_marker = nullptr;
@@ -130,6 +131,8 @@ Rebuild with `-fsanitize=address -fno-sanitize-recover=all` and the same program
 SUMMARY: AddressSanitizer: stack-overflow l05-depth.cpp:4 in deeper(int)
 ```
 
+(The topmost frame varies between runs: four of six runs here named `deeper(int)` as above, and the other two ran out of stack inside the sanitizer's own runtime and named a frame in `asan_fake_stack.cpp`. What never varies is the wall of identical `deeper(int)` frames below it.)
+
 Two details worth keeping. The trace is hundreds of identical frames, which is the signature of runaway recursion and tells you the function's name immediately. And the sanitized build overflowed *sooner* — last depth about 6540 rather than 7810 — because AddressSanitizer inserts redzones around stack objects, so each frame is effectively about $8\,388\,608/6540 = 1283$ bytes. A program that fits its stack with 20% to spare in a normal build can overflow under the sanitizer, which is a reason to give sanitized test runs a larger stack rather than to conclude the code is broken.
 :::
 
@@ -206,12 +209,20 @@ Three properties make the iterative version certifiable. The stack has a capacit
 
 The other way to exhaust a stack is one frame, not many. A `std::array<double, 200000>` local is 1,600,000 bytes — about 1.53 MiB — and it compiles without a word at `-Wall -Wextra -Wpedantic`. Two flags catch it:
 
+With `-Wstack-usage=16384`:
+
 ```text
+chk-bigframe.cpp: In function 'double mean_of_window()':
 chk-bigframe.cpp:3:8: warning: stack usage is 1600080 bytes [-Wstack-usage=]
-chk-bigframe.cpp:9:1: warning: the frame size of 1600064 bytes is larger than 16384 bytes [-Wframe-larger-than=]
 ```
 
-produced by `-Wstack-usage=16384` and `-Wframe-larger-than=16384` respectively. Set them to your task's budget and the build tells you when a frame grows past it. Neither is enabled by any of `-Wall`, `-Wextra` or `-Wpedantic`: you have to ask.
+and with `-Wframe-larger-than=16384`:
+
+```text
+chk-bigframe.cpp: In function 'double mean_of_window()':
+chk-bigframe.cpp:9:1: warning: the frame size of 1600064 bytes is larger than 16384 bytes [-Wframe-larger-than=]
+```
+ Set them to your task's budget and the build tells you when a frame grows past it. Neither is enabled by any of `-Wall`, `-Wextra` or `-Wpedantic`: you have to ask.
 
 ::: key
 A stack frame holds a call's return address, saved registers, parameters and locals, and its size is a compile-time constant for a function without variable-length arrays. Measure it with `-fstack-usage`; bound it with `-Wframe-larger-than=`. Stack overflow is undefined behaviour with no diagnostic from the language. Recursion makes worst-case depth data-dependent and so unprovable, which is why *Power of Ten* rule 1 forbids it; replace it with an explicit stack of fixed capacity and a defined behaviour when that capacity is reached.

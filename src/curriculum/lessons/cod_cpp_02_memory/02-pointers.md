@@ -94,11 +94,14 @@ and the process exits with status 1. The `-fno-sanitize-recover=all` is what pro
 This is the flashcard that the module expects you to answer without hesitating, and the way to answer it is to read the declaration right to left from the variable's name.
 
 ```cpp
-int*             p;    // "p is a pointer to int"                     — both mutable
-const int*      pc;    // "pc is a pointer to int const"              — pointee frozen
-int* const      cp;    // "cp is a const pointer to int"              — pointer frozen
-const int* const cpc;  // "cpc is a const pointer to int const"       — both frozen
+int              n = 0;
+int*             p   = &n;   // "p is a pointer to int"                — both mutable
+const int*      pc   = &n;   // "pc is a pointer to int const"         — pointee frozen
+int* const      cp   = &n;   // "cp is a const pointer to int"         — pointer frozen
+const int* const cpc = &n;   // "cpc is a const pointer to int const"  — both frozen
 ```
+
+The last two need an initialiser and would not compile without one: a `const` object of any kind, pointer included, must be given its value where it is declared.
 
 `const int*` and `int const*` mean exactly the same thing; the second reads better right to left, and some codebases require it. What never moves is the `const` *after* the star: that one always applies to the pointer itself.
 

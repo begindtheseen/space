@@ -2,7 +2,7 @@
   "name": "orbit-gnc",
   "productName": "ORBIT",
   "private": true,
-  "version": "1.0.2",
+  "version": "1.0.5",
   "type": "module",
   "description": "A local-first curriculum platform that takes a complete beginner to guidance, navigation and control engineering readiness.",
   "author": "begindtheseen",
@@ -11,7 +11,7 @@
     "updates": {
       "repo": "begindtheseen/space"
     },
-    "minShell": "1.0.0"
+    "minShell": "1.0.3"
   },
   "scripts": {
     "dev": "vite",
@@ -27,6 +27,7 @@
     "desktop:zip": "node scripts/make-mac-zip.mjs",
     "desktop:icon": "node scripts/make-icon.mjs",
     "desktop:e2e": "node desktop/test/e2e.mjs",
+    "desktop:bridge": "node desktop/test/bridge-e2e.mjs",
     "lessons:manifest": "node scripts/lessons-manifest.ts",
     "lessons:check": "LESSONS_STRICT=1 vitest run src/curriculum/lessons.test.ts",
     "smoke:focus": "node scripts/focus-smoke.mjs"

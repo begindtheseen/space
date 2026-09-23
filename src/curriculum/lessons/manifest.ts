@@ -1512,7 +1512,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-the-heap",
       "title": "The heap: what the allocator does, how long it takes, and how it fragments",
-      "minutes": 19,
+      "minutes": 20,
       "covers": [
         "The heap: fragmentation, non-deterministic allocation time, allocator behaviour"
       ],
@@ -1666,6 +1666,180 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "tmux sessions, windows, panes, detach/attach"
       ],
       "file": "cod_lnx_01_shell/09-tmux-sessions-windows-and-panes.md"
+    },
+    {
+      "id": "l10-environment-path-and-startup-files",
+      "title": "The environment, PATH, and startup files",
+      "minutes": 20,
+      "covers": [
+        "Environment variables, PATH, .bashrc vs .bash_profile"
+      ],
+      "file": "cod_lnx_01_shell/10-environment-path-and-startup-files.md"
+    },
+    {
+      "id": "l11-packages-and-building-from-source",
+      "title": "Packages, and building from source",
+      "minutes": 19,
+      "covers": [
+        "Package management (apt/dnf) and building from source"
+      ],
+      "file": "cod_lnx_01_shell/11-packages-and-building-from-source.md"
+    },
+    {
+      "id": "l12-systemd-services-and-the-journal",
+      "title": "systemd services and the journal",
+      "minutes": 20,
+      "covers": [
+        "systemd: systemctl, journalctl"
+      ],
+      "file": "cod_lnx_01_shell/12-systemd-services-and-the-journal.md"
+    },
+    {
+      "id": "l13-diagnosing-a-machine",
+      "title": "Diagnosing a machine — disk, network, syscalls, kernel",
+      "minutes": 23,
+      "covers": [
+        "df du lsblk ip ss curl strace lsof dmesg"
+      ],
+      "file": "cod_lnx_01_shell/13-diagnosing-a-machine.md"
+    },
+    {
+      "id": "l14-vim-survival",
+      "title": "vim survival",
+      "minutes": 21,
+      "covers": [
+        "vim survival: modes, motions, :wq"
+      ],
+      "file": "cod_lnx_01_shell/14-vim-survival.md"
+    }
+  ],
+  "cod_lnx_02_scripting": [
+    {
+      "id": "l01-shebangs-and-executable-scripts",
+      "title": "Shebang lines and executable scripts",
+      "minutes": 19,
+      "covers": [
+        "Shebang lines and executable scripts"
+      ],
+      "file": "cod_lnx_02_scripting/01-shebangs-and-executable-scripts.md"
+    },
+    {
+      "id": "l02-set-euo-pipefail",
+      "title": "set -euo pipefail, and what each flag protects against",
+      "minutes": 18,
+      "covers": [
+        "set -euo pipefail and what each flag actually does"
+      ],
+      "file": "cod_lnx_02_scripting/02-set-euo-pipefail.md"
+    },
+    {
+      "id": "l03-variables-quoting-and-expansion",
+      "title": "Variables, quoting, word splitting and globs",
+      "minutes": 18,
+      "covers": [
+        "Variables, quoting, word splitting, glob expansion"
+      ],
+      "file": "cod_lnx_02_scripting/03-variables-quoting-and-expansion.md"
+    },
+    {
+      "id": "l04-substitution-arithmetic-and-arrays",
+      "title": "Command substitution, arithmetic and arrays",
+      "minutes": 17,
+      "covers": [
+        "Command substitution $( ), arithmetic $(( )), arrays"
+      ],
+      "file": "cod_lnx_02_scripting/04-substitution-arithmetic-and-arrays.md"
+    },
+    {
+      "id": "l05-control-flow-and-tests",
+      "title": "Control flow, and the two kinds of bracket",
+      "minutes": 18,
+      "covers": [
+        "if / for / while / case, test [[ ]] vs [ ]"
+      ],
+      "file": "cod_lnx_02_scripting/05-control-flow-and-tests.md"
+    },
+    {
+      "id": "l06-functions-and-exit-codes",
+      "title": "Functions, return values and exit codes",
+      "minutes": 17,
+      "covers": [
+        "Functions, return values, exit codes, $?"
+      ],
+      "file": "cod_lnx_02_scripting/06-functions-and-exit-codes.md"
+    },
+    {
+      "id": "l07-trap-and-cleanup",
+      "title": "trap, and cleaning up on every exit path",
+      "minutes": 14,
+      "covers": [
+        "trap for cleanup on EXIT/INT/TERM"
+      ],
+      "file": "cod_lnx_02_scripting/07-trap-and-cleanup.md"
+    },
+    {
+      "id": "l08-getopts-and-arguments",
+      "title": "A script's interface — getopts, arguments and here-docs",
+      "minutes": 18,
+      "covers": [
+        "getopts for flags, positional args, \"$@\" vs \"$*\"",
+        "Here-docs and here-strings"
+      ],
+      "file": "cod_lnx_02_scripting/08-getopts-and-arguments.md"
+    },
+    {
+      "id": "l09-sed",
+      "title": "sed — substitution and addressing",
+      "minutes": 19,
+      "covers": [
+        "sed substitution and addressing; awk fields, patterns, BEGIN/END, arrays"
+      ],
+      "file": "cod_lnx_02_scripting/09-sed.md"
+    },
+    {
+      "id": "l10-awk",
+      "title": "awk — fields, patterns and arrays",
+      "minutes": 20,
+      "covers": [
+        "sed substitution and addressing; awk fields, patterns, BEGIN/END, arrays"
+      ],
+      "file": "cod_lnx_02_scripting/10-awk.md"
+    },
+    {
+      "id": "l11-jq-and-tabular-text",
+      "title": "jq for JSON, and lining up tabular text",
+      "minutes": 19,
+      "covers": [
+        "jq for JSON, column/paste/join for tabular text"
+      ],
+      "file": "cod_lnx_02_scripting/11-jq-and-tabular-text.md"
+    },
+    {
+      "id": "l12-shellcheck",
+      "title": "shellcheck as a mandatory linter",
+      "minutes": 18,
+      "covers": [
+        "shellcheck as a mandatory linter"
+      ],
+      "file": "cod_lnx_02_scripting/12-shellcheck.md"
+    },
+    {
+      "id": "l13-cron-and-systemd-timers",
+      "title": "cron and systemd timers",
+      "minutes": 19,
+      "covers": [
+        "cron and systemd timers"
+      ],
+      "file": "cod_lnx_02_scripting/13-cron-and-systemd-timers.md"
+    },
+    {
+      "id": "l14-when-to-stop-writing-bash",
+      "title": "When to stop writing bash",
+      "minutes": 20,
+      "covers": [
+        "When to stop writing bash and switch to Python"
+      ],
+      "file": "cod_lnx_02_scripting/14-when-to-stop-writing-bash.md"
     }
   ],
   "cod_py_01_basics": [
@@ -7668,37 +7842,16 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_lnx_01_shell": {
-    "covered": 10,
+    "covered": 15,
     "total": 15,
-    "complete": false,
-    "missing": [
-      "systemd: systemctl, journalctl",
-      "Environment variables, PATH, .bashrc vs .bash_profile",
-      "Package management (apt/dnf) and building from source",
-      "df du lsblk ip ss curl strace lsof dmesg",
-      "vim survival: modes, motions, :wq"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_lnx_02_scripting": {
-    "covered": 0,
+    "covered": 14,
     "total": 14,
-    "complete": false,
-    "missing": [
-      "Shebang lines and executable scripts",
-      "set -euo pipefail and what each flag actually does",
-      "Variables, quoting, word splitting, glob expansion",
-      "Command substitution $( ), arithmetic $(( )), arrays",
-      "if / for / while / case, test [[ ]] vs [ ]",
-      "Functions, return values, exit codes, $?",
-      "trap for cleanup on EXIT/INT/TERM",
-      "getopts for flags, positional args, \"$@\" vs \"$*\"",
-      "Here-docs and here-strings",
-      "sed substitution and addressing; awk fields, patterns, BEGIN/END, arrays",
-      "jq for JSON, column/paste/join for tabular text",
-      "shellcheck as a mandatory linter",
-      "cron and systemd timers",
-      "When to stop writing bash and switch to Python"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_git_01_basics": {
     "covered": 0,

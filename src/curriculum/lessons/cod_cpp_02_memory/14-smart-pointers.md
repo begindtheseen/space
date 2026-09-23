@@ -66,42 +66,64 @@ The function signature says all of this. `void takes_ownership(std::unique_ptr<S
 ::: example The same function, two ways, identical instructions
 ```cpp
 struct Sensor { int id; double last; };     // trivial destructor
-void use(Sensor* s);
 
-void with_raw(int id) {
+void use(Sensor* s);                        // defined in another translation unit
+
+__attribute__((noinline)) void with_raw(int id) {
     Sensor* s = new Sensor{id, 0.0};
     use(s);
     delete s;
 }
 
-void with_unique(int id) {
+__attribute__((noinline)) void with_unique(int id) {
     std::unique_ptr<Sensor> s(new Sensor{id, 0.0});
     use(s.get());
 }
 ```
 
-Compiled with `g++ -std=c++20 -O2 -fno-exceptions`, both functions produce the same instruction sequence:
+The `noinline` attributes only stop the compiler from folding these two into `main`, so that both bodies appear in the listing.
+
+Compiled with `g++ -std=c++20 -O2 -fno-exceptions` (with `use` defined in another translation unit, so the optimiser cannot see into it), both functions produce the same instruction sequence — the listing below is the two of them one after the other, with the assembler's `.cfi` and `.size` directives filtered out:
 
 ```text
-_Z8with_rawi:                      _Z11with_uniquei:
-	endbr64                            	endbr64
-	push	rbp                            	push	rbp
-	mov	ebp, edi                       	mov	ebp, edi
-	mov	edi, 16                        	mov	edi, 16
-	push	rbx                            	push	rbx
-	sub	rsp, 8                         	sub	rsp, 8
-	call	_Znwm@PLT                      	call	_Znwm@PLT
-	mov	DWORD PTR [rax], ebp           	mov	DWORD PTR [rax], ebp
-	mov	rdi, rax                       	mov	rdi, rax
-	mov	rbx, rax                       	mov	rbx, rax
-	mov	QWORD PTR 8[rax], 0x0          	mov	QWORD PTR 8[rax], 0x0
-	call	_Z3useP6Sensor@PLT             	call	_Z3useP6Sensor@PLT
-	add	rsp, 8                         	add	rsp, 8
-	mov	rdi, rbx                       	mov	rdi, rbx
-	mov	esi, 16                        	mov	esi, 16
-	pop	rbx                            	pop	rbx
-	pop	rbp                            	pop	rbp
-	jmp	_ZdlPvm@PLT                    	jmp	_ZdlPvm@PLT
+_Z8with_rawi:
+	endbr64
+	push	rbp
+	mov	ebp, edi
+	mov	edi, 16
+	push	rbx
+	sub	rsp, 8
+	call	_Znwm@PLT
+	mov	DWORD PTR [rax], ebp
+	mov	rdi, rax
+	mov	rbx, rax
+	mov	QWORD PTR 8[rax], 0x000000000
+	call	_Z3useP6Sensor@PLT
+	add	rsp, 8
+	mov	rdi, rbx
+	mov	esi, 16
+	pop	rbx
+	pop	rbp
+	jmp	_ZdlPvm@PLT
+_Z11with_uniquei:
+	endbr64
+	push	rbp
+	mov	ebp, edi
+	mov	edi, 16
+	push	rbx
+	sub	rsp, 8
+	call	_Znwm@PLT
+	mov	DWORD PTR [rax], ebp
+	mov	rdi, rax
+	mov	rbx, rax
+	mov	QWORD PTR 8[rax], 0x000000000
+	call	_Z3useP6Sensor@PLT
+	add	rsp, 8
+	mov	rdi, rbx
+	mov	esi, 16
+	pop	rbx
+	pop	rbp
+	jmp	_ZdlPvm@PLT
 ```
 
 Instruction for instruction identical: the allocation, the two stores, the call, the deallocation. `unique_ptr` is a class with one pointer member and an inlined destructor, so at `-O2` there is nothing left of it but the `delete` it emits.
@@ -150,6 +172,8 @@ two threads: shared_ptr copy 118.67 ns per copy (2 x 20000000 copies)
 (hardware_concurrency = 4)
 ```
 
+That is one run; the figures below give the spread over repeats.
+
 Single-threaded, a `shared_ptr` copy costs about 1.2 ns against 0.16 ns for a raw pointer: roughly eight times more, and still small enough to ignore in most code. Repeat runs gave 1.18 and 1.59 ns, so treat it as "about 1 to 1.5 ns".
 
 Two threads copying the *same* `shared_ptr` cost about **119 ns per copy** — and repeat runs gave 97 and 94 ns, so call it around 100 ns, roughly seventy times the uncontended figure. Nothing about the counter changed; what changed is that its cache line now moves between cores on every increment, and each atomic read-modify-write has to take exclusive ownership of it before it can proceed. Two threads that merely *look at* the same object, sharing no data and holding no lock, serialise on the reference count.
@@ -179,11 +203,25 @@ Reference counting cannot collect a cycle. If A holds a `shared_ptr` to B and B 
 
 ::: example A controller and an estimator that point at each other
 ```cpp
-struct Controller { std::shared_ptr<Estimator> est; ~Controller(); };
-struct Estimator  { std::shared_ptr<Controller> ctl; ~Estimator(); };   // the cycle
+struct Controller {
+    std::shared_ptr<Estimator> est;                 // owns the estimator
+    ~Controller() { std::printf("  ~Controller\n"); }
+};
 
-struct ControllerW { std::shared_ptr<EstimatorWeak> est; ~ControllerW(); };
-struct EstimatorWeak { std::weak_ptr<ControllerW> ctl; ~EstimatorWeak(); };  // observes
+struct Estimator {
+    std::shared_ptr<Controller> ctl;                // and points back: a cycle
+    ~Estimator() { std::printf("  ~Estimator\n"); }
+};
+
+struct ControllerW {
+    std::shared_ptr<EstimatorWeak> est;
+    ~ControllerW() { std::printf("  ~ControllerW\n"); }
+};
+
+struct EstimatorWeak {
+    std::weak_ptr<ControllerW> ctl;                 // observes, does not own
+    ~EstimatorWeak() { std::printf("  ~EstimatorWeak\n"); }
+};
 ```
 
 Both pairs are created with `make_shared`, wired to each other, and dropped at the end of a block. Under `-fsanitize=address -fno-sanitize-recover=all`:
@@ -197,12 +235,21 @@ with two shared_ptrs:
   c.use_count() = 2, e.use_count() = 2
 end of main
 
+=================================================================
 ==32161==ERROR: LeakSanitizer: detected memory leaks
+
 Indirect leak of 32 byte(s) in 1 object(s) allocated from:
-    …
+    ...
     #9 0x5566f83526ff in main l14-cycle.cpp:43
+    ...
+
+Indirect leak of 32 byte(s) in 1 object(s) allocated from:
+    ...
+
 SUMMARY: AddressSanitizer: 64 byte(s) leaked in 2 allocation(s).
 ```
+
+(Each leak's trace is nine frames of `make_shared` machinery inside libstdc++; the `...` lines cut them, and the frame that names your own code is `#9`.)
 
 The weak version's counts are 1 and 2: the local `c` is the only owner of the controller, because the estimator's back-reference is weak. Both destructors ran, in order, at the closing brace.
 

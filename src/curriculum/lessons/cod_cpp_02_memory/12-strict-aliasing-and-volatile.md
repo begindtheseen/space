@@ -60,19 +60,23 @@ The first answer is self-contradictory on its face — the function returned `*f
 
 ```text
 _Z15scale_then_readPfPj:
-	movss	xmm0, DWORD PTR .LC0[rip]     ; xmm0 = 1.0f
-	movss	DWORD PTR [rdi], xmm0         ; *f = 1.0f
-	mov	DWORD PTR [rsi], 2139095040   ; *u = 0x7F800000
-	ret                                   ; return xmm0, still 1.0f
+	endbr64
+	movss	xmm0, DWORD PTR .LC0[rip]
+	movss	DWORD PTR [rdi], xmm0
+	mov	DWORD PTR [rsi], 2139095040
+	ret
 ```
+
+`xmm0` is loaded with the constant 1.0f, stored through `f` (in `rdi`), the integer 2139095040 — which is `0x7F800000` — is stored through `u` (in `rsi`), and the function returns with `xmm0` **unchanged**: still 1.0f.
 
 At `-O2 -fno-strict-aliasing`:
 
 ```text
 _Z15scale_then_readPfPj:
+	endbr64
 	mov	DWORD PTR [rdi], 0x3f800000
 	mov	DWORD PTR [rsi], 2139095040
-	movss	xmm0, DWORD PTR [rdi]         ; reload *f
+	movss	xmm0, DWORD PTR [rdi]
 	ret
 ```
 
@@ -132,9 +136,11 @@ Compiled at `-O2` with the functions marked `noinline` so both are emitted:
 
 ```text
 _Z11bits_memcpyf:
+	endbr64
 	movd	eax, xmm0
 	ret
 _Z12bits_bitcastf:
+	endbr64
 	movd	eax, xmm0
 	ret
 ```
@@ -173,13 +179,14 @@ g++ 13.3.0 at `-O2`:
 
 ```text
 _Z23write_sequence_volatilev:
+	endbr64
 	mov	DWORD PTR ds:1073876992, 1
 	mov	DWORD PTR ds:1073876992, 0
 	mov	DWORD PTR ds:1073876992, 1
 	mov	eax, DWORD PTR ds:1073876992
 	ret
-
 _Z20write_sequence_plainv:
+	endbr64
 	mov	DWORD PTR ds:1073876992, 1
 	ret
 ```
@@ -190,9 +197,12 @@ The polling loops are worse:
 
 ```text
 _Z10poll_plainv:
+	endbr64
 	ret
-
 _Z13poll_volatilev:
+	endbr64
+	.p2align 4,,10
+	.p2align 3
 .L6:
 	movzx	eax, BYTE PTR g_ready_v[rip]
 	test	al, al

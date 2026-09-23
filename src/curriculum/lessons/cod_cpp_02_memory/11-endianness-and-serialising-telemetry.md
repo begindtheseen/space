@@ -33,7 +33,8 @@ dump("double -9.81:", &az, sizeof az);
 
 std::uint64_t bits;
 std::memcpy(&bits, &az, sizeof bits);
-std::printf("its IEEE-754 pattern: 0x%016llX\n", static_cast<unsigned long long>(bits));
+std::printf("%-26s 0x%016llX\n", "its IEEE-754 pattern:",
+            static_cast<unsigned long long>(bits));
 ```
 
 ```text
@@ -81,7 +82,7 @@ std::memcpy(host, &t_ms, 4);               // whatever this machine does
 shift-built little:      40 90 02 00
 shift-built big:         00 02 90 40
 memcpy of the object:    40 90 02 00
-
+big-endian bytes read back as little: 168000
 big-endian bytes read with a little-endian reader: 1083179520
 and read correctly with a big-endian reader: 168000
 ```
@@ -165,6 +166,8 @@ Two `Packet` objects with identical field values: one brace-initialised, one who
 braced:    07 [00] [00] [00] 40 90 02 00 02 01 [00] [00] [00] [00] [00] [00] 1F 85 EB 51 B8 9E 23 C0
 member:    07 [00] [00] [00] 40 90 02 00 02 01 [0C] [27] [D0] [7F] [00] [00] 1F 85 EB 51 B8 9E 23 C0
 ```
+
+That is one run. The four bracketed bytes in the second line are different on every run of the same binary, which is itself the finding.
 
 The bracketed bytes are padding. The brace-initialised object had zeros there on this build; the member-assigned one carried `0C 27 D0 7F`, which is the low half of a stack address left behind by the previous call — and which differed on every run, because of address-space randomisation.
 
