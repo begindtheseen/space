@@ -18,6 +18,7 @@ import type { LearnerState } from '@/engine/state'
 import { useLearner } from '@/hooks/useLearner'
 import { useUpdates } from '@/hooks/useUpdates'
 import { isDesktop } from '@/lib/desktop'
+import { fetchHawthorneTemporary, unseenPostings, type JobPosting } from '@/lib/jobs'
 import { navigate } from '@/lib/router'
 import './notifications.css'
 
@@ -39,9 +40,23 @@ export interface Note {
 export function notesFor(
   state: LearnerState,
   updateStatus: string | undefined,
+  postings: JobPosting[] = [],
   now: Date = new Date(),
 ): Note[] {
   const out: Note[] = []
+
+  // Hawthorne temporary roles do not stay up long, so a new one outranks
+  // everything else here: a review can be done tomorrow, a posting cannot.
+  const fresh = unseenPostings(postings, state.jobsSeen).length
+  if (fresh > 0) {
+    out.push({
+      id: 'jobs',
+      title: `${fresh} new temporary ${fresh === 1 ? 'opening' : 'openings'} at Hawthorne`,
+      detail: 'These come and go quickly. Worth a look now rather than later.',
+      href: '/jobs',
+      urgent: true,
+    })
+  }
 
   const due = dueAtoms(state, MODULES, now).length
   if (due > 0) {
@@ -96,13 +111,39 @@ export function notesFor(
   return out
 }
 
+let probe: Promise<JobPosting[]> | null = null
+
+/**
+ * The postings, fetched once per launch.
+ *
+ * The Jobs page marks everything it fetches as seen, so by the time she
+ * leaves it there is nothing left to notice — the bell has to look for
+ * itself. A failure is silence rather than an error: a notification that
+ * cannot say anything useful should not say anything.
+ */
+function probeJobs(): Promise<JobPosting[]> {
+  if (!probe) probe = fetchHawthorneTemporary().then((r) => r.postings).catch(() => [])
+  return probe
+}
+
 export function Notifications() {
   const { state } = useLearner()
   const updateStatus = useUpdates().state?.status
   const [open, setOpen] = useState(false)
+  const [postings, setPostings] = useState<JobPosting[]>([])
   const box = useRef<HTMLDivElement>(null)
 
-  const notes = notesFor(state, updateStatus)
+  useEffect(() => {
+    let alive = true
+    void probeJobs().then((p) => {
+      if (alive) setPostings(p)
+    })
+    return () => {
+      alive = false
+    }
+  }, [])
+
+  const notes = notesFor(state, updateStatus, postings)
   const urgent = notes.some((n) => n.urgent)
 
   useEffect(() => {

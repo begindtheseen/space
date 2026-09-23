@@ -40,6 +40,28 @@ describe('notesFor', () => {
     if (ids.includes('due')) expect(ids[0]).toBe('due')
   })
 
+  const posting = (id: string) => ({
+    id,
+    title: 'Technician, Temporary',
+    location: 'Hawthorne, CA',
+    url: 'https://example.invalid/x',
+  })
+
+  it('notices a posting she has not seen, and ranks it first', () => {
+    // A review can be done tomorrow; a temporary posting may be gone.
+    const s = base()
+    const notes = notesFor(s, 'ready', [posting('a'), posting('b')] as never)
+    expect(notes[0]?.id).toBe('jobs')
+    expect(notes[0]?.title).toContain('2 new temporary openings')
+  })
+
+  it('stays quiet about postings already seen', () => {
+    const s = base()
+    s.jobsSeen = { a: '2026-01-01T00:00:00.000Z' }
+    const notes = notesFor(s, undefined, [posting('a')] as never)
+    expect(notes.some((n) => n.id === 'jobs')).toBe(false)
+  })
+
   it('every note links somewhere', () => {
     for (const n of notesFor(base(), 'available')) {
       expect(n.href, n.id).toMatch(/^\//)
