@@ -44,14 +44,30 @@ function readPackage() {
   return { version, minShell, repo }
 }
 
+/**
+ * The notes shown before an update installs, taken from the entry for this
+ * version in CHANGELOG.md — the same file the app reads for the entry it
+ * shows afterwards, so the two cannot disagree.
+ *
+ * This used to look for a RELEASE_NOTES.md that no longer exists and quietly
+ * fall back to "Release v1.0.6", which is how four releases went out saying
+ * nothing about themselves. A missing entry is a mistake worth stopping for,
+ * not something to paper over: writing down what changed is part of shipping.
+ */
 function releaseNotes(version) {
-  const file = path.join(root, 'RELEASE_NOTES.md')
-  if (fs.existsSync(file)) {
-    const text = fs.readFileSync(file, 'utf8').trim()
-    if (text) return text
-    console.warn('make-bundle: RELEASE_NOTES.md is empty; using the default notes')
-  }
-  return `Release v${version}`
+  const file = path.join(root, 'CHANGELOG.md')
+  if (!fs.existsSync(file)) fail('CHANGELOG.md is missing; the release notes come from it')
+  const md = fs.readFileSync(file, 'utf8')
+
+  const heads = [...md.matchAll(/^##[ \t]+v?(\d+\.\d+\.\d+)[ \t]*$/gm)]
+  const i = heads.findIndex((h) => h[1] === version)
+  if (i < 0) fail(`CHANGELOG.md has no "## ${version}" entry; add one before releasing`)
+
+  const from = heads[i].index + heads[i][0].length
+  const to = i + 1 < heads.length ? heads[i + 1].index : md.length
+  const notes = md.slice(from, to).trim()
+  if (!notes) fail(`CHANGELOG.md's "## ${version}" entry is empty; say what changed`)
+  return notes
 }
 
 function publishedAt() {

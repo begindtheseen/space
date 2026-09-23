@@ -69,7 +69,20 @@ const SYMBOLS: [RegExp, string][] = [
 ]
 
 /** Spacing, sizing and styling commands that carry no sound at all. */
-const SILENT = /\\(?:left|right|big|Big|bigg|Bigg|displaystyle|textstyle|limits|nolimits|,|;|:|!|quad|qquad)\b|\\[,;:!]/g
+const SILENT = /\\(?:left|right|big|Big|bigg|Bigg|displaystyle|textstyle|limits|nolimits|,|;|:|!|quad|qquad)\b|\\[,;:!]|\\ /g
+
+/**
+ * Escaped punctuation. Only letters follow a backslash in the catch-all near
+ * the end of mathToWords, so these survived it and were spoken with the
+ * backslash still attached — "19 backslash percent".
+ */
+const ESCAPED: [RegExp, string][] = [
+  [/\\%/g, ' percent '],
+  [/\\&/g, ' and '],
+  [/\\\$/g, ' dollars '],
+  [/\\#/g, ' number '],
+  [/\\_/g, '_'],
+]
 
 /** Digits after a subscript read better as words: "I sub 3" beats "I sub three"? No. */
 const SUB_WORDS: Record<string, string> = {
@@ -79,7 +92,18 @@ const SUB_WORDS: Record<string, string> = {
 
 /** Balanced-brace argument reader, so nested braces survive. */
 function readArg(s: string, from: number): { body: string; end: number } | null {
-  if (s[from] !== '{') return null
+  // TeX lets a single token stand in for a braced group, and this curriculum
+  // uses that constantly: `\dot R` is how range rate is written, `\dot\lambda`
+  // how line-of-sight rate is. Requiring a brace meant both fell through to
+  // the "drop the command" path below, so R-dot was read as "R" and
+  // lambda-dot as "lambda" — the rate silently became the quantity, which in
+  // a guidance derivation is the difference between closing speed and range.
+  if (s[from] !== '{') {
+    const rest = s.slice(from)
+    const single = /^(\\[A-Za-z]+|[A-Za-z0-9])/.exec(rest)
+    if (!single) return null
+    return { body: single[1], end: from + single[1].length }
+  }
   let depth = 0
   for (let i = from; i < s.length; i++) {
     if (s[i] === '{') depth++
@@ -134,6 +158,34 @@ function rewrite(
  * aloud for anything else, which is the right failure: a slightly clumsy
  * sentence is recoverable, a stream of backslashes is not.
  */
+/**
+ * The reading speeds offered anywhere in the app.
+ *
+ * One list, because there are two controls: the picker above a lesson and the
+ * row in Settings. If they offered different values, choosing 1.75 in Settings
+ * would leave the lesson picker showing nothing, since a select cannot display
+ * a value that is not one of its options. The range matches the clamp in
+ * engine/state.ts, so every speed here survives being saved and reloaded.
+ */
+export const SPEECH_RATES = [0.5, 0.75, 0.8, 0.9, 1, 1.1, 1.25, 1.5, 1.75, 2] as const
+
+/** What a learner who has never touched the control hears. */
+export const DEFAULT_SPEECH_RATE = 1
+
+/**
+ * The speeds to offer, given the one currently saved.
+ *
+ * A select cannot show a value that is not one of its options: it renders
+ * blank instead. So a speed saved before this list existed — or before it last
+ * changed — is folded in rather than silently losing the setting the moment
+ * she opens the menu.
+ */
+export function speechRateOptions(current: number): number[] {
+  const all = new Set<number>(SPEECH_RATES)
+  if (Number.isFinite(current)) all.add(current)
+  return [...all].sort((a, b) => a - b)
+}
+
 export function mathToWords(tex: string): string {
   let s = tex
 
@@ -155,6 +207,7 @@ export function mathToWords(tex: string): string {
   s = rewrite(s, 'operatorname', 1, (a) => a)
   s = rewrite(s, 'mathcal', 1, (a) => mathToWords(a))
 
+  for (const [re, word] of ESCAPED) s = s.replace(re, word)
   for (const [re, word] of SYMBOLS) s = s.replace(re, word)
   s = s.replace(SILENT, ' ')
 
@@ -172,12 +225,25 @@ export function mathToWords(tex: string): string {
   s = s.replace(/_\{([^{}]*)\}/g, (_m, p: string) => ` sub ${mathToWords(p)} `)
   s = s.replace(/_(\w)/g, (_m, p: string) => ` sub ${SUB_WORDS[p] ?? p} `)
 
+  // Units before operators: the slash in "m/s" is part of a name, not a
+  // division, and turning it into "divided by" made a speed read as an
+  // algebraic quotient — "1000 m divided by s".
+  s = expandUnits(s)
+
   s = s
     .replace(/\\\\/g, ' . ')
     .replace(/[{}]/g, ' ')
     .replace(/\s*=\s*/g, ' equals ')
     .replace(/\s*\+\s*/g, ' plus ')
+    // A slash between terms is a quotient. Left silent it ran the two sides
+    // together — "t equals R V sub c" sounds like a product, which is the
+    // opposite of what time-to-go is.
+    .replace(/\s*\/\s*/g, ' divided by ')
     .replace(/(\w)\s*-\s*(\w)/g, '$1 minus $2')
+    // A minus that opens an expression, or follows an operator or a bracket,
+    // has nothing to its left for the rule above to match, so it was dropped
+    // and the value was read as positive.
+    .replace(/(^|[(\[,=+\s])-\s*(?=[\w\\(])/g, '$1 minus ')
     .replace(/\s*<\s*/g, ' is less than ')
     .replace(/\s*>\s*/g, ' is greater than ')
     // Anything left with a backslash is a command this does not know. Saying
@@ -201,6 +267,8 @@ export function mathToWords(tex: string): string {
  */
 const UNITS: [RegExp, string][] = [
   [/\bkm\/s\b/g, 'kilometres per second'],
+  [/\bkg\/s\b/g, 'kilograms per second'],
+  [/\bN\/m\b/g, 'newtons per metre'],
   [/\bm\/s\^?2\b/g, 'metres per second squared'],
   [/\bm\/s\b/g, 'metres per second'],
   [/\bkm\b/g, 'kilometres'],
@@ -257,6 +325,17 @@ export function speakableFromMarkdown(md: string): string {
   s = s.replace(/^:::\s*$/gm, '\n')
 
   // Display maths, then inline maths.
+  //
+  // A displayed equation sits in its own paragraph, but the sentence that
+  // introduces it usually does not finish first — "The tempting move is",
+  // then the equation. Left as two paragraphs those become two utterances,
+  // so the voice stopped dead on "is" and started again. The blank lines
+  // around the equation are taken with it, which puts it back in the sentence
+  // that was reaching for it.
+  s = s.replace(
+    /[ \t]*\n\s*\$\$([\s\S]*?)\$\$[ \t]*\n?/g,
+    (_m, tex: string) => ` ${mathToWords(tex)} `,
+  )
   s = s.replace(/\$\$([\s\S]*?)\$\$/g, (_m, tex: string) => ` ${mathToWords(tex)} `)
   s = s.replace(/\$([^$\n]+)\$/g, (_m, tex: string) => ` ${mathToWords(tex)} `)
 
@@ -342,13 +421,27 @@ export function toUtterances(text: string, maxChars = 320): string[] {
       const cut = Math.max(window.lastIndexOf('; '), window.lastIndexOf(', '))
       const at = cut > maxChars * 0.4 ? cut + 1 : window.lastIndexOf(' ')
       if (at <= 0) break
-      sized.push(rest.slice(0, at).trim())
+      const piece = rest.slice(0, at).trim()
+      // This is the middle of a sentence, cut for length alone. It ends on a
+      // comma so the voice keeps its pitch up and sounds like it is still
+      // going; a full stop here would close a sentence that has not ended,
+      // and bare words would trail off flat.
+      sized.push(/[.,;:!?]$/.test(piece) ? piece : `${piece},`)
       rest = rest.slice(at).trim()
     }
     if (rest) sized.push(rest)
   }
 
-  return sized.filter((s) => /[A-Za-z0-9]/.test(s))
+  // Every utterance ends on a mark the synthesiser can hear.
+  //
+  // Without one it reads the last words flat and simply stops, which is the
+  // sound of a sentence that has not finished. A heading, a list item or a
+  // line that trailed off into an equation all arrive here bare, and a full
+  // stop is right for those: they are complete. The pieces cut for length
+  // above already carry their own comma and keep it.
+  return sized
+    .filter((s) => /[A-Za-z0-9]/.test(s))
+    .map((s) => (/[.!?,;:]$/.test(s) ? s : `${s}.`))
 }
 
 /** Everything the reader needs: prepared prose, split for speaking. */
