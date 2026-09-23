@@ -8,6 +8,14 @@ the entry for the one you are running is what Settings shows you afterwards.
 Newest first. Each heading is exactly `## <version>` so both readers can find
 it.
 
+## 1.0.9
+
+**The search box looks like part of the app now.** Every result carries its
+track's own colour — the one GNC or Coding already has in the sidebar — so a
+lesson is findable by hue before you have finished reading the line. Pages and
+settings get their own. The first result is tinted and marked with ↵, because
+that is the one Enter takes.
+
 ## 1.0.8
 
 **A bell beside the profile button.** Everything waiting on you in one place:

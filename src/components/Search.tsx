@@ -25,53 +25,66 @@ interface Hit {
   /** Where it lives, e.g. "Settings" or the module a lesson belongs to. */
   where: string
   href: string
+  /**
+   * The colour this kind of result carries, as a CSS value.
+   *
+   * A track keeps its own accent all the way down — its modules and their
+   * lessons are tinted with it — so the colour she already associates with
+   * GNC in the sidebar is the colour its lessons have here. Pages and
+   * settings get their own, because they are not curriculum.
+   */
+  tone: string
 }
+
+const PAGE = 'var(--cyan)'
+const SETTING = 'var(--warn)'
 
 /** The pages, and the settings worth reaching by name rather than by scrolling. */
 const PLACES: Hit[] = [
-  { label: 'Home', where: 'Page', href: '/' },
-  { label: 'Learning', where: 'Page', href: '/learning' },
-  { label: 'Focus session', where: 'Page', href: '/focus' },
-  { label: 'Review', where: 'Page', href: '/review' },
-  { label: 'Playground', where: 'Page', href: '/playground' },
-  { label: 'Bench', where: 'Page', href: '/bench' },
-  { label: 'Jobs', where: 'Page', href: '/jobs' },
-  { label: 'Progress', where: 'Page', href: '/progress' },
-  { label: 'Resources', where: 'Page', href: '/resources' },
-  { label: 'Guide', where: 'Page', href: '/guide' },
-  { label: 'Settings', where: 'Page', href: '/settings' },
-  { label: 'Reviews due', where: 'Page', href: '/review' },
-  { label: 'Foundations & Math', where: 'Track', href: '/foundations' },
-  { label: 'GNC Preparation', where: 'Track', href: '/gnc' },
-  { label: 'Coding & Software', where: 'Track', href: '/coding' },
-  { label: 'Career Readiness', where: 'Track', href: '/career' },
+  { label: 'Home', where: 'Page', href: '/', tone: PAGE },
+  { label: 'Learning', where: 'Page', href: '/learning', tone: PAGE },
+  { label: 'Focus session', where: 'Page', href: '/focus', tone: PAGE },
+  { label: 'Review', where: 'Page', href: '/review', tone: PAGE },
+  { label: 'Playground', where: 'Page', href: '/playground', tone: PAGE },
+  { label: 'Bench', where: 'Page', href: '/bench', tone: PAGE },
+  { label: 'Jobs', where: 'Page', href: '/jobs', tone: PAGE },
+  { label: 'Progress', where: 'Page', href: '/progress', tone: PAGE },
+  { label: 'Resources', where: 'Page', href: '/resources', tone: PAGE },
+  { label: 'Guide', where: 'Page', href: '/guide', tone: PAGE },
+  { label: 'Settings', where: 'Page', href: '/settings', tone: PAGE },
+  { label: 'Reviews due', where: 'Page', href: '/review', tone: PAGE },
+  { label: 'Foundations & Math', where: 'Track', href: '/foundations', tone: 'var(--d-foundations)' },
+  { label: 'GNC Preparation', where: 'Track', href: '/gnc', tone: 'var(--d-gnc)' },
+  { label: 'Coding & Software', where: 'Track', href: '/coding', tone: 'var(--d-coding)' },
+  { label: 'Career Readiness', where: 'Track', href: '/career', tone: 'var(--d-career)' },
 
-  { label: 'Reading speed', where: 'Settings', href: '/settings' },
-  { label: 'Target retention', where: 'Settings', href: '/settings' },
-  { label: 'Ask for confidence before revealing', where: 'Settings', href: '/settings' },
-  { label: 'Interleave topics within a session', where: 'Settings', href: '/settings' },
-  { label: 'Fuzz review intervals', where: 'Settings', href: '/settings' },
-  { label: 'Reduce motion', where: 'Settings', href: '/settings' },
-  { label: 'Keep the menu on screen', where: 'Settings', href: '/settings' },
-  { label: 'Weekly study target', where: 'Settings', href: '/settings' },
-  { label: 'New items per day', where: 'Settings', href: '/settings' },
-  { label: 'Display name', where: 'Settings', href: '/settings' },
-  { label: 'Export a backup', where: 'Settings', href: '/settings' },
-  { label: 'Restore from a backup', where: 'Settings', href: '/settings' },
-  { label: 'Check for updates', where: 'Settings', href: '/settings' },
-  { label: "What's new", where: 'Settings', href: '/settings' },
-  { label: 'What is installed', where: 'Settings', href: '/settings' },
-  { label: 'Erase everything', where: 'Settings', href: '/settings' },
+  { label: 'Reading speed', where: 'Settings', href: '/settings', tone: SETTING },
+  { label: 'Target retention', where: 'Settings', href: '/settings', tone: SETTING },
+  { label: 'Ask for confidence before revealing', where: 'Settings', href: '/settings', tone: SETTING },
+  { label: 'Interleave topics within a session', where: 'Settings', href: '/settings', tone: SETTING },
+  { label: 'Fuzz review intervals', where: 'Settings', href: '/settings', tone: SETTING },
+  { label: 'Reduce motion', where: 'Settings', href: '/settings', tone: SETTING },
+  { label: 'Keep the menu on screen', where: 'Settings', href: '/settings', tone: SETTING },
+  { label: 'Weekly study target', where: 'Settings', href: '/settings', tone: SETTING },
+  { label: 'New items per day', where: 'Settings', href: '/settings', tone: SETTING },
+  { label: 'Display name', where: 'Settings', href: '/settings', tone: SETTING },
+  { label: 'Export a backup', where: 'Settings', href: '/settings', tone: SETTING },
+  { label: 'Restore from a backup', where: 'Settings', href: '/settings', tone: SETTING },
+  { label: 'Check for updates', where: 'Settings', href: '/settings', tone: SETTING },
+  { label: "What's new", where: 'Settings', href: '/settings', tone: SETTING },
+  { label: 'What is installed', where: 'Settings', href: '/settings', tone: SETTING },
+  { label: 'Erase everything', where: 'Settings', href: '/settings', tone: SETTING },
 ]
 
 /** Everything searchable, built once. */
 function buildIndex(): Hit[] {
   const out = [...PLACES]
   for (const m of MODULES) {
-    const track = TRACKS[m.track]?.title ?? 'Module'
-    out.push({ label: m.title, where: track, href: `/module/${m.id}` })
+    const def = TRACKS[m.track]
+    const tone = def?.accent ?? PAGE
+    out.push({ label: m.title, where: def?.title ?? 'Module', href: `/module/${m.id}`, tone })
     for (const lesson of LESSON_MANIFEST[m.id] ?? []) {
-      out.push({ label: lesson.title, where: m.title, href: `/module/${m.id}` })
+      out.push({ label: lesson.title, where: m.title, href: `/module/${m.id}`, tone })
     }
   }
   return out
@@ -153,11 +166,15 @@ export function Search() {
               <button
                 key={`${hit.href}-${hit.label}-${i}`}
                 className="search__hit"
+                style={{ ['--tone' as string]: hit.tone }}
+                data-first={i === 0}
                 type="button"
                 onClick={() => go(hit)}
               >
+                <span className="search__dot" />
                 <span className="search__label">{hit.label}</span>
                 <span className="search__where">{hit.where}</span>
+                {i === 0 ? <span className="search__enter">↵</span> : null}
               </button>
             ))
           )}
