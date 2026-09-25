@@ -123,6 +123,68 @@ const highlight = HighlightStyle.define([
   { tag: t.invalid, color: '#f4614e' },
 ])
 
+/*
+ * The playground's IDE window (the Coddy-style one): a neutral charcoal page,
+ * blue keywords and green strings, so code reads the same in every mode.
+ */
+const ideTheme = EditorView.theme(
+  {
+    '&': { color: '#d4d4d4', backgroundColor: '#1e1f22', fontSize: '13.5px', height: '100%' },
+    '.cm-content': {
+      fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+      padding: '14px 0 64px',
+      caretColor: '#4fc1ff',
+      lineHeight: '1.75',
+    },
+    '.cm-scroller': { fontFamily: 'inherit', overflow: 'auto' },
+    '&.cm-focused': { outline: 'none' },
+    '.cm-cursor, .cm-dropCursor': { borderLeftColor: '#4fc1ff', borderLeftWidth: '2px' },
+    '&.cm-focused .cm-selectionBackgroundMultiple, .cm-selectionBackground, ::selection': {
+      backgroundColor: 'rgba(79,193,255,0.22)',
+    },
+    '.cm-gutters': {
+      backgroundColor: '#1e1f22',
+      color: '#6b6f78',
+      border: 'none',
+      paddingLeft: '8px',
+      minWidth: '40px',
+    },
+    '.cm-activeLineGutter': { backgroundColor: 'transparent', color: '#b9bec8' },
+    '.cm-activeLine': { backgroundColor: 'rgba(255,255,255,0.03)' },
+    '.cm-matchingBracket, .cm-nonmatchingBracket': {
+      backgroundColor: 'rgba(79,193,255,0.18)',
+      outline: '1px solid rgba(79,193,255,0.4)',
+    },
+    '.cm-placeholder': { color: '#6b6f78', fontStyle: 'italic' },
+    '.cm-tooltip': {
+      backgroundColor: '#26272b',
+      border: '1px solid rgba(255,255,255,0.1)',
+      borderRadius: '8px',
+      boxShadow: '0 12px 40px rgba(0,0,0,0.6)',
+    },
+  },
+  { dark: true },
+)
+
+const ideHighlight = HighlightStyle.define([
+  { tag: [t.keyword, t.controlKeyword, t.moduleKeyword, t.operatorKeyword], color: '#2fa8e6', fontWeight: '600' },
+  { tag: [t.name, t.deleted, t.character, t.propertyName, t.macroName], color: '#d4d4d4' },
+  { tag: [t.function(t.variableName), t.labelName], color: '#dcdcaa' },
+  { tag: [t.typeName, t.className, t.namespace], color: '#4ec9b0' },
+  { tag: [t.tagName], color: '#2fa8e6', fontWeight: '600' },
+  { tag: [t.attributeName], color: '#4fc1ff' },
+  { tag: [t.number, t.bool, t.null, t.constant(t.name), t.standard(t.name)], color: '#2fa8e6' },
+  { tag: [t.string, t.processingInstruction, t.inserted, t.attributeValue], color: '#27b574' },
+  { tag: [t.regexp, t.escape, t.special(t.string)], color: '#d7ba7d' },
+  { tag: [t.operator, t.separator, t.bracket, t.angleBracket], color: '#a9adb6' },
+  { tag: t.meta, color: '#8a8f99' },
+  { tag: t.comment, color: '#6a9955', fontStyle: 'italic' },
+  { tag: t.strong, fontWeight: 'bold' },
+  { tag: t.emphasis, fontStyle: 'italic' },
+  { tag: t.heading, fontWeight: 'bold', color: '#2fa8e6' },
+  { tag: t.invalid, color: '#f14c4c' },
+])
+
 function languageFor(lang: Lang): Extension[] {
   switch (lang) {
     case 'python':
@@ -153,6 +215,7 @@ export function Editor({
   placeholder,
   minHeight = 240,
   onRun,
+  ide = false,
 }: {
   value: string
   onChange: (next: string) => void
@@ -162,6 +225,8 @@ export function Editor({
   minHeight?: number
   /** Ctrl/Cmd+Enter. */
   onRun?: () => void
+  /** The playground's IDE look (charcoal, Coddy-style) instead of ORBIT's navy. */
+  ide?: boolean
 }) {
   const host = useRef<HTMLDivElement | null>(null)
   const view = useRef<EditorView | null>(null)
@@ -181,8 +246,8 @@ export function Editor({
       bracketMatching(),
       closeBrackets(),
       autocompletion(),
-      syntaxHighlighting(highlight),
-      theme,
+      syntaxHighlighting(ide ? ideHighlight : highlight),
+      ide ? ideTheme : theme,
       EditorView.lineWrapping,
       ...languageFor(lang),
       ...(placeholder ? [placeholderExt(placeholder)] : []),
@@ -204,7 +269,7 @@ export function Editor({
         if (u.docChanged) onChangeRef.current(u.state.doc.toString())
       }),
     ],
-    [lang, readOnly, placeholder],
+    [lang, readOnly, placeholder, ide],
   )
 
   // Create once per language; the document is synced separately below so that
@@ -233,5 +298,5 @@ export function Editor({
     v.dispatch({ changes: { from: 0, to: current.length, insert: value } })
   }, [value])
 
-  return <div className="editor" ref={host} style={{ minHeight }} />
+  return <div className={ide ? 'editor editor--ide' : 'editor'} ref={host} style={{ minHeight }} />
 }

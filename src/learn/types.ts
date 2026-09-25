@@ -13,7 +13,7 @@
    both apps that carry this feature.
    ========================================================================== */
 
-export type LearnLang = 'javascript' | 'typescript' | 'python' | 'sql' | 'cpp'
+export type LearnLang = 'javascript' | 'typescript' | 'python' | 'sql' | 'cpp' | 'html' | 'bash'
 
 export type Cell = string | number | null
 
@@ -35,6 +35,16 @@ export type LearnCheck =
    * lesson with tests asks for functions, not for a program.
    */
   | (CheckBase & { kind: 'test'; expr: string })
+  /**
+   * A test case: call something she wrote and compare with the expected
+   * value — shown the way a judge shows it, INPUT / EXPECTED / YOUR OUTPUT.
+   * Equality is the language's own (deep for lists, dicts, vectors, maps).
+   */
+  | (CheckBase & { kind: 'case'; call: string; expect: string })
+  /** Web: steps run inside the rendered page (see lib/web.ts). */
+  | (CheckBase & { kind: 'dom'; steps: string[] })
+  /** Terminal: facts about the practice shell afterwards (see grade.ts). */
+  | (CheckBase & { kind: 'shell'; facts: string[] })
   /** Her source must (or, with `absent`, must not) match this pattern. */
   | (CheckBase & { kind: 'source'; pattern: string; absent: boolean })
   /** SQL: the last result set her statements produced. */
@@ -69,6 +79,14 @@ export interface LearnTrack {
   lessons: LearnLesson[]
 }
 
+/** A goal, and the courses that reach it in the order a mentor would teach them. */
+export interface Roadmap {
+  id: string
+  title: string
+  blurb: string
+  steps: LearnLang[]
+}
+
 /** What one run produced, in a shape every language can fill. */
 export interface LearnRun {
   stdout: string
@@ -77,6 +95,10 @@ export interface LearnRun {
   error: string | null
   /** SQL result sets, in order. */
   tables?: { columns: string[]; rows: Cell[][] }[]
+  /** Web: what each dom check found, in check order. */
+  dom?: { pass: boolean; detail?: string }[] | null
+  /** Terminal: the practice shell as she left it. */
+  shell?: import('@/lib/shell').ShellState
   ms: number
 }
 
@@ -88,6 +110,10 @@ export interface CheckResult {
   /** Why it failed, when there is more to say than the name. */
   detail?: string
   hint?: string
+  /** The test-case view: what went in, what should come out, what did. */
+  input?: string
+  expected?: string
+  actual?: string
 }
 
 export interface LearnGrade {

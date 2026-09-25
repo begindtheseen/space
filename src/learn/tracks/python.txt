@@ -77,13 +77,15 @@ print(city, population)
 `print(a, b)` prints both values with a space between them.
 --- hint
 `False` has a capital F and no quotes — it is a bool, not a string.
---- check test | city is the string "Houston"
-city == "Houston"
+--- check case | city is the string "Houston"
+city
+=> "Houston"
 --- check test | population is the int 2300000
 type(population) is int and population == 2300000
 ?? Write the number without quotes or commas: 2300000.
---- check test | is_capital is False
-is_capital is False
+--- check case | is_capital is False
+is_capital
+=> False
 --- check output | Prints: Houston 2300000
 Houston 2300000
 
@@ -171,8 +173,9 @@ print(f"user: {clean} ({len(clean)} characters)")
 Methods can be chained: `raw.strip().lower()`.
 --- hint
 The length goes inside the f-string too: `{len(clean)}`.
---- check test | clean is stripped and lowercased
-clean == "ada lovelace"
+--- check case | clean is stripped and lowercased
+clean
+=> "ada lovelace"
 --- check source | Uses an f-string
 f"|f'
 --- check output | Prints the sentence
@@ -258,8 +261,9 @@ average = sum(latencies) / len(latencies)
 print(fastest, slowest, average)
 --- hint
 `min(latencies)`, `max(latencies)`, and `sum(latencies) / len(latencies)`.
---- check test | 180 was appended
-latencies == [120, 95, 210, 143, 180]
+--- check case | 180 was appended
+latencies
+=> [120, 95, 210, 143, 180]
 --- check test | fastest and slowest are right
 fastest == 95 and slowest == 210
 --- check test | average is the mean of all five
@@ -359,16 +363,21 @@ def is_even(n):
 `"a b c".split()` is `["a", "b", "c"]`, and `len` of that is 3.
 --- hint
 `n % 2 == 0` is already True or False — you can return it directly.
---- check test | word_count("the quick brown fox") is 4
-word_count("the quick brown fox") == 4
---- check test | word_count handles extra spaces
-word_count("  spaced   out  ") == 2
---- check test | word_count("") is 0
-word_count("") == 0
---- check test | is_even(10) is True
-is_even(10) is True
---- check test | is_even(7) is False
-is_even(7) is False
+--- check case | word_count("the quick brown fox") is 4
+word_count("the quick brown fox")
+=> 4
+--- check case | word_count handles extra spaces
+word_count("  spaced   out  ")
+=> 2
+--- check case | word_count("") is 0
+word_count("")
+=> 0
+--- check case | is_even(10) is True
+is_even(10)
+=> True
+--- check case | is_even(7) is False
+is_even(7)
+=> False
 
 === py-09 | Dictionaries
 --- teach
@@ -404,12 +413,15 @@ def count_words(text):
 Loop over `text.lower().split()`.
 --- hint
 `counts[word] = counts.get(word, 0) + 1` adds one, starting from zero the first time.
---- check test | Counts repeated words
-count_words("to be or not to be") == {"to": 2, "be": 2, "or": 1, "not": 1}
---- check test | Ignores case
-count_words("The the THE") == {"the": 3}
---- check test | An empty string gives an empty dict
-count_words("") == {}
+--- check case | Counts repeated words
+count_words("to be or not to be")
+=> {"to": 2, "be": 2, "or": 1, "not": 1}
+--- check case | Ignores case
+count_words("The the THE")
+=> {"the": 3}
+--- check case | An empty string gives an empty dict
+count_words("")
+=> {}
 
 === py-10 | List comprehensions
 --- teach
@@ -444,10 +456,12 @@ def lengths(words):
     return {w: len(w) for w in words}
 --- hint
 `[w.upper() for w in words if len(w) > 4]`
---- check test | long_words keeps and uppercases long words
-long_words(["rocket", "fuel", "orbit", "go"]) == ["ROCKET", "ORBIT"]
---- check test | lengths maps words to their lengths
-lengths(["ada", "lovelace"]) == {"ada": 3, "lovelace": 8}
+--- check case | long_words keeps and uppercases long words
+long_words(["rocket", "fuel", "orbit", "go"])
+=> ["ROCKET", "ORBIT"]
+--- check case | lengths maps words to their lengths
+lengths(["ada", "lovelace"])
+=> {"ada": 3, "lovelace": 8}
 --- check source | Uses a comprehension
 \[[^\]]*\bfor\b[^\]]*\bin\b
 ?? Write the list as [expression for item in list if condition].
@@ -495,10 +509,12 @@ def parse_port(text):
 Wrap only the `int(text)` in `try` / `except ValueError: return None`.
 --- hint
 After the conversion, check the range and `raise ValueError(...)` if it is outside 1–65535.
---- check test | "8080" gives 8080
-parse_port("8080") == 8080
---- check test | "http" gives None
-parse_port("http") is None
+--- check case | "8080" gives 8080
+parse_port("8080")
+=> 8080
+--- check case | "http" gives None
+parse_port("http")
+=> None
 --- check test | "70000" raises ValueError
 raises(ValueError, lambda: parse_port("70000"))
 ?? A number outside 1–65535 must raise ValueError, not return something.
@@ -550,10 +566,12 @@ class Counter:
 `def __init__(self, start=0): self.value = start`
 --- hint
 `increment` changes `self.value`, then `return self.value`.
---- check test | A new Counter starts at 0
-Counter().value == 0
---- check test | It can start somewhere else
-Counter(5).value == 5
+--- check case | A new Counter starts at 0
+Counter().value
+=> 0
+--- check case | It can start somewhere else
+Counter(5).value
+=> 5
 --- check test | increment adds one and returns it
 (lambda c: (c.increment(), c.increment()) == (1, 2) and c.value == 2)(Counter())
 --- check test | reset goes back to 0

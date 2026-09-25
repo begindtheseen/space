@@ -497,7 +497,7 @@ function formatMinutes(m: number): string {
 const TOOLS: { icon: (p: IconProps) => ReactNode; title: string; sub: string; href: string }[] = [
   { icon: IconCompass, title: 'How ORBIT Works', sub: 'Where to start and how the loop runs', href: '#/guide' },
   { icon: IconTerminal, title: 'Code Playground', sub: 'Run Python, SQL and C++ in the browser', href: '#/playground' },
-  { icon: IconBulb, title: 'Learn to Code', sub: 'Python, SQL and C++ basics, step by step', href: '#/learn' },
+  { icon: IconBulb, title: 'Learn to Code', sub: 'Roadmaps: the terminal, Python, SQL and C++', href: '#/learn' },
   { icon: IconRecall, title: 'Review Session', sub: 'Clear what is scheduled today', href: '#/review' },
   { icon: IconWave, title: 'Forgetting Curve', sub: 'What you will still know in a year', href: '#/progress' },
   { icon: IconSigma, title: 'Formula Bank', sub: 'Every equation, one place', href: '#/resources' },

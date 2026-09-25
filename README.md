@@ -35,10 +35,16 @@ memory model and a dependency graph, and it shows its working:
   Rust and shell run through the desktop app's toolchains; without them those exercises
   are compared against the reference solution, and the app says so. MATLAB exercises ship
   a NumPy equivalent you can run.
-- **Learn to code.** A guided course through the basics of Python, SQL and C++, lesson
-  by lesson in the playground's editor, every step really run and checked. The lessons
-  are plain text in `src/learn/tracks/*.txt` (format in `src/learn/parse.ts`); the same
-  lesson engine runs in APEX's LAUNCHPAD app, which adds JavaScript and TypeScript.
+- **Learn to code.** Roadmaps — GNC Engineer, Flight Software, Test & Data — that lay out
+  courses in order: the terminal, Python, SQL and C++, lesson by lesson in the same IDE
+  window as the playground, every step really run and shown as test cases. The lessons
+  are plain text in `src/learn/tracks/*.txt` (format in `src/learn/parse.ts`); the
+  roadmaps are in `src/learn/platform.ts`. The same lesson engine runs in APEX's
+  LAUNCHPAD app, which adds JavaScript, TypeScript and the web.
+- **The playground** has three modes — Code, SQL and Terminal — in one IDE window with
+  a floating Run Code button and a panel for test cases, console, input and results.
+  Terminal is a practice shell that lives in the page (`src/lib/shell.ts`): files,
+  folders and enough git to learn the loop, the same on every machine.
 - **Honest numbers.** The Progress page shows your predicted retention over a year,
   your review workload ahead, and a reliability diagram of how well-calibrated your own
   confidence turns out to be. Completion estimates are given as a range, never a date.

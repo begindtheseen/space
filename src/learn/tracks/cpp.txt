@@ -140,12 +140,15 @@ int remainder_of(int a, int b) {
 }
 --- hint
 `total / count` divides two ints. Convert one first: `static_cast<double>(total) / count`.
---- check test | average(7, 2) is 3.5
-average(7, 2) == 3.5
---- check test | average(10, 4) is 2.5
-average(10, 4) == 2.5
---- check test | remainder_of(17, 5) is 2
-remainder_of(17, 5) == 2
+--- check case | average(7, 2) is 3.5
+average(7, 2)
+=> 3.5
+--- check case | average(10, 4) is 2.5
+average(10, 4)
+=> 2.5
+--- check case | remainder_of(17, 5) is 2
+remainder_of(17, 5)
+=> 2
 
 === cpp-04 | Reading input
 --- teach
@@ -244,14 +247,18 @@ std::string grade(int score) {
 }
 --- hint
 Test the highest band first: `if (score >= 70) return "pass";`
---- check test | 85 passes
-grade(85) == "pass"
---- check test | 70 passes (the boundary)
-grade(70) == "pass"
---- check test | 64 is close
-grade(64) == "close"
---- check test | 12 fails
-grade(12) == "fail"
+--- check case | 85 passes
+grade(85)
+=> "pass"
+--- check case | 70 passes (the boundary)
+grade(70)
+=> "pass"
+--- check case | 64 is close
+grade(64)
+=> "close"
+--- check case | 12 fails
+grade(12)
+=> "fail"
 
 === cpp-06 | Loops
 --- teach
@@ -351,12 +358,15 @@ long long factorial(int n) {
 `factorial`: start `result` at 1 and multiply by 2, 3, … n in a loop.
 --- check test | is_even works both ways
 is_even(10) && !is_even(7)
---- check test | factorial(5) is 120
-factorial(5) == 120
---- check test | factorial(0) is 1
-factorial(0) == 1
---- check test | factorial(20) fits in a long long
-factorial(20) == 2432902008176640000LL
+--- check case | factorial(5) is 120
+factorial(5)
+=> 120
+--- check case | factorial(0) is 1
+factorial(0)
+=> 1
+--- check case | factorial(20) fits in a long long
+factorial(20)
+=> 2432902008176640000LL
 
 === cpp-08 | std::vector
 --- teach
@@ -407,10 +417,12 @@ double mean(const std::vector<int>& v) {
 Start `best` at `v[0]`, then compare every element.
 --- hint
 For the mean, add up in a loop, then divide as a double.
---- check test | max_value({3, 9, 2}) is 9
-max_value({3, 9, 2}) == 9
---- check test | max_value works with negatives
-max_value({-5, -2, -9}) == -2
+--- check case | max_value({3, 9, 2}) is 9
+max_value({3, 9, 2})
+=> 9
+--- check case | max_value works with negatives
+max_value({-5, -2, -9})
+=> -2
 --- check test | mean({1, 2, 3, 4}) is 2.5
 std::abs(mean({1, 2, 3, 4}) - 2.5) < 1e-9
 
@@ -473,12 +485,15 @@ int count_char(const std::string& s, char c) {
 Keep a flag "the next letter starts a word": true at the start and after each space.
 --- hint
 `out += static_cast<char>(std::toupper(c));` appends one character.
---- check test | initials("ada lovelace") is "AL"
-initials("ada lovelace") == "AL"
---- check test | Extra spaces are fine
-initials("  grace  brewster hopper") == "GBH"
---- check test | count_char counts
-count_char("mississippi", 's') == 4
+--- check case | initials("ada lovelace") is "AL"
+initials("ada lovelace")
+=> "AL"
+--- check case | Extra spaces are fine
+initials("  grace  brewster hopper")
+=> "GBH"
+--- check case | count_char counts
+count_char("mississippi", 's')
+=> 4
 
 === cpp-10 | References
 --- teach
@@ -598,8 +613,9 @@ Distance: `std::sqrt(dx * dx + dy * dy)`.
 Keep the count in a private member, e.g. `int value_;`, set by the constructor.
 --- check test | distance of a 3-4-5 triangle is 5
 std::abs(distance(Point{0, 0}, Point{3, 4}) - 5.0) < 1e-9
---- check test | Counter starts where it is told
-Counter(5).value() == 5
+--- check case | Counter starts where it is told
+Counter(5).value()
+=> 5
 --- check test | increment and reset
 [] { Counter c(1); c.increment(); c.increment(); bool three = c.value() == 3; c.reset(); return three && c.value() == 0; }()
 
@@ -648,8 +664,9 @@ std::map<std::string, int> count_words(const std::string& text) {
 }
 --- hint
 `counts[word]++` works even the first time: a missing entry starts at 0.
---- check test | Counts repeated words
-count_words("to be or not to be") == std::map<std::string, int>{{"be", 2}, {"not", 1}, {"or", 1}, {"to", 2}}
+--- check case | Counts repeated words
+count_words("to be or not to be")
+=> std::map<std::string, int>{{"be", 2}, {"not", 1}, {"or", 1}, {"to", 2}}
 --- check test | An empty string gives an empty map
 count_words("").empty()
 

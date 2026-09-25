@@ -32,6 +32,14 @@
      total: 7
      --- check test | add(2, 3) gives 5
      add(2, 3) == 5
+     --- check case | add(2, 3)
+     add(2, 3)
+     => 5
+     --- check dom | The heading says Hello          (Web)
+     h1 text == Hello
+     --- check shell | notes/ exists and you are in it (Terminal)
+     dir notes
+     cwd notes
      --- check source | Uses a for loop
      \bfor\b
      --- check source absent | Does not hard-code the answer
@@ -49,7 +57,7 @@
    ========================================================================== */
 import type { Cell, LearnCheck, LearnLang, LearnLesson, LearnTrack } from './types'
 
-const LANGS: readonly LearnLang[] = ['javascript', 'typescript', 'python', 'sql', 'cpp']
+const LANGS: readonly LearnLang[] = ['javascript', 'typescript', 'python', 'sql', 'cpp', 'html', 'bash']
 const SECTIONS = new Set(['teach', 'task', 'starter', 'solution', 'hint', 'stdin', 'schema', 'check'])
 
 export class LessonFormatError extends Error {}
@@ -109,6 +117,20 @@ function parseCheck(header: string, body: string[], where: string): LearnCheck {
     case 'test':
       if (!text) fail(at, 'a test check needs an expression')
       return { ...base, kind: 'test', expr: text }
+    case 'case': {
+      const i = lines.findIndex((l) => l.startsWith('=> '))
+      if (i < 0) fail(at, 'a case needs the call, then a "=> expected" line')
+      const call = trimBlock(lines.slice(0, i)).replace(/\s*\n\s*/g, ' ')
+      const expect = lines.slice(i).join('\n').slice(3).trim()
+      if (!call || !expect) fail(at, 'a case needs both a call and an expected value')
+      return { ...base, kind: 'case', call, expect }
+    }
+    case 'dom':
+    case 'shell': {
+      const steps = trimBlock(lines).split('\n').map((l) => l.trim()).filter(Boolean)
+      if (!steps.length) fail(at, `a ${kind} check needs at least one line`)
+      return kind === 'dom' ? { ...base, kind: 'dom', steps } : { ...base, kind: 'shell', facts: steps }
+    }
     case 'source': {
       if (flag && flag !== 'absent') fail(at, `unknown source flag "${flag}"`)
       if (!text) fail(at, 'a source check needs a pattern')

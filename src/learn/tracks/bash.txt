@@ -1,0 +1,317 @@
+@track bash
+@title Terminal
+@blurb The command line every developer lives in: moving around, making and changing files, and saving your work with git.
+
+=== term-01 | Where am I?
+--- teach
+The **terminal** is a way to talk to your computer in text. You type a **command**, press Enter, and it answers.
+
+The line before your cursor is the **prompt**: `~/project $` means you are in a folder called `project` inside your home folder (`~`). Two commands you will use every day:
+
+- `pwd` — **p**rint **w**orking **d**irectory: the full path of the folder you are in.
+- `ls` — **l**i**s**t what is in it. Folders show with a `/` at the end.
+
+This terminal is a practice one: it lives in the page, so nothing you type can touch your real files.
+--- task
+Run `pwd` to see where you are, then `ls` to see what is in this folder.
+--- starter
+mkdir src
+touch README.md
+--- solution
+pwd
+ls
+--- hint
+Type `pwd` and press Enter. Then type `ls` and press Enter.
+--- check shell | You printed where you are
+ran pwd
+printed /home/you/project
+--- check shell | You listed the folder
+ran ls
+printed README.md
+
+=== term-02 | Making folders and moving into them
+--- teach
+`mkdir name` **m**a**k**es a **dir**ectory (a folder). `cd name` **c**hanges **d**irectory — it moves you into it, and the prompt changes to show where you are.
+
+```
+~/project $ mkdir notes
+~/project $ cd notes
+~/project/notes $
+```
+
+`cd ..` goes back up one level, and `cd` on its own takes you home.
+--- task
+Make a folder called `notes` and move into it.
+--- starter
+--- solution
+mkdir notes
+cd notes
+--- hint
+First `mkdir notes`, then `cd notes`.
+--- check shell | The notes folder exists
+dir notes
+--- check shell | You are inside it
+cwd notes
+
+=== term-03 | Files: create, write, read
+--- teach
+`touch name` makes an empty file. To put text in a file, `echo` it and **redirect** the output with `>`:
+
+```
+echo "Launch at dawn" > plan.txt
+```
+
+`echo` prints its text; `> plan.txt` sends that text into the file instead of the screen. Careful: `>` **replaces** whatever the file held.
+
+`cat plan.txt` prints a file's contents, so you can check what you wrote.
+--- task
+Create `hello.txt` containing exactly `Hello, terminal!`, then show it with `cat`.
+--- starter
+--- solution
+echo "Hello, terminal!" > hello.txt
+cat hello.txt
+--- hint
+Put the text in quotes: `echo "Hello, terminal!" > hello.txt`.
+--- hint
+Then `cat hello.txt`.
+--- check shell | hello.txt holds the greeting
+file hello.txt == Hello, terminal!
+--- check shell | You read it back with cat
+ran cat
+printed Hello, terminal!
+
+=== term-04 | Paths
+--- teach
+A **path** says where something is. `docs/guides` means "the `guides` folder inside `docs`, inside where I am now" — a **relative** path. `..` means "the folder above", so `../..` is two levels up. `~` is your home folder, and a path starting with `/` is **absolute**: it starts from the very top.
+
+`mkdir -p` makes every folder along a path at once, so you do not need one `mkdir` per level:
+
+```
+mkdir -p src/components/buttons
+cd src/components
+cd ../..
+```
+--- task
+With one command, make the folders `docs/guides`. Move into `docs/guides`, then come back up to `project` using `..`.
+--- starter
+--- solution
+mkdir -p docs/guides
+cd docs/guides
+cd ../..
+--- hint
+`mkdir -p docs/guides` makes both folders.
+--- hint
+From `docs/guides`, two levels up is `cd ../..`.
+--- check shell | docs/guides exists
+dir docs/guides
+--- check shell | You went into it
+ran cd docs/guides
+--- check shell | You came back up with ..
+used ..
+cwd .
+
+=== term-05 | Copying and moving
+--- teach
+`cp source destination` **c**o**p**ies a file. `mv source destination` **m**o**v**es it — and because moving a file to a new name in the same folder is renaming, `mv` is also how you rename:
+
+```
+cp report.txt report-backup.txt
+mv report.txt final-report.txt
+```
+
+If the destination is a folder, the file goes inside it with the same name: `mv notes.txt archive/`. Copying a whole folder needs `cp -r` (**r**ecursive).
+--- task
+There is a file called `draft.txt`. Copy it to `backup.txt`, then rename `draft.txt` to `final.txt`.
+--- starter
+echo "Our first mission plan" > draft.txt
+--- solution
+cp draft.txt backup.txt
+mv draft.txt final.txt
+--- hint
+`cp draft.txt backup.txt` first; then `mv draft.txt final.txt`.
+--- check shell | backup.txt is a copy
+file backup.txt == Our first mission plan
+--- check shell | draft.txt is now final.txt
+file final.txt == Our first mission plan
+missing draft.txt
+
+=== term-06 | Deleting
+--- teach
+`rm file` **r**e**m**oves a file. There is no bin to get it back from, so read the command before you press Enter.
+
+A folder needs `rm -r folder`: `-r` removes it and everything inside it. (`rmdir` only removes a folder that is already empty.)
+
+```
+rm old-notes.txt
+rm -r build
+```
+--- task
+Delete the file `junk.txt` and the whole `old` folder (it has files inside). Leave `keep.txt` alone.
+--- starter
+touch junk.txt
+touch keep.txt
+mkdir -p old/logs
+echo "stale" > old/logs/app.log
+--- solution
+rm junk.txt
+rm -r old
+--- hint
+`rm junk.txt` for the file, `rm -r old` for the folder.
+--- check shell | junk.txt is gone
+missing junk.txt
+--- check shell | old/ and everything in it is gone
+missing old
+--- check shell | keep.txt is still there
+file keep.txt
+
+=== term-07 | Looking inside files
+--- teach
+Real files can be long, so there are commands that show just part of one:
+
+- `head -n 3 file` — the first 3 lines. `tail -n 3 file` — the last 3.
+- `wc -l file` — **w**ord **c**ount; with `-l`, how many **l**ines.
+- `grep text file` — only the lines that contain `text`. Add `-i` to ignore case, `-n` to show line numbers.
+
+`grep` is how developers dig through logs: `grep ERROR server.log` pulls every error out of thousands of lines.
+--- task
+`launch.log` is the log from a test launch. Count its lines with `wc -l`, then use `grep` to show only the lines containing `ERROR`.
+--- starter
+echo "09:00 INFO systems check" > launch.log
+echo "09:01 INFO fuel loaded" >> launch.log
+echo "09:02 ERROR valve 3 stuck" >> launch.log
+echo "09:03 INFO valve 3 reset" >> launch.log
+echo "09:04 ERROR telemetry dropout" >> launch.log
+echo "09:05 INFO liftoff" >> launch.log
+--- solution
+wc -l launch.log
+grep ERROR launch.log
+--- hint
+`wc -l launch.log` counts the lines.
+--- hint
+`grep ERROR launch.log` prints only the error lines.
+--- check shell | You counted the lines
+ran wc -l
+printed 6 launch.log
+--- check shell | You found both errors
+ran grep
+printed 09:02 ERROR valve 3 stuck
+printed 09:04 ERROR telemetry dropout
+
+=== term-08 | Chaining and appending
+--- teach
+`&&` joins two commands: the second runs only if the first worked. It is how you write a sequence on one line:
+
+```
+mkdir build && cd build
+```
+
+`>>` is like `>`, but it **adds** to the end of the file instead of replacing it:
+
+```
+echo "first" > list.txt
+echo "second" >> list.txt
+```
+--- task
+In a single line, make a folder `logs` and move into it using `&&`. Then build `todo.txt` with two lines, `buy fuel` then `check engines`, using `>` for the first and `>>` for the second.
+--- starter
+--- solution
+mkdir logs && cd logs
+echo "buy fuel" > todo.txt
+echo "check engines" >> todo.txt
+--- hint
+`mkdir logs && cd logs` does both steps.
+--- hint
+`echo "buy fuel" > todo.txt`, then `echo "check engines" >> todo.txt`.
+--- check shell | You used && to make and enter logs
+used &&
+dir logs
+cwd logs
+--- check shell | todo.txt has both lines, in order
+file logs/todo.txt contains buy fuel
+file logs/todo.txt contains check engines
+used >>
+
+=== term-09 | Starting a git repository
+--- teach
+**git** keeps the history of a project: every saved version, who made it and why. It works on a **repository** (a "repo"): a folder that git is watching.
+
+- `git init` turns the folder you are in into a repository (it creates a hidden `.git` folder — see it with `ls -a`).
+- `git status` tells you what git sees: which files are new, which have changed, and what is ready to save.
+
+Run `git status` whenever you are unsure. It is always safe.
+--- task
+Turn `project` into a git repository, then ask git for its status.
+--- starter
+echo "# Rocket" > README.md
+--- solution
+git init
+git status
+--- hint
+`git init`, then `git status`.
+--- check shell | project is a git repository
+git . repo
+--- check shell | You checked its status
+ran git status
+printed Untracked files
+
+=== term-10 | Your first commit
+--- teach
+Saving a version in git is two steps:
+
+1. `git add file` **stages** a change — puts it in the box of things to save. `git add .` stages everything in the folder.
+2. `git commit -m "message"` saves what is staged as a **commit**, with a message that says what changed.
+
+`git log --oneline` lists the commits, newest first. A good message finishes the sentence "This commit will…": *Add the launch checklist*.
+--- task
+Stage both files and commit them with a message. Then look at the history with `git log --oneline`.
+--- starter
+git init
+echo "# Rocket" > README.md
+echo "print('liftoff')" > main.py
+--- solution
+git add .
+git commit -m "Add README and main program"
+git log --oneline
+--- hint
+`git add .` stages everything.
+--- hint
+`git commit -m "Add the first files"` — the quotes keep the message together.
+--- check shell | There is one commit
+git . commits == 1
+--- check shell | Nothing is left waiting to be committed
+git . clean
+--- check shell | You looked at the history
+ran git log
+
+=== term-11 | Branches
+--- teach
+A **branch** is a separate line of work. You make one to try something without disturbing `main`, and merge it back when it is ready.
+
+```
+git checkout -b feature     # make a branch called feature and switch to it
+git branch                  # list branches; * marks the one you are on
+```
+
+(`git switch -c feature` does the same as `checkout -b` — you will see both.) Commits you make now go on `feature`; `main` stays as it was.
+--- task
+Make a branch called `feature` and switch to it. On it, create `engine.py` (any content), then stage it and commit it.
+--- starter
+git init
+echo "# Rocket" > README.md
+git add .
+git commit -m "Start the project"
+--- solution
+git checkout -b feature
+echo "thrust = 100" > engine.py
+git add engine.py
+git commit -m "Add the engine"
+--- hint
+`git checkout -b feature` makes the branch and moves you onto it.
+--- hint
+Then `echo "thrust = 100" > engine.py`, `git add engine.py` and `git commit -m "Add the engine"`.
+--- check shell | You are on the feature branch
+git . branch feature
+--- check shell | Your work is committed on it
+file engine.py
+git . commits == 2
+git . clean

@@ -10,26 +10,36 @@ it.
 
 ## 1.1.0
 
-**Learn to code.** A new guided mode, in the sidebar and on Home, that takes
-you through the basics of Python, SQL and C++ one lesson at a time — 37
-lessons, from printing a line to classes, joins and pointers. Each lesson is a
-short explanation, one task, and your own code in the playground's editor.
-Run & check really runs it and grades what it did: the exact output, calls
-into the functions you wrote, the rows your query returned. Hints come one at
-a time and the solution is there when you ask. Your code and your progress
-are saved on this device, "Open in playground" takes your code to the
-scratchpad, and the playground points back into the lessons for the language
-you are on. It is practice: nothing here changes mastery, readiness or your
-reviews. More lessons, past the basics, will follow.
+**Learn to code.** A new guided mode, in the sidebar and on Home. It opens on
+roadmaps: pick a goal — GNC Engineer, Flight Software, or Test & Data — and
+its courses are laid out in the order a mentor would teach them, as a numbered
+path ending at a finish line. Four courses, 48 lessons: Terminal, Python, SQL
+and C++, from `pwd` and your first commit to classes, joins and pointers. Each
+lesson is a short explanation and a challenge, done in the same IDE window as
+the playground. Run Code really runs your code and shows every check as a test
+case — the input, what was expected, and what your code produced. Hints come
+one at a time and the solution is there when you ask. Your code, your progress
+and a daily streak are saved on this device. It is practice: nothing here
+changes mastery, readiness or your reviews. More lessons, past the basics,
+will follow.
+
+**A new playground.** Three modes along the top — Code, SQL and Terminal —
+and one IDE window: the file's name in a pill (in Code mode it picks Python,
+C++, Rust, MATLAB or a shell script), a floating Run Code button, and a panel
+under the editor with Test cases, Console, Input, Results and Tables. Terminal
+is a practice shell that lives in the page: files and folders, `&&`, `>` and
+`>>`, and enough git — init, status, add, commit, log, branch, checkout — to
+practise the loop. It says plainly that it is a simulation; real shell scripts
+still run on the Mac in Code mode.
 
 **C++ always really runs now.** In the desktop app with a compiler installed,
 nothing changes — the Mac's own compiler builds it. Everywhere else — in a
 browser, or on a Mac without Apple's command line tools — ORBIT now compiles
 it with clang++ built for WebAssembly, right in the app, instead of comparing
-your output as text. The playground has an input box for what your program
-reads. One limit, stated under the editor: that in-app compiler has no
-exception support, so `throw` and `try` need the Mac's compiler. It is a
-one-time download of about 105 MB, which the app keeps.
+your output as text. The Input tab is what your program reads. One limit,
+stated under the editor: that in-app compiler has no exception support, so
+`throw` and `try` need the Mac's compiler. It is a one-time download of about
+105 MB, which the app keeps.
 
 ## 1.0.10
 
