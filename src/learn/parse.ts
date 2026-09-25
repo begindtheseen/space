@@ -5,6 +5,7 @@
 
      @track python
      @title Python
+     @name Python, a first language      (optional: the course's full name)
      @blurb One line on what this track covers.
      @schema
      SQL every lesson starts from, unless it has its own --- schema
@@ -57,7 +58,7 @@
    ========================================================================== */
 import type { Cell, LearnCheck, LearnLang, LearnLesson, LearnTrack } from './types'
 
-const LANGS: readonly LearnLang[] = ['javascript', 'typescript', 'python', 'sql', 'cpp', 'html', 'bash']
+const LANGS: readonly LearnLang[] = ['javascript', 'typescript', 'python', 'sql', 'cpp', 'html', 'bash', 'git']
 const SECTIONS = new Set(['teach', 'task', 'starter', 'solution', 'hint', 'stdin', 'schema', 'check'])
 
 export class LessonFormatError extends Error {}
@@ -237,5 +238,5 @@ export function parseTrack(source: string, file = 'track'): LearnTrack {
     ids.add(l.id)
   }
   if (!lessons.length) fail(file, 'no lessons')
-  return { lang, title: meta.title!, blurb: meta.blurb ?? '', lessons }
+  return { lang, title: meta.title!, name: meta.name ?? meta.title!, blurb: meta.blurb ?? '', lessons }
 }

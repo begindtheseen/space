@@ -11,10 +11,12 @@ it.
 ## 1.1.0
 
 **Learn to code.** A new guided mode, in the sidebar and on Home. It opens on
-roadmaps: pick a goal — GNC Engineer, Flight Software, or Test & Data — and
-its courses are laid out in the order a mentor would teach them, as a numbered
-path ending at a finish line. Four courses, 48 lessons: Terminal, Python, SQL
-and C++, from `pwd` and your first commit to classes, joins and pointers. Each
+roadmaps: pick a goal — GNC Engineer, Flight Software, Test & Data or Software
+Engineer — and its courses are laid out in the order a mentor would teach
+them, as a numbered path of course tiles ending at a certificate, lit up as you
+go; See the roadmap walks it step by step. Five courses, 58 lessons: Linux and
+the command line, Git and version control, Python, SQL and C++, from `pwd` and
+your first commit to merges, classes, joins and pointers. Each
 lesson is a short explanation and a challenge, done in the same IDE window as
 the playground. Run Code really runs your code and shows every check as a test
 case — the input, what was expected, and what your code produced. Hints come
@@ -28,8 +30,8 @@ and one IDE window: the file's name in a pill (in Code mode it picks Python,
 C++, Rust, MATLAB or a shell script), a floating Run Code button, and a panel
 under the editor with Test cases, Console, Input, Results and Tables. Terminal
 is a practice shell that lives in the page: files and folders, `&&`, `>` and
-`>>`, and enough git — init, status, add, commit, log, branch, checkout — to
-practise the loop. It says plainly that it is a simulation; real shell scripts
+`>>`, and git — init, status, add, commit, log, diff, restore, branch, switch
+and merge, with switching branches really swapping the files in the folder. It says plainly that it is a simulation; real shell scripts
 still run on the Mac in Code mode.
 
 **C++ always really runs now.** In the desktop app with a compiler installed,

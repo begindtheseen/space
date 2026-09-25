@@ -123,4 +123,67 @@ describe('the practice terminal', () => {
     expect(r.out).toMatch(/refusing/)
     expect(lookup(r.state, START)?.kind).toBe('dir')
   })
+
+  describe('git beyond the first commit', () => {
+    const typed = (...lines: string[]) => lines.reduce((st, l) => run(st, l).state, newShell())
+    const base = ['git init', 'echo "v1" > app.txt', 'git add .', 'git commit -m "first"']
+
+    it('switching branches swaps the files in the folder', () => {
+      let st = typed(...base, 'git switch -c feature', 'echo "x" > extra.txt', 'git add .', 'git commit -m "extra"')
+      expect(lookup(st, `${START}/extra.txt`)).toBeDefined()
+      st = run(st, 'git switch main').state
+      expect(lookup(st, `${START}/extra.txt`)).toBeUndefined()
+      st = run(st, 'git checkout feature').state
+      expect(lookup(st, `${START}/extra.txt`)).toBeDefined()
+    })
+
+    it('refuses to switch with uncommitted changes, and says what to do', () => {
+      const st = typed(...base, 'git branch other', 'echo "v2" > app.txt')
+      const r = run(st, 'git switch other')
+      expect(r.out).toMatch(/Commit them/)
+      expect(gitInfo(r.state, START)!.branch).toBe('main')
+    })
+
+    it('fast-forwards a merge when main has not moved', () => {
+      const st = typed(...base, 'git switch -c feature', 'echo "v2" > app.txt', 'git commit -m "nope"', 'git add .', 'git commit -m "v2"', 'git switch main')
+      const r = run(st, 'git merge feature')
+      expect(r.out).toMatch(/Fast-forward/)
+      expect((lookup(r.state, `${START}/app.txt`) as { content: string }).content).toBe('v2\n')
+      expect(gitInfo(r.state, START)!.commits).toBe(2)
+    })
+
+    it('makes a merge commit when both branches moved, keeping both changes', () => {
+      const st = typed(...base, 'git switch -c feature', 'echo "b" > b.txt', 'git add .', 'git commit -m "b"', 'git switch main', 'echo "a" > a.txt', 'git add .', 'git commit -m "a"')
+      const r = run(st, 'git merge feature')
+      expect(r.out).toMatch(/Merge made/)
+      expect(lookup(r.state, `${START}/a.txt`)).toBeDefined()
+      expect(lookup(r.state, `${START}/b.txt`)).toBeDefined()
+      expect(gitInfo(r.state, START)!.merges).toBe(1)
+    })
+
+    it('stops on a conflict and changes nothing', () => {
+      const st = typed(...base, 'git switch -c feature', 'echo "theirs" > app.txt', 'git add .', 'git commit -m "t"', 'git switch main', 'echo "ours" > app.txt', 'git add .', 'git commit -m "o"')
+      const r = run(st, 'git merge feature')
+      expect(r.out).toMatch(/CONFLICT \(content\): Merge conflict in app.txt/)
+      expect((lookup(r.state, `${START}/app.txt`) as { content: string }).content).toBe('ours\n')
+    })
+
+    it('diffs the working tree against what was last saved, and restores it', () => {
+      let st = typed(...base, 'echo "v2" >> app.txt')
+      expect(run(st, 'git diff').out).toBe('diff --git a/app.txt b/app.txt\n--- a/app.txt\n+++ b/app.txt\n v1\n+v2')
+      expect(gitInfo(st, START)!.modified).toEqual(['app.txt'])
+      st = run(st, 'git restore app.txt').state
+      expect((lookup(st, `${START}/app.txt`) as { content: string }).content).toBe('v1\n')
+      expect(run(st, 'git diff').out).toBe('')
+    })
+
+    it('unstages with restore --staged, and lists untracked files', () => {
+      let st = typed(...base, 'touch new.txt', 'echo "v2" > app.txt', 'git add app.txt')
+      expect(gitInfo(st, START)!.untracked).toEqual(['new.txt'])
+      expect(run(st, 'git diff --staged').out).toMatch(/-v1\n\+v2/)
+      st = run(st, 'git restore --staged app.txt').state
+      expect(gitInfo(st, START)!.staged).toEqual([])
+      expect(gitInfo(st, START)!.modified).toEqual(['app.txt'])
+    })
+  })
 })

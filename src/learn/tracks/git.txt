@@ -1,0 +1,320 @@
+@track git
+@title Git
+@name Git and version control
+@blurb Save every version of your work, see exactly what changed, undo mistakes, and build on branches that merge back together.
+
+=== git-01 | Starting a repository
+--- teach
+**git** keeps the history of a project: every version you saved, what changed in it and why. Every team you will work on uses it.
+
+It works on a **repository** (a "repo"): a folder git is watching. `git init` turns the folder you are in into one. Git keeps its records in a hidden folder called `.git` — hidden because its name starts with a dot, so plain `ls` does not show it but `ls -a` does.
+
+You never edit `.git` yourself; git commands do that.
+--- task
+Turn `project` into a git repository, then use `ls -a` to see the hidden `.git` folder git made.
+--- starter
+echo "# Rocket" > README.md
+--- solution
+git init
+ls -a
+--- hint
+`git init` first.
+--- hint
+Then `ls -a` — the `.git/` folder is in the list.
+--- check shell | project is a git repository
+git . repo
+--- check shell | You found the .git folder
+printed .git
+
+=== git-02 | Asking git what it sees
+--- teach
+`git status` is the command you will run more than any other. It tells you, for every file git can see, which of three states it is in:
+
+- **Untracked** — a new file git has never saved.
+- **Modified** — a saved file you have changed since.
+- **Staged** — a change you have chosen to include in the next save.
+
+Run it whenever you are unsure what is going on. It only reads; it never changes anything.
+--- task
+Run `git status` and read the list of untracked files. Then create a file called `notes.txt` (any way you like) and run `git status` again: it joins the list.
+--- starter
+git init
+echo "# Rocket" > README.md
+echo "print('liftoff')" > main.py
+--- solution
+git status
+touch notes.txt
+git status
+--- hint
+`git status`, then `touch notes.txt`, then `git status` again.
+--- check shell | notes.txt exists and git sees it as untracked
+file notes.txt
+git . untracked notes.txt
+--- check shell | Git showed you notes.txt in its status
+ran git status
+printed notes.txt
+
+=== git-03 | Staging: choosing what to save
+--- teach
+Saving in git is two steps, and the first is choosing. `git add <file>` **stages** a file: it goes in the box of changes the next save will include. Files you do not add are left out.
+
+```
+git add README.md     # just this file
+git add .             # everything in this folder
+```
+
+After adding, `git status` lists the file under **Changes to be committed**. Choosing lets you save related changes together, even when you have been working on several things.
+--- task
+Stage `README.md` only — leave `main.py` untracked — then check with `git status`.
+--- starter
+git init
+echo "# Rocket" > README.md
+echo "print('liftoff')" > main.py
+--- solution
+git add README.md
+git status
+--- hint
+`git add README.md` stages just that file.
+--- check shell | README.md is staged
+git . staged README.md
+--- check shell | main.py is left out
+git . untracked main.py
+--- check shell | You checked with git status
+ran git status
+printed Changes to be committed
+
+=== git-04 | Your first commit
+--- teach
+The second step is `git commit`, which saves everything staged as a **commit**: a snapshot of the project, with a message saying what changed.
+
+```
+git commit -m "Add the launch checklist"
+```
+
+`-m` gives the message. A good one finishes the sentence *"This commit will…"*: **Add the launch checklist**, **Fix the fuel calculation**. `git log --oneline` then lists your commits, newest first, each with a short id.
+--- task
+Stage both files and commit them with a message. Then look at the history with `git log --oneline`.
+--- starter
+git init
+echo "# Rocket" > README.md
+echo "print('liftoff')" > main.py
+--- solution
+git add .
+git commit -m "Add README and main program"
+git log --oneline
+--- hint
+`git add .` stages everything.
+--- hint
+`git commit -m "Add the first files"` — the quotes keep the message together.
+--- check shell | There is one commit
+git . commits == 1
+--- check shell | Nothing is left waiting to be committed
+git . clean
+--- check shell | You looked at the history
+ran git log
+
+=== git-05 | Seeing what changed: diff
+--- teach
+Before you save a change, look at it. `git diff` shows every line that differs from the last commit:
+
+```
+diff --git a/main.py b/main.py
+ print('liftoff')
++print('stage two')
+```
+
+Lines starting with `+` were added, `-` removed, and a space means unchanged. `git diff --staged` does the same for changes you have already added. Reading your own diff before committing is how you catch the debugging line you forgot to delete.
+--- task
+Add the line `print('stage two')` to the end of `main.py` (use `>>`), then run `git diff` to see the change.
+--- starter
+git init
+echo "print('liftoff')" > main.py
+git add .
+git commit -m "Add main"
+--- solution
+echo "print('stage two')" >> main.py
+git diff
+--- hint
+`echo "print('stage two')" >> main.py` adds the line; `>` would replace the file.
+--- hint
+Then `git diff`.
+--- check shell | main.py has a new, unsaved line
+file main.py contains stage two
+git . modified main.py
+--- check shell | git diff showed it as added
+ran git diff
+printed +print('stage two')
+
+=== git-06 | Committing a change
+--- teach
+A file git already tracks goes through the same two steps every time you change it: `git add`, then `git commit`. Git then has both versions, and the history grows by one.
+
+Commit small and often: one commit per idea — *Add stage two*, then *Fix the timer* — rather than one enormous commit at the end of the day. Small commits are easy to read, review and undo.
+--- task
+`main.py` has a change that is not saved yet. Commit it with a message that starts with a verb (like `Add stage two`), then check `git log --oneline` shows two commits.
+--- starter
+git init
+echo "print('liftoff')" > main.py
+git add .
+git commit -m "Add main"
+echo "print('stage two')" >> main.py
+--- solution
+git add main.py
+git commit -m "Add stage two"
+git log --oneline
+--- hint
+`git add main.py`, then `git commit -m "Add stage two"`.
+--- check shell | The history has two commits
+git . commits == 2
+git . clean
+--- check shell | You looked at the history
+ran git log
+
+=== git-07 | Undoing a change: restore
+--- teach
+Changed a file and wish you had not? `git restore <file>` puts it back exactly as it was in the last commit.
+
+```
+git restore config.txt           # throw away changes to the file
+git restore --staged config.txt  # un-stage it, but keep the changes
+```
+
+Careful: restoring throws your changes away for good — they were never saved, so git has no copy. This is why committing often is a safety net.
+--- task
+`config.txt` was overwritten by mistake. Use git to put it back to the last committed version.
+--- starter
+git init
+echo "thrust = 100" > config.txt
+git add .
+git commit -m "Add config"
+echo "oops" > config.txt
+--- solution
+git restore config.txt
+--- hint
+`git diff` shows what happened; `git restore config.txt` undoes it.
+--- check shell | config.txt is back to the committed version
+file config.txt == thrust = 100
+--- check shell | Git did the undoing
+ran git restore
+
+=== git-08 | Branches
+--- teach
+A **branch** is a separate line of work. You make one to build something without disturbing `main`, and merge it back when it is ready. Teams work this way so that `main` always works.
+
+```
+git switch -c feature     # make a branch called feature and move onto it
+git branch                # list branches; * marks the one you are on
+```
+
+`git checkout -b feature` is the older spelling of `git switch -c feature` — you will see both.
+--- task
+Make a branch called `feature` and switch to it. Then list the branches with `git branch`.
+--- starter
+git init
+echo "# Rocket" > README.md
+git add .
+git commit -m "Start the project"
+--- solution
+git switch -c feature
+git branch
+--- hint
+`git switch -c feature` makes it and moves you onto it.
+--- check shell | You are on feature
+git . branch feature
+git . has-branch main
+--- check shell | The branch list shows you on it
+printed * feature
+
+=== git-09 | Working on a branch
+--- teach
+Commits you make on a branch stay on that branch. Switch back to `main` and git swaps the files in your folder to match `main` — the new file disappears, because `main` has never had it. Switch to the branch again and it is back.
+
+This is the point of branches: `main` stays exactly as it was while you work.
+--- task
+You are on `feature`. Create `engine.py` (any content), stage it and commit it. Then switch back to `main` and list the folder — `engine.py` is not there.
+--- starter
+git init
+echo "# Rocket" > README.md
+git add .
+git commit -m "Start the project"
+git switch -c feature
+--- solution
+echo "thrust = 100" > engine.py
+git add engine.py
+git commit -m "Add the engine"
+git switch main
+ls
+--- hint
+`echo "thrust = 100" > engine.py`, `git add engine.py`, `git commit -m "Add the engine"`.
+--- hint
+Then `git switch main` and `ls`.
+--- check shell | feature has the new commit
+git . commits-on feature == 2
+--- check shell | You are back on main, which does not have engine.py
+git . branch main
+missing engine.py
+ran ls
+
+=== git-10 | Merging a branch back
+--- teach
+When the work on a branch is done, you **merge** it into `main`. From `main`:
+
+```
+git merge feature
+```
+
+If `main` has not changed since the branch was made, git simply moves `main` forward to include the new commits — a **fast-forward**. The files from the branch appear in your folder.
+--- task
+The `feature` branch has a finished `engine.py`. You are on `main`: merge `feature` into it.
+--- starter
+git init
+echo "# Rocket" > README.md
+git add .
+git commit -m "Start the project"
+git switch -c feature
+echo "thrust = 100" > engine.py
+git add .
+git commit -m "Add the engine"
+git switch main
+--- solution
+git merge feature
+--- hint
+`git merge feature`, from `main`.
+--- check shell | main now has the engine
+git . branch main
+file engine.py == thrust = 100
+git . commits == 2
+
+=== git-11 | When both branches moved
+--- teach
+If `main` got new commits while you worked on a branch, a merge cannot just move forward. Git combines both sides from the commit where they split and makes a **merge commit** with two parents — `git log` shows it as *Merge branch '…'*.
+
+When both sides changed **different** files, or different parts of the project, this is automatic. When both changed the **same** lines, that is a **conflict**: git stops and asks you to choose. (In a real terminal you would edit the file and commit; this practice terminal stops and changes nothing.)
+--- task
+`main` and `docs` both have new commits, in different files. On `main`, merge `docs`, then look at `git log --oneline`.
+--- starter
+git init
+echo "# Rocket" > README.md
+git add .
+git commit -m "Start the project"
+git switch -c docs
+echo "How to launch" > GUIDE.md
+git add .
+git commit -m "Add the guide"
+git switch main
+echo "thrust = 100" > engine.py
+git add .
+git commit -m "Add the engine"
+--- solution
+git merge docs
+git log --oneline
+--- hint
+`git merge docs` from `main`.
+--- check shell | Both sides' work is on main
+file GUIDE.md
+file engine.py
+--- check shell | There is a merge commit
+git . merges == 1
+git . log contains Merge branch 'docs'
+--- check shell | You looked at the history
+ran git log

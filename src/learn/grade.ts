@@ -155,6 +155,7 @@ function harness(lesson: LearnLesson): string {
     }
     case 'html':
     case 'bash':
+    case 'git':
       return ''
   }
 }
@@ -277,6 +278,10 @@ export function checkFact(s: ShellState, fact: string): string | null {
       const want = words.slice(1).join(' ')
       return s.history.some((h) => h.includes(want)) ? null : `you have not used ${want} in a command yet`
     }
+    case 'printed-line': {
+      const want = words.slice(1).join(' ')
+      return s.transcript.some((t) => t.out.split('\n').includes(want)) ? null : `nothing has printed the line ${JSON.stringify(want)} yet`
+    }
     case 'printed': {
       const want = words.slice(1).join(' ')
       return s.transcript.some((t) => t.out.includes(want)) ? null : `nothing has printed ${JSON.stringify(want)} yet`
@@ -299,6 +304,26 @@ export function checkFact(s: ShellState, fact: string): string | null {
           return info.branches.includes(rest[0]!) ? null : `there is no branch ${rest[0]}`
         case 'staged':
           return info.staged.includes(rest[0]!) ? null : `${rest[0]} is not staged`
+        case 'untracked':
+          return info.untracked.includes(rest[0]!) ? null : `${rest[0]} is not an untracked file`
+        case 'modified':
+          return info.modified.includes(rest[0]!) ? null : `${rest[0]} has no unstaged changes`
+        case 'commits-on': {
+          const n = Number(rest[2])
+          const got = info.branchCommits[rest[0]!]
+          if (got === undefined) return `there is no branch ${rest[0]}`
+          const holds = rest[1] === '>=' ? got >= n : got === n
+          return holds ? null : `${rest[0]} has ${got} commit${got === 1 ? '' : 's'}`
+        }
+        case 'merges': {
+          const n = Number(rest[1])
+          const holds = rest[0] === '>=' ? info.merges >= n : info.merges === n
+          return holds ? null : `the history has ${info.merges} merge commit${info.merges === 1 ? '' : 's'}`
+        }
+        case 'log': {
+          const want = rest.slice(1).join(' ')
+          return info.messages.some((m) => m.includes(want)) ? null : `no commit message contains ${JSON.stringify(want)}`
+        }
         case 'clean':
           return info.staged.length ? `still staged: ${info.staged.join(', ')}` : null
         default:

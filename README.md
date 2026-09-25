@@ -35,8 +35,9 @@ memory model and a dependency graph, and it shows its working:
   Rust and shell run through the desktop app's toolchains; without them those exercises
   are compared against the reference solution, and the app says so. MATLAB exercises ship
   a NumPy equivalent you can run.
-- **Learn to code.** Roadmaps — GNC Engineer, Flight Software, Test & Data — that lay out
-  courses in order: the terminal, Python, SQL and C++, lesson by lesson in the same IDE
+- **Learn to code.** Roadmaps — GNC Engineer, Flight Software, Test & Data, Software
+  Engineer — that lay out courses in order as a numbered path: the command line, Git,
+  Python, SQL and C++, lesson by lesson in the same IDE
   window as the playground, every step really run and shown as test cases. The lessons
   are plain text in `src/learn/tracks/*.txt` (format in `src/learn/parse.ts`); the
   roadmaps are in `src/learn/platform.ts`. The same lesson engine runs in APEX's

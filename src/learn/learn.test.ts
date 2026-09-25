@@ -62,8 +62,8 @@ describe('the tracks', () => {
     for (const l of trackFor('html')?.lessons ?? []) expect(l.checks.some((c) => c.kind === 'dom'), l.id).toBe(true)
   })
 
-  it('every Terminal lesson passes when its solution is typed, and not before', () => {
-    for (const l of trackFor('bash')!.lessons) {
+  it('every Terminal and Git lesson passes when its solution is typed, and not before', () => {
+    for (const l of [...trackFor('bash')!.lessons, ...(trackFor('git')?.lessons ?? [])]) {
       const start = lessonShell(l)
       const before = gradeRun(l, '', { stdout: '', stderr: '', error: null, shell: start, ms: 0 })
       expect(before.passed, `${l.id} passes with nothing typed`).toBe(false)
@@ -71,6 +71,11 @@ describe('the tracks', () => {
       const failing = after.results.filter((r) => r.status === 'fail').map((r) => `${r.name}: ${r.actual ?? r.detail}`)
       expect(failing, l.id).toEqual([])
     }
+  })
+
+  it('every course has a full name for the roadmap, and Git is a course of its own', () => {
+    for (const t of TRACKS) expect(t.name.length, t.lang).toBeGreaterThan(t.lang === 'sql' ? 3 : 5)
+    expect(trackFor('git')?.lessons.length).toBeGreaterThanOrEqual(10)
   })
 
   it('every roadmap is made of courses this app has, and every course is on one', () => {
@@ -292,6 +297,17 @@ describe('terminal facts', () => {
     s = runShell(s, 'git checkout -b feature').state
     expect(checkFact(s, 'git . branch feature')).toBeNull()
     expect(checkFact(s, 'git . has-branch main')).toBeNull()
+    expect(checkFact(s, 'git . commits-on main == 1')).toBeNull()
+    s = runShell(s, 'git switch main').state
+    expect(checkFact(s, 'git . merges == 0')).toBeNull()
+    expect(checkFact(s, 'git . log contains first')).toBeNull()
+    expect(checkFact(s, 'git . log contains nope')).toMatch(/no commit message/)
+  })
+
+  it('reads a printed line exactly, not as part of a longer one', () => {
+    const s = typed('pwd')
+    expect(checkFact(s, 'printed-line /home/you/project')).toBeNull()
+    expect(checkFact(s, 'printed-line /home/you')).toMatch(/nothing has printed/)
   })
 
   it('forgets the setup, so only what she typed counts', () => {

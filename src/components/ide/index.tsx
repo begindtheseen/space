@@ -51,42 +51,120 @@ export function ModeTabs({ value, onChange, modes = ['code', 'sql', 'web', 'term
   )
 }
 
-/* ── Language marks ──────────────────────────────────────────────────────── */
+/* ── Course logos ────────────────────────────────────────────────────────── */
 
-const MARKS: Record<string, { bg: string; fg: string; text: string }> = {
-  javascript: { bg: '#f7df1e', fg: '#1b1b1b', text: 'JS' },
-  typescript: { bg: '#3178c6', fg: '#ffffff', text: 'TS' },
-  python: { bg: '#3572a5', fg: '#ffd43b', text: 'Py' },
-  sql: { bg: '#0f8a8a', fg: '#ffffff', text: 'SQL' },
-  cpp: { bg: '#00599c', fg: '#ffffff', text: 'C++' },
-  html: { bg: '#e44d26', fg: '#ffffff', text: '</>' },
-  bash: { bg: '#2b2d31', fg: '#4ade80', text: '>_' },
-  rust: { bg: '#b7410e', fg: '#ffffff', text: 'Rs' },
-  matlab: { bg: '#e16737', fg: '#ffffff', text: 'M' },
-  simulink: { bg: '#e16737', fg: '#ffffff', text: 'Sim' },
-  text: { bg: '#3a3d44', fg: '#e5e7eb', text: 'Aa' },
+/** The shape of each language's usual mark, drawn on a 32-unit grid. */
+function logo(lang: string): ReactNode {
+  const mono = "'JetBrains Mono', ui-monospace, monospace"
+  switch (lang) {
+    case 'python':
+      return (
+        <>
+          <path d="M15.9 2C9.8 2 10.2 4.6 10.2 4.6v2.8h5.8v.8H7.9S4 7.8 4 13.9s3.4 5.9 3.4 5.9h2v-2.8s-.1-3.4 3.4-3.4h5.8s3.2.1 3.2-3.1V5.3S22.3 2 15.9 2zm-3.2 1.9a1 1 0 110 2.1 1 1 0 010-2.1z" fill="#3776ab" />
+          <path d="M16.1 30c6.1 0 5.7-2.6 5.7-2.6v-2.8H16v-.8h8.1S28 24.2 28 18.1s-3.4-5.9-3.4-5.9h-2V15s.1 3.4-3.4 3.4h-5.8s-3.2-.1-3.2 3.1v5.2S9.7 30 16.1 30zm3.2-1.9a1 1 0 110-2.1 1 1 0 010 2.1z" fill="#ffd43b" />
+        </>
+      )
+    case 'javascript':
+      return (
+        <>
+          <rect x="4" y="4" width="24" height="24" rx="3" fill="#f7df1e" />
+          <text x="25.5" y="25" textAnchor="end" fontFamily={mono} fontWeight={800} fontSize="11" fill="#1b1b1b">JS</text>
+        </>
+      )
+    case 'typescript':
+      return (
+        <>
+          <rect x="4" y="4" width="24" height="24" rx="3" fill="#3178c6" />
+          <text x="25.5" y="25" textAnchor="end" fontFamily={mono} fontWeight={800} fontSize="11" fill="#ffffff">TS</text>
+        </>
+      )
+    case 'html':
+      return (
+        <>
+          <path d="M6 3l1.9 21.6L16 27l8.1-2.4L26 3H6z" fill="#e44d26" />
+          <path d="M16 5v20l6.5-1.9L24 5h-8z" fill="#f16529" />
+          <path d="M11 8h10l-.3 2.6h-7l.3 3h6.4l-.6 6.3L16 21l-3.8-1.1-.3-2.8h2.5l.1 1.1 1.5.4 1.5-.4.2-2.2h-6L11 8z" fill="#ffffff" />
+        </>
+      )
+    case 'sql':
+      return (
+        <>
+          <path d="M6 8v16c0 2.2 4.5 4 10 4s10-1.8 10-4V8" fill="#2b88c8" />
+          <ellipse cx="16" cy="8" rx="10" ry="4" fill="#6cc4f0" />
+          <path d="M6 14c0 2.2 4.5 4 10 4s10-1.8 10-4M6 19.5c0 2.2 4.5 4 10 4s10-1.8 10-4" fill="none" stroke="#6cc4f0" strokeWidth="1.4" />
+        </>
+      )
+    case 'cpp':
+      return (
+        <>
+          <path d="M16 2.5l11.7 6.75v13.5L16 29.5 4.3 22.75V9.25z" fill="#00599c" />
+          <path d="M16 2.5l11.7 6.75L16 16z" fill="#659ad2" />
+          <text x="16" y="20" textAnchor="middle" fontFamily={mono} fontWeight={800} fontSize="9" fill="#ffffff">C++</text>
+        </>
+      )
+    case 'bash':
+      return (
+        <>
+          <rect x="3" y="5" width="26" height="22" rx="3.5" fill="#1b1d21" stroke="#4b4f57" />
+          <circle cx="7.5" cy="9" r="1.2" fill="#f87171" />
+          <circle cx="11" cy="9" r="1.2" fill="#fbbf24" />
+          <circle cx="14.5" cy="9" r="1.2" fill="#4ade80" />
+          <path d="M8 15l4 3-4 3" fill="none" stroke="#4ade80" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M14.5 22h8" stroke="#4ade80" strokeWidth="2" strokeLinecap="round" />
+        </>
+      )
+    case 'git':
+      return (
+        <>
+          <rect x="7" y="7" width="18" height="18" rx="3" transform="rotate(45 16 16)" fill="#f05133" />
+          <path d="M13 10.5v11M13 13.5l5 4" stroke="#ffffff" strokeWidth="1.8" strokeLinecap="round" />
+          <circle cx="13" cy="10.5" r="1.9" fill="#ffffff" />
+          <circle cx="13" cy="21.5" r="1.9" fill="#ffffff" />
+          <circle cx="19" cy="18.2" r="1.9" fill="#ffffff" />
+        </>
+      )
+    case 'rust':
+      return (
+        <>
+          <circle cx="16" cy="16" r="12" fill="#b7410e" />
+          <text x="16" y="21" textAnchor="middle" fontFamily={mono} fontWeight={800} fontSize="13" fill="#ffffff">R</text>
+        </>
+      )
+    case 'matlab':
+    case 'simulink':
+      return (
+        <>
+          <path d="M3 21l8-5 5-11 6 14 7 3-8 1-4 5-6-7z" fill="#e16737" />
+          <path d="M16 5l6 14-6 2-5-5z" fill="#f59e5b" />
+        </>
+      )
+    default:
+      return (
+        <>
+          <rect x="7" y="4" width="18" height="24" rx="2.5" fill="#e5e7eb" />
+          <path d="M11 11h10M11 15h10M11 19h6" stroke="#6b7280" strokeWidth="1.6" strokeLinecap="round" />
+        </>
+      )
+  }
 }
 
-/** A small coloured tile naming a language, the way course icons do. */
+/** A language's mark, the way course icons show it. */
 export function LangMark({ lang, size = 22 }: { lang: string; size?: number }) {
-  const m = MARKS[lang] ?? { bg: '#3a3d44', fg: '#e5e7eb', text: '{}' }
-  const fs = m.text.length > 2 ? size * 0.34 : size * 0.44
   return (
-    <svg className="lang-mark" width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden="true">
-      <rect width={size} height={size} rx={size * 0.24} fill={m.bg} />
-      {lang === 'bash' ? <rect x={0.5} y={0.5} width={size - 1} height={size - 1} rx={size * 0.24} fill="none" stroke="#4b4f57" /> : null}
-      <text
-        x="50%"
-        y="54%"
-        dominantBaseline="middle"
-        textAnchor="middle"
-        fill={m.fg}
-        fontFamily="'JetBrains Mono', ui-monospace, monospace"
-        fontWeight={800}
-        fontSize={fs}
-      >
-        {m.text}
-      </text>
+    <svg className="lang-mark" width={size} height={size} viewBox="0 0 32 32" aria-hidden="true">
+      {logo(lang)}
+    </svg>
+  )
+}
+
+/** The finish line: a certificate with its ribbon. */
+export function CertificateMark({ size = 32 }: { size?: number }) {
+  return (
+    <svg className="lang-mark" width={size} height={size} viewBox="0 0 32 32" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="4" y="6" width="24" height="17" rx="2.5" />
+      <path d="M9 12h9M9 16.5h6" />
+      <circle cx="23" cy="19.5" r="3.4" fill="currentColor" stroke="none" />
+      <path d="M21 22.5l-1 5 3-1.6 3 1.6-1-5" />
     </svg>
   )
 }

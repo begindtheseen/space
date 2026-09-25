@@ -17,6 +17,7 @@ import { python as py, runNative, runSql, type RunOutput, type StatusFn } from '
 import type { ShellState } from '@/lib/shell'
 import bash from './tracks/bash.txt?raw'
 import cpp from './tracks/cpp.txt?raw'
+import git from './tracks/git.txt?raw'
 import python from './tracks/python.txt?raw'
 import sql from './tracks/sql.txt?raw'
 import type { LearnLang, LearnLesson, LearnRun, Roadmap } from './types'
@@ -24,6 +25,7 @@ import type { LearnLang, LearnLesson, LearnRun, Roadmap } from './types'
 /** The tracks this app teaches, in the order a beginner should meet them. */
 export const LEARN_SOURCES: [LearnLang, string][] = [
   ['bash', bash],
+  ['git', git],
   ['python', python],
   ['sql', sql],
   ['cpp', cpp],
@@ -40,20 +42,26 @@ export const ROADMAPS: Roadmap[] = [
   {
     id: 'gnc',
     title: 'GNC Engineer',
-    blurb: 'Guidance, navigation and control: the terminal and git underneath the work, Python for the analysis and the simulations, and C++ for the flight code.',
-    steps: ['bash', 'python', 'cpp'],
+    blurb: 'Guidance, navigation and control: the command line and git underneath the work, Python for the analysis and the simulations, and C++ for the flight code.',
+    steps: ['bash', 'git', 'python', 'cpp'],
   },
   {
     id: 'flight-software',
     title: 'Flight Software',
-    blurb: 'Code that flies: C++ first, exact about types and memory, with Python for the tools and tests around it.',
-    steps: ['bash', 'cpp', 'python'],
+    blurb: 'Code that flies: the command line and git every flight team works in, C++ exact about types and memory, and Python for the tools and tests around it.',
+    steps: ['bash', 'git', 'cpp', 'python'],
   },
   {
     id: 'test-data',
     title: 'Test & Data',
-    blurb: 'Every test campaign ends in data: Python to analyse it, and SQL to pull telemetry out of where it is kept.',
-    steps: ['bash', 'python', 'sql'],
+    blurb: 'Every test campaign ends in data: Python to analyse it, SQL to pull telemetry out of where it is kept, and the command line and git to keep the analysis reproducible.',
+    steps: ['python', 'sql', 'bash', 'git'],
+  },
+  {
+    id: 'software',
+    title: 'Software Engineer',
+    blurb: 'The ground every software job stands on: one language learned properly, the command line and git, SQL, and then C++ to see what the machine is really doing.',
+    steps: ['python', 'bash', 'git', 'sql', 'cpp'],
   },
 ]
 
@@ -74,6 +82,7 @@ export async function runLearn(
   const { onStatus } = opts
   switch (lesson.lang) {
     case 'bash':
+    case 'git':
       return { stdout: '', stderr: '', error: null, ...(opts.shell ? { shell: opts.shell } : {}), ms: 0 }
     case 'python': {
       const stdin = lesson.stdin?.replace(/\n$/, '').split('\n')
@@ -93,6 +102,7 @@ export async function runLearn(
 
 /** The editor's grammar for a lesson's language. */
 export function editorLang(lang: LearnLang): Lang {
+  if (lang === 'git') return 'bash'
   return lang === 'python' || lang === 'sql' || lang === 'cpp' || lang === 'bash' ? lang : 'text'
 }
 

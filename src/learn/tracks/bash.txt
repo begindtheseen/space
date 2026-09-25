@@ -1,6 +1,7 @@
 @track bash
 @title Terminal
-@blurb The command line every developer lives in: moving around, making and changing files, and saving your work with git.
+@name Linux and the command line
+@blurb The command line every developer lives in: moving around, making, reading and changing files, without a mouse.
 
 === term-01 | Where am I?
 --- teach
@@ -231,87 +232,56 @@ file logs/todo.txt contains buy fuel
 file logs/todo.txt contains check engines
 used >>
 
-=== term-09 | Starting a git repository
+=== term-09 | Hidden files, and the long listing
 --- teach
-**git** keeps the history of a project: every saved version, who made it and why. It works on a **repository** (a "repo"): a folder that git is watching.
+A file or folder whose name starts with a dot is **hidden**: plain `ls` skips it. Settings live in files like that — `.env`, `.gitignore`, `.config` — so you need to be able to see them.
 
-- `git init` turns the folder you are in into a repository (it creates a hidden `.git` folder — see it with `ls -a`).
-- `git status` tells you what git sees: which files are new, which have changed, and what is ready to save.
+- `ls -a` shows **a**ll of them, hidden ones included (plus `.` for this folder and `..` for the one above).
+- `ls -l` is the **l**ong listing: one line per entry, with whether it is a folder (`d`) or a file (`-`), and its size.
 
-Run `git status` whenever you are unsure. It is always safe.
+Flags combine: `ls -la` is both at once.
 --- task
-Turn `project` into a git repository, then ask git for its status.
+Something in this folder is hidden. Find it with `ls -a`, then look at the sizes with `ls -l`.
 --- starter
-echo "# Rocket" > README.md
+echo "API_KEY=demo" > .env
+mkdir src
+echo "print('hi')" > main.py
 --- solution
-git init
-git status
+ls -a
+ls -l
 --- hint
-`git init`, then `git status`.
---- check shell | project is a git repository
-git . repo
---- check shell | You checked its status
-ran git status
-printed Untracked files
+`ls -a` shows the hidden file.
+--- hint
+`ls -l` shows one line per file, starting with `-rw-r--r--` for files.
+--- check shell | You found the hidden file
+printed .env
+--- check shell | You used the long listing
+printed -rw-r--r--
 
-=== term-10 | Your first commit
+=== term-10 | Getting home, and back again
 --- teach
-Saving a version in git is two steps:
+Deep in a project, three shortcuts save a lot of typing:
 
-1. `git add file` **stages** a change — puts it in the box of things to save. `git add .` stages everything in the folder.
-2. `git commit -m "message"` saves what is staged as a **commit**, with a message that says what changed.
+- `cd ~` (or just `cd`) jumps straight to your **home** folder, wherever you are.
+- `cd -` jumps back to wherever you were **before** the last `cd`.
+- An **absolute** path works from anywhere: `cd /home/you/project`.
 
-`git log --oneline` lists the commits, newest first. A good message finishes the sentence "This commit will…": *Add the launch checklist*.
+Run `pwd` whenever you want to be sure where you have landed.
 --- task
-Stage both files and commit them with a message. Then look at the history with `git log --oneline`.
+You are three folders deep, in `src/app/components`. Jump to your home folder, check with `pwd` that you are there, then come straight back with `cd -`.
 --- starter
-git init
-echo "# Rocket" > README.md
-echo "print('liftoff')" > main.py
+mkdir -p src/app/components
+cd src/app/components
 --- solution
-git add .
-git commit -m "Add README and main program"
-git log --oneline
+cd ~
+pwd
+cd -
 --- hint
-`git add .` stages everything.
+`cd ~` goes home; `pwd` then prints `/home/you`.
 --- hint
-`git commit -m "Add the first files"` — the quotes keep the message together.
---- check shell | There is one commit
-git . commits == 1
---- check shell | Nothing is left waiting to be committed
-git . clean
---- check shell | You looked at the history
-ran git log
-
-=== term-11 | Branches
---- teach
-A **branch** is a separate line of work. You make one to try something without disturbing `main`, and merge it back when it is ready.
-
-```
-git checkout -b feature     # make a branch called feature and switch to it
-git branch                  # list branches; * marks the one you are on
-```
-
-(`git switch -c feature` does the same as `checkout -b` — you will see both.) Commits you make now go on `feature`; `main` stays as it was.
---- task
-Make a branch called `feature` and switch to it. On it, create `engine.py` (any content), then stage it and commit it.
---- starter
-git init
-echo "# Rocket" > README.md
-git add .
-git commit -m "Start the project"
---- solution
-git checkout -b feature
-echo "thrust = 100" > engine.py
-git add engine.py
-git commit -m "Add the engine"
---- hint
-`git checkout -b feature` makes the branch and moves you onto it.
---- hint
-Then `echo "thrust = 100" > engine.py`, `git add engine.py` and `git commit -m "Add the engine"`.
---- check shell | You are on the feature branch
-git . branch feature
---- check shell | Your work is committed on it
-file engine.py
-git . commits == 2
-git . clean
+`cd -` takes you back to `src/app/components` in one step.
+--- check shell | You checked that you were home
+printed-line /home/you
+--- check shell | You came back with cd -
+ran cd -
+cwd src/app/components

@@ -13,7 +13,7 @@
    both apps that carry this feature.
    ========================================================================== */
 
-export type LearnLang = 'javascript' | 'typescript' | 'python' | 'sql' | 'cpp' | 'html' | 'bash'
+export type LearnLang = 'javascript' | 'typescript' | 'python' | 'sql' | 'cpp' | 'html' | 'bash' | 'git'
 
 export type Cell = string | number | null
 
@@ -74,7 +74,10 @@ export interface LearnLesson {
 
 export interface LearnTrack {
   lang: LearnLang
+  /** Short: breadcrumbs, chips. */
   title: string
+  /** The course's full name, as the roadmap and its page show it. */
+  name: string
   blurb: string
   lessons: LearnLesson[]
 }

@@ -4,7 +4,9 @@
    A shell that runs in the page: a small in-memory filesystem, the commands a
    beginner meets first (pwd, ls, cd, mkdir, touch, echo, cat, cp, mv, rm, …),
    `&&`, `>` and `>>`, and enough of git — init, status, add, commit, log,
-   branch, checkout — to practise the loop every project runs on.
+   diff, restore, branch, switch, merge — to practise the loop every project
+   runs on. Switching branches really swaps the files in the folder, and a
+   merge combines two branches from the commit where they split.
 
    It is a simulation and says so: nothing here touches the real machine, and
    the terminal work the curriculum asks for (M1) still belongs in a real
@@ -25,6 +27,8 @@ interface Commit {
   message: string
   /** The commit this one was made on top of. */
   parent: string | null
+  /** A merge commit's second parent: the branch that was merged in. */
+  parent2?: string | null
   /** Every tracked file's content at this commit, by path relative to the repo. */
   tree: Record<string, string>
 }
@@ -464,7 +468,7 @@ function headTree(repo: Repo): Record<string, string> {
 
 function git(s: ShellState, args: string[]): Step {
   const [sub, ...rest] = args
-  if (!sub) return ok('usage: git <init | status | add | commit | log | branch | checkout | switch>')
+  if (!sub) return ok('usage: git <init | status | add | commit | log | diff | restore | branch | switch | checkout | merge>')
   if (sub === '--version') return ok('git version 2.47.0 (practice terminal)')
 
   if (sub === 'init') {
@@ -541,13 +545,173 @@ function git(s: ShellState, args: string[]): Step {
       if (create) {
         if (name in repo.branches) return bad(`fatal: a branch named '${name}' already exists`)
         repo.branches[name] = repo.branches[repo.branch] ?? null
-      } else if (!(name in repo.branches)) return bad(`error: pathspec '${name}' did not match any branch`)
+      } else {
+        if (!(name in repo.branches)) return bad(`error: pathspec '${name}' did not match any branch`)
+        if (name === repo.branch) return ok(`Already on '${name}'`)
+        if (dirty(s, root, repo)) return bad(`error: your changes would be lost by switching branches.\nCommit them (or git restore them) first.`)
+        // Switching branches puts that branch's files in the folder.
+        applyTree(s, root, headTree(repo), treeOf(repo, repo.branches[name] ?? null))
+      }
       repo.branch = name
       return ok(`Switched to ${create ? 'a new ' : ''}branch '${name}'`)
     }
+    case 'merge': {
+      const name = rest[0]
+      if (!name) return bad('usage: git merge <branch>')
+      if (!(name in repo.branches)) return bad(`merge: ${name} - not something we can merge`)
+      const ours = repo.branches[repo.branch] ?? null
+      const theirs = repo.branches[name] ?? null
+      if (!theirs || name === repo.branch || ancestors(repo, ours).has(theirs)) return ok('Already up to date.')
+      if (dirty(s, root, repo)) return bad('error: commit (or git restore) your changes before merging.')
+      if (!ours || ancestors(repo, theirs).has(ours)) {
+        // Nothing new on this branch: move it forward to theirs.
+        const before = headTree(repo)
+        repo.branches[repo.branch] = theirs
+        applyTree(s, root, before, treeOf(repo, theirs))
+        const n = changedFiles(before, treeOf(repo, theirs)).length
+        return ok(`Updating ${ours ?? '0000000'}..${theirs}\nFast-forward\n ${n} file${n === 1 ? '' : 's'} changed`)
+      }
+      // Both sides moved: combine them from where they split.
+      const mine = treeOf(repo, ours)
+      const other = treeOf(repo, theirs)
+      const base = treeOf(repo, mergeBase(repo, ours, theirs))
+      const merged: Record<string, string> = {}
+      const conflicts: string[] = []
+      for (const f of new Set([...Object.keys(mine), ...Object.keys(other), ...Object.keys(base)])) {
+        const [b, o, t] = [base[f], mine[f], other[f]]
+        const pick = o === t ? o : o === b ? t : t === b ? o : null
+        if (pick === null) conflicts.push(f)
+        else if (pick !== undefined) merged[f] = pick
+      }
+      if (conflicts.length)
+        return bad(
+          conflicts.map((f) => `CONFLICT (content): Merge conflict in ${f}`).join('\n') +
+            '\nAutomatic merge failed: both branches changed the same file. The practice terminal stops here — nothing was changed.',
+        )
+      const id = hash(`${repo.commits.length}:merge:${name}:${JSON.stringify(merged)}`)
+      repo.commits.push({ id, message: `Merge branch '${name}'`, parent: ours, parent2: theirs, tree: merged })
+      repo.branches[repo.branch] = id
+      applyTree(s, root, mine, merged)
+      return ok("Merge made by the 'ort' strategy.")
+    }
+    case 'diff': {
+      const staged = rest.includes('--staged') || rest.includes('--cached')
+      const head = headTree(repo)
+      const work = workingTree(s, root)
+      const files = Object.keys({ ...head, ...repo.staged }).sort()
+      const out: string[] = []
+      for (const f of files) {
+        const from = staged ? head[f] : (repo.staged[f] ?? head[f])
+        const to = staged ? repo.staged[f] : work[f]
+        if (staged && !(f in repo.staged)) continue
+        if (from === to) continue
+        out.push(`diff --git a/${f} b/${f}`, `--- a/${f}`, `+++ b/${f}`, ...lineDiff(from ?? '', to ?? ''))
+      }
+      return ok(out.join('\n'))
+    }
+    case 'restore': {
+      const unstage = rest.includes('--staged')
+      const paths = rest.filter((a) => a !== '--staged')
+      if (!paths.length) return bad('usage: git restore [--staged] <file>')
+      const head = headTree(repo)
+      for (const a of paths) {
+        const f = rel(a)
+        if (!(f in head) && !(f in repo.staged)) return bad(`error: pathspec '${a}' did not match any file(s) known to git`)
+        if (unstage) delete repo.staged[f]
+        else {
+          const err = writeFile(s, `${root}/${f}`, repo.staged[f] ?? head[f] ?? '', false)
+          if (err) return bad(err)
+        }
+      }
+      return ok()
+    }
     default:
-      return bad(`git: '${sub}' is not part of the practice terminal. Try: init, status, add, commit, log, branch, checkout.`)
+      return bad(`git: '${sub}' is not part of the practice terminal. Try: init, status, add, commit, log, diff, restore, branch, switch, merge.`)
   }
+}
+
+function treeOf(repo: Repo, id: string | null): Record<string, string> {
+  return (id && repo.commits.find((c) => c.id === id)?.tree) || {}
+}
+
+/** Every commit reachable from `id`, through both parents of a merge. */
+function ancestors(repo: Repo, id: string | null): Set<string> {
+  const byId = new Map(repo.commits.map((c) => [c.id, c]))
+  const seen = new Set<string>()
+  const todo = id ? [id] : []
+  while (todo.length) {
+    const c = byId.get(todo.pop()!)
+    if (!c || seen.has(c.id)) continue
+    seen.add(c.id)
+    if (c.parent) todo.push(c.parent)
+    if (c.parent2) todo.push(c.parent2)
+  }
+  return seen
+}
+
+/** The newest commit both branches have: where they split. */
+function mergeBase(repo: Repo, a: string | null, b: string | null): string | null {
+  const mine = ancestors(repo, a)
+  const byId = new Map(repo.commits.map((c) => [c.id, c]))
+  const queue = b ? [b] : []
+  const seen = new Set<string>()
+  while (queue.length) {
+    const id = queue.shift()!
+    if (mine.has(id)) return id
+    if (seen.has(id)) continue
+    seen.add(id)
+    const c = byId.get(id)
+    if (c?.parent) queue.push(c.parent)
+    if (c?.parent2) queue.push(c.parent2)
+  }
+  return null
+}
+
+function changedFiles(a: Record<string, string>, b: Record<string, string>): string[] {
+  return [...new Set([...Object.keys(a), ...Object.keys(b)])].filter((f) => a[f] !== b[f])
+}
+
+/** Staged work, or a tracked file changed or deleted since the last commit. */
+function dirty(s: ShellState, root: string, repo: Repo): boolean {
+  if (Object.keys(repo.staged).length) return true
+  const work = workingTree(s, root)
+  const head = headTree(repo)
+  return Object.keys(head).some((f) => work[f] !== head[f])
+}
+
+/** Moves the folder from one commit's files to another's; untracked files stay. */
+function applyTree(s: ShellState, root: string, from: Record<string, string>, to: Record<string, string>): void {
+  for (const f of Object.keys(from)) {
+    if (f in to) continue
+    const [dir, name] = parentOf(`${root}/${f}`)
+    const parent = lookup(s, dir)
+    if (parent?.kind === 'dir') delete parent.children[name]
+  }
+  for (const [f, content] of Object.entries(to)) {
+    mkdirp(s, parentOf(`${root}/${f}`)[0])
+    writeFile(s, `${root}/${f}`, content, false)
+  }
+}
+
+/** A line-by-line diff: ` ` kept, `-` removed, `+` added. */
+function lineDiff(a: string, b: string): string[] {
+  const x = a === '' ? [] : a.replace(/\n$/, '').split('\n')
+  const y = b === '' ? [] : b.replace(/\n$/, '').split('\n')
+  const lcs: number[][] = Array.from({ length: x.length + 1 }, () => new Array<number>(y.length + 1).fill(0))
+  for (let i = x.length - 1; i >= 0; i--)
+    for (let j = y.length - 1; j >= 0; j--) lcs[i]![j] = x[i] === y[j] ? lcs[i + 1]![j + 1]! + 1 : Math.max(lcs[i + 1]![j]!, lcs[i]![j + 1]!)
+  const out: string[] = []
+  let i = 0
+  let j = 0
+  while (i < x.length || j < y.length) {
+    if (i < x.length && j < y.length && x[i] === y[j]) {
+      out.push(` ${x[i]}`)
+      i++
+      j++
+    } else if (i < x.length && (j >= y.length || lcs[i + 1]![j]! >= lcs[i]![j + 1]!)) out.push(`-${x[i++]}`)
+    else out.push(`+${y[j++]}`)
+  }
+  return out
 }
 
 /** The commits reachable from the current branch, newest first. */
@@ -571,14 +735,35 @@ function hash(text: string): string {
 }
 
 /** The git facts Learn-mode checks read. */
-export function gitInfo(s: ShellState, path: string): { commits: number; branch: string; staged: string[]; branches: string[] } | null {
+export function gitInfo(
+  s: ShellState,
+  path: string,
+): {
+  commits: number
+  branch: string
+  staged: string[]
+  branches: string[]
+  branchCommits: Record<string, number>
+  untracked: string[]
+  modified: string[]
+  merges: number
+  messages: string[]
+} | null {
   const repo = s.repos[path]
   if (!repo || !lookup(s, `${path}/.git`)) return null
+  const work = workingTree(s, path)
+  const head = headTree(repo)
+  const chain = history(repo)
   return {
-    commits: history(repo).length,
+    commits: chain.length,
     branch: repo.branch,
     staged: Object.keys(repo.staged),
     branches: Object.keys(repo.branches),
+    branchCommits: Object.fromEntries(Object.keys(repo.branches).map((b) => [b, history({ ...repo, branch: b }).length])),
+    untracked: Object.keys(work).filter((f) => !(f in head) && !(f in repo.staged)),
+    modified: Object.keys(work).filter((f) => f in head && work[f] !== (repo.staged[f] ?? head[f])),
+    merges: chain.filter((c) => c.parent2).length,
+    messages: chain.map((c) => c.message),
   }
 }
 
@@ -597,7 +782,8 @@ nothing you type here can touch your real files.
   grep [-i] <text> <f> find lines containing text
   cp [-r] <a> <b>      copy          mv <a> <b>   move or rename
   rm [-r] <path>       delete        rmdir <dir>  delete an empty folder
-  git init | status | add | commit -m "msg" | log --oneline | branch | checkout -b
+  git init | status | add | commit -m "msg" | log --oneline | diff
+      restore | branch | switch [-c] | checkout [-b] | merge
   history, clear, whoami
 
 Join commands with && to run the next only if the first worked.`

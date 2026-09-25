@@ -1,5 +1,6 @@
 @track sql
 @title SQL
+@name SQL fundamentals
 @blurb Asking a database questions: SELECT through joins, grouping, changing data and CTEs — on a users-and-requests schema like the one your product will have.
 @schema
 CREATE TABLE users (

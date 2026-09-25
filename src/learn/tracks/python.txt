@@ -1,5 +1,6 @@
 @track python
 @title Python
+@name Python, a first language
 @blurb From print() to classes: the twelve ideas every Python program is built from.
 
 === py-01 | Printing

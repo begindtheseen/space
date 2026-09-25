@@ -4,7 +4,8 @@
    Three views, laid out the way a coding school lays them out:
 
      #/learn              roadmaps: pick a goal, see its courses in order as a
-                          numbered path of course tiles, start with step one
+                          numbered path of course tiles ending in a certificate
+     #/learn/roadmap-<id> one goal, step by step, with where to start
      #/learn/<language>   one course: what it covers and every lesson in it
      #/learn/<lesson id>  one lesson: the explanation and the challenge on the
                           left, the playground's own IDE window on the right,
@@ -24,6 +25,7 @@ import {
   ConsoleView,
   IdeBody,
   IdePanel,
+  CertificateMark,
   IdeWindow,
   LangMark,
   RunButton,
@@ -33,7 +35,7 @@ import {
   WebPreview,
   type PanelTab,
 } from '@/components/ide'
-import { IconArrowRight, IconCheck, IconChevronLeft, IconFlame, IconRefresh, IconStar, IconTerminal } from '@/components/icons'
+import { IconArrowRight, IconCheck, IconChevronLeft, IconFlame, IconRefresh } from '@/components/icons'
 import { Bar, Button } from '@/components/ui'
 import { markLearned, saveCode } from '@/engine/apply'
 import { useLearner } from '@/hooks/useLearner'
@@ -50,6 +52,8 @@ import './pages.css'
 
 export function Learn({ lessonId }: { lessonId?: string }) {
   if (!lessonId) return <LearnHome />
+  const goal = lessonId.startsWith('roadmap-') ? ROADMAPS.find((r) => `roadmap-${r.id}` === lessonId) : undefined
+  if (goal) return <RoadmapView roadmap={goal} />
   const track = trackFor(lessonId)
   if (track) return <CourseView track={track} />
   const found = findLesson(lessonId)
@@ -65,6 +69,7 @@ const FILE: Record<string, string> = {
   sql: 'query.sql',
   html: 'index.html',
   bash: '~/project',
+  git: '~/project',
 }
 
 function Streak() {
@@ -88,26 +93,16 @@ function LearnHome({ missing }: { missing?: string }) {
 
   return (
     <div className="page page--padtop ide-wrap lm-home">
-      <div className="page-head">
-        <div style={{ minWidth: 0 }}>
-          <div className="page-head__kicker">
-            Learn to code <Streak />
-          </div>
-          <h1 className="h-page">Roadmaps</h1>
-          <p className="page-head__sub">
-            Courses in the order a mentor would teach them. Pick a goal and start with step one — every lesson has you
-            write real code in the playground, and checks it.
-          </p>
+      <header className="rm-hero">
+        <div className="page-head__kicker">
+          Learn to code <Streak />
         </div>
-        <Button variant="ghost" size="md" onClick={() => navigate('/playground')}>
-          <IconTerminal size={13} />
-          Playground
-        </Button>
-      </div>
+        <h1 className="rm-hero__title">Roadmaps that put the courses in the order a mentor would teach them. Pick a goal and start with step one.</h1>
+      </header>
 
       {missing ? <p className="lm-missing">There is no lesson called “{missing}”. Pick a course below.</p> : null}
 
-      <div className="ide-modes" role="tablist" aria-label="Goal">
+      <div className="rm-goals" role="tablist" aria-label="Goal">
         {ROADMAPS.map((r) => (
           <button
             key={r.id}
@@ -115,7 +110,7 @@ function LearnHome({ missing }: { missing?: string }) {
             role="tab"
             aria-selected={r.id === goal.id}
             data-active={r.id === goal.id}
-            className="ide-modes__pill"
+            className="rm-goals__pill"
             onClick={() => navigate(`/learn?goal=${r.id}`, { replace: true })}
           >
             {r.title}
@@ -123,17 +118,27 @@ function LearnHome({ missing }: { missing?: string }) {
         ))}
       </div>
 
-      <RoadmapWindow roadmap={goal} passed={state.learn} />
+      <section className="rm">
+        <header className="rm__head">
+          <span className="rm__goal">{goal.title}</span>
+          <button type="button" className="rm__see" onClick={() => navigate(`/learn/roadmap-${goal.id}`)}>
+            See the roadmap
+          </button>
+        </header>
+        <RoadmapPath roadmap={goal} passed={state.learn} />
+      </section>
 
-      <h2 className="lm-h2">Every course</h2>
+      <h2 className="lm-h2">Browse every course</h2>
       <div className="lm-courses">
         {TRACKS.map((t) => {
           const done = passedCount(t, state.learn)
           return (
             <a key={t.lang} className="lm-course" href={`#/learn/${t.lang}`}>
-              <LangMark lang={t.lang} size={40} />
+              <span className="lm-course__icon">
+                <LangMark lang={t.lang} size={30} />
+              </span>
               <span className="lm-course__text">
-                <span className="lm-course__title">{t.title}</span>
+                <span className="lm-course__title">{t.name}</span>
                 <span className="lm-course__meta">
                   {done === t.lessons.length ? 'Complete' : `${done} of ${t.lessons.length} lessons`}
                 </span>
@@ -152,15 +157,15 @@ function LearnHome({ missing }: { missing?: string }) {
   )
 }
 
-/** How many tiles fit on a row of the path, from the width it has. */
+/** How many steps fit on a row of the path, from the width it has. */
 function useColumns(ref: React.RefObject<HTMLElement | null>): number {
-  const [cols, setCols] = useState(4)
+  const [cols, setCols] = useState(3)
   useLayoutEffect(() => {
     const el = ref.current
     if (!el) return
     const measure = () => {
       const w = el.clientWidth
-      setCols(w >= 760 ? 4 : w >= 520 ? 3 : 2)
+      setCols(w >= 900 ? 5 : w >= 620 ? 4 : 3)
     }
     measure()
     const ro = new ResizeObserver(measure)
@@ -170,81 +175,159 @@ function useColumns(ref: React.RefObject<HTMLElement | null>): number {
   return cols
 }
 
-function RoadmapWindow({ roadmap, passed }: { roadmap: Roadmap; passed: Record<string, string> }) {
+/** Where she is on a roadmap: each course's progress, and the step she is on. */
+function progressOn(roadmap: Roadmap, passed: Record<string, string>) {
   const tracks = roadmap.steps.map((l) => trackFor(l)).filter((t): t is LearnTrack => !!t)
-  const current = tracks.findIndex((t) => passedCount(t, passed) < t.lessons.length)
-  const allDone = current < 0
+  const done = tracks.map((t) => passedCount(t, passed) === t.lessons.length)
+  const current = done.indexOf(false)
+  return { tracks, done, current, allDone: current < 0 }
+}
+
+/**
+ * The goal's courses as a path of numbered course tiles, snaking left to
+ * right, around the end of the row, and back, ending at the certificate.
+ * Steps she has finished, and the one she is on, are lit.
+ */
+function RoadmapPath({ roadmap, passed }: { roadmap: Roadmap; passed: Record<string, string> }) {
+  const { tracks, done, current, allDone } = progressOn(roadmap, passed)
   const path = useRef<HTMLDivElement | null>(null)
   const cols = useColumns(path)
 
-  // The path snakes: left to right, then right to left, then back.
   const count = tracks.length + 1
   const place = (k: number) => {
     const row = Math.floor(k / cols)
     const c = k % cols
     return { row, col: row % 2 ? cols - 1 - c : c }
   }
-  const linkOf = (k: number): 'right' | 'left' | 'down' | undefined => {
+  const linkOf = (k: number): 'right' | 'left' | 'turn-right' | 'turn-left' | undefined => {
     if (k >= count - 1) return undefined
     const a = place(k)
     const b = place(k + 1)
-    return b.row !== a.row ? 'down' : b.col > a.col ? 'right' : 'left'
-  }
-
-  const go = () => {
-    const t = tracks[allDone ? 0 : current]!
-    navigate(`/learn/${nextLesson(t, passed).id}`)
+    if (b.row !== a.row) return a.col === cols - 1 ? 'turn-right' : 'turn-left'
+    return b.col > a.col ? 'right' : 'left'
   }
 
   return (
-    <section className="ide rm">
-      <header className="ide__head">
-        <div className="ide__file rm__goal">{roadmap.title}</div>
-        <div className="ide__right">
-          <button type="button" className="ide-run rm__go" onClick={go}>
-            {allDone ? 'Review' : current === 0 && passedCount(tracks[0]!, passed) === 0 ? 'Start step 1' : `Continue step ${current + 1}`}
+    <div className="rm__path" ref={path} style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}>
+      {tracks.map((t, k) => {
+        const n = passedCount(t, passed)
+        const lit = done[k] || k === current
+        const { row, col } = place(k)
+        return (
+          <div key={t.lang} className="rm-step" style={{ gridRow: row + 1, gridColumn: col + 1 }}>
+            <a
+              href={`#/learn/${t.lang}`}
+              className="rm-tile"
+              data-lit={lit}
+              data-state={done[k] ? 'done' : k === current ? 'current' : 'todo'}
+              aria-label={`Step ${k + 1}: ${t.name}, ${n} of ${t.lessons.length} lessons passed`}
+              title={`${t.name} · ${n}/${t.lessons.length} lessons`}
+            >
+              <LangMark lang={t.lang} size={34} />
+              <span className="rm-tile__n" aria-hidden="true">
+                {k + 1}
+              </span>
+            </a>
+            <span className="rm-step__label">{t.name}</span>
+            {linkOf(k) ? <span className="rm-link" data-dir={linkOf(k)} data-lit={done[k]} aria-hidden="true" /> : null}
+          </div>
+        )
+      })}
+      {(() => {
+        const { row, col } = place(tracks.length)
+        return (
+          <div className="rm-step" style={{ gridRow: row + 1, gridColumn: col + 1 }}>
+            <span
+              className="rm-tile rm-tile--end"
+              data-lit={allDone}
+              role="img"
+              aria-label={allDone ? `${roadmap.title}: every course complete` : `Finish line: complete every course on the ${roadmap.title} roadmap`}
+            >
+              <CertificateMark size={32} />
+            </span>
+            {allDone ? <span className="rm-step__label">Goal reached</span> : null}
+          </div>
+        )
+      })()}
+    </div>
+  )
+}
+
+/* ── One roadmap, step by step ───────────────────────────────────────────── */
+
+function RoadmapView({ roadmap }: { roadmap: Roadmap }) {
+  const { state } = useLearner()
+  const { tracks, done, current, allDone } = progressOn(roadmap, state.learn)
+  const finished = done.filter(Boolean).length
+  const go = (t: LearnTrack) => navigate(`/learn/${nextLesson(t, state.learn).id}`)
+  return (
+    <div className="page page--padtop ide-wrap">
+      <a className="lm-back" href={`#/learn?goal=${roadmap.id}`}>
+        <IconChevronLeft size={13} />
+        Roadmaps
+      </a>
+      <div className="rmv-head">
+        <div className="page-head__kicker">
+          Roadmap · {tracks.length} courses <Streak />
+        </div>
+        <h1 className="h-page">{roadmap.title}</h1>
+        <p className="page-head__sub">{roadmap.blurb}</p>
+        <div className="lm-course-go">
+          <Bar value={finished / tracks.length} height={6} />
+          <span className="lm-course-go__n">
+            {finished}/{tracks.length}
+          </span>
+          <button type="button" className="ide-run" onClick={() => go(tracks[allDone ? 0 : current]!)}>
+            {allDone ? 'Review' : finished === 0 && passedCount(tracks[0]!, state.learn) === 0 ? 'Start step 1' : `Continue step ${current + 1}`}
             <IconArrowRight size={13} />
           </button>
         </div>
-      </header>
-      <p className="rm__blurb">{roadmap.blurb}</p>
-      <div className="rm__path" ref={path} style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}>
+      </div>
+      <ol className="rmv">
         {tracks.map((t, k) => {
-          const done = passedCount(t, passed)
-          const total = t.lessons.length
-          const { row, col } = place(k)
+          const n = passedCount(t, state.learn)
           return (
-            <a
-              key={t.lang}
-              href={`#/learn/${t.lang}`}
-              className="rm-tile"
-              data-link={linkOf(k)}
-              data-state={done === total ? 'done' : k === current ? 'current' : 'todo'}
-              style={{ gridRow: row + 1, gridColumn: col + 1 }}
-              aria-label={`Step ${k + 1}: ${t.title}, ${done} of ${total} lessons passed`}
-            >
-              <span className="rm-tile__n">{done === total ? <IconCheck size={12} /> : k + 1}</span>
-              <LangMark lang={t.lang} size={52} />
-              <span className="rm-tile__title">{t.title}</span>
-              <span className="rm-tile__meta">{done === total ? 'Complete' : done ? `${done}/${total} lessons` : `${total} lessons`}</span>
-              <span className="rm-tile__bar" style={{ ['--p' as string]: `${(done / total) * 100}%` }} />
-            </a>
+            <li key={t.lang} className="rmv-step" data-state={done[k] ? 'done' : k === current ? 'current' : 'todo'}>
+              <span className="rm-tile rmv-step__tile" data-lit={done[k] || k === current}>
+                <LangMark lang={t.lang} size={30} />
+                <span className="rm-tile__n" aria-hidden="true">
+                  {k + 1}
+                </span>
+              </span>
+              <div className="rmv-step__body">
+                <a className="rmv-step__name" href={`#/learn/${t.lang}`}>
+                  {t.name}
+                </a>
+                <p className="rmv-step__blurb">{t.blurb}</p>
+                <div className="rmv-step__row">
+                  <Bar value={n / t.lessons.length} height={4} />
+                  <span className="rmv-step__n">
+                    {n}/{t.lessons.length} lessons
+                  </span>
+                  <button type="button" className="rmv-step__go" onClick={() => go(t)}>
+                    {n === 0 ? 'Start' : n === t.lessons.length ? 'Review' : 'Continue'}
+                    <IconArrowRight size={12} />
+                  </button>
+                </div>
+              </div>
+            </li>
           )
         })}
-        {(() => {
-          const { row, col } = place(tracks.length)
-          return (
-            <div className="rm-tile rm-tile--end" data-state={allDone ? 'done' : 'todo'} style={{ gridRow: row + 1, gridColumn: col + 1 }}>
-              <span className="rm-tile__trophy">
-                <IconStar size={26} />
-              </span>
-              <span className="rm-tile__title">{allDone ? 'Goal reached' : 'Finish line'}</span>
-              <span className="rm-tile__meta">{allDone ? `${roadmap.title} basics, done` : 'Pass every course above'}</span>
-            </div>
-          )
-        })()}
-      </div>
-    </section>
+        <li className="rmv-step" data-state={allDone ? 'done' : 'todo'}>
+          <span className="rm-tile rm-tile--end rmv-step__tile" data-lit={allDone}>
+            <CertificateMark size={28} />
+          </span>
+          <div className="rmv-step__body">
+            <span className="rmv-step__name">{allDone ? 'Goal reached' : 'Finish line'}</span>
+            <p className="rmv-step__blurb">
+              {allDone
+                ? `Every course on the ${roadmap.title} roadmap, complete. The basics are yours; more lessons past them will follow.`
+                : 'Complete every course above to reach it.'}
+            </p>
+          </div>
+        </li>
+      </ol>
+    </div>
   )
 }
 
@@ -262,12 +345,14 @@ function CourseView({ track }: { track: LearnTrack }) {
         Roadmaps
       </a>
       <div className="lm-course-head">
-        <LangMark lang={track.lang} size={64} />
+        <span className="rm-tile" style={{ ['--tile' as string]: '72px' }}>
+          <LangMark lang={track.lang} size={40} />
+        </span>
         <div style={{ minWidth: 0 }} className="grow">
           <div className="page-head__kicker">
             Course · {total} lessons <Streak />
           </div>
-          <h1 className="h-page">{track.title}</h1>
+          <h1 className="h-page">{track.name}</h1>
           <p className="page-head__sub">{track.blurb}</p>
         </div>
       </div>
@@ -307,7 +392,7 @@ function CourseView({ track }: { track: LearnTrack }) {
 function LessonView({ track, lesson, index }: { track: LearnTrack; lesson: LearnLesson; index: number }) {
   const { state, setState } = useLearner()
   const key = `learn:${lesson.id}`
-  const terminal = lesson.lang === 'bash'
+  const terminal = lesson.lang === 'bash' || lesson.lang === 'git'
   const web = lesson.lang === 'html'
   const [code, setCode] = useState(() => (terminal ? '' : (state.code[key] ?? lesson.starter)))
   const [shell, setShell] = useState<ShellState>(() => lessonShell(lesson))
