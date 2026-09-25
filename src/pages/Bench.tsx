@@ -7,24 +7,21 @@
    mastery, readiness or the review queue), and it is why the page is allowed
    to be the easy thing to open on a day when the curriculum is not.
 
-   The result panel is the point. It never says "correct". It says what was
-   measured and what the requirement was, the way a margin report does, and it
-   shows a passing number in the same typeface as a failing one.
+   The result is the point. It never says "correct". It says what was
+   measured and what the requirement was, the way a margin report does —
+   shown as the playground's test cases, a passing number in the same
+   typeface as a failing one. Each scenario is done in the playground's own
+   window, embedded in the page, like every other piece of code in ORBIT.
    ========================================================================== */
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Editor } from '@/components/Editor'
-import { IconCheck, IconChevronLeft, IconPlay, IconWarn } from '@/components/icons'
-import { Button, Card, CardHead, Chip } from '@/components/ui'
+import { useCallback, useEffect, useState } from 'react'
+import { PlaygroundEmbed, type Graded } from '@/components/ide/Embed'
+import { useLessonCode } from '@/components/ide/lessonCode'
+import { IconCheck, IconChevronLeft, IconWarn } from '@/components/icons'
+import { Button, Card, Chip } from '@/components/ui'
 import { BENCH_AREAS, BENCH_TASKS, benchTaskById, type BenchTask } from '@/curriculum/bench'
-import { markBenchSolved, saveCode } from '@/engine/apply'
+import { markBenchSolved } from '@/engine/apply'
 import { useLearner } from '@/hooks/useLearner'
-import {
-  buildBenchProgram,
-  describeMetric,
-  formatNumber,
-  parseBenchReport,
-  type BenchReport,
-} from '@/lib/bench'
+import { buildBenchProgram, formatNumber, parseBenchReport, reportTests, type BenchReport } from '@/lib/bench'
 import { Markdown } from '@/lib/markdown'
 import { navigate, useRoute } from '@/lib/router'
 import { python } from '@/lib/runtimes'
@@ -94,33 +91,25 @@ function TaskList() {
 
 /* ── one task ────────────────────────────────────────────────────────────── */
 
+/**
+ * One scenario, read top to bottom the way the day goes: the job arrives,
+ * what done means, then the code — written and run right here in the
+ * playground's window, with the margin report as its test cases — and on to
+ * the next job.
+ */
 function Workbench({ task }: { task: BenchTask }) {
   const { state, setState, setResume } = useLearner()
-  const bufferKey = `bench:${task.id}`
-  const [code, setCode] = useState(() => state.code[bufferKey] ?? task.starter)
-  const [running, setRunning] = useState(false)
-  const [status, setStatus] = useState('')
   const [report, setReport] = useState<BenchReport | null>(null)
-  const [stderr, setStderr] = useState('')
   const [showHint, setShowHint] = useState(false)
-  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
-
+  const specCode = useLessonCode(`bench:${task.id}:spec`, task.spec)
   const solvedAt = state.bench[task.id]
+  const at = BENCH_TASKS.findIndex((t) => t.id === task.id)
+  const next = BENCH_TASKS[at + 1]
 
   useEffect(() => {
-    setCode(state.code[bufferKey] ?? task.starter)
     setReport(null)
-    setStderr('')
     setShowHint(false)
-    // Reading the buffer once per task is deliberate: it changes on every
-    // keystroke and depending on it here would fight the editor.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [bufferKey])
-
-  // The runtime is several megabytes; start it as soon as the room opens.
-  useEffect(() => {
-    if (!python.isBooted) python.preload(setStatus)
-  }, [])
+  }, [task.id])
 
   useEffect(() => {
     setResume({
@@ -132,183 +121,105 @@ function Workbench({ task }: { task: BenchTask }) {
     })
   }, [task.id, task.title, task.area, setResume])
 
-  const onCodeChange = useCallback(
-    (next: string) => {
-      setCode(next)
-      if (saveTimer.current) clearTimeout(saveTimer.current)
-      saveTimer.current = setTimeout(() => setState((s) => saveCode(s, bufferKey, next)), 600)
-    },
-    [bufferKey, setState],
-  )
-
-  const run = useCallback(async () => {
-    setRunning(true)
-    setReport(null)
-    setStderr('')
-    try {
-      const program = buildBenchProgram(code, task.harness, task.lang)
-      const out = await python.run(program, { onStatus: setStatus })
+  /** Runs her code inside the scenario and reads the harness's report back as test cases. */
+  const grade = useCallback(
+    async (code: string, _stdin: string, onStatus: (s: string) => void): Promise<Graded> => {
+      const out = await python.run(buildBenchProgram(code, task.harness, task.lang), { onStatus })
       const parsed = parseBenchReport(out.stdout)
       setReport(parsed)
-      setStderr(out.error ? `${out.error}\n${out.stderr}` : out.stderr)
-      if (parsed.pass) setState((s) => markBenchSolved(s, task.id))
-    } finally {
-      setRunning(false)
-      setStatus('')
-    }
-  }, [code, task, setState])
+      return { run: { ...out, stdout: parsed.output }, tests: reportTests(parsed) }
+    },
+    [task],
+  )
 
-  const reset = () => {
-    setCode(task.starter)
-    setState((s) => saveCode(s, bufferKey, task.starter))
-    setReport(null)
-  }
+  const failing = (report?.lines ?? []).filter((l) => l.kind !== 'note' && !l.pass).length
+  const notes = report?.lines.filter((l): l is Extract<typeof l, { kind: 'note' }> => l.kind === 'note') ?? []
 
   return (
-    <div className="page page--padtop">
+    <div className="page page--padtop ide-wrap">
       <div className="bench-top">
         <button className="btn btn--quiet btn--sm" onClick={() => navigate('/bench')} type="button">
           <IconChevronLeft size={14} />
           Workbench
         </button>
         <span className="eyebrow-dim">
-          {BENCH_AREAS[task.area].label} · {task.difficulty} · about {task.minutes} min
+          Scenario {at + 1} of {BENCH_TASKS.length} · {BENCH_AREAS[task.area].label} · {task.difficulty} · about {task.minutes} min
         </span>
       </div>
 
-      <div className="page-head" style={{ paddingTop: 10 }}>
-        <div>
-          <h1 className="page-head__title">{task.title}</h1>
-          <p className="page-head__sub">{task.brief}</p>
-        </div>
-      </div>
+      <article className="bench-flow">
+        <h1 className="page-head__title">{task.title}</h1>
+        {solvedAt ? (
+          <span className="bench-card__solved">
+            <IconCheck size={12} /> passing
+          </span>
+        ) : null}
 
-      <div className="bench-split">
-        <div className="stack">
-          <Card index={0}>
-            <CardHead title="What done looks like" divided />
-            <div className="sect">
-              <Markdown className="bench-spec">{task.spec}</Markdown>
-            </div>
-          </Card>
+        <section className="bench-ticket" aria-label="How the job arrives">
+          <div className="bench-ticket__from">How it arrives</div>
+          <p>{task.brief}</p>
+        </section>
 
-          <Card index={1}>
-            <CardHead title="Your code" divided />
-            <Editor
-              value={code}
-              onChange={onCodeChange}
-              lang="python"
-              minHeight={420}
-              onRun={() => void run()}
-            />
-            <div className="bench-actions">
-              <Button onClick={() => void run()} disabled={running} variant="primary">
-                <IconPlay size={13} />
-                {running ? 'Running the scenario…' : 'Run the scenario'}
+        <h2 className="bench-h2">What done looks like</h2>
+        <Markdown className="bench-spec" renderCode={specCode}>
+          {task.spec}
+        </Markdown>
+
+        <h2 className="bench-h2">Your code</h2>
+        <PlaygroundEmbed
+          lang="python"
+          code={task.starter}
+          saveKey={`bench:${task.id}`}
+          grade={grade}
+          onPass={() => setState((s) => markBenchSolved(s, task.id))}
+          runLabel="Run the scenario"
+          input={false}
+          minHeight={360}
+          testsHint="Run the scenario: every requirement it measures shows here, with what your code achieved."
+          eager
+        />
+
+        {report ? (
+          <section className="bench-verdict-box" data-pass={report.pass}>
+            <p className={report.pass ? 'bench-verdict bench-verdict--pass' : 'bench-verdict'}>
+              {report.incomplete ? (
+                <>
+                  <IconWarn size={13} /> {report.incomplete}
+                </>
+              ) : report.pass ? (
+                'Every requirement met. This is the margin report you would send back.'
+              ) : (
+                `${failing} requirement${failing === 1 ? '' : 's'} not met yet — the test cases above say by how much.`
+              )}
+            </p>
+            {notes.length ? (
+              <div className="bench-notes">
+                {notes.map((n, i) => (
+                  <p key={i}>{n.text}</p>
+                ))}
+              </div>
+            ) : null}
+            {report.pass && next ? (
+              <Button variant="primary" size="md" onClick={() => navigate(`/bench?task=${next.id}`)}>
+                Next job: {next.title}
               </Button>
-              <button className="btn btn--quiet btn--sm" onClick={reset} type="button">
-                Reset
-              </button>
-              <button
-                className="btn btn--quiet btn--sm"
-                onClick={() => setShowHint((v) => !v)}
-                type="button"
-              >
-                {showHint ? 'Hide hint' : 'Hint'}
-              </button>
-              {status ? <span className="bench-status">{status}</span> : null}
-            </div>
-            {showHint ? <div className="bench-hint">{task.hint}</div> : null}
-          </Card>
-        </div>
+            ) : null}
+          </section>
+        ) : null}
 
-        <div className="stack">
-          <Card index={2}>
-            <CardHead
-              title="Margin report"
-              divided
-              right={
-                solvedAt ? (
-                  <Chip ghost>
-                    <IconCheck size={11} /> passed
-                  </Chip>
-                ) : null
-              }
-            />
-            <div className="sect">
-              {report ? <Report report={report} /> : <p className="bench-empty">Run the scenario to see what it measures.</p>}
-              {stderr ? <pre className="bench-stderr">{stderr}</pre> : null}
-            </div>
-          </Card>
+        <div className="bench-actions">
+          <button className="btn btn--quiet btn--sm" onClick={() => setShowHint((v) => !v)} type="button">
+            {showHint ? 'Hide hint' : 'Hint'}
+          </button>
+          {next ? (
+            <button className="btn btn--quiet btn--sm" onClick={() => navigate(`/bench?task=${next.id}`)} type="button">
+              Skip to the next job
+            </button>
+          ) : null}
         </div>
-      </div>
+        {showHint ? <div className="bench-hint">{task.hint}</div> : null}
+      </article>
     </div>
-  )
-}
-
-function Report({ report }: { report: BenchReport }) {
-  const metrics = report.lines.filter((l) => l.kind === 'metric')
-  const checks = report.lines.filter((l) => l.kind === 'check')
-  const notes = report.lines.filter((l) => l.kind === 'note')
-  const failing = useMemo(
-    () => [...metrics, ...checks].filter((l) => !l.pass).length,
-    [metrics, checks],
-  )
-
-  return (
-    <>
-      {report.incomplete ? (
-        <p className="bench-incomplete">
-          <IconWarn size={13} /> {report.incomplete}
-        </p>
-      ) : (
-        <p className={report.pass ? 'bench-verdict bench-verdict--pass' : 'bench-verdict'}>
-          {report.pass
-            ? 'Every requirement met.'
-            : `${failing} requirement${failing === 1 ? '' : 's'} not met yet.`}
-        </p>
-      )}
-
-      {metrics.length ? (
-        <table className="bench-table">
-          <tbody>
-            {metrics.map((m) => (
-              <tr key={m.name} className={m.pass ? '' : 'is-fail'}>
-                <td className="bench-table__name">{m.name.replace(/_/g, ' ')}</td>
-                <td className="bench-table__value">{describeMetric(m)}</td>
-                <td className="bench-table__mark">{m.pass ? '✓' : '✗'}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      ) : null}
-
-      {checks.length ? (
-        <ul className="bench-checks">
-          {checks.map((c) => (
-            <li key={c.name} className={c.pass ? '' : 'is-fail'}>
-              {c.pass ? '✓' : '✗'} {c.name.replace(/_/g, ' ')}
-              {c.detail ? ` — ${c.detail}` : ''}
-            </li>
-          ))}
-        </ul>
-      ) : null}
-
-      {notes.length ? (
-        <div className="bench-notes">
-          {notes.map((n, i) => (
-            <p key={i}>{n.text}</p>
-          ))}
-        </div>
-      ) : null}
-
-      {report.output.trim() ? (
-        <>
-          <div className="bench-outlabel">What your code printed</div>
-          <pre className="bench-out">{report.output.trimEnd()}</pre>
-        </>
-      ) : null}
-    </>
   )
 }
 

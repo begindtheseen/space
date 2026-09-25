@@ -39,6 +39,8 @@
    pass it did not earn.
    ========================================================================== */
 
+import type { CheckResult } from '@/learn/types'
+
 export const BENCH_MARKER = '__ORBIT_BENCH__'
 
 export type Comparator = '>=' | '<=' | '>' | '<' | '==' | '~='
@@ -184,6 +186,31 @@ export function parseBenchReport(stdout: string): BenchReport {
       ? { incomplete: 'The scenario ran but measured nothing. That is a fault in the task, not in your code.' }
       : {}),
   }
+}
+
+/**
+ * The report as test cases, the way every other run in the app shows its
+ * checks: each metric with its requirement and what was measured, each check
+ * with what it found. A run that never reported is one failing case saying
+ * why.
+ */
+export function reportTests(report: BenchReport): CheckResult[] {
+  if (report.incomplete) return [{ name: 'The scenario ran to the end', status: 'fail', detail: report.incomplete }]
+  const unit = (m: BenchMetric) => (m.unit ? ` ${m.unit}` : '')
+  return report.lines.flatMap((l): CheckResult[] => {
+    const name = l.kind === 'note' ? '' : l.name.replace(/_/g, ' ')
+    if (l.kind === 'metric')
+      return [
+        {
+          name,
+          status: l.pass ? 'pass' : 'fail',
+          expected: `${l.comparator === '~=' ? '≈' : l.comparator} ${formatNumber(l.target)}${unit(l)}`,
+          actual: `${Number.isFinite(l.value) ? formatNumber(l.value) : 'not a number'}${unit(l)}`,
+        },
+      ]
+    if (l.kind === 'check') return [{ name, status: l.pass ? 'pass' : 'fail', ...(l.detail ? { actual: l.detail } : {}) }]
+    return []
+  })
 }
 
 /** Turns a metric into the sentence an engineer would say out loud. */

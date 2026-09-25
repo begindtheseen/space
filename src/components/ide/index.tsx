@@ -445,11 +445,12 @@ export function SqlTables({ tables, lastOnly = false }: { tables: { columns: str
 
 /* ── Terminal ────────────────────────────────────────────────────────────── */
 
-interface Line {
+export interface TermLine {
   prompt: string
   cmd: string
   out: string
 }
+type Line = TermLine
 
 /**
  * The practice terminal: type a command, press Enter (or the ↵ button on a
@@ -462,14 +463,17 @@ export function TerminalView({
   banner = 'Practice terminal — nothing here touches your real files. Type help to see the commands.',
   height = 380,
   autoFocus = false,
+  initialLines = [],
 }: {
   shell: ShellState
   onShell: (next: ShellState) => void
   banner?: string
   height?: number
   autoFocus?: boolean
+  /** Commands already typed, as the screen should show them. */
+  initialLines?: TermLine[]
 }) {
-  const [lines, setLines] = useState<Line[]>([])
+  const [lines, setLines] = useState<Line[]>(initialLines)
   const [text, setText] = useState('')
   const [back, setBack] = useState(-1)
   const input = useRef<HTMLInputElement | null>(null)

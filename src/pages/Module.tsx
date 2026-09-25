@@ -49,6 +49,11 @@ import { useReadingPlace } from '@/hooks/useReadingPlace'
 import { useLearner } from '@/hooks/useLearner'
 import { formatDate } from '@/lib/format'
 import { Markdown } from '@/lib/markdown'
+import { PlaygroundEmbed } from '@/components/ide/Embed'
+import { TryItHere } from '@/components/ide/TryItHere'
+import { useLessonCode } from '@/components/ide/lessonCode'
+import { exerciseSchema, gradeExercise, isGraded } from '@/lib/exercise'
+import { practiceLangs } from '@/lib/practice'
 import { navigate, useRoute } from '@/lib/router'
 import './pages.css'
 
@@ -661,9 +666,9 @@ function Practice({ module, highlight }: { module: Module; highlight?: string })
   return (
     <>
       <p className="track-note" style={{ marginTop: 0 }}>
-        Exercises are where understanding meets reality. Code exercises open in the playground
-        with tests; derivations and analyses are done on paper, and the solution is there to check
-        against afterwards, not to read first.
+        Exercises are where understanding meets reality. Code exercises are done right here, in the
+        playground under each one, and checked against their tests; derivations and analyses are done
+        on paper, and the solution is there to check against afterwards, not to read first.
       </p>
       {exercises.map((ex, i) => (
         <ExerciseCard key={ex.id} exercise={ex} index={i} highlighted={ex.id === highlight} />
@@ -707,17 +712,20 @@ function ExerciseCard({
       <div className="sect">
         <Markdown>{exercise.prompt}</Markdown>
 
+        {runnable ? (
+          <PlaygroundEmbed
+            lang={exercise.lang!}
+            code={exercise.starter ?? ''}
+            saveKey={`ex:${exercise.id}`}
+            terminal={false}
+            minHeight={200}
+            {...(isGraded(exercise) ? { grade: (code: string, stdin: string, onStatus: (s: string) => void) => gradeExercise(exercise, code, stdin, onStatus) } : {})}
+            {...(exercise.lang === 'sql' && exerciseSchema(exercise) ? { schema: exerciseSchema(exercise)! } : {})}
+            onOpen={() => navigate(`/playground?ex=${encodeURIComponent(exercise.id)}`)}
+          />
+        ) : null}
+
         <div style={{ display: 'flex', gap: 9, marginTop: 15, flexWrap: 'wrap' }}>
-          {runnable ? (
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={() => navigate(`/playground?ex=${encodeURIComponent(exercise.id)}`)}
-            >
-              <IconTerminal size={14} />
-              {started ? 'Continue in playground' : 'Open in playground'}
-            </Button>
-          ) : null}
           {exercise.solution ? (
             <Button variant="ghost" size="sm" onClick={() => setShowSolution((s) => !s)}>
               {showSolution ? 'Hide solution' : 'Show solution'}
@@ -979,6 +987,7 @@ function LessonReader({ module, lesson }: { module: Module; lesson: LessonMeta }
   const done = !!state.read[lessonKey(module.id, lesson.id)]
   const [body, setBody] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const renderCode = useLessonCode(`lesson:${module.id}:${lesson.id}`, body)
 
   useEffect(() => {
     let alive = true
@@ -1077,10 +1086,14 @@ function LessonReader({ module, lesson }: { module: Module; lesson: LessonMeta }
           ) : body === null ? (
             <div className="reader__loading">Loading lesson…</div>
           ) : (
-            <Markdown className="reader__md">{body}</Markdown>
+            <Markdown className="reader__md" renderCode={renderCode}>
+              {body}
+            </Markdown>
           )}
         </div>
       </Card>
+
+      {body !== null && practiceLangs(module).length ? <TryItHere langs={practiceLangs(module)} saveKey={`try:${module.id}`} /> : null}
 
       <div className="reader__nav">
         <Button variant="ghost" size="md" onClick={() => go(prev)} disabled={!prev}>

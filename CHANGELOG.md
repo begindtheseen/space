@@ -14,7 +14,7 @@ it.
 roadmaps: pick a goal — GNC Engineer, Flight Software, Test & Data or Software
 Engineer — and its courses are laid out in the order a mentor would teach
 them, as a numbered path of course tiles ending at a certificate, lit up as you
-go; See the roadmap walks it step by step. Five courses, 58 lessons: Linux and
+go; View every step walks it course by course. Five courses, 58 lessons: Linux and
 the command line, Git and version control, Python, SQL and C++, from `pwd` and
 your first commit to merges, classes, joins and pointers. Each
 lesson is a short explanation and a challenge, done in the same IDE window as
@@ -24,6 +24,16 @@ one at a time and the solution is there when you ask. Your code, your progress
 and a daily streak are saved on this device. It is practice: nothing here
 changes mastery, readiness or your reviews. More lessons, past the basics,
 will follow.
+
+**The playground comes to the lesson.** The code in ORBIT's lessons runs where it stands: a
+Python or C++ snippet is the playground's own window, embedded in the text — edit it, run it, see
+what it prints — and a `>>>` transcript opens as the code you would type, printing what the
+transcript shows. Shell snippets the practice terminal knows run there. Each lesson ends with
+**Try it here** in its module's language. Code exercises are done on the module page, under their
+brief, and graded against their tests as test cases. And every Workbench scenario — a day on the
+job — is now one flow: how the job arrives, what done looks like, your code in the same window, and
+the margin report as test cases (the requirement, and what your code achieved), then the next job.
+The playground is still its own page for anything else.
 
 **A new playground.** Three modes along the top — Code, SQL and Terminal —
 and one IDE window: the file's name in a pill (in Code mode it picks Python,

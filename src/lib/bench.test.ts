@@ -7,6 +7,7 @@ import {
   describeMetric,
   formatNumber,
   parseBenchReport,
+  reportTests,
 } from './bench'
 
 const report = (body: string) => `some of her own output\n${BENCH_MARKER}\n${body}`
@@ -129,5 +130,24 @@ describe('the task set', () => {
     for (const t of BENCH_TASKS) {
       expect(t.harness, `${t.id} prints no METRIC or CHECK`).toMatch(/METRIC |CHECK /)
     }
+  })
+})
+
+describe('reportTests', () => {
+  it('shows each metric as a test case: requirement against what was measured', () => {
+    const r = parseBenchReport('hi\n__ORBIT_BENCH__\nMETRIC gain_margin 7.4 >= 6 dB\nMETRIC overshoot 31.2 <= 20 %\nCHECK stable pass\nCHECK sign fail flipped in the body frame\nNOTE fine\n')
+    expect(reportTests(r)).toEqual([
+      { name: 'gain margin', status: 'pass', expected: '>= 6 dB', actual: '7.4 dB' },
+      { name: 'overshoot', status: 'fail', expected: '<= 20 %', actual: '31.2 %' },
+      { name: 'stable', status: 'pass' },
+      { name: 'sign', status: 'fail', actual: 'flipped in the body frame' },
+    ])
+  })
+
+  it('turns a run that never reported into one failing case that says why', () => {
+    const t = reportTests(parseBenchReport('Traceback …'))
+    expect(t).toHaveLength(1)
+    expect(t[0]).toMatchObject({ status: 'fail' })
+    expect(t[0]!.detail).toBeTruthy()
   })
 })

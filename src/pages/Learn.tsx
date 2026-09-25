@@ -20,31 +20,26 @@
        carries it into the free scratchpad to keep playing.
    ========================================================================== */
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import { Editor } from '@/components/Editor'
+import { PlaygroundEmbed, type Graded } from '@/components/ide/Embed'
+import { useLessonCode } from '@/components/ide/lessonCode'
 import {
-  ConsoleView,
-  IdeBody,
-  IdePanel,
   CertificateMark,
+  IdePanel,
   IdeWindow,
   LangMark,
   RunButton,
-  SqlTables,
   TerminalView,
   TestCases,
-  WebPreview,
-  type PanelTab,
 } from '@/components/ide'
 import { IconArrowRight, IconCheck, IconChevronLeft, IconFlame, IconRefresh } from '@/components/icons'
 import { Bar, Button } from '@/components/ui'
-import { markLearned, saveCode } from '@/engine/apply'
+import { markLearned } from '@/engine/apply'
 import { useLearner } from '@/hooks/useLearner'
 import { buildProgram, gradeRun, lessonShell } from '@/learn/grade'
 import { ROADMAPS, TRACKS, findLesson, nextLesson, passedCount, streak, trackFor } from '@/learn/index'
 import { editorLang, runLearn, warmUp } from '@/learn/platform'
 import type { LearnGrade, LearnLesson, LearnTrack, Roadmap } from '@/learn/types'
 import type { ShellState } from '@/lib/shell'
-import type { WebLog } from '@/lib/web'
 import { Markdown } from '@/lib/markdown'
 import { navigate, useRoute } from '@/lib/router'
 import './learn.css'
@@ -59,17 +54,6 @@ export function Learn({ lessonId }: { lessonId?: string }) {
   const found = findLesson(lessonId)
   if (!found) return <LearnHome missing={lessonId} />
   return <LessonView key={found.lesson.id} track={found.track} lesson={found.lesson} index={found.index} />
-}
-
-const FILE: Record<string, string> = {
-  javascript: 'main.js',
-  typescript: 'main.ts',
-  python: 'main.py',
-  cpp: 'main.cpp',
-  sql: 'query.sql',
-  html: 'index.html',
-  bash: '~/project',
-  git: '~/project',
 }
 
 function Streak() {
@@ -97,7 +81,7 @@ function LearnHome({ missing }: { missing?: string }) {
         <div className="page-head__kicker">
           Learn to code <Streak />
         </div>
-        <h1 className="rm-hero__title">Roadmaps that put the courses in the order a mentor would teach them. Pick a goal and start with step one.</h1>
+        <h1 className="rm-hero__title">Choose where you want to end up. Each roadmap lines up the courses that get you there, one step at a time.</h1>
       </header>
 
       {missing ? <p className="lm-missing">There is no lesson called “{missing}”. Pick a course below.</p> : null}
@@ -122,7 +106,7 @@ function LearnHome({ missing }: { missing?: string }) {
         <header className="rm__head">
           <span className="rm__goal">{goal.title}</span>
           <button type="button" className="rm__see" onClick={() => navigate(`/learn/roadmap-${goal.id}`)}>
-            See the roadmap
+            View every step
           </button>
         </header>
         <RoadmapPath roadmap={goal} passed={state.learn} />
@@ -391,22 +375,12 @@ function CourseView({ track }: { track: LearnTrack }) {
 
 function LessonView({ track, lesson, index }: { track: LearnTrack; lesson: LearnLesson; index: number }) {
   const { state, setState } = useLearner()
-  const key = `learn:${lesson.id}`
   const terminal = lesson.lang === 'bash' || lesson.lang === 'git'
-  const web = lesson.lang === 'html'
-  const [code, setCode] = useState(() => (terminal ? '' : (state.code[key] ?? lesson.starter)))
-  const [shell, setShell] = useState<ShellState>(() => lessonShell(lesson))
-  const [termKey, setTermKey] = useState(0)
-  const [grade, setGrade] = useState<LearnGrade | null>(null)
-  const [running, setRunning] = useState(false)
-  const [status, setStatus] = useState('')
+  const [passedNow, setPassedNow] = useState(false)
   const [hints, setHints] = useState(0)
   const [showSolution, setShowSolution] = useState(false)
-  const [tab, setTab] = useState(web ? 'preview' : 'tests')
-  const [page, setPage] = useState(() => (web ? (state.code[key] ?? lesson.starter) : ''))
-  const [logs, setLogs] = useState<WebLog[]>([])
-  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const ideRef = useRef<HTMLDivElement | null>(null)
+  const winRef = useRef<HTMLDivElement | null>(null)
+  const teachCode = useLessonCode(`learn:${lesson.id}:example`, lesson.teach, lesson.schema)
 
   const passedBefore = !!state.learn[lesson.id]
   const prev = track.lessons[index - 1]
@@ -414,75 +388,24 @@ function LessonView({ track, lesson, index }: { track: LearnTrack; lesson: Learn
 
   useEffect(() => warmUp(lesson.lang), [lesson.lang])
 
-  // Save what she types, a moment after she stops.
-  const onCodeChange = useCallback(
-    (value: string) => {
-      setCode(value)
-      if (saveTimer.current) clearTimeout(saveTimer.current)
-      saveTimer.current = setTimeout(() => setState((s) => saveCode(s, key, value)), 600)
-    },
-    [key, setState],
-  )
-  useEffect(
-    () => () => {
-      if (saveTimer.current) clearTimeout(saveTimer.current)
-    },
-    [],
-  )
+  const onPassed = useCallback(() => {
+    setState((s) => markLearned(s, lesson.id))
+    setPassedNow(true)
+    requestAnimationFrame(() => winRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' }))
+  }, [lesson.id, setState])
 
-  const run = useCallback(async () => {
-    if (running) return
-    setRunning(true)
-    setGrade(null)
-    try {
-      if (!terminal) setState((s) => saveCode(s, key, code))
-      if (web) {
-        setLogs([])
-        setPage(code + (page === code ? ' ' : ''))
-      }
-      const result = await runLearn(lesson, buildProgram(lesson, code), { onStatus: setStatus, shell })
+  /** Runs her code with the lesson's checks and shows every check as a test case. */
+  const grade = useCallback(
+    async (code: string, _stdin: string, onStatus: (s: string) => void): Promise<Graded> => {
+      const result = await runLearn(lesson, buildProgram(lesson, code), { onStatus })
       const g = gradeRun(lesson, code, result)
-      setGrade(g)
-      setTab('tests')
-      if (g.passed) setState((s) => markLearned(s, lesson.id))
-      // On a phone the panel is below the lesson text, out of sight.
-      requestAnimationFrame(() => {
-        const el = ideRef.current
-        if (el && el.getBoundingClientRect().bottom > window.innerHeight) el.scrollIntoView({ block: 'end', behavior: 'smooth' })
-      })
-    } finally {
-      setRunning(false)
-      setStatus('')
-    }
-  }, [code, key, lesson, page, running, setState, shell, terminal, web])
-
-  const reset = () => {
-    setGrade(null)
-    if (terminal) {
-      setShell(lessonShell(lesson))
-      setTermKey((k) => k + 1)
-      return
-    }
-    setCode(lesson.starter)
-    setState((s) => saveCode(s, key, lesson.starter))
-    if (web) setPage(lesson.starter)
-  }
-
-  const openInPlayground = () => {
-    if (!terminal) setState((s) => saveCode(s, `scratch:${lesson.lang}`, code))
-    navigate(`/playground?lang=${lesson.lang}`)
-  }
-
-  const mark: PanelTab['mark'] = grade ? (grade.passed ? 'pass' : 'fail') : undefined
-  const errored = !!(grade?.error || grade?.stderr)
-  const tabs: PanelTab[] = [
-    { id: 'tests', label: 'Test cases', mark },
-    ...(web ? [{ id: 'preview', label: 'Preview' }] : []),
-    ...(lesson.lang === 'sql' ? [{ id: 'results', label: 'Results' }] : []),
-    ...(!terminal ? [{ id: 'console', label: 'Console', ...(errored ? { mark: 'fail' as const } : {}) }] : []),
-  ]
-  const active = tabs.some((t) => t.id === tab) ? tab : 'tests'
-  const runButton = <RunButton onClick={() => void run()} running={running} status={status} label={terminal ? 'Check' : 'Run Code'} />
+      return {
+        run: { stdout: g.output, stderr: g.stderr, error: g.error, plots: [], result: null, tables: g.tables, ms: g.ms },
+        tests: g.results,
+      }
+    },
+    [lesson],
+  )
 
   return (
     <div className="page page--padtop ide-wrap">
@@ -507,154 +430,155 @@ function LessonView({ track, lesson, index }: { track: LearnTrack; lesson: Learn
         <Streak />
       </div>
 
-      <div className="lm">
-        {/* ── what to understand, and what to do ─────────────────────────── */}
-        <article className="lm-text">
-          <div className="lm-text__kicker">
-            <LangMark lang={track.lang} size={18} />
-            Lesson {index + 1} of {track.lessons.length}
-            {passedBefore ? <span className="lm-passed-tag">Passed</span> : null}
-          </div>
-          <h1 className="lm-text__title">{lesson.title}</h1>
-          <div className="lm-teach">
-            <Markdown>{lesson.teach}</Markdown>
-          </div>
+      <article className="lm-flow">
+        <div className="lm-text__kicker">
+          <LangMark lang={track.lang} size={18} />
+          Lesson {index + 1} of {track.lessons.length}
+          {passedBefore ? <span className="lm-passed-tag">Passed</span> : null}
+        </div>
+        <h1 className="lm-text__title">{lesson.title}</h1>
 
-          <section className="lm-challenge">
-            <div className="lm-challenge__label">Challenge</div>
-            <Markdown>{lesson.task}</Markdown>
-            {lesson.stdin ? (
-              <div className="lm-stdin">
-                <div className="lm-stdin__label">Input the program reads</div>
-                <pre>{lesson.stdin}</pre>
-              </div>
-            ) : null}
-            {terminal ? <p className="lm-challenge__how">Type the commands into the terminal, then press Check.</p> : null}
-          </section>
+        {/* The explanation, with its examples runnable where they stand. */}
+        <div className="lm-teach">
+          <Markdown renderCode={teachCode}>{lesson.teach}</Markdown>
+        </div>
 
-          <div className="lm-help">
-            {lesson.hints.slice(0, hints).map((h, i) => (
-              <div className="lm-hint" key={i}>
-                <span className="lm-hint__n">Hint {i + 1}</span>
-                <Markdown>{h}</Markdown>
-              </div>
-            ))}
-            <div className="lm-help__row">
-              {hints < lesson.hints.length ? (
-                <button type="button" className="lm-link" onClick={() => setHints((n) => n + 1)}>
-                  {hints === 0 ? 'Show a hint' : 'Another hint'}
-                </button>
-              ) : null}
-              <button type="button" className="lm-link" onClick={() => setShowSolution((s) => !s)}>
-                {showSolution ? 'Hide the solution' : 'Show the solution'}
+        {/* Then her turn, in the same place. */}
+        <section className="lm-challenge">
+          <div className="lm-challenge__label">Your turn</div>
+          <Markdown>{lesson.task}</Markdown>
+          {lesson.stdin ? (
+            <div className="lm-stdin">
+              <div className="lm-stdin__label">Input the program reads</div>
+              <pre>{lesson.stdin}</pre>
+            </div>
+          ) : null}
+          {terminal ? <p className="lm-challenge__how">Type the commands into the terminal below, then press Check.</p> : null}
+        </section>
+
+        <div className="lm-work">
+        {terminal ? (
+          <TerminalChallenge lesson={lesson} onPass={onPassed} />
+        ) : (
+          <PlaygroundEmbed
+            lang={editorLang(lesson.lang)}
+            code={lesson.starter}
+            saveKey={`learn:${lesson.id}`}
+            grade={grade}
+            onPass={onPassed}
+            runLabel="Run Code"
+            input={false}
+            minHeight={260}
+            testsHint="Press Run Code to run your code against the tests."
+            eager
+          />
+        )}
+        </div>
+
+        <div ref={winRef}>
+          {passedNow ? (
+            <div className="lm-win">
+              <IconCheck size={16} />
+              <span className="grow">{next ? `Lesson passed. Next: ${next.title}` : `Lesson passed — that is the whole ${track.name} course.`}</span>
+              <button type="button" className="ide-run" onClick={() => navigate(next ? `/learn/${next.id}` : `/learn/${track.lang}`)}>
+                {next ? 'Continue' : 'Back to the course'}
+                <IconArrowRight size={13} />
               </button>
             </div>
-            {showSolution ? (
-              <div className="lm-solution">
-                <p>One way to do it. Try typing it yourself rather than copying — that is where it sticks.</p>
-                <Markdown>{'```' + fence(lesson.lang) + '\n' + lesson.solution + '```'}</Markdown>
-              </div>
-            ) : null}
-          </div>
-        </article>
-
-        {/* ── the IDE ─────────────────────────────────────────────────────── */}
-        <div className="lm-ide" ref={ideRef}>
-          <IdeWindow
-            lang={lesson.lang}
-            file={FILE[lesson.lang] ?? 'main'}
-            right={
-              <>
-                <button type="button" className="ide__tool" onClick={reset} title="Start this lesson over">
-                  <IconRefresh size={13} />
-                  Reset
-                </button>
-                <button type="button" className="ide__tool" onClick={openInPlayground}>
-                  Playground
-                </button>
-              </>
-            }
-          >
-            {terminal ? (
-              <>
-                <TerminalView
-                  key={termKey}
-                  shell={shell}
-                  onShell={setShell}
-                  height={340}
-                  banner="Practice terminal for this lesson. Type help to see the commands."
-                />
-                <div className="lm-termbar">{runButton}</div>
-              </>
-            ) : (
-              <IdeBody run={runButton}>
-                <Editor ide value={code} onChange={onCodeChange} lang={editorLang(lesson.lang)} minHeight={320} onRun={() => void run()} placeholder="Write your code here…" />
-              </IdeBody>
-            )}
-            <IdePanel tabs={tabs} active={active} onTab={setTab} height={web && active === 'preview' ? 1000 : 300}>
-              {web ? (
-                <div hidden={active !== 'preview'} className="lm-preview">
-                  <WebPreview html={page} onLog={(l) => setLogs((ls) => [...ls, l])} height={300} />
-                </div>
-              ) : null}
-              {active === 'tests' ? (
-                <>
-                  {grade?.passed ? (
-                    <div className="lm-win">
-                      <IconCheck size={16} />
-                      <span className="grow">{next ? 'Lesson passed! On to the next one.' : `Lesson passed — that is the whole ${track.title} course.`}</span>
-                      <button type="button" className="ide-run" onClick={() => navigate(next ? `/learn/${next.id}` : `/learn/${track.lang}`)}>
-                        {next ? 'Next lesson' : 'Course'}
-                        <IconArrowRight size={13} />
-                      </button>
-                    </div>
-                  ) : null}
-                  <TestCases results={grade?.results ?? null} empty={terminal ? 'Do the challenge in the terminal, then press Check.' : 'Press Run Code to run your code against the tests.'} />
-                </>
-              ) : active === 'results' ? (
-                grade && !grade.error ? (
-                  <SqlTables tables={grade.tables} lastOnly />
-                ) : (
-                  <p className="ide-empty">{grade?.error ? 'The query failed — see the Console tab.' : 'Run your query to see the rows it returns.'}</p>
-                )
-              ) : active === 'console' ? (
-                web ? (
-                  <ConsoleView empty="console.log from your page shows here.">
-                    {logs.map((l, i) => (
-                      <span key={i} className={l.level === 'error' ? 'ide-console__err' : undefined}>{`${l.text}\n`}</span>
-                    ))}
-                  </ConsoleView>
-                ) : (
-                  <ConsoleView
-                    stdout={grade?.output}
-                    stderr={grade?.stderr}
-                    error={grade?.error}
-                    note={grade && !grade.output && !grade.stderr && !grade.error ? (lesson.lang === 'sql' ? 'Ran. See the Results tab.' : 'Ran, and printed nothing.') : undefined}
-                    empty="Press Run Code to see what your code prints."
-                  />
-                )
-              ) : null}
-            </IdePanel>
-          </IdeWindow>
-
-          <div className="lm-nav">
-            {prev ? (
-              <Button variant="ghost" size="sm" onClick={() => navigate(`/learn/${prev.id}`)}>
-                <IconChevronLeft size={13} />
-                {prev.title}
-              </Button>
-            ) : (
-              <span />
-            )}
-            {next ? (
-              <Button variant="ghost" size="sm" onClick={() => navigate(`/learn/${next.id}`)}>
-                {next.title}
-                <IconArrowRight size={13} />
-              </Button>
-            ) : null}
-          </div>
+          ) : null}
         </div>
-      </div>
+
+        <div className="lm-help">
+          {lesson.hints.slice(0, hints).map((h, i) => (
+            <div className="lm-hint" key={i}>
+              <span className="lm-hint__n">Hint {i + 1}</span>
+              <Markdown>{h}</Markdown>
+            </div>
+          ))}
+          <div className="lm-help__row">
+            {hints < lesson.hints.length ? (
+              <button type="button" className="lm-link" onClick={() => setHints((n) => n + 1)}>
+                {hints === 0 ? 'Show a hint' : 'Another hint'}
+              </button>
+            ) : null}
+            <button type="button" className="lm-link" onClick={() => setShowSolution((v) => !v)}>
+              {showSolution ? 'Hide the solution' : 'Show the solution'}
+            </button>
+          </div>
+          {showSolution ? (
+            <div className="lm-solution">
+              <p>One way to do it. Try typing it yourself rather than copying — that is where it sticks.</p>
+              <Markdown>{'```' + fence(lesson.lang) + '\n' + lesson.solution + '```'}</Markdown>
+            </div>
+          ) : null}
+        </div>
+
+        <div className="lm-nav">
+          {prev ? (
+            <Button variant="ghost" size="sm" onClick={() => navigate(`/learn/${prev.id}`)}>
+              <IconChevronLeft size={13} />
+              {prev.title}
+            </Button>
+          ) : (
+            <span />
+          )}
+          {next ? (
+            <Button variant="ghost" size="sm" onClick={() => navigate(`/learn/${next.id}`)}>
+              {next.title}
+              <IconArrowRight size={13} />
+            </Button>
+          ) : null}
+        </div>
+      </article>
+    </div>
+  )
+}
+
+/** A Terminal or Git challenge: the practice shell, a Check button, and the checks as test cases. */
+function TerminalChallenge({ lesson, onPass }: { lesson: LearnLesson; onPass: () => void }) {
+  const [shell, setShell] = useState<ShellState>(() => lessonShell(lesson))
+  const [key, setKey] = useState(0)
+  const [grade, setGrade] = useState<LearnGrade | null>(null)
+  const [running, setRunning] = useState(false)
+
+  const check = async () => {
+    setRunning(true)
+    setGrade(null)
+    try {
+      const result = await runLearn(lesson, '', { shell })
+      const g = gradeRun(lesson, '', result)
+      setGrade(g)
+      if (g.passed) onPass()
+    } finally {
+      setRunning(false)
+    }
+  }
+  const reset = () => {
+    setShell(lessonShell(lesson))
+    setKey((k) => k + 1)
+    setGrade(null)
+  }
+
+  return (
+    <div className="embed">
+      <IdeWindow
+        lang="bash"
+        file="~/project"
+        right={
+          <button type="button" className="ide__tool" onClick={reset} title="Start this lesson over">
+            <IconRefresh size={13} />
+            Reset
+          </button>
+        }
+      >
+        <TerminalView key={key} shell={shell} onShell={setShell} height={300} banner="Practice terminal for this lesson. Type help to see the commands." />
+        <div className="lm-termbar">
+          <RunButton onClick={() => void check()} running={running} label="Check" />
+        </div>
+        <IdePanel tabs={[{ id: 'tests', label: 'Test cases', ...(grade ? { mark: grade.passed ? ('pass' as const) : ('fail' as const) } : {}) }]} active="tests" onTab={() => {}}>
+          <TestCases results={grade?.results ?? null} empty="Do the challenge in the terminal, then press Check." />
+        </IdePanel>
+      </IdeWindow>
     </div>
   )
 }

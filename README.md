@@ -42,6 +42,11 @@ memory model and a dependency graph, and it shows its working:
   are plain text in `src/learn/tracks/*.txt` (format in `src/learn/parse.ts`); the
   roadmaps are in `src/learn/platform.ts`. The same lesson engine runs in APEX's
   LAUNCHPAD app, which adds JavaScript, TypeScript and the web.
+- **The playground, embedded.** `components/ide/Embed.tsx` is the playground's window as a
+  component. Lesson code blocks that can run become it (`src/lib/practice.ts` decides which),
+  each lesson ends with Try it here, code exercises are done and graded in it on the module
+  page, and every Workbench scenario is coded in it. `src/lib/run.ts` says how each language
+  runs.
 - **The playground** has three modes — Code, SQL and Terminal — in one IDE window with
   a floating Run Code button and a panel for test cases, console, input and results.
   Terminal is a practice shell that lives in the page (`src/lib/shell.ts`): files,

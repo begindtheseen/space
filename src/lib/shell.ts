@@ -767,6 +767,41 @@ export function gitInfo(
   }
 }
 
+/** The commands this shell knows: an embed only offers to run lines made of these. */
+export const COMMANDS = ['help', 'pwd', 'whoami', 'date', 'clear', 'history', 'echo', 'cd', 'ls', 'mkdir', 'touch', 'cat', 'head', 'tail', 'wc', 'grep', 'rm', 'rmdir', 'cp', 'mv', 'git']
+const GIT_SUBS = ['init', 'status', 'add', 'commit', 'log', 'diff', 'restore', 'branch', 'checkout', 'switch', 'merge']
+
+/**
+ * Whether a line from a lesson could run here as written: every command in
+ * it is one this shell knows (and, for git, a subcommand it knows). A `$ `
+ * prompt at the start is ignored; comments and blank lines are fine.
+ */
+export function shellCanRun(text: string): boolean {
+  const lines = text.split('\n').map((l) => l.replace(/^\s*\$\s+/, '').trim()).filter((l) => l && !l.startsWith('#'))
+  if (!lines.length) return false
+  return lines.every((line) => {
+    let toks
+    try {
+      toks = tokenize(line)
+    } catch {
+      return false
+    }
+    if (toks.some((t) => t.op === '|')) return false
+    const parts: Token[][] = [[]]
+    for (const t of toks) (t.op === '&&' ? parts.push([]) : parts[parts.length - 1]!.push(t))
+    return parts.every((p) => {
+      const words = p.filter((t) => !t.op).map((t) => t.text)
+      if (!COMMANDS.includes(words[0] ?? '')) return false
+      return words[0] !== 'git' || GIT_SUBS.includes(words[1] ?? '')
+    })
+  })
+}
+
+/** A lesson's command lines, as they would be typed: prompts and comments dropped. */
+export function commandLines(text: string): string[] {
+  return text.split('\n').map((l) => l.replace(/^\s*\$\s+/, '').trim()).filter((l) => l && !l.startsWith('#'))
+}
+
 export const HELP = `This is a practice terminal: a pretend computer that lives in this page, so
 nothing you type here can touch your real files.
 

@@ -798,3 +798,26 @@ a.rmv-step__name:hover {
   gap: 10px;
   flex-wrap: wrap;
 }
+
+/* ── A lesson, as one flow ───────────────────────────────────────────────── */
+.lm-flow {
+  max-width: 780px;
+  margin: 0 auto;
+}
+
+/* Text and code run the same width, so an example and the challenge line up. */
+.lm-flow .md {
+  max-width: none;
+}
+
+.lm-flow .lm-teach {
+  font-size: 14.5px;
+}
+
+.lm-flow .lm-challenge {
+  margin-top: 26px;
+}
+
+.lm-flow .lm-win {
+  margin-top: 4px;
+}
