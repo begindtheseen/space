@@ -15,23 +15,35 @@
 import type { Lang } from '@/curriculum/types'
 import { python as py, runNative, runSql, type RunOutput, type StatusFn } from '@/lib/runtimes'
 import type { ShellState } from '@/lib/shell'
-import bash from './tracks/bash.txt?raw'
-import cpp from './tracks/cpp.txt?raw'
-import git from './tracks/git.txt?raw'
-import python from './tracks/python.txt?raw'
-import sql from './tracks/sql.txt?raw'
 import type { LearnLang, LearnLesson, LearnRun, Roadmap } from './types'
 
-/** The tracks this app teaches, in the order a beginner should meet them. */
-export const LEARN_SOURCES: [LearnLang, string][] = [
-  ['bash', bash],
-  ['git', git],
-  ['python', python],
-  ['sql', sql],
-  ['cpp', cpp],
-]
+/** The languages this app teaches, in the order a beginner should meet them. */
+const TAUGHT: LearnLang[] = ['bash', 'git', 'python', 'sql', 'cpp']
 
-export const LEARN_LANGS: LearnLang[] = LEARN_SOURCES.map(([lang]) => lang)
+/*
+ * Every course file in tracks/: `<lang>.txt` is a language's basics, and
+ * `<lang>.<level>.txt` the courses after it. The files are the same ones
+ * LAUNCHPAD carries; ORBIT takes the languages it teaches.
+ */
+const FILES = import.meta.glob('./tracks/*.txt', { query: '?raw', import: 'default', eager: true }) as Record<string, string>
+const LEVEL_ORDER = ['basics', 'intermediate', 'advanced', 'expert', 'projects']
+
+function sortKey(file: string): [number, number] {
+  const [lang = '', level = 'basics'] = file.replace(/\.txt$/, '').split('.')
+  return [TAUGHT.indexOf(lang as LearnLang), LEVEL_ORDER.indexOf(level)]
+}
+
+/** [file name, text] for every course this app teaches, language by language, basics first. */
+export const LEARN_SOURCES: [string, string][] = Object.entries(FILES)
+  .map(([path, text]): [string, string] => [path.split('/').pop()!, text])
+  .filter(([file]) => sortKey(file)[0] >= 0)
+  .sort((a, b) => {
+    const [la, va] = sortKey(a[0])
+    const [lb, vb] = sortKey(b[0])
+    return la - lb || va - vb
+  })
+
+export const LEARN_LANGS: LearnLang[] = TAUGHT.filter((l) => LEARN_SOURCES.some(([f]) => f.split('.')[0] === l))
 
 /**
  * The goals Learn to code opens on, each an order ORBIT's own modules use:

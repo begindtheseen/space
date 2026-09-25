@@ -23,7 +23,8 @@ const PYODIDE_URL = `https://cdn.jsdelivr.net/pyodide/v${PYODIDE_VERSION}/full/p
    a complete distribution. */
 
 interface PyodideLike {
-  runPythonAsync(code: string): Promise<unknown>
+  runPythonAsync(code: string, options?: { globals?: unknown }): Promise<unknown>
+  runPython(code: string): { destroy?: () => void }
   loadPackage(names: string[]): Promise<void>
   loadPackagesFromImports(code: string): Promise<void>
   setStdout(opts: { batched: (s: string) => void }): void
@@ -166,14 +167,21 @@ self.onmessage = async (e: MessageEvent<Incoming>) => {
 
       py.globals.set('_ORBIT_RUN_ID', msg.id)
 
-      const result = await py.runPythonAsync(msg.code)
+      // Every run starts from an empty namespace, the way `python main.py`
+      // does: nothing an earlier run defined can pass a check this one has
+      // not earned.
+      const scope = py.runPython('{"__name__": "__main__"}')
+      let repr: string | null = null
+      try {
+        const result = await py.runPythonAsync(msg.code, { globals: scope })
+        repr = result === undefined || result === null ? null : String(result)
+        ;(result as { destroy?: () => void } | null)?.destroy?.()
+      } finally {
+        scope.destroy?.()
+      }
       await py.runPythonAsync('_orbit_flush_figures()')
 
-      post({
-        type: 'result',
-        id: msg.id,
-        repr: result === undefined || result === null ? null : String(result),
-      })
+      post({ type: 'result', id: msg.id, repr })
     }
   } catch (err) {
     const message = err instanceof Error ? (err.message || String(err)) : String(err)
