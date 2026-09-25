@@ -1293,3 +1293,40 @@
   font-size: 11px;
   color: var(--ink-5);
 }
+
+/* Playground: standard input for a C++ program. Monospace, like the editor
+   above it, because what is typed here is read by the program byte for byte. */
+.pg__stdin {
+  padding: 12px 15px 15px;
+  border-top: 1px solid var(--line-soft);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pg__stdin label {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.pg__stdin textarea {
+  width: 100%;
+  resize: vertical;
+  min-height: 84px;
+  padding: 10px 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.28);
+  color: var(--ink);
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 12.5px;
+  line-height: 1.55;
+}
+
+.pg__stdin textarea:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}

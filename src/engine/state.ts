@@ -153,6 +153,12 @@ export interface LearnerState {
    * study path; nothing in the scheduler reads it.
    */
   read: Record<string, string>
+  /**
+   * Learn mode: lesson ids she has passed, with the ISO time she first did.
+   * Her code for each lesson lives in `code`, keyed `learn:<lesson id>`.
+   * Like the workbench, nothing here feeds mastery or the review queue.
+   */
+  learn: Record<string, string>
   goals: Goals
   settings: Settings
   /**
@@ -235,6 +241,7 @@ export function newLearnerState(now: Date = new Date()): LearnerState {
     suspended: [],
     pinned: [],
     read: {},
+    learn: {},
     goals: { ...DEFAULT_GOALS },
     settings: { ...DEFAULT_SETTINGS },
     media: {},
@@ -270,6 +277,7 @@ export function migrateState(raw: unknown, now: Date = new Date()): LearnerState
     suspended: Array.isArray(r.suspended) ? r.suspended.filter((s) => typeof s === 'string') : [],
     pinned: Array.isArray(r.pinned) ? r.pinned.filter((s) => typeof s === 'string') : [],
     read: isRecordOf(r.read, 'string') ? { ...r.read } : {},
+    learn: isRecordOf(r.learn, 'string') ? { ...r.learn } : {},
     goals: { ...base.goals, ...pickGoals(r.goals) },
     settings: { ...base.settings, ...pickSettings(r.settings) },
     media: {},

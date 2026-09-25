@@ -16,6 +16,7 @@ const Learning = lazy(() => import('@/pages/Learning').then((m) => ({ default: m
 const ModulePage = lazy(() => import('@/pages/Module').then((m) => ({ default: m.ModulePage })))
 const Review = lazy(() => import('@/pages/Review').then((m) => ({ default: m.Review })))
 const Track = lazy(() => import('@/pages/Track').then((m) => ({ default: m.Track })))
+const Learn = lazy(() => import('@/pages/Learn').then((m) => ({ default: m.Learn })))
 const Playground = lazy(() => import('@/pages/Playground').then((m) => ({ default: m.Playground })))
 const Focus = lazy(() => import('@/pages/Focus').then((m) => ({ default: m.Focus })))
 const Bench = lazy(() => import('@/pages/Bench').then((m) => ({ default: m.Bench })))
@@ -100,6 +101,8 @@ function Page({ path, segments }: { path: string; segments: string[] }) {
       return <Track track="career" />
     case 'playground':
       return <Playground />
+    case 'learn':
+      return <Learn lessonId={rest || undefined} />
     case 'bench':
       return <Bench />
     case 'jobs':
@@ -120,6 +123,7 @@ function Page({ path, segments }: { path: string; segments: string[] }) {
 function titleFor(path: string): string {
   const seg = path.split('/').filter(Boolean)[0]
   if (!seg) return 'Dashboard'
+  if (seg === 'learn') return 'Learn to code'
   return seg.charAt(0).toUpperCase() + seg.slice(1)
 }
 

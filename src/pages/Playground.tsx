@@ -13,6 +13,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { CSSProperties } from 'react'
 import { Editor } from '@/components/Editor'
 import {
+  IconArrowRight,
+  IconBulb,
   IconCheck,
   IconPause,
   IconPlay,
@@ -44,6 +46,7 @@ import type { ToolchainInfo } from '@/lib/desktop'
 import { Markdown } from '@/lib/markdown'
 import { useLearner } from '@/hooks/useLearner'
 import { navigate, useRoute } from '@/lib/router'
+import { useNextLesson } from '@/pages/Learn'
 import './pages.css'
 
 const SCRATCH: Record<string, string> = {
@@ -130,7 +133,11 @@ export function Playground() {
   const { state, setState } = useLearner()
 
   const exerciseRef = useMemo(() => findExercise(route.query.ex), [route.query.ex])
-  const [lang, setLang] = useState<Lang>(exerciseRef?.exercise.lang ?? 'python')
+  const [lang, setLang] = useState<Lang>(
+    exerciseRef?.exercise.lang ?? (RUNNABLE.includes(route.query.lang as Lang) ? (route.query.lang as Lang) : 'python'),
+  )
+  const learn = useNextLesson(lang)
+  const [stdin, setStdin] = useState('')
   const [code, setCode] = useState('')
   const [running, setRunning] = useState(false)
   const [status, setStatus] = useState('')
@@ -241,7 +248,7 @@ export function Playground() {
           ])
           return
         }
-        setPyOut(await runNative(lang, code))
+        setPyOut(await runNative(lang, code, lang === 'cpp' ? stdin : undefined, setStatus))
         return
       }
 
@@ -257,7 +264,7 @@ export function Playground() {
       setRunning(false)
       setStatus('')
     }
-  }, [lang, code, exercise, capability.mode])
+  }, [lang, code, exercise, capability.mode, stdin])
 
   const reset = () => {
     const starter = exercise?.starter ?? SCRATCH[lang] ?? ''
@@ -282,7 +289,7 @@ export function Playground() {
           <p className="page-head__sub">
             {exercise
               ? 'Your work is saved to this device as you type.'
-              : 'A place to try things. Python and SQL execute for real, in your browser, with nothing sent anywhere.'}
+              : 'A place to try things. Python, SQL and C++ execute for real, in your browser, with nothing sent anywhere.'}
           </p>
         </div>
         {exercise ? (
@@ -308,6 +315,24 @@ export function Playground() {
               setOutcomes(null)
             }}
           />
+        </div>
+      ) : null}
+
+      {!exercise && learn ? (
+        <div className="pg-learn">
+          <IconBulb size={16} />
+          <span className="grow">
+            <strong>Learn mode</strong> —{' '}
+            {learn.done === 0
+              ? `new to ${info.label}? Go through the basics lesson by lesson, in this editor, with every step checked.`
+              : learn.done === learn.total
+                ? `you have passed all ${learn.total} ${info.label} lessons.`
+                : `${learn.done} of ${learn.total} ${info.label} lessons passed. Next: ${learn.lesson.title}.`}
+          </span>
+          <Button variant="primary" size="sm" onClick={() => navigate(`/learn/${learn.lesson.id}`)}>
+            {learn.done === 0 ? 'Start the basics' : learn.done === learn.total ? 'Review' : 'Continue'}
+            <IconArrowRight size={13} />
+          </Button>
         </div>
       ) : null}
 
@@ -373,6 +398,20 @@ export function Playground() {
             {capability.mode === 'execute' ? <IconCheck size={11} style={inlineIcon} /> : <IconWarn size={11} style={inlineIcon} />}
             {capability.note}
           </div>
+
+          {lang === 'cpp' && !exercise ? (
+            <div className="pg__stdin">
+              <label htmlFor="pgStdin">Input — standard input for the program</label>
+              <textarea
+                id="pgStdin"
+                value={stdin}
+                onChange={(e) => setStdin(e.target.value)}
+                spellCheck={false}
+                rows={4}
+                placeholder="Anything typed here is what std::cin reads."
+              />
+            </div>
+          ) : null}
 
           {/* One missing compiler is the difference between a real test run
               and a string comparison, so the fix is offered here rather than

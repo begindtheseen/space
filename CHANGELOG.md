@@ -8,6 +8,29 @@ the entry for the one you are running is what Settings shows you afterwards.
 Newest first. Each heading is exactly `## <version>` so both readers can find
 it.
 
+## 1.1.0
+
+**Learn to code.** A new guided mode, in the sidebar and on Home, that takes
+you through the basics of Python, SQL and C++ one lesson at a time — 37
+lessons, from printing a line to classes, joins and pointers. Each lesson is a
+short explanation, one task, and your own code in the playground's editor.
+Run & check really runs it and grades what it did: the exact output, calls
+into the functions you wrote, the rows your query returned. Hints come one at
+a time and the solution is there when you ask. Your code and your progress
+are saved on this device, "Open in playground" takes your code to the
+scratchpad, and the playground points back into the lessons for the language
+you are on. It is practice: nothing here changes mastery, readiness or your
+reviews. More lessons, past the basics, will follow.
+
+**C++ always really runs now.** In the desktop app with a compiler installed,
+nothing changes — the Mac's own compiler builds it. Everywhere else — in a
+browser, or on a Mac without Apple's command line tools — ORBIT now compiles
+it with clang++ built for WebAssembly, right in the app, instead of comparing
+your output as text. The playground has an input box for what your program
+reads. One limit, stated under the editor: that in-app compiler has no
+exception support, so `throw` and `try` need the Mac's compiler. It is a
+one-time download of about 105 MB, which the app keeps.
+
 ## 1.0.10
 
 **The app notices an update while you are using it.** It used to ask GitHub

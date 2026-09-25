@@ -29,10 +29,16 @@ memory model and a dependency graph, and it shows its working:
   module rests on something you have not built yet, and point upstream instead of
   letting you grind against material you are not ready for.
 - **Real code execution.** Python runs for real (CPython 3.14 via Pyodide, with NumPy,
-  SciPy, SymPy, pandas and Matplotlib), and SQL runs against SQLite compiled to
-  WebAssembly. C++, Rust and shell exercises are written in the editor and compared
-  against the reference solution — nothing compiles in the browser, and the app says so
-  rather than pretending otherwise. MATLAB exercises ship a NumPy equivalent you can run.
+  SciPy, SymPy, pandas and Matplotlib), SQL runs against SQLite compiled to
+  WebAssembly, and C++ always compiles and runs: on the Mac's own compiler in the desktop
+  app when one is installed, otherwise with clang++ compiled to WebAssembly in the app.
+  Rust and shell run through the desktop app's toolchains; without them those exercises
+  are compared against the reference solution, and the app says so. MATLAB exercises ship
+  a NumPy equivalent you can run.
+- **Learn to code.** A guided course through the basics of Python, SQL and C++, lesson
+  by lesson in the playground's editor, every step really run and checked. The lessons
+  are plain text in `src/learn/tracks/*.txt` (format in `src/learn/parse.ts`); the same
+  lesson engine runs in APEX's LAUNCHPAD app, which adds JavaScript and TypeScript.
 - **Honest numbers.** The Progress page shows your predicted retention over a year,
   your review workload ahead, and a reliability diagram of how well-calibrated your own
   confidence turns out to be. Completion estimates are given as a range, never a date.
@@ -331,10 +337,11 @@ Stated plainly, because a study tool that oversells itself wastes your time:
   credential. The Career track covers the three realistic paths honestly.
 - **ITAR is a hard gate.** US-person status is required for essentially every role in
   this field. No amount of skill substitutes for it.
-- **C++, Rust and MATLAB do not execute here.** No browser-side C++ toolchain is small
-  enough to ship, there is no Rust compiler that runs in a browser at all, and MATLAB is
-  proprietary. Those exercises are checked against expected output, and the app labels
-  them as such.
+- **Rust and MATLAB need the desktop app's toolchains.** There is no Rust compiler that
+  runs in a browser at all, and MATLAB is proprietary (Octave is used when installed).
+  Without them those exercises are checked against expected output, and the app labels
+  them as such. C++ in the browser has no exception support: `throw` and `try` need the
+  Mac's own compiler.
 - **Your progress lives on one device.** There is no account and no sync. Export a
   backup from Settings and keep it somewhere else — that file is the durable copy.
 

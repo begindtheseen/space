@@ -1,0 +1,403 @@
+@track sql
+@title SQL
+@blurb Asking a database questions: SELECT through joins, grouping, changing data and CTEs — on a users-and-requests schema like the one your product will have.
+@schema
+CREATE TABLE users (
+  id INTEGER PRIMARY KEY,
+  email TEXT NOT NULL UNIQUE,
+  plan TEXT NOT NULL,
+  created TEXT NOT NULL
+);
+INSERT INTO users (id, email, plan, created) VALUES
+  (1, 'ada@example.com', 'pro',  '2025-01-04'),
+  (2, 'lin@example.com', 'free', '2025-02-11'),
+  (3, 'sam@example.com', 'free', '2025-03-20'),
+  (4, 'kai@example.com', 'pro',  '2025-03-28');
+CREATE TABLE requests (
+  id INTEGER PRIMARY KEY,
+  user_id INTEGER NOT NULL REFERENCES users(id),
+  model TEXT NOT NULL,
+  input_tokens INTEGER NOT NULL,
+  output_tokens INTEGER NOT NULL,
+  cost_usd REAL NOT NULL
+);
+INSERT INTO requests (id, user_id, model, input_tokens, output_tokens, cost_usd) VALUES
+  (1, 1, 'sonnet',  1200,  340, 0.0087),
+  (2, 1, 'sonnet',  5400,  910, 0.0298),
+  (3, 1, 'haiku',    800,  120, 0.0012),
+  (4, 2, 'sonnet', 15000, 2100, 0.0765),
+  (5, 2, 'haiku',    300,   80, 0.0006),
+  (6, 4, 'haiku',   2200,  400, 0.0034);
+@end
+
+=== sql-01 | Your first query
+--- teach
+A relational database stores data in **tables**: rows of records, each with the same named **columns**. This lesson's database has two:
+
+- `users` — `id`, `email`, `plan` (`'free'` or `'pro'`), `created`
+- `requests` — one row per model call: `id`, `user_id`, `model`, `input_tokens`, `output_tokens`, `cost_usd`
+
+You ask a database questions in **SQL**. The simplest question is "show me everything in a table":
+
+```sql
+SELECT * FROM requests;
+```
+
+`SELECT` says what you want, `*` means every column, `FROM` names the table. SQL keywords are conventionally written in capitals; the database does not care. End each statement with `;`.
+--- task
+Write a query that returns every row and every column of the `users` table.
+--- starter
+-- Show every user.
+
+--- solution
+SELECT * FROM users;
+--- hint
+`SELECT * FROM <table>;`
+--- check result | Returns all four users, every column
+[[1, "ada@example.com", "pro", "2025-01-04"], [2, "lin@example.com", "free", "2025-02-11"], [3, "sam@example.com", "free", "2025-03-20"], [4, "kai@example.com", "pro", "2025-03-28"]]
+
+=== sql-02 | Choosing columns
+--- teach
+Instead of `*`, list the columns you want, in the order you want them:
+
+```sql
+SELECT email, plan FROM users;
+```
+
+`AS` gives a column a new name in the result — useful for computed columns:
+
+```sql
+SELECT id, input_tokens + output_tokens AS total_tokens FROM requests;
+```
+
+Asking for only the columns you need is a habit worth keeping: on real tables it is faster, and the query says what it is for.
+--- task
+Return each request's `id`, its `model`, and its total tokens (input plus output) as a column named `total_tokens`.
+--- starter
+SELECT * FROM requests;
+--- solution
+SELECT id, model, input_tokens + output_tokens AS total_tokens FROM requests;
+--- hint
+`input_tokens + output_tokens AS total_tokens`
+--- check result | id, model and total tokens for every request
+[[1, "sonnet", 1540], [2, "sonnet", 6310], [3, "haiku", 920], [4, "sonnet", 17100], [5, "haiku", 380], [6, "haiku", 2600]]
+--- check source | Names the column total_tokens
+[Aa][Ss]\s+total_tokens
+
+=== sql-03 | Filtering with WHERE
+--- teach
+`WHERE` keeps only the rows that match a condition:
+
+```sql
+SELECT * FROM users WHERE plan = 'pro';
+SELECT * FROM requests WHERE input_tokens > 1000;
+```
+
+Text goes in single quotes. Compare with `=`, `<>` (not equal), `<`, `<=`, `>`, `>=`; combine with `AND`, `OR` and `NOT`; use brackets when mixing them. `IN ('a', 'b')` matches any of a list, and `LIKE 'ada%'` matches a pattern (`%` is any run of characters).
+--- task
+Return the `id`, `user_id` and `input_tokens` of every **sonnet** request with **more than 2000** input tokens.
+--- starter
+SELECT id, user_id, input_tokens FROM requests;
+--- solution
+SELECT id, user_id, input_tokens
+FROM requests
+WHERE model = 'sonnet' AND input_tokens > 2000;
+--- hint
+Two conditions joined with `AND`: `model = 'sonnet' AND input_tokens > 2000`.
+--- check result | The two big sonnet requests
+[[2, 1, 5400], [4, 2, 15000]]
+
+=== sql-04 | Sorting and limiting
+--- teach
+Rows come back in no guaranteed order unless you ask for one. `ORDER BY` sorts; `DESC` reverses; `LIMIT` keeps the first n:
+
+```sql
+SELECT email, created FROM users ORDER BY created DESC LIMIT 2;
+```
+
+You can sort by several columns (`ORDER BY plan, email`) — the second breaks ties in the first. "Top n" questions are always `ORDER BY … DESC LIMIT n`.
+--- task
+Return the `id` and `cost_usd` of the **three most expensive** requests, most expensive first.
+--- starter
+SELECT id, cost_usd FROM requests;
+--- solution
+SELECT id, cost_usd
+FROM requests
+ORDER BY cost_usd DESC
+LIMIT 3;
+--- hint
+`ORDER BY cost_usd DESC LIMIT 3`
+--- check result | The top three, in order
+ordered
+[[4, 0.0765], [2, 0.0298], [1, 0.0087]]
+
+=== sql-05 | Aggregates
+--- teach
+**Aggregate functions** turn many rows into one value:
+
+```sql
+SELECT COUNT(*) FROM users;                 -- how many rows
+SELECT SUM(cost_usd) FROM requests;         -- total
+SELECT AVG(input_tokens) FROM requests;     -- mean
+SELECT MIN(created), MAX(created) FROM users;
+```
+
+With `WHERE`, the aggregate only sees the rows that passed the filter. `ROUND(x, 4)` rounds to four decimal places — money in floating point needs it.
+--- task
+In one query, return three columns about **all** requests: how many there are, the total input tokens, and the highest single cost.
+--- starter
+SELECT * FROM requests;
+--- solution
+SELECT COUNT(*), SUM(input_tokens), MAX(cost_usd) FROM requests;
+--- hint
+`SELECT COUNT(*), SUM(...), MAX(...) FROM requests;`
+--- check result | 6 requests, 24900 input tokens, 0.0765 at most
+[[6, 24900, 0.0765]]
+
+=== sql-06 | Grouping
+--- teach
+`GROUP BY` splits the rows into groups and runs the aggregates once per group:
+
+```sql
+SELECT model, COUNT(*) AS calls, SUM(cost_usd) AS spend
+FROM requests
+GROUP BY model;
+```
+
+Every column in the `SELECT` must either be in the `GROUP BY` or be inside an aggregate. To filter **groups** (rather than rows), use `HAVING`, which runs after grouping:
+
+```sql
+... GROUP BY model HAVING COUNT(*) >= 3;
+```
+
+`WHERE` filters rows before they are grouped; `HAVING` filters the groups after.
+--- task
+For each `user_id`, return the user id, their number of requests, and their total input tokens — but only for users with **more than one** request.
+--- starter
+SELECT user_id FROM requests;
+--- solution
+SELECT user_id, COUNT(*) AS requests, SUM(input_tokens) AS input_total
+FROM requests
+GROUP BY user_id
+HAVING COUNT(*) > 1;
+--- hint
+`GROUP BY user_id`, then `HAVING COUNT(*) > 1`.
+--- check result | Users 1 and 2, with their counts and totals
+[[1, 3, 7400], [2, 2, 15300]]
+--- check source | Filters groups with HAVING
+\b[Hh][Aa][Vv][Ii][Nn][Gg]\b
+
+=== sql-07 | Joining tables
+--- teach
+`requests` only stores a `user_id`. To see the email next to each request, **join** the tables on the column they share:
+
+```sql
+SELECT users.email, requests.model
+FROM requests
+JOIN users ON users.id = requests.user_id;
+```
+
+`ON` says which rows belong together. Short aliases keep it readable: `FROM requests r JOIN users u ON u.id = r.user_id`, then `u.email`, `r.model`. An inner `JOIN` keeps only rows that have a match on both sides.
+--- task
+Return each **haiku** request's user email, model and input tokens.
+--- starter
+SELECT user_id, model, input_tokens FROM requests WHERE model = 'haiku';
+--- solution
+SELECT u.email, r.model, r.input_tokens
+FROM requests r
+JOIN users u ON u.id = r.user_id
+WHERE r.model = 'haiku';
+--- hint
+`FROM requests r JOIN users u ON u.id = r.user_id`
+--- check result | Three haiku requests with their emails
+[["ada@example.com", "haiku", 800], ["lin@example.com", "haiku", 300], ["kai@example.com", "haiku", 2200]]
+--- check source | Uses a JOIN
+\b[Jj][Oo][Ii][Nn]\b
+
+=== sql-08 | LEFT JOIN and NULL
+--- teach
+An inner join drops rows with no match — `sam` has never made a request, so sam vanishes from a join with `requests`. A **LEFT JOIN** keeps every row from the left table and fills the right side with `NULL` when there is no match:
+
+```sql
+SELECT u.email, r.id
+FROM users u
+LEFT JOIN requests r ON r.user_id = u.id;
+```
+
+`NULL` means "no value". It is not zero and not an empty string: test it with `IS NULL`, never `= NULL`. `COUNT(column)` skips NULLs (while `COUNT(*)` counts rows), and `COALESCE(x, 0)` replaces a NULL with 0.
+--- task
+Return **every** user's email with how many requests they have made — including users with none, who should show `0`.
+--- starter
+SELECT u.email, COUNT(*)
+FROM users u
+JOIN requests r ON r.user_id = u.id
+GROUP BY u.id;
+--- solution
+SELECT u.email, COUNT(r.id) AS requests
+FROM users u
+LEFT JOIN requests r ON r.user_id = u.id
+GROUP BY u.id;
+--- hint
+Change `JOIN` to `LEFT JOIN` so sam is kept.
+--- hint
+`COUNT(*)` counts sam's single NULL-filled row as 1. Count a column from `requests` instead: `COUNT(r.id)`.
+--- check result | All four users, sam with 0
+[["ada@example.com", 3], ["lin@example.com", 2], ["sam@example.com", 0], ["kai@example.com", 1]]
+
+=== sql-09 | Inserting rows
+--- teach
+`INSERT` adds rows:
+
+```sql
+INSERT INTO users (id, email, plan, created)
+VALUES (5, 'mo@example.com', 'free', '2025-04-02');
+```
+
+Name the columns you are filling, in the order the values come. Several rows at once: `VALUES (…), (…)`. The table's constraints still apply — this schema has `email … UNIQUE`, so a second `ada@example.com` would be refused. That refusal is the database protecting your data; do not work around it.
+--- task
+Add a user with id `5`, email `mo@example.com`, plan `free`, created `2025-04-02`. Then add a request for them: id `7`, model `haiku`, `500` input tokens, `90` output tokens, cost `0.0008`.
+--- starter
+-- Insert the new user, then their first request.
+
+--- solution
+INSERT INTO users (id, email, plan, created)
+VALUES (5, 'mo@example.com', 'free', '2025-04-02');
+
+INSERT INTO requests (id, user_id, model, input_tokens, output_tokens, cost_usd)
+VALUES (7, 5, 'haiku', 500, 90, 0.0008);
+--- hint
+Two `INSERT INTO … VALUES (…);` statements — the user first, since the request refers to them.
+--- check query | The user exists
+SELECT email, plan, created FROM users WHERE id = 5
+=> [["mo@example.com", "free", "2025-04-02"]]
+--- check query | Their request exists and points at them
+SELECT user_id, model, input_tokens, output_tokens, cost_usd FROM requests WHERE id = 7
+=> [[5, "haiku", 500, 90, 0.0008]]
+--- check query | Nothing else changed
+SELECT COUNT(*) FROM users
+=> [[5]]
+
+=== sql-10 | Updating and deleting
+--- teach
+`UPDATE` changes existing rows; `DELETE` removes them. Both take a `WHERE` — and both change **every** row when you forget it:
+
+```sql
+UPDATE users SET plan = 'pro' WHERE id = 3;
+DELETE FROM requests WHERE cost_usd = 0;
+```
+
+A good habit: write the `SELECT … WHERE …` first, check it returns exactly the rows you mean, then turn it into the `UPDATE` or `DELETE`.
+--- task
+Upgrade `lin@example.com` to the `pro` plan (match on the email), and delete every request with **fewer than 500** input tokens.
+--- starter
+-- Upgrade lin, then delete the small requests.
+
+--- solution
+UPDATE users SET plan = 'pro' WHERE email = 'lin@example.com';
+DELETE FROM requests WHERE input_tokens < 500;
+--- hint
+`UPDATE users SET plan = 'pro' WHERE email = 'lin@example.com';`
+--- check query | lin is on pro
+SELECT plan FROM users WHERE email = 'lin@example.com'
+=> [["pro"]]
+--- check query | Nobody else changed plan
+SELECT COUNT(*) FROM users WHERE plan = 'pro'
+=> [[3]]
+--- check query | The small request is gone
+SELECT COUNT(*) FROM requests WHERE input_tokens < 500
+=> [[0]]
+--- check query | The others are still there
+SELECT COUNT(*) FROM requests
+=> [[5]]
+
+=== sql-11 | Creating tables
+--- teach
+`CREATE TABLE` defines a table: each column's name, type and rules.
+
+```sql
+CREATE TABLE invoices (
+  id INTEGER PRIMARY KEY,
+  user_id INTEGER NOT NULL REFERENCES users(id),
+  amount_cents INTEGER NOT NULL,
+  paid INTEGER NOT NULL DEFAULT 0
+);
+```
+
+- `PRIMARY KEY` — uniquely identifies each row
+- `NOT NULL` — a value is required
+- `REFERENCES users(id)` — a **foreign key**: must point at a real user
+- `DEFAULT 0` — the value when an insert leaves it out
+- `UNIQUE` — no two rows may share the value
+
+Constraints are rules the database enforces for every writer, forever — cheaper than remembering them in every piece of code.
+--- task
+Create a table `api_keys` with: `id` (integer primary key), `user_id` (integer, required, referencing `users(id)`), `label` (text, required), and `revoked` (integer, required, default `0`). Then insert one key: id `1`, user `1`, label `laptop` — leaving `revoked` to its default.
+--- starter
+-- CREATE TABLE api_keys (...);
+
+--- solution
+CREATE TABLE api_keys (
+  id INTEGER PRIMARY KEY,
+  user_id INTEGER NOT NULL REFERENCES users(id),
+  label TEXT NOT NULL,
+  revoked INTEGER NOT NULL DEFAULT 0
+);
+
+INSERT INTO api_keys (id, user_id, label) VALUES (1, 1, 'laptop');
+--- hint
+Four columns, comma-separated, inside `CREATE TABLE api_keys ( … );`.
+--- hint
+The insert names only `id, user_id, label`; `revoked` fills itself in.
+--- check query | The key is there, and revoked defaulted to 0
+SELECT user_id, label, revoked FROM api_keys
+=> [[1, "laptop", 0]]
+--- check query | label is required (NOT NULL)
+SELECT "notnull" FROM pragma_table_info('api_keys') WHERE name = 'label'
+=> [[1]]
+--- check query | user_id references users
+SELECT "table", "from", "to" FROM pragma_foreign_key_list('api_keys')
+=> [["users", "user_id", "id"]]
+
+=== sql-12 | Subqueries and WITH
+--- teach
+A query can use the result of another. A **subquery** in brackets works anywhere a value or table would:
+
+```sql
+SELECT * FROM requests
+WHERE cost_usd > (SELECT AVG(cost_usd) FROM requests);
+```
+
+When a query gets layered, name the steps with `WITH` — a **common table expression** (CTE). Each step reads like a small table:
+
+```sql
+WITH spend AS (
+  SELECT user_id, SUM(cost_usd) AS total
+  FROM requests
+  GROUP BY user_id
+)
+SELECT * FROM spend WHERE total > 0.01;
+```
+
+CTEs are how real reporting queries stay readable: each step has a name, and you can run any one of them on its own to check it.
+--- task
+Return the email and total spend (rounded to 4 decimals) of every user whose total spend is **above the average** total spend per user (averaged over users who have made requests). Use a `WITH` step for the per-user totals.
+--- starter
+SELECT user_id, SUM(cost_usd) FROM requests GROUP BY user_id;
+--- solution
+WITH spend AS (
+  SELECT user_id, SUM(cost_usd) AS total
+  FROM requests
+  GROUP BY user_id
+)
+SELECT u.email, ROUND(s.total, 4) AS total
+FROM spend s
+JOIN users u ON u.id = s.user_id
+WHERE s.total > (SELECT AVG(total) FROM spend);
+--- hint
+Build `spend` with `WITH spend AS (SELECT user_id, SUM(cost_usd) AS total … GROUP BY user_id)`.
+--- hint
+Compare against `(SELECT AVG(total) FROM spend)`, and join `users` for the email.
+--- check result | Only lin spends more than the average
+[["lin@example.com", 0.0771]]
+--- check source | Uses WITH
+\b[Ww][Ii][Tt][Hh]\s+\w+\s+[Aa][Ss]\s*\(

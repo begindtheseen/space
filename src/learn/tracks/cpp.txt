@@ -1,0 +1,708 @@
+@track cpp
+@title C++
+@blurb Compiled for real by clang++ in your browser: from main() and std::cout to vectors, strings, references, classes and pointers.
+
+=== cpp-01 | Hello, main()
+--- teach
+Every C++ program starts in a function called `main`. The compiler turns your source into a program; when it runs, `main` runs.
+
+```cpp
+#include <iostream>
+
+int main() {
+    std::cout << "Launch in T-minus 10\n";
+    return 0;
+}
+```
+
+- `#include <iostream>` brings in the standard input/output library.
+- `std::cout << …` sends text to the output; `\n` ends the line. You can chain: `std::cout << "a" << 42 << "\n";`
+- Every statement ends with `;`. Blocks go in `{ }`.
+- `return 0;` tells whoever ran the program that it succeeded.
+
+Unlike Python or JavaScript, nothing runs until the whole file compiles. A missing `;` means no program at all — read the compiler's first error, it points at the line.
+--- task
+Write a complete program that prints exactly:
+
+```
+Hello, world!
+C++ is compiled and running in your browser.
+```
+--- starter
+#include <iostream>
+
+int main() {
+    // Print the two lines here.
+    return 0;
+}
+--- solution
+#include <iostream>
+
+int main() {
+    std::cout << "Hello, world!\n";
+    std::cout << "C++ is compiled and running in your browser.\n";
+    return 0;
+}
+--- hint
+`std::cout << "Hello, world!\n";` — and a second line like it.
+--- check output | Prints both lines, exactly
+Hello, world!
+C++ is compiled and running in your browser.
+
+=== cpp-02 | Variables and types
+--- teach
+C++ is **statically typed**: every variable has a type, fixed when it is declared.
+
+```cpp
+int count = 3;               // whole number
+double price = 4.99;         // decimal
+bool ready = true;
+char grade = 'A';            // one character, single quotes
+std::string name = "Ada";    // needs #include <string>
+auto total = count * price;  // auto: let the compiler work out the type (double)
+```
+
+`const` marks a value that must not change: `const double pi = 3.14159;`. Assigning to it is a compile error — the compiler catches the mistake before the program exists.
+--- task
+In `main`, declare `const std::string city = "Houston";`, an `int population` of `2300000`, and a `double area_km2` of `1651.1`. Print them as:
+
+```
+Houston: 2300000 people, 1651.1 km2
+```
+--- starter
+#include <iostream>
+#include <string>
+
+int main() {
+    return 0;
+}
+--- solution
+#include <iostream>
+#include <string>
+
+int main() {
+    const std::string city = "Houston";
+    int population = 2300000;
+    double area_km2 = 1651.1;
+    std::cout << city << ": " << population << " people, " << area_km2 << " km2\n";
+    return 0;
+}
+--- hint
+Chain everything into one `std::cout << … << "\n";`.
+--- check output | Prints the line
+Houston: 2300000 people, 1651.1 km2
+--- check source | city is a const std::string
+const\s+std::string\s+city
+--- check source | population is an int
+\bint\s+population\b
+
+=== cpp-03 | Arithmetic, and integer division
+--- teach
+From here on, some lessons ask for **functions** rather than a whole program. You write the function; the checker supplies `main()` and calls it — so do **not** write a `main` in those lessons.
+
+```cpp
+int add(int a, int b) {
+    return a + b;
+}
+```
+
+The return type comes first, then the name, then typed parameters.
+
+Arithmetic has one trap everyone meets: dividing two `int`s gives an `int`, throwing the remainder away.
+
+```cpp
+7 / 2                        // 3
+7 % 2                        // 1  (the remainder)
+7.0 / 2                      // 3.5
+static_cast<double>(7) / 2   // 3.5 — convert first, then divide
+```
+--- task
+Write `double average(int total, int count)` that returns the exact average (so `average(7, 2)` is `3.5`), and `int remainder_of(int a, int b)` returning the remainder of `a / b`. No `main` — the checker has it.
+--- starter
+// No main() in this lesson: the checker supplies it and calls your functions.
+
+double average(int total, int count) {
+    return total / count;
+}
+
+int remainder_of(int a, int b) {
+    return 0;
+}
+--- solution
+// No main() in this lesson: the checker supplies it and calls your functions.
+
+double average(int total, int count) {
+    return static_cast<double>(total) / count;
+}
+
+int remainder_of(int a, int b) {
+    return a % b;
+}
+--- hint
+`total / count` divides two ints. Convert one first: `static_cast<double>(total) / count`.
+--- check test | average(7, 2) is 3.5
+average(7, 2) == 3.5
+--- check test | average(10, 4) is 2.5
+average(10, 4) == 2.5
+--- check test | remainder_of(17, 5) is 2
+remainder_of(17, 5) == 2
+
+=== cpp-04 | Reading input
+--- teach
+`std::cin >> variable` reads the next value from standard input — whatever is in the **Input** box under the editor — skipping spaces and newlines, and converting to the variable's type:
+
+```cpp
+int a, b;
+std::cin >> a >> b;
+std::cout << a + b << "\n";
+```
+
+Used as a condition, `std::cin >> x` is true while it managed to read something, so this reads every number until the input runs out:
+
+```cpp
+int n;
+while (std::cin >> n) {
+    // use n
+}
+```
+
+`std::getline(std::cin, line)` reads a whole line into a `std::string` instead.
+--- task
+The input is a list of whole numbers. Read them all and print how many there were, their sum, and the largest, as:
+
+```
+count 5, sum 30, max 11
+```
+--- stdin
+4 8 11
+2 5
+--- starter
+#include <iostream>
+
+int main() {
+    int n;
+    return 0;
+}
+--- solution
+#include <iostream>
+
+int main() {
+    int n;
+    int count = 0;
+    int sum = 0;
+    int max = 0;
+    while (std::cin >> n) {
+        if (count == 0 || n > max) max = n;
+        count++;
+        sum += n;
+    }
+    std::cout << "count " << count << ", sum " << sum << ", max " << max << "\n";
+    return 0;
+}
+--- hint
+`while (std::cin >> n) { … }` runs once per number.
+--- hint
+Start `max` from the first number rather than from 0, or negative inputs would break it.
+--- check output | Prints count, sum and max for the input
+count 5, sum 30, max 11
+--- check source | Reads with std::cin
+std::cin\s*>>
+
+=== cpp-05 | Making decisions
+--- teach
+`if` runs a block when a condition is true:
+
+```cpp
+if (temperature > 30) {
+    std::cout << "hot\n";
+} else if (temperature > 15) {
+    std::cout << "mild\n";
+} else {
+    std::cout << "cold\n";
+}
+```
+
+Compare with `==`, `!=`, `<`, `<=`, `>`, `>=`; combine with `&&` (and), `||` (or), `!` (not). Watch for `=` (assign) where you meant `==` (compare) — clang warns about it, which is one reason to read warnings.
+--- task
+Write `std::string grade(int score)` returning `"pass"` for 70 or more, `"close"` for 60 to 69, and `"fail"` otherwise. (No `main`.)
+--- starter
+#include <string>
+
+std::string grade(int score) {
+    return "";
+}
+--- solution
+#include <string>
+
+std::string grade(int score) {
+    if (score >= 70) {
+        return "pass";
+    } else if (score >= 60) {
+        return "close";
+    }
+    return "fail";
+}
+--- hint
+Test the highest band first: `if (score >= 70) return "pass";`
+--- check test | 85 passes
+grade(85) == "pass"
+--- check test | 70 passes (the boundary)
+grade(70) == "pass"
+--- check test | 64 is close
+grade(64) == "close"
+--- check test | 12 fails
+grade(12) == "fail"
+
+=== cpp-06 | Loops
+--- teach
+The counting `for` loop has three parts — start; keep going while; step:
+
+```cpp
+for (int i = 1; i <= 5; i++) {
+    std::cout << i << "\n";
+}
+```
+
+`while (condition) { … }` repeats while the condition is true. `break` leaves a loop early; `continue` skips to the next pass.
+--- task
+Write a program that prints the numbers 1 to 15, one per line, printing `Fizz` for multiples of 3, `Buzz` for multiples of 5, and `FizzBuzz` for multiples of both.
+--- starter
+#include <iostream>
+
+int main() {
+    return 0;
+}
+--- solution
+#include <iostream>
+
+int main() {
+    for (int n = 1; n <= 15; n++) {
+        if (n % 15 == 0) {
+            std::cout << "FizzBuzz\n";
+        } else if (n % 3 == 0) {
+            std::cout << "Fizz\n";
+        } else if (n % 5 == 0) {
+            std::cout << "Buzz\n";
+        } else {
+            std::cout << n << "\n";
+        }
+    }
+    return 0;
+}
+--- hint
+`n % 3 == 0` means n is a multiple of 3 — check 15 first.
+--- check output | Prints FizzBuzz from 1 to 15
+1
+2
+Fizz
+4
+Buzz
+Fizz
+7
+8
+Fizz
+Buzz
+11
+Fizz
+13
+14
+FizzBuzz
+--- check source | Uses a loop
+\b(for|while)\b
+
+=== cpp-07 | Functions
+--- teach
+Functions let you name a piece of work and reuse it. A function must be declared before it is used, and its parameter and return types are part of what it is:
+
+```cpp
+bool is_positive(int n) {
+    return n > 0;
+}
+
+long long square(long long x) {
+    return x * x;
+}
+```
+
+`void` means it returns nothing. `int` holds numbers up to about 2 billion; `long long` goes to about 9 × 10¹⁸ — pick it when values can get big. A function can call itself (**recursion**) as long as some case stops it.
+--- task
+Write `bool is_even(int n)` and `long long factorial(int n)` (the product 1 × 2 × … × n, with `factorial(0)` equal to 1). No `main`.
+--- starter
+bool is_even(int n) {
+    return false;
+}
+
+long long factorial(int n) {
+    return 0;
+}
+--- solution
+bool is_even(int n) {
+    return n % 2 == 0;
+}
+
+long long factorial(int n) {
+    long long result = 1;
+    for (int i = 2; i <= n; i++) {
+        result *= i;
+    }
+    return result;
+}
+--- hint
+`factorial`: start `result` at 1 and multiply by 2, 3, … n in a loop.
+--- check test | is_even works both ways
+is_even(10) && !is_even(7)
+--- check test | factorial(5) is 120
+factorial(5) == 120
+--- check test | factorial(0) is 1
+factorial(0) == 1
+--- check test | factorial(20) fits in a long long
+factorial(20) == 2432902008176640000LL
+
+=== cpp-08 | std::vector
+--- teach
+`std::vector` is C++'s growable array — the container to reach for first:
+
+```cpp
+#include <vector>
+
+std::vector<int> v = {3, 9, 2};
+v.push_back(7);        // add to the end
+v.size();              // 4
+v[0];                  // 3
+for (int x : v) {      // a range-for loop: each element in turn
+    // ...
+}
+```
+
+Pass a vector to a function as `const std::vector<int>& v`: the `&` means "refer to the caller's vector" instead of copying it, and `const` promises not to change it. (More on references in lesson 10.)
+--- task
+Write `int max_value(const std::vector<int>& v)` (assume v is not empty) and `double mean(const std::vector<int>& v)`. No `main`.
+--- starter
+#include <vector>
+
+int max_value(const std::vector<int>& v) {
+    return 0;
+}
+
+double mean(const std::vector<int>& v) {
+    return 0;
+}
+--- solution
+#include <vector>
+
+int max_value(const std::vector<int>& v) {
+    int best = v[0];
+    for (int x : v) {
+        if (x > best) best = x;
+    }
+    return best;
+}
+
+double mean(const std::vector<int>& v) {
+    long long sum = 0;
+    for (int x : v) sum += x;
+    return static_cast<double>(sum) / v.size();
+}
+--- hint
+Start `best` at `v[0]`, then compare every element.
+--- hint
+For the mean, add up in a loop, then divide as a double.
+--- check test | max_value({3, 9, 2}) is 9
+max_value({3, 9, 2}) == 9
+--- check test | max_value works with negatives
+max_value({-5, -2, -9}) == -2
+--- check test | mean({1, 2, 3, 4}) is 2.5
+std::abs(mean({1, 2, 3, 4}) - 2.5) < 1e-9
+
+=== cpp-09 | std::string
+--- teach
+`std::string` holds text and knows its own length:
+
+```cpp
+#include <string>
+
+std::string s = "Ada Lovelace";
+s.size();              // 12
+s[0];                  // 'A'   (a char)
+s + "!"                // "Ada Lovelace!"
+s.find("Love");        // 4 — or std::string::npos if absent
+s.substr(4, 4);        // "Love"
+for (char c : s) { }   // each character
+```
+
+`<cctype>` has helpers for single characters: `std::toupper(c)`, `std::isspace(c)`, `std::isdigit(c)`.
+--- task
+Write `std::string initials(const std::string& name)` returning the uppercase first letter of each word (`"ada lovelace"` → `"AL"`; words are separated by spaces), and `int count_char(const std::string& s, char c)`. No `main`.
+--- starter
+#include <string>
+#include <cctype>
+
+std::string initials(const std::string& name) {
+    return "";
+}
+
+int count_char(const std::string& s, char c) {
+    return 0;
+}
+--- solution
+#include <string>
+#include <cctype>
+
+std::string initials(const std::string& name) {
+    std::string out;
+    bool start = true;
+    for (char c : name) {
+        if (c == ' ') {
+            start = true;
+        } else if (start) {
+            out += static_cast<char>(std::toupper(static_cast<unsigned char>(c)));
+            start = false;
+        }
+    }
+    return out;
+}
+
+int count_char(const std::string& s, char c) {
+    int n = 0;
+    for (char x : s) {
+        if (x == c) n++;
+    }
+    return n;
+}
+--- hint
+Keep a flag "the next letter starts a word": true at the start and after each space.
+--- hint
+`out += static_cast<char>(std::toupper(c));` appends one character.
+--- check test | initials("ada lovelace") is "AL"
+initials("ada lovelace") == "AL"
+--- check test | Extra spaces are fine
+initials("  grace  brewster hopper") == "GBH"
+--- check test | count_char counts
+count_char("mississippi", 's') == 4
+
+=== cpp-10 | References
+--- teach
+By default C++ passes arguments **by value**: the function gets a copy, and changing it changes nothing outside.
+
+A **reference** (`&`) is another name for an existing variable. Pass by reference and the function works on the caller's own variable:
+
+```cpp
+void add_one(int& n) {
+    n = n + 1;
+}
+
+int x = 4;
+add_one(x);   // x is now 5
+```
+
+So there are three ways to take an argument:
+
+- `int n` — a copy; cheap for small types
+- `const std::vector<int>& v` — no copy, read-only; the default for big things
+- `std::vector<int>& v` — no copy, and the function may change it
+--- task
+Write `void double_all(std::vector<int>& v)` that doubles every element **in place**, and `void swap_values(int& a, int& b)`. No `main`.
+--- starter
+#include <vector>
+
+void double_all(std::vector<int> v) {
+    for (int x : v) {
+        x = x * 2;
+    }
+}
+
+void swap_values(int a, int b) {
+}
+--- solution
+#include <vector>
+
+void double_all(std::vector<int>& v) {
+    for (int& x : v) {
+        x = x * 2;
+    }
+}
+
+void swap_values(int& a, int& b) {
+    int tmp = a;
+    a = b;
+    b = tmp;
+}
+--- hint
+Both the parameter and the loop variable need `&`: `std::vector<int>& v` and `for (int& x : v)`.
+--- hint
+Swapping needs a temporary: `int tmp = a; a = b; b = tmp;`
+--- check test | double_all changes the caller's vector
+[] { std::vector<int> v{1, 2, 3}; double_all(v); return v == std::vector<int>{2, 4, 6}; }()
+--- check test | swap_values swaps
+[] { int a = 1, b = 2; swap_values(a, b); return a == 2 && b == 1; }()
+
+=== cpp-11 | Structs and classes
+--- teach
+A `struct` groups related values into one type:
+
+```cpp
+struct Point {
+    double x;
+    double y;
+};
+
+Point p{3.0, 4.0};
+p.x;   // 3.0
+```
+
+A `class` is the same thing with its data **private** by default, so only its own member functions can change it. That is how a type keeps its rules:
+
+```cpp
+class Account {
+public:
+    explicit Account(int start) : balance_(start) {}
+    void deposit(int amount) { balance_ += amount; }
+    int balance() const { return balance_; }   // const: does not change the object
+private:
+    int balance_;
+};
+```
+
+The part after `:` in the constructor initialises members before the body runs.
+--- task
+Write `struct Point { double x; double y; };` and `double distance(Point a, Point b)` (straight-line distance; `std::sqrt` is in `<cmath>`). Then write a `class Counter` with a constructor taking a starting value, `void increment()`, `void reset()` (back to 0), and `int value() const`. No `main`.
+--- starter
+#include <cmath>
+
+--- solution
+#include <cmath>
+
+struct Point {
+    double x;
+    double y;
+};
+
+double distance(Point a, Point b) {
+    double dx = a.x - b.x;
+    double dy = a.y - b.y;
+    return std::sqrt(dx * dx + dy * dy);
+}
+
+class Counter {
+public:
+    explicit Counter(int start) : value_(start) {}
+    void increment() { value_++; }
+    void reset() { value_ = 0; }
+    int value() const { return value_; }
+private:
+    int value_;
+};
+--- hint
+Distance: `std::sqrt(dx * dx + dy * dy)`.
+--- hint
+Keep the count in a private member, e.g. `int value_;`, set by the constructor.
+--- check test | distance of a 3-4-5 triangle is 5
+std::abs(distance(Point{0, 0}, Point{3, 4}) - 5.0) < 1e-9
+--- check test | Counter starts where it is told
+Counter(5).value() == 5
+--- check test | increment and reset
+[] { Counter c(1); c.increment(); c.increment(); bool three = c.value() == 3; c.reset(); return three && c.value() == 0; }()
+
+=== cpp-12 | std::map
+--- teach
+`std::map` stores **key → value** pairs, kept sorted by key:
+
+```cpp
+#include <map>
+#include <string>
+
+std::map<std::string, int> stock;
+stock["apples"] = 5;
+stock["pears"] += 2;          // a missing key starts at 0, then += 2
+stock.count("kiwis");         // 0 — does the key exist?
+for (const auto& [name, qty] : stock) {
+    // name, qty — in key order
+}
+```
+
+Reading `m[key]` inserts the key if it is missing; use `m.find(key)` or `m.count(key)` when you only want to look.
+--- task
+Write `std::map<std::string, int> count_words(const std::string& text)` that counts how many times each space-separated word appears. (Reading words out of a string: `std::istringstream in(text); std::string w; while (in >> w) { … }` — it needs `<sstream>`.) No `main`.
+--- starter
+#include <map>
+#include <string>
+#include <sstream>
+
+std::map<std::string, int> count_words(const std::string& text) {
+    std::map<std::string, int> counts;
+    return counts;
+}
+--- solution
+#include <map>
+#include <string>
+#include <sstream>
+
+std::map<std::string, int> count_words(const std::string& text) {
+    std::map<std::string, int> counts;
+    std::istringstream in(text);
+    std::string word;
+    while (in >> word) {
+        counts[word]++;
+    }
+    return counts;
+}
+--- hint
+`counts[word]++` works even the first time: a missing entry starts at 0.
+--- check test | Counts repeated words
+count_words("to be or not to be") == std::map<std::string, int>{{"be", 2}, {"not", 1}, {"or", 1}, {"to", 2}}
+--- check test | An empty string gives an empty map
+count_words("").empty()
+
+=== cpp-13 | Pointers and ownership
+--- teach
+A **pointer** holds the address of a value. `&x` takes the address of `x`; `*p` follows a pointer to the value:
+
+```cpp
+int x = 10;
+int* p = &x;     // p points at x
+*p = 20;         // x is now 20
+int* none = nullptr;   // points at nothing — never follow it
+```
+
+Pointers are how C++ reaches memory that outlives a function. Memory you allocate must be given back exactly once, so modern C++ does not use raw `new` and `delete` for that: a **smart pointer** owns the object and frees it automatically.
+
+```cpp
+#include <memory>
+auto p = std::make_unique<int>(42);   // p owns an int
+*p += 1;                              // 43
+// freed automatically when p goes out of scope
+```
+
+Rule of thumb: raw pointers to *look at* things, `std::unique_ptr` to *own* them.
+--- task
+Write `void set_to_zero(int* p)` that sets the value `p` points at to zero — and does nothing if `p` is `nullptr`. Then write `std::unique_ptr<int> make_counter(int start)` that returns a newly owned int holding `start`. No `main`.
+--- starter
+#include <memory>
+
+void set_to_zero(int* p) {
+}
+
+--- solution
+#include <memory>
+
+void set_to_zero(int* p) {
+    if (p != nullptr) {
+        *p = 0;
+    }
+}
+
+std::unique_ptr<int> make_counter(int start) {
+    return std::make_unique<int>(start);
+}
+--- hint
+Check `if (p != nullptr)` before `*p = 0;`.
+--- hint
+`return std::make_unique<int>(start);`
+--- check test | set_to_zero changes the value it points at
+[] { int x = 7; set_to_zero(&x); return x == 0; }()
+--- check test | set_to_zero(nullptr) is safe
+[] { set_to_zero(nullptr); return true; }()
+--- check test | make_counter owns a new int
+[] { auto p = make_counter(41); *p += 1; return *p == 42; }()
+--- check source absent | Does not use raw new
+\bnew\s+int\b

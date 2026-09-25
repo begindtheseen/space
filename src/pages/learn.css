@@ -1,0 +1,268 @@
+/* ============================================================================
+   Learn mode
+   ========================================================================== */
+
+/* ── The course ──────────────────────────────────────────────────────────── */
+.lm-tracks {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: var(--gap);
+  align-items: start;
+}
+
+.lm-missing {
+  margin: 0 0 var(--gap);
+  font-size: 12.5px;
+  color: var(--warn);
+}
+
+.lm-track__blurb {
+  margin: 0 0 12px;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--ink-3);
+}
+
+.lm-track__go {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 14px 0 12px;
+}
+
+.lm-track__next {
+  font-size: 11.5px;
+  color: var(--ink-3);
+}
+
+.lm-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--line-soft);
+}
+
+.lm-list li + li {
+  border-top: 1px solid var(--line-soft);
+}
+
+.lm-list a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 36px;
+  padding: 6px 2px;
+  font-size: 12.5px;
+  color: var(--ink-2);
+  border-radius: 6px;
+}
+
+.lm-list a:hover {
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.lm-list a:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.lm-list__mark {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line-strong);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.lm-list li[data-done='true'] .lm-list__mark {
+  background: var(--ok, #3fb68b);
+  border-color: var(--ok, #3fb68b);
+  color: #02140c;
+}
+
+.lm-list li[data-next='true'] .lm-list__mark {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.lm-list li[data-next='true'] a {
+  color: var(--ink);
+}
+
+.lm-list__title {
+  min-width: 0;
+}
+
+/* ── A lesson ────────────────────────────────────────────────────────────── */
+.lm-progress {
+  display: flex;
+  gap: 4px;
+  margin: -6px 0 var(--gap);
+}
+
+.lm-progress__step {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--track);
+  border: 1px solid var(--line-strong);
+  min-width: 10px;
+}
+
+.lm-progress__step[data-done='true'] {
+  background: var(--ok, #3fb68b);
+  border-color: transparent;
+}
+
+.lm-progress__step[data-here='true'] {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.lm {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  gap: var(--gap);
+  align-items: start;
+}
+
+@media (max-width: 1000px) {
+  .lm {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.lm-task .sect {
+  border-left: 2px solid var(--accent);
+}
+
+.lm-stdin {
+  margin-top: 12px;
+}
+
+.lm-stdin__label,
+.lm-hint__n {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin-bottom: 6px;
+}
+
+.lm-stdin pre,
+.lm-detail {
+  margin: 0;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--line-soft);
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  color: var(--ink-2);
+}
+
+.lm-detail {
+  margin-top: 6px;
+}
+
+.lm-help {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.lm-help__row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.lm-hint {
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: rgba(77, 155, 255, 0.06);
+  border: 1px solid var(--line-blue, rgba(77, 155, 255, 0.24));
+}
+
+.lm-solution p {
+  margin: 0 0 8px;
+  font-size: 12px;
+  color: var(--ink-3);
+}
+
+.lm-passed {
+  border-color: rgba(63, 182, 139, 0.45);
+}
+
+.lm-passed__body {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.lm-passed__icon {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--ok, #3fb68b);
+  color: #02140c;
+}
+
+.lm-passed__title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.lm-passed__sub {
+  font-size: 12px;
+  color: var(--ink-3);
+  margin-top: 2px;
+}
+
+.lm-nav {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* ── The way in, on the playground ───────────────────────────────────────── */
+.pg-learn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: var(--gap);
+  padding: 12px 14px;
+  border-radius: var(--r-md, 10px);
+  border: 1px solid var(--line-blue, rgba(77, 155, 255, 0.24));
+  background: linear-gradient(90deg, rgba(77, 155, 255, 0.08), rgba(77, 155, 255, 0.02));
+  font-size: 12.5px;
+  color: var(--ink-2);
+}
+
+.pg-learn strong {
+  color: var(--ink);
+}
+
+.pg-learn .grow {
+  min-width: 200px;
+}

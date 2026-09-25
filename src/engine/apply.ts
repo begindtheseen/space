@@ -269,6 +269,19 @@ export function setOnboarded(state: LearnerState, now: Date = new Date()): Learn
   }
 }
 
+/**
+ * Learn mode: records that a lesson passed. The first pass is the one kept —
+ * passing it again later does not move the date.
+ */
+export function markLearned(state: LearnerState, lessonId: string, now: Date = new Date()): LearnerState {
+  if (state.learn[lessonId]) return state
+  return {
+    ...state,
+    learn: { ...state.learn, [lessonId]: now.toISOString() },
+    updatedAt: now.toISOString(),
+  }
+}
+
 export function saveCode(state: LearnerState, exerciseId: string, code: string): LearnerState {
   return {
     ...state,
