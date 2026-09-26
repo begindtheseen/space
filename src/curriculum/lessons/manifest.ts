@@ -4669,7 +4669,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-lti-systems-and-superposition",
       "title": "LTI systems, linearity, time invariance and superposition",
-      "minutes": 18,
+      "minutes": 21,
       "covers": [
         "LTI systems: linearity, time invariance, and why they buy you superposition"
       ],
@@ -4678,7 +4678,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-impulse-step-and-convolution",
       "title": "Impulse response, step response and convolution",
-      "minutes": 18,
+      "minutes": 21,
       "covers": [
         "Impulse response, step response, and convolution"
       ],
@@ -4687,7 +4687,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-laplace-and-the-transfer-function",
       "title": "The Laplace transform and the transfer function",
-      "minutes": 16,
+      "minutes": 19,
       "covers": [
         "The Laplace transform and the transfer function"
       ],
@@ -4696,7 +4696,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-poles-zeros-and-dc-gain",
       "title": "Poles, zeros and DC gain",
-      "minutes": 18,
+      "minutes": 24,
       "covers": [
         "Poles, zeros, and DC gain"
       ],
@@ -4705,7 +4705,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-first-and-second-order-response",
       "title": "First- and second-order response metrics",
-      "minutes": 14,
+      "minutes": 17,
       "covers": [
         "First- and second-order response: rise time, peak time, overshoot and settling time as functions of zeta and omega-n"
       ],
@@ -4714,7 +4714,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-dominant-poles-and-model-reduction",
       "title": "Dominant poles and model order reduction by inspection",
-      "minutes": 18,
+      "minutes": 19,
       "covers": [
         "Dominant poles and model order reduction by inspection"
       ],
@@ -4723,7 +4723,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-zeros-and-right-half-plane-zeros",
       "title": "Added zeros, non-minimum phase and right-half-plane zeros",
-      "minutes": 17,
+      "minutes": 21,
       "covers": [
         "Added zeros, non-minimum-phase zeros, and right-half-plane zeros"
       ],
@@ -4732,7 +4732,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-time-delay-and-pade",
       "title": "Time delay and the Padé approximation",
-      "minutes": 16,
+      "minutes": 18,
       "covers": [
         "Time delay and the Pade approximation"
       ],
@@ -4741,7 +4741,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-frequency-response-and-bode-plots",
       "title": "Frequency response and Bode plot construction by hand",
-      "minutes": 18,
+      "minutes": 19,
       "covers": [
         "Frequency response: magnitude and phase; Bode plot construction by hand"
       ],
@@ -4750,7 +4750,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-block-diagram-algebra-and-mason",
       "title": "Block diagram algebra, reduction and the Mason gain formula",
-      "minutes": 17,
+      "minutes": 21,
       "covers": [
         "Block diagram algebra, reduction, and the Mason gain formula"
       ],
@@ -4759,7 +4759,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-open-loop-vs-closed-loop",
       "title": "Open-loop and closed-loop transfer functions",
-      "minutes": 16,
+      "minutes": 19,
       "covers": [
         "Open-loop vs closed-loop transfer functions"
       ],
@@ -4768,7 +4768,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-sensitivity-and-complementary-sensitivity",
       "title": "Sensitivity, complementary sensitivity and S + T = 1",
-      "minutes": 16,
+      "minutes": 18,
       "covers": [
         "Sensitivity S and complementary sensitivity T, and the identity S + T = 1"
       ],
