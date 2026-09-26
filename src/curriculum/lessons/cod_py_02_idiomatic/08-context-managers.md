@@ -136,6 +136,23 @@ python3 valve.py
 
 Read the aborted run line by line. The valve opened. Propellant flowed. Then the block raised. The valve closed, and only *then* did the `except` clause print "caught". So `__exit__` runs while the exception is **[[unwinding|unwinding]]**, before any handler further out sees it. That is exactly what you want from a **[[safing|safing]]** action: the valve is shut before anyone starts deciding what went wrong.
 
+::: note What `with` turns into
+A `with` block is shorthand for a `try` statement you could write yourself. Ignoring a few details, `with valve as v:` followed by a body behaves like this:
+
+```python
+v = valve.__enter__()
+try:
+    body(v)
+except BaseException as exc:
+    if not valve.__exit__(type(exc), exc, exc.__traceback__):
+        raise
+else:
+    valve.__exit__(None, None, None)
+```
+
+Read it path by path. If the body raises, the `except` branch calls `__exit__` with the three facts about the exception, and a bare `raise` sends the exception on its way unless `__exit__` returned something truthy. If the body finishes, the `else` branch calls `__exit__` with three `None`s. (A `return` or `break` inside the body also triggers the exit call; the real machinery handles that too.) There is no path that skips `__exit__`, which is the whole guarantee.
+:::
+
 ::: key
 `__enter__` acquires and returns the resource, `__exit__` releases it and runs even when the body raises. It is Python RAII, and `contextlib.contextmanager` lets you write it as a generator with one `yield`.
 :::

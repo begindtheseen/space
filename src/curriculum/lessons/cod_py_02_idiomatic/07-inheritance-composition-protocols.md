@@ -1,7 +1,7 @@
 ---
 id: l07-inheritance-composition-protocols
 title: Inheritance, composition and Protocols
-minutes: 19
+minutes: 20
 covers:
   - Inheritance vs composition; duck typing and Protocols
 ---
@@ -152,7 +152,7 @@ Suppose at most one of the three gyros is faulty, and call the two healthy readi
 - If $f$ is below both, the list is $f, h_1, h_2$, and the middle is $h_1$.
 - If $f$ is between them, the middle is $f$ itself, and it lies between $h_1$ and $h_2$.
 
-In every case the answer lies between the two healthy readings, however wild $f$ is. An average has no such guarantee: the mean of 0.102, 0.099 and 0.130 is about 0.110, dragged a tenth of the way toward the bad unit. With two faulty gyros out of three the guarantee is gone, which is why four or more units fly where two failures must be survived.
+In every case the answer lies between the two healthy readings, however wild $f$ is. An average has no such guarantee: the mean of 0.102, 0.099 and 0.130 is about 0.110, off the truth by 0.010 — a third of the bad unit's error dragged into the answer. With two faulty gyros out of three, the guarantee is gone.
 :::
 
 ::: key

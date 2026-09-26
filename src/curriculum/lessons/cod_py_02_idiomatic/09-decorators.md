@@ -1,7 +1,7 @@
 ---
 id: l09-decorators
 title: Decorators, wraps and caching
-minutes: 20
+minutes: 21
 covers:
   - Decorators, functools.wraps, functools.lru_cache
 ---
@@ -239,6 +239,15 @@ Everyone gets the **[[three levels|factory-layers]]** wrong once, so name them:
 - `wrapper` takes the *call's arguments* (`*args`, `**kwargs`).
 
 If a decorator works as `@bounded` but not as `@bounded(-0.35, 0.35)`, you have two levels where you need three.
+:::
+
+::: note Why the factory needs that extra call
+The rule "`@d` means `f = d(f)`" still holds; the only question is what `d` is. Python treats everything after the `@` as an ordinary expression and evaluates it first. For `@bounded(-0.35, 0.35)` that expression is a *call*, so:
+
+1. `bounded(-0.35, 0.35)` runs and returns the inner function `decorator`.
+2. That result is the thing applied: `gimbal_command = decorator(gimbal_command)`.
+
+Written in one line, `gimbal_command = bounded(-0.35, 0.35)(gimbal_command)`. The two pairs of brackets are the two calls, and each call needs a function to receive it. With `@timed` there is no call after the name, so one level fewer is enough.
 :::
 
 ### Two tools for handling failures inside a wrapper
