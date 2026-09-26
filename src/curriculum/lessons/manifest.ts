@@ -2080,6 +2080,91 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       "file": "cod_py_02_idiomatic/13-package-layout.md"
     }
   ],
+  "cod_sql_01_select": [
+    {
+      "id": "l01-tables-rows-and-keys",
+      "title": "Tables, rows and keys",
+      "minutes": 22,
+      "covers": [
+        "Relations, rows, columns and domains; primary and foreign keys"
+      ],
+      "file": "cod_sql_01_select/01-tables-rows-and-keys.md"
+    },
+    {
+      "id": "l02-select-from-where",
+      "title": "Asking questions: SELECT, FROM, WHERE",
+      "minutes": 22,
+      "covers": [
+        "SELECT, FROM, WHERE; comparison, BETWEEN, IN, LIKE"
+      ],
+      "file": "cod_sql_01_select/02-select-from-where.md"
+    },
+    {
+      "id": "l03-sorting-limiting-and-distinct",
+      "title": "Sorting, limiting and removing duplicates",
+      "minutes": 22,
+      "covers": [
+        "ORDER BY, LIMIT and OFFSET; DISTINCT"
+      ],
+      "file": "cod_sql_01_select/03-sorting-limiting-and-distinct.md"
+    },
+    {
+      "id": "l04-expressions-and-case",
+      "title": "Computed columns and CASE WHEN",
+      "minutes": 21,
+      "covers": [
+        "Expressions and CASE WHEN"
+      ],
+      "file": "cod_sql_01_select/04-expressions-and-case.md"
+    },
+    {
+      "id": "l05-null-and-three-valued-logic",
+      "title": "NULL: the value that is not there",
+      "minutes": 24,
+      "covers": [
+        "NULL and three-valued logic; the = NULL trap; IS NULL and IS NOT NULL",
+        "COALESCE, NULLIF, CAST"
+      ],
+      "file": "cod_sql_01_select/05-null-and-three-valued-logic.md"
+    },
+    {
+      "id": "l06-data-types",
+      "title": "Data types: choosing what a column holds",
+      "minutes": 22,
+      "covers": [
+        "Data types: INTEGER, NUMERIC versus REAL, and why timestamps and money never use floats",
+        "COALESCE, NULLIF, CAST"
+      ],
+      "file": "cod_sql_01_select/06-data-types.md"
+    },
+    {
+      "id": "l07-time-in-the-database",
+      "title": "Time: TIMESTAMPTZ, intervals and UTC",
+      "minutes": 22,
+      "covers": [
+        "TIMESTAMPTZ versus TIMESTAMP, intervals, and why aerospace stores UTC"
+      ],
+      "file": "cod_sql_01_select/07-time-in-the-database.md"
+    },
+    {
+      "id": "l08-the-order-a-query-runs-in",
+      "title": "The order a query really runs in",
+      "minutes": 19,
+      "covers": [
+        "Logical versus physical query order: FROM, WHERE, GROUP BY, HAVING, SELECT, ORDER BY, LIMIT"
+      ],
+      "file": "cod_sql_01_select/08-the-order-a-query-runs-in.md"
+    },
+    {
+      "id": "l09-reading-a-schema",
+      "title": "Reading a schema you did not write",
+      "minutes": 22,
+      "covers": [
+        "Reading a schema you did not write"
+      ],
+      "file": "cod_sql_01_select/09-reading-a-schema.md"
+    }
+  ],
   "t0_m00_basecamp": [
     {
       "id": "l01-place-value-and-estimating",
@@ -8637,21 +8722,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "cod_sql_01_select": {
-    "covered": 0,
+    "covered": 10,
     "total": 10,
-    "complete": false,
-    "missing": [
-      "Relations, rows, columns and domains; primary and foreign keys",
-      "NULL and three-valued logic; the = NULL trap; IS NULL and IS NOT NULL",
-      "SELECT, FROM, WHERE; comparison, BETWEEN, IN, LIKE",
-      "ORDER BY, LIMIT and OFFSET; DISTINCT",
-      "Expressions and CASE WHEN",
-      "Data types: INTEGER, NUMERIC versus REAL, and why timestamps and money never use floats",
-      "TIMESTAMPTZ versus TIMESTAMP, intervals, and why aerospace stores UTC",
-      "COALESCE, NULLIF, CAST",
-      "Logical versus physical query order: FROM, WHERE, GROUP BY, HAVING, SELECT, ORDER BY, LIMIT",
-      "Reading a schema you did not write"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_sql_02_joins": {
     "covered": 0,
