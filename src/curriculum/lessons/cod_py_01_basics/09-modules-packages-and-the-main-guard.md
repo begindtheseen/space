@@ -1,20 +1,22 @@
 ---
 id: l09-modules-packages-and-the-main-guard
 title: Modules, imports, packages and the main guard
-minutes: 18
+minutes: 20
 covers:
   - Modules, import, packages, the if __name__ == "__main__" guard
 ---
 
-A 200-line analysis script is one file. The next one reuses its unit conversions, and the one after that reuses its limit checks, and if the only way to reuse them is to copy them, then within a month there are three versions of the same conversion and one of them has the wrong constant. A *module* is the mechanism that prevents this: a file of Python whose contents another file can use by name.
+Think about a family recipe for pancakes. You could copy it by hand into every notebook in the house. Then one day someone fixes a mistake — "two eggs, not three" — in one copy, and now the notebooks disagree. The better way is one recipe card in one box, and everyone who needs it goes to the box.
 
-You have been importing since lesson 1. `import math` brings in a module of the standard library. `import numpy as np`, in the modules after this one, brings in a third-party package. Writing your own is the same act from the other side, and it takes one thing: put the functions in a file, and import the file.
+Code has the same problem. A 200-line analysis script is one file. The next script wants its unit conversions. The one after that wants its limit checks. If the only way to reuse them is to copy them, then within a month there are three versions of the same conversion, and one of them has the wrong constant. A **module** is the recipe box: a file of Python whose contents another file can use by name.
 
-The part of this lesson that matters most is the smallest: `if __name__ == "__main__":`. Importing a module **runs it**, top to bottom. A file that starts a two-hour Monte Carlo when it is imported cannot be imported for the one function you wanted, and the guard is what separates "what this file defines" from "what this file does when you run it".
+You have been importing since lesson 1. `import math` brings in a module from the **standard library**, the collection of modules that comes with Python. `import numpy as np`, in the modules after this one, brings in a **third-party package** — one written by other people and installed separately. Writing your own module is the same act from the other side. Put the functions in a file, and import the file.
+
+The part of this lesson that matters most is also the smallest: `if __name__ == "__main__":`. Importing a module **runs it**, top to bottom. A file that starts a two-hour Monte Carlo simulation (one run thousands of times with random inputs) when it is imported cannot be imported for the one function you wanted. The guard is what separates "what this file defines" from "what this file does when you run it".
 
 ## A module is a file, and importing it runs it
 
-Put the reusable parts in a file. The `print` on the last line before the guard is there to show you when the file's body runs; a real module would not print anything:
+Put the reusable parts in a file. The `print` on the line before the guard is only there to show you *when* the file's body runs. A real module would not print anything:
 
 ```python
 # telemetry.py
@@ -46,7 +48,9 @@ if __name__ == "__main__":
     print("self-test:", mean(clean(demo)))
 ```
 
-Run it directly and both prints happen:
+(`DROPOUT` is a marker value: a sensor that missed a reading writes $-999.0$ instead. `!=` reads "is not equal to".)
+
+Run it directly, and both prints happen:
 
 ```bash
 python3 telemetry.py
@@ -54,7 +58,9 @@ python3 telemetry.py
 # self-test: 9.8
 ```
 
-Now use it from another file. `import telemetry` binds the name `telemetry` to a *module object*, and everything defined at the top level of the file is reachable through a dot:
+Sanity check on the self-test: after the dropout is removed, the mean of 9.79 and 9.81 is 9.80.
+
+Now use it from another file. `import telemetry` ties the name `telemetry` to a **module object**. Everything defined at the top level of the file is reachable through a dot, read aloud as "telemetry dot clean":
 
 ```python
 # report.py
@@ -78,13 +84,23 @@ python3 report.py
 # telemetry
 ```
 
-Look at the first line of that output. `report.py` never printed it — `telemetry.py` did, while being imported. The import statement executed the module's body: the `def` statements ran (which is what creates the functions), the assignment to `DROPOUT` ran, and so did the `print`. What did *not* run is the block under the guard, and the next section is why.
+Look at the first line of that output. `report.py` never printed it. `telemetry.py` did, while being imported. The import statement **[[executed the module's body|import-runs-body]]**:
+
+1. The assignment to `DROPOUT` ran.
+2. The two `def` statements ran — running a `def` is what creates a function.
+3. The `print` ran.
+4. The `if` was tested and was false, so the block under the guard was skipped.
+
+The next section is why step 4 came out false.
 
 ## `__name__` and the main guard
 
-Every module has a `__name__`. When a file is run directly, Python sets its `__name__` to the string `"__main__"`. When it is imported, `__name__` is the module's own name — which is why `report.py` printed `telemetry` on the last line.
+Every module has a name stored in `__name__`, read "**[[dunder name|dunder-main]]**" — "dunder" is short for the double underscores on each side. Python sets it for you:
 
-So the standard idiom reads exactly as it means: *if this file is the one being run, do this; if it is being imported, do not*.
+- When a file is **run directly**, its `__name__` is the string `"__main__"`.
+- When a file is **imported**, its `__name__` is the module's own name. That is why `report.py` printed `telemetry` on its last line.
+
+So the standard idiom reads exactly as it means: *if this file is the one being run, do this; if it is being imported, do not*. (`==` reads "equals".)
 
 ```python
 # guard_shape.py
@@ -97,22 +113,24 @@ if __name__ == "__main__":
     main()
 ```
 
-Everything that *does* something — running the analysis, reading a file, printing a report — goes under the guard or into a function the guard calls. Everything that *defines* something stays above it. Without the guard, importing your simulation module to reuse one function executes the whole run.
+Here is the rule for what goes where. Everything that *does* something — running the analysis, reading a file, printing a report — goes under the guard, or into a function the guard calls. Everything that *defines* something — constants, functions — stays above it. Without the guard, importing your simulation module to reuse one function executes the whole run.
 
 ::: key
-`if __name__ == "__main__":` guards code that should run only when the file is executed directly, not when it is imported. `__name__` is `"__main__"` in the file you ran and the module's own name everywhere else.
+`if __name__ == "__main__":` guards code that should run only when the file is executed directly, not when it is imported. Without it, importing your simulation module to reuse one function would execute the whole run. `__name__` is `"__main__"` in the file you ran and the module's own name everywhere else.
 :::
 
 ## Importing twice runs it once
 
-Python caches modules. The first import executes the file and stores the module object in `sys.modules`; every later import of the same name finds it there and binds the existing object:
+Python keeps a **[[cache|sys-modules-cache]]** of modules — a store of things already fetched, called `sys.modules`. The first import executes the file and saves the module object there. Every later import of the same name finds it there and reuses that object:
 
 ```bash
 python3 -c "import telemetry; import telemetry"
 # telemetry module loaded
 ```
 
-One line, not two. This is why a module's body is the wrong place for anything expensive or anything with a side effect: it runs at an unpredictable moment — whenever some file first imports it — and it never runs again, so you cannot rely on it either. It is also why changing a file has no effect on a REPL session that already imported it; restart the interpreter.
+One line, not two. (`python3 -c "..."` runs the Python code in the quotes, as you saw in lesson 1.)
+
+That has two consequences. First, a module's body is the wrong place for anything expensive or with a **side effect** — a change to the world outside the function, such as writing a file. It runs at a moment you do not choose (whenever some file first imports it), and it never runs again, so you cannot rely on it either. Second, editing a file has no effect on a REPL session that already imported it. Restart the interpreter.
 
 ## Four ways to import
 
@@ -128,19 +146,22 @@ print(sqrt(4.0), f"{pi:.5f}")    # 2.0 3.14159
 print(stats.mean([1.0, 2.0]))    # 1.5
 ```
 
-The first form is the default: `math.sqrt` says where `sqrt` came from, which is what a reader needs. The second is for names you use constantly, and it is how `from pathlib import Path` will appear in the next lesson. The third is a convention with established short names — `import numpy as np` is universal, and using anything else is unkind.
+1. `import math` is the default. `math.sqrt` tells the reader where `sqrt` came from, which is what a reader needs.
+2. `from math import sqrt, pi` is for names you use constantly. It is how `from pathlib import Path` will appear in lesson 11.
+3. `import statistics as stats` gives the module a shorter name. Use it where the short name is an established **[[convention|np-convention]]**: `import numpy as np` is universal, and using anything else is unkind to your readers.
+4. `from math import *` — read "from math import star" — pulls every public name into your file at once.
 
-The fourth, `from math import *`, imports every public name into your file at once. It saves typing and costs you the ability to tell where anything came from; worse, two star-imports can silently overwrite each other's names, so the meaning of your code depends on the order of your import lines. Do not use it.
+The fourth saves typing and costs you the ability to tell where anything came from. Worse, two star-imports can silently overwrite each other's names, so the meaning of your code depends on the order of your import lines. Do not use it.
 
 ## Where Python looks for a module
 
-When you write `import x`, Python looks in this order:
+When you write `import x`, Python looks in **[[this order|search-order]]**:
 
 1. `sys.modules`, the cache of modules already imported in this process.
-2. The modules compiled into the interpreter itself, listed in `sys.builtin_module_names` — `math`, `sys` and `time` are among them.
+2. The modules compiled into the interpreter program itself, listed in `sys.builtin_module_names`. `sys` is always among them. **[[Which others are|built-in-depends]]** depends on how your Python was built.
 3. Each directory in `sys.path`, in order: the directory of the script you ran, then any directories named in the `PYTHONPATH` environment variable, then the standard library, then the `site-packages` directory where installed third-party packages live.
 
-The first entry is the interesting one. The directory your script lives in is searched before the standard library, so `import telemetry` found your `telemetry.py` with no configuration at all — and a file of yours whose name collides with a standard library module wins.
+The first directory is the interesting one. The folder your script lives in is searched *before* the standard library. That is how `import telemetry` found your `telemetry.py` with no setup at all. It also means a file of yours whose name matches a standard library module wins.
 
 ```python
 # wherefrom.py
@@ -150,7 +171,7 @@ import sys
 print(sys.path[0] == os.path.dirname(os.path.abspath(__file__)))   # True
 ```
 
-`__file__` is the path of the module being run, and the check confirms that `sys.path[0]` is that file's own directory. Run a script from anywhere and its own directory is where its imports are found first.
+`__file__` is the path of the file being run. `os.path.abspath` makes it a full path, and `os.path.dirname` keeps only the folder part. The check confirms that `sys.path[0]` is that file's own folder. Run a script from anywhere, and its own folder is where its imports are looked for first.
 
 If the name is nowhere on the path, you get a specific error:
 
@@ -161,11 +182,11 @@ python3 -c "import flght"
 # ModuleNotFoundError: No module named 'flght'
 ```
 
-`ModuleNotFoundError` means one of three things: a typo, a package you have not installed into this environment (lesson 13), or a file that is not on the path because you ran the script from a different directory than you thought.
+`ModuleNotFoundError` means one of three things: a typo (as here, `flght`), a package you have not installed into this environment (lesson 13), or a file that is not on the path because you ran the script from a different folder than you thought.
 
 ## Packages: a directory of modules
 
-When one file is not enough, a *package* groups several. A package is a directory containing a file named `__init__.py`, which marks the directory as importable and runs when the package is first imported:
+When one file is not enough, a **package** groups several. A package is a directory — a folder — containing a file named `__init__.py` ("dunder init"). That file marks the folder as importable, and it runs when the package is first imported:
 
 ```python
 # flight/__init__.py
@@ -192,7 +213,7 @@ def psi_to_pa(psi):
     return psi * PSI_TO_PA
 ```
 
-The directory layout is
+The **[[directory layout|package-tree]]** is
 
 ```bash
 ls flight
@@ -200,7 +221,7 @@ ls flight
 # units.py
 ```
 
-and a script beside the `flight` directory imports from it with a dotted name:
+and a script sitting beside the `flight` folder imports from it with a dotted name:
 
 ```python
 # main.py
@@ -219,28 +240,38 @@ python3 main.py
 # 0.1.0
 ```
 
-100 nautical miles is 185.2 km exactly, because the nautical mile is defined as 1852 m; and 14.696 psi is 101,325.4 Pa, which is one standard atmosphere to the precision the input was written in. Both are the kind of conversion that must have its constant in exactly one file.
+Check both numbers. 100 **[[nautical miles|nautical-mile]]** is $100 \times 1852 = 185\,200$ m, or 185.2 km exactly, because the nautical mile is *defined* as 1852 m. And $14.696 \times 6894.757 \approx 101\,325.4$ Pa, which is one standard atmosphere ($101\,325$ Pa) to the precision the input was written in. Both are the kind of conversion that must have its constant in exactly one file.
 
-`from flight import units` gives you the submodule; `from flight.units import nmi_to_m` gives you the function directly. What `import flight` alone does *not* do is import the submodules — only `__init__.py` runs — so `flight.units.nmi_to_m(1.0)` after a bare `import flight` raises `AttributeError` unless `__init__.py` imported the submodule itself. Small packages often put `from flight import units` in `__init__.py` for exactly that reason.
+There are two ways to reach inside. `from flight import units` gives you the submodule. `from flight.units import nmi_to_m` gives you the function directly.
+
+What `import flight` alone does *not* do is import the submodules. Only `__init__.py` runs. So `flight.units.nmi_to_m(1.0)` after a bare `import flight` raises `AttributeError`, unless `__init__.py` imported the submodule itself. Small packages often put `from flight import units` inside `__init__.py` for exactly that reason.
 
 ::: example Splitting a script that had grown too big
-You have one file that reads a record, cleans it, computes statistics and prints a report, and now a second analysis needs the cleaning and the statistics but not the report. Split it:
+You have one file that reads a record, cleans it, computes statistics and prints a report. Now a second analysis needs the cleaning and the statistics, but not the report. Split it in two:
 
-- `telemetry.py` — `DROPOUT`, `clean`, `mean`. Definitions only, no output, no file reading at import time.
+- `telemetry.py` — `DROPOUT`, `clean`, `mean`. Definitions only: no output, no file reading at import time.
 - `report.py` — imports `telemetry`, does the work, prints.
 
-`report.py` keeps its actions under `if __name__ == "__main__":` too, so that a third script can one day import `report` for one of its formatting helpers without printing a report as a side effect. The rule generalises: **every file should be importable without doing anything**.
+`report.py` keeps its actions under `if __name__ == "__main__":` too. That way a third script can one day import `report` for one of its formatting helpers without printing a report as a side effect. The rule generalizes: **every file should be importable without doing anything**.
 
-The test for whether you have it right is one command. If `python3 -c "import report"` prints nothing and takes no measurable time, the file is safe to import. If it prints a report, the file is a script pretending to be a module, and the next person to want one function out of it will copy that function instead — which is how a codebase ends up with three versions of a conversion.
+Checking you got it right takes one command. If `python3 -c "import report"` prints nothing and takes no time you can notice, the file is safe to import. If it prints a report, the file is a script pretending to be a module. The next person who wants one function out of it will copy that function instead — which is how a codebase ends up with three versions of a conversion.
 :::
 
-::: note
-A Jupyter notebook is not a module. Its cells can be executed in any order, so the state a result depended on may be unreproducible from the file; it is stored as JSON with the outputs embedded, so a one-character change can produce a diff of thousands of lines and no reviewer can read it; and it cannot be imported or run under a test runner as it stands. Notebooks are excellent for exploring — load a file once, try a dozen plots against it — and the working rule is the same as this lesson's: anything worth keeping moves into a `.py` module that the notebook imports, and the notebook is restarted and run top to bottom before any result from it is believed.
-:::
+## Modules, scripts and notebooks
+
+Many engineers first meet Python in a **Jupyter notebook**: a page of code "cells" you run one at a time, with the plots and tables shown right under each cell. Notebooks are excellent for exploring — load a file once, try a dozen plots against it.
+
+A notebook is not a module, though, and the differences are exactly the things a team shipping code cares about.
+
+- **Order.** Cells can be run in any order, and run again. The state a result depended on may be impossible to rebuild from the file.
+- **Review.** The file is stored as **[[JSON|notebook-json]]** with the outputs embedded. A one-character change can produce a diff of thousands of lines that no reviewer can read.
+- **Reuse.** As it stands, a notebook cannot be imported by another file or run under a test runner.
+
+The working rule matches the rest of this lesson. Anything worth keeping moves into a `.py` module that the notebook imports. And before any result from a notebook is believed, the notebook is restarted and run top to bottom.
 
 ## Two naming traps
 
-A module of your own that shares a name with a standard library module shadows it, because the script's directory comes before the standard library on `sys.path`:
+**Trap 1: your file hides a standard module.** A module of your own that shares a name with a standard library module shadows it, because the script's folder comes before the standard library on `sys.path`:
 
 ```python
 # random.py
@@ -265,12 +296,12 @@ python3 jitter.py
 # AttributeError: module 'random' has no attribute 'uniform'
 ```
 
-The message is about an attribute, not about an import, which is what makes it hard to place: `import random` succeeded — it imported the wrong `random`. The same happens with `csv.py`, `json.py`, `statistics.py`, `email.py` and every other pure-Python module of the standard library.
+The message is about an attribute, not about an import, and that is what makes it hard to place. `import random` *succeeded*. It imported the wrong `random`. The same happens with `csv.py`, `json.py`, `statistics.py`, `email.py` and every other standard library module that is an ordinary file.
 
-Curiously, a file called `math.py` does *not* do this, because `math` is compiled into the interpreter and step 2 of the search finds it before `sys.path` is consulted at all. That inconsistency is the reason the rule has to be blunt rather than clever: never name a file after a module you might import, and if a name is suspiciously short and generic, assume it is taken.
+A module compiled into the interpreter cannot be hidden this way, because step 2 of the search finds it before `sys.path` is looked at. On the usual Linux builds `math` is one of those, so a local `math.py` changes nothing there — while on a build where `math` is a separate file, the same `math.py` would take over. That inconsistency is why the rule has to be blunt rather than clever: never name a file after a module you might import, and if a name is short and generic, assume it is taken.
 
 ::: example Which file did the import actually find?
-When a name resolves to the wrong module, the module itself will tell you where it came from. Every imported module carries `__file__`, the path it was loaded from:
+When a name leads to the wrong module, the module itself will tell you where it came from. Every module loaded from a file carries `__file__`, the path it was loaded from:
 
 ```python
 # which_module.py
@@ -281,7 +312,9 @@ print(Path(random.__file__).name)
 print(Path(random.__file__) == Path("random.py").resolve())
 ```
 
-Run in the directory that still contains the `random.py` from the previous section:
+(`Path` is a tidy way to handle file paths, taught properly in lesson 11. `.name` is the last part of a path; `.resolve()` turns a relative path into a full one.)
+
+Run it in the folder that still contains the `random.py` from the trap above:
 
 ```bash
 python3 which_module.py
@@ -289,7 +322,7 @@ python3 which_module.py
 # True
 ```
 
-The file name alone tells you nothing — the standard library's module is also called `random.py`. The full path is what settles it, and here it is the copy in the working directory. Delete that file and ask again:
+The file name alone tells you nothing, because the standard library's module is also called `random.py`. The full path is what settles it, and here it is the copy in the working folder. Delete that file and ask again:
 
 ```bash
 rm random.py
@@ -298,12 +331,12 @@ python3 which_module.py
 # False
 ```
 
-Now `random.__file__` points into the standard library instead, several directories away, and `random.uniform` exists again. Two lines of diagnosis for a failure that otherwise looks like the standard library losing a function.
+Now `random.__file__` points into the standard library, several folders away, and `random.uniform` exists again. That is two lines of diagnosis for a failure that otherwise looks like the standard library losing a function.
 
-The same trick works for any import that behaves strangely, including third-party packages in lesson 13: `print(numpy.__file__)` says which environment's NumPy you are actually running. The only modules without a `__file__` are the ones compiled into the interpreter, such as `math` — and that absence is itself the answer to why a local `math.py` never shadows anything.
+The same trick works for any import that behaves strangely, including third-party packages in lesson 13: `print(numpy.__file__)` tells you which environment's NumPy you are really running. The only modules without a `__file__` are the ones compiled into the interpreter — on this build, `math` is one, and `getattr(math, "__file__", None)` gives `None`.
 :::
 
-The second trap is the leftover `__pycache__` directory. Python caches the compiled bytecode of every imported module there. It is regenerated automatically, it should never be committed to version control, and deleting it is always safe.
+**Trap 2: the leftover `__pycache__` folder.** Python saves the translated form of every imported module — its **[[bytecode|pycache-files]]** — in a folder called `__pycache__`, so the next import is faster. It is rebuilt automatically, it should never be committed to version control, and deleting it is always safe.
 
 ::: warning
 Do not put an expensive or side-effecting statement at a module's top level: reading a data file, opening a network connection, creating a directory, or starting a run. It executes on first import, at a moment you do not control, and never again. Put it in a function, and call that function from under the main guard.
@@ -312,11 +345,13 @@ Do not put an expensive or side-effecting statement at a module's top level: rea
 ## Check yourself
 
 ::: check
-A colleague's `sim.py` ends with 30 lines that set up a vehicle and run a 10-minute simulation, not indented under anything. You want to reuse its `atmosphere` function. What happens when you write `import sim`, and what is the one-line fix to their file?
+A colleague's `sim.py` ends with 30 lines that set up a vehicle and run a 10-minute simulation, not indented under anything. You want to reuse its `atmosphere` function. What happens when you write `import sim`, and what is the fix to their file?
 :::
 
 ::: answer
-Importing `sim` executes the whole file, so the 10-minute simulation runs before your first line does — and it runs every time your script starts. You would get the function eventually, along with its output and its run time. The fix is to put the 30 lines into a function, say `def main(): ...`, and call it under `if __name__ == "__main__": main()`. Then `python3 sim.py` behaves exactly as before and `import sim` costs nothing.
+Importing `sim` executes the whole file, so the 10-minute simulation runs before your first line does — and it runs every time your script starts. You would get the function eventually, along with its output and its run time.
+
+The fix is to put the 30 lines into a function, say `def main(): ...`, and call it under `if __name__ == "__main__": main()`. Then `python3 sim.py` behaves exactly as before, and `import sim` costs nothing.
 :::
 
 ::: check
@@ -324,7 +359,7 @@ What does `__name__` hold inside `telemetry.py` when you run `python3 telemetry.
 :::
 
 ::: answer
-`"__main__"` in the first case, and `"telemetry"` in the second. Python sets `__name__` to `"__main__"` for the file it was asked to run, and to the module's own name for every module it imports. That single difference is what the guard tests; there is nothing more to it, and `__main__` is an ordinary string.
+`"__main__"` in the first case, and `"telemetry"` in the second. Python sets `__name__` to `"__main__"` for the file it was asked to run, and to the module's own name for every module it imports. That one difference is all the guard tests. There is nothing more to it: `"__main__"` is an ordinary string.
 :::
 
 ::: check
@@ -332,15 +367,19 @@ Why does `python3 -c "import telemetry; import telemetry"` print the module's lo
 :::
 
 ::: answer
-Because the first import executes the file and stores the resulting module object in `sys.modules` under the name `telemetry`. The second import finds the name already there and binds the same object without re-executing anything. The consequence worth remembering: a module's body runs exactly once per process, so it is the wrong place for work you want repeated — and editing a module does not affect a REPL that has already imported it.
+Because the first import executes the file and stores the resulting module object in `sys.modules` under the name `telemetry`. The second import finds the name already there and reuses the same object without running anything.
+
+The consequence worth remembering: a module's body runs exactly once per process. So it is the wrong place for work you want repeated — and editing a module does not affect a REPL that has already imported it.
 :::
 
 ::: check
-You save a file called `csv.py` containing your own parsing helpers, in the directory of a script that also does `import csv` for the standard library reader. What happens, and what does the error look like?
+You save a file called `csv.py` containing your own parsing helpers, in the folder of a script that also does `import csv` for the standard library reader. What happens, and what does the error look like?
 :::
 
 ::: answer
-Your file wins: the script's own directory is the first entry on `sys.path`, and `csv` is a pure-Python standard library module rather than one compiled into the interpreter. `import csv` binds your module, and the first use of the real one fails with an `AttributeError` such as `module 'csv' has no attribute 'reader'` — an error that says nothing about imports and sends you looking in the wrong place. Rename your file to something like `csv_helpers.py`.
+Your file wins. The script's own folder is the first entry on `sys.path`, and `csv` is an ordinary-file standard library module rather than one compiled into the interpreter. So `import csv` loads your module, and the first use of the real one fails with an `AttributeError` such as `module 'csv' has no attribute 'reader'`.
+
+That error says nothing about imports, so it sends you looking in the wrong place. `print(csv.__file__)` would show the path to your file. Rename your file to something like `csv_helpers.py`.
 :::
 
 ::: check
@@ -348,7 +387,9 @@ What is the minimum needed to turn a directory of modules into a package, and wh
 :::
 
 ::: answer
-A file named `__init__.py` in the directory, which may be empty; that is what marks the directory as a package and gives it a body to run on first import. `import flight` runs only `__init__.py` and binds the name `flight`. It does not import the submodules, so `flight.units` raises `AttributeError` unless `__init__.py` imported `units` itself or you wrote `from flight import units`. The version string in the example is reachable after a bare `import flight` precisely because it is defined in `__init__.py`.
+A file named `__init__.py` in the directory, which may be empty. That is what marks the folder as a package and gives it a body to run on first import.
+
+`import flight` runs only `__init__.py` and ties the name `flight` to the package. It does not import the submodules, so `flight.units` raises `AttributeError` unless `__init__.py` imported `units` itself or you wrote `from flight import units`. The version string in the example is reachable after a bare `import flight` precisely because it is defined in `__init__.py`.
 :::
 
 ## Summary
@@ -364,7 +405,109 @@ A file named `__init__.py` in the directory, which may be empty; that is what ma
 | Search order | `sys.modules`, then built-in modules, then `sys.path`: script directory, `PYTHONPATH`, standard library, `site-packages` |
 | Missing module | `ModuleNotFoundError: No module named 'x'` — typo, not installed, or wrong directory |
 | Package | A directory with `__init__.py`; `from pkg import mod`, `pkg.mod.f()` |
-| Shadowing | A local `random.py` or `csv.py` beats the standard library; `math.py` does not, because `math` is built in |
+| Shadowing | A local `random.py` or `csv.py` beats the standard library; a compiled-in module (like `math` on most Linux builds) cannot be shadowed |
+| Which file? | `print(m.__file__)` shows where module `m` was loaded from |
+| Notebooks | For exploring; code worth keeping moves into modules the notebook imports |
 | Importability | Every file should be importable with no visible effect and no measurable cost |
 
 The next lesson is about the other half of a reusable module: what it does when something goes wrong. A file that is missing, a line that will not parse, a channel that is not in the table — exceptions are how Python reports these, and how your code decides which ones to handle.
+
+::: context import-runs-body What an import actually does
+`import telemetry` is not a "copy and paste". Python finds the file, runs every top-level line in order inside a fresh module, and then ties your name to that module object. Only the guarded block is skipped, because inside an import `__name__` is `"telemetry"`, not `"__main__"`.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 170" font-family="Inter, Arial, sans-serif">
+  <rect x="12" y="20" width="110" height="36" rx="5" fill="#f2b880" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="67" y="43" font-size="12" text-anchor="middle" fill="#1f2a44">report.py</text>
+  <text x="67" y="74" font-size="11" text-anchor="middle" fill="#1f2a44">import telemetry</text>
+  <line x1="122" y1="38" x2="158" y2="38" stroke="#1f2a44" stroke-width="1.5"/>
+  <polygon points="166,38 156,33 156,43" fill="#1f2a44"/>
+  <rect x="168" y="10" width="186" height="150" rx="6" fill="#fff" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="180" y="30" font-size="11" fill="#1d6fd1">DROPOUT = -999.0   ran</text>
+  <text x="180" y="50" font-size="11" fill="#1d6fd1">def clean(...)      ran</text>
+  <text x="180" y="70" font-size="11" fill="#1d6fd1">def mean(...)       ran</text>
+  <text x="180" y="90" font-size="11" fill="#1d6fd1">print("loaded")     ran</text>
+  <rect x="174" y="104" width="174" height="46" rx="4" fill="#fff" stroke="#b4232c" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <text x="180" y="122" font-size="11" fill="#b4232c">if __name__ == "__main__":</text>
+  <text x="180" y="140" font-size="11" fill="#b4232c">skipped on import</text>
+</svg>
+```
+:::
+
+::: context dunder-main Where the name "__main__" comes from
+The file you hand to `python3` is itself loaded as a module — one whose name is `"__main__"`, meaning "the top-level program". You can see it in the cache: `sys.modules["__main__"]` is the module for the script you ran. Names that start and end with two underscores are Python's own hooks, and people say "dunder" to save breath: `__init__` is "dunder init", `__file__` is "dunder file".
+:::
+
+::: context sys-modules-cache A dictionary of everything loaded
+`sys.modules` is an ordinary Python dictionary from module names to module objects. Many modules are already in it before your first line runs, because Python loads them while starting up. If you are working in a REPL and really need a changed file without restarting, `importlib.reload(telemetry)` re-runs the file into the existing module object. It has sharp edges — objects made before the reload keep the old code — so restarting is the dependable habit.
+:::
+
+::: context np-convention Short names everyone agrees on
+Scientific Python has a set of short import names that almost every project uses: `import numpy as np`, `import pandas as pd`, `import matplotlib.pyplot as plt`. They are not enforced by Python — you could write `import numpy as banana` and it would work. They are kept because an engineer reading someone else's analysis script sees `np.` and instantly knows what it is. Breaking the convention costs every future reader a moment of confusion.
+:::
+
+::: context search-order The order of the search
+Python stops at the first place that has the name. Because your script's folder comes before the standard library, a file of yours can hide a standard module — but not one already cached or compiled in.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 200" font-family="Inter, Arial, sans-serif">
+  <g stroke="#1f2a44" stroke-width="1.5">
+    <rect x="30" y="10" width="300" height="26" rx="5" fill="#8fb8f0"/>
+    <rect x="30" y="46" width="300" height="26" rx="5" fill="#8fb8f0"/>
+    <rect x="30" y="82" width="300" height="26" rx="5" fill="#f2b880"/>
+    <rect x="30" y="118" width="300" height="26" rx="5" fill="#fff"/>
+    <rect x="30" y="154" width="300" height="26" rx="5" fill="#fff"/>
+  </g>
+  <g font-size="12" fill="#1f2a44">
+    <text x="42" y="28">1  sys.modules (already imported)</text>
+    <text x="42" y="64">2  compiled into the interpreter</text>
+    <text x="42" y="100">3  your script's folder</text>
+    <text x="42" y="136">4  PYTHONPATH, standard library</text>
+    <text x="42" y="172">5  site-packages (installed)</text>
+  </g>
+  <line x1="14" y1="16" x2="14" y2="178" stroke="#b4232c" stroke-width="2"/>
+  <polygon points="14,186 9,176 19,176" fill="#b4232c"/>
+</svg>
+```
+:::
+
+::: context built-in-depends Compiled in, or a file?
+Some standard modules are written in C and linked straight into the `python3` program; others are separate files, either Python source or compiled extension files. Which is which is decided when your Python is built, so it differs between, say, a Linux distribution's Python and one from another installer. Ask your own interpreter: `import sys; print("math" in sys.builtin_module_names)`. On the Python used to check this lesson, `math`, `time` and `sys` are compiled in, and `random` is not.
+:::
+
+::: context package-tree A package on disk
+A package is a folder with an `__init__.py` in it. The `__pycache__` folder appears on its own after the first import.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">
+  <text x="16" y="24" font-size="13" fill="#1f2a44">project/</text>
+  <g stroke="#6c7a93" stroke-width="1.5" fill="none">
+    <path d="M28 32 V122"/>
+    <path d="M28 46 H48"/>
+    <path d="M28 122 H48"/>
+    <path d="M64 56 V104"/>
+    <path d="M64 74 H84"/>
+    <path d="M64 104 H84"/>
+  </g>
+  <text x="52" y="50" font-size="13" fill="#1d6fd1">flight/</text>
+  <text x="88" y="78" font-size="12" fill="#1f2a44">__init__.py</text>
+  <text x="180" y="78" font-size="11" fill="#6c7a93">runs on import flight</text>
+  <text x="88" y="108" font-size="12" fill="#1f2a44">units.py</text>
+  <text x="180" y="108" font-size="11" fill="#6c7a93">flight.units</text>
+  <text x="52" y="126" font-size="12" fill="#1f2a44">main.py</text>
+  <text x="180" y="126" font-size="11" fill="#6c7a93">from flight import units</text>
+</svg>
+```
+:::
+
+::: context nautical-mile Why a mile of the sea is 1852 metres
+The nautical mile comes from navigation: it was meant to be one minute of arc of latitude, one sixtieth of a degree, so that distances on a chart match angles on the globe. Because Earth is not a perfect sphere, that length varies a little with latitude, so it was fixed by international agreement in 1929 as exactly 1852 m. Ships and aircraft still navigate by it, which is why a conversion constant like this belongs in one shared module.
+:::
+
+::: context notebook-json What a notebook file really is
+A `.ipynb` file is JSON: a text format of nested lists and dictionaries, which lesson 11 teaches you to read. Every cell's code, every output — including plots stored as long runs of encoded image data — and a counter of the order cells were run all sit in that one file. Re-running a single plot changes hundreds of lines of it. Tools exist to strip outputs before committing, but the simpler rule is the one in the lesson: logic lives in `.py` modules.
+:::
+
+::: context pycache-files What is in the cache folder
+Before running a module, Python translates it into **bytecode**, a compact list of instructions for its own virtual machine. It saves that in `__pycache__` under a name that includes the Python version, such as `telemetry.cpython-311.pyc`, and reuses it until the `.py` file changes. Adding `__pycache__/` to your project's `.gitignore` keeps it out of version control.
+:::
