@@ -110,11 +110,14 @@ Active bundle resolution, synchronous at startup:
 
 `Updater` is a plain `EventEmitter` with injectable `fetchImpl`, `getToken` and `log`,
 which is what makes it unit-testable without Electron. It emits `'state'` on every
-transition and `'relaunch'` when the shell should restart.
+transition, `'relaunch'` when the shell should restart, and `'quit'` when it should
+exit so a downloaded app can be swapped in.
 
 ```
 idle → checking → up-to-date | available | shell-required | error
        available → downloading → ready → (apply) relaunch
+       shell-required: shellUpdate downloading → ready → (installShell) quit, swap, open
+                                   └→ manual | error (with the reason; the card links the DMG)
 ```
 
 - **check**: `GET {apiBase}/repos/{repo}/releases/latest` with
@@ -138,6 +141,23 @@ idle → checking → up-to-date | available | shell-required | error
   only when neither could be written.
 - A failed **check** after a download keeps `ready` (with `error` set) as long as the
   extracted bundle still validates, so an offline laptop can still restart into it.
+- **downloadShell** (only in `shell-required`): asks the injected `shellInstaller`
+  (`shellInstall.js`) whether this copy can replace itself — macOS, packaged, not
+  running from App Translocation, parent folder writable — and reports
+  `shellUpdate.status = 'manual'` with the reason when not. Otherwise streams
+  `ORBIT-<v>-universal-mac.zip` (same auth and redirect handling as the bundle) to
+  `userData/shell-update/`, verifies its size and SHA-256 against `shell.zipSize` /
+  `shell.zipSha256` (or the size GitHub reports, for releases without them), unpacks
+  it with `ditto`, and checks the app's `CFBundleShortVersionString` and
+  `codesign --verify --deep --strict`. Then `shellUpdate.status = 'ready'`.
+- **installShell**: writes and starts, detached, a bash script that waits for this
+  process to exit, moves the app aside, moves the new one into its place (a rename on
+  the same volume, else `ditto`), clears quarantine, deletes the download and opens the
+  new app — and puts the old app back and opens it if the move fails. Its log is
+  `userData/shell-update.log`. Then emits `'quit'`. The next boot deletes any
+  `shell-update/` left behind.
+- The app therefore jumps straight to the latest release whatever version it is on;
+  only shells from before 1.1.1, which have no `downloadApp`, fall back to the DMG link.
 
 Release manifest (`orbit-manifest.json`, written by `scripts/make-bundle.mjs`):
 
@@ -157,10 +177,15 @@ Release manifest (`orbit-manifest.json`, written by `scripts/make-bundle.mjs`):
   "shell": {
     "version": "1.0.1",
     "dmgUrl": "https://github.com/begindtheseen/space/releases/download/v1.0.1/ORBIT-1.0.1-universal.dmg",
-    "zipUrl": "https://github.com/begindtheseen/space/releases/download/v1.0.1/ORBIT-1.0.1-universal-mac.zip"
+    "zipUrl": "https://github.com/begindtheseen/space/releases/download/v1.0.1/ORBIT-1.0.1-universal-mac.zip",
+    "zipSha256": "…64 hex…",
+    "zipSize": 212345678
   }
 }
 ```
+
+`shell.zipSha256` and `shell.zipSize` are added by the release job once the Mac app
+is built (the manifest itself is written on Linux, before it exists).
 
 Release asset names: `orbit-manifest.json`, `orbit-bundle-<v>.zip`,
 `ORBIT-<v>-universal.dmg`, `ORBIT-<v>-universal-mac.zip` (CI), and
@@ -182,6 +207,8 @@ interface OrbitBridge {
     download(): Promise<UpdateState>
     apply(): Promise<void>
     rollback(): Promise<void>
+    downloadApp(): Promise<UpdateState>   // shell-required: fetch + verify the latest app (1.1.1+)
+    installApp(): Promise<void>           // quit, swap it in, open it (1.1.1+)
     setToken(token: string | null): Promise<UpdateState>
     onState(cb: (s: UpdateState) => void): () => void
   }

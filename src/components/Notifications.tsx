@@ -101,8 +101,8 @@ export function notesFor(
   if (isDesktop && updateStatus === 'shell-required') {
     out.push({
       id: 'shell',
-      title: 'This update needs a newer ORBIT app',
-      detail: 'The lessons update themselves; the app around them is its own download.',
+      title: 'A newer ORBIT app is available',
+      detail: 'Settings updates the app straight to the latest version. Your progress is kept.',
       href: '/settings',
       urgent: true,
     })

@@ -4,6 +4,12 @@
 //
 // Lifecycle: resolveActive() once at boot → check() → download() → apply()
 // (relaunch) … rollback()/quarantine() move current.json back.
+//
+// When the latest bundle needs a newer app than this one ('shell-required'),
+// downloadShell() fetches that release's app, verifies it, and installShell()
+// hands it to the platform installer, which swaps it in once ORBIT has quit
+// and opens it: an app any number of versions behind jumps straight to the
+// latest, in two taps, instead of waiting on a manual download.
 
 import { EventEmitter } from 'node:events'
 import fs from 'node:fs'
@@ -23,6 +29,8 @@ export const BUNDLE_META = 'orbit-bundle.json'
 export const MAX_BUNDLE_BYTES = MAX_TOTAL_UNCOMPRESSED
 const MAX_REDIRECTS = 5
 export const MAX_MANIFEST_BYTES = 1024 * 1024
+/** Largest app zip downloadShell() accepts. The universal app is a few hundred MB. */
+export const MAX_SHELL_BYTES = 1024 * 1024 * 1024
 const PROGRESS_INTERVAL_MS = 100
 const REDIRECT_STATUSES = new Set([301, 302, 303, 307, 308])
 const SHA256_RE = /^[0-9a-f]{64}$/i
@@ -30,6 +38,8 @@ const REPO_RE = /^[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?\/[A-Za-z0-9_.-]+$/
 
 /** @param {string} version */
 export const bundleAssetName = (version) => `orbit-bundle-${version}.zip`
+/** @param {string} version */
+export const shellAssetName = (version) => `ORBIT-${version}-universal-mac.zip`
 
 /**
  * An update failure with a message fit for the Settings card.
@@ -57,6 +67,20 @@ export class UpdateError extends Error {
  * @property {string} sha256
  * @property {string} minShell
  * @property {string} [shellDownloadUrl]
+ * @property {{ size: number, sha256: string }} [shellZip] the app zip's size and hash, when the release recorded them
+ *
+ * @typedef {object} ShellUpdateState
+ * @property {'downloading'|'ready'|'error'|'manual'} status
+ * @property {string} version
+ * @property {{ received: number, total: number }} [progress]
+ * @property {string} [error]
+ *
+ * @typedef {object} ShellInstaller Platform half of replacing the app itself (see shellInstall.js).
+ * @property {() => { ok: true } | { ok: false, reason: string }} supported whether this copy of the app can replace itself
+ * @property {(zip: string, dest: string) => Promise<void>} extract
+ * @property {(dir: string) => string | null} findApp the app inside an extracted zip
+ * @property {(app: string, version: string) => Promise<void>} verify throws when the app is not that version, or broken
+ * @property {(app: string, workDir: string) => void} install swaps `app` in once this process exits, then opens it
  *
  * @typedef {object} UpdateState
  * @property {UpdateStatus} status
@@ -71,6 +95,7 @@ export class UpdateError extends Error {
  * @property {boolean} [needsToken]
  * @property {boolean} hasToken
  * @property {boolean} canRollback
+ * @property {ShellUpdateState} [shellUpdate]
  *
  * @typedef {{ dir: string, version: string, builtIn: boolean }} ActiveBundle
  * @typedef {{ version: string | null, previous: string | null }} CurrentFile
@@ -84,6 +109,7 @@ export class UpdateError extends Error {
  * @property {typeof fetch} [fetchImpl]
  * @property {() => Promise<string | null> | string | null} [getToken]
  * @property {(...args: unknown[]) => void} [log]
+ * @property {ShellInstaller} [shellInstaller] absent: the app can only be updated by hand
  */
 
 /**
@@ -148,14 +174,14 @@ function normalizeCurrent(raw) {
 /**
  * @param {unknown} release
  * @param {string} name
- * @returns {{ name: string, url: string } | null}
+ * @returns {{ name: string, url: string, size: number | null } | null}
  */
 function findAsset(release, name) {
-  const assets = /** @type {{ assets?: unknown }} */ (release).assets
+  const assets = release && typeof release === 'object' ? /** @type {{ assets?: unknown }} */ (release).assets : null
   if (!Array.isArray(assets)) return null
   for (const asset of assets) {
     if (asset && typeof asset === 'object' && asset.name === name && typeof asset.url === 'string') {
-      return { name, url: asset.url }
+      return { name, url: asset.url, size: Number.isSafeInteger(asset.size) && asset.size > 0 ? asset.size : null }
     }
   }
   return null
@@ -187,6 +213,8 @@ function validateManifest(raw) {
   if (!validVersion(b.minShell)) throw bad('bad bundle minShell')
 
   let shellDownloadUrl
+  /** @type {{ size: number, sha256: string } | undefined} */
+  let shellZip
   if (m.shell !== undefined) {
     if (!m.shell || typeof m.shell !== 'object') throw bad('shell must be an object')
     const s = /** @type {Record<string, unknown>} */ (m.shell)
@@ -194,6 +222,12 @@ function validateManifest(raw) {
     if (s.dmgUrl !== undefined && !isHttpsUrl(s.dmgUrl)) throw bad('shell dmgUrl must be https')
     if (s.zipUrl !== undefined && !isHttpsUrl(s.zipUrl)) throw bad('shell zipUrl must be https')
     if (typeof s.dmgUrl === 'string') shellDownloadUrl = s.dmgUrl
+    if (s.zipSha256 !== undefined || s.zipSize !== undefined) {
+      if (typeof s.zipSha256 !== 'string' || !SHA256_RE.test(s.zipSha256)) throw bad('shell zipSha256 must be 64 hex characters')
+      if (typeof s.zipSize !== 'number' || !Number.isSafeInteger(s.zipSize) || s.zipSize <= 0) throw bad('shell zipSize must be a positive integer')
+      if (s.zipSize > MAX_SHELL_BYTES) throw bad(`shell zipSize ${s.zipSize} is over the ${MAX_SHELL_BYTES} byte limit`)
+      shellZip = { size: s.zipSize, sha256: s.zipSha256.toLowerCase() }
+    }
   }
 
   return {
@@ -205,6 +239,7 @@ function validateManifest(raw) {
     minShell: /** @type {string} */ (b.minShell),
     bundleName: /** @type {string} */ (b.name),
     ...(shellDownloadUrl === undefined ? {} : { shellDownloadUrl }),
+    ...(shellZip === undefined ? {} : { shellZip }),
   }
 }
 
@@ -271,6 +306,12 @@ export class Updater extends EventEmitter {
   #checking = null
   /** @type {Promise<UpdateState> | null} */
   #downloading = null
+  /** @type {ShellUpdateState | undefined} */
+  #shell
+  /** @type {string | null} the verified app waiting for installShell() */
+  #shellApp = null
+  /** @type {Promise<UpdateState> | null} */
+  #shellDownloading = null
 
   /** @param {UpdaterOptions} opts */
   constructor(opts) {
@@ -300,11 +341,13 @@ export class Updater extends EventEmitter {
     this.fetchImpl = o.fetchImpl ?? globalThis.fetch
     this.getToken = o.getToken ?? (() => null)
     this.log = o.log ?? (() => {})
+    this.shellInstaller = o.shellInstaller ?? null
     this.paths = {
       bundles: path.join(o.userData, 'bundles'),
       tmp: path.join(o.userData, 'bundles', 'tmp'),
       current: path.join(o.userData, 'bundles', 'current.json'),
       bad: path.join(o.userData, 'bundles', 'bad.json'),
+      shell: path.join(o.userData, 'shell-update'),
     }
   }
 
@@ -348,6 +391,12 @@ export class Updater extends EventEmitter {
     }
     this.active = active ?? { dir: this.builtInDir, version: builtInVersion, builtIn: true }
     this.#gc(current)
+    // An app download from an earlier session: installed by now, or abandoned.
+    try {
+      fs.rmSync(this.paths.shell, { recursive: true, force: true })
+    } catch (err) {
+      this.log('updater: could not remove', this.paths.shell, describe(err))
+    }
     return this.active
   }
 
@@ -429,6 +478,10 @@ export class Updater extends EventEmitter {
     if (this.#progress !== undefined) state.progress = { ...this.#progress }
     if (this.#error !== undefined) state.error = this.#error
     if (this.#needsToken !== undefined) state.needsToken = this.#needsToken
+    if (this.#shell !== undefined) {
+      state.shellUpdate = { ...this.#shell }
+      if (this.#shell.progress) state.shellUpdate.progress = { ...this.#shell.progress }
+    }
     return state
   }
 
@@ -608,6 +661,7 @@ export class Updater extends EventEmitter {
   check() {
     if (this.#checking) return this.#checking
     if (this.#downloading) return this.#downloading
+    if (this.#shellDownloading) return this.#shellDownloading
     this.#checking = this.#check().finally(() => {
       this.#checking = null
     })
@@ -649,6 +703,11 @@ export class Updater extends EventEmitter {
       }
       this.#release = release
       this.#checkedAt = new Date().toISOString()
+      // An app download for a release that is no longer the one to install.
+      if (this.#shell && (this.#status !== 'shell-required' || this.#shell.version !== latest.version)) {
+        this.#shell = undefined
+        this.#shellApp = null
+      }
     } catch (err) {
       this.#fail(err)
       // A bundle downloaded and verified earlier is still worth restarting
@@ -755,9 +814,10 @@ export class Updater extends EventEmitter {
    * @param {ReadableStream<Uint8Array>} body
    * @param {string} file
    * @param {number} limit
+   * @param {(received: number) => void} [onProgress] instead of the bundle download's progress
    * @returns {Promise<{ bytes: number, sha256: string }>}
    */
-  async #streamToFile(body, file, limit) {
+  async #streamToFile(body, file, limit, onProgress) {
     const hash = createHash('sha256')
     const reader = body.getReader()
     const handle = await fs.promises.open(file, 'w')
@@ -782,7 +842,8 @@ export class Updater extends EventEmitter {
         const now = Date.now()
         if (now - lastEmit >= PROGRESS_INTERVAL_MS) {
           lastEmit = now
-          this.#progress = { received: bytes, total: limit }
+          if (onProgress) onProgress(bytes)
+          else this.#progress = { received: bytes, total: limit }
           this.#emit()
         }
       }
@@ -808,6 +869,118 @@ export class Updater extends EventEmitter {
     if (!semver.gte(this.shellVersion, /** @type {string} */ (minShell))) {
       throw new UpdateError(`The downloaded bundle needs ORBIT ${minShell} or newer.`)
     }
+  }
+
+  // ── updating the app itself ──────────────────────────────────────────
+
+  /**
+   * Downloads the latest release's app, verifies it, and unpacks it, ready
+   * for installShell(). Only when the latest bundle needs a newer app than
+   * this one; when this copy cannot replace itself, reports 'manual' with the
+   * reason, and the card offers the download page instead.
+   * @returns {Promise<UpdateState>}
+   */
+  downloadShell() {
+    if (this.#shellDownloading) return this.#shellDownloading
+    if (this.#shell?.status === 'ready' && this.#shellApp) return Promise.resolve(this.getState())
+    if (this.#status !== 'shell-required' || !this.#latest) {
+      return Promise.reject(new Error('No app update is needed; check for updates first.'))
+    }
+    this.#shellDownloading = this.#downloadShell(this.#latest).finally(() => {
+      this.#shellDownloading = null
+    })
+    return this.#shellDownloading
+  }
+
+  /**
+   * @param {Latest} latest
+   * @returns {Promise<UpdateState>}
+   */
+  async #downloadShell(latest) {
+    const { version } = latest
+    const installer = this.shellInstaller
+    const support = installer ? installer.supported() : { ok: false, reason: 'This copy of ORBIT cannot update itself.' }
+    if (!installer || !support.ok) {
+      this.#shell = { status: 'manual', version, error: /** @type {{ reason: string }} */ (support).reason }
+      this.log('updater: app update must be done by hand:', this.#shell.error)
+      this.#emit()
+      return this.getState()
+    }
+    const assetName = shellAssetName(version)
+    const work = path.join(this.paths.shell, version)
+    const zipPath = path.join(this.paths.shell, `${version}.zip`)
+    const limit = latest.shellZip?.size ?? MAX_SHELL_BYTES
+    this.#shellApp = null
+    this.#shell = { status: 'downloading', version, progress: { received: 0, total: latest.shellZip?.size ?? 0 } }
+    this.#emit()
+    try {
+      const asset = findAsset(this.#release, assetName)
+      if (!asset) throw new UpdateError(`The latest release has no ${assetName} asset.`)
+      const total = latest.shellZip?.size ?? asset.size ?? 0
+      if (total > MAX_SHELL_BYTES) throw new UpdateError(`${assetName} is larger than the ${MAX_SHELL_BYTES} bytes an app may be.`)
+      this.#shell.progress = { received: 0, total }
+
+      await fs.promises.rm(this.paths.shell, { recursive: true, force: true })
+      await fs.promises.mkdir(this.paths.shell, { recursive: true })
+
+      const token = await this.#loadToken()
+      const res = await this.#request(asset.url, { accept: 'application/octet-stream', token })
+      if (!res.ok) {
+        await res.body?.cancel().catch(() => {})
+        throw new UpdateError(`Could not download ${assetName} (HTTP ${res.status}).`)
+      }
+      if (!res.body) throw new UpdateError(`GitHub returned an empty response for ${assetName}.`)
+
+      const received = await this.#streamToFile(res.body, zipPath, total || limit, (p) => {
+        if (this.#shell) this.#shell.progress = { received: p, total }
+      })
+      if (latest.shellZip) {
+        if (received.bytes !== latest.shellZip.size) throw new UpdateError(`Downloaded ${received.bytes} bytes of the app but the manifest says ${latest.shellZip.size}.`)
+        if (received.sha256 !== latest.shellZip.sha256) throw new UpdateError('The downloaded app failed its integrity check (SHA-256 mismatch).')
+      } else if (asset.size !== null && received.bytes !== asset.size) {
+        throw new UpdateError(`Downloaded ${received.bytes} bytes of the app but GitHub says ${asset.size}.`)
+      }
+
+      await fs.promises.mkdir(work, { recursive: true })
+      try {
+        await installer.extract(zipPath, work)
+      } catch (err) {
+        throw new UpdateError(`The downloaded app could not be unpacked (${describe(err)}).`, { cause: err })
+      }
+      await fs.promises.rm(zipPath, { force: true })
+      const app = installer.findApp(work)
+      if (!app) throw new UpdateError('The downloaded zip has no ORBIT app in it.')
+      try {
+        await installer.verify(app, version)
+      } catch (err) {
+        throw new UpdateError(`The downloaded app did not pass its checks (${describe(err)}).`, { cause: err })
+      }
+      this.#shellApp = app
+      this.#shell = { status: 'ready', version }
+      this.log(`updater: app ${version} downloaded and verified at ${app}`)
+    } catch (err) {
+      await fs.promises.rm(this.paths.shell, { recursive: true, force: true }).catch(() => {})
+      const message = err instanceof UpdateError ? err.message : `Updating the app failed: ${describe(err)}`
+      this.#shell = { status: 'error', version, error: message }
+      this.log('updater:', message)
+    }
+    this.#emit()
+    return this.getState()
+  }
+
+  /**
+   * Hands the verified app to the installer, which replaces this one as soon
+   * as it has quit and then opens the new one, and asks the shell to quit.
+   * Learner data is in userData, outside the app, so nothing is lost.
+   */
+  async installShell() {
+    if (this.#shell?.status !== 'ready' || !this.#shellApp || !this.shellInstaller) {
+      throw new Error('No downloaded app is ready to install.')
+    }
+    const { version } = this.#shell
+    this.shellInstaller.install(this.#shellApp, this.paths.shell)
+    this.log(`updater: installing app ${version}; quitting so it can be swapped in`)
+    this.emit('quit', { reason: 'shell', version })
   }
 
   // ── switching bundles ────────────────────────────────────────────────

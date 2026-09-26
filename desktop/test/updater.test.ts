@@ -7,9 +7,11 @@
    redirect. Nothing is mocked.
    ========================================================================== */
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { spawnSync } from 'node:child_process'
 import path from 'node:path'
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import { MAX_BUNDLE_BYTES, MAX_MANIFEST_BYTES, Updater, type UpdateState } from '../updater.js'
+import { findAppIn } from '../shellInstall.js'
 import {
   FakeGitHub,
   REPO,
@@ -903,5 +905,187 @@ describe('apply and rollback', () => {
     const gh = await startGitHub()
     const { updater } = makeUpdater({ apiBase: gh.apiBase })
     expect((await updater.check()).status).toBe('available')
+  })
+})
+
+// ── the app updating itself ─────────────────────────────────────────────
+
+describe('app update (shell-required)', () => {
+  const APP_ZIP = `ORBIT-${NEW}-universal-mac.zip`
+  let appZip: Buffer
+
+  beforeAll(() => {
+    // The shape scripts/make-mac-zip.mjs produces: ORBIT <v>/ORBIT.app/…
+    const tree = path.join(fixtures, 'mac-zip')
+    mkdirSync(path.join(tree, `ORBIT ${NEW}`, 'ORBIT.app', 'Contents', 'MacOS'), { recursive: true })
+    writeFileSync(path.join(tree, `ORBIT ${NEW}`, 'ORBIT.app', 'Contents', 'MacOS', 'ORBIT'), 'binary')
+    writeFileSync(path.join(tree, `ORBIT ${NEW}`, 'ORBIT.app', 'Contents', 'version.txt'), NEW)
+    writeFileSync(path.join(tree, `ORBIT ${NEW}`, 'Install ORBIT.txt'), 'drag it')
+    appZip = zipWithPython(tree, path.join(fixtures, APP_ZIP), 'deflate')
+  })
+
+  interface FakeInstaller {
+    supported: () => { ok: true } | { ok: false; reason: string }
+    extract: (zip: string, dest: string) => Promise<void>
+    findApp: (dir: string) => string | null
+    verify: (app: string, version: string) => Promise<void>
+    install: (app: string, workDir: string) => void
+    verified: Array<[string, string]>
+    installed: Array<[string, string]>
+  }
+
+  function fakeInstaller(over: Partial<FakeInstaller> = {}): FakeInstaller {
+    const inst: FakeInstaller = {
+      supported: () => ({ ok: true }),
+      extract: async (zip, dest) => {
+        const r = spawnSync('python3', ['-c', 'import sys, zipfile; zipfile.ZipFile(sys.argv[1]).extractall(sys.argv[2])', zip, dest], { encoding: 'utf8' })
+        if (r.status !== 0) throw new Error(r.stderr)
+      },
+      findApp: (dir) => findAppIn(dir, 'ORBIT'),
+      verify: async (app, version) => {
+        inst.verified.push([app, version])
+        const found = readFileSync(path.join(app, 'Contents', 'version.txt'), 'utf8')
+        if (found !== version) throw new Error(`it says it is version ${found}, not ${version}`)
+      },
+      install: (app, workDir) => {
+        inst.installed.push([app, workDir])
+      },
+      verified: [],
+      installed: [],
+      ...over,
+    }
+    return inst
+  }
+
+  function withShellZip(extra: Record<string, unknown> = {}) {
+    const manifest = makeManifest(NEW, bundleZip)
+    ;(manifest.bundle as Record<string, unknown>).minShell = '2.0.0'
+    manifest.shell = { ...(manifest.shell as object), zipSha256: sha256(appZip), zipSize: appZip.length, ...extra }
+    return manifest
+  }
+
+  async function harness(opts: { installer?: FakeInstaller | null; manifest?: Record<string, unknown>; zip?: Buffer | null } = {}) {
+    const gh = await startGitHub({ manifest: opts.manifest ?? withShellZip() })
+    if (opts.zip !== null) gh.addAsset(APP_ZIP, opts.zip ?? appZip)
+    const installer = opts.installer === undefined ? fakeInstaller() : opts.installer
+    const logs: string[] = []
+    const updater = new Updater({
+      repo: REPO,
+      apiBase: gh.apiBase,
+      userData,
+      builtInDir,
+      shellVersion: SHELL,
+      log: (...args: unknown[]) => logs.push(args.map(String).join(' ')),
+      ...(installer ? { shellInstaller: installer } : {}),
+    })
+    const quits: Array<{ reason: string; version: string }> = []
+    const states: UpdateState[] = []
+    updater.on('quit', (q: { reason: string; version: string }) => quits.push(q))
+    updater.on('state', (s: UpdateState) => states.push(s))
+    updater.resolveActive()
+    expect((await updater.check()).status).toBe('shell-required')
+    return { gh, updater, installer, quits, states, logs }
+  }
+
+  it('reads the app zip hash from the manifest', async () => {
+    const { updater } = await harness()
+    expect(updater.getState().latest?.shellZip).toEqual({ size: appZip.length, sha256: sha256(appZip) })
+  })
+
+  it('downloads the latest app, checks its hash, unpacks it, verifies it, and installs it on request', async () => {
+    const { gh, updater, installer, quits, states } = await harness()
+    const state = await updater.downloadShell()
+    expect(state.status).toBe('shell-required')
+    expect(state.shellUpdate).toEqual({ status: 'ready', version: NEW })
+    expect(installer!.verified).toHaveLength(1)
+    const [app, version] = installer!.verified[0]
+    expect(version).toBe(NEW)
+    expect(app).toBe(path.join(userData, 'shell-update', NEW, `ORBIT ${NEW}`, 'ORBIT.app'))
+    expect(existsSync(path.join(userData, 'shell-update', `${NEW}.zip`))).toBe(false)
+    expect(states.some((s) => s.shellUpdate?.status === 'downloading')).toBe(true)
+    expect(gh.requests(`/files/${APP_ZIP}`)).toHaveLength(1)
+
+    await updater.installShell()
+    expect(installer!.installed).toEqual([[app, path.join(userData, 'shell-update')]])
+    expect(quits).toEqual([{ reason: 'shell', version: NEW }])
+  })
+
+  it('still works when the release recorded no hash, checking the size GitHub reports', async () => {
+    const manifest = makeManifest(NEW, bundleZip)
+    ;(manifest.bundle as Record<string, unknown>).minShell = '2.0.0'
+    const { updater } = await harness({ manifest })
+    expect(updater.getState().latest?.shellZip).toBeUndefined()
+    expect((await updater.downloadShell()).shellUpdate?.status).toBe('ready')
+  })
+
+  it('refuses an app whose hash does not match, and cleans up', async () => {
+    const { updater, installer } = await harness({ manifest: withShellZip({ zipSha256: 'f'.repeat(64) }) })
+    const state = await updater.downloadShell()
+    expect(state.shellUpdate).toMatchObject({ status: 'error', error: expect.stringMatching(/integrity check/) })
+    expect(installer!.verified).toHaveLength(0)
+    expect(existsSync(path.join(userData, 'shell-update'))).toBe(false)
+    await expect(updater.installShell()).rejects.toThrow(/No downloaded app/)
+  })
+
+  it('refuses an app that is not the version the release says', async () => {
+    const installer = fakeInstaller({ verify: async () => { throw new Error('it says it is version 1.0.0, not 9.9.9') } })
+    const { updater, quits } = await harness({ installer })
+    const state = await updater.downloadShell()
+    expect(state.shellUpdate?.status).toBe('error')
+    expect(state.shellUpdate?.error).toMatch(/did not pass its checks.*not 9\.9\.9/)
+    await expect(updater.installShell()).rejects.toThrow()
+    expect(quits).toHaveLength(0)
+  })
+
+  it('reports a release without the app zip', async () => {
+    const { updater } = await harness({ zip: null })
+    expect((await updater.downloadShell()).shellUpdate?.error).toMatch(new RegExp(`no ${APP_ZIP.replace(/\./g, '\\.')} asset`))
+  })
+
+  it('says why, without downloading, when this copy cannot replace itself', async () => {
+    const installer = fakeInstaller({ supported: () => ({ ok: false, reason: 'Move ORBIT into Applications first.' }) })
+    const { gh, updater } = await harness({ installer })
+    const state = await updater.downloadShell()
+    expect(state.shellUpdate).toEqual({ status: 'manual', version: NEW, error: 'Move ORBIT into Applications first.' })
+    expect(gh.requests(`/files/${APP_ZIP}`)).toHaveLength(0)
+  })
+
+  it('is manual when the shell has no installer at all', async () => {
+    const { updater } = await harness({ installer: null })
+    expect((await updater.downloadShell()).shellUpdate?.status).toBe('manual')
+  })
+
+  it('refuses to download an app when none is needed', async () => {
+    const gh = await startGitHub()
+    const updater = new Updater({ repo: REPO, apiBase: gh.apiBase, userData, builtInDir, shellVersion: SHELL, shellInstaller: fakeInstaller() })
+    updater.resolveActive()
+    await updater.check()
+    await expect(updater.downloadShell()).rejects.toThrow(/No app update is needed/)
+  })
+
+  it('shares one in-flight app download between concurrent calls', async () => {
+    const { gh, updater } = await harness()
+    const [a, b] = await Promise.all([updater.downloadShell(), updater.downloadShell()])
+    expect(a.shellUpdate?.status).toBe('ready')
+    expect(b.shellUpdate?.status).toBe('ready')
+    expect(gh.requests(`/files/${APP_ZIP}`)).toHaveLength(1)
+  })
+
+  it('rejects a manifest with a malformed app hash or size', async () => {
+    for (const extra of [{ zipSha256: 'nope' }, { zipSize: -1 }, { zipSize: 2 ** 31 }]) {
+      const gh = await startGitHub({ manifest: withShellZip(extra) })
+      const updater = new Updater({ repo: REPO, apiBase: gh.apiBase, userData, builtInDir, shellVersion: SHELL })
+      updater.resolveActive()
+      const state = await updater.check()
+      expect(state.status).toBe('error')
+      expect(state.error).toMatch(/manifest is invalid: shell zip/)
+    }
+  })
+
+  it('clears an app download left over from an earlier session at boot', () => {
+    mkdirSync(path.join(userData, 'shell-update', NEW), { recursive: true })
+    writeFileSync(path.join(userData, 'shell-update', `${NEW}.zip`), 'partial')
+    makeUpdater()
+    expect(existsSync(path.join(userData, 'shell-update'))).toBe(false)
   })
 })

@@ -8,6 +8,28 @@ the entry for the one you are running is what Settings shows you afterwards.
 Newest first. Each heading is exactly `## <version>` so both readers can find
 it.
 
+## 1.1.1
+
+**ORBIT updates itself, all the way to the latest.** When a release needs a
+newer app than the one you have — however many versions behind it is —
+Settings → Updates (and the bell) now offers **Update to** the latest version.
+ORBIT downloads the new app, checks it is exactly the one GitHub published (its
+size, its SHA-256 and its code signature), then **Install and reopen** quits,
+puts the new app where the old one was and opens it, straight onto the latest
+version and everything in it. If anything goes wrong while swapping, the old
+app is put back as it was. Your progress lives outside the app, so it comes
+along unchanged.
+
+It needs ORBIT in a folder it may write to, such as Applications. Opened
+straight from the download, macOS runs it from a temporary read-only copy;
+Settings then says so and offers the download instead.
+
+**One last manual install.** The app you have now cannot do this yet, so it
+will ask you to download 1.1.1 once. From 1.1.1 on, it updates itself.
+
+**Every merge is released.** Updates reach the app as soon as they are made,
+instead of waiting on someone to publish a release.
+
 ## 1.1.0
 
 **Learn to code.** A new guided mode, in the sidebar and on Home. It opens on
