@@ -102,7 +102,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-falcon-reuse-and-the-software-split",
       "title": "Falcon: reuse, and why one title became two",
-      "minutes": 18,
+      "minutes": 20,
       "covers": [
         "GNC Engineer and Sr. GNC Software Engineer (Falcon): booster entry, descent and landing, and reuse"
       ],
@@ -111,7 +111,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-dragon-rendezvous-and-human-rating",
       "title": "Dragon: rendezvous, docking, and flying people",
-      "minutes": 20,
+      "minutes": 22,
       "covers": [
         "GNC Engineer (Dragon): mission design, rendezvous and docking with the ISS, deorbit, reentry, abort"
       ],
@@ -120,7 +120,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-adcs-attitude-control-by-the-thousand",
       "title": "ADCS: attitude control across a fleet, not a flight",
-      "minutes": 19,
+      "minutes": 21,
       "covers": [
         "GNC Engineer, ADCS (Starlink and Starshield): attitude determination and control, reaction wheels, torque rods, momentum management"
       ],
@@ -129,7 +129,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-navigation-and-state-estimation",
       "title": "Navigation and State Estimation: knowing where you actually are",
-      "minutes": 19,
+      "minutes": 21,
       "covers": [
         "Navigation and State Estimation, Navigation and Orbit Determination, Precise Navigation Solutions (Starlink): star tracker and signals-based attitude determination, inertial propagation, GNSS, orbit determination"
       ],
@@ -138,7 +138,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-embedded-controls-and-beam-pointing",
       "title": "Embedded Controls and Beam Pointing: actuators and aim",
-      "minutes": 19,
+      "minutes": 21,
       "covers": [
         "Starlink Controls and Embedded Controls: solar array actuators, antenna gimbals, active optics, Hall thruster fluid and power control",
         "Device Navigation and Beam Pointing, Beam Planning: user terminal pointing, RF and optical link pointing"
@@ -158,7 +158,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-newer-programs-starfall-and-what-comes-next",
       "title": "Starfall, Starmind, and what a new program changes",
-      "minutes": 18,
+      "minutes": 20,
       "covers": [
         "GNC Engineer (Starfall): reentry and recovery of a returnable payload capsule, first flight June 2026",
         "newer programs seen in 2026 postings: Starfall, Starmind (Embedded Controls, AI Satellites), Starshield"
@@ -168,7 +168,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-choosing-a-family-and-proving-it",
       "title": "Choosing a family, and proving you belong in it",
-      "minutes": 21,
+      "minutes": 22,
       "covers": [
         "how family choice changes what you must be able to demonstrate"
       ],
