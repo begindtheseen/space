@@ -1458,6 +1458,140 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Form: flatness, straightness, circularity, cylindricity"
       ],
       "file": "cod_cad_02_gdt/04-form-controls.md"
+    },
+    {
+      "id": "l05-orientation-controls",
+      "title": "Orientation: square, parallel and at an angle",
+      "minutes": 18,
+      "covers": [
+        "Orientation: perpendicularity, angularity, parallelism"
+      ],
+      "file": "cod_cad_02_gdt/05-orientation-controls.md"
+    },
+    {
+      "id": "l06-position-and-location",
+      "title": "Location: position, concentricity and symmetry",
+      "minutes": 22,
+      "covers": [
+        "Location: position, concentricity, symmetry"
+      ],
+      "file": "cod_cad_02_gdt/06-position-and-location.md"
+    },
+    {
+      "id": "l07-material-condition-and-bonus",
+      "title": "MMC, LMC, RFS and bonus tolerance",
+      "minutes": 20,
+      "covers": [
+        "Material condition modifiers MMC, LMC and RFS; bonus tolerance"
+      ],
+      "file": "cod_cad_02_gdt/07-material-condition-and-bonus.md"
+    },
+    {
+      "id": "l08-virtual-condition-composite-projected",
+      "title": "Virtual condition, composite position and projected zones",
+      "minutes": 22,
+      "covers": [
+        "Virtual condition; composite position tolerance; projected tolerance zone"
+      ],
+      "file": "cod_cad_02_gdt/08-virtual-condition-composite-projected.md"
+    },
+    {
+      "id": "l09-profile-and-runout",
+      "title": "Profile and runout",
+      "minutes": 22,
+      "covers": [
+        "Profile of a line and profile of a surface, increasingly dominant in aerostructures",
+        "Runout: circular and total"
+      ],
+      "file": "cod_cad_02_gdt/09-profile-and-runout.md"
+    },
+    {
+      "id": "l10-free-state-and-geometric-stack-ups",
+      "title": "Free state, geometric stack-ups and the error budget",
+      "minutes": 24,
+      "covers": [
+        "Free-state variation for thin-wall aerospace parts",
+        "Tolerance stack-up with geometric controls"
+      ],
+      "file": "cod_cad_02_gdt/10-free-state-and-geometric-stack-ups.md"
+    },
+    {
+      "id": "l11-cmm-inspection-and-pmi",
+      "title": "Measuring GD&T — CMMs, gauges and PMI",
+      "minutes": 22,
+      "covers": [
+        "CMM inspection and how GD&T maps onto measurement",
+        "PMI annotation in a model-based-definition workflow"
+      ],
+      "file": "cod_cad_02_gdt/11-cmm-inspection-and-pmi.md"
+    }
+  ],
+  "cod_cad_03_tools": [
+    {
+      "id": "l01-the-autocad-command-line",
+      "title": "The AutoCAD command line and exact points",
+      "minutes": 21,
+      "covers": [
+        "AutoCAD: the command line as the real interface; absolute, relative and polar coordinate entry",
+        "Object snaps, ortho and polar tracking"
+      ],
+      "file": "cod_cad_03_tools/01-the-autocad-command-line.md"
+    },
+    {
+      "id": "l02-draw-and-modify",
+      "title": "Drawing and editing shapes",
+      "minutes": 21,
+      "covers": [
+        "Draw and modify: line, polyline, arc, offset, trim, extend, fillet, array, stretch"
+      ],
+      "file": "cod_cad_03_tools/02-draw-and-modify.md"
+    },
+    {
+      "id": "l03-layers",
+      "title": "Layers, the drafter's core discipline",
+      "minutes": 19,
+      "covers": [
+        "Layers as the core discipline: name, colour, linetype, lineweight, plot state, freeze versus off"
+      ],
+      "file": "cod_cad_03_tools/03-layers.md"
+    },
+    {
+      "id": "l04-blocks-and-xrefs",
+      "title": "Blocks, attributes and external references",
+      "minutes": 24,
+      "covers": [
+        "Blocks, attributes, dynamic blocks and external references"
+      ],
+      "file": "cod_cad_03_tools/04-blocks-and-xrefs.md"
+    },
+    {
+      "id": "l05-annotation-and-paper-space",
+      "title": "Annotation, paper space and plotting",
+      "minutes": 22,
+      "covers": [
+        "Annotation: text styles, dimension styles, multileaders, annotative scaling",
+        "Model space versus paper space; layouts, viewports and viewport scale; plot styles; sheet sets"
+      ],
+      "file": "cod_cad_03_tools/05-annotation-and-paper-space.md"
+    },
+    {
+      "id": "l06-templates-formats-and-where-autocad-lives",
+      "title": "Templates, file formats and where AutoCAD lives",
+      "minutes": 21,
+      "covers": [
+        "Templates, standards files, DWG versus DXF",
+        "Where AutoCAD genuinely lives in aerospace: facility and site layouts, ground support equipment, test-stand drawings, electrical and harness schematics, P&IDs, tooling layouts"
+      ],
+      "file": "cod_cad_03_tools/06-templates-formats-and-where-autocad-lives.md"
+    },
+    {
+      "id": "l07-parametric-sketches",
+      "title": "Parametric sketches and constraints",
+      "minutes": 21,
+      "covers": [
+        "Parametric feature-based modelling: sketches, constraints, fully defined sketches"
+      ],
+      "file": "cod_cad_03_tools/07-parametric-sketches.md"
     }
   ],
   "cod_cpp_01_basics": [
@@ -9097,37 +9231,16 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_cad_02_gdt": {
-    "covered": 5,
+    "covered": 15,
     "total": 15,
-    "complete": false,
-    "missing": [
-      "Orientation: perpendicularity, angularity, parallelism",
-      "Location: position, concentricity, symmetry",
-      "Profile of a line and profile of a surface, increasingly dominant in aerostructures",
-      "Runout: circular and total",
-      "Material condition modifiers MMC, LMC and RFS; bonus tolerance",
-      "Virtual condition; composite position tolerance; projected tolerance zone",
-      "Free-state variation for thin-wall aerospace parts",
-      "Tolerance stack-up with geometric controls",
-      "CMM inspection and how GD&T maps onto measurement",
-      "PMI annotation in a model-based-definition workflow"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_cad_03_tools": {
-    "covered": 0,
+    "covered": 10,
     "total": 19,
     "complete": false,
     "missing": [
-      "AutoCAD: the command line as the real interface; absolute, relative and polar coordinate entry",
-      "Object snaps, ortho and polar tracking",
-      "Draw and modify: line, polyline, arc, offset, trim, extend, fillet, array, stretch",
-      "Layers as the core discipline: name, colour, linetype, lineweight, plot state, freeze versus off",
-      "Blocks, attributes, dynamic blocks and external references",
-      "Annotation: text styles, dimension styles, multileaders, annotative scaling",
-      "Model space versus paper space; layouts, viewports and viewport scale; plot styles; sheet sets",
-      "Templates, standards files, DWG versus DXF",
-      "Where AutoCAD genuinely lives in aerospace: facility and site layouts, ground support equipment, test-stand drawings, electrical and harness schematics, P&IDs, tooling layouts",
-      "Parametric feature-based modelling: sketches, constraints, fully defined sketches",
       "Features: extrude, revolve, sweep, loft, fillet, shell, rib, draft, hole wizard, patterns, configurations",
       "The feature tree, parent-child relationships, design intent, robust versus fragile modelling",
       "Assemblies: mates, sub-assemblies, in-context design and its dangers, interference detection",

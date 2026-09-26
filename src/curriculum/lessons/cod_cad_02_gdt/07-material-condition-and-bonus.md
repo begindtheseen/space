@@ -10,7 +10,7 @@ Think about putting a key into a lock on a dark porch. If the keyhole is tight, 
 
 A bolt through a hole works the same way. The hole's job is to let the bolt through. A hole made a bit bigger than its smallest allowed size has extra room around the bolt, so the hole can sit a bit farther from its perfect spot and the bolt still goes in. GD&T lets the drawing say exactly that, with one small circled letter in the feature control frame.
 
-This lesson is about that letter. You will learn the three **material conditions** — ways of saying which size of a feature the tolerance is written for — and how one of them turns extra clearance into extra positional tolerance, called **bonus tolerance**. On a spacecraft this is everyday: the bolt holes in a star tracker bracket, an avionics box, or a thruster mounting flange almost always carry position at maximum material condition. It lets the machine shop keep more parts, without ever letting a bolt fail to go in.
+This lesson is about that letter. You will learn the three **material conditions** — ways of saying which size of a feature the tolerance is written for — and how one of them turns extra clearance into extra positional tolerance, called **bonus tolerance**. On a spacecraft this is everyday: the bolt holes in a star tracker bracket, an avionics box, or a thruster mounting flange very often carry position at maximum material condition. It lets the machine shop keep more parts, without ever letting a bolt fail to go in.
 
 ## Most metal, least metal
 
@@ -226,8 +226,13 @@ The bearing is a press fit, so there is no clearance to trade. A bigger bore doe
 
 Next lesson turns MMC into a boundary: the virtual condition a mating part or a hard gauge must clear, then composite position for hole patterns and projected zones for threaded holes.
 
+
 ::: context feature-of-size Things you can measure across
 A **feature of size** is a feature with two opposite surfaces, or one round surface, that you can put calipers or a pin across: a hole, a pin, a slot, a tab, the thickness of a plate. It has a size, so it has an MMC and an LMC. A single flat face does not: there is nothing on the other side to measure to. That is why material condition modifiers, bonus tolerance and Rule #1 from lesson 4 all apply only to features of size.
+:::
+
+::: context rfs-default Why you never see a circled S
+Older drawings, made to editions of the standard before 1994, sometimes showed a circled S for RFS. Today the standard says that when a tolerance has no modifier, RFS applies automatically, so the symbol is no longer used. Engineers sometimes call this "Rule #2". Datum letters in a frame follow a similar default: with no modifier, the datum feature is held regardless of its size, a condition the standard calls **regardless of material boundary** (RMB). A datum letter can also carry Ⓜ or Ⓛ, which lets the datum feature itself shift a little in its gauge.
 :::
 
 ::: context bonus-picture The zone grows with the hole
@@ -266,8 +271,8 @@ $$
 where $H$ is the hole's MMC diameter and $F$ is the bolt's largest diameter. For a $\varnothing\,6.0$ bolt in holes whose MMC is $6.4$, $T = 0.4$. When one part is threaded instead, so the bolt is fixed in it, the gap must be shared between the two parts, and each gets less. Later, in stack-ups, you will meet these again as the line items in a fit calculation.
 :::
 
-::: context rfs-default Why you never see a circled S
-Older drawings, made to editions of the standard before 1994, sometimes showed a circled S for RFS. Today the standard says that when a tolerance has no modifier, RFS applies automatically, so the symbol is no longer used. Engineers sometimes call this "Rule #2". Datum letters in a frame follow a similar default: with no modifier, the datum feature is held regardless of its size, a condition the standard calls **regardless of material boundary** (RMB). A datum letter can also carry Ⓜ or Ⓛ, which lets the datum feature itself shift a little in its gauge.
+::: context lesson8-bridge The gauge that never needs a ruler
+Here is a preview of the payoff. The flashcard hole at $10.0$ may shift within $\varnothing\,0.2$; at $10.3$ within $\varnothing\,0.5$. In both cases, the space inside the hole that is guaranteed clear is a perfect cylinder of diameter $10.0 - 0.2 = 9.8$ and $10.3 - 0.5 = 9.8$. The same number. So a pin of $\varnothing\,9.8$ at true position fits every good hole, whatever its size. That constant boundary is the virtual condition, and a plate carrying such pins is a functional gauge. Lesson 8 builds it.
 :::
 
 ::: context wall-picture A wall that stays the same
@@ -294,8 +299,4 @@ Two copies of the hole from the example. The big one, at LMC, may shift only $0.
 ```
 
 Drawn to scale; each hole is shifted toward the edge by half its zone. The red lines are the worst-case walls: equal, because Ⓛ spends only the metal the smaller hole leaves behind.
-:::
-
-::: context lesson8-bridge The gauge that never needs a ruler
-Here is a preview of the payoff. The flashcard hole at $10.0$ may shift within $\varnothing\,0.2$; at $10.3$ within $\varnothing\,0.5$. In both cases, the space inside the hole that is guaranteed clear is a perfect cylinder of diameter $10.0 - 0.2 = 9.8$ and $10.3 - 0.5 = 9.8$. The same number. So a pin of $\varnothing\,9.8$ at true position fits every good hole, whatever its size. That constant boundary is the virtual condition, and a plate carrying such pins is a functional gauge. Lesson 8 builds it.
 :::
