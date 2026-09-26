@@ -292,19 +292,58 @@ export function styleRow(tokenCount: number, rows: number): number {
   return Math.min(Math.max(tokenCount - 2 - 1, 0), rows - 1)
 }
 
+/* ── What is read, and the pauses between ─────────────────────────────── */
+
 /**
- * Splits text for synthesis at natural boundaries so no piece is too long
- * for one input, and so the first sound comes quickly: the model's time grows
- * with the length of what it says.
+ * Longest text given to the model at once. The model takes up to 510
+ * phonemes, but the memory it needs grows with the length of what it says,
+ * and never shrinks back: about 200 MB more for a short sentence and 700 MB
+ * for one of 400 phonemes, per worker, on top of the 450 MB the worker takes
+ * to start. A phone that runs out stalls or loses the worker mid-lesson, so
+ * a phone is given shorter pieces (see natural.ts, `unitChars`).
  */
-export function synthesisPieces(text: string, maxChars = 200): string[] {
-  if (text.length <= maxChars) return [text]
+export const MAX_UNIT_CHARS = 280
+
+export interface SpeechUnit {
+  text: string
+  /** The sentence this belongs to, for the counter and for skipping. */
+  sentence: number
+  /** Seconds of silence after it: a breath between sentences, a longer one between paragraphs. */
+  pause: number
+}
+
+/** A reader's pause after a sentence, by how it ends. */
+export function sentencePause(sentence: string, endsParagraph: boolean): number {
+  if (endsParagraph) return 0.55
+  if (/[?!]["”')]*$/.test(sentence)) return 0.3
+  if (/:["”')]*$/.test(sentence)) return 0.32
+  return 0.24
+}
+
+/** The pause where a sentence too long for one input had to be joined. */
+function joinPause(piece: string): number {
+  return /[;:—]$/.test(piece) ? 0.16 : /,$/.test(piece) ? 0.1 : 0.04
+}
+
+/**
+ * Cuts a sentence that is too long for the model into the fewest pieces, at
+ * its clause boundaries, each as long as it can be. A sentence that fits is
+ * never cut: every cut is a join the listener could hear.
+ */
+export function splitLong(sentence: string, max = MAX_UNIT_CHARS): string[] {
   const out: string[] = []
-  let rest = text
-  while (rest.length > maxChars) {
-    const window = rest.slice(0, maxChars)
-    const cut = Math.max(window.lastIndexOf('; '), window.lastIndexOf(', '), window.lastIndexOf(': '), window.lastIndexOf(' — '))
-    const at = cut > maxChars * 0.3 ? cut + 1 : window.lastIndexOf(' ')
+  let rest = sentence
+  while (rest.length > max) {
+    const window = rest.slice(0, max)
+    let at = -1
+    for (const mark of ['; ', ': ', ' — ', ', ']) {
+      const i = window.lastIndexOf(mark)
+      if (i > max * 0.35) {
+        at = mark === ' — ' ? i + 2 : i + 1
+        break
+      }
+    }
+    if (at < 0) at = window.lastIndexOf(' ')
     if (at <= 0) break
     out.push(rest.slice(0, at).trim())
     rest = rest.slice(at).trim()
@@ -314,21 +353,142 @@ export function synthesisPieces(text: string, maxChars = 200): string[] {
 }
 
 /**
- * The first pieces of a reading, made shorter: the first sound waits on the
- * whole first piece, so it is kept to a clause, and the next is kept short
- * while the other workers start. After that the pieces are full length, and
- * there is always one being made while another plays.
+ * A lesson's prepared text (lib/speech.ts, `prepare().text`) as what the
+ * natural voice reads: whole sentences, each with the pause a reader would
+ * take after it. Unlike the device voice's utterances, a sentence is never
+ * broken at a comma to save time — the pauses a model puts at a cut are the
+ * stammer this is built to avoid. Only a sentence longer than `maxChars` is
+ * cut, at its clauses, with the short pause a reader takes there.
  */
-export function rampPieces<T extends { text: string; last: boolean }>(plan: T[], caps = [48, 110]): T[] {
-  const out: T[] = []
-  for (const piece of plan) {
-    const cap = caps[out.length]
-    if (cap === undefined || piece.text.length <= cap) {
-      out.push(piece)
-      continue
+export function speechUnits(text: string, splitSentences: (paragraph: string) => string[], maxChars = MAX_UNIT_CHARS): SpeechUnit[] {
+  const out: SpeechUnit[] = []
+  let sentence = 0
+  const paragraphs = text.split(/\n{2,}/).map((p) => p.trim()).filter(Boolean)
+  paragraphs.forEach((para) => {
+    const sentences = splitSentences(para)
+    sentences.forEach((s, j) => {
+      const pieces = splitLong(s, maxChars)
+      pieces.forEach((piece, k) => {
+        const lastPiece = k === pieces.length - 1
+        out.push({ text: piece, sentence, pause: lastPiece ? sentencePause(s, j === sentences.length - 1) : joinPause(piece) })
+      })
+      sentence++
+    })
+  })
+  return out
+}
+
+/**
+ * The first thing read, split once at a clause near its middle so the voice
+ * can start sooner: the two halves are made side by side, and the second is
+ * ready before the first has finished playing. Only for a long first
+ * sentence, and only where there are two workers to make the halves at once.
+ */
+export function fastStart(units: SpeechUnit[], minChars = 150): SpeechUnit[] {
+  const first = units[0]
+  if (!first || first.text.length < minChars) return units
+  const t = first.text
+  let best = -1
+  for (const mark of ['; ', ': ', ' — ', ', ']) {
+    let i = t.indexOf(mark)
+    while (i >= 0) {
+      const at = mark === ' — ' ? i + 2 : i + 1
+      if (at >= t.length * 0.35 && at <= t.length * 0.6 && (best < 0 || Math.abs(at - t.length * 0.45) < Math.abs(best - t.length * 0.45))) best = at
+      i = t.indexOf(mark, i + 1)
     }
-    const parts = synthesisPieces(piece.text, cap)
-    parts.forEach((text, j) => out.push({ ...piece, text, last: piece.last && j === parts.length - 1 }))
+    if (best >= 0) break
+  }
+  if (best < 0) return units
+  const a = t.slice(0, best).trim()
+  const b = t.slice(best).trim()
+  return [{ ...first, text: a, pause: joinPause(a) }, { ...first, text: b }, ...units.slice(1)]
+}
+
+/**
+ * The model starts and ends every clip with about a third and half a second
+ * of silence. Played back to back, that is a gap after every piece; so it is
+ * trimmed to a few milliseconds, faded so there is no click, and the pause
+ * after each piece is then exactly the one chosen above.
+ */
+export function trimSilence(pcm: Float32Array, rate = SAMPLE_RATE): Float32Array {
+  const win = Math.max(1, Math.round(rate * 0.005))
+  const n = Math.floor(pcm.length / win)
+  if (n < 4) return pcm
+  const levels = new Float32Array(n)
+  for (let i = 0; i < n; i++) {
+    let s = 0
+    for (let j = i * win; j < (i + 1) * win; j++) s += pcm[j]! * pcm[j]!
+    levels[i] = Math.sqrt(s / win)
+  }
+  const sorted = Array.from(levels).sort((a, b) => a - b)
+  const loud = sorted[Math.floor(n * 0.95)]!
+  const floor = Math.max(0.003, loud * 0.04)
+  let first = 0
+  while (first < n && levels[first]! < floor) first++
+  let last = n - 1
+  while (last > first && levels[last]! < floor) last--
+  if (first >= last) return pcm
+  const margin = Math.round(rate * 0.025)
+  const from = Math.max(0, first * win - margin)
+  const to = Math.min(pcm.length, (last + 1) * win + margin)
+  const out = pcm.slice(from, to)
+  const fade = Math.min(Math.round(rate * 0.008), Math.floor(out.length / 4))
+  for (let i = 0; i < fade; i++) {
+    const g = i / fade
+    out[i]! *= g
+    out[out.length - 1 - i]! *= g
   }
   return out
+}
+
+/** Roughly how fast the voice speaks at speed 1, in characters a second, for planning ahead. */
+export const CHARS_PER_SECOND = 15
+
+/**
+ * When to start playing so the reading never runs dry — the way a video
+ * player waits to buffer rather than stall. The first sentence has just been
+ * made: how long that took, per second of speech, is how fast the workers are.
+ * The next sentences are simulated through the same workers, in order, and
+ * the start is put off just enough that each is ready before its turn. On a
+ * fast device that is no wait at all; on a slow one it is a moment before the
+ * first word, instead of silences in the middle of the lesson.
+ *
+ * Times are in seconds from when the first sentences were asked for. `ready`
+ * marks sentences already made (from the cache), which cost nothing.
+ */
+export function safeStart(o: {
+  firstReadyAt: number
+  durations: number[]
+  pauses: number[]
+  ready: boolean[]
+  workers: number
+  /** Seconds of work per second of speech, if known better than the first sentence shows. */
+  rtf?: number
+  horizon?: number
+  /**
+   * The most extra waiting worth doing, in seconds past the first sentence.
+   * A device that cannot make speech as fast as it is spoken will fall behind
+   * whatever is done; past this, it is better to start and let the shortfall
+   * fall as longer pauses between sentences than to keep her waiting.
+   */
+  maxExtra?: number
+}): number {
+  const first = Math.max(0.3, o.durations[0] ?? 0.3)
+  const measured = o.ready[0] ? 0 : o.firstReadyAt / first
+  const rtf = Math.max(measured, o.rtf ?? 0)
+  const free: number[] = new Array(Math.max(1, o.workers)).fill(0)
+  free[0] = o.firstReadyAt
+  let need = o.firstReadyAt
+  let offset = 0
+  const n = Math.min(o.durations.length, o.horizon ?? 8)
+  for (let k = 1; k < n; k++) {
+    offset += (o.durations[k - 1] ?? 0) + (o.pauses[k - 1] ?? 0)
+    if (o.ready[k]) continue
+    let w = 0
+    for (let i = 1; i < free.length; i++) if (free[i]! < free[w]!) w = i
+    const finish = free[w]! + rtf * (o.durations[k] ?? 0) * 1.15
+    free[w] = finish
+    need = Math.max(need, finish - offset)
+  }
+  return Math.min(need, o.firstReadyAt + (o.maxExtra ?? 10))
 }

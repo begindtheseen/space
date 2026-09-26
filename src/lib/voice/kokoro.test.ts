@@ -3,6 +3,7 @@ import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import {
   MAX_TOKENS,
+  MAX_UNIT_CHARS,
   NATURAL_VOICES,
   VOCAB,
   cleanPhonemes,
@@ -10,11 +11,15 @@ import {
   normalizeText,
   splitPunctuation,
   styleRow,
-  rampPieces,
-  synthesisPieces,
+  fastStart,
+  safeStart,
+  sentencePause,
+  speechUnits,
+  splitLong,
+  trimSilence,
   tokenize,
 } from './kokoro'
-import { poolSize } from './natural'
+import { poolSize, unitChars } from './natural'
 
 describe('the natural voice: text to tokens', () => {
   it('says what is written the way a reader would', () => {
@@ -53,23 +58,108 @@ describe('the natural voice: text to tokens', () => {
     expect(styleRow(9999, 510)).toBe(509)
   })
 
-  it('splits a long sentence at its commas so the first sound comes quickly', () => {
-    const long = 'When the model trains, every weight moves a little, in the direction that lowers the loss, and after thousands of steps, the network has learned something it was never told directly.'
-    const pieces = synthesisPieces(long, 80)
-    expect(pieces.join(' ')).toBe(long)
-    for (const p of pieces) expect(p.length).toBeLessThanOrEqual(80)
-    expect(pieces[0]).toMatch(/,$/)
-    expect(synthesisPieces('Short.', 80)).toEqual(['Short.'])
+  it('reads whole sentences: a sentence that fits is never cut at a comma, semicolon, colon or dash', () => {
+    const para = 'First, write the loss; then compute its gradient — and only then take a step: carefully. Then do it again.'
+    const units = speechUnits(`${para}\n\n- A list item, with a comma.\n\nThe end.`, (p) => p.split(/(?<=[.!?])\s+/))
+    expect(units.map((u) => u.text)).toEqual([
+      'First, write the loss; then compute its gradient — and only then take a step: carefully.',
+      'Then do it again.',
+      '- A list item, with a comma.',
+      'The end.',
+    ])
+    expect(units.map((u) => u.sentence)).toEqual([0, 1, 2, 3])
+    // A breath between sentences, a longer one between paragraphs.
+    expect(units[0]!.pause).toBeCloseTo(0.24)
+    expect(units[1]!.pause).toBeCloseTo(0.55)
   })
 
-  it('starts a reading with short pieces, so the first sound comes quickly', () => {
-    const text = 'The first sentence of a lesson is often long, with a clause, another clause, and a third one, before it ends.'
-    const plan = rampPieces([{ text, last: true, utt: 0 }, { text, last: true, utt: 1 }])
-    expect(plan[0]!.text.length).toBeLessThanOrEqual(48)
-    expect(plan.filter((p) => p.utt === 0).map((p) => p.text).join(' ')).toBe(text)
-    expect(plan.filter((p) => p.utt === 0 && p.last)).toHaveLength(1)
-    expect(plan.filter((p) => p.utt === 0).at(-1)!.last).toBe(true)
-    expect(plan.filter((p) => p.utt === 1).map((p) => p.text).join(' ')).toBe(text)
+  it('cuts only a sentence too long for the model, into the fewest pieces, at clause boundaries', () => {
+    const clause = 'the network adjusts every weight a little in the direction that lowers the loss'
+    const long = `When training starts, ${clause}, and ${clause}; after that, ${clause}, and ${clause}, until ${clause}.`
+    expect(long.length).toBeGreaterThan(MAX_UNIT_CHARS)
+    const pieces = splitLong(long)
+    expect(pieces.join(' ')).toBe(long)
+    expect(pieces.length).toBe(Math.ceil(long.length / MAX_UNIT_CHARS))
+    for (const p of pieces) expect(p.length).toBeLessThanOrEqual(MAX_UNIT_CHARS)
+    expect(pieces[0]).toMatch(/[;,]$/)
+    expect(splitLong('Short and whole, with a comma.')).toEqual(['Short and whole, with a comma.'])
+  })
+
+  it('gives a phone shorter pieces, still cut only at clauses, with a reader\'s pause at each', () => {
+    const clause = 'the network adjusts every weight a little in the direction that lowers the loss'
+    const long = `When training starts, ${clause}, and ${clause}; after that, ${clause}.`
+    const units = speechUnits(long, (p) => [p], 150)
+    expect(units.map((u) => u.text).join(' ')).toBe(long)
+    for (const u of units) expect(u.text.length).toBeLessThanOrEqual(150)
+    for (const u of units.slice(0, -1)) {
+      expect(u.text).toMatch(/[;,]$/)
+      expect(u.pause).toBeGreaterThanOrEqual(0.1)
+      expect(u.pause).toBeLessThan(0.2)
+    }
+    expect(new Set(units.map((u) => u.sentence))).toEqual(new Set([0]))
+    expect(unitChars({ userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X)' })).toBe(150)
+    expect(unitChars({ userAgent: 'Mozilla/5.0 (Macintosh)' })).toBe(MAX_UNIT_CHARS)
+  })
+
+  it('pauses like a reader: after a question, a statement, a lead-in', () => {
+    expect(sentencePause('Is it?', false)).toBeGreaterThan(sentencePause('It is.', false))
+    expect(sentencePause('Here is how:', false)).toBeGreaterThan(sentencePause('It is.', false))
+    expect(sentencePause('It is.', true)).toBeGreaterThan(sentencePause('Is it?', false))
+  })
+
+  it('may split only the first long sentence, near its middle, so reading starts sooner', () => {
+    const first = 'A model reads the whole sentence before it speaks a word of it, so the first sound waits on all of it, and a long opening sentence takes a noticeable while to begin.'
+    const units = fastStart([{ text: first, sentence: 0, pause: 0.24 }, { text: 'Next.', sentence: 1, pause: 0.24 }])
+    expect(units).toHaveLength(3)
+    expect(`${units[0]!.text} ${units[1]!.text}`).toBe(first)
+    expect(units[0]!.text.length / first.length).toBeGreaterThan(0.3)
+    expect(units[0]!.text.length / first.length).toBeLessThan(0.62)
+    expect(units[0]!.sentence).toBe(0)
+    expect(units[1]!.pause).toBeCloseTo(0.24)
+    expect(fastStart([{ text: 'Short.', sentence: 0, pause: 0.24 }])).toHaveLength(1)
+  })
+
+  it('trims the silence the model puts at both ends of a clip, and fades so there is no click', () => {
+    const rate = 24000
+    const pcm = new Float32Array(rate * 2)
+    // 0.4 s of silence, 1 s of sound, 0.6 s of silence: as the model makes it.
+    for (let i = Math.round(rate * 0.4); i < Math.round(rate * 1.4); i++) pcm[i] = 0.3 * Math.sin(i / 7)
+    const out = trimSilence(pcm, rate)
+    expect(out.length / rate).toBeGreaterThan(1)
+    expect(out.length / rate).toBeLessThan(1.08)
+    expect(Math.abs(out[0]!)).toBeLessThan(1e-3)
+    expect(Math.abs(out[out.length - 1]!)).toBeLessThan(1e-3)
+  })
+})
+
+describe('the natural voice: never running dry', () => {
+  it('on a fast device starts as soon as the first sentence is made', () => {
+    const need = safeStart({ firstReadyAt: 1, durations: [5, 8, 6, 7], pauses: [0.24, 0.24, 0.24, 0.24], ready: [false, false, false, false], workers: 1 })
+    expect(need).toBeCloseTo(1, 5)
+  })
+
+  it('on a slow one waits at the start instead of stopping mid-lesson: a short sentence, then a long one', () => {
+    // As measured on a slow CPU: 5.5 s of speech took 13.75 s to make; the next is 10.8 s long.
+    const o = { firstReadyAt: 13.75, durations: [5.5, 10.8, 8.6], pauses: [0.24, 0.24, 0.24], ready: [false, false, false], workers: 2 }
+    const need = safeStart({ ...o, maxExtra: 60 })
+    expect(need).toBeGreaterThan(o.firstReadyAt)
+    // Starting then, the second sentence is ready by the time the first has been spoken.
+    const secondReady = 2.5 * 10.8 * 1.15
+    expect(need + 5.5 + 0.24).toBeGreaterThanOrEqual(secondReady - 1e-9)
+    // But never more than ten seconds' extra wait by default.
+    expect(safeStart(o)).toBeCloseTo(o.firstReadyAt + 10, 5)
+  })
+
+  it('waits at most ten seconds more: a device that cannot keep up still starts', () => {
+    const hopeless = { firstReadyAt: 20, durations: [5, 10, 10, 10, 10, 10, 10, 10], pauses: new Array(8).fill(0.24), ready: new Array(8).fill(false), workers: 1 }
+    expect(safeStart(hopeless)).toBeCloseTo(30, 5)
+  })
+
+  it('counts sentences already made as costing nothing', () => {
+    const slow = { firstReadyAt: 13.75, durations: [5.5, 10.8, 8.6], pauses: [0.24, 0.24, 0.24], workers: 2 }
+    expect(safeStart({ ...slow, ready: [false, true, true] })).toBeCloseTo(13.75, 5)
+    // All made: no work, no wait.
+    expect(safeStart({ ...slow, firstReadyAt: 0, ready: [true, true, true] })).toBe(0)
   })
 })
 
@@ -93,9 +183,11 @@ describe('the natural voice: voices and devices', () => {
 
   it('runs fewer synthesis workers where memory is short', () => {
     expect(poolSize({ hardwareConcurrency: 2 })).toBe(1)
-    expect(poolSize({ hardwareConcurrency: 8, userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X)' })).toBe(2)
-    expect(poolSize({ hardwareConcurrency: 8, userAgent: 'Mozilla/5.0 (Macintosh)', maxTouchPoints: 5 })).toBe(2)
-    expect(poolSize({ hardwareConcurrency: 8, deviceMemory: 8, userAgent: 'Mozilla/5.0 (Linux; Android 15) Mobile' })).toBe(3)
+    // An iPhone or iPad: one worker. Two ran it out of memory mid-lesson.
+    expect(poolSize({ hardwareConcurrency: 8, userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X)' })).toBe(1)
+    expect(poolSize({ hardwareConcurrency: 8, userAgent: 'Mozilla/5.0 (Macintosh)', maxTouchPoints: 5 })).toBe(1)
+    expect(poolSize({ hardwareConcurrency: 8, deviceMemory: 4, userAgent: 'Mozilla/5.0 (Linux; Android 15) Mobile' })).toBe(1)
+    expect(poolSize({ hardwareConcurrency: 8, deviceMemory: 8, userAgent: 'Mozilla/5.0 (Linux; Android 15) Mobile' })).toBe(2)
     expect(poolSize({ hardwareConcurrency: 4, userAgent: 'Mozilla/5.0 (X11; Linux x86_64)' })).toBe(2)
     expect(poolSize({ hardwareConcurrency: 8, deviceMemory: 4, userAgent: 'Mozilla/5.0 (Windows NT 10.0)' })).toBe(2)
     expect(poolSize({ hardwareConcurrency: 12, deviceMemory: 16, userAgent: 'Mozilla/5.0 (Macintosh)' })).toBe(3)
@@ -121,5 +213,19 @@ describe.skipIf(!existsSync(PHONEMIZER))('the natural voice: agrees with the ref
       const parts = await Promise.all(splitPunctuation(normalizeText(text)).map(async (p) => (p.punct ? p.text : (await phonemize(p.text, 'en-us')).join(' '))))
       expect(tokenize(cleanPhonemes(parts.join(''), 'en-us')).slice(1, -1), text).toEqual(ids)
     }
+  }, 60_000)
+})
+
+// The model rewrite for the GPU, on the real model when a copy is at hand
+// (VOICE_MODEL), as the browser suite uses. Its sound is checked there and in
+// the voice's development notes; here, that it finds and rewrites every one.
+describe.skipIf(!process.env.VOICE_MODEL || !existsSync(process.env.VOICE_MODEL ?? ''))('the natural voice: the model, made fit for the GPU', () => {
+  it('rewrites all 87 integer convolutions, and leaves nothing to rewrite twice', async () => {
+    const { convIntegerToConv } = await import('./onnxEdit')
+    const model = new Uint8Array(readFileSync(process.env.VOICE_MODEL!))
+    const { bytes, report } = convIntegerToConv(model)
+    expect(report.convs).toBe(87)
+    expect(bytes.length).toBeLessThan(model.length)
+    expect(() => convIntegerToConv(bytes)).toThrow(/No integer convolutions/)
   }, 60_000)
 })
