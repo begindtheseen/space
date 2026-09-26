@@ -4158,7 +4158,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-one-tangent-transfers",
       "title": "One-tangent transfers",
-      "minutes": 24,
+      "minutes": 18,
       "covers": [
         "one-tangent burns"
       ],
@@ -4167,7 +4167,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-plane-changes",
       "title": "Plane changes and combined manoeuvres",
-      "minutes": 32,
+      "minutes": 21,
       "covers": [
         "plane change and combined plane-change-plus-raise optimisation"
       ],
@@ -4176,7 +4176,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-apsidal-rotation",
       "title": "Apsidal rotation",
-      "minutes": 18,
+      "minutes": 16,
       "covers": [
         "apsidal rotation"
       ],
@@ -4185,7 +4185,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-phasing-rendezvous",
       "title": "Phasing manoeuvres and rendezvous phasing",
-      "minutes": 24,
+      "minutes": 18,
       "covers": [
         "phasing manoeuvres and rendezvous phasing"
       ],
@@ -4194,7 +4194,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-finite-burns-gravity-losses",
       "title": "Finite burns and gravity losses",
-      "minutes": 20,
+      "minutes": 19,
       "covers": [
         "finite-burn and gravity losses"
       ],
@@ -4203,7 +4203,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-low-thrust-transfers",
       "title": "Low-thrust transfers: Edelbaum, spirals, electric propulsion",
-      "minutes": 22,
+      "minutes": 18,
       "covers": [
         "low-thrust transfers: Edelbaum, spirals, electric propulsion"
       ],
@@ -4212,7 +4212,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-stationkeeping-constellations-deorbit",
       "title": "Station-keeping, constellations and deorbit",
-      "minutes": 23,
+      "minutes": 28,
       "covers": [
         "station-keeping for GEO and LEO",
         "constellation management, drift orbits and deorbit"
@@ -4222,7 +4222,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-patched-conics-launch-windows",
       "title": "Patched conics and interplanetary trajectory design",
-      "minutes": 24,
+      "minutes": 25,
       "covers": [
         "patched conics, sphere of influence, C3, gravity assists",
         "porkchop plots and launch windows"
@@ -4234,7 +4234,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-perturbations-overview",
       "title": "The perturbed two-body problem",
-      "minutes": 24,
+      "minutes": 23,
       "covers": [
         "perturbation sources ranked by magnitude in LEO and GEO",
         "general vs special perturbations"
@@ -4244,7 +4244,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-geopotential-harmonics",
       "title": "The geopotential, spherical harmonics, and J2",
-      "minutes": 18,
+      "minutes": 22,
       "covers": [
         "non-spherical gravity, spherical harmonics, J2 and higher zonals"
       ],
