@@ -206,7 +206,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-the-preferred-list",
       "title": "The GNC Engineer preferred list, item by item",
-      "minutes": 19,
+      "minutes": 20,
       "covers": [
         "the full preferred list for GNC Engineer and what each item signals"
       ],
@@ -234,7 +234,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-solving-complex-problems",
       "title": "What 'little to no supervision' is actually testing",
-      "minutes": 17,
+      "minutes": 18,
       "covers": [
         "what capable of solving complex problems with little to no supervision is testing"
       ],
@@ -273,7 +273,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-path-one-degree-parallel",
       "title": "Path 1: the degree, taken parallel",
-      "minutes": 20,
+      "minutes": 21,
       "covers": [
         "Path 1, degree-parallel: use the curriculum to be the strongest candidate in a graduating cohort, because the real differentiator is demonstrated shipped 6-DOF, estimation and guidance work that almost no new grad has",
         "accredited routes that fit alongside work: ABET-accredited part-time and online bachelor’s programmes, community college transfer, competency-based models"
@@ -283,7 +283,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-path-two-the-side-door",
       "title": "Path 2: the side door, and the transfer inside",
-      "minutes": 19,
+      "minutes": 20,
       "covers": [
         "Path 2, side door then transfer: SRE GNC allows 4+ years of professional software or SRE experience in lieu of a degree and sits inside the GNC org; GNC Software Engineer and simulation and tools roles weight software skill heavily; internal transfer at SpaceX is common"
       ],

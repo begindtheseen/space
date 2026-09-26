@@ -6,90 +6,147 @@ covers:
   - "BASIC versus PREFERRED qualifications: hard filter versus ranking signal"
 ---
 
-Take a sentence like "Engineer II — 2+ years' experience, BS in Aerospace or related." Whoever wrote it folded three different kinds of claim into one line and did not tell you which is which: a condition that ends your application the moment it is unmet, a condition that only ever compares you against other candidates who already passed, and a condition a specific hiring manager might quietly read with some latitude if the rest of your case is strong. Treating all three the same way — as one undifferentiated wish list to feel discouraged by — is the single most common misreading of a job posting, and it costs people applications they would otherwise have won.
+Picture the sign-up sheet for a school soccer tryout. It says two kinds of thing. "You must be enrolled at this school and hand in a signed medical form." And: "The coach is especially looking for players who can play both feet, and for a goalkeeper." Miss the first kind and you do not get onto the field at all. Miss the second and you still try out. You only have a little less that makes you stand out.
 
-Real postings for GNC roles do most of this sorting for you, formally, with two labeled sections: BASIC QUALIFICATIONS and PREFERRED QUALIFICATIONS. The labels are not decoration. They mark a functional boundary that this lesson exists to make precise, because every lesson after this one — the new-grad posting, the Level I to II line, the senior branches, the site reliability engineer variant — is this exact distinction applied to a specific, real piece of posting text. Get the boundary wrong here and you will misread every line that follows it.
+A job posting mixes the same two kinds of line. Take a sentence like "Engineer II — 2+ years' experience, BS in Aerospace or related." It packs three different kinds of claim into one line and does not tell you which is which. Some of it can end your application the moment it is unmet. Some of it only compares you with other people who already passed. And some of it leaves a hiring manager a little room to read a borderline case kindly. Treating all of it as one long wish list to feel discouraged by is the most common way people misread a posting. It costs them applications they could have won.
 
-This lesson does not yet give you any of those specific lines. It gives you the framework for reading them, and the vocabulary this module uses throughout: hard filter, ranking signal, and the narrower, real discretion that sits underneath both.
+Real postings for GNC (guidance, navigation and control) roles do most of the sorting for you. They have two labeled sections: **BASIC QUALIFICATIONS** and **PREFERRED QUALIFICATIONS**. Every later lesson in this module — the new-graduate posting, the Level I to II line, the senior branches, the site reliability engineer role — applies this one distinction to a real piece of posting text. So this lesson gives you the framework and the words the module uses throughout: *hard filter*, *ranking signal*, and the narrow, real *discretion* — room for a person to use judgment — underneath both.
 
 ## Two sections, two different jobs
 
-A posting's BASIC QUALIFICATIONS section states the conditions a candidate must meet for the application to proceed at all. A posting's PREFERRED QUALIFICATIONS section states conditions that make a candidate who already meets the basic ones more competitive relative to others in the pool. Those are not two versions of the same idea at different strengths — they are two different mechanisms doing two different jobs, and a company that splits its posting into these two headed sections is telling you, plainly, which job each line is doing.
+The **basic qualifications** are the conditions you must meet for your application to move forward at all. Think of them as the door.
 
-Meeting every basic qualification does not get you an offer; it gets your application read past the first filter. Meeting zero preferred qualifications does not get you rejected; it means you have nothing yet distinguishing you from another candidate who also cleared the basic line. Nobody is expected to hold every item on a preferred list — that would defeat the purpose of separating it from the basic one in the first place. The two sections answer two different questions: "can this application proceed," and "how strong is this application relative to the others that can."
+The **preferred qualifications** are conditions that make you stronger compared with other candidates who already got through the door. Think of them as the ranking once you are inside.
 
-This split is common practice across technical hiring generally, not a convention invented for GNC roles specifically, though how strictly a given company enforces the boundary in practice is something only that company actually knows. Reading the section header correctly, before reading anything about your own qualifications, is the entire skill this lesson teaches.
+These are not the same idea at two strengths. They are two different machines doing two different jobs. A company that splits its posting under these two headings is telling you, in plain sight, which job each line is doing.
+
+Two things follow:
+
+- Meeting every basic qualification does not get you an offer. It gets your application read past the first filter.
+- Meeting zero preferred qualifications does not get you rejected. It means nothing yet sets you apart from another candidate who also cleared the basic line.
+
+Nobody is expected to hold every preferred item. If they were, there would be no reason to keep it separate from the basic list. The two sections answer [[two questions|filter-rank-grid]]: "Can this application go forward?" and "How strong is it compared with the others that can?"
+
+This split is common across technical hiring in general, not something invented for GNC jobs. How strictly any one company enforces it in practice is something only that company knows. But reading the section heading correctly — *before* you think about your own record — is the whole skill of this lesson.
 
 ## Why the hard filter comes first
 
-A hiring pipeline for an engineering role runs through stages that get progressively more expensive: an application is read, a recruiter has a short call, an engineer runs a technical phone screen, a panel spends hours on a deeper round, a hiring manager and a committee weigh a final decision. Every stage past the first consumes time from people who are not doing anything else with that time. That cost is the same reasoning this curriculum's ITAR-gate lessons already established for a different hard filter — export-control eligibility — and it applies with equal force here: a company reads basic qualifications early because a candidate who does not meet them cannot end in an offer for this specific role, and every stage spent finding that out the slow way is a stage the company and the candidate both paid for and got nothing from.
+Hiring runs through a series of steps, often called a **[[pipeline|funnel]]**. Each step costs more than the one before:
 
-In practice, this first read is often some mixture of an automated pass over the application — matching plain-text keywords or structured fields against the posting's stated requirements — and a recruiter's own manual read of the résumé. Exactly how any one employer splits that work between software and a person is not something this module can tell you, and it varies by company and changes over time as hiring tools change. What does not vary is the incentive: the cheapest filter runs first, and a basic qualification is written to be checked cheaply — a degree field, a count of years, a named language — precisely because it has to survive that first, high-volume pass.
+1. Someone reads your application.
+2. A **[[recruiter|recruiter]]** — the person whose job is to find candidates and move them through hiring — has a short call with you.
+3. An engineer runs a technical phone screen.
+4. A panel of engineers spends hours on deeper rounds.
+5. The **hiring manager** — the person who would be your boss — and sometimes a committee make the final decision.
+
+Every step after the first uses up the time of people who would otherwise be doing engineering. This is the same reasoning the earlier module on ITAR (said "eye-tar", the US export-control rules for defense technology) used for a different hard filter. A company checks basic qualifications early because a candidate who does not meet them cannot end in an offer for that role. Finding that out slowly wastes everyone's time, the candidate's included.
+
+In practice, that first read is often a mix of software and a person. Software may match keywords or form fields against the posting — the tool is usually called an **[[applicant tracking system|ats]]**. A recruiter also reads the **[[résumé|resume-word]]**, the one- or two-page summary of your education and work. How any single employer splits the work between the software and the person, this module cannot tell you. It varies by company and changes as the tools change.
+
+What does not vary is the reason. The cheapest check runs first. A basic qualification is written so it *can* be checked cheaply — a degree field, a count of years, a named programming language — because it has to survive that first, high-volume pass.
 
 ::: key
-A posting's BASIC QUALIFICATIONS are conditions for the application to proceed; failing one typically ends it at the earliest, cheapest stage of the pipeline. PREFERRED QUALIFICATIONS rank candidates who already cleared the basic line; nobody is expected to meet all of them.
+BASIC versus PREFERRED qualifications: basic qualifications are a hard filter applied at the recruiter stage — fail one and the application usually stops, at the earliest and cheapest step. Preferred qualifications rank candidates who already pass; nobody is expected to meet all of them, and they double as the syllabus for the technical rounds.
 :::
 
 ## Reading "hard" precisely: filter, shorthand, and give
 
-Every line in a posting is really three things, and the central skill this module builds is telling them apart rather than collapsing them into one.
+Every line in a posting is really three things. The central skill of this module is telling them apart.
 
-The first is the **stated requirement** — the literal text under the section header, exactly as written. The second is **what it functions as in practice** — for most basic qualifications, an early, largely mechanical screen that a clearly unmet line does not survive; for most preferred qualifications, a signal folded into a ranking rather than a screen. The third is **what an individual hiring manager or recruiter can actually do about a borderline case** — and this is where people go wrong in both directions, either assuming a stated line is rigid in every case when a genuinely borderline reading exists, or assuming a stated line is soft when it is, in fact, exactly what it says.
+1. **The stated requirement** — the exact words under the heading.
+2. **What it does in practice.** Most basic lines work as an early, mostly mechanical screen that a plainly unmet line does not survive. Most preferred lines work as one signal among many in a ranking.
+3. **What a recruiter or hiring manager can actually do about a borderline case.**
 
-The discretion that exists is narrower than most candidates hope. It applies to *reading* an ambiguous case — does an internship count as "professional experience," does a physics degree with a heavy computational-methods concentration count as "an engineering discipline" — not to *waiving* a line a candidate plainly fails. A candidate with no bachelor's degree at all, applying to a posting whose basic qualifications state one with no stated alternative, is not in a gray area a sympathetic hiring manager can read generously; they are outside a condition nobody at the company has the standing to set aside for one applicant, in exactly the way this curriculum's earlier lessons showed that an export-control statute cannot be waived by an employer who likes a candidate. A candidate with eighteen months of experience against a stated "2+ years" line, by contrast, is inside a genuinely ambiguous zone, because "2+" was never a claim of mathematical precision to the month — it is a floor someone chose, and how close is close enough is a judgment call the recruiter screen and the hiring manager, not the applicant, get to make.
+People go wrong on the third point in both directions. Some assume every line is rigid even when an honest borderline reading exists. Others assume a line is soft when it means exactly what it says.
 
-The phrase "recruiter's shorthand" is useful for a specific category of preferred-qualification language: a phrase like "strong communication skills," "self-starter," or "or related field" that is not an independently checkable box at all. Nobody screens a résumé for "self-starter" the way they screen for a degree field. These phrases stand in for a broader judgment the recruiter or hiring manager will actually form later, usually in conversation, not from the words on the page. Treating shorthand as though it were a literal checklist item — either despairing that you cannot prove you are a "self-starter" on paper, or assuming a vague phrase must be trivially satisfiable — both miss what the phrase is actually doing.
+### How much give there really is
+
+The room a company has is narrower than most candidates hope. It applies to *reading* an unclear case. Does an internship count as "professional experience"? Does a physics degree packed with computing courses count as "an engineering discipline"? Those are real questions.
+
+It does not apply to *waiving* a line you plainly fail. Say a posting's basic qualifications state a bachelor's degree, with no alternative route written in. A candidate with no bachelor's degree is not in a gray area that a friendly hiring manager can read generously. No single person at the company has the standing to set that line aside for one applicant they like — in the same way the ITAR module showed that an employer cannot waive a federal export-control law for a candidate it admires.
+
+Now take a candidate with eighteen months of experience against a line reading "**[[2+ years|two-plus]]**." That *is* an unclear zone. "2+" was never a promise of accuracy to the month. It is a floor someone chose. How close is close enough is a judgment call — and the recruiter and hiring manager make it, not the applicant.
+
+### Recruiter's shorthand
+
+Some phrases are not a box anyone can check at all. "Strong communication skills." "Self-starter." "Or related field." This module calls these **[[recruiter's shorthand|shorthand]]**: a short phrase that stands in for a bigger judgment someone will form later, usually by talking with you.
+
+Nobody screens a résumé for "self-starter" the way they screen for a degree. So there are two ways to get it wrong. One is despairing that you cannot prove "self-starter" on paper. The other is assuming a vague phrase must be automatically true of you. Both miss what the phrase is for: it tells you what the later conversation will probe, so you can bring real evidence to it.
 
 ::: warning Meeting every preferred line is not the goal, and missing several is not disqualifying
-A common and costly mistake runs in two directions at once. Some candidates read a long preferred list, realize they are missing half of it, and do not apply to a posting whose basic qualifications they meet comfortably — a basic-qualification pass is what makes an application viable at all, and a partial preferred match is normal, not a red flag. Others spend their preparation time trying to individually "check off" every preferred item as though it were graded, rather than using it — as the next lesson in this module will show — as a map of what the team actually works on.
+This mistake runs in two directions. Some candidates read a long preferred list, notice they are missing half of it, and do not apply to a posting whose basic qualifications they meet comfortably. But passing the basic line is what makes an application viable, and a partial preferred match is normal, not a red flag. Other candidates spend their preparation trying to "check off" every preferred item as if each were graded, instead of using the list — as a later lesson in this module shows — as a map of what the team actually works on.
 :::
 
 ## The preferred list previews the interview
 
-There is one more thing worth knowing about a preferred-qualifications list before you meet a specific one: it is not written by someone guessing at generic engineering virtues. It is written, almost always, by people close to the team that will do the hiring, and it tends to name the actual technical territory that team's work covers — specific mission phases, specific tools, specific kinds of problems. Because it doubles as an honest description of the job, it also functions, whether or not the company intends it this way, as a rough syllabus for what the later interview rounds will probe. A later lesson in this module works through a full preferred list item by item on exactly this basis. For now, the point is narrower: read a preferred list not as a bar to clear, but as information about the job, worth remembering the way you would remember anything else useful you learned about a role you want.
+One more thing about a preferred list, before you meet a real one. It is not written by someone guessing at general engineering virtues. It is almost always written by people close to the team that is hiring. It tends to name that team's real territory: particular mission phases, particular tools, particular kinds of problems.
 
-::: example Two lines, two different postings' sections, two different outcomes
-Suppose a posting's BASIC QUALIFICATIONS state: "Bachelor's degree in physics or an engineering discipline." A candidate with a degree in business administration and no engineering or physics coursework reads this line and applies anyway, reasoning that their analytical coursework is close enough. The application is very likely screened out at the earliest stage, because the line is a hard filter and a business degree is not, on any ordinary reading, physics or an engineering discipline — no amount of adjacent analytical skill changes what the line says.
+Because it is an honest description of the job, it also works — whether or not the company means it to — as a rough **[[syllabus|syllabus-bridge]]** for the later technical interviews: a list of topics you can expect to be asked about. A later lesson in this module works through a full preferred list item by item on exactly that basis. For now the point is smaller. Read a preferred list not as a bar to clear but as information about the job, worth remembering like anything else useful you learn about a role you want.
 
-Now suppose the same posting's PREFERRED QUALIFICATIONS include: "familiarity with trajectory optimization tools." A second candidate, whose degree and years of experience comfortably clear the basic line, has never used a trajectory optimization tool by name, though they have written general-purpose numerical optimization code. Missing this single preferred item does not end their application — it leaves them, on this one axis, less differentiated than a candidate who has used such a tool directly, which is a real but much smaller cost than the first candidate's outright screen-out. The two lines look grammatically similar. They are not functionally similar at all.
+::: example Two lines, two sections, two different outcomes
+**Line one, from BASIC QUALIFICATIONS:** "Bachelor's degree in physics or an engineering discipline."
+
+A candidate with a business administration degree, and no engineering or physics courses, applies anyway. Their reasoning: their analytical courses are "close enough."
+
+- Step 1 — which section? Basic. So this line is a hard filter.
+- Step 2 — is it met? Business administration is not physics. On any ordinary reading it is not an engineering discipline either.
+- Result: the application is very likely screened out at the first step. Strong analytical skills do not change what the line says.
+
+**Line two, from PREFERRED QUALIFICATIONS of the same posting:** "Familiarity with trajectory optimization tools."
+
+A second candidate clears the degree and years comfortably. They have never used a trajectory optimization tool by name, though they have written general numerical optimization code.
+
+- Step 1 — which section? Preferred. So this line is a ranking signal.
+- Step 2 — is it met? Not directly.
+- Result: the application continues. On this one axis, the candidate is a little less set apart than someone who has used such a tool.
+
+Sanity check: the two lines look alike on the page — each is a single phrase about background. But the first can end an application and the second only nudges a ranking. The section heading, not the grammar, told you which.
 :::
 
-::: example A borderline basic-qualification case, read the way a recruiter actually reads it
-A posting states "2+ years of professional experience in control systems." A candidate has one year and nine months in a full-time controls-engineering role, plus a six-month internship in the same discipline immediately before it. Read narrowly, "1 year 9 months" is under two years; read as a continuous professional record in the named discipline, the internship plausibly closes most or all of the gap, depending on how that specific employer treats internship time. This is exactly the kind of case that is not resolved by staring at the posting harder — it is resolved by applying and letting the recruiter screen ask the actual question, because the ambiguity lives in how the number is read, not in whether the candidate secretly fails a rule that was never actually rigid to the month. Contrast this with a candidate who has no professional controls experience at all, only a strong personal project: there, the ambiguity is gone, because "professional experience" is doing real work in the sentence, not standing in as a synonym for "any relevant work."
+::: example A borderline basic line, read the way a recruiter reads it
+A posting's basic line says "2+ years of professional experience in control systems." A candidate has one year and nine months in a full-time controls engineering job. Right before it, they did a six-month internship in the same field.
+
+- Step 1 — the full-time job alone: 1 year 9 months is 21 months, which is 3 months short of 24.
+- Step 2 — add the internship: 21 + 6 = 27 months, which is over 24 — *if* that employer counts internship time.
+- Step 3 — decide what kind of question this is. The gap is about how the number is *read*, not about a rule the candidate secretly fails. Staring harder at the posting will not settle it. Applying, and letting the recruiter screen ask the actual question, will.
+
+Now compare a candidate with no professional controls experience at all — only a strong personal project. Here there is no ambiguity. The word "professional" is doing real work in that sentence. It is not a stand-in for "any relevant work."
+
+Sanity check: in the first case the candidate is within three months of the floor even without the internship, which is the sort of case a recruiter is there to judge. In the second, the candidate misses the kind of experience entirely, not the amount.
 :::
 
 ## Check yourself
 
 ::: check
-In terms of what happens to an application, what is the functional difference between failing a basic qualification and failing to show a preferred one?
+In terms of what happens to an application, what is the difference between failing a basic qualification and not showing a preferred one?
 :::
 
 ::: answer
-Failing a stated basic qualification typically ends the application at the earliest, cheapest stage of the pipeline, because that section exists to filter candidates before any real evaluation time is spent. Failing to show a preferred qualification does not end anything — it leaves the candidate less differentiated on that one axis within a pool of candidates who have all already cleared the basic line, which affects ranking, not eligibility.
+Failing a stated basic qualification usually ends the application at the earliest, cheapest step, because that section exists to filter candidates before real evaluation time is spent. Not showing a preferred qualification ends nothing. It leaves the candidate less set apart on that one axis, among a pool of people who have all cleared the basic line. It affects ranking, not eligibility.
 :::
 
 ::: check
-Why do hiring pipelines generally place the cheapest-to-evaluate filter first, rather than evaluating the most important qualities first?
+Why do hiring pipelines usually put the cheapest check first, instead of judging the most important qualities first?
 :::
 
 ::: answer
-Every stage after the first consumes real time from people not otherwise engaged in evaluating that candidate — a recruiter's call, an engineer's phone screen, a panel's day. Placing a cheap, mechanical filter (a degree field, a count of years) at the very first stage means that time is spent only on candidates for whom the rest of the process could plausibly end in an offer, rather than being spent generally and discovering a structural mismatch only after several expensive stages. It is the same cost logic that puts an export-control eligibility question at the recruiter screen rather than the final interview.
+Every step after the first uses real time from people who would otherwise be doing other work — a recruiter's call, an engineer's phone screen, a panel's day. Putting a cheap, mechanical check (a degree field, a count of years) at the very first step means that time is spent only on candidates who could plausibly end in an offer. Otherwise the company would discover a basic mismatch only after several expensive steps. It is the same cost logic that puts the export-control eligibility question at the recruiter screen instead of the final interview.
 :::
 
 ::: check
-A candidate reads a posting's preferred qualifications, sees they are missing roughly half the list, and decides not to apply even though they comfortably meet every basic qualification. What is wrong with this reasoning?
+A candidate reads a posting's preferred qualifications, sees they are missing about half the list, and decides not to apply — even though they comfortably meet every basic qualification. What is wrong with this reasoning?
 :::
 
 ::: answer
-The reasoning treats a ranking signal as though it were a filter. Basic qualifications are what determines whether an application can proceed at all; the candidate meets those. A preferred list is not something anyone is expected to complete in full — missing roughly half of it is normal for a viable applicant, not a sign of disqualification. Declining to apply here forecloses an opportunity the candidate was actually eligible for, based on a section of the posting that was never a gate.
+It treats a ranking signal as if it were a filter. The basic qualifications decide whether an application can go forward, and the candidate meets them. Nobody is expected to complete a preferred list; missing about half of it is normal for a viable applicant. By not applying, the candidate gives up a chance they were actually eligible for, because of a section of the posting that was never a gate.
 :::
 
 ::: check
-Using the three-part distinction from this lesson — the stated line, what it functions as, and what discretion exists around it — explain why a candidate missing a stated bachelor's degree with no in-lieu clause is in a different position than a candidate with slightly fewer years of experience than a stated threshold.
+Use this lesson's three-part distinction — the stated line, what it does in practice, and what discretion exists — to explain why a candidate missing a stated bachelor's degree (with no in-lieu clause) is in a different position from a candidate with slightly fewer years than a stated threshold.
 :::
 
 ::: answer
-Both lines are stated as basic qualifications, and both function, in the ordinary case, as filters. But the discretion available differs sharply. A count of years is a number someone chose as a floor, and reasonable people can differ on how a specific candidate's record maps onto it, which is the kind of ambiguity a recruiter screen resolves case by case. A missing degree, where the posting states one with no alternative route, is not an ambiguous reading of the candidate's record — the condition is either met or it is not, and no one at the company has the individual authority to waive a line the posting states as a floor for one applicant they happen to like.
+Both lines are basic qualifications, and both normally work as filters. The difference is in the discretion. A count of years is a floor someone chose, and reasonable people can differ on how a particular record maps onto it — the kind of unclear case a recruiter screen settles one candidate at a time. A missing degree, where the posting states one with no alternative route, is not an unclear reading of the candidate's record. The condition is met or it is not, and no one person at the company has the authority to waive a stated floor for one applicant they happen to like.
 :::
 
 ::: check
@@ -97,15 +154,98 @@ What does it mean to call a phrase like "self-starter" or "or related field" rec
 :::
 
 ::: answer
-It means the phrase is not an independently checkable fact the way a degree field or a language is — it stands in for a broader judgment that gets formed later, usually through conversation or an interview, rather than screened directly from the page. It matters for preparation because there is nothing to "prove" about such a phrase on a résumé; the useful response is to have concrete, specific evidence ready to discuss when the underlying judgment actually gets made, rather than either worrying that the phrase is unprovable or assuming it is automatically satisfied.
+It means the phrase is not a checkable fact the way a degree field or a programming language is. It stands in for a broader judgment that gets formed later, usually in conversation or an interview, rather than screened from the page. That matters for preparation because there is nothing to "prove" about the phrase on a résumé. The useful move is to have concrete, specific evidence ready to discuss when the real judgment is made — not to worry that the phrase is unprovable, and not to assume it is automatically satisfied.
 :::
 
 ## Summary
 
-| Section | Function | Typical effect if unmet | Where it is evaluated |
+| Section | What it does | Usual effect if unmet | Where it is judged |
 | --- | --- | --- | --- |
-| Basic qualifications | Filter: sets the floor to proceed | Application usually ends at the earliest stage | Automated screen and/or recruiter's first read |
-| Preferred qualifications | Signal: ranks candidates who passed | Lower relative standing, not disqualification | Recruiter judgment and later interview rounds |
-| Recruiter's shorthand (a subset of preferred language) | Stands in for a later, less mechanical judgment | Nothing screenable — evaluated in conversation | Interview stages, not the résumé pass |
+| Basic qualifications | Hard filter: sets the floor to go forward | Application usually ends at the earliest step | Software screen and/or the recruiter's first read |
+| Preferred qualifications | Ranking signal among those who passed; a syllabus for the interviews | Lower relative standing, not disqualification | Recruiter judgment and later interview rounds |
+| Recruiter's shorthand (a kind of preferred wording) | Stands in for a later, less mechanical judgment | Nothing to screen — judged in conversation | Interviews, not the résumé pass |
 
-The next lesson applies exactly this framework to the first real posting in the ladder — the New Graduate Engineer, GNC role — where you will see precisely which words sit in each section and what each one is actually asking of a candidate with little or no professional experience yet.
+The next lesson applies this framework to the first real posting on the ladder — New Graduate Engineer, GNC — and shows exactly which words sit in each section and what each asks of someone with little or no professional experience yet.
+
+::: context filter-rank-grid Four places a candidate can stand
+Put the two sections on two axes. Across: did you meet every basic line? Up: how many preferred items do you show? Only the right-hand column is in the running at all; the preferred list then sorts within it.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 210" font-family="Inter, Arial, sans-serif">
+  <rect x="60" y="20" width="140" height="80" fill="#fff" stroke="#1f2a44" stroke-width="1.5"/>
+  <rect x="200" y="20" width="140" height="80" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
+  <rect x="60" y="100" width="140" height="80" fill="#fff" stroke="#1f2a44" stroke-width="1.5"/>
+  <rect x="200" y="100" width="140" height="80" fill="#fff" stroke="#1d6fd1" stroke-width="2"/>
+  <text x="130" y="56" font-size="12" text-anchor="middle" fill="#b4232c">screened out</text>
+  <text x="130" y="72" font-size="11" text-anchor="middle" fill="#6c7a93">preferred cannot help</text>
+  <text x="270" y="56" font-size="12" text-anchor="middle" fill="#1f2a44">strong candidate</text>
+  <text x="270" y="72" font-size="11" text-anchor="middle" fill="#1f2a44">ranks high</text>
+  <text x="130" y="136" font-size="12" text-anchor="middle" fill="#b4232c">screened out</text>
+  <text x="270" y="136" font-size="12" text-anchor="middle" fill="#1f2a44">viable candidate</text>
+  <text x="270" y="152" font-size="11" text-anchor="middle" fill="#1f2a44">apply, then study</text>
+  <text x="130" y="198" font-size="11" text-anchor="middle" fill="#1f2a44">basic: not met</text>
+  <text x="270" y="198" font-size="11" text-anchor="middle" fill="#1f2a44">basic: all met</text>
+  <text x="30" y="60" font-size="11" text-anchor="middle" fill="#1f2a44">many</text>
+  <text x="30" y="140" font-size="11" text-anchor="middle" fill="#1f2a44">few</text>
+  <text x="30" y="100" font-size="11" text-anchor="middle" fill="#6c7a93">pref.</text>
+</svg>
+```
+
+The top-left box is the trap: a candidate rich in preferred items who misses one basic line is still screened out, because preferred never overrides basic.
+:::
+
+::: context funnel Why hiring is called a pipeline or funnel
+Candidates go in at one end and move through the steps in order, and fewer come out at each step, so people call it a **pipeline** or a **funnel**. The cheap checks sit at the wide top.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 200" font-family="Inter, Arial, sans-serif">
+  <polygon points="20,10 340,10 310,46 50,46" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
+  <polygon points="50,50 310,50 280,86 80,86" fill="#fff" stroke="#1f2a44" stroke-width="1.5"/>
+  <polygon points="80,90 280,90 250,126 110,126" fill="#fff" stroke="#1f2a44" stroke-width="1.5"/>
+  <polygon points="110,130 250,130 220,166 140,166" fill="#fff" stroke="#1f2a44" stroke-width="1.5"/>
+  <rect x="140" y="170" width="80" height="24" fill="#f2b880" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="180" y="26" font-size="12" text-anchor="middle" fill="#1f2a44">application read</text>
+  <text x="180" y="41" font-size="11" text-anchor="middle" fill="#b4232c">basic lines checked here</text>
+  <text x="180" y="72" font-size="12" text-anchor="middle" fill="#1f2a44">recruiter call</text>
+  <text x="180" y="112" font-size="12" text-anchor="middle" fill="#1f2a44">technical screen</text>
+  <text x="180" y="152" font-size="12" text-anchor="middle" fill="#1f2a44">panel rounds</text>
+  <text x="180" y="186" font-size="12" text-anchor="middle" fill="#1f2a44">decision</text>
+</svg>
+```
+
+The shapes show the order and the narrowing, not real pass rates, which differ by company and by role.
+:::
+
+::: context recruiter Recruiter and hiring manager
+A **recruiter** finds candidates and steers them through a company's hiring steps. Recruiters are usually not engineers, and on a first call they are not judging your control design. They are checking the facts that decide whether the rest of the process can happen: the basic qualifications, eligibility, location, timing.
+
+The **hiring manager** is the engineer who leads the team with the open job and would become your boss. The recruiter works for the hiring manager's need; the hiring manager has the final say on whether you fit it.
+:::
+
+::: context ats What an applicant tracking system is
+An **applicant tracking system**, often shortened to ATS (said letter by letter, "A-T-S"), is the software a company uses to collect applications, store résumés and move candidates from step to step. Many such systems let a recruiter search or filter applications by keywords and form answers — for example, the degree field.
+
+That is one reason a basic qualification you meet should be stated plainly on your résumé, in the posting's own words where honest: "B.S. in Mechanical Engineering," not only a clever project title. How much any one company relies on automatic filtering, and how, varies and is not published.
+:::
+
+::: context resume-word Where "résumé" comes from
+**Résumé** is French for "summed up." It is the short summary of your education, work and projects that you send with an application — usually one page early in a career. In American English it is spelled with or without the accent marks: résumé, resume. Much of the world calls a similar document a **CV**, from the Latin *curriculum vitae*, "the course of one's life." In US academia a CV is usually the longer, complete record, including every publication.
+:::
+
+::: context two-plus How to read "2+"
+"2+ years" is read aloud as "two-plus years" and means **at least two years** — two or more. The plus sign is doing the work of "or more."
+
+It is a floor, not a target. Having five years does not make you overqualified for a "2+" line, though a posting at a much higher level might suit you better — a question the last lesson of this module takes up. And the floor was set by a person choosing a round number, which is why a case a few months short is a question for the recruiter, not an automatic no.
+:::
+
+::: context shorthand Why postings use shorthand at all
+A posting has a few hundred words to describe a job that takes years to learn. So some lines compress a whole judgment into two words. "Self-starter" stands for "can you find the next useful thing to do without being told?" "Strong communication skills" stands for "can you explain a technical decision so the people depending on it understand it?"
+
+Neither can be proven by writing the phrase on a résumé. Both get tested by asking you about something real you did — which is why the best preparation is a small set of true, specific stories. Lesson seven of this module looks at one such phrase, "little to no supervision," in detail.
+:::
+
+::: context syllabus-bridge A syllabus you can study from
+A **syllabus** is the list of topics a course will cover, handed out on day one. Calling the preferred list a syllabus means you can study from it: each item names a topic an interviewer on that team may ask about.
+
+Lesson four of this module takes the full GNC Engineer preferred list and turns every item into a question an interviewer could ask. The rest of this course teaches most of those subjects — control, filtering, trajectories, landing — so the list also tells you which parts of the course matter most for the job you want.
+:::
