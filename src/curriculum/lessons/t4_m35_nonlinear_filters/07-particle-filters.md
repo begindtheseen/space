@@ -347,20 +347,20 @@ This lesson showed a particle filter succeeding at a problem a single-bell filte
 A radar altimeter bounces radio waves straight down and times the echo, so it measures height above the ground directly below. Subtract that from your altitude above sea level and you get the ground's own height. Compare a string of those heights with a stored height map and you can work out where you are — the way you might recognize a road by its hills with your eyes shut.
 
 ```svg
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">
-  <path d="M10,110 C40,110 50,112 70,112 C90,112 95,140 110,140 C125,140 130,112 150,112 C170,112 175,98 185,98 C195,98 200,112 215,112 L240,112 C255,112 260,140 275,140 C290,140 295,112 315,112 L350,112" fill="none" stroke="#1f2a44" stroke-width="2"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 165" font-family="Inter, Arial, sans-serif">
+  <path d="M10,112 L80,112 C95,112 98,140 110,140 C122,140 125,112 140,112 L150,112 C155,112 157,106 162,106 C167,106 169,112 174,112 L245,112 C257,112 262,140 275,140 C288,140 291,112 305,112 L350,112" fill="none" stroke="#1f2a44" stroke-width="2"/>
   <line x1="10" y1="30" x2="350" y2="30" stroke="#6c7a93" stroke-width="1" stroke-dasharray="4 4"/>
   <polygon points="100,24 124,30 100,36" fill="#1d6fd1"/>
   <line x1="110" y1="36" x2="110" y2="138" stroke="#b4232c" stroke-width="1.5" stroke-dasharray="3 3"/>
   <text x="116" y="80" font-size="11" fill="#b4232c">altimeter</text>
-  <text x="95" y="130" font-size="11" fill="#1f2a44" text-anchor="end">valley 1</text>
-  <text x="185" y="92" font-size="11" fill="#1f2a44" text-anchor="middle">hump</text>
-  <text x="275" y="130" font-size="11" fill="#1f2a44" text-anchor="middle">valley 2</text>
+  <text x="110" y="158" font-size="11" fill="#1f2a44" text-anchor="middle">valley 1</text>
+  <text x="162" y="98" font-size="11" fill="#1f2a44" text-anchor="middle">hump</text>
+  <text x="275" y="158" font-size="11" fill="#1f2a44" text-anchor="middle">valley 2</text>
   <text x="340" y="24" font-size="11" fill="#6c7a93" text-anchor="end">steady altitude</text>
 </svg>
 ```
 
-Cruise missiles have navigated with this idea, called TERCOM (terrain contour matching), since the 1970s. Two similar valleys are its classic trap.
+Cruise missiles such as the Tomahawk have navigated with this idea, called TERCOM (terrain contour matching). Two similar valleys are its classic trap.
 :::
 
 ::: context dirac-spike A spike with all its weight at one point
@@ -446,7 +446,7 @@ Draw each resampled particle joined to the parent it was copied from. Here six p
 :::
 
 ::: context roughening-name Roughening, and why it is allowed
-The name comes from the 1993 bootstrap-filter paper: after resampling, the cloud is "rough-ened" by a small random nudge to every particle, so duplicates stop being exact twins. It works like a tiny extra dose of process noise. That is also why it is not free — it is noise the real system did not add. A common rule of thumb scales the jitter with the spread of the cloud and shrinks it as the number of particles and dimensions grows.
+The name comes from the 1993 bootstrap-filter paper: after resampling, the cloud is "rough-ened" by a small random nudge to every particle, so duplicates stop being exact twins. It works like a tiny extra dose of process noise. That is also why it is not free — it is noise the real system did not add. A common rule of thumb scales the jitter with the spread of the cloud and shrinks it as the number of particles grows.
 :::
 
 ::: context next-lesson-curse Coming next: the curse of dimensionality
