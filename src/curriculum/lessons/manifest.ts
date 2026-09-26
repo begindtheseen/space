@@ -3792,7 +3792,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-angular-momentum-h-equals-i-omega",
       "title": "Angular momentum H = Iω and rotational kinetic energy",
-      "minutes": 16,
+      "minutes": 19,
       "covers": [
         "angular momentum H = I omega"
       ],
@@ -3801,7 +3801,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-euler-rotational-equations-of-motion",
       "title": "Euler's rotational equations of motion",
-      "minutes": 19,
+      "minutes": 21,
       "covers": [
         "Euler rotational equations of motion"
       ],
@@ -3810,7 +3810,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-torque-free-motion-polhode-and-herpolhode",
       "title": "Torque-free motion, the polhode and the herpolhode",
-      "minutes": 19,
+      "minutes": 21,
       "covers": [
         "torque-free motion, polhode and herpolhode"
       ],
@@ -3819,7 +3819,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-spin-stability-and-the-intermediate-axis-theorem",
       "title": "Spin stability and the intermediate axis theorem",
-      "minutes": 18,
+      "minutes": 22,
       "covers": [
         "major/minor axis spin stability and the intermediate axis theorem"
       ],
@@ -3828,7 +3828,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-energy-dissipation-and-the-flat-spin-instability",
       "title": "Energy dissipation and the flat-spin instability",
-      "minutes": 22,
+      "minutes": 24,
       "covers": [
         "energy dissipation and the flat-spin instability"
       ],
@@ -3837,7 +3837,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-gyroscopic-effects-nutation-and-precession",
       "title": "Gyroscopic effects, nutation and precession",
-      "minutes": 22,
+      "minutes": 25,
       "covers": [
         "gyroscopic effects, nutation, precession"
       ],
@@ -3846,7 +3846,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-dual-spin-spacecraft",
       "title": "Dual-spin spacecraft",
-      "minutes": 22,
+      "minutes": 24,
       "covers": [
         "dual-spin spacecraft"
       ],
@@ -3855,7 +3855,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-momentum-wheels-and-control-moment-gyros",
       "title": "Momentum wheels and control moment gyros",
-      "minutes": 26,
+      "minutes": 28,
       "covers": [
         "momentum wheels and control moment gyros"
       ],
@@ -3864,7 +3864,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-flexible-modes-and-propellant-slosh",
       "title": "Flexible modes and propellant slosh",
-      "minutes": 23,
+      "minutes": 24,
       "covers": [
         "introduction to flexible modes and propellant slosh"
       ],
@@ -3875,7 +3875,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-frames-coordinates-and-rotation-matrices",
       "title": "Frames, coordinates and rotation matrices",
-      "minutes": 18,
+      "minutes": 22,
       "covers": [
         "frame transformation chains and notation discipline"
       ],
@@ -3884,7 +3884,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-the-transport-theorem",
       "title": "The transport theorem",
-      "minutes": 16,
+      "minutes": 20,
       "covers": [
         "the transport theorem"
       ],
@@ -3893,7 +3893,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-velocity-and-acceleration-in-rotating-frames",
       "title": "Velocity and acceleration in rotating frames",
-      "minutes": 17,
+      "minutes": 20,
       "covers": [
         "velocity and acceleration in rotating frames"
       ],
@@ -3902,7 +3902,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-coriolis-centrifugal-and-euler-terms",
       "title": "Coriolis, centrifugal and Euler terms",
-      "minutes": 20,
+      "minutes": 22,
       "covers": [
         "Coriolis, centrifugal and Euler acceleration terms"
       ],
@@ -3911,7 +3911,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-eci-ecef-and-the-earth-rotation-rate",
       "title": "ECI, ECEF and the Earth rotation rate",
-      "minutes": 21,
+      "minutes": 22,
       "covers": [
         "Earth rotation rate",
         "ECI (J2000 / GCRF) and ECEF (ITRF)"
@@ -3921,7 +3921,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-wgs-84-geodetic-latitude-ned-and-enu",
       "title": "WGS-84, geodetic latitude, NED and ENU",
-      "minutes": 19,
+      "minutes": 20,
       "covers": [
         "geodetic vs geocentric latitude and the WGS-84 ellipsoid",
         "NED and ENU local-level frames"
@@ -3960,7 +3960,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-the-direction-cosine-matrix-and-so3",
       "title": "The direction cosine matrix and SO(3)",
-      "minutes": 19,
+      "minutes": 21,
       "covers": [
         "the direction cosine matrix and SO(3)"
       ],
@@ -3969,7 +3969,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-euler-angles-and-the-twelve-sequences",
       "title": "Euler angles, the twelve sequences and the 3-2-1 aerospace convention",
-      "minutes": 19,
+      "minutes": 18,
       "covers": [
         "Euler angles, the twelve sequences, the 3-2-1 aerospace sequence"
       ],
@@ -3987,7 +3987,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-euler-rotation-theorem-and-the-principal-axis",
       "title": "Euler rotation theorem, principal rotation axis and angle",
-      "minutes": 19,
+      "minutes": 22,
       "covers": [
         "Euler rotation theorem, principal rotation axis and angle"
       ],
@@ -3996,7 +3996,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-quaternion-conventions-hamilton-and-jpl",
       "title": "Quaternions: Hamilton against JPL, scalar-first against scalar-last",
-      "minutes": 20,
+      "minutes": 22,
       "covers": [
         "quaternions: Hamilton vs JPL, scalar-first vs scalar-last"
       ],
@@ -4014,7 +4014,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-the-double-cover-and-the-shortest-path-sign",
       "title": "The double cover and the shortest-path sign convention",
-      "minutes": 18,
+      "minutes": 22,
       "covers": [
         "the double cover and the shortest-path sign convention"
       ],
@@ -4023,7 +4023,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-slerp",
       "title": "SLERP, spherical linear interpolation of attitude",
-      "minutes": 18,
+      "minutes": 17,
       "covers": [
         "SLERP"
       ],
@@ -4041,7 +4041,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-conversions-between-every-representation",
       "title": "Conversions between every representation",
-      "minutes": 20,
+      "minutes": 21,
       "covers": [
         "conversions between every representation"
       ],
@@ -4050,7 +4050,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-active-versus-passive-rotation",
       "title": "Active against passive rotation, operator against coordinate transformation",
-      "minutes": 18,
+      "minutes": 19,
       "covers": [
         "active vs passive rotation (operator vs coordinate transformation)"
       ],
@@ -4059,7 +4059,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-attitude-error-representations",
       "title": "Attitude error representations",
-      "minutes": 20,
+      "minutes": 24,
       "covers": [
         "attitude error representations"
       ],
@@ -4068,7 +4068,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l13-so3-so3-algebra-and-the-exp-log-maps",
       "title": "Introduction to SO(3), so(3) and the exp and log maps",
-      "minutes": 21,
+      "minutes": 24,
       "covers": [
         "introduction to SO(3), so(3) and the exp/log maps"
       ],
@@ -4079,7 +4079,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-kinematic-differential-equations",
       "title": "Kinematic differential equations for DCM, quaternion, Euler angles and MRP",
-      "minutes": 17,
+      "minutes": 22,
       "covers": [
         "kinematic differential equations for DCM, quaternion, Euler angles and MRP"
       ],
