@@ -11,13 +11,13 @@ A museum puts its most precious objects behind glass. Visitors can walk around a
 
 C++ has the same idea. A `const` object is behind glass, and only the member functions that promise to look without touching may be called on it. This lesson is about that promise and two other keywords that change who can do what to a class. **`const` member functions** promise not to change the object. **`mutable`** marks the few members — like the lighting — that may change anyway. **`static` members** belong to the whole class instead of to each object, like the museum's visitor counter at the door. And **`friend`** hands a trusted outsider a key to the private rooms.
 
-All four show up in flight code every day. A telemetry reader gets a `const&` to the vehicle state so it cannot corrupt it. A health monitor counts how many sensor objects are alive. And every class that prints itself to a log needs a stream operator that reaches its private data — the job `friend` was made for. Lesson 07 already used a friend `swap`; here is what that word means.
+All four show up in flight code. A telemetry reader gets a `const&` to the vehicle state so it cannot corrupt it. A health monitor counts live sensor objects. And a class that prints itself to a log needs a stream operator that reaches its private data — the job `friend` was made for (lesson 07 already used a friend `swap`).
 
 ## const member functions: a promise to look, not touch
 
 You met the syntax in `cod_cpp_01_basics`: a `const` after a member function's parameter list. Read `double mean() const` as "mean, a const member function". Now the precise rule.
 
-Every member function receives a hidden pointer to the object it was called on, named **[[`this`|this-pointer]]**. In an ordinary member function of `SampleWindow`, `this` has type `SampleWindow*`. In a `const` member function, it has type `const SampleWindow*` — "pointer to const SampleWindow". So inside the function, every member is seen through that const pointer and is read-only.
+Every member function receives a **[[hidden pointer|this-pointer]]** to the object it was called on, named `this`. In an ordinary member function of `SampleWindow`, `this` has type `SampleWindow*`. In a `const` member function, it has type `const SampleWindow*` — "pointer to const SampleWindow". So inside the function, every member is seen through that const pointer and is read-only.
 
 That gives the two rules:
 
@@ -50,7 +50,7 @@ cod_cpp_03_raii_08_err.cpp: In function 'void report(const SampleWindow&)':
 cod_cpp_03_raii_08_err.cpp:14:10: error: passing 'const SampleWindow' as 'this' argument discards qualifiers [-fpermissive]
 ```
 
-The second message is the one that confuses people. "Passing `const SampleWindow` as `this` argument discards qualifiers" means: to call `add`, the compiler would have to turn a `const SampleWindow*` into a plain `SampleWindow*` — throw away the `const` "qualifier" — and it will not do that. The fix is never a cast. Either the function should be `const`, or the caller should not have a `const` view.
+The second message confuses people. It means: to call `add`, the compiler would have to turn a `const SampleWindow*` into a plain `SampleWindow*` — throw away the `const` "qualifier" — and it will not. The fix is never a cast. Either the function should be `const`, or the caller should not have a `const` view.
 
 ### What "not modify" really means
 
@@ -172,8 +172,8 @@ Called on a `const HeapMatrix3 m`, it printed `m(0,0) = 42.0`. The by-value `Mat
 
 **Const-correctness** is the habit of marking `const` everything that does not change: every member function that only reads, every reference parameter the function only reads, every local that is set once. The payoff comes in three ways.
 
-- **The compiler checks your intent.** A function that takes `const Matrix3&` cannot change the caller's matrix by accident. The error message above is the compiler catching exactly that.
-- **const spreads.** If `mean()` were not `const`, then `report(const SampleWindow&)` could not call it. The caller would have to drop the `const`, and so would *its* caller. One missing `const` on a reader forces a whole call chain to give up protection. That is why the habit has to start at the bottom, in the class itself.
+- **The compiler checks your intent.** A function taking `const Matrix3&` cannot change the caller's matrix by accident.
+- **const spreads.** If `mean()` were not `const`, `report(const SampleWindow&)` could not call it, so the caller would have to drop its `const`, and so would *its* caller. The habit has to start at the bottom, in the class itself.
 - **const means safe to share.** Two threads may call `const` member functions on the same object at the same time without a lock, *if* the class keeps the promise. The C++ standard library [[assumes exactly that|const-thread-safe]]. It is also why the cache in the example would need a lock (or an atomic flag) if several threads could call `mean()` at once.
 
 A member function can also be **overloaded on `const`**: two versions with the same name, one `const` and one not. The compiler picks the `const` one for `const` objects. The `Matrix3` in lesson 07 did this with `at`: the non-`const` version returns `double&` so you can write through it, and the `const` version returns a plain `double` copy. Lesson 09 uses the same trick for `operator[]` and `operator()`.
@@ -256,7 +256,7 @@ Track& operator=(const Track&) = default;         // assignment makes no new obj
 
 and the output becomes `two copied: live = 4` and `all destroyed: live = 0`. Sanity check: at the end every object that was built has been destroyed, so the count must return to where it started — zero.
 
-Notice what happened: a counter is a kind of resource, and managing it by hand dragged the class into lesson 07's territory — a destructor forced us to think about the copy constructor. The rule-of-zero fix is to move the counting into a small member type whose own constructors, copy constructor and destructor do the counting, so `Track` declares none of the five.
+A counter is a kind of resource, and managing it by hand dragged the class into lesson 07's territory. The rule-of-zero fix is a small member type that does the counting in its own constructors and destructor, so `Track` declares none of the five.
 :::
 
 ::: warning A static member is a global in disguise
@@ -306,9 +306,9 @@ Three rules about friendship, all following the neighbor-with-a-key picture:
 - **It is not passed on.** If `A` is a friend of `B`, and `B` is a friend of `C`, `A` is not a friend of `C`. Your neighbor's friends do not get your key.
 - **It is not inherited.** A class derived from a friend class (lesson 10 introduces derived classes) does not get the access.
 
-You can also befriend a whole class: `friend class TrackTest;` gives every member function of `TrackTest` access. That is sometimes done for a unit-test class, though testing through the public interface is usually better.
+You can also befriend a whole class: `friend class TrackTest;` gives every member function of `TrackTest` access.
 
-Is `friend` a hole in the wall of `private`? Used for operators and `swap`, the opposite. The alternative would be public getters for every field, which lets *everyone* read them. A friend operator gives access to exactly one function, written by the class's author, right there in the class. That keeps the private data more private, not less.
+Is `friend` a hole in `private`? Used for operators and `swap`, the opposite. The alternative is public getters for every field, which lets *everyone* read them. A friend gives access to exactly one function, written by the class's author, inside the class.
 
 ## Check yourself
 
@@ -349,7 +349,7 @@ A class has `static std::array<double, 1000> scratch_;` used by one of its membe
 :::
 
 ::: answer
-A static data member is one array for the whole class, not one per object. The two objects, used by two different tasks, share the same `scratch_`. If both tasks run the member function at overlapping times, they write into the same array — a data race, which is undefined behaviour, and in practice one task's intermediate results get overwritten by the other's. The simulator never showed it because only one thread existed. The fix is to make `scratch_` an ordinary (non-static) member, so each object owns its own 8,000 bytes, or to pass a work buffer in. Mutable static state should be treated like a global variable.
+A static data member is one array for the whole class, so the two objects, used by two tasks, share the same `scratch_`. If both tasks run the function at overlapping times, they write into the same array — a data race, undefined behaviour, and in practice one task's intermediate results overwritten by the other's. The single-threaded simulator could never show it. Fix: make `scratch_` an ordinary member, so each object owns its own 8,000 bytes, or pass a work buffer in.
 :::
 
 ## Summary

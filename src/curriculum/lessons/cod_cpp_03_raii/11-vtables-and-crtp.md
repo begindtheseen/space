@@ -89,7 +89,7 @@ Read it line by line.
 - `o1` starts with a different address. It is an `Offset`, with its own vtable.
 - The chain applied gain 2, offset 1, gain 3: $(5 \times 2 + 1) \times 3 = 33$. Each call found the right function through the pointer.
 
-The exact addresses change on every run, because Linux loads programs at a random base address. The pattern stays: same class, same vptr. The two vtables sit $0\mathrm{x}50 - 0\mathrm{x}28 = 40$ bytes apart. The symbol table (`nm -S`) confirms each vtable is 40 bytes long — five 8-byte entries under the **[[Itanium C++ ABI|itanium-abi]]** rules g++ follows: two bookkeeping entries, two destructor slots, and `apply`. The vptr points just past the bookkeeping, at the first function slot. You can see [[the whole layout drawn out|vtable-picture]] in the note.
+The exact addresses change on every run, because Linux loads programs at a random base address. The pattern stays: same class, same vptr. The two vtables sit `0x50 - 0x28` = 40 bytes apart. The symbol table (`nm -S`) confirms each vtable is 40 bytes long — five 8-byte entries under the **[[Itanium C++ ABI|itanium-abi]]** rules g++ follows: two bookkeeping entries, two destructor slots, and `apply`. The vptr points just past the bookkeeping, at the first function slot. You can see [[the whole layout drawn out|vtable-picture]] in the note.
 
 Now the call itself. This function makes one virtual call:
 
@@ -253,7 +253,7 @@ virtual, final class   0.37 ns/call  (last output 1.4985)
 direct, not inlined    1.42 ns/call  (last output 1.4985)
 ```
 
-Five runs in a row agreed to within 0.03 ns. An earlier build of a slightly different version gave 1.3 to 1.8 ns for the virtual loop, so treat these as "on one machine, about". Your numbers will differ. The pattern is what to take away.
+Five runs in a row agreed to within about 0.07 ns. An earlier build of a slightly different version gave 1.3 to 1.8 ns for the virtual loop, so treat these as "on one machine, about". Your numbers will differ. The pattern is what to take away.
 
 First, the sanity check. All four print the same last output: $1.5 \times 0.999 = 1.4985$. They did the same work, so comparing their times is fair.
 
@@ -510,7 +510,7 @@ A call to `apply` reads the slot 16 bytes past where the vptr points, which is t
 :::
 
 ::: context cache-line Why object size matters for speed
-The processor does not fetch single bytes from main memory. It fetches 64-byte blocks called cache lines on most current x86 and ARM chips, and keeps recent ones in small, fast caches. A loop that walks an array of 24-byte objects gets about two and a half objects per line; make them 32 bytes and it gets two. Fewer useful bytes per fetch means more fetches, and main memory is roughly a hundred times slower than the nearest cache.
+The processor does not fetch single bytes from main memory. It fetches 64-byte blocks called cache lines on most current x86 and ARM chips, and keeps recent ones in small, fast caches. A loop that walks an array of 24-byte objects gets between two and three objects per line; make them 32 bytes and it gets two. Fewer useful bytes per fetch means more fetches, and main memory is roughly a hundred times slower than the nearest cache.
 :::
 
 ::: context branch-predictor Guessing where the jump goes

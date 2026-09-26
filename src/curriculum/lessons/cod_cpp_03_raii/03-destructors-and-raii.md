@@ -278,7 +278,7 @@ Sanity check on the order: `file` was built last, so it must be released first. 
 Two design notes on these outlines. First, `FileHandle` lets an object exist whose open failed, and makes the caller check `valid()`. A stricter design throws from the constructor when `fopen` fails, so that every `FileHandle` that exists holds an open file — a stronger class invariant, at the cost of needing exceptions. Both are common; flight code that is compiled without exceptions uses the first. Second, you rarely need to write these yourself in production: the [[standard library already has them|std-raii]]. Writing them once is how you understand what those library types are doing for you.
 
 ::: warning A nameless guard dies at the semicolon
-`MutexLock(telemetry_mutex);` with no variable name looks like it takes the lock for the rest of the scope. It does not: it creates a *temporary*, which is destroyed at the end of its full expression — the semicolon — so the mutex is locked and unlocked on the same line, and the code after it runs unprotected. (Worse, in this exact spelling C++ may read it as declaring a new variable named `telemetry_mutex`.) Always give an RAII guard a name: `MutexLock lock(telemetry_mutex);`.
+`MutexLock{telemetry_mutex};` with no variable name looks like it takes the lock for the rest of the scope. It does not: it creates a *temporary*, which is destroyed at the end of its full expression — the semicolon. With print statements added, the output is `locked`, `unlocked`, and only then `protected work?`: the code after it runs unprotected, and g++ says nothing. The round-bracket spelling `MutexLock(telemetry_mutex);` is a different trap: C++ reads it as declaring a new variable named `telemetry_mutex`, so here it fails to compile with `no matching function for call to 'MutexLock::MutexLock()'`. Always give an RAII guard a name: `MutexLock lock(telemetry_mutex);`.
 :::
 
 ## Virtual destructors for polymorphic bases
@@ -506,7 +506,7 @@ NASA JPL's "Power of Ten" rules for safety-critical code include one that forbid
 :::
 
 ::: context vtable-peek The hidden pointer inside a polymorphic object
-A class with virtual functions gets one hidden member: a pointer to a table of function addresses for its real type, called a **vtable**. That is why `Sensor` was 8 bytes (the hidden pointer alone) and `StarTracker` 16 (the pointer plus its `Buffer`, padded) in the sanitizer's report. A virtual destructor is one more entry in the same table:
+A class with virtual functions gets one hidden member: a pointer to a table of function addresses for its real type, called a **vtable**. That is why `Sensor` was 8 bytes (the hidden pointer alone) and `StarTracker` 16 (the pointer plus its `Buffer`, padded) in the sanitizer's report. A virtual destructor is one more entry in the same table (the picture is simplified; real tables hold a little more bookkeeping):
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 130" font-family="Inter, Arial, sans-serif">
