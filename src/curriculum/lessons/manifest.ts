@@ -3398,7 +3398,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-newton-laws-inertial-frames",
       "title": "Newton's laws and inertial frames",
-      "minutes": 21,
+      "minutes": 22,
       "covers": [
         "Newton laws and inertial frames"
       ],
@@ -3407,7 +3407,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-force-momentum-impulse",
       "title": "Force, momentum and impulse",
-      "minutes": 20,
+      "minutes": 24,
       "covers": [
         "force, momentum, impulse"
       ],
@@ -3416,7 +3416,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-work-energy-theorem",
       "title": "Work, kinetic energy and power",
-      "minutes": 21,
+      "minutes": 23,
       "covers": [
         "the work-energy theorem"
       ],
@@ -3425,7 +3425,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-conservative-forces-potential-energy",
       "title": "Conservative forces and potential energy",
-      "minutes": 20,
+      "minutes": 23,
       "covers": [
         "conservative forces and potential energy"
       ],
@@ -3433,8 +3433,8 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     },
     {
       "id": "l05-systems-of-particles-centre-of-mass",
-      "title": "Systems of particles and the centre of mass",
-      "minutes": 23,
+      "title": "Systems of particles and the center of mass",
+      "minutes": 24,
       "covers": [
         "systems of particles and the centre of mass"
       ],
@@ -3452,7 +3452,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-ascent-losses-gravity-turn",
       "title": "Gravity, drag and steering losses on ascent",
-      "minutes": 21,
+      "minutes": 22,
       "covers": [
         "variable-mass systems and the rocket equation done properly"
       ],
@@ -3482,7 +3482,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-rigid-body-kinematics",
       "title": "Rigid body kinematics and the angular velocity vector",
-      "minutes": 18,
+      "minutes": 23,
       "covers": [
         "rigid body kinematics and the angular velocity vector"
       ],
@@ -3491,7 +3491,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-inertia-tensor-and-parallel-axis-theorem",
       "title": "The inertia tensor and the parallel axis theorem",
-      "minutes": 20,
+      "minutes": 24,
       "covers": [
         "the moment of inertia tensor, products of inertia, parallel axis theorem"
       ],
@@ -3500,7 +3500,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-principal-axes-and-principal-moments",
       "title": "Principal axes and principal moments",
-      "minutes": 20,
+      "minutes": 22,
       "covers": [
         "principal axes and principal moments"
       ],
