@@ -2,19 +2,74 @@
 @title Terminal
 @name Linux and the command line
 @blurb The command line every developer lives in: moving around, making, reading and changing files, without a mouse.
+@plainvoice true
 
 === term-01 | Where am I?
 --- teach
-The **terminal** is a way to talk to your computer in text. You type a **command**, press Enter, and it answers.
+Welcome to the terminal. Most of the time you use a computer by pointing and clicking. This lesson shows another way: you type what you want, and the computer types back.
 
-The line before your cursor is the **prompt**: `~/project $` means you are in a folder called `project` inside your home folder (`~`). Two commands you will use every day:
+Think of texting a very literal friend. You send one short message, and they do exactly that one thing and reply.
 
-- `pwd` — **p**rint **w**orking **d**irectory: the full path of the folder you are in.
-- `ls` — **l**i**s**t what is in it. Folders show with a `/` at the end.
+The **[[terminal|terminal-shell]]** is that chat window: a way to talk to your computer in text. Each message you send is a **command** — a short word that names one job, like "show me" or "make this". You type it, press Enter, and the computer answers on the next lines.
 
-This terminal is a practice one: it lives in the page, so nothing you type can touch your real files.
+The text sitting before your cursor is the **[[prompt|prompt-parts]]**: the terminal's way of saying "ready, your turn". Here it looks like this:
+
+```
+~/project $
+```
+
+Read it left to right. `~` (the squiggle, called a *tilde*) means your **[[home folder|home-folder]]** — your own main folder on the computer. `/project` means "the folder called `project` inside it". The dollar sign `$` marks the end of the prompt; you type after it. So the whole prompt says: you are in a folder called `project` inside your home folder.
+
+Now two commands you will use every day.
+
+`pwd` stands for **p**rint **w**orking **d**irectory. The **working directory** is the folder you are in right now (*directory* is another word for folder). `pwd` prints its full address:
+
+```
+~/project $ pwd
+/home/you/project
+```
+
+`ls` is short for **l**i**s**t. It shows what is in the folder you are in. Folders show with a `/` (a slash) at the end, so you can tell them apart from files:
+
+```
+~/project $ ls
+README.md  src/
+```
+
+Here `README.md` is a file and `src/` is a folder.
+
+This terminal is a practice one: it lives in the page, so nothing you type can touch your real files. Feel free to try things. The same commands are ones [[real engineers type every day|why-text]].
+
+**Watch out:** the terminal is exact about spelling and capitals. `PWD` or `Ls` will not work — type commands in lowercase, and press Enter after each one.
+
+::: context terminal-shell Terminal and shell
+You will hear two words for this. The **terminal** is the window you type in. The **shell** is the program inside it that reads your command, runs it and prints the answer. The most common shell is called **bash**, which is the one this course teaches. People often mix the two words up, and for now that is fine: both mean "the place where I type commands".
+:::
+::: context prompt-parts Reading the prompt
+The prompt changes as you move around, so it always shows where you are. When you move into a folder called `notes`, it becomes `~/project/notes $`. On other computers the prompt can look different — some show your user name and computer name, some end in `%` or `#` instead of `$`. The job is the same everywhere: it tells you the shell is waiting for your next command. When a lesson shows `~/project $ ls`, you type only `ls`.
+:::
+::: context home-folder Your home folder
+Every user on a computer gets one folder of their own, called the home folder. In this practice terminal its full address is `/home/you`, and `~` is the short way to write it. Your `project` folder sits inside it.
+
+```svg
+<svg viewBox="0 0 360 150" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <rect x="130" y="10" width="100" height="28" rx="6" fill="white" stroke="#6c7a93" stroke-width="2"/>
+  <text x="180" y="29" font-size="13" text-anchor="middle" fill="#1f2a44">/home</text>
+  <line x1="180" y1="38" x2="180" y2="58" stroke="#6c7a93" stroke-width="2"/>
+  <rect x="115" y="58" width="130" height="28" rx="6" fill="#8fb8f0" stroke="#1d6fd1" stroke-width="2"/>
+  <text x="180" y="77" font-size="13" text-anchor="middle" fill="#1f2a44">you   (this is ~)</text>
+  <line x1="180" y1="86" x2="180" y2="106" stroke="#6c7a93" stroke-width="2"/>
+  <rect x="130" y="106" width="100" height="28" rx="6" fill="white" stroke="#1f2a44" stroke-width="2"/>
+  <text x="180" y="125" font-size="13" text-anchor="middle" fill="#1f2a44">project</text>
+  <text x="250" y="125" font-size="12" fill="#b4232c">you are here</text>
+</svg>
+```
+:::
+::: context why-text Why engineers still type
+Clicking is great for exploring, but typing wins when a job has to be done exactly, or done a thousand times. Engineers who build flight software spend much of their day in a terminal: running tests, reading data logs from test firings, and logging in to computers that have no screen at all. The commands you learn here are the same ones they use.
+:::
 --- task
-Run `pwd` to see where you are, then `ls` to see what is in this folder.
+Find out where you are and what is here. Run `pwd` to print the folder you are in, then run `ls` to list what is inside it.
 --- starter
 mkdir src
 touch README.md
@@ -22,7 +77,11 @@ touch README.md
 pwd
 ls
 --- hint
-Type `pwd` and press Enter. Then type `ls` and press Enter.
+Two commands, one after the other. The first prints where you are; the second lists what is here.
+--- hint
+Type `pwd` and press Enter. You should see `/home/you/project`.
+--- hint
+Then type `ls` and press Enter. You should see `README.md` and `src/`.
 --- check shell | You printed where you are
 ran pwd
 printed /home/you/project
@@ -32,21 +91,78 @@ printed README.md
 
 === term-02 | Making folders and moving into them
 --- teach
-`mkdir name` **m**a**k**es a **dir**ectory (a folder). `cd name` **c**hanges **d**irectory — it moves you into it, and the prompt changes to show where you are.
+Last lesson you used `pwd` to see where you are and `ls` to see what is there. Now you will make a new folder and step inside it.
+
+Picture a building. Making a folder is like building a new room. Moving into a folder is like walking through its door. After that, anything you do happens in that room until you walk out again.
+
+`mkdir` **m**a**k**es a **dir**ectory — a new folder. After the command, leave a space and type the folder's name. That name is an **[[argument|argument]]**: the extra word you give a command so it knows what to work on.
 
 ```
 ~/project $ mkdir notes
+~/project $ ls
+notes/
+```
+
+`mkdir` prints nothing when it works. Silence means success in the terminal. Run `ls` to see the new folder.
+
+`cd` stands for **c**hange **d**irectory. It moves you into a folder. Watch the prompt: it changes to show where you are now.
+
+```
 ~/project $ cd notes
 ~/project/notes $
 ```
 
-`cd ..` goes back up one level, and `cd` on its own takes you home.
+Two more ways to use `cd`. `cd ..` (cd, a space, then two dots) goes back up one level, to the folder that holds this one. The [[two dots|dot-dot]] always mean "the folder above".
+
+```
+~/project/notes $ cd ..
+~/project $
+```
+
+And `cd` on its own, with nothing after it, takes you [[home|cd-home]]:
+
+```
+~/project $ cd
+~ $
+```
+
+**Watch out:** `mkdir notes` only builds the folder — it does not move you into it. You need `cd notes` as a second step. Also keep a space between the command and the name: `cdnotes` is not a command. And avoid [[spaces inside folder names|no-spaces]] for now.
+
+::: context argument Commands and their arguments
+A command is often a verb, and the argument is its object. In `mkdir notes`, "make a folder" is the verb and `notes` is what to make. The shell splits what you type at the spaces: the first word is the command, and each word after it is an argument. Some commands take none (`pwd`), some take one (`cd notes`), and some take several (you will meet `cp`, which takes two).
+:::
+::: context dot-dot Up one level
+Folders sit inside folders, like boxes inside boxes. `..` is the name of the box that holds the one you are in. Every folder has it, so `cd ..` always works (except at the very top, where there is nothing above).
+
+```svg
+<svg viewBox="0 0 360 130" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <rect x="20" y="15" width="320" height="100" rx="8" fill="white" stroke="#1f2a44" stroke-width="2"/>
+  <text x="34" y="36" font-size="13" fill="#1f2a44">project</text>
+  <rect x="150" y="45" width="170" height="55" rx="8" fill="#8fb8f0" stroke="#1d6fd1" stroke-width="2"/>
+  <text x="164" y="66" font-size="13" fill="#1f2a44">notes</text>
+  <text x="164" y="88" font-size="12" fill="#1f2a44">you are here</text>
+  <path d="M150 80 C 110 80, 90 70, 70 55" fill="none" stroke="#b4232c" stroke-width="2"/>
+  <polygon points="66,50 78,54 70,62" fill="#b4232c"/>
+  <text x="40" y="95" font-size="12" fill="#b4232c">cd .. goes out</text>
+</svg>
+```
+:::
+::: context cd-home Home, from anywhere
+However deep you are, `cd` with no argument lands you in your home folder, `~`. It is the terminal's "go home" button. You will learn more ways to get home, and back, in a later lesson.
+:::
+::: context no-spaces Why engineers skip spaces
+The shell splits what you type at spaces, so `mkdir my notes` makes two folders: `my` and `notes`. There are ways around this (quotes, which you will meet next lesson), but most engineers avoid the problem by naming things with dashes or underscores: `my-notes`, `flight_logs`.
+:::
 --- task
-Make a folder called `notes` and move into it.
+Make a folder called `notes`, then move into it. When you are done, the prompt should end in `notes $`.
 --- starter
 --- solution
 mkdir notes
 cd notes
+--- hint
+It takes two commands: one that makes a folder, and one that moves you into a folder.
+--- hint
+Making a folder is `mkdir` followed by its name.
 --- hint
 First `mkdir notes`, then `cd notes`.
 --- check shell | The notes folder exists
@@ -56,27 +172,69 @@ cwd notes
 
 === term-03 | Files: create, write, read
 --- teach
-`touch name` makes an empty file. To put text in a file, `echo` it and **redirect** the output with `>`:
+Last lesson you made folders and moved between them. Folders are only boxes, though. This lesson puts something inside: files with words in them.
+
+`touch` makes an empty file. Give it the file's name as the argument:
 
 ```
-echo "Launch at dawn" > plan.txt
+~/project $ touch plan.txt
+~/project $ ls
+plan.txt
 ```
 
-`echo` prints its text; `> plan.txt` sends that text into the file instead of the screen. Careful: `>` **replaces** whatever the file held.
+The file is there, but blank — like a new, empty page.
 
-Put the text in double quotes. The quotes keep it together as one piece, and stop characters such as `>` or `&` inside it from being read as part of the command.
+To put words in it, you need two pieces. The first is `echo`. It prints back whatever text you give it, like an echo in a canyon:
 
-`cat plan.txt` prints a file's contents, so you can check what you wrote.
+```
+~/project $ echo "Launch at dawn"
+Launch at dawn
+```
+
+The second piece is the `>` sign (a greater-than sign, read "into"). It is a **[[redirect|redirect]]**: it takes what a command would have printed on the screen and sends it into a file instead.
+
+```
+~/project $ echo "Launch at dawn" > plan.txt
+~/project $
+```
+
+Nothing appears on screen this time. The words went into `plan.txt`. If the file did not exist yet, `>` makes it.
+
+Notice the **[[double quotes|quotes]]** around the text. The quotes keep it together as one piece. They also stop characters such as `>` or `&` (the and-sign, called an ampersand) inside your text from being read as part of the command.
+
+To read a file, use `cat`. It prints a file's contents on the screen, so you can [[check what you wrote|cat-name]]:
+
+```
+~/project $ cat plan.txt
+Launch at dawn
+```
+
+**Watch out:** `>` **replaces** whatever the file held. If `plan.txt` had a hundred lines, `echo "hi" > plan.txt` leaves it holding only `hi`, and the old lines are [[gone for good|overwrite]]. Read the command before you press Enter.
+
+::: context redirect Where output goes
+Normally a command's output goes to the screen. A redirect points it somewhere else, the way you might redirect a letter to a new address. `>` sends it into a file. Later you will meet `>>`, which adds to the end of a file instead of replacing it, and `|`, which sends one command's output into another command. Engineers use redirects all the time to save test results and data readings into files they can study later.
+:::
+::: context quotes Why the quotes matter
+The shell treats some characters as instructions: spaces split words, `>` means redirect, and `&` has a job too. Double quotes tell the shell "keep this together as one piece of text, and treat these characters as plain letters". (A few characters, such as `$`, still do something inside double quotes; you will meet them later.) Without quotes, `echo Launch > at dawn` would try to write into a file called `at`. The quotes make sure your message arrives whole.
+:::
+::: context cat-name Where the name cat comes from
+`cat` is short for *concatenate*, which means "join together in a chain". Give it several files, as in `cat a.txt b.txt`, and it prints them one after the other as if they were one. With one file, it prints that file. It has nothing to do with the animal.
+:::
+::: context overwrite No undo button
+The terminal trusts you. It does not ask "are you sure?" before `>` wipes a file, and there is no recycle bin to rescue it from. That is why careful engineers slow down before any command that changes files, and why real projects keep copies — you will learn to make one with `cp` in two lessons.
+:::
 --- task
-Create `hello.txt` containing exactly `Hello, terminal!`, then show it with `cat`.
+Create a file called `hello.txt` that contains exactly `Hello, terminal!` (with the comma and the exclamation mark). Then show what is in it with `cat`.
 --- starter
 --- solution
 echo "Hello, terminal!" > hello.txt
 cat hello.txt
 --- hint
-Put the text in quotes: `echo "Hello, terminal!" > hello.txt`.
+Use `echo` to print the text, and the `>` sign to send it into the file instead of the screen.
 --- hint
-Then `cat hello.txt`.
+Put the text in double quotes: `echo "Hello, terminal!" > hello.txt`.
+--- hint
+Then read it back with `cat hello.txt`. You should see `Hello, terminal!`.
 --- check shell | hello.txt holds the greeting
 file hello.txt == Hello, terminal!
 --- check shell | You read it back with cat
@@ -85,26 +243,79 @@ printed Hello, terminal!
 
 === term-04 | Paths
 --- teach
-A **path** says where something is. `docs/guides` means "the `guides` folder inside `docs`, inside where I am now" — a **relative** path. `..` means "the folder above", so `../..` is two levels up. `~` is your home folder, and a path starting with `/` is **absolute**: it starts from the very top.
+So far you have moved one folder at a time: `cd notes`, then `cd ..`. This lesson shows how to name a place several folders away in one go, and how to make a whole chain of folders at once.
 
-An option that starts with `-`, like the `-p` below, is a **flag**: it changes how a command behaves. `mkdir -p` makes every folder along a path at once, so you do not need one `mkdir` per level:
+Think of giving directions. "Go into the kitchen, then the pantry" works from where you are standing. A home address, like "12 Main Street", works from anywhere in town. The terminal has both kinds.
+
+A **path** says where something is: a list of folder names joined by `/` (a slash). The slash means "inside".
 
 ```
-mkdir -p src/components/buttons
-cd src/components
-cd ../..
+~/project $ cd docs/guides
+~/project/docs/guides $
 ```
+
+`docs/guides` means "the `guides` folder, inside `docs`, inside where I am now". A path that starts from where you are is a **relative** path — like "into the kitchen, then the pantry".
+
+You already know `..` means "the folder above". It works inside a path too. `../..` (dot-dot, slash, dot-dot) means "up one level, then up one more" — two levels up:
+
+```
+~/project/docs/guides $ cd ../..
+~/project $
+```
+
+A path can also start from a fixed place. `~` (the tilde) is your home folder, so `~/project` works wherever you are. And a path that starts with `/` is **absolute**: it starts from the very [[top of the computer|root]], like a full street address. `/home/you/project` is an absolute path. See the [[two kinds side by side|abs-rel]].
+
+Now the second idea. An option that starts with `-` (a dash), like `-p`, is a **[[flag|flag]]**. A flag changes how a command behaves. Plain `mkdir` makes one folder, and fails if the folder above it is missing. `mkdir -p` (the p is for [[parents|dash-p]]) makes every folder along the path at once, so you do not need one `mkdir` per level:
+
+```
+~/project $ mkdir -p src/components/buttons
+~/project $ cd src/components
+~/project/src/components $ cd ../..
+~/project $
+```
+
+**Watch out:** a path that starts with `/` means the very top of the computer, not "here". `cd /docs` looks for a folder called `docs` at the top, and fails. For a folder inside where you are, leave the slash off the front: `cd docs`.
+
+::: context root The top of the tree
+All the files on a computer hang from one starting folder called the **root**, written as a single `/`. Everything else is inside it: `/home` holds the users' folders, `/home/you` is yours. An absolute path spells out every step down from the root, so it points to the same place no matter where you are standing.
+:::
+::: context abs-rel Two ways to name the same folder
+From `~/project`, these two paths name the same folder:
+
+```svg
+<svg viewBox="0 0 360 170" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <text x="20" y="28" font-size="14" fill="#1f2a44">/</text>
+  <text x="40" y="52" font-size="14" fill="#1f2a44">home</text>
+  <text x="60" y="76" font-size="14" fill="#1f2a44">you</text>
+  <text x="80" y="100" font-size="14" fill="#1d6fd1">project   (you are here)</text>
+  <text x="100" y="124" font-size="14" fill="#1f2a44">docs</text>
+  <text x="120" y="148" font-size="14" fill="#b4232c">guides</text>
+  <text x="200" y="148" font-size="12" fill="#6c7a93">absolute: /home/you/project/docs/guides</text>
+  <text x="200" y="130" font-size="12" fill="#6c7a93">relative: docs/guides</text>
+</svg>
+```
+
+The absolute one works from anywhere. The relative one is shorter, but only right from `project`.
+:::
+::: context flag Flags are switches
+A flag is like a switch on a machine: the command is the same, but the switch changes what it does. Flags start with a dash and usually come right after the command's name, before the other arguments. Most are one letter, and you will meet many: `-r`, `-n`, `-l`. Each command has its own set, so `-p` means one thing for `mkdir` and may mean something else for another command.
+:::
+::: context dash-p Parents, and a bonus
+The folders above a folder are its *parents*, so `-p` means "make the parents too". It has a second handy effect: if the folder already exists, `mkdir -p` quietly does nothing instead of printing an error. That makes it safe to run twice, which is why setup scripts in real projects use it almost every time they make a folder.
+:::
 --- task
-With one command, make the folders `docs/guides`. Move into `docs/guides`, then come back up to `project` using `..`.
+With one command, make the folders `docs/guides` (a `guides` folder inside a `docs` folder). Move into `docs/guides`, then come back up to `project` using `..`.
 --- starter
 --- solution
 mkdir -p docs/guides
 cd docs/guides
 cd ../..
 --- hint
-`mkdir -p docs/guides` makes both folders.
+Making two levels of folders at once needs the `-p` flag on `mkdir`.
 --- hint
-From `docs/guides`, two levels up is `cd ../..`.
+`mkdir -p docs/guides` makes both folders. Then `cd docs/guides` moves you into the inner one.
+--- hint
+From `docs/guides`, `project` is two levels up: `cd ../..`.
 --- check shell | docs/guides exists
 dir docs/guides
 --- check shell | You went into it
@@ -115,23 +326,80 @@ cwd .
 
 === term-05 | Copying and moving
 --- teach
-`cp source destination` **c**o**p**ies a file. `mv source destination` **m**o**v**es it — and because moving a file to a new name in the same folder is renaming, `mv` is also how you rename:
+Last lesson you learned to name any folder with a path. Now you will use paths to copy files and move them around.
+
+Think of a paper worksheet. Photocopying it gives you two sheets: the original stays put, and you have a new one. Carrying it to another desk leaves only one sheet, in a new place. The terminal has a command for each.
+
+`cp` **c**o**p**ies a file. It takes two arguments: first the **source** (the file you start with), then the **destination** (where the copy goes).
 
 ```
-cp report.txt report-backup.txt
-mv report.txt final-report.txt
+~/project $ cp report.txt report-backup.txt
+~/project $ ls
+report-backup.txt  report.txt
 ```
 
-If the destination is a folder, the file goes inside it with the same name: `mv notes.txt archive/`. Copying a whole folder needs `cp -r` (**r**ecursive).
+Now there are two files with the same words in them.
+
+`mv` **m**o**v**es a file. It takes the same two arguments, source then destination. Moving a file to a new name in the same folder is the same thing as **renaming** it, so `mv` is also [[how you rename|rename]]:
+
+```
+~/project $ mv report.txt final-report.txt
+~/project $ ls
+final-report.txt  report-backup.txt
+```
+
+`report.txt` is gone; the same file now has a new name.
+
+If the destination is a folder, the file goes inside it and keeps its name. Here `archive/` is a folder, so `notes.txt` ends up at `archive/notes.txt`:
+
+```
+~/project $ mv notes.txt archive/
+```
+
+Copying a whole folder needs one more thing. Plain `cp` copies files only. `cp -r` adds the `-r` flag, which stands for **[[recursive|recursive]]**: go into every folder inside and copy all of it.
+
+```
+~/project $ cp -r archive archive-copy
+```
+
+**Watch out:** the order matters — source first, destination second. And if the destination file already exists, `cp` and `mv` [[replace it without asking|no-warning]].
+
+::: context rename Why there is no rename command
+To the computer, a file's name is part of its address. Changing the name and changing the folder both mean "this file now lives at a different address", so one command, `mv`, does both. You can even do both at once: `mv draft.txt archive/old-draft.txt` moves the file into `archive` and gives it a new name on the way.
+:::
+::: context recursive What recursive means
+Something is **recursive** when it repeats the same step on smaller and smaller pieces. `cp -r` copies a folder, then does the same thing to each folder inside it, then to each folder inside those, all the way down. You will see `-r` again soon: deleting a whole folder uses `rm -r`, and searching every file in a folder uses `grep -r`.
+
+```svg
+<svg viewBox="0 0 360 120" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <rect x="10" y="10" width="340" height="100" rx="8" fill="white" stroke="#1f2a44" stroke-width="2"/>
+  <text x="22" y="30" font-size="12" fill="#1f2a44">archive</text>
+  <rect x="30" y="40" width="190" height="60" rx="8" fill="#8fb8f0" stroke="#1d6fd1" stroke-width="2"/>
+  <text x="42" y="58" font-size="12" fill="#1f2a44">2025</text>
+  <rect x="50" y="66" width="110" height="26" rx="6" fill="#f2b880" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="60" y="84" font-size="12" fill="#1f2a44">march</text>
+  <text x="240" y="60" font-size="12" fill="#1f2a44">cp -r copies</text>
+  <text x="240" y="78" font-size="12" fill="#1f2a44">every box,</text>
+  <text x="240" y="96" font-size="12" fill="#1f2a44">all the way in</text>
+</svg>
+```
+:::
+::: context no-warning The terminal does not ask
+If `backup.txt` already exists, `cp draft.txt backup.txt` writes over it, and the old backup is lost. `mv` does the same. Both commands have an `-i` flag (for *interactive*) that asks before replacing anything, and some people turn it on for safety. The better habit is to run `ls` first and look before you copy.
+:::
 --- task
-There is a file called `draft.txt`. Copy it to `backup.txt`, then rename `draft.txt` to `final.txt`.
+There is a file called `draft.txt`. Copy it to a new file called `backup.txt`. Then rename `draft.txt` to `final.txt`.
 --- starter
 echo "Our first mission plan" > draft.txt
 --- solution
 cp draft.txt backup.txt
 mv draft.txt final.txt
 --- hint
-`cp draft.txt backup.txt` first; then `mv draft.txt final.txt`.
+Copying is `cp`, and renaming is `mv`. Both take the source first, then the destination.
+--- hint
+Make the copy first, while `draft.txt` still has its old name: `cp draft.txt backup.txt`.
+--- hint
+Then rename it: `mv draft.txt final.txt`. `ls` should show `backup.txt` and `final.txt`.
 --- check shell | backup.txt is a copy
 file backup.txt == Our first mission plan
 --- check shell | draft.txt is now final.txt
@@ -140,16 +408,80 @@ missing draft.txt
 
 === term-06 | Deleting
 --- teach
-`rm file` **r**e**m**oves a file. There is no bin to get it back from, so read the command before you press Enter.
+Last lesson you copied files with `cp` and moved or renamed them with `mv`. Sooner or later a project fills up with things you no longer want: old drafts, test output, empty folders. This lesson is about getting rid of them.
 
-A folder needs `rm -r folder`: `-r` removes it and everything inside it. (`rmdir` only removes a folder that is already empty.)
+Think of a paper shredder. Once the page goes through, it is gone. There is no pile of scraps to dig through later. Deleting in the terminal works the same way.
+
+**Deleting one file.** `rm` removes a file. The name is short for **r**e**m**ove. You give it the name of the file:
 
 ```
-rm old-notes.txt
-rm -r build
+~/project $ ls
+keep.txt  old-notes.txt
+~/project $ rm old-notes.txt
+~/project $ ls
+keep.txt
 ```
+
+`rm` prints nothing when it works. When you list the folder afterwards, the file is not there any more. There is [[no bin to get it back from|no-recycle-bin]], so read the command once before you press Enter.
+
+**Deleting a folder and everything in it.** `rm` on its own refuses to delete a folder. For that you add the **flag** `-r`, said "dash r". It stands for **recursive**: go into the folder, then into every folder inside it, and remove [[everything it finds, all the way down|recursive-tree]]:
+
+```
+~/project $ rm -r build
+```
+
+That one line deletes the folder `build`, every file in it, every folder in it, and every file in those.
+
+**Deleting an empty folder.** There is also `rmdir`, short for **r**e**m**ove **dir**ectory. It only works on a folder that is already empty. If anything is inside, it [[refuses and leaves the folder alone|why-rmdir]]:
+
+```
+~/project $ rmdir src
+rmdir: failed to remove 'src': Directory not empty
+```
+
+**Watch out:** `rm -r` does not ask "are you sure?". Check the folder name letter by letter before you press Enter, and use `ls` first if you are not sure what is inside. Real engineers have a habit of [[listing before they delete|look-before-delete]], because a typo in an `rm -r` line can wipe out a week of work.
+
+::: context no-recycle-bin Why there is no recycle bin
+On a desktop, "delete" usually moves a file to the Trash or Recycle Bin, and you can drag it back out. That bin is a feature of the desktop program, not of the computer's file system underneath.
+
+`rm` talks to the file system directly. It tells it "forget this file", and the space the file used is marked free for something else to use. There is no in-between stop. That is why careful engineers keep backups, and why the tool you will meet in the Git course, which saves every version of a project, is so valuable: it is the bin that `rm` never had.
+:::
+
+::: context recursive-tree What "recursive" means
+Something is **recursive** when it does the same job again on a smaller piece of itself. A folder can hold folders, which can hold more folders. `rm -r` handles one folder by emptying it: for each thing inside, if it is a file, delete it; if it is a folder, handle that folder the same way first. Then the empty folder itself goes.
+
+```svg
+<svg viewBox="0 0 360 170" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <rect x="130" y="10" width="100" height="30" rx="6" fill="#ffffff" stroke="#b4232c" stroke-width="2"/>
+  <text x="180" y="30" font-size="13" text-anchor="middle" fill="#1f2a44">build/</text>
+  <line x1="180" y1="40" x2="80" y2="75" stroke="#1f2a44" stroke-width="1.5"/>
+  <line x1="180" y1="40" x2="280" y2="75" stroke="#1f2a44" stroke-width="1.5"/>
+  <rect x="30" y="75" width="100" height="30" rx="6" fill="#ffffff" stroke="#b4232c" stroke-width="2"/>
+  <text x="80" y="95" font-size="13" text-anchor="middle" fill="#1f2a44">app.js</text>
+  <rect x="230" y="75" width="100" height="30" rx="6" fill="#ffffff" stroke="#b4232c" stroke-width="2"/>
+  <text x="280" y="95" font-size="13" text-anchor="middle" fill="#1f2a44">logs/</text>
+  <line x1="280" y1="105" x2="280" y2="130" stroke="#1f2a44" stroke-width="1.5"/>
+  <rect x="230" y="130" width="100" height="30" rx="6" fill="#ffffff" stroke="#b4232c" stroke-width="2"/>
+  <text x="280" y="150" font-size="13" text-anchor="middle" fill="#1f2a44">run.log</text>
+  <text x="20" y="150" font-size="12" fill="#b4232c">rm -r build</text>
+  <text x="20" y="165" font-size="11" fill="#6c7a93">removes every red box</text>
+</svg>
+```
+
+The same `-r` appeared with `cp -r` last lesson, meaning the same thing: go all the way down.
+:::
+
+::: context why-rmdir Why keep a command that refuses
+`rmdir` looks weaker than `rm -r`, and that is the point. If you think a folder is empty, `rmdir` is the safe choice: when you are right, the folder goes; when you are wrong, you get an error instead of losing files you forgot were there. A tool that refuses to do damage is often the better tool.
+:::
+
+::: context look-before-delete The habit of looking first
+A common habit among engineers is to run `ls` on exactly the thing they are about to delete, read the list, and only then press the up arrow and change `ls` to `rm`. The up arrow brings back the last command, so the name is typed once and checked by eye before anything is removed.
+
+Many systems also offer `rm -i`, where `-i` means **interactive**: it asks yes or no for every file. It is slow for big folders, but a good seat belt while you are learning.
+:::
 --- task
-Delete the file `junk.txt` and the whole `old` folder (it has files inside). Leave `keep.txt` alone.
+Delete the file `junk.txt` and the whole `old` folder. The `old` folder has files inside it, so it needs the recursive flag. Leave `keep.txt` alone.
 --- starter
 touch junk.txt
 touch keep.txt
@@ -159,7 +491,11 @@ echo "stale" > old/logs/app.log
 rm junk.txt
 rm -r old
 --- hint
-`rm junk.txt` for the file, `rm -r old` for the folder.
+There are two things to delete: one file and one folder with things inside. Files and full folders use slightly different forms of `rm`.
+--- hint
+For the file, `rm` and the file's name is enough. The folder needs the flag that means "go all the way down".
+--- hint
+`rm junk.txt` for the file, then `rm -r old` for the folder. Run `ls` afterwards: only `keep.txt` should be left.
 --- check shell | junk.txt is gone
 missing junk.txt
 --- check shell | old/ and everything in it is gone
@@ -169,15 +505,121 @@ file keep.txt
 
 === term-07 | Looking inside files
 --- teach
-Real files can be long, so there are commands that show just part of one:
+Last lesson you deleted files. Before deleting, or before trusting a file at all, you often want to look inside it. You already know `cat`, from the lesson on files: it prints the whole file. That is fine for three lines. Real files can have thousands.
 
-- `head -n 3 file` — the first 3 lines. `tail -n 3 file` — the last 3.
-- `wc -l file` — **w**ord **c**ount; with `-l`, how many **l**ines.
-- `grep text file` — only the lines that contain `text`. Add `-i` to ignore case, `-n` to show line numbers.
+Think of a long grocery receipt. You might glance at the top, check the total at the bottom, count the items, or hunt for one thing you bought. The terminal has a command for each of those.
 
-`grep` is how developers dig through logs: `grep ERROR server.log` pulls every error out of thousands of lines.
+For the examples, here is a small file called `steps.txt`:
+
+```
+~/project $ cat steps.txt
+fuel
+power
+radio
+weather
+go
+```
+
+**The top of a file.** `head` shows the [[first lines|head-tail-picture]]. The flag `-n`, said "dash n", means **number of lines**, and the number after it says how many:
+
+```
+~/project $ head -n 2 steps.txt
+fuel
+power
+```
+
+**The bottom of a file.** `tail` is the same idea from the other end. It shows the last lines:
+
+```
+~/project $ tail -n 2 steps.txt
+weather
+go
+```
+
+**Counting lines.** `wc` is short for **w**ord **c**ount. With the flag `-l`, said "dash l" (the letter, for **l**ines), it [[counts only the lines|wc-counts]] and prints the number, then the file name:
+
+```
+~/project $ wc -l steps.txt
+5 steps.txt
+```
+
+**Finding lines.** `grep` prints only the lines that contain some text. You give it the text first, then the file. This is the command with the [[strangest name|grep-name]] in the lesson, and one of the most useful:
+
+```
+~/project $ grep o steps.txt
+power
+radio
+go
+```
+
+Every line with a letter `o` in it came out; the rest stayed hidden.
+
+`grep` has two flags you will use often:
+
+- `-i`, "dash i": **ignore case**. **Case** means capital or small letters. Without `-i`, `grep error` does not match `ERROR`. With it, both match.
+- `-n`, "dash n": show the **line number** in front of each match, then a colon.
+
+```
+~/project $ grep -n o steps.txt
+2:power
+3:radio
+5:go
+```
+
+`grep` is how developers dig through [[logs|what-is-a-log]]: `grep ERROR server.log` pulls every error out of thousands of lines.
+
+**Watch out:** `grep` wants the text first and the file second. `grep launch.log ERROR` looks for the words "launch.log" inside a file called `ERROR`, which does not exist. Also, `grep` cares about capitals: if a search finds nothing, try again with `-i` before deciding the text is not there.
+
+::: context head-tail-picture Top, bottom, and the default of ten
+If you leave out `-n` and a number, `head` and `tail` show 10 lines each.
+
+```svg
+<svg viewBox="0 0 360 180" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <rect x="120" y="10" width="120" height="160" rx="6" fill="#ffffff" stroke="#1f2a44" stroke-width="1.5"/>
+  <rect x="120" y="10" width="120" height="40" rx="6" fill="#8fb8f0"/>
+  <rect x="120" y="130" width="120" height="40" rx="6" fill="#f2b880"/>
+  <line x1="135" y1="25" x2="225" y2="25" stroke="#1f2a44"/>
+  <line x1="135" y1="38" x2="225" y2="38" stroke="#1f2a44"/>
+  <line x1="135" y1="62" x2="225" y2="62" stroke="#6c7a93"/>
+  <line x1="135" y1="78" x2="225" y2="78" stroke="#6c7a93"/>
+  <line x1="135" y1="94" x2="225" y2="94" stroke="#6c7a93"/>
+  <line x1="135" y1="110" x2="225" y2="110" stroke="#6c7a93"/>
+  <line x1="135" y1="145" x2="225" y2="145" stroke="#1f2a44"/>
+  <line x1="135" y1="158" x2="225" y2="158" stroke="#1f2a44"/>
+  <text x="110" y="34" font-size="13" text-anchor="end" fill="#1d6fd1">head -n 2</text>
+  <text x="250" y="155" font-size="13" fill="#1f2a44">tail -n 2</text>
+  <text x="250" y="90" font-size="12" fill="#6c7a93">the middle</text>
+  <text x="250" y="104" font-size="12" fill="#6c7a93">is skipped</text>
+</svg>
+```
+
+`tail` is a favourite for logs, because the newest events are written at the bottom.
+:::
+
+::: context wc-counts Lines, words and letters
+On its own, with no flag, `wc` prints three numbers: lines, words, and the size in bytes (for plain English text, about one byte per character, counting the invisible end-of-line character too).
+
+```
+~/project $ wc steps.txt
+5 5 28 steps.txt
+```
+
+That is 5 lines, 5 words and 28 bytes. The flag `-l` keeps only the first number, and `-w` would keep only the words. Counting lines is by far the most common use, because in a log one line is usually one event.
+:::
+
+::: context grep-name Where the name grep comes from
+Before screens were common, programmers edited text with a line editor called `ed`. One of its commands was `g/re/p`: **g**lobally, for every line, search for a **r**egular **e**xpression, and **p**rint the lines that match. It was used so much that it became a program of its own, named after the command: `grep`.
+
+A **regular expression** is a way of describing a pattern of text, not only a fixed word, such as "any line starting with a digit". You will meet simple patterns in the next course.
+:::
+
+::: context what-is-a-log What a log is
+A **log** is a file a program writes as it runs, one line per event, usually starting with the time. The word comes from a ship's logbook, where the crew wrote down what happened each watch.
+
+Rockets and spacecraft log constantly. Flight computers record **telemetry**, measurements such as pressures, temperatures and valve positions sent back to the ground, many times per second. After a test, engineers search those huge files for the few lines that matter. `grep`, `head`, `tail` and `wc` are exactly the tools for a first look, before any fancy software is opened.
+:::
 --- task
-`launch.log` is the log from a test launch. Count its lines with `wc -l`, then use `grep` to show only the lines containing `ERROR`.
+`launch.log` is the log from a test launch. Count its lines with `wc -l`, then use `grep` to show only the lines containing `ERROR` (in capital letters, as it is written in the log).
 --- starter
 echo "09:00 INFO systems check" > launch.log
 echo "09:01 INFO fuel loaded" >> launch.log
@@ -189,9 +631,11 @@ echo "09:05 INFO liftoff" >> launch.log
 wc -l launch.log
 grep ERROR launch.log
 --- hint
-`wc -l launch.log` counts the lines.
+Two commands: one that counts, one that finds. Both take the file name `launch.log` at the end.
 --- hint
-`grep ERROR launch.log` prints only the error lines.
+Counting lines is `wc` with the flag for lines. Finding is `grep`, with the text to look for before the file name.
+--- hint
+`wc -l launch.log` should print `6 launch.log`. Then `grep ERROR launch.log` prints only the two error lines.
 --- check shell | You counted the lines
 ran wc -l
 printed 6 launch.log
@@ -202,29 +646,91 @@ printed 09:04 ERROR telemetry dropout
 
 === term-08 | Chaining and appending
 --- teach
-`&&` joins two commands: the second runs only if the first worked. It is how you write a sequence on one line:
+Last lesson you looked inside files with `head`, `tail`, `wc` and `grep`. This lesson adds two small tools for writing commands and files: one joins commands into a sequence, the other adds to a file without wiping it.
+
+**Joining commands with "and then".** Think of a recipe: "crack the eggs, and then whisk them". If the eggs never got cracked, you would not start whisking. Two ampersands, `&&`, said "and", do the same for commands. The second command runs only if the first one [[worked|exit-status]]:
 
 ```
-mkdir build && cd build
+~/project $ mkdir build && cd build
+~/project/build $
 ```
 
-`>>` is like `>`, but it **adds** to the end of the file instead of replacing it:
+One line, two steps: make the folder, and then move into it. Now watch what happens when the first step fails:
 
 ```
-echo "first" > list.txt
-echo "second" >> list.txt
+~/project $ mkdir build && cd build
+mkdir: cannot create directory 'build': File exists
+~/project $
 ```
+
+`mkdir` failed because `build` was already there, so `cd` never ran. The prompt shows you did not move. That is the whole point of `&&`: [[nothing goes ahead on top of a failure|and-vs-semicolon]].
+
+**Adding to a file.** In the lesson on files you met the greater-than sign, `>`. It sends a command's output into a file, and it **replaces** whatever the file held. Two greater-than signs, `>>`, **append**: they add the new text to the end of the file and keep what was there.
+
+```
+~/project $ echo "first" > list.txt
+~/project $ echo "second" >> list.txt
+~/project $ cat list.txt
+first
+second
+```
+
+The first line used `>` to start the file fresh. The second used `>>` to [[add a line underneath|append-vs-overwrite]].
+
+**Watch out:** `>` and `>>` look almost the same, but one missing character is the difference between adding a line and wiping the whole file. If you meant to add and typed `>`, the file now holds only the new line. Read the arrows before you press Enter.
+
+::: context exit-status How the shell knows a command worked
+Every command, when it finishes, hands back a small number called its **exit status**. `0` means "it worked". Any other number means "something went wrong", and different numbers can mean different problems.
+
+You never see this number unless you ask for it, but `&&` reads it: it runs the next command only if the status was `0`. You can see the last status yourself with `echo $?` (the dollar sign and question mark together name "the status of the last command"):
+
+```
+~/project $ rm nothing-here.txt
+rm: cannot remove 'nothing-here.txt': No such file or directory
+~/project $ echo $?
+1
+```
+:::
+
+::: context and-vs-semicolon Why "only if it worked" matters
+There is another way to put two commands on one line: a semicolon, `;`. It runs the second command no matter what happened to the first.
+
+That sounds handy, but think of `cd build ; rm -r old`. If `cd build` fails, you are still in the wrong folder, and `rm -r old` deletes whatever `old` is there. With `&&` the delete never happens. Build and launch scripts are full of `&&` for this reason: each step only runs on top of a step that succeeded, the same way a countdown holds instead of carrying on when a check fails.
+:::
+
+::: context append-vs-overwrite Overwrite versus append
+```svg
+<svg viewBox="0 0 360 150" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <text x="90" y="20" font-size="13" text-anchor="middle" fill="#b4232c">echo "new" &gt; f.txt</text>
+  <text x="270" y="20" font-size="13" text-anchor="middle" fill="#1d6fd1">echo "new" &gt;&gt; f.txt</text>
+  <rect x="40" y="35" width="100" height="70" rx="6" fill="#ffffff" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="55" y="55" font-size="12" fill="#6c7a93" text-decoration="line-through">old 1</text>
+  <text x="55" y="72" font-size="12" fill="#6c7a93" text-decoration="line-through">old 2</text>
+  <text x="55" y="95" font-size="12" fill="#b4232c">new</text>
+  <rect x="220" y="35" width="100" height="70" rx="6" fill="#ffffff" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="235" y="55" font-size="12" fill="#1f2a44">old 1</text>
+  <text x="235" y="72" font-size="12" fill="#1f2a44">old 2</text>
+  <text x="235" y="95" font-size="12" fill="#1d6fd1">new</text>
+  <text x="90" y="130" font-size="12" text-anchor="middle" fill="#1f2a44">replaced: only "new"</text>
+  <text x="270" y="130" font-size="12" text-anchor="middle" fill="#1f2a44">appended: all three</text>
+</svg>
+```
+
+Logs are written by appending: each new event goes on the end, so nothing earlier is lost. If `>>` names a file that does not exist yet, it creates it, the same as `>` would.
+:::
 --- task
-In a single line, make a folder `logs` and move into it using `&&`. Then build `todo.txt` with two lines, `buy fuel` then `check engines`, using `>` for the first and `>>` for the second.
+In a single line, make a folder `logs` and move into it, joining the two commands with `&&`. Then, inside `logs`, build a file `todo.txt` with two lines: `buy fuel` first, then `check engines`. Use `>` for the first line and `>>` for the second.
 --- starter
 --- solution
 mkdir logs && cd logs
 echo "buy fuel" > todo.txt
 echo "check engines" >> todo.txt
 --- hint
-`mkdir logs && cd logs` does both steps.
+The first line is two commands you already know, `mkdir` and `cd`, with the two ampersands between them.
 --- hint
-`echo "buy fuel" > todo.txt`, then `echo "check engines" >> todo.txt`.
+`mkdir logs && cd logs` makes the folder and moves in. For the file, use `echo` with the text in double quotes: one arrow starts the file, two arrows add to it.
+--- hint
+`echo "buy fuel" > todo.txt`, then `echo "check engines" >> todo.txt`. Check with `cat todo.txt`: both lines, in that order.
 --- check shell | You used && to make and enter logs
 used &&
 dir logs
@@ -236,14 +742,83 @@ used >>
 
 === term-09 | Hidden files, and the long listing
 --- teach
-A file or folder whose name starts with a dot is **hidden**: plain `ls` skips it. Settings live in files like that — `.env`, `.gitignore`, `.config` — so you need to be able to see them.
+Last lesson you chained commands with `&&` and added to files with `>>`. This lesson goes back to `ls`, the listing command from the very first lesson, and shows two flags that make it tell you much more.
 
-- `ls -a` shows **a**ll of them, hidden ones included (plus `.` for this folder and `..` for the one above).
-- `ls -l` is the **l**ong listing: one line per entry, with whether it is a folder (`d`) or a file (`-`), and its size.
+**Hidden files.** Some things in a folder are kept out of sight on purpose, like the settings drawer under an oven. A file or folder whose name starts with a dot, `.`, is **hidden**: plain `ls` skips it. The name comes from what it does, not from any lock. Anyone can open it; `ls` leaves it out unless you ask.
 
-Flags combine: `ls -la` is both at once.
+Settings live in files like that: `.env`, `.gitignore`, `.config`. They are called **[[dotfiles|dotfile-history]]**, and you need to be able to see them.
+
+**Showing everything.** The flag `-a`, said "dash a", stands for **all**. `ls -a` lists every name, hidden ones included:
+
+```
+~/project $ ls
+notes.txt  src/
+~/project $ ls -a
+.  ..  .gitignore  notes.txt  src/
+```
+
+`.gitignore` was there all along. You also see two odd names. A single dot, `.`, means **this folder**. Two dots, `..`, mean **the folder above**, the same `..` you used with `cd ..` in the lesson on paths. [[Every folder has both|dot-and-dotdot]].
+
+**The long listing.** The flag `-l`, said "dash l", stands for **long**. `ls -l` prints one line per entry, with details:
+
+```
+~/project $ ls -l
+-rw-r--r--  you     12  notes.txt
+drwxr-xr-x  you   4096  src/
+```
+
+Read each line from the left:
+
+- The very first character says what it is: `d` for a **directory** (a folder), or a dash, `-`, for a plain file.
+- The next nine characters are the [[permissions|permissions-string]]: who may read or change it.
+- Then the owner (here, `you`).
+- Then the size in [[bytes|file-size]]: `notes.txt` holds 12.
+- Then the name.
+
+**Combining flags.** Flags can share one dash. `ls -la` is `-l` and `-a` at once: the long listing, hidden files included.
+
+**Watch out:** `ls -l` is a lowercase letter l, for "long", not the number 1. And hidden files are hidden from `ls -l` too: if a file you expect is missing from the long listing, add the `a`.
+
+::: context dotfile-history How a dot came to mean hidden
+One of the early Unix programmers, Rob Pike, has told the story: `ls` was written to skip the names `.` and `..`, and the shortcut in the code skipped every name starting with a dot. People noticed, and began naming their settings files with a dot on purpose so they stayed out of the way. An accident became a rule every Unix-like system still follows.
+
+Your home folder on a real computer is probably full of them: `.bashrc` holds shell settings, `.ssh` holds keys for logging into other machines.
+:::
+
+::: context dot-and-dotdot Two names in every folder
+Every folder contains the entries `.` and `..`. They are not copies; they are signposts. `.` points at the folder itself, `..` at its parent. That is why `cd ..` works from anywhere, and why later you will see commands like `cp notes.txt .` (copy it here) and scripts started with `./launch.sh` (the file called `launch.sh` in this folder).
+:::
+
+::: context permissions-string Reading -rw-r--r--
+The nine characters after the first one come in three groups of three: the owner, the owner's group, and everyone else. In each group, `r` means **read**, `w` means **write** (change), `x` means **execute** (run it as a program, or, for a folder, go into it). A dash means "not allowed".
+
+```svg
+<svg viewBox="0 0 360 130" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <text x="30" y="45" font-size="22" fill="#6c7a93" font-family="monospace">-</text>
+  <text x="55" y="45" font-size="22" fill="#1d6fd1" font-family="monospace">rw-</text>
+  <text x="140" y="45" font-size="22" fill="#b4232c" font-family="monospace">r--</text>
+  <text x="225" y="45" font-size="22" fill="#1f2a44" font-family="monospace">r--</text>
+  <text x="36" y="75" font-size="11" text-anchor="middle" fill="#6c7a93">type</text>
+  <text x="77" y="75" font-size="12" text-anchor="middle" fill="#1d6fd1">owner</text>
+  <text x="162" y="75" font-size="12" text-anchor="middle" fill="#b4232c">group</text>
+  <text x="247" y="75" font-size="12" text-anchor="middle" fill="#1f2a44">everyone</text>
+  <text x="77" y="95" font-size="11" text-anchor="middle" fill="#1f2a44">read, write</text>
+  <text x="162" y="95" font-size="11" text-anchor="middle" fill="#1f2a44">read only</text>
+  <text x="247" y="95" font-size="11" text-anchor="middle" fill="#1f2a44">read only</text>
+  <text x="30" y="120" font-size="11" fill="#6c7a93">(- in the type spot: a file; d: a folder)</text>
+</svg>
+```
+
+So `-rw-r--r--` is a file you can read and change, and others can only read. On a Linux computer running many programs at once, permissions keep one program from rewriting files that belong to another. A later course shows how to change them.
+:::
+
+::: context file-size Bytes, and why folders say 4096
+A **byte** is the room one plain English letter takes, so the 12 bytes of `notes.txt` are the 11 characters of `hello there` plus the invisible end-of-line character.
+
+Folders show `4096` whatever is in them. That is the size of the small record the system keeps about the folder, not the size of its contents. A real computer's `ls -l` also shows a few more columns than this practice terminal, such as the group and the date the file last changed.
+:::
 --- task
-Something in this folder is hidden. Find it with `ls -a`, then look at the sizes with `ls -l`.
+Something in this folder is hidden. Find it with `ls -a`, then look at the sizes with the long listing, `ls -l`.
 --- starter
 echo "API_KEY=demo" > .env
 mkdir src
@@ -252,9 +827,11 @@ echo "print('hi')" > main.py
 ls -a
 ls -l
 --- hint
-`ls -a` shows the hidden file.
+Plain `ls` skips names that start with a dot. Which flag means "all"?
 --- hint
-`ls -l` shows one line per file, starting with `-rw-r--r--` for files.
+`ls -a` shows the hidden file. Then the flag for the long listing is the letter l.
+--- hint
+`ls -a`, then `ls -l`. The long listing's lines for files start with `-rw-r--r--`.
 --- check shell | You found the hidden file
 printed .env
 --- check shell | You used the long listing
@@ -262,15 +839,77 @@ printed -rw-r--r--
 
 === term-10 | Getting home, and back again
 --- teach
-Deep in a project, three shortcuts save a lot of typing:
+Last lesson you used `ls -a` and `ls -l` to see everything in a folder. This last lesson of the basics course is about moving around fast. Deep inside a project, typing `cd ../../..` over and over gets tiring. Three shortcuts fix that.
 
-- `cd ~` (or just `cd`) jumps straight to your **home** folder, wherever you are.
-- `cd -` jumps back to wherever you were **before** the last `cd`.
-- An **absolute** path works from anywhere: `cd /home/you/project`.
+Think of a phone's map app. It has a "home" button that takes you to your own address from anywhere, and a "back" button that returns you to where you were a moment ago. The terminal has both.
 
-Run `pwd` whenever you want to be sure where you have landed.
+**Going home.** Your **[[home folder|home-folder]]** is your own space on the computer. The tilde, `~`, is its short name, and you met it in the very first lesson's prompt. `cd ~` jumps straight home, wherever you are. `cd` on its own, with nothing after it, does the same:
+
+```
+~/project/src/app $ cd ~
+~ $ pwd
+/home/you
+```
+
+**Going back.** `cd -`, said "cd dash", jumps back to wherever you were **before** your last `cd`. It also prints the folder it lands in, so you can see where you went:
+
+```
+~ $ cd -
+~/project/src/app
+~/project/src/app $
+```
+
+Run `cd -` again and you are home again: it [[swaps between the last two places|cd-dash]].
+
+**Going anywhere, from anywhere.** In the lesson on paths you met the **absolute** path: a path that starts with a slash, `/`, at the very top of the computer. It works no matter where you are standing:
+
+```
+~ $ cd /home/you/project
+~/project $
+```
+
+A relative path like `src/app` only works from the right starting folder. An [[absolute path always works|absolute-anywhere]], because it gives the whole address.
+
+Run `pwd` whenever you want to be sure where you have landed. It costs nothing, and the prompt can be cut short in some terminals.
+
+**Watch out:** `cd -` remembers only one step back, not a whole history. And in `cd -` the dash stands alone after a space. That is different from a flag like `-a`, where a letter follows the dash.
+
+That completes the basics. You can move around, make, read, change and delete files, and look inside them. The [[next course|whats-next]] is about handling many files and lots of text at once.
+
+::: context home-folder Where home really is
+Every person with an account on a computer gets a home folder for their own files and settings. On Linux it is usually `/home/` followed by their user name, which is why yours here is `/home/you`. On a Mac it is `/Users/` followed by the name. The shell turns `~` into that full path for you, so `~/project` means `/home/you/project`.
+
+Engineers log into many machines, from laptops to test-stand computers, and `~` works on all of them even though the full path differs.
+:::
+
+::: context cd-dash How cd - remembers
+The shell keeps a note of the folder you were in before your last `cd`, in a setting called `OLDPWD` (old print working directory). `cd -` goes there, and the note is updated to the place you left. That is why pressing it twice brings you back: the two folders swap every time.
+
+```svg
+<svg viewBox="0 0 360 110" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <rect x="20" y="35" width="110" height="36" rx="6" fill="#ffffff" stroke="#1d6fd1" stroke-width="2"/>
+  <text x="75" y="58" font-size="13" text-anchor="middle" fill="#1f2a44">~</text>
+  <rect x="215" y="35" width="130" height="36" rx="6" fill="#ffffff" stroke="#1d6fd1" stroke-width="2"/>
+  <text x="280" y="58" font-size="13" text-anchor="middle" fill="#1f2a44">~/project/src/app</text>
+  <path d="M135 45 L210 45" stroke="#f2b880" stroke-width="2.5"/>
+  <path d="M202 40 L210 45 L202 50" fill="none" stroke="#f2b880" stroke-width="2.5"/>
+  <path d="M210 62 L135 62" stroke="#f2b880" stroke-width="2.5"/>
+  <path d="M143 57 L135 62 L143 67" fill="none" stroke="#f2b880" stroke-width="2.5"/>
+  <text x="172" y="25" font-size="12" text-anchor="middle" fill="#1f2a44">cd -</text>
+  <text x="172" y="92" font-size="12" text-anchor="middle" fill="#1f2a44">cd -</text>
+</svg>
+```
+:::
+
+::: context absolute-anywhere When to reach for an absolute path
+Relative paths are shorter, so people use them while working by hand. Scripts and programs that run on their own, such as a job that saves launch data every night, usually use absolute paths. A script cannot look at the prompt to check where it is, and a relative path that worked in one folder silently points somewhere else from another.
+:::
+
+::: context whats-next Coming up in the next course
+The intermediate Terminal course starts with **wildcards**: patterns such as `*.txt` that mean "every name ending in .txt", so one command can handle dozens of files. Then come **pipes**, which send one command's output straight into another, so `grep`, `wc`, `head` and friends from this course can be chained into small machines that answer real questions about a log. Everything you practised here is the building material.
+:::
 --- task
-You are three folders deep, in `src/app/components`. Jump to your home folder, check with `pwd` that you are there, then come straight back with `cd -`.
+You are three folders deep, in `src/app/components`. Jump to your home folder with `cd ~`, check with `pwd` that you are there, then come straight back with `cd -`.
 --- starter
 mkdir -p src/app/components
 cd src/app/components
@@ -279,9 +918,11 @@ cd ~
 pwd
 cd -
 --- hint
-`cd ~` goes home; `pwd` then prints `/home/you`.
+Three commands: one to go home, one to check where you are, one to go back.
 --- hint
-`cd -` takes you back to `src/app/components` in one step.
+The tilde is home: `cd ~`. Then `pwd` should print `/home/you`.
+--- hint
+Finish with `cd -`. It prints the folder it lands in, which should end in `src/app/components`.
 --- check shell | You checked that you were home
 printed-line /home/you
 --- check shell | You came back with cd -
