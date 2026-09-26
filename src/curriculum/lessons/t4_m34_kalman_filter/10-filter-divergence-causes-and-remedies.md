@@ -57,7 +57,7 @@ To see only the damage the outlier did, compare with the same run fed the honest
 
 Read the two columns together. For about two seconds the filter is wrong by up to twenty times its own reported $\sigma_p$, and the $\sigma_p$ column never twitches. That is not an accident. The covariance update $\mathbf{P}^+ = (\mathbf{I} - \mathbf{K}\mathbf{H})\mathbf{P}^-$ never looks at $\mathbf{z}$, so a mad measurement shrinks $\mathbf{P}$ exactly as much as a good one. Recovery is slow for two reasons. The gain is small, so each honest reading removes only about $14\%$ of the altitude error. And the outlier also kicked the velocity by $10.8\,\mathrm{m/s}$, which keeps dragging the altitude off for several more steps.
 
-Sanity check: the table compares against the honest reading, which happened to be $0.75\,\mathrm{m}$ low, so the two readings differ by $100.75\,\mathrm{m}$, and $0.147 \times 100.75 \approx 14.9\,\mathrm{m}$. The numbers hang together.
+Sanity check: the table compares against the honest reading, which happened to be $0.75\,\mathrm{m}$ low, so the two readings differ by $100.75\,\mathrm{m}$. With the position gain to four places, $0.1475 \times 100.75 \approx 14.9\,\mathrm{m}$. The numbers hang together.
 :::
 
 The size of that innovation should have been a giveaway. The quantity $\nu^2/S = 99.7^2 / 4.69 \approx 2120$ compares the innovation with its own predicted spread, and for an honest measurement it is almost never above about $9$. Checking that before accepting a measurement is called **gating**. The point here is the failure itself: an outlier leaves the filter confidently wrong, with a covariance that says nothing happened.

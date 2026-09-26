@@ -130,7 +130,7 @@ for k in range(1, 301):
     P = F @ (P - K @ H @ P) @ F.T + Q
 w, v = np.linalg.eigh(P)
 print(w, v[:, np.argmax(w)])
-# [0.05853715 4.04267149] [-0.99999951 -0.00098567]
+# [0.05853715 4.04267149] [-9.99999514e-01 -9.85672809e-04]
 ```
 
 The [[eigenvectors|eigen-ellipse]] of $\mathbf{P}$ are the filter's own report of where it is blind. Engineers check them for exactly this reason: a covariance that keeps growing along one fixed eigenvector, while everything else settles, is the fingerprint of an unobservable direction.
