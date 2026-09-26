@@ -212,7 +212,7 @@ Ideal rocket ([[Tsiolkovsky|tsiolkovsky]]) equation: $\Delta v = v_e\ln\dfrac{m_
 :::
 
 ::: example Ideal and real delta-v of a first stage
-Lesson 8's first stage had thrust $T = 7600\,\mathrm{kN}$, propellant flow $\dot m_p = 2600\,\mathrm{kg/s}$ and starting mass $m_0 = 550\,000\,\mathrm{kg}$, and burned for $162\,\mathrm{s}$. Its pitch program gave a gravity loss of $1298\,\mathrm{m/s}$. Find the ideal and the real $\Delta v$, and the mass ratio a single stage would need to reach orbit.
+Lesson 8's first stage had thrust $T = 7600\,\mathrm{kN}$, propellant flow $\dot m_p = 2600\,\mathrm{kg/s}$ and starting mass $m_0 = 550\,000\,\mathrm{kg}$, and burned for $162\,\mathrm{s}$. Its pitch program gave a gravity loss of $1314\,\mathrm{m/s}$. Find the ideal and the real $\Delta v$, and the mass ratio a single stage would need to reach orbit.
 
 **Exhaust velocity:** $v_e = T/\dot m_p = 7.6 \times 10^6/2600 = 2923\,\mathrm{m/s}$.
 
@@ -229,10 +229,10 @@ $$
 Divide by $m$ and multiply by $dt$: $dv = -v_e\dfrac{dm}{m} - g\sin\gamma\,dt$. The first term integrates as before. The second is a plain integral over time:
 
 $$
-\Delta v = v_e\ln\frac{m_0}{m_f} - \int_0^{t_b} g\sin\gamma\,dt = 4243 - 1298 = 2945\,\mathrm{m/s}.
+\Delta v = v_e\ln\frac{m_0}{m_f} - \int_0^{t_b} g\sin\gamma\,dt = 4243 - 1314 = 2929\,\mathrm{m/s}.
 $$
 
-Here $t_b$ is the burn time. The real gain is $2945/4243 = 69\%$ of the ideal. Drag would take roughly another hundred meters per second.
+Here $t_b$ is the burn time. The real gain is $2929/4243 = 69\%$ of the ideal. Drag would take roughly another hundred meters per second.
 
 **Single stage to orbit?** Orbit needs about $9.4\,\mathrm{km/s}$ of ideal $\Delta v$ once gravity and drag losses are counted. With $v_e = 3.0\,\mathrm{km/s}$, solve the rocket equation for the mass ratio:
 

@@ -2660,7 +2660,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-the-derivative",
       "title": "The derivative from first principles",
-      "minutes": 24,
+      "minutes": 21,
       "covers": [
         "the derivative: definition, chain, product and quotient rules"
       ],
@@ -2669,7 +2669,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-differentiation-rules",
       "title": "The product, quotient and chain rules",
-      "minutes": 25,
+      "minutes": 22,
       "covers": [
         "the derivative: definition, chain, product and quotient rules"
       ],
@@ -2687,7 +2687,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-maxima-minima-optimisation",
       "title": "Maxima, minima and optimising a scalar function",
-      "minutes": 24,
+      "minutes": 26,
       "covers": [
         "maxima, minima and optimisation of a scalar function"
       ],
@@ -2696,7 +2696,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-linearisation-and-differentials",
       "title": "Linearisation and differentials",
-      "minutes": 25,
+      "minutes": 23,
       "covers": [
         "linearisation and differentials"
       ],
@@ -2723,7 +2723,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-substitution-and-integration-by-parts",
       "title": "Substitution and integration by parts",
-      "minutes": 23,
+      "minutes": 20,
       "covers": [
         "integration by parts and substitution"
       ],
@@ -2741,7 +2741,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-separable-first-order-odes",
       "title": "Separable first-order ODEs and the rocket equation",
-      "minutes": 26,
+      "minutes": 23,
       "covers": [
         "separable first-order ODEs"
       ],
@@ -2752,7 +2752,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-partial-derivatives",
       "title": "Functions of several variables and partial derivatives",
-      "minutes": 20,
+      "minutes": 25,
       "covers": [
         "partial derivatives"
       ],
@@ -2761,7 +2761,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-gradient",
       "title": "The gradient and the directional derivative",
-      "minutes": 21,
+      "minutes": 23,
       "covers": [
         "gradient and directional derivative"
       ],
@@ -2779,7 +2779,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-chain-rule-hessian",
       "title": "The chain rule for vector functions, and the Hessian",
-      "minutes": 26,
+      "minutes": 24,
       "covers": [
         "chain rule for vector functions",
         "Jacobian and Hessian"
