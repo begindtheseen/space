@@ -2845,7 +2845,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-first-order-odes",
       "title": "First-order ODEs and the actuator lag",
-      "minutes": 20,
+      "minutes": 23,
       "covers": [
         "first-order ODEs: separable, linear, integrating factor"
       ],
@@ -2854,7 +2854,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-second-order-characteristic-equation",
       "title": "Second-order equations and the characteristic equation",
-      "minutes": 20,
+      "minutes": 22,
       "covers": [
         "second-order linear constant-coefficient ODEs and the characteristic equation"
       ],
@@ -2863,7 +2863,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-damped-oscillator-zeta-omega-n",
       "title": "The damped oscillator, natural frequency and damping ratio",
-      "minutes": 19,
+      "minutes": 22,
       "covers": [
         "the damped oscillator: natural frequency and damping ratio"
       ],
@@ -2872,7 +2872,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-state-space-and-matrix-exponential",
       "title": "State-space form and the matrix exponential",
-      "minutes": 18,
+      "minutes": 22,
       "covers": [
         "systems of first-order ODEs and state-space form",
         "matrix exponential solution"
@@ -2882,7 +2882,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-forced-response-and-resonance",
       "title": "Forced response and resonance",
-      "minutes": 18,
+      "minutes": 20,
       "covers": [
         "forced response and resonance"
       ],
@@ -2891,7 +2891,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-laplace-transform-partial-fractions",
       "title": "The Laplace transform, partial fractions, and the value theorems",
-      "minutes": 18,
+      "minutes": 21,
       "covers": [
         "Laplace transform, inverse transform, partial fractions",
         "initial and final value theorems"
@@ -2901,7 +2901,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-transfer-functions-convolution-impulse",
       "title": "Transfer functions, impulse response and convolution",
-      "minutes": 22,
+      "minutes": 24,
       "covers": [
         "transfer functions",
         "convolution and impulse response"
@@ -2923,7 +2923,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-probability-and-bayes",
       "title": "Sample spaces, conditional probability and Bayes' theorem",
-      "minutes": 20,
+      "minutes": 23,
       "covers": [
         "sample spaces, conditional probability, Bayes theorem"
       ],
@@ -2932,7 +2932,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-random-variables-pdf-cdf",
       "title": "Random variables, PDF and CDF",
-      "minutes": 21,
+      "minutes": 23,
       "covers": [
         "random variables, PDF and CDF"
       ],
