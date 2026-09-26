@@ -8,6 +8,15 @@ the entry for the one you are running is what Settings shows you afterwards.
 Newest first. Each heading is exactly `## <version>` so both readers can find
 it.
 
+## 1.1.3
+
+**ORBIT updates itself, like any other app.** When a new version comes out it downloads in the
+background while you work: no Settings trip, no Download button, and no new app to install. Most
+updates are small (about 11 MB) and slot into the app you already have. When one is ready the bell
+says so; restart when it suits you. From the next version of the app on, you do not even need to
+do that: the update is simply there the next time you open ORBIT, and the rare update that needs a
+whole new app downloads quietly too and goes in when you quit.
+
 ## 1.1.2
 
 **Focus mode changes how the app looks.** While a block runs, the rail, the top bar and the

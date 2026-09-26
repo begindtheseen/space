@@ -268,10 +268,12 @@ function TopBar({
   stuck: boolean
   onMenu: () => void
 }) {
-  // Desktop only: a bundle update waiting on the Settings page. In a browser
-  // the hook never subscribes and `state` stays null.
-  const updateStatus = useUpdates().state?.status
-  const updateWaiting = updateStatus === 'available' || updateStatus === 'ready'
+  // Desktop only: an update waiting on a restart. Updates download on their
+  // own, and one staged for the next launch needs nothing from her, so only
+  // a restart nobody else will do earns the dot. In a browser the hook never
+  // subscribes and `state` stays null.
+  const update = useUpdates().state
+  const updateWaiting = update?.status === 'ready' && !update.staged
 
   return (
     <header className="topbar" data-stuck={stuck}>

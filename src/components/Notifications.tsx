@@ -17,7 +17,7 @@ import { dueAtoms } from '@/engine/scheduler'
 import type { LearnerState } from '@/engine/state'
 import { useLearner } from '@/hooks/useLearner'
 import { useUpdates } from '@/hooks/useUpdates'
-import { isDesktop } from '@/lib/desktop'
+import { isDesktop, type UpdateState } from '@/lib/desktop'
 import { fetchHawthorneTemporary, unseenPostings, type JobPosting } from '@/lib/jobs'
 import { navigate } from '@/lib/router'
 import './notifications.css'
@@ -39,9 +39,10 @@ export interface Note {
  */
 export function notesFor(
   state: LearnerState,
-  updateStatus: string | undefined,
+  updateState: string | Pick<UpdateState, 'status' | 'staged' | 'autoUpdate' | 'shellUpdate'> | undefined,
   postings: JobPosting[] = [],
   now: Date = new Date(),
+  desktop: boolean = isDesktop,
 ): Note[] {
   const out: Note[] = []
 
@@ -85,27 +86,58 @@ export function notesFor(
     })
   }
 
-  if (isDesktop && (updateStatus === 'available' || updateStatus === 'ready')) {
-    out.push({
-      id: 'update',
-      title: updateStatus === 'ready' ? 'An update is ready to install' : 'An update is available',
-      detail:
-        updateStatus === 'ready'
-          ? 'Restart when you are at a good stopping point. Your progress is kept.'
-          : 'Settings shows what changed before you install it.',
-      href: '/settings',
-      urgent: updateStatus === 'ready',
-    })
+  // Updates download on their own (src/lib/updateWatch.ts, or the shell
+  // itself), so there is nothing to say while one is found or on its way —
+  // only once it is in hand, and only what, if anything, is left to do.
+  type Snapshot = { status: string; staged?: boolean; autoUpdate?: boolean; shellUpdate?: UpdateState['shellUpdate'] }
+  const update: Snapshot | undefined = typeof updateState === 'string' ? { status: updateState } : updateState
+  if (desktop && update?.status === 'ready') {
+    out.push(
+      update.staged
+        ? {
+            id: 'update',
+            title: 'ORBIT has updated',
+            detail: 'The new version opens the next time you start ORBIT. Restart now to use it straight away. Your progress is kept.',
+            href: '/settings',
+          }
+        : {
+            id: 'update',
+            title: 'Restart to finish updating',
+            detail: 'The update is downloaded. Restart when you are at a good stopping point. Your progress is kept.',
+            href: '/settings',
+            urgent: true,
+          },
+    )
   }
 
-  if (isDesktop && updateStatus === 'shell-required') {
-    out.push({
-      id: 'shell',
-      title: 'A newer ORBIT app is available',
-      detail: 'Settings updates the app straight to the latest version. Your progress is kept.',
-      href: '/settings',
-      urgent: true,
-    })
+  if (desktop && update?.status === 'shell-required') {
+    const app = update.shellUpdate?.status
+    if (app === 'ready') {
+      out.push(
+        update.autoUpdate
+          ? {
+              id: 'shell',
+              title: 'The new ORBIT is ready',
+              detail: 'It goes in when you quit ORBIT, like any other app update. Settings can install it now instead. Your progress is kept.',
+              href: '/settings',
+            }
+          : {
+              id: 'shell',
+              title: 'The new ORBIT is ready to install',
+              detail: 'Settings installs it and reopens ORBIT. Your progress is kept.',
+              href: '/settings',
+              urgent: true,
+            },
+      )
+    } else if (app !== 'downloading') {
+      out.push({
+        id: 'shell',
+        title: 'A newer ORBIT app is available',
+        detail: 'Settings updates the app straight to the latest version. Your progress is kept.',
+        href: '/settings',
+        urgent: true,
+      })
+    }
   }
 
   return out
@@ -128,7 +160,7 @@ function probeJobs(): Promise<JobPosting[]> {
 
 export function Notifications() {
   const { state } = useLearner()
-  const updateStatus = useUpdates().state?.status
+  const update = useUpdates().state
   const [open, setOpen] = useState(false)
   const [postings, setPostings] = useState<JobPosting[]>([])
   const box = useRef<HTMLDivElement>(null)
@@ -143,7 +175,7 @@ export function Notifications() {
     }
   }, [])
 
-  const notes = notesFor(state, updateStatus, postings)
+  const notes = notesFor(state, update ?? undefined, postings)
   const urgent = notes.some((n) => n.urgent)
 
   useEffect(() => {

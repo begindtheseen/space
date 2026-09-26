@@ -129,4 +129,13 @@ describe('the swap script', () => {
     expect(existsSync(`${target}.orbit-previous`)).toBe(false)
     expect(readFileSync(`${work}.log`, 'utf8')).toMatch(/putting the old app back/)
   })
+
+  it('installs on quit without opening the app, when told not to reopen it', async () => {
+    const { target, work, newApp, opened, opener, orbit } = setUp()
+    startSwap({ pid: orbit.pid!, newApp, target, workDir: work, opener, reopen: false })
+    orbit.kill()
+    expect(await waitFor(() => existsSync(`${work}.log`) && /installed/.test(readFileSync(`${work}.log`, 'utf8')))).toBe(true)
+    expect(readFileSync(path.join(target, 'Contents', 'version.txt'), 'utf8')).toBe('9.9.9')
+    expect(existsSync(opened)).toBe(false)
+  })
 })
