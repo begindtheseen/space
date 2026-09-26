@@ -2376,6 +2376,117 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       "file": "cod_py_04_scipy/11-constants-and-choosing-a-solver.md"
     }
   ],
+  "cod_py_05_plotting": [
+    {
+      "id": "l01-figure-and-axes",
+      "title": "Figures and Axes, and why you name them",
+      "minutes": 17,
+      "covers": [
+        "Figure and Axes object API versus the pyplot state machine"
+      ],
+      "file": "cod_py_05_plotting/01-figure-and-axes.md"
+    },
+    {
+      "id": "l02-layouts",
+      "title": "Many panels on one page",
+      "minutes": 18,
+      "covers": [
+        "subplots, shared axes, twin axes, gridspec, constrained layout"
+      ],
+      "file": "cod_py_05_plotting/02-layouts.md"
+    },
+    {
+      "id": "l03-plot-types",
+      "title": "Lines, steps, stems, error bars and sigma bands",
+      "minutes": 25,
+      "covers": [
+        "Line, scatter, step, stem, errorbar, fill_between for sigma envelopes"
+      ],
+      "file": "cod_py_05_plotting/03-plot-types.md"
+    },
+    {
+      "id": "l04-log-axes-and-control-plots",
+      "title": "Log axes, Bode plots, pole-zero maps and root loci",
+      "minutes": 20,
+      "covers": [
+        "Log and semilog axes; annotated Bode, pole-zero and root-locus plots"
+      ],
+      "file": "cod_py_05_plotting/04-log-axes-and-control-plots.md"
+    },
+    {
+      "id": "l05-ticks-labels-and-legends",
+      "title": "Ticks, labels, annotations and legends",
+      "minutes": 20,
+      "covers": [
+        "Ticks, locators, formatters, datetime axes",
+        "Text, annotation, legends outside axes, units in every axis label"
+      ],
+      "file": "cod_py_05_plotting/05-ticks-labels-and-legends.md"
+    },
+    {
+      "id": "l06-colour",
+      "title": "Color that carries meaning",
+      "minutes": 22,
+      "covers": [
+        "Colour: colourblind-safe cycles, sequential vs diverging, when colour carries data"
+      ],
+      "file": "cod_py_05_plotting/06-colour.md"
+    },
+    {
+      "id": "l07-saving-figures",
+      "title": "Saving figures that survive the trip",
+      "minutes": 22,
+      "covers": [
+        "Saving: vector formats, dpi, font embedding, figure size for a slide vs a report"
+      ],
+      "file": "cod_py_05_plotting/07-saving-figures.md"
+    },
+    {
+      "id": "l08-animation-and-plotly",
+      "title": "Moving pictures and plots you can poke",
+      "minutes": 23,
+      "covers": [
+        "Animation and interactive review; Plotly for exploratory telemetry"
+      ],
+      "file": "cod_py_05_plotting/08-animation-and-plotly.md"
+    },
+    {
+      "id": "l09-pandas-basics",
+      "title": "Telemetry tables with pandas",
+      "minutes": 23,
+      "covers": [
+        "pandas: DataFrame, Series, DatetimeIndex, read_csv, read_parquet"
+      ],
+      "file": "cod_py_05_plotting/09-pandas-basics.md"
+    },
+    {
+      "id": "l10-resample-rolling-groupby",
+      "title": "Resample, rolling, interpolate and groupby",
+      "minutes": 22,
+      "covers": [
+        "resample, rolling, interpolate, groupby and agg"
+      ],
+      "file": "cod_py_05_plotting/10-resample-rolling-groupby.md"
+    },
+    {
+      "id": "l11-merge-asof",
+      "title": "Lining up two clocks with merge_asof",
+      "minutes": 22,
+      "covers": [
+        "merge and merge_asof for aligning a 200 Hz IMU stream to 1 Hz GPS"
+      ],
+      "file": "cod_py_05_plotting/11-merge-asof.md"
+    },
+    {
+      "id": "l12-decimation-for-plotting",
+      "title": "Shrinking big data for a plot without losing the spike",
+      "minutes": 18,
+      "covers": [
+        "Downsampling for plotting without hiding transients (min/max decimation)"
+      ],
+      "file": "cod_py_05_plotting/12-decimation-for-plotting.md"
+    }
+  ],
   "cod_sql_01_select": [
     {
       "id": "l01-tables-rows-and-keys",
@@ -8579,24 +8690,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_py_05_plotting": {
-    "covered": 0,
+    "covered": 13,
     "total": 13,
-    "complete": false,
-    "missing": [
-      "Figure and Axes object API versus the pyplot state machine",
-      "subplots, shared axes, twin axes, gridspec, constrained layout",
-      "Line, scatter, step, stem, errorbar, fill_between for sigma envelopes",
-      "Log and semilog axes; annotated Bode, pole-zero and root-locus plots",
-      "Ticks, locators, formatters, datetime axes",
-      "Colour: colourblind-safe cycles, sequential vs diverging, when colour carries data",
-      "Text, annotation, legends outside axes, units in every axis label",
-      "Saving: vector formats, dpi, font embedding, figure size for a slide vs a report",
-      "Animation and interactive review; Plotly for exploratory telemetry",
-      "pandas: DataFrame, Series, DatetimeIndex, read_csv, read_parquet",
-      "resample, rolling, interpolate, groupby and agg",
-      "merge and merge_asof for aligning a 200 Hz IMU stream to 1 Hz GPS",
-      "Downsampling for plotting without hiding transients (min/max decimation)"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_py_06_testing": {
     "covered": 0,
