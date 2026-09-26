@@ -2959,7 +2959,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-linear-transformations",
       "title": "Linear transformations of random vectors",
-      "minutes": 24,
+      "minutes": 25,
       "covers": [
         "linear transformations of random vectors"
       ],
@@ -2968,7 +2968,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-sums-and-central-limit-theorem",
       "title": "Sums of random variables and the central limit theorem",
-      "minutes": 24,
+      "minutes": 23,
       "covers": [
         "sums of random variables and the central limit theorem"
       ],
@@ -2987,7 +2987,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-gauss-markov-and-imu-error-models",
       "title": "Gauss-Markov processes and IMU error models",
-      "minutes": 28,
+      "minutes": 25,
       "covers": [
         "white noise, random walk, Gauss-Markov processes"
       ],
@@ -2996,7 +2996,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-autocorrelation-and-power-spectral-density",
       "title": "Autocorrelation and power spectral density",
-      "minutes": 25,
+      "minutes": 23,
       "covers": [
         "power spectral density and autocorrelation"
       ],
@@ -3023,7 +3023,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-monte-carlo-methods-and-convergence-rates",
       "title": "Monte Carlo methods and convergence rates",
-      "minutes": 21,
+      "minutes": 22,
       "covers": [
         "Monte Carlo methods and convergence rates"
       ],
