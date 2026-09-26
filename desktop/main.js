@@ -23,6 +23,9 @@ const env = Object.freeze({
   userData: process.env.ORBIT_USER_DATA ? path.resolve(process.env.ORBIT_USER_DATA) : null,
   devUrl: process.env.ORBIT_DEV_URL || null,
   apiBase: process.env.ORBIT_UPDATE_API_BASE || 'https://api.github.com',
+  // Updates download and install on their own, like any other app's. The
+  // end-to-end run walks the buttons one by one, so it opts in explicitly.
+  autoUpdate: process.env.ORBIT_E2E === '1' ? process.env.ORBIT_AUTO_UPDATE === '1' : process.env.ORBIT_AUTO_UPDATE !== '0',
 })
 
 const timing = Object.freeze({
@@ -39,6 +42,7 @@ const timing = Object.freeze({
   // Built-in bundles predating the ready() call are trusted after did-finish-load.
   finishLoadGraceMs: 300,
   autoCheckDelayMs: 4000,
+  backgroundCheckMs: 60 * 60_000,
 })
 
 /** The renderer sends this through the boot-status channel when warm-up ends. */
@@ -55,6 +59,8 @@ process.on('unhandledRejection', (reason) => logError('unhandled rejection:', re
 /** @type {BrowserWindow | null} */
 let mainWindow = null
 let quitting = false
+/** @type {Updater | null} set once main() has one, for the quit handler */
+let activeUpdater = null
 
 // ── before ready ──────────────────────────────────────────────────────────────
 registerAppScheme()
@@ -74,6 +80,17 @@ if (!app.requestSingleInstanceLock()) {
   app.on('second-instance', () => focusMainWindow())
   app.on('before-quit', () => {
     quitting = true
+  })
+  // An app update downloaded in the background goes in when she quits, as
+  // with any other Mac app: next time ORBIT opens, it is the new version.
+  // (relaunch() and quitForAppUpdate() leave through app.exit, which skips
+  // this; the second has already started its own install.)
+  app.on('will-quit', () => {
+    try {
+      activeUpdater?.installOnExit()
+    } catch (err) {
+      logError('could not install the app update on quit:', err)
+    }
   })
   app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') app.quit()
@@ -201,7 +218,9 @@ async function main() {
     getToken: () => config.getToken(),
     log,
     shellInstaller: createShellInstaller({ isPackaged: app.isPackaged, productName: app.getName(), log }),
+    autoUpdate: env.autoUpdate,
   })
+  activeUpdater = updater
   // An 'error' event with no listener would throw out of the emitter and crash the process.
   updater.on('error', (err) => logError('updater error:', err))
   updater.on('relaunch', relaunch)
@@ -413,5 +432,13 @@ async function boot({ active, ipc, updater, windowOptions, startUrl }) {
     setTimeout(() => {
       updater.check().catch((err) => logError('automatic update check failed:', err))
     }, timing.autoCheckDelayMs)
+    // The renderer asks again while a window is open (src/lib/updateWatch.ts);
+    // this keeps asking when ORBIT sits in the dock with none, so an update
+    // is already downloaded by the time she comes back.
+    if (updater.autoUpdate) {
+      setInterval(() => {
+        updater.check().catch((err) => logError('periodic update check failed:', err))
+      }, timing.backgroundCheckMs).unref()
+    }
   }
 }

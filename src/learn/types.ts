@@ -101,6 +101,11 @@ export interface LearnTrack {
   name: string
   blurb: string
   lessons: LearnLesson[]
+  /**
+   * `@plainvoice true`: rewritten in the plain voice, every lesson with its
+   * context notes. The validator holds such a course to the notes rule.
+   */
+  plainVoice?: boolean
 }
 
 /** A goal, and the courses that reach it in the order a mentor would teach them. */

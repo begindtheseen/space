@@ -100,7 +100,13 @@ export function parseLesson(source: string, where = 'lesson'): ParsedLesson {
 
 /** Words in a body, ignoring math and code so long derivations do not inflate the count. */
 export function proseWordCount(body: string): number {
+  // Context notes are optional reading beside the lesson; they do not make
+  // the lesson itself longer, so they are not counted towards its length.
+  // (The same two patterns as src/lib/contextNotes.ts, repeated because this
+  // file must import nothing.)
   const stripped = body
+    .replace(/^[ \t]*:::[ \t]*context[ \t]+[a-z0-9][a-z0-9-]*[^\n]*\n[\s\S]*?^[ \t]*:::[ \t]*$/gm, ' ')
+    .replace(/\[\[([^\]|\n]+)\|[a-z0-9][a-z0-9-]*\]\]/g, '$1')
     .replace(/```[\s\S]*?```/g, ' ')
     .replace(/\$\$[\s\S]*?\$\$/g, ' ')
     .replace(/\$[^$\n]+\$/g, ' ')

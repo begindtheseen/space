@@ -59,6 +59,65 @@ Use `##` for sections and `###` for subsections. Never `#` — the title is the 
 
 Other blocks: `::: note` for asides. Blockquotes are fine for quoted definitions.
 
+## Context notes
+
+Like the notes on an annotated lyric sheet: a phrase in the lesson is marked, and
+tapping it opens a panel beside the lesson with the story behind it. The lesson
+must read completely without them — a note is for the moment a word or a step
+stops her, or she wants to know more.
+
+Mark a phrase inline, and put every note at the very end of the lesson, after
+`## Summary`, in the order the phrases appear:
+
+```
+… the **[[denominator|numerator-denominator]]**, says how many pieces …
+
+::: context numerator-denominator Where the words come from
+Numerator comes from the Latin for "counter" …
+:::
+```
+
+The id is lowercase words and dashes, unique in the lesson. Marked phrases may
+sit inside bold. Each note needs a title (a short headline, not the phrase
+again) and 15–260 words; aim for 40–120. A note holds prose and math only — no
+other `:::` blocks inside it.
+
+**What earns a note** (4–15 per lesson in a plain-voice module):
+
+- a word the lesson uses but a 12-year-old may not know, and that the lesson
+  does not stop to teach ("oxidizer", "dimensionless");
+- the *why* behind a step or a rule, told a different way from the lesson;
+- where a word or symbol comes from, when that makes it stick;
+- real-world context: how engineers at SpaceX or NASA actually meet this, a real
+  vehicle's numbers, a mission that went wrong because of it;
+- the picture that makes the idea click;
+- a bridge: where this comes back later in the course and what it will be for.
+
+Not: a note on every bold word, a repeat of the paragraph it sits in, or trivia
+with no bearing on the lesson. Every fact must be true — check numbers with
+python3 and do not invent history.
+
+**Pictures.** Where a picture genuinely helps (about one note in three), add one
+fenced `svg` block inside the note. It is shown as an image on a light card:
+
+- `viewBox` required, about 360 wide and 90–220 tall; no width/height needed;
+- dark ink on light: `#1f2a44` for lines and text, `#1d6fd1`/`#8fb8f0` blues,
+  `#b4232c` red, `#f2b880` orange, `#6c7a93` grey; white fills are fine;
+- `font-family="Inter, Arial, sans-serif"`, text at least 11 px, short labels;
+- no scripts, event handlers, external links or embedded images; under 16,000
+  characters (the validator checks all of this);
+- every drawn quantity must be right — count the slices, check the angles.
+
+`t0_m01_algebra_precalc/01-signed-numbers-and-fractions.md` is the model.
+
+Every lesson carries 4–15 notes. The validator enforces it in every module
+except the ones written before the rule (`WRITTEN_BEFORE_NOTES` in
+lessons.test.ts), which are being rewritten. When every lesson in one of those
+is in the plain voice with its notes, add an empty `.plain-voice` file to the
+module's lesson folder; the coordinator then takes it off the list. A new
+module is held to the rule from its first lesson. TEMPLATE.md has the skeleton
+and the full checklist.
+
 ## Mathematics
 
 KaTeX renders it. Inline `$…$`, display `$$` on its own line, formula, `$$` on its own
@@ -84,9 +143,34 @@ runnable. Show output in a comment.
 
 ## Voice
 
-Direct, precise, unhurried. Second person. Short paragraphs. Explain the why. No
-"simply", "obviously", "just". No emoji. Do not apologise for the mathematics.
-Use en-dashes and em-dashes freely; use the module's own terminology.
+Write so a curious 12-year-old could follow it, without leaving out anything an
+engineer needs. Plain does not mean less: every formula, derivation, key fact and
+worked number stays. What changes is the order and the words around them.
+
+- **Picture first, then the rule, then the rocket.** Open each idea with something
+  the reader already knows — money, a thermometer, a pizza, a recipe, a backpack of
+  water bottles — then state the precise rule, then show where it lives on a vehicle.
+- **Everyday words before technical ones.** Introduce a term only when it is needed,
+  in bold, with a one-line meaning right there ("the **denominator** — the bottom
+  number — says how many pieces the whole was cut into"). Say what a symbol is and
+  how to read it aloud the first time ("$m_d$, read "m sub d", the dry mass").
+- **Short sentences, short paragraphs.** One idea per paragraph. If a sentence needs
+  a semicolon, it is probably two sentences.
+- **Show the steps.** Write out every arithmetic step in the examples, and say in
+  words what each step did. Nothing "follows easily".
+- **Proofs are welcome, but after the intuition.** Put a "why it has to be true"
+  argument in a `::: note` after the plain explanation, so the reader who wants it
+  gets it and the reader who does not can keep going.
+- **Check the answer makes sense** in the examples ("more than half, as it should
+  be"), because that habit is what catches real mistakes.
+
+Second person, warm and direct. No "simply", "obviously", "just", "clearly",
+"trivially". No emoji. Do not apologise for the mathematics, and do not talk down:
+the reader is smart and new, not slow. Use en-dashes and em-dashes freely; use the
+module's own terminology once it has been introduced.
+
+`t0_m01_algebra_precalc/01-signed-numbers-and-fractions.md` is the model for this
+voice.
 
 ## Sources and originality
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { FOCUS_GAP_MS, RECHECK_MS, makeWatcher, type UpdateAsker } from './updateWatch'
+import { FOCUS_GAP_MS, RECHECK_MS, autoFetch, makeWatcher, startAutoDownload, type UpdateAsker } from './updateWatch'
 import type { UpdateState, UpdateStatus } from './desktop'
 
 function snapshot(status: UpdateStatus): UpdateState {
@@ -144,5 +144,62 @@ describe('makeWatcher', () => {
     const w = makeWatcher(f.asker, f.now)
     expect(await w.ask(RECHECK_MS)).toBe(false)
     expect(f.calls.state).toBe(0)
+  })
+})
+
+describe('autoFetch', () => {
+  const latest = { version: '1.2.0', notes: '', publishedAt: '', size: 1, sha256: 'x', minShell: '1.1.1' }
+  const at = (status: UpdateStatus, extra: Partial<UpdateState> = {}): UpdateState => ({ ...snapshot(status), latest, ...extra })
+
+  it('fetches a bundle as soon as one is available, once per version', () => {
+    const tried = new Set<string>()
+    expect(autoFetch(at('available'), tried, true)).toBe('bundle')
+    expect(autoFetch(at('available'), tried, true)).toBeNull()
+    expect(autoFetch(at('available', { latest: { ...latest, version: '1.2.1' } }), tried, true)).toBe('bundle')
+  })
+
+  it('fetches the app when the release needs a newer one and this shell can replace itself', () => {
+    const tried = new Set<string>()
+    expect(autoFetch(at('shell-required'), tried, false)).toBeNull()
+    expect(autoFetch(at('shell-required'), tried, true)).toBe('app')
+    expect(autoFetch(at('shell-required'), tried, true)).toBeNull()
+    expect(autoFetch(at('shell-required', { shellUpdate: { status: 'manual', version: '1.3.0' } }), new Set(), true)).toBeNull()
+  })
+
+  it('leaves everything to a shell that updates itself, and does nothing otherwise', () => {
+    expect(autoFetch(at('available', { autoUpdate: true }), new Set(), true)).toBeNull()
+    expect(autoFetch(at('shell-required', { autoUpdate: true }), new Set(), true)).toBeNull()
+    // Turned off in a new shell (the e2e run, ORBIT_AUTO_UPDATE=0): hands off too.
+    expect(autoFetch(at('available', { autoUpdate: false }), new Set(), true)).toBeNull()
+    for (const s of ['idle', 'checking', 'up-to-date', 'downloading', 'ready', 'error'] as UpdateStatus[]) {
+      expect(autoFetch(at(s), new Set(), true)).toBeNull()
+    }
+    expect(autoFetch(snapshot('available'), new Set(), true)).toBeNull()
+  })
+
+  it('starts the download from the current state and from pushed ones', async () => {
+    let push: (s: UpdateState) => void = () => {}
+    const calls: string[] = []
+    const stop = startAutoDownload({
+      getState: async () => at('available'),
+      onState: (cb) => {
+        push = cb
+        return () => calls.push('stopped')
+      },
+      download: async () => {
+        calls.push('download')
+        return at('downloading')
+      },
+      downloadApp: async () => {
+        calls.push('app')
+        return at('shell-required')
+      },
+    })
+    await Promise.resolve()
+    await Promise.resolve()
+    push(at('available'))
+    push(at('shell-required', { latest: { ...latest, version: '2.0.0' } }))
+    stop()
+    expect(calls).toEqual(['download', 'app', 'stopped'])
   })
 })

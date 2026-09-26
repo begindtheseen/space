@@ -70,6 +70,14 @@ export interface UpdateState {
   tokenPlaintext?: boolean
   /** Present once the app has been asked to update itself (status 'shell-required'). */
   shellUpdate?: ShellUpdateState
+  /**
+   * Whether the shell downloads and installs updates on its own. Sent by
+   * ORBIT 1.1.3 and later, true unless turned off; absent from older shells,
+   * where the renderer starts the downloads itself (src/lib/updateWatch.ts).
+   */
+  autoUpdate?: boolean
+  /** The downloaded bundle opens on the next launch even if nobody presses Restart. */
+  staged?: boolean
 }
 
 export interface OrbitVersions {

@@ -1,21 +1,25 @@
 ---
 id: l01-the-filesystem-and-getting-around
 title: The filesystem, paths, and moving things about
-minutes: 21
+minutes: 22
 covers:
   - Filesystem hierarchy, absolute vs relative paths, ~ . ..
   - ls cd cp mv rm mkdir ln (hard vs symbolic links)
 ---
 
-The machine that runs your simulations is almost certainly not the machine in front of you. It is a build box in a rack with forty-eight cores, no monitor, no mouse, and a home directory holding a hundred gigabytes of Monte Carlo output. Everything you do to it, you do by typing a path. So the first thing to own is not a list of commands — it is a clear picture of where things are and how a path names them.
+The computer that runs your simulations is almost never the one in front of you. It is a box in a rack with forty-eight cores, no monitor, no mouse, and a hundred gigabytes of Monte Carlo output. You cannot click on anything. Everything you do to it, you do by typing.
 
-This lesson gives you that picture and the seven commands that act on it: `ls`, `cd`, `mkdir`, `cp`, `mv`, `rm` and `ln`. The last one, linking, is the one people skip and then misread for years, so it gets the most room. By the end you should be able to lay out a campaign directory, point a stable name at whichever run is current, and explain why deleting a file did not free any disk space.
+That is normal in this job. The rocket's own computers run **[[Linux|why-linux]]**, and so do the build servers and simulation clusters. So the first thing to own is not a list of commands. It is a clear picture of *where things are*, and how a typed name — a **path** — points at them.
 
-Every command and every block of output below was run on this machine and pasted verbatim: Ubuntu 24.04.4 LTS, kernel 6.18.44, GNU bash 5.2.21, GNU coreutils 9.4. Where the output depends on the machine — file owners, timestamps, the size of a directory, which extra entries live at the root — the text says so. Yours will differ in those places and be identical in the rest.
+This lesson gives you that picture and seven commands that act on it: `ls`, `cd`, `mkdir`, `cp`, `mv`, `rm` and `ln`. Linking, the last, is the one people misunderstand for years, so it gets the most room.
+
+Every command below was really run and its output pasted exactly (Ubuntu 24.04.4, bash 5.2.21, GNU coreutils 9.4, home directory `/home/eng`). Owners, dates and inode numbers will differ on your screen; the rest will match.
 
 ## One tree, rooted at `/`
 
-Linux has no drive letters. There is one tree, its root is written `/`, and every disk, every USB stick and every network share appears somewhere inside it. Ask for the top level:
+Think of a family tree drawn upside down. Linux keeps *everything* in one such tree. At the top is the **root**, written `/` and read "slash". There are no drive letters like `C:`: every disk and USB stick shows up as a folder somewhere inside the **[[one tree|one-tree]]**. (On Linux a folder is called a **directory**.)
+
+Ask for the top level with `ls` ("list"):
 
 ```bash
 ls /
@@ -41,7 +45,6 @@ proc
 root
 run
 sbin
-sbin.usr-is-merged
 srv
 sys
 tmp
@@ -49,25 +52,23 @@ usr
 var
 ```
 
-Three of those entries — `container_info.json`, `old_root`, and the `*.usr-is-merged` markers — are artefacts of the container this was captured in, not part of any standard. That is normal: the root of a real machine always carries a few local oddities. The rest is the Filesystem Hierarchy Standard, and it is the same everywhere you will work:
+A few of those — `container_info.json`, `old_root` and the `*.usr-is-merged` markers — are local oddities of the container this ran in. The rest follows the **Filesystem Hierarchy Standard**, a shared agreement about what goes where on every Linux machine:
 
-- `/bin`, `/sbin`, `/usr/bin`, `/usr/sbin` — programs. `/usr/bin` is the big one; `ls /usr/bin | wc -l` reports 1097 here. On modern Ubuntu `/bin` is a symlink to `/usr/bin`, which is what "usr-is-merged" refers to.
-- `/etc` — system-wide configuration, plain text, editable. Your SSH client config, the list of users, the network setup.
-- `/home` — one directory per human. Yours is `/home/<yourname>`; the superuser's is `/root`, which is deliberately not under `/home` so that it stays reachable if `/home` fails to mount.
-- `/var` — data that changes as the machine runs. `/var/log` is where services write their logs.
-- `/tmp` — scratch space, wiped on reboot, writable by everyone.
-- `/opt`, `/usr/local` — software that did not come from the package manager. A simulator you built yourself belongs here.
-- `/proc`, `/sys`, `/dev` — not files on a disk at all. The kernel synthesises them on read. `/proc/cpuinfo` is generated the instant you look at it.
-
-::: note
-`/proc` is why so much of Linux diagnosis is just reading files. Process 4211's command line is the file `/proc/4211/cmdline`; the machine's load average is `/proc/loadavg`. Tools like `ps` and `top` are, underneath, readers of `/proc`.
-:::
+- `/bin`, `/sbin`, `/usr/bin`, `/usr/sbin` — programs. `/usr/bin` is the big one; `ls /usr/bin | wc -l` counts 1065 programs here. On modern Ubuntu `/bin` is only a pointer to `/usr/bin`, which is what "usr-is-merged" means.
+- `/etc` — settings for the whole machine, as plain text: the list of users, the network setup.
+- `/home` — one directory per person. Yours is `/home/<yourname>`. The superuser's is `/root`, kept outside `/home` so it still works if the disk holding `/home` fails to attach.
+- `/var` — data that changes while the machine runs. Services write their logs in `/var/log`.
+- `/tmp` — scratch space that anyone may write to, usually wiped at reboot.
+- `/opt`, `/usr/local` — software you built or installed yourself, outside the package manager.
+- `/proc`, `/sys`, `/dev` — not files on a disk at all. The kernel (the core of the operating system) makes them up the instant you read them. `/proc/cpuinfo` is written fresh each time you look, which is why **[[so much diagnosis is reading files|proc-files]]**.
 
 ## Absolute and relative paths
 
-A path starting with `/` is **absolute**: it is read from the root and means the same thing from anywhere. A path that does not start with `/` is **relative**: it is read from your current working directory, which every process carries with it.
+Directions come in two kinds. "123 Main Street, Springfield" works from anywhere. "Two doors down on the left" works only if you know where the speaker is standing.
 
-`pwd` prints that directory; `cd` changes it.
+So do paths. A path starting with `/` is **absolute**: read from the root, it means the same thing wherever you are. Any other path is **relative**: read from your **working directory**, the directory you are "standing in" right now. Every running program carries one.
+
+`pwd` ("print working directory") shows where you are. `cd` ("change directory") moves you.
 
 ```bash
 pwd
@@ -81,11 +82,11 @@ cd ..; pwd
 /home/eng/campaign
 ```
 
-Three names appear in every path and never name a file you can see with plain `ls`:
+The `;` (semicolon) separates two commands on one line. Three short names appear in paths all the time:
 
-- `.` is the current directory. `./analyse.sh` and `analyse.sh` name the same file, but only the first will run it — more on that in the lesson on `PATH`.
-- `..` is the parent. It chains: `../../shared/configs` climbs two levels then descends.
-- `~` is your home directory. The shell expands it before the command ever sees it, so it works as the first character of a path but not in the middle.
+- `.` (read "dot") is the current directory. `./analyse.sh` and `analyse.sh` name the same file, but only the first form runs it — the reason is in the lesson on `PATH`.
+- `..` ("dot-dot") is the parent, one level up. It chains: `../../shared/configs` climbs two levels, then goes down into `shared/configs`.
+- `~` ("tilde") is your home directory.
 
 ```bash
 echo ~
@@ -99,12 +100,12 @@ cd -
 /home/eng/campaign
 ```
 
-`cd -` returns to the previous directory and prints where it landed. It is the cheapest thing in this lesson and you will use it fifty times a day, bouncing between a source tree and an output directory.
+`echo` prints its arguments. `cd -` ("cd dash") jumps back to the previous directory and prints where it landed.
 
-`~` expanded to `/home/eng` here because that is what `HOME` was set to in the shell that produced this transcript. On your workstation it will be `/home/<yourname>`; in a root shell it is `/root`. The expansion is always the value of `HOME`, whatever that is.
+`~` became `/home/eng` because that is what the variable `HOME` held; for you it will be `/home/<yourname>`, for the superuser `/root`. The **shell** — the program reading your typing — swaps `~` for the value of `HOME` *before* the command runs. That is **[[expansion|shell-expands]]**, and it happens only when `~` starts a word.
 
-::: warning
-`~` is expanded by the shell, not by the kernel and not by the program, so quoting it turns it back into a literal character. `tar -cf ~/backup.tar .` works. Quote it and the program is handed a path that starts with a directory named `~`, which does not exist:
+::: warning Quoting a tilde turns it off
+Because the shell does the swap, quotes stop it, and the program receives a literal `~` character. `tar -cf ~/backup.tar .` works. Quote the tilde and `tar` is asked to write into a directory actually named `~`, which does not exist:
 
 ```bash
 tar -cf "~/backup.tar" .
@@ -115,12 +116,12 @@ tar: ~/backup.tar: Cannot open: No such file or directory
 tar: Error is not recoverable: exiting now
 ```
 
-Exit status 2, and no archive anywhere. The same thing happens wherever no shell is involved at all — a `~` inside a configuration file, a `crontab` entry or a `Dockerfile` is very often just a character. Write `$HOME` when you need the value and are not certain a shell will expand it.
+Exit status 2, and no archive anywhere. The same thing happens wherever no shell reads the line: a `~` inside a settings file, a `crontab` entry or a `Dockerfile` is very often just a character. When you need your home directory and are not sure a shell will expand it, write `$HOME`.
 :::
 
 ## `ls`, past the defaults
 
-Plain `ls` gives you names in columns. The flags that earn their keep:
+Plain `ls` prints names in columns. The **flags** — options starting with a dash — make it useful. `-l` means "long":
 
 ```bash
 ls -l runs | head -4
@@ -128,16 +129,18 @@ ls -l runs | head -4
 
 ```text
 total 2000
--rw-r--r-- 1 root root 629 Sep 22 20:10 case_0001.log
--rw-r--r-- 1 root root 629 Sep 22 20:10 case_0002.log
--rw-r--r-- 1 root root 629 Sep 22 20:10 case_0003.log
+-rw-r--r-- 1 root root 541 Sep 26 17:52 case_0001.log
+-rw-r--r-- 1 root root 541 Sep 26 17:52 case_0002.log
+-rw-r--r-- 1 root root 541 Sep 26 17:52 case_0003.log
 ```
 
-Read the long line left to right: type and permissions (`-rw-r--r--`, decoded in a later lesson), link count, owner, group, size in bytes, modification time, name. The owner and group here are `root` because this capture ran as root; on your machine they will be your username. The `total 2000` is the disk space the listing occupies, in 1K blocks, and it is a property of the filesystem rather than of the files.
+The `|` ("pipe") hands the output of `ls` to `head -4`, which keeps the first four lines (lesson 05 is all about pipes). Read a long line left to right: type and permissions (`-rw-r--r--`, decoded in lesson 03), link count, owner, group, size in bytes, time last changed, name. The owner is `root` because this ran as the superuser. The first line, `total 2000`, is the **[[disk space the listed files take up|total-blocks]]**, counted in blocks of 1024 bytes.
 
-- `-h` makes sizes human: `811` becomes `811`, but a 3.2-gigabyte trajectory file becomes `3.2G` instead of `3435973837`.
-- `-t` sorts newest first, `-r` reverses; `-ltr` — long, by time, oldest first — puts the file that changed most recently at the *bottom*, right above your next prompt. That is the single most useful `ls` on a machine that is producing output while you watch.
-- `-a` shows entries beginning with a dot, which `ls` otherwise hides. Note that `.` and `..` show up too:
+The flags that earn their keep:
+
+- `-h` ("human") prints big sizes in units: a 3.2-gigabyte trajectory file shows as `3.2G` instead of `3435973837`.
+- `-t` sorts newest first and `-r` reverses. So `ls -ltr` puts the most recently changed file at the *bottom*, right above your next prompt — the most useful `ls` on a machine producing output.
+- `-a` ("all") also shows names beginning with a dot, which `ls` otherwise hides — including `.` and `..`:
 
 ```bash
 ls -a configs
@@ -150,10 +153,10 @@ entry_burn.yaml
 entry_burn_v2.yaml
 ```
 
-- `-d` lists a directory itself rather than its contents — `ls -ld configs` tells you about `configs`, not what is in it.
-- `-i` prints the inode number, which is the whole point of the next-but-one section.
+- `-d` lists a directory itself instead of what is inside it: `ls -ld configs` describes `configs`.
+- `-i` prints each file's **inode number**, which matters a lot in the section on links.
 
-When the thing is not there, `ls` says so and exits non-zero:
+When the thing is not there, `ls` says so and reports failure:
 
 ```bash
 ls nosuchdir
@@ -163,11 +166,11 @@ ls nosuchdir
 ls: cannot access 'nosuchdir': No such file or directory
 ```
 
-Exit status 2. "No such file or directory" is the wording for the `ENOENT` error, and you will see it from every tool on Linux, because they are all reporting the same kernel error.
+Every program ends with an **exit status**: 0 means success, anything else means failure. Here it is 2. "No such file or directory" is the kernel's message for the error named **[[ENOENT|enoent]]**, so every tool uses the identical wording.
 
 ## Making, copying, moving
 
-`mkdir` makes one directory and fails if the parent is missing. `mkdir -p` makes the whole chain and, usefully, succeeds silently if it is already there:
+`mkdir` ("make directory") makes one directory, and fails if its parent is missing. `mkdir -p` ("parents") makes the whole chain and — usefully — succeeds quietly if it already exists. `ls -R` lists recursively, into every subdirectory:
 
 ```bash
 mkdir -p out/2026-03-14/plots
@@ -192,9 +195,9 @@ mkdir out
 mkdir: cannot create directory 'out': File exists
 ```
 
-That failure — exit status 1 — is exactly why scripts use `-p`: it makes the operation idempotent, so re-running a batch job does not abort on directory creation.
+That failure, exit status 1, is why scripts use `-p`: it makes the step **[[idempotent|idempotent]]** — safe to run twice — so a re-run batch job does not crash here.
 
-`cp src dst` copies a file. `cp -r src dst` copies a directory tree. If `dst` is an existing directory, the source is copied *into* it, keeping its name. And this is the part to be careful about:
+`cp src dst` copies a file; `cp -r` copies a whole directory tree. If `dst` is an existing directory, the source is copied *into* it and keeps its name. Now the part to be careful about. Suppose `entry_burn_v2.yaml` held a different `dt`, a longer horizon and an extra `margin_m` line, and you type:
 
 ```bash
 cp configs/entry_burn.yaml configs/entry_burn_v2.yaml
@@ -209,15 +212,21 @@ horizon_s: 18.0
 seed_base: 100000
 ```
 
-`entry_burn_v2.yaml` had a different `dt`, a longer horizon and a `margin_m` line. `cp` overwrote it without a single word of output. Unix tools are silent on success, and "success" here included destroying the file you meant to keep. `cp -i` asks first; `cp -n` refuses to overwrite, though coreutils 9.4 now warns that the spelling is non-portable and suggests `--update=none`; `cp --backup=numbered` keeps the old one as `entry_burn_v2.yaml.~1~`. Put `alias cp='cp -i'` in your shell configuration on any machine where you are about to do bulk file surgery.
+(`cat` prints a file; see lesson 02.) The version-2 settings are gone, and `cp` said nothing. Linux tools are silent on success — and "success" included destroying the file you meant to keep. Three safer spellings:
 
-`mv` renames within a filesystem — it is one `rename()` call, instantaneous whatever the file size — and copies-then-deletes across filesystems, which is not instantaneous and can be interrupted.
+- `cp -i` ("interactive") asks before overwriting.
+- `cp -n` ("no clobber") refuses to overwrite. Coreutils 9.4 now prints a warning that this spelling may change and suggests `--update=none`.
+- `cp --backup=numbered` keeps the old file as `entry_burn_v2.yaml.~1~`.
+
+Before bulk file surgery on a machine, put `alias cp='cp -i'` in your shell settings (lesson 10).
+
+`mv` ("move") also renames. Within one filesystem it is a **[[single rename call|rename-atomic]]**, instant whatever the size, because only the name moves. Between filesystems it copies then deletes, which takes time and can be interrupted.
 
 ## `rm`, and why it deserves its reputation
 
-`rm` deletes. There is no trash can, no undo, and no confirmation unless you ask for one.
+`rm` ("remove") deletes. There is no trash can, no undo, and no "are you sure?" unless you ask for one.
 
-Everything below was run on a scratch directory made for the purpose, `/home/eng/scratch`, holding nothing but a copy of one log file. That is the only way to show these commands honestly: a bare `rm -rf` recipe in a lesson is how people end up pasting one into the wrong terminal.
+Everything in this section ran in a throwaway directory, `scratch`, holding one copy of a log file. Try these only somewhere like that.
 
 ```bash
 rm scratch/doomed
@@ -227,7 +236,7 @@ rm scratch/doomed
 rm: cannot remove 'scratch/doomed': Is a directory
 ```
 
-Plain `rm` refuses directories. `rm -r` recurses into them; `rm -f` suppresses the prompts and the errors and returns success even when there was nothing to delete. Together, `rm -rf` means "delete this and everything under it, ask nothing, complain about nothing". Both halves are dangerous in their own way: `-r` because the damage is unbounded, `-f` because it hides the evidence that you aimed at the wrong thing.
+Plain `rm` refuses directories. `rm -r` ("recursive") goes into them and deletes everything inside. `rm -f` ("force") skips every question and error, and reports success even when there was nothing to delete. So `rm -rf` means "delete this and everything under it, ask nothing, complain about nothing". `-r` is dangerous because the damage has no limit; `-f` because it hides the sign that you aimed at the wrong thing.
 
 ```bash
 rm scratch/nothing-here.log
@@ -237,9 +246,9 @@ rm scratch/nothing-here.log
 rm: cannot remove 'scratch/nothing-here.log': No such file or directory
 ```
 
-Exit status 1 — a typo in a path is caught, which is the protection that `-f` removes.
+Exit status 1. A typo in the path was caught. That protection is exactly what `-f` switches off.
 
-The failure mode that has cost real people real data is an empty variable. A script builds a path from a variable, the variable is unset because of a typo or an earlier failure, and the path collapses to something enormous. You can see it without running anything destructive, by putting `echo` in front:
+The mistake that has cost real people real data is an **[[empty variable|empty-variable]]**. A script builds a path from a variable, the variable is empty because of a typo or an earlier failure, and the path shrinks to something enormous. Watch it safely by putting `echo` in front, so the command is printed instead of run:
 
 ```bash
 OUTDIR=; echo "rm -rf /home/eng/$OUTDIR"
@@ -251,14 +260,21 @@ rm -rf /home/eng/
 rm -rf /home/eng/results-2026-03-14
 ```
 
-The second line is what the script was supposed to build. Read the first one again: with `OUTDIR` empty, the command your script was about to run was `rm -rf /home/eng/`. Three habits prevent this: `set -u` in every script, so an unset variable is an error rather than an empty string; `echo` in front of a destructive command the first time you run it; and never building a deletion path by concatenation when you could `cd` into the parent first.
+`OUTDIR=` sets the variable to nothing; `$OUTDIR` (read "dollar OUTDIR") means "its value here". The second line is what the script meant. The first, with `OUTDIR` empty, deletes your entire home directory.
+
+Three habits prevent this:
+
+1. `set -u` at the top of every script, so an *unset* variable is an error instead of an empty string. (A variable set to empty, like `OUTDIR=` here, needs `${OUTDIR:?}` — see Check yourself.)
+2. `echo` in front of a destructive command the first time you run it.
+3. `cd` into the parent first rather than gluing a deletion path together.
 
 ::: example Laying out a campaign directory, then cleaning up after it
-A campaign of 500 entry-burn cases, with room for the dated output and its plots.
+You are about to run 500 entry-burn cases. You want a dated output folder with room for plots, a copy of the settings, and a record of exactly which settings file the run used.
 
 ```bash
 mkdir -p out/2026-03-14/plots
 cp -r configs out/2026-03-14/configs-copy
+cp configs/entry_burn.yaml out/2026-03-14/
 mv out/2026-03-14/entry_burn.yaml out/2026-03-14/entry_burn_run.yaml
 ls out/2026-03-14
 ```
@@ -269,14 +285,23 @@ entry_burn_run.yaml
 plots
 ```
 
-Copying the configuration *into* the output directory is not redundancy for its own sake: six weeks later, when someone asks which horizon that campaign used, the answer sits next to the numbers instead of in a repository history you have to reconstruct. The rename records that this copy is the one the run actually consumed.
+Step by step:
 
-To throw the whole thing away afterwards, `rm -r out/2026-03-14`. Note the absence of `-f`: if the path is wrong, you want to be told.
+1. `mkdir -p` built `out`, `out/2026-03-14` and `plots` in one go.
+2. `cp -r` copied the whole `configs` directory to a new one called `configs-copy`.
+3. `cp` put one more copy of `entry_burn.yaml` straight into the dated folder.
+4. `mv` renamed that copy `entry_burn_run.yaml`, recording that the run read this file.
+
+Check: three entries, exactly the three you made. Keeping the settings beside the output means that in six weeks, when someone asks which horizon the campaign used, the answer is right there.
+
+To throw it all away afterwards: `rm -r out/2026-03-14`. Notice there is no `-f`. If the path is wrong, you want to be told.
 :::
 
 ## Hard links and symbolic links
 
-A directory does not contain files. It contains **names** that point at **inodes**, and the inode is the file: its permissions, its size, its data blocks. Two names can point at one inode. That is a hard link, and `ln` makes one.
+Picture one student listed on two rosters, "Room 12" and "Chess Club". Cross her off one and she still exists; she is gone from the school only when no roster lists her.
+
+A directory is a roster. It holds **names**, and each name points at an **[[inode|inode]]** — the record that *is* the file: owner, permissions, size, and where the data sits on disk. A second name for the same inode is a **hard link**, made by `ln` ("link"). `ln -s` makes a different kind, a **symbolic link** or "symlink":
 
 ```bash
 ln case_0417.log diverged.log
@@ -285,14 +310,14 @@ ls -li case_0417.log diverged.log latest.log
 ```
 
 ```text
-421 -rw-r--r-- 2 root root 811 Sep 22 20:10 case_0417.log
-421 -rw-r--r-- 2 root root 811 Sep 22 20:10 diverged.log
-519 lrwxrwxrwx 1 root root  13 Sep 22 20:12 latest.log -> case_0417.log
+1885276 -rw-r--r-- 2 root root 716 Sep 26 17:52 case_0417.log
+1885276 -rw-r--r-- 2 root root 716 Sep 26 17:52 diverged.log
+1885407 lrwxrwxrwx 1 root root  13 Sep 26 17:52 latest.log -> case_0417.log
 ```
 
-Read the first column. `case_0417.log` and `diverged.log` have the same inode number, 421, and both show a link count of 2 — one inode, two names, and neither is the original. The inode numbers are specific to this filesystem; yours will be different integers.
+The first column is the inode number. `case_0417.log` and `diverged.log` share inode 1885276, and both show a **link count** of 2 (the number after the permissions). One inode, two names, and neither is "the original".
 
-`latest.log` is a different animal. Its own inode is 519, its type character is `l`, its size is 13 bytes — exactly the length of the string `case_0417.log` — and that string *is* its contents. A symbolic link is a tiny file holding a path, which the kernel follows when you open it.
+`latest.log` has its own inode, 1885407, and type letter `l`. Its size is 13 bytes — exactly the length of the text `case_0417.log` — because that text *is* its contents. A symbolic link is a tiny file holding a path, which the kernel follows when a program opens it.
 
 The difference shows the moment you delete the target:
 
@@ -307,18 +332,18 @@ cat latest.log
 cat: latest.log: No such file or directory
 ```
 
-The hard link still works, because removing a name only decrements the link count; the data survives until the count reaches zero. The symlink is now dangling: it still holds the string `case_0417.log`, and nothing is there. `ls -l latest.log` still lists it happily, arrow and all — a dangling symlink is not an error until something opens it.
+(`wc -l` counts lines; see lesson 02.) The hard link still works: removing a name only lowered the link count to 1, and data stays until the count reaches zero. The symlink is now **dangling**: it holds the text `case_0417.log`, and nothing by that name exists. `ls -l` still lists it, arrow and all — a dangling link is not an error until something opens it.
 
-This is also the answer to "I deleted a 40 GB file and `df` did not change". A name was removed; if another name, or a running process, still holds the inode, nothing is freed.
+So "I deleted a 40 GB file and the free space did not change" has an answer: you removed one *name*, and something else still holds the inode.
 
-Hard links have two hard limits, and both produce a clear error:
+Hard links have two limits. (`/dev/shm` is a separate, memory-backed filesystem.)
 
 ```bash
-ln case_0001.log /tmp/case_0001_hard.log
+ln case_0001.log /dev/shm/case_0001_hard.log
 ```
 
 ```text
-ln: failed to create hard link '/tmp/case_0001_hard.log' => 'case_0001.log': Invalid cross-device link
+ln: failed to create hard link '/dev/shm/case_0001_hard.log' => 'case_0001.log': Invalid cross-device link
 ```
 
 ```bash
@@ -329,10 +354,10 @@ ln ../configs configs_hard
 ln: ../configs: hard link not allowed for directory
 ```
 
-Inode numbers are only unique within one filesystem, so a hard link cannot cross one; here `/home` is a tmpfs and `/tmp` is on the root disk. And hard-linking directories would let you build cycles that `find` could never terminate on, so the kernel forbids it. Symbolic links have neither restriction: they hold a path, so they can point anywhere, at anything, including something that does not exist yet.
+The first fails because inode numbers are only unique *within* one filesystem. The second fails because hard-linked directories could form loops that a tree-walking program like `find` would never escape. Symbolic links have neither limit: they only hold a path, so they can point anywhere — even at something that does not exist yet.
 
-::: warning
-A symlink stores the path you typed, not the path it resolved to. Make a relative one, move it, and it breaks:
+::: warning A symlink stores what you typed
+A symlink keeps the exact path text you gave it, not the place that text pointed to at the time. Make a relative one, move it, and it breaks:
 
 ```bash
 ln -s ../configs/entry_burn.yaml used_config.yaml
@@ -344,11 +369,11 @@ cat ../used_config.yaml
 cat: ../used_config.yaml: No such file or directory
 ```
 
-The link still reads `-> ../configs/entry_burn.yaml`, but `..` now means something else. Relative symlinks are the right choice inside a tree that gets copied or archived as a unit; absolute ones are the right choice for a pointer that must survive being moved. Choose deliberately, and use `readlink -f` to see where one actually lands.
+The link still says `../configs/entry_burn.yaml`, but from its new home `..` means a different directory. Relative symlinks suit a tree copied as one piece; absolute ones suit a pointer that must survive being moved alone. Use `readlink -f` to see where a link really lands.
 :::
 
 ::: example A stable name for a moving target
-Your analysis notebook, your plotting script and the report template all want to read "the current best-fit configuration". Hard-coding `entry_burn_v2.yaml` means editing three files when v3 arrives.
+Your notebook, plotting script and report template all want "the current best settings". If each says `entry_burn_v2.yaml`, three files need editing when v3 arrives. Instead, give them one name that never changes:
 
 ```bash
 ln -s /home/eng/campaign/configs cfg
@@ -360,7 +385,9 @@ entry_burn.yaml
 entry_burn_v2.yaml
 ```
 
-A symlink named `cfg` pointing at the configuration directory, or `current.yaml` pointing at one file, gives every consumer one name that never changes. When v3 lands you re-point the link — `ln -sf entry_burn_v3.yaml current.yaml` — and every consumer follows, atomically, with no edits. Verify with `readlink -f current.yaml`, which resolves the whole chain:
+`cfg` is a symlink to the settings directory; listing it shows the target's contents. For one file, a link called `current.yaml` works the same way. When v3 lands, `ln -sf entry_burn_v3.yaml current.yaml` (`-f` replaces the old link) re-points it and every reader follows, with no edits. Coreutils 9.4 builds the new link under a temporary name and renames it into place, so no reader finds the name missing.
+
+To check where a link ends up, `readlink -f` follows the whole chain to a real path. Run on the `latest.log` link from earlier, before its target was deleted:
 
 ```bash
 readlink -f latest.log
@@ -370,77 +397,217 @@ readlink -f latest.log
 /home/eng/campaign/runs/case_0417.log
 ```
 
-This is exactly the pattern release directories use: `/opt/sim/releases/2026-03-14-a` holding the build, and `/opt/sim/current` a symlink you swing when you promote it.
+Sanity check: it resolved to a full absolute path ending in the target's name, as it should. This is the same pattern **[[software releases use|release-links]]**.
 :::
 
-::: key
-A hard link is another name for the same inode: same filesystem only, no original, data lives until the last name goes. A symbolic link is a small file containing a path: it crosses filesystems, points at directories, and dangles if the target moves. `ls -li` shows you which you have — same inode number and a link count above 1 means hard; type `l` and an arrow means symbolic.
+::: key Hard link vs symbolic link
+A hard link is a second directory entry pointing at the same inode: same filesystem only, no notion of an original, and the data survives until the last link is removed. A symlink is a small file holding a path: it can cross filesystems and point at directories, and it dangles if the target moves. `ls -li` tells you which you have — the same inode number with a link count above 1 means hard; type `l` and an arrow means symbolic.
 :::
 
 ## Check yourself
 
 ::: check
-You are in `/home/eng/campaign/runs`. Write three different paths that all name the file `/home/eng/campaign/configs/entry_burn.yaml`, and say which one you would put in a script that another team will run.
+You are in `/home/eng/campaign/runs`. Write three different paths that all name the file `/home/eng/campaign/configs/entry_burn.yaml`. Which would you put in a script that another team will run?
 :::
 
 ::: answer
-The absolute path `/home/eng/campaign/configs/entry_burn.yaml`; the relative path `../configs/entry_burn.yaml`; and the tilde path `~/campaign/configs/entry_burn.yaml`, which the shell expands using `HOME`.
+1. Absolute: `/home/eng/campaign/configs/entry_burn.yaml`.
+2. Relative: `../configs/entry_burn.yaml` — up one level from `runs` to `campaign`, then down into `configs`.
+3. Tilde: `~/campaign/configs/entry_burn.yaml`, which the shell expands using `HOME`.
 
-For a script another team runs, none of the three is right as written. The absolute path assumes their campaign lives at `/home/eng`; the tilde path assumes the file is under whoever's home directory happens to be running it; the relative path assumes a working directory. A script should take the campaign root as an argument or an environment variable and build the rest relative to that — the relative form, anchored to something explicit. Of the three literals, the relative one is the most portable, because it survives the whole tree being copied to another machine or another user.
+For another team's script, none is right as written. The absolute path assumes their campaign lives in `/home/eng`; the tilde path assumes it is under whoever runs the script; the relative path assumes a working directory. A good script takes the campaign's top folder as an argument or environment variable and builds the rest relative to it. Of the three literals, the relative one travels best: it survives the whole tree being copied to another machine or user.
 :::
 
 ::: check
-`ls -li` shows two names with the same inode number and a link count of 2. You delete one and run `df`. What changed, and why?
+`ls -li` shows two names with the same inode number and a link count of 2. You delete one name and check the free disk space. What changed, and why?
 :::
 
 ::: answer
-Nothing changed in `df`. Deleting a name calls `unlink()`, which removes the directory entry and decrements the inode's link count from 2 to 1. The inode still exists, still owns its data blocks, and is still reachable through the other name. The space is released only when the link count reaches zero *and* no process still has the file open — which is why a deleted-but-still-open log file can hold gigabytes hostage until the process writing it is restarted.
+The free space did not change. Deleting a name removes one directory entry and lowers the inode's link count from 2 to 1. The inode still exists, still owns its data, and is still reachable through the other name.
+
+The space comes back only when the link count reaches zero *and* no running program still has the file open. That second condition is why a deleted log that a program is still writing can keep gigabytes busy until that program is restarted.
 :::
 
 ::: check
-A colleague's script does `rm -rf "$RESULTS/$RUN_ID"`. `RUN_ID` is set from the output of a command that failed silently. What does the shell actually run, and what single line at the top of the script would have prevented it?
+A colleague's script runs `rm -rf "$RESULTS/$RUN_ID"`. `RUN_ID` is set from a command that failed without saying so. What does the shell actually run, and what one line at the top would have stopped it?
 :::
 
 ::: answer
-With `RUN_ID` empty, `"$RESULTS/$RUN_ID"` expands to `$RESULTS/` — so the command becomes `rm -rf /path/to/results/`, deleting every run in the results directory rather than one of them. The quoting did not help: quotes prevent word-splitting, not empty expansion.
+With `RUN_ID` empty, `"$RESULTS/$RUN_ID"` becomes `$RESULTS/`, so the command is `rm -rf /path/to/results/` — *every* run, not one. The quotes did not help: they stop a value being split at spaces, not an empty value.
 
-`set -u` at the top makes the shell abort with an error when an unset variable is referenced, so the script stops before `rm` is ever invoked. The fuller habit is `set -euo pipefail`. Note that `set -u` catches *unset*, not *empty*, so the belt-and-braces form is `rm -rf "${RESULTS:?}/${RUN_ID:?}"` — the `:?` makes an empty value an error too.
+`set -u` at the top makes the shell stop at an unset variable, so `rm` never runs; the fuller habit is `set -euo pipefail` (the scripting module explains each letter). `set -u` catches *unset*, not *empty*, so the belt-and-braces form is `rm -rf "${RESULTS:?}/${RUN_ID:?}"`, where `:?` makes an empty value an error too.
 :::
 
 ::: check
-You create `ln -s ../configs/entry_burn.yaml current.yaml` inside `runs/`, then `tar` up the whole `campaign` directory and unpack it on the cluster at `/scratch/campaign`. Does the link still work? What if you had made it absolute?
+Inside `runs/` you make `ln -s ../configs/entry_burn.yaml current.yaml`. Then you `tar` up the whole `campaign` directory and unpack it on the cluster at `/scratch/campaign`. Does the link still work? What if you had made it absolute?
 :::
 
 ::: answer
-The relative link still works. It stores the literal string `../configs/entry_burn.yaml`, and after unpacking, the directory one level up from `runs/` is `/scratch/campaign`, which still contains `configs/entry_burn.yaml`. The whole tree moved together, so every relative path inside it is still correct.
+The relative link still works. It stores the text `../configs/entry_burn.yaml`, and one level up from `runs/` is now `/scratch/campaign`, which still contains `configs/entry_burn.yaml`. The tree moved as a whole, so its relative paths are still right.
 
-An absolute link storing `/home/eng/campaign/configs/entry_burn.yaml` would dangle on the cluster, because that path does not exist there. Relative links travel with the tree; absolute links stay pinned to one machine's layout. This is why source trees and release tarballs use relative links almost exclusively.
+An absolute link storing `/home/eng/campaign/configs/entry_burn.yaml` would dangle, because that path does not exist on the cluster. Relative links travel with their tree; absolute links stay pinned to one machine. That is why source trees and release archives use relative links almost everywhere.
 :::
 
 ::: check
-Why does `ls` show nothing for `.bashrc` unless you pass `-a`, and what is the actual rule?
+Why does `ls` not show `.bashrc` unless you add `-a`? What is the actual rule?
 :::
 
 ::: answer
-There is no "hidden" attribute in the filesystem. The rule is purely a convention in the listing tools: `ls` omits any entry whose name begins with a dot, unless `-a` (all) or `-A` (all but `.` and `..`) is given. The shell's globbing follows the same convention — `*` does not match a leading dot — which is why `cp * /backup/` silently leaves your dotfiles behind. Nothing about the file itself is different; rename `.bashrc` to `bashrc` and it appears.
+No "hidden" switch is stored in the filesystem. It is a habit of the listing tools: `ls` leaves out names beginning with a dot unless you give `-a` (all) or `-A` (all except `.` and `..`). The shell's `*` wildcard follows the same habit, which is why `cp * /backup/` quietly leaves your dotfiles behind. Rename `.bashrc` to `bashrc` and it shows up.
 :::
 
 ## Summary
 
 | Thing | What it is | Worth remembering |
 | --- | --- | --- |
-| `/` | the single root of the one tree | no drive letters; every device appears inside it |
-| `/etc`, `/var/log`, `/usr/local`, `/proc` | config, logs, self-built software, kernel-synthesised files | `/proc` is why `ps` and `top` are just file readers |
-| absolute vs relative | starts with `/` vs starts from the working directory | relative paths travel with a tree that gets copied |
-| `.` `..` `~` | here, parent, `$HOME` | `~` is expanded by the shell; quoting it kills it |
+| `/` | the root of the one tree | no drive letters; every device appears inside it |
+| `/etc`, `/var/log`, `/usr/local`, `/proc` | settings, logs, self-built software, kernel-made files | `/proc` is why `ps` and `top` are file readers |
+| absolute vs relative | starts with `/` vs starts from the working directory | relative paths travel with a copied tree |
+| `.` `..` `~` | here, parent, `$HOME` | `~` is expanded by the shell; quoting it turns it off |
 | `cd -` | back to the previous directory | prints where it landed |
-| `ls -ltr` / `-a` / `-d` / `-i` | time-sorted oldest-first / dotfiles / the directory itself / inode | `-ltr` puts the newest file just above your prompt |
-| `mkdir -p` | make the whole chain, succeed if present | makes a batch job re-runnable |
-| `cp` | silent overwrite on success | `-i`, `-n` or `--backup=numbered` |
-| `rm -r`, `rm -f` | recurse; suppress prompts and errors | `-f` also hides a wrong path; `set -u` guards the empty-variable case |
-| `ln a b` | second name for one inode | same filesystem, no directories, `ls -li` proves it |
-| `ln -s a b` | small file holding the path `a` | crosses filesystems, dangles freely, stores what you typed |
-| `readlink -f` | resolve a link chain to a real path | the way to check what a link really points at |
+| `ls -ltr` / `-a` / `-d` / `-i` | oldest-first by time / dotfiles / the directory itself / inode | `-ltr` puts the newest file just above your prompt |
+| `mkdir -p` | make the whole chain; succeed if present | makes a batch job safe to re-run |
+| `cp` | overwrites silently on success | `-i`, `-n` or `--backup=numbered` |
+| `mv` | rename within a filesystem, copy-and-delete across | the rename is instant |
+| `rm -r`, `rm -f` | recurse; skip questions and errors | `-f` also hides a wrong path; `set -u` guards the empty variable |
+| `ln a b` | second name for one inode | same filesystem, no directories; `ls -li` proves it |
+| `ln -s a b` | small file holding the path `a` | crosses filesystems, can dangle, stores what you typed |
+| `readlink -f` | follow a link chain to a real path | checks where a link really points |
 | `No such file or directory` | the `ENOENT` error | same wording from every tool, because it is the kernel's |
 
-Lesson 02 stays in this directory and starts reading what is in the files: `cat`, `less`, `head`, `tail -f` and `wc`, and how to watch a running job's log without opening an editor on a growing file.
+Lesson 02 stays in this directory and starts reading what is *inside* the files — `cat`, `less`, `head`, `tail -f` and `wc` — including how to watch a running job's log grow without opening an editor on it.
+
+::: context why-linux Linux on the rocket and on the ground
+SpaceX engineers have said publicly that Falcon 9 flies three dual-core x86 flight computers running Linux, with the flight software written in C++. The same operating system runs the build servers, simulation clusters and much of the ground equipment.
+
+That is a practical reason to learn the shell well, not a matter of taste. The compilers (`gcc`, `clang`), the debugger (`gdb`), profilers like `perf`, and build tools like CMake are first-class on Linux, and everything can be scripted. When the target and the desk run the same system, what you test is closer to what flies.
+:::
+
+::: context one-tree Everything hangs from one root
+A slice of the tree. Every path is a walk down from `/`, one directory at a time. The path `/home/eng/campaign/runs` reads as: start at the root, go into `home`, then `eng`, then `campaign`, then `runs`.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 200" font-family="Inter, Arial, sans-serif">
+  <g stroke="#1f2a44" stroke-width="1.5" fill="none">
+    <path d="M180,28 L180,40 L40,40 L40,52"/>
+    <path d="M180,40 L110,40 L110,52"/>
+    <path d="M180,40 L180,52"/>
+    <path d="M180,40 L250,40 L250,52"/>
+    <path d="M180,40 L320,40 L320,52"/>
+    <path d="M180,70 L180,92"/>
+    <path d="M180,110 L180,132"/>
+    <path d="M180,150 L180,160 L130,160 L130,172"/>
+    <path d="M180,160 L230,160 L230,172"/>
+  </g>
+  <g font-size="13" fill="#1f2a44" text-anchor="middle">
+    <text x="180" y="22" font-weight="700" fill="#1d6fd1">/</text>
+    <text x="40" y="66">etc</text>
+    <text x="110" y="66">usr</text>
+    <text x="180" y="66">home</text>
+    <text x="250" y="66">var</text>
+    <text x="320" y="66">tmp</text>
+    <text x="180" y="106">eng</text>
+    <text x="180" y="146">campaign</text>
+    <text x="130" y="188">configs</text>
+    <text x="230" y="188">runs</text>
+  </g>
+  <text x="250" y="106" font-size="11" fill="#6c7a93">~ means this one</text>
+</svg>
+```
+
+A USB stick or a second disk is attached ("mounted") at some directory in this same tree, never as a separate letter.
+:::
+
+::: context proc-files Files the kernel writes on demand
+Nothing in `/proc` is stored on a disk. When you read one of its files, the kernel writes the answer at that instant. Process number 4211's command line is the file `/proc/4211/cmdline`. The machine's load is `/proc/loadavg`. Try `cat /proc/loadavg` twice a few seconds apart and the numbers change, although nobody saved anything.
+
+This is why so much Linux diagnosis is just reading files. Tools like `ps` and `top` (lesson 04) are, underneath, programs that read `/proc` and format what they find.
+:::
+
+::: context shell-expands The shell rewrites your line first
+When you press Enter, the shell does not hand your text straight to the program. It first rewrites it: `~` at the start of a word becomes your home directory, `$HOME` becomes its value, and `*.log` becomes the list of matching names. Only then does it start the program with the finished words.
+
+So `ls` never sees a `~`. It sees `/home/eng`. That is why a program reading a settings file, where no shell was involved, finds a plain `~` character instead.
+:::
+
+::: context total-blocks Why 500 small files take 2000 blocks
+Each log is only 541 bytes, yet `ls -l` reports `total 2000`. A filesystem hands out space in fixed-size **blocks**, commonly 4096 bytes (4 KiB) each, and even a one-byte file gets a whole block.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 100" font-family="Inter, Arial, sans-serif">
+  <rect x="20" y="30" width="320" height="34" fill="#fff" stroke="#1f2a44" stroke-width="1.5"/>
+  <rect x="20" y="30" width="42.3" height="34" fill="#1d6fd1"/>
+  <text x="41" y="22" font-size="11" text-anchor="middle" fill="#1d6fd1">541 bytes used</text>
+  <text x="200" y="52" font-size="12" text-anchor="middle" fill="#6c7a93">3555 bytes allocated but empty</text>
+  <text x="180" y="86" font-size="12" text-anchor="middle" fill="#1f2a44">one 4096-byte block per file</text>
+</svg>
+```
+
+$$
+500 \text{ files} \times 4\,\mathrm{KiB} = 2000\,\mathrm{KiB}
+$$
+
+`ls` counts that total in 1024-byte units, so it prints 2000. The files hold about 271 KB of text but occupy about 2 MB of disk. Many tiny files waste space this way, which comes back in lesson 13.
+:::
+
+::: context enoent The error names behind the messages
+When a request to the kernel fails, the kernel returns a short numbered error code, and each has a name. `ENOENT` means "error: no entry" — no directory entry by that name. Its standard message is "No such file or directory".
+
+Other names you will meet: `EACCES` ("Permission denied", lesson 03), `EEXIST` ("File exists", as `mkdir` said above) and `EXDEV` ("Invalid cross-device link", from the hard-link attempt). Because the message comes from one shared table, the wording is identical in `ls`, `cat`, `rm` and your own programs. Search for the exact words and you will find the cause.
+:::
+
+::: context idempotent A step you can safely repeat
+**Idempotent** (say "eye-dem-POH-tent") describes an action where doing it twice leaves things the same as doing it once. Pressing an elevator's call button is idempotent: pressing it again does not summon a second elevator.
+
+`mkdir -p out` is idempotent: the first run makes the directory, and later runs change nothing and still report success. Plain `mkdir out` is not, because the second run fails. Batch jobs are restarted all the time after a crash or a timeout, so every setup step in them should be idempotent.
+:::
+
+::: context rename-atomic Why a rename is instant
+A file's data sits in blocks on the disk, and the directory only holds the name pointing to it. Renaming within one filesystem changes that directory entry and nothing else, so a 50 GB file renames as fast as a tiny one.
+
+The kernel also does it as one indivisible step: any other program looking at that moment sees either the old name or the new one, never a half-finished state. Software uses this trick all the time: write a new file under a temporary name, then rename it over the old one, so readers never see a half-written file.
+:::
+
+::: context empty-variable A real script that emptied home directories
+In January 2015, users of Valve's Steam client for Linux reported that it had deleted every file they owned. The launcher script ran a line of the form `rm -rf "$STEAMROOT/"*`. When the script had been moved to an unexpected place, `STEAMROOT` came out empty, and the line became `rm -rf "/"*` — delete everything the user was allowed to delete.
+
+The quotes did not help, because the problem was an empty value, not a space. `set -u` and the `${STEAMROOT:?}` form from the Check yourself section are exactly the guards that stop this class of bug.
+:::
+
+::: context inode Names, inodes and data
+A directory is a table of names. Each name points at an inode. The inode points at the data. A hard link is a second name pointing at the same inode. A symlink has its own inode, and its "data" is a path.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 170" font-family="Inter, Arial, sans-serif">
+  <rect x="10" y="20" width="110" height="130" fill="#fff" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="65" y="14" font-size="11" text-anchor="middle" fill="#6c7a93">directory runs/</text>
+  <text x="18" y="48" font-size="11" fill="#1f2a44">case_0417.log</text>
+  <text x="18" y="88" font-size="11" fill="#1f2a44">diverged.log</text>
+  <text x="18" y="128" font-size="11" fill="#1f2a44">latest.log</text>
+  <rect x="170" y="45" width="80" height="44" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="210" y="63" font-size="11" text-anchor="middle" fill="#1f2a44">inode</text>
+  <text x="210" y="79" font-size="11" text-anchor="middle" fill="#1f2a44">links: 2</text>
+  <rect x="170" y="110" width="80" height="40" fill="#f2b880" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="210" y="127" font-size="11" text-anchor="middle" fill="#1f2a44">symlink</text>
+  <text x="210" y="142" font-size="11" text-anchor="middle" fill="#1f2a44">inode</text>
+  <rect x="290" y="45" width="60" height="44" fill="#fff" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="320" y="71" font-size="11" text-anchor="middle" fill="#1f2a44">data</text>
+  <text x="300" y="134" font-size="11" text-anchor="middle" fill="#1f2a44">"case_0417.log"</text>
+  <g stroke="#1d6fd1" stroke-width="1.5" fill="none">
+    <path d="M116,44 L168,60"/>
+    <path d="M116,84 L168,74"/>
+    <path d="M250,67 L288,67"/>
+  </g>
+  <path d="M116,124 L168,128" stroke="#b4232c" stroke-width="1.5" fill="none"/>
+  <path d="M250,130 L258,130" stroke="#b4232c" stroke-width="1.5" fill="none"/>
+</svg>
+```
+
+Delete `case_0417.log` and the blue path through `diverged.log` still reaches the data. The symlink's text still names `case_0417.log`, which no longer exists — so it dangles.
+:::
+
+::: context release-links How deployments swing a symlink
+Many teams install each build of a program in its own dated directory, such as `/opt/sim/releases/2026-03-14-a`, and keep one symlink, `/opt/sim/current`, pointing at the one in use. Everything else refers only to `/opt/sim/current`.
+
+Promoting a new build means re-pointing that one link; rolling back means pointing it at the old directory again. When the link points at a *directory*, write `ln -sfn` — the `-n` stops `ln` from treating the existing link as a directory and creating the new link inside it.
+:::

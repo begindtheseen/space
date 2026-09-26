@@ -26,6 +26,8 @@
    without a browser, which is the only reason it can be trusted.
    ========================================================================== */
 
+import { splitNotes, stripNoteRefs } from './contextNotes'
+
 /* ── Maths ───────────────────────────────────────────────────────────────── */
 
 /** Greek and the handful of named symbols a GNC lesson actually uses. */
@@ -44,7 +46,12 @@ const SYMBOLS: [RegExp, string][] = [
   [/\\omega\b/g, 'omega'], [/\\Omega\b/g, 'capital omega'],
   [/\\infty\b/g, 'infinity'], [/\\partial\b/g, 'partial'], [/\\nabla\b/g, 'del'],
   [/\\pm\b/g, ' plus or minus '], [/\\mp\b/g, ' minus or plus '],
-  [/\\times\b/g, ' times '], [/\\cdot\b/g, ' dot '], [/\\div\b/g, ' divided by '],
+  // A centred dot is multiplication — "I times 2 to the power of minus n" —
+  // except between two vectors, where it is the dot product; those were
+  // marked \innerproduct before this list runs (see vectorDots).
+  [/\\innerproduct\b/g, ' dot '],
+  [/\\times\b/g, ' times '], [/\\cdot\b/g, ' times '], [/[·∙⋅×]/g, ' times '],
+  [/\\div\b/g, ' divided by '],
   [/\\approx\b/g, ' is approximately '], [/\\equiv\b/g, ' is identical to '],
   [/\\neq\b/g, ' is not equal to '], [/\\sim\b/g, ' of order '],
   [/\\leq\b|\\le\b/g, ' is less than or equal to '],
@@ -54,7 +61,10 @@ const SYMBOLS: [RegExp, string][] = [
   [/\\leftrightarrow\b|\\Leftrightarrow\b/g, ' if and only if '],
   [/\\in\b/g, ' in '], [/\\propto\b/g, ' is proportional to '],
   [/\\forall\b/g, ' for all '], [/\\exists\b/g, ' there exists '],
-  [/\\ldots|\\dots|\\cdots/g, ' and so on '],
+  [/\\prime\b/g, ' prime '], [/\\star\b|\\ast\b/g, ' star '],
+  [/\\ldots|\\dots|\\cdots|\\vdots|\\ddots/g, ' and so on '],
+  // Composition: `(f \circ g)(x)`. A degree sign is `^\circ`, read before this.
+  [/\\circ\b/g, ' composed with '],
   // Norms are written without braces around the thing being measured, so they
   // are handled here rather than as a command with an argument.
   [/\\lVert|\\lvert|\\\|/g, ' the magnitude of '],
@@ -62,7 +72,7 @@ const SYMBOLS: [RegExp, string][] = [
   [/\\sin\b/g, 'sine'], [/\\cos\b/g, 'cosine'], [/\\tan\b/g, 'tangent'],
   [/\\arctan\b/g, 'arctangent'], [/\\arcsin\b/g, 'arcsine'], [/\\arccos\b/g, 'arccosine'],
   [/\\log\b/g, 'log'], [/\\ln\b/g, 'natural log'], [/\\exp\b/g, 'exponential of'],
-  [/\\min\b/g, 'minimum'], [/\\max\b/g, 'maximum'],
+  [/\\min\b/g, 'minimum'], [/\\max\b/g, 'maximum'], [/\\det\b/g, 'the determinant of'],
   [/\\int\b/g, ' the integral of '], [/\\oint\b/g, ' the closed integral of '],
   [/\\sum\b/g, ' the sum of '], [/\\prod\b/g, ' the product of '],
   [/\\lim\b/g, ' the limit of '],
@@ -150,6 +160,172 @@ function rewrite(
   return out
 }
 
+/* ── Degrees, powers and the other little marks ───────────────────────── */
+
+/** One number and the degree sign after it, or a bare degree sign. */
+const DEGREE_RE =
+  /(-?\d[\d,]*(?:\.\d+)?)?\s*°\s*(?:\/\s*(?:s|sec)\s*(\^\s*\{?\s*2\s*\}?|²)?(?![A-Za-z])|([CFK])\b)?/g
+
+/**
+ * The degree sign, read the way a person reads it: "53 degrees", "1 degree",
+ * "12.34 degrees per second", "20 degrees Celsius". Left to the voice, "°/s"
+ * came out as "degrees slash s", and inside an equation `^\circ` was read as
+ * "circ".
+ */
+export function degreesToWords(s: string): string {
+  return s.replace(DEGREE_RE, (_m, n: string | undefined, squared: string | undefined, scale: string | undefined) => {
+    const unit = n !== undefined && /^-?1$/.test(n) ? 'degree' : 'degrees'
+    let out = `${n !== undefined ? `${n} ` : ' '}${unit}`
+    if (scale) out += ` ${{ C: 'Celsius', F: 'Fahrenheit', K: 'Kelvin' }[scale]}`
+    else if (_m.includes('/')) out += squared ? ' per second squared' : ' per second'
+    return ` ${out} `
+  })
+}
+
+/** A power spoken: the common ones have names, the rest are "to the power of". */
+function powerWords(p: string): string {
+  const q = p.trim()
+  if (q === '2') return ' squared '
+  if (q === '3') return ' cubed '
+  const named: Record<string, string> = {
+    '1/2': 'one half', '-1/2': 'minus one half', '3/2': 'three halves',
+    '-3/2': 'minus three halves', '1/3': 'one third', '2/3': 'two thirds',
+  }
+  return ` to the power of ${named[q.replace(/\s+/g, '').replace(/^\+/, '')] ?? q} `
+}
+
+const SUPERSCRIPT: Record<string, string> = {
+  '⁰': '0', '¹': '1', '²': '2', '³': '3', '⁴': '4', '⁵': '5', '⁶': '6', '⁷': '7', '⁸': '8', '⁹': '9', '⁻': '-',
+}
+
+/**
+ * The symbols prose uses for arithmetic, outside any equation: "3 × 10⁸",
+ * "10^6", "m²", "45°", "8.4 deg". Each was read literally, or not at all —
+ * "x^2" came out as "x two".
+ */
+export function symbolsToWords(text: string): string {
+  let s = text.replace(/([^\s⁰¹²³⁴⁵⁶⁷⁸⁹⁻])([⁻]?[⁰¹²³⁴⁵⁶⁷⁸⁹]+)/g, (_m, base: string, sup: string) =>
+    `${base}^${[...sup].map((c) => SUPERSCRIPT[c]).join('')}`,
+  )
+  s = degreesToWords(s)
+  // Units first, so "m/s^2" is still a unit when the caret is reached.
+  s = expandUnits(s)
+  s = s.replace(/([\w)])\^\{?(-?\d+(?:\.\d+)?)\}?/g, (_m, base: string, p: string) => `${base}${powerWords(p)}`)
+  s = s
+    .replace(/(\d)\s*[·∙⋅×]\s*(?=[\d(])/g, '$1 times ')
+    // A spaced dot between phrases is a separator: a pause, or nothing after
+    // a full stop.
+    .replace(/([.!?;:,])\s+[·∙]\s+/g, '$1 ')
+    .replace(/\s[·∙]\s/g, ', ')
+    .replace(/(\p{L})[·∙⋅](?=\p{L})/gu, '$1 ')
+    .replace(/\s*×\s*/g, ' times ')
+    .replace(/ +([.,;:!?])/g, '$1')
+  return s
+}
+
+const ORDINAL = ['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten']
+
+/**
+ * Matrices, cases and aligned lines, which were read as "begin pmatrix 0 and
+ * 1 backslash minus 2 …". A matrix is read row by row; a column is read as a
+ * vector; cases are read as "this, if that"; aligned working is read line by
+ * line.
+ */
+function environments(tex: string): string {
+  const rowsOf = (body: string) =>
+    body
+      .split(/\\\\(?:\[[^\]]*\])?/)
+      .map((r) => r.replace(/\\hline/g, '').trim())
+      .filter(Boolean)
+  const det = (env: string) => /^[vV]matrix/.test(env)
+  const cellsOf = (row: string) => row.split(/(?<!\\)&/).map((c) => mathToWords(c)).filter(Boolean)
+  let s = tex
+  for (let guard = 0; guard < 32; guard++) {
+    // Innermost first: an environment whose body holds no other \begin.
+    const m = /\\begin\s*\{(\w+\*?)\}(?:\{[^{}]*\})?((?:(?!\\begin\s*\{)[\s\S])*?)\\end\s*\{\1\}/.exec(s)
+    if (!m) break
+    const [whole, env, body] = m
+    const rows = rowsOf(body).map(cellsOf)
+    let said: string
+    if (/^[pbBvV]?matrix\*?$|^smallmatrix$/.test(env)) {
+      const isDet = det(env)
+      if (rows.every((r) => r.length <= 1)) said = `the column vector ${rows.map((r) => r[0] ?? '0').join(', ')}`
+      else if (rows.length === 1) said = `the row vector ${rows[0].join(', ')}`
+      else said = `the matrix with ${rows.map((r, i) => `${ORDINAL[i] ? `row ${ORDINAL[i]}: ` : ''}${r.join(', ')}`).join('; ')}`
+      if (isDet) said = said.replace(/^the /, 'the determinant of the ')
+    } else if (/^[dr]?cases\*?$/.test(env)) {
+      said = rows.map((r) => (r.length > 1 ? `${r[0]}, ${/^(if|when|for|otherwise|else)\b/.test(r[1]) ? '' : 'if '}${r.slice(1).join(' ')}` : r[0])).join('; ')
+    } else {
+      // aligned, align, gathered, split, array, eqnarray: working, one line at a time.
+      said = rows.map((r) => r.join(' ')).join('. ')
+    }
+    // A comma, not a full stop: the equation usually carries on past it.
+    const before = det(env) ? s.slice(0, m.index).replace(/\\det\s*$/, '') : s.slice(0, m.index)
+    s = before + ` ${said}, ` + s.slice(m.index + whole.length)
+  }
+  // Transforms are written as an operator on braces: \mathcal{L}\{f(t)\}.
+  const transform: Record<string, string> = { L: 'Laplace transform', Z: 'z-transform', F: 'Fourier transform' }
+  s = s.replace(/\\mathcal\s*\{([LZF])\}\s*(\^\s*\{\s*-\s*1\s*\})?\s*(?=\\\{|\\left\s*\\\{)/g, (_m, k: string, inv: string | undefined) =>
+    ` the ${inv ? 'inverse ' : ''}${transform[k]} of `,
+  )
+  // Set-builder braces: "the set of x such that …". Any other escaped brace
+  // is grouping and has no sound.
+  s = s.replace(/\\\{([^{}]*?)(?:\s:\s|:|\\mid|\|)([^{}]*?)\\\}/g, ' the set of $1 such that $2 ')
+  s = s.replace(/\\[{}]/g, ' ')
+  // A line break outside an environment is a pause.
+  s = s.replace(/\\\\(?:\[[^\]]*\])?/g, ' , ')
+  return s
+}
+
+/**
+ * Integrals, sums and products with limits, and limits themselves: "the
+ * integral from 0 to T of", not "the integral of sub nought to the power T".
+ */
+function boundedOperators(tex: string): string {
+  const arg = String.raw`(\{(?:[^{}]|\{[^{}]*\})*\}|\\[A-Za-z]+|[A-Za-z0-9])`
+  const strip = (a: string) => mathToWords(a.startsWith('{') ? a.slice(1, -1) : a)
+  const name: Record<string, string> = { int: 'integral', oint: 'closed integral', sum: 'sum', prod: 'product' }
+  let s = tex.replace(
+    new RegExp(String.raw`\\(int|oint|sum|prod)(?:\\limits)?\s*_\s*${arg}\s*\^\s*${arg}`, 'g'),
+    (_m, op: string, lo: string, hi: string) => ` the ${name[op]} from ${strip(lo)} to ${strip(hi)} of `,
+  )
+  s = s.replace(
+    new RegExp(String.raw`\\(int|oint|sum|prod)(?:\\limits)?\s*_\s*${arg}`, 'g'),
+    (_m, op: string, lo: string) => ` the ${name[op]} over ${strip(lo)} of `,
+  )
+  s = s.replace(new RegExp(String.raw`\\lim\s*_\s*${arg}`, 'g'), (_m, lo: string) => ` the limit as ${strip(lo)} of `)
+  return s
+}
+
+/**
+ * The superscripts that are not powers: transpose, inverse, star and prime.
+ * Run before bold is dropped, because bold is what says a letter is a matrix.
+ */
+function namedSuperscripts(tex: string): string {
+  const matrix = String.raw`(\\(?:mathbf|boldsymbol)\s*\{[^{}]*\}|\\[A-Z][a-z]*\b|(?<![A-Za-z\\])[A-Z](?![a-z]))`
+  const T = String.raw`(?:T|\\top|\\intercal|\\mathsf\s*\{T\}|\\mathrm\s*\{T\}|\\mathsf\s*T)`
+  return tex
+    .replace(new RegExp(String.raw`\^\s*\{\s*-\s*${T}\s*\}`, 'g'), ' inverse transpose ')
+    .replace(new RegExp(String.raw`\^\s*(?:\{\s*${T}\s*\}|${T}(?![A-Za-z]))`, 'g'), ' transpose ')
+    .replace(new RegExp(String.raw`${matrix}\s*\^\s*\{\s*-\s*1\s*\}`, 'g'), '$1 inverse ')
+    .replace(/\^\s*\{?\s*(?:\*|\\ast|\\star)\s*\}?/g, ' star ')
+    // The cross-product matrix: a^\times is "a cross", not a power.
+    .replace(/\^\s*\{?\s*\\times\s*\}?/g, ' cross ')
+    .replace(/\^\s*\{?\s*\\wedge\s*\}?/g, ' wedge ')
+    // Not an apostrophe inside a word: `\text{don't}` is not "don prime t".
+    .replace(/\^\s*\{?\s*\\prime\s*\\prime\s*\}?|(?<=[A-Za-z)}])''(?![A-Za-z])/g, ' double prime ')
+    .replace(/\^\s*\{?\s*\\prime\s*\}?|(?<=[A-Za-z)}])'(?![A-Za-z])/g, ' prime ')
+}
+
+/**
+ * Marks a centred dot between two vectors as a dot product, so it is not
+ * read as "times" with everything else.
+ */
+function vectorDots(tex: string): string {
+  const vector = String.raw`(?:\\(?:mathbf|boldsymbol|vec)\s*(?:\{[^{}]*\}|\\?[A-Za-z]+\b)|\\hat\s*\{[^{}]*\}|\\hat\s*\\?[A-Za-z]+|\\nabla)`
+  return tex.replace(new RegExp(String.raw`(${vector}(?:\s*_\s*(?:\{[^{}]*\}|\w))?)\s*\\cdot(?![a-z])\s*(?=${vector})`, 'g'), '$1 \\innerproduct ')
+}
+
 /**
  * Turns one LaTeX expression into words.
  *
@@ -189,6 +365,16 @@ export function speechRateOptions(current: number): number[] {
 export function mathToWords(tex: string): string {
   let s = tex
 
+  s = environments(s)
+  s = boundedOperators(s)
+  s = vectorDots(s)
+  // Upright text first, so a transpose written `^{\mathsf{T}}` is still seen
+  // as one, and an apostrophe in `\text{…}` is plainly inside a word.
+  s = rewrite(s, 'mathrm', 1, (a) => a)
+  s = rewrite(s, 'text', 1, (a) => a)
+  s = rewrite(s, 'mathsf', 1, (a) => a)
+  s = rewrite(s, 'operatorname', 1, (a) => a)
+  s = namedSuperscripts(s)
   s = rewrite(s, 'tfrac', 2, (a, b) => `${mathToWords(a)} over ${mathToWords(b)}`)
   s = rewrite(s, 'dfrac', 2, (a, b) => `${mathToWords(a)} over ${mathToWords(b)}`)
   s = rewrite(s, 'frac', 2, (a, b) => `${mathToWords(a)} over ${mathToWords(b)}`)
@@ -201,21 +387,24 @@ export function mathToWords(tex: string): string {
   // In this curriculum bold means a vector or a matrix, so say so.
   s = rewrite(s, 'mathbf', 1, (a) => mathToWords(a))
   s = rewrite(s, 'boldsymbol', 1, (a) => mathToWords(a))
-  s = rewrite(s, 'mathrm', 1, (a) => a)
-  s = rewrite(s, 'text', 1, (a) => a)
-  s = rewrite(s, 'mathsf', 1, (a) => a)
-  s = rewrite(s, 'operatorname', 1, (a) => a)
   s = rewrite(s, 'mathcal', 1, (a) => mathToWords(a))
 
   for (const [re, word] of ESCAPED) s = s.replace(re, word)
-  for (const [re, word] of SYMBOLS) s = s.replace(re, word)
   s = s.replace(SILENT, ' ')
+  // Degrees before anything reads the caret: `65^\circ`, `{}^\circ/\mathrm{s}`.
+  s = s.replace(/\{\s*\}\s*\^\s*\\circ\b|\^\s*\{\s*\\circ\s*\}|\^\s*\\circ\b|\\degree\b/g, '°')
+  s = degreesToWords(s)
+  // Spaced, so a name never runs into the next one: `\cos\theta` had become
+  // "\costheta", which no later rule recognised.
+  for (const [re, word] of SYMBOLS) s = s.replace(re, ` ${word} `)
 
-  // Powers. The common ones have names; the rest are "to the power".
-  s = s.replace(/\^\{?2\}?(?![0-9])/g, ' squared ')
-  s = s.replace(/\^\{?3\}?(?![0-9])/g, ' cubed ')
-  s = s.replace(/\^\{([^{}]*)\}/g, (_m, p: string) => ` to the power ${mathToWords(p)} `)
-  s = s.replace(/\^(-?\w)/g, (_m, p: string) => ` to the power ${p} `)
+  // Powers. The common ones have names; the rest are "to the power of".
+  s = s.replace(/\^\s*\{\s*([23])\s*\}|\^\s*([23])(?![0-9])/g, (_m, a: string, b: string) => powerWords(a ?? b))
+  s = s.replace(/\^\s*\{([^{}]*)\}/g, (_m, p: string) => {
+    const q = p.replace(/\s+/g, '')
+    return /^[+-]?\d\/\d$/.test(q) ? powerWords(q) : ` to the power of ${mathToWords(p)} `
+  })
+  s = s.replace(/\^\s*(-?(?:\d+(?:\.\d+)?|[A-Za-z]+))/g, (_m, p: string) => powerWords(p))
 
   // `|_N` means "evaluated in frame N" throughout these lessons, and a voice
   // reading the bar as "sub N" loses the only word that carried the meaning.
@@ -224,6 +413,10 @@ export function mathToWords(tex: string): string {
   // Subscripts.
   s = s.replace(/_\{([^{}]*)\}/g, (_m, p: string) => ` sub ${mathToWords(p)} `)
   s = s.replace(/_(\w)/g, (_m, p: string) => ` sub ${SUB_WORDS[p] ?? p} `)
+  // Labels abbreviated in a subscript: v_circ is circular speed.
+  s = s.replace(/\bsub\s+(circ|esc|max|min|ref|cmd|init|avg|rel)\b/g, (_m, l: string) =>
+    ` sub ${{ circ: 'circular', esc: 'escape', max: 'max', min: 'min', ref: 'ref', cmd: 'command', init: 'initial', avg: 'average', rel: 'relative' }[l]} `,
+  )
 
   // Units before operators: the slash in "m/s" is part of a name, not a
   // division, and turning it into "divided by" made a speed read as an
@@ -233,6 +426,8 @@ export function mathToWords(tex: string): string {
   s = s
     .replace(/\\\\/g, ' . ')
     .replace(/[{}]/g, ' ')
+    // Alignment marks outside an environment have no sound.
+    .replace(/(?<!\\)&/g, ' ')
     .replace(/\s*=\s*/g, ' equals ')
     .replace(/\s*\+\s*/g, ' plus ')
     // A slash between terms is a quotient. Left silent it ran the two sides
@@ -249,6 +444,8 @@ export function mathToWords(tex: string): string {
     // Anything left with a backslash is a command this does not know. Saying
     // its name is closer to useful than saying "backslash".
     .replace(/\\([A-Za-z]+)/g, ' $1 ')
+    // A caret nothing above could read has no sound worth making.
+    .replace(/\^/g, ' ')
     // Implied multiplication, spaced out. Run together, "2I" is read as one
     // token and comes out as "two-eye"; separated, the voice says "two I",
     // which is how the expression is read aloud by a person.
@@ -278,6 +475,7 @@ const UNITS: [RegExp, string][] = [
   [/\bMPa\b/g, 'megapascals'],
   [/\brad\/s\b/g, 'radians per second'],
   [/\bdeg\/s\b/g, 'degrees per second'],
+  [/\bdeg\b/g, 'degrees'],
   [/\brpm\b/g, 'revolutions per minute'],
   [/\bHz\b/g, 'hertz'],
   [/\bms\b/g, 'milliseconds'],
@@ -309,7 +507,9 @@ const CALLOUT_NAME: Record<string, string> = {
  * forty lines of C++ aloud is a minute of noise she has to sit through.
  */
 export function speakableFromMarkdown(md: string): string {
-  let s = md
+  // Context notes are for looking up, not for listening to: the notes go, and
+  // a marked phrase is read as its plain words (see lib/contextNotes.ts).
+  let s = stripNoteRefs(splitNotes(md).body)
 
   // Fenced code: named, not read.
   s = s.replace(/```[\s\S]*?```/g, '\nCode block.\n')
@@ -323,6 +523,10 @@ export function speakableFromMarkdown(md: string): string {
     return `\n${name}${title ? ` ${title}.` : ''}\n`
   })
   s = s.replace(/^:::\s*$/gm, '\n')
+
+  // A literal dollar sign in prose is written \$, and left alone it opened an
+  // "equation" that ran to the next dollar sign: "\$150 per credit … 9000".
+  s = s.replace(/\\\$\s?(\d[\d,]*(?:\.\d+)?)/g, '$1 dollars').replace(/\\\$/g, ' dollars ')
 
   // Display maths, then inline maths.
   //
@@ -359,7 +563,7 @@ export function speakableFromMarkdown(md: string): string {
   s = s.replace(/^\s*(?:-{3,}|_{3,})\s*$/gm, '\n')
   s = s.replace(/^>\s?/gm, '')
 
-  s = expandUnits(s)
+  s = symbolsToWords(s)
 
   return s
     .replace(/[ \t]+/g, ' ')

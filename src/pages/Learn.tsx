@@ -22,6 +22,8 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { PlaygroundEmbed, type Graded } from '@/components/ide/Embed'
 import { useLessonCode } from '@/components/ide/lessonCode'
+import { ExplainPanel } from '@/components/ExplainPanel'
+import { SelectionAsk } from '@/components/SelectionAsk'
 import {
   CertificateMark,
   IdePanel,
@@ -31,7 +33,7 @@ import {
   TerminalView,
   TestCases,
 } from '@/components/ide'
-import { IconArrowRight, IconCheck, IconChevronLeft, IconFlame, IconRefresh } from '@/components/icons'
+import { IconArrowRight, IconCheck, IconChevronLeft, IconClock, IconFlame, IconRefresh } from '@/components/icons'
 import { Bar, Button } from '@/components/ui'
 import { markLearned } from '@/engine/apply'
 import { useLearner } from '@/hooks/useLearner'
@@ -40,6 +42,8 @@ import { LEARN_LANGS } from '@/learn/platform'
 import { MASTERY, ROADMAPS, currentTrack, findLesson, langName, nextLesson, passedCount, streak, trackFor, tracksFor } from '@/learn/index'
 import { editorLang, runLearn, warmUp } from '@/learn/platform'
 import { LEVEL_LABEL, type LearnGrade, type LearnLesson, type LearnTrack, type Roadmap } from '@/learn/types'
+import { onExplainRequested } from '@/lib/ctxBus'
+import type { ExplainSeed, LibraryLesson } from '@/lib/explain'
 import type { ShellState } from '@/lib/shell'
 import { Markdown } from '@/lib/markdown'
 import { navigate, useRoute } from '@/lib/router'
@@ -386,6 +390,7 @@ function CourseView({ track }: { track: LearnTrack }) {
           {done === 0 ? 'Start course' : done === total ? 'Review' : 'Continue'}
           <IconArrowRight size={13} />
         </button>
+        <FocusLink lessonId={next.id} />
       </div>
       <ol className="lm-outline">
         {track.lessons.map((l, i) => {
@@ -418,6 +423,26 @@ function LessonView({ track, lesson, index }: { track: LearnTrack; lesson: Learn
   const [showSolution, setShowSolution] = useState(false)
   const winRef = useRef<HTMLDivElement | null>(null)
   const teachCode = useLessonCode(`learn:${lesson.id}:example`, lesson.teach, lesson.schema)
+  const textRef = useRef<HTMLElement | null>(null)
+  const [asking, setAsking] = useState<ExplainSeed | null>(null)
+  const closeAsk = useCallback(() => setAsking(null), [])
+  // Explain reads this lesson, and the lessons of this course she has passed.
+  const here = useMemo<LibraryLesson>(
+    () => ({ moduleId: 'learn', moduleTitle: track.name, lessonId: lesson.id, title: lesson.title, body: `${lesson.teach}\n\n${lesson.task}` }),
+    [track.name, lesson],
+  )
+  const passedHere = useMemo<LibraryLesson[]>(
+    () =>
+      track.lessons
+        .filter((l) => l.id !== lesson.id && state.learn[l.id])
+        .map((l) => ({ moduleId: 'learn', moduleTitle: track.name, lessonId: l.id, title: l.title, body: `${l.teach}\n\n${l.task}` })),
+    // Only which lessons are passed matters, not her code in them.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [track, lesson.id, Object.keys(state.learn).join(',')],
+  )
+  useEffect(() => setAsking(null), [lesson.id])
+  // A note's "where else this comes up" arrives here.
+  useEffect(() => onExplainRequested(setAsking), [])
 
   const passedBefore = !!state.learn[lesson.id]
   const prev = track.lessons[index - 1]
@@ -467,10 +492,11 @@ function LessonView({ track, lesson, index }: { track: LearnTrack; lesson: Learn
             />
           ))}
         </div>
+        <FocusLink lessonId={lesson.id} />
         <Streak />
       </div>
 
-      <article className="lm-flow">
+      <article className="lm-flow" ref={textRef}>
         <div className="lm-text__kicker">
           <LangMark lang={track.lang} size={18} />
           Lesson {index + 1} of {track.lessons.length}
@@ -480,7 +506,9 @@ function LessonView({ track, lesson, index }: { track: LearnTrack; lesson: Learn
 
         {/* The explanation, with its examples runnable where they stand. */}
         <div className="lm-teach">
-          <Markdown renderCode={teachCode}>{lesson.teach}</Markdown>
+          <Markdown renderCode={teachCode} notes>
+            {lesson.teach}
+          </Markdown>
         </div>
 
         {/* Then her turn, in the same place. */}
@@ -580,6 +608,8 @@ function LessonView({ track, lesson, index }: { track: LearnTrack; lesson: Learn
           ) : null}
         </div>
       </article>
+      <SelectionAsk container={textRef} onAsk={setAsking} />
+      {asking ? <ExplainPanel seed={asking} here={here} extra={passedHere} onClose={closeAsk} /> : null}
     </div>
   )
 }
@@ -645,4 +675,20 @@ export function useNextLesson(lang: string): { lesson: LearnLesson; done: number
     if (!track) return null
     return { lesson: nextLesson(track, state.learn), done: passedCount(track, state.learn), total: track.lessons.length }
   }, [lang, state.learn])
+}
+
+/**
+ * Learn to code has its own focus block: this opens the Focus page on the
+ * coding side, pointed at this lesson. Hidden while a block is already running,
+ * since the strip at the bottom is then the way back to it.
+ */
+function FocusLink({ lessonId }: { lessonId: string }) {
+  const { state } = useLearner()
+  if (state.focus) return null
+  return (
+    <a className="lm-focus" href={`#/focus?on=code&lesson=${encodeURIComponent(lessonId)}`} title="Start a focus block on this lesson">
+      <IconClock size={13} />
+      Focus
+    </a>
+  )
 }

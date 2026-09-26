@@ -5,7 +5,7 @@
    every percentage is a weighted roll-up of real mastery and the focus list is
    the scheduler's own plan for the day.
    ========================================================================== */
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import { EarthLimb } from '@/components/art/EarthLimb'
 import { CodeThumb, ConicThumb, DescentThumb, HighBayThumb, PlanetPlate } from '@/components/art/Thumbs'
@@ -82,6 +82,8 @@ export function Home() {
         ) : null}
 
         <ResumeCard point={state.resume} onDismiss={() => setResume(null)} />
+
+        {!state.placement && !state.focus ? <PlacementPrompt /> : null}
 
         <StartBlock />
 
@@ -647,6 +649,55 @@ function whenWord(iso: string): string {
    when she does not want to read any of it. It sits directly under the hero so
    that on a bad day the first thing she sees is one button with one sentence
    under it, and she never has to scroll into the menu at all. */
+
+/**
+ * Until she has taken the placement test, the dashboard offers it first:
+ * starting at the right place matters more than starting at the first page.
+ * "Not now" hides it until the app is next opened.
+ */
+function PlacementPrompt() {
+  const [hidden, setHidden] = useState(() => {
+    try {
+      return sessionStorage.getItem('placement-later') === '1'
+    } catch {
+      return false
+    }
+  })
+  if (hidden) return null
+  return (
+    <Card className="placeprompt" index={0}>
+      <div className="placeprompt__body">
+        <div className="placeprompt__text">
+          <div className="placeprompt__kicker">Before you start</div>
+          <div className="placeprompt__title">Find your starting point</div>
+          <p className="placeprompt__why">
+            About fifteen minutes of questions, from decimals to logarithms. You get a plan: the foundation lessons you
+            need, in order, and the ones you can skip.
+          </p>
+        </div>
+        <div className="placeprompt__acts">
+          <Button variant="primary" size="md" onClick={() => navigate('/placement')}>
+            Take the placement test
+            <IconArrowRight size={15} />
+          </Button>
+          <button
+            className="placeprompt__alt"
+            onClick={() => {
+              try {
+                sessionStorage.setItem('placement-later', '1')
+              } catch {
+                /* private window: it just comes back next time */
+              }
+              setHidden(true)
+            }}
+          >
+            Not now
+          </button>
+        </div>
+      </div>
+    </Card>
+  )
+}
 
 function StartBlock() {
   const { state, dag, setState } = useLearner()

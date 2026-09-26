@@ -29,6 +29,7 @@ import { useLearner } from '@/hooks/useLearner'
 import { useUpdates } from '@/hooks/useUpdates'
 import { navigate, useRoute, useScrollReset } from '@/lib/router'
 import { startUpdateWatch } from '@/lib/updateWatch'
+import { useAwakeWhileActive } from '@/lib/wakeLock'
 import './shell.css'
 
 /**
@@ -102,6 +103,8 @@ export function Shell({
      open all day never hears about a release that lands while it is running.
      Started here because the shell is mounted for the life of the app. */
   useEffect(() => startUpdateWatch(), [])
+  // The screen stays on while she is using the app (src/lib/wakeLock.ts).
+  useAwakeWhileActive()
 
   /* The rail is revealed by moving toward the left edge and hidden again on
      the way out. The delay on the way out is the part that matters: without
@@ -268,10 +271,12 @@ function TopBar({
   stuck: boolean
   onMenu: () => void
 }) {
-  // Desktop only: a bundle update waiting on the Settings page. In a browser
-  // the hook never subscribes and `state` stays null.
-  const updateStatus = useUpdates().state?.status
-  const updateWaiting = updateStatus === 'available' || updateStatus === 'ready'
+  // Desktop only: an update waiting on a restart. Updates download on their
+  // own, and one staged for the next launch needs nothing from her, so only
+  // a restart nobody else will do earns the dot. In a browser the hook never
+  // subscribes and `state` stays null.
+  const update = useUpdates().state
+  const updateWaiting = update?.status === 'ready' && !update.staged
 
   return (
     <header className="topbar" data-stuck={stuck}>

@@ -9,6 +9,7 @@ import { Dag } from '@/engine/graph'
 import { CODING } from './coding'
 import { GNC_ADVANCED } from './gnc-advanced'
 import { GNC_CORE } from './gnc-core'
+import { BASECAMP } from './basecamp'
 import { GNC_FOUNDATIONS } from './gnc-foundations'
 import { lessonsFor, searchLessons } from './lessons'
 import { CAREER } from './tracks-aux'
@@ -17,6 +18,7 @@ import type { Module, TrackId } from './types'
 // Lessons are authored as files and attached here from the generated manifest,
 // so the module sources stay about structure and the prose stays in prose.
 export const MODULES: Module[] = [
+  BASECAMP,
   ...GNC_FOUNDATIONS,
   ...GNC_CORE,
   ...GNC_ADVANCED,

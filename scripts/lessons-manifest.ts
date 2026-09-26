@@ -11,12 +11,13 @@ import { GNC_ADVANCED } from '../src/curriculum/gnc-advanced.ts'
 import { GNC_CORE } from '../src/curriculum/gnc-core.ts'
 import { GNC_FOUNDATIONS } from '../src/curriculum/gnc-foundations.ts'
 import { CAREER } from '../src/curriculum/tracks-aux.ts'
+import { BASECAMP } from '../src/curriculum/basecamp.ts'
 
 // The leaf sources rather than src/curriculum/index.ts: that module attaches
 // lessons via import.meta.glob, which only exists under Vite, and this script
 // has to run under plain Node so the build can regenerate before bundling.
 const TOPICS = new Map<string, string[]>(
-  [...GNC_FOUNDATIONS, ...GNC_CORE, ...GNC_ADVANCED, ...CODING, ...CAREER].map((m) => [
+  [BASECAMP, ...GNC_FOUNDATIONS, ...GNC_CORE, ...GNC_ADVANCED, ...CODING, ...CAREER].map((m) => [
     m.id,
     m.topics,
   ]),
