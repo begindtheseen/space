@@ -1,7 +1,7 @@
 ---
 id: l05-curves-and-rotating-frames
 title: Trajectories as vector functions of time
-minutes: 26
+minutes: 24
 covers:
   - vector-valued functions of time, arc length, curvature
 ---
@@ -315,7 +315,7 @@ Drag pushes along $-\mathbf{v}$, which is not parallel to $\mathbf{r}$ except at
 The next lesson integrates instead of differentiating — over areas and volumes rather than along curves. Multiple integrals give a vehicle's mass, center of mass and inertia tensor, and Lesson 3's Jacobian determinant comes back as the factor that turns $dx\,dy\,dz$ into $r^2\sin\theta\,dr\,d\theta\,d\varphi$.
 
 ::: context newton-dot Newton's dot
-Isaac Newton wrote the rate of change of a quantity $x$ with a dot over it, $\dot x$, which he called a "fluxion" — the speed at which $x flows". Leibniz, working at the same time, wrote $dx/dt$. Engineers kept both: the dot for time derivatives, because it is compact, and $d/dt$ when the variable matters. Two dots, $\ddot x$, mean the second time derivative. In this course a dot always means *with respect to time*, never with respect to anything else.
+Isaac Newton wrote the rate of change of a quantity $x$ with a dot over it, $\dot x$, which he called a "fluxion" — the speed at which $x$ "flows". Leibniz, working at the same time, wrote $dx/dt$. Engineers kept both: the dot for time derivatives, because it is compact, and $d/dt$ when the variable matters. Two dots, $\ddot x$, mean the second time derivative. In this course a dot always means *with respect to time*, never with respect to anything else.
 :::
 
 ::: context chord-to-tangent From chord to tangent
@@ -324,15 +324,15 @@ The chord from $\mathbf{r}(t)$ to $\mathbf{r}(t + \delta t)$, divided by $\delta
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 170" font-family="Inter, Arial, sans-serif">
   <path d="M20,150 Q140,150 200,100 T340,20" fill="none" stroke="#1f2a44" stroke-width="2"/>
-  <circle cx="110" cy="138.9" r="4" fill="#1f2a44"/>
-  <text x="104" y="160" font-size="12" fill="#1f2a44" text-anchor="middle">r(t)</text>
-  <line x1="110" y1="138.9" x2="270" y2="46.3" stroke="#8fb8f0" stroke-width="1.5"/>
-  <circle cx="270" cy="46.3" r="3" fill="#8fb8f0"/>
-  <line x1="110" y1="138.9" x2="200" y2="100" stroke="#1d6fd1" stroke-width="1.5"/>
-  <circle cx="200" cy="100" r="3" fill="#1d6fd1"/>
-  <text x="258" y="70" font-size="11" fill="#1d6fd1">chords</text>
-  <line x1="40" y1="162.2" x2="240" y2="95.6" stroke="#b4232c" stroke-width="2"/>
-  <text x="252" y="104" font-size="12" fill="#b4232c">tangent: v</text>
+  <line x1="106.4" y1="142" x2="265" y2="55" stroke="#8fb8f0" stroke-width="1.5"/>
+  <circle cx="265" cy="55" r="3" fill="#8fb8f0"/>
+  <line x1="106.4" y1="142" x2="173.6" y2="118" stroke="#1d6fd1" stroke-width="1.5"/>
+  <circle cx="173.6" cy="118" r="3" fill="#1d6fd1"/>
+  <text x="170" y="72" font-size="11" fill="#1d6fd1" text-anchor="middle">chords</text>
+  <line x1="36.4" y1="156.6" x2="246.4" y2="112.8" stroke="#b4232c" stroke-width="2"/>
+  <text x="252" y="120" font-size="12" fill="#b4232c">tangent: v</text>
+  <circle cx="106.4" cy="142" r="4" fill="#1f2a44"/>
+  <text x="100" y="166" font-size="12" fill="#1f2a44" text-anchor="middle">r(t)</text>
 </svg>
 ```
 
@@ -376,7 +376,7 @@ The best-fitting circle at a point is called the **osculating circle**, from the
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 170" font-family="Inter, Arial, sans-serif">
-  <path d="M20,40 Q180,200 340,40" fill="none" stroke="#1f2a44" stroke-width="2.5"/>
+  <path d="M100,40 Q180,200 260,40" fill="none" stroke="#1f2a44" stroke-width="2.5"/>
   <circle cx="180" cy="80" r="40" fill="none" stroke="#1d6fd1" stroke-width="1.5" stroke-dasharray="5 4"/>
   <circle cx="180" cy="120" r="4" fill="#b4232c"/>
   <line x1="180" y1="120" x2="180" y2="80" stroke="#b4232c" stroke-width="1.5"/>
@@ -390,7 +390,7 @@ A curve that straightens out has a bigger kissing circle; a straight line's woul
 :::
 
 ::: context gravity-turn Why rockets fly a gravity turn
-In the thick lower air, a rocket that flew sideways to its motion would feel large sideways air loads that could bend or break it. So after a small pitch "kick" just after liftoff, most launch vehicles keep their nose pointed along the velocity and let gravity do the turning. The angle of attack stays near zero, the structure stays safe, and the rocket arcs over toward the horizontal. Guidance only steers actively once the air has thinned.
+In the thick lower air, a rocket that flew sideways to its motion would feel large sideways air loads that could bend or break it. So after a small pitch "kick" soon after liftoff, most launch vehicles keep their nose pointed along the velocity and let gravity do the turning. The angle of attack stays near zero, the structure stays safe, and the rocket arcs over toward the horizontal. Guidance only steers actively once the air has thinned.
 :::
 
 ::: context semi-latus-rectum What the semi-latus rectum is
