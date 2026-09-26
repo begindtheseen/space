@@ -6062,7 +6062,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-the-stochastic-state-space-model",
       "title": "The stochastic state-space model, process noise Q and measurement noise R",
-      "minutes": 20,
+      "minutes": 22,
       "covers": [
         "The stochastic state-space model: process noise Q and measurement noise R"
       ],
@@ -6071,7 +6071,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-three-derivations-of-the-kalman-filter",
       "title": "Three derivations of the Kalman filter",
-      "minutes": 24,
+      "minutes": 20,
       "covers": [
         "Three derivations of the Kalman filter: minimum variance/orthogonality, Bayesian Gaussian conditioning, recursive least squares"
       ],
@@ -6080,7 +6080,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-the-predict-and-update-steps",
       "title": "The predict and update steps",
-      "minutes": 17,
+      "minutes": 18,
       "covers": [
         "The predict and update steps"
       ],
@@ -6089,7 +6089,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-the-kalman-gain-as-a-trust-ratio",
       "title": "The Kalman gain as a trust ratio between prediction and measurement",
-      "minutes": 18,
+      "minutes": 23,
       "covers": [
         "The Kalman gain as a trust ratio between prediction and measurement"
       ],
@@ -6098,7 +6098,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-covariance-propagation-and-the-discrete-riccati-equation",
       "title": "Covariance propagation and the discrete Riccati equation",
-      "minutes": 14,
+      "minutes": 18,
       "covers": [
         "Covariance propagation and the discrete Riccati equation"
       ],
@@ -6107,7 +6107,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-process-noise-tuning-and-getting-q-wrong",
       "title": "Process noise tuning and the consequences of getting Q wrong",
-      "minutes": 19,
+      "minutes": 22,
       "covers": [
         "Process noise tuning and the consequences of getting Q wrong"
       ],
@@ -6116,7 +6116,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-the-steady-state-kalman-filter",
       "title": "The steady-state Kalman filter",
-      "minutes": 19,
+      "minutes": 23,
       "covers": [
         "The steady-state Kalman filter"
       ],
@@ -6125,7 +6125,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-observability-and-filter-convergence",
       "title": "Observability and filter convergence",
-      "minutes": 16,
+      "minutes": 18,
       "covers": [
         "Observability and filter convergence"
       ],
@@ -6134,7 +6134,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-numerically-stable-formulations",
       "title": "Numerically stable formulations: Joseph form, square-root, and UD factorization",
-      "minutes": 24,
+      "minutes": 21,
       "covers": [
         "Numerically stable formulations: Joseph form, square-root (Potter, Carlson), UD factorization (Bierman-Thornton)"
       ],
@@ -6143,7 +6143,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-filter-divergence-causes-and-remedies",
       "title": "Filter divergence: causes and remedies",
-      "minutes": 23,
+      "minutes": 24,
       "covers": [
         "Filter divergence: causes and remedies (fading memory, Q inflation, covariance symmetrization)"
       ],
@@ -6152,7 +6152,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-consistency-testing",
       "title": "Consistency testing: innovation whiteness, NEES and NIS",
-      "minutes": 25,
+      "minutes": 18,
       "covers": [
         "Consistency testing: innovation whiteness, NEES and NIS chi-square tests, innovation autocorrelation"
       ],
@@ -6161,7 +6161,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-sequential-vs-batch-updates-and-gating",
       "title": "Sequential vs batch measurement updates; measurement editing and gating",
-      "minutes": 21,
+      "minutes": 19,
       "covers": [
         "Sequential vs batch measurement updates; measurement editing and gating"
       ],
@@ -6170,7 +6170,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l13-the-rauch-tung-striebel-smoother",
       "title": "The Rauch-Tung-Striebel smoother",
-      "minutes": 20,
+      "minutes": 19,
       "covers": [
         "The Rauch-Tung-Striebel smoother"
       ],
@@ -6179,7 +6179,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l14-the-information-filter-form",
       "title": "The information filter form and its use in sensor fusion",
-      "minutes": 22,
+      "minutes": 21,
       "covers": [
         "The information filter form and its use in sensor fusion"
       ],
@@ -6199,7 +6199,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-the-extended-kalman-filter",
       "title": "The Extended Kalman Filter — linearizing about the estimate",
-      "minutes": 21,
+      "minutes": 25,
       "covers": [
         "The Extended Kalman Filter: linearization about the current estimate, Jacobians F and H, first-order truncation error"
       ],
@@ -6208,7 +6208,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-continuous-discrete-and-iterated-ekf",
       "title": "The continuous-discrete EKF and the iterated EKF",
-      "minutes": 20,
+      "minutes": 18,
       "covers": [
         "Continuous-discrete EKF and the iterated EKF"
       ],
@@ -6226,7 +6226,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-the-unscented-kalman-filter",
       "title": "The Unscented Kalman Filter",
-      "minutes": 22,
+      "minutes": 26,
       "covers": [
         "The Unscented Kalman Filter: the unscented transform, sigma point selection (alpha, beta, kappa), the square-root UKF"
       ],

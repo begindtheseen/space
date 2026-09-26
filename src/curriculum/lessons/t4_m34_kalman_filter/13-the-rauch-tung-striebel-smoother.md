@@ -1,7 +1,7 @@
 ---
 id: l13-the-rauch-tung-striebel-smoother
 title: The Rauch-Tung-Striebel smoother
-minutes: 21
+minutes: 19
 covers:
   - The Rauch-Tung-Striebel smoother
 ---
