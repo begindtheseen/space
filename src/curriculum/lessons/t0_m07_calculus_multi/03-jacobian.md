@@ -1,7 +1,7 @@
 ---
 id: l03-jacobian
 title: The Jacobian and the measurement matrix
-minutes: 24
+minutes: 22
 covers:
   - Jacobian and Hessian
 ---
@@ -295,10 +295,10 @@ def h_meas(x):
     return np.array([rho, d @ x[3:] / rho])
 
 x = np.array([7000.0, 100.0, -200.0, 0.5, 7.4, 0.1])
-print(numerical_jacobian(h_meas, x)[0, :3])  # [ 0.94103833  0.15129234 -0.30258467]
+print(numerical_jacobian(h_meas, x)[0, :3])  # [ 0.94103834  0.15129234 -0.30258467]
 ```
 
-The printed row matches $\hat{\mathbf{u}}^\top$ from the worked example, to the eight decimals shown.
+The printed row matches $\hat{\mathbf{u}}^\top = (0.941038, 0.151292, -0.302585)$ from the worked example. The first entry differs from the exact $0.94103833$ by about two parts in a billion — the round-off you met in Lesson 1 — which is far inside the test tolerance.
 
 ::: warning Rows are outputs, columns are inputs
 A $2 \times 6$ measurement Jacobian times a $6 \times 1$ state error gives a $2 \times 1$ residual. If you build the transpose out of habit, the product $\mathbf{H}\,\delta\mathbf{x}$ is not even defined, and the error gets caught. But the product $\mathbf{H}\mathbf{P}\mathbf{H}^\top$ inside a filter may silently come out the wrong shape in a language that **[[broadcasts|broadcasting]]** — stretches arrays to make mismatched shapes fit. Check shapes explicitly.
@@ -496,5 +496,5 @@ NumPy and similar libraries let you combine arrays of different shapes by stretc
 :::
 
 ::: context observability Where observability comes back
-Later in the course, the estimation module asks a precise question: from a sequence of measurements, can the whole state be worked out? The test stacks $\mathbf{H}$, $\mathbf{H}$ times the dynamics, $\mathbf{H}$ times the dynamics twice, and so on, and checks whether the stack has enough independent rows. The Jacobians of this lesson are the raw material for that test.
+Later in the course, when you study estimation, you will meet a precise question: from a sequence of measurements, can the whole state be worked out? The test stacks $\mathbf{H}$, $\mathbf{H}$ times the dynamics, $\mathbf{H}$ times the dynamics twice, and so on, and checks whether the stack has enough independent rows. The Jacobians of this lesson are the raw material for that test.
 :::
