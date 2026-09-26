@@ -399,7 +399,7 @@ note: `AdcsMode` defined here
    = note: the matched value is of type `AdcsMode`
 ```
 
-This is an **error**, not a warning, naming the missing variant and the exact match that forgot it. In a real flight program the same enum is matched in dozens of places: rate limits, telemetry labels, which actuators may fire. Every one lights up, so nobody can forget one.
+This is an **error**, not a warning, naming the missing variant and the exact match that forgot it. The full message also suggests a fix, adding the arm `AdcsMode::TargetTracking => todo!()`. The `todo!()` macro is a placeholder: it compiles, and panics with "not yet implemented" if it ever runs. It is handy while you write code, and never belongs in code that flies. In a real flight program the same enum is matched in dozens of places: rate limits, telemetry labels, which actuators may fire. Every one lights up, so nobody can forget one.
 
 ::: key
 Match exhaustiveness is a safety feature: adding a variant to an enum breaks every match that does not handle it, so a new vehicle mode cannot silently fall into a default branch. It turns a code-review responsibility into a compiler responsibility.

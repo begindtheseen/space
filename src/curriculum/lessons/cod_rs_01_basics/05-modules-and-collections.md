@@ -1,7 +1,7 @@
 ---
 id: l05-modules-and-collections
 title: Modules and collections
-minutes: 22
+minutes: 24
 covers:
   - Modules, pub, paths, use
   - Slices and arrays; Vec, HashMap, BTreeMap
@@ -113,7 +113,7 @@ This is how Rust protects an **[[invariant|invariant]]**, something that must al
 
 Enums are different. If an enum is `pub`, all its variants and their data are public. That makes sense: code that matches on an enum has to see every variant.
 
-There is also a middle setting, `pub(crate)`, meaning "public inside this crate but not to other crates that use it". A **crate** is one compiled unit: one library or one program, the thing one `Cargo.toml` package builds.
+There is also a middle setting, `pub(crate)`, meaning "public inside this crate but not to other crates that use it". A **[[crate|crate-word]]** is one compiled unit: one library or one program, the thing one `Cargo.toml` package builds.
 
 ::: key
 Items in a module are private by default; `pub` makes them visible to the parent and beyond. `pub struct` makes the type public, and each field needs its own `pub`. The variants of a `pub enum` are all public.
@@ -513,6 +513,14 @@ The compiler starts at `src/main.rs` (for a program) or `src/lib.rs` (for a libr
 An **invariant** is a fact about a value that is true every time anyone can look at it. "Tank level is between zero and capacity." "This quaternion has length one." "These timestamps only increase." If any code anywhere can write the fields, then any code anywhere can break the promise, and proving it holds means reading the whole program. If only the module's methods can write them, you check those few methods and you are done. C++ does the same with `private`, which you met in the C++ modules; Rust makes private the default.
 :::
 
+::: context crate-word Why a crate
+A crate is a wooden shipping box, and Rust's package site is named crates.io, so the word fits: a crate is the unit you build, publish and pull in as a dependency. One Cargo package can hold one library crate and several program crates (each file in `src/bin/` is its own program crate). `pub(crate)` draws the privacy line at the edge of that box.
+:::
+
+::: context panic A controlled stop
+A **panic** stops the current thread on purpose, prints where and why, and by default unwinds the stack so that each value's cleanup code runs. It is Rust's way of saying "this is a bug; continuing would be worse". It is not undefined behavior: an out-of-range read in C might return garbage and carry on, which is far harder to find. Flight code still treats a panic as a failure to be designed out, usually by using `.get` and handling the `None`, which lesson 06 shows.
+:::
+
 ::: context fat-pointer Two numbers pretending to be one
 A slice reference carries its own length, so the function receiving it always knows where the data ends. That is what makes bounds checking possible. In C, a function receiving `const double *xs` gets only the address and must trust a separate `n` passed beside it, and a wrong `n` is a classic source of buffer overruns.
 
@@ -542,6 +550,24 @@ A slice reference carries its own length, so the function receiving it always kn
 
 ::: context vec-growth Why doubling keeps pushes cheap
 Copying everything into a bigger block sounds slow, and one such copy is. But if the capacity doubles each time, the copies get rarer as the list gets longer. Filling a `Vec` to $n$ elements copies at most about $n$ elements in total across all its growths ($4 + 8 + 16 + \dots$ adds up to less than $2n$), so each push costs a small fixed amount on average. Engineers call this **amortized** constant time. The catch for real-time code is the word "average": the one push that triggers a copy is much slower than the rest.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 130" font-family="Inter, Arial, sans-serif">
+  <text x="10" y="30" font-size="12" fill="#1f2a44">cap 4</text>
+  <text x="10" y="70" font-size="12" fill="#1f2a44">cap 8</text>
+  <text x="10" y="110" font-size="12" fill="#1f2a44">cap 16</text>
+  <g stroke="#1f2a44">
+    <rect x="60" y="16" width="72" height="20" fill="#8fb8f0"/>
+    <rect x="60" y="56" width="90" height="20" fill="#8fb8f0"/>
+    <rect x="150" y="56" width="54" height="20" fill="#ffffff"/>
+    <rect x="60" y="96" width="162" height="20" fill="#8fb8f0"/>
+    <rect x="222" y="96" width="126" height="20" fill="#ffffff"/>
+  </g>
+  <text x="140" y="31" font-size="11" fill="#6c7a93">4 used, full</text>
+  <text x="212" y="71" font-size="11" fill="#6c7a93">5 used after 1st copy</text>
+  <text x="230" y="90" font-size="11" fill="#b4232c">9 used after 2nd copy</text>
+</svg>
+```
 :::
 
 ::: context hashing How a phone book with no order finds things fast
