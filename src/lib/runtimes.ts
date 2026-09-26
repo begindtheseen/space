@@ -24,6 +24,7 @@
    what it appears to mean. An exercise that was string-compared says so, and
    a missing compiler says which one and how to install it.
    ========================================================================== */
+import { REMOTE_NOTE_FALLBACK, REMOTE_NOTE_IOS, inTabCppUnavailable, runCppRemote } from '@/lib/cppRemote'
 import type { Lang } from '@/curriculum/types'
 import { getOrbit, hasNativeRunner, isDesktop, type RunRequest, type RunResult, type ToolchainInfo } from './desktop'
 
@@ -31,7 +32,9 @@ export type RunMode = 'execute' | 'check' | 'reference'
 
 /** What C++ does when there is no compiler on the machine to hand it to. */
 const CPP_BROWSER_NOTE =
-  'Compiled for real by clang++ (C++20) and run right here, with the input box as standard input. Exceptions are off in this in-browser toolchain, so throw and try do not compile. The compiler is a one-time download of about 105 MB before compression; in the desktop app, installing Apple’s command line tools uses the Mac’s own compiler instead.'
+  typeof navigator !== 'undefined' && inTabCppUnavailable()
+    ? 'Compiled for real by clang (C++20) on Compiler Explorer (godbolt.org): an iPhone or iPad cannot run the compiler inside the browser, so your code is sent there to compile and run, with the input box as standard input. Exceptions are off, as in the in-browser compiler, so throw and try do not compile.'
+    : 'Compiled for real by clang++ (C++20) and run right here, with the input box as standard input. Exceptions are off in this in-browser toolchain, so throw and try do not compile. The compiler is a one-time download of about 105 MB before compression; in the desktop app, installing Apple’s command line tools uses the Mac’s own compiler instead.'
 
 export interface LangInfo {
   id: Lang
@@ -595,7 +598,18 @@ export async function runCpp(
   const started = Date.now()
   const out: RunOutput = { stdout: '', stderr: '', plots: [], result: null, error: null, ms: 0 }
 
+  // An iPhone or iPad cannot run the compiler in the tab at all; do not make
+  // it download 105 MB to find that out.
+  if (inTabCppUnavailable()) return runCppRemote(code, { stdin: opts.stdin, onStatus: opts.onStatus, note: REMOTE_NOTE_IOS })
+
   const built = await cppCompiler.compile(code, opts.onStatus)
+  // The compiler did not start (not her code failing to compile): compile on
+  // a service instead, and say so, rather than leave C++ dead in this browser.
+  if (built.type === 'failed' && built.stage === 'load') {
+    const remote = await runCppRemote(code, { stdin: opts.stdin, onStatus: opts.onStatus, note: REMOTE_NOTE_FALLBACK })
+    if (remote.error && !remote.error.startsWith('It did not compile')) remote.error = `${built.diagnostics.trim()}\n\n${remote.error}`
+    return remote
+  }
   if (built.type === 'failed' || !built.wasm) {
     out.error =
       built.stage === 'compile'

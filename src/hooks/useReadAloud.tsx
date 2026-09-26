@@ -1,9 +1,20 @@
 /* ============================================================================
    ORBIT — the read-aloud player
    ----------------------------------------------------------------------------
-   Drives the browser's own synthesiser through a lesson, one sentence at a
-   time. The interesting parts are all defensive, because this API is one of
-   the least reliable in the platform:
+   Reads a lesson aloud, one sentence at a time, with one of two engines:
+
+   THE NATURAL VOICE (the default). A neural voice that sounds like a person
+   reading (lib/voice/natural.ts), made on the device by a pool of workers
+   and played through Web Audio. The player asks for the next few pieces of
+   the lesson while the current one plays, so the voice is never waiting on
+   the model; a sentence is split into pieces at its commas for the same
+   reason, so the first sound comes quickly. Pausing suspends the audio
+   clock, which is exact. If the natural voice cannot start — no download, an
+   old browser — the player says so and falls back to the device's voice.
+
+   THE DEVICE'S VOICE. The browser's own synthesiser, kept for anyone who
+   prefers it or cannot download the model. The interesting parts are all
+   defensive, because this API is one of the least reliable in the platform:
 
      - Chromium stops speaking after roughly fifteen seconds unless it is
        nudged. The fix is a periodic pause/resume, which is a real bug
@@ -15,17 +26,19 @@
        later, so the list is read again on `voiceschanged`.
      - `cancel()` sometimes fires an error event on the utterance in flight,
        which must not be reported as a failure. It arrives asynchronously, so
-       a boolean set and cleared around the cancel call is already false by the
-       time it lands: the cancelled utterance then looks like a real error,
-       advances the index, and a second chain starts speaking alongside the
-       first. Every chain therefore carries the epoch it was started in, and a
-       callback from a superseded epoch does nothing.
+       every chain carries the epoch it was started in, and a callback from a
+       superseded epoch does nothing.
      - `pause()` and `resume()` are not guaranteed to land. A resume that does
        not leaves the synthesiser paused while this hook still believes it is
        speaking, which reads as the whole player freezing.
+
+   Both engines share the epoch: bumped by every start and stop, so anything
+   still arriving from a run that has been superseded stays quiet.
    ========================================================================== */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { prepare, usableVoices, type VoiceLike } from '@/lib/speech'
+import { SAMPLE_RATE, naturalVoiceFor, rampPieces, synthesisPieces, type NaturalVoiceInfo } from '@/lib/voice/kokoro'
+import { naturalSupported, naturalVoice, poolSize, type NaturalStatus } from '@/lib/voice/natural'
 
 /** How often to nudge Chromium so it does not fall silent mid-lesson. */
 const KEEPALIVE_MS = 10_000
@@ -38,7 +51,14 @@ const KEEPALIVE_MS = 10_000
  */
 const SETTLE_MS = 260
 
-export type ReadState = 'idle' | 'speaking' | 'paused'
+/** The breath between two sentences of the natural voice, in seconds. */
+const SENTENCE_GAP_S = 0.14
+
+/** Synthesised pieces kept for going back a sentence or two without making them again. */
+const KEEP_PIECES = 24
+
+export type ReadState = 'idle' | 'preparing' | 'speaking' | 'paused'
+export type ReadEngine = 'natural' | 'device'
 
 export interface ReadAloud {
   supported: boolean
@@ -46,8 +66,19 @@ export interface ReadAloud {
   /** Index of the sentence being spoken, or -1. */
   at: number
   total: number
+  /** The device's own voices, for the picker. */
   voices: VoiceLike[]
+  engine: ReadEngine
+  /** Whether the natural voice can run in this browser. */
+  naturalAvailable: boolean
+  naturalStatus: NaturalStatus
+  /** Download progress of the natural voice, 0 to 1. */
+  progress: number
+  /** Something she should know, such as the natural voice falling back. */
+  notice: string | null
   start: (from?: number) => void
+  /** Starts the natural voice's workers ahead of a tap, when the model is already here. */
+  warm: () => void
   pause: () => void
   resume: () => void
   stop: () => void
@@ -57,18 +88,44 @@ export interface ReadAloud {
 export interface ReadAloudOptions {
   /** Lesson markdown. Prepared into speakable sentences internally. */
   markdown: string | null
+  /** The voice setting: '' or undefined for the natural default, `natural:<id>`, or a device voice's name. */
   voiceName?: string
   rate?: number
 }
 
+interface Piece {
+  utt: number
+  text: string
+  /** Last piece of its sentence: a breath follows it. */
+  last: boolean
+}
+
+function audioContextClass(): typeof AudioContext | null {
+  if (typeof window === 'undefined') return null
+  return window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext ?? null
+}
+
 export function useReadAloud({ markdown, voiceName, rate = 1 }: ReadAloudOptions): ReadAloud {
-  const supported = typeof window !== 'undefined' && 'speechSynthesis' in window
+  const deviceSupported = typeof window !== 'undefined' && 'speechSynthesis' in window
+  const naturalAvailable = naturalSupported()
+  const supported = deviceSupported || naturalAvailable
 
   const [voices, setVoices] = useState<VoiceLike[]>([])
   const [state, setState] = useState<ReadState>('idle')
   const [at, setAt] = useState(-1)
+  const [notice, setNotice] = useState<string | null>(null)
+  const [fellBack, setFellBack] = useState(false)
+  const [natural, setNatural] = useState({ status: naturalVoice.status, progress: naturalVoice.progress })
+
+  useEffect(
+    () => naturalVoice.subscribe(() => setNatural({ status: naturalVoice.status, progress: naturalVoice.progress })),
+    [],
+  )
 
   const utterances = useMemo(() => (markdown ? prepare(markdown).utterances : []), [markdown])
+
+  const wantedNatural = naturalVoiceFor(voiceName)
+  const engine: ReadEngine = wantedNatural && naturalAvailable && !fellBack ? 'natural' : 'device'
 
   // The index is held in a ref as well so the chain can advance without the
   // callback closing over a stale value.
@@ -82,37 +139,43 @@ export function useReadAloud({ markdown, voiceName, rate = 1 }: ReadAloudOptions
    */
   const epochRef = useRef(0)
 
-  // Speed and voice are read at the moment each sentence is spoken rather than
-  // captured when playback started. Without this the whole lesson keeps the
-  // settings it began with: the chain is built from callbacks that closed over
-  // the values of one render, so changing the speed changed nothing at all.
+  // Speed, voice and engine are read at the moment each sentence is spoken
+  // rather than captured when playback started. Without this the whole lesson
+  // keeps the settings it began with: the chain is built from callbacks that
+  // closed over the values of one render.
   const rateRef = useRef(rate)
   const voiceNameRef = useRef(voiceName)
+  const engineRef = useRef(engine)
+  const naturalVoiceRef = useRef<NaturalVoiceInfo | null>(wantedNatural)
   useEffect(() => {
     rateRef.current = rate
     voiceNameRef.current = voiceName
-  }, [rate, voiceName])
+    engineRef.current = engine
+    naturalVoiceRef.current = wantedNatural
+  }, [rate, voiceName, engine, wantedNatural])
 
   useEffect(() => {
-    if (!supported) return
+    if (!deviceSupported) return
     const read = () => setVoices(usableVoices(window.speechSynthesis.getVoices()))
     read()
     window.speechSynthesis.addEventListener('voiceschanged', read)
     return () => window.speechSynthesis.removeEventListener('voiceschanged', read)
-  }, [supported])
+  }, [deviceSupported])
+
+  /* ── The device's voice ──────────────────────────────────────────────── */
 
   const pickVoice = useCallback((): SpeechSynthesisVoice | null => {
-    if (!supported) return null
+    if (!deviceSupported) return null
     const all = window.speechSynthesis.getVoices()
     const wanted = voiceNameRef.current && all.find((v) => v.name === voiceNameRef.current)
     if (wanted) return wanted
     const best = usableVoices(all)[0]
     return best ? (all.find((v) => v.name === best.name) ?? null) : null
-  }, [supported])
+  }, [deviceSupported])
 
   const speakFrom = useCallback(
     (index: number, epoch: number) => {
-      if (!supported) return
+      if (!deviceSupported) return
       if (epoch !== epochRef.current) return
       if (index < 0 || index >= utterances.length) {
         atRef.current = -1
@@ -148,46 +211,210 @@ export function useReadAloud({ markdown, voiceName, rate = 1 }: ReadAloudOptions
       window.speechSynthesis.speak(u)
       setState('speaking')
     },
-    [supported, utterances, pickVoice],
+    [deviceSupported, utterances, pickVoice],
   )
 
+  /* ── The natural voice ───────────────────────────────────────────────── */
+
+  const ctxRef = useRef<AudioContext | null>(null)
+  const sourceRef = useRef<AudioBufferSourceNode | null>(null)
+  const piecesRef = useRef(new Map<string, Promise<Float32Array>>())
+
+  /** The pieces of the lesson from a sentence on, in speaking order. */
+  const piecesFrom = useCallback(
+    (from: number): Piece[] => {
+      const out: Piece[] = []
+      for (let i = from; i < utterances.length; i++) {
+        const parts = synthesisPieces(utterances[i]!)
+        parts.forEach((text, j) => out.push({ utt: i, text, last: j === parts.length - 1 }))
+      }
+      return out
+    },
+    [utterances],
+  )
+
+  /** The audio for a piece, made once and kept a while: going back a sentence should not wait. */
+  const audioFor = useCallback((piece: Piece): Promise<Float32Array> => {
+    const voice = naturalVoiceRef.current ?? naturalVoiceFor('')!
+    const speed = rateRef.current
+    const key = `${voice.id}|${speed}|${piece.text}`
+    const cache = piecesRef.current
+    let p = cache.get(key)
+    if (!p) {
+      p = naturalVoice.synth(piece.text, voice, speed).promise
+      p.catch(() => cache.delete(key))
+      cache.set(key, p)
+      while (cache.size > KEEP_PIECES) cache.delete(cache.keys().next().value!)
+    }
+    return p
+  }, [])
+
+  const playPcm = useCallback((pcm: Float32Array, gap: number, epoch: number): Promise<void> => {
+    const ctx = ctxRef.current
+    if (!ctx || epoch !== epochRef.current) return Promise.resolve()
+    const frames = pcm.length + Math.round(gap * SAMPLE_RATE)
+    const buffer = ctx.createBuffer(1, Math.max(1, frames), SAMPLE_RATE)
+    buffer.getChannelData(0).set(pcm)
+    const src = ctx.createBufferSource()
+    src.buffer = buffer
+    src.connect(ctx.destination)
+    sourceRef.current = src
+    return new Promise((resolve) => {
+      src.onended = () => {
+        if (sourceRef.current === src) sourceRef.current = null
+        resolve()
+      }
+      src.start()
+    })
+  }, [])
+
+  const fallBack = useCallback(
+    (reason: string, from: number) => {
+      setFellBack(true)
+      engineRef.current = 'device'
+      setNotice(`The natural voice could not start (${reason}). Reading with this device's voice instead.`)
+      if (!deviceSupported) {
+        setState('idle')
+        return
+      }
+      epochRef.current += 1
+      speakFrom(from, epochRef.current)
+    },
+    [deviceSupported, speakFrom],
+  )
+
+  const runNatural = useCallback(
+    async (from: number, epoch: number) => {
+      setState('preparing')
+      atRef.current = from
+      setAt(from)
+      try {
+        await naturalVoice.ensure()
+      } catch (err) {
+        if (epoch === epochRef.current) fallBack(err instanceof Error ? err.message : String(err), from)
+        return
+      }
+      const plan = rampPieces(piecesFrom(from))
+      // Ask for a few pieces ahead — one per worker, and one more — so the
+      // voice finishes a piece while the one before it is still playing.
+      const ahead = poolSize() + 1
+      for (let k = 0; k < plan.length; k++) {
+        if (epoch !== epochRef.current) return
+        for (let a = k; a < Math.min(plan.length, k + ahead); a++) void audioFor(plan[a]!).catch(() => {})
+        const piece = plan[k]!
+        let pcm: Float32Array
+        try {
+          pcm = await audioFor(piece)
+        } catch {
+          continue // one piece that would not synthesise is skipped, not the lesson
+        }
+        if (epoch !== epochRef.current) return
+        if (!pcm.length) continue
+        atRef.current = piece.utt
+        setAt(piece.utt)
+        setState((s) => (s === 'paused' ? s : 'speaking'))
+        await playPcm(pcm, piece.last ? SENTENCE_GAP_S : 0, epoch)
+      }
+      if (epoch !== epochRef.current) return
+      atRef.current = -1
+      setAt(-1)
+      setState('idle')
+    },
+    [audioFor, fallBack, piecesFrom, playPcm],
+  )
+
+  const silenceNatural = useCallback(() => {
+    naturalVoice.clear()
+    const src = sourceRef.current
+    sourceRef.current = null
+    if (src) {
+      src.onended = null
+      try {
+        src.stop()
+      } catch {
+        /* already stopped */
+      }
+    }
+  }, [])
+
+  /* ── Controls, for either engine ─────────────────────────────────────── */
+
   const stop = useCallback(() => {
-    if (!supported) return
     epochRef.current += 1
-    window.speechSynthesis.cancel()
+    if (deviceSupported) window.speechSynthesis.cancel()
+    silenceNatural()
     atRef.current = -1
     setAt(-1)
     setState('idle')
-  }, [supported])
+  }, [deviceSupported, silenceNatural])
 
   const start = useCallback(
     (from = 0) => {
       if (!supported || utterances.length === 0) return
-      // Bumping first orphans anything the cancel below is about to interrupt,
-      // so the outgoing utterance's error event cannot start a rival chain.
+      // Bumping first orphans anything about to be interrupted, so the
+      // outgoing sentence's end or error cannot start a rival chain.
       epochRef.current += 1
       const epoch = epochRef.current
-      window.speechSynthesis.cancel()
-      speakFrom(Math.max(0, Math.min(from, utterances.length - 1)), epoch)
+      const index = Math.max(0, Math.min(from, utterances.length - 1))
+      if (deviceSupported) window.speechSynthesis.cancel()
+      silenceNatural()
+      if (engineRef.current === 'natural') {
+        // The audio context has to be made and resumed in the tap that started
+        // reading: browsers only allow sound to begin from a gesture.
+        //
+        // On an iPhone, web audio counts as a sound effect and the silent switch
+        // mutes it, where the device's speech voice would still be heard. Saying
+        // this is playback, like a podcast, keeps the natural voice audible.
+        const session = (navigator as Navigator & { audioSession?: { type: string } }).audioSession
+        if (session) session.type = 'playback'
+        if (!ctxRef.current) {
+          const Ctx = audioContextClass()
+          if (Ctx) ctxRef.current = new Ctx({ sampleRate: SAMPLE_RATE })
+        }
+        void ctxRef.current?.resume()
+        void runNatural(index, epoch)
+        return
+      }
+      speakFrom(index, epoch)
     },
-    [supported, utterances.length, speakFrom],
+    [supported, deviceSupported, utterances.length, speakFrom, runNatural, silenceNatural],
   )
 
+  const warm = useCallback(() => {
+    if (engineRef.current !== 'natural' || naturalVoice.status !== 'idle') return
+    // Only when nothing needs downloading: warming must never start a 92 MB
+    // download she did not ask for.
+    void naturalVoice.downloaded().then((here) => {
+      if (here) void naturalVoice.ensure().catch(() => {})
+    })
+  }, [])
+
   const pause = useCallback(() => {
-    if (!supported) return
+    if (engineRef.current === 'natural') {
+      if (state === 'idle') return
+      void ctxRef.current?.suspend()
+      setState('paused')
+      return
+    }
+    if (!deviceSupported) return
     // Only claim paused if there is something to pause. Saying so when the
     // synthesiser is idle leaves the controls offering a resume that can never
     // do anything.
     if (!window.speechSynthesis.speaking) return
     window.speechSynthesis.pause()
     setState('paused')
-  }, [supported])
+  }, [deviceSupported, state])
 
   const resume = useCallback(() => {
-    if (!supported) return
+    if (engineRef.current === 'natural') {
+      void ctxRef.current?.resume()
+      setState(sourceRef.current ? 'speaking' : 'preparing')
+      return
+    }
+    if (!deviceSupported) return
     window.speechSynthesis.resume()
     setState('speaking')
-  }, [supported])
+  }, [deviceSupported])
 
   const skip = useCallback(
     (delta: number) => {
@@ -204,15 +431,13 @@ export function useReadAloud({ markdown, voiceName, rate = 1 }: ReadAloudOptions
   // for twenty seconds, so a speed she just chose appears not to work.
   // Restarting on every keystroke of a drag is the opposite — a stutter per
   // step. So the change is settled first and then the current sentence is
-  // spoken again from its start, which is the shortest restart available:
-  // sentences are capped when the lesson is prepared, so it re-reads a clause,
-  // not a paragraph.
-  const speakFromRef = useRef(speakFrom)
+  // spoken again from its start, which is the shortest restart available.
+  const startRef = useRef(start)
   const stateRef = useRef(state)
   useEffect(() => {
-    speakFromRef.current = speakFrom
+    startRef.current = start
     stateRef.current = state
-  }, [speakFrom, state])
+  }, [start, state])
 
   const settledOnce = useRef(false)
   useEffect(() => {
@@ -222,31 +447,32 @@ export function useReadAloud({ markdown, voiceName, rate = 1 }: ReadAloudOptions
       settledOnce.current = true
       return
     }
-    if (stateRef.current !== 'speaking') return
+    if (stateRef.current !== 'speaking' && stateRef.current !== 'preparing') return
     const id = setTimeout(() => {
       const index = atRef.current
-      if (index < 0 || stateRef.current !== 'speaking') return
-      epochRef.current += 1
-      const epoch = epochRef.current
-      window.speechSynthesis.cancel()
-      speakFromRef.current(index, epoch)
+      if (index < 0 || (stateRef.current !== 'speaking' && stateRef.current !== 'preparing')) return
+      startRef.current(index)
     }, SETTLE_MS)
     return () => clearTimeout(id)
   }, [supported, rate, voiceName])
+
+  // A voice chosen again after a fallback gets another chance.
+  useEffect(() => {
+    setFellBack(false)
+    setNotice(null)
+  }, [voiceName])
 
   // The Chromium keepalive. A pause immediately followed by a resume is a
   // no-op to the listener and resets the watchdog that would otherwise cut
   // the voice off.
   useEffect(() => {
-    if (!supported || state !== 'speaking') return
+    if (!deviceSupported || engine !== 'device' || state !== 'speaking') return
     const id = setInterval(() => {
       const s = window.speechSynthesis
       if (!s.speaking) return
       if (s.paused) {
         // We believe we are speaking and it is paused, which means an earlier
-        // resume did not land. The old guard skipped this case, so one missed
-        // resume silenced the rest of the lesson while the controls went on
-        // showing it as playing.
+        // resume did not land; one missed resume must not silence the rest.
         s.resume()
         return
       }
@@ -254,17 +480,26 @@ export function useReadAloud({ markdown, voiceName, rate = 1 }: ReadAloudOptions
       s.resume()
     }, KEEPALIVE_MS)
     return () => clearInterval(id)
-  }, [supported, state])
+  }, [deviceSupported, engine, state])
 
   // Leaving the lesson, or swapping to another one, must not leave a voice
   // reading a page that is no longer on screen.
   useEffect(() => {
-    if (!supported) return
     return () => {
       epochRef.current += 1
-      window.speechSynthesis.cancel()
+      if (deviceSupported) window.speechSynthesis.cancel()
+      silenceNatural()
+      piecesRef.current.clear()
     }
-  }, [supported, markdown])
+  }, [deviceSupported, markdown, silenceNatural])
+
+  useEffect(
+    () => () => {
+      void ctxRef.current?.close()
+      ctxRef.current = null
+    },
+    [],
+  )
 
   return {
     supported,
@@ -272,7 +507,13 @@ export function useReadAloud({ markdown, voiceName, rate = 1 }: ReadAloudOptions
     at,
     total: utterances.length,
     voices,
+    engine,
+    naturalAvailable,
+    naturalStatus: natural.status,
+    progress: natural.progress,
+    notice,
     start,
+    warm,
     pause,
     resume,
     stop,

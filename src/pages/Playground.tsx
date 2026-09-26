@@ -17,6 +17,7 @@
    string-compared has been misled by the product, and a green tick that means
    nothing is worse than no tick at all.
    ========================================================================== */
+import { inTabCppUnavailable } from '@/lib/cppRemote'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Editor } from '@/components/Editor'
 import { IconArrowRight, IconBulb, IconPause, IconRefresh } from '@/components/icons'
@@ -407,9 +408,10 @@ export function Playground() {
       ) : null}
 
       <p className="track-note">
-        Python, SQL and C++ run inside this browser tab: nothing you write is uploaded, which also means the Python
-        runtime (about 7 MB) and the C++ compiler (about 105 MB) come to you the first time, and your browser then keeps
-        them. The Terminal is a practice one that lives in the page; real shell scripts run in Code mode on the Mac.
+        {inTabCppUnavailable()
+          ? 'Python and SQL run inside this browser tab, and nothing you write in them is uploaded. C++ cannot: an iPhone or iPad cannot run the C++ compiler in a browser, so C++ is compiled and run on Compiler Explorer (godbolt.org), and that code is sent there.'
+          : 'Python, SQL and C++ run inside this browser tab: nothing you write is uploaded, which also means the Python runtime (about 7 MB) and the C++ compiler (about 105 MB) come to you the first time, and your browser then keeps them.'}{' '}
+        The Terminal is a practice one that lives in the page; real shell scripts run in Code mode on the Mac.
       </p>
     </div>
   )
