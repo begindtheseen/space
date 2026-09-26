@@ -4001,7 +4001,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-two-body-equation",
       "title": "Newton's gravitation and the two-body equation",
-      "minutes": 16,
+      "minutes": 21,
       "covers": [
         "Newton law of gravitation and the restricted two-body equation"
       ],
@@ -4010,7 +4010,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-constants-of-motion",
       "title": "Constants of motion – angular momentum, energy and the eccentricity vector",
-      "minutes": 16,
+      "minutes": 22,
       "covers": [
         "constants of motion: specific angular momentum, eccentricity vector, specific energy"
       ],
@@ -4019,7 +4019,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-orbit-equation-conics",
       "title": "The orbit equation and conic sections",
-      "minutes": 17,
+      "minutes": 20,
       "covers": [
         "the orbit equation and conic sections"
       ],
@@ -4028,7 +4028,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-kepler-laws-vis-viva",
       "title": "Kepler's three laws and the vis-viva equation",
-      "minutes": 16,
+      "minutes": 21,
       "covers": [
         "Kepler three laws, derived",
         "vis-viva"
@@ -4038,7 +4038,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-orbit-families",
       "title": "Circular, elliptical, parabolic and hyperbolic orbits",
-      "minutes": 16,
+      "minutes": 20,
       "covers": [
         "circular, elliptical, parabolic and hyperbolic orbits"
       ],
@@ -4047,7 +4047,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-classical-elements",
       "title": "The classical orbital elements and equinoctial alternatives",
-      "minutes": 16,
+      "minutes": 19,
       "covers": [
         "classical orbital elements and equinoctial alternatives"
       ],
@@ -4056,7 +4056,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-state-vector-conversions",
       "title": "State vector to orbital elements and back",
-      "minutes": 17,
+      "minutes": 21,
       "covers": [
         "state vector to orbital element conversion, both directions"
       ],
@@ -4065,7 +4065,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-anomalies-kepler-equation",
       "title": "True, eccentric and mean anomaly, and Kepler's equation",
-      "minutes": 17,
+      "minutes": 20,
       "covers": [
         "true, eccentric and mean anomaly",
         "Kepler equation: elliptic, hyperbolic and parabolic (Barker)"
@@ -4075,7 +4075,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-solving-kepler",
       "title": "Solving Kepler's equation robustly",
-      "minutes": 19,
+      "minutes": 22,
       "covers": [
         "Kepler equation: elliptic, hyperbolic and parabolic (Barker)"
       ],
@@ -4084,7 +4084,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-time-of-flight",
       "title": "Time of flight and analytic propagation",
-      "minutes": 19,
+      "minutes": 23,
       "covers": [
         "time of flight"
       ],
@@ -4093,7 +4093,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-universal-variables",
       "title": "Universal variables and the Stumpff functions",
-      "minutes": 17,
+      "minutes": 20,
       "covers": [
         "universal variables and the Stumpff functions"
       ],
@@ -4102,7 +4102,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-lagrange-coefficients",
       "title": "The Lagrange f and g coefficients",
-      "minutes": 15,
+      "minutes": 17,
       "covers": [
         "Lagrange f and g coefficients"
       ],
@@ -4111,7 +4111,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l13-ground-tracks-orbit-types",
       "title": "Ground tracks and the named orbit types",
-      "minutes": 18,
+      "minutes": 24,
       "covers": [
         "ground tracks and orbit types: LEO, MEO, GEO, GTO, SSO, Molniya, frozen"
       ],
@@ -4120,7 +4120,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l14-tle-sgp4",
       "title": "The TLE format and SGP4",
-      "minutes": 19,
+      "minutes": 24,
       "covers": [
         "TLE format and SGP4"
       ],
@@ -4131,7 +4131,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-impulsive-approximation",
       "title": "Impulsive Δv and when the instantaneous-burn model holds",
-      "minutes": 20,
+      "minutes": 21,
       "covers": [
         "the impulsive approximation and its validity limits"
       ],
@@ -4140,7 +4140,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-hohmann-transfer",
       "title": "The Hohmann transfer",
-      "minutes": 19,
+      "minutes": 18,
       "covers": [
         "Hohmann transfer and its optimality"
       ],
@@ -4149,7 +4149,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-bielliptic-transfer",
       "title": "The bi-elliptic transfer and the crossover ratio",
-      "minutes": 17,
+      "minutes": 20,
       "covers": [
         "bi-elliptic transfer and the crossover ratio"
       ],
@@ -4158,7 +4158,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-one-tangent-transfers",
       "title": "One-tangent transfers",
-      "minutes": 18,
+      "minutes": 24,
       "covers": [
         "one-tangent burns"
       ],
@@ -4167,7 +4167,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-plane-changes",
       "title": "Plane changes and combined manoeuvres",
-      "minutes": 24,
+      "minutes": 32,
       "covers": [
         "plane change and combined plane-change-plus-raise optimisation"
       ],
@@ -4185,7 +4185,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-phasing-rendezvous",
       "title": "Phasing manoeuvres and rendezvous phasing",
-      "minutes": 19,
+      "minutes": 24,
       "covers": [
         "phasing manoeuvres and rendezvous phasing"
       ],
