@@ -3242,7 +3242,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-linear-transformations",
       "title": "Linear transformations of random vectors",
-      "minutes": 24,
+      "minutes": 25,
       "covers": [
         "linear transformations of random vectors"
       ],
@@ -3251,7 +3251,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-sums-and-central-limit-theorem",
       "title": "Sums of random variables and the central limit theorem",
-      "minutes": 24,
+      "minutes": 23,
       "covers": [
         "sums of random variables and the central limit theorem"
       ],
@@ -3270,7 +3270,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-gauss-markov-and-imu-error-models",
       "title": "Gauss-Markov processes and IMU error models",
-      "minutes": 28,
+      "minutes": 25,
       "covers": [
         "white noise, random walk, Gauss-Markov processes"
       ],
@@ -3279,7 +3279,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-autocorrelation-and-power-spectral-density",
       "title": "Autocorrelation and power spectral density",
-      "minutes": 25,
+      "minutes": 23,
       "covers": [
         "power spectral density and autocorrelation"
       ],
@@ -3306,7 +3306,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-monte-carlo-methods-and-convergence-rates",
       "title": "Monte Carlo methods and convergence rates",
-      "minutes": 21,
+      "minutes": 22,
       "covers": [
         "Monte Carlo methods and convergence rates"
       ],
@@ -3326,7 +3326,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-floating-point",
       "title": "Floating point in flight software",
-      "minutes": 18,
+      "minutes": 22,
       "covers": [
         "floating-point representation, machine epsilon, catastrophic cancellation"
       ],
@@ -3335,7 +3335,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-root-finding-and-keplers-equation",
       "title": "Root finding and Kepler's equation",
-      "minutes": 26,
+      "minutes": 22,
       "covers": [
         "root finding: bisection, Newton-Raphson, secant, and convergence rates"
       ],
@@ -3344,7 +3344,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-euler-heun-rk4",
       "title": "Euler, Heun and RK4",
-      "minutes": 28,
+      "minutes": 19,
       "covers": [
         "numerical ODE integration: Euler, Heun, RK4, RK45 / Dormand-Prince",
         "local vs global truncation error"
@@ -3354,7 +3354,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-adaptive-step-size-control",
       "title": "Adaptive step-size control",
-      "minutes": 26,
+      "minutes": 22,
       "covers": [
         "adaptive step-size control"
       ],
@@ -3363,7 +3363,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-symplectic-integrators-and-energy-drift",
       "title": "Symplectic integrators and energy drift",
-      "minutes": 32,
+      "minutes": 24,
       "covers": [
         "symplectic integrators for long orbit propagation",
         "energy drift as a correctness check"
@@ -3373,7 +3373,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-adams-multistep-methods",
       "title": "Adams-Bashforth and Adams-Moulton multistep methods",
-      "minutes": 26,
+      "minutes": 22,
       "covers": [
         "Adams-Bashforth / Adams-Moulton multistep methods"
       ],
@@ -3382,7 +3382,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-stiffness-backward-euler-bdf",
       "title": "Stiffness, backward Euler and BDF",
-      "minutes": 28,
+      "minutes": 25,
       "covers": [
         "stiffness and implicit methods: backward Euler, BDF"
       ],
@@ -3391,7 +3391,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-interpolation-linear-and-cubic-spline",
       "title": "Interpolation, linear and cubic spline",
-      "minutes": 28,
+      "minutes": 26,
       "covers": [
         "interpolation: linear and cubic spline"
       ],
@@ -3400,7 +3400,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-numerical-differentiation-complex-step",
       "title": "Numerical differentiation and complex-step derivatives",
-      "minutes": 28,
+      "minutes": 22,
       "covers": [
         "numerical differentiation and complex-step derivatives"
       ],
@@ -3409,7 +3409,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-quadrature-simpson-gauss-legendre",
       "title": "Quadrature, Simpson and Gauss-Legendre",
-      "minutes": 28,
+      "minutes": 24,
       "covers": [
         "quadrature: Simpson, Gauss-Legendre"
       ],
@@ -3428,8 +3428,8 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
   "t0_m11_optimization": [
     {
       "id": "l01-descent-and-line-search",
-      "title": "Unconstrained optimisation I: optimality conditions, gradient descent and line search",
-      "minutes": 20,
+      "title": "Finding the bottom: descent, line search and Newton's method",
+      "minutes": 24,
       "covers": [
         "unconstrained optimisation: gradient descent, Newton, BFGS, line search, trust region"
       ],
@@ -3484,7 +3484,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-duality-and-the-dual-problem",
       "title": "Duality and the dual problem",
-      "minutes": 28,
+      "minutes": 22,
       "covers": [
         "duality and the dual problem"
       ],
