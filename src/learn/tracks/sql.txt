@@ -1,6 +1,7 @@
 @track sql
 @title SQL
 @name SQL fundamentals
+@plainvoice true
 @blurb Asking a database questions: SELECT through joins, grouping, changing data and CTEs — on a users-and-requests schema like the one your product will have.
 @schema
 CREATE TABLE users (
@@ -1302,16 +1303,110 @@ Change the last line to `WHERE r.id IS NULL;` and leave the rest as it is.
 
 === sql-09 | Inserting rows
 --- teach
-`INSERT` adds rows:
+Last lesson you used `LEFT JOIN` to keep every user, even sam, who has no requests. Up to now every query has only **read** the tables. From this lesson on, you change them. First: adding new rows.
+
+Think of a class register. A new student joins, so you write one new line at the bottom: name, form, start date. The old lines stay as they were. Adding a row to a table works the same way.
+
+The command is **INSERT**: it adds new rows to a table. In a real product, [[every sign-up|app-inserts]] ends with an `INSERT` like the one below.
 
 ```sql
 INSERT INTO users (id, email, plan, created)
 VALUES (5, 'mo@example.com', 'free', '2025-04-02');
 ```
 
-Name the columns you are filling, in the order the values come. Several rows at once: `VALUES (…), (…)`. The table's constraints still apply — this schema has `email … UNIQUE`, so a second `ada@example.com` would be refused. That refusal is the database protecting your data; do not work around it.
+Read it in three parts:
+
+- `INSERT INTO users` means "add a row to the `users` table".
+- `(id, email, plan, created)` is the list of columns you are filling.
+- `VALUES (5, 'mo@example.com', 'free', '2025-04-02')` is the values for those columns, in the **same order**. The first value goes into the first column, the second into the second, and so on.
+
+Text goes in [[single quotes|single-quotes]], like `'free'`. Numbers, like `5`, do not. The date is written as text too, `'2025-04-02'`, in the same year-month-day shape the table already uses.
+
+You name only the columns you are filling. A column you [[leave out of the list|leave-out]] is filled in by the table if it knows how, or refused if it does not. In this lesson, fill every column.
+
+Nothing comes back from an `INSERT`. To see the new row, ask for it with a `SELECT`:
+
+```sql
+SELECT * FROM users WHERE id = 5;
+```
+
+| id | email | plan | created |
+| --- | --- | --- | --- |
+| 5 | mo@example.com | free | 2025-04-02 |
+
+You can add **several rows at once**. Put a comma between the brackets, one bracket per row:
+
+```sql
+INSERT INTO users (id, email, plan, created)
+VALUES (6, 'zoe@example.com', 'free', '2025-04-03'),
+       (7, 'raj@example.com', 'pro',  '2025-04-05');
+```
+
+That adds two rows with one statement.
+
+The table's rules still apply to every row you add. These rules are called [[constraints|constraints]]. In this schema, `email` is marked `UNIQUE`, which means no two users may have the same email. So a second `ada@example.com` is **refused**: the database stops the insert with an [[error|unique-error]] and adds nothing. That refusal is the database protecting your data. Do not try to work around it.
+
+Order can matter too. A request row has a `user_id`, and that number should be the `id` of a real user. So when you add a new user and their first request, add the user first, then the request that [[points at them|parent-first]].
+
+**Watch out:** the column list and the `VALUES` list must line up. If you write the columns as `(id, email, plan, created)` but the values as `(5, 'free', 'mo@example.com', '2025-04-02')`, the database happily stores `free` as the email and `mo@example.com` as the plan. It cannot tell you swapped them. Read the two lists side by side before you run it.
+
+::: context app-inserts Where rows really come from
+Almost no row in a real database is typed by hand. When someone signs up for an app, the app's code runs an `INSERT` into its users table. When a flight computer logs a sensor reading ten times a second, each reading becomes a new row in a telemetry table. When a mission control team writes an entry in the log, that is a row too. The SQL is the same one you are learning here; a program fills in the values instead of you.
+:::
+
+::: context single-quotes Single quotes for text, double quotes for names
+In SQL, single quotes mark a piece of text: `'mo@example.com'`. Double quotes mean something different: they wrap the **name** of a table or column, as in `"created"`. You rarely need double quotes, only when a name contains a space or clashes with a SQL word. To put a single quote inside text, write it twice: `'O''Brien'` stores the name O'Brien. Mixing the two kinds of quote up is one of the most common beginner errors.
+:::
+
+::: context leave-out What happens to a column you skip
+Two things can happen. If the column has a default, the table fills that in. You will write a `DEFAULT` yourself in lesson 11. And in SQLite, a column declared `INTEGER PRIMARY KEY`, like `id` here, picks the next free number on its own: leave `id` out and mo would get 5, one more than the largest id so far. If the column has no default and is marked `NOT NULL`, the insert is refused, because "no value" is not allowed there.
+:::
+
+::: context constraints Rules that live in the table
+A **constraint** is a rule written into the table itself, when the table is made. `NOT NULL` says "this column must have a value". `UNIQUE` says "no two rows may share this value". `PRIMARY KEY` says "this column names each row, so it must be unique". Because the rule is in the table, it holds for every program, every script and every person that writes to it. You will write these rules yourself in lesson 11, and the SQL Advanced course has a whole lesson on them.
+:::
+
+::: context unique-error What the refusal looks like
+Try adding a second user with the email `ada@example.com` and SQLite answers with an error like this:
+
+```sql
+INSERT INTO users (id, email, plan, created)
+VALUES (9, 'ada@example.com', 'free', '2025-05-01');
+-- Error: UNIQUE constraint failed: users.email
+```
+
+The message names the rule (`UNIQUE`) and the column (`users.email`). No row is added, not even a half-finished one. Leaving out a required value gives a similar message: `NOT NULL constraint failed: users.created`. Reading the message slowly usually tells you exactly what to fix.
+:::
+
+::: context parent-first Why the user goes in first
+A request with `user_id` 5 points at user 5, like a luggage tag pointing at its owner. If you add the request before user 5 exists, the tag points at nobody for a moment. Databases that check these links refuse that, so the habit is: the thing being pointed at goes in first.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">
+  <text x="90" y="18" font-size="12" fill="#1f2a44" text-anchor="middle">users</text>
+  <rect x="30" y="28" width="120" height="24" fill="#fff" stroke="#6c7a93"/>
+  <text x="90" y="44" font-size="11" fill="#6c7a93" text-anchor="middle">4  kai@example.com</text>
+  <rect x="30" y="52" width="120" height="24" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="90" y="68" font-size="11" fill="#1f2a44" text-anchor="middle">5  mo@example.com</text>
+  <text x="90" y="98" font-size="11" fill="#1d6fd1" text-anchor="middle">1st: add the user</text>
+  <text x="270" y="18" font-size="12" fill="#1f2a44" text-anchor="middle">requests</text>
+  <rect x="210" y="28" width="120" height="24" fill="#fff" stroke="#6c7a93"/>
+  <text x="270" y="44" font-size="11" fill="#6c7a93" text-anchor="middle">6  user_id 4</text>
+  <rect x="210" y="52" width="120" height="24" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="270" y="68" font-size="11" fill="#1f2a44" text-anchor="middle">7  user_id 5</text>
+  <text x="270" y="98" font-size="11" fill="#1f2a44" text-anchor="middle">2nd: add the request</text>
+  <line x1="208" y1="64" x2="158" y2="64" stroke="#1f2a44" stroke-width="1.5"/>
+  <polygon points="152,64 160,59 160,69" fill="#1f2a44"/>
+  <text x="180" y="130" font-size="11" fill="#1f2a44" text-anchor="middle">the request's user_id points at the user's id</text>
+</svg>
+```
+
+SQLite, the database these lessons use, only checks these links when you switch the check on. Lesson 11 shows how.
+:::
 --- task
-Add a user with id `5`, email `mo@example.com`, plan `free`, created `2025-04-02`. Then add a request for them: id `7`, model `haiku`, `500` input tokens, `90` output tokens, cost `0.0008`.
+Add a user with id `5`, email `mo@example.com`, plan `free`, created `2025-04-02`. Then add a request for them to the `requests` table: id `7`, user_id `5`, model `haiku`, `500` input tokens, `90` output tokens, cost `0.0008`.
+
+The `requests` columns, in order, are `id, user_id, model, input_tokens, output_tokens, cost_usd`.
 --- starter
 -- Insert the new user, then their first request.
 
@@ -1322,7 +1417,11 @@ VALUES (5, 'mo@example.com', 'free', '2025-04-02');
 INSERT INTO requests (id, user_id, model, input_tokens, output_tokens, cost_usd)
 VALUES (7, 5, 'haiku', 500, 90, 0.0008);
 --- hint
-Two `INSERT INTO … VALUES (…);` statements — the user first, since the request refers to them.
+You need two separate `INSERT INTO … VALUES (…);` statements, each ending in a semicolon. The user goes first, because the request points at them.
+--- hint
+The first one is the example from the lesson, word for word: `INSERT INTO users (id, email, plan, created) VALUES (5, 'mo@example.com', 'free', '2025-04-02');`
+--- hint
+The second one starts `INSERT INTO requests (id, user_id, model, input_tokens, output_tokens, cost_usd)` and its values are `(7, 5, 'haiku', 500, 90, 0.0008)`. Only `'haiku'` is text, so only it gets quotes.
 --- check query | The user exists
 SELECT email, plan, created FROM users WHERE id = 5
 => [["mo@example.com", "free", "2025-04-02"]]
@@ -1335,16 +1434,127 @@ SELECT COUNT(*) FROM users
 
 === sql-10 | Updating and deleting
 --- teach
-`UPDATE` changes existing rows; `DELETE` removes them. Both take a `WHERE` — and both change **every** row when you forget it:
+Last lesson you added new rows with `INSERT`. This lesson does the other two jobs: changing rows that are already there, and removing them.
+
+Back to the class register. A student moves to a different form, so you cross out the old form and write the new one on the same line. Another student leaves the school, so you strike out their whole line. SQL has one command for each.
+
+**UPDATE** changes values in rows that already exist:
 
 ```sql
 UPDATE users SET plan = 'pro' WHERE id = 3;
+```
+
+Read it left to right:
+
+- `UPDATE users` means "change rows in the `users` table".
+- `SET plan = 'pro'` means "make the `plan` column hold `'pro'`".
+- `WHERE id = 3` picks which rows to change, the same `WHERE` you have used since the lesson "Filtering with WHERE".
+
+User 3 is sam. Before, sam's row said `free`. After:
+
+| id | email | plan | created |
+| --- | --- | --- | --- |
+| 3 | sam@example.com | pro | 2025-03-20 |
+
+Every other row is untouched, because only sam's row passed the `WHERE`. One `UPDATE` can also [[change more than one column|set-several]] at a time.
+
+**DELETE** removes whole rows:
+
+```sql
 DELETE FROM requests WHERE cost_usd = 0;
 ```
 
-A good habit: write the `SELECT … WHERE …` first, check it returns exactly the rows you mean, then turn it into the `UPDATE` or `DELETE`.
+- `DELETE FROM requests` means "remove rows from the `requests` table".
+- `WHERE cost_usd = 0` picks which ones: here, requests that cost nothing.
+
+There is no column list, because `DELETE` always takes away the [[whole row|one-value]]. In our data no request costs exactly 0, so this statement removes no rows at all. That is not an error; zero rows matched.
+
+Now the dangerous part. The `WHERE` is optional. Leave it out and the command runs on **every row** in the table:
+
+```sql
+UPDATE users SET plan = 'pro';   -- all four users are now pro
+DELETE FROM requests;            -- every request is gone
+```
+
+The database does not ask "are you sure?". It does what you wrote, and there is [[no undo button|no-undo]].
+
+So here is a good habit. Write the `SELECT` first, with the `WHERE` you plan to use, and look at what comes back. The `<` sign means "less than":
+
+```sql
+SELECT id, cost_usd FROM requests WHERE cost_usd < 0.002;
+```
+
+| id | cost_usd |
+| --- | --- |
+| 3 | 0.0012 |
+| 5 | 0.0006 |
+
+Two rows, and they are the ones you meant. Now keep the `WHERE` exactly as it is and [[swap the front of the statement|select-first]]:
+
+```sql
+DELETE FROM requests WHERE cost_usd < 0.002;
+```
+
+It removes exactly those two rows, the ones you saw a moment ago. (Many real apps go further and [[never delete important rows at all|soft-delete]].)
+
+**Watch out:** the missing `WHERE` is the real mistake, and it is easy to make. You write `DELETE FROM requests`, press run before typing the rest, and the whole table is empty. Always write the `WHERE` before you run anything, and check it with a `SELECT` first.
+
+::: context set-several Changing more than one column
+`SET` can change several columns at once. Separate them with commas:
+
+```sql
+UPDATE users
+SET plan = 'pro', created = '2025-01-01'
+WHERE id = 3;
+```
+
+Both columns change in the same step, and only in the rows the `WHERE` picks. The right side can also be a calculation that uses the old value. `SET input_tokens = input_tokens + 100` adds 100 to whatever was there before. The database reads each row's old value, works out the new one and writes it back.
+:::
+
+::: context one-value Emptying one value instead of the whole row
+`DELETE` cannot remove one cell. If you want to clear a single value and keep the rest of the row, that is an `UPDATE` that sets the value to `NULL`, the "no value" marker you met with `LEFT JOIN`:
+
+```sql
+UPDATE requests SET model = NULL WHERE id = 3;
+```
+
+In this schema that one is refused, because `model` is `NOT NULL`: every request must name its model. The rule protects the data, exactly as `UNIQUE` did last lesson.
+:::
+
+::: context no-undo Why there is no undo
+A database is not a document with an undo history. Once a statement finishes, the change is saved for good, and other programs may already be reading the new values. Teams protect themselves in three ways: backups taken on a schedule; **transactions**, which let you group several changes and cancel them all before they are saved (the SQL Advanced course has a lesson on them); and some tools, like MySQL's "safe updates" mode, that refuse an `UPDATE` or `DELETE` whose `WHERE` does not pick rows by a key column.
+:::
+
+::: context select-first Same WHERE, different verb
+The trick works because the `WHERE` does the same job in all three commands. It picks the rows. Only the first words change what happens to them.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">
+  <rect x="10" y="20" width="150" height="30" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="85" y="40" font-size="12" fill="#1f2a44" text-anchor="middle">SELECT * FROM requests</text>
+  <rect x="10" y="100" width="150" height="30" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="85" y="120" font-size="12" fill="#1f2a44" text-anchor="middle">DELETE FROM requests</text>
+  <rect x="200" y="60" width="150" height="30" fill="#fff" stroke="#1f2a44" stroke-width="2"/>
+  <text x="275" y="80" font-size="12" fill="#1f2a44" text-anchor="middle">WHERE cost_usd &lt; 0.002</text>
+  <line x1="162" y1="35" x2="198" y2="70" stroke="#1f2a44" stroke-width="1.5"/>
+  <line x1="162" y1="115" x2="198" y2="80" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="85" y="72" font-size="11" fill="#1d6fd1" text-anchor="middle">1. look at the rows</text>
+  <text x="85" y="146" font-size="11" fill="#b4232c" text-anchor="middle">2. then remove them</text>
+  <text x="275" y="112" font-size="11" fill="#6c7a93" text-anchor="middle">kept exactly the same</text>
+</svg>
+```
+
+If the `SELECT` shows the wrong rows, fix the `WHERE` there, where it is harmless, before it goes anywhere near a `DELETE`.
+:::
+
+::: context soft-delete Many apps never really delete
+Real products often avoid `DELETE` for anything important. Instead they keep the row and mark it, with a column like `deleted` or `revoked` set to 1 by an `UPDATE`. Every query then adds `WHERE deleted = 0`. This is called a **soft delete**. It means a mistake can be reversed, and there is a record of what existed and when. You will build a table with a `revoked` column like this in the next lesson.
+:::
 --- task
-Upgrade `lin@example.com` to the `pro` plan (match on the email), and delete every request with **fewer than 500** input tokens.
+Do two things, in this order:
+
+1. Upgrade the user with email `lin@example.com` to the `pro` plan. Pick lin's row by matching the `email` column, not the id.
+2. Delete every request with **fewer than 500** input tokens (the `input_tokens` column).
 --- starter
 -- Upgrade lin, then delete the small requests.
 
@@ -1352,7 +1562,11 @@ Upgrade `lin@example.com` to the `pro` plan (match on the email), and delete eve
 UPDATE users SET plan = 'pro' WHERE email = 'lin@example.com';
 DELETE FROM requests WHERE input_tokens < 500;
 --- hint
-`UPDATE users SET plan = 'pro' WHERE email = 'lin@example.com';`
+This is one `UPDATE` and one `DELETE`, each with its own `WHERE` and its own semicolon. If you like, check each `WHERE` with a `SELECT` first.
+--- hint
+The first one: `UPDATE users SET plan = 'pro' WHERE email = 'lin@example.com';` The email is text, so it goes in single quotes.
+--- hint
+The second one starts `DELETE FROM requests` and needs a `WHERE` that keeps rows with `input_tokens` less than `500`. "Less than" is `<`.
 --- check query | lin is on pro
 SELECT plan FROM users WHERE email = 'lin@example.com'
 => [["pro"]]
@@ -1368,7 +1582,32 @@ SELECT COUNT(*) FROM requests
 
 === sql-11 | Creating tables
 --- teach
-`CREATE TABLE` defines a table: each column's name, type and rules.
+Last lesson you changed and removed rows with `UPDATE` and `DELETE`. Every table so far was already there when you arrived. Now you build one of your own. In the task you make a table of [[API keys|api-key]].
+
+Think of printing a blank register page. Before anyone writes a line, you decide the column headings, what kind of thing goes under each one, and the rules printed at the top: "date: required", "each student number only once". Creating a table is making that blank page.
+
+The command is **CREATE TABLE**: it defines a new, empty table, with each column's name, type and rules.
+
+Start with the smallest possible table:
+
+```sql
+CREATE TABLE notes (
+  id INTEGER,
+  body TEXT
+);
+```
+
+- `CREATE TABLE notes` names the new table `notes`.
+- Inside the brackets, one column per line: its name, then its **type**, the [[kind of value it holds|column-types]].
+- A comma goes between columns, but **not** after the last one.
+
+The types you will see here:
+
+- `INTEGER`: a whole number, like `5` or `1200`.
+- `TEXT`: words and other text, like `'mo@example.com'`.
+- `REAL`: a number with a decimal point, like the `0.0087` in `cost_usd`.
+
+Now add rules. Here is a table for invoices, the bills a user has to pay:
 
 ```sql
 CREATE TABLE invoices (
@@ -1379,17 +1618,96 @@ CREATE TABLE invoices (
 );
 ```
 
-- `PRIMARY KEY` — uniquely identifies each row
-- `NOT NULL` — a value is required
-- `REFERENCES users(id)` — a **foreign key**: each `user_id` is meant to point at a real row in `users`
-- `DEFAULT 0` — the value when an insert leaves it out
-- `UNIQUE` — no two rows may share the value
+The money is stored as a whole number of [[cents|cents]], and `paid` holds [[0 for no, 1 for yes|booleans]]. The words after each type are the rules, one idea each:
 
-Constraints are rules the database enforces for every writer, forever — cheaper than remembering them in every piece of code.
+- `PRIMARY KEY`: this column uniquely identifies each row. No two invoices share an `id`.
+- `NOT NULL`: a value is required. An insert that leaves `amount_cents` empty is refused.
+- `REFERENCES users(id)`: a **[[foreign key|foreign-key]]**. Each `user_id` is meant to point at a real row in `users`, at its `id` column.
+- `DEFAULT 0`: the value used when an insert leaves this column out.
+- `UNIQUE`: no two rows may share the value. (You met it on `email` in the lesson "Inserting rows".)
 
-One catch in SQLite, the database these lessons run on: it records a foreign key but only **enforces** it once the connection has run `PRAGMA foreign_keys = ON;`. Until then, an `api_keys` row pointing at user 99 is accepted. Most other databases (PostgreSQL, MySQL) always enforce it; in SQLite, turn it on first.
+These rules are the **constraints** from "Inserting rows", and now you are the one writing them. Constraints are rules the database enforces for every writer, forever. That is cheaper than remembering them in every piece of code.
+
+Here is `DEFAULT` at work. The insert names only three columns and leaves `paid` out:
+
+```sql
+INSERT INTO invoices (id, user_id, amount_cents) VALUES (1, 2, 1500);
+SELECT * FROM invoices;
+```
+
+| id | user_id | amount_cents | paid |
+| --- | --- | --- | --- |
+| 1 | 2 | 1500 | 0 |
+
+The table filled in `paid` with `0` on its own.
+
+One catch in SQLite, the database these lessons run on. It records a foreign key, but it only **enforces** it once the connection has run this line:
+
+```sql
+PRAGMA foreign_keys = ON;
+```
+
+A [[PRAGMA|pragma]] is a SQLite settings command. Until that line runs, an `api_keys` row pointing at user 99, who does not exist, is accepted without a word. Most other databases, like PostgreSQL and MySQL, always enforce foreign keys. In SQLite, turn it on first.
+
+**Watch out:** a comma after the last column. `body TEXT,` followed by `);` gives the error `near ")": syntax error`, because SQLite expects another column after the comma. Every column but the last ends with a comma.
+
+::: context api-key What an API key is
+An **API key** is a long secret string that lets a program use a service, the way a key card lets you into a building. When an app sends a request to an AI model, it includes its key so the service knows whose account to charge. A user might have several keys, one per laptop or server, each with a label. Keys are not deleted when they stop being trusted; they are marked **revoked**, so the service refuses them but still has a record of them. That is the `revoked` column in this lesson's task.
+:::
+
+::: context column-types SQLite is relaxed about types
+Most databases refuse a value of the wrong type. SQLite is unusual: in an ordinary table, the type is a strong hint, not a hard rule. Put the text `'abc'` into an `INTEGER` column and SQLite stores it as text anyway. Since version 3.37 you can add the word `STRICT` after the closing bracket, `CREATE TABLE s (n INTEGER) STRICT;`, and then it refuses: `cannot store TEXT value in INTEGER column s.n`. Either way, choose the type that matches what the column really holds.
+:::
+
+::: context cents Why money is kept in whole cents
+Numbers with a decimal point are stored in binary, and most decimal fractions, like 0.1, cannot be stored exactly. Adding many of them lets tiny errors creep in. That is why you needed `ROUND` in lesson 5. Whole numbers do not have this problem. So billing systems store money as a whole number of the smallest unit: 1500 cents instead of 15.00 dollars. They divide by 100 only when they show it to a person.
+:::
+
+::: context booleans Yes and no as 0 and 1
+A column that answers a yes-or-no question is called a **boolean**. SQLite has no separate boolean type, so the habit is an `INTEGER` holding `0` for no (false) and `1` for yes (true). `paid = 0` means "not paid yet". Writing `TRUE` and `FALSE` in a query also works in SQLite, because they are another way of writing 1 and 0.
+:::
+
+::: context foreign-key A column that points at another table
+A foreign key is a column whose values are the ids of rows in another table. It is "foreign" because the id it holds belongs to a different table.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 170" font-family="Inter, Arial, sans-serif">
+  <text x="85" y="18" font-size="12" fill="#1f2a44" text-anchor="middle">invoices</text>
+  <rect x="20" y="28" width="130" height="24" fill="#fff" stroke="#1f2a44"/>
+  <text x="85" y="44" font-size="11" fill="#1f2a44" text-anchor="middle">id 1   user_id 2</text>
+  <rect x="20" y="52" width="130" height="24" fill="#fff" stroke="#b4232c"/>
+  <text x="85" y="68" font-size="11" fill="#b4232c" text-anchor="middle">id 2   user_id 99</text>
+  <text x="275" y="18" font-size="12" fill="#1f2a44" text-anchor="middle">users</text>
+  <rect x="210" y="28" width="130" height="22" fill="#fff" stroke="#6c7a93"/>
+  <text x="275" y="43" font-size="11" fill="#6c7a93" text-anchor="middle">id 1   ada</text>
+  <rect x="210" y="50" width="130" height="22" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="275" y="65" font-size="11" fill="#1f2a44" text-anchor="middle">id 2   lin</text>
+  <rect x="210" y="72" width="130" height="22" fill="#fff" stroke="#6c7a93"/>
+  <text x="275" y="87" font-size="11" fill="#6c7a93" text-anchor="middle">id 3   sam</text>
+  <rect x="210" y="94" width="130" height="22" fill="#fff" stroke="#6c7a93"/>
+  <text x="275" y="109" font-size="11" fill="#6c7a93" text-anchor="middle">id 4   kai</text>
+  <line x1="152" y1="40" x2="204" y2="60" stroke="#1d6fd1" stroke-width="1.5"/>
+  <polygon points="208,61 199,63 202,55" fill="#1d6fd1"/>
+  <line x1="152" y1="64" x2="190" y2="140" stroke="#b4232c" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <text x="200" y="152" font-size="11" fill="#b4232c">user 99: no such row</text>
+</svg>
+```
+
+With `PRAGMA foreign_keys = ON`, SQLite refuses the red one: `FOREIGN KEY constraint failed`.
+:::
+
+::: context pragma Settings, one connection at a time
+`PRAGMA` is a command that only SQLite has. It reads or changes a setting of the database engine instead of touching your data. `PRAGMA foreign_keys;` on its own tells you the current setting: 0 for off, 1 for on. The setting lasts only for the current connection, so apps run it every time they open the database. It is off by default because foreign-key checks arrived in SQLite 3.6.19, in 2009, and switching them on for everyone could have broken older programs. The SQL Advanced course has a whole lesson on foreign keys.
+:::
 --- task
-Create a table `api_keys` with: `id` (integer primary key), `user_id` (integer, required, referencing `users(id)`), `label` (text, required), and `revoked` (integer, required, default `0`). Then insert one key: id `1`, user `1`, label `laptop` — leaving `revoked` to its default.
+Create a table called `api_keys` with four columns:
+
+- `id`: an integer, the primary key.
+- `user_id`: an integer, required (`NOT NULL`), referencing `users(id)`.
+- `label`: text, required (`NOT NULL`).
+- `revoked`: an integer, required (`NOT NULL`), with a default of `0`.
+
+Then insert one key: id `1`, user_id `1`, label `laptop`. Leave `revoked` out of the insert, so it takes its default.
 --- starter
 -- CREATE TABLE api_keys (...);
 
@@ -1403,9 +1721,11 @@ CREATE TABLE api_keys (
 
 INSERT INTO api_keys (id, user_id, label) VALUES (1, 1, 'laptop');
 --- hint
-Four columns, comma-separated, inside `CREATE TABLE api_keys ( … );`.
+The `invoices` table in the lesson has the same shape. Start from `CREATE TABLE api_keys (` and write one column per line, with a comma after every column but the last. Close it with `);`.
 --- hint
-The insert names only `id, user_id, label`; `revoked` fills itself in.
+The columns are `id INTEGER PRIMARY KEY`, `user_id INTEGER NOT NULL REFERENCES users(id)`, `label TEXT NOT NULL` and `revoked INTEGER NOT NULL DEFAULT 0`.
+--- hint
+The insert names only `id, user_id, label`: `INSERT INTO api_keys (id, user_id, label) VALUES (1, 1, 'laptop');`. The table fills in `revoked` itself.
 --- check query | The key is there, and revoked defaulted to 0
 SELECT user_id, label, revoked FROM api_keys
 => [[1, "laptop", 0]]
@@ -1416,16 +1736,141 @@ SELECT "notnull" FROM pragma_table_info('api_keys') WHERE name = 'label'
 SELECT "table", "from", "to" FROM pragma_foreign_key_list('api_keys')
 => [["users", "user_id", "id"]]
 
-=== sql-12 | Subqueries and WITH
+=== sql-12 | Subqueries: a query inside a query
 --- teach
-A query can use the result of another. A **subquery** in brackets works anywhere a value or table would:
+Last lesson you built a table of your own. Now back to asking questions, with a new power: one query can use the answer of another.
+
+Picture finding everyone in your class who is taller than average. You cannot do it in one go. First you work out the average height on scrap paper. Then you go down the list and compare each person with that number. SQL lets you write the scrap-paper step right inside the main query.
+
+That inner step is a **subquery**: a whole `SELECT` in round brackets, used inside another query.
+
+Start with the scrap-paper step on its own. You met `AVG`, the average, in the lesson "Aggregates":
+
+```sql
+SELECT AVG(cost_usd) FROM requests;
+```
+
+It gives one value: about `0.02003`.
+
+Now put that query, in brackets, where the number would go in a `WHERE`. The `>` sign means "greater than":
 
 ```sql
 SELECT * FROM requests
 WHERE cost_usd > (SELECT AVG(cost_usd) FROM requests);
 ```
 
-When a query gets layered, name the steps with `WITH` — a **common table expression** (CTE). Each step reads like a small table:
+The database [[works out the inner query first|inside-out]], gets the average, and then checks every request against it. Two requests cost more than the average:
+
+| id | user_id | model | input_tokens | output_tokens | cost_usd |
+| --- | --- | --- | --- | --- | --- |
+| 2 | 1 | sonnet | 5400 | 910 | 0.0298 |
+| 4 | 2 | sonnet | 15000 | 2100 | 0.0765 |
+
+Why not type `0.02` instead? Because the average [[changes as the data changes|live-numbers]]. The subquery works it out fresh every time the query runs.
+
+A subquery works anywhere a **value** or a **table** would. That was the value case. Here is the table case. First, a query that counts calls per user, with `GROUP BY` from lesson 6:
+
+```sql
+SELECT user_id, COUNT(*) AS calls FROM requests GROUP BY user_id;
+```
+
+| user_id | calls |
+| --- | --- |
+| 1 | 3 |
+| 2 | 2 |
+| 4 | 1 |
+
+That result is a small table. Put it in brackets after `FROM`, and the outer query reads it like any other table:
+
+```sql
+SELECT MAX(calls)
+FROM (SELECT user_id, COUNT(*) AS calls FROM requests GROUP BY user_id);
+```
+
+The answer is `3`: the most calls any one user has made. You can also [[give the inner table a name|derived-name]].
+
+**Watch out:** a subquery used as a value has to give back exactly one value: one column, one row. This one returns three rows, one for each haiku request:
+
+```sql
+SELECT email FROM users
+WHERE id = (SELECT user_id FROM requests WHERE model = 'haiku');
+```
+
+SQLite [[quietly uses the first row|first-row]] and gives back only `ada@example.com`. No error, and a wrong answer. Run the inner query on its own first, and check it returns one value.
+
+There are [[more shapes of subquery|later-subqueries]] to come. This one, a single value in a `WHERE`, is the one you will write most.
+
+::: context inside-out Reading from the inside out
+When a subquery does not depend on the outer query, the database runs it once, before anything else. Its answer then sits in the outer query like a plain number.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 130" font-family="Inter, Arial, sans-serif">
+  <rect x="10" y="10" width="340" height="70" fill="#fff" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="20" y="30" font-size="11" fill="#1f2a44">SELECT * FROM requests WHERE cost_usd &gt;</text>
+  <rect x="30" y="42" width="230" height="28" fill="#8fb8f0" stroke="#1d6fd1"/>
+  <text x="145" y="60" font-size="11" fill="#1f2a44" text-anchor="middle">(SELECT AVG(cost_usd) FROM requests)</text>
+  <text x="305" y="60" font-size="11" fill="#1d6fd1" text-anchor="middle">1st</text>
+  <line x1="145" y1="72" x2="145" y2="98" stroke="#1d6fd1" stroke-width="1.5"/>
+  <polygon points="145,104 140,96 150,96" fill="#1d6fd1"/>
+  <text x="180" y="120" font-size="11" fill="#1f2a44" text-anchor="middle">becomes 0.02003, then every row is compared with it</text>
+</svg>
+```
+
+The inner box finishes first; the outer query only ever sees its one answer. The next course meets subqueries that run again for every row.
+:::
+
+::: context live-numbers Numbers that go stale
+A number typed into a query is a snapshot. The average cost today is 0.02003; after a thousand new requests it will be something else, and a query with `0.02` typed in will quietly give the wrong list. Dashboards and reports run the same query every hour or every day, so engineers write the rule ("above average") rather than today's answer. Checkers in these lessons sometimes test for exactly this.
+:::
+
+::: context derived-name Naming the table in brackets
+You can put a name after the closing bracket, like this:
+
+```sql
+SELECT MAX(per_user.calls)
+FROM (SELECT user_id, COUNT(*) AS calls FROM requests GROUP BY user_id) AS per_user;
+```
+
+In SQLite the name is optional. PostgreSQL insisted on one until version 16, so many engineers always write it. A table made on the spot by a subquery is often called a **derived table**. Next lesson shows a tidier way to name steps like this one.
+:::
+
+::: context first-row One row expected, three found
+When a value-subquery returns several rows, SQLite does not complain. It takes the first row it happens to find and throws the rest away. PostgreSQL stops instead, with the error "more than one row returned by a subquery used as an expression". The PostgreSQL behaviour is safer: a loud error is better than a quiet wrong answer. If you want "any of these values", that needs `IN`, which the next course teaches.
+:::
+
+::: context later-subqueries Where subqueries come back
+The SQL Intermediate course picks subqueries up again. You will use a subquery that gives back a **list**, with `IN`: `WHERE id IN (SELECT user_id FROM requests WHERE model = 'sonnet')` finds ada and lin. You will also meet **correlated** subqueries, which look at the outer row and run once for each one, and `EXISTS`, which asks "is there at least one matching row?".
+:::
+--- task
+Return the `id`, `model` and `input_tokens` of every request that used **more input tokens than the average** request.
+
+Work the average out with a subquery, `AVG(input_tokens)`, inside the `WHERE`. Do not type the average in as a number.
+--- starter
+SELECT id, model, input_tokens FROM requests;
+--- solution
+SELECT id, model, input_tokens
+FROM requests
+WHERE input_tokens > (SELECT AVG(input_tokens) FROM requests);
+--- hint
+First run `SELECT AVG(input_tokens) FROM requests;` on its own to see the average. That whole query becomes your subquery.
+--- hint
+Add a `WHERE` to the starter that compares `input_tokens` with something, using `>` for "greater than".
+--- hint
+The shape is `WHERE input_tokens > (SELECT AVG(input_tokens) FROM requests)`, with the subquery inside round brackets.
+--- check result | Only requests 2 and 4 are above the average
+[[2, "sonnet", 5400], [4, "sonnet", 15000]]
+--- check source | Uses a subquery in brackets
+\(\s*[Ss][Ee][Ll][Ee][Cc][Tt]\b
+--- check source absent | Does not type the average in
+4150
+
+=== sql-12b | WITH: naming the steps
+--- teach
+Last lesson you put one query inside another, in brackets. That works well for one step. With two or three steps, brackets inside brackets get hard to read. This lesson shows how to give each step a name.
+
+Think of a recipe. "Make the sauce. Boil the pasta. Mix the sauce into the pasta." Each step has a name, and later steps use the names of earlier ones. You never have to write the sauce recipe again inside the last step.
+
+In SQL, a named step is a **CTE**, short for **[[common table expression|cte-name]]**: a query you give a name to at the top, with the word `WITH`, and then use like a table.
 
 ```sql
 WITH spend AS (
@@ -1436,9 +1881,100 @@ WITH spend AS (
 SELECT * FROM spend WHERE total > 0.01;
 ```
 
-CTEs are how real reporting queries stay readable: each step has a name, and you can run any one of them on its own to check it.
+Read it in two parts:
+
+- `WITH spend AS ( … )` means "call the result of this query `spend`". The query inside works out each user's total spend.
+- The `SELECT` after the closing bracket is the main query. It reads from `spend` as if it were a table.
+
+Here is what `spend` holds:
+
+| user_id | total |
+| --- | --- |
+| 1 | 0.0397 |
+| 2 | 0.0771 |
+| 4 | 0.0034 |
+
+It only has rows for [[users who have made requests|missing-sam]]. The main query keeps the two totals above `0.01`: users 1 and 2.
+
+The name `spend` exists only [[for this one statement|temporary]]. Run `SELECT * FROM spend;` on its own afterwards and you get `no such table: spend`.
+
+A CTE can be used like any table: joined, filtered, or read inside a subquery. Here it is joined to `users` for the emails, as in lesson 7. `ROUND(x, 4)`, from lesson 5, rounds to four decimal places:
+
+```sql
+WITH spend AS (
+  SELECT user_id, SUM(cost_usd) AS total
+  FROM requests
+  GROUP BY user_id
+)
+SELECT u.email, ROUND(s.total, 4) AS total
+FROM spend s
+JOIN users u ON u.id = s.user_id
+WHERE s.total > 0.01;
+```
+
+| email | total |
+| --- | --- |
+| ada@example.com | 0.0397 |
+| lin@example.com | 0.0771 |
+
+And inside a subquery, the average of the totals is `(SELECT AVG(total) FROM spend)`. That gives about `0.04007`.
+
+CTEs are how [[real reporting queries|reports]] stay readable. Each step has a name, and you can run any one of them on its own to check it. You can also put [[several steps in one WITH|several-steps]].
+
+**Watch out:** no semicolon after the `WITH` part. The `WITH spend AS ( … )` and the main `SELECT` are one statement, so the only semicolon comes at the very end. A `;` straight after the closing bracket cuts the statement in half, and you get an error.
+
+::: context cte-name A long name for a simple idea
+"Common table expression" is the official name in the SQL standard, which added `WITH` in 1999. "Table" because the named step behaves like a table; "expression" because it is worked out from a query rather than stored. Nobody says the full name out loud. Engineers say "CTE" or "a WITH query". SQLite has understood `WITH` since version 3.8.3, released in 2014.
+:::
+
+::: context missing-sam Why sam is not in the average
+`spend` groups the `requests` table, and sam has no requests, so there is no group for sam at all. An average over `spend` is therefore the average over users who made at least one request: (0.0397 + 0.0771 + 0.0034) ÷ 3 ≈ 0.04007. If you wanted sam counted with a total of 0, you would start from `users` with a `LEFT JOIN` and use `COALESCE(total, 0)`, the tools from lesson 8. Which one is right depends on the question you are asking.
+:::
+
+::: context temporary Not saved anywhere
+A CTE is not a new table in the database. Nothing is written to disk, and no other query can see it. It lives for one statement and then it is gone. If you want a named query that stays around for everyone to use, SQL has **views**: saved queries that behave like tables. The SQL Advanced course has a lesson on them.
+:::
+
+::: context reports How CTEs are used for real
+Picture the query behind a monthly bill: take this month's requests, add them up per user, attach each user's plan, apply the plan's price, keep the users who owe something. Written as one query with brackets inside brackets, nobody can check it. Written as a CTE per step, each step can be run on its own, and a bug can be found step by step. The same goes for mission data: one step cleans the sensor readings, the next averages them per minute, the last flags the minutes that go out of range.
+:::
+
+::: context several-steps One WITH, several steps
+Separate the steps with commas. Each later step can read the earlier ones:
+
+```sql
+WITH spend AS (
+  SELECT user_id, SUM(cost_usd) AS total
+  FROM requests GROUP BY user_id
+),
+big AS (
+  SELECT * FROM spend WHERE total > 0.01
+)
+SELECT * FROM big;
+```
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 90" font-family="Inter, Arial, sans-serif">
+  <rect x="10" y="25" width="90" height="36" fill="#fff" stroke="#6c7a93"/>
+  <text x="55" y="47" font-size="12" fill="#1f2a44" text-anchor="middle">requests</text>
+  <rect x="135" y="25" width="90" height="36" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="180" y="47" font-size="12" fill="#1f2a44" text-anchor="middle">spend</text>
+  <rect x="260" y="25" width="90" height="36" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="305" y="47" font-size="12" fill="#1f2a44" text-anchor="middle">big</text>
+  <line x1="102" y1="43" x2="127" y2="43" stroke="#1f2a44" stroke-width="1.5"/>
+  <polygon points="133,43 125,38 125,48" fill="#1f2a44"/>
+  <line x1="227" y1="43" x2="252" y2="43" stroke="#1f2a44" stroke-width="1.5"/>
+  <polygon points="258,43 250,38 250,48" fill="#1f2a44"/>
+  <text x="180" y="80" font-size="11" fill="#6c7a93" text-anchor="middle">each step reads the one before</text>
+</svg>
+```
+
+The SQL Advanced course goes further, with a CTE that reads from **itself** to count, or to walk down an org chart.
+:::
 --- task
-Return the email and total spend (rounded to 4 decimals) of every user whose total spend is **above the average** total spend per user (averaged over users who have made requests). Use a `WITH` step for the per-user totals.
+Return the email and total spend (rounded to 4 decimals) of every user whose total spend is **above the average** total spend per user. Average over the users who have made requests.
+
+Use a `WITH` step called `spend` for the per-user totals, with columns `user_id` and `total`. Then join `users` for the email, and compare each total with the average of the totals.
 --- starter
 SELECT user_id, SUM(cost_usd) FROM requests GROUP BY user_id;
 --- solution
@@ -1452,9 +1988,11 @@ FROM spend s
 JOIN users u ON u.id = s.user_id
 WHERE s.total > (SELECT AVG(total) FROM spend);
 --- hint
-Build `spend` with `WITH spend AS (SELECT user_id, SUM(cost_usd) AS total … GROUP BY user_id)`.
+Build `spend` with `WITH spend AS (SELECT user_id, SUM(cost_usd) AS total … GROUP BY user_id)`. The starter query is most of it.
 --- hint
-Compare against `(SELECT AVG(total) FROM spend)`, and join `users` for the email.
+The lesson's second example is almost the whole answer. Only its `WHERE` is different: it compares with `0.01`, and you need the average instead.
+--- hint
+Replace `0.01` with the subquery `(SELECT AVG(total) FROM spend)`. The join to `users` for the email stays as it is.
 --- check result | Only lin spends more than the average
 [["lin@example.com", 0.0771]]
 --- check source | Uses WITH
