@@ -42,7 +42,7 @@ export function UpdatesCard({ index }: { index?: number }) {
   const repo = state?.repo ?? ''
   const latest = state?.latest
   const checked = state?.checkedAt ? formatRelativeTime(state.checkedAt) : null
-  const chip = chipFor(status, current)
+  const chip = chipFor(status, current, state?.staged === true)
 
   const openExternal = (url: string) => {
     orbit.openExternal(url).catch(() => {
@@ -140,7 +140,7 @@ export function UpdatesCard({ index }: { index?: number }) {
       {status === 'available' && latest ? (
         <div className="setting">
           <div className="grow">
-            <div className="setting__label">Version {latest.version} is ready to download</div>
+            <div className="setting__label">Version {latest.version} is available</div>
             <ReleaseNotes notes={latest.notes} />
             <div className="updates__meta">
               {formatBytes(latest.size)}
@@ -178,9 +178,15 @@ export function UpdatesCard({ index }: { index?: number }) {
       {status === 'ready' ? (
         <div className="setting">
           <div className="grow">
-            <div className="setting__label">Downloaded</div>
+            <div className="setting__label">
+              {state?.staged
+                ? `${latest ? `Version ${latest.version}` : 'The update'} opens next time you start ORBIT`
+                : 'Downloaded'}
+            </div>
             <p className="setting__help">
-              ORBIT needs to restart to switch to {latest ? `version ${latest.version}` : 'the new version'}.
+              {state?.staged
+                ? 'There is nothing to do: quit whenever you like, and ORBIT opens the new version next time. Restart now to use it straight away. '
+                : `ORBIT needs to restart to switch to ${latest ? `version ${latest.version}` : 'the new version'}. `}
               Your progress lives in the app's own storage, not inside the bundle, so it comes along
               unchanged.
             </p>
@@ -222,7 +228,9 @@ export function UpdatesCard({ index }: { index?: number }) {
               </div>
             ) : appUpdate?.status === 'ready' ? (
               <p className="setting__help">
-                ORBIT quits, the new app takes its place, and it opens straight to the latest version.
+                {state?.autoUpdate
+                  ? 'It goes in when you quit ORBIT, like any other app update, and the next time ORBIT opens it is the new version. Or install it now: ORBIT quits, the new app takes its place, and it reopens.'
+                  : 'ORBIT quits, the new app takes its place, and it opens straight to the latest version.'}{' '}
                 Your progress is kept outside the app, so it comes along unchanged.
               </p>
             ) : canUpdateApp && appUpdate?.status !== 'manual' ? (
@@ -413,14 +421,16 @@ export function UpdatesCard({ index }: { index?: number }) {
 
 /* ── Bits ────────────────────────────────────────────────────────────────── */
 
-function chipFor(status: UpdateStatus, current: string): { tone: ChipTone; label: string } {
+function chipFor(status: UpdateStatus, current: string, staged = false): { tone: ChipTone; label: string } {
   switch (status) {
     case 'up-to-date':
       return { tone: 'ok', label: 'Up to date' }
     case 'available':
       return { tone: 'warn', label: 'Update available' }
+    case 'downloading':
+      return { tone: 'default', label: 'Downloading' }
     case 'ready':
-      return { tone: 'warn', label: 'Restart to apply' }
+      return staged ? { tone: 'ok', label: 'Installs next launch' } : { tone: 'warn', label: 'Restart to apply' }
     case 'error':
       return { tone: 'bad', label: 'Error' }
     case 'shell-required':

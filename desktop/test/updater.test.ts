@@ -85,7 +85,7 @@ interface Harness {
   logs: string[]
 }
 
-function makeUpdater(opts: { apiBase?: string; token?: string | null; shellVersion?: string; resolve?: boolean } = {}): Harness {
+function makeUpdater(opts: { apiBase?: string; token?: string | null; shellVersion?: string; resolve?: boolean; autoUpdate?: boolean } = {}): Harness {
   const logs: string[] = []
   const updater = new Updater({
     repo: REPO,
@@ -95,6 +95,7 @@ function makeUpdater(opts: { apiBase?: string; token?: string | null; shellVersi
     shellVersion: opts.shellVersion ?? SHELL,
     getToken: async () => opts.token ?? null,
     log: (...args: unknown[]) => logs.push(args.map(String).join(' ')),
+    autoUpdate: opts.autoUpdate === true,
   })
   const states: UpdateState[] = []
   const relaunches: Harness['relaunches'] = []
@@ -929,9 +930,10 @@ describe('app update (shell-required)', () => {
     extract: (zip: string, dest: string) => Promise<void>
     findApp: (dir: string) => string | null
     verify: (app: string, version: string) => Promise<void>
-    install: (app: string, workDir: string) => void
+    install: (app: string, workDir: string, opts?: { reopen?: boolean }) => void
     verified: Array<[string, string]>
     installed: Array<[string, string]>
+    reopen: Array<boolean | undefined>
   }
 
   function fakeInstaller(over: Partial<FakeInstaller> = {}): FakeInstaller {
@@ -947,11 +949,13 @@ describe('app update (shell-required)', () => {
         const found = readFileSync(path.join(app, 'Contents', 'version.txt'), 'utf8')
         if (found !== version) throw new Error(`it says it is version ${found}, not ${version}`)
       },
-      install: (app, workDir) => {
+      install: (app, workDir, opts) => {
         inst.installed.push([app, workDir])
+        inst.reopen.push(opts?.reopen)
       },
       verified: [],
       installed: [],
+      reopen: [],
       ...over,
     }
     return inst
@@ -964,7 +968,7 @@ describe('app update (shell-required)', () => {
     return manifest
   }
 
-  async function harness(opts: { installer?: FakeInstaller | null; manifest?: Record<string, unknown>; zip?: Buffer | null } = {}) {
+  async function harness(opts: { installer?: FakeInstaller | null; manifest?: Record<string, unknown>; zip?: Buffer | null; autoUpdate?: boolean } = {}) {
     const gh = await startGitHub({ manifest: opts.manifest ?? withShellZip() })
     if (opts.zip !== null) gh.addAsset(APP_ZIP, opts.zip ?? appZip)
     const installer = opts.installer === undefined ? fakeInstaller() : opts.installer
@@ -977,6 +981,7 @@ describe('app update (shell-required)', () => {
       shellVersion: SHELL,
       log: (...args: unknown[]) => logs.push(args.map(String).join(' ')),
       ...(installer ? { shellInstaller: installer } : {}),
+      autoUpdate: opts.autoUpdate === true,
     })
     const quits: Array<{ reason: string; version: string }> = []
     const states: UpdateState[] = []
@@ -1082,10 +1087,121 @@ describe('app update (shell-required)', () => {
     }
   })
 
+  it('with autoUpdate, downloads the app in the background and installs it on quit without reopening it', async () => {
+    const { gh, updater, installer, quits } = await harness({ autoUpdate: true })
+    expect(await until(() => updater.getState().shellUpdate?.status === 'ready')).toBe(true)
+    expect(updater.getState().autoUpdate).toBe(true)
+    expect(gh.requests(`/files/${APP_ZIP}`)).toHaveLength(1)
+    expect(updater.hasAppReady()).toBe(true)
+
+    expect(updater.installOnExit()).toBe(true)
+    expect(installer!.installed).toHaveLength(1)
+    expect(installer!.reopen).toEqual([false])
+    // The quit was already happening: nothing asks the shell to quit again.
+    expect(quits).toHaveLength(0)
+  })
+
+  it('without autoUpdate, waits to be asked and never installs on quit', async () => {
+    const { gh, updater, installer } = await harness()
+    await new Promise((r) => setTimeout(r, 150))
+    expect(updater.getState().shellUpdate).toBeUndefined()
+    expect(gh.requests(`/files/${APP_ZIP}`)).toHaveLength(0)
+    await updater.downloadShell()
+    expect(updater.installOnExit()).toBe(false)
+    expect(installer!.installed).toHaveLength(0)
+  })
+
+  it('does not download in the background when this copy cannot replace itself', async () => {
+    const installer = fakeInstaller({ supported: () => ({ ok: false, reason: 'Move ORBIT into Applications first.' }) })
+    const { gh, updater } = await harness({ installer, autoUpdate: true })
+    expect(await until(() => updater.getState().shellUpdate?.status === 'manual')).toBe(true)
+    expect(gh.requests(`/files/${APP_ZIP}`)).toHaveLength(0)
+    expect(updater.installOnExit()).toBe(false)
+  })
+
   it('clears an app download left over from an earlier session at boot', () => {
     mkdirSync(path.join(userData, 'shell-update', NEW), { recursive: true })
     writeFileSync(path.join(userData, 'shell-update', `${NEW}.zip`), 'partial')
     makeUpdater()
     expect(existsSync(path.join(userData, 'shell-update'))).toBe(false)
+  })
+})
+
+// ── automatic updates ──────────────────────────────────────────────────
+
+async function until(ok: () => boolean, ms = 10_000): Promise<boolean> {
+  const end = Date.now() + ms
+  while (Date.now() < end) {
+    if (ok()) return true
+    await new Promise((r) => setTimeout(r, 20))
+  }
+  return ok()
+}
+
+describe('automatic updates', () => {
+  it('downloads what check() finds and stages it for the next launch, without a relaunch', async () => {
+    const gh = await startGitHub()
+    const { updater, relaunches, logs } = makeUpdater({ apiBase: gh.apiBase, autoUpdate: true })
+    await updater.check()
+    expect(await until(() => updater.getState().status === 'ready')).toBe(true)
+
+    const state = updater.getState()
+    expect(state.autoUpdate).toBe(true)
+    expect(state.staged).toBe(true)
+    expect(readCurrent()).toEqual({ version: NEW, previous: BUILT_IN })
+    expect(relaunches).toHaveLength(0)
+    expect(gh.requests(`/files/orbit-bundle-${NEW}.zip`)).toHaveLength(1)
+    expect(logs.some((l) => l.includes(`${NEW} opens on the next launch`))).toBe(true)
+
+    // The running session keeps its bundle; the next launch opens the new one.
+    expect(updater.active?.version).toBe(BUILT_IN)
+    const next = makeUpdater({ autoUpdate: true })
+    expect(next.updater.active).toMatchObject({ version: NEW, builtIn: false })
+  })
+
+  it('does not download again when checked again, and Restart now still works', async () => {
+    const gh = await startGitHub()
+    const { updater, relaunches } = makeUpdater({ apiBase: gh.apiBase, autoUpdate: true })
+    await updater.check()
+    expect(await until(() => updater.getState().status === 'ready')).toBe(true)
+    expect((await updater.check()).status).toBe('ready')
+    await new Promise((r) => setTimeout(r, 100))
+    expect(gh.requests(`/files/orbit-bundle-${NEW}.zip`)).toHaveLength(1)
+
+    await updater.apply()
+    expect(relaunches).toEqual([{ reason: 'apply', version: NEW }])
+    expect(readCurrent()).toEqual({ version: NEW, previous: BUILT_IN })
+  })
+
+  it('falls back to the running bundle if the staged one never boots', async () => {
+    const gh = await startGitHub()
+    const { updater } = makeUpdater({ apiBase: gh.apiBase, autoUpdate: true })
+    await updater.check()
+    expect(await until(() => updater.getState().staged === true)).toBe(true)
+
+    // Next launch: the boot watchdog quarantines it, and the launch after
+    // that is back on the bundle that was running before.
+    const next = makeUpdater({ autoUpdate: true })
+    next.updater.quarantine(NEW)
+    expect(makeUpdater().updater.active).toMatchObject({ version: BUILT_IN, builtIn: true })
+  })
+
+  it('stages nothing when a download fails, and says why', async () => {
+    const gh = await startGitHub({ bundle: Buffer.from('not the bundle') })
+    const { updater } = makeUpdater({ apiBase: gh.apiBase, autoUpdate: true })
+    await updater.check()
+    expect(await until(() => updater.getState().status === 'error')).toBe(true)
+    expect(updater.getState().staged).toBeUndefined()
+    expect(existsSync(path.join(bundlesDir(), 'current.json'))).toBe(false)
+  })
+
+  it('without autoUpdate, leaves the update available and stages nothing', async () => {
+    const gh = await startGitHub()
+    const { updater } = makeUpdater({ apiBase: gh.apiBase })
+    expect((await updater.check()).status).toBe('available')
+    await new Promise((r) => setTimeout(r, 100))
+    expect(updater.getState().status).toBe('available')
+    expect(updater.getState().autoUpdate).toBe(false)
+    expect(gh.requests(`/files/orbit-bundle-${NEW}.zip`)).toHaveLength(0)
   })
 })

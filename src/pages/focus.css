@@ -38,6 +38,12 @@
 }
 
 /* ── Block length ────────────────────────────────────────────────────────── */
+.focus-on {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
 .focus-len {
   display: flex;
   gap: 8px;

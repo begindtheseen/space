@@ -54,6 +54,7 @@ import {
 import { PageWords, inView, normWord, paint, scrollToRange } from '@/lib/voice/highlight'
 import { naturalSupported, naturalVoice, unitChars, type NaturalStatus } from '@/lib/voice/natural'
 import { recordingFor, unitAt, wordAt, type Recording } from '@/lib/voice/recorded'
+import { useWakeLock } from '@/lib/wakeLock'
 
 /** How often to nudge Chromium so it does not fall silent mid-lesson. */
 const KEEPALIVE_MS = 10_000
@@ -164,6 +165,8 @@ export function useReadAloud({ markdown, voiceName, rate = 1, contentSelector = 
 
   const [voices, setVoices] = useState<VoiceLike[]>([])
   const [state, setState] = useState<ReadState>('idle')
+  // Listening is looking without touching: keep the screen on while she does.
+  useWakeLock('read-aloud', state === 'speaking' || state === 'preparing')
   const [at, setAt] = useState(-1)
   const [notice, setNotice] = useState<string | null>(null)
   const [fellBack, setFellBack] = useState(false)

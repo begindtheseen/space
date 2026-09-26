@@ -17,8 +17,14 @@
    updates itself; the `.app` around it is a separate download. A fix that
    shipped in the shell would only reach her the next time she installed one
    by hand, which is the very thing that went wrong.
+
+   For the same reason, the renderer also fetches what a check finds, without
+   waiting for a tap on Download: an update should arrive the way it does in
+   any other app, not as a chore in Settings. A shell new enough to do that
+   itself reports `autoUpdate` (true, or false when it has been turned off),
+   and then this leaves it alone.
    ========================================================================== */
-import { getOrbit, type UpdateState, type UpdateStatus } from '@/lib/desktop'
+import { getOrbit, type OrbitBridge, type UpdateState, type UpdateStatus } from '@/lib/desktop'
 
 /** How often to ask while the app is simply sitting there. */
 export const RECHECK_MS = 30 * 60_000
@@ -83,6 +89,48 @@ export function makeWatcher(asker: UpdateAsker, now: () => number = Date.now, la
   }
 }
 
+/** The slice of the bridge the automatic download needs. */
+export type Fetcher = Pick<OrbitBridge['updates'], 'download' | 'downloadApp'>
+
+/**
+ * What to fetch for a snapshot, if anything: the bundle as soon as one is
+ * available, and the app when the release needs a newer one and this shell
+ * can replace itself. Each version is tried once per session, so a download
+ * that fails is left to the Try again button rather than retried in a loop.
+ */
+export function autoFetch(state: UpdateState, tried: Set<string>, canDownloadApp: boolean): 'bundle' | 'app' | null {
+  // A shell that says either way decides for itself; only one too old to say
+  // needs the renderer to do it.
+  if (state.autoUpdate !== undefined) return null
+  const version = state.latest?.version
+  if (!version) return null
+  if (state.status === 'available' && !tried.has(`bundle:${version}`)) {
+    tried.add(`bundle:${version}`)
+    return 'bundle'
+  }
+  if (state.status === 'shell-required' && canDownloadApp && !state.shellUpdate && !tried.has(`app:${version}`)) {
+    tried.add(`app:${version}`)
+    return 'app'
+  }
+  return null
+}
+
+/**
+ * Fetches updates as they are found. Returns a function that stops it.
+ */
+export function startAutoDownload(updates: Fetcher & Pick<OrbitBridge['updates'], 'getState' | 'onState'>): () => void {
+  const tried = new Set<string>()
+  const act = (state: UpdateState) => {
+    const what = autoFetch(state, tried, typeof updates.downloadApp === 'function')
+    // Failures come back as state ('error', or shellUpdate.error) for the card to show.
+    if (what === 'bundle') updates.download().catch(() => {})
+    else if (what === 'app') updates.downloadApp?.().catch(() => {})
+  }
+  const stop = updates.onState(act)
+  updates.getState().then(act, () => {})
+  return stop
+}
+
 /**
  * Start watching. Returns a function that stops it.
  *
@@ -96,9 +144,11 @@ export function startUpdateWatch(): () => void {
   const timer = window.setInterval(() => void watcher.ask(RECHECK_MS), RECHECK_MS)
   const onFocus = () => void watcher.ask(FOCUS_GAP_MS)
   window.addEventListener('focus', onFocus)
+  const stopFetching = startAutoDownload(orbit.updates)
 
   return () => {
     window.clearInterval(timer)
     window.removeEventListener('focus', onFocus)
+    stopFetching()
   }
 }

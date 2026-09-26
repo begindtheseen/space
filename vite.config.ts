@@ -1,11 +1,41 @@
-import { readFileSync } from 'node:fs'
+import { readdirSync, readFileSync } from 'node:fs'
+import path from 'node:path'
 import { fileURLToPath, URL } from 'node:url'
 import react from '@vitejs/plugin-react'
-import { defineConfig } from 'vite'
+import { defineConfig, type Plugin } from 'vite'
+import { notesOf } from './src/curriculum/lessons/notesIndex.ts'
 
 // The version the app is running, so it can show what this build changed.
 // package.json is the one place it is written down.
 const version: string = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8')).version
+
+/**
+ * `virtual:context-notes`: every context note in every lesson, gathered at
+ * build time into one module that the app imports lazily (src/lib/explain.ts).
+ * Rebuilt whenever a lesson changes under the dev server.
+ */
+function contextNotes(): Plugin {
+  const ID = 'virtual:context-notes'
+  const dir = fileURLToPath(new URL('./src/curriculum/lessons', import.meta.url))
+  return {
+    name: 'orbit-context-notes',
+    resolveId: (id) => (id === ID ? `\0${ID}` : undefined),
+    load(id) {
+      if (id !== `\0${ID}`) return undefined
+      const notes = []
+      for (const mod of readdirSync(dir, { withFileTypes: true })) {
+        if (!mod.isDirectory()) continue
+        for (const f of readdirSync(path.join(dir, mod.name)).sort()) {
+          if (!f.endsWith('.md')) continue
+          const file = path.join(dir, mod.name, f)
+          this.addWatchFile(file)
+          notes.push(...notesOf(mod.name, readFileSync(file, 'utf8')))
+        }
+      }
+      return `export default ${JSON.stringify(notes)}`
+    },
+  }
+}
 
 // Static, dependency-light build: the whole platform is client-side, so the
 // output of `vite build` can be dropped on any static host (GitHub Pages,
@@ -13,7 +43,7 @@ const version: string = JSON.parse(readFileSync(new URL('./package.json', import
 export default defineConfig({
   define: { __APP_VERSION__: JSON.stringify(version) },
   base: process.env.BASE_PATH ?? '/',
-  plugins: [react()],
+  plugins: [react(), contextNotes()],
   resolve: {
     alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
   },

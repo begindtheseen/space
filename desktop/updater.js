@@ -10,6 +10,12 @@
 // hands it to the platform installer, which swaps it in once ORBIT has quit
 // and opens it: an app any number of versions behind jumps straight to the
 // latest, in two taps, instead of waiting on a manual download.
+//
+// With `autoUpdate` it updates the way an ordinary app does, with no taps at
+// all: whatever check() finds is downloaded in the background, a bundle is
+// staged in current.json as soon as it is verified (so the next launch opens
+// it, whether or not anyone presses Restart), and a downloaded app is swapped
+// in when ORBIT quits (installOnExit()).
 
 import { EventEmitter } from 'node:events'
 import fs from 'node:fs'
@@ -80,7 +86,7 @@ export class UpdateError extends Error {
  * @property {(zip: string, dest: string) => Promise<void>} extract
  * @property {(dir: string) => string | null} findApp the app inside an extracted zip
  * @property {(app: string, version: string) => Promise<void>} verify throws when the app is not that version, or broken
- * @property {(app: string, workDir: string) => void} install swaps `app` in once this process exits, then opens it
+ * @property {(app: string, workDir: string, opts?: { reopen?: boolean }) => void} install swaps `app` in once this process exits, then opens it (unless `reopen` is false)
  *
  * @typedef {object} UpdateState
  * @property {UpdateStatus} status
@@ -96,6 +102,8 @@ export class UpdateError extends Error {
  * @property {boolean} hasToken
  * @property {boolean} canRollback
  * @property {ShellUpdateState} [shellUpdate]
+ * @property {boolean} [autoUpdate] whether this updater downloads and installs on its own; absent only from shells before 1.1.3
+ * @property {boolean} [staged] the downloaded bundle opens on the next launch even without a restart now
  *
  * @typedef {{ dir: string, version: string, builtIn: boolean }} ActiveBundle
  * @typedef {{ version: string | null, previous: string | null }} CurrentFile
@@ -110,6 +118,7 @@ export class UpdateError extends Error {
  * @property {() => Promise<string | null> | string | null} [getToken]
  * @property {(...args: unknown[]) => void} [log]
  * @property {ShellInstaller} [shellInstaller] absent: the app can only be updated by hand
+ * @property {boolean} [autoUpdate] download what check() finds, stage it, and install the app on quit
  */
 
 /**
@@ -312,6 +321,8 @@ export class Updater extends EventEmitter {
   #shellApp = null
   /** @type {Promise<UpdateState> | null} */
   #shellDownloading = null
+  /** @type {string | null} version written to current.json for the next launch */
+  #stagedVersion = null
 
   /** @param {UpdaterOptions} opts */
   constructor(opts) {
@@ -342,6 +353,7 @@ export class Updater extends EventEmitter {
     this.getToken = o.getToken ?? (() => null)
     this.log = o.log ?? (() => {})
     this.shellInstaller = o.shellInstaller ?? null
+    this.autoUpdate = o.autoUpdate === true
     this.paths = {
       bundles: path.join(o.userData, 'bundles'),
       tmp: path.join(o.userData, 'bundles', 'tmp'),
@@ -482,6 +494,10 @@ export class Updater extends EventEmitter {
       state.shellUpdate = { ...this.#shell }
       if (this.#shell.progress) state.shellUpdate.progress = { ...this.#shell.progress }
     }
+    // Always present (true or false) so the renderer can tell this shell from
+    // one too old to update itself, which never sends it.
+    state.autoUpdate = this.autoUpdate
+    if (this.#stagedVersion !== null && this.#stagedVersion === this.#readyVersion) state.staged = true
     return state
   }
 
@@ -721,7 +737,22 @@ export class Updater extends EventEmitter {
       }
     }
     this.#emit()
+    this.#continueAutomatically()
     return this.getState()
+  }
+
+  /**
+   * What an ordinary app does after finding an update: fetch it, without
+   * waiting to be asked. Runs in the background; the progress and the outcome
+   * arrive through 'state' like any download the card started.
+   */
+  #continueAutomatically() {
+    if (!this.autoUpdate) return
+    if (this.#status === 'available') {
+      this.download().catch((err) => this.log('updater: automatic download failed', describe(err)))
+    } else if (this.#status === 'shell-required' && this.#shell?.status !== 'ready' && this.#shell?.status !== 'manual') {
+      this.downloadShell().catch((err) => this.log('updater: automatic app download failed', describe(err)))
+    }
   }
 
   // ── download ─────────────────────────────────────────────────────────
@@ -798,6 +829,7 @@ export class Updater extends EventEmitter {
       this.#readyVersion = version
       this.#progress = undefined
       this.#status = 'ready'
+      if (this.autoUpdate) this.#stage(version)
     } catch (err) {
       await fs.promises.rm(zipPath, { force: true }).catch(() => {})
       await fs.promises.rm(extractDir, { recursive: true, force: true }).catch(() => {})
@@ -983,7 +1015,58 @@ export class Updater extends EventEmitter {
     this.emit('quit', { reason: 'shell', version })
   }
 
+  /**
+   * Whether a verified app is waiting to be swapped in. main.js asks when
+   * ORBIT is quitting, and installOnExit() does the swap.
+   * @returns {boolean}
+   */
+  hasAppReady() {
+    return this.#shell?.status === 'ready' && this.#shellApp !== null && this.shellInstaller !== null
+  }
+
+  /**
+   * Swaps the downloaded app in once this process has exited, without opening
+   * it: the quit was the user's, so the new version is simply there next time.
+   * Returns whether an install was started.
+   * @returns {boolean}
+   */
+  installOnExit() {
+    if (!this.autoUpdate || !this.hasAppReady()) return false
+    const { version } = /** @type {ShellUpdateState} */ (this.#shell)
+    try {
+      /** @type {ShellInstaller} */ (this.shellInstaller).install(/** @type {string} */ (this.#shellApp), this.paths.shell, { reopen: false })
+    } catch (err) {
+      this.log('updater: could not start installing the app on quit', describe(err))
+      return false
+    }
+    this.log(`updater: ORBIT is quitting; app ${version} will be swapped in`)
+    return true
+  }
+
   // ── switching bundles ────────────────────────────────────────────────
+
+  /**
+   * Points current.json at a verified download so the next launch opens it,
+   * keeping the running bundle as `previous` for the boot watchdog to fall
+   * back to. The running session is untouched: resolveActive() only reads
+   * current.json at boot.
+   * @param {string} version
+   */
+  #stage(version) {
+    if (!this.active) return
+    const reason = this.validateBundle(version)
+    if (reason !== null) {
+      this.log(`updater: not staging ${version} (${reason})`)
+      return
+    }
+    try {
+      writeJsonAtomic(this.paths.current, { version, previous: this.active.version })
+      this.#stagedVersion = version
+      this.log(`updater: ${version} opens on the next launch`)
+    } catch (err) {
+      this.log('updater: could not stage', version, describe(err))
+    }
+  }
 
   /**
    * Points current.json at the downloaded bundle and asks the shell to
@@ -1013,6 +1096,7 @@ export class Updater extends EventEmitter {
     if (!this.active) throw new Error('Updater: resolveActive() must run before rollback()')
     if (this.active.builtIn) throw new Error('The built-in version is already active.')
     writeJsonAtomic(this.paths.current, { version: null, previous: null })
+    this.#stagedVersion = null
     this.log(`updater: rolling back from ${this.active.version} to built-in on relaunch`)
     this.emit('relaunch', { reason: 'rollback', version: this.active.version })
   }
@@ -1057,6 +1141,7 @@ export class Updater extends EventEmitter {
       this.#readyVersion = null
       if (this.#status === 'ready') this.#status = 'idle'
     }
+    if (this.#stagedVersion === version) this.#stagedVersion = null
     if (selected && !blacklisted) {
       // Nothing on disk changed: a relaunch would serve this bundle again.
       throw new UpdateError(`Could not quarantine ${version} (${failures.map(describe).join('; ')}).`, { cause: failures[0] })

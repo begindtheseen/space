@@ -11,6 +11,9 @@ import { pickFocus, type FocusInputs, type FocusPick } from '@/engine/focus'
 import { dueAtoms, masteryMap, rankFrontier } from '@/engine/scheduler'
 import type { LearnerState } from '@/engine/state'
 import type { Dag } from '@/engine/graph'
+import { TRACKS, currentTrack, findLesson, nextLesson, tracksFor } from '@/learn'
+import { PLACEMENT_SKILLS } from '@/curriculum/placement'
+import { lessonKeyOf, planFor, testedOutKeys } from '@/engine/placement'
 
 export function focusInputs(state: LearnerState, dag: Dag, now: Date = new Date()): FocusInputs {
   const modules = dag.all()
@@ -52,8 +55,28 @@ export function focusInputs(state: LearnerState, dag: Dag, now: Date = new Date(
   const mastery = masteryMap(state, modules, now)
   const ranked = rankFrontier(state, dag, mastery, now)
 
+  // A lesson she tested out of counts as done for choosing what comes next;
+  // it is still there to read.
+  const testedOut = testedOutKeys(PLACEMENT_SKILLS, state.placement)
   const unread = (moduleId: string) =>
-    lessonsFor(moduleId).find((l) => !state.read[lessonKey(moduleId, l.id)])
+    lessonsFor(moduleId).find((l) => !state.read[lessonKey(moduleId, l.id)] && !testedOut.has(lessonKey(moduleId, l.id)))
+
+  /*
+   * The placement test's plan comes before the ranking: the first lesson it
+   * says she needs and has not read is where she starts. Once those are all
+   * read, the ranking takes over as usual.
+   */
+  if (state.placement) {
+    const todo = planFor(PLACEMENT_SKILLS, state.placement.levels).todo
+    for (const s of todo) {
+      const mod = moduleById(s.moduleId)
+      const lesson = lessonsFor(s.moduleId).find((l) => l.id === s.lessonId)
+      if (!mod || !lesson || state.read[lessonKeyOf(s)]) continue
+      inp.module = { id: mod.id, title: mod.title, started: lessonsFor(mod.id).some((l) => !!state.read[lessonKey(mod.id, l.id)]) }
+      inp.lesson = { id: lesson.id, title: lesson.title, minutes: lesson.minutes }
+      return inp
+    }
+  }
 
   const readable = ranked.find((c) => unread(c.module.id))
   const top = readable ?? ranked.find((c) => lessonsFor(c.module.id).length > 0) ?? ranked[0]
@@ -73,4 +96,44 @@ export function focusInputs(state: LearnerState, dag: Dag, now: Date = new Date(
 
 export function nextUp(state: LearnerState, dag: Dag, now: Date = new Date()): FocusPick {
   return pickFocus(focusInputs(state, dag, now))
+}
+
+/* ── Learn to code ────────────────────────────────────────────────────────── */
+
+/**
+ * The coding lesson to focus on: the one asked for, or where she left off —
+ * the next unpassed lesson in the language she passed a lesson in most
+ * recently, or the very first lesson if she has not started.
+ *
+ * The block may range over every lesson and course page of that language, so
+ * finishing one course and starting the next is the block working, not
+ * leaving it.
+ */
+export function codePick(state: LearnerState, lessonId?: string): FocusPick | null {
+  const asked = lessonId ? findLesson(lessonId) : undefined
+  let lesson = asked?.lesson
+  let track = asked?.track
+  if (!lesson) {
+    const latest = Object.entries(state.learn).sort((a, b) => b[1].localeCompare(a[1]))[0]
+    const lang = latest ? findLesson(latest[0])?.track.lang : undefined
+    track = lang ? currentTrack(lang, state.learn) : TRACKS[0]
+    if (!track) return null
+    lesson = nextLesson(track, state.learn)
+  }
+  if (!track || !lesson) return null
+  const index = track.lessons.indexOf(lesson)
+  const siblings = tracksFor(track.lang)
+  const also = [
+    ...siblings.map((t) => `/learn/${t.id}`),
+    ...siblings.flatMap((t) => t.lessons.map((l) => `/learn/${l.id}`)),
+  ]
+  return {
+    kind: 'learn-code',
+    title: `Code: ${lesson.title}`,
+    why: state.learn[lesson.id]
+      ? `Lesson ${index + 1} of ${track.lessons.length} in ${track.name}, which you have passed before — a good one to do again from memory.`
+      : `Lesson ${index + 1} of ${track.lessons.length} in ${track.name}, where you left off.`,
+    href: `/learn/${lesson.id}`,
+    also,
+  }
 }

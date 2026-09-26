@@ -1,37 +1,39 @@
 ---
 id: l12-systemd-services-and-the-journal
 title: systemd services and the journal
-minutes: 20
+minutes: 21
 covers:
   - 'systemd: systemctl, journalctl'
 ---
 
-Some things on a simulation machine must run without anyone logged in: the licence daemon, the job scheduler, the telemetry ingest that watches a directory, the SSH server you connect with. On every modern Linux distribution the program that starts them, restarts them when they crash, and collects their output is `systemd`, and you talk to it with two commands — `systemctl` for the state of things and `journalctl` for what they said.
+Picture the manager of a big building at night. Nobody else is around, yet the heating must run, the doors must lock at ten, and if the elevator breaks down someone has to restart it. The manager keeps a card for each job — what to start, when, what to do if it fails — and writes everything that happens in a logbook.
 
-You will use this most often in one specific situation: something that is supposed to be running is not, and you have five minutes to find out why. The answer is almost always in `systemctl status` and the twenty lines of journal it prints underneath. This lesson makes those twenty lines readable.
+A Linux machine has a manager like that. Some programs must run with nobody logged in: the license server, the job scheduler, the telemetry ingest that watches a folder for new files, the SSH server you connect with. Programs like these, running in the background with no terminal, are called **services** (or **[[daemons|daemon-word]]**). On every modern Linux distribution the manager that starts them, restarts them when they crash, and collects their output is **systemd**, the **[[first process the system runs|pid-1]]**. You talk to it with two commands: **`systemctl`** for the state of things, and **`journalctl`** for what they said — its logbook.
 
-All output below was produced on this machine and pasted verbatim, against a real systemd 255 (255.4-1ubuntu8.14) instance running in a container, with the demonstration units written to `/run/systemd/system/`. Timestamps, PIDs and the hostname `vm` are specific to this capture. The unit names `sim-sweep` and `sim-bad` are invented for the lesson; everything else — `ssh.service`, `docker.service` — is genuinely on this machine.
+You will use this most in one situation: something that should be running is not, and you have five minutes to find out why. The answer is nearly always in `systemctl status` and the twenty lines of log it prints underneath. This lesson makes those twenty lines readable.
 
-## Units
+The transcripts come from a real systemd 255 running in a container whose hostname is `vm`, with the demonstration units written to `/run/systemd/system/`. Timestamps and process numbers belong to that capture. The units `sim-sweep` and `sim-bad` were written for the lesson; `ssh.service`, `docker.service` and the rest are genuinely on that machine.
 
-systemd manages **units**, and the suffix tells you the kind:
+## Units: systemd's job cards
 
-- `.service` — a process to run. This is the one you will touch.
-- `.socket` — a port to listen on, starting the service on the first connection.
+systemd manages **units** — one small text file per job, like the manager's cards. The ending of the name tells you the kind:
+
+- `.service` — a program to run. This is the one you will touch.
+- `.socket` — a network port to listen on, starting its service when the first connection arrives.
 - `.timer` — a schedule, the modern replacement for a `cron` entry.
-- `.mount`, `.target`, `.device`, `.path` — filesystems, groups of units, hardware, directory watches.
+- `.mount`, `.target`, `.device`, `.path` — filesystems, **[[groups of units|target]]**, hardware, and folder watches.
 
-Unit files live in three places, and *which* one matters:
+Unit files live in three places, and *which* one matters. When two folders hold a file with the same name, the **[[higher one in this list wins|unit-precedence]]**:
 
 | Directory | Owned by | Survives |
 | --- | --- | --- |
+| `/etc/systemd/system/` | you, the administrator | highest priority; this is where you write |
+| `/run/systemd/system/` | runtime, temporary | lost on reboot |
 | `/usr/lib/systemd/system/` | the package manager | overwritten on upgrade |
-| `/etc/systemd/system/` | you, the administrator | takes precedence; this is where you write |
-| `/run/systemd/system/` | runtime, transient | lost on reboot |
 
-A unit in `/etc` shadows one of the same name in `/usr/lib`, which is how you override a packaged service without editing a file `apt` will replace.
+So a unit in `/etc` hides one of the same name in `/usr/lib`. That is how you override a packaged service without editing a file `apt` will replace.
 
-Here is a service, and it is about as small as a real one gets:
+Here is a service about as small as a real one gets:
 
 ```bash
 systemctl cat sim-sweep.service
@@ -54,18 +56,18 @@ RestartSec=5
 WantedBy=multi-user.target
 ```
 
-`systemctl cat` is the right way to read a unit: it prints the file *and its path*, and appends any drop-in overrides, so you see what systemd actually assembled rather than what you hope is there.
+`systemctl cat` is the right way to read a unit. It prints the file *and its path*, and appends any **drop-ins** — small override files — so you see what systemd actually assembled rather than what you hope is there.
 
-The fields:
+The fields, one at a time:
 
-- `Description` is what appears in `status` and every log line about the unit.
-- `After=` is ordering, not dependency — "if both are starting, start me second". `Requires=` is the dependency.
-- `Type=simple` means `ExecStart` *is* the service; systemd considers it started as soon as it forks. `Type=forking` is for daemons that background themselves, `Type=oneshot` for a command that runs and exits, and `Type=notify` for programs that tell systemd when they are ready.
-- `ExecStart` must be an **absolute path**, and it is not run through a shell — no pipes, no globs, no `$HOME`. If you need a shell, call one: `ExecStart=/bin/bash -c '...'`.
-- `Restart=on-failure` with `RestartSec=5` restarts the service five seconds after a non-zero exit. `Restart=always` restarts it even after a clean exit.
-- `WantedBy=multi-user.target` is what `systemctl enable` acts on — it says which target should pull this unit in at boot.
+- `Description` is the human name shown in `status` and in log lines about the unit.
+- `After=` is **ordering**, not dependency: "if both are starting, start me second". `Requires=` is the dependency.
+- `Type=simple` means the `ExecStart` program *is* the service, and systemd counts it as started as soon as it launches it. `Type=forking` is for old-style programs that move themselves into the background, `Type=oneshot` for a command that runs and exits, and `Type=notify` for programs that tell systemd when they are ready.
+- `ExecStart` is the command. Give it an **absolute path** (one starting with `/`). It is **not run through a shell**: no pipes, no redirection, no wildcards, no `~`. (Newer systemd accepts a bare name, but looks it up in a fixed list of system folders, never your `PATH`; and `$NAME` is filled in by systemd from the unit's own `Environment=` settings, not from your shell.) If you need a shell, call one: `ExecStart=/bin/bash -c '...'`.
+- `Restart=on-failure` with `RestartSec=5` restarts the service five seconds after it exits with an error. `Restart=always` restarts it even after a clean exit.
+- `WantedBy=multi-user.target` is what `systemctl enable` acts on: it names the target that should pull this unit in at boot.
 
-Check a unit file before loading it:
+You can check a unit file before loading it:
 
 ```bash
 systemd-analyze verify /run/systemd/system/sim-sweep.service; echo "verify exit=$?"
@@ -76,11 +78,17 @@ Binding to IPv6 address not available since kernel does not support IPv6.
 verify exit=0
 ```
 
-Exit 0: the file parses and its directives are known. The IPv6 line is this container's kernel, not a problem with the unit — a good illustration that `verify` reports what it notices while checking, not only what is wrong with your file.
+Read the *messages*, not only the exit status. The IPv6 line is about this container's kernel, not the unit. And a typo does not always change the exit status: a copy of this file with `RestartSecs=5` (one letter too many) also exited 0, printing only
 
-After adding or editing a unit file, **`systemctl daemon-reload`**. systemd caches the parsed units and will keep using the old text until you tell it not to. Forgetting this is the commonest confusion with systemd: the file on disk is right, the behaviour is the old one.
+```text
+.../sim-sweep.service:10: Unknown key name 'RestartSecs' in section 'Service', ignoring.
+```
 
-## The lifecycle
+The word "ignoring" is the trap. systemd skips the line it does not understand, so the service would run with the default restart delay and nobody would notice.
+
+After adding or editing a unit file, run **`systemctl daemon-reload`**. systemd keeps the parsed units in memory and keeps using the old text until you tell it to re-read. Forgetting this is the most common systemd confusion: the file on disk is right, and the behavior is the old one.
+
+## The lifecycle: now, and at boot
 
 ```bash
 systemctl is-active sim-sweep; systemctl is-enabled sim-sweep
@@ -91,7 +99,7 @@ inactive
 disabled
 ```
 
-Two independent facts, and the distinction is worth stating plainly: **`start`/`stop` are about now, `enable`/`disable` are about boot.** A service can be running and not enabled (it will not come back after a reboot), or enabled and not running (it failed, or someone stopped it).
+Those are two separate facts. Think of an alarm clock. Whether you are awake *right now* is one question; whether the alarm is set for tomorrow morning is another. **`start`/`stop` are about now. `enable`/`disable` are about boot.** A service can be running and not enabled (it will not come back after a reboot), or enabled and not running (it failed, or someone stopped it).
 
 ```bash
 systemctl start sim-sweep
@@ -115,16 +123,16 @@ Sep 22 21:03:40 vm run_sweep.sh[492]: case 0002 done
 Sep 22 21:03:41 vm run_sweep.sh[492]: case 0003 done
 ```
 
-Read it top to bottom, because every line answers a question you were about to ask:
+(`--no-pager` prints straight to the terminal instead of opening a scrolling viewer.) Read it top to bottom, because every line answers a question you were about to ask:
 
-- the **bullet** is a status glyph: `●` running, `○` stopped, `×` failed.
-- **`Loaded:`** — which file, and whether it is enabled. `not-found` here means you misspelled the unit name or forgot `daemon-reload`.
-- **`Active:`** — the state and *how long* it has been in it. "active (running) since 3s ago" on a service you did not just start means it has been restarting in a loop.
-- **`Main PID:`** — the process, by number and name. This is the pid you would pass to `ps` or `strace`.
-- **`CGroup:`** — every process the service owns, as a tree. This is systemd's real advantage over an init script: the service is a *cgroup*, so a child that daemonises away from its parent is still tracked, and `systemctl stop` kills all of it.
-- then the **last journal lines for this unit**, interleaved from systemd itself (`systemd[1]`) and from the service's own standard output (`run_sweep.sh[492]`). Anything the program prints is captured automatically — no redirection, no log file to configure.
+- The **dot** at the start is a status mark: `●` running, `○` stopped, `×` failed.
+- **`Loaded:`** — which file, and whether it is enabled. `not-found` here means you misspelled the name or forgot `daemon-reload`.
+- **`Active:`** — the state, and *how long* it has been in it. "running since 3s ago" on a service you did not just start means it keeps crashing and being restarted.
+- **`Main PID:`** — the process ID, the number you would hand to `ps` or `strace`.
+- **`CGroup:`** — every process the service owns, as a tree. This is systemd's real advantage over older start-up scripts. The service lives in a **[[control group|cgroup]]**, so a child process that wanders off is still tracked, and `systemctl stop` stops all of it.
+- Then the **unit's latest log lines**, mixed from systemd itself (`systemd[1]`) and from the program's own output (`run_sweep.sh[492]`). Anything the program prints is captured automatically — no redirection, no log file to set up.
 
-`systemctl restart` stops and starts; `systemctl reload` asks a service to re-read its configuration without dropping connections, if the unit defines `ExecReload`. Stopping is uneventful:
+`systemctl restart` stops and starts. `systemctl reload` asks a service to re-read its configuration without stopping — but only if the unit defines an `ExecReload=` command. Stopping is quiet:
 
 ```bash
 systemctl stop sim-sweep; systemctl is-active sim-sweep; echo "is-active exit=$?"
@@ -135,9 +143,9 @@ inactive
 is-active exit=3
 ```
 
-Exit status 3 for "not active" — the scriptable form, so `if systemctl is-active --quiet sim-sweep; then ...` works.
+Exit status 3 means "not active". That makes it scriptable: `if systemctl is-active --quiet sim-sweep; then ...` runs the `then` part only when the service is up.
 
-`systemctl enable` is a symlink operation and says exactly what it did:
+`systemctl enable` makes a **symbolic link** — a pointer file (lesson 01) — and says exactly what it did:
 
 ```bash
 systemctl enable sim-sweep
@@ -147,10 +155,10 @@ systemctl enable sim-sweep
 Created symlink /etc/systemd/system/multi-user.target.wants/sim-sweep.service → /run/systemd/system/sim-sweep.service.
 ```
 
-That is the whole of "enabled": a symlink in the wants-directory of the target named by `WantedBy`. `systemctl disable` removes it. Knowing this means you can answer "will this come back after the reboot?" by listing a directory.
+That link is the whole of **[["enabled"|enable-symlink]]**: a symlink in the `.wants` folder of the target named by `WantedBy`. `systemctl disable` removes it. So "will this come back after a reboot?" can be answered by listing a folder.
 
 ::: example A service that fails, and the four lines that explain it
-`sim-bad` runs a script that reads a configuration file which is not there. Note that `start` itself *succeeds* — it started the process; what the process then did is a separate question:
+`sim-bad` runs a script that reads a configuration file that is not there. Step one: start it. Notice that `start` itself *succeeds* — it launched the process; what the process did next is a separate question.
 
 ```bash
 systemctl start sim-bad; echo "start exit=$?"
@@ -159,6 +167,8 @@ systemctl start sim-bad; echo "start exit=$?"
 ```text
 start exit=0
 ```
+
+Step two: ask for its status.
 
 ```bash
 systemctl status sim-bad --no-pager
@@ -178,9 +188,16 @@ Sep 22 21:03:54 vm bad_sweep.sh[527]: cat: /srv/campaign/missing.yaml: No such f
 Sep 22 21:03:54 vm systemd[1]: sim-bad.service: Failed with result 'exit-code'.
 ```
 
-Four things to take from it. The glyph is `×` and the state is `failed (Result: exit-code)` — systemd distinguishes *how* it failed, and the other values you will meet are `signal` (killed), `timeout` (did not start in time) and `oom-kill`. `Duration: 4ms` says it died immediately, which rules out anything that happens under load. `status=1/FAILURE` is the exit code, in lesson 04's numbering — a `status=137/KILL` there would have been the OOM killer. And the actual cause is the third journal line, printed by the program itself: `No such file or directory` on a path you can now go and look at.
+Step three: read the four clues.
 
-The unit stays in the failed state until something clears it:
+1. The mark is `×` and the state is `failed (Result: exit-code)`. systemd records *how* it failed. The other results you will meet are `signal` (killed by a signal), `timeout` (did not start in time) and `oom-kill` (killed for using too much memory).
+2. `Duration: 4ms` says it died at once, which rules out anything that happens only under load.
+3. `code=exited, status=1/FAILURE` means the program chose to exit with status 1 (lesson 04). A process killed by a signal would instead show `code=killed, signal=KILL` or similar.
+4. The actual cause is the third log line, printed by the program itself: `No such file or directory`, on a path you can now go and look at.
+
+Sanity check: the log's process number, 525, matches `Main PID`. (The `cat` line shows 527 because the script ran `cat` as a child.)
+
+The unit stays failed until something clears it:
 
 ```bash
 systemctl --failed --no-pager
@@ -191,12 +208,12 @@ systemctl --failed --no-pager
 ● sim-bad.service loaded failed failed Sweep driver with a missing configuration file
 ```
 
-`systemctl --failed` on a machine you have just been handed is the single most informative command there is: it lists everything that is supposed to be working and is not. `systemctl reset-failed` clears the state once you have fixed the cause, and `systemctl is-failed sim-bad` exits 0 when it is failed, which is the scriptable check.
+On a machine you have just been handed, `systemctl --failed` is the single most informative command there is: it lists everything that is supposed to work and does not. `systemctl reset-failed` clears the state once you have fixed the cause, and `systemctl is-failed sim-bad` exits 0 when it *is* failed — the scriptable check.
 :::
 
-## `journalctl`
+## `journalctl`: reading the logbook
 
-The journal is one indexed store for everything: the kernel, systemd, and every service's standard output and standard error. You select from it rather than choosing a file.
+The **journal** is one indexed store for everything: the kernel, systemd, and every service's standard output and standard error. Instead of hunting for the right log file, you *select* from it.
 
 ```bash
 journalctl -u sim-bad --no-pager -n 10
@@ -212,13 +229,13 @@ Sep 22 21:03:54 vm systemd[1]: sim-bad.service: Failed with result 'exit-code'.
 
 The selectors that matter:
 
-- `-u NAME` one unit; `-n N` the last N lines; `-f` follow, exactly like `tail -f`.
-- `--since` and `--until` take both absolute and relative times: `--since "2026-09-22 21:00"`, `--since "-10 min"`, `--since yesterday`.
-- `-p err` filters by priority — `emerg alert crit err warning notice info debug`, and naming one includes everything more severe.
-- `-b` is this boot, `-b -1` the previous one. This is how you read what happened before a machine rebooted itself.
-- `-k` is kernel messages only, which is the same stream `dmesg` shows.
-- `-o json` or `-o short-iso` change the format; `-x` adds systemd's own explanatory text to its messages.
-- `--disk-usage` and `--vacuum-time=7d` report and bound the store:
+- `-u NAME` picks one unit; `-n N` shows the last N lines; `-f` follows new lines as they arrive, exactly like `tail -f`.
+- `--since` and `--until` take absolute or relative times: `--since "2026-09-22 21:00"`, `--since "-10 min"`, `--since yesterday`.
+- `-p err` filters by **[[priority|log-priority]]**, from most to least severe `emerg alert crit err warning notice info debug`. Naming one includes everything more severe.
+- `-b` means this boot, and `-b -1` the previous one. This is how you read what happened before a machine rebooted itself.
+- `-k` shows kernel messages only — the same stream `dmesg` shows.
+- `-o json` or `-o short-iso` change the format; `-x` adds systemd's explanations to its own messages.
+- `--disk-usage` and `--vacuum-time=7d` report and trim the store:
 
 ```bash
 journalctl --disk-usage
@@ -228,20 +245,20 @@ journalctl --disk-usage
 Archived and active journals take up 8.0M in the file system.
 ```
 
-Most useful in practice is `journalctl -u sim-sweep -f` during a deployment, and `journalctl -u sim-sweep --since "-1 h" -p warning` afterwards.
+In practice you will lean on two: `journalctl -u sim-sweep -f` while deploying, and `journalctl -u sim-sweep --since "-1 h" -p warning` afterward.
 
-::: warning
-The journal is not necessarily persistent. If `/var/log/journal/` does not exist, systemd keeps the journal in `/run`, a tmpfs, and **everything is lost on reboot** — so the logs explaining why the machine rebooted are gone, which is exactly when you wanted them. The symptom is `journalctl -b -1` answering
+::: warning The journal may vanish at reboot
+The journal is not always kept on disk. If `/var/log/journal/` does not exist, systemd keeps the journal under `/run`, which lives in memory (a **[[tmpfs|tmpfs]]**), and **everything is lost on reboot**. So the logs explaining why the machine rebooted are gone — exactly when you wanted them. The symptom is `journalctl -b -1` answering
 
 ```text
 No journal boot entry found from the specified boot offset (-1).
 ```
 
-with exit status 1. The fix is `mkdir -p /var/log/journal` and `systemctl restart systemd-journald`, or `Storage=persistent` in `/etc/systemd/journald.conf`. Check it on any machine you care about *before* you need it.
+with exit status 1. The fix is `mkdir -p /var/log/journal` and `systemctl restart systemd-journald`, or `Storage=persistent` in `/etc/systemd/journald.conf`. Check this on any machine you care about *before* you need it.
 :::
 
 ::: example Finding what is broken on a machine you were just given
-Four commands, in order, and you have almost always found it.
+Four commands, in order, and you have almost always found it. Step one: ask for the overall state.
 
 ```bash
 systemctl is-system-running
@@ -251,7 +268,9 @@ systemctl is-system-running
 running
 ```
 
-`running` means everything systemd was asked to start did start. The other answers are the interesting ones: `degraded` means at least one unit failed, `starting` means boot has not finished, and `maintenance` means it is in emergency mode. On `degraded`, go straight to `systemctl --failed`.
+`running` means everything systemd was asked to start did start. The other answers are the interesting ones: `degraded` means at least one unit failed, `starting` means boot has not finished, and `maintenance` means the machine is in emergency mode. On `degraded`, go straight to `systemctl --failed`.
+
+Step two: see what the machine is *for*.
 
 ```bash
 systemctl list-units --type=service --state=running --no-pager | head -8
@@ -268,7 +287,7 @@ systemctl list-units --type=service --state=running --no-pager | head -8
   ssh.service                loaded active running OpenBSD Secure Shell server
 ```
 
-That is the machine's job description in one screen. Then `systemctl status NAME` on whatever looks relevant, and `journalctl -u NAME -n 50` for its recent output. Errors from anything, including the kernel:
+That is the machine's job description on one screen. Step three: `systemctl status NAME` on whatever looks relevant, and `journalctl -u NAME -n 50` for its recent output. Step four: errors from anything, including the kernel:
 
 ```bash
 journalctl --no-pager -n 3 -p err
@@ -280,11 +299,11 @@ Sep 22 20:05:47 vm systemd[1]: Failed to create symlink /sys/fs/cgroup/cpuacct: 
 Sep 22 20:07:17 vm systemd[1]: Timed out waiting for device dev-ttyS0.device - /dev/ttyS0.
 ```
 
-All three are artefacts of running systemd inside a container — a cgroup layout it did not create and a serial device that does not exist — and none of them stopped anything. That is the last skill in this lesson: a machine's error log always has entries in it. What matters is whether one of them lines up in time with the thing that is actually broken.
+Sanity check before you panic: all three come from running systemd inside a container — a control-group layout it did not create, and a serial port that does not exist — and none of them stopped anything. That is the last skill in this lesson. A machine's error log always has entries in it. What matters is whether one lines up *in time* with the thing that is actually broken.
 :::
 
-::: key
-`systemctl status NAME` answers most questions: the glyph (`●` running, `○` stopped, `×` failed), `Loaded:` which file, `Active:` state and for how long, `Main PID:`, the `CGroup:` tree, and the unit's recent journal. `start`/`stop` are about now; `enable`/`disable` are about boot. Edit a unit, then `systemctl daemon-reload`. `journalctl -u NAME -f` follows a service; `-b -1` reads the previous boot, if the journal is persistent.
+::: key systemctl and journalctl
+`systemctl status NAME` answers most questions: the mark (`●` running, `○` stopped, `×` failed), `Loaded:` which file, `Active:` state and for how long, `Main PID:`, the `CGroup:` tree, and the unit's recent journal. `start`/`stop` are about now; `enable`/`disable` are about boot. Edit a unit, then `systemctl daemon-reload`. `journalctl -u NAME -f` follows a service; `-b -1` reads the previous boot, if the journal is persistent.
 :::
 
 ## Check yourself
@@ -294,11 +313,11 @@ You edit `/etc/systemd/system/telemetry.service` to change `ExecStart`, run `sys
 :::
 
 ::: answer
-`systemctl daemon-reload`. systemd parses unit files once and keeps them in memory; `restart` stops and starts the unit *as systemd currently understands it*, which is the version from before your edit. The file on disk and the running configuration have simply diverged.
+`systemctl daemon-reload`. systemd reads unit files once and keeps them in memory. `restart` stops and starts the unit *as systemd currently understands it* — the version from before your edit. The file on disk and the running configuration have drifted apart.
 
-The sequence is always: edit the file, `systemctl daemon-reload`, then `systemctl restart NAME`. Note that nothing will necessarily warn you: on systemd 255 here, editing a unit file and then running `systemctl status` and `systemctl restart` produced no message at all, and the service came back with the old command. Some versions and some paths do print a "changed on disk" warning; do not rely on seeing it. `systemctl cat NAME` reads the file from disk rather than from systemd's memory, so it shows your edit either way — which makes it a poor check for whether the reload happened, and a good check for what the file now says.
+The sequence is always: edit the file, `systemctl daemon-reload`, then `systemctl restart NAME`. Do not count on a reminder. Some versions print a "changed on disk" warning, but in the capture used for this lesson, editing a unit and then running `status` and `restart` printed nothing, and the service came back with the old command. `systemctl cat NAME` reads the file from disk, so it shows your edit either way — a poor check for whether the reload happened, and a good check for what the file now says.
 
-Related: prefer `systemctl edit NAME` for changing a packaged unit. It creates a drop-in under `/etc/systemd/system/NAME.d/override.conf` containing only your changes, runs the reload for you, and survives the package being upgraded. It is interactive by design — run without a terminal it refuses with `Cannot edit units if not on a tty.`, so a provisioning script writes the drop-in file itself and calls `systemctl daemon-reload`.
+Related: to change a packaged unit, prefer `systemctl edit NAME`. It creates a drop-in at `/etc/systemd/system/NAME.d/override.conf` holding only your changes, reloads for you, and survives package upgrades. It is interactive on purpose — run without a terminal it refuses with `Cannot edit units if not on a tty.` — so a setup script writes the drop-in file itself and then calls `systemctl daemon-reload`.
 :::
 
 ::: check
@@ -306,11 +325,11 @@ Related: prefer `systemctl edit NAME` for changing a packaged unit. It creates a
 :::
 
 ::: answer
-It is crash-looping. The unit has `Restart=always` or `Restart=on-failure`, the process dies shortly after starting, and systemd starts it again — so every time you look, it has "just started". The `since` time is the tell: a healthy long-running service shows hours or days there.
+It is **crash-looping**. The unit has `Restart=always` or `Restart=on-failure`, the program dies shortly after starting, and systemd starts it again — so whenever you look, it has "just started". The `since` time is the tell: a healthy long-running service shows hours or days there.
 
-Look at the journal for the unit rather than at `status`, because `status` shows only the last few lines and you need the pattern: `journalctl -u ingest -n 100` will show repeated `Started` / `Main process exited` / `Scheduled restart job` cycles, and between each pair the program's own last words, which are the actual cause.
+Look at the unit's journal rather than `status`, because `status` shows only the last few lines and you need the pattern. `journalctl -u ingest -n 100` shows repeated `Started` / `Main process exited` / `Scheduled restart job` cycles, and between them the program's own last words, which are the real cause.
 
-systemd has a rate limiter for exactly this. `systemctl show NAME -p StartLimitIntervalUSec -p StartLimitBurst` reports the defaults — `10s` and `5` on systemd 255 — and once that many starts happen inside that window it gives up and leaves the unit failed. The journal says so in as many words:
+systemd has a **[[rate limiter|restart-limit]]** for exactly this. `systemctl show NAME -p StartLimitIntervalUSec -p StartLimitBurst` reports the defaults — `10s` and `5` on systemd 255. Once that many starts happen inside that window, it gives up and leaves the unit failed, and the journal says so:
 
 ```text
 Sep 22 21:06:12 vm systemd[1]: sim-loop.service: Scheduled restart job, restart counter is at 5.
@@ -318,19 +337,19 @@ Sep 22 21:06:12 vm systemd[1]: sim-loop.service: Start request repeated too quic
 Sep 22 21:06:12 vm systemd[1]: Failed to start sim-loop.service - Crash-looping sweep.
 ```
 
-The `restart counter` line is the one to look for: it tells you how many times it has already tried. After that, `systemctl reset-failed ingest` is needed before it will start again.
+The `restart counter` line tells you how many times it has already tried. After that, `systemctl reset-failed ingest` is needed before it will start again.
 :::
 
 ::: check
-A colleague says a service is "enabled but not running" and another says it is "running but not enabled". Explain what each means and which is the more dangerous state for a licence daemon that simulations depend on.
+One colleague says a service is "enabled but not running"; another says one is "running but not enabled". Explain what each means, and which is the more dangerous state for a license server that simulations depend on.
 :::
 
 ::: answer
-"Enabled but not running" means the symlink exists in a target's `wants` directory, so it will start at the next boot, but right now it is stopped or failed — someone stopped it, or it crashed. "Running but not enabled" means it is working now, but the symlink does not exist, so after the next reboot it will not come back.
+"Enabled but not running": the symlink exists in a target's `.wants` folder, so it will start at the next boot, but right now it is stopped or failed. "Running but not enabled": it works now, but there is no symlink, so after the next reboot it will not come back.
 
-For a licence daemon the second is far more dangerous, because nothing is wrong today. The machine reboots months later, during an upgrade window or after a power event, and every simulation on the cluster fails to acquire a licence — with no recent change to point at, and the person who started it by hand long gone. The first state is loud and immediate; the second is a trap with a long fuse.
+For a license server the second is far more dangerous, because nothing is wrong today. Months later the machine reboots — an upgrade, a power cut — and every simulation on the cluster fails to get a license, with no recent change to point at and the person who started it by hand long gone. The first state is loud and immediate; the second is a trap with a long fuse.
 
-`systemctl is-enabled NAME` and `systemctl is-active NAME` answer the two questions separately, and `systemctl status` shows both: the `Loaded:` line carries `enabled` or `disabled`, and the `Active:` line carries the running state.
+`systemctl is-enabled NAME` and `systemctl is-active NAME` answer the two questions separately, and `systemctl status` shows both: `enabled` or `disabled` on the `Loaded:` line, the running state on the `Active:` line.
 :::
 
 ::: check
@@ -338,23 +357,23 @@ Why does `ExecStart=/srv/campaign/run_sweep.sh > /var/log/sweep.log` not do what
 :::
 
 ::: answer
-Because `ExecStart` is not passed to a shell. systemd splits the line into an argument vector itself, so `>` and `/var/log/sweep.log` are handed to `run_sweep.sh` as two ordinary arguments; no redirection happens. The same applies to `|`, `*`, `&&`, `$HOME` and `~` — none of them mean anything there. The related rule is that the first word must be an absolute path, because there is no `PATH` search either.
+Because `ExecStart` is not handed to a shell. systemd splits the line into words itself, so `>` and `/var/log/sweep.log` reach `run_sweep.sh` as two ordinary arguments, and no redirection happens. The same goes for `|`, `*`, `&&` and `~` — none of them mean anything there, and there is no `PATH` search from your shell either.
 
-Approach one, and usually the right one: do not redirect at all. systemd captures a service's standard output and standard error into the journal automatically, which is what `StandardOutput=journal` means by default, and `journalctl -u sweep` then gives you the log with timestamps, the unit name and the PID already attached.
+Approach one, usually the right one: do not redirect at all. systemd already sends a service's standard output and standard error to the journal (that is the default `StandardOutput=journal`), and `journalctl -u sweep` gives you the log with timestamps, unit name and process ID attached.
 
-Approach two, when you genuinely need a file: run a shell explicitly — `ExecStart=/bin/bash -c '/srv/campaign/run_sweep.sh > /var/log/sweep.log 2>&1'` — or set `StandardOutput=append:/var/log/sweep.log` in the `[Service]` section, which systemd handles directly and is cleaner than spawning a shell.
+Approach two, when you truly need a file: run a shell on purpose — `ExecStart=/bin/bash -c '/srv/campaign/run_sweep.sh > /var/log/sweep.log 2>&1'` — or, cleaner, set `StandardOutput=append:/var/log/sweep.log` in the `[Service]` section, which systemd handles without starting a shell.
 :::
 
 ::: check
-A machine rebooted overnight. `journalctl -b -1` says the boot ID does not exist. What happened, and what do you change so it does not happen again?
+A machine rebooted overnight. `journalctl -b -1` says there is no such boot. What happened, and what do you change so it does not happen again?
 :::
 
 ::: answer
-The journal is not persistent on that machine. When `/var/log/journal/` does not exist, `systemd-journald` stores the journal under `/run/log/journal/`, which is on a tmpfs — so it is created empty at every boot and everything from the previous boot is gone. `-b -1` has nothing to read because no record of that boot survived the reboot.
+The journal is not persistent on that machine. When `/var/log/journal/` does not exist, `systemd-journald` stores the journal under `/run/log/journal/`, which is in memory — so it starts empty at every boot, and the previous boot's record is gone. `-b -1` has nothing to read.
 
-The fix is to create the directory and restart the daemon: `mkdir -p /var/log/journal`, `systemd-journald` picks it up on `systemctl restart systemd-journald` (or at the next boot), and from then on `-b -1`, `-b -2` and so on work. Setting `Storage=persistent` in `/etc/systemd/journald.conf` makes it explicit rather than inferred from the directory's existence.
+The fix: `mkdir -p /var/log/journal`, then `systemctl restart systemd-journald` (or wait for the next boot). From then on `-b -1`, `-b -2` and so on work. Setting `Storage=persistent` in `/etc/systemd/journald.conf` makes the choice explicit instead of depending on whether a folder exists.
 
-Bound it while you are there, or a chatty service will fill the disk: `SystemMaxUse=2G` in the same file, or `journalctl --vacuum-time=30d` and `--vacuum-size=2G` to trim what is already stored. Check `journalctl --disk-usage` on any machine you have just been given.
+Put a cap on it while you are there, or a chatty service will fill the disk: `SystemMaxUse=2G` in the same file, or `journalctl --vacuum-time=30d` and `--vacuum-size=2G` to trim what is already stored. Run `journalctl --disk-usage` on any machine you have just been given.
 :::
 
 ## Summary
@@ -362,21 +381,100 @@ Bound it while you are there, or a chatty service will fill the disk: `SystemMax
 | Command | Does | Note |
 | --- | --- | --- |
 | `systemctl status NAME` | state, PID, cgroup, recent journal | `●` running, `○` stopped, `×` failed |
-| `Active: ... since Xs ago` | how long in this state | a few seconds, repeatedly, means crash-looping |
-| `systemctl start` / `stop` / `restart` / `reload` | now | `reload` needs `ExecReload` in the unit |
-| `systemctl enable` / `disable` | at boot — a symlink in a target's `wants` | orthogonal to running now |
+| `Active: ... since Xs ago` | how long in this state | a few seconds, every time, means crash-looping |
+| `systemctl start` / `stop` / `restart` / `reload` | now | `reload` needs `ExecReload=` |
+| `systemctl enable` / `disable` | at boot — a symlink in a target's `.wants` | separate from running now |
 | `systemctl is-active` / `is-enabled` / `is-failed` | scriptable, by exit status | `is-active` exits 3 when inactive |
-| `systemctl --failed` | everything broken, in one list | the first command on an unfamiliar machine |
+| `systemctl --failed` | everything broken, in one list | first command on an unfamiliar machine |
 | `systemctl is-system-running` | `running`, `degraded`, `starting`, `maintenance` | `degraded` sends you to `--failed` |
-| `systemctl cat NAME` | the unit file, its path and its drop-ins | what systemd actually assembled |
-| `systemctl daemon-reload` | re-read unit files | required after every edit |
+| `systemctl cat NAME` | the unit file, its path and drop-ins | what systemd assembled |
+| `systemctl daemon-reload` | re-read unit files | after every edit |
 | `systemctl edit NAME` | a drop-in override under `/etc` | survives package upgrades |
-| `systemd-analyze verify FILE` | parse and check a unit before loading it | exit 0 means it is well formed |
-| `ExecStart=` | absolute path, no shell | no `>`, no `\|`, no globs, no `$HOME` |
+| `systemd-analyze verify FILE` | check a unit before loading it | read the messages: "ignoring" still exits 0 |
+| `ExecStart=` | absolute path, no shell | no `>`, no `\|`, no wildcards, no `~` |
 | `Type=simple/forking/oneshot/notify` | how systemd decides it started | `simple` unless the program backgrounds itself |
-| `Restart=on-failure`, `RestartSec` | restart policy | with `StartLimitBurst` to stop a loop |
-| `journalctl -u NAME -f -n N` | one unit, follow, last N | the service's stdout is captured automatically |
+| `Restart=on-failure`, `RestartSec` | restart policy | `StartLimitBurst` stops a fast loop |
+| `journalctl -u NAME -f -n N` | one unit, follow, last N | the service's output is captured automatically |
 | `journalctl --since "-10 min" -p err -b -1 -k` | time, priority, boot, kernel | `-b -1` needs a persistent journal |
-| `journalctl --disk-usage`, `--vacuum-time=30d` | size, and bound it | tmpfs journal means logs die with the reboot |
+| `journalctl --disk-usage`, `--vacuum-time=30d` | size, and trim it | an in-memory journal dies with the reboot |
 
-Lesson 13 is the rest of the diagnosis kit — `df`, `du`, `lsblk`, `ip`, `ss`, `curl`, `strace`, `lsof` and `dmesg` — the commands for the half of the problems that are not a service at all.
+Lesson 13 is the rest of the diagnosis kit — `df`, `du`, `lsblk`, `ip`, `ss`, `curl`, `strace`, `lsof` and `dmesg` — for the half of the problems that are not a service at all.
+
+::: context daemon-word Why background programs are called daemons
+A **daemon** is a program that runs in the background with no terminal. Fernando Corbató, whose team at MIT used the word in the 1960s, said it was inspired by "Maxwell's demon", an imaginary helper in a physics thought experiment that works tirelessly out of sight. That is why so many service names end in `d`: `sshd` is the SSH daemon, `journald` the journal daemon, `systemd` the system daemon.
+:::
+
+::: context pid-1 The process with ID 1
+When Linux finishes starting, it runs exactly one program, and that program gets process ID 1. Every other process on the machine descends from it. On nearly all current distributions, including Ubuntu, Debian, Fedora and Red Hat Enterprise Linux, PID 1 is systemd. Because it is the ancestor of everything, it is in the right position to start services in order, watch them, and restart them when they die.
+:::
+
+::: context target A target is a milestone
+A **target** is a unit that does nothing itself; it groups other units into a milestone. `multi-user.target` means "the normal system is up, with networking and services, ready for logins" — the usual goal for a server. `graphical.target` is that plus a desktop. `network-online.target` means the network is actually configured. Saying `WantedBy=multi-user.target` puts your service on the list for that milestone.
+:::
+
+::: context unit-precedence Which copy of a unit wins
+If the same unit name exists in more than one folder, systemd uses the copy from the highest folder and ignores the rest. Drop-in folders like `NAME.d/` are different: their settings are *added on top* of whichever file won.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 160" font-family="Inter, Arial, sans-serif">
+  <rect x="20" y="15" width="230" height="36" rx="5" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="135" y="38" font-size="12" text-anchor="middle" fill="#1f2a44">/etc/systemd/system</text>
+  <rect x="20" y="62" width="230" height="36" rx="5" fill="#fff" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="135" y="85" font-size="12" text-anchor="middle" fill="#1f2a44">/run/systemd/system</text>
+  <rect x="20" y="109" width="230" height="36" rx="5" fill="#fff" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="135" y="132" font-size="12" text-anchor="middle" fill="#1f2a44">/usr/lib/systemd/system</text>
+  <line x1="290" y1="140" x2="290" y2="28" stroke="#1d6fd1" stroke-width="2"/>
+  <polygon points="290,18 284,30 296,30" fill="#1d6fd1"/>
+  <text x="305" y="60" font-size="11" fill="#1d6fd1">wins</text>
+  <text x="305" y="132" font-size="11" fill="#6c7a93">loses</text>
+</svg>
+```
+:::
+
+::: context cgroup A fence around a service
+A **control group** (cgroup) is a kernel feature that puts a set of processes in one labeled group, whose members can be counted, limited and stopped together. Every child a process starts joins the same group automatically, and forking or backgrounding itself does not get it out. That is how systemd knows that `sleep 1` belongs to `sim-sweep` even though the service never mentioned it.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">
+  <rect x="15" y="15" width="330" height="120" rx="10" fill="#fff" stroke="#1d6fd1" stroke-width="2" stroke-dasharray="6 4"/>
+  <text x="25" y="34" font-size="12" fill="#1d6fd1">/system.slice/sim-sweep.service</text>
+  <rect x="40" y="50" width="200" height="30" rx="5" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="140" y="70" font-size="12" text-anchor="middle" fill="#1f2a44">492 run_sweep.sh (main)</text>
+  <line x1="80" y1="80" x2="80" y2="110" stroke="#1f2a44" stroke-width="1.5"/>
+  <line x1="80" y1="110" x2="120" y2="110" stroke="#1f2a44" stroke-width="1.5"/>
+  <rect x="120" y="96" width="120" height="28" rx="5" fill="#f2b880" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="180" y="115" font-size="12" text-anchor="middle" fill="#1f2a44">499 sleep 1</text>
+  <text x="300" y="112" font-size="11" text-anchor="middle" fill="#6c7a93">stop ends all</text>
+</svg>
+```
+:::
+
+::: context enable-symlink What enable actually changes
+Enabling writes one symbolic link; disabling deletes it. At boot, systemd walks toward `multi-user.target`, looks in its `.wants` folder, and starts every unit it finds linked there.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 130" font-family="Inter, Arial, sans-serif">
+  <rect x="10" y="15" width="200" height="50" rx="6" fill="#fff" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="110" y="35" font-size="11" text-anchor="middle" fill="#1f2a44">multi-user.target.wants/</text>
+  <text x="110" y="54" font-size="12" text-anchor="middle" fill="#1d6fd1">sim-sweep.service (link)</text>
+  <line x1="210" y1="50" x2="248" y2="80" stroke="#1d6fd1" stroke-width="2" stroke-dasharray="5 3"/>
+  <polygon points="255,86 243,83 250,74" fill="#1d6fd1"/>
+  <rect x="185" y="86" width="165" height="34" rx="6" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="267" y="107" font-size="11" text-anchor="middle" fill="#1f2a44">sim-sweep.service (file)</text>
+  <text x="10" y="100" font-size="11" fill="#6c7a93">enable adds the link</text>
+  <text x="10" y="116" font-size="11" fill="#6c7a93">disable removes it</text>
+</svg>
+```
+:::
+
+::: context log-priority Eight levels of bad news
+The priorities are numbered, a scheme borrowed from the older syslog system: 0 emerg, 1 alert, 2 crit, 3 err, 4 warning, 5 notice, 6 info, 7 debug. A smaller number is more urgent. `-p err` means "priority 3 or more urgent", so it shows levels 0 through 3.
+:::
+
+::: context restart-limit When the rate limiter never trips
+The limiter counts *starts* inside a sliding window: with the defaults, five starts within 10 seconds. The default `RestartSec` is only 100 milliseconds, so a program that dies instantly reaches five starts in well under a second and gets stopped. But with `RestartSec=5`, starts come at most every 5 seconds, so at most three fit in any 10-second window. The limit is never reached, and the service can loop forever — which is exactly why the `since 4s ago` clue matters.
+:::
+
+::: context tmpfs A filesystem made of memory
+A **tmpfs** is a filesystem that lives in RAM instead of on a disk. It is fast and needs no cleanup, because it starts empty at every boot. Linux puts `/run` on a tmpfs for exactly that reason: it holds things that only make sense while the machine is up, like process ID files and sockets. A log kept there has the same lifetime — until the power goes.
+:::

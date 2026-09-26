@@ -212,7 +212,7 @@ class Harness {
   }
 
   /** Launches the app; resolves with the ElectronApplication plus an `exited` promise. */
-  async launch(label) {
+  async launch(label, extraEnv = {}) {
     this.launches += 1
     const tag = `${String(this.launches).padStart(2, '0')}-${label}`
     log(`launch ${tag}`)
@@ -229,6 +229,7 @@ class Harness {
         ORBIT_E2E: '1',
         ORBIT_USER_DATA: this.userData,
         ORBIT_UPDATE_API_BASE: this.apiBase,
+        ...extraEnv,
       },
       timeout: 45_000,
     })
@@ -440,12 +441,13 @@ async function screenshot(page, name, locatorToReveal) {
 
 const STEPS = [
   [1, 'Fake GitHub API + bundle fixture (headers asserted across the whole run)'],
-  [2, 'Launch: splash screenshot, main window, bridge versions, home screenshot'],
+  [2, 'Launch: splash screenshot, main window, bridge versions, home screenshot, screen wake lock'],
   [3, 'Settings: check → 9.9.9 → download → restart; bundle on disk; current.json'],
   [4, 'Relaunch on 9.9.9, roll back, relaunch on built-in'],
   [5, 'Quarantine: bundles that never call ready(), or crash in their first render, are quit and blacklisted'],
   [6, 'Token: Bearer sent to the API, dropped after the redirect'],
-  [7, 'Every assertion passed'],
+  [7, 'Automatic: check → downloads and stages on its own → quit (no restart) → next launch is 9.9.9'],
+  [8, 'Every assertion passed'],
 ]
 const results = new Map()
 const record = (step, ok, note = '') => results.set(step, { ok, note })
@@ -577,6 +579,19 @@ async function main() {
           `home.png is 1280×${820 - menuBarHeight} (the 1280×820 window${menuBarHeight ? ` minus the ${menuBarHeight} px in-window menu bar on ${win.platform}` : ''}; got ${homeSize.width}×${homeSize.height})`,
         )
       }
+
+      // The shell refuses every permission but this one: a Mac that sleeps in
+      // the middle of a long read is the thing it exists to stop.
+      const wake = await page.evaluate(() =>
+        navigator.wakeLock
+          ? navigator.wakeLock.request('screen').then((l) => l.release().then(() => 'granted'), (e) => `refused: ${e.name}`)
+          : 'no Wake Lock API',
+      )
+      assertEqual(wake, 'granted', 'screen wake lock in the app window')
+      const geo = await page.evaluate(
+        () => new Promise((resolve) => navigator.geolocation.getCurrentPosition(() => resolve('granted'), (e) => resolve(`refused: ${e.code}`), { timeout: 3000 })),
+      )
+      assert(geo !== 'granted', `every other permission is still refused (geolocation: ${geo})`)
     })
 
     // 3 ───────────────────────────────────────────────────────────────────────
@@ -738,13 +753,44 @@ async function main() {
 
     // 7 ───────────────────────────────────────────────────────────────────────
     await runStep(7, async () => {
+      handle = await harness.launch('auto', { ORBIT_AUTO_UPDATE: '1' })
+      page = await harness.waitForMain(handle)
+      const before = await page.evaluate(() => window.orbit.updates.getState())
+      assertEqual(before.autoUpdate, true, 'state.autoUpdate with ORBIT_AUTO_UPDATE=1')
+      assertEqual(before.current, BUILT_IN_VERSION, 'running the built-in bundle before the update')
+
+      // No Download, no Restart: the check alone brings it in.
+      await page.evaluate(() => window.orbit.updates.check())
+      const ready = await waitForStatus(page, (s) => s === 'ready' || s === 'error', 60_000, 'the automatic download to finish')
+      assertEqual(ready.status, 'ready', `status after the automatic download${ready.error ? ` (error: ${ready.error})` : ''}`)
+      assertEqual(ready.staged, true, 'state.staged')
+      const current = readJson(currentFile)
+      assertEqual(current.version, UPDATE_VERSION, 'current.json.version staged for the next launch')
+      assertEqual(current.previous, BUILT_IN_VERSION, 'current.json.previous kept for the watchdog')
+
+      const card = await openSettings(page)
+      await card.getByText(/opens next time you start ORBIT/).first().waitFor({ timeout: 10_000 })
+      assert(true, 'Settings says the update opens next time')
+      await screenshot(page, 'settings-staged.png', card)
+
+      // An ordinary quit — nobody presses Restart now.
+      await harness.closeCurrent()
+      handle = await harness.launch('auto-next')
+      page = await harness.waitForMain(handle)
+      const info = await harness.bridge(page)
+      assertEqual(info.versions?.bundle, UPDATE_VERSION, 'orbit.versions.bundle on the next ordinary launch')
+      await harness.closeCurrent()
+    })
+
+    // 8 ───────────────────────────────────────────────────────────────────────
+    await runStep(8, async () => {
       assert(github.state.failures.length === 0, `fake GitHub recorded no header violations across ${github.state.requests.length} requests`)
       for (const name of ['splash.png', 'home.png', 'settings-updates.png']) {
         if (fs.existsSync(path.join(outDir, name))) log(`  ok release/e2e/${name} written`)
         else warn(`release/e2e/${name} was not produced on this display`)
       }
       const failedSteps = [...results.entries()].filter(([, r]) => !r.ok)
-      assert(failedSteps.length === 0, 'steps 1–6 all passed')
+      assert(failedSteps.length === 0, 'steps 1–7 all passed')
     })
   } catch (err) {
     failed = true
@@ -765,7 +811,7 @@ async function main() {
 
   if (!failed && github.state.failures.length) {
     failed = true
-    record(7, false, github.state.failures.join('; '))
+    record(8, false, github.state.failures.join('; '))
   }
   printSummary()
   if (failed) {

@@ -159,6 +159,36 @@ idle → checking → up-to-date | available | shell-required | error
 - The app therefore jumps straight to the latest release whatever version it is on;
   only shells from before 1.1.1, which have no `downloadApp`, fall back to the DMG link.
 
+### Automatic updates (1.1.3+)
+
+With `autoUpdate` (on unless `ORBIT_AUTO_UPDATE=0`), updates arrive the way they do
+in any other app, with nothing to press:
+
+- Whatever **check** finds is fetched in the background: `download()` for a bundle,
+  `downloadShell()` for an app when the release needs one and this copy can replace
+  itself. Checks run 4 s after launch, every hour from the main process (so ORBIT
+  sitting in the dock with no window still keeps up), and every 30 minutes or on focus
+  from the renderer.
+- A verified bundle is **staged**: `current.json = { version: new, previous: active }`
+  is written at once, so the next launch opens it whether or not anyone presses
+  Restart now (which still works, and simply relaunches into it). The running session
+  is untouched. State carries `staged: true`. If the staged bundle never boots, the
+  watchdog's `quarantine()` sends the launch after back to `previous`.
+- A verified app is swapped in **on quit**: `will-quit` calls `installOnExit()`, which
+  starts the same swap script with `reopen = 0`, so the new app is simply there next
+  time. Install and reopen still installs it straight away.
+- State carries `autoUpdate: true`. On older shells, which lack all of this, the
+  renderer starts the downloads itself (`src/lib/updateWatch.ts`), and a restart
+  finishes the update.
+
+1.1.3 moved `minShell` to 1.1.3 once, so every install picks up this shell: the
+automatic updates above, and the window allowing `screen-wake-lock` (every other
+permission is still refused), which is how the renderer keeps the display awake.
+
+`orbit.minShell` only moves when a bundle genuinely cannot run on older shells — every
+bump sends everyone a whole app instead of a small bundle, so keep it where it is
+unless the bridge the bundle needs has changed.
+
 Release manifest (`orbit-manifest.json`, written by `scripts/make-bundle.mjs`):
 
 ```json
@@ -229,7 +259,8 @@ the dev URL's origin); permission requests are denied; webviews cannot attach.
 | --- | --- |
 | `ORBIT_UPDATE_API_BASE` | GitHub API base (default `https://api.github.com`); the e2e run points it at a local fake |
 | `ORBIT_USER_DATA` | `userData` directory, set before ready |
-| `ORBIT_E2E=1` | Splash minimum 300 ms, boot watchdog 3 s, no auto-check, and apply/rollback quit instead of relaunching so a harness can relaunch itself |
+| `ORBIT_E2E=1` | Splash minimum 300 ms, boot watchdog 3 s, no auto-check, no automatic downloads (unless `ORBIT_AUTO_UPDATE=1`), and apply/rollback quit instead of relaunching so a harness can relaunch itself |
+| `ORBIT_AUTO_UPDATE=0` | Turn off automatic downloads, staging and install-on-quit; the Settings buttons do it all by hand |
 | `ORBIT_DEV_URL` | Load a Vite dev server instead of `app://orbit/` |
 
 ## Packaging

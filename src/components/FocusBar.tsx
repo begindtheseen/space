@@ -33,6 +33,7 @@ import {
 } from '@/engine/focus'
 import { useLearner } from '@/hooks/useLearner'
 import { navigate, useRoute } from '@/lib/router'
+import { useWakeLock } from '@/lib/wakeLock'
 import './focus-bar.css'
 
 export function FocusBar() {
@@ -69,6 +70,8 @@ function Strip({
   }, [parking])
 
   const done = isComplete(run)
+  // A running block keeps the screen on however long she goes without touching it.
+  useWakeLock('focus', !run.pausedAt && !done)
   const left = remainingMs(run)
   const locked = isLocked(run)
   const pauseIn = pauseAvailableIn(run)

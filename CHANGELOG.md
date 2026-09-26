@@ -8,6 +8,61 @@ the entry for the one you are running is what Settings shows you afterwards.
 Newest first. Each heading is exactly `## <version>` so both readers can find
 it.
 
+## 1.1.3
+
+**Highlight anything and press Explain.** Select a word, a formula or a sentence in a lesson and
+an Explain button appears. It opens the panel beside the lesson with what the course already says
+about those words: the note that explains them, which lesson it comes from and whether you have
+read it, a flashcard if one defines it, and the places in lessons you have read where you met the
+words before, one tap away. It is instant, works offline and sends nothing anywhere. When nothing
+you have read covers it yet, it says so and shows you which lesson does. Every context note also
+has a "Still fuzzy?" button that shows where else the same idea comes up.
+
+**Tap the underlined words for the story behind them.** Lessons now have context notes, like the
+explanations on a lyrics site: tap an underlined phrase and a panel opens beside the lesson with
+what it means, why it matters and, often, a picture. The lesson slides over so the panel never
+covers what you are reading.
+
+**Find your starting point.** A placement test, offered on the dashboard, asks short
+questions from counting and decimals up to logarithms. "I don't know" is a good answer. At the end
+you get a plan — the lessons you need, in order, and the ones you can skip — and Next up follows it.
+
+**Basecamp: the maths under everything.** A new first module of twelve lessons: place value,
+decimals, factors, fractions from the ground up, formulas, equations, graphs, angles, area and
+volume, square roots and Pythagoras, the metric system, and speed and averages. Each one is
+written for someone meeting the idea for the first time, and each teaches only what the later
+lessons actually use.
+
+**The first modules are rewritten in plain words.** Algebra and Trigonometry now explain every
+step and every new word, with the same maths underneath. More modules follow in updates.
+
+**Learn to code has its own focus blocks.** Start a focus block on a coding lesson and the block
+keeps you in that course, the same way a study block keeps you in a module.
+
+**Your Mac stays awake while you use ORBIT.** The screen no longer dims and sleeps in the
+middle of a long read. It stays on while a focus block is running, while a lesson is being read
+aloud, and for fifteen minutes after you last scroll, click or type — then it is allowed to sleep
+as normal.
+
+**This is the last app update you install by hand.** Keeping the screen awake needs the app
+itself to be newer, so Settings will offer "Update to 1.1.3" once: two taps, and ORBIT replaces
+itself and reopens. After that, updates happen on their own.
+
+**ORBIT updates itself, like any other app.** When a new version comes out it downloads in the
+background while you work: no Settings trip and no Download button. Most updates are small
+(about 11 MB) and slot into the app you already have, and the new version is simply there the
+next time you open ORBIT — or restart when the bell says so to get it straight away. The rare
+update that needs a whole new app downloads quietly too, and goes in when you quit.
+
+**Read aloud says equations properly.** A centred dot is read as "times" (it stays "dot" between
+two vectors, where it is the dot product). Powers are "to the power of" — "10 to the power of
+minus 3" — and one half, three halves, transpose, inverse, star and prime are named rather than
+read as numbers. Degrees are read as degrees everywhere: "65 degrees", "1 degree", "12.3 degrees
+per second", "20 degrees Celsius", where before the voice said "circ" or "degrees slash s".
+Matrices are read row by row, cases as "this, if that", integrals and sums with their limits
+("the integral from 0 to T of"), sets as "the set of x such that", and 3 × 10⁸, 10^6 and m² in
+ordinary text come out as words.
+
 ## 1.1.2
 
 **Focus mode changes how the app looks.** While a block runs, the rail, the top bar and the

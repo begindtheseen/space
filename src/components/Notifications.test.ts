@@ -68,4 +68,37 @@ describe('notesFor', () => {
       expect(n.title.length, n.id).toBeGreaterThan(0)
     }
   })
+
+  it('says nothing while an update is found or on its way, since it downloads itself', () => {
+    for (const status of ['available', 'downloading', 'checking'] as const) {
+      expect(notesFor(base(), { status }).some((n) => n.id === 'update' || n.id === 'shell')).toBe(false)
+    }
+  })
+
+  const on = (update: Parameters<typeof notesFor>[1]) => notesFor(base(), update, [], new Date(), true)
+
+  it('says nothing while an update is on its way on the desktop either', () => {
+    for (const status of ['available', 'downloading', 'checking'] as const) {
+      expect(on({ status }).some((n) => n.id === 'update' || n.id === 'shell')).toBe(false)
+    }
+    expect(on({ status: 'shell-required', shellUpdate: { status: 'downloading', version: '2.0.0' } }).some((n) => n.id === 'shell')).toBe(false)
+  })
+
+  it('asks for a restart only when the update will not open by itself next launch', () => {
+    const staged = on({ status: 'ready', staged: true }).find((n) => n.id === 'update')
+    expect(staged?.title).toBe('ORBIT has updated')
+    expect(staged?.urgent).toBeFalsy()
+    const waiting = on({ status: 'ready' }).find((n) => n.id === 'update')
+    expect(waiting?.title).toBe('Restart to finish updating')
+    expect(waiting?.urgent).toBe(true)
+  })
+
+  it('tells her a downloaded app goes in on quit when the shell does that', () => {
+    const auto = on({ status: 'shell-required', autoUpdate: true, shellUpdate: { status: 'ready', version: '2.0.0' } }).find((n) => n.id === 'shell')
+    expect(auto?.detail).toMatch(/when you quit/)
+    expect(auto?.urgent).toBeFalsy()
+    const manual = on({ status: 'shell-required', shellUpdate: { status: 'manual', version: '2.0.0' } }).find((n) => n.id === 'shell')
+    expect(manual?.title).toBe('A newer ORBIT app is available')
+    expect(manual?.urgent).toBe(true)
+  })
 })

@@ -16,7 +16,10 @@ export function installGlobalGuards() {
   app.on('web-contents-created', (_event, contents) => {
     contents.on('will-attach-webview', (event) => event.preventDefault())
   })
-  session.defaultSession.setPermissionRequestHandler((_contents, _permission, callback) => callback(false))
+  // Every permission is refused except keeping the screen awake, which a
+  // lesson, a read-aloud or a focus block asks for (src/lib/wakeLock.ts): the
+  // Mac otherwise dims and sleeps in the middle of a long read.
+  session.defaultSession.setPermissionRequestHandler((_contents, permission, callback) => callback(permission === 'screen-wake-lock'))
 }
 
 function isHttps(url) {

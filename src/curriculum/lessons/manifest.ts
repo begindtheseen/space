@@ -1588,7 +1588,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-the-filesystem-and-getting-around",
       "title": "The filesystem, paths, and moving things about",
-      "minutes": 21,
+      "minutes": 22,
       "covers": [
         "Filesystem hierarchy, absolute vs relative paths, ~ . ..",
         "ls cd cp mv rm mkdir ln (hard vs symbolic links)"
@@ -1598,7 +1598,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-reading-files-without-an-editor",
       "title": "Reading files without an editor",
-      "minutes": 18,
+      "minutes": 20,
       "covers": [
         "cat less head tail -f wc"
       ],
@@ -1643,7 +1643,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-diffs-archives-and-moving-data",
       "title": "Diffs, archives and moving data between machines",
-      "minutes": 20,
+      "minutes": 22,
       "covers": [
         "diff/patch, tar, gzip, zstd, rsync, scp"
       ],
@@ -1661,7 +1661,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-tmux-sessions-windows-and-panes",
       "title": "tmux — sessions, windows and panes",
-      "minutes": 19,
+      "minutes": 21,
       "covers": [
         "tmux sessions, windows, panes, detach/attach"
       ],
@@ -1670,7 +1670,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-environment-path-and-startup-files",
       "title": "The environment, PATH, and startup files",
-      "minutes": 20,
+      "minutes": 22,
       "covers": [
         "Environment variables, PATH, .bashrc vs .bash_profile"
       ],
@@ -1679,7 +1679,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-packages-and-building-from-source",
       "title": "Packages, and building from source",
-      "minutes": 19,
+      "minutes": 21,
       "covers": [
         "Package management (apt/dnf) and building from source"
       ],
@@ -1688,7 +1688,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-systemd-services-and-the-journal",
       "title": "systemd services and the journal",
-      "minutes": 20,
+      "minutes": 21,
       "covers": [
         "systemd: systemctl, journalctl"
       ],
@@ -2080,11 +2080,121 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       "file": "cod_py_02_idiomatic/13-package-layout.md"
     }
   ],
+  "t0_m00_basecamp": [
+    {
+      "id": "l01-place-value-and-estimating",
+      "title": "Place value, big numbers and estimating",
+      "minutes": 23,
+      "covers": [
+        "place value, big numbers and estimating"
+      ],
+      "file": "t0_m00_basecamp/01-place-value-and-estimating.md"
+    },
+    {
+      "id": "l02-decimals-and-rounding",
+      "title": "Decimals and rounding",
+      "minutes": 24,
+      "covers": [
+        "decimals and rounding"
+      ],
+      "file": "t0_m00_basecamp/02-decimals-and-rounding.md"
+    },
+    {
+      "id": "l03-factors-and-primes",
+      "title": "Multiplication, division, factors and primes",
+      "minutes": 26,
+      "covers": [
+        "multiplication, division, factors and primes"
+      ],
+      "file": "t0_m00_basecamp/03-factors-and-primes.md"
+    },
+    {
+      "id": "l04-fractions-from-the-ground-up",
+      "title": "Fractions from the ground up",
+      "minutes": 25,
+      "covers": [
+        "fractions from the ground up"
+      ],
+      "file": "t0_m00_basecamp/04-fractions-from-the-ground-up.md"
+    },
+    {
+      "id": "l05-variables-and-formulas",
+      "title": "Variables, expressions and formulas",
+      "minutes": 17,
+      "covers": [
+        "variables, expressions and formulas"
+      ],
+      "file": "t0_m00_basecamp/05-variables-and-formulas.md"
+    },
+    {
+      "id": "l06-solving-simple-equations",
+      "title": "Solving simple equations",
+      "minutes": 17,
+      "covers": [
+        "solving simple equations"
+      ],
+      "file": "t0_m00_basecamp/06-solving-simple-equations.md"
+    },
+    {
+      "id": "l07-graphs-and-the-coordinate-plane",
+      "title": "The coordinate plane and reading graphs",
+      "minutes": 17,
+      "covers": [
+        "the coordinate plane and reading graphs"
+      ],
+      "file": "t0_m00_basecamp/07-graphs-and-the-coordinate-plane.md"
+    },
+    {
+      "id": "l08-angles-and-shapes",
+      "title": "Angles and shapes",
+      "minutes": 23,
+      "covers": [
+        "angles and shapes"
+      ],
+      "file": "t0_m00_basecamp/08-angles-and-shapes.md"
+    },
+    {
+      "id": "l09-perimeter-area-and-volume",
+      "title": "Perimeter, area and volume",
+      "minutes": 21,
+      "covers": [
+        "perimeter, area and volume"
+      ],
+      "file": "t0_m00_basecamp/09-perimeter-area-and-volume.md"
+    },
+    {
+      "id": "l10-square-roots-and-pythagoras",
+      "title": "Squares, square roots and Pythagoras",
+      "minutes": 22,
+      "covers": [
+        "squares, square roots and the Pythagorean theorem"
+      ],
+      "file": "t0_m00_basecamp/10-square-roots-and-pythagoras.md"
+    },
+    {
+      "id": "l11-the-metric-system",
+      "title": "The metric system and measuring",
+      "minutes": 23,
+      "covers": [
+        "the metric system and measurement"
+      ],
+      "file": "t0_m00_basecamp/11-the-metric-system.md"
+    },
+    {
+      "id": "l12-speed-rates-and-averages",
+      "title": "Speed, rates and averages",
+      "minutes": 20,
+      "covers": [
+        "speed, rates and averages"
+      ],
+      "file": "t0_m00_basecamp/12-speed-rates-and-averages.md"
+    }
+  ],
   "t0_m01_algebra_precalc": [
     {
       "id": "l01-signed-numbers-and-fractions",
       "title": "Signed numbers, fractions and ratios",
-      "minutes": 16,
+      "minutes": 18,
       "covers": [
         "arithmetic with signed numbers and fractions"
       ],
@@ -2093,7 +2203,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-exponents-and-radicals",
       "title": "Exponents, radicals and scaling laws",
-      "minutes": 16,
+      "minutes": 24,
       "covers": [
         "exponents and radicals"
       ],
@@ -2102,7 +2212,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-polynomials-and-factoring",
       "title": "Polynomials, expanding and factoring",
-      "minutes": 16,
+      "minutes": 21,
       "covers": [
         "polynomial manipulation and factoring"
       ],
@@ -2111,7 +2221,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-linear-and-quadratic-equations",
       "title": "Linear and quadratic equations",
-      "minutes": 16,
+      "minutes": 22,
       "covers": [
         "linear and quadratic equations"
       ],
@@ -2120,7 +2230,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-systems-of-equations",
       "title": "Systems of equations",
-      "minutes": 14,
+      "minutes": 22,
       "covers": [
         "systems of equations"
       ],
@@ -2129,7 +2239,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-functions",
       "title": "Functions, domain, range, composition and inverses",
-      "minutes": 21,
+      "minutes": 24,
       "covers": [
         "functions: domain, range, composition, inverses"
       ],
@@ -2138,7 +2248,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-exponentials-and-logarithms",
       "title": "Exponentials, logarithms and the rocket equation",
-      "minutes": 17,
+      "minutes": 21,
       "covers": [
         "exponentials and logarithms"
       ],
@@ -2147,7 +2257,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-sequences-and-series",
       "title": "Sequences, series and sigma notation",
-      "minutes": 15,
+      "minutes": 21,
       "covers": [
         "sequences, series, and sigma notation"
       ],
@@ -2156,7 +2266,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-inequalities",
       "title": "Inequalities and design constraints",
-      "minutes": 19,
+      "minutes": 24,
       "covers": [
         "inequalities"
       ],
@@ -2165,7 +2275,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-units-and-dimensional-analysis",
       "title": "Units, conversions and dimensional analysis",
-      "minutes": 17,
+      "minutes": 21,
       "covers": [
         "units and dimensional analysis"
       ],
@@ -2174,7 +2284,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-scientific-notation-and-significant-figures",
       "title": "Scientific notation and significant figures",
-      "minutes": 19,
+      "minutes": 24,
       "covers": [
         "scientific notation and significant figures"
       ],
@@ -2183,7 +2293,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-fermi-estimation",
       "title": "Order-of-magnitude estimation",
-      "minutes": 20,
+      "minutes": 27,
       "covers": [
         "order-of-magnitude (Fermi) estimation"
       ],
@@ -2194,7 +2304,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-angles-radians-unit-circle",
       "title": "Angles, radians and the unit circle",
-      "minutes": 20,
+      "minutes": 26,
       "covers": [
         "radians vs degrees",
         "the unit circle"
@@ -2204,7 +2314,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-sin-cos-tan-inverses",
       "title": "Sine, cosine, tangent and their inverses",
-      "minutes": 20,
+      "minutes": 22,
       "covers": [
         "sin, cos, tan and their inverses"
       ],
@@ -2213,7 +2323,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-atan2-quadrants-wrapping",
       "title": "atan2, quadrants and angle wrapping",
-      "minutes": 20,
+      "minutes": 22,
       "covers": [
         "atan2 and quadrant correctness"
       ],
@@ -2222,7 +2332,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-trig-identities",
       "title": "Trigonometric identities",
-      "minutes": 16,
+      "minutes": 23,
       "covers": [
         "identities: Pythagorean, sum/difference, double-angle"
       ],
@@ -2231,7 +2341,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-law-of-sines-and-cosines",
       "title": "The law of sines and the law of cosines",
-      "minutes": 19,
+      "minutes": 26,
       "covers": [
         "law of sines and law of cosines"
       ],
@@ -2240,7 +2350,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-small-angle-approximations",
       "title": "Small-angle approximations",
-      "minutes": 17,
+      "minutes": 21,
       "covers": [
         "small-angle approximations"
       ],
@@ -2249,7 +2359,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-polar-and-spherical-coordinates",
       "title": "Polar, spherical and geodetic coordinates",
-      "minutes": 19,
+      "minutes": 24,
       "covers": [
         "polar and spherical coordinates"
       ],
@@ -2258,7 +2368,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-conic-sections",
       "title": "Conic sections and the shape of orbits",
-      "minutes": 17,
+      "minutes": 20,
       "covers": [
         "conic sections in geometric and polar form"
       ],
@@ -2267,7 +2377,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-complex-numbers-and-euler",
       "title": "Complex numbers and the Euler formula",
-      "minutes": 18,
+      "minutes": 21,
       "covers": [
         "complex numbers and Euler formula"
       ],
@@ -2307,7 +2417,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-classes-and-pytest",
       "title": "Classes and pytest: a tested Vec3 and Quaternion",
-      "minutes": 20,
+      "minutes": 24,
       "covers": [
         "Python syntax, control flow, functions, classes",
         "pytest and test-driven numerical code"
@@ -2317,7 +2427,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-numpy-arrays",
       "title": "NumPy: arrays, broadcasting and vectorised thinking",
-      "minutes": 22,
+      "minutes": 23,
       "covers": [
         "NumPy arrays, broadcasting, vectorisation, dtypes, float64 semantics"
       ],
@@ -2326,7 +2436,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-floating-point",
       "title": "Floating point: machine epsilon and catastrophic cancellation",
-      "minutes": 20,
+      "minutes": 23,
       "covers": [
         "floating-point pitfalls: catastrophic cancellation, machine epsilon"
       ],
@@ -2344,7 +2454,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-matplotlib",
       "title": "matplotlib: figures a design review will accept",
-      "minutes": 21,
+      "minutes": 20,
       "covers": [
         "matplotlib and publication-grade plots"
       ],
@@ -2353,7 +2463,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-telemetry-csv-hdf5",
       "title": "Telemetry files: reading and plotting CSV and HDF5",
-      "minutes": 21,
+      "minutes": 22,
       "covers": [
         "reading and plotting CSV / HDF5 telemetry"
       ],
@@ -2364,7 +2474,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-vectors-norms-dot-product",
       "title": "Vectors, norms and the dot product",
-      "minutes": 19,
+      "minutes": 23,
       "covers": [
         "vectors, dot and cross products, norms, projections"
       ],
@@ -2373,7 +2483,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-matrices-as-linear-maps",
       "title": "Matrices as linear maps",
-      "minutes": 21,
+      "minutes": 25,
       "covers": [
         "matrix multiplication as composition of maps",
         "identity, inverse, transpose"
@@ -2383,7 +2493,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-gaussian-elimination-and-lu",
       "title": "Gaussian elimination and LU factorisation",
-      "minutes": 18,
+      "minutes": 20,
       "covers": [
         "Gaussian elimination and LU factorisation"
       ],
@@ -2735,7 +2845,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-first-order-odes",
       "title": "First-order ODEs and the actuator lag",
-      "minutes": 20,
+      "minutes": 23,
       "covers": [
         "first-order ODEs: separable, linear, integrating factor"
       ],
@@ -2744,7 +2854,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-second-order-characteristic-equation",
       "title": "Second-order equations and the characteristic equation",
-      "minutes": 20,
+      "minutes": 22,
       "covers": [
         "second-order linear constant-coefficient ODEs and the characteristic equation"
       ],
@@ -2753,7 +2863,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-damped-oscillator-zeta-omega-n",
       "title": "The damped oscillator, natural frequency and damping ratio",
-      "minutes": 19,
+      "minutes": 22,
       "covers": [
         "the damped oscillator: natural frequency and damping ratio"
       ],
@@ -2762,7 +2872,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-state-space-and-matrix-exponential",
       "title": "State-space form and the matrix exponential",
-      "minutes": 18,
+      "minutes": 22,
       "covers": [
         "systems of first-order ODEs and state-space form",
         "matrix exponential solution"
@@ -2772,7 +2882,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-forced-response-and-resonance",
       "title": "Forced response and resonance",
-      "minutes": 18,
+      "minutes": 20,
       "covers": [
         "forced response and resonance"
       ],
@@ -2781,7 +2891,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-laplace-transform-partial-fractions",
       "title": "The Laplace transform, partial fractions, and the value theorems",
-      "minutes": 18,
+      "minutes": 21,
       "covers": [
         "Laplace transform, inverse transform, partial fractions",
         "initial and final value theorems"
@@ -2791,7 +2901,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-transfer-functions-convolution-impulse",
       "title": "Transfer functions, impulse response and convolution",
-      "minutes": 22,
+      "minutes": 24,
       "covers": [
         "transfer functions",
         "convolution and impulse response"
@@ -3288,7 +3398,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-newton-laws-inertial-frames",
       "title": "Newton's laws and inertial frames",
-      "minutes": 21,
+      "minutes": 22,
       "covers": [
         "Newton laws and inertial frames"
       ],
@@ -3297,7 +3407,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-force-momentum-impulse",
       "title": "Force, momentum and impulse",
-      "minutes": 20,
+      "minutes": 24,
       "covers": [
         "force, momentum, impulse"
       ],
@@ -3306,7 +3416,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-work-energy-theorem",
       "title": "Work, kinetic energy and power",
-      "minutes": 21,
+      "minutes": 23,
       "covers": [
         "the work-energy theorem"
       ],
@@ -3315,7 +3425,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-conservative-forces-potential-energy",
       "title": "Conservative forces and potential energy",
-      "minutes": 20,
+      "minutes": 23,
       "covers": [
         "conservative forces and potential energy"
       ],
@@ -3323,8 +3433,8 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     },
     {
       "id": "l05-systems-of-particles-centre-of-mass",
-      "title": "Systems of particles and the centre of mass",
-      "minutes": 23,
+      "title": "Systems of particles and the center of mass",
+      "minutes": 24,
       "covers": [
         "systems of particles and the centre of mass"
       ],
@@ -3342,7 +3452,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-ascent-losses-gravity-turn",
       "title": "Gravity, drag and steering losses on ascent",
-      "minutes": 21,
+      "minutes": 22,
       "covers": [
         "variable-mass systems and the rocket equation done properly"
       ],
@@ -3372,7 +3482,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-rigid-body-kinematics",
       "title": "Rigid body kinematics and the angular velocity vector",
-      "minutes": 18,
+      "minutes": 23,
       "covers": [
         "rigid body kinematics and the angular velocity vector"
       ],
@@ -3381,7 +3491,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-inertia-tensor-and-parallel-axis-theorem",
       "title": "The inertia tensor and the parallel axis theorem",
-      "minutes": 20,
+      "minutes": 24,
       "covers": [
         "the moment of inertia tensor, products of inertia, parallel axis theorem"
       ],
@@ -3390,7 +3500,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-principal-axes-and-principal-moments",
       "title": "Principal axes and principal moments",
-      "minutes": 20,
+      "minutes": 22,
       "covers": [
         "principal axes and principal moments"
       ],
@@ -3891,7 +4001,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-two-body-equation",
       "title": "Newton's gravitation and the two-body equation",
-      "minutes": 16,
+      "minutes": 21,
       "covers": [
         "Newton law of gravitation and the restricted two-body equation"
       ],
@@ -3900,7 +4010,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-constants-of-motion",
       "title": "Constants of motion – angular momentum, energy and the eccentricity vector",
-      "minutes": 16,
+      "minutes": 22,
       "covers": [
         "constants of motion: specific angular momentum, eccentricity vector, specific energy"
       ],
@@ -3909,7 +4019,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-orbit-equation-conics",
       "title": "The orbit equation and conic sections",
-      "minutes": 17,
+      "minutes": 20,
       "covers": [
         "the orbit equation and conic sections"
       ],
@@ -3918,7 +4028,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-kepler-laws-vis-viva",
       "title": "Kepler's three laws and the vis-viva equation",
-      "minutes": 16,
+      "minutes": 21,
       "covers": [
         "Kepler three laws, derived",
         "vis-viva"
@@ -3928,7 +4038,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-orbit-families",
       "title": "Circular, elliptical, parabolic and hyperbolic orbits",
-      "minutes": 16,
+      "minutes": 20,
       "covers": [
         "circular, elliptical, parabolic and hyperbolic orbits"
       ],
@@ -3937,7 +4047,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-classical-elements",
       "title": "The classical orbital elements and equinoctial alternatives",
-      "minutes": 16,
+      "minutes": 19,
       "covers": [
         "classical orbital elements and equinoctial alternatives"
       ],
@@ -3946,7 +4056,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-state-vector-conversions",
       "title": "State vector to orbital elements and back",
-      "minutes": 17,
+      "minutes": 21,
       "covers": [
         "state vector to orbital element conversion, both directions"
       ],
@@ -3955,7 +4065,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-anomalies-kepler-equation",
       "title": "True, eccentric and mean anomaly, and Kepler's equation",
-      "minutes": 17,
+      "minutes": 20,
       "covers": [
         "true, eccentric and mean anomaly",
         "Kepler equation: elliptic, hyperbolic and parabolic (Barker)"
@@ -3965,7 +4075,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-solving-kepler",
       "title": "Solving Kepler's equation robustly",
-      "minutes": 19,
+      "minutes": 22,
       "covers": [
         "Kepler equation: elliptic, hyperbolic and parabolic (Barker)"
       ],
@@ -3974,7 +4084,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-time-of-flight",
       "title": "Time of flight and analytic propagation",
-      "minutes": 19,
+      "minutes": 23,
       "covers": [
         "time of flight"
       ],
@@ -3983,7 +4093,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-universal-variables",
       "title": "Universal variables and the Stumpff functions",
-      "minutes": 17,
+      "minutes": 20,
       "covers": [
         "universal variables and the Stumpff functions"
       ],
@@ -3992,7 +4102,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-lagrange-coefficients",
       "title": "The Lagrange f and g coefficients",
-      "minutes": 15,
+      "minutes": 17,
       "covers": [
         "Lagrange f and g coefficients"
       ],
@@ -7547,6 +7657,12 @@ export interface LessonCoverage {
 }
 
 export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
+  "t0_m00_basecamp": {
+    "covered": 12,
+    "total": 12,
+    "complete": true,
+    "missing": []
+  },
   "t0_m01_algebra_precalc": {
     "covered": 12,
     "total": 12,

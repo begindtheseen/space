@@ -62,6 +62,7 @@ export type FocusKind =
   | 'start-lesson'
   | 'continue-module'
   | 'bench'
+  | 'learn-code'
 
 export interface FocusPick {
   kind: FocusKind
@@ -72,7 +73,16 @@ export interface FocusPick {
   /** In-app route the block opens. */
   href: string
   moduleId?: string
+  /**
+   * Other in-app paths the block lets her be on, for work that spans pages
+   * with no common parent: Learn-to-code lessons are all `/learn/<id>`, so a
+   * block on a course lists that language's lessons here.
+   */
+  also?: string[]
 }
+
+/** The most extra paths a stored block may carry. */
+export const ALSO_LIMIT = 600
 
 /**
  * The facts `pickFocus` needs, gathered separately so the choice itself can be
@@ -278,6 +288,7 @@ export function lockAllows(run: FocusRun, path: string): boolean {
   const trim = (p: string) => p.replace(/\/+$/, '') || '/'
   const home = trim(run.pick.href.split('?')[0]!.split('#')[0]!)
   const here = trim(path)
+  if (run.pick.also?.some((p) => trim(p) === here)) return true
   if (home === '/') return here === '/'
   return here === home || here.startsWith(`${home}/`)
 }
@@ -345,6 +356,9 @@ export function coerceRun(raw: unknown): FocusRun | undefined {
   // The href is followed on restore, so it is held to the same rule as a
   // resume point: an in-app path only, never somewhere else.
   if (!p.href.startsWith('/') || p.href.startsWith('//')) return undefined
+  const also = Array.isArray(p.also)
+    ? p.also.filter((a): a is string => typeof a === 'string' && a.startsWith('/') && !a.startsWith('//')).slice(0, ALSO_LIMIT)
+    : []
   return {
     startedAt: rec.startedAt,
     minutes: clampMinutes(typeof rec.minutes === 'number' ? rec.minutes : DEFAULT_BLOCK),
@@ -356,6 +370,7 @@ export function coerceRun(raw: unknown): FocusRun | undefined {
       why: typeof p.why === 'string' ? p.why : '',
       href: p.href,
       moduleId: typeof p.moduleId === 'string' ? p.moduleId : undefined,
+      ...(also.length ? { also } : {}),
     },
   }
 }

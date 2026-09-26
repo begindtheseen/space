@@ -604,12 +604,14 @@
 /* ── Start a block ───────────────────────────────────────────────────────────
    Directly under the hero and above everything else, because on the days this
    app exists for she will not scroll. One sentence, one button. */
-.startblock {
+.startblock,
+.placeprompt {
   border-color: var(--line-blue);
   background: var(--raise-grad);
 }
 
-.startblock__body {
+.startblock__body,
+.placeprompt__body {
   display: flex;
   align-items: center;
   gap: 24px;
@@ -617,12 +619,14 @@
   padding: 18px 20px;
 }
 
-.startblock__text {
+.startblock__text,
+.placeprompt__text {
   flex: 1;
   min-width: 220px;
 }
 
-.startblock__kicker {
+.startblock__kicker,
+.placeprompt__kicker {
   font-size: 9.5px;
   font-weight: 700;
   letter-spacing: 0.14em;
@@ -630,7 +634,8 @@
   color: var(--accent);
 }
 
-.startblock__title {
+.startblock__title,
+.placeprompt__title {
   margin-top: 5px;
   font-family: var(--font-display);
   font-size: 19px;
@@ -641,7 +646,8 @@
   text-wrap: balance;
 }
 
-.startblock__why {
+.startblock__why,
+.placeprompt__why {
   margin-top: 5px;
   max-width: 56ch;
   font-size: 12.5px;
@@ -649,7 +655,8 @@
   color: var(--ink-4);
 }
 
-.startblock__acts {
+.startblock__acts,
+.placeprompt__acts {
   display: flex;
   flex-direction: column;
   align-items: stretch;
@@ -659,14 +666,16 @@
 
 /* The escape hatch, kept quiet. It has to exist — a single button with no
    alternative reads as a trap — but it must not compete with the button. */
-.startblock__alt {
+.startblock__alt,
+.placeprompt__alt {
   font-size: 11.5px;
   color: var(--ink-5);
   text-align: center;
   transition: color var(--t-fast) var(--ease-out);
 }
 
-.startblock__alt:hover {
+.startblock__alt:hover,
+.placeprompt__alt:hover {
   color: var(--ink-3);
   text-decoration: underline;
 }

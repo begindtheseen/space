@@ -6,7 +6,9 @@
 // (Electron's autoUpdater) will not take it; instead a small script, started
 // detached just before ORBIT quits, waits for this process to exit, moves the
 // new app into place (keeping the old one until the new one is there, and
-// putting it back if anything fails) and opens it. A download made by the app
+// putting it back if anything fails) and opens it — or, when the swap happens
+// because she quit ORBIT (updater.js installOnExit), leaves it closed, the way
+// an ordinary app installs its update on quit. A download made by the app
 // itself carries no quarantine flag, so the new app opens without the
 // Gatekeeper prompt a browser download would get.
 import { execFile, spawn } from 'node:child_process'
@@ -19,20 +21,28 @@ const run = promisify(execFile)
 /**
  * The script that does the swap, as its own file so it runs after ORBIT has
  * gone. Arguments, never interpolated into the text: the PID to wait for, the
- * new app, the app to replace, the work directory to delete afterwards, and
- * the command that opens an app (`open` on macOS; a stand-in under test).
+ * new app, the app to replace, the work directory to delete afterwards, the
+ * command that opens an app (`open` on macOS; a stand-in under test), and
+ * whether to open it afterwards (1, the default, or 0).
  */
 export const SWAP_SCRIPT = `#!/bin/bash
-pid="$1"; new="$2"; target="$3"; work="$4"; opener="\${5:-/usr/bin/open}"
+pid="$1"; new="$2"; target="$3"; work="$4"; opener="\${5:-/usr/bin/open}"; reopen="\${6:-1}"
 log="$work.log"
 exec >>"$log" 2>&1
 echo "$(date) swapping in $new for $target (waiting for $pid)"
-for _ in $(seq 1 600); do kill -0 "$pid" 2>/dev/null || break; sleep 0.1; done
+open_app() { if [ "$reopen" = "1" ]; then "$opener" "$target"; fi; }
+# A quit she asked for can take a moment (windows close, state is saved), so
+# wait up to five minutes, and never swap an app that is still running.
+for _ in $(seq 1 3000); do kill -0 "$pid" 2>/dev/null || break; sleep 0.1; done
+if kill -0 "$pid" 2>/dev/null; then
+  echo "ORBIT is still running; leaving the old app in place"
+  exit 1
+fi
 backup="$target.orbit-previous"
 rm -rf "$backup"
 if ! mv "$target" "$backup"; then
   echo "could not move the old app aside; leaving it in place"
-  "$opener" "$target"; exit 1
+  open_app; exit 1
 fi
 # Same volume (userData and /Applications usually are): a rename, instant and
 # exact. Otherwise a copy that keeps symlinks, permissions and attributes.
@@ -40,12 +50,12 @@ if mv "$new" "$target" 2>/dev/null || { command -v ditto >/dev/null && ditto "$n
   command -v xattr >/dev/null && xattr -dr com.apple.quarantine "$target" 2>/dev/null
   rm -rf "$backup" "$work"
   echo "installed"
-  "$opener" "$target"
+  open_app
 else
   echo "the copy failed; putting the old app back"
   rm -rf "$target"
   mv "$backup" "$target"
-  "$opener" "$target"
+  open_app
   exit 1
 fi
 `
@@ -94,15 +104,14 @@ export function findAppIn(dir, name) {
 
 /**
  * Starts the swap script detached, so it outlives this process.
- * @param {{ pid: number, newApp: string, target: string, workDir: string, opener?: string }} o
+ * @param {{ pid: number, newApp: string, target: string, workDir: string, opener?: string, reopen?: boolean }} o
  * @returns {string} the script's path
  */
-export function startSwap({ pid, newApp, target, workDir, opener }) {
+export function startSwap({ pid, newApp, target, workDir, opener, reopen = true }) {
   fs.mkdirSync(workDir, { recursive: true })
   const script = path.join(path.dirname(workDir), 'swap-app.sh')
   fs.writeFileSync(script, SWAP_SCRIPT, { mode: 0o755 })
-  const args = [script, String(pid), newApp, target, workDir]
-  if (opener) args.push(opener)
+  const args = [script, String(pid), newApp, target, workDir, opener || '/usr/bin/open', reopen ? '1' : '0']
   const child = spawn('/bin/bash', args, { detached: true, stdio: 'ignore' })
   child.unref()
   return script
@@ -151,9 +160,9 @@ export function createShellInstaller({ execPath = process.execPath, isPackaged, 
         throw new Error(`its code signature is broken${detail ? `: ${detail.trim().split('\n')[0]}` : ''}`)
       }
     },
-    install(app, workDir) {
+    install(app, workDir, { reopen = true } = {}) {
       if (!target) throw new Error('This is not an installed app.')
-      const script = startSwap({ pid: process.pid, newApp: app, target, workDir })
+      const script = startSwap({ pid: process.pid, newApp: app, target, workDir, reopen })
       log(`shell-install: ${script} will swap ${app} in for ${target}`)
     },
   }

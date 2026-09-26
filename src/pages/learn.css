@@ -926,3 +926,23 @@ a.rmv-step__name:hover {
   border-color: #2fa8e6;
   color: #fff;
 }
+
+/* Learn to code's own focus block: a quiet pill beside the progress. */
+.lm-focus {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink-2);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.lm-focus:hover {
+  color: var(--ink);
+  border-color: var(--ink-3);
+}
