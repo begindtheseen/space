@@ -1,7 +1,7 @@
 ---
 id: l02-the-views-on-a-sheet
 title: The views on a sheet
-minutes: 18
+minutes: 20
 covers:
   - 'Views: front, top, right, auxiliary, section (full, half, offset, broken-out), detail, isometric'
 ---
