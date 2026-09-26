@@ -140,7 +140,7 @@ Now the failing run. The `throw` happens before "ignition ok", so that line neve
 Sanity check: count them. Five objects were constructed (`valve`, `engine`, `tank`, `igniter`, and the `Stage` that owns two of them), and five destruction steps appear (four `destroy` lines and one `~Stage body`). Each was released exactly once.
 :::
 
-Three more rules complete the picture.
+Two more rules and a warning complete the picture.
 
 **If a constructor throws, that object's destructor does not run** — the object never finished being born, so there is nothing whole to destroy. But any *members* that were already fully built are destroyed, in reverse order. This is why RAII members matter: if a class holds a `std::vector` and a `FileHandle` as members, and its constructor throws after both are built, both are cleaned up. If it held a raw `FILE*` instead, nothing would close it.
 
@@ -165,7 +165,7 @@ Now the idea, stated precisely.
 **RAII — resource acquisition is initialisation.** Every resource is owned by an object. The constructor acquires it; the destructor releases it. Because destructors run automatically at scope exit — by `return`, by `break`, by the closing brace, or by an exception — the resource is released exactly once and cannot leak.
 :::
 
-A **resource** here means anything that must be given back: heap memory, an open file, a locked mutex, a network socket, a hardware channel you have claimed, even "the time I started measuring". The name is famously clumsy — the important half is the one it leaves out, *release is destruction* — but the pattern is simple, and you can see its value by imagining the code without it. Every function that opens a file would need a `fclose` before every `return`, and before every point that could throw — and some later edit would add a new `return` and forget one.
+A **resource** here means anything that must be given back: heap memory, an open file, a locked mutex, a network socket, a hardware channel you have claimed, even "the time I started measuring". Imagine the code without it: every function that opens a file would need a `fclose` before every `return` and every point that could throw — and some later edit would add a `return` and forget one.
 
 The exercise for this module asks for three RAII types. Here they are in outline. Each follows the same shape: acquire in the constructor, release in the destructor, and forbid copying.
 
@@ -270,12 +270,12 @@ Read the first call. `write_frame(false)` builds timer, lock, file — in that o
 
 Now the second call. It throws "checksum mismatch" after the file is open. Unwinding runs the same three destructors in the same reverse order — **file, mutex, timer** — and only after that does `main` print `caught:`. Each resource was released exactly once, in reverse construction order, before the exception was reported.
 
-The last line is the proof that matters. `try_lock()` tries to take the mutex without waiting, and succeeds only if nobody holds it. It succeeded, so the lock taken inside the failed call really was given back. Without `MutexLock`, the `throw` would have left `write_frame` with the mutex still locked, and the next call — from any thread — would have waited forever.
+The last line is the proof that matters. `try_lock()` takes the mutex only if nobody holds it, and it succeeded, so the lock taken inside the failed call really was given back.
 
 Sanity check on the order: `file` was built last, so it must be released first. It was, in both runs.
 :::
 
-Two design notes on these outlines. First, `FileHandle` lets an object exist whose open failed, and makes the caller check `valid()`. A stricter design throws from the constructor when `fopen` fails, so that every `FileHandle` that exists holds an open file — a stronger class invariant, at the cost of needing exceptions. Both are common; flight code that is compiled without exceptions uses the first. Second, you rarely need to write these yourself in production: the [[standard library already has them|std-raii]]. Writing them once is how you understand what those library types are doing for you.
+A stricter `FileHandle` would throw from its constructor when `fopen` fails, so every `FileHandle` that exists holds an open file — a stronger invariant, but it needs exceptions, so code built without them uses the `valid()` check instead. And in production you rarely write these yourself: the [[standard library already has them|std-raii]].
 
 ::: warning A nameless guard dies at the semicolon
 `MutexLock{telemetry_mutex};` with no variable name looks like it takes the lock for the rest of the scope. It does not: it creates a *temporary*, which is destroyed at the end of its full expression — the semicolon. With print statements added, the output is `locked`, `unlocked`, and only then `protected work?`: the code after it runs unprotected, and g++ says nothing. The round-bracket spelling `MutexLock(telemetry_mutex);` is a different trap: C++ reads it as declaring a new variable named `telemetry_mutex`, so here it fails to compile with `no matching function for call to 'MutexLock::MutexLock()'`. Always give an RAII guard a name: `MutexLock lock(telemetry_mutex);`.
@@ -374,7 +374,7 @@ Deleting a derived object through a base pointer with a non-virtual destructor i
 
 The same rule covers smart pointers. A `std::unique_ptr<Sensor>` that owns a `StarTracker` calls `delete` on a `Sensor*` when it dies, so it needs `virtual ~Sensor()` too.
 
-Where does this matter in flight software? **Anywhere an object is deleted through a base pointer** — a list of `std::unique_ptr<Sensor>` built at start-up from a configuration file, say. And it is one more reason many flight teams avoid owning polymorphic objects on the heap at all. A common style allocates every object once, at initialisation, as a [[fixed member or static object|static-allocation]], and never deletes anything. With no deletion through base pointers, the question never arises, though a virtual or protected destructor is still cheap insurance. Making the destructor virtual costs nothing extra in a class that already has virtual functions: it already carries the [[hidden pointer that virtual calls use|vtable-peek]].
+Where does this matter in flight software? **Anywhere an object is deleted through a base pointer** — a list of `std::unique_ptr<Sensor>` built at start-up from a configuration file, say. And it is one more reason many flight teams avoid owning polymorphic objects on the heap at all. A common style creates every object once, at initialisation, as a [[fixed member or static object|static-allocation]], and never deletes anything, so the question never arises. A virtual destructor is still cheap insurance: a class with virtual functions already carries the [[hidden pointer that virtual calls use|vtable-peek]].
 
 ## Check yourself
 
@@ -407,15 +407,7 @@ A base class `Actuator` has virtual functions and a public, non-virtual destruct
 :::
 
 ::: answer
-There is no undefined behaviour today, because the dangerous operation — deleting a derived object through a base pointer — never happens. But nothing stops someone adding it tomorrow, perhaps via a `std::unique_ptr<Actuator>`, and g++ would only warn. Two fixes are both correct. Make the destructor `virtual`, which costs nothing extra because the class already has virtual functions and so already carries the hidden table pointer, and makes deletion through a base pointer safe. Or make it `protected` and non-virtual, which turns a future `delete` through `Actuator*` into a compile error while leaving use through `Actuator&` untouched. The second states the design ("actuators are never owned polymorphically") in the code itself.
-:::
-
-::: check
-A teammate writes a destructor for `FileHandle` that throws an exception if `fclose` reports an error. What actually happens when that error occurs, and what should the destructor do instead?
-:::
-
-::: answer
-Destructors are `noexcept` by default, so the exception cannot leave the destructor: the program calls `std::terminate` and aborts on the spot — no `catch` anywhere can stop it, and g++ even warns "'throw' will always call 'terminate'". Worse, if the destructor was running because *another* exception was already unwinding the stack, there is no way to have two in flight either. The destructor should never throw: it should record the failure (increment an error counter, write a log entry, set a health flag) and carry on. If a caller genuinely needs to know whether closing succeeded, give the class a separate `close()` member function that reports the result, and let the destructor close only if `close()` was never called.
+No undefined behaviour today: the dangerous operation, deleting a derived object through a base pointer, never happens. But nothing stops someone adding it tomorrow, perhaps via a `std::unique_ptr<Actuator>`, and g++ would only warn. Either fix is correct. Make the destructor `virtual` — free here, since the class already carries the hidden table pointer — so that such a deletion is safe. Or make it `protected` and non-virtual, so a future `delete` through `Actuator*` is a compile error while use through `Actuator&` is untouched; that states the design ("actuators are never owned polymorphically") in the code itself.
 :::
 
 ## Summary
