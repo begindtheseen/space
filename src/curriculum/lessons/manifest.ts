@@ -2215,6 +2215,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       "file": "cod_mat_02_gnc_toolboxes/05-discretisation.md"
     },
     {
+      "id": "l06-state-space-design",
+      "title": "State-space design: place, lqr and kalman",
+      "minutes": 20,
+      "covers": [
+        "ctrb, obsv, gram; place, acker; lqr, dlqr, lqi; kalman, lqg"
+      ],
+      "file": "cod_mat_02_gnc_toolboxes/06-state-space-design.md"
+    },
+    {
       "id": "l07-model-reduction-and-pid-tuning",
       "title": "Shrinking models and tuning PID controllers",
       "minutes": 23,
@@ -2232,6 +2241,25 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Gain scheduling across a flight envelope; arrays of LTI models"
       ],
       "file": "cod_mat_02_gnc_toolboxes/08-gain-scheduling.md"
+    },
+    {
+      "id": "l09-aerospace-frames",
+      "title": "Aerospace frames: ECI, ECEF, NED, ENU, body, wind, stability",
+      "minutes": 25,
+      "covers": [
+        "Aerospace frames: ECI, ECEF, NED, ENU, body, wind, stability"
+      ],
+      "file": "cod_mat_02_gnc_toolboxes/09-aerospace-frames.md"
+    },
+    {
+      "id": "l10-rotations-and-quaternion-convention",
+      "title": "Rotations, quaternions and the scalar-first trap",
+      "minutes": 22,
+      "covers": [
+        "dcm2angle, angle2dcm, dcm2quat, quat2dcm, quatmultiply, quatrotate",
+        "The scalar-first quaternion convention in MathWorks Aerospace products"
+      ],
+      "file": "cod_mat_02_gnc_toolboxes/10-rotations-and-quaternion-convention.md"
     }
   ],
   "cod_py_01_basics": [
@@ -2470,6 +2498,17 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Package layout: src/ layout, __init__.py, relative imports"
       ],
       "file": "cod_py_02_idiomatic/13-package-layout.md"
+    }
+  ],
+  "cod_slk_01_models": [
+    {
+      "id": "l01-the-simulink-editor",
+      "title": "The Simulink Editor, the Library Browser and block search",
+      "minutes": 18,
+      "covers": [
+        "The Simulink Editor, Library Browser and block search"
+      ],
+      "file": "cod_slk_01_models/01-the-simulink-editor.md"
     }
   ],
   "cod_sql_01_select": [
@@ -9001,14 +9040,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_mat_02_gnc_toolboxes": {
-    "covered": 8,
+    "covered": 12,
     "total": 17,
     "complete": false,
     "missing": [
-      "ctrb, obsv, gram; place, acker; lqr, dlqr, lqi; kalman, lqg",
-      "Aerospace frames: ECI, ECEF, NED, ENU, body, wind, stability",
-      "dcm2angle, angle2dcm, dcm2quat, quat2dcm, quatmultiply, quatrotate",
-      "The scalar-first quaternion convention in MathWorks Aerospace products",
       "Atmosphere models: atmosisa, atmoscoesa (valid to 86 km), atmosnrlmsise00",
       "Gravity and magnetic models: gravitywgs84, gravitysphericalharmonic, wrldmagm",
       "Dryden and von Karman turbulence; wind shear",
@@ -9017,11 +9052,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "cod_slk_01_models": {
-    "covered": 0,
+    "covered": 1,
     "total": 14,
     "complete": false,
     "missing": [
-      "The Simulink Editor, Library Browser and block search",
       "Signals and lines; Constant, Gain, Sum, Product, Integrator",
       "Why the Derivative block is a trap in a feedback loop",
       "Transfer Fcn and State-Space blocks",
