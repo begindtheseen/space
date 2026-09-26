@@ -40,6 +40,20 @@ Every lesson is checked in the real runtimes before it ships: its starter
 needs work, and its solution passes. C++ lessons always use the in-app
 compiler, the one they were checked with.
 
+**Read aloud sounds like a person.** Lessons are read by a natural neural
+voice (Kokoro) instead of the system synthesiser, which on many devices still
+sounds like a robot. It runs on your machine, the same voice everywhere: six
+voices to choose from, American and British. The first time, it downloads once
+(about 92 MB, with progress shown) and then works offline; your machine's own
+voices stay in the picker, and are used automatically if the natural voice
+cannot load.
+
+**C++ works on iPhone and iPad.** An iPhone or iPad cannot run the 105 MB C++
+compiler inside a browser, so C++ never compiled there in the web app. Now it
+is compiled and run on Compiler Explorer (godbolt.org) instead — the code is
+sent there, and the playground and the output say so. In the desktop app and
+in other browsers nothing changes.
+
 **The playground comes to the lesson.** The code in ORBIT's lessons runs where it stands: a
 Python or C++ snippet is the playground's own window, embedded in the text — edit it, run it, see
 what it prints — and a `>>>` transcript opens as the code you would type, printing what the

@@ -46,6 +46,11 @@ memory model and a dependency graph, and it shows its working:
   `src/learn/platform.ts`. The same lesson engine and course files come from APEX's
   LAUNCHPAD app, which adds JavaScript, TypeScript and the web, and checks every
   lesson's starter and solution in the real runtimes.
+- **Read aloud** uses a natural neural voice, Kokoro-82M, made on the device
+  (`src/lib/voice/`), downloaded once (92 MB) from Hugging Face; the device's
+  own voices stay in the picker and are the fallback. **C++ on iPhone and
+  iPad**, which cannot run the in-browser compiler, is compiled on Compiler
+  Explorer, with Wandbox as a fallback (`src/lib/cppRemote.ts`).
 - **The playground, embedded.** `components/ide/Embed.tsx` is the playground's window as a
   component. Lesson code blocks that can run become it (`src/lib/practice.ts` decides which),
   each lesson ends with Try it here, code exercises are done and graded in it on the module

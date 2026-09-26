@@ -225,7 +225,7 @@ function RoadmapPath({ roadmap, passed }: { roadmap: Roadmap; passed: Record<str
         const lit = done[k] || k === current
         const { row, col } = place(k)
         return (
-          <div key={t.lang} className="rm-step" style={{ gridRow: row + 1, gridColumn: col + 1 }}>
+          <div key={t.id} className="rm-step" style={{ gridRow: row + 1, gridColumn: col + 1 }}>
             <a
               href={`#/learn/${t.lang}`}
               className="rm-tile"
@@ -298,7 +298,7 @@ function RoadmapView({ roadmap }: { roadmap: Roadmap }) {
         {tracks.map((t, k) => {
           const n = passedCount(t, state.learn)
           return (
-            <li key={t.lang} className="rmv-step" data-state={done[k] ? 'done' : k === current ? 'current' : 'todo'}>
+            <li key={t.id} className="rmv-step" data-state={done[k] ? 'done' : k === current ? 'current' : 'todo'}>
               <span className="rm-tile rmv-step__tile" data-lit={done[k] || k === current}>
                 <LangMark lang={t.lang} size={30} />
                 <span className="rm-tile__n" aria-hidden="true">

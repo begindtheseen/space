@@ -17,6 +17,9 @@ const RUNTIME = `${VERSION}-runtime`
 
 const PRECACHE = ['./', './index.html', './manifest.webmanifest', './icon.svg']
 
+/** Caches the page owns (see src/lib/voice/natural.ts), kept across versions. */
+const KEEP = 'natural-voice-'
+
 const PASSTHROUGH_HOSTS = ['cdn.jsdelivr.net']
 
 self.addEventListener('install', (event) => {
@@ -34,7 +37,12 @@ self.addEventListener('activate', (event) => {
     caches
       .keys()
       .then((keys) =>
-        Promise.all(keys.filter((k) => !k.startsWith(VERSION)).map((k) => caches.delete(k))),
+        // The natural voice's model (92 MB, downloaded once by the page) is
+        // not this worker's to throw away: an app update must not make her
+        // download the voice again.
+        Promise.all(
+          keys.filter((k) => !k.startsWith(VERSION) && !k.startsWith(KEEP)).map((k) => caches.delete(k)),
+        ),
       )
       .then(() => self.clients.claim()),
   )
