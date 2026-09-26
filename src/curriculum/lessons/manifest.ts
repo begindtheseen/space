@@ -4937,7 +4937,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-ballistic-entry-and-the-allen-eggers-solution",
       "title": "Ballistic entry and the Allen-Eggers solution",
-      "minutes": 14,
+      "minutes": 19,
       "covers": [
         "ballistic entry and the Allen-Eggers solution"
       ],
@@ -4946,7 +4946,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-peak-deceleration-and-peak-heating",
       "title": "Peak deceleration and peak heating, derived and then measured",
-      "minutes": 18,
+      "minutes": 20,
       "covers": [
         "peak deceleration and peak heating relations"
       ],
@@ -4955,7 +4955,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-aerothermodynamics-and-thermal-protection",
       "title": "Aerothermodynamics and thermal protection",
-      "minutes": 17,
+      "minutes": 22,
       "covers": [
         "aerothermodynamics: convective and radiative heating, Sutton-Graves",
         "thermal protection systems, heat rate vs heat load"
@@ -4965,7 +4965,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-ballistic-coefficient-and-trajectory-shape",
       "title": "Ballistic coefficient and the shape of the trajectory",
-      "minutes": 14,
+      "minutes": 16,
       "covers": [
         "ballistic coefficient and its effect on the trajectory"
       ],
@@ -4974,7 +4974,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-the-entry-corridor",
       "title": "The entry corridor: undershoot and overshoot",
-      "minutes": 17,
+      "minutes": 18,
       "covers": [
         "the entry corridor: undershoot and overshoot boundaries"
       ],
@@ -4983,7 +4983,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-skip-entry-and-lifting-entry",
       "title": "Skip entry and lifting entry",
-      "minutes": 16,
+      "minutes": 22,
       "covers": [
         "skip entry",
         "lifting entry and bank-angle modulation"
@@ -4993,7 +4993,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-apollo-and-shuttle-entry-guidance",
       "title": "Apollo and Shuttle entry guidance",
-      "minutes": 16,
+      "minutes": 23,
       "covers": [
         "Apollo entry guidance and its descendants",
         "Shuttle drag-vs-energy entry guidance"
@@ -5003,7 +5003,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-hypersonic-aerodynamics-and-transonic-transition",
       "title": "Hypersonic aerodynamics and the transonic transition",
-      "minutes": 15,
+      "minutes": 19,
       "covers": [
         "hypersonic aerodynamics and the transonic transition"
       ],
@@ -5012,7 +5012,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-propulsive-descent-phases",
       "title": "Propulsive descent — entry burn, aerodynamic guidance, landing burn",
-      "minutes": 14,
+      "minutes": 18,
       "covers": [
         "propulsive descent: entry burn, aerodynamic guidance, landing burn"
       ],
@@ -5021,7 +5021,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-terminal-descent-sensors",
       "title": "Terminal descent sensors",
-      "minutes": 14,
+      "minutes": 19,
       "covers": [
         "terminal descent sensors: radar altimeter, lidar, terrain relative navigation"
       ],
@@ -5030,7 +5030,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-hoverslam-and-divert-capability",
       "title": "The hoverslam problem, divert capability, and propellant margin",
-      "minutes": 17,
+      "minutes": 27,
       "covers": [
         "landing burn timing and the hoverslam problem",
         "divert capability and the landing ellipse"
@@ -5040,7 +5040,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l13-mars-edl-and-reusable-booster-return",
       "title": "Mars EDL and reusable booster return modes",
-      "minutes": 16,
+      "minutes": 22,
       "covers": [
         "Mars EDL: thin atmosphere, supersonic parachutes, sky crane",
         "reusable booster return modes: RTLS vs droneship, boostback burns"
