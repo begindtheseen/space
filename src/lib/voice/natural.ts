@@ -21,7 +21,7 @@
    a lesson heard once plays back at once.
    ========================================================================== */
 import type { VoiceDevice, VoiceReply, VoiceRequest } from '@/workers/voice.worker'
-import { MAX_UNIT_CHARS, type NaturalVoiceInfo } from './kokoro'
+import { MAX_UNIT_CHARS, textKey, type NaturalVoiceInfo } from './kokoro'
 
 export const MODEL_URL = 'https://huggingface.co/onnx-community/Kokoro-82M-v1.0-ONNX/resolve/main/onnx/model_quantized.onnx'
 /** The model's size, for the progress bar when the server does not say. */
@@ -35,6 +35,17 @@ const IDLE_MS = 180_000
 const PHONE_IDLE_MS = 45_000
 /** Workers replaced after failing, per start, before the voice gives up and says so. */
 const MAX_REPLACEMENTS = 6
+/**
+ * Sentences a worker makes before it is swapped for a fresh one. The model's
+ * memory grows with what it says and is never given back (WebAssembly memory
+ * only grows; the GPU runtime keeps buffers for every length it has seen), so
+ * a long lesson would otherwise end with the tab out of memory. The swap
+ * waits until the queue is empty — on a fast device, dozens of sentences
+ * already made — so the few seconds a fresh worker takes are never heard.
+ */
+const ROTATE_AFTER = 30
+/** Longest piece given to the model at once on a computer: shorter than it could be, to keep each worker's peak memory down. */
+const DESKTOP_UNIT_CHARS = 220
 /** A device override for testing and diagnosis: 'wasm' or 'webgpu'. */
 const DEVICE_KEY = 'natural-voice:device'
 /** Set when the GPU proved slower than real time, or failed, on this device. */
@@ -44,6 +55,12 @@ const GPU_MAX_RTF = 0.9
 /** How fast each kind of worker made speech here last time, for planning before it is measured again. */
 const RTF_KEY = 'natural-voice:rtf:'
 
+/** A piece of speech: 24 kHz samples, and where each word of its text starts and ends in them (seconds; [s0, e0, s1, e1, …]). */
+export interface Speech {
+  pcm: Float32Array
+  words?: Float64Array
+}
+
 export type NaturalStatus = 'idle' | 'downloading' | 'starting' | 'ready' | 'failed'
 
 interface Job {
@@ -51,7 +68,7 @@ interface Job {
   text: string
   voice: NaturalVoiceInfo
   speed: number
-  resolve: (pcm: Float32Array) => void
+  resolve: (speech: Speech) => void
   reject: (err: Error) => void
   cancelled: boolean
   /** Times it was handed to a fresh worker after one failed on it. */
@@ -65,6 +82,8 @@ interface Slot {
   job: Job | null
   /** Fires if the worker never answers: it hung, or the system took it. */
   watchdog: ReturnType<typeof setTimeout> | null
+  /** Sentences it has made (see ROTATE_AFTER). */
+  done: number
 }
 
 type Nav = { hardwareConcurrency?: number; deviceMemory?: number; userAgent?: string; maxTouchPoints?: number }
@@ -81,7 +100,7 @@ export function isPhone(nav: Nav = navigator): boolean {
  * a reader pauses anyway.
  */
 export function unitChars(nav: Nav = navigator): number {
-  return isPhone(nav) ? 150 : MAX_UNIT_CHARS
+  return isPhone(nav) ? 150 : Math.min(MAX_UNIT_CHARS, DESKTOP_UNIT_CHARS)
 }
 
 /** Whether this browser can run the natural voice at all. */
@@ -148,17 +167,7 @@ export async function chooseDevice(): Promise<VoiceDevice> {
   }
 }
 
-/** A short stable key for a piece of text. */
-export function textKey(text: string): string {
-  let h1 = 0x811c9dc5
-  let h2 = 0x01000193
-  for (let i = 0; i < text.length; i++) {
-    const c = text.charCodeAt(i)
-    h1 = Math.imul(h1 ^ c, 0x01000193)
-    h2 = Math.imul(h2 ^ c, 0x5bd1e995)
-  }
-  return `${(h1 >>> 0).toString(36)}${(h2 >>> 0).toString(36)}${text.length.toString(36)}`
-}
+export { textKey } from './kokoro'
 
 function cacheUrl(text: string, voice: NaturalVoiceInfo, speed: number): string {
   return `https://natural-voice.invalid/${voice.id}/${speed}/${textKey(text)}`
@@ -251,7 +260,7 @@ class NaturalVoice {
   private spawn(device: VoiceDevice): Promise<void> {
     return new Promise((resolve, reject) => {
       const worker = new Worker(new URL('../../workers/voice.worker.ts', import.meta.url), { type: 'module' })
-      const slot: Slot = { worker, device, ready: false, job: null, watchdog: null }
+      const slot: Slot = { worker, device, ready: false, job: null, watchdog: null, done: 0 }
       this.slots.push(slot)
       worker.onmessage = (e: MessageEvent<VoiceReply>) => {
         const m = e.data
@@ -291,8 +300,10 @@ class NaturalVoice {
         if (slot.watchdog) clearTimeout(slot.watchdog)
         slot.watchdog = null
         slot.job = null
+        slot.done++
         this.measure(m.ms, m.pcm.length / m.sampleRate)
-        job.resolve(m.pcm)
+        job.resolve(m.words ? { pcm: m.pcm, words: m.words } : { pcm: m.pcm })
+        if (slot.done >= ROTATE_AFTER && !this.queue.some((j) => !j.cancelled)) this.rotate(slot)
         this.pump()
       }
       worker.onerror = (e) => {
@@ -356,6 +367,16 @@ class NaturalVoice {
       if (!this.slots.length) this.giveUp(err instanceof Error ? err.message : String(err))
     })
     this.pump()
+  }
+
+  /** Swaps a worker that has made its share for a fresh one, giving its memory back. */
+  private rotate(slot: Slot): void {
+    if (!this.slots.includes(slot) || slot.job) return
+    this.slots = this.slots.filter((s) => s !== slot)
+    slot.worker.terminate()
+    this.spawn(slot.device).catch((err: unknown) => {
+      if (!this.slots.length) this.giveUp(err instanceof Error ? err.message : String(err))
+    })
   }
 
   /** No worker left and none coming: every waiting piece is told, so nothing waits forever. */
@@ -439,42 +460,48 @@ class NaturalVoice {
   }
 
   /** Speech for one piece of text, as 24 kHz samples: from the device's cache if it was made before. */
-  synth(text: string, voice: NaturalVoiceInfo, speed: number): Promise<Float32Array> {
+  synth(text: string, voice: NaturalVoiceInfo, speed: number): Promise<Speech> {
     return this.fromCache(text, voice, speed).then((hit) => {
       if (hit) return hit
-      const made = new Promise<Float32Array>((resolve, reject) => {
+      const made = new Promise<Speech>((resolve, reject) => {
         this.queue.push({ id: this.nextId++, text, voice, speed, resolve, reject, cancelled: false, retries: 0 })
         this.pump()
       })
-      return made.then((pcm) => {
-        void this.toCache(text, voice, speed, pcm)
-        return pcm
+      return made.then((speech) => {
+        void this.toCache(text, voice, speed, speech)
+        return speech
       })
     })
   }
 
-  private async fromCache(text: string, voice: NaturalVoiceInfo, speed: number): Promise<Float32Array | null> {
+  private async fromCache(text: string, voice: NaturalVoiceInfo, speed: number): Promise<Speech | null> {
     try {
-      const hit = await (await caches.open(AUDIO_CACHE)).match(cacheUrl(text, voice, speed))
+      const cache = await caches.open(AUDIO_CACHE)
+      const url = cacheUrl(text, voice, speed)
+      const hit = await cache.match(url)
       if (!hit) return null
       const pcm16 = new Int16Array(await hit.arrayBuffer())
-      const out = new Float32Array(pcm16.length)
-      for (let i = 0; i < pcm16.length; i++) out[i] = pcm16[i]! / 32767
-      return out
+      const pcm = new Float32Array(pcm16.length)
+      for (let i = 0; i < pcm16.length; i++) pcm[i] = pcm16[i]! / 32767
+      const times = await cache.match(`${url}/words`)
+      return times ? { pcm, words: new Float64Array(await times.arrayBuffer()) } : { pcm }
     } catch {
       return null
     }
   }
 
-  private async toCache(text: string, voice: NaturalVoiceInfo, speed: number, pcm: Float32Array): Promise<void> {
+  private async toCache(text: string, voice: NaturalVoiceInfo, speed: number, speech: Speech): Promise<void> {
     try {
+      const { pcm } = speech
       const pcm16 = new Int16Array(pcm.length)
       for (let i = 0; i < pcm.length; i++) pcm16[i] = Math.max(-32767, Math.min(32767, Math.round(pcm[i]! * 32767)))
       const cache = await caches.open(AUDIO_CACHE)
-      await cache.put(cacheUrl(text, voice, speed), new Response(pcm16.buffer, { headers: { 'content-type': 'application/octet-stream' } }))
+      const url = cacheUrl(text, voice, speed)
+      await cache.put(url, new Response(pcm16.buffer, { headers: { 'content-type': 'application/octet-stream' } }))
+      if (speech.words) await cache.put(`${url}/words`, new Response(speech.words.slice().buffer, { headers: { 'content-type': 'application/octet-stream' } }))
       if (++this.audioWrites % 25 === 0) {
         const keys = await cache.keys()
-        for (const k of keys.slice(0, Math.max(0, keys.length - AUDIO_CACHE_LIMIT))) await cache.delete(k)
+        for (const k of keys.slice(0, Math.max(0, keys.length - AUDIO_CACHE_LIMIT * 2))) await cache.delete(k)
       }
     } catch {
       /* no Cache Storage: it is made again next time */

@@ -37,8 +37,23 @@
    ========================================================================== */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { prepare, toUtterances, usableVoices, type VoiceLike } from '@/lib/speech'
-import { CHARS_PER_SECOND, SAMPLE_RATE, fastStart, naturalVoiceFor, safeStart, speechUnits, trimSilence, type NaturalVoiceInfo, type SpeechUnit } from '@/lib/voice/kokoro'
+import {
+  CHARS_PER_SECOND,
+  DEFAULT_NATURAL_VOICE,
+  SAMPLE_RATE,
+  fastStart,
+  naturalVoiceFor,
+  safeStart,
+  speechUnits,
+  textWords,
+  trimBounds,
+  trimSilence,
+  type NaturalVoiceInfo,
+  type SpeechUnit,
+} from '@/lib/voice/kokoro'
+import { PageWords, inView, normWord, paint, scrollToRange } from '@/lib/voice/highlight'
 import { naturalSupported, naturalVoice, unitChars, type NaturalStatus } from '@/lib/voice/natural'
+import { recordingFor, unitAt, wordAt, type Recording } from '@/lib/voice/recorded'
 
 /** How often to nudge Chromium so it does not fall silent mid-lesson. */
 const KEEPALIVE_MS = 10_000
@@ -54,6 +69,16 @@ const SETTLE_MS = 260
 /** Synthesised sentences kept in memory for going back without making them again. */
 const KEEP_PIECES = 48
 
+/**
+ * How many sentences ahead a fast device makes, when it makes speech well
+ * ahead of real time: far enough that the reading never has to stop and load
+ * more, and inside KEEP_PIECES so nothing made ahead is dropped before it plays.
+ */
+const FAST_LOOKAHEAD = 36
+
+/** How often the player follows the clock: the sentence counter and the lit word. */
+const FOLLOW_MS = 50
+
 /** How far ahead of the audio clock sentences are queued, in seconds. */
 const SCHEDULE_AHEAD_S = 8
 
@@ -61,7 +86,12 @@ const SCHEDULE_AHEAD_S = 8
 const USED_KEY = 'natural-voice:used'
 
 export type ReadState = 'idle' | 'preparing' | 'speaking' | 'paused'
-export type ReadEngine = 'natural' | 'device'
+/**
+ * natural: made on the device by the neural voice. recorded: the same voice,
+ * recorded ahead of time and streamed as a file (lib/voice/recorded.ts).
+ * device: the browser's own synthesiser.
+ */
+export type ReadEngine = 'natural' | 'recorded' | 'device'
 
 export interface ReadAloud {
   supported: boolean
@@ -86,6 +116,12 @@ export interface ReadAloud {
   resume: () => void
   stop: () => void
   skip: (delta: number) => void
+  /** Whether the word being read is lit up in the lesson as it goes. */
+  following: boolean
+  /** The word being read has scrolled out of sight. */
+  wordOffscreen: boolean
+  /** Scrolls the lesson back to the word being read. */
+  jumpToWord: () => void
 }
 
 export interface ReadAloudOptions {
@@ -94,6 +130,8 @@ export interface ReadAloudOptions {
   /** The voice setting: '' or undefined for the natural default, `natural:<id>`, or a device voice's name. */
   voiceName?: string
   rate?: number
+  /** The element the lesson is rendered in, for following along (default `.reader__md`). */
+  contentSelector?: string
 }
 
 interface Scheduled {
@@ -101,6 +139,15 @@ interface Scheduled {
   start: number
   end: number
   sentence: number
+  /** Word times, seconds from `start` ([s0, e0, …]), and the page word each lands on. */
+  words?: Float64Array
+  page?: Int32Array
+}
+
+/** A piece of the lesson, ready to play: trimmed audio and its word times (seconds into it). */
+interface Piece {
+  pcm: Float32Array
+  words?: Float64Array
 }
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
@@ -110,7 +157,7 @@ function audioContextClass(): typeof AudioContext | null {
   return window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext ?? null
 }
 
-export function useReadAloud({ markdown, voiceName, rate = 1 }: ReadAloudOptions): ReadAloud {
+export function useReadAloud({ markdown, voiceName, rate = 1, contentSelector = '.reader__md' }: ReadAloudOptions): ReadAloud {
   const deviceSupported = typeof window !== 'undefined' && 'speechSynthesis' in window
   const naturalAvailable = naturalSupported()
   const supported = deviceSupported || naturalAvailable
@@ -134,7 +181,25 @@ export function useReadAloud({ markdown, voiceName, rate = 1 }: ReadAloudOptions
   const sentenceCount = units.length ? units[units.length - 1]!.sentence + 1 : 0
 
   const wantedNatural = naturalVoiceFor(voiceName)
-  const engine: ReadEngine = wantedNatural && naturalAvailable && !fellBack ? 'natural' : 'device'
+
+  // A recording of this lesson in the default voice, when there is one: it
+  // plays as a file, with no model on the device at all.
+  const [recording, setRecording] = useState<Recording | null>(null)
+  const [recordingFailed, setRecordingFailed] = useState(false)
+  useEffect(() => {
+    setRecording(null)
+    setRecordingFailed(false)
+    if (!prepared || typeof Audio === 'undefined') return
+    let live = true
+    void recordingFor(prepared.text).then((r) => {
+      if (live) setRecording(r)
+    })
+    return () => {
+      live = false
+    }
+  }, [prepared])
+  const recordedOk = !!recording && !recordingFailed && wantedNatural?.id === DEFAULT_NATURAL_VOICE
+  const engine: ReadEngine = recordedOk ? 'recorded' : wantedNatural && naturalAvailable && !fellBack ? 'natural' : 'device'
 
   // The index is held in a ref as well so the chain can advance without the
   // callback closing over a stale value.
@@ -227,7 +292,7 @@ export function useReadAloud({ markdown, voiceName, rate = 1 }: ReadAloudOptions
 
   const ctxRef = useRef<AudioContext | null>(null)
   const scheduledRef = useRef<Scheduled[]>([])
-  const piecesRef = useRef(new Map<string, Promise<Float32Array>>())
+  const piecesRef = useRef(new Map<string, Promise<Piece>>())
   /** Units whose audio is already made, so planning knows they cost nothing. */
   const madeRef = useRef(new Set<string>())
   /** Whether the natural reader has more to say than is scheduled, so a silence is buffering, not the end. */
@@ -238,16 +303,18 @@ export function useReadAloud({ markdown, voiceName, rate = 1 }: ReadAloudOptions
   const userPausedRef = useRef(false)
 
   /** The audio for a unit, made once and kept a while: going back a sentence should not wait. */
-  const audioFor = useCallback((unit: SpeechUnit): Promise<Float32Array> => {
+  const audioFor = useCallback((unit: SpeechUnit): Promise<Piece> => {
     const voice = naturalVoiceRef.current ?? naturalVoiceFor('')!
     const speed = rateRef.current
     const key = `${voice.id}|${speed}|${unit.text}`
     const cache = piecesRef.current
     let p = cache.get(key)
     if (!p) {
-      p = naturalVoice.synth(unit.text, voice, speed).then((pcm) => {
+      p = naturalVoice.synth(unit.text, voice, speed).then(({ pcm, words }) => {
         madeRef.current.add(key)
-        return trimSilence(pcm)
+        // Trimming moves the start, so the word times move with it.
+        const cut = trimBounds(pcm).from / SAMPLE_RATE
+        return { pcm: trimSilence(pcm), words: words?.map((t) => (Number.isNaN(t) ? t : Math.max(0, t - cut))) }
       })
       p.catch(() => cache.delete(key))
       cache.set(key, p)
@@ -270,6 +337,71 @@ export function useReadAloud({ markdown, voiceName, rate = 1 }: ReadAloudOptions
     },
     [deviceSupported, speakFrom],
   )
+
+  /* ── Following along ──────────────────────────────────────────────────── */
+
+  const pageRef = useRef<PageWords | null>(null)
+  const litRef = useRef<{ page: Int32Array | null; word: number; range: Range | null }>({ page: null, word: -2, range: null })
+  const [wordOffscreen, setWordOffscreen] = useState(false)
+
+  /** The lesson's words as they are on the page now (it may have re-rendered since the last reading). */
+  const pageFor = useCallback((): PageWords | null => {
+    const root = typeof document !== 'undefined' ? document.querySelector(contentSelector) : null
+    pageRef.current = root ? new PageWords(root) : null
+    litRef.current = { page: null, word: -2, range: null }
+    return pageRef.current
+  }, [contentSelector])
+
+  /** Lights the word being spoken `t` seconds into a piece whose words are `words` and land on `onPage`. */
+  const follow = useCallback((words: ArrayLike<number>, onPage: Int32Array, t: number) => {
+    const page = pageRef.current
+    if (!page) return
+    let k = -1
+    for (let i = 0; i * 2 < words.length; i++) {
+      const s0 = words[i * 2]!
+      if (Number.isNaN(s0)) continue
+      if (s0 <= t) k = i
+      else break
+    }
+    const lit = litRef.current
+    if (lit.page === onPage && lit.word === k) return
+    let first = -1
+    let last = -1
+    for (const i of onPage) {
+      if (i < 0) continue
+      if (first < 0) first = i
+      last = i
+    }
+    const word = k >= 0 && onPage[k]! >= 0 ? page.range(onPage[k]!) : null
+    litRef.current = { page: onPage, word: k, range: word ?? lit.range }
+    paint(word, first >= 0 ? page.range(first, last) : null)
+  }, [])
+
+  const clearFollow = useCallback(() => {
+    paint(null, null)
+    litRef.current = { page: null, word: -2, range: null }
+    setWordOffscreen(false)
+  }, [])
+
+  // Whether the word being read is still on screen, so the lesson can offer
+  // to take her back to it.
+  useEffect(() => {
+    if (state === 'idle') return
+    const id = setInterval(() => {
+      const range = litRef.current.range
+      const root = typeof document !== 'undefined' ? document.querySelector(contentSelector) : null
+      setWordOffscreen(!!range && !inView(range, root?.closest('.scroll') ?? null))
+    }, 400)
+    return () => clearInterval(id)
+  }, [state, contentSelector])
+
+  const jumpToWord = useCallback(() => {
+    const range = litRef.current.range
+    if (!range) return
+    const root = document.querySelector(contentSelector)
+    scrollToRange(range, root?.closest('.scroll') ?? null)
+    setWordOffscreen(false)
+  }, [contentSelector])
 
   /**
    * Reads from a sentence on. Each sentence is scheduled on the audio clock
@@ -297,9 +429,15 @@ export function useReadAloud({ markdown, voiceName, rate = 1 }: ReadAloudOptions
       let plan = units.filter((u) => u.sentence >= from)
       if (naturalVoice.device === 'wasm' && naturalVoice.parallel >= 2) plan = fastStart(plan)
       const lookahead = () => {
-        const rtf = naturalVoice.rtf ?? 1.5
+        const rtf = naturalVoice.rtf ?? naturalVoice.expectedRtf()
+        // A device that makes speech well ahead of real time keeps making it
+        // ahead — dozens of sentences — so the reading never catches up with
+        // the voice and stops halfway to load more.
+        if (rtf / Math.max(1, naturalVoice.parallel) < 0.6) return FAST_LOOKAHEAD
         return Math.max(2, Math.ceil(naturalVoice.parallel * Math.max(1, rtf)) + 1)
       }
+      const page = pageFor()
+      let pagePos = -1
       const voiceId = (naturalVoiceRef.current ?? naturalVoiceFor('')!).id
       const isMade = (u: SpeechUnit) => madeRef.current.has(`${voiceId}|${rateRef.current}|${u.text}`)
       const firstWasMade = plan[0] ? isMade(plan[0]) : false
@@ -310,13 +448,14 @@ export function useReadAloud({ markdown, voiceName, rate = 1 }: ReadAloudOptions
         for (let a = k; a < Math.min(plan.length, k + lookahead()); a++) void audioFor(plan[a]!).catch(() => {})
         // Queue only a little way ahead of the clock, so stop and skip stay instant.
         while (epoch === epochRef.current && playhead - ctx.currentTime > SCHEDULE_AHEAD_S) await sleep(150)
-        let pcm: Float32Array
+        let piece: Piece
         try {
-          pcm = await audioFor(plan[k]!)
+          piece = await audioFor(plan[k]!)
         } catch {
           continue // one piece that would not synthesise is skipped, not the lesson
         }
         if (epoch !== epochRef.current) return
+        const pcm = piece.pcm
         if (!pcm.length) continue
         if (k === 0) {
           // Buffer before the first word just long enough that the reading
@@ -346,7 +485,22 @@ export function useReadAloud({ markdown, voiceName, rate = 1 }: ReadAloudOptions
         src.buffer = buffer
         src.connect(ctx.destination)
         src.start(playhead)
-        scheduledRef.current.push({ src, start: playhead, end: playhead + buffer.duration, sentence: plan[k]!.sentence })
+        // Where its words are on the page, carrying on from the piece before.
+        let onPage: Int32Array | undefined
+        if (page && piece.words) {
+          const text = plan[k]!.text
+          const norms = textWords(text).map((w) => normWord(text.slice(w.start, w.end)))
+          onPage = page.align(norms, pagePos < 0 ? page.seek(norms, 0) : pagePos)
+          for (const i of onPage) if (i >= 0) pagePos = i + 1
+        }
+        scheduledRef.current.push({
+          src,
+          start: playhead,
+          end: playhead + buffer.duration,
+          sentence: plan[k]!.sentence,
+          words: piece.words,
+          page: onPage,
+        })
         playhead += buffer.duration + plan[k]!.pause / Math.max(0.5, rateRef.current)
       }
       moreRef.current = false
@@ -357,11 +511,12 @@ export function useReadAloud({ markdown, voiceName, rate = 1 }: ReadAloudOptions
       setAt(-1)
       setState('idle')
     },
-    [audioFor, fallBack, units],
+    [audioFor, fallBack, units, pageFor],
   )
 
-  // Follows the audio clock: which sentence is sounding, and whether the
-  // reader is waiting on the voice. Paused, the clock stops and so does this.
+  // Follows the audio clock: which sentence is sounding, which word of it,
+  // and whether the reader is waiting on the voice. Paused, the clock stops
+  // and so does this.
   useEffect(() => {
     if (engine !== 'natural' || state === 'idle' || state === 'paused') return
     haltedRef.current = 0
@@ -390,10 +545,11 @@ export function useReadAloud({ markdown, voiceName, rate = 1 }: ReadAloudOptions
         }
         const waiting = now > current.end + 0.6 && moreRef.current
         setState((s) => (s === 'paused' ? s : waiting ? 'preparing' : 'speaking'))
+        if (current.words && current.page) follow(current.words, current.page, now - current.start)
       }
-    }, 100)
+    }, FOLLOW_MS)
     return () => clearInterval(id)
-  }, [engine, state])
+  }, [engine, state, follow])
 
   const silenceNatural = useCallback(() => {
     naturalVoice.clear()
@@ -408,20 +564,156 @@ export function useReadAloud({ markdown, voiceName, rate = 1 }: ReadAloudOptions
     scheduledRef.current = []
   }, [])
 
+  /* ── A recorded lesson ───────────────────────────────────────────────── */
+
+  const audioRef = useRef<HTMLAudioElement | null>(null)
+  const recordingRef = useRef(recording)
+  recordingRef.current = recording
+  /** The recording being played: its units' word times (flat, seconds into the file) and where they land on the page. */
+  const recRef = useRef<{ rec: Recording; words: Float64Array[]; onPage: Int32Array[] } | null>(null)
+  /** The controls, for the lock screen's buttons (set once they are defined, below). */
+  const controlsRef = useRef<{ pause: () => void; resume: () => void; skip: (d: number) => void } | null>(null)
+
+  const silenceRecorded = useCallback(() => {
+    audioRef.current?.pause()
+  }, [])
+
+  /** The one audio element recordings play through, kept (hidden) in the page. */
+  const playerElement = useCallback((): HTMLAudioElement => {
+    let a = audioRef.current
+    if (!a) {
+      a = new Audio()
+      a.preload = 'auto'
+      a.hidden = true
+      a.className = 'raloud-audio'
+      audioRef.current = a
+    }
+    if (!a.isConnected) document.body.appendChild(a)
+    return a
+  }, [])
+
+  const runRecorded = useCallback(
+    (from: number, epoch: number) => {
+      const rec = recordingRef.current
+      if (!rec) return
+      const a = playerElement()
+      const page = pageFor()
+      let pos = 0
+      const onPage = rec.units.map((u) => {
+        const norms = u.w.map(([, , cs, ce]) => normWord(u.t.slice(cs, ce)))
+        const idx = page ? page.align(norms, pos) : new Int32Array(norms.length).fill(-1)
+        for (const i of idx) if (i >= 0) pos = i + 1
+        return idx
+      })
+      const words = rec.units.map((u) => Float64Array.from(u.w.flatMap(([s0, e0]) => [s0, e0])))
+      recRef.current = { rec, words, onPage }
+
+      const first = Math.max(0, rec.units.findIndex((u) => u.n >= from))
+      const t0 = rec.units[first]?.s ?? 0
+      const seek = () => {
+        try {
+          a!.currentTime = t0
+        } catch {
+          /* seeks once it can, below */
+        }
+      }
+      if (a.dataset.base !== rec.url) {
+        // The start in the address as well: a phone may not honour a seek
+        // made before it has read the file's header.
+        a.src = `${rec.url}#t=${t0.toFixed(2)}`
+        a.dataset.base = rec.url
+        a.addEventListener('loadedmetadata', seek, { once: true })
+      } else seek()
+      a.playbackRate = rateRef.current
+      const pitch = a as HTMLAudioElement & { preservesPitch?: boolean; webkitPreservesPitch?: boolean }
+      pitch.preservesPitch = true
+      pitch.webkitPreservesPitch = true
+      a.onwaiting = () => {
+        if (epoch === epochRef.current) setState((s) => (s === 'paused' ? s : 'preparing'))
+      }
+      a.onplaying = () => {
+        if (epoch === epochRef.current) setState('speaking')
+      }
+      a.onended = () => {
+        if (epoch !== epochRef.current) return
+        atRef.current = -1
+        setAt(-1)
+        setState('idle')
+        clearFollow()
+      }
+      a.onerror = () => {
+        if (epoch !== epochRef.current) return
+        // The next tap reads it on the device instead.
+        setRecordingFailed(true)
+        setNotice('The recording of this lesson could not play. Tap Read aloud to have it read on this device instead.')
+        atRef.current = -1
+        setAt(-1)
+        setState('idle')
+        clearFollow()
+      }
+      atRef.current = from
+      setAt(from)
+      setState('preparing')
+      // The lock screen and headphone buttons control it too.
+      const media = (navigator as Navigator & { mediaSession?: MediaSession }).mediaSession
+      if (media) {
+        try {
+          if (typeof MediaMetadata !== 'undefined') media.metadata = new MediaMetadata({ title: document.title, artist: 'Read aloud' })
+          media.setActionHandler('play', () => controlsRef.current?.resume())
+          media.setActionHandler('pause', () => controlsRef.current?.pause())
+          media.setActionHandler('previoustrack', () => controlsRef.current?.skip(-1))
+          media.setActionHandler('nexttrack', () => controlsRef.current?.skip(1))
+        } catch {
+          /* only a convenience */
+        }
+      }
+      a.play().catch(() => {
+        // Not allowed without a tap (or interrupted): offer Resume, which is one.
+        if (epoch === epochRef.current) {
+          userPausedRef.current = true
+          setState('paused')
+        }
+      })
+    },
+    [pageFor, clearFollow, playerElement],
+  )
+
+  // Follows a recording: the sentence and the word at the playhead.
+  useEffect(() => {
+    if (engine !== 'recorded' || state === 'idle' || state === 'paused') return
+    const id = setInterval(() => {
+      const a = audioRef.current
+      const r = recRef.current
+      if (!a || !r) return
+      const t = a.currentTime
+      const u = unitAt(r.rec.units, t)
+      const unit = r.rec.units[u]
+      if (!unit) return
+      if (atRef.current !== unit.n) {
+        atRef.current = unit.n
+        setAt(unit.n)
+      }
+      if (wordAt(unit, t) >= -1) follow(r.words[u]!, r.onPage[u]!, t)
+    }, FOLLOW_MS)
+    return () => clearInterval(id)
+  }, [engine, state, follow])
+
   /* ── Controls, for either engine ─────────────────────────────────────── */
 
   const stop = useCallback(() => {
     epochRef.current += 1
     if (deviceSupported) window.speechSynthesis.cancel()
     silenceNatural()
+    silenceRecorded()
+    clearFollow()
     atRef.current = -1
     setAt(-1)
     setState('idle')
-  }, [deviceSupported, silenceNatural])
+  }, [deviceSupported, silenceNatural, silenceRecorded, clearFollow])
 
   const start = useCallback(
     (from = 0) => {
-      const count = engineRef.current === 'natural' ? sentenceCount : utterances.length
+      const count = engineRef.current === 'device' ? utterances.length : sentenceCount
       if (!supported || count === 0) return
       // Bumping first orphans anything about to be interrupted, so the
       // outgoing sentence's end or error cannot start a rival chain.
@@ -430,6 +722,14 @@ export function useReadAloud({ markdown, voiceName, rate = 1 }: ReadAloudOptions
       const index = Math.max(0, Math.min(from, count - 1))
       if (deviceSupported) window.speechSynthesis.cancel()
       silenceNatural()
+      if (engineRef.current !== 'recorded') silenceRecorded()
+      if (engineRef.current === 'recorded') {
+        userPausedRef.current = false
+        const session = (navigator as Navigator & { audioSession?: { type: string } }).audioSession
+        if (session && session.type !== 'playback') session.type = 'playback'
+        runRecorded(index, epoch)
+        return
+      }
       if (engineRef.current === 'natural') {
         userPausedRef.current = false
         // The audio context has to be made and resumed in the tap that started
@@ -480,10 +780,20 @@ export function useReadAloud({ markdown, voiceName, rate = 1 }: ReadAloudOptions
       }
       speakFrom(index, epoch)
     },
-    [supported, deviceSupported, utterances.length, sentenceCount, speakFrom, runNatural, silenceNatural],
+    [supported, deviceSupported, utterances.length, sentenceCount, speakFrom, runNatural, runRecorded, silenceNatural, silenceRecorded],
   )
 
   const warm = useCallback(() => {
+    if (engineRef.current === 'recorded') {
+      // Start fetching the recording's opening before the tap.
+      const rec = recordingRef.current
+      if (rec && !audioRef.current?.dataset.base) {
+        const a = playerElement()
+        a.src = rec.url
+        a.dataset.base = rec.url
+      }
+      return
+    }
     if (engineRef.current !== 'natural' || naturalVoice.status === 'downloading' || naturalVoice.status === 'starting') return
     // Only when nothing needs downloading: warming must never start a 92 MB
     // download she did not ask for. Warm means ready to speak at once: the
@@ -497,9 +807,16 @@ export function useReadAloud({ markdown, voiceName, rate = 1 }: ReadAloudOptions
         /* the tap will say what went wrong */
       }
     })
-  }, [units, audioFor])
+  }, [units, audioFor, playerElement])
 
   const pause = useCallback(() => {
+    if (engineRef.current === 'recorded') {
+      if (state === 'idle') return
+      userPausedRef.current = true
+      audioRef.current?.pause()
+      setState('paused')
+      return
+    }
     if (engineRef.current === 'natural') {
       if (state === 'idle') return
       userPausedRef.current = true
@@ -517,6 +834,19 @@ export function useReadAloud({ markdown, voiceName, rate = 1 }: ReadAloudOptions
   }, [deviceSupported, state])
 
   const resume = useCallback(() => {
+    if (engineRef.current === 'recorded') {
+      const a = audioRef.current
+      if (!a || !recRef.current) {
+        start(Math.max(0, atRef.current))
+        return
+      }
+      userPausedRef.current = false
+      a.play().then(
+        () => setState('speaking'),
+        () => setState('paused'),
+      )
+      return
+    }
     if (engineRef.current === 'natural') {
       const ctx = ctxRef.current
       if (ctx && ctx.state === 'suspended' && userPausedRef.current) {
@@ -538,13 +868,14 @@ export function useReadAloud({ markdown, voiceName, rate = 1 }: ReadAloudOptions
 
   const skip = useCallback(
     (delta: number) => {
-      const count = engineRef.current === 'natural' ? sentenceCount : utterances.length
+      const count = engineRef.current === 'device' ? utterances.length : sentenceCount
       const next = (atRef.current < 0 ? 0 : atRef.current) + delta
       if (next < 0 || next >= count) return
       start(next)
     },
     [utterances.length, sentenceCount, start],
   )
+  controlsRef.current = { pause, resume, skip }
 
   // She has used read-aloud before: get the voice ready while she starts on
   // the lesson, so pressing Read aloud speaks at once.
@@ -584,6 +915,11 @@ export function useReadAloud({ markdown, voiceName, rate = 1 }: ReadAloudOptions
       return
     }
     if (stateRef.current !== 'speaking' && stateRef.current !== 'preparing') return
+    // A recording changes speed as it plays, with its pitch kept: nothing to restart.
+    if (engineRef.current === 'recorded') {
+      if (audioRef.current) audioRef.current.playbackRate = rate
+      return
+    }
     const id = setTimeout(() => {
       const index = atRef.current
       if (index < 0 || (stateRef.current !== 'speaking' && stateRef.current !== 'preparing')) return
@@ -626,6 +962,15 @@ export function useReadAloud({ markdown, voiceName, rate = 1 }: ReadAloudOptions
       if (deviceSupported) window.speechSynthesis.cancel()
       silenceNatural()
       piecesRef.current.clear()
+      const a = audioRef.current
+      if (a) {
+        a.pause()
+        a.removeAttribute('src')
+        delete a.dataset.base
+        a.load()
+      }
+      recRef.current = null
+      paint(null, null)
     }
   }, [deviceSupported, markdown, silenceNatural])
 
@@ -633,6 +978,8 @@ export function useReadAloud({ markdown, voiceName, rate = 1 }: ReadAloudOptions
     () => () => {
       void ctxRef.current?.close()
       ctxRef.current = null
+      audioRef.current?.remove()
+      audioRef.current = null
     },
     [],
   )
@@ -641,7 +988,7 @@ export function useReadAloud({ markdown, voiceName, rate = 1 }: ReadAloudOptions
     supported,
     state,
     at,
-    total: engine === 'natural' ? sentenceCount : utterances.length,
+    total: engine === 'device' ? utterances.length : sentenceCount,
     voices,
     engine,
     naturalAvailable,
@@ -654,5 +1001,8 @@ export function useReadAloud({ markdown, voiceName, rate = 1 }: ReadAloudOptions
     resume,
     stop,
     skip,
+    following: engine !== 'device',
+    wordOffscreen: wordOffscreen && state !== 'idle',
+    jumpToWord,
   }
 }

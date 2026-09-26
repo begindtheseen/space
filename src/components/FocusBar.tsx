@@ -131,103 +131,113 @@ function Strip({
   }
 
   return (
-    <div className="fbar" data-done={done} data-locked={locked} role="region" aria-label="Focus block">
-      {turnedBack && locked ? (
-        <div className="fbar__notice" role="status">
-          You are in a focus block, so you stay on this lesson.{' '}
-          {pauseIn > 0
-            ? `You can pause in ${clock(pauseIn)}, or end the block now.`
-            : 'Pause or end the block to go somewhere else.'}
+    <>
+      {locked ? (
+        // Focus mode: the rest of the app is gone (focus-bar.css), and this
+        // is the one line left at the top — the thing she is doing.
+        <div className="focus-mast" aria-hidden="true">
+          <span className="focus-mast__kicker">In focus</span>
+          <span className="focus-mast__title">{run.pick.title}</span>
         </div>
       ) : null}
-      <Dial run={run} left={left} done={done} />
+      <div className="fbar" data-done={done} data-locked={locked} role="region" aria-label="Focus block">
+        {turnedBack && locked ? (
+          <div className="fbar__notice" role="status">
+            You are in a focus block, so you stay on this lesson.{' '}
+            {pauseIn > 0
+              ? `You can pause in ${clock(pauseIn)}, or end the block now.`
+              : 'Pause or end the block to go somewhere else.'}
+          </div>
+        ) : null}
+        <Dial run={run} left={left} done={done} />
 
-      <div className="fbar__time">
-        <span className="fbar__clock num" aria-live="off">
-          {done ? 'Done' : clock(left)}
-        </span>
-        <span className="fbar__label">
-          {done ? 'Block finished' : run.pausedAt ? 'Paused' : `${run.minutes}-minute block`}
-        </span>
-      </div>
+        <div className="fbar__time">
+          <span className="fbar__clock num" aria-live="off">
+            {done ? 'Done' : clock(left)}
+          </span>
+          <span className="fbar__label">
+            {done ? 'Block finished' : run.pausedAt ? 'Paused' : `${run.minutes}-minute block`}
+          </span>
+        </div>
 
-      <button className="fbar__task" onClick={() => navigate(run.pick.href)} title="Go to it">
-        <span className="fbar__task-title truncate">{run.pick.title}</span>
-        <span className="fbar__task-go">Open</span>
-      </button>
+        <button className="fbar__task" onClick={() => navigate(run.pick.href)} title="Go to it">
+          <span className="fbar__task-title truncate">{run.pick.title}</span>
+          <span className="fbar__task-go">Open</span>
+        </button>
 
-      {parking ? (
-        <form
-          className="fbar__park"
-          onSubmit={(e) => {
-            e.preventDefault()
-            submitNote()
-          }}
-        >
-          <input
-            ref={noteRef}
-            className="fbar__note"
-            value={note}
-            maxLength={280}
-            placeholder="Park it and keep going…"
-            onChange={(e) => setNote(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Escape') {
-                setParking(false)
-                setNote('')
-              }
+        {parking ? (
+          <form
+            className="fbar__park"
+            onSubmit={(e) => {
+              e.preventDefault()
+              submitNote()
             }}
-            aria-label="Park a thought for later"
-          />
-          <button className="fbar__btn" type="submit" title="Park it">
-            <IconCheck size={13} />
-          </button>
-        </form>
-      ) : (
-        <div className="fbar__acts">
-          <button
-            className="fbar__btn"
-            onClick={() => setParking(true)}
-            title="Park a thought for later"
           >
-            <IconPlus size={13} />
-            <span>Park a thought</span>
-          </button>
-          {!done ? (
+            <input
+              ref={noteRef}
+              className="fbar__note"
+              value={note}
+              maxLength={280}
+              placeholder="Park it and keep going…"
+              onChange={(e) => setNote(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Escape') {
+                  setParking(false)
+                  setNote('')
+                }
+              }}
+              aria-label="Park a thought for later"
+            />
+            <button className="fbar__btn" type="submit" title="Park it">
+              <IconCheck size={13} />
+            </button>
+          </form>
+        ) : (
+          <div className="fbar__acts">
             <button
               className="fbar__btn"
-              onClick={() => {
-                if (!run.pausedAt) return setState((s) => pauseFocus(s))
-                setState((s) => resumeFocus(s))
-                navigate(run.pick.href)
-              }}
-              disabled={!run.pausedAt && pauseIn > 0}
-              title={
-                run.pausedAt
-                  ? 'Resume the block and go back to it'
-                  : pauseIn > 0
-                    ? `A block can be paused once every ${PAUSE_COOLDOWN_MS / 60_000} minutes of focus. "I'm done" ends it now.`
-                    : 'Pause the block; you can leave this page while it is paused'
-              }
+              onClick={() => setParking(true)}
+              title="Park a thought for later"
             >
-              {run.pausedAt ? <IconPlay size={12} /> : <IconPause size={12} />}
-              <span className="num">{run.pausedAt ? 'Resume' : pauseIn > 0 ? `Pause in ${clock(pauseIn)}` : 'Pause'}</span>
+              <IconPlus size={13} />
+              <span>Park a thought</span>
             </button>
-          ) : null}
-          <button
-            className="fbar__btn fbar__btn--end"
-            onClick={() => {
-              setState((s) => endFocus(s))
-              navigate('/focus')
-            }}
-            title={done ? 'Close out the block' : 'End the block and keep the time'}
-          >
-            {done ? <IconCheck size={13} /> : <IconX size={12} />}
-            <span>{done ? 'Finish' : "I'm done"}</span>
-          </button>
-        </div>
-      )}
-    </div>
+            {!done ? (
+              <button
+                className="fbar__btn"
+                onClick={() => {
+                  if (!run.pausedAt) return setState((s) => pauseFocus(s))
+                  setState((s) => resumeFocus(s))
+                  navigate(run.pick.href)
+                }}
+                disabled={!run.pausedAt && pauseIn > 0}
+                title={
+                  run.pausedAt
+                    ? 'Resume the block and go back to it'
+                    : pauseIn > 0
+                      ? `A block can be paused once every ${PAUSE_COOLDOWN_MS / 60_000} minutes of focus. "I'm done" ends it now.`
+                      : 'Pause the block; you can leave this page while it is paused'
+                }
+              >
+                {run.pausedAt ? <IconPlay size={12} /> : <IconPause size={12} />}
+                <span className="num">{run.pausedAt ? 'Resume' : pauseIn > 0 ? `Pause in ${clock(pauseIn)}` : 'Pause'}</span>
+              </button>
+            ) : null}
+            <button
+              className="fbar__btn fbar__btn--end"
+              onClick={() => {
+                setState((s) => endFocus(s))
+                navigate('/focus')
+              }}
+              title={done ? 'Close out the block' : 'End the block and keep the time'}
+            >
+              {done ? <IconCheck size={13} /> : <IconX size={12} />}
+              <span>{done ? 'Finish' : "I'm done"}</span>
+            </button>
+          </div>
+        )}
+      </div>
+    </>
   )
 }
 

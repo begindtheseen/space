@@ -11,6 +11,7 @@
    The natural voices come first in the picker, and are the default: they read
    like a person. The device's own voices follow, for anyone who prefers one.
    ========================================================================== */
+import { createPortal } from 'react-dom'
 import { IconPause, IconPlay, IconX } from '@/components/icons'
 import { useLearner } from '@/hooks/useLearner'
 import { useReadAloud } from '@/hooks/useReadAloud'
@@ -37,7 +38,9 @@ export function ReadAloud({ markdown }: { markdown: string | null }) {
   const shown = player.naturalAvailable && naturalVoiceFor(setting) ? `${NATURAL_PREFIX}${naturalVoiceFor(setting)!.id}` : setting
 
   const preparingLabel =
-    player.naturalStatus === 'downloading'
+    player.engine === 'recorded'
+      ? 'Loading…'
+      : player.naturalStatus === 'downloading'
       ? `Getting the voice ready · ${Math.round(player.progress * 100)}%`
       : player.naturalStatus === 'starting'
         ? 'Starting the voice…'
@@ -45,13 +48,27 @@ export function ReadAloud({ markdown }: { markdown: string | null }) {
 
   return (
     <div className="raloud" data-on={!idle} data-engine={player.engine} data-state={player.state}>
+      {player.wordOffscreen && typeof document !== 'undefined'
+        ? createPortal(
+            <button className="raloud-jump" onClick={player.jumpToWord}>
+              Back to the word being read
+            </button>,
+            document.body,
+          )
+        : null}
       {idle ? (
         <button
           className="raloud__btn raloud__btn--go"
           onClick={() => player.start(0)}
           onPointerEnter={player.warm}
           onFocus={player.warm}
-          title={player.engine === 'natural' ? 'A natural voice, made on this device. The first time, it downloads once (about 92 MB).' : undefined}
+          title={
+            player.engine === 'recorded'
+              ? 'This lesson is recorded in a natural voice, so it plays straight away and follows along word by word.'
+              : player.engine === 'natural'
+                ? 'A natural voice, made on this device. The first time, it downloads once (about 92 MB).'
+                : undefined
+          }
         >
           <IconPlay size={12} /> Read aloud
         </button>
