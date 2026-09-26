@@ -1,7 +1,7 @@
 ---
 id: l06-default-delete-and-generation-rules
 title: What the compiler writes for you, and how to say yes or no
-minutes: 24
+minutes: 21
 covers:
   - = default and = delete; the special-member generation rules
 ---
@@ -51,7 +51,7 @@ The second use is documentation. Writing `T(const T&) = default;` tells the next
 
 `= delete` ("equals delete") declares a function and forbids every use of it. Any code that would call it fails to compile, with an error that names the deleted function. This is how you say "this type cannot be copied".
 
-Lesson 03 built `MutexLock`, which locks a mutex in its constructor and unlocks it in its destructor. Copying one would be a disaster: two objects would each unlock the same mutex, and the second unlock is undefined behaviour. So it deletes its copy pair. What about moving? `MutexLock` holds a *reference* to its mutex, and a reference cannot be re-pointed or emptied, so there is no sensible "moved-from" state. The exercise asks for it to be non-copyable *and* non-movable, and the generation rules give us that for free.
+Lesson 03 built `MutexLock`, which locks a mutex in its constructor and unlocks it in its destructor. Copying one would be a disaster: two objects would each unlock the same mutex, and the second unlock is undefined behaviour. So it deletes its copy pair. What about moving? `MutexLock` holds a *reference* to its mutex, and [[a reference cannot be re-pointed or emptied|lock-guard]], so there is no sensible "moved-from" state. The exercise asks for it to be non-copyable *and* non-movable, and the generation rules give us that for free.
 
 ::: example `MutexLock`: no copies, and no moves either
 ```cpp
@@ -102,7 +102,7 @@ So deleting the copy pair of a class also leaves it with no moves, unless you de
 
 ### Deleting any function
 
-`= delete` works on ordinary functions too, which makes it a precise tool for blocking a conversion you do not want:
+`= delete` works on ordinary functions too, which makes it a precise tool for blocking a [[conversion you do not want|units]]:
 
 ```cpp
 void set_throttle(double fraction) { std::printf("throttle %.2f\n", fraction); }
@@ -309,6 +309,29 @@ Ordinary member functions run only when you call them by name. These six are spe
 Three states, from least to most yours. **Implicitly declared**: you wrote nothing; the compiler added it. **User-declared**: it appears in your class, perhaps as `= default` or `= delete`. **User-provided**: user-declared and not defaulted or deleted on its first declaration, meaning you wrote a body. The move-suppression rule uses "user-declared", so `~T() = default;` suppresses moves. Other rules use "user-provided": for example, a class whose special members are all defaulted in the class can still be "trivially copyable", which lets the compiler copy it with a plain byte copy. An empty body `~T() {}` is user-provided and makes the destructor non-trivial.
 :::
 
+::: context lock-guard The standard library made the same choice
+`std::lock_guard`, the standard's version of `MutexLock`, is also non-copyable and non-movable, for the same reason: it holds a reference to one mutex for exactly one scope. When you do need to hand a lock around, `std::unique_lock` is movable, because it stores a *pointer* to the mutex plus an "owns the lock" flag, and a pointer can be set to null in a moved-from object. The concurrency module uses both.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 110" font-family="Inter, Arial, sans-serif">
+  <line x1="20" y1="60" x2="340" y2="60" stroke="#1f2a44" stroke-width="2"/>
+  <polygon points="340,60 331,55 331,65" fill="#1f2a44"/>
+  <rect x="70" y="46" width="200" height="28" fill="#8fb8f0" stroke="#1d6fd1" stroke-width="1.5"/>
+  <text x="170" y="64" font-size="12" fill="#1f2a44" text-anchor="middle">mutex held: one owner</text>
+  <line x1="70" y1="30" x2="70" y2="90" stroke="#1d6fd1" stroke-width="2"/>
+  <line x1="270" y1="30" x2="270" y2="90" stroke="#1d6fd1" stroke-width="2"/>
+  <text x="70" y="22" font-size="11" fill="#1f2a44" text-anchor="middle">constructor: lock()</text>
+  <text x="270" y="22" font-size="11" fill="#1f2a44" text-anchor="middle">closing brace: unlock()</text>
+  <text x="170" y="100" font-size="11" fill="#b4232c" text-anchor="middle">a copy would unlock a second time</text>
+  <text x="20" y="80" font-size="11" fill="#6c7a93">time</text>
+</svg>
+```
+:::
+
+::: context units Conversions and lost spacecraft
+Silent conversions between numbers that mean different things are a classic source of flight-software failures. NASA's Mars Climate Orbiter was lost in 1999 because one piece of ground software produced thruster impulse in pound-force seconds while the software using it expected newton-seconds; nothing in the interface caught the mismatch. A deleted overload catches one narrow case, an `int` where a fraction was meant. The stronger fix, used in many flight codebases, is a distinct type per unit, so a `Newtons` cannot be passed where a `PoundsForce` is expected at all.
+:::
+
 ::: context deprecated What "deprecated" means
 In the C++ standard, a **deprecated** feature still works and is still required to work, but the committee has warned that a future standard may remove it, and new code should not rely on it. The implicit copy in a class with a user-declared destructor has been deprecated since C++11 and has not been removed, because removing it would break a vast amount of code. Compilers do not warn by default. The practical meaning for you: if your class needs its copy after declaring a destructor, declare the copy explicitly (even as `= default`), so the class stops relying on the deprecated rule.
 :::
@@ -325,7 +348,7 @@ Howard Hinnant, one of the authors of the original move-semantics proposal, pres
   <text x="10" y="74" font-size="12" fill="#1f2a44">a copy op</text>
   <text x="10" y="102" font-size="12" fill="#1f2a44">a move op</text>
   <rect x="110" y="30" width="120" height="24" fill="#f2b880" stroke="#1f2a44" stroke-width="1"/>
-  <text x="170" y="46" font-size="11" fill="#1f2a44" text-anchor="middle">generated, deprecated</text>
+  <text x="170" y="46" font-size="11" fill="#1f2a44" text-anchor="middle">deprecated</text>
   <rect x="240" y="30" width="110" height="24" fill="#ffffff" stroke="#b4232c" stroke-width="1.5"/>
   <text x="295" y="46" font-size="11" fill="#b4232c" text-anchor="middle">not declared</text>
   <rect x="110" y="58" width="120" height="24" fill="#f2b880" stroke="#1f2a44" stroke-width="1"/>
@@ -336,7 +359,8 @@ Howard Hinnant, one of the authors of the original move-semantics proposal, pres
   <text x="170" y="102" font-size="11" fill="#ffffff" text-anchor="middle">deleted</text>
   <rect x="240" y="86" width="110" height="24" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1"/>
   <text x="295" y="102" font-size="11" fill="#1f2a44" text-anchor="middle">yours / not declared</text>
-  <text x="10" y="136" font-size="11" fill="#6c7a93">not declared: rvalues fall back to copy. deleted: any use is an error.</text>
+  <text x="10" y="128" font-size="11" fill="#6c7a93">not declared: rvalues fall back to the copy</text>
+  <text x="10" y="144" font-size="11" fill="#6c7a93">deleted: any use is a compile error</text>
 </svg>
 ```
 :::
