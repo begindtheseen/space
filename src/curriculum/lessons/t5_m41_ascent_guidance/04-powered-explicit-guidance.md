@@ -179,7 +179,7 @@ Change the stage-1 burnout state by $\pm 5\%$ in speed (about $\pm 180\ \mathrm{
 **Reserve.** The reserve is where the dispersions show. Starting slower and lower costs the most: only 3.0% is left. Starting faster and higher saves propellant: 7.1% is left.
 :::
 
-Some dispersions cannot be paid for. Each cycle PEG compares $t_{go}$ with the burn time the remaining propellant can actually supply, $(m - m_{\text{dry}})/\dot m$. If the target needs more, the check fails on the very cycle it becomes true. Load 5% less usable propellant in the flight above: the burn time available is $0.95 \times 98{,}900/273.68 = 343.3\ \mathrm{s}$, while the first cycle asks for $354.1\ \mathrm{s}$. The check trips at cycle zero, before the burn begins — no slow, silent drift toward an answer that never comes. What guidance does next — [[drop to a lower orbit it can reach|fallback-bridge]] — is a later lesson of this module.
+Some dispersions cannot be paid for. Each cycle PEG compares $t_{go}$ with the burn time the remaining propellant can actually supply, $(m - m_{\text{dry}})/\dot m$. If the target needs more, the check fails on the very cycle it becomes true. Load 7% less usable propellant in the flight above: the burn time available is $0.93 \times 98{,}900/273.68 = 336.1\ \mathrm{s}$, while the first cycle asks for $354.1\ \mathrm{s}$. The check trips at cycle zero, before the burn begins — no slow, silent drift toward an answer that never comes. And it is right: the full flight really burns $343.3\ \mathrm{s}$ and $93{,}957\ \mathrm{kg}$, about $1980\ \mathrm{kg}$ more than is aboard. One caution: early estimates run high (the first cycle said $354.1\ \mathrm{s}$; the flight took $343.3\ \mathrm{s}$, about 3% less). So flight software does not declare a target lost on one early cycle; it waits for $t_{go}$ to settle and keeps a margin. What guidance does next — [[drop to a lower orbit it can reach|fallback-bridge]] — is a later lesson of this module.
 
 ## UPFG: the generalization
 
@@ -260,7 +260,7 @@ It overstates the difference. UPFG's cycle — a rocket-equation time-to-go, a l
 | Convergence | receding horizon | local-model error shrinks as $t_{go}$ shrinks |
 | Worked insertion | 84 cycles, cutoff at 343.3 s | $-0.30$ m, $+1.43$ m/s, $2.42$ m/s radial, 5.0% reserve |
 | Open loop, same first solve | never re-solved | 194.8 km high, 546 m/s slow, 1841 m/s still climbing |
-| Unreachable check | $t_{go}$ against $(m - m_{\text{dry}})/\dot m$ | trips on the first cycle it is true |
+| Unreachable check | $t_{go}$ against $(m - m_{\text{dry}})/\dot m$ | 7% short trips at cycle zero; early $t_{go}$ runs about 3% high |
 | UPFG | Shuttle ascent guidance (Tim Brand, Draper Laboratory) | PEG across phases, staging and many targets |
 
 The next lesson takes the piece this one left open on purpose: what the throttle does while PEG steers. The flight above ended at more than 5 g, and real rockets are not allowed to do that. After it, lesson 6 shows how Saturn V's Iterative Guidance Mode solved this same problem with 1960s computers.
