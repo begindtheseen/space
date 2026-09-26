@@ -4916,7 +4916,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-z-transform-discrete-tf",
       "title": "The z-transform and discrete transfer functions",
-      "minutes": 17,
+      "minutes": 18,
       "covers": [
         "The z-transform and discrete transfer functions"
       ],
@@ -4934,7 +4934,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-discretization-methods",
       "title": "Discretization methods",
-      "minutes": 26,
+      "minutes": 22,
       "covers": [
         "Discretization methods: forward and backward Euler, Tustin, Tustin with prewarping, ZOH equivalence, matched pole-zero"
       ],
@@ -4952,7 +4952,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-choosing-a-sample-rate",
       "title": "Choosing a sample rate",
-      "minutes": 20,
+      "minutes": 22,
       "covers": [
         "Choosing a sample rate: the 20-40x bandwidth rule of thumb and what drives the ends of that range"
       ],
@@ -4970,7 +4970,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-discrete-pid-realization-forms",
       "title": "Discrete PID realization forms",
-      "minutes": 20,
+      "minutes": 21,
       "covers": [
         "Discrete PID realization forms (direct, parallel, delta) and their numerical conditioning"
       ],
@@ -4979,7 +4979,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-biquad-sections",
       "title": "Biquad sections for discrete filters and notches",
-      "minutes": 19,
+      "minutes": 22,
       "covers": [
         "Biquad sections for discrete filters and notches"
       ],
@@ -4999,7 +4999,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-state-space-models-and-realizations",
       "title": "State-space models and their realizations",
-      "minutes": 19,
+      "minutes": 24,
       "covers": [
         "State-space representation and realizations: controllable canonical, observable canonical, modal"
       ],
@@ -5008,7 +5008,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-similarity-transformations-and-invariants",
       "title": "Similarity transformations and what survives them",
-      "minutes": 15,
+      "minutes": 22,
       "covers": [
         "Similarity transformations and what is invariant under them"
       ],
@@ -5026,7 +5026,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-controllability-rank-gramian-pbh",
       "title": "Controllability — the rank test, the Gramian and PBH",
-      "minutes": 19,
+      "minutes": 23,
       "covers": [
         "Controllability: the Kalman rank test, the controllability Gramian, the PBH test"
       ],
@@ -5053,7 +5053,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-luenberger-observers",
       "title": "Luenberger observers and the estimation error dynamics",
-      "minutes": 20,
+      "minutes": 19,
       "covers": [
         "Luenberger observers and the estimation error dynamics"
       ],
