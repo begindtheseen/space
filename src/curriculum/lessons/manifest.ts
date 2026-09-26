@@ -7334,7 +7334,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-priority-inversion",
       "title": "Priority inversion, priority inheritance and priority ceiling",
-      "minutes": 22,
+      "minutes": 24,
       "covers": [
         "Priority inversion, priority inheritance and priority ceiling; the Mars Pathfinder failure and its fix"
       ],
@@ -7343,7 +7343,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-rtos-primitives",
       "title": "RTOS primitives and which of them can block unboundedly",
-      "minutes": 17,
+      "minutes": 20,
       "covers": [
         "RTOS primitives: tasks, semaphores, mutexes, message queues, and which of them can block unboundedly"
       ],
@@ -7416,7 +7416,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-architecture-layering-and-cfs",
       "title": "Architecture layering, and NASA cFS as a reference",
-      "minutes": 18,
+      "minutes": 22,
       "covers": [
         "Layering: hardware abstraction, device managers, the GNC application, the mode manager, telemetry and command",
         "NASA core Flight System as a public reference architecture: apps, the software bus, tables"
@@ -7426,7 +7426,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-mode-management-state-machine",
       "title": "Mode management as an explicit state machine",
-      "minutes": 20,
+      "minutes": 22,
       "covers": [
         "Mode management as an explicit state machine, with guard conditions and an exit to safe from every state"
       ],
@@ -7444,7 +7444,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-data-integrity-and-time",
       "title": "Data integrity and time management",
-      "minutes": 20,
+      "minutes": 26,
       "covers": [
         "Data integrity: CRCs, checksums, sequence counts and staleness checks on every input",
         "Time management, epochs, leap seconds and monotonic vs wall-clock time"
