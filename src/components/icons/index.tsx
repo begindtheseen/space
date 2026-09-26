@@ -485,3 +485,11 @@ export function Logomark({ size = 48, ...rest }: SVGProps<SVGSVGElement> & { siz
     </svg>
   )
 }
+
+/** Ask AI: a four-point spark. */
+export const IconSpark = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M12 3.5c.6 3.9 2.3 5.9 6.5 6.5-4.2.6-5.9 2.6-6.5 6.5-.6-3.9-2.3-5.9-6.5-6.5 4.2-.6 5.9-2.6 6.5-6.5z" />
+    <path d="M18.5 15.5c.2 1.4.9 2.1 2.2 2.3-1.3.2-2 .9-2.2 2.2-.2-1.3-.9-2-2.2-2.2 1.3-.2 2-.9 2.2-2.3z" />
+  </Svg>
+)

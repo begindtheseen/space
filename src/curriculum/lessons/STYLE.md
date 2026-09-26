@@ -110,9 +110,13 @@ fenced `svg` block inside the note. It is shown as an image on a light card:
 
 `t0_m01_algebra_precalc/01-signed-numbers-and-fractions.md` is the model.
 
-When every lesson in a module is in the plain voice with its notes, add an empty
-`.plain-voice` file to the module's lesson folder. From then on the validator
-requires 4–15 notes in each of its lessons.
+Every lesson carries 4–15 notes. The validator enforces it in every module
+except the ones written before the rule (`WRITTEN_BEFORE_NOTES` in
+lessons.test.ts), which are being rewritten. When every lesson in one of those
+is in the plain voice with its notes, add an empty `.plain-voice` file to the
+module's lesson folder; the coordinator then takes it off the list. A new
+module is held to the rule from its first lesson. TEMPLATE.md has the skeleton
+and the full checklist.
 
 ## Mathematics
 

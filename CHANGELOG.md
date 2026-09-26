@@ -10,6 +10,35 @@ it.
 
 ## 1.1.3
 
+**Highlight anything and press Explain.** Select a word, a formula or a sentence in a lesson and
+an Explain button appears. It opens the panel beside the lesson with what the course already says
+about those words: the note that explains them, which lesson it comes from and whether you have
+read it, a flashcard if one defines it, and the places in lessons you have read where you met the
+words before, one tap away. It is instant, works offline and sends nothing anywhere. When nothing
+you have read covers it yet, it says so and shows you which lesson does. Every context note also
+has a "Still fuzzy?" button that shows where else the same idea comes up.
+
+**Tap the underlined words for the story behind them.** Lessons now have context notes, like the
+explanations on a lyrics site: tap an underlined phrase and a panel opens beside the lesson with
+what it means, why it matters and, often, a picture. The lesson slides over so the panel never
+covers what you are reading.
+
+**Find your starting point.** A placement test, offered on the dashboard, asks short
+questions from counting and decimals up to logarithms. "I don't know" is a good answer. At the end
+you get a plan — the lessons you need, in order, and the ones you can skip — and Next up follows it.
+
+**Basecamp: the maths under everything.** A new first module of twelve lessons: place value,
+decimals, factors, fractions from the ground up, formulas, equations, graphs, angles, area and
+volume, square roots and Pythagoras, the metric system, and speed and averages. Each one is
+written for someone meeting the idea for the first time, and each teaches only what the later
+lessons actually use.
+
+**The first modules are rewritten in plain words.** Algebra and Trigonometry now explain every
+step and every new word, with the same maths underneath. More modules follow in updates.
+
+**Learn to code has its own focus blocks.** Start a focus block on a coding lesson and the block
+keeps you in that course, the same way a study block keeps you in a module.
+
 **Your Mac stays awake while you use ORBIT.** The screen no longer dims and sleeps in the
 middle of a long read. It stays on while a focus block is running, while a lesson is being read
 aloud, and for fifteen minutes after you last scroll, click or type — then it is allowed to sleep
