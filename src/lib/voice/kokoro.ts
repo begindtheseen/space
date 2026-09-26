@@ -279,12 +279,29 @@ export function cleanPhonemes(phonemes: string, lang: 'en-us' | 'en'): string {
 
 /** Phonemes → the model's token ids, pads included, cut to what one input holds. */
 export function tokenize(phonemes: string): number[] {
-  const ids: number[] = []
+  return tokenizeMapped(phonemes).ids
+}
+
+/**
+ * Tokenize, remembering where each token came from: `chars[i]` is the index
+ * (in UTF-16 units) of token i's character in `phonemes`, or -1 for the pad
+ * tokens at either end. Word timing uses it to tie durations back to words.
+ */
+export function tokenizeMapped(phonemes: string): { ids: number[]; chars: number[] } {
+  const ids = [0]
+  const chars = [-1]
+  let at = 0
   for (const ch of phonemes) {
     const id = VOCAB[ch]
-    if (id !== undefined) ids.push(id)
+    if (id !== undefined && ids.length < MAX_TOKENS - 1) {
+      ids.push(id)
+      chars.push(at)
+    }
+    at += ch.length
   }
-  return [0, ...ids.slice(0, MAX_TOKENS - 2), 0]
+  ids.push(0)
+  chars.push(-1)
+  return { ids, chars }
 }
 
 /** Which of a voice's 510 style vectors fits an input: one per phoneme count. */
@@ -411,9 +428,26 @@ export function fastStart(units: SpeechUnit[], minChars = 150): SpeechUnit[] {
  * after each piece is then exactly the one chosen above.
  */
 export function trimSilence(pcm: Float32Array, rate = SAMPLE_RATE): Float32Array {
+  const { from, to } = trimBounds(pcm, rate)
+  if (from === 0 && to === pcm.length) return pcm
+  const out = pcm.slice(from, to)
+  const fade = Math.min(Math.round(rate * 0.008), Math.floor(out.length / 4))
+  for (let i = 0; i < fade; i++) {
+    const g = i / fade
+    out[i]! *= g
+    out[out.length - 1 - i]! *= g
+  }
+  return out
+}
+
+/**
+ * Where trimSilence cuts: the sample range kept. Word times are measured from
+ * the start of the untrimmed clip, so they move back by `from`.
+ */
+export function trimBounds(pcm: Float32Array, rate = SAMPLE_RATE): { from: number; to: number } {
   const win = Math.max(1, Math.round(rate * 0.005))
   const n = Math.floor(pcm.length / win)
-  if (n < 4) return pcm
+  if (n < 4) return { from: 0, to: pcm.length }
   const levels = new Float32Array(n)
   for (let i = 0; i < n; i++) {
     let s = 0
@@ -427,18 +461,9 @@ export function trimSilence(pcm: Float32Array, rate = SAMPLE_RATE): Float32Array
   while (first < n && levels[first]! < floor) first++
   let last = n - 1
   while (last > first && levels[last]! < floor) last--
-  if (first >= last) return pcm
+  if (first >= last) return { from: 0, to: pcm.length }
   const margin = Math.round(rate * 0.025)
-  const from = Math.max(0, first * win - margin)
-  const to = Math.min(pcm.length, (last + 1) * win + margin)
-  const out = pcm.slice(from, to)
-  const fade = Math.min(Math.round(rate * 0.008), Math.floor(out.length / 4))
-  for (let i = 0; i < fade; i++) {
-    const g = i / fade
-    out[i]! *= g
-    out[out.length - 1 - i]! *= g
-  }
-  return out
+  return { from: Math.max(0, first * win - margin), to: Math.min(pcm.length, (last + 1) * win + margin) }
 }
 
 /** Roughly how fast the voice speaks at speed 1, in characters a second, for planning ahead. */
@@ -491,4 +516,178 @@ export function safeStart(o: {
     need = Math.max(need, finish - offset)
   }
   return Math.min(need, o.firstReadyAt + (o.maxExtra ?? 10))
+}
+
+/* ── Word timing ───────────────────────────────────────────────────────────────
+   The reader highlights each word as it is spoken. The model says how long
+   every token lasts (see onnxEdit.ts, exposeDurations), so the only question
+   is which tokens belong to which word of the text — and the sentence is
+   phonemized as a whole, where words merge ("of the" → ʌvðə) and numbers
+   expand ("2024" → four words), so the answer is not a simple count.
+
+   It is found by phonemizing each word again on its own and aligning the two
+   phoneme strings letter by letter (stress marks and spaces aside), the way
+   two spellings of the same thing are lined up: every letter of the sentence
+   then knows its word, and every token its letter. */
+
+/** A word of a piece of text, as character offsets into it. */
+export interface WordSpan {
+  start: number
+  end: number
+}
+
+const WORD_RE = /[\p{L}\p{N}]+(?:['’.\-][\p{L}\p{N}]+)*/gu
+
+/** The words of a piece of text: runs of letters and digits, keeping inner apostrophes, points and hyphens. */
+export function textWords(text: string): WordSpan[] {
+  const out: WordSpan[] = []
+  for (const m of text.matchAll(WORD_RE)) out.push({ start: m.index!, end: m.index! + m[0].length })
+  return out
+}
+
+const IGNORED = new Set(['ˈ', 'ˌ', ' ', '\n', '\t', ...PUNCTUATION])
+
+/**
+ * The word each character of a sentence's phonemes belongs to (-1 for spaces,
+ * punctuation and anything that matched no word), given the same words
+ * phonemized one at a time.
+ */
+export function alignPhonemes(sentence: string, words: readonly string[]): Int32Array {
+  const b: string[] = []
+  const bw: number[] = []
+  words.forEach((w, k) => {
+    for (const ch of w) if (!IGNORED.has(ch)) {
+      b.push(ch)
+      bw.push(k)
+    }
+  })
+  const a: string[] = []
+  const ai: number[] = []
+  let at = 0
+  for (const ch of sentence) {
+    if (!IGNORED.has(ch)) {
+      a.push(ch)
+      ai.push(at)
+    }
+    at += ch.length
+  }
+  const out = new Int32Array(sentence.length).fill(-1)
+  if (!a.length || !b.length) return out
+
+  // Edit distance with a full table, then a walk back to pair the letters.
+  const n = a.length
+  const m = b.length
+  const w = m + 1
+  const d = new Uint16Array((n + 1) * w)
+  for (let i = 0; i <= n; i++) d[i * w] = i
+  for (let j = 0; j <= m; j++) d[j] = j
+  for (let i = 1; i <= n; i++) {
+    for (let j = 1; j <= m; j++) {
+      const sub = d[(i - 1) * w + j - 1]! + (a[i - 1] === b[j - 1] ? 0 : 1)
+      const del = d[(i - 1) * w + j]! + 1
+      const ins = d[i * w + j - 1]! + 1
+      d[i * w + j] = Math.min(sub, del, ins)
+    }
+  }
+  const letterWord = new Int32Array(n).fill(-1)
+  let i = n
+  let j = m
+  while (i > 0 && j > 0) {
+    const here = d[i * w + j]!
+    if (here === d[(i - 1) * w + j - 1]! + (a[i - 1] === b[j - 1] ? 0 : 1)) {
+      letterWord[i - 1] = bw[j - 1]!
+      i--
+      j--
+    } else if (here === d[(i - 1) * w + j]! + 1) i--
+    else j--
+  }
+  // A sentence letter left unpaired sits between words it can only belong to one of: the previous one.
+  for (let k = 0; k < n; k++) if (letterWord[k] === -1) letterWord[k] = k > 0 ? letterWord[k - 1]! : -1
+  for (let k = n - 1; k >= 0; k--) if (letterWord[k] === -1 && k + 1 < n) letterWord[k] = letterWord[k + 1]!
+  for (let k = 0; k < n; k++) out[ai[k]!] = letterWord[k]!
+  // A stress mark belongs to the letter after it.
+  let next = -1
+  for (let c = sentence.length - 1; c >= 0; c--) {
+    const ch = sentence[c]!
+    if (ch === 'ˈ' || ch === 'ˌ') out[c] = next
+    else if (out[c] !== -1) next = out[c]!
+    else if (ch === ' ') next = -1
+  }
+  return out
+}
+
+/**
+ * Start and end of every word, in seconds from the start of the clip the
+ * model returned: `[start0, end0, start1, end1, …]`, NaN for a word no token
+ * was tied to. `chars` is from tokenizeMapped, `durations` the model's second
+ * output (one per token, in 600-sample frames).
+ */
+export function wordTimes(
+  chars: readonly number[],
+  charWord: Int32Array,
+  durations: ArrayLike<number | bigint>,
+  wordCount: number,
+  rate = SAMPLE_RATE,
+): Float64Array {
+  const out = new Float64Array(wordCount * 2).fill(NaN)
+  let t = 0
+  const n = Math.min(chars.length, durations.length)
+  for (let k = 0; k < n; k++) {
+    const len = Number(durations[k]) * 600
+    const c = chars[k]!
+    const word = c >= 0 ? charWord[c] ?? -1 : -1
+    if (word >= 0 && word < wordCount) {
+      if (Number.isNaN(out[word * 2]!)) out[word * 2] = t / rate
+      out[word * 2 + 1] = (t + len) / rate
+    }
+    t += len
+  }
+  // Words out of order (an alignment slip) would make the highlight jump back: keep them monotonic.
+  let last = 0
+  for (let k = 0; k < wordCount; k++) {
+    const s = out[k * 2]!
+    if (Number.isNaN(s)) continue
+    if (s < last) out[k * 2] = last
+    if (out[k * 2 + 1]! < out[k * 2]!) out[k * 2 + 1] = out[k * 2]!
+    last = out[k * 2]!
+  }
+  return out
+}
+
+/* ── Text to phonemes, shared by the voice worker and the lesson recorder ── */
+
+export type Phonemize = (text: string, lang: string) => Promise<string[]>
+
+/** Text → phonemes, keeping the punctuation the model needs for its pauses and pitch. */
+export async function phonemesFor(text: string, lang: 'en-us' | 'en', phonemize: Phonemize): Promise<string> {
+  const parts = await Promise.all(
+    splitPunctuation(normalizeText(text)).map(async (p) => (p.punct ? p.text : (await phonemize(p.text, lang)).join(' '))),
+  )
+  return cleanPhonemes(parts.join(''), lang)
+}
+
+/** The words of `text`, and which of them each character of its phonemes belongs to. */
+export async function alignWords(
+  text: string,
+  phonemes: string,
+  lang: 'en-us' | 'en',
+  phonemize: Phonemize,
+): Promise<{ words: WordSpan[]; charWord: Int32Array }> {
+  const words = textWords(text)
+  const each = await Promise.all(
+    words.map(async (w) => cleanPhonemes((await phonemize(normalizeText(text.slice(w.start, w.end)), lang)).join(' '), lang)),
+  )
+  return { words, charWord: alignPhonemes(phonemes, each) }
+}
+
+/** A short stable key for a piece of text: names a lesson's recording and a sentence's cached audio. */
+export function textKey(text: string): string {
+  let h1 = 0x811c9dc5
+  let h2 = 0x01000193
+  for (let i = 0; i < text.length; i++) {
+    const c = text.charCodeAt(i)
+    h1 = Math.imul(h1 ^ c, 0x01000193)
+    h2 = Math.imul(h2 ^ c, 0x5bd1e995)
+  }
+  return `${(h1 >>> 0).toString(36)}${(h2 >>> 0).toString(36)}${text.length.toString(36)}`
 }

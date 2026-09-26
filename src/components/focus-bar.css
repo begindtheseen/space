@@ -231,3 +231,136 @@
     width: 150px;
   }
 }
+
+/* ── Staying in the block ────────────────────────────────────────────────── */
+
+/* Pause is waiting out its five minutes: visibly unavailable, with the
+   countdown on it, so the wait is a fact she can see rather than a button
+   that does nothing. */
+.fbar__btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* Why the link she just tapped put her back here, and how to leave. */
+.fbar__notice {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 10px);
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: min(560px, calc(100vw - 32px));
+  padding: 9px 14px;
+  border: 1px solid var(--line-blue);
+  border-radius: 10px;
+  background: rgba(4, 16, 31, 0.98);
+  color: var(--ink-2);
+  font-size: 13px;
+  line-height: 1.45;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+/* While a block holds her, the ways out read as closed. They still work as
+   links — the hold is what turns them back — but they no longer invite. */
+html[data-focus-lock='true'] .side__nav,
+html[data-focus-lock='true'] .topbar .search {
+  opacity: 0.4;
+  transition: opacity 0.2s ease;
+}
+
+@media (max-width: 760px) {
+  /* The countdown is the reason the button is off; it stays on a phone. */
+  .fbar__btn:disabled span {
+    display: inline;
+  }
+}
+
+/* ── Focus mode: one thing on the screen ─────────────────────────────────────
+   While a block runs, the app stops looking like an app. The rail, the top
+   bar and the search box are gone — there is nowhere to click to — the edges
+   of the screen fall into shadow so the lesson is the only lit thing, and a
+   single quiet line at the top says what she is doing. Pausing or finishing
+   brings everything back. */
+html[data-focus-lock='true'] .side,
+html[data-focus-lock='true'] .edge-zone,
+html[data-focus-lock='true'] .scrim,
+html[data-focus-lock='true'] .topbar {
+  display: none !important;
+}
+
+html[data-focus-lock='true'] .fbar {
+  left: 0;
+}
+
+/* The page loses the bar it sat under; the line at the top takes its place. */
+html[data-focus-lock='true'] .scroll {
+  padding-top: calc(var(--safe-top, 0px) + 54px);
+}
+
+/* The dark around the edges. Fixed and click-through, under the content. */
+html[data-focus-lock='true'] .main::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse 70% 85% at 50% 45%, transparent 55%, rgba(0, 2, 8, 0.72) 100%);
+  animation: focus-fade 0.6s ease both;
+}
+
+html[data-focus-lock='true'] .scroll {
+  position: relative;
+  z-index: 1;
+}
+
+.focus-mast {
+  position: fixed;
+  top: calc(var(--safe-top, 0px) + 14px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 41;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  max-width: calc(100vw - 32px);
+  padding: 7px 16px;
+  border-radius: 999px;
+  background: rgba(3, 10, 22, 0.82);
+  border: 1px solid rgba(86, 150, 248, 0.22);
+  backdrop-filter: blur(10px);
+  pointer-events: none;
+  animation: focus-fade 0.6s ease both;
+}
+
+.focus-mast__kicker {
+  flex-shrink: 0;
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(120, 175, 255, 0.9);
+}
+
+.focus-mast__title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  color: var(--ink-2, #d8e2f0);
+}
+
+@keyframes focus-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-focus-lock='true'] .main::before,
+  .focus-mast {
+    animation: none;
+  }
+}

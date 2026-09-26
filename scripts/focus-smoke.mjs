@@ -2,8 +2,9 @@
    ORBIT — focus-block smoke test
    ----------------------------------------------------------------------------
    Serves dist/ and walks the whole focus flow in a real browser: start a block
-   from the dashboard, watch the clock tick, navigate away and find the strip
-   still there, park a thought, pause, end the block, reload and confirm it was
+   from the dashboard, watch the clock tick, try to navigate away and be held
+   on the lesson, park a thought, wait out the five minutes before Pause is
+   allowed, pause, look around, end the block, reload and confirm it was
    banked.
 
    This exists because the unit tests cannot see any of that. They proved the
@@ -43,6 +44,11 @@ const browser = await chromium.launch(launch)
 const page = await browser.newPage({ viewport: { width: 1400, height: 900 } })
 page.on('pageerror', (e) => errors.push('pageerror: ' + e.message))
 page.on('console', (m) => { if (m.type() === 'error') errors.push('console: ' + m.text()) })
+// Time runs as normal, but can be jumped past the five minutes a block must
+// run before it may be paused.
+await page.clock.install()
+await page.clock.resume()
+const pastPauseWait = () => page.clock.fastForward('05:05')
 
 const step = async (label, fn) => {
   try { await fn(); console.log('  PASS  ' + label) }
@@ -75,10 +81,23 @@ await step('the block strip shows a countdown', async () => {
   console.log('        clock ' + a.trim() + ' -> ' + b.trim())
 })
 
-await step('the block survives navigating away', async () => {
-  await page.goto(base + '#/progress', { waitUntil: 'load' })
+let lesson = ''
+await step('the block holds her on its lesson', async () => {
+  lesson = await page.evaluate(() => location.hash)
+  await page.evaluate(() => { location.hash = '#/progress' })
   await page.waitForTimeout(700)
+  const back = await page.evaluate(() => location.hash)
+  if (back !== lesson) throw new Error(`left the lesson: ${lesson} -> ${back}`)
+  await page.waitForSelector('.fbar__notice', { timeout: 3000 })
   await page.waitForSelector('.fbar', { timeout: 5000 })
+})
+
+await step('Pause waits for five minutes of the block', async () => {
+  const btn = page.locator('.fbar__btn', { hasText: /Pause/ })
+  if (!(await btn.isDisabled())) throw new Error('Pause was available at the start of the block')
+  const label = (await btn.innerText()).trim()
+  if (!/^Pause in \d:\d{2}$/.test(label)) throw new Error('Pause label read ' + label)
+  console.log('        ' + label)
 })
 
 await step('a thought can be parked', async () => {
@@ -86,20 +105,31 @@ await step('a thought can be parked', async () => {
   await page.fill('.fbar__note', 'renew the registration')
   await page.press('.fbar__note', 'Enter')
   await page.waitForTimeout(400)
-  await page.goto(base + '#/focus', { waitUntil: 'load' })
-  await page.waitForTimeout(700)
-  const txt = await page.textContent('.focus-parked')
-  if (!txt.includes('renew the registration')) throw new Error('parked note missing')
 })
 
 await step('pause holds the clock', async () => {
+  await pastPauseWait()
+  await page.waitForTimeout(300)
   await page.click('.fbar__btn:has-text("Pause")')
   await page.waitForTimeout(300)
   const a = await page.textContent('.fbar__clock')
   await page.waitForTimeout(2200)
   const b = await page.textContent('.fbar__clock')
   if (a.trim() !== b.trim()) throw new Error('paused clock moved: ' + a + ' -> ' + b)
+})
+
+await step('paused, she can look around, and finds the parked thought', async () => {
+  await page.evaluate(() => { location.hash = '#/focus' })
+  await page.waitForTimeout(700)
+  const txt = await page.textContent('.focus-parked')
+  if (!txt.includes('renew the registration')) throw new Error('parked note missing')
+})
+
+await step('Resume takes her back to the lesson', async () => {
   await page.click('.fbar__btn:has-text("Resume")')
+  await page.waitForTimeout(700)
+  const back = await page.evaluate(() => location.hash)
+  if (back !== lesson) throw new Error(`resumed somewhere else: ${back}`)
 })
 
 await step('ending the block banks it', async () => {
@@ -136,6 +166,8 @@ await step('the block dial drains as the clock runs', async () => {
 })
 
 await step('pausing stops the dial too', async () => {
+  await pastPauseWait()
+  await page.waitForTimeout(300)
   await page.click('.fbar__btn:has-text("Pause")')
   await page.waitForTimeout(300)
   const a = await page.$eval('.fbar__dial-arc', (el) => Number(el.getAttribute('stroke-dashoffset')))

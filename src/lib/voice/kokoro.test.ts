@@ -18,7 +18,15 @@ import {
   splitLong,
   trimSilence,
   tokenize,
+  tokenizeMapped,
+  textWords,
+  alignPhonemes,
+  alignWords,
+  wordTimes,
+  textKey,
+  trimBounds,
 } from './kokoro'
+import { unitAt, wordAt, type RecordedUnit } from './recorded'
 import { poolSize, unitChars } from './natural'
 
 describe('the natural voice: text to tokens', () => {
@@ -98,7 +106,9 @@ describe('the natural voice: text to tokens', () => {
     }
     expect(new Set(units.map((u) => u.sentence))).toEqual(new Set([0]))
     expect(unitChars({ userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X)' })).toBe(150)
-    expect(unitChars({ userAgent: 'Mozilla/5.0 (Macintosh)' })).toBe(MAX_UNIT_CHARS)
+    // A computer's pieces are kept a little shorter than the model allows, for memory.
+    expect(unitChars({ userAgent: 'Mozilla/5.0 (Macintosh)' })).toBe(220)
+    expect(unitChars({ userAgent: 'Mozilla/5.0 (Macintosh)' })).toBeLessThanOrEqual(MAX_UNIT_CHARS)
   })
 
   it('pauses like a reader: after a question, a statement, a lead-in', () => {
@@ -228,4 +238,130 @@ describe.skipIf(!process.env.VOICE_MODEL || !existsSync(process.env.VOICE_MODEL 
     expect(bytes.length).toBeLessThan(model.length)
     expect(() => convIntegerToConv(bytes)).toThrow(/No integer convolutions/)
   }, 60_000)
+})
+
+
+describe('following along: word timing', () => {
+  it('remembers which character each token came from', () => {
+    const { ids, chars } = tokenizeMapped('hə lˈoʊ')
+    expect(ids).toEqual(tokenize('hə lˈoʊ'))
+    expect(chars[0]).toBe(-1)
+    expect(chars.at(-1)).toBe(-1)
+    expect(chars.slice(1, -1)).toEqual([0, 1, 2, 3, 4, 5, 6])
+  })
+
+  it('finds the words of a text, keeping apostrophes, points and hyphens inside them', () => {
+    const t = "It's a well-known 3.14 value, isn't it?"
+    expect(textWords(t).map((w) => t.slice(w.start, w.end))).toEqual(["It's", 'a', 'well-known', '3.14', 'value', "isn't", 'it'])
+  })
+
+  it('ties a sentence’s phonemes to its words, through merged words and expanded numbers', () => {
+    // As espeak says it: "of the" run together, "2024" as four words.
+    const sentence = 'ʌvðə nˈɛtwɜːk ɪn tˈuː θˈaʊzənd twˈɛnti fˈoːɹ.'
+    const words = ['ˈʌv', 'ðˈə', 'nˈɛtwɜːk', 'ˈɪn', 'tˈuː θˈaʊzənd twˈɛnti fˈoːɹ']
+    const cw = alignPhonemes(sentence, words)
+    const wordOf = (needle: string) => cw[sentence.indexOf(needle)]
+    expect(wordOf('ʌv')).toBe(0)
+    expect(wordOf('ðə')).toBe(1)
+    expect(wordOf('nˈɛt')).toBe(2)
+    expect(wordOf('ɪn')).toBe(3)
+    expect(wordOf('θˈaʊ')).toBe(4)
+    expect(wordOf('fˈoː')).toBe(4)
+    expect(cw[sentence.indexOf('.')]).toBe(-1)
+    expect(cw[sentence.indexOf(' ')]).toBe(-1)
+  })
+
+  it('turns the model’s durations into word times, in order, at 600 samples a frame', () => {
+    const phon = 'ab cd'
+    const { chars } = tokenizeMapped(phon)
+    const cw = alignPhonemes(phon, ['ab', 'cd'])
+    // pad, a, b, space, c, d, pad
+    const t = wordTimes(chars, cw, [2, 4, 4, 2, 8, 8, 2], 2)
+    expect(t[0]).toBeCloseTo((2 * 600) / 24000)
+    expect(t[1]).toBeCloseTo((10 * 600) / 24000)
+    expect(t[2]).toBeCloseTo((12 * 600) / 24000)
+    expect(t[3]).toBeCloseTo((28 * 600) / 24000)
+    const none = wordTimes(chars, new Int32Array(phon.length).fill(-1), [1, 1, 1, 1, 1, 1, 1], 2)
+    expect(Number.isNaN(none[0]!)).toBe(true)
+  })
+
+  it('reports where it trims, so word times can move with the cut', () => {
+    const pcm = new Float32Array(24000)
+    for (let i = 6000; i < 18000; i++) pcm[i] = Math.sin(i / 7) * 0.5
+    const { from, to } = trimBounds(pcm)
+    expect(from).toBeGreaterThan(5000)
+    expect(from).toBeLessThan(6000)
+    expect(to).toBeGreaterThan(18000)
+    expect(trimSilence(pcm).length).toBe(to - from)
+  })
+
+  it('finds the sentence and word at a point in a recording', () => {
+    const units: RecordedUnit[] = [
+      { t: 'One two.', s: 0, e: 1, n: 0, w: [[0.1, 0.4, 0, 3], [0.5, 0.9, 4, 7]] },
+      { t: 'Three.', s: 1.3, e: 2, n: 1, w: [[1.35, 1.9, 0, 5]] },
+    ]
+    expect(unitAt(units, 0)).toBe(0)
+    expect(unitAt(units, 1.2)).toBe(0)
+    expect(unitAt(units, 1.3)).toBe(1)
+    expect(unitAt(units, 99)).toBe(1)
+    expect(wordAt(units[0]!, 0.05)).toBe(-1)
+    expect(wordAt(units[0]!, 0.6)).toBe(1)
+  })
+
+  it('keys a lesson by its exact text', () => {
+    expect(textKey('A lesson.')).toBe(textKey('A lesson.'))
+    expect(textKey('A lesson.')).not.toBe(textKey('A lesson!'))
+  })
+})
+
+describe.skipIf(!existsSync(PHONEMIZER))('following along: with the real phonemiser', () => {
+  it('ties every word of a real sentence to its phonemes', async () => {
+    const { phonemize } = (await import(PHONEMIZER)) as { phonemize: (t: string, l: string) => Promise<string[]> }
+    const { phonemesFor } = await import('./kokoro')
+    const text = 'The gradient of the loss tells the network which way to move, in 2024.'
+    const phonemes = await phonemesFor(text, 'en-us', phonemize)
+    const { words, charWord } = await alignWords(text, phonemes, 'en-us', phonemize)
+    const seen = new Set(Array.from(charWord).filter((w) => w >= 0))
+    expect(words).toHaveLength(14)
+    expect(seen.size).toBe(words.length)
+    // Every word's phonemes come after the previous word's.
+    let last = -1
+    for (let c = 0; c < phonemes.length; c++) {
+      const w = charWord[c]!
+      if (w < 0) continue
+      expect(w).toBeGreaterThanOrEqual(last)
+      last = w
+    }
+  }, 60_000)
+})
+
+describe.skipIf(!process.env.VOICE_MODEL || !existsSync(process.env.VOICE_MODEL ?? ''))('following along: the model’s durations', () => {
+  it('exposes one duration per token, summing exactly to the sound it makes', async () => {
+    const { exposeDurations, DURATIONS_TENSOR } = await import('./onnxEdit')
+    const model = new Uint8Array(readFileSync(process.env.VOICE_MODEL!))
+    const { bytes, added } = exposeDurations(model)
+    expect(added).toBe(true)
+    expect(exposeDurations(bytes).added).toBe(false)
+    const ortPath = join(__dirname, '../../../../node_modules/onnxruntime-web/dist/ort.wasm.min.mjs')
+    const ortMod = (await import(ortPath)) as { default?: unknown }
+    const ort = (ortMod.default ?? ortMod) as {
+      env: { wasm: { numThreads: number; wasmPaths: string } }
+      Tensor: new (type: string, data: unknown, dims: number[]) => unknown
+      InferenceSession: { create(m: Uint8Array): Promise<{ run(f: Record<string, unknown>): Promise<Record<string, { data: ArrayLike<number | bigint>; dims: number[] }>>; outputNames: string[] }> }
+    }
+    ort.env.wasm.numThreads = 1
+    ort.env.wasm.wasmPaths = join(__dirname, '../../../../node_modules/onnxruntime-web/dist/')
+    const session = await ort.InferenceSession.create(bytes)
+    expect(session.outputNames).toContain(DURATIONS_TENSOR)
+    const ids = [0, 50, 83, 54, 156, 57, 135, 16, 0]
+    const styles = new Float32Array(readFileSync(join(__dirname, '../../../public/voices/af_heart.bin')).buffer.slice(0))
+    const out = await session.run({
+      input_ids: new ort.Tensor('int64', BigInt64Array.from(ids, (x) => BigInt(x)), [1, ids.length]),
+      style: new ort.Tensor('float32', styles.slice(ids.length * 256, ids.length * 256 + 256), [1, 256]),
+      speed: new ort.Tensor('float32', Float32Array.of(1), [1]),
+    })
+    const durations = Array.from(out[DURATIONS_TENSOR]!.data, Number)
+    expect(durations).toHaveLength(ids.length)
+    expect(durations.reduce((a, b) => a + b, 0) * 600).toBe(out[session.outputNames[0]!]!.data.length)
+  }, 120_000)
 })

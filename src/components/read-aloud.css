@@ -107,3 +107,45 @@
     max-width: 120px;
   }
 }
+
+/* ── Following along ─────────────────────────────────────────────────────────
+   The word being read is lit, and the sentence around it faintly, so her eye
+   can find the place without hunting for it. Painted by the browser as a
+   highlight: the lesson's own markup is never touched. */
+::highlight(raloud-sentence) {
+  background-color: rgba(86, 150, 248, 0.1);
+}
+
+::highlight(raloud-word) {
+  background-color: rgba(86, 150, 248, 0.42);
+  color: #fff;
+}
+
+/* When she has scrolled away from where the voice is. */
+.raloud-jump {
+  position: fixed;
+  left: 50%;
+  bottom: calc(24px + var(--safe-bottom, 0px));
+  transform: translateX(-50%);
+  z-index: 45;
+  padding: 10px 18px;
+  border: 1px solid var(--line-blue, rgba(86, 150, 248, 0.4));
+  border-radius: 999px;
+  background: rgba(4, 16, 31, 0.96);
+  color: var(--ink-1, #fff);
+  font: inherit;
+  font-size: 13px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+}
+
+.raloud-jump:hover {
+  border-color: rgba(86, 150, 248, 0.8);
+}
+
+/* Above the focus strip when a block is running. */
+.shell[data-focus='true'] ~ .raloud-jump,
+html[data-focus-lock='true'] .raloud-jump,
+body:has(.fbar) .raloud-jump {
+  bottom: calc(96px + var(--safe-bottom, 0px));
+}

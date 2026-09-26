@@ -247,3 +247,45 @@ export function convIntegerToConv(model: Uint8Array): { bytes: Uint8Array; repor
   for (const f of top) modelParts.push(f === graphField ? lengthDelimited(7, newGraph) : model.subarray(f.start, f.end))
   return { bytes: concat(modelParts), report: { convs, removed: before - kept.length + dropped.size } }
 }
+
+/* ── Word timing: the durations the model already computes ─────────────────
+   Before it makes any sound, the model decides how long each phoneme lasts:
+   a whole number of 25 ms frames (600 samples) per input token, which it then
+   uses to lay the sound out. The published export returns only the waveform,
+   so those numbers are thrown away. Listing that tensor as a second output
+   costs nothing to compute and gives the exact moment every word starts and
+   ends — what the reader highlights as it goes. */
+
+/** The tensor that holds one duration per input token, in frames. */
+export const DURATIONS_TENSOR = '/encoder/Gather_output_0'
+/** Samples per duration frame at 24 kHz. */
+export const SAMPLES_PER_FRAME = 600
+
+/**
+ * Adds the per-token durations as a second graph output. Returns the model
+ * unchanged when it has no such tensor, or already outputs it.
+ */
+export function exposeDurations(model: Uint8Array): { bytes: Uint8Array; added: boolean } {
+  const top = fields(model)
+  const graphField = top.find((f) => f.no === 7 && f.wire === 2)
+  if (!graphField) return { bytes: model, added: false }
+  const graphBytes = graphField.value as Uint8Array
+  const graph = fields(graphBytes)
+  let produced = false
+  for (const f of graph) {
+    if (f.no === 1 && !produced) produced = parseNode(f.value as Uint8Array).outputs.includes(DURATIONS_TENSOR)
+    if (f.no === 12) {
+      const name = fields(f.value as Uint8Array).find((g) => g.no === 1)
+      if (name && str(name) === DURATIONS_TENSOR) return { bytes: model, added: false }
+    }
+  }
+  if (!produced) return { bytes: model, added: false }
+  // ValueInfoProto { name: 1, type: 2 → TypeProto { tensor_type: 1 → { elem_type: 1 = INT64 (7) } } }
+  const tensorType = new Uint8Array([8, 7])
+  const typeProto = lengthDelimited(1, tensorType)
+  const valueInfo = concat([stringField(1, DURATIONS_TENSOR), lengthDelimited(2, typeProto)])
+  const newGraph = concat([graphBytes, lengthDelimited(12, valueInfo)])
+  const modelParts: Uint8Array[] = []
+  for (const f of top) modelParts.push(f === graphField ? lengthDelimited(7, newGraph) : model.subarray(f.start, f.end))
+  return { bytes: concat(modelParts), added: true }
+}

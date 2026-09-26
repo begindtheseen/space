@@ -21,8 +21,8 @@
    rewritten into float ones as it loads (lib/voice/onnxEdit.ts), and speech
    is made many times faster than it is spoken.
    ========================================================================== */
-import { SAMPLE_RATE, cleanPhonemes, splitPunctuation, normalizeText, styleRow, tokenize } from '@/lib/voice/kokoro'
-import { convIntegerToConv } from '@/lib/voice/onnxEdit'
+import { SAMPLE_RATE, alignWords, phonemesFor, styleRow, tokenizeMapped, wordTimes } from '@/lib/voice/kokoro'
+import { DURATIONS_TENSOR, convIntegerToConv, exposeDurations } from '@/lib/voice/onnxEdit'
 
 const ORT_VERSION = '1.30.0'
 const PHONEMIZER_VERSION = '1.2.1'
@@ -41,7 +41,7 @@ const STYLE_DIM = 256
 // The slice of ONNX Runtime used here, typed locally so the app takes no
 // build-time dependency on a runtime it downloads when the voice is first used.
 interface OrtTensor {
-  data: Float32Array
+  data: Float32Array | BigInt64Array
 }
 interface OrtSession {
   run(feeds: Record<string, unknown>): Promise<Record<string, OrtTensor>>
@@ -63,7 +63,15 @@ export type VoiceRequest =
 export type VoiceReply =
   | { type: 'ready'; rtf?: number }
   | { type: 'fatal'; message: string }
-  | { type: 'audio'; id: number; pcm: Float32Array; sampleRate: number; ms: number }
+  | {
+      type: 'audio'
+      id: number
+      pcm: Float32Array
+      sampleRate: number
+      ms: number
+      /** Start and end of every word of the text, in seconds into `pcm` ([s0, e0, s1, e1, …], NaN if unknown); absent without durations. */
+      words?: Float64Array
+    }
   | { type: 'error'; id: number; message: string }
 
 const post = (m: VoiceReply, transfer: Transferable[] = []) => (self as unknown as Worker).postMessage(m, transfer)
@@ -147,8 +155,10 @@ async function init(req: Extract<VoiceRequest, { cmd: 'init' }>): Promise<number
   ;(ort.env as { logLevel?: string }).logLevel = 'error'
   phonemize = phon.mod.phonemize
   let bytes = await modelBytes(req.modelUrl, req.cacheName)
+  if (gpu) bytes = convIntegerToConv(bytes).bytes
+  // The per-phoneme durations, as a second output: where every word falls.
+  bytes = exposeDurations(bytes).bytes
   if (gpu) {
-    bytes = convIntegerToConv(bytes).bytes
     session = await ort.InferenceSession.create(bytes, { executionProviders: ['webgpu'], graphOptimizationLevel: 'all' })
     // One short sentence first: the GPU compiles its shaders on the first
     // run, and that wait belongs here, not before the first sentence read.
@@ -160,7 +170,7 @@ async function init(req: Extract<VoiceRequest, { cmd: 'init' }>): Promise<number
     // now, before anyone is left waiting on them.
     const t0 = performance.now()
     const probe = speakNow({ text: 'This is how quickly the voice can read on this device.', voice: 'af_heart', lang: 'en-us', speed: 1 }).then(
-      (pcm) => (performance.now() - t0) / 1000 / Math.max(0.5, pcm.length / SAMPLE_RATE),
+      ({ pcm }) => (performance.now() - t0) / 1000 / Math.max(0.5, pcm.length / SAMPLE_RATE),
     )
     return within(probe, 4_000, TOO_SLOW)
   }
@@ -181,19 +191,11 @@ function voice(id: string): Promise<Float32Array> {
   return v
 }
 
-/** Text → phonemes, keeping the punctuation the model needs for its pauses and pitch. */
-async function toPhonemes(text: string, lang: 'en-us' | 'en'): Promise<string> {
-  const parts = await Promise.all(
-    splitPunctuation(normalizeText(text)).map(async (p) => (p.punct ? p.text : (await phonemize!(p.text, lang)).join(' '))),
-  )
-  return cleanPhonemes(parts.join(''), lang)
-}
-
-async function speakNow(req: { text: string; voice: string; lang: 'en-us' | 'en'; speed: number }): Promise<Float32Array> {
+async function speakNow(req: { text: string; voice: string; lang: 'en-us' | 'en'; speed: number }): Promise<{ pcm: Float32Array; words?: Float64Array }> {
   if (!ort || !session || !phonemize) throw new Error('The voice is not ready.')
-  const [phonemes, styles] = await Promise.all([toPhonemes(req.text, req.lang), voice(req.voice)])
-  const ids = tokenize(phonemes)
-  if (ids.length <= 2) return new Float32Array(0)
+  const [phonemes, styles] = await Promise.all([phonemesFor(req.text, req.lang, phonemize), voice(req.voice)])
+  const { ids, chars } = tokenizeMapped(phonemes)
+  if (ids.length <= 2) return { pcm: new Float32Array(0) }
   const row = styleRow(ids.length, Math.floor(styles.length / STYLE_DIM))
   const style = styles.slice(row * STYLE_DIM, row * STYLE_DIM + STYLE_DIM)
   const out = await session.run({
@@ -201,11 +203,14 @@ async function speakNow(req: { text: string; voice: string; lang: 'en-us' | 'en'
     style: new ort.Tensor('float32', style, [1, STYLE_DIM]),
     speed: new ort.Tensor('float32', Float32Array.of(req.speed), [1]),
   })
-  const wave = out[session.outputNames[0]!]!.data
+  const wave = out[session.outputNames[0]!]!.data as Float32Array
   // A copy the page can own: the runtime reuses its output buffers.
   const pcm = new Float32Array(wave)
   for (let i = 0; i < pcm.length; i += 997) if (!Number.isFinite(pcm[i]!)) throw new Error('The voice produced no sound.')
-  return pcm
+  const durations = out[DURATIONS_TENSOR]?.data as ArrayLike<number | bigint> | undefined
+  if (!durations) return { pcm }
+  const { words, charWord } = await alignWords(req.text, phonemes, req.lang, phonemize)
+  return { pcm, words: wordTimes(chars, charWord, durations, words.length) }
 }
 
 // One request at a time, in order: the pool sends a worker its next piece
@@ -225,8 +230,12 @@ self.onmessage = (e: MessageEvent<VoiceRequest>) => {
     }
     try {
       const t0 = performance.now()
-      const pcm = await speakNow(req)
-      post({ type: 'audio', id: req.id, pcm, sampleRate: SAMPLE_RATE, ms: performance.now() - t0 }, [pcm.buffer])
+      const { pcm, words } = await speakNow(req)
+      const ms = performance.now() - t0
+      post(
+        words ? { type: 'audio', id: req.id, pcm, sampleRate: SAMPLE_RATE, ms, words } : { type: 'audio', id: req.id, pcm, sampleRate: SAMPLE_RATE, ms },
+        words ? [pcm.buffer, words.buffer] : [pcm.buffer],
+      )
     } catch (err) {
       post({ type: 'error', id: req.id, message: err instanceof Error ? err.message : String(err) })
     }

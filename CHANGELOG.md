@@ -8,6 +8,32 @@ the entry for the one you are running is what Settings shows you afterwards.
 Newest first. Each heading is exactly `## <version>` so both readers can find
 it.
 
+## 1.1.2
+
+**Focus mode changes how the app looks.** While a block runs, the rail, the top bar and the
+search box are gone, the edges of the screen fall into shadow, and one quiet line at the top says
+what you are doing. There is the lesson and nothing else until you pause or finish.
+
+**Read aloud follows along, word by word.** The word being read is lit up in the lesson as it is
+spoken, and the sentence around it faintly, so your eye can keep your place. Scroll away and
+**Back to the word being read** appears; one tap brings you back to it. The timing is exact: it
+comes from the voice model's own durations for every sound it makes, not a guess.
+
+**Read aloud no longer runs out of memory or stops halfway.** On a fast Mac the voice makes the
+lesson well ahead of where you are, so it never has to stop and load more, and it hands its memory
+back every thirty sentences, so a long lesson no longer ends with the app out of memory. Pieces
+given to the model at once are a little shorter, which keeps each one's memory down.
+
+**Focus blocks keep you on the lesson.** While a block is running, the app will not take you
+anywhere else: a sidebar link, the search box, the back button or a typed address puts you back on
+the lesson, and the strip at the bottom says why and how to leave. Moving between the lessons of
+the same module is fine. To go somewhere else, pause the block or end it.
+
+- **Pause** becomes available once five minutes of the block have run, and again five minutes
+  after each resume; until then the button shows how long is left. While paused you can go
+  anywhere, and **Resume** takes you straight back to the lesson.
+- **I'm done** ends the block at any moment, and every minute it ran still counts.
+
 ## 1.1.1
 
 **ORBIT updates itself, all the way to the latest.** When a release needs a

@@ -66,8 +66,8 @@ export function Focus() {
           <CardHead icon={<IconClock size={15} />} title="A block is already running" divided />
           <div className="sect">
             <p className="focus-why">
-              The timer is at the bottom of the window and it follows you around the app. Finish
-              that block before starting another one.
+              The timer is at the bottom of the window. While it runs it keeps you on its lesson;
+              paused, you are free to look around. Finish that block before starting another one.
             </p>
             <Button variant="primary" onClick={() => navigate(state.focus!.pick.href)}>
               Back to it
@@ -100,7 +100,8 @@ export function Focus() {
                 <IconPlay size={13} /> Start {minutes} minutes
               </Button>
               <span className="focus-start__note">
-                Stop whenever you want. The time still counts.
+                The block keeps you on this one thing until it ends. You can pause once five minutes
+                have run, and stop whenever you want; the time still counts.
               </span>
             </div>
           </div>
