@@ -8,7 +8,7 @@ covers:
 
 At a big concert, the coat check has 50 hooks. You hand over your coat, and instead of searching for a free hook, the attendant looks at the last two digits of your ticket, divides by 50 and takes the remainder: ticket 1437 goes on hook 37. When you come back, she does the same sum and walks straight to hook 37. No searching, however many coats there are. But if a friend's ticket is 2437, it lands on hook 37 as well, and the two coats share one hook. Now she has to check both.
 
-That is a **hash table**. A **hash function** turns a key into a number; the number, divided by the table size, picks a **bucket** (the hook); and keys that land in the same bucket, a **collision**, share it. In C++ it is `std::unordered_map` and `std::unordered_set`, and the name says what you give up: unlike last lesson's `std::map`, the keys come out in no useful order.
+That is a **hash table**. A **[[hash function|hash-word]]** turns a key into a number; the number, divided by the table size, picks a **bucket** (the hook); and keys that land in the same bucket, a **collision**, share it. In C++ it is `std::unordered_map` and `std::unordered_set`, and the name says what you give up: unlike last lesson's `std::map`, the keys come out in no useful order.
 
 In return, a lookup is one sum and a short walk, instead of a climb down a tree. *On average.* This lesson is about that word. You will measure how the table grows, how it can be forced into its worst case, and how it compares with the map and the sorted array for the 128-entry table that has run through this whole block of lessons.
 
@@ -92,7 +92,7 @@ The **load factor** is `size() / bucket_count()`: the average number of elements
 
 That is $O(n)$ work in one insert, like a vector's reallocation, and it is amortised the same way: the bucket count grows by a factor, so the average cost per insert stays constant.
 
-Unlike a vector's reallocation, a rehash does **not move the elements**. The nodes stay where they were; only the chains are relinked. So after a rehash:
+Unlike a vector's reallocation, a rehash does **not move the elements**. **[[The nodes stay where they were|open-addressing]]**; only the chains are relinked. So after a rehash:
 
 - **iterators are invalidated** — an iterator knows its position in the bucket structure, and that structure was rebuilt;
 - **pointers and references to elements stay valid** — the element is in the same node at the same address.
@@ -343,9 +343,9 @@ sorted array         40 ns       269 ns
 The other runs: map 36 and 37 ns hot, 938 and 953 ns cold; hash table 3 ns hot both times, 565 and 711 ns cold; sorted array 39 ns hot both times, 241 and 225 ns cold. Read the two columns separately, because they tell different stories.
 
 1. **Hot, the hash table wins by more than ten times.** With an identity hash, a lookup is one remainder, one bucket load and one node load, all in the fastest cache, with no branch that depends on the key's value in a hard-to-guess way. Separate lookups do not depend on each other, so the processor overlaps several at once, and each costs about 3 ns of throughput.
-2. **Cold, the sorted array wins** — about two to three times faster than the hash table and three to four times faster than the map. Once nothing is in cache, what counts is how many separate trips to memory a lookup makes, and whether each one's address is known in advance. The hash table must load the bucket array, then the node the bucket points to, which was allocated somewhere in the heap; each is a miss. The map misses on every level of the tree. The array's 2048 bytes are one contiguous block, its last steps fall in lines already fetched, and there is no pointer to follow at all.
+2. **Cold, the sorted array wins** — about two to three times faster than the hash table and three to four times faster than the map. Once nothing is in cache, what counts is how many separate trips to memory a lookup makes, and whether each one's address is known in advance. The hash table must load the bucket array, then the node the bucket points to, which was allocated somewhere in the heap; each is a miss. The map misses on every level of the tree, around eight of them. The array's 2048 bytes are one contiguous block, its last steps fall in lines already fetched, and there is no pointer to follow at all.
 
-Sanity check: the cold hash lookup, about 600 ns, is a little under the map's 860 and a little over twice the array's 270 — two dependent misses plus the flush's leftovers, against the map's eight to twelve. Timings vary between machines and runs; repeat them before you quote them.
+Sanity check: the cold hash lookup, about 600 ns, is a little under the map's 860 and a little over twice the array's 270 — two dependent misses, against about eight for the map and a few neighbouring lines for the array. Timings vary between machines and runs; repeat them before you quote them.
 :::
 
 So which is faster depends on how the program uses the table, and a flight control loop is the cold case: one or a few lookups per cycle, between everything else the cycle does. The hot row is what a naive benchmark measures.
@@ -360,7 +360,7 @@ And speed is not even the main argument. Put the three side by side as a reviewe
 | hot lookup, one machine | about 35 ns | about 3 ns | about 40 ns |
 | cold lookup, one machine | about 900 ns | about 600 ns | about 250 ns |
 
-The sorted array is the only one with no allocation, the smallest, and the only one whose worst case is a small fixed number a timing analysis can write down. Exercise `cpp04_ex2` asks you to build the three yourself and report timings, footprint and your choice; expect your hot numbers to differ from these, and say why.
+The sorted array is the only one with no allocation, the smallest, and the only one whose worst case is a small fixed number a timing analysis can write down. Exercise `cpp04_ex2` asks you to **[[build the three yourself|benchmark-hygiene]]** and report timings, footprint and your choice; expect your hot numbers to differ from these, and say why.
 
 ## Check yourself
 
@@ -420,6 +420,10 @@ Hot, everything is in cache, so the hash table's single remainder and two cached
 
 Next lesson moves from containers that *own* their elements to types that only *look at* someone else's: `std::span` and `std::string_view`, and the dangling-view hazard that comes with them.
 
+::: context hash-word Where "hash" comes from
+In the kitchen, to hash something is to chop it up and mix it, as in hash browns. A hash function does that to a key's bits: it chops and mixes them into a number that looks unrelated to the key, so that similar keys land far apart. A good one changes about half the output bits when one input bit changes. The integer hash in libstdc++ skips the mixing altogether, as the example shows.
+:::
+
 ::: context chaining Buckets with chains
 In a chained hash table, the bucket array holds pointers, and each pointer leads to a short linked list of the nodes whose keys landed there. Most buckets hold zero or one node; with a load factor near 1, a few hold two or three. A lookup costs the hash, one bucket load and a walk down one chain.
 
@@ -466,6 +470,56 @@ For the standard, yes: `std::hash` only has to give equal results for equal keys
 
 ::: context prime-buckets Why the bucket counts are prime
 Real keys often come in patterns: ids that are all multiples of 8, addresses aligned to 16 bytes. Take such keys modulo a power of two like 16 and they pile into a few buckets: multiples of 8 land only in buckets 0 and 8. Take them modulo a prime like 13 and they spread over every bucket, because a prime shares no factor with the pattern's step. With an identity hash, a prime bucket count is the table's main protection against ordinary, non-hostile patterns.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 130" font-family="Inter, Arial, sans-serif">
+  <text x="20" y="22" font-size="12" fill="#1f2a44">keys 0, 8, 16, … 56 into 16 buckets: two used</text>
+  <rect x="20" y="30" width="20" height="22" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="30" y="45" font-size="11" fill="#1f2a44" text-anchor="middle">4</text>
+  <rect x="40" y="30" width="20" height="22" fill="#ffffff" stroke="#1f2a44"/>
+  <rect x="60" y="30" width="20" height="22" fill="#ffffff" stroke="#1f2a44"/>
+  <rect x="80" y="30" width="20" height="22" fill="#ffffff" stroke="#1f2a44"/>
+  <rect x="100" y="30" width="20" height="22" fill="#ffffff" stroke="#1f2a44"/>
+  <rect x="120" y="30" width="20" height="22" fill="#ffffff" stroke="#1f2a44"/>
+  <rect x="140" y="30" width="20" height="22" fill="#ffffff" stroke="#1f2a44"/>
+  <rect x="160" y="30" width="20" height="22" fill="#ffffff" stroke="#1f2a44"/>
+  <rect x="180" y="30" width="20" height="22" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="190" y="45" font-size="11" fill="#1f2a44" text-anchor="middle">4</text>
+  <rect x="200" y="30" width="20" height="22" fill="#ffffff" stroke="#1f2a44"/>
+  <rect x="220" y="30" width="20" height="22" fill="#ffffff" stroke="#1f2a44"/>
+  <rect x="240" y="30" width="20" height="22" fill="#ffffff" stroke="#1f2a44"/>
+  <rect x="260" y="30" width="20" height="22" fill="#ffffff" stroke="#1f2a44"/>
+  <rect x="280" y="30" width="20" height="22" fill="#ffffff" stroke="#1f2a44"/>
+  <rect x="300" y="30" width="20" height="22" fill="#ffffff" stroke="#1f2a44"/>
+  <rect x="320" y="30" width="20" height="22" fill="#ffffff" stroke="#1f2a44"/>
+  <text x="20" y="80" font-size="12" fill="#1f2a44">the same keys into 13 buckets: eight used</text>
+  <rect x="20" y="88" width="20" height="22" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="30" y="103" font-size="11" fill="#1f2a44" text-anchor="middle">1</text>
+  <rect x="40" y="88" width="20" height="22" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="50" y="103" font-size="11" fill="#1f2a44" text-anchor="middle">1</text>
+  <rect x="60" y="88" width="20" height="22" fill="#ffffff" stroke="#1f2a44"/>
+  <rect x="80" y="88" width="20" height="22" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="90" y="103" font-size="11" fill="#1f2a44" text-anchor="middle">1</text>
+  <rect x="100" y="88" width="20" height="22" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="110" y="103" font-size="11" fill="#1f2a44" text-anchor="middle">1</text>
+  <rect x="120" y="88" width="20" height="22" fill="#ffffff" stroke="#1f2a44"/>
+  <rect x="140" y="88" width="20" height="22" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="150" y="103" font-size="11" fill="#1f2a44" text-anchor="middle">1</text>
+  <rect x="160" y="88" width="20" height="22" fill="#ffffff" stroke="#1f2a44"/>
+  <rect x="180" y="88" width="20" height="22" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="190" y="103" font-size="11" fill="#1f2a44" text-anchor="middle">1</text>
+  <rect x="200" y="88" width="20" height="22" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="210" y="103" font-size="11" fill="#1f2a44" text-anchor="middle">1</text>
+  <rect x="220" y="88" width="20" height="22" fill="#ffffff" stroke="#1f2a44"/>
+  <rect x="240" y="88" width="20" height="22" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="250" y="103" font-size="11" fill="#1f2a44" text-anchor="middle">1</text>
+  <rect x="260" y="88" width="20" height="22" fill="#ffffff" stroke="#1f2a44"/>
+</svg>
+```
+:::
+
+::: context open-addressing Hash tables without nodes
+Many fast hash tables outside the standard library store elements directly in one big array and, on a collision, try the next slot, a scheme called **open addressing**. That is contiguous and cache-friendly. The standard's `unordered_map` cannot do this, because it promises that references to elements survive a rehash, and in an open-addressed table a rehash moves every element. That one promise, made when the containers were standardised in C++11, commits every standard library to nodes.
 :::
 
 ::: context hash-flooding An attack on the average case
@@ -476,6 +530,6 @@ Hash flooding reached the headlines in December 2011, when Alexander Klink and J
 **Worst-case execution time** is the longest a piece of code can take on the target hardware, over every input. Real-time schedulers for flight software are checked against these numbers: if every task's worst case fits inside its period, with margin, the schedule is safe. An operation whose cost depends on how keys happen to collide has no useful bound, so a timing analyst has to assume the linear worst case, which is far too pessimistic to schedule.
 :::
 
-::: context open-addressing Hash tables without nodes
-Many fast hash tables outside the standard library store elements directly in one big array and, on a collision, try the next slot, a scheme called **open addressing**. That is contiguous and cache-friendly. The standard's `unordered_map` cannot do this, because it promises that references to elements survive a rehash, and in an open-addressed table a rehash moves every element. That one promise, made in 2011, commits every standard library to nodes.
+::: context benchmark-hygiene Making your own measurement honest
+Four habits keep a benchmark truthful. Use every result, as the `sink` variable does, or the optimiser may delete the lookups entirely. Time with `std::chrono::steady_clock`, a clock that never jumps. Run the whole program several times and report the spread, not one lucky number. And say which case you measured: a tight loop over the same keys, or one lookup among other work. Build with the same flags you ship, `-O2` here, because an unoptimised build measures the compiler, not the container.
 :::

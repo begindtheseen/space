@@ -314,7 +314,7 @@ Using `*it` without those checks reads the wrong channel's data — or, when the
 :::
 
 ::: note Why halving takes log₂ n steps
-Each comparison keeps at most half of the remaining candidates. After $s$ steps at most $n / 2^s$ remain. The search ends when one candidate is left, so $n / 2^s \le 1$, which means $2^s \ge n$, which means $s \ge \log_2 n$. Rounding up gives the worst case, $\lceil \log_2 n \rceil$. For 128 that is exactly 7. For 1,000 it is 10, because $2^{10} = 1024$ is the first power of two that reaches 1,000.
+Each comparison keeps at most half of the remaining candidates. After $s$ steps at most $n / 2^s$ remain. The search ends when one candidate is left, so $n / 2^s \le 1$, which means $2^s \ge n$, which means $s \ge \log_2 n$. Rounding up gives the worst case, $\lceil \log_2 n \rceil$. For 128 that is exactly 7. For 1,000 it is 10, because $2^{10} = 1024$ is the first power of two that reaches 1,000. That is the ideal count. The standard promises at most $\log_2 n + O(1)$ comparisons, and a real library can use one more: lesson 01 counted libstdc++'s `lower_bound` on a 128-entry table and saw 7 or 8, depending on the key.
 
 There is one more detail. `std::lower_bound` counts comparisons, not steps. On a `vector` or an `array`, jumping to the middle is one step. On a `std::list`, reaching the middle means walking there node by node, so the comparisons are still $O(\log n)$ but the walking is $O(n)$. A `std::set` or `std::map` has its own member `lower_bound`, which uses the tree and is truly $O(\log n)$ — use that one on them.
 :::

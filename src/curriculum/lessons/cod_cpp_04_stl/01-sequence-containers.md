@@ -219,7 +219,7 @@ What you buy with that:
 What you pay is what matters most on modern hardware: walking the list means following pointers to nodes that could be anywhere in memory. The processor reads memory through a **[[cache|cache-line]]** — a small, fast copy of recently used memory, filled 64 bytes at a time. A vector's next element is almost always in the 64 bytes already fetched. A list's next node may be a fresh trip to main memory.
 
 ::: example Walking four million doubles
-This program sums the same four million random doubles held three ways, and a list twice: once with its nodes allocated in order, and once after `l.sort()` has relinked the nodes so that walking them jumps all over memory. (Sorting a list relinks pointers; the nodes themselves stay where they were allocated.)
+This program sums the same four million random doubles held in a vector, a deque and a list. It walks the list twice: once with its nodes allocated in order, and once after `l.sort()` has relinked the nodes so that walking them jumps all over memory. (Sorting a list relinks pointers; the nodes themselves stay where they were allocated.)
 
 ```cpp
 #include <algorithm>
