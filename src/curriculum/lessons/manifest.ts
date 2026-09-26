@@ -3704,7 +3704,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-euler-rotation-theorem-and-the-principal-axis",
       "title": "Euler rotation theorem, principal rotation axis and angle",
-      "minutes": 21,
+      "minutes": 22,
       "covers": [
         "Euler rotation theorem, principal rotation axis and angle"
       ],
@@ -3731,7 +3731,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-the-double-cover-and-the-shortest-path-sign",
       "title": "The double cover and the shortest-path sign convention",
-      "minutes": 18,
+      "minutes": 22,
       "covers": [
         "the double cover and the shortest-path sign convention"
       ],
@@ -3740,7 +3740,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-slerp",
       "title": "SLERP, spherical linear interpolation of attitude",
-      "minutes": 18,
+      "minutes": 17,
       "covers": [
         "SLERP"
       ],
@@ -3758,7 +3758,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-conversions-between-every-representation",
       "title": "Conversions between every representation",
-      "minutes": 20,
+      "minutes": 21,
       "covers": [
         "conversions between every representation"
       ],
@@ -3767,7 +3767,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-active-versus-passive-rotation",
       "title": "Active against passive rotation, operator against coordinate transformation",
-      "minutes": 18,
+      "minutes": 19,
       "covers": [
         "active vs passive rotation (operator vs coordinate transformation)"
       ],
@@ -3776,7 +3776,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-attitude-error-representations",
       "title": "Attitude error representations",
-      "minutes": 20,
+      "minutes": 24,
       "covers": [
         "attitude error representations"
       ],
@@ -3785,7 +3785,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l13-so3-so3-algebra-and-the-exp-log-maps",
       "title": "Introduction to SO(3), so(3) and the exp and log maps",
-      "minutes": 21,
+      "minutes": 24,
       "covers": [
         "introduction to SO(3), so(3) and the exp/log maps"
       ],
@@ -3796,7 +3796,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-kinematic-differential-equations",
       "title": "Kinematic differential equations for DCM, quaternion, Euler angles and MRP",
-      "minutes": 17,
+      "minutes": 22,
       "covers": [
         "kinematic differential equations for DCM, quaternion, Euler angles and MRP"
       ],
