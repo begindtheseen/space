@@ -2565,6 +2565,100 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       "file": "cod_sql_02_joins/11-set-operations.md"
     }
   ],
+  "cod_sql_03_windows": [
+    {
+      "id": "l01-windows-versus-groups",
+      "title": "Windows: aggregates that keep every row",
+      "minutes": 22,
+      "covers": [
+        "OVER (PARTITION BY ... ORDER BY ...) and how a window differs from a group"
+      ],
+      "file": "cod_sql_03_windows/01-windows-versus-groups.md"
+    },
+    {
+      "id": "l02-ranking-functions",
+      "title": "Ranking rows",
+      "minutes": 19,
+      "covers": [
+        "Ranking: ROW_NUMBER, RANK, DENSE_RANK, NTILE, PERCENT_RANK"
+      ],
+      "file": "cod_sql_03_windows/02-ranking-functions.md"
+    },
+    {
+      "id": "l03-lag-lead-and-offsets",
+      "title": "Looking back and ahead: LAG, LEAD and friends",
+      "minutes": 21,
+      "covers": [
+        "Offsets: LAG and LEAD, FIRST_VALUE, LAST_VALUE, NTH_VALUE"
+      ],
+      "file": "cod_sql_03_windows/03-lag-lead-and-offsets.md"
+    },
+    {
+      "id": "l04-running-totals-and-moving-averages",
+      "title": "Running totals and moving averages",
+      "minutes": 21,
+      "covers": [
+        "Aggregate windows: running totals and moving averages"
+      ],
+      "file": "cod_sql_03_windows/04-running-totals-and-moving-averages.md"
+    },
+    {
+      "id": "l05-frames",
+      "title": "Frames: ROWS, RANGE and the default",
+      "minutes": 22,
+      "covers": [
+        "Frames: ROWS BETWEEN n PRECEDING AND CURRENT ROW versus RANGE BETWEEN an interval",
+        "The default frame and the classic LAST_VALUE surprise"
+      ],
+      "file": "cod_sql_03_windows/05-frames.md"
+    },
+    {
+      "id": "l06-deduplication-and-latest-per-key",
+      "title": "Deduplicating and picking the latest per key",
+      "minutes": 21,
+      "covers": [
+        "Deduplication with ROW_NUMBER filtered to 1",
+        "DISTINCT ON in PostgreSQL for latest-per-key"
+      ],
+      "file": "cod_sql_03_windows/06-deduplication-and-latest-per-key.md"
+    },
+    {
+      "id": "l07-gaps-and-islands",
+      "title": "Gaps and islands",
+      "minutes": 22,
+      "covers": [
+        "Gaps and islands: detecting contiguous runs"
+      ],
+      "file": "cod_sql_03_windows/07-gaps-and-islands.md"
+    },
+    {
+      "id": "l08-sessionisation",
+      "title": "Sessionising event streams",
+      "minutes": 20,
+      "covers": [
+        "Sessionisation of event streams"
+      ],
+      "file": "cod_sql_03_windows/08-sessionisation.md"
+    },
+    {
+      "id": "l09-downsampling-and-binning",
+      "title": "Downsampling into time buckets",
+      "minutes": 21,
+      "covers": [
+        "Downsampling and binning with date_trunc or time_bucket"
+      ],
+      "file": "cod_sql_03_windows/09-downsampling-and-binning.md"
+    },
+    {
+      "id": "l10-windows-versus-self-joins",
+      "title": "Window or self-join?",
+      "minutes": 25,
+      "covers": [
+        "When a window function beats a self-join, and when it does not"
+      ],
+      "file": "cod_sql_03_windows/10-windows-versus-self-joins.md"
+    }
+  ],
   "t0_m00_basecamp": [
     {
       "id": "l01-place-value-and-estimating",
@@ -9108,23 +9202,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_sql_03_windows": {
-    "covered": 0,
+    "covered": 12,
     "total": 12,
-    "complete": false,
-    "missing": [
-      "OVER (PARTITION BY ... ORDER BY ...) and how a window differs from a group",
-      "Ranking: ROW_NUMBER, RANK, DENSE_RANK, NTILE, PERCENT_RANK",
-      "Offsets: LAG and LEAD, FIRST_VALUE, LAST_VALUE, NTH_VALUE",
-      "Aggregate windows: running totals and moving averages",
-      "Frames: ROWS BETWEEN n PRECEDING AND CURRENT ROW versus RANGE BETWEEN an interval",
-      "The default frame and the classic LAST_VALUE surprise",
-      "Deduplication with ROW_NUMBER filtered to 1",
-      "Gaps and islands: detecting contiguous runs",
-      "Sessionisation of event streams",
-      "DISTINCT ON in PostgreSQL for latest-per-key",
-      "Downsampling and binning with date_trunc or time_bucket",
-      "When a window function beats a self-join, and when it does not"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_sql_04_schema": {
     "covered": 0,
