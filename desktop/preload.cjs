@@ -56,6 +56,13 @@ const bridge = {
     detect: (refresh) => ipcRenderer.invoke('orbit:run:detect', refresh === true),
     exec: (request) => ipcRenderer.invoke('orbit:run:exec', request),
   },
+  ai: {
+    status: () => ipcRenderer.invoke('orbit:ai:status'),
+    setKey: (key) => ipcRenderer.invoke('orbit:ai:set-key', key === null ? null : String(key)),
+    explain: (request) => ipcRenderer.invoke('orbit:ai:explain', request),
+    cancel: (id) => ipcRenderer.invoke('orbit:ai:cancel', String(id)),
+    onEvent: (cb) => subscribe('orbit:ai:event', cb),
+  },
   openExternal: (url) => ipcRenderer.invoke('orbit:open-external', String(url)),
   onNavigate: (cb) => subscribe('orbit:navigate', cb),
 }

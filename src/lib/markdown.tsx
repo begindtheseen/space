@@ -15,8 +15,9 @@
    ========================================================================== */
 import { ContextPanel } from '@/components/ContextPanel'
 import { VideoEmbed } from '@/components/VideoEmbed'
-import { splitNotes, type ContextNote } from '@/lib/contextNotes'
-import { createContext, useCallback, useContext, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { splitNotes, stripNoteRefs, type ContextNote } from '@/lib/contextNotes'
+import { canRequestAsk, claimCtx, holdCtxOpen, onCtxClaimed, requestAsk } from '@/lib/ctxBus'
+import { createContext, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import './markdown.css'
 
 /**
@@ -62,14 +63,22 @@ function WithNotes({ children, className, renderCode }: { children: string; clas
   // underneath it (context-panel.css).
   useLayoutEffect(() => {
     if (!note) return
-    document.documentElement.dataset.ctxOpen = 'true'
-    return () => void delete document.documentElement.dataset.ctxOpen
+    claimCtx('note')
+    return holdCtxOpen()
   }, [note])
+  // Ask AI opening puts the note away; only one panel shows at a time.
+  useEffect(() => onCtxClaimed('note', () => setActive(null)), [])
   const body = <div className={`md ${className}`}>{renderBlocks(split.body)}</div>
   return (
     <NotesContext.Provider value={state}>
       {renderCode ? <CodeContext.Provider value={renderCode}>{body}</CodeContext.Provider> : body}
-      {note ? <ContextPanel note={note} onClose={() => setActive(null)} /> : null}
+      {note ? (
+        <ContextPanel
+          note={note}
+          onClose={() => setActive(null)}
+          onAsk={canRequestAsk() ? () => requestAsk({ selection: note.title, paragraph: stripNoteRefs(note.body) }) : undefined}
+        />
+      ) : null}
     </NotesContext.Provider>
   )
 }

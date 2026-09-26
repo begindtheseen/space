@@ -20,7 +20,7 @@
     "typecheck": "tsc -b",
     "test": "vitest run",
     "test:watch": "vitest",
-    "build:bundle": "BASE_PATH=./ npm run build && node scripts/stamp-bundle.mjs",
+    "build:bundle": "BASE_PATH=./ npm run build && node scripts/stamp-bundle.mjs && node scripts/vendor-sdk.mjs",
     "bundle": "npm run build:bundle && node scripts/make-bundle.mjs",
     "desktop": "npm run build:bundle && electron .",
     "desktop:pack": "npm run build:bundle && electron-builder --mac --publish never",
@@ -33,6 +33,7 @@
     "smoke:focus": "node scripts/focus-smoke.mjs"
   },
   "devDependencies": {
+    "@anthropic-ai/sdk": "^0.128.0",
     "@bjorn3/browser_wasi_shim": "0.4.2",
     "@codemirror/autocomplete": "^6.20.3",
     "@codemirror/commands": "^6.11.1",
@@ -56,6 +57,7 @@
     "playwright": "^1.63.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
+    "rolldown": "^1.2.9",
     "typescript": "~6.0.2",
     "vite": "^8.3.0",
     "vitest": "^4.1.11"

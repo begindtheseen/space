@@ -9,7 +9,7 @@
    ========================================================================== */
 import { useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
-import { IconX } from '@/components/icons'
+import { IconSpark, IconX } from '@/components/icons'
 import { Markdown } from '@/lib/markdown'
 import type { ContextNote } from '@/lib/contextNotes'
 import './context-panel.css'
@@ -23,7 +23,7 @@ const drawSvg = (lang: string, code: string) =>
     <img className="ctx-panel__pic" src={`data:image/svg+xml;charset=utf-8,${encodeURIComponent(code.trim())}`} alt="" />
   ) : null
 
-export function ContextPanel({ note, onClose }: { note: ContextNote; onClose: () => void }) {
+export function ContextPanel({ note, onClose, onAsk }: { note: ContextNote; onClose: () => void; onAsk?: () => void }) {
   const ref = useRef<HTMLElement | null>(null)
 
   useEffect(() => {
@@ -57,6 +57,11 @@ export function ContextPanel({ note, onClose }: { note: ContextNote; onClose: ()
       <Markdown className="ctx-panel__body" renderCode={drawSvg}>
         {note.body}
       </Markdown>
+      {onAsk ? (
+        <button type="button" className="ctx-panel__ask" onClick={onAsk}>
+          <IconSpark size={14} /> Still fuzzy? Ask AI to explain it another way
+        </button>
+      ) : null}
     </aside>,
     document.body,
   )

@@ -1,12 +1,16 @@
 // Token/config storage: `<userData>/config.json`.
 //   { "tokenEnc": "<base64 safeStorage blob>" }        when OS encryption is available
 //   { "token": "<plaintext>", "plaintext": true }      otherwise (surfaced as a warning in the UI)
+// The Anthropic key for Ask AI (desktop/ai.js) is kept the same way, under
+// `aiKeyEnc`, or `aiKey` plus `aiKeyPlaintext`.
 import fs from 'node:fs'
 import path from 'node:path'
 import { safeStorage } from 'electron'
 
 export const TOKEN_RE = /^[A-Za-z0-9_]{20,255}$/
 export const TOKEN_RULE = 'Token must be 20–255 letters, digits or underscores (a ghp_… or github_pat_… token).'
+export const AI_KEY_RE = /^sk-ant-[A-Za-z0-9_-]{20,250}$/
+export const AI_KEY_RULE = 'That does not look like an Anthropic API key. They start with sk-ant- and come from console.anthropic.com.'
 
 /**
  * @param {string} file absolute path of config.json
@@ -89,6 +93,51 @@ export function createConfig(file, log = () => {}) {
     isPlaintext() {
       const data = read()
       return data.plaintext === true && typeof data.token === 'string'
+    },
+
+    /** @returns {Promise<string | null>} */
+    async getAiKey() {
+      const data = read()
+      if (typeof data.aiKeyEnc === 'string') {
+        if (!encryptionAvailable()) return null
+        try {
+          const key = safeStorage.decryptString(Buffer.from(data.aiKeyEnc, 'base64'))
+          return AI_KEY_RE.test(key) ? key : null
+        } catch (err) {
+          log('config: could not decrypt the AI key:', err.message)
+          return null
+        }
+      }
+      if (typeof data.aiKey === 'string' && AI_KEY_RE.test(data.aiKey)) return data.aiKey
+      return null
+    },
+
+    /** @param {string | null} key */
+    async setAiKey(key) {
+      if (key !== null && !(typeof key === 'string' && AI_KEY_RE.test(key))) throw new TypeError(AI_KEY_RULE)
+      const data = read()
+      delete data.aiKeyEnc
+      delete data.aiKey
+      delete data.aiKeyPlaintext
+      if (key !== null) {
+        if (encryptionAvailable()) {
+          data.aiKeyEnc = safeStorage.encryptString(key).toString('base64')
+        } else {
+          data.aiKey = key
+          data.aiKeyPlaintext = true
+        }
+      }
+      write(data)
+    },
+
+    hasAiKey() {
+      const data = read()
+      return typeof data.aiKeyEnc === 'string' || typeof data.aiKey === 'string'
+    },
+
+    aiKeyPlaintext() {
+      const data = read()
+      return data.aiKeyPlaintext === true && typeof data.aiKey === 'string'
     },
   }
 }

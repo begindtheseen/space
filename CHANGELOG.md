@@ -10,6 +10,36 @@ it.
 
 ## 1.1.3
 
+**Ask AI: highlight anything and it explains it.** Select a word, a formula or a whole sentence in
+a lesson and press **Explain this**. The answer starts appearing in a second or two, in plain
+words, and it builds on the lessons you have already read — it can say "remember in *Fractions*…"
+because it can see what *Fractions* taught you, and it links the lessons it used. Ask a follow-up
+in the same panel. It only ever sees what is in the app: the lesson you are in and passages from
+lessons you have read, never your progress, scores or code. It needs an Anthropic API key, added
+once in Settings → Ask AI, where it is kept in the Mac's keychain. Every context note also has a
+"Still fuzzy?" button that asks it to explain the same thing another way.
+
+**Tap the underlined words for the story behind them.** Lessons now have context notes, like the
+explanations on a lyrics site: tap an underlined phrase and a panel opens beside the lesson with
+what it means, why it matters and, often, a picture. The lesson slides over so the panel never
+covers what you are reading.
+
+**Find your starting point.** A placement test, offered on the dashboard, asks short
+questions from counting and decimals up to logarithms. "I don't know" is a good answer. At the end
+you get a plan — the lessons you need, in order, and the ones you can skip — and Next up follows it.
+
+**Basecamp: the maths under everything.** A new first module of twelve lessons: place value,
+decimals, factors, fractions from the ground up, formulas, equations, graphs, angles, area and
+volume, square roots and Pythagoras, the metric system, and speed and averages. Each one is
+written for someone meeting the idea for the first time, and each teaches only what the later
+lessons actually use.
+
+**The first modules are rewritten in plain words.** Algebra and Trigonometry now explain every
+step and every new word, with the same maths underneath. More modules follow in updates.
+
+**Learn to code has its own focus blocks.** Start a focus block on a coding lesson and the block
+keeps you in that course, the same way a study block keeps you in a module.
+
 **Your Mac stays awake while you use ORBIT.** The screen no longer dims and sleeps in the
 middle of a long read. It stays on while a focus block is running, while a lesson is being read
 aloud, and for fifteen minutes after you last scroll, click or type — then it is allowed to sleep

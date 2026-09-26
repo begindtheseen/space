@@ -4,7 +4,7 @@
 import { BrowserWindow, ipcMain, shell } from 'electron'
 import { readBackup, writeBackup } from './backup.js'
 import { detectToolchains, runCode } from './runner.js'
-import { TOKEN_RE, TOKEN_RULE } from './config.js'
+import { AI_KEY_RE, AI_KEY_RULE, TOKEN_RE, TOKEN_RULE } from './config.js'
 
 const STATE_CHANNEL = 'orbit:updates:state'
 const NAVIGATE_CHANNEL = 'orbit:navigate'
@@ -39,6 +39,7 @@ function errorMessage(err) {
 /**
  * @param {{
  *   updater: import('./updater.js').Updater,
+ *   ai: ReturnType<typeof import('./ai.js').createAi>,
  *   config: ReturnType<typeof import('./config.js').createConfig>,
  *   versions: { shell: string, bundle: string, builtIn: string, electron: string },
  *   repo: string,
@@ -46,7 +47,7 @@ function errorMessage(err) {
  *   log?: (...a: unknown[]) => void,
  * }} opts
  */
-export function registerIpc({ updater, config, versions, repo, allowedOrigins, log = () => {} }) {
+export function registerIpc({ updater, ai, config, versions, repo, allowedOrigins, log = () => {} }) {
   const readyListeners = new Set()
 
   function isTrusted(event) {
@@ -205,6 +206,47 @@ export function registerIpc({ updater, config, versions, repo, allowedOrigins, l
         ms: 0,
       }
     }
+  })
+
+  // Ask AI (desktop/ai.js). The key goes in and never comes back out: the page
+  // only ever learns whether one is stored. An answer streams back as
+  // 'orbit:ai:event' messages to the frame that asked.
+  async function aiStatus() {
+    return { available: await ai.available(), hasKey: config.hasAiKey(), plaintext: config.aiKeyPlaintext() }
+  }
+
+  ipcMain.handle('orbit:ai:status', async (event) => {
+    if (!isTrusted(event)) return { available: false, hasKey: false, plaintext: false }
+    return aiStatus()
+  })
+
+  ipcMain.handle('orbit:ai:set-key', async (event, key) => {
+    if (!isTrusted(event)) return { ...(await aiStatus()), error: 'Request from an untrusted page was ignored.' }
+    let next = null
+    if (key !== null && key !== undefined) {
+      if (typeof key !== 'string') return { ...(await aiStatus()), error: AI_KEY_RULE }
+      next = key.trim() || null
+      if (next !== null && !AI_KEY_RE.test(next)) return { ...(await aiStatus()), error: AI_KEY_RULE }
+    }
+    try {
+      await config.setAiKey(next)
+    } catch (err) {
+      return { ...(await aiStatus()), error: errorMessage(err) }
+    }
+    return aiStatus()
+  })
+
+  ipcMain.handle('orbit:ai:explain', async (event, request) => {
+    if (!isTrusted(event)) return
+    const sender = event.sender
+    await ai.explain(request, (payload) => {
+      if (!sender.isDestroyed()) sender.send('orbit:ai:event', payload)
+    })
+  })
+
+  ipcMain.handle('orbit:ai:cancel', (event, id) => {
+    if (!isTrusted(event)) return
+    ai.cancel(id)
   })
 
   return {

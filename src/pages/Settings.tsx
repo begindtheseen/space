@@ -19,6 +19,7 @@ import {
   IconWarn,
 } from '@/components/icons'
 import { Button, Card, CardHead, Chip } from '@/components/ui'
+import { AskAiCard } from '@/components/AskAiCard'
 import { UpdatesCard } from '@/components/UpdatesCard'
 import { corpusStats } from '@/curriculum'
 import { DEFAULT_W } from '@/engine/fsrs'
@@ -532,17 +533,20 @@ export function Settings() {
             </div>
           </Card>
 
-          <Card index={2}>
+          <AskAiCard index={2} />
+
+          <Card index={3}>
             <CardHead icon={<IconShield size={15} />} title="Privacy" divided />
             <div className="sect" style={{ fontSize: 12, color: 'var(--ink-3)', lineHeight: 1.75 }}>
               There is no account, no analytics and no network call carrying anything you do. The
               only outbound requests this app makes are for web fonts and, if you open the
               playground, the Python and SQLite runtimes — both from public CDNs, both cached after
-              the first load.
+              the first load. The one exception is Ask AI, and only when you press Explain this: the
+              card above says exactly what it sends.
             </div>
           </Card>
 
-          <Card index={3}>
+          <Card index={4}>
             <CardHead icon={<IconRecall size={15} />} title="About the scheduler" divided />
             <div className="sect" style={{ fontSize: 12, color: 'var(--ink-3)', lineHeight: 1.75 }}>
               Reviews are scheduled by FSRS-6, a fitted power-law memory model with per-item
