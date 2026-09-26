@@ -7,7 +7,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-why-space-is-controlled",
       "title": "Why launch vehicles and spacecraft are export-controlled",
-      "minutes": 17,
+      "minutes": 20,
       "covers": [
         "why launch vehicles and spacecraft are ITAR-controlled under the US Munitions List"
       ],
@@ -16,7 +16,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-who-is-a-us-person",
       "title": "Who is a US person: the four eligible statuses",
-      "minutes": 19,
+      "minutes": 20,
       "covers": [
         "the four eligible statuses named verbatim in SpaceX postings"
       ],
@@ -25,7 +25,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-regulation-versus-preference",
       "title": "The residual clause, and regulation versus employer preference",
-      "minutes": 19,
+      "minutes": 20,
       "covers": [
         "what being eligible to obtain authorization from the US Department of State does and does not mean",
         "the difference between an ITAR restriction and an employer preference"
@@ -44,7 +44,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-the-recruiter-screen",
       "title": "Where eligibility actually gets confirmed",
-      "minutes": 17,
+      "minutes": 16,
       "covers": [
         "where in the pipeline eligibility is confirmed"
       ],
@@ -53,7 +53,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-clearance-testing-and-hours",
       "title": "Beyond the ITAR gate: clearance, testing, and hours",
-      "minutes": 19,
+      "minutes": 18,
       "covers": [
         "roles that additionally require obtaining and maintaining a Top Secret clearance",
         "pre-employment and random drug and alcohol testing",
@@ -64,7 +64,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-the-international-alternative",
       "title": "If the gate is closed, part one: non-ITAR and international employers",
-      "minutes": 21,
+      "minutes": 20,
       "covers": [
         "what a non-US-person can realistically target instead: non-ITAR employers, European, UK, Canadian, Australian and Japanese space sectors, academia, and a long-horizon immigration path"
       ],
@@ -73,7 +73,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-academia-and-the-long-path",
       "title": "If the gate is closed, part two: academia, immigration, and what transfers",
-      "minutes": 22,
+      "minutes": 21,
       "covers": [
         "what a non-US-person can realistically target instead: non-ITAR employers, European, UK, Canadian, Australian and Japanese space sectors, academia, and a long-horizon immigration path"
       ],
@@ -84,7 +84,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-the-gnc-org-and-the-family-map",
       "title": "The GNC org: why one title hides many jobs",
-      "minutes": 19,
+      "minutes": 22,
       "covers": [
         "the GNC org as SpaceX describes it: vehicle design, trajectory design and optimization, high-fidelity vehicle simulation, software and control algorithm development, plus launch and on-orbit operations support across multiple vehicle programs"
       ],
@@ -93,7 +93,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-starship-ascent-entry-and-landing",
       "title": "Starship: ascent, entry, and landing control",
-      "minutes": 20,
+      "minutes": 22,
       "covers": [
         "GNC Engineer (Starship): ascent, entry and landing control, 6-DOF simulation, flight control of the largest vehicle ever flown"
       ],
@@ -102,7 +102,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-falcon-reuse-and-the-software-split",
       "title": "Falcon: reuse, and why one title became two",
-      "minutes": 18,
+      "minutes": 20,
       "covers": [
         "GNC Engineer and Sr. GNC Software Engineer (Falcon): booster entry, descent and landing, and reuse"
       ],
@@ -111,7 +111,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-dragon-rendezvous-and-human-rating",
       "title": "Dragon: rendezvous, docking, and flying people",
-      "minutes": 20,
+      "minutes": 22,
       "covers": [
         "GNC Engineer (Dragon): mission design, rendezvous and docking with the ISS, deorbit, reentry, abort"
       ],
@@ -120,7 +120,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-adcs-attitude-control-by-the-thousand",
       "title": "ADCS: attitude control across a fleet, not a flight",
-      "minutes": 19,
+      "minutes": 21,
       "covers": [
         "GNC Engineer, ADCS (Starlink and Starshield): attitude determination and control, reaction wheels, torque rods, momentum management"
       ],
@@ -129,7 +129,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-navigation-and-state-estimation",
       "title": "Navigation and State Estimation: knowing where you actually are",
-      "minutes": 19,
+      "minutes": 21,
       "covers": [
         "Navigation and State Estimation, Navigation and Orbit Determination, Precise Navigation Solutions (Starlink): star tracker and signals-based attitude determination, inertial propagation, GNSS, orbit determination"
       ],
@@ -138,7 +138,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-embedded-controls-and-beam-pointing",
       "title": "Embedded Controls and Beam Pointing: actuators and aim",
-      "minutes": 19,
+      "minutes": 21,
       "covers": [
         "Starlink Controls and Embedded Controls: solar array actuators, antenna gimbals, active optics, Hall thruster fluid and power control",
         "Device Navigation and Beam Pointing, Beam Planning: user terminal pointing, RF and optical link pointing"
@@ -158,7 +158,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-newer-programs-starfall-and-what-comes-next",
       "title": "Starfall, Starmind, and what a new program changes",
-      "minutes": 18,
+      "minutes": 20,
       "covers": [
         "GNC Engineer (Starfall): reentry and recovery of a returnable payload capsule, first flight June 2026",
         "newer programs seen in 2026 postings: Starfall, Starmind (Embedded Controls, AI Satellites), Starshield"
@@ -168,7 +168,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-choosing-a-family-and-proving-it",
       "title": "Choosing a family, and proving you belong in it",
-      "minutes": 21,
+      "minutes": 22,
       "covers": [
         "how family choice changes what you must be able to demonstrate"
       ],
@@ -206,7 +206,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-the-preferred-list",
       "title": "The GNC Engineer preferred list, item by item",
-      "minutes": 19,
+      "minutes": 20,
       "covers": [
         "the full preferred list for GNC Engineer and what each item signals"
       ],
@@ -234,7 +234,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-solving-complex-problems",
       "title": "What 'little to no supervision' is actually testing",
-      "minutes": 17,
+      "minutes": 18,
       "covers": [
         "what capable of solving complex problems with little to no supervision is testing"
       ],
@@ -264,7 +264,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-what-self-study-builds",
       "title": "What self-study builds, and what it cannot buy",
-      "minutes": 18,
+      "minutes": 17,
       "covers": [
         "what this platform can do and what it cannot: it builds capability, not a credential"
       ],
@@ -273,7 +273,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-path-one-degree-parallel",
       "title": "Path 1: the degree, taken parallel",
-      "minutes": 20,
+      "minutes": 19,
       "covers": [
         "Path 1, degree-parallel: use the curriculum to be the strongest candidate in a graduating cohort, because the real differentiator is demonstrated shipped 6-DOF, estimation and guidance work that almost no new grad has",
         "accredited routes that fit alongside work: ABET-accredited part-time and online bachelor’s programmes, community college transfer, competency-based models"
@@ -283,7 +283,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-path-two-the-side-door",
       "title": "Path 2: the side door, and the transfer inside",
-      "minutes": 19,
+      "minutes": 20,
       "covers": [
         "Path 2, side door then transfer: SRE GNC allows 4+ years of professional software or SRE experience in lieu of a degree and sits inside the GNC org; GNC Software Engineer and simulation and tools roles weight software skill heavily; internal transfer at SpaceX is common"
       ],
@@ -292,7 +292,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-path-three-the-newspace-ladder",
       "title": "Path 3: the NewSpace ladder",
-      "minutes": 19,
+      "minutes": 18,
       "covers": [
         "Path 3, NewSpace ladder: Varda, Stoke, Firefly, Astra, True Anomaly, Impulse, Relativity and Intuitive Machines hire GNC with looser credential gates, and 2 to 3 years there converts to 5+ years professional GNC experience or 7+ years in lieu of a degree at SpaceX senior level"
       ],
@@ -301,7 +301,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-timelines-and-two-failure-modes",
       "title": "Timelines, and the two ways to waste them",
-      "minutes": 22,
+      "minutes": 21,
       "covers": [
         "realistic timelines for each path, stated in years",
         "the two failure modes: believing a portfolio replaces the degree, and believing nothing but the degree matters"
@@ -323,7 +323,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-the-verbatim-expectation",
       "title": "The verbatim expectation: you write the flight code",
-      "minutes": 19,
+      "minutes": 21,
       "covers": [
         "the verbatim expectation: implementation, validation, unit testing, and deployment of production software primarily in C++",
         "GNC engineers write flight code themselves rather than handing prototypes to a software team"
@@ -352,7 +352,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-the-machine-the-deadline-and-the-forbidden-list",
       "title": "The machine, the deadline, and why the loop forbids the heap",
-      "minutes": 22,
+      "minutes": 25,
       "covers": [
         "flight computers: embedded Linux, a roughly 3.2 series kernel with real-time patches, on Dragon, Falcon and Starship primary flight computers",
         "determinism, fixed-step integration and bounded execution time in a flight control loop",
