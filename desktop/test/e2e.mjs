@@ -441,7 +441,7 @@ async function screenshot(page, name, locatorToReveal) {
 
 const STEPS = [
   [1, 'Fake GitHub API + bundle fixture (headers asserted across the whole run)'],
-  [2, 'Launch: splash screenshot, main window, bridge versions, home screenshot'],
+  [2, 'Launch: splash screenshot, main window, bridge versions, home screenshot, screen wake lock'],
   [3, 'Settings: check → 9.9.9 → download → restart; bundle on disk; current.json'],
   [4, 'Relaunch on 9.9.9, roll back, relaunch on built-in'],
   [5, 'Quarantine: bundles that never call ready(), or crash in their first render, are quit and blacklisted'],
@@ -579,6 +579,19 @@ async function main() {
           `home.png is 1280×${820 - menuBarHeight} (the 1280×820 window${menuBarHeight ? ` minus the ${menuBarHeight} px in-window menu bar on ${win.platform}` : ''}; got ${homeSize.width}×${homeSize.height})`,
         )
       }
+
+      // The shell refuses every permission but this one: a Mac that sleeps in
+      // the middle of a long read is the thing it exists to stop.
+      const wake = await page.evaluate(() =>
+        navigator.wakeLock
+          ? navigator.wakeLock.request('screen').then((l) => l.release().then(() => 'granted'), (e) => `refused: ${e.name}`)
+          : 'no Wake Lock API',
+      )
+      assertEqual(wake, 'granted', 'screen wake lock in the app window')
+      const geo = await page.evaluate(
+        () => new Promise((resolve) => navigator.geolocation.getCurrentPosition(() => resolve('granted'), (e) => resolve(`refused: ${e.code}`), { timeout: 3000 })),
+      )
+      assert(geo !== 'granted', `every other permission is still refused (geolocation: ${geo})`)
     })
 
     // 3 ───────────────────────────────────────────────────────────────────────

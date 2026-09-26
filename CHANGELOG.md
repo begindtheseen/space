@@ -10,12 +10,20 @@ it.
 
 ## 1.1.3
 
+**Your Mac stays awake while you use ORBIT.** The screen no longer dims and sleeps in the
+middle of a long read. It stays on while a focus block is running, while a lesson is being read
+aloud, and for fifteen minutes after you last scroll, click or type — then it is allowed to sleep
+as normal.
+
+**This is the last app update you install by hand.** Keeping the screen awake needs the app
+itself to be newer, so Settings will offer "Update to 1.1.3" once: two taps, and ORBIT replaces
+itself and reopens. After that, updates happen on their own.
+
 **ORBIT updates itself, like any other app.** When a new version comes out it downloads in the
-background while you work: no Settings trip, no Download button, and no new app to install. Most
-updates are small (about 11 MB) and slot into the app you already have. When one is ready the bell
-says so; restart when it suits you. From the next version of the app on, you do not even need to
-do that: the update is simply there the next time you open ORBIT, and the rare update that needs a
-whole new app downloads quietly too and goes in when you quit.
+background while you work: no Settings trip and no Download button. Most updates are small
+(about 11 MB) and slot into the app you already have, and the new version is simply there the
+next time you open ORBIT — or restart when the bell says so to get it straight away. The rare
+update that needs a whole new app downloads quietly too, and goes in when you quit.
 
 **Read aloud says equations properly.** A centred dot is read as "times" (it stays "dot" between
 two vectors, where it is the dot product). Powers are "to the power of" — "10 to the power of

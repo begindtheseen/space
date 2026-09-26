@@ -181,6 +181,10 @@ in any other app, with nothing to press:
   renderer starts the downloads itself (`src/lib/updateWatch.ts`), and a restart
   finishes the update.
 
+1.1.3 moved `minShell` to 1.1.3 once, so every install picks up this shell: the
+automatic updates above, and the window allowing `screen-wake-lock` (every other
+permission is still refused), which is how the renderer keeps the display awake.
+
 `orbit.minShell` only moves when a bundle genuinely cannot run on older shells — every
 bump sends everyone a whole app instead of a small bundle, so keep it where it is
 unless the bridge the bundle needs has changed.
