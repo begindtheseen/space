@@ -2084,7 +2084,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-signed-numbers-and-fractions",
       "title": "Signed numbers, fractions and ratios",
-      "minutes": 16,
+      "minutes": 18,
       "covers": [
         "arithmetic with signed numbers and fractions"
       ],
@@ -2093,7 +2093,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-exponents-and-radicals",
       "title": "Exponents, radicals and scaling laws",
-      "minutes": 16,
+      "minutes": 24,
       "covers": [
         "exponents and radicals"
       ],
@@ -2102,7 +2102,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-polynomials-and-factoring",
       "title": "Polynomials, expanding and factoring",
-      "minutes": 16,
+      "minutes": 21,
       "covers": [
         "polynomial manipulation and factoring"
       ],
@@ -2111,7 +2111,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-linear-and-quadratic-equations",
       "title": "Linear and quadratic equations",
-      "minutes": 16,
+      "minutes": 22,
       "covers": [
         "linear and quadratic equations"
       ],
@@ -2120,7 +2120,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-systems-of-equations",
       "title": "Systems of equations",
-      "minutes": 14,
+      "minutes": 22,
       "covers": [
         "systems of equations"
       ],
@@ -2129,7 +2129,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-functions",
       "title": "Functions, domain, range, composition and inverses",
-      "minutes": 21,
+      "minutes": 24,
       "covers": [
         "functions: domain, range, composition, inverses"
       ],
@@ -2138,7 +2138,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-exponentials-and-logarithms",
       "title": "Exponentials, logarithms and the rocket equation",
-      "minutes": 17,
+      "minutes": 21,
       "covers": [
         "exponentials and logarithms"
       ],
@@ -2147,7 +2147,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-sequences-and-series",
       "title": "Sequences, series and sigma notation",
-      "minutes": 15,
+      "minutes": 21,
       "covers": [
         "sequences, series, and sigma notation"
       ],
@@ -2156,7 +2156,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-inequalities",
       "title": "Inequalities and design constraints",
-      "minutes": 19,
+      "minutes": 24,
       "covers": [
         "inequalities"
       ],
@@ -2165,7 +2165,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-units-and-dimensional-analysis",
       "title": "Units, conversions and dimensional analysis",
-      "minutes": 17,
+      "minutes": 21,
       "covers": [
         "units and dimensional analysis"
       ],
@@ -2174,7 +2174,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-scientific-notation-and-significant-figures",
       "title": "Scientific notation and significant figures",
-      "minutes": 19,
+      "minutes": 24,
       "covers": [
         "scientific notation and significant figures"
       ],
@@ -2183,7 +2183,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-fermi-estimation",
       "title": "Order-of-magnitude estimation",
-      "minutes": 20,
+      "minutes": 27,
       "covers": [
         "order-of-magnitude (Fermi) estimation"
       ],

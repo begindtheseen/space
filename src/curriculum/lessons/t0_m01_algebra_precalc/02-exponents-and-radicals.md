@@ -1,154 +1,347 @@
 ---
 id: l02-exponents-and-radicals
 title: Exponents, radicals and scaling laws
-minutes: 16
+minutes: 24
 covers:
   - exponents and radicals
 ---
 
-Gravity falls off with the square of distance, orbital speed goes as the square root of one over the radius, and the period of an orbit grows as the radius to the three-halves power. Every one of those statements is a sentence about exponents. So is the difference between a kilonewton and a meganewton, and so is the reason a vehicle scaled up by half in every dimension weighs more than three times as much. If exponents are a set of half-remembered rules, those physical facts stay opaque; once the rules are seen as bookkeeping for repeated multiplication, they become obvious.
+Fold a sheet of paper in half and it is two layers thick. Fold it again: four layers. Again: eight. Each fold *multiplies* the thickness by two. After ten folds (if you could manage them) you would have $2 \times 2 \times 2 \times 2 \times 2 \times 2 \times 2 \times 2 \times 2 \times 2 = 1024$ layers. Writing all those twos is tiring, so mathematicians invented a short way to say "multiply this number by itself again and again". That short way is the **exponent**, and undoing it gives the **root**.
 
-This lesson derives the exponent laws from that single idea, extends them to zero, negative and fractional powers so that roots stop being a separate subject, and then spends the second half on the physics they unlock: the inverse-square law and the scaling relations that let you estimate one vehicle from another. Along the way it introduces the two physical constants you will use most in this module, Earth's gravitational parameter $\mu = 3.986 \times 10^{14}\,\mathrm{m^3/s^2}$ and Earth's mean radius $R = 6371\,\mathrm{km}$.
+This lesson is about both. You will need them straight away, because the most important facts about flying in space are sentences about exponents:
 
-You will also meet powers of ten here, informally. They are formalised as scientific notation later in the module; for now treat $10^{14}$ as exactly what it says, a $1$ followed by fourteen zeros.
+- Gravity gets weaker as you move away from Earth — four times weaker every time you double your distance from Earth's centre.
+- A satellite in a higher orbit moves more slowly, following a square root.
+- An orbit twice as big takes almost three times as long to go around.
+- A rocket made one and a half times bigger in every direction weighs more than three times as much.
+
+Once the exponent rules feel like simple bookkeeping — counting how many copies of a number are being multiplied — all four of those facts turn into one-line calculations. On the way you will meet the two numbers about Earth used most in this module: Earth's **gravitational parameter** $\mu = 3.986 \times 10^{14}\,\mathrm{m^3/s^2}$ (a measure of how hard Earth pulls, explained below) and Earth's average radius $R = 6371\,\mathrm{km}$.
+
+You will also meet powers of ten here, informally. They get their full treatment as scientific notation later in the module. For now, read $10^{14}$ as exactly what it says: a $1$ followed by fourteen zeros.
 
 ## Exponents are repeated multiplication
 
-For a positive whole number $n$, the **power** $a^n$ means $n$ copies of the **base** $a$ multiplied together: $a^3 = a \cdot a \cdot a$. The $n$ is the **exponent**. Every rule below is just counting copies.
+Here is the short way of writing. $2^3$ means three twos multiplied together:
 
-**Product rule.** $a^m \cdot a^n$ is $m$ copies times $n$ copies, so $m + n$ copies in total:
+$$
+2^3 = 2 \cdot 2 \cdot 2 = 8.
+$$
+
+(The raised dot $\cdot$ means multiply.) The big number at the bottom, $2$, is the **base** — the number being multiplied. The small raised number, $3$, is the **exponent** — how many copies of the base to multiply. The whole thing, $2^3$, is called a **power**. You read $a^n$ aloud as "a to the n" or "a to the power n".
+
+Two powers have their own names. $a^2$ is "a **squared**", because a square with sides of length $a$ has area $a \times a$. And $a^3$ is "a **cubed**", because a cube with sides of length $a$ has volume $a \times a \times a$.
+
+For a positive whole number $n$, then, $a^n$ is $n$ copies of $a$ multiplied together. Every rule below is nothing more than counting copies.
+
+**Product rule.** Multiply $m$ copies of $a$ by $n$ more copies and you have $m + n$ copies in total:
 
 $$
 a^m a^n = a^{m+n}.
 $$
 
-**Quotient rule.** Dividing $m$ copies by $n$ copies cancels $n$ of them, leaving $m - n$ (for now, with $m > n$):
+Try it with numbers: $2^3 \cdot 2^2 = (2 \cdot 2 \cdot 2)(2 \cdot 2) = 8 \cdot 4 = 32$, and $2^5 = 32$ too. Five twos either way.
+
+**Quotient rule.** Dividing is the opposite of multiplying. Put $m$ copies on top of a fraction and $n$ copies on the bottom. Each copy on the bottom cancels one on top, leaving $m - n$ (for now, with $m$ bigger than $n$):
 
 $$
 \frac{a^m}{a^n} = a^{m-n}.
 $$
 
-**Power of a power.** $(a^m)^n$ is $n$ groups of $m$ copies, so $mn$ copies:
+With numbers: $\frac{2^5}{2^2} = \frac{32}{4} = 8 = 2^3$. Two of the five twos cancelled.
+
+**Power of a power.** $(a^m)^n$ means $n$ groups, each holding $m$ copies. That is $m \times n$ copies:
 
 $$
 (a^m)^n = a^{mn}.
 $$
 
-**Power of a product or quotient.** Multiplication can be reordered, so $(ab)^n = a^n b^n$ and $\left(\frac{a}{b}\right)^n = \frac{a^n}{b^n}$.
+With numbers: $(2^3)^2 = 8^2 = 64$, and $2^6 = 64$. Two groups of three twos is six twos.
 
-Two things the rules do *not* say. First, $a^m \cdot b^n$ with different bases does not combine: $2^3 \cdot 3^2 = 72$ is not $6^5$. Second, an exponent tower is read from the top down: $2^{3^2} = 2^9 = 512$, whereas $(2^3)^2 = 8^2 = 64$. When you mean the second, write the parentheses.
+**Power of a product or quotient.** Multiplication can be done in any order, so the copies can be sorted into piles. $(ab)^n = a^n b^n$ and $\left(\frac{a}{b}\right)^n = \frac{a^n}{b^n}$. With numbers: $(2 \cdot 5)^3 = 10^3 = 1000$, and $2^3 \cdot 5^3 = 8 \cdot 125 = 1000$.
+
+Two things the rules do *not* say:
+
+- **Different bases do not combine.** $2^3 \cdot 3^2 = 8 \cdot 9 = 72$. It is not $6^5$, which is $7776$. The rules only count copies of the *same* number.
+- **A tower of exponents is read from the top down.** $2^{3^2}$ means $2$ to the power $3^2$, which is $2^9 = 512$. But $(2^3)^2 = 8^2 = 64$. When you mean the second one, write the brackets.
 
 ## Zero and negative exponents
 
-The quotient rule forces the meaning of $a^0$. Take $m = n$: $\frac{a^n}{a^n} = 1$ on the left, and $a^{n-n} = a^0$ on the right. So for any non-zero $a$,
+What could $2^0$ possibly mean — zero copies of two multiplied together? Walk down a staircase of powers and the answer appears on its own:
 
 $$
-a^0 = 1.
+2^4 = 16, \quad 2^3 = 8, \quad 2^2 = 4, \quad 2^1 = 2, \quad 2^0 = \;?, \quad 2^{-1} = \;?
 $$
 
-Take the rule one step further, with $m < n$: $\frac{a^2}{a^5}$ cancels two copies and leaves three in the denominator, $\frac{1}{a^3}$, while the rule says $a^{2-5} = a^{-3}$. A negative exponent is a reciprocal:
+Each step down *divides by two*. Keep going with that pattern: $2 \div 2 = 1$, so $2^0 = 1$. One more step: $1 \div 2 = \frac{1}{2}$, so $2^{-1} = \frac{1}{2}$. Then $2^{-2} = \frac{1}{4}$, and $2^{-3} = \frac{1}{8}$. The pattern never breaks, and it gives us two rules. For any number $a$ that is not zero,
+
+$$
+a^0 = 1,
+$$
+
+and a negative exponent means "one over" the positive power — the **reciprocal**, the fraction flipped upside down:
 
 $$
 a^{-n} = \frac{1}{a^n}, \qquad \frac{1}{a^{-n}} = a^n.
 $$
 
-A negative exponent never makes a quantity negative; it makes it small. $10^{-3}$ is $0.001$, and $2^{-10} = \frac{1}{1024} \approx 0.000977$. The inverse-square law $g = \mu r^{-2}$ is the same statement as $g = \frac{\mu}{r^2}$; the exponent form is more convenient when you differentiate, the fraction form when you compute.
+::: note Why it has to be true
+The staircase is a pattern. Here is the argument that it must hold for every base. Use the quotient rule with the same number of copies on top and bottom, $m = n$. The left side is something divided by itself, which is $1$. The right side is $a^{n-n} = a^0$. So $a^0 = 1$ — the only value that keeps the quotient rule working.
+
+Now take $m$ smaller than $n$, say $\frac{a^2}{a^5}$. Cancelling two copies leaves three on the bottom: $\frac{1}{a^3}$. The rule says the same thing is $a^{2-5} = a^{-3}$. So $a^{-3}$ must equal $\frac{1}{a^3}$. (Why not $a = 0$? Because you cannot divide by $0^n = 0$.)
+:::
+
+A negative exponent never makes a number negative. It makes it *small*. $10^{-3}$ is $\frac{1}{1000} = 0.001$, and $2^{-10} = \frac{1}{1024} \approx 0.000977$.
+
+This matters on day one of orbital mechanics. The law of gravity (coming later in this lesson) can be written $g = \mu r^{-2}$ or $g = \frac{\mu}{r^2}$. Those say exactly the same thing. The exponent form is handier for the calculus you will meet in a later module; the fraction form is handier when you plug in numbers.
 
 ### Powers of ten and prefixes
 
-Because we count in base ten, powers of ten are the exponents you will handle most. $10^3 = 1000$, $10^6$ is a million, $10^{-6}$ is a millionth, and the laws apply directly: $10^{-3} \times 10^{5} = 10^{2} = 100$. The SI prefixes are names for powers of ten in steps of three: kilo ($10^3$), mega ($10^6$), giga ($10^9$), and going down milli ($10^{-3}$), micro ($10^{-6}$), nano ($10^{-9}$). A meganewton is $10^6$ newtons, a thousand kilonewtons. Squaring a quantity squares its power of ten: $(6.371 \times 10^{6}\,\mathrm{m})^2 = 6.371^2 \times 10^{12}\,\mathrm{m^2} \approx 40.59 \times 10^{12}\,\mathrm{m^2}$.
+We count in tens, so powers of ten are the exponents you will handle most. $10^3 = 1000$, $10^6$ is a million, and $10^{-6}$ is a millionth. The laws work on them directly: $10^{-3} \times 10^{5} = 10^{-3+5} = 10^{2} = 100$.
+
+You already know some of these by their nicknames. A kilometre is a thousand metres; a millimetre is a thousandth of a metre. The SI **prefixes** are names for powers of ten in steps of three:
+
+| Prefix | Power | Meaning |
+| --- | --- | --- |
+| giga (G) | $10^9$ | a billion |
+| mega (M) | $10^6$ | a million |
+| kilo (k) | $10^3$ | a thousand |
+| milli (m) | $10^{-3}$ | a thousandth |
+| micro ($\mu$) | $10^{-6}$ | a millionth |
+| nano (n) | $10^{-9}$ | a billionth |
+
+A meganewton (MN) is $10^6$ newtons, which is a thousand kilonewtons (kN).
+
+Squaring a number squares its power of ten, by the power-of-a-product rule. Earth's radius in metres is $6.371 \times 10^{6}\,\mathrm{m}$, so
+
+$$
+(6.371 \times 10^{6}\,\mathrm{m})^2 = 6.371^2 \times (10^{6})^2\,\mathrm{m^2} \approx 40.59 \times 10^{12}\,\mathrm{m^2}.
+$$
+
+(The power of a power, $(10^6)^2 = 10^{12}$, doubled the exponent. The unit got squared too: metres times metres is square metres.)
 
 ::: warning Negative exponents are not negative numbers
-$10^{-3}$ is positive. So is $(-2)^{-3} = \frac{1}{(-2)^3} = -\frac{1}{8}$ — negative only because the base is negative and the power odd. Learners who read $r^{-2}$ as "minus $r$ squared" produce negative gravity. The sign of a power comes from the base; the exponent's sign says whether the quantity grows or shrinks.
+$10^{-3}$ is positive: it is $0.001$. People who read $r^{-2}$ as "minus $r$ squared" end up with negative gravity, which would push you off the planet. A power can be negative, but only because the *base* is negative: $(-2)^{-3} = \frac{1}{(-2)^3} = -\frac{1}{8}$, negative because $-2$ multiplied by itself an odd number of times is negative. The sign of a power comes from the base. The sign of the exponent only says whether the number grows (positive exponent) or shrinks (negative exponent).
 :::
 
 ## Roots and fractional exponents
 
-The **$n$th root** of $a$, written $\sqrt[n]{a}$, is the number whose $n$th power is $a$. The square root $\sqrt{a}$ is the case $n = 2$, and by convention it means the non-negative root: $\sqrt{9} = 3$, not $\pm 3$. When an equation like $x^2 = 9$ has two solutions we write $x = \pm\sqrt{9} = \pm 3$ — the $\pm$ is part of solving, not part of the root symbol.
+Picture a square garden with an area of $9$ square metres. How long is each side? You need a number that, multiplied by itself, gives $9$. That number is $3$, and it is called the **square root** of $9$, written $\sqrt{9} = 3$.
 
-Roots are exponents in disguise. Ask what $a^{1/2}$ should mean if the power-of-a-power rule is to keep working: $\left(a^{1/2}\right)^2 = a^{(1/2)\cdot 2} = a^1 = a$. So $a^{1/2}$ is a number whose square is $a$, that is, $\sqrt{a}$. In general
+Now picture a cube-shaped box that holds $8$ litres. Its side is $2$ units long, because $2 \cdot 2 \cdot 2 = 8$. That $2$ is the **cube root** of $8$, written $\sqrt[3]{8} = 2$.
+
+In general, the **$n$th root** of $a$, written $\sqrt[n]{a}$ and read "the n-th root of a", is the number whose $n$th power is $a$. The square root is the case $n = 2$, and we leave out the little $2$. The number under the root sign is called the **radicand**, and an expression with a root sign in it is called a **radical**.
+
+One rule about square roots: by agreement, $\sqrt{a}$ always means the root that is zero or positive. So $\sqrt{9} = 3$, not $-3$, even though $(-3)^2 = 9$ as well. When an equation like $x^2 = 9$ really does have two answers, we write both: $x = \pm\sqrt{9} = \pm 3$ (read "plus or minus 3"). The $\pm$ is part of *solving*, not part of the root sign.
+
+### Roots are exponents in disguise
+
+What should $9^{1/2}$ mean — nine to the power one half? Use the product rule and see. Multiply $9^{1/2}$ by itself: the exponents add, $\frac{1}{2} + \frac{1}{2} = 1$, giving $9^1 = 9$. So $9^{1/2}$ is a number that, times itself, makes $9$. That is the square root: $9^{1/2} = 3$.
+
+The same argument works for any root, which gives the rule
 
 $$
 a^{1/n} = \sqrt[n]{a}, \qquad a^{m/n} = \left(\sqrt[n]{a}\right)^m = \sqrt[n]{a^m}.
 $$
 
-For example $8^{2/3} = \left(\sqrt[3]{8}\right)^2 = 2^2 = 4$, and $16^{-3/4} = \frac{1}{\left(\sqrt[4]{16}\right)^3} = \frac{1}{2^3} = \frac{1}{8}$. Because roots are exponents, every law above applies to them: $\sqrt{ab} = \sqrt{a}\sqrt{b}$ and $\sqrt{a/b} = \sqrt{a}/\sqrt{b}$ are the power-of-a-product rule with exponent $\frac{1}{2}$.
+A fraction exponent has two jobs. The bottom number (the denominator) says which root to take. The top number (the numerator) says what power to raise to. Taking the root first usually keeps the numbers small:
 
-Two restrictions. Even roots of negative numbers are not real numbers: $\sqrt{-4}$ has no real value, because no real number squares to a negative. Odd roots are fine, $\sqrt[3]{-8} = -2$. And $\sqrt{x^2} = |x|$, not $x$, because the square root symbol promises a non-negative answer.
+$$
+8^{2/3} = \left(\sqrt[3]{8}\right)^2 = 2^2 = 4, \qquad 16^{-3/4} = \frac{1}{\left(\sqrt[4]{16}\right)^3} = \frac{1}{2^3} = \frac{1}{8}.
+$$
+
+In the second one, the minus sign meant "one over", the $4$ on the bottom meant "fourth root" ($2 \cdot 2 \cdot 2 \cdot 2 = 16$, so the fourth root of $16$ is $2$), and the $3$ on top meant "cube it".
+
+Because roots are exponents, every exponent law works on them. $\sqrt{ab} = \sqrt{a}\sqrt{b}$ and $\sqrt{a/b} = \sqrt{a}/\sqrt{b}$ are the power-of-a-product and power-of-a-quotient rules with exponent $\frac{1}{2}$. Check: $\sqrt{4 \cdot 9} = \sqrt{36} = 6$, and $\sqrt{4} \cdot \sqrt{9} = 2 \cdot 3 = 6$.
+
+::: note Why it has to be true
+The power-of-a-power rule forces the same answer. If that rule is to keep working for fractions, then $\left(a^{1/2}\right)^2 = a^{(1/2)\cdot 2} = a^1 = a$. So $a^{1/2}$ must be a number whose square is $a$ — that is, $\sqrt{a}$. In the same way $\left(a^{1/n}\right)^n = a$, so $a^{1/n} = \sqrt[n]{a}$, and $a^{m/n} = \left(a^{1/n}\right)^m$.
+:::
+
+Two restrictions to keep in mind:
+
+- **Even roots of negative numbers are not real numbers.** $\sqrt{-4}$ has no real value, because any real number times itself is zero or positive. Odd roots are fine: $\sqrt[3]{-8} = -2$, because $(-2)(-2)(-2) = -8$.
+- **$\sqrt{x^2} = |x|$, not $x$.** The bars mean **absolute value**, the size without the sign. The square root sign promises an answer that is not negative, so if $x = -3$, then $\sqrt{(-3)^2} = \sqrt{9} = 3$.
 
 ### Simplifying radicals
 
-To simplify a radical, pull out the largest perfect power: $\sqrt{72} = \sqrt{36 \cdot 2} = 6\sqrt{2} \approx 8.49$, and $\sqrt[3]{250} = \sqrt[3]{125 \cdot 2} = 5\sqrt[3]{2}$. Radicals with the same radicand add like like terms: $\sqrt{50} + \sqrt{18} = 5\sqrt{2} + 3\sqrt{2} = 8\sqrt{2}$. To **rationalise** a denominator, multiply top and bottom by the radical: $\frac{1}{\sqrt{2}} = \frac{\sqrt{2}}{\sqrt{2}\sqrt{2}} = \frac{\sqrt{2}}{2}$. This matters less with a calculator than it did, but it still keeps symbolic results in a form you can compare.
+To simplify a radical, look for the biggest perfect square (or cube) hiding inside the radicand and pull it out:
+
+$$
+\sqrt{72} = \sqrt{36 \cdot 2} = \sqrt{36}\,\sqrt{2} = 6\sqrt{2} \approx 8.49, \qquad \sqrt[3]{250} = \sqrt[3]{125 \cdot 2} = 5\sqrt[3]{2}.
+$$
+
+($36 = 6^2$ and $125 = 5^3$.) Radicals with the same radicand add like apples: three apples plus five apples is eight apples, and $3\sqrt{2} + 5\sqrt{2} = 8\sqrt{2}$. So
+
+$$
+\sqrt{50} + \sqrt{18} = 5\sqrt{2} + 3\sqrt{2} = 8\sqrt{2}.
+$$
+
+To **rationalise** a denominator — get the root out of the bottom of a fraction — multiply top and bottom by that root (which is multiplying by $1$, so nothing changes):
+
+$$
+\frac{1}{\sqrt{2}} = \frac{1 \cdot \sqrt{2}}{\sqrt{2}\,\sqrt{2}} = \frac{\sqrt{2}}{2}.
+$$
+
+With a calculator this matters less than it once did, but it still puts symbolic answers in a standard form you can compare at a glance.
 
 ### Mental arithmetic with powers
 
-A few anchor values make exponents fast enough to use while talking. $2^{10} = 1024 \approx 10^3$, so ten doublings is roughly a factor of a thousand and twenty doublings ($2^{20} = 1\,048\,576$) roughly a million. $\sqrt{10} \approx 3.16$, so the square root of any power of ten is either an exact power of ten (even exponent) or $3.16$ times one (odd exponent): $\sqrt{10^7} = \sqrt{10} \times 10^3 \approx 3160$. For a cube root, bracket the answer between perfect cubes — $\sqrt[3]{300}$ lies between $\sqrt[3]{216} = 6$ and $\sqrt[3]{343} = 7$, nearer $7$ — and refine only if the estimate has to be sharper than a few percent.
+A few anchor values let you use exponents in your head, fast enough to use in a conversation.
 
-Roots of physical quantities take the root of the unit as well as the number. $\sqrt{5.887 \times 10^7\,\mathrm{m^2/s^2}}$ is $\sqrt{5.887} \times \sqrt{10^7}\,\mathrm{m/s} \approx 2.43 \times 3160\,\mathrm{m/s} \approx 7670\,\mathrm{m/s}$; splitting the number from its power of ten and the unit from both is how you keep such a calculation honest without a calculator. You will lean on exactly this habit in the estimation lesson at the end of the module.
+- $2^{10} = 1024$, which is about $10^3$. So ten doublings is roughly a factor of a thousand, and twenty doublings ($2^{20} = 1\,048\,576$) is roughly a million.
+- $\sqrt{10} \approx 3.16$. So the square root of a power of ten is either an exact power of ten (when the exponent is even) or $3.16$ times one (when it is odd): $\sqrt{10^7} = \sqrt{10 \times 10^6} = \sqrt{10} \times 10^3 \approx 3160$.
+- For a cube root, trap the answer between two perfect cubes. $\sqrt[3]{300}$ lies between $\sqrt[3]{216} = 6$ and $\sqrt[3]{343} = 7$, nearer $7$ because $300$ is nearer $343$. (It is about $6.69$.) Refine only if you need better than a few percent.
 
-::: warning Roots do not distribute over addition
-$\sqrt{a + b} \neq \sqrt{a} + \sqrt{b}$. Check with numbers: $\sqrt{9 + 16} = 5$, while $\sqrt{9} + \sqrt{16} = 7$. The same goes for squares: $(a + b)^2 \neq a^2 + b^2$; the missing $2ab$ is the whole content of the next lesson's special products. Roots and powers distribute over multiplication and division only.
+When a number carries a unit, the root is taken of the unit too. Here is a speed hidden inside a square root:
+
+$$
+\sqrt{5.887 \times 10^7\,\mathrm{m^2/s^2}} = \sqrt{5.887} \times \sqrt{10^7}\,\mathrm{m/s} \approx 2.43 \times 3160\,\mathrm{m/s} \approx 7670\,\mathrm{m/s}.
+$$
+
+The square root of square metres per second squared is metres per second. Splitting the number from its power of ten, and the unit from both, keeps a calculation like this honest without a calculator. You will lean on exactly this habit in the estimation lesson at the end of the module.
+
+::: warning Roots do not split over adding
+$\sqrt{a + b}$ is **not** $\sqrt{a} + \sqrt{b}$. Test it with numbers: $\sqrt{9 + 16} = \sqrt{25} = 5$, but $\sqrt{9} + \sqrt{16} = 3 + 4 = 7$. The same goes for squares: $(a + b)^2$ is not $a^2 + b^2$. The missing piece, $2ab$, is the whole subject of the next lesson's special products. Roots and powers split over multiplying and dividing only.
 :::
 
 ::: example Fractional exponents by hand
-Simplify $\dfrac{(2x^3 y^{-2})^3}{4x^{-1}y}$.
+**Simplify** $\dfrac{(2x^3 y^{-2})^3}{4x^{-1}y}$.
 
-Power of a product on the numerator: $(2x^3y^{-2})^3 = 2^3 x^{9} y^{-6} = 8x^9y^{-6}$. Now divide, subtracting exponents base by base: $\frac{8}{4} = 2$; $x^{9 - (-1)} = x^{10}$; $y^{-6 - 1} = y^{-7}$. The result is $2x^{10}y^{-7} = \dfrac{2x^{10}}{y^{7}}$. Check with $x = 2$, $y = 3$: the original evaluates to $0.936$, and $2 \cdot 2^{10} / 3^7 = 2048/2187 = 0.936$. Plugging numbers into both sides is the fastest check you own for symbolic algebra.
+*Step 1: the top.* The cube applies to every factor inside the bracket (power of a product). Cube the $2$, and multiply each exponent by $3$ (power of a power):
 
-Solve $x^{3/2} = 8$ for $x > 0$. Raise both sides to the reciprocal power $\frac{2}{3}$: $\left(x^{3/2}\right)^{2/3} = x^{1} = 8^{2/3} = 4$. Check: $4^{3/2} = \left(\sqrt{4}\right)^3 = 8$.
+$$
+(2x^3y^{-2})^3 = 2^3\, x^{3 \cdot 3}\, y^{-2 \cdot 3} = 8x^9y^{-6}.
+$$
+
+*Step 2: divide, one base at a time.* Numbers first: $\frac{8}{4} = 2$. For $x$, subtract the bottom exponent from the top one: $x^{9 - (-1)} = x^{10}$ (subtracting $-1$ adds $1$). For $y$, the bottom $y$ has exponent $1$: $y^{-6 - 1} = y^{-7}$.
+
+*Step 3: tidy up.* The result is $2x^{10}y^{-7}$, and the negative exponent means "one over", so
+
+$$
+2x^{10}y^{-7} = \frac{2x^{10}}{y^{7}}.
+$$
+
+*Check with numbers.* Pick $x = 2$ and $y = 3$. The original expression works out to about $0.936$. The answer gives $\frac{2 \cdot 2^{10}}{3^7} = \frac{2048}{2187} \approx 0.936$. They match. Plugging the same numbers into both sides is the fastest check you have for symbolic algebra.
+
+**Solve** $x^{3/2} = 8$ for positive $x$.
+
+To undo a power of $\frac{3}{2}$, raise both sides to the flipped power $\frac{2}{3}$. By the power-of-a-power rule, $\frac{3}{2} \cdot \frac{2}{3} = 1$:
+
+$$
+\left(x^{3/2}\right)^{2/3} = x^{1} = 8^{2/3} = \left(\sqrt[3]{8}\right)^2 = 2^2 = 4.
+$$
+
+*Check:* $4^{3/2} = \left(\sqrt{4}\right)^3 = 2^3 = 8$. Correct.
 :::
 
 ## The inverse-square law
 
-Newton's law of gravitation says the gravitational acceleration at distance $r$ from the centre of a body is
+Think of a can of spray paint. Hold it close to a wall and it paints a small, thick patch. Step back to twice the distance: the spray spreads out, so the patch is twice as wide *and* twice as tall. That is $2 \times 2 = 4$ times the area, and the same paint spread over four times the area is only a quarter as thick. Step back to three times the distance and the paint is $3 \times 3 = 9$ times thinner.
+
+Gravity weakens with distance in exactly the same way. Newton's law of gravitation says that the acceleration gravity gives you, at distance $r$ from the centre of a planet, is
 
 $$
-g(r) = \frac{\mu}{r^2},
+g(r) = \frac{\mu}{r^2}.
 $$
 
-where $\mu$ (the **gravitational parameter**, the product of the gravitational constant and the body's mass) is $3.986 \times 10^{14}\,\mathrm{m^3/s^2}$ for Earth. Check the units: $\mathrm{m^3/s^2}$ divided by $\mathrm{m^2}$ is $\mathrm{m/s^2}$, an acceleration. Note that $r$ is measured from Earth's centre, not from the ground: a satellite at altitude $h$ has $r = R + h$.
+Here $g$ is the **gravitational acceleration** — how fast a dropped object speeds up, in metres per second every second ($\mathrm{m/s^2}$). The symbol $\mu$ (the Greek letter "mu" — the same letter as the prefix micro, but with a completely different job here) is the **gravitational parameter**: the universal gravitational constant multiplied by the planet's mass. A heavier planet has a bigger $\mu$ and pulls harder. For Earth, $\mu = 3.986 \times 10^{14}\,\mathrm{m^3/s^2}$.
 
-The exponent $-2$ carries a scaling rule. Double the distance and the acceleration drops by $2^2 = 4$; at ten Earth radii it is a hundredth of the surface value. In general, if $y \propto x^n$ (read "is proportional to"), multiplying $x$ by a factor $k$ multiplies $y$ by $k^n$, because $(kx)^n = k^n x^n$. That one line is the engine behind every scaling estimate in this module.
+Check the units: $\mathrm{m^3/s^2}$ divided by $\mathrm{m^2}$ leaves $\mathrm{m/s^2}$, an acceleration, as it should.
+
+Notice that $r$ is measured from Earth's **centre**, not from the ground. A satellite at **altitude** $h$ (height above the ground) has $r = R + h$, where $R$ is Earth's radius.
+
+The exponent $-2$ carries a scaling rule. Double the distance and the acceleration drops by a factor of $2^2 = 4$. At ten Earth radii it is a hundredth of its value at the surface.
+
+In general, if $y \propto x^n$ (the symbol $\propto$ is read "is proportional to"), then multiplying $x$ by some factor $k$ multiplies $y$ by $k^n$. The reason is the power-of-a-product rule: $(kx)^n = k^n x^n$. That one line powers every scaling estimate in this module.
 
 ::: example Gravity at orbital altitudes
-At the surface, $g = \dfrac{3.986 \times 10^{14}}{(6.371 \times 10^6)^2} = \dfrac{3.986 \times 10^{14}}{4.059 \times 10^{13}} \approx 9.82\,\mathrm{m/s^2}$ — slightly more than the familiar $9.81$ because Earth's rotation and shape are ignored here.
+**At the surface.** Here $r = R = 6.371 \times 10^6\,\mathrm{m}$. Square it, as worked out earlier: $(6.371 \times 10^6)^2 \approx 4.059 \times 10^{13}$. Then
 
-At the altitude of a space station, $h = 420\,\mathrm{km}$: $r = 6371 + 420 = 6791\,\mathrm{km} = 6.791 \times 10^6\,\mathrm{m}$, and
+$$
+g = \frac{3.986 \times 10^{14}}{4.059 \times 10^{13}} \approx 9.82\,\mathrm{m/s^2}.
+$$
+
+That is a touch more than the familiar $9.81$, because this simple formula ignores Earth's spin and its slightly squashed shape.
+
+**At a space station**, altitude $h = 420\,\mathrm{km}$. First add to get the distance from the centre: $r = 6371 + 420 = 6791\,\mathrm{km} = 6.791 \times 10^6\,\mathrm{m}$. Then square and divide:
 
 $$
 g = \frac{3.986 \times 10^{14}}{(6.791 \times 10^6)^2} = \frac{3.986 \times 10^{14}}{4.612 \times 10^{13}} \approx 8.64\,\mathrm{m/s^2}.
 $$
 
-Gravity there is $88\%$ of its surface value; astronauts float because they are falling, not because gravity is absent.
+That is $8.64 / 9.82 \approx 88\%$ of the surface value. Gravity up there is nearly as strong as on the ground. Astronauts float because they and their station are falling together, all the time — not because gravity has switched off.
 
-At geostationary altitude, $h = 35\,786\,\mathrm{km}$, $r = 42\,157\,\mathrm{km} \approx 6.62 R$. By the scaling rule, $g \approx 9.82 / 6.62^2 = 9.82 / 43.8 \approx 0.224\,\mathrm{m/s^2}$. Direct calculation, $\mu / (4.2157 \times 10^7)^2$, gives the same $0.224\,\mathrm{m/s^2}$.
+**At geostationary altitude**, $h = 35\,786\,\mathrm{km}$, where a satellite takes exactly one day to go around. Now $r = 6371 + 35\,786 = 42\,157\,\mathrm{km}$, which is $42\,157 / 6371 \approx 6.62$ Earth radii. Use the scaling rule: gravity is weaker by a factor of $6.62^2 \approx 43.8$, so
+
+$$
+g \approx \frac{9.82}{43.8} \approx 0.224\,\mathrm{m/s^2}.
+$$
+
+The direct calculation, $\mu / (4.2157 \times 10^7)^2$, gives the same $0.224\,\mathrm{m/s^2}$. Two routes, one answer — and the answer is small, as it should be so far out.
 :::
 
 ## Square roots in orbital speed
 
-For a circular orbit, gravity supplies exactly the acceleration $\frac{v^2}{r}$ needed to keep turning, so $\frac{v^2}{r} = \frac{\mu}{r^2}$. Multiply both sides by $r$ and take the square root:
+Swing a ball on a string in a circle. To keep it curving, the string has to keep pulling it toward the centre. Anything moving at speed $v$ around a circle of radius $r$ needs an inward acceleration of $\frac{v^2}{r}$. (You will derive that formula in a later module; for now take it as given.)
+
+A satellite in a **circular orbit** has no string. Gravity does the pulling. The orbit works when gravity supplies exactly the inward acceleration needed:
+
+$$
+\frac{v^2}{r} = \frac{\mu}{r^2}.
+$$
+
+Multiply both sides by $r$ to get $v^2 = \frac{\mu}{r}$. Then take the square root of both sides (speed is positive, so we want the positive root):
 
 $$
 v = \sqrt{\frac{\mu}{r}} = \mu^{1/2} r^{-1/2}.
 $$
 
-The exponent $-\frac{1}{2}$ says higher orbits are slower, but slowly so: quadrupling the radius halves the speed. Escape speed is $\sqrt{2\mu/r} = \sqrt{2}\, v$, a factor of $1.414$ above circular speed at the same radius; the $\sqrt{2}$ is the power-of-a-product rule at work.
+The exponent $-\frac{1}{2}$ tells the story. It is negative, so higher orbits are *slower*. But it is only a half, so they are slower only gently: making the radius four times bigger multiplies the speed by $4^{-1/2} = \frac{1}{2}$ — half the speed.
+
+The **escape speed**, the speed needed to leave Earth for good, is $\sqrt{2\mu/r}$. By the power-of-a-product rule, $\sqrt{2\mu/r} = \sqrt{2}\,\sqrt{\mu/r} = \sqrt{2}\, v$. So escape speed is $\sqrt{2} \approx 1.414$ times the circular speed at the same radius.
 
 ::: example Circular speed at 400 km
-$r = 6371 + 400 = 6771\,\mathrm{km} = 6.771 \times 10^6\,\mathrm{m}$, so
+*Step 1: distance from the centre.* $r = 6371 + 400 = 6771\,\mathrm{km} = 6.771 \times 10^6\,\mathrm{m}$.
+
+*Step 2: divide.*
 
 $$
-\frac{\mu}{r} = \frac{3.986 \times 10^{14}}{6.771 \times 10^6} = 5.887 \times 10^{7}\,\mathrm{m^2/s^2}, \qquad v = \sqrt{5.887 \times 10^7} \approx 7673\,\mathrm{m/s}.
+\frac{\mu}{r} = \frac{3.986 \times 10^{14}}{6.771 \times 10^6} = 5.887 \times 10^{7}\,\mathrm{m^2/s^2}.
 $$
 
-That is the $7.7\,\mathrm{km/s}$ you will hear quoted for low Earth orbit. Escape speed from the same radius is $\sqrt{2} \times 7673 \approx 10\,850\,\mathrm{m/s}$. Units check: $\mathrm{m^3/s^2}$ over $\mathrm{m}$ is $\mathrm{m^2/s^2}$, whose square root is $\mathrm{m/s}$. Taking the root of the unit is as necessary as taking the root of the number.
+*Step 3: take the square root*, number and unit together, exactly as in the mental-arithmetic section:
+
+$$
+v = \sqrt{5.887 \times 10^7\,\mathrm{m^2/s^2}} \approx 7673\,\mathrm{m/s}.
+$$
+
+That is the $7.7\,\mathrm{km/s}$ you will hear quoted for **low Earth orbit** (LEO) — about $28\,000$ kilometres per hour, fast enough to cross the United States in about ten minutes.
+
+*Escape speed* from the same radius is $\sqrt{2} \times 7673 \approx 10\,850\,\mathrm{m/s}$.
+
+*Units check:* $\mathrm{m^3/s^2}$ divided by $\mathrm{m}$ is $\mathrm{m^2/s^2}$, and its square root is $\mathrm{m/s}$ — a speed. Taking the root of the unit is as necessary as taking the root of the number.
 :::
 
 ## Scaling laws
 
-The exponent tells you how a quantity responds to a change of scale, and that is often all an early design estimate needs. If every linear dimension of a vehicle grows by a factor $k$, then areas grow by $k^2$ and volumes — hence masses, at fixed density — by $k^3$. A stage scaled up by $k = 1.5$ has $1.5^2 = 2.25$ times the skin area and $1.5^3 = 3.375$ times the propellant mass. Tank pressure loads scale with area but propellant mass with volume, which is one reason bigger rockets are structurally more efficient.
+Build a cube out of sugar cubes, two sugar cubes along each edge. Each face of the big cube shows $2 \times 2 = 4$ sugar-cube faces, and the whole thing uses $2 \times 2 \times 2 = 8$ sugar cubes. Make it three along each edge: each face shows $3^2 = 9$, and it uses $3^3 = 27$ sugar cubes. Lengths grew by $3$, areas by $9$, volumes by $27$.
 
-The period of a circular orbit is the circumference over the speed, $T = \frac{2\pi r}{v} = 2\pi r \sqrt{\frac{r}{\mu}} = 2\pi\sqrt{\frac{r^3}{\mu}}$, so $T \propto r^{3/2}$. Doubling the radius multiplies the period by $2^{3/2} = 2\sqrt{2} \approx 2.83$; quadrupling it multiplies the period by $4^{3/2} = 8$. This is Kepler's third law, and you have derived it from two exponent rules and one square root.
+That is the pattern for any shape. If every length of an object grows by a factor $k$, then:
+
+- its **areas** grow by $k^2$;
+- its **volumes** — and so its masses, if it is made of the same stuff — grow by $k^3$.
+
+So a rocket stage scaled up by $k = 1.5$ in every direction has $1.5^2 = 2.25$ times the skin area and $1.5^3 = 3.375$ times the propellant mass. Here is why that matters. The force of the pressurised propellant on the tank walls grows with area, but the amount of propellant grows with volume. The propellant grows faster than the structure needed to hold it, which is one reason bigger rockets are more efficient.
+
+The same thinking works on orbits. The **period** $T$ of an orbit is the time for one lap: the distance around, $2\pi r$, divided by the speed. Using the speed from the last section,
+
+$$
+T = \frac{2\pi r}{v} = 2\pi r \sqrt{\frac{r}{\mu}} = 2\pi\sqrt{\frac{r^3}{\mu}}.
+$$
+
+(The middle step flipped $\sqrt{\mu/r}$ upside down, since dividing by it is multiplying by $\sqrt{r/\mu}$. The last step moved $r$ inside the root, where it becomes $r^2$, and $r^2 \cdot r = r^3$.)
+
+So $T \propto r^{3/2}$. Doubling the radius multiplies the period by $2^{3/2} = 2\sqrt{2} \approx 2.83$. Quadrupling it multiplies the period by $4^{3/2} = \left(\sqrt{4}\right)^3 = 8$. This is **Kepler's third law**, and you have now derived it from two exponent rules and one square root.
 
 ::: key Exponent laws
 $a^m a^n = a^{m+n}$, $\dfrac{a^m}{a^n} = a^{m-n}$, $(a^m)^n = a^{mn}$, $(ab)^n = a^n b^n$, $a^0 = 1$, $a^{-n} = \dfrac{1}{a^n}$, $a^{1/n} = \sqrt[n]{a}$, $a^{m/n} = \left(\sqrt[n]{a}\right)^m$. If $y \propto x^n$, scaling $x$ by $k$ scales $y$ by $k^n$.
@@ -161,19 +354,35 @@ $g(r) = \mu / r^2$ and $v = \sqrt{\mu / r}$ with $r$ measured from the centre of
 ## Check yourself
 
 ::: check
+Without a calculator, write $5^0$, $5^{-2}$ and $10^{-3}$ as ordinary numbers. Which of them, if any, is negative?
+:::
+
+::: answer
+$5^0 = 1$ (anything except zero to the power zero is $1$). $5^{-2} = \frac{1}{5^2} = \frac{1}{25} = 0.04$. $10^{-3} = \frac{1}{1000} = 0.001$.
+
+None of them is negative. A negative exponent makes a number small, not negative.
+:::
+
+::: check
 Simplify $27^{-2/3}$ and $\left(\dfrac{a^4 b^{-1}}{a b^{2}}\right)^{-2}$ without a calculator.
 :::
 
 ::: answer
-$27^{-2/3} = \dfrac{1}{\left(\sqrt[3]{27}\right)^2} = \dfrac{1}{3^2} = \dfrac{1}{9}$. Inside the second bracket, $\dfrac{a^4 b^{-1}}{a b^2} = a^{4-1} b^{-1-2} = a^3 b^{-3}$. Raising to $-2$: $a^{-6} b^{6} = \dfrac{b^6}{a^6}$.
+$27^{-2/3}$: the minus means "one over", the $3$ on the bottom means cube root ($\sqrt[3]{27} = 3$), and the $2$ on top means square it. So $27^{-2/3} = \dfrac{1}{\left(\sqrt[3]{27}\right)^2} = \dfrac{1}{3^2} = \dfrac{1}{9}$.
+
+For the second, tidy up inside the bracket first, subtracting exponents base by base: $\dfrac{a^4 b^{-1}}{a b^2} = a^{4-1} b^{-1-2} = a^3 b^{-3}$. Now raise to the power $-2$ by multiplying each exponent by $-2$: $a^{-6} b^{6} = \dfrac{b^6}{a^6}$.
 :::
 
 ::: check
-Without computing any speed, by what factor is the circular orbital speed at $r = 4R$ smaller than at $r = R$? By what factor is the period longer?
+Without working out any speed, by what factor is the circular orbital speed at $r = 4R$ smaller than at $r = R$? By what factor is the period longer?
 :::
 
 ::: answer
-$v \propto r^{-1/2}$, so multiplying $r$ by $4$ multiplies $v$ by $4^{-1/2} = \frac{1}{2}$: half the speed. $T \propto r^{3/2}$, so the period is multiplied by $4^{3/2} = 8$. Consistency check: the circumference is $4$ times longer and the speed half, so the period should be $4 \times 2 = 8$ times longer.
+$v \propto r^{-1/2}$, so multiplying $r$ by $4$ multiplies $v$ by $4^{-1/2} = \frac{1}{\sqrt{4}} = \frac{1}{2}$: half the speed.
+
+$T \propto r^{3/2}$, so the period is multiplied by $4^{3/2} = 2^3 = 8$.
+
+Sanity check: the lap is $4$ times longer and the satellite goes at half the speed, so a lap should take $4 \times 2 = 8$ times as long. It does.
 :::
 
 ::: check
@@ -181,7 +390,7 @@ Write $\sqrt{50} + \sqrt{18} - \sqrt{8}$ as a single simplified radical, and giv
 :::
 
 ::: answer
-$\sqrt{50} = 5\sqrt{2}$, $\sqrt{18} = 3\sqrt{2}$, $\sqrt{8} = 2\sqrt{2}$. So the sum is $(5 + 3 - 2)\sqrt{2} = 6\sqrt{2} \approx 8.49$.
+Pull the perfect squares out of each: $\sqrt{50} = \sqrt{25 \cdot 2} = 5\sqrt{2}$, $\sqrt{18} = \sqrt{9 \cdot 2} = 3\sqrt{2}$, $\sqrt{8} = \sqrt{4 \cdot 2} = 2\sqrt{2}$. Now they are like terms: $(5 + 3 - 2)\sqrt{2} = 6\sqrt{2} \approx 8.49$.
 :::
 
 ::: check
@@ -189,7 +398,11 @@ A satellite's period is $5400\,\mathrm{s}$ (ninety minutes). Using $T = 2\pi\sqr
 :::
 
 ::: answer
-Square both sides: $T^2 = 4\pi^2 r^3/\mu$, so $r^3 = \dfrac{\mu T^2}{4\pi^2}$ and $r = \left(\dfrac{\mu T^2}{4\pi^2}\right)^{1/3}$. Numerically, $\mu T^2 = 3.986 \times 10^{14} \times 2.916 \times 10^7 = 1.162 \times 10^{22}$; dividing by $4\pi^2 = 39.48$ gives $2.944 \times 10^{20}$; the cube root is $6.65 \times 10^6\,\mathrm{m} = 6653\,\mathrm{km}$. The altitude is $6653 - 6371 \approx 282\,\mathrm{km}$.
+Get $r$ alone by undoing each operation. Square both sides to remove the root: $T^2 = \dfrac{4\pi^2 r^3}{\mu}$. Multiply by $\mu$ and divide by $4\pi^2$: $r^3 = \dfrac{\mu T^2}{4\pi^2}$. Take the cube root: $r = \left(\dfrac{\mu T^2}{4\pi^2}\right)^{1/3}$.
+
+Now the numbers. $T^2 = 5400^2 = 2.916 \times 10^7\,\mathrm{s^2}$, so $\mu T^2 = 3.986 \times 10^{14} \times 2.916 \times 10^7 = 1.162 \times 10^{22}$. Divide by $4\pi^2 = 39.48$ to get $2.944 \times 10^{20}\,\mathrm{m^3}$. The cube root is $6.65 \times 10^6\,\mathrm{m} = 6653\,\mathrm{km}$.
+
+The altitude is $r - R = 6653 - 6371 \approx 282\,\mathrm{km}$. That is a low orbit, which makes sense: an orbit skimming Earth's surface would take about eighty-five minutes, so ninety is close to the fastest possible.
 :::
 
 ::: check
@@ -197,22 +410,25 @@ Why is $\sqrt{x^2} = |x|$ rather than $x$? Give a value of $x$ for which the dif
 :::
 
 ::: answer
-The square root symbol denotes the non-negative root. For $x = -3$, $x^2 = 9$ and $\sqrt{9} = 3 = |-3|$, not $-3$. Forgetting this loses a sign whenever you take the square root of a squared negative quantity, such as a downward velocity component.
+The square root sign always means the root that is not negative. For $x = -3$: $x^2 = 9$ and $\sqrt{9} = 3$, which is $|-3|$, not $-3$.
+
+Forgetting this loses a minus sign whenever you take the square root of a squared negative quantity — a downward speed, for example.
 :::
 
 ## Summary
 
 | Idea | Statement |
 | --- | --- |
+| Power | $a^n$ is $n$ copies of the base $a$ multiplied; $a^2$ squared, $a^3$ cubed |
 | Product and quotient | $a^m a^n = a^{m+n}$, $a^m / a^n = a^{m-n}$ |
 | Power of a power | $(a^m)^n = a^{mn}$; towers read top-down, $2^{3^2} = 512$ |
 | Zero and negative | $a^0 = 1$, $a^{-n} = 1/a^n$ (small, not negative) |
 | Fractional | $a^{1/n} = \sqrt[n]{a}$, $a^{m/n} = (\sqrt[n]{a})^m$; $\sqrt{x^2} = \lvert x \rvert$ |
-| No distribution over $+$ | $\sqrt{a+b} \neq \sqrt{a} + \sqrt{b}$ |
-| Prefixes | kilo $10^3$, mega $10^6$, giga $10^9$, milli $10^{-3}$, micro $10^{-6}$ |
+| No splitting over $+$ | $\sqrt{a+b} \neq \sqrt{a} + \sqrt{b}$ |
+| Prefixes | kilo $10^3$, mega $10^6$, giga $10^9$, milli $10^{-3}$, micro $10^{-6}$, nano $10^{-9}$ |
 | Inverse square | $g = \mu / r^2$, $\mu_\oplus = 3.986 \times 10^{14}\,\mathrm{m^3/s^2}$, $r = R + h$ |
 | Circular speed | $v = \sqrt{\mu / r} \approx 7.7\,\mathrm{km/s}$ in LEO; escape is $\sqrt{2}$ times larger |
 | Period | $T = 2\pi\sqrt{r^3/\mu} \propto r^{3/2}$ |
-| Scaling | $y \propto x^n$ means scaling $x$ by $k$ scales $y$ by $k^n$ |
+| Scaling | $y \propto x^n$ means scaling $x$ by $k$ scales $y$ by $k^n$; areas $k^2$, volumes $k^3$ |
 
-The next lesson turns from single powers to sums of them — polynomials — and to the special products whose missing cross-terms were the warning above.
+The next lesson moves from single powers to sums of them — **polynomials** — and to the special products that supply the missing $2ab$ from the warning above.

@@ -84,9 +84,34 @@ runnable. Show output in a comment.
 
 ## Voice
 
-Direct, precise, unhurried. Second person. Short paragraphs. Explain the why. No
-"simply", "obviously", "just". No emoji. Do not apologise for the mathematics.
-Use en-dashes and em-dashes freely; use the module's own terminology.
+Write so a curious 12-year-old could follow it, without leaving out anything an
+engineer needs. Plain does not mean less: every formula, derivation, key fact and
+worked number stays. What changes is the order and the words around them.
+
+- **Picture first, then the rule, then the rocket.** Open each idea with something
+  the reader already knows — money, a thermometer, a pizza, a recipe, a backpack of
+  water bottles — then state the precise rule, then show where it lives on a vehicle.
+- **Everyday words before technical ones.** Introduce a term only when it is needed,
+  in bold, with a one-line meaning right there ("the **denominator** — the bottom
+  number — says how many pieces the whole was cut into"). Say what a symbol is and
+  how to read it aloud the first time ("$m_d$, read "m sub d", the dry mass").
+- **Short sentences, short paragraphs.** One idea per paragraph. If a sentence needs
+  a semicolon, it is probably two sentences.
+- **Show the steps.** Write out every arithmetic step in the examples, and say in
+  words what each step did. Nothing "follows easily".
+- **Proofs are welcome, but after the intuition.** Put a "why it has to be true"
+  argument in a `::: note` after the plain explanation, so the reader who wants it
+  gets it and the reader who does not can keep going.
+- **Check the answer makes sense** in the examples ("more than half, as it should
+  be"), because that habit is what catches real mistakes.
+
+Second person, warm and direct. No "simply", "obviously", "just", "clearly",
+"trivially". No emoji. Do not apologise for the mathematics, and do not talk down:
+the reader is smart and new, not slow. Use en-dashes and em-dashes freely; use the
+module's own terminology once it has been introduced.
+
+`t0_m01_algebra_precalc/01-signed-numbers-and-fractions.md` is the model for this
+voice.
 
 ## Sources and originality
 

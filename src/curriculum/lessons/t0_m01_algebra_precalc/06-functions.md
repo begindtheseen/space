@@ -1,24 +1,38 @@
 ---
 id: l06-functions
 title: Functions, domain, range, composition and inverses
-minutes: 21
+minutes: 24
 covers:
   - "functions: domain, range, composition, inverses"
 ---
 
-Every formula in the last four lessons was secretly a function. $g(r) = \mu/r^2$ takes a distance in and gives an acceleration out. $h(t) = 100 + 20t - 4.903t^2$ takes a time in and gives a height out. A pressure transducer takes a pressure in and gives a current out; a guidance law takes a state in and gives a steering command out. The word **function** names the pattern — one input, one definite output — and the vocabulary around it (domain, range, composition, inverse) is how engineers say precisely what a formula accepts, what it can produce, how formulas chain together, and when a formula can be run backwards.
+Think of a vending machine. You press B4 and out drops a bag of pretzels. Press B4 tomorrow and you get pretzels again — never "sometimes pretzels, sometimes gum". That is exactly what mathematicians mean by a **function**: a rule that takes an input and gives back one definite output.
 
-That last question is the practical one. Half of the equation-solving in the previous lessons was really inverting a function: given the period, find the radius; given the current, find the pressure; given the mass ratio, find the propellant. Inversion is only possible when the function does not map two different inputs to the same output, and this lesson gives you the test for that and the procedure for doing it. Composition is the other half of the story: real vehicle models are long chains of functions — altitude to radius, radius to gravity, gravity to acceleration — and the calculus modules will differentiate those chains with the chain rule, which is unreadable unless you can see the chain.
+Every formula in the last four lessons was secretly a function. $g(r) = \mu/r^2$ takes a distance in and gives gravity out. $h(t) = 100 + 20t - 4.903t^2$ takes a time in and gives a height out. On a rocket, a pressure sensor takes a pressure in and gives a current out; a guidance program takes position and speed in and gives a steering command out.
 
-The lesson uses the same aerospace functions you already know. Nothing new is asserted about the physics; what changes is how carefully you say what each formula is allowed to do.
+This lesson is about four words. The **domain** is what a formula is allowed to take in. The **range** is what it can give out. **Composition** is how formulas chain together, one feeding the next. The **inverse** is running a formula backwards — from the answer to the question.
+
+Running backwards matters most. Half your equation-solving so far was really that: given the orbit's period, find its radius; given the sensor's current, find the pressure. It only works when no two inputs give the same output, and you will learn the test. Chaining matters too. A vehicle model is a long chain — altitude to distance from Earth's centre, distance to gravity, gravity to acceleration — and calculus will later take such chains apart link by link. The physics is the same as before. What changes is how carefully you say what each formula is allowed to do.
 
 ## What a function is
 
-A function is a rule that assigns to each allowed input exactly one output. We write $f(x)$, read "f of x", for the output that the rule $f$ produces from the input $x$. The letter inside the brackets is the **argument**; it is a placeholder, and $f(t)$, $f(u)$ and $f(\text{anything})$ describe the same rule. What matters is that the rule is *definite*: if you feed the same input twice, you get the same output twice. A table of test-stand data with two different thrust readings at the same time stamp is not a function of time — and the first job of the data engineer is to decide which reading to keep.
+A function is a rule that gives each allowed input exactly one output. We write $f(x)$, read "f of x", for the output that the rule $f$ produces from the input $x$.
 
-To **evaluate** a function, substitute the input for every occurrence of the argument. For $f(x) = x^2 + 1$: $f(3) = 10$, $f(-3) = 10$, $f(a + b) = (a + b)^2 + 1 = a^2 + 2ab + b^2 + 1$. Two different inputs gave the same output $10$; that is allowed, and it is exactly what will make $f$ non-invertible later. Notice also that $f(a + b) \neq f(a) + f(b)$: the left side is $a^2 + 2ab + b^2 + 1$ and the right side is $a^2 + b^2 + 2$. The brackets in $f(x)$ are *not* multiplication and $f$ does not distribute. The only functions that do satisfy $f(a + b) = f(a) + f(b)$ are the lines through the origin, $f(x) = kx$, and the whole of linear algebra is built on how special they are.
+The letter inside the brackets is called the **argument**. It is a placeholder, like a blank on a form. $f(t)$, $f(u)$ and $f(\text{anything})$ all describe the same rule. What matters is that the rule is *definite*: same input, same output, every time. Test data with two different thrust readings at the same moment is not a function of time until someone decides which reading to keep.
 
-A function can be given as a formula, as a table, as a graph, or as a program. In Python:
+To **evaluate** a function, put the input in place of every copy of the argument. For $f(x) = x^2 + 1$:
+
+$$
+f(3) = 3^2 + 1 = 10, \qquad f(-3) = (-3)^2 + 1 = 10, \qquad f(a + b) = (a + b)^2 + 1 = a^2 + 2ab + b^2 + 1 .
+$$
+
+Two inputs, $3$ and $-3$, gave the same output, $10$. That is allowed — two buttons can both hold pretzels — but it will stop $f$ being run backwards later.
+
+::: warning The brackets in $f(x)$ are not multiplication
+$f(a + b)$ is not $f(a) + f(b)$. Above, the left side came out as $a^2 + 2ab + b^2 + 1$, while $f(a) + f(b) = (a^2 + 1) + (b^2 + 1) = a^2 + b^2 + 2$. Different. A function does not "distribute" over a sum. The only functions that do satisfy $f(a + b) = f(a) + f(b)$ are the straight lines through zero, $f(x) = kx$ for a fixed number $k$ — and the whole of linear algebra is built on how special they are.
+:::
+
+A function can be given as a formula, a table, a graph or a computer program. In Python:
 
 ```python
 mu = 3.986e14  # m^3/s^2
@@ -30,25 +44,49 @@ def g(r):
 print(g(6.371e6))  # 9.820239602513361
 ```
 
-The `def` line names the function and its argument; the `return` line is the rule. Calling `g(6.371e6)` is evaluation. When a physical model is a hundred such definitions calling one another, the ideas of this lesson are what keep the hundred straight.
+The `def` line names the function and its argument. The `return` line is the rule. Calling `g(6.371e6)` is evaluating it.
 
 ### Graphs
 
-The **graph** of $f$ is the set of points $(x, f(x))$. Because each input has one output, no vertical line crosses the graph twice — the **vertical line test**. A circle fails it, which is why $x^2 + y^2 = R^2$ is an equation and not a function of $x$: solving gives $y = \pm\sqrt{R^2 - x^2}$, two functions, the upper and lower half-circles. Reading a graph, the input runs along the horizontal axis and the output up the vertical axis; the height of the graph above $x$ *is* $f(x)$.
+The **graph** of $f$ is every point $(x, f(x))$ drawn on graph paper: input along the bottom, output going up. The height of the graph above $x$ *is* $f(x)$.
 
-## Domain
+Because each input has only one output, no vertical line can cross the graph twice. This is the **vertical line test**. A circle fails it — a vertical line through the middle hits top and bottom — so $x^2 + y^2 = R^2$ is an equation but not a function of $x$. Solving it gives $y = \pm\sqrt{R^2 - x^2}$ (the $\pm$ is read "plus or minus"), which is really two functions — the top half of the circle and the bottom half.
 
-The **domain** of a function is the set of inputs it accepts. There are two layers to it.
+## Domain: what goes in
 
-The **natural domain** of a formula is every real number for which the formula makes sense. Three things break a formula over the reals, and you have met all of them: division by zero, an even root of a negative number, and (from the next lesson) the logarithm of a number that is not positive. So the natural domain of $g(r) = \mu / r^2$ is every $r \neq 0$; the natural domain of $\sqrt{9 - x^2}$ is where $9 - x^2 \geq 0$, that is $-3 \leq x \leq 3$; and the natural domain of $\dfrac{1}{x^2 - 4}$ excludes $x = \pm 2$.
+The **domain** of a function is the set of inputs it accepts — the buttons that actually work. It has two layers.
 
-The **physical domain** is usually smaller. $g(r)$ describes gravity outside Earth, so the model is only meaningful for $r \geq R = 6371\,\mathrm{km}$; below the surface the inverse-square law is wrong, and the algebra would happily give you an enormous answer at $r = 1\,\mathrm{m}$. The height $h(t) = 100 + 20t - 4.903t^2$ is a model of a thrown object only from launch, $t = 0$, until it hits the ground at $t \approx 6.99\,\mathrm{s}$; the formula continues to exist for $t = 100\,\mathrm{s}$, when it says the object is $48$ kilometres underground. Writing the domain down is how you tell the reader — and yourself, six months later — where the model stops being a model.
+### What the formula allows
 
-Interval notation is the compact way to write domains. Square brackets include the endpoint, round ones exclude it: $[0, 6.99]$ is all $t$ with $0 \leq t \leq 6.99$; $(0, \infty)$ is all positive numbers; $[R, \infty)$ is every $r$ at or above the surface. Infinity always gets a round bracket, because it is not a number you can reach.
+The **natural domain** of a formula is every number for which the formula makes sense. Three things break a formula, and you have met all of them:
+
+1. **Dividing by zero.**
+2. **An even root of a negative number** — there is no ordinary number whose square is $-9$.
+3. **The logarithm of zero or a negative number** — you will meet logarithms in the next lesson.
+
+So the natural domain of $g(r) = \mu / r^2$ is every $r$ except $0$. That of $\sqrt{9 - x^2}$ is wherever $9 - x^2 \geq 0$ ("is at least zero"), which is $-3 \leq x \leq 3$. And that of $\dfrac{1}{x^2 - 4}$ leaves out $x = 2$ and $x = -2$, because both make the bottom zero.
+
+### What the physics allows
+
+The **physical domain** is usually smaller. A bathroom scale works up to maybe $150\,\mathrm{kg}$. Park a car on it and whatever the display shows means nothing.
+
+$g(r)$ describes gravity *outside* Earth, so it only means something for $r \geq R = 6371\,\mathrm{km}$, the planet's radius. Below the surface the inverse-square law is wrong, and the formula would happily give you an enormous answer at $r = 1\,\mathrm{m}$.
+
+The height $h(t) = 100 + 20t - 4.903t^2$ models a ball thrown up from a $100\,\mathrm{m}$ tower. It is only a model from launch, $t = 0$, until the ball hits the ground at $t \approx 6.99\,\mathrm{s}$. The formula still exists at $t = 100\,\mathrm{s}$, where it says the ball is about $47$ kilometres underground. Writing the domain down tells your reader where the model stops being a model.
+
+### Interval notation
+
+There is a short way to write a stretch of numbers. Square brackets mean "including this end". Round brackets mean "not including it".
+
+- $[0, 6.99]$ is every $t$ with $0 \leq t \leq 6.99$ — both ends included.
+- $(0, \infty)$ is every positive number. The symbol $\infty$ is "infinity": the stretch never ends.
+- $[R, \infty)$ is every $r$ at or above the surface.
+
+Infinity always gets a round bracket, because it is not a number you can reach. To join two stretches, use $\cup$, read "union" or "together with": $[2, 5) \cup (5, \infty)$ is everything from $2$ upward except $5$.
 
 ### Piecewise functions
 
-A function does not need one formula. A first-stage thrust profile might be
+A function does not need a single formula. A first-stage engine's thrust might be
 
 $$
 F(t) =
@@ -59,118 +97,191 @@ F(t) =
 \end{cases}
 $$
 
-three rules on three pieces of the domain, and it is a perfectly good function: every $t$ still gets exactly one output. Absolute value is the piecewise function you will meet most, $|x| = x$ for $x \geq 0$ and $|x| = -x$ for $x < 0$; a guidance law that switches between a coast rule and a burn rule is another. When you evaluate a piecewise function, the first step is always to find which piece the input belongs to.
+read as "zero before ignition, $7600\,\mathrm{kN}$ for $160$ seconds, zero after" — like a parking garage that is free for an hour and then charges. Three rules on three pieces of the domain, and still a perfectly good function: every $t$ gets exactly one output.
 
-## Range
+The piecewise function you will meet most is the absolute value: $|x| = x$ when $x \geq 0$, and $|x| = -x$ when $x < 0$. A guidance program that switches between a "coast" rule and a "burn" rule is another. To evaluate one, first find which piece your input belongs to.
 
-The **range** is the set of outputs the function actually produces as the input runs over the domain. It is harder to find than the domain, because you have to know how the function behaves, not only where it is defined.
+## Range: what comes out
 
-For a linear function $f(x) = mx + b$ with $m \neq 0$ on the whole real line, the range is every real number: any target $y$ is hit by $x = (y - b)/m$. Restrict the domain and the range shrinks with it: a $4$–$20\,\mathrm{mA}$ transducer with $I(P) = 4 + 0.016P$ (current in milliamps, pressure in psi) on the domain $[0, 1000]\,\mathrm{psi}$ has the range $[4, 20]\,\mathrm{mA}$ — evaluate at the two endpoints, and since a line has no bumps in between, everything between is covered.
+The **range** is the set of outputs the function actually produces as the input runs over the domain — the snacks actually inside the machine. It is harder to find than the domain, because you need to know how the function behaves.
 
-For a quadratic, the range is set by the vertex. Completing the square as in the equations lesson, $ax^2 + bx + c$ has its vertex at $x = -\frac{b}{2a}$, a minimum if $a > 0$ and a maximum if $a < 0$. The height function $h(t) = 100 + 20t - 4.903t^2$ has $a < 0$, so it peaks at $t = \frac{20}{2 \times 4.903} = 2.04\,\mathrm{s}$, where $h = 100 + 20(2.04) - 4.903(2.04)^2 = 120.4\,\mathrm{m}$. On its physical domain $[0, 6.99]$ the range is therefore $[0, 120.4]\,\mathrm{m}$: the object never gets higher than $120.4\,\mathrm{m}$ and the model stops at the ground. Asked "does it reach $150\,\mathrm{m}$?", you now answer without solving anything — $150$ is not in the range.
+**Lines.** For a straight line $f(x) = mx + b$ with $m \neq 0$ on all numbers, the range is every number: any target $y$ is hit by $x = (y - b)/m$. Shrink the domain and the range shrinks with it. A pressure sensor might send out a current $I(P) = 4 + 0.016P$ (in milliamps, mA, for a pressure $P$ in psi, pounds per square inch) on the domain $[0, 1000]\,\mathrm{psi}$. At the two ends, $I(0) = 4$ and $I(1000) = 4 + 16 = 20$. A line has no bumps in between, so everything from $4$ to $20$ is covered: the range is $[4, 20]\,\mathrm{mA}$.
 
-For $g(r) = \mu / r^2$ on the physical domain $[R, \infty)$, the function is largest at the smallest $r$, $g(R) = 9.82\,\mathrm{m/s^2}$, and decreases towards zero without ever reaching it. The range is $(0, 9.82]$. The round bracket at zero matters: there is no finite distance at which Earth's gravity is exactly zero, which is the mathematical content of "gravity has infinite reach".
+**Quadratics.** A parabola turns around at its **vertex**, the top or bottom of the curve, and the vertex sets the range. Completing the square (equations lesson) shows that $ax^2 + bx + c$ has its vertex at $x = -\frac{b}{2a}$. It is a lowest point if $a > 0$ and a highest point if $a < 0$.
+
+The height $h(t) = 100 + 20t - 4.903t^2$ has $a = -4.903 < 0$, so it peaks, at
+
+$$
+t = \frac{20}{2 \times 4.903} = 2.04\,\mathrm{s}, \qquad h = 100 + 20(2.04) - 4.903(2.04)^2 = 120.4\,\mathrm{m} .
+$$
+
+On its physical domain $[0, 6.99]$ the range is therefore $[0, 120.4]\,\mathrm{m}$: never higher than $120.4\,\mathrm{m}$, and the model stops at the ground. "Does it reach $150\,\mathrm{m}$?" No — $150$ is not in the range, and you did not have to solve anything.
+
+**Gravity.** For $g(r) = \mu / r^2$ on the physical domain $[R, \infty)$, the function is biggest at the smallest $r$: $g(R) = 9.82\,\mathrm{m/s^2}$. As $r$ grows it heads towards zero without ever reaching it. So the range is $(0, 9.82]$. The round bracket at zero matters: there is no distance at which Earth's gravity is exactly zero. That is what "gravity has infinite reach" means in mathematics.
 
 ::: example Domain and range of the circular-speed function
-$v(r) = \sqrt{\mu / r}$ gives the speed of a circular orbit of radius $r$. Its natural domain is $r > 0$ (the root needs $\mu/r \geq 0$ and the division forbids $r = 0$). Its physical domain begins at the surface, $r \geq R$, and for a real satellite begins higher still, where the atmosphere is thin enough to orbit through — say $r \geq 6371 + 200 = 6571\,\mathrm{km}$.
+The formula $v(r) = \sqrt{\mu / r}$ gives the speed a satellite needs to circle Earth at distance $r$ from its centre.
 
-The function decreases as $r$ grows (a bigger denominator under the root), so its largest value is at the smallest allowed $r$: $v(6.571 \times 10^6) = \sqrt{3.986 \times 10^{14} / 6.571 \times 10^6} = \sqrt{6.066 \times 10^7} \approx 7789\,\mathrm{m/s}$. As $r \to \infty$, $v \to 0$. The range over that physical domain is $(0, 7789]\,\mathrm{m/s}$: no circular orbit around Earth above $200\,\mathrm{km}$ is faster than about $7.8\,\mathrm{km/s}$, and no circular orbit is arbitrarily slow only in the sense that a very slow one is a very distant one. Both statements came from the shape of the function, not from solving an equation.
+**Natural domain.** The square root needs $\mu / r \geq 0$, and the division forbids $r = 0$. Since $\mu$ is positive, that means $r > 0$.
+
+**Physical domain.** The orbit cannot be inside the planet, so $r \geq R$. For a real satellite it must be higher still, above most of the air — say at least $200\,\mathrm{km}$ up, so $r \geq 6371 + 200 = 6571\,\mathrm{km}$.
+
+**Range.** A bigger $r$ means a bigger number on the bottom, so a smaller speed: $v$ goes down as $r$ goes up. Its largest value is at the smallest allowed $r$:
+
+$$
+v(6.571 \times 10^6) = \sqrt{\frac{3.986 \times 10^{14}}{6.571 \times 10^6}} = \sqrt{6.066 \times 10^7} \approx 7788\,\mathrm{m/s} .
+$$
+
+As $r$ grows without limit ("$r \to \infty$", read "r goes to infinity"), $v$ heads to $0$. So the range over this physical domain is $(0, 7788]\,\mathrm{m/s}$.
+
+In words: no circular orbit above $200\,\mathrm{km}$ is faster than about $7.8\,\mathrm{km/s}$ (the familiar low-orbit speed, a good sign), and one can be as slow as you like if it is far enough away. Both facts came from the *shape* of the function, not from solving an equation.
 :::
 
-::: warning Range is not the same as the set of allowed outputs you would like
-Learners often write the range as "all positive numbers" for any function that gives positive values. The range is the set of values *actually produced*. $g(r)$ on $r \geq R$ never produces $12\,\mathrm{m/s^2}$; $12$ is a positive number, but it is not in the range. When a downstream calculation asks for $g = 12$, the right response is not to solve for $r$ (you would get $r$ below the surface, outside the domain) but to say the request is impossible.
+::: warning The range is what the function produces, not what you would like
+It is tempting to call the range "all positive numbers" whenever the answers are positive. But the range is the set of values *actually produced*. $g(r)$ on $r \geq R$ never produces $12\,\mathrm{m/s^2}$. Twelve is positive, but it is not in the range. If a later calculation asks for $g = 12$, do not solve for $r$ (you would land below the surface, outside the domain). Say the request is impossible.
 :::
 
-## Composition
+## Composition: chaining functions
 
-**Composition** is applying one function to the output of another. If $u = g(x)$ and $y = f(u)$, then $y$ is a function of $x$ directly, written
+Getting dressed is a chain: socks first, then shoes. What comes out of step one (a foot in a sock) goes into step two. And order matters — shoes first, then socks, looks very different.
+
+**Composition** is doing one function to the output of another. If $u = g(x)$ and then $y = f(u)$, then $y$ depends on $x$ directly. We write
 
 $$
 (f \circ g)(x) = f(g(x)),
 $$
 
-read "f after g" or "f of g of x". The inner function $g$ acts first. Order matters: with $f(x) = x^2 + 1$ and $g(x) = 2x - 3$,
+read "f after g", or "f of g of x". The little circle $\circ$ means "composed with". The **inner** function, $g$, acts first — it is the socks. The **outer** function, $f$, acts on what comes out.
+
+Order matters here too. Take $f(x) = x^2 + 1$ and $g(x) = 2x - 3$. Work from the inside out:
 
 $$
-f(g(2)) = f(1) = 2, \qquad g(f(2)) = g(5) = 7 .
+f(g(2)) = f(2 \cdot 2 - 3) = f(1) = 1^2 + 1 = 2, \qquad g(f(2)) = g(2^2 + 1) = g(5) = 2 \cdot 5 - 3 = 7 .
 $$
 
-Symbolically, $f(g(x)) = (2x - 3)^2 + 1 = 4x^2 - 12x + 10$ while $g(f(x)) = 2(x^2 + 1) - 3 = 2x^2 - 1$. Different functions. The domain of $f \circ g$ is the set of $x$ in the domain of $g$ for which $g(x)$ lands in the domain of $f$; a composition can fail either because the inner function refuses the input or because the outer one refuses the intermediate value.
+With letters, $f(g(x)) = (2x - 3)^2 + 1 = 4x^2 - 12x + 10$, while $g(f(x)) = 2(x^2 + 1) - 3 = 2x^2 - 1$. Two different functions.
 
-Compositions are the natural language of a vehicle model. Altitude $h$ above the surface gives the radius through $r(h) = R + h$; the radius gives gravity through $g(r) = \mu / r^2$; so gravity as a function of altitude is the composition
+The domain of $f \circ g$ is every $x$ that $g$ accepts *and* whose output $g(x)$ is something $f$ accepts. A chain can fail at either link: the inner function can refuse the input, or the outer one can refuse what the inner one handed it.
+
+### Chains on a vehicle
+
+Vehicle models are built from compositions. The altitude $h$ above the ground gives the distance from Earth's centre through $r(h) = R + h$. The distance gives gravity through $g(r) = \mu / r^2$. So gravity as a function of altitude is the composition
 
 $$
 g(r(h)) = \frac{\mu}{(R + h)^2} .
 $$
 
-At $h = 1000\,\mathrm{km}$: $r = 7371\,\mathrm{km}$, and $g = 3.986 \times 10^{14} / (7.371 \times 10^6)^2 = 7.34\,\mathrm{m/s^2}$. You could substitute and simplify into a single formula, but usually you should not: keeping the chain visible is what lets you change one link (a different planet's $R$) without rederiving the rest, and it is what the chain rule of calculus will differentiate link by link.
+At $h = 1000\,\mathrm{km}$: first $r = 6371 + 1000 = 7371\,\mathrm{km}$, then $g = 3.986 \times 10^{14} / (7.371 \times 10^6)^2 = 7.34\,\mathrm{m/s^2}$. About three quarters of the surface value — less, as it should be.
 
-### Seeing the chain in a formula
+You could squash the chain into one formula, but usually you should not. Visible links let you change one — a different planet's $R$ — without redoing the rest, and they are what calculus's **chain rule** works on, link by link.
 
-The reverse skill is **decomposition**: looking at $\sqrt{\mu / (R + h)}$ and seeing three nested functions — add $R$, divide into $\mu$, take the square root. Practise by asking "what is done last?" The last operation is the outer function. In $(2x - 3)^2 + 1$ the last operation is adding $1$, before that squaring, before that the inner $2x - 3$. In $\dfrac{1}{\sqrt{1 - v^2/c^2}}$ the outermost is the reciprocal, then the root, then $1 - (\text{something})$, and innermost the square of $v/c$. Every step of a derivative you will ever take on such an expression follows that peeling order.
+### Seeing the chain inside a formula
+
+The reverse skill is **decomposition**: seeing three nested functions in $\sqrt{\mu / (R + h)}$ — add $R$, divide that into $\mu$, take the square root.
+
+The trick is to ask "what is done *last*?" The last step is the outer function. In $(2x - 3)^2 + 1$, the last step is adding $1$. Before that comes squaring, and before that the inner $2x - 3$. In $\dfrac{1}{\sqrt{1 - v^2/c^2}}$, the last step is "one over", then the square root, then "one minus something", and innermost the square of $v/c$. Calculus will peel such expressions in exactly that order, like layers of an onion.
 
 ### Shifts and scalings
 
-Two compositions are so common they have names. Composing with $x - a$ **shifts** a graph: $f(t - t_0)$ is the graph of $f$ moved so that what happened at $t = 0$ now happens at $t = t_0$. A burn that starts at $t_0 = 150\,\mathrm{s}$ and follows the profile $F(t)$ from ignition is $F(t - 150)$. Composing with $kx$ **scales**: $f(2t)$ runs twice as fast. Multiplying the output, $A f(t)$, stretches the graph vertically. Recognising these saves re-deriving a function every time the clock or the units change.
+Two chains are so common they have names.
 
-::: example Chaining a sensor and a calibration
-A pressure transducer produces current $I(P) = 4 + 0.016P$ milliamps for pressure $P$ in psi, and the flight computer's analogue input converts current to a raw count $N(I) = 204.7\,(I - 4)$, so that $4\,\mathrm{mA}$ reads $0$ and $20\,\mathrm{mA}$ reads $3275$. The count as a function of pressure is the composition
+- **Shift.** Feeding in $t - t_0$ instead of $t$ moves the graph along. $f(t - t_0)$ is the graph of $f$ moved so that what used to happen at $t = 0$ now happens at $t = t_0$. If a burn follows the profile $F(t)$ from ignition, but ignition is at $t_0 = 150\,\mathrm{s}$, the burn is $F(t - 150)$.
+- **Scale.** Feeding in $kt$ runs the clock faster: $f(2t)$ plays the same story at double speed, like a video on fast-forward. Multiplying the output instead, $A\,f(t)$, stretches the graph up and down.
+
+::: example Chaining a sensor and a computer
+A pressure sensor sends out a current $I(P) = 4 + 0.016P$ milliamps for a pressure $P$ in psi. The flight computer turns the current into a whole-number reading, a **count**, with $N(I) = 204.7\,(I - 4)$. So $4\,\mathrm{mA}$ reads $0$, and $20\,\mathrm{mA}$ reads $204.7 \times 16 = 3275$.
+
+The count as a function of pressure is the chain "sensor, then computer":
 
 $$
 N(I(P)) = 204.7\,\big((4 + 0.016P) - 4\big) = 204.7 \times 0.016\,P = 3.275\,P .
 $$
 
-The $4$'s cancelled, as the offset was designed to make them. At $P = 550\,\mathrm{psi}$: $I = 4 + 8.8 = 12.8\,\mathrm{mA}$, $N = 204.7 \times 8.8 = 1801$; the single formula gives $3.275 \times 550 = 1801$. Check the domain of the chain: $P$ in $[0, 1000]$ gives $I$ in $[4, 20]$, which is exactly what the input stage accepts. A pressure of $1200\,\mathrm{psi}$ would ask for $23.2\,\mathrm{mA}$, outside the second function's domain — in hardware, a saturated reading, and in the model, an input the composition must refuse.
+The two $4$'s cancelled — the $4\,\mathrm{mA}$ offset was designed so they would.
+
+**Check at $P = 550\,\mathrm{psi}$, link by link.** Sensor: $I = 4 + 0.016 \times 550 = 4 + 8.8 = 12.8\,\mathrm{mA}$. Computer: $N = 204.7 \times (12.8 - 4) = 204.7 \times 8.8 = 1801$. The single formula agrees: $3.275 \times 550 = 1801$.
+
+**Check the chain's domain.** $P$ in $[0, 1000]$ gives $I$ in $[4, 20]$, exactly what the computer accepts. But a pressure of $1200\,\mathrm{psi}$ would ask for $4 + 0.016 \times 1200 = 23.2\,\mathrm{mA}$, outside the second link's domain. In hardware, that is a maxed-out ("saturated") reading. In the model, it is an input the chain must refuse.
 :::
 
-## Inverses
+## Inverses: running a function backwards
 
-To **invert** a function is to run it backwards: given the output, recover the input. The inverse of $f$ is written $f^{-1}$, and it is defined by
+You put on socks, then shoes. To undo it, shoes come off first, then socks. Undoing reverses the order — keep that picture.
+
+To **invert** a function is to run it backwards: given the output, recover the input. The inverse of $f$ is written $f^{-1}$, read "f inverse". It is defined by two promises:
 
 $$
 f^{-1}(f(x)) = x \quad\text{and}\quad f(f^{-1}(y)) = y .
 $$
 
-The domain of $f^{-1}$ is the range of $f$, and the range of $f^{-1}$ is the domain of $f$: the inverse accepts exactly the outputs the original could produce, and gives back exactly the inputs the original accepted.
+Because the inverse swaps input and output, the **domain of $f^{-1}$ is the range of $f$**, and the range of $f^{-1}$ is the domain of $f$. The inverse accepts exactly the outputs the original could produce.
 
-::: warning The $-1$ is not an exponent
-$f^{-1}(x)$ means the inverse function, not $\dfrac{1}{f(x)}$. For $f(x) = 2x$, the inverse is $f^{-1}(x) = x/2$, while $1/f(x) = 1/(2x)$. The notation is unfortunate and permanent; when the reciprocal is meant, write $(f(x))^{-1}$ or $1/f(x)$. The same trap awaits with $\sin^{-1}$ in the trigonometry module.
+::: warning The $-1$ is not a power
+$f^{-1}(x)$ means the inverse function. It does *not* mean $\dfrac{1}{f(x)}$. For $f(x) = 2x$, the inverse is $f^{-1}(x) = x/2$ ("halve it undoes double it"), while $1/f(x) = 1/(2x)$. The notation is confusing, and permanent. For "one over", write $(f(x))^{-1}$ or $1/f(x)$. The same trap waits for you with $\sin^{-1}$ in the trigonometry module.
 :::
 
-### When an inverse exists
+### When can you run it backwards?
 
-A function can be inverted only if no two inputs share an output — otherwise, handed that output, you would not know which input to return. Such a function is **one-to-one**. On a graph, no horizontal line crosses it twice: the **horizontal line test**. Every strictly increasing or strictly decreasing function passes, which is why $g(r)$, $v(r)$ and $r(h)$ are all invertible on their physical domains, and why $f(x) = x^2$ on the whole real line is not: $f(3) = f(-3) = 9$.
+Picture a coat check. You hand over your coat and get ticket 17; later, ticket 17 gets your coat back. That works only because each ticket belongs to one coat. If two coats shared ticket 17, the attendant could not know which to return.
 
-The fix for a function that fails is to **restrict the domain** until it passes. $x^2$ on $[0, \infty)$ is one-to-one, and its inverse is $\sqrt{y}$ — which is precisely why the square root symbol was defined to return the non-negative root in the exponents lesson. The height function $h(t)$ fails on $[0, 6.99]$ because the object passes each height twice, going up and coming down; restrict to the descent, $[2.04, 6.99]$, and "at what time was it at $110\,\mathrm{m}$?" has one answer.
+A function can be inverted only if no two inputs share an output. Such a function is called **one-to-one**. On a graph, it means no horizontal line crosses the graph twice — the **horizontal line test**.
+
+A function that only ever goes up (**strictly increasing**) or only ever goes down (**strictly decreasing**) always passes. That is why $g(r)$, $v(r)$ and $r(h)$ can all be inverted on their physical domains. But $f(x) = x^2$ on all numbers cannot: $f(3) = f(-3) = 9$, so handed the output $9$, you cannot tell whether the input was $3$ or $-3$.
+
+The fix for a function that fails is to **restrict the domain** — use only part of it — until it passes. $x^2$ on $[0, \infty)$ is one-to-one, and its inverse is $\sqrt{y}$. That is why the square root symbol was defined in the exponents lesson to give the non-negative root.
+
+The height $h(t)$ fails on $[0, 6.99]$, because the ball passes each height below the peak twice — once going up, once coming down. Restrict to the way down, $[2.04, 6.99]$, and "at what time was it at $110\,\mathrm{m}$?" has one answer.
 
 ### Finding an inverse
 
-Write $y = f(x)$, solve for $x$ in terms of $y$ using the legal moves from the equations lesson, and the result is $x = f^{-1}(y)$. Whether you then rename the letters is a matter of taste; engineers usually keep the physical names. For the transducer, $I = 4 + 0.016P$ gives
+The recipe: write $y = f(x)$, then solve for $x$ using the legal moves from the equations lesson. The result is $x = f^{-1}(y)$. Engineers usually keep the physical letter names rather than swapping them.
+
+**The pressure sensor.** Start from $I = 4 + 0.016P$. Take $4$ from both sides, then divide by $0.016$:
 
 $$
-P = \frac{I - 4}{0.016} = 62.5\,(I - 4),
+P = \frac{I - 4}{0.016} = 62.5\,(I - 4) .
 $$
 
-so a reading of $12.8\,\mathrm{mA}$ means $P = 62.5 \times 8.8 = 550\,\mathrm{psi}$, and the domain of this inverse is $[4, 20]\,\mathrm{mA}$, the range of the original. For the circular-speed function, $v = \sqrt{\mu/r}$ squares to $v^2 = \mu/r$, so $r = \mu/v^2$. A satellite in a circular orbit moving at $3075\,\mathrm{m/s}$ has $r = 3.986 \times 10^{14} / 3075^2 = 4.215 \times 10^7\,\mathrm{m} = 42\,150\,\mathrm{km}$, an altitude of about $35\,780\,\mathrm{km}$: the geostationary belt. The period formula $T = 2\pi\sqrt{r^3/\mu}$ inverted to $r = (\mu T^2 / 4\pi^2)^{1/3}$ in the exponents lesson was the same procedure.
+A reading of $12.8\,\mathrm{mA}$ means $P = 62.5 \times 8.8 = 550\,\mathrm{psi}$ — matching the forward calculation above. The domain of this inverse is $[4, 20]\,\mathrm{mA}$, the range of the original.
 
-Graphically, the graph of $f^{-1}$ is the graph of $f$ reflected across the line $y = x$, because reflecting swaps the roles of the two axes — swaps input for output — and that is what inversion is.
+**Circular speed.** Start from $v = \sqrt{\mu/r}$. Square both sides to get $v^2 = \mu/r$. Multiply both sides by $r$ and divide by $v^2$:
+
+$$
+r = \frac{\mu}{v^2} .
+$$
+
+A circular orbit at $3075\,\mathrm{m/s}$ has $r = 3.986 \times 10^{14} / 3075^2 = 4.215 \times 10^7\,\mathrm{m} = 42\,150\,\mathrm{km}$ from Earth's centre. Take away Earth's radius: about $35\,780\,\mathrm{km}$ up: the **geostationary** belt, where a satellite goes round once a day and seems to hang still over one spot. In the exponents lesson you turned the period formula $T = 2\pi\sqrt{r^3/\mu}$ into $r = (\mu T^2 / 4\pi^2)^{1/3}$. That was this same recipe.
+
+**On a graph**, $f^{-1}$ is the graph of $f$ flipped in a mirror along the diagonal line $y = x$. That flip swaps the two axes — input for output — which is what inverting is.
 
 ::: example Inverting a temperature scale
-The Fahrenheit temperature of something at $C$ degrees Celsius is $F(C) = \tfrac{9}{5}C + 32$. It is a line with non-zero slope, so it is one-to-one on all of $\mathbb{R}$ and invertible everywhere. Solve $F = \tfrac{9}{5}C + 32$: subtract $32$, then multiply by $\tfrac{5}{9}$,
+The Fahrenheit temperature of something at $C$ degrees Celsius is
+
+$$
+F(C) = \tfrac{9}{5}C + 32 .
+$$
+
+A tilted straight line is one-to-one everywhere, so it can be run backwards. The forward recipe is "multiply by $\tfrac{9}{5}$, *then* add $32$". Undo in reverse order — like shoes before socks. First take away $32$, then multiply by $\tfrac{5}{9}$ (which undoes multiplying by $\tfrac{9}{5}$):
 
 $$
 C = \tfrac{5}{9}\,(F - 32) .
 $$
 
-Liquid oxygen boils at $-183\,^\circ\mathrm{C}$; forward, $F = \tfrac{9}{5}(-183) + 32 = -329.4 + 32 = -297.4\,^\circ\mathrm{F}$. Backward as a check, $C = \tfrac{5}{9}(-297.4 - 32) = \tfrac{5}{9}(-329.4) = -183\,^\circ\mathrm{C}$. A spec sheet quoting a $70\,^\circ\mathrm{F}$ storage temperature means $\tfrac{5}{9}(38) = 21.1\,^\circ\mathrm{C}$. Note that this inverse is *not* $\tfrac{5}{9}F - 32$: the operations have to be undone in reverse order — the $32$ was added last, so it is removed first.
+**Forward.** Liquid oxygen boils at $-183\,^\circ\mathrm{C}$. In Fahrenheit that is $\tfrac{9}{5}(-183) + 32 = -329.4 + 32 = -297.4\,^\circ\mathrm{F}$.
+
+**Backward, as a check.** $C = \tfrac{5}{9}(-297.4 - 32) = \tfrac{5}{9}(-329.4) = -183\,^\circ\mathrm{C}$. Back where we started, as an inverse must be.
+
+**A spec sheet.** A storage temperature of $70\,^\circ\mathrm{F}$ means $\tfrac{5}{9}(70 - 32) = \tfrac{5}{9}(38) = 21.1\,^\circ\mathrm{C}$ — room temperature, which makes sense.
+
+Note that the inverse is *not* $\tfrac{5}{9}F - 32$. The $32$ was added last, so it has to be removed first.
 :::
 
 ::: key Functions
 A function assigns one output $f(x)$ to each input $x$ in its **domain**; the set of outputs is its **range**. Write physical domains in interval notation and check them. $f(a+b) \neq f(a) + f(b)$ in general. Composition $(f \circ g)(x) = f(g(x))$ applies $g$ first; order matters. A function has an inverse $f^{-1}$, with $f^{-1}(f(x)) = x$, exactly when it is one-to-one (passes the horizontal line test); find it by solving $y = f(x)$ for $x$; its domain is the range of $f$. $f^{-1}$ is not $1/f$.
 :::
 
-::: note Functions of several variables
-Nothing here requires one input. Thrust depends on chamber pressure *and* ambient pressure, $F(p_c, p_a)$; the gravitational acceleration on another planet is $g(\mu, r)$. Domain, range and composition mean the same things with more arguments, and inversion becomes "solve for one input given the output and the others". The multivariable calculus module makes this precise; for now, when a formula has several symbols, decide which are inputs and which are fixed parameters before you call it a function.
+::: note Functions of several inputs
+Nothing here needs a single input. A rocket engine's thrust depends on the pressure inside its chamber *and* the air pressure outside, $F(p_c, p_a)$. Gravity on another planet is $g(\mu, r)$. Domain, range and composition mean the same things with more inputs, and inverting becomes "solve for one input, given the output and the others". When a formula has several symbols, decide which are inputs and which are fixed settings (**parameters**) before you call it a function.
 :::
 
 ## Check yourself
@@ -180,7 +291,7 @@ Give the natural domain of $f(x) = \dfrac{\sqrt{x - 2}}{x - 5}$, in interval not
 :::
 
 ::: answer
-The root needs $x - 2 \geq 0$, so $x \geq 2$; the denominator forbids $x = 5$. The domain is $[2, 5) \cup (5, \infty)$ — every number from $2$ upward except $5$.
+The square root needs $x - 2 \geq 0$, so $x \geq 2$. The bottom cannot be zero, so $x \neq 5$. The domain is $[2, 5) \cup (5, \infty)$ — every number from $2$ upward, except $5$. The square bracket says $2$ itself is allowed ($\sqrt{0} = 0$ is fine); the round ones leave out $5$.
 :::
 
 ::: check
@@ -188,31 +299,41 @@ With $f(x) = 3x - 1$ and $g(x) = x^2$, compute $f(g(2))$, $g(f(2))$, and a formu
 :::
 
 ::: answer
-$g(2) = 4$, so $f(g(2)) = 11$. $f(2) = 5$, so $g(f(2)) = 25$. In general $(g \circ f)(x) = g(3x - 1) = (3x - 1)^2 = 9x^2 - 6x + 1$; check at $x = 2$: $36 - 12 + 1 = 25$.
+Inside out. $g(2) = 4$, so $f(g(2)) = f(4) = 3 \cdot 4 - 1 = 11$. And $f(2) = 5$, so $g(f(2)) = g(5) = 25$. Different, because the order is different.
+
+In general $(g \circ f)(x) = g(3x - 1) = (3x - 1)^2 = 9x^2 - 6x + 1$. Check at $x = 2$: $36 - 12 + 1 = 25$, matching.
 :::
 
 ::: check
-A stage's remaining propellant is $m_p(t) = 400 - 2.5t$ tonnes, with $t$ in seconds from ignition. State its physical domain and range, and find the inverse function and what it is for.
+A stage's remaining propellant is $m_p(t) = 400 - 2.5t$ tonnes, with $t$ in seconds after ignition. State its physical domain and range, then find the inverse function and say what it is for.
 :::
 
 ::: answer
-The propellant runs out when $400 - 2.5t = 0$, at $t = 160\,\mathrm{s}$, so the domain is $[0, 160]\,\mathrm{s}$ and the range is $[0, 400]\,\mathrm{t}$ (a decreasing line, so evaluate at the endpoints). The function is one-to-one (strictly decreasing). Solving $m_p = 400 - 2.5t$ gives $t = (400 - m_p)/2.5 = 160 - 0.4\,m_p$, defined on $[0, 400]\,\mathrm{t}$: it tells you the time at which a given amount of propellant remains — for example, $100\,\mathrm{t}$ remain at $t = 160 - 40 = 120\,\mathrm{s}$.
+The propellant runs out when $400 - 2.5t = 0$, which is at $t = 400 / 2.5 = 160\,\mathrm{s}$. So the domain is $[0, 160]\,\mathrm{s}$. It is a line going down, so evaluate at the ends: $m_p(0) = 400$ and $m_p(160) = 0$. The range is $[0, 400]\,\mathrm{t}$.
+
+A line that only goes down is one-to-one. Solve $m_p = 400 - 2.5t$ for $t$: add $2.5t$ and take away $m_p$ to get $2.5t = 400 - m_p$, then divide by $2.5$: $t = (400 - m_p)/2.5 = 160 - 0.4\,m_p$. Its domain is $[0, 400]\,\mathrm{t}$. It tells you *when* a given amount of propellant is left — for example, $100\,\mathrm{t}$ are left at $t = 160 - 0.4 \times 100 = 120\,\mathrm{s}$.
 :::
 
 ::: check
-Why does $g(r) = \mu / r^2$ have an inverse on $[R, \infty)$ but $h(t) = 100 + 20t - 4.903t^2$ have none on $[0, 6.99]$? Find the inverse of $g$ and evaluate it at $2.455\,\mathrm{m/s^2}$.
+Why does $g(r) = \mu / r^2$ have an inverse on $[R, \infty)$, but $h(t) = 100 + 20t - 4.903t^2$ has none on $[0, 6.99]$? Find the inverse of $g$ and evaluate it at $2.455\,\mathrm{m/s^2}$.
 :::
 
 ::: answer
-$g$ is strictly decreasing on $[R, \infty)$, so each value of $g$ comes from one $r$: it passes the horizontal line test. $h$ rises then falls, so every height below the peak is reached twice, once ascending and once descending; a horizontal line at $h = 110$ crosses the graph twice, and there is no single "time at which the height was $110$". Inverting $g$: $g = \mu / r^2$ gives $r^2 = \mu / g$, and taking the positive root (since $r > 0$), $r = \sqrt{\mu / g}$. At $g = 2.455$: $r = \sqrt{3.986 \times 10^{14} / 2.455} = \sqrt{1.624 \times 10^{14}} = 1.274 \times 10^7\,\mathrm{m}$, which is $2R$ — consistent with the inverse-square law giving $9.82 / 4 = 2.455$ at twice the radius.
+$g$ only goes down on $[R, \infty)$, so each value of $g$ comes from one $r$: it passes the horizontal line test. $h$ goes up and then comes down, so every height below the peak is reached twice — once rising, once falling. A horizontal line at $h = 110$ crosses the graph twice, and there is no single "time at which the height was $110$".
+
+To invert $g$: from $g = \mu / r^2$, multiply by $r^2$ and divide by $g$ to get $r^2 = \mu / g$. Take the square root, keeping the positive one since a distance is positive: $r = \sqrt{\mu / g}$.
+
+At $g = 2.455$: $r = \sqrt{3.986 \times 10^{14} / 2.455} = \sqrt{1.624 \times 10^{14}} = 1.274 \times 10^7\,\mathrm{m}$. That is $2R$, twice Earth's radius. It makes sense: the inverse-square law says doubling the distance divides gravity by $2^2 = 4$, and $9.82 / 4 = 2.455$.
 :::
 
 ::: check
-Decompose $y = \dfrac{1}{\sqrt{R^2 + h^2}}$ into a chain of single-operation functions, innermost first.
+Break $y = \dfrac{1}{\sqrt{R^2 + h^2}}$ into a chain of one-step functions, innermost first.
 :::
 
 ::: answer
-Start with $h$. Square it: $u_1 = h^2$. Add $R^2$: $u_2 = u_1 + R^2$. Take the square root: $u_3 = \sqrt{u_2}$. Take the reciprocal: $y = 1/u_3$. Four links; the outermost (last applied) is the reciprocal. The chain rule will differentiate this by multiplying the derivative of each link, so seeing the four links is the whole of the setup.
+Start with $h$. Square it: $u_1 = h^2$. Add $R^2$: $u_2 = u_1 + R^2$. Take the square root: $u_3 = \sqrt{u_2}$. Take "one over": $y = 1/u_3$.
+
+Four links; the outermost — done last — is "one over". The chain rule will later handle one link at a time, so seeing the four links is the whole of the setup.
 :::
 
 ## Summary
@@ -220,6 +341,7 @@ Start with $h$. Square it: $u_1 = h^2$. Add $R^2$: $u_2 = u_1 + R^2$. Take the s
 | Idea | Statement |
 | --- | --- |
 | Function | one output $f(x)$ per input; $f(a+b) \neq f(a)+f(b)$ except for $f(x) = kx$ |
+| Vertical line test | no vertical line crosses a function's graph twice |
 | Domain | inputs accepted; natural (formula makes sense) vs physical (model applies) |
 | Breakers of the natural domain | division by zero, even root of a negative, log of a non-positive |
 | Interval notation | $[a, b]$ includes endpoints, $(a, b)$ excludes them; $\infty$ always gets $($ or $)$ |
@@ -228,8 +350,8 @@ Start with $h$. Square it: $u_1 = h^2$. Add $R^2$: $u_2 = u_1 + R^2$. Take the s
 | Composition | $(f \circ g)(x) = f(g(x))$, $g$ first; order matters |
 | Decomposition | ask "what is done last?" — that is the outer function |
 | Shift and scale | $f(t - t_0)$ delays by $t_0$; $f(kt)$ runs $k$ times faster |
-| Inverse | exists iff one-to-one (horizontal line test); solve $y = f(x)$ for $x$ |
+| Inverse | exists exactly when one-to-one (horizontal line test); solve $y = f(x)$ for $x$; undo steps in reverse order |
 | Inverse domain | domain of $f^{-1}$ is the range of $f$; $f^{-1} \neq 1/f$ |
 | Examples | $r = \mu / v^2$ inverts $v = \sqrt{\mu/r}$; $C = \tfrac{5}{9}(F - 32)$ inverts $F = \tfrac{9}{5}C + 32$ |
 
-The next lesson takes the one family of functions this module has not yet handled — $a^x$, where the variable is in the exponent — and its inverse, the logarithm, which is what turns the rocket equation from a mystery into one line of algebra.
+Next lesson: the one family of functions this module has not handled yet — $a^x$, where the variable sits up in the exponent — and its inverse, the **logarithm**. Together they turn the rocket equation from a mystery into one line of algebra.
