@@ -4179,7 +4179,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-kinematic-differential-equations",
       "title": "Kinematic differential equations for DCM, quaternion, Euler angles and MRP",
-      "minutes": 17,
+      "minutes": 22,
       "covers": [
         "kinematic differential equations for DCM, quaternion, Euler angles and MRP"
       ],
@@ -4188,7 +4188,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-numerical-integration-and-renormalisation",
       "title": "Integrating attitude numerically, and re-normalisation",
-      "minutes": 21,
+      "minutes": 26,
       "covers": [
         "numerical integration of attitude with re-normalisation"
       ],
@@ -4206,7 +4206,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-the-six-state-rotational-system",
       "title": "Coupling kinematics to Euler dynamics — the rotational 6-state",
-      "minutes": 18,
+      "minutes": 22,
       "covers": [
         "combining kinematics with Euler dynamics into a 6-state rotational system"
       ],
@@ -4233,7 +4233,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-thruster-control-and-minimum-impulse-bit",
       "title": "Thruster attitude control and the minimum impulse bit",
-      "minutes": 21,
+      "minutes": 24,
       "covers": [
         "thruster attitude control and minimum impulse bit"
       ],
