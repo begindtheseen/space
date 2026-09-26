@@ -30,7 +30,7 @@ Underestimated $\mathbf{Q}$; unmodelled dynamics or biases; unobservable states;
 
 ## A cause not yet seen: one bad measurement
 
-Every example so far fed the filter honest measurements: $\mathbf{z} = \mathbf{H}\mathbf{x} + \mathbf{v}$, with the noise $\mathbf{v}$ really drawn from the assumed $\mathbf{R}$. Real sensors sometimes hand back something else. A radar echo takes a detour off a nearby hillside before it comes home (**[[multipath|multipath]]**). A star tracker is fooled by a **[[cosmic ray|cosmic-ray]]** hitting its detector. A data word loses a bit on the way down the wire. A measurement far more wrong than its noise level allows is an **outlier**.
+Every example so far fed the filter honest measurements: $\mathbf{z} = \mathbf{H}\mathbf{x} + \mathbf{v}$, with $\mathbf{v}$ drawn from the assumed $\mathbf{R}$. Real sensors sometimes hand back something else. A radar echo takes a detour off a nearby hillside before it comes home (**[[multipath|multipath]]**). A star tracker is fooled by a **[[cosmic ray|cosmic-ray]]** hitting its detector. A data word loses a bit on the way down the wire. A measurement far more wrong than its noise level allows is an **outlier**.
 
 Nothing in the filter we have built can tell an honest large innovation from a corrupted one. Both move the estimate by $\mathbf{K}\boldsymbol{\nu}$ in exactly the same way. That is the whole problem.
 
@@ -259,7 +259,7 @@ A radar altimeter times how long its pulse takes to bounce off the ground and co
   <polyline fill="none" stroke="#b4232c" stroke-width="2" stroke-dasharray="5 3" points="186,44 260,130 300,70 196,44"/>
   <rect x="292" y="60" width="18" height="20" fill="#6c7a93"/>
   <text x="70" y="90" font-size="12" fill="#1d6fd1">direct echo</text>
-  <text x="250" y="148" font-size="12" fill="#b4232c">longer, bounced path</text>
+  <text x="236" y="148" font-size="12" fill="#b4232c" text-anchor="end">longer, bounced path</text>
 </svg>
 ```
 :::

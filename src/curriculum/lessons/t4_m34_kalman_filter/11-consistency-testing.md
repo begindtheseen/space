@@ -256,10 +256,10 @@ Ordinary distance treats every direction the same. The **Mahalanobis distance**,
   <circle cx="180" cy="100" r="90" fill="none" stroke="#6c7a93" stroke-width="1" stroke-dasharray="4 3"/>
   <circle cx="270" cy="100" r="5" fill="#1d6fd1"/>
   <circle cx="180" cy="10" r="5" fill="#b4232c"/>
-  <text x="276" y="92" font-size="12" fill="#1d6fd1">A: score 0.56</text>
-  <text x="190" y="22" font-size="12" fill="#b4232c">B: score 9</text>
-  <text x="302" y="128" font-size="11" fill="#1d6fd1" text-anchor="end">1σ ellipse</text>
-  <text x="48" y="180" font-size="11" fill="#6c7a93">dashed: same plain distance</text>
+  <text x="276" y="124" font-size="12" fill="#1d6fd1">A: 0.56</text>
+  <text x="192" y="14" font-size="12" fill="#b4232c">B: score 9</text>
+  <text x="62" y="148" font-size="11" fill="#1d6fd1">1σ ellipse</text>
+  <text x="352" y="192" font-size="11" fill="#6c7a93" text-anchor="end">dashed: same plain distance</text>
 </svg>
 ```
 :::
@@ -282,7 +282,8 @@ The **chi-square distribution** (from the Greek letter $\chi$, "kai") is what yo
     <text x="40" y="175">0</text><text x="100" y="175">2</text><text x="160" y="175">4</text><text x="220" y="175">6</text><text x="280" y="175">8</text><text x="340" y="175">10</text>
   </g>
   <text x="106" y="110" font-size="12" fill="#b4232c">average 2</text>
-  <text x="240" y="140" font-size="12" fill="#1f2a44">top 5%: above 5.99</text>
+  <line x1="219.7" y1="160" x2="219.7" y2="132" stroke="#1f2a44" stroke-width="1" stroke-dasharray="3 3"/>
+  <text x="226" y="136" font-size="12" fill="#1f2a44">top 5%: above 5.99</text>
 </svg>
 ```
 :::
