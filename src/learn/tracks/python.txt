@@ -1,0 +1,581 @@
+@track python
+@title Python
+@name Python, a first language
+@blurb From print() to classes: the twelve ideas every Python program is built from.
+
+=== py-01 | Printing
+--- teach
+A Python program is a list of instructions, run top to bottom. The first instruction everyone learns is `print`, which writes a line of text to the output:
+
+```python
+print("Launch in T-minus 10")
+```
+
+Text in quotes is a **string**. `print` can take several values separated by commas, and puts a space between them:
+
+```python
+print("Fuel:", 98, "percent")   # Fuel: 98 percent
+```
+
+Anything after `#` on a line is a **comment** — Python ignores it. Comments are for the next person who reads your code, which is usually you.
+--- task
+Make the program print exactly these two lines:
+
+```
+Hello, world!
+Python is running in your browser.
+```
+--- starter
+# Write your two print() calls below.
+
+--- solution
+print("Hello, world!")
+print("Python is running in your browser.")
+--- hint
+Each line of output needs its own `print(...)`, with the text inside quotes.
+--- hint
+Capitals and punctuation count: `Hello, world!` has a comma and an exclamation mark.
+--- check output | Prints both lines, exactly
+Hello, world!
+Python is running in your browser.
+?? Compare your output with the expected lines character by character — spacing and punctuation matter.
+
+=== py-02 | Variables and types
+--- teach
+A **variable** is a name for a value. You create one with `=`:
+
+```python
+name = "Ada"
+age = 36
+height_m = 1.65
+is_engineer = True
+```
+
+Every value has a **type**: `"Ada"` is a `str` (string), `36` is an `int` (whole number), `1.65` is a `float` (decimal), and `True` is a `bool`. `type(x)` tells you which:
+
+```python
+print(type(age))   # <class 'int'>
+```
+
+A variable can be reassigned, and it always refers to the most recent value. Names use lowercase with underscores: `max_speed`, not `MaxSpeed`.
+--- task
+Create three variables:
+
+- `city` holding the string `"Houston"`
+- `population` holding the whole number `2300000`
+- `is_capital` holding `False`
+
+Then print `city` and `population` on one line with a single `print`, so the output is `Houston 2300000`.
+--- starter
+# Create city, population and is_capital, then print city and population.
+
+--- solution
+city = "Houston"
+population = 2300000
+is_capital = False
+print(city, population)
+--- hint
+`print(a, b)` prints both values with a space between them.
+--- hint
+`False` has a capital F and no quotes — it is a bool, not a string.
+--- check case | city is the string "Houston"
+city
+=> "Houston"
+--- check test | population is the int 2300000
+type(population) is int and population == 2300000
+?? Write the number without quotes or commas: 2300000.
+--- check case | is_capital is False
+is_capital
+=> False
+--- check output | Prints: Houston 2300000
+Houston 2300000
+
+=== py-03 | Arithmetic
+--- teach
+Python does arithmetic with the operators you would expect, plus a few more:
+
+| Operator | Meaning | Example | Result |
+|---|---|---|---|
+| `+ - *` | add, subtract, multiply | `7 * 3` | `21` |
+| `/` | divide (always a float) | `7 / 2` | `3.5` |
+| `//` | whole-number division | `7 // 2` | `3` |
+| `%` | remainder | `7 % 2` | `1` |
+| `**` | power | `2 ** 10` | `1024` |
+
+Brackets work as in maths: `(2 + 3) * 4` is `20`. `round(x, 2)` rounds to two decimal places.
+--- task
+A request used `1250` input tokens and `380` output tokens. Input costs `0.000003` dollars per token and output costs `0.000015` per token.
+
+Set `input_tokens`, `output_tokens`, and `cost` (the total in dollars, rounded to 6 decimal places with `round`). Then print `cost`.
+--- starter
+input_tokens = 0
+output_tokens = 0
+cost = 0
+print(cost)
+--- solution
+input_tokens = 1250
+output_tokens = 380
+cost = round(input_tokens * 0.000003 + output_tokens * 0.000015, 6)
+print(cost)
+--- hint
+Multiply each token count by its price, then add the two.
+--- hint
+`round(value, 6)` keeps six digits after the decimal point.
+--- check test | input_tokens and output_tokens are set
+input_tokens == 1250 and output_tokens == 380
+--- check test | cost is the total in dollars
+abs(cost - 0.00945) < 1e-9
+?? 1250 × 0.000003 + 380 × 0.000015 = 0.00945.
+--- check source | Computes the cost rather than typing it in
+\*
+?? Use * to multiply — the point is to let Python do the arithmetic.
+--- check output | Prints the cost
+0.00945
+
+=== py-04 | Strings and f-strings
+--- teach
+Strings have useful methods — functions attached to the value:
+
+```python
+s = "  Hello World  "
+s.strip()      # "Hello World"     (removes spaces at the ends)
+s.lower()      # "  hello world  "
+s.upper()      # "  HELLO WORLD  "
+len(s)         # 15                (length, including spaces)
+"World" in s   # True
+```
+
+The cleanest way to build a string out of values is an **f-string** — put `f` before the quotes and variables inside `{}`:
+
+```python
+name = "Ada"
+count = 3
+print(f"{name} has {count} new messages")
+```
+
+Inside the braces you can put any expression, like `{count * 2}` or `{name.upper()}`.
+--- task
+`raw` holds a messy user name. Make `clean` the stripped, lowercased version of it, then print exactly:
+
+```
+user: ada lovelace (12 characters)
+```
+
+using an f-string, where the name and the length come from `clean`.
+--- starter
+raw = "   Ada Lovelace  "
+clean = raw
+print(clean)
+--- solution
+raw = "   Ada Lovelace  "
+clean = raw.strip().lower()
+print(f"user: {clean} ({len(clean)} characters)")
+--- hint
+Methods can be chained: `raw.strip().lower()`.
+--- hint
+The length goes inside the f-string too: `{len(clean)}`.
+--- check case | clean is stripped and lowercased
+clean
+=> "ada lovelace"
+--- check source | Uses an f-string
+f"|f'
+--- check output | Prints the sentence
+user: ada lovelace (12 characters)
+
+=== py-05 | Making decisions
+--- teach
+`if` runs a block of code only when a condition is true. The block is the indented lines underneath — Python uses indentation (4 spaces) instead of braces:
+
+```python
+temperature = 31
+if temperature > 30:
+    print("hot")
+elif temperature > 15:
+    print("mild")
+else:
+    print("cold")
+```
+
+Comparisons: `==` (equal), `!=`, `<`, `<=`, `>`, `>=`. Combine conditions with `and`, `or`, `not`. Note `=` assigns and `==` compares — mixing them up is the most common beginner error.
+--- task
+Write a function-free program that sets `label` based on `score`:
+
+- `"pass"` if score is 70 or more
+- `"close"` if score is 60 to 69
+- `"fail"` otherwise
+
+Then print `label`. The starter has `score = 64`; your `if` must work for any score.
+--- starter
+score = 64
+label = ""
+print(label)
+--- solution
+score = 64
+if score >= 70:
+    label = "pass"
+elif score >= 60:
+    label = "close"
+else:
+    label = "fail"
+print(label)
+--- hint
+Check the highest band first: `if score >= 70:`, then `elif score >= 60:`, then `else:`.
+--- check output | Prints close for a score of 64
+close
+--- check source | Uses if / elif / else
+\belif\b
+?? Three outcomes need `if`, `elif` and `else`.
+--- check source | Uses else for everything below 60
+\belse\s*:
+
+=== py-06 | Lists
+--- teach
+A **list** holds several values in order:
+
+```python
+planets = ["Mercury", "Venus", "Earth"]
+planets[0]          # "Mercury"  (counting starts at 0)
+planets[-1]         # "Earth"    (negative counts from the end)
+len(planets)        # 3
+planets.append("Mars")
+planets[1:3]        # ["Venus", "Earth"]  (a slice: from 1 up to, not including, 3)
+```
+
+Lists can hold any type, and `sum`, `min`, `max` and `sorted` work on lists of numbers.
+--- task
+`latencies` holds response times in milliseconds. Append one more measurement, `180`. Then set:
+
+- `fastest` to the smallest value
+- `slowest` to the largest
+- `average` to the mean (sum divided by count)
+
+and print them in that order on one line.
+--- starter
+latencies = [120, 95, 210, 143]
+
+--- solution
+latencies = [120, 95, 210, 143]
+latencies.append(180)
+fastest = min(latencies)
+slowest = max(latencies)
+average = sum(latencies) / len(latencies)
+print(fastest, slowest, average)
+--- hint
+`min(latencies)`, `max(latencies)`, and `sum(latencies) / len(latencies)`.
+--- check case | 180 was appended
+latencies
+=> [120, 95, 210, 143, 180]
+--- check test | fastest and slowest are right
+fastest == 95 and slowest == 210
+--- check test | average is the mean of all five
+abs(average - 149.6) < 1e-9
+--- check output | Prints all three
+95 210 149.6
+
+=== py-07 | Loops
+--- teach
+A `for` loop runs its block once for every item in a list (or anything else you can iterate):
+
+```python
+for name in ["ada", "lin", "sam"]:
+    print("hello", name)
+```
+
+`range(n)` gives the numbers `0` to `n - 1`; `range(1, 6)` gives `1` to `5`:
+
+```python
+total = 0
+for n in range(1, 6):
+    total = total + n      # or: total += n
+print(total)               # 15
+```
+
+A `while` loop repeats as long as its condition is true — make sure something inside changes, or it never stops. Inside any loop, `break` leaves the loop early and `continue` skips straight to the next pass.
+--- task
+Print the numbers from 1 to 15, one per line, but print `Fizz` instead of multiples of 3, `Buzz` instead of multiples of 5, and `FizzBuzz` instead of multiples of both. Use a loop.
+--- starter
+# FizzBuzz, 1 to 15.
+
+--- solution
+for n in range(1, 16):
+    if n % 15 == 0:
+        print("FizzBuzz")
+    elif n % 3 == 0:
+        print("Fizz")
+    elif n % 5 == 0:
+        print("Buzz")
+    else:
+        print(n)
+--- hint
+`n % 3 == 0` is true when n is a multiple of 3.
+--- hint
+Check "multiple of both" (that is, of 15) first — otherwise 15 stops at Fizz.
+--- check output | Prints FizzBuzz from 1 to 15
+1
+2
+Fizz
+4
+Buzz
+Fizz
+7
+8
+Fizz
+Buzz
+11
+Fizz
+13
+14
+FizzBuzz
+--- check source | Uses a loop
+\b(for|while)\b
+
+=== py-08 | Functions
+--- teach
+A **function** packages code under a name so you can run it again with different inputs:
+
+```python
+def greet(name, punctuation="!"):
+    return f"Hello, {name}{punctuation}"
+
+greet("Ada")         # "Hello, Ada!"
+greet("Lin", "?")    # "Hello, Lin?"
+```
+
+`def` starts the definition; the names in brackets are **parameters**; the values you pass when you call it (`"Lin"` and `"?"` above) are the **arguments**. `return` hands a value back to whoever called it. A parameter with `=` has a default. A function without `return` returns `None` — Python's value for "nothing".
+
+`pass` is a statement that does nothing. It holds the place of a body you have not written yet, since a `def` cannot be left empty — you will see it in starters.
+--- task
+Write a function `word_count(text)` that returns how many words are in `text` (words are separated by spaces — `text.split()` gives you the list of words).
+
+Also write `is_even(n)` that returns `True` when n is even and `False` otherwise.
+--- starter
+def word_count(text):
+    pass
+
+
+def is_even(n):
+    pass
+--- solution
+def word_count(text):
+    return len(text.split())
+
+
+def is_even(n):
+    return n % 2 == 0
+--- hint
+`"a b c".split()` is `["a", "b", "c"]`, and `len` of that is 3.
+--- hint
+`n % 2 == 0` is already True or False — you can return it directly.
+--- check case | word_count("the quick brown fox") is 4
+word_count("the quick brown fox")
+=> 4
+--- check case | word_count handles extra spaces
+word_count("  spaced   out  ")
+=> 2
+--- check case | word_count("") is 0
+word_count("")
+=> 0
+--- check case | is_even(10) is True
+is_even(10)
+=> True
+--- check case | is_even(7) is False
+is_even(7)
+=> False
+
+=== py-09 | Dictionaries
+--- teach
+A **dictionary** (`dict`) maps keys to values — like a lookup table:
+
+```python
+prices = {"input": 0.000003, "output": 0.000015}
+prices["input"]            # 0.000003
+prices["cached"] = 0.0000003
+"output" in prices         # True
+prices.get("missing", 0)   # 0 — .get gives a default instead of an error
+```
+
+Loop over keys and values together with `.items()`:
+
+```python
+for key, value in prices.items():
+    print(key, value)
+```
+--- task
+Write `count_words(text)` that returns a dict mapping each word to how many times it appears. Words are separated by spaces and should be compared in lowercase, so `"The the"` counts `the` twice.
+--- starter
+def count_words(text):
+    counts = {}
+    return counts
+--- solution
+def count_words(text):
+    counts = {}
+    for word in text.lower().split():
+        counts[word] = counts.get(word, 0) + 1
+    return counts
+--- hint
+Loop over `text.lower().split()`.
+--- hint
+`counts[word] = counts.get(word, 0) + 1` adds one, starting from zero the first time.
+--- check case | Counts repeated words
+count_words("to be or not to be")
+=> {"to": 2, "be": 2, "or": 1, "not": 1}
+--- check case | Ignores case
+count_words("The the THE")
+=> {"the": 3}
+--- check case | An empty string gives an empty dict
+count_words("")
+=> {}
+
+=== py-10 | List comprehensions
+--- teach
+Building a new list from an old one is so common that Python has a short form for it — the **list comprehension**:
+
+```python
+numbers = [1, 2, 3, 4, 5, 6]
+squares = [n * n for n in numbers]          # [1, 4, 9, 16, 25, 36]
+evens   = [n for n in numbers if n % 2 == 0] # [2, 4, 6]
+```
+
+Read it as: "`n * n` for each `n` in `numbers`", optionally "if" a condition. The same idea builds dicts: `{name: len(name) for name in names}`.
+--- task
+Using comprehensions:
+
+- `long_words(words)` returns the words longer than 4 characters, uppercased.
+- `lengths(words)` returns a dict mapping each word to its length.
+--- starter
+def long_words(words):
+    result = []
+    return result
+
+
+def lengths(words):
+    return {}
+--- solution
+def long_words(words):
+    return [w.upper() for w in words if len(w) > 4]
+
+
+def lengths(words):
+    return {w: len(w) for w in words}
+--- hint
+`[w.upper() for w in words if len(w) > 4]`
+--- check case | long_words keeps and uppercases long words
+long_words(["rocket", "fuel", "orbit", "go"])
+=> ["ROCKET", "ORBIT"]
+--- check case | lengths maps words to their lengths
+lengths(["ada", "lovelace"])
+=> {"ada": 3, "lovelace": 8}
+--- check source | Uses a comprehension
+\[[^\]]*\bfor\b[^\]]*\bin\b
+?? Write the list as [expression for item in list if condition].
+
+=== py-11 | Handling errors
+--- teach
+When something goes wrong at run time, Python **raises an exception**. Unhandled, it stops the program. `try` / `except` lets you handle it:
+
+```python
+try:
+    n = int("forty-two")
+except ValueError:
+    n = 0
+```
+
+You can raise your own when your function is given something it cannot work with:
+
+```python
+def percent(part, whole):
+    if whole == 0:
+        raise ValueError("whole must not be zero")
+    return part / whole * 100
+```
+
+Catch the specific exception you expect (`ValueError`, `KeyError`, `ZeroDivisionError`…) — a bare `except:` hides real bugs.
+--- task
+Write `parse_port(text)`:
+
+- return the text as an `int` if it is a whole number from 1 to 65535
+- if the text is not a number at all, return `None` (catch the `ValueError` that `int()` raises)
+- if it is a number outside 1–65535, raise `ValueError` yourself
+--- starter
+def parse_port(text):
+    return int(text)
+--- solution
+def parse_port(text):
+    try:
+        port = int(text)
+    except ValueError:
+        return None
+    if port < 1 or port > 65535:
+        raise ValueError(f"port out of range: {port}")
+    return port
+--- hint
+Wrap only the `int(text)` in `try` / `except ValueError: return None`.
+--- hint
+After the conversion, check the range and `raise ValueError(...)` if it is outside 1–65535.
+--- check case | "8080" gives 8080
+parse_port("8080")
+=> 8080
+--- check case | "http" gives None
+parse_port("http")
+=> None
+--- check test | "70000" raises ValueError
+raises(ValueError, lambda: parse_port("70000"))
+?? A number outside 1–65535 must raise ValueError, not return something.
+--- check test | "0" raises ValueError
+raises(ValueError, lambda: parse_port("0"))
+
+=== py-12 | Classes
+--- teach
+A **class** bundles data with the functions that work on it. Each object made from the class has its own data:
+
+```python
+class Account:
+    def __init__(self, owner, balance=0):
+        self.owner = owner
+        self.balance = balance
+
+    def deposit(self, amount):
+        self.balance += amount
+        return self.balance
+
+acct = Account("ada")
+acct.deposit(50)      # 50
+acct.balance          # 50
+```
+
+`__init__` runs when the object is created. `self` is the object itself — every method takes it first, and `self.x` is how an object stores its own data.
+--- task
+Write a class `Counter` that:
+
+- starts at `0` (or at a `start` value passed in)
+- has `increment()` that adds one and returns the new value
+- has `reset()` that sets it back to `0`
+- keeps the current value in `self.value`
+--- starter
+class Counter:
+    pass
+--- solution
+class Counter:
+    def __init__(self, start=0):
+        self.value = start
+
+    def increment(self):
+        self.value += 1
+        return self.value
+
+    def reset(self):
+        self.value = 0
+--- hint
+`def __init__(self, start=0): self.value = start`
+--- hint
+`increment` changes `self.value`, then `return self.value`.
+--- check case | A new Counter starts at 0
+Counter().value
+=> 0
+--- check case | It can start somewhere else
+Counter(5).value
+=> 5
+--- check test | increment adds one and returns it
+(lambda c: (c.increment(), c.increment()) == (1, 2) and c.value == 2)(Counter())
+--- check test | reset goes back to 0
+(lambda c: (c.increment(), c.reset(), c.value)[2] == 0)(Counter(9))

@@ -1,0 +1,934 @@
+@track sql
+@level intermediate
+@title SQL · Intermediate
+@name SQL, intermediate: joins, subqueries and honest numbers
+@blurb Answer real business questions from several tables at once — every join type, grouping, subqueries, CASE, dates and text — and catch the NULLs and fan-outs that quietly make reports wrong.
+@schema
+CREATE TABLE customers (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  email TEXT,
+  city TEXT,
+  referred_by INTEGER REFERENCES customers(id),
+  joined TEXT NOT NULL
+);
+INSERT INTO customers (id, name, email, city, referred_by, joined) VALUES
+  (1, 'Ada',  'ada@mail.com',  'London', NULL, '2024-01-15'),
+  (2, 'Ben',  'BEN@Mail.com',  'Paris',  1,    '2024-02-03'),
+  (3, 'Cleo', NULL,            NULL,     1,    '2024-02-20'),
+  (4, 'Dev',  ' dev@work.io',  'London', 2,    '2024-03-11'),
+  (5, 'Eve',  'eve@mail.com',  'Berlin', NULL, '2024-04-01'),
+  (6, 'Finn', 'finn@Work.io ', NULL,     4,    '2024-04-18'),
+  (7, 'Gus',  'gus@post.org',  'Paris',  NULL, '2024-05-02');
+CREATE TABLE products (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  category TEXT NOT NULL,
+  price REAL NOT NULL
+);
+INSERT INTO products (id, name, category, price) VALUES
+  (1, 'Notebook',     'stationery',   4.50),
+  (2, 'Fountain pen', 'stationery',  32.00),
+  (3, 'Desk lamp',    'home',        45.00),
+  (4, 'Mug',          'home',         9.00),
+  (5, 'Headphones',   'electronics', 89.00),
+  (6, 'USB cable',    'electronics',  6.50),
+  (7, 'Planner',      'stationery',  18.00),
+  (8, 'Bookends',     'home',         9.00);
+CREATE TABLE orders (
+  id INTEGER PRIMARY KEY,
+  customer_id INTEGER NOT NULL REFERENCES customers(id),
+  placed TEXT NOT NULL,
+  status TEXT NOT NULL,
+  coupon TEXT
+);
+INSERT INTO orders (id, customer_id, placed, status, coupon) VALUES
+  (1, 1, '2024-03-02 10:15:00', 'shipped',   NULL),
+  (2, 1, '2024-03-20 18:40:00', 'shipped',   'SPRING10'),
+  (3, 2, '2024-03-21 09:05:00', 'cancelled', NULL),
+  (4, 2, '2024-04-07 14:30:00', 'shipped',   'WELCOME5'),
+  (5, 3, '2024-04-07 20:10:00', 'paid',      'SPRING10'),
+  (6, 4, '2024-05-15 11:00:00', 'shipped',   NULL),
+  (7, 5, '2024-05-28 16:45:00', 'refunded',  ''),
+  (8, 1, '2024-06-01 08:30:00', 'paid',      NULL);
+CREATE TABLE order_items (
+  order_id INTEGER NOT NULL REFERENCES orders(id),
+  product_id INTEGER NOT NULL REFERENCES products(id),
+  qty INTEGER NOT NULL,
+  unit_price REAL NOT NULL
+);
+INSERT INTO order_items (order_id, product_id, qty, unit_price) VALUES
+  (1, 1, 3, 4.50), (1, 4, 1, 9.00),
+  (2, 5, 1, 80.10),
+  (3, 2, 1, 32.00),
+  (4, 3, 1, 45.00), (4, 6, 2, 6.50),
+  (5, 2, 1, 28.80), (5, 1, 2, 4.50),
+  (6, 5, 1, 89.00), (6, 4, 2, 9.00),
+  (7, 3, 1, 45.00),
+  (8, 6, 3, 6.50), (8, 1, 1, 5.50);
+CREATE TABLE payments (
+  id INTEGER PRIMARY KEY,
+  order_id INTEGER NOT NULL REFERENCES orders(id),
+  amount REAL NOT NULL
+);
+INSERT INTO payments (id, order_id, amount) VALUES
+  (1, 1, 22.50), (2, 2, 80.10), (3, 4, 30.00), (4, 4, 28.00),
+  (5, 5, 37.80), (6, 6, 107.00), (7, 7, 45.00), (8, 7, -45.00), (9, 8, 25.00);
+CREATE TABLE newsletter (
+  email TEXT NOT NULL,
+  signed_up TEXT NOT NULL
+);
+INSERT INTO newsletter (email, signed_up) VALUES
+  ('ada@mail.com',  '2024-01-20'),
+  ('zoe@mail.com',  '2024-02-14'),
+  ('ben@mail.com',  '2024-03-01'),
+  ('Zoe@mail.com ', '2024-05-09'),
+  ('max@post.org',  '2024-06-11');
+@end
+
+=== sql2-01 | Joining three tables
+--- teach
+The basics joined two tables — `requests` to `users` — and grouped, filtered and changed their rows. This course asks harder questions of a bigger database, and on the way teaches the traps that make a report quietly wrong: NULLs, joins that multiply rows, and text that looks equal but is not.
+
+It uses a small online shop. Its tables:
+
+- `customers` — `id`, `name`, `email`, `city`, `referred_by` (another customer's id, or NULL), `joined`
+- `products` — `id`, `name`, `category`, `price`
+- `orders` — `id`, `customer_id`, `placed` (a `'YYYY-MM-DD HH:MM:SS'` timestamp), `status` (`paid`, `shipped`, `cancelled`, `refunded`), `coupon`
+- `order_items` — one row per product in an order: `order_id`, `product_id`, `qty`, `unit_price` (what was actually charged, which can differ from today's price)
+- `payments` — `id`, `order_id`, `amount` (an order can have several; refunds are negative)
+- `newsletter` — `email`, `signed_up`
+
+Real questions usually cross more than two tables. You join them one link at a time, each `JOIN` with its own `ON`:
+
+```sql
+SELECT o.id, c.name, p.name AS product
+FROM order_items oi
+JOIN orders o    ON o.id = oi.order_id
+JOIN customers c ON c.id = o.customer_id
+JOIN products p  ON p.id = oi.product_id;
+```
+
+Read it as a chain: every item belongs to one order, every order to one customer, every item names one product. Start from the table whose rows you want one of per result row (here, one row per item), then walk out along the foreign keys.
+
+Two habits save a lot of confusion. First, give every table a short alias and prefix **every** column with it — `products.name` and `customers.name` would otherwise collide. Second, when two columns share a name in the result, rename one with `AS`.
+--- task
+For every item in a **shipped** order, return four columns: the order id, the customer's name, the product's name and the quantity. Sort by order id, then by product name.
+--- starter
+SELECT oi.order_id, oi.product_id, oi.qty
+FROM order_items oi;
+--- solution
+SELECT o.id AS order_id, c.name AS customer, p.name AS product, oi.qty
+FROM order_items oi
+JOIN orders o    ON o.id = oi.order_id
+JOIN customers c ON c.id = o.customer_id
+JOIN products p  ON p.id = oi.product_id
+WHERE o.status = 'shipped'
+ORDER BY o.id, p.name;
+--- hint
+Start `FROM order_items oi`, then `JOIN orders o ON o.id = oi.order_id`.
+--- hint
+Two more joins: `customers` through `o.customer_id` and `products` through `oi.product_id`. Filter with `WHERE o.status = 'shipped'`.
+--- hint
+Sort with `ORDER BY o.id, p.name`.
+--- check result | Seven items from orders 1, 2, 4 and 6, in order
+ordered
+[[1, "Ada", "Mug", 1], [1, "Ada", "Notebook", 3], [2, "Ada", "Headphones", 1], [4, "Ben", "Desk lamp", 1], [4, "Ben", "USB cable", 2], [6, "Dev", "Headphones", 1], [6, "Dev", "Mug", 2]]
+
+=== sql2-02 | LEFT JOIN: where the filter goes
+--- teach
+A `LEFT JOIN` keeps every row of the left table, filling the right side with NULL when nothing matches. That promise has a catch that trips up almost everyone once.
+
+Suppose you want every customer with their number of *live* orders (paid or shipped). This looks right:
+
+```sql
+SELECT c.name, COUNT(o.id) AS live_orders
+FROM customers c
+LEFT JOIN orders o ON o.customer_id = c.id
+WHERE o.status IN ('paid', 'shipped')
+GROUP BY c.id, c.name;
+```
+
+But `WHERE` runs **after** the join. A customer with no orders arrives with `o.status` = NULL, and `NULL IN ('paid', 'shipped')` is not true, so `WHERE` throws the row away. A customer whose only order was refunded is dropped the same way. The LEFT JOIN kept them; the WHERE undid it.
+
+The fix is to put conditions on the **right-hand** table inside the `ON`:
+
+```sql
+LEFT JOIN orders o ON o.customer_id = c.id AND o.status IN ('paid', 'shipped')
+```
+
+Now the condition decides which orders *match*. A customer with no matching orders still survives, with NULLs, and `COUNT(o.id)` counts them as 0.
+
+The rule of thumb: in a LEFT JOIN, conditions about the right table go in `ON`; conditions about the left table go in `WHERE`.
+--- task
+Return **every** customer's name and their number of orders whose status is `paid` or `shipped`, as a column named `live_orders` (0 for customers with none). Sort by name.
+--- starter
+SELECT c.name, COUNT(o.id) AS live_orders
+FROM customers c
+LEFT JOIN orders o ON o.customer_id = c.id
+WHERE o.status IN ('paid', 'shipped')
+GROUP BY c.id, c.name
+ORDER BY c.name;
+--- solution
+SELECT c.name, COUNT(o.id) AS live_orders
+FROM customers c
+LEFT JOIN orders o
+  ON o.customer_id = c.id AND o.status IN ('paid', 'shipped')
+GROUP BY c.id, c.name
+ORDER BY c.name;
+--- hint
+Run the starter: Eve, Finn and Gus are missing. Which clause removed them?
+--- hint
+Move the status condition out of `WHERE` and into the `ON`, joined with `AND`.
+--- check result | All seven customers; Eve, Finn and Gus have 0
+ordered
+[["Ada", 3], ["Ben", 1], ["Cleo", 1], ["Dev", 1], ["Eve", 0], ["Finn", 0], ["Gus", 0]]
+
+=== sql2-03 | Self-joins
+--- teach
+Sometimes a table points at itself. In `customers`, `referred_by` holds the id of the customer who brought this one in. To show the referrer's *name*, join the table to itself — using two different aliases, so SQL knows which copy you mean:
+
+```sql
+SELECT c.name, r.name AS referrer
+FROM customers c
+JOIN customers r ON r.id = c.referred_by;
+```
+
+`c` is "the customer", `r` is "the referrer": the same table, playing two parts. Employees and their managers, categories and their parents, replies and the message they answer — they are all self-joins.
+
+As with any join, an inner join drops rows with no match: customers nobody referred (`referred_by` is NULL) disappear. Whether that is right depends on the question. "Who referred whom?" — fine. "List every customer with their referrer" — use `LEFT JOIN`, and the missing referrers come back as NULL.
+--- task
+Return **every** customer's name and the name of the customer who referred them, as a column named `referrer` (NULL when nobody did).
+--- starter
+SELECT c.name, r.name AS referrer
+FROM customers c
+JOIN customers r ON r.id = c.referred_by;
+--- solution
+SELECT c.name, r.name AS referrer
+FROM customers c
+LEFT JOIN customers r ON r.id = c.referred_by;
+--- hint
+The starter loses Ada, Eve and Gus. Why do they have no match?
+--- hint
+Change the join so customers without a referrer stay in the result.
+--- check result | Seven customers, NULL for the three nobody referred
+[["Ada", null], ["Ben", "Ada"], ["Cleo", "Ada"], ["Dev", "Ben"], ["Eve", null], ["Finn", "Dev"], ["Gus", null]]
+
+=== sql2-04 | GROUP BY in depth
+--- teach
+You met `GROUP BY` and `HAVING` in the basics. Here is what happens underneath, in the order the database does it:
+
+1. `FROM` and the `JOIN`s build one wide set of rows.
+2. `WHERE` drops rows.
+3. `GROUP BY` sorts the survivors into buckets.
+4. The aggregates run once per bucket.
+5. `HAVING` drops buckets.
+6. `SELECT` shapes the output, then `ORDER BY` sorts it.
+
+That order explains the rules. `WHERE` cannot use `SUM(...)` because the sums do not exist yet; `HAVING` can. And a condition that could go in either place (`category = 'home'`) belongs in `WHERE`, where it throws rows away early.
+
+Three more tools:
+
+- `COUNT(DISTINCT x)` counts different values. After a join, `COUNT(*)` counts joined rows — one per order *item* — which is rarely what you want to call "orders" or "customers".
+- You can group by an expression, such as `GROUP BY substr(placed, 1, 7)` — the first seven characters of the timestamp, like `'2024-03'` — for months. (Lesson 8 covers text functions.)
+- NULLs all fall into one group of their own.
+
+One refinement of the basics rule that every selected column is grouped or aggregated. Grouping by a table's **primary key** also lets you select that table's other columns: `GROUP BY c.id` with `c.name` in the `SELECT` is fine, because each group is exactly one customer and so has exactly one name. PostgreSQL accepts this too. SQLite goes further and lets you select *any* column that is neither grouped nor aggregated, silently picking a value from some row in the group. Other databases reject that, and so should you: when in doubt, add the column to the `GROUP BY`.
+
+```sql
+SELECT p.category, COUNT(DISTINCT o.customer_id) AS buyers
+FROM order_items oi
+JOIN orders o   ON o.id = oi.order_id
+JOIN products p ON p.id = oi.product_id
+GROUP BY p.category;
+```
+--- task
+Using only orders whose status is `paid` or `shipped`, return one row per product category with: the category, the number of **different customers** who bought from it (`buyers`), the total units (`units`), and the revenue — the sum of `qty * unit_price`, rounded to 2 decimals (`revenue`). Keep only categories with revenue of at least 60, highest revenue first.
+--- starter
+SELECT p.category, COUNT(*) AS buyers, SUM(oi.qty) AS units
+FROM order_items oi
+JOIN products p ON p.id = oi.product_id
+GROUP BY p.category;
+--- solution
+SELECT p.category,
+       COUNT(DISTINCT o.customer_id) AS buyers,
+       SUM(oi.qty) AS units,
+       ROUND(SUM(oi.qty * oi.unit_price), 2) AS revenue
+FROM order_items oi
+JOIN orders o   ON o.id = oi.order_id
+JOIN products p ON p.id = oi.product_id
+WHERE o.status IN ('paid', 'shipped')
+GROUP BY p.category
+HAVING SUM(oi.qty * oi.unit_price) >= 60
+ORDER BY revenue DESC;
+--- hint
+You need `orders` in the join too: for the status filter, and for `customer_id`.
+--- hint
+`COUNT(DISTINCT o.customer_id)` for buyers. The status filter goes in `WHERE`; the revenue threshold goes in `HAVING`.
+--- check result | electronics then home; stationery (56.80) is left out
+ordered
+[["electronics", 3, 7, 201.6], ["home", 3, 4, 72.0]]
+
+=== sql2-05 | Subqueries: a value, or a list
+--- teach
+A subquery is a `SELECT` in brackets inside another statement. Where it goes depends on what it returns.
+
+A **scalar subquery** returns one row with one column, and can sit anywhere a single value can:
+
+```sql
+SELECT name, price,
+       price - (SELECT AVG(price) FROM products) AS above_avg
+FROM products;
+```
+
+A subquery that returns **one column of many rows** is a list, and pairs with `IN`:
+
+```sql
+SELECT name FROM customers
+WHERE id IN (SELECT customer_id FROM orders WHERE status = 'cancelled');
+```
+
+Why not just join? Because a join multiplies. Joining customers to their orders gives one row per *order*: a customer with three matching orders appears three times, and you end up bolting on `DISTINCT` (which drops duplicate rows — lesson 11) to undo it. `IN` asks a yes-or-no question — "is this customer's id in that list?" — so each customer appears at most once, however many times they match.
+
+Subqueries can nest. The inner list may itself be built from a join or another subquery; SQL does not mind, and it often reads closer to the question you were asked.
+--- task
+Return the name of every customer who has bought at least one product in the `electronics` category (any order status), **each name once**, in alphabetical order. Use `IN` with a subquery.
+--- starter
+SELECT c.name
+FROM customers c
+JOIN orders o       ON o.customer_id = c.id
+JOIN order_items oi ON oi.order_id = o.id
+JOIN products p     ON p.id = oi.product_id
+WHERE p.category = 'electronics'
+ORDER BY c.name;
+--- solution
+SELECT name
+FROM customers
+WHERE id IN (
+  SELECT o.customer_id
+  FROM orders o
+  JOIN order_items oi ON oi.order_id = o.id
+  JOIN products p     ON p.id = oi.product_id
+  WHERE p.category = 'electronics'
+)
+ORDER BY name;
+--- hint
+Run the starter: Ada appears twice because she bought electronics in two orders.
+--- hint
+Build the list of customer ids who bought electronics in a subquery, then `WHERE id IN (...)` on `customers`.
+--- check result | Ada, Ben and Dev, once each
+ordered
+[["Ada"], ["Ben"], ["Dev"]]
+--- check source | Uses IN with a subquery
+\b[Ii][Nn]\s*\(\s*[Ss][Ee][Ll][Ee][Cc][Tt]
+
+=== sql2-06 | Correlated subqueries and EXISTS
+--- teach
+The subqueries so far ran once. A **correlated** subquery refers to the outer row, so it runs (conceptually) once *per* outer row:
+
+```sql
+SELECT p.name, p.price
+FROM products p
+WHERE p.price > (SELECT AVG(x.price) FROM products x WHERE x.category = p.category);
+```
+
+For each product `p`, the inner query averages the prices *in p's category*. The link is `x.category = p.category`: the inner query reaches out to the row being tested. The aliases matter — without two different names, SQL cannot tell the inner products from the outer one.
+
+`EXISTS (subquery)` is true when the subquery returns at least one row. It never looks at *what* the rows contain, so the convention is `SELECT 1`:
+
+```sql
+SELECT c.name
+FROM customers c
+WHERE EXISTS (SELECT 1 FROM orders o WHERE o.customer_id = c.id AND o.status = 'refunded');
+```
+
+`EXISTS` is almost always correlated, and it can stop at the first match, which makes it cheap. In SQLite it is also an expression with a value — 1 or 0 — so it can go in the `SELECT` list as a yes/no column.
+--- task
+Return every product priced **above the average price of its own category**: its `name`, `category`, `price`, and a column `sold_shipped` that is `1` if the product appears in at least one `shipped` order and `0` otherwise. Use a correlated subquery for the average and `EXISTS` for `sold_shipped`.
+--- starter
+SELECT name, category, price
+FROM products
+WHERE price > (SELECT AVG(price) FROM products);
+--- solution
+SELECT p.name, p.category, p.price,
+       EXISTS (
+         SELECT 1
+         FROM order_items oi
+         JOIN orders o ON o.id = oi.order_id
+         WHERE oi.product_id = p.id AND o.status = 'shipped'
+       ) AS sold_shipped
+FROM products p
+WHERE p.price > (SELECT AVG(x.price) FROM products x WHERE x.category = p.category);
+--- hint
+The starter compares with the average of *all* products. Give the outer table an alias and add `WHERE x.category = p.category` inside.
+--- hint
+For the flag: `EXISTS (SELECT 1 FROM order_items oi JOIN orders o ON … WHERE oi.product_id = p.id AND o.status = 'shipped') AS sold_shipped`.
+--- check result | Fountain pen (never shipped), Desk lamp and Headphones
+[["Fountain pen", "stationery", 32.0, 0], ["Desk lamp", "home", 45.0, 1], ["Headphones", "electronics", 89.0, 1]]
+--- check source | Uses EXISTS
+\b[Ee][Xx][Ii][Ss][Tt][Ss]\s*\(
+
+=== sql2-07 | CASE: decisions inside a query
+--- teach
+`CASE` turns conditions into values. The searched form checks each `WHEN` in order and returns the first match:
+
+```sql
+SELECT name,
+       CASE
+         WHEN price >= 50 THEN 'premium'
+         WHEN price >= 10 THEN 'standard'
+         ELSE 'budget'
+       END AS tier
+FROM products;
+```
+
+Order matters: a price of 89 is also `>= 10`, but the first true `WHEN` wins, so list the narrowest conditions first. Without an `ELSE`, anything that matches nothing becomes NULL — usually a sign you forgot a case, so write the `ELSE`.
+
+There is a short form for comparing one expression with fixed values:
+
+```sql
+CASE status WHEN 'paid' THEN 'open' WHEN 'shipped' THEN 'done' ELSE 'closed' END
+```
+
+Boundaries are where bugs live. "Orders of 25 or more are medium" means `>= 25`, and an order of exactly 25.00 must land in medium. Decide each edge on purpose, then test the edge.
+
+`CASE` works anywhere an expression does — in `SELECT`, `ORDER BY`, inside `SUM(...)` — which makes it one of the most useful tools in SQL.
+--- task
+Return one row per order with its `id`, its `total` (the sum of `qty * unit_price`, rounded to 2 decimals) and a `size`: `'small'` under 25, `'medium'` from 25 up to (but not including) 100, and `'large'` at 100 or more. Sort by id.
+--- starter
+SELECT order_id AS id, ROUND(SUM(qty * unit_price), 2) AS total
+FROM order_items
+GROUP BY order_id
+ORDER BY order_id;
+--- solution
+SELECT order_id AS id,
+       ROUND(SUM(qty * unit_price), 2) AS total,
+       CASE
+         WHEN SUM(qty * unit_price) >= 100 THEN 'large'
+         WHEN SUM(qty * unit_price) >= 25  THEN 'medium'
+         ELSE 'small'
+       END AS size
+FROM order_items
+GROUP BY order_id
+ORDER BY order_id;
+--- hint
+Add a third column: `CASE WHEN … THEN … END AS size`.
+--- hint
+Test the largest bucket first: `WHEN SUM(qty * unit_price) >= 100 THEN 'large'`, then `>= 25`, then `ELSE 'small'`. Order 8 totals exactly 25.00.
+--- check result | Eight orders sized, order 8 (exactly 25) is medium
+ordered
+[[1, 22.5, "small"], [2, 80.1, "medium"], [3, 32.0, "medium"], [4, 58.0, "medium"], [5, 37.8, "medium"], [6, 107.0, "large"], [7, 45.0, "medium"], [8, 25.0, "medium"]]
+
+=== sql2-08 | Working with text
+--- teach
+Real text is messy: capitals, stray spaces, missing values. SQLite's text functions clean it up:
+
+| Function | Does |
+| --- | --- |
+| `lower(s)`, `upper(s)` | change case |
+| `trim(s)` | remove spaces at both ends (`ltrim`, `rtrim` for one end) |
+| `length(s)` | number of characters |
+| `substr(s, start, n)` | the piece from `start` (counting from 1), `n` long; leave `n` out for "to the end" |
+| `instr(s, t)` | where `t` first appears in `s` (0 if it does not) |
+| `replace(s, a, b)` | every `a` replaced by `b` |
+| `a || b` | joins text |
+
+They combine. Everything after the `@` in an email:
+
+```sql
+SELECT substr(email, instr(email, '@') + 1) FROM customers;
+```
+
+Clean **before** you compare or group. `'Mail.com'`, `'mail.com'` and `'mail.com '` are three different strings to `GROUP BY`, so a report grouped on raw text quietly splits one bucket into three. Normalise with `lower(trim(...))` first.
+
+Two more things to know. `LIKE` ignores case for plain letters in SQLite, but `=` does not. And every text function given NULL returns NULL — a missing email has no domain, and it will show up as a NULL group unless you filter it out.
+--- task
+Count customers per email **domain** (the part after the `@`), treating domains case-insensitively and ignoring stray spaces. Return `domain` (lower-case, trimmed) and `customers`, skipping customers with no email. Sort by `customers` descending, then `domain`.
+--- starter
+SELECT substr(email, instr(email, '@') + 1) AS domain, COUNT(*) AS customers
+FROM customers
+GROUP BY domain
+ORDER BY customers DESC, domain;
+--- solution
+SELECT lower(trim(substr(email, instr(email, '@') + 1))) AS domain,
+       COUNT(*) AS customers
+FROM customers
+WHERE email IS NOT NULL
+GROUP BY domain
+ORDER BY customers DESC, domain;
+--- hint
+Run the starter: `Mail.com` and `mail.com` are counted apart, `Work.io ` has a trailing space, and Cleo's NULL email makes a group of its own.
+--- hint
+Wrap the domain in `lower(trim(...))` and add `WHERE email IS NOT NULL`.
+--- check result | mail.com 3, work.io 2, post.org 1
+ordered
+[["mail.com", 3], ["work.io", 2], ["post.org", 1]]
+
+=== sql2-09 | Dates and times
+--- teach
+SQLite has no separate date type. Dates are stored as text in ISO format — `'2024-03-20'` or `'2024-03-20 18:40:00'` — and that is enough, because ISO text sorts in time order and a set of functions understands it:
+
+```sql
+SELECT date('2024-03-20 18:40:00');              -- '2024-03-20'
+SELECT date('2024-03-20', '+10 days');           -- '2024-03-30'
+SELECT date('2024-03-20', 'start of month');     -- '2024-03-01'
+SELECT date('2024-01-31', '+1 month');           -- '2024-03-02' (no Feb 31st!)
+SELECT strftime('%Y-%m', '2024-03-20 18:40:00'); -- '2024-03'
+SELECT julianday('2024-03-20') - julianday('2024-03-02');  -- 18.0 days
+```
+
+`strftime(format, time)` formats: `%Y` year, `%m` month, `%d` day, `%H` hour, `%W` week of the year, `%w` weekday (0 is Sunday). `date('now')` is today.
+
+For monthly reports, group by `strftime('%Y-%m', placed)`: every timestamp in March collapses to `'2024-03'`.
+
+Beware the join trap from the grouping lesson: once `orders` is joined to `order_items`, there is one row per *item*, so `COUNT(*)` counts items. To count orders, use `COUNT(DISTINCT o.id)`.
+
+Comparing ranges works on the text directly: `placed >= '2024-04-01' AND placed < '2024-05-01'` is April — and, unlike wrapping the column in a function, a database can use an index for it. You will see why that matters when you meet indexes in the advanced course.
+--- task
+Return a monthly sales report over orders whose status is `paid` or `shipped`: `month` (as `'YYYY-MM'`), `orders` (the number of different orders), and `revenue` (the sum of `qty * unit_price`, rounded to 2 decimals). Sort by month.
+--- starter
+SELECT placed AS month, COUNT(*) AS orders
+FROM orders
+GROUP BY placed;
+--- solution
+SELECT strftime('%Y-%m', o.placed) AS month,
+       COUNT(DISTINCT o.id) AS orders,
+       ROUND(SUM(oi.qty * oi.unit_price), 2) AS revenue
+FROM orders o
+JOIN order_items oi ON oi.order_id = o.id
+WHERE o.status IN ('paid', 'shipped')
+GROUP BY month
+ORDER BY month;
+--- hint
+`strftime('%Y-%m', o.placed)` turns each timestamp into its month; group by that.
+--- hint
+Join `order_items` for revenue, and count orders with `COUNT(DISTINCT o.id)` — the join makes one row per item.
+--- check result | Four months, with order counts and revenue
+ordered
+[["2024-03", 2, 102.6], ["2024-04", 2, 95.8], ["2024-05", 1, 107.0], ["2024-06", 1, 25.0]]
+
+=== sql2-10 | Debugging: the rows NULL made disappear
+--- teach
+**The bug report.** Marketing asked for every order that did **not** use the `SPRING10` coupon, with a readable coupon label. The query below returns two orders. There are eight orders and two used `SPRING10`, so six were expected.
+
+How to debug a query that returns too few rows:
+
+1. **Reproduce and count.** `SELECT COUNT(*) FROM orders` gives 8; the answer should be 8 − 2 = 6.
+2. **Look at what went missing.** `SELECT id, coupon FROM orders` — every missing order has `coupon` = NULL.
+3. **Check your assumption.** The query assumes `coupon != 'SPRING10'` is true for "no coupon". It is not.
+
+SQL uses **three-valued logic**: a comparison is true, false or *unknown*. Any comparison with NULL — `NULL = 'x'`, `NULL != 'x'`, even `NULL = NULL` — is unknown, and `WHERE` keeps only rows where the condition is **true**. So `coupon != 'SPRING10'` silently drops every order with no coupon. `NOT (…)` does not rescue it: not-unknown is still unknown.
+
+Fixes, from most to least explicit:
+
+```sql
+WHERE coupon IS NULL OR coupon <> 'SPRING10'
+WHERE coupon IS NOT 'SPRING10'        -- SQLite: IS / IS NOT treat NULL as a value
+WHERE COALESCE(coupon, '') <> 'SPRING10'
+```
+
+`COALESCE(a, b, …)` returns its first non-NULL argument, which also makes labels: `COALESCE(coupon, 'none')`. And watch for the cousin of NULL: the **empty string**. Order 7 has `coupon = ''`, which is *not* NULL, so COALESCE leaves it alone. `NULLIF(x, '')` turns `''` into NULL, so `COALESCE(NULLIF(trim(coupon), ''), 'none')` handles both.
+--- task
+Fix the query so it returns every order that did not use `SPRING10`: its `id` and a `coupon_label` that shows the coupon code, or `'none'` when the coupon is NULL or blank. Sort by id.
+--- starter
+SELECT id, coupon AS coupon_label
+FROM orders
+WHERE coupon != 'SPRING10'
+ORDER BY id;
+--- solution
+SELECT id, COALESCE(NULLIF(trim(coupon), ''), 'none') AS coupon_label
+FROM orders
+WHERE coupon IS NULL OR coupon <> 'SPRING10'
+ORDER BY id;
+--- hint
+Look at the coupons of the missing orders with `SELECT id, coupon FROM orders`. What does `NULL != 'SPRING10'` evaluate to?
+--- hint
+Let NULL coupons through explicitly: `WHERE coupon IS NULL OR coupon <> 'SPRING10'`.
+--- hint
+For the label, `COALESCE(...)` handles NULL but not `''`; wrap the coupon in `NULLIF(trim(coupon), '')` first.
+--- check result | Six orders, blank and missing coupons labelled none
+ordered
+[[1, "none"], [3, "none"], [4, "WELCOME5"], [6, "none"], [7, "none"], [8, "none"]]
+
+=== sql2-11 | DISTINCT, UNION and UNION ALL
+--- teach
+`SELECT DISTINCT` removes duplicate rows from a result — duplicates across **all** the selected columns, not just the first:
+
+```sql
+SELECT DISTINCT city FROM customers;          -- London, Paris, NULL, Berlin
+SELECT DISTINCT city, referred_by FROM customers;  -- pairs, so more rows
+```
+
+To stack two results on top of each other, use `UNION` or `UNION ALL`. Both need the same number of columns, and the column names come from the first `SELECT`:
+
+```sql
+SELECT email FROM customers
+UNION ALL
+SELECT email FROM newsletter;
+```
+
+- `UNION ALL` keeps every row, duplicates included. It is cheaper and the right choice when you want counts or know the parts cannot overlap.
+- `UNION` removes duplicates from the combined result, including duplicates *within* one side.
+
+An `ORDER BY` goes once, at the very end, and sorts the whole combined result.
+
+Deduplication compares values exactly. `'BEN@Mail.com'` and `'ben@mail.com'` are different strings, so neither `DISTINCT` nor `UNION` will merge them. When you mean "the same address", normalise inside each `SELECT` before the union does its work.
+--- task
+Build one mailing list from customers and newsletter subscribers: every **distinct** email address, lower-cased and trimmed, with no NULLs, as a single column named `email`, sorted alphabetically.
+--- starter
+SELECT email FROM customers
+UNION ALL
+SELECT email FROM newsletter;
+--- solution
+SELECT lower(trim(email)) AS email FROM customers WHERE email IS NOT NULL
+UNION
+SELECT lower(trim(email)) FROM newsletter
+ORDER BY email;
+--- hint
+`UNION` (without `ALL`) removes duplicates — but only exact ones. Normalise each side with `lower(trim(email))`.
+--- hint
+Filter Cleo's NULL out with `WHERE email IS NOT NULL` on the customers side, and put a single `ORDER BY email` at the end.
+--- check result | Eight addresses, each once
+ordered
+[["ada@mail.com"], ["ben@mail.com"], ["dev@work.io"], ["eve@mail.com"], ["finn@work.io"], ["gus@post.org"], ["max@post.org"], ["zoe@mail.com"]]
+
+=== sql2-12 | Pagination with LIMIT and OFFSET
+--- teach
+Apps show long lists a page at a time. `LIMIT n OFFSET k` skips `k` rows, then returns the next `n`. With a page size of 3, page `p` (counting from 1) is:
+
+```sql
+SELECT name, price FROM products
+ORDER BY price DESC, name
+LIMIT 3 OFFSET 3;   -- page 2: skip (2 - 1) * 3 rows
+```
+
+The part people forget is the **tie-breaker**. If two products cost the same, `ORDER BY price DESC` alone does not say which comes first, and the database may choose differently from one query to the next. Then an item can show up on two pages, or on none. Always end the `ORDER BY` with something unique, or at least something that fully decides the order the user expects.
+
+`OFFSET` has a cost: to skip 10,000 rows the database still has to find and throw away 10,000 rows. For deep pages, **keyset pagination** is faster — remember the last row you showed and ask for what comes after it:
+
+```sql
+-- the last row on the previous page was ('Fountain pen', 32.0)
+SELECT name, price FROM products
+WHERE price < 32.0 OR (price = 32.0 AND name > 'Fountain pen')
+ORDER BY price DESC, name
+LIMIT 3;
+```
+
+It also stays correct when rows are inserted while someone is paging.
+--- task
+Return **page 2** of the product list, 3 products per page, sorted by price from highest to lowest, with ties broken by name A to Z. Return `name` and `price`.
+--- starter
+SELECT name, price
+FROM products
+ORDER BY price DESC
+LIMIT 3;
+--- solution
+SELECT name, price
+FROM products
+ORDER BY price DESC, name
+LIMIT 3 OFFSET 3;
+--- hint
+Page 2 skips the first page: `OFFSET 3`.
+--- hint
+Bookends and Mug cost the same. Add `name` after `price DESC` in the `ORDER BY` so their order is decided.
+--- check result | Planner, Bookends, Mug — in that order
+ordered
+[["Planner", 18.0], ["Bookends", 9.0], ["Mug", 9.0]]
+
+=== sql2-13 | Changing data with conditions
+--- teach
+`UPDATE` and `DELETE` get their power from `WHERE`, and `WHERE` can use everything you have learned — including subqueries into other tables:
+
+```sql
+-- cancel paid orders from customers who have no email on file
+UPDATE orders SET status = 'cancelled'
+WHERE status = 'paid'
+  AND customer_id IN (SELECT id FROM customers WHERE email IS NULL);
+```
+
+`SET` can compute from the row's current values: `SET price = price * 1.1` uses each row's own price. Money is floating point here, so round what you store: `ROUND(price * 1.1, 2)`.
+
+`INSERT` can take its rows from a query instead of `VALUES`:
+
+```sql
+INSERT INTO newsletter (email, signed_up)
+SELECT lower(trim(email)), date('now') FROM customers WHERE city = 'Paris';
+```
+
+The safe routine for any change:
+
+1. Write the `SELECT` with the exact `WHERE` you plan to use, and check it returns exactly the rows you mean.
+2. Change `SELECT …` to `UPDATE … SET …` or `DELETE`, keeping the `WHERE` word for word.
+3. Query again to confirm the effect.
+
+A subquery on the **same** table you are changing is allowed, but be careful: it sees the table as it was before the statement started.
+--- task
+Make two changes:
+
+1. Raise the price of every `stationery` product by 10%, rounded to 2 decimals.
+2. Delete every newsletter row whose email (lower-cased and trimmed) belongs to a customer (compare the customer's email lower-cased and trimmed too) — they already hear from us.
+--- starter
+-- 1. Raise stationery prices by 10%.
+
+-- 2. Remove subscribers who are already customers.
+--- solution
+UPDATE products
+SET price = ROUND(price * 1.1, 2)
+WHERE category = 'stationery';
+
+DELETE FROM newsletter
+WHERE lower(trim(email)) IN (
+  SELECT lower(trim(email)) FROM customers WHERE email IS NOT NULL
+);
+--- hint
+`UPDATE products SET price = ROUND(price * 1.1, 2) WHERE category = 'stationery';`
+--- hint
+`DELETE FROM newsletter WHERE lower(trim(email)) IN (SELECT … FROM customers …);` — normalise both sides.
+--- check query | Stationery prices went up 10%
+SELECT name, price FROM products WHERE category = 'stationery' ORDER BY id
+=> [["Notebook", 4.95], ["Fountain pen", 35.2], ["Planner", 19.8]]
+--- check query | Other prices did not change
+SELECT SUM(price) FROM products WHERE category <> 'stationery'
+=> [[158.5]]
+--- check query | Only non-customers are left on the newsletter
+SELECT email FROM newsletter ORDER BY signed_up
+=> [["zoe@mail.com"], ["Zoe@mail.com "], ["max@post.org"]]
+
+=== sql2-14 | Debugging: the join that double-counts
+--- teach
+**The bug report.** Finance runs this report of what each customer ordered and what they paid. Ada's items come to 127.60 and she paid 127.60, but the report says she paid 175.10. Ben's numbers are both inflated too.
+
+The cause is called **fan-out**. Joining a table multiplies rows: an order with 2 items becomes 2 rows. Join payments on as well and an order with 2 items **and** 2 payments becomes 2 × 2 = 4 rows — every item paired with every payment. `SUM` then adds each payment once per item and each item once per payment.
+
+How to find it:
+
+1. **Pick one wrong number and shrink the query to it.** Add `WHERE c.name = 'Ada'`.
+2. **Remove the aggregation and look at the raw rows** — `SELECT o.id, oi.product_id, p.amount …`. You will see the same payment repeated.
+3. **Count rows per key.** If a row you expected once appears several times, a join is fanning out.
+
+The fix is not `DISTINCT` inside `SUM` — two genuinely different payments of the same amount would then merge. The fix is to **aggregate each child table down to one row per order first**, then join those one-row-per-order results. A `WITH` can hold several named steps, separated by commas:
+
+```sql
+WITH items AS (
+  SELECT order_id, SUM(qty * unit_price) AS items_total
+  FROM order_items GROUP BY order_id
+), paid AS (
+  SELECT order_id, SUM(amount) AS paid_total
+  FROM payments GROUP BY order_id
+)
+SELECT …
+FROM orders o
+JOIN items i     ON i.order_id = o.id
+LEFT JOIN paid p ON p.order_id = o.id
+```
+
+Joining one-to-one pieces cannot multiply anything. The general rule: never sum across two independent one-to-many joins at once.
+--- task
+Fix the report so each customer with orders shows their correct `items_total` and `paid_total` (both over all their orders, rounded to 2 decimals). Keep the columns `name`, `items_total`, `paid_total`. Customers whose orders have no payments at all should show `0` paid.
+--- starter
+SELECT c.name,
+       ROUND(SUM(oi.qty * oi.unit_price), 2) AS items_total,
+       ROUND(SUM(p.amount), 2) AS paid_total
+FROM customers c
+JOIN orders o       ON o.customer_id = c.id
+JOIN order_items oi ON oi.order_id = o.id
+LEFT JOIN payments p ON p.order_id = o.id
+GROUP BY c.id;
+--- solution
+WITH items AS (
+  SELECT order_id, SUM(qty * unit_price) AS items_total
+  FROM order_items
+  GROUP BY order_id
+), paid AS (
+  SELECT order_id, SUM(amount) AS paid_total
+  FROM payments
+  GROUP BY order_id
+)
+SELECT c.name,
+       ROUND(SUM(i.items_total), 2) AS items_total,
+       ROUND(COALESCE(SUM(p.paid_total), 0), 2) AS paid_total
+FROM customers c
+JOIN orders o    ON o.customer_id = c.id
+JOIN items i     ON i.order_id = o.id
+LEFT JOIN paid p ON p.order_id = o.id
+GROUP BY c.id;
+--- hint
+Add `WHERE c.name = 'Ada'` and select the raw rows without `SUM`. Which payment appears twice, and why?
+--- hint
+Sum `order_items` per order in one `WITH` step and `payments` per order in another; each then has one row per order.
+--- hint
+Join `orders` to both steps and sum those per customer. Ben's cancelled order has no payment, so wrap the paid sum in `COALESCE(…, 0)` only where it could be NULL.
+--- check result | Correct totals; Ben paid 58, Eve's refund nets to 0
+[["Ada", 127.6, 127.6], ["Ben", 90.0, 58.0], ["Cleo", 37.8, 37.8], ["Dev", 107.0, 107.0], ["Eve", 45.0, 0.0]]
+
+=== sql2-15 | Problem solving: the second-highest salary
+--- schema
+CREATE TABLE employees (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  dept TEXT NOT NULL,
+  salary INTEGER
+);
+INSERT INTO employees (id, name, dept, salary) VALUES
+  (1,  'Ana', 'eng',    120000),
+  (2,  'Bo',  'eng',    120000),
+  (3,  'Cy',  'eng',     95000),
+  (4,  'Di',  'eng',     80000),
+  (5,  'Ed',  'sales',   70000),
+  (6,  'Flo', 'sales',   70000),
+  (7,  'Gia', 'ops',     60000),
+  (8,  'Hal', 'sales',   55000),
+  (9,  'Ivy', 'design',  65000),
+  (10, 'Jo',  'eng',     NULL),
+  (11, 'Kit', 'design',  65000);
+--- teach
+This lesson's database has one table, `employees` (`id`, `name`, `dept`, `salary`). Contractors have a NULL salary.
+
+**The problem.** For each department, find the second-highest salary. "Second-highest" means the second-highest *distinct* amount: if two people share the top salary, the answer is the next amount below it. A department with fewer than two distinct salaries has no second-highest, and should show NULL rather than vanish.
+
+How to approach a problem like this:
+
+1. **Restate it with examples.** eng earns 120000, 120000, 95000, 80000 (and one NULL). The second-highest is 95000, not 120000.
+2. **Try the obvious answer and find where it breaks.** `ORDER BY salary DESC LIMIT 1 OFFSET 1` returns the second *row* — 120000 again, because of the tie. It also works on one department at a time only.
+3. **Rephrase.** "The second-highest salary" is "the highest salary that is below the highest salary". That is two MAXes, one inside the other:
+
+```sql
+SELECT MAX(salary) FROM employees
+WHERE salary < (SELECT MAX(salary) FROM employees);
+```
+
+4. **Generalise.** Make it per department with a correlated subquery, and drive the query from the list of departments so every department appears, even the ones with no answer. A subquery in `FROM` — `(SELECT DISTINCT dept FROM employees) d` — works like a table, as long as you give it an alias. `MAX` over no rows returns NULL — exactly the "no answer" you want.
+
+5. **Check the edge cases against the data:** a tie at the top (eng, sales), a department with one person (ops), a department where everyone earns the same (design), and NULL salaries (MAX ignores them).
+--- task
+Return one row per department: `dept` and `second_salary` (the second-highest distinct salary, or NULL if there is none). Sort by `dept`.
+--- starter
+SELECT dept, salary AS second_salary
+FROM employees
+ORDER BY salary DESC
+LIMIT 1 OFFSET 1;
+--- solution
+SELECT d.dept,
+       (SELECT MAX(e.salary)
+        FROM employees e
+        WHERE e.dept = d.dept
+          AND e.salary < (SELECT MAX(salary) FROM employees WHERE dept = d.dept)
+       ) AS second_salary
+FROM (SELECT DISTINCT dept FROM employees) d
+ORDER BY d.dept;
+--- hint
+For one department: the MAX salary that is less than the MAX salary.
+--- hint
+Drive the query from `(SELECT DISTINCT dept FROM employees) d`, so every department gets a row.
+--- hint
+Put the "max below the max" in a scalar subquery in the SELECT list, correlated on `e.dept = d.dept` (the inner MAX needs `dept = d.dept` too).
+--- check result | design NULL, eng 95000, ops NULL, sales 55000
+ordered
+[["design", null], ["eng", 95000], ["ops", null], ["sales", 55000]]
+
+=== sql2-16 | Problem solving: finding what is missing
+--- teach
+**The problem.** Sales wants to win back customers who have never bought anything. "Bought" means an order that is `paid` or `shipped`: a customer whose only order was refunded or cancelled has not really bought.
+
+This is an **anti-join**: rows in one table with *no* match in another. You cannot find them with an ordinary join, because a join only produces rows that match. There are three standard ways to ask for a missing match:
+
+```sql
+-- 1. NOT EXISTS: clearest, and safe with NULLs
+SELECT c.name FROM customers c
+WHERE NOT EXISTS (SELECT 1 FROM orders o WHERE o.customer_id = c.id);
+
+-- 2. LEFT JOIN, then keep the rows where the right side is missing
+SELECT c.name FROM customers c
+LEFT JOIN orders o ON o.customer_id = c.id
+WHERE o.id IS NULL;
+
+-- 3. NOT IN: works, until the list contains a NULL
+SELECT c.name FROM customers c
+WHERE c.id NOT IN (SELECT customer_id FROM orders);
+```
+
+The trap in option 3: `x NOT IN (1, 2, NULL)` means `x <> 1 AND x <> 2 AND x <> NULL`, and the last comparison is *unknown*, so the whole condition is never true. Try "customers who never referred anyone":
+
+```sql
+SELECT name FROM customers
+WHERE id NOT IN (SELECT referred_by FROM customers);  -- no rows at all!
+```
+
+`referred_by` is NULL for several customers, so the list contains NULL and the answer is empty — without any error. Prefer `NOT EXISTS`; it has no such trap.
+
+A wrong turn many people take first: `JOIN orders … WHERE status NOT IN ('paid', 'shipped')`. That finds customers who have *some* order that is not a purchase — a different question.
+--- task
+Return the names of the customers who have **no** order with status `paid` or `shipped` (including customers with no orders at all), alphabetically.
+--- starter
+SELECT DISTINCT c.name
+FROM customers c
+JOIN orders o ON o.customer_id = c.id
+WHERE o.status NOT IN ('paid', 'shipped')
+ORDER BY c.name;
+--- solution
+SELECT c.name
+FROM customers c
+WHERE NOT EXISTS (
+  SELECT 1 FROM orders o
+  WHERE o.customer_id = c.id AND o.status IN ('paid', 'shipped')
+)
+ORDER BY c.name;
+--- hint
+The starter finds Ben, who has bought (order 4), and misses Finn and Gus, who have no orders to join.
+--- hint
+Ask per customer whether a purchase exists: `WHERE NOT EXISTS (SELECT 1 FROM orders o WHERE o.customer_id = c.id AND …)`.
+--- check result | Eve (refunded only), Finn and Gus
+ordered
+[["Eve"], ["Finn"], ["Gus"]]
+
+=== sql2-17 | Design: choosing the joins for a report
+--- teach
+Every report is a set of decisions about joins. Make them on purpose, from the requirements, before you write a line:
+
+| The requirement says… | Use |
+| --- | --- |
+| "only X that have a Y" | `JOIN` (inner) |
+| "every X, with its Y if there is one" | `LEFT JOIN` from X |
+| "every X and every Y, matched where possible" | `FULL OUTER JOIN` (SQLite 3.39+) |
+| "every combination of X and Y" | `CROSS JOIN` — calendars, grids |
+| "X that has no Y" | `NOT EXISTS` / anti-join |
+
+Then three questions for each LEFT JOIN:
+
+1. **Which rows must survive?** That is the table you start `FROM`. Everything else hangs off it.
+2. **Where does each filter go?** A condition on a LEFT-joined table goes in its `ON`, or it turns the join back into an inner join (lesson 2).
+3. **Could this join multiply rows?** If two one-to-many tables hang off the same row, aggregate one of them first (lesson 14). Count rows as you add each join.
+
+Then decide what "nothing" looks like: `COUNT(o.id)` gives 0 for no matches, `MAX(...)` gives NULL, and `SUM(...)` gives NULL unless you `COALESCE` it.
+
+Build the query one join at a time and run it after each step. A report that is wrong usually went wrong at one specific join, and you will see it the moment it happens.
+--- task
+Build the **account review**: one row for **every** customer, sorted by name, with columns `name`; `referrer` (the referring customer's name, or NULL); `live_orders` (their number of `paid` or `shipped` orders, 0 if none); and `last_order` (the date — `'YYYY-MM-DD'`, no time — of their most recent `paid` or `shipped` order, or NULL).
+--- starter
+SELECT c.name, r.name AS referrer, COUNT(o.id) AS live_orders, MAX(o.placed) AS last_order
+FROM customers c
+JOIN customers r ON r.id = c.referred_by
+JOIN orders o    ON o.customer_id = c.id
+WHERE o.status IN ('paid', 'shipped')
+GROUP BY c.id, c.name, r.name
+ORDER BY c.name;
+--- solution
+SELECT c.name,
+       r.name AS referrer,
+       COUNT(o.id) AS live_orders,
+       date(MAX(o.placed)) AS last_order
+FROM customers c
+LEFT JOIN customers r ON r.id = c.referred_by
+LEFT JOIN orders o
+  ON o.customer_id = c.id AND o.status IN ('paid', 'shipped')
+GROUP BY c.id, c.name, r.name
+ORDER BY c.name;
+--- hint
+"Every customer" means both joins must be `LEFT JOIN`s from `customers`.
+--- hint
+The status filter belongs in the orders join's `ON`, not in `WHERE`.
+--- hint
+`date(MAX(o.placed))` drops the time; it stays NULL when there are no live orders.
+--- check result | All seven customers, with NULLs and zeros where nothing matched
+ordered
+[["Ada", null, 3, "2024-06-01"], ["Ben", "Ada", 1, "2024-04-07"], ["Cleo", "Ada", 1, "2024-04-07"], ["Dev", "Ben", 1, "2024-05-15"], ["Eve", null, 0, null], ["Finn", "Dev", 0, null], ["Gus", null, 0, null]]

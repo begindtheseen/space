@@ -1,0 +1,1383 @@
+@track sql
+@level projects
+@title SQL · Projects
+@name SQL projects: three real databases, then your own designs
+@blurb Build three working databases end to end — an online store, a product-analytics pipeline and a library — then design three more from a written specification, with nothing but the requirements to go on.
+@schema
+CREATE TABLE events (
+  event_id TEXT PRIMARY KEY,
+  user_id INTEGER NOT NULL,
+  name TEXT NOT NULL,
+  ts TEXT NOT NULL
+);
+INSERT INTO events (event_id, user_id, name, ts) VALUES
+  ('e01', 1, 'visit',    '2024-07-01 09:00:00'),
+  ('e02', 1, 'signup',   '2024-07-01 09:05:00'),
+  ('e03', 2, 'visit',    '2024-07-01 10:00:00'),
+  ('e04', 2, 'visit',    '2024-07-01 17:00:00'),
+  ('e05', 1, 'activate', '2024-07-02 08:00:00'),
+  ('e06', 3, 'visit',    '2024-07-02 09:00:00'),
+  ('e07', 3, 'signup',   '2024-07-02 09:02:00'),
+  ('e08', 2, 'signup',   '2024-07-02 11:00:00'),
+  ('e09', 3, 'activate', '2024-07-03 15:00:00'),
+  ('e10', 1, 'visit',    '2024-07-03 16:00:00'),
+  ('e11', 4, 'visit',    '2024-07-03 18:00:00'),
+  ('e12', 4, 'signup',   '2024-07-03 18:10:00'),
+  ('e13', 2, 'activate', '2024-07-05 11:00:00'),
+  ('e14', 5, 'visit',    '2024-07-05 11:00:00'),
+  ('e15', 5, 'signup',   '2024-07-05 11:30:00'),
+  ('e16', 1, 'visit',    '2024-07-05 12:00:00'),
+  ('e17', 4, 'visit',    '2024-07-06 09:00:00'),
+  ('e18', 3, 'visit',    '2024-07-06 10:00:00'),
+  ('e19', 6, 'signup',   '2024-07-07 21:00:00'),
+  ('e20', 6, 'visit',    '2024-07-07 22:00:00'),
+  ('e21', 2, 'visit',    '2024-07-07 08:00:00'),
+  ('e22', 1, 'visit',    '2024-07-08 09:00:00'),
+  ('e23', 5, 'activate', '2024-07-09 09:00:00'),
+  ('e24', 3, 'visit',    '2024-07-09 13:00:00'),
+  ('e25', 4, 'activate', '2024-07-10 10:00:00');
+@end
+
+=== sqlp-01 | Store 1: the schema
+--- schema
+CREATE TABLE import_rows (
+  order_ref INTEGER NOT NULL,
+  placed TEXT NOT NULL,
+  email TEXT NOT NULL,
+  customer_name TEXT NOT NULL,
+  country TEXT NOT NULL,
+  sku TEXT NOT NULL,
+  product_name TEXT NOT NULL,
+  category TEXT NOT NULL,
+  price TEXT NOT NULL,
+  qty INTEGER NOT NULL,
+  status TEXT NOT NULL
+);
+INSERT INTO import_rows VALUES
+  (1001, '2024-01-03 10:00:00', 'ana@mail.com',  'Ana Ruiz',  'ES', 'MUG',   'Mug',          'home',        '9.00',  2, 'paid'),
+  (1001, '2024-01-03 10:00:00', 'ana@mail.com',  'Ana Ruiz',  'ES', 'PEN',   'Fountain pen', 'stationery',  '32.50', 1, 'paid'),
+  (1002, '2024-01-15 12:30:00', 'BO@mail.com ',  'Bo Chen',   'UK', 'LAMP',  'Desk lamp',    'home',        '45.00', 1, 'SHIPPED'),
+  (1003, '2024-02-01 09:00:00', 'cy@mail.com',   'Cy Diaz',   'US', 'MUG',   'Mug',          'home',        '9.00',  4, 'shipped'),
+  (1003, '2024-02-01 09:00:00', 'cy@mail.com',   'Cy Diaz',   'US', 'NOTE',  'Notebook',     'stationery',  '4.35',  3, 'shipped'),
+  (1003, '2024-02-01 09:00:00', 'cy@mail.com',   'Cy Diaz',   'US', 'NOTE',  'Notebook',     'stationery',  '4.35',  3, 'shipped'),
+  (1004, '2024-02-14 18:00:00', ' ana@mail.com', 'Ana Ruiz',  'ES', 'HEAD',  'Headphones',   'electronics', '89.99', 1, 'Paid'),
+  (1005, '2024-02-20 11:11:00', 'dee@mail.com',  'Dee Evans', 'UK', 'PEN',   'Fountain pen', 'stationery',  '32.50', 2, 'refunded'),
+  (1006, '2024-03-05 16:45:00', 'bo@mail.com',   'Bo Chen',   'UK', 'HEAD',  'Headphones',   'electronics', '79.99', 1, 'paid'),
+  (1006, '2024-03-05 16:45:00', 'bo@mail.com',   'Bo Chen',   'UK', 'CABLE', 'USB cable',    'electronics', '6.50',  3, 'paid'),
+  (1007, '2024-03-18 08:20:00', 'cy@mail.com',   'Cy Diaz',   'US', 'LAMP',  'Desk lamp',    'home',        '45.00', 1, 'shipped'),
+  (1008, '2024-03-29 21:00:00', 'eli@mail.com',  'Eli Fox',   'US', 'MUG',   'Mug',          'home',        '9.00',  1, 'paid');
+--- teach
+This course puts the three SQL courses to work. First, three databases built step by step, each lesson carrying on from the last; then three capstones, where you design everything yourself from a written specification.
+
+**Project one: an online store's database**, from an empty file to the reports the owners read every Monday. Four lessons: the schema, loading the data, a revenue report, a customer report.
+
+The shop has been running on spreadsheets. Its export is already here as `import_rows`: one row per order line, with the customer and product repeated on every line (you will load it next lesson). First, design where it will live. Four tables, each about one thing:
+
+- `customers` — who buys
+- `products` — what is sold
+- `orders` — one purchase: who, when, what state it is in
+- `order_items` — one product within one order: how many, at what price
+
+Decisions worth making on purpose:
+
+- **Money in integer cents.** `0.1 + 0.2` is not `0.3` in floating point, and sums of prices drift by fractions of a cent. Store `price_cents INTEGER`, and divide by 100.0 only for display.
+- **The price charged lives on the order line** (`unit_cents`), separately from today's list price on `products`. Prices change; history must not.
+- **Natural keys stay unique.** The database assigns each customer an `id`, but an email may still belong to only one customer, and a SKU to one product — say so with `UNIQUE`.
+- **States are a closed list.** `CHECK (status IN (...))` stops `'Shipped '` and `'shiped'` from ever being stored.
+- **One line per product per order.** A composite primary key `(order_id, product_id)`; buying two mugs is `qty = 2`, not two lines.
+- **Children go with their parent.** Deleting an order should delete its lines (`ON DELETE CASCADE`), but deleting a product that has been sold should be refused (the default).
+--- task
+Turn foreign keys on, then create:
+
+- `customers` — `id` integer primary key; `email` text, required, unique; `name` text, required; `country` text, required
+- `products` — `id` integer primary key; `sku` text, required, unique; `name`, `category` text, required; `price_cents` integer, required, not negative
+- `orders` — `id` integer primary key; `customer_id` required, referencing `customers(id)`; `placed` text, required; `status` text, required, one of `'paid'`, `'shipped'`, `'refunded'`
+- `order_items` — `order_id` referencing `orders(id)` and deleted with its order; `product_id` referencing `products(id)`; `qty` integer, required, at least 1; `unit_cents` integer, required, not negative; primary key `(order_id, product_id)`
+--- starter
+PRAGMA foreign_keys = ON;
+
+CREATE TABLE customers (
+  id INTEGER PRIMARY KEY,
+  email TEXT NOT NULL UNIQUE,
+  name TEXT NOT NULL,
+  country TEXT NOT NULL
+);
+--- solution
+PRAGMA foreign_keys = ON;
+
+CREATE TABLE customers (
+  id INTEGER PRIMARY KEY,
+  email TEXT NOT NULL UNIQUE,
+  name TEXT NOT NULL,
+  country TEXT NOT NULL
+);
+CREATE TABLE products (
+  id INTEGER PRIMARY KEY,
+  sku TEXT NOT NULL UNIQUE,
+  name TEXT NOT NULL,
+  category TEXT NOT NULL,
+  price_cents INTEGER NOT NULL CHECK (price_cents >= 0)
+);
+CREATE TABLE orders (
+  id INTEGER PRIMARY KEY,
+  customer_id INTEGER NOT NULL REFERENCES customers(id),
+  placed TEXT NOT NULL,
+  status TEXT NOT NULL CHECK (status IN ('paid', 'shipped', 'refunded'))
+);
+CREATE TABLE order_items (
+  order_id INTEGER NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+  product_id INTEGER NOT NULL REFERENCES products(id),
+  qty INTEGER NOT NULL CHECK (qty > 0),
+  unit_cents INTEGER NOT NULL CHECK (unit_cents >= 0),
+  PRIMARY KEY (order_id, product_id)
+);
+--- hint
+Model each table on `customers`. Checks go after the type: `price_cents INTEGER NOT NULL CHECK (price_cents >= 0)`.
+--- hint
+`order_items` ends with a table constraint, `PRIMARY KEY (order_id, product_id)`, and its `order_id` has `REFERENCES orders(id) ON DELETE CASCADE`.
+--- check query | Foreign keys are on
+PRAGMA foreign_keys
+=> [[1]]
+--- check query | A customer, a product and an order with a line can be stored
+INSERT INTO customers (id, email, name, country) VALUES (1, 'ana@mail.com', 'Ana', 'ES');
+INSERT INTO products (id, sku, name, category, price_cents) VALUES (1, 'MUG', 'Mug', 'home', 900);
+INSERT INTO orders (id, customer_id, placed, status) VALUES (1, 1, '2024-01-03 10:00:00', 'paid');
+INSERT INTO order_items (order_id, product_id, qty, unit_cents) VALUES (1, 1, 2, 900) RETURNING order_id, qty
+=> [[1, 2]]
+--- check query | A second customer with the same email is refused
+INSERT OR IGNORE INTO customers (id, email, name, country) VALUES (2, 'ana@mail.com', 'Ana B', 'ES') RETURNING id
+=> []
+--- check query | A duplicate SKU or a negative price is refused
+INSERT OR IGNORE INTO products (id, sku, name, category, price_cents) VALUES (2, 'MUG', 'Mug 2', 'home', 900), (3, 'CUP', 'Cup', 'home', -1) RETURNING id
+=> []
+--- check query | An unknown status is refused
+INSERT OR IGNORE INTO orders (id, customer_id, placed, status) VALUES (2, 1, '2024-01-04 10:00:00', 'Shipped ') RETURNING id
+=> []
+--- check query | A zero quantity, or the same product twice in one order, is refused
+INSERT OR IGNORE INTO order_items (order_id, product_id, qty, unit_cents) VALUES (1, 1, 1, 900) RETURNING qty
+=> []
+--- check query | order_items points at orders (cascading) and products
+SELECT "table", "from", on_delete FROM pragma_foreign_key_list('order_items') ORDER BY "from"
+=> [["orders", "order_id", "CASCADE"], ["products", "product_id", "NO ACTION"]]
+--- check query | Deleting an order deletes its lines
+DELETE FROM orders WHERE id = 1;
+SELECT COUNT(*) FROM order_items
+=> [[0]]
+
+=== sqlp-02 | Store 2: loading the export
+--- schema
+CREATE TABLE customers (
+  id INTEGER PRIMARY KEY,
+  email TEXT NOT NULL UNIQUE,
+  name TEXT NOT NULL,
+  country TEXT NOT NULL
+);
+CREATE TABLE products (
+  id INTEGER PRIMARY KEY,
+  sku TEXT NOT NULL UNIQUE,
+  name TEXT NOT NULL,
+  category TEXT NOT NULL,
+  price_cents INTEGER NOT NULL CHECK (price_cents >= 0)
+);
+CREATE TABLE orders (
+  id INTEGER PRIMARY KEY,
+  customer_id INTEGER NOT NULL REFERENCES customers(id),
+  placed TEXT NOT NULL,
+  status TEXT NOT NULL CHECK (status IN ('paid', 'shipped', 'refunded'))
+);
+CREATE TABLE order_items (
+  order_id INTEGER NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+  product_id INTEGER NOT NULL REFERENCES products(id),
+  qty INTEGER NOT NULL CHECK (qty > 0),
+  unit_cents INTEGER NOT NULL CHECK (unit_cents >= 0),
+  PRIMARY KEY (order_id, product_id)
+);
+CREATE TABLE import_rows (
+  order_ref INTEGER NOT NULL,
+  placed TEXT NOT NULL,
+  email TEXT NOT NULL,
+  customer_name TEXT NOT NULL,
+  country TEXT NOT NULL,
+  sku TEXT NOT NULL,
+  product_name TEXT NOT NULL,
+  category TEXT NOT NULL,
+  price TEXT NOT NULL,
+  qty INTEGER NOT NULL,
+  status TEXT NOT NULL
+);
+INSERT INTO import_rows VALUES
+  (1001, '2024-01-03 10:00:00', 'ana@mail.com',  'Ana Ruiz',  'ES', 'MUG',   'Mug',          'home',        '9.00',  2, 'paid'),
+  (1001, '2024-01-03 10:00:00', 'ana@mail.com',  'Ana Ruiz',  'ES', 'PEN',   'Fountain pen', 'stationery',  '32.50', 1, 'paid'),
+  (1002, '2024-01-15 12:30:00', 'BO@mail.com ',  'Bo Chen',   'UK', 'LAMP',  'Desk lamp',    'home',        '45.00', 1, 'SHIPPED'),
+  (1003, '2024-02-01 09:00:00', 'cy@mail.com',   'Cy Diaz',   'US', 'MUG',   'Mug',          'home',        '9.00',  4, 'shipped'),
+  (1003, '2024-02-01 09:00:00', 'cy@mail.com',   'Cy Diaz',   'US', 'NOTE',  'Notebook',     'stationery',  '4.35',  3, 'shipped'),
+  (1003, '2024-02-01 09:00:00', 'cy@mail.com',   'Cy Diaz',   'US', 'NOTE',  'Notebook',     'stationery',  '4.35',  3, 'shipped'),
+  (1004, '2024-02-14 18:00:00', ' ana@mail.com', 'Ana Ruiz',  'ES', 'HEAD',  'Headphones',   'electronics', '89.99', 1, 'Paid'),
+  (1005, '2024-02-20 11:11:00', 'dee@mail.com',  'Dee Evans', 'UK', 'PEN',   'Fountain pen', 'stationery',  '32.50', 2, 'refunded'),
+  (1006, '2024-03-05 16:45:00', 'bo@mail.com',   'Bo Chen',   'UK', 'HEAD',  'Headphones',   'electronics', '79.99', 1, 'paid'),
+  (1006, '2024-03-05 16:45:00', 'bo@mail.com',   'Bo Chen',   'UK', 'CABLE', 'USB cable',    'electronics', '6.50',  3, 'paid'),
+  (1007, '2024-03-18 08:20:00', 'cy@mail.com',   'Cy Diaz',   'US', 'LAMP',  'Desk lamp',    'home',        '45.00', 1, 'shipped'),
+  (1008, '2024-03-29 21:00:00', 'eli@mail.com',  'Eli Fox',   'US', 'MUG',   'Mug',          'home',        '9.00',  1, 'paid');
+--- teach
+The empty tables from last lesson are here, next to `import_rows`, the spreadsheet export. Loading it is `INSERT … SELECT`, one table at a time, **parents before children** so every foreign key has something to point at. Before writing any of it, **look at the data**. `SELECT * FROM import_rows` shows every problem you have to handle:
+
+- **Emails with stray capitals and spaces**: `'BO@mail.com '` and `' ana@mail.com'`. Normalise with `lower(trim(email))` and group by that.
+- **Statuses in mixed case**: `'SHIPPED'`, `'Paid'`. `lower(trim(status))`, or the `CHECK` you wrote will (rightly) refuse the row.
+- **Prices as text in dollars.** Convert to cents — and watch floating point: `89.99 * 100` is `8998.999999999999`, and `CAST(… AS INTEGER)` truncates to 8998. **Round first**: `CAST(ROUND(CAST(price AS REAL) * 100) AS INTEGER)`.
+- **An exact duplicate line** (order 1003's notebooks appear twice — the export double-counted). `SELECT DISTINCT` drops it; the primary key would refuse it anyway.
+- **A product sold at two prices.** The headphones went for 89.99 and, on sale, 79.99. Each line keeps what it was charged; the product's list price is the highest price it has sold at.
+
+Grouping by the normalised email gives one row per customer, but the name and country columns are neither grouped nor aggregated. Every row of a customer carries the same name, so `MIN(customer_name)` is an honest way to pick it — an aggregate, so the query is valid in any database.
+
+Then the linking. `orders` needs a `customer_id`, which the export does not have — it has an email. Join back to the customers you just inserted on the normalised email to find the id. `order_items` finds its `product_id` the same way, through the SKU. The order's own id can simply be the export's `order_ref`.
+
+Finish by reconciling: the total of the lines you loaded must equal the total in the export, minus the duplicate. Numbers that do not reconcile are a bug in the load, not a rounding curiosity.
+--- task
+Load `import_rows` into the four tables:
+
+- one customer per normalised email (`lower(trim(email))`), with their name and country
+- one product per SKU, with `price_cents` the highest price it sold at, in cents
+- one order per `order_ref` (use it as the order `id`), linked to its customer, with the status lower-cased and trimmed
+- one line per order and product, with `unit_cents` the price on that line in cents — the duplicate line loaded once
+--- starter
+INSERT INTO customers (email, name, country)
+SELECT email, customer_name, country FROM import_rows;
+--- solution
+INSERT INTO customers (email, name, country)
+SELECT lower(trim(email)), MIN(customer_name), MIN(country)
+FROM import_rows
+GROUP BY lower(trim(email))
+ORDER BY MIN(order_ref);
+
+INSERT INTO products (sku, name, category, price_cents)
+SELECT sku, MIN(product_name), MIN(category), MAX(CAST(ROUND(CAST(price AS REAL) * 100) AS INTEGER))
+FROM import_rows
+GROUP BY sku
+ORDER BY MIN(order_ref), sku;
+
+INSERT INTO orders (id, customer_id, placed, status)
+SELECT DISTINCT r.order_ref, c.id, r.placed, lower(trim(r.status))
+FROM import_rows r
+JOIN customers c ON c.email = lower(trim(r.email));
+
+INSERT INTO order_items (order_id, product_id, qty, unit_cents)
+SELECT DISTINCT r.order_ref, p.id, r.qty, CAST(ROUND(CAST(r.price AS REAL) * 100) AS INTEGER)
+FROM import_rows r
+JOIN products p ON p.sku = r.sku;
+--- hint
+Customers: `SELECT lower(trim(email)), MIN(customer_name), MIN(country) FROM import_rows GROUP BY lower(trim(email))`. Products the same way, grouped by SKU, with `MAX(...)` of the price in cents.
+--- hint
+Cents: `CAST(ROUND(CAST(price AS REAL) * 100) AS INTEGER)` — without `ROUND`, 89.99 becomes 8998.
+--- hint
+Orders and lines: `SELECT DISTINCT … FROM import_rows r JOIN customers c ON c.email = lower(trim(r.email))`, and `JOIN products p ON p.sku = r.sku` for the lines.
+--- check query | 5 customers, 6 products, 8 orders, 11 lines
+SELECT (SELECT COUNT(*) FROM customers), (SELECT COUNT(*) FROM products), (SELECT COUNT(*) FROM orders), (SELECT COUNT(*) FROM order_items)
+=> [[5, 6, 8, 11]]
+--- check query | Emails are normalised, one customer each
+SELECT email, name, country FROM customers ORDER BY email
+=> [["ana@mail.com", "Ana Ruiz", "ES"], ["bo@mail.com", "Bo Chen", "UK"], ["cy@mail.com", "Cy Diaz", "US"], ["dee@mail.com", "Dee Evans", "UK"], ["eli@mail.com", "Eli Fox", "US"]]
+--- check query | Prices are exact cents, list price the highest sold
+SELECT sku, price_cents FROM products ORDER BY sku
+=> [["CABLE", 650], ["HEAD", 8999], ["LAMP", 4500], ["MUG", 900], ["NOTE", 435], ["PEN", 3250]]
+--- check query | Orders belong to the right customers, with clean statuses
+SELECT o.id, c.email, o.status FROM orders o JOIN customers c ON c.id = o.customer_id ORDER BY o.id
+=> [[1001, "ana@mail.com", "paid"], [1002, "bo@mail.com", "shipped"], [1003, "cy@mail.com", "shipped"], [1004, "ana@mail.com", "paid"], [1005, "dee@mail.com", "refunded"], [1006, "bo@mail.com", "paid"], [1007, "cy@mail.com", "shipped"], [1008, "eli@mail.com", "paid"]]
+--- check query | Each line keeps the price it was charged; the total reconciles
+SELECT (SELECT unit_cents FROM order_items oi JOIN products p ON p.id = oi.product_id WHERE oi.order_id = 1006 AND p.sku = 'HEAD'), SUM(qty * unit_cents) FROM order_items
+=> [[7999, 45303]]
+
+=== sqlp-03 | Store 3: the revenue report
+--- schema
+CREATE TABLE customers (
+  id INTEGER PRIMARY KEY,
+  email TEXT NOT NULL UNIQUE,
+  name TEXT NOT NULL,
+  country TEXT NOT NULL
+);
+CREATE TABLE products (
+  id INTEGER PRIMARY KEY,
+  sku TEXT NOT NULL UNIQUE,
+  name TEXT NOT NULL,
+  category TEXT NOT NULL,
+  price_cents INTEGER NOT NULL CHECK (price_cents >= 0)
+);
+CREATE TABLE orders (
+  id INTEGER PRIMARY KEY,
+  customer_id INTEGER NOT NULL REFERENCES customers(id),
+  placed TEXT NOT NULL,
+  status TEXT NOT NULL CHECK (status IN ('paid', 'shipped', 'refunded'))
+);
+CREATE TABLE order_items (
+  order_id INTEGER NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+  product_id INTEGER NOT NULL REFERENCES products(id),
+  qty INTEGER NOT NULL CHECK (qty > 0),
+  unit_cents INTEGER NOT NULL CHECK (unit_cents >= 0),
+  PRIMARY KEY (order_id, product_id)
+);
+INSERT INTO customers (id, email, name, country) VALUES
+  (1, 'ana@mail.com', 'Ana Ruiz', 'ES'),
+  (2, 'bo@mail.com', 'Bo Chen', 'UK'),
+  (3, 'cy@mail.com', 'Cy Diaz', 'US'),
+  (4, 'dee@mail.com', 'Dee Evans', 'UK'),
+  (5, 'eli@mail.com', 'Eli Fox', 'US');
+INSERT INTO products (id, sku, name, category, price_cents) VALUES
+  (1, 'MUG', 'Mug', 'home', 900),
+  (2, 'PEN', 'Fountain pen', 'stationery', 3250),
+  (3, 'LAMP', 'Desk lamp', 'home', 4500),
+  (4, 'NOTE', 'Notebook', 'stationery', 435),
+  (5, 'HEAD', 'Headphones', 'electronics', 8999),
+  (6, 'CABLE', 'USB cable', 'electronics', 650);
+INSERT INTO orders (id, customer_id, placed, status) VALUES
+  (1001, 1, '2024-01-03 10:00:00', 'paid'),
+  (1002, 2, '2024-01-15 12:30:00', 'shipped'),
+  (1003, 3, '2024-02-01 09:00:00', 'shipped'),
+  (1004, 1, '2024-02-14 18:00:00', 'paid'),
+  (1005, 4, '2024-02-20 11:11:00', 'refunded'),
+  (1006, 2, '2024-03-05 16:45:00', 'paid'),
+  (1007, 3, '2024-03-18 08:20:00', 'shipped'),
+  (1008, 5, '2024-03-29 21:00:00', 'paid');
+INSERT INTO order_items (order_id, product_id, qty, unit_cents) VALUES
+  (1001, 1, 2, 900),
+  (1001, 2, 1, 3250),
+  (1002, 3, 1, 4500),
+  (1003, 1, 4, 900),
+  (1003, 4, 3, 435),
+  (1004, 5, 1, 8999),
+  (1005, 2, 2, 3250),
+  (1006, 5, 1, 7999),
+  (1006, 6, 3, 650),
+  (1007, 3, 1, 4500),
+  (1008, 1, 1, 900);
+--- teach
+The store is loaded. (Its tables are here with the data from last lesson.) Now the owners' first question: **where does the money come from, month by month?**
+
+A report like this is a pipeline, and CTEs are its stages:
+
+1. **Line revenue** — join items to orders and products, drop refunded orders, compute `qty * unit_cents` per line, and tag each line with its month and category.
+2. **Aggregate** — sum per month and category.
+3. **Compare** — each category's share of its month, with a window function: `SUM(revenue) OVER (PARTITION BY month)` puts the month's total on every row of that month, without collapsing them.
+
+Keep the arithmetic in integer cents until the very end, then convert once: `ROUND(cents / 100.0, 2)`. Converting early and then summing reintroduces the floating-point drift you designed away.
+
+Refunds: a refunded order is money you gave back. Excluding it is the simplest honest choice for a revenue report; a finance report would show it as a negative line instead. Either way, decide it explicitly and say so in the column name or the report title — silent inclusion is how two dashboards end up disagreeing.
+--- task
+Return revenue by month and category, excluding refunded orders: `month` (`'YYYY-MM'`), `category`, `revenue` (in dollars, rounded to 2 decimals) and `share` (the category's percentage of that month's revenue, rounded to 1 decimal). Sort by month, then revenue from highest to lowest.
+--- starter
+SELECT strftime('%Y-%m', o.placed) AS month, SUM(oi.qty * oi.unit_cents) AS revenue
+FROM orders o
+JOIN order_items oi ON oi.order_id = o.id
+GROUP BY month;
+--- solution
+WITH lines AS (
+  SELECT strftime('%Y-%m', o.placed) AS month, p.category, oi.qty * oi.unit_cents AS cents
+  FROM order_items oi
+  JOIN orders o   ON o.id = oi.order_id
+  JOIN products p ON p.id = oi.product_id
+  WHERE o.status <> 'refunded'
+), totals AS (
+  SELECT month, category, SUM(cents) AS cents
+  FROM lines
+  GROUP BY month, category
+)
+SELECT month, category,
+       ROUND(cents / 100.0, 2) AS revenue,
+       ROUND(100.0 * cents / SUM(cents) OVER (PARTITION BY month), 1) AS share
+FROM totals
+ORDER BY month, revenue DESC;
+--- hint
+First CTE: one row per line with its month, category and `qty * unit_cents`, refunded orders filtered out. Second: sum per month and category.
+--- hint
+`share` is `100.0 * cents / SUM(cents) OVER (PARTITION BY month)`. Convert cents to dollars only in the final `SELECT`.
+--- check result | Seven month-and-category rows, refund excluded
+ordered
+[["2024-01", "home", 63.0, 66.0], ["2024-01", "stationery", 32.5, 34.0], ["2024-02", "electronics", 89.99, 64.7], ["2024-02", "home", 36.0, 25.9], ["2024-02", "stationery", 13.05, 9.4], ["2024-03", "electronics", 99.49, 64.8], ["2024-03", "home", 54.0, 35.2]]
+
+=== sqlp-04 | Store 4: the customer report
+--- schema
+CREATE TABLE customers (
+  id INTEGER PRIMARY KEY,
+  email TEXT NOT NULL UNIQUE,
+  name TEXT NOT NULL,
+  country TEXT NOT NULL
+);
+CREATE TABLE products (
+  id INTEGER PRIMARY KEY,
+  sku TEXT NOT NULL UNIQUE,
+  name TEXT NOT NULL,
+  category TEXT NOT NULL,
+  price_cents INTEGER NOT NULL CHECK (price_cents >= 0)
+);
+CREATE TABLE orders (
+  id INTEGER PRIMARY KEY,
+  customer_id INTEGER NOT NULL REFERENCES customers(id),
+  placed TEXT NOT NULL,
+  status TEXT NOT NULL CHECK (status IN ('paid', 'shipped', 'refunded'))
+);
+CREATE TABLE order_items (
+  order_id INTEGER NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+  product_id INTEGER NOT NULL REFERENCES products(id),
+  qty INTEGER NOT NULL CHECK (qty > 0),
+  unit_cents INTEGER NOT NULL CHECK (unit_cents >= 0),
+  PRIMARY KEY (order_id, product_id)
+);
+INSERT INTO customers (id, email, name, country) VALUES
+  (1, 'ana@mail.com', 'Ana Ruiz', 'ES'),
+  (2, 'bo@mail.com', 'Bo Chen', 'UK'),
+  (3, 'cy@mail.com', 'Cy Diaz', 'US'),
+  (4, 'dee@mail.com', 'Dee Evans', 'UK'),
+  (5, 'eli@mail.com', 'Eli Fox', 'US');
+INSERT INTO products (id, sku, name, category, price_cents) VALUES
+  (1, 'MUG', 'Mug', 'home', 900),
+  (2, 'PEN', 'Fountain pen', 'stationery', 3250),
+  (3, 'LAMP', 'Desk lamp', 'home', 4500),
+  (4, 'NOTE', 'Notebook', 'stationery', 435),
+  (5, 'HEAD', 'Headphones', 'electronics', 8999),
+  (6, 'CABLE', 'USB cable', 'electronics', 650);
+INSERT INTO orders (id, customer_id, placed, status) VALUES
+  (1001, 1, '2024-01-03 10:00:00', 'paid'),
+  (1002, 2, '2024-01-15 12:30:00', 'shipped'),
+  (1003, 3, '2024-02-01 09:00:00', 'shipped'),
+  (1004, 1, '2024-02-14 18:00:00', 'paid'),
+  (1005, 4, '2024-02-20 11:11:00', 'refunded'),
+  (1006, 2, '2024-03-05 16:45:00', 'paid'),
+  (1007, 3, '2024-03-18 08:20:00', 'shipped'),
+  (1008, 5, '2024-03-29 21:00:00', 'paid');
+INSERT INTO order_items (order_id, product_id, qty, unit_cents) VALUES
+  (1001, 1, 2, 900),
+  (1001, 2, 1, 3250),
+  (1002, 3, 1, 4500),
+  (1003, 1, 4, 900),
+  (1003, 4, 3, 435),
+  (1004, 5, 1, 8999),
+  (1005, 2, 2, 3250),
+  (1006, 5, 1, 7999),
+  (1006, 6, 3, 650),
+  (1007, 3, 1, 4500),
+  (1008, 1, 1, 900);
+INSERT INTO customers (id, email, name, country) VALUES (6, 'fay@mail.com', 'Fay Gold', 'ES');
+--- teach
+The second Monday question: **who are our customers, and how much are they worth?** The tables are the same as last lesson, plus Fay, who signed up yesterday and has not ordered yet.
+
+A customer report has to include **every** customer — including the ones who have not bought, because "signed up but never bought" is exactly who marketing wants to reach. That decides the shape: start from `customers` and LEFT JOIN everything else.
+
+Three traps, each from an earlier course:
+
+- **Condition placement.** Refunded orders must not count, but a customer whose only order was refunded must still appear. The status filter goes in the LEFT JOIN's `ON`.
+- **Fan-out.** Joining orders to their lines makes one row per *line*, so `COUNT(o.id)` counts lines. Count orders with `COUNT(DISTINCT o.id)`, or pre-aggregate each order's total in a CTE first.
+- **NULL is not zero.** A customer with no orders has `SUM(...)` = NULL. `COALESCE(…, 0)` makes the report say what it means.
+
+Then a **segment**, so the numbers turn into action. A `CASE` on lifetime spend: big spenders are `'vip'`, anyone who has spent something is `'active'`, everyone else `'inactive'`. Write the boundaries into the task, and test the edges.
+--- task
+Return one row per customer (all of them): `email`, `orders` (their non-refunded orders), `spent` (total of those orders in dollars, rounded to 2 decimals; 0 if none), `last_order` (date of the latest non-refunded order as `'YYYY-MM-DD'`, or NULL) and `segment` — `'vip'` for spend of 100 dollars or more, `'active'` for any spend above 0, else `'inactive'`. Sort by spent, highest first, then email.
+--- starter
+SELECT c.email, COUNT(o.id) AS orders
+FROM customers c
+JOIN orders o ON o.customer_id = c.id
+GROUP BY c.id;
+--- solution
+WITH order_totals AS (
+  SELECT o.id, o.customer_id, o.placed, SUM(oi.qty * oi.unit_cents) AS cents
+  FROM orders o
+  JOIN order_items oi ON oi.order_id = o.id
+  WHERE o.status <> 'refunded'
+  GROUP BY o.id
+), per_customer AS (
+  SELECT c.email,
+         COUNT(t.id) AS orders,
+         COALESCE(SUM(t.cents), 0) AS cents,
+         date(MAX(t.placed)) AS last_order
+  FROM customers c
+  LEFT JOIN order_totals t ON t.customer_id = c.id
+  GROUP BY c.id
+)
+SELECT email, orders,
+       ROUND(cents / 100.0, 2) AS spent,
+       last_order,
+       CASE WHEN cents >= 10000 THEN 'vip'
+            WHEN cents > 0 THEN 'active'
+            ELSE 'inactive' END AS segment
+FROM per_customer
+ORDER BY spent DESC, email;
+--- hint
+Pre-aggregate: a CTE with one row per non-refunded order and its total in cents. That removes the fan-out.
+--- hint
+LEFT JOIN customers to that CTE, `COUNT(t.id)` for orders, `COALESCE(SUM(t.cents), 0)` for spend, `date(MAX(t.placed))` for the last order.
+--- hint
+The segment is a `CASE` on cents: `>= 10000` is vip, `> 0` is active.
+--- check result | Six customers; Dee (refund only) and Fay (no orders) are inactive
+ordered
+[["bo@mail.com", 2, 144.49, "2024-03-05", "vip"], ["ana@mail.com", 2, 140.49, "2024-02-14", "vip"], ["cy@mail.com", 2, 94.05, "2024-03-18", "active"], ["eli@mail.com", 1, 9.0, "2024-03-29", "active"], ["dee@mail.com", 0, 0.0, null, "inactive"], ["fay@mail.com", 0, 0.0, null, "inactive"]]
+
+=== sqlp-05 | Analytics 1: ingesting raw events
+--- schema
+CREATE TABLE raw_events (
+  id INTEGER PRIMARY KEY,
+  received_at TEXT NOT NULL,
+  body TEXT NOT NULL
+);
+INSERT INTO raw_events (id, received_at, body) VALUES
+  (1,  '2024-07-01 09:00:01', '{"event_id": "e1", "user_id": 1, "name": "visit", "ts": "2024-07-01 09:00:00"}'),
+  (2,  '2024-07-01 09:03:01', '{"event_id": "e2", "user_id": 1, "name": "signup", "ts": "2024-07-01 09:03:00"}'),
+  (3,  '2024-07-01 09:03:09', '{"event_id": "e2", "user_id": 1, "name": "signup", "ts": "2024-07-01 09:03:00"}'),
+  (4,  '2024-07-01 10:00:01', '{"event_id": "e3", "user_id": 2, "name": "visit", "ts": "2024-07-01 10:00:00"}'),
+  (5,  '2024-07-01 10:20:00', 'not json at all'),
+  (6,  '2024-07-01 11:00:01', '{"event_id": "e4", "name": "visit", "ts": "2024-07-01 11:00:00"}'),
+  (7,  '2024-07-02 08:00:01', '{"event_id": "e5", "user_id": "3", "name": "Visit", "ts": "2024-07-02 08:00:00"}'),
+  (8,  '2024-07-02 10:30:02', '{"event_id": "e6", "user_id": 2, "name": "signup", "ts": "2024-07-02T10:30:00Z"}'),
+  (9,  '2024-07-02 12:00:01', '{"event_id": "e7", "user_id": 1, "name": "activate", "ts": "2024-07-02 12:00:00", "props": {"plan": "pro"}}'),
+  (10, '2024-07-03 09:00:01', '{"user_id": 4, "name": "visit", "ts": "2024-07-03 09:00:00"}');
+--- teach
+**Project two: product analytics.** The app sends an event every time a user does something — `visit`, `signup`, `activate` — and the team wants daily actives, a signup funnel and retention. Four lessons: ingest, daily actives, funnel, retention.
+
+Events arrive in `raw_events` exactly as the clients sent them: a JSON `body` per row. Raw data from the outside world is never clean, and the first job of any pipeline is to turn it into a table you can trust. Read the rows and you find:
+
+- **Body that is not JSON at all** (row 5). `json_valid(body)` is 0 for it; every JSON function would error or return NULL.
+- **Client retries.** The phone lost signal and sent `e2` twice. The event carries its own id, so the id — not the row — decides what is a duplicate. Make `event_id` the primary key and load with `INSERT OR IGNORE`: the first copy wins, later copies are skipped.
+- **Missing required fields**: no `user_id` (row 6), no `event_id` (row 10). An event you cannot attribute or deduplicate is not usable; skip it (a real pipeline would also count what it skipped).
+- **Wrong types**: `"user_id": "3"` is a string. `CAST(… AS INTEGER)` fixes it — and `typeof(user_id)` in the result proves it.
+- **Inconsistent values**: `"Visit"` vs `"visit"`; a timestamp in ISO form with `T` and `Z`. `lower()`, and `datetime(ts)`, which turns `'2024-07-02T10:30:00Z'` into `'2024-07-02 10:30:00'`.
+
+The rule of an ingest step: the output table has constraints strict enough that bad data **cannot** land in it, and the query does the cleaning that makes good data fit. Order the input by the raw row id, so "first copy wins" means the copy that arrived first.
+--- task
+Create `events` (`event_id` text primary key; `user_id` integer, required; `name` text, required; `ts` text, required) and load it from `raw_events`: only rows whose body is valid JSON and has both an `event_id` and a `user_id`; `user_id` as an integer; `name` lower-cased; `ts` normalised with `datetime()`; each `event_id` once (the first copy received).
+--- starter
+CREATE TABLE events (
+  event_id TEXT PRIMARY KEY,
+  user_id INTEGER NOT NULL,
+  name TEXT NOT NULL,
+  ts TEXT NOT NULL
+);
+--- solution
+CREATE TABLE events (
+  event_id TEXT PRIMARY KEY,
+  user_id INTEGER NOT NULL,
+  name TEXT NOT NULL,
+  ts TEXT NOT NULL
+);
+
+INSERT OR IGNORE INTO events (event_id, user_id, name, ts)
+SELECT body ->> '$.event_id',
+       CAST(body ->> '$.user_id' AS INTEGER),
+       lower(body ->> '$.name'),
+       datetime(body ->> '$.ts')
+FROM raw_events
+WHERE json_valid(body)
+  AND body ->> '$.event_id' IS NOT NULL
+  AND body ->> '$.user_id' IS NOT NULL
+ORDER BY id;
+--- hint
+Filter first: `WHERE json_valid(body) AND body ->> '$.event_id' IS NOT NULL AND body ->> '$.user_id' IS NOT NULL`.
+--- hint
+`INSERT OR IGNORE … SELECT … ORDER BY id` lets the primary key drop the retried copy.
+--- hint
+Clean each field: `CAST(body ->> '$.user_id' AS INTEGER)`, `lower(body ->> '$.name')`, `datetime(body ->> '$.ts')`.
+--- check query | Six clean events: bad JSON, missing ids and the retry are gone
+SELECT event_id, user_id, name, ts FROM events ORDER BY event_id
+=> [["e1", 1, "visit", "2024-07-01 09:00:00"], ["e2", 1, "signup", "2024-07-01 09:03:00"], ["e3", 2, "visit", "2024-07-01 10:00:00"], ["e5", 3, "visit", "2024-07-02 08:00:00"], ["e6", 2, "signup", "2024-07-02 10:30:00"], ["e7", 1, "activate", "2024-07-02 12:00:00"]]
+--- check query | Every user_id is stored as an integer
+SELECT DISTINCT typeof(user_id) FROM events
+=> [["integer"]]
+--- check query | A replayed event is still ignored
+INSERT OR IGNORE INTO events (event_id, user_id, name, ts) VALUES ('e1', 1, 'visit', '2024-07-01 09:00:00') RETURNING event_id
+=> []
+
+=== sqlp-06 | Analytics 2: daily active users
+--- teach
+The clean `events` table (`event_id`, `user_id`, `name`, `ts`) now holds ten days of real traffic. The first number every product team watches: **daily active users** (DAU) — how many *different* users did anything each day — and alongside it, how many of them were **new** that day.
+
+Two traps make naive DAU charts lie:
+
+1. **Days with no events vanish.** `GROUP BY date(ts)` has no row for a day with no activity, so a chart simply skips it, and a dead day looks like nothing happened. Generate the calendar with a recursive CTE and LEFT JOIN onto it (the advanced course, lesson 2).
+2. **Activity is not users.** A user with five events is one active user: `COUNT(DISTINCT user_id)`.
+
+"New" needs each user's **first-ever** day, which is a per-user `MIN`:
+
+```sql
+SELECT user_id, MIN(date(ts)) AS first_day FROM events GROUP BY user_id
+```
+
+Then a day's new users are the users whose `first_day` is that day. Because it is computed over *all* events, not just the report's week, a user first seen before the report starts is never counted as new inside it.
+
+Both measures hang off the calendar, and each is its own aggregate, so compute them in separate CTEs and join both onto the calendar — joining them together first would fan out.
+--- task
+For every day from `2024-07-01` to `2024-07-07`, return `day`, `dau` (distinct users with any event that day) and `new_users` (users whose first-ever event was that day). Days with no activity show 0 for both. Sort by day.
+--- starter
+SELECT date(ts) AS day, COUNT(*) AS dau
+FROM events
+GROUP BY day;
+--- solution
+WITH RECURSIVE days(day) AS (
+  SELECT '2024-07-01'
+  UNION ALL
+  SELECT date(day, '+1 day') FROM days WHERE day < '2024-07-07'
+), active AS (
+  SELECT date(ts) AS day, COUNT(DISTINCT user_id) AS dau
+  FROM events
+  GROUP BY date(ts)
+), firsts AS (
+  SELECT first_day AS day, COUNT(*) AS new_users
+  FROM (SELECT user_id, MIN(date(ts)) AS first_day FROM events GROUP BY user_id)
+  GROUP BY first_day
+)
+SELECT d.day, COALESCE(a.dau, 0) AS dau, COALESCE(f.new_users, 0) AS new_users
+FROM days d
+LEFT JOIN active a ON a.day = d.day
+LEFT JOIN firsts f ON f.day = d.day
+ORDER BY d.day;
+--- hint
+Build the seven-day calendar with a recursive CTE, and LEFT JOIN the numbers onto it.
+--- hint
+DAU per day is `COUNT(DISTINCT user_id)` grouped by `date(ts)`. New users: each user's `MIN(date(ts))`, then count users per first day.
+--- check result | Seven days; 4 July is empty
+ordered
+[["2024-07-01", 2, 2], ["2024-07-02", 3, 1], ["2024-07-03", 3, 1], ["2024-07-04", 0, 0], ["2024-07-05", 3, 1], ["2024-07-06", 2, 0], ["2024-07-07", 2, 1]]
+
+=== sqlp-07 | Analytics 3: a signup funnel with a deadline
+--- teach
+Next: the **signup funnel**, visit → signup → activate. You built an ordered funnel in the expert course; this one adds a rule product teams care about — a **deadline**. Activation only counts if it happens **within 72 hours of signing up**. A user who activates a week later is a win, but not one the onboarding flow can take credit for.
+
+So each step has two conditions: it happens **after** the previous step, and (for activation) **no later than** a window after it:
+
+```sql
+WHERE e.name = 'activate'
+  AND e.ts > s2.t
+  AND unixepoch(e.ts) - unixepoch(s2.t) <= 72 * 3600
+```
+
+Measure the window in integer seconds with `unixepoch` — `72 * 3600` exactly — so an activation at precisely the 72-hour mark is included, as the rule says ("within" includes the boundary; write that decision down).
+
+Data details that decide the numbers here:
+
+- User 6 signed up *before* their first visit (they came from an invite link). In an ordered funnel their signup does not follow a visit, so they stop at step 1.
+- User 2 activated exactly 72 hours after signing up: in.
+- Users 4 and 5 activated, but too late: out.
+
+This time report each step's conversion against the **first** step (the share of visitors who got this far), which is how an overall funnel chart reads. `FIRST_VALUE(users) OVER (ORDER BY step)` gives step 1's count on every row.
+--- task
+Return the funnel visit → signup → activate: `step` (1–3), `name`, `users` and `pct` (users as a percentage of step 1's users, rounded to 1 decimal). A user reaches step 1 at their first `visit`, step 2 at their first `signup` after that, and step 3 at their first `activate` after that signup and no more than 72 hours after it. Sort by step.
+--- starter
+SELECT name, COUNT(DISTINCT user_id) AS users
+FROM events
+GROUP BY name;
+--- solution
+WITH s1 AS (
+  SELECT user_id, MIN(ts) AS t FROM events WHERE name = 'visit' GROUP BY user_id
+), s2 AS (
+  SELECT e.user_id, MIN(e.ts) AS t
+  FROM events e JOIN s1 ON s1.user_id = e.user_id
+  WHERE e.name = 'signup' AND e.ts > s1.t
+  GROUP BY e.user_id
+), s3 AS (
+  SELECT e.user_id, MIN(e.ts) AS t
+  FROM events e JOIN s2 ON s2.user_id = e.user_id
+  WHERE e.name = 'activate' AND e.ts > s2.t
+    AND unixepoch(e.ts) - unixepoch(s2.t) <= 72 * 3600
+  GROUP BY e.user_id
+), steps AS (
+  SELECT 1 AS step, 'visit' AS name, COUNT(*) AS users FROM s1
+  UNION ALL SELECT 2, 'signup', COUNT(*) FROM s2
+  UNION ALL SELECT 3, 'activate', COUNT(*) FROM s3
+)
+SELECT step, name, users,
+       ROUND(100.0 * users / FIRST_VALUE(users) OVER (ORDER BY step), 1) AS pct
+FROM steps
+ORDER BY step;
+--- hint
+One CTE per step, each joined to the previous one and taking the earliest qualifying event after it.
+--- hint
+The activation step adds `unixepoch(e.ts) - unixepoch(s2.t) <= 72 * 3600`.
+--- hint
+Stack the three counts with `UNION ALL`, then `FIRST_VALUE(users) OVER (ORDER BY step)` for the percentage.
+--- check result | 6 visitors, 5 signed up after visiting, 3 activated in time
+ordered
+[[1, "visit", 6, 100.0], [2, "signup", 5, 83.3], [3, "activate", 3, 50.0]]
+
+=== sqlp-08 | Analytics 4: day-N retention
+--- teach
+The last analytics question: **do people come back?** Day-N retention asks, for N = 1, 2, … 7: of the users who signed up, what share were active on the Nth calendar day after their signup day?
+
+Build it from pieces you know:
+
+1. **Each user's signup day** — `date(ts)` of their `signup` event.
+2. **Each user's active days** — `SELECT DISTINCT user_id, date(ts)`.
+3. **The offsets 1–7** — a recursive CTE generating a series.
+4. **Every (user, N) pair** — `CROSS JOIN` the signups with the offsets.
+5. For each pair, was the user active on `date(signup_day, '+' || N || ' days')`? `EXISTS` gives 1 or 0.
+
+There is one subtlety that separates a correct retention table from a misleading one: **users who have not had day N yet.** The data ends on `2024-07-10`. User 6 signed up on 07-07; their day 7 is 07-14, which has not happened. Counting them as "not retained" on day 7 makes recent signups drag the curve down for no reason. Only users whose day N is on or before the last day of data are **eligible** for day N; they form the denominator.
+
+So each row reports `eligible` (users whose day N has happened), `retained` (eligible users active on day N) and `pct`. Find the last day of data from the data itself (`MAX(date(ts))`), not by typing it in.
+--- task
+Return one row for each N from 1 to 7: `day` (N), `eligible` (signed-up users whose day N is on or before the last day in `events`), `retained` (eligible users with any event on exactly their day N) and `pct` (retained as a percentage of eligible, rounded to 1 decimal). A user's day 0 is the date of their `signup` event. Sort by day.
+--- starter
+SELECT user_id, date(ts) AS signup_day
+FROM events
+WHERE name = 'signup';
+--- solution
+WITH RECURSIVE n(day) AS (
+  SELECT 1 UNION ALL SELECT day + 1 FROM n WHERE day < 7
+), signups AS (
+  SELECT user_id, date(MIN(ts)) AS d0 FROM events WHERE name = 'signup' GROUP BY user_id
+), active AS (
+  SELECT DISTINCT user_id, date(ts) AS d FROM events
+), last AS (
+  SELECT MAX(date(ts)) AS d FROM events
+), pairs AS (
+  SELECT n.day, s.user_id,
+         EXISTS (SELECT 1 FROM active a
+                 WHERE a.user_id = s.user_id AND a.d = date(s.d0, '+' || n.day || ' days')) AS hit
+  FROM n
+  CROSS JOIN signups s
+  CROSS JOIN last
+  WHERE date(s.d0, '+' || n.day || ' days') <= last.d
+)
+SELECT day, COUNT(*) AS eligible, SUM(hit) AS retained,
+       ROUND(100.0 * SUM(hit) / COUNT(*), 1) AS pct
+FROM pairs
+GROUP BY day
+ORDER BY day;
+--- hint
+Four CTEs: the series 1–7, each user's signup day, each user's distinct active days, and the last day of data.
+--- hint
+`CROSS JOIN` the series with the signups, keep pairs whose day N (`date(d0, '+' || day || ' days')`) is on or before the last day, and flag each with `EXISTS (…)`.
+--- hint
+Group by N: `COUNT(*)` is eligible, `SUM(hit)` is retained.
+--- check result | Seven days of retention, with shrinking eligibility
+ordered
+[[1, 6, 2, 33.3], [2, 6, 1, 16.7], [3, 6, 2, 33.3], [4, 5, 3, 60.0], [5, 5, 1, 20.0], [6, 4, 0, 0.0], [7, 4, 3, 75.0]]
+
+=== sqlp-09 | Library 1: the schema
+--- schema
+CREATE TABLE members (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  email TEXT NOT NULL UNIQUE
+);
+INSERT INTO members (id, name, email) VALUES (1, 'Ana', 'ana@mail.com'), (2, 'Bo', 'bo@mail.com'), (3, 'Cy', 'cy@mail.com');
+--- teach
+**Project three: a library.** Four lessons: the schema, availability, overdue fines, and returns that charge fines by themselves. The town's membership list already exists as `members` (`id`, `name`, `email`). You design the rest.
+
+The first modelling decision is the classic one: a **book** is not a **copy**. "Dune" is one book with an ISBN, a title and an author; the library owns three physical copies of it, each with its own barcode. You lend copies, not books. Get this wrong — a `books` table with a `quantity` column — and you cannot say *which* copy is overdue or damaged.
+
+- `books` — the title: ISBN (unique), title, author
+- `copies` — a physical item: which book, its barcode (unique)
+- `loans` — one lending: which copy, which member, when lent, when due, when returned (NULL while out)
+
+Now the rules, as constraints wherever the database can hold them:
+
+- A loan is due **after** it starts: `CHECK (due_on > loaned_on)`.
+- It cannot be returned before it was lent: `CHECK (returned_on IS NULL OR returned_on >= loaned_on)`.
+- **A copy can be out on only one loan at a time.** This is the interesting one. A plain `UNIQUE (copy_id)` would allow only one loan per copy *ever*. What you want is "unique among the loans that are still open" — a **partial index**:
+
+```sql
+CREATE UNIQUE INDEX one_open_loan_per_copy ON loans(copy_id) WHERE returned_on IS NULL;
+```
+
+Only rows matching the `WHERE` go into the index, so uniqueness applies to open loans alone. Closed loans pile up freely as history.
+--- task
+Turn foreign keys on and create:
+
+- `books` — `id` integer primary key; `isbn` text, required, unique; `title` and `author` text, required
+- `copies` — `id` integer primary key; `book_id` required, referencing `books(id)`; `barcode` text, required, unique
+- `loans` — `id` integer primary key; `copy_id` required, referencing `copies(id)`; `member_id` required, referencing `members(id)`; `loaned_on` and `due_on` text, required, with the due date after the loan date; `returned_on` text, NULL while out, never before the loan date
+- a unique partial index named `one_open_loan_per_copy` so a copy can have only one open loan at a time
+--- starter
+PRAGMA foreign_keys = ON;
+
+CREATE TABLE books (
+  id INTEGER PRIMARY KEY,
+  isbn TEXT NOT NULL UNIQUE,
+  title TEXT NOT NULL,
+  author TEXT NOT NULL
+);
+--- solution
+PRAGMA foreign_keys = ON;
+
+CREATE TABLE books (
+  id INTEGER PRIMARY KEY,
+  isbn TEXT NOT NULL UNIQUE,
+  title TEXT NOT NULL,
+  author TEXT NOT NULL
+);
+CREATE TABLE copies (
+  id INTEGER PRIMARY KEY,
+  book_id INTEGER NOT NULL REFERENCES books(id),
+  barcode TEXT NOT NULL UNIQUE
+);
+CREATE TABLE loans (
+  id INTEGER PRIMARY KEY,
+  copy_id INTEGER NOT NULL REFERENCES copies(id),
+  member_id INTEGER NOT NULL REFERENCES members(id),
+  loaned_on TEXT NOT NULL,
+  due_on TEXT NOT NULL,
+  returned_on TEXT,
+  CHECK (due_on > loaned_on),
+  CHECK (returned_on IS NULL OR returned_on >= loaned_on)
+);
+CREATE UNIQUE INDEX one_open_loan_per_copy ON loans(copy_id) WHERE returned_on IS NULL;
+--- hint
+Two `CHECK`s at the end of `loans`: `CHECK (due_on > loaned_on)` and `CHECK (returned_on IS NULL OR returned_on >= loaned_on)`.
+--- hint
+The one-open-loan rule is `CREATE UNIQUE INDEX one_open_loan_per_copy ON loans(copy_id) WHERE returned_on IS NULL;`
+--- check query | Books, copies and a loan can be stored
+INSERT INTO books (id, isbn, title, author) VALUES (1, '9780441013593', 'Dune', 'Frank Herbert');
+INSERT INTO copies (id, book_id, barcode) VALUES (1, 1, 'D-1'), (2, 1, 'D-2');
+INSERT INTO loans (id, copy_id, member_id, loaned_on, due_on) VALUES (1, 1, 1, '2024-07-01', '2024-07-15') RETURNING id, returned_on
+=> [[1, null]]
+--- check query | A duplicate ISBN or barcode is refused
+INSERT OR IGNORE INTO books (id, isbn, title, author) VALUES (2, '9780441013593', 'Dune again', 'F. H.') RETURNING id
+=> []
+--- check query | The same copy cannot go out twice at once
+INSERT OR IGNORE INTO loans (id, copy_id, member_id, loaned_on, due_on) VALUES (2, 1, 2, '2024-07-02', '2024-07-16') RETURNING id
+=> []
+--- check query | Once returned, the copy can go out again
+UPDATE loans SET returned_on = '2024-07-05' WHERE id = 1;
+INSERT OR IGNORE INTO loans (id, copy_id, member_id, loaned_on, due_on) VALUES (3, 1, 2, '2024-07-06', '2024-07-20') RETURNING id
+=> [[3]]
+--- check query | A due date before the loan, or a return before it, is refused
+INSERT OR IGNORE INTO loans (id, copy_id, member_id, loaned_on, due_on, returned_on) VALUES (4, 2, 1, '2024-07-10', '2024-07-01', NULL), (5, 2, 1, '2024-07-10', '2024-07-24', '2024-07-09') RETURNING id
+=> []
+--- check query | loans references copies and members
+SELECT "table", "from" FROM pragma_foreign_key_list('loans') ORDER BY "from"
+=> [["copies", "copy_id"], ["members", "member_id"]]
+
+=== sqlp-10 | Library 2: what can I borrow?
+--- schema
+CREATE TABLE members (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  email TEXT NOT NULL UNIQUE
+);
+CREATE TABLE books (
+  id INTEGER PRIMARY KEY,
+  isbn TEXT NOT NULL UNIQUE,
+  title TEXT NOT NULL,
+  author TEXT NOT NULL
+);
+CREATE TABLE copies (
+  id INTEGER PRIMARY KEY,
+  book_id INTEGER NOT NULL REFERENCES books(id),
+  barcode TEXT NOT NULL UNIQUE
+);
+CREATE TABLE loans (
+  id INTEGER PRIMARY KEY,
+  copy_id INTEGER NOT NULL REFERENCES copies(id),
+  member_id INTEGER NOT NULL REFERENCES members(id),
+  loaned_on TEXT NOT NULL,
+  due_on TEXT NOT NULL,
+  returned_on TEXT,
+  CHECK (due_on > loaned_on),
+  CHECK (returned_on IS NULL OR returned_on >= loaned_on)
+);
+CREATE UNIQUE INDEX one_open_loan_per_copy ON loans(copy_id) WHERE returned_on IS NULL;
+INSERT INTO members (id, name, email) VALUES (1, 'Ana', 'ana@mail.com'), (2, 'Bo', 'bo@mail.com'), (3, 'Cy', 'cy@mail.com');
+INSERT INTO books (id, isbn, title, author) VALUES
+  (1, '9780441013593', 'Dune',    'Frank Herbert'),
+  (2, '9780141439587', 'Emma',    'Jane Austen'),
+  (3, '9780547572291', 'Ubik',    'Philip K. Dick'),
+  (4, '9780807083697', 'Kindred', 'Octavia E. Butler');
+INSERT INTO copies (id, book_id, barcode) VALUES
+  (1, 1, 'D-1'), (2, 1, 'D-2'), (3, 1, 'D-3'), (4, 2, 'E-1'), (5, 3, 'U-1'), (6, 3, 'U-2');
+INSERT INTO loans (id, copy_id, member_id, loaned_on, due_on, returned_on) VALUES
+  (1, 1, 1, '2024-06-01', '2024-06-15', '2024-06-14'),
+  (2, 2, 2, '2024-06-20', '2024-07-04', NULL),
+  (3, 1, 3, '2024-06-25', '2024-07-09', NULL),
+  (4, 4, 1, '2024-07-01', '2024-07-15', NULL),
+  (5, 5, 2, '2024-05-01', '2024-05-15', '2024-05-30'),
+  (6, 6, 1, '2024-04-01', '2024-04-15', NULL);
+--- teach
+The library's tables are here with real data: four books, six copies, three members and six loans. *Kindred* has just been catalogued and has no copies yet.
+
+The question the front desk and the website both ask: **for each book, how many copies are there, how many are out, and how many can be borrowed right now?** Put it in a view, `book_availability`, so the desk, the website and the weekly report all share one definition of "available".
+
+A copy is **out** when it has a loan with `returned_on IS NULL` — thanks to last lesson's partial index, at most one. Build it in the order of the tables:
+
+- start **from `books`**, so a book with no copies still appears (with 0 everywhere, not missing);
+- LEFT JOIN `copies`;
+- LEFT JOIN `loans` **on the copy and `returned_on IS NULL`** — the open-loan condition belongs in the `ON`, or every copy that was ever returned would be counted in odd ways, and copies with no loans would drop out.
+
+Then count: `COUNT(c.id)` copies, `COUNT(l.id)` open loans, and available is the difference. Because each copy has at most one open loan, this join cannot fan out — the constraint you designed is what makes this query correct.
+--- task
+Create a view `book_availability` with one row per book (including books with no copies): `book_id`, `title`, `copies`, `on_loan` (copies currently out) and `available` (copies minus on loan).
+--- starter
+CREATE VIEW book_availability AS
+SELECT b.id AS book_id, b.title, COUNT(*) AS copies
+FROM books b
+JOIN copies c ON c.book_id = b.id
+GROUP BY b.id;
+--- solution
+CREATE VIEW book_availability AS
+SELECT b.id AS book_id, b.title,
+       COUNT(c.id) AS copies,
+       COUNT(l.id) AS on_loan,
+       COUNT(c.id) - COUNT(l.id) AS available
+FROM books b
+LEFT JOIN copies c ON c.book_id = b.id
+LEFT JOIN loans l  ON l.copy_id = c.id AND l.returned_on IS NULL
+GROUP BY b.id;
+--- hint
+Start from `books` and LEFT JOIN both `copies` and `loans`.
+--- hint
+The loans join is `ON l.copy_id = c.id AND l.returned_on IS NULL`; count `c.id` and `l.id`, not `*`.
+--- check query | Every book, with copies, loans and availability
+SELECT book_id, title, copies, on_loan, available FROM book_availability ORDER BY book_id
+=> [[1, "Dune", 3, 2, 1], [2, "Emma", 1, 1, 0], [3, "Ubik", 2, 1, 1], [4, "Kindred", 0, 0, 0]]
+--- check query | Returning a copy makes it available straight away
+UPDATE loans SET returned_on = '2024-07-15' WHERE id = 4;
+SELECT available FROM book_availability WHERE title = 'Emma'
+=> [[1]]
+
+=== sqlp-11 | Library 3: overdue loans and fines
+--- schema
+CREATE TABLE members (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  email TEXT NOT NULL UNIQUE
+);
+CREATE TABLE books (
+  id INTEGER PRIMARY KEY,
+  isbn TEXT NOT NULL UNIQUE,
+  title TEXT NOT NULL,
+  author TEXT NOT NULL
+);
+CREATE TABLE copies (
+  id INTEGER PRIMARY KEY,
+  book_id INTEGER NOT NULL REFERENCES books(id),
+  barcode TEXT NOT NULL UNIQUE
+);
+CREATE TABLE loans (
+  id INTEGER PRIMARY KEY,
+  copy_id INTEGER NOT NULL REFERENCES copies(id),
+  member_id INTEGER NOT NULL REFERENCES members(id),
+  loaned_on TEXT NOT NULL,
+  due_on TEXT NOT NULL,
+  returned_on TEXT,
+  CHECK (due_on > loaned_on),
+  CHECK (returned_on IS NULL OR returned_on >= loaned_on)
+);
+CREATE UNIQUE INDEX one_open_loan_per_copy ON loans(copy_id) WHERE returned_on IS NULL;
+INSERT INTO members (id, name, email) VALUES (1, 'Ana', 'ana@mail.com'), (2, 'Bo', 'bo@mail.com'), (3, 'Cy', 'cy@mail.com');
+INSERT INTO books (id, isbn, title, author) VALUES
+  (1, '9780441013593', 'Dune',    'Frank Herbert'),
+  (2, '9780141439587', 'Emma',    'Jane Austen'),
+  (3, '9780547572291', 'Ubik',    'Philip K. Dick'),
+  (4, '9780807083697', 'Kindred', 'Octavia E. Butler');
+INSERT INTO copies (id, book_id, barcode) VALUES
+  (1, 1, 'D-1'), (2, 1, 'D-2'), (3, 1, 'D-3'), (4, 2, 'E-1'), (5, 3, 'U-1'), (6, 3, 'U-2');
+INSERT INTO loans (id, copy_id, member_id, loaned_on, due_on, returned_on) VALUES
+  (1, 1, 1, '2024-06-01', '2024-06-15', '2024-06-14'),
+  (2, 2, 2, '2024-06-20', '2024-07-04', NULL),
+  (3, 1, 3, '2024-06-25', '2024-07-09', NULL),
+  (4, 4, 1, '2024-07-01', '2024-07-15', NULL),
+  (5, 5, 2, '2024-05-01', '2024-05-15', '2024-05-30'),
+  (6, 6, 1, '2024-04-01', '2024-04-15', NULL);
+--- teach
+Every Monday the library emails members with overdue books. The rules:
+
+- A loan is **overdue** when it is still out and its due date has passed.
+- The fine is **25 cents per day** overdue, **capped at 10 dollars** (1000 cents) per loan — nobody should owe more than a book is worth.
+
+Dates: `julianday(a) - julianday(b)` is the number of days between two dates. For whole dates like `'2024-07-15'` the difference is a whole number, but it is still a REAL; `CAST(… AS INTEGER)` makes it an integer for display and arithmetic.
+
+The cap is `MIN(days * 25, 1000)` — in SQLite, `MIN` with two or more arguments is the ordinary "smaller of these values" function, not the aggregate.
+
+Choose the reporting date carefully. `date('now')` makes the report correct today and untestable forever: tomorrow it gives different numbers. Reports that people check, compare and reproduce take the date as an input. Here it is fixed: **as of 2024-07-15**. A book due on the 15th is not overdue on the 15th.
+--- task
+Return every loan that is overdue as of `2024-07-15`: `member` (name), `title`, `due_on`, `days_overdue` (an integer) and `fine_cents` (25 per day, at most 1000). Sort by fine, largest first, then member.
+--- starter
+SELECT m.name AS member, l.due_on
+FROM loans l
+JOIN members m ON m.id = l.member_id
+WHERE l.returned_on IS NULL;
+--- solution
+SELECT m.name AS member, b.title, l.due_on,
+       CAST(julianday('2024-07-15') - julianday(l.due_on) AS INTEGER) AS days_overdue,
+       MIN(CAST(julianday('2024-07-15') - julianday(l.due_on) AS INTEGER) * 25, 1000) AS fine_cents
+FROM loans l
+JOIN members m ON m.id = l.member_id
+JOIN copies c  ON c.id = l.copy_id
+JOIN books b   ON b.id = c.book_id
+WHERE l.returned_on IS NULL
+  AND l.due_on < '2024-07-15'
+ORDER BY fine_cents DESC, member;
+--- hint
+Overdue: `returned_on IS NULL AND due_on < '2024-07-15'`. The title is two joins away: loans → copies → books.
+--- hint
+Days: `CAST(julianday('2024-07-15') - julianday(l.due_on) AS INTEGER)`; fine: `MIN(days * 25, 1000)`.
+--- check result | Ana's 91-day loan is capped; Emma, due today, is not overdue
+ordered
+[["Ana", "Ubik", "2024-04-15", 91, 1000], ["Bo", "Dune", "2024-07-04", 11, 275], ["Cy", "Dune", "2024-07-09", 6, 150]]
+
+=== sqlp-12 | Library 4: returns that charge fines
+--- schema
+CREATE TABLE members (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  email TEXT NOT NULL UNIQUE
+);
+CREATE TABLE books (
+  id INTEGER PRIMARY KEY,
+  isbn TEXT NOT NULL UNIQUE,
+  title TEXT NOT NULL,
+  author TEXT NOT NULL
+);
+CREATE TABLE copies (
+  id INTEGER PRIMARY KEY,
+  book_id INTEGER NOT NULL REFERENCES books(id),
+  barcode TEXT NOT NULL UNIQUE
+);
+CREATE TABLE loans (
+  id INTEGER PRIMARY KEY,
+  copy_id INTEGER NOT NULL REFERENCES copies(id),
+  member_id INTEGER NOT NULL REFERENCES members(id),
+  loaned_on TEXT NOT NULL,
+  due_on TEXT NOT NULL,
+  returned_on TEXT,
+  CHECK (due_on > loaned_on),
+  CHECK (returned_on IS NULL OR returned_on >= loaned_on)
+);
+CREATE UNIQUE INDEX one_open_loan_per_copy ON loans(copy_id) WHERE returned_on IS NULL;
+INSERT INTO members (id, name, email) VALUES (1, 'Ana', 'ana@mail.com'), (2, 'Bo', 'bo@mail.com'), (3, 'Cy', 'cy@mail.com');
+INSERT INTO books (id, isbn, title, author) VALUES
+  (1, '9780441013593', 'Dune',    'Frank Herbert'),
+  (2, '9780141439587', 'Emma',    'Jane Austen'),
+  (3, '9780547572291', 'Ubik',    'Philip K. Dick'),
+  (4, '9780807083697', 'Kindred', 'Octavia E. Butler');
+INSERT INTO copies (id, book_id, barcode) VALUES
+  (1, 1, 'D-1'), (2, 1, 'D-2'), (3, 1, 'D-3'), (4, 2, 'E-1'), (5, 3, 'U-1'), (6, 3, 'U-2');
+INSERT INTO loans (id, copy_id, member_id, loaned_on, due_on, returned_on) VALUES
+  (1, 1, 1, '2024-06-01', '2024-06-15', '2024-06-14'),
+  (2, 2, 2, '2024-06-20', '2024-07-04', NULL),
+  (3, 1, 3, '2024-06-25', '2024-07-09', NULL),
+  (4, 4, 1, '2024-07-01', '2024-07-15', NULL),
+  (5, 5, 2, '2024-05-01', '2024-05-15', '2024-05-30'),
+  (6, 6, 1, '2024-04-01', '2024-04-15', NULL);
+CREATE TABLE fines (
+  loan_id INTEGER PRIMARY KEY REFERENCES loans(id),
+  cents INTEGER NOT NULL CHECK (cents > 0)
+);
+--- teach
+Last lesson's report shows fines building up. When a late book comes back, the fine becomes **real**: it should be recorded in the new `fines` table (`loan_id`, `cents`) at the moment of return, whichever system recorded the return — the desk, the self-service kiosk, or a librarian fixing a typo.
+
+"Whenever this column changes, do that" is a trigger:
+
+```sql
+CREATE TRIGGER loan_returned
+AFTER UPDATE OF returned_on ON loans
+WHEN OLD.returned_on IS NULL AND NEW.returned_on > NEW.due_on
+BEGIN
+  INSERT INTO fines (loan_id, cents) VALUES (NEW.id, …);
+END;
+```
+
+- `UPDATE OF returned_on` fires only when that column is assigned — not when someone edits the due date.
+- The `WHEN` makes it fire only on the actual return (`OLD.returned_on IS NULL`) and only when late. A book returned on time, or on its due date, owes nothing — and the table's `CHECK (cents > 0)` would refuse a zero fine anyway.
+- The fine uses the same rule as the report: 25 cents per day late, capped at 1000. Now `NEW.returned_on` replaces the fixed report date.
+
+A fine is money owed, so keep it even if the loan record is later edited. The `loan_id` primary key also makes sure one loan can only be fined once.
+--- task
+Create a trigger `loan_returned` that, when a loan's `returned_on` is set on a loan that was still out and the return is after `due_on`, inserts a row into `fines` with the loan's id and 25 cents per day late, at most 1000.
+--- starter
+CREATE TRIGGER loan_returned
+AFTER UPDATE OF returned_on ON loans
+BEGIN
+  SELECT 1;
+END;
+--- solution
+CREATE TRIGGER loan_returned
+AFTER UPDATE OF returned_on ON loans
+WHEN OLD.returned_on IS NULL AND NEW.returned_on > NEW.due_on
+BEGIN
+  INSERT INTO fines (loan_id, cents)
+  VALUES (NEW.id, MIN(CAST(julianday(NEW.returned_on) - julianday(NEW.due_on) AS INTEGER) * 25, 1000));
+END;
+--- hint
+Fire only on a real, late return: `WHEN OLD.returned_on IS NULL AND NEW.returned_on > NEW.due_on`.
+--- hint
+The amount is `MIN(CAST(julianday(NEW.returned_on) - julianday(NEW.due_on) AS INTEGER) * 25, 1000)`.
+--- check query | A late return is fined per day; a very late one is capped
+UPDATE loans SET returned_on = '2024-07-15' WHERE id IN (2, 6);
+SELECT loan_id, cents FROM fines ORDER BY loan_id
+=> [[2, 275], [6, 1000]]
+--- check query | An on-time return is not fined
+UPDATE loans SET returned_on = '2024-07-15' WHERE id = 4;
+SELECT COUNT(*) FROM fines WHERE loan_id = 4
+=> [[0]]
+--- check query | Editing a loan that was already returned charges nothing more
+UPDATE loans SET returned_on = '2024-06-01' WHERE id = 5;
+SELECT COUNT(*) FROM fines
+=> [[2]]
+
+=== sqlp-13 | Capstone: event ticketing
+--- schema
+CREATE TABLE venues (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  capacity INTEGER NOT NULL CHECK (capacity > 0)
+);
+INSERT INTO venues (id, name, capacity) VALUES (1, 'Hall', 3), (2, 'Club', 100);
+--- teach
+**Capstones.** From here on there is no worked example and almost no starter: a specification, and checks that use your database the way the application would. How you get there — names of constraints, which checks, how the view is built — is yours to decide. The checks only rely on the **table names, column names and behaviour the spec states**, so extra columns are fine as long as they have defaults or allow NULL.
+
+Work like you would on the job:
+
+1. **Read the whole spec** and list the entities, their columns, and every rule.
+2. **Decide where each rule lives.** A rule the database can enforce (unique, required, range, reference) is a constraint. A number other people read is a view.
+3. **Write the tables, then try to break them.** Insert good rows, then bad ones, and see that each bad one is refused.
+4. **Build the view last** and check it by hand against a few rows.
+
+**The spec: a small ticketing system.** The venue list already exists (`venues`: `id`, `name`, `capacity`).
+
+- Enforce foreign keys.
+- `events` — `id` (integer primary key), `venue_id` (required, a real venue), `title` (required), `starts_at` (required text timestamp).
+- `tickets` — `id` (integer primary key), `event_id` (required, a real event), `seat` (required text), `buyer_email` (required), `price_cents` (required integer, zero or more). **A seat can be sold only once per event** — the same seat at a different event is fine. Deleting an event deletes its tickets.
+- A view `event_sales` with one row per event — including events with no tickets sold — and the columns `event_id`, `title`, `sold` (tickets sold), `capacity` (the venue's), `remaining` (capacity minus sold) and `revenue_cents` (total ticket price; 0 when none sold).
+--- task
+Implement the ticketing specification above: the `events` and `tickets` tables with every rule it states, foreign keys enforced, and the `event_sales` view.
+--- starter
+-- Ticketing: your schema goes here.
+--- solution
+PRAGMA foreign_keys = ON;
+
+CREATE TABLE events (
+  id INTEGER PRIMARY KEY,
+  venue_id INTEGER NOT NULL REFERENCES venues(id),
+  title TEXT NOT NULL,
+  starts_at TEXT NOT NULL
+);
+
+CREATE TABLE tickets (
+  id INTEGER PRIMARY KEY,
+  event_id INTEGER NOT NULL REFERENCES events(id) ON DELETE CASCADE,
+  seat TEXT NOT NULL,
+  buyer_email TEXT NOT NULL,
+  price_cents INTEGER NOT NULL CHECK (price_cents >= 0),
+  UNIQUE (event_id, seat)
+);
+
+CREATE VIEW event_sales AS
+SELECT e.id AS event_id, e.title,
+       COUNT(t.id) AS sold,
+       v.capacity,
+       v.capacity - COUNT(t.id) AS remaining,
+       COALESCE(SUM(t.price_cents), 0) AS revenue_cents
+FROM events e
+JOIN venues v ON v.id = e.venue_id
+LEFT JOIN tickets t ON t.event_id = e.id
+GROUP BY e.id, e.title, v.capacity;
+--- hint
+"Once per event" is a composite rule: a table-level `UNIQUE (event_id, seat)`.
+--- hint
+The view starts from `events`, joins its venue, and LEFT JOINs tickets so an event with no sales still has a row; `COALESCE` the revenue.
+--- check query | Foreign keys are enforced
+PRAGMA foreign_keys
+=> [[1]]
+--- check query | Events and tickets can be created
+INSERT INTO events (id, venue_id, title, starts_at) VALUES (10, 1, 'Quartet', '2024-09-01 19:00'), (11, 2, 'DJ night', '2024-09-02 22:00'), (12, 1, 'Poetry', '2024-09-03 18:00');
+INSERT INTO tickets (id, event_id, seat, buyer_email, price_cents) VALUES (1, 10, 'A1', 'ana@x.io', 2500), (2, 10, 'A2', 'bo@x.io', 2500), (3, 11, 'A1', 'cy@x.io', 1500) RETURNING id
+=> [[1], [2], [3]]
+--- check query | A seat already sold for that event is refused
+INSERT OR IGNORE INTO tickets (id, event_id, seat, buyer_email, price_cents) VALUES (4, 10, 'A1', 'dee@x.io', 2500) RETURNING id
+=> []
+--- check query | A negative price or a missing buyer is refused
+INSERT OR IGNORE INTO tickets (id, event_id, seat, buyer_email, price_cents) VALUES (5, 10, 'B1', 'eli@x.io', -100), (6, 10, 'B2', NULL, 100) RETURNING id
+=> []
+--- check query | event_sales covers every event, unsold ones included
+SELECT event_id, title, sold, capacity, remaining, revenue_cents FROM event_sales ORDER BY event_id
+=> [[10, "Quartet", 2, 3, 1, 5000], [11, "DJ night", 1, 100, 99, 1500], [12, "Poetry", 0, 3, 3, 0]]
+--- check query | Cancelling an event removes its tickets
+DELETE FROM events WHERE id = 10;
+SELECT COUNT(*) FROM tickets
+=> [[1]]
+
+=== sqlp-14 | Capstone: splitting expenses
+--- schema
+CREATE TABLE people (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL UNIQUE
+);
+INSERT INTO people (id, name) VALUES (1, 'Ana'), (2, 'Bo'), (3, 'Cy'), (4, 'Dee');
+--- teach
+**The spec: an app for splitting shared expenses** among a group of friends. Someone pays for dinner; the app records who owes what share of it; at any moment it can say who is up and who is down. The group already exists in `people` (`id`, `name`).
+
+- Enforce foreign keys.
+- `expenses` — `id` (integer primary key), `paid_by` (required, a real person), `description` (required), `amount_cents` (required integer, **more than zero**).
+- `shares` — who owes what part of an expense: `expense_id` (a real expense; deleting the expense deletes its shares), `person_id` (a real person), `share_cents` (required integer, zero or more). A person has **at most one share per expense**.
+- A view `balances` with one row for **every** person — including people with no expenses — and the columns `person_id`, `name`, `paid_cents` (total of the expenses they paid), `owed_cents` (total of their shares) and `net_cents` (paid minus owed: positive means the group owes them).
+- A view `unbalanced_expenses` listing every expense whose shares do not add up to its amount — including expenses with no shares at all — with the columns `expense_id`, `amount_cents` and `shared_cents` (the total of its shares, 0 if none).
+
+A warning from experience: `balances` joins people to two different one-to-many tables (expenses paid, shares owed). Build each total separately before combining them.
+--- task
+Implement the expense-splitting specification above: the `expenses` and `shares` tables with every rule, foreign keys enforced, and the `balances` and `unbalanced_expenses` views.
+--- starter
+-- Expense splitting: your schema goes here.
+--- solution
+PRAGMA foreign_keys = ON;
+
+CREATE TABLE expenses (
+  id INTEGER PRIMARY KEY,
+  paid_by INTEGER NOT NULL REFERENCES people(id),
+  description TEXT NOT NULL,
+  amount_cents INTEGER NOT NULL CHECK (amount_cents > 0)
+);
+
+CREATE TABLE shares (
+  expense_id INTEGER NOT NULL REFERENCES expenses(id) ON DELETE CASCADE,
+  person_id INTEGER NOT NULL REFERENCES people(id),
+  share_cents INTEGER NOT NULL CHECK (share_cents >= 0),
+  PRIMARY KEY (expense_id, person_id)
+);
+
+CREATE VIEW balances AS
+WITH paid AS (
+  SELECT paid_by AS person_id, SUM(amount_cents) AS cents FROM expenses GROUP BY paid_by
+), owed AS (
+  SELECT person_id, SUM(share_cents) AS cents FROM shares GROUP BY person_id
+)
+SELECT p.id AS person_id, p.name,
+       COALESCE(pd.cents, 0) AS paid_cents,
+       COALESCE(ow.cents, 0) AS owed_cents,
+       COALESCE(pd.cents, 0) - COALESCE(ow.cents, 0) AS net_cents
+FROM people p
+LEFT JOIN paid pd ON pd.person_id = p.id
+LEFT JOIN owed ow ON ow.person_id = p.id;
+
+CREATE VIEW unbalanced_expenses AS
+SELECT e.id AS expense_id, e.amount_cents,
+       COALESCE(SUM(s.share_cents), 0) AS shared_cents
+FROM expenses e
+LEFT JOIN shares s ON s.expense_id = e.id
+GROUP BY e.id
+HAVING COALESCE(SUM(s.share_cents), 0) <> e.amount_cents;
+--- hint
+`shares` needs a composite primary key `(expense_id, person_id)` for "one share per person per expense".
+--- hint
+For `balances`, total the paid amounts per person and the owed shares per person in two separate CTEs, then LEFT JOIN both onto `people`.
+--- hint
+`unbalanced_expenses` LEFT JOINs shares onto expenses, groups by expense, and keeps groups with `HAVING` total ≠ amount.
+--- check query | Foreign keys are enforced
+PRAGMA foreign_keys
+=> [[1]]
+--- check query | Expenses can be recorded; a zero amount is refused
+INSERT INTO expenses (id, paid_by, description, amount_cents) VALUES (1, 1, 'Dinner', 9000), (2, 2, 'Taxi', 3000), (3, 1, 'Tickets', 5000), (5, 3, 'Snacks', 1200);
+INSERT OR IGNORE INTO expenses (id, paid_by, description, amount_cents) VALUES (4, 1, 'Free walk', 0);
+SELECT id FROM expenses ORDER BY id
+=> [[1], [2], [3], [5]]
+--- check query | Shares can be recorded
+INSERT INTO shares (expense_id, person_id, share_cents) VALUES (1, 1, 3000), (1, 2, 3000), (1, 3, 3000), (2, 2, 1500), (2, 3, 1500), (3, 1, 2500), (3, 2, 2000) RETURNING expense_id
+=> [[1], [1], [1], [2], [2], [3], [3]]
+--- check query | A second share for the same person and expense, or a negative share, is refused
+INSERT OR IGNORE INTO shares (expense_id, person_id, share_cents) VALUES (1, 1, 100), (2, 4, -5) RETURNING expense_id
+=> []
+--- check query | Balances cover everyone and are not inflated by the joins
+SELECT person_id, name, paid_cents, owed_cents, net_cents FROM balances ORDER BY person_id
+=> [[1, "Ana", 14000, 5500, 8500], [2, "Bo", 3000, 6500, -3500], [3, "Cy", 1200, 4500, -3300], [4, "Dee", 0, 0, 0]]
+--- check query | Expenses whose shares do not add up are flagged, including ones with no shares
+SELECT expense_id, amount_cents, shared_cents FROM unbalanced_expenses ORDER BY expense_id
+=> [[3, 5000, 4500], [5, 1200, 0]]
+--- check query | Deleting an expense deletes its shares
+DELETE FROM expenses WHERE id = 1;
+SELECT COUNT(*) FROM shares
+=> [[4]]
+
+=== sqlp-15 | Capstone: appointment booking
+--- schema
+CREATE TABLE staff (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL
+);
+INSERT INTO staff (id, name) VALUES (1, 'Dr Ng'), (2, 'Dr Oz');
+--- teach
+**The spec: bookings for a small clinic.** Clients book appointments with staff; the clinic needs to spot double bookings and see each day's workload. The staff list already exists (`staff`: `id`, `name`).
+
+- `clients` — `id` (integer primary key), `email` (required, and unique **ignoring case**: `ANA@x.io` and `ana@x.io` are the same client), `name`.
+- `appointments` — `id` (integer primary key), `staff_id` (required, a real staff member), `client_id` (required, a real client), `starts_at` and `ends_at` (required text timestamps, `'YYYY-MM-DD HH:MM'`; an appointment must **end after it starts**), `status` (required; `'booked'` or `'cancelled'`; **defaults to `'booked'`**).
+- A view `double_bookings(staff_id, first_id, second_id)`: every pair of **booked** appointments for the same staff member whose times overlap, with `first_id` less than `second_id`. Two intervals overlap when each starts before the other ends; back-to-back appointments (one ends at 09:30, the next starts at 09:30) do **not** overlap. Cancelled appointments never count.
+- A view `daily_schedule(staff_id, day, appointments, booked_minutes)`: for each staff member and calendar day (`'YYYY-MM-DD'`) with booked appointments, how many and their total length in whole minutes.
+- An index that lets the app list one staff member's appointments in time order without a separate sort: its first column `staff_id`, its second `starts_at`.
+--- task
+Implement the booking specification above: the `clients` and `appointments` tables with every rule, the `double_bookings` and `daily_schedule` views, and the index.
+--- starter
+-- Clinic bookings: your schema goes here.
+--- solution
+PRAGMA foreign_keys = ON;
+
+CREATE TABLE clients (
+  id INTEGER PRIMARY KEY,
+  email TEXT NOT NULL UNIQUE COLLATE NOCASE,
+  name TEXT
+);
+
+CREATE TABLE appointments (
+  id INTEGER PRIMARY KEY,
+  staff_id INTEGER NOT NULL REFERENCES staff(id),
+  client_id INTEGER NOT NULL REFERENCES clients(id),
+  starts_at TEXT NOT NULL,
+  ends_at TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'booked' CHECK (status IN ('booked', 'cancelled')),
+  CHECK (ends_at > starts_at)
+);
+
+CREATE INDEX idx_appointments_staff_start ON appointments(staff_id, starts_at);
+
+CREATE VIEW double_bookings AS
+SELECT a.staff_id, a.id AS first_id, b.id AS second_id
+FROM appointments a
+JOIN appointments b
+  ON b.staff_id = a.staff_id
+ AND a.id < b.id
+ AND a.starts_at < b.ends_at
+ AND b.starts_at < a.ends_at
+WHERE a.status = 'booked' AND b.status = 'booked';
+
+CREATE VIEW daily_schedule AS
+SELECT staff_id,
+       date(starts_at) AS day,
+       COUNT(*) AS appointments,
+       SUM((unixepoch(ends_at) - unixepoch(starts_at)) / 60) AS booked_minutes
+FROM appointments
+WHERE status = 'booked'
+GROUP BY staff_id, date(starts_at);
+--- hint
+Case-insensitive uniqueness: a unique index on the expression `lower(email)`, as in the expert course's deduplication lesson. (Declaring the column `UNIQUE COLLATE NOCASE`, which makes it compare ignoring case, works too.)
+--- hint
+Overlap is a self-join: same staff, `a.id < b.id`, `a.starts_at < b.ends_at AND b.starts_at < a.ends_at`, both booked.
+--- hint
+Minutes: `(unixepoch(ends_at) - unixepoch(starts_at)) / 60`, summed per staff member and `date(starts_at)`.
+--- check query | Clients can be added; the same email in other capitals is refused
+INSERT INTO clients (id, email, name) VALUES (1, 'ana@x.io', 'Ana'), (2, 'bo@x.io', 'Bo');
+INSERT OR IGNORE INTO clients (id, email, name) VALUES (3, 'ANA@x.io', 'Ana again');
+SELECT id FROM clients ORDER BY id
+=> [[1], [2]]
+--- check query | Appointments are booked by default
+INSERT INTO appointments (id, staff_id, client_id, starts_at, ends_at) VALUES
+  (1, 1, 1, '2024-09-02 09:00', '2024-09-02 09:30'),
+  (2, 1, 2, '2024-09-02 09:30', '2024-09-02 10:00'),
+  (3, 1, 2, '2024-09-02 09:45', '2024-09-02 10:15'),
+  (4, 2, 1, '2024-09-02 09:00', '2024-09-02 10:00'),
+  (5, 1, 1, '2024-09-03 14:00', '2024-09-03 15:00')
+RETURNING id, status
+=> [[1, "booked"], [2, "booked"], [3, "booked"], [4, "booked"], [5, "booked"]]
+--- check query | An appointment ending before it starts, or with an unknown status, is refused
+INSERT OR IGNORE INTO appointments (id, staff_id, client_id, starts_at, ends_at, status) VALUES
+  (8, 1, 1, '2024-09-04 10:00', '2024-09-04 09:00', 'booked'),
+  (9, 1, 1, '2024-09-04 11:00', '2024-09-04 11:30', 'maybe')
+RETURNING id
+=> []
+--- check query | Overlaps are found; back-to-back is fine
+SELECT staff_id, first_id, second_id FROM double_bookings ORDER BY staff_id, first_id, second_id
+=> [[1, 2, 3]]
+--- check query | Cancelled appointments stop counting; a one-minute overlap is caught
+UPDATE appointments SET status = 'cancelled' WHERE id = 3;
+INSERT INTO appointments (id, staff_id, client_id, starts_at, ends_at) VALUES (6, 2, 2, '2024-09-02 09:59', '2024-09-02 10:30');
+SELECT staff_id, first_id, second_id FROM double_bookings ORDER BY staff_id, first_id, second_id
+=> [[2, 4, 6]]
+--- check query | The daily schedule counts booked appointments and minutes
+SELECT staff_id, day, appointments, booked_minutes FROM daily_schedule ORDER BY staff_id, day
+=> [[1, "2024-09-02", 2, 60], [1, "2024-09-03", 1, 60], [2, "2024-09-02", 2, 91]]
+--- check query | An index leads with staff_id, then starts_at
+SELECT COUNT(*) > 0
+FROM pragma_index_list('appointments') il
+JOIN pragma_index_info(il.name) a ON a.seqno = 0 AND a.name = 'staff_id'
+JOIN pragma_index_info(il.name) b ON b.seqno = 1 AND b.name = 'starts_at'
+=> [[1]]

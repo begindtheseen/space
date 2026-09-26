@@ -1,0 +1,1458 @@
+@track python
+@level intermediate
+@title Python · Intermediate
+@name Python, intermediate: idioms, errors, classes and the standard library
+@blurb Write Python the way experienced people do: comprehensions, unpacking, dicts that count for you, exceptions you design, classes that behave, and the habits that let you read a traceback, fix the real cause and untangle messy code.
+
+=== py2-01 | Comprehensions: list, dict and set
+--- teach
+You met list comprehensions at the end of the basics. They come in three shapes, and they are worth knowing well because Python code is full of them:
+
+```python
+nums = [3, 1, 4, 1, 5, 9, 2, 6]
+
+[n * 10 for n in nums if n > 3]        # list: [40, 50, 90, 60]
+{n % 3 for n in nums}                  # set:  {0, 1, 2}   (no duplicates)
+{n: n * n for n in nums if n % 2 == 0} # dict: {4: 16, 2: 4, 6: 36}
+```
+
+Read each one left to right as a sentence: *"`n * 10`, for each `n` in `nums`, if `n > 3`"*. The brackets decide what you get: `[...]` a list, `{x ...}` a set, `{k: v ...}` a dict.
+
+**Why bother?** A comprehension says *what* the result is in one line, where a loop says *how* to build it over four. The reader sees "a list of these, filtered by that" at a glance, and there is no half-built variable to get wrong.
+
+You can loop twice, which reads like nested `for` loops in the same order:
+
+```python
+[(r, c) for r in range(2) for c in range(3)]
+# [(0, 0), (0, 1), (0, 2), (1, 0), (1, 1), (1, 2)]
+```
+
+A condition can also choose between two values. That `if ... else` goes *before* the `for`, because it is part of the expression, not a filter:
+
+```python
+["even" if n % 2 == 0 else "odd" for n in [1, 2, 3]]   # ['odd', 'even', 'odd']
+```
+
+`a if condition else b` is a **conditional expression**, and it works anywhere a value does, not just in comprehensions: `label = "even" if n % 2 == 0 else "odd"`.
+
+**Truthiness.** In any `if`, Python treats empty or zero values — `""`, `[]`, `{}`, `set()`, `0`, `None` — as false, and everything else as true. So `if name:` means "if `name` is not empty", and a comprehension's `if name` skips the empty strings.
+
+**Common mistakes.**
+
+- `{}` on its own is an empty *dict*, not an empty set. Write `set()` for an empty set.
+- Swapping keys and values with `{v: k for k, v in d.items()}` silently loses entries when two keys share a value: the later one wins.
+- A comprehension with side effects (`[print(x) for x in xs]`) builds a useless list. Use a plain loop when you want to *do* something rather than *make* something.
+--- task
+Write three functions, each a single comprehension:
+
+- `squares_of_odds(nums)` returns a list of the squares of the odd numbers, in their original order.
+- `invert(d)` returns a new dict with keys and values swapped.
+- `initials(names)` returns the **set** of lowercase first letters of the names, skipping empty strings.
+--- starter
+def squares_of_odds(nums):
+    result = []
+    return result
+
+
+def invert(d):
+    return d
+
+
+def initials(names):
+    return set()
+--- solution
+def squares_of_odds(nums):
+    return [n * n for n in nums if n % 2 == 1]
+
+
+def invert(d):
+    return {v: k for k, v in d.items()}
+
+
+def initials(names):
+    return {name[0].lower() for name in names if name}
+--- hint
+Each function body can be one `return` of a comprehension. Decide on the brackets first: list, dict, or set?
+--- hint
+For `invert`, loop over `d.items()`, which gives you `(key, value)` pairs, and put the value first.
+--- hint
+For `initials`, `if name` skips empty strings because an empty string counts as false: `{name[0].lower() for name in names if name}`.
+--- check case | squares_of_odds keeps odd numbers, squared, in order
+squares_of_odds([1, 2, 3, 4, 5])
+=> [1, 9, 25]
+--- check case | Negative odd numbers count too
+squares_of_odds([-3, -2, 0, 7])
+=> [9, 49]
+--- check case | squares_of_odds of an empty list is empty
+squares_of_odds([])
+=> []
+--- check case | invert swaps keys and values
+invert({"a": 1, "b": 2})
+=> {1: "a", 2: "b"}
+--- check test | invert does not change the dict you pass in
+(lambda d: (invert(d), d)[1] == {"x": 9})({"x": 9})
+--- check case | initials is a set of lowercase first letters
+initials(["Ada", "alan", "Grace", "", "guido"])
+=> {"a", "g"}
+--- check case | initials of no names is an empty set
+initials([])
+=> set()
+
+=== py2-02 | Tuples, unpacking, enumerate and zip
+--- teach
+A **tuple** is an ordered group of values, written with commas (the brackets are usually optional):
+
+```python
+point = (3, 4)
+point[0]            # 3
+len(point)          # 2
+```
+
+Unlike a list, a tuple cannot be changed after it is made. That makes it the natural type for a *fixed bundle* of values that belong together: a coordinate, an `(x, y, z)`, a function returning two results.
+
+**Unpacking** pulls a tuple (or any sequence) apart into names in one go:
+
+```python
+x, y = point               # x is 3, y is 4
+a, b = 1, 2
+a, b = b, a                # swap without a temporary variable
+first, *rest = [10, 20, 30, 40]   # first is 10, rest is [20, 30, 40]
+```
+
+A function "returns two things" by returning a tuple, and the caller unpacks it:
+
+```python
+def div_mod(a, b):
+    return a // b, a % b
+
+q, r = div_mod(17, 5)      # q is 3, r is 2
+```
+
+Two built-ins make loops cleaner, and both hand you tuples to unpack:
+
+```python
+names = ["ada", "lin", "sam"]
+scores = [91, 78, 85]
+
+list(enumerate(names, start=1))   # [(1, 'ada'), (2, 'lin'), (3, 'sam')]
+list(zip(names, scores))          # [('ada', 91), ('lin', 78), ('sam', 85)]
+dict(zip(names, scores))          # {'ada': 91, 'lin': 78, 'sam': 85}
+
+for i, name in enumerate(names, start=1):
+    print(i, name)
+```
+
+**Common mistakes.**
+
+- `for i in range(len(names)): print(names[i])` works but is clumsy and easy to get wrong. Use `enumerate` when you need the position.
+- `zip` stops at the *shortest* input, silently. If the lists should be the same length, `zip(a, b, strict=True)` raises an error when they are not.
+- A one-element tuple needs a trailing comma: `(5,)`. `(5)` is just the number 5 in brackets.
+--- task
+Write:
+
+- `min_max(nums)` returning a tuple `(smallest, largest)`.
+- `numbered(lines)` returning a list of strings like `"1. first"`, `"2. second"`, numbering from 1 (use `enumerate`).
+- `scoreboard(names, scores)` returning a dict mapping each name to its score (use `zip`).
+- `head_tail(items)` returning a tuple `(first_item, list_of_the_rest)` using star unpacking.
+--- starter
+def min_max(nums):
+    pass
+
+
+def numbered(lines):
+    pass
+
+
+def scoreboard(names, scores):
+    pass
+
+
+def head_tail(items):
+    pass
+--- solution
+def min_max(nums):
+    return min(nums), max(nums)
+
+
+def numbered(lines):
+    return [f"{i}. {line}" for i, line in enumerate(lines, start=1)]
+
+
+def scoreboard(names, scores):
+    return dict(zip(names, scores))
+
+
+def head_tail(items):
+    first, *rest = items
+    return first, rest
+--- hint
+`return a, b` returns the tuple `(a, b)`.
+--- hint
+`enumerate(lines, start=1)` gives `(1, line)`, `(2, line)`… Unpack them in the comprehension: `for i, line in enumerate(...)`.
+--- hint
+`first, *rest = items` puts the first item in `first` and a list of the others in `rest`.
+--- check case | min_max returns a (smallest, largest) tuple
+min_max([4, -2, 9, 0])
+=> (-2, 9)
+--- check case | min_max of one number
+min_max([7])
+=> (7, 7)
+--- check case | numbered counts from 1
+numbered(["wake", "code", "sleep"])
+=> ["1. wake", "2. code", "3. sleep"]
+--- check case | numbered of nothing is an empty list
+numbered([])
+=> []
+--- check case | scoreboard pairs names with scores
+scoreboard(["ada", "lin"], [91, 78])
+=> {"ada": 91, "lin": 78}
+--- check case | head_tail splits the first item from the rest
+head_tail([10, 20, 30])
+=> (10, [20, 30])
+--- check case | head_tail of a single item has an empty rest
+head_tail(["only"])
+=> ("only", [])
+
+=== py2-03 | String methods and f-string formatting
+--- teach
+Strings come with a large toolkit. The ones you will reach for constantly:
+
+```python
+s = "  Launch Window: 14:05  "
+s.strip()                      # 'Launch Window: 14:05'
+s.strip().split(": ")          # ['Launch Window', '14:05']
+"a,b,,c".split(",")            # ['a', 'b', '', 'c']
+"-".join(["2026", "09", "25"]) # '2026-09-25'
+"report.csv".endswith(".csv")  # True
+"hello".replace("l", "L")      # 'heLLo'
+"Ada Lovelace".title()         # 'Ada Lovelace'
+"abc123".isalnum(), "42".isdigit()   # (True, True)
+"key=value=x".partition("=")   # ('key', '=', 'value=x')
+```
+
+`sep.join(pieces)` is the opposite of `split`: it glues a list of strings together with `sep` between them. It accepts any iterable of strings, including a comprehension written without its square brackets, `"".join(c.upper() for c in "abc")` → `'ABC'`. (That bracket-less form is a *generator expression*; the advanced course explains what it really is.)
+
+Strings are **immutable**: every method returns a *new* string. `s.upper()` on its own line does nothing useful. You must keep the result: `s = s.upper()`.
+
+**f-strings can format, not just insert.** After the value, a colon starts a *format spec*:
+
+```python
+price = 1234.5
+f"{price:.2f}"       # '1234.50'     two decimal places
+f"{price:,.2f}"      # '1,234.50'    with a thousands separator
+f"{42:5d}"           # '   42'       width 5, right-aligned (numbers default right)
+f"{'ab':<5}|"        # 'ab   |'      left-align in width 5
+f"{'ab':>5}|"        # '   ab|'      right-align
+f"{'ab':^6}|"        # '  ab  |'     centre
+f"{7:03d}"           # '007'         pad with zeros
+f"{0.256:.1%}"       # '25.6%'
+```
+
+The order inside the spec is *align, width, comma, precision, type*. Aligned columns are how you make text reports readable:
+
+```python
+for name, qty in [("tea", 3), ("biscuits", 12)]:
+    print(f"{name:<10}{qty:>4}")
+```
+
+**Common mistakes.** `str.split()` with no argument splits on any run of whitespace and drops empty pieces; `str.split(" ")` splits on every single space and keeps empty strings. And a width is a *minimum*: a value longer than the width is never cut short.
+--- task
+Write two functions.
+
+`format_row(item, qty, price)` returns one line of a receipt: the item name left-aligned in a column 10 wide, the quantity right-aligned in 4, then the line total (`qty * price`) right-aligned in 12 with a thousands separator and 2 decimals. For example `format_row("apple", 3, 0.5)` is `"apple        3        1.50"`.
+
+`slugify(title)` turns a title into a URL slug: lowercase, every run of characters that are not letters or digits becomes a single `-`, and there is no `-` at either end. `slugify("  Hello, World!  ")` is `"hello-world"`.
+--- starter
+def format_row(item, qty, price):
+    return f"{item} {qty} {qty * price}"
+
+
+def slugify(title):
+    return title.lower()
+--- solution
+def format_row(item, qty, price):
+    return f"{item:<10}{qty:>4}{qty * price:>12,.2f}"
+
+
+def slugify(title):
+    kept = "".join(c if c.isalnum() else " " for c in title.lower())
+    return "-".join(kept.split())
+--- hint
+The spec for the total is `>12,.2f`: right-align, width 12, thousands separator, 2 decimals.
+--- hint
+For `slugify`, first replace every character that is not `isalnum()` with a space. Then the problem becomes "join the words with hyphens".
+--- hint
+`"-".join(text.split())` joins the words with hyphens, and `split()` with no argument already ignores runs of spaces and spaces at the ends.
+--- check case | format_row lines up the three columns
+format_row("apple", 3, 0.5)
+=> "apple     " + "   3" + "        1.50"
+--- check case | Large totals get a thousands separator
+format_row("laptop", 2, 1250.0)
+=> "laptop    " + "   2" + "    2,500.00"
+--- check case | A long name is not cut short
+format_row("watermelons", 1, 3.0)
+=> "watermelons" + "   1" + "        3.00"
+--- check case | slugify lowercases and joins words with hyphens
+slugify("  Hello, World!  ")
+=> "hello-world"
+--- check case | Punctuation between words becomes one hyphen
+slugify("Python 3.13 -- is out!")
+=> "python-3-13-is-out"
+--- check case | A title with no letters or digits gives an empty slug
+slugify("!!! ---")
+=> ""
+
+=== py2-04 | Dicts in depth: get, setdefault, Counter and defaultdict
+--- teach
+Counting and grouping are two of the most common things programs do, and Python has a tool for each.
+
+**`get` and `setdefault`.** `d.get(key, default)` reads without failing when the key is missing. `d.setdefault(key, default)` reads *and*, if the key is missing, stores the default first, then returns the stored value. That makes grouping a one-liner:
+
+```python
+groups = {}
+for word in ["apple", "avocado", "banana"]:
+    groups.setdefault(word[0], []).append(word)
+groups   # {'a': ['apple', 'avocado'], 'b': ['banana']}
+```
+
+**Importing.** Python ships with a large **standard library** of modules. `collections` is one of them. `import collections` makes it available as `collections.Counter`; `from collections import Counter` brings that one name in directly. Imports go at the top of the file.
+
+**`collections.defaultdict`** does the same thing without having to say it every time: you give it a function that makes the default, and it calls that the first time a key is used.
+
+```python
+from collections import defaultdict
+groups = defaultdict(list)
+for word in ["apple", "avocado", "banana"]:
+    groups[word[0]].append(word)
+dict(groups)   # {'a': ['apple', 'avocado'], 'b': ['banana']}
+```
+
+**`collections.Counter`** is a dict built for counting:
+
+```python
+from collections import Counter
+c = Counter("mississippi")
+c["s"]              # 4
+c["z"]              # 0   (missing keys count as zero, no KeyError)
+c.most_common(2)    # [('i', 4), ('s', 4)]
+```
+
+`most_common` sorts by count, highest first; equal counts keep the order in which the items were *first seen*. That matters when you write checks that expect an exact order.
+
+**Common mistakes.**
+
+- Reading a `defaultdict` with `groups[key]` *creates* the key. To ask "is it there?" use `key in groups`.
+- `d.setdefault(k, []).append(x)` is fine, but `d.get(k, []).append(x)` does nothing: `get` hands back a fresh list that is never stored.
+- A `Counter` or `defaultdict` is still a dict, but it prints differently. Convert with `dict(...)` when you return it to code that expects a plain dict.
+--- task
+Write:
+
+- `group_by_length(words)` returning a plain `dict` from word length to the list of words of that length, in their original order. Use `defaultdict`.
+- `top_words(text, n)` returning the `n` most common lowercase words of `text` as a list of `(word, count)` tuples. Use `Counter`.
+--- starter
+from collections import Counter, defaultdict
+
+
+def group_by_length(words):
+    return {}
+
+
+def top_words(text, n):
+    return []
+--- solution
+from collections import Counter, defaultdict
+
+
+def group_by_length(words):
+    groups = defaultdict(list)
+    for word in words:
+        groups[len(word)].append(word)
+    return dict(groups)
+
+
+def top_words(text, n):
+    return Counter(text.lower().split()).most_common(n)
+--- hint
+`groups = defaultdict(list)` and then `groups[len(word)].append(word)`. No `if` needed.
+--- hint
+Return `dict(groups)` so the caller gets a plain dict.
+--- hint
+`Counter(some_list).most_common(n)` already returns a list of `(item, count)` tuples.
+--- check case | group_by_length groups words by their length
+group_by_length(["hi", "yo", "hey", "a"])
+=> {2: ["hi", "yo"], 3: ["hey"], 1: ["a"]}
+--- check test | group_by_length returns a plain dict
+type(group_by_length(["a"])) is dict
+?? Wrap the defaultdict in dict(...) before returning it.
+--- check case | No words, no groups
+group_by_length([])
+=> {}
+--- check case | top_words counts case-insensitively
+top_words("the cat and The dog and THE end", 2)
+=> [("the", 3), ("and", 2)]
+--- check case | Ties keep the order the words first appeared
+top_words("b a b a c", 3)
+=> [("b", 2), ("a", 2), ("c", 1)]
+--- check case | top_words of empty text is empty
+top_words("", 5)
+=> []
+
+=== py2-05 | Sorting with key= and lambda
+--- teach
+`sorted(items)` returns a new sorted list; `items.sort()` sorts the list in place and returns `None`. Both take two optional arguments that do most of the real work: `key` and `reverse`.
+
+`key` is a function Python calls on each item to get *the value to sort by*:
+
+```python
+words = ["banana", "Kiwi", "apple"]
+sorted(words)                    # ['Kiwi', 'apple', 'banana']  (capitals sort first)
+sorted(words, key=str.lower)     # ['apple', 'banana', 'Kiwi']
+sorted(words, key=len)           # ['Kiwi', 'apple', 'banana']
+```
+
+For a one-off key you write a **lambda**, a small nameless function: `lambda p: p["age"]` means "given `p`, return `p['age']`".
+
+```python
+people = [{"name": "Lin", "age": 30}, {"name": "Ada", "age": 36}, {"name": "Sam", "age": 30}]
+sorted(people, key=lambda p: p["age"])
+# Lin 30, Sam 30, Ada 36
+```
+
+**Sorting by several things.** Return a tuple: tuples compare their first items, and only look at the second when the first are equal. To sort one part the other way, negate it if it is a number:
+
+```python
+sorted(people, key=lambda p: (-p["age"], p["name"]))
+# Ada 36, Lin 30, Sam 30   (oldest first, then by name)
+```
+
+Python's sort is **stable**: items that compare equal keep their original order. That is true with `reverse=True` too.
+
+The same `key=` works on `min` and `max`: `max(people, key=lambda p: p["age"])` is the oldest person, not the largest dict.
+
+**Common mistakes.**
+
+- `names = names.sort()` sets `names` to `None`. Either `names.sort()` on its own line, or `names = sorted(names)`.
+- `key=len()` calls `len` with nothing and fails. Pass the function itself: `key=len`.
+- Negating only works for numbers. To sort strings descending inside a tuple key, sort twice (stability makes that correct) or use `reverse=True` on the whole thing.
+--- task
+Each person is a dict with `"name"` and `"age"`. Write:
+
+- `by_age_then_name(people)` returning a new list, oldest first, ties broken by name A to Z.
+- `longest_first(words)` returning the words sorted by length, longest first, with words of equal length keeping their original order.
+- `youngest(people)` returning the **name** of the youngest person, using `min` with a key.
+--- starter
+def by_age_then_name(people):
+    return people
+
+
+def longest_first(words):
+    return sorted(words)
+
+
+def youngest(people):
+    return min(people)
+--- solution
+def by_age_then_name(people):
+    return sorted(people, key=lambda p: (-p["age"], p["name"]))
+
+
+def longest_first(words):
+    return sorted(words, key=len, reverse=True)
+
+
+def youngest(people):
+    return min(people, key=lambda p: p["age"])["name"]
+--- hint
+A key can return a tuple: `(-p["age"], p["name"])` sorts by age descending, then name ascending.
+--- hint
+For `longest_first`, `key=len, reverse=True`. Because the sort is stable, equal lengths keep their order.
+--- hint
+`min(people, key=...)` returns the whole dict. Take its `["name"]`.
+--- check case | Oldest first, then alphabetical
+[p["name"] for p in by_age_then_name([{"name": "Lin", "age": 30}, {"name": "Ada", "age": 36}, {"name": "Cy", "age": 30}])]
+=> ["Ada", "Cy", "Lin"]
+--- check test | by_age_then_name does not change the list you pass in
+(lambda ps: (by_age_then_name(ps), [p["name"] for p in ps])[1] == ["B", "A"])([{"name": "B", "age": 1}, {"name": "A", "age": 2}])
+?? Use sorted(...), which returns a new list, rather than .sort().
+--- check case | longest_first keeps ties in their original order
+longest_first(["bb", "a", "ccc", "dd", "e"])
+=> ["ccc", "bb", "dd", "a", "e"]
+--- check case | youngest returns a name
+youngest([{"name": "Ada", "age": 36}, {"name": "Tim", "age": 9}, {"name": "Lin", "age": 30}])
+=> "Tim"
+
+=== py2-06 | *args, **kwargs and default arguments
+--- teach
+Python functions can take a flexible number of arguments.
+
+**`*args`** collects any extra *positional* arguments into a tuple. **`**kwargs`** collects extra *keyword* arguments into a dict. The names `args` and `kwargs` are only a convention; the stars do the work.
+
+```python
+def show(*args, **kwargs):
+    return args, kwargs
+
+show(1, 2, colour="red")   # ((1, 2), {'colour': 'red'})
+```
+
+The stars also work the other way round, when *calling*: they spread a list or dict out into separate arguments.
+
+```python
+nums = [3, 7, 1]
+max(*nums)                 # same as max(3, 7, 1)
+opts = {"sep": "-"}
+print("a", "b", **opts)    # a-b
+```
+
+**Defaults and keyword-only arguments.** A parameter with `=` has a default. Anything after a bare `*` (or after `*args`) can only be passed by name, which stops callers mixing up arguments that look alike:
+
+```python
+def connect(host, *, port=443, timeout=5.0):
+    return f"{host}:{port} (timeout {timeout}s)"
+
+connect("example.org", port=8080)   # 'example.org:8080 (timeout 5.0s)'
+# connect("example.org", 8080)  ->  TypeError: takes 1 positional argument
+```
+
+The full order of a signature is: normal parameters, `*args`, keyword-only ones, `**kwargs`.
+
+**Common mistake:** a default is worked out *once*, when `def` runs, not on every call. For numbers and strings that never matters. For lists and dicts it matters a lot, and that is the next lesson.
+--- task
+Write:
+
+- `total(*nums)` returning the sum of any number of numbers (`total()` is `0`).
+- `tag(name, *children, **attrs)` returning an HTML string. The attributes come first, in the order given, as `key="value"`, and the children are joined with nothing in between. `tag("a", "home", href="/")` is `'<a href="/">home</a>'`; `tag("p")` is `"<p></p>"`; `tag("b", "x", "y")` is `"<b>xy</b>"`.
+--- starter
+def total(nums):
+    return sum(nums)
+
+
+def tag(name, children, attrs):
+    return ""
+--- solution
+def total(*nums):
+    return sum(nums)
+
+
+def tag(name, *children, **attrs):
+    attr_text = "".join(f' {key}="{value}"' for key, value in attrs.items())
+    return f"<{name}{attr_text}>{''.join(children)}</{name}>"
+--- hint
+Inside the function, `nums` (from `*nums`) is a tuple, so `sum(nums)` works on it directly.
+--- hint
+Build the attributes as one string: each one is `' key="value"'` (note the leading space), joined together from `attrs.items()`.
+--- hint
+The shape is `f"<{name}{attr_text}>{''.join(children)}</{name}>"`.
+--- check case | total adds any number of numbers
+total(1, 2, 3, 4)
+=> 10
+--- check case | total() is 0
+total()
+=> 0
+--- check case | tag with an attribute and a child
+tag("a", "home", href="/")
+=> '<a href="/">home</a>'
+--- check case | tag with nothing inside
+tag("p")
+=> "<p></p>"
+--- check case | Several children are joined
+tag("b", "x", "y")
+=> "<b>xy</b>"
+--- check case | Attributes keep the order they were given in
+tag("img", src="a.png", alt="A")
+=> '<img src="a.png" alt="A"></img>'
+
+=== py2-07 | Debugging: the mutable default argument
+--- teach
+This lesson is a bug hunt. Before the bug, the **method**, because the method is what you keep:
+
+1. **Reproduce it.** Find the smallest set of calls that shows the problem, every time.
+2. **State what you expected and what you got.** Precisely: "the second call returned `['tea', 'milk']`, I expected `['milk']`".
+3. **Check your assumptions.** The bug lives in something you believe that is not true. List what you are assuming and test each one.
+4. **Inspect.** Print values, or print `id(x)`, which is the identity of an object. Two names with the same `id` are the *same* object.
+5. **Fix the cause, not the symptom.** A patch that clears the list after each call hides the problem; understanding *why* the list is shared removes it.
+
+Here is the bug, reproduced:
+
+```python
+def add_item(item, cart=[]):
+    cart.append(item)
+    return cart
+
+add_item("tea")      # ['tea']
+add_item("milk")     # ['tea', 'milk']   <- a new customer got the old cart
+```
+
+The assumption that fails: "`cart=[]` gives me a new empty list on each call". It does not. The default is created **once, when the `def` line runs**, and stored on the function. Every call that leaves `cart` out gets *that same list*, and `append` changes it in place. You can see it:
+
+```python
+add_item.__defaults__    # (['tea', 'milk'],)
+```
+
+**The fix** is to use a value that cannot be changed as the default, usually `None`, and make the new list *inside* the function, which runs on every call:
+
+```python
+def add_item(item, cart=None):
+    if cart is None:
+        cart = []
+    cart.append(item)
+    return cart
+```
+
+Use `is None`, not `if not cart`: an empty list passed in on purpose is falsy too, and you must still add to *that* list.
+
+The same trap catches `{}`, `set()`, and any object you create in a default. It is so common that linters flag it on sight.
+--- task
+**Bug report:** in the ordering system, the second customer's basket already contains the first customer's items, and the word tally for one document includes words from a previous document.
+
+Reproduce both bugs, then fix the cause in `add_to_basket` and `tally`. Both must still add to a basket or dict that the caller passes in, and return it.
+--- starter
+def add_to_basket(item, basket=[]):
+    basket.append(item)
+    return basket
+
+
+def tally(words, counts={}):
+    for word in words:
+        counts[word] = counts.get(word, 0) + 1
+    return counts
+--- solution
+def add_to_basket(item, basket=None):
+    if basket is None:
+        basket = []
+    basket.append(item)
+    return basket
+
+
+def tally(words, counts=None):
+    if counts is None:
+        counts = {}
+    for word in words:
+        counts[word] = counts.get(word, 0) + 1
+    return counts
+--- hint
+Print `add_to_basket.__defaults__` after a couple of calls. What do you see?
+--- hint
+Make the default `None`, and create the empty list or dict inside the function.
+--- hint
+`if basket is None: basket = []`. Use `is None` so an empty basket the caller passes in is still used.
+--- check test | Two new baskets do not share items
+add_to_basket("tea") == ["tea"] and add_to_basket("milk") == ["milk"]
+?? Each call without a basket must start from an empty list made during that call.
+--- check test | A basket you pass in is added to and returned
+(lambda b: add_to_basket("jam", b) is b and b == ["bread", "jam"])(["bread"])
+--- check test | An empty basket you pass in is still the one used
+(lambda b: add_to_basket("egg", b) is b)([])
+?? Check `is None`, not `if not basket`: an empty list is falsy too.
+--- check test | Two new tallies are independent
+tally(["a", "b", "a"]) == {"a": 2, "b": 1} and tally(["c"]) == {"c": 1}
+--- check test | A dict you pass in keeps counting
+(lambda d: tally(["x", "x"], d) is d and d == {"x": 3})({"x": 1})
+
+=== py2-08 | Exceptions you design
+--- teach
+In the basics you caught `ValueError`. Real code needs a little more: the full shape of `try`, and exceptions of your own.
+
+```python
+try:
+    value = int(text)          # the code that might fail
+except ValueError as err:      # runs only if that error happened
+    print("not a number:", err)
+else:                          # runs only if NO error happened
+    print("got", value)
+finally:                       # always runs, error or not
+    print("done")
+```
+
+Why have `else` at all? It keeps the `try` block small. Only the line that can fail belongs in `try`; code that runs on success goes in `else`, so an unexpected error there is not swallowed by the `except`. `finally` is for clean-up that must happen whatever occurs: closing a file, releasing a lock.
+
+**Your own exception classes.** A custom exception is a class that inherits from `Exception` (or from one of your own). It lets callers catch *your* kind of failure specifically, and it can carry data:
+
+```python
+class ShippingError(Exception):
+    """Base class for everything that can go wrong with shipping."""
+
+class TooHeavy(ShippingError):
+    def __init__(self, weight, limit):
+        super().__init__(f"{weight} kg is over the {limit} kg limit")
+        self.weight = weight
+        self.limit = limit
+
+try:
+    raise TooHeavy(32, 30)
+except ShippingError as err:     # catches TooHeavy too: it IS a ShippingError
+    print(err, err.weight)       # 32 kg is over the 30 kg limit 32
+```
+
+`class TooHeavy(ShippingError):` makes `TooHeavy` a **subclass** that **inherits** from `ShippingError`: it *is* a `ShippingError`, with everything that class has, plus what it adds. `super()` means "the parent class", so `super().__init__(message)` runs the parent's `__init__`, which sets the text you see when the exception is printed. The triple-quoted string on the first line of `ShippingError` is a **docstring**, the class's documentation; a class needs at least one line in its body, and a docstring is enough.
+
+`except` clauses are tried top to bottom, and the first match wins, so put the most specific classes first.
+
+**Common mistakes.**
+
+- `except Exception:` around a large block hides bugs you did not expect. Catch what you can handle, where you can handle it.
+- `raise TooHeavy` with no arguments fails here, because `__init__` needs them. Raise an instance: `raise TooHeavy(32, 30)`.
+--- task
+Build a small withdrawal system:
+
+- `class LedgerError(Exception)`, the base class.
+- `class InsufficientFunds(LedgerError)`, created as `InsufficientFunds(shortfall)`. It stores `self.shortfall`, and its message is `"short by <shortfall>"`.
+- `withdraw(balance, amount)` returns the new balance. It raises `ValueError` if `amount` is not positive, and `InsufficientFunds` if `amount` is more than `balance`.
+- `attempt(balance, amount)` calls `withdraw` and returns a string: `"ok: <new balance>"` on success, `"refused: short by <shortfall>"` for `InsufficientFunds`, and `"invalid"` for a `ValueError`. Use `try` / `except` / `else`.
+--- starter
+class LedgerError(Exception):
+    pass
+
+
+def withdraw(balance, amount):
+    return balance - amount
+
+
+def attempt(balance, amount):
+    return "ok: " + str(withdraw(balance, amount))
+--- solution
+class LedgerError(Exception):
+    pass
+
+
+class InsufficientFunds(LedgerError):
+    def __init__(self, shortfall):
+        super().__init__(f"short by {shortfall}")
+        self.shortfall = shortfall
+
+
+def withdraw(balance, amount):
+    if amount <= 0:
+        raise ValueError("amount must be positive")
+    if amount > balance:
+        raise InsufficientFunds(amount - balance)
+    return balance - amount
+
+
+def attempt(balance, amount):
+    try:
+        new_balance = withdraw(balance, amount)
+    except InsufficientFunds as err:
+        return f"refused: {err}"
+    except ValueError:
+        return "invalid"
+    else:
+        return f"ok: {new_balance}"
+--- hint
+`InsufficientFunds.__init__(self, shortfall)` should call `super().__init__(f"short by {shortfall}")` and set `self.shortfall`.
+--- hint
+In `withdraw`, check the bad cases first and `raise` an instance, like `raise InsufficientFunds(amount - balance)`.
+--- hint
+In `attempt`, only the `withdraw(...)` call goes inside `try`. `str(err)` is the message you gave `super().__init__`.
+--- check case | A valid withdrawal returns the new balance
+withdraw(100, 30)
+=> 70
+--- check case | Withdrawing everything is allowed
+withdraw(50, 50)
+=> 0
+--- check test | Overdrawing raises InsufficientFunds (a LedgerError)
+raises(InsufficientFunds, lambda: withdraw(20, 50)) and raises(LedgerError, lambda: withdraw(0, 1))
+--- check test | InsufficientFunds is a LedgerError and carries the shortfall
+issubclass(InsufficientFunds, LedgerError) and InsufficientFunds(30).shortfall == 30 and str(InsufficientFunds(30)) == "short by 30"
+--- check test | Zero or negative amounts raise ValueError
+raises(ValueError, lambda: withdraw(10, 0)) and raises(ValueError, lambda: withdraw(10, -5))
+--- check case | attempt reports success
+attempt(100, 40)
+=> "ok: 60"
+--- check case | attempt reports a refusal with the shortfall
+attempt(20, 50)
+=> "refused: short by 30"
+--- check case | attempt reports an invalid amount
+attempt(20, -1)
+=> "invalid"
+
+=== py2-09 | Debugging: reading a traceback
+--- teach
+When a Python program crashes, it prints a **traceback**. People new to Python see a wall of red and panic; experienced people read it in ten seconds, because it is a precise report of what happened.
+
+```
+Traceback (most recent call last):
+  File "main.py", line 17, in <module>
+    print(order_total(ORDERS))
+  File "main.py", line 14, in order_total
+    return sum(line_total(parse_line(line)) for line in lines)
+  File "main.py", line 14, in <genexpr>
+    return sum(line_total(parse_line(line)) for line in lines)
+  File "main.py", line 10, in line_total
+    return item["qty"] * item["price"]
+TypeError: can't multiply sequence by non-int of type 'float'
+```
+
+**Read it from the bottom up.**
+
+1. **The last line is the error**: its type (`TypeError`) and message. The message says that something is a *sequence* (a string, here) being multiplied by a float.
+2. **The frame just above it is where it happened**: `line_total`, line 10.
+3. **The frames above that are how you got there**: each call, from the outermost (`<module>`, the top level of your file) inwards. "Most recent call last" means the bottom is the latest. (`<genexpr>` is the generator expression inside `sum(...)`, which runs as a frame of its own.)
+
+Now the important part: **where it crashed is not always where the bug is.** Line 10 is correct code: multiplying a quantity by a price. It crashed because `item["qty"]` is the string `"3"`, not the number `3`. The real question is: *who made that value?* Walk *up* the data flow. `parse_line` built the dict, and it forgot to convert the quantity.
+
+A quick way to confirm your theory before changing anything:
+
+```python
+item = parse_line("tea,3,2.50")
+print(repr(item["qty"]), type(item["qty"]))    # '3' <class 'str'>
+```
+
+`repr` shows the quotes, which a plain `print` hides.
+
+**Fix the cause, not the symptom.** Writing `int(item["qty"])` inside `line_total` would stop *this* crash, but every other user of `parse_line` would still get strings. Fix the function that produces bad data, so everything after it can trust it.
+--- task
+**Bug report:** running the order program crashes with the traceback above. It should print the order total, `17.5`.
+
+Find the cause and fix it at the source. After your fix, `parse_line` must return the name with spaces trimmed, the quantity as an `int`, and the price as a `float`, even when there are spaces around the commas.
+--- starter
+ORDERS = ["tea, 3, 2.50", "biscuits, 2, 1.25", "jam, 1, 7.50"]
+
+
+def parse_line(line):
+    name, qty, price = line.split(",")
+    return {"name": name, "qty": qty, "price": float(price)}
+
+
+def line_total(item):
+    return item["qty"] * item["price"]
+
+
+def order_total(lines):
+    return sum(line_total(parse_line(line)) for line in lines)
+
+
+print(order_total(ORDERS))
+--- solution
+ORDERS = ["tea, 3, 2.50", "biscuits, 2, 1.25", "jam, 1, 7.50"]
+
+
+def parse_line(line):
+    name, qty, price = line.split(",")
+    return {"name": name.strip(), "qty": int(qty), "price": float(price)}
+
+
+def line_total(item):
+    return item["qty"] * item["price"]
+
+
+def order_total(lines):
+    return sum(line_total(parse_line(line)) for line in lines)
+
+
+print(order_total(ORDERS))
+--- hint
+The traceback ends in `line_total`, but that line is fine. What type is `item["qty"]`? Print `repr(parse_line("tea, 3, 2.50"))`.
+--- hint
+The quantity is still a string. Which function created that dict?
+--- hint
+Convert in `parse_line`: `int(qty)` (it copes with the surrounding spaces) and `name.strip()`.
+--- check output | The program prints the total
+17.5
+--- check case | parse_line converts and trims every field
+parse_line(" tea , 3 , 2.50")
+=> {"name": "tea", "qty": 3, "price": 2.5}
+--- check test | The quantity is a real int
+type(parse_line("jam,1,7.5")["qty"]) is int
+--- check case | order_total of no lines is 0
+order_total([])
+=> 0
+--- check source absent | The fix is not a patch inside line_total
+int\(\s*item\[
+
+=== py2-10 | Classes that behave: __repr__, __eq__ and @property
+--- teach
+A class that only has `__init__` works, but it is awkward: printing it shows `<__main__.Money object at 0x7f...>`, and two objects with the same data are not equal. A few special methods fix that.
+
+**`__repr__`** returns the text Python shows for the object in the console, in lists, and in error messages. A good one looks like the code that would build it:
+
+```python
+class Point:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+    def __repr__(self):
+        return f"Point({self.x}, {self.y})"
+
+    def __eq__(self, other):
+        if not isinstance(other, Point):
+            return NotImplemented
+        return (self.x, self.y) == (other.x, other.y)
+
+[Point(1, 2)]             # [Point(1, 2)]
+Point(1, 2) == Point(1, 2)   # True  (without __eq__ this is False)
+```
+
+**`__eq__`** decides what `==` means. Without it, `==` asks "is this the very same object?". `isinstance(other, Point)` is true when `other` is a `Point` (or a subclass of one). Returning `NotImplemented` for other types lets Python try the other side and then say `False`, instead of crashing.
+
+**`@property`** makes a method look like an attribute. It is how you *compute* a value on the fly, or *validate* a value when it is set, while callers still write plain `obj.attr`:
+
+```python
+class Rectangle:
+    def __init__(self, width, height):
+        self.width = width
+        self.height = height
+
+    @property
+    def area(self):
+        return self.width * self.height
+
+r = Rectangle(3, 4)
+r.area          # 12   (no brackets: it reads like data)
+r.width = 10
+r.area          # 40   (always up to date)
+```
+
+A property can have a **setter**. The usual pattern stores the real value in an attribute with a leading underscore, and the setter checks it first:
+
+```python
+class Account:
+    def __init__(self, balance):
+        self.balance = balance          # goes through the setter below
+
+    @property
+    def balance(self):
+        return self._balance
+
+    @balance.setter
+    def balance(self, value):
+        if value < 0:
+            raise ValueError("balance cannot be negative")
+        self._balance = value
+```
+
+**Common mistake:** inside the getter, writing `return self.balance` calls the property again, forever, until Python gives up with `RecursionError`. The getter and setter use `self._balance`.
+--- task
+Write a class `Temperature`:
+
+- `Temperature(celsius)` stores the temperature.
+- a `celsius` property with a setter that raises `ValueError` for anything below `-273.15` (this applies in `__init__` too).
+- a `fahrenheit` property (`celsius * 9 / 5 + 32`) with a setter that converts back and stores Celsius.
+- `__repr__` giving `Temperature(21.5)`.
+- `__eq__` so two temperatures with the same Celsius value are equal.
+--- starter
+class Temperature:
+    def __init__(self, celsius):
+        self.celsius = celsius
+--- solution
+class Temperature:
+    def __init__(self, celsius):
+        self.celsius = celsius
+
+    @property
+    def celsius(self):
+        return self._celsius
+
+    @celsius.setter
+    def celsius(self, value):
+        if value < -273.15:
+            raise ValueError("below absolute zero")
+        self._celsius = value
+
+    @property
+    def fahrenheit(self):
+        return self._celsius * 9 / 5 + 32
+
+    @fahrenheit.setter
+    def fahrenheit(self, value):
+        self.celsius = (value - 32) * 5 / 9
+
+    def __repr__(self):
+        return f"Temperature({self._celsius})"
+
+    def __eq__(self, other):
+        if not isinstance(other, Temperature):
+            return NotImplemented
+        return self._celsius == other._celsius
+--- hint
+Store the number in `self._celsius`. The `celsius` property returns it; its setter checks, then assigns it.
+--- hint
+Keep `self.celsius = celsius` in `__init__`: it goes through the setter, so construction is validated too.
+--- hint
+The `fahrenheit` setter can just do `self.celsius = (value - 32) * 5 / 9` and let the Celsius setter do the checking.
+--- check case | fahrenheit is computed
+Temperature(100).fahrenheit
+=> 212.0
+--- check test | Setting fahrenheit updates celsius
+(lambda t: (setattr(t, "fahrenheit", 32), t.celsius)[1] == 0)(Temperature(50))
+--- check test | Too cold is rejected when created
+raises(ValueError, lambda: Temperature(-300))
+--- check test | Too cold is rejected when set later
+(lambda t: raises(ValueError, lambda: setattr(t, "celsius", -274)) and t.celsius == 5)(Temperature(5))
+--- check test | Absolute zero itself is allowed
+Temperature(-273.15).celsius == -273.15
+--- check case | repr looks like the code that builds it
+repr(Temperature(21.5))
+=> "Temperature(21.5)"
+--- check test | Equal temperatures are ==, different ones are not
+Temperature(20) == Temperature(20) and Temperature(20) != Temperature(21) and Temperature(1) != "1"
+
+=== py2-11 | The standard library: math, itertools and collections
+--- teach
+Python ships with a large standard library. Knowing what is in it saves you from writing (and debugging) things that already exist. Three modules pay off immediately.
+
+**`math`**: beyond `+ - * /`.
+
+```python
+import math
+math.ceil(7 / 2), math.floor(7 / 2)    # (4, 3)
+math.sqrt(16), math.hypot(3, 4)        # (4.0, 5.0)
+math.gcd(12, 18), math.prod([2, 3, 4]) # (6, 24)
+math.inf > 10**100                     # True
+```
+
+**`itertools`**: tools for looping.
+
+```python
+from itertools import accumulate, chain, combinations, groupby, islice, count
+
+list(accumulate([1, 2, 3, 4]))              # [1, 3, 6, 10]   running totals
+list(chain([1, 2], [3], [4, 5]))            # [1, 2, 3, 4, 5]
+list(chain.from_iterable([[1, 2], [3]]))    # [1, 2, 3]       flatten one level
+list(combinations("abc", 2))                # [('a', 'b'), ('a', 'c'), ('b', 'c')]
+list(islice(count(10), 3))                  # [10, 11, 12]    first 3 of an endless count
+[(k, len(list(g))) for k, g in groupby("aaabcc")]   # [('a', 3), ('b', 1), ('c', 2)]
+```
+
+`groupby` only groups items that are *next to each other*: sort first if you want every equal item together.
+
+**`collections`**: besides `Counter` and `defaultdict`, `namedtuple` makes a tiny class whose fields have names, and `deque` is a list with fast adding and removing at both ends.
+
+```python
+from collections import namedtuple, deque
+Point = namedtuple("Point", ["x", "y"])
+p = Point(3, 4)
+p.x, p[1]            # (3, 4)   by name or by position
+p                    # Point(x=3, y=4)
+
+q = deque([1, 2, 3])
+q.appendleft(0); q.pop()
+q                    # deque([0, 1, 2])
+```
+
+**Common mistake:** writing your own running total, flatten or pairs loop with index arithmetic. It is not wrong, but it is longer, slower to read, and the off-by-one errors are yours to find.
+--- task
+Using the standard library:
+
+- `running_totals(nums)` returns the list of running totals (use `itertools.accumulate`).
+- `flatten(lists)` returns one list from a list of lists (use `itertools.chain`).
+- `pages_needed(items, per_page)` returns how many pages you need to show `items` things, `per_page` at a time (use `math.ceil`). Zero items need zero pages.
+- `Point`, a `namedtuple` with fields `x` and `y`.
+- `run_lengths(text)` returns a list of `(character, count)` for each run of repeated characters (use `itertools.groupby`).
+--- starter
+import math
+from collections import namedtuple
+from itertools import accumulate, chain, groupby
+
+
+def running_totals(nums):
+    return nums
+
+
+def flatten(lists):
+    return lists
+
+
+def pages_needed(items, per_page):
+    return items // per_page
+
+
+def run_lengths(text):
+    return []
+--- solution
+import math
+from collections import namedtuple
+from itertools import accumulate, chain, groupby
+
+Point = namedtuple("Point", ["x", "y"])
+
+
+def running_totals(nums):
+    return list(accumulate(nums))
+
+
+def flatten(lists):
+    return list(chain.from_iterable(lists))
+
+
+def pages_needed(items, per_page):
+    return math.ceil(items / per_page)
+
+
+def run_lengths(text):
+    return [(ch, len(list(group))) for ch, group in groupby(text)]
+--- hint
+`accumulate` and `chain.from_iterable` give you iterators; wrap them in `list(...)`.
+--- hint
+`math.ceil(items / per_page)` rounds up, so 11 items at 5 per page is 3 pages.
+--- hint
+`groupby(text)` yields `(char, group)` pairs; `len(list(group))` counts the run.
+--- check case | running_totals
+running_totals([5, -2, 10, 1])
+=> [5, 3, 13, 14]
+--- check case | running_totals of nothing
+running_totals([])
+=> []
+--- check case | flatten joins the lists
+flatten([[1, 2], [], [3], [4, 5]])
+=> [1, 2, 3, 4, 5]
+--- check test | pages_needed rounds up
+pages_needed(11, 5) == 3 and pages_needed(10, 5) == 2 and pages_needed(1, 50) == 1 and pages_needed(0, 5) == 0
+--- check test | Point has named fields
+(lambda p: p.x == 3 and p.y == 4 and p == (3, 4) and repr(p) == "Point(x=3, y=4)")(Point(3, 4))
+--- check case | run_lengths counts each run
+run_lengths("aaabccdddd")
+=> [("a", 3), ("b", 1), ("c", 2), ("d", 4)]
+--- check case | A letter can come back in a later run
+run_lengths("aabaa")
+=> [("a", 2), ("b", 1), ("a", 2)]
+
+=== py2-12 | Processing text in memory
+--- teach
+A lot of programming is turning text into data: logs, CSV exports, config files. You do not need a file on disk to practise it; a multi-line string behaves the same way.
+
+**Lines.** `text.splitlines()` splits on line breaks and, unlike `split("\n")`, does not leave an empty string at the end when the text ends with a newline:
+
+```python
+text = "a\nb\n"
+text.split("\n")      # ['a', 'b', '']
+text.splitlines()     # ['a', 'b']
+```
+
+A robust parsing loop strips each line and skips blank lines and comments *first*, before doing anything else, so the rest of the loop only sees real data:
+
+```python
+for line in text.splitlines():
+    line = line.strip()
+    if not line or line.startswith("#"):
+        continue
+    ...
+```
+
+**`io.StringIO`** is a string that pretends to be an open file. Anything that reads or writes files (the `csv` module, `print(..., file=...)`, a function that expects a file) works on it:
+
+```python
+import io, csv
+
+f = io.StringIO("name,score\nada,91\nlin,78\n")
+rows = list(csv.DictReader(f))
+rows[0]            # {'name': 'ada', 'score': '91'}   (every value is a string)
+
+out = io.StringIO()
+writer = csv.writer(out, lineterminator="\n")
+writer.writerow(["name", "note"])
+writer.writerow(["ada", "likes, commas"])
+out.getvalue()     # 'name,note\nada,"likes, commas"\n'
+```
+
+Notice that `csv` quoted the field that contains a comma. That is why you use `csv` instead of `",".join(...)`: joining by hand breaks the moment your data contains the separator.
+
+**Common mistakes.** The `csv` writer ends lines with `\r\n` unless you pass `lineterminator="\n"`. `csv` gives you strings: convert numbers yourself. And after writing to a `StringIO`, read it back with `getvalue()`, not `read()` (the read position is at the end).
+--- task
+Write:
+
+- `level_counts(text)` takes log text where each line looks like `2026-09-25 12:00:01 ERROR disk full`. It returns a plain dict from level (the third word) to how many lines have it. Skip blank lines and lines starting with `#`, even when they have leading spaces.
+- `to_csv(rows)` takes a list of lists and returns CSV text with `\n` line endings, using `csv.writer` and `io.StringIO`, so fields containing commas or quotes are quoted correctly.
+--- starter
+import csv
+import io
+
+
+def level_counts(text):
+    counts = {}
+    for line in text.split("\n"):
+        level = line.split()[2]
+        counts[level] = counts.get(level, 0) + 1
+    return counts
+
+
+def to_csv(rows):
+    return "\n".join(",".join(str(v) for v in row) for row in rows)
+--- solution
+import csv
+import io
+
+
+def level_counts(text):
+    counts = {}
+    for line in text.splitlines():
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        level = line.split()[2]
+        counts[level] = counts.get(level, 0) + 1
+    return counts
+
+
+def to_csv(rows):
+    out = io.StringIO()
+    writer = csv.writer(out, lineterminator="\n")
+    writer.writerows(rows)
+    return out.getvalue()
+--- hint
+Strip each line first, then `continue` past blank lines and comments before you split.
+--- hint
+For `to_csv`: `out = io.StringIO()`, `csv.writer(out, lineterminator="\n")`, `writer.writerows(rows)`.
+--- hint
+Return `out.getvalue()`.
+--- check case | level_counts counts each level
+level_counts("2026-09-25 10:00:00 INFO start\n2026-09-25 10:00:01 ERROR disk full\n2026-09-25 10:00:02 INFO ok\n")
+=> {"INFO": 2, "ERROR": 1}
+--- check case | Blank lines and comments are skipped
+level_counts("# nightly run\n\n   \n  # indented comment\n2026-09-25 10:00:00 WARN low memory\n")
+=> {"WARN": 1}
+--- check case | Empty text gives an empty dict
+level_counts("")
+=> {}
+--- check case | to_csv writes simple rows
+to_csv([["name", "score"], ["ada", 91]])
+=> "name,score\nada,91\n"
+--- check case | Fields with commas and quotes are quoted
+to_csv([["ada", "likes, commas"], ["lin", 'said "hi"']])
+=> 'ada,"likes, commas"\nlin,"said ""hi"""\n'
+
+=== py2-13 | Problem solving: two sum
+--- teach
+This lesson is about *how to solve a problem you have not seen before*. Here is a method that works on almost anything.
+
+1. **Restate the problem** in your own words, including what to return when there is no answer.
+2. **Work small examples by hand**, including awkward ones: empty input, duplicates, negatives.
+3. **Write the brute force first** in your head or on paper. It is usually obvious and usually slow, but it proves you understand the problem.
+4. **Find what the brute force repeats**, and remember it instead of recomputing it.
+5. **Check the edge cases again** against the faster version.
+
+**The problem.** Given a list `nums` and a `target`, find two *different* positions `i < j` with `nums[i] + nums[j] == target`.
+
+**Brute force:** try every pair.
+
+```python
+def two_sum_slow(nums, target):
+    for j in range(len(nums)):
+        for i in range(j):
+            if nums[i] + nums[j] == target:
+                return (i, j)
+    return None
+```
+
+For a list of `n` numbers that is about `n * n / 2` pairs. With 100,000 numbers that is five *billion* additions: far too slow.
+
+**What does it repeat?** For each `j`, the inner loop searches everything before `j` for one specific value: `target - nums[j]`, the **complement**. Searching a list is slow; looking something up in a dict is (on average) instant. So as you walk the list once, keep a dict from *value* to *the position where you first saw it*. At each `j`, ask the dict whether the complement has been seen.
+
+```python
+seen = {}
+# at position j with value x:
+#   if target - x in seen: found it: (seen[target - x], j)
+#   otherwise remember x
+```
+
+That is one pass: about `n` steps instead of `n * n / 2`. This "trade memory for time with a dict" move is one of the most useful ideas in programming.
+
+**Watch the details.** Check for the complement *before* you store the current number, or `[3]` with target `6` would pair 3 with itself. And think about which index you keep when a value appears twice.
+--- task
+Write `two_sum(nums, target)` returning a tuple `(i, j)` with `i < j` and `nums[i] + nums[j] == target`, or `None` if there is no such pair.
+
+If there are several answers, return the one with the **smallest `j`**, and for that `j` the **smallest `i`**. It must handle 100,000 numbers quickly.
+--- starter
+def two_sum(nums, target):
+    return None
+--- solution
+def two_sum(nums, target):
+    seen = {}
+    for j, x in enumerate(nums):
+        need = target - x
+        if need in seen:
+            return (seen[need], j)
+        if x not in seen:
+            seen[x] = j
+    return None
+--- hint
+Walk the list once with `enumerate`. For each number `x`, the partner you need is `target - x`.
+--- hint
+Keep a dict from value to index. Look the partner up *before* storing `x`, so a number never pairs with itself.
+--- hint
+To return the smallest `i`, store a value's index only the first time you see it: `if x not in seen: seen[x] = j`.
+--- check case | The classic example
+two_sum([2, 7, 11, 15], 9)
+=> (0, 1)
+--- check case | A number cannot pair with itself, but a duplicate can
+two_sum([3, 2, 4, 3], 6)
+=> (1, 2)
+--- check case | Two equal numbers
+two_sum([3, 3], 6)
+=> (0, 1)
+--- check case | Negative numbers
+two_sum([-3, 4, 3, 90], 0)
+=> (0, 2)
+--- check case | Smallest j first, then smallest i
+two_sum([1, 4, 1, 3], 4)
+=> (0, 3)
+?? When a value appears twice, keep the index of the first time you saw it.
+--- check case | No pair gives None
+two_sum([1, 2, 3], 7)
+=> None
+--- check case | Empty list gives None
+two_sum([], 5)
+=> None
+--- check case | 100,000 numbers, answer at the very end
+two_sum(list(range(1, 100001)), 199999)
+=> (99998, 99999)
+?? Checking every pair is billions of steps here. Use a dict so each number is handled once.
+
+=== py2-14 | Design: untangling a long function
+--- teach
+Code that works is not finished. Code gets *read* far more often than it gets written, and a 40-line function that parses, computes, decides and formats all at once is hard to read, hard to test and hard to change.
+
+**The refactoring method:**
+
+1. **Pin the behaviour down first.** Before you move anything, have checks (or a few saved outputs) that prove the program still does exactly what it did. Refactoring means changing the *shape*, never the *behaviour*.
+2. **Find the separate jobs.** Read the function and name each thing it does in a few words: "parse a line", "average the scores", "choose a letter", "format a row". Each phrase is a function waiting to be extracted.
+3. **Extract one at a time**, running the checks after each move.
+4. **Name things for what they mean**, not how they work: `letter(avg)` rather than `check_thresholds(x)`.
+5. **What remains is the story.** The top-level function should read like a summary of the steps.
+
+Before:
+
+```python
+def total(text):
+    t = 0
+    for l in text.split(","):
+        l = l.strip()
+        if l:
+            t += int(l)
+    return t
+```
+
+After:
+
+```python
+def parse_numbers(text):
+    return [int(part) for part in text.split(",") if part.strip()]
+
+def total(text):
+    return sum(parse_numbers(text))
+```
+
+Now `parse_numbers` can be tested alone, reused elsewhere, and fixed in one place.
+
+Each small function should do **one job** and *return* its result rather than print it or change something far away. Functions like that are easy to test, and they fit together.
+
+**Common mistake:** "improving" behaviour during a refactor. If you notice a bug, write it down and fix it separately, so a changed output never leaves you wondering whether it was the refactor or the fix.
+--- task
+`report(text)` works, but it does everything in one place. Refactor it, **keeping its output exactly the same**, into:
+
+- `parse_line(line)` returns `(name, scores)` for a data line, with the name stripped and title-cased and the scores as a list of ints, or `None` for a blank line or a `#` comment.
+- `average(scores)` returns the mean as a float, or `0.0` for an empty list.
+- `letter(avg)` returns `"A"` (90 and up), `"B"` (80 and up), `"C"` (70 and up) or `"F"`.
+- `format_row(name, avg)` returns one row of the report.
+- `report(text)` builds the report by calling those four.
+--- starter
+def report(text):
+    out = []
+    best_name = None
+    best_avg = -1
+    for raw in text.splitlines():
+        raw = raw.strip()
+        if raw == "" or raw.startswith("#"):
+            continue
+        name, _, rest = raw.partition(":")
+        name = name.strip().title()
+        nums = []
+        for part in rest.split(","):
+            part = part.strip()
+            if part:
+                nums.append(int(part))
+        if len(nums) == 0:
+            avg = 0.0
+        else:
+            avg = sum(nums) / len(nums)
+        if avg >= 90:
+            grade = "A"
+        elif avg >= 80:
+            grade = "B"
+        elif avg >= 70:
+            grade = "C"
+        else:
+            grade = "F"
+        out.append(f"{name:<10}{avg:6.1f}  {grade}")
+        if avg > best_avg:
+            best_avg = avg
+            best_name = name
+    if best_name is not None:
+        out.append(f"Top: {best_name}")
+    return "\n".join(out)
+--- solution
+def parse_line(line):
+    line = line.strip()
+    if not line or line.startswith("#"):
+        return None
+    name, _, rest = line.partition(":")
+    scores = [int(part) for part in rest.split(",") if part.strip()]
+    return name.strip().title(), scores
+
+
+def average(scores):
+    return sum(scores) / len(scores) if scores else 0.0
+
+
+def letter(avg):
+    if avg >= 90:
+        return "A"
+    if avg >= 80:
+        return "B"
+    if avg >= 70:
+        return "C"
+    return "F"
+
+
+def format_row(name, avg):
+    return f"{name:<10}{avg:6.1f}  {letter(avg)}"
+
+
+def report(text):
+    rows = []
+    best = None
+    for line in text.splitlines():
+        parsed = parse_line(line)
+        if parsed is None:
+            continue
+        name, scores = parsed
+        avg = average(scores)
+        rows.append(format_row(name, avg))
+        if best is None or avg > best[1]:
+            best = (name, avg)
+    if best is not None:
+        rows.append(f"Top: {best[0]}")
+    return "\n".join(rows)
+--- hint
+Start with the easiest extraction: `letter(avg)` is the `if`/`elif` chain, returning instead of assigning.
+--- hint
+`parse_line` is the strip, the "skip" test (return `None`), the `partition(":")` and the list of ints. A comprehension can build the scores.
+--- hint
+When all four exist, `report` becomes: for each line, `parse_line`; skip `None`; `average`; `format_row`; track the best. Compare its output with the original on the sample text.
+--- check case | parse_line reads a data line
+parse_line("  ada lovelace: 90, 85,100 ")
+=> ("Ada Lovelace", [90, 85, 100])
+--- check test | parse_line skips blanks and comments
+parse_line("") is None and parse_line("   ") is None and parse_line("# header") is None
+--- check case | parse_line with no scores
+parse_line("sam:")
+=> ("Sam", [])
+--- check test | average, including the empty case
+average([80, 90]) == 85.0 and average([]) == 0.0
+--- check test | letter uses the right boundaries
+[letter(x) for x in (95, 90, 89.9, 80, 75, 70, 69.9, 0)] == ["A", "A", "B", "B", "C", "C", "F", "F"]
+--- check case | format_row lays out one row
+format_row("Ada", 91.66)
+=> "Ada         91.7  A"
+--- check case | report is unchanged
+report("# class 3B\nada: 90, 95\n\n lin : 70,80,75\nsam: 50\ngrace: 99,98")
+=> "Ada         92.5  A\nLin         75.0  C\nSam         50.0  F\nGrace       98.5  A\nTop: Grace"
+--- check case | A tie for top keeps the first
+report("a: 80\nb: 80")
+=> "A           80.0  B\nB           80.0  B\nTop: A"
+--- check case | Nothing to report
+report("# only a comment\n")
+=> ""
+--- check test | report is built from the four helpers
+{"parse_line", "average", "format_row"} <= set(report.__code__.co_names)
+?? report should call parse_line, average and format_row (and format_row calls letter).

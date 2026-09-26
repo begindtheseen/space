@@ -14,11 +14,32 @@
    answer, note, warning). Everything else is plain text.
    ========================================================================== */
 import { VideoEmbed } from '@/components/VideoEmbed'
-import { useLayoutEffect, useRef, useState, type ReactNode } from 'react'
+import { createContext, useContext, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 import './markdown.css'
 
-export function Markdown({ children, className = '' }: { children: string; className?: string }) {
-  return <div className={`md ${className}`}>{renderBlocks(children)}</div>
+/**
+ * Lets a page draw some fenced code blocks itself — a lesson turns runnable
+ * ones into the embedded playground. Returning null keeps the plain block.
+ */
+export type CodeRenderer = (lang: string, code: string) => ReactNode | null
+
+const CodeContext = createContext<CodeRenderer | null>(null)
+
+export function Markdown({ children, className = '', renderCode }: { children: string; className?: string; renderCode?: CodeRenderer }) {
+  const body = <div className={`md ${className}`}>{renderBlocks(children)}</div>
+  return renderCode ? <CodeContext.Provider value={renderCode}>{body}</CodeContext.Provider> : body
+}
+
+function CodeBlock({ lang, code }: { lang: string; code: string }) {
+  const render = useContext(CodeContext)
+  const custom = render?.(lang, code)
+  if (custom) return <>{custom}</>
+  return (
+    <pre className="md__pre" data-lang={lang || undefined}>
+      {lang ? <span className="md__lang">{lang}</span> : null}
+      <code>{code}</code>
+    </pre>
+  )
 }
 
 /* ── Math ────────────────────────────────────────────────────────────────── */
@@ -100,12 +121,7 @@ function renderBlocks(src: string): ReactNode[] {
         i++
       }
       i++ // closing fence
-      out.push(
-        <pre className="md__pre" key={key++} data-lang={lang || undefined}>
-          {lang ? <span className="md__lang">{lang}</span> : null}
-          <code>{body.join('\n')}</code>
-        </pre>,
-      )
+      out.push(<CodeBlock key={key++} lang={lang} code={body.join('\n')} />)
       continue
     }
 

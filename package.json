@@ -2,7 +2,7 @@
   "name": "orbit-gnc",
   "productName": "ORBIT",
   "private": true,
-  "version": "1.0.10",
+  "version": "1.1.0",
   "type": "module",
   "description": "A local-first curriculum platform that takes a complete beginner to guidance, navigation and control engineering readiness.",
   "author": "begindtheseen",
@@ -33,6 +33,7 @@
     "smoke:focus": "node scripts/focus-smoke.mjs"
   },
   "devDependencies": {
+    "@bjorn3/browser_wasi_shim": "0.4.2",
     "@codemirror/autocomplete": "^6.20.3",
     "@codemirror/commands": "^6.11.1",
     "@codemirror/lang-cpp": "^6.0.3",

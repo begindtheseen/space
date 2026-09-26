@@ -1293,3 +1293,135 @@
   font-size: 11px;
   color: var(--ink-5);
 }
+
+/* Playground: standard input for a C++ program. Monospace, like the editor
+   above it, because what is typed here is read by the program byte for byte. */
+.pg__stdin {
+  padding: 12px 15px 15px;
+  border-top: 1px solid var(--line-soft);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pg__stdin label {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.pg__stdin textarea {
+  width: 100%;
+  resize: vertical;
+  min-height: 84px;
+  padding: 10px 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.28);
+  color: var(--ink);
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 12.5px;
+  line-height: 1.55;
+}
+
+.pg__stdin textarea:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+/* ── Playground, Coddy-style ─────────────────────────────────────────────── */
+.pgx-learn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 14px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(47, 168, 230, 0.28);
+  background: rgba(47, 168, 230, 0.08);
+  color: var(--ink-2);
+  font-size: 13px;
+  line-height: 1.45;
+  text-decoration: none;
+}
+
+.pgx-learn > svg {
+  color: #4fc1ff;
+  flex: none;
+}
+
+.pgx-learn:hover {
+  border-color: rgba(47, 168, 230, 0.5);
+}
+
+.pgx-learn__go {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+  font-weight: 700;
+  color: #4fc1ff;
+  white-space: nowrap;
+}
+
+.pgx-brief {
+  margin: 0 0 14px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: var(--panel-grad);
+}
+
+.pgx-status {
+  font-size: 11.5px;
+  color: #80858f;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 45%;
+  padding: 0 4px 0 10px;
+}
+
+.pgx-note {
+  margin: 10px 2px 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--ink-4);
+}
+
+.pgx-web {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+}
+
+.pgx-web__out .ide-panel {
+  border-top: none;
+}
+
+.pgx-web__out .ide-panel__body {
+  padding: 0;
+}
+
+.pgx-web__out .ide-console {
+  padding: 12px 14px;
+  min-height: 120px;
+}
+
+.ide-console__warn {
+  color: #e2c08d;
+}
+
+@media (max-width: 900px) {
+  .pgx-web {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 560px) {
+  .pgx-learn {
+    flex-wrap: wrap;
+  }
+}

@@ -1,0 +1,1189 @@
+@track sql
+@level advanced
+@title SQL · Advanced
+@name SQL, advanced: window functions, schema design and the database's own rules
+@blurb Write the queries analysts reach for — CTEs, recursion, window functions — and design databases that protect themselves with constraints, indexes, transactions, upserts, views and triggers.
+@schema
+CREATE TABLE employees (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  title TEXT NOT NULL,
+  manager_id INTEGER REFERENCES employees(id),
+  dept TEXT NOT NULL,
+  salary INTEGER NOT NULL,
+  hired TEXT NOT NULL
+);
+INSERT INTO employees (id, name, title, manager_id, dept, salary, hired) VALUES
+  (1,  'Maya', 'CEO',              NULL, 'exec',    250000, '2019-01-10'),
+  (2,  'Omar', 'CTO',              1,    'eng',     200000, '2019-03-01'),
+  (3,  'Lena', 'CFO',              1,    'finance', 190000, '2019-06-15'),
+  (4,  'Raj',  'Eng manager',      2,    'eng',     150000, '2020-02-01'),
+  (5,  'Tess', 'Staff engineer',   2,    'eng',     150000, '2020-05-20'),
+  (6,  'Ivan', 'Engineer',         4,    'eng',     120000, '2021-01-11'),
+  (7,  'Nora', 'Engineer',         4,    'eng',     120000, '2021-09-01'),
+  (8,  'Paul', 'Engineer',         4,    'eng',     105000, '2022-04-18'),
+  (9,  'Zara', 'Accountant',       3,    'finance',  90000, '2021-07-07'),
+  (10, 'Leo',  'Intern',           6,    'eng',      40000, '2024-06-03'),
+  (11, 'Amy',  'Analyst',          3,    'finance',  90000, '2023-02-14');
+CREATE TABLE daily_sales (
+  day TEXT NOT NULL,
+  region TEXT NOT NULL,
+  amount REAL NOT NULL,
+  PRIMARY KEY (day, region)
+);
+INSERT INTO daily_sales (day, region, amount) VALUES
+  ('2024-07-01', 'north', 120), ('2024-07-02', 'north',  80), ('2024-07-03', 'north', 150),
+  ('2024-07-05', 'north',  90), ('2024-07-06', 'north', 200), ('2024-07-07', 'north', 110),
+  ('2024-07-01', 'south',  60), ('2024-07-03', 'south',  75), ('2024-07-04', 'south',  75),
+  ('2024-07-05', 'south',  40), ('2024-07-07', 'south',  95);
+CREATE TABLE categories (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  parent_id INTEGER REFERENCES categories(id)
+);
+INSERT INTO categories (id, name, parent_id) VALUES
+  (1, 'All', NULL), (2, 'Electronics', 1), (3, 'Home', 1), (4, 'Audio', 2),
+  (5, 'Headphones', 4), (6, 'Speakers', 4), (7, 'Cables', 2), (8, 'Kitchen', 3), (9, 'Earbuds', 5);
+@end
+
+=== sql3-01 | CTEs: a query in named steps
+--- teach
+Most lessons in this course share three tables:
+
+- `employees` — `id`, `name`, `title`, `manager_id` (another employee, NULL for the CEO), `dept`, `salary`, `hired`
+- `daily_sales` — `day`, `region` (`north` or `south`), `amount`; some days have no row
+- `categories` — `id`, `name`, `parent_id` (NULL for the root): a tree
+
+The intermediate course answered business questions with joins, subqueries and `CASE`. This course adds what analysts reach for next — recursion and window functions — and then turns to design: a database that protects its own data.
+
+You have already chained two `WITH` steps to fix a fan-out. Each step can also use the ones defined **before** it, which turns a long question into a pipeline:
+
+```sql
+WITH dept_pay AS (
+  SELECT dept, COUNT(*) AS headcount, SUM(salary) AS payroll
+  FROM employees
+  GROUP BY dept
+), company AS (
+  SELECT SUM(payroll) AS total FROM dept_pay
+)
+SELECT d.dept, d.payroll, c.total
+FROM dept_pay d CROSS JOIN company c;
+```
+
+`company` is built from `dept_pay`, and the final `SELECT` uses both. `CROSS JOIN` with a one-row result simply puts that value on every row.
+
+Why bother, when subqueries can do the same? Because each step has a **name** that says what it means, and you can debug a step by selecting from it on its own. Long reports written as nested subqueries are read inside-out; CTEs are read top to bottom, in the order you thought of them.
+
+One precision trap: dividing two integers in SQLite gives an integer (`7 / 2` is `3`). Multiply by `100.0` first to get a real percentage.
+--- task
+Return one row per department with `dept`, `headcount`, `payroll` (total salary) and `share` — the department's payroll as a percentage of the whole company's payroll, rounded to 1 decimal. Use at least two CTEs. Sort by payroll, largest first.
+--- starter
+SELECT dept, COUNT(*) AS headcount, SUM(salary) AS payroll
+FROM employees
+GROUP BY dept;
+--- solution
+WITH dept_pay AS (
+  SELECT dept, COUNT(*) AS headcount, SUM(salary) AS payroll
+  FROM employees
+  GROUP BY dept
+), company AS (
+  SELECT SUM(payroll) AS total FROM dept_pay
+)
+SELECT d.dept, d.headcount, d.payroll,
+       ROUND(100.0 * d.payroll / c.total, 1) AS share
+FROM dept_pay d
+CROSS JOIN company c
+ORDER BY d.payroll DESC;
+--- hint
+First CTE: payroll per department. Second CTE: the sum of those payrolls.
+--- hint
+Join the two with `CROSS JOIN` and compute `ROUND(100.0 * d.payroll / c.total, 1)`.
+--- check result | eng, finance, exec with their shares
+ordered
+[["eng", 7, 885000, 58.8], ["finance", 3, 370000, 24.6], ["exec", 1, 250000, 16.6]]
+--- check source | Uses more than one CTE
+\)\s*,\s*\w+\s+[Aa][Ss]\s*\(
+
+=== sql3-02 | Recursive CTEs: generating a series
+--- teach
+`daily_sales` has no row for a day with no sales in a region. A chart built straight from it would silently skip those days — and a "per day" average would be wrong. You need a row for **every** day, with 0 where nothing happened. SQL has no loop, but it has **recursive CTEs**:
+
+```sql
+WITH RECURSIVE n(x) AS (
+  SELECT 1                           -- the anchor: the first row
+  UNION ALL
+  SELECT x + 1 FROM n WHERE x < 5    -- the step: builds the next row from the last
+)
+SELECT x FROM n;                     -- 1, 2, 3, 4, 5
+```
+
+How it runs: the anchor produces the first rows. Then the step runs on the rows produced last time, and its output becomes the input to the next round. When a round produces nothing — here, when `x < 5` is false — it stops. **Always write the stopping condition first**; without it the query runs forever.
+
+A calendar is the same idea with dates:
+
+```sql
+WITH RECURSIVE days(day) AS (
+  SELECT '2024-07-01'
+  UNION ALL
+  SELECT date(day, '+1 day') FROM days WHERE day < '2024-07-07'
+)
+SELECT day FROM days;
+```
+
+Then `LEFT JOIN` the real data onto the calendar. The calendar supplies every day; the data fills in what it has; `COALESCE(amount, 0)` fills the gaps. Remember the LEFT JOIN rule from the intermediate course: a filter on the right-hand table — here, the region — belongs in the `ON`.
+--- task
+Return one row for every day from `2024-07-01` to `2024-07-07` with the `north` region's sales: columns `day` and `amount`, where a day with no row shows `0`. Sort by day.
+--- starter
+SELECT day, amount
+FROM daily_sales
+WHERE region = 'north'
+ORDER BY day;
+--- solution
+WITH RECURSIVE days(day) AS (
+  SELECT '2024-07-01'
+  UNION ALL
+  SELECT date(day, '+1 day') FROM days WHERE day < '2024-07-07'
+)
+SELECT d.day, COALESCE(s.amount, 0) AS amount
+FROM days d
+LEFT JOIN daily_sales s ON s.day = d.day AND s.region = 'north'
+ORDER BY d.day;
+--- hint
+Build the calendar with `WITH RECURSIVE days(day) AS (SELECT '2024-07-01' UNION ALL SELECT date(day, '+1 day') FROM days WHERE day < '2024-07-07')`.
+--- hint
+`LEFT JOIN daily_sales s ON s.day = d.day AND s.region = 'north'`, and `COALESCE(s.amount, 0)`.
+--- check result | Seven days; 4 July is 0
+ordered
+[["2024-07-01", 120.0], ["2024-07-02", 80.0], ["2024-07-03", 150.0], ["2024-07-04", 0], ["2024-07-05", 90.0], ["2024-07-06", 200.0], ["2024-07-07", 110.0]]
+
+=== sql3-03 | Recursive CTEs: walking an org chart
+--- teach
+A self-join finds someone's *direct* reports. "Everyone under Omar, at any depth" needs as many joins as the tree is deep — and you do not know the depth in advance. A recursive CTE walks it for you:
+
+```sql
+WITH RECURSIVE chain(id, name, depth) AS (
+  SELECT id, name, 1 FROM employees WHERE manager_id = 4    -- Raj's direct reports
+  UNION ALL
+  SELECT e.id, e.name, c.depth + 1
+  FROM employees e
+  JOIN chain c ON e.manager_id = c.id                       -- their reports, and so on
+)
+SELECT * FROM chain;
+```
+
+Round one finds the people whose manager is Raj. Each later round joins `employees` to the rows found in the round before: people managed by *those* people. When a round finds nobody, it stops — the leaves of the tree end the recursion on their own.
+
+Carry along whatever you need as you go: a `depth` counter, the manager's name, a path string. The anchor sets the starting value; the step updates it.
+
+Walking **up** is the same with the join flipped: start from one person and join `e.id = c.manager_id` to climb to the CEO.
+
+Real data can contain a cycle (A manages B, B manages A), and then the recursion never ends. Guarding with `WHERE c.depth < 20` in the step is cheap insurance.
+--- task
+Return everyone who reports to **Omar**, directly or indirectly: their `name` and `depth` (1 for Omar's direct reports, 2 for theirs, and so on). Sort by depth, then name. Find Omar by name, not by id.
+--- starter
+SELECT name, 1 AS depth
+FROM employees
+WHERE manager_id = (SELECT id FROM employees WHERE name = 'Omar')
+ORDER BY name;
+--- solution
+WITH RECURSIVE reports(id, name, depth) AS (
+  SELECT id, name, 1
+  FROM employees
+  WHERE manager_id = (SELECT id FROM employees WHERE name = 'Omar')
+  UNION ALL
+  SELECT e.id, e.name, r.depth + 1
+  FROM employees e
+  JOIN reports r ON e.manager_id = r.id
+)
+SELECT name, depth
+FROM reports
+ORDER BY depth, name;
+--- hint
+The starter is the anchor: Omar's direct reports at depth 1. Put it inside `WITH RECURSIVE reports(id, name, depth) AS ( … )`.
+--- hint
+The step: `SELECT e.id, e.name, r.depth + 1 FROM employees e JOIN reports r ON e.manager_id = r.id`, joined to the anchor with `UNION ALL`.
+--- check result | Raj and Tess, then Ivan, Nora and Paul, then Leo
+ordered
+[["Raj", 1], ["Tess", 1], ["Ivan", 2], ["Nora", 2], ["Paul", 2], ["Leo", 3]]
+
+=== sql3-04 | Recursive CTEs: paths through a tree
+--- teach
+Category trees are everywhere: shops, file systems, comment threads. A recursive CTE can build each node's **path** from the root, by carrying a string along and appending to it at each step:
+
+```sql
+WITH RECURSIVE tree(id, path) AS (
+  SELECT id, name FROM categories WHERE parent_id IS NULL
+  UNION ALL
+  SELECT c.id, t.path || '/' || c.name
+  FROM categories c
+  JOIN tree t ON c.parent_id = t.id
+)
+SELECT path FROM tree;
+```
+
+This walks **down** from the root, so every node is reached through its parent, and its path is its parent's path plus its own name.
+
+The path is useful beyond display. Sorting by it lists the tree in reading order, each parent directly above its children. And "everything under Electronics" becomes `WHERE path LIKE 'All/Electronics/%'`.
+
+Count as you go, too: a `level` column starting at 0 and growing by 1 per step tells you how deep each node is — handy for indenting.
+--- task
+Return every category with its `path` from the root, names joined by `' > '` (for example `All > Electronics > Audio`), and its `level` (0 for `All`, 1 for its children, and so on). Sort by path.
+--- starter
+SELECT name AS path, 0 AS level
+FROM categories
+WHERE parent_id IS NULL;
+--- solution
+WITH RECURSIVE tree(id, path, level) AS (
+  SELECT id, name, 0 FROM categories WHERE parent_id IS NULL
+  UNION ALL
+  SELECT c.id, t.path || ' > ' || c.name, t.level + 1
+  FROM categories c
+  JOIN tree t ON c.parent_id = t.id
+)
+SELECT path, level
+FROM tree
+ORDER BY path;
+--- hint
+Anchor: the root, `SELECT id, name, 0 FROM categories WHERE parent_id IS NULL`.
+--- hint
+Step: join `categories c` to the tree on `c.parent_id = t.id`, building `t.path || ' > ' || c.name` and `t.level + 1`.
+--- check result | Nine categories in tree order, Earbuds four levels down
+ordered
+[["All", 0], ["All > Electronics", 1], ["All > Electronics > Audio", 2], ["All > Electronics > Audio > Headphones", 3], ["All > Electronics > Audio > Headphones > Earbuds", 4], ["All > Electronics > Audio > Speakers", 3], ["All > Electronics > Cables", 2], ["All > Home", 1], ["All > Home > Kitchen", 2]]
+
+=== sql3-18 | Problem solving: everyone under every manager
+--- teach
+**The problem.** HR wants a table of every manager with the size and cost of the whole team beneath them: for each employee who manages anyone, the number of people below them **at any depth**, and the total salary of those people. Maya, the CEO, has everyone below her; Ivan has only his intern.
+
+Lesson 3 walked the tree below *one* person. This asks for the same walk below *every* person at once. Work it through the problem-solving steps from the intermediate course:
+
+1. **Restate it with an example.** Omar manages Raj and Tess; Raj manages Ivan, Nora and Paul; Ivan manages Leo. So Omar's team is 6 people, and its payroll is their six salaries — not Omar's own.
+2. **Brute force first.** You could run lesson 3's query once per manager, changing the name each time. That gives the right numbers, but it is one query per manager, and a new manager means a new query.
+3. **Find the pattern.** Every walk starts the same way — a manager and their direct reports — and every step does the same thing: add the reports of the people found so far. The only difference between the walks is *whose* walk it is. So carry that along: make the recursive rows **pairs**, `(boss_id, emp_id)`, meaning "emp is somewhere under boss".
+   - Anchor: every direct link, `SELECT manager_id, id FROM employees WHERE manager_id IS NOT NULL`.
+   - Step: for each pair found, the people managed by `emp_id` are also under the same `boss_id`.
+4. **Then it is ordinary grouping.** Group the pairs by `boss_id`: `COUNT(*)` is the team size, and joining each `emp_id` back to `employees` gives the salaries to sum.
+5. **Check the edges.** People who manage nobody (Leo, Zara…) produce no pairs as a boss, so they do not appear — which is what the question asks. Every person appears once per boss above them, never twice under the same boss, because a tree has only one path upwards.
+--- task
+For every employee who manages at least one person, return `name`, `reports` (the number of people under them at any depth) and `team_payroll` (the total salary of those people, not counting the manager). Use one recursive CTE for all managers at once. Sort by `reports`, largest first, then name.
+--- starter
+SELECT b.name, COUNT(*) AS reports, SUM(e.salary) AS team_payroll
+FROM employees e
+JOIN employees b ON b.id = e.manager_id
+GROUP BY b.id, b.name
+ORDER BY reports DESC, b.name;
+--- solution
+WITH RECURSIVE under(boss_id, emp_id) AS (
+  SELECT manager_id, id FROM employees WHERE manager_id IS NOT NULL
+  UNION ALL
+  SELECT u.boss_id, e.id
+  FROM under u
+  JOIN employees e ON e.manager_id = u.emp_id
+)
+SELECT b.name, COUNT(*) AS reports, SUM(e.salary) AS team_payroll
+FROM under u
+JOIN employees b ON b.id = u.boss_id
+JOIN employees e ON e.id = u.emp_id
+GROUP BY b.id, b.name
+ORDER BY reports DESC, b.name;
+--- hint
+The starter counts only direct reports: Maya shows 2, but everyone is under her. You need the whole tree below each manager.
+--- hint
+Make the recursion build pairs `(boss_id, emp_id)`. The anchor is every direct link: `SELECT manager_id, id FROM employees WHERE manager_id IS NOT NULL`.
+--- hint
+The step keeps the boss and moves one level down: `SELECT u.boss_id, e.id FROM under u JOIN employees e ON e.manager_id = u.emp_id`. Then group the pairs by boss and join `employees` twice, once for the boss's name and once for the salaries.
+--- check result | Five managers, with whole-tree headcounts and payrolls
+ordered
+[["Maya", 10, 1255000], ["Omar", 6, 685000], ["Raj", 4, 385000], ["Lena", 2, 180000], ["Ivan", 1, 40000]]
+--- check source | Uses a recursive CTE
+[Rr][Ee][Cc][Uu][Rr][Ss][Ii][Vv][Ee]
+
+=== sql3-05 | Window functions: ranking
+--- teach
+`GROUP BY` collapses rows into one per group. A **window function** computes across a group of rows but keeps every row. The group is described by `OVER (...)`:
+
+```sql
+SELECT name, dept, salary,
+       RANK() OVER (PARTITION BY dept ORDER BY salary DESC) AS pos
+FROM employees;
+```
+
+- `PARTITION BY dept` — rank within each department separately (leave it out for one ranking over everything).
+- `ORDER BY salary DESC` — the order the ranking follows.
+
+The three ranking functions differ only in how they treat **ties**. For salaries 150, 150, 120:
+
+| function | gives | meaning |
+| --- | --- | --- |
+| `ROW_NUMBER()` | 1, 2, 3 | always distinct; ties broken arbitrarily unless you add a tie-breaker |
+| `RANK()` | 1, 1, 3 | ties share, then a gap — "third fastest" |
+| `DENSE_RANK()` | 1, 1, 2 | ties share, no gap — "second-highest salary" |
+
+Pick by the question. "Exactly one row per group" wants `ROW_NUMBER` with a tie-breaker in the `ORDER BY`, so the result is the same every run. "Everyone who shares the top spot" wants `RANK` or `DENSE_RANK`.
+
+Window functions run after `WHERE` and `GROUP BY`, so you cannot filter on them in the same query's `WHERE` — wrap the query in a CTE and filter outside. You will do that in the expert course.
+--- task
+For every employee in the `eng` department, return `name`, `salary`, and three rankings by salary (highest first): `rn` with `ROW_NUMBER()` (ties broken by name, A to Z), `rnk` with `RANK()` and `dense` with `DENSE_RANK()`. Sort by `rn`.
+--- starter
+SELECT name, salary
+FROM employees
+WHERE dept = 'eng'
+ORDER BY salary DESC;
+--- solution
+SELECT name, salary,
+       ROW_NUMBER() OVER (ORDER BY salary DESC, name) AS rn,
+       RANK()       OVER (ORDER BY salary DESC) AS rnk,
+       DENSE_RANK() OVER (ORDER BY salary DESC) AS dense
+FROM employees
+WHERE dept = 'eng'
+ORDER BY rn;
+--- hint
+Each ranking is its own column: `RANK() OVER (ORDER BY salary DESC) AS rnk`.
+--- hint
+`ROW_NUMBER` needs the tie-breaker: `OVER (ORDER BY salary DESC, name)`. Sort the final result by `rn`.
+--- check result | Ties share a RANK (with gaps) and a DENSE_RANK (without)
+ordered
+[["Omar", 200000, 1, 1, 1], ["Raj", 150000, 2, 2, 2], ["Tess", 150000, 3, 2, 2], ["Ivan", 120000, 4, 4, 3], ["Nora", 120000, 5, 4, 3], ["Paul", 105000, 6, 6, 4], ["Leo", 40000, 7, 7, 5]]
+
+=== sql3-06 | Running totals with SUM() OVER
+--- teach
+Aggregates become window functions when you add `OVER`. With an `ORDER BY` inside, they accumulate — a **running total**:
+
+```sql
+SELECT day, amount,
+       SUM(amount) OVER (ORDER BY day) AS so_far
+FROM daily_sales
+WHERE region = 'north';
+```
+
+Each row's `so_far` is the sum of every row up to and including it, in day order. `PARTITION BY` restarts the running total for each group:
+
+```sql
+SUM(amount) OVER (PARTITION BY region ORDER BY day)
+```
+
+Without `ORDER BY` inside `OVER`, the window is the whole partition, so every row gets the partition's grand total — which is exactly what you want for "share of total":
+
+```sql
+amount * 100.0 / SUM(amount) OVER (PARTITION BY region)
+```
+
+The same works for `AVG`, `COUNT`, `MIN` and `MAX`: a running count, a best-so-far.
+
+A subtle default: with `ORDER BY`, the window includes every row with the **same** sort value as the current one (its *peers*). If two rows tie on `day`, both show the total including both. When the order column is unique — here `(day, region)` is the primary key, so within a region `day` is unique — you never notice. The next lesson shows how to take control of this.
+--- task
+For each region, return `region`, `day`, `amount`, `running` (the region's running total up to and including that day) and `pct` (that day's amount as a percentage of the region's total for the week, rounded to 1 decimal). Sort by region, then day.
+--- starter
+SELECT region, day, amount
+FROM daily_sales
+ORDER BY region, day;
+--- solution
+SELECT region, day, amount,
+       SUM(amount) OVER (PARTITION BY region ORDER BY day) AS running,
+       ROUND(amount * 100.0 / SUM(amount) OVER (PARTITION BY region), 1) AS pct
+FROM daily_sales
+ORDER BY region, day;
+--- hint
+Running total: `SUM(amount) OVER (PARTITION BY region ORDER BY day)`.
+--- hint
+Region total: the same without `ORDER BY` — `SUM(amount) OVER (PARTITION BY region)`. Divide and round.
+--- check result | Running totals restart per region
+ordered
+[["north", "2024-07-01", 120.0, 120.0, 16.0], ["north", "2024-07-02", 80.0, 200.0, 10.7], ["north", "2024-07-03", 150.0, 350.0, 20.0], ["north", "2024-07-05", 90.0, 440.0, 12.0], ["north", "2024-07-06", 200.0, 640.0, 26.7], ["north", "2024-07-07", 110.0, 750.0, 14.7], ["south", "2024-07-01", 60.0, 60.0, 17.4], ["south", "2024-07-03", 75.0, 135.0, 21.7], ["south", "2024-07-04", 75.0, 210.0, 21.7], ["south", "2024-07-05", 40.0, 250.0, 11.6], ["south", "2024-07-07", 95.0, 345.0, 27.5]]
+
+=== sql3-07 | LAG and LEAD: comparing with neighbours
+--- teach
+"How did today compare with yesterday?" needs a value from **another row**. `LAG(x)` returns `x` from the previous row of the window; `LEAD(x)` from the next one:
+
+```sql
+SELECT day, amount,
+       LAG(amount) OVER (ORDER BY day) AS prev,
+       amount - LAG(amount) OVER (ORDER BY day) AS change
+FROM daily_sales
+WHERE region = 'north';
+```
+
+The first row has no previous row, so `LAG` gives NULL (and so does the change). You can ask for a default instead — `LAG(amount, 1, 0)` — but think first: is "no previous day" really a change from zero? Usually NULL is the honest answer.
+
+`LAG(x, n)` looks `n` rows back. And, as always, `PARTITION BY region` keeps north's rows from being compared with south's.
+
+The catch: `LAG` means the previous **row**, not the previous **day**. North has no row for 4 July, so on 5 July the "previous" row is 3 July. That may be what you want (compare with the last recorded day), or not (then build a full calendar first, as in lesson 2). Either way, it is worth showing how far back the previous row was:
+
+```sql
+julianday(day) - julianday(LAG(day) OVER (ORDER BY day)) AS gap_days
+```
+--- task
+For both regions, return `region`, `day`, `amount`, `change` (the amount minus the region's previous recorded amount; NULL for its first row) and `gap_days` (the number of days since the region's previous row, as a number; NULL for its first row). Sort by region, then day.
+--- starter
+SELECT region, day, amount,
+       amount - LAG(amount) OVER (ORDER BY day) AS change
+FROM daily_sales
+ORDER BY region, day;
+--- solution
+SELECT region, day, amount,
+       amount - LAG(amount) OVER w AS change,
+       julianday(day) - julianday(LAG(day) OVER w) AS gap_days
+FROM daily_sales
+WINDOW w AS (PARTITION BY region ORDER BY day)
+ORDER BY region, day;
+--- hint
+The starter compares north with south: its window has no `PARTITION BY region`.
+--- hint
+`gap_days` is `julianday(day) - julianday(LAG(day) OVER (PARTITION BY region ORDER BY day))`. A named `WINDOW w AS (…)` saves repeating it.
+--- check result | Changes and gaps within each region
+ordered
+[["north", "2024-07-01", 120.0, null, null], ["north", "2024-07-02", 80.0, -40.0, 1.0], ["north", "2024-07-03", 150.0, 70.0, 1.0], ["north", "2024-07-05", 90.0, -60.0, 2.0], ["north", "2024-07-06", 200.0, 110.0, 1.0], ["north", "2024-07-07", 110.0, -90.0, 1.0], ["south", "2024-07-01", 60.0, null, null], ["south", "2024-07-03", 75.0, 15.0, 2.0], ["south", "2024-07-04", 75.0, 0.0, 1.0], ["south", "2024-07-05", 40.0, -35.0, 1.0], ["south", "2024-07-07", 95.0, 55.0, 2.0]]
+
+=== sql3-08 | Window frames: moving averages
+--- teach
+A window function sees a **frame**: the rows around the current one that it aggregates over. You can set the frame yourself:
+
+```sql
+AVG(amount) OVER (
+  ORDER BY day
+  ROWS BETWEEN 2 PRECEDING AND CURRENT ROW
+)
+```
+
+This averages the current row and the two before it — a 3-row **moving average**, the standard way to smooth a noisy daily series. Near the start there are fewer rows available, so the first row averages just itself and the second averages two.
+
+The frame parts:
+
+- `UNBOUNDED PRECEDING` — from the first row of the partition
+- `n PRECEDING` / `n FOLLOWING` — n rows before / after
+- `CURRENT ROW`
+- `UNBOUNDED FOLLOWING` — to the last row
+
+And the frame type:
+
+- `ROWS` counts physical rows.
+- `RANGE` works on *values*: it includes every row whose sort value is within the range, so ties (peers) are always included together.
+
+This is the default you met last lesson. With only `ORDER BY`, the frame is `RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW` — and if two rows tie on the sort key, both get the total including both, so a "running total" jumps by two rows at once. When you want exactly one row at a time, say `ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW`, and give the `ORDER BY` a tie-breaker.
+
+Frames also give you "the rest of the partition": `ROWS BETWEEN 1 FOLLOWING AND UNBOUNDED FOLLOWING`.
+--- task
+For the `north` region, return `day`, `amount` and `moving_avg`: the average of that row and the two rows before it (fewer at the start), rounded to 1 decimal. Sort by day.
+--- starter
+SELECT day, amount,
+       ROUND(AVG(amount) OVER (ORDER BY day), 1) AS moving_avg
+FROM daily_sales
+WHERE region = 'north'
+ORDER BY day;
+--- solution
+SELECT day, amount,
+       ROUND(AVG(amount) OVER (
+         ORDER BY day
+         ROWS BETWEEN 2 PRECEDING AND CURRENT ROW
+       ), 1) AS moving_avg
+FROM daily_sales
+WHERE region = 'north'
+ORDER BY day;
+--- hint
+The starter's default frame runs from the first row: it is a running average, not a moving one.
+--- hint
+Add a frame inside `OVER`: `ROWS BETWEEN 2 PRECEDING AND CURRENT ROW`.
+--- check result | A three-row moving average
+ordered
+[["2024-07-01", 120.0, 120.0], ["2024-07-02", 80.0, 100.0], ["2024-07-03", 150.0, 116.7], ["2024-07-05", 90.0, 106.7], ["2024-07-06", 200.0, 146.7], ["2024-07-07", 110.0, 133.3]]
+--- check source | Sets the frame with ROWS
+[Rr][Oo][Ww][Ss]\s+[Bb][Ee][Tt][Ww][Ee][Ee][Nn]
+
+=== sql3-19 | Debugging: the running balance that repeats
+--- schema
+CREATE TABLE ledger (
+  id INTEGER PRIMARY KEY,
+  account TEXT NOT NULL,
+  day TEXT NOT NULL,
+  amount INTEGER NOT NULL
+);
+INSERT INTO ledger (id, account, day, amount) VALUES
+  (1, 'ana', '2024-07-01', 100),
+  (2, 'ana', '2024-07-02', -30),
+  (3, 'ana', '2024-07-02', -20),
+  (4, 'ana', '2024-07-04', 50),
+  (5, 'bo',  '2024-07-01', 200),
+  (6, 'bo',  '2024-07-03', -50),
+  (7, 'bo',  '2024-07-03', 25),
+  (8, 'bo',  '2024-07-03', -75);
+--- teach
+This lesson's table: `ledger` (`id`, `account`, `day`, `amount`) — one row per transaction, several on some days. `id` is the order they happened in.
+
+**The bug report.** The statement page shows each transaction with the account's balance after it. Ana's two payments on 2 July both show a balance of **50**; after the first one (−30) her balance was 70. Bo's three transactions on 3 July all show **100**. The balance at the end of each day is right.
+
+The method is the one you used on queries in the intermediate course:
+
+1. **Reproduce it small.** Run the query for one account and read the raw rows next to the balance. Ana's lines 2 and 3 show the same number.
+2. **Look for the pattern in what is wrong.** Every wrong row shares its `day` with another row of the same account. Rows alone on their day are right. That points at how ties on `day` are handled.
+3. **Check your assumption.** The query assumes `SUM(...) OVER (... ORDER BY day)` adds one row at a time. It does not: with only an `ORDER BY`, the default frame is `RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW`, and `RANGE` takes every **peer** — every row with the same `day` — together (you met this in the window-frames lesson). So both of Ana's 2 July rows get the total after both.
+4. **Fix the cause, not the symptom.** The real problem is that `day` does not fully decide the order. Make the order unique with a tie-breaker, `ORDER BY day, id`, and say that you mean one row at a time with `ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW`. Hiding the repeated numbers on the page, or grouping by day, would treat the symptom and lose the per-transaction balance the page exists to show.
+5. **Check that the fix did not break what was right.** The balance at the end of each day must not change.
+--- task
+Fix the statement query so `balance` is each account's running balance after **each** transaction, in the order they happened (`day`, then `id`). Keep the columns `id`, `account`, `day`, `amount`, `balance` and the sort order.
+--- starter
+SELECT id, account, day, amount,
+       SUM(amount) OVER (PARTITION BY account ORDER BY day) AS balance
+FROM ledger
+ORDER BY account, day, id;
+--- solution
+SELECT id, account, day, amount,
+       SUM(amount) OVER (
+         PARTITION BY account
+         ORDER BY day, id
+         ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+       ) AS balance
+FROM ledger
+ORDER BY account, day, id;
+--- hint
+Look only at Ana's rows. Which rows show a wrong balance, and what do they have in common?
+--- hint
+With only `ORDER BY day`, rows that share a day are peers and are summed together. The window needs to know which of them came first.
+--- hint
+Order the window by `day, id`, and add `ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW`.
+--- check result | A balance after every transaction, in order
+ordered
+[[1, "ana", "2024-07-01", 100, 100], [2, "ana", "2024-07-02", -30, 70], [3, "ana", "2024-07-02", -20, 50], [4, "ana", "2024-07-04", 50, 100], [5, "bo", "2024-07-01", 200, 200], [6, "bo", "2024-07-03", -50, 150], [7, "bo", "2024-07-03", 25, 175], [8, "bo", "2024-07-03", -75, 100]]
+
+=== sql3-09 | Constraints: rules the database enforces
+--- schema
+CREATE TABLE plans (
+  name TEXT PRIMARY KEY,
+  monthly_cents INTEGER NOT NULL
+);
+INSERT INTO plans (name, monthly_cents) VALUES ('free', 0), ('team', 1200), ('enterprise', 4900);
+--- teach
+Application code has bugs, runs in several versions at once, and is joined by scripts and admin tools that skip its checks. The only rule that holds for **every** writer is one the database enforces. That is what constraints are for:
+
+```sql
+CREATE TABLE accounts (
+  id INTEGER PRIMARY KEY,
+  email TEXT NOT NULL UNIQUE,
+  plan TEXT NOT NULL CHECK (plan IN ('free', 'team', 'enterprise')),
+  seats INTEGER NOT NULL DEFAULT 1 CHECK (seats >= 1)
+);
+```
+
+| constraint | refuses |
+| --- | --- |
+| `PRIMARY KEY` | a second row with the same key |
+| `NOT NULL` | a missing value |
+| `UNIQUE` | a value that is already in the column (NULLs excepted) |
+| `CHECK (expr)` | a row for which `expr` is false |
+| `DEFAULT v` | (not a rule) fills the column when an insert leaves it out |
+
+Constraints can also go at the end, covering several columns: `UNIQUE (team_id, email)` means one email per team, but the same email may join two teams.
+
+When a constraint is broken, the statement fails with an error and changes nothing. You can choose another reaction with `INSERT OR IGNORE` (skip the bad row silently) or `INSERT OR REPLACE` (delete the old row, then insert). The checks in this lesson use `INSERT OR IGNORE … RETURNING id`: a row that your table accepts comes back, and a row it refuses returns nothing.
+
+In SQLite, `INTEGER PRIMARY KEY` is special: it becomes the row's own id, filled in automatically when you leave it out. And a column type is only a hint — SQLite happily stores `'abc'` in an `INTEGER` column — which is one more reason to write `CHECK`s for what matters.
+--- task
+Create a table `accounts` with:
+
+- `id` — integer primary key
+- `email` — text, required, and unique
+- `plan` — text, required, and only `'free'`, `'team'` or `'enterprise'`
+- `seats` — integer, required, at least 1, defaulting to 1
+--- starter
+CREATE TABLE accounts (
+  id INTEGER PRIMARY KEY,
+  email TEXT,
+  plan TEXT,
+  seats INTEGER
+);
+--- solution
+CREATE TABLE accounts (
+  id INTEGER PRIMARY KEY,
+  email TEXT NOT NULL UNIQUE,
+  plan TEXT NOT NULL CHECK (plan IN ('free', 'team', 'enterprise')),
+  seats INTEGER NOT NULL DEFAULT 1 CHECK (seats >= 1)
+);
+--- hint
+Stack constraints after the type, space-separated: `email TEXT NOT NULL UNIQUE`.
+--- hint
+`CHECK (plan IN ('free', 'team', 'enterprise'))` and `seats INTEGER NOT NULL DEFAULT 1 CHECK (seats >= 1)`.
+--- check query | A valid account is accepted
+INSERT OR IGNORE INTO accounts (id, email, plan, seats) VALUES (1, 'ops@acme.io', 'team', 5) RETURNING id
+=> [[1]]
+--- check query | A second account with the same email is refused
+INSERT OR IGNORE INTO accounts (id, email, plan, seats) VALUES (2, 'ops@acme.io', 'free', 1) RETURNING id
+=> []
+--- check query | An unknown plan is refused
+INSERT OR IGNORE INTO accounts (id, email, plan, seats) VALUES (3, 'x@acme.io', 'gold', 1) RETURNING id
+=> []
+--- check query | Zero seats are refused
+INSERT OR IGNORE INTO accounts (id, email, plan, seats) VALUES (4, 'y@acme.io', 'team', 0) RETURNING id
+=> []
+--- check query | A missing email or plan is refused
+INSERT OR IGNORE INTO accounts (id, email, plan, seats) VALUES (5, NULL, 'free', 1), (6, 'z@acme.io', NULL, 1) RETURNING id
+=> []
+--- check query | seats defaults to 1
+INSERT OR IGNORE INTO accounts (id, email, plan) VALUES (7, 'solo@acme.io', 'free') RETURNING seats
+=> [[1]]
+
+=== sql3-10 | Foreign keys
+--- schema
+CREATE TABLE teams (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL
+);
+INSERT INTO teams (id, name) VALUES (1, 'Platform'), (2, 'Growth');
+--- teach
+A foreign key says "this column must point at a real row over there":
+
+```sql
+CREATE TABLE members (
+  id INTEGER PRIMARY KEY,
+  team_id INTEGER NOT NULL REFERENCES teams(id) ON DELETE CASCADE,
+  email TEXT NOT NULL
+);
+```
+
+With it, the database refuses a member whose `team_id` names no team — no more **orphans**, rows pointing at nothing, which every report then has to step around.
+
+The `ON DELETE` part says what happens to members when their team is deleted:
+
+| action | effect |
+| --- | --- |
+| `NO ACTION` / `RESTRICT` (default) | refuse to delete a team that still has members |
+| `CASCADE` | delete its members too |
+| `SET NULL` | keep the members, set their `team_id` to NULL (the column must allow NULL) |
+
+Choose by meaning. A team's memberships make no sense without the team: `CASCADE`. Invoices must survive a customer being removed: `RESTRICT`, and archive customers instead of deleting them.
+
+**The SQLite catch:** for backwards compatibility, SQLite does *not* enforce foreign keys unless you switch them on, once per connection:
+
+```sql
+PRAGMA foreign_keys = ON;
+```
+
+Without it, `REFERENCES` is just documentation. Every app that uses SQLite should run this pragma as soon as it opens the database. `PRAGMA foreign_keys;` on its own tells you the current setting (1 is on).
+--- task
+Turn foreign key enforcement on, then create a table `members` with `id` (integer primary key), `team_id` (integer, required, referencing `teams(id)`, deleting a team deletes its members) and `email` (text, required).
+--- starter
+CREATE TABLE members (
+  id INTEGER PRIMARY KEY,
+  team_id INTEGER NOT NULL,
+  email TEXT NOT NULL
+);
+--- solution
+PRAGMA foreign_keys = ON;
+
+CREATE TABLE members (
+  id INTEGER PRIMARY KEY,
+  team_id INTEGER NOT NULL REFERENCES teams(id) ON DELETE CASCADE,
+  email TEXT NOT NULL
+);
+--- hint
+`team_id INTEGER NOT NULL REFERENCES teams(id) ON DELETE CASCADE`.
+--- hint
+Enforcement is off until you run `PRAGMA foreign_keys = ON;` — put it first.
+--- check query | Foreign keys are enforced
+PRAGMA foreign_keys
+=> [[1]]
+--- check query | team_id references teams(id) and cascades on delete
+SELECT "table", "from", "to", on_delete FROM pragma_foreign_key_list('members')
+=> [["teams", "team_id", "id", "CASCADE"]]
+--- check query | Members can be added to real teams
+INSERT INTO members (id, team_id, email) VALUES (1, 1, 'ana@acme.io'), (2, 1, 'bo@acme.io'), (3, 2, 'cy@acme.io') RETURNING id
+=> [[1], [2], [3]]
+--- check query | Deleting Platform removes its members, and only them
+DELETE FROM teams WHERE id = 1;
+SELECT id FROM members ORDER BY id
+=> [[3]]
+
+=== sql3-11 | Design: normalising a flat table
+--- schema
+CREATE TABLE orders_flat (
+  order_id INTEGER NOT NULL,
+  placed TEXT NOT NULL,
+  customer_email TEXT NOT NULL,
+  customer_name TEXT NOT NULL,
+  sku TEXT NOT NULL,
+  product_name TEXT NOT NULL,
+  unit_price REAL NOT NULL,
+  qty INTEGER NOT NULL
+);
+INSERT INTO orders_flat VALUES
+  (101, '2024-05-01', 'ana@mail.com', 'Ana Ruiz', 'MUG-1', 'Mug',       9.00, 2),
+  (101, '2024-05-01', 'ana@mail.com', 'Ana Ruiz', 'PEN-2', 'Pen',       3.50, 4),
+  (102, '2024-05-03', 'bo@mail.com',  'Bo Chen',  'MUG-1', 'Mug',       9.00, 1),
+  (103, '2024-05-09', 'ana@mail.com', 'Ana Ruiz', 'LMP-3', 'Desk lamp', 45.00, 1),
+  (104, '2024-06-02', 'bo@mail.com',  'Bo Chen',  'MUG-1', 'Mug',       10.00, 3),
+  (104, '2024-06-02', 'bo@mail.com',  'Bo Chen',  'PEN-2', 'Pen',       3.50, 1);
+--- teach
+Spreadsheet exports often arrive as one wide table: every order line repeats the customer's name and the product's name. It works until it doesn't:
+
+- **Update anomaly** — Ana changes her name; you must update every one of her rows, and missing one leaves her with two names.
+- **Insert anomaly** — you cannot record a new product until someone orders it.
+- **Delete anomaly** — delete Bo's only order and you lose the fact that Bo exists.
+
+**Normalising** splits the table so every fact is stored once, in the table it describes. Ask of each column: *what is this a fact about?*
+
+- `customer_name` is a fact about a customer → `customers`
+- `product_name` is a fact about a product → `products`
+- `placed` is a fact about an order → `orders`
+- `qty` is a fact about one product in one order → `order_items`
+- `unit_price`? Look at the data: the Mug cost 9.00 in May and 10.00 in June. It is what was **charged on that line**, so it belongs on `order_items`, not on `products`. Putting it on products would rewrite history.
+
+Each table gets a key, and the links become foreign keys. Then fill the new tables from the old one with `INSERT … SELECT DISTINCT`:
+
+```sql
+INSERT INTO customers (email, name)
+SELECT DISTINCT customer_email, customer_name FROM orders_flat;
+```
+
+Leaving out an `INTEGER PRIMARY KEY` lets SQLite number the rows. To link orders to those new ids, join back on the natural key: `JOIN customers c ON c.email = f.customer_email`.
+
+The test that you lost nothing: joining the new tables back together must reproduce the flat table exactly.
+--- task
+Split `orders_flat` into four tables and fill them from it:
+
+- `customers` — `id` (integer primary key), `email` (text, required, unique), `name` (text, required)
+- `products` — `sku` (text primary key), `name` (text, required)
+- `orders` — `id` (integer primary key, the old `order_id`), `customer_id` (references `customers(id)`), `placed`
+- `order_items` — `order_id` (references `orders(id)`), `sku` (references `products(sku)`), `qty`, `unit_price`, with the primary key `(order_id, sku)`
+--- starter
+-- Design the four tables, then fill them from orders_flat.
+CREATE TABLE customers (
+  id INTEGER PRIMARY KEY,
+  email TEXT NOT NULL UNIQUE,
+  name TEXT NOT NULL
+);
+--- solution
+CREATE TABLE customers (
+  id INTEGER PRIMARY KEY,
+  email TEXT NOT NULL UNIQUE,
+  name TEXT NOT NULL
+);
+CREATE TABLE products (
+  sku TEXT PRIMARY KEY,
+  name TEXT NOT NULL
+);
+CREATE TABLE orders (
+  id INTEGER PRIMARY KEY,
+  customer_id INTEGER NOT NULL REFERENCES customers(id),
+  placed TEXT NOT NULL
+);
+CREATE TABLE order_items (
+  order_id INTEGER NOT NULL REFERENCES orders(id),
+  sku TEXT NOT NULL REFERENCES products(sku),
+  qty INTEGER NOT NULL,
+  unit_price REAL NOT NULL,
+  PRIMARY KEY (order_id, sku)
+);
+
+INSERT INTO customers (email, name)
+SELECT DISTINCT customer_email, customer_name FROM orders_flat;
+
+INSERT INTO products (sku, name)
+SELECT DISTINCT sku, product_name FROM orders_flat;
+
+INSERT INTO orders (id, customer_id, placed)
+SELECT DISTINCT f.order_id, c.id, f.placed
+FROM orders_flat f
+JOIN customers c ON c.email = f.customer_email;
+
+INSERT INTO order_items (order_id, sku, qty, unit_price)
+SELECT order_id, sku, qty, unit_price FROM orders_flat;
+--- hint
+Create all four tables first. `order_items` ends with `PRIMARY KEY (order_id, sku)` as a table constraint.
+--- hint
+Fill customers and products with `INSERT … SELECT DISTINCT`, then orders by joining `orders_flat` to `customers` on the email to find each `customer_id`.
+--- hint
+Keep `unit_price` on `order_items`: the Mug's price changed between orders.
+--- check query | Each fact stored once: 2 customers, 3 products, 4 orders, 6 items
+SELECT (SELECT COUNT(*) FROM customers), (SELECT COUNT(*) FROM products), (SELECT COUNT(*) FROM orders), (SELECT COUNT(*) FROM order_items)
+=> [[2, 3, 4, 6]]
+--- check query | Joining the tables back reproduces the flat table exactly
+SELECT COUNT(*) FROM (
+  SELECT order_id, placed, customer_email, customer_name, sku, product_name, unit_price, qty FROM orders_flat
+  EXCEPT
+  SELECT o.id, o.placed, c.email, c.name, p.sku, p.name, oi.unit_price, oi.qty
+  FROM order_items oi
+  JOIN orders o    ON o.id = oi.order_id
+  JOIN customers c ON c.id = o.customer_id
+  JOIN products p  ON p.sku = oi.sku
+)
+=> [[0]]
+--- check query | order_items has the composite primary key (order_id, sku)
+SELECT name FROM pragma_table_info('order_items') WHERE pk > 0 ORDER BY pk
+=> [["order_id"], ["sku"]]
+--- check query | Customer emails are unique
+SELECT COUNT(*) FROM pragma_index_list('customers') WHERE "unique" = 1
+=> [[1]]
+--- check query | products has no price column (the price lives on the order line)
+SELECT COUNT(*) FROM pragma_table_info('products') WHERE name LIKE '%price%'
+=> [[0]]
+
+=== sql3-12 | Indexes and EXPLAIN QUERY PLAN
+--- schema
+CREATE TABLE orders (
+  id INTEGER PRIMARY KEY,
+  customer_id INTEGER NOT NULL,
+  placed TEXT NOT NULL,
+  total REAL NOT NULL
+);
+WITH RECURSIVE n(i) AS (SELECT 1 UNION ALL SELECT i + 1 FROM n WHERE i < 2000)
+INSERT INTO orders (id, customer_id, placed, total)
+SELECT i, i % 200, date('2024-01-01', '+' || (i % 300) || ' days'), (i * 37 % 500) / 4.0 FROM n;
+--- teach
+Without help, finding one customer's orders means reading **every** row of the table — a *full scan*. An **index** is a separate, sorted copy of some columns with a pointer back to each row, like the index at the back of a book. The database jumps to the right place in it instead of reading everything.
+
+```sql
+CREATE INDEX idx_orders_customer ON orders(customer_id);
+```
+
+To see what the database will actually do, put `EXPLAIN QUERY PLAN` in front of a query:
+
+```sql
+EXPLAIN QUERY PLAN
+SELECT id, total FROM orders WHERE customer_id = 7;
+```
+
+The `detail` column tells the story:
+
+- `SCAN orders` — reads the whole table. Fine for tiny tables; slow for big ones.
+- `SEARCH orders USING INDEX idx_orders_customer (customer_id=?)` — jumps straight to the matching rows.
+- `USE TEMP B-TREE FOR ORDER BY` — had to sort the result itself afterwards.
+
+A **composite index** on several columns is sorted by the first, then the second within it — like a phone book by surname, then first name. An index on `(customer_id, placed)` can find one customer's orders **already in date order**, so `WHERE customer_id = ? ORDER BY placed` needs no sort step. The order of the columns matters: the column you test with `=` goes first; the one you sort or range over goes after it.
+
+Indexes are not free: each one takes space and slows every insert and update a little, because it must be kept in step. Index for the queries you actually run.
+--- task
+The app's busiest query is:
+
+```sql
+SELECT id, total FROM orders WHERE customer_id = 7 ORDER BY placed DESC;
+```
+
+Create an index named `idx_orders_customer_placed` that lets it find the customer's rows **and** return them in order without a separate sort.
+--- starter
+CREATE INDEX idx_orders_customer_placed ON orders(placed);
+--- solution
+CREATE INDEX idx_orders_customer_placed ON orders(customer_id, placed);
+--- hint
+Look at the plan: `EXPLAIN QUERY PLAN SELECT id, total FROM orders WHERE customer_id = 7 ORDER BY placed DESC;`
+--- hint
+The column tested with `=` goes first in the index, the sort column second.
+--- check query | The index covers customer_id, then placed
+SELECT name FROM pragma_index_info('idx_orders_customer_placed') ORDER BY seqno
+=> [["customer_id"], ["placed"]]
+--- check query | The query searches the index and needs no sort step
+EXPLAIN QUERY PLAN SELECT id, total FROM orders WHERE customer_id = 7 ORDER BY placed DESC
+=> [[4, 0, 63, "SEARCH orders USING INDEX idx_orders_customer_placed (customer_id=?)"]]
+
+=== sql3-13 | Transactions: all or nothing
+--- schema
+CREATE TABLE accounts (
+  id INTEGER PRIMARY KEY,
+  owner TEXT NOT NULL,
+  balance INTEGER NOT NULL
+);
+INSERT INTO accounts (id, owner, balance) VALUES (1, 'Ana', 100), (2, 'Bo', 50), (3, 'Cy', 0);
+CREATE TABLE transfers (
+  id INTEGER PRIMARY KEY,
+  from_id INTEGER NOT NULL,
+  to_id INTEGER NOT NULL,
+  amount INTEGER NOT NULL
+);
+--- teach
+A transfer of money is three statements: take from one account, add to another, record the transfer. If the program crashes after the first, money has vanished. A **transaction** makes several statements one unit — either all of them happen, or none do:
+
+```sql
+BEGIN;
+UPDATE accounts SET balance = balance - 30 WHERE id = 1;
+UPDATE accounts SET balance = balance + 30 WHERE id = 2;
+INSERT INTO transfers (from_id, to_id, amount) VALUES (1, 2, 30);
+COMMIT;
+```
+
+- `BEGIN` starts the transaction.
+- `COMMIT` makes every change permanent, together.
+- `ROLLBACK` throws away every change since `BEGIN`, as if none had happened.
+
+Until `COMMIT`, other connections do not see the changes, and if the process dies the database recovers to the state before `BEGIN`. That is the **A** (atomic) and **I** (isolated) in the *ACID* promise.
+
+In an app the pattern is always the same: begin, do the work, check that everything went as expected, then commit — or roll back on any error or failed check. A failed check here might be a balance going negative, or an `UPDATE` that changed 0 rows because the account id was wrong. `SELECT changes()` tells you how many rows the last statement changed.
+
+Transactions are also fast: SQLite writes to disk once per commit, so 10,000 inserts in one transaction can be hundreds of times faster than 10,000 separate ones.
+--- task
+Run two transfers, each as its own transaction:
+
+1. Move **40** from Ana (id 1) to Cy (id 3): both balance updates and a row in `transfers`. Commit it.
+2. Start moving **80** from Bo (id 2) to Cy: begin, update both balances, then query Bo's balance — it is negative, so **roll the whole transfer back**.
+--- starter
+UPDATE accounts SET balance = balance - 40 WHERE id = 1;
+UPDATE accounts SET balance = balance + 40 WHERE id = 3;
+INSERT INTO transfers (from_id, to_id, amount) VALUES (1, 3, 40);
+
+UPDATE accounts SET balance = balance - 80 WHERE id = 2;
+UPDATE accounts SET balance = balance + 80 WHERE id = 3;
+INSERT INTO transfers (from_id, to_id, amount) VALUES (2, 3, 80);
+--- solution
+BEGIN;
+UPDATE accounts SET balance = balance - 40 WHERE id = 1;
+UPDATE accounts SET balance = balance + 40 WHERE id = 3;
+INSERT INTO transfers (from_id, to_id, amount) VALUES (1, 3, 40);
+COMMIT;
+
+BEGIN;
+UPDATE accounts SET balance = balance - 80 WHERE id = 2;
+UPDATE accounts SET balance = balance + 80 WHERE id = 3;
+SELECT balance FROM accounts WHERE id = 2;
+ROLLBACK;
+--- hint
+Wrap the first transfer in `BEGIN;` … `COMMIT;`.
+--- hint
+Wrap the second in `BEGIN;` … and, after the `SELECT` shows Bo at -30, end it with `ROLLBACK;` instead of `COMMIT;`.
+--- check query | Only the first transfer moved money
+SELECT id, balance FROM accounts ORDER BY id
+=> [[1, 60], [2, 50], [3, 40]]
+--- check query | Only the first transfer was recorded
+SELECT from_id, to_id, amount FROM transfers
+=> [[1, 3, 40]]
+--- check query | Money was neither created nor destroyed
+SELECT SUM(balance) FROM accounts
+=> [[150]]
+--- check source | Rolls back the failed transfer
+\b[Rr][Oo][Ll][Ll][Bb][Aa][Cc][Kk]\b
+
+=== sql3-14 | UPSERT: insert or update
+--- schema
+CREATE TABLE daily_views (
+  page TEXT NOT NULL,
+  day TEXT NOT NULL,
+  views INTEGER NOT NULL,
+  PRIMARY KEY (page, day)
+);
+INSERT INTO daily_views (page, day, views) VALUES
+  ('/pricing', '2024-07-01', 10),
+  ('/docs',    '2024-07-01', 4);
+CREATE TABLE raw_hits (
+  page TEXT NOT NULL,
+  ts TEXT NOT NULL
+);
+INSERT INTO raw_hits (page, ts) VALUES
+  ('/pricing', '2024-07-01 22:10:00'),
+  ('/pricing', '2024-07-01 23:59:59'),
+  ('/pricing', '2024-07-02 00:00:01'),
+  ('/docs',    '2024-07-02 09:30:00'),
+  ('/blog',    '2024-07-01 12:00:00'),
+  ('/blog',    '2024-07-01 12:05:00'),
+  ('/blog',    '2024-07-01 13:00:00');
+--- teach
+Counters, settings and caches all need "insert this row, or if it already exists, update it". Doing it in two steps — `SELECT`, then `INSERT` or `UPDATE` — has a race: two requests can both see "no row" and both insert. **UPSERT** does it in one statement:
+
+```sql
+INSERT INTO daily_views (page, day, views)
+VALUES ('/pricing', '2024-07-01', 3)
+ON CONFLICT (page, day) DO UPDATE SET views = views + excluded.views;
+```
+
+- `ON CONFLICT (page, day)` names the **unique** constraint that decides "already exists" — it must match a primary key or unique index exactly.
+- `excluded` is the row you tried to insert. `excluded.views` is the 3; plain `views` is the value already in the table.
+- `DO NOTHING` instead of `DO UPDATE` keeps the existing row and moves on.
+
+You can upsert many rows at once from a query. One SQLite parsing quirk: when the rows come from a `SELECT`, SQLite cannot tell whether `ON` begins a join or the conflict clause, so the `SELECT` needs a `WHERE` before `ON CONFLICT` — `WHERE true` is the customary way:
+
+```sql
+INSERT INTO t (a, b)
+SELECT a, b FROM staging WHERE true
+ON CONFLICT (a) DO UPDATE SET b = excluded.b;
+```
+
+Compare `INSERT OR REPLACE`: it *deletes* the old row and inserts a new one, so any columns you did not supply are lost, and delete triggers fire. UPSERT updates in place.
+--- task
+Fold the raw hits into the daily counters with **one** `INSERT … SELECT … ON CONFLICT` statement: count `raw_hits` per page and calendar day (`date(ts)`), add each count to the existing row for that page and day, and create a row where none exists yet.
+--- starter
+INSERT INTO daily_views (page, day, views)
+SELECT page, date(ts), COUNT(*)
+FROM raw_hits
+GROUP BY page, date(ts);
+--- solution
+INSERT INTO daily_views (page, day, views)
+SELECT page, date(ts), COUNT(*)
+FROM raw_hits
+WHERE true
+GROUP BY page, date(ts)
+ON CONFLICT (page, day) DO UPDATE SET views = views + excluded.views;
+--- hint
+Run the starter: it fails, because `/pricing` on 2024-07-01 already exists.
+--- hint
+Add `ON CONFLICT (page, day) DO UPDATE SET views = views + excluded.views` — and a `WHERE true` before `GROUP BY` so SQLite parses it.
+--- check query | Existing counters were added to, new ones created
+SELECT page, day, views FROM daily_views ORDER BY page, day
+=> [["/blog", "2024-07-01", 3], ["/docs", "2024-07-01", 4], ["/docs", "2024-07-02", 1], ["/pricing", "2024-07-01", 12], ["/pricing", "2024-07-02", 1]]
+--- check source | Uses ON CONFLICT … DO UPDATE
+[Oo][Nn]\s+[Cc][Oo][Nn][Ff][Ll][Ii][Cc][Tt][\s\S]*[Dd][Oo]\s+[Uu][Pp][Dd][Aa][Tt][Ee]
+
+=== sql3-15 | Views: saved queries
+--- teach
+A **view** is a query with a name, stored in the database. You select from it like a table, but it holds no data: each time you use it, its query runs against the current tables.
+
+```sql
+CREATE VIEW eng_team AS
+SELECT name, title, salary FROM employees WHERE dept = 'eng';
+
+SELECT * FROM eng_team WHERE salary > 100000;
+```
+
+What views are good for:
+
+- **One definition of a business number.** If "active customer" or "net revenue" is defined in one view, every report that uses the view agrees — and when the definition changes, it changes once.
+- **Simpler queries.** Hide a five-table join behind a name.
+- **A narrower surface.** Give a reporting tool the view, not the raw tables with salaries and emails.
+
+Name the output columns clearly inside the view with `AS`, because those names are what everyone else sees.
+
+A view is always up to date, because it is re-run every time. The price is that it is re-run every time: a slow query behind a view is still slow. (Other databases offer *materialized* views that store the result; in SQLite you build that yourself with a table and triggers.)
+
+To change a view, `DROP VIEW name;` and create it again.
+--- task
+Create a view named `dept_summary` with one row per department and the columns `dept`, `headcount`, `avg_salary` (the average salary, rounded to the nearest whole number) and `top_salary` (the highest salary).
+--- starter
+SELECT dept, COUNT(*) AS headcount
+FROM employees
+GROUP BY dept;
+--- solution
+CREATE VIEW dept_summary AS
+SELECT dept,
+       COUNT(*) AS headcount,
+       ROUND(AVG(salary)) AS avg_salary,
+       MAX(salary) AS top_salary
+FROM employees
+GROUP BY dept;
+--- hint
+`CREATE VIEW dept_summary AS` followed by the `SELECT`.
+--- hint
+`ROUND(AVG(salary)) AS avg_salary, MAX(salary) AS top_salary`.
+--- check query | The view gives one row per department
+SELECT dept, headcount, avg_salary, top_salary FROM dept_summary ORDER BY dept
+=> [["eng", 7, 126429.0, 200000], ["exec", 1, 250000.0, 250000], ["finance", 3, 123333.0, 190000]]
+--- check query | It is a view, not a table
+SELECT type FROM sqlite_master WHERE name = 'dept_summary'
+=> [["view"]]
+--- check query | It reflects changes to employees immediately
+UPDATE employees SET salary = 260000 WHERE name = 'Lena';
+SELECT top_salary FROM dept_summary WHERE dept = 'finance'
+=> [[260000]]
+
+=== sql3-16 | Triggers: reacting to changes
+--- schema
+CREATE TABLE products (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  stock INTEGER NOT NULL
+);
+INSERT INTO products (id, name, stock) VALUES (1, 'Mug', 20), (2, 'Lamp', 5);
+CREATE TABLE order_lines (
+  id INTEGER PRIMARY KEY,
+  product_id INTEGER NOT NULL REFERENCES products(id),
+  qty INTEGER NOT NULL
+);
+--- teach
+A **trigger** is SQL the database runs by itself when something happens to a table. It keeps derived data in step no matter which code made the change:
+
+```sql
+CREATE TRIGGER line_added
+AFTER INSERT ON order_lines
+BEGIN
+  UPDATE products SET stock = stock - NEW.qty WHERE id = NEW.product_id;
+END;
+```
+
+- **When:** `BEFORE` or `AFTER`, and the event: `INSERT`, `UPDATE` (or `UPDATE OF column`), `DELETE`.
+- **Which rows:** it runs once for each affected row.
+- **The row:** `NEW` is the row as inserted or updated; `OLD` is the row as it was before an update or delete. An insert has no `OLD`, a delete no `NEW`.
+- **The body** sits between `BEGIN` and `END;`, with a `;` after each statement inside.
+
+A `WHEN` condition limits when it fires: `AFTER UPDATE OF price ON products WHEN NEW.price <> OLD.price`. And a `BEFORE` trigger can refuse a change with `SELECT RAISE(ABORT, 'message')`.
+
+Use triggers sparingly. They are invisible to someone reading the application code, and a chain of triggers firing triggers is hard to reason about. They shine for rules that must hold whatever writes the data: stock counts, audit logs, `updated_at` stamps.
+--- task
+Create two triggers that keep `products.stock` in step with `order_lines`:
+
+- `order_line_added` — after a line is inserted, take its `qty` off the product's stock.
+- `order_line_removed` — after a line is deleted, put its `qty` back.
+--- starter
+CREATE TRIGGER order_line_added
+AFTER INSERT ON order_lines
+BEGIN
+  SELECT 1;
+END;
+--- solution
+CREATE TRIGGER order_line_added
+AFTER INSERT ON order_lines
+BEGIN
+  UPDATE products SET stock = stock - NEW.qty WHERE id = NEW.product_id;
+END;
+
+CREATE TRIGGER order_line_removed
+AFTER DELETE ON order_lines
+BEGIN
+  UPDATE products SET stock = stock + OLD.qty WHERE id = OLD.product_id;
+END;
+--- hint
+Inside the first trigger: `UPDATE products SET stock = stock - NEW.qty WHERE id = NEW.product_id;`
+--- hint
+The delete trigger uses `OLD`, because a deleted row has no `NEW`.
+--- check query | Adding lines takes stock
+INSERT INTO order_lines (id, product_id, qty) VALUES (1, 1, 3), (2, 2, 2), (3, 1, 4);
+SELECT id, stock FROM products ORDER BY id
+=> [[1, 13], [2, 3]]
+--- check query | Deleting a line gives its stock back
+DELETE FROM order_lines WHERE id = 3;
+SELECT id, stock FROM products ORDER BY id
+=> [[1, 17], [2, 3]]
+--- check query | Both triggers exist
+SELECT name FROM sqlite_master WHERE type = 'trigger' ORDER BY name
+=> [["order_line_added"], ["order_line_removed"]]
+
+=== sql3-17 | RETURNING: see what you changed
+--- schema
+CREATE TABLE tickets (
+  id INTEGER PRIMARY KEY,
+  title TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'open',
+  opened TEXT NOT NULL,
+  closed TEXT
+);
+INSERT INTO tickets (id, title, status, opened, closed) VALUES
+  (1, 'Login fails on Safari',   'open',    '2024-06-02', NULL),
+  (2, 'Export is slow',          'open',    '2024-06-20', NULL),
+  (3, 'Typo on pricing page',    'closed',  '2024-06-05', '2024-06-06'),
+  (4, 'Webhook retries',         'open',    '2024-07-03', NULL),
+  (5, 'Dark mode contrast',      'pending', '2024-06-11', NULL);
+--- teach
+After an `INSERT`, `UPDATE` or `DELETE`, the app often needs to know what happened: the id the new row got, or which rows a bulk update touched. Without help that means a second query — and a second query can see a different world if another writer got in between. `RETURNING` hands the affected rows back from the same statement:
+
+```sql
+INSERT INTO tickets (title, opened) VALUES ('New bug', '2024-07-09')
+RETURNING id, status;          -- the generated id, and the default status
+
+DELETE FROM tickets WHERE status = 'closed'
+RETURNING id, title;           -- exactly what was deleted
+```
+
+`RETURNING` takes any expressions over the row's columns, the way a `SELECT` list does, and shows the row **after** the change (for a delete, as it was just before it went). It returns one row per affected row, and nothing if no row matched — useful in itself: "did that update find its row?"
+
+It pairs well with the safe-change routine: the returned rows are your record of what the statement actually did.
+--- task
+Close every **open** ticket opened before `2024-07-01`: set its `status` to `'closed'` and `closed` to `'2024-07-10'`. In the same statement, return the `id` and `title` of each ticket you closed.
+--- starter
+UPDATE tickets
+SET status = 'closed', closed = '2024-07-10'
+WHERE opened < '2024-07-01';
+--- solution
+UPDATE tickets
+SET status = 'closed', closed = '2024-07-10'
+WHERE status = 'open' AND opened < '2024-07-01'
+RETURNING id, title;
+--- hint
+Only `open` tickets: the pending one and the already-closed one must not change.
+--- hint
+End the `UPDATE` with `RETURNING id, title`.
+--- check result | Returns tickets 1 and 2
+[[1, "Login fails on Safari"], [2, "Export is slow"]]
+--- check query | Exactly those two changed
+SELECT id, status, closed FROM tickets ORDER BY id
+=> [[1, "closed", "2024-07-10"], [2, "closed", "2024-07-10"], [3, "closed", "2024-06-06"], [4, "open", null], [5, "pending", null]]

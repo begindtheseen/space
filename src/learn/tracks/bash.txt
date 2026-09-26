@@ -1,0 +1,289 @@
+@track bash
+@title Terminal
+@name Linux and the command line
+@blurb The command line every developer lives in: moving around, making, reading and changing files, without a mouse.
+
+=== term-01 | Where am I?
+--- teach
+The **terminal** is a way to talk to your computer in text. You type a **command**, press Enter, and it answers.
+
+The line before your cursor is the **prompt**: `~/project $` means you are in a folder called `project` inside your home folder (`~`). Two commands you will use every day:
+
+- `pwd` — **p**rint **w**orking **d**irectory: the full path of the folder you are in.
+- `ls` — **l**i**s**t what is in it. Folders show with a `/` at the end.
+
+This terminal is a practice one: it lives in the page, so nothing you type can touch your real files.
+--- task
+Run `pwd` to see where you are, then `ls` to see what is in this folder.
+--- starter
+mkdir src
+touch README.md
+--- solution
+pwd
+ls
+--- hint
+Type `pwd` and press Enter. Then type `ls` and press Enter.
+--- check shell | You printed where you are
+ran pwd
+printed /home/you/project
+--- check shell | You listed the folder
+ran ls
+printed README.md
+
+=== term-02 | Making folders and moving into them
+--- teach
+`mkdir name` **m**a**k**es a **dir**ectory (a folder). `cd name` **c**hanges **d**irectory — it moves you into it, and the prompt changes to show where you are.
+
+```
+~/project $ mkdir notes
+~/project $ cd notes
+~/project/notes $
+```
+
+`cd ..` goes back up one level, and `cd` on its own takes you home.
+--- task
+Make a folder called `notes` and move into it.
+--- starter
+--- solution
+mkdir notes
+cd notes
+--- hint
+First `mkdir notes`, then `cd notes`.
+--- check shell | The notes folder exists
+dir notes
+--- check shell | You are inside it
+cwd notes
+
+=== term-03 | Files: create, write, read
+--- teach
+`touch name` makes an empty file. To put text in a file, `echo` it and **redirect** the output with `>`:
+
+```
+echo "Launch at dawn" > plan.txt
+```
+
+`echo` prints its text; `> plan.txt` sends that text into the file instead of the screen. Careful: `>` **replaces** whatever the file held.
+
+Put the text in double quotes. The quotes keep it together as one piece, and stop characters such as `>` or `&` inside it from being read as part of the command.
+
+`cat plan.txt` prints a file's contents, so you can check what you wrote.
+--- task
+Create `hello.txt` containing exactly `Hello, terminal!`, then show it with `cat`.
+--- starter
+--- solution
+echo "Hello, terminal!" > hello.txt
+cat hello.txt
+--- hint
+Put the text in quotes: `echo "Hello, terminal!" > hello.txt`.
+--- hint
+Then `cat hello.txt`.
+--- check shell | hello.txt holds the greeting
+file hello.txt == Hello, terminal!
+--- check shell | You read it back with cat
+ran cat
+printed Hello, terminal!
+
+=== term-04 | Paths
+--- teach
+A **path** says where something is. `docs/guides` means "the `guides` folder inside `docs`, inside where I am now" — a **relative** path. `..` means "the folder above", so `../..` is two levels up. `~` is your home folder, and a path starting with `/` is **absolute**: it starts from the very top.
+
+An option that starts with `-`, like the `-p` below, is a **flag**: it changes how a command behaves. `mkdir -p` makes every folder along a path at once, so you do not need one `mkdir` per level:
+
+```
+mkdir -p src/components/buttons
+cd src/components
+cd ../..
+```
+--- task
+With one command, make the folders `docs/guides`. Move into `docs/guides`, then come back up to `project` using `..`.
+--- starter
+--- solution
+mkdir -p docs/guides
+cd docs/guides
+cd ../..
+--- hint
+`mkdir -p docs/guides` makes both folders.
+--- hint
+From `docs/guides`, two levels up is `cd ../..`.
+--- check shell | docs/guides exists
+dir docs/guides
+--- check shell | You went into it
+ran cd docs/guides
+--- check shell | You came back up with ..
+used ..
+cwd .
+
+=== term-05 | Copying and moving
+--- teach
+`cp source destination` **c**o**p**ies a file. `mv source destination` **m**o**v**es it — and because moving a file to a new name in the same folder is renaming, `mv` is also how you rename:
+
+```
+cp report.txt report-backup.txt
+mv report.txt final-report.txt
+```
+
+If the destination is a folder, the file goes inside it with the same name: `mv notes.txt archive/`. Copying a whole folder needs `cp -r` (**r**ecursive).
+--- task
+There is a file called `draft.txt`. Copy it to `backup.txt`, then rename `draft.txt` to `final.txt`.
+--- starter
+echo "Our first mission plan" > draft.txt
+--- solution
+cp draft.txt backup.txt
+mv draft.txt final.txt
+--- hint
+`cp draft.txt backup.txt` first; then `mv draft.txt final.txt`.
+--- check shell | backup.txt is a copy
+file backup.txt == Our first mission plan
+--- check shell | draft.txt is now final.txt
+file final.txt == Our first mission plan
+missing draft.txt
+
+=== term-06 | Deleting
+--- teach
+`rm file` **r**e**m**oves a file. There is no bin to get it back from, so read the command before you press Enter.
+
+A folder needs `rm -r folder`: `-r` removes it and everything inside it. (`rmdir` only removes a folder that is already empty.)
+
+```
+rm old-notes.txt
+rm -r build
+```
+--- task
+Delete the file `junk.txt` and the whole `old` folder (it has files inside). Leave `keep.txt` alone.
+--- starter
+touch junk.txt
+touch keep.txt
+mkdir -p old/logs
+echo "stale" > old/logs/app.log
+--- solution
+rm junk.txt
+rm -r old
+--- hint
+`rm junk.txt` for the file, `rm -r old` for the folder.
+--- check shell | junk.txt is gone
+missing junk.txt
+--- check shell | old/ and everything in it is gone
+missing old
+--- check shell | keep.txt is still there
+file keep.txt
+
+=== term-07 | Looking inside files
+--- teach
+Real files can be long, so there are commands that show just part of one:
+
+- `head -n 3 file` — the first 3 lines. `tail -n 3 file` — the last 3.
+- `wc -l file` — **w**ord **c**ount; with `-l`, how many **l**ines.
+- `grep text file` — only the lines that contain `text`. Add `-i` to ignore case, `-n` to show line numbers.
+
+`grep` is how developers dig through logs: `grep ERROR server.log` pulls every error out of thousands of lines.
+--- task
+`launch.log` is the log from a test launch. Count its lines with `wc -l`, then use `grep` to show only the lines containing `ERROR`.
+--- starter
+echo "09:00 INFO systems check" > launch.log
+echo "09:01 INFO fuel loaded" >> launch.log
+echo "09:02 ERROR valve 3 stuck" >> launch.log
+echo "09:03 INFO valve 3 reset" >> launch.log
+echo "09:04 ERROR telemetry dropout" >> launch.log
+echo "09:05 INFO liftoff" >> launch.log
+--- solution
+wc -l launch.log
+grep ERROR launch.log
+--- hint
+`wc -l launch.log` counts the lines.
+--- hint
+`grep ERROR launch.log` prints only the error lines.
+--- check shell | You counted the lines
+ran wc -l
+printed 6 launch.log
+--- check shell | You found both errors
+ran grep
+printed 09:02 ERROR valve 3 stuck
+printed 09:04 ERROR telemetry dropout
+
+=== term-08 | Chaining and appending
+--- teach
+`&&` joins two commands: the second runs only if the first worked. It is how you write a sequence on one line:
+
+```
+mkdir build && cd build
+```
+
+`>>` is like `>`, but it **adds** to the end of the file instead of replacing it:
+
+```
+echo "first" > list.txt
+echo "second" >> list.txt
+```
+--- task
+In a single line, make a folder `logs` and move into it using `&&`. Then build `todo.txt` with two lines, `buy fuel` then `check engines`, using `>` for the first and `>>` for the second.
+--- starter
+--- solution
+mkdir logs && cd logs
+echo "buy fuel" > todo.txt
+echo "check engines" >> todo.txt
+--- hint
+`mkdir logs && cd logs` does both steps.
+--- hint
+`echo "buy fuel" > todo.txt`, then `echo "check engines" >> todo.txt`.
+--- check shell | You used && to make and enter logs
+used &&
+dir logs
+cwd logs
+--- check shell | todo.txt has both lines, in order
+file logs/todo.txt contains buy fuel
+file logs/todo.txt contains check engines
+used >>
+
+=== term-09 | Hidden files, and the long listing
+--- teach
+A file or folder whose name starts with a dot is **hidden**: plain `ls` skips it. Settings live in files like that — `.env`, `.gitignore`, `.config` — so you need to be able to see them.
+
+- `ls -a` shows **a**ll of them, hidden ones included (plus `.` for this folder and `..` for the one above).
+- `ls -l` is the **l**ong listing: one line per entry, with whether it is a folder (`d`) or a file (`-`), and its size.
+
+Flags combine: `ls -la` is both at once.
+--- task
+Something in this folder is hidden. Find it with `ls -a`, then look at the sizes with `ls -l`.
+--- starter
+echo "API_KEY=demo" > .env
+mkdir src
+echo "print('hi')" > main.py
+--- solution
+ls -a
+ls -l
+--- hint
+`ls -a` shows the hidden file.
+--- hint
+`ls -l` shows one line per file, starting with `-rw-r--r--` for files.
+--- check shell | You found the hidden file
+printed .env
+--- check shell | You used the long listing
+printed -rw-r--r--
+
+=== term-10 | Getting home, and back again
+--- teach
+Deep in a project, three shortcuts save a lot of typing:
+
+- `cd ~` (or just `cd`) jumps straight to your **home** folder, wherever you are.
+- `cd -` jumps back to wherever you were **before** the last `cd`.
+- An **absolute** path works from anywhere: `cd /home/you/project`.
+
+Run `pwd` whenever you want to be sure where you have landed.
+--- task
+You are three folders deep, in `src/app/components`. Jump to your home folder, check with `pwd` that you are there, then come straight back with `cd -`.
+--- starter
+mkdir -p src/app/components
+cd src/app/components
+--- solution
+cd ~
+pwd
+cd -
+--- hint
+`cd ~` goes home; `pwd` then prints `/home/you`.
+--- hint
+`cd -` takes you back to `src/app/components` in one step.
+--- check shell | You checked that you were home
+printed-line /home/you
+--- check shell | You came back with cd -
+ran cd -
+cwd src/app/components

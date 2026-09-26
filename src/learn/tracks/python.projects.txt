@@ -1,0 +1,3111 @@
+@track python
+@level projects
+@title Python · Projects
+@name Python projects: real programs, built step by step, then designed by you
+@blurb Build three real programs one step at a time (an expense tracker, a Markdown converter and a library system with saving and loading), then prove you can work alone on four capstones where you get only a specification and design everything yourself.
+
+=== pyp-01 | Expense tracker 1: planning and parsing commands
+--- teach
+Welcome to the projects course. Everything here uses what the three courses before it taught: the idioms of the intermediate course, the classes and algorithms of the advanced one, and the design habits of the expert one (a pure core, a thin shell, injected dependencies, tests that catch bugs). Each of the first three projects is a real program built over four lessons, and **each lesson starts from where the last one finished**. Then come the capstones, where you get only a specification.
+
+The first project is an **expense tracker** you drive with typed commands:
+
+```
+add 12.50 food lunch with Sam
+add 3.20 transport bus
+total food
+report
+```
+
+**Plan before you type.** A program this size has four jobs, and each gets its own lesson and its own layer of code:
+
+1. **Parse**: turn a line of text into a structured command, or reject it with a clear reason.
+2. **Model**: store expenses and answer questions about them.
+3. **Report**: turn the stored data into readable output.
+4. **Run**: the loop that reads input, calls the layers above, and prints results.
+
+Keeping these apart means each can be tested on its own, and a change to the report format never breaks parsing.
+
+**Decide how to represent the data.** Money is the classic trap: `0.1 + 0.2` is not `0.3` in floating point. So this program stores every amount as a whole number of **cents** (`12.50` becomes `1250`) and only turns it back into a decimal string for display. Converting from text yourself is simple with `partition`:
+
+```python
+"12.5".partition(".")     # ('12', '.', '5')
+"12".partition(".")       # ('12', '', '')
+"5".ljust(2, "0")         # '50'  pad on the right: 5 tenths is 50 cents
+```
+
+**Decide the error policy.** A command-line tool must never crash on a typo. Here, the parser raises `ValueError` with a message a user can act on (`usage: add <amount> <category> [note]`), and the run loop (lesson 4) will catch it and print it.
+
+A parsed command is a small dict. The shape is your *contract* between the parser and the rest of the program:
+
+```python
+{"cmd": "add", "amount": 1250, "category": "food", "note": "lunch with Sam"}
+{"cmd": "total", "category": None}
+{"cmd": "report"}
+```
+
+**Common mistake:** trying to handle every command in one long function that parses, stores and prints. It works for three commands and becomes impossible at ten.
+--- task
+Write the parsing layer:
+
+`to_cents(text)` turns a string amount into whole cents: `"12.50"` → `1250`, `"3"` → `300`, `"0.5"` → `50`. It raises `ValueError` for anything that is not digits with an optional `.` and at most two decimal places (`"abc"`, `"12.345"`, `"-5"`, `"1."`), and for zero.
+
+`parse_command(line)` returns one of the dicts shown above (command words are case-insensitive; categories are lowercased; the note is the rest of the words joined by single spaces, or `""`). It raises `ValueError` for: an empty line (`"empty command"`), `add` with fewer than two arguments (`"usage: add <amount> <category> [note]"`), `total` with more than one argument (`"usage: total [category]"`), `report` with any argument (`"usage: report"`), or an unknown command (`"unknown command: <word>"`).
+--- starter
+# Expense tracker, step 1: understand one command.
+# Amounts are kept in whole cents (ints), never floats.
+
+
+def to_cents(text):
+    pass
+
+
+def parse_command(line):
+    pass
+--- solution
+# Expense tracker, step 1: understand one command.
+# Amounts are kept in whole cents (ints), never floats.
+
+
+def to_cents(text):
+    """Turn "12.50" into 1250. Only positive amounts with at most 2 decimals."""
+    whole, dot, frac = text.partition(".")
+    if not whole.isdigit() or (dot and not frac.isdigit()) or len(frac) > 2:
+        raise ValueError(f"bad amount: {text}")
+    cents = int(whole) * 100 + int(frac.ljust(2, "0"))
+    if cents <= 0:
+        raise ValueError(f"amount must be positive: {text}")
+    return cents
+
+
+def parse_command(line):
+    """Turn one command line into a dict, or raise ValueError saying what is wrong."""
+    words = line.split()
+    if not words:
+        raise ValueError("empty command")
+    cmd, args = words[0].lower(), words[1:]
+    if cmd == "add":
+        if len(args) < 2:
+            raise ValueError("usage: add <amount> <category> [note]")
+        return {"cmd": "add", "amount": to_cents(args[0]), "category": args[1].lower(), "note": " ".join(args[2:])}
+    if cmd == "total":
+        if len(args) > 1:
+            raise ValueError("usage: total [category]")
+        return {"cmd": "total", "category": args[0].lower() if args else None}
+    if cmd == "report":
+        if args:
+            raise ValueError("usage: report")
+        return {"cmd": "report"}
+    raise ValueError(f"unknown command: {words[0]}")
+--- hint
+For `to_cents`, `whole, dot, frac = text.partition(".")`. The whole part must be digits; if there was a dot, the fraction must be digits too, and at most 2 of them.
+--- hint
+`int(frac.ljust(2, "0"))` turns `"5"` into 50 and `""` into 0. Check the total is more than zero at the end.
+--- hint
+In `parse_command`, split the line into words, look at the first word (lowercased), and check how many arguments each command got before building its dict.
+--- check test | to_cents converts valid amounts
+[to_cents(t) for t in ("12.50", "3", "0.5", "0.05", "1200")] == [1250, 300, 50, 5, 120000]
+--- check test | to_cents rejects bad amounts
+all(raises(ValueError, lambda t=t: to_cents(t)) for t in ("abc", "12.345", "-5", "1.", ".5", "0", "0.00", "", "1,000"))
+--- check case | parse an add command
+parse_command("add 12.50 Food lunch   with Sam")
+=> {"cmd": "add", "amount": 1250, "category": "food", "note": "lunch with Sam"}
+--- check case | The note is optional
+parse_command("ADD 7 rent")
+=> {"cmd": "add", "amount": 700, "category": "rent", "note": ""}
+--- check test | total and report
+parse_command("total") == {"cmd": "total", "category": None} and parse_command("Total FOOD") == {"cmd": "total", "category": "food"} and parse_command("report") == {"cmd": "report"}
+--- check test | Bad commands raise ValueError
+all(raises(ValueError, lambda l=l: parse_command(l)) for l in ("", "   ", "add 5", "add", "total a b", "report now", "spend 5 fun", "add x food"))
+--- check test | The error messages say what is wrong
+(lambda msg: msg("") == "empty command" and msg("add 5") == "usage: add <amount> <category> [note]" and msg("fly") == "unknown command: fly")(lambda l: (lambda g: (exec("try:\n    parse_command(line)\nexcept ValueError as e:\n    msg = str(e)\n", g), g.get("msg"))[1])({**globals(), "line": l}))
+
+=== pyp-02 | Expense tracker 2: the ledger
+--- teach
+Now the model: somewhere to keep expenses and a set of questions you can ask about them.
+
+**One record type, one owner.** Each expense is a small, fixed bundle of fields, which is exactly what a dataclass is for. The collection of expenses belongs to a `Ledger` class, and *every* change and question goes through its methods. That gives the rules one home: if you later need to reject duplicate entries or keep an audit log, there is exactly one place to change.
+
+```python
+from dataclasses import dataclass
+
+@dataclass
+class Expense:
+    amount: int        # cents
+    category: str
+    note: str = ""
+```
+
+**Answer questions from the data, do not store answers.** It is tempting to keep a running `self.total` and update it on every `add`. But stored answers go stale the moment someone adds a `remove` method and forgets to update them. Computing `total()` from the list whenever you are asked is always right, and for a personal expense list it is plenty fast.
+
+```python
+def total(self, category=None):
+    return sum(e.amount for e in self.expenses if category is None or e.category == category)
+```
+
+**Formatting cents for people.** `divmod`-style arithmetic splits cents into whole units and the remainder, and the format spec does the rest:
+
+```python
+cents = 123456
+f"{cents // 100:,}.{cents % 100:02d}"    # '1,234.56'
+```
+
+`:02d` pads the cents to two digits, so 5 cents shows as `.05`, not `.5`.
+
+Defining `__len__` lets callers write `len(ledger)`, which reads naturally and is what Python programmers expect from a collection.
+
+**Common mistake:** letting other code reach in and edit `ledger.expenses` directly. It works until the day the ledger needs to enforce a rule. Go through the methods.
+--- task
+Add the model to your parser:
+
+- A dataclass `Expense` with `amount` (int cents), `category` (str) and `note` (str, default `""`).
+- `format_cents(cents)` returning a string with a thousands separator and two decimals: `1250` → `"12.50"`, `5` → `"0.05"`, `123456` → `"1,234.56"`.
+- A class `Ledger` with `add(amount, category, note="")` (stores and returns a new `Expense`), `total(category=None)` (cents, for one category or all), `categories()` (sorted, no duplicates) and `__len__`.
+--- starter
+# Expense tracker, step 1: understand one command.
+# Amounts are kept in whole cents (ints), never floats.
+
+
+def to_cents(text):
+    """Turn "12.50" into 1250. Only positive amounts with at most 2 decimals."""
+    whole, dot, frac = text.partition(".")
+    if not whole.isdigit() or (dot and not frac.isdigit()) or len(frac) > 2:
+        raise ValueError(f"bad amount: {text}")
+    cents = int(whole) * 100 + int(frac.ljust(2, "0"))
+    if cents <= 0:
+        raise ValueError(f"amount must be positive: {text}")
+    return cents
+
+
+def parse_command(line):
+    """Turn one command line into a dict, or raise ValueError saying what is wrong."""
+    words = line.split()
+    if not words:
+        raise ValueError("empty command")
+    cmd, args = words[0].lower(), words[1:]
+    if cmd == "add":
+        if len(args) < 2:
+            raise ValueError("usage: add <amount> <category> [note]")
+        return {"cmd": "add", "amount": to_cents(args[0]), "category": args[1].lower(), "note": " ".join(args[2:])}
+    if cmd == "total":
+        if len(args) > 1:
+            raise ValueError("usage: total [category]")
+        return {"cmd": "total", "category": args[0].lower() if args else None}
+    if cmd == "report":
+        if args:
+            raise ValueError("usage: report")
+        return {"cmd": "report"}
+    raise ValueError(f"unknown command: {words[0]}")
+--- solution
+# Expense tracker, step 2: a ledger that stores expenses.
+from dataclasses import dataclass
+
+
+def to_cents(text):
+    """Turn "12.50" into 1250. Only positive amounts with at most 2 decimals."""
+    whole, dot, frac = text.partition(".")
+    if not whole.isdigit() or (dot and not frac.isdigit()) or len(frac) > 2:
+        raise ValueError(f"bad amount: {text}")
+    cents = int(whole) * 100 + int(frac.ljust(2, "0"))
+    if cents <= 0:
+        raise ValueError(f"amount must be positive: {text}")
+    return cents
+
+
+def parse_command(line):
+    """Turn one command line into a dict, or raise ValueError saying what is wrong."""
+    words = line.split()
+    if not words:
+        raise ValueError("empty command")
+    cmd, args = words[0].lower(), words[1:]
+    if cmd == "add":
+        if len(args) < 2:
+            raise ValueError("usage: add <amount> <category> [note]")
+        return {"cmd": "add", "amount": to_cents(args[0]), "category": args[1].lower(), "note": " ".join(args[2:])}
+    if cmd == "total":
+        if len(args) > 1:
+            raise ValueError("usage: total [category]")
+        return {"cmd": "total", "category": args[0].lower() if args else None}
+    if cmd == "report":
+        if args:
+            raise ValueError("usage: report")
+        return {"cmd": "report"}
+    raise ValueError(f"unknown command: {words[0]}")
+
+
+@dataclass
+class Expense:
+    amount: int
+    category: str
+    note: str = ""
+
+
+def format_cents(cents):
+    """1250 -> "12.50", 123456 -> "1,234.56"."""
+    return f"{cents // 100:,}.{cents % 100:02d}"
+
+
+class Ledger:
+    def __init__(self):
+        self.expenses = []
+
+    def add(self, amount, category, note=""):
+        expense = Expense(amount, category, note)
+        self.expenses.append(expense)
+        return expense
+
+    def total(self, category=None):
+        return sum(e.amount for e in self.expenses if category is None or e.category == category)
+
+    def categories(self):
+        return sorted({e.category for e in self.expenses})
+
+    def __len__(self):
+        return len(self.expenses)
+--- hint
+Import `dataclass` at the top and declare the three annotated fields; the default goes on the last one.
+--- hint
+`format_cents` is one f-string: `cents // 100` with `:,` then `cents % 100` with `:02d`.
+--- hint
+The ledger keeps a list, `self.expenses`. `total` is a `sum` over a generator with an `if`; `categories` is `sorted` of a set comprehension.
+--- check test | format_cents
+[format_cents(c) for c in (1250, 5, 0, 100, 123456, 100000000)] == ["12.50", "0.05", "0.00", "1.00", "1,234.56", "1,000,000.00"]
+--- check test | add stores and returns an Expense
+(lambda l: (l.add(1250, "food", "lunch"), len(l))[0] == Expense(1250, "food", "lunch") and len(l) == 1)(Ledger())
+--- check test | The note defaults to empty
+Expense(300, "bus").note == "" and Ledger().add(5, "x").note == ""
+--- check case | total, overall and by category
+(lambda l: (l.add(1250, "food"), l.add(320, "transport"), l.add(4500, "food"), l.total(), l.total("food"), l.total("fun"))[3:])(Ledger())
+=> (6070, 5750, 0)
+--- check case | categories are sorted without duplicates
+(lambda l: (l.add(1, "rent"), l.add(2, "food"), l.add(3, "rent"), l.categories())[-1])(Ledger())
+=> ["food", "rent"]
+--- check test | An empty ledger
+len(Ledger()) == 0 and Ledger().total() == 0 and Ledger().categories() == []
+--- check test | The parser still works
+parse_command("add 1 food") == {"cmd": "add", "amount": 100, "category": "food", "note": ""}
+
+=== pyp-03 | Expense tracker 3: reports
+--- teach
+A report answers "where did the money go?" at a glance. That takes three steps, and each is a standard technique.
+
+**1. Aggregate.** Group the expenses by category and sum each group. A plain dict with `get` does it in one pass:
+
+```python
+totals = {}
+for e in expenses:
+    totals[e.category] = totals.get(e.category, 0) + e.amount
+```
+
+**2. Order.** Biggest spending first is most useful. For equal totals, order by name, so the report is the same every time you run it; a report whose rows shuffle randomly is hard to compare from month to month. One sort with a tuple key does both:
+
+```python
+rows = sorted(totals.items(), key=lambda kv: (-kv[1], kv[0]))
+```
+
+**3. Lay out.** Fixed-width columns make numbers line up so the eye can scan them. Left-align names, right-align amounts:
+
+```python
+f"{'food':<12}{'57.50':>10}"     # 'food             57.50'
+```
+
+**Return lines, do not print them.** `report()` returns a list of strings. Printing is the run loop's job. A method that returns data can be tested by comparing lists, reused in a different interface (a web page, an email), and combined with other output. A method that prints can only be looked at.
+
+**Handle the empty case on purpose.** A report on no data should say so, rather than print a header, a rule and a total of zero, or crash on `max()` of an empty list.
+
+**Common mistake:** forgetting ties. Sorting only by amount makes the order of equal totals depend on insertion order, and your tests (and your users) see it change.
+--- task
+Add two methods to `Ledger`:
+
+- `by_category()` returns a dict from category to total cents.
+- `report()` returns a list of lines: one per category, highest total first and ties in alphabetical order, as the category left-aligned in 12 characters then `format_cents(total)` right-aligned in 10; then a line of 22 `-` characters; then `TOTAL` laid out the same way. An empty ledger's report is `["no expenses"]`.
+--- starter
+# Expense tracker, step 2: a ledger that stores expenses.
+from dataclasses import dataclass
+
+
+def to_cents(text):
+    """Turn "12.50" into 1250. Only positive amounts with at most 2 decimals."""
+    whole, dot, frac = text.partition(".")
+    if not whole.isdigit() or (dot and not frac.isdigit()) or len(frac) > 2:
+        raise ValueError(f"bad amount: {text}")
+    cents = int(whole) * 100 + int(frac.ljust(2, "0"))
+    if cents <= 0:
+        raise ValueError(f"amount must be positive: {text}")
+    return cents
+
+
+def parse_command(line):
+    """Turn one command line into a dict, or raise ValueError saying what is wrong."""
+    words = line.split()
+    if not words:
+        raise ValueError("empty command")
+    cmd, args = words[0].lower(), words[1:]
+    if cmd == "add":
+        if len(args) < 2:
+            raise ValueError("usage: add <amount> <category> [note]")
+        return {"cmd": "add", "amount": to_cents(args[0]), "category": args[1].lower(), "note": " ".join(args[2:])}
+    if cmd == "total":
+        if len(args) > 1:
+            raise ValueError("usage: total [category]")
+        return {"cmd": "total", "category": args[0].lower() if args else None}
+    if cmd == "report":
+        if args:
+            raise ValueError("usage: report")
+        return {"cmd": "report"}
+    raise ValueError(f"unknown command: {words[0]}")
+
+
+@dataclass
+class Expense:
+    amount: int
+    category: str
+    note: str = ""
+
+
+def format_cents(cents):
+    """1250 -> "12.50", 123456 -> "1,234.56"."""
+    return f"{cents // 100:,}.{cents % 100:02d}"
+
+
+class Ledger:
+    def __init__(self):
+        self.expenses = []
+
+    def add(self, amount, category, note=""):
+        expense = Expense(amount, category, note)
+        self.expenses.append(expense)
+        return expense
+
+    def total(self, category=None):
+        return sum(e.amount for e in self.expenses if category is None or e.category == category)
+
+    def categories(self):
+        return sorted({e.category for e in self.expenses})
+
+    def __len__(self):
+        return len(self.expenses)
+--- solution
+# Expense tracker, step 3: reports.
+from dataclasses import dataclass
+
+
+def to_cents(text):
+    """Turn "12.50" into 1250. Only positive amounts with at most 2 decimals."""
+    whole, dot, frac = text.partition(".")
+    if not whole.isdigit() or (dot and not frac.isdigit()) or len(frac) > 2:
+        raise ValueError(f"bad amount: {text}")
+    cents = int(whole) * 100 + int(frac.ljust(2, "0"))
+    if cents <= 0:
+        raise ValueError(f"amount must be positive: {text}")
+    return cents
+
+
+def parse_command(line):
+    """Turn one command line into a dict, or raise ValueError saying what is wrong."""
+    words = line.split()
+    if not words:
+        raise ValueError("empty command")
+    cmd, args = words[0].lower(), words[1:]
+    if cmd == "add":
+        if len(args) < 2:
+            raise ValueError("usage: add <amount> <category> [note]")
+        return {"cmd": "add", "amount": to_cents(args[0]), "category": args[1].lower(), "note": " ".join(args[2:])}
+    if cmd == "total":
+        if len(args) > 1:
+            raise ValueError("usage: total [category]")
+        return {"cmd": "total", "category": args[0].lower() if args else None}
+    if cmd == "report":
+        if args:
+            raise ValueError("usage: report")
+        return {"cmd": "report"}
+    raise ValueError(f"unknown command: {words[0]}")
+
+
+@dataclass
+class Expense:
+    amount: int
+    category: str
+    note: str = ""
+
+
+def format_cents(cents):
+    """1250 -> "12.50", 123456 -> "1,234.56"."""
+    return f"{cents // 100:,}.{cents % 100:02d}"
+
+
+class Ledger:
+    def __init__(self):
+        self.expenses = []
+
+    def add(self, amount, category, note=""):
+        expense = Expense(amount, category, note)
+        self.expenses.append(expense)
+        return expense
+
+    def total(self, category=None):
+        return sum(e.amount for e in self.expenses if category is None or e.category == category)
+
+    def categories(self):
+        return sorted({e.category for e in self.expenses})
+
+    def __len__(self):
+        return len(self.expenses)
+
+    def by_category(self):
+        totals = {}
+        for e in self.expenses:
+            totals[e.category] = totals.get(e.category, 0) + e.amount
+        return totals
+
+    def report(self):
+        if not self.expenses:
+            return ["no expenses"]
+        rows = sorted(self.by_category().items(), key=lambda kv: (-kv[1], kv[0]))
+        lines = [f"{category:<12}{format_cents(total):>10}" for category, total in rows]
+        lines.append("-" * 22)
+        lines.append(f"{'TOTAL':<12}{format_cents(self.total()):>10}")
+        return lines
+--- hint
+`by_category` is the `totals.get(category, 0) + amount` loop.
+--- hint
+Sort `self.by_category().items()` with `key=lambda kv: (-kv[1], kv[0])`, and format each row with `f"{category:<12}{format_cents(total):>10}"`.
+--- hint
+After the rows, append `"-" * 22` and the TOTAL row. Check for an empty ledger first.
+--- check case | by_category sums each category
+(lambda l: (l.add(1250, "food"), l.add(320, "bus"), l.add(4500, "food"), l.by_category())[-1])(Ledger())
+=> {"food": 5750, "bus": 320}
+--- check case | The report, biggest first
+(lambda l: (l.add(1250, "food"), l.add(320, "transport"), l.add(4500, "food"), l.add(120000, "rent"), l.report())[-1])(Ledger())
+=> ["rent          1,200.00", "food             57.50", "transport         3.20", "----------------------", "TOTAL         1,260.70"]
+--- check case | Equal totals are in alphabetical order
+(lambda l: (l.add(500, "zoo"), l.add(500, "art"), l.add(500, "music"), l.report())[-1][:3])(Ledger())
+=> ["art               5.00", "music             5.00", "zoo               5.00"]
+--- check case | An empty report
+Ledger().report()
+=> ["no expenses"]
+
+=== pyp-04 | Expense tracker 4: the program
+--- teach
+The last piece is the loop that makes this a program: read commands, run them, print what happened.
+
+```python
+def run(lines):
+    ledger = Ledger()
+    out = []
+    for line in lines:
+        ...
+    return out
+```
+
+**Where to catch errors.** Each layer below raises `ValueError` when something is wrong, and knows nothing about screens or users. The run loop is the **error boundary**: the one place that knows how to *report* a problem, so it catches the error, turns it into an `error: ...` line, and carries on with the next command. One typo must never lose the rest of someone's input.
+
+Catch only what you expect (`ValueError` from parsing). An unexpected `TypeError` is a bug in *your* code, and hiding it would make it much harder to find.
+
+**`run(lines)` returns output instead of printing** for the same reason as `report()`: it can be tested with a list of lines in and a list of lines out, with no keyboard involved. The real program is then a thin shell around it:
+
+```python
+if __name__ == "__main__":
+    for line in run(sys.stdin.read().splitlines()):
+        print(line)
+```
+
+`sys.stdin.read()` reads everything the user typed or piped in. The `__name__` guard means the loop runs when the file is executed as a program, but not when another file imports its functions.
+
+**Blank lines and comments** (`# September`) are skipped before parsing, so an input file can be laid out and annotated for humans.
+
+That is the whole program: four layers, each small, each testable, each with one job. Look back at how little each lesson needed to change the ones before it. That is what a good structure buys you.
+--- task
+Write `run(lines)`, returning the list of output lines:
+
+- Skip blank lines and lines starting with `#`.
+- A line that fails to parse produces `"error: <message>"`, and processing continues.
+- `add` stores the expense and produces `"added 12.50 to food"`.
+- `total` produces `"total: <amount>"`; `total food` produces `"total food: <amount>"`.
+- `report` produces the report lines.
+
+Then add the entry point under `if __name__ == "__main__":` that runs the lines of standard input and prints each output line.
+--- starter
+# Expense tracker, step 3: reports.
+from dataclasses import dataclass
+
+
+def to_cents(text):
+    """Turn "12.50" into 1250. Only positive amounts with at most 2 decimals."""
+    whole, dot, frac = text.partition(".")
+    if not whole.isdigit() or (dot and not frac.isdigit()) or len(frac) > 2:
+        raise ValueError(f"bad amount: {text}")
+    cents = int(whole) * 100 + int(frac.ljust(2, "0"))
+    if cents <= 0:
+        raise ValueError(f"amount must be positive: {text}")
+    return cents
+
+
+def parse_command(line):
+    """Turn one command line into a dict, or raise ValueError saying what is wrong."""
+    words = line.split()
+    if not words:
+        raise ValueError("empty command")
+    cmd, args = words[0].lower(), words[1:]
+    if cmd == "add":
+        if len(args) < 2:
+            raise ValueError("usage: add <amount> <category> [note]")
+        return {"cmd": "add", "amount": to_cents(args[0]), "category": args[1].lower(), "note": " ".join(args[2:])}
+    if cmd == "total":
+        if len(args) > 1:
+            raise ValueError("usage: total [category]")
+        return {"cmd": "total", "category": args[0].lower() if args else None}
+    if cmd == "report":
+        if args:
+            raise ValueError("usage: report")
+        return {"cmd": "report"}
+    raise ValueError(f"unknown command: {words[0]}")
+
+
+@dataclass
+class Expense:
+    amount: int
+    category: str
+    note: str = ""
+
+
+def format_cents(cents):
+    """1250 -> "12.50", 123456 -> "1,234.56"."""
+    return f"{cents // 100:,}.{cents % 100:02d}"
+
+
+class Ledger:
+    def __init__(self):
+        self.expenses = []
+
+    def add(self, amount, category, note=""):
+        expense = Expense(amount, category, note)
+        self.expenses.append(expense)
+        return expense
+
+    def total(self, category=None):
+        return sum(e.amount for e in self.expenses if category is None or e.category == category)
+
+    def categories(self):
+        return sorted({e.category for e in self.expenses})
+
+    def __len__(self):
+        return len(self.expenses)
+
+    def by_category(self):
+        totals = {}
+        for e in self.expenses:
+            totals[e.category] = totals.get(e.category, 0) + e.amount
+        return totals
+
+    def report(self):
+        if not self.expenses:
+            return ["no expenses"]
+        rows = sorted(self.by_category().items(), key=lambda kv: (-kv[1], kv[0]))
+        lines = [f"{category:<12}{format_cents(total):>10}" for category, total in rows]
+        lines.append("-" * 22)
+        lines.append(f"{'TOTAL':<12}{format_cents(self.total()):>10}")
+        return lines
+--- solution
+# Expense tracker, step 4: the program.
+import sys
+from dataclasses import dataclass
+
+
+def to_cents(text):
+    """Turn "12.50" into 1250. Only positive amounts with at most 2 decimals."""
+    whole, dot, frac = text.partition(".")
+    if not whole.isdigit() or (dot and not frac.isdigit()) or len(frac) > 2:
+        raise ValueError(f"bad amount: {text}")
+    cents = int(whole) * 100 + int(frac.ljust(2, "0"))
+    if cents <= 0:
+        raise ValueError(f"amount must be positive: {text}")
+    return cents
+
+
+def parse_command(line):
+    """Turn one command line into a dict, or raise ValueError saying what is wrong."""
+    words = line.split()
+    if not words:
+        raise ValueError("empty command")
+    cmd, args = words[0].lower(), words[1:]
+    if cmd == "add":
+        if len(args) < 2:
+            raise ValueError("usage: add <amount> <category> [note]")
+        return {"cmd": "add", "amount": to_cents(args[0]), "category": args[1].lower(), "note": " ".join(args[2:])}
+    if cmd == "total":
+        if len(args) > 1:
+            raise ValueError("usage: total [category]")
+        return {"cmd": "total", "category": args[0].lower() if args else None}
+    if cmd == "report":
+        if args:
+            raise ValueError("usage: report")
+        return {"cmd": "report"}
+    raise ValueError(f"unknown command: {words[0]}")
+
+
+@dataclass
+class Expense:
+    amount: int
+    category: str
+    note: str = ""
+
+
+def format_cents(cents):
+    """1250 -> "12.50", 123456 -> "1,234.56"."""
+    return f"{cents // 100:,}.{cents % 100:02d}"
+
+
+class Ledger:
+    def __init__(self):
+        self.expenses = []
+
+    def add(self, amount, category, note=""):
+        expense = Expense(amount, category, note)
+        self.expenses.append(expense)
+        return expense
+
+    def total(self, category=None):
+        return sum(e.amount for e in self.expenses if category is None or e.category == category)
+
+    def categories(self):
+        return sorted({e.category for e in self.expenses})
+
+    def __len__(self):
+        return len(self.expenses)
+
+    def by_category(self):
+        totals = {}
+        for e in self.expenses:
+            totals[e.category] = totals.get(e.category, 0) + e.amount
+        return totals
+
+    def report(self):
+        if not self.expenses:
+            return ["no expenses"]
+        rows = sorted(self.by_category().items(), key=lambda kv: (-kv[1], kv[0]))
+        lines = [f"{category:<12}{format_cents(total):>10}" for category, total in rows]
+        lines.append("-" * 22)
+        lines.append(f"{'TOTAL':<12}{format_cents(self.total()):>10}")
+        return lines
+
+
+def run(lines):
+    """Run every command line; return the output lines. Never crashes on bad input."""
+    ledger = Ledger()
+    out = []
+    for line in lines:
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        try:
+            command = parse_command(line)
+        except ValueError as err:
+            out.append(f"error: {err}")
+            continue
+        if command["cmd"] == "add":
+            ledger.add(command["amount"], command["category"], command["note"])
+            out.append(f"added {format_cents(command['amount'])} to {command['category']}")
+        elif command["cmd"] == "total":
+            category = command["category"]
+            label = "total" if category is None else f"total {category}"
+            out.append(f"{label}: {format_cents(ledger.total(category))}")
+        else:
+            out.extend(ledger.report())
+    return out
+
+
+if __name__ == "__main__":
+    for output_line in run(sys.stdin.read().splitlines()):
+        print(output_line)
+--- stdin
+# September
+add 12.50 food lunch with Sam
+add 3.20 transport bus
+add 45 food groceries
+add 1200 rent
+
+add abc food
+total
+total food
+spend 5 fun
+report
+--- hint
+Inside the loop: strip, skip blanks and comments, then `try: command = parse_command(line)` / `except ValueError as err:` append the error line and `continue`.
+--- hint
+Then branch on `command["cmd"]`. For `total`, the label is `"total"` or `f"total {category}"`; for `report`, `out.extend(ledger.report())`.
+--- hint
+You need `import sys` at the top for `sys.stdin.read().splitlines()`.
+--- check output | The program runs a whole session
+added 12.50 to food
+added 3.20 to transport
+added 45.00 to food
+added 1,200.00 to rent
+error: bad amount: abc
+total: 1,260.70
+total food: 57.50
+error: unknown command: spend
+rent          1,200.00
+food             57.50
+transport         3.20
+----------------------
+TOTAL         1,260.70
+--- check case | run returns the output lines
+run(["add 2 fun", "total fun", "total"])
+=> ["added 2.00 to fun", "total fun: 2.00", "total: 2.00"]
+--- check case | Errors do not stop the run
+run(["add", "add 1.234 x", "report"])
+=> ["error: usage: add <amount> <category> [note]", "error: bad amount: 1.234", "no expenses"]
+--- check case | Nothing in, nothing out
+run(["", "# just a comment"])
+=> []
+
+=== pyp-05 | Markdown converter 1: inline formatting with regular expressions
+--- teach
+The second project converts **Markdown** (the plain-text format of READMEs and chat messages) into HTML. This lesson handles formatting *inside* a line; the next three handle the structure of the document.
+
+| Markdown | HTML |
+|---|---|
+| `**bold**` | `<strong>bold</strong>` |
+| `*italic*` | `<em>italic</em>` |
+| `` `code` `` | `<code>code</code>` |
+| `[text](url)` | `<a href="url">text</a>` |
+
+**Regular expressions** are a small language for describing patterns in text, and the `re` module runs them:
+
+```python
+import re
+re.findall(r"\d+", "3 cats and 12 dogs")          # ['3', '12']
+re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", "a **b** c")  # 'a <b>b</b> c'
+```
+
+The pieces you need:
+
+| Pattern | Matches |
+|---|---|
+| `\*` | a literal `*` (a bare `*` means "repeat") |
+| `.` | any character; `\S` any non-space character |
+| `+`, `*`, `?` | one or more, zero or more, optional |
+| `+?`, `*?` | the same, but as **few** as possible |
+| `( )` | a group you can refer to as `\1`, `\2` in the replacement |
+| `[^\]]` | any character except `]` |
+
+Write patterns as raw strings (`r"..."`) so Python does not treat the backslashes itself.
+
+**Greedy vs lazy.** In `"**a** and **b**"`, the greedy `\*\*(.+)\*\*` matches from the first `**` to the *last*, swallowing ` and `. The lazy `.+?` stops at the first closing `**`.
+
+**Precision matters.** `5 * 3 * 2` is not italic, and Markdown agrees: emphasis needs a non-space character just inside each star. `\*(\S|\S.*?\S)\*` says exactly that: a star, then either a single non-space character, or a non-space, as little as possible, and another non-space; then a star. The `|` means "or", and the regex tries the left side first, which is why `*a* or *b*` gives two short matches instead of one long one.
+
+**Escape first.** Text like `a < b` must become `a &lt; b`, or the browser reads `<` as the start of a tag. Replace `&` *first*, or you will turn the `&` of every `&lt;` you just made into `&amp;lt;`.
+
+**Code spans are special:** nothing inside backticks is formatted. `re.split` with a *capturing* group keeps the separators, so the code spans land at the odd positions of the result:
+
+```python
+re.split(r"(`[^`]+`)", "use `a*b*c` here")    # ['use ', '`a*b*c`', ' here']
+```
+--- task
+Write:
+
+- `escape(text)`: replace `&`, `<`, `>` and `"` with `&amp;`, `&lt;`, `&gt;` and `&quot;`.
+- `inline(text)`: escape the text and convert `**strong**`, `*em*` (only when the characters just inside the stars are not spaces), `` `code` `` and `[text](url)` links. Text inside backticks is escaped but not otherwise formatted.
+--- starter
+# Markdown to HTML, step 1: inline formatting.
+import re
+
+
+def escape(text):
+    return text
+
+
+def inline(text):
+    return text
+--- solution
+# Markdown to HTML, step 1: inline formatting.
+import re
+
+STRONG = re.compile(r"\*\*(\S|\S.*?\S)\*\*")
+EM = re.compile(r"\*(\S|\S.*?\S)\*")
+LINK = re.compile(r"\[([^\]]+)\]\(([^)\s]+)\)")
+
+
+def escape(text):
+    """Make text safe to put inside HTML. The & must be replaced first."""
+    return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;")
+
+
+def format_text(text):
+    text = escape(text)
+    text = LINK.sub(r'<a href="\2">\1</a>', text)
+    text = STRONG.sub(r"<strong>\1</strong>", text)
+    return EM.sub(r"<em>\1</em>", text)
+
+
+def inline(text):
+    """Code spans first, so nothing inside backticks is formatted."""
+    parts = re.split(r"(`[^`]+`)", text)
+    out = []
+    for i, part in enumerate(parts):
+        if i % 2 == 1:
+            out.append(f"<code>{escape(part[1:-1])}</code>")
+        else:
+            out.append(format_text(part))
+    return "".join(out)
+--- hint
+Split the text with `re.split(r"(`[^`]+`)", text)`. Odd positions are code spans: strip the backticks and escape. Even positions get escaped and then formatted.
+--- hint
+Do the formatting with `re.sub` after escaping: links first, then `**strong**`, then `*em*` (so the strong stars are gone before the em pattern looks).
+--- hint
+A strong pattern that refuses spaces just inside: `r"\*\*(\S|\S.*?\S)\*\*"`. The em pattern is the same with single stars.
+--- check case | escape, with & first
+escape('a < b && "c" > d')
+=> "a &lt; b &amp;&amp; &quot;c&quot; &gt; d"
+--- check case | Bold and italic
+inline("**bold** and *soft*")
+=> "<strong>bold</strong> and <em>soft</em>"
+--- check case | Two bold phrases stay separate
+inline("**a** or **b**")
+=> "<strong>a</strong> or <strong>b</strong>"
+--- check case | Stars with spaces around them are not emphasis
+inline("5 * 3 * 2")
+=> "5 * 3 * 2"
+--- check case | Code spans are escaped but not formatted
+inline("run `a*b*c < d` now")
+=> "run <code>a*b*c &lt; d</code> now"
+--- check case | Links
+inline("see [the docs](https://example.com/a?x=1&y=2)")
+=> 'see <a href="https://example.com/a?x=1&amp;y=2">the docs</a>'
+--- check case | Plain text is only escaped
+inline("fish & chips")
+=> "fish &amp; chips"
+
+=== pyp-06 | Markdown converter 2: headings and paragraphs
+--- teach
+Inline formatting works within a line. Now the document's **blocks**: headings and paragraphs.
+
+```
+# Title
+
+This is one paragraph
+that spans two lines.
+
+## Section
+Another paragraph.
+```
+
+becomes
+
+```
+<h1>Title</h1>
+<p>This is one paragraph that spans two lines.</p>
+<h2>Section</h2>
+<p>Another paragraph.</p>
+```
+
+The rules: a line starting with one to six `#` and a space is a heading of that level. Consecutive ordinary lines form one paragraph, joined with spaces. A blank line ends a paragraph. A heading also ends any paragraph before it.
+
+**Line-by-line processing with a buffer.** You cannot write a paragraph's HTML when you see its first line, because you do not yet know where it ends. So collect its lines in a list, and **flush** (write it out and clear it) when something ends it: a blank line, a heading, or the end of the input.
+
+```python
+paragraph = []
+
+def flush():
+    if paragraph:
+        html.append(f"<p>{inline(' '.join(paragraph))}</p>")
+        paragraph.clear()
+```
+
+`flush` is defined inside `convert` so it can see `html` and `paragraph`. It calls `paragraph.clear()` rather than `paragraph = []`, because assigning inside `flush` would create a new local variable instead of emptying the shared list. That is the closure rule from the expert course.
+
+**Don't forget the end.** When the loop finishes, the last paragraph is still in the buffer. The most common bug in this kind of code is losing the final block.
+
+**Common mistake:** matching headings with `line.startswith("#")`. Then `#hashtag` and `####### seven` become headings. A regular expression can state the rule exactly: `^(#{1,6})\s+(.*)$`.
+--- task
+Write `convert(md)` returning the HTML as a string, one block per line (joined with `"\n"`):
+
+- `#` to `######` followed by a space: `<h1>`…`<h6>`, text trimmed and run through `inline`.
+- Consecutive other non-blank lines (each stripped): one `<p>`, joined with single spaces, run through `inline`.
+- Blank lines separate blocks and produce nothing themselves.
+--- starter
+# Markdown to HTML, step 1: inline formatting.
+import re
+
+STRONG = re.compile(r"\*\*(\S|\S.*?\S)\*\*")
+EM = re.compile(r"\*(\S|\S.*?\S)\*")
+LINK = re.compile(r"\[([^\]]+)\]\(([^)\s]+)\)")
+
+
+def escape(text):
+    """Make text safe to put inside HTML. The & must be replaced first."""
+    return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;")
+
+
+def format_text(text):
+    text = escape(text)
+    text = LINK.sub(r'<a href="\2">\1</a>', text)
+    text = STRONG.sub(r"<strong>\1</strong>", text)
+    return EM.sub(r"<em>\1</em>", text)
+
+
+def inline(text):
+    """Code spans first, so nothing inside backticks is formatted."""
+    parts = re.split(r"(`[^`]+`)", text)
+    out = []
+    for i, part in enumerate(parts):
+        if i % 2 == 1:
+            out.append(f"<code>{escape(part[1:-1])}</code>")
+        else:
+            out.append(format_text(part))
+    return "".join(out)
+--- solution
+# Markdown to HTML, step 2: headings and paragraphs.
+import re
+
+STRONG = re.compile(r"\*\*(\S|\S.*?\S)\*\*")
+EM = re.compile(r"\*(\S|\S.*?\S)\*")
+LINK = re.compile(r"\[([^\]]+)\]\(([^)\s]+)\)")
+
+
+def escape(text):
+    """Make text safe to put inside HTML. The & must be replaced first."""
+    return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;")
+
+
+def format_text(text):
+    text = escape(text)
+    text = LINK.sub(r'<a href="\2">\1</a>', text)
+    text = STRONG.sub(r"<strong>\1</strong>", text)
+    return EM.sub(r"<em>\1</em>", text)
+
+
+def inline(text):
+    """Code spans first, so nothing inside backticks is formatted."""
+    parts = re.split(r"(`[^`]+`)", text)
+    out = []
+    for i, part in enumerate(parts):
+        if i % 2 == 1:
+            out.append(f"<code>{escape(part[1:-1])}</code>")
+        else:
+            out.append(format_text(part))
+    return "".join(out)
+
+
+HEADING = re.compile(r"^(#{1,6})\s+(.*)$")
+
+
+def convert(md):
+    html = []
+    paragraph = []
+
+    def flush():
+        if paragraph:
+            html.append(f"<p>{inline(' '.join(paragraph))}</p>")
+            paragraph.clear()
+
+    for raw in md.splitlines():
+        line = raw.strip()
+        heading = HEADING.match(line)
+        if not line:
+            flush()
+        elif heading:
+            flush()
+            level = len(heading.group(1))
+            html.append(f"<h{level}>{inline(heading.group(2).strip())}</h{level}>")
+        else:
+            paragraph.append(line)
+    flush()
+    return "\n".join(html)
+--- hint
+Loop over `md.splitlines()`, strip each line, and decide: blank, heading (use a compiled `re` pattern), or paragraph text.
+--- hint
+Keep a `paragraph` list and a nested `flush()` that writes it as a `<p>` and clears it. Call `flush()` on a blank line, before a heading, and once after the loop.
+--- hint
+The heading level is `len(match.group(1))`, the number of `#` characters.
+--- check case | A heading and a two-line paragraph
+convert("# Title\n\nOne paragraph\nover two lines.")
+=> "<h1>Title</h1>\n<p>One paragraph over two lines.</p>"
+--- check case | A heading ends a paragraph even without a blank line
+convert("text\n## Part *two*\nmore")
+=> "<p>text</p>\n<h2>Part <em>two</em></h2>\n<p>more</p>"
+--- check case | Not headings: no space, or seven #
+convert("#hashtag\n\n####### seven")
+=> "<p>#hashtag</p>\n<p>####### seven</p>"
+--- check case | Extra blank lines and indentation
+convert("\n\n   first  \n\n\n  second\n\n")
+=> "<p>first</p>\n<p>second</p>"
+--- check case | Every heading level
+convert("###### small\n### mid")
+=> "<h6>small</h6>\n<h3>mid</h3>"
+--- check case | Empty input
+convert("")
+=> ""
+
+=== pyp-07 | Markdown converter 3: lists
+--- teach
+Lists add a second kind of block that spans several lines:
+
+```
+- milk
+- eggs
+
+1. mix
+2. bake
+```
+
+becomes
+
+```
+<ul>
+<li>milk</li>
+<li>eggs</li>
+</ul>
+<ol>
+<li>mix</li>
+<li>bake</li>
+</ol>
+```
+
+A line starting with `- ` or `* ` is a bullet item; a line starting with a number, a dot and a space is a numbered item. Consecutive items of the same kind are one list. Anything else (a blank line, a heading, ordinary text, or an item of the *other* kind) ends it.
+
+**The converter now has state.** Besides the paragraph buffer, it must remember whether a list is open and which kind. That is a small **state machine**: the same line can mean different things depending on the current state. An item when no list is open starts one (`<ul>` then `<li>`); an item when the same kind is open just adds an `<li>`.
+
+```python
+list_kind = None      # None, "ul" or "ol"
+
+def list_item(kind, text):
+    nonlocal list_kind
+    if list_kind != kind:
+        flush()                    # close whatever was open
+        html.append(f"<{kind}>")
+        list_kind = kind
+    html.append(f"<li>{inline(text)}</li>")
+```
+
+This time the helper *assigns* to `list_kind`, so it needs `nonlocal`. Extend `flush()` to close an open list as well as a paragraph, and every existing call to it (blank line, heading, end of input) now closes lists too, for free.
+
+**Watch the overlap with emphasis.** `* item` (star then space) is a bullet, but `*word* starts here` is a paragraph with italics. The pattern `^[-*]\s+` requires the space.
+
+**Common mistake:** ordinary text right after a list being swallowed into the list, or the list never being closed. Test both.
+--- task
+Extend `convert` with lists:
+
+- `- item` or `* item`: a `<ul>`; `1. item` (any number): an `<ol>`.
+- Output `<ul>` / `<ol>`, each `<li>...</li>` and the closing tag on their own lines. Item text is run through `inline`.
+- A blank line, heading, ordinary line, or an item of the other kind closes the open list. Headings and paragraphs work as before.
+--- starter
+# Markdown to HTML, step 2: headings and paragraphs.
+import re
+
+STRONG = re.compile(r"\*\*(\S|\S.*?\S)\*\*")
+EM = re.compile(r"\*(\S|\S.*?\S)\*")
+LINK = re.compile(r"\[([^\]]+)\]\(([^)\s]+)\)")
+
+
+def escape(text):
+    """Make text safe to put inside HTML. The & must be replaced first."""
+    return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;")
+
+
+def format_text(text):
+    text = escape(text)
+    text = LINK.sub(r'<a href="\2">\1</a>', text)
+    text = STRONG.sub(r"<strong>\1</strong>", text)
+    return EM.sub(r"<em>\1</em>", text)
+
+
+def inline(text):
+    """Code spans first, so nothing inside backticks is formatted."""
+    parts = re.split(r"(`[^`]+`)", text)
+    out = []
+    for i, part in enumerate(parts):
+        if i % 2 == 1:
+            out.append(f"<code>{escape(part[1:-1])}</code>")
+        else:
+            out.append(format_text(part))
+    return "".join(out)
+
+
+HEADING = re.compile(r"^(#{1,6})\s+(.*)$")
+
+
+def convert(md):
+    html = []
+    paragraph = []
+
+    def flush():
+        if paragraph:
+            html.append(f"<p>{inline(' '.join(paragraph))}</p>")
+            paragraph.clear()
+
+    for raw in md.splitlines():
+        line = raw.strip()
+        heading = HEADING.match(line)
+        if not line:
+            flush()
+        elif heading:
+            flush()
+            level = len(heading.group(1))
+            html.append(f"<h{level}>{inline(heading.group(2).strip())}</h{level}>")
+        else:
+            paragraph.append(line)
+    flush()
+    return "\n".join(html)
+--- solution
+# Markdown to HTML, step 3: lists.
+import re
+
+STRONG = re.compile(r"\*\*(\S|\S.*?\S)\*\*")
+EM = re.compile(r"\*(\S|\S.*?\S)\*")
+LINK = re.compile(r"\[([^\]]+)\]\(([^)\s]+)\)")
+
+
+def escape(text):
+    """Make text safe to put inside HTML. The & must be replaced first."""
+    return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;")
+
+
+def format_text(text):
+    text = escape(text)
+    text = LINK.sub(r'<a href="\2">\1</a>', text)
+    text = STRONG.sub(r"<strong>\1</strong>", text)
+    return EM.sub(r"<em>\1</em>", text)
+
+
+def inline(text):
+    """Code spans first, so nothing inside backticks is formatted."""
+    parts = re.split(r"(`[^`]+`)", text)
+    out = []
+    for i, part in enumerate(parts):
+        if i % 2 == 1:
+            out.append(f"<code>{escape(part[1:-1])}</code>")
+        else:
+            out.append(format_text(part))
+    return "".join(out)
+
+
+HEADING = re.compile(r"^(#{1,6})\s+(.*)$")
+BULLET = re.compile(r"^[-*]\s+(.*)$")
+NUMBERED = re.compile(r"^\d+\.\s+(.*)$")
+
+
+def convert(md):
+    html = []
+    paragraph = []
+    list_kind = None
+
+    def flush():
+        nonlocal list_kind
+        if paragraph:
+            html.append(f"<p>{inline(' '.join(paragraph))}</p>")
+            paragraph.clear()
+        if list_kind:
+            html.append(f"</{list_kind}>")
+            list_kind = None
+
+    def list_item(kind, text):
+        nonlocal list_kind
+        if list_kind != kind:
+            flush()
+            html.append(f"<{kind}>")
+            list_kind = kind
+        html.append(f"<li>{inline(text)}</li>")
+
+    for raw in md.splitlines():
+        line = raw.strip()
+        heading = HEADING.match(line)
+        bullet = BULLET.match(line)
+        numbered = NUMBERED.match(line)
+        if not line:
+            flush()
+        elif heading:
+            flush()
+            level = len(heading.group(1))
+            html.append(f"<h{level}>{inline(heading.group(2).strip())}</h{level}>")
+        elif bullet:
+            list_item("ul", bullet.group(1))
+        elif numbered:
+            list_item("ol", numbered.group(1))
+        else:
+            if list_kind:
+                flush()
+            paragraph.append(line)
+    flush()
+    return "\n".join(html)
+--- hint
+Add two patterns: `r"^[-*]\s+(.*)$"` and `r"^\d+\.\s+(.*)$"`, and a `list_kind` variable that starts as `None`.
+--- hint
+Write a nested `list_item(kind, text)` that opens a new list when `list_kind != kind` (flushing first), then appends the `<li>`. It needs `nonlocal list_kind`.
+--- hint
+Make `flush()` also close an open list (append `</ul>` or `</ol>` and reset `list_kind`). An ordinary line after a list must flush before starting its paragraph.
+--- check case | A bullet list
+convert("- milk\n* eggs & *ham*")
+=> "<ul>\n<li>milk</li>\n<li>eggs &amp; <em>ham</em></li>\n</ul>"
+--- check case | A numbered list after a bullet list
+convert("- a\n- b\n1. one\n22. two")
+=> "<ul>\n<li>a</li>\n<li>b</li>\n</ul>\n<ol>\n<li>one</li>\n<li>two</li>\n</ol>"
+--- check case | Text after a list starts a paragraph
+convert("- a\nthen text\nmore text")
+=> "<ul>\n<li>a</li>\n</ul>\n<p>then text more text</p>"
+--- check case | A paragraph, a list, a heading
+convert("Intro\n- x\n# End")
+=> "<p>Intro</p>\n<ul>\n<li>x</li>\n</ul>\n<h1>End</h1>"
+--- check case | Italic text at the start of a line is not a list
+convert("*word* starts here")
+=> "<p><em>word</em> starts here</p>"
+--- check case | Headings and paragraphs still work
+convert("# T\n\np1\np2")
+=> "<h1>T</h1>\n<p>p1 p2</p>"
+
+=== pyp-08 | Markdown converter 4: code blocks and the command line
+--- teach
+The last feature is fenced **code blocks**:
+
+````
+```python
+if x < 3:
+    print("*not italic*")
+```
+````
+
+Inside a fence, *nothing* is Markdown: no headings, no lists, no emphasis, and the indentation must survive. The only thing to do is escape it. The output is
+
+```
+<pre><code class="language-python">if x &lt; 3:
+    print(&quot;*not italic*&quot;)</code></pre>
+```
+
+**A new mode.** In a code block, lines must not be stripped or interpreted, so the one-line-at-a-time `for` loop no longer fits: when you see an opening fence you want to *consume* every line up to the closing fence in one go. Switch to an index-based loop, where a branch can move the index as far as it needs:
+
+```python
+i = 0
+while i < len(lines):
+    if opening fence:
+        i += 1
+        while i < len(lines) and lines[i].strip() != "```":
+            code.append(escape(lines[i]))      # raw line, not stripped
+            i += 1
+        ...
+    i += 1          # also steps past the closing fence
+```
+
+A fence that is never closed runs to the end of the document: the inner loop simply stops at the end.
+
+**The command line.** Like the expense tracker, the converter becomes a program by adding a thin shell: read all of standard input, convert it, print it. Because `convert` takes a string and returns a string, the shell is one line, and everything that matters can be tested without it.
+
+With this lesson you have built a real tool: a document converter with inline formatting, block structure, state, modes and a command-line interface, in well under a hundred lines, each part testable on its own.
+--- task
+Extend `convert`:
+
+- A line that is ` ``` ` optionally followed by a language name (after stripping) opens a code block; the next line that strips to ` ``` ` closes it (or the end of the input does).
+- Output the block as `<pre><code>` + the raw lines, escaped but not stripped or formatted, joined with `"\n"` + `</code></pre>` on one output entry. With a language, the opening tag is `<code class="language-NAME">`.
+- A code block closes any open paragraph or list first.
+
+Then add the entry point under `if __name__ == "__main__":` that converts all of standard input and prints the result.
+--- starter
+# Markdown to HTML, step 3: lists.
+import re
+
+STRONG = re.compile(r"\*\*(\S|\S.*?\S)\*\*")
+EM = re.compile(r"\*(\S|\S.*?\S)\*")
+LINK = re.compile(r"\[([^\]]+)\]\(([^)\s]+)\)")
+
+
+def escape(text):
+    """Make text safe to put inside HTML. The & must be replaced first."""
+    return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;")
+
+
+def format_text(text):
+    text = escape(text)
+    text = LINK.sub(r'<a href="\2">\1</a>', text)
+    text = STRONG.sub(r"<strong>\1</strong>", text)
+    return EM.sub(r"<em>\1</em>", text)
+
+
+def inline(text):
+    """Code spans first, so nothing inside backticks is formatted."""
+    parts = re.split(r"(`[^`]+`)", text)
+    out = []
+    for i, part in enumerate(parts):
+        if i % 2 == 1:
+            out.append(f"<code>{escape(part[1:-1])}</code>")
+        else:
+            out.append(format_text(part))
+    return "".join(out)
+
+
+HEADING = re.compile(r"^(#{1,6})\s+(.*)$")
+BULLET = re.compile(r"^[-*]\s+(.*)$")
+NUMBERED = re.compile(r"^\d+\.\s+(.*)$")
+
+
+def convert(md):
+    html = []
+    paragraph = []
+    list_kind = None
+
+    def flush():
+        nonlocal list_kind
+        if paragraph:
+            html.append(f"<p>{inline(' '.join(paragraph))}</p>")
+            paragraph.clear()
+        if list_kind:
+            html.append(f"</{list_kind}>")
+            list_kind = None
+
+    def list_item(kind, text):
+        nonlocal list_kind
+        if list_kind != kind:
+            flush()
+            html.append(f"<{kind}>")
+            list_kind = kind
+        html.append(f"<li>{inline(text)}</li>")
+
+    for raw in md.splitlines():
+        line = raw.strip()
+        heading = HEADING.match(line)
+        bullet = BULLET.match(line)
+        numbered = NUMBERED.match(line)
+        if not line:
+            flush()
+        elif heading:
+            flush()
+            level = len(heading.group(1))
+            html.append(f"<h{level}>{inline(heading.group(2).strip())}</h{level}>")
+        elif bullet:
+            list_item("ul", bullet.group(1))
+        elif numbered:
+            list_item("ol", numbered.group(1))
+        else:
+            if list_kind:
+                flush()
+            paragraph.append(line)
+    flush()
+    return "\n".join(html)
+--- solution
+# Markdown to HTML, step 4: code blocks and the command line.
+import sys
+import re
+
+STRONG = re.compile(r"\*\*(\S|\S.*?\S)\*\*")
+EM = re.compile(r"\*(\S|\S.*?\S)\*")
+LINK = re.compile(r"\[([^\]]+)\]\(([^)\s]+)\)")
+
+
+def escape(text):
+    """Make text safe to put inside HTML. The & must be replaced first."""
+    return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;")
+
+
+def format_text(text):
+    text = escape(text)
+    text = LINK.sub(r'<a href="\2">\1</a>', text)
+    text = STRONG.sub(r"<strong>\1</strong>", text)
+    return EM.sub(r"<em>\1</em>", text)
+
+
+def inline(text):
+    """Code spans first, so nothing inside backticks is formatted."""
+    parts = re.split(r"(`[^`]+`)", text)
+    out = []
+    for i, part in enumerate(parts):
+        if i % 2 == 1:
+            out.append(f"<code>{escape(part[1:-1])}</code>")
+        else:
+            out.append(format_text(part))
+    return "".join(out)
+
+
+HEADING = re.compile(r"^(#{1,6})\s+(.*)$")
+BULLET = re.compile(r"^[-*]\s+(.*)$")
+NUMBERED = re.compile(r"^\d+\.\s+(.*)$")
+FENCE = re.compile(r"^```\s*([\w+-]*)\s*$")
+
+
+def convert(md):
+    html = []
+    paragraph = []
+    list_kind = None
+
+    def flush():
+        nonlocal list_kind
+        if paragraph:
+            html.append(f"<p>{inline(' '.join(paragraph))}</p>")
+            paragraph.clear()
+        if list_kind:
+            html.append(f"</{list_kind}>")
+            list_kind = None
+
+    def list_item(kind, text):
+        nonlocal list_kind
+        if list_kind != kind:
+            flush()
+            html.append(f"<{kind}>")
+            list_kind = kind
+        html.append(f"<li>{inline(text)}</li>")
+
+    lines = md.splitlines()
+    i = 0
+    while i < len(lines):
+        line = lines[i].strip()
+        fence = FENCE.match(line)
+        heading = HEADING.match(line)
+        bullet = BULLET.match(line)
+        numbered = NUMBERED.match(line)
+        if fence:
+            flush()
+            language = fence.group(1)
+            code = []
+            i += 1
+            while i < len(lines) and lines[i].strip() != "```":
+                code.append(escape(lines[i]))
+                i += 1
+            attr = f' class="language-{language}"' if language else ""
+            html.append(f"<pre><code{attr}>" + "\n".join(code) + "</code></pre>")
+        elif not line:
+            flush()
+        elif heading:
+            flush()
+            level = len(heading.group(1))
+            html.append(f"<h{level}>{inline(heading.group(2).strip())}</h{level}>")
+        elif bullet:
+            list_item("ul", bullet.group(1))
+        elif numbered:
+            list_item("ol", numbered.group(1))
+        else:
+            if list_kind:
+                flush()
+            paragraph.append(line)
+        i += 1
+    flush()
+    return "\n".join(html)
+
+
+if __name__ == "__main__":
+    print(convert(sys.stdin.read()))
+--- stdin
+# Shopping *list*
+
+Things to buy **today**:
+
+- milk & eggs
+- `bread`
+
+1. go to the shop
+2. pay
+
+```python
+if total < 10:
+    print("cheap")
+```
+See [the map](https://example.com/map?a=1&b=2).
+--- hint
+Change the `for` loop into `i = 0` / `while i < len(lines):` with `i += 1` at the end of the body, so a branch can move `i` further.
+--- hint
+Match the opening fence with `r"^```\s*([\w+-]*)\s*$"` on the stripped line; group 1 is the language (possibly empty). Flush, then collect escaped raw lines until a line strips to three backticks.
+--- hint
+For the entry point you need `import sys`, then `print(convert(sys.stdin.read()))` under the `__name__` guard.
+--- check output | Converts a whole document from standard input
+<h1>Shopping <em>list</em></h1>
+<p>Things to buy <strong>today</strong>:</p>
+<ul>
+<li>milk &amp; eggs</li>
+<li><code>bread</code></li>
+</ul>
+<ol>
+<li>go to the shop</li>
+<li>pay</li>
+</ol>
+<pre><code class="language-python">if total &lt; 10:
+    print(&quot;cheap&quot;)</code></pre>
+<p>See <a href="https://example.com/map?a=1&amp;b=2">the map</a>.</p>
+--- check case | Code keeps indentation and is not formatted
+convert("```\n  # not a heading\n  - *raw*\n```")
+=> "<pre><code>  # not a heading\n  - *raw*</code></pre>"
+--- check case | A code block closes an open paragraph
+convert("text\n```js\nlet a = 1;\n```\nafter")
+=> '<p>text</p>\n<pre><code class="language-js">let a = 1;</code></pre>\n<p>after</p>'
+--- check case | An unclosed fence runs to the end
+convert("```\na\n\nb")
+=> "<pre><code>a\n\nb</code></pre>"
+--- check case | An empty code block
+convert("```\n```")
+=> "<pre><code></code></pre>"
+
+=== pyp-09 | Library system 1: the data model
+--- teach
+The third project is a lending library: books, members, loans, rules, and saving everything to disk. It is the kind of program most business software is: a **domain model** with rules, plus persistence.
+
+**Model the nouns.** Read a description of the problem and underline the nouns: *books*, *members*, *loans*, *the library*. Each is a candidate class. Then ask what identifies each one: a book by its **ISBN**, a member by a **member id**. Identifiers are what you use as dict keys and what you store in other records to point at things.
+
+```python
+@dataclass
+class Book:
+    isbn: str
+    title: str
+    author: str
+    copies: int = 1
+```
+
+**One object owns the collections.** `Library` holds dicts of books and members keyed by their ids, and every change goes through its methods. That is where rules live: "a member id cannot be used twice", "adding a book that already exists adds copies".
+
+**A custom exception for the domain.** Callers need to tell "the library refused this" apart from a bug. A `LibraryError` class does that: the interface can catch `LibraryError` and show its message, while a real `TypeError` still stops the program.
+
+**Protect your internals from aliasing.** If `add_book` stores the caller's `Book` object and later changes its `copies`, the caller's object changes too, which is the aliasing bug from the advanced course. `dataclasses.replace(book)` makes a copy (optionally with some fields changed), so the library owns its own record:
+
+```python
+from dataclasses import replace
+stored = replace(book)          # a new Book with the same fields
+```
+
+**Lookups that fail loudly.** `book(isbn)` returns the record or raises `LibraryError("no such book: ...")`. Every later method can then call it and trust the result, instead of repeating `if isbn not in self.books` everywhere.
+
+**Common mistake:** keying things by name. Two members can be called Sam, and titles change; ids do not.
+--- task
+Write:
+
+- `class LibraryError(Exception)`.
+- Dataclasses `Book(isbn, title, author, copies=1)` and `Member(member_id, name)`.
+- `Library` with `books` and `members` dicts, and:
+  - `add_book(book)`: if the ISBN is new, store a **copy** of the book; if it exists, add `book.copies` to the stored copies. A book with fewer than 1 copy raises `LibraryError`. Returns the stored book.
+  - `add_member(member)`: a duplicate member id raises `LibraryError`.
+  - `book(isbn)` and `member(member_id)`: return the record, or raise `LibraryError` (`"no such book: <isbn>"`, `"no such member: <id>"`).
+  - `find_by_author(text)`: titles of books whose author contains `text`, ignoring case, sorted.
+--- starter
+# Library system, step 1: the data model.
+from dataclasses import dataclass
+
+
+class LibraryError(Exception):
+    pass
+
+
+class Library:
+    def __init__(self):
+        self.books = {}
+        self.members = {}
+--- solution
+# Library system, step 1: the data model.
+from dataclasses import dataclass, replace
+
+
+class LibraryError(Exception):
+    pass
+
+
+@dataclass
+class Book:
+    isbn: str
+    title: str
+    author: str
+    copies: int = 1
+
+
+@dataclass
+class Member:
+    member_id: str
+    name: str
+
+
+class Library:
+    def __init__(self):
+        self.books = {}
+        self.members = {}
+
+    def add_book(self, book):
+        if book.copies < 1:
+            raise LibraryError("a book needs at least one copy")
+        if book.isbn in self.books:
+            self.books[book.isbn].copies += book.copies
+        else:
+            self.books[book.isbn] = replace(book)
+        return self.books[book.isbn]
+
+    def add_member(self, member):
+        if member.member_id in self.members:
+            raise LibraryError(f"member {member.member_id} already exists")
+        self.members[member.member_id] = member
+
+    def book(self, isbn):
+        if isbn not in self.books:
+            raise LibraryError(f"no such book: {isbn}")
+        return self.books[isbn]
+
+    def member(self, member_id):
+        if member_id not in self.members:
+            raise LibraryError(f"no such member: {member_id}")
+        return self.members[member_id]
+
+    def find_by_author(self, text):
+        text = text.lower()
+        return sorted(b.title for b in self.books.values() if text in b.author.lower())
+--- hint
+Two `@dataclass` classes with annotated fields; `copies: int = 1` goes last.
+--- hint
+In `add_book`, validate first, then either increase `self.books[book.isbn].copies` or store `replace(book)` (import `replace` from `dataclasses`).
+--- hint
+`book(isbn)` checks `if isbn not in self.books:` and raises `LibraryError(f"no such book: {isbn}")`. `find_by_author` lowercases both sides and sorts the matching titles.
+--- check test | add_book stores books by ISBN
+(lambda lib: (lib.add_book(Book("111", "Dune", "Frank Herbert")), lib.book("111").title)[1] == "Dune" and lib.book("111").copies == 1)(Library())
+--- check case | Adding the same ISBN again adds copies
+(lambda lib: (lib.add_book(Book("111", "Dune", "Frank Herbert", 2)), lib.add_book(Book("111", "Dune", "Frank Herbert", 3)), lib.book("111").copies)[-1])(Library())
+=> 5
+--- check test | The library keeps its own copy of the book
+(lambda lib, b: (lib.add_book(b), lib.add_book(Book("1", "T", "A", 4)), b.copies)[-1] == 1)(Library(), Book("1", "T", "A"))
+?? Store replace(book), not the caller's object.
+--- check test | Zero copies is rejected
+raises(LibraryError, lambda: Library().add_book(Book("1", "T", "A", 0)))
+--- check test | Duplicate members are rejected
+(lambda lib: (lib.add_member(Member("m1", "Ada")), raises(LibraryError, lambda: lib.add_member(Member("m1", "Sam"))))[1])(Library())
+--- check test | Unknown ids raise LibraryError, which is an Exception
+raises(LibraryError, lambda: Library().book("nope")) and raises(LibraryError, lambda: Library().member("nope")) and issubclass(LibraryError, Exception)
+--- check case | find_by_author ignores case and sorts titles
+(lambda lib: (lib.add_book(Book("1", "Emma", "Jane Austen")), lib.add_book(Book("2", "Dune", "Frank Herbert")), lib.add_book(Book("3", "Persuasion", "JANE AUSTEN")), lib.find_by_author("austen"))[-1])(Library())
+=> ["Emma", "Persuasion"]
+
+=== pyp-10 | Library system 2: loans and rules
+--- teach
+A library exists to lend books, and lending comes with **rules**: a member can borrow at most three books, cannot borrow the same book twice, and cannot borrow a book with no copies left. Rules like these are the heart of most real software, and they deserve care.
+
+**A loan is a record too.** It links a member to a book, with a due date:
+
+```python
+@dataclass
+class Loan:
+    member_id: str
+    isbn: str
+    due: date
+```
+
+It stores **ids**, not the `Member` and `Book` objects themselves. Ids are stable, easy to save to a file (next lesson), and there is only one copy of each book's data to keep up to date.
+
+**Derive, do not duplicate.** How many copies are available? You could store an `available` count on each book and remember to change it on every checkout and return. Or you could compute it: copies minus loans of that ISBN. The computed version can never disagree with the loans, because it *is* the loans. Keep a single source of truth wherever you can.
+
+**Check every rule before changing anything.** `checkout` validates the member, the book, the duplicate, the limit and the availability, and only then appends the loan. If a check fails halfway after something was changed, the data is left half-updated.
+
+**Time is an input.** A due date depends on today's date. Calling `date.today()` inside `checkout` would make it impossible to test ("does a loan made on 1 March fall due on 15 March?") except on 1 March. Pass `today` in, the dependency injection idea from the expert course:
+
+```python
+from datetime import date, timedelta
+date(2026, 3, 1) + timedelta(days=14)     # datetime.date(2026, 3, 15)
+```
+
+**Named constants** (`LOAN_DAYS = 14`, `MAX_LOANS = 3`) at the top of the file say what the numbers mean and give each rule one place to change.
+
+**Common mistake:** returning `True`/`False` from `checkout` to mean success or failure. The caller has to check it, and will forget. Raising a `LibraryError` with a message cannot be ignored silently, and says *why*.
+--- task
+Add loans:
+
+- Constants `LOAN_DAYS = 14` and `MAX_LOANS = 3`, and a dataclass `Loan(member_id, isbn, due)`.
+- `Library.loans`, a list, starting empty.
+- `available(isbn)`: copies minus current loans of that book (unknown ISBN raises `LibraryError`).
+- `loans_of(member_id)`: that member's loans (unknown member raises `LibraryError`).
+- `checkout(member_id, isbn, today)`: checks, in this order, that the member and book exist, that the member does not already have this book, that they have fewer than `MAX_LOANS` loans, and that a copy is available, raising `LibraryError` otherwise. Then it records and returns a `Loan` due `LOAN_DAYS` after `today`.
+- `return_book(member_id, isbn)`: removes and returns that loan, or raises `LibraryError` if there is no such loan.
+--- starter
+# Library system, step 1: the data model.
+from dataclasses import dataclass, replace
+
+
+class LibraryError(Exception):
+    pass
+
+
+@dataclass
+class Book:
+    isbn: str
+    title: str
+    author: str
+    copies: int = 1
+
+
+@dataclass
+class Member:
+    member_id: str
+    name: str
+
+
+class Library:
+    def __init__(self):
+        self.books = {}
+        self.members = {}
+
+    def add_book(self, book):
+        if book.copies < 1:
+            raise LibraryError("a book needs at least one copy")
+        if book.isbn in self.books:
+            self.books[book.isbn].copies += book.copies
+        else:
+            self.books[book.isbn] = replace(book)
+        return self.books[book.isbn]
+
+    def add_member(self, member):
+        if member.member_id in self.members:
+            raise LibraryError(f"member {member.member_id} already exists")
+        self.members[member.member_id] = member
+
+    def book(self, isbn):
+        if isbn not in self.books:
+            raise LibraryError(f"no such book: {isbn}")
+        return self.books[isbn]
+
+    def member(self, member_id):
+        if member_id not in self.members:
+            raise LibraryError(f"no such member: {member_id}")
+        return self.members[member_id]
+
+    def find_by_author(self, text):
+        text = text.lower()
+        return sorted(b.title for b in self.books.values() if text in b.author.lower())
+--- solution
+# Library system, step 2: loans and rules.
+from dataclasses import dataclass, replace
+from datetime import date, timedelta
+
+LOAN_DAYS = 14
+MAX_LOANS = 3
+
+
+class LibraryError(Exception):
+    pass
+
+
+@dataclass
+class Book:
+    isbn: str
+    title: str
+    author: str
+    copies: int = 1
+
+
+@dataclass
+class Member:
+    member_id: str
+    name: str
+
+
+@dataclass
+class Loan:
+    member_id: str
+    isbn: str
+    due: date
+
+
+class Library:
+    def __init__(self):
+        self.books = {}
+        self.members = {}
+        self.loans = []
+
+    def add_book(self, book):
+        if book.copies < 1:
+            raise LibraryError("a book needs at least one copy")
+        if book.isbn in self.books:
+            self.books[book.isbn].copies += book.copies
+        else:
+            self.books[book.isbn] = replace(book)
+        return self.books[book.isbn]
+
+    def add_member(self, member):
+        if member.member_id in self.members:
+            raise LibraryError(f"member {member.member_id} already exists")
+        self.members[member.member_id] = member
+
+    def book(self, isbn):
+        if isbn not in self.books:
+            raise LibraryError(f"no such book: {isbn}")
+        return self.books[isbn]
+
+    def member(self, member_id):
+        if member_id not in self.members:
+            raise LibraryError(f"no such member: {member_id}")
+        return self.members[member_id]
+
+    def find_by_author(self, text):
+        text = text.lower()
+        return sorted(b.title for b in self.books.values() if text in b.author.lower())
+
+    def available(self, isbn):
+        book = self.book(isbn)
+        return book.copies - sum(1 for loan in self.loans if loan.isbn == isbn)
+
+    def loans_of(self, member_id):
+        self.member(member_id)
+        return [loan for loan in self.loans if loan.member_id == member_id]
+
+    def checkout(self, member_id, isbn, today):
+        current = self.loans_of(member_id)
+        self.book(isbn)
+        if any(loan.isbn == isbn for loan in current):
+            raise LibraryError(f"{member_id} already has {isbn}")
+        if len(current) >= MAX_LOANS:
+            raise LibraryError("loan limit reached")
+        if self.available(isbn) < 1:
+            raise LibraryError(f"no copies of {isbn} available")
+        loan = Loan(member_id, isbn, today + timedelta(days=LOAN_DAYS))
+        self.loans.append(loan)
+        return loan
+
+    def return_book(self, member_id, isbn):
+        for i, loan in enumerate(self.loans):
+            if loan.member_id == member_id and loan.isbn == isbn:
+                return self.loans.pop(i)
+        raise LibraryError(f"{member_id} has not borrowed {isbn}")
+--- hint
+Import `date` and `timedelta` from `datetime`, add the `Loan` dataclass and `self.loans = []` in `__init__`.
+--- hint
+`available` is `self.book(isbn).copies` minus the number of loans with that ISBN. `loans_of` calls `self.member(member_id)` first so unknown members raise.
+--- hint
+In `checkout`, run every check first (reuse `loans_of`, `book` and `available`), then append `Loan(member_id, isbn, today + timedelta(days=LOAN_DAYS))`.
+--- check case | A checkout is due 14 days later
+(lambda lib: (lib.add_book(Book("1", "Dune", "Frank Herbert")), lib.add_member(Member("m1", "Ada")), lib.checkout("m1", "1", date(2026, 3, 1)))[-1])(Library())
+=> Loan("m1", "1", date(2026, 3, 15))
+--- check case | available counts loans
+(lambda lib: (lib.add_book(Book("1", "Dune", "F", 2)), lib.add_member(Member("a", "Ada")), lib.add_member(Member("b", "Bo")), lib.available("1"), lib.checkout("a", "1", date(2026, 1, 1)), lib.available("1"), lib.checkout("b", "1", date(2026, 1, 1)), lib.available("1"))[3::2])(Library())
+=> (2, 1, 0)
+--- check test | No copies left
+(lambda lib: (lib.add_book(Book("1", "Dune", "F")), lib.add_member(Member("a", "Ada")), lib.add_member(Member("b", "Bo")), lib.checkout("a", "1", date(2026, 1, 1)), raises(LibraryError, lambda: lib.checkout("b", "1", date(2026, 1, 1))))[-1])(Library())
+--- check test | The same book twice is refused
+(lambda lib: (lib.add_book(Book("1", "Dune", "F", 5)), lib.add_member(Member("a", "Ada")), lib.checkout("a", "1", date(2026, 1, 1)), raises(LibraryError, lambda: lib.checkout("a", "1", date(2026, 1, 1))))[-1])(Library())
+--- check test | At most three loans each
+(lambda lib: ([lib.add_book(Book(str(i), f"B{i}", "A")) for i in range(4)], lib.add_member(Member("a", "Ada")), [lib.checkout("a", str(i), date(2026, 1, 1)) for i in range(3)], raises(LibraryError, lambda: lib.checkout("a", "3", date(2026, 1, 1))), len(lib.loans_of("a")))[3:])(Library()) == (True, 3)
+--- check test | Unknown member or book
+(lambda lib: (lib.add_book(Book("1", "Dune", "F")), lib.add_member(Member("a", "Ada")), raises(LibraryError, lambda: lib.checkout("zz", "1", date(2026, 1, 1))), raises(LibraryError, lambda: lib.checkout("a", "9", date(2026, 1, 1))), lib.loans)[2:])(Library()) == (True, True, [])
+--- check test | Returning frees the copy; returning twice is refused
+(lambda lib: (lib.add_book(Book("1", "Dune", "F")), lib.add_member(Member("a", "Ada")), lib.checkout("a", "1", date(2026, 1, 1)), lib.return_book("a", "1").isbn, lib.available("1"), raises(LibraryError, lambda: lib.return_book("a", "1")))[3:])(Library()) == ("1", 1, True)
+
+=== pyp-11 | Library system 3: saving and loading with JSON
+--- teach
+A library that forgets everything when the program stops is not much use. The data needs to be **persisted**: written somewhere and read back later. JSON is the most common format for that: text, human-readable, and understood by every language.
+
+```python
+import json
+text = json.dumps({"name": "Ada", "tags": ["x", "y"], "active": True})
+text                   # '{"name": "Ada", "tags": ["x", "y"], "active": true}'
+json.loads(text)       # back to a dict
+```
+
+JSON only knows **dicts (with string keys), lists, strings, numbers, booleans and null**. Anything else must be converted on the way out and rebuilt on the way in:
+
+| Python | Out (to JSON) | In (from JSON) |
+|---|---|---|
+| dataclass | `dataclasses.asdict(obj)` | `Book(**d)` |
+| `date` | `d.isoformat()` → `"2026-03-15"` | `date.fromisoformat(s)` |
+| tuple, set | a list | rebuild if you need the type |
+
+**Design the file format deliberately.** Write down its shape, because other programs (and future versions of yours) will depend on it. Here, a dict of three lists: `books`, `members`, `loans`.
+
+**Make output stable.** `json.dumps(data, indent=2, sort_keys=True)` produces the same text for the same data every time, which makes saved files readable and easy to compare.
+
+**The round trip is the test.** The essential property of save and load is that loading what you saved gives back the same library: `Library.from_json(lib.to_json())` must behave exactly like `lib`.
+
+**Loading is a trust boundary.** A save file can be truncated, hand-edited or from an older version. `json.loads` raises `json.JSONDecodeError` (a `ValueError`) on broken text; a missing key raises `KeyError`; a wrong field raises `TypeError` when you build the dataclass. Catch those and raise one clear `LibraryError("corrupt save file: ...")`, so the caller has one thing to handle. Writing `raise LibraryError(...) from err` keeps the original error attached as the cause, so a traceback still shows what really went wrong.
+
+**`@classmethod`** is the natural shape for "build a new object from something": `Library.from_json(text)` receives the class as `cls` and returns `cls()` filled in. It is an **alternative constructor**, like `date.fromisoformat`.
+
+**Common mistake:** loading by assigning the parsed dicts straight into `self.books`. Everything "works" until some code calls `book.title` on what is actually a dict. Rebuild real objects on load.
+--- task
+Add persistence to `Library`:
+
+- `to_json()` returns `json.dumps(data, indent=2, sort_keys=True)` where `data` is `{"books": [...], "members": [...], "loans": [...]}`: books and members as dicts of their fields (in the order they were added), and each loan as `{"member_id": ..., "isbn": ..., "due": "YYYY-MM-DD"}`.
+- The class method `Library.from_json(text)` rebuilds a `Library` with real `Book`, `Member` and `Loan` objects (with `date` due dates). Broken JSON, missing keys or bad fields raise `LibraryError`.
+--- starter
+# Library system, step 2: loans and rules.
+from dataclasses import dataclass, replace
+from datetime import date, timedelta
+
+LOAN_DAYS = 14
+MAX_LOANS = 3
+
+
+class LibraryError(Exception):
+    pass
+
+
+@dataclass
+class Book:
+    isbn: str
+    title: str
+    author: str
+    copies: int = 1
+
+
+@dataclass
+class Member:
+    member_id: str
+    name: str
+
+
+@dataclass
+class Loan:
+    member_id: str
+    isbn: str
+    due: date
+
+
+class Library:
+    def __init__(self):
+        self.books = {}
+        self.members = {}
+        self.loans = []
+
+    def add_book(self, book):
+        if book.copies < 1:
+            raise LibraryError("a book needs at least one copy")
+        if book.isbn in self.books:
+            self.books[book.isbn].copies += book.copies
+        else:
+            self.books[book.isbn] = replace(book)
+        return self.books[book.isbn]
+
+    def add_member(self, member):
+        if member.member_id in self.members:
+            raise LibraryError(f"member {member.member_id} already exists")
+        self.members[member.member_id] = member
+
+    def book(self, isbn):
+        if isbn not in self.books:
+            raise LibraryError(f"no such book: {isbn}")
+        return self.books[isbn]
+
+    def member(self, member_id):
+        if member_id not in self.members:
+            raise LibraryError(f"no such member: {member_id}")
+        return self.members[member_id]
+
+    def find_by_author(self, text):
+        text = text.lower()
+        return sorted(b.title for b in self.books.values() if text in b.author.lower())
+
+    def available(self, isbn):
+        book = self.book(isbn)
+        return book.copies - sum(1 for loan in self.loans if loan.isbn == isbn)
+
+    def loans_of(self, member_id):
+        self.member(member_id)
+        return [loan for loan in self.loans if loan.member_id == member_id]
+
+    def checkout(self, member_id, isbn, today):
+        current = self.loans_of(member_id)
+        self.book(isbn)
+        if any(loan.isbn == isbn for loan in current):
+            raise LibraryError(f"{member_id} already has {isbn}")
+        if len(current) >= MAX_LOANS:
+            raise LibraryError("loan limit reached")
+        if self.available(isbn) < 1:
+            raise LibraryError(f"no copies of {isbn} available")
+        loan = Loan(member_id, isbn, today + timedelta(days=LOAN_DAYS))
+        self.loans.append(loan)
+        return loan
+
+    def return_book(self, member_id, isbn):
+        for i, loan in enumerate(self.loans):
+            if loan.member_id == member_id and loan.isbn == isbn:
+                return self.loans.pop(i)
+        raise LibraryError(f"{member_id} has not borrowed {isbn}")
+--- solution
+# Library system, step 3: saving and loading.
+import json
+from dataclasses import asdict, dataclass, replace
+from datetime import date, timedelta
+
+LOAN_DAYS = 14
+MAX_LOANS = 3
+
+
+class LibraryError(Exception):
+    pass
+
+
+@dataclass
+class Book:
+    isbn: str
+    title: str
+    author: str
+    copies: int = 1
+
+
+@dataclass
+class Member:
+    member_id: str
+    name: str
+
+
+@dataclass
+class Loan:
+    member_id: str
+    isbn: str
+    due: date
+
+
+class Library:
+    def __init__(self):
+        self.books = {}
+        self.members = {}
+        self.loans = []
+
+    def add_book(self, book):
+        if book.copies < 1:
+            raise LibraryError("a book needs at least one copy")
+        if book.isbn in self.books:
+            self.books[book.isbn].copies += book.copies
+        else:
+            self.books[book.isbn] = replace(book)
+        return self.books[book.isbn]
+
+    def add_member(self, member):
+        if member.member_id in self.members:
+            raise LibraryError(f"member {member.member_id} already exists")
+        self.members[member.member_id] = member
+
+    def book(self, isbn):
+        if isbn not in self.books:
+            raise LibraryError(f"no such book: {isbn}")
+        return self.books[isbn]
+
+    def member(self, member_id):
+        if member_id not in self.members:
+            raise LibraryError(f"no such member: {member_id}")
+        return self.members[member_id]
+
+    def find_by_author(self, text):
+        text = text.lower()
+        return sorted(b.title for b in self.books.values() if text in b.author.lower())
+
+    def available(self, isbn):
+        book = self.book(isbn)
+        return book.copies - sum(1 for loan in self.loans if loan.isbn == isbn)
+
+    def loans_of(self, member_id):
+        self.member(member_id)
+        return [loan for loan in self.loans if loan.member_id == member_id]
+
+    def checkout(self, member_id, isbn, today):
+        current = self.loans_of(member_id)
+        self.book(isbn)
+        if any(loan.isbn == isbn for loan in current):
+            raise LibraryError(f"{member_id} already has {isbn}")
+        if len(current) >= MAX_LOANS:
+            raise LibraryError("loan limit reached")
+        if self.available(isbn) < 1:
+            raise LibraryError(f"no copies of {isbn} available")
+        loan = Loan(member_id, isbn, today + timedelta(days=LOAN_DAYS))
+        self.loans.append(loan)
+        return loan
+
+    def return_book(self, member_id, isbn):
+        for i, loan in enumerate(self.loans):
+            if loan.member_id == member_id and loan.isbn == isbn:
+                return self.loans.pop(i)
+        raise LibraryError(f"{member_id} has not borrowed {isbn}")
+
+    def to_json(self):
+        data = {
+            "books": [asdict(b) for b in self.books.values()],
+            "members": [asdict(m) for m in self.members.values()],
+            "loans": [{"member_id": l.member_id, "isbn": l.isbn, "due": l.due.isoformat()} for l in self.loans],
+        }
+        return json.dumps(data, indent=2, sort_keys=True)
+
+    @classmethod
+    def from_json(cls, text):
+        try:
+            data = json.loads(text)
+            library = cls()
+            for b in data["books"]:
+                library.add_book(Book(**b))
+            for m in data["members"]:
+                library.add_member(Member(**m))
+            for l in data["loans"]:
+                library.loans.append(Loan(l["member_id"], l["isbn"], date.fromisoformat(l["due"])))
+        except (ValueError, KeyError, TypeError) as err:
+            raise LibraryError(f"corrupt save file: {err}") from err
+        return library
+--- hint
+`from dataclasses import asdict` turns a Book or Member into a dict. For loans, build the dict yourself so the date becomes `loan.due.isoformat()`.
+--- hint
+`from_json` is a `@classmethod`: `library = cls()`, then add each book and member with `Book(**d)` / `Member(**d)`, and append a `Loan` for each loan with `date.fromisoformat(d["due"])`.
+--- hint
+Wrap the whole of loading in `try:` and turn `ValueError`, `KeyError` and `TypeError` into `raise LibraryError(...) from err`.
+--- check case | to_json writes the agreed format
+(lambda lib: (lib.add_book(Book("1", "Dune", "Frank Herbert", 2)), lib.add_member(Member("m1", "Ada")), lib.checkout("m1", "1", date(2026, 3, 1)), __import__("json").loads(lib.to_json()))[-1])(Library())
+=> {"books": [{"isbn": "1", "title": "Dune", "author": "Frank Herbert", "copies": 2}], "members": [{"member_id": "m1", "name": "Ada"}], "loans": [{"member_id": "m1", "isbn": "1", "due": "2026-03-15"}]}
+--- check test | to_json is stable: sorted keys and indented
+(lambda lib: (lib.add_member(Member("m1", "Ada")), lib.to_json())[1] == '{\n  "books": [],\n  "loans": [],\n  "members": [\n    {\n      "member_id": "m1",\n      "name": "Ada"\n    }\n  ]\n}')(Library())
+--- check test | A round trip gives back real objects
+(lambda lib: (lib.add_book(Book("1", "Dune", "F", 2)), lib.add_member(Member("m1", "Ada")), lib.checkout("m1", "1", date(2026, 3, 1)), (lambda new: new.book("1") == Book("1", "Dune", "F", 2) and new.member("m1") == Member("m1", "Ada") and new.loans == [Loan("m1", "1", date(2026, 3, 15))] and new.available("1") == 1)(Library.from_json(lib.to_json())))[-1])(Library())
+--- check test | Saving what you loaded gives the same text
+(lambda lib: (lib.add_book(Book("9", "Emma", "Austen")), lib.add_member(Member("x", "Xi")), lib.checkout("x", "9", date(2026, 12, 25)), Library.from_json(lib.to_json()).to_json() == lib.to_json())[-1])(Library())
+--- check test | from_json is a class method
+isinstance(Library.__dict__["from_json"], classmethod)
+--- check test | Corrupt files raise LibraryError
+all(raises(LibraryError, lambda t=t: Library.from_json(t)) for t in ["not json", "{}", '{"books": [{"isbn": "1"}], "members": [], "loans": []}', '{"books": [], "members": [], "loans": [{"member_id": "a", "isbn": "1", "due": "someday"}]}'])
+
+=== pyp-12 | Library system 4: overdue loans and fines
+--- teach
+The last feature is the one that makes a library's day-to-day work possible: knowing what is overdue, what each member owes, and what is due back soon.
+
+**Date arithmetic.** Subtracting two dates gives a `timedelta`, whose `.days` is a whole number that can be negative:
+
+```python
+from datetime import date
+(date(2026, 3, 20) - date(2026, 3, 15)).days     # 5   five days late
+(date(2026, 3, 10) - date(2026, 3, 15)).days     # -5  not due yet
+```
+
+A loan returned *on* its due date is not late: only positive differences count. `max(0, days)` expresses "late days, never negative" in one step.
+
+**One helper, used everywhere.** "How many days late is this loan?" is needed by the overdue list and by the fine. Write it once as `days_late(loan, today)`, and both features are guaranteed to agree. Two slightly different copies of the same calculation is how off-by-one disagreements happen.
+
+**Reports are sorted on purpose.** The overdue list is most useful with the worst cases first, then by name and title, so that the same data always gives the same order.
+
+**Money in cents, again.** The fine is 20 cents per day per late book, an integer. Formatting is the interface's business.
+
+**`today` stays an argument.** Every one of these methods depends on the date, and every one takes `today`. That is why testing them is easy: you can check "three days after the due date, the fine is 60" without waiting three days.
+
+With this lesson the library system is complete: a model with rules, persistence with a stable file format and validation, and time-based reports, all tested without touching a real disk or a real clock.
+--- task
+Add `FINE_PER_DAY = 20` (cents) and these `Library` methods:
+
+- `days_late(loan, today)`: how many days after its due date `today` is, never negative.
+- `overdue(today)`: a list of `(member name, book title, days late)` for every loan that is late, most days late first, then by name, then by title.
+- `fine(member_id, today)`: the member's total fine in cents, `FINE_PER_DAY` for each day each of their loans is late.
+- `due_soon(today, within=3)`: titles of books on loan that are due between `today` and `within` days after it (inclusive), soonest first, then by title.
+--- starter
+# Library system, step 3: saving and loading.
+import json
+from dataclasses import asdict, dataclass, replace
+from datetime import date, timedelta
+
+LOAN_DAYS = 14
+MAX_LOANS = 3
+
+
+class LibraryError(Exception):
+    pass
+
+
+@dataclass
+class Book:
+    isbn: str
+    title: str
+    author: str
+    copies: int = 1
+
+
+@dataclass
+class Member:
+    member_id: str
+    name: str
+
+
+@dataclass
+class Loan:
+    member_id: str
+    isbn: str
+    due: date
+
+
+class Library:
+    def __init__(self):
+        self.books = {}
+        self.members = {}
+        self.loans = []
+
+    def add_book(self, book):
+        if book.copies < 1:
+            raise LibraryError("a book needs at least one copy")
+        if book.isbn in self.books:
+            self.books[book.isbn].copies += book.copies
+        else:
+            self.books[book.isbn] = replace(book)
+        return self.books[book.isbn]
+
+    def add_member(self, member):
+        if member.member_id in self.members:
+            raise LibraryError(f"member {member.member_id} already exists")
+        self.members[member.member_id] = member
+
+    def book(self, isbn):
+        if isbn not in self.books:
+            raise LibraryError(f"no such book: {isbn}")
+        return self.books[isbn]
+
+    def member(self, member_id):
+        if member_id not in self.members:
+            raise LibraryError(f"no such member: {member_id}")
+        return self.members[member_id]
+
+    def find_by_author(self, text):
+        text = text.lower()
+        return sorted(b.title for b in self.books.values() if text in b.author.lower())
+
+    def available(self, isbn):
+        book = self.book(isbn)
+        return book.copies - sum(1 for loan in self.loans if loan.isbn == isbn)
+
+    def loans_of(self, member_id):
+        self.member(member_id)
+        return [loan for loan in self.loans if loan.member_id == member_id]
+
+    def checkout(self, member_id, isbn, today):
+        current = self.loans_of(member_id)
+        self.book(isbn)
+        if any(loan.isbn == isbn for loan in current):
+            raise LibraryError(f"{member_id} already has {isbn}")
+        if len(current) >= MAX_LOANS:
+            raise LibraryError("loan limit reached")
+        if self.available(isbn) < 1:
+            raise LibraryError(f"no copies of {isbn} available")
+        loan = Loan(member_id, isbn, today + timedelta(days=LOAN_DAYS))
+        self.loans.append(loan)
+        return loan
+
+    def return_book(self, member_id, isbn):
+        for i, loan in enumerate(self.loans):
+            if loan.member_id == member_id and loan.isbn == isbn:
+                return self.loans.pop(i)
+        raise LibraryError(f"{member_id} has not borrowed {isbn}")
+
+    def to_json(self):
+        data = {
+            "books": [asdict(b) for b in self.books.values()],
+            "members": [asdict(m) for m in self.members.values()],
+            "loans": [{"member_id": l.member_id, "isbn": l.isbn, "due": l.due.isoformat()} for l in self.loans],
+        }
+        return json.dumps(data, indent=2, sort_keys=True)
+
+    @classmethod
+    def from_json(cls, text):
+        try:
+            data = json.loads(text)
+            library = cls()
+            for b in data["books"]:
+                library.add_book(Book(**b))
+            for m in data["members"]:
+                library.add_member(Member(**m))
+            for l in data["loans"]:
+                library.loans.append(Loan(l["member_id"], l["isbn"], date.fromisoformat(l["due"])))
+        except (ValueError, KeyError, TypeError) as err:
+            raise LibraryError(f"corrupt save file: {err}") from err
+        return library
+--- solution
+# Library system, step 4: overdue loans and fines.
+import json
+from dataclasses import asdict, dataclass, replace
+from datetime import date, timedelta
+
+LOAN_DAYS = 14
+MAX_LOANS = 3
+FINE_PER_DAY = 20  # cents
+
+
+class LibraryError(Exception):
+    pass
+
+
+@dataclass
+class Book:
+    isbn: str
+    title: str
+    author: str
+    copies: int = 1
+
+
+@dataclass
+class Member:
+    member_id: str
+    name: str
+
+
+@dataclass
+class Loan:
+    member_id: str
+    isbn: str
+    due: date
+
+
+class Library:
+    def __init__(self):
+        self.books = {}
+        self.members = {}
+        self.loans = []
+
+    def add_book(self, book):
+        if book.copies < 1:
+            raise LibraryError("a book needs at least one copy")
+        if book.isbn in self.books:
+            self.books[book.isbn].copies += book.copies
+        else:
+            self.books[book.isbn] = replace(book)
+        return self.books[book.isbn]
+
+    def add_member(self, member):
+        if member.member_id in self.members:
+            raise LibraryError(f"member {member.member_id} already exists")
+        self.members[member.member_id] = member
+
+    def book(self, isbn):
+        if isbn not in self.books:
+            raise LibraryError(f"no such book: {isbn}")
+        return self.books[isbn]
+
+    def member(self, member_id):
+        if member_id not in self.members:
+            raise LibraryError(f"no such member: {member_id}")
+        return self.members[member_id]
+
+    def find_by_author(self, text):
+        text = text.lower()
+        return sorted(b.title for b in self.books.values() if text in b.author.lower())
+
+    def available(self, isbn):
+        book = self.book(isbn)
+        return book.copies - sum(1 for loan in self.loans if loan.isbn == isbn)
+
+    def loans_of(self, member_id):
+        self.member(member_id)
+        return [loan for loan in self.loans if loan.member_id == member_id]
+
+    def checkout(self, member_id, isbn, today):
+        current = self.loans_of(member_id)
+        self.book(isbn)
+        if any(loan.isbn == isbn for loan in current):
+            raise LibraryError(f"{member_id} already has {isbn}")
+        if len(current) >= MAX_LOANS:
+            raise LibraryError("loan limit reached")
+        if self.available(isbn) < 1:
+            raise LibraryError(f"no copies of {isbn} available")
+        loan = Loan(member_id, isbn, today + timedelta(days=LOAN_DAYS))
+        self.loans.append(loan)
+        return loan
+
+    def return_book(self, member_id, isbn):
+        for i, loan in enumerate(self.loans):
+            if loan.member_id == member_id and loan.isbn == isbn:
+                return self.loans.pop(i)
+        raise LibraryError(f"{member_id} has not borrowed {isbn}")
+
+    def to_json(self):
+        data = {
+            "books": [asdict(b) for b in self.books.values()],
+            "members": [asdict(m) for m in self.members.values()],
+            "loans": [{"member_id": l.member_id, "isbn": l.isbn, "due": l.due.isoformat()} for l in self.loans],
+        }
+        return json.dumps(data, indent=2, sort_keys=True)
+
+    @classmethod
+    def from_json(cls, text):
+        try:
+            data = json.loads(text)
+            library = cls()
+            for b in data["books"]:
+                library.add_book(Book(**b))
+            for m in data["members"]:
+                library.add_member(Member(**m))
+            for l in data["loans"]:
+                library.loans.append(Loan(l["member_id"], l["isbn"], date.fromisoformat(l["due"])))
+        except (ValueError, KeyError, TypeError) as err:
+            raise LibraryError(f"corrupt save file: {err}") from err
+        return library
+
+    def days_late(self, loan, today):
+        return max(0, (today - loan.due).days)
+
+    def overdue(self, today):
+        rows = [
+            (self.members[l.member_id].name, self.books[l.isbn].title, self.days_late(l, today))
+            for l in self.loans
+            if self.days_late(l, today) > 0
+        ]
+        return sorted(rows, key=lambda r: (-r[2], r[0], r[1]))
+
+    def fine(self, member_id, today):
+        return sum(self.days_late(l, today) * FINE_PER_DAY for l in self.loans_of(member_id))
+
+    def due_soon(self, today, within=3):
+        soon = [l for l in self.loans if 0 <= (l.due - today).days <= within]
+        return [self.books[l.isbn].title for l in sorted(soon, key=lambda l: (l.due, self.books[l.isbn].title))]
+--- hint
+`days_late` is `max(0, (today - loan.due).days)`.
+--- hint
+`overdue` builds tuples for loans where `days_late(...) > 0`, looking up names and titles with `self.members[...]` and `self.books[...]`, then sorts with `key=lambda r: (-r[2], r[0], r[1])`.
+--- hint
+For `due_soon`, keep loans where `0 <= (loan.due - today).days <= within`, sort them by `(loan.due, title)`, and return the titles.
+--- check test | days_late is never negative
+(lambda lib: (lib.add_book(Book("1", "Dune", "F")), lib.add_member(Member("a", "Ada")), lib.checkout("a", "1", date(2026, 3, 1)), [lib.days_late(lib.loans[0], date(2026, 3, d)) for d in (10, 15, 16, 20)])[-1] == [0, 0, 1, 5])(Library())
+--- check case | overdue lists the worst first
+(lambda lib: ([lib.add_book(Book(i, t, "A")) for i, t in (("1", "Dune"), ("2", "Emma"), ("3", "Ulysses"))], lib.add_member(Member("a", "Ada")), lib.add_member(Member("b", "Bo")), lib.checkout("a", "1", date(2026, 3, 1)), lib.checkout("b", "2", date(2026, 3, 5)), lib.checkout("b", "3", date(2026, 3, 1)), lib.overdue(date(2026, 3, 20)))[-1])(Library())
+=> [("Ada", "Dune", 5), ("Bo", "Ulysses", 5), ("Bo", "Emma", 1)]
+--- check case | Nothing overdue
+(lambda lib: (lib.add_book(Book("1", "Dune", "F")), lib.add_member(Member("a", "Ada")), lib.checkout("a", "1", date(2026, 3, 1)), lib.overdue(date(2026, 3, 15)))[-1])(Library())
+=> []
+--- check case | fine adds up every late day of every book
+(lambda lib: ([lib.add_book(Book(i, i, "A")) for i in "123"], lib.add_member(Member("a", "Ada")), lib.checkout("a", "1", date(2026, 3, 1)), lib.checkout("a", "2", date(2026, 3, 4)), lib.checkout("a", "3", date(2026, 3, 30)), lib.fine("a", date(2026, 3, 20)))[-1])(Library())
+=> 140
+--- check test | fine for an unknown member raises LibraryError
+raises(LibraryError, lambda: Library().fine("zz", date(2026, 1, 1)))
+--- check case | due_soon, soonest first, inclusive
+(lambda lib: ([lib.add_book(Book(i, t, "A")) for i, t in (("1", "Dune"), ("2", "Emma"), ("3", "Ulysses"), ("4", "Beloved"))], lib.add_member(Member("a", "Ada")), lib.add_member(Member("b", "Bo")), lib.checkout("a", "1", date(2026, 3, 3)), lib.checkout("a", "2", date(2026, 3, 1)), lib.checkout("b", "3", date(2026, 3, 10)), lib.checkout("b", "4", date(2026, 3, 1)), lib.due_soon(date(2026, 3, 14)))[-1])(Library())
+=> ["Beloved", "Emma", "Dune"]
+
+=== pyp-13 | Capstone: a to-do manager with undo
+--- teach
+From here on, you get a specification and an empty file. There are no step-by-step instructions, and the checks test only behaviour, so the design is yours. This is where you prove you can build things on your own.
+
+**How to approach a specification:**
+
+1. **Read it twice**, then write down every behaviour as a one-line example: `add("x") returns 1`, `undo() with nothing to undo returns False`.
+2. **Choose the data model first.** What do you store, and in what shape? Most of the difficulty of a program is decided here.
+3. **Build a skeleton**: the class and every method, each doing nothing yet. Then make one behaviour work at a time, trying it as you go.
+4. **Hunt for edge cases**: empty input, unknown ids, doing something twice, undoing when there is nothing to undo.
+5. **Refactor** once it works: name things well, remove repetition.
+
+**Thinking about undo.** There are two classic designs:
+
+- **Snapshots**: before every change, save a copy of the whole state; undo restores the last copy. Simple and hard to get wrong. Costs memory, which does not matter for a to-do list. The copy must be *deep*, or the "saved" state changes along with the live one.
+- **Commands**: record each change as an object that knows how to reverse itself (`add` is undone by removing, `remove` by restoring the item). Cheaper, and more code.
+
+Either is a good answer; choose one deliberately. Note what should *not* be undone: here, ids are never reused, even after undoing an `add`.
+--- task
+Build a class `TodoList`:
+
+- `add(title, priority="normal", tags=())` adds an item and returns its id: 1, 2, 3, … Ids are never reused, even after `remove` or `undo`. The title is stripped; an empty title raises `ValueError`. `priority` must be `"low"`, `"normal"` or `"high"`, otherwise `ValueError`.
+- `done(item_id)` marks an item done; `remove(item_id)` deletes it. An unknown id raises `KeyError`.
+- `pending(tag=None)` returns the titles of items not done, `high` first, then `normal`, then `low`, and oldest first within the same priority. With a tag, only items that have that tag.
+- `search(text)` returns the ids (ascending) of all items, done or not, whose title contains `text`, ignoring case.
+- `undo()` reverses the most recent `add`, `done` or `remove` that has not been undone yet, and returns `True`; with nothing left to undo, it returns `False`. Failed operations (those that raised) are not undoable.
+- `summary()` returns `"<n> pending, <m> done"`.
+--- starter
+# Capstone: design and build TodoList to the specification in the task.
+--- solution
+import copy
+
+PRIORITIES = {"high": 0, "normal": 1, "low": 2}
+
+
+class TodoList:
+    def __init__(self):
+        self._items = {}
+        self._next_id = 1
+        self._history = []
+
+    def _snapshot(self):
+        self._history.append(copy.deepcopy(self._items))
+
+    def _get(self, item_id):
+        if item_id not in self._items:
+            raise KeyError(item_id)
+        return self._items[item_id]
+
+    def add(self, title, priority="normal", tags=()):
+        title = title.strip()
+        if not title:
+            raise ValueError("title must not be empty")
+        if priority not in PRIORITIES:
+            raise ValueError(f"unknown priority: {priority}")
+        self._snapshot()
+        item_id = self._next_id
+        self._next_id += 1
+        self._items[item_id] = {"title": title, "priority": priority, "tags": set(tags), "done": False}
+        return item_id
+
+    def done(self, item_id):
+        self._get(item_id)
+        self._snapshot()
+        self._items[item_id]["done"] = True
+
+    def remove(self, item_id):
+        self._get(item_id)
+        self._snapshot()
+        del self._items[item_id]
+
+    def undo(self):
+        if not self._history:
+            return False
+        self._items = self._history.pop()
+        return True
+
+    def pending(self, tag=None):
+        rows = [
+            (PRIORITIES[item["priority"]], item_id, item["title"])
+            for item_id, item in self._items.items()
+            if not item["done"] and (tag is None or tag in item["tags"])
+        ]
+        return [title for _, _, title in sorted(rows)]
+
+    def search(self, text):
+        text = text.lower()
+        return sorted(item_id for item_id, item in self._items.items() if text in item["title"].lower())
+
+    def summary(self):
+        done = sum(1 for item in self._items.values() if item["done"])
+        return f"{len(self._items) - done} pending, {done} done"
+--- hint
+Decide your data model first. One option: a dict from id to a small record (title, priority, tags, done), plus a counter for the next id.
+--- hint
+For undo, the simplest correct design is to push a deep copy of your items onto a history list before every successful change, and pop it back on `undo()`. Keep the id counter out of the snapshot so ids are never reused.
+--- hint
+For `pending`, sort by a tuple: a priority rank (high 0, normal 1, low 2), then the id.
+--- check case | Ids count up from 1
+(lambda t: [t.add("a"), t.add("b"), t.add("c")])(TodoList())
+=> [1, 2, 3]
+--- check case | pending orders by priority, then age
+(lambda t: (t.add("water plants", "low"), t.add("pay rent", "high"), t.add("email Sam"), t.add("fix bike", "high"), t.pending())[-1])(TodoList())
+=> ["pay rent", "fix bike", "email Sam", "water plants"]
+--- check case | done items leave the pending list; titles are stripped
+(lambda t: (t.add("  a  "), t.add("b"), t.done(1), t.pending(), t.summary())[-2:])(TodoList())
+=> (["b"], "1 pending, 1 done")
+--- check case | pending by tag
+(lambda t: (t.add("a", tags=["home"]), t.add("b", tags=["work"]), t.add("c", "high", tags=("home", "urgent")), t.pending("home"))[-1])(TodoList())
+=> ["c", "a"]
+--- check test | Bad input raises ValueError
+raises(ValueError, lambda: TodoList().add("   ")) and raises(ValueError, lambda: TodoList().add("x", "urgent"))
+--- check test | Unknown ids raise KeyError
+raises(KeyError, lambda: TodoList().done(1)) and raises(KeyError, lambda: TodoList().remove(7))
+--- check case | search ignores case and includes done items
+(lambda t: (t.add("Buy milk"), t.add("call mum"), t.add("MILK the cow"), t.done(3), t.search("milk"))[-1])(TodoList())
+=> [1, 3]
+--- check case | undo reverses done, remove and add, newest first
+(lambda t: (t.add("a"), t.add("b"), t.done(1), t.remove(2), t.undo(), t.pending(), t.undo(), t.pending(), t.undo(), t.pending())[4:])(TodoList())
+=> (True, ["b"], True, ["a", "b"], True, ["a"])
+--- check test | Nothing to undo returns False
+(lambda t: (t.undo(), t.add("x"), t.undo(), t.undo(), t.summary()))(TodoList()) == (False, 1, True, False, "0 pending, 0 done")
+--- check test | Ids are never reused, even after undo
+(lambda t: (t.add("a"), t.add("b"), t.undo(), t.add("c")))(TodoList())[-1] == 3
+--- check test | A failed operation cannot be undone
+(lambda t: (t.add("a"), raises(KeyError, lambda: t.done(5)), raises(ValueError, lambda: t.add("")), t.undo(), t.undo()))(TodoList())[3:] == (True, False)
+
+=== pyp-14 | Capstone: a calculator language with variables
+--- teach
+In the expert course you wrote a tokenizer and a recursive-descent parser for arithmetic. This capstone turns that into a tiny **language**: it has variables, functions, its own power operator and error messages instead of crashes. It is designed by you from a specification, like a real interpreter.
+
+**Reuse the architecture, not just the code.** The same pipeline works: *tokenize → parse → evaluate*, with one grammar rule per precedence level. New features slot into it:
+
+- **Names** are a new kind of token: a letter or underscore, then letters, digits or underscores. In `atom`, a name followed by `(` is a function call; otherwise it is a variable to look up.
+- **Function calls** parse a comma-separated list of expressions between brackets.
+- **Assignment** (`let x = ...`) is a *statement*, not part of the expression grammar. Recognise it first, then evaluate the right-hand side with the expression parser.
+- **State** (the variables) lives in the interpreter object and survives between lines.
+
+**Errors are part of the design.** An interactive calculator must answer every line. Use your own exception class inside the parser (so you can tell your deliberate errors from bugs), and convert it to an `error: ...` reply in one place, at the top.
+
+**Specification details that are easy to miss:** `^` is right-associative; unary minus binds *less* tightly than `^` (so `-2 ^ 2` is `-4`); a failed `let` must not change the variable; results that are whole numbers print without `.0`.
+
+Plan the grammar on paper before writing code. Getting the grammar right is most of the work.
+--- task
+Build a class `Interpreter` with a method `execute(line)` that returns a string.
+
+- `let NAME = EXPR` evaluates `EXPR`, stores it in variable `NAME`, and returns `"NAME = VALUE"`. Otherwise, the line is an expression and the reply is its value.
+- Expressions: numbers (`3`, `2.5`), variables, `+ - * /` with the usual precedence (left to right), `^` for power (right-associative, binding tighter than unary minus: `-2 ^ 2` is `-4`, `2 ^ -1` is `0.5`), unary minus, brackets, and the functions `sqrt(x)`, `abs(x)`, `min(a, b, ...)` and `max(a, b, ...)`.
+- Values print as Python prints them, except that a float with a whole value prints without `.0`: `7 / 2` → `"3.5"`, `6 / 2` → `"3"`.
+- Errors never raise: they return a string starting with `"error: "`. Exactly `"error: unknown variable NAME"` for an undefined variable and `"error: division by zero"` for dividing by zero. A failed `let` leaves the variable unchanged. Names are case-sensitive, and `let` cannot assign to a function name.
+--- starter
+# Capstone: design and build Interpreter to the specification in the task.
+--- solution
+import math
+import re
+
+TOKEN = re.compile(r"\s*(?:(\d+\.\d*|\.\d+|\d+)|([A-Za-z_]\w*)|(\S))")
+FUNCTIONS = {"sqrt": math.sqrt, "abs": abs, "min": min, "max": max}
+
+
+class CalcError(Exception):
+    pass
+
+
+def tokenize(text):
+    tokens = []
+    pos = 0
+    text = text.rstrip()
+    while pos < len(text):
+        m = TOKEN.match(text, pos)
+        number, name, op = m.groups()
+        if number:
+            tokens.append(("num", float(number) if "." in number else int(number)))
+        elif name:
+            tokens.append(("name", name))
+        elif op in "+-*/^(),":
+            tokens.append(("op", op))
+        else:
+            raise CalcError(f"unexpected character {op!r}")
+        pos = m.end()
+    return tokens
+
+
+class Parser:
+    def __init__(self, tokens, variables):
+        self.tokens = tokens
+        self.pos = 0
+        self.variables = variables
+
+    def peek(self):
+        return self.tokens[self.pos] if self.pos < len(self.tokens) else (None, None)
+
+    def take(self):
+        token = self.peek()
+        self.pos += 1
+        return token
+
+    def expect(self, op):
+        if self.take() != ("op", op):
+            raise CalcError(f"expected {op}")
+
+    def parse(self):
+        value = self.expr()
+        if self.pos != len(self.tokens):
+            raise CalcError("syntax error")
+        return value
+
+    def expr(self):
+        value = self.term()
+        while self.peek() in (("op", "+"), ("op", "-")):
+            op = self.take()[1]
+            right = self.term()
+            value = value + right if op == "+" else value - right
+        return value
+
+    def term(self):
+        value = self.unary()
+        while self.peek() in (("op", "*"), ("op", "/")):
+            op = self.take()[1]
+            right = self.unary()
+            if op == "/":
+                if right == 0:
+                    raise CalcError("division by zero")
+                value = value / right
+            else:
+                value = value * right
+        return value
+
+    def unary(self):
+        if self.peek() == ("op", "-"):
+            self.take()
+            return -self.unary()
+        return self.power()
+
+    def power(self):
+        base = self.atom()
+        if self.peek() == ("op", "^"):
+            self.take()
+            return base ** self.unary()
+        return base
+
+    def atom(self):
+        kind, value = self.take()
+        if kind == "num":
+            return value
+        if kind == "name":
+            if self.peek() == ("op", "("):
+                return self.call(value)
+            if value not in self.variables:
+                raise CalcError(f"unknown variable {value}")
+            return self.variables[value]
+        if (kind, value) == ("op", "("):
+            result = self.expr()
+            self.expect(")")
+            return result
+        raise CalcError("syntax error")
+
+    def call(self, name):
+        if name not in FUNCTIONS:
+            raise CalcError(f"unknown function {name}")
+        self.expect("(")
+        args = [self.expr()]
+        while self.peek() == ("op", ","):
+            self.take()
+            args.append(self.expr())
+        self.expect(")")
+        if name in ("sqrt", "abs") and len(args) != 1:
+            raise CalcError(f"{name} takes one argument")
+        if name == "sqrt" and args[0] < 0:
+            raise CalcError("square root of a negative number")
+        return FUNCTIONS[name](*args)
+
+
+def show(value):
+    if isinstance(value, float) and value.is_integer():
+        return str(int(value))
+    return str(value)
+
+
+class Interpreter:
+    LET = re.compile(r"^let\s+([A-Za-z_]\w*)\s*=(.*)$")
+
+    def __init__(self):
+        self.variables = {}
+
+    def evaluate(self, text):
+        tokens = tokenize(text)
+        if not tokens:
+            raise CalcError("empty expression")
+        return Parser(tokens, self.variables).parse()
+
+    def execute(self, line):
+        line = line.strip()
+        try:
+            m = self.LET.match(line)
+            if m:
+                name = m.group(1)
+                if name in FUNCTIONS or name == "let":
+                    raise CalcError(f"cannot assign to {name}")
+                value = self.evaluate(m.group(2))
+                self.variables[name] = value
+                return f"{name} = {show(value)}"
+            return show(self.evaluate(line))
+        except CalcError as err:
+            return f"error: {err}"
+        except (OverflowError, ValueError, TypeError) as err:
+            return f"error: {err}"
+--- hint
+Start from the tokenizer and parser architecture of the expert course. Add a `name` token kind (a regular expression such as `[A-Za-z_]\w*` helps) and a `,` token.
+--- hint
+Grammar, loosest first: expr (`+ -`), term (`* /`), unary (`-`), power (`atom ^ unary`), atom (number, name, call, or bracketed expr). Recognise `let NAME =` with a regular expression before parsing.
+--- hint
+Define your own exception class, raise it for every deliberate error (with the exact messages from the specification), and catch it once in `execute` to return `f"error: {err}"`.
+--- check case | Arithmetic with precedence
+(lambda i: [i.execute(l) for l in ["1 + 2 * 3", "(1 + 2) * 3", "10 - 4 - 3", "7 / 2", "6 / 2", "2.5 * 2"]])(Interpreter())
+=> ["7", "9", "3", "3.5", "3", "5"]
+--- check case | Power and unary minus
+(lambda i: [i.execute(l) for l in ["2 ^ 3 ^ 2", "-2 ^ 2", "(-2) ^ 2", "2 ^ -1", "--4"]])(Interpreter())
+=> ["512", "-4", "4", "0.5", "4"]
+--- check case | Variables persist between lines
+(lambda i: [i.execute(l) for l in ["let rate = 1.5", "let hours = 8", "rate * hours", "let hours = hours + 2", "rate * hours"]])(Interpreter())
+=> ["rate = 1.5", "hours = 8", "12", "hours = 10", "15"]
+--- check case | Functions
+(lambda i: [i.execute(l) for l in ["sqrt(16)", "abs(-3.5)", "max(1, 7, 3)", "min(4, -2 * 3)", "max(sqrt(9), 2) + 1"]])(Interpreter())
+=> ["4", "3.5", "7", "-6", "4"]
+--- check test | Unknown variables and division by zero
+(lambda i: i.execute("y + 1") == "error: unknown variable y" and i.execute("1 / (2 - 2)") == "error: division by zero")(Interpreter())
+--- check test | Syntax errors reply with an error, never raise
+(lambda i: all(i.execute(l).startswith("error: ") for l in ["", "1 +", "(1", "1)", "2 3", "* 4", "let = 3", "let 5 = 3", "max()", "sqrt(1, 2)", "3 $ 4", "let sqrt = 4"]))(Interpreter())
+--- check test | A failed let does not change the variable
+(lambda i: (i.execute("let x = 5"), i.execute("let x = 1 / 0"), i.execute("x"))[1:])(Interpreter()) == ("error: division by zero", "5")
+--- check test | Names are case-sensitive and can contain digits and underscores
+(lambda i: (i.execute("let total_2 = 3"), i.execute("total_2 * 2"), i.execute("Total_2"))[1:])(Interpreter()) == ("6", "error: unknown variable Total_2")
+
+=== pyp-15 | Capstone: a bank ledger with validation
+--- teach
+Money software is unforgiving: a lost cent is a bug report, and a half-finished transfer is a disaster. This capstone is about **correctness under bad input**.
+
+**Validate at the boundary.** Every value that comes from outside (a user, a file, another system) is checked the moment it arrives, and turned into a trusted internal form. Here, amounts arrive as strings like `"12.34"`; check the format strictly, convert to integer cents once, and the rest of the code never sees a string or a float again. Strict means: reject `"12.345"`, `"-5"`, `"1e3"`, `" "`, and also a float like `12.5`, because accepting floats would invite exactly the rounding errors you are avoiding.
+
+**Atomic operations.** A transfer is two changes: take from one account, give to another. If the first happens and the second fails, money vanishes. The rule is: **check everything that can fail first, then make all the changes**, with nothing between them that can raise. A transfer to a missing account, or of more than the balance, must leave *both* accounts, and both statements, exactly as they were.
+
+**An audit trail.** Real ledgers never just overwrite a balance; they record every movement. A statement per account (a list of lines, each with the movement and the resulting balance) lets anyone check the arithmetic.
+
+**Distinct errors for distinct problems.** Bad input (`ValueError`), an unknown account (`KeyError`), and a refused withdrawal (`InsufficientFunds`, your own class) are different situations for the caller: a form shows a validation message, a missing account is probably a bug, and insufficient funds is a normal business outcome.
+
+**Design questions to settle first:** how will you store an account? How will you generate account numbers? Where does validation live, so it is written once?
+--- task
+Build `class InsufficientFunds(Exception)` and `class Bank`:
+
+- Amounts are strings of digits with an optional `.` and one or two decimals (`"12"`, `"12.3"`, `"12.34"`), surrounding spaces allowed. Anything else (including non-strings) raises `ValueError`. Balances are always shown as strings with two decimals and no thousands separator, like `"1234.50"`.
+- `open(name, initial="0.00")` returns a new account number: `"ACC-0001"`, `"ACC-0002"`, … An empty name raises `ValueError`. The initial amount may be zero.
+- `deposit(number, amount)` and `withdraw(number, amount)`: the amount must be more than zero (`ValueError`); withdrawing more than the balance raises `InsufficientFunds`.
+- `transfer(source, target, amount)`: moves money between two different accounts (the same account twice is a `ValueError`); insufficient funds raises `InsufficientFunds`. A failed transfer changes nothing.
+- An unknown account number raises `KeyError` everywhere.
+- `balance(number)` returns the balance string. `total()` returns the sum of all balances.
+- `statement(number)` returns a list of lines, one per movement: `"open 10.00 -> 10.00"`, `"deposit 5.50 -> 15.50"`, `"withdraw 2.00 -> 13.50"`, `"transfer-out 3.00 to ACC-0002 -> 10.50"`, `"transfer-in 3.00 from ACC-0001 -> 3.00"`. Each ends with the balance after that movement. Failed operations add no line.
+--- starter
+# Capstone: design and build InsufficientFunds and Bank to the specification in the task.
+--- solution
+import re
+
+
+class InsufficientFunds(Exception):
+    pass
+
+
+AMOUNT = re.compile(r"\d+(\.\d{1,2})?")
+
+
+def parse_amount(text):
+    """"12.34" -> 1234 cents. Only strings with at most two decimals."""
+    if not isinstance(text, str) or not AMOUNT.fullmatch(text.strip()):
+        raise ValueError(f"invalid amount: {text!r}")
+    whole, _, frac = text.strip().partition(".")
+    return int(whole) * 100 + int(frac.ljust(2, "0"))
+
+
+def fmt(cents):
+    return f"{cents // 100}.{cents % 100:02d}"
+
+
+class Bank:
+    def __init__(self):
+        self._accounts = {}
+        self._opened = 0
+
+    def _account(self, number):
+        if number not in self._accounts:
+            raise KeyError(number)
+        return self._accounts[number]
+
+    def _positive(self, amount):
+        cents = parse_amount(amount)
+        if cents <= 0:
+            raise ValueError("amount must be more than zero")
+        return cents
+
+    def _record(self, number, kind, cents, detail=""):
+        account = self._accounts[number]
+        account["history"].append(f"{kind} {fmt(cents)}{detail} -> {fmt(account['balance'])}")
+
+    def open(self, name, initial="0.00"):
+        if not isinstance(name, str) or not name.strip():
+            raise ValueError("an account needs a name")
+        cents = parse_amount(initial)
+        self._opened += 1
+        number = f"ACC-{self._opened:04d}"
+        self._accounts[number] = {"name": name.strip(), "balance": cents, "history": []}
+        self._record(number, "open", cents)
+        return number
+
+    def deposit(self, number, amount):
+        account = self._account(number)
+        cents = self._positive(amount)
+        account["balance"] += cents
+        self._record(number, "deposit", cents)
+
+    def withdraw(self, number, amount):
+        account = self._account(number)
+        cents = self._positive(amount)
+        if cents > account["balance"]:
+            raise InsufficientFunds(f"{number} has only {fmt(account['balance'])}")
+        account["balance"] -= cents
+        self._record(number, "withdraw", cents)
+
+    def transfer(self, source, target, amount):
+        src = self._account(source)
+        self._account(target)
+        if source == target:
+            raise ValueError("cannot transfer to the same account")
+        cents = self._positive(amount)
+        if cents > src["balance"]:
+            raise InsufficientFunds(f"{source} has only {fmt(src['balance'])}")
+        src["balance"] -= cents
+        self._accounts[target]["balance"] += cents
+        self._record(source, "transfer-out", cents, f" to {target}")
+        self._record(target, "transfer-in", cents, f" from {source}")
+
+    def balance(self, number):
+        return fmt(self._account(number)["balance"])
+
+    def statement(self, number):
+        return list(self._account(number)["history"])
+
+    def total(self):
+        return fmt(sum(a["balance"] for a in self._accounts.values()))
+--- hint
+Write one function that validates and converts an amount string to integer cents (a regular expression such as `\d+(\.\d{1,2})?` with `fullmatch` is precise). Use it everywhere, and one function that formats cents for display.
+--- hint
+Store each account as a record with its name, balance in cents and a list of statement lines. Count opened accounts to make numbers with `f"ACC-{n:04d}"`.
+--- hint
+In `transfer`, look up both accounts, check they differ, validate the amount and check the balance before you change either balance.
+--- check case | Open, deposit, withdraw
+(lambda b: (lambda a: (b.deposit(a, "5.50"), b.withdraw(a, " 2 "), b.balance(a), b.statement(a)))(b.open("Ada", "10.00")))(Bank())[2:]
+=> ("13.50", ["open 10.00 -> 10.00", "deposit 5.50 -> 15.50", "withdraw 2.00 -> 13.50"])
+--- check test | Account numbers count up
+(lambda b: [b.open("A"), b.open("B"), b.open("C")])(Bank()) == ["ACC-0001", "ACC-0002", "ACC-0003"]
+--- check case | A transfer moves money and records both sides
+(lambda b: (b.open("Ada", "20"), b.open("Bo"), b.transfer("ACC-0001", "ACC-0002", "3"), b.balance("ACC-0001"), b.balance("ACC-0002"), b.statement("ACC-0001")[-1], b.statement("ACC-0002")[-1], b.total())[3:])(Bank())
+=> ("17.00", "3.00", "transfer-out 3.00 to ACC-0002 -> 17.00", "transfer-in 3.00 from ACC-0001 -> 3.00", "20.00")
+--- check test | Invalid amounts raise ValueError
+(lambda b: (lambda a: all(raises(ValueError, lambda x=x: b.deposit(a, x)) for x in ["12.345", "-5", "abc", "", "1e3", "0", "0.00", "5.", 12.5, None]))(b.open("Ada")))(Bank())
+--- check test | Overdrawing raises InsufficientFunds and changes nothing
+(lambda b: (lambda a: (raises(InsufficientFunds, lambda: b.withdraw(a, "10.01")), b.balance(a), len(b.statement(a))))(b.open("Ada", "10")))(Bank()) == (True, "10.00", 1)
+--- check test | A failed transfer changes nothing at all
+(lambda b: (b.open("Ada", "10"), b.open("Bo", "1"), raises(InsufficientFunds, lambda: b.transfer("ACC-0001", "ACC-0002", "50")), raises(KeyError, lambda: b.transfer("ACC-0001", "ACC-0099", "1")), raises(ValueError, lambda: b.transfer("ACC-0001", "ACC-0001", "1")), b.balance("ACC-0001"), b.balance("ACC-0002"), len(b.statement("ACC-0001")), len(b.statement("ACC-0002")))[2:])(Bank()) == (True, True, True, "10.00", "1.00", 1, 1)
+--- check test | Unknown accounts raise KeyError
+raises(KeyError, lambda: Bank().balance("ACC-0001")) and raises(KeyError, lambda: Bank().deposit("ACC-0001", "1"))
+--- check test | An account needs a name
+raises(ValueError, lambda: Bank().open("   "))
+--- check test | Exact to the cent over many operations
+(lambda b: (lambda a: ([b.deposit(a, "0.10") for _ in range(1000)], [b.withdraw(a, "0.07") for _ in range(1000)], b.balance(a))[-1])(b.open("Ada")))(Bank()) == "30.00"
+--- check test | Big balances print with no separator
+(lambda b: b.balance(b.open("Rich", "1234567.8")))(Bank()) == "1234567.80"
+
+=== pyp-16 | Capstone: a text adventure state machine
+--- teach
+A text adventure is a **state machine**: the game is always in some state (which room you are in, what you carry, what is where), each command moves it to a new state, and the reply describes what happened. The same shape describes vending machines, network protocols, checkout flows and game AI.
+
+**Separate data from logic.** The rooms, exits and items are *data*: a dict you can read, edit or load from a file. The rules (how `go`, `take` and `drop` work) are *code*. Your code should work for any world with the same shape, not just the example: the checks try a different world too.
+
+**Identify the state.** Before writing a line, list exactly what changes during play: the current room, the inventory, the items in each room, whether the game is over. Everything else (descriptions, exits, which exit needs which key) is fixed. Keep changing state in the game object.
+
+**Do not modify the data you were given.** If two games are created from the same world dict and the first one's `take` removes an item from *the shared dict*, the second game starts with the item missing. That is the aliasing bug once more. Make a deep copy of the world when a game starts.
+
+**A command parser, a dispatcher, and one method per verb.** Split the input into a verb and the rest; look the verb up; call its handler. Each handler checks its own preconditions ("is there such an exit?", "is it locked?", "is the item here?") and returns the reply.
+
+**The end state.** Once the goal item is taken, the game is over and every command gets the same reply. Check that *first*, before any other command logic runs.
+
+**Precise output matters here**, as it does whenever another program (or a checker) reads your output. Follow the reply formats exactly, including full stops and the order of lists.
+--- task
+The starter defines `WORLD`, an example world. Build a class `Game(world)` for any world of that shape (`start`, `goal`, and `rooms`, each with `description`, `exits`, `items` and optionally `locked`, which maps a direction to the item needed to go that way).
+
+`game.room` is the current room's name. `game.do(command)` returns the reply (commands are case-insensitive):
+
+- `look`: `"<description> Exits: <exits, sorted, comma-separated>."`, followed by `" You see: <items in the room's order>."` if the room has items. With no exits: `Exits: none.`
+- `go <direction>`: moves and returns the new room's `look` text. No such exit: `"You can't go that way."`. A locked exit without its item in your inventory: `"The way <direction> is locked."`.
+- `take <item>`: `"Taken: <item>."`, or `"There is no <item> here."`. Taking the goal item replies `"Taken: <item>. You win!"` and ends the game.
+- `drop <item>`: puts it in the current room (at the end of its item list): `"Dropped: <item>."`, or `"You don't have <item>."`.
+- `inventory`: `"You carry: <items, sorted>."` or `"You carry nothing."`.
+- Anything else, including a verb missing its word: `"I don't understand."`. After the game is over, every command replies `"The game is over."`.
+
+Creating or playing a game must not change the world dict it was given.
+--- starter
+WORLD = {
+    "start": "hall",
+    "goal": "treasure",
+    "rooms": {
+        "hall": {
+            "description": "A dusty hall.",
+            "exits": {"north": "library", "east": "kitchen"},
+            "items": ["lamp"],
+        },
+        "library": {
+            "description": "Shelves of old books.",
+            "exits": {"south": "hall"},
+            "items": ["key", "map"],
+        },
+        "kitchen": {
+            "description": "It smells of bread.",
+            "exits": {"west": "hall", "down": "cellar"},
+            "items": [],
+            "locked": {"down": "key"},
+        },
+        "cellar": {
+            "description": "Treasure glitters in the dark.",
+            "exits": {"up": "kitchen"},
+            "items": ["treasure"],
+        },
+    },
+}
+
+# Capstone: design and build Game to the specification in the task.
+--- solution
+import copy
+
+WORLD = {
+    "start": "hall",
+    "goal": "treasure",
+    "rooms": {
+        "hall": {
+            "description": "A dusty hall.",
+            "exits": {"north": "library", "east": "kitchen"},
+            "items": ["lamp"],
+        },
+        "library": {
+            "description": "Shelves of old books.",
+            "exits": {"south": "hall"},
+            "items": ["key", "map"],
+        },
+        "kitchen": {
+            "description": "It smells of bread.",
+            "exits": {"west": "hall", "down": "cellar"},
+            "items": [],
+            "locked": {"down": "key"},
+        },
+        "cellar": {
+            "description": "Treasure glitters in the dark.",
+            "exits": {"up": "kitchen"},
+            "items": ["treasure"],
+        },
+    },
+}
+
+
+class Game:
+    def __init__(self, world):
+        self.world = copy.deepcopy(world)
+        self.rooms = self.world["rooms"]
+        self.room = self.world["start"]
+        self.inventory = []
+        self.over = False
+
+    def look(self):
+        room = self.rooms[self.room]
+        exits = ", ".join(sorted(room["exits"])) or "none"
+        text = f"{room['description']} Exits: {exits}."
+        if room["items"]:
+            text += f" You see: {', '.join(room['items'])}."
+        return text
+
+    def go(self, direction):
+        room = self.rooms[self.room]
+        if direction not in room["exits"]:
+            return "You can't go that way."
+        key = room.get("locked", {}).get(direction)
+        if key and key not in self.inventory:
+            return f"The way {direction} is locked."
+        self.room = room["exits"][direction]
+        return self.look()
+
+    def take(self, item):
+        items = self.rooms[self.room]["items"]
+        if item not in items:
+            return f"There is no {item} here."
+        items.remove(item)
+        self.inventory.append(item)
+        if item == self.world.get("goal"):
+            self.over = True
+            return f"Taken: {item}. You win!"
+        return f"Taken: {item}."
+
+    def drop(self, item):
+        if item not in self.inventory:
+            return f"You don't have {item}."
+        self.inventory.remove(item)
+        self.rooms[self.room]["items"].append(item)
+        return f"Dropped: {item}."
+
+    def do(self, command):
+        if self.over:
+            return "The game is over."
+        words = command.lower().split()
+        if not words:
+            return "I don't understand."
+        verb, rest = words[0], " ".join(words[1:])
+        if verb == "look" and not rest:
+            return self.look()
+        if verb == "inventory" and not rest:
+            if not self.inventory:
+                return "You carry nothing."
+            return f"You carry: {', '.join(sorted(self.inventory))}."
+        if verb == "go" and rest:
+            return self.go(rest)
+        if verb == "take" and rest:
+            return self.take(rest)
+        if verb == "drop" and rest:
+            return self.drop(rest)
+        return "I don't understand."
+--- hint
+State that changes: the current room, the inventory, each room's items, and whether the game is over. Deep-copy the world in `__init__` so the items can change safely.
+--- hint
+In `do`, check "game over" first, then split the command into a verb and the rest, and call one method per verb.
+--- hint
+For `go`, check the exit exists, then look in the room's `locked` dict (use `.get(..., {})`, since most rooms have none) for a required item.
+--- check case | Looking around the start
+Game(WORLD).do("look")
+=> "A dusty hall. Exits: east, north. You see: lamp."
+--- check case | Moving, taking and the inventory
+(lambda g: [g.do(c) for c in ["go north", "take key", "take sword", "inventory", "go west", "go south", "look"]])(Game(WORLD))
+=> ["Shelves of old books. Exits: south. You see: key, map.", "Taken: key.", "There is no sword here.", "You carry: key.", "You can't go that way.", "A dusty hall. Exits: east, north. You see: lamp.", "A dusty hall. Exits: east, north. You see: lamp."]
+--- check case | A locked way needs its key
+(lambda g: [g.do(c) for c in ["go east", "go down", "go west", "go north", "take key", "go south", "go east", "go down"]] + [g.room])(Game(WORLD))
+=> ["It smells of bread. Exits: down, west.", "The way down is locked.", "A dusty hall. Exits: east, north. You see: lamp.", "Shelves of old books. Exits: south. You see: key, map.", "Taken: key.", "A dusty hall. Exits: east, north. You see: lamp.", "It smells of bread. Exits: down, west.", "Treasure glitters in the dark. Exits: up. You see: treasure.", "cellar"]
+--- check case | Winning ends the game
+(lambda g: [g.do(c) for c in ["go north", "TAKE KEY", "go south", "go east", "go down", "take treasure", "look"]][-3:] + [g.room])(Game(WORLD))
+=> ["Treasure glitters in the dark. Exits: up. You see: treasure.", "Taken: treasure. You win!", "The game is over.", "cellar"]
+--- check case | Dropping puts the item in the current room
+(lambda g: [g.do(c) for c in ["take lamp", "drop map", "go north", "drop lamp", "look", "inventory"]])(Game(WORLD))
+=> ["Taken: lamp.", "You don't have map.", "Shelves of old books. Exits: south. You see: key, map.", "Dropped: lamp.", "Shelves of old books. Exits: south. You see: key, map, lamp.", "You carry nothing."]
+--- check test | Unknown commands
+(lambda g: [g.do(c) for c in ["dance", "", "go", "take", "look around"]] == ["I don't understand."] * 5)(Game(WORLD))
+--- check test | Games do not change the world, or each other
+(lambda w: (lambda g1: (g1.do("take lamp"), Game(w).do("look"), w["rooms"]["hall"]["items"])[1:])(Game(w)))(WORLD) == ("A dusty hall. Exits: east, north. You see: lamp.", ["lamp"])
+--- check case | Works for a different world
+(lambda g: [g.do(c) for c in ["look", "go up", "take coin", "take star", "inventory", "go up"]])(Game({"start": "pit", "goal": "star", "rooms": {"pit": {"description": "A deep pit.", "exits": {"up": "rim"}, "items": ["coin", "rope"], "locked": {"up": "rope"}}, "rim": {"description": "The rim.", "exits": {}, "items": ["star"]}}}))
+=> ["A deep pit. Exits: up. You see: coin, rope.", "The way up is locked.", "Taken: coin.", "There is no star here.", "You carry: coin.", "The way up is locked."]
+--- check case | A room with no exits
+(lambda g: [g.do("take rope"), g.do("go up")])(Game({"start": "pit", "goal": "star", "rooms": {"pit": {"description": "A deep pit.", "exits": {"up": "rim"}, "items": ["rope"], "locked": {"up": "rope"}}, "rim": {"description": "The rim.", "exits": {}, "items": ["star"]}}}))
+=> ["Taken: rope.", "The rim. Exits: none. You see: star."]

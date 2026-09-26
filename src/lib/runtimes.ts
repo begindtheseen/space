@@ -6,9 +6,9 @@
 
      Python  real execution, Pyodide in a module worker, full scientific stack
      SQL     real execution, SQLite compiled to WebAssembly
-     C, C++  no browser compiler is worth tens of megabytes of download, but
-             the desktop shell has the machine underneath it: clang or gcc is
-             used when installed, and the exercise really compiles and runs
+     C++     the desktop shell's clang or gcc when one is installed; everywhere
+             else — a browser, or a Mac with no compiler yet — clang++ compiled
+             to WebAssembly, downloaded once, so C++ always really runs
      Rust    no rustc-in-WASM exists at all; rustc is used the same way
      Shell   run by the machine's own bash
      MATLAB  proprietary, but Octave runs the same language and is free, so
@@ -16,7 +16,7 @@
              it is not
      JS      run by the shell's own Node
 
-   Everything but Python and SQL therefore depends on the desktop shell and on
+   Rust, the shell and MATLAB therefore depend on the desktop shell and on
    what is installed. `capabilityOf` answers that per language at the moment
    she presses run, and the UI states the answer rather than guessing.
 
@@ -28,6 +28,10 @@ import type { Lang } from '@/curriculum/types'
 import { getOrbit, hasNativeRunner, isDesktop, type RunRequest, type RunResult, type ToolchainInfo } from './desktop'
 
 export type RunMode = 'execute' | 'check' | 'reference'
+
+/** What C++ does when there is no compiler on the machine to hand it to. */
+const CPP_BROWSER_NOTE =
+  'Compiled for real by clang++ (C++20) and run right here, with the input box as standard input. Exceptions are off in this in-browser toolchain, so throw and try do not compile. The compiler is a one-time download of about 105 MB before compression; in the desktop app, installing Apple’s command line tools uses the Mac’s own compiler instead.'
 
 export interface LangInfo {
   id: Lang
@@ -53,8 +57,8 @@ export const LANGS: Record<Lang, LangInfo> = {
   cpp: {
     id: 'cpp',
     label: 'C++',
-    mode: 'check',
-    note: 'Compiled and run for real by the compiler on this Mac. Without one installed, your output is compared against the expected result instead.',
+    mode: 'execute',
+    note: CPP_BROWSER_NOTE,
   },
   rust: {
     id: 'rust',
@@ -127,9 +131,23 @@ export function capabilityOf(
   runner: boolean = hasNativeRunner,
 ): Capability {
   const info = LANGS[lang]
-  if (info.mode === 'execute') return { mode: 'execute', note: info.note }
-
   const key = NATIVE_LANGS[lang]
+
+  // C++ always runs: on the Mac's compiler when there is one, otherwise on
+  // the one compiled to WebAssembly. Only the note changes.
+  if (lang === 'cpp') {
+    const tool = desktop && runner ? toolchains?.cpp : undefined
+    if (tool?.available) {
+      return {
+        mode: 'execute',
+        note: `Runs for real — compiled and executed by ${tool.version ?? tool.bin} on this machine, in a scratch directory that is thrown away afterwards.`,
+        toolchain: tool.version ?? tool.bin,
+      }
+    }
+    return { mode: 'execute', note: CPP_BROWSER_NOTE }
+  }
+
+  if (info.mode === 'execute') return { mode: 'execute', note: info.note }
   if (!key) return { mode: info.mode, note: info.note }
 
   if (!desktop) {
@@ -195,7 +213,7 @@ export async function detectToolchains(refresh = false): Promise<Record<string, 
  * `RunOutput` the Python runtime produces so the playground has one shape to
  * render regardless of language.
  */
-export async function runNative(lang: Lang, source: string, stdin?: string): Promise<RunOutput> {
+export async function runNative(lang: Lang, source: string, stdin?: string, onStatus?: StatusFn): Promise<RunOutput> {
   const started = Date.now()
   const empty = (error: string): RunOutput => ({
     stdout: '',
@@ -209,6 +227,8 @@ export async function runNative(lang: Lang, source: string, stdin?: string): Pro
   const key = NATIVE_LANGS[lang]
   const orbit = getOrbit()
   if (!key) return empty(`${LANGS[lang].label} cannot be executed.`)
+  // No shell to compile with: C++ compiles in the browser instead.
+  if (lang === 'cpp' && !orbit?.run) return runCpp(source, { stdin, onStatus })
   if (!orbit?.run) {
     return empty(
       isDesktop
@@ -225,6 +245,8 @@ export async function runNative(lang: Lang, source: string, stdin?: string): Pro
     return empty(err instanceof Error ? err.message : String(err))
   }
   if (!res) return empty('The shell did not answer the run request.')
+  // The shell is there but the Mac has no C++ compiler yet.
+  if (lang === 'cpp' && !res.ok && res.stage === 'toolchain') return runCpp(source, { stdin, onStatus })
 
   // A compile error belongs in the error slot rather than buried in stderr:
   // it is the thing she needs to read, and the playground highlights it.
@@ -328,6 +350,9 @@ class PythonRuntime {
     resolve: (o: RunOutput) => void
     out: RunOutput
     startedAt: number
+    /** Stops the run after this long, counted from when the runtime is ready. */
+    limitMs?: number
+    timer?: ReturnType<typeof setTimeout>
   } | null = null
   private onStatus: StatusFn | null = null
   private booted = false
@@ -359,6 +384,7 @@ class PythonRuntime {
     if (type === 'ready') {
       this.booted = true
       this.onStatus?.('')
+      this.startClock()
       return
     }
     if (type === 'fatal') {
@@ -390,9 +416,19 @@ class PythonRuntime {
     }
   }
 
+  private startClock(): void {
+    const p = this.pending
+    if (!p || !p.limitMs || p.timer) return
+    const limit = p.limitMs
+    p.timer = setTimeout(() => {
+      if (this.pending === p) this.cancel(`Still running after ${limit / 1000} seconds, so it was stopped.`)
+    }, limit)
+  }
+
   private settle(): void {
     const p = this.pending
     if (!p) return
+    clearTimeout(p.timer)
     this.pending = null
     p.out.ms = Date.now() - p.startedAt
     p.resolve(p.out)
@@ -400,6 +436,7 @@ class PythonRuntime {
 
   private fail(message: string): void {
     const p = this.pending
+    if (p) clearTimeout(p.timer)
     this.pending = null
     this.booted = false
     this.worker?.terminate()
@@ -421,7 +458,7 @@ class PythonRuntime {
 
   run(
     code: string,
-    opts: { stdin?: string[]; packages?: string[]; onStatus?: StatusFn } = {},
+    opts: { stdin?: string[]; packages?: string[]; onStatus?: StatusFn; limitMs?: number } = {},
   ): Promise<RunOutput> {
     if (opts.onStatus) this.onStatus = opts.onStatus
     if (this.pending) this.cancel()
@@ -435,20 +472,23 @@ class PythonRuntime {
         resolve,
         startedAt: Date.now(),
         out: { stdout: '', stderr: '', plots: [], result: null, error: null, ms: 0 },
+        ...(opts.limitMs ? { limitMs: opts.limitMs } : {}),
       }
       w.postMessage({ cmd: 'run', id, code, stdin: opts.stdin, packages: opts.packages })
+      if (this.booted) this.startClock()
     })
   }
 
   /** Kills the worker. The next run pays the boot cost again. */
-  cancel(): void {
+  cancel(reason = 'Stopped.'): void {
     const p = this.pending
+    if (p) clearTimeout(p.timer)
     this.pending = null
     this.worker?.terminate()
     this.worker = null
     this.booted = false
     if (p) {
-      p.out.error = 'Stopped.'
+      p.out.error = reason
       p.out.ms = Date.now() - p.startedAt
       p.resolve(p.out)
     }
@@ -456,6 +496,164 @@ class PythonRuntime {
 }
 
 export const python = new PythonRuntime()
+
+/* ── A compiler that lives in a worker ───────────────────────────────────────
+   The in-browser C++ compiler is large, so it lives in one worker that is
+   created on first use and kept: loading it is the expensive part,
+   and a compile always finishes. What they produce is run elsewhere, in a
+   worker thrown away after each run, so a program that never ends can be
+   stopped without throwing the compiler away with it. */
+
+interface CompileReply {
+  type: 'compiled' | 'failed'
+  stage?: 'load' | 'compile' | 'check'
+  diagnostics: string
+  wasm?: ArrayBuffer
+  js?: string
+}
+
+class CompilerWorker {
+  private worker: Worker | null = null
+  private nextId = 1
+  private waiting = new Map<number, { resolve: (r: CompileReply) => void; onStatus?: StatusFn }>()
+
+  private readonly create: () => Worker
+  private readonly verb: string
+  private readonly crashed: string
+
+  constructor(create: () => Worker, verb: string, crashed: string) {
+    this.create = create
+    this.verb = verb
+    this.crashed = crashed
+  }
+
+  private ensure(): Worker {
+    if (this.worker) return this.worker
+    const w = this.create()
+    w.onmessage = (e: MessageEvent) => {
+      const msg = e.data as Omit<CompileReply, 'type'> & { type: CompileReply['type'] | 'status'; id: number; text?: string }
+      const entry = this.waiting.get(msg.id)
+      if (!entry) return
+      if (msg.type === 'status') {
+        entry.onStatus?.(msg.text ?? '')
+        return
+      }
+      this.waiting.delete(msg.id)
+      entry.resolve({ ...msg, type: msg.type })
+    }
+    w.onerror = (e) => {
+      e.preventDefault()
+      this.reset(this.crashed)
+    }
+    this.worker = w
+    return w
+  }
+
+  /** Throws the worker away and fails whatever was waiting on it. */
+  private reset(message: string): void {
+    this.worker?.terminate()
+    this.worker = null
+    for (const [, entry] of this.waiting) entry.resolve({ type: 'failed', stage: 'load', diagnostics: message })
+    this.waiting.clear()
+  }
+
+  /** Starts downloading the compiler without compiling anything. */
+  preload(): void {
+    this.ensure().postMessage({ cmd: 'preload' })
+  }
+
+  compile(source: string, onStatus?: StatusFn): Promise<CompileReply> {
+    const w = this.ensure()
+    const id = this.nextId++
+    return new Promise<CompileReply>((resolve) => {
+      this.waiting.set(id, { resolve, onStatus })
+      w.postMessage({ cmd: this.verb, id, source })
+    })
+  }
+}
+
+export const cppCompiler = new CompilerWorker(
+  () => new Worker(new URL('../workers/cpp.worker.ts', import.meta.url), { type: 'module' }),
+  'compile',
+  'The C++ compiler stopped unexpectedly (most often the tab ran short of memory). Press Run again to reload it.',
+)
+
+/* ── C++ ─────────────────────────────────────────────────────────────────── */
+
+export const CPP_TIME_LIMIT_MS = 10_000
+
+/**
+ * Compiles with clang++ in the browser, then runs the program in a fresh
+ * worker with `stdin` as its standard input. A compile error comes back in
+ * `error`, exactly as clang printed it; warnings on a program that did build
+ * are shown with its output.
+ */
+export async function runCpp(
+  code: string,
+  opts: { stdin?: string; onStatus?: StatusFn; timeLimitMs?: number } = {},
+): Promise<RunOutput> {
+  const started = Date.now()
+  const out: RunOutput = { stdout: '', stderr: '', plots: [], result: null, error: null, ms: 0 }
+
+  const built = await cppCompiler.compile(code, opts.onStatus)
+  if (built.type === 'failed' || !built.wasm) {
+    out.error =
+      built.stage === 'compile'
+        ? `It did not compile:\n\n${built.diagnostics.trim()}`
+        : built.diagnostics.trim() || 'The C++ compiler could not be loaded.'
+    out.ms = Date.now() - started
+    return out
+  }
+  if (built.diagnostics.trim()) out.stderr += `${built.diagnostics.trim()}\n\n`
+  opts.onStatus?.('Running…')
+
+  const limit = opts.timeLimitMs ?? CPP_TIME_LIMIT_MS
+  return new Promise<RunOutput>((resolve) => {
+    let worker: Worker
+    try {
+      worker = new Worker(new URL('../workers/wasi.worker.ts', import.meta.url), { type: 'module' })
+    } catch (err) {
+      out.error = err instanceof Error ? err.message : String(err)
+      out.ms = Date.now() - started
+      resolve(out)
+      return
+    }
+    const finish = (error?: string) => {
+      clearTimeout(timer)
+      worker.terminate()
+      if (error) out.error = error
+      out.ms = Date.now() - started
+      resolve(out)
+    }
+    const timer = setTimeout(
+      () =>
+        finish(
+          `Still running after ${Math.round(limit / 1000)} seconds, so it was stopped. A loop that never ends, or a read from standard input that is waiting for more, does this.`,
+        ),
+      limit,
+    )
+    worker.onmessage = (e: MessageEvent) => {
+      const msg = e.data as { type: string; text?: string; code?: number; message?: string }
+      if (msg.type === 'stdout') out.stdout += msg.text ?? ''
+      else if (msg.type === 'stderr') out.stderr += msg.text ?? ''
+      else if (msg.type === 'exit') {
+        if (msg.code) out.result = `exit code ${msg.code}`
+        finish()
+      } else if (msg.type === 'trap') {
+        finish(
+          `The program crashed: ${msg.message}. abort(), a failed assert, an out-of-range .at(), dividing an integer by zero and reading memory the program does not own all end this way.`,
+        )
+      }
+    }
+    worker.onerror = (e) => {
+      e.preventDefault()
+      finish(e.message || 'The program runner failed to start.')
+    }
+    const wasm = built.wasm!
+    worker.postMessage({ cmd: 'run', id: 1, wasm, stdin: opts.stdin ?? '' }, [wasm])
+  })
+}
+
 
 /* ── SQL ─────────────────────────────────────────────────────────────────────
    sql.js, on the main thread rather than in a worker.

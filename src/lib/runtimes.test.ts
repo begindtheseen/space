@@ -114,12 +114,12 @@ describe('parseTestOutput', () => {
 })
 
 describe('language modes', () => {
-  it('only claims real execution for Python and SQL', () => {
+  it('claims real execution for Python, SQL and C++ — C++ compiles in the browser when nothing else can', () => {
     const executing = Object.values(LANGS)
       .filter((l) => l.mode === 'execute')
       .map((l) => l.id)
       .sort()
-    expect(executing).toEqual(['python', 'sql'])
+    expect(executing).toEqual(['cpp', 'python', 'sql'])
   })
 
   it('gives every language an honest note about what happens when you hit run', () => {
@@ -150,41 +150,50 @@ describe('capabilityOf', () => {
     expect(cap.note).toContain('Runs for real')
   })
 
-  it('falls back to comparison and names the fix when the compiler is missing', () => {
+  it('compiles C++ in the browser when the Mac has no compiler, and says which is being used', () => {
     const cap = capabilityOf('cpp', noClang, true, true)
-    expect(cap.mode).toBe('check')
-    expect(cap.missing?.install).toContain('xcode-select')
-    // The note must not imply the code ran.
-    expect(cap.note).not.toContain('Runs for real')
+    expect(cap.mode).toBe('execute')
+    expect(cap.missing).toBeUndefined()
+    expect(cap.note).toContain('clang++')
+    // It must not claim the Mac's own compiler ran it.
+    expect(cap.note).not.toContain('on this machine')
   })
 
-  it('says where to run it when there is no shell at all', () => {
+  it('compiles C++ in the browser when there is no shell at all', () => {
     const cap = capabilityOf('cpp', null, false)
-    expect(cap.mode).toBe('check')
-    expect(cap.note).toContain('desktop app')
+    expect(cap.mode).toBe('execute')
+    expect(cap.note).toContain('throw and try do not compile')
     expect(cap.missing).toBeUndefined()
   })
 
   it('does not claim anything is missing before detection has answered', () => {
-    const cap = capabilityOf('cpp', null, true, true)
-    expect(cap.missing).toBeUndefined()
-    expect(cap.note).toContain('Checking')
+    expect(capabilityOf('cpp', null, true, true).missing).toBeUndefined()
+    const rust = capabilityOf('rust', null, true, true)
+    expect(rust.missing).toBeUndefined()
+    expect(rust.note).toContain('Checking')
   })
 
   it('blames the old app, not the missing desktop, inside an old app', () => {
     // A bundle updates itself and the app around it does not, so a shell from
     // before the runner existed shows a current curriculum it cannot compile.
     // Telling her to go get the desktop app while she is looking at it is the
-    // one answer that leaves her with nowhere to go.
-    const cap = capabilityOf('cpp', null, true, false)
+    // one answer that leaves her with nowhere to go. (C++ no longer needs the
+    // shell at all; Rust still does.)
+    const cap = capabilityOf('rust', null, true, false)
     expect(cap.mode).toBe('check')
     expect(cap.note).toContain('older than the lessons')
     expect(cap.note).not.toContain('Checking')
     expect(cap.missing?.install).toContain('Settings')
+    expect(capabilityOf('cpp', null, true, false).mode).toBe('execute')
   })
 
-  it('never says a language runs for real when the shell cannot reach a compiler', () => {
-    for (const lang of ['cpp', 'rust', 'matlab', 'bash'] as const) {
+  it('never credits the Mac\'s compiler when the shell cannot reach it', () => {
+    // Even handed a full set of toolchains: without the bridge, none of them
+    // are reachable. C++ still runs, in the browser — and says so.
+    const cpp = capabilityOf('cpp', clang, true, false)
+    expect(cpp.toolchain).toBeUndefined()
+    expect(cpp.note).not.toContain('clang 18.1.3')
+    for (const lang of ['rust', 'matlab', 'bash'] as const) {
       // Even handed a full set of toolchains: without the bridge, none of them
       // are reachable, and a green "runs for real" would be a lie.
       const cap = capabilityOf(lang, clang, true, false)

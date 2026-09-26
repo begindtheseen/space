@@ -1,0 +1,1600 @@
+@track python
+@level advanced
+@title Python · Advanced
+@name Python, advanced: iterators, decorators, data models and algorithms
+@blurb Learn how Python works underneath (iterators, generators, decorators, context managers, special methods) and the algorithmic thinking (recursion, dynamic programming, big-O, search) that turns slow code into code that finishes.
+
+=== py3-01 | Iterators and the iterator protocol
+--- teach
+The intermediate course taught you to write Python the way experienced people do. This course opens the hood: how Python's own features work underneath, so you can build your own, and the algorithms that decide whether code finishes at all.
+
+Every `for` loop in Python runs on one small agreement called the **iterator protocol**. Once you know it, generators, files, `zip`, `range` and dict views stop being magic.
+
+There are two roles:
+
+- An **iterable** is anything you can loop over. It has an `__iter__` method that returns an iterator. Lists, strings, dicts and ranges are iterables.
+- An **iterator** is the thing that hands out values one at a time. It has `__next__`, which returns the next value or raises `StopIteration` when there are none left. An iterator's `__iter__` returns itself.
+
+You can drive the protocol by hand with the built-ins `iter()` and `next()`:
+
+```python
+it = iter([10, 20])
+next(it)      # 10
+next(it)      # 20
+# next(it)    -> StopIteration
+```
+
+A `for` loop is exactly this, done for you:
+
+```python
+# for x in things: body     is roughly:
+it = iter(things)
+while True:
+    try:
+        x = next(it)
+    except StopIteration:
+        break
+    body
+```
+
+**Why the two roles?** An iterator remembers *where it is*, so it can only be walked once. An iterable can hand out a *fresh* iterator each time, so you can loop over it again and again, and even have two loops over it at once.
+
+```python
+class Squares:                      # an iterable
+    def __init__(self, n):
+        self.n = n
+    def __iter__(self):
+        return SquaresIterator(self.n)
+
+class SquaresIterator:              # its iterator
+    def __init__(self, n):
+        self.i = 0
+        self.n = n
+    def __iter__(self):
+        return self
+    def __next__(self):
+        if self.i >= self.n:
+            raise StopIteration
+        self.i += 1
+        return self.i * self.i
+
+list(Squares(3))    # [1, 4, 9]
+list(Squares(3))    # [1, 4, 9]   again: a fresh iterator each time
+```
+
+**Common mistake:** writing a class whose `__iter__` returns `self` and then being surprised that the second loop is empty. That class is an iterator, and iterators are one-shot.
+--- task
+Write two classes:
+
+- `CountdownIterator(n)`, an **iterator** producing `n, n-1, ..., 1`, then raising `StopIteration`. Its `__iter__` returns itself.
+- `Countdown(n)`, an **iterable** whose `__iter__` returns a new `CountdownIterator` each time, so it can be looped over more than once.
+--- starter
+class CountdownIterator:
+    def __init__(self, n):
+        self.n = n
+
+
+class Countdown:
+    def __init__(self, n):
+        self.n = n
+--- solution
+class CountdownIterator:
+    def __init__(self, n):
+        self.current = n
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        if self.current <= 0:
+            raise StopIteration
+        value = self.current
+        self.current -= 1
+        return value
+
+
+class Countdown:
+    def __init__(self, n):
+        self.n = n
+
+    def __iter__(self):
+        return CountdownIterator(self.n)
+--- hint
+The iterator needs a counter that `__next__` moves down. When it reaches 0, `raise StopIteration`.
+--- hint
+Remember to return the value *before* you move the counter, or you will skip `n`.
+--- hint
+`Countdown.__iter__` is one line: `return CountdownIterator(self.n)`.
+--- check case | Countdown(3) produces 3, 2, 1
+list(Countdown(3))
+=> [3, 2, 1]
+--- check case | Countdown(0) produces nothing
+list(Countdown(0))
+=> []
+--- check test | A Countdown can be looped over twice
+(lambda c: list(c) == [2, 1] and list(c) == [2, 1])(Countdown(2))
+?? Countdown.__iter__ must return a brand new CountdownIterator each time.
+--- check test | The iterator returns itself from iter()
+(lambda it: iter(it) is it)(CountdownIterator(2))
+--- check test | The iterator is used up after one pass
+(lambda it: (next(it), next(it)) == (2, 1) and raises(StopIteration, lambda: next(it)) and list(it) == [])(CountdownIterator(2))
+--- check case | Works with anything that loops: sum
+sum(Countdown(100))
+=> 5050
+
+=== py3-02 | Generators and pipelines
+--- teach
+Writing an iterator class by hand is a lot of ceremony. A **generator function** does the same job in a few lines: any function containing `yield` returns a generator, which is an iterator.
+
+```python
+def countdown(n):
+    while n > 0:
+        yield n
+        n -= 1
+
+g = countdown(3)
+next(g)        # 3
+list(g)        # [2, 1]
+```
+
+Each `yield` hands out one value and **pauses** the function, local variables and all. The next `next()` resumes right after the `yield`. When the function returns, the generator raises `StopIteration` for you.
+
+**Why this matters: laziness.** A generator produces values only when asked. It can walk a million-line log without holding it in memory, and it can even be endless:
+
+```python
+from itertools import count
+def evens():
+    for n in count():
+        if n % 2 == 0:
+            yield n
+```
+
+**Pipelines.** Because each generator takes an iterable and yields values, you can chain small stages together, like pipes in a shell. Each stage does one job, and values flow through one at a time:
+
+```python
+def non_blank(lines):
+    for line in lines:
+        if line.strip():
+            yield line.strip()
+
+def as_ints(lines):
+    for line in lines:
+        yield int(line)
+
+lines = ["3", "", "4", "  5 "]
+sum(as_ints(non_blank(lines)))    # 12
+```
+
+A **generator expression** is a comprehension with round brackets: `(x * x for x in nums)`. It is lazy too, and passing one straight into `sum(...)` or `max(...)` avoids building a list.
+
+**Common mistakes.** Calling a generator function runs *none* of its body; it only makes the generator. So errors inside show up later, when you first ask for a value. And a generator is an iterator, so it is used up after one pass.
+--- task
+Write three generator functions:
+
+- `read_numbers(lines)` yields the integer on each line, after stripping. It skips blank lines, lines starting with `#`, and lines that are not whole numbers.
+- `running_total(nums)` yields the running total after each number.
+- `take(n, items)` yields the first `n` items of any iterable, **including an endless one**, then stops.
+
+All three must be lazy: they must not read more input than they need.
+--- starter
+def read_numbers(lines):
+    return [int(line) for line in lines]
+
+
+def running_total(nums):
+    return []
+
+
+def take(n, items):
+    return list(items)[:n]
+--- solution
+def read_numbers(lines):
+    for line in lines:
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        try:
+            yield int(line)
+        except ValueError:
+            continue
+
+
+def running_total(nums):
+    total = 0
+    for n in nums:
+        total += n
+        yield total
+
+
+def take(n, items):
+    if n <= 0:
+        return
+    for i, item in enumerate(items, start=1):
+        yield item
+        if i >= n:
+            return
+--- hint
+Each function is a `for` loop with a `yield` inside. `continue` skips a line in `read_numbers`.
+--- hint
+Put only `int(line)` in `try` / `except ValueError`, and `yield` the result when it works.
+--- hint
+In `take`, stop with `return` as soon as you have yielded `n` items. Do not check for more first, or you will read one item too many. Handle `n <= 0` before the loop.
+--- check case | read_numbers skips blanks, comments and junk
+list(read_numbers(["10", "  ", "# total", " -4 ", "abc", "3.5", "7"]))
+=> [10, -4, 7]
+--- check test | read_numbers is a generator
+__import__("inspect").isgeneratorfunction(read_numbers)
+--- check test | read_numbers is lazy: it does not read past what you ask for
+next(read_numbers(__import__("itertools").chain(["5"], (str(1 // 0) for _ in "x")))) == 5
+?? Yield each number as soon as you have it, instead of building a list first.
+--- check case | running_total
+list(running_total([3, 1, 4, 1, 5]))
+=> [3, 4, 8, 9, 14]
+--- check case | take the first 5 running totals of the endless 1, 2, 3, ...
+list(take(5, running_total(__import__("itertools").count(1))))
+=> [1, 3, 6, 10, 15]
+--- check test | take never reads one item too many
+(lambda it: list(take(2, it)) == [0, 1] and next(it) == 2)(iter(range(10)))
+--- check case | take(0, ...) is empty
+list(take(0, __import__("itertools").count()))
+=> []
+--- check case | take more than there is
+list(take(10, "abc"))
+=> ["a", "b", "c"]
+
+=== py3-03 | Debugging: the iterator that ran dry
+--- teach
+Some bugs make no sense until you know what to suspect. This one produces no error at all: a value that should be there is simply empty.
+
+**Reproduce and shrink.** Cut the program down to the fewest lines that still show the wrong result:
+
+```python
+nums = (n for n in [3, 1, 2])
+print(max(nums))    # 3
+print(sorted(nums)) # []    <- where did the numbers go?
+```
+
+**Check your assumptions.** The hidden assumption is "`nums` is a collection of numbers". It is not. It is a *generator*: a one-shot iterator. `max` walked it to the end, and there is nothing left for `sorted`. The same is true of `zip(...)`, `map(...)`, `filter(...)`, `enumerate(...)`, `reversed(...)`, an open file, and anything a generator function returns.
+
+**Inspect, carefully.** `type(nums)` tells you what you have. But beware: *printing* `list(nums)` to see the values uses the iterator up, so adding a debug print can change what the program does. That is a classic "heisenbug", a bug that changes when you look at it. Print the type, not the contents, or make a list first.
+
+**Fix the cause.** If you need the values more than once, turn them into a list *once*, where they are created:
+
+```python
+nums = [n for n in [3, 1, 2]]     # or list(generator)
+max(nums), sorted(nums)           # (3, [1, 2, 3])
+```
+
+If the data is too large for a list, restructure so you only need one pass (compute both results in one loop), or create a fresh iterator for each pass.
+--- task
+**Bug report:** `summary(lines)` should return `(how many non-blank lines, the longest one)` but the longest is always `""`. `standings(names, points)` should return `(the leader's name, every name sorted by points, highest first)` but the list is always empty.
+
+Find out why and fix both. Keep the functions' results exactly as described; `summary([])` is `(0, "")`.
+--- starter
+def load(lines):
+    return (line.strip() for line in lines if line.strip())
+
+
+def summary(lines):
+    records = load(lines)
+    count = sum(1 for _ in records)
+    longest = max(records, key=len, default="")
+    return count, longest
+
+
+def standings(names, points):
+    pairs = zip(names, points)
+    leader = max(pairs, key=lambda p: p[1])[0]
+    ranked = [name for name, _ in sorted(pairs, key=lambda p: -p[1])]
+    return leader, ranked
+--- solution
+def load(lines):
+    return (line.strip() for line in lines if line.strip())
+
+
+def summary(lines):
+    records = list(load(lines))
+    count = len(records)
+    longest = max(records, key=len, default="")
+    return count, longest
+
+
+def standings(names, points):
+    pairs = list(zip(names, points))
+    leader = max(pairs, key=lambda p: p[1])[0]
+    ranked = [name for name, _ in sorted(pairs, key=lambda p: -p[1])]
+    return leader, ranked
+--- hint
+Print `type(records)` inside `summary`. What kind of object is it, and how many times can you loop over it?
+--- hint
+`zip(...)` returns an iterator as well. `max` used it up before `sorted` got its turn.
+--- hint
+Make each one a list where it is created: `list(load(lines))` and `list(zip(names, points))`.
+--- check case | summary counts and finds the longest line
+summary(["a", "  bbb ", "", "cc"])
+=> (3, "bbb")
+--- check case | summary of nothing
+summary([])
+=> (0, "")
+--- check case | standings finds the leader and ranks everyone
+standings(["ada", "lin", "sam"], [7, 12, 9])
+=> ("lin", ["lin", "sam", "ada"])
+--- check case | Equal points keep their original order
+standings(["x", "y", "z"], [5, 5, 1])
+=> ("x", ["x", "y", "z"])
+
+=== py3-04 | Decorators
+--- teach
+In Python, functions are values. You can pass a function to another function, and return one from it. A **decorator** is a function that takes a function and returns a new function that wraps it, adding behaviour before or after.
+
+```python
+import functools
+
+def shout(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        result = func(*args, **kwargs)
+        return result.upper()
+    return wrapper
+
+@shout
+def greet(name):
+    return f"hello, {name}"
+
+greet("ada")        # 'HELLO, ADA'
+```
+
+The `@shout` line is only shorthand for `greet = shout(greet)`: the name `greet` now points at `wrapper`, which calls the original.
+
+Three details matter:
+
+- **`*args, **kwargs`** in the wrapper pass every argument through unchanged, so the decorator works on any function.
+- **`return`** the original's result, or the decorated function will quietly return `None`.
+- **`functools.wraps(func)`** copies the original's name, docstring and other details onto the wrapper. Without it, `greet.__name__` is `'wrapper'`, which confuses error messages, debuggers and any tool that looks functions up by name.
+
+A wrapper can keep state as an attribute on itself, since functions are objects too: `wrapper.calls = 0`.
+
+**Decorators with arguments** need one more layer. `@repeat(3)` first *calls* `repeat(3)`, which must return the actual decorator:
+
+```python
+def repeat(times):              # takes the settings
+    def decorator(func):        # takes the function
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):   # takes the call's arguments
+            return [func(*args, **kwargs) for _ in range(times)]
+        return wrapper
+    return decorator
+
+@repeat(3)
+def roll():
+    return 4
+
+roll()     # [4, 4, 4]
+```
+
+A function defined inside another function can keep using the outer function's variables even after the outer one has returned. The inner function together with the variables it remembers is called a **closure**. Each layer here closes over the variables of the layer outside it, which is how `wrapper` still knows `times` and `func` long after `repeat` returned.
+
+**Common mistake:** writing `@repeat` without brackets for a decorator that takes arguments. Python then passes the function in as `times`, and things go wrong far from the cause.
+--- task
+Write two decorators, both using `functools.wraps`:
+
+- `count_calls(func)`: the returned function has an attribute `calls`, starting at `0` and going up by one on every call. It returns whatever `func` returns.
+- `retry(times)`: a decorator with an argument. The decorated function is tried up to `times` times in total. If a try raises an exception, it tries again; if every try fails, the last exception is raised. As soon as a try succeeds, its result is returned.
+--- starter
+import functools
+
+
+def count_calls(func):
+    return func
+
+
+def retry(times):
+    def decorator(func):
+        return func
+    return decorator
+--- solution
+import functools
+
+
+def count_calls(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        wrapper.calls += 1
+        return func(*args, **kwargs)
+
+    wrapper.calls = 0
+    return wrapper
+
+
+def retry(times):
+    def decorator(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            for attempt in range(1, times + 1):
+                try:
+                    return func(*args, **kwargs)
+                except Exception:
+                    if attempt == times:
+                        raise
+        return wrapper
+    return decorator
+--- hint
+In `count_calls`, set `wrapper.calls = 0` after defining `wrapper`, and add one inside it before calling `func`.
+--- hint
+`retry` has three levels: `retry(times)` returns `decorator(func)`, which returns `wrapper(*args, **kwargs)`.
+--- hint
+In the wrapper, loop over the attempts with `return func(...)` inside `try`. In `except`, a bare `raise` re-raises the current exception; do that only on the last attempt.
+--- check test | count_calls counts every call
+(lambda f: (f(1), f(2), f(3), f.calls)[3] == 3)(count_calls(lambda x: x))
+--- check test | A new decorated function starts at 0
+count_calls(lambda: 1).calls == 0
+--- check case | count_calls passes arguments through and returns the result
+count_calls(lambda a, b=1: a + b)(1, b=5)
+=> 6
+--- check test | Both decorators keep the original's name (functools.wraps)
+count_calls(len).__name__ == "len" and retry(2)(len).__name__ == "len"
+?? Put @functools.wraps(func) on the wrapper.
+--- check case | retry succeeds on the third try
+retry(3)((lambda seq: lambda: next(seq)())(iter([lambda: 1 / 0, lambda: 1 / 0, lambda: "ok"])))()
+=> "ok"
+--- check test | retry gives up after `times` tries and raises the last error
+raises(ZeroDivisionError, retry(2)((lambda seq: lambda: next(seq)())(iter([lambda: 1 / 0, lambda: 1 / 0, lambda: "ok"]))))
+--- check test | retry stops as soon as a try succeeds
+(lambda log: (retry(5)(lambda: log.append(1) or len(log))(), log)[1] == [1])([])
+--- check case | retry passes arguments through
+retry(1)(lambda a, b: a * b)(6, b=7)
+=> 42
+
+=== py3-05 | Context managers
+--- teach
+`with` guarantees that clean-up happens, whatever happens inside the block:
+
+```python
+with open("notes.txt", "w") as f:
+    f.write("hi")
+# the file is closed here, even if write() had raised
+```
+
+(`open(name, "w")` opens a file for writing; the `with` block closes it again.)
+
+Any object can work with `with` if it has two methods. The statement
+
+```python
+with manager as value:
+    body
+```
+
+does roughly this:
+
+```python
+value = manager.__enter__()
+try:
+    body
+except BaseException as e:
+    if not manager.__exit__(type(e), e, e.__traceback__):
+        raise                   # __exit__ returned false: let it propagate
+else:
+    manager.__exit__(None, None, None)
+```
+
+So `__enter__` sets things up and returns what `as` binds. `__exit__` receives the exception (or three `None`s if there was none), cleans up, and **returns True to swallow the exception**, or anything false to let it carry on.
+
+```python
+class Tag:
+    def __init__(self, name):
+        self.name = name
+    def __enter__(self):
+        print(f"<{self.name}>")
+        return self
+    def __exit__(self, exc_type, exc, tb):
+        print(f"</{self.name}>")
+        return False          # never hide errors
+```
+
+**The shortcut: `contextlib.contextmanager`.** For most cases, write a generator that yields once. Code before the `yield` is `__enter__`, code after it is `__exit__`, and an exception in the block is raised *at the `yield`*:
+
+```python
+from contextlib import contextmanager
+
+@contextmanager
+def tag(name):
+    print(f"<{name}>")
+    try:
+        yield
+    finally:
+        print(f"</{name}>")
+```
+
+**Common mistake:** leaving out `try` / `finally` around the `yield`. It works while nothing goes wrong, and silently skips the clean-up the first time something does, which is exactly when clean-up matters.
+
+One tool the task needs: `del settings[key]` removes a key (and its value) from a dict.
+--- task
+Write two context managers:
+
+- A class `Suppress(*exc_types)`. Inside its block, exceptions of any of the given types (including their subclasses) are swallowed and stored in `self.caught`; any other exception passes through. `self.caught` is `None` if nothing was caught. `__enter__` returns the manager itself.
+- With `@contextmanager`, `temp_setting(settings, key, value)`: inside the block, `settings[key]` is `value`. Afterwards, the old value is put back, or the key is removed if it was not there before. This must happen **even if the block raises**, and the exception must not be swallowed.
+--- starter
+from contextlib import contextmanager
+
+
+class Suppress:
+    def __init__(self, *exc_types):
+        self.exc_types = exc_types
+
+
+@contextmanager
+def temp_setting(settings, key, value):
+    settings[key] = value
+    yield
+--- solution
+from contextlib import contextmanager
+
+
+class Suppress:
+    def __init__(self, *exc_types):
+        self.exc_types = exc_types
+        self.caught = None
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc, tb):
+        if exc_type is not None and issubclass(exc_type, self.exc_types):
+            self.caught = exc
+            return True
+        return False
+
+
+_MISSING = object()
+
+
+@contextmanager
+def temp_setting(settings, key, value):
+    old = settings.get(key, _MISSING)
+    settings[key] = value
+    try:
+        yield
+    finally:
+        if old is _MISSING:
+            del settings[key]
+        else:
+            settings[key] = old
+--- hint
+`__exit__` gets `exc_type` as `None` when nothing went wrong. Test that before calling `issubclass(exc_type, self.exc_types)` (a tuple of types works there).
+--- hint
+Remember the old value before changing it. `None` could be a real value, so use a unique marker object for "was not there".
+--- hint
+Wrap the `yield` in `try:` / `finally:` and restore (or `del`) in the `finally`.
+--- check test | Suppress works in a real with block
+(lambda g: (exec("with Suppress(ZeroDivisionError) as s:\n    1 / 0\n", g), type(g["s"].caught) is ZeroDivisionError)[1])(dict(globals()))
+--- check test | __enter__ returns the manager, and a listed error is swallowed
+(lambda s: s.__enter__() is s and bool(s.__exit__(KeyError, KeyError("k"), None)))(Suppress(KeyError, IndexError))
+--- check test | The caught exception is stored
+(lambda s, e: (s.__enter__(), s.__exit__(IndexError, e, None), s.caught is e)[2])(Suppress(KeyError, IndexError), IndexError("i"))
+--- check test | Subclasses are caught too
+bool(Suppress(LookupError).__exit__(KeyError, KeyError("k"), None))
+--- check test | Other errors pass through
+not Suppress(KeyError).__exit__(ValueError, ValueError("v"), None)
+--- check test | With no error, caught stays None
+(lambda s: (s.__enter__(), s.__exit__(None, None, None), s.caught)[2] is None)(Suppress(KeyError))
+--- check case | temp_setting sets the value inside, restores it after
+(lambda d: (lambda cm: [cm.__enter__(), d["mode"], cm.__exit__(None, None, None), dict(d)][1::2])(temp_setting(d, "mode", "test")))({"mode": "live"})
+=> ["test", {"mode": "live"}]
+--- check case | A key that was not there is removed afterwards
+(lambda d: (lambda cm: [cm.__enter__(), d["x"], cm.__exit__(None, None, None), dict(d)][1::2])(temp_setting(d, "x", 1)))({})
+=> [1, {}]
+--- check case | The old value comes back even when the block raises, and the error still propagates
+(lambda g: (exec("try:\n    with temp_setting(cfg, 'debug', True):\n        raise RuntimeError('boom')\nexcept RuntimeError:\n    cfg['propagated'] = True\n", g), g["cfg"])[1])({**globals(), "cfg": {"debug": False}})
+=> {"debug": False, "propagated": True}
+?? Put the yield inside try/finally.
+
+=== py3-06 | Dataclasses and enums
+--- teach
+Many classes exist only to hold data. Writing `__init__`, `__repr__` and `__eq__` by hand for each is repetitive and easy to get wrong. **`@dataclass`** writes them for you from type-annotated fields:
+
+```python
+from dataclasses import dataclass, field
+
+@dataclass
+class Item:
+    name: str
+    price: float
+    tags: list[str] = field(default_factory=list)
+
+Item("tea", 2.5)                      # Item(name='tea', price=2.5, tags=[])
+Item("tea", 2.5) == Item("tea", 2.5)  # True
+```
+
+`name: str` is a **type annotation**: it records what type the field is meant to hold (`list[str]` is a list of strings). Python does not check annotations when the program runs (the expert course shows the tools that do); `@dataclass` reads them to find the fields.
+
+Fields with defaults must come after fields without. A mutable default needs `field(default_factory=list)`, which calls `list()` for each new object. (Remember the mutable default bug? Dataclasses refuse a plain `= []` for that reason.)
+
+Useful options: `@dataclass(frozen=True)` makes instances read-only, which also makes them **hashable** so they can go in sets and be dict keys. `@dataclass(order=True)` adds `<`, `>` and friends, comparing fields in order.
+
+**Enums** give a fixed set of named values. Instead of passing strings like `"high"` around (where a typo like `"hihg"` fails silently), you pass `Priority.HIGH` (where a typo is an immediate `AttributeError`):
+
+```python
+from enum import Enum
+
+class Colour(Enum):
+    RED = 1
+    GREEN = 2
+
+Colour.RED            # <Colour.RED: 1>
+Colour.RED.name       # 'RED'
+Colour.RED.value      # 1
+Colour(2)             # <Colour.GREEN: 2>   look up by value
+Colour["GREEN"]       # <Colour.GREEN: 2>   look up by name
+list(Colour)          # [<Colour.RED: 1>, <Colour.GREEN: 2>]
+```
+
+**Common mistake:** comparing an enum member to its raw value. `Colour.RED == 1` is `False`. Compare members with members (`is` works too), and use `.value` when you really need the number.
+--- task
+Write:
+
+- An `Enum` called `Priority` with members `LOW = 1`, `MEDIUM = 2`, `HIGH = 3`.
+- A dataclass `Task` with fields `title` (str), `priority` (default `Priority.MEDIUM`), `tags` (a list, default empty and **not shared** between tasks) and `done` (default `False`), plus a method `complete()` that sets `done` to `True`.
+- A frozen dataclass `Point` with fields `x` and `y`.
+- `by_priority(tasks)` returning the tasks sorted highest priority first, then by title A to Z.
+--- starter
+from dataclasses import dataclass, field
+from enum import Enum
+
+
+class Task:
+    def __init__(self, title):
+        self.title = title
+
+
+def by_priority(tasks):
+    return tasks
+--- solution
+from dataclasses import dataclass, field
+from enum import Enum
+
+
+class Priority(Enum):
+    LOW = 1
+    MEDIUM = 2
+    HIGH = 3
+
+
+@dataclass
+class Task:
+    title: str
+    priority: Priority = Priority.MEDIUM
+    tags: list[str] = field(default_factory=list)
+    done: bool = False
+
+    def complete(self):
+        self.done = True
+
+
+@dataclass(frozen=True)
+class Point:
+    x: float
+    y: float
+
+
+def by_priority(tasks):
+    return sorted(tasks, key=lambda t: (-t.priority.value, t.title))
+--- hint
+`tags: list[str] = field(default_factory=list)` gives each task its own list.
+--- hint
+`@dataclass(frozen=True)` above `class Point:` with two annotated fields.
+--- hint
+Enum members do not compare with `<`, so sort on `-t.priority.value` then `t.title`.
+--- check test | Priority members and lookups
+Priority.HIGH.value == 3 and Priority(1) is Priority.LOW and Priority["MEDIUM"] is Priority.MEDIUM and len(Priority) == 3
+--- check case | Task has a generated repr with the defaults
+repr(Task("write"))
+=> "Task(title='write', priority=<Priority.MEDIUM: 2>, tags=[], done=False)"
+--- check test | Two tasks with the same data are equal
+Task("a", Priority.LOW) == Task("a", Priority.LOW) and Task("a") != Task("b")
+--- check test | Tasks do not share their tag list
+(lambda a, b: (a.tags.append("x"), b.tags)[1] == [])(Task("a"), Task("b"))
+--- check test | complete() marks the task done
+(lambda t: (t.complete(), t.done)[1] is True)(Task("a"))
+--- check test | Point is frozen
+raises(__import__("dataclasses").FrozenInstanceError, lambda: setattr(Point(1, 2), "x", 5))
+--- check test | Frozen points can go in a set
+len({Point(1, 2), Point(1, 2), Point(2, 1)}) == 2
+--- check case | by_priority sorts by priority, then title
+[t.title for t in by_priority([Task("b"), Task("z", Priority.HIGH), Task("a"), Task("c", Priority.LOW), Task("m", Priority.HIGH)])]
+=> ["m", "z", "a", "b", "c"]
+
+=== py3-07 | Special methods: making your own types feel built in
+--- teach
+Why does `len(x)` work on a list, `x[0]` on a string and `a + b` on numbers? Because those types define **special methods** (also called *dunder* methods, for the double underscores). Python turns syntax into method calls:
+
+| You write | Python calls |
+|---|---|
+| `len(v)` | `v.__len__()` |
+| `v[i]` | `v.__getitem__(i)` |
+| `for x in v` | `v.__iter__()` |
+| `x in v` | `v.__contains__(x)` |
+| `a + b` | `a.__add__(b)` |
+| `a * 3` | `a.__mul__(3)` |
+| `3 * a` | `a.__rmul__(3)` (after `int.__mul__` gives up) |
+| `a == b` | `a.__eq__(b)` |
+| `hash(a)` | `a.__hash__()` |
+| `abs(a)` | `a.__abs__()` |
+| `bool(a)` | `a.__bool__()` (or `__len__` if there is no `__bool__`) |
+
+Define them and your objects work with the whole language: `sum`, `sorted`, `in`, sets, dict keys. (Two built-ins you may want for the task: `any(xs)` is `True` if at least one item of `xs` is truthy, and `all(xs)` if every item is.)
+
+```python
+class Money:
+    def __init__(self, cents):
+        self.cents = cents
+    def __add__(self, other):
+        if not isinstance(other, Money):
+            return NotImplemented
+        return Money(self.cents + other.cents)
+    def __repr__(self):
+        return f"Money({self.cents})"
+
+Money(150) + Money(75)     # Money(225)
+```
+
+Returning `NotImplemented` (a special value, not an error) tells Python "I don't know how to do this", so it can try the other operand's method, and raise a clear `TypeError` if neither knows.
+
+**The hash rule.** Objects that compare equal must have equal hashes, or sets and dicts will misbehave. When you define `__eq__`, Python sets `__hash__` to `None` (unhashable) unless you define it too. Hash the same data you compare, and only if that data cannot change: `hash(self.components)` for a tuple.
+
+`__getitem__` receives whatever is inside the brackets. For `v[1:3]` that is a `slice` object; `isinstance(index, slice)` lets you handle both.
+
+**Common mistake:** making `__add__` change `self` and return it. `a + b` must never modify `a`; return a new object.
+--- task
+Write a class `Vector` built from any number of numbers, `Vector(1, 2, 3)`, stored as a tuple so it cannot change. It supports:
+
+- `repr` → `Vector(1, 2, 3)`; `len`; iteration; `v[i]` (a slice returns a new `Vector`)
+- `v + w` and `v - w` element by element; a `ValueError` if the lengths differ
+- `v * k` and `k * v` for a number `k`
+- `==` with another `Vector`, and a `__hash__` consistent with it
+- `abs(v)`, the length `sqrt(x² + y² + ...)`, and `bool(v)`, false only when every component is 0
+--- starter
+class Vector:
+    def __init__(self, *components):
+        self.components = list(components)
+--- solution
+import math
+
+
+class Vector:
+    def __init__(self, *components):
+        self.components = tuple(components)
+
+    def __repr__(self):
+        return f"Vector({', '.join(repr(c) for c in self.components)})"
+
+    def __len__(self):
+        return len(self.components)
+
+    def __iter__(self):
+        return iter(self.components)
+
+    def __getitem__(self, index):
+        if isinstance(index, slice):
+            return Vector(*self.components[index])
+        return self.components[index]
+
+    def _check(self, other):
+        if not isinstance(other, Vector):
+            return False
+        if len(other) != len(self):
+            raise ValueError("vectors must have the same length")
+        return True
+
+    def __add__(self, other):
+        if not self._check(other):
+            return NotImplemented
+        return Vector(*(a + b for a, b in zip(self, other)))
+
+    def __sub__(self, other):
+        if not self._check(other):
+            return NotImplemented
+        return Vector(*(a - b for a, b in zip(self, other)))
+
+    def __mul__(self, k):
+        if not isinstance(k, (int, float)):
+            return NotImplemented
+        return Vector(*(a * k for a in self))
+
+    __rmul__ = __mul__
+
+    def __eq__(self, other):
+        if not isinstance(other, Vector):
+            return NotImplemented
+        return self.components == other.components
+
+    def __hash__(self):
+        return hash(self.components)
+
+    def __abs__(self):
+        return math.sqrt(sum(a * a for a in self))
+
+    def __bool__(self):
+        return any(self.components)
+--- hint
+Store `tuple(components)`. Many methods then just hand over to the tuple: `len(self.components)`, `iter(self.components)`, `hash(self.components)`.
+--- hint
+For `+` and `-`, build a new Vector from `zip(self, other)`. Check the lengths first and raise `ValueError` if they differ.
+--- hint
+`__rmul__ = __mul__` makes `3 * v` work. In `__getitem__`, `isinstance(index, slice)` tells you to return `Vector(*self.components[index])`.
+--- check case | repr
+repr(Vector(1, 2, 3))
+=> "Vector(1, 2, 3)"
+--- check test | len, iteration and indexing
+(lambda v: len(v) == 3 and list(v) == [4, 5, 6] and v[0] == 4 and v[-1] == 6)(Vector(4, 5, 6))
+--- check case | A slice is a Vector
+Vector(1, 2, 3, 4)[1:3]
+=> Vector(2, 3)
+--- check case | Addition and subtraction
+(Vector(1, 2) + Vector(10, 20), Vector(5, 5) - Vector(1, 2))
+=> (Vector(11, 22), Vector(4, 3))
+--- check test | Adding different lengths raises ValueError
+raises(ValueError, lambda: Vector(1, 2) + Vector(1, 2, 3))
+--- check test | Scaling works on both sides, and + does not change the original
+(lambda v: v * 2 == Vector(2, 4) and 3 * v == Vector(3, 6) and (v + v, v)[1] == Vector(1, 2))(Vector(1, 2))
+--- check test | Equal vectors hash equal and work in sets and dicts
+len({Vector(1, 2), Vector(1, 2), Vector(2, 1)}) == 2 and {Vector(0, 1): "up"}[Vector(0, 1)] == "up"
+--- check test | Vector is not equal to a tuple with the same numbers
+Vector(1, 2) != (1, 2)
+--- check test | abs is the length, bool is false only for zero
+abs(Vector(3, 4)) == 5.0 and not Vector(0, 0) and bool(Vector(0, 1))
+--- check test | Components cannot be changed
+isinstance(Vector(1, 2).components, tuple)
+?? Store the components as a tuple.
+
+=== py3-08 | functools: partial, reduce and lru_cache
+--- teach
+`functools` is the standard library's toolbox for working *with* functions.
+
+**`partial`** fixes some arguments of a function now, giving you a new function that takes the rest later:
+
+```python
+from functools import partial
+def power(base, exp):
+    return base ** exp
+
+square = partial(power, exp=2)
+square(9)           # 81
+int_from_binary = partial(int, base=2)
+int_from_binary("101")   # 5
+```
+
+It is handy wherever something wants a function of one argument (a `key=`, a callback) and yours takes more.
+
+**`reduce`** folds a sequence into one value by applying a two-argument function repeatedly, left to right:
+
+```python
+from functools import reduce
+reduce(lambda acc, x: acc + x, [1, 2, 3, 4], 0)    # ((((0+1)+2)+3)+4) = 10
+reduce(lambda acc, x: acc * x, [], 1)              # 1: the start value
+```
+
+Always give a start value: without one, `reduce` fails on an empty sequence. For sums and products, `sum()` and `math.prod()` are clearer; `reduce` earns its place when the combining step is your own, like chaining functions together.
+
+**`lru_cache`** remembers a function's results by its arguments. Call it again with the same arguments and it returns the stored answer instantly:
+
+```python
+from functools import lru_cache
+
+@lru_cache(maxsize=None)
+def slow_square(n):
+    print("computing", n)
+    return n * n
+
+slow_square(4)   # prints "computing 4", returns 16
+slow_square(4)   # returns 16 at once, nothing printed
+slow_square.cache_info()   # CacheInfo(hits=1, misses=1, maxsize=None, currsize=1)
+```
+
+This only makes sense for **pure functions**, whose result depends only on their arguments. Cache a function that reads the clock or a file, and you get stale answers. The arguments must be hashable too: no lists.
+
+**Common mistake:** in `reduce`, mixing up the order of the two arguments. The first is always the running result so far; the second is the next item.
+--- task
+Write:
+
+- `product(nums)` using `reduce`; `product([])` is `1`.
+- `compose(*funcs)` returning one function that applies them **right to left**: `compose(f, g, h)(x)` is `f(g(h(x)))`, and `compose()` returns its argument unchanged. Use `reduce`.
+- `two_to_the`, made with `partial` from the built-in `pow`, so `two_to_the(10)` is `1024`.
+- `collatz_steps(n)`, cached with `lru_cache`: `0` if `n` is 1, otherwise `1 +` the steps of `n // 2` (if `n` is even) or `3 * n + 1` (if odd).
+--- starter
+from functools import lru_cache, partial, reduce
+
+
+def product(nums):
+    return 0
+
+
+def compose(*funcs):
+    return funcs[0]
+
+
+def collatz_steps(n):
+    return 0
+--- solution
+from functools import lru_cache, partial, reduce
+
+
+def product(nums):
+    return reduce(lambda acc, x: acc * x, nums, 1)
+
+
+def compose(*funcs):
+    return reduce(lambda f, g: lambda x: f(g(x)), funcs, lambda x: x)
+
+
+two_to_the = partial(pow, 2)
+
+
+@lru_cache(maxsize=None)
+def collatz_steps(n):
+    if n == 1:
+        return 0
+    if n % 2 == 0:
+        return 1 + collatz_steps(n // 2)
+    return 1 + collatz_steps(3 * n + 1)
+--- hint
+`reduce(lambda acc, x: acc * x, nums, 1)`: the last argument is the start value for an empty list.
+--- hint
+For `compose`, start from the identity function `lambda x: x`, and at each step combine the function so far `f` with the next one `g` into `lambda x: f(g(x))`.
+--- hint
+`partial(pow, 2)` fixes the base; `@lru_cache(maxsize=None)` goes directly above `def collatz_steps`.
+--- check test | product, including the empty case
+product([2, 3, 4]) == 24 and product([]) == 1 and product([-1, 5]) == -5
+--- check case | compose applies right to left
+compose(lambda x: x + 1, lambda x: x * 2)(5)
+=> 11
+--- check case | compose works with any number of functions
+compose(str, abs, lambda x: x - 10)(3)
+=> "7"
+--- check case | compose() is the identity
+compose()("same")
+=> "same"
+--- check test | two_to_the is a partial of pow
+two_to_the(10) == 1024 and isinstance(two_to_the, __import__("functools").partial)
+--- check test | collatz_steps small values
+[collatz_steps(n) for n in (1, 2, 6, 27)] == [0, 1, 8, 111]
+--- check case | The longest chain below 30,000 (the cache makes this fast)
+max(range(1, 30000), key=collatz_steps)
+=> 26623
+--- check test | collatz_steps is cached with lru_cache
+collatz_steps.cache_info().hits > 0
+?? Put @lru_cache(maxsize=None) on collatz_steps.
+--- check source | Uses reduce
+\breduce\(
+
+=== py3-09 | Debugging: aliasing and shared state
+--- teach
+A variable in Python is not a box holding a value. It is a **name pointing at an object**. Two names can point at the same object, and then a change made through one is visible through the other. That is called **aliasing**, and it is behind some of the most confusing bugs you will meet.
+
+```python
+a = [1, 2]
+b = a          # no copy: b is another name for the same list
+b.append(3)
+a              # [1, 2, 3]
+a is b         # True   (same object)
+```
+
+**The debugging tool** is `is` (or `id()`): when two things change together, ask whether they are the same object.
+
+**Where aliasing hides:**
+
+```python
+grid = [[0] * 3] * 2      # the outer * copies the REFERENCE to one inner list
+grid[0][0] = 9
+grid                      # [[9, 0, 0], [9, 0, 0]]
+grid[0] is grid[1]        # True
+```
+
+`[0] * 3` is fine (numbers cannot change), but `[inner] * 2` gives two references to *one* inner list. Build each row separately: `[[0] * 3 for _ in range(2)]`.
+
+`dict.fromkeys(names, [])` has the same flaw: every key gets the *same* list.
+
+**Shallow and deep copies.** `list(x)`, `x.copy()`, `x[:]` and `copy.copy(x)` make a **shallow** copy: a new outer container, but the *same* objects inside. For nested data, you need `copy.deepcopy`, which copies all the way down:
+
+```python
+import copy
+state = {"round": 1, "scores": {"ada": 0}}
+shallow = state.copy()
+deep = copy.deepcopy(state)
+state["scores"]["ada"] = 5
+shallow["scores"]     # {'ada': 5}   shares the inner dict
+deep["scores"]        # {'ada': 0}   independent
+```
+
+**Fix the cause.** When you see "changing one thing changed another", find where the second name was created, and decide deliberately: should these share, or should one be a copy? Also, a function should not quietly change data it was given unless that is its whole job and its name says so.
+--- task
+**Bug report:**
+
+1. `place(make_board(3), 0, 0, "X")` puts an X in the whole first column instead of one cell.
+2. `new_inventories(["ada", "lin"])` gives players whose item lists are linked: giving Ada a sword gives Lin one too.
+3. `snapshots(state, changes)` should return the state after each change, but every snapshot shows the final scores, and the caller's own `state` is changed.
+
+Fix all three. `snapshots` must not modify the `state` passed in.
+--- starter
+def make_board(size):
+    return [["."] * size] * size
+
+
+def place(board, row, col, mark):
+    board[row][col] = mark
+    return board
+
+
+def new_inventories(names):
+    return dict.fromkeys(names, [])
+
+
+def snapshots(state, changes):
+    history = []
+    for name, score in changes:
+        state["scores"][name] = score
+        history.append(state.copy())
+    return history
+--- solution
+import copy
+
+
+def make_board(size):
+    return [["."] * size for _ in range(size)]
+
+
+def place(board, row, col, mark):
+    board[row][col] = mark
+    return board
+
+
+def new_inventories(names):
+    return {name: [] for name in names}
+
+
+def snapshots(state, changes):
+    current = copy.deepcopy(state)
+    history = []
+    for name, score in changes:
+        current["scores"][name] = score
+        history.append(copy.deepcopy(current))
+    return history
+--- hint
+Check `board[0] is board[1]`. Then build each row separately with a comprehension.
+--- hint
+`dict.fromkeys(names, [])` gives every key the same list. A dict comprehension makes a new list per name.
+--- hint
+In `snapshots`, work on `copy.deepcopy(state)`, and append a `copy.deepcopy` of it each time: `.copy()` is shallow, so the inner `scores` dict was shared.
+--- check case | place marks exactly one cell
+place(make_board(3), 0, 0, "X")
+=> [["X", ".", "."], [".", ".", "."], [".", ".", "."]]
+--- check test | Every row is its own list
+(lambda b: b[0] is not b[1] and b[1] is not b[2])(make_board(3))
+--- check test | Inventories are independent
+(lambda inv: (inv["ada"].append("sword"), inv["lin"])[1] == [])(new_inventories(["ada", "lin"]))
+--- check case | Each snapshot shows the state at that moment
+[s["scores"] for s in snapshots({"round": 1, "scores": {"ada": 0, "lin": 0}}, [("ada", 3), ("lin", 5), ("ada", 4)])]
+=> [{"ada": 3, "lin": 0}, {"ada": 3, "lin": 5}, {"ada": 4, "lin": 5}]
+--- check test | snapshots does not change the caller's state
+(lambda st: (snapshots(st, [("ada", 9)]), st)[1] == {"round": 1, "scores": {"ada": 0}})({"round": 1, "scores": {"ada": 0}})
+
+=== py3-10 | Design: composition over inheritance, and the strategy pattern
+--- teach
+There are two ways to give a class new behaviour. **Inheritance** says "an `ExpressOrder` *is an* `Order`, with one method replaced". **Composition** says "an `Order` *has a* shipping method, and asks it for the cost".
+
+Inheritance looks natural at first, and then it multiplies. Express shipping, gift wrap, discounts: soon you need `ExpressGiftWrappedDiscountedOrder`, one class for every combination. Worse, an order cannot change its shipping method without becoming a different class.
+
+With composition, each varying part becomes an object you plug in:
+
+```python
+class Order:
+    def __init__(self, items, shipping):
+        self.items = items
+        self.shipping = shipping      # any object with a cost(order) method
+
+    def shipping_cost(self):
+        return self.shipping.cost(self)
+```
+
+This is the **strategy pattern**: a family of interchangeable objects, each with the same method, chosen at run time. `Order` does not know or care which one it has. Adding a new shipping method means writing a new small class; `Order` does not change at all.
+
+Strategy objects can hold their own settings, which a chain of `if`s cannot do neatly:
+
+```python
+class Flat:
+    def __init__(self, fee):
+        self.fee = fee
+    def cost(self, order):
+        return self.fee
+
+Order(items, Flat(3.50))
+```
+
+**When to use which?** Inherit when the child genuinely *is* a kind of the parent and uses nearly all of it (a `TimeoutError` is an `OSError`). Compose when a *part* of the behaviour varies. A useful smell: an `if`/`elif` chain on a type name or mode string, repeated in several methods, is asking to become strategy objects.
+
+In Python a strategy does not even have to be a class: any object with the right method works ("duck typing"), and for a single method, a plain function often does the job.
+--- task
+`Order.shipping_cost` is a chain of `if`s on a string. Refactor it to the strategy pattern:
+
+- Classes `Standard`, `Express` and `Pickup`, each with a method `cost(order)`: Standard is `0` when the subtotal is 50 or more, otherwise `4.99`; Express is `9.99 + per_kg * order.weight()`, where `Express(per_kg=2.0)` has `per_kg` defaulting to `2.0`; Pickup is `0`.
+- `Order(items, shipping)` takes a shipping **object** and asks it for the cost. `Order` must not mention any shipping method by name.
+
+Items are `(name, price, weight_kg)` tuples. `subtotal`, `weight` and `total` keep working as now.
+--- starter
+class Order:
+    def __init__(self, items, shipping):
+        self.items = items
+        self.shipping = shipping
+
+    def subtotal(self):
+        return sum(price for _, price, _ in self.items)
+
+    def weight(self):
+        return sum(kg for _, _, kg in self.items)
+
+    def shipping_cost(self):
+        if self.shipping == "standard":
+            return 0 if self.subtotal() >= 50 else 4.99
+        elif self.shipping == "express":
+            return 9.99 + 2.0 * self.weight()
+        elif self.shipping == "pickup":
+            return 0
+        raise ValueError(f"unknown shipping: {self.shipping}")
+
+    def total(self):
+        return round(self.subtotal() + self.shipping_cost(), 2)
+--- solution
+class Standard:
+    def cost(self, order):
+        return 0 if order.subtotal() >= 50 else 4.99
+
+
+class Express:
+    def __init__(self, per_kg=2.0):
+        self.per_kg = per_kg
+
+    def cost(self, order):
+        return 9.99 + self.per_kg * order.weight()
+
+
+class Pickup:
+    def cost(self, order):
+        return 0
+
+
+class Order:
+    def __init__(self, items, shipping):
+        self.items = items
+        self.shipping = shipping
+
+    def subtotal(self):
+        return sum(price for _, price, _ in self.items)
+
+    def weight(self):
+        return sum(kg for _, _, kg in self.items)
+
+    def shipping_cost(self):
+        return self.shipping.cost(self)
+
+    def total(self):
+        return round(self.subtotal() + self.shipping_cost(), 2)
+--- hint
+Move each branch of the `if` chain into the `cost(self, order)` method of its own class. Use `order.subtotal()` and `order.weight()` instead of `self.`.
+--- hint
+`Express` needs an `__init__(self, per_kg=2.0)` that stores `per_kg`.
+--- hint
+`Order.shipping_cost` becomes one line: `return self.shipping.cost(self)`.
+--- check case | Standard is free over 50
+Order([("boots", 60.0, 1.2)], Standard()).total()
+=> 60.0
+--- check case | Standard charges 4.99 under 50
+Order([("socks", 8.0, 0.1), ("hat", 12.0, 0.2)], Standard()).total()
+=> 24.99
+--- check case | Express charges by weight
+Order([("books", 30.0, 2.5)], Express()).total()
+=> 44.99
+--- check case | Express can be configured
+Order([("books", 30.0, 2.5)], Express(per_kg=1.0)).total()
+=> 42.49
+--- check case | Pickup is free
+Order([("tv", 400.0, 15.0)], Pickup()).total()
+=> 400.0
+--- check case | A brand new strategy works without changing Order
+Order([("gift", 20.0, 1.0)], type("Flat", (), {"cost": lambda self, order: 3.5})()).total()
+=> 23.5
+--- check source absent | Order no longer checks shipping names
+==\s*["'](standard|express|pickup)["']
+
+=== py3-11 | Recursion, memoisation and dynamic programming
+--- teach
+A **recursive** function solves a problem by calling itself on a smaller version of the same problem. It needs two parts:
+
+- a **base case** small enough to answer directly, and
+- a **recursive case** that makes the problem smaller and trusts the call to solve the rest.
+
+```python
+def total(nums):
+    if not nums:                    # base case
+        return 0
+    return nums[0] + total(nums[1:])   # smaller problem
+```
+
+**The trap: repeated work.** The textbook Fibonacci recursion is correct but hopeless:
+
+```python
+def fib(n):
+    return n if n < 2 else fib(n - 1) + fib(n - 2)
+```
+
+`fib(5)` calls `fib(3)` twice, `fib(2)` three times, and the count doubles with each step. `fib(40)` makes over 300 million calls. The fix is **memoisation**: remember each answer the first time. With `@lru_cache`, every `fib(k)` is computed once, and `fib(40)` takes 41 calls.
+
+That is the heart of **dynamic programming (DP)**: when a problem breaks into *overlapping* subproblems, solve each once and reuse it.
+
+**Top-down vs bottom-up.** Memoised recursion is *top-down*: start from the question and recurse. Python limits recursion depth (about 1000 calls), so for big inputs you often go *bottom-up* instead: fill a table from the smallest subproblem upwards with a loop.
+
+**Worked example: fewest coins.** Coins `[1, 3, 4]`, amount `6`. Grabbing the biggest coin first gives 4+1+1 (three coins), but 3+3 is two. Greedy fails, so think in subproblems: *the best way to make `a` is one coin `c` plus the best way to make `a - c`*, for whichever coin gives the fewest.
+
+```python
+best[0] = 0
+best[a] = 1 + min(best[a - c] for each coin c <= a)
+```
+
+Filling `best[0]`, `best[1]`, … `best[amount]` in order means every value you need is already there when you need it.
+
+**Counting combinations** is similar but has a twist: to count `1+2` and `2+1` as the *same* way, loop over the coins on the outside, so each coin is only ever added after the ones before it.
+--- task
+Solve two coin problems with dynamic programming. Both must handle an amount of 10,000 quickly.
+
+- `min_coins(coins, amount)` returns the fewest coins that add up to `amount`, or `-1` if it cannot be done. `min_coins(coins, 0)` is `0`.
+- `count_ways(coins, amount)` returns how many different **combinations** of coins add up to `amount` (order does not matter, so `1+2` and `2+1` are one way). There is exactly one way to make `0`.
+
+You have an unlimited supply of each coin.
+--- starter
+def min_coins(coins, amount):
+    count = 0
+    for coin in sorted(coins, reverse=True):
+        while amount >= coin:
+            amount -= coin
+            count += 1
+    return count if amount == 0 else -1
+
+
+def count_ways(coins, amount):
+    return 0
+--- solution
+def min_coins(coins, amount):
+    INF = float("inf")
+    best = [0] + [INF] * amount
+    for a in range(1, amount + 1):
+        for c in coins:
+            if c <= a and best[a - c] + 1 < best[a]:
+                best[a] = best[a - c] + 1
+    return best[amount] if best[amount] != INF else -1
+
+
+def count_ways(coins, amount):
+    ways = [1] + [0] * amount
+    for c in coins:
+        for a in range(c, amount + 1):
+            ways[a] += ways[a - c]
+    return ways[amount]
+--- hint
+The starter's greedy `min_coins` fails for coins `[1, 3, 4]` and amount 6. Make a list `best` where `best[a]` is the fewest coins for amount `a`, with `best[0] = 0` and everything else "infinity" (`float("inf")`).
+--- hint
+For each amount `a` from 1 upwards, try every coin `c <= a`: `best[a] = min(best[a], best[a - c] + 1)`. Unreachable amounts stay infinite; return -1 for those.
+--- hint
+For `count_ways`, `ways = [1] + [0] * amount`, then *for each coin* (outer loop), for each `a` from `c` to `amount`: `ways[a] += ways[a - c]`.
+--- check case | min_coins, the usual case
+min_coins([1, 2, 5], 11)
+=> 3
+--- check case | Greedy is wrong here, DP is not
+min_coins([1, 3, 4], 6)
+=> 2
+?? Taking the biggest coin first gives 4+1+1. Try every coin at every amount.
+--- check case | Impossible gives -1
+min_coins([2], 3)
+=> -1
+--- check case | Zero needs zero coins
+min_coins([1, 5], 0)
+=> 0
+--- check case | A big amount
+min_coins([1, 7, 23, 97, 331], 10000)
+=> 34
+--- check case | A big amount with no 1-coin
+min_coins([7, 23, 97, 331], 9999)
+=> 33
+--- check case | count_ways counts combinations, not orders
+count_ways([1, 2, 5], 5)
+=> 4
+--- check case | count_ways with several coins
+count_ways([2, 5, 3, 6], 10)
+=> 5
+--- check test | One way to make zero, none when it cannot be done
+count_ways([1, 2], 0) == 1 and count_ways([7], 3) == 0
+--- check case | count_ways for 10,000 with eight coins
+count_ways([1, 2, 5, 10, 20, 50, 100, 200], 10000)
+=> 1133873304647601
+
+=== py3-12 | Big-O: code that finishes
+--- teach
+Two programs can give the same answer and differ by hours. **Big-O notation** describes how the work grows as the input grows, ignoring constant factors:
+
+| Big-O | Name | 1,000 items | 1,000,000 items |
+|---|---|---|---|
+| O(1) | constant | 1 | 1 |
+| O(log n) | logarithmic | 10 | 20 |
+| O(n) | linear | 1,000 | 1,000,000 |
+| O(n log n) | sorting | 10,000 | 20,000,000 |
+| O(n²) | quadratic | 1,000,000 | 1,000,000,000,000 |
+
+Python does very roughly ten million simple steps a second. So O(n²) on a million items is not "slow"; it never finishes.
+
+**Know the cost of what you call.** Hidden loops are where quadratic code comes from:
+
+| Operation | list | set / dict |
+|---|---|---|
+| `x in c` | O(n): checks every item | O(1) on average |
+| `c.append(x)` / `c.add(x)` | O(1) | O(1) |
+| `c.insert(0, x)`, `c.pop(0)` | O(n) | n/a |
+| `sum(c[a:b])` | O(b - a) | n/a |
+
+This innocent-looking loop is O(n²), because `x not in result` scans the list each time:
+
+```python
+result = []
+for x in items:
+    if x not in result:      # hidden loop
+        result.append(x)
+```
+
+Add a `set` beside the list and the check becomes instant. The loop is now O(n).
+
+**Precompute to answer many questions.** If you will be asked for the sum of `nums[lo:hi]` many times, summing each slice is O(n) per question. Instead, build **prefix sums** once: `prefix[i]` is the sum of the first `i` numbers. Then every range sum is one subtraction:
+
+```python
+nums   = [3, 1, 4, 1, 5]
+prefix = [0, 3, 4, 8, 9, 14]      # prefix[i] = sum(nums[:i])
+# sum(nums[1:4]) == prefix[4] - prefix[1] == 9 - 3 == 6
+```
+
+O(n) once, then O(1) per question, instead of O(n) per question.
+
+**Common mistake:** testing only on tiny inputs. Everything is fast on ten items. Always ask: *what happens when this is 100,000?*
+--- task
+Both functions must handle 100,000-item inputs in well under a second.
+
+- `dedupe(items)` returns the items with duplicates removed, keeping the **first** occurrence of each, in order.
+- `range_sums(nums, queries)` takes a list of `(lo, hi)` pairs and returns a list with `sum(nums[lo:hi])` for each (`lo <= hi`, both within the list). Use prefix sums.
+--- starter
+def dedupe(items):
+    result = []
+    for x in items:
+        if x not in result:
+            result.append(x)
+    return result
+
+
+def range_sums(nums, queries):
+    return [sum(nums[lo:hi]) for lo, hi in queries]
+--- solution
+def dedupe(items):
+    seen = set()
+    result = []
+    for x in items:
+        if x not in seen:
+            seen.add(x)
+            result.append(x)
+    return result
+
+
+def range_sums(nums, queries):
+    prefix = [0]
+    for n in nums:
+        prefix.append(prefix[-1] + n)
+    return [prefix[hi] - prefix[lo] for lo, hi in queries]
+--- hint
+The starter gives the right answers. It is too slow because `x not in result` and `sum(nums[lo:hi])` are hidden loops. Where does each one run, and how many times?
+--- hint
+Keep a `set` of what you have seen beside the result list, and test membership in the set.
+--- hint
+Build `prefix` so `prefix[i]` is the sum of the first `i` numbers (it has one more entry than `nums`). Then each answer is `prefix[hi] - prefix[lo]`.
+--- check case | dedupe keeps the first of each, in order
+dedupe([3, 1, 3, 2, 1, 3])
+=> [3, 1, 2]
+--- check case | dedupe works on strings and empty input
+(dedupe(list("mississippi")), dedupe([]))
+=> (["m", "i", "s", "p"], [])
+--- check test | dedupe on 200,000 items
+dedupe(list(range(100000)) * 2) == list(range(100000))
+?? `x not in list` scans the whole list. A set answers that instantly.
+--- check case | range_sums answers each query
+range_sums([3, 1, 4, 1, 5], [(1, 4), (0, 5), (2, 2), (4, 5)])
+=> [6, 14, 0, 5]
+--- check case | Negative numbers
+range_sums([5, -2, -3, 10], [(0, 3), (1, 4)])
+=> [0, 5]
+--- check test | 200,000 queries over 100,000 numbers
+range_sums(list(range(100000)), [(0, 100000)] * 200000 + [(5, 10)])[-2:] == [4999950000, 35]
+?? Summing a slice for every query is billions of steps here. Build prefix sums once.
+
+=== py3-13 | Problem solving: shortest path on a grid (BFS)
+--- teach
+"What is the fewest number of moves from here to there?" comes up in games, maps, puzzles and networks. When every move costs the same, the answer is **breadth-first search (BFS)**.
+
+**The idea.** Explore in rings. First every square 1 step from the start, then every square 2 steps away, then 3… The first time you reach the goal, you got there by a shortest route, because every shorter distance was fully explored before.
+
+**The mechanics.** Keep a **queue** of squares to visit, first in first out, and a record of squares already seen:
+
+```python
+from collections import deque
+
+def steps_to(grid, start, goal):
+    rows, cols = len(grid), len(grid[0])
+    queue = deque([(start, 0)])
+    seen = {start}
+    while queue:
+        (r, c), dist = queue.popleft()
+        if (r, c) == goal:
+            return dist
+        for dr, dc in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            nr, nc = r + dr, c + dc
+            if 0 <= nr < rows and 0 <= nc < cols and grid[nr][nc] != "#" and (nr, nc) not in seen:
+                seen.add((nr, nc))
+                queue.append(((nr, nc), dist + 1))
+    return -1
+```
+
+Three details make it correct and fast:
+
+- **`deque.popleft()`**, not `list.pop(0)`. Removing from the front of a list shifts every other item along; a deque does it in O(1).
+- **Mark squares as seen when you *add* them to the queue**, not when you take them out. Otherwise the same square can be queued many times from different neighbours.
+- **Check the bounds before indexing**. A negative index does not fail in Python; it quietly wraps around to the other side of the grid.
+
+Every square is added at most once, so BFS is O(rows × cols).
+
+**Common mistake:** using depth-first search (recursion, or a stack) for shortest paths. DFS finds *a* path, not the shortest, and exploring every path to compare them is exponential.
+--- task
+Write `shortest_path(grid)`. The grid is a list of equal-length strings: `S` is the start, `E` the end, `#` a wall, `.` open floor. You can move up, down, left or right, one square per step, never through walls or off the grid.
+
+Return the fewest steps from `S` to `E`, or `-1` if `E` cannot be reached. It must handle grids with tens of thousands of squares.
+--- starter
+def shortest_path(grid):
+    return -1
+--- solution
+from collections import deque
+
+
+def shortest_path(grid):
+    rows, cols = len(grid), len(grid[0])
+    start = goal = None
+    for r, row in enumerate(grid):
+        for c, ch in enumerate(row):
+            if ch == "S":
+                start = (r, c)
+            elif ch == "E":
+                goal = (r, c)
+    queue = deque([(start, 0)])
+    seen = {start}
+    while queue:
+        (r, c), dist = queue.popleft()
+        if (r, c) == goal:
+            return dist
+        for dr, dc in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            nr, nc = r + dr, c + dc
+            if 0 <= nr < rows and 0 <= nc < cols and grid[nr][nc] != "#" and (nr, nc) not in seen:
+                seen.add((nr, nc))
+                queue.append(((nr, nc), dist + 1))
+    return -1
+--- hint
+First find the coordinates of `S` and `E` with two nested loops over the rows and columns.
+--- hint
+Use a `deque` of `((row, col), distance)` and a `seen` set. Pop from the left; push each open, unseen neighbour with `distance + 1`.
+--- hint
+Check `0 <= nr < rows and 0 <= nc < cols` *before* reading `grid[nr][nc]`, and add to `seen` at the moment you queue a square.
+--- check case | A straight corridor
+shortest_path(["S..E"])
+=> 3
+--- check case | Around a wall
+shortest_path(["S#.", ".#.", "..E"])
+=> 4
+--- check case | Walled off
+shortest_path(["S#E"])
+=> -1
+--- check case | Start next to the end
+shortest_path(["SE"])
+=> 1
+--- check case | Does not wrap around the edges
+shortest_path(["E#S"])
+=> -1
+?? Check the bounds yourself: grid[r][-1] is the last column, not an error.
+--- check case | Open 300 by 300 grid, corner to corner
+shortest_path(["S" + "." * 299] + ["." * 300] * 298 + ["." * 299 + "E"])
+=> 598
+--- check case | A long winding maze
+shortest_path(["".join("S" if (r, c) == (0, 0) else "E" if (r, c) == (200, 0) else "#" if r % 2 and c != (199 if r % 4 == 1 else 0) else "." for c in range(200)) for r in range(201)])
+=> 20100
+
+=== py3-14 | Problem solving: binary search
+--- teach
+Looking for a word in a dictionary, you do not start at page one. You open it in the middle, see whether your word is before or after, and throw away half the book. Repeat, and a million pages take about twenty looks. That is **binary search**, O(log n), and it works on anything **sorted**.
+
+The version that is most useful in practice does not ask "is `x` here?" but "**where is the first position whose value is at least `x`?**" That answers membership, insertion points and range counts all at once.
+
+```python
+def first_at_least(nums, target):
+    lo, hi = 0, len(nums)          # the answer is somewhere in [lo, hi]
+    while lo < hi:
+        mid = (lo + hi) // 2
+        if nums[mid] < target:
+            lo = mid + 1           # mid and everything left of it is too small
+        else:
+            hi = mid               # mid might be the answer; keep it
+    return lo
+```
+
+The whole trick is the **invariant**: at every step, the answer lies between `lo` and `hi`. Each branch keeps that true while shrinking the range, and the loop ends when `lo == hi`, the answer. If every value is smaller than `target`, the answer is `len(nums)`, which is why `hi` starts there and not at `len(nums) - 1`.
+
+**Binary search on the answer.** The same idea works when there is no list at all, only a yes/no question that flips once. "What is the largest `r` with `r * r <= n`?" The answer is between 0 and `n`; for a guess `mid`, if `mid * mid <= n` the answer is at least `mid`, otherwise it is below. Halve until the range closes. Because Python integers have no size limit, this works exactly even for numbers with forty digits, where `n ** 0.5` (a float) is already wrong.
+
+**Common mistakes:** loops that never end because `lo = mid` instead of `mid + 1`; off-by-one answers from mixing up "first at least" with "last below"; and forgetting that the input must be sorted.
+
+(The standard library has this built in, in the `bisect` module; you will use it in the expert course. Writing it yourself once is how you learn to trust it.)
+--- task
+Write both without `bisect` or `math.isqrt`:
+
+- `first_at_least(nums, target)`: `nums` is sorted ascending; return the index of the first element `>= target`, or `len(nums)` if there is none. It must be O(log n).
+- `int_sqrt(n)`: for a whole number `n >= 0`, return the largest integer `r` with `r * r <= n`. It must be exact even for very large `n`.
+--- starter
+def first_at_least(nums, target):
+    for i, x in enumerate(nums):
+        if x >= target:
+            return i
+    return len(nums)
+
+
+def int_sqrt(n):
+    return int(n ** 0.5)
+--- solution
+def first_at_least(nums, target):
+    lo, hi = 0, len(nums)
+    while lo < hi:
+        mid = (lo + hi) // 2
+        if nums[mid] < target:
+            lo = mid + 1
+        else:
+            hi = mid
+    return lo
+
+
+def int_sqrt(n):
+    lo, hi = 0, n
+    while lo < hi:
+        mid = (lo + hi + 1) // 2
+        if mid * mid <= n:
+            lo = mid
+        else:
+            hi = mid - 1
+    return lo
+--- hint
+Keep `lo` and `hi` with the answer always between them (`hi` starts at `len(nums)`). Each step, look at the middle and move one end.
+--- hint
+If `nums[mid] < target`, the answer is to the right: `lo = mid + 1`. Otherwise `mid` could be it: `hi = mid`.
+--- hint
+For `int_sqrt`, you are looking for the *last* value that passes, so round the middle up, `mid = (lo + hi + 1) // 2`, then `lo = mid` if `mid * mid <= n`, else `hi = mid - 1`.
+--- check case | first_at_least finds the first match
+first_at_least([1, 3, 3, 3, 8], 3)
+=> 1
+--- check case | Between values, it gives the insertion point
+first_at_least([1, 3, 5, 7], 4)
+=> 2
+--- check test | Below everything is 0, above everything is len
+first_at_least([2, 4], 1) == 0 and first_at_least([2, 4], 5) == 2 and first_at_least([], 7) == 0
+--- check test | 20,000 searches in a million numbers
+(lambda big: all(first_at_least(big, q) == (q + 1) // 2 for q in range(0, 2000000, 97)))(list(range(0, 2000000, 2)))
+?? A loop from the start takes up to a million steps per search. Halve the range each time.
+--- check test | int_sqrt on small numbers
+[int_sqrt(n) for n in (0, 1, 2, 3, 4, 15, 16, 17, 99, 100)] == [0, 1, 1, 1, 2, 3, 4, 4, 9, 10]
+--- check test | int_sqrt is exact on huge numbers
+int_sqrt(10 ** 30) == 10 ** 15 and int_sqrt(10 ** 30 - 1) == 10 ** 15 - 1 and int_sqrt(2 ** 200) == 2 ** 100
+?? Floats have about 16 significant digits, so n ** 0.5 is wrong here. Search on whole numbers.
+--- check source absent | Does not use bisect or math.isqrt
+\bbisect\b|\bisqrt\s*\(

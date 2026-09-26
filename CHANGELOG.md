@@ -8,6 +8,70 @@ the entry for the one you are running is what Settings shows you afterwards.
 Newest first. Each heading is exactly `## <version>` so both readers can find
 it.
 
+## 1.1.0
+
+**Learn to code.** A new guided mode, in the sidebar and on Home. It opens on
+roadmaps: pick a goal — GNC Engineer, Flight Software, Test & Data or Software
+Engineer — and its courses are laid out in the order a mentor would teach
+them, as a numbered path of course tiles ending at a certificate, lit up as you
+go; View every step walks it course by course. Your code, your progress and a
+daily streak are saved on this device. It is practice: nothing here changes
+mastery, readiness or your reviews.
+
+**From your first line to expert.** 21 courses, 291 lessons: Linux and the
+command line, Git, Python, SQL and C++, each from the basics through
+intermediate and advanced (Python, SQL and C++ on to expert), then a projects
+course. Past the basics every course mixes four kinds of lesson: new ideas;
+**debugging** real broken code from a bug report — reproduce it, read the
+error, narrow it down, fix the cause; **problem solving**, where you design the
+algorithm and a big input only an efficient answer finishes in time; and
+**design**, refactoring working code into a better shape or shaping an API to a
+spec. Projects courses build real programs step by step — an expense tracker,
+a Markdown converter, a matrix library, an analytics database — and end in
+capstones: a specification, an empty file, and tests that only check what
+your program does, so the design is yours. Each language has a mastery roadmap
+that walks its whole ladder, and each course offers the next when you finish.
+Each lesson
+is a short explanation with examples you can run where they stand, then a
+challenge in the same IDE window; Run Code really runs your code and shows
+every check as a test case — the input, what was expected, and what your code
+produced. Hints come one at a time and the solution is there when you ask.
+Every lesson is checked in the real runtimes before it ships: its starter
+needs work, and its solution passes. C++ lessons always use the in-app
+compiler, the one they were checked with.
+
+**The playground comes to the lesson.** The code in ORBIT's lessons runs where it stands: a
+Python or C++ snippet is the playground's own window, embedded in the text — edit it, run it, see
+what it prints — and a `>>>` transcript opens as the code you would type, printing what the
+transcript shows. Shell snippets the practice terminal knows run there. Each lesson ends with
+**Try it here** in its module's language. Code exercises are done on the module page, under their
+brief, and graded against their tests as test cases. And every Workbench scenario — a day on the
+job — is now one flow: how the job arrives, what done looks like, your code in the same window, and
+the margin report as test cases (the requirement, and what your code achieved), then the next job.
+The playground is still its own page for anything else.
+
+**A new playground.** Three modes along the top — Code, SQL and Terminal —
+and one IDE window: the file's name in a pill (in Code mode it picks Python,
+C++, Rust, MATLAB or a shell script), a floating Run Code button, and a panel
+under the editor with Test cases, Console, Input, Results and Tables. Terminal
+is a practice shell that lives in the page, and a small real one: quoting,
+variables, `$(…)`, wildcards, pipes, redirection (standard error too), `for`,
+`while` and `if`, scripts you save and run, and `grep`, `sort`, `uniq`, `cut`,
+`find`, `sed` and `xargs`. Its git merges line by line and writes real conflict
+markers for you to resolve, and has stash, reset, revert, rebase, cherry-pick,
+tags, bisect, blame and a pretend remote that rejects a push the way a real one
+does. It says plainly that it is a simulation; real shell scripts still run on
+the Mac in Code mode.
+
+**C++ always really runs now.** In the desktop app with a compiler installed,
+nothing changes — the Mac's own compiler builds it. Everywhere else — in a
+browser, or on a Mac without Apple's command line tools — ORBIT now compiles
+it with clang++ built for WebAssembly, right in the app, instead of comparing
+your output as text. The Input tab is what your program reads. One limit,
+stated under the editor: that in-app compiler has no exception support, so
+`throw` and `try` need the Mac's compiler. It is a one-time download of about
+105 MB, which the app keeps.
+
 ## 1.0.10
 
 **The app notices an update while you are using it.** It used to ask GitHub

@@ -1,0 +1,1074 @@
+@track sql
+@level expert
+@title SQL · Expert
+@name SQL, expert: fast queries, hard questions and trustworthy data
+@blurb Make slow queries fast and prove it with the query plan, answer the analyst's hardest questions — top-N, streaks, sessions, cohorts, funnels — and find and repair broken data yourself.
+
+=== sql4-01 | Sargable predicates
+--- schema
+CREATE TABLE orders (
+  id INTEGER PRIMARY KEY,
+  customer_id INTEGER NOT NULL,
+  created TEXT NOT NULL,
+  total REAL NOT NULL
+);
+WITH RECURSIVE n(i) AS (SELECT 1 UNION ALL SELECT i + 1 FROM n WHERE i < 3000)
+INSERT INTO orders (id, customer_id, created, total)
+SELECT i, i % 400 + 1, datetime('2024-03-01', '+' || (i * 37 % 44640) || ' minutes'), (i * 53 % 400) / 4.0 + 5 FROM n;
+CREATE INDEX idx_orders_created ON orders(created);
+--- teach
+The advanced course taught you to create indexes and read `EXPLAIN QUERY PLAN`. This course puts them to work on slow queries, then takes on the analyst's hardest questions and data that needs repairing. Each lesson brings its own tables; the lesson text says what they are. Here: `orders` (`id`, `customer_id`, `created` as `'YYYY-MM-DD HH:MM:SS'`, `total`) — 3,000 rows in March 2024 — with an index `idx_orders_created` on `created`.
+
+An index is sorted by the **stored value** of its columns. It can find `created >= '2024-03-15'` by jumping into the sorted list. But look at this:
+
+```sql
+SELECT COUNT(*) FROM orders WHERE date(created) = '2024-03-15';
+```
+
+The index is sorted by `created`, not by `date(created)`. To know which rows match, the database has to compute `date()` for **every** row: a full scan, index ignored. `EXPLAIN QUERY PLAN` shows `SCAN orders`.
+
+A predicate the database can answer from an index is called **sargable** (from *Search ARGument ABLE*). The rule: leave the indexed column **bare** on one side of the comparison, and move all the computing to the other side:
+
+| not sargable | sargable rewrite |
+| --- | --- |
+| `date(created) = '2024-03-15'` | `created >= '2024-03-15' AND created < '2024-03-16'` |
+| `strftime('%Y', created) = '2024'` | `created >= '2024-01-01' AND created < '2025-01-01'` |
+| `total * 1.2 > 120` | `total > 100` |
+| `substr(sku, 1, 3) = 'MUG'` | `sku >= 'MUG' AND sku < 'MUH'` |
+
+Use a half-open range (`>=` start, `<` next start). `BETWEEN '2024-03-15' AND '2024-03-15 23:59:59'` works too, but is easy to get wrong at the edges.
+
+When you truly must search on an expression — say `lower(email)` — index the expression itself: `CREATE INDEX idx_email_lower ON users(lower(email));`. The query must then use exactly that expression.
+
+A view's plan is its query's plan, so `EXPLAIN QUERY PLAN SELECT * FROM some_view` shows how the view's query runs.
+--- task
+The dashboard lists the orders of 15 March 2024 with this slow query:
+
+```sql
+SELECT id, created, total FROM orders WHERE date(created) = '2024-03-15';
+```
+
+Create a view named `orders_mar_15` with the same columns (`id`, `created`, `total`) and the same rows, rewritten so it uses `idx_orders_created`.
+--- starter
+CREATE VIEW orders_mar_15 AS
+SELECT id, created, total
+FROM orders
+WHERE date(created) = '2024-03-15';
+--- solution
+CREATE VIEW orders_mar_15 AS
+SELECT id, created, total
+FROM orders
+WHERE created >= '2024-03-15' AND created < '2024-03-16';
+--- hint
+Run `EXPLAIN QUERY PLAN SELECT * FROM orders_mar_15;` on the starter: `SCAN orders`.
+--- hint
+Leave `created` bare: a range from `'2024-03-15'` (inclusive) to `'2024-03-16'` (exclusive).
+--- check query | Same rows as the slow query: 117 orders worth 6561.00
+SELECT COUNT(*), ROUND(SUM(total), 2), MIN(created) >= '2024-03-15', MAX(created) < '2024-03-16' FROM orders_mar_15
+=> [[117, 6561.0, 1, 1]]
+--- check query | No order of the day is missed
+SELECT COUNT(*) FROM orders WHERE date(created) = '2024-03-15' AND id NOT IN (SELECT id FROM orders_mar_15)
+=> [[0]]
+--- check query | The plan searches idx_orders_created with a range
+EXPLAIN QUERY PLAN SELECT * FROM orders_mar_15
+=> [[3, 0, 165, "SEARCH orders USING INDEX idx_orders_created (created>? AND created<?)"]]
+
+=== sql4-02 | Covering indexes and column order
+--- schema
+CREATE TABLE orders (
+  id INTEGER PRIMARY KEY,
+  customer_id INTEGER NOT NULL,
+  status TEXT NOT NULL,
+  total REAL NOT NULL
+);
+WITH RECURSIVE n(i) AS (SELECT 1 UNION ALL SELECT i + 1 FROM n WHERE i < 3000)
+INSERT INTO orders (id, customer_id, status, total)
+SELECT i, i % 250 + 1, CASE i % 5 WHEN 0 THEN 'refunded' WHEN 1 THEN 'pending' ELSE 'paid' END, (i * 29 % 300) / 2.0 FROM n;
+--- teach
+This lesson's table: `orders` (`id`, `customer_id`, `status`, `total`), 3,000 rows, no indexes yet.
+
+When a query uses an index, it normally does two lookups per row: find the entry in the index, then follow its pointer to the table row to fetch the other columns. If the index **already contains every column the query needs**, the second lookup disappears. That is a **covering index**, and the plan says so: `USING COVERING INDEX`.
+
+Take the report every finance team wants:
+
+```sql
+SELECT customer_id, COUNT(*) AS orders, SUM(total) AS spent
+FROM orders
+WHERE status = 'paid'
+GROUP BY customer_id;
+```
+
+It needs `status` (to filter), `customer_id` (to group) and `total` (to sum). The column **order** in the index decides what it can do:
+
+1. **Equality columns first.** `status = 'paid'` jumps to one contiguous block of the index only if `status` leads.
+2. **Then the grouping or sorting column.** Within the `status = 'paid'` block, entries are sorted by the next column. With `customer_id` next, rows arrive already grouped, so there is no `USE TEMP B-TREE FOR GROUP BY` step.
+3. **Then the columns you only read.** `total` rides along so the table is never touched.
+
+Get the order wrong and the plan tells you. With `(customer_id, status, total)` the index still covers the query, but `status` is not first, so the database reads the whole index: `SCAN orders USING COVERING INDEX`. Better than a table scan — but still every entry.
+
+Covering indexes are the sharpest tool for a hot query, and the most specific. Wide indexes cost space and write speed, so build them for the few queries that matter.
+--- task
+Create an index named `idx_orders_status_customer_total` that makes the report above search only the paid orders, read nothing from the table itself, and need no separate grouping step.
+--- starter
+CREATE INDEX idx_orders_status_customer_total ON orders(customer_id, status, total);
+--- solution
+CREATE INDEX idx_orders_status_customer_total ON orders(status, customer_id, total);
+--- hint
+Check the plan: `EXPLAIN QUERY PLAN SELECT customer_id, COUNT(*), SUM(total) FROM orders WHERE status = 'paid' GROUP BY customer_id;`
+--- hint
+Equality column first, then the grouping column, then the column you only read.
+--- check query | The index columns are status, customer_id, total
+SELECT name FROM pragma_index_info('idx_orders_status_customer_total') ORDER BY seqno
+=> [["status"], ["customer_id"], ["total"]]
+--- check query | The report searches a covering index, with no temp B-tree
+EXPLAIN QUERY PLAN SELECT customer_id, COUNT(*) AS orders, SUM(total) AS spent FROM orders WHERE status = 'paid' GROUP BY customer_id
+=> [[6, 0, 56, "SEARCH orders USING COVERING INDEX idx_orders_status_customer_total (status=?)"]]
+
+=== sql4-03 | Top N per group
+--- schema
+CREATE TABLE products (
+  id INTEGER PRIMARY KEY,
+  category TEXT NOT NULL,
+  name TEXT NOT NULL,
+  units_sold INTEGER
+);
+INSERT INTO products (id, category, name, units_sold) VALUES
+  (1,  'books', 'Atlas',      50),
+  (2,  'books', 'Bestiary',   50),
+  (3,  'books', 'Cookbook',   30),
+  (4,  'books', 'Diary',      10),
+  (5,  'games', 'Echo',       80),
+  (6,  'games', 'Fable',      60),
+  (7,  'games', 'Gambit',     60),
+  (8,  'games', 'Hexa',       20),
+  (9,  'music', 'Intro',      15),
+  (10, 'toys',  'Jigsaw',     NULL),
+  (11, 'toys',  'Kite',       5);
+--- teach
+This lesson's table: `products` (`id`, `category`, `name`, `units_sold` — NULL when no sales have been recorded yet).
+
+"The best two sellers in **each** category" is one of the most asked questions in analytics, and `LIMIT` cannot answer it: `LIMIT` applies to the whole result, not per group. The pattern is: **rank within each group with a window function, then filter on the rank.**
+
+Window functions are computed after `WHERE`, so you cannot filter on one in the same query. Rank in a CTE, filter outside it:
+
+```sql
+WITH ranked AS (
+  SELECT category, name, units_sold,
+         RANK() OVER (PARTITION BY category ORDER BY units_sold DESC) AS pos
+  FROM products
+)
+SELECT * FROM ranked WHERE pos <= 2;
+```
+
+The choice of ranking function **is** the definition of "top 2", so make it on purpose:
+
+- `ROW_NUMBER()` — exactly two rows per category. Ties are cut arbitrarily unless you add a tie-breaker (`ORDER BY units_sold DESC, id`).
+- `RANK()` — everyone whose position is 1 or 2. If two tie for second, you get three rows; if two tie for *first*, the next one is third and is left out.
+- `DENSE_RANK()` — the top two **values**, and every product that has one of them.
+
+And decide what NULL means. In SQLite, NULL sorts *below* every number in `DESC` order — so a product with no data would rank after the real ones and could sneak into a top-2 for a small category. "No sales recorded" is not a ranking; filter it out before you rank.
+--- task
+Return the top two products per category by `units_sold`, keeping ties: every product whose `RANK()` in its category is 1 or 2. Ignore products with no recorded sales. Columns: `category`, `name`, `units_sold`, `pos` (the rank). Sort by category, then pos, then name.
+--- starter
+SELECT category, name, units_sold
+FROM products
+ORDER BY units_sold DESC
+LIMIT 2;
+--- solution
+WITH ranked AS (
+  SELECT category, name, units_sold,
+         RANK() OVER (PARTITION BY category ORDER BY units_sold DESC) AS pos
+  FROM products
+  WHERE units_sold IS NOT NULL
+)
+SELECT category, name, units_sold, pos
+FROM ranked
+WHERE pos <= 2
+ORDER BY category, pos, name;
+--- hint
+Compute `RANK() OVER (PARTITION BY category ORDER BY units_sold DESC)` in a CTE, then keep `pos <= 2` outside it.
+--- hint
+Filter `units_sold IS NOT NULL` inside the CTE, before ranking — otherwise Jigsaw ranks second among toys.
+--- check result | Both tied books, three games (a tie for second), Intro and Kite alone
+ordered
+[["books", "Atlas", 50, 1], ["books", "Bestiary", 50, 1], ["games", "Echo", 80, 1], ["games", "Fable", 60, 2], ["games", "Gambit", 60, 2], ["music", "Intro", 15, 1], ["toys", "Kite", 5, 1]]
+
+=== sql4-04 | Gaps and islands: streaks
+--- schema
+CREATE TABLE logins (
+  user_id INTEGER NOT NULL,
+  day TEXT NOT NULL
+);
+INSERT INTO logins (user_id, day) VALUES
+  (1, '2024-07-01'), (1, '2024-07-02'), (1, '2024-07-02'), (1, '2024-07-03'),
+  (1, '2024-07-05'), (1, '2024-07-06'), (1, '2024-07-09'),
+  (2, '2024-07-01'), (2, '2024-07-03'), (2, '2024-07-04'), (2, '2024-07-05'), (2, '2024-07-06'),
+  (3, '2024-07-10');
+--- teach
+This lesson's table: `logins` (`user_id`, `day`) — one row per login, and a user can log in more than once a day.
+
+"How long is each user's streak of consecutive days?" is a **gaps-and-islands** problem: find the runs (islands) of consecutive values separated by gaps. It looks like it needs a loop. It needs one trick.
+
+Number each user's days in order with `ROW_NUMBER()`. Within a run of consecutive days, the day goes up by 1 and the row number goes up by 1 — so **day minus row number stays constant** for the whole run, and jumps when there is a gap:
+
+| day | row number | day − row number |
+| --- | --- | --- |
+| 07-01 | 1 | 06-30 |
+| 07-02 | 2 | 06-30 |
+| 07-03 | 3 | 06-30 |
+| 07-05 | 4 | 07-01 |
+| 07-06 | 5 | 07-01 |
+
+That constant is an **island key**. Group by user and key, and each group is one streak: `MIN(day)` starts it, `MAX(day)` ends it, `COUNT(*)` is its length.
+
+```sql
+date(day, '-' || ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY day) || ' days') AS grp
+```
+
+The trap is **duplicates**. Two logins on 07-02 give that day two row numbers, the difference shifts by one, and the streak splits in the wrong place. Reduce the data to one row per user per day *first* (`SELECT DISTINCT`), then number it.
+
+The same trick finds runs of consecutive ids, months without an outage, and any other "consecutive" question.
+--- task
+Return every login streak: `user_id`, `streak_start`, `streak_end` and `days` (its length). A single day on its own is a streak of 1. Sort by user, then start.
+--- starter
+SELECT user_id, MIN(day) AS streak_start, MAX(day) AS streak_end, COUNT(*) AS days
+FROM logins
+GROUP BY user_id;
+--- solution
+WITH days AS (
+  SELECT DISTINCT user_id, day FROM logins
+), keyed AS (
+  SELECT user_id, day,
+         date(day, '-' || ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY day) || ' days') AS grp
+  FROM days
+)
+SELECT user_id, MIN(day) AS streak_start, MAX(day) AS streak_end, COUNT(*) AS days
+FROM keyed
+GROUP BY user_id, grp
+ORDER BY user_id, streak_start;
+--- hint
+First reduce to one row per user per day with `SELECT DISTINCT user_id, day`.
+--- hint
+The island key: `date(day, '-' || ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY day) || ' days')`. Consecutive days share it.
+--- hint
+Group by `user_id` and the key; `MIN`, `MAX` and `COUNT(*)` give each streak.
+--- check result | Six streaks; the double login on 2 July does not split user 1's first streak
+ordered
+[[1, "2024-07-01", "2024-07-03", 3], [1, "2024-07-05", "2024-07-06", 2], [1, "2024-07-09", "2024-07-09", 1], [2, "2024-07-01", "2024-07-01", 1], [2, "2024-07-03", "2024-07-06", 4], [3, "2024-07-10", "2024-07-10", 1]]
+
+=== sql4-05 | Sessionising events
+--- schema
+CREATE TABLE events (
+  user_id INTEGER NOT NULL,
+  ts TEXT NOT NULL
+);
+INSERT INTO events (user_id, ts) VALUES
+  (1, '2024-07-01 09:00:00'), (1, '2024-07-01 09:10:00'), (1, '2024-07-01 09:40:00'),
+  (1, '2024-07-01 10:20:00'), (1, '2024-07-01 10:25:00'), (1, '2024-07-01 13:00:00'),
+  (2, '2024-07-01 09:05:00'), (2, '2024-07-01 11:00:00'), (2, '2024-07-01 11:29:00');
+--- teach
+This lesson's table: `events` (`user_id`, `ts`) — one row per thing a user did in the app.
+
+Product analytics thinks in **sessions**: a burst of activity, ended by a stretch of silence. The usual rule: a new session starts when more than 30 minutes pass since the user's previous event. There is no session id in the data; you derive it in three steps, each a window function.
+
+1. **Gap to the previous event.** `LAG(ts) OVER (PARTITION BY user_id ORDER BY ts)`.
+2. **Flag session starts.** 1 when there is no previous event or the gap is over 30 minutes, else 0.
+3. **Number the sessions.** A running `SUM` of the flags: it goes up by one at each start, so every event gets the number of its session.
+
+```sql
+SUM(is_start) OVER (PARTITION BY user_id ORDER BY ts
+                    ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS session
+```
+
+Then group by `user_id, session` for start, end and size.
+
+Measure time gaps in whole **seconds**, not fractions of days. `julianday(b) - julianday(a)` is a floating-point number, and multiplying it back up to minutes can give 29.9999999 for exactly 30 minutes — so an edge case silently lands on the wrong side. `unixepoch(ts)` gives integer seconds, and `unixepoch(b) - unixepoch(a) > 1800` is exact.
+
+This "flag the boundaries, then running-sum the flags" pattern is worth remembering on its own: it turns any "start a new group when …" rule into a group number.
+--- task
+Split each user's events into sessions (a new session starts when **more than** 30 minutes have passed since that user's previous event). Return `user_id`, `session` (1, 2, … per user, in time order), `started`, `ended` and `events` (the count). Sort by user, then session.
+--- starter
+SELECT user_id, 1 AS session, MIN(ts) AS started, MAX(ts) AS ended, COUNT(*) AS events
+FROM events
+GROUP BY user_id;
+--- solution
+WITH gaps AS (
+  SELECT user_id, ts,
+         CASE
+           WHEN LAG(ts) OVER (PARTITION BY user_id ORDER BY ts) IS NULL THEN 1
+           WHEN unixepoch(ts) - unixepoch(LAG(ts) OVER (PARTITION BY user_id ORDER BY ts)) > 1800 THEN 1
+           ELSE 0
+         END AS is_start
+  FROM events
+), numbered AS (
+  SELECT user_id, ts,
+         SUM(is_start) OVER (PARTITION BY user_id ORDER BY ts
+                             ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS session
+  FROM gaps
+)
+SELECT user_id, session, MIN(ts) AS started, MAX(ts) AS ended, COUNT(*) AS events
+FROM numbered
+GROUP BY user_id, session
+ORDER BY user_id, session;
+--- hint
+Step one: a CTE with `is_start`, 1 when `LAG(ts)` is NULL or the gap is over 1800 seconds.
+--- hint
+Step two: `SUM(is_start) OVER (PARTITION BY user_id ORDER BY ts ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)` numbers the sessions.
+--- hint
+Compare `unixepoch(ts) - unixepoch(previous ts)` with 1800; exactly 30 minutes (09:10 to 09:40) stays in the same session.
+--- check result | Five sessions; a gap of exactly 30 minutes does not split
+ordered
+[[1, 1, "2024-07-01 09:00:00", "2024-07-01 09:40:00", 3], [1, 2, "2024-07-01 10:20:00", "2024-07-01 10:25:00", 2], [1, 3, "2024-07-01 13:00:00", "2024-07-01 13:00:00", 1], [2, 1, "2024-07-01 09:05:00", "2024-07-01 09:05:00", 1], [2, 2, "2024-07-01 11:00:00", "2024-07-01 11:29:00", 2]]
+
+=== sql4-06 | Deduplicating: keep the latest row
+--- schema
+CREATE TABLE contacts (
+  id INTEGER PRIMARY KEY,
+  email TEXT NOT NULL,
+  name TEXT NOT NULL,
+  phone TEXT,
+  updated_at TEXT NOT NULL
+);
+INSERT INTO contacts (id, email, name, phone, updated_at) VALUES
+  (1, 'ana@mail.com',  'Ana',      '111', '2024-01-01'),
+  (2, 'ANA@mail.com',  'Ana Ruiz', '222', '2024-03-01'),
+  (3, 'bo@mail.com',   'Bo',       '333', '2024-02-01'),
+  (4, 'bo@mail.com',   'Bo Chen',  '444', '2024-02-01'),
+  (5, 'cy@mail.com',   'Cy',       '555', '2024-01-15'),
+  (6, ' ana@mail.com', 'Ana',      '666', '2024-02-01');
+--- teach
+This lesson's table: `contacts` (`id`, `email`, `name`, `phone`, `updated_at`), filled by several imports that never checked for duplicates.
+
+Deduplication has three decisions, and the SQL is the easy part:
+
+1. **What makes two rows "the same"?** Here, the email — but `'ANA@mail.com'` and `' ana@mail.com'` are the same person, so the key is `lower(trim(email))`.
+2. **Which copy survives?** The most recently updated one.
+3. **What breaks a tie?** Rows 3 and 4 were both updated on 2024-02-01. Without a rule, which one survives is luck — and a re-run may choose differently. Choose a deterministic tie-breaker: the higher id (the later insert).
+
+`ROW_NUMBER()` encodes all three: partition by the key, order by the survival rule and the tie-breaker, and the row numbered 1 in each partition is the keeper.
+
+```sql
+SELECT id,
+       ROW_NUMBER() OVER (
+         PARTITION BY lower(trim(email))
+         ORDER BY updated_at DESC, id DESC
+       ) AS rn
+FROM contacts;
+```
+
+Then delete everything that is not a keeper: `DELETE FROM contacts WHERE id NOT IN (SELECT id FROM … WHERE rn = 1)`. Run it as a `SELECT` first and read the list.
+
+Cleaning without prevention is a chore you will repeat. Finish by making the duplicate impossible: a **unique index on the expression**, so the database itself refuses a second `' Ana@Mail.com'`:
+
+```sql
+CREATE UNIQUE INDEX contacts_email_key ON contacts(lower(trim(email)));
+```
+
+(A unique index cannot be created while duplicates still exist — so the order is always clean, then constrain.)
+--- task
+Delete the duplicate contacts, keeping for each email (compared lower-cased and trimmed) only the row with the latest `updated_at`, and on a tie the higher `id`. Then create a unique index named `contacts_email_key` on `lower(trim(email))`.
+--- starter
+DELETE FROM contacts
+WHERE id NOT IN (SELECT MAX(id) FROM contacts GROUP BY email);
+--- solution
+DELETE FROM contacts
+WHERE id NOT IN (
+  SELECT id FROM (
+    SELECT id,
+           ROW_NUMBER() OVER (
+             PARTITION BY lower(trim(email))
+             ORDER BY updated_at DESC, id DESC
+           ) AS rn
+    FROM contacts
+  )
+  WHERE rn = 1
+);
+
+CREATE UNIQUE INDEX contacts_email_key ON contacts(lower(trim(email)));
+--- hint
+The starter groups by the raw email, so the three spellings of Ana's address stay apart — and `MAX(id)` ignores `updated_at`.
+--- hint
+Number rows with `ROW_NUMBER() OVER (PARTITION BY lower(trim(email)) ORDER BY updated_at DESC, id DESC)`, and delete every id that is not numbered 1.
+--- check query | One row per person: the latest, ties to the higher id
+SELECT id, name, phone FROM contacts ORDER BY id
+=> [[2, "Ana Ruiz", "222"], [4, "Bo Chen", "444"], [5, "Cy", "555"]]
+--- check query | A differently-spelled duplicate is now refused
+INSERT OR IGNORE INTO contacts (email, name, updated_at) VALUES (' CY@mail.com', 'Cy again', '2024-05-01') RETURNING id
+=> []
+--- check query | A new address is still welcome
+INSERT OR IGNORE INTO contacts (id, email, name, updated_at) VALUES (7, 'dee@mail.com', 'Dee', '2024-05-01') RETURNING id
+=> [[7]]
+
+=== sql4-07 | Pivoting with conditional aggregation
+--- schema
+CREATE TABLE orders (
+  id INTEGER PRIMARY KEY,
+  created TEXT NOT NULL,
+  status TEXT NOT NULL,
+  total REAL NOT NULL
+);
+INSERT INTO orders (id, created, status, total) VALUES
+  (1,  '2024-01-05', 'paid',      100.00),
+  (2,  '2024-01-09', 'paid',       50.00),
+  (3,  '2024-01-20', 'cancelled',  30.00),
+  (4,  '2024-02-02', 'paid',       80.00),
+  (5,  '2024-02-14', 'refunded',   80.00),
+  (6,  '2024-02-15', 'paid',       20.50),
+  (7,  '2024-02-28', 'paid',       10.00),
+  (8,  '2024-03-01', 'cancelled',  15.00),
+  (9,  '2024-03-03', 'paid',       60.00),
+  (10, '2024-03-19', 'refunded',   25.00),
+  (11, '2024-03-30', 'paid',       40.00);
+--- teach
+This lesson's table: `orders` (`id`, `created`, `status`, `total`).
+
+`GROUP BY month, status` gives one row per month **and** status — a long list. People want a grid: one row per month, one **column** per status. Turning rows into columns is a **pivot**, and SQL does it with **conditional aggregation**: an aggregate over a `CASE` that only lets some rows count.
+
+```sql
+SELECT substr(created, 1, 7) AS month,
+       SUM(CASE WHEN status = 'paid' THEN 1 ELSE 0 END) AS paid,
+       SUM(CASE WHEN status = 'paid' THEN total ELSE 0 END) AS paid_revenue
+FROM orders
+GROUP BY month;
+```
+
+Each column sees every row of the month, but the `CASE` turns the rows it should ignore into 0. SQLite also treats a comparison as 1 or 0, so `SUM(status = 'paid')` is a short way to count, and some databases offer `COUNT(*) FILTER (WHERE status = 'paid')`, which SQLite supports too.
+
+Two details make a pivot trustworthy:
+
+- **Write the `ELSE 0`.** Without it, a month with no refunds sums nothing but NULLs and shows NULL instead of 0 — and NULL then poisons any arithmetic you do with the column.
+- **The columns are fixed in the query.** A new status value appears in no column until you add one. Pivots are for known, stable categories; if the values change often, return the long form and let the chart pivot it.
+
+Derived columns combine the pieces: net revenue is paid revenue minus refunded revenue, all inside one pass over the table.
+--- task
+Return one row per month (`'YYYY-MM'`) with the columns `month`, `paid`, `refunded` and `cancelled` (the number of orders in each status; 0 when none) and `net` (the total of paid orders minus the total of refunded orders, rounded to 2 decimals). Sort by month.
+--- starter
+SELECT substr(created, 1, 7) AS month, status, COUNT(*) AS n
+FROM orders
+GROUP BY month, status;
+--- solution
+SELECT substr(created, 1, 7) AS month,
+       SUM(CASE WHEN status = 'paid' THEN 1 ELSE 0 END) AS paid,
+       SUM(CASE WHEN status = 'refunded' THEN 1 ELSE 0 END) AS refunded,
+       SUM(CASE WHEN status = 'cancelled' THEN 1 ELSE 0 END) AS cancelled,
+       ROUND(SUM(CASE WHEN status = 'paid' THEN total
+                      WHEN status = 'refunded' THEN -total
+                      ELSE 0 END), 2) AS net
+FROM orders
+GROUP BY month
+ORDER BY month;
+--- hint
+One row per month means `GROUP BY month` only; each status becomes `SUM(CASE WHEN status = '…' THEN 1 ELSE 0 END)`.
+--- hint
+`net` is one more `SUM(CASE …)`: `total` for paid, `-total` for refunded, `0` otherwise.
+--- check result | Three months; no refunds in January shows 0, not NULL
+ordered
+[["2024-01", 2, 0, 1, 150.0], ["2024-02", 3, 1, 0, 30.5], ["2024-03", 2, 1, 1, 75.0]]
+
+=== sql4-08 | JSON columns
+--- schema
+CREATE TABLE events (
+  id INTEGER PRIMARY KEY,
+  user_id INTEGER NOT NULL,
+  name TEXT NOT NULL,
+  payload TEXT NOT NULL
+);
+INSERT INTO events (id, user_id, name, payload) VALUES
+  (1, 1, 'checkout',  '{"items": [{"sku": "MUG", "qty": 2}, {"sku": "PEN", "qty": 1}], "coupon": "SPRING"}'),
+  (2, 2, 'checkout',  '{"items": [{"sku": "MUG", "qty": 1}]}'),
+  (3, 1, 'page_view', '{"path": "/pricing"}'),
+  (4, 3, 'checkout',  '{"items": [{"sku": "LAMP", "qty": 1}, {"sku": "PEN", "qty": 3}], "coupon": null}'),
+  (5, 2, 'checkout',  '{"items": []}');
+--- teach
+This lesson's table: `events` (`id`, `user_id`, `name`, `payload`), where `payload` is a JSON document whose shape depends on the event.
+
+Event data often arrives as JSON with a different shape per event, and storing it as-is in a text column is reasonable. SQLite's JSON functions query inside it:
+
+```sql
+SELECT json_extract(payload, '$.coupon') FROM events;   -- 'SPRING', NULL, …
+SELECT payload ->> '$.coupon' FROM events;              -- the same, shorter
+SELECT json_array_length(payload, '$.items') FROM events;
+```
+
+A path starts at `$` (the whole document): `$.coupon` is a key, `$.items[0].sku` the first item's sku. A key that is missing gives NULL — and so does a key whose value is JSON `null`, so the two are indistinguishable this way. `->>` returns a plain SQL value; `->` returns JSON text (use it when you want to keep a sub-document as JSON).
+
+Arrays need **`json_each`**, a table-valued function: it turns an array into rows, one per element, and you join it like a table:
+
+```sql
+SELECT e.id, item.value ->> '$.sku' AS sku
+FROM events e, json_each(e.payload, '$.items') AS item;
+```
+
+The comma in `FROM events e, json_each(…)` is an older spelling of `CROSS JOIN`. With a table-valued function it means "for each event `e`, the rows `json_each` makes from *that* event's payload". Each row of `json_each` has `key` (the index), `value` (the element) and more. An empty array produces no rows, so event 5 simply contributes nothing.
+
+When a JSON field becomes important — filtered on every request — promote it: add a generated column `coupon TEXT GENERATED ALWAYS AS (payload ->> '$.coupon')` and index it, or give it a real column. JSON is flexible storage, not a substitute for a schema.
+--- task
+From the `checkout` events, return one row per sku with `sku`, `units` (the total `qty` across all checkouts) and `orders` (the number of checkout events that include it). Sort by units, highest first, then sku.
+--- starter
+SELECT payload ->> '$.items[0].sku' AS sku, payload ->> '$.items[0].qty' AS units
+FROM events
+WHERE name = 'checkout';
+--- solution
+SELECT item.value ->> '$.sku' AS sku,
+       SUM(item.value ->> '$.qty') AS units,
+       COUNT(DISTINCT e.id) AS orders
+FROM events e, json_each(e.payload, '$.items') AS item
+WHERE e.name = 'checkout'
+GROUP BY sku
+ORDER BY units DESC, sku;
+--- hint
+The starter only looks at the first item. `json_each(e.payload, '$.items')` gives one row per item.
+--- hint
+Read the item's fields with `item.value ->> '$.sku'` and `item.value ->> '$.qty'`, then group by sku.
+--- check result | PEN 4 units in 2 orders, MUG 3 in 2, LAMP 1 in 1
+ordered
+[["PEN", 4, 2], ["MUG", 3, 2], ["LAMP", 1, 1]]
+--- check source | Uses json_each
+json_each
+
+=== sql4-09 | Design: many-to-many for an app
+--- schema
+CREATE TABLE notes (
+  id INTEGER PRIMARY KEY,
+  title TEXT NOT NULL,
+  tags TEXT
+);
+INSERT INTO notes (id, title, tags) VALUES
+  (1, 'Q3 plan',      'work, urgent'),
+  (2, 'Groceries',    'personal'),
+  (3, 'Launch ideas', 'Work,ideas'),
+  (4, 'Draft',        NULL),
+  (5, 'Old stuff',    ''),
+  (6, 'Board prep',   'urgent,work, work');
+--- teach
+This lesson's table: `notes` (`id`, `title`, `tags`), from a notes app whose first version stored tags as a comma-separated string.
+
+That design breaks as soon as anyone asks a real question. "All notes tagged work" becomes `tags LIKE '%work%'` — which also matches `homework`. Renaming a tag means rewriting strings. Nothing stops `'Work'` and `'work'` becoming two tags. The string is a **list stuffed into one column**, and relational databases do lists with rows.
+
+A note has many tags; a tag belongs to many notes. That is a **many-to-many** relationship, and it always takes three tables: the two things, and a **join table** with one row per link:
+
+```sql
+CREATE TABLE tags (id INTEGER PRIMARY KEY, name TEXT NOT NULL UNIQUE);
+CREATE TABLE note_tags (
+  note_id INTEGER NOT NULL REFERENCES notes(id) ON DELETE CASCADE,
+  tag_id  INTEGER NOT NULL REFERENCES tags(id)  ON DELETE CASCADE,
+  PRIMARY KEY (note_id, tag_id)
+);
+```
+
+The composite primary key makes each link unique — the same tag cannot be attached twice — and doubles as the index for "tags of this note". Cascades mean deleting a note removes its links (not the tags, which other notes share). Remember `PRAGMA foreign_keys = ON`.
+
+**Migrating** the old strings is the expert part: split each string into rows. A recursive CTE does it by peeling off one piece per step:
+
+```sql
+WITH RECURSIVE split(note_id, piece, rest) AS (
+  SELECT id, NULL, tags || ',' FROM notes WHERE tags IS NOT NULL
+  UNION ALL
+  SELECT note_id,
+         trim(substr(rest, 1, instr(rest, ',') - 1)),
+         substr(rest, instr(rest, ',') + 1)
+  FROM split WHERE rest <> ''
+)
+SELECT note_id, lower(piece) FROM split WHERE piece <> '';
+```
+
+Normalise as you go (`lower`, `trim`, drop empty pieces), and use `INSERT OR IGNORE` or `DISTINCT` so a tag listed twice links once. You need the split twice — once to fill `tags`, once to fill `note_tags` — so save it once: `CREATE TEMP TABLE pieces AS <query>` stores a query's result as a table that disappears when the connection closes. When everything has moved, drop the old column with `ALTER TABLE notes DROP COLUMN tags;` so nobody keeps writing to it.
+--- task
+Replace the `tags` string with a many-to-many design:
+
+1. Turn foreign key enforcement on.
+2. Create `tags` (`id` integer primary key, `name` text, required, unique) and `note_tags` (`note_id` referencing `notes(id)`, `tag_id` referencing `tags(id)`, both cascading on delete, primary key `(note_id, tag_id)`).
+3. Move every tag across: names lower-cased and trimmed, blank pieces ignored, each tag stored once, each note linked to each of its tags once.
+4. Drop the old `tags` column from `notes`.
+--- starter
+PRAGMA foreign_keys = ON;
+
+CREATE TABLE tags (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL UNIQUE
+);
+--- solution
+PRAGMA foreign_keys = ON;
+
+CREATE TABLE tags (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL UNIQUE
+);
+CREATE TABLE note_tags (
+  note_id INTEGER NOT NULL REFERENCES notes(id) ON DELETE CASCADE,
+  tag_id INTEGER NOT NULL REFERENCES tags(id) ON DELETE CASCADE,
+  PRIMARY KEY (note_id, tag_id)
+);
+
+CREATE TEMP TABLE pieces AS
+WITH RECURSIVE split(note_id, piece, rest) AS (
+  SELECT id, NULL, tags || ',' FROM notes WHERE tags IS NOT NULL
+  UNION ALL
+  SELECT note_id,
+         trim(substr(rest, 1, instr(rest, ',') - 1)),
+         substr(rest, instr(rest, ',') + 1)
+  FROM split
+  WHERE rest <> ''
+)
+SELECT DISTINCT note_id, lower(piece) AS name FROM split WHERE piece <> '';
+
+INSERT INTO tags (name) SELECT DISTINCT name FROM pieces;
+
+INSERT INTO note_tags (note_id, tag_id)
+SELECT p.note_id, t.id FROM pieces p JOIN tags t ON t.name = p.name;
+
+ALTER TABLE notes DROP COLUMN tags;
+--- hint
+Create `note_tags` with a table-level `PRIMARY KEY (note_id, tag_id)` and `ON DELETE CASCADE` on both references.
+--- hint
+Split once into a temporary table (`CREATE TEMP TABLE pieces AS WITH RECURSIVE …`), keeping `DISTINCT note_id, lower(piece)` where the piece is not empty. Then fill `tags` and `note_tags` from it.
+--- hint
+Finish with `ALTER TABLE notes DROP COLUMN tags;`.
+--- check query | Four tags, each once
+SELECT name FROM tags ORDER BY name
+=> [["ideas"], ["personal"], ["urgent"], ["work"]]
+--- check query | Each note is linked to its tags, once each
+SELECT n.title, group_concat(t.name, ',' ORDER BY t.name)
+FROM notes n JOIN note_tags nt ON nt.note_id = n.id JOIN tags t ON t.id = nt.tag_id
+GROUP BY n.id ORDER BY n.id
+=> [["Q3 plan", "urgent,work"], ["Groceries", "personal"], ["Launch ideas", "ideas,work"], ["Board prep", "urgent,work"]]
+--- check query | The same link cannot be added twice
+INSERT OR IGNORE INTO note_tags (note_id, tag_id) SELECT 1, id FROM tags WHERE name = 'work' RETURNING note_id
+=> []
+--- check query | A tag name cannot be added twice
+INSERT OR IGNORE INTO tags (name) VALUES ('work') RETURNING id
+=> []
+--- check query | Deleting a note removes its links, not the tags
+DELETE FROM notes WHERE id = 1;
+SELECT (SELECT COUNT(*) FROM note_tags), (SELECT COUNT(*) FROM tags)
+=> [[5, 4]]
+--- check query | The old tags column is gone
+SELECT COUNT(*) FROM pragma_table_info('notes') WHERE name = 'tags'
+=> [[0]]
+
+=== sql4-10 | Audit trails with triggers
+--- schema
+CREATE TABLE products (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  price REAL NOT NULL
+);
+INSERT INTO products (id, name, price) VALUES (1, 'Mug', 9.0), (2, 'Lamp', 45.0);
+CREATE TABLE audit_log (
+  id INTEGER PRIMARY KEY,
+  product_id INTEGER NOT NULL,
+  action TEXT NOT NULL,
+  old_row TEXT,
+  new_row TEXT
+);
+--- teach
+This lesson's tables: `products` (`id`, `name`, `price`) and an empty `audit_log` (`id`, `product_id`, `action`, `old_row`, `new_row`).
+
+"Who changed this price, and what was it before?" Regulators, support teams and your future self all ask it. An **audit trail** records every change as a row. Doing it in application code misses every change made elsewhere — a migration, an admin console, a one-off fix at 2am. A trigger catches them all.
+
+Three triggers cover a table: one per event. Each writes the row as it was (`OLD`) and as it became (`NEW`). Store both as JSON so one log table works for any table's shape:
+
+```sql
+CREATE TRIGGER products_audit_update
+AFTER UPDATE ON products
+WHEN OLD.name IS NOT NEW.name OR OLD.price IS NOT NEW.price
+BEGIN
+  INSERT INTO audit_log (product_id, action, old_row, new_row)
+  VALUES (NEW.id, 'update',
+          json_object('name', OLD.name, 'price', OLD.price),
+          json_object('name', NEW.name, 'price', NEW.price));
+END;
+```
+
+Details that separate a useful audit trail from noise:
+
+- **Skip no-op updates.** An app that saves a form rewrites every field, changed or not. The `WHEN` clause logs only real changes. Use `IS NOT`, not `<>`, so a change to or from NULL counts.
+- **Inserts have no `OLD`, deletes have no `NEW`.** Log NULL for the missing side.
+- **Never update or delete audit rows.** The log is append-only; that is what makes it evidence.
+- In production you would also record *when* (`datetime('now')`) and *who* — which the app has to supply, since the database does not know the user.
+
+`json_object('name', OLD.name, …)` builds `{"name":"Mug","price":9.0}`; `json_extract(old_row, '$.price')` reads it back.
+--- task
+Create three triggers that record every change to `products` in `audit_log`, with `old_row` and `new_row` as `json_object('name', …, 'price', …)` of the row before and after (NULL for the side that does not exist):
+
+- `products_audit_insert` — after insert, `action` `'insert'`.
+- `products_audit_update` — after update, `action` `'update'`, only when the name or price actually changed.
+- `products_audit_delete` — after delete, `action` `'delete'`.
+--- starter
+CREATE TRIGGER products_audit_update
+AFTER UPDATE ON products
+BEGIN
+  INSERT INTO audit_log (product_id, action) VALUES (NEW.id, 'update');
+END;
+--- solution
+CREATE TRIGGER products_audit_insert
+AFTER INSERT ON products
+BEGIN
+  INSERT INTO audit_log (product_id, action, old_row, new_row)
+  VALUES (NEW.id, 'insert', NULL, json_object('name', NEW.name, 'price', NEW.price));
+END;
+
+CREATE TRIGGER products_audit_update
+AFTER UPDATE ON products
+WHEN OLD.name IS NOT NEW.name OR OLD.price IS NOT NEW.price
+BEGIN
+  INSERT INTO audit_log (product_id, action, old_row, new_row)
+  VALUES (NEW.id, 'update',
+          json_object('name', OLD.name, 'price', OLD.price),
+          json_object('name', NEW.name, 'price', NEW.price));
+END;
+
+CREATE TRIGGER products_audit_delete
+AFTER DELETE ON products
+BEGIN
+  INSERT INTO audit_log (product_id, action, old_row, new_row)
+  VALUES (OLD.id, 'delete', json_object('name', OLD.name, 'price', OLD.price), NULL);
+END;
+--- hint
+Each trigger is `AFTER <event> ON products BEGIN INSERT INTO audit_log … ; END;`.
+--- hint
+The update trigger needs `WHEN OLD.name IS NOT NEW.name OR OLD.price IS NOT NEW.price` so a save that changes nothing logs nothing.
+--- check query | Inserts, real updates and deletes are logged — a no-op save is not
+INSERT INTO products (id, name, price) VALUES (3, 'Pen', 3.5);
+UPDATE products SET price = 10.0 WHERE id = 1;
+UPDATE products SET name = 'Lamp', price = 45.0 WHERE id = 2;
+DELETE FROM products WHERE id = 3;
+SELECT product_id, action, old_row, new_row FROM audit_log ORDER BY id
+=> [[3, "insert", null, "{\"name\":\"Pen\",\"price\":3.5}"], [1, "update", "{\"name\":\"Mug\",\"price\":9.0}", "{\"name\":\"Mug\",\"price\":10.0}"], [3, "delete", "{\"name\":\"Pen\",\"price\":3.5}", null]]
+--- check query | The old price can be read back from the log
+SELECT json_extract(old_row, '$.price') FROM audit_log WHERE action = 'update'
+=> [[9.0]]
+
+=== sql4-11 | Debugging: orphans and duplicates
+--- schema
+CREATE TABLE customers (
+  id INTEGER PRIMARY KEY,
+  email TEXT NOT NULL,
+  name TEXT NOT NULL
+);
+INSERT INTO customers (id, email, name) VALUES
+  (1, 'ana@mail.com', 'Ana'),
+  (2, 'bo@mail.com',  'Bo'),
+  (3, 'ANA@mail.com', 'Ana'),
+  (4, 'cy@mail.com',  'Cy'),
+  (5, 'bo@mail.com ', 'Bo');
+CREATE TABLE orders (
+  id INTEGER PRIMARY KEY,
+  customer_id INTEGER,
+  total REAL NOT NULL
+);
+INSERT INTO orders (id, customer_id, total) VALUES
+  (1, 1, 20.0), (2, 3, 35.0), (3, 2, 10.0), (4, 5, 12.0),
+  (5, 9, 50.0), (6, 4, 5.0), (7, NULL, 8.0), (8, 7, 3.0);
+--- teach
+This lesson's tables: `customers` (`id`, `email`, `name`) and `orders` (`id`, `customer_id`, `total`), from a legacy app with no constraints.
+
+**The bug report.** The customer count on the dashboard is higher than the CRM's, and revenue by customer does not add up to total revenue. Both are symptoms of bad data, not of bad report SQL.
+
+The method for data problems is the same as for code: **measure before you touch anything**.
+
+1. **Find duplicates.** Group by the normalised key and look for groups over 1:
+
+```sql
+SELECT lower(trim(email)) AS k, COUNT(*), group_concat(id)
+FROM customers GROUP BY k HAVING COUNT(*) > 1;
+```
+
+`group_concat(id)` joins the group's ids into one string, such as `'1,3'`, so you can see exactly which rows collide.
+
+2. **Find orphans** — child rows whose parent is missing. An anti-join:
+
+```sql
+SELECT o.* FROM orders o
+WHERE NOT EXISTS (SELECT 1 FROM customers c WHERE c.id = o.customer_id);
+```
+
+(A NULL `customer_id` matches nothing, so it shows up here too. When a table declares its foreign keys, `PRAGMA foreign_key_check` lists orphans for you.)
+
+3. **Fix in the right order.** Merging duplicates means *re-pointing* their children to the survivor **before** deleting them — delete first, and you create new orphans. Choose the survivor by a rule (here the lowest id, the original account).
+
+4. **Decide what orphans mean.** Sometimes they can be re-attached; sometimes they are junk from a bug. Here they point at customers that no longer exist and cannot be recovered, so they go.
+
+5. **Measure again**, then **prevent it**: a unique index on the normalised email stops the duplicates coming back. (Adding a foreign key to an existing SQLite table means rebuilding the table — create the new table with the constraint, copy the rows, drop the old one, rename — which is a job for a migration of its own.)
+
+Do the fix inside a transaction, so a mistake halfway leaves nothing half-done.
+--- task
+Clean the data, in a transaction:
+
+1. Re-point every order of a duplicate customer to the surviving customer — the one with the **lowest id** among those sharing the same `lower(trim(email))`.
+2. Delete the duplicate customers.
+3. Delete the orphan orders (their `customer_id` is NULL or matches no customer).
+4. Create a unique index named `customers_email_key` on `lower(trim(email))`.
+--- starter
+BEGIN;
+DELETE FROM customers
+WHERE id NOT IN (SELECT MIN(id) FROM customers GROUP BY lower(trim(email)));
+COMMIT;
+--- solution
+BEGIN;
+
+UPDATE orders
+SET customer_id = (
+  SELECT MIN(c2.id)
+  FROM customers c1
+  JOIN customers c2 ON lower(trim(c2.email)) = lower(trim(c1.email))
+  WHERE c1.id = orders.customer_id
+)
+WHERE customer_id IN (SELECT id FROM customers);
+
+DELETE FROM customers
+WHERE id NOT IN (SELECT MIN(id) FROM customers GROUP BY lower(trim(email)));
+
+DELETE FROM orders
+WHERE NOT EXISTS (SELECT 1 FROM customers c WHERE c.id = orders.customer_id);
+
+CREATE UNIQUE INDEX customers_email_key ON customers(lower(trim(email)));
+
+COMMIT;
+--- hint
+Measure first: group customers by `lower(trim(email))` for duplicates, and anti-join orders to customers for orphans. The starter deletes duplicates before moving their orders — creating new orphans.
+--- hint
+Re-point with a correlated subquery: for each order, the `MIN(id)` of customers whose normalised email equals its current customer's. Restrict the update to orders whose customer exists.
+--- hint
+Then delete the duplicates, then `DELETE FROM orders WHERE NOT EXISTS (…)`, then create the unique index.
+--- check query | Three customers remain: the originals
+SELECT id, email FROM customers ORDER BY id
+=> [[1, "ana@mail.com"], [2, "bo@mail.com"], [4, "cy@mail.com"]]
+--- check query | Duplicates' orders now belong to the survivors; orphans are gone
+SELECT id, customer_id FROM orders ORDER BY id
+=> [[1, 1], [2, 1], [3, 2], [4, 2], [6, 4]]
+--- check query | No order points at a missing customer
+SELECT COUNT(*) FROM orders o WHERE NOT EXISTS (SELECT 1 FROM customers c WHERE c.id = o.customer_id)
+=> [[0]]
+--- check query | A new duplicate spelling is refused
+INSERT OR IGNORE INTO customers (email, name) VALUES (' CY@Mail.com', 'Cy') RETURNING id
+=> []
+
+=== sql4-12 | Problem solving: cohort retention
+--- schema
+CREATE TABLE users (
+  id INTEGER PRIMARY KEY,
+  signed_up TEXT NOT NULL
+);
+INSERT INTO users (id, signed_up) VALUES
+  (1, '2024-01-05'), (2, '2024-01-20'), (3, '2024-01-31'), (4, '2024-01-15'),
+  (5, '2024-02-02'), (6, '2024-02-10'),
+  (7, '2024-03-03');
+CREATE TABLE activity (
+  user_id INTEGER NOT NULL REFERENCES users(id),
+  day TEXT NOT NULL
+);
+INSERT INTO activity (user_id, day) VALUES
+  (1, '2024-01-06'), (1, '2024-02-03'), (1, '2024-02-20'), (1, '2024-03-15'),
+  (2, '2024-02-01'),
+  (3, '2024-03-02'),
+  (5, '2024-03-01'), (5, '2024-04-10'),
+  (6, '2024-02-11'), (6, '2024-04-20'),
+  (7, '2024-04-01');
+--- teach
+This lesson's tables: `users` (`id`, `signed_up`) and `activity` (`user_id`, `day`) — one row each time a user was active.
+
+**The problem.** Growth wants to know whether people stick around. Group users into **cohorts** by the month they signed up. For each cohort, report its size and the percentage of its users who were active **one month** after their signup month, and **two months** after. A user signing up in January is "month 1 active" if they were active at any time in February.
+
+Work it through the problem-solving steps:
+
+1. **Restate with an example.** January's cohort is users 1–4. In February, users 1 and 2 were active: 2 of 4, 50%. User 1 was active twice in February — that is still one user.
+2. **Find the key quantity:** for every activity, *how many months after signup* it happened. Turn a date into a month number, `year * 12 + month`, and subtract:
+
+```sql
+(CAST(strftime('%Y', a.day) AS INTEGER) * 12 + CAST(strftime('%m', a.day) AS INTEGER))
+- (CAST(strftime('%Y', u.signed_up) AS INTEGER) * 12 + CAST(strftime('%m', u.signed_up) AS INTEGER))
+```
+
+`strftime` returns text (`'03'`); `CAST(x AS INTEGER)` converts it to the number 3 so the arithmetic is done on numbers. Month numbers carry across years correctly, which "month minus month" would not (December to January is +1, not −11).
+
+3. **Build in steps with CTEs:** users with their cohort; activity with its month offset; then per cohort, the **distinct** users with offset 1, and with offset 2.
+4. **Mind the edges.** Users with no activity at all (user 4) still count in the cohort size — so the cohort side must drive the query and activity must be LEFT-joined or counted with conditional aggregation. A cohort nobody came back to shows `0.0`, not NULL. Percentages are `100.0 * active / size`.
+5. **Check against the example** before you trust the rest.
+--- task
+Return one row per signup cohort: `cohort` (`'YYYY-MM'`), `users` (cohort size), `m1_pct` and `m2_pct` — the percentage of the cohort's users active in the first and second month after their signup month, rounded to 1 decimal (0.0 when nobody). Sort by cohort.
+--- starter
+SELECT strftime('%Y-%m', signed_up) AS cohort, COUNT(*) AS users
+FROM users
+GROUP BY cohort;
+--- solution
+WITH u AS (
+  SELECT id,
+         strftime('%Y-%m', signed_up) AS cohort,
+         CAST(strftime('%Y', signed_up) AS INTEGER) * 12 + CAST(strftime('%m', signed_up) AS INTEGER) AS m0
+  FROM users
+), a AS (
+  SELECT DISTINCT a.user_id,
+         CAST(strftime('%Y', a.day) AS INTEGER) * 12 + CAST(strftime('%m', a.day) AS INTEGER) - u.m0 AS offset
+  FROM activity a
+  JOIN u ON u.id = a.user_id
+)
+SELECT u.cohort,
+       COUNT(*) AS users,
+       ROUND(100.0 * SUM(EXISTS (SELECT 1 FROM a WHERE a.user_id = u.id AND a.offset = 1)) / COUNT(*), 1) AS m1_pct,
+       ROUND(100.0 * SUM(EXISTS (SELECT 1 FROM a WHERE a.user_id = u.id AND a.offset = 2)) / COUNT(*), 1) AS m2_pct
+FROM u
+GROUP BY u.cohort
+ORDER BY u.cohort;
+--- hint
+Give each user a month number `year * 12 + month` for their signup, and each activity the same; the difference is the month offset.
+--- hint
+Drive the final query from users (so inactive users count in the size), and for each user ask whether an activity with offset 1 (or 2) exists — `EXISTS` gives 1 or 0, which you can `SUM`.
+--- hint
+`ROUND(100.0 * SUM(…) / COUNT(*), 1)`. Check January: 4 users, 50.0 and 50.0.
+--- check result | Jan 50/50, Feb 50/100, Mar 100/0
+ordered
+[["2024-01", 4, 50.0, 50.0], ["2024-02", 2, 50.0, 100.0], ["2024-03", 1, 100.0, 0.0]]
+
+=== sql4-13 | Problem solving: a conversion funnel
+--- schema
+CREATE TABLE events (
+  user_id INTEGER NOT NULL,
+  ts TEXT NOT NULL,
+  name TEXT NOT NULL
+);
+INSERT INTO events (user_id, ts, name) VALUES
+  (1, '2024-07-01 10:00', 'view'), (1, '2024-07-01 10:05', 'cart'), (1, '2024-07-01 10:10', 'checkout'), (1, '2024-07-01 10:12', 'purchase'),
+  (2, '2024-07-01 10:00', 'view'), (2, '2024-07-01 10:01', 'cart'), (2, '2024-07-01 10:03', 'view'),
+  (3, '2024-07-01 09:00', 'cart'), (3, '2024-07-01 09:05', 'view'), (3, '2024-07-01 09:10', 'checkout'),
+  (4, '2024-07-01 11:00', 'view'), (4, '2024-07-01 11:02', 'cart'), (4, '2024-07-01 11:04', 'checkout'),
+  (5, '2024-07-01 12:00', 'purchase'),
+  (6, '2024-07-01 13:00', 'view'), (6, '2024-07-01 13:01', 'view'), (6, '2024-07-01 13:05', 'cart'),
+  (6, '2024-07-01 13:07', 'checkout'), (6, '2024-07-01 13:09', 'purchase'), (6, '2024-07-01 13:30', 'purchase'),
+  (7, '2024-07-01 14:00', 'view');
+--- teach
+This lesson's table: `events` (`user_id`, `ts`, `name`), where `name` is one of `view`, `cart`, `checkout`, `purchase`.
+
+**The problem.** The shop's funnel is **view → cart → checkout → purchase**. For each step, how many users reached it — *in order* — and what percentage of the previous step's users made it this far?
+
+"In order" is the whole difficulty. User 3 added to cart *before* ever viewing a product (a deep link), then viewed, then checked out. Counting users per event name would credit them with cart and checkout; the funnel must not. User 5 only has a purchase — an import glitch — and must not count at any step. User 6 viewed twice and purchased twice: still one user per step.
+
+Approach:
+
+1. **Restate precisely.** A user reaches step 1 at their first `view`. They reach step 2 at their first `cart` **after** that time; step 3 at their first `checkout` after *that*; and so on. Each step's time is the earliest qualifying event.
+2. **One CTE per step**, each built from the one before:
+
+```sql
+s1 AS (SELECT user_id, MIN(ts) AS t FROM events WHERE name = 'view' GROUP BY user_id),
+s2 AS (SELECT e.user_id, MIN(e.ts) AS t
+       FROM events e JOIN s1 ON s1.user_id = e.user_id
+       WHERE e.name = 'cart' AND e.ts > s1.t
+       GROUP BY e.user_id),
+…
+```
+
+Because each step joins only the users who reached the previous one, the counts can only shrink.
+
+3. **Assemble the report** with a `UNION ALL` of one row per step (step number, name, count), then `LAG` over the step number gives the previous step's count for the percentage. The first step has no previous one, so its percentage is NULL.
+
+4. **Check by hand** against the data: six users viewed (everyone but user 5); four of them carted after viewing.
+--- task
+Return one row per funnel step: `step` (1–4), `name`, `users` (how many users reached it in order) and `pct` — `users` as a percentage of the previous step's users, rounded to 1 decimal (NULL for step 1). Sort by step.
+--- starter
+SELECT name, COUNT(DISTINCT user_id) AS users
+FROM events
+GROUP BY name;
+--- solution
+WITH s1 AS (
+  SELECT user_id, MIN(ts) AS t FROM events WHERE name = 'view' GROUP BY user_id
+), s2 AS (
+  SELECT e.user_id, MIN(e.ts) AS t
+  FROM events e JOIN s1 ON s1.user_id = e.user_id
+  WHERE e.name = 'cart' AND e.ts > s1.t
+  GROUP BY e.user_id
+), s3 AS (
+  SELECT e.user_id, MIN(e.ts) AS t
+  FROM events e JOIN s2 ON s2.user_id = e.user_id
+  WHERE e.name = 'checkout' AND e.ts > s2.t
+  GROUP BY e.user_id
+), s4 AS (
+  SELECT e.user_id, MIN(e.ts) AS t
+  FROM events e JOIN s3 ON s3.user_id = e.user_id
+  WHERE e.name = 'purchase' AND e.ts > s3.t
+  GROUP BY e.user_id
+), steps AS (
+  SELECT 1 AS step, 'view' AS name, COUNT(*) AS users FROM s1
+  UNION ALL SELECT 2, 'cart', COUNT(*) FROM s2
+  UNION ALL SELECT 3, 'checkout', COUNT(*) FROM s3
+  UNION ALL SELECT 4, 'purchase', COUNT(*) FROM s4
+)
+SELECT step, name, users,
+       ROUND(100.0 * users / LAG(users) OVER (ORDER BY step), 1) AS pct
+FROM steps
+ORDER BY step;
+--- hint
+Step 1 is each user's first `view`. Each later step is the first event of the next name **after** the previous step's time, for users who reached the previous step.
+--- hint
+Write `s1` … `s4` as CTEs, each joining the one before. Then stack four count rows with `UNION ALL`.
+--- hint
+`LAG(users) OVER (ORDER BY step)` gives the previous step's count for `pct`.
+--- check result | 6 viewed, 4 carted in order, 3 checked out, 2 purchased
+ordered
+[[1, "view", 6, null], [2, "cart", 4, 66.7], [3, "checkout", 3, 75.0], [4, "purchase", 2, 66.7]]
+
+=== sql4-14 | Problem solving: find and fix a slow query
+--- schema
+CREATE TABLE customers (
+  id INTEGER PRIMARY KEY,
+  email TEXT NOT NULL UNIQUE CHECK (email = lower(email)),
+  name TEXT NOT NULL
+);
+CREATE TABLE orders (
+  id INTEGER PRIMARY KEY,
+  customer_id INTEGER NOT NULL REFERENCES customers(id),
+  created TEXT NOT NULL,
+  total REAL NOT NULL
+);
+WITH RECURSIVE n(i) AS (SELECT 1 UNION ALL SELECT i + 1 FROM n WHERE i < 1000)
+INSERT INTO customers (id, email, name) SELECT i, 'user' || i || '@example.com', 'User ' || i FROM n;
+WITH RECURSIVE n(i) AS (SELECT 1 UNION ALL SELECT i + 1 FROM n WHERE i < 8000)
+INSERT INTO orders (id, customer_id, created, total)
+SELECT i, i % 1000 + 1, datetime('2024-01-01', '+' || (i * 97 % 525600) || ' minutes'), (i * 31 % 300) / 2.0 FROM n;
+CREATE VIEW customer_month AS
+SELECT c.email, o.id AS order_id, o.created, o.total
+FROM orders o
+JOIN customers c ON c.id = o.customer_id
+WHERE lower(c.email) = 'user347@example.com'
+  AND strftime('%Y-%m', o.created) = '2024-03';
+--- teach
+This lesson's tables: `customers` (`id`, `email` — unique, and a `CHECK` guarantees it is stored lower-case — `name`), 1,000 rows; `orders` (`id`, `customer_id`, `created`, `total`), 8,000 rows; and a view `customer_month` that the support tool calls on every page load.
+
+**The report.** Support says the customer page got slower as the shop grew, and it is only going to grow. Nobody knows why.
+
+Finding a slow query is a method, not a hunch:
+
+1. **Read the plan.** `EXPLAIN QUERY PLAN SELECT * FROM customer_month;` Every `SCAN` on a big table is a suspect; `AUTOMATIC INDEX` means SQLite found it worth building a throwaway index *for this one query* — a missing index, announced.
+2. **For each suspect, ask why the index is not used.** Is there no index on that column? Or is there one the predicate cannot use — a column wrapped in a function (lesson 1)?
+3. **Question every function.** Is `lower()` needed at all? Read the schema: if a constraint already guarantees the value, the function is doing nothing except blocking the index.
+4. **Fix one thing, re-read the plan,** until each table is reached by a `SEARCH`.
+5. **Prove the answer did not change.** A fast wrong query is worse than a slow right one — compare the rows before and after.
+
+Indexes for a join: the table you *start* from needs an index on its filter column; the table you *join into* needs an index on the join column — and, if you also filter it by a range, the range column right after, so one index answers both.
+
+This shop names indexes after their columns: `idx_<table>_<column>_<column>`.
+--- task
+Make `customer_month` fast without changing the rows it returns: recreate the view under the same name and columns with sargable predicates, and add whatever index it needs (named by the shop's convention), so that both tables are reached with `SEARCH` and nothing is scanned.
+--- starter
+EXPLAIN QUERY PLAN SELECT * FROM customer_month;
+--- solution
+DROP VIEW customer_month;
+CREATE VIEW customer_month AS
+SELECT c.email, o.id AS order_id, o.created, o.total
+FROM orders o
+JOIN customers c ON c.id = o.customer_id
+WHERE c.email = 'user347@example.com'
+  AND o.created >= '2024-03-01' AND o.created < '2024-04-01';
+
+CREATE INDEX idx_orders_customer_id_created ON orders(customer_id, created);
+--- hint
+Run the starter and read the plan. Then read the `customers` schema: can `email` ever contain capitals?
+--- hint
+Drop the `lower()` (the unique index on `email` can then be used), turn the month test into a range on `created`, and index orders by the join column and then the range column.
+--- hint
+`DROP VIEW customer_month;` then create it again; the index is `idx_orders_customer_id_created ON orders(customer_id, created)`.
+--- check query | The view returns the same rows as before
+SELECT email, order_id, created, total FROM customer_month ORDER BY order_id
+=> [["user347@example.com", 1346, "2024-03-31 16:02:00", 13.0], ["user347@example.com", 6346, "2024-03-03 11:22:00", 113.0]]
+--- check query | Both tables are searched, nothing scanned
+EXPLAIN QUERY PLAN SELECT * FROM customer_month
+=> [[4, 0, 45, "SEARCH c USING COVERING INDEX sqlite_autoindex_customers_1 (email=?)"], [8, 0, 50, "SEARCH o USING INDEX idx_orders_customer_id_created (customer_id=? AND created>? AND created<?)"]]

@@ -1,169 +1,140 @@
 /* ============================================================================
    ORBIT — code playground
    ----------------------------------------------------------------------------
-   Opens standalone, or on a specific exercise via `#/playground?ex=<id>`, in
-   which case it loads the starter code, the tests and the reference solution.
+   Three modes along the top, the way a coding site lays them out:
 
-   The header always states which of the three run modes applies. A learner who
-   thinks their C++ compiled when it was actually string-compared has been
-   misled by the product, and a green tick that means nothing is worse than no
-   tick at all.
+     Code      Python, C++, Rust, MATLAB and shell scripts, picked from the
+               file pill
+     SQL       SQLite, on a seeded telemetry table, results as a table
+     Terminal  the practice shell: files, folders and git, in the page
+
+   Opens standalone, or on a specific exercise via `#/playground?ex=<id>`, in
+   which case it loads the starter code, the tests and the reference solution
+   and shows them as test cases. `?lang=<lang>` opens a language directly.
+
+   The note under the window always states which of the three run modes
+   applies. A learner who thinks their C++ compiled when it was actually
+   string-compared has been misled by the product, and a green tick that means
+   nothing is worse than no tick at all.
    ========================================================================== */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import type { CSSProperties } from 'react'
 import { Editor } from '@/components/Editor'
+import { IconArrowRight, IconBulb, IconPause, IconRefresh } from '@/components/icons'
 import {
-  IconCheck,
-  IconPause,
-  IconPlay,
-  IconRefresh,
-  IconTerminal,
-  IconWarn,
-  IconX,
-} from '@/components/icons'
-import { Button, Card, CardHead, Chip, Segmented } from '@/components/ui'
+  ConsoleView,
+  IdeBody,
+  IdePanel,
+  IdeWindow,
+  ModeTabs,
+  RunButton,
+  SqlTables,
+  TerminalView,
+  TestCases,
+  type Mode,
+  type PanelTab,
+} from '@/components/ide'
+import { Button } from '@/components/ui'
 import { MODULES } from '@/curriculum'
 import type { Exercise, Lang, Module } from '@/curriculum/types'
 import { saveCode } from '@/engine/apply'
+import type { CheckResult } from '@/learn/types'
 import {
   LANGS,
   buildTestProgram,
   capabilityOf,
   detectToolchains,
-  runAgainstSolution,
-  runNative,
   parseTestOutput,
   python,
+  runAgainstSolution,
+  runNative,
   runSql,
-  type Capability,
   type RunOutput,
   type SqlResult,
-  type TestOutcome,
 } from '@/lib/runtimes'
 import type { ToolchainInfo } from '@/lib/desktop'
+import { newShell, type ShellState } from '@/lib/shell'
 import { Markdown } from '@/lib/markdown'
 import { useLearner } from '@/hooks/useLearner'
 import { navigate, useRoute } from '@/lib/router'
+import { SCRATCH, SQL_SCHEMA } from '@/lib/scratch'
+import { useNextLesson } from '@/pages/Learn'
 import './pages.css'
 
-const SCRATCH: Record<string, string> = {
-  python: `# Two-body propagation, Euler-Cromer.
-# A rough integrator on purpose — watch the energy drift.
-import numpy as np
-import matplotlib.pyplot as plt
+/** The languages Code mode's file pill offers. */
+const CODE_LANGS: Lang[] = ['python', 'cpp', 'rust', 'matlab', 'bash']
 
-MU = 398600.4418          # km^3/s^2, Earth
-r = np.array([7000.0, 0.0])
-v = np.array([0.0, 7.546])
-dt, steps = 10.0, 3000
-
-track = np.zeros((steps, 2))
-for i in range(steps):
-    a = -MU * r / np.linalg.norm(r) ** 3
-    v = v + a * dt
-    r = r + v * dt
-    track[i] = r
-
-plt.figure(figsize=(4.2, 4.2))
-plt.plot(track[:, 0], track[:, 1], lw=1)
-plt.gca().add_patch(plt.Circle((0, 0), 6378, color="#1b4a78"))
-plt.axis("equal"); plt.grid(alpha=.15)
-plt.title("LEO, 3000 steps")
-plt.show()
-
-print("final radius:", round(float(np.linalg.norm(r)), 1), "km")
-`,
-  sql: `-- Telemetry is where SQL earns its place in aerospace work.
-SELECT
-  channel,
-  COUNT(*)                AS samples,
-  ROUND(AVG(value), 2)    AS mean,
-  ROUND(MAX(value), 2)    AS peak
-FROM telemetry
-GROUP BY channel
-HAVING COUNT(*) > 2
-ORDER BY peak DESC;
-`,
-  cpp: `#include <cstdio>
-
-int main() {
-    std::printf("Hello from a C++ exercise\\n");
-    return 0;
-}
-`,
-  rust: `fn main() {
-    println!("Hello from a Rust exercise");
-}
-`,
-  matlab: `% MATLAB cannot execute here — the NumPy equivalent is one tab away.
-mu = 398600.4418;
-r  = [7000; 0; 0];
-v  = [0; 7.546; 0];
-h  = cross(r, v);
-disp(norm(h))
-`,
-  bash: `#!/usr/bin/env bash
-set -euo pipefail
-echo "Hello from a shell exercise"
-`,
-  simulink: '',
-  text: '',
+const FILES: Partial<Record<Lang, string>> = {
+  python: 'main.py',
+  cpp: 'main.cpp',
+  rust: 'main.rs',
+  matlab: 'main.m',
+  bash: 'script.sh',
+  sql: 'query.sql',
+  simulink: 'model.slx',
+  text: 'notes.md',
 }
 
-/** Seed data for the standalone SQL scratchpad. */
-const SQL_SCHEMA = `
-CREATE TABLE telemetry (t REAL, channel TEXT, value REAL);
-INSERT INTO telemetry VALUES
-  (0.0,'chamber_pressure',  98.2), (0.1,'chamber_pressure',  99.4),
-  (0.2,'chamber_pressure', 101.7), (0.3,'chamber_pressure', 100.9),
-  (0.0,'gimbal_angle',       0.4), (0.1,'gimbal_angle',      -1.2),
-  (0.2,'gimbal_angle',       2.8), (0.3,'gimbal_angle',       1.1),
-  (0.0,'accel_axial',       12.4), (0.1,'accel_axial',       19.8),
-  (0.2,'accel_axial',       24.1), (0.3,'accel_axial',       31.6),
-  (0.0,'tank_level',        99.9), (0.1,'tank_level',        92.3);
-`
-
-const RUNNABLE: Lang[] = ['python', 'sql', 'cpp', 'rust', 'matlab', 'bash']
+/** ORBIT's playground has no web mode: nothing in its curriculum is a web page. */
+const MODES: Mode[] = ['code', 'sql', 'terminal']
 
 export function Playground() {
   const route = useRoute()
   const { state, setState } = useLearner()
 
   const exerciseRef = useMemo(() => findExercise(route.query.ex), [route.query.ex])
-  const [lang, setLang] = useState<Lang>(exerciseRef?.exercise.lang ?? 'python')
+  const exercise = exerciseRef?.exercise
+  const asked = route.query.lang
+  // `?lang=bash` is the practice terminal, the way Learn to code links to it;
+  // shell scripts are one pick away in Code mode.
+  const [mode, setMode] = useState<Mode>(exercise ? (exercise.lang === 'sql' ? 'sql' : 'code') : asked === 'sql' ? 'sql' : asked === 'bash' ? 'terminal' : 'code')
+  const [codeLang, setCodeLang] = useState<Lang>(
+    exercise?.lang && exercise.lang !== 'sql' ? exercise.lang : CODE_LANGS.includes(asked as Lang) && asked !== 'bash' ? (asked as Lang) : 'python',
+  )
+  const lang: Lang = mode === 'sql' ? 'sql' : mode === 'terminal' ? 'bash' : codeLang
+  const info = LANGS[lang]
+  const learn = useNextLesson(lang)
+
+  const bufferKey = exercise ? `ex:${exercise.id}` : `scratch:${lang}`
   const [code, setCode] = useState('')
   const [running, setRunning] = useState(false)
   const [status, setStatus] = useState('')
-  const [pyOut, setPyOut] = useState<RunOutput | null>(null)
+  const [out, setOut] = useState<RunOutput | null>(null)
   const [sqlOut, setSqlOut] = useState<SqlResult | null>(null)
-  const [outcomes, setOutcomes] = useState<TestOutcome[] | null>(null)
+  const [tests, setTests] = useState<CheckResult[] | null>(null)
+  const [stdin, setStdin] = useState<Record<string, string>>({})
+  const [tab, setTab] = useState('console')
   const [toolchains, setToolchains] = useState<Record<string, ToolchainInfo> | null>(null)
   const [showSolution, setShowSolution] = useState(false)
+  const [shell, setShell] = useState<ShellState>(() => newShell())
+  const [termKey, setTermKey] = useState(0)
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const exercise = exerciseRef?.exercise
-  const info = LANGS[lang]
-  const bufferKey = exercise ? `ex:${exercise.id}` : `scratch:${lang}`
+  // What this language can do at this moment, on this machine.
+  const capability = useMemo(() => capabilityOf(lang, toolchains), [lang, toolchains])
+  const executes = capability.mode === 'execute'
+  const graded = !!exercise && ((exercise.tests?.length ?? 0) > 0 || (executes && lang !== 'python' && lang !== 'sql' && !!exercise.solution))
+  const takesInput = lang === 'cpp' || lang === 'python'
 
   /* ── load the buffer for whatever is selected ──────────────────────────── */
   useEffect(() => {
+    if (mode === 'terminal') return
     const saved = state.code[bufferKey]
-    if (saved != null) {
-      setCode(saved)
-      return
-    }
-    setCode(exercise?.starter ?? SCRATCH[lang] ?? '')
+    setCode(saved ?? exercise?.starter ?? SCRATCH[lang] ?? '')
+    setOut(null)
+    setSqlOut(null)
+    setTests(null)
+    setTab(graded ? 'tests' : mode === 'sql' ? 'results' : 'console')
     // Deliberately not re-running on every keystroke-driven state change.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [bufferKey])
+  }, [bufferKey, mode])
 
   /* Python's runtime is ~7MB over the wire; start it downloading as soon as
-     the page opens rather than at the moment someone hits Run. */
+     the language is picked rather than at the moment someone hits Run. */
   useEffect(() => {
     if (lang === 'python' && !python.isBooted) python.preload(setStatus)
   }, [lang])
 
-  /* What the machine can compile. Asked once on open; `refresh` re-probes
+  /* What the machine can compile. Asked once on open; `Check again` re-probes
      after she installs something without needing a restart. */
   useEffect(() => {
     let alive = true
@@ -179,398 +150,272 @@ export function Playground() {
     setToolchains(await detectToolchains(true))
   }, [])
 
-  // What this language can do at this moment, on this machine.
-  const capability = useMemo(() => capabilityOf(lang, toolchains), [lang, toolchains])
-
   const onCodeChange = useCallback(
     (next: string) => {
       setCode(next)
       if (saveTimer.current) clearTimeout(saveTimer.current)
-      saveTimer.current = setTimeout(() => {
-        setState((s) => saveCode(s, bufferKey, next))
-      }, 700)
+      saveTimer.current = setTimeout(() => setState((s) => saveCode(s, bufferKey, next)), 700)
     },
     [bufferKey, setState],
   )
 
   const run = useCallback(async () => {
+    if (running) return
     setRunning(true)
-    setPyOut(null)
+    setOut(null)
     setSqlOut(null)
-    setOutcomes(null)
-
+    setTests(null)
+    const input = stdin[lang] ?? ''
     try {
       if (lang === 'python') {
-        const tests = exercise?.tests ?? []
-        const program = tests.length ? buildTestProgram(code, tests) : code
-        const out = await python.run(program, { onStatus: setStatus })
-
-        if (tests.length) {
-          const parsed = parseTestOutput(out.stdout, tests)
-          setPyOut({ ...out, stdout: parsed.userOutput })
-          setOutcomes(parsed.outcomes)
-        } else {
-          setPyOut(out)
-        }
-        return
-      }
-
-      if (lang === 'sql') {
-        const schema = exercise?.starter?.includes('CREATE TABLE')
-          ? undefined // the learner's own buffer already builds its tables
-          : SQL_SCHEMA
+        const pyTests = exercise?.tests ?? []
+        const program = pyTests.length ? buildTestProgram(code, pyTests) : code
+        const lines = input ? input.replace(/\n$/, '').split('\n') : undefined
+        const result = await python.run(program, { onStatus: setStatus, ...(lines ? { stdin: lines } : {}) })
+        if (pyTests.length) {
+          const parsed = parseTestOutput(result.stdout, pyTests)
+          setOut({ ...result, stdout: parsed.userOutput })
+          setTests(parsed.outcomes.map((o) => ({ name: o.name, status: o.status === 'pass' ? 'pass' : 'fail', ...(o.message ? { detail: o.message } : {}) })))
+        } else setOut(result)
+      } else if (lang === 'sql') {
+        // An exercise whose buffer builds its own tables gets an empty database.
+        const schema = exercise?.starter?.includes('CREATE TABLE') ? undefined : SQL_SCHEMA
         setSqlOut(await runSql(code, schema))
-        return
-      }
-
-      // Everything else compiles and runs through the shell when the machine
-      // has the toolchain for it. When it does not, this stays a comparison
-      // against the expected output and the toolbar says so plainly.
-      if (capability.mode === 'execute') {
-        // With a reference solution to compare against, running it is a real
-        // grade: both programs actually execute and their output is compared.
+      } else if (executes) {
+        // Everything else compiles and runs on this machine's toolchain (C++
+        // also in the browser). With a reference solution, running it is a
+        // real grade: both programs execute and their output is compared.
         if (exercise?.solution) {
-          const graded = await runAgainstSolution(lang, code, exercise.solution)
-          setPyOut(graded.yours)
-          setOutcomes([
+          const g = await runAgainstSolution(lang, code, exercise.solution, lang === 'cpp' ? input : undefined)
+          setOut(g.yours)
+          setTests([
             {
               name: 'Matches the reference solution',
-              status: graded.pass ? 'pass' : 'fail',
-              message: graded.detail,
+              status: g.pass ? 'pass' : 'fail',
+              input: input.trim() || '(no input)',
+              ...(g.reference ? { expected: g.reference.stdout.trimEnd() } : {}),
+              actual: g.yours.error ? g.yours.error : g.yours.stdout.trimEnd(),
+              ...(g.pass ? {} : { detail: g.detail }),
             },
           ])
-          return
-        }
-        setPyOut(await runNative(lang, code))
-        return
+        } else setOut(await runNative(lang, code, lang === 'cpp' ? input : undefined, setStatus))
+      } else {
+        // Nothing to run it on: say so, rather than showing an empty console
+        // that looks like a program which printed nothing.
+        setOut({ stdout: '', stderr: '', plots: [], result: null, error: null, ms: 0 })
       }
-
-      setPyOut({
-        stdout: '',
-        stderr: '',
-        plots: [],
-        result: null,
-        error: null,
-        ms: 0,
-      })
+      setTab(graded ? 'tests' : lang === 'sql' ? 'results' : 'console')
     } finally {
       setRunning(false)
       setStatus('')
     }
-  }, [lang, code, exercise, capability.mode])
+  }, [code, executes, exercise, graded, lang, running, stdin])
 
   const reset = () => {
+    if (mode === 'terminal') {
+      setShell(newShell())
+      setTermKey((k) => k + 1)
+      return
+    }
     const starter = exercise?.starter ?? SCRATCH[lang] ?? ''
     setCode(starter)
     setState((s) => saveCode(s, bufferKey, starter))
-    setPyOut(null)
+    setOut(null)
     setSqlOut(null)
-    setOutcomes(null)
+    setTests(null)
   }
 
-  const passed = outcomes?.every((o) => o.status === 'pass') ?? false
+  const chooseMode = (m: Mode) => {
+    if (exercise) navigate('/playground')
+    setMode(m)
+  }
+
+  const testMark: PanelTab['mark'] = tests ? (tests.every((t) => t.status === 'pass') ? 'pass' : 'fail') : undefined
+  const failed = !!(out?.error || sqlOut?.error)
+  const tabs: PanelTab[] =
+    mode === 'sql'
+      ? [
+          ...(graded ? [{ id: 'tests', label: 'Test cases', mark: testMark }] : []),
+          { id: 'results', label: 'Results' },
+          { id: 'console', label: 'Console', ...(failed ? { mark: 'fail' as const } : {}) },
+          ...(!exercise ? [{ id: 'schema', label: 'Tables' }] : []),
+        ]
+      : [
+          ...(graded ? [{ id: 'tests', label: 'Test cases', mark: testMark }] : []),
+          { id: 'console', label: 'Console', ...(failed ? { mark: 'fail' as const } : {}) },
+          ...(takesInput ? [{ id: 'input', label: 'Input' }] : []),
+        ]
+
+  const runButton = (
+    <RunButton onClick={() => void run()} running={running} status={status} label={!executes ? 'Check' : graded ? 'Run tests' : 'Run Code'} />
+  )
+  const choices = CODE_LANGS.map((l) => ({ value: l, label: `${FILES[l]} · ${LANGS[l].label}` }))
 
   return (
-    <div className="page page--padtop">
+    <div className="page page--padtop ide-wrap pgx">
       <div className="page-head">
         <div style={{ minWidth: 0 }}>
-          <div className="page-head__kicker">
-            <IconTerminal size={13} />
-            {exercise ? exerciseRef!.module.title : 'Scratchpad'}
-          </div>
+          <div className="page-head__kicker">{exercise ? exerciseRef!.module.title : 'Playground'}</div>
           <h1 className="h-page">{exercise ? exercise.title : 'Code playground'}</h1>
           <p className="page-head__sub">
             {exercise
               ? 'Your work is saved to this device as you type.'
-              : 'A place to try things. Python and SQL execute for real, in your browser, with nothing sent anywhere.'}
+              : 'Write code and run it right here. Python, SQL and C++ execute in your browser with nothing sent anywhere; Rust, MATLAB and shell scripts run on the Mac’s own tools in the desktop app.'}
           </p>
         </div>
         {exercise ? (
-          <Button
-            variant="ghost"
-            size="md"
-            onClick={() => navigate(`/module/${exerciseRef!.module.id}`)}
-          >
+          <Button variant="ghost" size="md" onClick={() => navigate(`/module/${exerciseRef!.module.id}`)}>
             Back to module
           </Button>
         ) : null}
       </div>
 
-      {!exercise ? (
-        <div style={{ marginBottom: 'var(--gap)' }}>
-          <Segmented
-            value={lang}
-            options={RUNNABLE.map((l) => ({ value: l, label: LANGS[l].label }))}
-            onChange={(l) => {
-              setLang(l)
-              setPyOut(null)
-              setSqlOut(null)
-              setOutcomes(null)
-            }}
-          />
-        </div>
+      <ModeTabs value={mode} onChange={chooseMode} modes={MODES} />
+
+      {!exercise && learn ? (
+        <a className="pgx-learn" href={`#/learn/${learn.lesson.id}`}>
+          <IconBulb size={15} />
+          <span className="grow">
+            {learn.done === 0
+              ? `New to ${mode === 'terminal' ? 'the terminal' : info.label}? Learn the basics lesson by lesson, right here.`
+              : learn.done === learn.total
+                ? `All ${learn.total} ${mode === 'terminal' ? 'Terminal' : info.label} lessons passed.`
+                : `${learn.done} of ${learn.total} ${mode === 'terminal' ? 'Terminal' : info.label} lessons passed · Next: ${learn.lesson.title}`}
+          </span>
+          <span className="pgx-learn__go">
+            {learn.done === 0 ? 'Start learning' : learn.done === learn.total ? 'Review' : 'Continue'}
+            <IconArrowRight size={13} />
+          </span>
+        </a>
       ) : null}
 
       {exercise ? (
-        <Card index={0} style={{ marginBottom: 'var(--gap)' }}>
-          <CardHead
-            icon={<IconTerminal size={15} />}
-            title="Brief"
-            right={
-              <div style={{ display: 'flex', gap: 6 }}>
-                <Chip tone="blue">{info.label}</Chip>
-                <Chip ghost>{capability.mode}</Chip>
-              </div>
-            }
-            divided
-          />
-          <div className="sect">
-            <Markdown>{exercise.prompt}</Markdown>
-          </div>
-        </Card>
+        <div className="pgx-brief">
+          <Markdown>{exercise.prompt}</Markdown>
+        </div>
       ) : null}
 
-      <div className="pg">
-        {/* ── editor ────────────────────────────────────────────────────── */}
-        <Card index={1}>
-          <div className="pg__toolbar">
-            <Button variant="primary" size="sm" onClick={() => void run()} disabled={running}>
-              <IconPlay size={13} />
-              {capability.mode === 'execute' ? 'Run' : 'Check'}
-            </Button>
-            {running && lang === 'python' ? (
-              <Button variant="ghost" size="sm" onClick={() => python.cancel()}>
-                <IconPause size={13} />
-                Stop
-              </Button>
-            ) : null}
-            <Button variant="quiet" size="sm" onClick={reset}>
+      {mode === 'terminal' ? (
+        <IdeWindow
+          lang="bash"
+          file="~/project"
+          right={
+            <button type="button" className="ide__tool" onClick={reset}>
               <IconRefresh size={13} />
               Reset
-            </Button>
-            {exercise?.solution ? (
-              <Button variant="quiet" size="sm" onClick={() => setShowSolution((s) => !s)}>
-                {showSolution ? 'Hide solution' : 'Solution'}
-              </Button>
-            ) : null}
-
-            <div className="pg__status">
-              {running ? <span className="pg__spinner" /> : null}
-              {status || (pyOut ? `${pyOut.ms} ms` : sqlOut ? `${sqlOut.ms} ms` : 'Ctrl+Enter to run')}
-            </div>
-          </div>
-
-          <Editor
-            value={code}
-            onChange={onCodeChange}
-            lang={lang}
-            minHeight={400}
-            onRun={() => void run()}
-            placeholder={`Write ${info.label} here…`}
-          />
-
-          <div className="pg__note">
-            {capability.mode === 'execute' ? <IconCheck size={11} style={inlineIcon} /> : <IconWarn size={11} style={inlineIcon} />}
-            {capability.note}
-          </div>
-
-          {/* One missing compiler is the difference between a real test run
-              and a string comparison, so the fix is offered here rather than
-              left for her to go and find. */}
-          {capability.missing ? (
-            <div className="pg__install">
-              <p>
-                <strong>{capability.missing.label} is not installed.</strong> {capability.missing.install}
-              </p>
-              <button className="btn btn--quiet btn--sm" onClick={() => void refreshToolchains()} type="button">
-                Check again
+            </button>
+          }
+        >
+          <TerminalView key={termKey} shell={shell} onShell={setShell} height={460} />
+        </IdeWindow>
+      ) : (
+        <IdeWindow
+          lang={lang}
+          file={FILES[lang] ?? 'main'}
+          {...(mode === 'code' && !exercise ? { choices, onChoose: (v: string) => setCodeLang(v as Lang) } : {})}
+          right={
+            <>
+              {running && lang === 'python' ? (
+                <button type="button" className="ide__tool" onClick={() => python.cancel()}>
+                  <IconPause size={13} />
+                  Stop
+                </button>
+              ) : null}
+              {exercise?.solution ? (
+                <button type="button" className="ide__tool" onClick={() => setShowSolution((s) => !s)}>
+                  {showSolution ? 'Hide solution' : 'Solution'}
+                </button>
+              ) : null}
+              <button type="button" className="ide__tool" onClick={reset}>
+                <IconRefresh size={13} />
+                Reset
               </button>
-            </div>
-          ) : null}
-        </Card>
+            </>
+          }
+        >
+          <IdeBody run={runButton}>
+            <Editor ide value={code} onChange={onCodeChange} lang={lang} minHeight={380} onRun={() => void run()} placeholder={`Write ${info.label} here…`} />
+          </IdeBody>
+          <IdePanel
+            tabs={tabs}
+            active={tabs.some((t) => t.id === tab) ? tab : tabs[0]!.id}
+            onTab={setTab}
+            right={<span className="pgx-status">{status || (out ? `${out.ms} ms` : sqlOut ? `${sqlOut.ms} ms` : 'Ctrl+Enter runs')}</span>}
+          >
+            {tab === 'tests' && graded ? (
+              <TestCases results={tests} empty="Run your code to check it against the tests." />
+            ) : tab === 'input' && takesInput ? (
+              <>
+                <p className="ide-hint">Standard input: what the program reads{lang === 'python' ? ' with input()' : ' from std::cin'}, one line at a time.</p>
+                <textarea
+                  className="ide-stdin"
+                  aria-label="Standard input"
+                  value={stdin[lang] ?? ''}
+                  onChange={(e) => setStdin((m) => ({ ...m, [lang]: e.target.value }))}
+                  spellCheck={false}
+                />
+              </>
+            ) : tab === 'results' && mode === 'sql' ? (
+              sqlOut && !sqlOut.error ? (
+                <SqlTables tables={sqlOut.tables} />
+              ) : (
+                <p className="ide-empty">{sqlOut?.error ? 'The query failed — see the Console tab.' : 'Run your query to see the rows it returns.'}</p>
+              )
+            ) : tab === 'schema' && mode === 'sql' ? (
+              <>
+                <p className="ide-hint">Each run starts from a fresh in-memory database with this table.</p>
+                <pre className="tcase__value">{SQL_SCHEMA.trim()}</pre>
+              </>
+            ) : mode === 'sql' ? (
+              <ConsoleView error={sqlOut?.error} note={sqlOut && !sqlOut.error ? `Ran in ${sqlOut.ms} ms.` : undefined} empty="Errors from your SQL show here." />
+            ) : out && !executes ? (
+              <ConsoleView note={`Not executed. ${capability.note}`} />
+            ) : (
+              <ConsoleView
+                stdout={out?.stdout}
+                stderr={out?.stderr}
+                error={out?.error}
+                note={out?.result ? `→ ${out.result}` : out && !out.stdout && !out.stderr && !out.error && !out.plots.length ? 'Ran cleanly with no output.' : undefined}
+              >
+                {out?.plots.map((src, i) => <img src={src} alt={`Figure ${i + 1}`} key={i} />)}
+              </ConsoleView>
+            )}
+          </IdePanel>
+        </IdeWindow>
+      )}
 
-        {/* ── output ────────────────────────────────────────────────────── */}
-        <div className="stack">
-          {outcomes ? (
-            <Card index={2}>
-              <CardHead
-                icon={passed ? <IconCheck size={15} /> : <IconX size={15} />}
-                title={passed ? 'All tests passed' : 'Tests'}
-                right={
-                  <Chip tone={passed ? 'ok' : 'bad'}>
-                    {outcomes.filter((o) => o.status === 'pass').length}/{outcomes.length}
-                  </Chip>
-                }
-                divided
-              />
-              <div className="sect">
-                <div className="tests">
-                  {outcomes.map((o, i) => (
-                    <div className="test" data-status={o.status} key={i}>
-                      <span className="test__icon">
-                        {o.status === 'pass' ? <IconCheck size={13} /> : <IconX size={13} />}
-                      </span>
-                      <div className="grow">
-                        <div className="test__name">{o.name}</div>
-                        {o.message ? <div className="test__msg">{o.message}</div> : null}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </Card>
-          ) : null}
+      <p className="pgx-note">{capability.note}</p>
 
-          {sqlOut ? <SqlOutput result={sqlOut} /> : null}
-          {pyOut ? <PythonOutput out={pyOut} capability={capability} /> : null}
-
-          {showSolution && exercise?.solution ? (
-            <Card index={4}>
-              <CardHead icon={<IconCheck size={15} />} title="Reference solution" divided />
-              <div className="sect">
-                <Markdown>
-                  {'```' + (exercise.lang ?? '') + '\n' + exercise.solution + '\n```'}
-                </Markdown>
-              </div>
-            </Card>
-          ) : null}
-
-          {!pyOut && !sqlOut && !outcomes ? (
-            <Card index={3}>
-              <CardHead icon={<IconTerminal size={15} />} title="Output" divided />
-              <div className="sect">
-                <div className="console" />
-              </div>
-            </Card>
-          ) : null}
+      {/* One missing compiler is the difference between a real test run and a
+          string comparison, so the fix is offered here rather than left for
+          her to go and find. */}
+      {mode === 'code' && capability.missing ? (
+        <div className="pg__install">
+          <p>
+            <strong>{capability.missing.label} is not installed.</strong> {capability.missing.install}
+          </p>
+          <button className="btn btn--quiet btn--sm" onClick={() => void refreshToolchains()} type="button">
+            Check again
+          </button>
         </div>
-      </div>
+      ) : null}
+
+      {showSolution && exercise?.solution ? (
+        <div className="pgx-brief">
+          <Markdown>{'**Reference solution**\n\n```' + (exercise.lang ?? '') + '\n' + exercise.solution + '\n```'}</Markdown>
+        </div>
+      ) : null}
 
       <p className="track-note">
-        Everything here runs inside this browser tab. Nothing you write is uploaded, and nothing
-        leaves the device — which also means the Python runtime is a one-time ~7 MB download that
-        your browser then caches.
+        Python, SQL and C++ run inside this browser tab: nothing you write is uploaded, which also means the Python
+        runtime (about 7 MB) and the C++ compiler (about 105 MB) come to you the first time, and your browser then keeps
+        them. The Terminal is a practice one that lives in the page; real shell scripts run in Code mode on the Mac.
       </p>
     </div>
   )
 }
 
-/* ── Output panels ───────────────────────────────────────────────────────── */
-
-function PythonOutput({ out, capability }: { out: RunOutput; capability: Capability }) {
-  if (capability.mode !== 'execute') {
-    return (
-      <Card index={3}>
-        <CardHead icon={<IconWarn size={15} />} title="Not executed" divided />
-        <div className="sect" style={{ fontSize: 12.5, color: 'var(--ink-3)', lineHeight: 1.7 }}>
-          {/* The reason has to be the real one. This panel used to say the language
-              "does not run in a browser" whatever the actual cause was, which is the
-              wrong sentence inside the desktop app: it made a compiler she has not
-              installed yet look like a limitation of ORBIT, and hid the one line that
-              says which compiler and how to get it. */}
-          {capability.note}
-          {capability.missing ? (
-            <div style={{ marginTop: 10 }}>
-              <strong>{capability.missing.label} is not installed.</strong>{' '}
-              {capability.missing.install} Use the refresh button above once it is, so ORBIT looks
-              again without a restart.
-            </div>
-          ) : null}
-        </div>
-      </Card>
-    )
-  }
-
-  return (
-    <Card index={3}>
-      <CardHead
-        icon={<IconTerminal size={15} />}
-        title="Output"
-        right={<span className="eyebrow-dim">{out.ms} ms</span>}
-        divided
-      />
-      <div className="sect">
-        <div className="console">
-          {out.stdout ? <span>{out.stdout}</span> : null}
-          {out.stderr ? <span className="console__err">{out.stderr}</span> : null}
-          {out.error ? <span className="console__err">{out.error}</span> : null}
-          {out.result ? <span className="console__meta">{`→ ${out.result}\n`}</span> : null}
-          {!out.stdout && !out.stderr && !out.error && !out.result && out.plots.length === 0 ? (
-            <span className="console__meta">Ran cleanly with no output.</span>
-          ) : null}
-        </div>
-
-        {out.plots.map((src, i) => (
-          <img className="console__plot" src={src} alt={`Figure ${i + 1}`} key={i} />
-        ))}
-      </div>
-    </Card>
-  )
-}
-
-function SqlOutput({ result }: { result: SqlResult }) {
-  return (
-    <Card index={3}>
-      <CardHead
-        icon={<IconTerminal size={15} />}
-        title="Result"
-        right={<span className="eyebrow-dim">{result.ms} ms</span>}
-        divided
-      />
-      <div className="sect">
-        {result.error ? (
-          <div className="console">
-            <span className="console__err">{result.error}</span>
-          </div>
-        ) : result.tables.length === 0 ? (
-          <div className="console">
-            <span className="console__meta">
-              Statement ran and returned no rows. INSERT, UPDATE and CREATE produce no result set —
-              run a SELECT to see the effect.
-            </span>
-          </div>
-        ) : (
-          result.tables.map((t, ti) => (
-            <div className="grid" key={ti} style={{ marginBottom: ti < result.tables.length - 1 ? 12 : 0 }}>
-              <div className="grid__caption">
-                {t.rows.length} row{t.rows.length === 1 ? '' : 's'} · {t.columns.length} column
-                {t.columns.length === 1 ? '' : 's'}
-              </div>
-              <table>
-                <thead>
-                  <tr>
-                    {t.columns.map((c) => (
-                      <th key={c}>{c}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {t.rows.slice(0, 200).map((row, ri) => (
-                    <tr key={ri}>
-                      {row.map((cell, ci) => (
-                        <td key={ci} className={cell === null ? 'null' : undefined}>
-                          {cell === null ? 'NULL' : String(cell)}
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ))
-        )}
-      </div>
-    </Card>
-  )
-}
-
 /* ── Helpers ─────────────────────────────────────────────────────────────── */
-
-const inlineIcon: CSSProperties = {
-  display: 'inline',
-  verticalAlign: '-1px',
-  marginRight: 6,
-}
 
 function findExercise(id?: string): { exercise: Exercise; module: Module } | null {
   if (!id) return null

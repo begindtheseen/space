@@ -1,0 +1,1720 @@
+@track python
+@level expert
+@title Python · Expert
+@name Python, expert: the machinery, concurrency, testing and hard problems
+@blurb Understand the machinery serious Python code is built on (closures, descriptors, class hooks, coroutines), write code that is typed, tested and designed for change, and solve the kind of hard problems that need a real algorithm.
+
+=== py4-01 | Debugging: closures and late binding
+--- teach
+The advanced course showed you how iterators, decorators and special methods work. This course goes further into the machinery (closures, descriptors, class hooks, coroutines), then into typing, testing and design for change, and ends with problems that need a real algorithm.
+
+It starts with a bug that only makes sense once you know how a **closure** remembers variables. You met closures in the decorators lesson: a function defined inside another can use the outer function's variables, even after the outer one has returned:
+
+```python
+def make_greeter(greeting):
+    def greet(name):
+        return f"{greeting}, {name}"
+    return greet
+
+hello = make_greeter("hello")
+hello("ada")          # 'hello, ada'
+```
+
+Two rules about closures cause most of the bugs.
+
+**1. Closures capture variables, not values.** The inner function looks the variable up *when it runs*, not when it was created. This is **late binding**. In a loop, every function you create shares the one loop variable, so by the time you call them, they all see its final value:
+
+```python
+funcs = [lambda: i for i in range(3)]
+[f() for f in funcs]      # [2, 2, 2], not [0, 1, 2]
+```
+
+The fix is to capture the *current value* at creation time, either with a default argument (defaults are evaluated when the function is defined) or with a factory function that gets its own variable per call:
+
+```python
+funcs = [lambda i=i: i for i in range(3)]      # default argument
+def make(i):
+    return lambda: i                            # factory: a new i each call
+funcs = [make(i) for i in range(3)]
+[f() for f in funcs]      # [0, 1, 2]
+```
+
+**2. Assigning to a name makes it local.** If an inner function *assigns* to a variable (including `+=`), Python treats that name as local to the inner function for the whole function body, so reading it first fails with `UnboundLocalError`. Declare `nonlocal count` to say "this is the outer function's variable":
+
+```python
+def make_counter():
+    count = 0
+    def increment():
+        nonlocal count
+        count += 1
+        return count
+    return increment
+```
+
+**The debugging method here:** when several functions "all return the same thing", suspect a shared variable. You can even look at what a closure captured: `f.__closure__[0].cell_contents` shows the current value of its first captured variable, and it is the same cell for every function made in the loop.
+--- task
+**Bug report:**
+
+1. `make_multipliers(4)` should return four functions where the `k`th multiplies by `k`, but all of them multiply by 3.
+2. `make_handlers(["save", "open"])` should map each name to a function returning `"clicked <name>"`, but every handler says `"clicked open"`.
+3. `make_counter()` should return a function that counts 1, 2, 3… but calling it crashes with `UnboundLocalError`.
+
+Fix all three.
+--- starter
+def make_multipliers(n):
+    return [lambda x: i * x for i in range(n)]
+
+
+def make_handlers(names):
+    handlers = {}
+    for name in names:
+        handlers[name] = lambda: f"clicked {name}"
+    return handlers
+
+
+def make_counter():
+    count = 0
+
+    def increment():
+        count += 1
+        return count
+
+    return increment
+--- solution
+def make_multipliers(n):
+    def times(k):
+        return lambda x: k * x
+    return [times(i) for i in range(n)]
+
+
+def make_handlers(names):
+    handlers = {}
+    for name in names:
+        handlers[name] = lambda name=name: f"clicked {name}"
+    return handlers
+
+
+def make_counter():
+    count = 0
+
+    def increment():
+        nonlocal count
+        count += 1
+        return count
+
+    return increment
+--- hint
+Call each multiplier and look at `f.__closure__[0].cell_contents`. Are they separate variables or one shared one?
+--- hint
+Capture the value when each function is created: a default argument (`lambda name=name: ...`) or a small factory function that returns the lambda.
+--- hint
+The counter assigns to `count`, which makes it local to `increment`. Add `nonlocal count` as the first line of `increment`.
+--- check case | Each multiplier uses its own k
+[f(10) for f in make_multipliers(4)]
+=> [0, 10, 20, 30]
+--- check case | Each handler remembers its own name
+{name: h() for name, h in make_handlers(["save", "open", "quit"]).items()}
+=> {"save": "clicked save", "open": "clicked open", "quit": "clicked quit"}
+--- check case | The counter counts
+(lambda c: [c(), c(), c()])(make_counter())
+=> [1, 2, 3]
+--- check test | Two counters are independent
+(lambda a, b: (a(), a(), b()) == (1, 2, 1))(make_counter(), make_counter())
+
+=== py4-02 | Descriptors: how @property really works
+--- teach
+When you write `obj.attr`, Python does not just look in the object's dictionary. It first checks whether the *class* has an attribute of that name that is a **descriptor**: an object with `__get__` (and maybe `__set__`). If so, Python calls it. That single rule is how `@property`, methods, `classmethod` and `staticmethod` all work.
+
+```python
+class Loud:
+    def __get__(self, obj, owner):
+        return "HELLO"
+
+class Thing:
+    greeting = Loud()     # a descriptor, stored on the CLASS
+
+Thing().greeting          # 'HELLO'   (Loud.__get__ was called)
+```
+
+The protocol:
+
+- `__get__(self, obj, owner)`: called on read. `obj` is the instance, or `None` when read from the class itself (`Thing.greeting`); by convention return the descriptor itself then.
+- `__set__(self, obj, value)`: called on assignment. Having it makes a **data descriptor**, which wins over the instance's own `__dict__`.
+- `__set_name__(self, owner, name)`: called once when the class is created, telling the descriptor the name it was assigned to.
+
+**Where does the value live?** Not on the descriptor! There is one descriptor per *class*, shared by every instance. Store per-object data in the instance: `obj.__dict__[self.name] = value`.
+
+A reusable validator shows why descriptors exist. With `@property` you would repeat the same getter and setter for every field; a descriptor writes it once:
+
+```python
+class NonEmpty:
+    def __set_name__(self, owner, name):
+        self.name = name
+    def __get__(self, obj, owner):
+        if obj is None:
+            return self
+        return obj.__dict__[self.name]
+    def __set__(self, obj, value):
+        if not value:
+            raise ValueError(f"{self.name} must not be empty")
+        obj.__dict__[self.name] = value
+
+class User:
+    username = NonEmpty()
+    email = NonEmpty()
+    def __init__(self, username, email):
+        self.username = username      # goes through NonEmpty.__set__
+        self.email = email
+```
+
+A descriptor with only `__get__` is a **non-data descriptor**, and the instance's `__dict__` wins over it. That enables a neat trick: compute a value on first access, store it in the instance dict under the *same name*, and from then on Python finds the stored value first and never calls `__get__` again. That is exactly how `functools.cached_property` works.
+
+**Common mistake:** storing the value on `self` inside the descriptor (`self.value = value`). Every instance then shares one value, because there is only one descriptor.
+--- task
+Write two descriptors:
+
+- `Positive`: a data descriptor for numbers that must be greater than 0. Assigning anything else raises `ValueError`. Store the value in the instance's `__dict__` under the attribute's own name (use `__set_name__`). Reading it from the class returns the descriptor.
+- `lazy(func)`: a non-data descriptor used like a decorator on a method. The first read calls `func(obj)`, stores the result in the instance's `__dict__` under the same name, and returns it; later reads never call `func` again.
+
+Then write `Product(name, price, quantity)`, where `price` and `quantity` are `Positive`, with a property `total` (price × quantity).
+--- starter
+class Positive:
+    pass
+
+
+class lazy:
+    def __init__(self, func):
+        self.func = func
+
+
+class Product:
+    def __init__(self, name, price, quantity):
+        self.name = name
+        self.price = price
+        self.quantity = quantity
+--- solution
+class Positive:
+    def __set_name__(self, owner, name):
+        self.name = name
+
+    def __get__(self, obj, owner):
+        if obj is None:
+            return self
+        return obj.__dict__[self.name]
+
+    def __set__(self, obj, value):
+        if not isinstance(value, (int, float)) or isinstance(value, bool) or value <= 0:
+            raise ValueError(f"{self.name} must be a number greater than 0")
+        obj.__dict__[self.name] = value
+
+
+class lazy:
+    def __init__(self, func):
+        self.func = func
+
+    def __set_name__(self, owner, name):
+        self.name = name
+
+    def __get__(self, obj, owner):
+        if obj is None:
+            return self
+        value = self.func(obj)
+        obj.__dict__[self.name] = value
+        return value
+
+
+class Product:
+    price = Positive()
+    quantity = Positive()
+
+    def __init__(self, name, price, quantity):
+        self.name = name
+        self.price = price
+        self.quantity = quantity
+
+    @property
+    def total(self):
+        return self.price * self.quantity
+--- hint
+`__set_name__(self, owner, name)` stores `self.name = name`. `__get__` returns `self` when `obj is None`, otherwise `obj.__dict__[self.name]`.
+--- hint
+In `Positive.__set__`, check the value, then store it with `obj.__dict__[self.name] = value`, never on `self`.
+--- hint
+`lazy` has no `__set__`. Its `__get__` computes `self.func(obj)`, stores it in `obj.__dict__[self.name]`, and returns it; the instance dict then shadows the descriptor.
+--- check case | A valid product
+(lambda p: (p.price, p.quantity, p.total))(Product("pen", 1.5, 4))
+=> (1.5, 4, 6.0)
+--- check test | Non-positive values are rejected, at creation and later
+raises(ValueError, lambda: Product("x", 0, 1)) and raises(ValueError, lambda: Product("x", 1, -3)) and (lambda p: raises(ValueError, lambda: setattr(p, "price", -1)) and p.price == 2)(Product("x", 2, 1))
+--- check test | Non-numbers are rejected
+raises(ValueError, lambda: Product("x", "5", 1))
+--- check test | Each product keeps its own values
+(lambda a, b: (a.price, b.price) == (1, 2))(Product("a", 1, 1), Product("b", 2, 1))
+?? The descriptor is shared by every instance: store the value in obj.__dict__, not on self.
+--- check test | Values live in the instance dict under their own names
+vars(Product("a", 2.5, 3)) == {"name": "a", "price": 2.5, "quantity": 3}
+--- check test | Reading from the class gives the descriptor
+isinstance(Product.price, Positive)
+--- check case | lazy computes once, then reads the stored value
+(lambda log: (lambda R: (lambda r: (r.data, r.data, len(log), "data" in vars(r)))(R()))(type("R", (), {"data": lazy(lambda self: log.append(1) or 42)})))([])
+=> (42, 42, 1, True)
+--- check test | lazy values are per instance
+(lambda R: (R().v, R().v) == (1, 1))(type("R", (), {"n": 0, "v": lazy(lambda self: self.n + 1)}))
+
+=== py4-03 | Class hooks: __init_subclass__ and the plugin pattern
+--- teach
+Some programs are built from **plugins**: commands, file formats, payment providers. Each lives in its own class, and the core program finds them without a hand-kept list. Forget to add a new class to the list and it silently does not exist; the fix is to have classes **register themselves** the moment they are defined.
+
+Python gives base classes a hook for exactly that. `__init_subclass__` is called *on the base class* every time a subclass is created (it is implicitly a class method, so its first argument is the new subclass):
+
+```python
+class Exporter:
+    formats = {}
+
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
+        Exporter.formats[cls.extension] = cls
+
+class CsvExporter(Exporter):
+    extension = "csv"
+
+class JsonExporter(Exporter):
+    extension = "json"
+
+Exporter.formats     # {'csv': <class 'CsvExporter'>, 'json': <class 'JsonExporter'>}
+```
+
+Things to get right:
+
+- **Register on the base class explicitly** (`Exporter.formats`), so every subclass shares one registry.
+- **Call `super().__init_subclass__(**kwargs)`** so the hook cooperates with other base classes.
+- **Validate at definition time.** The hook runs when the `class` statement runs, so a subclass that forgot its `extension`, or reused one, can raise an error immediately, at import, long before a user hits it.
+
+Subclasses can also pass keyword arguments to the hook: `class Csv(Exporter, extension="csv")` calls `__init_subclass__(extension="csv")`.
+
+Before `__init_subclass__` existed, this took a **metaclass** (a class whose instances are classes). Metaclasses can do more, but they are harder to read and combine; reach for the hook first. A class decorator (`@register`) is the other alternative, at the cost of having to remember to write it.
+
+Classes can also be created by calling `type(name, bases, namespace)` directly, and the hook still runs. That is how the checks below add plugins of their own.
+--- task
+Build a tiny command system:
+
+- `class Command` with a class attribute `registry = {}` and a method `run(self, args)` that subclasses override (`args` is a list of strings; it returns a string).
+- Every subclass registers itself in `Command.registry` under its class attribute `name`, via `__init_subclass__`. A subclass with no `name` (or an empty one) raises `TypeError`; a name that is already registered raises `ValueError`.
+- `Add` (name `"add"`) returns the sum of its integer arguments as a string; `Upper` (name `"upper"`) returns its arguments joined by spaces, uppercased.
+- `dispatch(line)` splits the line into words, finds the command by the first word, and returns `command().run(rest)`. An empty line returns `"error: empty command"`; an unknown name returns `"error: unknown command <name>"`.
+--- starter
+class Command:
+    registry = {}
+
+    def run(self, args):
+        raise NotImplementedError
+
+
+class Add(Command):
+    def run(self, args):
+        return str(sum(int(a) for a in args))
+
+
+def dispatch(line):
+    return "error: empty command"
+--- solution
+class Command:
+    registry = {}
+    name = None
+
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
+        if not cls.name:
+            raise TypeError(f"{cls.__name__} needs a name")
+        if cls.name in Command.registry:
+            raise ValueError(f"command {cls.name!r} is already registered")
+        Command.registry[cls.name] = cls
+
+    def run(self, args):
+        raise NotImplementedError
+
+
+class Add(Command):
+    name = "add"
+
+    def run(self, args):
+        return str(sum(int(a) for a in args))
+
+
+class Upper(Command):
+    name = "upper"
+
+    def run(self, args):
+        return " ".join(args).upper()
+
+
+def dispatch(line):
+    words = line.split()
+    if not words:
+        return "error: empty command"
+    command = Command.registry.get(words[0])
+    if command is None:
+        return f"error: unknown command {words[0]}"
+    return command().run(words[1:])
+--- hint
+Give `Command` a class attribute `name = None`, so subclasses that forget theirs inherit `None` and you can test `if not cls.name`.
+--- hint
+In `__init_subclass__(cls, **kwargs)`, call `super().__init_subclass__(**kwargs)`, validate, then `Command.registry[cls.name] = cls`.
+--- hint
+`dispatch`: `words = line.split()`, handle the empty case, look up `Command.registry.get(words[0])`, then `command().run(words[1:])`.
+--- check case | add sums its arguments
+dispatch("add 1 2 39")
+=> "42"
+--- check case | upper shouts
+dispatch("upper hello there")
+=> "HELLO THERE"
+--- check test | Both commands registered themselves
+Command.registry.get("add") is Add and Command.registry.get("upper") is Upper and Command not in Command.registry.values()
+--- check test | A new plugin works with no other change
+(type("Echo", (Command,), {"name": "echo", "run": lambda self, args: "|".join(args)}), dispatch("echo a b c"))[1] == "a|b|c"
+--- check test | A subclass without a name is rejected when it is defined
+raises(TypeError, lambda: type("Nameless", (Command,), {}))
+--- check test | A duplicate name is rejected
+raises(ValueError, lambda: type("Add2", (Command,), {"name": "add"}))
+--- check test | Empty and unknown commands give errors, not crashes
+dispatch("   ") == "error: empty command" and dispatch("fly away") == "error: unknown command fly"
+
+=== py4-04 | Advanced generators: send and yield from
+--- teach
+A generator can do more than hand values out. It can also **receive** them, and it can **delegate** to another generator.
+
+**`send`.** `yield` is an expression. `x = yield value` hands out `value`, pauses, and when the caller resumes it with `g.send(something)`, that `something` becomes `x`:
+
+```python
+def echo_upper():
+    reply = None
+    while True:
+        text = yield reply
+        reply = text.upper()
+
+g = echo_upper()
+next(g)             # run to the first yield ("prime" it); returns None
+g.send("hi")        # 'HI'
+g.send("there")     # 'THERE'
+```
+
+You must call `next(g)` (or `g.send(None)`) once before sending anything real, because a new generator has not reached a `yield` yet. A generator used like this is a small **stateful machine**: it keeps its local variables between messages, with no class needed.
+
+**`yield from`.** Inside a generator, `yield from other` passes through every value `other` yields (and every value sent in) until `other` finishes. It is how a recursive generator stays short:
+
+```python
+def walk(tree):
+    for node in tree:
+        if isinstance(node, list):
+            yield from walk(node)    # hand over to the recursive call
+        else:
+            yield node
+
+list(walk([1, [2, [3]], 4]))   # [1, 2, 3, 4]
+```
+
+**Return values.** A generator can `return` a value. It arrives as the result of the `yield from` expression in the generator that delegated to it:
+
+```python
+def add_up():
+    total = 0
+    while True:
+        x = yield
+        if x is None:
+            return total      # ends this generator with a result
+        total += x
+
+def outer(results):
+    while True:
+        results.append((yield from add_up()))
+```
+
+This send-and-delegate machinery is the ancestor of `async`/`await`, which is the next lesson.
+
+**Common mistake:** when flattening, treating strings as nested lists. A string is iterable, and its characters are strings too, so recursing into strings never ends. Test for `list` and `tuple` explicitly.
+--- task
+Write three generators:
+
+- `averager()`: after priming with `next()`, each `send(x)` returns the average of all numbers sent so far.
+- `flatten(items)`: yields every non-list, non-tuple value from arbitrarily nested lists and tuples, in order, using `yield from`. Strings are values, not containers.
+- `tally()` receives numbers by `send` until it receives `None`, then **returns** the tuple `(count, total)`. `collect(results)` loops forever, appending the result of `yield from tally()` to the list `results` each time a tally finishes.
+--- starter
+def averager():
+    yield 0
+
+
+def flatten(items):
+    for item in items:
+        yield item
+
+
+def tally():
+    return (0, 0)
+    yield
+
+
+def collect(results):
+    yield
+--- solution
+def averager():
+    total = 0
+    count = 0
+    average = None
+    while True:
+        x = yield average
+        total += x
+        count += 1
+        average = total / count
+
+
+def flatten(items):
+    for item in items:
+        if isinstance(item, (list, tuple)):
+            yield from flatten(item)
+        else:
+            yield item
+
+
+def tally():
+    count = 0
+    total = 0
+    while True:
+        x = yield
+        if x is None:
+            return (count, total)
+        count += 1
+        total += x
+
+
+def collect(results):
+    while True:
+        results.append((yield from tally()))
+--- hint
+In `averager`, keep a running total and count in local variables; the line `x = yield average` both hands out the latest average and receives the next number.
+--- hint
+`flatten` recurses with `yield from flatten(item)` when `isinstance(item, (list, tuple))`.
+--- hint
+`tally` ends with `return (count, total)` when it receives `None`. In `collect`, `results.append((yield from tally()))` inside `while True:` (note the extra brackets).
+--- check case | averager keeps a running average
+(lambda g: (next(g), g.send(10), g.send(20), g.send(0))[1:])(averager())
+=> (10.0, 15.0, 10.0)
+--- check case | flatten handles any nesting, and keeps strings whole
+list(flatten([1, [2, (3, [4, []])], "ab", [[["deep"]]]]))
+=> [1, 2, 3, 4, "ab", "deep"]
+--- check case | flatten of nothing
+list(flatten([]))
+=> []
+--- check test | tally returns (count, total) when sent None
+(lambda g: (next(g), g.send(4), g.send(6), raises(StopIteration, lambda: g.send(None))))(tally())[3]
+--- check case | collect gathers one result per finished tally
+(lambda res: (lambda g: (next(g), g.send(1), g.send(2), g.send(None), g.send(5), g.send(None), res)[-1])(collect(res)))([])
+=> [(2, 3), (1, 5)]
+--- check source | Uses yield from
+\byield\s+from\b
+
+=== py4-05 | asyncio: concurrency with async and await
+--- teach
+Much of a program's time is spent **waiting**: for a network reply, a database, a timer. `asyncio` lets one thread start many waits and handle whichever finishes first, instead of waiting for each in turn. That is **concurrency** (juggling several tasks), not parallelism (doing several computations at the same instant).
+
+```python
+import asyncio
+
+async def fetch(name, delay):
+    await asyncio.sleep(delay)      # stand-in for a network call
+    return f"{name} ready"
+```
+
+- `async def` defines a **coroutine function**. Calling it runs nothing; it returns a coroutine object.
+- `await` runs a coroutine (or anything awaitable) and, while it is waiting, lets the event loop run other tasks.
+- `await` only works inside `async def`, or at the top level of the program in environments that allow it (this one does).
+
+**Running things at the same time.** Awaiting one after another is still one-at-a-time:
+
+```python
+a = await fetch("a", 1)     # 1 second
+b = await fetch("b", 1)     # another second: 2 in total
+```
+
+`asyncio.gather` starts them all and waits for all of them, returning the results **in the order you passed them in**, whatever order they finished in:
+
+```python
+a, b = await asyncio.gather(fetch("a", 1), fetch("b", 1))   # about 1 second
+```
+
+**Producer and consumer.** When there is a stream of work and you want at most `n` jobs running at once, use an `asyncio.Queue` and `n` workers:
+
+```python
+async def worker(queue, results):
+    while True:
+        item = await queue.get()
+        try:
+            results.append(await handle(item))
+        finally:
+            queue.task_done()          # tell the queue this item is finished
+
+async def run(items, n):
+    queue = asyncio.Queue()
+    results = []
+    workers = [asyncio.create_task(worker(queue, results)) for _ in range(n)]
+    for item in items:
+        await queue.put(item)          # the producer
+    await queue.join()                 # wait until every item is task_done
+    for w in workers:
+        w.cancel()                     # workers loop forever; stop them
+    return results
+```
+
+**Common mistakes.** Forgetting `await` (you get a coroutine object and a warning, not a result). Calling `time.sleep` inside a coroutine, which freezes *everything*, because nothing else can run while the thread is blocked; use `await asyncio.sleep`. And forgetting `task_done()`, which leaves `queue.join()` waiting forever.
+--- task
+Write:
+
+- `fetch(name, delay)`: a coroutine that waits `delay` seconds with `asyncio.sleep` and returns `f"{name}:{delay}"`.
+- `fetch_all(jobs)`: a coroutine taking a list of `(name, delay)` pairs, running every fetch **concurrently**, returning the results in the same order as `jobs`.
+- `square_slowly(x)`: a coroutine that waits `0.05` seconds and returns `x * x`.
+- `process(items, workers)`: a coroutine that squares every item with `square_slowly`, using an `asyncio.Queue` and exactly `workers` worker tasks, and returns the results sorted.
+
+The code at the bottom already runs them and times them; keep it.
+--- starter
+import asyncio
+import time
+
+
+async def fetch(name, delay):
+    await asyncio.sleep(delay)
+    return f"{name}:{delay}"
+
+
+async def fetch_all(jobs):
+    results = []
+    for name, delay in jobs:
+        results.append(await fetch(name, delay))
+    return results
+
+
+async def square_slowly(x):
+    await asyncio.sleep(0.05)
+    return x * x
+
+
+async def process(items, workers):
+    return sorted([await square_slowly(x) for x in items])
+
+
+start = time.perf_counter()
+results = await fetch_all([("a", 0.3), ("b", 0.1), ("c", 0.2)])
+fetch_seconds = time.perf_counter() - start
+
+start = time.perf_counter()
+squares = await process(list(range(20)), 5)
+process_seconds = time.perf_counter() - start
+print(results, round(fetch_seconds, 1))
+--- solution
+import asyncio
+import time
+
+
+async def fetch(name, delay):
+    await asyncio.sleep(delay)
+    return f"{name}:{delay}"
+
+
+async def fetch_all(jobs):
+    return list(await asyncio.gather(*(fetch(name, delay) for name, delay in jobs)))
+
+
+async def square_slowly(x):
+    await asyncio.sleep(0.05)
+    return x * x
+
+
+async def process(items, workers):
+    queue = asyncio.Queue()
+    results = []
+
+    async def worker():
+        while True:
+            item = await queue.get()
+            try:
+                results.append(await square_slowly(item))
+            finally:
+                queue.task_done()
+
+    tasks = [asyncio.create_task(worker()) for _ in range(workers)]
+    for item in items:
+        await queue.put(item)
+    await queue.join()
+    for task in tasks:
+        task.cancel()
+    return sorted(results)
+
+
+start = time.perf_counter()
+results = await fetch_all([("a", 0.3), ("b", 0.1), ("c", 0.2)])
+fetch_seconds = time.perf_counter() - start
+
+start = time.perf_counter()
+squares = await process(list(range(20)), 5)
+process_seconds = time.perf_counter() - start
+print(results, round(fetch_seconds, 1))
+--- hint
+`await asyncio.gather(*coroutines)` runs them all at once. Build the coroutines with a generator expression and spread it with `*`.
+--- hint
+For `process`: make a `Queue`, start `workers` tasks with `asyncio.create_task(worker())`, put every item, then `await queue.join()`.
+--- hint
+Each worker loops forever: `item = await queue.get()`, compute, and call `queue.task_done()` in a `finally`. After `join()`, cancel the worker tasks.
+--- check case | fetch_all returns results in the order of the jobs
+results
+=> ["a:0.3", "b:0.1", "c:0.2"]
+--- check test | The fetches ran at the same time (about 0.3s, not 0.6s)
+fetch_seconds < 0.55
+?? Awaiting each fetch in a loop waits for them one after another. Use asyncio.gather.
+--- check case | process squares everything
+squares
+=> [x * x for x in range(20)]
+--- check test | Five workers made it about five times faster than one at a time
+process_seconds < 0.8
+?? 20 items at 0.05s each is 1s one by one. Five workers pulling from a Queue should take about 0.2s.
+--- check test | They are all coroutine functions
+all(__import__("inspect").iscoroutinefunction(f) for f in (fetch, fetch_all, square_slowly, process))
+--- check source | process uses an asyncio.Queue
+asyncio\.Queue\(
+
+=== py4-06 | heapq and bisect: the right structure for speed
+--- teach
+Some questions come up again and again: "what is the smallest item right now?", "where does this value go in sorted order?". Answering them by sorting every time is O(n log n) per question. Two standard-library modules answer them far faster.
+
+**`heapq`: the smallest item, always ready.** A *heap* is a list kept in a special partial order where `heap[0]` is always the smallest item. Adding and removing are O(log n):
+
+```python
+import heapq
+h = []
+for x in [5, 1, 8, 3]:
+    heapq.heappush(h, x)
+h[0]                    # 1   the smallest, without sorting
+heapq.heappop(h)        # 1   removes and returns it
+heapq.heappop(h)        # 3
+heapq.nlargest(2, [5, 1, 8, 3, 9])       # [9, 8]
+list(heapq.merge([1, 4, 9], [2, 3, 10])) # [1, 2, 3, 4, 9, 10]
+```
+
+`heapq` only does *min*-heaps. For a max-heap, push negated numbers and negate again when you pop. Items can be tuples, `(priority, item)`, which compare by the first element first.
+
+**Two heaps make a running median.** Keep the smaller half of the numbers in a max-heap (`low`, stored negated) and the larger half in a min-heap (`high`). Keep their sizes within one of each other, and every number in `low` no bigger than any in `high`. Then the median is at the top of one heap, or halfway between the two tops. Each new number costs O(log n), instead of re-sorting everything.
+
+**`bisect`: positions in a sorted list.** `bisect_left(a, x)` is the binary search you wrote in the advanced course: the first index whose value is at least `x`. `bisect_right` gives the index just past any equal values. `insort` inserts while keeping the list sorted.
+
+```python
+import bisect
+bisect.bisect_left([10, 20, 30], 20)     # 1
+bisect.bisect_right([10, 20, 30], 20)    # 2
+```
+
+A classic use is mapping a number onto bands without an `if` chain:
+
+```python
+breakpoints = [18.5, 25, 30]
+labels = ["under", "normal", "over", "obese"]
+labels[bisect.bisect_right(breakpoints, 22.0)]   # 'normal'
+```
+
+**Common mistake:** reading `h[1]` as "the second smallest". A heap is only partly ordered: `h[0]` is the minimum, and the rest is in no useful order.
+--- task
+Write:
+
+- `k_largest(nums, k)`: the `k` largest numbers, largest first, using `heapq`.
+- `class RunningMedian` with `add(x)` and `median()`: the median of everything added so far (the average of the middle two when the count is even). `median()` with nothing added raises `ValueError`. Use two heaps, so 100,000 adds with a median after each are fast.
+- `grade(score)` using `bisect`: below 60 is `"F"`, 60 up to 70 is `"D"`, then `"C"`, `"B"`, and 90 or more is `"A"`.
+--- starter
+import bisect
+import heapq
+
+
+def k_largest(nums, k):
+    return sorted(nums)[:k]
+
+
+class RunningMedian:
+    def __init__(self):
+        self.values = []
+
+    def add(self, x):
+        self.values.append(x)
+
+    def median(self):
+        s = sorted(self.values)
+        return s[len(s) // 2]
+
+
+def grade(score):
+    return "F"
+--- solution
+import bisect
+import heapq
+
+
+def k_largest(nums, k):
+    return heapq.nlargest(k, nums)
+
+
+class RunningMedian:
+    def __init__(self):
+        self.low = []    # max-heap of the smaller half, stored negated
+        self.high = []   # min-heap of the larger half
+
+    def add(self, x):
+        if self.low and x > -self.low[0]:
+            heapq.heappush(self.high, x)
+        else:
+            heapq.heappush(self.low, -x)
+        if len(self.low) > len(self.high) + 1:
+            heapq.heappush(self.high, -heapq.heappop(self.low))
+        elif len(self.high) > len(self.low):
+            heapq.heappush(self.low, -heapq.heappop(self.high))
+
+    def median(self):
+        if not self.low:
+            raise ValueError("no values yet")
+        if len(self.low) > len(self.high):
+            return -self.low[0]
+        return (-self.low[0] + self.high[0]) / 2
+
+
+def grade(score):
+    return "FDCBA"[bisect.bisect_right([60, 70, 80, 90], score)]
+--- hint
+`heapq.nlargest(k, nums)` already returns them largest first.
+--- hint
+Keep `low` (negated, so it acts as a max-heap) and `high`. Push the new number onto the correct side, then move one number across if `low` has more than one extra, or `high` has more than `low`.
+--- hint
+If `low` is bigger, the median is `-low[0]`; otherwise it is the average of `-low[0]` and `high[0]`. For `grade`, `bisect_right([60, 70, 80, 90], score)` gives 0 to 4, an index into `"FDCBA"`.
+--- check case | k_largest, largest first
+k_largest([5, 1, 9, 3, 9, 7], 3)
+=> [9, 9, 7]
+--- check case | k larger than the list
+k_largest([2, 1], 5)
+=> [2, 1]
+--- check test | Running median, odd and even counts
+(lambda m: [m.add(x) or m.median() for x in [5, 15, 1, 3, 8]])(RunningMedian()) == [5, 10.0, 5, 4.0, 5]
+--- check test | Negative numbers and duplicates
+(lambda m: [m.add(x) or m.median() for x in [-2, -2, -10, 4]])(RunningMedian()) == [-2, -2.0, -2, -2.0]
+--- check test | Empty median raises ValueError
+raises(ValueError, lambda: RunningMedian().median())
+--- check test | 100,000 adds, with a median after every one
+(lambda m: [m.add(x) or m.median() for x in range(100000)][-1])(RunningMedian()) == 49999.5
+?? Sorting on every median() call is far too slow here. Keep two heaps.
+--- check case | grade boundaries
+[grade(s) for s in (0, 59.9, 60, 69, 70, 80, 89.5, 90, 100)]
+=> ["F", "F", "D", "D", "C", "B", "B", "A", "A"]
+--- check source | grade uses bisect
+bisect\.bisect
+
+=== py4-07 | Typing: Protocols and generics
+--- teach
+Type hints describe what a function expects and returns. Python itself does not enforce them at run time; tools such as mypy and pyright read them and catch mistakes before the code runs, and editors use them for autocompletion. In a large codebase they are documentation that cannot go out of date without something complaining.
+
+```python
+def mean(values: list[float]) -> float:
+    return sum(values) / len(values)
+```
+
+**Protocols: typing by behaviour.** Python has always worked by *duck typing*: if it has an `area()` method, you can ask for its area. A `Protocol` puts that into the type system. It lists the methods something must have, and **any** class with those methods matches, with no inheritance needed:
+
+```python
+from typing import Protocol, runtime_checkable
+
+@runtime_checkable
+class Closeable(Protocol):
+    def close(self) -> None: ...
+
+class File:
+    def close(self) -> None:
+        print("closed")
+
+isinstance(File(), Closeable)   # True, though File never mentions Closeable
+```
+
+`@runtime_checkable` also makes `isinstance` work, but at run time it only checks that the methods *exist*, not their signatures.
+
+**Generics: one class, many types.** A `Stack` of ints and a `Stack` of strings are the same code. A **type variable** says "some type, the same one throughout":
+
+```python
+from typing import Generic, TypeVar
+T = TypeVar("T")
+
+class Box(Generic[T]):
+    def __init__(self, item: T) -> None:
+        self.item = item
+    def get(self) -> T:
+        return self.item
+
+def first(items: list[T]) -> T:      # returns the same type the list holds
+    return items[0]
+
+b: Box[int] = Box(3)
+```
+
+(Since Python 3.12 you can also write `class Box[T]:` and `def first[T](items: list[T]) -> T:` without the `TypeVar` line.)
+
+Hints are ordinary Python objects you can inspect: `typing.get_type_hints(first)` returns the annotations as a dict.
+
+**Common mistakes.** Making a class *inherit* from a protocol "to be safe" defeats the point: protocols exist so unrelated classes match by shape. And a hint is not a check; if you need validation at run time, write it.
+--- task
+Write, with full type hints:
+
+- A runtime-checkable `Protocol` called `HasArea` with a method `area(self) -> float`.
+- Classes `Square(side)` and `Circle(radius)` with `area()` methods. They must **not** inherit from `HasArea`.
+- `total_area(shapes: Iterable[HasArea]) -> float`.
+- A generic `class Stack(Generic[T])` with `push(item)`, `pop()` (raises `IndexError` when empty), `peek()` (also `IndexError` when empty), and `__len__`.
+- `first(items: Sequence[T], default: T) -> T` returning the first item, or `default` if `items` is empty.
+--- starter
+import math
+from typing import Generic, Iterable, Protocol, Sequence, TypeVar, runtime_checkable
+
+T = TypeVar("T")
+
+
+class Square:
+    def __init__(self, side):
+        self.side = side
+
+
+def total_area(shapes):
+    return 0
+--- solution
+import math
+from typing import Generic, Iterable, Protocol, Sequence, TypeVar, runtime_checkable
+
+T = TypeVar("T")
+
+
+@runtime_checkable
+class HasArea(Protocol):
+    def area(self) -> float: ...
+
+
+class Square:
+    def __init__(self, side: float) -> None:
+        self.side = side
+
+    def area(self) -> float:
+        return self.side * self.side
+
+
+class Circle:
+    def __init__(self, radius: float) -> None:
+        self.radius = radius
+
+    def area(self) -> float:
+        return math.pi * self.radius ** 2
+
+
+def total_area(shapes: Iterable[HasArea]) -> float:
+    return sum(shape.area() for shape in shapes)
+
+
+class Stack(Generic[T]):
+    def __init__(self) -> None:
+        self._items: list[T] = []
+
+    def push(self, item: T) -> None:
+        self._items.append(item)
+
+    def pop(self) -> T:
+        if not self._items:
+            raise IndexError("pop from empty stack")
+        return self._items.pop()
+
+    def peek(self) -> T:
+        if not self._items:
+            raise IndexError("peek at empty stack")
+        return self._items[-1]
+
+    def __len__(self) -> int:
+        return len(self._items)
+
+
+def first(items: Sequence[T], default: T) -> T:
+    return items[0] if items else default
+--- hint
+A protocol is a class inheriting from `Protocol` whose method body is just `...`. Put `@runtime_checkable` above it.
+--- hint
+`Stack(Generic[T])` keeps a plain list inside; `pop` and `peek` check for emptiness first and raise `IndexError`.
+--- hint
+Annotate everything, including `-> None` on `__init__` and `push`, and `-> float` on `total_area`.
+--- check test | Squares and circles match the protocol without inheriting it
+isinstance(Square(2), HasArea) and isinstance(Circle(1), HasArea) and HasArea not in Square.__mro__ and not isinstance(object(), HasArea)
+--- check test | total_area adds up any mix of shapes
+abs(total_area([Square(2), Circle(1), Square(0.5)]) - (4 + __import__("math").pi + 0.25)) < 1e-9 and total_area([]) == 0
+--- check test | total_area is annotated to return float and take HasArea items
+(lambda h: h["return"] is float and "HasArea" in str(h["shapes"]))(__import__("typing").get_type_hints(total_area))
+--- check case | Stack is last in, first out
+(lambda s: (s.push(1), s.push(2), s.push(3), s.peek(), s.pop(), s.pop(), len(s))[3:])(Stack())
+=> (3, 3, 2, 1)
+--- check test | Popping or peeking an empty stack raises IndexError
+raises(IndexError, lambda: Stack().pop()) and raises(IndexError, lambda: Stack().peek())
+--- check test | Stack is generic: Stack[str] works and has one type parameter
+len(Stack.__parameters__) == 1 and len(Stack[str]()) == 0
+--- check test | first, with and without items
+first([7, 8], 0) == 7 and first([], "none") == "none" and first("xyz", "?") == "x"
+
+=== py4-08 | Testing: write the test that catches the bug
+--- teach
+A test is a small program that checks another program. The most valuable tests are the ones that **fail when the code is wrong**. A test that passes on buggy code is worse than none, because it makes you confident.
+
+The shape of a test is **arrange, act, assert**:
+
+```python
+def test_slugify():
+    # arrange: an input; act: call the code; assert: compare with what it should be
+    assert slugify("Hello, World") == "hello-world"
+    assert slugify("") == ""
+```
+
+`assert condition, message` raises `AssertionError` (with the message) if the condition is false. Test runners such as `pytest` find functions whose names start with `test_`, run them, and report every `AssertionError`.
+
+**How to choose test cases.** Do not pick random examples; pick the cases that *break* implementations:
+
+- **Each rule in the specification** gets a case that only passes if that rule is implemented.
+- **Boundaries**: exactly at a limit, one either side of it. Off-by-one bugs live there.
+- **Exceptions to the rule, and exceptions to the exceptions.**
+- **Both outcomes**: a test that only ever expects `True` cannot catch a function that always returns `True`.
+- **Degenerate inputs**: empty, zero, one element, negative.
+
+A useful habit: **imagine the likely bugs**, then make sure some case catches each one. Professionals check their tests exactly like that, by deliberately breaking the code ("mutation testing") and seeing whether any test notices.
+
+**Tests take the code as a parameter here.** To check your test, the checker calls it with several implementations, some correct and some broken:
+
+```python
+def test_absolute(absolute):
+    assert absolute(5) == 5       # catches "return -x"
+    assert absolute(-5) == 5      # catches "return x"
+    assert absolute(0) == 0       # the boundary between the two cases
+```
+
+**Common mistakes.** Recomputing the expected value with the same logic as the code under test (then both are wrong together). Asserting on too little. And tests that depend on each other's order or on shared state.
+--- task
+The rule for leap years: a year is a leap year if it is divisible by 4, **except** years divisible by 100, which are not, **except** years divisible by 400, which are.
+
+Write `test_is_leap(is_leap)`. It takes a function `is_leap(year)` that should return `True` or `False`, and uses `assert` to check it. Your test must **pass** (return without error) for a correct implementation, and **raise `AssertionError`** for every buggy one the checker tries. Think about which bugs are likely.
+--- starter
+def test_is_leap(is_leap):
+    assert is_leap(2024)
+--- solution
+def test_is_leap(is_leap):
+    # the basic rule, both ways
+    assert is_leap(2024) is True
+    assert is_leap(2023) is False
+    assert is_leap(4) is True
+    # divisible by 100: not a leap year
+    assert is_leap(1900) is False
+    assert is_leap(1800) is False
+    assert is_leap(2100) is False
+    assert is_leap(2200) is False
+    # divisible by 400: a leap year again, before and after 2000
+    assert is_leap(2000) is True
+    assert is_leap(1600) is True
+    assert is_leap(2400) is True
+    # near the boundaries
+    assert is_leap(1999) is False
+    assert is_leap(2001) is False
+    assert is_leap(1996) is True
+--- hint
+List the three rules, and for each one, write a year that is only right if that rule is implemented.
+--- hint
+Test both outcomes: some years that are leap years and some that are not. A test with only "True" cases cannot catch a function that always says True.
+--- hint
+Years such as 1900 and 2100 (divisible by 100) catch a missing century rule; 2000 and also 1600 or 2400 (divisible by 400) catch a missing or half-done 400 rule.
+--- check test | Passes a correct implementation
+not raises(AssertionError, lambda: test_is_leap(lambda y: y % 4 == 0 and (y % 100 != 0 or y % 400 == 0)))
+--- check test | Passes the standard library's implementation
+not raises(AssertionError, lambda: test_is_leap(__import__("calendar").isleap))
+--- check test | Catches a function that ignores the century rule
+raises(AssertionError, lambda: test_is_leap(lambda y: y % 4 == 0))
+--- check test | Catches a function that forgets the 400 rule
+raises(AssertionError, lambda: test_is_leap(lambda y: y % 4 == 0 and y % 100 != 0))
+--- check test | Catches a function that always says True
+raises(AssertionError, lambda: test_is_leap(lambda y: True))
+--- check test | Catches a 400 rule that only works from 2000 on
+raises(AssertionError, lambda: test_is_leap(lambda y: (y % 4 == 0 and y % 100 != 0) or (y % 400 == 0 and y >= 2000)))
+?? Try a year divisible by 400 other than 2000.
+--- check test | Catches a function that checks divisibility by 40 instead of 400
+raises(AssertionError, lambda: test_is_leap(lambda y: y % 4 == 0 and (y % 100 != 0 or y % 40 == 0)))
+?? Try several century years that are not leap years, not just one.
+
+=== py4-09 | Design: pure logic, thin I/O, injected dependencies
+--- teach
+Look at almost any hard-to-test program and you find the same problem: the **logic is tangled with the input and output**. The function that decides *what* should happen also reads the keyboard, prints, sends email or looks at the clock. To test it, you would have to type input and read the screen.
+
+The fix is an architecture sometimes called **functional core, imperative shell**:
+
+- A **pure core**: functions that take data and return data. No `input()`, no `print()`, no global state, no clock. Same input, same output, every time. Trivial to test.
+- A **thin shell**: a small layer that reads input, calls the core, and writes output. It has almost no logic, so it barely needs testing.
+
+**Dependency injection** is how the shell stays swappable. Instead of reaching out for `print` or the clock itself, a function *receives* them as parameters:
+
+```python
+def run(lines, notify):
+    for line in lines:
+        ...
+        notify(f"alert: {line}")
+
+run(sys.stdin.read().splitlines(), print)    # the real program
+sent = []
+run(["a", "b"], sent.append)                 # a test: collect what would be sent
+```
+
+The same goes for time: `def is_overdue(due, today)` is testable for any date; `def is_overdue(due)` that calls `date.today()` inside is only testable today.
+
+**Reading input.** A program reads what the user types, or pipes in, from **standard input**: in this editor, the Input box. `input()` reads one line and returns it without the newline; `sys.stdin.read()` (after `import sys`) reads all of it at once as one string, and `.splitlines()` turns that into a list of lines. Only the shell reads input; the pure core is handed the lines.
+
+**A program's entry point** goes under `if __name__ == "__main__":`. That block runs when the file is executed as a program, but not when another file imports it to reuse (or test) the functions.
+
+**Common mistake:** "injecting" by setting a global variable that the function reads. That still couples everything to one shared value; pass it in as an argument.
+--- task
+The stock checker works but is one tangled function. Refactor it so that the **output stays exactly the same** for the given input, into:
+
+- `parse_stock(lines)` → a list of `(name, stock, minimum)` tuples with ints, skipping blank lines.
+- `needs_reorder(items)` → only the items whose stock is **below** their minimum, in order.
+- `format_alert(item)` → `"REORDER widget: 3 left (minimum 10)"`.
+- `run(lines, notify)` → calls `notify(message)` once per alert, then once with the summary `"2 of 5 items need reordering"`, and returns the number of alerts. It must not print anything itself.
+- The entry point, under `if __name__ == "__main__":`, calls `run` with the lines of standard input and `print`.
+--- starter
+import sys
+
+
+def main():
+    count = 0
+    total = 0
+    for line in sys.stdin.read().splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        total += 1
+        name, stock, minimum = line.split()
+        stock = int(stock)
+        minimum = int(minimum)
+        if stock < minimum:
+            count += 1
+            print(f"REORDER {name}: {stock} left (minimum {minimum})")
+    print(f"{count} of {total} items need reordering")
+
+
+main()
+--- solution
+import sys
+
+
+def parse_stock(lines):
+    items = []
+    for line in lines:
+        if not line.strip():
+            continue
+        name, stock, minimum = line.split()
+        items.append((name, int(stock), int(minimum)))
+    return items
+
+
+def needs_reorder(items):
+    return [item for item in items if item[1] < item[2]]
+
+
+def format_alert(item):
+    name, stock, minimum = item
+    return f"REORDER {name}: {stock} left (minimum {minimum})"
+
+
+def run(lines, notify):
+    items = parse_stock(lines)
+    low = needs_reorder(items)
+    for item in low:
+        notify(format_alert(item))
+    notify(f"{len(low)} of {len(items)} items need reordering")
+    return len(low)
+
+
+if __name__ == "__main__":
+    run(sys.stdin.read().splitlines(), print)
+--- stdin
+widget 3 10
+gizmo 25 5
+
+sprocket 0 1
+doohickey 7 7
+flange 40 12
+--- hint
+Pull out the pure pieces first: `parse_stock` (the loop that builds tuples), `needs_reorder` (a filter), `format_alert` (the f-string). None of them prints.
+--- hint
+`run(lines, notify)` wires them together and calls `notify(...)` where the old code called `print(...)`.
+--- hint
+The entry point is two lines: `if __name__ == "__main__":` and `run(sys.stdin.read().splitlines(), print)`.
+--- check output | The program's output is unchanged
+REORDER widget: 3 left (minimum 10)
+REORDER sprocket: 0 left (minimum 1)
+2 of 5 items need reordering
+--- check case | parse_stock builds tuples and skips blank lines
+parse_stock(["bolt 4 9", "  ", "nut 12 3"])
+=> [("bolt", 4, 9), ("nut", 12, 3)]
+--- check case | needs_reorder keeps only items below their minimum
+needs_reorder([("a", 1, 2), ("b", 2, 2), ("c", 5, 1), ("d", 0, 3)])
+=> [("a", 1, 2), ("d", 0, 3)]
+--- check case | format_alert
+format_alert(("washer", 3, 10))
+=> "REORDER washer: 3 left (minimum 10)"
+--- check case | run sends messages through the notifier it is given
+(lambda sent: (run(["bolt 1 5", "nut 9 2"], sent.append), sent))([])
+=> (1, ["REORDER bolt: 1 left (minimum 5)", "1 of 2 items need reordering"])
+--- check case | run with nothing to report
+(lambda sent: (run([], sent.append), sent))([])
+=> (0, ["0 of 0 items need reordering"])
+
+=== py4-10 | Debugging: floating-point surprises
+--- teach
+This looks like a bug in Python:
+
+```python
+0.1 + 0.2            # 0.30000000000000004
+0.1 + 0.2 == 0.3     # False
+round(2.675, 2)      # 2.67, not 2.68
+```
+
+It is not a bug; it is how floats work in every language. A `float` stores numbers in **binary**, and most decimal fractions, including 0.1, have no exact binary form, the same way 1/3 has no exact decimal form. Each float is the nearest representable value, and tiny errors appear when you add them up. `2.675` is actually stored as `2.67499999...`, which is why it rounds down.
+
+**Diagnose it.** When a comparison of computed numbers fails "impossibly", print with `repr()` or with many digits: `f"{x:.20f}"`. If you see `...0000004` or `...9999998`, it is floating point.
+
+**Choose the right fix for the job:**
+
+1. **Measurements and science** (lengths, sensor readings, physics): floats are right, but never compare them with `==`. Compare with a tolerance:
+
+```python
+import math
+math.isclose(0.1 + 0.2, 0.3)                       # True (relative tolerance 1e-9)
+math.isclose(1e-12, 0.0, abs_tol=1e-9)             # True: near zero you need abs_tol
+```
+
+A relative tolerance alone never considers anything "close" to exactly 0, so add `abs_tol` when zero is a possible answer.
+
+2. **Money**: never use floats. Use `decimal.Decimal`, created **from strings**:
+
+```python
+from decimal import Decimal
+Decimal("0.10") + Decimal("0.20") == Decimal("0.30")    # True, exactly
+Decimal(0.1)      # Decimal('0.1000000000000000055511151231257827...')  the float's error, preserved
+```
+
+Or work in whole cents as `int`.
+
+3. **Exact fractions** (ratios, probabilities): `fractions.Fraction(1, 3) * 3 == 1` is exactly `True`.
+
+**Splitting money** has its own trap: 10.00 split three ways is not three times 3.33, because a cent disappears. Work in cents, give everyone the rounded-down share, then hand out the leftover cents one each.
+--- task
+**Bug report** from the finance team:
+
+1. `is_settled(["0.10", "0.20", "-0.30"])` says `False`, but those transactions cancel out. `balance` must return the exact total as a `Decimal`.
+2. `split("10.00", 3)` returns three equal shares that add up to 9.99. It must return a list of `Decimal` amounts in cents that add up **exactly** to the total, with any leftover cents going one each to the first people: `[Decimal("3.34"), Decimal("3.33"), Decimal("3.33")]`.
+3. `same_reading(0.1 + 0.2, 0.3)` says two sensor readings differ. Readings count as the same if they are within a relative tolerance of `1e-9` or an absolute tolerance of `1e-9`.
+--- starter
+def balance(amounts):
+    return sum(float(a) for a in amounts)
+
+
+def is_settled(amounts):
+    return balance(amounts) == 0
+
+
+def split(total, people):
+    share = round(float(total) / people, 2)
+    return [share] * people
+
+
+def same_reading(a, b):
+    return a == b
+--- solution
+import math
+from decimal import Decimal
+
+
+def balance(amounts):
+    return sum((Decimal(a) for a in amounts), Decimal("0"))
+
+
+def is_settled(amounts):
+    return balance(amounts) == 0
+
+
+def split(total, people):
+    cents = int(Decimal(total) * 100)
+    base, extra = divmod(cents, people)
+    return [Decimal(base + (1 if i < extra else 0)) / 100 for i in range(people)]
+
+
+def same_reading(a, b):
+    return math.isclose(a, b, rel_tol=1e-9, abs_tol=1e-9)
+--- hint
+Print `repr(balance(["0.10", "0.20", "-0.30"]))`. Then build each amount with `Decimal(a)` from the string, never from a float.
+--- hint
+`sum` starts from the int `0`; give it a `Decimal("0")` start so the result is always a `Decimal`, even for no amounts.
+--- hint
+For `split`, turn the total into whole cents, `divmod(cents, people)` gives each person's base share and the leftover cents; give one extra cent to each of the first `extra` people, then divide by 100 as a `Decimal`.
+--- check case | balance is exact
+balance(["0.10", "0.20"])
+=> __import__("decimal").Decimal("0.30")
+--- check test | balance returns a Decimal, even for no amounts
+type(balance(["1.5"])).__name__ == "Decimal" and balance([]) == 0 and type(balance([])).__name__ == "Decimal"
+--- check test | Transactions that cancel out are settled
+is_settled(["0.10", "0.20", "-0.30"]) and is_settled([]) and not is_settled(["0.01"])
+--- check case | split gives leftover cents to the first people
+split("10.00", 3)
+=> [__import__("decimal").Decimal("3.34"), __import__("decimal").Decimal("3.33"), __import__("decimal").Decimal("3.33")]
+--- check test | split always adds up exactly
+all(sum(split(t, n)) == __import__("decimal").Decimal(t) for t in ("100.00", "0.05", "19.99", "7.00") for n in (1, 2, 3, 7))
+--- check test | same_reading uses a tolerance
+same_reading(0.1 + 0.2, 0.3) and not same_reading(1.0, 1.001) and same_reading(1e-12, 0.0) and same_reading(1e20, 1e20 + 1)
+
+=== py4-11 | Problem solving: edit distance
+--- teach
+How different are two strings? Spell checkers, DNA comparison and `diff` all need a precise answer. The **edit distance** (Levenshtein distance) is the fewest single-character **insertions, deletions and substitutions** that turn one string into the other. `kitten` → `sitting` takes 3: substitute k→s, substitute e→i, insert g.
+
+**Restate as subproblems.** Let `d(i, j)` be the distance between the first `i` characters of `a` and the first `j` characters of `b`. Look at the last characters, `a[i-1]` and `b[j-1]`:
+
+- If they are **equal**, they cost nothing: `d(i, j) = d(i-1, j-1)`.
+- Otherwise, the last step was one of three edits; take the cheapest:
+  - delete `a[i-1]`: `d(i-1, j) + 1`
+  - insert `b[j-1]`: `d(i, j-1) + 1`
+  - substitute: `d(i-1, j-1) + 1`
+
+**Base cases**: turning a prefix of length `i` into the empty string takes `i` deletions, so `d(i, 0) = i`, and `d(0, j) = j`.
+
+**Why not plain recursion?** Each call branches three ways and the same `(i, j)` pairs come up again and again: exponential. Memoisation fixes the repeats, but recursion depth grows to `len(a) + len(b)`, past Python's limit for long strings. So fill a table **bottom-up**, row by row:
+
+```
+        ""  s  i  t  t  i  n  g
+    ""   0  1  2  3  4  5  6  7
+    k    1  1  2  3  4  5  6  7
+    i    2  2  1  2  3  4  5  6
+    ...
+```
+
+Each cell needs only the cell to its left, the one above, and the one diagonally above-left. So you only need to keep **the previous row**, which cuts memory from `len(a) × len(b)` to `len(b)`.
+
+The table is `len(a) × len(b)` cells, O(n·m) time: fine for strings of a thousand or so characters each.
+
+**Common mistake:** an off-by-one between string indices and table indices. Row `i` of the table is about `a[:i]`, so the character it adds is `a[i - 1]`.
+--- task
+Write `edit_distance(a, b)` returning the fewest insertions, deletions and substitutions that turn `a` into `b`. It must handle two strings of about 1,000 characters each in a few seconds.
+--- starter
+def edit_distance(a, b):
+    if a == b:
+        return 0
+    return max(len(a), len(b))
+--- solution
+def edit_distance(a, b):
+    previous = list(range(len(b) + 1))
+    for i in range(1, len(a) + 1):
+        current = [i] + [0] * len(b)
+        for j in range(1, len(b) + 1):
+            if a[i - 1] == b[j - 1]:
+                current[j] = previous[j - 1]
+            else:
+                current[j] = 1 + min(previous[j], current[j - 1], previous[j - 1])
+        previous = current
+    return previous[len(b)]
+--- hint
+Start with the row for the empty prefix of `a`: `list(range(len(b) + 1))`, since turning `""` into `b[:j]` takes `j` insertions.
+--- hint
+Each new row starts with `i`. For each `j`, if `a[i - 1] == b[j - 1]` copy the diagonal (`previous[j - 1]`); otherwise take 1 + the smallest of above, left and diagonal.
+--- hint
+After the last row, the answer is its final entry, `previous[len(b)]`.
+--- check case | kitten to sitting
+edit_distance("kitten", "sitting")
+=> 3
+--- check test | Empty strings
+edit_distance("", "abc") == 3 and edit_distance("abc", "") == 3 and edit_distance("", "") == 0
+--- check case | Identical strings
+edit_distance("same", "same")
+=> 0
+--- check test | Distance is the same in both directions
+edit_distance("sunday", "saturday") == 3 and edit_distance("saturday", "sunday") == 3
+--- check case | Completely different
+edit_distance("abc", "xyz")
+=> 3
+--- check case | 1,200 characters, only 2 edits apart
+edit_distance("ab" * 600, "ba" * 600)
+=> 2
+?? Plain recursion explodes here. Fill a table bottom-up, keeping only the previous row.
+--- check case | 1,000 characters, all different
+edit_distance("a" * 1000, "b" * 1000)
+=> 1000
+
+=== py4-12 | Problem solving: Dijkstra's shortest path
+--- teach
+BFS finds the fewest *steps*. When steps have different costs (road lengths, travel times, prices), the fewest steps can be the most expensive route. **Dijkstra's algorithm** finds the cheapest route when every cost is zero or more.
+
+**The idea.** Like BFS, it grows outwards from the start, but in order of *total cost so far* instead of number of steps. It keeps a tentative best cost for every place it has reached, and always settles the **cheapest unsettled place next**. When a place is settled, its cost is final: any other route to it would have to pass through somewhere at least as expensive, and costs never go negative.
+
+**The data structure** that makes "cheapest next" fast is a heap:
+
+```python
+import heapq
+
+def costs_from(graph, start):
+    best = {start: 0}
+    heap = [(0, start)]
+    while heap:
+        cost, node = heapq.heappop(heap)
+        if cost > best[node]:
+            continue                      # an old, worse entry: skip it
+        for neighbour, weight in graph.get(node, []):
+            new = cost + weight
+            if new < best.get(neighbour, float("inf")):
+                best[neighbour] = new
+                heapq.heappush(heap, (new, neighbour))
+    return best
+```
+
+Details that matter:
+
+- A node may be pushed several times as better routes appear. Instead of updating the heap in place, push the new entry and **skip stale entries** when they come off (`cost > best[node]`).
+- **To recover the route**, record for each node which node you reached it from (`previous[neighbour] = node`) whenever you improve it; then walk back from the goal and reverse.
+- You can **stop early** the moment the goal comes off the heap.
+
+With a heap, Dijkstra is O(E log V) for E edges and V nodes. Scanning a plain list for the cheapest node each time is O(V²), hopeless for tens of thousands of nodes.
+
+**Common mistake:** marking a node finished when you *push* it, as in BFS. With weights, a later, longer-looking path can still be cheaper; only popping settles a node.
+--- task
+Write `cheapest(graph, start, goal)`. `graph` maps each node to a list of `(neighbour, cost)` pairs (costs are 0 or more; a node may appear only as a neighbour and not as a key). Return `(total_cost, path)` where `path` is the list of nodes from `start` to `goal` inclusive, or `None` if the goal cannot be reached. `cheapest(g, x, x)` is `(0, [x])`.
+
+It must handle a graph of about 20,000 nodes quickly.
+--- starter
+def cheapest(graph, start, goal):
+    return None
+--- solution
+import heapq
+
+
+def cheapest(graph, start, goal):
+    best = {start: 0}
+    previous = {}
+    heap = [(0, start)]
+    while heap:
+        cost, node = heapq.heappop(heap)
+        if node == goal:
+            path = [node]
+            while node in previous:
+                node = previous[node]
+                path.append(node)
+            return cost, path[::-1]
+        if cost > best[node]:
+            continue
+        for neighbour, weight in graph.get(node, []):
+            new = cost + weight
+            if new < best.get(neighbour, float("inf")):
+                best[neighbour] = new
+                previous[neighbour] = node
+                heapq.heappush(heap, (new, neighbour))
+    return None
+--- hint
+Keep `best` (cheapest known cost per node), `previous` (where you came from) and a heap of `(cost, node)` starting with `(0, start)`.
+--- hint
+Pop the cheapest entry; skip it if it is worse than `best[node]`; otherwise relax each neighbour, pushing it when you find a cheaper cost. Use `graph.get(node, [])` for nodes with no outgoing edges.
+--- hint
+When the goal is popped, follow `previous` back to the start, reverse the list, and return it with the cost.
+--- check case | The cheaper route has more steps
+cheapest({"A": [("B", 10), ("C", 1)], "C": [("D", 1)], "D": [("B", 1)]}, "A", "B")
+=> (3, ["A", "C", "D", "B"])
+--- check case | Start is the goal
+cheapest({"A": [("B", 1)]}, "A", "A")
+=> (0, ["A"])
+--- check case | Unreachable
+cheapest({"A": [("B", 1)], "C": [("A", 1)]}, "A", "C")
+=> None
+--- check case | Edges are one way
+cheapest({"A": [("B", 5)], "B": [("A", 1), ("C", 1)]}, "C", "A")
+=> None
+--- check case | Zero-cost edges are fine
+cheapest({"s": [("a", 0), ("b", 2)], "a": [("b", 0)], "b": [("t", 1)]}, "s", "t")
+=> (1, ["s", "a", "b", "t"])
+--- check case | A 150 by 150 weighted grid (22,500 nodes)
+cheapest({(r, c): [((r + dr, c + dc), ((r + dr) * 7 + (c + dc) * 13) % 10 + 1) for dr, dc in ((0, 1), (1, 0), (0, -1), (-1, 0)) if 0 <= r + dr < 150 and 0 <= c + dc < 150] for r in range(150) for c in range(150)}, (0, 0), (149, 149))[0]
+=> 745
+?? Finding the cheapest node by scanning every node is far too slow here. Use a heap.
+
+=== py4-13 | Problem solving: a tokenizer
+--- teach
+Over the next two lessons you will build a calculator that understands `2 * (3 + 4) - -1`, the same way real interpreters and compilers work, in two stages:
+
+1. **Tokenizing** (this lesson): turn the characters into a list of meaningful pieces, **tokens**: `2`, `*`, `(`, `3`, `+`, `4`, `)`, `-`, `-`, `1`.
+2. **Parsing** (next lesson): work out the structure of the tokens and compute the result.
+
+Splitting the job keeps each half simple: the parser never has to think about spaces or how many characters a number has.
+
+**How a tokenizer works.** Walk through the text with an index `i`. Look at the character there and decide what kind of token starts at that position:
+
+```python
+i = 0
+while i < len(text):
+    ch = text[i]
+    if ch.isspace():
+        i += 1                      # skip it, no token
+    elif ch.isdigit():
+        start = i
+        while i < len(text) and text[i].isdigit():
+            i += 1                  # consume the whole number
+        tokens.append(int(text[start:i]))
+    elif ...
+```
+
+The key rule is **maximal munch**: always take the *longest* token that fits. `123` is one number, not three; `**` is one power operator, not two multiplications. So when you see `*`, peek at the next character before deciding.
+
+**Report errors precisely.** When a character does not start any token, raise an error that says *what* and *where*: `unexpected character '$' at position 4`. That message is the difference between a tool people can use and one they give up on.
+
+**Common mistake:** writing `text = text[1:]` to move along. It works, but copies the rest of the string every time, making the tokenizer quadratic. Move an index instead.
+--- task
+Write `tokenize(text)` returning a list of tokens:
+
+- Numbers: a run of digits with at most one `.`. With a `.` it becomes a `float`, otherwise an `int`. A run with two dots (`1.2.3`) or only a dot is a `ValueError`.
+- Operators and brackets as strings: `+`, `-`, `*`, `/`, `**`, `(`, `)`. `**` is one token.
+- Spaces are skipped. Any other character raises `ValueError` with a message containing its position, like `unexpected character '$' at position 4`.
+--- starter
+def tokenize(text):
+    return text.split()
+--- solution
+def tokenize(text):
+    tokens = []
+    i = 0
+    while i < len(text):
+        ch = text[i]
+        if ch.isspace():
+            i += 1
+        elif ch.isdigit() or ch == ".":
+            start = i
+            while i < len(text) and (text[i].isdigit() or text[i] == "."):
+                i += 1
+            number = text[start:i]
+            if number.count(".") > 1 or number == ".":
+                raise ValueError(f"bad number {number!r} at position {start}")
+            tokens.append(float(number) if "." in number else int(number))
+        elif text.startswith("**", i):
+            tokens.append("**")
+            i += 2
+        elif ch in "+-*/()":
+            tokens.append(ch)
+            i += 1
+        else:
+            raise ValueError(f"unexpected character {ch!r} at position {i}")
+    return tokens
+--- hint
+Use a `while i < len(text)` loop with an index, and one branch per kind of token: space, number, `**`, single-character operator, anything else.
+--- hint
+For a number, remember `start = i`, move `i` along while you see digits or dots, then look at `text[start:i]`: count the dots before converting.
+--- hint
+Check for `**` with `text.startswith("**", i)` *before* the single `*` case, and move `i` on by 2.
+--- check case | A mixed expression
+tokenize("3 + 4.5*(2-1)")
+=> [3, "+", 4.5, "*", "(", 2, "-", 1, ")"]
+--- check case | ** is one token
+tokenize("2**3*4")
+=> [2, "**", 3, "*", 4]
+--- check test | Whole numbers are ints, decimals are floats
+type(tokenize("7")[0]) is int and type(tokenize("7.0")[0]) is float and tokenize(".5") == [0.5]
+--- check test | Empty and blank input give no tokens
+tokenize("") == [] and tokenize("   ") == []
+--- check case | Multi-digit numbers and spaces
+tokenize("  120 /  12  ")
+=> [120, "/", 12]
+--- check test | An unknown character is a ValueError
+raises(ValueError, lambda: tokenize("3 $ 4")) and raises(ValueError, lambda: tokenize("x"))
+--- check test | The error message names the character and its position
+(lambda msg: "'$'" in msg and "4" in msg)((lambda g: (exec("try:\n    tokenize('3 + $')\nexcept ValueError as e:\n    msg = str(e)\n", g), g.get("msg", ""))[1])(dict(globals())))
+?? Put the character (with repr, so it has quotes) and the index i in the message.
+--- check test | A number with two dots is rejected
+raises(ValueError, lambda: tokenize("1.2.3")) and raises(ValueError, lambda: tokenize("1 + . + 2"))
+--- check test | 100,000 tokens
+len(tokenize("1+" * 50000 + "1")) == 100001
+
+=== py4-14 | Problem solving: a recursive-descent calculator
+--- teach
+You have tokens. Now: what does `2 + 3 * 4` mean? Not `(2 + 3) * 4`, because `*` binds tighter than `+`. A **grammar** writes those rules down, one rule per level of precedence, loosest first:
+
+```
+expr   := term   (("+" | "-") term)*
+term   := unary  (("*" | "/") unary)*
+unary  := "-" unary  |  power
+power  := atom   ("**" unary)?
+atom   := NUMBER  |  "(" expr ")"
+```
+
+Read `*` as "zero or more times" and `?` as "optional". So an `expr` is terms separated by `+` or `-`; a term is unary pieces separated by `*` or `/`; and so on down to numbers and bracketed sub-expressions.
+
+**Recursive descent** turns each rule into one function with the same name. Each function consumes the tokens its rule matches and returns their value:
+
+```python
+def expr(self):
+    value = self.term()
+    while self.peek() in ("+", "-"):
+        op = self.take()
+        right = self.term()
+        value = value + right if op == "+" else value - right
+    return value
+```
+
+Precedence falls out of the structure: `expr` only ever sees whole terms, so by the time it adds, every multiplication inside a term has already happened. Brackets work because `atom` calls back up to `expr`: that is the recursion in the name.
+
+Two subtler rules, both matching Python itself:
+
+- **Left to right** for `+ - * /`: `8 - 3 - 2` is `(8 - 3) - 2 = 3`. The `while` loop gives you that, because it folds each new term into the value so far.
+- **Right to left** for `**`: `2 ** 3 ** 2` is `2 ** 9 = 512`. `power` calls `unary` for its right side, which can itself contain another `**`. And `-2 ** 2` is `-(2 ** 2) = -4`, because `unary` handles the minus *around* `power`.
+
+**Errors.** A parser must reject nonsense rather than guess. Keep a position in the token list, and:
+
+- when a rule needs a number or `(` and finds something else (or the end), raise `ValueError`;
+- when `atom` has parsed `( expr`, it must find `)`;
+- after parsing the whole `expr`, every token must have been used, or `1 2` would quietly evaluate to 1.
+
+**Common mistake:** evaluating with Python's built-in `eval`. Apart from missing the point, `eval` on user input runs *any* Python code the user types.
+--- task
+Your tokenizer from the last lesson is in the starter. Write `evaluate(text)` that tokenizes `text` and computes its value using recursive descent with the grammar above:
+
+- `+ - * /` with the usual precedence, left to right; `/` is true division.
+- `**` binds tighter than unary minus on its left and is right-associative: `2 ** 3 ** 2` is `512`, `-2 ** 2` is `-4`, `2 ** -1` is `0.5`.
+- Unary minus, any number of times: `--3` is `3`.
+- Brackets.
+- Anything malformed (empty, a missing number, unbalanced brackets, leftover tokens) raises `ValueError`. Dividing by zero may raise `ZeroDivisionError`. Do not use `eval`.
+--- starter
+def tokenize(text):
+    tokens = []
+    i = 0
+    while i < len(text):
+        ch = text[i]
+        if ch.isspace():
+            i += 1
+        elif ch.isdigit() or ch == ".":
+            start = i
+            while i < len(text) and (text[i].isdigit() or text[i] == "."):
+                i += 1
+            number = text[start:i]
+            if number.count(".") > 1 or number == ".":
+                raise ValueError(f"bad number {number!r} at position {start}")
+            tokens.append(float(number) if "." in number else int(number))
+        elif text.startswith("**", i):
+            tokens.append("**")
+            i += 2
+        elif ch in "+-*/()":
+            tokens.append(ch)
+            i += 1
+        else:
+            raise ValueError(f"unexpected character {ch!r} at position {i}")
+    return tokens
+
+
+def evaluate(text):
+    raise NotImplementedError
+--- solution
+def tokenize(text):
+    tokens = []
+    i = 0
+    while i < len(text):
+        ch = text[i]
+        if ch.isspace():
+            i += 1
+        elif ch.isdigit() or ch == ".":
+            start = i
+            while i < len(text) and (text[i].isdigit() or text[i] == "."):
+                i += 1
+            number = text[start:i]
+            if number.count(".") > 1 or number == ".":
+                raise ValueError(f"bad number {number!r} at position {start}")
+            tokens.append(float(number) if "." in number else int(number))
+        elif text.startswith("**", i):
+            tokens.append("**")
+            i += 2
+        elif ch in "+-*/()":
+            tokens.append(ch)
+            i += 1
+        else:
+            raise ValueError(f"unexpected character {ch!r} at position {i}")
+    return tokens
+
+
+class Parser:
+    def __init__(self, tokens):
+        self.tokens = tokens
+        self.pos = 0
+
+    def peek(self):
+        return self.tokens[self.pos] if self.pos < len(self.tokens) else None
+
+    def take(self):
+        token = self.peek()
+        self.pos += 1
+        return token
+
+    def expr(self):
+        value = self.term()
+        while self.peek() in ("+", "-"):
+            op = self.take()
+            right = self.term()
+            value = value + right if op == "+" else value - right
+        return value
+
+    def term(self):
+        value = self.unary()
+        while self.peek() in ("*", "/"):
+            op = self.take()
+            right = self.unary()
+            value = value * right if op == "*" else value / right
+        return value
+
+    def unary(self):
+        if self.peek() == "-":
+            self.take()
+            return -self.unary()
+        return self.power()
+
+    def power(self):
+        base = self.atom()
+        if self.peek() == "**":
+            self.take()
+            return base ** self.unary()
+        return base
+
+    def atom(self):
+        token = self.take()
+        if token == "(":
+            value = self.expr()
+            if self.take() != ")":
+                raise ValueError("expected )")
+            return value
+        if isinstance(token, (int, float)):
+            return token
+        raise ValueError(f"expected a number, got {token!r}")
+
+
+def evaluate(text):
+    parser = Parser(tokenize(text))
+    value = parser.expr()
+    if parser.peek() is not None:
+        raise ValueError(f"unexpected {parser.peek()!r}")
+    return value
+--- hint
+Make a small `Parser` class holding the tokens and a position, with `peek()` (the current token, or `None` at the end) and `take()` (return it and move on).
+--- hint
+Write one method per grammar rule. `expr` and `term` are loops; `unary` calls itself after a `-`; `power` parses an atom and, if the next token is `**`, raises it to `self.unary()`; `atom` handles a number or `( expr )`.
+--- hint
+In `evaluate`, after `parser.expr()` returns, raise `ValueError` if any token is left over. In `atom`, raise `ValueError` if the token is not a number or `(`, and if the `)` is missing.
+--- check test | Precedence and brackets
+evaluate("2 + 3 * 4") == 14 and evaluate("(2 + 3) * 4") == 20 and evaluate("2 * (3 + 4) - -1") == 15
+--- check test | Left to right for - and /
+evaluate("8 - 3 - 2") == 3 and evaluate("100 / 10 / 5") == 2.0 and evaluate("7 - 2 * 3 + 1") == 2
+--- check test | ** is right-associative and binds tighter than unary minus
+evaluate("2 ** 3 ** 2") == 512 and evaluate("-2 ** 2") == -4 and evaluate("2 ** -1") == 0.5 and evaluate("(-2) ** 2") == 4
+--- check test | Repeated unary minus and decimals
+evaluate("--3") == 3 and evaluate("-(-(1.5))") == 1.5 and evaluate("0.1 * 10") == 1.0
+--- check test | Agrees with Python on a batch of expressions
+all(evaluate(e) == eval(e) for e in ["1+2*3-4/5", "((1))", "2*-3", "-2**-2", "3-(2-(1-(0)))", "10/4*2", "2**2**3", "1 - -1 - -1", "4*(3+2)**2/5"])
+--- check test | Malformed input raises ValueError
+all(raises(ValueError, lambda e=e: evaluate(e)) for e in ["", "2 +", "(1 + 2", "1 + 2)", "* 3", "1 2", "()", "3 ** "])
+?? Check for a missing ")" in atom, and for leftover tokens after the whole expression.
+--- check test | Long input: 20,001 terms
+evaluate("1+" * 20000 + "1") == 20001 and evaluate("2*" * 30 + "1") == 2 ** 30
+--- check source absent | Does not use eval
+\beval\s*\(

@@ -1,0 +1,516 @@
+@track bash
+@level intermediate
+@title Terminal · Intermediate
+@name The command line, intermediate: pipes, patterns and finding things
+@blurb Match many files with one pattern, chain small tools into pipelines that answer real questions, search whole projects, and work out why a command gave the wrong answer.
+
+=== term2-01 | Wildcards: many files, one pattern
+--- teach
+The basics course had you handling files one at a time and reading them with `head`, `tail`, `wc` and `grep`. This course is about many files and lots of text at once: patterns that match many names, pipes that chain small tools together, and ways to search a whole project.
+
+Typing every file name gets old fast. Instead, you can describe the names you mean with a **pattern**, using **wildcards**:
+
+- `*` matches any run of characters, even none: `*.txt` is every name ending in `.txt`.
+- `?` matches exactly one character: `day?.log` matches `day1.log` and `day9.log`, but not `day10.log`.
+- `[abc]` matches one character from the set: `report-[12].pdf` is `report-1.pdf` and `report-2.pdf`.
+
+The shell turns the pattern into the list of matching names **before** the command runs. `mv` never sees the `*`: it receives `beach.jpg boat.jpg sunset.jpg`, exactly as if you had typed them. That is why `echo` is the safe way to test a pattern — it just prints what the pattern turned into:
+
+```
+~/project $ echo *.txt
+notes.txt todo.txt
+~/project $ mv *.txt archive/
+```
+
+Three things catch people out:
+
+- Names starting with a dot are skipped: `*` does not match `.env`.
+- A pattern that matches nothing is passed along unchanged, so with no logs around, `ls *.log` complains `cannot access '*.log'`.
+- One stray space changes everything. `rm * .txt` is not "remove the .txt files": it is `rm *` (every file) plus a file called `.txt`. Run `echo` with the same pattern first.
+--- task
+This folder is a mix of photos and notes. Make a folder called `photos` and move **all** the `.jpg` files into it with a single `mv` and a wildcard. Then list only the single-digit photos (`trip-1.jpg`, `trip-2.jpg`, but not `trip-10.jpg`) with `ls photos/trip-?.jpg`.
+--- starter
+touch trip-1.jpg trip-2.jpg trip-10.jpg notes.txt todo.txt
+--- solution
+mkdir photos
+mv *.jpg photos
+ls photos/trip-?.jpg
+--- hint
+`echo *.jpg` shows which names the pattern matches, without moving anything.
+--- hint
+`mv *.jpg photos` moves every match into the folder in one go.
+--- hint
+`?` stands for exactly one character, so `photos/trip-?.jpg` leaves out `trip-10.jpg`.
+--- check shell | Every photo moved, with one wildcard
+count *.jpg == 0
+count photos/*.jpg == 3
+ran mv *.jpg
+--- check shell | The notes stayed where they were
+file notes.txt
+file todo.txt
+--- check shell | ? matched the single-digit photos
+ran ls photos/trip-?.jpg
+printed photos/trip-1.jpg
+printed photos/trip-2.jpg
+
+=== term2-02 | Pipes: plugging commands together
+--- teach
+The **pipe**, `|`, sends everything one command prints straight into the next command, instead of to the screen. Each tool does one small job well, and pipes let you chain them into something bigger:
+
+```
+grep ERROR server.log | wc -l
+```
+
+`grep` keeps only the error lines; `wc -l` counts whatever lines it is given. When a command like `wc`, `head`, `sort` or `grep` gets no file name, it reads from the pipe instead.
+
+Build a pipeline **one stage at a time**. Run the first command on its own and look at what it prints, then add `| next-command` and look again. It is the fastest way to write one, and later, when an answer looks wrong, it is how you find which stage is wrong.
+
+Two classic mistakes:
+
+- Giving the later command a file name as well: `grep ERROR server.log | wc -l server.log` counts every line of the file and ignores the pipe completely.
+- Piping into a command that does not read input: `ls | echo` prints an empty line, because `echo` only ever prints its own arguments.
+--- task
+`server.log` holds a morning of messages. With **one pipeline**, count how many lines contain `ERROR`, using `grep` and `wc -l`. Then, with a second pipeline, show only the **first two** error lines, using `grep` and `head`.
+--- starter
+echo "08:00 INFO server started" > server.log
+echo "08:01 INFO user ada logged in" >> server.log
+echo "08:02 ERROR disk almost full" >> server.log
+echo "08:03 WARN slow response" >> server.log
+echo "08:05 ERROR payment timeout" >> server.log
+echo "08:06 INFO user lin logged in" >> server.log
+echo "08:09 ERROR payment timeout" >> server.log
+echo "08:12 ERROR disk full" >> server.log
+--- solution
+grep ERROR server.log | wc -l
+grep ERROR server.log | head -n 2
+--- hint
+First run `grep ERROR server.log` on its own and look at the lines it keeps.
+--- hint
+Add `| wc -l` to count them. For the second job, `| head -n 2` keeps the first two.
+--- check shell | You counted the errors with a pipeline
+ran grep ERROR server.log
+ran wc -l
+printed-exactly 4
+--- check shell | You showed just the first two errors
+ran head
+printed-exactly 08:02 ERROR disk almost full\n08:05 ERROR payment timeout
+
+=== term2-03 | Sorting and counting: sort and uniq
+--- teach
+`sort` puts lines in order. Three flags you will reach for constantly:
+
+- `-n` sorts **numbers** as numbers. Without it, `10` sorts before `9`, because text is compared one character at a time and `1` comes before `9`.
+- `-r` reverses the order, biggest (or last) first. Flags combine: `sort -rn`.
+- `-u` keeps a single copy of each line.
+
+`uniq` squeezes repeated lines into one, and `uniq -c` writes how many there were in front:
+
+```
+~/project $ sort colours.txt | uniq -c
+      2 blue
+      3 red
+```
+
+The catch: `uniq` only compares each line with **the one just above it**. Repeats that are not next to each other are not merged — which is why `uniq` nearly always comes straight after `sort`.
+
+Remember this line, because it answers "what is the most common thing in here?" for almost any list:
+
+```
+sort | uniq -c | sort -rn
+```
+
+Sort so that repeats sit together, count each run, then sort by the counts, biggest first.
+--- task
+`visitors.txt` has one city per line, one line per visit. Print each city **once**, with its number of visits, **most visits first** — `4 lagos` on the first line — using `sort`, `uniq -c` and `sort -rn` in one pipeline.
+--- starter
+echo "lima" > visitors.txt
+echo "lagos" >> visitors.txt
+echo "oslo" >> visitors.txt
+echo "lagos" >> visitors.txt
+echo "pune" >> visitors.txt
+echo "oslo" >> visitors.txt
+echo "lagos" >> visitors.txt
+echo "lima" >> visitors.txt
+echo "oslo" >> visitors.txt
+echo "lagos" >> visitors.txt
+--- solution
+sort visitors.txt | uniq -c | sort -rn
+--- hint
+Start with `sort visitors.txt` and notice the repeats now sit together.
+--- hint
+Add `| uniq -c` to count each run of repeats, then `| sort -rn` to put the biggest count first.
+--- check shell | Each city once, with its count, most visits first
+printed-exactly 4 lagos\n3 oslo\n2 lima\n1 pune
+--- check shell | Counted with uniq -c
+used uniq -c
+
+=== term2-04 | The top and the bottom: head, tail and numeric sorts
+--- teach
+`head` and `tail` are at their best at the end of a pipeline: sort, then keep the first few lines.
+
+```
+sort -rn sizes.txt | head -n 3     # the three biggest
+sort -n sizes.txt | head -n 1      # the smallest
+```
+
+Real data often starts with a **header line** naming the column. `tail -n +2` means "start from line 2", which drops the header:
+
+```
+tail -n +2 sizes.txt | sort -n | head -n 1
+```
+
+Why bother? Because `sort -n` treats a line that is not a number as `0`. A header like `bytes` then sorts as the smallest "number" of all, and `head -n 1` hands you the word `bytes` instead of an answer. Whenever a result looks odd, look at the first lines of your data with `head` — headers, blank lines and stray text are the usual suspects.
+--- task
+`sizes.txt` lists file sizes in bytes, under a header line `bytes`. Print the **three largest** sizes, largest first. Then print the **smallest** size — without the header sneaking in.
+--- starter
+echo "bytes" > sizes.txt
+echo "640" >> sizes.txt
+echo "12" >> sizes.txt
+echo "9200" >> sizes.txt
+echo "87" >> sizes.txt
+echo "870" >> sizes.txt
+echo "150" >> sizes.txt
+--- solution
+tail -n +2 sizes.txt | sort -rn | head -n 3
+tail -n +2 sizes.txt | sort -n | head -n 1
+--- hint
+Sort as numbers, biggest first, with `sort -rn`, and keep three lines with `head -n 3`.
+--- hint
+For the smallest, `sort -n` puts `bytes` first. `tail -n +2 sizes.txt` hands the pipeline everything except the header.
+--- check shell | The three largest sizes, largest first
+printed-exactly 9200\n870\n640
+--- check shell | The smallest size, not the header
+printed-exactly 12
+--- check shell | You used head on a sorted list
+ran sort
+ran head
+
+=== term2-05 | Columns: cut
+--- teach
+A lot of data comes as **columns**: CSV files, logs, exports from spreadsheets. `cut` picks columns out of every line.
+
+- `-d ,` says what separates the columns (here a comma).
+- `-f 2` says which column (**f**ield) to keep, counting from 1. Several at once: `-f 1,3`. A range: `-f 2-4`.
+
+```
+~/project $ cut -d , -f 2 people.csv
+name
+ada
+lin
+```
+
+The usual mistake is leaving out `-d`. Then `cut` splits on the **tab** character, finds none, and prints every line whole — it looks as if `cut` did nothing.
+
+`cut` shines inside a pipeline. To list the distinct values of one column, drop the header, cut the column, then sort and de-duplicate:
+
+```
+tail -n +2 people.csv | cut -d , -f 3 | sort -u
+```
+--- task
+`orders.csv` has a header and then one order per line: `id,customer,item,qty`. Print the **distinct items** that were ordered, alphabetically, one per line, without the header.
+--- starter
+echo "id,customer,item,qty" > orders.csv
+echo "1,ada,keyboard,1" >> orders.csv
+echo "2,lin,mouse,2" >> orders.csv
+echo "3,ada,monitor,1" >> orders.csv
+echo "4,sam,mouse,1" >> orders.csv
+echo "5,lin,keyboard,3" >> orders.csv
+echo "6,kai,cable,4" >> orders.csv
+--- solution
+tail -n +2 orders.csv | cut -d , -f 3 | sort -u
+--- hint
+The item is the third column: `cut -d , -f 3 orders.csv`.
+--- hint
+Put `tail -n +2` in front to drop the header, and `sort -u` after to sort and keep one of each.
+--- check shell | The distinct items, alphabetically, without the header
+printed-exactly cable\nkeyboard\nmonitor\nmouse
+--- check shell | You cut the column with -d
+used cut -d
+
+=== term2-06 | Finding files: find
+--- teach
+`ls` shows one folder. `find` searches a folder **and everything inside it**:
+
+```
+find . -name "*.md"            # every .md file below here
+find src -name config.json     # every config.json below src
+find . -type d -name tests     # only folders called tests
+find . -type f -iname "*.JPG"  # files, ignoring upper/lower case
+```
+
+The first argument is where to start (`.` is "here"); the rest describe what you want. Tests combine: `-type d -name tests` means both.
+
+**Quote the pattern.** Without quotes, the shell expands `*.md` itself before `find` runs. If this folder happens to contain `a.md` and `b.md`, `find` receives `-name a.md b.md` and stops with `paths must precede expression`. With quotes, the pattern reaches `find` intact and it matches at every depth.
+--- task
+Somewhere in this project there are three files called `config.json`, at different depths. List them all with `find`. Then list every **folder** called `tests` — there is also a *file* called `tests`, which must not appear.
+--- starter
+mkdir -p api/v1/tests web/tests docs
+touch config.json api/config.json api/v1/config.json web/app.js docs/tests
+--- solution
+find . -name config.json
+find . -type d -name tests
+--- hint
+`find . -name config.json` starts here and looks in every folder below.
+--- hint
+Add `-type d` so that only folders count.
+--- check shell | You found all three config files
+ran find
+printed ./config.json
+printed ./api/config.json
+printed ./api/v1/config.json
+--- check shell | You found the tests folders, and only folders
+printed-exactly ./api/v1/tests\n./web/tests
+used -type d
+
+=== term2-07 | Searching inside files: grep's everyday flags
+--- teach
+You have used `grep PATTERN file`. A handful of flags turns it into the tool you use to find your way around any codebase:
+
+- `-r` searches a folder and everything in it. Each hit starts with the file it is in.
+- `-n` adds the line number: `src/api.js:3:// TODO`.
+- `-i` ignores upper and lower case.
+- `-v` inverts: keep the lines that do **not** match.
+- `-c` prints how many lines matched instead of the lines themselves.
+- `-l` prints only the names of files that match.
+
+Flags combine: `grep -rn TODO src` lists every TODO in `src` with its file and line.
+
+The pattern is a **regular expression**, so a few characters are special: `.` matches any character, `^` means "start of line" and `$` "end of line". `grep "^ERROR" app.log` finds lines that begin with ERROR, not lines that mention it.
+
+Two mistakes: forgetting `-r` on a folder (grep answers `Is a directory`), and expecting `-c` to count words — it counts **lines**.
+--- task
+Two jobs. First, find every `TODO` in the `src` folder, showing file names and line numbers, with one `grep`. Second, `app.log` is full of `DEBUG` noise: count the lines that are **not** DEBUG lines.
+--- starter
+mkdir -p src/lib
+echo "import db" > src/api.js
+echo "" >> src/api.js
+echo "// TODO: retry on failure" >> src/api.js
+echo "export run" >> src/api.js
+echo "// helpers" > src/lib/util.js
+echo "// TODO: cache results" >> src/lib/util.js
+echo "const x = 1" > src/main.js
+echo "DEBUG start" > app.log
+echo "INFO ready" >> app.log
+echo "DEBUG tick" >> app.log
+echo "WARN slow" >> app.log
+echo "DEBUG tick" >> app.log
+echo "ERROR crash" >> app.log
+echo "INFO restart" >> app.log
+--- solution
+grep -rn TODO src
+grep -vc DEBUG app.log
+--- hint
+`-r` searches the whole folder and `-n` adds line numbers: `grep -rn TODO src`.
+--- hint
+`-v` keeps the lines that do not match; add `-c` to count them (or pipe into `wc -l`).
+--- check shell | Every TODO, with its file and line number
+printed-line src/api.js:3:// TODO: retry on failure
+printed-line src/lib/util.js:2:// TODO: cache results
+--- check shell | You counted the lines that are not DEBUG
+used -v
+printed-exactly 4
+
+=== term2-08 | Two kinds of output: redirecting errors
+--- teach
+Every command has two separate outputs:
+
+- **standard output** (number 1) for results,
+- **standard error** (number 2) for problems.
+
+Both appear on your screen, so they look the same — until you redirect. `>` only catches standard output. Errors still land on the screen, and the file does not get them:
+
+```
+~/project $ ls reports missing > out.txt
+ls: cannot access 'missing': No such file or directory
+```
+
+To send the errors somewhere, name stream 2:
+
+- `2> errors.txt` — errors to a file.
+- `2> /dev/null` — throw errors away (`/dev/null` swallows whatever is written to it).
+- `> all.txt 2>&1` — results to the file, then "send 2 wherever 1 is going", so both end up in `all.txt`. The order matters: `2>&1 > all.txt` points errors at the screen first, then moves only the results. `&> all.txt` is a shorter spelling of the right version.
+
+Pipes carry only standard output too, which is why `broken-command | grep x` still shows the error on screen.
+--- task
+`ls reports missing` lists a real folder and a folder that does not exist, so it prints a listing **and** an error. In one command, save the listing in `found.txt` and the error in `errors.txt`. Then, in a second command, save **both** into `all.txt`.
+--- starter
+mkdir reports
+touch reports/q1.txt reports/q2.txt
+--- solution
+ls reports missing > found.txt 2> errors.txt
+ls reports missing > all.txt 2>&1
+--- hint
+`>` sends the listing to a file and `2>` sends the error to another, in the same command.
+--- hint
+For both at once, add `2>&1` after `> all.txt`.
+--- check shell | The listing went to found.txt, and the error did not
+file found.txt contains q1.txt
+file found.txt excludes cannot access
+--- check shell | The error went to errors.txt
+file errors.txt contains cannot access 'missing'
+used 2>
+--- check shell | all.txt has both
+file all.txt contains q2.txt
+file all.txt contains No such file or directory
+
+=== term2-09 | Keeping results: >>, and tee
+--- teach
+You already know the two ways to save output: `>` replaces a file, `>>` adds to its end. Picking the wrong one is how logs lose their history — each `>` throws away everything that was there.
+
+Sometimes you want to **see** a result and **save** it. `tee` does both: it writes what it receives into a file and passes the same text on, to the screen or the next command.
+
+```
+sort -u names.txt | tee unique.txt          # see the list and save it
+sort -u names.txt | tee unique.txt | wc -l  # save it, and count it
+echo "run finished" >> run.log              # add a line, keep the rest
+```
+
+`tee -a file` appends instead of replacing, just like `>>`.
+--- task
+Put each name from `logins.txt` once, sorted, into `users.txt` — and see the list on screen at the same time, using `tee`. Then add the line `checked by you` to the **end** of `users.txt` without losing the names.
+--- starter
+echo "sam" > logins.txt
+echo "ada" >> logins.txt
+echo "sam" >> logins.txt
+echo "lin" >> logins.txt
+echo "ada" >> logins.txt
+--- solution
+sort -u logins.txt | tee users.txt
+echo "checked by you" >> users.txt
+--- hint
+`sort -u logins.txt` gives each name once. Pipe it into `tee users.txt` to save it and see it.
+--- hint
+`>>` adds a line to the end; `>` would wipe the names.
+--- check shell | users.txt has each name once, sorted, then your line
+file users.txt ~= ada\nlin\nsam\nchecked by you
+--- check shell | You saw the names as they were saved
+used tee
+printed-exactly ada\nlin\nsam
+
+=== term2-10 | Problem solving: the busiest visitors
+--- teach
+Here is a real question from a real job: *which addresses are hammering our server?* You have every tool you need. What matters is the approach.
+
+1. **Restate the problem.** "Count requests per IP address; show the three biggest counts."
+2. **Look at the data** before writing anything: `head -n 3 access.log`. Every line starts with the address, then a space:
+   ```
+   10.0.0.7 - - [25/Sep/2026:09:10:00] "GET /home" 200
+   ```
+3. **Solve it stage by stage**, checking the output each time:
+   - get just the addresses: `cut -d ' ' -f 1 access.log` (**single quotes** keep text together just as double quotes do, so `' '` is one space character given to `-d`)
+   - bring equal ones together: `| sort`
+   - count each: `| uniq -c`
+   - biggest first: `| sort -rn`
+   - keep three: `| head -n 3`
+4. **Check the answer** against something you can verify another way, like `grep -c "^10.0.0.7 " access.log`.
+
+Think about edge cases too. What if the same address appears in different places in the file — does your pipeline still merge them? (Only if you sort before `uniq`.) What if two addresses tie? Then `sort -rn` puts them next to each other and `head` takes whichever comes first, so say so if it matters.
+--- task
+`access.log` has one line per request, a few hundred of them. Print the **three addresses with the most requests**, with their counts, busiest first. Then save the same three lines into `top3.txt`.
+--- starter
+for i in $(seq 1 12); do echo "192.168.1.9 - - [25/Sep/2026:09:00:0$((i % 10))] \"GET /login\" 401" >> access.log; echo "10.0.0.7 - - [25/Sep/2026:09:10:00] \"GET /home\" 200" >> access.log; echo "10.0.0.3 - - [25/Sep/2026:09:11:00] \"GET /api\" 200" >> access.log; done
+for i in $(seq 1 5); do echo "172.16.0.2 - - [25/Sep/2026:09:20:00] \"GET /about\" 200" >> access.log; done
+for i in $(seq 1 28); do echo "10.0.0.7 - - [25/Sep/2026:09:30:00] \"GET /home\" 200" >> access.log; done
+for i in $(seq 1 3); do echo "10.0.0.9 - - [25/Sep/2026:09:40:00] \"GET /api\" 500" >> access.log; done
+for i in $(seq 1 13); do echo "10.0.0.3 - - [25/Sep/2026:09:50:00] \"GET /api\" 200" >> access.log; done
+--- solution
+cut -d ' ' -f 1 access.log | sort | uniq -c | sort -rn | head -n 3
+cut -d ' ' -f 1 access.log | sort | uniq -c | sort -rn | head -n 3 > top3.txt
+--- hint
+Start with `cut -d ' ' -f 1 access.log`: the address is the first column, and columns are separated by spaces.
+--- hint
+Then the counting pattern from before: `| sort | uniq -c | sort -rn`.
+--- hint
+Finish with `| head -n 3`, and run the same pipeline again ending in `> top3.txt`.
+--- check shell | The three busiest addresses, busiest first
+printed-exactly 40 10.0.0.7\n25 10.0.0.3\n12 192.168.1.9
+--- check shell | Saved in top3.txt
+file top3.txt ~= 40 10.0.0.7\n25 10.0.0.3\n12 192.168.1.9
+--- check shell | Counted with a pipeline
+used uniq -c
+used |
+
+=== term2-11 | Debugging: the count that lied
+--- teach
+When a pipeline gives a wrong answer, do not stare at the whole line hoping to spot it. Debug it the way you would any program:
+
+1. **Reproduce** it: run the exact command and look at the output.
+2. **Inspect each stage.** Cut the pipeline back to its first command, then add one stage at a time. The stage where the output stops making sense is the stage with the bug.
+3. **Check your assumptions** about what each tool does. Most pipeline bugs are a tool doing exactly what it was designed to do, which is not what you thought.
+4. **Fix the cause, not the symptom.** Adding up the duplicate lines by hand makes this answer right and leaves the pipeline broken for next time.
+5. **Verify** with a number you can check another way, such as `grep -c north sales.csv`.
+
+Here is the report from a colleague:
+
+> I count sales per region with `cut -d , -f 2 sales.csv | uniq -c`. It says `north` 1 time, then `north` 1 time again, then 2 times… and there is a line for a region called `region`. There are only three regions.
+--- task
+Run the broken pipeline to see the problem for yourself. Then write a correct one that saves each region **once**, with its number of sales, **most sales first**, and **without** the header's `region` line, into `region-counts.txt`.
+--- starter
+echo "id,region,amount" > sales.csv
+echo "1,north,20" >> sales.csv
+echo "2,south,15" >> sales.csv
+echo "3,north,40" >> sales.csv
+echo "4,east,5" >> sales.csv
+echo "5,south,10" >> sales.csv
+echo "6,north,25" >> sales.csv
+echo "7,north,30" >> sales.csv
+echo "8,east,12" >> sales.csv
+echo "9,south,8" >> sales.csv
+--- solution
+cut -d , -f 2 sales.csv | uniq -c
+tail -n +2 sales.csv | cut -d , -f 2 | sort | uniq -c | sort -rn > region-counts.txt
+--- hint
+Run `cut -d , -f 2 sales.csv` alone. Are all the `north` lines next to each other? What does `uniq` compare each line with?
+--- hint
+`uniq` only merges neighbours, so it needs `sort` in front of it. The `region` line is the header: drop it with `tail -n +2`.
+--- hint
+Finish with `| sort -rn > region-counts.txt`.
+--- check shell | You reproduced the bug first
+printed 1 region
+--- check shell | Each region once, with its total, most sales first
+file region-counts.txt ~= 4 north\n3 south\n2 east
+
+=== term2-12 | Debugging: the file that emptied itself
+--- teach
+Here is a bug report you will one day write yourself:
+
+> I sorted my list with `sort names.txt > names.txt`. Now `names.txt` is empty.
+
+Nothing is wrong with `sort`. The cause is the **order** things happen in. Before running a command, the shell sets up its redirections, and `>` means "empty this file, then send the output here". So the file is already empty by the time `sort` opens it to read. Sorting nothing gives nothing, and nothing is what gets saved.
+
+The same rule is behind a cousin of this bug: a log written with `>` in each step keeps only its last line, because every `>` wipes what the previous one wrote. That is a job for `>>`.
+
+The safe pattern for changing a file with a command: write the result to a **new** file, check it, then move it into place:
+
+```
+sort names.txt > names.sorted
+cat names.sorted
+mv names.sorted names.txt
+```
+
+And a debugging habit worth keeping: when you are not sure what a command will do to your data, try it on a **copy** first.
+--- task
+`names.txt` has just been emptied by that exact command, but there is a backup in `names.bak`. Put the names back into `names.txt`, **sorted**, safely: through a temporary file and `mv`. Then add the name `zara` to the **end** of `names.txt` without losing the others.
+--- starter
+echo "cy" > names.bak
+echo "ada" >> names.bak
+echo "bo" >> names.bak
+cp names.bak names.txt
+sort names.txt > names.txt
+--- solution
+sort names.bak > sorted.tmp
+mv sorted.tmp names.txt
+echo "zara" >> names.txt
+--- hint
+`cat names.txt` shows it is empty and `cat names.bak` shows what you can recover.
+--- hint
+Sort the backup into a new file, `sort names.bak > sorted.tmp`, then `mv sorted.tmp names.txt`.
+--- hint
+Use `>>` for `zara`: `>` would empty the file again.
+--- check shell | names.txt is sorted and complete, with zara at the end
+file names.txt ~= ada\nbo\ncy\nzara
+--- check shell | You moved a finished file into place and appended with >>
+used mv
+used >>
+--- check shell | The backup is untouched
+file names.bak ~= cy\nada\nbo
