@@ -1,27 +1,29 @@
 ---
 id: l09-tmux-sessions-windows-and-panes
 title: tmux — sessions, windows and panes
-minutes: 19
+minutes: 21
 covers:
   - tmux sessions, windows, panes, detach/attach
 ---
 
-Lesson 04 ended with a job that died because a terminal went away. `nohup` and `setsid` keep the process alive but give you nothing back: no scrollback, no way to type into it, no way to see what it is doing now. `tmux` solves the whole problem instead of half of it. The job runs in a session owned by a server process on the remote machine; your terminal is a *client* that draws that session. Disconnect and the session carries on; reconnect from anywhere and you are looking at the same screen, scrollback and all.
+Think of a TV show you are streaming. Your phone is only a screen. Turn the phone off, and the show is still there on the service's computers; pick up your tablet, and you can carry on from the same spot. **tmux** does that for work in a terminal. Your job runs on the remote machine, inside a session that tmux keeps alive. Your terminal is only a screen showing it. Close the screen, lose the network, and the job carries on. Reconnect from anywhere and you see the same screen, with everything it printed still there.
 
-If you take one habit away from this module, take this one: **the first thing you type after `ssh` is `tmux`.** A six-hour Monte Carlo, a `make -j16`, a long `rsync` — all of them belong inside a session that does not care about your network.
+Lesson 04 ended with a job that died because a terminal went away. `nohup` and `setsid` keep the process alive but give you nothing back: no **scrollback** (the earlier output you can scroll up to), no way to type into it, no way to see what it is doing now. tmux solves the whole problem instead of half of it.
 
-All output below was produced on this machine and pasted verbatim with tmux 3.4 on Ubuntu 24.04.4, running as an ordinary user `eng`. The demonstration job, `sweep.sh`, prints one line per second so that the panes have something to show. PIDs, timestamps and the pane dimensions are specific to this capture.
+If you take one habit from this module, take this one: **the first thing you type after `ssh` is `tmux`.** A six-hour Monte Carlo campaign, a sixteen-way parallel build, a long `rsync` — all of them belong in a session that does not care about your network.
+
+All output below is real, pasted as it came out, from tmux 3.4 on Ubuntu 24.04, run by an ordinary user `eng`. The demonstration job, `sweep.sh`, prints one line per second so the panes have something to show. Process numbers, times and pane sizes will differ on yours.
 
 ## The model: server, session, window, pane
 
-Four nouns, and they nest:
+tmux has four nouns, and they fit inside each other like boxes in boxes — a **[[nesting picture|tmux-nesting]]** worth keeping in your head:
 
-- The **server** is one background process per user per machine. It owns everything and starts itself the first time you run `tmux`.
-- A **session** is a named workspace — normally one per task. `campaign`, `flightsw`, `notes`.
+- The **server** is one background program per user per machine. It owns everything, and it starts itself the first time you run `tmux`.
+- A **session** is a named workspace, normally one per task: `campaign`, `flightsw`, `notes`.
 - A **window** is a full-screen tab inside a session, numbered from 0.
-- A **pane** is a rectangle inside a window; splitting a window gives you two, each running its own shell.
+- A **pane** is a rectangle inside a window. Splitting a window gives you two panes, each running its own shell.
 
-A **client** is your terminal, attached to one session. Detaching leaves everything running and exits the client. That is the whole idea: the processes belong to the server, not to your terminal.
+A **client** is your terminal, attached to one session. **Detaching** closes the client and leaves everything else running. That is the whole idea: the programs belong to the server, not to your terminal.
 
 ```bash
 tmux -V
@@ -36,7 +38,7 @@ tmux 3.4
 error connecting to /tmp/tmux-1500/default (No such file or directory)
 ```
 
-Exit status 1 — there is no server yet, so there is nothing to list. The path is the server's control socket, under a directory named for your uid. Start a session and it appears:
+`tmux ls` ("list sessions") exits with status 1: there is no server yet, so there is nothing to list. The path is the server's **[[control socket|tmux-socket]]**, in a folder named after your user number. (If the folder exists but no server is running, the message reads `no server running on ...` instead.) Start a session and it appears:
 
 ```bash
 tmux new-session -d -s campaign
@@ -47,28 +49,28 @@ tmux ls
 campaign: 1 windows (created Tue Sep 22 20:51:53 2026)
 ```
 
-`-d` means "create it but do not attach", which is how a script starts a session; interactively you write `tmux new -s campaign` and land inside it.
+`-s campaign` names the session. `-d` means "create it but do not attach", which is how a script starts one. Typing at the keyboard, you would write `tmux new -s campaign` and land inside it.
 
 ## Detach and attach
 
-Inside a session, every tmux command starts with the **prefix key**, `Ctrl-b` by default. Press and release the prefix, then press the command key. Detach is `Ctrl-b` then `d`:
+Inside a session, every tmux command starts with the **[[prefix key|why-a-prefix]]**: `Ctrl-b` by default. Hold `Ctrl`, tap `b`, let go of both, *then* press the command key. Detach is `Ctrl-b` then `d`:
 
 ```text
 [detached (from session campaign)]
 ```
 
-Your shell prompt comes back. Nothing in the session stopped. `tmux ls` still shows it, and `tmux attach -t campaign` — `tmux a -t campaign` for short — puts you back exactly where you were, mid-scrollback, with the job still printing.
+Your shell prompt comes back, and nothing in the session stopped. `tmux ls` still lists it. `tmux attach -t campaign` — `tmux a -t campaign` for short, where `-t` means "target" — puts you back exactly where you were, mid-scrollback, with the job still printing.
 
-The line across the bottom of an attached client is the status bar, and it is worth reading:
+The line across the bottom of an attached screen is the **status bar**, and it is worth reading:
 
 ```text
 [campaign]0:tail*                                           "vm" 20:52 22-Sep-26
 ```
 
-Session name in brackets; then the windows, here just window 0 running `tail`, with `*` marking the active one; then the hostname, the time and the date. When you have four sessions on three machines, that bracket is how you know which one you are typing into.
+Left to right: the session name in brackets; then the windows, here only window 0, running `tail`, with `*` marking the active one; then the machine's name, the time and the date. With four sessions on three machines, that bracket is how you know which one you are typing into.
 
 ::: example The job outlives the client, and here is the proof
-A session is created, a sweep is started in it, and the session is then examined from outside.
+Create a session, start a sweep in it, then look at it from outside. `send-keys` types text into a pane as if you had typed it, and `Enter` presses the Enter key.
 
 ```bash
 tmux new-session -d -s campaign
@@ -88,7 +90,7 @@ tmux ls
 campaign: 1 windows (created Tue Sep 22 20:53:07 2026)
 ```
 
-The sweep is running, and its parent is a shell owned by the tmux server — not by the terminal that ran `tmux new-session`, which had already returned to a prompt because of `-d`. Closing that terminal, or dropping the SSH connection that carried it, changes nothing about process 2185.
+The sweep is running as process 2185. Its parent is a shell that belongs to the tmux server — not to the terminal that ran `tmux new-session`, which had already gone back to its prompt because of `-d`. So closing that terminal, or dropping the SSH connection that carried it, changes nothing for process 2185.
 
 What *does* stop it is killing the session:
 
@@ -101,12 +103,18 @@ pgrep -a -f sweep.sh
 2185 [sweep.sh] <defunct>
 ```
 
-`tmux` sent the pane's processes `SIGHUP` when the session went away, and the sweep is now a zombie waiting to be reaped — the state from lesson 04. So `kill-session` is a real kill: detach when you want to leave, and only kill when you mean to stop the work.
+When the session went away, tmux sent `SIGHUP` ("hang up") to the programs in its panes. The sweep ended, and in this snapshot it is a **[[zombie|zombie-bridge]]** — finished, waiting for its exit status to be collected — the state from lesson 04. Sanity check on the lesson: `kill-session` is a real kill. Detach when you want to leave; kill only when you mean to stop the work.
 :::
 
 ## Windows
 
-`Ctrl-b c` creates a window, `Ctrl-b ,` renames it, `Ctrl-b n` and `Ctrl-b p` move next and previous, and `Ctrl-b <digit>` jumps straight to a number. `Ctrl-b w` gives an interactive list of every window in every session.
+Windows are like browser tabs. The keys, each after `Ctrl-b`:
+
+- `c` **c**reates a window;
+- `,` renames the current one;
+- `n` and `p` move to the **n**ext and **p**revious;
+- a digit, `0` to `9`, jumps straight to that number;
+- `w` shows an interactive list of every window in every session.
 
 ```bash
 tmux list-windows -t campaign
@@ -117,16 +125,25 @@ tmux list-windows -t campaign
 1: plots* (1 panes) [100x20] [layout a67f,100x20,0,0,2] @1 (active)
 ```
 
-Window 0 is named `watch` and holds two panes; window 1 is named `plots` and is active, which is what the `*` means. tmux names a window after the program running in it unless you rename it — and renaming is worth the two keystrokes, because `0:bash 1:bash 2:bash` tells you nothing at four in the afternoon.
+Window 0 is named `watch` and holds two panes. Window 1 is named `plots` and is active — that is what the `*` means. The `-` after `watch` marks the *previous* window, the one `Ctrl-b l` ("last") would jump back to.
 
-The layout strings and `@0`/`@1` identifiers are tmux's internal bookkeeping. You never type them; they are useful only in that `tmux list-windows` is a machine-readable way for a script to find out what exists.
+tmux names a window after the program running in it unless you rename it. Renaming is worth the two keystrokes, because `0:bash 1:bash 2:bash` tells you nothing at four in the afternoon.
+
+The `[layout ...]` strings and `@0`/`@1` labels are tmux's own bookkeeping. You never type them. They matter only because `tmux list-windows` gives a script a reliable way to find out what exists.
 
 ## Panes
 
-`Ctrl-b %` splits the current pane left and right; `Ctrl-b "` splits it top and bottom. `Ctrl-b` then an arrow key moves between panes, `Ctrl-b o` cycles, `Ctrl-b z` zooms the current pane to fill the window (press again to unzoom), `Ctrl-b x` kills it, and `Ctrl-b space` cycles through the preset layouts. Holding the prefix and pressing an arrow repeatedly resizes.
+Panes split one window into parts, like dividing a sheet of paper with a ruler. The keys, each after `Ctrl-b`:
+
+- `%` splits the current pane into left and right halves; `"` splits it into top and bottom — see the **[[split picture|pane-splits]]**;
+- an arrow key moves to the pane in that direction, and `o` cycles through them;
+- `z` **z**ooms the current pane to fill the window, and a second `z` puts it back;
+- `x` kills the current pane, after asking `kill-pane 0? (y/n)`;
+- `space` cycles through the preset layouts;
+- `Ctrl`+arrow (that is, `Ctrl-b` then `Ctrl-Up`, and so on) resizes by one cell. For a short moment afterwards you can tap more `Ctrl`+arrows without pressing the prefix again.
 
 ::: example The layout you will actually use
-One window, split top and bottom: the sweep running above, a shell below to poke at its output while it runs.
+One window, split top and bottom: the sweep running above, and a shell below to look at its output while it runs.
 
 ```text
 --- pane 0 ---
@@ -155,24 +172,32 @@ tmux list-panes -t campaign
 1: [90x7] [history 0/2000, 3447 bytes] %1 (active)
 ```
 
-Ninety columns by eight rows and by seven, with 2 lines of scrollback in the first and none yet in the second. Note the arithmetic: 8 + 7 = 15, one short of the window's 16 rows, because the divider takes a line.
+Read the sizes as columns by rows: pane 0 is 90 columns wide and 8 rows tall, pane 1 is 90 by 7. The `history 2/2000` says pane 0 keeps 2 lines of scrollback out of a limit of 2000, and pane 1 none yet.
 
-This is the whole ergonomic argument for panes. The top pane is the authoritative live output; the bottom is where you count what has completed, check a config, or start the analysis on the cases that have already finished — without stopping the job, without a second SSH connection, and without losing either view.
+Check the arithmetic: $8 + 7 = 15$ rows, one short of the window's 16, because the dividing line between the panes takes a row of its own.
+
+This is the whole case for panes. The top pane is the live, trusted output. The bottom is where you count what has finished, check a config, or start analyzing the cases already done — without stopping the job, without a second SSH connection, and without losing either view.
 :::
 
 ## Scrollback and copy mode
 
-The pane's scrollback is tmux's, not your terminal's, which is why your mouse wheel may do nothing useful by default. `Ctrl-b [` enters **copy mode**, and then:
+The scrollback belongs to tmux, not to your terminal program, which is why your mouse wheel may do nothing useful at first. `Ctrl-b [` enters **copy mode**, a way to move around in the pane's history.
 
-- arrow keys, `PageUp`/`PageDown`, `Ctrl-u`/`Ctrl-d` scroll;
-- `/` searches forward and `?` backward, `n` and `N` repeat — the same keys as `less`;
-- `g` and `G` go to the top and the bottom;
-- `space` starts a selection, `Enter` copies it, `Ctrl-b ]` pastes it into the current pane;
-- `q` leaves copy mode.
+tmux has two sets of copy-mode keys, one modeled on the Emacs editor and one on vi, and it uses the **[[Emacs set unless told otherwise|emacs-or-vi-keys]]**. In both, `PageUp` and `PageDown` scroll, `n` and `N` repeat a search, and `q` leaves copy mode. The rest differ:
 
-`[history 2/2000, ...]` in the `list-panes` output above is the scrollback: 2 lines retained of a 2000-line limit. Two thousand is the default and it is far too small for a job that prints a line per case. Raise it.
+| Job | default (Emacs) keys | vi keys |
+| --- | --- | --- |
+| search down / up | `Ctrl-s` / `Ctrl-r` | `/` / `?` — the same keys as `less` |
+| half a page up / down | `Alt-Up` / `Alt-Down` | `Ctrl-u` / `Ctrl-d` |
+| top / bottom of history | `Alt-<` / `Alt->` | `g` / `G` |
+| start a selection | `Ctrl-Space` | `Space` |
+| copy the selection | `Alt-w` | `Enter` |
 
-`tmux capture-pane -p -t campaign.0` prints a pane's visible contents to standard output, and with `-S -3000` it prints the scrollback too. That is how you get a session's output into a file from a script — and how every pane in this lesson was captured.
+Whichever set you use, `Ctrl-b ]` pastes what you copied into the current pane. The next section switches on the vi set with one line.
+
+`[history 2/2000, ...]` in the `list-panes` output above is the scrollback: 2 lines kept, out of a 2000-line limit. Two thousand is the default, and it is far too small for a job that prints a line per case. Raise it.
+
+`tmux capture-pane -p -t campaign.0` prints what pane 0 of `campaign` is showing (`-p` means print to standard output). Add `-S -3000` to start 3000 lines back in the scrollback. That is how a script gets a session's output into a file — and how every pane in this lesson was captured.
 
 ## Configuration worth having
 
@@ -185,75 +210,84 @@ setw -g mode-keys vi
 set -g base-index 1
 ```
 
-`history-limit` is the scrollback, per pane, in lines — the default 2000 is about half an hour of a chatty simulation. `mouse on` makes the wheel scroll, and clicking select panes and drag resize them; it is the single change that makes tmux feel less hostile. `mode-keys vi` gives copy mode `vi` motions. `base-index 1` numbers windows from 1 so they match the number keys on the keyboard.
+Line by line (`-g` means "global", for every session):
 
-Many people also remap the prefix — `set -g prefix C-a` — because `Ctrl-b` collides with the `vi`/`less` page-up binding. Do it if you like, but remember that on someone else's machine the prefix is `Ctrl-b`.
+- `history-limit` is the scrollback per pane, in lines. The default 2000 is about half an hour of a chatty simulation.
+- `mouse on` makes the wheel scroll, lets you click to choose a pane, and lets you drag the dividers to resize. It is the single change that makes tmux feel friendly.
+- `mode-keys vi` gives copy mode the vi keys from the table above.
+- `base-index 1` numbers windows from 1, so they match the order of the number keys along the keyboard.
 
-After editing the file, `tmux source-file ~/.tmux.conf` applies it to the running server; `Ctrl-b ?` lists every key binding in effect.
+Many people also change the prefix — `set -g prefix C-a` — because `Ctrl-b` also means "page back" in `vi` and `less`. Do it if you like, but remember that on someone else's machine the prefix is `Ctrl-b`.
 
-::: note
-`screen` is the older program that does the same job. It is still installed on machines that have nothing else, its prefix is `Ctrl-a`, `Ctrl-a d` detaches and `screen -r` reattaches. If you find yourself on a host with no tmux, those three facts are enough. Everything else here is tmux-specific.
+After editing the file, `tmux source-file ~/.tmux.conf` applies it to the running server. `Ctrl-b ?` lists every key binding in effect.
+
+::: note The older cousin: screen
+`screen` is the older program that does the same job, and it is still installed on machines that have nothing else. Its prefix is `Ctrl-a`; `Ctrl-a d` detaches, and `screen -r` reattaches. If you land on a host with no tmux, those three facts are enough. Everything else in this lesson is tmux-specific.
 :::
 
 ## The working pattern
 
-Put together, the routine for a long run on a remote machine is four steps:
+Put together, a long run on a remote machine is four steps:
 
 1. `ssh sim01`
-2. `tmux new -s campaign` — or `tmux a -t campaign` if it is already there
-3. start the job; split a pane for watching it
+2. `tmux new -s campaign` — or `tmux a -t campaign` if it already exists
+3. start the job, and split a pane for watching it
 4. `Ctrl-b d`, and close the laptop
 
-Come back tomorrow: `ssh sim01`, `tmux a -t campaign`, and the scrollback is still there. If the job finished overnight, its final output is on the screen where it stopped, which is exactly what `nohup` cannot give you.
+Come back tomorrow: `ssh sim01`, `tmux a -t campaign`, and the scrollback is still there. If the job finished overnight, its last output is on the screen where it stopped — exactly what `nohup` cannot give you.
 
-Two habits that go with it. Name sessions after the work, not after the day — `campaign`, not `tuesday` — because you will attach to them by name for a week. And run `tmux ls` when you log in, before you start anything: it is common to find a session you had forgotten, still holding the output you are about to regenerate.
+Two habits go with it. Name sessions after the work, not the day — `campaign`, not `tuesday` — because you will attach to them by name for a week. And run `tmux ls` when you log in, before you start anything. It is common to find a forgotten session still holding the output you were about to regenerate.
 
-::: key
+::: key tmux in one breath
 tmux runs a server on the remote machine; sessions, windows and panes belong to it, not to your terminal. `Ctrl-b d` detaches and leaves everything running; `tmux a -t name` reattaches with the scrollback intact. `tmux kill-session` really does kill — it hangs up the panes' processes. Raise `history-limit`; 2000 lines is not enough.
 :::
 
 ## Check yourself
 
 ::: check
-You run `tmux new -s campaign`, start a six-hour Monte Carlo, and press `Ctrl-b` then `x`. What happened, and what should you have pressed?
+You run `tmux new -s campaign`, start a six-hour Monte Carlo, then press `Ctrl-b` then `x`, and answer `y` to the question at the bottom of the screen. What happened, and what should you have pressed?
 :::
 
 ::: answer
-`Ctrl-b x` kills the current *pane*. Since the session had one window with one pane, tmux prompted to confirm and then destroyed the pane, the window and the session with it, hanging up the Monte Carlo. Six hours of work, if it had been running that long, are gone.
+`Ctrl-b x` kills the current *pane*. tmux asked `kill-pane 0? (y/n)`, and you said yes. The session had one window with one pane, so tmux destroyed the pane, then the empty window, then the empty session — and hung up the Monte Carlo inside it. Whatever it had computed so far is gone.
 
-The key you wanted was `Ctrl-b d` — detach. It exits the client and leaves the server, the session and every process in it untouched. The mnemonic that keeps them apart: `d` for detach is about *you* leaving; `x` and `kill-session` are about the *work* stopping. If you are ever unsure, just close your terminal window — tmux treats that exactly like a detach.
+The key you wanted was `Ctrl-b d` — detach. It closes the client and leaves the server, the session and every program in it untouched.
+
+A way to keep them apart: `d` for detach is about *you* leaving; `x` and `kill-session` are about the *work* stopping. If you are ever unsure, close the terminal window instead — tmux treats that exactly like a detach.
 :::
 
 ::: check
-Explain why a job started inside tmux survives an SSH disconnection, in terms of what lesson 04 said about `SIGHUP` and process groups.
+Explain why a job started inside tmux survives an SSH disconnection, using what lesson 04 said about `SIGHUP` and process groups.
 :::
 
 ::: answer
-When the SSH connection drops, the server tears down the pseudo-terminal, and the kernel sends `SIGHUP` to the process group attached to it. Inside a plain SSH session that group contains your shell and its jobs, so they are terminated.
+When the SSH connection drops, the server side tears down your **pseudo-terminal** (the software stand-in for a terminal that SSH gave your login). The kernel sends `SIGHUP` to the programs attached to that terminal, and your shell passes it on to its jobs. In a plain SSH session that includes the job, so it dies.
 
-With tmux, that group contains only the tmux *client*. The client dies, and nothing else does, because the job's terminal is a pseudo-terminal created by the tmux **server**, which is a separate process in its own session with no controlling terminal and no connection to your SSH session at all. The server was started by you but is not a child of your shell in any way that matters: nothing about your connection's teardown reaches it.
+With tmux, the only program attached to the SSH terminal is the tmux *client*. The client gets the hang-up and exits, and nothing else is touched. The job's terminal is a different pseudo-terminal, created by the tmux **server** — a separate process that runs in its own session with no terminal of its own, and no link to your SSH login. Nothing about your connection's teardown reaches it.
 
-That is also exactly why `tmux kill-session` does stop the job — it makes the server destroy the pane's pseudo-terminal, and *that* hangup does reach the processes inside.
+That is also exactly why `tmux kill-session` *does* stop the job: the server destroys the pane's pseudo-terminal itself, and *that* hang-up reaches the programs inside.
 :::
 
 ::: check
-You reattach to a session the next morning and want the line where a particular case first printed `WARN`, which was about 40,000 lines ago. Two things could stop you finding it. What are they, and what should you have set up in advance?
+You reattach the next morning and want the line where one case first printed `WARN`, about 40,000 lines ago. Two things could stop you finding it. What are they, and what should you have set up in advance?
 :::
 
 ::: answer
-First, the default `history-limit` of 2000 lines per pane. Forty thousand lines ago is long gone; tmux discarded it as new output arrived, and no key will bring it back. Second, even within the retained history, scrolling by hand is hopeless — you need `Ctrl-b [` to enter copy mode and then `/WARN` and `n` to search, which is the same key set as `less`.
+First, the default `history-limit` of 2000 lines per pane. Forty thousand lines back is long gone; tmux threw it away as new output arrived, and no key brings it back.
 
-In advance: `set -g history-limit 100000` in `~/.tmux.conf`, so a day of output is retained. Better still, do not rely on scrollback at all for anything you might need — pipe the job through `tee` to a log file, as in `./sweep.sh 2>&1 | tee sweep.log`. Scrollback is a convenience that a pane resize or a server restart can lose; a file on disk is the record. Then the question becomes `grep -n WARN sweep.log`, which needs no tmux at all.
+Second, even inside the history it keeps, scrolling by hand through thousands of lines is hopeless. You need to search: `Ctrl-b [` to enter copy mode, then `Ctrl-r` and type `WARN` with the default keys — or, with `mode-keys vi`, `?WARN` to search upward and `n` to repeat, the same keys as `less`.
+
+In advance: put `set -g history-limit 100000` in `~/.tmux.conf`, so a day of output is kept. Better still, do not rely on scrollback for anything you might need. Send the job's output through `tee` to a file: `./sweep.sh 2>&1 | tee sweep.log`. Scrollback is a convenience that a server restart can lose; a file on disk is the record. Then the question becomes `grep -n WARN sweep.log`, which needs no tmux at all.
 :::
 
 ::: check
-Your colleague's tmux does not respond to `Ctrl-b c` on his machine, and the status bar is green rather than the default. What is the likeliest explanation, and how do you find the answer without asking him?
+On a colleague's machine, `Ctrl-b c` does nothing, and the status bar is green instead of the usual color. What is the likeliest explanation, and how can you find out without asking him?
 :::
 
 ::: answer
-He has a `~/.tmux.conf` that remaps the prefix — `set -g prefix C-a` is by far the commonest change, usually together with `unbind C-b` — and has also restyled the status bar. So `Ctrl-b` does nothing because it is no longer the prefix; the binding for `c` is intact, you just cannot reach it.
+He has a `~/.tmux.conf` that changes the prefix — `set -g prefix C-a`, usually with `unbind C-b`, is by far the most common change — and he has also restyled the status bar. So `Ctrl-b` does nothing because it is no longer the prefix. The `c` binding is still there; you cannot reach it.
 
-You find out from inside the session. `Ctrl-b ?` lists the key bindings, but of course that needs the prefix too. The reliable route is a command prompt or the shell: `tmux show-options -g prefix` prints the current prefix key, and `tmux list-keys` prints every binding. Both are ordinary commands you can type at a shell inside a pane, no prefix required. That is generally true of tmux: everything the prefix does is also a command you can run, which is what makes it scriptable.
+Find out from inside the session. `Ctrl-b ?` would list the bindings, but it needs the prefix too. The reliable route is the shell in any pane: `tmux show-options -g prefix` prints the current prefix key, and `tmux list-keys` prints every binding. Both are ordinary commands and need no prefix. That is true of tmux in general: everything a key does is also a command you can type, which is what makes it scriptable.
 :::
 
 ::: check
@@ -266,9 +300,11 @@ tmux new-session -d -s sweep './run_campaign.sh 2>&1 | tee campaign.log'
 tmux has-session -t sweep
 ```
 
-`-d` creates the session without attaching, so the command returns immediately and the calling script carries on. Giving the shell command as the last argument makes it the pane's process rather than an interactive shell — note that when it exits, the pane and the session close, so redirect to a file if you want the output afterwards. `2>&1 | tee` captures both streams, in the order from lesson 05.
+`-d` creates the session without attaching, so the command returns at once and the script carries on. Putting the shell command last makes it the pane's program instead of an interactive shell. The catch: when the command ends, the pane and the session close with it, so the file is where the output survives. `2>&1 | tee` captures both output streams, in the order lesson 05 taught.
 
-`tmux has-session -t sweep` is the scriptable check: exit status 0 if it exists, 1 if not, with a message on stderr, so `if tmux has-session -t sweep 2>/dev/null; then ...` is the idiom. `tmux ls` works too but you would have to parse it. If you want the session to stay open after the job ends so you can read the last screen, use `tmux new-session -d -s sweep` followed by `tmux send-keys -t sweep './run_campaign.sh 2>&1 | tee campaign.log' Enter`, which runs it inside an interactive shell that survives the command.
+`tmux has-session -t sweep` is the check for scripts: exit status 0 if the session exists, 1 if not (with a message on standard error). So the usual form is `if tmux has-session -t sweep 2>/dev/null; then ...`. `tmux ls` works too, but you would have to pick apart its output.
+
+If you want the session to stay open after the job ends, so you can read its last screen, start an ordinary session and type the command into it: `tmux new-session -d -s sweep`, then `tmux send-keys -t sweep './run_campaign.sh 2>&1 | tee campaign.log' Enter`. The job then runs inside an interactive shell that outlives it.
 :::
 
 ## Summary
@@ -283,11 +319,74 @@ tmux has-session -t sweep
 | `Ctrl-b d` | detach | leaves everything running |
 | `tmux kill-session -t NAME` | destroy it | hangs up the panes' processes — a real kill |
 | `Ctrl-b c` / `,` / `n` `p` / digit / `w` | new window / rename / move / jump / list | name them after the work |
-| `Ctrl-b %` / `"` / arrows / `o` / `z` / `x` | split vertical / horizontal / move / cycle / zoom / kill pane | `z` un-zooms on a second press |
-| `Ctrl-b [`, `/`, `n`, `q` | copy mode, search, repeat, leave | the same keys as `less` |
+| `Ctrl-b %` / `"` / arrows / `o` / `z` / `x` | split left-right / top-bottom / move / cycle / zoom / kill pane | `z` un-zooms on a second press; `x` asks first |
+| `Ctrl-b [`, then `q` | enter and leave copy mode | search `Ctrl-r`/`Ctrl-s`, or `/` `?` `n` with vi keys |
 | `tmux capture-pane -p [-S -3000]` | print a pane, optionally with scrollback | how a script reads a session's output |
 | `history-limit`, `mouse on`, `mode-keys vi`, `base-index 1` | the four lines of `~/.tmux.conf` | 2000 lines of scrollback is not enough |
 | `tmux source-file ~/.tmux.conf`, `Ctrl-b ?` | reload config, list bindings | `tmux list-keys` does the same from a shell |
 | `screen`, `Ctrl-a d`, `screen -r` | the older equivalent | for machines with no tmux |
 
-Lesson 10 turns to the shell you find waiting inside each of those panes: environment variables, `PATH`, and the difference between `.bashrc` and `.bash_profile` that decides which of your settings a remote command actually sees.
+Lesson 10 turns to the shell waiting inside each of those panes: environment variables, `PATH`, and the difference between `.bashrc` and `.bash_profile` that decides which of your settings a remote command actually sees.
+
+::: context tmux-nesting Boxes inside boxes
+One server holds any number of sessions; each session holds windows; each window holds panes; each pane runs one program, usually a shell. Your terminal (the client) looks at one window of one session at a time. The name *tmux* is short for **terminal multiplexer** — one connection, many terminals.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 200" font-family="Inter, Arial, sans-serif">
+  <rect x="8" y="8" width="344" height="184" rx="8" fill="#fff" stroke="#1f2a44" stroke-width="2"/>
+  <text x="18" y="26" font-size="12" fill="#1f2a44" font-weight="700">server</text>
+  <rect x="20" y="36" width="210" height="146" rx="6" fill="#fff" stroke="#1d6fd1" stroke-width="1.5"/>
+  <text x="30" y="53" font-size="12" fill="#1d6fd1">session: campaign</text>
+  <rect x="30" y="62" width="120" height="110" rx="4" fill="#fff" stroke="#6c7a93" stroke-width="1.5"/>
+  <text x="38" y="78" font-size="11" fill="#1f2a44">window 0: watch</text>
+  <rect x="38" y="86" width="104" height="38" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="90" y="109" font-size="11" text-anchor="middle" fill="#1f2a44">pane 0</text>
+  <rect x="38" y="126" width="104" height="38" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="90" y="149" font-size="11" text-anchor="middle" fill="#1f2a44">pane 1</text>
+  <rect x="158" y="62" width="64" height="110" rx="4" fill="#fff" stroke="#6c7a93" stroke-width="1.5"/>
+  <text x="190" y="78" font-size="11" text-anchor="middle" fill="#1f2a44">window 1</text>
+  <rect x="166" y="86" width="48" height="78" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="190" y="129" font-size="11" text-anchor="middle" fill="#1f2a44">pane</text>
+  <rect x="242" y="36" width="100" height="146" rx="6" fill="#fff" stroke="#1d6fd1" stroke-width="1.5"/>
+  <text x="292" y="53" font-size="12" text-anchor="middle" fill="#1d6fd1">session: notes</text>
+  <text x="292" y="115" font-size="11" text-anchor="middle" fill="#6c7a93">its own windows</text>
+</svg>
+```
+:::
+
+::: context tmux-socket Where the server lives
+The server and its clients talk through a Unix socket — a special file that works like a hatch between two programs on one machine. By default it is `/tmp/tmux-UID/default`, where UID is your numeric user id (`id -u` prints it; 1500 in the transcript). Every `tmux` command you type finds the server through that file. That is why the error names the path: no file there means no server to talk to.
+:::
+
+::: context why-a-prefix Why tmux needs a prefix key
+Almost every key you press inside tmux must go straight through to the program in the pane — your shell, an editor, a running simulation. tmux needs one key that means "the next key is for me, not for the program". That is the prefix. `Ctrl-b` was picked because few programs need it; `screen`, the older tool, used `Ctrl-a`, which clashes with "go to start of line" in the shell. To send a real `Ctrl-b` to the program, press it twice.
+:::
+
+::: context zombie-bridge Why a zombie, and not gone at once
+A finished process leaves behind a tiny record holding its exit status, and it stays a zombie until its parent collects that record. Here the sweep's parent shell was hung up at the same moment, so the sweep was handed to the system's first process, whose job is to collect such orphans. On a normal Linux machine that happens almost at once and the zombie vanishes; the capture happened to catch it in between. A zombie uses no CPU and no memory beyond that small record.
+:::
+
+::: context pane-splits Which key splits which way
+The symbols are easy to muddle. Think of `%` as a slash drawn down the middle — a vertical divider, so the halves sit left and right. Think of `"` as two marks one above the other — a horizontal divider, so the halves are stacked. The divider takes one row or column itself, which is why a 16-row window split top and bottom gives $8 + 7 = 15$ rows of panes.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 140" font-family="Inter, Arial, sans-serif">
+  <rect x="20" y="24" width="140" height="90" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
+  <line x1="90" y1="24" x2="90" y2="114" stroke="#1f2a44" stroke-width="3"/>
+  <text x="55" y="73" font-size="12" text-anchor="middle" fill="#1f2a44">pane 0</text>
+  <text x="125" y="73" font-size="12" text-anchor="middle" fill="#1f2a44">pane 1</text>
+  <text x="90" y="16" font-size="12" text-anchor="middle" fill="#1f2a44">Ctrl-b %</text>
+  <text x="90" y="132" font-size="11" text-anchor="middle" fill="#6c7a93">left and right</text>
+  <rect x="200" y="24" width="140" height="90" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
+  <line x1="200" y1="69" x2="340" y2="69" stroke="#1f2a44" stroke-width="3"/>
+  <text x="270" y="51" font-size="12" text-anchor="middle" fill="#1f2a44">pane 0</text>
+  <text x="270" y="96" font-size="12" text-anchor="middle" fill="#1f2a44">pane 1</text>
+  <text x="270" y="16" font-size="12" text-anchor="middle" fill="#1f2a44">Ctrl-b "</text>
+  <text x="270" y="132" font-size="11" text-anchor="middle" fill="#6c7a93">top and bottom</text>
+</svg>
+```
+:::
+
+::: context emacs-or-vi-keys Two families of keys
+Emacs and vi are two old, much-loved text editors with very different key habits, and many terminal tools copy one or the other. tmux's copy mode uses the Emacs-style keys by default, but switches to vi-style by itself if your `EDITOR` or `VISUAL` setting contains "vi". `tmux show-window-options -g mode-keys` tells you which you have. The vi keys are worth learning because `less`, `man` and vim (lesson 14) share them.
+:::
