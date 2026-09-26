@@ -25,6 +25,7 @@ const Progress = lazy(() => import('@/pages/Progress').then((m) => ({ default: m
 const Resources = lazy(() => import('@/pages/Resources').then((m) => ({ default: m.Resources })))
 const Settings = lazy(() => import('@/pages/Settings').then((m) => ({ default: m.Settings })))
 const Guide = lazy(() => import('@/pages/Guide').then((m) => ({ default: m.Guide })))
+const Placement = lazy(() => import('@/pages/Placement').then((m) => ({ default: m.Placement })))
 
 export function App() {
   return (
@@ -115,6 +116,8 @@ function Page({ path, segments }: { path: string; segments: string[] }) {
       return <Settings />
     case 'guide':
       return <Guide />
+    case 'placement':
+      return <Placement />
     default:
       return <NotFound path={path} />
   }

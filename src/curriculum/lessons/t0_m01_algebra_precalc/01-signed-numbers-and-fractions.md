@@ -18,9 +18,9 @@ Go slowly, and do the arithmetic with a pencil the first time, not a calculator.
 
 ## Numbers with a direction
 
-Picture a thermometer, or a long street with house number $0$ in the middle. Walk right and the numbers go up: $1, 2, 3$. Walk left and they go below zero: $-1, -2, -3$. That street is the **number line**. A **signed number** tells you two things at once: how far from zero (the **size**, or magnitude) and which side (the **sign**).
+Picture a thermometer, or a long street with house number $0$ in the middle. Walk right and the numbers go up: $1, 2, 3$. Walk left and they go below zero: $-1, -2, -3$. That street is the **[[number line|number-line]]**. A **signed number** tells you two things at once: how far from zero (the **size**, or magnitude) and which side (the **sign**).
 
-Here is the part people forget: *you* decide which way is plus. On a rocket you might say "up is positive, down is negative". Once you have decided, stick to it. The sign then carries that choice through every calculation. That is why a sign mistake is dangerous: it does not give you a slightly wrong answer, it gives you the right size pointing the wrong way — a rocket that thinks it is climbing when it is falling.
+Here is the part people forget: *you* decide [[which way is plus|choosing-plus]]. On a rocket you might say "up is positive, down is negative". Once you have decided, stick to it. The sign then carries that choice through every calculation. That is why a sign mistake is dangerous: it does not give you a slightly wrong answer, it gives you the right size pointing the wrong way — a rocket that thinks it is climbing when it is falling.
 
 ### Adding and subtracting
 
@@ -42,7 +42,7 @@ Think of it with money. You are $5$ dollars in debt. Then someone *takes away* a
 
 ### Multiplying and dividing
 
-Multiplying by a positive number stretches: $3 \times 4$ is four steps of three. Multiplying by $-1$ does something new — it **turns you around** to face the other way on the number line.
+Multiplying by a positive number stretches: $3 \times 4$ is four steps of three. Multiplying by $-1$ does something new — it **[[turns you around|turning-around]]** to face the other way on the number line.
 
 So negative times negative is positive: turn around twice and you are facing forward again. A good way to get the sign of any product is to count the minus signs. An even number of them gives a positive answer; an odd number gives a negative one.
 
@@ -109,7 +109,7 @@ The size, $300\,\mathrm{m/s}$, is bigger than either speed on its own — becaus
 
 ## Fractions are sharing
 
-A fraction is a division waiting to happen. $\frac{3}{4}$ means "$3$ divided by $4$" — cut something into $4$ equal pieces and take $3$ of them. The bottom number, the **denominator**, says how many pieces the whole was cut into. The top number, the **numerator**, says how many pieces you have.
+A fraction is a division waiting to happen. $\frac{3}{4}$ means "$3$ divided by $4$" — cut something into $4$ equal pieces and take $3$ of them. The bottom number, the **[[denominator|numerator-denominator]]**, says how many pieces the whole was cut into. The top number, the **numerator**, says how many pieces you have.
 
 The bottom can never be zero. Sharing a pizza among zero people makes no sense, and in maths it has no answer at all.
 
@@ -134,7 +134,7 @@ $$
 \frac{5}{8} - \frac{7}{12} = \frac{15}{24} - \frac{14}{24} = \frac{1}{24}.
 $$
 
-The shared bottom number is called the **common denominator**. The smallest one that works (the **least common denominator**) keeps the numbers small, but any common denominator gives the right answer. The general recipe is
+The shared bottom number is called the **[[common denominator|common-denominator]]**. The smallest one that works (the **least common denominator**) keeps the numbers small, but any common denominator gives the right answer. The general recipe is
 
 $$
 \frac{a}{b} + \frac{c}{d} = \frac{ad + bc}{bd}.
@@ -222,13 +222,13 @@ A single rocket **stage** has three kinds of mass:
 
 (The little letters are labels, not powers: $m_d$ is read "m sub d", meaning "the mass we call d, for dry".)
 
-At lift-off it has everything on board. That is the **initial** (or "wet") mass, $m_0 = m_d + m_p + m_L$. When the engines stop, the propellant is gone, leaving the **final** (burnout) mass $m_f = m_d + m_L$. The **mass ratio** compares the two:
+At lift-off it has everything on board. That is the **initial** (or "wet") mass, $m_0 = m_d + m_p + m_L$. When the engines stop, the propellant is gone, leaving the **final** (burnout) mass $m_f = m_d + m_L$. The **[[mass ratio|why-mass-ratio]]** compares the two:
 
 $$
 MR = \frac{m_0}{m_f} = \frac{m_d + m_p + m_L}{m_d + m_L}.
 $$
 
-Tonnes divided by tonnes: the units cancel, so the mass ratio is a plain number with no units — engineers call that **dimensionless**. It is always bigger than $1$, because the top is the bottom *plus* some propellant.
+Tonnes divided by tonnes: the units cancel, so the mass ratio is a plain number with no units — engineers call that **[[dimensionless|dimensionless]]**. It is always bigger than $1$, because the top is the bottom *plus* some propellant.
 
 Two related fractions come straight out of it. Its flip, $\frac{1}{MR} = \frac{m_f}{m_0}$, is the fraction of the lift-off mass still there at burnout. And $1 - \frac{1}{MR} = \frac{m_p}{m_0}$ is the fraction that was propellant.
 
@@ -262,7 +262,7 @@ The classic slip is dividing propellant by dry mass, $m_p / m_d$. In the example
 
 ## Mixture ratio and bulk density
 
-A rocket engine that burns two liquids — a fuel and an **oxidizer**, the oxygen the fuel burns with — mixes them in a fixed ratio, like a recipe. That ratio is the **mixture ratio**, written $O/F$ ("oxidizer over fuel") and measured by mass.
+A rocket engine that burns two liquids — a fuel and an **[[oxidizer|why-oxidizer]]**, the oxygen the fuel burns with — mixes them in a fixed ratio, like a recipe. That ratio is the **mixture ratio**, written $O/F$ ("oxidizer over fuel") and measured by mass.
 
 A kerosene-and-oxygen engine running at $O/F = 2.3$ uses $2.3\,\mathrm{kg}$ of liquid oxygen for every $1\,\mathrm{kg}$ of kerosene (rocket kerosene is called RP-1). That is the ratio $2.3{:}1$, so there are $2.3 + 1 = 3.3$ shares, and
 
@@ -276,7 +276,7 @@ These fractions add up to $1$, as fractions of a whole always do.
 
 To build the tanks you need volume, not mass. **Density** tells you how heavy a fixed amount of stuff is: a litre of liquid oxygen weighs more than a litre of kerosene. Mass is density times volume, $m = \rho V$ ($\rho$ is the Greek letter "rho", used for density), so the volume is $V = m / \rho$.
 
-The **bulk density** of the propellant is the total mass divided by the total volume. Here is the surprise: it is *not* the average of the two densities. Think of a bag holding a kilogram of marbles and a kilogram of ping-pong balls. The ping-pong balls take up far more room, so the mix is much lighter for its size than "halfway between marbles and ping-pong balls" would suggest.
+The **[[bulk density|bulk-density]]** of the propellant is the total mass divided by the total volume. Here is the surprise: it is *not* the average of the two densities. Think of a bag holding a kilogram of marbles and a kilogram of ping-pong balls. The ping-pong balls take up far more room, so the mix is much lighter for its size than "halfway between marbles and ping-pong balls" would suggest.
 
 Here is the calculation, one step at a time:
 
@@ -375,3 +375,130 @@ Both the top and the bottom are forces measured in newtons, so the units cancel 
 | Bulk density | $\rho_{bulk} = \dfrac{1 + O/F}{O/F/\rho_{ox} + 1/\rho_{fuel}}$ — not the average |
 
 Next lesson: multiplying the same number again and again gets its own short way of writing — **exponents** — and undoing it gives **roots**. With those, the way gravity weakens as you move away from Earth becomes a one-line calculation.
+
+::: context number-line The number line
+Every number has a place on one long line. Zero sits in the middle, positive numbers march off to the right, and negative numbers march off to the left. The distance from zero is the number's **size**; the side it is on is its **sign**.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 90" font-family="Inter, Arial, sans-serif">
+  <line x1="12" y1="45" x2="348" y2="45" stroke="#1f2a44" stroke-width="2"/>
+  <polygon points="348,45 338,40 338,50" fill="#1f2a44"/>
+  <polygon points="12,45 22,40 22,50" fill="#1f2a44"/>
+  <g stroke="#1f2a44" stroke-width="2">
+    <line x1="40" y1="38" x2="40" y2="52"/><line x1="80" y1="38" x2="80" y2="52"/><line x1="120" y1="38" x2="120" y2="52"/>
+    <line x1="160" y1="38" x2="160" y2="52"/><line x1="200" y1="36" x2="200" y2="54"/><line x1="240" y1="38" x2="240" y2="52"/>
+    <line x1="280" y1="38" x2="280" y2="52"/><line x1="320" y1="38" x2="320" y2="52"/>
+  </g>
+  <g font-size="13" fill="#1f2a44" text-anchor="middle">
+    <text x="40" y="72">−4</text><text x="80" y="72">−3</text><text x="120" y="72">−2</text><text x="160" y="72">−1</text>
+    <text x="200" y="72" font-weight="700">0</text><text x="240" y="72">1</text><text x="280" y="72">2</text><text x="320" y="72">3</text>
+  </g>
+  <text x="100" y="22" font-size="12" fill="#b4232c" text-anchor="middle">negative: to the left</text>
+  <text x="290" y="22" font-size="12" fill="#1d6fd1" text-anchor="middle">positive: to the right</text>
+</svg>
+```
+
+A thermometer is a number line stood on its end — which is why "below zero" means negative.
+:::
+
+::: context choosing-plus Engineers choose which way is plus
+Nature does not come with a plus sign. People pick one and write it down. Aircraft engineers often use "north, east, down", so a *positive* height change means going **down**. Rocket engineers often use "up is positive". Both are fine — as long as everyone on the team uses the same one.
+
+Real missions have been lost to exactly this kind of mix-up. The habit you are building here — say which way is plus before you start — is one working engineers use every day.
+:::
+
+::: context turning-around Multiplying by −1 turns you around
+Stand on the number line facing right. Multiplying by $-1$ spins you to face left. Do it again and you face right once more.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 120" font-family="Inter, Arial, sans-serif">
+  <line x1="20" y1="60" x2="340" y2="60" stroke="#1f2a44" stroke-width="2"/>
+  <line x1="180" y1="52" x2="180" y2="68" stroke="#1f2a44" stroke-width="2"/>
+  <text x="180" y="86" font-size="12" text-anchor="middle" fill="#1f2a44">0</text>
+  <line x1="180" y1="40" x2="290" y2="40" stroke="#1d6fd1" stroke-width="4"/>
+  <polygon points="300,40 288,34 288,46" fill="#1d6fd1"/>
+  <text x="240" y="30" font-size="12" text-anchor="middle" fill="#1d6fd1">+3</text>
+  <line x1="180" y1="100" x2="70" y2="100" stroke="#b4232c" stroke-width="4"/>
+  <polygon points="60,100 72,94 72,106" fill="#b4232c"/>
+  <text x="120" y="116" font-size="12" text-anchor="middle" fill="#b4232c">× (−1) → −3</text>
+</svg>
+```
+
+So a product with two minus signs faces forward: two turns cancel. Three minus signs leave you facing backward.
+:::
+
+::: context numerator-denominator Where the words come from
+Both words are old Latin. **Numerator** comes from the word for "counter": it *counts* how many pieces you have. **Denominator** comes from the word for "namer": it *names* what size the pieces are — halves, thirds, quarters. Read $\frac{3}{4}$ as "three quarters": three is the count, quarters is the name.
+:::
+
+::: context common-denominator Why the slices must match
+You cannot add a half and a third directly, because they are different-sized pieces. Cut both into sixths first and they become pieces you can count together.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 120" font-family="Inter, Arial, sans-serif">
+  <g transform="translate(60,55)">
+    <circle r="40" fill="#fff" stroke="#1f2a44" stroke-width="2"/>
+    <path d="M0,0 L0,-40 A40,40 0 0,1 0,40 Z" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
+    <line x1="0" y1="0" x2="34.64" y2="-20" stroke="#1f2a44" stroke-width="1.5"/>
+    <line x1="0" y1="0" x2="34.64" y2="20" stroke="#1f2a44" stroke-width="1.5"/>
+    <line x1="0" y1="0" x2="-34.64" y2="20" stroke="#1f2a44" stroke-width="1.5"/>
+    <line x1="0" y1="0" x2="-34.64" y2="-20" stroke="#1f2a44" stroke-width="1.5"/>
+    <line x1="0" y1="-40" x2="0" y2="40" stroke="#1f2a44" stroke-width="1.5"/>
+    <text y="62" font-size="12" text-anchor="middle" fill="#1f2a44">1/2 = 3/6</text>
+  </g>
+  <text x="130" y="60" font-size="22" text-anchor="middle" fill="#1f2a44">+</text>
+  <g transform="translate(200,55)">
+    <circle r="40" fill="#fff" stroke="#1f2a44" stroke-width="2"/>
+    <path d="M0,0 L0,-40 A40,40 0 0,1 34.64,-20 Z" fill="#f2b880" stroke="#1f2a44" stroke-width="1.5"/>
+    <path d="M0,0 L34.64,-20 A40,40 0 0,1 34.64,20 Z" fill="#f2b880" stroke="#1f2a44" stroke-width="1.5"/>
+    <line x1="0" y1="0" x2="0" y2="40" stroke="#1f2a44" stroke-width="1.5"/>
+    <line x1="0" y1="0" x2="-34.64" y2="20" stroke="#1f2a44" stroke-width="1.5"/>
+    <line x1="0" y1="0" x2="-34.64" y2="-20" stroke="#1f2a44" stroke-width="1.5"/>
+    <line x1="0" y1="0" x2="34.64" y2="20" stroke="#1f2a44" stroke-width="1.5"/>
+    <text y="62" font-size="12" text-anchor="middle" fill="#1f2a44">1/3 = 2/6</text>
+  </g>
+  <text x="300" y="60" font-size="16" text-anchor="middle" fill="#1f2a44">= 5/6</text>
+</svg>
+```
+
+The common denominator is simply a slice size both pizzas can be cut into.
+:::
+
+::: context why-mass-ratio Why rocket engineers care so much about this fraction
+How much a rocket can change its speed depends on two things: how fast its exhaust leaves the engine, and its mass ratio. A bigger mass ratio means more speed. Reaching orbit takes a speed change of roughly $9{,}400\,\mathrm{m/s}$, which needs a mass ratio of around $20$ for a good engine. That is so hard to build in one piece that rockets are split into **stages** — you will see exactly why in the logarithms lesson.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 110" font-family="Inter, Arial, sans-serif">
+  <rect x="20" y="20" width="300" height="30" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
+  <rect x="320" y="20" width="16" height="30" fill="#9aa5b8" stroke="#1f2a44" stroke-width="1.5"/>
+  <rect x="336" y="20" width="12" height="30" fill="#f2b880" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="170" y="40" font-size="12" text-anchor="middle" fill="#1f2a44">propellant m_p</text>
+  <text x="328" y="66" font-size="11" text-anchor="middle" fill="#1f2a44">dry</text>
+  <text x="344" y="80" font-size="11" text-anchor="middle" fill="#1f2a44">payload</text>
+  <text x="20" y="100" font-size="12" fill="#1f2a44">lift-off m₀ = everything · burnout m_f = dry + payload</text>
+</svg>
+```
+:::
+
+::: context dimensionless What "dimensionless" means
+A dimension is the *kind* of thing a number measures: length, mass, time. When you divide tonnes by tonnes, the "tonnes" cancel and what is left is a plain count — "twelve times as heavy". Ratios like this are handy because they come out the same whatever units you used: kilograms over kilograms gives the same $12.1$ as tonnes over tonnes.
+:::
+
+::: context why-oxidizer Why a rocket carries its own oxygen
+A car engine and a campfire take their oxygen from the air around them. In space there is no air, so a rocket must carry its oxygen with it, usually as a very cold liquid. That is why a rocket has two big tanks — one for fuel, one for oxidizer — and why the oxidizer tank is usually the heavier one.
+:::
+
+::: context bulk-density Marbles and ping-pong balls
+Put one kilogram of marbles and one kilogram of ping-pong balls in a bag. The ping-pong balls fill almost all of it. The mix is far less dense than the average of "marble density" and "ping-pong density" suggests, because the light stuff takes most of the room. Liquid hydrogen is the ping-pong ball of rocket fuels — which is why hydrogen rockets are so fat.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 110" font-family="Inter, Arial, sans-serif">
+  <rect x="20" y="15" width="320" height="60" rx="8" fill="#fff" stroke="#1f2a44" stroke-width="1.5"/>
+  <rect x="20" y="15" width="40" height="60" rx="8" fill="#6c7a93"/>
+  <text x="40" y="95" font-size="11" text-anchor="middle" fill="#1f2a44">1 kg marbles</text>
+  <text x="200" y="50" font-size="12" text-anchor="middle" fill="#1f2a44">1 kg ping-pong balls</text>
+  <text x="200" y="95" font-size="11" text-anchor="middle" fill="#1f2a44">same mass, far more room</text>
+</svg>
+```
+:::
+

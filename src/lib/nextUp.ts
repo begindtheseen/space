@@ -12,6 +12,8 @@ import { dueAtoms, masteryMap, rankFrontier } from '@/engine/scheduler'
 import type { LearnerState } from '@/engine/state'
 import type { Dag } from '@/engine/graph'
 import { TRACKS, currentTrack, findLesson, nextLesson, tracksFor } from '@/learn'
+import { PLACEMENT_SKILLS } from '@/curriculum/placement'
+import { lessonKeyOf, planFor, testedOutKeys } from '@/engine/placement'
 
 export function focusInputs(state: LearnerState, dag: Dag, now: Date = new Date()): FocusInputs {
   const modules = dag.all()
@@ -53,8 +55,28 @@ export function focusInputs(state: LearnerState, dag: Dag, now: Date = new Date(
   const mastery = masteryMap(state, modules, now)
   const ranked = rankFrontier(state, dag, mastery, now)
 
+  // A lesson she tested out of counts as done for choosing what comes next;
+  // it is still there to read.
+  const testedOut = testedOutKeys(PLACEMENT_SKILLS, state.placement)
   const unread = (moduleId: string) =>
-    lessonsFor(moduleId).find((l) => !state.read[lessonKey(moduleId, l.id)])
+    lessonsFor(moduleId).find((l) => !state.read[lessonKey(moduleId, l.id)] && !testedOut.has(lessonKey(moduleId, l.id)))
+
+  /*
+   * The placement test's plan comes before the ranking: the first lesson it
+   * says she needs and has not read is where she starts. Once those are all
+   * read, the ranking takes over as usual.
+   */
+  if (state.placement) {
+    const todo = planFor(PLACEMENT_SKILLS, state.placement.levels).todo
+    for (const s of todo) {
+      const mod = moduleById(s.moduleId)
+      const lesson = lessonsFor(s.moduleId).find((l) => l.id === s.lessonId)
+      if (!mod || !lesson || state.read[lessonKeyOf(s)]) continue
+      inp.module = { id: mod.id, title: mod.title, started: lessonsFor(mod.id).some((l) => !!state.read[lessonKey(mod.id, l.id)]) }
+      inp.lesson = { id: lesson.id, title: lesson.title, minutes: lesson.minutes }
+      return inp
+    }
+  }
 
   const readable = ranked.find((c) => unread(c.module.id))
   const top = readable ?? ranked.find((c) => lessonsFor(c.module.id).length > 0) ?? ranked[0]

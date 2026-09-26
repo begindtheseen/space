@@ -16,6 +16,7 @@ import { buildCoverage, buildManifest } from '../../scripts/lessons-manifest'
 import { moduleById } from './index'
 import { LESSON_COVERAGE, LESSON_MANIFEST } from './lessons/manifest'
 import { parseLesson, proseWordCount } from './lessons/parse'
+import { noteRefs, notePicture, pictureProblem, splitNotes } from '../lib/contextNotes'
 
 const dir = fileURLToPath(new URL('./lessons', import.meta.url))
 const only = process.env.LESSON_MODULE
@@ -39,7 +40,19 @@ const moduleDirs = fs
 
 const MIN_WORDS = 600
 const MAX_WORDS = 7000
-const KINDS = ['example', 'key', 'check', 'answer', 'note', 'warning', 'video']
+const KINDS = ['example', 'key', 'check', 'answer', 'note', 'warning', 'video', 'context']
+
+/**
+ * Modules written (or rewritten) in the plain voice, whose every lesson carries
+ * context notes. A module joins when its lessons have them.
+ */
+const NOTES_REQUIRED = new Set<string>(
+  (process.env.NOTES_REQUIRED ?? '').split(',').filter(Boolean).concat([
+    't0_m00_basecamp',
+  ]),
+)
+const NOTES_MIN = 4
+const NOTES_MAX = 15
 // `::: video <id>` — 11 URL-safe base64 characters, as the provider issues them.
 const VIDEO_ID_RE = /^[A-Za-z0-9_-]{11}$/
 
@@ -380,6 +393,35 @@ describe.each(moduleDirs)('lessons for %s', (moduleId) => {
   })
 
   describe.each(parsed.map((p) => [p.file, p] as const))('%s', (_file, p) => {
+    it('has context notes that are complete, in place and safe', () => {
+      const { body, notes } = splitNotes(p.body)
+      const refs = noteRefs(body)
+      const blocks = [...p.body.matchAll(/^\s*:::\s*context\s+(\S+)/gm)].map((m) => m[1]!)
+      expect(new Set(blocks).size, 'context note ids are unique').toBe(blocks.length)
+      for (const id of blocks) expect(id, 'context note ids are lowercase words and dashes').toMatch(/^[a-z0-9][a-z0-9-]*$/)
+      expect([...new Set(refs)].filter((id) => !notes.has(id)), 'marked phrases with no note').toEqual([])
+      expect([...notes.keys()].filter((id) => !refs.includes(id)), 'notes nothing in the lesson points to').toEqual([])
+      if (notes.size) {
+        const summary = p.body.search(/^##\s+Summary/m)
+        const first = p.body.search(/^\s*:::\s*context\s/m)
+        expect(first, 'context notes go at the end, after the Summary').toBeGreaterThan(summary)
+        expect(/^\s*:::\s*(?!context\b)[a-z]+/m.test(p.body.slice(first)), 'nothing but context notes after the first note').toBe(false)
+      }
+      for (const n of notes.values()) {
+        expect(n.title.length, `note "${n.id}" title`).toBeLessThanOrEqual(80)
+        const words = n.body.replace(/```[\s\S]*?```/g, ' ').split(/\s+/).filter((w) => /[A-Za-z0-9]/.test(w)).length
+        expect(words, `note "${n.id}" should say something (15–260 words)`).toBeGreaterThanOrEqual(15)
+        expect(words, `note "${n.id}" should say something (15–260 words)`).toBeLessThanOrEqual(260)
+        expect((n.body.match(/```svg/g) ?? []).length, `note "${n.id}" has at most one picture`).toBeLessThanOrEqual(1)
+        const svg = notePicture(n.body)
+        if (svg) expect(pictureProblem(svg), `note "${n.id}" picture`).toBeNull()
+      }
+      if (NOTES_REQUIRED.has(moduleId)) {
+        expect(notes.size, `lessons in ${moduleId} carry ${NOTES_MIN}–${NOTES_MAX} context notes`).toBeGreaterThanOrEqual(NOTES_MIN)
+        expect(notes.size, `lessons in ${moduleId} carry ${NOTES_MIN}–${NOTES_MAX} context notes`).toBeLessThanOrEqual(NOTES_MAX)
+      }
+    })
+
     it('has a sane header', () => {
       expect(p.header.title.length).toBeLessThanOrEqual(90)
       expect(p.header.minutes).toBeGreaterThanOrEqual(5)

@@ -17,6 +17,8 @@
    say so plainly and point upstream instead of letting someone grind against
    material they do not have the prerequisites for.
    ========================================================================== */
+import { PLACEMENT_SKILLS } from '@/curriculum/placement'
+import { testedOutKeys } from '@/engine/placement'
 import { useEffect, useMemo, useState } from 'react'
 import {
   IconArrowRight,
@@ -369,7 +371,9 @@ function Learn({
   const resources = [...module.resources].sort((a, b) => Number(b.free) - Number(a.free))
   const startHere = resources[0]
   const hasLessons = lessons.length > 0
-  const firstUnread = lessons.find((l) => !state.read[lessonKey(module.id, l.id)])
+  // Lessons the placement test showed she already knows: still open, not "up next".
+  const testedOut = testedOutKeys(PLACEMENT_SKILLS, state.placement)
+  const firstUnread = lessons.find((l) => !state.read[lessonKey(module.id, l.id)] && !testedOut.has(lessonKey(module.id, l.id)))
   const coverage = lessonCoverage(module.id)
 
   return (
@@ -476,6 +480,7 @@ function Learn({
           <div className="sect" style={{ paddingTop: 6, paddingBottom: 6 }}>
             {lessons.map((l, i) => {
               const done = !!state.read[lessonKey(module.id, l.id)]
+              const skipped = !done && testedOut.has(lessonKey(module.id, l.id))
               return (
                 <button
                   key={l.id}
@@ -490,7 +495,7 @@ function Learn({
                     <span className="lesson__title">{l.title}</span>
                     <span className="lesson__meta">
                       {l.minutes} min
-                      {!done && firstUnread?.id === l.id ? ' · up next' : done ? ' · read' : ''}
+                      {skipped ? ' · tested out' : !done && firstUnread?.id === l.id ? ' · up next' : done ? ' · read' : ''}
                     </span>
                   </span>
                   <IconChevronRight size={14} style={{ color: 'var(--ink-5)', flex: 'none' }} />
@@ -1086,7 +1091,7 @@ function LessonReader({ module, lesson }: { module: Module; lesson: LessonMeta }
           ) : body === null ? (
             <div className="reader__loading">Loading lesson…</div>
           ) : (
-            <Markdown className="reader__md" renderCode={renderCode}>
+            <Markdown className="reader__md" renderCode={renderCode} notes>
               {body}
             </Markdown>
           )}

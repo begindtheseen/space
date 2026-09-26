@@ -59,6 +59,57 @@ Use `##` for sections and `###` for subsections. Never `#` — the title is the 
 
 Other blocks: `::: note` for asides. Blockquotes are fine for quoted definitions.
 
+## Context notes
+
+Like the notes on an annotated lyric sheet: a phrase in the lesson is marked, and
+tapping it opens a panel beside the lesson with the story behind it. The lesson
+must read completely without them — a note is for the moment a word or a step
+stops her, or she wants to know more.
+
+Mark a phrase inline, and put every note at the very end of the lesson, after
+`## Summary`, in the order the phrases appear:
+
+```
+… the **[[denominator|numerator-denominator]]**, says how many pieces …
+
+::: context numerator-denominator Where the words come from
+Numerator comes from the Latin for "counter" …
+:::
+```
+
+The id is lowercase words and dashes, unique in the lesson. Marked phrases may
+sit inside bold. Each note needs a title (a short headline, not the phrase
+again) and 15–260 words; aim for 40–120. A note holds prose and math only — no
+other `:::` blocks inside it.
+
+**What earns a note** (4–15 per lesson in a plain-voice module):
+
+- a word the lesson uses but a 12-year-old may not know, and that the lesson
+  does not stop to teach ("oxidizer", "dimensionless");
+- the *why* behind a step or a rule, told a different way from the lesson;
+- where a word or symbol comes from, when that makes it stick;
+- real-world context: how engineers at SpaceX or NASA actually meet this, a real
+  vehicle's numbers, a mission that went wrong because of it;
+- the picture that makes the idea click;
+- a bridge: where this comes back later in the course and what it will be for.
+
+Not: a note on every bold word, a repeat of the paragraph it sits in, or trivia
+with no bearing on the lesson. Every fact must be true — check numbers with
+python3 and do not invent history.
+
+**Pictures.** Where a picture genuinely helps (about one note in three), add one
+fenced `svg` block inside the note. It is shown as an image on a light card:
+
+- `viewBox` required, about 360 wide and 90–220 tall; no width/height needed;
+- dark ink on light: `#1f2a44` for lines and text, `#1d6fd1`/`#8fb8f0` blues,
+  `#b4232c` red, `#f2b880` orange, `#6c7a93` grey; white fills are fine;
+- `font-family="Inter, Arial, sans-serif"`, text at least 11 px, short labels;
+- no scripts, event handlers, external links or embedded images; under 16,000
+  characters (the validator checks all of this);
+- every drawn quantity must be right — count the slices, check the angles.
+
+`t0_m01_algebra_precalc/01-signed-numbers-and-fractions.md` is the model.
+
 ## Mathematics
 
 KaTeX renders it. Inline `$…$`, display `$$` on its own line, formula, `$$` on its own

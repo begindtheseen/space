@@ -13,8 +13,10 @@
    display `$$…$$` math, and `::: kind` callout blocks (example, key, check,
    answer, note, warning). Everything else is plain text.
    ========================================================================== */
+import { ContextPanel } from '@/components/ContextPanel'
 import { VideoEmbed } from '@/components/VideoEmbed'
-import { createContext, useContext, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
+import { splitNotes, type ContextNote } from '@/lib/contextNotes'
+import { createContext, useCallback, useContext, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import './markdown.css'
 
 /**
@@ -25,9 +27,79 @@ export type CodeRenderer = (lang: string, code: string) => ReactNode | null
 
 const CodeContext = createContext<CodeRenderer | null>(null)
 
-export function Markdown({ children, className = '', renderCode }: { children: string; className?: string; renderCode?: CodeRenderer }) {
+/** The open lesson's context notes, and which one is showing. */
+interface NotesState {
+  notes: Map<string, ContextNote>
+  active: string | null
+  open(id: string): void
+}
+const NotesContext = createContext<NotesState | null>(null)
+
+export function Markdown({
+  children,
+  className = '',
+  renderCode,
+  notes = false,
+}: {
+  children: string
+  className?: string
+  renderCode?: CodeRenderer
+  /** Lift out `::: context` notes and make `[[phrase|id]]` open them (lessons only). */
+  notes?: boolean
+}) {
+  if (notes) return <WithNotes className={className} renderCode={renderCode}>{children}</WithNotes>
   const body = <div className={`md ${className}`}>{renderBlocks(children)}</div>
   return renderCode ? <CodeContext.Provider value={renderCode}>{body}</CodeContext.Provider> : body
+}
+
+function WithNotes({ children, className, renderCode }: { children: string; className: string; renderCode?: CodeRenderer }) {
+  const split = useMemo(() => splitNotes(children), [children])
+  const [active, setActive] = useState<string | null>(null)
+  const open = useCallback((id: string) => setActive((a) => (a === id ? null : id)), [])
+  const state = useMemo(() => ({ notes: split.notes, active, open }), [split.notes, active, open])
+  const note = active ? split.notes.get(active) : undefined
+  // On a wide screen the lesson steps aside for the panel instead of running
+  // underneath it (context-panel.css).
+  useLayoutEffect(() => {
+    if (!note) return
+    document.documentElement.dataset.ctxOpen = 'true'
+    return () => void delete document.documentElement.dataset.ctxOpen
+  }, [note])
+  const body = <div className={`md ${className}`}>{renderBlocks(split.body)}</div>
+  return (
+    <NotesContext.Provider value={state}>
+      {renderCode ? <CodeContext.Provider value={renderCode}>{body}</CodeContext.Provider> : body}
+      {note ? <ContextPanel note={note} onClose={() => setActive(null)} /> : null}
+    </NotesContext.Provider>
+  )
+}
+
+/** A marked phrase: tap it, and its note opens beside the lesson. */
+function NoteRef({ id, phrase }: { id: string; phrase: string }) {
+  const ctx = useContext(NotesContext)
+  const note = ctx?.notes.get(id)
+  if (!ctx || !note) return <>{inline(phrase)}</>
+  // A span, not a button: read-aloud's word follower walks the lesson's text
+  // and skips buttons, and these words are part of the sentence it is reading.
+  return (
+    <span
+      className="md__ctx"
+      role="button"
+      tabIndex={0}
+      data-active={ctx.active === id}
+      aria-expanded={ctx.active === id}
+      aria-label={`${phrase} — context: ${note.title}`}
+      onClick={() => ctx.open(id)}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          ctx.open(id)
+        }
+      }}
+    >
+      {inline(phrase)}
+    </span>
+  )
 }
 
 function CodeBlock({ lang, code }: { lang: string; code: string }) {
@@ -165,6 +237,10 @@ function renderBlocks(src: string): ReactNode[] {
         i++
       }
       i++ // closing :::
+
+      // Context notes are shown in the side panel, never inline (and only a
+      // lesson's renderer lifts them out; anywhere else they are dropped).
+      if (kind === 'context') continue
 
       // `::: video <id>` — the container's body is the caption, not prose to
       // render, so it is handled before the callout shapes below.
@@ -391,7 +467,7 @@ function Table({ rows }: { rows: string[] }) {
 function inline(src: string): ReactNode[] {
   const out: ReactNode[] = []
   const re =
-    /(\\\$)|(`[^`]+`)|(\$(?!\s)(?:[^$\n\\]|\\.)+?(?<!\s)\$)|(\*\*[^*]+\*\*)|(\*[^*\s][^*]*\*)|(\[[^\]]+\]\([^)]+\))/g
+    /(\\\$)|(`[^`]+`)|(\$(?!\s)(?:[^$\n\\]|\\.)+?(?<!\s)\$)|(\[\[[^\]|\n]+\|[a-z0-9][a-z0-9-]*\]\])|(\*\*[^*]+\*\*)|(\*[^*\s][^*]*\*)|(\[[^\]]+\]\([^)]+\))/g
   let last = 0
   let m: RegExpExecArray | null
   let key = 0
@@ -410,6 +486,9 @@ function inline(src: string): ReactNode[] {
       )
     } else if (tok.startsWith('$')) {
       out.push(<Math tex={tok.slice(1, -1)} key={key++} />)
+    } else if (tok.startsWith('[[')) {
+      const bar = tok.lastIndexOf('|')
+      out.push(<NoteRef key={key++} phrase={tok.slice(2, bar)} id={tok.slice(bar + 1, -2)} />)
     } else if (tok.startsWith('**')) {
       out.push(<strong key={key++}>{inline(tok.slice(2, -2))}</strong>)
     } else if (tok.startsWith('*')) {

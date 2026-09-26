@@ -26,6 +26,8 @@
    without a browser, which is the only reason it can be trusted.
    ========================================================================== */
 
+import { splitNotes, stripNoteRefs } from './contextNotes'
+
 /* ── Maths ───────────────────────────────────────────────────────────────── */
 
 /** Greek and the handful of named symbols a GNC lesson actually uses. */
@@ -505,7 +507,9 @@ const CALLOUT_NAME: Record<string, string> = {
  * forty lines of C++ aloud is a minute of noise she has to sit through.
  */
 export function speakableFromMarkdown(md: string): string {
-  let s = md
+  // Context notes are for looking up, not for listening to: the notes go, and
+  // a marked phrase is read as its plain words (see lib/contextNotes.ts).
+  let s = stripNoteRefs(splitNotes(md).body)
 
   // Fenced code: named, not read.
   s = s.replace(/```[\s\S]*?```/g, '\nCode block.\n')
