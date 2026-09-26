@@ -1797,6 +1797,120 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       "file": "cod_cpp_08_realtime/12-coding-standards-and-static-analysis.md"
     }
   ],
+  "cod_cpp_09_eigen": [
+    {
+      "id": "l01-matrix-types-and-fixed-size",
+      "title": "Matrix types, fixed size and dynamic size",
+      "minutes": 23,
+      "covers": [
+        "Matrix<Scalar, Rows, Cols>; Vector3d, Matrix3d, Quaterniond typedefs; Dynamic sizing",
+        "Why fixed-size types allocate nothing and unroll their loops"
+      ],
+      "file": "cod_cpp_09_eigen/01-matrix-types-and-fixed-size.md"
+    },
+    {
+      "id": "l02-storage-order-and-map",
+      "title": "Storage order and Map",
+      "minutes": 23,
+      "covers": [
+        "Storage order; Map for wrapping an external buffer with no copy"
+      ],
+      "file": "cod_cpp_09_eigen/02-storage-order-and-map.md"
+    },
+    {
+      "id": "l03-block-operations",
+      "title": "Block operations: windows inside a matrix",
+      "minutes": 17,
+      "covers": [
+        "Block operations: block, head, tail, segment, row, col"
+      ],
+      "file": "cod_cpp_09_eigen/03-block-operations.md"
+    },
+    {
+      "id": "l04-array-versus-matrix-reductions-broadcasting",
+      "title": "Arrays versus matrices, reductions and broadcasting",
+      "minutes": 21,
+      "covers": [
+        "Coefficient-wise operations via .array() versus matrix operations",
+        "Reductions and broadcasting"
+      ],
+      "file": "cod_cpp_09_eigen/04-array-versus-matrix-reductions-broadcasting.md"
+    },
+    {
+      "id": "l05-expression-templates-aliasing-eval-noalias",
+      "title": "Expression templates, aliasing, eval() and noalias()",
+      "minutes": 25,
+      "covers": [
+        "Expression templates, lazy evaluation, aliasing, eval() and noalias()"
+      ],
+      "file": "cod_cpp_09_eigen/05-expression-templates-aliasing-eval-noalias.md"
+    },
+    {
+      "id": "l06-floating-point-in-practice",
+      "title": "Floating point in practice",
+      "minutes": 26,
+      "covers": [
+        "IEEE-754 in practice: fma, Kahan summation, condition number, reproducibility"
+      ],
+      "file": "cod_cpp_09_eigen/06-floating-point-in-practice.md"
+    },
+    {
+      "id": "l07-decompositions",
+      "title": "Decompositions, or taking a matrix apart",
+      "minutes": 25,
+      "covers": [
+        "Decompositions: LLT and LDLT (Cholesky, the covariance workhorse), PartialPivLU, HouseholderQR, ColPivHouseholderQR, JacobiSVD, BDCSVD, SelfAdjointEigenSolver"
+      ],
+      "file": "cod_cpp_09_eigen/07-decompositions.md"
+    },
+    {
+      "id": "l08-solve-do-not-invert",
+      "title": "Solve, do not invert",
+      "minutes": 20,
+      "covers": [
+        "Solving Ax=b with ldlt().solve(b) rather than inverting"
+      ],
+      "file": "cod_cpp_09_eigen/08-solve-do-not-invert.md"
+    },
+    {
+      "id": "l09-the-geometry-module",
+      "title": "Rotations and frames: the Geometry module",
+      "minutes": 26,
+      "covers": [
+        "The Geometry module: Quaterniond, AngleAxis, Translation, Isometry3d, Transform, slerp"
+      ],
+      "file": "cod_cpp_09_eigen/09-the-geometry-module.md"
+    },
+    {
+      "id": "l10-quaternion-element-order",
+      "title": "Quaternion element order",
+      "minutes": 22,
+      "covers": [
+        "The Quaterniond(w,x,y,z) constructor versus coeffs() returning x,y,z,w"
+      ],
+      "file": "cod_cpp_09_eigen/10-quaternion-element-order.md"
+    },
+    {
+      "id": "l11-alignment-and-proving-no-allocation",
+      "title": "Alignment and proving no allocation",
+      "minutes": 21,
+      "covers": [
+        "Alignment, fixed-size vectorizable types and EIGEN_MAKE_ALIGNED_OPERATOR_NEW",
+        "Proving no allocation with EIGEN_RUNTIME_NO_MALLOC and set_is_malloc_allowed"
+      ],
+      "file": "cod_cpp_09_eigen/11-alignment-and-proving-no-allocation.md"
+    },
+    {
+      "id": "l12-numpy-mapping-and-neighbours",
+      "title": "Eigen and NumPy side by side, and the neighbors",
+      "minutes": 21,
+      "covers": [
+        "Eigen to NumPy mental mapping",
+        "Neighbours: Sophus for Lie groups, Ceres and GTSAM for least squares and factor graphs, SymForce for generated C++"
+      ],
+      "file": "cod_cpp_09_eigen/12-numpy-mapping-and-neighbours.md"
+    }
+  ],
   "cod_git_01_basics": [
     {
       "id": "l01-snapshots-and-the-object-model",
@@ -8829,27 +8943,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_cpp_09_eigen": {
-    "covered": 0,
+    "covered": 16,
     "total": 16,
-    "complete": false,
-    "missing": [
-      "Matrix<Scalar, Rows, Cols>; Vector3d, Matrix3d, Quaterniond typedefs; Dynamic sizing",
-      "Why fixed-size types allocate nothing and unroll their loops",
-      "Storage order; Map for wrapping an external buffer with no copy",
-      "Block operations: block, head, tail, segment, row, col",
-      "Coefficient-wise operations via .array() versus matrix operations",
-      "Reductions and broadcasting",
-      "Decompositions: LLT and LDLT (Cholesky, the covariance workhorse), PartialPivLU, HouseholderQR, ColPivHouseholderQR, JacobiSVD, BDCSVD, SelfAdjointEigenSolver",
-      "Solving Ax=b with ldlt().solve(b) rather than inverting",
-      "The Geometry module: Quaterniond, AngleAxis, Translation, Isometry3d, Transform, slerp",
-      "The Quaterniond(w,x,y,z) constructor versus coeffs() returning x,y,z,w",
-      "Alignment, fixed-size vectorizable types and EIGEN_MAKE_ALIGNED_OPERATOR_NEW",
-      "Expression templates, lazy evaluation, aliasing, eval() and noalias()",
-      "Proving no allocation with EIGEN_RUNTIME_NO_MALLOC and set_is_malloc_allowed",
-      "Eigen to NumPy mental mapping",
-      "Neighbours: Sophus for Lie groups, Ceres and GTSAM for least squares and factor graphs, SymForce for generated C++",
-      "IEEE-754 in practice: fma, Kahan summation, condition number, reproducibility"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_cpp_10_cmake": {
     "covered": 0,
