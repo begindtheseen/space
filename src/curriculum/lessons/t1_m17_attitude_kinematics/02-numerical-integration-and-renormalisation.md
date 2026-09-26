@@ -12,7 +12,7 @@ A computer stepping an attitude forward in time has exactly this problem. The eq
 
 So every attitude program ever flown has a standing chore. Each cycle, the integrator steps the attitude forward. The state drifts a little off its rule. Something has to push it back. That push is **re-normalisation**: dividing a quaternion by its length, or straightening up a DCM so it is a true rotation again. It costs a few microseconds per cycle on a flight processor.
 
-This lesson covers what the drift looks like, how big it gets at real rates and step sizes, how to fix it cheaply — and the one thing re-normalisation does *not* do, which is make the answer more accurate. Get this right once and it disappears into the background for the rest of your career. Get it wrong and you can spend a week chasing a 0.06 per cent scale error in a navigation filter that everyone assumes is a sensor problem.
+This lesson covers what the drift looks like, how big it gets at real rates and step sizes, how to fix it cheaply — and the one thing re-normalisation does *not* do, which is make the answer more accurate. Get it wrong and you can spend a week chasing a 0.06 per cent scale error that everyone assumes is a sensor problem.
 
 ## Where the error goes
 
@@ -23,7 +23,7 @@ One numerical step lands at $\mathbf{x}_{k+1}$ with a small error, and that erro
 - The **tangent** part runs along $\mathcal{M}$. It is a wrong attitude — the train in the wrong place on the track. This is ordinary **truncation error**, the price of taking finite steps. For a method of **order** $p$ it shrinks like $\Delta t^{\,p}$ over a fixed time, so the only cures are a smaller step or a better method. Re-normalisation cannot touch it.
 - The **normal** part points straight off $\mathcal{M}$. It is not an attitude at all — the train off the rails. This is the **constraint violation**. You can see it for free by computing $\lVert\mathbf{q}\rVert$ or $\mathbf{C}^\top\mathbf{C}$, and you can remove it at any time by pushing the state back onto $\mathcal{M}$.
 
-That split is the whole picture. The constraint violation is a *symptom* you can watch and a *defect* you can repair. It is not the error you care about, and repairing it tells you nothing about the error you do care about.
+That split is the whole picture. The constraint violation is a *symptom* you can watch and a *defect* you can repair. Repairing it tells you nothing about the error you care about.
 
 ## How large is the drift, really
 
@@ -106,7 +106,7 @@ For RK4, each step shrinks the norm by $\theta^6/144 = 6.80\times 10^{-12}$. Ove
 Now the part that matters. For constant $\boldsymbol{\omega}$, the exact answer is a steady turn of $\lVert\boldsymbol{\omega}\rVert t$ about the fixed axis $\boldsymbol{\omega}/\lVert\boldsymbol{\omega}\rVert$. Compare each result with it and measure the angle of the leftover error rotation. RK4 is off by $1.78\times 10^{-3}$ degrees — $6.4$ arcseconds (an **arcsecond** is $1/3600$ of a degree) after ten minutes and 600 turns. Forward Euler is off by $71.7$ degrees. And both numbers are **identical whether or not the code re-normalised** — to every digit shown, whether it re-normalised every step, every 1000 steps, or never.
 :::
 
-That last sentence is not luck. It happens every time, and here is why.
+That is not luck. Here is why.
 
 ## Re-normalisation changes length, not direction
 
@@ -161,7 +161,7 @@ Try it. With $\varepsilon = 10^{-3}$ — a huge violation — the corrected norm
 
 For the RK4 run above, the norm was $1 - 4.08\times 10^{-7}$, so $\varepsilon \approx 2 \times 4.08\times 10^{-7} = 8.2\times 10^{-7}$ (squaring doubles a small relative error). One Newton step leaves $\tfrac{3}{8}(8.2\times 10^{-7})^2 = 2.5\times 10^{-13}$ — over three million times smaller than the violation it was handed.
 
-So the cheap fix is not a compromise. When the violation is already small, one Newton step cannot be told apart from an exact normalisation.
+So when the violation is already small, one Newton step cannot be told apart from an exact normalisation.
 :::
 
 ## Orthonormalising a DCM
