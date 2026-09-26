@@ -10,7 +10,7 @@ Think about how hot a shower feels. It depends on two knobs, hot and cold. Turn 
 
 Almost nothing a guidance, navigation and control (GNC) engineer works with depends on one number alone. The air pushing on a climbing rocket depends on the air's density *and* the rocket's speed. The distance a ground station measures to a satellite depends on all three of the satellite's position coordinates. The pull of gravity that a trajectory program adds up, step after step, depends on three coordinates too, and once air drag is included, on three velocity components as well. Single-variable calculus gave you the derivative of a function with one input. Here you extend it to many inputs, one input at a time.
 
-That one-at-a-time derivative is the building block for everything else in this module. The gradient (next lesson) is a column of partial derivatives. The Jacobian — the $\mathbf{H}$ matrix inside a Kalman filter — is a table of them. When a filter engineer asks "how much would this measurement change if the satellite were one metre further along $x$?", she is asking for a partial derivative. By the end of this lesson you will be able to define one, compute the ones orbit determination needs, use them to predict small changes, and check them with a computer — the test every flight-software derivative must pass before it flies.
+That one-at-a-time derivative is the building block for everything else in this module. The gradient (next lesson) is a column of partial derivatives. The Jacobian — the $\mathbf{H}$ matrix inside a Kalman filter — is a table of them. When a filter engineer asks "how much would this measurement change if the satellite were one meter further along $x$?", she is asking for a partial derivative. By the end of this lesson you will be able to define one, compute the ones orbit determination needs, use them to predict small changes, and check them with a computer — the test every flight-software derivative must pass before it flies.
 
 ## Scalar fields and their level sets
 
@@ -54,7 +54,7 @@ $$
 \frac{\partial f}{\partial x} = 2xy + y\cos(xy), \qquad \frac{\partial f}{\partial y} = x^2 + x\cos(xy).
 $$
 
-Units work the same way as for any derivative: output units divided by input units. If $q$ is a pressure in pascals and $v$ a speed in metres per second, then $\partial q/\partial v$ is in pascals per metre per second.
+Units work the same way as for any derivative: output units divided by input units. If $q$ is a pressure in pascals and $v$ a speed in meters per second, then $\partial q/\partial v$ is in pascals per meter per second.
 
 ::: example Sensitivities of dynamic pressure
 Stick your hand out of a moving car's window and you feel the air push. That push per unit area is the **dynamic pressure**, $q = \tfrac{1}{2}\rho v^2$, where $\rho$ (the Greek letter "rho") is the air density and $v$ the airspeed. It has two inputs, so it has two partial derivatives.
@@ -77,7 +77,7 @@ $$
 \frac{\partial q}{\partial v} = 1.225 \times 250 = 306.25\,\mathrm{Pa\ per\ m/s}, \qquad \frac{\partial q}{\partial \rho} = 0.5 \times 250^2 = 31{,}250\,\mathrm{Pa\ per\ kg/m^3}.
 $$
 
-Read them like **exchange rates**. One extra metre per second of airspeed costs about $306\,\mathrm{Pa}$. A density error of $0.01\,\mathrm{kg/m^3}$ costs $31{,}250 \times 0.01 \approx 313\,\mathrm{Pa}$. A guidance loop that keeps $q$ under a [[structural limit|max-q]] during ascent needs exactly these two numbers to judge how far a wind gust or a wrong atmosphere model will push it toward the limit.
+Read them like **exchange rates**. One extra meter per second of airspeed costs about $306\,\mathrm{Pa}$. A density error of $0.01\,\mathrm{kg/m^3}$ costs $31{,}250 \times 0.01 \approx 313\,\mathrm{Pa}$. A guidance loop that keeps $q$ under a [[structural limit|max-q]] during ascent needs exactly these two numbers to judge how far a wind gust or a wrong atmosphere model will push it toward the limit.
 
 Sanity check: both rates are positive. Faster air or thicker air should both push harder, and they do.
 :::
@@ -100,7 +100,7 @@ $$
 
 The same steps give $\partial\rho/\partial y = (y - y_s)/\rho$ and $\partial\rho/\partial z = (z - z_s)/\rho$.
 
-Look at what came out. Each partial derivative is one component of the arrow from station to satellite, divided by that arrow's length. Together they are the components of the **[[unit vector|line-of-sight]]** — an arrow of length one — pointing from the station toward the satellite, along the **line of sight**. The units check out too: metres of range per metre of position, so no units at all.
+Look at what came out. Each partial derivative is one component of the arrow from station to satellite, divided by that arrow's length. Together they are the components of the **[[unit vector|line-of-sight]]** — an arrow of length one — pointing from the station toward the satellite, along the **line of sight**. The units check out too: meters of range per meter of position, so no units at all.
 
 For the distance from the origin, $r = \lVert \mathbf{r} \rVert = \sqrt{x^2 + y^2 + z^2}$, put the station at zero:
 
@@ -271,7 +271,7 @@ $$
 
 Sanity check: the arrow from station to satellite points mostly along $x$ ($622$ of the $661\,\mathrm{km}$), so the $x$ partial should be close to $1$. It is.
 
-**Step 2: the numerical answer.** Nudge $x$ by $h = 10^{-4}\,\mathrm{km}$ (ten centimetres) each way and recompute $\rho$. The central difference agrees with the analytic value to about $2 \times 10^{-9}$ — nine matching digits.
+**Step 2: the numerical answer.** Nudge $x$ by $h = 10^{-4}\,\mathrm{km}$ (ten centimeters) each way and recompute $\rho$. The central difference agrees with the analytic value to about $2 \times 10^{-9}$ — nine matching digits.
 
 **Step 3: compare the methods.** The forward difference with the same $h$ is off by about $1.1 \times 10^{-8}$, five times worse. Most of that is the predicted $\tfrac{1}{2} h f_{xx}$, where $f_{xx} = (\Delta y^2 + \Delta z^2)/\rho^3 = 1.73 \times 10^{-4}\,\mathrm{km^{-1}}$ (with $\Delta y = 100$, $\Delta z = -200$) gives $8.7 \times 10^{-9}$. The rest is round-off.
 
@@ -332,7 +332,7 @@ The partials of $\rho$ are the components of $(622, 100, -200)/660.972 = (0.9410
 
 Exactly: the new relative position is $(623, 101, -199)$, whose length is $661.764\,\mathrm{km}$, so $\delta\rho = 661.764 - 660.972 = 0.792\,\mathrm{km}$.
 
-The tangent plane is off by about two metres on a change of $790\,\mathrm{m}$. That is good, because the step, about $1.7\,\mathrm{km}$ long, is small compared with the $661\,\mathrm{km}$ range.
+The tangent plane is off by about two meters on a change of $790\,\mathrm{m}$. That is good, because the step, about $1.7\,\mathrm{km}$ long, is small compared with the $661\,\mathrm{km}$ range.
 :::
 
 ::: check
@@ -415,7 +415,7 @@ Rings far apart mean gentle ground; rings close together mean steep ground. Next
 :::
 
 ::: context geoid The shape of "sea level"
-If the oceans stopped moving — no tides, no currents, no wind — their surface would settle on one surface of constant gravitational potential. That surface, continued under the land, is the **geoid**. It is lumpy, because Earth's mass is spread unevenly: it rises and dips about a hundred metres from a smooth ellipsoid. Heights on maps and "metres above sea level" are measured from it, and a spirit level sits flat along it.
+If the oceans stopped moving — no tides, no currents, no wind — their surface would settle on one surface of constant gravitational potential. That surface, continued under the land, is the **geoid**. It is lumpy, because Earth's mass is spread unevenly: it rises and dips about a hundred meters from a smooth ellipsoid. Heights on maps and "meters above sea level" are measured from it, and a spirit level sits flat along it.
 :::
 
 ::: context curly-d The curly d
@@ -455,7 +455,7 @@ As a rocket climbs, it speeds up while the air thins out. Dynamic pressure $q = 
 :::
 
 ::: context line-of-sight The unit line of sight
-Point from the station to the satellite. Shrink that arrow to length one without turning it. Its three components are the three partial derivatives of range. Move the satellite along this arrow and the range grows metre for metre. Move it at right angles to the arrow and the range, to first order, does not change at all — a fact you will use again and again in the next two lessons.
+Point from the station to the satellite. Shrink that arrow to length one without turning it. Its three components are the three partial derivatives of range. Move the satellite along this arrow and the range grows meter for meter. Move it at right angles to the arrow and the range, to first order, does not change at all — a fact you will use again and again in the next two lessons.
 :::
 
 ::: context schwarz-name Two names for one theorem

@@ -196,7 +196,7 @@ $$
 
 **Step 5: check.** A central finite difference with step $10^{-4}\,\mathrm{km}$ (and $10^{-4}\,\mathrm{km/s}$ for velocities) on every state number reproduces every entry to within $2.1 \times 10^{-9}$ absolute and $2.7 \times 10^{-9}$ relative.
 
-**Why the small block matters.** The bottom-left block is small, about $0.011\,\mathrm{s^{-1}}$. It is not negligible. A $1\,\mathrm{km}$ position error across the beam produces about $0.011 \times 1000 = 11\,\mathrm{m/s}$ of range-rate residual. A filter whose Doppler noise is around a metre per second will act on that strongly. Leave the block out and the filter blames that residual on velocity instead.
+**Why the small block matters.** The bottom-left block is small, about $0.011\,\mathrm{s^{-1}}$. It is not negligible. A $1\,\mathrm{km}$ position error across the beam produces about $0.011 \times 1000 = 11\,\mathrm{m/s}$ of range-rate residual. A filter whose Doppler noise is around a meter per second will act on that strongly. Leave the block out and the filter blames that residual on velocity instead.
 :::
 
 ::: warning The forgotten denominator
@@ -274,7 +274,7 @@ $$
 \mathbf{J}_{:,j} \approx \frac{\mathbf{f}(\mathbf{x} + h\mathbf{e}_j) - \mathbf{f}(\mathbf{x} - h\mathbf{e}_j)}{2h} .
 $$
 
-(Read $\mathbf{J}_{:,j}$ as "all of column $j$".) For positions in kilometres, a step of $h = 10^{-4}\,\mathrm{km}$ works well, as Lesson 1 showed. Compare entry by entry with a relative tolerance near $10^{-6}$, plus a small absolute tolerance for entries that should be zero.
+(Read $\mathbf{J}_{:,j}$ as "all of column $j$".) For positions in kilometers, a step of $h = 10^{-4}\,\mathrm{km}$ works well, as Lesson 1 showed. Compare entry by entry with a relative tolerance near $10^{-6}$, plus a small absolute tolerance for entries that should be zero.
 
 Do this in a test, never in the flight code. A finite-difference Jacobian costs $2n$ extra function evaluations every time, and it carries the round-off noise you met in Lesson 1.
 

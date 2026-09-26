@@ -220,7 +220,7 @@ so $d = 1.02$: [[a one-sigma event|mahalanobis-picture]], because the error lies
 import numpy as np
 
 P = np.array([[100.01001, 0.100125], [0.100125, 1.0025]])
-P = 0.5 * (P + P.T)                  # symmetrise before either test
+P = 0.5 * (P + P.T)                  # symmetrize before either test
 w = np.linalg.eigvalsh(P)            # eigenvalues only, ascending
 print(w)                             # [  1.00239875 100.01011125]
 print(w.min() > 0)                   # True: positive definite

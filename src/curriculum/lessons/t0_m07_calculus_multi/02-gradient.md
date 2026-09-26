@@ -23,7 +23,7 @@ $$
 
 The upside-down triangle $\nabla$ is called **[[nabla|nabla-name]]** or "del". Read $\nabla f$ aloud as "grad f" or "del f".
 
-Each component has the units of $f$ divided by a length. Here is a case that matters. Gravitational potential energy per kilogram is measured in $\mathrm{J/kg}$, which is the same as $\mathrm{m^2/s^2}$. Divide by metres and you get $\mathrm{m/s^2}$ — an acceleration. The gradient of a potential is the right kind of thing to be a pull.
+Each component has the units of $f$ divided by a length. Here is a case that matters. Gravitational potential energy per kilogram is measured in $\mathrm{J/kg}$, which is the same as $\mathrm{m^2/s^2}$. Divide by meters and you get $\mathrm{m/s^2}$ — an acceleration. The gradient of a potential is the right kind of thing to be a pull.
 
 In three dimensions, with $\hat{\mathbf{x}}$, $\hat{\mathbf{y}}$, $\hat{\mathbf{z}}$ the unit arrows along the axes ("x hat" and so on):
 
@@ -45,7 +45,7 @@ $$
 D_{\mathbf{u}} f(\mathbf{x}) = \lim_{h \to 0} \frac{f(\mathbf{x} + h\mathbf{u}) - f(\mathbf{x})}{h} .
 $$
 
-Read $D_{\mathbf{u}} f$ as "D u of f". It is the change in $f$ per unit distance travelled along $\mathbf{u}$. If you choose $\mathbf{u} = \mathbf{e}_i$, one of the axis directions, you get back the partial derivative $\partial f/\partial x_i$.
+Read $D_{\mathbf{u}} f$ as "D u of f". It is the change in $f$ per unit distance traveled along $\mathbf{u}$. If you choose $\mathbf{u} = \mathbf{e}_i$, one of the axis directions, you get back the partial derivative $\partial f/\partial x_i$.
 
 Now the good part: you do not need a new limit for every direction. Use Lesson 1's tangent-plane approximation with the step $\delta\mathbf{x} = h\mathbf{u}$. Each input $x_i$ moves by $h u_i$, and each contributes its partial derivative times that move:
 
@@ -106,7 +106,7 @@ Sanity check: $7.2$ is less than $8.54$, as every directional derivative must be
 :::
 
 ::: warning Unit vectors only
-The formula $D_{\mathbf{u}} f = \nabla f \cdot \mathbf{u}$ needs a unit vector. Dot the gradient with the raw move $(3, 4)$, of length $5$, and you get five times the true rate per metre: $36$ instead of $7.2$. There is one exception, and it is useful. If $\mathbf{v}$ is a *velocity*, then $\nabla f \cdot \mathbf{v}$, with no normalizing, is the rate of change of $f$ per second rather than per metre. That is the chain rule, coming next.
+The formula $D_{\mathbf{u}} f = \nabla f \cdot \mathbf{u}$ needs a unit vector. Dot the gradient with the raw move $(3, 4)$, of length $5$, and you get five times the true rate per meter: $36$ instead of $7.2$. There is one exception, and it is useful. If $\mathbf{v}$ is a *velocity*, then $\nabla f \cdot \mathbf{v}$, with no normalizing, is the rate of change of $f$ per second rather than per meter. That is the chain rule, coming next.
 :::
 
 ## Why the gradient is normal to level sets
@@ -171,7 +171,7 @@ $$
 \nabla r = \frac{1}{r}\begin{bmatrix} x \\ y \\ z \end{bmatrix} = \frac{\mathbf{r}}{r} = \hat{\mathbf{r}} .
 $$
 
-The gradient of distance-from-the-origin is $\hat{\mathbf{r}}$, the unit arrow pointing straight outward. Read it through the three facts. Distance grows fastest when you move straight outward. It grows at exactly one metre per metre, since $\lVert \hat{\mathbf{r}} \rVert = 1$. And it does not change at all when you move sideways, around a sphere centered on the origin.
+The gradient of distance-from-the-origin is $\hat{\mathbf{r}}$, the unit arrow pointing straight outward. Read it through the three facts. Distance grows fastest when you move straight outward. It grows at exactly one meter per meter, since $\lVert \hat{\mathbf{r}} \rVert = 1$. And it does not change at all when you move sideways, around a sphere centered on the origin.
 
 The same calculation for the range to a station gives
 
@@ -213,10 +213,10 @@ The gradient of $U$ points outward, because potential energy increases as you cl
 **Step 4: a slanted move.** From the point $(r, 0, 0)$, move along $\mathbf{u} = [\cos 45^\circ, \sin 45^\circ, 0]^\top$, half outward and half sideways. The gradient there is $(\mu/r^2)\,\hat{\mathbf{x}}$, so
 
 $$
-D_{\mathbf{u}} U = \nabla U \cdot \mathbf{u} = \frac{\mu}{r^2}\cos 45^\circ = 6.135\,\mathrm{J/kg\ per\ metre}.
+D_{\mathbf{u}} U = \nabla U \cdot \mathbf{u} = \frac{\mu}{r^2}\cos 45^\circ = 6.135\,\mathrm{J/kg\ per\ meter}.
 $$
 
-Climbing straight up would cost the full $8.676\,\mathrm{J/kg}$ per metre. Moving purely sideways costs nothing — the statement that each sphere $r = \text{const}$ is a surface of equal potential.
+Climbing straight up would cost the full $8.676\,\mathrm{J/kg}$ per meter. Moving purely sideways costs nothing — the statement that each sphere $r = \text{const}$ is a surface of equal potential.
 :::
 
 ::: key Gravity from a potential
@@ -252,7 +252,7 @@ $$
 \nabla f = \frac{\partial f}{\partial r}\,\hat{\mathbf{r}} + \frac{1}{r}\frac{\partial f}{\partial \theta}\,\hat{\boldsymbol{\theta}} + \frac{1}{r\sin\theta}\frac{\partial f}{\partial \varphi}\,\hat{\boldsymbol{\varphi}} .
 $$
 
-The factors appear because a small change $d\theta$ moves you a distance $r\,d\theta$, not $d\theta$, and a small change $d\varphi$ moves you around a circle of radius $r\sin\theta$. The gradient is a rate per metre, so it must divide by those distances. This is why the module's $J_2$ exercise asks you to work in Cartesian coordinates, where no such factors arise.
+The factors appear because a small change $d\theta$ moves you a distance $r\,d\theta$, not $d\theta$, and a small change $d\varphi$ moves you around a circle of radius $r\sin\theta$. The gradient is a rate per meter, so it must divide by those distances. This is why the module's $J_2$ exercise asks you to work in Cartesian coordinates, where no such factors arise.
 :::
 
 ::: warning Column or row?
