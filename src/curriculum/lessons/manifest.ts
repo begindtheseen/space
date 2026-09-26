@@ -1900,7 +1900,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-scope-legb-and-closures",
       "title": "Scope, the LEGB rule and closures",
-      "minutes": 17,
+      "minutes": 19,
       "covers": [
         "Scope and LEGB; closures at a first-pass level"
       ],
@@ -1909,7 +1909,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-mutable-default-arguments",
       "title": "The mutable default argument, identity and copying",
-      "minutes": 16,
+      "minutes": 18,
       "covers": [
         "The mutable default argument trap"
       ],
@@ -1918,7 +1918,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-modules-packages-and-the-main-guard",
       "title": "Modules, imports, packages and the main guard",
-      "minutes": 18,
+      "minutes": 20,
       "covers": [
         "Modules, import, packages, the if __name__ == \"__main__\" guard"
       ],
@@ -1927,7 +1927,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-exceptions",
       "title": "Exceptions: raising, catching and designing failure",
-      "minutes": 16,
+      "minutes": 20,
       "covers": [
         "Exceptions: try/except/else/finally, raising, custom exception types"
       ],
@@ -1936,7 +1936,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-files-pathlib-csv-and-json",
       "title": "Files, paths, CSV and JSON",
-      "minutes": 16,
+      "minutes": 20,
       "covers": [
         "Files, pathlib, csv and json"
       ],
@@ -1945,7 +1945,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-floating-point",
       "title": "Floating point, and why 0.1 + 0.2 is not 0.3",
-      "minutes": 19,
+      "minutes": 22,
       "covers": [
         "Floating point: why 0.1 + 0.2 != 0.3 and what to do about it"
       ],
@@ -1954,7 +1954,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l13-virtual-environments-and-packaging",
       "title": "Virtual environments, pip and pyproject.toml",
-      "minutes": 16,
+      "minutes": 20,
       "covers": [
         "Virtual environments with venv, pip, requirements and pyproject.toml"
       ],
@@ -1965,7 +1965,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-comprehensions",
       "title": "Comprehensions: saying what the result is",
-      "minutes": 17,
+      "minutes": 21,
       "covers": [
         "List, dict and set comprehensions; generator expressions"
       ],
@@ -1974,7 +1974,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-generators-and-laziness",
       "title": "Generators, yield and laziness",
-      "minutes": 16,
+      "minutes": 23,
       "covers": [
         "Generators and yield; the iterator protocol; laziness and memory"
       ],
@@ -1991,8 +1991,8 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     },
     {
       "id": "l04-classes",
-      "title": "Classes: state, behaviour and properties",
-      "minutes": 16,
+      "title": "Classes: state, behavior and properties",
+      "minutes": 19,
       "covers": [
         "Classes: __init__, attributes vs methods, @property, @staticmethod, @classmethod"
       ],
