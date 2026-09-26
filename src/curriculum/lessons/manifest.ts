@@ -1584,6 +1584,100 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       "file": "cod_cpp_02_memory/14-smart-pointers.md"
     }
   ],
+  "cod_git_01_basics": [
+    {
+      "id": "l01-snapshots-and-the-object-model",
+      "title": "Snapshots, objects and the commit graph",
+      "minutes": 22,
+      "covers": [
+        "Blobs, trees, commits, refs, HEAD and the commit DAG"
+      ],
+      "file": "cod_git_01_basics/01-snapshots-and-the-object-model.md"
+    },
+    {
+      "id": "l02-the-three-areas-and-your-first-commit",
+      "title": "The three areas and your first commits",
+      "minutes": 20,
+      "covers": [
+        "The three areas: working tree, index/staging, repository",
+        "init, clone, add, status, diff, diff --staged, commit"
+      ],
+      "file": "cod_git_01_basics/02-the-three-areas-and-your-first-commit.md"
+    },
+    {
+      "id": "l03-reading-history-and-writing-messages",
+      "title": "Reading history and writing good commit messages",
+      "minutes": 24,
+      "covers": [
+        "log --oneline --graph --all, show, blame",
+        "Commit message craft: imperative subject, why-not-what body"
+      ],
+      "file": "cod_git_01_basics/03-reading-history-and-writing-messages.md"
+    },
+    {
+      "id": "l04-branches-are-pointers",
+      "title": "Branches are pointers",
+      "minutes": 20,
+      "covers": [
+        "Branches as pointers; checkout/switch; detached HEAD"
+      ],
+      "file": "cod_git_01_basics/04-branches-are-pointers.md"
+    },
+    {
+      "id": "l05-merging-and-conflicts",
+      "title": "Merging and resolving a conflict",
+      "minutes": 23,
+      "covers": [
+        "Fast-forward vs true merge; resolving a conflict"
+      ],
+      "file": "cod_git_01_basics/05-merging-and-conflicts.md"
+    },
+    {
+      "id": "l06-undoing-reset-revert-restore",
+      "title": "Undoing things: reset, revert and restore",
+      "minutes": 26,
+      "covers": [
+        "reset --soft/--mixed/--hard vs revert vs restore"
+      ],
+      "file": "cod_git_01_basics/06-undoing-reset-revert-restore.md"
+    },
+    {
+      "id": "l07-stash-and-the-reflog",
+      "title": "The safety net: stash and reflog",
+      "minutes": 22,
+      "covers": [
+        "stash and reflog as the undo net"
+      ],
+      "file": "cod_git_01_basics/07-stash-and-the-reflog.md"
+    },
+    {
+      "id": "l08-what-git-should-not-track",
+      "title": "What Git should not track: .gitignore, .gitattributes and LFS",
+      "minutes": 23,
+      "covers": [
+        ".gitignore, .gitattributes, Git LFS for large binary artefacts"
+      ],
+      "file": "cod_git_01_basics/08-what-git-should-not-track.md"
+    },
+    {
+      "id": "l09-tags-and-versions",
+      "title": "Tags and semantic versioning",
+      "minutes": 19,
+      "covers": [
+        "Tags and semantic versioning"
+      ],
+      "file": "cod_git_01_basics/09-tags-and-versions.md"
+    },
+    {
+      "id": "l10-bisect",
+      "title": "Hunting a regression with bisect",
+      "minutes": 22,
+      "covers": [
+        "bisect for regression hunting"
+      ],
+      "file": "cod_git_01_basics/10-bisect.md"
+    }
+  ],
   "cod_lnx_01_shell": [
     {
       "id": "l01-the-filesystem-and-getting-around",
@@ -8055,23 +8149,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_git_01_basics": {
-    "covered": 0,
+    "covered": 12,
     "total": 12,
-    "complete": false,
-    "missing": [
-      "Blobs, trees, commits, refs, HEAD and the commit DAG",
-      "The three areas: working tree, index/staging, repository",
-      "init, clone, add, status, diff, diff --staged, commit",
-      "log --oneline --graph --all, show, blame",
-      "Branches as pointers; checkout/switch; detached HEAD",
-      "Fast-forward vs true merge; resolving a conflict",
-      "reset --soft/--mixed/--hard vs revert vs restore",
-      "stash and reflog as the undo net",
-      ".gitignore, .gitattributes, Git LFS for large binary artefacts",
-      "Commit message craft: imperative subject, why-not-what body",
-      "Tags and semantic versioning",
-      "bisect for regression hunting"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_git_02_collab": {
     "covered": 0,
