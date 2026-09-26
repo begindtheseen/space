@@ -6,24 +6,26 @@ covers:
   - 'Pipes and redirection: | > >> 2> 2>&1 /dev/null, here-docs, tee, xargs'
 ---
 
-Every program you have met so far reads from one stream and writes to two. That is the whole design: **standard input** (file descriptor 0), **standard output** (fd 1) and **standard error** (fd 2). None of them is a file until the shell makes it one, and the shell will attach any of them to a file, to a terminal, to `/dev/null`, or to another program — before the program starts and without the program's knowledge or consent.
+Think of a program as a machine on a workbench with three hoses. One hose brings material in. One carries the finished product out. The third carries the scraps and complaints. The program does not know or care where the hoses lead. You, the shell, decide: into a file, onto the screen, into the bin, or straight into the next machine.
 
-This is the part of the shell that turns twenty small tools into one tool for whatever question you have today. "Which of these 500 runs diverged" is not a program anybody wrote; it is `grep` and `sort` and `head` connected end to end. The connecting is what this lesson is about.
+Those hoses are the three **standard streams**. **Standard input** (stdin) comes in; **standard output** (stdout) goes out; **standard error** (stderr) carries error messages. Each has a number, called a **[[file descriptor|file-descriptor]]** (fd): stdin is 0, stdout is 1, stderr is 2. The shell connects them *before the program starts*, without asking the program.
 
-All transcripts were produced on this machine and pasted verbatim: Ubuntu 24.04.4, GNU bash 5.2.21, GNU coreutils 9.4, GNU findutils 4.9.0 (`xargs`), GNU grep 3.11, mawk 1.3.4. The fixture is a campaign of 500 entry-burn logs; timings depend on the machine, which has four cores.
+This is the part of the shell that turns twenty small tools into one tool for today's question. "Which of these 500 runs diverged?" is not a program anybody wrote. It is `grep`, `sort` and `head` joined end to end. The joining is this lesson.
+
+The transcripts are real, from Ubuntu 24.04 with GNU bash 5.2.21, coreutils 9.4, findutils 4.9.0 (`xargs`), grep 3.11 and mawk 1.3.4, on a four-core machine. The example data is a campaign of 500 simulated entry-burn logs in `runs/`.
 
 ## The three streams
 
-Three redirection operators cover the ordinary cases:
+Three **redirection** operators cover the ordinary cases. Read `>` aloud as "into", `>>` as "append to", and `<` as "from":
 
-- `> file` sends standard output to `file`, **truncating it to zero length first**;
-- `>> file` appends instead;
-- `< file` feeds `file` to standard input.
+- `> file` sends stdout into `file`, **emptying the file first**;
+- `>> file` adds to the end of `file` instead;
+- `< file` feeds `file` to stdin.
 
 ```bash
-echo "one" > /tmp/r.txt; cat /tmp/r.txt
-echo "two" > /tmp/r.txt; cat /tmp/r.txt
-echo "three" >> /tmp/r.txt; cat /tmp/r.txt
+echo "one" > r.txt; cat r.txt
+echo "two" > r.txt; cat r.txt
+echo "three" >> r.txt; cat r.txt
 ```
 
 ```text
@@ -33,7 +35,7 @@ two
 three
 ```
 
-The second `>` destroyed the first line without a word. This is the most easily made destructive operation in the shell: `>` truncates before the command on the left has run at all, so `sort results.txt > results.txt` produces an empty file — the truncation happens first, and `sort` then reads nothing. There is no undo:
+The second `>` destroyed the first line without a word. This is the easiest destructive mistake in the shell. The shell empties the file *before* the command on the left even starts. So `sort results.txt > results.txt` produces an empty file: the truncation happens first, and `sort` then reads nothing. There is no undo:
 
 ```bash
 printf "c\nb\na\n" > res.txt; wc -c res.txt
@@ -45,15 +47,15 @@ sort res.txt > res.txt; wc -c res.txt
 0 res.txt
 ```
 
-`set -o noclobber` makes `>` refuse to overwrite an existing file, and `>|` overrides it when you mean it:
+Six bytes became zero. `set -o noclobber` makes `>` refuse to overwrite an existing file, and `>|` overrides it when you really mean it:
 
 ```text
 bash: nc.txt: cannot overwrite existing file
 ```
 
-Exit status 1, and the original contents intact.
+The exit status is 1 and the old contents are intact.
 
-Standard error is separate, and that separation is the point:
+Standard error is a separate hose, and that separation is the point:
 
 ```bash
 ls runs/case_0001.log nosuch.log
@@ -64,10 +66,10 @@ ls: cannot access 'nosuch.log': No such file or directory
 runs/case_0001.log
 ```
 
-Two streams, interleaved on your terminal because both are pointed at it. Send only fd 1 to a file and the error still reaches you:
+Two streams, mixed on your screen because both point at it. Send only fd 1 to a file and the error still reaches you. `2>` (read "two into") redirects fd 2:
 
 ```bash
-ls runs/case_0001.log nosuch.log > /tmp/out.txt 2>/tmp/err.txt
+ls runs/case_0001.log nosuch.log > out.txt 2> err.txt
 ```
 
 ```text
@@ -77,15 +79,15 @@ runs/case_0001.log
 ls: cannot access 'nosuch.log': No such file or directory
 ```
 
-`2>` redirects fd 2. That is why a long job's `progress.log` can be clean while its problems go somewhere else entirely, and why `cmd > log.txt` on a failing job produces an empty log and an error on your screen.
+That is why a long job's `progress.log` can be clean while its problems go somewhere else, and why `cmd > log.txt` on a failing job gives an empty log and an error on your screen.
 
 ### `2>&1`, and why the order matters
 
-`2>&1` does not mean "send stderr to stdout". It means **make fd 2 a duplicate of whatever fd 1 points at right now**. Redirections are applied left to right, so the position of `2>&1` decides everything:
+`2>&1` is read "two into wherever one goes". Precisely, it means **make fd 2 a copy of wherever fd 1 points right now**. The shell applies redirections **left to right**, so where you put `2>&1` decides everything:
 
 ```bash
-ls runs/case_0001.log nosuch.log > /tmp/both.txt 2>&1
-cat /tmp/both.txt
+ls runs/case_0001.log nosuch.log > both.txt 2>&1
+cat both.txt
 ```
 
 ```text
@@ -93,10 +95,10 @@ ls: cannot access 'nosuch.log': No such file or directory
 runs/case_0001.log
 ```
 
-Both streams in the file. Now swap the two:
+Both streams landed in the file. Now swap the two:
 
 ```bash
-ls runs/case_0001.log nosuch.log 2>&1 > /tmp/both2.txt
+ls runs/case_0001.log nosuch.log 2>&1 > both2.txt
 ```
 
 ```text
@@ -105,9 +107,9 @@ ls: cannot access 'nosuch.log': No such file or directory
 runs/case_0001.log
 ```
 
-The error came to the terminal and only stdout reached the file. When `2>&1` was processed, fd 1 still pointed at the terminal, so fd 2 was bound to the terminal; *then* fd 1 was moved to the file, and fd 2 stayed where it had been put. Bash also offers `&> file` as a shorthand for the correct order, which is convenient and not portable to `sh`.
+The error came to the screen, and only stdout reached the file. Walk through it **[[step by step|redirection-order]]**. When the shell handled `2>&1`, fd 1 still pointed at the screen, so fd 2 was pointed at the screen too. *Then* `> both2.txt` moved fd 1 to the file. Fd 2 stayed where it had been put. Bash also has `&> file`, a shorthand for the correct order; it is handy but does not work in plain `sh`.
 
-`/dev/null` is a device that discards everything written to it and returns end-of-file when read. `2>/dev/null` is how you silence the errors you have decided are noise, and `>/dev/null` is how you throw away output you only wanted for its exit status:
+`/dev/null` is a **[[device that throws away|dev-null]]** everything written to it and reads as empty. `2>/dev/null` silences errors you have decided are noise. `>/dev/null` throws away output you only wanted for its exit status:
 
 ```bash
 ls nosuch.log 2>/dev/null; echo "exit was $?"
@@ -117,19 +119,19 @@ ls nosuch.log 2>/dev/null; echo "exit was $?"
 exit was 2
 ```
 
-The message is gone; the exit status is not. That is exactly the right thing to discard and the wrong thing to ignore.
+(`$?`, read "dollar question mark", holds the exit status of the last command.) The message is gone; the exit status is not. That is exactly the right thing to discard and the wrong thing to ignore.
 
-::: warning
-`2>/dev/null` on a command whose output you are collecting is how a campaign quietly produces half the runs it was asked for. The errors are the part that tells you a case failed. Redirect them to a file — `2>errors.log` — and look at that file; do not discard them. And never write `cmd >out.txt 2>out.txt`: two independent redirections to the same file give you two independent file offsets, and the streams overwrite each other. `cmd >out.txt 2>&1` is the correct form, because fd 2 then shares fd 1's offset.
+::: warning Do not throw away the errors you are collecting
+`2>/dev/null` on a command whose output you are gathering is how a campaign quietly produces half the runs it was asked for — the errors were the part telling you a case failed. Send them to a file, `2> errors.log`, and read it. And never write `cmd > out.txt 2> out.txt`. Two separate redirections to one file give two independent write positions, and the streams overwrite each other. `cmd > out.txt 2>&1` is right, because fd 2 then shares fd 1's position.
 :::
 
-::: key
-Redirections are applied left to right. `cmd > f 2>&1` sends both streams to `f`; `cmd 2>&1 > f` sends stderr to the original terminal and only stdout to `f`. `>` truncates before the command runs; `>>` appends; `/dev/null` discards.
+::: key Redirection order
+`2>&1` makes fd 2 (stderr) a duplicate of wherever fd 1 currently points. Redirections are applied left to right, so `cmd > out 2>&1` sends both streams to the file, while `cmd 2>&1 > out` sends stderr to the original terminal and only stdout to the file. `>` truncates before the command runs; `>>` appends; `/dev/null` discards.
 :::
 
 ## Pipes
 
-`a | b` connects a's standard output to b's standard input through a kernel buffer, and runs both at once. They are not sequential: `b` starts immediately and consumes what `a` produces as it appears, which is why a pipeline over a huge file uses almost no memory and why `head` can stop a long-running producer early.
+A **pipe**, written `|` and read "pipe", is a hose from one program straight into the next. `a | b` connects a's stdout to b's stdin through a **[[small kernel buffer|pipe-buffer]]**, and runs both *at the same time*. They are not one-after-the-other. `b` starts at once and eats what `a` produces as it appears. That is why a pipeline over a huge file uses almost no memory, and why `head` can stop a long producer early.
 
 ```bash
 grep -h MISS_DISTANCE_M runs/*.log | awk '{print $4}' | sort -g | tail -3
@@ -141,11 +143,11 @@ grep -h MISS_DISTANCE_M runs/*.log | awk '{print $4}' | sort -g | tail -3
 4812.6
 ```
 
-Read it as a sentence. `grep -h` pulls the miss-distance line out of all 500 logs (`-h` suppresses the filename prefix). `awk '{print $4}'` keeps the fourth whitespace-separated field, the number. `sort -g` sorts numerically in the general sense, so `4812.6` beats `784.1` rather than losing to it alphabetically. `tail -3` takes the largest three. Three of your 500 cases are above 700 m, one of them by a factor of six — and you have not written a line of Python.
+Read it like a **[[sentence|pipeline-picture]]**. `grep -h` pulls the miss-distance line out of all 500 logs (`-h` hides the filename). `awk '{print $4}'` keeps the fourth space-separated field, the number. `sort -g` sorts by numeric value, so `4812.6` lands after `784.1` instead of before it as text would. `tail -3` keeps the largest three. Three of the 500 cases missed by more than 700 m — the worst by 4,812.6 m, more than six times the third — and you have not written a line of Python.
 
 ### The exit status of a pipeline
 
-By default a pipeline's exit status is that of the **last** command only. This hides failures:
+By default a pipeline's exit status is that of its **last** command only. This hides failures:
 
 ```bash
 grep NOTHING runs/case_0001.log | wc -l; echo "exit=$?"
@@ -156,7 +158,7 @@ grep NOTHING runs/case_0001.log | wc -l; echo "exit=$?"
 exit=0
 ```
 
-`grep` found nothing and exited 1; `wc` succeeded, so the pipeline reports success. In a script with `set -e` this pipeline will not stop anything. Two fixes:
+`grep` found nothing and exited 1, but `wc` succeeded, so the pipeline reports success. In a script run with **[[`set -e`|set-e]]** — "stop at the first failure" — this pipeline stops nothing. There are two fixes. The first is the bash array `PIPESTATUS`, which holds every stage's status:
 
 ```bash
 grep NOTHING runs/case_0001.log | wc -l; echo "pipeline status ${PIPESTATUS[*]}"
@@ -167,7 +169,7 @@ grep NOTHING runs/case_0001.log | wc -l; echo "pipeline status ${PIPESTATUS[*]}"
 pipeline status 1 0
 ```
 
-`PIPESTATUS` is a bash array holding every stage's status — read it *immediately*, because the next command replaces it. Or set the option that makes the pipeline fail if any stage does:
+Read it *immediately*; the next command replaces it. The second is an option that makes the pipeline fail if any stage fails:
 
 ```bash
 set -o pipefail
@@ -179,14 +181,14 @@ grep NOTHING runs/case_0001.log | wc -l; echo "exit=$?"
 exit=1
 ```
 
-`set -euo pipefail` at the top of a batch script is the standard incantation, and `pipefail` is the member of it that people leave out and regret.
+`set -euo pipefail` at the top of a batch script is the standard opening line. `pipefail` is the part people leave out and regret.
 
 ## `tee`: a branch in the pipe
 
-`tee` writes its input to a file *and* passes it on, so you can capture an intermediate stage without breaking the pipeline:
+A plumber's T-fitting splits one flow into two. `tee` does that for data: it writes its input to a file *and* passes it along, so you can save a middle stage without breaking the pipeline:
 
 ```bash
-grep -h MISS_DISTANCE_M runs/*.log | awk '{print $4}' | sort -g | tail -3 | tee /tmp/worst.txt
+grep -h MISS_DISTANCE_M runs/*.log | awk '{print $4}' | sort -g | tail -3 | tee worst.txt
 ```
 
 ```text
@@ -195,21 +197,21 @@ grep -h MISS_DISTANCE_M runs/*.log | awk '{print $4}' | sort -g | tail -3 | tee 
 4812.6
 ```
 
-The numbers appeared on screen and are also in the file. `tee -a` appends rather than truncating. Put `tee` in the middle and both halves work:
+The numbers appeared on screen and are also in `worst.txt`. `tee -a` appends instead of emptying the file first. In the middle of a pipe, both halves keep working:
 
 ```bash
-head -3 runs/case_0417.log | tee /tmp/t1.txt | wc -l
+head -3 runs/case_0417.log | tee t1.txt | wc -l
 ```
 
 ```text
 3
 ```
 
-`wc` saw the three lines, and `/tmp/t1.txt` now holds them. The other standard use is the one from lesson 03: `command | sudo tee /etc/something` makes the *privileged* program the one that opens the file, because your own shell cannot.
+`wc` counted three lines, and `t1.txt` holds them. The other standard use is from lesson 03: `command | sudo tee /etc/something` lets the *privileged* program open the file, because your own shell cannot.
 
 ## Here-documents and here-strings
 
-A here-document feeds literal text to a command's standard input, ending at the word you name:
+A **here-document** feeds a block of literal text to a command's stdin, ending at a **[[marker word|eof-marker]]** you choose. `<<` is read "here-doc":
 
 ```bash
 cat <<EOF > sweep.yaml
@@ -219,7 +221,7 @@ dt: 0.002
 EOF
 ```
 
-That is how a script writes a configuration file without an editor and without quoting a multi-line string. The body is expanded like a double-quoted string by default:
+That is how a script writes a configuration file without an editor. By default the body is expanded like a double-quoted string — `$NAME` becomes the variable's value:
 
 ```bash
 cat <<EOF
@@ -231,7 +233,7 @@ EOF
 expanded /home/eng
 ```
 
-Quote the delimiter and nothing is expanded — this is the form to use whenever the body contains `$`, backticks or backslashes that belong to another language:
+Quote the marker and nothing is expanded. Use this form whenever the body holds `$`, backticks or backslashes that belong to another language:
 
 ```bash
 cat <<"EOF"
@@ -243,9 +245,9 @@ EOF
 literal $HOME and $(date)
 ```
 
-The difference is not cosmetic. A here-document holding a Python or awk program will be mangled by the shell unless the delimiter is quoted. `<<-EOF` additionally strips leading *tabs* (not spaces) from each line, which lets you indent the body inside a function.
+The difference is not cosmetic: a here-document holding a Python or awk program gets mangled unless the marker is quoted. `<<-EOF` also strips leading *tabs* (not spaces) from each line, so you can indent the body inside a function.
 
-Any program that reads standard input can be driven this way:
+Any program that reads stdin can be driven this way. This one computes a rocket's speed change from its engine efficiency and **[[mass ratio|rocket-equation]]**:
 
 ```bash
 python3 <<EOF
@@ -258,7 +260,7 @@ EOF
 dv = 2794.6 m/s
 ```
 
-A here-*string*, `<<<`, is the one-line version, useful for feeding a single variable to a tool that insists on a file or a stream:
+A **here-string**, `<<<`, is the one-line version. It feeds a single string to a tool that wants a stream:
 
 ```bash
 grep -c INFO <<< "2026-03-14T09:00:00Z INFO sim start"
@@ -270,7 +272,7 @@ grep -c INFO <<< "2026-03-14T09:00:00Z INFO sim start"
 
 ## `xargs`: turning a stream into arguments
 
-A pipe connects stdout to stdin. But most commands do not read filenames from stdin — `rm`, `ls`, `cp`, your simulator — they take them as *arguments*. `xargs` is the adapter: it reads items from standard input and builds command lines out of them.
+A pipe connects stdout to stdin. But many commands do not read filenames from stdin — `rm`, `ls`, `cp`, your simulator. They take them as **arguments**, the words typed after the command name. `xargs` is the adapter. It reads items from stdin and builds command lines out of them.
 
 ```bash
 printf "case_0417\ncase_0288\n" | xargs echo running
@@ -289,7 +291,7 @@ running case_0417
 running case_0288
 ```
 
-`-n 1` means one item per command line; without it `xargs` packs as many as will fit. `-I{}` puts each item at a named position instead of at the end, which is what you need when the item is not the last argument:
+`-n 1` means one item per command; without it, `xargs` packs in as many as fit. `-I{}` puts each item wherever `{}` appears, for when the item is not the last argument:
 
 ```bash
 printf "a\nb\nc\n" | xargs -I{} echo "case {} done"
@@ -301,7 +303,7 @@ case b done
 case c done
 ```
 
-Two flags prevent real accidents. `-r` (`--no-run-if-empty`) stops `xargs` running the command at all when the input is empty. Watch what happens without it:
+`-r` (long form `--no-run-if-empty`) prevents a quiet accident: GNU `xargs` otherwise runs the command once even with no input at all. Watch:
 
 ```bash
 grep -l NOTHING runs/*.log | xargs wc -l
@@ -311,7 +313,7 @@ grep -l NOTHING runs/*.log | xargs wc -l
 0
 ```
 
-`grep` matched nothing, so `xargs` ran bare `wc -l`, which read from *its* standard input — the terminal — and reported zero. Harmless here. With `rm` in place of `wc`, a command with no arguments is harmless too; with `rm -rf .` built by a script, it is not. Add `-r` and nothing runs:
+`grep` matched nothing, so `xargs` ran a bare `wc -l`, which read from *its own* stdin and reported zero. Harmless here. But many commands treat "no arguments" as "the current directory" or "read the keyboard" — `ls`, `du`, `find`, `wc` — so an empty list silently turns your question into a different one. Add `-r` and nothing runs:
 
 ```bash
 grep -l NOTHING runs/*.log | xargs -r wc -l; echo "exit=$?"
@@ -322,51 +324,51 @@ exit=0
 ```
 
 ::: example Filenames with spaces, and the only safe pairing
-Two log files whose names contain spaces, which is what you get the moment data comes from a Windows machine or an instrument's export dialogue.
+Two log files with spaces in their names, as you get the moment data comes from a Windows machine or an instrument's export dialog:
 
 ```bash
-find /tmp/sp -name "*.log" | xargs ls -l
+find sp -name "*.log" | xargs ls -l
 ```
 
 ```text
-ls: cannot access '/tmp/sp/entry': No such file or directory
+ls: cannot access 'sp/entry': No such file or directory
 ls: cannot access 'burn': No such file or directory
 ls: cannot access '01.log': No such file or directory
-ls: cannot access '/tmp/sp/entry': No such file or directory
+ls: cannot access 'sp/entry': No such file or directory
 ls: cannot access 'burn': No such file or directory
 ls: cannot access '02.log': No such file or directory
 ```
 
-Exit status 123. `xargs` splits its input on whitespace, so `entry burn 01.log` became three arguments. Had the command been `rm`, it would have tried to delete a file called `burn` — and on a bad day succeeded.
+Exit status 123, `xargs`'s way of saying a command failed. `xargs` splits its input on spaces and newlines, so `entry burn 01.log` became three arguments. Had the command been `rm`, it would have tried to delete a file called `burn` — and on a bad day succeeded.
 
-NUL is the only byte that cannot appear in a filename, so it is the only safe separator. `find -print0` emits it and `xargs -0` expects it:
+The **[[NUL byte|nul-byte]]** — the byte with value zero — is the only byte that cannot appear in a filename, so it is the only safe separator. `find -print0` ends each name with it, and `xargs -0` splits on it:
 
 ```bash
-find /tmp/sp -name "*.log" -print0 | xargs -0 ls -l
+find sp -name "*.log" -print0 | xargs -0 ls -l
 ```
 
 ```text
--rw-r--r-- 1 root root 0 Sep 22 20:28 /tmp/sp/entry burn 01.log
--rw-r--r-- 1 root root 0 Sep 22 20:28 /tmp/sp/entry burn 02.log
+-rw-r--r-- 1 root root 0 Sep 26 17:52 sp/entry burn 01.log
+-rw-r--r-- 1 root root 0 Sep 26 17:52 sp/entry burn 02.log
 ```
 
-`find` can also skip the pipe entirely, and this form has no quoting hazard at all:
+`find` can also skip the pipe entirely, which has no quoting hazard at all:
 
 ```bash
-find /tmp/sp -name "*.log" -exec ls -l {} +
+find sp -name "*.log" -exec ls -l {} +
 ```
 
 ```text
--rw-r--r-- 1 root root 0 Sep 22 20:28 /tmp/sp/entry burn 01.log
--rw-r--r-- 1 root root 0 Sep 22 20:28 /tmp/sp/entry burn 02.log
+-rw-r--r-- 1 root root 0 Sep 26 17:52 sp/entry burn 01.log
+-rw-r--r-- 1 root root 0 Sep 26 17:52 sp/entry burn 02.log
 ```
 
-The `+` at the end batches the matches into as few command lines as possible, exactly as `xargs` does; a `\;` there would run `ls` once per file. Prefer `-exec ... +` when `find` is already in the pipeline, and `-print0 | xargs -0` when you need `xargs` flags such as `-P`.
+The `+` at the end packs the matches into as few commands as possible, as `xargs` does; `\;` there would run `ls` once per file. Prefer `-exec ... +` when `find` is already in play, and `-print0 | xargs -0` when you need `xargs` options such as `-P`.
 :::
 
-### Why `xargs` exists at all: `Argument list too long`
+### Why `xargs` exists: `Argument list too long`
 
-The kernel caps the total size of a command's arguments and environment. On this machine:
+The kernel limits the total size of a command's arguments plus its environment. On this machine:
 
 ```bash
 getconf ARG_MAX
@@ -376,7 +378,7 @@ getconf ARG_MAX
 2097152
 ```
 
-Two megabytes, and there is a separate cap of 128 KiB on any *single* argument. Exceed either and the `exec` fails before the program runs a single instruction:
+That is **[[2 MiB|arg-max]]** ($2 \times 1024 \times 1024 = 2{,}097{,}152$ bytes). There is also a separate cap on any *single* argument. Go over either and the program never starts:
 
 ```bash
 /bin/echo $(python3 -c "print('x'*132000)")
@@ -386,12 +388,16 @@ Two megabytes, and there is a separate cap of 128 KiB on any *single* argument. 
 /bin/echo: Argument list too long
 ```
 
-The same line with 130,000 characters succeeds, which pins the limit at 131,072 bytes — 32 pages — for one argument.
+Testing lengths pins the single-argument cap down exactly. 131,071 characters work; 131,072 fail. Each argument is stored with one extra zero byte at its end, so the cap is $131{,}071 + 1 = 131{,}072$ bytes — exactly 128 KiB, or 32 pages of 4,096 bytes ($32 \times 4096 = 131{,}072$).
 
-This is what `rm *.log` does in a directory of 200,000 run logs: the shell expands the glob into one enormous argument list, and the kernel refuses the `exec`. Nothing is deleted and nothing is wrong with your command. `xargs` exists precisely for this — it measures the limit and splits the work into as many command lines as it takes, which is why `find . -name '*.log' -print0 | xargs -0 rm` works where `rm *.log` cannot.
+This is what happens with `rm *.log` in a directory of 200,000 run logs. The shell expands the pattern into one enormous argument list, and the kernel refuses to start `rm`. Nothing is deleted, and nothing is wrong with your command. `xargs` exists for exactly this. It knows the limit and splits the work into as many command lines as it takes, which is why `find . -name '*.log' -print0 | xargs -0 rm` works where `rm *.log` cannot.
 
-::: example Driving a batch of simulations across the cores you have
-`xargs -P N` runs up to N command lines at once. With a stand-in `run_case.sh` that takes one second per case, and eight cases:
+::: key What xargs is for
+`xargs` converts data on stdin into command-line arguments. Use `-0` with `find -print0` so filenames containing spaces or newlines survive, `-n` to set the batch size and `-P` to run batches in parallel. Add `-r` so empty input runs nothing.
+:::
+
+::: example Driving a batch of simulations across your cores
+`xargs -P N` runs up to N commands at once. Take a stand-in `run_case.sh` that needs one second per case, and a file of eight case numbers. One at a time:
 
 ```bash
 time xargs -n 1 ./run_case.sh < cases.txt
@@ -407,37 +413,39 @@ case 0006 done
 case 0007 done
 case 0008 done
 
-real	0m8.039s
+real	0m8.040s
 user	0m0.027s
-sys	0m0.011s
+sys	0m0.012s
 ```
+
+Eight cases at one second each: about 8 seconds, as expected. Now four at a time:
 
 ```bash
 time xargs -n 1 -P 4 ./run_case.sh < cases.txt
 ```
 
 ```text
-case 0001 done
 case 0002 done
 case 0003 done
+case 0001 done
 case 0004 done
 case 0005 done
 case 0006 done
-case 0007 done
 case 0008 done
+case 0007 done
 
-real	0m2.012s
-user	0m0.025s
-sys	0m0.007s
+real	0m2.017s
+user	0m0.031s
+sys	0m0.010s
 ```
 
-Eight seconds becomes two on this four-core machine (`nproc` reports 4). That is the whole of parallel Monte Carlo on one box: a file of case ids, a script that runs one case, and `-P $(nproc)`.
+Four lanes: $8 \div 4 = 2$ rounds of one second, and the clock agrees — about 2 seconds, on this four-core machine (`nproc` reports 4). That is parallel Monte Carlo on one box: a file of case ids, a script that runs one case, and `-P $(nproc)`.
 
-Two cautions that matter as soon as the cases do real work. First, the outputs interleave — here each case printed one atomic line, but two processes writing multi-line output to the same stream will produce shuffled text. Give each case its own output file. Second, `-P` with more jobs than cores makes things slower for CPU-bound work, and `-P 0` means "as many as possible", which on a 500-case list means 500 simultaneous simulations and a machine that stops responding. Set it to `$(nproc)` and measure.
+Look at the order, though: 2, 3, 1, 4 … 8, 7. Parallel jobs finish when they finish. That leads to two cautions for real work. First, outputs interleave. Each case here printed one short line, but two processes writing many lines to the same stream produce shuffled text — give each case its own output file. Second, for CPU-heavy work, more jobs than cores makes things slower, and `-P 0` means "as many as possible": 500 simultaneous simulations and a machine that stops responding. Use `$(nproc)` and measure.
 :::
 
-::: note
-`<(command)` is *process substitution*: bash runs the command and hands its output to the other program as a filename, so tools that demand files can be fed pipelines.
+::: note Process substitution: a command posing as a file
+`<(command)` is **process substitution**. Bash runs the command and hands the other program a filename that reads its output, so tools that insist on files can be fed pipelines:
 
 ```bash
 diff <(head -3 runs/case_0001.log) <(head -3 runs/case_0002.log)
@@ -445,93 +453,217 @@ diff <(head -3 runs/case_0001.log) <(head -3 runs/case_0002.log)
 
 ```text
 1,3c1,3
-< 2026-03-14T09:00:00Z INFO  sim start case=0001 seed=545923
+< 2026-03-14T09:00:00Z INFO  sim start case=0001 seed=439563
 < 2026-03-14T09:00:00Z INFO  vehicle=falcon9-s1 profile=entry-burn dt=0.002
 < 2026-03-14T09:00:01Z INFO  guidance mode=PDG horizon_s=18.0
 ---
-> 2026-03-14T09:00:31Z INFO  sim start case=0002 seed=952054
+> 2026-03-14T09:00:31Z INFO  sim start case=0002 seed=150631
 > 2026-03-14T09:00:31Z INFO  vehicle=falcon9-s1 profile=entry-burn dt=0.002
 > 2026-03-14T09:00:32Z INFO  guidance mode=PDG horizon_s=18.0
 ```
 
-Comparing the output of two commands without creating two temporary files is worth the syntax on its own.
+Comparing two commands' output without making two temporary files is worth the odd syntax.
 :::
 
 ## Check yourself
 
 ::: check
-`./run_sweep.sh > sweep.log 2>&1` runs overnight and `sweep.log` is empty, yet the output directory has 500 files in it. What is the likeliest explanation?
+`./run_sweep.sh > sweep.log 2>&1` runs overnight. `sweep.log` is empty, yet the output directory holds 500 files. What is the likeliest explanation?
 :::
 
 ::: answer
-The script's own output went somewhere else. The two usual cases. First, it redirected internally — a line like `exec > /var/log/sweep/run.log` or a per-case `> case.log` inside the loop — so nothing was left for the outer redirection to capture. Second, the program writes to the terminal device directly, `/dev/tty`, which bypasses fd 1 and fd 2 entirely; some progress bars do this deliberately so they are not captured.
+The script's output went somewhere else. Two usual cases. First, the script redirects internally — a line like `exec > /var/log/sweep/run.log`, or a `> case.log` for each case inside the loop — so nothing is left for the outer redirection to catch. Second, the program writes straight to the terminal device, `/dev/tty`, which bypasses fd 1 and fd 2 entirely; some progress bars do this on purpose.
 
-There is a third possibility worth ruling out first: the file is not empty, it is buffered. A program writing to a pipe or a file uses block buffering rather than line buffering, so nothing appears until 4 or 8 KB have accumulated or the program exits. If the job is still running, `ls -l sweep.log` showing 0 may simply mean it has not filled a block yet. `stdbuf -oL ./run_sweep.sh` forces line buffering.
+Rule out a third possibility first: the output is only *buffered*. A program writing to a file or pipe saves output up in blocks instead of line by line, so nothing appears until 4 or 8 KB have piled up or the program exits. If the job is still running, a 0 in `ls -l sweep.log` may only mean the first block is not full yet. `stdbuf -oL ./run_sweep.sh` forces line-by-line output.
 :::
 
 ::: check
-Explain, in terms of file descriptors, why `cmd 2>&1 > out.txt` does not put both streams in the file — and give the correct form.
+Explain, in terms of file descriptors, why `cmd 2>&1 > out.txt` does not put both streams in the file, and give the correct form.
 :::
 
 ::: answer
-The shell processes redirections strictly left to right, and `2>&1` copies *where fd 1 currently points* into fd 2. At the moment it is processed, fd 1 has not been touched yet, so it still refers to the terminal; fd 2 is therefore made a second reference to the terminal. Only then does `> out.txt` move fd 1 to the file. Fd 2 is unaffected by that later move, because it is bound to the terminal itself, not to "whatever fd 1 is".
+The shell handles redirections strictly left to right, and `2>&1` copies *where fd 1 points at that moment* into fd 2. When it is handled, fd 1 has not been touched, so it still points at the terminal — and fd 2 becomes a second pointer to the terminal. Only then does `> out.txt` move fd 1 to the file. Fd 2 does not follow, because it was pointed at the terminal itself, not at "whatever fd 1 is".
 
-The correct form is `cmd > out.txt 2>&1`: fd 1 is moved to the file first, then fd 2 is made a duplicate of it, so both share the file *and its offset*. Bash's `&> out.txt` is shorthand for the correct order. Note that `cmd > out.txt 2> out.txt` is not equivalent — two separate opens give two independent offsets, and the streams clobber each other.
+The correct form is `cmd > out.txt 2>&1`: fd 1 moves to the file first, then fd 2 copies it, so both share the file *and its write position*. Bash's `&> out.txt` is shorthand for this. Note that `cmd > out.txt 2> out.txt` is different: two separate opens give two independent positions, and the streams overwrite each other.
 :::
 
 ::: check
-`find . -name '*.log' | xargs rm` on a directory where one file is named `entry burn 01.log`. What does `rm` actually receive, and what is the exposure? Give two safe rewrites.
+You run `find . -name '*.log' | xargs rm` in a directory where one file is named `entry burn 01.log`. What does `rm` actually receive, and what could go wrong? Give two safe rewrites.
 :::
 
 ::: answer
-`xargs` splits its input on whitespace and newlines by default, so the single path `./entry burn 01.log` arrives as three arguments: `./entry`, `burn`, `01.log`. `rm` is handed all three. Two produce "No such file or directory"; but if a file called `burn` happens to exist in the current directory, it is deleted — a file nobody asked to remove and whose name appears nowhere in the command.
+`xargs` splits on spaces and newlines by default, so the one path `./entry burn 01.log` arrives as three arguments: `./entry`, `burn` and `01.log`. Two of them produce "No such file or directory". But if a file named `burn` happens to exist in the current directory, it is deleted — a file nobody asked to remove, whose name appears nowhere in the command.
 
-Two safe rewrites. `find . -name '*.log' -print0 | xargs -0 rm` uses NUL as the separator, which is the one byte that cannot occur in a filename. Or drop `xargs` entirely: `find . -name '*.log' -exec rm {} +`, where `find` passes the paths to `rm` directly with no text parsing in between. Add `-r` to any `xargs` invocation so an empty match list does not run the command at all.
+Safe rewrite one: `find . -name '*.log' -print0 | xargs -0 rm`, which separates names with NUL, the one byte a filename cannot contain. Safe rewrite two: drop `xargs` and use `find . -name '*.log' -exec rm {} +`, where `find` hands the paths to `rm` directly, with no text splitting in between. Add `-r` to any `xargs` so that an empty match list runs nothing.
 :::
 
 ::: check
-A campaign script ends with `grep -c DIVERGED runs/*.log | wc -l` and the surrounding `set -e` never triggers, even on days when `grep` fails. Why, and what are the two ways to fix it?
+A campaign script ends with `grep -c DIVERGED runs/*.log | wc -l`, and its `set -e` never triggers, even on days when `grep` fails. Why, and what are two ways to fix it?
 :::
 
 ::: answer
-A pipeline's exit status is the status of its last command only. `wc` succeeds whatever `grep` did, so the pipeline reports 0 and `set -e` has nothing to act on. `grep` exiting 1 for "no matches" — which is its normal, documented behaviour, not an error — is invisible.
+A pipeline's exit status is its last command's only. `wc` succeeds whatever `grep` did, so the pipeline reports 0 and `set -e` has nothing to act on. `grep` exiting 1 for "no matches" — normal, documented behavior, not an error — is invisible.
 
-Fix one: `set -o pipefail`, which makes the pipeline return the status of the rightmost command that failed. Combined as `set -euo pipefail` it is the standard header for a script that must not continue past a failure. Fix two: inspect `${PIPESTATUS[@]}` immediately after the pipeline, which is a bash array holding one status per stage — `${PIPESTATUS[0]}` is `grep`'s. It must be read on the very next line, because any other command overwrites it.
+Fix one: `set -o pipefail`, which makes the pipeline return the status of the rightmost stage that failed. As `set -euo pipefail` it is the standard header for a script that must stop at a failure. Fix two: check `${PIPESTATUS[@]}` right after the pipeline. It is a bash array with one status per stage, so `${PIPESTATUS[0]}` is `grep`'s. Read it on the very next line, because any other command overwrites it.
 :::
 
 ::: check
-Why can `head -3 hugefile.log` return instantly on a 40 GB file when it is on the right-hand side of a pipe — `grep PATTERN hugefile.log | head -3` — rather than having to wait for `grep` to finish?
+`grep PATTERN hugefile.log | head -3` returns instantly on a 40 GB file. Why does it not wait for `grep` to read the whole file?
 :::
 
 ::: answer
-Because the two run concurrently and the pipe has a finite buffer. `grep` writes into the pipe; `head` reads three lines, prints them and exits. The pipe's read end is then closed, so the next time `grep` writes, the kernel sends it `SIGPIPE`, whose default action is to terminate. `grep` dies part-way through the file and never reads the rest.
+Because the two run at the same time and the pipe's buffer is small. `grep` writes into the pipe; `head` reads three lines, prints them and exits. That closes the pipe's reading end, so the next time `grep` writes, the kernel sends it `SIGPIPE` ("broken pipe", signal 13), whose default action is to terminate. `grep` dies partway through the file and never reads the rest. Its exit status shows it: `${PIPESTATUS[0]}` is 141, which is $128 + 13$.
 
-That is the mechanism behind two things you will meet. It is why `| head` is cheap on enormous inputs. And it is why a program that ignores `SIGPIPE` reports the failed write instead. Python sets it to be ignored, so the write raises an exception and the interpreter prints, on stderr, a traceback ending
+That explains two things you will meet. It is why `| head` is cheap on enormous inputs. And it is why a program that *ignores* `SIGPIPE` reports a failed write instead. Python ignores it, so the write raises an exception and the interpreter prints a traceback on stderr ending
 
 ```text
 BrokenPipeError: [Errno 32] Broken pipe
 ```
 
-That is not a bug in your generator script; it is the expected consequence of `head` having seen enough.
+That is not a bug in your script. It is the expected result of `head` having seen enough.
 :::
 
 ## Summary
 
-| Construct | Meaning | Note |
+| Construct | Meaning | Remember |
 | --- | --- | --- |
-| `> f` / `>> f` / `< f` | stdout to f, truncating / appending / stdin from f | `>` truncates before the command runs |
-| `2> f` | stderr to f | `cmd > log` alone leaves errors on the terminal |
-| `cmd > f 2>&1` | both streams to f | order matters; `2>&1 > f` does not do this |
-| `&> f` | bash shorthand for the correct order | not portable to `sh` |
-| `/dev/null` | discards writes, reads as EOF | discarding stderr hides failed cases |
-| `a \| b` | a's stdout to b's stdin, both running at once | `head` closing early sends `SIGPIPE` to a |
-| `${PIPESTATUS[@]}`, `set -o pipefail` | every stage's status; fail if any stage fails | a pipeline otherwise reports only the last stage |
-| `tee f`, `tee -a f` | copy the stream to f and pass it on | `\| sudo tee f` writes with privilege |
-| `<<EOF` / `<<"EOF"` / `<<<` | here-doc expanded / literal / here-string | quote the delimiter around another language's `$` |
+| `> f` / `>> f` / `< f` | stdout into f (emptying it) / appended to f / stdin from f | `>` empties the file before the command runs |
+| `2> f` | stderr into f | `cmd > log` alone leaves errors on the screen |
+| `cmd > f 2>&1` | both streams into f | order matters; `2>&1 > f` does not do this |
+| `&> f` | bash shorthand for the correct order | not in plain `sh` |
+| `/dev/null` | throws writes away, reads as empty | discarding stderr hides failed cases |
+| `a \| b` | a's stdout into b's stdin, both running at once | `head` exiting early sends `SIGPIPE` to a |
+| `${PIPESTATUS[@]}`, `set -o pipefail` | every stage's status; fail if any stage fails | otherwise only the last stage counts |
+| `tee f`, `tee -a f` | copy the stream into f and pass it on | `\| sudo tee f` writes with privilege |
+| `<<EOF` / `<<"EOF"` / `<<<` | here-doc expanded / literal / here-string | quote the marker around another language's `$` |
 | `xargs`, `-n`, `-I{}`, `-r` | stream to arguments; batch size; placeholder; skip if empty | `-r` stops a bare command running on empty input |
 | `find -print0 \| xargs -0` | the only whitespace-safe pairing | or `find -exec cmd {} +` |
-| `xargs -P N` | N command lines at once | `-P $(nproc)`; `-P 0` is unbounded |
-| `Argument list too long` | `ARG_MAX` exceeded by a glob | 2 MiB here; `xargs` splits the work |
+| `xargs -P N` | N commands at once | `-P $(nproc)`; `-P 0` is unlimited |
+| `Argument list too long` | a glob exceeded `ARG_MAX` | 2 MiB here; `xargs` splits the work |
 | `<(cmd)` | process substitution: a command as a filename | `diff <(a) <(b)` |
 
-Lesson 06 fills in the tools that go *inside* these pipelines: `grep` and the regular expressions it takes, then `cut`, `sort`, `uniq -c`, `tr` and `find`.
+Next lesson fills in the tools that go *inside* these pipelines: `grep` and the regular expressions it understands, then `cut`, `sort`, `uniq -c`, `tr` and `find`.
+
+::: context file-descriptor Numbered slots
+Each process has a small table of open "things" — files, the terminal, pipes — and a file descriptor is only a row number in that table. Programs never write "to the screen"; they write "to slot 1" and let the table decide where that goes.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 130" font-family="Inter, Arial, sans-serif">
+  <rect x="20" y="15" width="130" height="100" rx="6" fill="#fff" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="85" y="32" font-size="12" text-anchor="middle" fill="#1f2a44">process</text>
+  <g font-size="12" fill="#1f2a44">
+    <rect x="35" y="42" width="100" height="20" fill="#8fb8f0" stroke="#1f2a44"/><text x="45" y="57">0 stdin</text>
+    <rect x="35" y="64" width="100" height="20" fill="#8fb8f0" stroke="#1f2a44"/><text x="45" y="79">1 stdout</text>
+    <rect x="35" y="86" width="100" height="20" fill="#f2b880" stroke="#1f2a44"/><text x="45" y="101">2 stderr</text>
+  </g>
+  <g stroke="#1f2a44" stroke-width="1.5">
+    <line x1="220" y1="52" x2="135" y2="52"/><polygon points="135,52 145,47 145,57" fill="#1f2a44"/>
+    <line x1="135" y1="74" x2="210" y2="74"/><polygon points="220,74 210,69 210,79" fill="#1f2a44"/>
+    <line x1="135" y1="96" x2="210" y2="96"/><polygon points="220,96 210,91 210,101" fill="#1f2a44"/>
+  </g>
+  <g font-size="12" fill="#1f2a44">
+    <text x="226" y="56">keyboard</text><text x="226" y="78">screen</text><text x="226" y="100">screen</text>
+  </g>
+</svg>
+```
+
+Redirection only rewrites the right-hand column. The program never knows.
+:::
+
+::: context redirection-order Watching the table change
+Follow the slots through each command. In `> f 2>&1`, slot 1 moves to the file first, then slot 2 copies it. In `2>&1 > f`, slot 2 copies the screen, then slot 1 moves.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">
+  <text x="90" y="16" font-size="12" text-anchor="middle" fill="#1f2a44">cmd &gt; f 2&gt;&amp;1</text>
+  <text x="270" y="16" font-size="12" text-anchor="middle" fill="#1f2a44">cmd 2&gt;&amp;1 &gt; f</text>
+  <line x1="180" y1="6" x2="180" y2="146" stroke="#6c7a93" stroke-width="1"/>
+  <g font-size="11" fill="#1f2a44">
+    <text x="12" y="44">after &gt; f:</text>
+    <text x="94" y="38">1 → f</text><text x="94" y="54">2 → screen</text>
+    <text x="12" y="94">after 2&gt;&amp;1:</text>
+    <text x="94" y="88" fill="#1d6fd1">1 → f</text><text x="94" y="104" fill="#1d6fd1">2 → f</text>
+    <text x="192" y="44">after 2&gt;&amp;1:</text>
+    <text x="278" y="38">1 → screen</text><text x="278" y="54">2 → screen</text>
+    <text x="192" y="94">after &gt; f:</text>
+    <text x="278" y="88" fill="#1d6fd1">1 → f</text><text x="278" y="104" fill="#b4232c">2 → screen</text>
+  </g>
+  <text x="90" y="136" font-size="11" text-anchor="middle" fill="#1d6fd1">both in the file</text>
+  <text x="270" y="136" font-size="11" text-anchor="middle" fill="#b4232c">errors still on screen</text>
+</svg>
+```
+
+`2>&1` copies a destination at one instant. It does not create a lasting link to fd 1.
+:::
+
+::: context dev-null The bit bucket
+`/dev/null` is not a file on a disk. It is a **device file**: a name in `/dev` that the kernel answers itself. Writing to it always succeeds and the data vanishes; reading from it returns "end of file" straight away. Programmers call it the bit bucket.
+
+Its neighbors are as handy. `/dev/zero` reads as endless zero bytes, and `/dev/urandom` as endless random bytes.
+:::
+
+::: context pipe-buffer How big the pipe is
+On Linux a pipe holds 65,536 bytes (64 KiB) by default. If the reader falls behind and the buffer fills, the writer is paused until there is room. If the buffer is empty, the reader waits.
+
+That automatic pause is called **backpressure**, and it is why a fast `grep` cannot flood a slow `sort` or eat all your memory. Each stage runs at the pace of the slowest one.
+:::
+
+::: context pipeline-picture The pipeline as a production line
+Each program is a station on a conveyor belt. Data flows left to right, and all stations work at once.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 100" font-family="Inter, Arial, sans-serif">
+  <g stroke="#1f2a44" stroke-width="1.5">
+    <rect x="8" y="30" width="62" height="30" rx="5" fill="#8fb8f0"/>
+    <rect x="96" y="30" width="62" height="30" rx="5" fill="#8fb8f0"/>
+    <rect x="184" y="30" width="62" height="30" rx="5" fill="#8fb8f0"/>
+    <rect x="272" y="30" width="62" height="30" rx="5" fill="#8fb8f0"/>
+    <line x1="70" y1="45" x2="90" y2="45"/><polygon points="96,45 88,41 88,49" fill="#1f2a44"/>
+    <line x1="158" y1="45" x2="178" y2="45"/><polygon points="184,45 176,41 176,49" fill="#1f2a44"/>
+    <line x1="246" y1="45" x2="266" y2="45"/><polygon points="272,45 264,41 264,49" fill="#1f2a44"/>
+  </g>
+  <g font-size="12" text-anchor="middle" fill="#1f2a44">
+    <text x="39" y="50">grep</text><text x="127" y="50">awk</text><text x="215" y="50">sort -g</text><text x="303" y="50">tail -3</text>
+  </g>
+  <g font-size="11" text-anchor="middle" fill="#6c7a93">
+    <text x="39" y="80">500 lines</text><text x="127" y="80">500 numbers</text><text x="215" y="80">in order</text><text x="303" y="80">3 largest</text>
+  </g>
+</svg>
+```
+
+`sort` is the one station that must see *everything* before it can pass anything on — the largest value might be the last line.
+:::
+
+::: context set-e What set -e and friends do
+`set -e` tells bash to stop the script as soon as a command fails (exits non-zero), instead of carrying on with broken data. `set -u` treats a misspelled or unset variable as an error rather than quietly using an empty string. `set -o pipefail` makes a pipeline count as failed if any stage failed.
+
+Together, `set -euo pipefail` turns many silent problems into loud ones, which is what you want in a script that runs overnight with nobody watching.
+:::
+
+::: context eof-marker The marker word
+`EOF` stands for "end of file", and it is only a habit. Any word works — `END`, `YAML`, `PY` — as long as it appears alone on the closing line, with nothing else on that line.
+
+Choosing a word that describes the body, like `<<'PY'` for a Python snippet, makes a long script easier to read.
+:::
+
+::: context rocket-equation The number the snippet computed
+The snippet evaluates the rocket equation, $\Delta v = g_0 \, I_{sp} \ln(m_0/m_f)$, with $g_0 = 9.80665\,\mathrm{m/s^2}$, a specific impulse of $311\,\mathrm{s}$, and a final mass that is $0.4$ of the starting mass, so $m_0/m_f = 2.5$:
+
+$$
+\Delta v = 9.80665 \times 311 \times \ln 2.5 \approx 2795\,\mathrm{m/s}.
+$$
+
+The math modules derive this equation. Here the point is only that a here-doc let the shell hand a whole Python program to `python3` without a separate file.
+:::
+
+::: context nul-byte Why NUL is the safe separator
+Linux stores names as C strings, which end at the first zero byte. So a filename cannot contain a NUL — the kernel would read the name as ending there. Spaces, tabs, quotes, even newlines *are* allowed in names.
+
+That makes NUL the one separator that can never be confused with part of a name, which is why `find -print0`, `xargs -0`, `sort -z` and `grep -z` all speak it.
+:::
+
+::: context arg-max Where the 2 MiB comes from
+On Linux, the space for a new program's arguments and environment is carved from its stack, and the kernel allows a quarter of the stack size limit. The default stack limit is 8 MiB (`ulimit -s` prints 8192, in KiB), and a quarter of that is 2 MiB — the `2097152` that `getconf ARG_MAX` printed.
+
+Raising the stack limit raises `ARG_MAX` too, but `xargs` is the portable fix.
+:::
