@@ -1,7 +1,7 @@
 ---
 id: l04-the-unscented-kalman-filter
 title: The Unscented Kalman Filter
-minutes: 26
+minutes: 23
 covers:
   - 'The Unscented Kalman Filter: the unscented transform, sigma point selection (alpha, beta, kappa), the square-root UKF'
 ---
@@ -10,7 +10,7 @@ Stand in front of a funhouse mirror. It bends your reflection: your head looks h
 
 There is another way. Line up a few friends at carefully chosen spots: one in the middle, the others spread out to the left, right, front and back. Look at where each reflection lands. Then work out the group's average position and spread from those few reflections. You never measured the slope of the glass. You only looked at what the mirror *really does* to a handful of well-placed people.
 
-That second way is the **Unscented Kalman Filter** (**UKF**) — a Kalman filter that pushes a small set of chosen points through the true nonlinear function, instead of pushing one point and a slope. The machinery inside it is called the **[[unscented|why-unscented]] transform**. The last two lessons showed how the EKF's one-slope picture can fail badly, near a bearing sensor for instance. This lesson builds the UKF, shows what its three tuning knobs do, and shows the one way its arithmetic can go wrong, together with the fix, the **square-root UKF**. UKFs fly today in spacecraft attitude filters, in drone autopilots and in orbit-determination software, wherever a model is too curved or too complicated to differentiate by hand.
+That second way is the **Unscented Kalman Filter** (**UKF**) — a Kalman filter that pushes a small set of chosen points through the true nonlinear function, instead of pushing one point and a slope. The machinery inside it is called the **[[unscented|why-unscented]] transform**. The last two lessons showed how the EKF's one-slope picture can fail badly, near a bearing sensor for instance. This lesson builds the UKF, shows what its three tuning knobs do, and shows the one way its arithmetic can go wrong, together with the fix, the **square-root UKF**. UKFs are used today in spacecraft attitude estimation, orbit determination and robotics, wherever a model is too curved, or too complicated to differentiate by hand.
 
 ## The job both filter steps need done
 
@@ -245,7 +245,7 @@ It updates $\mathbf S$ directly, never forming $\mathbf P$:
 - the centre point, when its weight is negative, is handled by a **Cholesky downdate**, a routine that removes one outer product from $\mathbf S\mathbf S^{\mathsf T}$;
 - the measurement update removes $\mathbf K\mathbf P_{zz}\mathbf K^{\mathsf T}$ by more downdates.
 
-A downdate cannot quietly return a negative variance. If the removal would make the result invalid, it stops and reports failure. So the square-root form turns a silent disaster into a loud one, and on ordinary problems it also keeps twice as many correct digits, because $\mathbf S$ is far better conditioned than $\mathbf P$. These are the same [[square-root forms|bridge-sqrt]] the Kalman filter module used; the trigger here is different, but the remedy is the same idea.
+A downdate cannot quietly return a negative variance. If the removal would make the result invalid, it stops and reports failure. So the square-root form turns a silent disaster into a loud one, and on ordinary problems it also keeps roughly twice as many correct digits, because $\mathbf S$ is far better conditioned than $\mathbf P$. These are the same [[square-root forms|bridge-sqrt]] the Kalman filter module used; the trigger here is different, but the remedy is the same idea.
 
 ::: warning Treat the cause as well as the symptom
 The square-root form guarantees you never *use* an invalid covariance. It does not make the huge weights sensible. In the example above, the root cause was $\alpha = 10^{-3}$ stretching a local bend over a $57\,\mathrm m$ ellipse, plus a wrapped angle. The durable fixes are a larger $\alpha$ when the problem allows it, weights with $W_0^{(c)} \ge 0$ where you can choose them, and careful angle handling — together with the square-root form.
