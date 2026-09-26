@@ -2502,7 +2502,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-independence-rank-and-null-space",
       "title": "Independence, basis, rank and null space",
-      "minutes": 22,
+      "minutes": 24,
       "covers": [
         "linear independence and basis",
         "rank, null space, column space"
@@ -2512,7 +2512,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-the-determinant",
       "title": "The determinant and what it measures",
-      "minutes": 19,
+      "minutes": 22,
       "covers": [
         "determinant and its geometric meaning"
       ],
@@ -2521,7 +2521,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-orthogonality-gram-schmidt-qr",
       "title": "Orthogonality, Gram–Schmidt and QR",
-      "minutes": 19,
+      "minutes": 21,
       "covers": [
         "orthogonality, Gram-Schmidt, QR"
       ],
@@ -2530,7 +2530,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-change-of-basis-between-frames",
       "title": "Change of basis between reference frames",
-      "minutes": 21,
+      "minutes": 24,
       "covers": [
         "change of basis between reference frames"
       ],
@@ -2539,7 +2539,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-skew-symmetric-cross-product-matrix",
       "title": "Skew-symmetric matrices and the cross-product matrix",
-      "minutes": 23,
+      "minutes": 25,
       "covers": [
         "skew-symmetric matrices and the cross-product matrix"
       ],
@@ -2550,7 +2550,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-eigenvalues-and-diagonalisation",
       "title": "Eigenvalues, eigenvectors and diagonalisation",
-      "minutes": 20,
+      "minutes": 23,
       "covers": [
         "eigenvalues, eigenvectors, diagonalisation"
       ],
@@ -2577,7 +2577,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-symmetric-matrices-spectral-theorem",
       "title": "Symmetric matrices and the spectral theorem",
-      "minutes": 21,
+      "minutes": 25,
       "covers": [
         "symmetric matrices and the spectral theorem"
       ],
