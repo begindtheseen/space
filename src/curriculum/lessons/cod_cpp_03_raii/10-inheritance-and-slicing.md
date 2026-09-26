@@ -228,7 +228,7 @@ Do not call a virtual function from a constructor or destructor and expect the d
 
 ## The virtual destructor, revisited
 
-Lesson 3 met this rule. Now you can see why it has to hold. `delete p` where `p` is a `Sensor*` runs a destructor. If `~Sensor` is not virtual, the compiler picks it by the static type — `Sensor` — and `~Imu` never runs. Anything the `Imu` owns, such as a `std::vector` of history, is never freed. The standard goes further and calls the whole thing **undefined behaviour**: anything may happen.
+Lesson 3 met this rule. Now you can see why it has to hold. `delete p` where `p` is a `Sensor*` runs a destructor. If `~Sensor` is not virtual, the compiler picks it by the static type — `Sensor` — and `~Imu` never runs. Anything the `Imu` owns, such as a `std::vector` of history, is never freed. The standard calls it **undefined behaviour**.
 
 g++ warns about it under `-Wall`:
 
@@ -350,7 +350,7 @@ A base class declares `virtual void update(double dt_s);`. A derived class decla
 :::
 
 ::: answer
-With `override` it fails to compile, with an error like "marked 'override', but does not override". The parameter type differs — `float` instead of `double` — so the derived function has a different signature and cannot fill the base's slot. Without `override`, it would compile. The derived class would then have two unrelated functions named `update`. A call through a base reference, `base.update(0.01)`, would run the base version, and the derived logic would never execute in the control loop. A direct call on the derived object might even pick the `float` one, so a quick test could look fine. `override` turns that silent run-time bug into a compile error.
+With `override` it fails to compile, with an error like "marked 'override', but does not override". The parameter type differs — `float` instead of `double` — so the derived function has a different signature and cannot fill the base's slot. Without `override`, it would compile. The derived class would then have two unrelated functions named `update`. A call through a base reference, `base.update(0.01)`, would run the base version, and the derived logic would never execute in the control loop. `override` turns that silent run-time bug into a compile error.
 :::
 
 ::: check
@@ -358,7 +358,7 @@ With `override` it fails to compile, with an error like "marked 'override', but 
 :::
 
 ::: answer
-No. `Star` inherits the pure virtual `attitude` and does not override it, so `Star` still has a pure virtual function. That makes `Star` abstract too, and the compiler refuses to create one, listing `attitude` as the function still pure. The fix is to give `Star` a `Quat attitude() const override` with a body. Then `Star` is concrete and `Star s;` compiles. A class is concrete only when every pure virtual function along its chain of bases has been overridden.
+No. `Star` inherits the pure virtual `attitude` and does not override it, so `Star` still has a pure virtual function. That makes `Star` abstract too, and the compiler refuses to create one, listing `attitude` as the function still pure. Give `Star` a `Quat attitude() const override` with a body, and `Star s;` compiles. A class is concrete only when every pure virtual function along its chain of bases has been overridden.
 :::
 
 ::: check
@@ -436,6 +436,20 @@ The idea that a derived object must work anywhere its base is expected is called
 
 ::: context static-dynamic-type Two types for one expression
 In `const Sensor& s = imu;`, the name `s` has static type `Sensor` forever: that is what is written. The object it refers to has dynamic type `Imu`: that is what was built. The static type is known when compiling; the dynamic type may only be known when running, for example when a configuration file decides which sensor to create. Non-virtual calls, overloads and templates all follow the static type. Only virtual calls, `dynamic_cast` and `typeid` look at the dynamic type.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 110" font-family="Inter, Arial, sans-serif">
+  <rect x="10" y="36" width="120" height="34" fill="#ffffff" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="70" y="57" font-size="12" text-anchor="middle" fill="#1f2a44">const Sensor&amp; s</text>
+  <text x="70" y="92" font-size="11" text-anchor="middle" fill="#1d6fd1">static type: Sensor</text>
+  <line x1="130" y1="53" x2="200" y2="53" stroke="#1f2a44" stroke-width="2"/>
+  <polygon points="208,53 198,47 198,59" fill="#1f2a44"/>
+  <rect x="210" y="30" width="140" height="46" fill="#f2b880" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="280" y="57" font-size="12" text-anchor="middle" fill="#1f2a44">an Imu object</text>
+  <text x="280" y="92" font-size="11" text-anchor="middle" fill="#b4232c">dynamic type: Imu</text>
+  <text x="180" y="18" font-size="11" text-anchor="middle" fill="#6c7a93">refers to</text>
+</svg>
+```
 :::
 
 ::: context vptr-bridge The hidden pointer, briefly

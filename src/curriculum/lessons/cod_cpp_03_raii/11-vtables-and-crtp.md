@@ -280,7 +280,7 @@ Measure before you rewrite. A virtual call in code that runs 50 times a second c
 
 Before reaching for a faster kind of inheritance, ask whether inheritance is the right tool at all.
 
-A rocket's reaction-control thruster has a valve and a heater. It is not a valve. If `Thruster` inherited from `Valve`, every public `Valve` function — `open()`, `close()` — would become part of `Thruster`'s public face. Any code could open the valve without going through the thruster's own safety logic. And any change to `Valve` would ripple into every class built on it.
+A rocket's reaction-control thruster has a valve and a heater. It is not a valve. If `Thruster` inherited from `Valve`, every public `Valve` function — `open()`, `close()` — would become part of `Thruster`'s public face. Any code could open the valve and skip the thruster's own safety logic.
 
 **Composition** means building a class from member objects — "has a" — instead of from a base class — "is a". The thruster holds a `Valve` and a `Heater` as members and decides for itself what to expose:
 
@@ -296,7 +296,7 @@ private:
 };
 ```
 
-With simple `Valve` and `Heater` classes, calling `fire()` then `stop()` printed `firing: 1` and then `firing: 0`. Composition has no vptr, no virtual calls and nothing to slice. Each member's constructor and destructor run in the usual order, so RAII works unchanged. And the members can be swapped for others with the same functions without touching any caller.
+With simple `Valve` and `Heater` classes, calling `fire()` then `stop()` printed `firing: 1` and then `firing: 0`. Composition has no vptr, no virtual calls and nothing to slice. RAII works unchanged, and a member can be swapped for another without touching any caller.
 
 "Prefer composition over inheritance" is one of the best-known design rules, going back to the [[1994 Design Patterns book|design-patterns]]. It does not mean "never inherit". Inheritance fits when you truly have an is-a relationship and need to treat many kinds through one interface — the sensor loop from last lesson. It is a poor way merely to reuse code.
 
@@ -416,7 +416,7 @@ Using the measured numbers, a flight computer runs a filter over 4,000 samples e
 :::
 
 ::: answer
-Per call the difference was about $1.78 - 0.37 = 1.41$ ns on the test machine. Per cycle: $4{,}000 \times 1.41 = 5{,}640$ ns, about 5.6 µs. At 1,000 cycles per second, that is about 5.6 ms of every second, or 0.56 per cent of one core. The cycle has a 1 ms budget, and 5.6 µs is 0.56 per cent of it. Whether that is worth changing depends on how close to the budget the cycle is. On a loaded flight computer, where every microsecond of worst-case time is counted, it may well be. The numbers came from one server and would need re-measuring on the real flight processor, which is usually slower.
+Per call the difference was about $1.78 - 0.37 = 1.41$ ns on the test machine. Per cycle: $4{,}000 \times 1.41 = 5{,}640$ ns, about 5.6 µs. At 1,000 cycles per second, that is about 5.6 ms of every second, or 0.56 per cent of one core. The cycle has a 1 ms budget, and 5.6 µs is 0.56 per cent of it. Whether that is worth changing depends on how close to budget the cycle runs; on a loaded flight computer it may well be. And these numbers came from one server: re-measure on the real flight processor, which is usually slower.
 :::
 
 ::: check
@@ -480,7 +480,7 @@ Two `Gain` objects share one table; the `Offset` has its own. Each vptr points p
   <text x="35" y="166" font-size="11" text-anchor="middle" fill="#1f2a44">vptr</text>
   <text x="85" y="166" font-size="11" text-anchor="middle" fill="#1f2a44">b = 1</text>
   <text x="10" y="188" font-size="11" fill="#6c7a93">o1</text>
-  <text x="200" y="16" font-size="12" fill="#1f2a44">vtable for Gain (40 bytes)</text>
+  <text x="200" y="16" font-size="12" fill="#1f2a44">vtable of Gain</text>
   <rect x="200" y="22" width="150" height="14" fill="#ffffff" stroke="#6c7a93"/>
   <rect x="200" y="36" width="150" height="14" fill="#ffffff" stroke="#6c7a93"/>
   <rect x="200" y="50" width="150" height="14" fill="#8fb8f0" stroke="#1f2a44"/>
@@ -491,7 +491,7 @@ Two `Gain` objects share one table; the `Offset` has its own. Each vptr points p
   <text x="275" y="61" font-size="11" text-anchor="middle" fill="#1f2a44">~Gain</text>
   <text x="275" y="75" font-size="11" text-anchor="middle" fill="#1f2a44">~Gain (deleting)</text>
   <text x="275" y="89" font-size="11" text-anchor="middle" fill="#1f2a44">Gain::apply</text>
-  <text x="200" y="120" font-size="12" fill="#1f2a44">vtable for Offset (40 bytes)</text>
+  <text x="200" y="120" font-size="12" fill="#1f2a44">vtable of Offset</text>
   <rect x="200" y="126" width="150" height="14" fill="#ffffff" stroke="#6c7a93"/>
   <rect x="200" y="140" width="150" height="14" fill="#ffffff" stroke="#6c7a93"/>
   <rect x="200" y="154" width="150" height="14" fill="#f2b880" stroke="#1f2a44"/>
@@ -519,6 +519,25 @@ A modern processor works on many instructions at once, like an assembly line. At
 
 ::: context inlining What the compiler gains by pasting the body in
 A function call has fixed costs: saving and restoring registers, moving arguments into place, the call and return themselves. Inlining removes those. The larger gain comes after: with the body in view, the compiler can keep values in registers across iterations, drop work whose result is unused, replace a variable with a constant it knows, and process several elements at once. None of that can cross a call whose target is unknown.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 130" font-family="Inter, Arial, sans-serif">
+  <text x="10" y="16" font-size="12" fill="#1f2a44">loop with a call</text>
+  <rect x="10" y="24" width="150" height="90" fill="#ffffff" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="20" y="44" font-size="11" fill="#1f2a44">load in[i]</text>
+  <text x="20" y="62" font-size="11" fill="#b4232c">call apply →</text>
+  <text x="20" y="80" font-size="11" fill="#1f2a44">store out[i]</text>
+  <text x="20" y="98" font-size="11" fill="#1f2a44">next i</text>
+  <rect x="120" y="50" width="30" height="18" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="135" y="63" font-size="11" text-anchor="middle" fill="#1f2a44">k×x</text>
+  <text x="200" y="16" font-size="12" fill="#1f2a44">after inlining</text>
+  <rect x="200" y="24" width="150" height="90" fill="#ffffff" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="210" y="44" font-size="11" fill="#1f2a44">load in[i]</text>
+  <text x="210" y="62" font-size="11" fill="#1d6fd1">multiply by k</text>
+  <text x="210" y="80" font-size="11" fill="#1f2a44">store out[i]</text>
+  <text x="210" y="98" font-size="11" fill="#1f2a44">next i</text>
+</svg>
+```
 :::
 
 ::: context vectorisation One instruction, several numbers
