@@ -11,7 +11,7 @@ Think of a ticket dispenser at a deli counter. You press the button and it hands
 
 Now picture a factory conveyor belt. Parts come off the dispenser one at a time and roll past a few stations. One station paints each part. One throws away the dented ones. At the end of the belt, a worker counts or boxes what arrives. Nothing moves until that last worker pulls the next part toward them.
 
-Rust's **[[iterators|iterator-word]]** are the dispenser, and its **adapters** are the stations on the belt. The little instructions you hand to each station — "paint it blue", "throw away anything above 1200 m" — are **closures**: short functions you write right where you need them, which can remember values from around them. On a flight-software or ground-tools team you use all three constantly: to scan a telemetry log, to compute a rate from neighboring samples, to sort thrusters by health, to hand a callback to a scheduler. This lesson shows how they work, why a long chain of them runs as fast as a loop you wrote by hand, and what the three closure traits `Fn`, `FnMut` and `FnOnce` mean.
+Rust's **[[iterators|iterator-word]]** are the dispenser, and its **adapters** are the stations on the belt. The instructions you hand each station — "throw away anything above 1200 m" — are **closures**: short functions written right where you need them, which can remember values from around them. Flight-software and ground-tools teams use all three constantly: to scan a telemetry log, compute a rate from neighboring samples, or hand a callback to a scheduler. This lesson shows how they work, why a chain of them runs as fast as a hand-written loop, and what the closure traits `Fn`, `FnMut` and `FnOnce` mean.
 
 ## An iterator is anything with a `next` button
 
@@ -130,7 +130,7 @@ warning: unused `Map` that must be used
   = note: iterators are lazy and do nothing unless consumed
 ```
 
-Being **lazy** — doing work only when asked — is not a flaw. It means a chain can stop early. `(1..).map(|n| n * n).take(3)` starts from an endless range of numbers, yet `collect` gives `[1, 4, 9]` and stops, because `take(3)` never asks for a fourth. Each item travels the whole belt before the next one starts, so no hidden temporary lists are built between stations. The consumer at the end is [[pulling items through|pull-model]], one at a time.
+Being **lazy** — doing work only when asked — is not a flaw. It lets a chain stop early: `(1..).map(|n| n * n).take(3)` starts from an endless range, yet `collect` gives `[1, 4, 9]` and stops. And since each item travels the whole belt before the next starts, no hidden temporary lists are built between stations. The consumer at the end is [[pulling items through|pull-model]], one at a time.
 
 ::: example A descent rate from an altitude log
 A lander's altimeter logs its height above the pad once per second: 1200, 1130, 1062, 9999, 931 and 868 m. The 9999 is a glitch — a bad reading. You want the descent rate, in meters per second, between each pair of good samples.
@@ -165,9 +165,9 @@ mean    = 83.00 m/s
 fastest = 131.0 m/s
 ```
 
-Read the chain aloud. Walk the altitudes, copy each one out, keep only those at or below 1200 m, collect them. Then slide a window of two, subtract, collect.
+Read the chain aloud: walk the altitudes, copy each out, keep those at or below 1200 m, collect. Then slide a window of two, subtract, collect.
 
-Now check that it makes sense. The rates go 70, 68, then suddenly 131, then 63. A lander slowing down does not suddenly double its speed for one second. What happened? The filter removed the sample at 3 s, so 1062 m (at 2 s) and 931 m (at 4 s) became neighbors. They are two seconds apart, not one: $1062 - 931 = 131\,\mathrm{m}$ in $2\,\mathrm{s}$ is $65.5\,\mathrm{m/s}$.
+Now check that it makes sense. The rates go 70, 68, then 131, then 63. A braking lander does not double its speed for one second. The filter removed the sample at 3 s, so 1062 m (at 2 s) and 931 m (at 4 s) became neighbors, two seconds apart: $1062 - 931 = 131\,\mathrm{m}$ in $2\,\mathrm{s}$ is $65.5\,\mathrm{m/s}$.
 
 The fix is to keep each sample's time stamp with it before filtering. `enumerate` gives the index, which is the time in seconds:
 
@@ -213,9 +213,7 @@ That is how you would parse a whole column of numbers from a ground-station file
 
 ## Why the chain costs nothing
 
-A reasonable worry: all these stations, closures and `Option`s must cost something. In C or old C++, a call through a function pointer for every element is real overhead. So is a chain of iterators slower than a plain loop?
-
-In an optimized build, no. Two compiler steps make the stations disappear.
+A reasonable worry: all these stations, closures and `Option`s must cost something. In C, a call through a function pointer for every element is real overhead. In an optimized Rust build, though, two compiler steps make the stations disappear.
 
 The first is **[[monomorphization|monomorphization]]**: turning generic code into a separate, concrete copy for each type it is used with. Every closure in Rust has its own unique type, and `map` is generic over that type. So `v.iter().map(|x| 0.5 * x * x)` is not "map with some function"; it is a brand-new type, a `Map` of a slice iterator over `f64` with this one closure inside. The compiler writes code for exactly that combination, the same way a C++ template is stamped out for each type you use it with.
 
@@ -273,7 +271,7 @@ loop  13.25ms  iter  12.47ms  same answer: true
 
 In the release build the two are within the noise of each other, as the identical assembly promised. The loop got about $37.5/13.3 \approx 2.8$ times faster than in debug, and the iterator version about $80.6/12.5 \approx 6.4$ times faster.
 
-**Sanity check.** The debug build tells the other half of the story: with no optimization, nothing was inlined, and every `map` and `next` was a real function call, so the iterator version took about twice as long as the loop. Zero cost is something the optimizer delivers. It is not a property of the source code.
+**Sanity check.** In debug, nothing was inlined and every `map` and `next` was a real function call, so the iterator version took about twice as long as the loop. Zero cost is delivered by the optimizer, not by the source code.
 :::
 
 ::: warning "Zero cost" does not mean "free"
@@ -292,7 +290,7 @@ println!("{}", scale(10.0)); // 8
 
 Read `|x: f64| gain * x` as "a closure taking x, returning gain times x". The types of the parameter and the result can usually be left out, because the compiler works them out from how the closure is used. For more than one line, put the body in braces: `|x| { let y = x * 2.0; y + 1.0 }`.
 
-The interesting part is `gain`. It is not a parameter. It lives outside the closure, yet the closure uses it. The closure has **captured** it — packed a reference to it into its own little backpack. That is where the name comes from: the function [[closes over|closure-word]] its surroundings.
+The interesting part is `gain`. It is not a parameter; it lives outside the closure, yet the closure uses it. The closure has **captured** it — packed a reference to it into its own backpack. That is where the name comes from: the function [[closes over|closure-word]] its surroundings.
 
 If you know C++ lambdas, this is the same idea, with one difference. In C++ you write the capture list yourself, `[gain](double x) { return gain * x; }`. In Rust the compiler looks at what the body does with each variable and picks the lightest capture that works: a shared borrow if the closure only reads it, a mutable borrow if it changes it, and taking ownership if it has to give it away.
 
@@ -385,7 +383,7 @@ Three closure traits by how they capture: Fn borrows immutably and can be called
 
 "Most permissive" means the one that lets the closure be used in the most places. The families nest like [[rungs on a ladder|closure-trait-ladder]]. Every `Fn` closure can also be used where an `FnMut` is asked for (reading is a harmless kind of changing nothing), and every `FnMut` can be used where an `FnOnce` is asked for (anything you can call many times you can certainly call once). So the compiler makes a closure `Fn` whenever the body allows, `FnMut` if the body changes something, and only `FnOnce` if the body gives something away.
 
-Seen from the other side, a function that *accepts* a closure should ask for the least it needs. `Iterator::map` asks for `FnMut`, so you can keep a running counter inside a `map` if you must. A function that calls its argument exactly once, like starting a new thread, asks for `FnOnce`, which accepts every closure.
+A function that *accepts* a closure should ask for the least it needs. `Iterator::map` asks for `FnMut`; a function that calls its argument exactly once asks for `FnOnce`, which accepts every closure.
 
 ### What the compiler says when the family is wrong
 
@@ -412,13 +410,13 @@ error[E0382]: use of moved value: `hand_over`
 note: closure cannot be invoked more than once because it moves the variable `log` out of its environment
 ```
 
-Both are mistakes that in C++ would compile and then misbehave: two threads bumping the same counter, or a buffer read after it was moved away. Here they never reach a test stand.
+In C++ the matching mistakes — a counter bumped where only reading was promised, a buffer used after it was moved away — can compile and misbehave. Here they never reach a test stand.
 
 ::: warning `move` does not make a closure `FnOnce`
 `move` decides how values get *into* the closure: by ownership instead of by borrow. The family depends on what the body does with them *afterwards*. `make_limiter` returned a `move` closure that is still `Fn` — it only reads its `max`, so it can be called a thousand times. A closure is `FnOnce` only when its body gives a captured value away, as `hand_over` did.
 :::
 
-On a real vehicle's software these show up everywhere. A sort that orders thrusters by remaining propellant takes an `FnMut` comparison. A filter that scans telemetry for out-of-limit pressures takes a closure. A scheduler that runs a task every 10 ms stores `FnMut` callbacks, because tasks keep state between runs. And handing work to a [[new thread|threads-bridge]] takes an `FnOnce`, because the work, and everything it captured, moves to the thread for good.
+On a vehicle's software these are everywhere. A scheduler that runs a task every 10 ms stores `FnMut` callbacks, because tasks keep state between runs. Handing work to a [[new thread|threads-bridge]] takes an `FnOnce`, because the work and everything it captured move to the thread for good.
 
 ## Check yourself
 
@@ -455,7 +453,7 @@ A teammate replaces `for i in 0..p.len() { if p[i] > 200.0 { n += 1; } }` with a
 ::: answer
 `let n = p.iter().copied().filter(|&x| x > 200.0).count();` — for `[101.2, 99.8, 240.0, 100.4, 251.3]` it gives 2.
 
-In an optimized build the chain is monomorphised for this one closure and inlined into a plain loop, so it compiles to the same machine code as the index loop, usually without bounds checks. It would be slower only in an unoptimized debug build, where every `next` and closure call stays a real function call — which is why speed is always judged with `--release` and confirmed with a benchmark or the assembly.
+In an optimized build the chain is monomorphised for this closure and inlined into a plain loop, the same machine code as the index loop. It would be slower only in an unoptimized debug build, where every `next` and closure call stays a real function call — so judge speed with `--release` and a benchmark.
 :::
 
 ::: check
@@ -466,14 +464,6 @@ Why does `readings.iter().max()` fail to compile for a slice of `f64`, when it w
 `max` needs the items to be `Ord`: any two values must have a definite order. Integers have one. Floats do not, because NaN compares as neither smaller, equal nor larger than anything, so `f64` implements only the weaker `PartialOrd`.
 
 Two fixes: `readings.iter().copied().fold(f64::MIN, f64::max)`, which starts below every real reading and keeps the larger at each step; or `readings.iter().copied().max_by(|a, b| a.total_cmp(b))`, which uses a complete ordering that gives NaN a fixed place. `max_by` returns an `Option`, which is `None` for an empty slice.
-:::
-
-::: check
-`make_limiter` in the lesson begins its closure with `move`. Explain what would go wrong without it, in terms of where `max` lives.
-:::
-
-::: answer
-`max` is a parameter of `make_limiter`, so it lives only while `make_limiter` is running. Without `move`, the closure would borrow `max` — hold a reference to it — because it only reads it. But the closure is returned and used after `make_limiter` has ended, when `max` no longer exists. That reference would point at nothing. Rust refuses to compile it and suggests adding `move`, which makes the closure carry its own copy of `max` in its backpack.
 :::
 
 ## Summary
