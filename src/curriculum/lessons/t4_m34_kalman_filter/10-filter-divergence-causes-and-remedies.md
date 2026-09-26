@@ -22,8 +22,6 @@ Here is the whole list, with the usual remedy for each. The rest of the lesson f
 Underestimated $\mathbf{Q}$; unmodelled dynamics or biases; unobservable states; numerical loss of symmetry or positive definiteness; and unrejected measurement outliers. Remedies: augment the state, inflate $\mathbf{Q}$ or fade memory, symmetrize, use Joseph or square-root forms, and gate measurements.
 :::
 
-Take them one at a time.
-
 - **Underestimated $\mathbf{Q}$.** The process-noise lesson showed it. A filter tuned a hundred times too tight ends up reporting a position standard deviation of about $0.43\,\mathrm{m}$ while its real error grows past $25\,\mathrm{m}$ — around sixty of its own standard deviations. The covariance shrinks the whole time.
 - **Unmodelled dynamics or biases.** Something real is pushing the vehicle, and the model has no term for it. In the same process-noise example, the truth had a steady deceleration the constant-velocity model did not contain. "Make $\mathbf{Q}$ bigger" is one answer. This lesson shows a better one.
 - **Unobservable states.** The observability lesson showed a state the sensor cannot see at all. Its covariance grows forever if $\mathbf{Q}$ is not zero, or sits frozen at its starting value if $\mathbf{Q}$ is zero. Either way, its error is never corrected.
@@ -82,7 +80,7 @@ Fly $50$ simulated descents, each $150$ steps ($15\,\mathrm{s}$) long, all with 
 
 The augmented filter is about three times more accurate than the best constant-velocity filter ($2.56 / 0.82 \approx 3.1$). It also hands you the acceleration itself, within about $1\%$ on average. The constant-velocity filter never had that number at all. Changing $q_a$ a hundredfold barely changes the accuracy, because now the state, not the noise budget, is doing the work of tracking the acceleration.
 
-Look at the second row once more. Even the "well-tuned" constant-velocity filter reports $\sigma_p = 0.75\,\mathrm{m}$ while its real RMS error is $2.56\,\mathrm{m}$. Inflating $\mathbf{Q}$ stopped the runaway, but it did not make the filter honest. The augmented filter's reported $\sigma_p$ and real error are close.
+Look at the second row again: it reports $\sigma_p = 0.75\,\mathrm{m}$ with a real RMS error of $2.56\,\mathrm{m}$. A bigger $\mathbf{Q}$ stopped the runaway but did not make the filter honest. The augmented filter's claim and reality are close.
 :::
 
 Augmentation is listed first among the remedies because it is the only one that fixes the defect instead of covering for it. It needs you to know *what* is missing, which an outlier or a round-off error never tells you. But when a nameable effect — a drag term, a sensor bias, a thrust misalignment — is driving the divergence, adding it as a state beats every other remedy here.

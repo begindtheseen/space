@@ -1,7 +1,7 @@
 ---
 id: l08-observability-and-filter-convergence
 title: Observability and filter convergence
-minutes: 20
+minutes: 18
 covers:
   - Observability and filter convergence
 ---
@@ -182,7 +182,7 @@ In the Doppler-only example, the correlation $P_{pv}$ settles at $0.00393$ while
 :::
 
 ::: answer
-$P_{pv}$ has a correction channel. The sensor measures velocity, so the update multiplies $P_{pv}$ by $R/S$ every cycle, shrinking it. The predict step adds to it an amount set by $\Delta t\,P_{vv}$ and $\mathbf{Q}$. Once $P_{vv}$ has settled (velocity is fully observable on its own), that added amount is constant, and a fixed shrink factor balancing a fixed addition gives a fixed point — just like the scalar steady state of the last lesson.
+$P_{pv}$ has a correction channel. The sensor measures velocity, so the update multiplies $P_{pv}$ by $R/S$ every cycle, shrinking it. The predict step adds to it an amount set by $\Delta t\,P_{vv}$ and $\mathbf{Q}$. Once $P_{vv}$ has settled (velocity is fully observable on its own), that added amount is constant, and a fixed shrink factor balancing a fixed addition gives a fixed point — the same way the scalar steady state worked of the last lesson.
 
 $P_{pp}$ has no such balance. Each cycle the predict step adds a fixed $0.000367$, and the update can remove only a fixed $0.000225$ through the small, settled correlation. The removal does not grow as $P_{pp}$ grows, so there is no level at which the two match. The difference, $0.000142$, piles up forever.
 :::
