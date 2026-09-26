@@ -2789,7 +2789,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-curves-and-rotating-frames",
       "title": "Trajectories as vector functions of time",
-      "minutes": 26,
+      "minutes": 24,
       "covers": [
         "vector-valued functions of time, arc length, curvature"
       ],
@@ -2798,7 +2798,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-multiple-integrals",
       "title": "Double and triple integrals",
-      "minutes": 25,
+      "minutes": 23,
       "covers": [
         "multiple integrals"
       ],
@@ -2807,7 +2807,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-line-and-surface-integrals",
       "title": "Line integrals and surface integrals",
-      "minutes": 25,
+      "minutes": 30,
       "covers": [
         "line and surface integrals"
       ],
@@ -2816,7 +2816,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-div-curl-laplacian",
       "title": "Divergence, curl and the Laplacian",
-      "minutes": 25,
+      "minutes": 23,
       "covers": [
         "divergence, curl, Laplacian"
       ],
@@ -2825,7 +2825,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-divergence-and-stokes-theorems",
       "title": "The divergence theorem and Stokes' theorem",
-      "minutes": 25,
+      "minutes": 24,
       "covers": [
         "divergence and Stokes theorems"
       ],
@@ -2834,7 +2834,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-conservative-fields",
       "title": "Conservative fields, potentials and orbital energy",
-      "minutes": 27,
+      "minutes": 22,
       "covers": [
         "conservative fields and potential functions"
       ],
