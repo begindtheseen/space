@@ -7435,7 +7435,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-command-and-telemetry",
       "title": "Command and telemetry",
-      "minutes": 19,
+      "minutes": 21,
       "covers": [
         "Command and telemetry: CCSDS packet structure, dictionaries, limit checking, and command authentication"
       ],
@@ -7454,7 +7454,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-redundancy-architectures",
       "title": "Redundancy architectures, classical and modern",
-      "minutes": 20,
+      "minutes": 21,
       "covers": [
         "Redundancy architectures: cold, warm and hot standby; dual-dual; cross-strapping",
         "Commodity multi-core computers running Linux with redundant flight strings and voted output, as publicly described for modern launch and crew vehicles"
@@ -7464,7 +7464,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-tmr-and-voting",
       "title": "Triple modular redundancy and voting",
-      "minutes": 20,
+      "minutes": 22,
       "covers": [
         "Triple modular redundancy and voting; mid-value select; what a voter can and cannot detect"
       ],
@@ -7473,7 +7473,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-byzantine-faults-and-determinism",
       "title": "Byzantine faults and determinism",
-      "minutes": 20,
+      "minutes": 27,
       "covers": [
         "Byzantine faults and why a majority vote does not handle an asymmetric liar",
         "Determinism across redundant strings, and why a non-deterministic algorithm cannot be voted"
@@ -7483,7 +7483,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-radiation-and-watchdogs",
       "title": "Radiation effects and watchdog timers",
-      "minutes": 22,
+      "minutes": 26,
       "covers": [
         "Radiation effects: single-event upsets, latch-up, total ionising dose; EDAC and ECC memory; memory scrubbing",
         "Watchdog timers: what they catch, what they miss, and why a reset is a real-time decision"
@@ -7493,7 +7493,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-fault-detection-isolation-recovery",
       "title": "Fault detection, isolation and recovery",
-      "minutes": 24,
+      "minutes": 28,
       "covers": [
         "Fault detection, isolation and recovery: residual monitors, hypothesis tests, persistence counters and hysteresis"
       ],
@@ -7502,7 +7502,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-fmea-fault-trees-abort",
       "title": "FMEA, fault trees, and the abort decision",
-      "minutes": 22,
+      "minutes": 27,
       "covers": [
         "FMEA and fault trees; identifying the single points of failure a voter does not cover",
         "Abort logic and autonomous flight termination systems"
@@ -7512,7 +7512,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-safing-reachability",
       "title": "Safing modes: proving safe is reachable",
-      "minutes": 17,
+      "minutes": 23,
       "covers": [
         "Safing modes and the rule that safe must be reachable, stable and exitable only by an explicit decision"
       ],
@@ -7521,7 +7521,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-traceability-config-updates",
       "title": "Traceability, configuration management, and in-flight updates",
-      "minutes": 21,
+      "minutes": 25,
       "covers": [
         "Requirements traceability from a vehicle requirement to a line of code to a test",
         "Configuration management of gains, I-loads and tables separately from the executable",
@@ -7543,7 +7543,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-fixed-step-vs-variable-step-integration",
       "title": "Fixed-step vs. variable-step integration",
-      "minutes": 19,
+      "minutes": 22,
       "covers": [
         "Fixed-step vs variable-step integration, and why a closed loop with a digital controller wants a fixed step"
       ],
