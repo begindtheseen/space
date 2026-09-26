@@ -429,7 +429,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-portfolio-principles",
       "title": "Portfolio principles: few, deep, and defensible",
-      "minutes": 21,
+      "minutes": 22,
       "covers": [
         "portfolio principles: few, deep, documented, defensible, reproducible",
         "what not to build: tutorial follow-alongs, notebooks without validation, thirty shallow repositories"
@@ -439,7 +439,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-the-write-up-structure",
       "title": "The write-up: structure, and the ninety-second read",
-      "minutes": 19,
+      "minutes": 20,
       "covers": [
         "the write-up structure: problem, model, assumptions, verification, validation, results, limitations"
       ],
@@ -448,7 +448,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-verification-toolkit",
       "title": "How you know the result is right: the verification toolkit",
-      "minutes": 21,
+      "minutes": 23,
       "covers": [
         "stating how you know the result is right: analytic cases, conservation checks, convergence, cross-comparison"
       ],
@@ -457,7 +457,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-anchor-a-6dof-simulation",
       "title": "Anchor A: the 6-DOF launch vehicle simulation",
-      "minutes": 20,
+      "minutes": 21,
       "covers": [
         "anchor project A — 6-DOF launch vehicle simulation with a real atmosphere model and dispersion campaign"
       ],
@@ -475,7 +475,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-anchor-c-quaternion-ekf",
       "title": "Anchor C: the quaternion EKF, proved consistent",
-      "minutes": 22,
+      "minutes": 21,
       "covers": [
         "anchor project C — multiplicative quaternion EKF fusing IMU and star tracker, with NEES and NIS consistency checks"
       ],
@@ -502,7 +502,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-hardware-adjacent-work",
       "title": "Hardware-adjacent work: meeting real sensor reality",
-      "minutes": 20,
+      "minutes": 18,
       "covers": [
         "hardware-adjacent work: a real IMU, a thrust-vector-control testbed, a balancing robot, to evidence sensor reality"
       ],
@@ -511,7 +511,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-reproducibility",
       "title": "Reproducibility: seeded, one command, pinned, CI",
-      "minutes": 18,
+      "minutes": 19,
       "covers": [
         "reproducibility: seeded, one-command, CI, pinned dependencies"
       ],
@@ -520,7 +520,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-licensing-and-prior-employer-ip",
       "title": "Licensing, and what to do about prior-employer IP",
-      "minutes": 18,
+      "minutes": 22,
       "covers": [
         "open-sourcing, licensing, and what to do about prior-employer intellectual property"
       ],
@@ -528,8 +528,8 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     },
     {
       "id": "l12-feeding-the-past-project-defence",
-      "title": "How the portfolio feeds the past-project defence",
-      "minutes": 18,
+      "title": "How the portfolio feeds the past-project defense",
+      "minutes": 21,
       "covers": [
         "how the portfolio feeds the past-project presentation round"
       ],
