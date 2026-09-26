@@ -4244,7 +4244,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-geopotential-harmonics",
       "title": "The geopotential, spherical harmonics, and J2",
-      "minutes": 22,
+      "minutes": 18,
       "covers": [
         "non-spherical gravity, spherical harmonics, J2 and higher zonals"
       ],
@@ -4253,7 +4253,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-gauss-variational-equations",
       "title": "The Gauss variational and Lagrange planetary equations",
-      "minutes": 18,
+      "minutes": 20,
       "covers": [
         "Gauss variational equations and Lagrange planetary equations"
       ],
@@ -4262,7 +4262,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-j2-secular-effects",
       "title": "J2 secular effects — nodal regression and apsidal rotation",
-      "minutes": 20,
+      "minutes": 25,
       "covers": [
         "J2 secular effects: nodal regression and apsidal rotation"
       ],
@@ -4271,7 +4271,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-sun-synchronous-orbits",
       "title": "Designing a sun-synchronous orbit",
-      "minutes": 15,
+      "minutes": 16,
       "covers": [
         "sun-synchronous orbits"
       ],
@@ -4280,7 +4280,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-mean-vs-osculating-elements",
       "title": "Mean vs osculating elements",
-      "minutes": 20,
+      "minutes": 18,
       "covers": [
         "mean vs osculating elements"
       ],
@@ -4289,7 +4289,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-atmospheric-drag",
       "title": "Atmospheric drag, ballistic coefficient, and density uncertainty",
-      "minutes": 17,
+      "minutes": 26,
       "covers": [
         "atmospheric drag, ballistic coefficient and density model uncertainty"
       ],
@@ -4298,7 +4298,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-third-body-tides-relativity",
       "title": "Third-body attraction, tides, and relativistic corrections",
-      "minutes": 17,
+      "minutes": 18,
       "covers": [
         "third-body lunar and solar perturbations",
         "tides and relativistic corrections"
@@ -4308,7 +4308,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-solar-radiation-pressure",
       "title": "Solar radiation pressure and eclipse modelling",
-      "minutes": 15,
+      "minutes": 20,
       "covers": [
         "solar radiation pressure and eclipse modelling"
       ],
@@ -4317,7 +4317,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-cowell-encke-methods",
       "title": "Cowell's method and Encke's method",
-      "minutes": 19,
+      "minutes": 23,
       "covers": [
         "Cowell and Encke methods"
       ],
@@ -4326,7 +4326,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-sgp4-tle",
       "title": "SGP4/SDP4 and why TLEs are theory-specific",
-      "minutes": 19,
+      "minutes": 21,
       "covers": [
         "SGP4/SDP4 and why TLEs are theory-specific"
       ],
@@ -4335,7 +4335,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-long-term-evolution-lifetime",
       "title": "Long-term orbit evolution and lifetime estimation",
-      "minutes": 18,
+      "minutes": 21,
       "covers": [
         "long-term orbit evolution and lifetime estimation",
         "perturbation sources ranked by magnitude in LEO and GEO"
@@ -4347,7 +4347,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-lamberts-problem-and-theorem",
       "title": "Lambert's problem and Lambert's theorem",
-      "minutes": 20,
+      "minutes": 19,
       "covers": [
         "Lambert's problem statement and Lambert's theorem"
       ],
@@ -4356,7 +4356,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-universal-variable-solver",
       "title": "Solving Lambert's problem: Gauss, universal variables, and Izzo",
-      "minutes": 22,
+      "minutes": 25,
       "covers": [
         "solution methods: Gauss, universal variables / Battin, Izzo"
       ],
