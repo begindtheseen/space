@@ -1697,7 +1697,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l13-diagnosing-a-machine",
       "title": "Diagnosing a machine — disk, network, syscalls, kernel",
-      "minutes": 23,
+      "minutes": 22,
       "covers": [
         "df du lsblk ip ss curl strace lsof dmesg"
       ],
@@ -1717,7 +1717,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-shebangs-and-executable-scripts",
       "title": "Shebang lines and executable scripts",
-      "minutes": 19,
+      "minutes": 22,
       "covers": [
         "Shebang lines and executable scripts"
       ],
@@ -1726,7 +1726,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-set-euo-pipefail",
       "title": "set -euo pipefail, and what each flag protects against",
-      "minutes": 18,
+      "minutes": 21,
       "covers": [
         "set -euo pipefail and what each flag actually does"
       ],
@@ -1735,7 +1735,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-variables-quoting-and-expansion",
       "title": "Variables, quoting, word splitting and globs",
-      "minutes": 18,
+      "minutes": 20,
       "covers": [
         "Variables, quoting, word splitting, glob expansion"
       ],
@@ -1744,7 +1744,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-substitution-arithmetic-and-arrays",
       "title": "Command substitution, arithmetic and arrays",
-      "minutes": 17,
+      "minutes": 22,
       "covers": [
         "Command substitution $( ), arithmetic $(( )), arrays"
       ],
@@ -1753,7 +1753,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-control-flow-and-tests",
       "title": "Control flow, and the two kinds of bracket",
-      "minutes": 18,
+      "minutes": 21,
       "covers": [
         "if / for / while / case, test [[ ]] vs [ ]"
       ],
@@ -1762,7 +1762,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-functions-and-exit-codes",
       "title": "Functions, return values and exit codes",
-      "minutes": 17,
+      "minutes": 19,
       "covers": [
         "Functions, return values, exit codes, $?"
       ],
@@ -1771,7 +1771,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-trap-and-cleanup",
       "title": "trap, and cleaning up on every exit path",
-      "minutes": 14,
+      "minutes": 18,
       "covers": [
         "trap for cleanup on EXIT/INT/TERM"
       ],
@@ -1780,7 +1780,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-getopts-and-arguments",
       "title": "A script's interface — getopts, arguments and here-docs",
-      "minutes": 18,
+      "minutes": 21,
       "covers": [
         "getopts for flags, positional args, \"$@\" vs \"$*\"",
         "Here-docs and here-strings"
@@ -1790,7 +1790,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-sed",
       "title": "sed — substitution and addressing",
-      "minutes": 19,
+      "minutes": 22,
       "covers": [
         "sed substitution and addressing; awk fields, patterns, BEGIN/END, arrays"
       ],
@@ -1799,7 +1799,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-awk",
       "title": "awk — fields, patterns and arrays",
-      "minutes": 20,
+      "minutes": 21,
       "covers": [
         "sed substitution and addressing; awk fields, patterns, BEGIN/END, arrays"
       ],
@@ -1808,7 +1808,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-jq-and-tabular-text",
       "title": "jq for JSON, and lining up tabular text",
-      "minutes": 19,
+      "minutes": 22,
       "covers": [
         "jq for JSON, column/paste/join for tabular text"
       ],
@@ -1817,7 +1817,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-shellcheck",
       "title": "shellcheck as a mandatory linter",
-      "minutes": 18,
+      "minutes": 20,
       "covers": [
         "shellcheck as a mandatory linter"
       ],
@@ -1826,7 +1826,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l13-cron-and-systemd-timers",
       "title": "cron and systemd timers",
-      "minutes": 19,
+      "minutes": 22,
       "covers": [
         "cron and systemd timers"
       ],
@@ -1835,7 +1835,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l14-when-to-stop-writing-bash",
       "title": "When to stop writing bash",
-      "minutes": 20,
+      "minutes": 22,
       "covers": [
         "When to stop writing bash and switch to Python"
       ],
@@ -1846,7 +1846,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-interpreter-repl-and-scripts",
       "title": "The interpreter, the REPL and your first script",
-      "minutes": 18,
+      "minutes": 19,
       "covers": [
         "Interpreter, REPL, running scripts, the difference between them"
       ],
@@ -1855,7 +1855,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-numbers-text-and-f-strings",
       "title": "Numbers, text and f-strings",
-      "minutes": 18,
+      "minutes": 20,
       "covers": [
         "int, float, bool, str; f-strings; str methods"
       ],
@@ -1864,7 +1864,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-lists-and-tuples",
       "title": "Lists, tuples and slicing",
-      "minutes": 17,
+      "minutes": 20,
       "covers": [
         "list, tuple, dict, set; slicing; truthiness; mutability"
       ],
@@ -1873,7 +1873,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-dicts-sets-and-truthiness",
       "title": "Dictionaries, sets and truthiness",
-      "minutes": 18,
+      "minutes": 22,
       "covers": [
         "list, tuple, dict, set; slicing; truthiness; mutability"
       ],
@@ -1882,7 +1882,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-control-flow",
       "title": "Choosing and repeating: if, for, while",
-      "minutes": 17,
+      "minutes": 20,
       "covers": [
         "if/elif/else; for, while, range, enumerate, zip; break/continue/else"
       ],
@@ -1891,7 +1891,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-functions",
       "title": "Functions, arguments and return values",
-      "minutes": 17,
+      "minutes": 20,
       "covers": [
         "Functions: positional, keyword, default, *args, **kwargs"
       ],
@@ -1900,7 +1900,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-scope-legb-and-closures",
       "title": "Scope, the LEGB rule and closures",
-      "minutes": 17,
+      "minutes": 19,
       "covers": [
         "Scope and LEGB; closures at a first-pass level"
       ],
@@ -1909,7 +1909,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-mutable-default-arguments",
       "title": "The mutable default argument, identity and copying",
-      "minutes": 16,
+      "minutes": 18,
       "covers": [
         "The mutable default argument trap"
       ],
@@ -1918,7 +1918,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-modules-packages-and-the-main-guard",
       "title": "Modules, imports, packages and the main guard",
-      "minutes": 18,
+      "minutes": 20,
       "covers": [
         "Modules, import, packages, the if __name__ == \"__main__\" guard"
       ],
@@ -1927,7 +1927,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-exceptions",
       "title": "Exceptions: raising, catching and designing failure",
-      "minutes": 16,
+      "minutes": 20,
       "covers": [
         "Exceptions: try/except/else/finally, raising, custom exception types"
       ],
@@ -1936,7 +1936,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-files-pathlib-csv-and-json",
       "title": "Files, paths, CSV and JSON",
-      "minutes": 16,
+      "minutes": 20,
       "covers": [
         "Files, pathlib, csv and json"
       ],
@@ -1945,7 +1945,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-floating-point",
       "title": "Floating point, and why 0.1 + 0.2 is not 0.3",
-      "minutes": 19,
+      "minutes": 22,
       "covers": [
         "Floating point: why 0.1 + 0.2 != 0.3 and what to do about it"
       ],
@@ -1954,7 +1954,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l13-virtual-environments-and-packaging",
       "title": "Virtual environments, pip and pyproject.toml",
-      "minutes": 16,
+      "minutes": 20,
       "covers": [
         "Virtual environments with venv, pip, requirements and pyproject.toml"
       ],
@@ -1965,7 +1965,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-comprehensions",
       "title": "Comprehensions: saying what the result is",
-      "minutes": 17,
+      "minutes": 21,
       "covers": [
         "List, dict and set comprehensions; generator expressions"
       ],
@@ -1974,7 +1974,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-generators-and-laziness",
       "title": "Generators, yield and laziness",
-      "minutes": 16,
+      "minutes": 23,
       "covers": [
         "Generators and yield; the iterator protocol; laziness and memory"
       ],
@@ -1991,8 +1991,8 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     },
     {
       "id": "l04-classes",
-      "title": "Classes: state, behaviour and properties",
-      "minutes": 16,
+      "title": "Classes: state, behavior and properties",
+      "minutes": 19,
       "covers": [
         "Classes: __init__, attributes vs methods, @property, @staticmethod, @classmethod"
       ],

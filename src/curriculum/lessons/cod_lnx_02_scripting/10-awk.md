@@ -1,16 +1,18 @@
 ---
 id: l10-awk
 title: awk — fields, patterns and arrays
-minutes: 20
+minutes: 21
 covers:
   - sed substitution and addressing; awk fields, patterns, BEGIN/END, arrays
 ---
 
-`sed` sees a line as a string. `awk` sees it as a record split into fields, and gives you variables, floating-point arithmetic, associative arrays and a place to run code before the first record and after the last. That is enough to turn most log post-processing from a pipeline of five tools into one pass.
+Think of a spreadsheet. Every row is one reading, and every column holds one kind of thing — time, channel, value. You never think "a long string of characters". You think "the third cell of row 12".
 
-It matters for simulation work more than for anything else on this list. A campaign produces columns — time, channel, value, status, exit code — and the questions you ask of them are aggregations: how many of each, what was the largest, which case, what is the spread. Those are three-line `awk` programs, and writing them in bash instead is both slower and, as lesson 04 showed, harder to get right.
+`sed`, from the last lesson, sees a line as a string. **`awk`** sees it the spreadsheet way: a **[[record|awk-name]]** — one row — cut into **fields**, the cells. It adds variables, decimal arithmetic, tables indexed by name, and a place to run code before the first row and after the last. That turns most log post-processing from a pipeline of five tools into one pass.
 
-All output below was produced on this machine and pasted verbatim, with **GNU Awk 5.2.1** on Ubuntu 24.04.4. That matters: Ubuntu's default `awk` is `mawk`, and `/usr/bin/awk` is a symlink managed by the alternatives system that points at whichever is installed. This machine has `gawk`, so `awk` is `gawk` here. Where the two differ, the text says so.
+A test campaign produces columns — time, channel, value, status, exit code — and the questions you ask are **aggregations**, answers that boil many rows down to a few numbers: how many of each, the largest, which case, the spread. Each is a three-line `awk` program. In bash it is slower and, as lesson 04 showed, harder to get right.
+
+All output below is real, from **GNU Awk 5.2.1** on Ubuntu 24.04. Ubuntu's default `awk` is a different program, **[[`mawk`|three-awks]]**, and `/usr/bin/awk` is a link the system's "alternatives" mechanism points at whichever one is chosen:
 
 ```bash
 ls -l /usr/bin/awk
@@ -20,11 +22,21 @@ ls -l /usr/bin/awk
 lrwxrwxrwx 1 root root 21 Apr  8  2024 /usr/bin/awk -> /etc/alternatives/awk
 ```
 
+Here, `awk` was `gawk`. Where the two differ, the text says so.
+
 ## The model
 
-An `awk` program is a list of **pattern { action }** rules. For each input record — by default, each line — `awk` tests every pattern in order and runs the action of each one that matches. A rule with no pattern runs on every record; a rule with no action prints the record.
+An `awk` program is a list of rules shaped **pattern { action }** — a test, then what to do when it passes. For each record (by default, each line), `awk` tries every pattern in order and runs the action of each one that matches. A rule with no pattern runs on every record. A rule with no action prints the record.
 
-Each record is split into fields on `FS` (runs of whitespace by default). `$1` is the first field, `$0` the whole record, `NF` the number of fields and `$NF` the last one. `NR` is the record number.
+Each record is split into fields on **`FS`**, the field separator. By default that is "any run of spaces or tabs". Then:
+
+- `$1` (read "dollar one") is the first field, `$2` the second, and so on.
+- `$0` is the whole record.
+- `NF` is the **number of fields** in this record.
+- `$NF` (read "dollar N F") is the last field — field number `NF`.
+- `NR` is the **number of the record** — which line you are on, counted across all input.
+
+Here is a driver log, and a program that prints three of those values for each line:
 
 ```bash
 head -3 logs/driver.log
@@ -46,13 +58,17 @@ awk '{print NR, NF, $NF}' logs/driver.log | head -3
 3 5 dv_ms=129.46
 ```
 
-Note that the two spaces after `INFO` did not create an empty field: whitespace field splitting collapses runs and ignores leading and trailing space. That is precisely what `cut -d' '` cannot do (lesson 06 of the previous module), and it is the main reason to prefer `awk` on human-formatted output.
+Line 1 has **[[5 fields|field-picture]]**, the last being `dv_ms=128.84`. The two spaces after `INFO` did not create an empty field: whitespace splitting treats a run of spaces as one gap and ignores spaces at the ends of the line. `cut -d' '` cannot do that (lesson 06 of the previous module), which is the main reason to prefer `awk` on output lined up for human eyes.
 
-**Always single-quote the program.** It is full of `$`, `{` and `"`, all of which the shell would take first.
+::: key In awk, what are NR and NF?
+`NR` is the current record (line) number across all input; `NF` is the number of fields in the current record. `$NF` is the last field, which is the idiomatic way to grab a trailing value.
+:::
+
+**Always put the program in single quotes.** It is full of `$`, `{` and `"`, which the shell would otherwise grab first.
 
 ## Patterns
 
-A pattern can be a regular expression, an expression, a range, or `BEGIN`/`END`.
+A pattern can be a regular expression between slashes, a comparison, a range of line numbers, or one of the two special words `BEGIN` and `END`.
 
 ```bash
 awk '/ERROR/ {print}' logs/driver.log
@@ -74,9 +90,11 @@ awk 'NR>=3 && NR<=5' logs/driver.log
 2026-04-02T08:05:00Z INFO  case=005 status=OK dv_ms=135.92
 ```
 
-The second and third have no action, so the default — print the record — applies. `$2 == "WARN"` is why `awk` beats `grep` for structured logs: it matches the *field*, so a case whose description happens to contain the word `WARN` is not caught.
+Read `==` as "is equal to" and `&&` as "and". The second and third programs have no action, so the default — print the record — applies.
 
-`BEGIN` runs before any input is read, `END` after the last record:
+The second is why `awk` beats `grep` on structured logs. `$2 == "WARN"` tests the severity *field* and nothing else, so a message that mentions `WARN` elsewhere on the line is not caught.
+
+`BEGIN` runs before any input is read. `END` runs after the last record:
 
 ```bash
 awk 'BEGIN{print "start"} {n++} END{print "lines:", n}' logs/run.log
@@ -87,11 +105,13 @@ start
 lines: 400
 ```
 
-`BEGIN` is where you set `FS`, `OFS` and constants, and print a header. `END` is where almost every aggregation reports. An `awk` program that is only a `BEGIN` block reads no input at all, which is how `awk 'BEGIN{printf "%.4f\n", 10/3}'` became lesson 04's calculator.
+`n++` (read "n plus plus") adds one to `n`. The middle rule has no pattern, so it runs on all 400 lines, and `END` reports the count.
+
+`BEGIN` is where you set `FS`, `OFS` and constants, and print a header. `END` is where aggregations report. A program that is *only* a `BEGIN` block reads no input at all — which is how `awk 'BEGIN{printf "%.4f\n", 10/3}'` became lesson 04's calculator.
 
 ## Field separators
 
-`-F` sets the input separator, and it may be a regular expression:
+The `-F` option sets the input separator, and it may be a regular expression:
 
 ```bash
 awk -F'[= ]+' '{print $2, $4, $6}' logs/run.log | head -3
@@ -103,9 +123,9 @@ awk -F'[= ]+' '{print $2, $4, $6}' logs/run.log | head -3
 1.5 GYRO_X_DPS -0.1
 ```
 
-The log line is `t=0.5 chan=WHEEL_RPM val=4187.0`, and splitting on runs of `=` and space gives six fields: the three names in the odd positions and the three values in the even ones. Getting that off by one is the commonest `awk` mistake — print `NF` and a few `$n` before writing the rest.
+Read `[= ]+` as "one or more characters, each an equals sign or a space" — see **[[reading the pattern|reading-the-separator]]**. The line `t=0.5 chan=WHEEL_RPM val=4187.0` splits into six fields: names in the odd positions, values in the even ones. Getting that count off by one is the commonest `awk` mistake, so print `NF` and a few `$n` before writing the rest.
 
-For a tab-separated file, `-F'\t'` is required and `-F,` is wrong:
+For a tab-separated file, `-F'\t'` is required, and `-F,` is wrong:
 
 ```bash
 awk -F'\t' 'NR>1 {print $1, $3}' etc/cases.tsv | head -3
@@ -117,7 +137,7 @@ awk -F'\t' 'NR>1 {print $1, $3}' etc/cases.tsv | head -3
 3 OK
 ```
 
-`OFS` is the output separator used by `print` between comma-separated items, and it defaults to a single space:
+`NR>1` skips the header. **`OFS`**, the output field separator, is what `print` puts between comma-separated items — a single space unless you change it:
 
 ```bash
 awk 'BEGIN{OFS=" | "} {print $2, $3}' logs/driver.log | head -3
@@ -129,11 +149,11 @@ INFO | case=002
 INFO | case=003
 ```
 
-`RS` and `ORS` do the same for records; setting `RS=""` reads blank-line-separated paragraphs, which is how you parse a multi-line record format.
+`RS` and `ORS` do the same for records. `RS=""` reads blank-line-separated paragraphs as single records, for formats where one record spans several lines.
 
 ## Arithmetic and `printf`
 
-`awk` has floating point, which bash does not:
+`awk` does arithmetic with decimals, which bash cannot:
 
 ```bash
 awk 'BEGIN {print 10/3, 2^10, int(7/2), 7%2}'
@@ -143,7 +163,9 @@ awk 'BEGIN {print 10/3, 2^10, int(7/2), 7%2}'
 3.33333 1024 3 1
 ```
 
-`print` uses `OFMT` (`%.6g` by default) and is fine for a quick look. For anything a person or another program will read, use `printf`, whose format string is C's:
+Left to right: ten divided by three; two to the power ten (`^`); `int` chops the fraction off 3.5; and `%` is the remainder of 7 divided by 2.
+
+`print` shows about six significant digits — fine for a quick look. For anything a person or program will read, use **`printf`**, whose format string works like C's:
 
 ```bash
 awk 'BEGIN {printf "%.4f %.2e %5d|%-5d|\n", 10/3, 1234.5, 42, 42}'
@@ -152,6 +174,8 @@ awk 'BEGIN {printf "%.4f %.2e %5d|%-5d|\n", 10/3, 1234.5, 42, 42}'
 ```text
 3.3333 1.23e+03    42|42   |
 ```
+
+Each `%` code takes the next value. `%.4f` is four decimal places. `%.2e` is scientific notation — `1.23e+03` is $1.23 \times 10^3$. `%5d` is a whole number padded on the left to five characters; `%-5d` pads on the right. The **[[bars show the padding|printf-widths]]**.
 
 ```bash
 awk -F'[= ]+' 'NR<=3 {printf "%6.1f  %-12s %10.2f\n", $2, $4, $6}' logs/run.log
@@ -163,19 +187,19 @@ awk -F'[= ]+' 'NR<=3 {printf "%6.1f  %-12s %10.2f\n", $2, $4, $6}' logs/run.log
    1.5  GYRO_X_DPS        -0.10
 ```
 
-`printf` in `awk` does not add a newline — the `\n` is yours to write, and forgetting it produces one very long line.
+`printf` does not add a newline. The `\n` is yours to write, and forgetting it produces one very long line.
 
-Variables need no declaration and start empty, which is zero in a numeric context: `{n++}` works without initialising `n`. A field used arithmetically is converted to a number, and a field that is not numeric converts to 0 — so `dv_ms=nan` in the log above contributes nothing to a sum and still counts in `NR`.
+Variables need no declaration. They start empty, and empty counts as zero, so `{n++}` works without setting `n` first. A field that does not look like a number converts to 0 in arithmetic. So `dv_ms=nan` in the driver log adds nothing to a sum — but it is still a record, and still counts in `NR`.
 
-::: warning
-`NR` is the number of records **read**, not the number you selected. Dividing a filtered sum by `NR` is a silent, plausible error:
+::: warning `NR` counts records read, not records you chose
+Dividing a filtered sum by `NR` is a silent, plausible error:
 
 ```bash
 awk -F'[= ]+' '$4=="BUS_VOLTS" {s+=$6} END {printf "wrong: dividing by NR=%d gives %.3f\n", NR, s/NR}' logs/run.log
 ```
 
 ```text
-wrong: dividing by NR=400 gives 6.997
+wrong: dividing by NR=400 gives 6.998
 ```
 
 ```bash
@@ -186,14 +210,14 @@ awk -F'[= ]+' '$4=="BUS_VOLTS" {s+=$6; n++} END {printf "bus mean over %d sample
 bus mean over 100 samples = 27.990
 ```
 
-The bus voltage is 28 V, and the first command reported 7.0 — which is not obviously absurd if you do not already know the answer. **Count what you sum.** Increment your own counter in the same rule that accumulates, and divide by that.
+`s+=$6` (read "s plus-equals dollar six") adds to a running total. The bus runs at 28 V, and the first command reported 7.0 — a quarter of the truth, because one line in four is a bus reading. Without knowing the answer, 7.0 would not look absurd. **Count what you sum**: add to your own counter in the same rule that adds to the total, and divide by that.
 
-The same applies to `END{print s/NR}` on a file with a header line, a trailing blank line, or comment lines: all of them are records.
+The same trap waits in `END{print s/NR}` on a file with a header, a trailing blank line or comment lines. All of them are records.
 :::
 
 ## Arrays
 
-`awk` arrays are associative — the subscript is a string — and they are the feature that makes one-pass aggregation possible.
+An `awk` array is **associative**: its index — the **subscript**, in square brackets — is a string, not a position. Think of labeled jars rather than numbered boxes. This is what makes one-pass aggregation possible.
 
 ```bash
 awk -F'[= ]+' '{ n[$4]++ } END { for (c in n) print c, n[c] }' logs/run.log | sort
@@ -206,7 +230,30 @@ TANK_PSI 100
 WHEEL_RPM 100
 ```
 
-`n[$4]++` creates the entry on first use with value 0 and increments it. `for (c in n)` iterates the keys — in an **unspecified order**, which is why the `| sort` is there. GNU awk can sort for you:
+`n[$4]++` means "add one to the jar labeled with this line's channel". The first time a name appears, its jar is **[[created on the spot|jars-picture]]** holding 0.
+
+`for (c in n)` walks the labels in an **unspecified order** — however the **[[table happens to store them|hash-order]]** — which is why the `| sort` is there. Without it, the two versions of `awk` disagree:
+
+```bash
+gawk -F'[= ]+' '{ n[$4]++ } END { for (c in n) print c, n[c] }' logs/run.log
+mawk -F'[= ]+' '{ n[$4]++ } END { for (c in n) print c, n[c] }' logs/run.log
+```
+
+```text
+GYRO_X_DPS 100
+WHEEL_RPM 100
+TANK_PSI 100
+BUS_VOLTS 100
+```
+
+```text
+TANK_PSI 100
+BUS_VOLTS 100
+WHEEL_RPM 100
+GYRO_X_DPS 100
+```
+
+Same data, two orders, neither wrong. GNU awk can sort for you:
 
 ```bash
 awk 'BEGIN{PROCINFO["sorted_in"]="@ind_str_asc"} {n[$2]++} END{for (k in n) print k, n[k]}' logs/driver.log
@@ -218,7 +265,7 @@ INFO 24
 WARN 1
 ```
 
-but that is a `gawk` extension, and `mawk` ignores it silently:
+But that is a `gawk` extension, and `mawk` ignores it without a word:
 
 ```bash
 mawk 'BEGIN{PROCINFO["sorted_in"]="@ind_str_asc"} {n[$2]++} END{for (k in n) print k, n[k]}' logs/driver.log
@@ -230,12 +277,12 @@ ERROR 1
 WARN 1
 ```
 
-No error, different order. If the output order matters, pipe to `sort` — which works everywhere — or state in the script that it requires `gawk`.
+No error, different order. If order matters, pipe to `sort`, which works everywhere, or state that the script needs `gawk`.
 
-`key in array` tests membership without creating the key, and `delete array[key]` removes one. Multidimensional subscripts are written `a[i,j]` and are really a single key with `SUBSEP` between the parts.
+`key in array` tests whether a label exists *without* creating it, and `delete array[key]` removes one. A two-part subscript, `a[i,j]`, is really one string key with a hidden separator, `SUBSEP`, between the parts.
 
 ::: example Min, max and range per channel in one pass
-The whole point of arrays: four hundred interleaved records, four channels, one read of the file.
+Four hundred interleaved records, four channels, one read of the file.
 
 ```bash
 awk -F'[= ]+' '
@@ -253,14 +300,23 @@ TANK_PSI     min=    297.80  max=    323.90  range=     26.10
 WHEEL_RPM    min=   3964.20  max=   4405.10  range=    440.90
 ```
 
-Four details make it correct. `!(c in lo)` seeds each channel from its first record instead of from a magic sentinel like `1e99`, which would be wrong for a channel whose values are larger. The comparison `v < lo[c]` is numeric because both sides came from fields that look like numbers — if a value could be non-numeric, force it with `v+0` and check. Assigning `c=$4` and `v=$6` once costs nothing and stops the field indices being repeated in four places, where they are easy to get wrong. And `| sort` gives a deterministic order, which matters the moment this output is compared against a previous run.
+The first rule runs on every record. It copies the channel into `c` and the value into `v`, then says: "if this channel has no low yet (`!` is "not", `||` is "or"), or this value is lower, store it". The same for the high. `END` prints each channel's low, high and difference.
 
-Extending it to a per-channel mean, or to a count of samples outside a limit, is one more array and one more line each — which is the shape of most real post-processing.
+Sanity check: for the bus, $28.90 - 27.20 = 1.70$; for the wheel, $4405.10 - 3964.20 = 440.90$. Both match the range column.
+
+Four details make it correct:
+
+- `!(c in lo)` seeds each channel from its own first value, not from a made-up sentinel like `1e99`, which fails the day a channel's values are larger.
+- `v < lo[c]` compares as numbers because both came from numeric-looking fields. If a value could be non-numeric, force it with `v+0` and check.
+- `c=$4` and `v=$6` put the field numbers in one place instead of four.
+- `| sort` gives a fixed order, which matters once this output is compared with a previous run.
+
+A per-channel mean, or a count outside a limit, is one more array and one more line each.
 :::
 
 ## Passing values in, and out
 
-`-v name=value` sets a variable before the program runs, and is the only safe way to get a shell value into an `awk` program:
+`-v name=value` sets an `awk` variable before the program runs. It is the safe way to get a shell value into an `awk` program:
 
 ```bash
 awk -F'[= ]+' -v chan=WHEEL_RPM -v lim=4400 '$4==chan && $6>lim {print NR": "$0}' logs/run.log
@@ -271,9 +327,9 @@ awk -F'[= ]+' -v chan=WHEEL_RPM -v lim=4400 '$4==chan && $6>lim {print NR": "$0}
 369: t=184.5 chan=WHEEL_RPM val=4405.1
 ```
 
-The alternative — interpolating with double quotes, `awk "\$4==\"$chan\""` — makes the shell rewrite the program text, so a value containing a quote, a backslash or a `/` breaks it, and the quoting becomes unreadable at the second variable. Use `-v` and keep the program single-quoted.
+Two wheel readings went over 4400 rpm. The alternative, pasting the value in with double quotes — `awk "\$4==\"$chan\""` — makes the shell rewrite the program text. A value containing a quote, a backslash or a `/` breaks it, and the quoting is unreadable by the second variable.
 
-Sending output somewhere is the mirror image: `print > "file"` writes, `>>` appends, and `| "command"` pipes:
+Output goes the other way: `print > "file"` writes, `>>` appends, and `| "command"` pipes into a command:
 
 ```bash
 awk -F'[= ]+' '{ n[$4]++ } END { for (c in n) printf "%-12s %d\n", c, n[c] | "sort" }' logs/run.log
@@ -286,9 +342,9 @@ TANK_PSI     100
 WHEEL_RPM    100
 ```
 
-The `sort` runs as a child of `awk`, which is occasionally useful for writing several sorted files in one pass. For a single output stream, piping outside is clearer.
+The `sort` runs as a child of `awk`, occasionally useful for writing several sorted files in one pass. For one output stream, a pipe outside is clearer.
 
-`awk` exits 0 normally, and `exit N` in a rule sets the status — after running `END`, which is a detail worth knowing:
+`exit N` stops reading and sets `awk`'s exit status — but still runs `END` first:
 
 ```bash
 awk 'BEGIN{exit 3}'; echo "awk exit=$?"
@@ -302,7 +358,7 @@ That is how an `awk` check becomes a test in a script: `awk '...' log || handle_
 
 ## Several files, and longer programs
 
-`FNR` is the record number within the current file and `FILENAME` is its name, which is how you treat files separately:
+When you give `awk` several files, **`FNR`** is the record number *within the current file* and **`FILENAME`** is that file's name. `NR` keeps counting across all of them:
 
 ```bash
 awk '{print FILENAME, FNR, NR}' logs/driver.log etc/sim.conf | sed -n '1p;26p;27p;30p'
@@ -315,9 +371,9 @@ etc/sim.conf 1 27
 etc/sim.conf 4 30
 ```
 
-`FNR==1` is therefore "the first line of each file" — the idiom for skipping a header in every input, or for printing a banner. `NR==FNR` is true only while the *first* file is being read, which is the classic two-file join: build an array from file one, then look it up while reading file two.
+At the start of `sim.conf`, `FNR` **[[starts again at 1|nr-fnr-picture]]** while `NR` carries on to 27. So `FNR==1` means "the first line of each file" — for skipping every header. And `NR==FNR` is true only while the *first* file is read: the classic two-file join.
 
-`next` skips the remaining rules for this record and `exit` stops reading:
+`next` skips the remaining rules for this record:
 
 ```bash
 awk '/^#/ {next} {print "kept:", $0}' etc/sim.conf
@@ -329,7 +385,7 @@ kept: dt      = 0.002
 kept: horizon = 18.0
 ```
 
-Once a program is more than about three lines, put it in a file and run `awk -f prog.awk data`, or embed it in a here-document with a quoted delimiter so the shell leaves it alone:
+The comment line matched `/^#/` ("starts with #"), so `next` skipped the print. Past about three lines, put the program in a file and run `awk -f prog.awk data`, or in a here-document with a quoted delimiter:
 
 ```bash
 awk -f /dev/stdin logs/driver.log <<'AWKEOF'
@@ -342,10 +398,10 @@ AWKEOF
 1 error line(s) in 26
 ```
 
-The quoted `'AWKEOF'` is what stops bash expanding `$2` (lesson 05 of the previous module). Without the quotes the program would arrive as `== "ERROR"`.
+The quotes around `'AWKEOF'` are what stop bash from expanding `$2` (lesson 08). Without them the program would arrive as `== "ERROR"`.
 
 ::: example Joining a manifest to a result log in one pass
-`NR==FNR` is true only while the first file is being read, which makes a two-file lookup natural: build an array from file one, then use it while reading file two.
+The seeds file lists a random seed for some of the cases:
 
 ```text
 001	100001
@@ -369,11 +425,13 @@ case 004  seed=?  dv=138.02
 case 005  seed=?  dv=135.92
 ```
 
-The seed file lists four cases; the log has twenty-six. Cases 004 and 005 print `?` because `(id in seed)` is false — which is the point of testing membership rather than reading `seed[id]` directly, since a bare read would create the key with an empty value and quietly report a blank seed.
+The separator `[= \t]+` splits on equals signs, spaces and tabs, so in a log line the case id is `$4` and the value `$8`. While reading the seeds file, rule one stores each seed under its id and calls `next`, so rule two never sees those lines. While reading the log, rule two looks the id up.
 
-Two details. `next` after the first rule stops the second rule from also running on the manifest's records, which would otherwise be processed as if they were log lines. And `NR==FNR` is subtly wrong if the first file can be empty — `FNR` restarts at 1 for the second file while `NR` continues, so with an empty first file the test is never true and everything is treated as file two, which is usually the right failure but is worth knowing. A file-name test, `FILENAME==ARGV[1]`, is unambiguous.
+`(id in seed ? seed[id] : "?")` reads "if the id is in the table, its seed, otherwise a question mark". Cases 004 and 005 have no seed, so they print `?`. Testing membership matters: a bare `seed[id]` would *create* the key and quietly report a blank seed.
 
-The `join` command does the same job for pre-sorted files and is lesson 11's subject; `awk` wins when the key needs computing, the files are not sorted, or the output needs formatting.
+One blind spot: if the first file is empty, `NR` and `FNR` stay equal all through the second file, and every log line is stored as a seed. `FILENAME==ARGV[1]` has no such hole.
+
+The `join` command does this for pre-sorted files (lesson 11). `awk` wins when the key must be computed, the files are unsorted, or the output needs formatting.
 :::
 
 ## The built-in functions worth knowing
@@ -396,7 +454,15 @@ awk 'BEGIN{ if (match("dv_ms=128.84", /[0-9]+\.[0-9]+/)) print RSTART, RLENGTH, 
 7 6 128.84
 ```
 
-`length`, `substr` (1-based), `index`, `split` (which returns the count and fills an array), `match` (which sets `RSTART` and `RLENGTH`), `sub` and `gsub` (which edit `$0` or a named field in place and return how many replacements they made), `sprintf`, `toupper`/`tolower`. `split($0, a, /re/)` is how you parse a field that has internal structure without changing `FS` for the whole program.
+`chan=WHEEL_RPM` is 14 characters; from character 6 on it reads `WHEEL_RPM`; the `=` is at position 5. Positions count from 1, not 0. The set to know:
+
+- `length`, `substr` (counting from 1) and `index` for pieces of strings.
+- `split(s, a, sep)`, which fills array `a` and returns how many pieces it made.
+- `match(s, /re/)`, which sets `RSTART` (where the match begins) and `RLENGTH` (how long it is).
+- `sub` and `gsub`, which edit `$0` or a named field in place and return how many replacements they made.
+- `sprintf`, which is `printf` into a string, and `toupper`/`tolower`.
+
+`split($0, a, /re/)` takes apart a field with inner structure without changing `FS` for the whole program.
 
 ::: key
 `awk` runs **pattern { action }** rules against each record, which is split into `$1`…`$NF` on `FS`. `BEGIN` runs before input, `END` after. Patterns may be regexes, field comparisons or ranges; an empty action prints. Arrays are associative and iterate in unspecified order — pipe to `sort`. `NR` counts records read, not records matched, so count what you sum. Use `-v` to pass shell values in, and single-quote the program always.
@@ -409,11 +475,11 @@ awk 'BEGIN{ if (match("dv_ms=128.84", /[0-9]+\.[0-9]+/)) print RSTART, RLENGTH, 
 :::
 
 ::: answer
-First, `NR` counts every record read, not the ones that contributed to `s`. If the file has a header line, blank lines, comment lines, or interleaves several channels and only some have a meaningful column 3, the denominator is too large and the mean comes out proportionally small. A file of four interleaved channels divides by four times too many. The fix is to count in the same rule that sums — `{s += $3; n++}` — under whatever pattern selects the records you mean.
+First, `NR` counts every record read, not the ones that added to `s`. A header, blank lines, comment lines, or other channels mixed in all make the divisor too big, and the mean too small in proportion — four mixed channels divide by four times too many. Count in the same rule that sums, `{s += $3; n++}`, under a pattern that picks the records you mean.
 
-Second, non-numeric values in column 3 convert to 0. A field of `nan`, `N/A`, `-` or an empty string adds nothing to `s` and still increments `NR`. `awk` does not warn; conversion is silent and defined. If the data can contain those, filter explicitly: `$3 ~ /^-?[0-9.]+$/ {s += $3; n++}`.
+Second, non-numeric values in column 3 convert to 0. `N/A`, `-` or an empty field adds nothing to `s` but still adds one to `NR`, and `awk` does not warn. (`nan` is special: GNU awk treats it as 0 like any other word, but `mawk` reads it as not-a-number and the whole sum becomes `nan`.) Filter explicitly: `$3 ~ /^-?[0-9.]+$/ {s += $3; n++}`, where `~` reads "matches".
 
-A third possibility to rule out: the field index is wrong because the separator is not what you assume. Whitespace splitting collapses runs, so a file aligned with spaces has different field numbers from one aligned with tabs. Print `NF` and `$3` for a few records before trusting the sum.
+Also rule out a wrong field number: a file lined up with spaces can number its fields differently from one lined up with tabs. Print `NF` and `$3` for a few records first.
 :::
 
 ::: check
@@ -421,13 +487,11 @@ Explain the difference between `awk '/WARN/'` and `awk '$2 == "WARN"'` on a log,
 :::
 
 ::: answer
-The first matches the *record*: any line containing the four characters `WARN` anywhere, including inside a case name, a file path, a message such as `no warnings`, or a field that happens to end in it. It is `grep` with extra steps.
+The first matches the *record*: any line containing `WARN` anywhere — in a case name, a file path, a message like `NO WARNINGS`. It is `grep` with extra steps.
 
-The second matches a *field*: the second whitespace-separated field must be exactly `WARN`. A message mentioning warnings elsewhere on the line does not match, and neither does `WARNING` in that position, because the comparison is exact equality rather than a substring test.
+The second matches a *field*: the second whitespace-separated field must be exactly `WARN`. A mention elsewhere on the line does not match, and neither does `WARNING` in that column, because the test is equality, not "contains".
 
-The second is usually right because a log line is structured, and the severity lives in a known column. It is also faster, because no regular expression is involved. The cases for the regex form are when the position varies, or when you deliberately want a substring — and then `$2 ~ /^WARN/` gives you the regex *and* the column, which is usually the best of both.
-
-The underlying point is that `awk` can see the structure and `grep` cannot. Using `awk` as a slower `grep` gives up its main advantage.
+The second is usually right because the severity lives in a known column, and it is faster, with no regular expression involved. When you do want a pattern, `$2 ~ /^WARN/` gives the regex *and* the column. `awk` can see structure and `grep` cannot; using `awk` as a slower `grep` throws that away.
 :::
 
 ::: check
@@ -435,11 +499,11 @@ Why does `awk "\$1 == \"$chan\""` sometimes fail, and what should you write inst
 :::
 
 ::: answer
-Because the shell rewrites the program before `awk` sees it. Inside double quotes, bash expands `$chan` into the program *text*, so the program that runs depends on the value. A value containing a double quote ends the string early and produces a syntax error; a backslash is consumed by bash; a value that is empty leaves `$1 == ""`, which quietly matches blank fields. And the escaping needed for `awk`'s own `$1` makes the line unreadable once there are two variables.
+Because bash pastes the value of `$chan` into the program *text*, so the program depends on the value. A double quote in it ends the string early — a syntax error. A backslash is eaten by bash. An empty value leaves `$1 == ""`, which quietly matches blank fields. And escaping `awk`'s own `$1` makes the line unreadable.
 
-Write `awk -v chan="$chan" '$1 == chan'`. The program stays single-quoted, so bash does not touch it, and the value arrives through `awk`'s own variable mechanism where quoting and backslashes are handled correctly.
+Write `awk -v chan="$chan" '$1 == chan'`. The program stays in single quotes, so bash does not touch it, and the value arrives through `awk`'s own variable mechanism.
 
-One caveat on `-v`: the value goes through escape-sequence processing, so a literal backslash must be doubled. If the value is a path or a pattern containing backslashes, pass it in the environment instead and read it with `ENVIRON["chan"]`, which does no processing at all.
+One catch with `-v`: the value goes through escape processing, so `\t` in it becomes a tab and a literal backslash must be doubled. If the value is a path or a pattern with backslashes in it, pass it through the environment instead and read it with `ENVIRON["chan"]`, which does no processing at all.
 :::
 
 ::: check
@@ -447,11 +511,11 @@ An aggregation prints its channels in a different order on two machines, with id
 :::
 
 ::: answer
-`for (k in array)` iterates in an implementation-defined order — effectively the hash order — and it is not guaranteed to be stable between implementations, between versions, or between runs. Two machines with `mawk` and `gawk`, or with different `gawk` versions, produce different orders from the same data. Nothing is wrong with either.
+`for (k in array)` walks the keys in the order of the implementation's internal hash table, which need not match between implementations, versions, or even runs. `mawk` and `gawk` gave different orders from the same data in this lesson. Neither is wrong.
 
-Fix one, portable: pipe the output to `sort`, so the ordering is done by a program whose behaviour is specified. `... | sort` for lexicographic, `sort -k2 -g` to order by a computed value. This also lets you sort by something other than the key.
+Fix one, portable: pipe to `sort`, whose behavior is specified — `sort` for alphabetical, `sort -k2 -g` to order by a computed value in column 2.
 
-Fix two, `gawk` only: `PROCINFO["sorted_in"]="@ind_str_asc"` makes `for (k in array)` iterate in ascending key order. `mawk` ignores the setting **silently**, which is the trap — the script appears to work and produces unsorted output on the other machine. If you rely on it, check the interpreter first:
+Fix two, `gawk` only: `PROCINFO["sorted_in"]="@ind_str_asc"` gives ascending key order. `mawk` ignores it **silently** — the script seems to work and gives unsorted output elsewhere. If you rely on it, check the interpreter first:
 
 ```bash
 awk  'BEGIN { if (PROCINFO["version"] == "") { print "this script needs gawk" > "/dev/stderr"; exit 2 } print "gawk", PROCINFO["version"] }'
@@ -466,9 +530,7 @@ gawk 5.2.1
 this script needs gawk
 ```
 
-Exit 0 and exit 2. `PROCINFO` does not exist at all in `mawk`, so the subscript yields the empty string; note that testing `"sorted_in" in PROCINFO` does *not* work, because that key is absent under `gawk` too until you set it.
-
-The general principle: any output that will be diffed against a previous run must have a defined order, and "the order awk happened to produce" is not one.
+Exit 0 and exit 2. `PROCINFO` does not exist in `mawk`, so the lookup is empty. Testing `"sorted_in" in PROCINFO` does *not* work, because that key is missing under `gawk` too until you set it. Any output compared with a previous run needs a defined order, and "whatever awk produced" is not one.
 :::
 
 ::: check
@@ -476,13 +538,13 @@ When is `awk` the wrong tool, and what replaces it?
 :::
 
 ::: answer
-When the input is not line-and-field structured. JSON, XML and YAML have nesting that a record-and-field model cannot represent; a value may span lines and may contain the separator. `jq` handles JSON properly and is the next lesson; for XML use a parser; for CSV with quoted fields containing commas, use a real CSV reader, because `-F,` splits inside the quotes and produces plausible wrong columns.
+When the input is not lines and fields. JSON, XML and YAML nest, and a value may span lines or contain the separator. `jq` handles JSON (next lesson); XML needs a parser; CSV with quoted commas needs a real CSV reader, because `-F,` splits inside the quotes and gives plausible wrong columns.
 
-When the computation needs more than accumulation. Sorting a large intermediate, joining on several keys, fitting a curve, anything statistical beyond means and extrema, or anything that must be tested — those belong in Python with `numpy` or `pandas`, which lesson 14 argues for at length. `awk`'s arrays are one-dimensional string maps and its only control flow is loops and conditionals; a program that needs more is fighting the language.
+When the computation needs more than accumulating: sorting a big intermediate, joining on several keys, fitting a curve, statistics beyond means and extremes, or code that must be tested. That is Python with `numpy` or `pandas` (lesson 14). `awk`'s arrays are one-level string maps; a program that needs more is fighting the language.
 
-When the numbers need care. `awk` computes in double precision, which is usually fine, but it has no decimal type, no integer overflow behaviour you can rely on across implementations, and `%d` on a value beyond 2^53 loses precision silently.
+When the numbers need care. `awk` computes in **[[double precision|double-precision]]**: no decimal type, integer overflow that differs between implementations, and `%d` beyond $2^{53}$ silently losing precision.
 
-`awk` remains the right tool for exactly what it is good at: one pass over a columnar text stream, selecting by field, accumulating into arrays, and printing a formatted summary. Most campaign post-processing is precisely that shape, which is why it earns a lesson.
+`awk` stays right for what it is good at: one pass over columns, choosing by field, adding into arrays, printing a formatted summary — the shape of most campaign post-processing.
 :::
 
 ## Summary
@@ -490,22 +552,153 @@ When the numbers need care. `awk` computes in double precision, which is usually
 | Form | Meaning | Note |
 | --- | --- | --- |
 | `pattern { action }` | run the action on matching records | no pattern = every record; no action = print |
-| `$0 $1 … $NF`, `NF`, `NR` | record, fields, field count, record number | whitespace splitting collapses runs |
+| `$0 $1 … $NF`, `NF`, `NR` | record, fields, field count, record number | whitespace splitting merges runs |
 | `-F'[= ]+'`, `-F'\t'` | input separator, may be a regex | print `NF` first; off-by-one is the usual bug |
 | `OFS`, `RS`, `ORS` | output field, input record, output record separators | `RS=""` reads paragraphs |
 | `BEGIN` / `END` | before any input / after the last record | set `FS` and constants; report aggregates |
 | `$2 == "WARN"` vs `/WARN/` | field equality vs substring anywhere | the field test is what structure buys you |
-| `printf "%.3f %-10s\n"` | C-style formatting | no implicit newline |
+| `printf "%.3f %-10s\n"` | C-style formatting | no automatic newline |
 | `{n++}`, `s += $6` | variables need no declaration; start at 0/"" | a non-numeric field converts to 0 |
 | `NR` in `END` | records **read** | count what you sum; `{s+=$6; n++}` |
 | `a[$4]++`, `for (k in a)`, `k in a`, `delete a[k]` | associative arrays | iteration order is unspecified — pipe to `sort` |
 | `PROCINFO["sorted_in"]` | ordered iteration | **gawk only**; mawk ignores it silently |
-| `-v name=value` | pass a shell value in safely | never interpolate into the program text |
+| `-v name=value` | pass a shell value in safely | never paste it into the program text |
 | `print > "f"`, `\| "cmd"` | write or pipe from inside awk | the child runs under awk |
 | `exit N` | sets awk's exit status | `END` still runs |
 | `FNR`, `FILENAME`, `NR==FNR` | per-file counter, name, "still on the first file" | the two-file join idiom |
-| `next` | skip the remaining rules for this record | the comment-stripping idiom |
+| `next` | skip the remaining rules for this record | the comment-skipping idiom |
 | `awk -f prog.awk`, `<<'EOF'` | longer programs | quote the here-doc delimiter |
-| `length substr index split match sub gsub sprintf toupper` | the built-ins you will use | `substr` is 1-based; `match` sets `RSTART`/`RLENGTH` |
+| `length substr index split match sub gsub sprintf toupper` | the built-ins you will use | `substr` counts from 1; `match` sets `RSTART`/`RLENGTH` |
 
-Lesson 11 handles the data `awk` should not touch: JSON with `jq`, and the `column`, `paste` and `join` tools for lining tabular text up.
+Lesson 11 handles the data `awk` should not touch — JSON, with `jq` — and the `column`, `paste` and `join` tools for lining tabular text up and merging it.
+
+::: context awk-name A language named after its authors
+`awk` was written at Bell Labs in 1977 by Alfred **A**ho, Peter **W**einberger and Brian **K**ernighan — the name is their initials. Aho is known for compiler theory and Kernighan co-wrote the classic book on C.
+
+They built it for exactly the job in this lesson: short programs, often one line, that pick records out of text and add things up. The word "record" comes from the world of data processing, where a record is one entry — one row — in a file of many.
+:::
+
+::: context three-awks Three awks, one command name
+The language has several implementations that all answer to `awk`:
+
+- **POSIX awk** is the standard: the features every version must have.
+- **gawk** is GNU's version. It adds extras such as `PROCINFO`, sorted array loops and network access.
+- **mawk**, written by Mike Brennan, is small and fast, and is what a fresh Ubuntu install uses.
+
+Each one runs everything in the standard, so a script that sticks to it works everywhere. The trouble starts when a script leans on a `gawk` extra and then runs on a machine where `awk` means `mawk`.
+:::
+
+::: context field-picture One line, five fields
+Whitespace splitting cuts at every run of spaces, so the double space after `INFO` is one gap, not an empty field between two.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 130" font-family="Inter, Arial, sans-serif">
+  <g stroke="#1f2a44" stroke-width="1.5">
+    <rect x="6" y="30" width="112" height="30" fill="#8fb8f0"/>
+    <rect x="124" y="30" width="44" height="30" fill="#fff"/>
+    <rect x="174" y="30" width="58" height="30" fill="#fff"/>
+    <rect x="238" y="30" width="54" height="30" fill="#fff"/>
+    <rect x="298" y="30" width="56" height="30" fill="#f2b880"/>
+  </g>
+  <g font-size="11" fill="#1f2a44" text-anchor="middle">
+    <text x="62" y="49">2026-04-02T08…</text>
+    <text x="146" y="49">INFO</text>
+    <text x="203" y="49">case=001</text>
+    <text x="265" y="49">status=OK</text>
+    <text x="326" y="49">dv_ms=…</text>
+    <text x="62" y="20">$1</text>
+    <text x="146" y="20">$2</text>
+    <text x="203" y="20">$3</text>
+    <text x="265" y="20">$4</text>
+    <text x="326" y="20">$5 = $NF</text>
+  </g>
+  <text x="180" y="88" font-size="12" text-anchor="middle" fill="#1f2a44">NF = 5, so $NF is the same field as $5</text>
+  <text x="180" y="112" font-size="11" text-anchor="middle" fill="#6c7a93">$0 is the whole line, all five together</text>
+</svg>
+```
+
+`$NF` is a field number computed on the fly: `NF` is 5, so `$NF` means `$5`. On a line with seven fields it would mean `$7`. That is why it always gets the last one.
+:::
+
+::: context reading-the-separator Reading [= ]+ aloud
+The pattern after `-F` is a small regular expression, the same language `grep` speaks.
+
+- `[= ]` is a **bracket expression**: one character, which may be either `=` or a space.
+- `+` means "one or more of the thing before me".
+
+So `[= ]+` is "a run of one or more equals signs and spaces, in any mix". In `t=0.5 chan=WHEEL_RPM`, the `=` after `t` is one run, the space before `chan` is another, and the `=` after `chan` a third. Each run becomes one cut between fields.
+:::
+
+::: context printf-widths What the numbers in %5d mean
+In a `printf` code, the number between `%` and the letter is the **width**: the least number of characters to print. If the value is shorter, spaces fill the gap — on the left by default, on the right with a minus sign.
+
+In `%10.2f` there are two numbers. `10` is the width and `.2` is the number of digits after the decimal point. So `27.9` becomes `     27.90`: five characters of value, padded to ten.
+
+Widths are what make columns line up, which is why the channel table earlier reads cleanly down the page.
+:::
+
+::: context jars-picture An array as a row of labeled jars
+After reading the whole log, the array `n` from `n[$4]++` looks like this — four jars, each named by a channel, each holding a count.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 120" font-family="Inter, Arial, sans-serif">
+  <g stroke="#1f2a44" stroke-width="1.5">
+    <rect x="10" y="40" width="80" height="44" rx="6" fill="#fff"/>
+    <rect x="97" y="40" width="80" height="44" rx="6" fill="#fff"/>
+    <rect x="184" y="40" width="80" height="44" rx="6" fill="#fff"/>
+    <rect x="271" y="40" width="80" height="44" rx="6" fill="#fff"/>
+  </g>
+  <g font-size="11" fill="#1d6fd1" text-anchor="middle">
+    <text x="50" y="30">BUS_VOLTS</text>
+    <text x="137" y="30">GYRO_X_DPS</text>
+    <text x="224" y="30">TANK_PSI</text>
+    <text x="311" y="30">WHEEL_RPM</text>
+  </g>
+  <g font-size="16" fill="#1f2a44" text-anchor="middle">
+    <text x="50" y="68">100</text>
+    <text x="137" y="68">100</text>
+    <text x="224" y="68">100</text>
+    <text x="311" y="68">100</text>
+  </g>
+  <text x="180" y="108" font-size="11" text-anchor="middle" fill="#6c7a93">the label is the subscript; the number inside is the value</text>
+</svg>
+```
+
+A new label gets a new jar the first time it is used, starting at zero. That is why no setup is needed — and why reading `n["TYPO"]` by accident quietly creates an empty jar, while `"TYPO" in n` does not.
+:::
+
+::: context hash-order Why the order looks random
+To find a key fast, `awk` stores its array as a **hash table**. It runs each key through a scrambling function that turns the text into a number, and uses that number to pick a storage slot. Looking a key up is then one calculation, not a search.
+
+The cost is that the slots have nothing to do with alphabetical order or with the order keys arrived in. Different versions of `awk` use different scrambling functions and table sizes, so they visit the slots in different orders — exactly what the `gawk` and `mawk` runs in this lesson showed.
+
+Python dictionaries use a hash table too. Since Python 3.7 they also remember insertion order, which is an extra promise `awk` never made.
+:::
+
+::: context nr-fnr-picture Two counters over two files
+`NR` counts every line `awk` has read. `FNR` counts lines in the current file, and starts over when a new file begins.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 140" font-family="Inter, Arial, sans-serif">
+  <rect x="20" y="30" width="260" height="28" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
+  <rect x="280" y="30" width="40" height="28" fill="#f2b880" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="150" y="48" font-size="11" text-anchor="middle" fill="#1f2a44">driver.log, 26 lines</text>
+  <text x="300" y="22" font-size="11" text-anchor="middle" fill="#1f2a44">sim.conf</text>
+  <g font-size="11" fill="#1f2a44">
+    <text x="4" y="84">NR</text>
+    <text x="4" y="114">FNR</text>
+    <text x="24" y="84">1</text><text x="262" y="84">26</text><text x="284" y="84">27</text><text x="308" y="84">30</text>
+    <text x="24" y="114">1</text><text x="262" y="114">26</text><text x="284" y="114" fill="#b4232c">1</text><text x="308" y="114">4</text>
+  </g>
+  <text x="180" y="134" font-size="11" text-anchor="middle" fill="#6c7a93">NR == FNR only while the first file is being read</text>
+</svg>
+```
+
+The bar widths are to scale: 26 lines against 4. The red 1 is the moment the two counters part ways.
+:::
+
+::: context double-precision What double precision can hold
+`awk` keeps every number as a 64-bit **double**, the same kind of floating-point number that C, Python and most flight software use. It carries about 15 to 16 significant decimal digits.
+
+Whole numbers are exact up to $2^{53} = 9\,007\,199\,254\,740\,992$. Beyond that, not every integer can be stored: the gaps between neighboring doubles grow larger than 1. A nanosecond timestamp since 1970 is already about $1.8 \times 10^{18}$, far past that limit — so do not do exact arithmetic on it in `awk`.
+:::
