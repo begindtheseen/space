@@ -1,7 +1,7 @@
 ---
 id: l05-two-phase-throttle-structure
 title: The two-phase throttle structure
-minutes: 22
+minutes: 18
 covers:
   - "The two-phase throttle structure: constant thrust to a g-limit, then throttled constant acceleration"
 ---
@@ -44,9 +44,9 @@ No crew could take seven g for long, and few payloads are built for it. And noth
 
 ## The g-limit
 
-Real vehicles set a hard ceiling on acceleration, the **g-limit**, written $a_{\lim}$ ("a lim"). It is set by the weakest link: what the crew can safely take, what the payload was built for, or what the rocket's own structure can carry. Values from 3 to 6 g are typical. Crewed vehicles often use about 3 g; the Space Shuttle held its crew to 3 g.
+Real vehicles set a hard ceiling on acceleration, the **g-limit**, written $a_{\lim}$ ("a lim"). It is set by the weakest link: what the crew can safely take, [[what the payload was built for|payload-limits]], or what the rocket's own structure can carry. Values from 3 to 6 g are typical. Crewed vehicles often use about 3 g; the Space Shuttle held its crew to 3 g.
 
-Below the limit, full thrust is the best choice. It delivers the needed velocity in the least time. Less time spent climbing means less time for gravity to pull speed away, so the gravity loss from the first lesson of this module is smallest. Above the limit, full thrust is not "a bit worse". It is simply not allowed.
+Below the limit, full thrust is the best choice. It delivers the needed velocity in the least time. Less time spent climbing means less time for gravity to pull speed away, so the [[gravity loss|gravity-loss-short]] from the first lesson of this module is smallest. Above the limit, full thrust is not "a bit worse". It is simply not allowed.
 
 ## Two phases, one burn
 
@@ -64,13 +64,13 @@ $$
 
 In words: the thrust must shrink in step with the mass. Half the mass, half the thrust.
 
-This changes how the mass falls. For a rocket engine the flow is thrust divided by exhaust velocity, $\dot m = T/v_e$, where $v_e$ ("v sub e") is how fast the exhaust leaves the nozzle. Put the throttle rule in:
+This changes how the mass falls. For a rocket engine [[the flow is thrust divided by exhaust velocity|flow-rule]], $\dot m = T/v_e$, where $v_e$ ("v sub e") is how fast the exhaust leaves the nozzle. Put the throttle rule in:
 
 $$
 \frac{dm}{dt} = -\frac{T}{v_e} = -\frac{a_{\lim}}{v_e}\, m.
 $$
 
-The minus sign says mass goes down. The rate at which it goes down is proportional to how much mass there is. That is the signature of **exponential decay** — the same shape as a cooling cup of cocoa or a bouncing ball that loses a fixed fraction of its height each bounce. The solution is
+The minus sign says mass goes down. The rate at which it goes down is proportional to how much mass there is. That is the signature of **[[exponential decay|exp-decay]]** — the same shape as a cooling cup of cocoa or a bouncing ball that loses a fixed fraction of its height each bounce. The solution is
 
 $$
 m(t) = m_{\lim}\, \exp\!\left[-\frac{a_{\lim}}{v_e}(t - t_{\lim})\right], \qquad \tau_{\text{throttle}} \equiv \frac{v_e}{a_{\lim}},
@@ -169,7 +169,7 @@ That is $0.89\ \mathrm{s}$ short, a 7.0% error. At 4 g, $0.89\ \mathrm{s}$ of bu
 **Sanity check.** Throttling can only slow the burn down, never speed it up, so the limited burn must take longer. It does.
 :::
 
-A guidance cycle using the constant-thrust formula in phase two would misjudge the remaining burn every single cycle. It would also steer using the wrong picture of how the last velocity arrives: it expects the acceleration to keep climbing past 4 g, when in truth it stays flat. The error shrinks as $\Delta v$ shrinks, but it never has to be there at all, because the right formula is no harder to evaluate. So a real implementation tracks the phase and switches formulas at the boundary, exactly as it tracks which stage is burning. The Shuttle's [[UPFG|upfg-modes]] did exactly this.
+A guidance cycle using the constant-thrust formula in phase two would misjudge the remaining burn every single cycle. It would also steer using the wrong picture of how the last velocity arrives: it expects the acceleration to keep climbing past 4 g, when in truth it stays flat. The error shrinks as $\Delta v$ shrinks, but it never has to be there at all, because the right formula is no harder to evaluate. So a real implementation tracks the phase and switches formulas at the boundary, exactly as it tracks [[which stage is burning|engine-out-bridge]]. The Shuttle's [[UPFG|upfg-modes]] did exactly this.
 
 ::: warning The g-limit is not a steering rule
 Throttling changes only the size of the thrust, $|T(t)|$. The linear tangent law still sets its *direction* in both phases — the derivation of lesson 3 never needed the thrust size to be constant. A throttled engine still steers. What does change is the numbers: the best $A$ and $B$ depend on the thrust history, so PEG must feed the true two-phase profile into its solve.
@@ -238,10 +238,65 @@ The next lesson goes back in time. Saturn V flew this same steering problem in t
 
 ::: context g-load What "4 g" feels like
 One g is the pull you feel standing still: your normal weight. Under an acceleration of $n$ g, your seat pushes on you $n$ times as hard, so you feel $n$ times as heavy. A big roller coaster may reach about 4 g for a moment. Astronauts on the Space Shuttle felt 3 g for the last minute or so of the climb — like having two more people lying on top of them. Lying on your back helps: the load goes through your chest front to back, which the body tolerates far better than head-to-foot, where blood drains from the brain.
+
+The curve below is this lesson's stage 2: acceleration in g against time. Blue: full thrust all the way, climbing to 7 g. Red: the 4 g limit, flat from 323.7 s.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 165" font-family="Inter, Arial, sans-serif">
+  <line x1="40" y1="140" x2="345" y2="140" stroke="#1f2a44" stroke-width="1.5"/>
+  <line x1="40" y1="140" x2="40" y2="15" stroke="#1f2a44" stroke-width="1.5"/>
+  <line x1="37" y1="124" x2="43" y2="124" stroke="#1f2a44" stroke-width="1.5"/>
+  <line x1="37" y1="76" x2="43" y2="76" stroke="#1f2a44" stroke-width="1.5"/>
+  <line x1="37" y1="28" x2="43" y2="28" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="34" y="128" font-size="11" text-anchor="end" fill="#1f2a44">1 g</text>
+  <text x="34" y="80" font-size="11" text-anchor="end" fill="#1f2a44">4 g</text>
+  <text x="34" y="32" font-size="11" text-anchor="end" fill="#1f2a44">7 g</text>
+  <polyline fill="none" stroke="#1d6fd1" stroke-width="2.5" points="40,126 72,125 104,123 136,121 169,118 201,114 233,107 257,100 281,90 300,76 313,61 321,48 325,40 331,27"/>
+  <line x1="300" y1="76" x2="340" y2="76" stroke="#b4232c" stroke-width="2.5"/>
+  <text x="190" y="158" font-size="11" text-anchor="middle" fill="#1f2a44">time since stage-2 ignition (0 to 373 s)</text>
+  <text x="250" y="70" font-size="11" text-anchor="end" fill="#b4232c">capped at 4 g</text>
+</svg>
+```
+:::
+
+::: context payload-limits Satellites have a g-limit too
+A satellite is built to survive its ride, and no more — every extra kilogram of stiffening is a kilogram of fuel or instruments it cannot carry. So each launch vehicle publishes a payload user's guide listing the steady accelerations and vibrations a payload will see, and satellite makers design to those numbers. A rocket that exceeded its published g-limit would break its promise to every customer who designed to it.
+:::
+
+::: context gravity-loss-short Why slow burns waste propellant
+Picture a helicopter hovering: its engine burns fuel every second and it goes nowhere, because all the lift just cancels its weight. A rocket climbing with low acceleration is partly in the same trap — every second of burn, gravity takes back about $9.8\ \mathrm{m/s}$ of the vertical speed. Finish the burn sooner and gravity has fewer seconds to take its share. That is why full thrust is best whenever it is allowed, and why throttling to meet the g-limit costs a little performance: the burn gets longer.
+:::
+
+::: context flow-rule Why flow is thrust over exhaust velocity
+Thrust is the push you get from throwing mass out of the back. Each second the engine throws $\dot m$ kilograms of gas backward at speed $v_e$, which gives the gas $\dot m\, v_e$ of momentum per second. By Newton's third law the rocket gets the same push forward, so $T = \dot m\, v_e$. Turn it around and $\dot m = T/v_e$: at a fixed exhaust velocity, throttle the thrust down by half and the flow halves too. Throttling changes $v_e$ a little in a real engine, but treating it as fixed is the standard guidance model.
+:::
+
+::: context exp-decay Exponential decay you already know
+A hot drink cools fast at first and then more and more slowly, because the rate of cooling depends on how much hotter it is than the room. Any quantity whose rate of change is proportional to its own size decays this way. After one time constant it is down to 36.8% of where it started; after two, 13.5%; after three, 5.0%. The throttled rocket's mass and thrust follow exactly this rule.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 160" font-family="Inter, Arial, sans-serif">
+  <line x1="40" y1="130" x2="340" y2="130" stroke="#1f2a44" stroke-width="1.5"/>
+  <line x1="40" y1="130" x2="40" y2="15" stroke="#1f2a44" stroke-width="1.5"/>
+  <polyline fill="none" stroke="#1d6fd1" stroke-width="2.5" points="40,30 70,58 100,79 130,93 160,104 190,111 220,116 250,120 280,123 310,125 340,126"/>
+  <line x1="130" y1="93" x2="130" y2="130" stroke="#6c7a93" stroke-width="1" stroke-dasharray="4 4"/>
+  <line x1="220" y1="116" x2="220" y2="130" stroke="#6c7a93" stroke-width="1" stroke-dasharray="4 4"/>
+  <text x="34" y="34" font-size="11" text-anchor="end" fill="#1f2a44">100%</text>
+  <text x="136" y="90" font-size="11" fill="#1f2a44">36.8%</text>
+  <text x="226" y="110" font-size="11" fill="#1f2a44">13.5%</text>
+  <text x="130" y="146" font-size="11" text-anchor="middle" fill="#1f2a44">1 τ</text>
+  <text x="220" y="146" font-size="11" text-anchor="middle" fill="#1f2a44">2 τ</text>
+  <text x="310" y="146" font-size="11" text-anchor="middle" fill="#1f2a44">3 τ</text>
+</svg>
+```
 :::
 
 ::: context minimum-throttle Engines cannot throttle all the way down
 Turning down a rocket engine is harder than turning down a stove. At low thrust the pressure in the combustion chamber drops, the propellant can burn unevenly, and the engine can start to shake itself or stall. So every engine has a minimum setting. When a vehicle cannot throttle deep enough, it can shut engines off instead: Saturn V's first stage switched off its center engine early, partly to keep the acceleration down. Multi-engine stages have that option; single-engine upper stages must be designed so the limit phase never asks for less than the engine can give.
+:::
+
+::: context engine-out-bridge When the phase boundary moves
+The switch time $t_{\lim}$ is not fixed before launch. It is where the thrust over the mass reaches the limit, so anything that changes thrust or mass moves it. Lose one engine of several and the acceleration is lower all the way up — the limit is reached later, or never. A guidance system that had the switch time stored as a number would plan wrongly; one that recomputes $m_{\lim} = T/a_{\lim}$ from the thrust it actually has gets it right. Lesson 8, on engine-out, builds on this.
 :::
 
 ::: context upfg-modes How UPFG handles the two phases
@@ -252,7 +307,7 @@ UPFG, the Shuttle's guidance from the last lesson, was built for exactly this. I
   <line x1="40" y1="140" x2="340" y2="140" stroke="#1f2a44" stroke-width="1.5"/>
   <line x1="40" y1="140" x2="40" y2="15" stroke="#1f2a44" stroke-width="1.5"/>
   <line x1="40" y1="30" x2="296" y2="30" stroke="#1d6fd1" stroke-width="2.5"/>
-  <path d="M 296 30 L 305 42 L 314 54 L 324 66 L 335 78" fill="none" stroke="#b4232c" stroke-width="2.5"/>
+  <polyline fill="none" stroke="#b4232c" stroke-width="2.5" points="296,30 304,42 312,52 319,62 327,70 335,78"/>
   <line x1="296" y1="25" x2="296" y2="140" stroke="#6c7a93" stroke-width="1" stroke-dasharray="4 4"/>
   <text x="34" y="34" font-size="11" text-anchor="end" fill="#1f2a44">100%</text>
   <text x="34" y="82" font-size="11" text-anchor="end" fill="#1f2a44">57%</text>
@@ -266,24 +321,4 @@ UPFG, the Shuttle's guidance from the last lesson, was built for exactly this. I
 ```
 
 Thrust (as a percent of full) against time for this lesson's stage 2 burned to empty: flat for 323.7 s, then an exponential slide to 56.7% at 373.1 s.
-:::
-
-::: context exp-decay Exponential decay you already know
-A hot drink cools fast at first and then more and more slowly, because the rate of cooling depends on how much hotter it is than the room. Any quantity whose rate of change is proportional to its own size decays this way. After one time constant it is down to 36.8% of where it started; after two, 13.5%; after three, 5.0%. The throttled rocket's mass and thrust follow exactly this rule.
-
-```svg
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 160" font-family="Inter, Arial, sans-serif">
-  <line x1="40" y1="130" x2="340" y2="130" stroke="#1f2a44" stroke-width="1.5"/>
-  <line x1="40" y1="130" x2="40" y2="15" stroke="#1f2a44" stroke-width="1.5"/>
-  <polyline fill="none" stroke="#1d6fd1" stroke-width="2.5" points="40,30 70,58 100,79 130,94 160,107 190,113 220,119 250,123 280,125 310,127 340,128"/>
-  <line x1="130" y1="94" x2="130" y2="130" stroke="#6c7a93" stroke-width="1" stroke-dasharray="4 4"/>
-  <line x1="220" y1="119" x2="220" y2="130" stroke="#6c7a93" stroke-width="1" stroke-dasharray="4 4"/>
-  <text x="34" y="34" font-size="11" text-anchor="end" fill="#1f2a44">100%</text>
-  <text x="136" y="90" font-size="11" fill="#1f2a44">36.8%</text>
-  <text x="226" y="114" font-size="11" fill="#1f2a44">13.5%</text>
-  <text x="130" y="146" font-size="11" text-anchor="middle" fill="#1f2a44">1 τ</text>
-  <text x="220" y="146" font-size="11" text-anchor="middle" fill="#1f2a44">2 τ</text>
-  <text x="310" y="146" font-size="11" text-anchor="middle" fill="#1f2a44">3 τ</text>
-</svg>
-```
 :::
