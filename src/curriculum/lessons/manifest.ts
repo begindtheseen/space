@@ -1336,7 +1336,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-orthographic-projection",
       "title": "Looking at a part straight on",
-      "minutes": 17,
+      "minutes": 20,
       "covers": [
         "Orthographic projection; third-angle (US) versus first-angle (ISO) and the symbol that identifies which"
       ],
@@ -1345,7 +1345,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-the-views-on-a-sheet",
       "title": "The views on a sheet",
-      "minutes": 18,
+      "minutes": 20,
       "covers": [
         "Views: front, top, right, auxiliary, section (full, half, offset, broken-out), detail, isometric"
       ],
@@ -1354,7 +1354,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-lines-and-scales",
       "title": "The lines on a drawing, and its scale",
-      "minutes": 18,
+      "minutes": 21,
       "covers": [
         "Line types: visible, hidden, centre, phantom, section; line weights",
         "Scales and their notation"
@@ -1394,7 +1394,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-tolerance-stack-up",
       "title": "Tolerance stack-up — worst case and root-sum-square",
-      "minutes": 23,
+      "minutes": 24,
       "covers": [
         "Tolerance stack-up: worst case versus root-sum-square"
       ],
@@ -1409,6 +1409,16 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Fastener and thread callouts; materials and specifications"
       ],
       "file": "cod_cad_01_drawings/08-finishes-welds-and-fasteners.md"
+    },
+    {
+      "id": "l09-standards-mbd-and-export-control",
+      "title": "Drawing standards, model-based definition and export control",
+      "minutes": 20,
+      "covers": [
+        "ASME Y14.100 drawing practices, Y14.24 drawing types, Y14.41 model-based definition",
+        "Export-control markings on aerospace drawings"
+      ],
+      "file": "cod_cad_01_drawings/09-standards-mbd-and-export-control.md"
     }
   ],
   "cod_cad_02_gdt": [
@@ -1430,6 +1440,24 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Datums, datum features, the datum reference frame, the 3-2-1 rule and degrees of freedom"
       ],
       "file": "cod_cad_02_gdt/02-datums-and-the-3-2-1-rule.md"
+    },
+    {
+      "id": "l03-datum-targets-and-precedence",
+      "title": "Datum targets and datum precedence",
+      "minutes": 20,
+      "covers": [
+        "Datum targets and datum precedence"
+      ],
+      "file": "cod_cad_02_gdt/03-datum-targets-and-precedence.md"
+    },
+    {
+      "id": "l04-form-controls",
+      "title": "Form: flat, straight, round and cylindrical",
+      "minutes": 20,
+      "covers": [
+        "Form: flatness, straightness, circularity, cylindricity"
+      ],
+      "file": "cod_cad_02_gdt/04-form-controls.md"
     }
   ],
   "cod_cpp_01_basics": [
@@ -9063,21 +9091,16 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "cod_cad_01_drawings": {
-    "covered": 13,
+    "covered": 15,
     "total": 15,
-    "complete": false,
-    "missing": [
-      "ASME Y14.100 drawing practices, Y14.24 drawing types, Y14.41 model-based definition",
-      "Export-control markings on aerospace drawings"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_cad_02_gdt": {
-    "covered": 3,
+    "covered": 5,
     "total": 15,
     "complete": false,
     "missing": [
-      "Datum targets and datum precedence",
-      "Form: flatness, straightness, circularity, cylindricity",
       "Orientation: perpendicularity, angularity, parallelism",
       "Location: position, concentricity, symmetry",
       "Profile of a line and profile of a surface, increasingly dominant in aerostructures",

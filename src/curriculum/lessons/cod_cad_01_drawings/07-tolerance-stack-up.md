@@ -12,6 +12,23 @@ Engineers call this a **[[tolerance stack-up|stack-up-word]]** — working out h
 
 For a guidance, navigation and control (GNC) engineer this is not a mechanical side issue. A star tracker — a camera that works out which way a spacecraft points by recognising star patterns — sits on a bracket, on a panel, on the spacecraft structure. Every one of those parts adds a little tilt. The sum of those tilts is how wrong the spacecraft's idea of its own direction can be, before any software runs at all.
 
+## Datums: where the measuring starts
+
+A stack-up needs a starting point. So does every measurement. When you measure your height, you start from the floor. On a drawing, that starting surface is called a **[[datum|datum-symbol]]** — a real surface or feature of the part that the drawing names as the reference everything else is measured and dimensioned from.
+
+A drawing marks a datum with a **datum feature symbol**: a capital letter in a box, attached by a short line to a small triangle that sits on the surface. A part usually has up to three. The **primary** datum, A, is the face the part rests on first. The **secondary**, B, is the next face it is pushed against. The **tertiary**, C, is the last. Think of setting a box into the corner of a room: floor, then one wall, then the other.
+
+Datums decide how tolerances pile up. Suppose three holes sit in a row, $20\,\mathrm{mm}$ apart, starting $20\,\mathrm{mm}$ from an edge that is datum A, each dimension $\pm 0.1\,\mathrm{mm}$.
+
+- **Chain dimensioning** gives each hole's distance from the hole before it. To find the third hole from the edge, you walk the chain of three dimensions. If each one is at its limit in the same direction, the third hole is off by $3 \times 0.1 = 0.3\,\mathrm{mm}$.
+- **Baseline dimensioning** gives every hole's distance straight from datum A. Each hole is then within $\pm 0.1\,\mathrm{mm}$ of the datum, with no piling up.
+
+So a stack-up always runs along the chain of dimensions that connects the two surfaces you care about. A good designer dimensions from the datums that matter for the part's job, to keep that chain short. The next module, on geometric dimensioning and tolerancing (GD&T), treats datums fully.
+
+::: warning Short chains, small stacks
+Every link in a dimension chain adds its tolerance. If two features must line up with each other, dimension one from the other, or both from the same datum. Do not route them through a long chain of unrelated dimensions.
+:::
+
 ## Adding up errors along a chain
 
 Picture the chain as a line of parts, each with a nominal size and a tolerance written as $\pm t$ (read "plus or minus t"). The nominal sizes add up the ordinary way. The question is what to do with the $t$ values.
@@ -25,23 +42,6 @@ $$
 $$
 
 Now the errors. Notice that the box and the parts pull the gap in opposite directions: a bigger box makes the gap bigger, while a bigger part makes it smaller. It does not matter for the size of the spread, because each tolerance can push the gap either way by its full amount. So all four tolerances, $0.10$, $0.05$, $0.08$ and $0.06$, feed into the gap. What we need is a rule for combining them.
-
-## Datums: where the measuring starts
-
-A stack-up needs a starting point. So does every measurement. When you measure your height, you start from the floor. On a drawing, that starting surface is called a **[[datum|datum-symbol]]** — a real surface or feature of the part that the drawing names as the reference everything else is measured and dimensioned from.
-
-A drawing marks a datum with a **datum feature symbol**: a capital letter in a box, attached by a short line to a small triangle that sits on the surface. A part usually has up to three. The **primary** datum, A, is the face the part rests on first. The **secondary**, B, is the next face it is pushed against. The **tertiary**, C, is the last. Think of setting a box into the corner of a room: floor, then one wall, then the other.
-
-Datums decide how tolerances pile up. Suppose three holes sit in a row, $20\,\mathrm{mm}$ apart, each dimension $\pm 0.1\,\mathrm{mm}$.
-
-- **Chain dimensioning** gives each hole's distance from the hole before it. To find the third hole from the edge, you walk the chain: three dimensions, so a worst case of $3 \times 0.1 = 0.3\,\mathrm{mm}$.
-- **Baseline dimensioning** gives every hole's distance straight from datum A. Each hole is then within $\pm 0.1\,\mathrm{mm}$ of the datum, with no piling up.
-
-So a stack-up always runs along the chain of dimensions that connects the two surfaces you care about. A good designer dimensions from the datums that matter for the part's job, to keep that chain short. The next module, on geometric dimensioning and tolerancing (GD&T), treats datums fully.
-
-::: warning Short chains, small stacks
-Every link in a dimension chain adds its tolerance. If two features must line up with each other, dimension one from the other, or both from the same datum. Do not route them through a long chain of unrelated dimensions.
-:::
 
 ## Worst case: assume everything goes wrong at once
 
