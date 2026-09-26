@@ -38,7 +38,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { prepare, toUtterances, usableVoices, type VoiceLike } from '@/lib/speech'
 import { CHARS_PER_SECOND, SAMPLE_RATE, fastStart, naturalVoiceFor, safeStart, speechUnits, trimSilence, type NaturalVoiceInfo, type SpeechUnit } from '@/lib/voice/kokoro'
-import { naturalSupported, naturalVoice, type NaturalStatus } from '@/lib/voice/natural'
+import { naturalSupported, naturalVoice, unitChars, type NaturalStatus } from '@/lib/voice/natural'
 
 /** How often to nudge Chromium so it does not fall silent mid-lesson. */
 const KEEPALIVE_MS = 10_000
@@ -130,7 +130,7 @@ export function useReadAloud({ markdown, voiceName, rate = 1 }: ReadAloudOptions
   const prepared = useMemo(() => (markdown ? prepare(markdown) : null), [markdown])
   const utterances = useMemo(() => prepared?.utterances ?? [], [prepared])
   // What the natural voice reads: whole sentences, never cut at a comma.
-  const units = useMemo(() => (prepared ? speechUnits(prepared.text, (p) => toUtterances(p, 100_000)) : []), [prepared])
+  const units = useMemo(() => (prepared ? speechUnits(prepared.text, (p) => toUtterances(p, 100_000), unitChars()) : []), [prepared])
   const sentenceCount = units.length ? units[units.length - 1]!.sentence + 1 : 0
 
   const wantedNatural = naturalVoiceFor(voiceName)
@@ -232,6 +232,10 @@ export function useReadAloud({ markdown, voiceName, rate = 1 }: ReadAloudOptions
   const madeRef = useRef(new Set<string>())
   /** Whether the natural reader has more to say than is scheduled, so a silence is buffering, not the end. */
   const moreRef = useRef(false)
+  /** When the audio was found stopped by the system (see the clock follower), or 0. */
+  const haltedRef = useRef(0)
+  /** Whether the reader paused it, as against the system stopping the audio. */
+  const userPausedRef = useRef(false)
 
   /** The audio for a unit, made once and kept a while: going back a sentence should not wait. */
   const audioFor = useCallback((unit: SpeechUnit): Promise<Float32Array> => {
@@ -360,9 +364,21 @@ export function useReadAloud({ markdown, voiceName, rate = 1 }: ReadAloudOptions
   // reader is waiting on the voice. Paused, the clock stops and so does this.
   useEffect(() => {
     if (engine !== 'natural' || state === 'idle' || state === 'paused') return
+    haltedRef.current = 0
     const id = setInterval(() => {
       const ctx = ctxRef.current
       if (!ctx) return
+      if (ctx.state !== 'running') {
+        // iOS stops web audio on its own — a call, Siri, another app's sound,
+        // the screen locking — and the clock stops with it, so the reading
+        // would seem frozen. Try to carry on; if the system will not allow it
+        // without a tap, show it as paused, so Resume (a tap) brings it back.
+        void ctx.resume().catch(() => {})
+        if (!haltedRef.current) haltedRef.current = performance.now()
+        else if (performance.now() - haltedRef.current > 1500) setState('paused')
+        return
+      }
+      haltedRef.current = 0
       const now = ctx.currentTime
       const list = scheduledRef.current
       while (list.length > 1 && list[1]!.start <= now) list.shift()
@@ -415,6 +431,7 @@ export function useReadAloud({ markdown, voiceName, rate = 1 }: ReadAloudOptions
       if (deviceSupported) window.speechSynthesis.cancel()
       silenceNatural()
       if (engineRef.current === 'natural') {
+        userPausedRef.current = false
         // The audio context has to be made and resumed in the tap that started
         // reading: browsers only allow sound to begin from a gesture.
         //
@@ -422,7 +439,13 @@ export function useReadAloud({ markdown, voiceName, rate = 1 }: ReadAloudOptions
         // mutes it, where the device's speech voice would still be heard. Saying
         // this is playback, like a podcast, keeps the natural voice audible.
         const session = (navigator as Navigator & { audioSession?: { type: string } }).audioSession
-        if (session) session.type = 'playback'
+        if (session && session.type !== 'playback') session.type = 'playback'
+        // A context the system stopped (iOS marks it interrupted) may never
+        // start again; a fresh one, made in this tap, always can.
+        if (ctxRef.current && ctxRef.current.state !== 'running') {
+          void ctxRef.current.close().catch(() => {})
+          ctxRef.current = null
+        }
         if (!ctxRef.current) {
           const Ctx = audioContextClass()
           if (Ctx) {
@@ -433,7 +456,20 @@ export function useReadAloud({ markdown, voiceName, rate = 1 }: ReadAloudOptions
             }
           }
         }
-        void ctxRef.current?.resume()
+        const ctx = ctxRef.current
+        if (ctx) {
+          void ctx.resume().catch(() => {})
+          // iOS unlocks audio for the page only once a sound starts inside
+          // the tap itself; one silent sample is enough.
+          try {
+            const src = ctx.createBufferSource()
+            src.buffer = ctx.createBuffer(1, 1, ctx.sampleRate)
+            src.connect(ctx.destination)
+            src.start(0)
+          } catch {
+            /* the resume above is usually enough */
+          }
+        }
         try {
           localStorage.setItem(USED_KEY, '1')
         } catch {
@@ -466,6 +502,7 @@ export function useReadAloud({ markdown, voiceName, rate = 1 }: ReadAloudOptions
   const pause = useCallback(() => {
     if (engineRef.current === 'natural') {
       if (state === 'idle') return
+      userPausedRef.current = true
       void ctxRef.current?.suspend()
       setState('paused')
       return
@@ -481,14 +518,23 @@ export function useReadAloud({ markdown, voiceName, rate = 1 }: ReadAloudOptions
 
   const resume = useCallback(() => {
     if (engineRef.current === 'natural') {
-      void ctxRef.current?.resume()
-      setState('speaking')
+      const ctx = ctxRef.current
+      if (ctx && ctx.state === 'suspended' && userPausedRef.current) {
+        userPausedRef.current = false
+        void ctx.resume()
+        setState('speaking')
+        return
+      }
+      // Stopped by the system, not by pause: start again from this sentence,
+      // in a fresh context made in this tap. What was made is kept, so it
+      // picks up at once.
+      start(Math.max(0, atRef.current))
       return
     }
     if (!deviceSupported) return
     window.speechSynthesis.resume()
     setState('speaking')
-  }, [deviceSupported])
+  }, [deviceSupported, start])
 
   const skip = useCallback(
     (delta: number) => {

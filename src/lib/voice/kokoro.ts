@@ -294,8 +294,15 @@ export function styleRow(tokenCount: number, rows: number): number {
 
 /* ── What is read, and the pauses between ─────────────────────────────── */
 
-/** Longest text given to the model at once, safely inside its 510 phonemes. */
-export const MAX_UNIT_CHARS = 360
+/**
+ * Longest text given to the model at once. The model takes up to 510
+ * phonemes, but the memory it needs grows with the length of what it says,
+ * and never shrinks back: about 200 MB more for a short sentence and 700 MB
+ * for one of 400 phonemes, per worker, on top of the 450 MB the worker takes
+ * to start. A phone that runs out stalls or loses the worker mid-lesson, so
+ * a phone is given shorter pieces (see natural.ts, `unitChars`).
+ */
+export const MAX_UNIT_CHARS = 280
 
 export interface SpeechUnit {
   text: string
@@ -350,16 +357,17 @@ export function splitLong(sentence: string, max = MAX_UNIT_CHARS): string[] {
  * natural voice reads: whole sentences, each with the pause a reader would
  * take after it. Unlike the device voice's utterances, a sentence is never
  * broken at a comma to save time — the pauses a model puts at a cut are the
- * stammer this is built to avoid.
+ * stammer this is built to avoid. Only a sentence longer than `maxChars` is
+ * cut, at its clauses, with the short pause a reader takes there.
  */
-export function speechUnits(text: string, splitSentences: (paragraph: string) => string[]): SpeechUnit[] {
+export function speechUnits(text: string, splitSentences: (paragraph: string) => string[], maxChars = MAX_UNIT_CHARS): SpeechUnit[] {
   const out: SpeechUnit[] = []
   let sentence = 0
   const paragraphs = text.split(/\n{2,}/).map((p) => p.trim()).filter(Boolean)
   paragraphs.forEach((para) => {
     const sentences = splitSentences(para)
     sentences.forEach((s, j) => {
-      const pieces = splitLong(s)
+      const pieces = splitLong(s, maxChars)
       pieces.forEach((piece, k) => {
         const lastPiece = k === pieces.length - 1
         out.push({ text: piece, sentence, pause: lastPiece ? sentencePause(s, j === sentences.length - 1) : joinPause(piece) })

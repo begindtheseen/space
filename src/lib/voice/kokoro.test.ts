@@ -3,6 +3,7 @@ import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import {
   MAX_TOKENS,
+  MAX_UNIT_CHARS,
   NATURAL_VOICES,
   VOCAB,
   cleanPhonemes,
@@ -18,7 +19,7 @@ import {
   trimSilence,
   tokenize,
 } from './kokoro'
-import { poolSize } from './natural'
+import { poolSize, unitChars } from './natural'
 
 describe('the natural voice: text to tokens', () => {
   it('says what is written the way a reader would', () => {
@@ -75,13 +76,29 @@ describe('the natural voice: text to tokens', () => {
   it('cuts only a sentence too long for the model, into the fewest pieces, at clause boundaries', () => {
     const clause = 'the network adjusts every weight a little in the direction that lowers the loss'
     const long = `When training starts, ${clause}, and ${clause}; after that, ${clause}, and ${clause}, until ${clause}.`
-    expect(long.length).toBeGreaterThan(360)
+    expect(long.length).toBeGreaterThan(MAX_UNIT_CHARS)
     const pieces = splitLong(long)
     expect(pieces.join(' ')).toBe(long)
-    expect(pieces.length).toBe(Math.ceil(long.length / 360))
-    for (const p of pieces) expect(p.length).toBeLessThanOrEqual(360)
+    expect(pieces.length).toBe(Math.ceil(long.length / MAX_UNIT_CHARS))
+    for (const p of pieces) expect(p.length).toBeLessThanOrEqual(MAX_UNIT_CHARS)
     expect(pieces[0]).toMatch(/[;,]$/)
     expect(splitLong('Short and whole, with a comma.')).toEqual(['Short and whole, with a comma.'])
+  })
+
+  it('gives a phone shorter pieces, still cut only at clauses, with a reader\'s pause at each', () => {
+    const clause = 'the network adjusts every weight a little in the direction that lowers the loss'
+    const long = `When training starts, ${clause}, and ${clause}; after that, ${clause}.`
+    const units = speechUnits(long, (p) => [p], 150)
+    expect(units.map((u) => u.text).join(' ')).toBe(long)
+    for (const u of units) expect(u.text.length).toBeLessThanOrEqual(150)
+    for (const u of units.slice(0, -1)) {
+      expect(u.text).toMatch(/[;,]$/)
+      expect(u.pause).toBeGreaterThanOrEqual(0.1)
+      expect(u.pause).toBeLessThan(0.2)
+    }
+    expect(new Set(units.map((u) => u.sentence))).toEqual(new Set([0]))
+    expect(unitChars({ userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X)' })).toBe(150)
+    expect(unitChars({ userAgent: 'Mozilla/5.0 (Macintosh)' })).toBe(MAX_UNIT_CHARS)
   })
 
   it('pauses like a reader: after a question, a statement, a lead-in', () => {
@@ -166,9 +183,11 @@ describe('the natural voice: voices and devices', () => {
 
   it('runs fewer synthesis workers where memory is short', () => {
     expect(poolSize({ hardwareConcurrency: 2 })).toBe(1)
-    expect(poolSize({ hardwareConcurrency: 8, userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X)' })).toBe(2)
-    expect(poolSize({ hardwareConcurrency: 8, userAgent: 'Mozilla/5.0 (Macintosh)', maxTouchPoints: 5 })).toBe(2)
-    expect(poolSize({ hardwareConcurrency: 8, deviceMemory: 8, userAgent: 'Mozilla/5.0 (Linux; Android 15) Mobile' })).toBe(3)
+    // An iPhone or iPad: one worker. Two ran it out of memory mid-lesson.
+    expect(poolSize({ hardwareConcurrency: 8, userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X)' })).toBe(1)
+    expect(poolSize({ hardwareConcurrency: 8, userAgent: 'Mozilla/5.0 (Macintosh)', maxTouchPoints: 5 })).toBe(1)
+    expect(poolSize({ hardwareConcurrency: 8, deviceMemory: 4, userAgent: 'Mozilla/5.0 (Linux; Android 15) Mobile' })).toBe(1)
+    expect(poolSize({ hardwareConcurrency: 8, deviceMemory: 8, userAgent: 'Mozilla/5.0 (Linux; Android 15) Mobile' })).toBe(2)
     expect(poolSize({ hardwareConcurrency: 4, userAgent: 'Mozilla/5.0 (X11; Linux x86_64)' })).toBe(2)
     expect(poolSize({ hardwareConcurrency: 8, deviceMemory: 4, userAgent: 'Mozilla/5.0 (Windows NT 10.0)' })).toBe(2)
     expect(poolSize({ hardwareConcurrency: 12, deviceMemory: 16, userAgent: 'Mozilla/5.0 (Macintosh)' })).toBe(3)

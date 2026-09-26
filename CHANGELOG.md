@@ -45,9 +45,13 @@ a natural neural voice (Kokoro) instead of the system synthesiser, which on
 many devices still sounds like a robot. It runs on your machine — on the GPU
 where there is one, many times faster than it speaks, otherwise on the
 processor — the same voice everywhere: six voices, American and British. It
-reads whole sentences, never broken at a comma, with a reader's pause between
-sentences and a longer one between paragraphs, and it waits just long enough
-before the first word, if it needs to, that it never has to stop mid-lesson.
+reads whole sentences (only a very long one is cut, at a clause), with a
+reader's pause between sentences and a longer one between paragraphs, and it
+waits just long enough before the first word, if it needs to, that it never
+has to stop mid-lesson. On a phone it runs in one worker with short pieces,
+so it stays within the phone's memory; a worker that fails or is taken by the
+system is replaced and its sentence made again, and audio the system stopped
+is started again, so the reading never freezes.
 The first time, it downloads once (about 92 MB, with progress shown) and then
 works offline, and what it has read is kept, so a lesson heard again plays at
 once. Your machine's own voices stay in the picker, and are used
