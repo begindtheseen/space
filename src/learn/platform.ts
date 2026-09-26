@@ -6,14 +6,14 @@
    else — the format, the lessons, the grading — is shared.
 
    ORBIT teaches what its playground can always run: Python (Pyodide), SQL
-   (sql.js), C++ (the Mac's compiler in the desktop app when one is installed,
-   clang++ compiled to WebAssembly everywhere else), and the terminal, on the
+   (sql.js), C++ (clang++ compiled to WebAssembly: lessons always use the
+   compiler they were checked with), and the terminal, on the
    in-page practice shell, so the basics of the command line and git are the
    same on every machine. Rust, shell scripts and MATLAB only run through a
    toolchain on the Mac, so their basics come later.
    ========================================================================== */
 import type { Lang } from '@/curriculum/types'
-import { python as py, runNative, runSql, type RunOutput, type StatusFn } from '@/lib/runtimes'
+import { python as py, runCpp, runSql, type RunOutput, type StatusFn } from '@/lib/runtimes'
 import type { ShellState } from '@/lib/shell'
 import type { LearnLang, LearnLesson, LearnRun, Roadmap } from './types'
 
@@ -86,6 +86,9 @@ function fromOutput(out: RunOutput): LearnRun {
  * A Terminal lesson has nothing to run: its checks read the shell she typed
  * into, passed in as `shell`.
  */
+/** How long a Python lesson check may run once Python is loaded. */
+export const PY_LESSON_LIMIT_MS = 30_000
+
 export async function runLearn(
   lesson: LearnLesson,
   program: string,
@@ -98,10 +101,15 @@ export async function runLearn(
       return { stdout: '', stderr: '', error: null, ...(opts.shell ? { shell: opts.shell } : {}), ms: 0 }
     case 'python': {
       const stdin = lesson.stdin?.replace(/\n$/, '').split('\n')
-      return fromOutput(await py.run(program, { onStatus, ...(stdin ? { stdin } : {}) }))
+      // The same limit as the lesson checker: a program that passes there
+      // passes here, and a slow one stops instead of spinning.
+      return fromOutput(await py.run(program, { onStatus, limitMs: PY_LESSON_LIMIT_MS, ...(stdin ? { stdin } : {}) }))
     }
     case 'cpp':
-      return fromOutput(await runNative('cpp', program, lesson.stdin ?? '', onStatus))
+      // Always the in-browser clang, even on a Mac with its own compiler: it
+      // is the compiler every lesson was checked with, so a lesson that uses
+      // a newer library feature (ranges, say) passes on every machine.
+      return fromOutput(await runCpp(program, { stdin: lesson.stdin ?? '', onStatus }))
     case 'sql': {
       const r = await runSql(program, lesson.schema)
       // sql.js hands back numbers, strings and nulls (and blobs, which no lesson uses).

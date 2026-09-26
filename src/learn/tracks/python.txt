@@ -290,7 +290,7 @@ for n in range(1, 6):
 print(total)               # 15
 ```
 
-A `while` loop repeats as long as its condition is true — make sure something inside changes, or it never stops.
+A `while` loop repeats as long as its condition is true — make sure something inside changes, or it never stops. Inside any loop, `break` leaves the loop early and `continue` skips straight to the next pass.
 --- task
 Print the numbers from 1 to 15, one per line, but print `Fizz` instead of multiples of 3, `Buzz` instead of multiples of 5, and `FizzBuzz` instead of multiples of both. Use a loop.
 --- starter
@@ -341,7 +341,9 @@ greet("Ada")         # "Hello, Ada!"
 greet("Lin", "?")    # "Hello, Lin?"
 ```
 
-`def` starts the definition; the names in brackets are **parameters**; `return` hands a value back to whoever called it. A parameter with `=` has a default. A function without `return` returns `None`.
+`def` starts the definition; the names in brackets are **parameters**; the values you pass when you call it (`"Lin"` and `"?"` above) are the **arguments**. `return` hands a value back to whoever called it. A parameter with `=` has a default. A function without `return` returns `None` — Python's value for "nothing".
+
+`pass` is a statement that does nothing. It holds the place of a body you have not written yet, since a `def` cannot be left empty — you will see it in starters.
 --- task
 Write a function `word_count(text)` that returns how many words are in `text` (words are separated by spaces — `text.split()` gives you the list of words).
 

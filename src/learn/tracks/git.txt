@@ -289,7 +289,7 @@ git . commits == 2
 --- teach
 If `main` got new commits while you worked on a branch, a merge cannot just move forward. Git combines both sides from the commit where they split and makes a **merge commit** with two parents — `git log` shows it as *Merge branch '…'*.
 
-When both sides changed **different** files, or different parts of the project, this is automatic. When both changed the **same** lines, that is a **conflict**: git stops and asks you to choose. (In a real terminal you would edit the file and commit; this practice terminal stops and changes nothing.)
+When both sides changed **different** files, or different parts of the project, this is automatic. When both changed the **same** lines, that is a **conflict**: git stops, marks the clashing lines in the file, and asks you to choose. Resolving a conflict has a lesson of its own in the next Git course.
 --- task
 `main` and `docs` both have new commits, in different files. On `main`, merge `docs`, then look at `git log --oneline`.
 --- starter

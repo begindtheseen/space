@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { buildProgram, checkFact, gradeRun, lessonShell, normalize, splitMarks, typeLines } from './grade'
-import { ROADMAPS, TRACKS, findLesson, nextLesson, streak, trackFor } from './index'
+import { buildProgram, checkFact, gradeRun, lessonShell, normalize, splitMarks, typeCheckFailures, typeLines } from './grade'
+import { MASTERY, PREREQUISITES, ROADMAPS, TRACKS, findLesson, nextLesson, streak, trackFor, tracksFor } from './index'
 import { LEARN_LANGS } from './platform'
 import { run as runShell } from '@/lib/shell'
 import { LessonFormatError, parseTrack } from './parse'
-import type { LearnLesson } from './types'
+import { LEVELS, type LearnLesson } from './types'
 
 const lesson = (over: Partial<LearnLesson>): LearnLesson => ({
   id: 'x-01',
@@ -20,13 +20,24 @@ const lesson = (over: Partial<LearnLesson>): LearnLesson => ({
 })
 
 describe('the tracks', () => {
-  it('every language this app teaches has a track that parses', () => {
-    expect(TRACKS.map((t) => t.lang)).toEqual(LEARN_LANGS)
+  it('every language this app teaches has courses that parse, basics first', () => {
+    expect([...new Set(TRACKS.map((t) => t.lang))]).toEqual(LEARN_LANGS)
+    for (const lang of LEARN_LANGS) expect(tracksFor(lang)[0]!.level, lang).toBe('basics')
     expect(LEARN_LANGS).toEqual(expect.arrayContaining(['bash', 'python', 'sql', 'cpp']))
   })
 
   it('each track covers the basics: at least ten lessons', () => {
     for (const t of TRACKS) expect(t.lessons.length, t.lang).toBeGreaterThanOrEqual(10)
+  })
+
+  it('course ids are unique, and a language\'s courses run in level order', () => {
+    const ids = TRACKS.map((t) => t.id)
+    expect(new Set(ids).size).toBe(ids.length)
+    for (const lang of LEARN_LANGS) {
+      const order = tracksFor(lang).map((t) => LEVELS.indexOf(t.level))
+      expect(order, lang).toEqual([...order].sort((a, b) => a - b))
+      expect(new Set(order).size, lang).toBe(order.length)
+    }
   })
 
   it('lesson ids are unique across every track', () => {
@@ -48,22 +59,22 @@ describe('the tracks', () => {
   })
 
   it('C++ lessons with tests do not ask for main — the checker supplies it', () => {
-    for (const l of TRACKS.find((t) => t.lang === 'cpp')?.lessons ?? []) {
+    for (const l of tracksFor('cpp').flatMap((t) => t.lessons)) {
       if (!l.checks.some((c) => c.kind === 'test' || c.kind === 'case')) continue
       expect(/\bint\s+main\s*\(/.test(l.solution), l.id).toBe(false)
     }
   })
 
   it('SQL lessons all have a database', () => {
-    for (const l of TRACKS.find((t) => t.lang === 'sql')?.lessons ?? []) expect(l.schema, l.id).toContain('CREATE TABLE')
+    for (const l of tracksFor('sql').flatMap((t) => t.lessons)) expect(l.schema, l.id).toContain('CREATE TABLE')
   })
 
   it('Web lessons are checked inside the page, never on the source alone', () => {
-    for (const l of trackFor('html')?.lessons ?? []) expect(l.checks.some((c) => c.kind === 'dom'), l.id).toBe(true)
+    for (const l of tracksFor('html').flatMap((t) => t.lessons)) expect(l.checks.some((c) => c.kind === 'dom'), l.id).toBe(true)
   })
 
   it('every Terminal and Git lesson passes when its solution is typed, and not before', () => {
-    for (const l of [...trackFor('bash')!.lessons, ...(trackFor('git')?.lessons ?? [])]) {
+    for (const l of [...tracksFor('bash'), ...tracksFor('git')].flatMap((t) => t.lessons)) {
       const start = lessonShell(l)
       const before = gradeRun(l, '', { stdout: '', stderr: '', error: null, shell: start, ms: 0 })
       expect(before.passed, `${l.id} passes with nothing typed`).toBe(false)
@@ -79,10 +90,33 @@ describe('the tracks', () => {
   })
 
   it('every roadmap is made of courses this app has, and every course is on one', () => {
-    const langs = new Set(TRACKS.map((t) => t.lang))
-    for (const r of ROADMAPS) for (const step of r.steps) expect(langs.has(step), `${r.id}: ${step}`).toBe(true)
-    for (const t of TRACKS) expect(ROADMAPS.some((r) => r.steps.includes(t.lang)), t.lang).toBe(true)
-    expect(new Set(ROADMAPS.map((r) => r.id)).size).toBe(ROADMAPS.length)
+    const ids = new Set(TRACKS.map((t) => t.id))
+    const all = [...ROADMAPS, ...MASTERY]
+    for (const r of all) for (const step of r.steps) expect(ids.has(step), `${r.id}: ${step}`).toBe(true)
+    for (const t of TRACKS) expect(all.some((r) => r.steps.includes(t.id)), t.id).toBe(true)
+    expect(new Set(all.map((r) => r.id)).size).toBe(all.length)
+  })
+
+  it('a language with more than one course has a beginner-to-expert roadmap through all of them', () => {
+    for (const lang of LEARN_LANGS) {
+      const courses = tracksFor(lang)
+      if (courses.length < 2) continue
+      const steps = MASTERY.find((r) => r.id === `master-${lang}`)?.steps ?? []
+      // Its own courses, all of them, in order…
+      expect(steps.filter((id) => trackFor(id)?.lang === lang), lang).toEqual(courses.map((t) => t.id))
+      // …and another language's course only where the ladder needs it, just before that step.
+      const extra = steps.filter((id) => trackFor(id)?.lang !== lang)
+      const needed = (PREREQUISITES[lang] ?? []).filter((p) => TRACKS.some((t) => t.id === p.course) && courses.some((t) => t.id === p.before))
+      expect(extra, lang).toEqual(needed.map((p) => p.course))
+      for (const p of needed) expect(steps.indexOf(p.course) + 1, lang).toBe(steps.indexOf(p.before))
+    }
+  })
+
+  it('a mastery roadmap brings in the basics its ladder leans on', () => {
+    const steps = (lang: string) => MASTERY.find((r) => r.id === `master-${lang}`)?.steps ?? []
+    if (steps('typescript').length) expect(steps('typescript').slice(0, 2)).toEqual(['javascript', 'typescript'])
+    if (steps('git').length) expect(steps('git').slice(0, 2)).toEqual(['bash', 'git'])
+    if (steps('html').includes('html-advanced')) expect(steps('html').slice(0, 4)).toEqual(['html', 'html-intermediate', 'javascript', 'html-advanced'])
   })
 
   it('continue goes to the first lesson not yet passed', () => {
@@ -138,6 +172,14 @@ describe('the lesson format', () => {
     expect(sh).toEqual({ kind: 'shell', name: 'made it', facts: ['dir notes', 'cwd notes'] })
   })
 
+  it('reads a type-error check (a kind with a hyphen)', () => {
+    const t = parseTrack(
+      '@track typescript\n@title TypeScript\n\n=== t-1 | One\n--- teach\nx\n--- task\nt\n--- solution\ntype Id = string & { __id: true }\n' +
+        "--- check type-error | a plain string is not an Id\nconst id: Id = 'abc'\n?? brand it\n",
+    )
+    expect(t.lessons[0]!.checks[0]).toEqual({ kind: 'type-error', name: 'a plain string is not an Id', code: "const id: Id = 'abc'", hint: 'brand it' })
+  })
+
   it('names the lesson at fault when a file is malformed', () => {
     expect(() => parseTrack(head + '=== p-9 | Bad\n--- teach\nx\n--- task\nt\n--- solution\ny\n')).toThrow(/p-9.*check/)
     expect(() => parseTrack(head + '=== p-9 | Bad\n--- teach\nx\n--- task\nt\n--- solution\ny\n--- check nope | n\nz\n')).toThrow(
@@ -180,6 +222,33 @@ describe('grading', () => {
     const l = lesson({ checks: [{ kind: 'case', name: 'adds', call: 'add(2, 3)', expect: '5' }] })
     const g = gradeRun(l, '', { stdout: '@@LEARN 0 FAIL 6\n', stderr: '', error: null, ms: 1 })
     expect(g.results[0]).toMatchObject({ status: 'fail', input: 'add(2, 3)', expected: '5', actual: '6' })
+  })
+
+  it('puts each type-error check behind a @ts-expect-error that fails when the code type-checks', () => {
+    const l = lesson({ lang: 'typescript', checks: [{ kind: 'type-error', name: 'n', code: "const id: UserId = 'abc'" }] })
+    const p = buildProgram(l, 'type UserId = string & { __brand: "UserId" }\n')
+    expect(p).toMatch(/\/\/ @ts-expect-error learn-type-check 0\n\s*;\(\(\) => \{ const id: UserId = 'abc' \}\)/)
+  })
+
+  it('reads which type-error checks compiled, and keeps the rest of the program runnable', () => {
+    const l = lesson({
+      lang: 'typescript',
+      checks: [
+        { kind: 'type-error', name: 'a', code: 'bad()' },
+        { kind: 'type-error', name: 'b', code: 'worse()' },
+      ],
+    })
+    const p = buildProgram(l, 'let x = 1\n')
+    const line = p.split('\n').findIndex((s) => s.includes('learn-type-check 1')) + 1
+    const err = `Type errors, so nothing ran:\n\nmain.ts(${line},3): error TS2578: Unused '@ts-expect-error' directive.`
+    const t = typeCheckFailures(p, err)!
+    expect(t.fails).toEqual([1])
+    expect(t.program).not.toContain('learn-type-check 1')
+    expect(t.program).toContain('learn-type-check 0')
+    // Her own type error is hers, not a check's.
+    expect(typeCheckFailures(p, 'main.ts(1,5): error TS2322: nope')).toBeNull()
+    const g = gradeRun(l, '', { stdout: '', stderr: '', error: null, typeFails: [1], ms: 1 })
+    expect(g.results.map((r) => r.status)).toEqual(['pass', 'fail'])
   })
 
   it('grades a page check from what the page reported', () => {

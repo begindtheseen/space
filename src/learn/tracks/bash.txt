@@ -64,6 +64,8 @@ echo "Launch at dawn" > plan.txt
 
 `echo` prints its text; `> plan.txt` sends that text into the file instead of the screen. Careful: `>` **replaces** whatever the file held.
 
+Put the text in double quotes. The quotes keep it together as one piece, and stop characters such as `>` or `&` inside it from being read as part of the command.
+
 `cat plan.txt` prints a file's contents, so you can check what you wrote.
 --- task
 Create `hello.txt` containing exactly `Hello, terminal!`, then show it with `cat`.
@@ -85,7 +87,7 @@ printed Hello, terminal!
 --- teach
 A **path** says where something is. `docs/guides` means "the `guides` folder inside `docs`, inside where I am now" — a **relative** path. `..` means "the folder above", so `../..` is two levels up. `~` is your home folder, and a path starting with `/` is **absolute**: it starts from the very top.
 
-`mkdir -p` makes every folder along a path at once, so you do not need one `mkdir` per level:
+An option that starts with `-`, like the `-p` below, is a **flag**: it changes how a command behaves. `mkdir -p` makes every folder along a path at once, so you do not need one `mkdir` per level:
 
 ```
 mkdir -p src/components/buttons

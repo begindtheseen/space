@@ -350,6 +350,9 @@ class PythonRuntime {
     resolve: (o: RunOutput) => void
     out: RunOutput
     startedAt: number
+    /** Stops the run after this long, counted from when the runtime is ready. */
+    limitMs?: number
+    timer?: ReturnType<typeof setTimeout>
   } | null = null
   private onStatus: StatusFn | null = null
   private booted = false
@@ -381,6 +384,7 @@ class PythonRuntime {
     if (type === 'ready') {
       this.booted = true
       this.onStatus?.('')
+      this.startClock()
       return
     }
     if (type === 'fatal') {
@@ -412,9 +416,19 @@ class PythonRuntime {
     }
   }
 
+  private startClock(): void {
+    const p = this.pending
+    if (!p || !p.limitMs || p.timer) return
+    const limit = p.limitMs
+    p.timer = setTimeout(() => {
+      if (this.pending === p) this.cancel(`Still running after ${limit / 1000} seconds, so it was stopped.`)
+    }, limit)
+  }
+
   private settle(): void {
     const p = this.pending
     if (!p) return
+    clearTimeout(p.timer)
     this.pending = null
     p.out.ms = Date.now() - p.startedAt
     p.resolve(p.out)
@@ -422,6 +436,7 @@ class PythonRuntime {
 
   private fail(message: string): void {
     const p = this.pending
+    if (p) clearTimeout(p.timer)
     this.pending = null
     this.booted = false
     this.worker?.terminate()
@@ -443,7 +458,7 @@ class PythonRuntime {
 
   run(
     code: string,
-    opts: { stdin?: string[]; packages?: string[]; onStatus?: StatusFn } = {},
+    opts: { stdin?: string[]; packages?: string[]; onStatus?: StatusFn; limitMs?: number } = {},
   ): Promise<RunOutput> {
     if (opts.onStatus) this.onStatus = opts.onStatus
     if (this.pending) this.cancel()
@@ -457,20 +472,23 @@ class PythonRuntime {
         resolve,
         startedAt: Date.now(),
         out: { stdout: '', stderr: '', plots: [], result: null, error: null, ms: 0 },
+        ...(opts.limitMs ? { limitMs: opts.limitMs } : {}),
       }
       w.postMessage({ cmd: 'run', id, code, stdin: opts.stdin, packages: opts.packages })
+      if (this.booted) this.startClock()
     })
   }
 
   /** Kills the worker. The next run pays the boot cost again. */
-  cancel(): void {
+  cancel(reason = 'Stopped.'): void {
     const p = this.pending
+    if (p) clearTimeout(p.timer)
     this.pending = null
     this.worker?.terminate()
     this.worker = null
     this.booted = false
     if (p) {
-      p.out.error = 'Stopped.'
+      p.out.error = reason
       p.out.ms = Date.now() - p.startedAt
       p.resolve(p.out)
     }

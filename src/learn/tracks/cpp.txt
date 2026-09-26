@@ -107,7 +107,7 @@ int add(int a, int b) {
 }
 ```
 
-The return type comes first, then the name, then typed parameters.
+The return type comes first, then the name, then the typed **parameters** (`a` and `b`). The values a call passes in — `2` and `3` in `add(2, 3)` — are the **arguments**.
 
 Arithmetic has one trap everyone meets: dividing two `int`s gives an `int`, throwing the remainder away.
 
@@ -443,7 +443,7 @@ s.substr(4, 4);        // "Love"
 for (char c : s) { }   // each character
 ```
 
-`<cctype>` has helpers for single characters: `std::toupper(c)`, `std::isspace(c)`, `std::isdigit(c)`.
+`<cctype>` has helpers for single characters: `std::toupper(c)`, `std::isspace(c)`, `std::isdigit(c)`. They take and return an `int`, not a `char`, so convert on the way in and out: `static_cast<char>(std::toupper(static_cast<unsigned char>(c)))`. The `unsigned char` step matters for letters outside plain English (like `é`), which a `char` can hold as a negative number the helpers are not allowed to receive.
 --- task
 Write `std::string initials(const std::string& name)` returning the uppercase first letter of each word (`"ada lovelace"` → `"AL"`; words are separated by spaces), and `int count_char(const std::string& s, char c)`. No `main`.
 --- starter
@@ -485,7 +485,7 @@ int count_char(const std::string& s, char c) {
 --- hint
 Keep a flag "the next letter starts a word": true at the start and after each space.
 --- hint
-`out += static_cast<char>(std::toupper(c));` appends one character.
+`out += static_cast<char>(std::toupper(static_cast<unsigned char>(c)));` appends one uppercase character.
 --- check case | initials("ada lovelace") is "AL"
 initials("ada lovelace")
 => "AL"
@@ -516,6 +516,8 @@ So there are three ways to take an argument:
 - `int n` — a copy; cheap for small types
 - `const std::vector<int>& v` — no copy, read-only; the default for big things
 - `std::vector<int>& v` — no copy, and the function may change it
+
+The checks in this lesson are written as `[] { …; return …; }()`. That is a **lambda** — a small unnamed function — defined and called on the spot, so a check can set up variables, call your function and test the result. You will write lambdas yourself later; here you only need to read them.
 --- task
 Write `void double_all(std::vector<int>& v)` that doubles every element **in place**, and `void swap_values(int& a, int& b)`. No `main`.
 --- starter

@@ -1,0 +1,2951 @@
+@track cpp
+@level projects
+@title C++ · Projects
+@name C++ projects: build real programs, then prove it with capstones
+@blurb Three programs built step by step — a matrix library, a bank with polymorphic accounts and a text-statistics tool — then three capstones where you get only a specification and design everything yourself.
+
+=== cppp-01 | Matrix 1: storage and element access
+--- teach
+This course puts the whole C++ ladder to work on bigger programs. Three projects grow over four steps each: a matrix library, a bank and a text-statistics tool. Then three capstones give you only a specification.
+
+The first project is a small **matrix library** — the kind of type that sits under graphics, physics and machine learning code. Over four steps you will build it up to arithmetic, printing, determinants and fast powers. Each step starts from where the last one finished.
+
+Every good type starts with a decision about **representation**. A matrix with `rows × cols` numbers could be a `std::vector<std::vector<double>>`, but that scatters each row in its own allocation and allows ragged rows. The better choice is one flat `std::vector<double>` in **row-major** order: row 0, then row 1, and so on. Element `(r, c)` lives at index `r * cols + c`.
+
+```
+| 1 2 3 |
+| 4 5 6 |   ->   data = {1, 2, 3, 4, 5, 6},   (1, 2) is data[1 * 3 + 2] = 6
+```
+
+Access goes through `operator()`, the conventional choice for matrices because it takes two indexes (`m(1, 2)`). You need two versions:
+
+```cpp
+double& operator()(std::size_t r, std::size_t c);        // m(1, 2) = 7.0;  lets you write
+double operator()(std::size_t r, std::size_t c) const;   // reading a const matrix
+```
+
+For convenience, a constructor taking `std::initializer_list<std::initializer_list<double>>` lets you write a matrix literally:
+
+```cpp
+Matrix m{{1, 2, 3},
+         {4, 5, 6}};   // 2 rows, 3 columns
+```
+
+The outer list's size is the number of rows; the first inner list's size is the number of columns. Construct with **parentheses** for sizes (`Matrix(2, 3)`) and **braces** for values — braces prefer the initializer-list constructor.
+
+A **static member function** makes a named constructor: `Matrix::identity(3)` reads better than a flag argument.
+--- task
+Write `class Matrix`, storing its values row-major in one `std::vector<double>`. No `main`.
+
+- `Matrix(std::size_t rows, std::size_t cols, double fill = 0.0)` — every element is `fill`.
+- `Matrix(std::initializer_list<std::initializer_list<double>> rows)` — values row by row (all rows are the same length).
+- `static Matrix identity(std::size_t n)` — `n × n` with 1 on the diagonal, 0 elsewhere.
+- `std::size_t rows() const`, `std::size_t cols() const`.
+- `double& operator()(std::size_t r, std::size_t c)` and a `const` version returning `double`.
+--- starter
+#include <cstddef>
+#include <initializer_list>
+#include <vector>
+
+// Step 1 of the matrix project: storage and element access.
+class Matrix {
+public:
+    Matrix(std::size_t rows, std::size_t cols, double fill = 0.0) {}
+
+    std::size_t rows() const { return 0; }
+    std::size_t cols() const { return 0; }
+
+private:
+    std::vector<double> data_;
+};
+--- solution
+#include <cstddef>
+#include <initializer_list>
+#include <vector>
+
+class Matrix {
+public:
+    Matrix(std::size_t rows, std::size_t cols, double fill = 0.0)
+        : rows_(rows), cols_(cols), data_(rows * cols, fill) {}
+
+    Matrix(std::initializer_list<std::initializer_list<double>> rows)
+        : rows_(rows.size()), cols_(rows.size() ? rows.begin()->size() : 0) {
+        data_.reserve(rows_ * cols_);
+        for (const auto& row : rows) {
+            for (double x : row) data_.push_back(x);
+        }
+    }
+
+    static Matrix identity(std::size_t n) {
+        Matrix m(n, n);
+        for (std::size_t i = 0; i < n; ++i) m(i, i) = 1.0;
+        return m;
+    }
+
+    std::size_t rows() const { return rows_; }
+    std::size_t cols() const { return cols_; }
+
+    double& operator()(std::size_t r, std::size_t c) { return data_[r * cols_ + c]; }
+    double operator()(std::size_t r, std::size_t c) const { return data_[r * cols_ + c]; }
+
+private:
+    std::size_t rows_;
+    std::size_t cols_;
+    std::vector<double> data_;
+};
+--- hint
+Keep three members: `rows_`, `cols_` and `std::vector<double> data_`. The sized constructor can build `data_(rows * cols, fill)` directly.
+--- hint
+In the initializer-list constructor, `rows.size()` is the row count and `rows.begin()->size()` the column count (guard against an empty list); then push every value in order.
+--- hint
+Both `operator()` versions return `data_[r * cols_ + c]`.
+--- check test | A sized matrix is filled
+[] { Matrix m(2, 3, 1.5); return m.rows() == 2 && m.cols() == 3 && m(0, 0) == 1.5 && m(1, 2) == 1.5; }()
+--- check test | The default fill is zero
+[] { Matrix m(3, 1); return m.rows() == 3 && m.cols() == 1 && m(2, 0) == 0.0; }()
+--- check test | A literal matrix is row-major
+[] { Matrix m{{1, 2, 3}, {4, 5, 6}}; return m.rows() == 2 && m.cols() == 3 && m(0, 2) == 3 && m(1, 0) == 4 && m(1, 2) == 6; }()
+--- check test | Elements can be written
+[] { Matrix m(2, 2); m(1, 0) = 7.5; const Matrix& c = m; return c(1, 0) == 7.5 && c(0, 1) == 0.0; }()
+--- check test | identity(3)
+[] { Matrix i = Matrix::identity(3); bool ok = i.rows() == 3 && i.cols() == 3; for (std::size_t r = 0; r < 3; ++r) for (std::size_t c = 0; c < 3; ++c) ok = ok && i(r, c) == (r == c ? 1.0 : 0.0); return ok; }()
+
+=== cppp-02 | Matrix 2: arithmetic, and operations that can fail
+--- teach
+Now the matrix learns arithmetic. Here the project meets a real design question: **what should happen when an operation makes no sense?** Adding a 2 × 3 matrix to a 3 × 2 one, or multiplying when the inner sizes differ, has no answer.
+
+With exceptions off, the options are: crash (an `assert`), return a garbage value, or make the failure visible in the type. This library splits the operations by whether they can fail:
+
+- Operations that **always** work get operators: `m * 2.0`, `2.0 * m`, `a == b`, `m.transpose()`.
+- Operations that **can** fail return `std::optional<Matrix>`: `add(a, b)` and `multiply(a, b)`. The caller has to look inside, so a size mismatch can never be silently ignored.
+
+Operators should be **non-member** functions (so `2.0 * m` works as well as `m * 2.0`), written in terms of the public `rows()`, `cols()` and `operator()`.
+
+**Matrix multiplication**: for `A` (n × m) and `B` (m × p), the result is n × p, and
+
+```
+C(i, j) = sum over k of A(i, k) * B(k, j)
+```
+
+The loop order matters for speed. The textbook `i, j, k` order walks down a column of `B` in the innermost loop — jumping a whole row each step. Ordering the loops `i, k, j` makes the innermost loop walk along rows of both `B` and `C`, which is contiguous in row-major storage. Same result, friendlier to the cache.
+
+`==` compares shapes first; two matrices of different shape are simply not equal.
+--- task
+Add to your matrix — no `main`:
+
+- `Matrix transpose() const` — rows become columns.
+- `bool operator==(const Matrix&, const Matrix&)` — same shape and every element equal.
+- `std::optional<Matrix> add(const Matrix& a, const Matrix& b)` — element by element; `std::nullopt` if the shapes differ.
+- `Matrix operator*(const Matrix&, double)` and `Matrix operator*(double, const Matrix&)` — scale every element.
+- `std::optional<Matrix> multiply(const Matrix& a, const Matrix& b)` — the matrix product; `std::nullopt` unless `a.cols() == b.rows()`.
+--- starter
+#include <cstddef>
+#include <initializer_list>
+#include <vector>
+
+class Matrix {
+public:
+    Matrix(std::size_t rows, std::size_t cols, double fill = 0.0)
+        : rows_(rows), cols_(cols), data_(rows * cols, fill) {}
+
+    Matrix(std::initializer_list<std::initializer_list<double>> rows)
+        : rows_(rows.size()), cols_(rows.size() ? rows.begin()->size() : 0) {
+        data_.reserve(rows_ * cols_);
+        for (const auto& row : rows) {
+            for (double x : row) data_.push_back(x);
+        }
+    }
+
+    static Matrix identity(std::size_t n) {
+        Matrix m(n, n);
+        for (std::size_t i = 0; i < n; ++i) m(i, i) = 1.0;
+        return m;
+    }
+
+    std::size_t rows() const { return rows_; }
+    std::size_t cols() const { return cols_; }
+
+    double& operator()(std::size_t r, std::size_t c) { return data_[r * cols_ + c]; }
+    double operator()(std::size_t r, std::size_t c) const { return data_[r * cols_ + c]; }
+
+private:
+    std::size_t rows_;
+    std::size_t cols_;
+    std::vector<double> data_;
+};
+--- solution
+#include <cstddef>
+#include <initializer_list>
+#include <optional>
+#include <vector>
+
+class Matrix {
+public:
+    Matrix(std::size_t rows, std::size_t cols, double fill = 0.0)
+        : rows_(rows), cols_(cols), data_(rows * cols, fill) {}
+
+    Matrix(std::initializer_list<std::initializer_list<double>> rows)
+        : rows_(rows.size()), cols_(rows.size() ? rows.begin()->size() : 0) {
+        data_.reserve(rows_ * cols_);
+        for (const auto& row : rows) {
+            for (double x : row) data_.push_back(x);
+        }
+    }
+
+    static Matrix identity(std::size_t n) {
+        Matrix m(n, n);
+        for (std::size_t i = 0; i < n; ++i) m(i, i) = 1.0;
+        return m;
+    }
+
+    std::size_t rows() const { return rows_; }
+    std::size_t cols() const { return cols_; }
+
+    double& operator()(std::size_t r, std::size_t c) { return data_[r * cols_ + c]; }
+    double operator()(std::size_t r, std::size_t c) const { return data_[r * cols_ + c]; }
+
+    Matrix transpose() const {
+        Matrix t(cols_, rows_);
+        for (std::size_t r = 0; r < rows_; ++r)
+            for (std::size_t c = 0; c < cols_; ++c) t(c, r) = (*this)(r, c);
+        return t;
+    }
+
+private:
+    std::size_t rows_;
+    std::size_t cols_;
+    std::vector<double> data_;
+};
+
+bool operator==(const Matrix& a, const Matrix& b) {
+    if (a.rows() != b.rows() || a.cols() != b.cols()) return false;
+    for (std::size_t r = 0; r < a.rows(); ++r)
+        for (std::size_t c = 0; c < a.cols(); ++c)
+            if (a(r, c) != b(r, c)) return false;
+    return true;
+}
+
+std::optional<Matrix> add(const Matrix& a, const Matrix& b) {
+    if (a.rows() != b.rows() || a.cols() != b.cols()) return std::nullopt;
+    Matrix out(a.rows(), a.cols());
+    for (std::size_t r = 0; r < a.rows(); ++r)
+        for (std::size_t c = 0; c < a.cols(); ++c) out(r, c) = a(r, c) + b(r, c);
+    return out;
+}
+
+Matrix operator*(const Matrix& m, double k) {
+    Matrix out(m.rows(), m.cols());
+    for (std::size_t r = 0; r < m.rows(); ++r)
+        for (std::size_t c = 0; c < m.cols(); ++c) out(r, c) = m(r, c) * k;
+    return out;
+}
+
+Matrix operator*(double k, const Matrix& m) { return m * k; }
+
+std::optional<Matrix> multiply(const Matrix& a, const Matrix& b) {
+    if (a.cols() != b.rows()) return std::nullopt;
+    Matrix out(a.rows(), b.cols());
+    for (std::size_t i = 0; i < a.rows(); ++i)
+        for (std::size_t k = 0; k < a.cols(); ++k)
+            for (std::size_t j = 0; j < b.cols(); ++j) out(i, j) += a(i, k) * b(k, j);
+    return out;
+}
+--- hint
+`transpose` builds a `Matrix(cols_, rows_)` and copies `(r, c)` to `(c, r)`.
+--- hint
+For the optional-returning functions, check the shapes first and `return std::nullopt;` on a mismatch, otherwise build and return the result (it converts to an optional).
+--- hint
+`multiply`: start from a zero `Matrix(a.rows(), b.cols())` and add `a(i, k) * b(k, j)` into `out(i, j)`, looping `i`, then `k`, then `j`.
+--- check test | transpose
+Matrix{{1, 2, 3}, {4, 5, 6}}.transpose() == Matrix{{1, 4}, {2, 5}, {3, 6}}
+--- check test | == compares shape and values
+Matrix{{1, 2}} == Matrix{{1, 2}} && !(Matrix{{1, 2}} == Matrix{{1, 3}}) && !(Matrix{{1, 2}} == Matrix{{1}, {2}})
+--- check test | add, and add with mismatched shapes
+[] { auto s = add(Matrix{{1, 2}, {3, 4}}, Matrix{{10, 20}, {30, 40}}); return s && *s == Matrix{{11, 22}, {33, 44}} && !add(Matrix(2, 2), Matrix(2, 3)); }()
+--- check test | Scaling from either side
+Matrix{{1, -2}} * 3.0 == Matrix{{3, -6}} && 0.5 * Matrix{{4}, {8}} == Matrix{{2}, {4}}
+--- check test | multiply a 2x3 by a 3x2
+[] { auto p = multiply(Matrix{{1, 2, 3}, {4, 5, 6}}, Matrix{{7, 8}, {9, 10}, {11, 12}}); return p && *p == Matrix{{58, 64}, {139, 154}}; }()
+--- check test | multiply by the identity changes nothing
+[] { Matrix m{{2, 7}, {1, 8}}; auto p = multiply(m, Matrix::identity(2)); return p && *p == m; }()
+--- check test | multiply with mismatched sizes fails
+!multiply(Matrix(2, 3), Matrix(2, 3)) && multiply(Matrix(2, 3), Matrix(3, 5))->cols() == 5
+
+=== cppp-03 | Matrix 3: printing and the determinant
+--- teach
+Two more features make the library usable: a way to **see** a matrix, and a real algorithm on it.
+
+**Printing.** `operator<<` should print one row per line, values separated by single spaces, each with exactly two decimal places. `std::fixed << std::setprecision(2)` does the formatting — but those settings *stick* to the stream afterwards, which would surprise whoever prints to it next. A tidy trick is to format into a local `std::ostringstream` and then write its text to the real stream, leaving the caller's stream untouched.
+
+**The determinant** of a square matrix is a single number that says, among other things, whether the matrix can be inverted (it can exactly when the determinant is not zero). The formula you may have seen for 2 × 2 — `ad - bc` — generalises badly: expanding by cofactors costs O(n!) operations.
+
+**Gaussian elimination** does it in O(n³). Turn the matrix into upper-triangular form by subtracting multiples of rows from the rows below; the determinant of a triangular matrix is the product of its diagonal. Two facts keep the answer right:
+
+- Subtracting a multiple of one row from another does **not** change the determinant.
+- **Swapping** two rows flips its sign.
+
+For each column, choose the row with the largest absolute value in that column as the **pivot** and swap it up (*partial pivoting*). That avoids dividing by zero when the natural pivot is 0, and keeps rounding errors small. If the best pivot is (almost) zero, the matrix is singular and the determinant is 0.
+
+Work on a **copy** of the data — `determinant()` is `const`.
+--- task
+Add to your matrix — no `main`:
+
+- `std::ostream& operator<<(std::ostream& out, const Matrix& m)` — each row on its own line ending in `\n`, values separated by one space, each printed with two decimal places (`1.00 -2.50`). Leave the stream's formatting settings as they were.
+- `std::optional<double> determinant() const` — `std::nullopt` if the matrix is not square; otherwise the determinant, by Gaussian elimination with partial pivoting (0 for a singular matrix).
+--- starter
+#include <cstddef>
+#include <initializer_list>
+#include <optional>
+#include <vector>
+
+class Matrix {
+public:
+    Matrix(std::size_t rows, std::size_t cols, double fill = 0.0)
+        : rows_(rows), cols_(cols), data_(rows * cols, fill) {}
+
+    Matrix(std::initializer_list<std::initializer_list<double>> rows)
+        : rows_(rows.size()), cols_(rows.size() ? rows.begin()->size() : 0) {
+        data_.reserve(rows_ * cols_);
+        for (const auto& row : rows) {
+            for (double x : row) data_.push_back(x);
+        }
+    }
+
+    static Matrix identity(std::size_t n) {
+        Matrix m(n, n);
+        for (std::size_t i = 0; i < n; ++i) m(i, i) = 1.0;
+        return m;
+    }
+
+    std::size_t rows() const { return rows_; }
+    std::size_t cols() const { return cols_; }
+
+    double& operator()(std::size_t r, std::size_t c) { return data_[r * cols_ + c]; }
+    double operator()(std::size_t r, std::size_t c) const { return data_[r * cols_ + c]; }
+
+    Matrix transpose() const {
+        Matrix t(cols_, rows_);
+        for (std::size_t r = 0; r < rows_; ++r)
+            for (std::size_t c = 0; c < cols_; ++c) t(c, r) = (*this)(r, c);
+        return t;
+    }
+
+private:
+    std::size_t rows_;
+    std::size_t cols_;
+    std::vector<double> data_;
+};
+
+bool operator==(const Matrix& a, const Matrix& b) {
+    if (a.rows() != b.rows() || a.cols() != b.cols()) return false;
+    for (std::size_t r = 0; r < a.rows(); ++r)
+        for (std::size_t c = 0; c < a.cols(); ++c)
+            if (a(r, c) != b(r, c)) return false;
+    return true;
+}
+
+std::optional<Matrix> add(const Matrix& a, const Matrix& b) {
+    if (a.rows() != b.rows() || a.cols() != b.cols()) return std::nullopt;
+    Matrix out(a.rows(), a.cols());
+    for (std::size_t r = 0; r < a.rows(); ++r)
+        for (std::size_t c = 0; c < a.cols(); ++c) out(r, c) = a(r, c) + b(r, c);
+    return out;
+}
+
+Matrix operator*(const Matrix& m, double k) {
+    Matrix out(m.rows(), m.cols());
+    for (std::size_t r = 0; r < m.rows(); ++r)
+        for (std::size_t c = 0; c < m.cols(); ++c) out(r, c) = m(r, c) * k;
+    return out;
+}
+
+Matrix operator*(double k, const Matrix& m) { return m * k; }
+
+std::optional<Matrix> multiply(const Matrix& a, const Matrix& b) {
+    if (a.cols() != b.rows()) return std::nullopt;
+    Matrix out(a.rows(), b.cols());
+    for (std::size_t i = 0; i < a.rows(); ++i)
+        for (std::size_t k = 0; k < a.cols(); ++k)
+            for (std::size_t j = 0; j < b.cols(); ++j) out(i, j) += a(i, k) * b(k, j);
+    return out;
+}
+--- solution
+#include <cmath>
+#include <cstddef>
+#include <initializer_list>
+#include <iomanip>
+#include <optional>
+#include <ostream>
+#include <sstream>
+#include <utility>
+#include <vector>
+
+class Matrix {
+public:
+    Matrix(std::size_t rows, std::size_t cols, double fill = 0.0)
+        : rows_(rows), cols_(cols), data_(rows * cols, fill) {}
+
+    Matrix(std::initializer_list<std::initializer_list<double>> rows)
+        : rows_(rows.size()), cols_(rows.size() ? rows.begin()->size() : 0) {
+        data_.reserve(rows_ * cols_);
+        for (const auto& row : rows) {
+            for (double x : row) data_.push_back(x);
+        }
+    }
+
+    static Matrix identity(std::size_t n) {
+        Matrix m(n, n);
+        for (std::size_t i = 0; i < n; ++i) m(i, i) = 1.0;
+        return m;
+    }
+
+    std::size_t rows() const { return rows_; }
+    std::size_t cols() const { return cols_; }
+
+    double& operator()(std::size_t r, std::size_t c) { return data_[r * cols_ + c]; }
+    double operator()(std::size_t r, std::size_t c) const { return data_[r * cols_ + c]; }
+
+    Matrix transpose() const {
+        Matrix t(cols_, rows_);
+        for (std::size_t r = 0; r < rows_; ++r)
+            for (std::size_t c = 0; c < cols_; ++c) t(c, r) = (*this)(r, c);
+        return t;
+    }
+
+    std::optional<double> determinant() const {
+        if (rows_ != cols_) return std::nullopt;
+        const std::size_t n = rows_;
+        std::vector<double> a = data_;
+        double det = 1.0;
+        for (std::size_t col = 0; col < n; ++col) {
+            std::size_t pivot = col;
+            for (std::size_t r = col + 1; r < n; ++r)
+                if (std::abs(a[r * n + col]) > std::abs(a[pivot * n + col])) pivot = r;
+            if (std::abs(a[pivot * n + col]) < 1e-12) return 0.0;
+            if (pivot != col) {
+                for (std::size_t c = 0; c < n; ++c) std::swap(a[pivot * n + c], a[col * n + c]);
+                det = -det;
+            }
+            det *= a[col * n + col];
+            for (std::size_t r = col + 1; r < n; ++r) {
+                double f = a[r * n + col] / a[col * n + col];
+                for (std::size_t c = col; c < n; ++c) a[r * n + c] -= f * a[col * n + c];
+            }
+        }
+        return det;
+    }
+
+private:
+    std::size_t rows_;
+    std::size_t cols_;
+    std::vector<double> data_;
+};
+
+bool operator==(const Matrix& a, const Matrix& b) {
+    if (a.rows() != b.rows() || a.cols() != b.cols()) return false;
+    for (std::size_t r = 0; r < a.rows(); ++r)
+        for (std::size_t c = 0; c < a.cols(); ++c)
+            if (a(r, c) != b(r, c)) return false;
+    return true;
+}
+
+std::optional<Matrix> add(const Matrix& a, const Matrix& b) {
+    if (a.rows() != b.rows() || a.cols() != b.cols()) return std::nullopt;
+    Matrix out(a.rows(), a.cols());
+    for (std::size_t r = 0; r < a.rows(); ++r)
+        for (std::size_t c = 0; c < a.cols(); ++c) out(r, c) = a(r, c) + b(r, c);
+    return out;
+}
+
+Matrix operator*(const Matrix& m, double k) {
+    Matrix out(m.rows(), m.cols());
+    for (std::size_t r = 0; r < m.rows(); ++r)
+        for (std::size_t c = 0; c < m.cols(); ++c) out(r, c) = m(r, c) * k;
+    return out;
+}
+
+Matrix operator*(double k, const Matrix& m) { return m * k; }
+
+std::optional<Matrix> multiply(const Matrix& a, const Matrix& b) {
+    if (a.cols() != b.rows()) return std::nullopt;
+    Matrix out(a.rows(), b.cols());
+    for (std::size_t i = 0; i < a.rows(); ++i)
+        for (std::size_t k = 0; k < a.cols(); ++k)
+            for (std::size_t j = 0; j < b.cols(); ++j) out(i, j) += a(i, k) * b(k, j);
+    return out;
+}
+
+std::ostream& operator<<(std::ostream& out, const Matrix& m) {
+    std::ostringstream text;
+    text << std::fixed << std::setprecision(2);
+    for (std::size_t r = 0; r < m.rows(); ++r) {
+        for (std::size_t c = 0; c < m.cols(); ++c) {
+            if (c > 0) text << ' ';
+            text << m(r, c);
+        }
+        text << '\n';
+    }
+    return out << text.str();
+}
+--- hint
+Print into a local `std::ostringstream text;` with `text << std::fixed << std::setprecision(2);`, then `return out << text.str();`.
+--- hint
+For each column: find the row (from the current one down) with the largest `std::abs` value in that column; if it is below `1e-12`, return 0; otherwise swap it up and flip the sign of your running determinant.
+--- hint
+Multiply the running determinant by the pivot, then subtract `factor * pivot row` from each row below, with `factor = a[r][col] / a[col][col]`.
+--- check case | Printing a matrix
+[] { std::ostringstream o; o << Matrix{{1, -2.5}, {0, 10}}; return o.str(); }()
+=> "1.00 -2.50\n0.00 10.00\n"
+--- check test | Printing leaves the stream settings alone
+[] { std::ostringstream o; o << Matrix{{1}} << 2.5; return o.str() == "1.00\n2.5"; }()
+--- check test | Determinant of a 2x2
+[] { auto d = Matrix{{1, 2}, {3, 4}}.determinant(); return d && std::abs(*d - (-2.0)) < 1e-9; }()
+--- check test | Determinant of a 3x3
+[] { auto d = Matrix{{2, -3, 1}, {2, 0, -1}, {1, 4, 5}}.determinant(); return d && std::abs(*d - 49.0) < 1e-9; }()
+--- check test | A zero in the corner needs a row swap
+[] { auto d = Matrix{{0, 1}, {1, 0}}.determinant(); auto e = Matrix{{0, 2, 1}, {1, 0, 0}, {0, 0, 3}}.determinant(); return d && std::abs(*d + 1.0) < 1e-9 && e && std::abs(*e + 6.0) < 1e-9; }()
+--- check test | A singular matrix has determinant 0
+[] { auto d = Matrix{{1, 2}, {2, 4}}.determinant(); return d && std::abs(*d) < 1e-9; }()
+--- check test | Non-square has no determinant; identity has 1
+[] { auto d = Matrix::identity(5).determinant(); return !Matrix(2, 3).determinant() && d && std::abs(*d - 1.0) < 1e-12; }()
+
+=== cppp-04 | Matrix 4: fast powers
+--- teach
+The last feature shows why a matrix type is worth having: **raising a matrix to a power** solves problems that look nothing like matrices.
+
+Fibonacci numbers, for example, satisfy
+
+```
+| 1 1 | ^ k     | F(k+1)  F(k)   |
+| 1 0 |      =  | F(k)    F(k-1) |
+```
+
+so `F(70)` is one entry of a matrix power. The same trick counts paths in graphs and steps linear recurrences forward.
+
+Multiplying `k` times costs `k` matrix products — hopeless for `k = 1,000,000,000`. **Exponentiation by squaring** needs only about `2 log₂ k`:
+
+```
+result = identity
+while k > 0:
+    if k is odd: result = result * base
+    base = base * base
+    k = k / 2
+```
+
+In C++, `k & 1` tests "k is odd" and `k >>= 1` halves `k` (the bit operators from the expert course).
+
+It works because of the binary digits of `k`: `M^13 = M^8 · M^4 · M^1`, and `M, M², M⁴, M⁸` come from repeated squaring. A billion needs about 30 squarings instead of a billion multiplications.
+
+Two design notes:
+
+- `power(m, 0)` is the identity — the "empty product", just as `x⁰ = 1`.
+- Only square matrices have powers, so `power` returns `std::optional<Matrix>`. Inside it, once you have checked the shape, every `multiply` is guaranteed to succeed, so dereferencing its result with `*` is safe — and a comment saying why is worth writing.
+
+Doubles hold integers exactly up to 2⁵³ (about 9 × 10¹⁵), so `F(70) = 190392490709135` comes out exact.
+--- task
+Add `std::optional<Matrix> power(const Matrix& m, unsigned long long k)` — `m` multiplied by itself `k` times, using exponentiation by squaring; the identity when `k` is 0; `std::nullopt` if `m` is not square. No `main`.
+--- starter
+#include <cmath>
+#include <cstddef>
+#include <initializer_list>
+#include <iomanip>
+#include <optional>
+#include <ostream>
+#include <sstream>
+#include <utility>
+#include <vector>
+
+class Matrix {
+public:
+    Matrix(std::size_t rows, std::size_t cols, double fill = 0.0)
+        : rows_(rows), cols_(cols), data_(rows * cols, fill) {}
+
+    Matrix(std::initializer_list<std::initializer_list<double>> rows)
+        : rows_(rows.size()), cols_(rows.size() ? rows.begin()->size() : 0) {
+        data_.reserve(rows_ * cols_);
+        for (const auto& row : rows) {
+            for (double x : row) data_.push_back(x);
+        }
+    }
+
+    static Matrix identity(std::size_t n) {
+        Matrix m(n, n);
+        for (std::size_t i = 0; i < n; ++i) m(i, i) = 1.0;
+        return m;
+    }
+
+    std::size_t rows() const { return rows_; }
+    std::size_t cols() const { return cols_; }
+
+    double& operator()(std::size_t r, std::size_t c) { return data_[r * cols_ + c]; }
+    double operator()(std::size_t r, std::size_t c) const { return data_[r * cols_ + c]; }
+
+    Matrix transpose() const {
+        Matrix t(cols_, rows_);
+        for (std::size_t r = 0; r < rows_; ++r)
+            for (std::size_t c = 0; c < cols_; ++c) t(c, r) = (*this)(r, c);
+        return t;
+    }
+
+    std::optional<double> determinant() const {
+        if (rows_ != cols_) return std::nullopt;
+        const std::size_t n = rows_;
+        std::vector<double> a = data_;
+        double det = 1.0;
+        for (std::size_t col = 0; col < n; ++col) {
+            std::size_t pivot = col;
+            for (std::size_t r = col + 1; r < n; ++r)
+                if (std::abs(a[r * n + col]) > std::abs(a[pivot * n + col])) pivot = r;
+            if (std::abs(a[pivot * n + col]) < 1e-12) return 0.0;
+            if (pivot != col) {
+                for (std::size_t c = 0; c < n; ++c) std::swap(a[pivot * n + c], a[col * n + c]);
+                det = -det;
+            }
+            det *= a[col * n + col];
+            for (std::size_t r = col + 1; r < n; ++r) {
+                double f = a[r * n + col] / a[col * n + col];
+                for (std::size_t c = col; c < n; ++c) a[r * n + c] -= f * a[col * n + c];
+            }
+        }
+        return det;
+    }
+
+private:
+    std::size_t rows_;
+    std::size_t cols_;
+    std::vector<double> data_;
+};
+
+bool operator==(const Matrix& a, const Matrix& b) {
+    if (a.rows() != b.rows() || a.cols() != b.cols()) return false;
+    for (std::size_t r = 0; r < a.rows(); ++r)
+        for (std::size_t c = 0; c < a.cols(); ++c)
+            if (a(r, c) != b(r, c)) return false;
+    return true;
+}
+
+std::optional<Matrix> add(const Matrix& a, const Matrix& b) {
+    if (a.rows() != b.rows() || a.cols() != b.cols()) return std::nullopt;
+    Matrix out(a.rows(), a.cols());
+    for (std::size_t r = 0; r < a.rows(); ++r)
+        for (std::size_t c = 0; c < a.cols(); ++c) out(r, c) = a(r, c) + b(r, c);
+    return out;
+}
+
+Matrix operator*(const Matrix& m, double k) {
+    Matrix out(m.rows(), m.cols());
+    for (std::size_t r = 0; r < m.rows(); ++r)
+        for (std::size_t c = 0; c < m.cols(); ++c) out(r, c) = m(r, c) * k;
+    return out;
+}
+
+Matrix operator*(double k, const Matrix& m) { return m * k; }
+
+std::optional<Matrix> multiply(const Matrix& a, const Matrix& b) {
+    if (a.cols() != b.rows()) return std::nullopt;
+    Matrix out(a.rows(), b.cols());
+    for (std::size_t i = 0; i < a.rows(); ++i)
+        for (std::size_t k = 0; k < a.cols(); ++k)
+            for (std::size_t j = 0; j < b.cols(); ++j) out(i, j) += a(i, k) * b(k, j);
+    return out;
+}
+
+std::ostream& operator<<(std::ostream& out, const Matrix& m) {
+    std::ostringstream text;
+    text << std::fixed << std::setprecision(2);
+    for (std::size_t r = 0; r < m.rows(); ++r) {
+        for (std::size_t c = 0; c < m.cols(); ++c) {
+            if (c > 0) text << ' ';
+            text << m(r, c);
+        }
+        text << '\n';
+    }
+    return out << text.str();
+}
+--- solution
+#include <cmath>
+#include <cstddef>
+#include <initializer_list>
+#include <iomanip>
+#include <optional>
+#include <ostream>
+#include <sstream>
+#include <utility>
+#include <vector>
+
+class Matrix {
+public:
+    Matrix(std::size_t rows, std::size_t cols, double fill = 0.0)
+        : rows_(rows), cols_(cols), data_(rows * cols, fill) {}
+
+    Matrix(std::initializer_list<std::initializer_list<double>> rows)
+        : rows_(rows.size()), cols_(rows.size() ? rows.begin()->size() : 0) {
+        data_.reserve(rows_ * cols_);
+        for (const auto& row : rows) {
+            for (double x : row) data_.push_back(x);
+        }
+    }
+
+    static Matrix identity(std::size_t n) {
+        Matrix m(n, n);
+        for (std::size_t i = 0; i < n; ++i) m(i, i) = 1.0;
+        return m;
+    }
+
+    std::size_t rows() const { return rows_; }
+    std::size_t cols() const { return cols_; }
+
+    double& operator()(std::size_t r, std::size_t c) { return data_[r * cols_ + c]; }
+    double operator()(std::size_t r, std::size_t c) const { return data_[r * cols_ + c]; }
+
+    Matrix transpose() const {
+        Matrix t(cols_, rows_);
+        for (std::size_t r = 0; r < rows_; ++r)
+            for (std::size_t c = 0; c < cols_; ++c) t(c, r) = (*this)(r, c);
+        return t;
+    }
+
+    std::optional<double> determinant() const {
+        if (rows_ != cols_) return std::nullopt;
+        const std::size_t n = rows_;
+        std::vector<double> a = data_;
+        double det = 1.0;
+        for (std::size_t col = 0; col < n; ++col) {
+            std::size_t pivot = col;
+            for (std::size_t r = col + 1; r < n; ++r)
+                if (std::abs(a[r * n + col]) > std::abs(a[pivot * n + col])) pivot = r;
+            if (std::abs(a[pivot * n + col]) < 1e-12) return 0.0;
+            if (pivot != col) {
+                for (std::size_t c = 0; c < n; ++c) std::swap(a[pivot * n + c], a[col * n + c]);
+                det = -det;
+            }
+            det *= a[col * n + col];
+            for (std::size_t r = col + 1; r < n; ++r) {
+                double f = a[r * n + col] / a[col * n + col];
+                for (std::size_t c = col; c < n; ++c) a[r * n + c] -= f * a[col * n + c];
+            }
+        }
+        return det;
+    }
+
+private:
+    std::size_t rows_;
+    std::size_t cols_;
+    std::vector<double> data_;
+};
+
+bool operator==(const Matrix& a, const Matrix& b) {
+    if (a.rows() != b.rows() || a.cols() != b.cols()) return false;
+    for (std::size_t r = 0; r < a.rows(); ++r)
+        for (std::size_t c = 0; c < a.cols(); ++c)
+            if (a(r, c) != b(r, c)) return false;
+    return true;
+}
+
+std::optional<Matrix> add(const Matrix& a, const Matrix& b) {
+    if (a.rows() != b.rows() || a.cols() != b.cols()) return std::nullopt;
+    Matrix out(a.rows(), a.cols());
+    for (std::size_t r = 0; r < a.rows(); ++r)
+        for (std::size_t c = 0; c < a.cols(); ++c) out(r, c) = a(r, c) + b(r, c);
+    return out;
+}
+
+Matrix operator*(const Matrix& m, double k) {
+    Matrix out(m.rows(), m.cols());
+    for (std::size_t r = 0; r < m.rows(); ++r)
+        for (std::size_t c = 0; c < m.cols(); ++c) out(r, c) = m(r, c) * k;
+    return out;
+}
+
+Matrix operator*(double k, const Matrix& m) { return m * k; }
+
+std::optional<Matrix> multiply(const Matrix& a, const Matrix& b) {
+    if (a.cols() != b.rows()) return std::nullopt;
+    Matrix out(a.rows(), b.cols());
+    for (std::size_t i = 0; i < a.rows(); ++i)
+        for (std::size_t k = 0; k < a.cols(); ++k)
+            for (std::size_t j = 0; j < b.cols(); ++j) out(i, j) += a(i, k) * b(k, j);
+    return out;
+}
+
+std::ostream& operator<<(std::ostream& out, const Matrix& m) {
+    std::ostringstream text;
+    text << std::fixed << std::setprecision(2);
+    for (std::size_t r = 0; r < m.rows(); ++r) {
+        for (std::size_t c = 0; c < m.cols(); ++c) {
+            if (c > 0) text << ' ';
+            text << m(r, c);
+        }
+        text << '\n';
+    }
+    return out << text.str();
+}
+
+std::optional<Matrix> power(const Matrix& m, unsigned long long k) {
+    if (m.rows() != m.cols()) return std::nullopt;
+    Matrix result = Matrix::identity(m.rows());
+    Matrix base = m;
+    while (k > 0) {
+        if (k & 1) result = *multiply(result, base);
+        k >>= 1;
+        if (k > 0) base = *multiply(base, base);
+    }
+    return result;
+}
+--- hint
+Check `m.rows() == m.cols()` first. Then keep `result` (starting as the identity) and `base` (starting as `m`).
+--- hint
+Loop while `k > 0`: if `k & 1`, multiply `result` by `base`; square `base`; shift `k >>= 1`.
+--- hint
+`multiply` returns an optional; after the shape check it always has a value, so `*multiply(result, base)` is safe here.
+--- check test | Small powers
+[] { Matrix m{{1, 1}, {1, 0}}; auto p = power(m, 5); return p && *p == Matrix{{8, 5}, {5, 3}}; }()
+--- check test | Power 0 is the identity, power 1 is the matrix
+[] { Matrix m{{2, 3}, {4, 5}}; auto a = power(m, 0); auto b = power(m, 1); return a && *a == Matrix::identity(2) && b && *b == m; }()
+--- check test | Fibonacci 70 from a matrix power
+[] { auto p = power(Matrix{{1, 1}, {1, 0}}, 70); return p && std::abs((*p)(0, 1) - 190392490709135.0) < 0.5; }()
+--- check test | A billion-th power in a blink
+[] { auto p = power(Matrix{{1, 1}, {0, 1}}, 1000000000ULL); return p && *p == Matrix{{1, 1000000000.0}, {0, 1}}; }()
+--- check test | Non-square matrices have no powers
+!power(Matrix(2, 3), 2) && !power(Matrix(1, 2), 0)
+
+=== cppp-05 | Bank 1: an account that keeps its rules
+--- teach
+The second project is a small **bank**: accounts of different kinds, a bank that owns them, transfers, and statements. It is a classic exercise in classes, invariants and polymorphism, built over four steps.
+
+Start with money. **Never store money in a `double`.** `0.1 + 0.2` is not exactly `0.3` in binary floating point, and those tiny errors add up to real discrepancies. Store whole **cents** in an integer type — `long long` holds amounts up to about 92 thousand trillion dollars — and convert to text only for display.
+
+Next, the account itself. Its rules — its **invariant** — are:
+
+- Deposits and withdrawals must be positive amounts.
+- A basic account can never go below zero.
+
+The data is private (or protected, see below) so that the only way to change a balance is through `deposit` and `withdraw`, which enforce those rules and report failure by returning `false`.
+
+This account is also going to be a **base class**: next lesson adds checking and savings accounts that withdraw differently. Plan for it now:
+
+- `withdraw` is `virtual`, so derived accounts can replace the rule.
+- `end_month` is a `virtual` hook that does nothing here; savings accounts will pay interest in it.
+- `kind` is `virtual` and names the account type.
+- The destructor is `virtual`, because accounts will be owned through `Account` pointers.
+- `balance_` is **protected**: derived classes may adjust it, outside code may not.
+
+Formatting cents for people: `123456` is `$1234.56`, `5` is `$0.05`, and `-507` is `-$5.07`. Work with the absolute value, then put the sign in front of the `$`.
+--- task
+Rewrite the starter's `Account` so it keeps its rules, and write `format_cents`. No `main`.
+
+- `std::string format_cents(long long cents)` — `"$1234.56"`, `"$0.05"`, `"-$5.07"`.
+- `Account(int id, std::string owner)`; `id()`, `owner()`, `balance()` (in cents, starting at 0).
+- `bool deposit(long long cents)` — false (and no change) unless `cents > 0`.
+- `virtual bool withdraw(long long cents)` — false (and no change) unless `cents > 0` and the balance covers it.
+- `virtual void end_month()` — does nothing for a basic account.
+- `virtual std::string kind() const` — `"basic"`.
+- A virtual destructor, and `long long balance_` as a **protected** member.
+--- starter
+#include <string>
+#include <type_traits>
+#include <utility>
+
+// Step 1 of the bank project: one account that keeps its own rules.
+std::string format_cents(long long cents) {
+    return std::to_string(cents);
+}
+
+class Account {
+public:
+    Account(int id, std::string owner) : id_(id), owner_(std::move(owner)) {}
+
+    int id() const { return id_; }
+    const std::string& owner() const { return owner_; }
+    long long balance() const { return balance_; }
+
+    bool deposit(long long cents) {
+        balance_ += cents;
+        return true;
+    }
+
+    bool withdraw(long long cents) {
+        balance_ -= cents;
+        return true;
+    }
+
+private:
+    int id_;
+    std::string owner_;
+    long long balance_ = 0;
+};
+--- solution
+#include <string>
+#include <type_traits>
+#include <utility>
+
+// Money is kept in whole cents: 123456 prints as $1234.56.
+std::string format_cents(long long cents) {
+    long long v = cents < 0 ? -cents : cents;
+    std::string frac = std::to_string(v % 100);
+    if (frac.size() < 2) frac = "0" + frac;
+    return (cents < 0 ? "-$" : "$") + std::to_string(v / 100) + "." + frac;
+}
+
+class Account {
+public:
+    Account(int id, std::string owner) : id_(id), owner_(std::move(owner)) {}
+    virtual ~Account() = default;
+
+    int id() const { return id_; }
+    const std::string& owner() const { return owner_; }
+    long long balance() const { return balance_; }
+
+    bool deposit(long long cents) {
+        if (cents <= 0) return false;
+        balance_ += cents;
+        return true;
+    }
+
+    virtual bool withdraw(long long cents) {
+        if (cents <= 0 || cents > balance_) return false;
+        balance_ -= cents;
+        return true;
+    }
+
+    virtual void end_month() {}
+    virtual std::string kind() const { return "basic"; }
+
+protected:
+    long long balance_ = 0;
+
+private:
+    int id_;
+    std::string owner_;
+};
+--- hint
+`format_cents`: take the absolute value `v`, print `v / 100`, a `.`, and `v % 100` padded to two digits; prefix `-$` or `$`.
+--- hint
+Both `deposit` and `withdraw` start with a guard that returns `false` before touching the balance.
+--- hint
+Move `balance_` into a `protected:` section and mark `withdraw`, `end_month`, `kind` and the destructor `virtual`.
+--- check test | format_cents
+format_cents(123456) == "$1234.56" && format_cents(5) == "$0.05" && format_cents(0) == "$0.00" && format_cents(-507) == "-$5.07" && format_cents(100) == "$1.00"
+--- check test | A new account
+[] { Account a(7, "Ada"); return a.id() == 7 && a.owner() == "Ada" && a.balance() == 0 && a.kind() == "basic"; }()
+--- check test | Deposits must be positive
+[] { Account a(1, "A"); bool ok = a.deposit(2500); bool zero = a.deposit(0); bool neg = a.deposit(-100); return ok && !zero && !neg && a.balance() == 2500; }()
+--- check test | Withdrawals cannot overdraw
+[] { Account a(1, "A"); a.deposit(1000); bool ok = a.withdraw(400); bool too_much = a.withdraw(601); bool neg = a.withdraw(-1); bool exact = a.withdraw(600); return ok && !too_much && !neg && exact && a.balance() == 0; }()
+--- check test | Account is ready to be a base class
+std::has_virtual_destructor_v<Account> && std::is_polymorphic_v<Account>
+
+=== cppp-06 | Bank 2: account types
+--- teach
+Real banks have several kinds of account, which share most things and differ in a few rules. That is exactly what inheritance with virtual functions is for: the shared parts live in `Account`, and each derived class **overrides** only what differs.
+
+**A checking account** may go overdrawn, down to an agreed limit. With a limit of $100.00 (10000 cents), the balance may fall to -10000 but no further. Its `withdraw` replaces the base rule entirely.
+
+**A savings account** pays interest and limits withdrawals:
+
+- At most 3 withdrawals per month; the 4th fails until `end_month()`.
+- It never goes negative — the base rule — so its `withdraw` can **reuse** the base version: check the monthly limit, then call `Account::withdraw(cents)`, and count the withdrawal only if that succeeded. Calling the base version explicitly like this is how an override extends, rather than replaces, behaviour.
+- `end_month()` pays interest and resets the monthly count.
+
+Interest rates are given in **basis points** (hundredths of a percent): 250 bp is 2.5%. Keeping to integers, the monthly interest is `balance * rate_bp / 10000`, rounded down by integer division, and only on a positive balance.
+
+Because `balance_` is `protected`, both derived classes can adjust it directly. Code outside the hierarchy still cannot.
+
+Always write `override`. If a signature does not match the base exactly — a missing `const`, a different parameter type — the compiler says so, instead of silently creating a new, never-called function.
+--- task
+Add two account types. No `main`.
+
+- `CheckingAccount(int id, std::string owner, long long overdraft_limit)` — `withdraw` succeeds for a positive amount as long as the balance stays `>= -overdraft_limit`. `kind()` is `"checking"`.
+- `SavingsAccount(int id, std::string owner, int rate_bp)` — `withdraw` follows the basic rule, but at most 3 successful withdrawals per month. `end_month()` adds `balance * rate_bp / 10000` (only when the balance is positive) and resets the monthly count. `kind()` is `"savings"`.
+--- starter
+#include <string>
+#include <type_traits>
+#include <utility>
+
+// Money is kept in whole cents: 123456 prints as $1234.56.
+std::string format_cents(long long cents) {
+    long long v = cents < 0 ? -cents : cents;
+    std::string frac = std::to_string(v % 100);
+    if (frac.size() < 2) frac = "0" + frac;
+    return (cents < 0 ? "-$" : "$") + std::to_string(v / 100) + "." + frac;
+}
+
+class Account {
+public:
+    Account(int id, std::string owner) : id_(id), owner_(std::move(owner)) {}
+    virtual ~Account() = default;
+
+    int id() const { return id_; }
+    const std::string& owner() const { return owner_; }
+    long long balance() const { return balance_; }
+
+    bool deposit(long long cents) {
+        if (cents <= 0) return false;
+        balance_ += cents;
+        return true;
+    }
+
+    virtual bool withdraw(long long cents) {
+        if (cents <= 0 || cents > balance_) return false;
+        balance_ -= cents;
+        return true;
+    }
+
+    virtual void end_month() {}
+    virtual std::string kind() const { return "basic"; }
+
+protected:
+    long long balance_ = 0;
+
+private:
+    int id_;
+    std::string owner_;
+};
+--- solution
+#include <string>
+#include <type_traits>
+#include <utility>
+
+// Money is kept in whole cents: 123456 prints as $1234.56.
+std::string format_cents(long long cents) {
+    long long v = cents < 0 ? -cents : cents;
+    std::string frac = std::to_string(v % 100);
+    if (frac.size() < 2) frac = "0" + frac;
+    return (cents < 0 ? "-$" : "$") + std::to_string(v / 100) + "." + frac;
+}
+
+class Account {
+public:
+    Account(int id, std::string owner) : id_(id), owner_(std::move(owner)) {}
+    virtual ~Account() = default;
+
+    int id() const { return id_; }
+    const std::string& owner() const { return owner_; }
+    long long balance() const { return balance_; }
+
+    bool deposit(long long cents) {
+        if (cents <= 0) return false;
+        balance_ += cents;
+        return true;
+    }
+
+    virtual bool withdraw(long long cents) {
+        if (cents <= 0 || cents > balance_) return false;
+        balance_ -= cents;
+        return true;
+    }
+
+    virtual void end_month() {}
+    virtual std::string kind() const { return "basic"; }
+
+protected:
+    long long balance_ = 0;
+
+private:
+    int id_;
+    std::string owner_;
+};
+
+class CheckingAccount : public Account {
+public:
+    CheckingAccount(int id, std::string owner, long long overdraft_limit)
+        : Account(id, std::move(owner)), overdraft_limit_(overdraft_limit) {}
+
+    bool withdraw(long long cents) override {
+        if (cents <= 0 || balance_ - cents < -overdraft_limit_) return false;
+        balance_ -= cents;
+        return true;
+    }
+
+    std::string kind() const override { return "checking"; }
+
+private:
+    long long overdraft_limit_;
+};
+
+class SavingsAccount : public Account {
+public:
+    static constexpr int kWithdrawalsPerMonth = 3;
+
+    SavingsAccount(int id, std::string owner, int rate_bp)
+        : Account(id, std::move(owner)), rate_bp_(rate_bp) {}
+
+    bool withdraw(long long cents) override {
+        if (withdrawals_ >= kWithdrawalsPerMonth) return false;
+        if (!Account::withdraw(cents)) return false;
+        ++withdrawals_;
+        return true;
+    }
+
+    void end_month() override {
+        if (balance_ > 0) balance_ += balance_ * rate_bp_ / 10000;
+        withdrawals_ = 0;
+    }
+
+    std::string kind() const override { return "savings"; }
+
+private:
+    int rate_bp_;
+    int withdrawals_ = 0;
+};
+--- hint
+`CheckingAccount::withdraw`: fail if `cents <= 0` or `balance_ - cents < -overdraft_limit_`; otherwise subtract.
+--- hint
+`SavingsAccount::withdraw`: if the monthly count has reached 3, fail; otherwise `if (!Account::withdraw(cents)) return false;` then count it.
+--- hint
+Both derived constructors pass `id` and `owner` on to `Account(id, std::move(owner))` in the initialiser list.
+--- check test | Checking can go overdrawn up to the limit
+[] { CheckingAccount c(1, "A", 10000); c.deposit(5000); bool ok = c.withdraw(15000); bool beyond = c.withdraw(1); return ok && !beyond && c.balance() == -10000 && c.kind() == "checking"; }()
+--- check test | Savings allows three withdrawals a month
+[] { SavingsAccount s(2, "B", 0); s.deposit(1000); bool three = s.withdraw(10) && s.withdraw(10) && s.withdraw(10); bool fourth = s.withdraw(10); s.end_month(); bool again = s.withdraw(10); return three && !fourth && again && s.balance() == 960; }()
+--- check test | A failed savings withdrawal does not use up the allowance
+[] { SavingsAccount s(2, "B", 0); s.deposit(100); bool big = s.withdraw(5000); bool three = s.withdraw(1) && s.withdraw(1) && s.withdraw(1); return !big && three && !s.withdraw(1); }()
+--- check test | Savings pays interest, rounded down
+[] { SavingsAccount s(3, "C", 250); s.deposit(10000); s.end_month(); bool first = s.balance() == 10250; s.end_month(); return first && s.balance() == 10506 && s.kind() == "savings"; }()
+--- check test | Virtual calls through an Account reference
+[] { CheckingAccount c(1, "A", 500); SavingsAccount s(2, "B", 100); Account& a = c; Account& b = s; b.deposit(1000); bool ok = a.withdraw(300); b.end_month(); return ok && a.balance() == -300 && a.kind() == "checking" && b.balance() == 1010 && b.kind() == "savings"; }()
+
+=== cppp-07 | Bank 3: the bank owns the accounts
+--- teach
+Now a `Bank` to hold the accounts. The central question is **ownership**: who creates the accounts, who destroys them, and who merely uses them?
+
+The bank owns them. Because accounts are polymorphic — a checking account and a savings account have different sizes and behaviour — they cannot sit in a `std::vector<Account>` (that would slice them). The bank keeps **owning pointers**:
+
+```cpp
+std::map<int, std::unique_ptr<Account>> accounts_;
+```
+
+A map from id to account gives fast lookup by id, and the `unique_ptr`s destroy every account when the bank goes away. Callers who want to look at an account get a **non-owning** `Account*` from `find` — `nullptr` when there is no such id. They must not delete it; it stays valid as long as the bank does.
+
+The bank also hands out the ids (1, 2, 3, …), so two accounts can never share one.
+
+**Transfers must be all-or-nothing.** Money must never vanish or appear. Do every check that can fail first — both ids exist, they are different, the amount is positive, the withdrawal succeeds — and only then deposit. Because a positive deposit cannot fail, "withdraw, then deposit" is safe; the reverse order is not.
+
+`end_month` on the bank calls `end_month` on every account. Thanks to the virtual hook from lesson 1, the bank does not need to know which accounts are savings accounts — each one does the right thing. That is polymorphism paying off: no `if (kind == …)` chains, and a new account type later needs no change here.
+--- task
+Add `class Bank`. No `main`.
+
+- `int open_checking(const std::string& owner, long long overdraft_limit)` and `int open_savings(const std::string& owner, int rate_bp)` — create the account and return its id (1, 2, 3, … in order).
+- `Account* find(int id)` and a `const` version — `nullptr` for an unknown id.
+- `bool deposit(int id, long long cents)` and `bool withdraw(int id, long long cents)` — false for an unknown id, otherwise the account's own answer.
+- `bool transfer(int from, int to, long long cents)` — all or nothing; false (and nothing changes) for an unknown or equal id, a non-positive amount, or a refused withdrawal.
+- `long long total_balance() const` and `void end_month()`.
+--- starter
+#include <string>
+#include <type_traits>
+#include <utility>
+
+// Money is kept in whole cents: 123456 prints as $1234.56.
+std::string format_cents(long long cents) {
+    long long v = cents < 0 ? -cents : cents;
+    std::string frac = std::to_string(v % 100);
+    if (frac.size() < 2) frac = "0" + frac;
+    return (cents < 0 ? "-$" : "$") + std::to_string(v / 100) + "." + frac;
+}
+
+class Account {
+public:
+    Account(int id, std::string owner) : id_(id), owner_(std::move(owner)) {}
+    virtual ~Account() = default;
+
+    int id() const { return id_; }
+    const std::string& owner() const { return owner_; }
+    long long balance() const { return balance_; }
+
+    bool deposit(long long cents) {
+        if (cents <= 0) return false;
+        balance_ += cents;
+        return true;
+    }
+
+    virtual bool withdraw(long long cents) {
+        if (cents <= 0 || cents > balance_) return false;
+        balance_ -= cents;
+        return true;
+    }
+
+    virtual void end_month() {}
+    virtual std::string kind() const { return "basic"; }
+
+protected:
+    long long balance_ = 0;
+
+private:
+    int id_;
+    std::string owner_;
+};
+
+class CheckingAccount : public Account {
+public:
+    CheckingAccount(int id, std::string owner, long long overdraft_limit)
+        : Account(id, std::move(owner)), overdraft_limit_(overdraft_limit) {}
+
+    bool withdraw(long long cents) override {
+        if (cents <= 0 || balance_ - cents < -overdraft_limit_) return false;
+        balance_ -= cents;
+        return true;
+    }
+
+    std::string kind() const override { return "checking"; }
+
+private:
+    long long overdraft_limit_;
+};
+
+class SavingsAccount : public Account {
+public:
+    static constexpr int kWithdrawalsPerMonth = 3;
+
+    SavingsAccount(int id, std::string owner, int rate_bp)
+        : Account(id, std::move(owner)), rate_bp_(rate_bp) {}
+
+    bool withdraw(long long cents) override {
+        if (withdrawals_ >= kWithdrawalsPerMonth) return false;
+        if (!Account::withdraw(cents)) return false;
+        ++withdrawals_;
+        return true;
+    }
+
+    void end_month() override {
+        if (balance_ > 0) balance_ += balance_ * rate_bp_ / 10000;
+        withdrawals_ = 0;
+    }
+
+    std::string kind() const override { return "savings"; }
+
+private:
+    int rate_bp_;
+    int withdrawals_ = 0;
+};
+--- solution
+#include <map>
+#include <memory>
+#include <string>
+#include <type_traits>
+#include <utility>
+
+// Money is kept in whole cents: 123456 prints as $1234.56.
+std::string format_cents(long long cents) {
+    long long v = cents < 0 ? -cents : cents;
+    std::string frac = std::to_string(v % 100);
+    if (frac.size() < 2) frac = "0" + frac;
+    return (cents < 0 ? "-$" : "$") + std::to_string(v / 100) + "." + frac;
+}
+
+class Account {
+public:
+    Account(int id, std::string owner) : id_(id), owner_(std::move(owner)) {}
+    virtual ~Account() = default;
+
+    int id() const { return id_; }
+    const std::string& owner() const { return owner_; }
+    long long balance() const { return balance_; }
+
+    bool deposit(long long cents) {
+        if (cents <= 0) return false;
+        balance_ += cents;
+        return true;
+    }
+
+    virtual bool withdraw(long long cents) {
+        if (cents <= 0 || cents > balance_) return false;
+        balance_ -= cents;
+        return true;
+    }
+
+    virtual void end_month() {}
+    virtual std::string kind() const { return "basic"; }
+
+protected:
+    long long balance_ = 0;
+
+private:
+    int id_;
+    std::string owner_;
+};
+
+class CheckingAccount : public Account {
+public:
+    CheckingAccount(int id, std::string owner, long long overdraft_limit)
+        : Account(id, std::move(owner)), overdraft_limit_(overdraft_limit) {}
+
+    bool withdraw(long long cents) override {
+        if (cents <= 0 || balance_ - cents < -overdraft_limit_) return false;
+        balance_ -= cents;
+        return true;
+    }
+
+    std::string kind() const override { return "checking"; }
+
+private:
+    long long overdraft_limit_;
+};
+
+class SavingsAccount : public Account {
+public:
+    static constexpr int kWithdrawalsPerMonth = 3;
+
+    SavingsAccount(int id, std::string owner, int rate_bp)
+        : Account(id, std::move(owner)), rate_bp_(rate_bp) {}
+
+    bool withdraw(long long cents) override {
+        if (withdrawals_ >= kWithdrawalsPerMonth) return false;
+        if (!Account::withdraw(cents)) return false;
+        ++withdrawals_;
+        return true;
+    }
+
+    void end_month() override {
+        if (balance_ > 0) balance_ += balance_ * rate_bp_ / 10000;
+        withdrawals_ = 0;
+    }
+
+    std::string kind() const override { return "savings"; }
+
+private:
+    int rate_bp_;
+    int withdrawals_ = 0;
+};
+
+class Bank {
+public:
+    int open_checking(const std::string& owner, long long overdraft_limit) {
+        int id = next_id_++;
+        accounts_[id] = std::make_unique<CheckingAccount>(id, owner, overdraft_limit);
+        return id;
+    }
+
+    int open_savings(const std::string& owner, int rate_bp) {
+        int id = next_id_++;
+        accounts_[id] = std::make_unique<SavingsAccount>(id, owner, rate_bp);
+        return id;
+    }
+
+    Account* find(int id) {
+        auto it = accounts_.find(id);
+        return it == accounts_.end() ? nullptr : it->second.get();
+    }
+
+    const Account* find(int id) const {
+        auto it = accounts_.find(id);
+        return it == accounts_.end() ? nullptr : it->second.get();
+    }
+
+    bool deposit(int id, long long cents) {
+        Account* a = find(id);
+        return a && a->deposit(cents);
+    }
+
+    bool withdraw(int id, long long cents) {
+        Account* a = find(id);
+        return a && a->withdraw(cents);
+    }
+
+    bool transfer(int from, int to, long long cents) {
+        if (from == to || cents <= 0) return false;
+        Account* a = find(from);
+        Account* b = find(to);
+        if (!a || !b) return false;
+        if (!a->withdraw(cents)) return false;
+        b->deposit(cents);
+        return true;
+    }
+
+    long long total_balance() const {
+        long long total = 0;
+        for (const auto& [id, account] : accounts_) total += account->balance();
+        return total;
+    }
+
+    void end_month() {
+        for (auto& [id, account] : accounts_) account->end_month();
+    }
+
+private:
+    std::map<int, std::unique_ptr<Account>> accounts_;
+    int next_id_ = 1;
+};
+--- hint
+Store `std::map<int, std::unique_ptr<Account>> accounts_` and an `int next_id_ = 1`; `open_…` does `accounts_[id] = std::make_unique<CheckingAccount>(id, owner, limit);`.
+--- hint
+`find` uses `accounts_.find(id)` and returns `it->second.get()`, or `nullptr`.
+--- hint
+In `transfer`, check everything that can fail before any money moves: equal ids, the amount, both accounts found, then `withdraw`; only after that, `deposit`.
+--- check test | Opening accounts hands out ids in order
+[] { Bank b; int a = b.open_checking("Ada", 0); int s = b.open_savings("Lin", 100); return a == 1 && s == 2 && b.find(1)->kind() == "checking" && b.find(2)->owner() == "Lin" && b.find(3) == nullptr; }()
+--- check test | Deposits and withdrawals by id
+[] { Bank b; int a = b.open_checking("Ada", 1000); bool d = b.deposit(a, 500); bool w = b.withdraw(a, 1200); bool nobody = b.deposit(42, 100); return d && w && !nobody && b.find(a)->balance() == -700; }()
+--- check test | A transfer moves money
+[] { Bank b; int a = b.open_checking("Ada", 0); int c = b.open_checking("Cy", 0); b.deposit(a, 1000); bool ok = b.transfer(a, c, 400); return ok && b.find(a)->balance() == 600 && b.find(c)->balance() == 400 && b.total_balance() == 1000; }()
+--- check test | Failed transfers change nothing
+[] { Bank b; int a = b.open_checking("Ada", 0); int c = b.open_savings("Cy", 0); b.deposit(a, 1000); bool poor = b.transfer(a, c, 5000); bool same = b.transfer(a, a, 10); bool unknown = b.transfer(a, 99, 10); bool zero = b.transfer(a, c, 0); return !poor && !same && !unknown && !zero && b.find(a)->balance() == 1000 && b.find(c)->balance() == 0; }()
+--- check test | end_month pays interest on savings only
+[] { Bank b; int a = b.open_checking("Ada", 0); int s = b.open_savings("Lin", 500); b.deposit(a, 10000); b.deposit(s, 10000); b.end_month(); return b.find(a)->balance() == 10000 && b.find(s)->balance() == 10500 && b.total_balance() == 20500; }()
+--- check test | find works on a const bank
+[] { Bank b; b.open_savings("Lin", 0); const Bank& c = b; return c.find(1) != nullptr && c.find(2) == nullptr; }()
+
+=== cppp-08 | Bank 4: the transaction log and statements
+--- teach
+A bank that cannot say what happened is not a bank. The last step records every operation in a **transaction log** and prints statements from it.
+
+**Model the data first.** A transaction is a plain record:
+
+```cpp
+enum class TxKind { Deposit, Withdraw, Transfer };
+
+struct Transaction {
+    TxKind kind;
+    int from;        // 0 for a deposit
+    int to;          // 0 for a withdrawal
+    long long cents;
+    bool ok;         // did it succeed?
+};
+```
+
+Using `0` for "no account" works because ids start at 1. An `enum class` names the kinds instead of magic strings.
+
+**Decide what gets logged.** Failed attempts matter to an auditor — a refused withdrawal is worth seeing — so they are logged with `ok = false`. But calls that never referred to a real operation (an unknown account, a zero amount, a transfer to itself) are simply rejected and **not** logged.
+
+**Keep one source of truth.** A statement is *derived* from the log: filter the transactions that involve the account and format each one. Nothing is stored twice, so the statement cannot disagree with the history.
+
+**Separate data from presentation.** `history()` returns the raw records (by `const&`, so no copy and no way to edit them); `statement()` turns them into text. Tests, reports and a future user interface can all use the same data.
+
+A transfer appears in **both** accounts' statements, as `transfer out` for one and `transfer in` for the other.
+--- task
+Replace `Bank` with a version that keeps a log. No `main`.
+
+- `enum class TxKind { Deposit, Withdraw, Transfer };` and `struct Transaction { TxKind kind; int from; int to; long long cents; bool ok; };` (`from` is 0 for deposits, `to` is 0 for withdrawals).
+- `deposit`, `withdraw` and `transfer` behave as before, and append a `Transaction` — successful or not — whenever the accounts exist, the amount is positive and (for transfers) the ids differ. Other calls are rejected without logging.
+- `const std::vector<Transaction>& history() const`.
+- `std::string statement(int id) const` — `"no such account\n"` for an unknown id; otherwise:
+
+```
+Statement for #1 (Ada, checking)
+deposit +$100.00
+withdraw -$20.00
+transfer out -$30.00 to #2
+transfer in +$5.00 from #2
+withdraw -$500.00 FAILED
+balance $55.00
+```
+
+One line per logged transaction involving the account, oldest first, with ` FAILED` added to failed ones, then the balance.
+--- starter
+#include <map>
+#include <memory>
+#include <string>
+#include <type_traits>
+#include <utility>
+
+// Money is kept in whole cents: 123456 prints as $1234.56.
+std::string format_cents(long long cents) {
+    long long v = cents < 0 ? -cents : cents;
+    std::string frac = std::to_string(v % 100);
+    if (frac.size() < 2) frac = "0" + frac;
+    return (cents < 0 ? "-$" : "$") + std::to_string(v / 100) + "." + frac;
+}
+
+class Account {
+public:
+    Account(int id, std::string owner) : id_(id), owner_(std::move(owner)) {}
+    virtual ~Account() = default;
+
+    int id() const { return id_; }
+    const std::string& owner() const { return owner_; }
+    long long balance() const { return balance_; }
+
+    bool deposit(long long cents) {
+        if (cents <= 0) return false;
+        balance_ += cents;
+        return true;
+    }
+
+    virtual bool withdraw(long long cents) {
+        if (cents <= 0 || cents > balance_) return false;
+        balance_ -= cents;
+        return true;
+    }
+
+    virtual void end_month() {}
+    virtual std::string kind() const { return "basic"; }
+
+protected:
+    long long balance_ = 0;
+
+private:
+    int id_;
+    std::string owner_;
+};
+
+class CheckingAccount : public Account {
+public:
+    CheckingAccount(int id, std::string owner, long long overdraft_limit)
+        : Account(id, std::move(owner)), overdraft_limit_(overdraft_limit) {}
+
+    bool withdraw(long long cents) override {
+        if (cents <= 0 || balance_ - cents < -overdraft_limit_) return false;
+        balance_ -= cents;
+        return true;
+    }
+
+    std::string kind() const override { return "checking"; }
+
+private:
+    long long overdraft_limit_;
+};
+
+class SavingsAccount : public Account {
+public:
+    static constexpr int kWithdrawalsPerMonth = 3;
+
+    SavingsAccount(int id, std::string owner, int rate_bp)
+        : Account(id, std::move(owner)), rate_bp_(rate_bp) {}
+
+    bool withdraw(long long cents) override {
+        if (withdrawals_ >= kWithdrawalsPerMonth) return false;
+        if (!Account::withdraw(cents)) return false;
+        ++withdrawals_;
+        return true;
+    }
+
+    void end_month() override {
+        if (balance_ > 0) balance_ += balance_ * rate_bp_ / 10000;
+        withdrawals_ = 0;
+    }
+
+    std::string kind() const override { return "savings"; }
+
+private:
+    int rate_bp_;
+    int withdrawals_ = 0;
+};
+
+class Bank {
+public:
+    int open_checking(const std::string& owner, long long overdraft_limit) {
+        int id = next_id_++;
+        accounts_[id] = std::make_unique<CheckingAccount>(id, owner, overdraft_limit);
+        return id;
+    }
+
+    int open_savings(const std::string& owner, int rate_bp) {
+        int id = next_id_++;
+        accounts_[id] = std::make_unique<SavingsAccount>(id, owner, rate_bp);
+        return id;
+    }
+
+    Account* find(int id) {
+        auto it = accounts_.find(id);
+        return it == accounts_.end() ? nullptr : it->second.get();
+    }
+
+    const Account* find(int id) const {
+        auto it = accounts_.find(id);
+        return it == accounts_.end() ? nullptr : it->second.get();
+    }
+
+    bool deposit(int id, long long cents) {
+        Account* a = find(id);
+        return a && a->deposit(cents);
+    }
+
+    bool withdraw(int id, long long cents) {
+        Account* a = find(id);
+        return a && a->withdraw(cents);
+    }
+
+    bool transfer(int from, int to, long long cents) {
+        if (from == to || cents <= 0) return false;
+        Account* a = find(from);
+        Account* b = find(to);
+        if (!a || !b) return false;
+        if (!a->withdraw(cents)) return false;
+        b->deposit(cents);
+        return true;
+    }
+
+    long long total_balance() const {
+        long long total = 0;
+        for (const auto& [id, account] : accounts_) total += account->balance();
+        return total;
+    }
+
+    void end_month() {
+        for (auto& [id, account] : accounts_) account->end_month();
+    }
+
+private:
+    std::map<int, std::unique_ptr<Account>> accounts_;
+    int next_id_ = 1;
+};
+--- solution
+#include <map>
+#include <memory>
+#include <sstream>
+#include <string>
+#include <type_traits>
+#include <utility>
+#include <vector>
+
+// Money is kept in whole cents: 123456 prints as $1234.56.
+std::string format_cents(long long cents) {
+    long long v = cents < 0 ? -cents : cents;
+    std::string frac = std::to_string(v % 100);
+    if (frac.size() < 2) frac = "0" + frac;
+    return (cents < 0 ? "-$" : "$") + std::to_string(v / 100) + "." + frac;
+}
+
+class Account {
+public:
+    Account(int id, std::string owner) : id_(id), owner_(std::move(owner)) {}
+    virtual ~Account() = default;
+
+    int id() const { return id_; }
+    const std::string& owner() const { return owner_; }
+    long long balance() const { return balance_; }
+
+    bool deposit(long long cents) {
+        if (cents <= 0) return false;
+        balance_ += cents;
+        return true;
+    }
+
+    virtual bool withdraw(long long cents) {
+        if (cents <= 0 || cents > balance_) return false;
+        balance_ -= cents;
+        return true;
+    }
+
+    virtual void end_month() {}
+    virtual std::string kind() const { return "basic"; }
+
+protected:
+    long long balance_ = 0;
+
+private:
+    int id_;
+    std::string owner_;
+};
+
+class CheckingAccount : public Account {
+public:
+    CheckingAccount(int id, std::string owner, long long overdraft_limit)
+        : Account(id, std::move(owner)), overdraft_limit_(overdraft_limit) {}
+
+    bool withdraw(long long cents) override {
+        if (cents <= 0 || balance_ - cents < -overdraft_limit_) return false;
+        balance_ -= cents;
+        return true;
+    }
+
+    std::string kind() const override { return "checking"; }
+
+private:
+    long long overdraft_limit_;
+};
+
+class SavingsAccount : public Account {
+public:
+    static constexpr int kWithdrawalsPerMonth = 3;
+
+    SavingsAccount(int id, std::string owner, int rate_bp)
+        : Account(id, std::move(owner)), rate_bp_(rate_bp) {}
+
+    bool withdraw(long long cents) override {
+        if (withdrawals_ >= kWithdrawalsPerMonth) return false;
+        if (!Account::withdraw(cents)) return false;
+        ++withdrawals_;
+        return true;
+    }
+
+    void end_month() override {
+        if (balance_ > 0) balance_ += balance_ * rate_bp_ / 10000;
+        withdrawals_ = 0;
+    }
+
+    std::string kind() const override { return "savings"; }
+
+private:
+    int rate_bp_;
+    int withdrawals_ = 0;
+};
+
+enum class TxKind { Deposit, Withdraw, Transfer };
+
+struct Transaction {
+    TxKind kind;
+    int from;   // 0 for a deposit
+    int to;     // 0 for a withdrawal
+    long long cents;
+    bool ok;
+};
+
+class Bank {
+public:
+    int open_checking(const std::string& owner, long long overdraft_limit) {
+        int id = next_id_++;
+        accounts_[id] = std::make_unique<CheckingAccount>(id, owner, overdraft_limit);
+        return id;
+    }
+
+    int open_savings(const std::string& owner, int rate_bp) {
+        int id = next_id_++;
+        accounts_[id] = std::make_unique<SavingsAccount>(id, owner, rate_bp);
+        return id;
+    }
+
+    Account* find(int id) {
+        auto it = accounts_.find(id);
+        return it == accounts_.end() ? nullptr : it->second.get();
+    }
+
+    const Account* find(int id) const {
+        auto it = accounts_.find(id);
+        return it == accounts_.end() ? nullptr : it->second.get();
+    }
+
+    bool deposit(int id, long long cents) {
+        Account* a = find(id);
+        if (!a || cents <= 0) return false;
+        bool ok = a->deposit(cents);
+        log_.push_back({TxKind::Deposit, 0, id, cents, ok});
+        return ok;
+    }
+
+    bool withdraw(int id, long long cents) {
+        Account* a = find(id);
+        if (!a || cents <= 0) return false;
+        bool ok = a->withdraw(cents);
+        log_.push_back({TxKind::Withdraw, id, 0, cents, ok});
+        return ok;
+    }
+
+    bool transfer(int from, int to, long long cents) {
+        if (from == to || cents <= 0) return false;
+        Account* a = find(from);
+        Account* b = find(to);
+        if (!a || !b) return false;
+        bool ok = a->withdraw(cents);
+        if (ok) b->deposit(cents);
+        log_.push_back({TxKind::Transfer, from, to, cents, ok});
+        return ok;
+    }
+
+    long long total_balance() const {
+        long long total = 0;
+        for (const auto& [id, account] : accounts_) total += account->balance();
+        return total;
+    }
+
+    void end_month() {
+        for (auto& [id, account] : accounts_) account->end_month();
+    }
+
+    const std::vector<Transaction>& history() const { return log_; }
+
+    std::string statement(int id) const {
+        const Account* a = find(id);
+        if (!a) return "no such account\n";
+        std::ostringstream out;
+        out << "Statement for #" << id << " (" << a->owner() << ", " << a->kind() << ")\n";
+        for (const Transaction& t : log_) {
+            std::string line;
+            if (t.kind == TxKind::Deposit && t.to == id) {
+                line = "deposit +" + format_cents(t.cents);
+            } else if (t.kind == TxKind::Withdraw && t.from == id) {
+                line = "withdraw -" + format_cents(t.cents);
+            } else if (t.kind == TxKind::Transfer && t.from == id) {
+                line = "transfer out -" + format_cents(t.cents) + " to #" + std::to_string(t.to);
+            } else if (t.kind == TxKind::Transfer && t.to == id) {
+                line = "transfer in +" + format_cents(t.cents) + " from #" + std::to_string(t.from);
+            } else {
+                continue;
+            }
+            if (!t.ok) line += " FAILED";
+            out << line << "\n";
+        }
+        out << "balance " << format_cents(a->balance()) << "\n";
+        return out.str();
+    }
+
+private:
+    std::map<int, std::unique_ptr<Account>> accounts_;
+    std::vector<Transaction> log_;
+    int next_id_ = 1;
+};
+--- hint
+Add a `std::vector<Transaction> log_` member. In each operation, do the "reject without logging" checks first, then perform it, then `log_.push_back({kind, from, to, cents, ok})`.
+--- hint
+In `transfer`, a refused withdrawal is logged with `ok = false`; on success deposit and log `ok = true`.
+--- hint
+`statement` loops over `log_`, builds a line for each transaction where the account is `from` or `to` (using `format_cents`), appends `" FAILED"` when `!t.ok`, and ends with the balance line.
+--- check case | Ada's statement
+[] { Bank b; int ada = b.open_checking("Ada", 0); int lin = b.open_savings("Lin", 100); b.deposit(ada, 10000); b.withdraw(ada, 2000); b.transfer(ada, lin, 3000); b.transfer(lin, ada, 500); b.withdraw(ada, 50000); return b.statement(ada); }()
+=> "Statement for #1 (Ada, checking)\ndeposit +$100.00\nwithdraw -$20.00\ntransfer out -$30.00 to #2\ntransfer in +$5.00 from #2\nwithdraw -$500.00 FAILED\nbalance $55.00\n"
+--- check case | The other side of the transfers
+[] { Bank b; int ada = b.open_checking("Ada", 0); int lin = b.open_savings("Lin", 100); b.deposit(ada, 10000); b.transfer(ada, lin, 3000); b.transfer(lin, ada, 500); return b.statement(lin); }()
+=> "Statement for #2 (Lin, savings)\ntransfer in +$30.00 from #1\ntransfer out -$5.00 to #1\nbalance $25.00\n"
+--- check test | Failed transfers are logged; rejected calls are not
+[] { Bank b; int a = b.open_checking("A", 0); int c = b.open_checking("C", 0); b.transfer(a, c, 100); b.deposit(99, 100); b.deposit(a, -5); b.transfer(a, a, 10); b.withdraw(a, 0); const auto& h = b.history(); return h.size() == 1 && h[0].kind == TxKind::Transfer && !h[0].ok && h[0].from == a && h[0].to == c && h[0].cents == 100; }()
+--- check test | Deposits and withdrawals record their accounts
+[] { Bank b; int a = b.open_savings("A", 0); b.deposit(a, 700); b.withdraw(a, 200); const auto& h = b.history(); return h.size() == 2 && h[0].kind == TxKind::Deposit && h[0].from == 0 && h[0].to == a && h[0].ok && h[1].kind == TxKind::Withdraw && h[1].from == a && h[1].to == 0 && h[1].cents == 200; }()
+--- check case | An unknown account
+Bank().statement(3)
+=> "no such account\n"
+--- check case | A statement with no transactions
+[] { Bank b; b.open_checking("Bo", 5000); return b.statement(1); }()
+=> "Statement for #1 (Bo, checking)\nbalance $0.00\n"
+
+=== cppp-09 | Text stats 1: counting lines, words and characters
+--- teach
+The third project is a **command-line tool**: a complete program that reads text from standard input and prints statistics about it, in the spirit of the Unix `wc` command. Over four steps it grows word frequencies, sentence statistics and a histogram. In this project you write whole programs with `main`, and they are checked on their exact output.
+
+Reading all of standard input line by line is a loop you will write many times:
+
+```cpp
+std::string line;
+while (std::getline(std::cin, line)) {
+    // one line, without its '\n'
+}
+```
+
+`std::getline` returns the stream, which converts to `false` once there is nothing left to read. Every line counts — blank ones too.
+
+Counting words inside a line is where `std::istringstream` shines: `>>` into a `std::string` skips any amount of whitespace and reads one run of non-space characters, so double spaces and tabs are handled for you:
+
+```cpp
+std::istringstream in(line);
+std::string word;
+while (in >> word) ++words;
+```
+
+Decide definitions before you write code — tools are only useful when their numbers mean something precise:
+
+- **lines**: how many lines were read.
+- **words**: whitespace-separated pieces, punctuation included (`"summer."` is one word).
+- **chars**: characters on the lines, **not** counting the line breaks.
+
+Use `long long` for counts that grow with input size; a tool should not break on a big file.
+--- task
+Write a complete program that reads all of standard input and prints exactly:
+
+```
+lines: <number of lines>
+words: <number of whitespace-separated words>
+chars: <number of characters, not counting line breaks>
+```
+--- starter
+#include <iostream>
+#include <string>
+
+// Step 1 of the text-statistics tool: read all of standard input and count it.
+int main() {
+    std::cout << "lines: 0\n";
+    std::cout << "words: 0\n";
+    std::cout << "chars: 0\n";
+    return 0;
+}
+--- solution
+#include <iostream>
+#include <sstream>
+#include <string>
+
+int main() {
+    std::string line;
+    int lines = 0;
+    int words = 0;
+    long long chars = 0;
+    while (std::getline(std::cin, line)) {
+        ++lines;
+        chars += static_cast<long long>(line.size());
+        std::istringstream in(line);
+        std::string word;
+        while (in >> word) ++words;
+    }
+    std::cout << "lines: " << lines << "\n";
+    std::cout << "words: " << words << "\n";
+    std::cout << "chars: " << chars << "\n";
+    return 0;
+}
+--- hint
+`while (std::getline(std::cin, line))` runs once per line, blank lines included.
+--- hint
+Add `line.size()` to the character count, and count words with a `std::istringstream` over the line.
+--- stdin
+The river was low that summer. The boats sat in the mud, and the children
+walked out to them at noon!
+
+Was the river ever this low before? Old Mara said yes: once, when she was a girl.
+The children did not believe her. The river, they said, had always been there...
+--- check output | Counts the sample text
+lines: 5
+words: 52
+chars: 261
+
+=== cppp-10 | Text stats 2: word frequencies
+--- teach
+Counting words is easy; counting **the same** word needs a decision about what "the same" means. In the sample text, `The`, `the` and `the,` should all count as one word. So before counting, **normalise** each word:
+
+1. Trim punctuation from both ends — anything that is not a letter or digit (`std::isalnum`). `"summer."` becomes `"summer"`, `"(yes)"` becomes `"yes"`. Punctuation *inside* a word, like the apostrophe in `don't`, stays.
+2. Lowercase what is left (`std::tolower`).
+3. If nothing is left (the "word" was just `--`), skip it.
+
+Put that in its own function, `normalize`. It has one job, it is easy to test on its own, and the next two lessons reuse it.
+
+Then counting is the `std::map<std::string, int>` pattern from the basics. To rank the words, copy the map's entries into a `std::vector<std::pair<std::string, int>>` and sort it with a comparator: **higher count first, and alphabetical order to break ties**. Without a tie-breaker, words with equal counts could come out in any order, and the output would not be reliable — a tool's output should be the same every time for the same input.
+
+`std::isalnum` and `std::tolower` expect an `unsigned char` value; pass `static_cast<unsigned char>(c)` to stay safe with non-ASCII bytes.
+
+The raw word count from step 1 stays as it was: it counts pieces of text, not normalised words.
+--- task
+Keep the three lines from step 1, then print the five most frequent **normalised** words (lowercased, with non-letter/digit characters trimmed from both ends; skip words that become empty):
+
+```
+top words:
+  <word>: <count>
+```
+
+Most frequent first; equal counts in alphabetical order; fewer than five lines if there are fewer distinct words.
+--- starter
+#include <iostream>
+#include <sstream>
+#include <string>
+
+int main() {
+    std::string line;
+    int lines = 0;
+    int words = 0;
+    long long chars = 0;
+    while (std::getline(std::cin, line)) {
+        ++lines;
+        chars += static_cast<long long>(line.size());
+        std::istringstream in(line);
+        std::string word;
+        while (in >> word) ++words;
+    }
+    std::cout << "lines: " << lines << "\n";
+    std::cout << "words: " << words << "\n";
+    std::cout << "chars: " << chars << "\n";
+    return 0;
+}
+--- solution
+#include <algorithm>
+#include <cctype>
+#include <iostream>
+#include <map>
+#include <sstream>
+#include <string>
+#include <utility>
+#include <vector>
+
+// Lowercase, with punctuation trimmed from both ends ("River," becomes "river").
+std::string normalize(const std::string& raw) {
+    std::size_t a = 0;
+    std::size_t b = raw.size();
+    while (a < b && !std::isalnum(static_cast<unsigned char>(raw[a]))) ++a;
+    while (b > a && !std::isalnum(static_cast<unsigned char>(raw[b - 1]))) --b;
+    std::string w = raw.substr(a, b - a);
+    for (char& c : w) c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+    return w;
+}
+
+int main() {
+    std::string line;
+    int lines = 0;
+    int raw_words = 0;
+    long long chars = 0;
+    std::vector<std::string> words;
+    while (std::getline(std::cin, line)) {
+        ++lines;
+        chars += static_cast<long long>(line.size());
+        std::istringstream in(line);
+        std::string raw;
+        while (in >> raw) {
+            ++raw_words;
+            std::string w = normalize(raw);
+            if (!w.empty()) words.push_back(w);
+        }
+    }
+    std::cout << "lines: " << lines << "\n";
+    std::cout << "words: " << raw_words << "\n";
+    std::cout << "chars: " << chars << "\n";
+    std::map<std::string, int> counts;
+    for (const auto& w : words) counts[w]++;
+    std::vector<std::pair<std::string, int>> ranked(counts.begin(), counts.end());
+    std::sort(ranked.begin(), ranked.end(), [](const auto& a, const auto& b) {
+        if (a.second != b.second) return a.second > b.second;
+        return a.first < b.first;
+    });
+    std::cout << "top words:\n";
+    for (std::size_t i = 0; i < ranked.size() && i < 5; ++i) {
+        std::cout << "  " << ranked[i].first << ": " << ranked[i].second << "\n";
+    }
+    return 0;
+}
+--- hint
+Write `std::string normalize(const std::string& raw)`: move a start index forward and an end index backward past non-`std::isalnum` characters, take the `substr`, then lowercase it.
+--- hint
+Collect the normalised words in a vector while you read, count them in a `std::map<std::string, int>`, then copy the map into a vector of pairs.
+--- hint
+Sort with `if (a.second != b.second) return a.second > b.second; return a.first < b.first;` and print the first five.
+--- stdin
+The river was low that summer. The boats sat in the mud, and the children
+walked out to them at noon!
+
+Was the river ever this low before? Old Mara said yes: once, when she was a girl.
+The children did not believe her. The river, they said, had always been there...
+--- check output | Counts and the top five words
+lines: 5
+words: 52
+chars: 261
+top words:
+  the: 7
+  river: 3
+  was: 3
+  children: 2
+  low: 2
+
+=== cppp-11 | Text stats 3: sentences and word lengths
+--- teach
+Three more statistics, each with a definition to pin down first.
+
+**Sentences.** A sentence ends with `.`, `!` or `?`. But `"there..."` has three dots and ends *one* sentence, and `"Wait?!"` is one sentence too. So count **runs** of ending characters: a new sentence ends whenever an ending character follows something that was not one. Keep a flag `previous_was_end` as you walk each line's characters. (A colon, as in `"said yes:"`, does not end a sentence.)
+
+**Average word length.** Over the normalised words from step 2 — so punctuation does not count toward length — divide the total number of characters by the number of words. Print it with exactly two decimal places:
+
+```cpp
+#include <iomanip>
+std::cout << std::fixed << std::setprecision(2) << average << "\n";
+```
+
+`std::fixed` stays set on `std::cout` afterwards. That is harmless here — it affects only floating-point output, and everything printed after it is text or whole numbers — but it is the kind of side effect worth knowing about.
+
+**Longest word.** The first normalised word of the greatest length. "First" matters: several words may tie, and a precise rule makes the output predictable. Replace your current best only when a word is strictly longer.
+
+Put the sentence counter in its own small function, as you did with `normalize`. As the tool grows, `main` should read like a summary of what the program does, with the details in named helpers.
+--- task
+Extend the tool. After the `chars` line and before `top words:`, print:
+
+```
+sentences: <count>
+average word length: <two decimal places>
+longest word: <word>
+```
+
+A sentence ends at each run of one or more `.`, `!` or `?` characters within a line. The average and the longest word use the normalised words; the longest is the first one of maximal length.
+--- starter
+#include <algorithm>
+#include <cctype>
+#include <iostream>
+#include <map>
+#include <sstream>
+#include <string>
+#include <utility>
+#include <vector>
+
+// Lowercase, with punctuation trimmed from both ends ("River," becomes "river").
+std::string normalize(const std::string& raw) {
+    std::size_t a = 0;
+    std::size_t b = raw.size();
+    while (a < b && !std::isalnum(static_cast<unsigned char>(raw[a]))) ++a;
+    while (b > a && !std::isalnum(static_cast<unsigned char>(raw[b - 1]))) --b;
+    std::string w = raw.substr(a, b - a);
+    for (char& c : w) c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+    return w;
+}
+
+int main() {
+    std::string line;
+    int lines = 0;
+    int raw_words = 0;
+    long long chars = 0;
+    std::vector<std::string> words;
+    while (std::getline(std::cin, line)) {
+        ++lines;
+        chars += static_cast<long long>(line.size());
+        std::istringstream in(line);
+        std::string raw;
+        while (in >> raw) {
+            ++raw_words;
+            std::string w = normalize(raw);
+            if (!w.empty()) words.push_back(w);
+        }
+    }
+    std::cout << "lines: " << lines << "\n";
+    std::cout << "words: " << raw_words << "\n";
+    std::cout << "chars: " << chars << "\n";
+    std::map<std::string, int> counts;
+    for (const auto& w : words) counts[w]++;
+    std::vector<std::pair<std::string, int>> ranked(counts.begin(), counts.end());
+    std::sort(ranked.begin(), ranked.end(), [](const auto& a, const auto& b) {
+        if (a.second != b.second) return a.second > b.second;
+        return a.first < b.first;
+    });
+    std::cout << "top words:\n";
+    for (std::size_t i = 0; i < ranked.size() && i < 5; ++i) {
+        std::cout << "  " << ranked[i].first << ": " << ranked[i].second << "\n";
+    }
+    return 0;
+}
+--- solution
+#include <algorithm>
+#include <cctype>
+#include <iomanip>
+#include <iostream>
+#include <map>
+#include <sstream>
+#include <string>
+#include <utility>
+#include <vector>
+
+// Lowercase, with punctuation trimmed from both ends ("River," becomes "river").
+std::string normalize(const std::string& raw) {
+    std::size_t a = 0;
+    std::size_t b = raw.size();
+    while (a < b && !std::isalnum(static_cast<unsigned char>(raw[a]))) ++a;
+    while (b > a && !std::isalnum(static_cast<unsigned char>(raw[b - 1]))) --b;
+    std::string w = raw.substr(a, b - a);
+    for (char& c : w) c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+    return w;
+}
+
+// Each run of . ! ? ends one sentence ("there..." counts once).
+int count_sentences(const std::string& line) {
+    int n = 0;
+    bool previous_was_end = false;
+    for (char c : line) {
+        bool end = c == '.' || c == '!' || c == '?';
+        if (end && !previous_was_end) ++n;
+        previous_was_end = end;
+    }
+    return n;
+}
+
+int main() {
+    std::string line;
+    int lines = 0;
+    int raw_words = 0;
+    long long chars = 0;
+    int sentences = 0;
+    std::vector<std::string> words;
+    while (std::getline(std::cin, line)) {
+        ++lines;
+        chars += static_cast<long long>(line.size());
+        sentences += count_sentences(line);
+        std::istringstream in(line);
+        std::string raw;
+        while (in >> raw) {
+            ++raw_words;
+            std::string w = normalize(raw);
+            if (!w.empty()) words.push_back(w);
+        }
+    }
+    std::cout << "lines: " << lines << "\n";
+    std::cout << "words: " << raw_words << "\n";
+    std::cout << "chars: " << chars << "\n";
+    std::cout << "sentences: " << sentences << "\n";
+    long long letters = 0;
+    std::string longest;
+    for (const auto& w : words) {
+        letters += static_cast<long long>(w.size());
+        if (w.size() > longest.size()) longest = w;
+    }
+    double average = words.empty() ? 0.0 : static_cast<double>(letters) / static_cast<double>(words.size());
+    std::cout << "average word length: " << std::fixed << std::setprecision(2) << average << "\n";
+    std::cout << "longest word: " << longest << "\n";
+    std::map<std::string, int> counts;
+    for (const auto& w : words) counts[w]++;
+    std::vector<std::pair<std::string, int>> ranked(counts.begin(), counts.end());
+    std::sort(ranked.begin(), ranked.end(), [](const auto& a, const auto& b) {
+        if (a.second != b.second) return a.second > b.second;
+        return a.first < b.first;
+    });
+    std::cout << "top words:\n";
+    for (std::size_t i = 0; i < ranked.size() && i < 5; ++i) {
+        std::cout << "  " << ranked[i].first << ": " << ranked[i].second << "\n";
+    }
+    return 0;
+}
+--- hint
+Write `int count_sentences(const std::string& line)` that walks the characters with a `previous_was_end` flag, counting only when an ending character follows a non-ending one.
+--- hint
+While reading, add `count_sentences(line)` to a running total.
+--- hint
+Loop over the normalised words once, summing their lengths and keeping the longest (replace only when strictly longer). Print the average with `std::fixed << std::setprecision(2)`.
+--- stdin
+The river was low that summer. The boats sat in the mud, and the children
+walked out to them at noon!
+
+Was the river ever this low before? Old Mara said yes: once, when she was a girl.
+The children did not believe her. The river, they said, had always been there...
+--- check output | All the statistics so far
+lines: 5
+words: 52
+chars: 261
+sentences: 6
+average word length: 3.85
+longest word: children
+top words:
+  the: 7
+  river: 3
+  was: 3
+  children: 2
+  low: 2
+
+=== cppp-12 | Text stats 4: a word-length histogram
+--- teach
+The last step adds a text-mode **histogram** — a bar chart made of characters — of how long the words are. It is a small exercise in layout, the part of command-line tools people notice first.
+
+Count words by length in a `std::map<std::size_t, int>`: the map keeps the lengths in increasing order, so printing is a single loop. Only lengths that actually occur get a line.
+
+Each line has three parts: the length, **right-aligned** in a column 4 characters wide; a bar of `#` characters, one per word; and the count. `std::setw` sets the width of the *next* thing printed (it does not stick, unlike `std::fixed`), and a `std::string(n, '#')` builds the bar:
+
+```cpp
+std::cout << std::setw(4) << length << " | " << std::string(n, '#') << " " << n << "\n";
+```
+
+```
+   3 | ####### 7
+  12 | ## 2
+```
+
+Right-aligning numbers keeps the bars lined up even when lengths reach two digits.
+
+With four features in place, look back at the shape of the program. Reading happens once; every statistic is computed from the same list of normalised words; each non-trivial rule — normalising, counting sentences — is a named function. Adding the histogram took one new block. That is the payoff of the structure you built step by step: new features slot in without disturbing the old ones, and the output check proves nothing earlier changed.
+--- task
+Extend the tool one last time. After the top words, print:
+
+```
+word lengths:
+```
+
+followed by one line per word length that occurs among the normalised words, shortest first: the length right-aligned in 4 characters, then ` | `, then one `#` per word of that length, a space, and the count.
+--- starter
+#include <algorithm>
+#include <cctype>
+#include <iomanip>
+#include <iostream>
+#include <map>
+#include <sstream>
+#include <string>
+#include <utility>
+#include <vector>
+
+// Lowercase, with punctuation trimmed from both ends ("River," becomes "river").
+std::string normalize(const std::string& raw) {
+    std::size_t a = 0;
+    std::size_t b = raw.size();
+    while (a < b && !std::isalnum(static_cast<unsigned char>(raw[a]))) ++a;
+    while (b > a && !std::isalnum(static_cast<unsigned char>(raw[b - 1]))) --b;
+    std::string w = raw.substr(a, b - a);
+    for (char& c : w) c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+    return w;
+}
+
+// Each run of . ! ? ends one sentence ("there..." counts once).
+int count_sentences(const std::string& line) {
+    int n = 0;
+    bool previous_was_end = false;
+    for (char c : line) {
+        bool end = c == '.' || c == '!' || c == '?';
+        if (end && !previous_was_end) ++n;
+        previous_was_end = end;
+    }
+    return n;
+}
+
+int main() {
+    std::string line;
+    int lines = 0;
+    int raw_words = 0;
+    long long chars = 0;
+    int sentences = 0;
+    std::vector<std::string> words;
+    while (std::getline(std::cin, line)) {
+        ++lines;
+        chars += static_cast<long long>(line.size());
+        sentences += count_sentences(line);
+        std::istringstream in(line);
+        std::string raw;
+        while (in >> raw) {
+            ++raw_words;
+            std::string w = normalize(raw);
+            if (!w.empty()) words.push_back(w);
+        }
+    }
+    std::cout << "lines: " << lines << "\n";
+    std::cout << "words: " << raw_words << "\n";
+    std::cout << "chars: " << chars << "\n";
+    std::cout << "sentences: " << sentences << "\n";
+    long long letters = 0;
+    std::string longest;
+    for (const auto& w : words) {
+        letters += static_cast<long long>(w.size());
+        if (w.size() > longest.size()) longest = w;
+    }
+    double average = words.empty() ? 0.0 : static_cast<double>(letters) / static_cast<double>(words.size());
+    std::cout << "average word length: " << std::fixed << std::setprecision(2) << average << "\n";
+    std::cout << "longest word: " << longest << "\n";
+    std::map<std::string, int> counts;
+    for (const auto& w : words) counts[w]++;
+    std::vector<std::pair<std::string, int>> ranked(counts.begin(), counts.end());
+    std::sort(ranked.begin(), ranked.end(), [](const auto& a, const auto& b) {
+        if (a.second != b.second) return a.second > b.second;
+        return a.first < b.first;
+    });
+    std::cout << "top words:\n";
+    for (std::size_t i = 0; i < ranked.size() && i < 5; ++i) {
+        std::cout << "  " << ranked[i].first << ": " << ranked[i].second << "\n";
+    }
+    return 0;
+}
+--- solution
+#include <algorithm>
+#include <cctype>
+#include <iomanip>
+#include <iostream>
+#include <map>
+#include <sstream>
+#include <string>
+#include <utility>
+#include <vector>
+
+// Lowercase, with punctuation trimmed from both ends ("River," becomes "river").
+std::string normalize(const std::string& raw) {
+    std::size_t a = 0;
+    std::size_t b = raw.size();
+    while (a < b && !std::isalnum(static_cast<unsigned char>(raw[a]))) ++a;
+    while (b > a && !std::isalnum(static_cast<unsigned char>(raw[b - 1]))) --b;
+    std::string w = raw.substr(a, b - a);
+    for (char& c : w) c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+    return w;
+}
+
+// Each run of . ! ? ends one sentence ("there..." counts once).
+int count_sentences(const std::string& line) {
+    int n = 0;
+    bool previous_was_end = false;
+    for (char c : line) {
+        bool end = c == '.' || c == '!' || c == '?';
+        if (end && !previous_was_end) ++n;
+        previous_was_end = end;
+    }
+    return n;
+}
+
+int main() {
+    std::string line;
+    int lines = 0;
+    int raw_words = 0;
+    long long chars = 0;
+    int sentences = 0;
+    std::vector<std::string> words;
+    while (std::getline(std::cin, line)) {
+        ++lines;
+        chars += static_cast<long long>(line.size());
+        sentences += count_sentences(line);
+        std::istringstream in(line);
+        std::string raw;
+        while (in >> raw) {
+            ++raw_words;
+            std::string w = normalize(raw);
+            if (!w.empty()) words.push_back(w);
+        }
+    }
+    std::cout << "lines: " << lines << "\n";
+    std::cout << "words: " << raw_words << "\n";
+    std::cout << "chars: " << chars << "\n";
+    std::cout << "sentences: " << sentences << "\n";
+    long long letters = 0;
+    std::string longest;
+    for (const auto& w : words) {
+        letters += static_cast<long long>(w.size());
+        if (w.size() > longest.size()) longest = w;
+    }
+    double average = words.empty() ? 0.0 : static_cast<double>(letters) / static_cast<double>(words.size());
+    std::cout << "average word length: " << std::fixed << std::setprecision(2) << average << "\n";
+    std::cout << "longest word: " << longest << "\n";
+    std::map<std::string, int> counts;
+    for (const auto& w : words) counts[w]++;
+    std::vector<std::pair<std::string, int>> ranked(counts.begin(), counts.end());
+    std::sort(ranked.begin(), ranked.end(), [](const auto& a, const auto& b) {
+        if (a.second != b.second) return a.second > b.second;
+        return a.first < b.first;
+    });
+    std::cout << "top words:\n";
+    for (std::size_t i = 0; i < ranked.size() && i < 5; ++i) {
+        std::cout << "  " << ranked[i].first << ": " << ranked[i].second << "\n";
+    }
+    std::map<std::size_t, int> by_length;
+    for (const auto& w : words) by_length[w.size()]++;
+    std::cout << "word lengths:\n";
+    for (const auto& [length, n] : by_length) {
+        std::cout << std::setw(4) << length << " | " << std::string(n, '#') << " " << n << "\n";
+    }
+    return 0;
+}
+--- hint
+Count lengths in a `std::map<std::size_t, int>` from the normalised words.
+--- hint
+`std::setw(4) << length` right-aligns the length; `std::string(n, '#')` is the bar.
+--- stdin
+The river was low that summer. The boats sat in the mud, and the children
+walked out to them at noon!
+
+Was the river ever this low before? Old Mara said yes: once, when she was a girl.
+The children did not believe her. The river, they said, had always been there...
+--- check output | The full report with the histogram
+lines: 5
+words: 52
+chars: 261
+sentences: 6
+average word length: 3.85
+longest word: children
+top words:
+  the: 7
+  river: 3
+  was: 3
+  children: 2
+  low: 2
+word lengths:
+   1 | # 1
+   2 | ### 3
+   3 | ####################### 23
+   4 | ############# 13
+   5 | ##### 5
+   6 | #### 4
+   7 | # 1
+   8 | ## 2
+
+=== cppp-13 | Capstone: a priority task scheduler
+--- teach
+From here on there are no step-by-step instructions: each capstone is a **specification**, an empty file and a set of behaviour checks. You choose the data structures, the helper types and the algorithms. This is the part that proves you can build things on your own.
+
+A way to work that holds up on real projects:
+
+1. **Read the spec twice** and write down the rules as a list. Note the edge cases it mentions.
+2. **Work examples by hand**, especially the tricky ones — here, ties in priority and tasks that wait on others.
+3. **Pick data structures from the operations.** List what must be fast. "Give me the highest-priority ready task" over and over is exactly what a heap (`std::priority_queue`) does in O(log n). "When a task finishes, which tasks were waiting for it?" suggests each task keeps a list of its dependents and a count of unfinished dependencies.
+4. **Build the simplest version that passes the small checks, then make it fast.** The big checks use 100,000 tasks and a 50,000-long chain of dependencies; anything that rescans every task on every call will run out of time.
+
+This scheduler is a small version of what build systems, package managers and job queues do: run things in priority order, but never before what they depend on. Because a task can only depend on tasks that already exist, there can be no cycles.
+
+A `std::priority_queue` puts the "largest" element on top, so its ordering must say what "larger" means for you: higher priority, and on equal priority the task **added earlier**. `std::priority_queue<T>` (from `<queue>`) has `push(x)`, `top()` (the largest) and `pop()`. It compares with `<` on `T` unless you give it a comparator, so a small struct with its own `operator<` is the easiest way to say what "larger" means.
+--- task
+Write `class Scheduler`. No `main`.
+
+- `bool add(const std::string& name, int priority, const std::vector<std::string>& deps = {})` — adds a task that depends on the tasks named in `deps`. Returns false, adding nothing, if the name is already used or any dependency is not a known task.
+- `std::optional<std::string> next()` — among tasks that are not finished and whose dependencies are all finished, returns the one with the **highest priority** (on a tie, the one added first) and marks it finished. `std::nullopt` if no task is ready.
+- `std::size_t pending() const` — tasks added but not yet finished.
+- `bool is_done(const std::string& name) const` — true if that task has been returned by `next()`.
+
+`next()` and `add()` must be fast: well under O(n) each.
+--- starter
+#include <cstddef>
+#include <optional>
+#include <queue>
+#include <string>
+#include <unordered_map>
+#include <vector>
+
+// Capstone: design and write class Scheduler to the specification.
+--- solution
+#include <cstddef>
+#include <optional>
+#include <queue>
+#include <string>
+#include <unordered_map>
+#include <vector>
+
+class Scheduler {
+public:
+    bool add(const std::string& name, int priority, const std::vector<std::string>& deps = {}) {
+        if (index_.count(name)) return false;
+        for (const auto& d : deps) {
+            if (!index_.count(d)) return false;
+        }
+        std::size_t id = tasks_.size();
+        tasks_.push_back(Task{name, priority, 0, {}, false});
+        index_.emplace(name, id);
+        for (const auto& d : deps) {
+            Task& dep = tasks_[index_.find(d)->second];
+            if (!dep.done) {
+                dep.dependents.push_back(id);
+                ++tasks_[id].waiting;
+            }
+        }
+        if (tasks_[id].waiting == 0) ready_.push(Ready{priority, id});
+        ++pending_;
+        return true;
+    }
+
+    std::optional<std::string> next() {
+        if (ready_.empty()) return std::nullopt;
+        std::size_t id = ready_.top().id;
+        ready_.pop();
+        tasks_[id].done = true;
+        --pending_;
+        for (std::size_t d : tasks_[id].dependents) {
+            if (--tasks_[d].waiting == 0) ready_.push(Ready{tasks_[d].priority, d});
+        }
+        return tasks_[id].name;
+    }
+
+    std::size_t pending() const { return pending_; }
+
+    bool is_done(const std::string& name) const {
+        auto it = index_.find(name);
+        return it != index_.end() && tasks_[it->second].done;
+    }
+
+private:
+    struct Task {
+        std::string name;
+        int priority;
+        int waiting;                          // unfinished dependencies
+        std::vector<std::size_t> dependents;  // tasks waiting on this one
+        bool done;
+    };
+
+    struct Ready {
+        int priority;
+        std::size_t id;
+        // priority_queue puts the "largest" on top: higher priority, then earlier id.
+        bool operator<(const Ready& o) const { return priority != o.priority ? priority < o.priority : id > o.id; }
+    };
+
+    std::vector<Task> tasks_;
+    std::unordered_map<std::string, std::size_t> index_;
+    std::priority_queue<Ready> ready_;
+    std::size_t pending_ = 0;
+};
+--- hint
+Store tasks in a vector (index = order added) with a map from name to index. Each task keeps its priority, a count of unfinished dependencies, and a list of the tasks that depend on it.
+--- hint
+Keep ready tasks in a `std::priority_queue` of small structs whose `operator<` makes higher priority — then lower index — come out first.
+--- hint
+When `next()` finishes a task, decrement the waiting count of each dependent; any that reach zero go into the queue. A dependency that is already finished when a task is added does not count as waiting.
+--- check test | Highest priority first
+[] { Scheduler s; s.add("a", 1); s.add("b", 5); s.add("c", 3); auto x = s.next(); auto y = s.next(); auto z = s.next(); return x == "b" && y == "c" && z == "a" && s.next() == std::nullopt; }()
+--- check test | Ties go to the task added first
+[] { Scheduler s; s.add("x", 2); s.add("y", 2); s.add("z", 2); auto a = s.next(); auto b = s.next(); auto c = s.next(); return a == "x" && b == "y" && c == "z"; }()
+--- check test | A task waits for its dependencies
+[] { Scheduler s; s.add("build", 1); s.add("test", 9, {"build"}); s.add("lint", 5); auto a = s.next(); auto b = s.next(); auto c = s.next(); return a == "lint" && b == "build" && c == "test"; }()
+--- check test | Several dependencies must all finish
+[] { Scheduler s; s.add("a", 1); s.add("b", 2); s.add("ship", 100, {"a", "b"}); auto first = s.next(); bool waiting = !s.is_done("ship") && s.pending() == 2; auto second = s.next(); auto third = s.next(); return first == "b" && waiting && second == "a" && third == "ship" && s.pending() == 0; }()
+--- check test | Duplicates and unknown dependencies are refused
+[] { Scheduler s; bool a = s.add("a", 1); bool dup = s.add("a", 2); bool unknown = s.add("b", 1, {"nope"}); bool self = s.add("c", 1, {"c"}); return a && !dup && !unknown && !self && s.pending() == 1; }()
+--- check test | Depending on a finished task means ready at once
+[] { Scheduler s; s.add("a", 1); s.next(); bool added = s.add("b", 0, {"a"}); return added && s.is_done("a") && s.next() == "b" && s.is_done("b"); }()
+--- check test | 100,000 tasks come out in order
+[] { Scheduler s; for (int i = 0; i < 100000; ++i) s.add("t" + std::to_string(i), i % 1000); for (int p = 999; p >= 0; --p) for (int i = p; i < 100000; i += 1000) { auto n = s.next(); if (!n || *n != "t" + std::to_string(i)) return false; } return !s.next() && s.pending() == 0; }()
+--- check test | A chain of 50,000 dependencies
+[] { Scheduler s; s.add("c0", 0); for (int i = 1; i < 50000; ++i) s.add("c" + std::to_string(i), i, {"c" + std::to_string(i - 1)}); for (int i = 0; i < 50000; ++i) { auto n = s.next(); if (!n || *n != "c" + std::to_string(i)) return false; } return s.pending() == 0; }()
+
+=== cppp-14 | Capstone: a JSON value type
+--- teach
+JSON is how most programs exchange data: `null`, `true`/`false`, numbers, strings, arrays `[…]` and objects `{"key": value}`, nested to any depth. This capstone asks you to design a C++ type that can hold **any** JSON value, be built up in code, and print itself as compact JSON text.
+
+The design questions are yours to answer, but here are the forces at work:
+
+- **One type, six shapes.** You met two ways to say "one of several kinds": a class hierarchy with virtual functions, and `std::variant`. The set of JSON kinds is fixed forever — a **closed** set — which is the textbook case for a variant.
+- **It is recursive.** An array holds values, which may be arrays. A class can contain a `std::vector` or `std::map` of itself, even before the class is complete, because those containers store their elements elsewhere.
+- **It should behave like a value.** Copying a document should copy all of it; changing the copy must not change the original. If every member manages itself (vectors, maps, strings, variants), the **rule of zero** gives you correct copies for free.
+- **Constructors decide how natural it feels.** `Json(3)`, `Json(2.5)`, `Json(true)`, `Json("hi")` should each do the obvious thing. Remember the trap from the intermediate course: without a `const char*` constructor, a string literal quietly prefers `bool`.
+
+Printing is a recursive walk: each kind knows how to print itself, and arrays and objects print their children. Strings need escaping (`"` and `\` and control characters), and object keys come out sorted (a `std::map` does that).
+
+Numbers: JSON has one number type, so store a `double`, but print whole numbers without a decimal point — `3`, not `3.000000`.
+--- task
+Write `class Json`. No `main`.
+
+- Constructors: `Json()` and `Json(std::nullptr_t)` make null; `Json(bool)`, `Json(int)`, `Json(double)`, `Json(const char*)`, `Json(std::string)`. `static Json array()` and `static Json object()` make empty ones.
+- `is_null()`, `is_bool()`, `is_number()`, `is_string()`, `is_array()`, `is_object()`; `std::size_t size() const` — elements of an array or members of an object, 0 for anything else.
+- `Json& push_back(Json v)` — appends to an array (a null value becomes an empty array first); returns `*this` so calls chain.
+- `Json& operator[](const std::string& key)` — the member with that key, inserting null if it is missing (a null value becomes an empty object first).
+- `const Json* get(const std::string& key) const` — the member, or `nullptr` if this is not an object or has no such key.
+- `std::string dump() const` — compact JSON with no spaces: `null`, `true`, `false`; numbers that are whole (and smaller than 10¹⁵ in size) as integers, others as `std::ostringstream` prints them with `std::setprecision(15)`; strings in double quotes with `"` `\` newline and tab escaped as `\"` `\\` `\n` `\t`; arrays `[a,b]`; objects `{"k":v}` with keys in sorted order.
+--- starter
+#include <cmath>
+#include <cstddef>
+#include <iomanip>
+#include <map>
+#include <sstream>
+#include <string>
+#include <type_traits>
+#include <utility>
+#include <variant>
+#include <vector>
+
+// Capstone: design and write class Json to the specification.
+--- solution
+#include <cmath>
+#include <cstddef>
+#include <iomanip>
+#include <map>
+#include <sstream>
+#include <string>
+#include <type_traits>
+#include <utility>
+#include <variant>
+#include <vector>
+
+class Json {
+public:
+    using Array = std::vector<Json>;
+    using Object = std::map<std::string, Json>;
+
+    Json() = default;
+    Json(std::nullptr_t) {}
+    Json(bool b) : value_(b) {}
+    Json(int n) : value_(static_cast<double>(n)) {}
+    Json(double d) : value_(d) {}
+    Json(const char* s) : value_(std::string(s)) {}
+    Json(std::string s) : value_(std::move(s)) {}
+
+    static Json array() {
+        Json j;
+        j.value_ = Array{};
+        return j;
+    }
+
+    static Json object() {
+        Json j;
+        j.value_ = Object{};
+        return j;
+    }
+
+    bool is_null() const { return std::holds_alternative<std::nullptr_t>(value_); }
+    bool is_bool() const { return std::holds_alternative<bool>(value_); }
+    bool is_number() const { return std::holds_alternative<double>(value_); }
+    bool is_string() const { return std::holds_alternative<std::string>(value_); }
+    bool is_array() const { return std::holds_alternative<Array>(value_); }
+    bool is_object() const { return std::holds_alternative<Object>(value_); }
+
+    std::size_t size() const {
+        if (const auto* a = std::get_if<Array>(&value_)) return a->size();
+        if (const auto* o = std::get_if<Object>(&value_)) return o->size();
+        return 0;
+    }
+
+    Json& push_back(Json v) {
+        if (is_null()) value_ = Array{};
+        if (auto* a = std::get_if<Array>(&value_)) a->push_back(std::move(v));
+        return *this;
+    }
+
+    Json& operator[](const std::string& key) {
+        if (is_null()) value_ = Object{};
+        return (*std::get_if<Object>(&value_))[key];
+    }
+
+    const Json* get(const std::string& key) const {
+        const auto* o = std::get_if<Object>(&value_);
+        if (!o) return nullptr;
+        auto it = o->find(key);
+        return it == o->end() ? nullptr : &it->second;
+    }
+
+    std::string dump() const {
+        std::string out;
+        write(out);
+        return out;
+    }
+
+private:
+    static std::string number(double d) {
+        if (std::floor(d) == d && std::abs(d) < 1e15) return std::to_string(static_cast<long long>(d));
+        std::ostringstream o;
+        o << std::setprecision(15) << d;
+        return o.str();
+    }
+
+    static void quote(std::string& out, const std::string& s) {
+        out += '"';
+        for (char c : s) {
+            switch (c) {
+                case '"': out += "\\\""; break;
+                case '\\': out += "\\\\"; break;
+                case '\n': out += "\\n"; break;
+                case '\t': out += "\\t"; break;
+                default: out += c;
+            }
+        }
+        out += '"';
+    }
+
+    void write(std::string& out) const {
+        std::visit([&out](const auto& v) {
+            using T = std::decay_t<decltype(v)>;
+            if constexpr (std::is_same_v<T, std::nullptr_t>) {
+                out += "null";
+            } else if constexpr (std::is_same_v<T, bool>) {
+                out += v ? "true" : "false";
+            } else if constexpr (std::is_same_v<T, double>) {
+                out += number(v);
+            } else if constexpr (std::is_same_v<T, std::string>) {
+                quote(out, v);
+            } else if constexpr (std::is_same_v<T, Array>) {
+                out += '[';
+                for (std::size_t i = 0; i < v.size(); ++i) {
+                    if (i > 0) out += ',';
+                    v[i].write(out);
+                }
+                out += ']';
+            } else {
+                out += '{';
+                bool first = true;
+                for (const auto& [key, item] : v) {
+                    if (!first) out += ',';
+                    first = false;
+                    quote(out, key);
+                    out += ':';
+                    item.write(out);
+                }
+                out += '}';
+            }
+        }, value_);
+    }
+
+    std::variant<std::nullptr_t, bool, double, std::string, Array, Object> value_;
+};
+--- hint
+One member does it: a `std::variant<std::nullptr_t, bool, double, std::string, std::vector<Json>, std::map<std::string, Json>>`. Default-constructing it gives null.
+--- hint
+`dump` can call a private recursive `write(std::string& out) const` that uses `std::visit` with `if constexpr` on the held type.
+--- hint
+For numbers: `if (std::floor(d) == d && std::abs(d) < 1e15)` print `static_cast<long long>(d)`; otherwise use an `std::ostringstream` with `std::setprecision(15)`.
+--- check test | Scalars dump as JSON
+Json().dump() == "null" && Json(nullptr).dump() == "null" && Json(true).dump() == "true" && Json(false).dump() == "false" && Json(3).dump() == "3" && Json(-2.5).dump() == "-2.5" && Json(0.1).dump() == "0.1" && Json(1e20).dump() == "1e+20"
+--- check test | A string literal is a string, not a bool
+Json("hi").is_string() && Json("hi").dump() == "\"hi\"" && Json(std::string("x")).is_string() && Json(3).is_number() && Json(2.5).is_number() && Json(true).is_bool()
+--- check case | Strings are escaped
+Json("say \"hi\"\n\\\t").dump()
+=> "\"say \\\"hi\\\"\\n\\\\\\t\""
+--- check case | Building a nested document
+[] { Json doc = Json::object(); doc["name"] = "Ada"; doc["age"] = 36; doc["langs"] = Json::array(); doc["langs"].push_back("C++").push_back(true).push_back(nullptr); return doc.dump(); }()
+=> "{\"age\":36,\"langs\":[\"C++\",true,null],\"name\":\"Ada\"}"
+--- check test | Empty containers, and nesting them
+Json::array().dump() == "[]" && Json::object().dump() == "{}" && Json::array().push_back(Json::array()).push_back(Json::object()).dump() == "[[],{}]"
+--- check test | Null becomes an array or object on first use
+[] { Json a; a.push_back(1); a.push_back(2); Json o; o["x"] = 1.5; return a.is_array() && a.size() == 2 && a.dump() == "[1,2]" && o.is_object() && o.dump() == "{\"x\":1.5}"; }()
+--- check test | Copies are independent
+[] { Json a = Json::object(); a["list"] = Json::array(); Json b = a; b["list"].push_back(1); b["new"] = "yes"; return a.dump() == "{\"list\":[]}" && b.dump() == "{\"list\":[1],\"new\":\"yes\"}"; }()
+--- check test | get looks without inserting
+[] { Json doc = Json::object(); doc["k"] = 7; const Json& c = doc; const Json* k = c.get("k"); return k && k->dump() == "7" && c.get("missing") == nullptr && doc.size() == 1 && Json(5).get("k") == nullptr && Json(5).size() == 0; }()
+--- check test | A big array dumps quickly
+[] { Json a = Json::array(); for (int i = 0; i < 20000; ++i) a.push_back(i % 10); std::string d = a.dump(); return a.size() == 20000 && d.size() == 2 + 20000 + 19999 && d.substr(0, 8) == "[0,1,2,3"; }()
+
+=== cppp-15 | Capstone: an expression evaluator with variables
+--- teach
+The final capstone is a small **interpreter**: a calculator that remembers variables across lines, like the prompt of a scripting language.
+
+```
+> rate = 0.05
+0.05
+> years = 10
+10
+> 1000 * (1 + rate) ^ years
+1628.894626777442
+```
+
+You built the core of this in the expert course: a tokenizer and a recursive-descent parser. This time there is no scaffolding. Design decisions to make:
+
+- **Tokenize first, or parse characters directly?** Both work. A separate tokenizer keeps the parser simpler; parsing characters directly keeps everything in one place. Choose one and be consistent.
+- **Where does `^` go in the grammar?** Power binds tighter than `*` and unary minus on its **left**, and it is **right-associative**: `2 ^ 3 ^ 2` is `2 ^ 9 = 512`, and `-2 ^ 2` is `-(2 ^ 2) = -4`. But a minus on its right belongs to the exponent: `2 ^ -1` is `0.5`. A rule like `power := primary ('^' unary)?` with `unary := '-' unary | power` captures all three — work through why.
+- **How do you tell an assignment from an expression?** A line is an assignment when it starts with a name followed by `=`. Anything else is an expression.
+- **Failure must not leave a mess.** If the right-hand side of `x = …` fails, `x` keeps its old value (or stays undefined). Evaluate completely, then store.
+
+Errors — unknown variables, division by zero, bad syntax, leftover input, results that are not finite numbers (`(-8) ^ 0.5`) — are all reported as `std::nullopt`. `std::pow(a, b)` from `<cmath>` computes a power, and `std::isfinite(x)` tells you whether a result is a real, finite number (not infinity or NaN).
+
+Keep the evaluator separate from any printing, as you did with the bank's statements: `run` returns a value, and whoever calls it decides what to show.
+--- task
+Write `class Calculator`. No `main`.
+
+- `std::optional<double> run(const std::string& line)` — if the line is `name = expression`, evaluates the expression, stores it in the variable `name` and returns it; otherwise evaluates the whole line as an expression. Returns `std::nullopt` on any error, and a failed line changes no variable.
+- `std::optional<double> get(const std::string& name) const` — a variable's value, or `std::nullopt`.
+
+Expressions contain numbers (`3`, `2.5`), variable names (a letter or `_`, then letters, digits or `_`), `+ - * /`, `^` (power), parentheses and unary minus, with spaces allowed anywhere between them. Precedence from lowest: `+ -`, then `* /`, then unary minus, then `^` (right-associative, and its exponent may start with a unary minus). Errors: bad syntax or leftover input, an unknown variable, division by zero, or a result that is not a finite number.
+--- starter
+#include <cctype>
+#include <cmath>
+#include <cstdlib>
+#include <map>
+#include <optional>
+#include <string>
+
+// Capstone: design and write class Calculator to the specification.
+--- solution
+#include <cctype>
+#include <cmath>
+#include <cstdlib>
+#include <map>
+#include <optional>
+#include <string>
+
+class Calculator {
+public:
+    std::optional<double> run(const std::string& line) {
+        std::size_t i = 0;
+        while (i < line.size() && std::isspace(static_cast<unsigned char>(line[i]))) ++i;
+        const std::size_t start = i;
+        if (i < line.size() && name_start(line[i])) {
+            while (i < line.size() && name_char(line[i])) ++i;
+            std::string name = line.substr(start, i - start);
+            while (i < line.size() && std::isspace(static_cast<unsigned char>(line[i]))) ++i;
+            if (i < line.size() && line[i] == '=') {
+                auto value = Parser{line, i + 1, vars_}.parse();
+                if (value) vars_[name] = *value;
+                return value;
+            }
+        }
+        return Parser{line, start, vars_}.parse();
+    }
+
+    std::optional<double> get(const std::string& name) const {
+        auto it = vars_.find(name);
+        if (it == vars_.end()) return std::nullopt;
+        return it->second;
+    }
+
+private:
+    static bool name_start(char c) { return std::isalpha(static_cast<unsigned char>(c)) || c == '_'; }
+    static bool name_char(char c) { return std::isalnum(static_cast<unsigned char>(c)) || c == '_'; }
+
+    // expr := term (('+'|'-') term)*    term := unary (('*'|'/') unary)*
+    // unary := '-' unary | power        power := primary ('^' unary)?
+    // primary := number | name | '(' expr ')'
+    struct Parser {
+        const std::string& s;
+        std::size_t i;
+        const std::map<std::string, double>& vars;
+
+        std::optional<double> parse() {
+            auto v = expr();
+            skip();
+            if (!v || i != s.size() || !std::isfinite(*v)) return std::nullopt;
+            return v;
+        }
+
+        void skip() {
+            while (i < s.size() && std::isspace(static_cast<unsigned char>(s[i]))) ++i;
+        }
+
+        bool eat(char c) {
+            skip();
+            if (i < s.size() && s[i] == c) {
+                ++i;
+                return true;
+            }
+            return false;
+        }
+
+        std::optional<double> expr() {
+            auto left = term();
+            while (left) {
+                if (eat('+')) {
+                    auto right = term();
+                    if (!right) return std::nullopt;
+                    *left += *right;
+                } else if (eat('-')) {
+                    auto right = term();
+                    if (!right) return std::nullopt;
+                    *left -= *right;
+                } else {
+                    break;
+                }
+            }
+            return left;
+        }
+
+        std::optional<double> term() {
+            auto left = unary();
+            while (left) {
+                if (eat('*')) {
+                    auto right = unary();
+                    if (!right) return std::nullopt;
+                    *left *= *right;
+                } else if (eat('/')) {
+                    auto right = unary();
+                    if (!right || *right == 0) return std::nullopt;
+                    *left /= *right;
+                } else {
+                    break;
+                }
+            }
+            return left;
+        }
+
+        std::optional<double> unary() {
+            if (eat('-')) {
+                auto v = unary();
+                if (!v) return std::nullopt;
+                return -*v;
+            }
+            return power();
+        }
+
+        std::optional<double> power() {
+            auto base = primary();
+            if (!base) return std::nullopt;
+            if (eat('^')) {
+                auto exponent = unary();
+                if (!exponent) return std::nullopt;
+                return std::pow(*base, *exponent);
+            }
+            return base;
+        }
+
+        std::optional<double> primary() {
+            skip();
+            if (i >= s.size()) return std::nullopt;
+            if (eat('(')) {
+                auto v = expr();
+                if (!v || !eat(')')) return std::nullopt;
+                return v;
+            }
+            if (std::isdigit(static_cast<unsigned char>(s[i]))) {
+                std::size_t start = i;
+                while (i < s.size() && std::isdigit(static_cast<unsigned char>(s[i]))) ++i;
+                if (i < s.size() && s[i] == '.') {
+                    ++i;
+                    if (i >= s.size() || !std::isdigit(static_cast<unsigned char>(s[i]))) return std::nullopt;
+                    while (i < s.size() && std::isdigit(static_cast<unsigned char>(s[i]))) ++i;
+                }
+                return std::strtod(s.substr(start, i - start).c_str(), nullptr);
+            }
+            if (name_start(s[i])) {
+                std::size_t start = i;
+                while (i < s.size() && name_char(s[i])) ++i;
+                auto it = vars.find(s.substr(start, i - start));
+                if (it == vars.end()) return std::nullopt;
+                return it->second;
+            }
+            return std::nullopt;
+        }
+    };
+
+    std::map<std::string, double> vars_;
+};
+--- hint
+Write a small parser (a struct holding the text, a position and a reference to the variables) with one function per grammar level: expression, term, unary, power, primary.
+--- hint
+`power := primary ('^' unary)?` and `unary := '-' unary | power` give right associativity, `-2^2 = -4` and `2^-1 = 0.5`.
+--- hint
+In `run`, skip spaces, try to read a name, skip spaces again: if the next character is `=`, parse the rest as the expression; otherwise parse the whole line from the start. Store only after the parse succeeds.
+--- check test | Arithmetic with precedence
+[] { Calculator c; auto a = c.run("1 + 2 * 3"); auto b = c.run("(1 + 2) * 3"); auto d = c.run("8 - 3 - 2"); auto e = c.run("7 / 2"); return a == 7.0 && b == 9.0 && d == 3.0 && e == 3.5; }()
+--- check test | Assign, then use
+[] { Calculator c; auto x = c.run("x = 4"); auto y = c.run("x * x + 1"); return x == 4.0 && y == 17.0 && c.get("x") == 4.0 && c.get("y") == std::nullopt; }()
+--- check test | A variable can update itself
+[] { Calculator c; c.run("total = 0"); for (int i = 1; i <= 10000; ++i) c.run("total = total + 1"); return c.get("total") == 10000.0; }()
+--- check test | Power: right-associative, and unary minus
+[] { Calculator c; auto a = c.run("2 ^ 3 ^ 2"); auto b = c.run("-2 ^ 2"); auto d = c.run("2 ^ -1"); auto e = c.run("(-2) ^ 2"); return a == 512.0 && b == -4.0 && d == 0.5 && e == 4.0; }()
+--- check test | Names with digits and underscores
+[] { Calculator c; c.run("_rate2 = 0.5"); c.run("years = 10"); auto v = c.run("  years*_rate2  "); return v == 5.0; }()
+--- check test | Unknown variables and division by zero
+[] { Calculator c; c.run("x = 1"); return !c.run("y + 1") && !c.run("x / 0") && !c.run("x / (x - 1)") && !c.run("(0 - 8) ^ 0.5"); }()
+--- check test | A failed line changes nothing
+[] { Calculator c; c.run("x = 5"); auto bad = c.run("x = 1 / 0"); auto bad2 = c.run("z = w + 1"); return !bad && !bad2 && c.get("x") == 5.0 && !c.get("z"); }()
+--- check test | Syntax errors
+[] { Calculator c; c.run("x = 1"); return !c.run("") && !c.run("1 +") && !c.run("(1") && !c.run("1)") && !c.run("2 3") && !c.run("1x = 3") && !c.run("= 3") && !c.run("x == 3") && !c.run("3.") && !c.run("x ="); }()

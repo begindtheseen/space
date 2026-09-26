@@ -36,9 +36,10 @@ import { Bar, Button } from '@/components/ui'
 import { markLearned } from '@/engine/apply'
 import { useLearner } from '@/hooks/useLearner'
 import { buildProgram, gradeRun, lessonShell } from '@/learn/grade'
-import { ROADMAPS, TRACKS, findLesson, nextLesson, passedCount, streak, trackFor } from '@/learn/index'
+import { LEARN_LANGS } from '@/learn/platform'
+import { MASTERY, ROADMAPS, currentTrack, findLesson, langName, nextLesson, passedCount, streak, trackFor, tracksFor } from '@/learn/index'
 import { editorLang, runLearn, warmUp } from '@/learn/platform'
-import type { LearnGrade, LearnLesson, LearnTrack, Roadmap } from '@/learn/types'
+import { LEVEL_LABEL, type LearnGrade, type LearnLesson, type LearnTrack, type Roadmap } from '@/learn/types'
 import type { ShellState } from '@/lib/shell'
 import { Markdown } from '@/lib/markdown'
 import { navigate, useRoute } from '@/lib/router'
@@ -47,7 +48,7 @@ import './pages.css'
 
 export function Learn({ lessonId }: { lessonId?: string }) {
   if (!lessonId) return <LearnHome />
-  const goal = lessonId.startsWith('roadmap-') ? ROADMAPS.find((r) => `roadmap-${r.id}` === lessonId) : undefined
+  const goal = lessonId.startsWith('roadmap-') ? ALL_ROADMAPS.find((r) => `roadmap-${r.id}` === lessonId) : undefined
   if (goal) return <RoadmapView roadmap={goal} />
   const track = trackFor(lessonId)
   if (track) return <CourseView track={track} />
@@ -70,10 +71,27 @@ function Streak() {
 
 /* ── Roadmaps ────────────────────────────────────────────────────────────── */
 
+/** Goals first, then one beginner-to-expert roadmap per language. */
+const ALL_ROADMAPS: Roadmap[] = [...ROADMAPS, ...MASTERY]
+
 function LearnHome({ missing }: { missing?: string }) {
   const { state } = useLearner()
   const route = useRoute()
-  const goal = ROADMAPS.find((r) => r.id === route.query.goal) ?? ROADMAPS[0]!
+  const goal = ALL_ROADMAPS.find((r) => r.id === route.query.goal) ?? ROADMAPS[0]!
+  const pill = (r: Roadmap, label = r.title) => (
+    <button
+      key={r.id}
+      type="button"
+      role="tab"
+      aria-selected={r.id === goal.id}
+      data-active={r.id === goal.id}
+      className="rm-goals__pill"
+      onClick={() => navigate(`/learn?goal=${r.id}`, { replace: true })}
+    >
+      {r.id.startsWith('master-') ? <LangMark lang={r.id.slice(7)} size={16} /> : null}
+      {label}
+    </button>
+  )
 
   return (
     <div className="page page--padtop ide-wrap lm-home">
@@ -86,20 +104,15 @@ function LearnHome({ missing }: { missing?: string }) {
 
       {missing ? <p className="lm-missing">There is no lesson called “{missing}”. Pick a course below.</p> : null}
 
-      <div className="rm-goals" role="tablist" aria-label="Goal">
-        {ROADMAPS.map((r) => (
-          <button
-            key={r.id}
-            type="button"
-            role="tab"
-            aria-selected={r.id === goal.id}
-            data-active={r.id === goal.id}
-            className="rm-goals__pill"
-            onClick={() => navigate(`/learn?goal=${r.id}`, { replace: true })}
-          >
-            {r.title}
-          </button>
-        ))}
+      <div className="rm-goals" role="tablist" aria-label="Roadmap">
+        <span className="rm-goals__label">Reach a goal</span>
+        <div className="rm-goals__row">{ROADMAPS.map((r) => pill(r))}</div>
+        {MASTERY.length ? (
+          <>
+            <span className="rm-goals__label">Or master one language, beginner to expert</span>
+            <div className="rm-goals__row">{MASTERY.map((r) => pill(r))}</div>
+          </>
+        ) : null}
       </div>
 
       <section className="rm">
@@ -113,29 +126,43 @@ function LearnHome({ missing }: { missing?: string }) {
       </section>
 
       <h2 className="lm-h2">Browse every course</h2>
-      <div className="lm-courses">
-        {TRACKS.map((t) => {
-          const done = passedCount(t, state.learn)
-          return (
-            <a key={t.lang} className="lm-course" href={`#/learn/${t.lang}`}>
-              <span className="lm-course__icon">
-                <LangMark lang={t.lang} size={30} />
-              </span>
-              <span className="lm-course__text">
-                <span className="lm-course__title">{t.name}</span>
-                <span className="lm-course__meta">
-                  {done === t.lessons.length ? 'Complete' : `${done} of ${t.lessons.length} lessons`}
-                </span>
-                <Bar value={done / t.lessons.length} height={4} />
-              </span>
-            </a>
-          )
-        })}
-      </div>
+      {LEARN_LANGS.map((lang) => (
+        <section key={lang} className="lm-lang" aria-label={langName(lang)}>
+          <h3 className="lm-lang__name">
+            <LangMark lang={lang} size={20} />
+            {langName(lang)}
+            <span className="lm-lang__count">
+              {tracksFor(lang).length} course{tracksFor(lang).length === 1 ? '' : 's'} · {tracksFor(lang).reduce((n, t) => n + t.lessons.length, 0)} lessons
+            </span>
+          </h3>
+          <div className="lm-courses">
+            {tracksFor(lang).map((t) => {
+              const done = passedCount(t, state.learn)
+              return (
+                <a key={t.id} className="lm-course" href={`#/learn/${t.id}`}>
+                  <span className="lm-course__icon">
+                    <LangMark lang={t.lang} size={30} />
+                  </span>
+                  <span className="lm-course__text">
+                    <span className="lm-course__level" data-level={t.level}>
+                      {LEVEL_LABEL[t.level]}
+                    </span>
+                    <span className="lm-course__title">{t.name}</span>
+                    <span className="lm-course__meta">
+                      {done === t.lessons.length ? 'Complete' : `${done} of ${t.lessons.length} lessons`}
+                    </span>
+                    <Bar value={done / t.lessons.length} height={4} />
+                  </span>
+                </a>
+              )
+            })}
+          </div>
+        </section>
+      ))}
 
       <p className="track-note">
         Learn to code is practice, and it counts for nothing else: passing a lesson does not change your modules, your
-        readiness or your review queue. More lessons, past the basics, will follow.
+        readiness or your review queue.
       </p>
     </div>
   )
@@ -334,12 +361,22 @@ function CourseView({ track }: { track: LearnTrack }) {
         </span>
         <div style={{ minWidth: 0 }} className="grow">
           <div className="page-head__kicker">
-            Course · {total} lessons <Streak />
+            {LEVEL_LABEL[track.level]} · {total} lessons <Streak />
           </div>
           <h1 className="h-page">{track.name}</h1>
           <p className="page-head__sub">{track.blurb}</p>
         </div>
       </div>
+      {tracksFor(track.lang).length > 1 ? (
+        <nav className="lm-ladder" aria-label={`${langName(track.lang)} courses`}>
+          {tracksFor(track.lang).map((t, i) => (
+            <a key={t.id} href={`#/learn/${t.id}`} className="lm-ladder__step" data-here={t.id === track.id} data-done={passedCount(t, state.learn) === t.lessons.length}>
+              <span className="lm-ladder__n">{i + 1}</span>
+              {LEVEL_LABEL[t.level]}
+            </a>
+          ))}
+        </nav>
+      ) : null}
       <div className="lm-course-go">
         <Bar value={done / total} height={6} />
         <span className="lm-course-go__n">
@@ -385,6 +422,9 @@ function LessonView({ track, lesson, index }: { track: LearnTrack; lesson: Learn
   const passedBefore = !!state.learn[lesson.id]
   const prev = track.lessons[index - 1]
   const next = track.lessons[index + 1]
+  // At the end of a course, the way on is the next course in the language.
+  const ladder = tracksFor(track.lang)
+  const nextCourse = next ? undefined : ladder[ladder.findIndex((t) => t.id === track.id) + 1]
 
   useEffect(() => warmUp(lesson.lang), [lesson.lang])
 
@@ -410,7 +450,7 @@ function LessonView({ track, lesson, index }: { track: LearnTrack; lesson: Learn
   return (
     <div className="page page--padtop ide-wrap">
       <div className="lm-top">
-        <a className="lm-back" href={`#/learn/${track.lang}`}>
+        <a className="lm-back" href={`#/learn/${track.id}`}>
           <IconChevronLeft size={13} />
           {track.title}
         </a>
@@ -479,9 +519,19 @@ function LessonView({ track, lesson, index }: { track: LearnTrack; lesson: Learn
           {passedNow ? (
             <div className="lm-win">
               <IconCheck size={16} />
-              <span className="grow">{next ? `Lesson passed. Next: ${next.title}` : `Lesson passed — that is the whole ${track.name} course.`}</span>
-              <button type="button" className="ide-run" onClick={() => navigate(next ? `/learn/${next.id}` : `/learn/${track.lang}`)}>
-                {next ? 'Continue' : 'Back to the course'}
+              <span className="grow">
+                {next
+                  ? `Lesson passed. Next: ${next.title}`
+                  : nextCourse
+                    ? `That is the whole ${track.name} course. Next: ${nextCourse.name}.`
+                    : `Lesson passed — that is the whole ${track.name} course.`}
+              </span>
+              <button
+                type="button"
+                className="ide-run"
+                onClick={() => navigate(next ? `/learn/${next.id}` : nextCourse ? `/learn/${nextCourse.lessons[0]!.id}` : `/learn/${track.id}`)}
+              >
+                {next ? 'Continue' : nextCourse ? 'Start the next course' : 'Back to the course'}
                 <IconArrowRight size={13} />
               </button>
             </div>
@@ -591,7 +641,7 @@ function fence(lang: LearnLesson['lang']): string {
 export function useNextLesson(lang: string): { lesson: LearnLesson; done: number; total: number } | null {
   const { state } = useLearner()
   return useMemo(() => {
-    const track = TRACKS.find((t) => t.lang === lang)
+    const track = currentTrack(lang, state.learn)
     if (!track) return null
     return { lesson: nextLesson(track, state.learn), done: passedCount(track, state.learn), total: track.lessons.length }
   }, [lang, state.learn])

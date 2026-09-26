@@ -14,16 +14,31 @@ it.
 roadmaps: pick a goal — GNC Engineer, Flight Software, Test & Data or Software
 Engineer — and its courses are laid out in the order a mentor would teach
 them, as a numbered path of course tiles ending at a certificate, lit up as you
-go; View every step walks it course by course. Five courses, 58 lessons: Linux and
-the command line, Git and version control, Python, SQL and C++, from `pwd` and
-your first commit to merges, classes, joins and pointers. Each
-lesson is a short explanation and a challenge, done in the same IDE window as
-the playground. Run Code really runs your code and shows every check as a test
-case — the input, what was expected, and what your code produced. Hints come
-one at a time and the solution is there when you ask. Your code, your progress
-and a daily streak are saved on this device. It is practice: nothing here
-changes mastery, readiness or your reviews. More lessons, past the basics,
-will follow.
+go; View every step walks it course by course. Your code, your progress and a
+daily streak are saved on this device. It is practice: nothing here changes
+mastery, readiness or your reviews.
+
+**From your first line to expert.** 21 courses, 291 lessons: Linux and the
+command line, Git, Python, SQL and C++, each from the basics through
+intermediate and advanced (Python, SQL and C++ on to expert), then a projects
+course. Past the basics every course mixes four kinds of lesson: new ideas;
+**debugging** real broken code from a bug report — reproduce it, read the
+error, narrow it down, fix the cause; **problem solving**, where you design the
+algorithm and a big input only an efficient answer finishes in time; and
+**design**, refactoring working code into a better shape or shaping an API to a
+spec. Projects courses build real programs step by step — an expense tracker,
+a Markdown converter, a matrix library, an analytics database — and end in
+capstones: a specification, an empty file, and tests that only check what
+your program does, so the design is yours. Each language has a mastery roadmap
+that walks its whole ladder, and each course offers the next when you finish.
+Each lesson
+is a short explanation with examples you can run where they stand, then a
+challenge in the same IDE window; Run Code really runs your code and shows
+every check as a test case — the input, what was expected, and what your code
+produced. Hints come one at a time and the solution is there when you ask.
+Every lesson is checked in the real runtimes before it ships: its starter
+needs work, and its solution passes. C++ lessons always use the in-app
+compiler, the one they were checked with.
 
 **The playground comes to the lesson.** The code in ORBIT's lessons runs where it stands: a
 Python or C++ snippet is the playground's own window, embedded in the text — edit it, run it, see
@@ -39,10 +54,14 @@ The playground is still its own page for anything else.
 and one IDE window: the file's name in a pill (in Code mode it picks Python,
 C++, Rust, MATLAB or a shell script), a floating Run Code button, and a panel
 under the editor with Test cases, Console, Input, Results and Tables. Terminal
-is a practice shell that lives in the page: files and folders, `&&`, `>` and
-`>>`, and git — init, status, add, commit, log, diff, restore, branch, switch
-and merge, with switching branches really swapping the files in the folder. It says plainly that it is a simulation; real shell scripts
-still run on the Mac in Code mode.
+is a practice shell that lives in the page, and a small real one: quoting,
+variables, `$(…)`, wildcards, pipes, redirection (standard error too), `for`,
+`while` and `if`, scripts you save and run, and `grep`, `sort`, `uniq`, `cut`,
+`find`, `sed` and `xargs`. Its git merges line by line and writes real conflict
+markers for you to resolve, and has stash, reset, revert, rebase, cherry-pick,
+tags, bisect, blame and a pretend remote that rejects a push the way a real one
+does. It says plainly that it is a simulation; real shell scripts still run on
+the Mac in Code mode.
 
 **C++ always really runs now.** In the desktop app with a compiler installed,
 nothing changes — the Mac's own compiler builds it. Everywhere else — in a

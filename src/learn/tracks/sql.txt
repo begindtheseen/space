@@ -232,12 +232,12 @@ Return **every** user's email with how many requests they have made — includin
 SELECT u.email, COUNT(*)
 FROM users u
 JOIN requests r ON r.user_id = u.id
-GROUP BY u.id;
+GROUP BY u.id, u.email;
 --- solution
 SELECT u.email, COUNT(r.id) AS requests
 FROM users u
 LEFT JOIN requests r ON r.user_id = u.id
-GROUP BY u.id;
+GROUP BY u.id, u.email;
 --- hint
 Change `JOIN` to `LEFT JOIN` so sam is kept.
 --- hint
@@ -326,11 +326,13 @@ CREATE TABLE invoices (
 
 - `PRIMARY KEY` — uniquely identifies each row
 - `NOT NULL` — a value is required
-- `REFERENCES users(id)` — a **foreign key**: must point at a real user
+- `REFERENCES users(id)` — a **foreign key**: each `user_id` is meant to point at a real row in `users`
 - `DEFAULT 0` — the value when an insert leaves it out
 - `UNIQUE` — no two rows may share the value
 
 Constraints are rules the database enforces for every writer, forever — cheaper than remembering them in every piece of code.
+
+One catch in SQLite, the database these lessons run on: it records a foreign key but only **enforces** it once the connection has run `PRAGMA foreign_keys = ON;`. Until then, an `api_keys` row pointing at user 99 is accepted. Most other databases (PostgreSQL, MySQL) always enforce it; in SQLite, turn it on first.
 --- task
 Create a table `api_keys` with: `id` (integer primary key), `user_id` (integer, required, referencing `users(id)`), `label` (text, required), and `revoked` (integer, required, default `0`). Then insert one key: id `1`, user `1`, label `laptop` — leaving `revoked` to its default.
 --- starter

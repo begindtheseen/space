@@ -1,0 +1,1492 @@
+@track cpp
+@level intermediate
+@title C++ · Intermediate
+@name C++, intermediate: the standard library, classes and careful code
+@blurb Write everyday modern C++ with confidence: const-correct references, vectors and algorithms, maps and sets, small classes, optional and lambdas, plus the debugging habits that catch copies, off-by-ones, overflow and garbage values.
+
+=== cpp2-01 | const correctness
+--- teach
+The basics course had you writing functions, vectors, strings, maps and small classes. This course turns that into careful, everyday modern C++: the standard library's containers and algorithms, classes that guard their own rules, and the debugging habits that catch C++'s quiet bugs. It starts with the keyword that makes code safe to pass around.
+
+`const` is a promise the compiler holds you to. You met it on variables; it matters far more on **references** and **member functions**.
+
+A `const` reference parameter says "I need to look at your object, I will not change it, and I will not copy it":
+
+```cpp
+int total(const std::vector<int>& v);   // reads v, never copies it
+```
+
+Inside a class, putting `const` after a member function's parameter list promises that calling it leaves the object unchanged:
+
+```cpp
+class Wallet {
+public:
+    void add(int cents) { cents_ += cents; }        // changes the object
+    int cents() const { return cents_; }            // only looks
+private:
+    int cents_ = 0;
+};
+```
+
+Here is why it matters. Through a `const Wallet&`, the compiler only lets you call `const` member functions:
+
+```cpp
+void show(const Wallet& w) {
+    std::cout << w.cents();   // fine: cents() is const
+    w.add(5);                 // compile error: add() is not const
+}
+```
+
+So the most common mistake is the reverse: writing a getter and **forgetting** the `const`. The class still works on its own, but the moment someone passes it around the normal way, by `const&`, every call to that getter fails to compile. The rule of thumb:
+
+- Parameters you only read: `const T&` (or a plain copy for small things like `int`).
+- Member functions that only read: mark them `const`.
+- Loops that only read: `for (const auto& x : items)`.
+
+A `const` member function cannot change members, and it can only call other `const` member functions. Inside one, `this` points at a `const` object.
+
+Two small things you will meet in the solution and all through this course. `v.size()` returns a `std::size_t`, an **unsigned** whole-number type (it can never be negative); when a function returns `int`, convert with `static_cast<int>(v.size())`. And `std::min_element(v.begin(), v.end())` from `<algorithm>` finds the smallest element for you. It returns an **iterator** (a position in the vector, used like a pointer), so put `*` in front to get the value. The next lessons cover algorithms and iterators properly.
+--- task
+Finish the `Thermometer` class so it is const-correct:
+
+- `void record(int reading)` adds a reading.
+- `int count() const` returns how many readings there are.
+- `int lowest() const` and `int highest() const` return the smallest and largest reading (you may assume there is at least one).
+
+Then write a free function `int range_of(const Thermometer& t)` that returns `highest - lowest`. The checks use your class through a `const Thermometer&`. No `main`.
+--- starter
+#include <vector>
+
+class Thermometer {
+public:
+    void record(int reading) { readings_.push_back(reading); }
+    int count() { return 0; }
+    int lowest() { return 0; }
+    int highest() { return 0; }
+private:
+    std::vector<int> readings_;
+};
+
+int range_of(Thermometer t) {
+    return 0;
+}
+--- solution
+#include <algorithm>
+#include <vector>
+
+class Thermometer {
+public:
+    void record(int reading) { readings_.push_back(reading); }
+    int count() const { return static_cast<int>(readings_.size()); }
+    int lowest() const { return *std::min_element(readings_.begin(), readings_.end()); }
+    int highest() const { return *std::max_element(readings_.begin(), readings_.end()); }
+private:
+    std::vector<int> readings_;
+};
+
+int range_of(const Thermometer& t) {
+    return t.highest() - t.lowest();
+}
+--- hint
+Put `const` after the parameter list of each function that only reads: `int count() const { … }`.
+--- hint
+`std::min_element(v.begin(), v.end())` (from `<algorithm>`) returns an iterator to the smallest element; `*` it to get the value.
+--- hint
+`range_of` should take `const Thermometer& t`, so it neither copies nor changes it.
+--- check test | count, lowest and highest work through a const reference
+[] { Thermometer t; t.record(12); t.record(-3); t.record(7); const Thermometer& view = t; return view.count() == 3 && view.lowest() == -3 && view.highest() == 12; }()
+--- check case | range_of 12, -3, 7 is 15
+[] { Thermometer t; t.record(12); t.record(-3); t.record(7); return range_of(t); }()
+=> 15
+--- check case | One reading has a range of 0
+[] { Thermometer t; t.record(5); return range_of(t); }()
+=> 0
+--- check case | A fresh thermometer has no readings
+[] { const Thermometer t; return t.count(); }()
+=> 0
+
+=== cpp2-02 | Debugging: the function that changed a copy
+--- teach
+Some bugs make no noise at all: the program compiles, runs, and simply does nothing. Those call for a method, not guesswork.
+
+1. **Reproduce** it with the smallest input you can: one or two items, numbers you can check in your head.
+2. **Check your assumptions** one at a time. "The function runs" — does it? Print inside it. "It changes my data" — print the data inside the function *and* straight after the call.
+3. **Narrow down** to the first place where what you see differs from what you expect.
+4. **Fix the cause**, not the symptom. Returning the changed vector and assigning it back would make the output right, but it hides a design mistake that will bite again.
+
+In C++ the classic silent bug is **working on a copy**. Two places make copies without saying so:
+
+```cpp
+void reset(std::vector<int> v) {     // 1. a by-value parameter copies the caller's vector
+    for (int x : v) {                // 2. a by-value loop variable copies each element
+        x = 0;
+    }
+}
+```
+
+Both copies are changed and then thrown away. Printing `x` inside the loop shows zeros, printing the caller's vector afterwards shows nothing changed — that gap is exactly where the copy is.
+
+The fix is a reference at *each* copy point: `std::vector<int>& v` and `for (int& x : v)`. Fixing only one of the two still leaves the bug, which is why step 2 (checking after every change) matters.
+--- task
+**Bug report:** "After `apply_discount(cart, 10)` every price in `cart` is still the old one. No error, no warning."
+
+`apply_discount` should lower each item's `price_cents` by `percent` percent, rounding down (so 10% off 250 is 225). Find why the caller's items never change and fix the cause, keeping the function's name and `void` return. No `main`.
+--- starter
+#include <string>
+#include <vector>
+
+struct Item {
+    std::string name;
+    int price_cents;
+};
+
+// Lowers every price by `percent` percent, rounding down.
+void apply_discount(std::vector<Item> items, int percent) {
+    for (auto item : items) {
+        item.price_cents = item.price_cents * (100 - percent) / 100;
+    }
+}
+--- solution
+#include <string>
+#include <vector>
+
+struct Item {
+    std::string name;
+    int price_cents;
+};
+
+// Lowers every price by `percent` percent, rounding down.
+void apply_discount(std::vector<Item>& items, int percent) {
+    for (auto& item : items) {
+        item.price_cents = item.price_cents * (100 - percent) / 100;
+    }
+}
+--- hint
+Print `items[0].price_cents` inside the function and `cart[0].price_cents` right after the call. They disagree — why?
+--- hint
+There are two copies: the parameter and the loop variable. Each needs an `&`.
+--- check test | 10% off changes the caller's cart
+[] { std::vector<Item> cart{{"tea", 1000}, {"jam", 250}}; apply_discount(cart, 10); return cart[0].price_cents == 900 && cart[1].price_cents == 225; }()
+--- check test | 0% leaves prices alone
+[] { std::vector<Item> cart{{"tea", 1000}}; apply_discount(cart, 0); return cart[0].price_cents == 1000; }()
+--- check test | 100% makes everything free
+[] { std::vector<Item> cart{{"tea", 1000}, {"jam", 250}}; apply_discount(cart, 100); return cart[0].price_cents == 0 && cart[1].price_cents == 0; }()
+--- check test | An empty cart is fine
+[] { std::vector<Item> cart; apply_discount(cart, 50); return cart.empty(); }()
+
+=== cpp2-03 | std::vector and <algorithm>
+--- teach
+`<algorithm>` and `<numeric>` hold tested, named loops. Using them makes code say *what* it does instead of *how*, and removes a whole class of off-by-one mistakes. They all work on a **range**: a `begin()` and an `end()` iterator.
+
+```cpp
+#include <algorithm>
+#include <numeric>
+#include <vector>
+
+std::vector<int> v = {5, 1, 4, 2};
+
+std::sort(v.begin(), v.end());                          // {1, 2, 4, 5}
+std::sort(v.begin(), v.end(), std::greater<int>());     // {5, 4, 2, 1}
+
+auto it = std::find_if(v.begin(), v.end(), [](int x) { return x > 3; });
+if (it != v.end()) { /* *it is the first element over 3 */ }
+
+auto n = std::count_if(v.begin(), v.end(), [](int x) { return x % 2 == 0; });   // 2
+
+std::vector<int> out(v.size());
+std::transform(v.begin(), v.end(), out.begin(), [](int x) { return x * 10; });
+
+long long total = std::accumulate(v.begin(), v.end(), 0LL);   // 12
+```
+
+The `[](int x) { return x > 3; }` parts are **lambdas**: small unnamed functions written in place. You will meet them properly soon; for now read them as "given x, return this".
+
+Two traps:
+
+- `find_if` returns `end()` when nothing matches. Always compare before you use `*it`.
+- `accumulate` adds in the type of its **starting value**. `0` means `int`, which overflows past about 2 billion; `0LL` means `long long`.
+
+`std::greater<int>()` (from `<functional>`) is a ready-made "is a greater than b?", so sorting with it puts the largest first.
+
+One more piece of syntax that the solutions use from here on is the **conditional operator**. `condition ? a : b` gives `a` when the condition is true and `b` when it is false, so `return it == v.end() ? -1 : *it;` is a short if/else that produces a value.
+--- task
+Write these five functions **without writing any loops** — use the algorithms. No `main`.
+
+- `std::vector<int> sorted_descending(std::vector<int> v)` — the values, largest first.
+- `int count_at_least(const std::vector<int>& v, int bar)` — how many values are `>= bar`.
+- `long long sum_of(const std::vector<int>& v)` — the total, without overflowing.
+- `std::vector<int> doubled(const std::vector<int>& v)` — each value times two, in order.
+- `int first_over(const std::vector<int>& v, int limit)` — the first value `> limit`, or `-1` if there is none.
+--- starter
+#include <algorithm>
+#include <numeric>
+#include <vector>
+
+std::vector<int> sorted_descending(std::vector<int> v) {
+    return v;
+}
+
+int count_at_least(const std::vector<int>& v, int bar) {
+    return 0;
+}
+
+long long sum_of(const std::vector<int>& v) {
+    return 0;
+}
+
+std::vector<int> doubled(const std::vector<int>& v) {
+    return v;
+}
+
+int first_over(const std::vector<int>& v, int limit) {
+    return -1;
+}
+--- solution
+#include <algorithm>
+#include <functional>
+#include <numeric>
+#include <vector>
+
+std::vector<int> sorted_descending(std::vector<int> v) {
+    std::sort(v.begin(), v.end(), std::greater<int>());
+    return v;
+}
+
+int count_at_least(const std::vector<int>& v, int bar) {
+    return static_cast<int>(std::count_if(v.begin(), v.end(), [bar](int x) { return x >= bar; }));
+}
+
+long long sum_of(const std::vector<int>& v) {
+    return std::accumulate(v.begin(), v.end(), 0LL);
+}
+
+std::vector<int> doubled(const std::vector<int>& v) {
+    std::vector<int> out(v.size());
+    std::transform(v.begin(), v.end(), out.begin(), [](int x) { return x * 2; });
+    return out;
+}
+
+int first_over(const std::vector<int>& v, int limit) {
+    auto it = std::find_if(v.begin(), v.end(), [limit](int x) { return x > limit; });
+    return it == v.end() ? -1 : *it;
+}
+--- hint
+`sorted_descending` takes its vector by value on purpose: sort that copy with `std::greater<int>()` and return it.
+--- hint
+A lambda can use a parameter if you name it in the brackets: `[bar](int x) { return x >= bar; }`.
+--- hint
+`transform` needs somewhere to write: create `std::vector<int> out(v.size());` first. For the sum, start from `0LL`.
+--- check case | sorted_descending({3, 1, 2})
+sorted_descending({3, 1, 2})
+=> std::vector<int>{3, 2, 1}
+--- check case | sorted_descending of nothing is nothing
+sorted_descending({})
+=> std::vector<int>{}
+--- check case | count_at_least counts the boundary too
+count_at_least({50, 70, 69, 90, 70}, 70)
+=> 3
+--- check case | sum_of does not overflow
+sum_of({2000000000, 2000000000, 5})
+=> 4000000005LL
+--- check case | doubled keeps the order
+doubled({4, -1, 0})
+=> std::vector<int>{8, -2, 0}
+--- check case | first_over finds the first match
+first_over({3, 9, 4, 12}, 5)
+=> 9
+--- check case | first_over with no match is -1
+first_over({1, 2, 3}, 10)
+=> -1
+--- check source absent | No hand-written loops
+\b(for|while)\s*\(
+
+=== cpp2-04 | Iterators and range-for
+--- teach
+An **iterator** is a position in a container. It behaves like a pointer: `*it` is the element, `++it` moves to the next one. Every container gives you two:
+
+- `begin()` — the first element.
+- `end()` — one **past** the last. It is a stopping mark, never an element: do not `*` it.
+
+That half-open shape `[begin, end)` is why an empty container has `begin() == end()`, and why loops read "while not at the end":
+
+```cpp
+std::vector<int> v = {7, 3, 9};
+for (auto it = v.begin(); it != v.end(); ++it) {
+    std::cout << *it << "\n";
+}
+```
+
+The **range-for** loop is exactly that loop, written for you:
+
+```cpp
+for (int x : v)          // x is a copy of each element
+for (int& x : v)         // x IS each element: changes stick
+for (const auto& s : names)   // no copy, read-only: the default for strings and bigger things
+```
+
+Iterators are what algorithms return, so you often turn one back into a position with `std::distance`:
+
+```cpp
+auto it = std::max_element(v.begin(), v.end());   // points at 9
+auto index = std::distance(v.begin(), it);        // 2
+```
+
+`rbegin()` and `rend()` walk backwards, which makes "is it the same both ways?" a one-liner: `std::equal(s.begin(), s.end(), s.rbegin())` compares the start going forwards with the end going backwards.
+--- task
+Write three functions. No `main`.
+
+- `int index_of_max(const std::vector<int>& v)` — the position of the largest value (the first one if it appears more than once), or `-1` for an empty vector.
+- `bool is_palindrome(const std::string& s)` — true if `s` reads the same backwards (`"level"`, `""`, `"a"`). Compare characters exactly.
+- `void capitalize_all(std::vector<std::string>& words)` — uppercase the first letter of every non-empty word, **in place**.
+--- starter
+#include <algorithm>
+#include <cctype>
+#include <iterator>
+#include <string>
+#include <vector>
+
+int index_of_max(const std::vector<int>& v) {
+    return 0;
+}
+
+bool is_palindrome(const std::string& s) {
+    return false;
+}
+
+void capitalize_all(std::vector<std::string>& words) {
+    for (auto w : words) {
+        w[0] = static_cast<char>(std::toupper(static_cast<unsigned char>(w[0])));
+    }
+}
+--- solution
+#include <algorithm>
+#include <cctype>
+#include <iterator>
+#include <string>
+#include <vector>
+
+int index_of_max(const std::vector<int>& v) {
+    if (v.empty()) return -1;
+    auto it = std::max_element(v.begin(), v.end());
+    return static_cast<int>(std::distance(v.begin(), it));
+}
+
+bool is_palindrome(const std::string& s) {
+    return std::equal(s.begin(), s.end(), s.rbegin());
+}
+
+void capitalize_all(std::vector<std::string>& words) {
+    for (auto& w : words) {
+        if (!w.empty()) {
+            w[0] = static_cast<char>(std::toupper(static_cast<unsigned char>(w[0])));
+        }
+    }
+}
+--- hint
+`std::max_element` already returns the *first* largest; `std::distance(v.begin(), it)` turns it into an index.
+--- hint
+`std::equal(s.begin(), s.end(), s.rbegin())` walks forwards through `s` and backwards at the same time.
+--- hint
+In `capitalize_all`, the loop variable must be a reference, and `w[0]` on an empty string is not a letter you may change — check `w.empty()` first.
+--- check case | index_of_max finds the first largest
+index_of_max({4, 9, 2, 9})
+=> 1
+--- check case | index_of_max of an empty vector is -1
+index_of_max({})
+=> -1
+--- check test | Palindromes and not
+is_palindrome("level") && is_palindrome("") && is_palindrome("a") && !is_palindrome("ab") && !is_palindrome("Level")
+--- check test | capitalize_all changes the words in place
+[] { std::vector<std::string> w{"ada", "", "grace", "Linus"}; capitalize_all(w); return w == std::vector<std::string>{"Ada", "", "Grace", "Linus"}; }()
+
+=== cpp2-05 | std::map, std::unordered_map and std::set
+--- teach
+Three containers cover most "look it up" problems:
+
+| Container | Holds | Order | Lookup |
+| --- | --- | --- | --- |
+| `std::map<K, V>` | key → value | sorted by key | O(log n) |
+| `std::unordered_map<K, V>` | key → value | none you can rely on | O(1) on average |
+| `std::set<T>` | unique values | sorted | O(log n) |
+
+```cpp
+#include <map>
+#include <set>
+#include <unordered_map>
+
+std::set<std::string> seen = {"b", "a", "b"};   // {"a", "b"}: duplicates vanish
+seen.insert("c");
+seen.contains("a");                             // true (C++20)
+
+std::unordered_map<std::string, int> count;
+for (const auto& w : words) count[w]++;         // missing keys start at 0
+
+auto it = count.find("pear");
+if (it != count.end()) {
+    // it->first is the key, it->second the value
+}
+```
+
+`it->first` is short for `(*it).first`: follow the iterator (or pointer), then take the member. A map's elements are pairs, so `first` is the key and `second` the value. Containers can also be built straight from a range: `std::set<std::string> s(words.begin(), words.end());` makes a set from a vector, and a vector can be made from a set in the same way.
+
+How to choose: reach for `unordered_map` when you only need fast lookups, `map` when you also need the keys in order (printing a sorted report, "the smallest key over 10"), and `set` when you only care whether something is there.
+
+Two things trip people up. `m[key]` **inserts** the key when it is missing, so use `find` or `contains` to only look. And an `unordered_map` iterates in an unpredictable order, so if your answer depends on order (say, breaking ties alphabetically), you have to decide that order yourself.
+--- task
+Write three functions. No `main`.
+
+- `std::vector<std::string> unique_sorted(const std::vector<std::string>& words)` — each distinct word once, in sorted order.
+- `std::map<char, int> letter_counts(const std::string& text)` — how often each letter appears, counting upper and lower case as the same (keys are lowercase); ignore everything that is not a letter.
+- `std::string most_common(const std::vector<std::string>& words)` — the word that appears most often; if several tie, the alphabetically smallest of them; `""` for an empty list.
+--- starter
+#include <cctype>
+#include <map>
+#include <set>
+#include <string>
+#include <unordered_map>
+#include <vector>
+
+std::vector<std::string> unique_sorted(const std::vector<std::string>& words) {
+    return words;
+}
+
+std::map<char, int> letter_counts(const std::string& text) {
+    return {};
+}
+
+std::string most_common(const std::vector<std::string>& words) {
+    return "";
+}
+--- solution
+#include <cctype>
+#include <map>
+#include <set>
+#include <string>
+#include <unordered_map>
+#include <vector>
+
+std::vector<std::string> unique_sorted(const std::vector<std::string>& words) {
+    std::set<std::string> s(words.begin(), words.end());
+    return std::vector<std::string>(s.begin(), s.end());
+}
+
+std::map<char, int> letter_counts(const std::string& text) {
+    std::map<char, int> counts;
+    for (char c : text) {
+        unsigned char u = static_cast<unsigned char>(c);
+        if (std::isalpha(u)) counts[static_cast<char>(std::tolower(u))]++;
+    }
+    return counts;
+}
+
+std::string most_common(const std::vector<std::string>& words) {
+    std::unordered_map<std::string, int> counts;
+    for (const auto& w : words) counts[w]++;
+    std::string best;
+    int best_count = 0;
+    for (const auto& [word, n] : counts) {
+        if (n > best_count || (n == best_count && word < best)) {
+            best = word;
+            best_count = n;
+        }
+    }
+    return best;
+}
+--- hint
+A `std::set` built from the words (`std::set<std::string> s(words.begin(), words.end());`) is already unique and sorted; turn it back into a vector the same way.
+--- hint
+For letters: `std::isalpha` and `std::tolower` from `<cctype>` — pass them an `unsigned char`.
+--- hint
+For `most_common`, count first, then walk the counts keeping the best so far: replace it when the count is higher, or equal with a smaller word.
+--- check case | unique_sorted drops duplicates and sorts
+unique_sorted({"pear", "apple", "pear", "fig"})
+=> std::vector<std::string>{"apple", "fig", "pear"}
+--- check case | letter_counts ignores case and non-letters
+letter_counts("Aa b!")
+=> std::map<char, int>{{'a', 2}, {'b', 1}}
+--- check case | most_common picks the most frequent
+most_common({"b", "a", "b", "c", "b", "a"})
+=> "b"
+--- check case | Ties go to the alphabetically smallest
+most_common({"kiwi", "fig", "kiwi", "fig", "plum"})
+=> "fig"
+--- check case | Nothing in, empty string out
+most_common({})
+=> ""
+
+=== cpp2-06 | Classes that keep their own rules
+--- teach
+A class earns its keep by holding an **invariant**: a rule that is true of every object, always. The constructor establishes it; every member function preserves it; the data is `private` so nobody else can break it.
+
+Take a clock. The rule: the time is always between 00:00 and 23:59. If the data were public, any code could set the minutes to 75. With a class, the only ways in are the constructor and the member functions, so those are the only places the rule has to be enforced:
+
+```cpp
+class Timer {
+public:
+    explicit Timer(int seconds) : seconds_(seconds < 0 ? 0 : seconds) {}
+    void tick() { if (seconds_ > 0) --seconds_; }
+    bool done() const { return seconds_ == 0; }
+private:
+    int seconds_;   // rule: never negative
+};
+```
+
+Things worth knowing:
+
+- The **member initialiser list** (`: seconds_(…)`) initialises members before the constructor body runs. Prefer it to assigning in the body.
+- `explicit` on a one-argument constructor stops surprise conversions like `Timer t = 5;`.
+- A good trick is to store the data in whatever shape makes the rule easy. For a clock, store **total minutes since midnight** in `[0, 1440)`; hours and minutes are then just `/ 60` and `% 60`.
+- `%` in C++ keeps the sign of the left side: `-1 % 1440` is `-1`, not `1439`. To wrap a possibly negative number into `[0, n)`, use `((x % n) + n) % n`.
+- `std::to_string(7)` (from `<string>`) turns a number into text: `"7"`.
+- A member marked `static` belongs to the class, not to any one object. `static int wrap(int m)` is a helper that needs no object. `static constexpr int kDay = 24 * 60;` is one constant that every `Clock` shares; `constexpr` means its value is known while compiling (the advanced course covers it), and constants are named `kLikeThis`.
+--- task
+Write `class Clock`:
+
+- `Clock(int hours, int minutes)` — any values are allowed and are wrapped onto a 24-hour clock: `Clock(25, 70)` is 02:10, `Clock(0, -1)` is 23:59.
+- `void add_minutes(int m)` — moves the time forward (or back, if `m` is negative), wrapping around midnight.
+- `int hours() const` and `int minutes() const`.
+- `std::string to_string() const` — always `HH:MM` with two digits each, like `"07:05"`.
+
+No `main`.
+--- starter
+#include <string>
+
+class Clock {
+public:
+    Clock(int hours, int minutes) : hours_(hours), minutes_(minutes) {}
+    void add_minutes(int m) { minutes_ += m; }
+    int hours() const { return hours_; }
+    int minutes() const { return minutes_; }
+    std::string to_string() const { return std::to_string(hours_) + ":" + std::to_string(minutes_); }
+private:
+    int hours_;
+    int minutes_;
+};
+--- solution
+#include <string>
+
+class Clock {
+public:
+    Clock(int hours, int minutes) : total_(wrap(hours * 60 + minutes)) {}
+    void add_minutes(int m) { total_ = wrap(total_ + m); }
+    int hours() const { return total_ / 60; }
+    int minutes() const { return total_ % 60; }
+    std::string to_string() const { return two(hours()) + ":" + two(minutes()); }
+private:
+    static constexpr int kDay = 24 * 60;
+    static int wrap(int m) { return ((m % kDay) + kDay) % kDay; }
+    static std::string two(int n) { return (n < 10 ? "0" : "") + std::to_string(n); }
+    int total_;   // minutes since midnight, always in [0, kDay)
+};
+--- hint
+Store one number: minutes since midnight. Wrap it every time it changes.
+--- hint
+`((m % 1440) + 1440) % 1440` wraps any int, negative or not, into `[0, 1440)`.
+--- hint
+Two-digit formatting: add a `"0"` in front when the number is below 10.
+--- check case | Clock(8, 5) shows 08:05
+Clock(8, 5).to_string()
+=> "08:05"
+--- check case | Clock(25, 70) wraps to 02:10
+Clock(25, 70).to_string()
+=> "02:10"
+--- check case | Clock(0, -1) is 23:59
+Clock(0, -1).to_string()
+=> "23:59"
+--- check test | add_minutes wraps forwards and backwards
+[] { Clock c(23, 30); c.add_minutes(45); bool fwd = c.to_string() == "00:15"; c.add_minutes(-1500); return fwd && c.to_string() == "23:15" && c.hours() == 23 && c.minutes() == 15; }()
+--- check case | A negative start many days back
+Clock(-49, 0).to_string()
+=> "23:00"
+
+=== cpp2-07 | Overloading and default arguments
+--- teach
+C++ lets several functions share a name as long as their parameter lists differ. The compiler picks one — **overload resolution** — by how well each argument matches:
+
+```cpp
+std::string area(int side)           { return "square"; }
+std::string area(int w, int h)       { return "rectangle"; }
+std::string area(double radius)      { return "circle"; }
+
+area(3);       // "square"    — exact match for int
+area(3, 4);    // "rectangle"
+area(1.5);     // "circle"
+```
+
+Roughly, from best to worst: an exact match, a small promotion (`char` → `int`, `float` → `double`), a standard conversion (`int` → `double`, *anything pointer-like* → `bool`), and last a user-defined conversion (like `const char*` → `std::string`). If two candidates tie, the call is **ambiguous** and does not compile.
+
+That ranking hides a famous trap. A string literal like `"hi"` is a `const char*`. If you have overloads for `bool` and for `const std::string&`, the pointer-to-`bool` standard conversion **beats** the user-defined conversion to `std::string`, so `f("hi")` quietly calls the `bool` version. The cure is an overload that takes `const char*` exactly.
+
+**Default arguments** fill in trailing parameters the caller leaves out:
+
+```cpp
+std::string greet(const std::string& name, const std::string& greeting = "Hello") {
+    return greeting + ", " + name;
+}
+greet("Ada");            // "Hello, Ada"
+greet("Ada", "Hi");      // "Hi, Ada"
+```
+
+Defaults go on the rightmost parameters only, and are written once (on the declaration). Use them for the common case; use overloads when the *work* differs by type.
+--- task
+The starter has `describe` for `int`, `double`, `bool` and `const std::string&`, each returning the type name, a space and the value (`"int 42"`, `"double 2.5"`, `"bool true"`, `"string hi"`). But `describe("hi")` returns `"bool true"`. Add the overload that makes a string literal give `"string hi"`.
+
+Then write `std::string pad_left(const std::string& s, std::size_t width, char fill = ' ')`: `s` with `fill` characters added in front until it is `width` long (unchanged if it is already that long or longer). No `main`.
+--- starter
+#include <sstream>
+#include <string>
+
+std::string describe(int n) { return "int " + std::to_string(n); }
+std::string describe(double d) {
+    std::ostringstream out;
+    out << "double " << d;
+    return out.str();
+}
+std::string describe(bool b) { return std::string("bool ") + (b ? "true" : "false"); }
+std::string describe(const std::string& s) { return "string " + s; }
+
+std::string pad_left(const std::string& s, std::size_t width, char fill) {
+    return s;
+}
+--- solution
+#include <sstream>
+#include <string>
+
+std::string describe(int n) { return "int " + std::to_string(n); }
+std::string describe(double d) {
+    std::ostringstream out;
+    out << "double " << d;
+    return out.str();
+}
+std::string describe(bool b) { return std::string("bool ") + (b ? "true" : "false"); }
+std::string describe(const std::string& s) { return "string " + s; }
+std::string describe(const char* s) { return describe(std::string(s)); }
+
+std::string pad_left(const std::string& s, std::size_t width, char fill = ' ') {
+    if (s.size() >= width) return s;
+    return std::string(width - s.size(), fill) + s;
+}
+--- hint
+A string literal is a `const char*`. Give `describe` an overload taking exactly that, and have it call the `std::string` version.
+--- hint
+`std::string(n, c)` is `n` copies of the character `c`.
+--- hint
+The default goes in the parameter list: `char fill = ' '`. Check `s.size() >= width` before subtracting — `std::size_t` cannot go negative.
+--- check case | describe("hi") is a string
+describe("hi")
+=> "string hi"
+--- check test | The other overloads still work
+describe(42) == "int 42" && describe(2.5) == "double 2.5" && describe(false) == "bool false" && describe(std::string("yo")) == "string yo"
+--- check case | pad_left uses spaces by default
+pad_left("7", 3)
+=> "  7"
+--- check case | pad_left with a fill character
+pad_left("42", 5, '0')
+=> "00042"
+--- check case | pad_left never cuts
+pad_left("toolong", 3)
+=> "toolong"
+
+=== cpp2-08 | enum class
+--- teach
+When a value can only be one of a few named things — a direction, a suit, a state — say so with an **enumeration**. Modern C++ uses `enum class`:
+
+```cpp
+enum class Light { Red, Amber, Green };
+
+Light next(Light l) {
+    switch (l) {
+        case Light::Red:   return Light::Green;
+        case Light::Green: return Light::Amber;
+        case Light::Amber: return Light::Red;
+    }
+    return Light::Red;   // not reached; keeps the compiler happy
+}
+```
+
+A **`switch`** compares one value with its `case` labels and jumps to the one that matches. End each case with `return` or `break`; without one, the code *falls through* into the next case. A `default:` label catches any value that is not listed.
+
+Why `enum class` rather than the older plain `enum`:
+
+- The names are **scoped**: you write `Light::Red`, so two enums can both have a `Red`.
+- It does **not** silently turn into an `int`. `if (l == 2)` is a compile error, which catches real mistakes. When you do want the number, ask for it: `static_cast<int>(l)`, and back again with `static_cast<Light>(n)`.
+
+A `switch` over an enum class is the natural way to act on each value. Leave out the `default:` label and clang warns (`-Wswitch`) when you forget a case — a free check every time someone adds a new value later.
+
+Turning left or right through four directions in order is arithmetic on the underlying number, wrapped with `% 4` (add 3 instead of subtracting 1, so it never goes negative).
+--- task
+The starter declares `enum class Direction { North, East, South, West };` and `struct Position { int x; int y; Direction facing; };`. Write:
+
+- `Direction turn_right(Direction d)` and `Direction turn_left(Direction d)`.
+- `std::string direction_name(Direction d)` — `"North"`, `"East"`, `"South"` or `"West"`.
+- `Position follow(const std::string& commands)` — a robot starts at (0, 0) facing North. `'L'` and `'R'` turn it; `'F'` moves one step forward (North is `y + 1`, East is `x + 1`). Ignore any other character.
+
+No `main`.
+--- starter
+#include <string>
+
+enum class Direction { North, East, South, West };
+
+struct Position {
+    int x;
+    int y;
+    Direction facing;
+};
+
+Direction turn_right(Direction d) { return d; }
+Direction turn_left(Direction d) { return d; }
+std::string direction_name(Direction d) { return ""; }
+
+Position follow(const std::string& commands) {
+    return Position{0, 0, Direction::North};
+}
+--- solution
+#include <string>
+
+enum class Direction { North, East, South, West };
+
+struct Position {
+    int x;
+    int y;
+    Direction facing;
+};
+
+Direction turn_right(Direction d) { return static_cast<Direction>((static_cast<int>(d) + 1) % 4); }
+Direction turn_left(Direction d) { return static_cast<Direction>((static_cast<int>(d) + 3) % 4); }
+
+std::string direction_name(Direction d) {
+    switch (d) {
+        case Direction::North: return "North";
+        case Direction::East:  return "East";
+        case Direction::South: return "South";
+        case Direction::West:  return "West";
+    }
+    return "";
+}
+
+Position follow(const std::string& commands) {
+    Position p{0, 0, Direction::North};
+    for (char c : commands) {
+        if (c == 'L') {
+            p.facing = turn_left(p.facing);
+        } else if (c == 'R') {
+            p.facing = turn_right(p.facing);
+        } else if (c == 'F') {
+            switch (p.facing) {
+                case Direction::North: p.y++; break;
+                case Direction::East:  p.x++; break;
+                case Direction::South: p.y--; break;
+                case Direction::West:  p.x--; break;
+            }
+        }
+    }
+    return p;
+}
+--- hint
+Turning right is "next in the list": `static_cast<Direction>((static_cast<int>(d) + 1) % 4)`. Turning left adds 3.
+--- hint
+`follow` keeps one `Position` and updates it for each character; a `switch` on `facing` decides which coordinate an `'F'` changes.
+--- check test | Turning right goes round the compass
+turn_right(Direction::North) == Direction::East && turn_right(Direction::West) == Direction::North
+--- check test | Turning left goes the other way
+turn_left(Direction::North) == Direction::West && turn_left(Direction::East) == Direction::North
+--- check case | direction_name
+direction_name(turn_left(Direction::South))
+=> "East"
+--- check test | FFRFF ends at (2, 2) facing East
+[] { Position p = follow("FFRFF"); return p.x == 2 && p.y == 2 && p.facing == Direction::East; }()
+--- check test | A full square comes home
+[] { Position p = follow("FRFRFRFR"); return p.x == 0 && p.y == 0 && p.facing == Direction::North; }()
+--- check test | Other characters are ignored
+[] { Position p = follow("L?F F"); return p.x == -2 && p.y == 0 && p.facing == Direction::West; }()
+
+=== cpp2-09 | std::optional: maybe a value
+--- teach
+Some functions cannot always answer. "Parse this text as a number" fails on `"abc"`. "Find this name" fails when it is not there. Old C++ code signals that with a magic value — `-1`, `0`, an empty string — which works until `-1` is a real answer.
+
+`std::optional<T>` says it in the type: either a `T`, or nothing.
+
+```cpp
+#include <optional>
+
+std::optional<int> find_age(const std::string& name) {
+    if (name == "Ada") return 36;
+    return std::nullopt;             // "no value"
+}
+
+auto age = find_age("Bob");
+if (age) {                           // true when there is a value
+    std::cout << *age;               // * gets it out
+}
+int years = find_age("Bob").value_or(0);   // a fallback when empty
+```
+
+An optional compares directly with a value: `find_age("Ada") == 36` is true, and `find_age("Bob") == std::nullopt` is true.
+
+Two rules keep you safe. Never `*` an optional you have not checked — with no value inside that is undefined behaviour. And decide the edge cases *before* writing code: for a parser, is `""` a number? Is `"-"`? Is `" 7"`? Writing them down first is half the work.
+--- task
+Write three functions. No `main`.
+
+- `std::optional<int> parse_int(const std::string& s)` — an optional `-` followed by one to nine digits and nothing else. Anything else (empty, `"-"`, spaces, letters, ten or more digits) is `std::nullopt`.
+- `std::optional<std::size_t> index_of(const std::vector<std::string>& v, const std::string& target)` — the position of the first `target`, or `std::nullopt`.
+- `int sum_valid(const std::vector<std::string>& items)` — the sum of the items that `parse_int` accepts, skipping the rest.
+--- starter
+#include <cctype>
+#include <optional>
+#include <string>
+#include <vector>
+
+std::optional<int> parse_int(const std::string& s) {
+    return 0;
+}
+
+std::optional<std::size_t> index_of(const std::vector<std::string>& v, const std::string& target) {
+    return 0;
+}
+
+int sum_valid(const std::vector<std::string>& items) {
+    return 0;
+}
+--- solution
+#include <cctype>
+#include <optional>
+#include <string>
+#include <vector>
+
+std::optional<int> parse_int(const std::string& s) {
+    std::size_t i = 0;
+    bool negative = false;
+    if (i < s.size() && s[i] == '-') {
+        negative = true;
+        ++i;
+    }
+    std::size_t digits = s.size() - i;
+    if (digits == 0 || digits > 9) return std::nullopt;
+    int value = 0;
+    for (; i < s.size(); ++i) {
+        if (!std::isdigit(static_cast<unsigned char>(s[i]))) return std::nullopt;
+        value = value * 10 + (s[i] - '0');
+    }
+    return negative ? -value : value;
+}
+
+std::optional<std::size_t> index_of(const std::vector<std::string>& v, const std::string& target) {
+    for (std::size_t i = 0; i < v.size(); ++i) {
+        if (v[i] == target) return i;
+    }
+    return std::nullopt;
+}
+
+int sum_valid(const std::vector<std::string>& items) {
+    int total = 0;
+    for (const auto& item : items) {
+        total += parse_int(item).value_or(0);
+    }
+    return total;
+}
+--- hint
+Deal with the optional `-` first, then check how many characters are left (1 to 9) before looking at them.
+--- hint
+Build the number digit by digit: `value = value * 10 + (c - '0')`. Return `std::nullopt` the moment a character is not a digit.
+--- hint
+`sum_valid` is one line inside the loop with `value_or(0)`.
+--- check test | Plain and negative numbers parse
+parse_int("42") == 42 && parse_int("-7") == -7 && parse_int("0") == 0
+--- check test | Empty, a lone minus and letters do not
+parse_int("") == std::nullopt && parse_int("-") == std::nullopt && parse_int("4x2") == std::nullopt && parse_int(" 5") == std::nullopt
+--- check test | Nine digits parse, ten do not
+parse_int("999999999") == 999999999 && parse_int("1234567890") == std::nullopt
+--- check test | index_of finds the first match, or nothing
+index_of({"a", "b", "a"}, "a") == std::size_t{0} && index_of({"a", "b"}, "b") == std::size_t{1} && index_of({"a"}, "z") == std::nullopt
+--- check case | sum_valid skips what does not parse
+sum_valid({"3", "x", "-1", "", "10"})
+=> 12
+
+=== cpp2-10 | Lambdas and captures
+--- teach
+A **lambda** is a function you write where you need it:
+
+```cpp
+auto square = [](int x) { return x * x; };
+square(5);   // 25
+```
+
+The `[]` part is the **capture list**: which variables from around the lambda it can use.
+
+| Capture | Meaning |
+| --- | --- |
+| `[]` | nothing |
+| `[limit]` | a copy of `limit`, taken when the lambda is created |
+| `[&total]` | a reference to `total`: the lambda can change it |
+| `[=]` / `[&]` | everything it uses, by copy / by reference |
+| `[n = 0]` | a new variable living inside the lambda |
+
+```cpp
+int limit = 10;
+auto big = std::count_if(v.begin(), v.end(), [limit](int x) { return x > limit; });
+
+int calls = 0;
+std::sort(v.begin(), v.end(), [&calls](int a, int b) { ++calls; return a < b; });
+```
+
+A lambda's own captured copies are read-only unless you mark it `mutable`. That, plus an init capture, gives a lambda **state** that survives between calls:
+
+```cpp
+auto next_id = [id = 100]() mutable { return id++; };
+next_id();   // 100
+next_id();   // 101
+```
+
+The mistake to avoid: capturing a local **by reference** and then keeping the lambda after that local is gone. The reference dangles. When a lambda outlives the function that made it — for instance when you return it — capture by value.
+
+Sorting with a lambda is the everyday use: the comparator returns true when `a` should come **before** `b`. Compare `std::abs(a - target)` values to sort by closeness, and break ties explicitly.
+--- task
+Write three functions. No `main`.
+
+- `std::vector<int> keep_above(const std::vector<int>& v, int limit)` — the values greater than `limit`, in order (use `std::copy_if` with a lambda).
+- `void sort_by_distance(std::vector<int>& v, int target)` — sort in place so values closest to `target` come first; on a tie, the smaller value first.
+- `make_counter()` — returns a lambda that returns 1 the first time it is called, then 2, 3, … Each counter made counts on its own. (Declare it `auto make_counter()`.)
+--- starter
+#include <algorithm>
+#include <cstdlib>
+#include <iterator>
+#include <vector>
+
+std::vector<int> keep_above(const std::vector<int>& v, int limit) {
+    return v;
+}
+
+void sort_by_distance(std::vector<int>& v, int target) {
+}
+
+auto make_counter() {
+    return [] { return 0; };
+}
+--- solution
+#include <algorithm>
+#include <cstdlib>
+#include <iterator>
+#include <vector>
+
+std::vector<int> keep_above(const std::vector<int>& v, int limit) {
+    std::vector<int> out;
+    std::copy_if(v.begin(), v.end(), std::back_inserter(out), [limit](int x) { return x > limit; });
+    return out;
+}
+
+void sort_by_distance(std::vector<int>& v, int target) {
+    std::sort(v.begin(), v.end(), [target](int a, int b) {
+        int da = std::abs(a - target);
+        int db = std::abs(b - target);
+        if (da != db) return da < db;
+        return a < b;
+    });
+}
+
+auto make_counter() {
+    return [n = 0]() mutable { return ++n; };
+}
+--- hint
+`std::copy_if(v.begin(), v.end(), std::back_inserter(out), …)` appends each match to `out`.
+--- hint
+The comparator captures `target` and compares distances first; only when they are equal does it compare the values.
+--- hint
+The counter needs its own variable that it may change: an init capture plus `mutable`.
+--- check case | keep_above keeps order
+keep_above({5, 12, 3, 40, 10}, 10)
+=> std::vector<int>{12, 40}
+--- check test | sort_by_distance puts the closest first, ties smaller first
+[] { std::vector<int> v{1, 9, 6, 4, 5}; sort_by_distance(v, 5); return v == std::vector<int>{5, 4, 6, 1, 9}; }()
+--- check test | A counter counts
+[] { auto c = make_counter(); c(); c(); return c() == 3; }()
+--- check test | Two counters are independent
+[] { auto a = make_counter(); auto b = make_counter(); a(); a(); return b() == 1 && a() == 3; }()
+
+=== cpp2-11 | Processing text with string streams
+--- teach
+Real input is messy text. Three tools handle most of it.
+
+**`std::istringstream`** (from `<sstream>`) lets you read from a string exactly as you would from `std::cin`:
+
+```cpp
+std::istringstream in("3 apples 4.5");
+int n; std::string what; double w;
+in >> n >> what >> w;        // 3, "apples", 4.5
+```
+
+**`std::getline(stream, line)`** reads up to a newline; `std::getline(stream, field, ',')` reads up to any character you choose. Reading every line of a block of text:
+
+```cpp
+std::istringstream text("first\nsecond\n");
+std::string line;
+while (std::getline(text, line)) { /* one line at a time */ }
+```
+
+The reverse direction is **`std::ostringstream`**: write to it with `<<` just as you write to `std::cout`, then take the text out with `.str()`. With `<iomanip>`, `out << std::fixed << std::setprecision(1) << 3.14159` writes `3.1`, a fixed number of decimal places.
+
+**`find` and `substr`** cut strings by hand when you need exact control:
+
+```cpp
+std::string s = "key=value";
+auto eq = s.find('=');                 // 3, or std::string::npos
+std::string key = s.substr(0, eq);     // "key"
+std::string val = s.substr(eq + 1);    // "value"
+```
+
+Know the edges. `getline` with a delimiter drops a trailing empty field: splitting `"a,b,"` that way gives two fields, not three. And checking that a whole field was a number takes two steps: `in >> n` must succeed, **and** there must be nothing left afterwards (`in >> std::ws` then `in.eof()`), or `"12abc"` sneaks through as 12.
+
+Whitespace to trim is spaces, tabs and newlines: `std::isspace` from `<cctype>` recognises all of them.
+--- task
+Write three functions. No `main`.
+
+- `std::vector<std::string> split(const std::string& s, char sep)` — every field, **including empty ones**: `split("a,,b", ',')` is `{"a", "", "b"}`, `split("a,", ',')` is `{"a", ""}`, and `split("", ',')` is `{""}`.
+- `std::string trim(const std::string& s)` — `s` without leading and trailing whitespace.
+- `std::map<std::string, int> parse_scores(const std::string& text)` — each line looks like `name: score`, with any amount of whitespace around the name and the score. Store `name → score`. Skip lines that are blank, have no `:`, have an empty name, or whose score is not a whole number.
+--- starter
+#include <cctype>
+#include <map>
+#include <sstream>
+#include <string>
+#include <vector>
+
+std::vector<std::string> split(const std::string& s, char sep) {
+    std::vector<std::string> out;
+    std::istringstream in(s);
+    std::string field;
+    while (std::getline(in, field, sep)) out.push_back(field);
+    return out;
+}
+
+std::string trim(const std::string& s) {
+    return s;
+}
+
+std::map<std::string, int> parse_scores(const std::string& text) {
+    return {};
+}
+--- solution
+#include <cctype>
+#include <map>
+#include <sstream>
+#include <string>
+#include <vector>
+
+std::vector<std::string> split(const std::string& s, char sep) {
+    std::vector<std::string> out;
+    std::size_t start = 0;
+    while (true) {
+        std::size_t at = s.find(sep, start);
+        if (at == std::string::npos) {
+            out.push_back(s.substr(start));
+            return out;
+        }
+        out.push_back(s.substr(start, at - start));
+        start = at + 1;
+    }
+}
+
+std::string trim(const std::string& s) {
+    std::size_t a = 0;
+    std::size_t b = s.size();
+    while (a < b && std::isspace(static_cast<unsigned char>(s[a]))) ++a;
+    while (b > a && std::isspace(static_cast<unsigned char>(s[b - 1]))) --b;
+    return s.substr(a, b - a);
+}
+
+std::map<std::string, int> parse_scores(const std::string& text) {
+    std::map<std::string, int> scores;
+    std::istringstream lines(text);
+    std::string line;
+    while (std::getline(lines, line)) {
+        std::size_t colon = line.find(':');
+        if (colon == std::string::npos) continue;
+        std::string name = trim(line.substr(0, colon));
+        if (name.empty()) continue;
+        std::istringstream num(line.substr(colon + 1));
+        int score;
+        if (!(num >> score)) continue;
+        num >> std::ws;
+        if (!num.eof()) continue;
+        scores[name] = score;
+    }
+    return scores;
+}
+--- hint
+For `split`, loop with `s.find(sep, start)`: take the piece from `start` up to the separator, then carry on after it. When there are no more separators, the rest of the string is the last field — even if it is empty.
+--- hint
+For `trim`, move one index forward past whitespace and another backward, then `substr` between them.
+--- hint
+In `parse_scores`, read the score from its own `std::istringstream`; after `>> score` succeeds, `num >> std::ws` then `num.eof()` tells you nothing else was there.
+--- check case | split keeps empty fields in the middle
+split("a,,b", ',')
+=> std::vector<std::string>{"a", "", "b"}
+--- check case | split keeps a trailing empty field
+split("a,", ',')
+=> std::vector<std::string>{"a", ""}
+--- check case | split of an empty string is one empty field
+split("", ',')
+=> std::vector<std::string>{""}
+--- check case | trim removes spaces, tabs and newlines at both ends
+trim(" \t hello world \n")
+=> "hello world"
+--- check case | trim of only spaces is empty
+trim("   ")
+=> ""
+--- check case | parse_scores reads good lines and skips bad ones
+parse_scores("  ada : 90\n\nlin:75 \nno colon here\n: 5\nsam: 7x\n")
+=> std::map<std::string, int>{{"ada", 90}, {"lin", 75}}
+
+=== cpp2-12 | Debugging: off by one, out of range
+--- teach
+An **off-by-one** error means a loop runs one time too many or too few. In C++ it is dangerous, because `v[i]` does no checking: reading one past the end does not stop the program — it reads whatever memory happens to be there and carries on with a wrong number.
+
+A method for loops that misbehave:
+
+1. **Reproduce small.** Pick an input where you can write the right answer by hand.
+2. **Trace the boundaries.** Write down the first and last value of every loop variable, and the largest index it will touch. For `v` of size 4, valid indexes are 0 to 3; anything that reaches 4 is a bug.
+3. **Check the edge inputs**: empty, one element, and the sizes where the loop condition flips.
+4. **Make out-of-range loud while you look.** `v.at(i)` checks the index; out of range it stops the program at once instead of returning garbage.
+
+There is a second, sneakier trap in C++: **unsigned wrap-around**. `v.size()` is a `std::size_t`, which cannot be negative. So when `v.size()` is 2 and `k` is 3, `v.size() - k` is not -1 — it wraps round to a *huge* number, and a loop like `for (i = 0; i <= v.size() - k; ++i)` runs almost forever, reading far outside the vector.
+
+The cause-level fix is to write the condition so it never subtracts below zero — for example `i + k <= v.size()` — and to handle the impossible cases (like `k == 0`) up front.
+--- task
+**Bug report:** "`window_sums({1, 2, 3, 4}, 2)` should be `{3, 5, 7}` — the sums of each two neighbours — but the numbers are wrong. And with `k` bigger than the list, the program crashes."
+
+`window_sums(v, k)` returns the sum of every run of `k` consecutive values, in order. If `k` is 0 or larger than `v.size()`, it returns an empty vector. Find both bugs and fix their causes. No `main`.
+--- starter
+#include <vector>
+
+// The sum of every run of k consecutive values:
+// window_sums({1, 2, 3, 4}, 2) is {3, 5, 7}.
+std::vector<int> window_sums(const std::vector<int>& v, std::size_t k) {
+    std::vector<int> out;
+    for (std::size_t i = 0; i <= v.size() - k; ++i) {
+        int sum = 0;
+        for (std::size_t j = 0; j <= k; ++j) {
+            sum += v[i + j];
+        }
+        out.push_back(sum);
+    }
+    return out;
+}
+--- solution
+#include <vector>
+
+// The sum of every run of k consecutive values:
+// window_sums({1, 2, 3, 4}, 2) is {3, 5, 7}.
+std::vector<int> window_sums(const std::vector<int>& v, std::size_t k) {
+    std::vector<int> out;
+    if (k == 0) return out;
+    for (std::size_t i = 0; i + k <= v.size(); ++i) {
+        int sum = 0;
+        for (std::size_t j = 0; j < k; ++j) {
+            sum += v[i + j];
+        }
+        out.push_back(sum);
+    }
+    return out;
+}
+--- hint
+Trace `window_sums({1, 2, 3, 4}, 2)` by hand: how many values does the inner loop add each time?
+--- hint
+When `k > v.size()`, what is `v.size() - k` for an unsigned type? Rewrite the condition so nothing is subtracted.
+--- hint
+`k == 0` would produce "windows" of nothing; return early.
+--- check case | Pairs of neighbours
+window_sums({1, 2, 3, 4}, 2)
+=> std::vector<int>{3, 5, 7}
+--- check case | k equal to the size gives one sum
+window_sums({1, 2, 3, 4}, 4)
+=> std::vector<int>{10}
+--- check case | k of 1 gives the values back
+window_sums({5, -2, 8}, 1)
+=> std::vector<int>{5, -2, 8}
+--- check case | k of 0 gives nothing
+window_sums({1, 2, 3}, 0)
+=> std::vector<int>{}
+--- check case | k bigger than the list gives nothing
+window_sums({1, 2}, 3)
+=> std::vector<int>{}
+
+=== cpp2-13 | Debugging: overflow and uninitialised values
+--- teach
+Two bugs produce numbers that are simply **wrong**, with no crash to point at them.
+
+**Integer overflow.** An `int` holds up to 2,147,483,647. Go past it and a signed integer's behaviour is *undefined* — in practice you usually get a large negative number, but the compiler is allowed to assume it never happens at all. The cure is to pick a type big enough for the *result*, not just the inputs: `long long` goes to about 9 × 10¹⁸.
+
+A classic hiding place is `std::accumulate`, which adds in the type of its starting value:
+
+```cpp
+std::vector<int> v = {2000000000, 2000000000};
+std::accumulate(v.begin(), v.end(), 0);     // int arithmetic: overflows
+std::accumulate(v.begin(), v.end(), 0LL);   // long long: 4000000000
+```
+
+Declaring the function as returning `long long` does not help — the damage is done inside, before the result is converted.
+
+**Uninitialised variables.** `int lowest;` does not mean zero. A local without an initialiser holds whatever was in that memory, and reading it is undefined behaviour: the program may seem to work today and fail tomorrow.
+
+Debugging both:
+
+- **Read the warnings.** Compile with `-Wall -Wextra` (this checker does); clang flags many uninitialised reads.
+- **Test the edges** where these bugs live: very large values, all-negative or all-positive inputs, a single element.
+- **Fix the cause.** For "smallest so far", start from the first real element, not from 0 (which breaks on all-positive data) and not from a guess.
+--- task
+**Bug report:** "`total_bytes` of three 1.5 GB files comes out negative. And `coldest({5, 7, 9})` returns nonsense instead of 5."
+
+Fix both functions at the cause:
+
+- `long long total_bytes(const std::vector<int>& sizes)` — the sum of the sizes (0 for none).
+- `int coldest(const std::vector<int>& temps)` — the smallest temperature (the list is never empty).
+
+No `main`.
+--- starter
+#include <numeric>
+#include <vector>
+
+// Total size of all files, in bytes. A single file can be up to 2 GB.
+long long total_bytes(const std::vector<int>& sizes) {
+    return std::accumulate(sizes.begin(), sizes.end(), 0);
+}
+
+// The lowest temperature in the list (never empty).
+int coldest(const std::vector<int>& temps) {
+    int lowest;
+    for (int t : temps) {
+        if (t < lowest) lowest = t;
+    }
+    return lowest;
+}
+--- solution
+#include <numeric>
+#include <vector>
+
+// Total size of all files, in bytes. A single file can be up to 2 GB.
+long long total_bytes(const std::vector<int>& sizes) {
+    return std::accumulate(sizes.begin(), sizes.end(), 0LL);
+}
+
+// The lowest temperature in the list (never empty).
+int coldest(const std::vector<int>& temps) {
+    int lowest = temps[0];
+    for (int t : temps) {
+        if (t < lowest) lowest = t;
+    }
+    return lowest;
+}
+--- hint
+What type is the `0` passed to `accumulate`? That is the type the adding happens in.
+--- hint
+What value does `lowest` have before the loop? Start it from something that is really in the list.
+--- check case | Three 1.5 GB files
+total_bytes({1500000000, 1500000000, 1500000000})
+=> 4500000000LL
+--- check case | No files is 0 bytes
+total_bytes({})
+=> 0LL
+--- check case | coldest of all-positive temperatures
+coldest({5, 7, 9})
+=> 5
+--- check case | coldest of all-negative temperatures
+coldest({-3, -8, -1})
+=> -8
+--- check case | coldest of one reading
+coldest({42})
+=> 42
+
+=== cpp2-14 | Problem solving: two that add up
+--- teach
+Problem-solving lessons ask you to design the algorithm. A reliable way in:
+
+1. **Restate** the problem in your own words and pin down the output exactly.
+2. **Work examples** by hand, including awkward ones: duplicates, negatives, no answer.
+3. **Brute force first.** What is the obvious solution, and how slow is it?
+4. **Find the pattern** that removes the wasted work.
+
+Here: given numbers and a target, find two different positions whose values add up to the target.
+
+The brute force checks every pair — two nested loops, about n²/2 pairs. For 10 numbers that is nothing; for 200,000 numbers it is 20 **billion** pairs, far too slow.
+
+The pattern: walk through the numbers once. When you are standing on value `x` at position `j`, you need some *earlier* value equal to `target - x`. If you remember every earlier value and where you saw it, that question takes O(1) with a hash map:
+
+```
+seen = {}                         value -> first position it appeared
+for j, x in numbers:
+    if (target - x) in seen: answer is (seen[target - x], j)
+    if x not in seen: seen[x] = j
+```
+
+Checking *before* inserting `x` is what stops you pairing a number with itself. Keeping only the **first** position of each value gives the smallest `i` for that `j`. One pass, O(n) — 200,000 numbers take a blink.
+
+`std::unordered_map<int, int>` is the tool; `find` or `contains` looks without inserting.
+
+The answer is two numbers, so the function returns a **`std::pair<int, int>`** (from `<utility>`). `return {i, j};` builds one, and `.first` and `.second` read it back. To remember a position, `m.emplace(key, value)` inserts only when the key is missing. It never overwrites.
+--- task
+Write `std::pair<int, int> two_sum(const std::vector<int>& nums, int target)` returning positions `{i, j}` with `i < j` and `nums[i] + nums[j] == target`.
+
+If there are several answers, return the one with the **smallest `j`**, and for that `j` the smallest `i`. If there is none, return `{-1, -1}`. The last check has 200,002 numbers, so it needs the one-pass idea. No `main`.
+--- starter
+#include <unordered_map>
+#include <utility>
+#include <vector>
+
+std::pair<int, int> two_sum(const std::vector<int>& nums, int target) {
+    return {-1, -1};
+}
+--- solution
+#include <unordered_map>
+#include <utility>
+#include <vector>
+
+std::pair<int, int> two_sum(const std::vector<int>& nums, int target) {
+    std::unordered_map<int, int> first_seen;
+    for (int j = 0; j < static_cast<int>(nums.size()); ++j) {
+        auto it = first_seen.find(target - nums[j]);
+        if (it != first_seen.end()) return {it->second, j};
+        first_seen.emplace(nums[j], j);
+    }
+    return {-1, -1};
+}
+--- hint
+For each position `j`, the question is "have I already seen `target - nums[j]`, and where?"
+--- hint
+Look up before you insert, so a number never pairs with itself. `emplace` does not overwrite an existing key, so the first position of each value is kept.
+--- check case | The classic example
+two_sum({2, 7, 11, 15}, 9)
+=> std::pair<int, int>{0, 1}
+--- check case | Not the first element
+two_sum({3, 2, 4}, 6)
+=> std::pair<int, int>{1, 2}
+--- check case | The same value twice
+two_sum({3, 3}, 6)
+=> std::pair<int, int>{0, 1}
+--- check case | Smallest j wins, then smallest i
+two_sum({2, 2, 2, 5, 3}, 4)
+=> std::pair<int, int>{0, 1}
+--- check case | Negative numbers
+two_sum({-4, 10, 7, 1}, -3)
+=> std::pair<int, int>{0, 3}
+--- check case | No answer
+two_sum({1, 2, 3}, 100)
+=> std::pair<int, int>{-1, -1}
+--- check case | Empty input
+two_sum({}, 0)
+=> std::pair<int, int>{-1, -1}
+--- check test | 200,002 numbers, answer at the very end
+[] { std::vector<int> v; for (int i = 0; i < 200000; ++i) v.push_back(10 + i * 10); v.push_back(1); v.push_back(2); return two_sum(v, 3) == std::pair<int, int>{200000, 200001}; }()
+
+=== cpp2-15 | Design: give repeated work a name
+--- teach
+Copy-pasted code is a bug waiting to happen. Three blocks that "do the same thing" drift apart the first time someone edits one and forgets the others — and the one they forgot is usually wrong.
+
+Refactoring means changing the **shape** of code without changing what it does. For duplicated blocks:
+
+1. **Find what varies.** Line the copies up side by side. Here only the data and a label differ.
+2. **Name the idea.** A function name should say what it computes, not how: `summarize`, not `loop_and_min_max`.
+3. **Return a meaningful type.** When a function produces several related values, a small `struct` with named fields beats three output parameters or a `std::pair` of a `std::pair`.
+4. **Replace each copy with a call**, then re-run the checks. They are your safety net: behaviour must not change (except for fixing bugs the duplication was hiding).
+
+```cpp
+struct Range { int low; int high; };
+
+Range range_of(const std::vector<int>& v) {        // one place to get it right
+    auto [lo, hi] = std::minmax_element(v.begin(), v.end());
+    return {*lo, *hi};
+}
+```
+
+A good split has one function for **computing** (`summarize` returns numbers) and one for **presenting** (`format_line` turns them into text). You can then test each alone, and reuse the numbers somewhere that does not want text.
+--- task
+`report` works, mostly — but its three copied blocks hide a copy-paste bug. Refactor it:
+
+- `struct Summary { int min; int max; double mean; };`
+- `Summary summarize(const std::vector<int>& readings)` — for a non-empty list.
+- `std::string format_line(const std::string& label, const std::vector<int>& readings)` — `"label: min 1, max 5, mean 3.0\n"` (mean to one decimal place), or `"label: no readings\n"` for an empty list.
+- `report` returns the three lines, morning then noon then night, built with `format_line`.
+
+Keep at most one loop in the whole file. No `main`.
+--- starter
+#include <iomanip>
+#include <sstream>
+#include <string>
+#include <vector>
+
+std::string report(const std::vector<int>& morning, const std::vector<int>& noon, const std::vector<int>& night) {
+    std::ostringstream out;
+    out << std::fixed << std::setprecision(1);
+
+    int lo = morning[0], hi = morning[0];
+    long long sum = 0;
+    for (int x : morning) { if (x < lo) lo = x; if (x > hi) hi = x; sum += x; }
+    out << "morning: min " << lo << ", max " << hi << ", mean " << static_cast<double>(sum) / morning.size() << "\n";
+
+    lo = noon[0]; hi = noon[0];
+    sum = 0;
+    for (int x : noon) { if (x < lo) lo = x; if (x > hi) hi = x; sum += x; }
+    out << "noon: min " << lo << ", max " << hi << ", mean " << static_cast<double>(sum) / noon.size() << "\n";
+
+    lo = night[0]; hi = night[0];
+    sum = 0;
+    for (int x : night) { if (x < lo) lo = x; if (x > hi) hi = x; sum += x; }
+    out << "night: min " << lo << ", max " << hi << ", mean " << static_cast<double>(sum) / noon.size() << "\n";
+
+    return out.str();
+}
+--- solution
+#include <iomanip>
+#include <sstream>
+#include <string>
+#include <vector>
+
+struct Summary {
+    int min;
+    int max;
+    double mean;
+};
+
+Summary summarize(const std::vector<int>& readings) {
+    Summary s{readings[0], readings[0], 0.0};
+    long long sum = 0;
+    for (int x : readings) {
+        if (x < s.min) s.min = x;
+        if (x > s.max) s.max = x;
+        sum += x;
+    }
+    s.mean = static_cast<double>(sum) / readings.size();
+    return s;
+}
+
+std::string format_line(const std::string& label, const std::vector<int>& readings) {
+    if (readings.empty()) return label + ": no readings\n";
+    Summary s = summarize(readings);
+    std::ostringstream out;
+    out << std::fixed << std::setprecision(1);
+    out << label << ": min " << s.min << ", max " << s.max << ", mean " << s.mean << "\n";
+    return out.str();
+}
+
+std::string report(const std::vector<int>& morning, const std::vector<int>& noon, const std::vector<int>& night) {
+    return format_line("morning", morning) + format_line("noon", noon) + format_line("night", night);
+}
+--- hint
+Compare the three blocks line by line. What is different in the last one, and is it meant to be?
+--- hint
+Move one block into `summarize`, returning a `Summary{min, max, mean}`. Then `format_line` calls it and does the text.
+--- hint
+`report` becomes a single line: three `format_line` calls joined with `+`.
+--- check case | report gives the three lines, with the night mean right
+report({1, 5, 3}, {10, 20}, {-2, 4, 1, 1})
+=> "morning: min 1, max 5, mean 3.0\nnoon: min 10, max 20, mean 15.0\nnight: min -2, max 4, mean 1.0\n"
+--- check test | summarize returns the numbers
+[] { Summary s = summarize({4, -1, 9}); return s.min == -1 && s.max == 9 && std::abs(s.mean - 4.0) < 1e-9; }()
+--- check case | format_line with no readings
+format_line("noon", {})
+=> "noon: no readings\n"
+--- check case | report copes with an empty period
+report({2}, {}, {7, 8})
+=> "morning: min 2, max 2, mean 2.0\nnoon: no readings\nnight: min 7, max 8, mean 7.5\n"
+--- check source | report uses format_line
+format_line\(\s*"morning"
+--- check source absent | At most one loop in the file
+\b(for|while)\s*\([\s\S]*\b(for|while)\s*\(

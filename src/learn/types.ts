@@ -51,6 +51,11 @@ export type LearnCheck =
   | (CheckBase & { kind: 'result'; rows: Cell[][]; ordered: boolean })
   /** SQL: a query run after hers, on the same database, and what it returns. */
   | (CheckBase & { kind: 'query'; sql: string; rows: Cell[][] })
+  /**
+   * TypeScript: code that must NOT type-check — the compiler has to reject it.
+   * How a lesson proves a type is as tight as it should be.
+   */
+  | (CheckBase & { kind: 'type-error'; code: string })
 
 export interface LearnLesson {
   /** Stable across releases: progress and saved code are keyed by it. */
@@ -72,8 +77,24 @@ export interface LearnLesson {
   schema?: string
 }
 
+/** Where a course sits on the way from first line to expert. */
+export type LearnLevel = 'basics' | 'intermediate' | 'advanced' | 'expert' | 'projects'
+
+export const LEVELS: LearnLevel[] = ['basics', 'intermediate', 'advanced', 'expert', 'projects']
+
+export const LEVEL_LABEL: Record<LearnLevel, string> = {
+  basics: 'Basics',
+  intermediate: 'Intermediate',
+  advanced: 'Advanced',
+  expert: 'Expert',
+  projects: 'Projects',
+}
+
 export interface LearnTrack {
+  /** The course's id: `python` for a language's basics, `python-advanced` and so on after. */
+  id: string
   lang: LearnLang
+  level: LearnLevel
   /** Short: breadcrumbs, chips. */
   title: string
   /** The course's full name, as the roadmap and its page show it. */
@@ -87,7 +108,8 @@ export interface Roadmap {
   id: string
   title: string
   blurb: string
-  steps: LearnLang[]
+  /** Course ids, in order (a language's basics course has the language's name). */
+  steps: string[]
 }
 
 /** What one run produced, in a shape every language can fill. */
@@ -100,6 +122,8 @@ export interface LearnRun {
   tables?: { columns: string[]; rows: Cell[][] }[]
   /** Web: what each dom check found, in check order. */
   dom?: { pass: boolean; detail?: string }[] | null
+  /** TypeScript: type-error checks the compiler accepted, which it should not have. */
+  typeFails?: number[]
   /** Terminal: the practice shell as she left it. */
   shell?: import('@/lib/shell').ShellState
   ms: number

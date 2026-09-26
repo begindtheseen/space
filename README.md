@@ -36,12 +36,16 @@ memory model and a dependency graph, and it shows its working:
   are compared against the reference solution, and the app says so. MATLAB exercises ship
   a NumPy equivalent you can run.
 - **Learn to code.** Roadmaps — GNC Engineer, Flight Software, Test & Data, Software
-  Engineer — that lay out courses in order as a numbered path: the command line, Git,
-  Python, SQL and C++, lesson by lesson in the same IDE
-  window as the playground, every step really run and shown as test cases. The lessons
-  are plain text in `src/learn/tracks/*.txt` (format in `src/learn/parse.ts`); the
-  roadmaps are in `src/learn/platform.ts`. The same lesson engine runs in APEX's
-  LAUNCHPAD app, which adds JavaScript, TypeScript and the web.
+  Engineer, and a mastery roadmap per language — that lay out courses in order as a
+  numbered path. 21 courses, 291 lessons: the command line, Git, Python, SQL and C++,
+  each from basics to advanced or expert and then a projects course with capstones,
+  mixing concept, debugging, problem-solving and design lessons, done in the same IDE
+  window as the playground, every step really run and shown as test cases. A course is
+  one plain-text file in `src/learn/tracks/` (`<lang>.txt` for the basics,
+  `<lang>.<level>.txt` after; format in `src/learn/parse.ts`); the roadmaps are in
+  `src/learn/platform.ts`. The same lesson engine and course files come from APEX's
+  LAUNCHPAD app, which adds JavaScript, TypeScript and the web, and checks every
+  lesson's starter and solution in the real runtimes.
 - **The playground, embedded.** `components/ide/Embed.tsx` is the playground's window as a
   component. Lesson code blocks that can run become it (`src/lib/practice.ts` decides which),
   each lesson ends with Try it here, code exercises are done and graded in it on the module

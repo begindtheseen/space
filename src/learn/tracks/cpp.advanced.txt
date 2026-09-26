@@ -1,0 +1,2016 @@
+@track cpp
+@level advanced
+@title C++ · Advanced
+@name C++, advanced: ownership, templates and polymorphism
+@blurb Design types that manage their own resources and behave like built-ins: RAII, copy and move, smart pointers, templates, operators, interfaces, variants, compile-time code and error handling without exceptions.
+
+=== cpp3-01 | RAII: let destructors clean up
+--- teach
+The intermediate course had you *using* types that look after themselves: vectors, strings, maps, `unique_ptr`. This course is about *writing* them. You will build types that own resources, copy and move correctly, work for any element type and behave like built-ins, starting with the idea underneath all of them.
+
+Every resource a program takes — memory, a file, a lock, a network connection — has to be given back exactly once, on **every** path out of the code: the normal end, an early `return`, a `break` out of a loop. Doing that by hand is where leaks come from:
+
+```cpp
+bool process(const std::string& name) {
+    open_file(name);
+    if (name.empty()) return false;   // oops: never closed
+    // ...
+    close_file(name);
+    return true;
+}
+```
+
+C++'s answer is **RAII** — *Resource Acquisition Is Initialisation*. Tie the resource to an object: the **constructor** acquires it, the **destructor** (written `~ClassName()`, with no parameters and no return type) releases it. A local object's destructor runs automatically when it goes out of scope, however that happens, so cleanup can no longer be forgotten:
+
+```cpp
+class Lock {
+public:
+    explicit Lock(Mutex& m) : m_(m) { m_.lock(); }
+    ~Lock() { m_.unlock(); }
+private:
+    Mutex& m_;
+};
+
+void work(Mutex& m) {
+    Lock guard(m);        // locked here
+    if (bad()) return;    // unlocked here
+}                         // ... and here
+```
+
+Destructors run in **reverse order** of construction, so nested guards unwind like a stack.
+
+One more rule. A class that owns something usually must not be **copied** by accident — two copies would both release the same resource. Say so by deleting the copy operations:
+
+```cpp
+Lock(const Lock&) = delete;
+Lock& operator=(const Lock&) = delete;
+```
+
+You have already used RAII types all along: `std::vector` frees its memory, `std::unique_ptr` deletes its object, a file stream closes its file.
+--- task
+The starter has a global `open_handles` counter and `open_file` / `close_file` functions that change it.
+
+1. Make `FileHandle` an RAII type: its constructor calls `open_file(name)`, its destructor calls `close_file(name)`, `name()` returns the name, and it cannot be copied.
+2. Write `class ValueGuard` with a constructor `ValueGuard(int& target, int temporary)` that saves `target`'s current value and sets it to `temporary`, and a destructor that puts the saved value back. It cannot be copied either.
+
+No `main`.
+--- starter
+#include <string>
+#include <type_traits>
+
+int open_handles = 0;   // how many files are open right now
+void open_file(const std::string&) { ++open_handles; }
+void close_file(const std::string&) { --open_handles; }
+
+class FileHandle {
+public:
+    explicit FileHandle(const std::string& name) : name_(name) {}
+    const std::string& name() const { return name_; }
+private:
+    std::string name_;
+};
+--- solution
+#include <string>
+#include <type_traits>
+
+int open_handles = 0;   // how many files are open right now
+void open_file(const std::string&) { ++open_handles; }
+void close_file(const std::string&) { --open_handles; }
+
+class FileHandle {
+public:
+    explicit FileHandle(const std::string& name) : name_(name) { open_file(name_); }
+    ~FileHandle() { close_file(name_); }
+    FileHandle(const FileHandle&) = delete;
+    FileHandle& operator=(const FileHandle&) = delete;
+    const std::string& name() const { return name_; }
+private:
+    std::string name_;
+};
+
+class ValueGuard {
+public:
+    ValueGuard(int& target, int temporary) : target_(target), saved_(target) { target_ = temporary; }
+    ~ValueGuard() { target_ = saved_; }
+    ValueGuard(const ValueGuard&) = delete;
+    ValueGuard& operator=(const ValueGuard&) = delete;
+private:
+    int& target_;
+    int saved_;
+};
+--- hint
+The constructor body is the place to acquire (`open_file(name_);`); `~FileHandle()` releases.
+--- hint
+`ValueGuard` needs two members: a reference `int& target_` to the variable, and an `int saved_` holding its old value.
+--- hint
+Delete copying with `ClassName(const ClassName&) = delete;` and the same for `operator=`.
+--- check test | A handle is open while it lives, closed after
+[] { bool during; { FileHandle f("log.txt"); during = open_handles == 1 && f.name() == "log.txt"; } return during && open_handles == 0; }()
+--- check test | An early return still closes every handle
+[] { auto work = [] { FileHandle a("a"); FileHandle b("b"); if (open_handles == 2) return true; return false; }; bool ok = work(); return ok && open_handles == 0; }()
+--- check test | FileHandle cannot be copied
+!std::is_copy_constructible_v<FileHandle> && !std::is_copy_assignable_v<FileHandle>
+--- check test | ValueGuard sets and restores
+[] { int level = 1; bool inside; { ValueGuard g(level, 5); inside = level == 5; } return inside && level == 1; }()
+--- check test | Nested guards unwind in reverse order
+[] { int x = 0; bool ok = true; { ValueGuard a(x, 1); { ValueGuard b(x, 2); ok = ok && x == 2; } ok = ok && x == 1; } return ok && x == 0; }()
+
+=== cpp3-02 | Copying: the rule of three
+--- teach
+When you copy an object, C++ copies each member. For `int`s, `std::string`s and `std::vector`s that is exactly right. For a **raw pointer** it is a disaster: the copy gets the same address, so two objects now "own" one block of memory.
+
+```cpp
+class Bad {
+public:
+    Bad() : data_(new int[3]()) {}
+    ~Bad() { delete[] data_; }
+private:
+    int* data_;
+};
+
+Bad a;
+Bad b = a;   // b.data_ == a.data_
+             // writing through b changes a; at the end both destructors
+             // delete the same block — a double free
+```
+
+The basics told you never to write raw `new` and `delete`. This lesson and the next break that rule on purpose, to show what `std::vector` and `std::unique_ptr` do for you. `new int[3]()` allocates three `int`s (the `()` sets them to zero) and returns a pointer to the first one; `delete[]` gives an array back. `std::copy(from_begin, from_end, to)` copies a range, and plain pointers work as its iterators.
+
+The starter also has `static inline int copies = 0;`. A **static data member** belongs to the class rather than to each object: it is one counter shared by every `Buffer`, reached as `Buffer::copies`. The word `inline` lets you give it a value right there in the class.
+
+The **rule of three**: if a class needs a custom destructor, it almost certainly needs a custom **copy constructor** and **copy assignment operator** too, because all three deal with the same owned resource.
+
+```cpp
+Bad(const Bad& other)                  // copy constructor: build a new object
+    : data_(new int[3]) {
+    std::copy(other.data_, other.data_ + 3, data_);
+}
+
+Bad& operator=(const Bad& other) {     // copy assignment: overwrite an existing one
+    if (this != &other) {              // a = a must not destroy a's own data
+        int* fresh = new int[3];
+        std::copy(other.data_, other.data_ + 3, fresh);
+        delete[] data_;
+        data_ = fresh;
+    }
+    return *this;
+}
+```
+
+Assignment is the harder one: the object already owns something, which must be released, and self-assignment must be safe. Allocating the new block **before** freeing the old one keeps the object valid at every step.
+
+In real code you would use `std::vector<int>` and write none of this (lesson after next). Writing it once by hand is how you understand what those types do for you.
+--- task
+`Buffer` owns an `int` array and frees it in its destructor, but copies share the array. Give it a **deep** copy constructor and copy assignment operator. Both must add 1 to the static counter `Buffer::copies`, and assigning a buffer to itself must leave it unchanged. No `main`.
+--- starter
+#include <algorithm>
+#include <cstddef>
+
+class Buffer {
+public:
+    static inline int copies = 0;
+
+    explicit Buffer(std::size_t size) : size_(size), data_(new int[size]()) {}
+    ~Buffer() { delete[] data_; }
+
+    std::size_t size() const { return size_; }
+    int get(std::size_t i) const { return data_[i]; }
+    void set(std::size_t i, int value) { data_[i] = value; }
+
+private:
+    std::size_t size_;
+    int* data_;
+};
+--- solution
+#include <algorithm>
+#include <cstddef>
+
+class Buffer {
+public:
+    static inline int copies = 0;
+
+    explicit Buffer(std::size_t size) : size_(size), data_(new int[size]()) {}
+    ~Buffer() { delete[] data_; }
+
+    Buffer(const Buffer& other) : size_(other.size_), data_(new int[other.size_]) {
+        std::copy(other.data_, other.data_ + size_, data_);
+        ++copies;
+    }
+
+    Buffer& operator=(const Buffer& other) {
+        if (this != &other) {
+            int* fresh = new int[other.size_];
+            std::copy(other.data_, other.data_ + other.size_, fresh);
+            delete[] data_;
+            data_ = fresh;
+            size_ = other.size_;
+            ++copies;
+        }
+        return *this;
+    }
+
+    std::size_t size() const { return size_; }
+    int get(std::size_t i) const { return data_[i]; }
+    void set(std::size_t i, int value) { data_[i] = value; }
+
+private:
+    std::size_t size_;
+    int* data_;
+};
+--- hint
+The copy constructor allocates its own `new int[other.size_]` and copies the values across with `std::copy`.
+--- hint
+In `operator=`, check `this != &other` first; allocate and fill the new array, then `delete[]` the old one, then update `data_` and `size_`. Return `*this`.
+--- check test | A copy has its own data
+[] { Buffer a(3); a.set(0, 7); Buffer b = a; b.set(0, 9); return a.get(0) == 7 && b.get(0) == 9 && b.size() == 3; }()
+--- check test | Assignment copies deeply, even between sizes
+[] { Buffer a(2); a.set(1, 4); Buffer b(5); b = a; a.set(1, 8); return b.size() == 2 && b.get(1) == 4; }()
+--- check test | Self-assignment is harmless
+[] { Buffer a(2); a.set(0, 3); Buffer& same = a; a = same; return a.size() == 2 && a.get(0) == 3; }()
+--- check test | Every copy is counted
+[] { Buffer::copies = 0; Buffer a(1); Buffer b = a; Buffer c(4); c = a; return Buffer::copies == 2; }()
+
+=== cpp3-03 | Moving, and the rule of zero
+--- teach
+Copying a big buffer means allocating and copying every element. But very often the source is about to die anyway — a temporary, or a local being returned. Then it is far cheaper to **steal** its memory: take the pointer, and leave the source empty. That is a **move**.
+
+```cpp
+Buffer(Buffer&& other) noexcept               // move constructor
+    : size_(other.size_), data_(other.data_) {
+    other.size_ = 0;
+    other.data_ = nullptr;                    // the source must still be safe to destroy
+}
+```
+
+`Buffer&&` is an **rvalue reference**: it binds to things that are about to go away. `std::move(x)` does not move anything by itself — it is a cast that says "you may treat `x` as expendable". After a move, `x` is valid but unspecified: you may assign to it or destroy it, nothing more.
+
+Adding the move constructor and move assignment to the three from last lesson gives the **rule of five**.
+
+Why `noexcept`? When a `std::vector` grows it must move its elements to new memory. It will only use your move constructor if it is marked `noexcept`; otherwise, to stay safe, it **copies** every element instead. Forgetting `noexcept` silently makes vectors of your type slow.
+
+And now the best news, the **rule of zero**: a class whose members already manage themselves — `std::string`, `std::vector`, `std::unique_ptr`, or a class like your finished `Buffer` — should declare **none** of the five. The compiler writes all of them correctly, member by member:
+
+```cpp
+struct Track {
+    std::string title;
+    std::vector<int> samples;
+};   // copies, moves and cleans up correctly with no code at all
+```
+
+So the rule of five is for the few low-level types that own a raw resource; everything built on top of them follows the rule of zero.
+--- task
+Give `Buffer` a move constructor and a move assignment operator, both `noexcept`. Each adds 1 to `Buffer::moves`, and leaves the source with size 0 and no data. Moving a buffer onto itself must leave it unchanged.
+
+Then write `struct Album { std::string title; Buffer art; };` with **no** special member functions of its own — the rule of zero. No `main`.
+--- starter
+#include <algorithm>
+#include <cstddef>
+#include <string>
+#include <utility>
+#include <vector>
+
+class Buffer {
+public:
+    static inline int copies = 0;
+    static inline int moves = 0;
+
+    explicit Buffer(std::size_t size) : size_(size), data_(new int[size]()) {}
+    ~Buffer() { delete[] data_; }
+
+    Buffer(const Buffer& other) : size_(other.size_), data_(new int[other.size_]) {
+        std::copy(other.data_, other.data_ + size_, data_);
+        ++copies;
+    }
+
+    Buffer& operator=(const Buffer& other) {
+        if (this != &other) {
+            int* fresh = new int[other.size_];
+            std::copy(other.data_, other.data_ + other.size_, fresh);
+            delete[] data_;
+            data_ = fresh;
+            size_ = other.size_;
+            ++copies;
+        }
+        return *this;
+    }
+
+    std::size_t size() const { return size_; }
+    int get(std::size_t i) const { return data_[i]; }
+    void set(std::size_t i, int value) { data_[i] = value; }
+
+private:
+    std::size_t size_;
+    int* data_;
+};
+--- solution
+#include <algorithm>
+#include <cstddef>
+#include <string>
+#include <utility>
+#include <vector>
+
+class Buffer {
+public:
+    static inline int copies = 0;
+    static inline int moves = 0;
+
+    explicit Buffer(std::size_t size) : size_(size), data_(new int[size]()) {}
+    ~Buffer() { delete[] data_; }
+
+    Buffer(const Buffer& other) : size_(other.size_), data_(new int[other.size_]) {
+        std::copy(other.data_, other.data_ + size_, data_);
+        ++copies;
+    }
+
+    Buffer& operator=(const Buffer& other) {
+        if (this != &other) {
+            int* fresh = new int[other.size_];
+            std::copy(other.data_, other.data_ + other.size_, fresh);
+            delete[] data_;
+            data_ = fresh;
+            size_ = other.size_;
+            ++copies;
+        }
+        return *this;
+    }
+
+    Buffer(Buffer&& other) noexcept : size_(other.size_), data_(other.data_) {
+        other.size_ = 0;
+        other.data_ = nullptr;
+        ++moves;
+    }
+
+    Buffer& operator=(Buffer&& other) noexcept {
+        if (this != &other) {
+            delete[] data_;
+            data_ = other.data_;
+            size_ = other.size_;
+            other.data_ = nullptr;
+            other.size_ = 0;
+            ++moves;
+        }
+        return *this;
+    }
+
+    std::size_t size() const { return size_; }
+    int get(std::size_t i) const { return data_[i]; }
+    void set(std::size_t i, int value) { data_[i] = value; }
+
+private:
+    std::size_t size_;
+    int* data_;
+};
+
+struct Album {
+    std::string title;
+    Buffer art;
+};
+--- hint
+The move constructor takes `Buffer&& other`, copies the two members across, then sets `other.data_ = nullptr; other.size_ = 0;`.
+--- hint
+Move assignment frees its own array first (after the `this != &other` check), then steals.
+--- hint
+`Album` is just the two members — declare nothing else, and the compiler moves `art` with your move constructor.
+--- check test | Moving steals, the source is left empty
+[] { Buffer::copies = 0; Buffer::moves = 0; Buffer a(3); a.set(2, 5); Buffer b = std::move(a); return b.size() == 3 && b.get(2) == 5 && a.size() == 0 && Buffer::moves == 1 && Buffer::copies == 0; }()
+--- check test | Move assignment
+[] { Buffer::moves = 0; Buffer a(2); a.set(0, 1); Buffer b(9); b = std::move(a); return b.size() == 2 && b.get(0) == 1 && a.size() == 0 && Buffer::moves == 1; }()
+--- check test | Self-move leaves the buffer as it was
+[] { Buffer a(2); a.set(1, 6); Buffer& same = a; a = std::move(same); return a.size() == 2 && a.get(1) == 6; }()
+--- check test | A growing vector moves, never copies (noexcept)
+[] { Buffer::copies = 0; std::vector<Buffer> v; for (int i = 0; i < 20; ++i) v.push_back(Buffer(4)); return Buffer::copies == 0 && v.size() == 20; }()
+--- check test | Album follows the rule of zero
+[] { Buffer::copies = 0; Buffer::moves = 0; Album a{"Blue", Buffer(8)}; Album b = std::move(a); Album c = b; return b.art.size() == 8 && a.art.size() == 0 && Buffer::copies == 1 && Buffer::moves >= 1 && c.title == "Blue"; }()
+
+=== cpp3-04 | Smart pointers: unique_ptr and shared_ptr
+--- teach
+Writing the rule of five for every owning type would be tiring. Smart pointers are RAII for single heap objects, already written:
+
+**`std::unique_ptr<T>`** — exactly one owner. It cannot be copied, only moved, and deletes the object when it goes away. This is the default.
+
+```cpp
+auto p = std::make_unique<Node>();    // p owns a Node
+std::unique_ptr<Node> q = std::move(p);   // ownership moves to q; p is now null
+```
+
+Trees are the classic fit: each parent owns its children.
+
+```cpp
+struct Node {
+    int value;
+    std::vector<std::unique_ptr<Node>> children;
+};
+```
+
+Destroying the root destroys the whole tree, with no cleanup code.
+
+Walking a tree is naturally **recursive**: a function calls itself on each child, and nodes with no children end the recursion. The basics only mentioned recursion; here it earns its keep, because a tree's shape is itself recursive. `*child` turns a child's `unique_ptr` into the `Node&` it owns, and `p->value` reads a member through a pointer.
+
+**`std::shared_ptr<T>`** — shared ownership. It keeps a reference count; the object is deleted when the **last** `shared_ptr` to it goes away. `use_count()` tells you how many there are.
+
+```cpp
+auto tex = std::make_shared<Texture>();
+auto a = tex;          // count 2
+auto b = tex;          // count 3
+```
+
+Use it when there genuinely is no single owner — several sprites sharing one loaded texture. Two cautions. Shared ownership makes lifetimes hard to reason about, so do not reach for it by default. And two objects holding `shared_ptr`s to **each other** never reach a count of zero — a leak; break such cycles with `std::weak_ptr`, which watches without owning.
+
+Code that only *uses* an object takes a plain reference or raw pointer (`const Node&`, `Node*`) — ownership is the smart pointer's job, not every function's.
+--- task
+The starter declares `Node` and `Texture`. Write, with no `main`:
+
+- `std::unique_ptr<Node> make_node(int value)` — a new node with no children.
+- `Node& add_child(Node& parent, int value)` — appends a new child and returns a reference to it (so you can add grandchildren).
+- `int tree_sum(const Node& root)` — the sum of every value in the tree.
+- `int tree_depth(const Node& root)` — the number of nodes on the longest path from the root down (a lone node has depth 1).
+- `std::vector<std::shared_ptr<Texture>> share_texture(const std::string& file, int n)` — `n` pointers that all share **one** new `Texture` whose `file` is `file`.
+--- starter
+#include <algorithm>
+#include <memory>
+#include <string>
+#include <vector>
+
+struct Node {
+    int value;
+    std::vector<std::unique_ptr<Node>> children;
+};
+
+struct Texture {
+    std::string file;
+};
+
+std::unique_ptr<Node> make_node(int value) {
+    return nullptr;
+}
+
+Node& add_child(Node& parent, int value) {
+    return parent;
+}
+
+int tree_sum(const Node& root) {
+    return root.value;
+}
+
+int tree_depth(const Node& root) {
+    return 1;
+}
+
+std::vector<std::shared_ptr<Texture>> share_texture(const std::string& file, int n) {
+    return {};
+}
+--- solution
+#include <algorithm>
+#include <memory>
+#include <string>
+#include <vector>
+
+struct Node {
+    int value;
+    std::vector<std::unique_ptr<Node>> children;
+};
+
+struct Texture {
+    std::string file;
+};
+
+std::unique_ptr<Node> make_node(int value) {
+    auto node = std::make_unique<Node>();
+    node->value = value;
+    return node;
+}
+
+Node& add_child(Node& parent, int value) {
+    parent.children.push_back(make_node(value));
+    return *parent.children.back();
+}
+
+int tree_sum(const Node& root) {
+    int total = root.value;
+    for (const auto& child : root.children) total += tree_sum(*child);
+    return total;
+}
+
+int tree_depth(const Node& root) {
+    int deepest = 0;
+    for (const auto& child : root.children) deepest = std::max(deepest, tree_depth(*child));
+    return deepest + 1;
+}
+
+std::vector<std::shared_ptr<Texture>> share_texture(const std::string& file, int n) {
+    std::vector<std::shared_ptr<Texture>> out;
+    if (n <= 0) return out;
+    auto tex = std::make_shared<Texture>(Texture{file});
+    for (int i = 0; i < n; ++i) out.push_back(tex);
+    return out;
+}
+--- hint
+`add_child`: `parent.children.push_back(make_node(value));` then return `*parent.children.back()`.
+--- hint
+`tree_sum` and `tree_depth` are recursive: combine the answers for each child (`*child` turns the pointer into a `Node&`).
+--- hint
+Make **one** texture with `std::make_shared`, then push that same `shared_ptr` `n` times — copying it shares, it does not duplicate.
+--- check test | make_node makes a leaf
+[] { auto n = make_node(4); return n != nullptr && n->value == 4 && n->children.empty(); }()
+--- check test | Building a tree and summing it
+[] { auto root = make_node(1); Node& a = add_child(*root, 2); add_child(*root, 3); add_child(a, 10); return tree_sum(*root) == 16 && root->children.size() == 2; }()
+--- check test | Depth counts the longest path
+[] { auto root = make_node(0); Node& a = add_child(*root, 0); Node& b = add_child(a, 0); add_child(b, 0); add_child(*root, 0); return tree_depth(*root) == 4 && tree_depth(b) == 2; }()
+--- check test | A lone node has depth 1 and its own value as sum
+[] { auto n = make_node(-5); return tree_depth(*n) == 1 && tree_sum(*n) == -5; }()
+--- check test | One texture, shared three ways
+[] { auto v = share_texture("grass.png", 3); return v.size() == 3 && v[0].get() == v[2].get() && v[0].use_count() == 3 && v[1]->file == "grass.png"; }()
+--- check test | Sharing zero times makes nothing
+share_texture("x.png", 0).empty()
+
+=== cpp3-05 | Function templates
+--- teach
+Writing `largest` once for `int`, again for `double` and again for `std::string` is copy-paste. A **function template** writes it once for any type:
+
+```cpp
+template <typename T>
+T largest(const std::vector<T>& v) {
+    T best = v[0];
+    for (const T& x : v) if (best < x) best = x;
+    return best;
+}
+
+largest(std::vector<int>{3, 8, 1});            // T is int
+largest(std::vector<std::string>{"b", "a"});   // T is std::string
+```
+
+The compiler **deduces** `T` from the arguments and generates a real function for each type you use. The template only requires what its body does: here, that `T` can be copied and compared with `<`. Call it with a type that has no `<` and you get a compile error (C++20 *concepts* make those errors readable — that comes in the expert course).
+
+Deduction has one trap. Every place `T` appears must deduce the **same** type:
+
+```cpp
+template <typename T>
+int count_equal(const std::vector<T>& v, const T& x);
+
+std::vector<std::string> names = {"ada", "lin"};
+count_equal(names, "ada");   // error: T is std::string from names,
+                             // but const char[4] from "ada"
+```
+
+Two fixes: give the second parameter its own template parameter (`template <typename T, typename U>`), or tell the compiler not to deduce from it with `std::type_identity_t<T>` (from `<type_traits>`): `const std::type_identity_t<T>& x`. Then `T` comes only from the vector, and `"ada"` simply converts to `std::string`.
+
+You can also name the type explicitly: `largest<double>(…)`.
+--- task
+Write three function templates. No `main`.
+
+- `T largest(const std::vector<T>& v)` — the largest element (`v` is never empty).
+- `count_equal(v, x)` — how many elements of the vector equal `x`, returned as `int`. It must work for `count_equal(names, "ada")` where `names` is a `std::vector<std::string>`.
+- `void clamp_all(std::vector<T>& v, const T& lo, const T& hi)` — change every element below `lo` to `lo` and above `hi` to `hi`, in place.
+--- starter
+#include <string>
+#include <type_traits>
+#include <vector>
+
+int largest(const std::vector<int>& v) {
+    return v[0];
+}
+--- solution
+#include <string>
+#include <type_traits>
+#include <vector>
+
+template <typename T>
+T largest(const std::vector<T>& v) {
+    T best = v[0];
+    for (const T& x : v) {
+        if (best < x) best = x;
+    }
+    return best;
+}
+
+template <typename T>
+int count_equal(const std::vector<T>& v, const std::type_identity_t<T>& x) {
+    int n = 0;
+    for (const T& item : v) {
+        if (item == x) ++n;
+    }
+    return n;
+}
+
+template <typename T>
+void clamp_all(std::vector<T>& v, const T& lo, const T& hi) {
+    for (T& x : v) {
+        if (x < lo) x = lo;
+        else if (hi < x) x = hi;
+    }
+}
+--- hint
+Start each with `template <typename T>` and write `T` wherever the element type goes.
+--- hint
+For `count_equal`, make the second parameter `const std::type_identity_t<T>& x` so `T` is deduced from the vector only.
+--- hint
+`clamp_all` needs `T&` in its loop so the changes stick.
+--- check case | largest of ints
+largest(std::vector<int>{3, 8, -1, 8})
+=> 8
+--- check test | largest of doubles
+std::abs(largest(std::vector<double>{1.5, -2.0, 9.25}) - 9.25) < 1e-12
+--- check case | largest of strings
+largest(std::vector<std::string>{"pear", "apple", "zucchini", "fig"})
+=> "zucchini"
+--- check case | count_equal with a string literal
+[] { std::vector<std::string> names{"ada", "lin", "ada"}; return count_equal(names, "ada"); }()
+=> 2
+--- check case | count_equal with ints
+count_equal(std::vector<int>{1, 2, 1, 1}, 1)
+=> 3
+--- check test | clamp_all works in place
+[] { std::vector<int> v{-5, 3, 12, 10}; clamp_all(v, 0, 10); std::vector<double> d{0.5, 2.5}; clamp_all(d, 1.0, 2.0); return v == std::vector<int>{0, 3, 10, 10} && d == std::vector<double>{1.0, 2.0}; }()
+
+=== cpp3-06 | Class templates
+--- teach
+A **class template** is a blueprint for a family of classes. `std::vector<T>` is one; so is `std::optional<T>`. Writing your own looks like this:
+
+```cpp
+template <typename T>
+class Box {
+public:
+    explicit Box(T value) : value_(std::move(value)) {}
+    const T& get() const { return value_; }
+private:
+    T value_;
+};
+
+Box<int> a(5);
+Box<std::string> b("hi");
+Box c(2.5);          // C++17: T deduced as double from the constructor
+```
+
+Member functions written inside the class body need no extra syntax. Only the members you actually call are compiled for each `T`, so a `Box<T>` whose `print()` needs `<<` still works for a `T` without `<<`, as long as nobody calls `print()`.
+
+Template parameters can also be **values** known at compile time:
+
+```cpp
+template <typename T, std::size_t N>
+class Recent { /* keeps at most N items */ };
+
+Recent<int, 3> last_three;
+```
+
+`N` is part of the type: `Recent<int, 3>` and `Recent<int, 4>` are different classes. A `static_assert(N > 0);` inside the class turns a nonsense size into a clear compile error.
+
+For "take the top item" operations that can fail on an empty container, returning `std::optional<T>` is a clean design: the caller cannot forget that it might be empty. For "look at the top" without removing, returning a `const T*` (null when empty) avoids a copy.
+
+One more standard container helps with the task. `std::deque<T>` (from `<deque>`) is like a vector that is also cheap to change at the **front**: `push_back`, `pop_front`, `front()` and `back()`.
+--- task
+Write two class templates. No `main`.
+
+`Stack<T>`: `void push(const T& x)`, `std::optional<T> pop()` (removes and returns the top, or `std::nullopt` when empty), `const T* top() const` (the top item, or `nullptr` when empty), `std::size_t size() const`, `bool empty() const`.
+
+`Recent<T, N>`: keeps the last `N` items added. `void add(const T& x)` — when it already holds `N`, the oldest is dropped. `std::vector<T> items() const` — oldest first.
+--- starter
+#include <cstddef>
+#include <deque>
+#include <optional>
+#include <string>
+#include <vector>
+
+template <typename T>
+class Stack {
+public:
+    void push(const T& x) {}
+    std::optional<T> pop() { return std::nullopt; }
+    const T* top() const { return nullptr; }
+    std::size_t size() const { return 0; }
+    bool empty() const { return true; }
+};
+--- solution
+#include <cstddef>
+#include <deque>
+#include <optional>
+#include <string>
+#include <vector>
+
+template <typename T>
+class Stack {
+public:
+    void push(const T& x) { items_.push_back(x); }
+    std::optional<T> pop() {
+        if (items_.empty()) return std::nullopt;
+        T top = std::move(items_.back());
+        items_.pop_back();
+        return top;
+    }
+    const T* top() const { return items_.empty() ? nullptr : &items_.back(); }
+    std::size_t size() const { return items_.size(); }
+    bool empty() const { return items_.empty(); }
+private:
+    std::vector<T> items_;
+};
+
+template <typename T, std::size_t N>
+class Recent {
+    static_assert(N > 0, "Recent needs room for at least one item");
+public:
+    void add(const T& x) {
+        if (items_.size() == N) items_.pop_front();
+        items_.push_back(x);
+    }
+    std::vector<T> items() const { return std::vector<T>(items_.begin(), items_.end()); }
+private:
+    std::deque<T> items_;
+};
+--- hint
+Keep the stack's items in a `std::vector<T>` member: the back of the vector is the top.
+--- hint
+In `pop`, check for empty first, then move the back element out, `pop_back()`, and return it.
+--- hint
+`Recent` can hold a `std::deque<T>`: `pop_front()` drops the oldest when the size reaches `N`.
+--- check test | Push, top and pop, last in first out
+[] { Stack<int> s; s.push(1); s.push(2); bool top2 = s.top() && *s.top() == 2; auto a = s.pop(); auto b = s.pop(); return top2 && a == 2 && b == 1 && s.empty(); }()
+--- check test | An empty stack says so
+[] { Stack<std::string> s; return s.pop() == std::nullopt && s.top() == nullptr && s.size() == 0 && s.empty(); }()
+--- check test | Stack works with strings
+[] { Stack<std::string> s; s.push("a"); s.push("b"); s.push("c"); s.pop(); return s.size() == 2 && *s.top() == "b"; }()
+--- check case | Recent keeps the last three
+[] { Recent<int, 3> r; for (int i = 1; i <= 5; ++i) r.add(i); return r.items(); }()
+=> std::vector<int>{3, 4, 5}
+--- check case | Recent with fewer than N items
+[] { Recent<std::string, 4> r; r.add("x"); r.add("y"); return r.items(); }()
+=> std::vector<std::string>{"x", "y"}
+
+=== cpp3-07 | Operator overloading: a Fraction type
+--- teach
+Operator overloading lets your own types read like built-in ones: `a + b` instead of `add(a, b)`. An operator is just a function with a special name:
+
+```cpp
+struct Vec2 { double x, y; };
+
+Vec2 operator+(const Vec2& a, const Vec2& b) { return {a.x + b.x, a.y + b.y}; }
+bool operator==(const Vec2& a, const Vec2& b) { return a.x == b.x && a.y == b.y; }
+
+std::ostream& operator<<(std::ostream& out, const Vec2& v) {
+    return out << "(" << v.x << ", " << v.y << ")";
+}
+```
+
+Guidelines that keep operators pleasant:
+
+- **Mean what the symbol means.** `+` adds, `==` compares, `<` orders. An `operator+` that prints is a trap.
+- **Write binary operators as non-member functions.** Then conversions work on *both* sides. If `Fraction` has a non-`explicit` constructor from a whole number, `1 + half` works with a non-member `operator+`, but not with a member one (the left side of a member call is never converted).
+- **`<<` returns the stream** so calls chain: `out << a << b`.
+- **Keep an invariant** so `==` can be simple. For a fraction: always stored in lowest terms, with a positive denominator. Then 2/4 and 1/2 are stored identically, and equality is just comparing two numbers.
+
+`std::gcd` (in `<numeric>`) gives the greatest common divisor for reducing. To compare `a/b < c/d` with positive denominators, cross-multiply: `a * d < c * b` — no floating point, no rounding.
+
+C++20 can also generate all six comparisons from one `operator<=>`, but writing `==` and `<` yourself first is the best way to see what they mean.
+--- task
+Write `class Fraction`:
+
+- `Fraction(long long num = 0, long long den = 1)` — not `explicit`. Store it in lowest terms with a positive denominator (`den` is never 0). `num()` and `den()` return the parts.
+- Non-member `+`, `-`, `*` and `/` (dividing by a non-zero fraction), `==` and `<`.
+- `operator<<` printing `num/den`, or just `num` when the denominator is 1.
+
+No `main`.
+--- starter
+#include <numeric>
+#include <ostream>
+
+class Fraction {
+public:
+    Fraction(long long num = 0, long long den = 1) : num_(num), den_(den) {}
+    long long num() const { return num_; }
+    long long den() const { return den_; }
+private:
+    long long num_;
+    long long den_;
+};
+--- solution
+#include <numeric>
+#include <ostream>
+
+class Fraction {
+public:
+    Fraction(long long num = 0, long long den = 1) : num_(num), den_(den) {
+        if (den_ < 0) {
+            num_ = -num_;
+            den_ = -den_;
+        }
+        long long g = std::gcd(num_, den_);
+        if (g > 1) {
+            num_ /= g;
+            den_ /= g;
+        }
+    }
+    long long num() const { return num_; }
+    long long den() const { return den_; }
+private:
+    long long num_;
+    long long den_;
+};
+
+Fraction operator+(const Fraction& a, const Fraction& b) {
+    return Fraction(a.num() * b.den() + b.num() * a.den(), a.den() * b.den());
+}
+Fraction operator-(const Fraction& a, const Fraction& b) {
+    return Fraction(a.num() * b.den() - b.num() * a.den(), a.den() * b.den());
+}
+Fraction operator*(const Fraction& a, const Fraction& b) {
+    return Fraction(a.num() * b.num(), a.den() * b.den());
+}
+Fraction operator/(const Fraction& a, const Fraction& b) {
+    return Fraction(a.num() * b.den(), a.den() * b.num());
+}
+bool operator==(const Fraction& a, const Fraction& b) {
+    return a.num() == b.num() && a.den() == b.den();
+}
+bool operator<(const Fraction& a, const Fraction& b) {
+    return a.num() * b.den() < b.num() * a.den();
+}
+std::ostream& operator<<(std::ostream& out, const Fraction& f) {
+    out << f.num();
+    if (f.den() != 1) out << "/" << f.den();
+    return out;
+}
+--- hint
+Normalise in the constructor: flip both signs if `den` is negative, then divide both by `std::gcd(num, den)`.
+--- hint
+Each arithmetic operator builds a new `Fraction` from cross products and lets the constructor reduce it: `a/b + c/d = (a*d + c*b) / (b*d)`.
+--- hint
+Because every fraction is stored reduced, `==` just compares `num()` and `den()`.
+--- check test | Stored in lowest terms with a positive denominator
+Fraction(6, -4).num() == -3 && Fraction(6, -4).den() == 2 && Fraction(0, 5).den() == 1
+--- check case | 1/2 + 1/3 is 5/6
+Fraction(1, 2) + Fraction(1, 3)
+=> Fraction(5, 6)
+--- check case | Subtraction can go negative
+Fraction(1, 4) - Fraction(1, 2)
+=> Fraction(-1, 4)
+--- check case | Multiply and divide
+(Fraction(2, 3) * Fraction(3, 4)) / Fraction(1, 2)
+=> Fraction(1, 1)
+--- check test | A whole number on the left converts
+1 + Fraction(1, 2) == Fraction(3, 2)
+--- check test | Ordering by value, not by parts
+Fraction(1, 3) < Fraction(1, 2) && !(Fraction(1, 2) < Fraction(2, 4)) && Fraction(-1, 2) < Fraction(1, 100)
+--- check case | Printing, including whole numbers
+[] { std::ostringstream o; o << Fraction(6, -4) << " " << Fraction(8, 4) << " " << Fraction(0, 3); return o.str(); }()
+=> "-3/2 2 0"
+
+=== cpp3-08 | Virtual functions and interfaces
+--- teach
+Sometimes you want one piece of code to work with many kinds of thing: "add up the area of these shapes", whatever shapes they are. That is **runtime polymorphism**, and in C++ it takes three ingredients.
+
+**An interface**: a base class with **pure virtual** functions (`= 0`). It cannot be instantiated; it only states what every shape can do.
+
+```cpp
+class Shape {
+public:
+    virtual ~Shape() = default;               // essential, see below
+    virtual double area() const = 0;
+    virtual std::string name() const = 0;
+};
+```
+
+**Implementations** that derive from it and **`override`** each function:
+
+```cpp
+class Circle : public Shape {
+public:
+    explicit Circle(double r) : r_(r) {}
+    double area() const override { return 3.141592653589793 * r_ * r_; }
+    std::string name() const override { return "circle"; }
+private:
+    double r_;
+};
+```
+
+`class Circle : public Shape` means `Circle` **derives from** `Shape`: it is a kind of `Shape` and has everything a `Shape` has. A derived constructor can pass arguments to its base's constructor in the initialiser list, for example `Square(double side) : Rectangle(side, side) {}`.
+
+**Access through a pointer or reference** to the base. A call to a `virtual` function then runs the version for the object's *real* type:
+
+```cpp
+std::vector<std::unique_ptr<Shape>> shapes;
+shapes.push_back(std::make_unique<Circle>(1.0));
+for (const auto& s : shapes) total += s->area();   // Circle::area
+```
+
+Why each detail matters:
+
+- `override` makes the compiler check that you really are overriding something. Misspell the name or forget a `const` and it is an error instead of a silent new function that never gets called.
+- A **virtual destructor** in the base means deleting a `Circle` through a `Shape*` (which `unique_ptr<Shape>` does) runs `Circle`'s destructor too. Without it, that is undefined behaviour.
+- A derived class can derive further: a `Square` *is a* `Rectangle` with equal sides, and can reuse its constructor, overriding only `name()`.
+--- task
+Complete the shapes. No `main`.
+
+- `Shape` is the interface in the starter: make `area()`, `perimeter()` and `name()` pure virtual, and give it a virtual destructor.
+- `Circle(double r)` — name `"circle"`. Use `3.141592653589793` for π.
+- `Rectangle(double w, double h)` — name `"rectangle"`.
+- `Square(double side)` derives from `Rectangle` — name `"square"`.
+- `double total_area(const std::vector<std::unique_ptr<Shape>>& shapes)`.
+- `std::string largest_name(const std::vector<std::unique_ptr<Shape>>& shapes)` — the name of the shape with the largest area (the first one on a tie), or `""` if there are none.
+--- starter
+#include <memory>
+#include <string>
+#include <type_traits>
+#include <vector>
+
+class Shape {
+public:
+    double area() const { return 0; }
+    double perimeter() const { return 0; }
+    std::string name() const { return "shape"; }
+};
+--- solution
+#include <memory>
+#include <string>
+#include <type_traits>
+#include <vector>
+
+class Shape {
+public:
+    virtual ~Shape() = default;
+    virtual double area() const = 0;
+    virtual double perimeter() const = 0;
+    virtual std::string name() const = 0;
+};
+
+class Circle : public Shape {
+public:
+    explicit Circle(double r) : r_(r) {}
+    double area() const override { return kPi * r_ * r_; }
+    double perimeter() const override { return 2 * kPi * r_; }
+    std::string name() const override { return "circle"; }
+private:
+    static constexpr double kPi = 3.141592653589793;
+    double r_;
+};
+
+class Rectangle : public Shape {
+public:
+    Rectangle(double w, double h) : w_(w), h_(h) {}
+    double area() const override { return w_ * h_; }
+    double perimeter() const override { return 2 * (w_ + h_); }
+    std::string name() const override { return "rectangle"; }
+private:
+    double w_;
+    double h_;
+};
+
+class Square : public Rectangle {
+public:
+    explicit Square(double side) : Rectangle(side, side) {}
+    std::string name() const override { return "square"; }
+};
+
+double total_area(const std::vector<std::unique_ptr<Shape>>& shapes) {
+    double total = 0;
+    for (const auto& s : shapes) total += s->area();
+    return total;
+}
+
+std::string largest_name(const std::vector<std::unique_ptr<Shape>>& shapes) {
+    const Shape* best = nullptr;
+    for (const auto& s : shapes) {
+        if (!best || s->area() > best->area()) best = s.get();
+    }
+    return best ? best->name() : "";
+}
+--- hint
+Pure virtual: `virtual double area() const = 0;`. Add `virtual ~Shape() = default;`.
+--- hint
+Each derived class writes `double area() const override { … }` — the `const` must match the base exactly.
+--- hint
+`Square(double side) : Rectangle(side, side) {}` reuses the rectangle; it only needs its own `name()`.
+--- check test | Shape is an abstract interface with a virtual destructor
+std::is_abstract_v<Shape> && std::has_virtual_destructor_v<Shape>
+--- check test | Areas and perimeters
+[] { Circle c(1); Rectangle r(2, 3); Square s(4); return std::abs(c.area() - 3.141592653589793) < 1e-9 && std::abs(c.perimeter() - 6.283185307179586) < 1e-9 && r.area() == 6 && r.perimeter() == 10 && s.area() == 16 && s.perimeter() == 16; }()
+--- check test | Names through a base pointer
+[] { std::unique_ptr<Shape> s = std::make_unique<Square>(2); std::unique_ptr<Shape> r = std::make_unique<Rectangle>(1, 2); return s->name() == "square" && r->name() == "rectangle"; }()
+--- check test | total_area over a mixed collection
+[] { std::vector<std::unique_ptr<Shape>> v; v.push_back(std::make_unique<Rectangle>(2, 5)); v.push_back(std::make_unique<Square>(3)); v.push_back(std::make_unique<Circle>(1)); return std::abs(total_area(v) - (19 + 3.141592653589793)) < 1e-9; }()
+--- check test | largest_name picks the biggest, first on a tie
+[] { std::vector<std::unique_ptr<Shape>> v; v.push_back(std::make_unique<Rectangle>(2, 8)); v.push_back(std::make_unique<Square>(4)); v.push_back(std::make_unique<Circle>(1)); std::vector<std::unique_ptr<Shape>> none; return largest_name(v) == "rectangle" && largest_name(none) == ""; }()
+
+=== cpp3-09 | Debugging: object slicing
+--- teach
+Here is a bug that confuses people who come to C++ from Java, Python or C#: a `Dog` that suddenly forgets it is a dog.
+
+```cpp
+Dog rex("Rex");
+Animal a = rex;        // copies only the Animal part of rex
+a.sound();             // "..." — Animal's version, not Dog's
+```
+
+This is **object slicing**. A variable of type `Animal` has room for exactly an `Animal`. Copying a `Dog` into it keeps the `Animal` part and slices off the rest — including the "I am really a Dog" information that virtual calls rely on. No error, no warning: just the wrong function.
+
+Slicing hides in three places:
+
+- **By-value parameters:** `void describe(Animal a)` slices every `Dog` passed in.
+- **Containers of the base type:** `std::vector<Animal>` stores `Animal`s; `push_back(Dog(...))` slices.
+- **Assignments** like `Animal a = rex;`.
+
+Debugging it follows the usual method. Reproduce with one `Dog`. Check the assumption "this call is virtual, so it will use `Dog`'s version" — it is only true through a **pointer or reference**. Look for every place a derived object is converted to a base **value**.
+
+The fix is to keep polymorphic objects behind references and pointers: `const Animal&` parameters, and `std::vector<std::unique_ptr<Animal>>` for collections.
+
+To stop it happening again, a base class meant for polymorphism can forbid copying (`Animal(const Animal&) = delete;`) — then any accidental slice becomes a compile error.
+--- task
+**Bug report:** "`describe(Dog("Rex"))` returns `"Rex says ..."` instead of `"Rex says woof"`, and `chorus()` returns `"..., ..., ..."` instead of `"woof, meow, ..."`."
+
+Find where the dogs and cats lose their type and fix it. Keep the classes and the names and return types of `describe` and `chorus`. No `main`.
+--- starter
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
+
+class Animal {
+public:
+    explicit Animal(std::string name) : name_(std::move(name)) {}
+    virtual ~Animal() = default;
+    virtual std::string sound() const { return "..."; }
+    const std::string& name() const { return name_; }
+private:
+    std::string name_;
+};
+
+class Dog : public Animal {
+public:
+    explicit Dog(std::string name) : Animal(std::move(name)) {}
+    std::string sound() const override { return "woof"; }
+};
+
+class Cat : public Animal {
+public:
+    explicit Cat(std::string name) : Animal(std::move(name)) {}
+    std::string sound() const override { return "meow"; }
+};
+
+std::string describe(Animal a) {
+    return a.name() + " says " + a.sound();
+}
+
+std::string chorus() {
+    std::vector<Animal> zoo;
+    zoo.push_back(Dog("Rex"));
+    zoo.push_back(Cat("Tom"));
+    zoo.push_back(Animal("Blob"));
+    std::string out;
+    for (const Animal& a : zoo) {
+        if (!out.empty()) out += ", ";
+        out += a.sound();
+    }
+    return out;
+}
+--- solution
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
+
+class Animal {
+public:
+    explicit Animal(std::string name) : name_(std::move(name)) {}
+    virtual ~Animal() = default;
+    virtual std::string sound() const { return "..."; }
+    const std::string& name() const { return name_; }
+private:
+    std::string name_;
+};
+
+class Dog : public Animal {
+public:
+    explicit Dog(std::string name) : Animal(std::move(name)) {}
+    std::string sound() const override { return "woof"; }
+};
+
+class Cat : public Animal {
+public:
+    explicit Cat(std::string name) : Animal(std::move(name)) {}
+    std::string sound() const override { return "meow"; }
+};
+
+std::string describe(const Animal& a) {
+    return a.name() + " says " + a.sound();
+}
+
+std::string chorus() {
+    std::vector<std::unique_ptr<Animal>> zoo;
+    zoo.push_back(std::make_unique<Dog>("Rex"));
+    zoo.push_back(std::make_unique<Cat>("Tom"));
+    zoo.push_back(std::make_unique<Animal>("Blob"));
+    std::string out;
+    for (const auto& a : zoo) {
+        if (!out.empty()) out += ", ";
+        out += a->sound();
+    }
+    return out;
+}
+--- hint
+`describe` takes an `Animal` by value. What happens to a `Dog` when it is copied into an `Animal`?
+--- hint
+`std::vector<Animal>` can only hold `Animal`s. Store owning pointers instead: `std::vector<std::unique_ptr<Animal>>` and `std::make_unique<Dog>("Rex")`.
+--- check case | describe keeps the dog a dog
+describe(Dog("Rex"))
+=> "Rex says woof"
+--- check case | describe keeps the cat a cat
+describe(Cat("Tom"))
+=> "Tom says meow"
+--- check case | A plain animal still says ...
+describe(Animal("Blob"))
+=> "Blob says ..."
+--- check case | chorus has every voice
+chorus()
+=> "woof, meow, ..."
+
+=== cpp3-10 | std::function and callbacks
+--- teach
+A **callback** is code you hand to someone else to run later: "when a message arrives, call this". The receiver needs to store callables of many kinds — lambdas with different captures, plain functions, function objects — in one container. Each lambda has its own unique type, so you need a common type that can hold any of them.
+
+That is `std::function<Signature>` (from `<functional>`):
+
+```cpp
+#include <functional>
+
+std::function<int(int, int)> op = [](int a, int b) { return a + b; };
+op(2, 3);                      // 5
+op = [](int a, int b) { return a * b; };
+op(2, 3);                      // 6
+
+std::function<void()> empty;
+if (!empty) { /* nothing stored: calling it would be an error */ }
+```
+
+It is a small example of **type erasure**: whatever you put in, from the outside it is just "something callable with this signature". It costs a little — usually a heap allocation and an indirect call — so use a template parameter instead when the callable is only passed straight through, and `std::function` when you need to **store** callables.
+
+A typical design: an event bus mapping event names to lists of handlers.
+
+```cpp
+std::map<std::string, std::vector<std::function<void(int)>>> handlers;
+```
+
+Two warnings. A handler that captures a local **by reference** must not outlive that local. And returning a handle (an id) from `subscribe` is what lets callers unsubscribe later — a lambda cannot be compared with `==`, so you cannot find it again by value.
+
+Functions can also **return** callables: `compose(f, g)` returns a new function that runs `g`, then `f` on the result.
+--- task
+Write `class EventBus`, no `main`:
+
+- `int subscribe(const std::string& event, std::function<void(int)> handler)` — registers a handler and returns a new id (1, 2, 3, … in order).
+- `bool unsubscribe(int id)` — removes that handler; false if there was no such id.
+- `int publish(const std::string& event, int value)` — calls every handler for `event`, in the order they subscribed, passing `value`; returns how many were called.
+
+Also write `std::function<int(int)> compose(std::function<int(int)> f, std::function<int(int)> g)` returning a function that computes `f(g(x))`.
+--- starter
+#include <functional>
+#include <map>
+#include <string>
+#include <utility>
+#include <vector>
+
+class EventBus {
+public:
+    int subscribe(const std::string& event, std::function<void(int)> handler) { return 0; }
+    bool unsubscribe(int id) { return false; }
+    int publish(const std::string& event, int value) { return 0; }
+};
+
+std::function<int(int)> compose(std::function<int(int)> f, std::function<int(int)> g) {
+    return f;
+}
+--- solution
+#include <functional>
+#include <map>
+#include <string>
+#include <utility>
+#include <vector>
+
+class EventBus {
+public:
+    int subscribe(const std::string& event, std::function<void(int)> handler) {
+        int id = next_id_++;
+        subs_.push_back({id, event, std::move(handler)});
+        return id;
+    }
+
+    bool unsubscribe(int id) {
+        for (auto it = subs_.begin(); it != subs_.end(); ++it) {
+            if (it->id == id) {
+                subs_.erase(it);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    int publish(const std::string& event, int value) {
+        int called = 0;
+        for (const auto& s : subs_) {
+            if (s.event == event) {
+                s.handler(value);
+                ++called;
+            }
+        }
+        return called;
+    }
+
+private:
+    struct Subscription {
+        int id;
+        std::string event;
+        std::function<void(int)> handler;
+    };
+    std::vector<Subscription> subs_;
+    int next_id_ = 1;
+};
+
+std::function<int(int)> compose(std::function<int(int)> f, std::function<int(int)> g) {
+    return [f = std::move(f), g = std::move(g)](int x) { return f(g(x)); };
+}
+--- hint
+Store each subscription as a small struct `{ id, event, handler }` in a vector — the vector keeps subscription order for free.
+--- hint
+`publish` walks the vector and calls `s.handler(value)` for each matching event.
+--- hint
+`compose` returns a lambda that captures `f` and `g` **by value** — they must outlive the call to `compose`.
+--- check test | Handlers run in order with the value
+[] { EventBus bus; std::vector<int> log; bus.subscribe("tick", [&log](int v) { log.push_back(v); }); bus.subscribe("tick", [&log](int v) { log.push_back(v * 10); }); int n = bus.publish("tick", 3); return n == 2 && log == std::vector<int>{3, 30}; }()
+--- check test | Only the named event's handlers run
+[] { EventBus bus; int a = 0, b = 0; bus.subscribe("a", [&a](int v) { a += v; }); bus.subscribe("b", [&b](int v) { b += v; }); bus.publish("a", 5); return a == 5 && b == 0 && bus.publish("nobody", 1) == 0; }()
+--- check test | Ids count up and unsubscribe removes one handler
+[] { EventBus bus; int hits = 0; int id1 = bus.subscribe("x", [&hits](int) { hits += 1; }); int id2 = bus.subscribe("x", [&hits](int) { hits += 100; }); bool gone = bus.unsubscribe(id1); bus.publish("x", 0); return id1 == 1 && id2 == 2 && gone && hits == 100 && !bus.unsubscribe(id1) && !bus.unsubscribe(42); }()
+--- check test | compose runs g, then f
+[] { auto add1 = [](int x) { return x + 1; }; auto twice = [](int x) { return x * 2; }; auto h = compose(add1, twice); auto k = compose(twice, add1); return h(5) == 11 && k(5) == 12; }()
+
+=== cpp3-11 | std::variant and std::visit
+--- teach
+`std::optional<T>` is "a T or nothing". `std::variant<A, B, C>` is "**exactly one** of A, B or C" — a type-safe union that remembers which one it holds.
+
+```cpp
+#include <variant>
+
+using Value = std::variant<int, double, std::string>;
+
+Value v = 42;          // holds an int
+v = "hello";           // now holds a std::string
+
+v.index();                          // 2: the position of the held type
+std::holds_alternative<int>(v);     // false
+std::get_if<std::string>(&v);       // pointer to the string, or nullptr
+```
+
+`using Value = …;` gives a type a shorter name, so `Value` now means that whole variant.
+
+(`std::get<T>(v)` also exists, but with exceptions switched off a wrong guess ends the program — prefer `get_if` or `holds_alternative`.)
+
+The real power is **`std::visit`**: call a function with whatever the variant holds, and have the compiler check you handled every case. A common idiom builds the visitor from several lambdas:
+
+```cpp
+template <class... Fs> struct overloaded : Fs... { using Fs::operator()...; };
+
+std::string describe(const Value& v) {
+    return std::visit(overloaded{
+        [](int i)                { return "int " + std::to_string(i); },
+        [](double d)             { return std::string("a double"); },
+        [](const std::string& s) { return "text " + s; },
+    }, v);
+}
+```
+
+For now, treat `overloaded` as a recipe to copy: it bundles several lambdas into one object that has all of their call operators. How its `class... Fs` works (variadic templates) is covered in the expert course.
+
+Leave out a case and it does not compile. That makes a variant the right tool for a **closed** set of alternatives that you know up front — tokens in a parser, the kinds of value in a spreadsheet cell. (Virtual functions suit the opposite: an **open** set of types that others will add later.)
+
+`std::visit` can also take two variants at once; the visitor then gets both values, which is handy for "combine two values of mixed kinds".
+
+Instead of one lambda per type, you can write a single **generic lambda**, `[](const auto& x) { … }`, which the compiler stamps out once for each type. Inside it you can ask what `x` really is:
+
+- `std::decay_t<decltype(x)>` is its plain type. `decltype` gives the declared type, and `decay_t` strips the `const` and `&`.
+- `std::is_same_v<A, B>` (from `<type_traits>`) is true when two types match.
+- **`if constexpr (…)`** keeps only the branch that applies to this type; the other branches are not even compiled.
+
+Writing `-> std::optional<Value>` after the parameters states the lambda's return type, for when its branches would otherwise return different types.
+--- task
+With `using Value = std::variant<int, double, std::string>;`, write — no `main`:
+
+- `std::string type_name(const Value& v)` — `"int"`, `"double"` or `"string"`.
+- `std::string to_text(const Value& v)` — ints as digits, doubles as a default-formatted `std::ostringstream` prints them (`2.5`), strings in double quotes (`"hi"` becomes `"\"hi\""`).
+- `std::optional<Value> add(const Value& a, const Value& b)` — int + int is an int; any other mix of int and double is a double; string + string joins them; a string with a number is `std::nullopt`.
+--- starter
+#include <optional>
+#include <sstream>
+#include <string>
+#include <variant>
+
+using Value = std::variant<int, double, std::string>;
+
+std::string type_name(const Value& v) {
+    return "";
+}
+
+std::string to_text(const Value& v) {
+    return "";
+}
+
+std::optional<Value> add(const Value& a, const Value& b) {
+    return std::nullopt;
+}
+--- solution
+#include <optional>
+#include <sstream>
+#include <string>
+#include <type_traits>
+#include <variant>
+
+using Value = std::variant<int, double, std::string>;
+
+template <class... Fs> struct overloaded : Fs... { using Fs::operator()...; };
+
+std::string type_name(const Value& v) {
+    return std::visit(overloaded{
+        [](int) { return std::string("int"); },
+        [](double) { return std::string("double"); },
+        [](const std::string&) { return std::string("string"); },
+    }, v);
+}
+
+std::string to_text(const Value& v) {
+    return std::visit(overloaded{
+        [](int i) { return std::to_string(i); },
+        [](double d) {
+            std::ostringstream out;
+            out << d;
+            return out.str();
+        },
+        [](const std::string& s) { return "\"" + s + "\""; },
+    }, v);
+}
+
+std::optional<Value> add(const Value& a, const Value& b) {
+    return std::visit([](const auto& x, const auto& y) -> std::optional<Value> {
+        using X = std::decay_t<decltype(x)>;
+        using Y = std::decay_t<decltype(y)>;
+        constexpr bool xs = std::is_same_v<X, std::string>;
+        constexpr bool ys = std::is_same_v<Y, std::string>;
+        if constexpr (xs && ys) {
+            return Value(x + y);
+        } else if constexpr (xs || ys) {
+            return std::nullopt;
+        } else if constexpr (std::is_same_v<X, int> && std::is_same_v<Y, int>) {
+            return Value(x + y);
+        } else {
+            return Value(static_cast<double>(x) + static_cast<double>(y));
+        }
+    }, a, b);
+}
+--- hint
+`type_name` and `to_text` are one `std::visit` each with three lambdas (use the `overloaded` helper from the lesson).
+--- hint
+For `add`, `std::visit` can take both values: `std::visit([](const auto& x, const auto& y) -> std::optional<Value> { … }, a, b)`.
+--- hint
+Inside that generic lambda, `std::is_same_v<std::decay_t<decltype(x)>, std::string>` tells you what `x` is, and `if constexpr` picks a branch at compile time.
+--- check test | type_name
+type_name(Value(3)) == "int" && type_name(Value(2.5)) == "double" && type_name(Value(std::string("a"))) == "string"
+--- check test | to_text formats each kind
+to_text(Value(42)) == "42" && to_text(Value(2.5)) == "2.5" && to_text(Value(std::string("hi"))) == "\"hi\""
+--- check test | int + int stays an int
+[] { auto r = add(Value(2), Value(3)); return r && std::holds_alternative<int>(*r) && *std::get_if<int>(&*r) == 5; }()
+--- check test | int + double becomes a double
+[] { auto r = add(Value(1), Value(0.5)); auto s = add(Value(0.25), Value(2)); return r && std::holds_alternative<double>(*r) && *std::get_if<double>(&*r) == 1.5 && s && *std::get_if<double>(&*s) == 2.25; }()
+--- check test | Strings join
+[] { auto r = add(Value(std::string("ab")), Value(std::string("cd"))); return r && std::holds_alternative<std::string>(*r) && *std::get_if<std::string>(&*r) == "abcd"; }()
+--- check test | A string and a number do not add
+!add(Value(std::string("a")), Value(1)).has_value() && !add(Value(2.0), Value(std::string("b"))).has_value()
+
+=== cpp3-12 | constexpr: work done by the compiler
+--- teach
+A `constexpr` function **can** run at compile time. When it is called where a constant is required — the size of a `std::array`, a `static_assert`, a `constexpr` variable — the compiler evaluates it while compiling, and the program just contains the answer.
+
+```cpp
+constexpr int square(int x) { return x * x; }
+
+constexpr int nine = square(3);        // computed by the compiler
+std::array<int, square(4)> grid{};     // an array of 16
+static_assert(square(5) == 25);        // checked at compile time: a wrong answer
+                                       // is a compile error, not a runtime bug
+int n = read_number();
+int m = square(n);                     // the same function, now at run time
+```
+
+`std::array<T, N>` (from `<array>`) is a fixed-size array whose size `N` is part of its type, so `N` must be a compile-time constant.
+
+Modern `constexpr` functions can contain loops, `if`, local variables and even `std::array` — most ordinary code. What they cannot do includes: I/O, `static` locals, and anything with undefined behaviour (which the compiler **rejects** during constant evaluation — a nice bonus: overflow inside `static_assert` is a compile error instead of garbage).
+
+Why bother?
+
+- **Speed**: the work is done once, when you build, not every time the program runs.
+- **Safety**: `static_assert` turns facts about your code into checks that run on every build.
+- **Types need constants**: array sizes and template arguments must be known at compile time.
+
+`consteval` goes further: the function *must* run at compile time. `constexpr` is the flexible default.
+
+A useful shape for compile-time maths is iteration rather than deep recursion — for example Fibonacci with two running values, not the exponential recursive version.
+--- task
+The starter's three functions are correct, but they only run at run time, so the checks — which use them in `static_assert`s, `constexpr` variables and an array size — do not compile. Make them usable at compile time, keeping their results. No `main`.
+
+- `long long fib(int n)` — `fib(0) = 0`, `fib(1) = 1`, each next is the sum of the two before.
+- `bool is_prime(int n)` — false for anything below 2.
+- `int count_primes_below(int n)` — how many primes are less than `n`.
+--- starter
+#include <array>
+
+long long fib(int n) {
+    long long a = 0, b = 1;
+    for (int i = 0; i < n; ++i) {
+        long long next = a + b;
+        a = b;
+        b = next;
+    }
+    return a;
+}
+
+bool is_prime(int n) {
+    if (n < 2) return false;
+    for (int d = 2; d * d <= n; ++d) {
+        if (n % d == 0) return false;
+    }
+    return true;
+}
+
+int count_primes_below(int n) {
+    int count = 0;
+    for (int k = 2; k < n; ++k) {
+        if (is_prime(k)) ++count;
+    }
+    return count;
+}
+--- solution
+#include <array>
+
+constexpr long long fib(int n) {
+    long long a = 0, b = 1;
+    for (int i = 0; i < n; ++i) {
+        long long next = a + b;
+        a = b;
+        b = next;
+    }
+    return a;
+}
+
+constexpr bool is_prime(int n) {
+    if (n < 2) return false;
+    for (int d = 2; d * d <= n; ++d) {
+        if (n % d == 0) return false;
+    }
+    return true;
+}
+
+constexpr int count_primes_below(int n) {
+    int count = 0;
+    for (int k = 2; k < n; ++k) {
+        if (is_prime(k)) ++count;
+    }
+    return count;
+}
+--- hint
+It is one word in front of each function.
+--- hint
+`count_primes_below` calls `is_prime`, so `is_prime` must be `constexpr` too for the compile-time call to work.
+--- check test | fib(50) as a compile-time constant
+[] { constexpr long long f = fib(50); return f == 12586269025LL; }()
+--- check test | fib at the edges
+[] { static_assert(fib(0) == 0); static_assert(fib(1) == 1); static_assert(fib(2) == 1); return fib(10) == 55; }()
+--- check test | is_prime checked by static_assert
+[] { static_assert(is_prime(2) && is_prime(97) && !is_prime(1) && !is_prime(91) && !is_prime(-7)); return is_prime(7919); }()
+--- check test | count_primes_below sizes an array
+[] { std::array<int, count_primes_below(30)> a{}; return a.size() == 10 && count_primes_below(2) == 0; }()
+
+=== cpp3-13 | Errors without exceptions
+--- teach
+Many C++ codebases — games, embedded systems, this checker — are built with exceptions **switched off**. Errors then travel in the return value, and the type system makes sure the caller deals with them.
+
+Three shapes, from simplest to richest:
+
+1. **`bool` or an error code** — fine for "it worked or it did not" when the caller cannot do anything smarter anyway.
+2. **`std::optional<T>`** — a value or nothing. Right when there is only one way to fail ("not found"), or the reason does not matter.
+3. **A result type: `std::variant<T, Error>`** — a value *or* an explanation. Right when the caller needs to know *what* went wrong: which line, which field, what message.
+
+```cpp
+struct ParseError {
+    int line;
+    std::string message;
+};
+
+std::variant<Settings, ParseError> load(const std::string& text);
+
+auto result = load(text);
+if (auto* err = std::get_if<ParseError>(&result)) {
+    std::cout << "line " << err->line << ": " << err->message << "\n";
+} else {
+    const Settings& s = std::get<Settings>(result);
+    // ...
+}
+```
+
+Habits that make this style work:
+
+- **Return early on the first error**, with as much context as you have (line numbers are gold).
+- **Validate everything once, at the boundary**, so the rest of the program can trust a `Settings` it receives.
+- **Mark such functions `[[nodiscard]]`** so ignoring the result is a warning.
+- **Separate parsing from using.** A function that returns a result does not print or exit; its caller decides.
+--- task
+Write `std::variant<Config, ConfigError> parse_config(const std::string& text)` using the types in the starter. The text has one setting per line, `key = value`, with any spaces around key and value (use the starter's `trim`). Blank lines and lines starting with `#` are skipped. Lines are numbered from 1.
+
+- `host` — any non-empty value. Required.
+- `port` — a whole number from 1 to 65535. Defaults to 80.
+- `verbose` — `true` or `false`. Defaults to false.
+
+The **first** problem found is returned as a `ConfigError`: a line with no `=` → `"expected key = value"`; an unknown key → `"unknown key: <key>"`; a bad port → `"bad port"`; a bad verbose value → `"bad verbose"`; an empty host → `"empty host"`. If every line is fine but no host was given, return line `0` with `"missing host"`. No `main`.
+--- starter
+#include <cctype>
+#include <sstream>
+#include <string>
+#include <variant>
+
+struct Config {
+    std::string host;
+    int port = 80;
+    bool verbose = false;
+};
+
+struct ConfigError {
+    int line;
+    std::string message;
+};
+
+std::string trim(const std::string& s) {
+    std::size_t a = 0, b = s.size();
+    while (a < b && std::isspace(static_cast<unsigned char>(s[a]))) ++a;
+    while (b > a && std::isspace(static_cast<unsigned char>(s[b - 1]))) --b;
+    return s.substr(a, b - a);
+}
+
+[[nodiscard]] std::variant<Config, ConfigError> parse_config(const std::string& text) {
+    return ConfigError{0, "not written yet"};
+}
+--- solution
+#include <cctype>
+#include <sstream>
+#include <string>
+#include <variant>
+
+struct Config {
+    std::string host;
+    int port = 80;
+    bool verbose = false;
+};
+
+struct ConfigError {
+    int line;
+    std::string message;
+};
+
+std::string trim(const std::string& s) {
+    std::size_t a = 0, b = s.size();
+    while (a < b && std::isspace(static_cast<unsigned char>(s[a]))) ++a;
+    while (b > a && std::isspace(static_cast<unsigned char>(s[b - 1]))) --b;
+    return s.substr(a, b - a);
+}
+
+bool parse_port(const std::string& s, int& out) {
+    if (s.empty() || s.size() > 5) return false;
+    int n = 0;
+    for (char c : s) {
+        if (!std::isdigit(static_cast<unsigned char>(c))) return false;
+        n = n * 10 + (c - '0');
+    }
+    if (n < 1 || n > 65535) return false;
+    out = n;
+    return true;
+}
+
+[[nodiscard]] std::variant<Config, ConfigError> parse_config(const std::string& text) {
+    Config config;
+    bool have_host = false;
+    std::istringstream in(text);
+    std::string raw;
+    int line = 0;
+    while (std::getline(in, raw)) {
+        ++line;
+        std::string l = trim(raw);
+        if (l.empty() || l[0] == '#') continue;
+        std::size_t eq = l.find('=');
+        if (eq == std::string::npos) return ConfigError{line, "expected key = value"};
+        std::string key = trim(l.substr(0, eq));
+        std::string value = trim(l.substr(eq + 1));
+        if (key == "host") {
+            if (value.empty()) return ConfigError{line, "empty host"};
+            config.host = value;
+            have_host = true;
+        } else if (key == "port") {
+            if (!parse_port(value, config.port)) return ConfigError{line, "bad port"};
+        } else if (key == "verbose") {
+            if (value == "true") config.verbose = true;
+            else if (value == "false") config.verbose = false;
+            else return ConfigError{line, "bad verbose"};
+        } else {
+            return ConfigError{line, "unknown key: " + key};
+        }
+    }
+    if (!have_host) return ConfigError{0, "missing host"};
+    return config;
+}
+--- hint
+Read line by line with `std::getline`, counting lines as you go. Trim, skip blanks and `#` comments, then split at the first `=`.
+--- hint
+Return a `ConfigError{line, "…"}` the moment something is wrong; the `std::variant` return type converts it for you.
+--- hint
+Parse the port by hand: only digits, at most five of them, and then check the range 1–65535.
+--- check test | A full, valid config
+[] { auto r = parse_config("# server\nhost = example.org\nport=8080\n\nverbose = true\n"); auto* c = std::get_if<Config>(&r); return c && c->host == "example.org" && c->port == 8080 && c->verbose; }()
+--- check test | Defaults apply
+[] { auto r = parse_config("host=localhost"); auto* c = std::get_if<Config>(&r); return c && c->port == 80 && !c->verbose; }()
+--- check test | A line with no = names its line
+[] { auto r = parse_config("host = a\nport 80\n"); auto* e = std::get_if<ConfigError>(&r); return e && e->line == 2 && e->message == "expected key = value"; }()
+--- check test | Unknown keys are reported by name
+[] { auto r = parse_config("\n\ncolour = red\nhost = a\n"); auto* e = std::get_if<ConfigError>(&r); return e && e->line == 3 && e->message == "unknown key: colour"; }()
+--- check test | Bad ports: zero, too big, not a number
+[] { auto a = parse_config("host=a\nport=0"); auto b = parse_config("host=a\nport=70000"); auto c = parse_config("port=8o\nhost=a"); auto* ea = std::get_if<ConfigError>(&a); auto* eb = std::get_if<ConfigError>(&b); auto* ec = std::get_if<ConfigError>(&c); return ea && ea->message == "bad port" && eb && eb->line == 2 && ec && ec->line == 1 && ec->message == "bad port"; }()
+--- check test | Bad verbose and empty host
+[] { auto a = parse_config("host=a\nverbose=yes"); auto b = parse_config("host =   "); auto* ea = std::get_if<ConfigError>(&a); auto* eb = std::get_if<ConfigError>(&b); return ea && ea->message == "bad verbose" && eb && eb->line == 1 && eb->message == "empty host"; }()
+--- check test | No host at all
+[] { auto r = parse_config("port = 22\n# no host\n"); auto* e = std::get_if<ConfigError>(&r); return e && e->line == 0 && e->message == "missing host"; }()
+
+=== cpp3-14 | Custom comparators and sorting
+--- teach
+`std::sort` orders with `<` unless you give it a **comparator**: a function `comp(a, b)` that returns true when `a` must come **before** `b`.
+
+Sorting by several keys is where people get tangled. The clean way is to compare **tuples** — `std::tie` builds a tuple of references, and tuples compare left to right, like words in a dictionary:
+
+```cpp
+std::sort(people.begin(), people.end(), [](const Person& a, const Person& b) {
+    return std::tie(a.last, a.first) < std::tie(b.last, b.first);
+});
+```
+
+To sort one key **descending**, swap `a` and `b` for that key only: `std::tie(a.dept, b.salary, a.name) < std::tie(b.dept, a.salary, b.name)` means dept ascending, salary descending, name ascending.
+
+A comparator must be a **strict weak ordering**, which in practice means: it behaves like `<`, never like `<=`. `comp(x, x)` must be false. Break that rule — say with `a.salary <= b.salary` — and `std::sort` has undefined behaviour: wrong orders, or reading outside the vector.
+
+Related tools:
+
+- **`std::stable_sort`** keeps equal elements in their original order. Sort by length with it and words of the same length stay in input order.
+- **`std::partial_sort`** puts only the first `k` in order — cheaper when you want a top 10 out of a million.
+- **Containers take comparators too**: `std::set<std::string, ByLength>` orders by your rule — and treats two strings of equal length as the *same* key, because "neither comes before the other" means equal. Choose comparators for containers with care.
+--- task
+With the starter's `Employee`, write — no `main`:
+
+- `void sort_staff(std::vector<Employee>& staff)` — by `dept` A→Z, then `salary` highest first, then `name` A→Z.
+- `std::vector<std::string> top_earners(std::vector<Employee> staff, std::size_t k)` — the names of the `k` highest-paid (ties by name A→Z), highest first; all of them if `k` is larger than the list.
+- `std::vector<std::string> by_length(std::vector<std::string> words)` — shortest first; words of equal length keep their original order.
+--- starter
+#include <algorithm>
+#include <string>
+#include <tuple>
+#include <vector>
+
+struct Employee {
+    std::string name;
+    std::string dept;
+    int salary;
+};
+
+void sort_staff(std::vector<Employee>& staff) {
+}
+
+std::vector<std::string> top_earners(std::vector<Employee> staff, std::size_t k) {
+    return {};
+}
+
+std::vector<std::string> by_length(std::vector<std::string> words) {
+    std::sort(words.begin(), words.end(), [](const std::string& a, const std::string& b) {
+        return a.size() <= b.size();
+    });
+    return words;
+}
+--- solution
+#include <algorithm>
+#include <string>
+#include <tuple>
+#include <vector>
+
+struct Employee {
+    std::string name;
+    std::string dept;
+    int salary;
+};
+
+void sort_staff(std::vector<Employee>& staff) {
+    std::sort(staff.begin(), staff.end(), [](const Employee& a, const Employee& b) {
+        return std::tie(a.dept, b.salary, a.name) < std::tie(b.dept, a.salary, b.name);
+    });
+}
+
+std::vector<std::string> top_earners(std::vector<Employee> staff, std::size_t k) {
+    k = std::min(k, staff.size());
+    std::partial_sort(staff.begin(), staff.begin() + k, staff.end(), [](const Employee& a, const Employee& b) {
+        return std::tie(b.salary, a.name) < std::tie(a.salary, b.name);
+    });
+    std::vector<std::string> names;
+    for (std::size_t i = 0; i < k; ++i) names.push_back(staff[i].name);
+    return names;
+}
+
+std::vector<std::string> by_length(std::vector<std::string> words) {
+    std::stable_sort(words.begin(), words.end(), [](const std::string& a, const std::string& b) {
+        return a.size() < b.size();
+    });
+    return words;
+}
+--- hint
+`std::tie(a.dept, b.salary, a.name) < std::tie(b.dept, a.salary, b.name)` — the swapped middle key sorts salary descending.
+--- hint
+For `top_earners`, clamp `k` to the size, then `std::partial_sort(begin, begin + k, end, comp)` and take the first `k` names.
+--- hint
+`by_length` has two problems: `<=` is not a valid comparator, and plain `std::sort` does not keep equal elements in order.
+--- check test | sort_staff orders by dept, salary down, name
+[] { std::vector<Employee> s{{"cy", "ops", 50}, {"al", "dev", 70}, {"bo", "dev", 90}, {"ab", "dev", 70}, {"di", "ops", 60}}; sort_staff(s); std::vector<std::string> names; for (const auto& e : s) names.push_back(e.name); return names == std::vector<std::string>{"bo", "ab", "al", "di", "cy"}; }()
+--- check case | top_earners, ties by name
+top_earners({{"cy", "ops", 50}, {"al", "dev", 70}, {"bo", "dev", 90}, {"ab", "dev", 70}}, 3)
+=> std::vector<std::string>{"bo", "ab", "al"}
+--- check case | top_earners with k past the end
+top_earners({{"x", "a", 1}, {"y", "a", 2}}, 10)
+=> std::vector<std::string>{"y", "x"}
+--- check case | by_length is stable
+by_length({"pear", "fig", "kiwi", "apple", "yam", "plum"})
+=> std::vector<std::string>{"fig", "yam", "pear", "kiwi", "plum", "apple"}
+
+=== cpp3-15 | Problem solving: binary search on the answer
+--- teach
+Binary search finds things in **sorted** data in O(log n): look at the middle, throw away the half that cannot contain the answer, repeat. A million items take about 20 steps.
+
+The standard library has it ready:
+
+```cpp
+std::vector<int> v = {1, 3, 3, 3, 8};
+std::lower_bound(v.begin(), v.end(), 3);   // first element >= 3  (index 1)
+std::upper_bound(v.begin(), v.end(), 3);   // first element >  3  (index 4)
+// how many 3s: upper - lower = 3
+```
+
+The bigger idea is **binary search on the answer**. Many problems ask for "the smallest X that works", where checking whether a given X works is easy, and the answers have a shape: every X below some point fails, every X from there on works.
+
+Example: packages must ship **in order** within D days; each day's load cannot exceed the ship's capacity. What is the smallest capacity that makes it?
+
+- Checking a capacity is easy: fill each day greedily until the next package would not fit, and count the days. O(n).
+- A capacity below the heaviest package never works; the sum of all packages always works in one day.
+- If capacity C works, C + 1 works too. So "works?" goes fail, fail, …, fail, **work**, work, work.
+
+Brute force tries every capacity from the heaviest up: with 200,000 packages of 10,000 kg that can be a billion capacities × 200,000 packages. Binary search over `[heaviest, total]` needs about 31 checks.
+
+```
+lo = heaviest, hi = total
+while lo < hi:
+    mid = lo + (hi - lo) / 2
+    if works(mid): hi = mid       # mid might be the answer
+    else:          lo = mid + 1   # mid is too small
+answer = lo
+```
+
+Watch the types: 200,000 × 10,000 is two billion, past `int`. Use `long long` for sums.
+--- task
+Write two functions. No `main`.
+
+- `long long min_capacity(const std::vector<int>& weights, int days)` — the smallest ship capacity that delivers every package, in order, within `days` days. Weights are positive; `days >= 1`; there is at least one package.
+- `int count_in_range(const std::vector<int>& sorted, int lo, int hi)` — how many values of the sorted vector lie in `[lo, hi]` (0 if `lo > hi`).
+
+Both are checked on big inputs, so they need binary search.
+--- starter
+#include <algorithm>
+#include <numeric>
+#include <vector>
+
+long long min_capacity(const std::vector<int>& weights, int days) {
+    long long cap = *std::max_element(weights.begin(), weights.end());
+    while (true) {
+        int used = 1;
+        long long load = 0;
+        for (int w : weights) {
+            if (load + w > cap) {
+                ++used;
+                load = 0;
+            }
+            load += w;
+        }
+        if (used <= days) return cap;
+        ++cap;
+    }
+}
+
+int count_in_range(const std::vector<int>& sorted, int lo, int hi) {
+    int n = 0;
+    for (int x : sorted) {
+        if (x >= lo && x <= hi) ++n;
+    }
+    return n;
+}
+--- solution
+#include <algorithm>
+#include <numeric>
+#include <vector>
+
+bool fits(const std::vector<int>& weights, int days, long long cap) {
+    int used = 1;
+    long long load = 0;
+    for (int w : weights) {
+        if (load + w > cap) {
+            ++used;
+            load = 0;
+        }
+        load += w;
+    }
+    return used <= days;
+}
+
+long long min_capacity(const std::vector<int>& weights, int days) {
+    long long lo = *std::max_element(weights.begin(), weights.end());
+    long long hi = std::accumulate(weights.begin(), weights.end(), 0LL);
+    while (lo < hi) {
+        long long mid = lo + (hi - lo) / 2;
+        if (fits(weights, days, mid)) hi = mid;
+        else lo = mid + 1;
+    }
+    return lo;
+}
+
+int count_in_range(const std::vector<int>& sorted, int lo, int hi) {
+    if (lo > hi) return 0;
+    auto first = std::lower_bound(sorted.begin(), sorted.end(), lo);
+    auto last = std::upper_bound(sorted.begin(), sorted.end(), hi);
+    return static_cast<int>(last - first);
+}
+--- hint
+Keep the starter's inner loop as a `fits(weights, days, cap)` check; replace the `++cap` search with a binary search between the heaviest package and the total.
+--- hint
+In the binary search, when `mid` fits keep it (`hi = mid`); when it does not, `lo = mid + 1`. Stop when `lo == hi`.
+--- hint
+`count_in_range` is `upper_bound(hi) - lower_bound(lo)`.
+--- check case | The classic: ten packages in five days
+min_capacity({1, 2, 3, 4, 5, 6, 7, 8, 9, 10}, 5)
+=> 15LL
+--- check case | One day means the total
+min_capacity({3, 2, 2, 4, 1, 4}, 1)
+=> 16LL
+--- check case | More days than packages means the heaviest
+min_capacity({1, 2, 3, 1, 1}, 10)
+=> 3LL
+--- check test | 200,000 heavy packages in two days
+[] { std::vector<int> w(200000, 10000); return min_capacity(w, 2) == 1000000000LL; }()
+--- check case | count_in_range counts both ends
+count_in_range({1, 3, 3, 3, 8, 9}, 3, 8)
+=> 4
+--- check test | count_in_range with nothing inside, and lo > hi
+count_in_range({1, 5, 9}, 6, 8) == 0 && count_in_range({1, 5, 9}, 9, 1) == 0 && count_in_range({}, 0, 10) == 0
+--- check test | 100,000 queries over a million values
+[] { std::vector<int> v(1000000); for (int i = 0; i < 1000000; ++i) v[i] = i / 2; long long total = 0; for (int q = 0; q < 100000; ++q) total += count_in_range(v, q, q + 9); return total == 2000000; }()
+
+=== cpp3-16 | Design: composition over inheritance
+--- teach
+Inheritance says "**is a**": a `Circle` is a `Shape`. It is tempting to use it for "**has**" or "**can do**" too — and that is where designs rot.
+
+Suppose robots can fly or swim. With inheritance you write `FlyingRobot` and `SwimmingRobot`. Then someone needs a robot that does both: `FlyingSwimmingRobot`, copying code from the other two. Add driving and you need `DrivingRobot`, `FlyingDrivingRobot`, `SwimmingDrivingRobot`, `FlyingSwimmingDrivingRobot`… Each new ability **doubles** the number of classes, and every copy is a chance for the copies to drift apart.
+
+**Composition** says "**has**": a robot *has* a list of abilities. Each ability is a small object behind an interface, and a robot is assembled from parts at run time:
+
+```cpp
+class Ability {
+public:
+    virtual ~Ability() = default;
+    virtual std::string verb() const = 0;
+};
+
+class Robot {
+public:
+    Robot& add(std::unique_ptr<Ability> a) {
+        abilities_.push_back(std::move(a));
+        return *this;               // returning *this lets calls chain
+    }
+private:
+    std::vector<std::unique_ptr<Ability>> abilities_;
+};
+
+Robot r("Otto");
+r.add(std::make_unique<Fly>()).add(std::make_unique<Swim>());
+```
+
+Now three abilities are three small classes, and any combination is free. Inheritance has not gone away — it is used for what it is good at, a narrow **interface** (`Ability`) with interchangeable implementations. What went away is inheritance used to **share code** between concrete classes.
+
+A rule of thumb: inherit to be *used as* the base (polymorphism); compose to *reuse* behaviour. When you catch yourself naming a class after a combination of features, that is the signal.
+
+The starter uses two things you may not have met. `protected` members can be used by derived classes but not by outside code. `using Robot::Robot;` lets a derived class reuse its base's constructors. Neither survives the redesign.
+--- task
+Replace the starter's class hierarchy with composition. No `main`.
+
+- `class Ability` — an interface with `virtual std::string verb() const = 0;` and a virtual destructor.
+- `Fly`, `Swim` and `Drive` — their verbs are `"flies"`, `"swims"` and `"drives"`.
+- `class Robot` — `explicit Robot(std::string name)`; `Robot& add(std::unique_ptr<Ability> ability)` (returns `*this`); `std::size_t ability_count() const`; `std::string act() const` returning `"Name: flies, swims"` with the verbs in the order added, or `"Name: idles"` with none.
+
+No class may derive from `Robot`.
+--- starter
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
+
+class Robot {
+public:
+    explicit Robot(std::string name) : name_(std::move(name)) {}
+    virtual ~Robot() = default;
+    virtual std::string act() const { return name_ + ": idles"; }
+protected:
+    std::string name_;
+};
+
+class FlyingRobot : public Robot {
+public:
+    using Robot::Robot;
+    std::string act() const override { return name_ + ": flies"; }
+};
+
+class SwimmingRobot : public Robot {
+public:
+    using Robot::Robot;
+    std::string act() const override { return name_ + ": swims"; }
+};
+
+class FlyingSwimmingRobot : public Robot {
+public:
+    using Robot::Robot;
+    std::string act() const override { return name_ + ": flies, swims"; }
+};
+--- solution
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
+
+class Ability {
+public:
+    virtual ~Ability() = default;
+    virtual std::string verb() const = 0;
+};
+
+class Fly : public Ability {
+public:
+    std::string verb() const override { return "flies"; }
+};
+
+class Swim : public Ability {
+public:
+    std::string verb() const override { return "swims"; }
+};
+
+class Drive : public Ability {
+public:
+    std::string verb() const override { return "drives"; }
+};
+
+class Robot {
+public:
+    explicit Robot(std::string name) : name_(std::move(name)) {}
+
+    Robot& add(std::unique_ptr<Ability> ability) {
+        abilities_.push_back(std::move(ability));
+        return *this;
+    }
+
+    std::size_t ability_count() const { return abilities_.size(); }
+
+    std::string act() const {
+        if (abilities_.empty()) return name_ + ": idles";
+        std::string out = name_ + ": ";
+        for (std::size_t i = 0; i < abilities_.size(); ++i) {
+            if (i > 0) out += ", ";
+            out += abilities_[i]->verb();
+        }
+        return out;
+    }
+
+private:
+    std::string name_;
+    std::vector<std::unique_ptr<Ability>> abilities_;
+};
+--- hint
+`Robot` stops being a base class: it holds `std::vector<std::unique_ptr<Ability>> abilities_;`.
+--- hint
+`add` moves the pointer into the vector and returns `*this`, so `r.add(…).add(…)` chains.
+--- hint
+`act` joins each ability's `verb()` with `", "` after `"Name: "`.
+--- check case | A robot with no abilities idles
+Robot("Idle").act()
+=> "Idle: idles"
+--- check case | Abilities combine in the order added
+[] { Robot r("Otto"); r.add(std::make_unique<Fly>()).add(std::make_unique<Swim>()); return r.act(); }()
+=> "Otto: flies, swims"
+--- check test | Any combination, with no new classes
+[] { Robot r("Tank"); r.add(std::make_unique<Drive>()).add(std::make_unique<Swim>()).add(std::make_unique<Fly>()); return r.act() == "Tank: drives, swims, flies" && r.ability_count() == 3; }()
+--- check test | Your own ability plugs in
+[] { struct Dig : Ability { std::string verb() const override { return "digs"; } }; Robot r("Mole"); r.add(std::make_unique<Dig>()); return r.act() == "Mole: digs"; }()
+--- check source absent | Nothing derives from Robot
+\b(class|struct)\s+\w+\s*(final\s*)?:[^{;]*\bRobot\b
