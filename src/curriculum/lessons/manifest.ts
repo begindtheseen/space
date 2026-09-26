@@ -1436,7 +1436,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-the-build-pipeline",
       "title": "From source to executable: the four build stages",
-      "minutes": 18,
+      "minutes": 21,
       "covers": [
         "Preprocess, compile, assemble, link: what each stage consumes and emits",
         "g++ and clang++ invocation; -Wall -Wextra -Wpedantic -Werror; -g; -O0 to -O3; -std=c++20"
@@ -2213,7 +2213,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-inheritance-composition-protocols",
       "title": "Inheritance, composition and Protocols",
-      "minutes": 16,
+      "minutes": 20,
       "covers": [
         "Inheritance vs composition; duck typing and Protocols"
       ],
@@ -2222,7 +2222,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-context-managers",
       "title": "Context managers: release on every path",
-      "minutes": 15,
+      "minutes": 18,
       "covers": [
         "Context managers: with, __enter__/__exit__, contextlib"
       ],
@@ -2231,7 +2231,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-decorators",
       "title": "Decorators, wraps and caching",
-      "minutes": 15,
+      "minutes": 21,
       "covers": [
         "Decorators, functools.wraps, functools.lru_cache"
       ],
@@ -2240,7 +2240,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-type-annotations-and-mypy",
       "title": "Type annotations and mypy",
-      "minutes": 17,
+      "minutes": 22,
       "covers": [
         "Type annotations, Optional, Sequence, npt.NDArray, and mypy"
       ],
@@ -2249,7 +2249,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-logging",
       "title": "Logging instead of print",
-      "minutes": 15,
+      "minutes": 20,
       "covers": [
         "logging instead of print; levels and handlers"
       ],
@@ -2258,7 +2258,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-argparse",
       "title": "Command-line tools with argparse",
-      "minutes": 15,
+      "minutes": 20,
       "covers": [
         "argparse for command-line tools"
       ],
@@ -2267,7 +2267,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l13-package-layout",
       "title": "Package layout and relative imports",
-      "minutes": 17,
+      "minutes": 20,
       "covers": [
         "Package layout: src/ layout, __init__.py, relative imports"
       ],
