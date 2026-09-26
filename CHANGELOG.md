@@ -40,13 +40,18 @@ Every lesson is checked in the real runtimes before it ships: its starter
 needs work, and its solution passes. C++ lessons always use the in-app
 compiler, the one they were checked with.
 
-**Read aloud sounds like a person.** Lessons are read by a natural neural
-voice (Kokoro) instead of the system synthesiser, which on many devices still
-sounds like a robot. It runs on your machine, the same voice everywhere: six
-voices to choose from, American and British. The first time, it downloads once
-(about 92 MB, with progress shown) and then works offline; your machine's own
-voices stay in the picker, and are used automatically if the natural voice
-cannot load.
+**Read aloud sounds like a person, and reads fluently.** Lessons are read by
+a natural neural voice (Kokoro) instead of the system synthesiser, which on
+many devices still sounds like a robot. It runs on your machine — on the GPU
+where there is one, many times faster than it speaks, otherwise on the
+processor — the same voice everywhere: six voices, American and British. It
+reads whole sentences, never broken at a comma, with a reader's pause between
+sentences and a longer one between paragraphs, and it waits just long enough
+before the first word, if it needs to, that it never has to stop mid-lesson.
+The first time, it downloads once (about 92 MB, with progress shown) and then
+works offline, and what it has read is kept, so a lesson heard again plays at
+once. Your machine's own voices stay in the picker, and are used
+automatically if the natural voice cannot load.
 
 **C++ works on iPhone and iPad.** An iPhone or iPad cannot run the 105 MB C++
 compiler inside a browser, so C++ never compiled there in the web app. Now it
