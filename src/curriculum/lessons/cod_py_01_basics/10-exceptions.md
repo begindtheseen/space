@@ -1,18 +1,22 @@
 ---
 id: l10-exceptions
 title: Exceptions: raising, catching and designing failure
-minutes: 16
+minutes: 20
 covers:
   - Exceptions: try/except/else/finally, raising, custom exception types
 ---
 
-Every error you have seen in this module so far has been an *exception*: `IndexError`, `KeyError`, `ValueError`, `TypeError`, `UnboundLocalError`, `ModuleNotFoundError`. An exception is an object describing something that went wrong, raised at the point of the problem and travelling up through the callers until something catches it or the program stops.
+Picture a worker on an assembly line who finds a cracked part. She cannot fix it herself, so she stops and hands the problem to her supervisor. If the supervisor knows what to do, the line keeps going. If not, the supervisor passes it to the manager, and so on up. If nobody at all knows what to do, the whole factory stops and someone writes a report saying exactly where the crack was found.
 
-The default — stop the program and print a traceback — is almost always the right behaviour, and this is worth insisting on before any syntax for suppressing it. A script that crashes on a corrupt file tells you the file is corrupt. A script that catches the error and carries on tells you nothing, and the number it prints at the end looks exactly like a number from a good run. For flight-adjacent work the bias should be firmly towards failing loudly: the expensive failure is not the one that stopped, it is the one that produced a plausible answer.
+Python works the same way. Every error you have seen in this module so far — `IndexError`, `KeyError`, `ValueError`, `TypeError`, `UnboundLocalError`, `ModuleNotFoundError` — was an **exception**: an object that describes something that went wrong. It is **raised** (created and sent on its way) at the exact spot of the problem. It then travels up through the functions that called that spot, until one of them **catches** it (handles it) or the program stops and prints a report.
 
-So the question this lesson answers is not "how do I stop the crashes" but "which failures do I *expect*, what should happen for each, and how do I report the rest". You will meet handling (`try`/`except`/`else`/`finally`), raising (`raise`), and defining exception types of your own so that a caller can tell your errors apart from the interpreter's.
+That default — stop and print the report — is almost always the right behavior. It is worth saying that before learning any way to switch it off. A script that crashes on a corrupt file tells you the file is corrupt. A script that catches the error and carries on tells you nothing, and the number it prints at the end looks exactly like a number from a good run. In work near flight hardware, lean hard towards **failing loudly**. The expensive failure is not the one that stopped. It is the one that produced a believable answer.
+
+So this lesson does not answer "how do I stop the crashes". It answers three better questions. Which failures do I *expect*? What should happen for each one? And how do I report the rest? You will meet handling (`try`, `except`, `else`, `finally`), raising (`raise`), and making exception types of your own, so that a caller can tell your errors apart from Python's.
 
 ## Reading a traceback
+
+When nobody catches an exception, Python prints a **[[traceback|call-stack]]** — a list of every function call that was in progress when the error happened. Here is a small program that fails on purpose:
 
 ```python
 # parse_chain.py
@@ -44,15 +48,19 @@ python3 parse_chain.py
 # ValueError: could not convert string to float: '9.81 m/s^2'
 ```
 
-Read it from the bottom. The last line is the exception type and its message, and it is the answer to "what went wrong". Above it, in order, are the *frames*: the innermost call last. `to_float` was called by `parse_row`, which was called by the top level of the file at line 11. The `^^^^` markers under each line point at the exact expression, which Python 3.11 added and which saves real time on a line with four function calls in it.
+Read it from the bottom. The last line is the exception's type, `ValueError`, and its message. That line answers "what went wrong".
 
-The frame you usually want is the deepest one *in your own code*. When the bottom frame is inside a library, walk up until you find the line you wrote: that is where the bad value came from.
+Above it are the **frames** — one block per function call that was still running. The innermost call is last. So, reading upwards: `to_float` failed at line 3. It had been called by `parse_row` at line 7. And `parse_row` had been called by the top level of the file, `<module>`, at line 11.
 
-Note also that the first line of output, `9.81`, came from a successful call. Everything before the failure had already happened, which is the point lesson 1 made about errors of meaning.
+The **[[`^^^^` markers|caret-markers]]** under each line point at the exact piece of the line that was running. On a line with four function calls in it, that saves real time.
+
+The frame you usually want is the deepest one *in your own code*. When the bottom frame is inside a library, walk up until you reach a line you wrote. That is where the bad value came from.
+
+Notice the first line of output, `9.81`. It came from a call that worked. Everything before the failure had already happened, which is the point lesson 1 made about errors of meaning: they are found only when the line runs.
 
 ## try and except
 
-Wrap the risky operation, and name the exception you expect:
+To handle an error you expect, put the risky line inside a `try` block, and name the exception you expect in an `except` clause:
 
 ```python
 # parse_one.py
@@ -73,9 +81,11 @@ python3 parse_one.py
 # None
 ```
 
-`as e` binds the exception object, whose `str` is the message and whose type you can get with `type(e).__name__`. If no exception occurs, the `except` block is skipped entirely.
+Read `except ValueError as e:` aloud as "if a ValueError happens, call it `e` and do this". The name `e` is now the exception object. Printing it gives the message. `type(e).__name__` gives the name of its type as a string.
 
-Several `except` clauses can follow one `try`, and the first matching one runs. A tuple catches several types at once:
+If no exception happens inside `try`, the `except` block is skipped entirely.
+
+Several `except` clauses can follow one `try`. Python checks them from the top, and the first one that matches runs. To catch several types in one clause, list them in a tuple:
 
 ```python
 # two_types.py
@@ -87,9 +97,11 @@ for text in ("9.81", None):
         # TypeError - float() argument must be a string or a real number, not 'NoneType'
 ```
 
-Catching a type also catches its subclasses, because exceptions form a hierarchy: `ZeroDivisionError` is a kind of `ArithmeticError`, which is a kind of `Exception`, which is a kind of `BaseException`. Catching `Exception` therefore catches almost everything — which is the subject of the next section.
+Catching a type also catches every type below it, because exceptions form a family tree — a **[[hierarchy|exception-tree]]**. `ZeroDivisionError` is a kind of `ArithmeticError`. `ArithmeticError` is a kind of `Exception`. And `Exception` is a kind of `BaseException`, the root of the whole tree. So catching `Exception` catches almost everything. That is the subject of the next section.
 
 ## Catch what you expect, not everything
+
+A `try` with a bare `except:` — no type named at all — catches every exception there is. Here is what that does:
 
 ```python
 # bare_except.py
@@ -110,9 +122,13 @@ except:
     print("a bare except swallowed sys.exit")   # a bare except swallowed sys.exit
 ```
 
-Two disasters in nine lines. The first `try` was meant to guard against bad data; what it actually caught was a `NameError` from a misspelled variable, and the program now reports a total of zero. The bug is invisible: no traceback, no warning, a plausible number. The second shows that a bare `except:` also catches `SystemExit` — and `KeyboardInterrupt`, so a program with a bare except inside a loop cannot be stopped with ctrl-C.
+That is two disasters in nine lines.
 
-The rule is to name the exception. If you genuinely need a catch-all — a long batch job that must survive one bad file — use `except Exception`, which leaves `KeyboardInterrupt` and `SystemExit` alone, and always log what you caught:
+The first `try` was meant to guard against bad data. What it actually caught was a `NameError` from a misspelled variable, `sampels`. The program now reports a total of zero. The bug is invisible: no traceback, no warning, a believable number.
+
+The second shows that a bare `except:` also catches **[[`SystemExit`|sys-exit]]**, the exception that `sys.exit` uses to end a program. It catches `KeyboardInterrupt` too — the exception Ctrl-C raises. So a program with a bare `except:` inside a loop cannot be stopped with Ctrl-C.
+
+The rule is: name the exception. Sometimes you truly need a catch-all, such as a long batch job that must survive one bad file. Then write `except Exception`, which leaves `KeyboardInterrupt` and `SystemExit` alone, and always record what you caught:
 
 ```python
 # exception_vs_bare.py
@@ -126,7 +142,7 @@ except SystemExit as e:
     print("SystemExit code", e.code)   # SystemExit code 1
 ```
 
-`SystemExit` derives from `BaseException` rather than `Exception`, which is exactly why `except Exception` does not swallow it.
+`SystemExit` hangs directly off `BaseException`, not off `Exception`. That is exactly why `except Exception` lets it pass.
 
 ::: key
 Catch a specific exception type. A bare `except:` also swallows `KeyboardInterrupt`, `SystemExit` and genuine programming errors such as `NameError`, turning a crash you could have fixed into silently wrong numbers. Where a catch-all is truly needed, `except Exception` at least leaves the interpreter's own control signals alone.
@@ -134,7 +150,7 @@ Catch a specific exception type. A bare `except:` also swallows `KeyboardInterru
 
 ## else and finally
 
-The full statement has four parts:
+A `try` statement can have four parts. Think of a hospital check-up: *try* the test; *except* if it shows a problem, treat it; *else*, if all was well, carry on with your day; and *finally*, whatever happened, put your coat back on.
 
 ```python
 # four_parts.py
@@ -162,9 +178,11 @@ print(divide(1.0, 0.0))
 # 0.0
 ```
 
-`else` runs only when the `try` block raised nothing. Its purpose is to let you keep the `try` block down to the single line that can fail: if `result = a / b` and everything you do with `result` were both inside `try`, an unrelated `ZeroDivisionError` from the second part would be caught by a handler meant for the first.
+`else` runs only when the `try` block raised nothing. Its job is to let you keep the `try` block down to the one line that can fail. Suppose `result = a / b` *and* everything you do with `result` were all inside `try`. Then an unrelated `ZeroDivisionError` from the later lines would be caught by a handler that was meant only for the first one. It would be treated as the wrong problem.
 
-`finally` always runs — after success, after a handled exception, after an unhandled one on its way out, and even after a `return`, as the output above shows: `finally ran` is printed before the returned value reaches `print`. That makes it the place for cleanup that must happen regardless: closing a file, releasing a lock, restoring a setting. The next lesson shows the `with` statement, which is a shorter way to say the same thing for files.
+`finally` always runs. It runs after success. It runs after a handled exception. It runs when an unhandled exception passes through on its way up. It even runs after a `return`. Look at the output above: `finally ran` is printed *before* the returned value reaches `print`.
+
+That makes `finally` the place for **cleanup** — work that must happen no matter what: closing a file, releasing a lock, putting a setting back. The next lesson shows the `with` statement, a shorter way to say the same thing for files.
 
 ::: key
 `else` runs only if the `try` block raised nothing, which lets you keep the risky line alone inside `try`. `finally` always runs — on success, on exception and on `return` — and is where cleanup belongs.
@@ -172,7 +190,7 @@ print(divide(1.0, 0.0))
 
 ## Raising
 
-`raise` creates and throws an exception. Use it when your function is given something it cannot work with:
+So far Python has raised the exceptions. You can raise them too. The `raise` statement creates an exception and sends it up to the caller. Use it when your function is handed something it cannot work with:
 
 ```python
 # raising.py
@@ -191,15 +209,24 @@ except ValueError as e:
     print("rejected:", e)   # rejected: rate must be positive, got 0.0
 ```
 
-Choose the type that fits: `ValueError` for a value of the right type but an unusable value, `TypeError` for the wrong type entirely, `KeyError` for a missing key, `FileNotFoundError` for a missing file. Put the offending value in the message — `got 0.0` is the difference between a five-second fix and a twenty-minute hunt.
+A sanity check on the first line: 40 frames every second means each frame lasts $1/40 = 0.025\,\mathrm{s}$, or 25 milliseconds.
 
-Raising early is not pessimism, it is how a function states its contract. A `frame_period` that returned `math.inf` for a rate of zero would push the problem into whatever used the result, and the traceback would then point at a line that is perfectly correct.
+Choose the type that fits the problem:
 
-Inside an `except` block, a bare `raise` re-raises the exception you just caught, with its original traceback intact — useful when you want to log something and then let the failure continue on its way.
+- `ValueError` — the right type but an unusable value, like a rate of zero;
+- `TypeError` — the wrong type entirely;
+- `KeyError` — a missing dictionary key;
+- `FileNotFoundError` — a missing file.
+
+Put the offending value in the message. `got 0.0` is the difference between a five-second fix and a twenty-minute hunt.
+
+Raising early is not pessimism. It is how a function states its **[[contract|contracts-and-assert]]** — the promise of what it needs and what it gives back. Imagine a `frame_period` that returned `math.inf` (infinity) for a rate of zero instead. The problem would slide into whatever used the result, and the eventual traceback would point at some later line that is perfectly correct.
+
+Inside an `except` block, a bare `raise`, with nothing after it, re-raises the exception you just caught, with its original traceback intact. Use it when you want to note something and then let the failure carry on up. And when you want to turn a low-level error into one that makes sense to your caller, you can **[[raise a new one on top|exception-chaining]]**.
 
 ## Exception types of your own
 
-When a caller needs to distinguish *your* errors from the interpreter's, define a type. The syntax borrows one line from classes, which are the next module's subject; for an exception, this line and a docstring are the whole definition:
+When a caller needs to tell *your* errors apart from Python's, define a type of your own. The syntax borrows one line from **classes**, which are the next module's subject. For an exception, that one line and a docstring are the whole definition:
 
 ```python
 # telemetry_errors.py
@@ -215,10 +242,12 @@ print(issubclass(DropoutError, TelemetryError))   # True
 print(issubclass(DropoutError, Exception))        # True
 ```
 
-`class Name(Exception):` says "a new exception type, which is a kind of `Exception`". Deriving `DropoutError` from `TelemetryError` rather than straight from `Exception` gives callers a choice of precision: `except DropoutError` handles that one case, `except TelemetryError` handles anything this module raises, and both still work if you add a third error type next month. That is why a library normally defines one base error of its own and derives the rest from it.
+Read `class TelemetryError(Exception):` as "a new exception type called `TelemetryError`, which is a kind of `Exception`". The built-in `issubclass(A, B)` asks "is `A` a kind of `B`?", and both answers are `True`.
+
+Why derive `DropoutError` from `TelemetryError` instead of straight from `Exception`? It gives callers a choice of how precise to be. `except DropoutError` handles that one case. `except TelemetryError` handles anything this module raises. And both keep working if you add a third error type next month. That is why a library normally defines one **base error** of its own and derives the rest from it.
 
 ::: example Parsing a column that contains junk
-A telemetry export has a numeric column, and real exports contain blanks and text. The loop must survive them and say how many it skipped.
+A telemetry export has a column of numbers, and real exports contain blanks and text. The loop must survive them and say how many it skipped.
 
 ```python
 # parse_column.py
@@ -247,13 +276,19 @@ python3 parse_column.py
 # 2
 ```
 
-Three decisions are visible. Only `float(r)` is inside the `try`, so the `append` cannot be silently skipped by an unrelated error — that is what `else` is for. The bad value is printed with `!r`, so the empty string shows as `''` rather than as nothing at all. And the count is kept, because "parsed 1,198 of 1,200 rows" is a result and "parsed 1,198 rows" is a mystery.
+Walk through the five rows. `"9.79"` converts, so `else` appends it. `""` fails, so the count goes to 1. `"9.81"` converts. `"bad"` fails, so the count goes to 2. `"-999.0"` converts. Check: 3 kept plus 2 skipped is 5, the number of rows.
 
-What the loop does *not* do is convert `-999.0` — the dropout marker is a perfectly good float, and no exception can tell you it is not a real measurement. Exceptions catch malformed data; only a domain check catches meaningless data.
+Three decisions are visible here.
+
+- Only `float(r)` is inside the `try`. So the `append` cannot be silently skipped by some unrelated error. That is what `else` is for.
+- The bad value is printed with **[[`!r`|bang-r]]**, so the empty string shows as `''` instead of as nothing at all.
+- The count is kept. "Parsed 1,198 of 1,200 rows" is a result. "Parsed 1,198 rows" is a mystery.
+
+What the loop does *not* do is reject `-999.0`. That is a **dropout marker** — a made-up value the recorder writes when a sample is missing — and it is a perfectly good float. No exception can tell you it is not a real measurement. Exceptions catch *malformed* data. Only a check you write about the meaning of the data catches *meaningless* data.
 :::
 
-::: example A record that refuses to be analysed
-Some failures are not the interpreter's to find. If a quarter of the samples are dropouts, the statistics are worthless, and the analysis should say so rather than average what is left.
+::: example A record that refuses to be analyzed
+Some failures are not Python's to find. If a quarter or more of the samples are dropouts, the statistics are worthless. The analysis should say so, not quietly average what is left.
 
 ```python
 # dropout_check.py
@@ -293,9 +328,15 @@ for record in ([9.79, DROPOUT, DROPOUT, 9.80], []):
 # bad record: record is empty
 ```
 
-The first record is exactly at the limit — one dropout in four is 0.25, and the test is `>`, so it passes and returns 0.25. Decide deliberately which way a boundary falls and write the comparison that says it.
+Step through the three records.
 
-The two `except` clauses show why the type hierarchy is worth the extra line. A caller that cares about dropouts specifically catches `DropoutError`; the same caller catches `TelemetryError` for everything else this module can raise, including the empty-record case and any error type added later. Without the custom types, the empty record would have surfaced as a `ZeroDivisionError` from the division — a true statement about the arithmetic that says nothing about the data.
+1. `[9.79, DROPOUT, 9.81, 9.80]` has one dropout in four samples: $1/4 = 0.25$. The test is `fraction > limit`, and $0.25 > 0.25$ is false. So it passes and returns `0.25`. It sits exactly on the boundary. Decide on purpose which side a boundary falls, and write the comparison that says so.
+2. `[9.79, DROPOUT, DROPOUT, 9.80]` has two in four: $2/4 = 0.5$, which is more than $0.25$. So `DropoutError` is raised, and the first `except` prints `unusable: 2 of 4 samples are dropouts`.
+3. `[]` is empty. The `if not samples:` check raises `TelemetryError`. The first `except` does not match — a plain `TelemetryError` is not a `DropoutError` — so the second one does.
+
+The two `except` clauses show why the family tree is worth the extra line. A caller that cares about dropouts in particular catches `DropoutError`. The same caller catches `TelemetryError` for everything else this module can raise, including the empty record and any error type added later.
+
+Without the empty-record check, that empty list would have reached the division and surfaced as a `ZeroDivisionError`. That is a true statement about the arithmetic, and it says nothing at all about the data.
 :::
 
 ## The exceptions you will meet
@@ -313,9 +354,11 @@ The two `except` clauses show why the type hierarchy is worth the extra line. A 
 | `UnboundLocalError` | Reading a local name before it is assigned |
 | `KeyboardInterrupt` | Ctrl-C — derives from `BaseException`, not `Exception` |
 
-::: warning
-Do not use exceptions for ordinary control flow you can test for directly. `if key in limits:` is clearer than catching `KeyError`, and `if not samples:` is clearer than catching `ZeroDivisionError` from the division that follows. Exceptions are for what you cannot cheaply check in advance — the file that was deleted between your check and your open, the line that turned out not to be a number.
+::: warning Do not use exceptions for ordinary decisions
+If you can test for something directly, test for it. `if key in limits:` is clearer than catching `KeyError`. `if not samples:` is clearer than catching the `ZeroDivisionError` from the division that follows. Exceptions are for what you cannot cheaply check in advance — the file that was **[[deleted between your check and your open|check-then-use]]**, the line that turned out not to be a number.
 :::
+
+A real mission shows how much the *policy* for an exception matters, not only the code that raises it: on its first flight, Ariane 5 was lost to **[[an exception nobody planned for|ariane-501]]**.
 
 ## Check yourself
 
@@ -324,7 +367,11 @@ Why does a bare `except:` around `total = sum(sampels)` make a typo harder to fi
 :::
 
 ::: answer
-Because the misspelled name raises `NameError`, which the bare `except` catches along with everything else. The program continues with whatever the handler assigned — zero, typically — and produces output that looks like a result. Without the handler, Python would stop and print a traceback naming `sampels` and the line it is on, which is a complete diagnosis. The handler converted a self-announcing failure into a silent wrong answer. Name the exception you expect — `except ValueError` — and a `NameError` will still stop the program.
+The misspelled name raises `NameError`, and the bare `except` catches that along with everything else. The program then carries on with whatever the handler assigned — zero, typically — and prints output that looks like a result.
+
+Without the handler, Python would stop and print a traceback naming `sampels` and the line it is on. That is a complete diagnosis. The handler turned a failure that announces itself into a silent wrong answer.
+
+The fix: name the exception you expect, such as `except ValueError`. A `NameError` will then still stop the program.
 :::
 
 ::: check
@@ -342,7 +389,9 @@ print(f())
 :::
 
 ::: answer
-`cleanup` first, then `from try`. The `return` inside `try` does not leave the function until the `finally` block has run, so the print inside `finally` happens before the value reaches the caller. This is the property that makes `finally` safe for cleanup: there is no path out of the `try` block — success, exception or return — that skips it.
+`cleanup` first, then `from try`.
+
+The `return` inside `try` does not leave the function until the `finally` block has run. So the `print` inside `finally` happens before the value reaches the caller's `print`. This is the property that makes `finally` safe for cleanup: there is no way out of the `try` block — success, exception or `return` — that skips it.
 :::
 
 ::: check
@@ -363,7 +412,7 @@ print(margin)
 :::
 
 ::: answer
-Separate the two lookups so that each `try` guards one thing, and say which one failed:
+Split the two lookups, so that each `try` guards one thing and says which one failed:
 
 ```python
 # separate_lookups.py
@@ -393,15 +442,21 @@ python3 separate_lookups.py
 # None
 ```
 
-The original cannot tell you which table was missing the key, and the two cases mean quite different things: a missing limit is an incomplete test procedure, a missing peak is a channel that did not record. The last line uses a *conditional expression*, `a if cond else b`, which is an `if` that produces a value.
+The original cannot tell you which table was missing the key, and the two cases mean quite different things. A missing limit is an incomplete test procedure. A missing peak is a channel that did not record.
+
+The last line uses a **conditional expression**, `a if cond else b` — read it as "`a` if the condition holds, otherwise `b`". It is an `if` that produces a value.
 :::
 
 ::: check
-Why define `class DropoutError(TelemetryError)` rather than raising `ValueError` with a good message?
+Why define `class DropoutError(TelemetryError)` instead of raising `ValueError` with a good message?
 :::
 
 ::: answer
-Because a caller can then handle it by type. With `ValueError` the caller must either catch every `ValueError` in the block — including ones from `float()` on an unrelated line — or inspect the message text, which is fragile and breaks the moment you improve the wording. A dedicated type lets one caller catch `DropoutError` specifically, another catch the base `TelemetryError` to mean "anything this module considers a bad record", and a third let it propagate; and adding a new error type derived from the same base does not break any of them.
+Because a caller can then handle it by type.
+
+With `ValueError`, the caller has two bad options. It can catch every `ValueError` in the block — including ones from `float()` on some unrelated line. Or it can read the message text, which is fragile and breaks the moment you improve the wording.
+
+A dedicated type lets one caller catch `DropoutError` alone, another catch the base `TelemetryError` to mean "anything this module considers a bad record", and a third let it pass up untouched. Adding a new error type derived from the same base breaks none of them.
 :::
 
 ::: check
@@ -409,7 +464,7 @@ A batch job processes 500 telemetry files and must not stop because one is corru
 :::
 
 ::: answer
-Loop over the files with a `try` around the processing of one file, catch `Exception` — not a bare `except:` — record the filename and the exception, continue, and report the failures at the end:
+Loop over the files. Put a `try` around the processing of one file. Catch `Exception` — not a bare `except:`. Record the filename and the exception, move on, and report the failures at the end:
 
 ```python
 # batch_sketch.py
@@ -431,7 +486,7 @@ print(len(failures))   # 1
 print(failures[0])     # ('run3.csv', 'ValueError', 'corrupt header')
 ```
 
-The differences from a bare `except:` are that ctrl-C and `sys.exit` still work, and that nothing is silently discarded: every failure is recorded with its type and message, and the run ends by saying how many files it could not process. A batch job that reports "500 files processed" when 40 of them failed is worse than one that crashed on file 3.
+Two things make this different from a bare `except:`. First, Ctrl-C and `sys.exit` still work. Second, nothing is silently thrown away: every failure is recorded with its type and message, and the run ends by saying how many files it could not process. A batch job that reports "500 files processed" when 40 of them failed is worse than one that crashed on file 3.
 :::
 
 ## Summary
@@ -449,4 +504,111 @@ The differences from a bare `except:` are that ctrl-C and `sys.exit` still work,
 | Custom type | `class MyError(Exception):` plus a docstring; derive a family from one base |
 | Choosing | Exceptions for what you cannot cheaply check; `if key in d` for what you can |
 
-The next lesson opens files, which is where exceptions stop being an exercise: the file may not exist, may be unreadable, may be half-written, and every one of those is a specific exception type with a specific right response.
+The next lesson opens files, which is where exceptions stop being an exercise. The file may not exist, may be unreadable, may be half-written — and each of those is a specific exception type with a specific right response.
+
+::: context call-stack The stack of calls
+Every time a function is called, Python puts a new **frame** — that call's local variables and the line it is on — on top of a pile, like plates. When the function returns, its plate comes off. An exception starts on the top plate and works down the pile, one frame at a time, looking for a matching `except`.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 170" font-family="Inter, Arial, sans-serif">
+  <rect x="30" y="20" width="200" height="34" fill="#f2b880" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="130" y="42" font-size="12" text-anchor="middle" fill="#1f2a44">to_float — line 3 (raised here)</text>
+  <rect x="30" y="62" width="200" height="34" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="130" y="84" font-size="12" text-anchor="middle" fill="#1f2a44">parse_row — line 7</text>
+  <rect x="30" y="104" width="200" height="34" fill="#fff" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="130" y="126" font-size="12" text-anchor="middle" fill="#1f2a44">&lt;module&gt; — line 11</text>
+  <line x1="260" y1="36" x2="260" y2="136" stroke="#b4232c" stroke-width="2.5"/>
+  <polygon points="260,146 254,134 266,134" fill="#b4232c"/>
+  <text x="272" y="80" font-size="11" fill="#b4232c">ValueError</text>
+  <text x="272" y="95" font-size="11" fill="#b4232c">travels down</text>
+  <text x="130" y="160" font-size="11" text-anchor="middle" fill="#6c7a93">no except anywhere: program stops</text>
+</svg>
+```
+
+The traceback prints this pile upside down — outermost first, so the frame where things broke lands right above the error line.
+:::
+
+::: context caret-markers Pointing at the exact spot
+The `^^^^` underlines arrived in Python 3.11, from a proposal called PEP 657, "fine-grained error locations in tracebacks". Before that, a traceback named only the line. On a line like `x = f(a) + g(b[i])`, you had to guess which of the calls or the indexing failed.
+
+Python leaves the carets out when they would underline the whole line anyway, so you will not always see them.
+:::
+
+::: context exception-tree The family tree of exceptions
+Every built-in exception has a parent. Catching a parent catches all of its children.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 200" font-family="Inter, Arial, sans-serif">
+  <g font-size="11" fill="#1f2a44">
+    <text x="10" y="20" font-weight="700">BaseException</text>
+    <text x="30" y="40" fill="#b4232c">SystemExit</text>
+    <text x="30" y="58" fill="#b4232c">KeyboardInterrupt</text>
+    <text x="30" y="78" font-weight="700" fill="#1d6fd1">Exception</text>
+    <text x="50" y="98">ArithmeticError</text>
+    <text x="70" y="114">ZeroDivisionError</text>
+    <text x="50" y="134">LookupError</text>
+    <text x="70" y="150">KeyError, IndexError</text>
+    <text x="50" y="170">OSError</text>
+    <text x="70" y="186">FileNotFoundError</text>
+    <text x="220" y="98">ValueError</text>
+    <text x="220" y="114">TypeError</text>
+    <text x="220" y="130">NameError</text>
+    <text x="240" y="146">UnboundLocalError</text>
+  </g>
+  <g stroke="#6c7a93" stroke-width="1">
+    <line x1="18" y1="26" x2="18" y2="74"/><line x1="18" y1="36" x2="28" y2="36"/><line x1="18" y1="54" x2="28" y2="54"/><line x1="18" y1="74" x2="28" y2="74"/>
+    <line x1="38" y1="84" x2="38" y2="166"/><line x1="38" y1="94" x2="48" y2="94"/><line x1="38" y1="130" x2="48" y2="130"/><line x1="38" y1="166" x2="48" y2="166"/>
+    <line x1="38" y1="84" x2="210" y2="84"/><line x1="210" y1="84" x2="210" y2="126"/><line x1="210" y1="94" x2="218" y2="94"/><line x1="210" y1="110" x2="218" y2="110"/><line x1="210" y1="126" x2="218" y2="126"/>
+  </g>
+</svg>
+```
+
+The two red ones sit beside `Exception`, not under it. That one placement is why `except Exception` leaves Ctrl-C and `sys.exit` working.
+:::
+
+::: context sys-exit Leaving is an exception too
+`sys.exit(1)` does not stop the program on the spot. It raises `SystemExit`, carrying the number `1` as its exit code. The exception travels up like any other, so every `finally` on the way still runs its cleanup. When it reaches the top, Python quits and hands the code to the shell — the same number you read with `echo $?` in the shell module, where `0` means success.
+:::
+
+::: context contracts-and-assert Contracts, and why assert is not one
+A function's **preconditions** are what it needs from its caller: here, a positive rate. Checking them at the top and raising is called *guarding*.
+
+You may see `assert rate_hz > 0` used for this. Do not rely on it for real input checks. Running Python with the `-O` (optimize) flag removes every `assert` statement, so the check silently vanishes. `assert` is for tests and for "this can never happen" notes to yourself — the testing tool `pytest` is built on it — not for rejecting bad data.
+:::
+
+::: context exception-chaining Raising on top of another exception
+Sometimes a low-level error means something bigger to your caller. Write `raise NewError("what it means") from e` inside the handler. The traceback then shows both: first the original `ValueError`, then the line "The above exception was the direct cause of the following exception:", then yours. Nothing is hidden, and the reader sees the whole story.
+
+If you raise inside a handler without `from`, Python still keeps both, but links them with "During handling of the above exception, another exception occurred" — which reads like a second accident.
+:::
+
+::: context bang-r What !r does in an f-string
+Inside an f-string, `{r!r}` means "show the `repr` of `r`" — the way you would type it into Python, quotes and all. Plain `{r}` shows the `str`, which for an empty string is nothing. Read `!r` aloud as "bang r". Compare `f"[{r}]"` giving `[]` with `f"[{r!r}]"` giving `['']`. For finding bad data, `repr` is almost always what you want: it also shows stray spaces and tabs as `\t`.
+:::
+
+::: context check-then-use The gap between checking and using
+Checking first and then acting leaves a gap. Another program can change things in between.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 120" font-family="Inter, Arial, sans-serif">
+  <line x1="20" y1="60" x2="340" y2="60" stroke="#1f2a44" stroke-width="2"/>
+  <polygon points="340,60 330,55 330,65" fill="#1f2a44"/>
+  <circle cx="70" cy="60" r="6" fill="#1d6fd1"/>
+  <text x="70" y="40" font-size="11" text-anchor="middle" fill="#1d6fd1">exists()? yes</text>
+  <circle cx="180" cy="60" r="6" fill="#b4232c"/>
+  <text x="180" y="90" font-size="11" text-anchor="middle" fill="#b4232c">other program</text>
+  <text x="180" y="104" font-size="11" text-anchor="middle" fill="#b4232c">deletes the file</text>
+  <circle cx="290" cy="60" r="6" fill="#1d6fd1"/>
+  <text x="290" y="40" font-size="11" text-anchor="middle" fill="#1d6fd1">open() fails</text>
+  <text x="340" y="84" font-size="11" text-anchor="end" fill="#6c7a93">time</text>
+</svg>
+```
+
+Programmers call this a *time-of-check to time-of-use* race. For files, the honest answer is to open the file and catch `FileNotFoundError`. Python's own glossary names the two styles: "look before you leap" (LBYL) and "easier to ask for forgiveness than permission" (EAFP).
+:::
+
+::: context ariane-501 Ariane 501: a handler that did the wrong thing
+On 4 June 1996, the first Ariane 5 broke up about 40 seconds after launch. Software reused from Ariane 4 converted a 64-bit floating-point value, the horizontal bias, into a 16-bit signed integer. Ariane 5 flew a faster trajectory, the number was too big to fit, and the conversion raised an operand error.
+
+That conversion had been left unprotected. The system's policy for any such exception was to shut the inertial reference computer down — sensible for a hardware fault, fatal for a design error. The backup unit ran the same software and had already shut down the same way. The inquiry board's report is a classic read on deciding, for each failure, what the right response actually is.
+:::
