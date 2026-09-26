@@ -1,7 +1,7 @@
 ---
 id: l07-iterators-and-closures
 title: Iterators and closures
-minutes: 25
+minutes: 22
 covers:
   - Iterators and adapters and their zero-cost nature
   - 'Closures: Fn, FnMut, FnOnce'
@@ -24,7 +24,7 @@ trait Iterator {
 }
 ```
 
-Read it line by line. A **trait** is a list of abilities a type can promise to have — you will meet traits properly in the next module. `type Item;` says every iterator names the kind of thing it hands out; this is an **[[associated type|associated-type]]**. Then `next` takes `&mut self` ("ampersand mut self", a mutable borrow of the iterator, because pressing the button changes where it is in the roll) and returns an `Option` of an item.
+A **trait** is a list of abilities a type promises to have (the next module covers traits properly). `type Item;` says every iterator names the kind of thing it hands out; this is an **[[associated type|associated-type]]**. Then `next` takes `&mut self` ("ampersand mut self", a mutable borrow of the iterator, because pressing the button changes where it is in the roll) and returns an `Option` of an item.
 
 You met `Option` in the last lesson. `Some(item)` means "here is the next ticket". `None` means "the roll is empty". That is the whole protocol.
 
@@ -46,11 +46,11 @@ Some(3.0)
 None
 ```
 
-`burns.iter()` makes an iterator over the array. Each call to `next` moves it along by one. The fourth call has nothing left to give, so it returns `None`.
+Each call to `next` moves along by one; the fourth has nothing left, so it returns `None`.
 
 ### The `for` loop is an iterator in disguise
 
-You have been using iterators since lesson 03 without seeing them. A `for` loop is **[[syntactic sugar|syntactic-sugar]]** for a `while let` that calls `next` until it gets `None`. These two fragments do the same thing:
+A `for` loop is **[[syntactic sugar|syntactic-sugar]]** for a `while let` that calls `next` until it gets `None`. These two fragments do the same thing:
 
 ```rust
 for b in burns.iter() {
@@ -65,7 +65,7 @@ while let Some(b) = it.next() {
 
 ### Three ways to walk a collection
 
-A collection like a `Vec` or an array can give you three kinds of iterator. The difference is what each item is:
+A `Vec` or array gives three kinds of iterator, differing in what each item is:
 
 - `v.iter()` hands out `&T` — a shared borrow of each element. You can look but not change. This is the one you use most.
 - `v.iter_mut()` hands out `&mut T` — a mutable borrow, so you can change each element in place.
@@ -79,11 +79,11 @@ for t in temps_c.iter_mut() {
 // temps_c is now [294.65, 295.15, 292.65], in kelvin
 ```
 
-Who owns what, and why `into_iter` uses the collection up, is the whole subject of the next module. For now, reach for `iter()` unless you need one of the other two.
+Why `into_iter` uses the collection up is the subject of the next module. For now, reach for `iter()`.
 
 ## Adapters and consumers
 
-An **adapter** is a method that takes an iterator and returns a new iterator that does a bit more work. It is a station on the belt. A **consumer** is a method that actually pulls items through and produces a final answer. It is the worker at the end.
+An **adapter** takes an iterator and returns a new one that does a bit more work — a station on the belt. A **consumer** pulls items through and produces a final answer — the worker at the end.
 
 Adapters you will use every week:
 
@@ -108,7 +108,7 @@ A slice also has a handy method, `windows(n)`, which gives you every run of `n` 
 
 ### Adapters are lazy
 
-Here is the rule that surprises people. An adapter on its own does nothing at all. It only builds the belt. Nothing moves until a consumer pulls.
+The surprising rule: an adapter alone does nothing. It only builds the belt; nothing moves until a consumer pulls.
 
 ```rust
 fn main() {
@@ -130,7 +130,7 @@ warning: unused `Map` that must be used
   = note: iterators are lazy and do nothing unless consumed
 ```
 
-Being **lazy** — doing work only when asked — is not a flaw. It lets a chain stop early: `(1..).map(|n| n * n).take(3)` starts from an endless range, yet `collect` gives `[1, 4, 9]` and stops. And since each item travels the whole belt before the next starts, no hidden temporary lists are built between stations. The consumer at the end is [[pulling items through|pull-model]], one at a time.
+Being **lazy** — working only when asked — lets a chain stop early: `(1..).map(|n| n * n).take(3)` starts from an endless range, yet `collect` gives `[1, 4, 9]` and stops. And since each item travels the whole belt before the next starts, no hidden temporary lists are built between stations. The consumer at the end is [[pulling items through|pull-model]], one at a time.
 
 ::: example A descent rate from an altitude log
 A lander's altimeter logs its height above the pad once per second: 1200, 1130, 1062, 9999, 931 and 868 m. The 9999 is a glitch — a bad reading. You want the descent rate, in meters per second, between each pair of good samples.
@@ -200,7 +200,7 @@ Now the rates fall steadily — 70, 68, 65.5, 63 — the way a lander braking wi
 
 ### Collecting results that can fail
 
-`collect` is smarter than it looks. If each item is a `Result`, you can collect into a `Result<Vec<_>, _>`. You get `Ok` with the whole list if every item was `Ok`, or the first `Err` if any failed:
+If each item is a `Result`, you can collect into a `Result<Vec<_>, _>`: `Ok` with the whole list if every item was `Ok`, or the first `Err`:
 
 ```rust
 let good: Result<Vec<f64>, _> = ["1.5", "2.25", "4"].iter().map(|s| s.parse::<f64>()).collect();
@@ -209,15 +209,15 @@ let bad: Result<Vec<f64>, _> = ["1.5", "two", "4"].iter().map(|s| s.parse::<f64>
 // bad  = Err(ParseFloatError { kind: Invalid })
 ```
 
-That is how you would parse a whole column of numbers from a ground-station file, with the error handling of the last lesson built in.
+That is how you parse a whole column of numbers from a ground-station file.
 
 ## Why the chain costs nothing
 
 A reasonable worry: all these stations, closures and `Option`s must cost something. In C, a call through a function pointer for every element is real overhead. In an optimized Rust build, though, two compiler steps make the stations disappear.
 
-The first is **[[monomorphization|monomorphization]]**: turning generic code into a separate, concrete copy for each type it is used with. Every closure in Rust has its own unique type, and `map` is generic over that type. So `v.iter().map(|x| 0.5 * x * x)` is not "map with some function"; it is a brand-new type, a `Map` of a slice iterator over `f64` with this one closure inside. The compiler writes code for exactly that combination, the same way a C++ template is stamped out for each type you use it with.
+The first is **[[monomorphization|monomorphization]]**: turning generic code into a separate, concrete copy for each type it is used with. Every closure in Rust has its own unique type, and `map` is generic over that type. So `v.iter().map(|x| 0.5 * x * x)` is a brand-new type — a `Map` of a slice iterator with this one closure inside — and the compiler writes code for exactly that combination, the way a C++ template is stamped out per type.
 
-The second is **[[inlining|inlining]]**: pasting the body of a small function directly where it is called, instead of jumping to it. Because the compiler knows exactly which closure and which `next` are involved, it pastes them all into one function. What is left is an ordinary loop, and the optimizer treats it like any loop you wrote yourself. Often it does better: a slice iterator knows it cannot run past the end, so the bounds checks an index loop might need are gone.
+The second is **[[inlining|inlining]]**: pasting the body of a small function directly where it is called, instead of jumping to it. Because the compiler knows exactly which closure and which `next` are involved, it pastes them all into one function, leaving an ordinary loop. Often it is better than yours: a slice iterator cannot run past the end, so bounds checks disappear.
 
 ::: key Are Rust iterators actually zero cost?
 In practice yes: adapter chains monomorphise and inline into the same loop a hand-written version would produce, often with bounds checks eliminated. Verify with a benchmark or Compiler Explorer rather than taking it on faith.
@@ -250,7 +250,7 @@ pub fn energy_iter(v: &[f64]) -> f64 {
 }
 ```
 
-`#[inline(never)]` stops the compiler from folding these two into their callers, so each one stays a separate function you can inspect. (`fold(0.0, …)` is used instead of `sum()` so that both versions start from exactly the same `0.0` and the comparison is fair.)
+`#[inline(never)]` keeps each one a separate function you can inspect. (`fold(0.0, …)` is used instead of `sum()` so both start from exactly the same `0.0`.)
 
 **Step 1: read the machine code.** Ask the compiler for **[[assembly|assembly-language]]** with full optimization:
 
@@ -260,7 +260,7 @@ rustc --edition 2024 --crate-type=lib -C opt-level=3 -C codegen-units=1 --emit a
 
 With rustc 1.94.1 on x86-64, each function comes out as 53 instructions. After renaming the internal jump labels, the two bodies are identical, line for line. Neither contains a single call to a panic routine, so the index loop's bounds check on `v[i]` was removed too. Both handle four samples per trip around the loop (the optimizer "unrolled" it), with ten `mulsd` (multiply) and five `addsd` (add) instructions in all.
 
-**Step 2: time it.** A small program calls each function on 10 million samples and prints the time, first in a debug build and then with `--release`:
+**Step 2: time it.** A small program times each function on 10 million samples, in debug and then with `--release`:
 
 ```text
 DEBUG
@@ -292,7 +292,7 @@ Read `|x: f64| gain * x` as "a closure taking x, returning gain times x". The ty
 
 The interesting part is `gain`. It is not a parameter; it lives outside the closure, yet the closure uses it. The closure has **captured** it — packed a reference to it into its own backpack. That is where the name comes from: the function [[closes over|closure-word]] its surroundings.
 
-If you know C++ lambdas, this is the same idea, with one difference. In C++ you write the capture list yourself, `[gain](double x) { return gain * x; }`. In Rust the compiler looks at what the body does with each variable and picks the lightest capture that works: a shared borrow if the closure only reads it, a mutable borrow if it changes it, and taking ownership if it has to give it away.
+A C++ lambda does the same, but you write the capture list yourself: `[gain](double x) { return gain * x; }`. Rust picks the lightest capture that works from what the body does: a shared borrow to read, a mutable borrow to change, ownership to give away.
 
 ### Passing and returning closures
 
@@ -320,7 +320,7 @@ fins   = [3.0, -15.0, 8.0]
 gimbal = [3.0, -5.0, 5.0]
 ```
 
-The keyword **`move`** in front of the pipes tells the closure to take ownership of what it captures instead of borrowing it. It is needed here because `max` belongs to `make_limiter`, which ends as soon as it returns. A borrow of `max` would point at something that no longer exists, so the closure must carry its own copy. Each limiter now carries its own `max`: 15 degrees for the fins, 5 for the engine gimbal.
+The keyword **`move`** in front of the pipes tells the closure to take ownership of what it captures instead of borrowing it. It is needed because `max` belongs to `make_limiter`, which ends as soon as it returns; a borrow would point at nothing (the compiler refuses, and suggests `move`). Each limiter now carries its own `max`: 15 degrees for the fins, 5 for the gimbal.
 
 ## `Fn`, `FnMut` and `FnOnce`
 
@@ -429,7 +429,7 @@ Without running it, say what this prints, and say which methods are adapters and
 
 `filter` and `map` are adapters: each returns a new iterator and does no work on its own. `sum` is the consumer that pulls the items through.
 
-Without `.sum()`, `total` would be an unconsumed iterator. No filtering or squaring would ever happen, and printing it with `{}` would not even compile, because an iterator is not a number and does not know how to display itself.
+Without `.sum()`, `total` would be an unconsumed iterator: no filtering or squaring would ever happen, and printing it with `{}` would not compile, because an iterator is not a number.
 :::
 
 ::: check
@@ -461,9 +461,9 @@ Why does `readings.iter().max()` fail to compile for a slice of `f64`, when it w
 :::
 
 ::: answer
-`max` needs the items to be `Ord`: any two values must have a definite order. Integers have one. Floats do not, because NaN compares as neither smaller, equal nor larger than anything, so `f64` implements only the weaker `PartialOrd`.
+`max` needs `Ord`: a definite order between any two values. Floats lack one because of NaN, so `f64` has only the weaker `PartialOrd`.
 
-Two fixes: `readings.iter().copied().fold(f64::MIN, f64::max)`, which starts below every real reading and keeps the larger at each step; or `readings.iter().copied().max_by(|a, b| a.total_cmp(b))`, which uses a complete ordering that gives NaN a fixed place. `max_by` returns an `Option`, which is `None` for an empty slice.
+Two fixes: `fold(f64::MIN, f64::max)` after `copied()`, which starts below every real reading and keeps the larger at each step; or `max_by(|a, b| a.total_cmp(b))`, which returns an `Option` (`None` for an empty slice).
 :::
 
 ## Summary
