@@ -1790,7 +1790,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-sed",
       "title": "sed — substitution and addressing",
-      "minutes": 19,
+      "minutes": 22,
       "covers": [
         "sed substitution and addressing; awk fields, patterns, BEGIN/END, arrays"
       ],
@@ -1799,7 +1799,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-awk",
       "title": "awk — fields, patterns and arrays",
-      "minutes": 20,
+      "minutes": 21,
       "covers": [
         "sed substitution and addressing; awk fields, patterns, BEGIN/END, arrays"
       ],
@@ -1808,7 +1808,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-jq-and-tabular-text",
       "title": "jq for JSON, and lining up tabular text",
-      "minutes": 19,
+      "minutes": 22,
       "covers": [
         "jq for JSON, column/paste/join for tabular text"
       ],
@@ -1817,7 +1817,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-shellcheck",
       "title": "shellcheck as a mandatory linter",
-      "minutes": 18,
+      "minutes": 20,
       "covers": [
         "shellcheck as a mandatory linter"
       ],
@@ -1826,7 +1826,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l13-cron-and-systemd-timers",
       "title": "cron and systemd timers",
-      "minutes": 19,
+      "minutes": 22,
       "covers": [
         "cron and systemd timers"
       ],
@@ -1835,7 +1835,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l14-when-to-stop-writing-bash",
       "title": "When to stop writing bash",
-      "minutes": 20,
+      "minutes": 22,
       "covers": [
         "When to stop writing bash and switch to Python"
       ],
@@ -1846,7 +1846,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-interpreter-repl-and-scripts",
       "title": "The interpreter, the REPL and your first script",
-      "minutes": 18,
+      "minutes": 19,
       "covers": [
         "Interpreter, REPL, running scripts, the difference between them"
       ],
@@ -1855,7 +1855,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-numbers-text-and-f-strings",
       "title": "Numbers, text and f-strings",
-      "minutes": 18,
+      "minutes": 20,
       "covers": [
         "int, float, bool, str; f-strings; str methods"
       ],
@@ -1864,7 +1864,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-lists-and-tuples",
       "title": "Lists, tuples and slicing",
-      "minutes": 17,
+      "minutes": 20,
       "covers": [
         "list, tuple, dict, set; slicing; truthiness; mutability"
       ],
@@ -1873,7 +1873,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-dicts-sets-and-truthiness",
       "title": "Dictionaries, sets and truthiness",
-      "minutes": 18,
+      "minutes": 22,
       "covers": [
         "list, tuple, dict, set; slicing; truthiness; mutability"
       ],
@@ -1882,7 +1882,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-control-flow",
       "title": "Choosing and repeating: if, for, while",
-      "minutes": 17,
+      "minutes": 20,
       "covers": [
         "if/elif/else; for, while, range, enumerate, zip; break/continue/else"
       ],
@@ -1891,7 +1891,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-functions",
       "title": "Functions, arguments and return values",
-      "minutes": 17,
+      "minutes": 20,
       "covers": [
         "Functions: positional, keyword, default, *args, **kwargs"
       ],

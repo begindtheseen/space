@@ -1,20 +1,22 @@
 ---
 id: l11-jq-and-tabular-text
 title: jq for JSON, and lining up tabular text
-minutes: 19
+minutes: 22
 covers:
   - jq for JSON, column/paste/join for tabular text
 ---
 
-The previous two lessons were about text that is a line with fields in it. A growing share of what a simulation toolchain emits is not that: a run manifest, a solver's diagnostics, a scheduler's job record, a REST API's answer all arrive as JSON, where a value may contain the separator, a record may span lines, and nesting is the point. `grep`, `sed` and `awk` are all wrong for it, and produce plausible answers that fail on the first awkward value.
+A set of nesting boxes is not a spreadsheet. A box can hold a box that holds three more, and the useful thing is often at the bottom. You cannot find it by counting "the fourth item on line 12". You find it by name: "open *cases*, then the one with id 12, then its *status*".
 
-`jq` is the right tool, and it is worth half an hour because it turns "parse this in Python" into a line in a pipeline. The second half of this lesson is the small set of coreutils that handle *tabular* text — `column` to line it up for a human, `paste` to glue files side by side, `join` to merge them on a key.
+The last two lessons were about text shaped like a spreadsheet — lines with fields. A growing share of what a simulation toolchain produces is shaped like the boxes: a run manifest, a solver's diagnostics, a scheduler's job record, the answer from a web service. These arrive as **[[JSON|json-shape]]**, a text format for nested data. In JSON a value may contain the separator, a record may span many lines, and nesting is the point. `grep`, `sed` and `awk` are all wrong for it, and give plausible answers that fail on the first awkward value.
 
-All output below was produced on this machine and pasted verbatim, with jq 1.7 and util-linux 2.39.3 on Ubuntu 24.04.4. The fixture is a campaign manifest of twelve cases, one of which failed.
+**`jq`** is the right tool. It is worth half an hour, because it turns "parse this in Python" into one line in a pipeline. The second half of this lesson covers three small tools for *tabular* text: `column` to line it up for a person, `paste` to glue files side by side, and `join` to merge them on a shared key.
+
+All output below is real, from jq 1.7 and util-linux 2.39.3 on Ubuntu 24.04. The main example file is a campaign manifest of twelve cases, one of which failed.
 
 ## `jq`: a filter language for JSON
 
-`jq 'filter' file.json` reads JSON, applies the filter, and writes JSON. The identity filter `.` pretty-prints and, usefully, validates:
+`jq 'filter' file.json` reads JSON, applies the **filter** — a small program saying what to pull out — and writes JSON. The simplest filter is `.` (read "dot"), the **identity**: "the whole thing, unchanged". It pretty-prints the file and, usefully, checks that it is valid JSON:
 
 ```bash
 jq . etc/manifest.json | head -6
@@ -29,7 +31,7 @@ jq . etc/manifest.json | head -6
     {
 ```
 
-Field access is `.name`, array indexing `.[n]`, and the two compose:
+`.name` picks a field out of an object, and `.[n]` picks element n out of an array, counting from 0. The two combine:
 
 ```bash
 jq -r '.campaign, .vehicle' etc/manifest.json
@@ -45,9 +47,9 @@ falcon9-s1
 12
 ```
 
-`-r` is **raw output**: without it, strings come back with their JSON quotes, which is not what you want when the value is going into a shell variable. Learn to type it automatically for anything that leaves `jq`.
+**`-r`** means **raw output**. Without it, strings come back wrapped in their JSON quotes, which is not what you want when the value is going into a shell variable. Learn to type it automatically for anything that leaves `jq`.
 
-`.cases[]` iterates the array, producing one output per element, and `|` pipes inside the filter:
+`.cases[]` — "each element of cases" — **iterates**: it produces one output per element. And `|` (read "pipe") passes results from one filter to the next *inside* `jq`, the way the shell's pipe passes text between programs:
 
 ```bash
 jq -r '.cases[] | .id' etc/manifest.json | head -4
@@ -60,7 +62,7 @@ jq -r '.cases[] | .id' etc/manifest.json | head -4
 4
 ```
 
-`select(condition)` keeps only the elements that match, which is `jq`'s `grep`:
+`select(condition)` keeps only the elements where the condition is true. It is `jq`'s `grep`:
 
 ```bash
 jq -r '.cases[] | select(.status=="FAIL") | .id' etc/manifest.json
@@ -70,11 +72,11 @@ jq -r '.cases[] | select(.status=="FAIL") | .id' etc/manifest.json
 12
 ```
 
-One command, and it is correct whatever the values contain — a status with a space in it, a message with a quote, a number written in scientific notation. That is the whole argument against doing this with `grep`.
+Read it as a **[[pipeline of three stages|jq-pipeline-picture]]**: take each case, keep the ones whose status is `FAIL`, print their id. It is correct whatever the values contain — a status with a space in it, a message with a quote, a number written in scientific notation. That is the whole argument against doing this with `grep`.
 
 ### Getting out of JSON and into a pipeline
 
-`[a, b, c]` builds an array and `@tsv` or `@csv` formats it, with the quoting and escaping done properly:
+`[a, b, c]` builds an array, and `@tsv` or `@csv` turns it into one line of tab-separated or comma-separated text, with the quoting and **[[escaping|tsv-escaping]]** done properly:
 
 ```bash
 jq -r '.cases[] | [.id, .status, .miss_m] | @tsv' etc/manifest.json | head -4
@@ -97,9 +99,9 @@ jq -r '.cases[] | [.id, .status, .miss_m] | @csv' etc/manifest.json | head -3
 3,"OK",308.9
 ```
 
-That is the bridge: JSON in, columns out, and from there `sort`, `awk` and everything in the last two lessons apply. `@csv` quotes strings and leaves numbers bare, which is what a CSV reader expects.
+That is the bridge: JSON in, columns out. From there `sort`, `awk` and everything in the last two lessons apply. `@csv` quotes strings and leaves numbers bare, which is what a CSV reader expects.
 
-String interpolation, `"\(expr)"`, formats a line directly:
+**String interpolation**, `"\(expr)"` (read "backslash-paren"), drops a value into a piece of text:
 
 ```bash
 jq -r '.cases | sort_by(-.miss_m) | .[0:3] | .[] | "\(.id) \(.miss_m)"' etc/manifest.json
@@ -111,11 +113,11 @@ jq -r '.cases | sort_by(-.miss_m) | .[0:3] | .[] | "\(.id) \(.miss_m)"' etc/mani
 5 474.9
 ```
 
-The three worst misses in the campaign, by case id. `sort_by(-.miss_m)` sorts descending — negating the key rather than reversing — and `.[0:3]` slices.
+These are the three worst miss distances in the campaign, with their case ids. `sort_by(-.miss_m)` sorts by the *negative* of the miss, which puts the largest first. `.[0:3]` **slices** out elements 0, 1 and 2.
 
 ### Aggregating
 
-`jq` has the arithmetic that `awk` has and the structure that `awk` does not:
+`jq` has the arithmetic `awk` has, plus the structure `awk` lacks:
 
 ```bash
 jq '[.cases[].miss_m] | add / length' etc/manifest.json
@@ -124,6 +126,8 @@ jq '[.cases[].miss_m] | add / length' etc/manifest.json
 ```text
 308.5666666666666
 ```
+
+`[.cases[].miss_m]` collects the twelve miss distances into one array. `add` sums it and `length` counts it, so this is the mean. Sanity check: the values run from about 118 to 519 m, and 309 m sits comfortably between.
 
 ```bash
 jq '[.cases[] | select(.dv_ms != null) | .dv_ms] | {n: length, min: min, max: max}' etc/manifest.json
@@ -137,7 +141,7 @@ jq '[.cases[] | select(.dv_ms != null) | .dv_ms] | {n: length, min: min, max: ma
 }
 ```
 
-Note the `select(.dv_ms != null)`: the failed case has `"dv_ms": null`, and `min` over an array containing `null` would return `null`, because `null` sorts below every number. Filtering nulls before aggregating is the JSON equivalent of the "count what you sum" rule from the last lesson.
+Notice `select(.dv_ms != null)`, where `!=` reads "is not equal to". The failed case has `"dv_ms": null` — **[[null|null-meaning]]** is JSON's word for "no value". `min` over an array containing `null` returns `null`, because `null` sorts below every number. Filtering out nulls before aggregating is the JSON form of last lesson's rule: count what you sum.
 
 `group_by` does what an `awk` array does, with the grouping built in:
 
@@ -150,8 +154,10 @@ FAIL 1
 OK 11
 ```
 
+`group_by(.status)` makes an array of groups, one per status. `map(...)` turns each group into a small object: its status (taken from the group's first member, `.[0]`) and its size. Check: $1 + 11 = 12$ cases.
+
 ::: example A campaign summary from a manifest, in one pipeline
-Three questions a run report has to answer: how many cases of each outcome, what the worst miss was, and which case it was.
+A run report has three questions to answer: how many cases had each outcome, what the worst miss was, and which case it was. First, the whole manifest as a table:
 
 ```bash
 jq -r '.cases[] | [.id, .status, .dv_ms, .miss_m] | @tsv' etc/manifest.json | column -t -N id,status,dv_ms,miss_m
@@ -170,10 +176,34 @@ id  status  dv_ms   miss_m
 9   OK      133.35  501.2
 10  OK      139.0   284.7
 11  OK      137.83  118.3
-12  FAIL    144.5
+12  FAIL    144.5   
 ```
 
-`jq` extracts and `column -t` aligns; `-N` supplies the header names, since the JSON had them as keys rather than as a row. Case 12 has an empty `miss_m` because its value is `null`, which `@tsv` renders as an empty field — honest, and worth noticing before the column is treated as numeric.
+`jq` extracts the columns and `column -t` lines them up. `-N` supplies the header names, because the JSON had them as keys, not as a row.
+
+Now look hard at case 12. It seems to say `dv_ms` was 144.5 and `miss_m` was empty. That is **wrong**. Case 12's `dv_ms` is `null`, which `@tsv` writes as an empty field, and its `miss_m` is 144.5. Plain `column -t` splits on whitespace and treats two tabs in a row as one gap, so the empty field **[[vanished and the value slid left|column-shift-picture]]**. Telling `column` that the separator is a tab keeps the empty field:
+
+```bash
+jq -r '.cases[] | [.id, .status, .dv_ms, .miss_m] | @tsv' etc/manifest.json | column -t -s "$(printf '\t')" -N id,status,dv_ms,miss_m
+```
+
+```text
+id  status  dv_ms   miss_m
+1   OK      129.89  308.3
+2   OK      120.11  519.0
+3   OK      135.02  308.9
+4   OK      128.5   229.3
+5   OK      123.52  474.9
+6   OK      121.0   252.7
+7   OK      124.98  396.0
+8   OK      136.03  165.0
+9   OK      133.35  501.2
+10  OK      139.0   284.7
+11  OK      137.83  118.3
+12  FAIL            144.5
+```
+
+Now the blank is where it belongs. `"$(printf '\t')"` is a command substitution that produces one tab character.
 
 The two summary lines:
 
@@ -187,10 +217,14 @@ FAIL 1
 OK 11
 ```
 
-Everything here is reading structure by name. Nothing depends on field position, on whitespace, or on a value not containing a comma — which means it keeps working when the manifest gains a field, and fails loudly rather than quietly if a field is renamed.
+```text
+worst: case 2 at 519.0 m
+```
+
+Everything in `jq` here reads structure by name. Nothing depends on field position, on whitespace, or on a value not containing a comma — so it keeps working when the manifest gains a field. The one place position crept back in was `column`, and it bit.
 :::
 
-::: warning
+::: warning Missing keys are silent
 `jq` returns `null` for a key that does not exist, and for an index past the end:
 
 ```bash
@@ -206,9 +240,9 @@ null
 null
 ```
 
-Exit status 0 both times. A typo in a filter therefore produces `null`, silently, and a shell variable set from it contains the four characters `null` rather than being empty — which then passes an `[[ -n "$x" ]]` test. Guard with `// "default"` for a fallback, or make it fatal with `-e`, which exits 1 when the last output was `null` or `false`.
+Exit status 0 both times. So a typo in a filter produces `null`, silently. A shell variable set from it holds the four characters `null` rather than being empty — and that passes an `[[ -n "$x" ]]` ("is not empty") test. Guard with `// "default"` (read "or else"), which substitutes a fallback when the left side is `null` or `false`. Or make it fatal with **`-e`**, which exits 1 when the last output was `null` or `false`.
 
-Malformed input is different and is loud:
+Malformed input is different, and loud:
 
 ```bash
 printf '{bad json' | jq .
@@ -218,9 +252,9 @@ printf '{bad json' | jq .
 jq: parse error: Invalid numeric literal at line 1, column 5
 ```
 
-Exit status **5**, which is worth remembering: a `jq` pipeline under `set -o pipefail` fails on bad input, as it should.
+Exit status **[[5|jq-exit-codes]]**. A `jq` pipeline under `set -o pipefail` therefore fails on bad input, as it should.
 
-And never build a filter by string-interpolating a shell variable. `--arg name value` passes a string safely and `--argjson` passes JSON:
+And never build a filter by pasting a shell variable into it. `--arg name value` passes a string safely, and `--argjson` passes a piece of JSON:
 
 ```bash
 jq -r --arg s FAIL '.cases[] | select(.status==$s) | .id' etc/manifest.json
@@ -231,9 +265,9 @@ jq -r --arg s FAIL '.cases[] | select(.status==$s) | .id' etc/manifest.json
 ```
 :::
 
-`-c` prints each result on one line, which is the form for JSON Lines and for feeding another program one record per line. `-s` ("slurp") reads the whole input into one array, which is how you aggregate across a stream of separate JSON documents.
+Two more options. `-c` prints each result on one line, which is the form for **[[JSON Lines|json-lines]]** and for feeding another program one record per line. `-s` ("slurp") reads the whole input into one array, which is how you aggregate across a stream of separate JSON documents.
 
-## `column`: align for a human
+## `column`: line it up for a person
 
 ```bash
 column -t -s "$(printf '\t')" etc/cases.tsv | head -4
@@ -246,13 +280,13 @@ id  seed    status
 3   100003  OK
 ```
 
-`-t` creates a table, `-s` sets the input separator, `-N` supplies header names, `-R` right-aligns the listed columns. It is a **display** tool: the output is aligned with spaces and is no longer machine-readable in the way the input was, so it belongs at the very end of a pipeline and never in the middle.
+`-t` makes a table, `-s` sets the input separator, `-N` supplies header names, and `-R` right-aligns the columns you list. `column` is a **display** tool. Its output is lined up with spaces and is no longer machine-readable in the way the input was. It belongs at the very end of a pipeline, never in the middle.
 
-The default separator is whitespace, which means `column -t` on data containing empty fields will shift columns — one more reason to keep the aligned form for humans only.
+Its default separator is whitespace, which is what shifted case 12 in the example above. On data that can have empty fields, give `-s` the real separator — one more reason to keep the aligned form for human eyes only.
 
 ## `paste`: side by side
 
-`paste` joins files **by line number**, with no notion of a key:
+`paste` joins files **by line number**, with no idea of a key. Line 1 goes with line 1, line 2 with line 2:
 
 ```bash
 paste etc/cases.tsv etc/miss.tsv | head -4
@@ -260,14 +294,14 @@ paste etc/cases.tsv etc/miss.tsv | head -4
 
 ```text
 id	seed	status	id	miss_m
-1	100001	OK	1	17.5
-2	100002	OK	2	291.5
-3	100003	OK	3	5.6
+1	100001	OK	1	308.3
+2	100002	OK	2	519.0
+3	100003	OK	3	308.9
 ```
 
-That is only correct because the two files happen to be in the same order — and if one gained a row, every subsequent line would pair the wrong values, silently. Use `paste` when you *generated* both files from the same list in the same order, and `join` otherwise.
+That is only correct because the two files happen to list the cases in the same order. If one gained or lost a row, every line after it would pair the wrong values, silently. Use `paste` when you *generated* both files from the same list in the same order, and `join` otherwise.
 
-`-d` sets the delimiter, and `-s` pastes a file's lines into one line, which is the compact way to turn a column into a list:
+`-d` sets the delimiter. `-s` pastes all of one file's lines into a single line, the compact way to turn a column into a list:
 
 ```bash
 paste -s -d' ' <(cut -f1 etc/cases.tsv | tail -n +2)
@@ -279,7 +313,7 @@ paste -s -d' ' <(cut -f1 etc/cases.tsv | tail -n +2)
 
 ## `join`: merge on a key
 
-`join` merges two files on a common field, like a database join — and it requires both inputs to be **sorted on that field**.
+`join` merges two files on a common field — the **key** — the way a database does. It requires both inputs to be **sorted on that field**.
 
 ```bash
 join <(printf '1 a\n3 c\n') <(printf '1 x\n2 y\n3 z\n')
@@ -290,9 +324,9 @@ join <(printf '1 a\n3 c\n') <(printf '1 x\n2 y\n3 z\n')
 3 c z
 ```
 
-By default it joins on field 1, outputs the key followed by the remaining fields of each side, and prints only lines that matched — an inner join. Key 2 appears in the second file only and is dropped.
+By default it joins on field 1, prints the key followed by the other fields from each side, and prints only lines whose key appears in *both* files. That is an **inner join**. Key 2 exists only in the second file, so it is dropped.
 
-`-a N` keeps the unpairable lines from file N, `-e` supplies a filler, and `-o` chooses the output fields (`0` means the key, `1.2` means field 2 of file 1):
+`-a N` also keeps the unmatched lines from file N. `-e` supplies a filler word for the missing side. `-o` chooses the output fields: `0` is the key, and `1.2` means "field 2 of file 1".
 
 ```bash
 join -a1 -a2 -e MISSING -o 0,1.2,2.2 <(printf '1 a\n3 c\n') <(printf '1 x\n2 y\n3 z\n')
@@ -304,9 +338,9 @@ join -a1 -a2 -e MISSING -o 0,1.2,2.2 <(printf '1 a\n3 c\n') <(printf '1 x\n2 y\n
 3 c z
 ```
 
-That is a full outer join, and the `MISSING` marks where a case exists on one side only — which, on a real campaign, is exactly the question "which runs produced no result file".
+That is a **full outer join**: every key from either side, with `MISSING` where one side has nothing. On a real campaign, that answers "which runs produced no result file?"
 
-With tab-separated data, `-t` is required, and `--header` passes the first line of each file through without joining it:
+With tab-separated data, `-t` with a tab is required. And `--header` passes the first line of each file through without trying to join it:
 
 ```bash
 join -t "$(printf '\t')" --header etc/cases.tsv etc/miss.tsv | head -4
@@ -314,13 +348,15 @@ join -t "$(printf '\t')" --header etc/cases.tsv etc/miss.tsv | head -4
 
 ```text
 id	seed	status	miss_m
-1	100001	OK	17.5
-2	100002	OK	291.5
-3	100003	OK	5.6
+1	100001	OK	308.3
+2	100002	OK	519.0
+3	100003	OK	308.9
 ```
 
-::: warning
-`join` needs its inputs sorted **in the collating order it uses**, and it tells you when they are not — after producing partial output:
+Bash also has a shorter way to write a tab, `$'\t'` (a "dollar-quoted" string, where backslash codes are turned into characters). The two spellings are the same to `join`.
+
+::: warning `join` complains late, and only sometimes
+`join` needs its inputs sorted **in the order it compares keys**. When they are not, it says so — after printing partial output:
 
 ```bash
 join <(printf '3 c\n1 a\n') <(printf '1 x\n3 z\n')
@@ -332,9 +368,9 @@ join: /dev/fd/63:2: is not sorted: 1 a
 join: input is not in sorted order
 ```
 
-Exit status 1, and one joined line was printed before the complaint. A script that ignores the status keeps that partial output.
+Exit status 1, and one joined line was printed before the complaint. A script that ignores the status keeps that partial output. Worse, GNU `join` only checks the order when it meets lines that do not pair up. The `--header` example above had its ids in number order, 1 to 12, which is *not* string order — but every key paired, so no complaint, and the output happened to be right.
 
-The subtlety is that "sorted" means sorted by the *key field as a string*, in the current locale — so `sort -k1,1` and not `sort -n`, and preferably `LC_ALL=C sort -k1,1` so that both `sort` and `join` agree regardless of the machine's locale. Numeric ids sort as strings, which is why `10` comes before `2` in the transcript earlier in this lesson; that is consistent and correct for `join`, and it is not the order a person expects.
+"Sorted" means sorted on the key field *as text*, in the current **[[locale|locale-collation]]**. So use `sort -k1,1`, not `sort -n`, and preferably `LC_ALL=C sort -k1,1`, so that `sort` and `join` agree on every machine. In text order, `10` comes before `2`, because the character `1` comes before `2`. That looks odd to a person and is exactly what `join` expects.
 
 The shape that always works:
 
@@ -344,11 +380,11 @@ join -t "$(printf '\t')" \
   <(tail -n +2 b.tsv | LC_ALL=C sort -k1,1)
 ```
 
-If getting the sort right is a nuisance, `awk`'s `NR==FNR` two-file idiom from the last lesson needs no sorting at all, and is usually the better choice inside a script.
+`tail -n +2` means "from line 2 on", which drops the header. If getting the sort right is a nuisance, `awk`'s `NR==FNR` idiom from the last lesson needs no sorting at all, and is often the better choice inside a script.
 :::
 
 ::: example Which runs produced no result?
-Two files from the same campaign, in the same order but not with the same rows: one case ran and produced nothing, another produced a result with no run record.
+Two files from the same campaign, not quite with the same rows. One case ran and produced nothing; another has a result but no run record. Here they are side by side:
 
 ```text
 id	wall_s          id	miss_m
@@ -359,7 +395,7 @@ id	wall_s          id	miss_m
 6	190.2           6	252.7
 ```
 
-A plain inner join shows only the four that matched, which is the useful table and hides the problem:
+A plain inner join shows only the four that matched. It is a useful table, and it hides the problem:
 
 ```text
 1	182.4	308.3
@@ -368,7 +404,7 @@ A plain inner join shows only the four that matched, which is the useful table a
 6	190.2	252.7
 ```
 
-A full outer join shows the discrepancy, with `MISSING` where one side has nothing:
+A **[[full outer join|outer-join-picture]]** shows the gap, with `MISSING` where one side has nothing:
 
 ```bash
 join -t "$(printf '\t')" -a1 -a2 -e MISSING -o 0,1.2,2.2 \
@@ -385,9 +421,9 @@ join -t "$(printf '\t')" -a1 -a2 -e MISSING -o 0,1.2,2.2 \
 6  190.2    252.7
 ```
 
-Case 4 ran for 168 seconds and produced no result; case 5 has a result and no run record. Both are things you want to know before computing a statistic over the campaign, and neither is visible in the inner join.
+Case 4 ran for 168 seconds and left no result. Case 5 has a result and no run record. You want to know both before computing any statistic over the campaign, and neither shows in the inner join. Count check: 4 matched + 1 + 1 = 6 distinct ids.
 
-`-v1` and `-v2` isolate each side, which is the form to use in a check that must fail:
+`-v1` and `-v2` print only the unmatched lines from each side — the form to use in a check that must fail:
 
 ```bash
 join -t "$(printf '\t')" -v1 <(…runs…) <(…results…)
@@ -402,7 +438,7 @@ join -t "$(printf '\t')" -v2 <(…runs…) <(…results…)
 5	120.4
 ```
 
-And the reason not to have used `paste` here, made explicit — the two files diverge at row 4, so every row after it would have paired the wrong values:
+And here is why `paste` would have been wrong. The two files part ways at data row 4, and every row after that would pair the wrong values:
 
 ```bash
 paste etc/runs.tsv etc/results.tsv | awk -F'\t' '$1 != $3 {print "MISMATCH at line " NR; exit 1}'
@@ -412,11 +448,11 @@ paste etc/runs.tsv etc/results.tsv | awk -F'\t' '$1 != $3 {print "MISMATCH at li
 MISMATCH at line 5
 ```
 
-Exit status 1. That two-line check costs nothing and turns a silent misalignment into a failed job.
+Exit status 1. Line 5 counts the header, so it is data row 4. That one-line check costs nothing and turns a silent mix-up into a failed job.
 :::
 
 ::: key
-`jq 'filter' file` reads JSON structurally: `.key`, `.[n]`, `.arr[]`, `select(cond)`, `group_by`, `sort_by`, `add`, `length`, `min`, `max`. `-r` for raw strings, `@tsv`/`@csv` to leave JSON for a pipeline, `--arg` to pass shell values, `-e` to make a `null` result a failure. `column -t` aligns for humans only; `paste` joins by line number and is silently wrong if the files diverge; `join` merges on a key and requires both inputs sorted on it.
+`jq 'filter' file` reads JSON by structure: `.key`, `.[n]`, `.arr[]`, `select(cond)`, `group_by`, `sort_by`, `add`, `length`, `min`, `max`. `-r` for raw strings, `@tsv`/`@csv` to leave JSON for a pipeline, `--arg` to pass shell values, `-e` to make a `null` result a failure. `column -t` aligns for humans only; `paste` joins by line number and is silently wrong if the files diverge; `join` merges on a key and requires both inputs sorted on it.
 :::
 
 ## Check yourself
@@ -426,11 +462,11 @@ Exit status 1. That two-line check costs nothing and turns a silent misalignment
 :::
 
 ::: answer
-Without `-r`, `jq` emits JSON, so the value is the six characters `"OK"` — with the quotes. The comparison against `OK` fails. Printing `$status` looks right in a message, which is why this survives casual checking.
+Without `-r`, `jq` writes JSON, so the value is the four characters `"OK"` — quotes included — and the comparison with `OK` fails. Printing `$status` in a message looks right, which is why this survives casual checking.
 
-`status=$(jq -r '.cases[0].status' manifest.json)` gives `OK`. `-r` applies to strings only; numbers and objects are unaffected, so it is safe to use always.
+`status=$(jq -r '.cases[0].status' manifest.json)` gives `OK`. `-r` only changes strings; numbers and objects come out the same, so it is safe to use always.
 
-Two related traps in the same line. If the key is misspelled, `jq` outputs `null` with exit status 0, so `status` becomes the four characters `null` and passes `[[ -n "$status" ]]`. Add `-e`, which makes a final result of `null` or `false` exit 1, and check the status. And the command substitution strips trailing newlines, which is what you want here but not if you are capturing a multi-value result — for several values, use `mapfile -t arr < <(jq -r '…')` from lesson 04.
+Two related traps sit in the same line. If the key is misspelled, `jq` prints `null` with exit status 0, so `status` becomes the four characters `null` and passes `[[ -n "$status" ]]`. Add `-e`, which makes a final `null` or `false` exit 1, and check the status. And command substitution strips trailing newlines — what you want here, but not for a result with several values. For those, use `mapfile -t arr < <(jq -r '…')` from lesson 04.
 :::
 
 ::: check
@@ -444,11 +480,11 @@ join -t "$(printf '\t')" \
   <(tail -n +2 results.tsv | LC_ALL=C sort -k1,1)
 ```
 
-Three steps, each necessary. `tail -n +2` removes the headers, because `join` would otherwise treat `id` as a key and sort it into the middle of the data — `--header` is the alternative, and then the files must be sorted *excluding* their first line, which is more awkward. `sort -k1,1` sorts on the key field only, as a string; `sort` alone would sort on the whole line and `sort -n` would produce an order `join` does not use. `LC_ALL=C` makes the collation deterministic, so the same script gives the same answer on a machine with a different locale.
+Three steps, each needed. `tail -n +2` removes the headers; otherwise `join` treats `id` as a key and the sort moves it into the middle of the data. (`--header` is the alternative, but then each file must be sorted *below* its first line, which is more awkward.) `sort -k1,1` sorts on the key field only, as text: plain `sort` sorts on the whole line, and `sort -n` gives an order `join` does not use. `LC_ALL=C` makes the ordering the same on every machine, whatever its locale.
 
-If the inputs are not sorted, `join` emits some output and then `join: input is not in sorted order` with exit status 1 — so a script that does not check the status silently keeps a partial result. If the headers are left in, you get a spurious `id` row and possibly a sort-order complaint.
+If the inputs are not sorted, `join` prints some output, then `join: input is not in sorted order`, and exits 1 — so a script that ignores the status keeps a partial result. If the headers stay in, you get a spurious `id` row and possibly a sort-order complaint.
 
-Add `-a1 -a2 -e MISSING -o 0,1.2,2.2` when you need to see the cases present on only one side, which is how you find runs that produced no result.
+Add `-a1 -a2 -e MISSING -o 0,1.2,2.2` to see the cases present on only one side — the runs that produced no result.
 :::
 
 ::: check
@@ -456,13 +492,11 @@ Why is `grep '"status": "FAIL"' manifest.json` a bad way to count failed cases?
 :::
 
 ::: answer
-Because it depends on formatting rather than on structure. The same document is valid with no space after the colon, with different key ordering, minified onto one line — in which case there are no line boundaries to count at all — or with the status expressed as `"status":"FAIL"`. Any of those changes the count to zero without changing the data.
+Because it depends on formatting, not structure. The same data is valid JSON with no space after the colon, with keys in another order, or squeezed onto one line — and then there are no line boundaries to count at all. Any of those changes the count without changing the data.
 
-It also cannot distinguish context. A `"status": "FAIL"` nested inside a per-stage sub-object, or inside a comment-like string field, matches just as well as the one you meant, so the count is an upper bound on something you did not define.
+It cannot tell context apart, either. A `"status": "FAIL"` inside some nested per-stage object matches just as well as the one you meant, so the count is an upper bound on something you never defined. And it gives you a count, not the ids; getting those takes a second regular expression.
 
-And it gives no way to act on the result: you have a count, not the ids, and extracting the ids means a second regular expression over a different line.
-
-`jq '[.cases[] | select(.status=="FAIL")] | length'` counts exactly the cases in exactly that array, whatever the whitespace, and `jq -r '.cases[] | select(.status=="FAIL") | .id'` gives the ids. Both are shorter than the `grep` and correct by construction.
+`jq '[.cases[] | select(.status=="FAIL")] | length'` counts exactly the cases in exactly that array, whatever the whitespace. `jq -r '.cases[] | select(.status=="FAIL") | .id'` lists their ids. Both are shorter than the `grep` and correct by construction.
 :::
 
 ::: check
@@ -470,25 +504,25 @@ When is `paste` right and when is it a bug waiting to happen?
 :::
 
 ::: answer
-`paste` is right when both files were produced from the same list, in the same order, in the same pass — a column of case ids and a column of results written by the same loop, or the output of two filters over the same input. Then line *n* of one genuinely corresponds to line *n* of the other, and `paste` is the cheapest way to put them side by side.
+`paste` is right when both files came from the same list, in the same order, in the same pass — a column of case ids and a column of results written by one loop, or two filters run over one input. Then line *n* of one really does belong with line *n* of the other, and `paste` is the cheapest way to put them side by side.
 
-It is a bug waiting to happen whenever the correspondence is by key rather than by position. If one file is missing a row — a case that crashed and wrote no result — every line after that point pairs the wrong values, and nothing reports it: the output has the same shape, the same number of columns, and plausible numbers in the wrong rows. That is the worst kind of defect, because it is discovered downstream as a physics result that does not make sense.
+It is a bug waiting to happen whenever lines belong together by key rather than by position. If one file is missing a row — a case that crashed and wrote nothing — every line after it pairs the wrong values, and nothing says so. The output has the same shape, the same number of columns, and believable numbers in the wrong rows. That is the worst kind of defect, because it is found downstream as a physics result that makes no sense.
 
-Use `join` when there is a key, or the `awk` `NR==FNR` idiom when the files are unsorted. If you must use `paste`, verify first: `paste a b | awk -F'\t' '$1 != $3 {print "MISMATCH at line " NR; exit 1}'` compares the two key columns and fails loudly.
+Use `join` when there is a key, or `awk`'s `NR==FNR` idiom when the files are unsorted. If you must use `paste`, check first: `paste a b | awk -F'\t' '$1 != $3 {print "MISMATCH at line " NR; exit 1}'` compares the two key columns and fails loudly.
 :::
 
 ::: check
-A script does `jq -r '.result.value' out.json` and the downstream comparison silently passes when the run failed. Explain, and give two fixes.
+A script does `jq -r '.result.value' out.json`, and the downstream comparison silently passes when the run failed. Explain, and give two fixes.
 :::
 
 ::: answer
-When `out.json` lacks `result`, or `result` lacks `value`, `jq` outputs `null` and exits 0. The shell variable then holds the literal string `null`, which is non-empty, so `[[ -n "$v" ]]` passes and a comparison against an expected value simply differs — reported, if at all, as a wrong number rather than as a missing one. If the downstream test is a threshold, `null` may even compare in a way that passes.
+When `out.json` has no `result`, or `result` has no `value`, `jq` prints `null` and exits 0. The shell variable then holds the text `null`, which is not empty, so `[[ -n "$v" ]]` passes. A comparison with an expected value just differs — reported, if at all, as a wrong number rather than a missing one. If the downstream test is a threshold, `null` may even compare in a way that passes.
 
-Fix one: `jq -e -r '.result.value' out.json`. `-e` sets the exit status from the last output — 1 if it was `null` or `false`, 4 if there was no output at all — so the command fails and `set -e` or an explicit check catches it.
+Fix one: `jq -e -r '.result.value' out.json`. `-e` sets the exit status from the last output — 1 if it was `null` or `false`, 4 if there was no output at all — so the command fails, and `set -e` or an explicit check catches it.
 
-Fix two: make the filter assert what you expect. `jq -r '.result.value // error("no result.value")'` raises an error with your message and exits 5, which is clearer in a log than a bare status. For a default rather than an error, `// 0` supplies one.
+Fix two: make the filter state what you expect. `jq -r '.result.value // error("no result.value")'` raises an error with your message and exits 5, which reads more clearly in a log than a bare status. If you want a default instead of an error, `// 0` supplies one.
 
-The general point is the same as for `grep` exit statuses in the previous module: a tool that reports "nothing here" as a value rather than as a failure needs the script to make the distinction explicitly.
+The general point is the one from `grep`'s exit statuses in the previous module: a tool that reports "nothing here" as a *value* rather than a *failure* needs the script to make the difference explicit.
 :::
 
 ## Summary
@@ -503,12 +537,147 @@ The general point is the same as for `grep` exit statuses in the previous module
 | `"\(.id) \(.miss_m)"` | string interpolation | format a line directly |
 | `length add min max sort_by group_by map` | aggregation | filter `null` before `min`/`add` |
 | missing key → `null`, exit 0 | a typo is silent | `-e` makes `null`/`false` exit 1; `// default` |
-| `--arg n v`, `--argjson n v` | pass shell values safely | never interpolate into the filter |
+| `--arg n v`, `--argjson n v` | pass shell values safely | never paste them into the filter |
 | `-c`, `-s` | one line per result; slurp into an array | JSON Lines; aggregate across documents |
-| `column -t -s SEP -N names` | align for a human | display only; never mid-pipeline |
+| `column -t -s SEP -N names` | align for a human | display only; give `-s` if fields can be empty |
 | `paste a b`, `-d`, `-s` | join by line number | silently wrong if the files diverge |
 | `join a b` | merge on a key, inner join by default | both inputs must be sorted on that key |
 | `join -t $'\t' --header -a1 -a2 -e X -o 0,1.2,2.2` | tabs, headers, outer join, filler, field choice | `-a1 -a2` finds one-sided cases |
 | `join: input is not in sorted order` | exit 1, **after** partial output | `LC_ALL=C sort -k1,1` both sides |
 
-Lesson 12 adds the tool that would have caught several of the bugs in the last five lessons before they ran: `shellcheck`.
+Lesson 12 adds the tool that would have caught several of the bugs in the last few lessons before they ever ran: `shellcheck`.
+
+::: context json-shape What JSON looks like
+**JSON** stands for JavaScript Object Notation. It was drawn from the way the JavaScript language writes data, and is now used by nearly every language and web service. It has only a few pieces:
+
+- an **object**, `{"key": value, …}`, a set of named values — the boxes with labels;
+- an **array**, `[value, value, …]`, an ordered list;
+- strings in double quotes, numbers, `true`, `false` and `null`.
+
+Objects and arrays can hold each other to any depth. That nesting is what a line-and-field tool like `awk` cannot see.
+:::
+
+::: context jq-pipeline-picture Three stages inside one filter
+Each `|` inside a `jq` filter hands every result of the left side to the right side. Here is how many values flow between the stages for the manifest:
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 120" font-family="Inter, Arial, sans-serif">
+  <g stroke="#1f2a44" stroke-width="1.5">
+    <rect x="8" y="34" width="96" height="40" rx="6" fill="#8fb8f0"/>
+    <rect x="132" y="34" width="112" height="40" rx="6" fill="#fff"/>
+    <rect x="272" y="34" width="80" height="40" rx="6" fill="#f2b880"/>
+  </g>
+  <g font-size="12" fill="#1f2a44" text-anchor="middle">
+    <text x="56" y="58">.cases[]</text>
+    <text x="188" y="58">select(FAIL)</text>
+    <text x="312" y="58">.id</text>
+  </g>
+  <g stroke="#1f2a44" stroke-width="1.5">
+    <line x1="104" y1="54" x2="126" y2="54"/><line x1="244" y1="54" x2="266" y2="54"/>
+  </g>
+  <polygon points="132,54 124,50 124,58" fill="#1f2a44"/>
+  <polygon points="272,54 264,50 264,58" fill="#1f2a44"/>
+  <g font-size="11" fill="#6c7a93" text-anchor="middle">
+    <text x="118" y="26">12 cases</text>
+    <text x="258" y="26">1 case</text>
+    <text x="312" y="96">prints 12</text>
+  </g>
+</svg>
+```
+
+Twelve objects go into `select`, one comes out, and `.id` turns that one object into the number 12 — the id of the failed case.
+:::
+
+::: context tsv-escaping Why "escaping" matters
+A tab-separated line breaks if a value itself contains a tab or a newline: the reader would see an extra column or an extra row. `@tsv` guards against that by writing a tab inside a value as the two characters `\t`, and a newline as `\n`. This is **escaping** — replacing a character that has a special job with a harmless code for it.
+
+`@csv` does the CSV version: it wraps strings in double quotes and doubles any quote inside them, so a comma in a value stays inside its field.
+:::
+
+::: context null-meaning null is not zero
+`null` means "there is no value here". It is not zero and not an empty string. A failed case has no delta-v, so writing `0` would claim a perfect burn that never happened.
+
+That is why tools must treat `null` specially. `jq` sorts `null` below every number, so `min` of `[null, 120.11]` is `null`. And `@tsv` writes it as an empty field, which is honest — as long as nothing downstream quietly squeezes the empty field out.
+:::
+
+::: context column-shift-picture How an empty field slid left
+The row for case 12 holds four fields, and the third is empty. Split on whitespace, the two tabs around the empty field look like one gap.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">
+  <text x="8" y="22" font-size="11" fill="#1f2a44">split on tab</text>
+  <g stroke="#1f2a44" stroke-width="1.5">
+    <rect x="96" y="8" width="56" height="24" fill="#fff"/>
+    <rect x="158" y="8" width="56" height="24" fill="#fff"/>
+    <rect x="220" y="8" width="56" height="24" fill="#fff" stroke-dasharray="4 3"/>
+    <rect x="282" y="8" width="66" height="24" fill="#f2b880"/>
+  </g>
+  <g font-size="11" fill="#1f2a44" text-anchor="middle">
+    <text x="124" y="24">12</text><text x="186" y="24">FAIL</text><text x="248" y="24">(empty)</text><text x="315" y="24">144.5</text>
+    <text x="124" y="52">id</text><text x="186" y="52">status</text><text x="248" y="52">dv_ms</text><text x="315" y="52">miss_m</text>
+  </g>
+  <text x="8" y="92" font-size="11" fill="#1f2a44">split on space</text>
+  <g stroke="#1f2a44" stroke-width="1.5">
+    <rect x="96" y="78" width="56" height="24" fill="#fff"/>
+    <rect x="158" y="78" width="56" height="24" fill="#fff"/>
+    <rect x="220" y="78" width="56" height="24" fill="#f2b880"/>
+    <rect x="282" y="78" width="66" height="24" fill="#fff" stroke-dasharray="4 3"/>
+  </g>
+  <g font-size="11" fill="#1f2a44" text-anchor="middle">
+    <text x="124" y="94">12</text><text x="186" y="94">FAIL</text><text x="248" y="94">144.5</text><text x="315" y="94">(empty)</text>
+  </g>
+  <text x="180" y="130" font-size="11" text-anchor="middle" fill="#b4232c">144.5 lands under dv_ms: a wrong table that looks fine</text>
+</svg>
+```
+
+The value did not change; its column did. `column -t -s` with a tab keeps the empty slot in place.
+:::
+
+::: context jq-exit-codes What jq's exit statuses mean
+`jq` uses its exit status to tell different failures apart:
+
+- **0** — the program ran.
+- **1** — with `-e`, the last output was `null` or `false`.
+- **2** — a usage or system problem, such as a file that cannot be opened.
+- **3** — the filter itself has a syntax error.
+- **4** — with `-e`, there was no output at all.
+- **5** — an error while running, including input that is not valid JSON and `error(…)` in the filter.
+
+A script can branch on these the same way it branches on `grep`'s 0, 1 and 2.
+:::
+
+::: context json-lines One JSON document per line
+**JSON Lines** is a simple convention: a file where every line is a complete JSON object. Logs and event streams love it, because a program can append one line per event and a reader can process the file line by line, without loading it all.
+
+`jq -c` writes exactly that shape, and `jq -s` reads a stream of such documents back into one array so you can count or sum across them.
+:::
+
+::: context locale-collation Why sort order depends on the machine
+A **locale** is a machine's language and region settings. Among other things, it decides **collation** — the order in which text is sorted. In many English locales, sorting ignores punctuation and case at first, so `a-b` and `ab` may land next to each other.
+
+`LC_ALL=C` switches that off for one command and compares raw byte values instead. The result is the same on every machine, which is what two programs that must agree — `sort` and `join` — need.
+:::
+
+::: context outer-join-picture Inner join and outer join
+Picture the case ids in each file as two overlapping sets. An inner join keeps only the overlap. A full outer join keeps everything, and marks the side that is missing.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">
+  <circle cx="140" cy="72" r="58" fill="#8fb8f0" fill-opacity="0.6" stroke="#1f2a44" stroke-width="1.5"/>
+  <circle cx="220" cy="72" r="58" fill="#f2b880" fill-opacity="0.6" stroke="#1f2a44" stroke-width="1.5"/>
+  <g font-size="12" fill="#1f2a44" text-anchor="middle">
+    <text x="110" y="76">4</text>
+    <text x="180" y="66">1 2</text>
+    <text x="180" y="84">3 6</text>
+    <text x="250" y="76">5</text>
+  </g>
+  <g font-size="11" text-anchor="middle">
+    <text x="100" y="146" fill="#1d6fd1">runs.tsv</text>
+    <text x="260" y="146" fill="#1f2a44">results.tsv</text>
+    <text x="180" y="10" fill="#1f2a44">inner join: 1 2 3 6</text>
+  </g>
+</svg>
+```
+
+Case 4 is only in the runs file and case 5 only in the results; the outer join prints both, with `MISSING` for the empty side.
+:::
