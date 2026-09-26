@@ -1,7 +1,7 @@
 ---
 id: l11-gravity-turn-ascent
 title: The gravity turn
-minutes: 26
+minutes: 22
 covers:
   - Gravity turn ascent and zero-lift trajectories; the pitch program and open-loop pitch kick
 ---

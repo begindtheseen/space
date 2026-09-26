@@ -1,7 +1,7 @@
 ---
 id: l03-line-of-sight-and-pursuit-guidance
 title: Line-of-sight and pursuit guidance
-minutes: 21
+minutes: 19
 covers:
   - Line-of-sight guidance and pursuit guidance
 ---
@@ -112,7 +112,7 @@ drift = fly_pursuit([2000.0, 500.0], [-0.6, 0.2])
 for R_mark in [2000, 1000, 500, 200, 100, 50, 20, 10]:
     t, R, ld = next(x for x in drift if x[1] <= R_mark)
     print(f"R = {R:7.1f} m   lambda_dot = {ld:.3e} rad/s   a_lat = {Vp*ld:.3e} m/s^2")
-# stationary: max |lambda_dot| = 4.98e-17   (zero, up to rounding)
+# stationary: max |lambda_dot| = 4.979...e-17   (zero, up to rounding)
 # R =  2000.0 m   lambda_dot = 1.711e-04 rad/s   a_lat = 2.567e-04 m/s^2
 # R =  1000.0 m   lambda_dot = 4.080e-04 rad/s   a_lat = 6.120e-04 m/s^2
 # R =   500.0 m   lambda_dot = 9.575e-04 rad/s   a_lat = 1.436e-03 m/s^2
@@ -132,7 +132,7 @@ for R_mark in [2000, 1000, 500, 200, 100, 50, 20, 10]:
 
 That is *faster* than the plain one-over-range the identity would give if the across speed stayed fixed. The reason is that the across speed does not stay fixed. Under pure pursuit the chaser's own velocity lies exactly along the line of sight, so all of $v_{rel,\perp}$ comes from the target's velocity. As the line of sight swings around, the target's motion points more and more across it. Here $v_{rel,\perp} = R\,\dot\lambda$ grows from $2000 \times 0.0001711 \approx 0.34\,\mathrm{m/s}$ to $20 \times 0.0279 \approx 0.56\,\mathrm{m/s}$. Shrinking range and a growing across speed multiply together.
 
-**Sanity check.** At $R = 1000\,\mathrm{m}$: $a_{lat} = V_p\dot\lambda = 1.5 \times 0.000408 = 0.000612\,\mathrm{m/s^2}$, matching the table. And the demand keeps climbing all the way in: $0.066\,\mathrm{m/s^2}$ at $10\,\mathrm{m}$, more than $250$ times the starting value, with the chaser's heading swinging through well over $100$ degrees in the last minute or so.
+**Sanity check.** At $R = 1000\,\mathrm{m}$: $a_{lat} = V_p\dot\lambda = 1.5 \times 0.000408 = 0.000612\,\mathrm{m/s^2}$, matching the table. And the demand keeps climbing all the way in: $0.066\,\mathrm{m/s^2}$ at $10\,\mathrm{m}$, more than $250$ times the starting value, with the chaser's heading swinging from about $60$ degrees to over $150$ degrees in the last $75$ seconds or so.
 :::
 
 That growth is not a quirk of the numbers. It is the defining weakness of pure pursuit, and the path it traces has a name: the **[[curve of pursuit|curve-of-pursuit]]**. Near the end, the pursuer is forced to whip around behind the target. Whether the turn rate actually grows without limit depends on the **[[speed ratio|speed-ratio]]** — here the chaser is $2.37$ times faster than the target, and in that case it does.
@@ -155,7 +155,7 @@ $$
 
 Here $a_\perp$ ("a perp") is the commanded acceleration across the line, $k_1$ pushes back against the offset, and $k_2$ pushes back against the drift rate. Matching to the spring-and-damper form as before gives $k_1 = \omega_n^2$ and $k_2 = 2\zeta\omega_n$.
 
-A good choice for a corridor is **critical damping**, $\zeta = 1$: the fastest return that does not swing back and forth across the line.
+A good choice for a corridor is **[[critical damping|critical-damping]]**, $\zeta = 1$: the fastest return that does not swing back and forth across the line.
 
 ::: example Cancelling a sideways drift on a V-bar approach
 A chaser is $y_0 = 8\,\mathrm{m}$ off the V-bar line and drifting further off at $\dot y_0 = 0.02\,\mathrm{m/s}$. Choose critical damping, $\zeta = 1$, with natural frequency $\omega_n = 0.02\,\mathrm{rad/s}$. That is slow enough not to fight the approach's own forward closing, and fast enough to settle well before contact.
@@ -208,7 +208,7 @@ Pursuit guidance: $\chi = \lambda$, giving $a_{lat} = V_p\dot\lambda$. It is sim
 :::
 
 ::: warning Pursuit's formula looks like the answer, but it is not, yet
-$a_{lat} = V_p\dot\lambda$ has exactly the shape of the law the next lesson derives, and that is no coincidence. But two things are wrong with it as it stands. First, it uses the pursuer's own speed $V_p$, where the right quantity turns out to be the **closing velocity** $V_c$ — how fast the range is shrinking — which behaves very differently near intercept. Second, it has no free gain at all, so there is nothing to tune against sensor noise, lag or a target that maneuvers. Recognizing the shape is the useful part of studying pursuit. Trusting the formula as written is the mistake.
+$a_{lat} = V_p\dot\lambda$ has exactly the shape of the law the next lesson derives, and that is no coincidence. But two things are wrong with it as it stands. First, it uses the pursuer's own speed $V_p$, where the right quantity turns out to be the **[[closing velocity|closing-velocity]]** $V_c$ — how fast the range is shrinking — which behaves very differently near intercept. Second, it has no free gain at all, so there is nothing to tune against sensor noise, lag or a target that maneuvers. Recognizing the shape is the useful part of studying pursuit. Trusting the formula as written is the mistake.
 :::
 
 ::: note Deviated pursuit is a patch, not a fix
@@ -339,7 +339,7 @@ You may know it as $v^2/r$ for circular motion. It is the same thing: going arou
 ::: context curve-of-pursuit An old puzzle with a new job
 The curve a chaser traces while always heading at a moving target was studied by the French mathematician Pierre Bouguer in 1732, as the path of a pirate ship chasing a merchant ship. Four dogs at the corners of a square, each chasing the next, trace a famous version of it.
 
-The picture shows the chaser's heading in the worked example. For most of the chase it barely changes, from $14°$ toward $40°$. In the last minute or so it swings to over $150°$ as the chaser whips around behind the target.
+The picture shows the chaser's heading in the worked example. For most of the chase it barely changes, from $14°$ toward $40°$. In the last $75$ seconds or so it swings from about $60°$ to over $150°$ as the chaser whips around behind the target.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 180" font-family="Inter, Arial, sans-serif">

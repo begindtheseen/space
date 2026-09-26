@@ -1,7 +1,7 @@
 ---
 id: l09-miss-distance-and-adjoint-methods
 title: Miss-distance analysis and the adjoint method
-minutes: 24
+minutes: 18
 covers:
   - Miss-distance analysis and adjoint methods
 ---
@@ -277,7 +277,7 @@ Turn a shower from cold to hot. The water does not jump to the new temperature; 
   <line x1="40" y1="140" x2="40" y2="20" stroke="#1f2a44" stroke-width="1.5"/>
   <polyline points="40,140 60,140 60,40 340,40" fill="none" stroke="#b4232c" stroke-width="2"/>
   <text x="250" y="33" font-size="11" fill="#b4232c">command</text>
-  <path d="M 60 140 C 90 90, 120 60, 180 48 S 280 41, 340 40" fill="none" stroke="#1d6fd1" stroke-width="2.5"/>
+  <polyline points="60,140 70,122 80,107 90,95 100,85 110,77 120,70 130,65 140,60 150,57 160,54 170,51 180,49 190,47 200,46 210,45 220,44 230,43 240,43 250,42 260,42 270,41 280,41 290,41 300,41 310,41 320,41 330,40 340,40" fill="none" stroke="#1d6fd1" stroke-width="2.5"/>
   <text x="200" y="80" font-size="11" fill="#1d6fd1">achieved</text>
   <line x1="110" y1="140" x2="110" y2="77" stroke="#6c7a93" stroke-dasharray="4 3"/>
   <line x1="40" y1="77" x2="110" y2="77" stroke="#6c7a93" stroke-dasharray="4 3"/>
@@ -322,7 +322,7 @@ The brute-force alternative is a Monte Carlo campaign: run the full simulation h
 :::
 
 ::: context psd Power spectral density
-Random noise has no single history you can write down, but it has a recipe: how much of its strength is at slow wiggles and how much at fast ones. The power spectral density is that recipe. "White" noise has equal strength at every frequency, like the hiss of an untuned radio. For white noise the miss formula collapses to one number, $\Phi$, times the area under $h^2$. For this example's loop that area is about $0.0039\,\mathrm{s^3}$, so a white-noise source with $\Phi = 1\,\mathrm{m^2/s^3}$ would give a root-mean-square miss of about $\sqrt{0.0039} \approx 0.063\,\mathrm{m}$.
+Random noise has no single history you can write down, but it has a recipe: how much of its strength is at slow wiggles and how much at fast ones. The power spectral density is that recipe. "White" noise has equal strength at every frequency, like the hiss of an untuned radio. For white noise the miss formula collapses to one number, $\Phi$, times the area under $h^2$. For this example's loop that area is about $0.003906\,\mathrm{s^3}$, so a white-noise source with $\Phi = 1\,\mathrm{m^2/s^3}$ would give a root-mean-square miss of about $\sqrt{0.003906} \approx 0.0625\,\mathrm{m}$.
 :::
 
 ::: context adjoint-costate The adjoint is an old friend

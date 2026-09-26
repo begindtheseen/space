@@ -1,7 +1,7 @@
 ---
 id: l10-time-to-go-estimation
 title: Time-to-go estimation
-minutes: 27
+minutes: 23
 covers:
   - Time-to-go estimation and why it is the critical quantity
 ---

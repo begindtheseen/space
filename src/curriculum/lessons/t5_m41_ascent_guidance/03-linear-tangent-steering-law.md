@@ -1,7 +1,7 @@
 ---
 id: l03-linear-tangent-steering-law
 title: The linear tangent steering law
-minutes: 24
+minutes: 21
 covers:
   - "Optimal exoatmospheric steering: the linear tangent law from Pontryagin and the calculus of variations"
 ---
@@ -209,7 +209,7 @@ $$
 
 **Check the result.** Flying the full equations with this $\beta(t)$ gives $v_x = 2400.0000$ and $v_z = 500.0000$ m/s, a final speed of 2451.53 m/s, and an altitude gain of 28.55 km.
 
-**Where did the other 687.1 m/s go?** The ideal was 3138.7 m/s; we got $3138.7 - 2451.5 = 687.1$ m/s less. Two losses share it. **Gravity loss**, $\int g\sin\gamma\,dt$, takes 272.8 m/s. **[[Steering loss|steering-loss]]** — thrust not pointing along the velocity, so part of it turns the velocity instead of speeding it up — takes 414.3 m/s. Check: $272.8 + 414.3 = 687.1$. The steering loss is large here because the rocket starts from rest: early on its small velocity points well away from the $54^\circ$ thrust. It is the price of arriving with *this* velocity vector, 28.55 km up, in exactly 150 s.
+**Where did the other 687.1 m/s go?** The ideal was 3138.7 m/s; we got $3138.65 - 2451.53 = 687.12$ m/s less. Two losses share it. **Gravity loss**, $\int g\sin\gamma\,dt$, takes 272.8 m/s. **[[Steering loss|steering-loss]]** — thrust not pointing along the velocity, so part of it turns the velocity instead of speeding it up — takes 414.3 m/s. Check: $272.8 + 414.3 = 687.1$. The steering loss is large here because the rocket starts from rest: early on its small velocity points well away from the $54^\circ$ thrust. It is the price of arriving with *this* velocity vector, 28.55 km up, in exactly 150 s.
 
 **Is this steering optimal?** It meets the minimum-principle conditions for reaching that velocity at that altitude, with $x$ free. So among all steering histories it is the most propellant-efficient way to reach that end state. In the full problem the target altitude is given too, and the burn time becomes a third unknown alongside $A$ and $B$ — three unknowns for three conditions. The exercise for this module does exactly that.
 :::
@@ -244,7 +244,7 @@ Every step leaned on one fact: the accelerations $\dot v_x, \dot v_z$ depend onl
 
 **Add realistic gravity.** Real gravity is $\mu/r^2$, which depends on position. Then $\partial H/\partial z \ne 0$, the position costates stop being constant, and the law is no longer exact.
 
-So the linear tangent law is exact for flat, uniform-gravity, drag-free flight, and an excellent approximation over any short stretch of a real, curved-gravity burn above the air. The next lesson uses precisely that: re-solve it every few seconds, and a locally flat answer flies a curved path to orbit.
+So the linear tangent law is exact for flat, uniform-gravity, drag-free flight, and an excellent approximation over any short stretch of a real, curved-gravity burn above the air. The next lesson uses precisely that: [[re-solve it every few seconds|peg-bridge]], and a locally flat answer flies a curved path to orbit.
 
 ## Check yourself
 

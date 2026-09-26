@@ -1,7 +1,7 @@
 ---
 id: l12-terminal-midcourse-and-actuator-limits
 title: Terminal versus midcourse guidance, and actuator limits
-minutes: 22
+minutes: 17
 covers:
   - Terminal vs midcourse guidance; guidance under actuator limits
 ---
