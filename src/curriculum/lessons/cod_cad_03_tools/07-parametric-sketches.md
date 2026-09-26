@@ -123,7 +123,7 @@ Now the three words every CAD reviewer uses.
 
 A sketch is **fully defined** when it has exactly 0 DOF left: every point's position follows from the rules. A sketch is **under-defined** when some DOF are left: part of it can still be dragged. A sketch is **over-defined** when you have added more rules than the geometry has freedom, so at least one rule is repeated or fights another.
 
-The software tells you which you have. In SolidWorks and Onshape, under-defined sketch geometry is drawn in blue and fully defined geometry turns black. Over-defined or conflicting constraints are shown in red (SolidWorks also uses yellow). SolidWorks writes the status in the bottom bar, and NX reports how many constraints the sketch still needs. The habit to build: drag a line. If it moves, the sketch is not done.
+The software tells you which you have. In SolidWorks and Onshape, under-defined sketch geometry is drawn in blue and fully defined geometry turns black. Over-defined or conflicting constraints are shown in red. SolidWorks writes the status in the bottom bar, and NX reports how many constraints the sketch still needs. The habit to build: drag a line. If it moves, the sketch is not done.
 
 Why does this matter so much? Because an [[under-defined sketch|latent-defect]] still builds. The part looks perfect on screen today. The loose geometry only moves later — when someone changes an unrelated dimension and the solver picks a different answer, or when the file is reopened and re-solved.
 
@@ -237,6 +237,35 @@ A fully defined sketch is only a flat outline. The next lesson turns sketches in
 Every rule you add turns into an equation. Horizontal says two $y$ values are equal. A $60\,\mathrm{mm}$ dimension says the distance between two points is $60$. Tangent and perpendicular become equations with angles in them. The solver collects them all and finds the $x$ and $y$ of every point that make them true at once, starting from where you roughly drew things.
 
 Most commercial CAD programs do not write their own solver. Siemens sells a solver component that many of them license. That is part of why constraints behave so alike from one program to another.
+:::
+
+::: context tangent-corner Smooth join versus sharp corner
+Tangent means the line and the arc point the same way at the spot where they meet, so a pencil tracing along never has to turn suddenly. Without tangent, the join is a kink.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 140" font-family="Inter, Arial, sans-serif">
+  <path d="M20,110 L100,110 A50,50 0 0,0 150,60" fill="none" stroke="#1d6fd1" stroke-width="3"/>
+  <circle cx="100" cy="110" r="4" fill="#1f2a44"/>
+  <text x="85" y="132" font-size="12" text-anchor="middle" fill="#1f2a44">tangent: smooth</text>
+  <path d="M200,110 L280,110 L330,60" fill="none" stroke="#b4232c" stroke-width="3"/>
+  <circle cx="280" cy="110" r="4" fill="#1f2a44"/>
+  <text x="275" y="132" font-size="12" text-anchor="middle" fill="#1f2a44">not tangent: a corner</text>
+</svg>
+```
+
+On real parts, tangent joins avoid sharp corners where stress piles up and where cutters would leave a step.
+:::
+
+::: context expressions Numbers with names
+Giving a dimension a name like `W` turns a drawing into a small program. If the hole spacing is written as `W - 20`, it can never drift out of step with the width, because it is computed from it. Large aerospace models in NX can hold hundreds of named expressions, some fed from spreadsheets, so one change to a key number — a tank diameter, say — flows to every part built from it.
+:::
+
+::: context dof-bridge Where "degree of freedom" comes back
+The same counting runs through the whole course. A flat rigid shape in a sketch can slide two ways and spin one way: 3 DOF. A rigid body in space can move along three axes and rotate about three axes: 6 DOF. That is where the name of a "6-DOF simulation" comes from — it tracks all six for a vehicle. Later in this module, the mass properties from your CAD model feed exactly that kind of simulation.
+:::
+
+::: context clearance-hole Why the hole is bigger than the bolt
+A clearance hole lets a bolt pass through without touching the sides, so the parts can be lined up even when the holes are a little out of place. For an M6 bolt (nominal diameter $6\,\mathrm{mm}$), the common hole sizes in the ISO table are $6.4\,\mathrm{mm}$ (fine), $6.6\,\mathrm{mm}$ (medium) and $7\,\mathrm{mm}$ (coarse). The gap is also what the position tolerances from the GD&T module have to fit inside.
 :::
 
 ::: context latent-defect A defect that is waiting
