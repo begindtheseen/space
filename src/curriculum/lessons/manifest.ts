@@ -5952,7 +5952,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-linear-least-squares-normal-equations-qr-svd",
       "title": "The linear least squares problem",
-      "minutes": 22,
+      "minutes": 20,
       "covers": [
         "The linear least squares problem; normal equations, QR, and SVD solutions"
       ],
@@ -5961,7 +5961,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-weighted-least-squares-and-the-information-matrix",
       "title": "Weighted least squares and the information matrix",
-      "minutes": 21,
+      "minutes": 18,
       "covers": [
         "Weighted least squares and the information matrix"
       ],
@@ -5970,7 +5970,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-minimum-variance-blue-gauss-markov",
       "title": "Minimum variance and BLUE: the Gauss-Markov theorem",
-      "minutes": 19,
+      "minutes": 16,
       "covers": [
         "Minimum variance and BLUE: the Gauss-Markov theorem"
       ],
@@ -5979,7 +5979,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-maximum-likelihood-equivalence-wls-gaussian",
       "title": "Maximum likelihood and its equivalence to WLS under Gaussian noise",
-      "minutes": 17,
+      "minutes": 19,
       "covers": [
         "Maximum likelihood and its equivalence to WLS under Gaussian noise"
       ],
@@ -5988,7 +5988,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-maximum-a-posteriori-estimation",
       "title": "Maximum a posteriori estimation",
-      "minutes": 19,
+      "minutes": 20,
       "covers": [
         "Maximum a posteriori estimation"
       ],
@@ -5997,7 +5997,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-nonlinear-least-squares-gauss-newton-levenberg-marquardt",
       "title": "Nonlinear least squares: Gauss-Newton and Levenberg-Marquardt",
-      "minutes": 20,
+      "minutes": 24,
       "covers": [
         "Nonlinear least squares: Gauss-Newton and Levenberg-Marquardt"
       ],
@@ -6006,7 +6006,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-recursive-least-squares-kalman-bridge",
       "title": "Recursive least squares and the bridge to the Kalman filter",
-      "minutes": 15,
+      "minutes": 21,
       "covers": [
         "Recursive least squares and the bridge to the Kalman filter"
       ],
@@ -6015,7 +6015,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-condition-number-observability-metric",
       "title": "The normal matrix condition number as an observability metric",
-      "minutes": 16,
+      "minutes": 18,
       "covers": [
         "The normal matrix condition number as an observability metric"
       ],
@@ -6024,7 +6024,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-residual-analysis-outlier-rejection-robust-estimation",
       "title": "Residual analysis, outlier rejection, and robust estimation",
-      "minutes": 19,
+      "minutes": 22,
       "covers": [
         "Residual analysis, outlier rejection, and robust estimation (Huber loss, RANSAC)"
       ],
@@ -6033,7 +6033,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-wahba-problem",
       "title": "The Wahba problem: aligning two sets of vector observations",
-      "minutes": 15,
+      "minutes": 19,
       "covers": [
         "The Wahba problem: find the rotation best aligning two sets of vector observations"
       ],
@@ -6042,7 +6042,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-wahba-solutions-triad-davenport-quest-svd",
       "title": "Wahba solutions: TRIAD, Davenport, QUEST, ESOQ, and SVD",
-      "minutes": 20,
+      "minutes": 22,
       "covers": [
         "Wahba solutions: TRIAD, Davenport q-method, QUEST, ESOQ, and the SVD method"
       ],
@@ -6051,7 +6051,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-attitude-covariance-sensor-geometry",
       "title": "Covariance of an attitude solution and the effect of sensor geometry",
-      "minutes": 18,
+      "minutes": 16,
       "covers": [
         "Covariance of an attitude solution and the effect of sensor geometry"
       ],
