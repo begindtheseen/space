@@ -1584,6 +1584,100 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       "file": "cod_cpp_02_memory/14-smart-pointers.md"
     }
   ],
+  "cod_git_01_basics": [
+    {
+      "id": "l01-snapshots-and-the-object-model",
+      "title": "Snapshots, objects and the commit graph",
+      "minutes": 22,
+      "covers": [
+        "Blobs, trees, commits, refs, HEAD and the commit DAG"
+      ],
+      "file": "cod_git_01_basics/01-snapshots-and-the-object-model.md"
+    },
+    {
+      "id": "l02-the-three-areas-and-your-first-commit",
+      "title": "The three areas and your first commits",
+      "minutes": 20,
+      "covers": [
+        "The three areas: working tree, index/staging, repository",
+        "init, clone, add, status, diff, diff --staged, commit"
+      ],
+      "file": "cod_git_01_basics/02-the-three-areas-and-your-first-commit.md"
+    },
+    {
+      "id": "l03-reading-history-and-writing-messages",
+      "title": "Reading history and writing good commit messages",
+      "minutes": 24,
+      "covers": [
+        "log --oneline --graph --all, show, blame",
+        "Commit message craft: imperative subject, why-not-what body"
+      ],
+      "file": "cod_git_01_basics/03-reading-history-and-writing-messages.md"
+    },
+    {
+      "id": "l04-branches-are-pointers",
+      "title": "Branches are pointers",
+      "minutes": 20,
+      "covers": [
+        "Branches as pointers; checkout/switch; detached HEAD"
+      ],
+      "file": "cod_git_01_basics/04-branches-are-pointers.md"
+    },
+    {
+      "id": "l05-merging-and-conflicts",
+      "title": "Merging and resolving a conflict",
+      "minutes": 23,
+      "covers": [
+        "Fast-forward vs true merge; resolving a conflict"
+      ],
+      "file": "cod_git_01_basics/05-merging-and-conflicts.md"
+    },
+    {
+      "id": "l06-undoing-reset-revert-restore",
+      "title": "Undoing things: reset, revert and restore",
+      "minutes": 26,
+      "covers": [
+        "reset --soft/--mixed/--hard vs revert vs restore"
+      ],
+      "file": "cod_git_01_basics/06-undoing-reset-revert-restore.md"
+    },
+    {
+      "id": "l07-stash-and-the-reflog",
+      "title": "The safety net: stash and reflog",
+      "minutes": 22,
+      "covers": [
+        "stash and reflog as the undo net"
+      ],
+      "file": "cod_git_01_basics/07-stash-and-the-reflog.md"
+    },
+    {
+      "id": "l08-what-git-should-not-track",
+      "title": "What Git should not track: .gitignore, .gitattributes and LFS",
+      "minutes": 23,
+      "covers": [
+        ".gitignore, .gitattributes, Git LFS for large binary artefacts"
+      ],
+      "file": "cod_git_01_basics/08-what-git-should-not-track.md"
+    },
+    {
+      "id": "l09-tags-and-versions",
+      "title": "Tags and semantic versioning",
+      "minutes": 19,
+      "covers": [
+        "Tags and semantic versioning"
+      ],
+      "file": "cod_git_01_basics/09-tags-and-versions.md"
+    },
+    {
+      "id": "l10-bisect",
+      "title": "Hunting a regression with bisect",
+      "minutes": 22,
+      "covers": [
+        "bisect for regression hunting"
+      ],
+      "file": "cod_git_01_basics/10-bisect.md"
+    }
+  ],
   "cod_lnx_01_shell": [
     {
       "id": "l01-the-filesystem-and-getting-around",
@@ -2078,6 +2172,195 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Package layout: src/ layout, __init__.py, relative imports"
       ],
       "file": "cod_py_02_idiomatic/13-package-layout.md"
+    }
+  ],
+  "cod_sql_01_select": [
+    {
+      "id": "l01-tables-rows-and-keys",
+      "title": "Tables, rows and keys",
+      "minutes": 22,
+      "covers": [
+        "Relations, rows, columns and domains; primary and foreign keys"
+      ],
+      "file": "cod_sql_01_select/01-tables-rows-and-keys.md"
+    },
+    {
+      "id": "l02-select-from-where",
+      "title": "Asking questions: SELECT, FROM, WHERE",
+      "minutes": 22,
+      "covers": [
+        "SELECT, FROM, WHERE; comparison, BETWEEN, IN, LIKE"
+      ],
+      "file": "cod_sql_01_select/02-select-from-where.md"
+    },
+    {
+      "id": "l03-sorting-limiting-and-distinct",
+      "title": "Sorting, limiting and removing duplicates",
+      "minutes": 22,
+      "covers": [
+        "ORDER BY, LIMIT and OFFSET; DISTINCT"
+      ],
+      "file": "cod_sql_01_select/03-sorting-limiting-and-distinct.md"
+    },
+    {
+      "id": "l04-expressions-and-case",
+      "title": "Computed columns and CASE WHEN",
+      "minutes": 21,
+      "covers": [
+        "Expressions and CASE WHEN"
+      ],
+      "file": "cod_sql_01_select/04-expressions-and-case.md"
+    },
+    {
+      "id": "l05-null-and-three-valued-logic",
+      "title": "NULL: the value that is not there",
+      "minutes": 24,
+      "covers": [
+        "NULL and three-valued logic; the = NULL trap; IS NULL and IS NOT NULL",
+        "COALESCE, NULLIF, CAST"
+      ],
+      "file": "cod_sql_01_select/05-null-and-three-valued-logic.md"
+    },
+    {
+      "id": "l06-data-types",
+      "title": "Data types: choosing what a column holds",
+      "minutes": 22,
+      "covers": [
+        "Data types: INTEGER, NUMERIC versus REAL, and why timestamps and money never use floats",
+        "COALESCE, NULLIF, CAST"
+      ],
+      "file": "cod_sql_01_select/06-data-types.md"
+    },
+    {
+      "id": "l07-time-in-the-database",
+      "title": "Time: TIMESTAMPTZ, intervals and UTC",
+      "minutes": 22,
+      "covers": [
+        "TIMESTAMPTZ versus TIMESTAMP, intervals, and why aerospace stores UTC"
+      ],
+      "file": "cod_sql_01_select/07-time-in-the-database.md"
+    },
+    {
+      "id": "l08-the-order-a-query-runs-in",
+      "title": "The order a query really runs in",
+      "minutes": 19,
+      "covers": [
+        "Logical versus physical query order: FROM, WHERE, GROUP BY, HAVING, SELECT, ORDER BY, LIMIT"
+      ],
+      "file": "cod_sql_01_select/08-the-order-a-query-runs-in.md"
+    },
+    {
+      "id": "l09-reading-a-schema",
+      "title": "Reading a schema you did not write",
+      "minutes": 22,
+      "covers": [
+        "Reading a schema you did not write"
+      ],
+      "file": "cod_sql_01_select/09-reading-a-schema.md"
+    }
+  ],
+  "cod_sql_02_joins": [
+    {
+      "id": "l01-joining-tables",
+      "title": "Joining tables: inner, outer, cross and self",
+      "minutes": 22,
+      "covers": [
+        "INNER, LEFT, RIGHT and FULL OUTER joins; CROSS join; self-joins"
+      ],
+      "file": "cod_sql_02_joins/01-joining-tables.md"
+    },
+    {
+      "id": "l02-join-keys-and-cardinality",
+      "title": "Join conditions and how many rows come out",
+      "minutes": 22,
+      "covers": [
+        "ON versus USING; why NATURAL JOIN is a trap",
+        "Join cardinality reasoning and the fan-out trap when aggregating after a one-to-many join"
+      ],
+      "file": "cod_sql_02_joins/02-join-keys-and-cardinality.md"
+    },
+    {
+      "id": "l03-group-by-and-aggregates",
+      "title": "GROUP BY, HAVING and the basic aggregates",
+      "minutes": 22,
+      "covers": [
+        "GROUP BY and HAVING; the difference between WHERE and HAVING",
+        "COUNT(*) versus COUNT(col); SUM, AVG, MIN, MAX"
+      ],
+      "file": "cod_sql_02_joins/03-group-by-and-aggregates.md"
+    },
+    {
+      "id": "l04-the-fan-out-trap",
+      "title": "The fan-out trap",
+      "minutes": 25,
+      "covers": [
+        "Join cardinality reasoning and the fan-out trap when aggregating after a one-to-many join"
+      ],
+      "file": "cod_sql_02_joins/04-the-fan-out-trap.md"
+    },
+    {
+      "id": "l05-richer-aggregates",
+      "title": "Lists, percentiles and conditional aggregates",
+      "minutes": 23,
+      "covers": [
+        "STRING_AGG and ARRAY_AGG; PERCENTILE_CONT",
+        "FILTER (WHERE ...) for conditional aggregation"
+      ],
+      "file": "cod_sql_02_joins/05-richer-aggregates.md"
+    },
+    {
+      "id": "l06-grouping-sets-rollup-cube",
+      "title": "Subtotals: GROUPING SETS, ROLLUP and CUBE",
+      "minutes": 20,
+      "covers": [
+        "GROUPING SETS, ROLLUP and CUBE"
+      ],
+      "file": "cod_sql_02_joins/06-grouping-sets-rollup-cube.md"
+    },
+    {
+      "id": "l07-subqueries",
+      "title": "Subqueries: queries inside queries",
+      "minutes": 24,
+      "covers": [
+        "Scalar, row and table subqueries; correlated subqueries"
+      ],
+      "file": "cod_sql_02_joins/07-subqueries.md"
+    },
+    {
+      "id": "l08-exists-in-and-anti-joins",
+      "title": "EXISTS, IN and the anti-join",
+      "minutes": 24,
+      "covers": [
+        "EXISTS versus IN versus JOIN, and their NULL semantics"
+      ],
+      "file": "cod_sql_02_joins/08-exists-in-and-anti-joins.md"
+    },
+    {
+      "id": "l09-common-table-expressions",
+      "title": "Common table expressions",
+      "minutes": 22,
+      "covers": [
+        "Common table expressions and chained CTEs for readability"
+      ],
+      "file": "cod_sql_02_joins/09-common-table-expressions.md"
+    },
+    {
+      "id": "l10-recursive-ctes",
+      "title": "Recursive CTEs: hierarchies and gap-filling",
+      "minutes": 22,
+      "covers": [
+        "Recursive CTEs for hierarchies and for gap-filling a time series"
+      ],
+      "file": "cod_sql_02_joins/10-recursive-ctes.md"
+    },
+    {
+      "id": "l11-set-operations",
+      "title": "Set operations: UNION, INTERSECT and EXCEPT",
+      "minutes": 21,
+      "covers": [
+        "UNION, UNION ALL, INTERSECT and EXCEPT"
+      ],
+      "file": "cod_sql_02_joins/11-set-operations.md"
     }
   ],
   "t0_m00_basecamp": [
@@ -7970,23 +8253,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_git_01_basics": {
-    "covered": 0,
+    "covered": 12,
     "total": 12,
-    "complete": false,
-    "missing": [
-      "Blobs, trees, commits, refs, HEAD and the commit DAG",
-      "The three areas: working tree, index/staging, repository",
-      "init, clone, add, status, diff, diff --staged, commit",
-      "log --oneline --graph --all, show, blame",
-      "Branches as pointers; checkout/switch; detached HEAD",
-      "Fast-forward vs true merge; resolving a conflict",
-      "reset --soft/--mixed/--hard vs revert vs restore",
-      "stash and reflog as the undo net",
-      ".gitignore, .gitattributes, Git LFS for large binary artefacts",
-      "Commit message craft: imperative subject, why-not-what body",
-      "Tags and semantic versioning",
-      "bisect for regression hunting"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_git_02_collab": {
     "covered": 0,
@@ -8637,41 +8907,16 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "cod_sql_01_select": {
-    "covered": 0,
+    "covered": 10,
     "total": 10,
-    "complete": false,
-    "missing": [
-      "Relations, rows, columns and domains; primary and foreign keys",
-      "NULL and three-valued logic; the = NULL trap; IS NULL and IS NOT NULL",
-      "SELECT, FROM, WHERE; comparison, BETWEEN, IN, LIKE",
-      "ORDER BY, LIMIT and OFFSET; DISTINCT",
-      "Expressions and CASE WHEN",
-      "Data types: INTEGER, NUMERIC versus REAL, and why timestamps and money never use floats",
-      "TIMESTAMPTZ versus TIMESTAMP, intervals, and why aerospace stores UTC",
-      "COALESCE, NULLIF, CAST",
-      "Logical versus physical query order: FROM, WHERE, GROUP BY, HAVING, SELECT, ORDER BY, LIMIT",
-      "Reading a schema you did not write"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_sql_02_joins": {
-    "covered": 0,
+    "covered": 13,
     "total": 13,
-    "complete": false,
-    "missing": [
-      "INNER, LEFT, RIGHT and FULL OUTER joins; CROSS join; self-joins",
-      "ON versus USING; why NATURAL JOIN is a trap",
-      "Join cardinality reasoning and the fan-out trap when aggregating after a one-to-many join",
-      "GROUP BY and HAVING; the difference between WHERE and HAVING",
-      "COUNT(*) versus COUNT(col); SUM, AVG, MIN, MAX",
-      "STRING_AGG and ARRAY_AGG; PERCENTILE_CONT",
-      "FILTER (WHERE ...) for conditional aggregation",
-      "GROUPING SETS, ROLLUP and CUBE",
-      "Scalar, row and table subqueries; correlated subqueries",
-      "EXISTS versus IN versus JOIN, and their NULL semantics",
-      "Common table expressions and chained CTEs for readability",
-      "Recursive CTEs for hierarchies and for gap-filling a time series",
-      "UNION, UNION ALL, INTERSECT and EXCEPT"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_sql_03_windows": {
     "covered": 0,
