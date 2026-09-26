@@ -540,7 +540,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-one-page-and-the-top-third",
       "title": "One page, reverse chronological: what goes in the top third",
-      "minutes": 19,
+      "minutes": 21,
       "covers": [
         "one page, reverse chronological, and what belongs in the top third"
       ],
@@ -558,8 +558,8 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     },
     {
       "id": "l03-quantified-bullets",
-      "title": "Bullets that name a problem, a method, and a result",
-      "minutes": 24,
+      "title": "Bullets that name an action, a method, and a result",
+      "minutes": 25,
       "covers": [
         "quantified bullets: what you did, how, and the measured result"
       ],
@@ -567,8 +567,8 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     },
     {
       "id": "l04-the-projects-section",
-      "title": "The projects section: the primary evidence, placed and labeled honestly",
-      "minutes": 17,
+      "title": "The projects section: your main evidence, placed and labeled honestly",
+      "minutes": 19,
       "covers": [
         "the projects section as the primary section for candidates without industry GNC experience"
       ],
@@ -577,7 +577,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-applicant-tracking-systems",
       "title": "Formatting so a parser reads it correctly",
-      "minutes": 16,
+      "minutes": 18,
       "covers": [
         "applicant tracking system parsing: no tables, no multi-column layouts, no images, standard headings, PDF"
       ],
@@ -605,7 +605,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-referrals",
       "title": "Referrals: what they do, and how to earn one",
-      "minutes": 18,
+      "minutes": 20,
       "covers": [
         "referrals: who can refer, how to ask, and what to give the referrer to make it easy"
       ],
@@ -614,7 +614,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-community-and-conferences",
       "title": "Community and conferences: building the presence a referral needs",
-      "minutes": 17,
+      "minutes": 18,
       "covers": [
         "community and conferences: AIAA and AAS Space Flight Mechanics, SmallSat, university seminars, open-source contribution"
       ],
@@ -623,7 +623,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-outreach-and-reapplying",
       "title": "LinkedIn outreach, and knowing when to reapply",
-      "minutes": 19,
+      "minutes": 22,
       "covers": [
         "recruiter outreach on LinkedIn done well and done badly",
         "reapplication cadence and what must change between attempts"
