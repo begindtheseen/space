@@ -17,6 +17,15 @@ says so; restart when it suits you. From the next version of the app on, you do 
 do that: the update is simply there the next time you open ORBIT, and the rare update that needs a
 whole new app downloads quietly too and goes in when you quit.
 
+**Read aloud says equations properly.** A centred dot is read as "times" (it stays "dot" between
+two vectors, where it is the dot product). Powers are "to the power of" — "10 to the power of
+minus 3" — and one half, three halves, transpose, inverse, star and prime are named rather than
+read as numbers. Degrees are read as degrees everywhere: "65 degrees", "1 degree", "12.3 degrees
+per second", "20 degrees Celsius", where before the voice said "circ" or "degrees slash s".
+Matrices are read row by row, cases as "this, if that", integrals and sums with their limits
+("the integral from 0 to T of"), sets as "the set of x such that", and 3 × 10⁸, 10^6 and m² in
+ordinary text come out as words.
+
 ## 1.1.2
 
 **Focus mode changes how the app looks.** While a block runs, the rail, the top bar and the

@@ -20,7 +20,7 @@ describe('maths becomes English', () => {
   it('names the common powers and reads the rest', () => {
     expect(mathToWords('x^2')).toBe('x squared')
     expect(mathToWords('x^3')).toBe('x cubed')
-    expect(mathToWords('x^{n+1}')).toContain('to the power n plus 1')
+    expect(mathToWords('x^{n+1}')).toBe('x to the power of n plus 1')
   })
 
   it('reads rates and unit vectors the way an engineer says them', () => {
@@ -268,3 +268,96 @@ describe('sentence closing', () => {
     expect(out.some((u) => u.trim() === 'The move is.')).toBe(false)
   })
 })
+
+describe('equations read the way a person says them', () => {
+  it('reads a centred dot as times, and keeps "dot" for two vectors', () => {
+    expect(mathToWords(String.raw`I \cdot 2^{-n}`)).toBe('I times 2 to the power of minus n')
+    expect(mathToWords(String.raw`3 \cdot 4`)).toBe('3 times 4')
+    expect(mathToWords('3 · 4')).toBe('3 times 4')
+    expect(mathToWords(String.raw`\mathbf{a}\cdot\mathbf{b}`)).toBe('a dot b')
+    expect(mathToWords(String.raw`\mathbf a \cdot \mathbf b`)).toBe('a dot b')
+    expect(mathToWords(String.raw`\hat{n} \cdot \mathbf{v}`)).toBe('n hat dot v')
+    expect(mathToWords(String.raw`\nabla \cdot \mathbf{E}`)).toBe('del dot E')
+    // \cdots is not \cdot.
+    expect(mathToWords(String.raw`a_1 + \cdots`)).toBe('a sub one plus and so on')
+    // Rates keep their dot.
+    expect(mathToWords(String.raw`\dot{x} = A x`)).toBe('x dot equals A x')
+  })
+
+  it('says "to the power of"', () => {
+    expect(mathToWords('e^{-t/\\tau}')).toBe('e to the power of minus t divided by tau')
+    expect(mathToWords('10^{-3}')).toBe('10 to the power of minus 3')
+    expect(mathToWords('5.783\\times 10^7')).toBe('5.783 times 10 to the power of 7')
+    expect(mathToWords('z^{-1}')).toBe('z to the power of minus 1')
+    expect(mathToWords('x^n')).toBe('x to the power of n')
+    expect(mathToWords('\\omega^\\alpha')).toBe('omega to the power of alpha')
+    expect(mathToWords('r^{3/2}')).toBe('r to the power of three halves')
+    expect(mathToWords('x^{1/2}')).toBe('x to the power of one half')
+  })
+
+  it('names transpose, inverse, star and prime instead of reading them as powers', () => {
+    expect(mathToWords('A P + P A^T + B B^T = 0')).toBe('A P plus P A transpose plus B B transpose equals 0')
+    expect(mathToWords('\\mathbf{R}^\\top \\mathbf{v}')).toBe('R transpose v')
+    expect(mathToWords('C^{\\mathsf{T}}')).toBe('C transpose')
+    expect(mathToWords('\\mathbf{P}^{-1}')).toBe('P inverse')
+    expect(mathToWords('x^*')).toBe('x star')
+    expect(mathToWords("f'(x)")).toBe('f prime (x)')
+    expect(mathToWords("\\text{don't}")).toBe("don't")
+  })
+
+  it('reads limits on integrals and sums', () => {
+    expect(mathToWords('\\int_0^T y(t)\\,dt')).toBe('the integral from 0 to T of y(t) dt')
+    expect(mathToWords('\\sum_{k=0}^{N-1} x_k')).toBe('the sum from k equals 0 to N minus 1 of x sub k')
+    expect(mathToWords('\\lim_{x \\to 0} f(x)')).toBe('the limit as x goes to 0 of f(x)')
+  })
+
+  it('reads degrees, in an equation and in prose', () => {
+    expect(mathToWords('65.03^\\circ')).toBe('65.03 degrees')
+    expect(mathToWords('90^{\\circ}')).toBe('90 degrees')
+    expect(mathToWords('1^\\circ')).toBe('1 degree')
+    expect(mathToWords('7.155\\times10^{-3}\\,{}^\\circ/\\mathrm{s}')).toBe('7.155 times 10 to the power of minus 3 degrees per second')
+    expect(mathToWords('0.7475\\,{}^\\circ/\\mathrm{s^2}')).toBe('0.7475 degrees per second squared')
+    expect(mathToWords('\\tan(10°)')).toContain('tangent')
+    expect(mathToWords('\\tan(10°)')).toContain('10 degrees')
+    expect(mathToWords('\\cos\\theta')).toBe('cosine theta')
+    expect(speakableFromMarkdown('A 53° shell, turning at 12.34°/s.')).toBe('A 53 degrees shell, turning at 12.34 degrees per second.')
+    expect(speakableFromMarkdown('Heat it to 20°C.')).toBe('Heat it to 20 degrees Celsius.')
+    expect(speakableFromMarkdown('A phase of -8.4 deg.')).toBe('A phase of -8.4 degrees.')
+  })
+
+  it('reads the arithmetic symbols prose uses', () => {
+    expect(speakableFromMarkdown('About 3 × 10⁸ m/s.')).toBe('About 3 times 10 to the power of 8 metres per second.')
+    expect(speakableFromMarkdown('Take 10^6 samples.')).toBe('Take 10 to the power of 6 samples.')
+    expect(speakableFromMarkdown('An area in m².')).toBe('An area in m squared.')
+    expect(speakableFromMarkdown('It costs 9.81 m/s² of lift.')).toBe('It costs 9.81 metres per second squared of lift.')
+    expect(speakableFromMarkdown('first · second')).toBe('first, second')
+    expect(speakableFromMarkdown('Done. · Next')).toBe('Done. Next')
+  })
+
+  it('reads matrices, cases, aligned working, sets and transforms', () => {
+    expect(mathToWords(String.raw`A = \begin{pmatrix} 0 & 1 \\ -2 & -3 \end{pmatrix}`)).toBe(
+      'A equals the matrix with row one: 0, 1; row two: minus 2, minus 3,',
+    )
+    expect(mathToWords(String.raw`\mathbf{x} = \begin{bmatrix} x \\ \dot x \end{bmatrix}`)).toBe('x equals the column vector x, x dot,')
+    expect(mathToWords(String.raw`\det\begin{vmatrix} a & b \\ c & d \end{vmatrix} = ad - bc`)).toBe(
+      'the determinant of the matrix with row one: a, b; row two: c, d, equals ad minus bc',
+    )
+    expect(mathToWords(String.raw`f(x) = \begin{cases} x^2 & x \ge 0 \\ 0 & \text{otherwise} \end{cases}`)).toBe(
+      'f(x) equals x squared, if x is greater than or equal to 0; 0, otherwise,',
+    )
+    expect(mathToWords(String.raw`\begin{aligned} a &= b + c \\ &= d \end{aligned}`)).toBe('a equals b plus c. equals d,')
+    expect(mathToWords(String.raw`\{ x : a^T x = b \}`)).toBe('the set of x such that a transpose x equals b')
+    expect(mathToWords(String.raw`F(s) = \mathcal{L}\{f(t)\}`)).toBe('F(s) equals the Laplace transform of f(t)')
+    expect(mathToWords(String.raw`(f \circ g)(x)`)).toBe('(f composed with g)(x)')
+    expect(mathToWords(String.raw`\tau^{+1/2}`)).toBe('tau to the power of one half')
+  })
+
+  it('reads the cross-product matrix, subscript labels and a dollar sign in prose', () => {
+    expect(mathToWords(String.raw`a^\times b`)).toBe('a cross b')
+    expect(mathToWords(String.raw`v_{\text{circ}} = \sqrt{\mu/r}`)).toBe('v sub circular equals the square root of mu divided by r')
+    expect(speakableFromMarkdown(String.raw`A rate of \$150 per credit, so $60 \times 150 = 9000$ dollars.`)).toBe(
+      'A rate of 150 dollars per credit, so 60 times 150 equals 9000 dollars.',
+    )
+  })
+})
+
