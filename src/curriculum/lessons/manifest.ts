@@ -4730,7 +4730,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-lamberts-problem-and-theorem",
       "title": "Lambert's problem and Lambert's theorem",
-      "minutes": 20,
+      "minutes": 19,
       "covers": [
         "Lambert's problem statement and Lambert's theorem"
       ],
@@ -4739,7 +4739,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-universal-variable-solver",
       "title": "Solving Lambert's problem: Gauss, universal variables, and Izzo",
-      "minutes": 22,
+      "minutes": 18,
       "covers": [
         "solution methods: Gauss, universal variables / Battin, Izzo"
       ],
@@ -4748,7 +4748,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-branches-short-long-multirev",
       "title": "Branches, honestly: short way, long way, and multiple revolutions",
-      "minutes": 21,
+      "minutes": 18,
       "covers": [
         "multi-revolution solutions and their multiplicity"
       ],
@@ -4757,7 +4757,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-the-180-degree-singularity",
       "title": "The 180-degree singularity",
-      "minutes": 20,
+      "minutes": 18,
       "covers": [
         "convergence and singular geometries near a 180 degree transfer"
       ],
@@ -4766,7 +4766,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-the-state-transition-matrix",
       "title": "The state transition matrix for two-body motion",
-      "minutes": 21,
+      "minutes": 18,
       "covers": [
         "the state transition matrix and its use in targeting"
       ],
@@ -4775,7 +4775,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-differential-correction",
       "title": "Targeting and differential correction",
-      "minutes": 22,
+      "minutes": 20,
       "covers": [
         "targeting and differential correction"
       ],
@@ -4784,7 +4784,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-b-plane-targeting",
       "title": "B-plane targeting",
-      "minutes": 19,
+      "minutes": 22,
       "covers": [
         "B-plane targeting"
       ],
@@ -4802,7 +4802,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-tcm-and-linear-covariance",
       "title": "Trajectory correction manoeuvres and linear covariance analysis",
-      "minutes": 24,
+      "minutes": 25,
       "covers": [
         "trajectory correction manoeuvres",
         "linear covariance analysis of targeting errors"
@@ -4814,7 +4814,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-relative-motion-frames",
       "title": "Relative motion frames: LVLH, Hill and RIC",
-      "minutes": 18,
+      "minutes": 21,
       "covers": [
         "relative motion frames: LVLH, Hill, RIC"
       ],
@@ -4823,7 +4823,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-deriving-clohessy-wiltshire",
       "title": "Deriving the Clohessy-Wiltshire equations",
-      "minutes": 19,
+      "minutes": 18,
       "covers": [
         "derivation of the Clohessy-Wiltshire equations"
       ],
@@ -4832,7 +4832,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-cw-state-transition-matrix",
       "title": "Solving CW — closed-form motion and the state transition matrix",
-      "minutes": 17,
+      "minutes": 15,
       "covers": [
         "the CW state transition matrix"
       ],
@@ -4841,7 +4841,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-cw-validity-and-tschauner-hempel",
       "title": "How good is CW? Validity limits and the eccentric-orbit break",
-      "minutes": 22,
+      "minutes": 24,
       "covers": [
         "Tschauner-Hempel equations for eccentric reference orbits"
       ],
@@ -4869,7 +4869,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-two-impulse-cw-targeting",
       "title": "Two-impulse CW rendezvous targeting",
-      "minutes": 17,
+      "minutes": 18,
       "covers": [
         "two-impulse CW rendezvous targeting"
       ],
