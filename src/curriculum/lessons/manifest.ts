@@ -2568,7 +2568,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-similarity-transforms-modes-stability",
       "title": "Similarity transforms, modal coordinates and stability",
-      "minutes": 21,
+      "minutes": 24,
       "covers": [
         "similarity transforms"
       ],
@@ -2586,7 +2586,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-positive-definiteness-quadratic-forms",
       "title": "Positive definiteness and quadratic forms",
-      "minutes": 22,
+      "minutes": 24,
       "covers": [
         "positive definiteness and quadratic forms"
       ],
@@ -2604,7 +2604,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-matrix-calculus-gradients-jacobians",
       "title": "Matrix calculus, gradients and Jacobians",
-      "minutes": 21,
+      "minutes": 24,
       "covers": [
         "matrix calculus: gradients and Jacobians"
       ],
@@ -2613,7 +2613,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-singular-value-decomposition",
       "title": "The singular value decomposition",
-      "minutes": 22,
+      "minutes": 20,
       "covers": [
         "singular value decomposition"
       ],
@@ -2622,7 +2622,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-pseudoinverse-and-rank-deficiency",
       "title": "The pseudoinverse and rank deficiency",
-      "minutes": 23,
+      "minutes": 24,
       "covers": [
         "pseudoinverse and rank deficiency"
       ],
@@ -2631,7 +2631,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-condition-number",
       "title": "The condition number",
-      "minutes": 23,
+      "minutes": 24,
       "covers": [
         "condition number"
       ],
@@ -2640,7 +2640,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-least-squares-normal-equations-qr-svd",
       "title": "Least squares: normal equations, QR and SVD",
-      "minutes": 22,
+      "minutes": 24,
       "covers": [
         "least squares: normal equations vs QR vs SVD"
       ],
@@ -2678,7 +2678,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-implicit-differentiation-related-rates",
       "title": "Implicit differentiation and related rates",
-      "minutes": 22,
+      "minutes": 25,
       "covers": [
         "implicit differentiation and related rates"
       ],
