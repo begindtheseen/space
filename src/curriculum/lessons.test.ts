@@ -52,26 +52,20 @@ const KINDS = ['example', 'key', 'check', 'answer', 'note', 'warning', 'video', 
  */
 const WRITTEN_BEFORE_NOTES = new Set<string>([
   // Career
-  'car_01_itar_gate', 'car_02_role_families', 'car_03_levels_and_quals', 'car_04_degree_reality',
   'car_05_tooling_reality', 'car_06_portfolio', 'car_07_resume_and_referrals', 'car_08_pipeline',
   'car_09_screens', 'car_10_past_project_presentation', 'car_11_domain_round', 'car_12_first_principles',
   'car_13_behavioral_star',
   // Coding
-  'cod_cpp_01_basics', 'cod_cpp_02_memory', 'cod_lnx_01_shell', 'cod_lnx_02_scripting', 'cod_py_01_basics',
-  'cod_py_02_idiomatic',
+  'cod_cpp_01_basics', 'cod_cpp_02_memory', 'cod_py_02_idiomatic',
   // Tier 0
-  't0_m03_python_scicomp', 't0_m04_linear_algebra_1', 't0_m05_linear_algebra_2', 't0_m06_calculus_single',
-  't0_m07_calculus_multi', 't0_m09_probability_stats', 't0_m10_numerical_methods', 't0_m11_optimization',
-  't0_m12_cpp',
+  't0_m07_calculus_multi', 't0_m11_optimization', 't0_m12_cpp',
   // Tier 1
-  't1_m14_rigid_body_dynamics', 't1_m15_rotating_frames', 't1_m16_attitude_representations',
   't1_m17_attitude_kinematics', 't1_m18_atmospheric_flight',
   // Tier 2
-  't2_m19_two_body', 't2_m20_orbital_maneuvers', 't2_m21_perturbations', 't2_m22_lambert_targeting',
-  't2_m23_relative_motion_rpo', 't2_m24_edl',
+  't2_m22_lambert_targeting', 't2_m23_relative_motion_rpo', 't2_m24_edl',
   // Tier 3
-  't3_m25_signals_systems', 't3_m26_classical_control', 't3_m27_digital_control', 't3_m28_state_space',
-  't3_m29_optimal_control_lqr', 't3_m30_robust_control', 't3_m31_nonlinear_control', 't3_m32_mpc',
+  't3_m26_classical_control', 't3_m27_digital_control', 't3_m28_state_space', 't3_m29_optimal_control_lqr',
+  't3_m30_robust_control', 't3_m31_nonlinear_control', 't3_m32_mpc',
   // Tier 4
   't4_m33_least_squares', 't4_m34_kalman_filter', 't4_m35_nonlinear_filters', 't4_m36_inertial_navigation',
   't4_m37_gnss', 't4_m38_sensors_optical_nav', 't4_m39_orbit_determination',
@@ -483,6 +477,18 @@ describe.each(moduleDirs)('lessons for %s', (moduleId) => {
         .split('\n')
         .filter((l) => /^(<{7}|={7}|>{7})(\s|$)/.test(l))
       expect(markers, 'unresolved merge or stash conflict in the lesson').toEqual([])
+    })
+
+    it('carries no control characters', () => {
+      // A script that writes "\times" or "\varepsilon" into a Python or JS
+      // string without escaping the backslash leaves a tab or a vertical tab
+      // where the command was, and KaTeX quietly renders what is left.
+      const bad = p.src
+        .split('\n')
+        .map((l, i) => ({ l, i }))
+        .filter(({ l }) => /[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]|\t(?:imes|ext|heta|au|riangle|ilde|op)\b/.test(l))
+        .map(({ i }) => `line ${i + 1}`)
+      expect(bad, 'a TeX command lost its backslash to a string escape').toEqual([])
     })
 
     it('is a full lesson, not a stub', () => {
