@@ -323,7 +323,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-the-verbatim-expectation",
       "title": "The verbatim expectation: you write the flight code",
-      "minutes": 21,
+      "minutes": 19,
       "covers": [
         "the verbatim expectation: implementation, validation, unit testing, and deployment of production software primarily in C++",
         "GNC engineers write flight code themselves rather than handing prototypes to a software team"
@@ -352,7 +352,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-the-machine-the-deadline-and-the-forbidden-list",
       "title": "The machine, the deadline, and why the loop forbids the heap",
-      "minutes": 25,
+      "minutes": 22,
       "covers": [
         "flight computers: embedded Linux, a roughly 3.2 series kernel with real-time patches, on Dragon, Falcon and Starship primary flight computers",
         "determinism, fixed-step integration and bounded execution time in a flight control loop",
@@ -1332,6 +1332,106 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       "file": "car_13_behavioral_star/12-questions-that-prove-understanding.md"
     }
   ],
+  "cod_cad_01_drawings": [
+    {
+      "id": "l01-orthographic-projection",
+      "title": "Looking at a part straight on",
+      "minutes": 17,
+      "covers": [
+        "Orthographic projection; third-angle (US) versus first-angle (ISO) and the symbol that identifies which"
+      ],
+      "file": "cod_cad_01_drawings/01-orthographic-projection.md"
+    },
+    {
+      "id": "l02-the-views-on-a-sheet",
+      "title": "The views on a sheet",
+      "minutes": 18,
+      "covers": [
+        "Views: front, top, right, auxiliary, section (full, half, offset, broken-out), detail, isometric"
+      ],
+      "file": "cod_cad_01_drawings/02-the-views-on-a-sheet.md"
+    },
+    {
+      "id": "l03-lines-and-scales",
+      "title": "The lines on a drawing, and its scale",
+      "minutes": 18,
+      "covers": [
+        "Line types: visible, hidden, centre, phantom, section; line weights",
+        "Scales and their notation"
+      ],
+      "file": "cod_cad_01_drawings/03-lines-and-scales.md"
+    },
+    {
+      "id": "l04-title-block-and-revisions",
+      "title": "The title block, revisions and why the drawing is the law",
+      "minutes": 22,
+      "covers": [
+        "Title block, revision block, revision letters and change bars",
+        "The drawing as the legal definition of the part"
+      ],
+      "file": "cod_cad_01_drawings/04-title-block-and-revisions.md"
+    },
+    {
+      "id": "l05-assemblies-boms-and-notes",
+      "title": "Assemblies, parts lists and the notes that go with them",
+      "minutes": 20,
+      "covers": [
+        "Bills of material, item balloons and find numbers",
+        "General notes and flag notes"
+      ],
+      "file": "cod_cad_01_drawings/05-assemblies-boms-and-notes.md"
+    },
+    {
+      "id": "l06-tolerances-and-fits",
+      "title": "Tolerances and fits",
+      "minutes": 26,
+      "covers": [
+        "Tolerances: limit, plus/minus, bilateral and unilateral",
+        "Fits: clearance, transition, interference"
+      ],
+      "file": "cod_cad_01_drawings/06-tolerances-and-fits.md"
+    },
+    {
+      "id": "l07-tolerance-stack-up",
+      "title": "Tolerance stack-up — worst case and root-sum-square",
+      "minutes": 23,
+      "covers": [
+        "Tolerance stack-up: worst case versus root-sum-square"
+      ],
+      "file": "cod_cad_01_drawings/07-tolerance-stack-up.md"
+    },
+    {
+      "id": "l08-finishes-welds-and-fasteners",
+      "title": "Surface finish, welds, fasteners and materials",
+      "minutes": 22,
+      "covers": [
+        "Surface finish symbols; weld symbols",
+        "Fastener and thread callouts; materials and specifications"
+      ],
+      "file": "cod_cad_01_drawings/08-finishes-welds-and-fasteners.md"
+    }
+  ],
+  "cod_cad_02_gdt": [
+    {
+      "id": "l01-why-gdt-exists",
+      "title": "Why GD&T exists, and how to read a feature control frame",
+      "minutes": 22,
+      "covers": [
+        "Why GD&T exists: coordinate tolerancing makes square zones and ambiguous setups",
+        "Anatomy of a feature control frame"
+      ],
+      "file": "cod_cad_02_gdt/01-why-gdt-exists.md"
+    },
+    {
+      "id": "l02-datums-and-the-3-2-1-rule",
+      "title": "Datums, six degrees of freedom and the 3-2-1 rule",
+      "minutes": 21,
+      "covers": [
+        "Datums, datum features, the datum reference frame, the 3-2-1 rule and degrees of freedom"
+      ],
+      "file": "cod_cad_02_gdt/02-datums-and-the-3-2-1-rule.md"
+    }
+  ],
   "cod_cpp_01_basics": [
     {
       "id": "l01-the-build-pipeline",
@@ -2059,7 +2159,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-comprehensions",
       "title": "Comprehensions: saying what the result is",
-      "minutes": 21,
+      "minutes": 20,
       "covers": [
         "List, dict and set comprehensions; generator expressions"
       ],
@@ -2068,7 +2168,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-generators-and-laziness",
       "title": "Generators, yield and laziness",
-      "minutes": 23,
+      "minutes": 19,
       "covers": [
         "Generators and yield; the iterator protocol; laziness and memory"
       ],
@@ -2077,7 +2177,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-keys-lambdas-and-sorting",
       "title": "Keys, lambdas and sorting",
-      "minutes": 17,
+      "minutes": 20,
       "covers": [
         "lambda, map, filter, sorted with key="
       ],
@@ -2095,7 +2195,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-dunder-methods",
       "title": "Dunder methods: behaving like a built-in type",
-      "minutes": 16,
+      "minutes": 20,
       "covers": [
         "Dunder methods: __repr__, __eq__, __add__, __mul__, __len__, __iter__"
       ],
@@ -2104,7 +2204,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-dataclasses",
       "title": "Dataclasses and value semantics",
-      "minutes": 16,
+      "minutes": 20,
       "covers": [
         "dataclasses and frozen dataclasses"
       ],
@@ -3035,7 +3135,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-partial-derivatives",
       "title": "Functions of several variables and partial derivatives",
-      "minutes": 25,
+      "minutes": 20,
       "covers": [
         "partial derivatives"
       ],
@@ -3044,7 +3144,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-gradient",
       "title": "The gradient and the directional derivative",
-      "minutes": 23,
+      "minutes": 21,
       "covers": [
         "gradient and directional derivative"
       ],
@@ -3062,7 +3162,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-chain-rule-hessian",
       "title": "The chain rule for vector functions, and the Hessian",
-      "minutes": 24,
+      "minutes": 26,
       "covers": [
         "chain rule for vector functions",
         "Jacobian and Hessian"
@@ -3206,7 +3306,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-probability-and-bayes",
       "title": "Sample spaces, conditional probability and Bayes' theorem",
-      "minutes": 20,
+      "minutes": 23,
       "covers": [
         "sample spaces, conditional probability, Bayes theorem"
       ],
@@ -3215,7 +3315,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-random-variables-pdf-cdf",
       "title": "Random variables, PDF and CDF",
-      "minutes": 21,
+      "minutes": 23,
       "covers": [
         "random variables, PDF and CDF"
       ],
@@ -3428,8 +3528,8 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
   "t0_m11_optimization": [
     {
       "id": "l01-descent-and-line-search",
-      "title": "Finding the bottom: descent, line search and Newton's method",
-      "minutes": 24,
+      "title": "Unconstrained optimisation I: optimality conditions, gradient descent and line search",
+      "minutes": 20,
       "covers": [
         "unconstrained optimisation: gradient descent, Newton, BFGS, line search, trust region"
       ],
@@ -3484,7 +3584,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-duality-and-the-dual-problem",
       "title": "Duality and the dual problem",
-      "minutes": 22,
+      "minutes": 28,
       "covers": [
         "duality and the dual problem"
       ],
@@ -4079,7 +4179,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-kinematic-differential-equations",
       "title": "Kinematic differential equations for DCM, quaternion, Euler angles and MRP",
-      "minutes": 22,
+      "minutes": 17,
       "covers": [
         "kinematic differential equations for DCM, quaternion, Euler angles and MRP"
       ],
@@ -4630,7 +4730,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-lamberts-problem-and-theorem",
       "title": "Lambert's problem and Lambert's theorem",
-      "minutes": 19,
+      "minutes": 20,
       "covers": [
         "Lambert's problem statement and Lambert's theorem"
       ],
@@ -4639,7 +4739,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-universal-variable-solver",
       "title": "Solving Lambert's problem: Gauss, universal variables, and Izzo",
-      "minutes": 25,
+      "minutes": 22,
       "covers": [
         "solution methods: Gauss, universal variables / Battin, Izzo"
       ],
@@ -7205,7 +7305,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-hard-soft-firm-real-time",
       "title": "Hard, soft and firm real-time; determinism, WCET and jitter",
-      "minutes": 21,
+      "minutes": 23,
       "covers": [
         "Hard vs soft vs firm real-time, and why \"fast\" and \"real-time\" are unrelated properties",
         "Determinism, worst-case execution time, and jitter as the three things you actually measure"
@@ -7215,7 +7315,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-rate-monotonic-and-edf",
       "title": "Fixed-priority scheduling and earliest-deadline-first",
-      "minutes": 20,
+      "minutes": 22,
       "covers": [
         "Fixed-priority scheduling: rate-monotonic priority assignment and the Liu-Layland utilisation bound",
         "Earliest-deadline-first and why it achieves higher utilisation but degrades worse on overload"
@@ -7225,7 +7325,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-response-time-analysis",
       "title": "Exact schedulability by response-time analysis",
-      "minutes": 18,
+      "minutes": 17,
       "covers": [
         "Exact schedulability by response-time analysis, and why the utilisation bound is only sufficient"
       ],
@@ -7262,7 +7362,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-interrupts-and-memory-protection",
       "title": "Interrupts, latency and memory protection",
-      "minutes": 17,
+      "minutes": 22,
       "covers": [
         "Interrupt handling, interrupt latency, and the split between the handler and the deferred half",
         "Memory protection with an MMU or MPU; stack sizing and stack-overflow detection"
@@ -7272,7 +7372,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-no-heap-no-recursion",
       "title": "No heap, no recursion, and the limits of predictable hardware",
-      "minutes": 24,
+      "minutes": 25,
       "covers": [
         "No dynamic allocation after initialisation: static pools, fixed-capacity containers, and placement construction",
         "Bounded loops, no recursion, and the rest of the Power of Ten rules",
@@ -7283,7 +7383,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-drivers-volatile-buses",
       "title": "Device drivers, volatile, and buses",
-      "minutes": 17,
+      "minutes": 21,
       "covers": [
         "Device drivers, memory-mapped I/O, and the volatile keyword",
         "Buses: UART, SPI, I2C, CAN, RS-422, Ethernet/UDP, and time-triggered protocols"
@@ -7293,7 +7393,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-time-sync-bare-metal-toolchains",
       "title": "Time synchronisation, bare metal versus Linux, and the toolchain",
-      "minutes": 18,
+      "minutes": 22,
       "covers": [
         "Time synchronisation: GPS pulse-per-second, PTP, and disciplined timestamping of every sample",
         "Bare-metal microcontrollers vs embedded Linux, and where the boundary sits on a real vehicle",
@@ -7304,7 +7404,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-logging-and-fixed-point",
       "title": "Logging under a real-time budget, and fixed-point arithmetic",
-      "minutes": 17,
+      "minutes": 21,
       "covers": [
         "Logging and telemetry under a real-time budget: lock-free ring buffers and never blocking the control task",
         "Fixed-point arithmetic and when it is still the right answer"
@@ -8963,35 +9063,19 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "cod_cad_01_drawings": {
-    "covered": 0,
+    "covered": 13,
     "total": 15,
     "complete": false,
     "missing": [
-      "Orthographic projection; third-angle (US) versus first-angle (ISO) and the symbol that identifies which",
-      "Views: front, top, right, auxiliary, section (full, half, offset, broken-out), detail, isometric",
-      "Line types: visible, hidden, centre, phantom, section; line weights",
-      "Scales and their notation",
-      "Title block, revision block, revision letters and change bars",
-      "The drawing as the legal definition of the part",
-      "Bills of material, item balloons and find numbers",
-      "General notes and flag notes",
-      "Surface finish symbols; weld symbols",
-      "Tolerances: limit, plus/minus, bilateral and unilateral",
-      "Tolerance stack-up: worst case versus root-sum-square",
-      "Fits: clearance, transition, interference",
-      "Fastener and thread callouts; materials and specifications",
       "ASME Y14.100 drawing practices, Y14.24 drawing types, Y14.41 model-based definition",
       "Export-control markings on aerospace drawings"
     ]
   },
   "cod_cad_02_gdt": {
-    "covered": 0,
+    "covered": 3,
     "total": 15,
     "complete": false,
     "missing": [
-      "Why GD&T exists: coordinate tolerancing makes square zones and ambiguous setups",
-      "Anatomy of a feature control frame",
-      "Datums, datum features, the datum reference frame, the 3-2-1 rule and degrees of freedom",
       "Datum targets and datum precedence",
       "Form: flatness, straightness, circularity, cylindricity",
       "Orientation: perpendicularity, angularity, parallelism",

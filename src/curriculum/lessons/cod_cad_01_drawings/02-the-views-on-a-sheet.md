@@ -71,7 +71,7 @@ How do you know where the cut was made? The view it came from shows a **[[cuttin
 - **arrows** at its ends, which point in the direction you look at the cut. The arrows point *away* from the piece that was thrown away.
 - **letters** at its ends, such as A and A. The section view is labelled to match, as SECTION A-A. A drawing with several cuts uses B-B, C-C and so on.
 
-Some habits of section views, so they do not surprise you:
+Some habits of [[section views|section-in-practice]], so they do not surprise you:
 
 - Only material the plane actually cuts is hatched. Holes and empty spaces are left blank.
 - Visible edges behind the cut are drawn, since you would see them looking at the cut face.

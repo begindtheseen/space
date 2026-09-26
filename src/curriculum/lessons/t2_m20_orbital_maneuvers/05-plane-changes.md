@@ -166,7 +166,7 @@ They match: about $21\,\mathrm{m/s}$ per degree at each end. Moving one more deg
 
 It is easy to mix up plane changes with a famous rule of thumb: "burns are more efficient deep in a gravity well, where you are fast." That rule is the **[[Oberth effect|oberth]]** from lesson 3, and it is true — for energy.
 
-Recall the reason. Burn quickly at one point, so the distance $r$ from Earth does not change, and add $\Delta v$ straight along the motion. The specific energy $arepsilon = v^2/2 - \mu/r$ then changes by
+Recall the reason. Burn quickly at one point, so the distance $r$ from Earth does not change, and add $\Delta v$ straight along the motion. The specific energy $\varepsilon = v^2/2 - \mu/r$ then changes by
 
 $$
 \Delta\varepsilon = \frac{(v+\Delta v)^2}{2} - \frac{v^2}{2} = v\,\Delta v + \frac{\Delta v^2}{2}.
