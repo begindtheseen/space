@@ -123,8 +123,8 @@ describe('the tracks', () => {
   it('continue goes to the first lesson not yet passed', () => {
     const py = TRACKS.find((t) => t.lang === 'python')!
     expect(nextLesson(py, {}).id).toBe('py-01')
-    expect(nextLesson(py, { 'py-01': 'x', 'py-02': 'x' }).id).toBe('py-03')
-    expect(findLesson('py-03')?.index).toBe(2)
+    expect(nextLesson(py, { 'py-01': 'x' }).id).toBe('py-02')
+    expect(findLesson('py-02')?.index).toBe(1)
   })
 })
 
