@@ -3638,7 +3638,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-wgs-84-geodetic-latitude-ned-and-enu",
       "title": "WGS-84, geodetic latitude, NED and ENU",
-      "minutes": 19,
+      "minutes": 20,
       "covers": [
         "geodetic vs geocentric latitude and the WGS-84 ellipsoid",
         "NED and ENU local-level frames"
@@ -3677,7 +3677,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-the-direction-cosine-matrix-and-so3",
       "title": "The direction cosine matrix and SO(3)",
-      "minutes": 19,
+      "minutes": 21,
       "covers": [
         "the direction cosine matrix and SO(3)"
       ],
@@ -3686,7 +3686,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-euler-angles-and-the-twelve-sequences",
       "title": "Euler angles, the twelve sequences and the 3-2-1 aerospace convention",
-      "minutes": 19,
+      "minutes": 18,
       "covers": [
         "Euler angles, the twelve sequences, the 3-2-1 aerospace sequence"
       ],
@@ -3704,7 +3704,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-euler-rotation-theorem-and-the-principal-axis",
       "title": "Euler rotation theorem, principal rotation axis and angle",
-      "minutes": 19,
+      "minutes": 21,
       "covers": [
         "Euler rotation theorem, principal rotation axis and angle"
       ],
@@ -3713,7 +3713,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-quaternion-conventions-hamilton-and-jpl",
       "title": "Quaternions: Hamilton against JPL, scalar-first against scalar-last",
-      "minutes": 20,
+      "minutes": 22,
       "covers": [
         "quaternions: Hamilton vs JPL, scalar-first vs scalar-last"
       ],
