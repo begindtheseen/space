@@ -310,5 +310,5 @@ A **blind hole** stops inside the part; a **through hole** goes all the way. A t
 :::
 
 ::: context a-series How A-series paper works
-An A0 sheet has an area of one square meter. Cut it in half across its long side and you get A1; halve that for A2, then A3, then A4. The trick is the shape: the long side is $\sqrt{2}$ times the short side, so every half has the same shape as the whole. A3 is $297 	imes 420\,\mathrm{mm}$ and A4 is $210 	imes 297\,\mathrm{mm}$. Going down one size multiplies every length by $1/\sqrt{2} pprox 0.707$. US drawings often use ANSI sizes instead (A is letter size, $8.5 	imes 11$ inches, then B, C, D, E), where the shape alternates rather than staying fixed.
+An A0 sheet has an area of one square meter. Cut it in half across its long side and you get A1; halve that for A2, then A3, then A4. The trick is the shape: the long side is $\sqrt{2}$ times the short side, so every half has the same shape as the whole. A3 is $297 	imes 420\,\mathrm{mm}$ and A4 is $210 	imes 297\,\mathrm{mm}$. Going down one size multiplies every length by $1/\sqrt{2} \approx 0.707$. US drawings often use ANSI sizes instead (A is letter size, $8.5 	imes 11$ inches, then B, C, D, E), where the shape alternates rather than staying fixed.
 :::
