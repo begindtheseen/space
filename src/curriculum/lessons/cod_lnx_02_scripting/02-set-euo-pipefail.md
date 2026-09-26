@@ -1,20 +1,22 @@
 ---
 id: l02-set-euo-pipefail
 title: set -euo pipefail, and what each flag protects against
-minutes: 18
+minutes: 21
 covers:
   - set -euo pipefail and what each flag actually does
 ---
 
-Bash's defaults were designed for an interactive session, where a failed command is obvious because you are watching. In a script those defaults are dangerous: a command fails, the script prints an error nobody reads, and then carries on doing the next thing with a file that does not exist. The run "succeeds", exits 0, and produces output that is wrong rather than missing — which is far worse, because nothing downstream will notice.
+Imagine following a cake recipe. Step 2 says "crack three eggs", and you discover there are no eggs. A sensible cook stops. A robot cook that ignores problems carries on, bakes an eggless cake, and proudly announces "done". Bash, out of the box, is that robot. Its **[[defaults were designed for typing by hand|interactive-defaults]]**, where you watch each command and notice when one fails. In a script nobody is watching. A command fails, prints an error nobody reads, and the script carries on with a file that does not exist. The run "succeeds" and hands back output that is *wrong* rather than *missing* — far worse, because nothing further down the line will notice.
 
-`set -euo pipefail` at the top of a script changes three of those defaults. This lesson shows each one failing and each one saving you, with the script's exit status printed every time. It also spends half its length on the other half of the subject: the places where `set -e` does *not* fire. Those holes are not bugs, they are deliberate, and a script author who does not know them will believe the script is protected when it is not.
+One line near the top of a script changes three of those defaults: `set -euo pipefail` (read "set dash e u o pipefail"). This lesson shows each flag failing and each flag saving you, with the script's **exit status** — the number it hands back, where 0 means success and anything else means failure — printed every time. It also spends half its length on the other half of the subject: the places where `set -e` does *not* fire. Those gaps are on purpose, and an author who does not know them believes a script is protected when it is not.
 
-All output below was produced on this machine and pasted verbatim, with GNU bash 5.2.21 on Ubuntu 24.04.4, running as an ordinary user in a small campaign directory. Line numbers in bash's messages refer to the scripts as shown.
+On a real campaign — say, five hundred trajectory simulations running overnight on a cluster — this line is the difference between a job that stops at case 37 and says why, and a job that reports success on a folder of half-empty files.
+
+All output below was produced on a real machine and pasted exactly, with GNU bash 5.2.21 on Ubuntu 24.04.4, as an ordinary user in a small campaign directory. Line numbers in bash's messages refer to the scripts as shown.
 
 ## `-e`: stop at the first failure
 
-Without it, a script runs every line regardless of what the previous ones did:
+Without it, a script runs every line no matter what the lines before it did:
 
 ```bash
 #!/usr/bin/env bash
@@ -31,7 +33,7 @@ step 2: running the sweep with /tmp/cfg.yaml
 step 3: done
 ```
 
-Exit status **0**. Look at what that means in practice. The `cp` failed, so `/tmp/cfg.yaml` is either absent or a stale copy from a previous run. Step 2 announced that it is using it. Step 3 declared success. A scheduler reading the exit status sees a green run, and the campaign's results were computed from whatever configuration happened to be lying around.
+Exit status **0**. Think about what that means. The `cp` failed, so `/tmp/cfg.yaml` is either missing or a stale copy left over from a previous run. Step 2 announced that it is using it. Step 3 declared success. A scheduler reading the exit status sees a green run, and the campaign's results came from whatever settings happened to be lying around.
 
 Add one line:
 
@@ -49,11 +51,11 @@ step 1: preparing
 cp: cannot stat 'missing_config.yaml': No such file or directory
 ```
 
-Exit status **1**. The script stopped at the failure and passed the failing command's status up. That is the whole of `-e`: **exit immediately if a command returns non-zero**, with that command's status.
+Exit status **1**. The script stopped at the failure and passed the failing command's status up to whoever ran it. That is the whole of `-e`: **exit immediately if a command returns non-zero**, with that command's status.
 
 ## `-u`: an unset variable is an error
 
-By default, expanding a variable that was never set yields the empty string, silently:
+A variable that was never given a value is called **unset**. By default, bash quietly replaces an unset variable with nothing at all — an empty string:
 
 ```bash
 #!/usr/bin/env bash
@@ -65,7 +67,7 @@ echo "would run: rm -rf /srv/campaign/$OUTDIR"
 would run: rm -rf /srv/campaign/
 ```
 
-The variable is `OUT`; the script says `OUTDIR`. One typo, and the path the script was about to act on is the *parent* of everything, not one directory inside it. (This one only prints the command; the point is what the expansion became.) With `-u`:
+The variable is named `OUT`; the next line asks for `OUTDIR`. One typo, and the folder the script was about to delete is the *parent* of everything, not one folder inside it. This script only prints the command, but a real one would have run it. With `-u`:
 
 ```bash
 #!/usr/bin/env bash
@@ -79,11 +81,11 @@ echo "not reached"
 ./bin/withu.sh: line 4: OUTDIR: unbound variable
 ```
 
-Exit status **1**, and the message names the file, the line and the variable. `-u` turns "a value I forgot to provide" from an empty string into an error, which is the difference between a typo that destroys data and a typo that stops the script.
+Exit status **1**, and the message names the file, the line and the **[[unbound|unbound-word]]** variable. `-u` turns "a value I forgot to provide" from an empty string into an error. That is the difference between a typo that destroys data and a typo that stops the script.
 
-### Making `-u` liveable: default expansions
+### Making `-u` livable: default expansions
 
-A script with optional parameters needs a way to say "use this if it is unset", or `-u` kills it. Bash has four forms, and they are worth knowing exactly:
+Think of a form with a few optional boxes. A blank optional box should get a sensible default; a blank *required* box should stop the clerk. Bash has four forms for this, and they are worth knowing exactly. Read `${var:-default}` as "var, colon-dash, default".
 
 | Form | If `var` is unset or empty | Side effect |
 | --- | --- | --- |
@@ -92,7 +94,7 @@ A script with optional parameters needs a way to say "use this if it is unset", 
 | `${var:?message}` | prints `message` and exits | aborts the script |
 | `${var:+alt}` | expands to nothing | the *opposite*: `alt` only if var is set |
 
-(Omit the colon — `${var-default}` — and the test becomes "unset" only, so an explicitly empty value is kept.)
+Leave out the colon — `${var-default}` — and the test becomes "unset" only, so a value that was deliberately set to empty is kept.
 
 ::: example The four forms, with the exit status each produces
 ```bash
@@ -107,7 +109,7 @@ echo "about to require SIM_ROOT"
 echo "not reached"
 ```
 
-Run with nothing set:
+Run it with nothing set:
 
 ```text
 cases   = 10
@@ -118,11 +120,16 @@ about to require SIM_ROOT
 ./bin/defaults.sh: line 8: SIM_ROOT: set SIM_ROOT to the campaign directory
 ```
 
-Exit status **1**. `CASES` fell back to 10 without being assigned; `OUTDIR` fell back *and* was assigned, which is why the next line can use `$OUTDIR` bare; `VERBOSE` is deliberately empty, and `${VERBOSE:-}` is the idiom for "I know this may be unset and that is fine" — without it `-u` would kill the script on a variable you never intended to require. And `SIM_ROOT` is mandatory, so `${SIM_ROOT:?…}` aborts with your message rather than bash's.
+Exit status **1**. Walk through it line by line:
 
-The `:` in front of `"${SIM_ROOT:?…}"` is the null command — it does nothing and ignores its arguments, so the line exists purely for the expansion's side effect. That is the standard way to write a required-parameter check.
+1. `CASES` was unset, so it fell back to `10` — without being assigned.
+2. `OUTDIR` fell back to `results` *and* was assigned. That is why line 5 can use `$OUTDIR` on its own.
+3. `VERBOSE` expanded to nothing. `${VERBOSE:-}` is the idiom for "this may be unset, and that is fine". Without it, `-u` would kill the script over a variable you never meant to require.
+4. `SIM_ROOT` is required, so `${SIM_ROOT:?…}` stopped the script with *your* message instead of bash's.
 
-Supply the variable and the script completes:
+The `:` at the start of line 8 is the **[[null command|colon-command]]**: it does nothing and ignores its arguments. The line exists only for the side effect of the expansion. That is the standard way to write a required-parameter check.
+
+Now supply the variables. Writing `NAME=value` in front of a command sets that variable for that one command:
 
 ```bash
 CASES=500 SIM_ROOT=/srv ./bin/defaults.sh
@@ -137,7 +144,7 @@ about to require SIM_ROOT
 not reached
 ```
 
-Exit status 0. Note that `"$@"` and `$#` are always safe under `-u` even with no arguments — an empty argument list is not an unset variable:
+Exit status 0. One more reassurance: `"$@"` (all the arguments) and `$#` (how many there are) are always safe under `-u`, even with no arguments. An empty argument list is not an unset variable. A script printing `$#` and `${1:-<none>}` with no arguments gives:
 
 ```text
 count=0
@@ -145,9 +152,13 @@ first=<none>
 ```
 :::
 
+::: key Default value expansions
+`${var:-default}` (colon-dash) gives a default if `var` is unset or empty. `${var:=default}` (colon-equals) gives the default *and assigns it*. `${var:?message}` (colon-question) aborts the script with a message. These are how you keep `-u` from killing scripts with optional parameters.
+:::
+
 ## `-o pipefail`: a pipeline is as strong as its weakest stage
 
-A pipeline's exit status is, by default, the status of the **last** command only. Everything before it can fail unnoticed:
+A **pipeline** joins commands with `|` (read "pipe"), so the output of one becomes the input of the next — like an assembly line. By default, only the **last** worker on the line reports whether things went well. Everything before it can fail unnoticed:
 
 ```bash
 #!/usr/bin/env bash
@@ -161,7 +172,13 @@ echo "reached the end, exit status of the pipeline was $?"
 reached the end, exit status of the pipeline was 0
 ```
 
-`grep` found nothing and exited 1. `wc` counted the nothing and exited 0. The pipeline reported 0, `set -e` had nothing to act on, and the script reached its end — printing a count of zero that means "no matches" but could equally have meant "the log file was unreadable". Add the third flag:
+(`$?`, read "dollar question mark", is the exit status of the most recent command.) Here is **[[what happened|pipe-statuses]]**, stage by stage:
+
+1. `grep` searched for `DIVERGED`, found nothing, and exited 1.
+2. `wc -l` counted the empty input, printed `0`, and exited 0.
+3. The pipeline reported `wc`'s 0, so `set -e` had nothing to act on.
+
+The count of zero means "no matches" — but it would look exactly the same if the log had been unreadable. Add the third flag:
 
 ```bash
 #!/usr/bin/env bash
@@ -174,9 +191,9 @@ echo "not reached"
 0
 ```
 
-Exit status **1**. `pipefail` makes the pipeline return the rightmost non-zero status, so `grep`'s 1 propagates and `-e` fires.
+Exit status **1**. `pipefail` makes the pipeline return the status of the rightmost stage that failed, so `grep`'s 1 comes through and `-e` fires.
 
-The array that shows you the whole picture is `PIPESTATUS`, one entry per stage, and it must be read on the very next line because the next command replaces it:
+To see every stage's status, read the array `PIPESTATUS`, which has one entry per stage. Read it on the very next command, because the next command replaces it:
 
 ```bash
 grep DIVERGED logs/driver.log | wc -l; echo "PIPESTATUS = ${PIPESTATUS[*]}"
@@ -187,23 +204,29 @@ grep DIVERGED logs/driver.log | wc -l; echo "PIPESTATUS = ${PIPESTATUS[*]}"
 PIPESTATUS = 1 0
 ```
 
-::: warning
-`pipefail` makes `grep` and `head` newly dangerous, because both exit non-zero for perfectly ordinary reasons. `grep` returns 1 when a pattern legitimately does not match, and a producer piped into `head` is killed by `SIGPIPE` once `head` has enough. With `pipefail` those become script-killing failures.
+::: key What each flag does
+`set -e` exits on the first command that returns non-zero. `set -u` makes an unset variable an error instead of an empty string. `set -o pipefail` makes a pipeline fail when any stage fails — it returns the rightmost non-zero status — instead of returning only the last command's status.
+:::
 
-The fix is to say so where it is true, not to remove the flag: append `|| true` to a pipeline whose failure is acceptable, or capture the status and test it:
+::: warning `grep` and `head` under pipefail
+`pipefail` makes `grep` and `head` newly dangerous, because both exit non-zero for perfectly ordinary reasons. `grep` returns 1 when a pattern honestly does not match. And a command feeding into `head` is stopped by a **[[SIGPIPE|sigpipe]]** signal once `head` has read enough. With `pipefail`, both become script-killing failures.
+
+The fix is to say so where it is true, not to remove the flag. Add `|| true` (read "or-or true": "if that failed, run `true`, which always succeeds") to a command whose failure is acceptable:
 
 ```bash
 count=$(grep -c DIVERGED logs/driver.log || true)
 ```
 
-If you need to distinguish "no matches" from "could not read the file", test the status explicitly — `grep` returns 1 for the first and 2 for the second.
+If you need to tell "no matches" apart from "could not read the file", test the status yourself: `grep` returns 1 for the first and 2 for the second.
 :::
 
 ## What `set -e` does not catch
 
-This is the half that matters. `set -e` is suppressed wherever bash is *testing* a command's status rather than relying on it, because in those places a non-zero status is data, not a failure.
+This is the half that matters. `set -e` is switched off wherever bash is **[[testing a command's status|errexit-decision]]** rather than relying on it. In those places a non-zero status is an answer to a question, not a failure.
 
-::: example Eight lines that all fail, under `set -euo pipefail`
+::: example Seven failures, and the script survives them all
+Each line prints a label, then runs a command that fails:
+
 ```bash
 #!/usr/bin/env bash
 set -euo pipefail
@@ -212,8 +235,8 @@ echo "B: after &&";       false && echo unreachable
 echo "C: after ||";       false || echo "the || branch ran"
 echo "D: negated";        ! false
 echo "E: in a while condition"; while false; do :; done
-echo "F: assignment from a failing command substitution"; out="$(false || true)"
-echo "G: still alive"
+echo "F: inside a command substitution"; out="$(false; echo ok)"
+echo "G: still alive, out=$out"
 ```
 
 ```text
@@ -223,23 +246,29 @@ C: after ||
 the || branch ran
 D: negated
 E: in a while condition
-F: assignment from a failing command substitution
-G: still alive
+F: inside a command substitution
+G: still alive, out=ok
 ```
 
-Exit status **0**. Every one of those commands failed and the script ran to the end.
+Exit status **0**. Every one of those lines ran a failing command (`false` always fails), and the script reached the end. Go through them:
 
-The rule behind all of them: `-e` does not apply to a command whose status is being consumed — the condition of `if`, `while` or `until`, any command in a `&&` or `||` chain except the last, a command preceded by `!`, and anything inside a construct that is itself in one of those positions. That last clause is the one that catches people: a *function* called from an `if` runs with `-e` effectively disabled for its whole body, so a helper that is safe when called directly is not when called as a test.
+- **A** and **E**: `if` and `while` exist to ask "did this succeed?", so failure is a legitimate answer.
+- **B** and **C**: in `a && b` (read "and-and": run `b` only if `a` succeeded) or `a || b` (run `b` only if `a` failed), the left side is being tested.
+- **D**: `!` (read "not") flips a status, so the original status is being used.
+- **F**: a command substitution runs in a **[[subshell|subshell]]**, which does not inherit `-e`; see `inherit_errexit` below.
 
-Note `B` in particular. `false && echo unreachable` fails, and the script continues — so the popular habit of writing `cmd1 && cmd2` on one line silently opts that line out of `-e`. Write them on separate lines.
+The rule behind A to E: `-e` does not apply to a command whose status is being used — the condition of `if`, `while` or `until`, any command in a `&&` or `||` chain except the last, a command after `!`, and anything inside a construct sitting in one of those positions. That last clause catches people. A **function** called from an `if` runs with `-e` effectively off for its whole body. A helper that is safe when you call it directly is not safe when you call it as a test.
+
+Look at B again. `false && echo unreachable` fails, and the script carries on. So the popular habit of writing `cmd1 && cmd2` on one line quietly **[[opts that line out of -e|and-chain]]**. Write them on separate lines.
 :::
 
-::: warning
-The single most common way to lose `set -e` in real scripts is `local`:
+::: warning The `local` trap
+The single most common way to lose `set -e` in real scripts is `local`, the keyword that makes a variable private to a function:
 
 ```bash
 local_demo() { local n="$(grep -c DIVERGED logs/driver.log)"; echo "  local n=[$n] and we are still here"; }
 plain_demo() { n="$(grep -c DIVERGED logs/driver.log)"; echo "  plain n=[$n] -- not reached"; }
+echo "about to assign with local"
 local_demo
 plain_demo
 ```
@@ -249,21 +278,21 @@ about to assign with local
   local n=[0] and we are still here
 ```
 
-Exit status **1** — from `plain_demo`, not from `local_demo`. The two lines look identical and behave differently, because `local` is itself a *command*, and the exit status of `local n="$(...)"` is the status of `local` — which succeeded in declaring the variable. The command substitution's failure is thrown away. Exactly the same applies to `declare`, `export` and `readonly`.
+Exit status **1** — from `plain_demo`, not from `local_demo`. The two lines look the same and behave differently. `local` is itself a *command*, and the status of `local n="$(...)"` is the status of `local`, which succeeded in creating the variable. The failure of the `grep` inside is thrown away. The same happens with `declare`, `export` and `readonly`.
 
-The fix is to split the line:
+The fix is to split the line in two:
 
 ```bash
 local n
 n="$(grep -c DIVERGED logs/driver.log)"
 ```
 
-Now the assignment is its own command and its status is the substitution's. `shellcheck` (lesson 12) flags the one-line form as SC2155, and this is why.
+Now the assignment is its own command, and its status is the `grep`'s. `shellcheck` (lesson 12) flags the one-line form as SC2155, for exactly this reason.
 :::
 
 ### `inherit_errexit`
 
-A command substitution runs in a subshell, and by default that subshell does not inherit `-e`:
+Line F above showed it: a command substitution runs in a subshell, and by default that subshell does not inherit `-e`.
 
 ```bash
 set -euo pipefail
@@ -277,7 +306,7 @@ out=[subshell kept going]  status=0
 end
 ```
 
-The `false` was ignored inside the subshell and the assignment picked up the later output. Turning on the shell option changes it:
+The `false` was ignored inside the subshell, and the assignment picked up the later output. A shell option, switched on with `shopt -s`, changes this:
 
 ```bash
 set -euo pipefail
@@ -287,11 +316,11 @@ echo "out=[$out]  status=$?"
 echo "end"
 ```
 
-That script prints nothing at all and exits **1**: the subshell now aborts at `false`, the substitution fails, and `-e` fires in the parent. `shopt inherit_errexit` reports `off` by default. It is worth adding to any script whose command substitutions contain more than one command.
+This version prints nothing at all and exits **1**. The subshell now stops at `false`, so the substitution fails, so `-e` fires in the main script. `shopt inherit_errexit` reports `off` by default. Add it to any script whose command substitutions contain more than one command.
 
 ### A trap that tells you where it died
 
-`set -e` stops the script but says nothing about where. An `ERR` trap fixes that, and `-E` makes the trap apply inside functions as well:
+`set -e` stops the script but does not say where. An **`ERR` trap** — a command bash runs whenever a command fails — fixes that. The `-E` flag makes the trap work inside functions too:
 
 ```bash
 #!/usr/bin/env bash
@@ -309,34 +338,34 @@ cp: cannot stat 'missing_config.yaml': No such file or directory
 FAILED at line 4 running: cp missing_config.yaml /tmp/x.yaml
 ```
 
-Exit status **1**, and now the log says which line and which command. `$BASH_COMMAND` is the command being executed when the trap fired and `$LINENO` its line. Without `-E`, the `ERR` trap is not inherited by functions, subshells or command substitutions, and this script would have died silently. Lesson 07 covers `trap` properly; this is the one use of it that belongs next to `set -e`.
+Exit status **1**, and now the log names the line and the command. `$BASH_COMMAND` is the command that was running when the trap fired, and `$LINENO` is its line. `>&2` sends the message to the error stream. Without `-E`, the `ERR` trap is not passed on to functions, subshells or command substitutions, and this script would have died with no `FAILED` line. **[[Lesson 07|trap-bridge]]** covers `trap` properly; this is the one use of it that belongs next to `set -e`.
 
-::: key
-`-e` exits on the first command that returns non-zero. `-u` makes an unset variable an error instead of an empty string. `-o pipefail` makes a pipeline return the first non-zero status instead of only the last command's. `-e` is suppressed inside `if`, `while` and `until` conditions, in `&&`/`||` chains, after `!`, and throughout any function called in one of those positions — and it is masked by `local x="$(cmd)"`, where the status is `local`'s. Check statuses explicitly where it matters.
+::: key Why set -e is not a complete safety net
+`-e` is suppressed inside conditions (`if`, `while`, `until`), in `&&` and `||` chains, after `!`, for any command whose status is tested, and for functions called in those positions. It also cannot see a failure hidden mid-pipeline unless `pipefail` is on, and it is masked by `local x="$(cmd)"`, where the status is `local`'s. Check critical statuses explicitly.
 :::
 
 ## Check yourself
 
 ::: check
-A nightly campaign script begins `set -euo pipefail` and ends with a tarball that is missing three of its ten cases, while the job reported success. Give two mechanisms by which that can happen despite the flags.
+A nightly campaign script begins `set -euo pipefail` and ends with a tarball missing three of its ten cases, while the job reported success. Give two ways that can happen despite the flags.
 :::
 
 ::: answer
-First, the failing command was in a position where `-e` is suppressed. If the loop body is `run_case "$i" && record "$i"`, or the case is run inside an `if` — `if ! run_case "$i"; then log_warning; fi` — a non-zero status is data, not a failure, and the loop continues. Writing `cmd1 && cmd2` on one line is the commonest form of this, because it looks like sequencing and is actually a tested chain.
+First, the failing command sat where `-e` is switched off. If the loop body is `run_case "$i" && record "$i"`, or the case runs inside an `if` — `if ! run_case "$i"; then log_warning; fi` — a non-zero status is an answer, not a failure, and the loop carries on. Writing `cmd1 && cmd2` on one line is the most common form of this, because it looks like "do this, then that" but is really a tested chain.
 
-Second, the failure was masked by an assignment. `local out="$(run_case "$i")"` returns `local`'s status, which is zero, so a case that crashed leaves `out` empty and the script proceeds. The same applies to `declare`, `export` and `readonly`, and to a command substitution containing several commands unless `shopt -s inherit_errexit` is on.
+Second, an assignment hid the failure. `local out="$(run_case "$i")"` returns `local`'s status, which is 0, so a case that crashed leaves `out` empty and the script moves on. The same goes for `declare`, `export` and `readonly`, and for a command substitution holding several commands unless `shopt -s inherit_errexit` is on.
 
-There is a third possibility worth checking: the case program itself exited 0 while failing, so there was nothing for `-e` to see. Verify the output, not the status — count the files and compare against the case list before the script declares success. A `trap ... ERR` with `$LINENO` and `$BASH_COMMAND` turns the first two into a log line that names the culprit.
+A third possibility is worth checking: the case program itself exited 0 while failing, so `-e` had nothing to see. Check the output, not only the status — count the result files and compare them with the case list before declaring success. A `trap ... ERR` using `$LINENO` and `$BASH_COMMAND` turns the first two causes into a log line naming the culprit.
 :::
 
 ::: check
-Why does `count=$(grep -c ERROR run.log)` abort a script under `set -e` when the log contains no errors, and what are two correct ways to write it?
+Why does `count=$(grep -c ERROR run.log)` stop a script under `set -e` when the log contains no errors, and what are two correct ways to write it?
 :::
 
 ::: answer
-Because `grep` exits 1 to mean "no lines matched", which is a normal result and not an error. The assignment's exit status is the command substitution's status, so the assignment fails, and `-e` ends the script — on the happy path, when everything is fine.
+Because `grep` exits 1 to mean "no lines matched" — a normal result, not an error. The assignment's exit status is the status of the command substitution, so the assignment fails and `-e` ends the script. It dies on the happy path, when everything is fine.
 
-Two correct forms. Append `|| true` so the failure is absorbed deliberately: `count=$(grep -c ERROR run.log || true)`. Or test the status explicitly when you need to distinguish outcomes:
+The first fix absorbs the failure on purpose: `count=$(grep -c ERROR run.log || true)`. The second tests the status when you need to tell outcomes apart:
 
 ```bash
 if count=$(grep -c ERROR run.log); then
@@ -347,19 +376,19 @@ else
 fi
 ```
 
-The second is better whenever "no matches" and "could not read the file" should be treated differently, because `grep` returns 1 for the first and 2 for the second, and `|| true` swallows both. Note that `grep -c` prints `0` and exits 1, so the value is usable either way — it is only the status that is in the way.
+The second is better whenever "no matches" and "could not read the file" should be handled differently. `grep` returns 1 for the first and 2 for the second, and `|| true` swallows both. Note that `grep -c` prints `0` and exits 1, so the value is usable either way; only the status is in the way.
 :::
 
 ::: check
-Explain precisely why `local n="$(cmd)"` behaves differently from `local n` followed by `n="$(cmd)"` under `set -e`.
+Explain exactly why `local n="$(cmd)"` behaves differently from `local n` followed by `n="$(cmd)"` under `set -e`.
 :::
 
 ::: answer
-`local` is a builtin *command*, and the exit status of a command that performs an assignment as part of its arguments is the status of the command, not of the expansions in its arguments. So `local n="$(cmd)"` runs `cmd`, captures its output, hands the result to `local`, and `local` succeeds — status 0. `cmd`'s status is discarded before `-e` ever looks at it.
+`local` is a built-in *command*. When a command does an assignment as part of its arguments, its exit status is the command's own, not that of the expansions inside its arguments. So `local n="$(cmd)"` runs `cmd`, captures its output, hands the result to `local`, and `local` succeeds with status 0. `cmd`'s status is thrown away before `-e` ever looks at it.
 
-Split into two statements, the second is a plain assignment. A plain assignment's exit status *is* the status of the last command substitution in it, so `n="$(cmd)"` fails when `cmd` fails, and `-e` fires.
+Split into two statements, the second is a plain assignment. A plain assignment's exit status *is* the status of the last command substitution in it. So `n="$(cmd)"` fails when `cmd` fails, and `-e` fires.
 
-The same trap applies to `declare`, `export`, `readonly` and `typeset`. `shellcheck` reports it as SC2155, "Declare and assign separately to avoid masking return values", and it is one of the warnings most worth never suppressing. The one case where the single-line form is fine is when you genuinely do not care whether the command succeeded — and then `|| true` makes that intention visible.
+The same trap applies to `declare`, `export`, `readonly` and `typeset`. `shellcheck` reports it as SC2155, "Declare and assign separately to avoid masking return values", and it is one of the warnings most worth never silencing. The one-line form is fine only when you truly do not care whether the command succeeded — and then `|| true` makes that intention visible.
 :::
 
 ::: check
@@ -367,42 +396,132 @@ What does `${OUTDIR:=results}` do that `${OUTDIR:-results}` does not, and when w
 :::
 
 ::: answer
-`:-` substitutes a default for this one expansion and leaves the variable alone. `:=` substitutes the default *and assigns it*, so the variable holds the value from then on.
+`:-` puts in a default for this one use and leaves the variable alone. `:=` puts in the default *and assigns it*, so the variable holds that value from then on.
 
-Use `:-` when you want a fallback at the point of use and nothing else — reading `${VERBOSE:-}` to keep `set -u` quiet, or `${CASES:-10}` in a single command. Use `:=` when the value will be referenced repeatedly and you want one authoritative copy: set it once near the top and every later `$OUTDIR` is correct, including inside functions and in anything the script exports.
+Use `:-` when you want a fallback at one spot and nothing else — `${VERBOSE:-}` to keep `set -u` quiet, or `${CASES:-10}` in a single command. Use `:=` when the value will be used many times and you want one authoritative copy: set it once near the top, and every later `$OUTDIR` is right, including inside functions and in anything the script exports.
 
-Two details. Both treat unset and empty alike; drop the colon (`${OUTDIR-results}`, `${OUTDIR=results}`) to distinguish them, so that an explicitly empty value is respected. And `:=` cannot be used on positional parameters: `${1:=default}` fails with `bash: $1: cannot assign in this way`, so a default for an argument has to be written `arg="${1:-default}"`.
+Two details. Both treat unset and empty alike; drop the colon (`${OUTDIR-results}`, `${OUTDIR=results}`) to tell them apart, so a deliberately empty value is respected. And `:=` cannot assign to a numbered argument: `${1:=default}` fails with `$1: cannot assign in this way`. A default for an argument is written `arg="${1:-default}"`.
 :::
 
 ::: check
-Your script has `set -euo pipefail`, and a colleague adds `2>/dev/null` to a noisy command. The script now completes but produces no output. What should you suspect, and what is the better change?
+Your script has `set -euo pipefail`, and a colleague adds `2>/dev/null` to a noisy command. The script now completes but produces no output. What should you suspect, and what is a better change?
 :::
 
 ::: answer
-Suspect that the command was failing all along, and that its error message — now discarded — was the only evidence. `2>/dev/null` hides the diagnosis but not the exit status, so if the script now *completes*, something else must also have changed: most likely the same edit added `|| true`, or moved the command into an `if` or a `&&` chain, which is where `-e` stops applying. A command that merely had its stderr redirected would still abort the script under `-e`.
+Suspect that the command was failing all along, and that its error message — now thrown away — was the only evidence. `2>/dev/null` hides the message but not the exit status. So if the script now *completes*, something else must also have changed: most likely the same edit added `|| true`, or moved the command into an `if` or a `&&` chain, where `-e` stops applying. A command that only had its error stream redirected would still stop the script under `-e`.
 
-The better change is to send the noise somewhere you can read it rather than to `/dev/null`: `2>>run-errors.log`, or `2>&1 | tee -a run.log` if you want it interleaved. Noise is the thing that becomes the diagnosis the one time it matters, and a campaign that silently produced no output is precisely that time.
+The better change is to send the noise somewhere you can read it instead of `/dev/null`: `2>>run-errors.log`, or `2>&1 | tee -a run.log` to keep it mixed in with the normal output. The noise is exactly what becomes the diagnosis on the one day it matters, and a campaign that silently produced nothing is that day.
 
-If the noise really is harmless — a tool warning about a deprecated flag — filter it by content rather than by stream: `2> >(grep -v 'deprecated' >&2)`, or fix the flag.
+If the noise really is harmless — a tool warning about an outdated flag — filter it by content rather than by stream: `2> >(grep -v 'deprecated' >&2)`. Or fix the flag.
 :::
 
 ## Summary
 
 | Flag or form | Does | Note |
 | --- | --- | --- |
-| `set -e` | exit on the first non-zero status | propagates that command's status |
+| `set -e` | exit on the first non-zero status | passes that command's status up |
 | `set -u` | an unset variable is a fatal error | "unbound variable", with file and line |
 | `set -o pipefail` | a pipeline returns the rightmost non-zero status | otherwise only the last stage counts |
-| `${PIPESTATUS[*]}` | one status per pipeline stage | read it on the very next line |
+| `${PIPESTATUS[*]}` | one status per pipeline stage | read it on the very next command |
 | `set -x` / `set +x` | trace commands after expansion | `bash -x script.sh` without editing |
 | `set -E` | `ERR` traps are inherited by functions and subshells | needed for a useful `trap … ERR` |
 | `shopt -s inherit_errexit` | command substitutions inherit `-e` | off by default |
 | `${var:-d}` / `${var:=d}` / `${var:?msg}` / `${var:+alt}` | default / assign default / require / only-if-set | drop the colon to test "unset" only |
 | `: "${VAR:?msg}"` | a required-parameter check | `:` is the null command |
-| `${VERBOSE:-}` | "may be unset, and that is fine" | what keeps `-u` from killing optional flags |
-| `-e` suppressed in | `if`/`while`/`until` conditions, `&&`/`||` chains, after `!`, and inside functions called there | `cmd1 && cmd2` opts that line out |
-| `local n="$(cmd)"` | status is `local`'s, so the failure is lost | split the declaration and the assignment (SC2155) |
+| `${VERBOSE:-}` | "may be unset, and that is fine" | keeps `-u` from killing optional settings |
+| `-e` suppressed in | `if`/`while`/`until` conditions, `&&`/`\|\|` chains, after `!`, and inside functions called there | `cmd1 && cmd2` opts that line out |
+| `local n="$(cmd)"` | status is `local`'s, so the failure is lost | split declaration and assignment (SC2155) |
 | `count=$(grep -c X f \|\| true)` | absorb a legitimate non-match | `grep` returns 1 for no match, 2 for a real error |
 | `trap '… $LINENO $BASH_COMMAND' ERR` | say where the script died | with `-E`, works inside functions too |
 
-Lesson 03 turns to the other large source of silent bugs: what happens to a variable between the moment you write `$x` and the moment the command sees it — word splitting, glob expansion, and the quoting that stops both.
+Lesson 03 turns to the other big source of silent bugs: what happens to a variable between the moment you write `$x` and the moment the command sees it — word splitting, glob expansion, and the quoting that stops both.
+
+::: context interactive-defaults Why the defaults are so forgiving
+The first Unix shells were built for people sitting at a terminal. If you type a command and it fails, you see the error and decide what to do next; a shell that quit on every mistake would log you out constantly. Scripts inherited those same rules, so every script starts in "keep going no matter what" mode. The `-e` and `-u` options date back to the early Bourne shell; `pipefail` came much later, from the Korn shell, and bash added it in version 3.0.
+:::
+
+::: context unbound-word Unbound means "has no value"
+"Bound" here means "tied to a value". A variable that has been given a value — even an empty one — is bound. A variable that has never been assigned, or was removed with `unset`, is unbound. That is why `-u` complains about `OUTDIR` but not about `VERBOSE=""`: an empty value is still a value. The `:-` forms treat both cases alike; the forms without a colon tell them apart.
+:::
+
+::: context colon-command The command that does nothing
+`:` is a real built-in command. It ignores its arguments and always succeeds, like `true`. That sounds useless, but bash still *expands* the arguments before throwing them away — so `: "${SIM_ROOT:?message}"` runs the check and discards the result. You will also see it as an empty loop body, `while false; do :; done`, because bash does not allow a completely empty body.
+:::
+
+::: context pipe-statuses Each stage has its own status
+Every command in a pipeline runs at the same time as the others, and each one finishes with its own exit status. Bash has to pick one number to stand for the whole line.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">
+  <rect x="20" y="20" width="130" height="34" fill="#fff" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="85" y="42" font-size="12" text-anchor="middle" fill="#1f2a44">grep DIVERGED</text>
+  <text x="175" y="42" font-size="16" text-anchor="middle" fill="#1f2a44">|</text>
+  <rect x="200" y="20" width="130" height="34" fill="#fff" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="265" y="42" font-size="12" text-anchor="middle" fill="#1f2a44">wc -l</text>
+  <text x="85" y="72" font-size="12" text-anchor="middle" fill="#b4232c">status 1</text>
+  <text x="265" y="72" font-size="12" text-anchor="middle" fill="#1d6fd1">status 0</text>
+  <text x="20" y="104" font-size="12" fill="#1f2a44">default: last stage only</text>
+  <text x="330" y="104" font-size="12" text-anchor="end" fill="#1d6fd1">0</text>
+  <text x="20" y="130" font-size="12" fill="#1f2a44">pipefail: rightmost failure</text>
+  <text x="330" y="130" font-size="12" text-anchor="end" fill="#b4232c">1</text>
+</svg>
+```
+
+`PIPESTATUS` keeps all of them — here `1 0` — so you can inspect each stage yourself.
+:::
+
+::: context sigpipe When the reader hangs up
+`yes | head -1` prints one `y`. `head` then exits, and `yes` — which would print forever — is stopped the next time it tries to write into the now-closed pipe. The kernel sends it the signal SIGPIPE, number 13, and a program killed by signal n reports status 128 + n. So `yes` ends with 141 even though nothing went wrong. Under `pipefail`, that 141 becomes the pipeline's status, and `-e` stops the script.
+:::
+
+::: context errexit-decision How bash decides whether to stop
+When a command returns non-zero, `-e` asks one question: was anyone checking this status?
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 170" font-family="Inter, Arial, sans-serif">
+  <rect x="100" y="10" width="160" height="30" rx="6" fill="#fff" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="180" y="30" font-size="12" text-anchor="middle" fill="#1f2a44">command returns non-zero</text>
+  <line x1="180" y1="40" x2="180" y2="58" stroke="#1f2a44" stroke-width="1.5"/>
+  <polygon points="180,64 175,56 185,56" fill="#1f2a44"/>
+  <rect x="60" y="64" width="240" height="40" rx="6" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="180" y="81" font-size="12" text-anchor="middle" fill="#1f2a44">status being tested? (if, while,</text>
+  <text x="180" y="96" font-size="12" text-anchor="middle" fill="#1f2a44">left of &amp;&amp; or ||, after !)</text>
+  <line x1="110" y1="104" x2="80" y2="132" stroke="#1f2a44" stroke-width="1.5"/>
+  <line x1="250" y1="104" x2="280" y2="132" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="78" y="122" font-size="11" text-anchor="end" fill="#1f2a44">yes</text>
+  <text x="284" y="122" font-size="11" fill="#1f2a44">no</text>
+  <rect x="20" y="134" width="120" height="28" rx="6" fill="#fff" stroke="#1d6fd1" stroke-width="1.5"/>
+  <text x="80" y="152" font-size="12" text-anchor="middle" fill="#1d6fd1">keep going</text>
+  <rect x="206" y="134" width="148" height="28" rx="6" fill="#fff" stroke="#b4232c" stroke-width="1.5"/>
+  <text x="280" y="152" font-size="12" text-anchor="middle" fill="#b4232c">exit with that status</text>
+</svg>
+```
+
+If someone is checking, the non-zero status is an answer to their question, so bash hands it to them instead of stopping.
+:::
+
+::: context subshell A subshell is a copy of the shell
+A **subshell** is a separate copy of the running shell, started to do some work and then thrown away. `$( … )`, a pipeline stage and `( … )` in parentheses all run in subshells. The copy gets your variables, but anything it changes vanishes when it ends — which is why a variable set inside `$( … )` is not visible afterwards.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 130" font-family="Inter, Arial, sans-serif">
+  <rect x="10" y="10" width="340" height="110" rx="8" fill="#fff" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="22" y="30" font-size="12" fill="#1f2a44">your script: set -e is on</text>
+  <text x="22" y="48" font-size="11" fill="#6c7a93">out="$( … )"</text>
+  <rect x="120" y="40" width="218" height="68" rx="6" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="229" y="60" font-size="12" text-anchor="middle" fill="#1f2a44">subshell (a copy)</text>
+  <text x="229" y="80" font-size="12" text-anchor="middle" fill="#b4232c">-e dropped by default</text>
+  <text x="229" y="98" font-size="11" text-anchor="middle" fill="#1f2a44">kept with inherit_errexit</text>
+</svg>
+```
+
+In bash's normal mode, a command substitution's copy drops the `-e` setting; that is what `inherit_errexit` restores.
+:::
+
+::: context and-chain The and-and chain at the end of a function
+There is one twist. If `false && echo x` is the *last* line of a function, the function returns that line's status, 1. The line itself did not stop anything, but the function call now fails, and `-e` fires at the caller. So the same line is harmless in the middle of a function and fatal at its end. Behavior that depends on position like this is exactly why writing each command on its own line is the safer habit.
+:::
+
+::: context trap-bridge Where traps come back
+The `ERR` trap here is for diagnosis. Lesson 07 introduces its more important sibling, the `EXIT` trap, which runs cleanup — deleting temporary folders, releasing locks — however the script ends: success, a failure caught by `set -e`, or Ctrl-C. Together, `set -Eeuo pipefail`, an `ERR` trap and an `EXIT` trap form the standard opening of a robust script.
+:::
