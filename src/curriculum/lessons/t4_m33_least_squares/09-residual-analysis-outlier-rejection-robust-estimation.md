@@ -1,7 +1,7 @@
 ---
 id: l09-residual-analysis-outlier-rejection-robust-estimation
 title: "Residual analysis, outlier rejection, and robust estimation"
-minutes: 24
+minutes: 22
 covers:
   - "Residual analysis, outlier rejection, and robust estimation (Huber loss, RANSAC)"
 ---
@@ -421,7 +421,7 @@ Efficiency compares variances. At $95\%$, Huber on clean Gaussian data behaves a
 :::
 
 ::: context ransac-history Born in computer vision
-Martin Fischler and Robert Bolles of SRI International published RANSAC in 1981, for the problem of working out where a camera is from points in an image, when many of the automatically matched points are simply wrong. It is still everywhere in vision: phone panorama stitching, robot and drone visual navigation, and the terrain-relative navigation that helped guide NASA's Perseverance rover to its landing site in 2021 by matching camera images to a stored map.
+Martin Fischler and Robert Bolles of SRI International published RANSAC in 1981, for the problem of working out where a camera is from points in an image, when many of the automatically matched points are simply wrong. It is still everywhere in vision: phone panorama stitching, robot and drone visual navigation, and any system that matches features in a camera image against a map, where some of the matches are always wrong.
 :::
 
 ::: context breakdown Where any method must give up
