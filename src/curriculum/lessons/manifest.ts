@@ -2274,6 +2274,126 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       "file": "cod_py_02_idiomatic/13-package-layout.md"
     }
   ],
+  "cod_rs_01_basics": [
+    {
+      "id": "l01-rustup-and-cargo",
+      "title": "Installing Rust, and running everything with Cargo",
+      "minutes": 25,
+      "covers": [
+        "rustup, toolchains, editions; cargo new, build, run, test, doc, clippy, fmt",
+        "Cargo.toml, dev and release profiles, workspaces, semver and feature flags"
+      ],
+      "file": "cod_rs_01_basics/01-rustup-and-cargo.md"
+    },
+    {
+      "id": "l02-variables-types-and-overflow",
+      "title": "Variables, types, and what happens when a number overflows",
+      "minutes": 22,
+      "covers": [
+        "Variables, mut, shadowing; scalar and compound types",
+        "Integer overflow: panics in debug, wraps in release; checked, wrapping and saturating operations"
+      ],
+      "file": "cod_rs_01_basics/02-variables-types-and-overflow.md"
+    },
+    {
+      "id": "l03-strings-and-control-flow",
+      "title": "Text as String and &str, and the ways a program repeats and decides",
+      "minutes": 21,
+      "covers": [
+        "String versus &str",
+        "Control flow; loop, while let, for"
+      ],
+      "file": "cod_rs_01_basics/03-strings-and-control-flow.md"
+    },
+    {
+      "id": "l04-structs-enums-and-match",
+      "title": "Structs, enums and match",
+      "minutes": 24,
+      "covers": [
+        "struct, enum as real sum types, impl blocks",
+        "Pattern matching and match exhaustiveness"
+      ],
+      "file": "cod_rs_01_basics/04-structs-enums-and-match.md"
+    },
+    {
+      "id": "l05-modules-and-collections",
+      "title": "Modules and collections",
+      "minutes": 24,
+      "covers": [
+        "Modules, pub, paths, use",
+        "Slices and arrays; Vec, HashMap, BTreeMap"
+      ],
+      "file": "cod_rs_01_basics/05-modules-and-collections.md"
+    },
+    {
+      "id": "l06-option-result-and-the-question-mark",
+      "title": "Option, Result and the question mark",
+      "minutes": 21,
+      "covers": [
+        "Option and Result, the absence of null, and the ? operator"
+      ],
+      "file": "cod_rs_01_basics/06-option-result-and-the-question-mark.md"
+    },
+    {
+      "id": "l07-iterators-and-closures",
+      "title": "Iterators and closures",
+      "minutes": 22,
+      "covers": [
+        "Iterators and adapters and their zero-cost nature",
+        "Closures: Fn, FnMut, FnOnce"
+      ],
+      "file": "cod_rs_01_basics/07-iterators-and-closures.md"
+    },
+    {
+      "id": "l08-derive-cfg-doc-tests-and-clippy",
+      "title": "derive, cfg, doc tests and clippy",
+      "minutes": 24,
+      "covers": [
+        "derive macros; cfg attributes; doc tests",
+        "clippy as a teaching tool"
+      ],
+      "file": "cod_rs_01_basics/08-derive-cfg-doc-tests-and-clippy.md"
+    }
+  ],
+  "cod_rs_02_ownership": [
+    {
+      "id": "l01-ownership-and-moves",
+      "title": "Ownership and moves",
+      "minutes": 20,
+      "covers": [
+        "The three ownership rules; move by default and Copy types"
+      ],
+      "file": "cod_rs_02_ownership/01-ownership-and-moves.md"
+    },
+    {
+      "id": "l02-borrowing-and-aliasing-xor-mutability",
+      "title": "Borrowing, and the rule of many readers or one writer",
+      "minutes": 22,
+      "covers": [
+        "Borrowing: shared &T versus exclusive &mut T",
+        "Aliasing XOR mutability and why it removes data races and iterator invalidation by construction"
+      ],
+      "file": "cod_rs_02_ownership/02-borrowing-and-aliasing-xor-mutability.md"
+    },
+    {
+      "id": "l03-reading-borrow-checker-errors",
+      "title": "Reading borrow-checker errors",
+      "minutes": 23,
+      "covers": [
+        "Reading borrow-checker errors instead of fighting them"
+      ],
+      "file": "cod_rs_02_ownership/03-reading-borrow-checker-errors.md"
+    },
+    {
+      "id": "l04-lifetimes",
+      "title": "Lifetimes, or how long a borrow may last",
+      "minutes": 22,
+      "covers": [
+        "Lifetimes: elision rules, explicit annotations, lifetimes in structs, static"
+      ],
+      "file": "cod_rs_02_ownership/04-lifetimes.md"
+    }
+  ],
   "cod_sql_01_select": [
     {
       "id": "l01-tables-rows-and-keys",
@@ -8939,37 +9059,16 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "cod_rs_01_basics": {
-    "covered": 0,
+    "covered": 15,
     "total": 15,
-    "complete": false,
-    "missing": [
-      "rustup, toolchains, editions; cargo new, build, run, test, doc, clippy, fmt",
-      "Cargo.toml, dev and release profiles, workspaces, semver and feature flags",
-      "Variables, mut, shadowing; scalar and compound types",
-      "Integer overflow: panics in debug, wraps in release; checked, wrapping and saturating operations",
-      "String versus &str",
-      "Control flow; loop, while let, for",
-      "Pattern matching and match exhaustiveness",
-      "struct, enum as real sum types, impl blocks",
-      "Modules, pub, paths, use",
-      "Slices and arrays; Vec, HashMap, BTreeMap",
-      "Option and Result, the absence of null, and the ? operator",
-      "Iterators and adapters and their zero-cost nature",
-      "Closures: Fn, FnMut, FnOnce",
-      "derive macros; cfg attributes; doc tests",
-      "clippy as a teaching tool"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_rs_02_ownership": {
-    "covered": 0,
+    "covered": 5,
     "total": 16,
     "complete": false,
     "missing": [
-      "The three ownership rules; move by default and Copy types",
-      "Borrowing: shared &T versus exclusive &mut T",
-      "Aliasing XOR mutability and why it removes data races and iterator invalidation by construction",
-      "Reading borrow-checker errors instead of fighting them",
-      "Lifetimes: elision rules, explicit annotations, lifetimes in structs, static",
       "Interior mutability: Cell, RefCell and its runtime panics, Rc, Arc, Mutex, RwLock, OnceLock",
       "Send and Sync: thread safety as a type-system property",
       "Box and Pin (awareness); Drop as Rust RAII",
