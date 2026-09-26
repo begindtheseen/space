@@ -1588,7 +1588,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-the-filesystem-and-getting-around",
       "title": "The filesystem, paths, and moving things about",
-      "minutes": 21,
+      "minutes": 22,
       "covers": [
         "Filesystem hierarchy, absolute vs relative paths, ~ . ..",
         "ls cd cp mv rm mkdir ln (hard vs symbolic links)"
@@ -1598,7 +1598,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-reading-files-without-an-editor",
       "title": "Reading files without an editor",
-      "minutes": 18,
+      "minutes": 20,
       "covers": [
         "cat less head tail -f wc"
       ],
@@ -1643,7 +1643,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-diffs-archives-and-moving-data",
       "title": "Diffs, archives and moving data between machines",
-      "minutes": 20,
+      "minutes": 22,
       "covers": [
         "diff/patch, tar, gzip, zstd, rsync, scp"
       ],
@@ -1661,7 +1661,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-tmux-sessions-windows-and-panes",
       "title": "tmux — sessions, windows and panes",
-      "minutes": 19,
+      "minutes": 21,
       "covers": [
         "tmux sessions, windows, panes, detach/attach"
       ],
@@ -1670,7 +1670,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-environment-path-and-startup-files",
       "title": "The environment, PATH, and startup files",
-      "minutes": 20,
+      "minutes": 22,
       "covers": [
         "Environment variables, PATH, .bashrc vs .bash_profile"
       ],
@@ -1679,7 +1679,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-packages-and-building-from-source",
       "title": "Packages, and building from source",
-      "minutes": 19,
+      "minutes": 21,
       "covers": [
         "Package management (apt/dnf) and building from source"
       ],
@@ -1688,7 +1688,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-systemd-services-and-the-journal",
       "title": "systemd services and the journal",
-      "minutes": 20,
+      "minutes": 21,
       "covers": [
         "systemd: systemctl, journalctl"
       ],
@@ -1697,7 +1697,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l13-diagnosing-a-machine",
       "title": "Diagnosing a machine — disk, network, syscalls, kernel",
-      "minutes": 23,
+      "minutes": 22,
       "covers": [
         "df du lsblk ip ss curl strace lsof dmesg"
       ],
@@ -1717,7 +1717,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-shebangs-and-executable-scripts",
       "title": "Shebang lines and executable scripts",
-      "minutes": 19,
+      "minutes": 22,
       "covers": [
         "Shebang lines and executable scripts"
       ],
@@ -1726,7 +1726,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-set-euo-pipefail",
       "title": "set -euo pipefail, and what each flag protects against",
-      "minutes": 18,
+      "minutes": 21,
       "covers": [
         "set -euo pipefail and what each flag actually does"
       ],
@@ -1735,7 +1735,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-variables-quoting-and-expansion",
       "title": "Variables, quoting, word splitting and globs",
-      "minutes": 18,
+      "minutes": 20,
       "covers": [
         "Variables, quoting, word splitting, glob expansion"
       ],
@@ -1744,7 +1744,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-substitution-arithmetic-and-arrays",
       "title": "Command substitution, arithmetic and arrays",
-      "minutes": 17,
+      "minutes": 22,
       "covers": [
         "Command substitution $( ), arithmetic $(( )), arrays"
       ],
@@ -1753,7 +1753,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-control-flow-and-tests",
       "title": "Control flow, and the two kinds of bracket",
-      "minutes": 18,
+      "minutes": 21,
       "covers": [
         "if / for / while / case, test [[ ]] vs [ ]"
       ],
@@ -1762,7 +1762,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-functions-and-exit-codes",
       "title": "Functions, return values and exit codes",
-      "minutes": 17,
+      "minutes": 19,
       "covers": [
         "Functions, return values, exit codes, $?"
       ],
@@ -1771,7 +1771,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-trap-and-cleanup",
       "title": "trap, and cleaning up on every exit path",
-      "minutes": 14,
+      "minutes": 18,
       "covers": [
         "trap for cleanup on EXIT/INT/TERM"
       ],
@@ -1780,7 +1780,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-getopts-and-arguments",
       "title": "A script's interface — getopts, arguments and here-docs",
-      "minutes": 18,
+      "minutes": 21,
       "covers": [
         "getopts for flags, positional args, \"$@\" vs \"$*\"",
         "Here-docs and here-strings"

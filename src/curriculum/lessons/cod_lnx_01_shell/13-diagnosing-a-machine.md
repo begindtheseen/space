@@ -1,20 +1,27 @@
 ---
 id: l13-diagnosing-a-machine
 title: Diagnosing a machine — disk, network, syscalls, kernel
-minutes: 23
+minutes: 22
 covers:
   - df du lsblk ip ss curl strace lsof dmesg
 ---
 
-Something has gone wrong on a machine you do not administer. The campaign stopped at case 312, or the licence server is "unreachable", or a binary that worked yesterday now exits immediately with no message. The person who can answer those in ten minutes is not cleverer than the person who cannot; she has nine commands and knows which one to reach for.
+A good doctor does not guess. She takes your temperature, listens to your chest, looks in your throat. Each instrument answers one question.
 
-They divide by the question they answer. *Is there room?* — `df`, `du`, `lsblk`. *Is the network the problem?* — `ip`, `ss`, `curl`. *What is the program actually doing?* — `strace`, `lsof`. *What did the kernel notice?* — `dmesg`. This lesson takes them in that order, with real failures triggered on purpose.
+This lesson gives you the instruments for a sick Linux machine. The Monte Carlo campaign stopped at case 312. The license server is "unreachable". A simulation binary that worked yesterday exits at once and prints nothing. The engineer who sorts it out in ten minutes knows nine commands:
 
-All output below was produced on this machine and pasted verbatim: Ubuntu 24.04.4 with kernel 6.18.44, GNU coreutils 9.4 (`df`, `du`), util-linux `lsblk`, iproute2 6.1.0 (`ip`, `ss`), curl 8.5.0, strace 6.8, lsof 4.95.0. Sizes, addresses, PIDs and timestamps are specific to this machine. The disk-full and out-of-memory failures were produced inside small, deliberately created containers — a one-megabyte tmpfs and a 64-megabyte memory limit — so that they are real failures that could not damage anything.
+- **Is there room?** — `df`, `du`, `lsblk`.
+- **Is the network the problem?** — `ip`, `ss`, `curl`.
+- **What is the program actually doing?** — `strace`, `lsof`.
+- **What did the kernel notice?** — `dmesg`.
+
+We break things on purpose, in small sandboxes, so every failure and every output below is real (Ubuntu 24.04.4, kernel 6.18.44).
 
 ## Is there room? `df`, `du`, `lsblk`
 
-`df` reports free space **per filesystem**. `-h` makes it readable, and giving it a path tells you about the filesystem that path is on, which is what you almost always want:
+Picture a parking garage. You can ask the office, which keeps a counter of free spaces, or walk every row counting cars. Usually the answers agree. When they do not, the difference is a clue.
+
+`df` ("disk free") asks the office. It reports free space **per filesystem** — per separate storage area, each with its own counter. `-h` gives human-readable units, and a path asks about the filesystem that path lives on. The `.` means "the folder I am in":
 
 ```bash
 df -h .
@@ -25,9 +32,9 @@ Filesystem      Size  Used Avail Use% Mounted on
 tmpfs           7.9G  2.0M  7.9G   1% /home
 ```
 
-Note what that just told you: the current directory is on a **tmpfs**, which lives in RAM and does not survive a reboot. `df -h` on its own lists everything, and reading the "Mounted on" column is how you discover that `/home` and `/` are different devices — so cleaning up `/tmp` does nothing for a full home directory.
+This folder is on a **[[tmpfs|tmpfs]]**, a filesystem in memory. `df -h` with no path lists every filesystem, and "Mounted on" shows where each is attached. That is how you discover that `/home` and `/` are separate — so cleaning `/tmp` does nothing for a full home folder.
 
-`du` reports space **used by files**, recursively:
+`du` ("disk usage") walks the rows. It adds up the space **used by files**, going down into every subfolder:
 
 ```bash
 du -sh runs telemetry configs
@@ -39,7 +46,7 @@ du -sh runs telemetry configs
 8.0K	configs
 ```
 
-`-s` summarises rather than listing every subdirectory, `-h` is human units. The idiom for "what is eating the disk" is one level at a time, sorted:
+`-s` gives one total per argument. To find what is eating the disk, go one level at a time and sort. Read `|` aloud as "pipe": it feeds the left command's output to the right one.
 
 ```bash
 du -h --max-depth=1 . | sort -h
@@ -52,12 +59,10 @@ du -h --max-depth=1 . | sort -h
 2.0M	./runs
 ```
 
-`sort -h` understands `K`, `M` and `G` (lesson 06). Run it, `cd` into the biggest entry, run it again; three or four rounds find any runaway directory on any machine.
+`sort -h` understands `K`, `M` and `G` (lesson 06), so the biggest lands last. `cd` into it and repeat.
 
-::: warning
-`du` and `df` measure different things and disagree for two distinct reasons, and confusing them wastes hours.
-
-**Blocks versus bytes.** `du` counts allocated blocks by default, and a file smaller than a block still occupies one:
+::: warning Three sizes that disagree
+**Bytes versus blocks.** Space is handed out in fixed chunks called **[[blocks|blocks]]**, usually 4 KiB, and a tiny file still takes a whole one. `du` counts blocks; `du -b` (`--bytes`, which implies `--apparent-size`) counts bytes written, as `ls -l` does:
 
 ```bash
 du -sh . ; du -sb .
@@ -68,9 +73,14 @@ du -sh . ; du -sb .
 337551	.
 ```
 
-Two megabytes allocated for 338 kilobytes of content — because 500 log files of about 630 bytes each occupy a 4 KiB block apiece. `du -sb` (`--bytes`, which implies `--apparent-size`) gives the content size. On a directory of many small files the two differ by a factor of six, as here.
+The 500 log files in `runs` hold a few hundred bytes each, but each sits in its own 4 KiB block: 2.0 MB of blocks for 338 kB of content, a factor of $2\,097\,152 / 337\,551 \approx 6.2$.
 
-**Deleted files that are still open.** A file whose last name is removed keeps its blocks until every process that has it open closes it. Here a writer holds a 6 MB file on an 8 MB filesystem, and the file is then deleted:
+**`du` versus `df`.** Both count blocks, so normally they roughly agree. When `df` shows far more used than `du` finds, suspect: a deleted file still open (next); files hidden under a **mount point**, written into a folder before a filesystem was attached over it; folders `du` skipped with `Permission denied`; and the few percent ext4 reserves for root, which is why `Used` plus `Avail` is less than `Size`.
+:::
+
+### The deleted file that still holds its space
+
+A file's name is only a label on its data. The data is freed only when no labels are left *and* no program has the file open. Here a program holds a 6 MB log open on an 8 MB filesystem, and the file is deleted (read `;` as "then"):
 
 ```bash
 rm /mnt/small/telemetry.log
@@ -83,18 +93,20 @@ tmpfs           8.0M  6.0M  2.0M  75% /mnt/small
 0	/mnt/small
 ```
 
-`du` says the directory is empty. `df` says 6 MB are in use. Both are right: `du` walks names, `df` asks the filesystem. This is the single most common "the disk is full and there is nothing on it" situation, and it is invariably a log file that was deleted while a service still had it open.
+`du` walks names, and the name is gone. `df` asks the filesystem, and the blocks are still taken. Both are right. This is the classic "disk full, nothing on it": nearly always a log deleted while a service was writing it.
 
-`lsof +L1` lists every open file with a link count below one — that is, every deleted-but-open file on the machine:
+`lsof +L1` lists every open file whose **[[link count|inode]]** — the number of names pointing at it — is below one. That is every deleted-but-open file on the machine:
 
 ```text
-python3   16660     root    3w   REG   0,63  6291456     0       2 /mnt/small/telemetry.log (deleted)
+COMMAND   PID     USER   FD   TYPE DEVICE SIZE/OFF NLINK NODE NAME
+python3   16660     root    3w   REG   0,63  6291456     0    2 /mnt/small/telemetry.log (deleted)
 ```
 
-There is the culprit, with its PID and its size. Restarting that process — or asking it to reopen its log — releases the space immediately; there is nothing to delete, because it is already deleted. `ls -l /proc/16660/fd` shows the same thing from the other side, as a symlink marked `(deleted)`.
-:::
+There is the culprit: process number (PID) 16660, 6 MB, `NLINK` 0. Restart it, or ask it to reopen its log, and the space returns at once. `ls -l /proc/16660/fd` shows it from the process's side.
 
-`lsblk` shows the block devices themselves, which is the layer below filesystems:
+### Devices and inodes
+
+`lsblk` ("list block devices") shows the devices below the filesystems:
 
 ```bash
 lsblk
@@ -108,9 +120,9 @@ vdb   254:16   0   9.6M  1 disk /opt/rclone
 vdc   254:32   0 250.4M  1 disk /opt/claude-code
 ```
 
-`RO` marks read-only devices, `TYPE` distinguishes `disk`, `part` and `lvm`, and an empty `MOUNTPOINTS` means the device is there and not mounted — which is the answer when a data disk "disappeared". `lsblk -f` adds the filesystem type, label and how full each one is.
+`RO` is 1 for read-only. `TYPE` tells a `disk` from a `part` (partition) or `lvm` volume. An empty `MOUNTPOINTS` means the device exists but is not attached — the answer when a data disk "disappeared". `lsblk -f` adds type, label and fullness.
 
-One more failure mode `df -h` will not show you: **running out of inodes**. A filesystem with free space but no free inodes refuses to create files, with the same `ENOSPC` error.
+One failure hides from `df -h`: **running out of inodes**. An **inode** is the record card kept for each file — owner, permissions, where its blocks are. Filesystems such as ext4 print a fixed number of cards when created. When they run out, no file can be made even with gigabytes free, and you get the same "no space" error. `-i` counts cards:
 
 ```bash
 df -i /mnt/small
@@ -121,42 +133,47 @@ Filesystem      Inodes IUsed   IFree IUse% Mounted on
 tmpfs          2060247     1 2060246    1% /mnt/small
 ```
 
-Check `df -i` whenever "No space left on device" appears and `df -h` looks fine. A campaign that writes several small files per case is exactly the workload that exhausts inodes first.
+Run `df -i` whenever "No space left on device" appears and `df -h` looks fine. A campaign writing several small files per case runs out of inodes first.
 
-::: example What a full filesystem actually looks like
-An eight-hour job that fails at 3 a.m. leaves you this, and nothing else. Here, deliberately, on a one-megabyte tmpfs created for the purpose:
+::: example What a full filesystem looks like
+A job that dies at 3 a.m. leaves you only this. Here it is on a one-megabyte tmpfs. `dd` copies data in blocks; this asks for 32 blocks of 64 KiB, 2 MiB in all:
 
 ```bash
 dd if=/dev/zero of=big.bin bs=64k count=32
 ```
 
 ```text
+dd: error writing 'big.bin': No space left on device
 17+0 records in
 16+0 records out
-1048576 bytes (1.0 MB, 1.0 MiB) copied, 0.000536503 s, 2.0 GB/s
+1048576 bytes (1.0 MB, 1.0 MiB) copied, 0.000500892 s, 2.1 GB/s
 ```
 
-The filesystem is now exactly full — `df -h` reports `1.0M 1.0M 0 100%`. The next write fails:
+It wrote 16 blocks and the 17th failed. Check: $16 \times 65\,536 = 1\,048\,576$ bytes, exactly the 1 MiB filesystem. `df -h` now shows `100%`, and the next write fails at once:
 
 ```bash
 dd if=/dev/zero of=big2.bin bs=64k count=64
+ls -l
 ```
 
 ```text
 dd: error writing 'big2.bin': No space left on device
 1+0 records in
 0+0 records out
-0 bytes copied, 4.5599e-05 s, 0.0 kB/s
+0 bytes copied, 6.3783e-05 s, 0.0 kB/s
+total 1024
+-rw-r--r-- 1 root root 1048576 Sep 26 18:06 big.bin
+-rw-r--r-- 1 root root       0 Sep 26 18:06 big2.bin
 ```
 
-"No space left on device" is the `ENOSPC` error, and you will see it from every program — Python's `OSError`, a C++ `ofstream` that silently sets `badbit`, a solver that writes a truncated output file and carries on. Note the last line of `ls -l`: `big2.bin` exists, with size 0. A failed write usually leaves a partial or empty file behind, so "the output file is there" is not evidence that the run succeeded.
+"No space left on device" is the **`ENOSPC`** error. Python raises `OSError`, a C++ `ofstream` quietly sets its `badbit`, a solver writes a cut-off file and carries on. And `big2.bin` exists with size 0: "the output file is there" does not prove the run worked.
 
-Three things to check, in order, when you see it: `df -h <the directory>` for space, `df -i <the directory>` for inodes, and `lsof +L1` for deleted-but-open files holding the space that `du` says is free.
+Then check, in order: `df -h`, `df -i`, `lsof +L1`.
 :::
 
 ## Is it the network? `ip`, `ss`, `curl`
 
-`ip` replaced `ifconfig` and `route`. Three forms cover everyday use:
+Think of phoning an office. Is your phone plugged in? Is anyone at the extension? Do they understand you? Three commands check those three things. `ip` (which replaced `ifconfig` and `route`) answers the first:
 
 ```bash
 ip -br a
@@ -170,7 +187,7 @@ eth0             UP             192.0.2.2/24
 docker0          DOWN           172.17.0.1/16
 ```
 
-`-br` is brief: interface, state, address. `ip a` without it gives the full detail, and `ip a show eth0` narrows it. The state word is the first thing to read — `DOWN` on the interface you expected to use ends the investigation.
+`-br` (brief) prints one line per **interface** — a network connection, real or virtual — with state and address. `ip a` gives full detail; `ip a show eth0` narrows it. `DOWN` on the interface you meant to use ends the investigation.
 
 ```bash
 ip r
@@ -182,9 +199,9 @@ default via 192.0.2.1 dev eth0
 192.0.2.0/24 dev eth0 proto kernel scope link src 192.0.2.2
 ```
 
-The routing table. `default via ...` is the gateway — where anything not covered by a more specific route goes. No default route means the machine can reach its own subnet and nothing else, which presents as "DNS is broken" and is not.
+That is the **routing table**: where to send traffic for each range of addresses. `default via ...` names the **gateway**, where everything else goes. With no default route, only the local network is reachable — which looks like broken DNS.
 
-`ss` replaced `netstat` and answers "what is listening, and who is connected":
+`ss` ("socket statistics", replacing `netstat`) answers the second: what is listening, and who is connected.
 
 ```bash
 ss -ltnp | grep -E "2222|8899"
@@ -195,13 +212,11 @@ LISTEN 0      128        127.0.0.1:2222       0.0.0.0:*    users:(("sshd",pid=25
 LISTEN 0      5          127.0.0.1:8899       0.0.0.0:*    users:(("python3",pid=24049,fd=3))
 ```
 
-The flags: `-l` listening, `-t` TCP, `-n` numeric (do not resolve names, which is much faster and avoids a DNS hang), `-p` the owning process — which needs root to see other users' processes.
+`-l` listening, `-t` TCP, `-n` numeric (no name lookups, so it cannot hang on slow DNS), `-p` the owning process — which needs root for other users' processes.
 
-Read the **Local Address** column carefully, because it answers the commonest networking question there is. `127.0.0.1:8899` means the service is bound to loopback and is reachable *only from this machine*; `0.0.0.0:2025` means it accepts connections from anywhere. A service you cannot reach from your laptop, that works fine over SSH, is almost always bound to `127.0.0.1` — and lesson 08's `ssh -L` is the answer.
+Read the **Local Address** column. `127.0.0.1:8899` means the service listens on **[[loopback|loopback]]** only: reachable *only from this machine*. `0.0.0.0:8899` would mean every interface. A service you cannot reach from your laptop, but that works once you SSH in, is almost always on `127.0.0.1` — and lesson 08's `ssh -L` tunnel is the answer. `ss -tn state established` lists connections; `ss -s` counts sockets by state.
 
-`ss -tn state established` lists current connections, and `ss -s` gives a one-screen summary of how many sockets exist in each state.
-
-`curl` tests an HTTP service from the command line, and its exit statuses are precise:
+`curl` answers the third. It talks to a web (HTTP) service, and how it fails tells you where things broke:
 
 ```bash
 curl -s -o /dev/null -w "http=%{http_code} time=%{time_total}s size=%{size_download}\n" http://127.0.0.1:8899/
@@ -211,7 +226,7 @@ curl -s -o /dev/null -w "http=%{http_code} time=%{time_total}s size=%{size_downl
 http=200 time=0.002176s size=40
 ```
 
-`-o /dev/null` throws the body away and `-w` prints exactly the fields you asked for — the form to use in a health check. Compare the three ways it fails:
+`-o /dev/null` discards the page and `-w` prints only the fields you name — a health check. Now three failures:
 
 ```bash
 curl -sS -o /dev/null -w "%{http_code}\n" http://127.0.0.1:8899/nosuchpage
@@ -237,26 +252,46 @@ curl -sS --max-time 3 http://no-such-host.invalid/
 curl: (6) Could not resolve host: no-such-host.invalid
 ```
 
-Three different layers, three different answers. **404** — the network is fine, the server answered, your URL is wrong. **Exit 7** — the name resolved and the machine is reachable, but nothing is listening on that port (or a firewall dropped it). **Exit 6** — DNS failed; nothing was even attempted. Use `-sS` in scripts: `-s` silences the progress meter, `-S` keeps error messages, and without the pair you get either a broken progress bar in your log or no diagnosis at all. `-I` fetches only the headers, and `-v` shows the whole exchange including TLS negotiation.
+Three layers, three answers:
+
+- **404** — the network is fine and the server answered. Your address (URL) is wrong.
+- **Exit status 7** — the connection was refused: nothing listens on that port, or a firewall rejected it. A firewall that silently drops packets gives a timeout instead (exit 28 with `--max-time`).
+- **Exit status 6** — **[[DNS|dns]]**, which turns names into addresses, failed. Nothing was attempted.
+
+::: warning A 404 is still exit status 0
+`curl` counts any answer as success, so that 404 exited 0, and a script testing only `$?` ("dollar question mark", the last exit status) calls a missing page healthy. With `-f` (`--fail`), any HTTP status of 400 or more becomes exit status 22:
+
+```text
+curl: (22) The requested URL returned error: 404
+```
+:::
+
+In scripts use `-sS`: `-s` hides the progress meter, `-S` keeps error messages. `-I` fetches headers; `-v` shows everything.
 
 ## What is the program doing? `strace`, `lsof`
 
-`strace` prints every system call a process makes. It turns "it does not work and says nothing" into a transcript.
+A program cannot touch a file, the network or the screen itself. It asks the kernel, and each request is a **[[system call|system-call]]**. `strace` prints every system call with its answer, turning "it fails and says nothing" into a written record:
 
 ```bash
 strace -e trace=openat cat nosuchfile.yaml
 ```
 
 ```text
+openat(AT_FDCWD, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3
 openat(AT_FDCWD, "/lib/x86_64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3
 openat(AT_FDCWD, "nosuchfile.yaml", O_RDONLY) = -1 ENOENT (No such file or directory)
 cat: nosuchfile.yaml: No such file or directory
 +++ exited with 1 +++
 ```
 
-Read a line as *call(arguments) = result*. A negative result is an error and `strace` names it: `ENOENT` no such file, `EACCES` permission denied, `ENOSPC` no space, `ECONNREFUSED` nothing listening. This is the tool for a program that fails without telling you *which* file it wanted — a configuration file, a licence file, a shared library — because the failing `openat` names it exactly.
+Read each line as *call(arguments) = result*. `openat` opens a file; a result of 3 is a file number, success. A negative result is an error, and `strace` names it. The **[[error names|errno-names]]** to know: `ENOENT` no such file, `EACCES` permission denied, `ENOSPC` no space, `ECONNREFUSED` nothing listening. When a program fails without saying *which* file it wanted — configuration, license, shared library — the failing `openat` names it.
 
-The flags that matter: `-e trace=openat` (or `file`, `network`, `process`) to cut the noise; `-f` to follow forked children, without which you see nothing from a wrapper script; `-p PID` to attach to something already running; `-o FILE` to write the trace to a file, because it is voluminous; and `-c` for a summary instead of a transcript:
+The flags that matter:
+
+- `-e trace=openat`, or a class such as `trace=file`, `trace=network`, `trace=process`, to cut the noise;
+- `-f` to follow child processes — without it you see nothing from a program started by a wrapper script;
+- `-p PID` to attach to a running program; `-o FILE` to save the long record;
+- `-c` for a count instead of a record:
 
 ```bash
 strace -c ls configs
@@ -268,11 +303,11 @@ strace -c ls configs
 100.00    0.000000           0        75         4 total
 ```
 
-Seventy-five system calls to list a directory, four of which returned errors — and those four are in the "errors" column, which is where you look when a program is slow because it is searching thirty directories for a file that is not there.
+Seventy-five calls to list one folder, four failed — the `errors` column. Look there when a program is slow because it searches thirty folders for a missing file.
 
-`strace` slows the traced process down by a large factor, so it is a diagnostic, not a monitor. Attaching to another user's process needs root, or a relaxed `ptrace_scope`.
+`strace` slows a program greatly, so it is for diagnosis only. Attaching with `-p` to another user's process needs root. On Ubuntu, so does attaching to your *own* running process, unless `kernel.yama.ptrace_scope` is 0; starting a program under `strace` always works.
 
-`lsof` lists open files — and on Unix that includes sockets, pipes, devices and the program's own binary.
+`lsof` ("list open files") shows what a program has open — sockets, pipes and devices too, since Unix opens them all like files:
 
 ```bash
 lsof -p 16660 | grep -E 'COMMAND|telemetry'
@@ -283,11 +318,11 @@ COMMAND   PID USER   FD   TYPE DEVICE SIZE/OFF   NODE NAME
 python3 16660 root    3w   REG   0,63  6291456      2 /mnt/small/telemetry.log (deleted)
 ```
 
-The forms worth remembering: `lsof -p PID` what one process has open; `lsof +D /dir` every process using anything under a directory — which is how you find what is stopping `umount`; `lsof -i :8899` who is using a port; and `lsof +L1` the deleted-but-open files from earlier. Without root you see only your own processes.
+Four forms: `lsof -p PID`, one process; `lsof +D /dir`, everyone using a folder (what blocks `umount`); `lsof -i :8899`, who holds a port; `lsof +L1`, deleted-but-open files. Without root you see only your own processes.
 
 ## What did the kernel see? `dmesg`
 
-The kernel's ring buffer holds hardware events, driver messages, filesystem errors, and the two kills that a program cannot report itself, because it is not alive afterwards.
+Some deaths leave no note, because the program is not alive to write one. The kernel keeps a diary anyway, in a **[[ring buffer|ring-buffer]]**: hardware and driver events, filesystem errors, and the kills a program cannot report. `dmesg` reads it:
 
 ```bash
 dmesg --level=err,warn | tail -5
@@ -301,10 +336,14 @@ dmesg --level=err,warn | tail -5
 [37451.292625] systemd[1]: Binding to IPv6 address not available since kernel does not support IPv6.
 ```
 
-The bracketed number is seconds since boot, which is useless for correlating with a job's timestamps; `dmesg -T` converts it to wall-clock time. `--level=err,warn` filters by severity. Without root, `dmesg` may be refused outright — `dmesg: read kernel buffer failed: Operation not permitted` — which is a hardening setting, not a broken machine.
+The bracketed number is seconds since boot; `dmesg -T` shows time of day instead. `--level=err,warn` keeps errors and warnings. Without root you may get `dmesg: read kernel buffer failed: Operation not permitted` — a security setting (`kernel.dmesg_restrict`), not a broken machine.
+
+### The exit status tells you who ended it
+
+Lesson 04 showed that a program killed by signal N gets exit status **[[128 + N|exit-128]]**. So a **small status** (1, 2, …) means the program ended *itself*. **128 + N** means something *outside* ended it, and the program could write nothing.
 
 ::: example The two kills only `dmesg` can explain
-**A segmentation fault.** A C program that dereferences a null pointer:
+**A segmentation fault.** A small C program, `sim_crash`, compiled with `gcc -g` so it carries debugging information, prints a line and then writes through a **null pointer** — address zero, which no program may touch:
 
 ```bash
 ./sim_crash; echo "exit=$?"
@@ -316,19 +355,30 @@ Segmentation fault
 exit=139
 ```
 
-139 is 128 + 11, and signal 11 is `SIGSEGV` — lesson 04's arithmetic. The program's own `printf` reached the terminal; the two words after it came from the shell, and are all anyone got about the failure itself. The kernel recorded more:
+$139 = 128 + 11$, and signal 11 is `SIGSEGV`. The last two words came from the shell, and are all anyone saw of the crash. The kernel wrote more:
 
 ```bash
 dmesg -T | grep sim_crash | tail -2
 ```
 
 ```text
-[Tue Sep 22 21:08:28 2026] sim_crash[16870]: segfault at 0 ip 000055815be53170 sp 00007ffe0463dff0 error 6 in sim_crash[1170,55815be53000+1000] likely on CPU 1 (core 1, socket 0)
+[Sat Sep 26 18:06:33 2026] sim_crash[14360]: segfault at 0 ip 000055e7014df19f sp 00007ffcfcfe3840 error 6 in sim_crash[119f,55e7014df000+1000] likely on CPU 0 (core 0, socket 0)
 ```
 
-`segfault at 0` is the address the program touched — zero, so a null pointer — and `ip` is the instruction pointer, which `addr2line` can turn into a source line if the binary has symbols. For a solver that dies once in three hundred Monte Carlo cases, that address is often the whole diagnosis: `at 0` is a null pointer, a huge address is usually an uninitialised or overrun pointer.
+`segfault at 0` is the address touched: a null pointer. `ip` is the **instruction pointer**, the address of the guilty instruction. The bracket gives the same spot as an offset in the file. Check: $\texttt{0x55e7014df19f} - \texttt{0x55e7014df000} = \texttt{0x19f}$, and this piece of the program starts at file offset `0x1000`, so the offset is $\texttt{0x1000} + \texttt{0x19f} = \texttt{0x119f}$. `addr2line` turns that into a function and a source line (`-f` asks for the function, `-s` drops the folder from the path):
 
-**The out-of-memory killer.** A Python process allowed 64 MB and asking for more, run as a service so the limit is enforced by its cgroup:
+```bash
+addr2line -s -e sim_crash -f 0x119f
+```
+
+```text
+main
+crash.c:6
+```
+
+Line 6 of `crash.c` is `*p = 42;`. For a solver that dies once in three hundred cases, that line is often the whole diagnosis. An address of `0`, or a small one like `0x18` (a field read through a null pointer), means null; a random-looking one usually means a garbage or freed pointer.
+
+**The out-of-memory killer.** A Python sweep, run as a service capped at 64 MiB by its control group, asks for more:
 
 ```bash
 systemctl status sim-hog --no-pager | head -6
@@ -343,7 +393,7 @@ systemctl status sim-hog --no-pager | head -6
    Main PID: 722 (code=killed, signal=KILL)
 ```
 
-`code=killed, signal=KILL` — and the process, killed by `SIGKILL`, had no opportunity to log anything. The reason is in the kernel log:
+`code=killed, signal=KILL`: no chance to log anything. The reason is in the kernel's diary:
 
 ```bash
 dmesg -T | grep -i -e "out of memory" -e "Killed process" | tail -4
@@ -353,13 +403,19 @@ dmesg -T | grep -i -e "out of memory" -e "Killed process" | tail -4
 [Tue Sep 22 21:08:28 2026] Memory cgroup out of memory: Killed process 16914 (python3) total-vm:80648kB, anon-rss:65224kB, file-rss:5308kB, shmem-rss:0kB, UID:0 pgtables:192kB oom_score_adj:0
 ```
 
-It names the process, and `anon-rss:65224kB` is how much it was actually holding when it died — 65 MB against a 64 MB limit. "Memory cgroup out of memory" means a *limit* was hit, so the machine itself was fine; without "cgroup", the whole machine ran out and the kernel chose a victim.
+`anon-rss:65224kB` is the program's own data: $65\,224 / 1024 \approx 63.7$ MiB, at the 64 MiB ceiling once mapped files are added. "Memory cgroup out of memory" means a *limit* was hit; without "cgroup", the whole machine ran out and the kernel chose a victim. So "exited with 137 and wrote nothing" means $128 + 9$, `SIGKILL`, and only `dmesg` records why.
+:::
 
-This is the answer to "my job exited with 137 and wrote nothing". 137 is 128 + 9, `SIGKILL`, and `dmesg` is the only place the reason is recorded.
+### Core files
+
+A **[[core file|core-file]]** is a snapshot of a crashed program's memory, which the debugger `gdb` can open. `ulimit -c` prints the largest core this shell allows; `0`, the usual default, means none, and `ulimit -c unlimited` turns them on. `/proc/sys/kernel/core_pattern` says where cores go; if it starts with `|`, a collector takes them, such as `systemd-coredump` (see `coredumpctl`) or Ubuntu's `apport`.
+
+::: key Where to look when a simulation binary silently exits on a remote box
+Exit status (`$?`), then the process stderr, then `dmesg` (the OOM killer logs there), then `journalctl -u <unit>` if it was a service, then check `ulimit -c` and look for a core file.
 :::
 
 ::: key
-`df` asks the filesystem, `du` walks names — they disagree over block allocation and over deleted-but-open files, which `lsof +L1` finds. `df -i` catches inode exhaustion when `df -h` looks fine. `ss -ltnp`'s Local Address column distinguishes `127.0.0.1` (loopback only) from `0.0.0.0` (anywhere). `curl` exit 6 is DNS, 7 is nothing listening, and a 404 means the network was fine. `strace -f -e trace=openat` names the file a silent program could not find. `dmesg` is the only record of a segfault (exit 139) or an OOM kill (exit 137).
+`df` asks the filesystem, `du` walks names; a big gap means a deleted-but-open file (`lsof +L1`). `df -i` catches inode exhaustion. In `ss -ltnp`, `127.0.0.1` is loopback only, `0.0.0.0` every interface. `curl` exit 6 is DNS, 7 a refused connection; a 404 means the network was fine. `strace -f -e trace=openat` names the file a silent program wanted. `dmesg` alone records a segfault (exit 139) or an OOM kill (exit 137).
 :::
 
 ## Check yourself
@@ -369,11 +425,11 @@ This is the answer to "my job exited with 137 and wrote nothing". 137 is 128 + 9
 :::
 
 ::: answer
-A process is holding a deleted file open. Removing a name decrements the inode's link count, but the blocks are released only when the count reaches zero *and* no process still has the file open. `du` walks directory entries, so a file with no name is invisible to it; `df` asks the filesystem how many blocks are allocated, and they still are. Hence 40 GB of visible files and a full disk.
+Most likely a process holds a deleted file open. Removing a name lowers the inode's link count, but blocks are freed only when the count is zero *and* no process has the file open. `du` walks names, so a nameless file is invisible to it; `df` asks the filesystem, where the blocks are still taken.
 
-`lsof +L1` lists every open file whose link count is below one, with the owning PID, the size and the path marked `(deleted)`. Look for a large one on that filesystem. Restarting the process that holds it, or sending it whatever signal makes it reopen its log, frees the space instantly — there is nothing to delete.
+`lsof +L1` lists open files with link count below one: PID, size, and path marked `(deleted)`. Restart the process holding the big one on `/data`, or signal it to reopen its log, and the space returns instantly. The usual culprit is a log removed by a cleanup script while a service still wrote to it — what `logrotate` with `copytruncate`, or following by name with `tail -F` (lesson 02), avoids.
 
-The usual culprit is a log file removed by a cleanup script while a long-running service was still writing to it, which is exactly the situation `logrotate` with `copytruncate` (or a `-F`-aware reader, lesson 02) exists to avoid. Rule out the other cause first: `du -sb` versus `du -sh` distinguishes a block-allocation discrepancy from this one.
+Also rule out the other ways `du` misses space: run it as root so nothing is skipped, and check nothing was written into `/data` before the disk was mounted over it. (`du -sb` versus `du -sh` does not explain this gap; `du` and `df` both count blocks.)
 :::
 
 ::: check
@@ -381,11 +437,11 @@ A campaign fails with "No space left on device" but `df -h` shows 60% free on th
 :::
 
 ::: answer
-`df -i` on the same filesystem. Inodes are allocated when the filesystem is created, in a fixed number, and each file consumes one regardless of size. Exhausting them produces `ENOSPC` — the same error as a full disk — while `df -h` reports plenty of free blocks.
+`df -i` on the same filesystem. On ext4 the number of inodes is fixed when the filesystem is made, and every file uses one whatever its size. Running out gives `ENOSPC`, the same error as a full disk, while `df -h` shows free blocks.
 
-A Monte Carlo campaign is exactly the workload that hits it: hundreds of thousands of small files, one or several per case, each consuming an inode while using a fraction of a block. Five hundred cases is nothing; a fifty-thousand-case sweep writing four files per case is 200,000 inodes, and a filesystem sized for a handful of large datasets may have been created with fewer.
+A Monte Carlo campaign is the classic cause: huge numbers of small files. Five hundred cases is nothing, but a fifty-thousand-case sweep writing four files per case needs $50\,000 \times 4 = 200\,000$ inodes, and a filesystem made for a few large datasets may have fewer.
 
-The fixes are structural rather than clever: write fewer, larger files (one HDF5 or one tar per batch rather than a file per case), archive completed batches with `tar` and delete the originals, or have the filesystem recreated with a higher inode density. Note that you cannot add inodes to an existing ext4 filesystem — it has to be remade.
+Fix the layout: fewer, larger files (one HDF5 file or tar archive per batch), archive finished batches with `tar` and delete the originals, or recreate the filesystem with more inodes per gigabyte — an existing ext4 filesystem's inode density cannot be changed.
 :::
 
 ::: check
@@ -393,23 +449,23 @@ A colleague cannot reach a dashboard on `sim01:8080` from her laptop, but `curl 
 :::
 
 ::: answer
-`ss -ltnp | grep 8080` on `sim01`. If the Local Address is `127.0.0.1:8080` the service is bound to the loopback interface and, by design, accepts no connection from outside the machine. That is why it works locally and cannot work remotely; no firewall is involved and nothing is broken. A `0.0.0.0:8080` or `*:8080` there would mean it is listening on all interfaces and the problem is elsewhere — a firewall, a route, or the wrong address.
+`ss -ltnp | grep 8080` on `sim01`. A Local Address of `127.0.0.1:8080` means the service is bound to loopback and, by design, accepts nothing from outside the machine; no firewall is involved and nothing is broken. `0.0.0.0:8080` or `*:8080` would mean it listens everywhere and the problem is elsewhere — a firewall, a route, the wrong address.
 
-Fix one, and the right one for a dashboard with no authentication: leave it on loopback and tunnel, `ssh -L 8080:127.0.0.1:8080 sim01`, then browse `http://localhost:8080` on the laptop. Fix two: reconfigure the service to bind `0.0.0.0`, which exposes it to everything that can route to the machine and therefore needs a firewall rule and some thought about who may read it.
+Fix one, right for a dashboard with no login: tunnel with `ssh -L 8080:127.0.0.1:8080 sim01`, then browse to `http://localhost:8080` on the laptop. Fix two: rebind the service to `0.0.0.0`, which exposes it to everything that can reach the machine and so needs a firewall rule and thought.
 
-If `ss` shows nothing at all on 8080, the service is not running — go to `systemctl status` instead.
+If `ss` shows nothing on 8080, the service is not running — go to `systemctl status`.
 :::
 
 ::: check
-A solver prints nothing and exits immediately with status 1. `strace` it and you see `openat(AT_FDCWD, "/opt/sim/etc/vehicle.yaml", O_RDONLY) = -1 ENOENT`. What do you now know, and what do you check next?
+A solver prints nothing and exits immediately with status 1. You `strace` it and see `openat(AT_FDCWD, "/opt/sim/etc/vehicle.yaml", O_RDONLY) = -1 ENOENT`. What do you now know, and what do you check next?
 :::
 
 ::: answer
-You know exactly which file it wanted and that it does not exist at that path — which the program itself failed to tell you. `AT_FDCWD` means the path was resolved relative to the current working directory, and since this one is absolute that makes no difference; had it been relative, the working directory would be the next thing to check.
+You know exactly which file it wanted and that it is not at that path — which the program never said. `AT_FDCWD` means a relative path would start from the working folder; this path is absolute, so that does not matter here.
 
-What to check next, in order. Does the file exist at all — `ls -l /opt/sim/etc/vehicle.yaml` — and if not, is it somewhere else because the installation used a different prefix (lesson 11)? If it exists but the trace still says `ENOENT`, look at the whole path with `namei -l /opt/sim/etc/vehicle.yaml`: a missing execute bit on a parent directory produces `EACCES` rather than `ENOENT`, but a broken symlink in the middle of the path produces `ENOENT` for a file you can plainly see. And check whether the program is looking somewhere it was configured to look — an environment variable such as `SIM_ROOT` that is set in your interactive shell and not in the batch environment (lesson 10) is a very common cause of exactly this.
+Next, in order. Does the file exist — `ls -l /opt/sim/etc/vehicle.yaml` — or was the software installed under another prefix (lesson 11)? If you can see it but the trace says `ENOENT`, check each step with `namei -l /opt/sim/etc/vehicle.yaml`: a missing execute bit on a parent gives `EACCES`, but a broken symbolic link partway along gives `ENOENT`. Then check where it was told to look: a variable such as `SIM_ROOT`, set in your interactive shell but not in the batch environment (lesson 10), causes exactly this.
 
-Add `-f` to the `strace` if the solver is started by a wrapper script; without it you trace only the wrapper and see nothing.
+If a wrapper script starts the solver, add `-f`, or you trace only the wrapper.
 :::
 
 ::: check
@@ -417,35 +473,154 @@ Distinguish exit status 137, 139 and 1 for a simulation binary, and say where yo
 :::
 
 ::: answer
-**137** is 128 + 9, killed by `SIGKILL`. The process had no chance to run any handler or write anything, so its own log ends mid-sentence. Look in `dmesg` for the out-of-memory killer — "Out of memory: Killed process" for the whole machine, "Memory cgroup out of memory" for a limit — and in the scheduler's or container's records for a memory or wall-clock limit. The third possibility is a person who typed `kill -9`.
+**137** is $128 + 9$, `SIGKILL`: no handler ran, and the log stops mid-sentence. Look in `dmesg` for the OOM killer ("Out of memory: Killed process" for the machine, "Memory cgroup out of memory" for a limit), and in the scheduler's or container's records for a memory or time limit. Or someone typed `kill -9`.
 
-**139** is 128 + 11, `SIGSEGV`: the program touched memory it may not. Look in `dmesg` for the `segfault at ADDRESS ip ADDRESS` line, which gives the faulting address — `at 0` is a null pointer — and for a core file if `ulimit -c` allowed one, which `gdb` can then read. This is a bug in the program, not in the machine.
+**139** is $128 + 11$, `SIGSEGV`: the program touched memory it may not. Look in `dmesg` for `segfault at ADDRESS ip ADDRESS` (`at 0` is a null pointer), and for a core file if `ulimit -c` allowed one, which `gdb` can open. This is a bug in the program, not the machine.
 
-**1** is a *chosen* exit status: the program ran, decided it had failed, and returned. Its own output is therefore the authoritative source — stderr, its log file, or `journalctl -u` if it ran as a service. `dmesg` will have nothing to say, because from the kernel's point of view nothing went wrong.
-
-The shape of the rule: 128 + N means something outside the program ended it and the kernel is the witness; a small status means the program ended itself and its own output is the witness.
+**1** is a *chosen* status: the program decided it had failed. Trust its own output — stderr, its log file, or `journalctl -u` for a service. `dmesg` has nothing, because to the kernel nothing went wrong. The rule: 128 + N means the kernel is the witness; a small status means the program's own output is.
 :::
 
 ## Summary
 
-| Command | Answers | Note |
-| --- | --- | --- |
-| `df -h PATH` | free space on that filesystem | read "Mounted on"; `/home` may not be `/` |
-| `df -i PATH` | free inodes | `ENOSPC` with free blocks means this |
-| `du -sh`, `du -h --max-depth=1 \| sort -h` | what is using the space | walk down one level at a time |
-| `du -sb` vs `du -sh` | apparent bytes vs allocated blocks | many small files differ by a large factor |
-| `lsof +L1` | deleted-but-open files | the cause of "full disk, nothing on it" |
-| `lsblk`, `lsblk -f` | devices, types, mountpoints, filling | an empty mountpoint means it is not mounted |
-| `No space left on device` | `ENOSPC` | a zero-length output file is often left behind |
-| `ip -br a`, `ip a show DEV`, `ip r` | interfaces, addresses, routes | no default route looks like broken DNS |
-| `ss -ltnp` | what is listening and whose it is | `127.0.0.1` is loopback only, `0.0.0.0` is everywhere |
-| `curl -sS -o /dev/null -w '%{http_code}'` | a scriptable health check | `-s` hides progress, `-S` keeps errors |
-| curl exit 6 / 7 / a 404 | DNS failed / nothing listening / the URL is wrong | three different layers |
-| `strace -f -e trace=openat -p PID` | which file it wanted | the result is the error name: `ENOENT`, `EACCES` |
-| `strace -c` | syscall counts and errors | the errors column finds a search that is failing |
-| `lsof -p PID`, `+D dir`, `-i :PORT` | open files, who blocks an unmount, who holds a port | sockets are files too |
-| `dmesg -T`, `--level=err,warn` | the kernel's record | `-T` for wall-clock; needs root on hardened systems |
-| `segfault at 0 ... ip ...` | a null-pointer dereference | pairs with exit 139 |
-| `Memory cgroup out of memory: Killed process` | the OOM killer | pairs with exit 137, `code=killed, signal=KILL` |
+| Command | Answers |
+| --- | --- |
+| `df -h PATH`, `df -i PATH` | free space, free inodes |
+| `du -h --max-depth=1 \| sort -h` | what uses the space |
+| `du -sb` vs `du -sh` | bytes vs blocks |
+| `lsof +L1` | deleted-but-open files |
+| `lsblk -f` | devices and mount points |
+| `ip -br a`, `ip r` | interfaces, routes |
+| `ss -ltnp` | who listens where |
+| `curl -fsS -w '%{http_code}'` | health check: exit 6 DNS, 7 refused, 22 HTTP error |
+| `strace -f -e trace=openat`, `-c` | which file it wanted; call counts |
+| `lsof -p`, `+D`, `-i :PORT` | open files, unmount blockers, ports |
+| `dmesg -T` | the kernel's record |
+| exit 139, `segfault at 0` | null pointer; `addr2line` finds the line |
+| exit 137, `Killed process` | the OOM killer |
+| `ulimit -c`, `coredumpctl` | core files |
 
-Lesson 14 is the last piece of survival equipment: enough `vim` to edit a configuration file on a machine that has nothing else, and to get out again.
+Lesson 14 is the last piece of survival kit: enough `vim` to edit a configuration file on a machine with nothing else — and to get back out.
+
+::: context tmpfs A filesystem made of memory
+A **tmpfs** keeps its files in RAM instead of on a disk. It is fast, and it starts empty at every boot, which is why Linux uses it for `/run` and often for `/tmp`. Anything saved there is gone when the power goes. If `df` shows your working folder is on a tmpfs, results you mean to keep belong somewhere else. Its size is also a limit on memory: a tmpfs that fills up is eating RAM that your simulation could have used.
+:::
+
+::: context blocks Why small files waste space
+A filesystem hands out space in whole blocks, like a parking garage that only rents full spaces. A 650-byte log still takes a whole 4096-byte block, so most of the block sits empty.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 130" font-family="Inter, Arial, sans-serif">
+  <text x="12" y="20" font-size="12" fill="#1f2a44">three small files, one 4 KiB block each</text>
+  <g stroke="#1f2a44" stroke-width="1.5">
+    <rect x="12" y="32" width="100" height="40" fill="#fff"/>
+    <rect x="130" y="32" width="100" height="40" fill="#fff"/>
+    <rect x="248" y="32" width="100" height="40" fill="#fff"/>
+  </g>
+  <g fill="#1d6fd1">
+    <rect x="13" y="33" width="16" height="38"/>
+    <rect x="131" y="33" width="16" height="38"/>
+    <rect x="249" y="33" width="16" height="38"/>
+  </g>
+  <g font-size="11" fill="#6c7a93" text-anchor="middle">
+    <text x="70" y="56">empty</text><text x="188" y="56">empty</text><text x="306" y="56">empty</text>
+  </g>
+  <text x="12" y="96" font-size="12" fill="#1d6fd1">blue: 650 bytes of data (du -b counts this)</text>
+  <text x="12" y="116" font-size="12" fill="#1f2a44">whole box: 4096 bytes allocated (du counts this)</text>
+</svg>
+```
+
+The blue strip is drawn to scale: $650 / 4096 \approx 0.16$ of the block.
+:::
+
+::: context inode Names, inodes and blocks
+A file has three layers. The **name** lives in a folder and points to an **inode**, the file's record card. The inode lists owner, permissions, size and where the data **blocks** are. The link count on the card says how many names point at it.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">
+  <rect x="10" y="30" width="100" height="36" fill="#fff" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="60" y="53" font-size="12" text-anchor="middle" fill="#1f2a44">telemetry.log</text>
+  <text x="60" y="20" font-size="11" text-anchor="middle" fill="#6c7a93">name (in a folder)</text>
+  <line x1="110" y1="48" x2="146" y2="48" stroke="#1f2a44" stroke-width="1.5"/>
+  <polygon points="150,48 140,43 140,53" fill="#1f2a44"/>
+  <rect x="150" y="30" width="90" height="56" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="195" y="50" font-size="12" text-anchor="middle" fill="#1f2a44">inode 2</text>
+  <text x="195" y="70" font-size="11" text-anchor="middle" fill="#1f2a44">links: 1</text>
+  <text x="195" y="20" font-size="11" text-anchor="middle" fill="#6c7a93">record card</text>
+  <line x1="240" y1="58" x2="266" y2="58" stroke="#1f2a44" stroke-width="1.5"/>
+  <polygon points="270,58 260,53 260,63" fill="#1f2a44"/>
+  <g stroke="#1f2a44" stroke-width="1.5" fill="#f2b880">
+    <rect x="270" y="40" width="24" height="36"/><rect x="298" y="40" width="24" height="36"/><rect x="326" y="40" width="24" height="36"/>
+  </g>
+  <text x="310" y="20" font-size="11" text-anchor="middle" fill="#6c7a93">data blocks</text>
+  <text x="10" y="112" font-size="12" fill="#b4232c">rm removes the name: links drop to 0</text>
+  <text x="10" y="132" font-size="12" fill="#1f2a44">blocks are freed only once no process has it open</text>
+</svg>
+```
+:::
+
+::: context loopback Loopback and "any address"
+**127.0.0.1** is the **loopback** address: a pretend network that never leaves the machine. Every Linux computer calls itself 127.0.0.1, so a service listening there can only be reached from the same computer. **0.0.0.0** in a listening socket means "every address this machine has", including its real network card.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">
+  <rect x="150" y="14" width="200" height="122" fill="#fff" stroke="#1f2a44" stroke-width="2"/>
+  <text x="250" y="32" font-size="12" text-anchor="middle" fill="#1f2a44">sim01</text>
+  <rect x="236" y="48" width="104" height="30" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="288" y="67" font-size="11" text-anchor="middle" fill="#1f2a44">127.0.0.1:8080</text>
+  <rect x="164" y="92" width="56" height="30" fill="#fff" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="192" y="111" font-size="11" text-anchor="middle" fill="#1f2a44">curl</text>
+  <line x1="220" y1="100" x2="250" y2="80" stroke="#1d6fd1" stroke-width="2"/>
+  <text x="290" y="112" font-size="11" text-anchor="middle" fill="#1d6fd1">works</text>
+  <rect x="10" y="48" width="70" height="30" fill="#fff" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="45" y="67" font-size="11" text-anchor="middle" fill="#1f2a44">laptop</text>
+  <line x1="80" y1="63" x2="146" y2="63" stroke="#b4232c" stroke-width="2" stroke-dasharray="5,4"/>
+  <text x="113" y="54" font-size="16" text-anchor="middle" fill="#b4232c">×</text>
+  <text x="45" y="100" font-size="11" text-anchor="middle" fill="#b4232c">refused</text>
+</svg>
+```
+
+An SSH tunnel works because the SSH server itself sits on sim01 and connects to 127.0.0.1 from inside.
+:::
+
+::: context dns Names into numbers
+Computers connect using numeric addresses such as `192.0.2.2`. **DNS**, the Domain Name System, is the internet's phone book: it turns a name like `sim01.example.com` into a number. If the lookup fails, `curl` has no number to dial, so it stops with exit status 6 before sending anything. The name `no-such-host.invalid` in the lesson is safe to use in tests: the ending `.invalid` is reserved by an internet standard (RFC 2606) so that it can never belong to a real machine.
+:::
+
+::: context system-call Asking the kernel
+A running program lives inside a fence. It can do arithmetic on its own memory, but to open a file, send a network packet, start another program or even print to the screen, it must ask the **kernel** — the core of the operating system, which owns the hardware. Each request is a **system call**, and Linux has a few hundred kinds. Because *every* contact with the outside world passes through this one gate, watching the gate with `strace` shows everything a program does to the machine.
+:::
+
+::: context errno-names Where names like ENOENT come from
+When a system call fails, the kernel returns a small error number, and the C library stores it in a variable called `errno`. Each number has a short name starting with **E** for "error": `ENOENT` is "error, no entry" (no such file or folder entry), `EACCES` is "access denied", `ENOSPC` is "no space". The same names turn up in Python's `OSError`, in C++ and in `strace`, so learning them once pays off everywhere. `man errno` lists them all.
+:::
+
+::: context ring-buffer A diary that overwrites itself
+The kernel's log is a **ring buffer**: a fixed amount of memory where, once it is full, each new message overwrites the oldest one, like a loop of tape. On a busy machine, a message from days ago may already be gone. On systemd machines the kernel's messages are also copied into the journal, so `journalctl -k` shows them too — and if the journal is kept on disk, `journalctl -k -b -1` shows the previous boot's, which `dmesg` never can.
+:::
+
+::: context exit-128 How the shell reports a killed program
+A program that finishes by itself returns a number from 0 to 255 — 0 for success. A program killed by a signal returns nothing, so the shell makes up a status: 128 plus the signal number.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 110" font-family="Inter, Arial, sans-serif">
+  <line x1="20" y1="50" x2="340" y2="50" stroke="#1f2a44" stroke-width="2"/>
+  <line x1="20" y1="42" x2="20" y2="58" stroke="#1f2a44" stroke-width="2"/>
+  <line x1="180" y1="40" x2="180" y2="60" stroke="#1f2a44" stroke-width="2"/>
+  <line x1="340" y1="42" x2="340" y2="58" stroke="#1f2a44" stroke-width="2"/>
+  <rect x="20" y="28" width="160" height="14" fill="#8fb8f0"/>
+  <rect x="180" y="28" width="160" height="14" fill="#f2b880"/>
+  <g font-size="11" fill="#1f2a44" text-anchor="middle">
+    <text x="20" y="74">0</text><text x="180" y="74">128</text><text x="340" y="74">255</text>
+  </g>
+  <text x="100" y="22" font-size="11" text-anchor="middle" fill="#1d6fd1">program chose it</text>
+  <text x="260" y="22" font-size="11" text-anchor="middle" fill="#b4232c">killed by signal N</text>
+  <text x="260" y="96" font-size="11" text-anchor="middle" fill="#1f2a44">137 = 128 + 9 · 139 = 128 + 11</text>
+</svg>
+```
+
+The line is drawn roughly half and half, because 128 is about half of 255.
+:::
+
+::: context core-file Why it is called a core dump
+In the 1950s and 1960s, computer memory was made of **magnetic cores** — tiny rings of magnetic material threaded on wires, each holding one bit. Memory was simply called "core", and printing it all out after a crash was "dumping core". The hardware is long gone, but the name stuck: a **core file** is still a copy of a program's memory at the moment it died, and `gdb program core` lets you walk around inside it.
+:::
