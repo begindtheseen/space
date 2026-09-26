@@ -343,7 +343,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-reading-someone-elses-simulation",
       "title": "Reading a simulation someone else built",
-      "minutes": 19,
+      "minutes": 21,
       "covers": [
         "6-DOF simulation stacks and what high fidelity actually means"
       ],
@@ -352,7 +352,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-the-machine-the-deadline-and-the-forbidden-list",
       "title": "The machine, the deadline, and why the loop forbids the heap",
-      "minutes": 25,
+      "minutes": 22,
       "covers": [
         "flight computers: embedded Linux, a roughly 3.2 series kernel with real-time patches, on Dragon, Falcon and Starship primary flight computers",
         "determinism, fixed-step integration and bounded execution time in a flight control loop",
@@ -363,7 +363,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-redundancy-voting-and-fault-management",
       "title": "Redundancy, voting, and fault management",
-      "minutes": 21,
+      "minutes": 19,
       "covers": [
         "redundancy, voting and fault management as first-class design concerns"
       ],
@@ -372,7 +372,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-monte-carlo-dispersion-campaigns",
       "title": "Monte Carlo dispersion campaigns: what they actually prove",
-      "minutes": 18,
+      "minutes": 19,
       "covers": [
         "Monte Carlo dispersion campaigns across tens of thousands of CPUs and what they are used to prove"
       ],
@@ -390,7 +390,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-data-discipline-telemetry-time-units-and-frames",
       "title": "Data discipline: telemetry, time, units and frames",
-      "minutes": 21,
+      "minutes": 22,
       "covers": [
         "Python for analysis, tooling, pipelines and test infrastructure"
       ],
@@ -399,7 +399,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-tickets-traceability-and-the-unglamorous-majority",
       "title": "Tickets, traceability, and the unglamorous majority of the work",
-      "minutes": 16,
+      "minutes": 19,
       "covers": [
         "continuous integration for rocket and simulation software"
       ],
@@ -408,7 +408,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-version-control-and-code-review",
       "title": "Version control, code review, and what a reviewer is checking",
-      "minutes": 18,
+      "minutes": 20,
       "covers": [
         "version control, code review and what production-quality means at senior level"
       ],
@@ -417,7 +417,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-what-to-practice-now",
       "title": "What to practice now, alone, that actually transfers",
-      "minutes": 17,
+      "minutes": 19,
       "covers": [
         "6-DOF simulation stacks and what high fidelity actually means",
         "version control, code review and what production-quality means at senior level"
