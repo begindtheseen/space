@@ -1,7 +1,7 @@
 ---
 id: l05-orientation-controls
 title: 'Orientation: square, parallel and at an angle'
-minutes: 21
+minutes: 18
 covers:
   - 'Orientation: perpendicularity, angularity, parallelism'
 ---
@@ -86,7 +86,7 @@ A spacer plate $50\,\mathrm{mm}$ across must have its top face parallel to its b
 
 Now the physics. A small **thruster** is bolted by its flange to a seat on the spacecraft. The designers aim its **[[thrust line|thrust-misalignment]]** — the straight line along which it pushes — exactly through the spacecraft's **center of mass**, the balance point. A push through the balance point moves the vehicle without turning it.
 
-Tilt the seat by $\theta$ and the thrust line tilts by $\theta$ too. Now it misses the center of mass. Picture pushing a floating book: shove through its middle and it slides; shove a little off-center and it slides *and* spins. The spin comes from a **torque** — a twisting effect, measured in newton-meters ($\mathrm{N \cdot m}$).
+Tilt the seat by $\theta$ and the thrust line tilts by $\theta$ too — a **thrust-vector misalignment**. Now it misses the center of mass. Picture pushing a floating book: shove through its middle and it slides; shove a little off-center and it slides *and* spins. The spin comes from a **torque** — a twisting effect, measured in newton-meters ($\mathrm{N \cdot m}$).
 
 How far does the tilted line miss? Let the thruster sit a distance $\ell$ (read "ell") from the center of mass, along the intended line — the **lever arm**. The miss distance is $\ell \sin\theta$. The torque is force times miss distance:
 
@@ -107,7 +107,7 @@ A $22\,\mathrm{N}$ thruster mounts on a seat $40\,\mathrm{mm}$ across, called ou
 
 **Torque.** $\tau = F \ell \sin\theta = 22 \times 0.001875 = 0.0413\,\mathrm{N \cdot m}$.
 
-**What it adds up to.** A ten-minute burn, $600\,\mathrm{s}$, at that torque delivers $0.0413 \times 600 = 24.7\,\mathrm{N \cdot m \cdot s}$ of unwanted angular momentum. Other thrusters or reaction wheels have to cancel it.
+**What it adds up to.** A ten-minute burn, $600\,\mathrm{s}$, at that torque delivers $0.04125 \times 600 = 24.75\,\mathrm{N \cdot m \cdot s}$, about $25$, of unwanted angular momentum. Other thrusters or reaction wheels have to cancel it.
 
 **Sanity check.** A thrust line that misses the balance point by about $2\,\mathrm{mm}$, pushed with $22\,\mathrm{N}$, gives about $22 \times 0.002 = 0.044\,\mathrm{N \cdot m}$. Close to $0.041$, as it should be.
 :::
