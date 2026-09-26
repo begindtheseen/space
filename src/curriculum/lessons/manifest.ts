@@ -2259,6 +2259,110 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       "file": "cod_sql_01_select/09-reading-a-schema.md"
     }
   ],
+  "cod_sql_02_joins": [
+    {
+      "id": "l01-joining-tables",
+      "title": "Joining tables: inner, outer, cross and self",
+      "minutes": 22,
+      "covers": [
+        "INNER, LEFT, RIGHT and FULL OUTER joins; CROSS join; self-joins"
+      ],
+      "file": "cod_sql_02_joins/01-joining-tables.md"
+    },
+    {
+      "id": "l02-join-keys-and-cardinality",
+      "title": "Join conditions and how many rows come out",
+      "minutes": 22,
+      "covers": [
+        "ON versus USING; why NATURAL JOIN is a trap",
+        "Join cardinality reasoning and the fan-out trap when aggregating after a one-to-many join"
+      ],
+      "file": "cod_sql_02_joins/02-join-keys-and-cardinality.md"
+    },
+    {
+      "id": "l03-group-by-and-aggregates",
+      "title": "GROUP BY, HAVING and the basic aggregates",
+      "minutes": 22,
+      "covers": [
+        "GROUP BY and HAVING; the difference between WHERE and HAVING",
+        "COUNT(*) versus COUNT(col); SUM, AVG, MIN, MAX"
+      ],
+      "file": "cod_sql_02_joins/03-group-by-and-aggregates.md"
+    },
+    {
+      "id": "l04-the-fan-out-trap",
+      "title": "The fan-out trap",
+      "minutes": 25,
+      "covers": [
+        "Join cardinality reasoning and the fan-out trap when aggregating after a one-to-many join"
+      ],
+      "file": "cod_sql_02_joins/04-the-fan-out-trap.md"
+    },
+    {
+      "id": "l05-richer-aggregates",
+      "title": "Lists, percentiles and conditional aggregates",
+      "minutes": 23,
+      "covers": [
+        "STRING_AGG and ARRAY_AGG; PERCENTILE_CONT",
+        "FILTER (WHERE ...) for conditional aggregation"
+      ],
+      "file": "cod_sql_02_joins/05-richer-aggregates.md"
+    },
+    {
+      "id": "l06-grouping-sets-rollup-cube",
+      "title": "Subtotals: GROUPING SETS, ROLLUP and CUBE",
+      "minutes": 20,
+      "covers": [
+        "GROUPING SETS, ROLLUP and CUBE"
+      ],
+      "file": "cod_sql_02_joins/06-grouping-sets-rollup-cube.md"
+    },
+    {
+      "id": "l07-subqueries",
+      "title": "Subqueries: queries inside queries",
+      "minutes": 24,
+      "covers": [
+        "Scalar, row and table subqueries; correlated subqueries"
+      ],
+      "file": "cod_sql_02_joins/07-subqueries.md"
+    },
+    {
+      "id": "l08-exists-in-and-anti-joins",
+      "title": "EXISTS, IN and the anti-join",
+      "minutes": 24,
+      "covers": [
+        "EXISTS versus IN versus JOIN, and their NULL semantics"
+      ],
+      "file": "cod_sql_02_joins/08-exists-in-and-anti-joins.md"
+    },
+    {
+      "id": "l09-common-table-expressions",
+      "title": "Common table expressions",
+      "minutes": 22,
+      "covers": [
+        "Common table expressions and chained CTEs for readability"
+      ],
+      "file": "cod_sql_02_joins/09-common-table-expressions.md"
+    },
+    {
+      "id": "l10-recursive-ctes",
+      "title": "Recursive CTEs: hierarchies and gap-filling",
+      "minutes": 22,
+      "covers": [
+        "Recursive CTEs for hierarchies and for gap-filling a time series"
+      ],
+      "file": "cod_sql_02_joins/10-recursive-ctes.md"
+    },
+    {
+      "id": "l11-set-operations",
+      "title": "Set operations: UNION, INTERSECT and EXCEPT",
+      "minutes": 21,
+      "covers": [
+        "UNION, UNION ALL, INTERSECT and EXCEPT"
+      ],
+      "file": "cod_sql_02_joins/11-set-operations.md"
+    }
+  ],
   "t0_m00_basecamp": [
     {
       "id": "l01-place-value-and-estimating",
@@ -8809,24 +8913,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_sql_02_joins": {
-    "covered": 0,
+    "covered": 13,
     "total": 13,
-    "complete": false,
-    "missing": [
-      "INNER, LEFT, RIGHT and FULL OUTER joins; CROSS join; self-joins",
-      "ON versus USING; why NATURAL JOIN is a trap",
-      "Join cardinality reasoning and the fan-out trap when aggregating after a one-to-many join",
-      "GROUP BY and HAVING; the difference between WHERE and HAVING",
-      "COUNT(*) versus COUNT(col); SUM, AVG, MIN, MAX",
-      "STRING_AGG and ARRAY_AGG; PERCENTILE_CONT",
-      "FILTER (WHERE ...) for conditional aggregation",
-      "GROUPING SETS, ROLLUP and CUBE",
-      "Scalar, row and table subqueries; correlated subqueries",
-      "EXISTS versus IN versus JOIN, and their NULL semantics",
-      "Common table expressions and chained CTEs for readability",
-      "Recursive CTEs for hierarchies and for gap-filling a time series",
-      "UNION, UNION ALL, INTERSECT and EXCEPT"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_sql_03_windows": {
     "covered": 0,
