@@ -323,7 +323,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-the-verbatim-expectation",
       "title": "The verbatim expectation: you write the flight code",
-      "minutes": 19,
+      "minutes": 21,
       "covers": [
         "the verbatim expectation: implementation, validation, unit testing, and deployment of production software primarily in C++",
         "GNC engineers write flight code themselves rather than handing prototypes to a software team"
@@ -333,7 +333,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-languages-and-the-model-boundary",
       "title": "Where each language lives, and the model-to-flight-code boundary",
-      "minutes": 18,
+      "minutes": 21,
       "covers": [
         "Python for analysis, tooling, pipelines and test infrastructure",
         "MATLAB and Simulink as secondary skills and why the curriculum is not MATLAB-first"
@@ -352,7 +352,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-the-machine-the-deadline-and-the-forbidden-list",
       "title": "The machine, the deadline, and why the loop forbids the heap",
-      "minutes": 22,
+      "minutes": 25,
       "covers": [
         "flight computers: embedded Linux, a roughly 3.2 series kernel with real-time patches, on Dragon, Falcon and Starship primary flight computers",
         "determinism, fixed-step integration and bounded execution time in a flight control loop",
@@ -363,7 +363,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-redundancy-voting-and-fault-management",
       "title": "Redundancy, voting, and fault management",
-      "minutes": 18,
+      "minutes": 21,
       "covers": [
         "redundancy, voting and fault management as first-class design concerns"
       ],
@@ -381,7 +381,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-infrastructure-behind-the-simulations",
       "title": "Infrastructure: the stack that keeps the fleet running",
-      "minutes": 17,
+      "minutes": 21,
       "covers": [
         "infrastructure: Linux, Docker, Kubernetes, Ansible, Puppet, Terraform, Bazel-class build systems"
       ],
