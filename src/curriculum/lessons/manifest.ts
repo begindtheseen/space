@@ -4271,7 +4271,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-standard-atmosphere",
       "title": "The standard atmosphere",
-      "minutes": 21,
+      "minutes": 22,
       "covers": [
         "standard atmosphere models: US Standard 1976, exponential, NRLMSISE-00",
         "density, pressure and temperature vs altitude"
@@ -4281,7 +4281,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-dynamic-pressure-and-max-q",
       "title": "Dynamic pressure and max-Q",
-      "minutes": 17,
+      "minutes": 19,
       "covers": [
         "dynamic pressure and max-Q"
       ],
@@ -4290,7 +4290,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-mach-regimes-and-drag",
       "title": "Mach number, flow regimes and the drag coefficient",
-      "minutes": 20,
+      "minutes": 22,
       "covers": [
         "Mach number and the subsonic / transonic / supersonic / hypersonic regimes",
         "drag coefficient vs Mach"
@@ -4308,8 +4308,8 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     },
     {
       "id": "l05-normal-force-and-static-margin",
-      "title": "Normal force, centre of pressure and static margin",
-      "minutes": 19,
+      "title": "Normal force, center of pressure and static margin",
+      "minutes": 24,
       "covers": [
         "normal force, centre of pressure vs centre of gravity, static margin"
       ],
@@ -4318,7 +4318,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-unstable-booster-and-tvc",
       "title": "The aerodynamically unstable booster and its TVC loop",
-      "minutes": 19,
+      "minutes": 25,
       "covers": [
         "aerodynamic instability of a boosting rocket"
       ],
@@ -4327,7 +4327,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-q-alpha-and-load-relief",
       "title": "The q-alpha load indicator and load relief",
-      "minutes": 18,
+      "minutes": 22,
       "covers": [
         "the q-alpha load indicator and load relief control"
       ],
@@ -4336,7 +4336,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-winds-gusts-and-shear",
       "title": "Wind profiles, gusts and wind shear",
-      "minutes": 19,
+      "minutes": 24,
       "covers": [
         "wind profiles and gust models (Dryden, von Karman), wind shear"
       ],
@@ -4345,7 +4345,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-bending-modes-and-structural-filters",
       "title": "Bending modes, flexible-body dynamics and structural filters",
-      "minutes": 21,
+      "minutes": 24,
       "covers": [
         "bending modes, flexible body dynamics and structural filter design"
       ],
@@ -4354,7 +4354,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-propellant-slosh",
       "title": "Propellant slosh as a pendulum or mass-spring",
-      "minutes": 21,
+      "minutes": 24,
       "covers": [
         "propellant slosh as a pendulum or mass-spring"
       ],
@@ -4363,7 +4363,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-control-structure-interaction",
       "title": "Control-structure interaction",
-      "minutes": 20,
+      "minutes": 21,
       "covers": [
         "control-structure interaction"
       ],
@@ -4372,7 +4372,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-grid-fins-and-entry",
       "title": "Grid fins, control surfaces and entry aerodynamics",
-      "minutes": 22,
+      "minutes": 25,
       "covers": [
         "grid fins and aerodynamic control surfaces",
         "ballistic coefficient and lift-to-drag ratio in entry"
