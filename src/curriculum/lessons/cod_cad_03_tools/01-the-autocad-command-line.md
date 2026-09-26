@@ -1,7 +1,7 @@
 ---
 id: l01-the-autocad-command-line
 title: The AutoCAD command line and exact points
-minutes: 20
+minutes: 21
 covers:
   - 'AutoCAD: the command line as the real interface; absolute, relative and polar coordinate entry'
   - Object snaps, ortho and polar tracking

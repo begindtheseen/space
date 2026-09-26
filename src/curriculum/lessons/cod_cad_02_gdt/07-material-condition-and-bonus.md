@@ -1,7 +1,7 @@
 ---
 id: l07-material-condition-and-bonus
 title: MMC, LMC, RFS and bonus tolerance
-minutes: 22
+minutes: 20
 covers:
   - Material condition modifiers MMC, LMC and RFS; bonus tolerance
 ---
