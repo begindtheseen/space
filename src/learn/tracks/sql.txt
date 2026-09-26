@@ -1359,11 +1359,11 @@ In SQL, single quotes mark a piece of text: `'mo@example.com'`. Double quotes me
 :::
 
 ::: context leave-out What happens to a column you skip
-Two things can happen. If the column has a default, the table fills that in. You will write a `DEFAULT` yourself in lesson 11. And in SQLite, a column declared `INTEGER PRIMARY KEY`, like `id` here, picks the next free number on its own: leave `id` out and mo would get 5, one more than the largest id so far. If the column has no default and is marked `NOT NULL`, the insert is refused, because "no value" is not allowed there.
+Two things can happen. If the column has a default, the table fills that in. You will write a `DEFAULT` yourself in the lesson "Creating tables". And in SQLite, a column declared `INTEGER PRIMARY KEY`, like `id` here, picks the next free number on its own: leave `id` out and mo would get 5, one more than the largest id so far. If the column has no default and is marked `NOT NULL`, the insert is refused, because "no value" is not allowed there.
 :::
 
 ::: context constraints Rules that live in the table
-A **constraint** is a rule written into the table itself, when the table is made. `NOT NULL` says "this column must have a value". `UNIQUE` says "no two rows may share this value". `PRIMARY KEY` says "this column names each row, so it must be unique". Because the rule is in the table, it holds for every program, every script and every person that writes to it. You will write these rules yourself in lesson 11, and the SQL Advanced course has a whole lesson on them.
+A **constraint** is a rule written into the table itself, when the table is made. `NOT NULL` says "this column must have a value". `UNIQUE` says "no two rows may share this value". `PRIMARY KEY` says "this column names each row, so it must be unique". Because the rule is in the table, it holds for every program, every script and every person that writes to it. You will write these rules yourself in the lesson "Creating tables", and the SQL Advanced course has a whole lesson on them.
 :::
 
 ::: context unique-error What the refusal looks like
@@ -1660,7 +1660,7 @@ Most databases refuse a value of the wrong type. SQLite is unusual: in an ordina
 :::
 
 ::: context cents Why money is kept in whole cents
-Numbers with a decimal point are stored in binary, and most decimal fractions, like 0.1, cannot be stored exactly. Adding many of them lets tiny errors creep in. That is why you needed `ROUND` in lesson 5. Whole numbers do not have this problem. So billing systems store money as a whole number of the smallest unit: 1500 cents instead of 15.00 dollars. They divide by 100 only when they show it to a person.
+Numbers with a decimal point are stored in binary, and most decimal fractions, like 0.1, cannot be stored exactly. Adding many of them lets tiny errors creep in. That is why you needed `ROUND` in the lesson "Aggregates". Whole numbers do not have this problem. So billing systems store money as a whole number of the smallest unit: 1500 cents instead of 15.00 dollars. They divide by 100 only when they show it to a person.
 :::
 
 ::: context booleans Yes and no as 0 and 1
@@ -1768,7 +1768,7 @@ The database [[works out the inner query first|inside-out]], gets the average, a
 
 Why not type `0.02` instead? Because the average [[changes as the data changes|live-numbers]]. The subquery works it out fresh every time the query runs.
 
-A subquery works anywhere a **value** or a **table** would. That was the value case. Here is the table case. First, a query that counts calls per user, with `GROUP BY` from lesson 6:
+A subquery works anywhere a **value** or a **table** would. That was the value case. Here is the table case. First, a query that counts calls per user, with `GROUP BY` from the lesson "Grouping":
 
 ```sql
 SELECT user_id, COUNT(*) AS calls FROM requests GROUP BY user_id;
@@ -1898,7 +1898,7 @@ It only has rows for [[users who have made requests|missing-sam]]. The main quer
 
 The name `spend` exists only [[for this one statement|temporary]]. Run `SELECT * FROM spend;` on its own afterwards and you get `no such table: spend`.
 
-A CTE can be used like any table: joined, filtered, or read inside a subquery. Here it is joined to `users` for the emails, as in lesson 7. `ROUND(x, 4)`, from lesson 5, rounds to four decimal places:
+A CTE can be used like any table: joined, filtered, or read inside a subquery. Here it is joined to `users` for the emails, as in the lesson "Joining tables". `ROUND(x, 4)`, from "Aggregates", rounds to four decimal places:
 
 ```sql
 WITH spend AS (
@@ -1928,7 +1928,7 @@ CTEs are how [[real reporting queries|reports]] stay readable. Each step has a n
 :::
 
 ::: context missing-sam Why sam is not in the average
-`spend` groups the `requests` table, and sam has no requests, so there is no group for sam at all. An average over `spend` is therefore the average over users who made at least one request: (0.0397 + 0.0771 + 0.0034) ÷ 3 ≈ 0.04007. If you wanted sam counted with a total of 0, you would start from `users` with a `LEFT JOIN` and use `COALESCE(total, 0)`, the tools from lesson 8. Which one is right depends on the question you are asking.
+`spend` groups the `requests` table, and sam has no requests, so there is no group for sam at all. An average over `spend` is therefore the average over users who made at least one request: (0.0397 + 0.0771 + 0.0034) ÷ 3 ≈ 0.04007. If you wanted sam counted with a total of 0, you would start from `users` with a `LEFT JOIN` and use `COALESCE(total, 0)`, the tools from "LEFT JOIN and NULL" and "Testing for NULL". Which one is right depends on the question you are asking.
 :::
 
 ::: context temporary Not saved anywhere
