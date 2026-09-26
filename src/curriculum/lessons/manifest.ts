@@ -2376,17 +2376,6 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       "file": "cod_py_04_scipy/11-constants-and-choosing-a-solver.md"
     }
   ],
-  "cod_py_05_plotting": [
-    {
-      "id": "l01-figure-and-axes",
-      "title": "Figures and Axes, and why you name them",
-      "minutes": 19,
-      "covers": [
-        "Figure and Axes object API versus the pyplot state machine"
-      ],
-      "file": "cod_py_05_plotting/01-figure-and-axes.md"
-    }
-  ],
   "cod_sql_01_select": [
     {
       "id": "l01-tables-rows-and-keys",
@@ -8590,10 +8579,11 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_py_05_plotting": {
-    "covered": 1,
+    "covered": 0,
     "total": 13,
     "complete": false,
     "missing": [
+      "Figure and Axes object API versus the pyplot state machine",
       "subplots, shared axes, twin axes, gridspec, constrained layout",
       "Line, scatter, step, stem, errorbar, fill_between for sigma envelopes",
       "Log and semilog axes; annotated Bode, pole-zero and root-locus plots",
