@@ -2,7 +2,7 @@
   "name": "orbit-gnc",
   "productName": "ORBIT",
   "private": true,
-  "version": "1.1.0",
+  "version": "1.1.1",
   "type": "module",
   "description": "A local-first curriculum platform that takes a complete beginner to guidance, navigation and control engineering readiness.",
   "author": "begindtheseen",
@@ -11,7 +11,7 @@
     "updates": {
       "repo": "begindtheseen/space"
     },
-    "minShell": "1.0.3"
+    "minShell": "1.1.1"
   },
   "scripts": {
     "dev": "vite",

@@ -27,6 +27,11 @@ export interface UseUpdates {
   apply(): Promise<UpdateState | null>
   rollback(): Promise<UpdateState | null>
   setToken(token: string | null): Promise<UpdateState | null>
+  /** Whether this shell can replace itself with the latest app (shells before 1.1.1 cannot). */
+  canUpdateApp: boolean
+  downloadApp(): Promise<UpdateState | null>
+  /** Resolves only if the shell declined; on success ORBIT quits and the new app opens. */
+  installApp(): Promise<UpdateState | null>
 }
 
 export function useUpdates(): UseUpdates {
@@ -92,16 +97,22 @@ export function useUpdates(): UseUpdates {
   const apply = useCallback(() => run((u) => u.apply()), [run])
   const rollback = useCallback(() => run((u) => u.rollback()), [run])
   const setToken = useCallback((token: string | null) => run((u) => u.setToken(token)), [run])
+  const downloadApp = useCallback(() => run((u) => (u.downloadApp ? u.downloadApp() : Promise.resolve(null))), [run])
+  const installApp = useCallback(() => run((u) => (u.installApp ? u.installApp() : Promise.resolve(null))), [run])
+  const canUpdateApp = typeof orbit?.updates.downloadApp === 'function' && typeof orbit.updates.installApp === 'function'
 
   const status = state?.status
   return {
     state,
-    busy: pending > 0 || status === 'checking' || status === 'downloading',
+    busy: pending > 0 || status === 'checking' || status === 'downloading' || state?.shellUpdate?.status === 'downloading',
     check,
     download,
     apply,
     rollback,
     setToken,
+    canUpdateApp,
+    downloadApp,
+    installApp,
   }
 }
 

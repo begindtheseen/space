@@ -169,6 +169,26 @@ jobs:
         with:
           name: mac-app
           path: release
+      - name: Record the app zip's size and hash in the manifest
+        # The manifest is written on Linux before the Mac app exists, so its
+        # hash is added here, once both are built. Installed apps check the
+        # app they download against it before replacing themselves.
+        shell: bash
+        run: |
+          set -euo pipefail
+          node - "$VERSION" <<'JS'
+          const fs = require('node:fs')
+          const { createHash } = require('node:crypto')
+          const version = process.argv[2]
+          const file = 'release/orbit-manifest.json'
+          const zip = `release/ORBIT-${version}-universal-mac.zip`
+          if (!fs.existsSync(zip)) process.exit(0) // the next step reports the missing asset
+          const manifest = JSON.parse(fs.readFileSync(file, 'utf8'))
+          const bytes = fs.readFileSync(zip)
+          manifest.shell = { ...manifest.shell, zipSha256: createHash('sha256').update(bytes).digest('hex'), zipSize: bytes.length }
+          fs.writeFileSync(file, `${JSON.stringify(manifest, null, 2)}\n`)
+          console.log(`app zip: ${bytes.length} bytes, sha256 ${manifest.shell.zipSha256}`)
+          JS
       - name: Check every asset is present and the manifest matches the bundle
         shell: bash
         run: |

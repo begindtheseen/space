@@ -32,6 +32,19 @@ export interface UpdateLatest {
   minShell: string
   /** Where to get the newer shell when this bundle needs one. */
   shellDownloadUrl?: string
+  /** The app zip's size and SHA-256, when the release recorded them. */
+  shellZip?: { size: number; sha256: string }
+}
+
+/**
+ * The app updating itself to the latest release. `manual` means this copy
+ * cannot replace itself (and `error` says why); the card offers the download.
+ */
+export interface ShellUpdateState {
+  status: 'downloading' | 'ready' | 'error' | 'manual'
+  version: string
+  progress?: { received: number; total: number }
+  error?: string
 }
 
 export interface UpdateState {
@@ -55,6 +68,8 @@ export interface UpdateState {
   canRollback: boolean
   /** The token had to be stored unencrypted because no OS keychain was available. */
   tokenPlaintext?: boolean
+  /** Present once the app has been asked to update itself (status 'shell-required'). */
+  shellUpdate?: ShellUpdateState
 }
 
 export interface OrbitVersions {
@@ -120,6 +135,13 @@ export interface OrbitBridge {
     apply(): Promise<void>
     /** Returns to the built-in bundle and relaunches. */
     rollback(): Promise<void>
+    /**
+     * Downloads and verifies the latest app when the latest bundle needs a
+     * newer one. Absent in shells from before the app could update itself.
+     */
+    downloadApp?(): Promise<UpdateState>
+    /** Quits, swaps the downloaded app in, and opens it. */
+    installApp?(): Promise<void>
     setToken(token: string | null): Promise<UpdateState>
     onState(cb: (state: UpdateState) => void): () => void
   }

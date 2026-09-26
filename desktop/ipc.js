@@ -133,6 +133,10 @@ export function registerIpc({ updater, config, versions, repo, allowedOrigins, l
   handleState('orbit:updates:rollback', async () => {
     await updater.rollback()
   })
+  handleState('orbit:updates:download-app', async () => decorate(await updater.downloadShell()))
+  handleState('orbit:updates:install-app', async () => {
+    await updater.installShell()
+  })
   handleState('orbit:updates:set-token', async (token) => {
     let next = null
     if (token !== null && token !== undefined) {

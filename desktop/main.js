@@ -6,6 +6,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { app, BrowserWindow, dialog } from 'electron'
 import { Updater } from './updater.js'
+import { createShellInstaller } from './shellInstall.js'
 import { createConfig } from './config.js'
 import { openExternal, registerIpc } from './ipc.js'
 import { buildMenu } from './menu.js'
@@ -140,6 +141,16 @@ function relaunch() {
   app.exit(0)
 }
 
+/** Quits so the downloaded app can be swapped in; the swap script opens it. */
+function quitForAppUpdate() {
+  quitting = true
+  if (env.e2e) {
+    app.quit()
+    return
+  }
+  app.exit(0)
+}
+
 function focusMainWindow() {
   if (!mainWindow || mainWindow.isDestroyed()) return
   if (mainWindow.isMinimized()) mainWindow.restore()
@@ -189,10 +200,12 @@ async function main() {
     fetchImpl: (input, init) => globalThis.fetch(input, init),
     getToken: () => config.getToken(),
     log,
+    shellInstaller: createShellInstaller({ isPackaged: app.isPackaged, productName: app.getName(), log }),
   })
   // An 'error' event with no listener would throw out of the emitter and crash the process.
   updater.on('error', (err) => logError('updater error:', err))
   updater.on('relaunch', relaunch)
+  updater.on('quit', quitForAppUpdate)
 
   const active = resolveActive(updater, builtInDir, shellVersion)
   installAppProtocol(active.dir, log)

@@ -21,11 +21,11 @@ type ChipTone = 'default' | 'ok' | 'warn' | 'bad'
 
 export function UpdatesCard({ index }: { index?: number }) {
   const orbit = getOrbit()
-  const { state, busy, check, download, apply, rollback, setToken } = useUpdates()
+  const { state, busy, check, download, apply, rollback, setToken, canUpdateApp, downloadApp, installApp } = useUpdates()
   const [draft, setDraft] = useState('')
   const [tokenError, setTokenError] = useState<string | null>(null)
   const [confirmRollback, setConfirmRollback] = useState(false)
-  const [relaunching, setRelaunching] = useState<'apply' | 'rollback' | null>(null)
+  const [relaunching, setRelaunching] = useState<'apply' | 'rollback' | 'app' | null>(null)
 
   useMinuteTick(state?.checkedAt)
 
@@ -74,6 +74,13 @@ export function UpdatesCard({ index }: { index?: number }) {
     setRelaunching(null)
   }
 
+  const onInstallApp = async () => {
+    setRelaunching('app')
+    await installApp()
+    // Still here, so the shell declined; the reason is now in `state`.
+    setRelaunching(null)
+  }
+
   const onRollback = async () => {
     setRelaunching('rollback')
     await rollback()
@@ -84,6 +91,19 @@ export function UpdatesCard({ index }: { index?: number }) {
   const received = state?.progress?.received ?? 0
   const total = state?.progress?.total ?? latest?.size ?? 0
   const shellUrl = latest?.shellDownloadUrl
+  const appUpdate = state?.shellUpdate?.version === latest?.version ? state?.shellUpdate : undefined
+  const appReceived = appUpdate?.progress?.received ?? 0
+  const appTotal = appUpdate?.progress?.total ?? latest?.shellZip?.size ?? 0
+  const manualDownload = shellUrl ? (
+    <Button variant={canUpdateApp && appUpdate?.status !== 'manual' ? 'ghost' : 'primary'} size="md" onClick={() => openExternal(shellUrl)}>
+      <IconDownload size={15} />
+      Download new app
+    </Button>
+  ) : (
+    <Button variant="ghost" size="md" onClick={() => openExternal(`https://github.com/${repo}/releases`)} disabled={repo === ''}>
+      Open releases
+    </Button>
+  )
   const published = latest ? formatDate(latest.publishedAt) : null
 
   return (
@@ -188,28 +208,65 @@ export function UpdatesCard({ index }: { index?: number }) {
       {status === 'shell-required' && latest ? (
         <div className="setting">
           <div className="grow">
-            <div className="setting__label">Version {latest.version} needs a newer ORBIT app</div>
-            <p className="setting__help">
-              This update needs a newer ORBIT app ({latest.minShell}+). A bundle only carries the
-              curriculum; the app around it ships as its own download, and your progress stays where
-              it is when you install one.
-            </p>
+            <div className="setting__label">
+              {appUpdate?.status === 'ready'
+                ? `ORBIT ${latest.version} is ready to install`
+                : `Version ${latest.version} needs a newer ORBIT app`}
+            </div>
+            {appUpdate?.status === 'downloading' ? (
+              <div className="updates__progress">
+                <Bar value={appTotal > 0 ? appReceived / appTotal : 0} />
+                <div className="updates__meta">
+                  {appTotal > 0 ? `${formatBytes(appReceived)} of ${formatBytes(appTotal)}` : formatBytes(appReceived)}
+                </div>
+              </div>
+            ) : appUpdate?.status === 'ready' ? (
+              <p className="setting__help">
+                ORBIT quits, the new app takes its place, and it opens straight to the latest version.
+                Your progress is kept outside the app, so it comes along unchanged.
+              </p>
+            ) : canUpdateApp && appUpdate?.status !== 'manual' ? (
+              <>
+                <p className="setting__help">
+                  Your app is behind the latest release. Update it and ORBIT jumps straight to{' '}
+                  {latest.version} and everything in it, however many versions it skips. Your progress
+                  stays where it is.
+                </p>
+                <ReleaseNotes notes={latest.notes} />
+              </>
+            ) : (
+              <p className="setting__help">
+                This update needs a newer ORBIT app ({latest.minShell}+). A bundle only carries the
+                curriculum; the app around it ships as its own download, and your progress stays where
+                it is when you install one.
+              </p>
+            )}
+            {appUpdate?.error ? (
+              <div className={`updates__status updates__status--${appUpdate.status === 'manual' ? 'warn' : 'bad'}`}>
+                <span className="signal__dot" />
+                <span>{appUpdate.error}</span>
+              </div>
+            ) : null}
           </div>
           <div className="setting__control">
-            {shellUrl ? (
-              <Button variant="primary" size="md" onClick={() => openExternal(shellUrl)}>
-                <IconDownload size={15} />
-                Download new app
+            {appUpdate?.status === 'ready' ? (
+              <Button variant="primary" size="md" onClick={() => void onInstallApp()} disabled={busy || relaunching !== null}>
+                {relaunching === 'app' ? 'Installing…' : 'Install and reopen'}
               </Button>
+            ) : appUpdate?.status === 'downloading' ? (
+              <Button variant="primary" size="md" disabled>
+                Downloading…
+              </Button>
+            ) : canUpdateApp && appUpdate?.status !== 'manual' ? (
+              <>
+                <Button variant="primary" size="md" onClick={() => void downloadApp()} disabled={busy}>
+                  <IconDownload size={15} />
+                  {appUpdate?.status === 'error' ? 'Try again' : `Update to ${latest.version}`}
+                </Button>
+                {appUpdate?.status === 'error' ? manualDownload : null}
+              </>
             ) : (
-              <Button
-                variant="ghost"
-                size="md"
-                onClick={() => openExternal(`https://github.com/${repo}/releases`)}
-                disabled={repo === ''}
-              >
-                Open releases
-              </Button>
+              manualDownload
             )}
           </div>
         </div>
@@ -366,6 +423,8 @@ function chipFor(status: UpdateStatus, current: string): { tone: ChipTone; label
       return { tone: 'warn', label: 'Restart to apply' }
     case 'error':
       return { tone: 'bad', label: 'Error' }
+    case 'shell-required':
+      return { tone: 'warn', label: 'App update available' }
     default:
       return { tone: 'default', label: `Bundle ${current}` }
   }

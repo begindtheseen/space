@@ -43,6 +43,8 @@ const bridge = {
     download: () => ipcRenderer.invoke('orbit:updates:download'),
     apply: () => ipcRenderer.invoke('orbit:updates:apply'),
     rollback: () => ipcRenderer.invoke('orbit:updates:rollback'),
+    downloadApp: () => ipcRenderer.invoke('orbit:updates:download-app'),
+    installApp: () => ipcRenderer.invoke('orbit:updates:install-app'),
     setToken: (token) => ipcRenderer.invoke('orbit:updates:set-token', token === null ? null : String(token)),
     onState: (cb) => subscribe('orbit:updates:state', cb),
   },
