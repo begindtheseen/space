@@ -1,18 +1,52 @@
 ---
 id: l07-particle-filters
 title: Particle filters — sequential importance sampling and resampling
-minutes: 23
+minutes: 25
 covers:
   - 'Particle filters: sequential importance sampling, resampling, degeneracy and sample impoverishment'
 ---
 
-Every filter built so far in this module — EKF, UKF, CKF — keeps the same underlying commitment: the posterior is one Gaussian, and the only question is how carefully that Gaussian gets pushed through a nonlinear function. A **particle filter** drops that commitment entirely. It represents the posterior not as a mean and a covariance but as a weighted cloud of samples, each one a complete, concrete hypothesis about the state — "the target might be exactly here, with this much relative belief" — and lets that cloud take on whatever shape the true posterior actually has: skewed, multi-modal, with heavy tails, anything at all. In the limit of infinitely many particles, this representation converges to the true posterior with no linearization, no Gaussian assumption, and no Jacobian anywhere in the algorithm.
+Imagine you have lost your dog in a big park. You call two thousand friends, and each one goes and stands at a spot where the dog *might* be. Every few seconds you get a clue — "someone heard barking near water" — and each friend asks: "if the dog were right where I am standing, how likely is that clue?" Friends standing by the pond get louder voices. Friends in the dry parking lot get quieter ones. Then everybody takes a step in the direction the dog was last seen running, and the next clue arrives. After a while the loud voices are all bunched in one place, and that place is where the dog is.
 
-That generality is not free, and this lesson is built to show precisely what it costs as much as what it buys. A particle filter's weights can — and, left unmanaged, reliably will — collapse onto a single particle after enough cycles, a failure called **degeneracy**; the standard fix, resampling, introduces its own failure, **sample impoverishment**, if used carelessly. Both are demonstrated here with a real, running particle filter and honest counts, not analogies.
+That crowd of guessers is a **particle filter**: a filter that describes what it believes about the state with a big crowd of sample guesses, each carrying a "how much do I believe this one" number. Each guess is called a **particle**. Its belief number is its **weight**.
 
-## Sequential importance sampling
+Every filter so far in this module — the EKF, the UKF, the CKF — makes the same promise: "what I believe is one bell curve", one mean and one covariance, and the only question is how carefully to push that bell through a curved function. A particle filter drops that promise completely. The crowd can take any shape the truth has: lopsided, with long tails, or split into two separate bunches. As the number of particles grows without limit, the crowd's shape settles onto the true answer. There is no linearization, no bell-curve assumption and no Jacobian anywhere in it. Robots find themselves in buildings this way, and aircraft can fix their position by matching a **[[radar altimeter|terrain-matching]]** against a height map of the ground below.
 
-Represent the posterior at time $k$ by $N$ weighted particles, $\{\mathbf x_k^{(i)},w_k^{(i)}\}_{i=1}^N$, with $\sum_i w_k^{(i)}=1$, standing in for the distribution $p(\mathbf x_k\mid\mathbf z_{1:k})\approx\sum_i w_k^{(i)}\delta(\mathbf x_k-\mathbf x_k^{(i)})$. The simplest and most common variant — the **bootstrap particle filter** — propagates every particle through the true dynamics with an independently sampled noise draw, then reweights by how well each particle's prediction matches the new measurement:
+That freedom has a price, and this lesson is as much about the price as the prize. Left alone, a particle filter's weights pile up on a single particle — a failure called **degeneracy**. The standard fix, resampling, causes a second failure, **sample impoverishment**, if you use it carelessly. You will see both happen, with real counts from a running filter.
+
+## A crowd of weighted guesses
+
+Start with what the filter is trying to describe. At time step $k$, after the measurements $\mathbf z_1,\dots,\mathbf z_k$ have come in, everything the filter believes about the state $\mathbf x_k$ is a probability distribution, the **posterior** $p(\mathbf x_k\mid\mathbf z_{1:k})$. Read it as "the probability of x k, given z one through k". A Kalman filter stores it as a mean and a covariance. A particle filter stores it as a list.
+
+The list has $N$ entries. Entry number $i$ is a pair: a particle $\mathbf x_k^{(i)}$ (read "x k, particle i"), which is one complete, concrete guess of the state, and its weight $w_k^{(i)}$. The weights are positive and add up to one:
+
+$$
+\sum_{i=1}^N w_k^{(i)} = 1.
+$$
+
+The list stands in for the whole distribution:
+
+$$
+p(\mathbf x_k\mid\mathbf z_{1:k})\approx\sum_{i=1}^N w_k^{(i)}\,\delta\big(\mathbf x_k-\mathbf x_k^{(i)}\big).
+$$
+
+The symbol $\delta$ ("delta") is a **[[spike|dirac-spike]]**: an infinitely thin, infinitely tall bump at one point, holding a total amount of one. So the right-hand side is a row of thin spikes, one at each particle, each as heavy as its weight. It looks nothing like a smooth curve up close. But ask it any question that is an average — "what is the mean position?", "what is the chance the vehicle is past the ridge?" — and the answer comes out close to the true one, closer as $N$ grows.
+
+For example, the filter's mean estimate is the weighted average of the particles:
+
+$$
+\hat{\mathbf x}_k = \sum_{i=1}^N w_k^{(i)}\mathbf x_k^{(i)}.
+$$
+
+That one number is often what an autopilot wants. But the cloud holds far more than its mean. If the particles sit in two separate bunches, the cloud *says so*. A single mean and covariance cannot.
+
+## One cycle: move, then weigh
+
+A particle filter runs in the same rhythm as a Kalman filter: predict, then update. Here is the simplest and most common version, the **[[bootstrap particle filter|bootstrap-name]]**.
+
+**Move.** Push every particle through the true motion rule $\mathbf f$, and give each one its own fresh random draw of process noise. Particle $i$ gets noise $\mathbf w^{(i)}$, drawn from the noise distribution $p(\mathbf w)$. Different particles get different draws, so the cloud spreads out the way the real uncertainty spreads out.
+
+**Weigh.** When measurement $\mathbf z_k$ arrives, ask of each particle: "if the state really were $\mathbf x_k^{(i)}$, how probable is the reading I got?" That number is the **[[likelihood|likelihood-meaning]]** $p(\mathbf z_k\mid\mathbf x_k^{(i)})$, read "p of z k given x k i". Multiply the particle's old weight by it. Then divide every weight by their total so they add up to one again — that step is called **normalizing**.
 
 ::: key The bootstrap particle filter, one cycle
 $$
@@ -21,12 +55,52 @@ $$
 followed by normalizing $w_k^{(i)}$ so the weights sum to one. Both $\mathbf f$ and the measurement likelihood $p(\mathbf z_k\mid\mathbf x_k^{(i)})$ are the true, unmodified functions — nothing here is linearized, and $p(\mathbf z_k\mid\mathbf x_k^{(i)})$ need not even be Gaussian.
 :::
 
-Every particle is propagated through the *actual* nonlinear $\mathbf f$, with its own independent noise realization — there is no linearized covariance to propagate at all, because there is no single Gaussian to describe. Each particle's new weight measures how consistent that particle's own predicted measurement is with what was actually observed; particles whose predictions land far from $\mathbf z_k$ lose weight, particles that land close gain it, relative to the other particles in the cloud. Summed and normalized across all $N$ particles, the weighted cloud is the filter's entire representation of the posterior — its mean, if wanted, is $\sum_i w_k^{(i)}\mathbf x_k^{(i)}$, but the cloud itself carries far more information than that one summary number, which is the entire point.
+The symbol $\propto$ reads "is proportional to": the left side equals the right side times some constant that is the same for every particle. Normalizing fixes that constant.
+
+::: key Bootstrap particle filter loop
+Propagate each particle through the dynamics with sampled noise, weight by the measurement likelihood, normalise, and resample when the effective sample size drops below a threshold (often $N/2$).
+:::
+
+(The last two words of that loop, "resample" and "effective sample size", are the subject of the second half of this lesson.)
+
+Notice what is *not* in the recipe. There is no covariance matrix to push forward, because there is no single bell to describe. There is no Jacobian, because nothing is being straightened. Every particle goes through the real, curved $\mathbf f$. Every weight uses the real sensor model, whatever shape its noise has.
+
+This whole scheme has a name that says what it does. **Sequential importance sampling** means: represent a distribution by samples (sampling), give each sample a weight that corrects for where it was drawn from ([[importance|importance-name]]), and update both one time step after another (sequential).
+
+::: example Weighing three particles against one altimeter reading
+A plane's radar altimeter reads $z = 430\,\mathrm m$ above the ground. Its noise is Gaussian with standard deviation $\sigma = 2\,\mathrm m$. Three particles, currently of equal weight $1/3$, sit at three positions along the flight track. From the terrain map, each one predicts what the altimeter *should* read if the plane were there: $429\,\mathrm m$, $433\,\mathrm m$ and $440\,\mathrm m$.
+
+**Step 1: the misses.** Subtract each prediction from the reading: $430-429 = 1\,\mathrm m$, $430-433=-3\,\mathrm m$, $430-440=-10\,\mathrm m$.
+
+**Step 2: the likelihoods.** For Gaussian noise, the likelihood is proportional to $\exp\!\big(-\tfrac12 (r/\sigma)^2\big)$, where $r$ is the miss. (The constant in front of a bell curve is the same for all three, so it drops out at normalizing.)
+
+$$
+e^{-\frac12(1/2)^2}=0.8825, \qquad e^{-\frac12(3/2)^2}=0.3247, \qquad e^{-\frac12(10/2)^2}=3.727\times10^{-6}.
+$$
+
+**Step 3: multiply by the old weights and normalize.** The old weights are all equal, so they cancel. The total is $0.8825+0.3247+0.0000037=1.2072$. Divide each likelihood by it:
+
+$$
+w^{(1)} = 0.731, \qquad w^{(2)} = 0.269, \qquad w^{(3)} = 3.09\times10^{-6}.
+$$
+
+**Sanity check.** The three weights add up to one. The particle that missed by $1\,\mathrm m$ — half a standard deviation — gets most of the belief. The one that missed by $10\,\mathrm m$ — five standard deviations — is all but ruled out. That is what a reading with $2\,\mathrm m$ of noise should do.
+:::
+
+::: note Why the weight update has to be true
+Bayes' rule says the new belief is the old belief, pushed forward by the motion, times the likelihood of the new reading, divided by a constant:
+$$
+p(\mathbf x_k\mid\mathbf z_{1:k}) \propto p(\mathbf z_k\mid\mathbf x_k)\,p(\mathbf x_k\mid\mathbf z_{1:k-1}).
+$$
+The move step draws each new particle from $p(\mathbf x_k\mid\mathbf x_{k-1}^{(i)})$, the motion rule plus noise. So before the reading, the weighted cloud is a fair sample of the predicted belief $p(\mathbf x_k\mid\mathbf z_{1:k-1})$ — with the same weights as before. To turn a fair sample of that into a fair sample of the posterior, each particle must be reweighted by the ratio "posterior over predicted" at its own position. By Bayes' rule that ratio is the likelihood $p(\mathbf z_k\mid\mathbf x_k^{(i)})$, up to a constant. The constant is the same for every particle, so normalizing removes it. That is the key block's update, and nothing in it assumed a Gaussian.
+:::
 
 ::: example A particle filter resolving a genuinely ambiguous position
-A vehicle flies at a known, roughly constant altitude and airspeed along a track with a radar altimeter reading height above ground. The terrain has two valleys of nearly identical shape and depth, $80\,\mathrm m$ deep, centered $8\,\mathrm{km}$ apart, so a single altimeter reading taken near either valley is genuinely ambiguous about which one produced it. The vehicle's true along-track position starts inside the first valley's basin; $2000$ particles are seeded uniformly across a $14\,\mathrm{km}$ window spanning both valleys, with no prior bias toward either.
+A vehicle flies at a known, steady altitude and airspeed ($100\,\mathrm{m/s}$) along a track, with a radar altimeter reading its height above the ground (noise $\sigma = 2\,\mathrm m$). The terrain has two valleys of nearly the same shape, each $80\,\mathrm m$ deep, with centers $8\,\mathrm{km}$ apart. So one altimeter reading taken near either valley cannot tell you which valley produced it. The only difference is a small $15\,\mathrm m$ hump on the far side of the first valley, with nothing like it near the second.
 
-| $t\,(\mathrm s)$ | weight on valley $1$ (true) | weight on valley $2$ | $\mathrm{ESS}$ |
+The vehicle really starts inside the first valley. The filter does not know that. It scatters $2000$ particles evenly across a $14\,\mathrm{km}$ window covering both valleys, favoring neither. It resamples whenever the effective sample size $N_\text{eff}$ drops below $N/2$ — the standard practice the rest of this lesson explains. The table adds up the weight of the particles nearer each valley's track.
+
+| $t\,(\mathrm s)$ | weight on valley $1$ (true) | weight on valley $2$ | $N_\text{eff}$ |
 | --- | --- | --- | --- |
 | $1$ | $0.379$ | $0.621$ | $70.8$ |
 | $5$ | $0.314$ | $0.686$ | $1277.7$ |
@@ -35,7 +109,11 @@ A vehicle flies at a known, roughly constant altitude and airspeed along a track
 | $20$ | $1.000$ | $0.000$ | $1885.9$ |
 | $30$ | $1.000$ | $0.000$ | $1244.5$ |
 
-For the first fifteen seconds, weight is spread across both hypotheses — at $t=10\,\mathrm s$ the filter actually favors the *wrong* valley, $75\%$ to $25\%$, which is exactly the honest behavior a genuinely ambiguous measurement should produce, not a bug. A small feature in the terrain unique to the true valley's side (absent near the other valley) breaks the tie once the vehicle has flown far enough to reach it: by $t=20\,\mathrm s$ every particle consistent with the wrong valley has been weighted essentially to zero, and the filter has correctly resolved which valley it was in without ever having been forced, the way a single-Gaussian filter would be, to commit to one hypothesis before the data justified it. (This run resamples whenever $N_\text{eff}$ falls below $N/2$ — the standard practice the rest of this lesson explains — which is why $N_\text{eff}$ never collapses toward $1$ even while the cloud is genuinely representing two live hypotheses.)
+**Reading the table.** For the first fifteen seconds, the weight is split between the two valleys. At $t=10\,\mathrm s$ the filter even leans toward the *wrong* one, $75\%$ to $25\%$. That is not a bug. The readings so far really do fit both valleys, and the noise happened to fit the wrong one a little better. An honest filter should be unsure here.
+
+Then the vehicle reaches the hump. Only particles on the valley-1 track predicted a hump; the valley-2 particles predicted flat ground and missed by many standard deviations. By $t=20\,\mathrm s$ their weight is essentially zero, and the filter has correctly worked out where it is. It never had to bet on one valley before the data justified it.
+
+**Sanity check.** $N_\text{eff}$ is $70.8$ at $t=1\,\mathrm s$: the very first reading already ruled out most of the $14\,\mathrm{km}$ window (particles over flat ground, where the altimeter would have read something else). Resampling then restored a healthy cloud, which is why the column never falls toward $1$ even while two hypotheses are alive.
 :::
 
 ```python
@@ -52,7 +130,7 @@ def systematic_resample(w, u):
     return np.searchsorted(cumsum, positions)
 
 rng = np.random.default_rng(11)
-N, A0, v, dt = 2000, 1000.0, 0.1, 1.0
+N, A0, v, dt = 2000, 1000.0, 0.1, 1.0        # distances in km, heights in m
 sigma_w, sigma_alt = 0.003, 2.0
 s_true = 6.3
 particles = rng.uniform(3.0, 17.0, N)
@@ -82,9 +160,13 @@ for k in range(70):
 # 30 1.0000 0.0000  1244.5
 ```
 
-## Degeneracy and effective sample size
+## When the weights pile up: degeneracy
 
-Even when a particle filter is working correctly, its weights do not stay uniform. Every cycle multiplies each particle's weight by that particle's own measurement likelihood, and over enough cycles the *product* of many likelihoods inevitably concentrates on whichever few particles happened to track the true trajectory best — this is not a bug, it is what a correctly-computed posterior weight is supposed to do, but carried to its extreme it leaves almost the entire weight on a single particle, called **degeneracy**: the other $N-1$ particles are still being propagated and evaluated every cycle, for essentially zero return, since they contribute almost nothing to any expectation computed from the cloud.
+Even a correctly working particle filter does not keep its weights even. Every cycle multiplies each weight by one more likelihood. Think of a game where every round, each player's score is multiplied by how well they guessed. After many rounds, one or two players who kept guessing well have almost all the points, and the rest have next to nothing.
+
+That is what a correct posterior weight is supposed to do — it is Bayes' rule at work. But pushed to the extreme it leaves nearly all the weight on a single particle. This is **degeneracy**. The other $N-1$ particles are still moved and weighed every cycle, costing computer time, while adding almost nothing to any average taken from the cloud.
+
+You need a number that says how bad it is. That number is the **effective sample size**: roughly, "how many equally weighted particles is this lopsided cloud worth?"
 
 ::: key Effective sample size
 $$
@@ -93,14 +175,54 @@ $$
 $N_{\text{eff}}=N$ exactly when every weight is equal ($1/N$); $N_{\text{eff}}=1$ exactly when a single particle carries all the weight, regardless of how many particles are nominally in the cloud. $N_{\text{eff}}$ depends only on the *shape* of the weight distribution, not its overall scale — multiplying every unnormalized weight by the same constant leaves it unchanged.
 :::
 
-$N_\text{eff}$ falling well below $N$ is the standard, quantitative signal of degeneracy — in the terrain example, it fell to $70.8$ (from an initial $2000$) after only the first measurement, reflecting how strongly that first altimeter reading already discriminated between plausible and implausible positions. The fix is **resampling**: draw a new set of $N$ particles from the current weighted cloud, with particles carrying more weight more likely to be drawn (possibly several times), and reset every weight to $1/N$. This does not create new information — it redistributes the computational effort of the next cycle toward the particles that currently matter, and discards effort on the particles that do not.
+::: key Effective sample size, in one line
+$N_\text{eff}$ = 1 / sum of the squared normalised weights. It falls to $1$ when one particle holds all the weight (degeneracy). Resample on $N_\text{eff}$, not every step, and add roughening to avoid impoverishment.
+:::
 
-## Resampling and its own failure mode
+Check the two ends. If all $N$ weights are $1/N$, the sum of squares is $N\cdot(1/N)^2 = 1/N$, so $N_\text{eff} = N$. If one weight is $1$ and the rest are $0$, the sum of squares is $1$, so $N_\text{eff}=1$.
 
-Resampling looks, at first, like an unambiguous improvement: weights are equal again, $N_\text{eff}$ is reset to $N$, degeneracy is gone. Applied every single cycle, though, it introduces a different problem. Every resampling step is a genealogical bottleneck: a particle with below-average weight is likely to vanish from the population entirely, replaced by copies of its higher-weight neighbors. Do this often enough with too little added diversity between resamples, and the population's genuine diversity — the number of *distinct* ancestral values still represented — collapses, even while the reported $N_\text{eff}$ looks perfectly healthy immediately after each resample. This is **sample impoverishment**, and it is dangerous precisely because the standard diagnostic for degeneracy does not catch it.
+::: example Two small clouds
+**Four particles, weights $0.4, 0.3, 0.2, 0.1$.** Square each: $0.16, 0.09, 0.04, 0.01$. Add: $0.30$. Flip: $N_\text{eff} = 1/0.30 = 3.33$. Four particles, worth about three and a third even ones — mildly lopsided.
+
+**Four particles, weights $0.97, 0.01, 0.01, 0.01$.** Squares: $0.9409$ and three of $0.0001$. Sum: $0.9412$. $N_\text{eff} = 1/0.9412 = 1.06$. Four particles on paper, but worth barely more than one. That cloud is degenerate.
+
+**Sanity check.** Both answers sit between $1$ and $N = 4$, as they must.
+:::
+
+::: note Why N_eff always lands between 1 and N
+The upper end: the weights add up to one, and the sum of squares of $N$ positive numbers with a fixed total is smallest when they are all equal (spreading evenly always lowers a sum of squares). The smallest sum of squares is $1/N$, so $N_\text{eff}\le N$. The lower end: each weight is at most one, so $(w^{(i)})^2 \le w^{(i)}$, and adding up gives $\sum_i (w^{(i)})^2 \le \sum_i w^{(i)} = 1$. So $N_\text{eff}\ge 1$.
+:::
+
+In the terrain example, $N_\text{eff}$ fell from $2000$ to $70.8$ after the first measurement alone. That is how sharply one altimeter reading separated plausible positions from impossible ones.
+
+## Resampling: moving the crowd to where it matters
+
+The fix for degeneracy is **resampling**: build a brand-new set of $N$ particles by drawing from the current weighted cloud. Heavy particles are likely to be drawn, possibly several times. Light particles are likely to be dropped. Then every weight is reset to $1/N$.
+
+Resampling adds no new information. The new cloud describes the same belief as the old one. What it changes is where the computer's effort goes next cycle: onto the particles that currently matter, and off the ones that do not.
+
+The standard way to draw is **systematic resampling**, and it needs only one random number. Picture the weights laid end to end along a ruler from $0$ to $1$, each particle owning a stretch as long as its weight. Now lay a [[comb|comb-picture]] with $N$ evenly spaced teeth, $1/N$ apart, along the ruler, shifted by one random amount $u/N$ where $u$ is between $0$ and $1$. Each tooth lands in some particle's stretch. That particle gets one copy. A particle with weight $w$ gets about $N w$ copies — never fewer than the whole part of $Nw$ rounded down, never more than rounded up.
+
+::: example Systematic resampling by hand
+Four particles have weights $0.1, 0.4, 0.3, 0.2$. Take $u = 0.5$.
+
+**Step 1: the ruler.** Add the weights up as you go (the **cumulative sum**): $0.1, 0.5, 0.8, 1.0$. So particle 0 owns $[0, 0.1)$, particle 1 owns $[0.1, 0.5)$, particle 2 owns $[0.5, 0.8)$ and particle 3 owns $[0.8, 1.0]$.
+
+**Step 2: the comb.** The teeth sit at $(j + u)/N$ for $j = 0,1,2,3$: that is $0.125, 0.375, 0.625, 0.875$.
+
+**Step 3: read off the owners.** $0.125$ and $0.375$ fall in particle 1's stretch. $0.625$ falls in particle 2's. $0.875$ falls in particle 3's. The new parents are $[1, 1, 2, 3]$.
+
+**Sanity check.** The expected copies are $N w = 0.4, 1.6, 1.2, 0.8$. Particle 0 got $0$, particle 1 got $2$, particle 2 got $1$, particle 3 got $1$ — each one within one of its expected count, and four particles in total, as there must be.
+:::
+
+## Resampling's own trap: impoverishment
+
+Resampling looks like pure improvement. The weights are even again, $N_\text{eff}$ is back to $N$, degeneracy is gone. So why not resample every single cycle?
+
+Because every resample is a [[family-tree bottleneck|family-tree]]. A particle with below-average weight is likely to vanish, replaced by copies of its heavier neighbors. Copies are exact duplicates. Do this over and over, with nothing to make the copies different from each other, and the number of *distinct* values in the cloud shrinks. You may still have $500$ particles, but they are $500$ copies of a handful of ancestors. This is **sample impoverishment**. It is dangerous because $N_\text{eff}$, the tool that catches degeneracy, cannot see it: right after a resample every weight is equal, so $N_\text{eff}$ looks perfect no matter how many of those particles are twins.
 
 ::: example Impoverishment, counted directly
-Estimate a fixed, unknown range $r=500\,\mathrm m$ from repeated noisy measurements, $\sigma_z=5\,\mathrm m$, with $500$ particles and **systematic resampling every single cycle**, no added jitter. Track the number of *distinct* particle values surviving, not merely $N_\text{eff}$:
+Estimate a fixed, unknown range $r=500\,\mathrm m$ from repeated noisy measurements with $\sigma_z=5\,\mathrm m$. Use $500$ particles, start them spread around $490\,\mathrm m$ with standard deviation $20\,\mathrm m$, and apply **systematic resampling every single cycle**, adding nothing afterward. Nothing moves — the range is fixed, so there is no process noise to spread copies apart. Track both $N_\text{eff}$ and the number of *distinct* particle values still alive:
 
 | cycle | $N_\text{eff}$ immediately before resampling | distinct particle values remaining |
 | --- | --- | --- |
@@ -111,7 +233,11 @@ Estimate a fixed, unknown range $r=500\,\mathrm m$ from repeated noisy measureme
 | $32$ | $379.0$ | $36$ |
 | $39$ | $497.7$ | $35$ |
 
-$N_\text{eff}$ immediately before each resample stays in a perfectly reasonable range throughout — never collapsing toward $1$ the way true degeneracy would show it — because each cycle applies only *one* likelihood update to an already-equal-weight population, which rarely peaks sharply enough to look degenerate on its own. Meanwhile the population's actual diversity is bleeding out underneath that healthy-looking number: from $500$ initial particles down to $35$ surviving distinct ancestral values after forty cycles, entirely invisible to $N_\text{eff}$ because $N_\text{eff}$ is recomputed fresh from equal weights every time and has no memory of which particles are, underneath, exact copies of one another. Adding a small amount of independent jitter after each resample — **roughening**, $0.4\,\mathrm m$ standard deviation here — is a complete fix on this problem: with roughening, all $500$ values remain distinct at every one of the same forty cycles.
+**Reading the table.** $N_\text{eff}$ never comes near $1$. Its lowest value in all forty cycles is $158.9$, in the very first one. That is because each cycle applies only *one* likelihood to an evenly weighted cloud, which rarely looks lopsided on its own. Meanwhile the real diversity is draining away underneath: from $500$ distinct values to $35$ after forty cycles. $N_\text{eff}$ cannot see it, because it is worked out fresh from equal weights each time and has no memory of which particles are copies.
+
+**The fix.** After each resample, add a little independent random jitter to every particle — **[[roughening|roughening-name]]** — here with standard deviation $0.4\,\mathrm m$. Rerun the same forty cycles and all $500$ values stay distinct at every cycle.
+
+**Sanity check.** Forty readings with $5\,\mathrm m$ noise should pin the range to about $5/\sqrt{40} \approx 0.79\,\mathrm m$. The un-roughened cloud's spread at the end is $0.77\,\mathrm m$ — about right, but carried by only $35$ distinct values. The roughened cloud's spread is $1.46\,\mathrm m$: every value is distinct, but the jitter has made the cloud wider than the data justify. Roughening has a cost too (the last Check yourself question comes back to this).
 :::
 
 ```python
@@ -137,6 +263,7 @@ for k in range(40):
     idx = systematic_resample(weights, rng.uniform())
     particles = particles[idx]
     weights = np.full(N, 1.0/N)
+    # roughening would go here: particles += rng.normal(0, 0.4, N)
     n_unique = len(np.unique(np.round(particles, 9)))
     if k in (0, 8, 16, 24, 32, 39):
         print(k, ess, n_unique)
@@ -149,15 +276,15 @@ for k in range(40):
 ```
 
 ::: key The standard compromise
-Resample only when $N_\text{eff}$ drops below a threshold, commonly $N/2$, rather than every cycle — this keeps degeneracy from ever becoming severe while resampling far less often than "always," which is most of what impoverishment needs to become a problem. Add a small amount of roughening after every resample regardless, since even threshold-triggered resampling is still a genealogical bottleneck each time it fires.
+Resample only when $N_\text{eff}$ drops below a threshold, commonly $N/2$, rather than every cycle — this keeps degeneracy from ever becoming severe while resampling far less often than "always", which is most of what impoverishment needs to become a problem. Add a small amount of roughening after every resample regardless, since even threshold-triggered resampling is still a genealogical bottleneck each time it fires.
 :::
 
 ::: warning "Effective sample size looks fine" does not mean the particle population is healthy
-The impoverishment example's $N_\text{eff}$ never dropped below about $150$ out of $500$ at any point across forty aggressive resamples — by the usual degeneracy threshold, this filter never looked troubled for a moment. The distinct-value count tells a completely different story. Any diagnostic built only from the current weights, checked only immediately after a resample, is structurally blind to impoverishment, because resampling resets weights to uniform regardless of how few distinct ancestors those uniform weights are now describing.
+In the impoverishment example, $N_\text{eff}$ never dropped below about $150$ out of $500$ across forty aggressive resamples. By the usual degeneracy test, this filter never looked troubled for a moment. The distinct-value count tells a completely different story. Any check built only from the current weights, looked at right after a resample, is blind to impoverishment, because resampling resets the weights to equal no matter how few distinct ancestors they now describe.
 :::
 
 ::: warning A particle filter with too few particles for the state dimension will not announce itself as broken
-Nothing in the bootstrap recipe checks whether $N$ is large enough for the problem's dimensionality — the algorithm runs, produces weights, resamples, and reports an $N_\text{eff}$ regardless of whether the cloud is actually covering the relevant part of state space at all. The next lesson in this module makes this concern precise and quantifies it directly, because it is the single practical limitation that decides whether a particle filter is a reasonable engineering choice for a given problem.
+Nothing in the bootstrap recipe checks whether $N$ is big enough for the problem. The algorithm runs, produces weights, resamples and reports an $N_\text{eff}$ whether or not the cloud covers the part of the state space that matters. The [[next lesson|next-lesson-curse]] makes this precise and measures it, because it is the one practical limit that decides whether a particle filter is a sensible engineering choice.
 :::
 
 ## Check yourself
@@ -167,15 +294,15 @@ In the bootstrap particle filter's weight update, which parts of the algorithm i
 :::
 
 ::: answer
-None. Every particle is propagated through the true, unmodified $\mathbf f$ with its own sampled noise realization, and every weight is computed from the true measurement likelihood $p(\mathbf z_k\mid\mathbf x_k^{(i)})$ evaluated at that particle's actual predicted measurement — no Jacobian, no Taylor expansion, and no assumption that the likelihood is Gaussian appears anywhere in the recipe.
+None. Every particle goes through the true, unmodified $\mathbf f$ with its own sampled noise. Every weight uses the true measurement likelihood $p(\mathbf z_k\mid\mathbf x_k^{(i)})$, worked out at that particle's own predicted measurement. No Jacobian, no Taylor expansion and no assumption that the likelihood is Gaussian appears anywhere in the recipe.
 :::
 
 ::: check
-At $t=10\,\mathrm s$ in the terrain example, the particle filter assigned more weight to the wrong valley than the correct one. Was this a filter error?
+At $t=10\,\mathrm s$ in the terrain example, the particle filter put more weight on the wrong valley than on the right one. Was this a filter error?
 :::
 
 ::: answer
-No — it is the correct, honest response to genuinely ambiguous data. At that point the vehicle had not yet reached the terrain feature that distinguishes the two valleys, so an altimeter reading consistent with either basin really does slightly favor whichever one the specific noise realization happened to match better; a filter that instead locked onto one hypothesis early, before the data justified it, would be the one making an error. The weight shifting correctly to the true valley once the distinguishing feature was reached, rather than staying stuck on the early, noise-driven favorite, is exactly the behavior that shows the filter working as intended.
+No — it was the correct, honest response to ambiguous data. The vehicle had not yet reached the hump that tells the two valleys apart, so a reading that fits both basins really can slightly favor whichever one the noise happened to match better. A filter that locked onto one valley early, before the data justified it, would be the one making the mistake. The weight moving firmly to the true valley once the hump was reached — instead of staying stuck on the early, noise-driven favorite — is exactly the behavior that shows the filter working.
 :::
 
 ::: check
@@ -183,34 +310,145 @@ Explain precisely why $N_\text{eff}$ is unaffected by multiplying every particle
 :::
 
 ::: answer
-$N_\text{eff}=1/\sum_i(w^{(i)})^2$ is defined on the *normalized* weights, and normalizing divides out any common scale factor before the sum of squares is computed: if every unnormalized weight is scaled by $c$, the normalization step $w^{(i)}=cw^{(i)}_{\text{raw}}/\sum_j cw^{(j)}_{\text{raw}}$ cancels the $c$ exactly, leaving identical normalized weights and therefore an identical $N_\text{eff}$ — the quantity depends only on the relative shape of the weight distribution, never on its absolute scale.
+$N_\text{eff}=1/\sum_i(w^{(i)})^2$ is defined on the *normalized* weights, and normalizing divides out any common factor before the squares are added. If every raw weight is multiplied by $c$, the normalized weight is $c\,w^{(i)}_{\text{raw}}/\sum_j c\,w^{(j)}_{\text{raw}}$. The $c$ on top and the $c$ on the bottom cancel exactly, leaving the same normalized weights and so the same $N_\text{eff}$. It depends only on the relative shape of the weights, never on their overall size. (For example, raw weights $3, 1, 1, 1$ and $51, 17, 17, 17$ both normalize to $0.5, 1/6, 1/6, 1/6$ and give $N_\text{eff} = 3$.)
 :::
 
 ::: check
-A colleague suggests resampling every cycle is the "safest" choice because it guarantees $N_\text{eff}=N$ immediately afterward, at every step. What is wrong with using this reasoning alone to justify the choice?
+A colleague says resampling every cycle is the "safest" choice because it guarantees $N_\text{eff}=N$ right afterward, at every step. What is wrong with using this reasoning alone to justify the choice?
 :::
 
 ::: answer
-$N_\text{eff}=N$ immediately after any resample is true by construction — every weight is reset to $1/N$ — so it says nothing at all about whether the resampled particles still represent a genuinely diverse population or are increasingly copies of a shrinking set of ancestors. The impoverishment example showed exactly this: resampling every cycle kept $N_\text{eff}$ looking healthy throughout while the distinct-value count collapsed from $500$ to $35$, which is precisely the failure "resample every cycle to be safe" causes rather than prevents.
+$N_\text{eff}=N$ right after any resample is true by construction — every weight is reset to $1/N$. So it says nothing about whether the new particles are still a diverse crowd or more and more copies of a shrinking set of ancestors. The impoverishment example showed exactly this: resampling every cycle kept $N_\text{eff}$ looking healthy while the distinct-value count collapsed from $500$ to $35$. "Resample every cycle to be safe" causes that failure rather than preventing it.
 :::
 
 ::: check
-Suppose roughening is added, but its standard deviation is chosen far too large relative to the actual measurement precision. What would you expect to happen to the filter's accuracy, even though impoverishment itself would no longer be a problem?
+Suppose roughening is added, but its standard deviation is chosen far too large compared with the measurement precision. What would you expect to happen to the filter's accuracy, even though impoverishment would no longer be a problem?
 :::
 
 ::: answer
-Roughening adds noise to the particle values independent of what the data actually supports, so choosing its scale far larger than the measurement precision would spread the particles out well beyond where the true posterior actually concentrates, degrading the filter's accuracy and inflating its effective uncertainty even though the *diversity* problem (impoverishment) would indeed be solved. Roughening's scale is a real tuning choice with a genuine trade-off — too little and impoverishment returns, too much and the filter's own added noise starts to dominate the very information the measurements were supposed to provide — not a parameter with a self-evidently safe, large default.
+Roughening adds noise to the particles that no data asked for. Make it far larger than the measurement precision and it spreads the particles well beyond where the true posterior sits, hurting accuracy and inflating the filter's uncertainty — even though the diversity problem is solved. You can see the start of this in the impoverishment example: $0.4\,\mathrm m$ of roughening every cycle left the cloud $1.46\,\mathrm m$ wide where the data supported about $0.79\,\mathrm m$. Roughening's size is a real tuning choice with a trade-off: too little and impoverishment returns, too much and the filter's own added noise drowns the information the measurements provide. There is no safe large default.
 :::
 
 ## Summary
 
 | Item | Statement |
 | --- | --- |
-| Bootstrap particle filter | Propagate every particle through the true $\mathbf f$ with sampled noise; reweight by the true measurement likelihood $p(\mathbf z_k\mid\mathbf x_k^{(i)})$; no linearization anywhere |
-| Effective sample size | $N_\text{eff}=1/\sum_i(w^{(i)})^2$; falls toward $1$ as weight concentrates on few particles (degeneracy), independent of the weights' overall scale |
-| Resampling | Draw a new population weighted toward high-weight particles, reset weights to $1/N$; fixes degeneracy, but each application is a genealogical bottleneck |
-| Sample impoverishment | Resampling too often, with too little added diversity, collapses the number of *distinct* surviving particle values — invisible to $N_\text{eff}$, which resets to a healthy value at every resample regardless |
-| Standard practice | Resample only when $N_\text{eff}$ falls below a threshold (often $N/2$), and add roughening after every resample that does fire |
-| Demonstrated | Terrain example: genuine early ambiguity ($30\%$–$70\%$ split), correctly resolved once distinguishing data arrived. Impoverishment example: $500\to35$ distinct values over $40$ unconditional resamples with no roughening; $500\to500$ with it |
+| Particles and weights | The posterior is a cloud of $N$ guesses $\mathbf x_k^{(i)}$ with weights $w_k^{(i)}$ that sum to one; the mean estimate is $\sum_i w_k^{(i)}\mathbf x_k^{(i)}$ |
+| Bootstrap particle filter | Propagate every particle through the true $\mathbf f$ with sampled noise; reweight by the true measurement likelihood $p(\mathbf z_k\mid\mathbf x_k^{(i)})$; normalize; no linearization anywhere |
+| Effective sample size | $N_\text{eff}=1/\sum_i(w^{(i)})^2$; between $1$ and $N$; falls toward $1$ as weight piles onto few particles (degeneracy); unaffected by the weights' overall scale |
+| Resampling | Draw a new cloud weighted toward heavy particles, reset weights to $1/N$; systematic resampling uses one random number and a comb of $N$ evenly spaced teeth |
+| Sample impoverishment | Resampling too often, with nothing to spread copies apart, collapses the number of *distinct* particle values — invisible to $N_\text{eff}$ |
+| Standard practice | Resample only when $N_\text{eff}$ falls below a threshold (often $N/2$), and add roughening after every resample that fires |
+| Demonstrated | Terrain: early ambiguity (about $25\%$ to $40\%$ on the true valley) resolved correctly once the hump arrived. Impoverishment: $500\to35$ distinct values over $40$ unconditional resamples; $500\to500$ with roughening |
 
-This lesson showed a particle filter succeeding at a problem a single-Gaussian filter is structurally unable to represent honestly. The next lesson makes precise exactly when that gap is worth the cost — and names the specific, practical limitation that keeps particle filters from replacing the EKF and UKF everywhere.
+This lesson showed a particle filter succeeding at a problem a single-bell filter cannot even describe honestly. The next lesson makes precise when that gap is worth the cost, and names the practical limit that keeps particle filters from replacing the EKF and UKF everywhere.
+
+::: context terrain-matching Navigating by the shape of the ground
+A radar altimeter bounces radio waves straight down and times the echo, so it measures height above the ground directly below. Subtract that from your altitude above sea level and you get the ground's own height. Compare a string of those heights with a stored height map and you can work out where you are — the way you might recognize a road by its hills with your eyes shut.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">
+  <path d="M10,110 C40,110 50,112 70,112 C90,112 95,140 110,140 C125,140 130,112 150,112 C170,112 175,98 185,98 C195,98 200,112 215,112 L240,112 C255,112 260,140 275,140 C290,140 295,112 315,112 L350,112" fill="none" stroke="#1f2a44" stroke-width="2"/>
+  <line x1="10" y1="30" x2="350" y2="30" stroke="#6c7a93" stroke-width="1" stroke-dasharray="4 4"/>
+  <polygon points="100,24 124,30 100,36" fill="#1d6fd1"/>
+  <line x1="110" y1="36" x2="110" y2="138" stroke="#b4232c" stroke-width="1.5" stroke-dasharray="3 3"/>
+  <text x="116" y="80" font-size="11" fill="#b4232c">altimeter</text>
+  <text x="95" y="130" font-size="11" fill="#1f2a44" text-anchor="end">valley 1</text>
+  <text x="185" y="92" font-size="11" fill="#1f2a44" text-anchor="middle">hump</text>
+  <text x="275" y="130" font-size="11" fill="#1f2a44" text-anchor="middle">valley 2</text>
+  <text x="340" y="24" font-size="11" fill="#6c7a93" text-anchor="end">steady altitude</text>
+</svg>
+```
+
+Cruise missiles have navigated with this idea, called TERCOM (terrain contour matching), since the 1970s. Two similar valleys are its classic trap.
+:::
+
+::: context dirac-spike A spike with all its weight at one point
+The spike $\delta$ is named after the physicist Paul Dirac. Think of it as a bell curve squeezed thinner and thinner while keeping its area at one. In the limit, all the "stuff" sits at a single point.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 130" font-family="Inter, Arial, sans-serif">
+  <line x1="20" y1="100" x2="340" y2="100" stroke="#1f2a44" stroke-width="1.5"/>
+  <g stroke="#1d6fd1" stroke-width="3">
+    <line x1="60" y1="100" x2="60" y2="90"/>
+    <line x1="110" y1="100" x2="110" y2="70"/>
+    <line x1="160" y1="100" x2="160" y2="30"/>
+    <line x1="210" y1="100" x2="210" y2="50"/>
+    <line x1="260" y1="100" x2="260" y2="70"/>
+    <line x1="310" y1="100" x2="310" y2="90"/>
+  </g>
+  <g fill="#1d6fd1"><circle cx="60" cy="90" r="3"/><circle cx="110" cy="70" r="3"/><circle cx="160" cy="30" r="3"/><circle cx="210" cy="50" r="3"/><circle cx="260" cy="70" r="3"/><circle cx="310" cy="90" r="3"/></g>
+  <g font-size="11" fill="#1f2a44" text-anchor="middle"><text x="60" y="116">0.05</text><text x="110" y="116">0.15</text><text x="160" y="116">0.35</text><text x="210" y="116">0.25</text><text x="260" y="116">0.15</text><text x="310" y="116">0.05</text></g>
+  <text x="340" y="20" font-size="11" fill="#6c7a93" text-anchor="end">height = weight</text>
+</svg>
+```
+
+Six particles drawn as spikes, each as tall as its weight. The heights add up to one. Blur them a little and a bell shape appears.
+:::
+
+::: context bootstrap-name Why "bootstrap"
+"Pulling yourself up by your bootstraps" means getting something done with nothing but what you already have. The bootstrap filter makes its new guesses using nothing but the motion model itself — no cleverer proposal, no peeking at the new measurement first. It was introduced under that name by Neil Gordon, David Salmond and Adrian Smith in 1993, and it is still the version most people write first. Fancier particle filters draw their new particles with help from the latest measurement, and then need a more complicated weight to correct for it.
+:::
+
+::: context likelihood-meaning Likelihood is a question asked backward
+Probability usually runs forward: "the plane is here; what will the altimeter probably read?" Likelihood runs the same formula backward: "the altimeter read this; how well does *here* explain it?" For each particle the reading is fixed and the position varies. A likelihood is not itself a probability of the position — it does not have to add up to one over positions — which is exactly why the particle weights are normalized after multiplying.
+:::
+
+::: context importance-name Where "importance" comes from
+Importance sampling is an old trick for averages. Suppose you want the average of something under distribution $p$, but you can only draw samples from a different distribution $q$. Draw from $q$ anyway, then give each sample the weight $p/q$ at its position: samples that $q$ produced too often get turned down, and samples it produced too rarely get turned up. The weights say how *important* each sample is to the average you really want. In the bootstrap filter, $q$ is the prediction and $p$ is the posterior, so the ratio is the likelihood.
+:::
+
+::: context comb-picture The comb, drawn
+The ruler is the four weights $0.1, 0.4, 0.3, 0.2$ laid end to end. The four comb teeth, spaced $1/4$ apart and shifted by $u/N = 0.125$, pick the parents.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 120" font-family="Inter, Arial, sans-serif">
+  <rect x="20" y="50" width="32" height="26" fill="#f2b880" stroke="#1f2a44" stroke-width="1.5"/>
+  <rect x="52" y="50" width="128" height="26" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
+  <rect x="180" y="50" width="96" height="26" fill="#ffffff" stroke="#1f2a44" stroke-width="1.5"/>
+  <rect x="276" y="50" width="64" height="26" fill="#f2b880" stroke="#1f2a44" stroke-width="1.5"/>
+  <g font-size="11" fill="#1f2a44" text-anchor="middle"><text x="36" y="94">0</text><text x="116" y="94">1</text><text x="228" y="94">2</text><text x="308" y="94">3</text></g>
+  <text x="20" y="110" font-size="11" fill="#6c7a93">particle owning each stretch</text>
+  <g stroke="#b4232c" stroke-width="2"><line x1="60" y1="20" x2="60" y2="76"/><line x1="140" y1="20" x2="140" y2="76"/><line x1="220" y1="20" x2="220" y2="76"/><line x1="300" y1="20" x2="300" y2="76"/></g>
+  <line x1="60" y1="20" x2="300" y2="20" stroke="#b4232c" stroke-width="2"/>
+  <text x="180" y="14" font-size="11" fill="#b4232c" text-anchor="middle">teeth at 0.125, 0.375, 0.625, 0.875</text>
+</svg>
+```
+
+Two teeth land in particle 1, one each in 2 and 3, none in 0: parents $[1,1,2,3]$.
+:::
+
+::: context family-tree The family tree narrows
+Draw each resampled particle joined to the parent it was copied from. Here six particles go through three resamples. Lines that stop are lineages that died out. By the bottom row, all six particles descend from only two of the original six — and with no roughening, they hold only two distinct values.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 200" font-family="Inter, Arial, sans-serif">
+  <g stroke-width="1.5">
+    <line x1="80" y1="30" x2="40" y2="80" stroke="#1d6fd1"/><line x1="80" y1="30" x2="80" y2="80" stroke="#1d6fd1"/>
+    <line x1="120" y1="30" x2="120" y2="80" stroke="#6c7a93"/>
+    <line x1="160" y1="30" x2="160" y2="80" stroke="#b4232c"/><line x1="160" y1="30" x2="200" y2="80" stroke="#b4232c"/>
+    <line x1="200" y1="30" x2="240" y2="80" stroke="#6c7a93"/>
+    <line x1="40" y1="80" x2="40" y2="130" stroke="#1d6fd1"/><line x1="80" y1="80" x2="80" y2="130" stroke="#1d6fd1"/><line x1="80" y1="80" x2="120" y2="130" stroke="#1d6fd1"/>
+    <line x1="160" y1="80" x2="160" y2="130" stroke="#b4232c"/><line x1="200" y1="80" x2="200" y2="130" stroke="#b4232c"/><line x1="200" y1="80" x2="240" y2="130" stroke="#b4232c"/>
+    <line x1="80" y1="130" x2="40" y2="180" stroke="#1d6fd1"/><line x1="120" y1="130" x2="80" y2="180" stroke="#1d6fd1"/><line x1="120" y1="130" x2="120" y2="180" stroke="#1d6fd1"/>
+    <line x1="160" y1="130" x2="160" y2="180" stroke="#b4232c"/><line x1="200" y1="130" x2="200" y2="180" stroke="#b4232c"/><line x1="240" y1="130" x2="240" y2="180" stroke="#b4232c"/>
+  </g>
+  <g fill="#1f2a44">
+    <circle cx="40" cy="30" r="5"/><circle cx="80" cy="30" r="5"/><circle cx="120" cy="30" r="5"/><circle cx="160" cy="30" r="5"/><circle cx="200" cy="30" r="5"/><circle cx="240" cy="30" r="5"/>
+    <circle cx="40" cy="80" r="5"/><circle cx="80" cy="80" r="5"/><circle cx="120" cy="80" r="5"/><circle cx="160" cy="80" r="5"/><circle cx="200" cy="80" r="5"/><circle cx="240" cy="80" r="5"/>
+    <circle cx="40" cy="130" r="5"/><circle cx="80" cy="130" r="5"/><circle cx="120" cy="130" r="5"/><circle cx="160" cy="130" r="5"/><circle cx="200" cy="130" r="5"/><circle cx="240" cy="130" r="5"/>
+  </g>
+  <g fill="#1d6fd1"><circle cx="40" cy="180" r="5"/><circle cx="80" cy="180" r="5"/><circle cx="120" cy="180" r="5"/></g>
+  <g fill="#b4232c"><circle cx="160" cy="180" r="5"/><circle cx="200" cy="180" r="5"/><circle cx="240" cy="180" r="5"/></g>
+  <g font-size="11" fill="#1f2a44"><text x="262" y="34">start: 6 values</text><text x="262" y="84">resample 1</text><text x="262" y="134">resample 2</text><text x="262" y="184">resample 3</text></g>
+</svg>
+```
+:::
+
+::: context roughening-name Roughening, and why it is allowed
+The name comes from the 1993 bootstrap-filter paper: after resampling, the cloud is "rough-ened" by a small random nudge to every particle, so duplicates stop being exact twins. It works like a tiny extra dose of process noise. That is also why it is not free — it is noise the real system did not add. A common rule of thumb scales the jitter with the spread of the cloud and shrinks it as the number of particles and dimensions grows.
+:::
+
+::: context next-lesson-curse Coming next: the curse of dimensionality
+In one dimension, $2000$ particles cover a $14\,\mathrm{km}$ window with one every $7\,\mathrm m$. In ten dimensions, the same trick needs a grid in every direction at once, and the number of particles needed explodes. The next lesson measures exactly how fast, and shows the standard escape: use particles only for the few truly ambiguous parts of the state, and let small Kalman filters handle the rest.
+:::

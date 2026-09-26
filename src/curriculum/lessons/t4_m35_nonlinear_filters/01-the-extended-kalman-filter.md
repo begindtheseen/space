@@ -60,7 +60,7 @@ Run the Kalman equations with $\mathbf F = \partial\mathbf f/\partial\mathbf x$ 
 Read the first block slowly. Every symbol does the same job it did in the predict-and-update lesson. $\hat{\mathbf x}_k^-$ ("x hat k minus") is still the prediction before the reading. $\mathbf P_k^+$ is still the covariance after it. $\boldsymbol\nu_k$ ("nu k") is still the **innovation**, the surprise in the reading. $\mathbf K_k$ is still the gain that sets how far to trust the reading over the prediction. The gain formula and the covariance update have the same shape as before. Two things are new. The mean now goes through the real $\mathbf f$ and $\mathbf h$. And $\mathbf F$ and $\mathbf H$ are now slope tables, recomputed at the current estimate.
 
 ::: example The bearing sensor's Jacobian
-A **bearing-only** sensor reports just the direction to a target, not its distance — think of hearing a sound and pointing at it. Take the state $\mathbf x=(x,\,y,\,\dot x,\,\dot y)^{\mathsf T}$: the target's position and velocity relative to the observer ($\dot x$ is read "x dot", the speed in $x$). The reading is the angle $h(\mathbf x)=\operatorname{atan2}(y,x)$, the [[four-quadrant arctangent|atan2-recall]].
+A **bearing-only** sensor reports only the direction to a target, not its distance — think of hearing a sound and pointing at it. Take the state $\mathbf x=(x,\,y,\,\dot x,\,\dot y)^{\mathsf T}$: the target's position and velocity relative to the observer ($\dot x$ is read "x dot", the speed in $x$). The reading is the angle $h(\mathbf x)=\operatorname{atan2}(y,x)$, the [[four-quadrant arctangent|atan2-recall]].
 
 **Step 1: the slopes.** Write $r^2=x^2+y^2$ for the squared distance. Ordinary calculus gives
 
@@ -163,7 +163,7 @@ $$
 \arctan(s/r_0)-s/r_0 = -\tfrac13(s/r_0)^3+O\!\left((s/r_0)^5\right).
 $$
 
-It starts at the *cube* of the offset, not the square. The squared term cancels by symmetry: moving left or right by the same amount turns the bearing by the same amount either way.
+It starts at the *cube* of the offset, not the square. The squared term cancels by symmetry: moving left or right by the same amount turns the bearing by equal amounts in opposite directions, so the error has no lopsided, squared part.
 
 **Step 4: numbers.** At $s=150\,\mathrm m$, $s/r_0=0.1632$. The true bearing is $0.649717\,\mathrm{rad}$, the straight line says $0.651142\,\mathrm{rad}$, and the error is $-1.425\,\mathrm{mrad}$ (milliradians, thousandths of a radian). The cubic term alone predicts $-\tfrac13(0.16317)^3=-1.448\times10^{-3}\,\mathrm{rad}$. Close; the small gap is the next, fifth-power term. At $s=10\,\mathrm m$ the error is only $-4.29\times10^{-7}\,\mathrm{rad}$.
 
@@ -334,7 +334,7 @@ So the two columns fail in different ways. Shrinking the uncertainty fixes trunc
 The next lesson keeps this recipe and asks two more questions. What happens *between* readings, when the motion runs in continuous time instead of one jump? And what if the filter re-aims its straight line more than once for a single reading?
 
 ::: context apollo-origin From Apollo to your phone
-In 1960, Stanley Schmidt's group at NASA's Ames Research Center was working out how Apollo could navigate between the Earth and the Moon. Rudolf Kalman had just published his filter, which assumed straight-line models. Orbits are not straight lines, so Schmidt's team linearized the equations around the current best trajectory estimate — the step at the heart of this lesson. That work helped carry the Kalman filter into the Apollo guidance computer. Since then the same idea has spread to aircraft inertial navigation, satellite GPS receivers, drones and the motion sensors in phones.
+In 1960, Stanley Schmidt's group at NASA's Ames Research Center was working out how Apollo could navigate between the Earth and the Moon. Rudolf Kalman had recently published his filter, which assumed straight-line models. Orbits are not straight lines, so Schmidt's team linearized the equations around the current best trajectory estimate — the step at the heart of this lesson. That work helped carry the Kalman filter into the Apollo guidance computer. Since then the same idea has spread to aircraft inertial navigation, satellite GPS receivers, drones and the motion sensors in phones.
 :::
 
 ::: context jensen-bend Why a bend moves the average
@@ -393,7 +393,7 @@ A one-sided difference, $[h(x+\epsilon)-h(x)]/\epsilon$, is off by an amount pro
 :::
 
 ::: context pendulum-model Why a pendulum keeps showing up
-A pendulum is the smallest system with a truly curved motion rule: the pull back is $\sin\theta$, not $\theta$. Near the bottom it behaves like a straight-line system, and far from it, it does not, so you can dial the nonlinearity up and down just by choosing the starting angle. The same kind of sine-shaped restoring pull appears in the gravity-gradient torque that swings a long satellite back toward pointing at Earth, which is one reason it is a favorite test problem.
+A pendulum is the smallest system with a truly curved motion rule: the pull back is $\sin\theta$, not $\theta$. Near the bottom it behaves like a straight-line system, and far from it, it does not, so you can dial the nonlinearity up and down by choosing the starting angle. The same kind of sine-shaped restoring pull appears in the gravity-gradient torque that swings a long satellite back toward pointing at Earth, which is one reason it is a favorite test problem.
 :::
 
 ::: context taylor-name Taylor's idea
