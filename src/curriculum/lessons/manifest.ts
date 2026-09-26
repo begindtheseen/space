@@ -4197,7 +4197,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-quaternion-integration-schemes-and-norm-drift",
       "title": "Quaternion integration schemes and norm drift",
-      "minutes": 20,
+      "minutes": 25,
       "covers": [
         "quaternion integration schemes and norm drift"
       ],
@@ -4215,7 +4215,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-external-disturbance-torques",
       "title": "External torques — gravity gradient, aerodynamic, SRP and magnetic",
-      "minutes": 21,
+      "minutes": 24,
       "covers": [
         "external torques: gravity gradient, aerodynamic, solar radiation pressure, residual magnetic dipole"
       ],
@@ -4224,7 +4224,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-reaction-wheels-cmgs-and-momentum-coupling",
       "title": "Reaction wheels, CMGs and momentum coupling",
-      "minutes": 22,
+      "minutes": 24,
       "covers": [
         "reaction wheel and CMG dynamics and momentum coupling"
       ],
@@ -4242,7 +4242,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-thrust-vector-control-gimbal-dynamics",
       "title": "Thrust vector control — gimbal dynamics for launch vehicles",
-      "minutes": 21,
+      "minutes": 23,
       "covers": [
         "thrust vector control gimbal dynamics for launch vehicles"
       ],
@@ -4251,7 +4251,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-actuator-saturation-and-rate-limits",
       "title": "Actuator saturation and rate limits",
-      "minutes": 22,
+      "minutes": 24,
       "covers": [
         "actuator saturation and rate limits"
       ],
@@ -4260,7 +4260,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-coning-motion-and-coning-correction",
       "title": "Coning motion and coning correction",
-      "minutes": 20,
+      "minutes": 23,
       "covers": [
         "coning motion and coning correction"
       ],
@@ -4271,7 +4271,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-standard-atmosphere",
       "title": "The standard atmosphere",
-      "minutes": 18,
+      "minutes": 21,
       "covers": [
         "standard atmosphere models: US Standard 1976, exponential, NRLMSISE-00",
         "density, pressure and temperature vs altitude"
@@ -4300,7 +4300,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-angle-of-attack-and-wind-frame",
       "title": "Angle of attack, sideslip and the wind frame",
-      "minutes": 18,
+      "minutes": 23,
       "covers": [
         "angle of attack and sideslip; body vs wind frame"
       ],
