@@ -1778,6 +1778,108 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       "file": "cod_git_01_basics/10-bisect.md"
     }
   ],
+  "cod_git_02_collab": [
+    {
+      "id": "l01-remotes-fetch-and-pull",
+      "title": "Remotes: fetch, pull and upstream tracking",
+      "minutes": 24,
+      "covers": [
+        "Remotes: fetch vs pull, pull --rebase, upstream tracking"
+      ],
+      "file": "cod_git_02_collab/01-remotes-fetch-and-pull.md"
+    },
+    {
+      "id": "l02-merge-versus-rebase",
+      "title": "Merge versus rebase, and the golden rule",
+      "minutes": 19,
+      "covers": [
+        "Merge vs rebase and the golden rule about shared history"
+      ],
+      "file": "cod_git_02_collab/02-merge-versus-rebase.md"
+    },
+    {
+      "id": "l03-interactive-rebase",
+      "title": "Interactive rebase and force-with-lease",
+      "minutes": 22,
+      "covers": [
+        "Interactive rebase: squash, fixup, reword, drop, reorder",
+        "push --force-with-lease vs --force"
+      ],
+      "file": "cod_git_02_collab/03-interactive-rebase.md"
+    },
+    {
+      "id": "l04-conflict-strategy-and-rerere",
+      "title": "Resolving conflicts on purpose, and rerere",
+      "minutes": 21,
+      "covers": [
+        "Conflict resolution strategy; rerere"
+      ],
+      "file": "cod_git_02_collab/04-conflict-strategy-and-rerere.md"
+    },
+    {
+      "id": "l05-team-workflows",
+      "title": "Team workflows: trunk-based, GitFlow and forks",
+      "minutes": 24,
+      "covers": [
+        "Trunk-based development vs GitFlow vs forking workflows"
+      ],
+      "file": "cod_git_02_collab/05-team-workflows.md"
+    },
+    {
+      "id": "l06-pull-requests",
+      "title": "Pull requests that get merged",
+      "minutes": 22,
+      "covers": [
+        "Pull requests: small diffs, draft PRs, required checks, CODEOWNERS"
+      ],
+      "file": "cod_git_02_collab/06-pull-requests.md"
+    },
+    {
+      "id": "l07-reviewing-a-diff",
+      "title": "Reviewing a diff",
+      "minutes": 25,
+      "covers": [
+        "Reviewing a diff: correctness, tests, interfaces, units and frames"
+      ],
+      "file": "cod_git_02_collab/07-reviewing-a-diff.md"
+    },
+    {
+      "id": "l08-release-branches-and-changelogs",
+      "title": "Release branches, tags and changelogs",
+      "minutes": 22,
+      "covers": [
+        "Release branches, tags, semantic versioning, changelogs"
+      ],
+      "file": "cod_git_02_collab/08-release-branches-and-changelogs.md"
+    },
+    {
+      "id": "l09-cherry-pick-and-backports",
+      "title": "Cherry-pick and backporting a fix",
+      "minutes": 22,
+      "covers": [
+        "cherry-pick and backporting a fix to a release branch"
+      ],
+      "file": "cod_git_02_collab/09-cherry-pick-and-backports.md"
+    },
+    {
+      "id": "l10-submodules-subtrees-vendoring",
+      "title": "Other people's code: submodules, subtrees and vendoring",
+      "minutes": 24,
+      "covers": [
+        "Submodules vs subtrees vs vendoring"
+      ],
+      "file": "cod_git_02_collab/10-submodules-subtrees-vendoring.md"
+    },
+    {
+      "id": "l11-binary-files-and-locking",
+      "title": "Binary files, Simulink models and locking",
+      "minutes": 22,
+      "covers": [
+        "Binary-file pain: model locking for Simulink and CAD assets"
+      ],
+      "file": "cod_git_02_collab/11-binary-files-and-locking.md"
+    }
+  ],
   "cod_lnx_01_shell": [
     {
       "id": "l01-the-filesystem-and-getting-around",
@@ -8359,23 +8461,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_git_02_collab": {
-    "covered": 0,
+    "covered": 12,
     "total": 12,
-    "complete": false,
-    "missing": [
-      "Merge vs rebase and the golden rule about shared history",
-      "Interactive rebase: squash, fixup, reword, drop, reorder",
-      "cherry-pick and backporting a fix to a release branch",
-      "Conflict resolution strategy; rerere",
-      "Remotes: fetch vs pull, pull --rebase, upstream tracking",
-      "push --force-with-lease vs --force",
-      "Trunk-based development vs GitFlow vs forking workflows",
-      "Pull requests: small diffs, draft PRs, required checks, CODEOWNERS",
-      "Release branches, tags, semantic versioning, changelogs",
-      "Submodules vs subtrees vs vendoring",
-      "Reviewing a diff: correctness, tests, interfaces, units and frames",
-      "Binary-file pain: model locking for Simulink and CAD assets"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_ops_01_docker": {
     "covered": 0,
