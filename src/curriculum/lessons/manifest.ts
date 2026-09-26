@@ -2671,7 +2671,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-python-basics",
       "title": "Python from zero: values, names and control flow",
-      "minutes": 20,
+      "minutes": 22,
       "covers": [
         "Python syntax, control flow, functions, classes"
       ],
@@ -2680,7 +2680,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-functions-modules",
       "title": "Functions, errors and modules",
-      "minutes": 20,
+      "minutes": 21,
       "covers": [
         "Python syntax, control flow, functions, classes"
       ],
@@ -2785,7 +2785,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-independence-rank-and-null-space",
       "title": "Independence, basis, rank and null space",
-      "minutes": 22,
+      "minutes": 24,
       "covers": [
         "linear independence and basis",
         "rank, null space, column space"
@@ -2795,7 +2795,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-the-determinant",
       "title": "The determinant and what it measures",
-      "minutes": 19,
+      "minutes": 22,
       "covers": [
         "determinant and its geometric meaning"
       ],
@@ -2804,7 +2804,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-orthogonality-gram-schmidt-qr",
       "title": "Orthogonality, Gram–Schmidt and QR",
-      "minutes": 19,
+      "minutes": 21,
       "covers": [
         "orthogonality, Gram-Schmidt, QR"
       ],
@@ -2813,7 +2813,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-change-of-basis-between-frames",
       "title": "Change of basis between reference frames",
-      "minutes": 21,
+      "minutes": 24,
       "covers": [
         "change of basis between reference frames"
       ],
@@ -2822,7 +2822,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-skew-symmetric-cross-product-matrix",
       "title": "Skew-symmetric matrices and the cross-product matrix",
-      "minutes": 23,
+      "minutes": 25,
       "covers": [
         "skew-symmetric matrices and the cross-product matrix"
       ],
@@ -2833,7 +2833,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-eigenvalues-and-diagonalisation",
       "title": "Eigenvalues, eigenvectors and diagonalisation",
-      "minutes": 20,
+      "minutes": 23,
       "covers": [
         "eigenvalues, eigenvectors, diagonalisation"
       ],
@@ -2851,7 +2851,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-similarity-transforms-modes-stability",
       "title": "Similarity transforms, modal coordinates and stability",
-      "minutes": 21,
+      "minutes": 24,
       "covers": [
         "similarity transforms"
       ],
@@ -2860,7 +2860,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-symmetric-matrices-spectral-theorem",
       "title": "Symmetric matrices and the spectral theorem",
-      "minutes": 21,
+      "minutes": 25,
       "covers": [
         "symmetric matrices and the spectral theorem"
       ],
@@ -2869,7 +2869,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-positive-definiteness-quadratic-forms",
       "title": "Positive definiteness and quadratic forms",
-      "minutes": 22,
+      "minutes": 24,
       "covers": [
         "positive definiteness and quadratic forms"
       ],
@@ -2887,7 +2887,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-matrix-calculus-gradients-jacobians",
       "title": "Matrix calculus, gradients and Jacobians",
-      "minutes": 21,
+      "minutes": 24,
       "covers": [
         "matrix calculus: gradients and Jacobians"
       ],
@@ -2896,7 +2896,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-singular-value-decomposition",
       "title": "The singular value decomposition",
-      "minutes": 22,
+      "minutes": 20,
       "covers": [
         "singular value decomposition"
       ],
@@ -2905,7 +2905,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-pseudoinverse-and-rank-deficiency",
       "title": "The pseudoinverse and rank deficiency",
-      "minutes": 23,
+      "minutes": 24,
       "covers": [
         "pseudoinverse and rank deficiency"
       ],
@@ -2914,7 +2914,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-condition-number",
       "title": "The condition number",
-      "minutes": 23,
+      "minutes": 24,
       "covers": [
         "condition number"
       ],
@@ -2923,7 +2923,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-least-squares-normal-equations-qr-svd",
       "title": "Least squares: normal equations, QR and SVD",
-      "minutes": 22,
+      "minutes": 24,
       "covers": [
         "least squares: normal equations vs QR vs SVD"
       ],
@@ -2943,7 +2943,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-the-derivative",
       "title": "The derivative from first principles",
-      "minutes": 24,
+      "minutes": 21,
       "covers": [
         "the derivative: definition, chain, product and quotient rules"
       ],
@@ -2952,7 +2952,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-differentiation-rules",
       "title": "The product, quotient and chain rules",
-      "minutes": 25,
+      "minutes": 22,
       "covers": [
         "the derivative: definition, chain, product and quotient rules"
       ],
@@ -2961,7 +2961,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-implicit-differentiation-related-rates",
       "title": "Implicit differentiation and related rates",
-      "minutes": 22,
+      "minutes": 25,
       "covers": [
         "implicit differentiation and related rates"
       ],
@@ -2970,7 +2970,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-maxima-minima-optimisation",
       "title": "Maxima, minima and optimising a scalar function",
-      "minutes": 24,
+      "minutes": 26,
       "covers": [
         "maxima, minima and optimisation of a scalar function"
       ],
@@ -2979,7 +2979,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-linearisation-and-differentials",
       "title": "Linearisation and differentials",
-      "minutes": 25,
+      "minutes": 23,
       "covers": [
         "linearisation and differentials"
       ],
@@ -3006,7 +3006,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-substitution-and-integration-by-parts",
       "title": "Substitution and integration by parts",
-      "minutes": 23,
+      "minutes": 20,
       "covers": [
         "integration by parts and substitution"
       ],
@@ -3024,7 +3024,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-separable-first-order-odes",
       "title": "Separable first-order ODEs and the rocket equation",
-      "minutes": 26,
+      "minutes": 23,
       "covers": [
         "separable first-order ODEs"
       ],
@@ -3035,7 +3035,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-partial-derivatives",
       "title": "Functions of several variables and partial derivatives",
-      "minutes": 20,
+      "minutes": 25,
       "covers": [
         "partial derivatives"
       ],
@@ -3044,7 +3044,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-gradient",
       "title": "The gradient and the directional derivative",
-      "minutes": 21,
+      "minutes": 23,
       "covers": [
         "gradient and directional derivative"
       ],
@@ -3062,7 +3062,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-chain-rule-hessian",
       "title": "The chain rule for vector functions, and the Hessian",
-      "minutes": 26,
+      "minutes": 24,
       "covers": [
         "chain rule for vector functions",
         "Jacobian and Hessian"
