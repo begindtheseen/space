@@ -4841,7 +4841,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-cw-validity-and-tschauner-hempel",
       "title": "How good is CW? Validity limits and the eccentric-orbit break",
-      "minutes": 24,
+      "minutes": 22,
       "covers": [
         "Tschauner-Hempel equations for eccentric reference orbits"
       ],
@@ -4850,7 +4850,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-secular-drift-and-the-counterintuitive-burn",
       "title": "Secular drift and the counterintuitive burn",
-      "minutes": 18,
+      "minutes": 17,
       "covers": [
         "secular in-track drift and why it dominates"
       ],
@@ -4859,7 +4859,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-football-orbits-and-circumnavigation",
       "title": "Football orbits and natural motion circumnavigation",
-      "minutes": 22,
+      "minutes": 19,
       "covers": [
         "football and drifting relative orbits",
         "natural motion circumnavigation"
@@ -4878,7 +4878,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-glideslope-algorithms",
       "title": "Glideslope algorithms",
-      "minutes": 18,
+      "minutes": 16,
       "covers": [
         "glideslope algorithms"
       ],
@@ -4887,7 +4887,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-vbar-rbar-passive-safety",
       "title": "V-bar and R-bar approaches and passive safety",
-      "minutes": 23,
+      "minutes": 26,
       "covers": [
         "V-bar and R-bar approaches and their safety properties",
         "passive safety and safety ellipses"
@@ -4897,7 +4897,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-corridors-keepout-and-aborts",
       "title": "Approach corridors, keep-out spheres and abort trajectories",
-      "minutes": 19,
+      "minutes": 21,
       "covers": [
         "approach corridors and keep-out spheres",
         "abort trajectories and collision avoidance manoeuvres"
@@ -4907,7 +4907,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-docking-vs-berthing-iss-profile",
       "title": "Docking vs berthing, and the ISS visiting-vehicle profile",
-      "minutes": 20,
+      "minutes": 16,
       "covers": [
         "docking vs berthing",
         "ISS visiting vehicle requirements"
@@ -4928,7 +4928,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-entry-interface-conditions",
       "title": "The entry interface and the entry state",
-      "minutes": 18,
+      "minutes": 20,
       "covers": [
         "entry interface conditions"
       ],
