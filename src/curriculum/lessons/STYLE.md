@@ -110,6 +110,10 @@ fenced `svg` block inside the note. It is shown as an image on a light card:
 
 `t0_m01_algebra_precalc/01-signed-numbers-and-fractions.md` is the model.
 
+When every lesson in a module is in the plain voice with its notes, add an empty
+`.plain-voice` file to the module's lesson folder. From then on the validator
+requires 4–15 notes in each of its lessons.
+
 ## Mathematics
 
 KaTeX renders it. Inline `$…$`, display `$$` on its own line, formula, `$$` on its own

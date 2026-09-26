@@ -6,11 +6,11 @@ covers:
   - exponentials and logarithms
 ---
 
-Suppose someone offers you a deal: one cent today, two cents tomorrow, four the day after, doubling every day for a month. It sounds like pocket change. By day 30 the payment alone is over five million dollars. Things that grow by the same *factor* every step start slow and then explode. That kind of growth is called **exponential**, and it is the first half of this lesson.
+Suppose someone offers you a deal: one cent today, two cents tomorrow, four the day after, doubling every day for a month. It sounds like pocket change. By day 30 the payment alone is [[over five million dollars|penny-doubling]]. Things that grow by the same *factor* every step start slow and then explode. That kind of growth is called **exponential**, and it is the first half of this lesson.
 
-The exponents lesson had a fixed power and a changing base: $r^{-2}$, $r^{3/2}$. This lesson swaps them. In $2^t$, $e^{-h/H}$ or $(0.5)^{t/87.7}$, the *exponent* is the thing that changes. Each time the input moves on by a fixed step, the output gets multiplied by a fixed factor. That is how savings grow, how the air thins as you climb, how a nuclear battery on a space probe fades over a mission — and, turned around, how the fuel a rocket needs grows with the change in speed you ask of it.
+The exponents lesson had a fixed power and a changing base: $r^{-2}$, $r^{3/2}$. This lesson swaps them. In $2^t$, $e^{-h/H}$ or $(0.5)^{t/87.7}$, the *exponent* is the thing that changes. Each time the input moves on by a fixed step, the output gets multiplied by a fixed factor. That is how savings grow, how the air thins as you climb, how a [[nuclear battery|rtg]] on a space probe fades over a mission — and, turned around, how the fuel a rocket needs grows with the change in speed you ask of it.
 
-The second half is the **logarithm**, the inverse of the exponential in exactly the sense of the last lesson. It answers the question "what exponent gets me here?" — for the penny deal, "how many doublings until I have a million?" Its rules turn multiplying into adding. That is the reason rockets are built in stages: the stages' mass ratios multiply, and the logarithm makes their speed gains add. By the end you will be able to write the rocket equation, solve it both ways, and see in one line why a single-stage rocket to orbit is so hard. Along the way you meet two numbers you will use for the rest of the course: the standard gravity $g_0$, and the link between an engine's specific impulse and its exhaust speed.
+The second half is the **[[logarithm|logarithm-word]]**, the inverse of the exponential in exactly the sense of the last lesson. It answers the question "what exponent gets me here?" — for the penny deal, "how many doublings until I have a million?" Its rules turn multiplying into adding. That is the reason rockets are built in stages: the stages' mass ratios multiply, and the logarithm makes their speed gains add. By the end you will be able to write the rocket equation, solve it both ways, and see in one line why a single-stage rocket to orbit is so hard. Along the way you meet two numbers you will use for the rest of the course: the standard gravity $g_0$, and the link between an engine's specific impulse and its exhaust speed.
 
 ## Exponential functions
 
@@ -32,7 +32,7 @@ Both kinds pass through the point $(0, 1)$, because $a^0 = 1$. Both are always p
 
 ### The number $e$
 
-Among all bases, one is special, and banks found it.
+Among all bases, one is special, and [[banks found it|who-found-e]].
 
 Say a bank pays $100\%$ interest a year. Paid once, at year's end, your money doubles: a factor $(1 + 1)^1 = 2$. Now say it pays in instalments — $\tfrac{1}{10}$ of the interest, ten times a year, each time on the whole balance so far. The factor becomes $(1 + \tfrac{1}{10})^{10} = 2.594$. Pay a hundred times, $(1 + \tfrac{1}{100})^{100} = 2.705$. A thousand times, $(1 + \tfrac{1}{1000})^{1000} = 2.717$. In general, $n$ payments at rate $r$ give $\left(1 + \frac{r}{n}\right)^{n}$, here with $r = 1$.
 
@@ -148,7 +148,7 @@ $$
 \rho(h) = \rho_0 e^{-h/H} .
 $$
 
-Here $\rho$ ("rho") is density, $\rho_0 = 1.225\,\mathrm{kg/m^3}$ ("rho nought") is its value at sea level, and $H \approx 8.5\,\mathrm{km}$ is the **scale height**: every $8.5\,\mathrm{km}$ you climb, the density is divided by $e$.
+Here $\rho$ ("rho") is density, $\rho_0 = 1.225\,\mathrm{kg/m^3}$ ("rho nought") is its value at sea level, and $H \approx 8.5\,\mathrm{km}$ is the **[[scale height|scale-height]]**: every $8.5\,\mathrm{km}$ you climb, the density is divided by $e$.
 
 At what height is the air a thousandth as dense as at sea level? Set $\rho_0 e^{-h/H} = \rho_0 / 1000$. Divide both sides by $\rho_0$: $e^{-h/H} = 1/1000$. Take $\ln$ of both sides:
 
@@ -198,7 +198,7 @@ $$
 
 It is a *defined* number, agreed on in 1901 — not a measurement, and not the actual gravity at your launch pad. (That is about $9.78$ at the equator, $9.83$ at the poles, and $9.82$ from the inverse-square law of the exponents lesson.) Its job is to turn mass into weight in one fixed, agreed way. Whenever $g_0$ appears in a rocket-engine formula, it means this exact value.
 
-Next, how good is an engine? A push (a force) kept up for some time delivers an **impulse**: force times time. An engine's **specific impulse**, $I_{sp}$ ("I sub s p"), is the impulse it gets out of each unit of propellant *weight*. Force times time, divided by a force, leaves a time — so $I_{sp}$ is measured in seconds. A bigger number means more push from the same propellant, like a car's miles per gallon.
+Next, how good is an engine? A push (a force) kept up for some time delivers an **impulse**: force times time. An engine's **[[specific impulse|specific-word]]**, $I_{sp}$ ("I sub s p"), is the impulse it gets out of each unit of propellant *weight*. Force times time, divided by a force, leaves a time — so $I_{sp}$ is measured in seconds. A bigger number means more push from the same propellant, like a car's miles per gallon.
 
 The physical quantity behind it is the **effective exhaust velocity**, how fast the engine effectively throws its exhaust out the back:
 
@@ -218,7 +218,7 @@ Stand on a skateboard holding a pile of heavy balls. Throw one backwards, hard, 
 
 Here is the key detail. Each throw pushes you with the same kick, but as the pile shrinks, *you* get lighter. The same kick moves a lighter you more. So the last few balls give you much more speed than the first few.
 
-In symbols: throwing a small mass $\Delta m$ backwards at speed $v_e$ gives the remaining mass $m$ an extra speed of about $v_e\,\Delta m / m$. Divide by a smaller $m$ and you get a bigger gain. The total change in speed comes from adding up $\Delta m / m$ over every throw, as the mass goes from $m_0$ down to $m_f$. That sum is exactly what the natural logarithm measures — the sequences lesson and the calculus module show that the "sum of $\Delta m / m$" is $\ln(m_0/m_f)$. The dynamics module derives the whole thing from conservation of momentum. The result is the **Tsiolkovsky rocket equation**:
+In symbols: throwing a small mass $\Delta m$ backwards at speed $v_e$ gives the remaining mass $m$ an extra speed of about $v_e\,\Delta m / m$. Divide by a smaller $m$ and you get a bigger gain. The total change in speed comes from adding up $\Delta m / m$ over every throw, as the mass goes from $m_0$ down to $m_f$. That sum is exactly what the natural logarithm measures — the sequences lesson and the calculus module show that the "sum of $\Delta m / m$" is $\ln(m_0/m_f)$. The dynamics module derives the whole thing from conservation of momentum. The result is the **[[Tsiolkovsky rocket equation|tsiolkovsky]]**:
 
 $$
 \Delta v = v_e \ln\frac{m_0}{m_f} = v_e \ln MR .
@@ -242,7 +242,7 @@ $$
 MR = e^{9400/3050} = e^{3.08} = 21.8 .
 $$
 
-The rocket at lift-off must weigh nearly twenty-two times what reaches orbit. So $1 - 1/21.8 = 95.4\%$ of it must be propellant, leaving $4.6\%$ for the tanks, engines, frame *and* the payload together. Picture a soda can that is $95\%$ soda and $5\%$ can, with a satellite in there too. That is why a single-stage rocket to orbit on chemical fuel is so nearly impossible — and it fell out of one exponential.
+The rocket at lift-off must weigh nearly twenty-two times what reaches orbit. So $1 - 1/21.8 = 95.4\%$ of it must be propellant, leaving $4.6\%$ for the tanks, engines, frame *and* the payload together. Picture a [[soda can|thin-tanks]] that is $95\%$ soda and $5\%$ can, with a satellite in there too. That is why a [[single-stage rocket to orbit|tyranny]] on chemical fuel is so nearly impossible — and it fell out of one exponential.
 
 ::: example How much can a stage deliver?
 A rocket has lift-off mass $m_0 = 549\,\mathrm{t}$ and engines with $I_{sp} = 311\,\mathrm{s}$, so $v_e = 3050\,\mathrm{m/s}$. What mass is left after the stage has added $\Delta v = 3000\,\mathrm{m/s}$?
@@ -286,9 +286,9 @@ Say $\Delta v / v_e = 0.8$. The mass ratio is $e^{0.8} = 2.23$ — not $0.8$, an
 
 ## Logarithmic scales
 
-Because logarithms squash big ranges, engineers draw graphs with them. A quantity running from $10^{-6}$ to $10^{3}$ is unreadable on an ordinary axis: everything below $10$ is crushed flat against zero. On a $\log_{10}$ axis, every factor of ten (a **decade**) gets the same width, and it all fits.
+Because logarithms squash big ranges, engineers draw graphs with them. A quantity running from $10^{-6}$ to $10^{3}$ is unreadable on an ordinary axis: everything below $10$ is crushed flat against zero. On a $\log_{10}$ axis, every factor of ten (a **[[decade|log-axis]]**) gets the same width, and it all fits.
 
-The **decibel** (dB) works the same way. It is ten times the $\log_{10}$ of a power ratio. So $+10\,\mathrm{dB}$ is a factor of ten in power, and $+3\,\mathrm{dB}$ is a factor of $10^{0.3} = 2$. A radio link that "loses $6\,\mathrm{dB}$" keeps $10^{-0.6} = 0.25$ of its power — it has lost three quarters of its signal. The control modules spend weeks on Bode plots, which use log scales for both frequency and gain. The reason is the product law: gains that multiply one after another *add* on a log plot.
+The **[[decibel|decibel-bell]]** (dB) works the same way. It is ten times the $\log_{10}$ of a power ratio. So $+10\,\mathrm{dB}$ is a factor of ten in power, and $+3\,\mathrm{dB}$ is a factor of $10^{0.3} = 2$. A radio link that "loses $6\,\mathrm{dB}$" keeps $10^{-0.6} = 0.25$ of its power — it has lost three quarters of its signal. The control modules spend weeks on Bode plots, which use log scales for both frequency and gain. The reason is the product law: gains that multiply one after another *add* on a log plot.
 
 A cheap habit to start now: when a number is very big or very small, know its $\log_{10}$ to one decimal place. Remember $\log_{10} 2 = 0.30$, $\log_{10} 3 = 0.48$ and $\log_{10} 5 = 0.70$. Then, by the product law, $\log_{10}(4.45 \times 10^6) = \log_{10} 4.45 + 6 \approx 0.65 + 6 = 6.65$. You can multiply and divide huge numbers by adding and subtracting small ones. The estimation lesson is built on this.
 
@@ -370,3 +370,99 @@ Now check. $x = -2$ would need $\ln(-2 - 3) = \ln(-5)$, which does not exist, so
 | Anchors | $\ln 2 = 0.693$, $\ln 10 = 2.303$, $\log_{10} 2 = 0.30$, $e^3 \approx 20$ |
 
 Next lesson: the rocket equation came from adding up many small pieces. The next lesson gives that idea its own notation — **sequences**, **series** and the sigma sign $\Sigma$ — including the geometric series that any fixed-factor process produces.
+
+::: context penny-doubling Slow, slow, then sudden
+Double one cent every day. Day 10 pays \$5.12. Day 20 pays \$5,243. Day 30 pays \$5,368,709. Each day pays exactly one cent more than all the days before it put together — so the last few days carry almost everything.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 200" font-family="Inter, Arial, sans-serif">
+<line x1="30" y1="160" x2="340" y2="160" stroke="#1f2a44" stroke-width="1.5"/>
+  <rect x="215" y="159.94" width="7" height="0.06" fill="#1d6fd1"/><rect x="225" y="159.87" width="7" height="0.13" fill="#1d6fd1"/><rect x="235" y="159.75" width="7" height="0.25" fill="#1d6fd1"/><rect x="245" y="159.49" width="7" height="0.51" fill="#1d6fd1"/><rect x="255" y="158.98" width="7" height="1.02" fill="#1d6fd1"/><rect x="265" y="157.97" width="7" height="2.03" fill="#1d6fd1"/><rect x="275" y="155.94" width="7" height="4.06" fill="#1d6fd1"/><rect x="285" y="151.88" width="7" height="8.12" fill="#1d6fd1"/><rect x="295" y="143.75" width="7" height="16.25" fill="#1d6fd1"/><rect x="305" y="127.50" width="7" height="32.50" fill="#1d6fd1"/><rect x="315" y="95.00" width="7" height="65.00" fill="#1d6fd1"/><rect x="325" y="30.00" width="7" height="130.00" fill="#1d6fd1"/>
+  <g font-size="11" fill="#1f2a44" text-anchor="middle"><text x="38.5" y="176">1</text><text x="128.5" y="176">10</text><text x="228.5" y="176">20</text><text x="328.5" y="176">30</text></g>
+  <text x="185" y="192" font-size="11" fill="#6c7a93" text-anchor="middle">day</text>
+  <text x="332" y="22" font-size="12" fill="#1f2a44" text-anchor="end">day 30: $5.37 million</text>
+  <text x="312" y="88" font-size="11" fill="#1f2a44" text-anchor="end">day 29: $2.68 million</text>
+  <text x="130" y="148" font-size="11" fill="#6c7a93" text-anchor="middle">days 1–20: too small to see</text>
+</svg>
+```
+
+Drawn to scale, the first twenty days are too small to see at all. That is what exponential growth feels like from the inside: nothing, nothing, nothing, everything.
+:::
+
+::: context rtg Batteries that run on heat
+Voyager 1 and 2 (launched in 1977), New Horizons, and the Curiosity and Perseverance rovers all carry a **radioisotope thermoelectric generator**, or RTG. A lump of plutonium-238 stays hot as it slowly decays, and devices called thermocouples turn that heat straight into electricity, with no moving parts and no sunlight needed. Far from the Sun, solar panels catch too little light, so this is how the outer planets get explored. Because the plutonium decays exponentially, the power slowly fades, and mission teams plan years ahead which instruments to switch off.
+:::
+
+::: context logarithm-word Where "logarithm" comes from
+The Scottish mathematician John Napier invented logarithms and published the first tables in 1614. He built the word from two Greek ones: *logos*, "ratio" or "reckoning", and *arithmos*, "number". His reason was practical. Astronomers spent weeks multiplying long numbers by hand, and a table of logarithms let them add instead. Soon after, Henry Briggs reworked Napier's idea into base-10 tables — the common logarithm of this lesson — and scientists, navigators and engineers used such tables for more than three hundred years.
+:::
+
+::: context who-found-e The number nobody set out to find
+In 1683 the Swiss mathematician Jacob Bernoulli asked exactly this bank question: what happens when interest is paid more and more often? He showed the answer settles somewhere between $2$ and $3$, but gave it no name. Decades later Leonhard Euler worked out its digits and started writing it with the letter $e$, and the name stuck. It turns up far from banks — in how air thins with height, how a hot drink cools, and how a spacecraft's control system settles after a nudge.
+:::
+
+::: context scale-height Where the air runs out
+Try the formula at the top of Mount Everest, $8.85\,\mathrm{km}$ up: $e^{-8.85/8.5} = 0.35$. The air there is about a third as dense as at sea level, close to what climbers really find. At $100\,\mathrm{km}$, a common choice for the edge of space, the formula gives about a hundred-thousandth, and the real air is thinner still. Yet a trace remains even at the International Space Station, about $400\,\mathrm{km}$ up. It drags on the station, which slowly sinks and has to fire engines every so often to climb back.
+:::
+
+::: context specific-word What "specific" means
+In engineering, **specific** means "per unit of mass" (or of weight). Specific heat is heat per kilogram; specific energy is energy per kilogram. So specific impulse is push-times-time *per unit of propellant* — a fair way to compare engines of any size, the way miles per gallon compares a scooter with a truck. Some real values: a solid rocket booster manages roughly $250\,\mathrm{s}$, the Space Shuttle's hydrogen main engines $452\,\mathrm{s}$ in vacuum, and the electric ion engines on NASA's Dawn probe about $3000\,\mathrm{s}$ — a tiny push, but astonishing mileage.
+:::
+
+::: context tsiolkovsky The schoolteacher who wrote it down
+Konstantin Tsiolkovsky (1857–1935) was a schoolteacher in the small Russian town of Kaluga. Left nearly deaf by scarlet fever as a boy, he taught himself mathematics and physics from library books. In 1903 he published this equation in a paper about reaching space with rockets — months before the Wright brothers first flew an aeroplane. He also saw the consequence you are about to meet: one rocket cannot reach orbit on its own. His answer was "rocket trains", which we now call multi-stage rockets.
+:::
+
+::: context thin-tanks Thinner than a soda can
+A real soda can is about $96\%$ drink by mass: roughly $370\,\mathrm{g}$ of soda in about $14\,\mathrm{g}$ of aluminium. So a single-stage rocket would have to be built about as flimsily as a soda can, with engines and a satellite inside too. Engineers have come close. The American Atlas rocket of the 1950s and 60s had steel tanks so thin that it had to stay pressurised, like a balloon, or it would crumple under its own weight. Even so, Atlas dropped part of its engines on the way up.
+:::
+
+::: context tyranny The tyranny of the rocket equation
+Here is the rocket equation run backwards, $MR = e^{\Delta v/v_e}$, for a kerosene engine with $v_e = 3.05\,\mathrm{km/s}$. Every extra $3\,\mathrm{km/s}$ multiplies the mass ratio by about $2.7$, so the curve bends upward faster and faster.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 216" font-family="Inter, Arial, sans-serif">
+<g stroke="#1f2a44" stroke-width="1.5">
+    <line x1="50" y1="180" x2="335" y2="180"/><line x1="50" y1="180" x2="50" y2="25"/>
+    <line x1="50" y1="180" x2="50" y2="185"/><line x1="106" y1="180" x2="106" y2="185"/><line x1="162" y1="180" x2="162" y2="185"/><line x1="218" y1="180" x2="218" y2="185"/><line x1="274" y1="180" x2="274" y2="185"/><line x1="330" y1="180" x2="330" y2="185"/><line x1="45" y1="180" x2="50" y2="180"/><line x1="45" y1="130" x2="50" y2="130"/><line x1="45" y1="80" x2="50" y2="80"/><line x1="45" y1="30" x2="50" y2="30"/>
+  </g>
+  <g font-size="11" fill="#1f2a44" text-anchor="middle"><text x="50" y="198">0</text><text x="106" y="198">2</text><text x="162" y="198">4</text><text x="218" y="198">6</text><text x="274" y="198">8</text><text x="330" y="198">10</text></g>
+  <g font-size="11" fill="#1f2a44" text-anchor="end"><text x="41" y="184">0</text><text x="41" y="134">10</text><text x="41" y="84">20</text><text x="41" y="34">30</text></g>
+  <text x="192" y="210" font-size="11" fill="#1f2a44" text-anchor="middle">change in speed Δv (km/s)</text>
+  <text x="58" y="20" font-size="11" fill="#1f2a44">mass ratio MR</text>
+  <polyline points="50.0,175.0 57.0,174.6 64.0,174.1 71.0,173.6 78.0,173.1 85.0,172.5 92.0,171.8 99.0,171.1 106.0,170.4 113.0,169.5 120.0,168.7 127.0,167.7 134.0,166.6 141.0,165.5 148.0,164.2 155.0,162.9 162.0,161.4 169.0,159.9 176.0,158.1 183.0,156.3 190.0,154.2 197.0,152.0 204.0,149.7 211.0,147.1 218.0,144.2 225.0,141.2 232.0,137.9 239.0,134.3 246.0,130.4 253.0,126.1 260.0,121.5 267.0,116.5 274.0,111.1 281.0,105.2 288.0,98.8 295.0,91.9 302.0,84.4 309.0,76.2 316.0,67.4 323.0,57.7 330.0,47.3" fill="none" stroke="#1d6fd1" stroke-width="2.5"/>
+  <line x1="313.2" y1="180" x2="313.2" y2="71.0" stroke="#6c7a93" stroke-dasharray="3 3"/>
+  <circle cx="313.2" cy="71.0" r="4" fill="#b4232c"/>
+  <text x="305.2" y="63.0" font-size="11" fill="#b4232c" text-anchor="end">orbit: 9.4 km/s needs MR 21.8</text>
+</svg>
+```
+
+Astronaut Don Pettit called this "the tyranny of the rocket equation": each extra bit of speed also has to carry the propellant that buys it. Staging, a few paragraphs on, is how real rockets live with it.
+:::
+
+::: context log-axis Why a log axis fits everything
+The same four numbers on two kinds of axis. On an ordinary axis each step of one unit gets the same width, so $1$, $10$ and even $100$ crowd together at the left. On a log axis each *factor* of ten gets the same width, and they spread out evenly.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">
+<text x="30" y="28" font-size="12" fill="#1f2a44">ordinary axis, 0 to 1000</text>
+  <line x1="30" y1="50" x2="330" y2="50" stroke="#1f2a44" stroke-width="1.5"/>
+  <circle cx="30.3" cy="50" r="4" fill="#b4232c"/><circle cx="33" cy="50" r="4" fill="#b4232c"/><circle cx="60" cy="50" r="4" fill="#b4232c"/><circle cx="330" cy="50" r="4" fill="#b4232c"/>
+  <g font-size="11" fill="#1f2a44" text-anchor="middle">
+    <text x="36" y="68">1, 10</text><text x="62" y="68">100</text><text x="330" y="68">1000</text>
+  </g>
+  <text x="30" y="98" font-size="12" fill="#1f2a44">log axis: every ×10 gets the same width</text>
+  <line x1="30" y1="118" x2="330" y2="118" stroke="#1f2a44" stroke-width="1.5"/>
+  <circle cx="30" cy="118" r="4" fill="#1d6fd1"/><circle cx="130" cy="118" r="4" fill="#1d6fd1"/><circle cx="230" cy="118" r="4" fill="#1d6fd1"/><circle cx="330" cy="118" r="4" fill="#1d6fd1"/>
+  <g font-size="11" fill="#1f2a44" text-anchor="middle">
+    <text x="30" y="138">1</text><text x="130" y="138">10</text><text x="230" y="138">100</text><text x="330" y="138">1000</text>
+  </g>
+</svg>
+```
+
+A log axis has no zero. Going left you meet $0.1$, $0.01$, $0.001$ and so on forever, because no power of ten is zero.
+:::
+
+::: context decibel-bell Named after the telephone man
+The **bel** is named after Alexander Graham Bell, inventor of the telephone, and a **decibel** is a tenth of a bel — "deci" means a tenth, as in decimetre. The bel proved too big a step for everyday use, so the decibel won. Engineers love it because a whole radio link can be worked out by adding and subtracting: transmitter power, plus antenna gains, minus the loss over the distance, minus cable losses, all in dB. That is the product law of logarithms doing the multiplying for you.
+:::

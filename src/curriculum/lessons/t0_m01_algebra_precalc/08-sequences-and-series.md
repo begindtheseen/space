@@ -6,13 +6,13 @@ covers:
   - sequences, series, and sigma notation
 ---
 
-Say you put $5$ dollars in a jar every week. Write down how much is in the jar each Sunday: $5, 10, 15, 20, \ldots$ That numbered list is a **sequence**. Now drop a bouncy ball and write down how high it gets after each bounce: $2\,\mathrm{m}$, then $1.2\,\mathrm{m}$, then $0.72\,\mathrm{m}$, each bounce a bit lower than the last. That is a sequence too. And if you add up a list as you go — the total distance the ball has travelled — you get a **series**.
+Say you put $5$ dollars in a jar every week. Write down how much is in the jar each Sunday: $5, 10, 15, 20, \ldots$ That numbered list is a **sequence**. Now drop a bouncy ball and write down how high it gets after each bounce: $2\,\mathrm{m}$, then $1.2\,\mathrm{m}$, then $0.72\,\mathrm{m}$, each bounce a bit lower than the last. That is a sequence too. And if you add up a list as you go — the total distance the ball has travelled — you get a **[[series|series-word]]**.
 
-A flight computer lives on lists like these. It never sees a smooth signal. It sees the accelerometer reading at tick $0$, at tick $1$, at tick $2$, a hundred or a thousand times a second. Add those readings up and you get velocity. Add the velocities up and you get position. A digital filter is a rule that builds each new output by mixing together old ones in fixed proportions. The sigma sign $\sum$ is the notation that lets you write "add these $n$ things" in one line and then work with it like any other expression.
+A flight computer lives on lists like these. It never sees a smooth signal. It sees the [[accelerometer|accelerometer]] reading at tick $0$, at tick $1$, at tick $2$, a hundred or a thousand times a second. Add those readings up and you get velocity. Add the velocities up and you get position. A digital filter is a rule that builds each new output by mixing together old ones in fixed proportions. The sigma sign $\sum$ is the notation that lets you write "add these $n$ things" in one line and then work with it like any other expression.
 
-Two families of sequence turn up again and again. In an **arithmetic** sequence you add the same amount each step, like the jar. In a **geometric** sequence you multiply by the same amount each step, like the ball. The geometric one matters more: it is the step-by-step version of the exponential from the previous lesson. You will work out a formula for the sum of each, and you will watch the rocket equation's logarithm appear out of a sum.
+Two families of sequence turn up again and again. In an **arithmetic** sequence you add the same amount each step, like the jar. In a **[[geometric|why-geometric]]** sequence you multiply by the same amount each step, like the ball. The geometric one matters more: it is the step-by-step version of the exponential from the previous lesson. You will work out a formula for the sum of each, and you will watch the rocket equation's logarithm appear out of a sum.
 
-This lesson is also where counting from zero starts to matter. Python counts from $0$. Most textbooks count from $1$. Both are fine. Mixing them up causes the **off-by-one error**, the most common bug in numerical code.
+This lesson is also where counting from zero starts to matter. Python counts from $0$. Most textbooks count from $1$. Both are fine. Mixing them up causes the **[[off-by-one error|fencepost]]**, the most common bug in numerical code.
 
 ## Sequences: a numbered list
 
@@ -57,7 +57,7 @@ $$
 a_{n+1} = r\,a_n .
 $$
 
-The bouncing ball is geometric with $r = 0.6$: each bounce reaches $60\%$ of the height before. By the same staircase counting, the $n$th term has been multiplied by $r$ a total of $n - 1$ times:
+The [[bouncing ball|bounce]] is geometric with $r = 0.6$: each bounce reaches $60\%$ of the height before. By the same staircase counting, the $n$th term has been multiplied by $r$ a total of $n - 1$ times:
 
 $$
 a_n = a_1\, r^{\,n-1} .
@@ -81,7 +81,7 @@ Written with $a_1$ first, the $n$th term is $a_1 r^{n-1}$. Written with $a_0$ fi
 
 ## Sigma notation: a short way to say "add them up"
 
-A grocery receipt lists items and then a total. Writing "item 1 plus item 2 plus … plus item 20" gets tiring. Mathematics has a shorthand, the capital Greek letter **sigma**, $\sum$ (it is an S, for "sum"):
+A grocery receipt lists items and then a total. Writing "item 1 plus item 2 plus … plus item 20" gets tiring. Mathematics has a shorthand, the capital Greek letter **[[sigma|two-s-signs]]**, $\sum$ (it is an S, for "sum"):
 
 $$
 \sum_{k=1}^{n} a_k = a_1 + a_2 + \cdots + a_n .
@@ -127,7 +127,7 @@ There is **no** rule for a sum of products: $\sum a_k b_k$ is not $(\sum a_k)(\s
 
 ### Adding up $1 + 2 + \cdots + n$
 
-The story goes that a teacher told a class to add up the numbers from $1$ to $100$, expecting peace and quiet, and a young Carl Friedrich Gauss had the answer in a minute. His trick: pair the first number with the last. $1 + 100 = 101$. $2 + 99 = 101$. $3 + 98 = 101$. Every pair makes $101$, and there are $50$ pairs, so the total is $50 \times 101 = 5050$.
+The story goes that a teacher told a class to add up the numbers from $1$ to $100$, expecting peace and quiet, and a young [[Carl Friedrich Gauss|gauss-ceres]] had the answer in a minute. His trick: pair the first number with the last. $1 + 100 = 101$. $2 + 99 = 101$. $3 + 98 = 101$. Every pair makes $101$, and there are $50$ pairs, so the total is $50 \times 101 = 5050$.
 
 Here is the same trick for any $n$. Write the sum forwards, then backwards underneath, and add each column:
 
@@ -218,7 +218,7 @@ Every term of $rS_n$ except the last one also appears in $S_n$. So subtracting t
 
 ### Adding up forever: the infinite geometric series
 
-Stand $1\,\mathrm{m}$ from a wall. Step halfway there: $\tfrac{1}{2}\,\mathrm{m}$. Step half the remaining distance: $\tfrac{1}{4}\,\mathrm{m}$. Then $\tfrac{1}{8}$, then $\tfrac{1}{16}$, forever. You take infinitely many steps, but you never go past the wall. Your total distance creeps up on exactly $1\,\mathrm{m}$.
+Stand $1\,\mathrm{m}$ from a wall. [[Step halfway there|zeno]]: $\tfrac{1}{2}\,\mathrm{m}$. Step half the remaining distance: $\tfrac{1}{4}\,\mathrm{m}$. Then $\tfrac{1}{8}$, then $\tfrac{1}{16}$, forever. You take infinitely many steps, but you never go past the wall. Your total distance creeps up on exactly $1\,\mathrm{m}$.
 
 That is an infinite geometric series with $a = \tfrac{1}{2}$ and $r = \tfrac{1}{2}$. The running totals are $0.5, 0.75, 0.875, 0.9375, 0.96875, \ldots$, each one halving the gap to $1$.
 
@@ -232,7 +232,7 @@ The $\infty$ on top, read "infinity", means "keep going forever". For the wall, 
 
 If $|r| \geq 1$ the terms do not shrink, and the series **diverges**: the running totals grow without limit, or, for $r = -1$, flip back and forth between two values forever.
 
-Repeating decimals are infinite geometric series in disguise. $0.2727\ldots$ is $0.27 + 0.0027 + 0.000027 + \cdots$, with $a = 0.27$ and $r = 0.01$. So it equals $\frac{0.27}{1 - 0.01} = \frac{0.27}{0.99} = \frac{27}{99} = \frac{3}{11}$. (Check: $3 \div 11 = 0.2727\ldots$) And $0.999\ldots = \frac{0.9}{1 - 0.1} = \frac{0.9}{0.9} = 1$ exactly. That surprises most people the first time, and it is true all the same.
+Repeating decimals are infinite geometric series in disguise. $0.2727\ldots$ is $0.27 + 0.0027 + 0.000027 + \cdots$, with $a = 0.27$ and $r = 0.01$. So it equals $\frac{0.27}{1 - 0.01} = \frac{0.27}{0.99} = \frac{27}{99} = \frac{3}{11}$. (Check: $3 \div 11 = 0.2727\ldots$) And $0.999\ldots = \frac{0.9}{1 - 0.1} = \frac{0.9}{0.9} = 1$ exactly. That [[surprises most people|point-nine-repeating]] the first time, and it is true all the same.
 
 ::: key Geometric series
 Finite $n$ terms: $S_n = a(1 - r^n)/(1 - r)$, where $a$ is the first term and $r$ the common ratio. Infinite, for $|r| < 1$: $S = a/(1 - r)$. Arithmetic series: $S_n = n(a_1 + a_n)/2$. Sum of the first $n$ integers: $n(n+1)/2$.
@@ -296,7 +296,7 @@ This is not arithmetic or geometric — the bottoms of the fractions form an ari
 
 The values close in on $\ln 2 = 0.693147$. And $\ln(m_0/m_f) = \ln(100/50) = \ln 2$ is exactly what the rocket equation says. The calculus module shows that this kind of sum of $\Delta m / m$, over finer and finer parcels, always tends to $\ln(m_0 / m_f)$ — that is one way to define the logarithm. But the numbers are already in front of you. The rocket equation is a sum of tiny speed gains, and each equal parcel of propellant buys more speed than the last because the vehicle is lighter.
 
-A related sum shows why the logarithm grows so slowly. The **harmonic series** adds up the reciprocals of the counting numbers, $H_n = \sum_{k=1}^{n} \frac{1}{k} = 1 + \tfrac{1}{2} + \tfrac{1}{3} + \cdots$ It gives $H_{10} = 2.93$, $H_{100} = 5.19$ and $H_{1000} = 7.49$. It never stops growing, so it diverges — but only like $\ln n$ plus a constant (about $0.577$). Ten times as many terms add only about $2.3 = \ln 10$ to the total. Compare the geometric series, which converges because its terms shrink by a fixed *ratio*. That contrast is the whole difference between "shrinks fast enough" and "does not".
+A related sum shows why the logarithm grows so slowly. The **[[harmonic series|harmonic-name]]** adds up the reciprocals of the counting numbers, $H_n = \sum_{k=1}^{n} \frac{1}{k} = 1 + \tfrac{1}{2} + \tfrac{1}{3} + \cdots$ It gives $H_{10} = 2.93$, $H_{100} = 5.19$ and $H_{1000} = 7.49$. It never stops growing, so it diverges — but only like $\ln n$ plus a constant (about $0.577$). Ten times as many terms add only about $2.3 = \ln 10$ to the total. Compare the geometric series, which converges because its terms shrink by a fixed *ratio*. That contrast is the whole difference between "shrinks fast enough" and "does not".
 
 ::: note What the sigma is for
 Nothing in this lesson needed a sigma; you could write every sum out with dots. The point of $\sum$ is that it turns a sum into a single *object*. You can pull a constant out of it, split it, shift its index, later take its derivative term by term, and prove things about it for every $n$ at once. Whenever a derivation says "and so on", the honest version has a sigma in it with its limits written out — and the honest version is the one that catches off-by-one errors.
@@ -372,3 +372,92 @@ The same $n$ terms are being added in the same order; only their labels changed.
 | Indexing | one-based $a_1 r^{n-1}$ versus zero-based $a_0 r^n$; check which term is first |
 
 Next lesson: from equalities to **inequalities** — the limits that box in a design, like a thrust-to-weight ratio that must be more than one, a heating rate that must stay under a limit, or a radius that must be at least the planet's radius, $r \geq R$.
+
+::: context series-word A series is a sum, not a list
+In everyday English a series is a string of things one after another — a TV series, a series of games. Mathematics is stricter. A **sequence** is the list; a **series** is what you get when you add the list up. The ball's heights $2, 1.2, 0.72, \ldots$ are a sequence. The running total of how far it has travelled is a series. People mix the two words up all the time, so fix it now: list first, then sum.
+:::
+
+::: context accelerometer The sensor that feels a push
+An **accelerometer** measures how hard it is being pushed — its acceleration. Your phone has a tiny one; it is how the screen knows you turned the phone sideways. A rocket carries very precise ones, together with **gyroscopes** that sense turning, in a box called an inertial measurement unit. The flight computer reads them hundreds of times a second and adds the readings up, tick by tick, to know its speed and position without looking outside at all. That adding up is a series.
+:::
+
+::: context why-geometric Where the two names come from
+The names come from two kinds of average. In an arithmetic sequence every term is the ordinary average — the **arithmetic mean** — of its two neighbours: $7$ is halfway between $3$ and $11$. In a geometric sequence every term is the **geometric mean** of its neighbours, the square root of their product: $6 = \sqrt{2 \times 18}$. That mean earned its name from geometry: $\sqrt{ab}$ is the side of a square with the same area as an $a$-by-$b$ rectangle. It comes back for estimating in the last lesson of this module.
+:::
+
+::: context fencepost The fencepost puzzle
+A fence $3\,\mathrm{m}$ long has a post every metre. How many posts? Most people say three. The answer is four: three gaps, but a post at each end.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 136" font-family="Inter, Arial, sans-serif">
+<line x1="20" y1="90" x2="340" y2="90" stroke="#6c7a93" stroke-width="1.5"/>
+  <g fill="#f2b880">
+    <rect x="65" y="52" width="80" height="6"/><rect x="145" y="52" width="80" height="6"/><rect x="225" y="52" width="80" height="6"/>
+    <rect x="65" y="72" width="80" height="6"/><rect x="145" y="72" width="80" height="6"/><rect x="225" y="72" width="80" height="6"/>
+  </g>
+  <rect x="60" y="40" width="10" height="50" fill="#1f2a44"/><rect x="140" y="40" width="10" height="50" fill="#1f2a44"/><rect x="220" y="40" width="10" height="50" fill="#1f2a44"/><rect x="300" y="40" width="10" height="50" fill="#1f2a44"/>
+  <g font-size="12" fill="#1f2a44" text-anchor="middle">
+    <text x="65" y="30">post 1</text><text x="145" y="30">post 2</text><text x="225" y="30">post 3</text><text x="305" y="30">post 4</text>
+    <text x="105" y="106">1 m</text><text x="185" y="106">1 m</text><text x="265" y="106">1 m</text>
+  </g>
+  <text x="180" y="126" font-size="12" fill="#b4232c" text-anchor="middle">3 gaps, but 4 posts</text>
+</svg>
+```
+
+Posts and gaps always differ by one. So do "how many terms from $a_1$ to $a_n$" (that is $n$) and "how many steps between them" (that is $n - 1$). Programmers call this bug the fencepost error, and it is why formulas in this lesson keep saying $n - 1$.
+:::
+
+::: context bounce Every bounce keeps sixty percent
+Each time the ball hits the floor it loses the same *fraction* of its energy to squashing and heat, and how high a ball rises is proportional to its energy. So every height is the one before times the same $0.6$.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 196" font-family="Inter, Arial, sans-serif">
+<line x1="20" y1="170" x2="345" y2="170" stroke="#1f2a44" stroke-width="2"/>
+  <line x1="50" y1="50" x2="50" y2="170" stroke="#1d6fd1" stroke-width="2" stroke-dasharray="4 3"/>
+  <circle cx="50" cy="44" r="6" fill="#f2b880" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="62" y="48" font-size="12" fill="#1f2a44">dropped from 2 m</text>
+  <path d="M50.0,170 Q99.3,26.0 148.6,170" fill="none" stroke="#1d6fd1" stroke-width="2"/><path d="M148.6,170 Q186.8,83.6 225.0,170" fill="none" stroke="#1d6fd1" stroke-width="2"/><path d="M225.0,170 Q254.5,118.2 284.1,170" fill="none" stroke="#1d6fd1" stroke-width="2"/><path d="M284.1,170 Q307.0,138.9 329.9,170" fill="none" stroke="#1d6fd1" stroke-width="2"/>
+  <g font-size="11" fill="#1f2a44" text-anchor="middle"><text x="99.3" y="92.0">1.2 m</text><text x="186.8" y="120.8">0.72 m</text><text x="254.5" y="138.1">0.43 m</text><text x="307.0" y="148.4">0.26 m</text></g>
+  <text x="340" y="190" font-size="11" fill="#6c7a93" text-anchor="end">each bounce: 0.6 × the one before</text>
+</svg>
+```
+
+How far does it travel in all, bouncing forever? Down $2\,\mathrm{m}$, then up and down on every bounce: $2 + 2 \times \frac{1.2}{1 - 0.6} = 2 + 6 = 8\,\mathrm{m}$. That sum is a geometric series, and you will have the formula for it by the end of this lesson.
+:::
+
+::: context two-s-signs Two ways to write S
+Leonhard Euler began writing $\Sigma$ for sums in 1755. It is the Greek capital S, standing for *summa*, Latin for "total" — which also gave English the word sum. Eighty years earlier Gottfried Leibniz had picked a tall, stretched S, $\int$, for the **integral**: a sum of infinitely many infinitely thin pieces. So the two signs are cousins. $\Sigma$ adds separate pieces; $\int$ adds a smooth flow. Near the end of this lesson you will watch the first turn into the second.
+:::
+
+::: context gauss-ceres Gauss and the lost dwarf planet
+Gauss grew up to be one of the greatest mathematicians who ever lived — and one of the first navigators of space. In 1801 astronomers found Ceres, the largest body in the asteroid belt, then lost it in the Sun's glare after only a few weeks of sightings. Gauss, aged 24, invented a new way to work out an orbit from those few measurements and predicted where Ceres would reappear. It was found almost exactly there. His **method of least squares**, for fitting the best answer through imperfect measurements, is still at the heart of how spacecraft work out where they are.
+:::
+
+::: context zeno Zeno's paradox
+About 2,500 years ago the Greek thinker Zeno of Elea used this very walk to argue that motion is impossible. Before you reach the wall you must cover half the distance, then half of what is left, and so on without end — and how can anyone finish infinitely many steps? Mathematics took a very long time to answer him properly: infinitely many pieces can add up to a finite total.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 130" font-family="Inter, Arial, sans-serif">
+<rect x="30.00" y="40" width="150.00" height="34" fill="#1d6fd1" stroke="#1f2a44" stroke-width="1"/><rect x="180.00" y="40" width="75.00" height="34" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1"/><rect x="255.00" y="40" width="37.50" height="34" fill="#1d6fd1" stroke="#1f2a44" stroke-width="1"/><rect x="292.50" y="40" width="18.75" height="34" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1"/><rect x="311.25" y="40" width="9.38" height="34" fill="#1d6fd1" stroke="#1f2a44" stroke-width="1"/><rect x="320.62" y="40" width="4.69" height="34" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1"/><rect x="325.31" y="40" width="2.34" height="34" fill="#1d6fd1" stroke="#1f2a44" stroke-width="1"/><rect x="327.66" y="40" width="1.17" height="34" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1"/><rect x="328.83" y="40" width="0.59" height="34" fill="#1d6fd1" stroke="#1f2a44" stroke-width="1"/>
+  <line x1="330" y1="24" x2="330" y2="92" stroke="#1f2a44" stroke-width="4"/>
+  <text x="330" y="18" font-size="12" fill="#1f2a44" text-anchor="middle">wall</text>
+  <g font-size="12" fill="#1f2a44" text-anchor="middle">
+    <text x="105" y="62">1/2</text><text x="217.5" y="62">1/4</text><text x="273.75" y="62">1/8</text>
+  </g>
+  <line x1="30" y1="100" x2="330" y2="100" stroke="#1f2a44" stroke-width="1.5"/>
+  <line x1="30" y1="94" x2="30" y2="106" stroke="#1f2a44" stroke-width="1.5"/>
+  <line x1="330" y1="94" x2="330" y2="106" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="180" y="120" font-size="12" fill="#1f2a44" text-anchor="middle">1/2 + 1/4 + 1/8 + 1/16 + … = 1 m</text>
+</svg>
+```
+
+Each block is half the one before. Together they fill exactly one metre, and never more.
+:::
+
+::: context point-nine-repeating Why 0.999… really is 1
+Two more ways to see it. First: $\tfrac{1}{3} = 0.333\ldots$, and three times that is $0.999\ldots$ — but three thirds make $1$. Second: two different numbers always have other numbers between them, such as their average. So try to find a number between $0.999\ldots$ and $1$. Any number less than $1$ must have a digit smaller than $9$ somewhere, and then it is already smaller than $0.999\ldots$ There is no room between them, so they are the same number written two ways.
+:::
+
+::: context harmonic-name Why it is called harmonic
+A guitar string vibrates as a whole, and also in halves, thirds, quarters and so on. These are its **harmonics**, the overtones that give an instrument its sound, and their wavelengths are $1, \tfrac{1}{2}, \tfrac{1}{3}, \tfrac{1}{4}, \ldots$ of the longest one — hence the name. A strange consequence: stack identical books off the edge of a table, each sticking out as far as it can without toppling, and the overhangs are $\tfrac{1}{2}, \tfrac{1}{4}, \tfrac{1}{6}, \ldots$ of a book — half the harmonic series. Because the series diverges, a tall enough stack can reach as far out as you like.
+:::

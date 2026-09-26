@@ -6,9 +6,9 @@ covers:
   - units and dimensional analysis
 ---
 
-In September 1999 a spacecraft called the Mars Climate Orbiter reached Mars and was never heard from again. It had flown too low and burned up in the Martian air. The cause was not a hard physics mistake. One piece of software reported the push from the thrusters in American units (pound-force seconds). The software that read those numbers expected metric units (newton seconds). Every number was calculated correctly. But one pound-force is about $4.45$ newtons, and nobody applied that factor. Over months of small course corrections the path drifted by more than a hundred kilometres. The mission had cost hundreds of millions of dollars. That is why this lesson exists, and why the module's coding exercise asks you to build a converter that *refuses* to turn a force into a mass.
+In September 1999 a spacecraft called the [[Mars Climate Orbiter|mco]] reached Mars and was never heard from again. It had flown too low and burned up in the Martian air. The cause was not a hard physics mistake. One piece of software reported the push from the thrusters in American units (pound-force seconds). The software that read those numbers expected metric units (newton seconds). Every number was calculated correctly. But one pound-force is about $4.45$ newtons, and nobody applied that factor. Over months of small course corrections the path drifted by more than a hundred kilometres. The mission had cost hundreds of millions of dollars. That is why this lesson exists, and why the module's coding exercise asks you to build a converter that *refuses* to turn a force into a mass.
 
-Aerospace lives in two unit systems at once — a bit like a kitchen where half the recipes use cups and half use grams. Engine thrust is given in pounds-force in one document and kilonewtons in the next. Tank pressures come in psi. Ranges come in nautical miles, altitudes in feet. You cannot avoid the second system, so you need to move between them mechanically, and to notice when a number is in the wrong one. The method is the algebra you have been doing all module — units are symbols that multiply, divide and cancel — plus a short table of exact factors.
+Aerospace lives in two unit systems at once — a bit like a kitchen where half the recipes use cups and half use grams. Engine thrust is given in pounds-force in one document and kilonewtons in the next. Tank pressures come in psi. Ranges come in nautical miles, altitudes in feet. You cannot avoid the second system, so you need to move between them mechanically, and to notice when a number is [[in the wrong one|gimli-glider]]. The method is the algebra you have been doing all module — units are symbols that multiply, divide and cancel — plus a short table of exact factors.
 
 The second half of the lesson is about **dimensions**, the idea underneath units. A length is a length whether you measure it in metres or feet. An equation that adds a length to a time is wrong in every unit system. Checking that every piece of an equation has the same dimensions takes thirty seconds and catches a surprising number of algebra mistakes before any number is worked out. It is the cheapest error check you own.
 
@@ -31,11 +31,11 @@ Other quantities get their dimensions from their formulas, using ordinary algebr
 - energy is force times distance, $\mathsf{M}\mathsf{L}^{2}\mathsf{T}^{-2}$;
 - Earth's gravitational parameter $\mu$ ("mu") has dimensions $\mathsf{L}^{3}\mathsf{T}^{-2}$, which you can read straight off its unit, $\mathrm{m^3/s^2}$.
 
-A **dimensionless** quantity has no dimensions at all — every power is zero. Examples: a length divided by a length, a mass ratio, a count, or an angle in radians (which is arc length divided by radius).
+A **dimensionless** quantity has no dimensions at all — every power is zero. Examples: a length divided by a length, a mass ratio, a count, or an [[angle in radians|radian]] (which is arc length divided by radius).
 
 ### The SI system
 
-The **SI** (the international metric system) has three base units for mechanics: the metre ($\mathrm{m}$), the kilogram ($\mathrm{kg}$) and the second ($\mathrm{s}$). Every other unit is built from these, and the ones with their own names are shorthand:
+The **[[SI|si-name]]** (the international metric system) has three base units for mechanics: the metre ($\mathrm{m}$), the kilogram ($\mathrm{kg}$) and the second ($\mathrm{s}$). Every other unit is built from these, and the ones with their own names are shorthand:
 
 | Quantity | Unit | In base units |
 | --- | --- | --- |
@@ -45,7 +45,7 @@ The **SI** (the international metric system) has three base units for mechanics:
 | power | watt, $\mathrm{W}$ | $\mathrm{J/s} = \mathrm{kg\,m^2/s^3}$ |
 | impulse | $\mathrm{N\,s}$ | $\mathrm{kg\,m/s}$ (same as momentum) |
 
-A **newton** is the force that makes one kilogram speed up by one metre per second, every second: $F = ma$ with $m = 1\,\mathrm{kg}$ and $a = 1\,\mathrm{m/s^2}$. Because every SI unit is defined this way, no stray conversion numbers ever appear inside SI formulas. The factor is always one. That property is called being **coherent**.
+A **[[newton|newton-apple]]** is the force that makes one kilogram speed up by one metre per second, every second: $F = ma$ with $m = 1\,\mathrm{kg}$ and $a = 1\,\mathrm{m/s^2}$. Because every SI unit is defined this way, no stray conversion numbers ever appear inside SI formulas. The factor is always one. That property is called being **coherent**.
 
 The SI prefixes from the exponents lesson scale any unit by a power of ten: $\mathrm{kN} = 10^3\,\mathrm{N}$, $\mathrm{MPa} = 10^6\,\mathrm{Pa}$, $\mathrm{km} = 10^3\,\mathrm{m}$. Two extra units are used alongside SI. The **tonne**, $\mathrm{t} = 1000\,\mathrm{kg}$, is the natural size for rocket masses. The **bar**, $10^5\,\mathrm{Pa}$, is common for tank pressures and is almost one atmosphere ($1\,\mathrm{atm} = 101\,325\,\mathrm{Pa}$).
 
@@ -61,7 +61,7 @@ Units on the top and bottom of a fraction cancel, exactly as the $x$ does in $\f
 
 ### Multiplying by one
 
-Twelve eggs and one dozen eggs are the same amount of eggs. So the fraction $\frac{12\,\text{eggs}}{1\,\text{dozen}}$ equals one. A **conversion factor** is a fraction like that: the top and bottom are the same physical amount written in two different units. For example, a nautical mile is exactly $1852$ metres, so
+Twelve eggs and one dozen eggs are the same amount of eggs. So the fraction $\frac{12\,\text{eggs}}{1\,\text{dozen}}$ equals one. A **[[conversion factor|conversion-chain]]** is a fraction like that: the top and bottom are the same physical amount written in two different units. For example, a nautical mile is exactly $1852$ metres, so
 
 $$
 \frac{1852\,\mathrm{m}}{1\,\mathrm{nmi}} = 1 .
@@ -101,7 +101,7 @@ The **US customary** system — also called foot–pound–second, or "English" 
 
 The foot is exactly $1\,\mathrm{ft} = 0.3048\,\mathrm{m}$. The inch is $\tfrac{1}{12}$ of a foot, exactly $25.4\,\mathrm{mm}$. The ordinary (statute) mile is $5280\,\mathrm{ft} = 1609.344\,\mathrm{m}$.
 
-The **nautical mile** is a separate unit, used at sea and in the air: $1\,\mathrm{nmi} = 1852\,\mathrm{m}$ exactly. It started life as one minute of latitude — one sixtieth of a degree, measured north–south along the Earth's surface — which is why navigation charts use it. The modern definition fixes it at a round number of metres. Speeds in navigation are in **knots**, nautical miles per hour: $1\,\mathrm{kn} = 1852/3600 = 0.5144\,\mathrm{m/s}$.
+The **nautical mile** is a separate unit, used at sea and in the air: $1\,\mathrm{nmi} = 1852\,\mathrm{m}$ exactly. It started life as [[one minute of latitude|minute-of-latitude]] — one sixtieth of a degree, measured north–south along the Earth's surface — which is why navigation charts use it. The modern definition fixes it at a round number of metres. Speeds in navigation are in **knots**, nautical miles per hour: $1\,\mathrm{kn} = 1852/3600 = 0.5144\,\mathrm{m/s}$.
 
 ### Mass and force: two different "pounds"
 
@@ -132,7 +132,7 @@ $$
 1\,\mathrm{psi} = \frac{4.4482216\,\mathrm{N}}{(0.0254\,\mathrm{m})^2} = \frac{4.4482216}{6.4516 \times 10^{-4}}\,\mathrm{Pa} = 6894.76\,\mathrm{Pa} .
 $$
 
-So one atmosphere is $101\,325 / 6894.76 = 14.70\,\mathrm{psi}$. Pressure gauges often read **gauge pressure** ("psig"), measured above the surrounding air. **Absolute pressure** ("psia") is measured above empty space (vacuum). A tank at $50\,\mathrm{psig}$ at sea level holds $50 + 14.7 = 64.7\,\mathrm{psia}$.
+So one atmosphere is $101\,325 / 6894.76 = 14.70\,\mathrm{psi}$. Pressure gauges often read **[[gauge pressure|tyre-gauge]]** ("psig"), measured above the surrounding air. **Absolute pressure** ("psia") is measured above empty space (vacuum). A tank at $50\,\mathrm{psig}$ at sea level holds $50 + 14.7 = 64.7\,\mathrm{psia}$.
 
 ::: key Conversion factors
 $1\,\mathrm{lbf} = 4.4482216\,\mathrm{N}$ ($\approx 4.45\,\mathrm{N}$; $10^6\,\mathrm{lbf} \approx 4.45\,\mathrm{MN}$). $1\,\mathrm{psi} = 6894.76\,\mathrm{Pa} \approx 6.895\,\mathrm{kPa}$; $1\,\mathrm{atm} \approx 14.7\,\mathrm{psi} \approx 101.325\,\mathrm{kPa}$. $1\,\mathrm{nmi} = 1.852\,\mathrm{km}$ exactly (originally one minute of latitude). $1\,\mathrm{slug} = 14.5939\,\mathrm{kg}$, the mass that $1\,\mathrm{lbf}$ accelerates at $1\,\mathrm{ft/s^2}$. $1\,\mathrm{ft} = 0.3048\,\mathrm{m}$ and $1\,\mathrm{lbm} = 0.45359237\,\mathrm{kg}$, both exact. Standard gravity $g_0 = 9.80665\,\mathrm{m/s^2}$ is a defined constant.
@@ -194,7 +194,7 @@ Every additive term in an equation must carry identical dimensions, and the argu
 
 ### Dimensional analysis: getting the shape of a law for free
 
-You can also run the check forwards, to *find* a formula. If you know which quantities a result depends on, making the dimensions balance often fixes the shape of the formula, up to a plain-number constant.
+You can also [[run the check forwards|taylor-blast]], to *find* a formula. If you know which quantities a result depends on, making the dimensions balance often fixes the shape of the formula, up to a plain-number constant.
 
 How long does a circular orbit take? The period $T$ can only depend on the orbit radius $r$ and the gravitational parameter $\mu$ — nothing else is in the problem. So guess $T = C\, r^a \mu^b$, where $C$ is a plain number and the powers $a$ and $b$ are unknown. The dimensions must balance:
 
@@ -207,7 +207,7 @@ The left side has $\mathsf{T}$ to the power $1$ and no $\mathsf{L}$ at all. Matc
 - For $\mathsf{T}$: $-2b = 1$, so $b = -\tfrac{1}{2}$.
 - For $\mathsf{L}$: $a + 3b = 0$, so $a = -3b = \tfrac{3}{2}$.
 
-So $T = C\, r^{3/2} \mu^{-1/2} = C\sqrt{r^3/\mu}$. That is Kepler's third law, with only the number $C = 2\pi$ left for the physics to supply. The same trick gives a pendulum's swing time as $C\sqrt{L/g}$, and says the drag force on a body must go as $\rho v^2 A$ times some plain number — which is where the drag coefficient $C_D$ comes from. When you cannot remember a formula, its dimensions often can.
+So $T = C\, r^{3/2} \mu^{-1/2} = C\sqrt{r^3/\mu}$. That is [[Kepler's third law|kepler]], with only the number $C = 2\pi$ left for the physics to supply. The same trick gives a pendulum's swing time as $C\sqrt{L/g}$, and says the drag force on a body must go as $\rho v^2 A$ times some plain number — which is where the drag coefficient $C_D$ comes from. When you cannot remember a formula, its dimensions often can.
 
 ::: example Reading a pressure spec
 A helium bottle is rated to $3000\,\mathrm{psi}$. The regulator after it is set to $700\,\mathrm{psi}$. The tank it feeds is designed for at most $5\,\mathrm{MPa}$. Is the regulator setting safe for the tank, and what fraction of the bottle's rating is it?
@@ -329,3 +329,109 @@ So $1\,\mathrm{slug} = 32.174\,\mathrm{lbm}$. Check: $14.5939 / 0.45359 = 32.17$
 | Code | convert through the SI base unit; refuse mismatched dimensions |
 
 Next lesson: the numbers attached to these units. You will learn to write very large and very small numbers in **scientific notation** without losing track of the power of ten, and to judge how many of their digits — **significant figures** — you are actually entitled to keep.
+
+::: context mco What happened at Mars
+Mars Climate Orbiter was launched in December 1998. Software written by the spacecraft's builder, Lockheed Martin, reported each thruster firing in pound-force seconds. The navigation team at NASA's Jet Propulsion Laboratory fed those numbers into software that assumed newton seconds, so every small push was counted as less than a quarter of its real size. The errors piled up over nine months. On arrival the orbiter passed roughly $57\,\mathrm{km}$ above Mars instead of the planned height of about $150\,\mathrm{km}$, deep enough in the air to be destroyed. The investigation named the missing unit conversion as the root cause.
+:::
+
+::: context gimli-glider The Gimli Glider
+In July 1983 an Air Canada Boeing 767 ran out of fuel at $41\,000$ feet over Canada. The country was switching to metric, and the fuel load had been worked out with a pounds-per-litre factor where a kilograms-per-litre one belonged. The plane took off with less than half the fuel it needed, and both engines stopped. The captain happened to be an experienced glider pilot. He glided the jet down to a disused air-force runway at Gimli, Manitoba, and everyone on board survived.
+:::
+
+::: context radian An angle with no units
+Lay one radius of a circle along its edge. The angle that piece of edge covers is one **radian**, about $57.3^\circ$.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 190" font-family="Inter, Arial, sans-serif">
+<circle cx="110" cy="105" r="70" fill="#fff" stroke="#6c7a93" stroke-width="1.5"/>
+  <line x1="110" y1="105" x2="180" y2="105" stroke="#1f2a44" stroke-width="2"/>
+  <line x1="110" y1="105" x2="147.82" y2="46.10" stroke="#1f2a44" stroke-width="2"/>
+  <path d="M180,105 A70,70 0 0,0 147.82,46.10" fill="none" stroke="#b4232c" stroke-width="4"/>
+  <path d="M128,105 A18,18 0 0,0 119.73,89.85" fill="none" stroke="#1d6fd1" stroke-width="2"/>
+  <g font-size="12" fill="#1f2a44" text-anchor="middle">
+    <text x="145.0" y="121">r</text>
+    <text x="116.9" y="73.5">r</text>
+  </g>
+  <text x="185.7" y="64.7" font-size="12" fill="#b4232c">arc = r</text>
+  <text x="134" y="99" font-size="11" fill="#1d6fd1">1 rad</text>
+  <g font-size="12" fill="#1f2a44">
+    <text x="215" y="80">1 radian ≈ 57.3°</text>
+    <text x="215" y="102">full turn = 2π rad</text>
+    <text x="215" y="124">≈ 6.28 rad = 360°</text>
+  </g>
+</svg>
+```
+
+A radian is a length divided by a length, so it has no dimension. That is why it can sit inside $\sin$ and $\cos$, and why arc length is simply $r\theta$ with no conversion factor. Degrees hide a factor of $\pi/180$. Flight software works in radians almost everywhere.
+:::
+
+::: context si-name Why SI and not IS
+SI stands for *Système international d'unités*, French for "International System of Units", and the letters keep the French order in every language. It got that name in 1960, built on the metric system that began in France in the 1790s. Since 2019 every SI unit has been defined by fixed constants of nature. Before then, the kilogram was a metal cylinder locked in a vault near Paris, and every kilogram on Earth traced back to it.
+:::
+
+::: context newton-apple A newton is about one apple
+The unit is named after Isaac Newton, whose laws of motion define it. A handy anchor: a small apple of about $102\,\mathrm{g}$ weighs almost exactly one newton on Earth, since $0.102 \times 9.81 \approx 1.00$. So a person weighs several hundred newtons, and an engine's thrust in meganewtons is millions of apples. One writing rule: unit names are lowercase (newton, pascal, watt), but the symbols of units named after people are capitals (N, Pa, W).
+:::
+
+::: context conversion-chain Watching the units cancel
+Here is the nautical-mile chain from this section with the cancelling marked. Treat each unit like a letter in algebra: the same unit on top and underneath cancels out.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 144" font-family="Inter, Arial, sans-serif">
+<g font-size="14" fill="#1f2a44" text-anchor="middle">
+    <text x="40" y="66">400 <tspan fill="#b4232c" text-decoration="line-through">km</tspan></text>
+    <text x="84" y="66">×</text>
+    <text x="130" y="50">1000 <tspan fill="#b4232c" text-decoration="line-through">m</tspan></text>
+    <line x1="100" y1="58" x2="160" y2="58" stroke="#1f2a44" stroke-width="1.5"/>
+    <text x="130" y="76">1 <tspan fill="#b4232c" text-decoration="line-through">km</tspan></text>
+    <text x="176" y="66">×</text>
+    <text x="222" y="50">1 nmi</text>
+    <line x1="192" y1="58" x2="252" y2="58" stroke="#1f2a44" stroke-width="1.5"/>
+    <text x="222" y="76">1852 <tspan fill="#b4232c" text-decoration="line-through">m</tspan></text>
+    <text x="266" y="66">=</text>
+    <text x="310" y="66" font-weight="700">216 nmi</text>
+  </g>
+  <text x="180" y="112" font-size="12" fill="#6c7a93" text-anchor="middle">km cancels km, m cancels m: only nmi is left</text>
+  <text x="180" y="132" font-size="12" fill="#6c7a93" text-anchor="middle">each fraction equals 1, so the distance never changed</text>
+</svg>
+```
+
+If a unit you meant to get rid of is still standing at the end, one of the factors went in upside down.
+:::
+
+::: context minute-of-latitude A mile measured off the Earth
+Go once around the Earth through both poles. That is $360$ degrees, and each degree splits into $60$ minutes, so $21\,600$ minutes in all. The distance around that way is about $40\,000\,\mathrm{km}$, so each minute covers about $1.85\,\mathrm{km}$.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 196" font-family="Inter, Arial, sans-serif">
+<circle cx="95" cy="105" r="78" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
+  <line x1="17" y1="105" x2="173" y2="105" stroke="#1f2a44" stroke-dasharray="4 3"/>
+  <path d="M95,105 L162.55,66.00 A78,78 0 0,0 154.75,54.86 Z" fill="#f2b880" stroke="#1f2a44" stroke-width="1"/>
+  <path d="M162.55,66.00 A78,78 0 0,0 154.75,54.86" fill="none" stroke="#b4232c" stroke-width="4"/>
+  <text x="95" y="21" font-size="12" fill="#1f2a44" text-anchor="middle">N pole</text>
+  <text x="21" y="100" font-size="11" fill="#1f2a44">equator</text>
+  <text x="170.7" y="53.4" font-size="11" fill="#b4232c">1′ = 1 nmi</text>
+  <g font-size="12" fill="#1f2a44">
+    <text x="200" y="70">360° × 60 = 21 600 minutes</text>
+    <text x="200" y="94">40 000 km ÷ 21 600</text>
+    <text x="200" y="114">≈ 1.85 km</text>
+    <text x="200" y="146" fill="#6c7a93">(wedge drawn much wider</text>
+    <text x="200" y="162" fill="#6c7a93">than one minute)</text>
+  </g>
+</svg>
+```
+
+That is why a navigator can measure distance straight off the latitude scale on the side of a chart: one minute of latitude, one nautical mile.
+:::
+
+::: context tyre-gauge What a tyre gauge really reads
+A tyre gauge that reads $32\,\mathrm{psi}$ is measuring how much harder the air inside pushes than the air outside. The absolute pressure inside is $32 + 14.7 = 46.7\,\mathrm{psia}$. A flat tyre reads zero, yet it still holds air at $14.7\,\mathrm{psia}$ — just no more than outside. On a spacecraft the difference is serious. Outside becomes vacuum, so a sealed tank's gauge pressure rises by about $14.7\,\mathrm{psi}$ between the launch pad and orbit, with nothing inside it changing at all.
+:::
+
+::: context taylor-blast Guessing a secret from photographs
+In 1950 the British physicist G. I. Taylor published an estimate of the energy released by the first atomic bomb test, a closely guarded secret. He used only photographs of the fireball that had been released to the public, with a distance scale and a clock in the corner. If the fireball's radius $R$ depends only on the energy $E$, the time $t$ and the air density $\rho$, the dimensions force $R \propto (E t^2 / \rho)^{1/5}$. His answer, about $17$ kilotons of TNT, was close to the secret figure of around twenty.
+:::
+
+::: context kepler Kepler found it the hard way
+Johannes Kepler published this law in 1619, after years of working through Tycho Brahe's careful measurements of the planets by hand: the square of a planet's year is proportional to the cube of its distance from the Sun. Newton explained *why* decades later. Dimensional analysis gets the shape in a few lines only because $\mu$, from Newton's gravity, already carries the physics. Try it: at $r = 6771\,\mathrm{km}$, $2\pi\sqrt{r^3/\mu}$ gives about $92$ minutes, the period of the Space Station.
+:::

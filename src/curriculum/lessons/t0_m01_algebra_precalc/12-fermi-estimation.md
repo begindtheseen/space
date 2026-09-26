@@ -6,7 +6,7 @@ covers:
   - order-of-magnitude (Fermi) estimation
 ---
 
-In 1945, at the first test of an atomic bomb, the physicist Enrico Fermi dropped scraps of paper as the blast wave passed. From how far they blew, he estimated the bomb's energy at about ten kilotons (as much as ten thousand tonnes of TNT explosive). The instruments later said about twenty. He was within a factor of two, in seconds, with no equipment. That is the standard an **order-of-magnitude estimate** — also called a **Fermi estimate** — aims at. Not the exact answer, but the right *size* of answer, with every assumption written down.
+In 1945, at the first test of an atomic bomb, the physicist [[Enrico Fermi|who-fermi]] dropped scraps of paper as the blast wave passed. From how far they blew, he estimated the bomb's energy at about ten kilotons (as much as ten thousand tonnes of TNT explosive). The instruments later said about twenty. He was within a factor of two, in seconds, with no equipment. That is the standard an **order-of-magnitude estimate** — also called a **[[Fermi estimate|piano-tuners]]** — aims at. Not the exact answer, but the right *size* of answer, with every assumption written down.
 
 In guidance and navigation work you will do this daily. A simulation prints a stage propellant mass of $4100\,\mathrm{t}$. Is that believable, or did a unit slip? A colleague proposes a manoeuvre needing $3\,\mathrm{km/s}$ of speed change. Roughly how much of the spacecraft would be propellant? Before trusting a computer, a spreadsheet or a supplier, you should be able to say what the number ought to be, within a factor of a few, from things you already know.
 
@@ -18,15 +18,15 @@ Here is a problem you might meet before a school party: how many pizzas should y
 
 **1. State the quantity precisely, with its unit.** "How big is a first stage?" is not a question. "What is the propellant mass of a first stage, in tonnes?" is. The unit tells you what your chain of factors must multiply out to. **Dimensional homogeneity** — every term in an equation must have the same units — will then police your working.
 
-**2. Break it into factors you can estimate.** Rewrite the unknown as numbers multiplied or divided together, each one something you know or can guess to within a factor of two or three. A mass is a volume times a density. A volume is a cross-section times a length. A rate times a time is an amount. Write the chain with units, and check the units cancel down to the one you want. If they do not, the breakdown is wrong, however sensible the numbers look.
+**2. [[Break it into factors|estimate-tree]] you can estimate.** Rewrite the unknown as numbers multiplied or divided together, each one something you know or can guess to within a factor of two or three. A mass is a volume times a density. A volume is a cross-section times a length. A rate times a time is an amount. Write the chain with units, and check the units cancel down to the one you want. If they do not, the breakdown is wrong, however sensible the numbers look.
 
 **3. Estimate each factor.** Anchor on things you know: a person is about $70\,\mathrm{kg}$, water is $1000\,\mathrm{kg/m^3}$, low orbit is $7.7\,\mathrm{km/s}$, a year is $3.16 \times 10^{7}\,\mathrm{s}$ (close to $\pi \times 10^7$, an easy way to remember it).
 
-When you cannot anchor, **bracket**. Find a value you are sure is too low and one you are sure is too high. Then take their **geometric mean**, $\sqrt{ab}$ — multiply the two and take the square root. Between $300$ and $3000$ the geometric mean is $\sqrt{300 \times 3000} = \sqrt{900\,000} \approx 950$, about $1000$.
+When you cannot anchor, **bracket**. Find a value you are sure is too low and one you are sure is too high. Then take their **[[geometric mean|geo-mean]]**, $\sqrt{ab}$ — multiply the two and take the square root. Between $300$ and $3000$ the geometric mean is $\sqrt{300 \times 3000} = \sqrt{900\,000} \approx 950$, about $1000$.
 
 Why not the ordinary average, $1650$? When you are unsure by a big factor, what matters is "how many *times* too big or small", not "how much". The geometric mean is as many times above the low guess as below the high one: $950$ is about three times $300$, and $3000$ is about three times $950$. The average is five and a half times the low guess but under twice below the high one, so it leans too far up.
 
-Another: the **ullage** of a tank is the empty space left above the liquid (tanks are never filled to the brim). Bracketing an ullage fraction between $2\%$ and $10\%$ gives $\sqrt{0.02 \times 0.10} = 4.5\%$. Round each factor to one significant figure, or to the steps $1, 3, 10$ when even one figure is more than you know.
+Another: the **[[ullage|ullage-word]]** of a tank is the empty space left above the liquid (tanks are never filled to the brim). Bracketing an ullage fraction between $2\%$ and $10\%$ gives $\sqrt{0.02 \times 0.10} = 4.5\%$. Round each factor to one significant figure, or to the steps $1, 3, 10$ when even one figure is more than you know.
 
 **4. Multiply, keeping the exponents separate.** Use scientific notation, or add $\log_{10}$ values, as in the last lesson. Keep two figures while you work and report one or two at the end. A Fermi estimate reported to four figures contradicts itself.
 
@@ -52,7 +52,7 @@ Flip six coins and all heads is rare; usually heads and tails partly balance out
 
 Now the precise version. Say a factor is uncertain by a multiplying factor $f$: you believe the true value lies somewhere between $x/f$ and $xf$. (For example, $f = 2$ means "somewhere between half and double my guess".) Then its logarithm is uncertain by $\pm\log_{10} f$. Multiplying $k$ factors *adds* their logarithms. So in the worst case the logarithm of the product is off by $k \log_{10} f$, which means the product is off by a factor of $f^k$. With four factors each good to $\pm 30\%$ ($f = 1.3$), the worst case is $1.3^4 = 2.9$, a factor of three.
 
-But the worst case needs every error to go the same way, and independent guesses do not team up. When errors are as likely high as low, the typical error in the logarithm grows like $\sqrt{k}$ instead of $k$. This is the same square-root law that governs random walks, and it comes back in the statistics module.
+But the worst case needs every error to go the same way, and independent guesses do not team up. When errors are as likely high as low, the typical error in the logarithm grows like $\sqrt{k}$ instead of $k$. This is the same square-root law that governs [[random walks|random-walk]], and it comes back in the statistics module.
 
 - Four factors each good to $1.3$ give a product typically good to $1.3^{\sqrt{4}} = 1.3^2 = 1.7$.
 - Six factors each uncertain by a factor of two give a product typically off by $2^{\sqrt 6} = 5.5$ — not $2^6 = 64$. Still within an order of magnitude.
@@ -137,7 +137,7 @@ $$
 So the dominant assumption is the effective exhaust velocity: its plausible range, $2.8$–$3.1\,\mathrm{km/s}$, moves the answer by about $\pm 5\%$. This is also an independent check on the size-based estimate the module's exercise asks for. Two different breakdowns that agree to ten percent are worth more than either alone.
 :::
 
-First, the parts of a liquid-fuelled stage. It is mostly two tall **tanks**, one of fuel and one of oxidizer, stacked end to end. Each tank is a cylinder closed by rounded **domes** at top and bottom, and the curve of a dome wastes some length. Between the two tanks there is often an **intertank** — a short empty section of hull joining them. Some stages avoid it with a **common bulkhead**: one shared dome that is the bottom of one tank and the top of the other, which saves length and mass. Below the tanks sit the engines and the **thrust structure** that carries their push into the stage. And each tank keeps some ullage, the empty space above the liquid.
+First, [[the parts of a liquid-fuelled stage|stage-anatomy]]. It is mostly two tall **tanks**, one of fuel and one of oxidizer, stacked end to end. Each tank is a cylinder closed by rounded **domes** at top and bottom, and the curve of a dome wastes some length. Between the two tanks there is often an **intertank** — a short empty section of hull joining them. Some stages avoid it with a **[[common bulkhead|common-bulkhead]]**: one shared dome that is the bottom of one tank and the top of the other, which saves length and mass. Below the tanks sit the engines and the **thrust structure** that carries their push into the stage. And each tank keeps some ullage, the empty space above the liquid.
 
 ::: example Propellant of a stage from its dimensions
 A large kerosene–oxygen first stage is $10.1\,\mathrm{m}$ across and $42\,\mathrm{m}$ long. Estimate its propellant mass.
@@ -164,7 +164,7 @@ almost exactly the density of water. (The same formula with the module exercise'
 
 **Multiply:** $m_p \approx 2.36 \times 10^{3} \times 1.01 \times 10^{3} = 2.4 \times 10^{6}\,\mathrm{kg} = 2400\,\mathrm{t}$.
 
-**Compare:** the stage described is the Saturn V first stage, whose published propellant load is about $2150\,\mathrm{t}$. The estimate is $11\%$ high — well inside a factor of $1.5$.
+**Compare:** the stage described is [[the Saturn V first stage|s-ic]], whose published propellant load is about $2150\,\mathrm{t}$. The estimate is $11\%$ high — well inside a factor of $1.5$.
 
 **Criticise.** The dominant assumption is the tank fraction. At $0.6$ the estimate is $2050\,\mathrm{t}$; at $0.8$ it is $2730\,\mathrm{t}$. That one guess swings the answer by about $\pm 15\%$, while the density is known to a percent and the cylinder volume to a few. To do better, I would spend all my effort on the tank fraction — measuring where the tanks end on a photograph of the stage — and none on the density. The estimate came out high, which says the true tank fraction is nearer $0.63$. Indeed, that stage's domed tank ends and intertank take up more length than a $0.7$ guess allows.
 :::
@@ -276,3 +276,114 @@ To tighten it, look for the thrust-to-weight ratio of engines in that class — 
 | Honesty | guess first, compare second, never tune to the answer |
 
 This closes the module. The next module, trigonometry, and everything after it — vectors, calculus, dynamics — assumes you can rearrange a formula without slips, keep units and figures honest, and say roughly what a number should be before you compute it. When a later derivation feels slippery, the fault is usually in one of these lessons. The fix is to come back and redo the check-yourself questions until they are boring.
+
+::: context who-fermi Who Fermi was
+Enrico Fermi (1901–1954) was an Italian physicist who won the Nobel Prize in 1938 and then moved to the United States. In 1942, in a squash court under the stands of a football field in Chicago, his team started the world's first nuclear reactor. He was famous for being equally strong at theory and at experiment — rare in physics — and for quick, rough calculations on scraps of paper. The element fermium is named after him.
+:::
+
+::: context piano-tuners How many piano tuners in Chicago?
+Fermi liked to ask students questions like "How many piano tuners are there in Chicago?" Nobody knows offhand, but you can guess the pieces: about three million people in about a million households; perhaps one household in five with a piano, each tuned about once a year; a tuner managing about four a day, a thousand a year. That gives $200\,000 / 1000 = 200$ tuners. The exact answer is not the point. The point is that an impossible-sounding question falls apart into pieces that are each easy to guess.
+:::
+
+::: context estimate-tree An estimate is a tree
+Put the unknown at the top and the pieces you can guess underneath, with the operation on each branch. Here is the pizza estimate drawn that way.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 160" font-family="Inter, Arial, sans-serif">
+<g stroke="#1f2a44" stroke-width="1.5">
+    <line x1="180" y1="45" x2="60" y2="92"/><line x1="180" y1="45" x2="180" y2="92"/><line x1="180" y1="45" x2="300" y2="92"/>
+  </g>
+  <rect x="105.0" y="15.0" width="150" height="30" rx="6" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/><g font-size="12" fill="#1f2a44" text-anchor="middle"><text x="180" y="34">pizzas ≈ 34</text></g>
+  <rect x="10.0" y="92.0" width="100" height="40" rx="6" fill="#fff" stroke="#1f2a44" stroke-width="1.5"/><g font-size="12" fill="#1f2a44" text-anchor="middle"><text x="60" y="108">kids</text><text x="60" y="124">90</text></g>
+  <rect x="130.0" y="92.0" width="100" height="40" rx="6" fill="#fff" stroke="#1f2a44" stroke-width="1.5"/><g font-size="12" fill="#1f2a44" text-anchor="middle"><text x="180" y="108">slices per kid</text><text x="180" y="124">3</text></g>
+  <rect x="250.0" y="92.0" width="100" height="40" rx="6" fill="#fff" stroke="#1f2a44" stroke-width="1.5"/><g font-size="12" fill="#1f2a44" text-anchor="middle"><text x="300" y="108">slices per pizza</text><text x="300" y="124">8</text></g>
+  <g font-size="16" fill="#b4232c" text-anchor="middle"><text x="120" y="117">×</text><text x="240" y="117">÷</text></g>
+  <text x="180" y="152" font-size="12" fill="#1f2a44" text-anchor="middle">90 × 3 ÷ 8 = 33.75, about 34</text>
+</svg>
+```
+
+Bigger estimates just grow deeper trees. Any branch you cannot guess gets broken down again, until every leaf is something you know or can bracket.
+:::
+
+::: context geo-mean Halfway in times, not in steps
+On a log scale the geometric mean sits exactly in the middle of the bracket, while the ordinary average sits well to the right.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 168" font-family="Inter, Arial, sans-serif">
+<text x="180" y="18" font-size="12" fill="#1f2a44" text-anchor="middle">log scale: equal widths are equal factors</text>
+  <line x1="20" y1="100" x2="340" y2="100" stroke="#1f2a44" stroke-width="1.5"/>
+  <g stroke="#1f2a44" stroke-width="1.2"><line x1="30.0" y1="94" x2="30.0" y2="106"/><line x1="75.2" y1="98" x2="75.2" y2="102"/><line x1="101.6" y1="98" x2="101.6" y2="102"/><line x1="120.3" y1="98" x2="120.3" y2="102"/><line x1="134.8" y1="98" x2="134.8" y2="102"/><line x1="146.7" y1="98" x2="146.7" y2="102"/><line x1="156.8" y1="98" x2="156.8" y2="102"/><line x1="165.5" y1="98" x2="165.5" y2="102"/><line x1="173.1" y1="98" x2="173.1" y2="102"/><line x1="180.0" y1="94" x2="180.0" y2="106"/><line x1="225.2" y1="98" x2="225.2" y2="102"/><line x1="251.6" y1="98" x2="251.6" y2="102"/><line x1="270.3" y1="98" x2="270.3" y2="102"/><line x1="284.8" y1="98" x2="284.8" y2="102"/><line x1="296.7" y1="98" x2="296.7" y2="102"/><line x1="306.8" y1="98" x2="306.8" y2="102"/><line x1="315.5" y1="98" x2="315.5" y2="102"/><line x1="323.1" y1="98" x2="323.1" y2="102"/><line x1="330.0" y1="94" x2="330.0" y2="106"/></g>
+  <g font-size="11" fill="#6c7a93" text-anchor="middle">
+    <text x="30.0" y="120">100</text><text x="180.0" y="120">1000</text><text x="330.0" y="120">10 000</text>
+  </g>
+  <g fill="#1f2a44"><circle cx="101.6" cy="100" r="5"/><circle cx="251.6" cy="100" r="5"/></g>
+  <circle cx="176.6" cy="100" r="5" fill="#1d6fd1"/>
+  <circle cx="212.6" cy="100" r="5" fill="#b4232c"/>
+  <g font-size="12" text-anchor="middle">
+    <text x="101.6" y="140" fill="#1f2a44">low 300</text>
+    <text x="251.6" y="140" fill="#1f2a44">high 3000</text>
+    <text x="164.6" y="140" fill="#1d6fd1">√ab ≈ 950</text>
+    <text x="220.6" y="160" fill="#b4232c">average 1650</text>
+  </g>
+  <g stroke="#1d6fd1" stroke-width="1.5" fill="none">
+    <path d="M101.6,88 Q139.1,58 176.6,88"/>
+    <path d="M176.6,88 Q214.1,58 251.6,88"/>
+  </g>
+  <g font-size="12" fill="#1d6fd1" text-anchor="middle">
+    <text x="139.1" y="62">×3.16</text><text x="214.1" y="62">×3.16</text>
+  </g>
+</svg>
+```
+
+When you are unsure even of the first digit, "how many times off" is the fair way to measure a miss — so the middle in times is the fair guess.
+:::
+
+::: context ullage-word A word from the wine cellar
+Ullage is an old wine-trade word: it meant how far a cask falls short of full, from an Old French word for topping a cask up to the brim. Rockets care about it for two reasons. Liquids expand as they warm, so tanks need room to spare. And in weightlessness the propellant floats about inside the tank, so some upper stages first fire small **ullage motors**, nudging the stage forward so the liquid settles over the engine's inlet before the main engine lights.
+:::
+
+::: context random-walk The random walk
+Stand on a line and flip a coin: heads, one step right; tails, one step left. After $100$ flips, how far from the start are you? Not $100$ steps — that needs every flip to agree — and usually not zero either. Typically about $\sqrt{100} = 10$ steps. The steps partly cancel, just like independent guessing errors. The same law describes a drop of ink spreading through water, and the slow drift of a spacecraft's navigation when its sensor errors are random.
+:::
+
+::: context stage-anatomy Inside a stage
+A liquid-fuelled first stage, drawn lying on its side. In many kerosene stages, including the Saturn V's first stage and Falcon 9's, the oxidizer tank sits on top.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 152" font-family="Inter, Arial, sans-serif">
+<text x="180" y="16" font-size="12" fill="#1f2a44" text-anchor="middle">a first stage on its side, nose to the left</text>
+  <rect x="20" y="55" width="285" height="50" fill="#fff" stroke="#1f2a44" stroke-width="1.5"/>
+  <path d="M59,57 L161,57 Q174,57 174,80.0 Q174,103 161,103 L59,103 Q46,103 46,80.0 Q46,57 59,57 Z" fill="#8fb8f0"/>
+  <path d="M59,57 Q46,57 46,80.0 Q46,103 59,103 L66,103 L66,57 Z" fill="#fff"/>
+  <path d="M59,57 L161,57 Q174,57 174,80.0 Q174,103 161,103 L59,103 Q46,103 46,80.0 Q46,57 59,57 Z" fill="none" stroke="#1f2a44" stroke-width="1.5"/>
+  <path d="M219,57 L265,57 Q278,57 278,80.0 Q278,103 265,103 L219,103 Q206,103 206,80.0 Q206,57 219,57 Z" fill="#8fb8f0"/>
+  <path d="M219,57 Q206,57 206,80.0 Q206,103 219,103 L220,103 L220,57 Z" fill="#fff"/>
+  <path d="M219,57 L265,57 Q278,57 278,80.0 Q278,103 265,103 L219,103 Q206,103 206,80.0 Q206,57 219,57 Z" fill="none" stroke="#1f2a44" stroke-width="1.5"/>
+  <line x1="45" y1="55" x2="45" y2="105" stroke="#1f2a44" stroke-width="1"/>
+  <line x1="175" y1="55" x2="175" y2="105" stroke="#1f2a44" stroke-width="1"/>
+  <line x1="205" y1="55" x2="205" y2="105" stroke="#1f2a44" stroke-width="1"/>
+  <rect x="280" y="55" width="25" height="50" fill="#f2b880" stroke="#1f2a44" stroke-width="1.5"/>
+  <polygon points="305,70 342,56 342,104 305,90" fill="#1f2a44"/>
+  <g font-size="11" fill="#1f2a44" text-anchor="middle">
+    <text x="110" y="44">oxidizer tank</text>
+    <text x="242" y="44">fuel tank</text>
+    <text x="323" y="44">engines</text>
+    <text x="32" y="124">skirt</text>
+    <text x="190" y="124">intertank</text>
+    <text x="292" y="124">thrust structure</text>
+  </g>
+  <line x1="58" y1="80" x2="70" y2="134" stroke="#6c7a93" stroke-width="1"/>
+  <text x="74" y="142" font-size="11" fill="#6c7a93">ullage (empty space)</text>
+</svg>
+```
+
+Only the blue holds propellant. The skirt, intertank, thrust structure, engines, the ullage and the corners around the rounded domes are the length your tank-fraction guess has to leave out.
+:::
+
+::: context common-bulkhead One wall for two tanks
+A common bulkhead is harder to build than it sounds. The liquids on either side can be at very different temperatures: liquid oxygen at about $-183\,^\circ\mathrm{C}$ and, in hydrogen stages, liquid hydrogen at about $-253\,^\circ\mathrm{C}$. The shared wall has to stop heat flowing across, or the hydrogen boils and the oxygen freezes. The Saturn V's second and third stages used insulated common bulkheads between their hydrogen and oxygen, saving the length and mass of an intertank.
+:::
+
+::: context s-ic Meet the S-IC
+The Saturn V's first stage was called the S-IC, and Boeing built it. Its five F-1 engines together gave about $7.5$ million pounds-force of thrust at lift-off — about $33\,\mathrm{MN}$, more than four times the stage in the previous example. It burned for about two and a half minutes, lifting the Apollo crews to roughly $65\,\mathrm{km}$, then dropped away and fell into the Atlantic Ocean.
+:::

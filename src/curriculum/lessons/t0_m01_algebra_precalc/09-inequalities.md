@@ -8,7 +8,7 @@ covers:
 
 "You must be at least $48$ inches tall to ride." "Speed limit $65$." "Carry-on bags must weigh no more than $10\,\mathrm{kg}$." None of these rules gives an exact number. Each gives an allowed *range*. An equation says what a quantity *is*. These rules say what it *must not go over* or *must at least reach*. Statements like that are **inequalities**.
 
-Most of what an engineer has to say about a vehicle is an inequality. Thrust must be more than weight, or the rocket sits on the pad. The air pushing on the nose cone (the dynamic pressure) must stay below what the structure can take, or the cone breaks. The navigation error must stay inside the landing zone. A design is a set of inequalities that are all true at the same time. A launch vehicle's requirements document is really a long list of "at most" and "at least".
+Most of what an engineer has to say about a vehicle is an inequality. Thrust must be more than weight, or the rocket sits on the pad. The air pushing on the nose cone (the [[dynamic pressure|max-q]]) must stay below what the structure can take, or the cone breaks. The navigation error must stay inside the landing zone. A design is a set of inequalities that are all true at the same time. A launch vehicle's [[requirements document|shall-statements]] is really a long list of "at most" and "at least".
 
 You solve inequalities with almost the same moves as equations: add the same thing to both sides, multiply both sides by the same thing. There is one difference, and it causes nearly every mistake: multiplying or dividing by a negative number flips the direction of the sign. This lesson shows *why* it flips, then works through the kinds of inequality you will actually meet — straight-line ones, tolerances with absolute values, curved (quadratic) ones, and ones with exponentials inside. The answer to an inequality is usually a range, not a single number — as most real answers are.
 
@@ -21,11 +21,11 @@ Four symbols compare two numbers by where they sit on the number line:
 - $a > b$, "a is greater than b": $a$ is to the right.
 - $a \geq b$, "a is greater than or equal to b", or "a is at least b".
 
-A handy memory trick: the pointy end of $<$ points at the smaller number.
+A handy memory trick: the [[pointy end|less-than-origin]] of $<$ points at the smaller number.
 
 Any two numbers fit exactly one of $a < b$, $a = b$ or $a > b$. An inequality with an unknown in it, such as $3x - 7 < 5$, is true for some values of $x$ and false for others. To **solve** it means to find every value that makes it true. That collection of values is the **solution set**.
 
-A **compound inequality** joins two conditions. An "and" is written as a chain: $2 < x \leq 5$ means $x$ is more than $2$ *and* at most $5$. In the interval notation from the functions lesson this is $(2, 5]$ — a round bracket means the end is left out, a square bracket means it is included. An "or" uses the word "or", or the **union** sign $\cup$ (read "union", meaning "either piece"): "$x < -1$ or $x > 3$" is $(-\infty, -1) \cup (3, \infty)$, where $\infty$ ("infinity") means the piece runs on forever in that direction. A chain always has both signs pointing the same way. $2 < x > 5$ is not a statement at all.
+A **[[compound inequality|interval-picture]]** joins two conditions. An "and" is written as a chain: $2 < x \leq 5$ means $x$ is more than $2$ *and* at most $5$. In the interval notation from the functions lesson this is $(2, 5]$ — a round bracket means the end is left out, a square bracket means it is included. An "or" uses the word "or", or the **union** sign $\cup$ (read "union", meaning "either piece"): "$x < -1$ or $x > 3$" is $(-\infty, -1) \cup (3, \infty)$, where $\infty$ ("infinity") means the piece runs on forever in that direction. A chain always has both signs pointing the same way. $2 < x > 5$ is not a statement at all.
 
 ## The legal moves
 
@@ -35,7 +35,7 @@ Two inequalities are **equivalent** if they have exactly the same solution set. 
 
 **Multiplying both sides by a positive number.** You have $2$ dollars and your friend has $5$. Both of you triple your money. You still have less: $6 < 15$. Multiplying by a positive $k$ stretches the number line away from zero (or squeezes it towards zero) without turning it around, so $ka < kb$. Dividing by a positive number is multiplying by its flip, so it is allowed too.
 
-**Multiplying both sides by a negative number.** Now the surprise. You have $2$ dollars and your friend has $5$, so $2 < 5$. Turn both amounts into *debts* — multiply by $-1$. Now you owe $2$ and your friend owes $5$. Who is better off? You are: $-2 > -5$, because $-2$ is to the right of $-5$ on the number line. Multiplying by a negative number mirrors the number line through zero, and what was on the left ends up on the right. In general:
+**Multiplying both sides by a negative number.** Now the surprise. You have $2$ dollars and your friend has $5$, so $2 < 5$. Turn both amounts into *debts* — multiply by $-1$. Now you owe $2$ and your friend owes $5$. Who is better off? You are: $-2 > -5$, because $-2$ is to the right of $-5$ on the number line. Multiplying by a negative number [[mirrors the number line through zero|mirror-flip]], and what was on the left ends up on the right. In general:
 
 $$
 a < b \;\text{ and }\; k < 0 \quad\Rightarrow\quad ka > kb .
@@ -74,7 +74,7 @@ You can do other things to both sides of an inequality too — take a square roo
 - Adding a constant, and multiplying by a positive constant, are increasing. Those are the first two rules above.
 - $\sqrt{x}$, $x^3$, $e^x$ and $\ln x$ are increasing wherever they are defined. So $a < b$ gives $\sqrt{a} < \sqrt{b}$ (for $a, b \geq 0$), $e^a < e^b$, and $\ln a < \ln b$ (for $a, b > 0$).
 - $1/x$ is decreasing on the positive numbers: if $0 < a < b$ then $\frac{1}{a} > \frac{1}{b}$. Two is less than five, but a half is more than a fifth — split a pizza among fewer people and each slice is bigger. Across zero the rule breaks: $-1 < 2$, but $\frac{1}{-1} = -1$ is *less* than $\tfrac{1}{2}$, not more. Never take reciprocals of both sides unless both sides are known to have the same sign.
-- $x^2$ is increasing only for $x \geq 0$. For non-negative $a$ and $b$, $a < b$ exactly when $a^2 < b^2$ (the symbol $\Leftrightarrow$, "if and only if", says both directions hold). With a negative side, squaring can flip or wreck the inequality: $-3 < 2$, but $9 > 4$. Speeds, masses and distances are never negative, so for them $v^2 < 2\mu/r$ and $v < \sqrt{2\mu/r}$ say the same thing. That is how the escape-speed limit is read in either direction.
+- $x^2$ is increasing only for $x \geq 0$. For non-negative $a$ and $b$, $a < b$ exactly when $a^2 < b^2$ (the symbol $\Leftrightarrow$, "if and only if", says both directions hold). With a negative side, squaring can flip or wreck the inequality: $-3 < 2$, but $9 > 4$. Speeds, masses and distances are never negative, so for them $v^2 < 2\mu/r$ and $v < \sqrt{2\mu/r}$ say the same thing. That is how the [[escape-speed limit|escape-speed]] is read in either direction.
 
 Here is a clean case from the logarithms lesson. Air density falls off with height $h$ as $e^{-h/H}$ times its sea-level value, with scale height $H = 8.5\,\mathrm{km}$. Where is the air thinner than a thousandth of sea level? We need
 
@@ -104,7 +104,7 @@ $$
 
 means "$x$ is *more* than $\delta$ away from $a$": everything *outside* that interval. That is two separate pieces joined by "or", never a chain. The $\leq$ and $\geq$ versions include the end points.
 
-Every engineering tolerance is one of these. "$300 \pm 5\,\mathrm{psi}$" (the symbol $\pm$ is read "plus or minus") means $|p - 300| \leq 5$, that is $295 \leq p \leq 305$. A rule that a rocket must touch down within $10\,\mathrm{m}$ of the pad centre in each direction is $|x| \leq 10$ and $|y| \leq 10$. A guidance loop that declares itself "done when $|\text{error}| < 0.01\,\mathrm{m/s}$" is testing exactly this.
+Every [[engineering tolerance|tolerances]] is one of these. "$300 \pm 5\,\mathrm{psi}$" (the symbol $\pm$ is read "plus or minus") means $|p - 300| \leq 5$, that is $295 \leq p \leq 305$. A rule that a rocket must touch down within $10\,\mathrm{m}$ of the pad centre in each direction is $|x| \leq 10$ and $|y| \leq 10$. A guidance loop that declares itself "done when $|\text{error}| < 0.01\,\mathrm{m/s}$" is testing exactly this.
 
 Solve $|2x - 3| \leq 7$:
 
@@ -114,7 +114,7 @@ Solve $|2x - 3| \leq 7$:
 
 The solution is $[-2, 5]$. Check the end points: $x = -2$ gives $|{-4} - 3| = 7$, and $x = 5$ gives $|10 - 3| = 7$. Both equal $7$, so both are included.
 
-One inequality about absolute values has its own name. Walk $3$ blocks one way, then $4$ blocks some other way. How far from the start can you end up? At most $7$ blocks, if you kept walking in the same direction. Less, if you turned. That is the **triangle inequality**:
+One inequality about absolute values has its own name. Walk $3$ blocks one way, then $4$ blocks some other way. How far from the start can you end up? At most $7$ blocks, if you kept walking in the same direction. Less, if you turned. That is the **[[triangle inequality|triangle]]**:
 
 $$
 |a + b| \leq |a| + |b| .
@@ -205,9 +205,9 @@ For $m_0 = 549\,\mathrm{t} = 549\,000\,\mathrm{kg}$ this gives $T \geq 1.2 \time
 2. Take $\ln$ (increasing, so no flip): $-\Delta v / v_e \geq \ln 0.05 = -\ln 20$.
 3. Multiply by $-v_e$ (negative, so flip): $\Delta v \leq v_e \ln 20$.
 
-With $v_e = 3050\,\mathrm{m/s}$: $\Delta v \leq 3050 \times 2.996 = 9137\,\mathrm{m/s}$. So any single-stage mission that needs more than about $9.1\,\mathrm{km/s}$ from this engine cannot keep five percent of its mass — and that five percent has to include the rocket's own structure. This is the inequality that kills single-stage-to-orbit rockets, and it is only two legal moves long.
+With $v_e = 3050\,\mathrm{m/s}$: $\Delta v \leq 3050 \times 2.996 = 9137\,\mathrm{m/s}$. So any single-stage mission that needs more than about $9.1\,\mathrm{km/s}$ from this engine cannot keep five percent of its mass — and that five percent has to include the rocket's own structure. This is the inequality that kills [[single-stage-to-orbit|ssto]] rockets, and it is only two legal moves long.
 
-**Hovering.** A returning booster of mass $28\,\mathrm{t}$ can hover in place only if its engine can throttle down to exactly its weight: $T = m g_0 = 28\,000 \times 9.80665 = 275\,\mathrm{kN}$. But suppose the engine's *lowest* thrust is about $480\,\mathrm{kN}$. Then $T_{\min} > m g_0$ — the inequality points the wrong way — and the booster cannot hover. Even at its lowest setting it keeps slowing down, at
+**Hovering.** A returning booster of mass $28\,\mathrm{t}$ can hover in place only if its engine can throttle down to exactly its weight: $T = m g_0 = 28\,000 \times 9.80665 = 275\,\mathrm{kN}$. But suppose the engine's *lowest* thrust is about $480\,\mathrm{kN}$. Then $T_{\min} > m g_0$ — the inequality points the wrong way — and [[the booster cannot hover|hoverslam]]. Even at its lowest setting it keeps slowing down, at
 
 $$
 \frac{T}{m} - g_0 = \frac{480\,000}{28\,000} - 9.81 = 17.1 - 9.81 = 7.3\,\mathrm{m/s^2} .
@@ -325,3 +325,113 @@ The careless multiplication would have given $x + 3 < 2x - 2$, so $x > 5$ only �
 | Fixed $MR$ | $m_p = (MR - 1)(m_d + m_L)$, so more payload needs $(MR - 1)$ times as much more propellant |
 
 Next lesson: the numbers themselves. Every number an engineer writes carries a **unit**. You will learn to convert between metric and US units without losing a spacecraft, and to use the rule that every term in an equation must have the same kind of units to catch mistakes before they fly.
+
+::: context max-q Max Q
+Dynamic pressure is $q = \tfrac{1}{2}\rho v^2$: half the air density times the speed squared. Just after lift-off the rocket is slow; high up, the air is thin. In between, roughly a minute into the flight, $q$ peaks. Engineers call that moment **Max Q**, and launch commentators announce it out loud. Many rockets throttle their engines down while passing through it, so the structure never feels more than it was built for. The whole plan is one inequality, $q \leq q_{\max}$, true at every moment of the climb.
+:::
+
+::: context shall-statements The word "shall"
+Engineering requirements are written in a strict style: one sentence each, built around the word **shall**. "The vehicle shall have a lift-off thrust-to-weight ratio of at least 1.2." "Peak acceleration shall not exceed 5 g." Every requirement has to be checkable, so in practice nearly every one hides an inequality with a number in it. A big programme has thousands of them, and before flight each must be shown true by test, analysis, inspection or demonstration.
+:::
+
+::: context less-than-origin Where < and > came from
+The signs $<$ and $>$ first appeared in print in 1631, in a book by the English mathematician Thomas Harriot, published ten years after he died. The shape is a picture: wide open at the bigger number, narrowing to a point at the smaller one. Some people remember it as a hungry mouth that always opens towards the bigger meal. The versions with a bar underneath, $\leq$ and $\geq$, for "or equal", came along about a century later.
+:::
+
+::: context interval-picture Drawing a solution set
+On a number line an inequality becomes a shaded stretch. An **open circle** means that end is left out, like a round bracket. A **filled dot** means it is included, like a square bracket.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 160" font-family="Inter, Arial, sans-serif">
+<text x="18" y="20" font-size="12" fill="#1f2a44">2 &lt; x ≤ 5, written (2, 5]</text>
+  <line x1="18" y1="45" x2="342" y2="45" stroke="#1f2a44" stroke-width="1.5"/>
+  <g stroke="#1f2a44" stroke-width="1.5"><line x1="30" y1="40" x2="30" y2="50"/><line x1="60" y1="40" x2="60" y2="50"/><line x1="90" y1="40" x2="90" y2="50"/><line x1="120" y1="40" x2="120" y2="50"/><line x1="150" y1="40" x2="150" y2="50"/><line x1="180" y1="40" x2="180" y2="50"/><line x1="210" y1="40" x2="210" y2="50"/><line x1="240" y1="40" x2="240" y2="50"/><line x1="270" y1="40" x2="270" y2="50"/><line x1="300" y1="40" x2="300" y2="50"/><line x1="330" y1="40" x2="330" y2="50"/></g>
+  <g font-size="11" fill="#1f2a44" text-anchor="middle"><text x="30" y="65">−3</text><text x="60" y="65">−2</text><text x="90" y="65">−1</text><text x="120" y="65">0</text><text x="150" y="65">1</text><text x="180" y="65">2</text><text x="210" y="65">3</text><text x="240" y="65">4</text><text x="270" y="65">5</text><text x="300" y="65">6</text><text x="330" y="65">7</text></g>
+  <line x1="180" y1="45" x2="270" y2="45" stroke="#1d6fd1" stroke-width="6"/>
+  <circle cx="180" cy="45" r="6" fill="#fff" stroke="#1d6fd1" stroke-width="2.5"/>
+  <circle cx="270" cy="45" r="6" fill="#1d6fd1"/>
+  <text x="18" y="104" font-size="12" fill="#1f2a44">x &lt; −1 or x &gt; 3, written (−∞, −1) ∪ (3, ∞)</text>
+  <line x1="18" y1="130" x2="342" y2="130" stroke="#1f2a44" stroke-width="1.5"/>
+  <g stroke="#1f2a44" stroke-width="1.5"><line x1="30" y1="125" x2="30" y2="135"/><line x1="60" y1="125" x2="60" y2="135"/><line x1="90" y1="125" x2="90" y2="135"/><line x1="120" y1="125" x2="120" y2="135"/><line x1="150" y1="125" x2="150" y2="135"/><line x1="180" y1="125" x2="180" y2="135"/><line x1="210" y1="125" x2="210" y2="135"/><line x1="240" y1="125" x2="240" y2="135"/><line x1="270" y1="125" x2="270" y2="135"/><line x1="300" y1="125" x2="300" y2="135"/><line x1="330" y1="125" x2="330" y2="135"/></g>
+  <g font-size="11" fill="#1f2a44" text-anchor="middle"><text x="30" y="150">−3</text><text x="60" y="150">−2</text><text x="90" y="150">−1</text><text x="120" y="150">0</text><text x="150" y="150">1</text><text x="180" y="150">2</text><text x="210" y="150">3</text><text x="240" y="150">4</text><text x="270" y="150">5</text><text x="300" y="150">6</text><text x="330" y="150">7</text></g>
+  <line x1="90" y1="130" x2="22" y2="130" stroke="#b4232c" stroke-width="6"/>
+  <polygon points="12,130 24,123 24,137" fill="#b4232c"/>
+  <line x1="210" y1="130" x2="338" y2="130" stroke="#b4232c" stroke-width="6"/>
+  <polygon points="348,130 336,123 336,137" fill="#b4232c"/>
+  <circle cx="90" cy="130" r="6" fill="#fff" stroke="#b4232c" stroke-width="2.5"/>
+  <circle cx="210" cy="130" r="6" fill="#fff" stroke="#b4232c" stroke-width="2.5"/>
+</svg>
+```
+
+An arrow on the end of a shaded piece means it runs on forever — what $\infty$ says in interval notation. An "and" is one piece; an "or" can be two.
+:::
+
+::: context mirror-flip The mirror in the middle
+Multiplying by $-1$ sends every number to the same distance on the other side of zero. Watch what happens to the order.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 170" font-family="Inter, Arial, sans-serif">
+<line x1="20" y1="40" x2="340" y2="40" stroke="#1f2a44" stroke-width="1.5"/>
+  <g stroke="#1f2a44" stroke-width="1.5"><line x1="30" y1="36" x2="30" y2="44"/><line x1="55" y1="36" x2="55" y2="44"/><line x1="80" y1="36" x2="80" y2="44"/><line x1="105" y1="36" x2="105" y2="44"/><line x1="130" y1="36" x2="130" y2="44"/><line x1="155" y1="36" x2="155" y2="44"/><line x1="180" y1="36" x2="180" y2="44"/><line x1="205" y1="36" x2="205" y2="44"/><line x1="230" y1="36" x2="230" y2="44"/><line x1="255" y1="36" x2="255" y2="44"/><line x1="280" y1="36" x2="280" y2="44"/><line x1="305" y1="36" x2="305" y2="44"/><line x1="330" y1="36" x2="330" y2="44"/></g>
+  <line x1="20" y1="140" x2="340" y2="140" stroke="#1f2a44" stroke-width="1.5"/>
+  <g stroke="#1f2a44" stroke-width="1.5"><line x1="30" y1="136" x2="30" y2="144"/><line x1="55" y1="136" x2="55" y2="144"/><line x1="80" y1="136" x2="80" y2="144"/><line x1="105" y1="136" x2="105" y2="144"/><line x1="130" y1="136" x2="130" y2="144"/><line x1="155" y1="136" x2="155" y2="144"/><line x1="180" y1="136" x2="180" y2="144"/><line x1="205" y1="136" x2="205" y2="144"/><line x1="230" y1="136" x2="230" y2="144"/><line x1="255" y1="136" x2="255" y2="144"/><line x1="280" y1="136" x2="280" y2="144"/><line x1="305" y1="136" x2="305" y2="144"/><line x1="330" y1="136" x2="330" y2="144"/></g>
+  <line x1="180" y1="32" x2="180" y2="148" stroke="#6c7a93" stroke-dasharray="4 3"/>
+  <text x="180" y="26" font-size="12" fill="#6c7a93" text-anchor="middle">0</text><text x="180" y="160" font-size="12" fill="#6c7a93" text-anchor="middle">0</text>
+  <line x1="230" y1="46" x2="130" y2="134" stroke="#1d6fd1" stroke-width="1.5" stroke-dasharray="5 3"/>
+  <line x1="305" y1="46" x2="55" y2="134" stroke="#b4232c" stroke-width="1.5" stroke-dasharray="5 3"/>
+  <circle cx="230" cy="40" r="5" fill="#1d6fd1"/><circle cx="305" cy="40" r="5" fill="#b4232c"/>
+  <circle cx="130" cy="140" r="5" fill="#1d6fd1"/><circle cx="55" cy="140" r="5" fill="#b4232c"/>
+  <g font-size="12" text-anchor="middle">
+    <text x="230" y="26" fill="#1d6fd1">2</text><text x="305" y="26" fill="#b4232c">5</text>
+    <text x="130" y="160" fill="#1d6fd1">−2</text><text x="55" y="160" fill="#b4232c">−5</text>
+  </g>
+  <text x="24" y="30" font-size="12" fill="#1f2a44">2 &lt; 5</text>
+  <text x="258" y="160" font-size="12" fill="#1f2a44">× (−1): −2 &gt; −5</text>
+</svg>
+```
+
+Before, $2$ sat to the left of $5$. After, $-2$ sits to the *right* of $-5$. The two paths cross, and that crossing is the flipped sign. Multiplying by $-3$ does the same mirroring and then a stretch, and no stretch can undo the crossing.
+:::
+
+::: context escape-speed Fast enough never to fall back
+Throw a ball up and it comes back down. Throw it faster and it goes higher first. Above one particular speed — the **escape speed**, $\sqrt{2\mu/r}$ — it never comes back at all, because gravity weakens with distance and can never quite stop it. From Earth's surface that is about $11.2\,\mathrm{km/s}$, roughly $40\,000\,\mathrm{km/h}$. So "escaping" is an inequality, $v \geq \sqrt{2\mu/r}$. A probe heading to Mars must beat it; a satellite in orbit stays below it.
+:::
+
+::: context tolerances Nothing is made exactly
+No machine cuts a part to exactly $50\,\mathrm{mm}$, so every engineering drawing says how far off is still fine — say $50.00 \pm 0.02\,\mathrm{mm}$. Tolerances are why a spare part made in one factory fits a machine built in another. Tight ones cost money: each extra decimal place means slower machining and more parts thrown away, so good engineers make them only as tight as the job needs. (The psi in the pressure example is pounds per square inch, the US unit of pressure; the air around you presses at about $14.7\,\mathrm{psi}$.)
+:::
+
+::: context triangle Why it is called the triangle inequality
+Walk $3$ blocks east, then $4$ blocks north. You end up $5$ blocks from the start as the crow flies — less than $3 + 4 = 7$, because you turned.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 180" font-family="Inter, Arial, sans-serif">
+<polyline points="30,150 102,150 102,54" fill="none" stroke="#1d6fd1" stroke-width="3"/>
+  <line x1="30" y1="150" x2="102" y2="54" stroke="#b4232c" stroke-width="3"/>
+  <circle cx="30" cy="150" r="4" fill="#1f2a44"/>
+  <g font-size="12" fill="#1f2a44" text-anchor="middle">
+    <text x="66.0" y="168">3</text>
+    <text x="114" y="106">4</text>
+  </g>
+  <text x="52.0" y="98" font-size="12" fill="#b4232c" text-anchor="middle">5</text>
+  <text x="30" y="30" font-size="12" fill="#1f2a44">turn: end up 5 away</text>
+  <line x1="150" y1="150" x2="318" y2="150" stroke="#1d6fd1" stroke-width="3"/>
+  <line x1="222" y1="144" x2="222" y2="156" stroke="#1f2a44" stroke-width="1.5"/>
+  <circle cx="150" cy="150" r="4" fill="#1f2a44"/>
+  <g font-size="12" fill="#1f2a44" text-anchor="middle">
+    <text x="186.0" y="168">3</text><text x="270" y="168">4</text>
+  </g>
+  <text x="234.0" y="130" font-size="12" fill="#1f2a44" text-anchor="middle">no turn: 3 + 4 = 7 away</text>
+</svg>
+```
+
+In any triangle, one side is always shorter than the other two put together: going straight is the shortest way between two points. Only when the triangle is squashed flat — no turn at all — does the long way round equal the direct way.
+:::
+
+::: context ssto The rocket nobody has built
+No rocket has ever reached orbit from Earth on chemical fuel without dropping some part of itself on the way. Engineers have tried to get close. In the 1990s NASA and Lockheed Martin built parts of the X-33, a test craft for a single-stage vehicle called VentureStar. Its lightweight composite fuel tank failed in testing, and the programme was cancelled in 2001. This inequality shows why the margins are so thin: everything that is not propellant — structure, engines, heat protection and payload — has to fit inside a few percent of the lift-off mass.
+:::
+
+::: context hoverslam The hoverslam
+SpaceX's Falcon 9 boosters land in exactly this situation. Nearly empty, a booster is so light that even one engine at its lowest setting pushes harder than the booster weighs. So it cannot hang in the air and edge down gently like a helicopter. Instead the computer lights the engine at just the height and speed where the booster will reach zero speed at the instant its legs touch down. Engineers nicknamed this the **hoverslam**. The first Falcon 9 booster to land came down on solid ground in Florida in December 2015.
+:::

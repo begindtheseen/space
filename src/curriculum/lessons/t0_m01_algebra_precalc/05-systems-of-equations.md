@@ -28,7 +28,7 @@ The letters $x$ and $y$ are the **unknowns** — numbers we have not found yet. 
 
 Now draw them. Take a sheet of graph paper. Let $x$ count squares to the right and $y$ count squares up. Every pair of numbers is one dot, written $(x, y)$ — so $(7, 3)$ is seven across and three up. That flat grid is the **$x$–$y$ plane**. Plot every pair that makes $x + y = 10$ true, and the dots line up into a straight line. That is why an equation of the form $ax + by = c$ (with fixed numbers $a$, $b$, $c$) is called a **linear equation**: its picture is a line.
 
-A second equation draws a second line. A solution of the **system** has to be on both lines at once — so it is the point where the lines **cross**.
+A second equation draws a second line. A solution of the **system** has to be on both lines at once — so it is the point where the lines **[[cross|crossing-point]]**.
 
 Two straight lines on a flat sheet can only do three things:
 
@@ -72,7 +72,7 @@ $$
 
 ($m_{ox}$ is read "m sub ox", the oxidizer mass. $1\,\mathrm{t}$ is a tonne, $1000\,\mathrm{kg}$.) Substitute the second into the first: $2.3\,m_{fuel} + m_{fuel} = 400$. That is $3.3\,m_{fuel} = 400$, so $m_{fuel} = 400 / 3.3 = 121.2\,\mathrm{t}$ and $m_{ox} = 2.3 \times 121.2 = 278.8\,\mathrm{t}$. These are the same numbers the "fractions of the whole" method gave in the first lesson — now with no fractions to reason about.
 
-A chase is another one. A chaser drives along a road so that its position is $x = 2 + 1.5t$, and a target's position is $x = 10 + 0.5t$ ($x$ in kilometres, $t$ in hours). They meet when they are at the same place at the same time — when the two $x$'s are equal:
+[[A chase|rendezvous]] is another one. A chaser drives along a road so that its position is $x = 2 + 1.5t$, and a target's position is $x = 10 + 0.5t$ ($x$ in kilometres, $t$ in hours). They meet when they are at the same place at the same time — when the two $x$'s are equal:
 
 $$
 2 + 1.5t = 10 + 0.5t .
@@ -86,7 +86,7 @@ Sometimes neither equation has an unknown standing alone. Then there is a second
 
 Picture two shopping receipts. The first says: 2 burgers and 1 order of fries cost \$13. The second says: 1 burger and 1 order of fries cost \$8. Lay one receipt on top of the other and take the difference. The first bought exactly one extra burger and paid \$5 more. So a burger costs \$5 — and from the second receipt, the fries cost \$8 − \$5 = \$3. Subtracting the receipts made the fries disappear.
 
-That is **elimination**: combine the equations so that one unknown cancels out. Often you first have to **scale** an equation — multiply the whole thing by a number — so that the cancelling works. Take
+That is **[[elimination|elimination-history]]**: combine the equations so that one unknown cancels out. Often you first have to **scale** an equation — multiply the whole thing by a number — so that the cancelling works. Take
 
 $$
 3x + 2y = 16, \qquad 5x - 4y = 12 .
@@ -143,7 +143,7 @@ $$
 D = a_1 b_2 - a_2 b_1 ,
 $$
 
-called the **determinant** of the system. It decides everything:
+called the **[[determinant|determinant-slope]]** of the system. It decides everything:
 
 - If $D \neq 0$ ("D is not zero"), you can divide by it, and there is exactly **one** solution.
 - If $D = 0$, the two lines have the same steepness — they are parallel. Then there is **no** solution, unless the top numbers are zero as well. In that case the two equations are the same line in disguise, and every point on it is a solution: **infinitely many**.
@@ -174,7 +174,7 @@ With three unknowns you need three clues. The picture is no longer lines on a sh
 The method is elimination in stages. Use one equation to remove one unknown from the other two. That leaves two equations in two unknowns — a system you already know how to solve. Solve it, then back-substitute to get the third unknown. There is more bookkeeping, but no new ideas.
 
 ::: example Fitting a thrust curve through three points
-A test stand records an engine's push (its **thrust**, a force) at three moments: $800\,\mathrm{kN}$ at $t = 0$, $950\,\mathrm{kN}$ at $t = 10\,\mathrm{s}$ and $800\,\mathrm{kN}$ at $t = 40\,\mathrm{s}$. We want a smooth curve through all three, of the form
+A test stand records an engine's push (its **thrust**, a force) at three moments: $800\,\mathrm{kN}$ at $t = 0$, $950\,\mathrm{kN}$ at $t = 10\,\mathrm{s}$ and $800\,\mathrm{kN}$ at $t = 40\,\mathrm{s}$. We want a [[smooth curve through all three|ceres]], of the form
 
 $$
 F(t) = a + bt + ct^2 .
@@ -210,13 +210,13 @@ What if one of the equations is not a line — a circle, a parabola, a product o
 The picture changes a little. A line can cross a circle twice, touch it once, or miss it entirely. So a nonlinear system can have two solutions, one, or none. The **discriminant** — the $b^2 - 4ac$ under the square root in the quadratic formula — tells you which. If it comes out negative, the square root does not exist, and the curves do not meet.
 
 ::: example Where a line of sight meets the ground
-Picture a slice through the middle of the Earth. In that slice, the surface is a circle of radius $R = 6371\,\mathrm{km}$ centred at $(0, 0)$. A point $(x, y)$ is on the circle when its distance from the centre is $R$. By Pythagoras' theorem, that distance squared is $x^2 + y^2$, so the circle is the equation
+Picture a slice through the middle of the Earth. In that slice, the surface is a circle of radius $R = 6371\,\mathrm{km}$ centred at $(0, 0)$. A point $(x, y)$ is on the circle when its distance from the centre is $R$. By [[Pythagoras' theorem|pythagoras]], that distance squared is $x^2 + y^2$, so the circle is the equation
 
 $$
 x^2 + y^2 = R^2 .
 $$
 
-Work in kilometres. A satellite sits at $(0,\, 6771)$, which is $6771 - 6371 = 400\,\mathrm{km}$ above the surface. Its camera looks along the line $y = 6771 - 3x$: three kilometres down for every kilometre sideways. Where does the camera's centre line (its **boresight**) hit the ground?
+Work in kilometres. A satellite sits at $(0,\, 6771)$, which is $6771 - 6371 = 400\,\mathrm{km}$ above the surface. Its camera looks along the line $y = 6771 - 3x$: three kilometres down for every kilometre sideways. Where does the camera's centre line (its **[[boresight|boresight]]**) hit the ground?
 
 **Substitute** the line into the circle — wherever the circle says $y$, write $6771 - 3x$:
 
@@ -244,7 +244,7 @@ $$
 x = \frac{40\,626 \pm 37\,950}{20} = 133.8 \quad\text{or}\quad 3928.8\,\mathrm{km} .
 $$
 
-Two answers, because a line that enters a circle also leaves it. The nearer one is the ground point: $x = 133.8$, $y = 6771 - 3(133.8) = 6771 - 401.4 = 6369.6\,\mathrm{km}$.
+Two answers, because [[a line that enters a circle also leaves it|line-enters-leaves]]. The nearer one is the ground point: $x = 133.8$, $y = 6771 - 3(133.8) = 6771 - 401.4 = 6369.6\,\mathrm{km}$.
 
 **Check it is on the circle:** $133.8^2 + 6369.6^2 = 17\,902 + 40\,571\,800 \approx 40\,589\,700$, and $6371^2 = 40\,589\,641$. Close enough, given the rounding. The far answer is where the line would come out the other side of the planet after passing through it.
 
@@ -257,20 +257,20 @@ Had the line been tilted so shallow that it missed the Earth, the discriminant w
 
 Between "one solution" and "no solution" there is a grey zone that matters more in real life than either.
 
-Picture two roads that cross at a very shallow angle, almost side by side. Shift one road over by a hair and the crossing point slides a long way along them. When $D$ is small but not zero, the two lines of a system cross at such a shallow angle, and a tiny change in either equation moves the answer a long way.
+Picture two roads that [[cross at a very shallow angle|shallow-angle]], almost side by side. Shift one road over by a hair and the crossing point slides a long way along them. When $D$ is small but not zero, the two lines of a system cross at such a shallow angle, and a tiny change in either equation moves the answer a long way.
 
 Try it. Take $x + y = 2$ and $x + 1.001y = 2.001$. Subtract the first from the second: $0.001y = 0.001$, so $y = 1$ and then $x = 1$.
 
 Now nudge the second right-hand side from $2.001$ to $2.002$ — a change of about one part in two thousand. The subtraction becomes $0.001y = 0.002$, so $y = 2$ and $x = 0$. A tiny nudge moved the solution by a whole unit.
 
-A system like this is called **ill-conditioned**. Real measurements always carry small errors. So a navigation fix made from two nearly parallel lines of position is nearly worthless, even though the algebra "works". You will meet this again as the **condition number** of a matrix, and as the geometry factor in satellite positioning. The picture to keep is two lines crossing at a grazing angle.
+A system like this is called **ill-conditioned**. Real measurements always carry small errors. So a navigation fix made from two nearly parallel lines of position is nearly worthless, even though the algebra "works". You will meet this again as the **condition number** of a matrix, and as the [[geometry factor in satellite positioning|gps-geometry]]. The picture to keep is two lines crossing at a grazing angle.
 
 ## Mixtures and budgets
 
 A large family of practical systems has the same shape: *the parts add up to a total*, and *a weighted mix of the parts hits a target*. Think of mixing warm and cold water to fill a bath at exactly the right temperature. Mass budgets, stage splits and sensor blends all look like this.
 
 ::: example Blending two batches of kerosene
-You need $1000\,\mathrm{L}$ of kerosene with density $815\,\mathrm{kg/m^3}$. You have one batch at $800\,\mathrm{kg/m^3}$ and another at $820\,\mathrm{kg/m^3}$. How much of each?
+You need $1000\,\mathrm{L}$ of [[kerosene|kerosene]] with density $815\,\mathrm{kg/m^3}$. You have one batch at $800\,\mathrm{kg/m^3}$ and another at $820\,\mathrm{kg/m^3}$. How much of each?
 
 Call the volumes $V_1$ and $V_2$, in litres. Clue one — the parts add up to the total:
 
@@ -378,3 +378,141 @@ Check in the first receipt: $3(0.30) + 2(0.20) = 0.90 + 0.40 = 1.30$. True.
 | Mixture pattern | parts sum to a total, weighted parts equal a target |
 
 Next lesson: we step back from equations to the rules that produce them — **functions**. You will learn what a formula is allowed to take in (its domain), what it can give out (its range), how formulas chain together, and when one can be run backwards.
+
+::: context crossing-point Two clues, one crossing
+Here are the two clues $x + y = 10$ and $x - y = 4$ drawn as lines. Every point on the blue line fits the first clue. Every point on the red line fits the second. Only one point is on both: $(7, 3)$.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 200" font-family="Inter, Arial, sans-serif">
+  <g stroke="#8fb8f0" stroke-width="0.8" stroke-opacity="0.6">
+    <line x1="53" y1="45" x2="53" y2="175"/><line x1="40" y1="162" x2="170" y2="162"/><line x1="66" y1="45" x2="66" y2="175"/><line x1="40" y1="149" x2="170" y2="149"/><line x1="79" y1="45" x2="79" y2="175"/><line x1="40" y1="136" x2="170" y2="136"/><line x1="92" y1="45" x2="92" y2="175"/><line x1="40" y1="123" x2="170" y2="123"/><line x1="105" y1="45" x2="105" y2="175"/><line x1="40" y1="110" x2="170" y2="110"/><line x1="118" y1="45" x2="118" y2="175"/><line x1="40" y1="97" x2="170" y2="97"/><line x1="131" y1="45" x2="131" y2="175"/><line x1="40" y1="84" x2="170" y2="84"/><line x1="144" y1="45" x2="144" y2="175"/><line x1="40" y1="71" x2="170" y2="71"/><line x1="157" y1="45" x2="157" y2="175"/><line x1="40" y1="58" x2="170" y2="58"/><line x1="170" y1="45" x2="170" y2="175"/><line x1="40" y1="45" x2="170" y2="45"/>
+  </g>
+  <line x1="40" y1="175" x2="180" y2="175" stroke="#1f2a44" stroke-width="1.5"/>
+  <line x1="40" y1="175" x2="40" y2="35" stroke="#1f2a44" stroke-width="1.5"/>
+  <g font-size="11" fill="#1f2a44" text-anchor="middle">
+    <text x="40" y="190">0</text><text x="105" y="190">5</text><text x="170" y="190">10</text>
+    <text x="28" y="114">5</text><text x="28" y="49">10</text>
+    <text x="186" y="179">x</text><text x="40" y="28">y</text>
+  </g>
+  <line x1="40" y1="45" x2="170" y2="175" stroke="#1d6fd1" stroke-width="3"/>
+  <line x1="92" y1="175" x2="170" y2="97" stroke="#b4232c" stroke-width="3"/>
+  <circle cx="131" cy="136" r="5" fill="#1f2a44"/>
+  <g font-size="12" fill="#1f2a44">
+    <text x="210" y="70" fill="#1d6fd1">blue: x + y = 10</text>
+    <text x="210" y="92" fill="#b4232c">red: x − y = 4</text>
+    <text x="210" y="124">crossing: (7, 3)</text>
+    <text x="210" y="142" font-size="11">on both lines at once</text>
+  </g>
+</svg>
+```
+
+Substitution and elimination are ways of finding that crossing without drawing — and more exactly than any pencil could.
+:::
+
+::: context rendezvous Chasing a space station
+Every trip to the space station ends in a chase like this one. The visiting spacecraft starts in a slightly lower orbit, which goes around faster, so it gains on the station lap by lap. Then it raises its orbit to meet it. Working out *when* and *where* the two positions match is a system of equations.
+
+The first crewed rendezvous was in December 1965, when Gemini 6A flew to within about $30$ centimetres of Gemini 7.
+:::
+
+::: context elimination-history Two thousand years of elimination
+This method is ancient. A Chinese book called *The Nine Chapters on the Mathematical Art*, put together roughly two thousand years ago, solves systems of three or more equations by laying the numbers out in a grid of counting rods and combining the rows — the same scaling and subtracting you do here.
+
+In the West it is called **Gaussian elimination**, after the German mathematician Carl Friedrich Gauss. It is still how computers solve large systems of equations.
+:::
+
+::: context determinant-slope Why D = 0 means parallel
+Each line $ax + by = c$ has a steepness (its slope) of $-\frac{a}{b}$. Two lines are parallel when their slopes match:
+
+$$
+-\frac{a_1}{b_1} = -\frac{a_2}{b_2}.
+$$
+
+Multiply both sides by $-b_1 b_2$ and this becomes $a_1 b_2 = a_2 b_1$ — which is the same as $a_1 b_2 - a_2 b_1 = 0$. So "$D = 0$" is a tidy way of saying "same slope". Because it has no division in it, it even works for upright lines, where $b = 0$ and the slope has no value.
+:::
+
+::: context ceres Gauss and the lost dwarf planet
+Three points fix a quadratic exactly. Real engineers usually have *more* measurements than unknowns — hundreds of radar readings to pin down the six numbers that describe an orbit — and the readings disagree slightly. Then they look for the curve that misses all of them by the least total amount, a method called **least squares**.
+
+Gauss used it in 1801, aged 24, to predict where the newly found dwarf planet Ceres would reappear after it was lost in the Sun's glare. Astronomers found it close to where he said. Orbit determination still works this way.
+:::
+
+::: context pythagoras Older than Pythagoras
+For a right-angled triangle with shorter sides $x$ and $y$ and longest side $d$, the rule is $x^2 + y^2 = d^2$. It carries the name of Pythagoras, a Greek thinker from about $2500$ years ago. But Babylonian clay tablets more than a thousand years older already list sets of whole numbers that fit it, such as $119$, $120$ and $169$.
+
+Every straight-line distance a navigation computer works out, in two dimensions or three, uses this rule.
+:::
+
+::: context boresight Looking down the barrel
+The word comes from guns. To line up a rifle's sight, you look straight down the inside of the barrel — its *bore* — and adjust the sight until it points where the bore points.
+
+Engineers kept the word for the direction any instrument looks: a camera, a radar dish, a telescope, a star tracker. Knowing each boresight's direction to a tiny fraction of a degree is a big part of a GNC engineer's job, because a small pointing error becomes kilometres on the ground.
+:::
+
+::: context line-enters-leaves Drawn to scale
+Here is the example drawn to scale: the Earth slice as a circle, the satellite $400\,\mathrm{km}$ above it, and the camera line going in and coming out.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 215" font-family="Inter, Arial, sans-serif">
+  <circle cx="150" cy="110" r="90" fill="#8fb8f0" fill-opacity="0.45" stroke="#1f2a44" stroke-width="1.5"/>
+  <line x1="150" y1="14.35" x2="151.9" y2="20" stroke="#b4232c" stroke-width="2.5"/>
+  <line x1="151.9" y1="20" x2="205.5" y2="180.85" stroke="#6c7a93" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <line x1="205.5" y1="180.85" x2="213.6" y2="205.1" stroke="#6c7a93" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <rect x="146" y="10.35" width="8" height="8" fill="#1d6fd1"/>
+  <circle cx="151.9" cy="20" r="3.5" fill="#b4232c"/>
+  <circle cx="205.5" cy="180.85" r="3.5" fill="#fff" stroke="#1f2a44" stroke-width="1.5"/>
+  <line x1="155" y1="22" x2="220" y2="40" stroke="#1f2a44" stroke-width="1"/>
+  <g font-size="11" fill="#1f2a44">
+    <text x="162" y="15">satellite, 400 km up</text>
+    <text x="224" y="44">near crossing:</text>
+    <text x="224" y="58">the ground point</text>
+    <text x="214" y="185">far crossing</text>
+  </g>
+  <text x="150" y="108" font-size="12" text-anchor="middle" fill="#1f2a44">Earth</text>
+  <text x="150" y="124" font-size="11" text-anchor="middle" fill="#1f2a44">R = 6371 km</text>
+</svg>
+```
+
+At this scale the satellite almost touches the planet: low orbit is very low. The near crossing, at $x = 133.8\,\mathrm{km}$, is the ground point. The far one, at $x = 3928.8\,\mathrm{km}$, is on the other side of the planet, where the line would come out.
+:::
+
+::: context shallow-angle Why a shallow crossing is fragile
+Every measured line is a little uncertain, so think of it as a band rather than a hair-thin line. The answer could be anywhere the two bands overlap. A steep crossing leaves a small diamond. A shallow crossing leaves a long sliver.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 200" font-family="Inter, Arial, sans-serif">
+  <g stroke-width="14" stroke-opacity="0.4" stroke-linecap="butt">
+    <line x1="45" y1="50" x2="135" y2="140" stroke="#1d6fd1"/>
+    <line x1="45" y1="140" x2="135" y2="50" stroke="#b4232c"/>
+    <line x1="180" y1="87.8" x2="340" y2="102.2" stroke="#1d6fd1"/>
+    <line x1="180" y1="102.2" x2="340" y2="87.8" stroke="#b4232c"/>
+  </g>
+  <g stroke-width="1.5">
+    <line x1="45" y1="50" x2="135" y2="140" stroke="#1d6fd1"/>
+    <line x1="45" y1="140" x2="135" y2="50" stroke="#b4232c"/>
+    <line x1="180" y1="87.8" x2="340" y2="102.2" stroke="#1d6fd1"/>
+    <line x1="180" y1="102.2" x2="340" y2="87.8" stroke="#b4232c"/>
+  </g>
+  <circle cx="90" cy="95" r="3" fill="#1f2a44"/>
+  <circle cx="260" cy="95" r="3" fill="#1f2a44"/>
+  <g font-size="12" text-anchor="middle" fill="#1f2a44">
+    <text x="90" y="172">steep crossing:</text><text x="90" y="188">small overlap</text>
+    <text x="260" y="172">shallow crossing:</text><text x="260" y="188">long sliver</text>
+  </g>
+</svg>
+```
+
+The bands are the same width in both — the same measuring errors — but the shallow pair smears the answer along a long stretch.
+:::
+
+::: context gps-geometry Satellites bunched in the sky
+A GPS receiver finds where it is from its distances to several satellites. Each distance is one clue, and the receiver solves the system. If all the satellites it can see sit close together in one patch of sky, the clues are nearly parallel and the position fix is poor, however accurate each distance is.
+
+Receivers report this as **dilution of precision** (DOP): a number that says how much the geometry magnifies the measuring errors. Satellites spread across the sky give a low DOP and a sharp fix.
+:::
+
+::: context kerosene Rocket kerosene
+Many rockets, including Falcon 9, burn a very pure kerosene called **RP-1** ("Rocket Propellant-1"). It is refined more strictly than jet fuel so that it does not leave gummy deposits inside the engine.
+
+Density matters because a tank holds a fixed *volume*, but the engine burns *mass*. SpaceX chills its RP-1 well below room temperature before loading it: colder fuel is denser, so the same tanks carry more of it. The weighted-average sum in this example tells you the density of any blend.
+:::

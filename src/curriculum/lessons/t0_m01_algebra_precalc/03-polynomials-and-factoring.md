@@ -6,9 +6,9 @@ covers:
   - polynomial manipulation and factoring
 ---
 
-You buy three notebooks that cost $x$ dollars each and one pen for two dollars. The bill is $3x + 2$. That little formula is a **polynomial**: some numbers, a letter standing for an unknown number, and nothing but adding and multiplying. It is the simplest kind of formula there is.
+You buy three notebooks that cost $x$ dollars each and one pen for two dollars. The bill is $3x + 2$. That little formula is a **[[polynomial|polynomial-word]]**: some numbers, a letter standing for an unknown number, and nothing but adding and multiplying. It is the simplest kind of formula there is.
 
-That simplicity is why polynomials are everywhere in engineering. A rocket engine's push over time, fitted to test data, is a polynomial. So is the height of a falling object, and the energy of motion $\tfrac{1}{2}mv^2$. So is the "characteristic equation" of an autopilot — the equation whose answers decide whether the autopilot calmly settles down or wobbles itself out of control. Being able to rewrite polynomials without hesitating is the difference between following a derivation and being dragged along by it.
+That simplicity is why polynomials are everywhere in engineering. A rocket engine's push over time, fitted to test data, is a polynomial. So is the height of a falling object, and the energy of motion $\tfrac{1}{2}mv^2$. So is the "[[characteristic equation|characteristic-equation]]" of an autopilot — the equation whose answers decide whether the autopilot calmly settles down or wobbles itself out of control. Being able to rewrite polynomials without hesitating is the difference between following a derivation and being dragged along by it.
 
 This lesson has two skills that are mirror images of each other, like unpacking and packing a suitcase:
 
@@ -38,7 +38,7 @@ Degree $1$ is called **linear** (its graph is a straight line), degree $2$ **qua
 
 **Like terms** have exactly the same letters raised to the same powers, and they combine by adding coefficients — apples with apples. $3x^2 + 5x^2 = 8x^2$. But $3x^2 + 5x$ stays as it is, like $3$ apples and $5$ bananas.
 
-**Evaluating** a polynomial means putting in a number for the variable and following the order of operations. Suppose a test engine's thrust (its push) is fitted as $F(t) = 800 + 20t - 0.5t^2$, in kilonewtons, with $t$ the time in seconds. At $t = 10$:
+**Evaluating** a polynomial means putting in a number for the variable and following the order of operations. Suppose a test engine's [[thrust|thrust-curve]] (its push) is fitted as $F(t) = 800 + 20t - 0.5t^2$, in kilonewtons, with $t$ the time in seconds. At $t = 10$:
 
 $$
 F(10) = 800 + 20(10) - 0.5(10)^2 = 800 + 200 - 50 = 950\,\mathrm{kN}.
@@ -64,7 +64,7 @@ $$
 
 Step by step: the first move split the first bracket into its two terms, $3x$ and $-2$, each multiplying all of $(x + 5)$. The second move distributed each of those. The last move combined the like terms $15x - 2x = 13x$.
 
-Every term in the first bracket meets every term in the second. The memory aid "FOIL" (first, outer, inner, last) records exactly that for two terms times two terms. For longer brackets the rule is the same: three terms times two terms makes six products to collect.
+Every term in the first bracket meets every term in the second. The memory aid "[[FOIL|foil]]" (first, outer, inner, last) records exactly that for two terms times two terms. For longer brackets the rule is the same: three terms times two terms makes six products to collect.
 
 Distributing a minus sign is the same law with $a = -1$: $-(a - b) = -a + b$. So
 
@@ -74,7 +74,7 @@ $$
 
 ### Special products
 
-Draw a square with sides of length $a + b$. Cut it with one line across and one down, at distance $a$ from the corner. You get four pieces: an $a$-by-$a$ square, a $b$-by-$b$ square, and *two* $a$-by-$b$ rectangles. So the big square's area is $a^2 + 2ab + b^2$.
+Draw a square with sides of length $a + b$. Cut it with one line across and one down, at distance $a$ from the corner. You get [[four pieces|square-pieces]]: an $a$-by-$a$ square, a $b$-by-$b$ square, and *two* $a$-by-$b$ rectangles. So the big square's area is $a^2 + 2ab + b^2$.
 
 Three expansions like this turn up so often that they are worth knowing on sight:
 
@@ -96,7 +96,7 @@ $$
 (a + b)^3 = a^3 + 3a^2b + 3ab^2 + b^3 .
 $$
 
-The coefficients $1, 3, 3, 1$ are a row of **Pascal's triangle**. Each number in the triangle is the sum of the two above it:
+The coefficients $1, 3, 3, 1$ are a row of **[[Pascal's triangle|pascal]]**. Each number in the triangle is the sum of the two above it:
 
 - $1$
 - $1, 1$
@@ -116,10 +116,10 @@ $$
 
 because the square of a tiny number is tinier still, and can be dropped. Check it: $1.001^2 = 1.002001$, and $1 + 2(0.001) = 1.002$. The dropped piece was $0.000001$. In the same way, $(1 + \varepsilon)^3 \approx 1 + 3\varepsilon$.
 
-In words: make a length one percent longer, and an area grows about two percent and a volume about three percent.
+In words: make a length one percent longer, and an area grows about two percent and a [[volume about three percent|small-change]].
 
 ::: example How much energy does a burn add?
-A $1000\,\mathrm{kg}$ spacecraft is moving at $v = 7700\,\mathrm{m/s}$. It fires its engine forward (engineers say **prograde**) and speeds up by $\Delta v = 100\,\mathrm{m/s}$. How much does its energy of motion — its **kinetic energy**, $\tfrac{1}{2}mv^2$ — go up?
+A $1000\,\mathrm{kg}$ spacecraft is moving at $v = 7700\,\mathrm{m/s}$. It fires its engine forward (engineers say **[[prograde|prograde]]**) and speeds up by $\Delta v = 100\,\mathrm{m/s}$. How much does its energy of motion — its **kinetic energy**, $\tfrac{1}{2}mv^2$ — go up?
 
 The change is the energy after minus the energy before:
 
@@ -141,7 +141,7 @@ $$
 \Delta E = 1000 \times 7700 \times 100 + \tfrac{1}{2} \times 1000 \times 100^2 = 7.70 \times 10^8 + 5.0 \times 10^6 = 7.75 \times 10^8\,\mathrm{J}.
 $$
 
-The first term is $154$ times the second. So the same $100\,\mathrm{m/s}$ buys far more energy when you are already moving fast. That is the **Oberth effect**, one of the big ideas of spaceflight, in one line of algebra.
+The first term is $154$ times the second. So the same $100\,\mathrm{m/s}$ buys far more energy when you are already moving fast. That is the **[[Oberth effect|oberth]]**, one of the big ideas of spaceflight, in one line of algebra.
 
 *Check by a second route*, the difference of squares: $7800^2 - 7700^2 = (7800 - 7700)(7800 + 7700) = 100 \times 15\,500 = 1.55 \times 10^6$, and $\tfrac{1}{2} \times 1000 \times 1.55 \times 10^6 = 7.75 \times 10^8\,\mathrm{J}$. Two routes, one answer.
 :::
@@ -231,7 +231,7 @@ $$
 \frac{x^3 - 2x^2 - 5x + 6}{x - 3} = x^2 + x - 2 = (x + 2)(x - 1),
 $$
 
-and the cubic factors completely as $(x - 3)(x + 2)(x - 1)$. Its **roots** — the values of $x$ that make it zero — are $3$, $-2$ and $1$.
+and the cubic factors completely as $(x - 3)(x + 2)(x - 1)$. Its **[[roots|roots-word]]** — the values of $x$ that make it zero — are $3$, $-2$ and $1$.
 
 Two facts make this useful.
 
@@ -262,7 +262,7 @@ $$
 \frac{x^2 - 9}{x^2 + x - 6} = \frac{(x - 3)(x + 3)}{(x + 3)(x - 2)} = \frac{x - 3}{x - 2}, \qquad x \neq -3,\ x \neq 2 .
 $$
 
-($\neq$ means "is not equal to".) The excluded values are where the *original* bottom is zero. Cancelling $(x + 3)$ does not make $x = -3$ allowed. It only hides the problem, like a hole in a road covered with a tarp.
+($\neq$ means "is not equal to".) The [[excluded values|excluded-values]] are where the *original* bottom is zero. Cancelling $(x + 3)$ does not make $x = -3$ allowed. It only hides the problem, like a hole in a road covered with a tarp.
 
 To add, build a common denominator from the factored forms:
 
@@ -390,3 +390,122 @@ The exact value is $1.002^2 = 1.004004$. The difference, four millionths, is the
 | Stage identities | $MR - 1 = m_p / m_f$, $1 - 1/MR = m_p / m_0$, $\zeta/(1 - \zeta) = m_p / m_d$ |
 
 The next lesson uses the zero-product property and a trick called completing the square to solve linear and quadratic equations — and derives the quadratic formula you will use for the rest of your career.
+
+::: context polynomial-word Many terms, one word
+**Polynomial** is built from the Greek *poly*, "many", and the Latin *nomen*, "name" — used here to mean "term". So a polynomial is "many terms". The same pattern names the others in this lesson: a **monomial** has one term, a **binomial** two ($a + b$), a **trinomial** three ($x^2 + 5x + 6$).
+
+Mixing Greek and Latin in one word is the sort of thing language experts grumble about, but the name stuck centuries ago.
+:::
+
+::: context characteristic-equation The polynomial that decides calm or wobble
+An autopilot, a car's cruise control and a thermostat all push back against errors. How such a system settles down is decided by one polynomial built from its settings. Its roots — the values that make it zero — work like the system's fingerprints: each one says whether a wobble dies away, keeps going, or grows.
+
+If a single root is on the wrong side, the wobble grows until something breaks. You will find these roots in the control modules later in the course, and the factoring in this lesson is where that skill starts.
+:::
+
+::: context thrust-curve Thrust is not constant
+A rocket engine does not push equally hard the whole way up. About a minute after launch, a Falcon 9 turns its engines down while it passes through the part of the climb where the air presses hardest on the rocket — engineers call it **max Q** — then turns them back up. The Space Shuttle's main engines throttled back near the end of the climb, to keep the crew's acceleration at about $3g$.
+
+Engineers describe curves like these with polynomials fitted to test data, exactly like $F(t)$ here.
+:::
+
+::: context foil Every term meets every term
+FOIL only works for two terms times two terms. A method that always works is the **box**: write one bracket's terms along the top, the other's down the side, and fill each cell with the product of its row and column. For $(3x - 2)(x + 5)$:
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 140" font-family="Inter, Arial, sans-serif">
+  <rect x="120" y="45" width="100" height="40" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
+  <rect x="220" y="45" width="100" height="40" fill="#f2b880" stroke="#1f2a44" stroke-width="1.5"/>
+  <rect x="120" y="85" width="100" height="40" fill="#f2b880" stroke="#1f2a44" stroke-width="1.5"/>
+  <rect x="220" y="85" width="100" height="40" fill="#fff" stroke="#1f2a44" stroke-width="1.5"/>
+  <g font-size="14" text-anchor="middle" fill="#1f2a44">
+    <text x="170" y="34" font-weight="700">x</text><text x="270" y="34" font-weight="700">+5</text>
+    <text x="90" y="70" font-weight="700">3x</text><text x="90" y="110" font-weight="700">−2</text>
+    <text x="170" y="70">3x²</text><text x="270" y="70">15x</text>
+    <text x="170" y="110">−2x</text><text x="270" y="110">−10</text>
+  </g>
+</svg>
+```
+
+The two orange cells are like terms: $15x - 2x = 13x$. Adding all four cells gives $3x^2 + 13x - 10$. A bracket with three terms just makes the box three cells wide.
+:::
+
+::: context square-pieces (a + b)² as four tiles
+Here is the square from the text. The blue pieces are the squares $a^2$ and $b^2$. The two orange rectangles are the cross term $2ab$ that people forget.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 160" font-family="Inter, Arial, sans-serif">
+  <rect x="40" y="25" width="90" height="90" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
+  <rect x="130" y="25" width="30" height="90" fill="#f2b880" stroke="#1f2a44" stroke-width="1.5"/>
+  <rect x="40" y="115" width="90" height="30" fill="#f2b880" stroke="#1f2a44" stroke-width="1.5"/>
+  <rect x="130" y="115" width="30" height="30" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
+  <g font-size="13" text-anchor="middle" fill="#1f2a44">
+    <text x="85" y="75">a²</text><text x="145" y="75">ab</text>
+    <text x="85" y="135">ab</text><text x="145" y="135">b²</text>
+    <text x="85" y="18">a</text><text x="145" y="18">b</text>
+    <text x="28" y="74">a</text><text x="28" y="134">b</text>
+  </g>
+  <g font-size="13" fill="#1f2a44">
+    <text x="185" y="70">(a + b)² = a² + 2ab + b²</text>
+    <text x="185" y="100">a = 3, b = 1:</text>
+    <text x="185" y="120">16 = 9 + 3 + 3 + 1</text>
+  </g>
+</svg>
+```
+
+Leave out the orange and you are missing real area. That is why $(a + b)^2$ is not $a^2 + b^2$: for $a = 3$ and $b = 1$ it is $16$, not $10$.
+:::
+
+::: context pascal Older than Pascal
+Blaise Pascal wrote about this triangle in 1654, but he was far from the first. In China it is called Yang Hui's triangle, after a writer of the 1200s, and mathematicians in Persia and India knew it earlier still. Each number is the sum of the two just above it:
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 160" font-family="Inter, Arial, sans-serif">
+  <g font-size="14" text-anchor="middle" fill="#1f2a44">
+    <text x="180" y="22">1</text>
+    <text x="162" y="46">1</text><text x="198" y="46">1</text>
+    <text x="144" y="70">1</text><text x="180" y="70">2</text><text x="216" y="70">1</text>
+    <text x="126" y="94">1</text><text x="162" y="94">3</text><text x="198" y="94">3</text><text x="234" y="94">1</text>
+    <text x="90" y="142">1</text><text x="126" y="142">5</text><text x="162" y="142">10</text><text x="198" y="142">10</text><text x="234" y="142">5</text><text x="270" y="142">1</text>
+  </g>
+  <g font-size="14" text-anchor="middle" fill="#1d6fd1" font-weight="700">
+    <text x="108" y="118">1</text><text x="144" y="118">4</text><text x="180" y="118">6</text><text x="216" y="118">4</text><text x="252" y="118">1</text>
+  </g>
+  <line x1="165" y1="98" x2="176" y2="106" stroke="#b4232c" stroke-width="1.5"/>
+  <line x1="195" y1="98" x2="184" y2="106" stroke="#b4232c" stroke-width="1.5"/>
+  <text x="300" y="98" font-size="11" text-anchor="middle" fill="#b4232c">3 + 3 = 6</text>
+</svg>
+```
+
+The blue row gives $(a + b)^4 = a^4 + 4a^3b + 6a^2b^2 + 4ab^3 + b^4$. The same numbers count choices: there are $6$ ways to pick $2$ things out of $4$.
+:::
+
+::: context small-change Your first taste of calculus
+Dropping the square of a tiny number is one of the most used moves in all of engineering. It is called **linearising**: close to a known point, treat a curve as if it were a straight line.
+
+Guidance software does this constantly. It works out how a small change — in engine angle, say — shifts the path, and ignores the far smaller "change times change" pieces. Calculus will make the idea exact: the $2$ in $1 + 2\varepsilon$ is the steepness (the slope) of the curve $x^2$ at $x = 1$.
+:::
+
+::: context prograde Forward, backward
+**Prograde** means "stepping forward", from the Latin *pro*, forward, and *gradi*, to step. It is a burn along the direction you are already moving, which speeds you up. Its opposite, **retrograde**, fires against your motion to slow you down — that is how a spacecraft drops out of orbit to come home.
+
+Crews and flight software name burns by direction because "speed up" means nothing until you say *which way*.
+:::
+
+::: context oberth Oberth's discovery
+Hermann Oberth, one of the founders of rocket science, worked this out in the 1920s. The algebra shows why it happens: the energy gained is about $m v\,\Delta v$, so the same $\Delta v$ is worth more when $v$ is bigger.
+
+That is why spacecraft do their big burns at the lowest point of their orbit, where they move fastest. A probe leaving for Mars fires its engine close to Earth, rather than after it has climbed away and slowed down.
+:::
+
+::: context roots-word Why they are called roots
+It is the same word as in "square root", and not by accident. About $1200$ years ago, the Baghdad mathematician al-Khwarizmi called the unknown number in his equations the *jidhr*, Arabic for "root". Translators into Latin wrote *radix*, and the word stayed with both ideas: the value that solves an equation, and the number that squares to give another.
+
+The title of al-Khwarizmi's book gave us the word *algebra*, and his own name gave us *algorithm*.
+:::
+
+::: context excluded-values Division by zero in the real world
+Computers enforce excluded values the hard way. In 1997 the US Navy cruiser *Yorktown*, testing new computer systems, was left dead in the water for nearly three hours after a zero was typed into a database field. The software divided by it, the error spread, and the ship lost control of its engines.
+
+Flight software guards every division whose bottom could reach zero. That starts with knowing exactly where it can — which is what listing the excluded values does.
+:::

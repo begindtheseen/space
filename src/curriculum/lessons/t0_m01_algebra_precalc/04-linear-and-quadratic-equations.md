@@ -8,15 +8,15 @@ covers:
 
 In the morning you put on your socks, then your shoes. At night you undo it in the opposite order: shoes off first, then socks. Solving an equation works the same way. Something was done to the unknown number, step by step. To get it back on its own, you undo those steps in reverse order.
 
-Most of the algebra a GNC engineer does in a day is not solving for a mystery $x$. It is taking a *formula* and getting one of its letters by itself: the burnout mass from the mass ratio, the size of an orbit from the time it takes to go around, the time to fall from a given height. The numbers come in at the end. So this lesson treats solving as what it is — undoing operations in reverse order, doing the same thing to both sides — and uses it on formulas full of letters as much as on equations with numbers.
+Most of the algebra a [[GNC engineer|gnc]] does in a day is not solving for a mystery $x$. It is taking a *formula* and getting one of its letters by itself: the burnout mass from the mass ratio, the size of an orbit from the time it takes to go around, the time to fall from a given height. The numbers come in at the end. So this lesson treats solving as what it is — undoing operations in reverse order, doing the same thing to both sides — and uses it on formulas full of letters as much as on equations with numbers.
 
-The second half is about **quadratics**, equations where the unknown is squared. They appear the moment anything is squared, which in physics is constantly: distance travelled while speeding up, energy of motion, the distance to a point on a circle. You will derive the famous quadratic formula rather than memorise it. You will meet the **discriminant**, which tells you how many answers there are before you work any of them out. And you will learn the one number trap hidden inside the formula, which has caught out real flight software.
+The second half is about **quadratics**, equations where the unknown is squared. They appear the moment anything is squared, which in physics is constantly: distance travelled while speeding up, energy of motion, the distance to a point on a circle. You will derive the famous quadratic formula rather than memorise it. You will meet the **[[discriminant|discriminant-word]]**, which tells you how many answers there are before you work any of them out. And you will learn the one number trap hidden inside the formula, which has caught out real flight software.
 
 Every answer in this lesson ends with a check: put it back into the original equation and see that both sides match. Make that a reflex now, while the equations are easy.
 
 ## What solving means
 
-Picture an old-fashioned balance scale with two pans. An **equation** says the two pans weigh the same: whatever is on the left equals whatever is on the right. If you add a kilogram to one pan, you must add a kilogram to the other, or it tips. That is the whole idea of solving.
+Picture an old-fashioned [[balance scale|balance-scale]] with two pans. An **equation** says the two pans weigh the same: whatever is on the left equals whatever is on the right. If you add a kilogram to one pan, you must add a kilogram to the other, or it tips. That is the whole idea of solving.
 
 **Solving** an equation means finding every value of the unknown that makes it true — no more, no fewer. That collection of values is the **solution set**. Two equations are **equivalent** if they have exactly the same solution set. The legal moves are the ones that keep the solution set the same:
 
@@ -59,7 +59,7 @@ Both happen in real derivations. Usually they mean two conditions you thought we
 
 A **literal equation** is a formula with several letters, and you want one particular letter on its own. The method is exactly the same. The only new skill is treating the other letters as if they were ordinary numbers. Read the formula as a recipe — what was done to your letter, and in what order — then undo the steps in reverse, like shoes before socks.
 
-**Newton's second law**, $F = ma$ (force equals mass times acceleration). Here $a$ was multiplied by $m$. Undo that by dividing both sides by $m$: $a = F/m$. An engine pushing with $F = 845\,\mathrm{kN}$ on a $25\,000\,\mathrm{kg}$ vehicle gives
+**[[Newton's second law|newton-merlin]]**, $F = ma$ (force equals mass times acceleration). Here $a$ was multiplied by $m$. Undo that by dividing both sides by $m$: $a = F/m$. An engine pushing with $F = 845\,\mathrm{kN}$ on a $25\,000\,\mathrm{kg}$ vehicle gives
 
 $$
 a = \frac{845\,000\,\mathrm{N}}{25\,000\,\mathrm{kg}} = 33.8\,\mathrm{m/s^2},
@@ -73,7 +73,7 @@ $$
 t = \frac{v - v_0}{a} .
 $$
 
-How long would it take to reach orbital speed, $7670\,\mathrm{m/s}$, from rest at a steady $3g$? Here $a = 3 \times 9.80665 = 29.42\,\mathrm{m/s^2}$, so $t = \frac{7670 - 0}{29.42} \approx 261\,\mathrm{s}$ — between four and five minutes.
+How long would it take to reach [[orbital speed|three-g]], $7670\,\mathrm{m/s}$, from rest at a steady $3g$? Here $a = 3 \times 9.80665 = 29.42\,\mathrm{m/s^2}$, so $t = \frac{7670 - 0}{29.42} \approx 261\,\mathrm{s}$ — between four and five minutes.
 
 **When the letter is inside a root**, square both sides. (Both sides here are positive, so squaring cannot create a fake answer.) A pendulum's swing time is $T = 2\pi\sqrt{L/g}$, where $L$ is its length. To solve for $g$, divide by $2\pi$, square, then flip both fractions over:
 
@@ -81,7 +81,7 @@ $$
 \left(\frac{T}{2\pi}\right)^2 = \frac{L}{g} \;\Rightarrow\; g = \frac{4\pi^2 L}{T^2} .
 $$
 
-A one-metre pendulum that takes $T = 2.006\,\mathrm{s}$ per swing gives $g = \frac{39.48 \times 1}{2.006^2} = \frac{39.48}{4.024} \approx 9.81\,\mathrm{m/s^2}$. For two centuries, this is how gravity was measured.
+A one-metre pendulum that takes $T = 2.006\,\mathrm{s}$ per swing gives $g = \frac{39.48 \times 1}{2.006^2} = \frac{39.48}{4.024} \approx 9.81\,\mathrm{m/s^2}$. [[For two centuries|pendulum]], this is how gravity was measured.
 
 **When the letter appears more than once**, gather it together. Solve the propellant mass fraction $\zeta = \dfrac{m_p}{m_p + m_d}$ for $m_p$:
 
@@ -97,7 +97,7 @@ $$
 A stage with $\zeta = 0.949$ and dry mass $m_d = 22\,\mathrm{t}$ carries $m_p = \frac{0.949 \times 22}{0.051} \approx 409\,\mathrm{t}$ of propellant. That matches the $410\,\mathrm{t}$ that produced $\zeta$ in the first lesson; the small gap comes from rounding $\zeta$ to three figures.
 
 ::: example Geostationary radius from the period
-A **geostationary** satellite goes around exactly once per day, so from the ground it seems to hang still in the sky — which is why TV dishes can point at one spot. How high is it?
+A **[[geostationary|geostationary]]** satellite goes around exactly once per day, so from the ground it seems to hang still in the sky — which is why TV dishes can point at one spot. How high is it?
 
 The time for one circular orbit, the **period**, is $T = 2\pi\sqrt{r^3/\mu}$, where $r$ is the distance from Earth's centre and $\mu = 3.986 \times 10^{14}\,\mathrm{m^3/s^2}$ is Earth's gravitational parameter. The recipe for $T$ was: cube $r$, divide by $\mu$, take the square root, multiply by $2\pi$. Undo it in reverse: divide by $2\pi$, square, multiply by $\mu$, take the cube root.
 
@@ -105,7 +105,7 @@ $$
 r^3 = \frac{\mu T^2}{4\pi^2}, \qquad r = \left(\frac{\mu T^2}{4\pi^2}\right)^{1/3} .
 $$
 
-One turn of Earth relative to the stars (a **sidereal day**) is $T = 86\,164\,\mathrm{s}$, a few minutes shorter than $24$ hours. Now the arithmetic, one step at a time:
+One turn of Earth relative to the stars (a **[[sidereal day|sidereal-day]]**) is $T = 86\,164\,\mathrm{s}$, a few minutes shorter than $24$ hours. Now the arithmetic, one step at a time:
 
 - Square the period: $T^2 = (8.6164 \times 10^4)^2 = 7.424 \times 10^9\,\mathrm{s^2}$.
 - Multiply by $\mu$: $3.986 \times 10^{14} \times 7.424 \times 10^9 = 2.959 \times 10^{24}$.
@@ -149,7 +149,7 @@ $$
 x^2 + 6x + 9 = (x + 3)^2 .
 $$
 
-That is **completing the square**. In general, half the middle coefficient, squared, fills the corner: $(x + \tfrac{p}{2})^2 = x^2 + px + \tfrac{p^2}{4}$. Here it is solving an equation — whatever you add to one side, add to the other:
+That is **[[completing the square|square-corner]]**. In general, half the middle coefficient, squared, fills the corner: $(x + \tfrac{p}{2})^2 = x^2 + px + \tfrac{p^2}{4}$. Here it is solving an equation — whatever you add to one side, add to the other:
 
 $$
 x^2 + 6x - 7 = 0 \;\Rightarrow\; x^2 + 6x + 9 = 7 + 9 \;\Rightarrow\; (x + 3)^2 = 16 \;\Rightarrow\; x + 3 = \pm 4 \;\Rightarrow\; x = 1 \text{ or } x = -7 .
@@ -195,7 +195,7 @@ The part under the root, $b^2 - 4ac$, is called the **discriminant**, and it is 
 - $\Delta = 0$: one repeated solution, $x = -\frac{b}{2a}$ (adding or subtracting zero changes nothing).
 - $\Delta < 0$: no real solutions (no real number is the square root of a negative).
 
-Picture the graph of $y = ax^2 + bx + c$. It is a U-shaped curve called a **parabola**. The solutions are where it crosses the line $y = 0$. It can cross twice, touch once, or miss entirely.
+Picture the graph of $y = ax^2 + bx + c$. It is a U-shaped curve called a **[[parabola|parabola-crossings]]**. The solutions are where it crosses the line $y = 0$. It can cross twice, touch once, or miss entirely.
 
 For $3x^2 + 2x + 5 = 0$: $\Delta = 2^2 - 4(3)(5) = 4 - 60 = -56$. Negative, so the parabola never reaches zero and there is no real solution. In physics, a negative discriminant usually means the thing you asked about cannot happen: a line of sight that misses the planet, or a speed that is never reached.
 
@@ -207,7 +207,7 @@ $$
 x_1 + x_2 = -\frac{b}{a}, \qquad x_1 x_2 = \frac{c}{a} .
 $$
 
-These are **Vieta's relations**. Try them on $2x^2 - 7x + 3$, whose roots are $\tfrac{1}{2}$ and $3$. Sum: $\tfrac{1}{2} + 3 = 3.5$, and $-\frac{b}{a} = \frac{7}{2} = 3.5$. Product: $\tfrac{1}{2} \times 3 = 1.5$, and $\frac{c}{a} = \frac{3}{2} = 1.5$. They are the fastest check on a pair of roots — and the product one is about to earn its keep.
+These are **[[Vieta's relations|vieta]]**. Try them on $2x^2 - 7x + 3$, whose roots are $\tfrac{1}{2}$ and $3$. Sum: $\tfrac{1}{2} + 3 = 3.5$, and $-\frac{b}{a} = \frac{7}{2} = 3.5$. Product: $\tfrac{1}{2} \times 3 = 1.5$, and $\frac{c}{a} = \frac{3}{2} = 1.5$. They are the fastest check on a pair of roots — and the product one is about to earn its keep.
 
 ::: note Why it has to be true
 Write $s = \sqrt{b^2 - 4ac}$, so the roots are $x_1 = \frac{-b + s}{2a}$ and $x_2 = \frac{-b - s}{2a}$.
@@ -257,7 +257,7 @@ Note that $-b$ came out *positive* because $b$ itself was negative. Missing that
 
 Here is a puzzle. How do you find a truck driver's weight with a truck scale that reads only to the nearest $100\,\mathrm{kg}$? Weigh the truck with the driver, then without, and subtract? Both readings might be $15\,000\,\mathrm{kg}$, and the difference would say the driver weighs nothing. Subtracting two big, nearly equal numbers wipes out almost all the useful digits.
 
-The quadratic formula can fall into exactly that trap. When $b^2$ is much bigger than $4ac$ (written $b^2 \gg 4ac$, read "much greater than"), the root $\sqrt{b^2 - 4ac}$ is very nearly the same size as $b$. For one of the two roots, the top of the formula, $-b \pm \sqrt{\Delta}$, is then the difference of two nearly equal numbers, and most of the **significant figures** — the digits that carry real information — cancel out. This is called **catastrophic cancellation**. It is not a textbook curiosity. It turns up whenever a quadratic has one large root and one tiny root — for example, in a system with one fast motion and one slow one.
+The quadratic formula can fall into exactly that trap. When $b^2$ is much bigger than $4ac$ (written $b^2 \gg 4ac$, read "much greater than"), the root $\sqrt{b^2 - 4ac}$ is very nearly the same size as $b$. For one of the two roots, the top of the formula, $-b \pm \sqrt{\Delta}$, is then the difference of two nearly equal numbers, and most of the **significant figures** — the digits that carry real information — cancel out. This is called **[[catastrophic cancellation|cancellation]]**. It is not a textbook curiosity. It turns up whenever a quadratic has one large root and one tiny root — for example, in a system with one fast motion and one slow one.
 
 The fix uses Vieta's product. First compute the *large* root, choosing the sign so that $-b$ and the square root **add** instead of cancel. Then get the small root by dividing:
 
@@ -380,3 +380,167 @@ The plain subtraction $\frac{5000 - 4999.9992}{2}$ would have kept only a couple
 | Stable small root | $x_{\text{small}} = c / (a\,x_{\text{large}})$ when $b^2 \gg 4ac$ |
 
 The next lesson has several unknowns at once: **systems of equations**, where the same legal moves are applied to two or three equations together.
+
+::: context gnc What G, N and C stand for
+GNC is **guidance, navigation and control** — the brain and reflexes of a flying vehicle.
+
+- *Navigation* answers "where am I, and how fast am I going?"
+- *Guidance* answers "where should I go, and what path gets me there?"
+- *Control* answers "how do I point the engines and fins to follow that path?"
+
+A Falcon 9 booster coming back to land on a ship at sea is all three working together, many times a second — and every one of those jobs is full of formulas solved for one letter.
+:::
+
+::: context discriminant-word The number that tells cases apart
+To *discriminate* first meant simply "to tell apart", from the Latin *discriminare*, to separate. The discriminant tells the three kinds of quadratic apart — two answers, one answer, or none — before you do any of the work.
+
+The English mathematician James Joseph Sylvester gave it this name in 1851.
+:::
+
+::: context balance-scale Keep the pans level
+Here is a scale with $2x + 3$ on the left pan and $9$ on the right. It balances, so the two sides are equal. Take $3$ off *both* pans and it still balances: $2x = 6$. Halve what is on *both* pans and it still balances: $x = 3$.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 180" font-family="Inter, Arial, sans-serif">
+  <polygon points="180,50 165,150 195,150" fill="#6c7a93"/>
+  <rect x="140" y="150" width="80" height="8" fill="#6c7a93"/>
+  <line x1="60" y1="50" x2="300" y2="50" stroke="#1f2a44" stroke-width="4"/>
+  <circle cx="180" cy="50" r="5" fill="#1f2a44"/>
+  <g stroke="#1f2a44" stroke-width="1.5">
+    <line x1="70" y1="50" x2="45" y2="100"/><line x1="70" y1="50" x2="95" y2="100"/>
+    <line x1="290" y1="50" x2="265" y2="100"/><line x1="290" y1="50" x2="315" y2="100"/>
+  </g>
+  <path d="M40,100 L100,100 L92,110 L48,110 Z" fill="#1f2a44"/>
+  <path d="M260,100 L320,100 L312,110 L268,110 Z" fill="#1f2a44"/>
+  <rect x="44" y="76" width="52" height="24" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
+  <rect x="272" y="76" width="36" height="24" fill="#f2b880" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="70" y="93" font-size="13" text-anchor="middle" fill="#1f2a44">2x + 3</text>
+  <text x="290" y="93" font-size="13" text-anchor="middle" fill="#1f2a44">9</text>
+  <text x="180" y="174" font-size="12" text-anchor="middle" fill="#1f2a44">level beam: 2x + 3 = 9</text>
+</svg>
+```
+
+Take $3$ off only one pan and the scale tips: the equation is no longer true. Every legal move in this lesson is a way of changing both pans by the same amount.
+:::
+
+::: context newton-merlin Newton's law, a real engine
+Isaac Newton set out his three laws of motion in 1687, in a book usually called the *Principia*. He wrote the second law in words, about "change of motion"; the tidy form $F = ma$ came later.
+
+The force in the example is realistic: about $845\,\mathrm{kN}$ is the sea-level thrust of one Merlin engine, and nine of them lift a Falcon 9. The whole rocket weighs more than $500$ tonnes at lift-off, though, so its real starting acceleration is far gentler than $3.4g$.
+:::
+
+::: context three-g Why 3 g is a real number
+Three times Earth's gravity is not a random choice. The Space Shuttle throttled its engines back near the end of its climb to keep the crew's acceleration at about $3g$ — three times their normal weight pressing them into their seats.
+
+Real rockets do not hold $3g$ the whole way. They start much gentler, lose speed fighting gravity and air, and reach orbit after about eight or nine minutes rather than four and a half.
+:::
+
+::: context pendulum Richer's slow clock
+In 1672 the French astronomer Jean Richer took a pendulum clock from Paris to Cayenne, in South America near the equator. There it lost about two and a half minutes a day. The pendulum swung more slowly because gravity is slightly weaker near the equator — partly because Earth spins, partly because it bulges there.
+
+Turned around as $g = 4\pi^2 L / T^2$, careful swing times became the first maps of how gravity changes around the world.
+:::
+
+::: context geostationary Clarke's orbit
+The writer Arthur C. Clarke described using satellites at this height to relay radio and television around the world in a magazine article in 1945 — twelve years before the first satellite of any kind was launched. Syncom 3 became the first geostationary satellite in 1964 and carried live TV of the Tokyo Olympics across the Pacific.
+
+Today hundreds of communication and weather satellites share this one thin ring above the equator, which is why places in it are handed out by international agreement.
+:::
+
+::: context sidereal-day Why the star day is shorter
+An ordinary day is measured by the Sun: noon to noon. But while Earth spins once, it also moves about $\frac{1}{365}$ of the way around the Sun, so it must turn a little extra to face the Sun again. Measured against the far-away stars, one turn takes only $86\,164\,\mathrm{s}$ — about $3$ minutes $56$ seconds less than $24$ hours.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 220" font-family="Inter, Arial, sans-serif">
+  <path d="M194.1,181.8 A170,170 0 0 0 194.1,38.2" fill="none" stroke="#6c7a93" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <circle cx="40" cy="110" r="18" fill="#f2b880" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="40" y="145" font-size="12" text-anchor="middle" fill="#1f2a44">Sun</text>
+  <circle cx="204.2" cy="154" r="12" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
+  <circle cx="204.2" cy="66" r="12" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
+  <line x1="204.2" y1="154" x2="170" y2="144.8" stroke="#b4232c" stroke-width="2"/>
+  <polygon points="165.6,143.6 174.4,141.8 172.3,149.6" fill="#b4232c"/>
+  <line x1="204.2" y1="66" x2="170" y2="56.8" stroke="#6c7a93" stroke-width="2" stroke-dasharray="4 3"/>
+  <polygon points="165.6,55.6 174.3,53.8 172.3,61.6" fill="#6c7a93"/>
+  <line x1="204.2" y1="66" x2="170" y2="75.2" stroke="#b4232c" stroke-width="2"/>
+  <polygon points="165.6,76.4 172.3,70.4 174.3,78.2" fill="#b4232c"/>
+  <path d="M177.2,58.75 A28,28 0 0 0 177.2,73.25" fill="none" stroke="#1d6fd1" stroke-width="2"/>
+  <text x="160" y="50" font-size="11" text-anchor="end" fill="#6c7a93">to a far star</text>
+  <g font-size="11" fill="#1f2a44">
+    <text x="226" y="150">day 1, noon:</text>
+    <text x="226" y="165">Sun and star in line</text>
+    <text x="226" y="46">one turn later:</text>
+    <text x="226" y="60">faces the star again,</text>
+    <text x="226" y="74" fill="#1d6fd1">must turn about 1°</text>
+    <text x="226" y="88" fill="#1d6fd1">more to face the Sun</text>
+  </g>
+  <text x="180" y="210" font-size="11" text-anchor="middle" fill="#6c7a93">(Earth's move drawn far bigger than real)</text>
+</svg>
+```
+
+A geostationary satellite has to keep pace with Earth's true spin, so its period is the star day, not the Sun day.
+:::
+
+::: context square-corner The missing corner
+Here is the picture from the text. The $x$-by-$x$ square plus two strips $3$ wide make an almost-square, $x + 3$ on each side. Only the corner is missing, and it is $3 \times 3 = 9$.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 165" font-family="Inter, Arial, sans-serif">
+  <rect x="40" y="20" width="100" height="100" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
+  <rect x="140" y="20" width="30" height="100" fill="#f2b880" stroke="#1f2a44" stroke-width="1.5"/>
+  <rect x="40" y="120" width="100" height="30" fill="#f2b880" stroke="#1f2a44" stroke-width="1.5"/>
+  <rect x="140" y="120" width="30" height="30" fill="#fff" stroke="#b4232c" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <g font-size="13" text-anchor="middle" fill="#1f2a44">
+    <text x="90" y="75">x²</text><text x="155" y="75">3x</text><text x="90" y="140">3x</text>
+    <text x="90" y="14">x</text><text x="155" y="14">3</text>
+    <text x="28" y="74">x</text><text x="28" y="139">3</text>
+  </g>
+  <text x="155" y="140" font-size="13" text-anchor="middle" fill="#b4232c" font-weight="700">9</text>
+  <g font-size="13" fill="#1f2a44">
+    <text x="195" y="70">x² + 6x + 9</text>
+    <text x="195" y="92">= (x + 3)²</text>
+    <text x="195" y="140" fill="#b4232c" font-size="12">the corner you add</text>
+  </g>
+</svg>
+```
+
+With letters: for $x^2 + px$, each strip is $\frac{p}{2}$ wide, so the corner is $\left(\frac{p}{2}\right)^2$ — exactly the piece added in step 2 of the quadratic formula's derivation.
+:::
+
+::: context parabola-crossings Two, one or none
+The solutions of $ax^2 + bx + c = 0$ are where the curve $y = ax^2 + bx + c$ meets the horizontal line $y = 0$. Slide the curve up or down (change $c$) and the number of meeting points changes. The discriminant tells you which picture you are in.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">
+  <g stroke="#1f2a44" stroke-width="1.5">
+    <line x1="10" y1="80" x2="110" y2="80"/><line x1="130" y1="80" x2="230" y2="80"/><line x1="250" y1="80" x2="350" y2="80"/>
+  </g>
+  <g fill="none" stroke="#1d6fd1" stroke-width="2.5">
+    <path d="M20,30 Q60,170 100,30"/>
+    <path d="M140,20 Q180,140 220,20"/>
+    <path d="M260,10 Q300,110 340,10"/>
+  </g>
+  <g fill="#b4232c">
+    <circle cx="38.6" cy="80" r="4"/><circle cx="81.4" cy="80" r="4"/>
+    <circle cx="180" cy="80" r="4"/>
+  </g>
+  <g font-size="12" text-anchor="middle" fill="#1f2a44">
+    <text x="60" y="122">two roots</text><text x="180" y="122">one root</text><text x="300" y="122">no real roots</text>
+    <text x="60" y="140">Δ &gt; 0</text><text x="180" y="140">Δ = 0</text><text x="300" y="140">Δ &lt; 0</text>
+  </g>
+</svg>
+```
+
+A thrown ball traces this same curve through the air (ignoring air drag), which is why the time-of-flight example below is a quadratic.
+:::
+
+::: context vieta The lawyer who used letters
+François Viète was a French lawyer and adviser to kings in the late 1500s who did mathematics in his spare time. He was one of the first to use letters for numbers in general — vowels for unknowns, consonants for known quantities. That habit is what makes a formula like the quadratic formula possible at all: one line that covers every $a$, $b$ and $c$.
+
+He also cracked coded Spanish letters for the French king, Henry IV.
+:::
+
+::: context cancellation Rounding is not a detail
+A computer stores every number with a fixed number of digits, so every result is rounded. Usually that is harmless. It bites when you subtract nearly equal numbers, or let tiny errors pile up.
+
+In 1991, during the Gulf War, a Patriot air-defence battery in Dhahran, Saudi Arabia, had been running for about $100$ hours. A tiny rounding error in the way it counted tenths of a second had grown to about a third of a second. It looked in the wrong place for an incoming missile, which struck a barracks and killed $28$ American soldiers. Not the same trap as this one, but the same family.
+:::

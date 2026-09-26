@@ -6,7 +6,7 @@ covers:
   - exponents and radicals
 ---
 
-Fold a sheet of paper in half and it is two layers thick. Fold it again: four layers. Again: eight. Each fold *multiplies* the thickness by two. After ten folds (if you could manage them) you would have $2 \times 2 \times 2 \times 2 \times 2 \times 2 \times 2 \times 2 \times 2 \times 2 = 1024$ layers. Writing all those twos is tiring, so mathematicians invented a short way to say "multiply this number by itself again and again". That short way is the **exponent**, and undoing it gives the **root**.
+Fold a sheet of paper in half and it is two layers thick. Fold it again: four layers. Again: eight. Each fold *multiplies* the thickness by two. After ten folds (if you could manage them) you would have $2 \times 2 \times 2 \times 2 \times 2 \times 2 \times 2 \times 2 \times 2 \times 2 = 1024$ layers. Writing all those twos is tiring, so mathematicians invented a short way to say "multiply this number by itself again and again". That short way is the **[[exponent|exponent-word]]**, and undoing it gives the **root**.
 
 This lesson is about both. You will need them straight away, because the most important facts about flying in space are sentences about exponents:
 
@@ -15,7 +15,7 @@ This lesson is about both. You will need them straight away, because the most im
 - An orbit twice as big takes almost three times as long to go around.
 - A rocket made one and a half times bigger in every direction weighs more than three times as much.
 
-Once the exponent rules feel like simple bookkeeping — counting how many copies of a number are being multiplied — all four of those facts turn into one-line calculations. On the way you will meet the two numbers about Earth used most in this module: Earth's **gravitational parameter** $\mu = 3.986 \times 10^{14}\,\mathrm{m^3/s^2}$ (a measure of how hard Earth pulls, explained below) and Earth's average radius $R = 6371\,\mathrm{km}$.
+Once the exponent rules feel like simple bookkeeping — counting how many copies of a number are being multiplied — all four of those facts turn into one-line calculations. On the way you will meet the two numbers about Earth used most in this module: Earth's **[[gravitational parameter|mu-gm]]** $\mu = 3.986 \times 10^{14}\,\mathrm{m^3/s^2}$ (a measure of how hard Earth pulls, explained below) and Earth's average radius $R = 6371\,\mathrm{km}$.
 
 You will also meet powers of ten here, informally. They get their full treatment as scientific notation later in the module. For now, read $10^{14}$ as exactly what it says: a $1$ followed by fourteen zeros.
 
@@ -29,7 +29,7 @@ $$
 
 (The raised dot $\cdot$ means multiply.) The big number at the bottom, $2$, is the **base** — the number being multiplied. The small raised number, $3$, is the **exponent** — how many copies of the base to multiply. The whole thing, $2^3$, is called a **power**. You read $a^n$ aloud as "a to the n" or "a to the power n".
 
-Two powers have their own names. $a^2$ is "a **squared**", because a square with sides of length $a$ has area $a \times a$. And $a^3$ is "a **cubed**", because a cube with sides of length $a$ has volume $a \times a \times a$.
+Two powers have their own names. $a^2$ is "a **[[squared|squared-cubed]]**", because a square with sides of length $a$ has area $a \times a$. And $a^3$ is "a **cubed**", because a cube with sides of length $a$ has volume $a \times a \times a$.
 
 For a positive whole number $n$, then, $a^n$ is $n$ copies of $a$ multiplied together. Every rule below is nothing more than counting copies.
 
@@ -62,7 +62,7 @@ With numbers: $(2^3)^2 = 8^2 = 64$, and $2^6 = 64$. Two groups of three twos is 
 Two things the rules do *not* say:
 
 - **Different bases do not combine.** $2^3 \cdot 3^2 = 8 \cdot 9 = 72$. It is not $6^5$, which is $7776$. The rules only count copies of the *same* number.
-- **A tower of exponents is read from the top down.** $2^{3^2}$ means $2$ to the power $3^2$, which is $2^9 = 512$. But $(2^3)^2 = 8^2 = 64$. When you mean the second one, write the brackets.
+- **A tower of exponents is [[read from the top down|tower-top-down]].** $2^{3^2}$ means $2$ to the power $3^2$, which is $2^9 = 512$. But $(2^3)^2 = 8^2 = 64$. When you mean the second one, write the brackets.
 
 ## Zero and negative exponents
 
@@ -98,7 +98,7 @@ This matters on day one of orbital mechanics. The law of gravity (coming later i
 
 We count in tens, so powers of ten are the exponents you will handle most. $10^3 = 1000$, $10^6$ is a million, and $10^{-6}$ is a millionth. The laws work on them directly: $10^{-3} \times 10^{5} = 10^{-3+5} = 10^{2} = 100$.
 
-You already know some of these by their nicknames. A kilometre is a thousand metres; a millimetre is a thousandth of a metre. The SI **prefixes** are names for powers of ten in steps of three:
+You already know some of these by their nicknames. A kilometre is a thousand metres; a millimetre is a thousandth of a metre. The SI **[[prefixes|prefix-names]]** are names for powers of ten in steps of three:
 
 | Prefix | Power | Meaning |
 | --- | --- | --- |
@@ -129,7 +129,7 @@ Picture a square garden with an area of $9$ square metres. How long is each side
 
 Now picture a cube-shaped box that holds $8$ litres. Its side is $2$ units long, because $2 \cdot 2 \cdot 2 = 8$. That $2$ is the **cube root** of $8$, written $\sqrt[3]{8} = 2$.
 
-In general, the **$n$th root** of $a$, written $\sqrt[n]{a}$ and read "the n-th root of a", is the number whose $n$th power is $a$. The square root is the case $n = 2$, and we leave out the little $2$. The number under the root sign is called the **radicand**, and an expression with a root sign in it is called a **radical**.
+In general, the **$n$th root** of $a$, written $\sqrt[n]{a}$ and read "the n-th root of a", is the number whose $n$th power is $a$. The square root is the case $n = 2$, and we leave out the little $2$. The number under the root sign is called the **[[radicand|radix]]**, and an expression with a root sign in it is called a **radical**.
 
 One rule about square roots: by agreement, $\sqrt{a}$ always means the root that is zero or positive. So $\sqrt{9} = 3$, not $-3$, even though $(-3)^2 = 9$ as well. When an equation like $x^2 = 9$ really does have two answers, we write both: $x = \pm\sqrt{9} = \pm 3$ (read "plus or minus 3"). The $\pm$ is part of *solving*, not part of the root sign.
 
@@ -176,7 +176,7 @@ $$
 \sqrt{50} + \sqrt{18} = 5\sqrt{2} + 3\sqrt{2} = 8\sqrt{2}.
 $$
 
-To **rationalise** a denominator — get the root out of the bottom of a fraction — multiply top and bottom by that root (which is multiplying by $1$, so nothing changes):
+To **[[rationalise|rationalise-why]]** a denominator — get the root out of the bottom of a fraction — multiply top and bottom by that root (which is multiplying by $1$, so nothing changes):
 
 $$
 \frac{1}{\sqrt{2}} = \frac{1 \cdot \sqrt{2}}{\sqrt{2}\,\sqrt{2}} = \frac{\sqrt{2}}{2}.
@@ -236,7 +236,7 @@ $$
 
 ## The inverse-square law
 
-Think of a can of spray paint. Hold it close to a wall and it paints a small, thick patch. Step back to twice the distance: the spray spreads out, so the patch is twice as wide *and* twice as tall. That is $2 \times 2 = 4$ times the area, and the same paint spread over four times the area is only a quarter as thick. Step back to three times the distance and the paint is $3 \times 3 = 9$ times thinner.
+Think of a can of spray paint. Hold it close to a wall and it paints a small, thick patch. Step back to [[twice the distance|spreading-out]]: the spray spreads out, so the patch is twice as wide *and* twice as tall. That is $2 \times 2 = 4$ times the area, and the same paint spread over four times the area is only a quarter as thick. Step back to three times the distance and the paint is $3 \times 3 = 9$ times thinner.
 
 Gravity weakens with distance in exactly the same way. Newton's law of gravitation says that the acceleration gravity gives you, at distance $r$ from the centre of a planet, is
 
@@ -269,7 +269,7 @@ $$
 g = \frac{3.986 \times 10^{14}}{(6.791 \times 10^6)^2} = \frac{3.986 \times 10^{14}}{4.612 \times 10^{13}} \approx 8.64\,\mathrm{m/s^2}.
 $$
 
-That is $8.64 / 9.82 \approx 88\%$ of the surface value. Gravity up there is nearly as strong as on the ground. Astronauts float because they and their station are falling together, all the time — not because gravity has switched off.
+That is $8.64 / 9.82 \approx 88\%$ of the surface value. Gravity up there is nearly as strong as on the ground. Astronauts float because they and their station are [[falling together|falling-together]], all the time — not because gravity has switched off.
 
 **At geostationary altitude**, $h = 35\,786\,\mathrm{km}$, where a satellite takes exactly one day to go around. Now $r = 6371 + 35\,786 = 42\,157\,\mathrm{km}$, which is $42\,157 / 6371 \approx 6.62$ Earth radii. Use the scaling rule: gravity is weaker by a factor of $6.62^2 \approx 43.8$, so
 
@@ -298,7 +298,7 @@ $$
 
 The exponent $-\frac{1}{2}$ tells the story. It is negative, so higher orbits are *slower*. But it is only a half, so they are slower only gently: making the radius four times bigger multiplies the speed by $4^{-1/2} = \frac{1}{2}$ — half the speed.
 
-The **escape speed**, the speed needed to leave Earth for good, is $\sqrt{2\mu/r}$. By the power-of-a-product rule, $\sqrt{2\mu/r} = \sqrt{2}\,\sqrt{\mu/r} = \sqrt{2}\, v$. So escape speed is $\sqrt{2} \approx 1.414$ times the circular speed at the same radius.
+The **[[escape speed|escape-speed]]**, the speed needed to leave Earth for good, is $\sqrt{2\mu/r}$. By the power-of-a-product rule, $\sqrt{2\mu/r} = \sqrt{2}\,\sqrt{\mu/r} = \sqrt{2}\, v$. So escape speed is $\sqrt{2} \approx 1.414$ times the circular speed at the same radius.
 
 ::: example Circular speed at 400 km
 *Step 1: distance from the centre.* $r = 6371 + 400 = 6771\,\mathrm{km} = 6.771 \times 10^6\,\mathrm{m}$.
@@ -326,7 +326,7 @@ That is the $7.7\,\mathrm{km/s}$ you will hear quoted for **low Earth orbit** (L
 
 Build a cube out of sugar cubes, two sugar cubes along each edge. Each face of the big cube shows $2 \times 2 = 4$ sugar-cube faces, and the whole thing uses $2 \times 2 \times 2 = 8$ sugar cubes. Make it three along each edge: each face shows $3^2 = 9$, and it uses $3^3 = 27$ sugar cubes. Lengths grew by $3$, areas by $9$, volumes by $27$.
 
-That is the pattern for any shape. If every length of an object grows by a factor $k$, then:
+That is the pattern for [[any shape|square-cube]]. If every length of an object grows by a factor $k$, then:
 
 - its **areas** grow by $k^2$;
 - its **volumes** — and so its masses, if it is made of the same stuff — grow by $k^3$.
@@ -341,7 +341,7 @@ $$
 
 (The middle step flipped $\sqrt{\mu/r}$ upside down, since dividing by it is multiplying by $\sqrt{r/\mu}$. The last step moved $r$ inside the root, where it becomes $r^2$, and $r^2 \cdot r = r^3$.)
 
-So $T \propto r^{3/2}$. Doubling the radius multiplies the period by $2^{3/2} = 2\sqrt{2} \approx 2.83$. Quadrupling it multiplies the period by $4^{3/2} = \left(\sqrt{4}\right)^3 = 8$. This is **Kepler's third law**, and you have now derived it from two exponent rules and one square root.
+So $T \propto r^{3/2}$. Doubling the radius multiplies the period by $2^{3/2} = 2\sqrt{2} \approx 2.83$. Quadrupling it multiplies the period by $4^{3/2} = \left(\sqrt{4}\right)^3 = 8$. This is **[[Kepler's third law|kepler-third]]**, and you have now derived it from two exponent rules and one square root.
 
 ::: key Exponent laws
 $a^m a^n = a^{m+n}$, $\dfrac{a^m}{a^n} = a^{m-n}$, $(a^m)^n = a^{mn}$, $(ab)^n = a^n b^n$, $a^0 = 1$, $a^{-n} = \dfrac{1}{a^n}$, $a^{1/n} = \sqrt[n]{a}$, $a^{m/n} = \left(\sqrt[n]{a}\right)^m$. If $y \propto x^n$, scaling $x$ by $k$ scales $y$ by $k^n$.
@@ -432,3 +432,145 @@ Forgetting this loses a minus sign whenever you take the square root of a square
 | Scaling | $y \propto x^n$ means scaling $x$ by $k$ scales $y$ by $k^n$; areas $k^2$, volumes $k^3$ |
 
 The next lesson moves from single powers to sums of them — **polynomials** — and to the special products that supply the missing $2ab$ from the warning above.
+
+::: context exponent-word Forty-two folds to the Moon
+Doubling gets out of hand fast. A sheet of printer paper is about $0.1\,\mathrm{mm}$ thick. Fold it $42$ times (impossible in real life, but fine on paper) and the stack is $0.1\,\mathrm{mm} \times 2^{42} \approx 440\,000\,\mathrm{km}$ thick — farther than the Moon, which is about $384\,000\,\mathrm{km}$ away. Forty-one folds would get you only just over halfway.
+
+The word **exponent** comes from the Latin *exponere*, "to put out" or "to set out": the little number set out up top, telling you how many copies to multiply.
+:::
+
+::: context mu-gm Why μ, and not G times M
+You may have seen gravity written with $G$, the universal gravitational constant, and $M$, Earth's mass. Engineers prefer their product, $\mu = GM$, for a practical reason: it is known far more precisely.
+
+By tracking satellites — timing laser pulses bounced off them — $\mu$ for Earth is known to about nine significant figures. $G$ on its own, measured in laboratories with small weights, is known to only about five. Earth's mass is worked out by dividing $\mu$ by $G$, so it is no better than $G$. Orbits only ever need the product, so that is the number mission designers use.
+:::
+
+::: context squared-cubed Why a square and a cube
+The names are pictures. Three squared is the number of tiles in a square three tiles on a side. Three cubed is the number of blocks in a cube three blocks on a side.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">
+  <rect x="40" y="30" width="60" height="60" fill="#8fb8f0" stroke="#1f2a44" stroke-width="2"/>
+  <g stroke="#1f2a44" stroke-width="1">
+    <line x1="60" y1="30" x2="60" y2="90"/><line x1="80" y1="30" x2="80" y2="90"/>
+    <line x1="40" y1="50" x2="100" y2="50"/><line x1="40" y1="70" x2="100" y2="70"/>
+  </g>
+  <text x="70" y="22" font-size="12" text-anchor="middle" fill="#1f2a44">3</text>
+  <text x="30" y="64" font-size="12" text-anchor="middle" fill="#1f2a44">3</text>
+  <text x="70" y="120" font-size="13" text-anchor="middle" fill="#1f2a44">3 × 3 = 9 tiles</text>
+  <polygon points="200,50 224,26 284,26 260,50" fill="#f2b880" stroke="#1f2a44" stroke-width="2"/>
+  <polygon points="260,50 284,26 284,86 260,110" fill="#8fb8f0" stroke="#1f2a44" stroke-width="2"/>
+  <rect x="200" y="50" width="60" height="60" fill="#fff" stroke="#1f2a44" stroke-width="2"/>
+  <g stroke="#1f2a44" stroke-width="1">
+    <line x1="220" y1="50" x2="220" y2="110"/><line x1="240" y1="50" x2="240" y2="110"/>
+    <line x1="200" y1="70" x2="260" y2="70"/><line x1="200" y1="90" x2="260" y2="90"/>
+    <line x1="208" y1="42" x2="268" y2="42"/><line x1="216" y1="34" x2="276" y2="34"/>
+    <line x1="220" y1="50" x2="244" y2="26"/><line x1="240" y1="50" x2="264" y2="26"/>
+    <line x1="268" y1="42" x2="268" y2="102"/><line x1="276" y1="34" x2="276" y2="94"/>
+    <line x1="260" y1="70" x2="284" y2="46"/><line x1="260" y1="90" x2="284" y2="66"/>
+  </g>
+  <text x="242" y="140" font-size="13" text-anchor="middle" fill="#1f2a44">3 × 3 × 3 = 27 blocks</text>
+</svg>
+```
+
+That is also why areas come in square metres ($\mathrm{m^2}$) and volumes in cubic metres ($\mathrm{m^3}$): the exponent on the unit counts how many lengths were multiplied together.
+:::
+
+::: context tower-top-down Why towers are read top-down
+It is a rule people agreed on, and a sensible one. If you meant "bottom up", $(2^3)^2$, the power-of-a-power rule already lets you write it more simply as $2^{3 \cdot 2} = 2^6$ — no tower needed. So the tower is saved for the meaning that has no shortcut: $2^{(3^2)} = 2^9$.
+
+Calculators and programming languages follow the same rule. In Python, `2**3**2` gives `512`, not `64`.
+:::
+
+::: context prefix-names Giants, dwarfs and thousands
+The prefixes are old Greek and Latin words. **Kilo** comes from the Greek for "thousand", and **milli** from the Latin for "thousand" (a thousandth part). **Mega** means "great", **giga** "giant", **micro** "small" and **nano** "dwarf". So a nanometre is, word for word, a "dwarf metre".
+
+You will meet meganewtons straight away in rocketry. A single Merlin engine on a Falcon 9 first stage pushes with about $845\,\mathrm{kN}$ at sea level, and all nine together make about $7.6\,\mathrm{MN}$.
+:::
+
+::: context radix Roots and radishes
+**Radicand** and **radical** come from the Latin *radix*, "root" — the same word that gave English the *radish*, a vegetable that is mostly root. The radicand is "the thing whose root is taken".
+
+The root sign $\sqrt{\ }$ is usually said to have grown out of a quickly written letter r, for *radix*. It first appeared in print in a German algebra book in 1525. The bar over the top, which shows how far the root reaches, was added later.
+:::
+
+::: context rationalise-why Why people bothered
+Before calculators, division was done by hand, digit by digit. Work out $\frac{1}{\sqrt{2}}$ directly and you must divide $1$ by $1.41421\ldots$ — a long division by a messy number. Rationalise first and it becomes $\frac{\sqrt{2}}{2}$: just halve $1.41421$ to get $0.70711$. Same number, far less work.
+
+The name comes from **rational number**: a number that can be written as a fraction of two whole numbers. $\sqrt{2}$ cannot be, so rationalising means leaving only a rational number on the bottom.
+:::
+
+::: context spreading-out Same spray, bigger patch
+Every drop from the nozzle travels in a straight line, so the patch grows in both directions at once. At twice the distance it is twice as wide and twice as tall — four patches' worth. At three times the distance, nine.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 210" font-family="Inter, Arial, sans-serif">
+  <line x1="20" y1="100" x2="300" y2="47.5" stroke="#6c7a93" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <line x1="20" y1="100" x2="300" y2="152.5" stroke="#6c7a93" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <circle cx="20" cy="100" r="5" fill="#b4232c"/>
+  <text x="20" y="124" font-size="11" text-anchor="middle" fill="#1f2a44">spray</text>
+  <line x1="100" y1="85" x2="100" y2="115" stroke="#1d6fd1" stroke-width="4"/>
+  <line x1="180" y1="70" x2="180" y2="130" stroke="#1d6fd1" stroke-width="4"/>
+  <line x1="260" y1="55" x2="260" y2="145" stroke="#1d6fd1" stroke-width="4"/>
+  <g font-size="12" text-anchor="middle" fill="#1f2a44">
+    <text x="100" y="40">d</text><text x="180" y="40">2d</text><text x="260" y="40">3d</text>
+  </g>
+  <g fill="#8fb8f0" stroke="#1f2a44" stroke-width="1">
+    <rect x="94" y="165" width="12" height="12"/>
+    <rect x="168" y="159" width="24" height="24"/>
+    <rect x="242" y="153" width="36" height="36"/>
+  </g>
+  <g stroke="#1f2a44" stroke-width="1">
+    <line x1="180" y1="159" x2="180" y2="183"/><line x1="168" y1="171" x2="192" y2="171"/>
+    <line x1="254" y1="153" x2="254" y2="189"/><line x1="266" y1="153" x2="266" y2="189"/>
+    <line x1="242" y1="165" x2="278" y2="165"/><line x1="242" y1="177" x2="278" y2="177"/>
+  </g>
+  <g font-size="11" text-anchor="middle" fill="#1f2a44">
+    <text x="100" y="204">1 patch</text><text x="180" y="204">4 patches</text><text x="260" y="204">9 patches</text>
+  </g>
+</svg>
+```
+
+Light, sound and radio spread the same way. That is why a space probe's signal is so faint by the time it reaches home: the Voyager probes, more than $20$ billion kilometres out, are heard with dish antennas $70$ metres across.
+:::
+
+::: context falling-together Always falling, always missing
+Isaac Newton imagined a cannon on a very tall mountain. Fire the ball slowly and it curves down to the ground nearby. Fire it faster and it lands farther away. Fire it fast enough and the ground curves away beneath it as fast as it falls, so it falls all the way around the Earth and never lands. That is an orbit.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 220" font-family="Inter, Arial, sans-serif">
+  <circle cx="180" cy="130" r="82" fill="none" stroke="#1d6fd1" stroke-width="2" stroke-dasharray="6 4"/>
+  <circle cx="180" cy="130" r="70" fill="#8fb8f0" stroke="#1f2a44" stroke-width="2"/>
+  <polygon points="172,61 180,48 188,61" fill="#6c7a93" stroke="#1f2a44" stroke-width="1"/>
+  <path d="M180,48 Q205,50 215,69.4" fill="none" stroke="#b4232c" stroke-width="2"/>
+  <path d="M180,48 Q236,50 247.6,111.9" fill="none" stroke="#b4232c" stroke-width="2"/>
+  <text x="180" y="135" font-size="13" text-anchor="middle" fill="#1f2a44">Earth</text>
+  <text x="300" y="60" font-size="11" text-anchor="middle" fill="#b4232c">slow: lands</text>
+  <text x="300" y="75" font-size="11" text-anchor="middle" fill="#b4232c">faster: lands</text>
+  <text x="300" y="90" font-size="11" text-anchor="middle" fill="#b4232c">farther away</text>
+  <text x="60" y="30" font-size="11" text-anchor="middle" fill="#1d6fd1">fast enough:</text>
+  <text x="60" y="45" font-size="11" text-anchor="middle" fill="#1d6fd1">falls all the</text>
+  <text x="60" y="60" font-size="11" text-anchor="middle" fill="#1d6fd1">way around</text>
+</svg>
+```
+
+The space station does this at about $7.7\,\mathrm{km/s}$, going once around every $93$ minutes — about fifteen and a half times a day. Everything inside falls at the same rate, so nothing presses on anything. That is what floating is.
+:::
+
+::: context escape-speed Eleven kilometres per second
+From Earth's surface, ignoring the air, escape speed is $\sqrt{2\mu/R} \approx 11.2\,\mathrm{km/s}$ — about $40\,000$ kilometres per hour. No rocket leaves the ground that fast; the air would burn it up. Instead, a probe bound for Mars first climbs to orbit at about $7.7\,\mathrm{km/s}$, then fires again, above the air, to go faster than the local escape speed.
+
+Escape speed does not depend on the probe's mass: a pebble and a spacecraft need the same speed. Nor does it depend on direction, as long as the path does not run into the planet.
+:::
+
+::: context square-cube Galileo's giants
+This pattern is called the **square–cube law**. Galileo wrote about it in 1638. Scale an animal up and its weight (a volume) grows faster than the strength of its bones (which depends on their cross-section, an area). A giant built exactly like a person would break its own legs. That is why an elephant's legs are so thick for its size.
+
+Rockets feel the law both ways. Growing bigger helps, because the propellant grows faster than much of the structure around it. Shrinking hurts: very small rockets struggle, because their structure is a larger share of their mass.
+:::
+
+::: context kepler-third Kepler found it first
+Johannes Kepler discovered this rule in 1619 by puzzling over years of careful planet measurements made by the astronomer Tycho Brahe. He had no idea *why* it worked. Newton explained it about seventy years later, with the law of gravity — the same derivation you just did.
+
+Try it on Mars. Mars is $1.524$ times as far from the Sun as Earth, so its year should be $1.524^{3/2} \approx 1.88$ Earth years. The measured value is $1.88$ years. The rule works around the Sun, which has its own $\mu$, because it only compares orbits around the same body.
+:::

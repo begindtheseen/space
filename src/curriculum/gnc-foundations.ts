@@ -479,7 +479,7 @@ assert max(vals) - min(vals) < 1e-9`,
       {
         id: 'c_atan2_why',
         front: 'Why does flight software use atan2(y, x) instead of atan(y/x)?',
-        back: 'atan2 resolves all four quadrants and is defined at x = 0; atan(y/x) folds quadrants II and IV onto I and III and divides by zero on the ±90° axis.',
+        back: 'atan2 resolves all four quadrants and is defined at x = 0; atan(y/x) can only answer in quadrants I and IV, so a point in III is reported as I and one in II as IV, and it divides by zero on the ±90° axis.',
       },
       {
         id: 'c_euler_formula',

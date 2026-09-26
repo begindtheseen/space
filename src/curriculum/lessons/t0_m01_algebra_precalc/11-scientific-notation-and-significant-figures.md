@@ -6,7 +6,7 @@ covers:
   - scientific notation and significant figures
 ---
 
-Try reading this out loud: $398\,600\,000\,000\,000\,\mathrm{m^3/s^2}$. It is Earth's **gravitational parameter** — how strongly Earth pulls. Now this: $0.000\,000\,000\,066\,74$, the **gravitational constant**, the strength of gravity itself. Nobody can count those zeros reliably, or multiply the two in their head.
+Try reading this out loud: $398\,600\,000\,000\,000\,\mathrm{m^3/s^2}$. It is Earth's **gravitational parameter** — how strongly Earth pulls. Now this: $0.000\,000\,000\,066\,74$, the **[[gravitational constant|g-vs-mu]]**, the strength of gravity itself. Nobody can count those zeros reliably, or multiply the two in their head.
 
 **Scientific notation** fixes this. It writes the first as $3.986 \times 10^{14}$ and the second as $6.674 \times 10^{-11}$. Each number is split into its *digits* (a small number between one and ten) and its *size* (a power of ten), and the two parts are handled separately: the powers of ten by adding whole numbers, the digits by ordinary arithmetic. You have been reading this notation all module. This lesson spells out the rules.
 
@@ -14,7 +14,7 @@ Then comes a harder question: how many of those digits are you allowed to write?
 
 ## Writing huge and tiny numbers
 
-Start with money. "Three thousand dollars" is $3 \times 1000$; "three million" is $3 \times 1\,000\,000$. The $3$ is the digits and the "thousand" or "million" is the size. Scientific notation writes the size as a power of ten: $1000 = 10^3$ ("ten to the third", three tens multiplied together) and $1\,000\,000 = 10^6$.
+Start with money. "Three thousand dollars" is $3 \times 1000$; "three million" is $3 \times 1\,000\,000$. The $3$ is the digits and the "thousand" or "million" is the size. Scientific notation writes the size as a [[power of ten|powers-ladder]]: $1000 = 10^3$ ("ten to the third", three tens multiplied together) and $1\,000\,000 = 10^6$.
 
 Tiny numbers use negative powers. From the exponents lesson, $10^{-1} = \tfrac{1}{10} = 0.1$, $10^{-2} = 0.01$, $10^{-3} = 0.001$. A negative exponent means "divide by ten that many times".
 
@@ -24,7 +24,7 @@ $$
 a \times 10^{n}, \qquad 1 \leq |a| < 10, \qquad n \text{ a whole number}.
 $$
 
-The front number $a$ is the **mantissa** (also called the coefficient). It must be at least $1$ and less than $10$ in size. The power $n$ is the **exponent**. Read $3.986 \times 10^{14}$ aloud as "three point nine eight six times ten to the fourteenth".
+The front number $a$ is the **[[mantissa|mantissa-word]]** (also called the coefficient). It must be at least $1$ and less than $10$ in size. The power $n$ is the **exponent**. Read $3.986 \times 10^{14}$ aloud as "three point nine eight six times ten to the fourteenth".
 
 ### Moving the decimal point
 
@@ -110,7 +110,7 @@ Two words get mixed up here:
 - **Accuracy** is how close a value is to the truth.
 - **Precision** is how finely it is stated, or how well it repeats.
 
-Darts clumped tightly but far from the bullseye are precise and inaccurate; darts scattered loosely around it are accurate and imprecise. A pressure gauge reading $300.0\,\mathrm{psi}$ (pounds per square inch) that is miscalibrated by $20\,\mathrm{psi}$ is precise and inaccurate. One that reads "about $300$" and is right is accurate and imprecise.
+[[Darts|darts]] clumped tightly but far from the bullseye are precise and inaccurate; darts scattered loosely around it are accurate and imprecise. A pressure gauge reading $300.0\,\mathrm{psi}$ (pounds per square inch) that is miscalibrated by $20\,\mathrm{psi}$ is precise and inaccurate. One that reads "about $300$" and is right is accurate and imprecise.
 
 **Significant figures** are about precision. They are the digits in a number that carry real information.
 
@@ -124,7 +124,7 @@ Darts clumped tightly but far from the bullseye are precise and inaccurate; dart
 
 ### Exact numbers
 
-Some numbers are not measured at all. These **exact numbers** have unlimited significant figures and never limit a result: the $2$ in $\tfrac{1}{2}mv^2$, the $4\pi$ in a sphere's area, the defined standard gravity $g_0 = 9.80665\,\mathrm{m/s^2}$, the defined $1852\,\mathrm{m}$ in a nautical mile. Only measured or estimated inputs bring uncertainty in.
+Some numbers are not measured at all. These **[[exact numbers|defined-exact]]** have unlimited significant figures and never limit a result: the $2$ in $\tfrac{1}{2}mv^2$, the $4\pi$ in a sphere's area, the defined standard gravity $g_0 = 9.80665\,\mathrm{m/s^2}$, the defined $1852\,\mathrm{m}$ in a nautical mile. Only measured or estimated inputs bring uncertainty in.
 
 ### Rounding
 
@@ -134,7 +134,7 @@ Some numbers are not measured at all. These **exact numbers** have unlimited sig
 - $9.8202$ to three figures is $9.82$.
 - $0.0004567$ to two figures is $0.00046 = 4.6 \times 10^{-4}$.
 
-A final $5$ with nothing after it is usually rounded up ($2.345 \to 2.35$). But Python's `round` and many libraries round halves to the nearest *even* digit — `round(2.5)` is `2`, `round(3.5)` is `4` — so that millions of roundings do not all push upward. Neither choice matters at the third figure of an engineering estimate. Both matter in accounting.
+A final $5$ with nothing after it is usually rounded up ($2.345 \to 2.35$). But Python's `round` and many libraries [[round halves|bankers-rounding]] to the nearest *even* digit — `round(2.5)` is `2`, `round(3.5)` is `4` — so that millions of roundings do not all push upward. Neither choice matters at the third figure of an engineering estimate. Both matter in accounting.
 
 ## How precision passes through arithmetic
 
@@ -186,7 +186,7 @@ Multiplication and division: the result carries no more significant figures than
 
 ### Carry extra digits, round once
 
-The rules say how many figures to *report*, not how many to *carry* while you work. Rounding at every step adds a fresh error each time, and the errors pile up: round $9.82$ to $10$, use it in three more steps, and the answer can move several percent.
+The rules say how many figures to *report*, not how many to *carry* while you work. Rounding at every step adds a fresh error each time, and [[the errors pile up|patriot]]: round $9.82$ to $10$, use it in three more steps, and the answer can move several percent.
 
 So carry one or two extra **guard digits** through the whole calculation, and round once, at the end. A computer does this automatically: a standard (double-precision) number carries about sixteen significant figures. But the reporting rule still applies. A printout of `7672.594396313682` is not a claim to sixteen figures of orbital speed; cut it back to what the inputs deserve.
 
@@ -222,7 +222,7 @@ Notice which step cost the precision: not the division, but subtracting two simi
 
 Sometimes you only need to know roughly how big something is. About ten? A thousand? A million? The **order of magnitude** of a number is the power of ten closest to it.
 
-"Closest" needs care, because powers of ten are spaced by multiplying, not adding. Halfway between $1$ and $10$ in this sense is $\sqrt{10} \approx 3.16$: about three times $1$, and about three times smaller than $10$. So the careful definition uses the **common logarithm** $\log_{10}$ (from the logarithms lesson: $\log_{10} x$ is the power you raise $10$ to in order to get $x$). Round $\log_{10}$ of the number to the nearest whole number, and that is its order.
+"Closest" needs care, because powers of ten are spaced by multiplying, not adding. [[Halfway|log-halfway]] between $1$ and $10$ in this sense is $\sqrt{10} \approx 3.16$: about three times $1$, and about three times smaller than $10$. So the careful definition uses the **common logarithm** $\log_{10}$ (from the logarithms lesson: $\log_{10} x$ is the power you raise $10$ to in order to get $x$). Round $\log_{10}$ of the number to the nearest whole number, and that is its order.
 
 So numbers from $3.16$ to $31.6$ — from $10^{0.5}$ to $10^{1.5}$ — are "of order ten", $10^1$. A more casual usage reads the exponent straight off the scientific notation: anything from $1 \times 10^{n}$ to $9.99 \times 10^{n}$ is of order $10^{n}$. Both usages are common, and they differ by at most one power of ten — the fuzziness of the idea anyway. Two numbers "differ by an order of magnitude" when one is about ten times the other, and by three orders when it is about a thousand times.
 
@@ -234,7 +234,7 @@ So numbers from $3.16$ to $31.6$ — from $10^{0.5}$ to $10^{1.5}$ — are "of o
 
 Multiplying numbers *adds* their logarithms, so it adds their orders. A product of six factors, each known only to an order of magnitude, is itself known to within a few orders of magnitude — and often better, because errors in opposite directions cancel. The estimation lesson makes that argument carefully.
 
-Logarithms to a couple of decimals are the tool. Here is a multiplication done by adding:
+Logarithms to a couple of decimals are the tool. Here is a [[multiplication done by adding|slide-rule]]:
 
 $$
 \log_{10}(1.013 \times 10^5) = 5.006, \qquad \log_{10}(5.1 \times 10^{14}) = 14.708, \qquad \log_{10} 9.81 = 0.992.
@@ -325,3 +325,77 @@ They differ by about six orders of magnitude, so the ratio is about a million. T
 | Floats | about $16$ decimal figures; same rules, smaller scale |
 
 Next lesson, the last of the module, puts everything together. With orders of magnitude, units, a few remembered constants and the nerve to guess a number and say so, you will estimate rocket-sized quantities to within a factor of two — and know which guess to blame when the estimate misses.
+
+::: context g-vs-mu Why engineers use μ, not G
+Henry Cavendish first measured $G$ in 1798, with a delicate twisting balance and lead balls — an experiment often called "weighing the Earth". Even today $G$ is known to only about five significant figures, because gravity between lab-sized objects is so feeble. But Earth's $\mu = GM$ is known to about ten, from tracking satellites, whose orbits depend only on the product. So navigators use $\mu$ directly and almost never multiply $G$ by Earth's mass. It is a significant-figures lesson hiding in the first paragraph.
+:::
+
+::: context powers-ladder One step per power of ten
+On this ruler every step is ten times the one before, so an ant and the distance to the Moon fit on the same line.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 172" font-family="Inter, Arial, sans-serif">
+<text x="20" y="22" font-size="12" fill="#1f2a44">lengths in metres: each tick is ×10</text>
+  <line x1="20" y1="120" x2="340" y2="120" stroke="#1f2a44" stroke-width="1.5"/>
+  <g stroke="#1f2a44" stroke-width="1.5"><line x1="30" y1="110" x2="30" y2="130"/><line x1="55" y1="116" x2="55" y2="124"/><line x1="80" y1="116" x2="80" y2="124"/><line x1="105" y1="110" x2="105" y2="130"/><line x1="130" y1="116" x2="130" y2="124"/><line x1="155" y1="116" x2="155" y2="124"/><line x1="180" y1="110" x2="180" y2="130"/><line x1="205" y1="116" x2="205" y2="124"/><line x1="230" y1="116" x2="230" y2="124"/><line x1="255" y1="110" x2="255" y2="130"/><line x1="280" y1="116" x2="280" y2="124"/><line x1="305" y1="116" x2="305" y2="124"/><line x1="330" y1="110" x2="330" y2="130"/></g>
+  <g font-size="11" fill="#1f2a44"><line x1="41.9" y1="96" x2="41.9" y2="120" stroke="#6c7a93" stroke-width="1"/><circle cx="41.9" cy="120" r="4" fill="#b4232c"/><text x="35.9" y="92" text-anchor="start">ant, 3 mm</text><line x1="110.8" y1="74" x2="110.8" y2="120" stroke="#6c7a93" stroke-width="1"/><circle cx="110.8" cy="120" r="4" fill="#b4232c"/><text x="110.8" y="70" text-anchor="middle">person, 1.7 m</text><line x1="203.7" y1="96" x2="203.7" y2="120" stroke="#6c7a93" stroke-width="1"/><circle cx="203.7" cy="120" r="4" fill="#b4232c"/><text x="203.7" y="92" text-anchor="middle">Everest, 8.8 km</text><line x1="275.1" y1="74" x2="275.1" y2="120" stroke="#6c7a93" stroke-width="1"/><circle cx="275.1" cy="120" r="4" fill="#b4232c"/><text x="275.1" y="70" text-anchor="middle">Earth radius</text><line x1="319.6" y1="52" x2="319.6" y2="120" stroke="#6c7a93" stroke-width="1"/><circle cx="319.6" cy="120" r="4" fill="#b4232c"/><text x="325.6" y="48" text-anchor="end">Moon, 384 000 km</text></g>
+  <g font-size="12" fill="#1f2a44" text-anchor="middle"><text x="30" y="146">10⁻³</text><text x="30" y="162" fill="#6c7a93">milli</text><text x="105" y="146">10⁰</text><text x="105" y="162" fill="#6c7a93"></text><text x="180" y="146">10³</text><text x="180" y="162" fill="#6c7a93">kilo</text><text x="255" y="146">10⁶</text><text x="255" y="162" fill="#6c7a93">mega</text><text x="330" y="146">10⁹</text><text x="330" y="162" fill="#6c7a93">giga</text></g>
+</svg>
+```
+
+The prefixes sit every three steps. Kilo comes from the Greek for "thousand", mega from "great" and giga from "giant"; milli, going down, is from the Latin for "thousand". That spacing of three is why engineering notation only uses exponents that are multiples of three.
+:::
+
+::: context mantissa-word A word borrowed from log tables
+*Mantissa* is an old Latin word for a small extra — a makeweight added to top up a purchase. Early makers of logarithm tables used it for the part of a logarithm after the decimal point, which is the part their tables listed. Later it drifted to mean the digits part of a number in scientific notation. Some people prefer **significand** or **coefficient** for that, because in the log-table sense $\log_{10}(3.986 \times 10^{14}) = 14.6005$ has mantissa $0.6005$, not $3.986$.
+:::
+
+::: context darts Two dartboards
+Precision is how tightly the darts cluster. Accuracy is how close the middle of the cluster lands to the bullseye.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 168" font-family="Inter, Arial, sans-serif">
+<circle cx="95" cy="75" r="60" fill="#fff" stroke="#1f2a44" stroke-width="1.2"/><circle cx="95" cy="75" r="40" fill="#fff" stroke="#1f2a44" stroke-width="1.2"/><circle cx="95" cy="75" r="20" fill="#fff" stroke="#1f2a44" stroke-width="1.2"/><circle cx="95" cy="75" r="6" fill="#b4232c"/><circle cx="125" cy="47" r="4" fill="#1d6fd1" stroke="#1f2a44" stroke-width="0.8"/><circle cx="130" cy="51" r="4" fill="#1d6fd1" stroke="#1f2a44" stroke-width="0.8"/><circle cx="122" cy="53" r="4" fill="#1d6fd1" stroke="#1f2a44" stroke-width="0.8"/><circle cx="128" cy="44" r="4" fill="#1d6fd1" stroke="#1f2a44" stroke-width="0.8"/><circle cx="133" cy="48" r="4" fill="#1d6fd1" stroke="#1f2a44" stroke-width="0.8"/><circle cx="126" cy="55" r="4" fill="#1d6fd1" stroke="#1f2a44" stroke-width="0.8"/><text x="95" y="155" font-size="12" fill="#1f2a44" text-anchor="middle">precise, not accurate</text><circle cx="265" cy="75" r="60" fill="#fff" stroke="#1f2a44" stroke-width="1.2"/><circle cx="265" cy="75" r="40" fill="#fff" stroke="#1f2a44" stroke-width="1.2"/><circle cx="265" cy="75" r="20" fill="#fff" stroke="#1f2a44" stroke-width="1.2"/><circle cx="265" cy="75" r="6" fill="#b4232c"/><circle cx="295" cy="65" r="4" fill="#1d6fd1" stroke="#1f2a44" stroke-width="0.8"/><circle cx="240" cy="95" r="4" fill="#1d6fd1" stroke="#1f2a44" stroke-width="0.8"/><circle cx="270" cy="40" r="4" fill="#1d6fd1" stroke="#1f2a44" stroke-width="0.8"/><circle cx="235" cy="60" r="4" fill="#1d6fd1" stroke="#1f2a44" stroke-width="0.8"/><circle cx="285" cy="105" r="4" fill="#1d6fd1" stroke="#1f2a44" stroke-width="0.8"/><circle cx="265" cy="80" r="4" fill="#1d6fd1" stroke="#1f2a44" stroke-width="0.8"/><text x="265" y="155" font-size="12" fill="#1f2a44" text-anchor="middle">accurate, not precise</text>
+</svg>
+```
+
+A badly calibrated sensor is the left board: very repeatable, and wrong the same way every time. Engineers call that steady error a **bias**, and a good part of navigation is estimating biases and taking them out.
+:::
+
+::: context defined-exact Numbers fixed by agreement
+Some of the most famous constants are now exact by definition. Since 1983 the metre has been defined as the distance light travels in $1/299\,792\,458$ of a second, so the speed of light is exactly $299\,792\,458\,\mathrm{m/s}$, with no uncertainty at all. Since 2019 the kilogram has been defined by fixing the Planck constant in the same way. A constant that is exact can never be the weakest link in your significant figures.
+:::
+
+::: context bankers-rounding Banker's rounding
+Round $0.5$, $1.5$, $2.5$ and $3.5$ the schoolbook way and you get $1 + 2 + 3 + 4 = 10$, though the true total is $8$. Every half went up, so the error only grows. Round halves to even instead and you get $0 + 2 + 2 + 4 = 8$: half the halves go up and half go down, and over many numbers the errors cancel. This is often called **banker's rounding**, and it is the default in IEEE 754, the standard for computer arithmetic.
+:::
+
+::: context patriot When tiny errors piled up
+In February 1991 a Patriot air-defence battery in Dhahran, Saudi Arabia, failed to stop an incoming Scud missile, which hit a US Army barracks and killed 28 soldiers. The battery's computer counted time in tenths of a second, and $0.1$ cannot be stored exactly in binary, so every tick was chopped very slightly short. After about $100$ hours of running, the clock was off by about a third of a second. A Scud travels more than half a kilometre in that time, so the system looked for it in the wrong place.
+:::
+
+::: context log-halfway The middle of a power of ten
+On a log scale the middle of $1$ and $10$ is not $5.5$ but $\sqrt{10} \approx 3.16$: the same number of *times* away from each end.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 156" font-family="Inter, Arial, sans-serif">
+<rect x="105.0" y="60" width="150.0" height="28" fill="#8fb8f0"/>
+  <text x="180" y="52" font-size="12" fill="#1d6fd1" text-anchor="middle">everything here rounds to 10¹</text>
+  <line x1="20" y1="74" x2="340" y2="74" stroke="#1f2a44" stroke-width="1.5"/>
+  <g stroke="#1f2a44" stroke-width="1.2"><line x1="30.0" y1="62" x2="30.0" y2="86"/><line x1="75.2" y1="68" x2="75.2" y2="80"/><line x1="101.6" y1="68" x2="101.6" y2="80"/><line x1="120.3" y1="68" x2="120.3" y2="80"/><line x1="134.8" y1="68" x2="134.8" y2="80"/><line x1="146.7" y1="68" x2="146.7" y2="80"/><line x1="156.8" y1="68" x2="156.8" y2="80"/><line x1="165.5" y1="68" x2="165.5" y2="80"/><line x1="173.1" y1="68" x2="173.1" y2="80"/><line x1="180.0" y1="62" x2="180.0" y2="86"/><line x1="225.2" y1="68" x2="225.2" y2="80"/><line x1="251.6" y1="68" x2="251.6" y2="80"/><line x1="270.3" y1="68" x2="270.3" y2="80"/><line x1="284.8" y1="68" x2="284.8" y2="80"/><line x1="296.7" y1="68" x2="296.7" y2="80"/><line x1="306.8" y1="68" x2="306.8" y2="80"/><line x1="315.5" y1="68" x2="315.5" y2="80"/><line x1="323.1" y1="68" x2="323.1" y2="80"/><line x1="330.0" y1="62" x2="330.0" y2="86"/></g>
+  <g font-size="12" fill="#1f2a44" text-anchor="middle">
+    <text x="30.0" y="104">1</text><text x="180.0" y="104">10</text><text x="330.0" y="104">100</text>
+  </g>
+  <g font-size="12" fill="#b4232c" text-anchor="middle">
+    <text x="105.0" y="122">3.16</text><text x="255.0" y="122">31.6</text>
+  </g>
+  <text x="180" y="146" font-size="11" fill="#6c7a93" text-anchor="middle">3.16 is 3.16 times 1, and 10 is 3.16 times 3.16</text>
+</svg>
+```
+
+Everything in the shaded stretch is "of order ten". On this scale any doubling takes the same width, about $30\%$ of a power of ten, because $\log_{10} 2 = 0.30$.
+:::
+
+::: context slide-rule A computer made of two rulers
+A **slide rule** does exactly this, with no batteries. Two rulers carry log scales; sliding one along the other adds lengths, and adding logarithms multiplies numbers. The English clergyman William Oughtred invented it around 1622, a few years after Napier's logarithms. For more than three centuries engineers designed bridges, aircraft and rockets with slide rules, good to about three significant figures. Apollo astronauts carried one to the Moon as a backup.
+:::

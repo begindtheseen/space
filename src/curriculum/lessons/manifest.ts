@@ -2080,6 +2080,116 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       "file": "cod_py_02_idiomatic/13-package-layout.md"
     }
   ],
+  "t0_m00_basecamp": [
+    {
+      "id": "l01-place-value-and-estimating",
+      "title": "Place value, big numbers and estimating",
+      "minutes": 23,
+      "covers": [
+        "place value, big numbers and estimating"
+      ],
+      "file": "t0_m00_basecamp/01-place-value-and-estimating.md"
+    },
+    {
+      "id": "l02-decimals-and-rounding",
+      "title": "Decimals and rounding",
+      "minutes": 24,
+      "covers": [
+        "decimals and rounding"
+      ],
+      "file": "t0_m00_basecamp/02-decimals-and-rounding.md"
+    },
+    {
+      "id": "l03-factors-and-primes",
+      "title": "Multiplication, division, factors and primes",
+      "minutes": 26,
+      "covers": [
+        "multiplication, division, factors and primes"
+      ],
+      "file": "t0_m00_basecamp/03-factors-and-primes.md"
+    },
+    {
+      "id": "l04-fractions-from-the-ground-up",
+      "title": "Fractions from the ground up",
+      "minutes": 25,
+      "covers": [
+        "fractions from the ground up"
+      ],
+      "file": "t0_m00_basecamp/04-fractions-from-the-ground-up.md"
+    },
+    {
+      "id": "l05-variables-and-formulas",
+      "title": "Variables, expressions and formulas",
+      "minutes": 17,
+      "covers": [
+        "variables, expressions and formulas"
+      ],
+      "file": "t0_m00_basecamp/05-variables-and-formulas.md"
+    },
+    {
+      "id": "l06-solving-simple-equations",
+      "title": "Solving simple equations",
+      "minutes": 17,
+      "covers": [
+        "solving simple equations"
+      ],
+      "file": "t0_m00_basecamp/06-solving-simple-equations.md"
+    },
+    {
+      "id": "l07-graphs-and-the-coordinate-plane",
+      "title": "The coordinate plane and reading graphs",
+      "minutes": 17,
+      "covers": [
+        "the coordinate plane and reading graphs"
+      ],
+      "file": "t0_m00_basecamp/07-graphs-and-the-coordinate-plane.md"
+    },
+    {
+      "id": "l08-angles-and-shapes",
+      "title": "Angles and shapes",
+      "minutes": 23,
+      "covers": [
+        "angles and shapes"
+      ],
+      "file": "t0_m00_basecamp/08-angles-and-shapes.md"
+    },
+    {
+      "id": "l09-perimeter-area-and-volume",
+      "title": "Perimeter, area and volume",
+      "minutes": 21,
+      "covers": [
+        "perimeter, area and volume"
+      ],
+      "file": "t0_m00_basecamp/09-perimeter-area-and-volume.md"
+    },
+    {
+      "id": "l10-square-roots-and-pythagoras",
+      "title": "Squares, square roots and Pythagoras",
+      "minutes": 22,
+      "covers": [
+        "squares, square roots and the Pythagorean theorem"
+      ],
+      "file": "t0_m00_basecamp/10-square-roots-and-pythagoras.md"
+    },
+    {
+      "id": "l11-the-metric-system",
+      "title": "The metric system and measuring",
+      "minutes": 23,
+      "covers": [
+        "the metric system and measurement"
+      ],
+      "file": "t0_m00_basecamp/11-the-metric-system.md"
+    },
+    {
+      "id": "l12-speed-rates-and-averages",
+      "title": "Speed, rates and averages",
+      "minutes": 20,
+      "covers": [
+        "speed, rates and averages"
+      ],
+      "file": "t0_m00_basecamp/12-speed-rates-and-averages.md"
+    }
+  ],
   "t0_m01_algebra_precalc": [
     {
       "id": "l01-signed-numbers-and-fractions",
@@ -2194,7 +2304,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-angles-radians-unit-circle",
       "title": "Angles, radians and the unit circle",
-      "minutes": 20,
+      "minutes": 26,
       "covers": [
         "radians vs degrees",
         "the unit circle"
@@ -2204,7 +2314,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-sin-cos-tan-inverses",
       "title": "Sine, cosine, tangent and their inverses",
-      "minutes": 20,
+      "minutes": 22,
       "covers": [
         "sin, cos, tan and their inverses"
       ],
@@ -2213,7 +2323,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-atan2-quadrants-wrapping",
       "title": "atan2, quadrants and angle wrapping",
-      "minutes": 20,
+      "minutes": 22,
       "covers": [
         "atan2 and quadrant correctness"
       ],
@@ -2222,7 +2332,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-trig-identities",
       "title": "Trigonometric identities",
-      "minutes": 16,
+      "minutes": 23,
       "covers": [
         "identities: Pythagorean, sum/difference, double-angle"
       ],
@@ -2231,7 +2341,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-law-of-sines-and-cosines",
       "title": "The law of sines and the law of cosines",
-      "minutes": 19,
+      "minutes": 26,
       "covers": [
         "law of sines and law of cosines"
       ],
@@ -2240,7 +2350,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-small-angle-approximations",
       "title": "Small-angle approximations",
-      "minutes": 17,
+      "minutes": 21,
       "covers": [
         "small-angle approximations"
       ],
@@ -2249,7 +2359,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-polar-and-spherical-coordinates",
       "title": "Polar, spherical and geodetic coordinates",
-      "minutes": 19,
+      "minutes": 24,
       "covers": [
         "polar and spherical coordinates"
       ],
@@ -2258,7 +2368,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-conic-sections",
       "title": "Conic sections and the shape of orbits",
-      "minutes": 17,
+      "minutes": 20,
       "covers": [
         "conic sections in geometric and polar form"
       ],
@@ -2267,7 +2377,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-complex-numbers-and-euler",
       "title": "Complex numbers and the Euler formula",
-      "minutes": 18,
+      "minutes": 21,
       "covers": [
         "complex numbers and Euler formula"
       ],
@@ -7547,6 +7657,12 @@ export interface LessonCoverage {
 }
 
 export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
+  "t0_m00_basecamp": {
+    "covered": 12,
+    "total": 12,
+    "complete": true,
+    "missing": []
+  },
   "t0_m01_algebra_precalc": {
     "covered": 12,
     "total": 12,

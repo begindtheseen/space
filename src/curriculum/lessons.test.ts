@@ -44,13 +44,15 @@ const KINDS = ['example', 'key', 'check', 'answer', 'note', 'warning', 'video', 
 
 /**
  * Modules written (or rewritten) in the plain voice, whose every lesson carries
- * context notes. A module joins when its lessons have them.
+ * context notes. A module opts in with an empty `.plain-voice` file in its
+ * lesson folder — a file of its own, so parallel writers never edit a shared
+ * list. NOTES_REQUIRED=<id,id> adds modules for a run (while one is being
+ * written, before its marker goes in).
  */
-const NOTES_REQUIRED = new Set<string>(
-  (process.env.NOTES_REQUIRED ?? '').split(',').filter(Boolean).concat([
-    't0_m00_basecamp',
-  ]),
-)
+const NOTES_REQUIRED = new Set<string>([
+  ...(process.env.NOTES_REQUIRED ?? '').split(',').filter(Boolean),
+  ...fs.readdirSync(dir).filter((d) => fs.existsSync(path.join(dir, d, '.plain-voice'))),
+])
 const NOTES_MIN = 4
 const NOTES_MAX = 15
 // `::: video <id>` — 11 URL-safe base64 characters, as the provider issues them.
