@@ -13,13 +13,26 @@
    the alternative is that she leaves to deal with it. And a way to stop, in
    plain words, because a timer you cannot stop is a thing people avoid
    starting.
+
+   While the block runs it also holds her on its page (engine/focus.ts,
+   "Staying in the block"): a link, the search box or the back button that
+   would take her elsewhere puts her straight back, and the strip says why and
+   how to leave — pause it (once five minutes have run) or end it.
    ========================================================================== */
 import { useEffect, useRef, useState } from 'react'
 import { IconCheck, IconPause, IconPlay, IconPlus, IconX } from '@/components/icons'
 import { endFocus, park, pauseFocus, resumeFocus } from '@/engine/apply'
-import { isComplete, remainingMs, type FocusRun } from '@/engine/focus'
+import {
+  isComplete,
+  isLocked,
+  lockAllows,
+  pauseAvailableIn,
+  PAUSE_COOLDOWN_MS,
+  remainingMs,
+  type FocusRun,
+} from '@/engine/focus'
 import { useLearner } from '@/hooks/useLearner'
-import { navigate } from '@/lib/router'
+import { navigate, useRoute } from '@/lib/router'
 import './focus-bar.css'
 
 export function FocusBar() {
@@ -39,7 +52,9 @@ function Strip({
   const [, force] = useState(0)
   const [parking, setParking] = useState(false)
   const [note, setNote] = useState('')
+  const [turnedBack, setTurnedBack] = useState(0)
   const noteRef = useRef<HTMLInputElement | null>(null)
+  const route = useRoute()
 
   // One second is the coarsest tick that still reads as a live countdown. A
   // paused block has nothing to redraw, so it costs nothing while it waits.
@@ -55,6 +70,58 @@ function Strip({
 
   const done = isComplete(run)
   const left = remainingMs(run)
+  const locked = isLocked(run)
+  const pauseIn = pauseAvailableIn(run)
+
+  // The hold. Checked on every route change and every tick, so a block that
+  // is resumed from somewhere else takes her back to it, and one that ends
+  // lets her go.
+  useEffect(() => {
+    if (!locked || lockAllows(run, route.path)) return
+    navigate(run.pick.href, { replace: true })
+    setTurnedBack(Date.now())
+  }, [locked, route.path, run])
+
+  // Links that would leave, stopped before they go: a hash route outside the
+  // block, or a same-tab link off this page altogether (the realm switcher),
+  // which the route check above could never turn back. A link that opens in a
+  // new tab, like a lesson's reference, is not leaving.
+  useEffect(() => {
+    if (!locked) return
+    const onClick = (e: MouseEvent) => {
+      if (e.defaultPrevented || e.button !== 0) return
+      const a = (e.target as Element | null)?.closest?.('a[href]') as HTMLAnchorElement | null
+      if (!a || a.closest('.fbar')) return
+      if (a.target === '_blank' || e.metaKey || e.ctrlKey || e.shiftKey) return
+      const href = a.getAttribute('href') ?? ''
+      const leaves = href.startsWith('#')
+        ? !lockAllows(run, href.slice(1).split('?')[0] || '/')
+        : !/^(mailto:|tel:)/.test(href)
+      if (!leaves) return
+      e.preventDefault()
+      e.stopPropagation()
+      setTurnedBack(Date.now())
+    }
+    document.addEventListener('click', onClick, true)
+    return () => document.removeEventListener('click', onClick, true)
+  }, [locked, run])
+
+  // The note stays up long enough to read, then gets out of the way.
+  useEffect(() => {
+    if (!turnedBack) return
+    const id = setTimeout(() => setTurnedBack(0), 5000)
+    return () => clearTimeout(id)
+  }, [turnedBack])
+
+  // The rest of the app dims its way out (sidebar, search) while it is closed.
+  useEffect(() => {
+    const root = document.documentElement
+    if (locked) root.dataset.focusLock = 'true'
+    else delete root.dataset.focusLock
+    return () => {
+      delete root.dataset.focusLock
+    }
+  }, [locked])
 
   const submitNote = () => {
     const text = note
@@ -64,7 +131,15 @@ function Strip({
   }
 
   return (
-    <div className="fbar" data-done={done} role="region" aria-label="Focus block">
+    <div className="fbar" data-done={done} data-locked={locked} role="region" aria-label="Focus block">
+      {turnedBack && locked ? (
+        <div className="fbar__notice" role="status">
+          You are in a focus block, so you stay on this lesson.{' '}
+          {pauseIn > 0
+            ? `You can pause in ${clock(pauseIn)}, or end the block now.`
+            : 'Pause or end the block to go somewhere else.'}
+        </div>
+      ) : null}
       <Dial run={run} left={left} done={done} />
 
       <div className="fbar__time">
@@ -121,11 +196,22 @@ function Strip({
           {!done ? (
             <button
               className="fbar__btn"
-              onClick={() => setState((s) => (run.pausedAt ? resumeFocus(s) : pauseFocus(s)))}
-              title={run.pausedAt ? 'Resume the block' : 'Pause the block'}
+              onClick={() => {
+                if (!run.pausedAt) return setState((s) => pauseFocus(s))
+                setState((s) => resumeFocus(s))
+                navigate(run.pick.href)
+              }}
+              disabled={!run.pausedAt && pauseIn > 0}
+              title={
+                run.pausedAt
+                  ? 'Resume the block and go back to it'
+                  : pauseIn > 0
+                    ? `A block can be paused once every ${PAUSE_COOLDOWN_MS / 60_000} minutes of focus. "I'm done" ends it now.`
+                    : 'Pause the block; you can leave this page while it is paused'
+              }
             >
               {run.pausedAt ? <IconPlay size={12} /> : <IconPause size={12} />}
-              <span>{run.pausedAt ? 'Resume' : 'Pause'}</span>
+              <span className="num">{run.pausedAt ? 'Resume' : pauseIn > 0 ? `Pause in ${clock(pauseIn)}` : 'Pause'}</span>
             </button>
           ) : null}
           <button

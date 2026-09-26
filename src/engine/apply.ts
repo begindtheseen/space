@@ -16,6 +16,7 @@
 import type { Module } from '@/curriculum/types'
 import { parseItemId } from '@/curriculum/types'
 import {
+  canPause,
   minutesSpent,
   parkNote,
   pauseRun,
@@ -360,8 +361,9 @@ export function startFocus(
   return { ...state, focus: startRun(pick, minutes, now), updatedAt: now.toISOString() }
 }
 
+/** Pauses the block, if it may be paused yet (see canPause); otherwise leaves it running. */
 export function pauseFocus(state: LearnerState, now: Date = new Date()): LearnerState {
-  if (!state.focus) return state
+  if (!state.focus || !canPause(state.focus, now)) return state
   return { ...state, focus: pauseRun(state.focus, now), updatedAt: now.toISOString() }
 }
 

@@ -234,6 +234,54 @@ export function resumeRun(run: FocusRun, now: Date = new Date()): FocusRun {
   return { ...rest, startedAt: now.toISOString() }
 }
 
+/* ── Staying in the block ─────────────────────────────────────────────────────
+   A running block holds her where it sent her. The easiest way out of a
+   block was always a click: a sidebar link, the search box, the back button,
+   and the block kept counting down on a page she had left. So while a block
+   is running the app will not take her anywhere else; to leave, she pauses it
+   or ends it — both one tap, both in plain words on the strip.
+
+   Pausing is rationed, because a pause that is always one tap away turns into
+   the same exit with an extra step: after a block starts or resumes, Pause
+   waits until five minutes of it have run. Ending is never rationed. A block
+   she cannot stop is a block she stops starting, and an ended block is still
+   credited with every minute it ran. */
+
+/** Focused time a block must run, after it starts or resumes, before it can be paused. */
+export const PAUSE_COOLDOWN_MS = 5 * 60_000
+
+/** Whether the block is holding her in place: running, not paused, not finished. */
+export function isLocked(run: FocusRun | undefined, now: Date = new Date()): run is FocusRun {
+  return !!run && !run.pausedAt && !isComplete(run, now)
+}
+
+/** Milliseconds until the block may be paused; zero when it may be now. */
+export function pauseAvailableIn(run: FocusRun, now: Date = new Date()): number {
+  if (run.pausedAt) return 0
+  const since = Date.parse(run.startedAt)
+  if (!Number.isFinite(since)) return 0
+  // startedAt is reset on every resume, so this is time run since the last one.
+  const ran = Math.max(0, now.getTime() - since)
+  return Math.max(0, Math.min(PAUSE_COOLDOWN_MS - ran, remainingMs(run, now)))
+}
+
+export function canPause(run: FocusRun, now: Date = new Date()): boolean {
+  return !run.pausedAt && !isComplete(run, now) && pauseAvailableIn(run, now) === 0
+}
+
+/**
+ * Where a running block lets her be: the page it opened and anything under
+ * it. A block on a module may move between that module's lessons (finishing
+ * one early and reading the next is the block working), not out of it.
+ */
+export function lockAllows(run: FocusRun, path: string): boolean {
+  const trim = (p: string) => p.replace(/\/+$/, '') || '/'
+  const home = trim(run.pick.href.split('?')[0]!.split('#')[0]!)
+  const here = trim(path)
+  if (home === '/') return here === '/'
+  return here === home || here.startsWith(`${home}/`)
+}
+
 /**
  * Whole minutes actually spent, for the day log.
  *

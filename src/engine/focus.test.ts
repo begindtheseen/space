@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { endFocus, park, startFocus, unpark } from './apply'
+import { endFocus, park, pauseFocus, resumeFocus, startFocus, unpark } from './apply'
 import {
   blockSummary,
   clampMinutes,
@@ -17,6 +17,11 @@ import {
   unparkNote,
   PARK_LIMIT,
   PARK_MAX_CHARS,
+  PAUSE_COOLDOWN_MS,
+  canPause,
+  isLocked,
+  lockAllows,
+  pauseAvailableIn,
   type FocusInputs,
   type FocusPick,
 } from './focus'
@@ -323,5 +328,66 @@ describe('the module boundary', () => {
     const s0 = startFocus(newLearnerState(T0), pick, 15, T0)
     expect(blocksToday(s0, T0)).toBe(0)
     expect(blocksToday(endFocus(s0, at('2026-03-02T10:15:00.000Z')), T0)).toBe(1)
+  })
+})
+
+describe('staying in the block', () => {
+  const lesson: FocusPick = { kind: 'start-lesson', title: 'Vectors', why: 'next', href: '/module/m1?lesson=l2', moduleId: 'm1' }
+  const min = (n: number) => new Date(T0.getTime() + n * 60_000)
+
+  it('holds her while it runs, and lets go when it is paused or finished', () => {
+    const run = startRun(lesson, 15, T0)
+    expect(isLocked(run, min(1))).toBe(true)
+    expect(isLocked(pauseRun(run, min(6)), min(7))).toBe(false)
+    expect(isLocked(run, min(15))).toBe(false)
+    expect(isLocked(undefined, T0)).toBe(false)
+  })
+
+  it('keeps her on the module it opened, between its lessons, and nowhere else', () => {
+    const run = startRun(lesson, 15, T0)
+    expect(lockAllows(run, '/module/m1')).toBe(true)
+    expect(lockAllows(run, '/module/m1/')).toBe(true)
+    expect(lockAllows(run, '/module/m2')).toBe(false)
+    expect(lockAllows(run, '/module/m10')).toBe(false)
+    expect(lockAllows(run, '/')).toBe(false)
+    expect(lockAllows(run, '/settings')).toBe(false)
+    const review = startRun(pick, 15, T0)
+    expect(lockAllows(review, '/review')).toBe(true)
+    expect(lockAllows(review, '/review/session')).toBe(true)
+    expect(lockAllows(review, '/reviews')).toBe(false)
+  })
+
+  it('can be paused only once five minutes of it have run, from the start and from each resume', () => {
+    const run = startRun(lesson, 25, T0)
+    expect(PAUSE_COOLDOWN_MS).toBe(5 * 60_000)
+    expect(canPause(run, min(1))).toBe(false)
+    expect(pauseAvailableIn(run, min(1))).toBe(4 * 60_000)
+    expect(canPause(run, min(5))).toBe(true)
+    const paused = pauseRun(run, min(6))
+    expect(pauseAvailableIn(paused, min(6))).toBe(0)
+    const resumed = resumeRun(paused, min(20))
+    // Resumed at minute 20: the next pause waits for five more minutes of focus.
+    expect(canPause(resumed, min(21))).toBe(false)
+    expect(pauseAvailableIn(resumed, min(22))).toBe(3 * 60_000)
+    expect(canPause(resumed, min(25))).toBe(true)
+  })
+
+  it('never makes her wait past the end of the block', () => {
+    const short = startRun(lesson, 3, T0)
+    expect(pauseAvailableIn(short, min(1))).toBe(2 * 60_000)
+    expect(canPause(short, min(3))).toBe(false)
+  })
+
+  it('refuses a pause before its time through the state, but always lets her end the block', () => {
+    let s = startFocus(newLearnerState(T0), lesson, 25, T0)
+    s = pauseFocus(s, min(2))
+    expect(s.focus?.pausedAt).toBeUndefined()
+    s = pauseFocus(s, min(5))
+    expect(s.focus?.pausedAt).toBe(min(5).toISOString())
+    s = resumeFocus(s, min(8))
+    expect(pauseFocus(s, min(9)).focus?.pausedAt).toBeUndefined()
+    const ended = endFocus(s, min(9))
+    expect(ended.focus).toBeUndefined()
+    expect(blocksToday(ended, min(9))).toBe(1)
   })
 })
