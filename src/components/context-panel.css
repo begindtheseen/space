@@ -131,7 +131,7 @@
   }
 }
 
-/* A note's way into Ask AI, under its explanation. */
+/* A note's way into Explain, under its explanation. */
 .ctx-panel__ask {
   display: inline-flex;
   align-items: center;
@@ -151,140 +151,159 @@
   background: var(--raise);
 }
 
-/* ── Ask AI ──────────────────────────────────────────────────────────────── */
+/* ── Explain ─────────────────────────────────────────────────────────────── */
 
-.ask {
-  display: flex;
-  flex-direction: column;
-}
-
-.ask .ctx-panel__kicker {
+.explain .ctx-panel__kicker {
   display: flex;
   align-items: center;
   gap: 5px;
 }
 
-.ask__title {
+.explain__title {
   font-size: 15px;
   font-weight: 600;
   color: var(--ink-2);
   overflow-wrap: anywhere;
 }
 
-.ask__thread {
-  flex: 1 0 auto;
-}
-
-.ask__status {
+.explain__status {
   margin: 4px 0 12px;
   font-size: 13.5px;
   color: var(--ink-3);
-  animation: ask-pulse 1.4s ease-in-out infinite;
 }
 
-@keyframes ask-pulse {
-  50% {
-    opacity: 0.45;
-  }
+.explain__h {
+  margin: 4px 0 6px;
+  font: 700 15.5px/1.35 var(--font-sans);
+  color: var(--ink);
 }
 
-.ask__q {
-  margin: 14px 0 8px;
-  padding: 8px 12px;
-  border-radius: var(--r-md);
-  background: var(--raise);
-  font-size: 13.5px;
-  color: var(--ink-2);
-}
-
-.ask__a {
-  margin-bottom: 4px;
-}
-
-.ask__caret {
-  display: inline-block;
-  width: 7px;
-  height: 15px;
-  margin-left: 2px;
-  border-radius: 1px;
-  background: var(--accent);
-  vertical-align: -2px;
-  animation: ask-pulse 0.9s steps(2, jump-none) infinite;
-}
-
-.ask__problem {
-  margin: 10px 0;
-  padding: 12px 14px;
-  border: 1px solid color-mix(in srgb, var(--warn) 45%, transparent);
-  border-radius: var(--r-md);
-  background: color-mix(in srgb, var(--warn) 8%, transparent);
-  font-size: 13.5px;
-  color: var(--ink-2);
-}
-
-.ask__problem p {
-  margin: 0 0 10px;
-}
-
-.ask__sources {
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid var(--line-soft);
-  font-size: 12.5px;
-}
-
-.ask__sources-label {
-  margin-bottom: 6px;
-  font-weight: 600;
-  color: var(--ink-3);
-}
-
-.ask__sources ul {
-  margin: 0;
-  padding-left: 18px;
+.explain__from {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  font-size: 12px;
   color: var(--ink-4);
 }
 
-.ask__sources a {
+.explain__from a {
   color: var(--accent);
   text-decoration: none;
 }
 
-.ask__sources a:hover {
-  text-decoration: underline;
-}
-
-.ask__follow {
-  display: flex;
-  gap: 8px;
-  margin-top: 14px;
-}
-
-.ask__input {
-  flex: 1;
-  min-width: 0;
-  padding: 8px 12px;
-  border: 1px solid var(--line);
-  border-radius: var(--r-pill);
-  background: var(--panel-2);
-  color: var(--ink);
-  font: inherit;
-  font-size: 13.5px;
-}
-
-.ask__input:focus {
-  outline: none;
-  border-color: var(--line-blue-strong);
-}
-
-.ask__fine {
-  margin: 10px 0 0;
-  font-size: 11px;
-  line-height: 1.5;
+.explain__from a span {
   color: var(--ink-4);
 }
 
-/* "Explain this", floating over a highlight. */
+.explain__from a:hover {
+  text-decoration: underline;
+}
+
+.explain__sect {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line-soft);
+}
+
+.explain__label {
+  margin-bottom: 8px;
+  font: 700 10.5px/1 var(--font-sans);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.explain__card {
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--panel-2);
+  font-size: 13.5px;
+}
+
+.explain__card + .explain__card {
+  margin-top: 8px;
+}
+
+.explain__card-front {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.explain__card-back {
+  margin-top: 4px;
+  color: var(--ink-2);
+}
+
+.explain__card p {
+  margin: 0;
+}
+
+.explain__more {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.explain__more summary {
+  cursor: pointer;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ink-2);
+}
+
+.explain__more[open] summary {
+  margin-bottom: 6px;
+  color: var(--ink);
+}
+
+.explain__passage {
+  display: block;
+  margin-bottom: 10px;
+  padding: 8px 12px;
+  border-left: 2px solid var(--line-blue-strong);
+  border-radius: 0 var(--r-sm, 6px) var(--r-sm, 6px) 0;
+  color: inherit;
+  text-decoration: none;
+}
+
+.explain__passage:hover {
+  background: var(--raise);
+}
+
+.explain__quote {
+  font-size: 13px;
+  color: var(--ink-2);
+}
+
+.explain__quote p {
+  margin: 0;
+}
+
+.explain__passage-from {
+  display: block;
+  margin-top: 4px;
+  font-size: 11.5px;
+  color: var(--accent);
+}
+
+.explain__empty {
+  font-size: 13.5px;
+  color: var(--ink-2);
+}
+
+.explain__empty ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.explain__empty a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+/* "Explain", floating over a highlight. */
 .sel-ask {
   position: fixed;
   z-index: 70;

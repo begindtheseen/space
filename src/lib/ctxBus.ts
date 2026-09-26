@@ -2,19 +2,19 @@
    ORBIT — who has the context panel
    ----------------------------------------------------------------------------
    Two things open down the right of a lesson: a context note (markdown.tsx)
-   and Ask AI (AskPanel.tsx). Only one should show at a time, and the lesson
+   and Explain (ExplainPanel.tsx). Only one should show at a time, and the lesson
    should step aside while either does. This is the small shared switch for
    both: whoever opens claims the panel and the other closes, and the page
    stays pushed aside while anything still holds it.
    ========================================================================== */
-import type { AskSeed } from '@/lib/askAi'
+import type { ExplainSeed } from '@/lib/explain'
 
-export type CtxOwner = 'note' | 'ai'
+export type CtxOwner = 'note' | 'explain'
 
 const CLAIM = 'orbit:ctx-claim'
-const ASK = 'orbit:ask'
+const EXPLAIN = 'orbit:explain'
 let holds = 0
-let askListeners = 0
+let explainListeners = 0
 
 /** Keeps the lesson pushed aside for the panel until the returned release runs. */
 export function holdCtxOpen(): () => void {
@@ -42,22 +42,22 @@ export function onCtxClaimed(me: CtxOwner, cb: () => void): () => void {
   return () => window.removeEventListener(CLAIM, listener)
 }
 
-/** Asks Ask AI about something, e.g. from a note's "explain it another way". */
-export function requestAsk(seed: AskSeed): void {
-  window.dispatchEvent(new CustomEvent<AskSeed>(ASK, { detail: seed }))
+/** Opens Explain on something, e.g. from a note's "where else this comes up". */
+export function requestExplain(seed: ExplainSeed): void {
+  window.dispatchEvent(new CustomEvent<ExplainSeed>(EXPLAIN, { detail: seed }))
 }
 
 /** Whether a page that can answer is listening right now. */
-export function canRequestAsk(): boolean {
-  return askListeners > 0
+export function canRequestExplain(): boolean {
+  return explainListeners > 0
 }
 
-export function onAskRequested(cb: (seed: AskSeed) => void): () => void {
-  const listener = (e: Event) => cb((e as CustomEvent<AskSeed>).detail)
-  window.addEventListener(ASK, listener)
-  askListeners++
+export function onExplainRequested(cb: (seed: ExplainSeed) => void): () => void {
+  const listener = (e: Event) => cb((e as CustomEvent<ExplainSeed>).detail)
+  window.addEventListener(EXPLAIN, listener)
+  explainListeners++
   return () => {
-    window.removeEventListener(ASK, listener)
-    askListeners--
+    window.removeEventListener(EXPLAIN, listener)
+    explainListeners--
   }
 }

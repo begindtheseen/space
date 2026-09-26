@@ -125,38 +125,6 @@ export interface RunResult {
   install?: string
 }
 
-/** Where Ask AI stands in this shell (desktop/ai.js). The key itself never crosses the bridge. */
-export interface AiStatus {
-  /** The shell was built with the SDK bundled in. */
-  available: boolean
-  hasKey: boolean
-  /** The key had to be stored unencrypted because no OS keychain was available. */
-  plaintext: boolean
-  /** Why the last set-key was refused. */
-  error?: string
-}
-
-export interface AiRequest {
-  /** Names the answer so its streamed events can be told apart. */
-  id: string
-  model: string
-  effort: 'low' | 'medium' | 'high'
-  maxTokens: number
-  system: string
-  messages: { role: 'user' | 'assistant'; content: string }[]
-}
-
-/** One piece of a streamed answer: some text, or the end of it. */
-export interface AiEvent {
-  id: string
-  text?: string
-  done?: boolean
-  stopReason?: string | null
-  error?: string
-  /** 'nokey', 'key', 'busy', 'offline', 'request', 'unavailable', 'cancelled', … */
-  code?: string
-}
-
 export interface OrbitBridge {
   readonly platform: 'darwin' | 'win32' | 'linux'
   readonly versions: Readonly<OrbitVersions>
@@ -205,18 +173,6 @@ export interface OrbitBridge {
     detect(refresh?: boolean): Promise<Record<string, ToolchainInfo>>
     exec(request: RunRequest): Promise<RunResult | null>
   }
-  /**
-   * Ask AI: explanations from Claude, called by the shell with a key only the
-   * shell can read. Absent in shells from before ORBIT 1.1.3.
-   */
-  readonly ai?: {
-    status(): Promise<AiStatus>
-    setKey(key: string | null): Promise<AiStatus>
-    /** Resolves when the answer is finished; the text arrives through onEvent. */
-    explain(request: AiRequest): Promise<void>
-    cancel(id: string): Promise<void>
-    onEvent(cb: (event: AiEvent) => void): () => void
-  }
   /** https: and mailto: only; the shell drops anything else. */
   openExternal(url: string): Promise<void>
   /** Menu-driven navigation, e.g. "Check for Updates…" lands on '/settings'. */
@@ -262,9 +218,6 @@ export const isDesktop = !!getOrbit()
  * is sitting in it.
  */
 export const hasNativeRunner = !!getOrbit()?.run
-
-/** The shell's key rule (desktop/config.js), mirrored so a paste slip is caught here. */
-export const AI_KEY_PATTERN = /^sk-ant-[A-Za-z0-9_-]{20,250}$/
 
 const STATUSES: ReadonlySet<string> = new Set<UpdateStatus>([
   'idle',

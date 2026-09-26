@@ -10,14 +10,13 @@ it.
 
 ## 1.1.3
 
-**Ask AI: highlight anything and it explains it.** Select a word, a formula or a whole sentence in
-a lesson and press **Explain this**. The answer starts appearing in a second or two, in plain
-words, and it builds on the lessons you have already read — it can say "remember in *Fractions*…"
-because it can see what *Fractions* taught you, and it links the lessons it used. Ask a follow-up
-in the same panel. It only ever sees what is in the app: the lesson you are in and passages from
-lessons you have read, never your progress, scores or code. It needs an Anthropic API key, added
-once in Settings → Ask AI, where it is kept in the Mac's keychain. Every context note also has a
-"Still fuzzy?" button that asks it to explain the same thing another way.
+**Highlight anything and press Explain.** Select a word, a formula or a sentence in a lesson and
+an Explain button appears. It opens the panel beside the lesson with what the course already says
+about those words: the note that explains them, which lesson it comes from and whether you have
+read it, a flashcard if one defines it, and the places in lessons you have read where you met the
+words before, one tap away. It is instant, works offline and sends nothing anywhere. When nothing
+you have read covers it yet, it says so and shows you which lesson does. Every context note also
+has a "Still fuzzy?" button that shows where else the same idea comes up.
 
 **Tap the underlined words for the story behind them.** Lessons now have context notes, like the
 explanations on a lyrics site: tap an underlined phrase and a panel opens beside the lesson with

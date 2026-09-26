@@ -5,6 +5,7 @@ You are one of several parallel content writers for ORBIT, a self-study aerospac
 THE GOAL: every lesson reads so a curious 12-year-old can follow it, without losing anything an engineer needs, and carries Genius-style context notes (tap a marked phrase → a side panel explains it, sometimes with a picture).
 
 READ FIRST, carefully, before anything else:
+0. src/curriculum/lessons/TEMPLATE.md — the skeleton and checklist of everything every lesson must have. Every lesson you write or rewrite follows it, and every lesson carries context notes: no exceptions.
 1. src/curriculum/lessons/STYLE.md — all of it; especially "Voice", "Context notes" (syntax, what earns a note, SVG picture rules) and the `.plain-voice` marker.
 2. The models: src/curriculum/lessons/t0_m01_algebra_precalc/01-signed-numbers-and-fractions.md (voice + notes), plus any two lessons of src/curriculum/lessons/t0_m02_trigonometry/ and src/curriculum/lessons/t0_m00_basecamp/ to see the standard.
 3. For each of your modules: its definition (search `id: '<moduleId>'` in src/curriculum/*.ts) — topics, objectives, cards (flashcards), quiz, exercises.

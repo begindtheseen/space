@@ -1,18 +1,20 @@
 /* ============================================================================
-   ORBIT — what Ask AI may draw on
+   ORBIT — what Explain draws on
    ----------------------------------------------------------------------------
    The lessons she has marked read, the ones the placement test says she
    already knows, and the lessons before this one in the module she is in
    (read or not, they come first for a reason). Bodies load the same lazy way
-   the reader loads them and stay cached, so asking twice costs nothing.
+   the reader loads them and stay cached. The notes index and the flashcards
+   cover the whole course, so a note from a lesson still ahead can answer too.
    ========================================================================== */
-import { lessonsFor, loadLessonBody, moduleById } from '@/curriculum'
+import { lessonsFor, loadLessonBody, moduleById, MODULES } from '@/curriculum'
+import type { IndexedNote } from '@/curriculum/lessons/notesIndex'
 import { PLACEMENT_SKILLS } from '@/curriculum/placement'
 import { testedOutKeys } from '@/engine/placement'
 import type { LearnerState } from '@/engine/state'
-import type { LibraryLesson } from '@/lib/askAi'
+import type { CardHit, LibraryLesson } from '@/lib/explain'
 
-/** The most lessons one question will read through; the most recently read win. */
+/** The most lessons one lookup will quote from; the most recently read win. */
 const MAX_LESSONS = 160
 
 export function libraryKeys(state: LearnerState, here: { moduleId: string; lessonId: string }): string[] {
@@ -48,4 +50,29 @@ export async function loadLibrary(keys: string[]): Promise<LibraryLesson[]> {
     }),
   )
   return out.filter((l): l is LibraryLesson => l !== null)
+}
+
+let notes: Promise<IndexedNote[]> | null = null
+
+/** Every context note in the course: one chunk, fetched the first time Explain is used. */
+export function loadNotes(): Promise<IndexedNote[]> {
+  notes ??= import('virtual:context-notes').then((m) => m.default).catch((err: unknown) => {
+    notes = null
+    throw err
+  })
+  return notes
+}
+
+let cards: CardHit[] | null = null
+
+export function allCards(): CardHit[] {
+  cards ??= MODULES.flatMap((m) => (m.cards ?? []).map((c) => ({ moduleId: m.id, front: c.front, back: c.back })))
+  return cards
+}
+
+/** "Lesson title" and "Module" for a note's lesson, for the link under it. */
+export function lessonLabel(moduleId: string, lessonId: string): { title: string; module: string } | null {
+  const mod = moduleById(moduleId)
+  const meta = mod && lessonsFor(moduleId).find((l) => l.id === lessonId)
+  return mod && meta ? { title: meta.title, module: mod.title.split(':')[0]! } : null
 }

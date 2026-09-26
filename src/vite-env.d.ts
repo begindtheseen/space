@@ -13,3 +13,9 @@ declare module '*.md?raw' {
 
 /** The version from package.json, injected at build time. */
 declare const __APP_VERSION__: string
+
+/** Every lesson's context notes, built by vite.config.ts (see curriculum/lessons/notesIndex.ts). */
+declare module 'virtual:context-notes' {
+  const notes: import('./curriculum/lessons/notesIndex').IndexedNote[]
+  export default notes
+}

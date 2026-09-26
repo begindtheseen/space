@@ -3,13 +3,13 @@
    ----------------------------------------------------------------------------
    Highlight words in a lesson and a small button appears just above them (just
    below on a touch screen, where the system's own copy menu sits on top).
-   Pressing it hands the words, and the paragraph they came from, to Ask AI.
+   Pressing it hands the words, and the paragraph they came from, to Explain.
    The button takes the press without taking focus, so the highlight is still
    there when it opens.
    ========================================================================== */
 import { useEffect, useRef, useState, type RefObject } from 'react'
 import { IconSpark } from '@/components/icons'
-import type { AskSeed } from '@/lib/askAi'
+import type { ExplainSeed } from '@/lib/explain'
 
 const BLOCKS = 'p, li, blockquote, td, th, h1, h2, h3, h4, figcaption, .md__math--display'
 const MIN_CHARS = 2
@@ -31,7 +31,7 @@ export function readableText(root: Node): string {
   return (host.textContent ?? '').replace(/\s+/g, ' ').trim()
 }
 
-function seedFrom(selection: Selection, container: HTMLElement): AskSeed | null {
+function seedFrom(selection: Selection, container: HTMLElement): ExplainSeed | null {
   if (selection.isCollapsed || selection.rangeCount === 0) return null
   const range = selection.getRangeAt(0)
   if (!container.contains(range.commonAncestorContainer)) return null
@@ -44,9 +44,9 @@ function seedFrom(selection: Selection, container: HTMLElement): AskSeed | null 
   return { selection: text.slice(0, MAX_CHARS), paragraph: paragraph.slice(0, 2000) }
 }
 
-export function SelectionAsk({ container, onAsk }: { container: RefObject<HTMLElement | null>; onAsk: (seed: AskSeed) => void }) {
+export function SelectionAsk({ container, onAsk }: { container: RefObject<HTMLElement | null>; onAsk: (seed: ExplainSeed) => void }) {
   const [spot, setSpot] = useState<{ x: number; y: number; below: boolean } | null>(null)
-  const seedRef = useRef<AskSeed | null>(null)
+  const seedRef = useRef<ExplainSeed | null>(null)
 
   useEffect(() => {
     let frame = 0
@@ -100,7 +100,7 @@ export function SelectionAsk({ container, onAsk }: { container: RefObject<HTMLEl
         onAsk(seed)
       }}
     >
-      <IconSpark size={14} /> Explain this
+      <IconSpark size={14} /> Explain
     </button>
   )
 }

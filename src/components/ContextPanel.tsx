@@ -23,7 +23,7 @@ const drawSvg = (lang: string, code: string) =>
     <img className="ctx-panel__pic" src={`data:image/svg+xml;charset=utf-8,${encodeURIComponent(code.trim())}`} alt="" />
   ) : null
 
-export function ContextPanel({ note, onClose, onAsk }: { note: ContextNote; onClose: () => void; onAsk?: () => void }) {
+export function ContextPanel({ note, onClose, onMore }: { note: ContextNote; onClose: () => void; onMore?: () => void }) {
   const ref = useRef<HTMLElement | null>(null)
 
   useEffect(() => {
@@ -57,9 +57,9 @@ export function ContextPanel({ note, onClose, onAsk }: { note: ContextNote; onCl
       <Markdown className="ctx-panel__body" renderCode={drawSvg}>
         {note.body}
       </Markdown>
-      {onAsk ? (
-        <button type="button" className="ctx-panel__ask" onClick={onAsk}>
-          <IconSpark size={14} /> Still fuzzy? Ask AI to explain it another way
+      {onMore ? (
+        <button type="button" className="ctx-panel__ask" onClick={onMore}>
+          <IconSpark size={14} /> Still fuzzy? See where else this comes up
         </button>
       ) : null}
     </aside>,

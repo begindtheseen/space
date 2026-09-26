@@ -16,7 +16,7 @@
 import { ContextPanel } from '@/components/ContextPanel'
 import { VideoEmbed } from '@/components/VideoEmbed'
 import { splitNotes, stripNoteRefs, type ContextNote } from '@/lib/contextNotes'
-import { canRequestAsk, claimCtx, holdCtxOpen, onCtxClaimed, requestAsk } from '@/lib/ctxBus'
+import { canRequestExplain, claimCtx, holdCtxOpen, onCtxClaimed, requestExplain } from '@/lib/ctxBus'
 import { createContext, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import './markdown.css'
 
@@ -66,7 +66,7 @@ function WithNotes({ children, className, renderCode }: { children: string; clas
     claimCtx('note')
     return holdCtxOpen()
   }, [note])
-  // Ask AI opening puts the note away; only one panel shows at a time.
+  // Explain opening puts the note away; only one panel shows at a time.
   useEffect(() => onCtxClaimed('note', () => setActive(null)), [])
   const body = <div className={`md ${className}`}>{renderBlocks(split.body)}</div>
   return (
@@ -76,7 +76,7 @@ function WithNotes({ children, className, renderCode }: { children: string; clas
         <ContextPanel
           note={note}
           onClose={() => setActive(null)}
-          onAsk={canRequestAsk() ? () => requestAsk({ selection: note.title, paragraph: stripNoteRefs(note.body) }) : undefined}
+          onMore={canRequestExplain() ? () => requestExplain({ selection: note.title, paragraph: stripNoteRefs(note.body) }) : undefined}
         />
       ) : null}
     </NotesContext.Provider>

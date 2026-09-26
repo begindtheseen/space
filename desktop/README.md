@@ -242,24 +242,10 @@ interface OrbitBridge {
     setToken(token: string | null): Promise<UpdateState>
     onState(cb: (s: UpdateState) => void): () => void
   }
-  ai: {                                                // Ask AI (1.1.3+), desktop/ai.js
-    status(): Promise<{ available: boolean; hasKey: boolean; plaintext: boolean }>
-    setKey(key: string | null): Promise<AiStatus>      // stored like the token; never read back
-    explain(request: AiRequest): Promise<void>         // answer streams as onEvent({ id, text }) … ({ id, done })
-    cancel(id: string): Promise<void>
-    onEvent(cb: (e: AiEvent) => void): () => void
-  }
   openExternal(url: string): Promise<void>            // https: and mailto: only
   onNavigate(cb: (path: string) => void): () => void  // menu → '/settings'
 }
 ```
-
-Ask AI's question is built in the page (`src/lib/askAi.ts`); the shell holds the Anthropic key
-(`aiKeyEnc` in config.json, via `safeStorage`) and makes the call with the SDK, which
-`scripts/vendor-sdk.mjs` bundles into `desktop/vendor/` during `npm run build:bundle` (the
-shell ships without node_modules). `ai.js` checks every request first: a `claude-*` model,
-low/medium/high effort, at most 2048 answer tokens, alternating turns, at most 120,000
-characters. Keys must match `/^sk-ant-[A-Za-z0-9_-]{20,250}$/`.
 
 Every main-side handler validates its arguments and returns
 `{ ...state, status: 'error', error }` rather than throwing across IPC. Tokens must match

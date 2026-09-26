@@ -441,7 +441,7 @@ async function screenshot(page, name, locatorToReveal) {
 
 const STEPS = [
   [1, 'Fake GitHub API + bundle fixture (headers asserted across the whole run)'],
-  [2, 'Launch: splash screenshot, main window, bridge versions, home screenshot, screen wake lock, Ask AI key handling'],
+  [2, 'Launch: splash screenshot, main window, bridge versions, home screenshot, screen wake lock'],
   [3, 'Settings: check → 9.9.9 → download → restart; bundle on disk; current.json'],
   [4, 'Relaunch on 9.9.9, roll back, relaunch on built-in'],
   [5, 'Quarantine: bundles that never call ready(), or crash in their first render, are quit and blacklisted'],
@@ -592,28 +592,6 @@ async function main() {
         () => new Promise((resolve) => navigator.geolocation.getCurrentPosition(() => resolve('granted'), (e) => resolve(`refused: ${e.code}`), { timeout: 3000 })),
       )
       assert(geo !== 'granted', `every other permission is still refused (geolocation: ${geo})`)
-
-      // Ask AI: the SDK is bundled into the shell and loads, a key goes in and
-      // never comes back out, and a question without a key is answered with
-      // how to add one rather than a call that cannot work.
-      const ai = await page.evaluate(async () => {
-        const before = await window.orbit.ai.status()
-        const bad = await window.orbit.ai.setKey('not-a-key')
-        const saved = await window.orbit.ai.setKey('sk-ant-e2e-0123456789abcdefghijklmnop')
-        const removed = await window.orbit.ai.setKey(null)
-        const events = []
-        const off = window.orbit.ai.onEvent((e) => events.push(e))
-        await window.orbit.ai.explain({ id: 'e2e', model: 'claude-opus-5', effort: 'low', maxTokens: 256, system: 'x', messages: [{ role: 'user', content: 'hi' }] })
-        // The last event and the call's reply travel separately; either can land first.
-        for (let i = 0; i < 40 && !events.some((e) => e.done); i++) await new Promise((r) => setTimeout(r, 50))
-        off()
-        return { before, bad, saved, removed, events }
-      })
-      assert(ai.before.available === true, 'Ask AI: the bundled SDK loads in the shell')
-      assert(ai.before.hasKey === false && typeof ai.bad.error === 'string' && ai.bad.hasKey === false, 'Ask AI: a malformed key is refused')
-      assert(ai.saved.hasKey === true && !('key' in ai.saved) && !JSON.stringify(ai.saved).includes('sk-ant'), 'Ask AI: a saved key is stored and never handed back')
-      assert(ai.removed.hasKey === false, 'Ask AI: the key can be removed')
-      assertEqual(ai.events.at(-1)?.code, 'nokey', 'Ask AI: asking without a key says how to add one')
     })
 
     // 3 ───────────────────────────────────────────────────────────────────────

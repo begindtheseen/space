@@ -45,14 +45,14 @@ import { atomsOf, dueAtoms } from '@/engine/scheduler'
 import { diagnoseModule } from '@/engine/diagnose'
 import { getItem, type LearnerState } from '@/engine/state'
 import { currentR } from '@/engine/fsrs'
-import { AskPanel } from '@/components/AskPanel'
+import { ExplainPanel } from '@/components/ExplainPanel'
 import { ReadAloud } from '@/components/ReadAloud'
 import { SelectionAsk } from '@/components/SelectionAsk'
 import { ReadingProgress } from '@/components/ReadingProgress'
 import { useReadingPlace } from '@/hooks/useReadingPlace'
 import { useLearner } from '@/hooks/useLearner'
-import { askAvailable, type AskSeed, type LibraryLesson } from '@/lib/askAi'
-import { onAskRequested } from '@/lib/ctxBus'
+import type { ExplainSeed, LibraryLesson } from '@/lib/explain'
+import { onExplainRequested } from '@/lib/ctxBus'
 import { formatDate } from '@/lib/format'
 import { Markdown } from '@/lib/markdown'
 import { PlaygroundEmbed } from '@/components/ide/Embed'
@@ -987,8 +987,6 @@ function UnlocksCard({ dag, module }: { dag: ReturnType<typeof useLearner>['dag'
 
 /* ── Lesson reader ───────────────────────────────────────────────────────── */
 
-/** Ask AI is a Mac-app feature: the shell holds the key and makes the call. */
-const canAsk = askAvailable()
 
 function LessonReader({ module, lesson }: { module: Module; lesson: LessonMeta }) {
   const { state, setState } = useLearner()
@@ -1001,14 +999,14 @@ function LessonReader({ module, lesson }: { module: Module; lesson: LessonMeta }
   const [error, setError] = useState<string | null>(null)
   const renderCode = useLessonCode(`lesson:${module.id}:${lesson.id}`, body)
   const readerRef = useRef<HTMLDivElement | null>(null)
-  const [asking, setAsking] = useState<AskSeed | null>(null)
+  const [asking, setAsking] = useState<ExplainSeed | null>(null)
   const here = useMemo<LibraryLesson | null>(
     () => (body === null ? null : { moduleId: module.id, moduleTitle: module.title, lessonId: lesson.id, title: lesson.title, body }),
     [module.id, module.title, lesson.id, lesson.title, body],
   )
   const closeAsk = useCallback(() => setAsking(null), [])
   // A note's "explain it another way" arrives here.
-  useEffect(() => (canAsk && here ? onAskRequested(setAsking) : undefined), [here])
+  useEffect(() => (here ? onExplainRequested(setAsking) : undefined), [here])
 
   useEffect(() => {
     let alive = true
@@ -1115,8 +1113,8 @@ function LessonReader({ module, lesson }: { module: Module; lesson: LessonMeta }
         </div>
       </Card>
 
-      {canAsk && here ? <SelectionAsk container={readerRef} onAsk={setAsking} /> : null}
-      {asking && here ? <AskPanel seed={asking} here={here} onClose={closeAsk} /> : null}
+      {here ? <SelectionAsk container={readerRef} onAsk={setAsking} /> : null}
+      {asking && here ? <ExplainPanel seed={asking} here={here} onClose={closeAsk} /> : null}
 
       {body !== null && practiceLangs(module).length ? <TryItHere langs={practiceLangs(module)} saveKey={`try:${module.id}`} /> : null}
 

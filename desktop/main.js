@@ -7,7 +7,6 @@ import path from 'node:path'
 import { app, BrowserWindow, dialog } from 'electron'
 import { Updater } from './updater.js'
 import { createShellInstaller } from './shellInstall.js'
-import { createAi } from './ai.js'
 import { createConfig } from './config.js'
 import { openExternal, registerIpc } from './ipc.js'
 import { buildMenu } from './menu.js'
@@ -244,9 +243,7 @@ async function main() {
   const startUrl = dev ? env.devUrl : APP_URL
   const open = (url) => openExternal(url, log)
 
-  const ai = createAi({ getKey: () => config.getAiKey(), log })
-  app.on('before-quit', () => ai.cancelAll())
-  const ipc = registerIpc({ updater, ai, config, versions, repo, allowedOrigins, log })
+  const ipc = registerIpc({ updater, config, versions, repo, allowedOrigins, log })
 
   const windowOptions = { preload: paths.preloadFile, boundsFile: paths.windowFile(), allowedOrigins, openExternal: open, log }
 
