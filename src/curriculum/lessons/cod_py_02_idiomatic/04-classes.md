@@ -1,18 +1,20 @@
 ---
 id: l04-classes
-title: Classes: state, behaviour and properties
-minutes: 16
+title: Classes: state, behavior and properties
+minutes: 19
 covers:
   - Classes: __init__, attributes vs methods, @property, @staticmethod, @classmethod
 ---
 
-A six-degree-of-freedom simulation carries a *state*: time, position, velocity, attitude, angular rate, mass. Every function in the simulation takes one and returns one, and so the first design decision anybody makes is how to represent it. The usual first answer is a dict, and the usual second answer, a week later, is a class.
+Think of the difference between a pile of sticky notes and a printed form. On sticky notes you can write anything: "mass 31500", "mas5 30000", a phone number. Nothing stops a typo, nothing says which notes belong together, and nothing checks that the mass is a sensible number. A printed form has fixed boxes with labels. It says exactly what goes on it. The office that uses the form also knows what to *do* with a filled-in one.
 
-The reason is not that dicts are slow. It is that a dict has no fixed set of keys, no place to put the operations that belong to a state, and nothing to say what a valid state is. `state["mas5"]` is a new key, not an error. A derived quantity like speed gets recomputed at every call site, three of which will have a typo in the square root. Nothing knows that mass must be positive.
+In Python, a dictionary is the pile of sticky notes and a **class** is the form. A class is a blueprint for a new kind of object: it says what data each object carries and what operations the object supports. Each object built from the blueprint is an **instance** of the class — one filled-in copy of the form.
 
-A class fixes all three. `__init__` says what a state consists of, methods say what you can do with one, `@property` gives derived quantities a name without storing them, and `@classmethod` gives you a second way to build one without a second name to remember. This lesson is that vocabulary, and the next one is the dunder methods that make your class behave like a built-in type.
+A six-degree-of-freedom flight simulation carries a **[[state|six-dof]]**: time, position, velocity, attitude, spin rate, mass. Every function in the simulation takes a state and returns a state, so the first design decision anybody makes is how to hold one. The usual first answer is a dict. The usual second answer, a week later, is a class. This lesson shows why, and teaches the vocabulary: `__init__`, attributes and methods, `@property`, `@classmethod` and `@staticmethod`. The next lesson adds the special methods that make your class behave like one of Python's own types.
 
 ## What the dict version costs
+
+Here is a state stored as a dict, with one derived quantity (speed) and two typos.
 
 ```python
 # dict_state.py
@@ -33,7 +35,15 @@ python3 dict_state.py
 # ['mas5', 'mass', 't', 'vx', 'vy', 'vz']
 ```
 
-The speed calculation is correct and will be copied into six other files. The misspelled `state.get("mas5", 0.0)` returned `0.0` instead of raising, which in a mass-flow calculation is a division by zero somewhere far away. And the misspelled assignment added a *sixth* key rather than failing, so the dict now describes a state that does not exist.
+Three problems hide in those few lines.
+
+The speed calculation is correct, but it lives at the call site. It will be copied into six other files, and one of those copies will get the square root wrong.
+
+The misspelled `state.get("mas5", 0.0)` did not fail. It quietly returned `0.0`. In a mass-flow calculation that zero becomes a division by zero somewhere far away, and the traceback points at the wrong line.
+
+The misspelled assignment `state["mas5"] = 30000.0` added a *sixth* key instead of failing. The dict now describes a state that does not exist: one with two masses.
+
+A class fixes all three. It names the parts once, it keeps the operations next to the data, and it can refuse bad values.
 
 ## A class names the parts and holds the operations
 
@@ -43,7 +53,7 @@ import math
 
 
 class State:
-    """Vehicle state at one instant, in an Earth-centred inertial frame."""
+    """Vehicle state at one instant, in an Earth-centered inertial frame."""
 
     def __init__(self, t, velocity, mass):
         self.t = float(t)
@@ -73,15 +83,23 @@ python3 state.py
 # 2769704280.0
 ```
 
-Four things in that file are worth saying precisely.
+Walk through it from the top.
 
-`__init__` is not a constructor. By the time it runs, the object exists and is empty; `__init__` fills it in, and returns `None`. Whatever it assigns to `self` is what the object has.
+`class State:` starts the blueprint. Everything indented under it belongs to the class. The string right under the `class` line is the **docstring** — a description that `help(State)` will show.
 
-`self` is an ordinary parameter and Python passes it explicitly. `s.speed()` is `State.speed(s)`, and you can write the second form; the first is sugar. This is why every method's first parameter is `self`, and why forgetting it gives an argument-count error rather than something mysterious.
+`def __init__(self, t, velocity, mass):` is the setup method. The name is read "dunder init" — **dunder** is short for "double underscore", the two underscores on each side. Python calls it for you when you write `State(12.5, ...)`.
 
-`self.velocity = tuple(float(v) for v in velocity)` does two useful things in one line: it coerces the components to float, so a caller passing integers or strings from a file gets floats out, and it copies them into a tuple, so a caller who later mutates the list they passed in cannot change this state behind its back.
+`s = State(12.5, (410.0, -3.2, 88.0), 31500.0)` builds one instance and names it `s`. The dot in `s.t` is read "s dot t" and means "the `t` that belongs to `s`".
 
-`speed` and `kinetic_energy` are *methods*: behaviour, stored once on the class. `t`, `velocity` and `mass` are *attributes*: data, stored per instance. You can see the split:
+Now four things that are worth saying precisely.
+
+**`__init__` is not a constructor.** By the time it runs, the object already exists and is empty. `__init__` fills it in and returns `None`. Whatever it assigns to `self` is what the object has. (The step that actually creates the empty object is a different method, `__new__`, which you will almost never write.)
+
+**`self` is an ordinary parameter, and Python passes it for you.** `self` is the instance the method is working on. Writing `s.speed()` is shorthand for `State.speed(s)` — you can write the long form and it does the same thing. That is why every method's first parameter is `self`, and why forgetting it gives an error about the number of arguments rather than something mysterious.
+
+**Converting and copying in `__init__` pays off.** The line `self.velocity = tuple(float(v) for v in velocity)` does two jobs. It turns each component into a float, so a caller who passes integers, or strings read from a file, still gets floats. And it copies the components into a **tuple** — a list that cannot be changed — so a caller who later edits the list they passed in cannot change this state behind its back.
+
+**Attributes are data; methods are behavior.** `t`, `velocity` and `mass` are **attributes**: values stored separately in each instance. `speed` and `kinetic_energy` are **methods**: functions stored once on the class and shared by every instance. You can see the split:
 
 ```python
 # bound.py
@@ -98,22 +116,31 @@ print(s.speed() == State.speed(s))
 ```bash
 python3 bound.py
 # {'t': 12.5, 'velocity': (410.0, -3.2, 88.0), 'mass': 31500.0}
-# <function State.speed at 0x7fd853819b20>
-# <bound method State.speed of <state.State object at 0x7fd853806190>>
+# <function State.speed at 0x7fe960ba5d00>
+# <bound method State.speed of <state.State object at 0x7fe960b92190>>
 # True
 ```
 
-`vars(s)` is the instance's own data and holds exactly the three attributes — no methods. `State.speed` is a plain function. `s.speed` is that same function with `s` already attached, which is what "bound method" means. The two hex addresses will differ on your machine; nothing else in that output will.
+Read the output line by line.
+
+- `vars(s)` shows the instance's own data. It holds exactly the three attributes and no methods. It is, under the hood, **[[a dictionary|instance-dict]]** — but one that only the class's own code fills in.
+- `State.speed` is a plain function that lives on the class.
+- `s.speed` is that same function with `s` already attached as its first argument. That is what a **[[bound method|bound-method]]** means: a method glued to one instance.
+- The last line confirms the two calls give the same answer.
+
+The two hex numbers are memory addresses. They will differ on your machine; nothing else in that output will.
 
 ::: key
-`__init__(self, ...)` initialises an already-created object and returns `None`. Instance data lives in the instance (`vars(obj)`); methods live on the class and are shared. `obj.method(args)` means `Class.method(obj, args)`.
+`__init__(self, ...)` initializes an already-created object and returns `None`. Instance data lives in the instance (`vars(obj)`); methods live on the class and are shared. `obj.method(args)` means `Class.method(obj, args)`.
 :::
 
-## @property: a method that is read like an attribute
+## @property: a method that reads like an attribute
 
-`s.speed()` and `s.mass` read differently although both are "a number belonging to this state". The parentheses are an implementation detail leaking into every call site, and the moment you decide to store speed instead of computing it, or to compute mass instead of storing it, every call site has to change.
+Look at `s.speed()` and `s.mass`. Both are "a number belonging to this state", yet one has parentheses and one does not. The parentheses are an implementation detail — "this one is computed" — leaking into every place that uses it. Worse, if you later decide to store speed instead of computing it, or to compute mass instead of storing it, every one of those places has to change.
 
-`@property` removes the distinction. A property is a method you access without parentheses:
+Think of a car's fuel gauge. You glance at it the same way whether it reads a float in the tank or a computer estimates the level from flow meters. How the number is produced is hidden behind the dial.
+
+`@property` is that dial. The `@` line above a `def` is a **[[decorator|decorator-preview]]** — read `@property` as "at property" — and it changes the function underneath. A **property** is a method you read without parentheses:
 
 ```python
 # property_state.py
@@ -175,18 +202,24 @@ python3 property_state.py
 # AttributeError: property 'speed' of 'State' object has no setter
 ```
 
-Five things happened there. `s.speed` with no parentheses ran a method. Setting `s.mass` ran the setter, which validated. Changing `velocity` changed `speed` immediately, because speed is derived at every read and never stored — so the two can never disagree, which a cached copy could. Assigning an invalid mass raised at the assignment, not later in a propagator. And `speed`, having no setter, is read-only.
+Five things happened, one per output line.
 
-The last message, `property 'speed' of 'State' object has no setter`, is the Python 3.11 wording; older versions said `can't set attribute`. The exception type, `AttributeError`, is the part you should write code against.
+1. `s.speed`, with no parentheses, ran a method and printed 419.35.
+2. `s.mass = 29800.0` ran the **setter** — the method marked `@mass.setter`, which handles writes. It checked the value and stored it.
+3. After `velocity` changed to all zeros, `s.speed` was 0.0 at once. Speed is worked out fresh at every read and never stored, so speed and velocity can never disagree.
+4. Assigning a negative mass raised a `ValueError` right at the assignment, not later inside a propagator.
+5. `speed` has no setter, so it is read-only, and writing to it raised `AttributeError`.
+
+The wording of the last message, `property 'speed' of 'State' object has no setter`, is from Python 3.11. Older versions said `can't set attribute`. The exception type, `AttributeError`, is the part to write code against.
 
 ::: key
-`@property` turns a method into a read-only attribute; `@name.setter` adds a write path that can validate. The value of this is that you may start with a plain attribute and add validation or derivation later **without changing a single caller**. That is why Python code does not begin life with `get_mass()` and `set_mass()` the way Java code does.
+`@property` turns a method into a read-only attribute; `@name.setter` adds a write path that can validate. The value of this is that you may start with a plain attribute and add validation or derivation later **without changing a single caller**. That is why Python code does not begin life with `get_mass()` and `set_mass()` the way **[[Java|java-getters]]** code does.
 :::
 
 ::: example A State class for a propagator, and what the property bought
-Suppose `mass` began as a plain attribute and the class shipped. Fifty call sites read `s.mass`, a dozen assign it. Then a Monte Carlo run produces a negative mass after a propellant-depletion bug, and the trajectory quietly continues with negative kinetic energy.
+Suppose `mass` began life as a plain attribute and the class shipped. Fifty places read `s.mass`, and a dozen assign it. Then a Monte Carlo run — thousands of simulated flights with randomized inputs — hits a propellant-depletion bug that drives the mass negative. The trajectory carries on quietly with a negative kinetic energy.
 
-With a plain attribute the fix means finding every assignment. With the property above the fix is the eight lines of `mass` and `mass.setter`, and **no call site changes at all** — `s.mass` still reads, `s.mass = x` still writes, and the invalid write now raises at the point where the bad value is produced:
+With a plain attribute, the fix means hunting down every assignment. With the property above, the fix is the eight lines of `mass` and `mass.setter`, and **no call site changes at all**. `s.mass` still reads. `s.mass = x` still writes. The invalid write now raises at the exact line where the bad value is produced:
 
 ```bash
 python3 property_state.py
@@ -197,16 +230,24 @@ python3 property_state.py
 # AttributeError: property 'speed' of 'State' object has no setter
 ```
 
-Two details that trip people. The stored value has to go somewhere other than `self.mass`, or the setter calls itself forever; the convention is a leading underscore, `self._mass`, meaning "internal, do not touch from outside". And `__init__` assigns `self.mass = mass` rather than `self._mass = mass` on purpose, so that construction goes through the same validation as any later assignment — which is what makes `State(12.5, (0, 0, 0), -5.0)` raise instead of building a state nobody can use.
+Two details trip people up.
 
-There is a cost, and it is honest to state it: a property is a function call, so reading `s.speed` a million times inside an integration loop is a million calls. If profiling shows that, compute the value once outside the loop. It is not a reason to avoid properties in general.
+First, the stored value has to go somewhere other than `self.mass`. If the setter wrote `self.mass = value`, that assignment would call the setter again, which would call it again, forever. The convention is a leading underscore, `self._mass`, which means "**[[internal|underscore]]** — do not touch from outside".
+
+Second, `__init__` assigns `self.mass = mass`, not `self._mass = mass`, on purpose. That sends construction through the same check as any later assignment. So `State(12.5, (0, 0, 0), -5.0)` raises instead of building a state nobody can use.
+
+Sanity check on the numbers: the speed is $\sqrt{410^2 + 3.2^2 + 88^2} \approx 419.35\,\mathrm{m/s}$. It is a little more than the biggest component, 410, as a length should be.
+
+There is an honest cost. A property is a function call, so reading `s.speed` a million times inside an integration loop is a million calls. If profiling shows that matters, compute the value once, outside the loop. It is not a reason to avoid properties in general.
 :::
 
 ## @classmethod and @staticmethod
 
-A `@classmethod` receives the class as its first argument, conventionally `cls`, instead of an instance. Its main use is an *alternative constructor*: a second way to build an object, named for where the data came from.
+A normal method receives the instance as its first argument. Two decorators change that.
 
-A `@staticmethod` receives neither. It is a plain function that lives inside the class because it belongs to the subject, not because it needs any object.
+A **class method**, marked `@classmethod`, receives the *class* as its first argument, named `cls` by convention, instead of an instance. Its main use is an **alternative constructor**: a second way to build an object, named for where the data came from. Think of a bakery that takes orders by phone or by web form. Either way you end up with the same cake; the bakery has two front doors.
+
+A **static method**, marked `@staticmethod`, receives neither the instance nor the class. It is a plain function that lives inside the class because it belongs to the same subject, not because it needs any object.
 
 ::: example Building a vehicle from a config file, and the rocket equation
 ```python
@@ -283,21 +324,34 @@ python3 vehicle.py
 # 9.80665 9.80665
 ```
 
-The physics is Tsiolkovsky's equation,
+The physics is the **[[Tsiolkovsky rocket equation|rocket-equation]]**:
 
 $$\Delta v = I_{sp}\, g_0 \ln\!\left(\frac{m_0}{m_f}\right)$$
 
-with $I_{sp}$ the specific impulse in seconds, $g_0 = 9.80665\,\mathrm{m/s^2}$ the standard gravity that turns seconds into an exhaust velocity, $m_0$ the mass at ignition and $m_f$ at burnout. Here $m_0 = 111{,}000\,\mathrm{kg}$ and $m_f = 19{,}000\,\mathrm{kg}$, so the ratio is 5.8421 and the ideal contribution is about 6.02 km/s — a plausible upper-stage number, and an upper bound, since it ignores gravity and drag losses.
+Read $\Delta v$ as "delta v", the change in speed the stage can give. $I_{sp}$ ("I sub s p") is the specific impulse in seconds. $g_0 = 9.80665\,\mathrm{m/s^2}$ is standard gravity, which turns seconds into an exhaust speed. $m_0$ is the mass at ignition and $m_f$ the mass at burnout. $\ln$ is the natural logarithm.
 
-Three design points. `from_config` is a classmethod rather than a function called `vehicle_from_config`, so it is found where you look for it — next to the class — and it uses `cls(...)` rather than `Vehicle(...)` so that a subclass calling `Reusable.from_config(cfg)` gets a `Reusable`.
+Now the numbers, step by step.
 
-`delta_v` is a staticmethod because it is the rocket equation: it needs an Isp and a mass ratio, not a vehicle. It can be called on the class or on an instance, and `ideal_delta_v` calls it through `self` to supply this vehicle's numbers. Note that a staticmethod gets no `cls`, which is why it has to say `Vehicle.G0` explicitly.
+1. Burnout mass: dry plus payload, $m_f = 4{,}000 + 15{,}000 = 19{,}000\,\mathrm{kg}$.
+2. Ignition mass: add the propellant, $m_0 = 19{,}000 + 92{,}000 = 111{,}000\,\mathrm{kg}$. The program printed the same.
+3. Mass ratio: $111{,}000 / 19{,}000 \approx 5.8421$.
+4. Its logarithm: $\ln 5.8421 \approx 1.7651$.
+5. Exhaust speed: $348 \times 9.80665 \approx 3{,}413\,\mathrm{m/s}$.
+6. Multiply: $3{,}413 \times 1.7651 \approx 6{,}024\,\mathrm{m/s}$, about 6.02 km/s.
 
-`G0` is a *class attribute*: one object, shared, reachable as `Vehicle.G0` or through any instance. That is the right home for a physical constant — it is a fact about the world, not about one vehicle.
+That is a plausible upper-stage number. It is also an upper bound, because it ignores gravity and drag losses.
+
+Three design points.
+
+`from_config` is a class method, not a free function called `vehicle_from_config`. So it is found where you would look for it — next to the class. And it builds with `cls(...)`, not `Vehicle(...)`, so a subclass calling `Reusable.from_config(cfg)` gets a `Reusable`.
+
+`delta_v` is a static method because it is the rocket equation itself. It needs an Isp and a mass ratio, not a vehicle. You can call it on the class, `Vehicle.delta_v(311.0, 3.5)`, or through an instance, which is what `ideal_delta_v` does with `self.delta_v(...)` to supply this vehicle's numbers. A static method gets no `cls`, which is why it has to spell out `Vehicle.G0`.
+
+`G0` is a **class attribute**: one value, stored on the class, shared by all instances, reachable as `Vehicle.G0` or through any instance as `stage.G0`. That is the right home for a physical constant. It is a fact about the world, not about one vehicle.
 :::
 
 ::: warning
-A class attribute that is *mutable* is shared in a way almost nobody intends. This is the same trap as a mutable default argument, wearing different clothes:
+A class attribute that can be *changed in place* — a list, a dict — is shared in a way almost nobody intends. It is the same trap as a mutable default argument, wearing different clothes:
 
 ```python
 # shared.py
@@ -335,7 +389,7 @@ python3 shared.py
 # per instance: [] False
 ```
 
-The GPS reported the IMU's fault, because `self.faults.append(...)` mutated the one list the class owns. Immutable class attributes such as `G0 = 9.80665` are fine; anything you will mutate belongs in `__init__`.
+The GPS reported the IMU's fault, because `self.faults.append(...)` changed the one list the class owns. (`is` asks "are these the very same object?", and the answer was `True`.) Unchangeable class attributes such as `G0 = 9.80665` are fine. Anything you will change belongs in `__init__`, where each instance gets its own. The reason the lookup reaches the class at all is the **[[search order for attributes|lookup-order]]**.
 :::
 
 ## Check yourself
@@ -345,49 +399,51 @@ Why does `__init__` return `None` rather than the new object, and what happens i
 :::
 
 ::: answer
-Because `__init__` does not create the object. `Vehicle(...)` calls `Vehicle.__new__` to allocate the instance, then calls `__init__` on it to fill it in, then hands the instance back. `__init__` is an initialiser, and its return value is not used.
+Because `__init__` does not create the object. `Vehicle(...)` first calls `Vehicle.__new__` to make an empty instance, then calls `__init__` on it to fill it in, then hands the instance back to you. `__init__` is an initializer, and Python ignores its return value — as long as that value is `None`.
 
-Returning anything other than `None` from it is an error: `TypeError: __init__() should return None, not 'Vehicle'`. If you want a method that builds and returns an object, that is a `@classmethod` alternative constructor, which is exactly what `from_config` is.
+Returning anything else is an error: `TypeError: __init__() should return None, not 'Vehicle'`. If you want a method that builds and returns an object, that is a `@classmethod` alternative constructor, which is exactly what `from_config` is.
 :::
 
 ::: check
-`speed` is a property computed on every read. What would go wrong if you instead computed it once in `__init__` and stored `self.speed`?
+`speed` is a property computed on every read. What would go wrong if you instead computed it once in `__init__` and stored it as `self.speed`?
 :::
 
 ::: answer
-It would be correct exactly until something changed `velocity`, and then it would be silently wrong. The stored number and the velocity it came from are two pieces of state that must agree, and nothing enforces the agreement; the propagator updates the velocity, nobody remembers to update the speed, and the log reports the speed the vehicle had at ignition for the rest of the flight.
+It would be correct right up until something changed `velocity`, and then it would be silently wrong. The stored speed and the velocity it came from are two pieces of state that must agree, and nothing makes them agree. The propagator updates the velocity, nobody remembers to update the speed, and the log reports the speed at ignition for the rest of the flight.
 
-The property has one source of truth. The general rule is to store what is independent and derive what follows from it, and to cache only when a measurement says the recomputation costs you something — at which point you cache *inside* the property and invalidate it in the setter that can change the inputs.
+The property has one source of truth. The general rule: store what is independent, derive what follows from it, and cache only when a measurement says the recomputing costs you something. At that point you cache *inside* the property, and clear the cache in the setter that can change the inputs.
 :::
 
 ::: check
-When should a helper be a `@staticmethod` on a class rather than a module-level function?
+When should a helper be a `@staticmethod` on a class rather than a function at the top level of the module?
 :::
 
 ::: answer
-When it belongs to the class's subject but needs no instance, and you want a reader to find it next to the class. `Vehicle.delta_v(isp, ratio)` reads as "the rocket equation, which is part of what a Vehicle is about", and it comes along with the class when the class is imported.
+When it belongs to the class's subject but needs no instance, and you want a reader to find it next to the class. `Vehicle.delta_v(isp, ratio)` reads as "the rocket equation, which is part of what a Vehicle is about", and it comes along whenever the class is imported.
 
-If the helper is useful to code that never touches a `Vehicle`, a module-level function is better, because a static method on a class is an awkward import for anybody who wanted only the formula. And if the helper needs the class — to build an instance, or to read a class attribute that a subclass might override — it should be a `@classmethod`, not a static method, so that subclasses behave correctly.
+If the helper is useful to code that never touches a `Vehicle`, a module-level function is better. A static method is an awkward import for somebody who wanted only the formula. And if the helper needs the class — to build an instance, or to read a class attribute a subclass might override — it should be a `@classmethod`, so subclasses behave correctly.
 :::
 
 ::: check
-`from_config` is written `return cls(...)` rather than `return Vehicle(...)`. What breaks if you write the second, and when?
+`from_config` is written `return cls(...)` rather than `return Vehicle(...)`. What breaks if you write the second form, and when?
 :::
 
 ::: answer
-Nothing breaks until somebody subclasses. `class Reusable(Vehicle)` with extra landing-propellant bookkeeping then finds that `Reusable.from_config(cfg)` returns a plain `Vehicle`: the classmethod hard-coded the class it builds, so the subclass's `__init__` never runs and none of its attributes exist. The failure appears as an `AttributeError` on the first use of a subclass-only attribute, far from the constructor that caused it.
+Nothing breaks until somebody makes a **subclass** — a new class built on top of `Vehicle`, which lesson 7 covers. Say `class Reusable(Vehicle)` adds landing-propellant bookkeeping. Then `Reusable.from_config(cfg)` returns a plain `Vehicle`, because the method hard-coded which class it builds. The subclass's `__init__` never runs, and none of its extra attributes exist. The failure shows up as an `AttributeError` the first time something uses a subclass-only attribute, far from the constructor that caused it.
 
-`cls` is bound to the class the method was called on, so `Reusable.from_config(cfg)` calls `Reusable(...)`. This is the entire reason `@classmethod` exists rather than `@staticmethod` for alternative constructors.
+`cls` is bound to whichever class the method was called on, so `Reusable.from_config(cfg)` calls `Reusable(...)`. That is the whole reason alternative constructors are class methods and not static methods.
 :::
 
 ::: check
-A `Mission` class has `waypoints = []` as a class attribute. Two missions are created and one has three waypoints added. What does the other report, and what is the one-line fix?
+A `Mission` class has `waypoints = []` as a class attribute. Two missions are created, and three waypoints are appended to the first. What does the second report, and what is the one-line fix?
 :::
 
 ::: answer
-The other reports the same three waypoints, and `m1.waypoints is m2.waypoints` is `True`. There is one list, owned by the class, and `self.waypoints.append(...)` mutates it through whichever instance happens to be at hand.
+The second reports the same three waypoints, and `m1.waypoints is m2.waypoints` is `True`. There is one list, owned by the class, and `self.waypoints.append(...)` changes it through whichever instance is at hand.
 
-The fix is to create the list per instance, in `__init__`: `self.waypoints = []`. Note the failure only shows up with mutation — `self.waypoints = [wp]` would *rebind* the name on the instance and shadow the class attribute, leaving the other mission's view intact, which is why the bug is intermittent and confusing. Assignment shadows; mutation shares.
+The fix is to make the list per instance, in `__init__`: `self.waypoints = []`.
+
+Notice that the bug appears only when the list is *changed in place*. Writing `self.waypoints = [wp]` would instead create a new attribute on that one instance, which hides the class attribute and leaves the other mission alone. That is why the bug seems to come and go. Assignment shadows; mutation shares.
 :::
 
 ## Summary
@@ -395,15 +451,123 @@ The fix is to create the list per instance, in `__init__`: `self.waypoints = []`
 | Item | Statement |
 | --- | --- |
 | `class Name:` | Defines a type; `Name(...)` creates an instance and runs `__init__` on it |
-| `__init__(self, ...)` | Initialises an existing object, returns `None`, is not a constructor |
-| `self` | The instance, passed explicitly; `obj.m(x)` is `Class.m(obj, x)` |
+| `__init__(self, ...)` | Initializes an existing object, returns `None`, is not a constructor |
+| `self` | The instance, passed for you; `obj.m(x)` is `Class.m(obj, x)` |
 | Attributes | Per-instance data, visible in `vars(obj)` |
-| Methods | Behaviour stored on the class; accessed through an instance they are bound |
+| Methods | Behavior stored on the class; reached through an instance they are bound |
 | Class attribute | One object shared by all instances; fine for constants, a trap when mutable |
 | `@property` | Method read as an attribute; derive instead of store, add validation later without changing callers |
-| `@name.setter` | The write path; store behind `self._name` to avoid infinite recursion |
+| `@name.setter` | The write path; store behind `self._name` to avoid endless recursion |
 | `@classmethod` | Receives `cls`; the idiomatic alternative constructor, `return cls(...)` |
 | `@staticmethod` | Receives neither instance nor class; a related function housed with the class |
 | Worked here | Upper stage, mass ratio 5.8421, ideal delta-v about 6.02 km/s |
 
-The next lesson gives the class the behaviour of a built-in type: printing usefully, comparing correctly, adding, multiplying, and being looped over — the dunder methods, and the traps in `__eq__` in particular.
+The next lesson makes your class behave like a built-in type: printing usefully, comparing correctly, adding, multiplying and being looped over. Those are the dunder methods, and the traps hidden in `__eq__` in particular.
+
+::: context six-dof What "six degrees of freedom" means
+A rigid body can move in six independent ways. It can slide along three directions (forward, sideways, up) and turn about three axes (roll, pitch, yaw). A **degree of freedom** is one of those independent ways to move, so a "6-DOF" simulation tracks all six.
+
+To step such a simulation forward you need, at each instant, the position and velocity (three numbers each), the attitude and the spin rate (three or four numbers each), plus time and mass. Bundling those into one `State` object is exactly the job this lesson builds toward.
+:::
+
+::: context instance-dict Objects are dictionaries inside
+Here is a nice irony. A normal Python object stores its attributes in a hidden dictionary called `__dict__`, and `vars(s)` hands you that dictionary. So the class did not get rid of the dict — it put a gatekeeper in front of it.
+
+The gain is that only the class's own code decides which keys go in, methods live elsewhere and are shared, and properties can check values on the way in. In lesson 6 you will meet `slots=True`, which replaces this hidden dict with a fixed row of slots and saves memory.
+:::
+
+::: context bound-method Where methods and data live
+Each instance holds only its data. The functions sit once on the class. When you write `s.speed`, Python finds `speed` on the class and glues `s` onto it as the first argument, making a bound method.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 180" font-family="Inter, Arial, sans-serif">
+  <rect x="200" y="20" width="145" height="120" rx="6" fill="#fff" stroke="#1d6fd1" stroke-width="2"/>
+  <text x="272" y="40" font-size="13" font-weight="700" text-anchor="middle" fill="#1d6fd1">class State</text>
+  <text x="212" y="66" font-size="12" fill="#1f2a44">__init__</text>
+  <text x="212" y="88" font-size="12" fill="#1f2a44">speed</text>
+  <text x="212" y="110" font-size="12" fill="#1f2a44">kinetic_energy</text>
+  <text x="272" y="132" font-size="11" text-anchor="middle" fill="#6c7a93">methods: stored once</text>
+  <rect x="15" y="20" width="130" height="62" rx="6" fill="#fff" stroke="#1f2a44" stroke-width="2"/>
+  <text x="25" y="38" font-size="12" font-weight="700" fill="#1f2a44">s1</text>
+  <text x="25" y="56" font-size="11" fill="#1f2a44">t=12.5  mass=31500</text>
+  <text x="25" y="72" font-size="11" fill="#1f2a44">velocity=(410, …)</text>
+  <rect x="15" y="100" width="130" height="62" rx="6" fill="#fff" stroke="#1f2a44" stroke-width="2"/>
+  <text x="25" y="118" font-size="12" font-weight="700" fill="#1f2a44">s2</text>
+  <text x="25" y="136" font-size="11" fill="#1f2a44">t=0.0  mass=40000</text>
+  <text x="25" y="152" font-size="11" fill="#1f2a44">velocity=(0, 0, 0)</text>
+  <line x1="145" y1="51" x2="196" y2="70" stroke="#b4232c" stroke-width="2"/>
+  <polygon points="200,72 190,64 188,74" fill="#b4232c"/>
+  <line x1="145" y1="131" x2="196" y2="100" stroke="#b4232c" stroke-width="2"/>
+  <polygon points="200,98 188,98 193,107" fill="#b4232c"/>
+  <text x="180" y="172" font-size="11" text-anchor="middle" fill="#b4232c">each instance points to its class</text>
+</svg>
+```
+
+A thousand states cost a thousand small data boxes, not a thousand copies of `speed`.
+:::
+
+::: context decorator-preview A first look at the @ sign
+The line `@property` above `def speed` is shorthand. It means: define the function `speed`, then pass it to `property`, and keep what comes back under the name `speed`. Written out in full, it is `speed = property(speed)`.
+
+`@classmethod` and `@staticmethod` work the same way. Lesson 9 opens decorators up properly and shows you how to write your own — for example one that times every call to a function.
+:::
+
+::: context java-getters The getters Python does not need
+In Java, code usually starts with private fields and a pair of methods for each one: `getMass()` and `setMass(x)`. The reason is defensive. If a field were public and later needed checking, every caller would have to change from `v.mass` to `v.getMass()`. So Java programmers pay for the methods up front, in case they are ever needed.
+
+Python's `@property` removes that reason. You start with a plain attribute. If checking is ever needed, you turn it into a property, and `v.mass` keeps working everywhere. Writing `get_mass()` in Python is a sign someone brought a habit from another language.
+:::
+
+::: context underscore What a leading underscore promises
+Python has no truly private attributes. A single leading underscore, as in `_mass`, is a polite sign that says "internal detail, may change, please do not use from outside". Nothing enforces it; tools and readers respect it.
+
+Two leading underscores, as in `__mass`, trigger **name mangling**: Python quietly renames it to `_State__mass` so that a subclass cannot clash with it by accident. That is for avoiding name collisions, not for secrecy, and most code sticks with one underscore.
+:::
+
+::: context rocket-equation The equation and its numbers
+Konstantin Tsiolkovsky, a Russian schoolteacher, published this equation in 1903. It says the speed change a rocket can give depends on its exhaust speed and on the *ratio* of full mass to empty mass, not on the size of the rocket.
+
+The upper stage in the example, drawn to scale by mass (the full bar is 111,000 kg):
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 120" font-family="Inter, Arial, sans-serif">
+  <rect x="20" y="34" width="43.2" height="32" fill="#6c7a93"/>
+  <rect x="63.2" y="34" width="11.5" height="32" fill="#1f2a44"/>
+  <rect x="74.7" y="34" width="265.3" height="32" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1"/>
+  <text x="41.6" y="26" font-size="11" text-anchor="middle" fill="#1f2a44">payload 15 t</text>
+  <line x1="69" y1="34" x2="92" y2="20" stroke="#1f2a44" stroke-width="1"/>
+  <text x="95" y="18" font-size="11" fill="#1f2a44">dry 4 t</text>
+  <text x="207" y="55" font-size="12" text-anchor="middle" fill="#1f2a44">propellant 92 t</text>
+  <path d="M20,74 L20,80 L74.7,80 L74.7,74" fill="none" stroke="#b4232c" stroke-width="1.5"/>
+  <text x="47" y="94" font-size="11" text-anchor="middle" fill="#b4232c">burnout 19 t</text>
+  <path d="M20,98 L20,104 L340,104 L340,98" fill="none" stroke="#1d6fd1" stroke-width="1.5"/>
+  <text x="200" y="117" font-size="11" text-anchor="middle" fill="#1d6fd1">ignition 111 t</text>
+</svg>
+```
+
+A tonne (t) is 1,000 kg. Most of the stage is propellant, which is why the ratio is almost 6.
+:::
+
+::: context lookup-order Instance first, then class
+When you read `obj.name`, Python looks in the instance's own dictionary first. Only if the name is not there does it look on the class. That one rule explains both halves of the shared-list trap.
+
+`self.faults.append(x)` *reads* `faults`, finds nothing on the instance, finds the class's list, and changes that list — so every instance sees the change. `self.faults = [x]` *writes*, and a write always goes into the instance's own dictionary. It creates a new, private attribute that hides the class one from then on.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">
+  <rect x="15" y="30" width="140" height="80" rx="6" fill="#fff" stroke="#1f2a44" stroke-width="2"/>
+  <text x="85" y="22" font-size="12" font-weight="700" text-anchor="middle" fill="#1f2a44">1. instance imu</text>
+  <text x="27" y="56" font-size="12" fill="#1f2a44">name = "imu"</text>
+  <text x="27" y="80" font-size="11" fill="#6c7a93">no "faults" here</text>
+  <rect x="205" y="30" width="140" height="80" rx="6" fill="#fff" stroke="#1d6fd1" stroke-width="2"/>
+  <text x="275" y="22" font-size="12" font-weight="700" text-anchor="middle" fill="#1d6fd1">2. class SensorShared</text>
+  <text x="217" y="56" font-size="12" fill="#1f2a44">faults = [ ]</text>
+  <text x="217" y="80" font-size="12" fill="#1f2a44">report</text>
+  <line x1="155" y1="70" x2="197" y2="70" stroke="#b4232c" stroke-width="2"/>
+  <polygon points="203,70 193,65 193,75" fill="#b4232c"/>
+  <text x="180" y="135" font-size="11" text-anchor="middle" fill="#b4232c">not found on the instance? look on the class</text>
+</svg>
+```
+
+The same rule is why `stage.G0` works: `G0` is not on the instance, so Python finds it on the class.
+:::
