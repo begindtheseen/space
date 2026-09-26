@@ -4,7 +4,9 @@
 #   mac (macOS)     the universal DMG and drag-install zip, ad-hoc signed
 #   release         publishes all four; fails if any of them is missing
 # The tag must equal "v" + package.json version, because the manifest's
-# download URLs are built from that tag.
+# download URLs are built from that tag. Called by auto-release.yml (every
+# merge to main), the version is given instead, and stamped into
+# package.json before anything is built.
 name: Release
 
 on:
@@ -12,8 +14,15 @@ on:
     tags: ['v*']
   workflow_dispatch:
   # Called by release-request.yml when RELEASE.txt changes, so a release
-  # can be cut from a plain branch push (no tag needed).
+  # can be cut from a plain branch push (no tag needed), and by
+  # auto-release.yml on every merge to main, with the version to publish.
   workflow_call:
+    inputs:
+      version:
+        description: The version to publish; package.json's when empty.
+        type: string
+        required: false
+        default: ''
 
 permissions:
   contents: read
@@ -40,9 +49,16 @@ jobs:
       - name: Read the version and check it against the tag
         id: meta
         shell: bash
+        env:
+          GIVEN_VERSION: ${{ inputs.version }}
         run: |
           set -euo pipefail
-          version="$(node -p "require('./package.json').version")"
+          version="${GIVEN_VERSION:-}"
+          [[ -n "$version" ]] || version="$(node -p "require('./package.json').version")"
+          if ! [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+            echo "::error::${version} is not a version (x.y.z)"
+            exit 1
+          fi
           tag="v${version}"
           if [[ "$GITHUB_REF_TYPE" == "tag" ]]; then
             if [[ "$GITHUB_REF_NAME" != "$tag" ]]; then
@@ -52,7 +68,7 @@ jobs:
           else
             # Branch push (RELEASE.txt) or manual run: the tag is created by the
             # release job, so it must not exist yet, and RELEASE.txt must agree.
-            if [[ -f RELEASE.txt ]]; then
+            if [[ -z "${GIVEN_VERSION:-}" && -f RELEASE.txt ]]; then
               requested="$(head -n1 RELEASE.txt | tr -d '[:space:]')"
               if [[ "$requested" != "$version" ]]; then
                 echo "::error::RELEASE.txt asks for ${requested} but package.json version is ${version}; make them match"
@@ -76,6 +92,9 @@ jobs:
           [[ "${skip:-}" == "true" ]] || echo "Releasing ${tag}"
       - run: npm ci --legacy-peer-deps
         if: steps.meta.outputs.skip != 'true'
+      - name: Stamp the version into package.json
+        if: steps.meta.outputs.skip != 'true'
+        run: npm version "${{ steps.meta.outputs.version }}" --no-git-tag-version --allow-same-version --ignore-scripts
       - name: Typecheck
         if: steps.meta.outputs.skip != 'true'
         run: npx tsc -b
@@ -106,6 +125,8 @@ jobs:
           node-version: '22'
           cache: 'npm'
       - run: npm ci --legacy-peer-deps
+      - name: Stamp the version into package.json
+        run: npm version "${{ needs.bundle.outputs.version }}" --no-git-tag-version --allow-same-version --ignore-scripts
       - name: Build and stamp the web bundle
         run: npm run build:bundle
       - name: Package the universal app (DMG + zip, ad-hoc signed)

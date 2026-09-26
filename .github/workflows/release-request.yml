@@ -10,11 +10,12 @@ name: Release (RELEASE.txt)
 on:
   push:
     # A push trigger with no branches/tags filter fires for tag pushes as well,
-    # and path filters are not evaluated for tags — so without this every
-    # `git push --follow-tags` would run the release pipeline a second time
-    # (via release.yml's own `tags: ['v*']`) against the same tag. `**`
-    # matches every branch and, per the GitHub docs, excludes tags.
-    branches: ['**']
+    # and path filters are not evaluated for tags — so without a branch filter
+    # every `git push --follow-tags` would run the release pipeline a second
+    # time (via release.yml's own `tags: ['v*']`) against the same tag. A
+    # branches-ignore filter, per the GitHub docs, excludes tags too. Not
+    # main: every merge to main already releases (auto-release.yml).
+    branches-ignore: ['main']
     paths: ['RELEASE.txt']
 
 permissions:

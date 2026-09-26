@@ -1,0 +1,51 @@
+# Every merge to main ships: installed apps update themselves from the latest
+# GitHub Release, so a change that is merged but never released never reaches
+# them — which is how the app sat on 1.0.10 while a dozen updates landed.
+#
+# The version is worked out here, not typed by hand:
+#   - package.json's version, if it is newer than every release (bump it in a
+#     PR to move to a new minor or major version);
+#   - otherwise the latest release with its patch number plus one.
+# A push whose files are exactly those of the latest release (the merge of a
+# branch that was already released from, say) publishes nothing.
+#
+# release.yml does the rest, stamping the version into package.json before it
+# builds. RELEASE.txt and version tags still work for releasing from a branch.
+name: Release (every merge to main)
+
+on:
+  push:
+    branches: ['main']
+
+# One at a time, so two quick merges cannot both pick the same version.
+concurrency:
+  group: auto-release
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  version:
+    name: Next version
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      version: ${{ steps.next.outputs.version }}
+      skip: ${{ steps.next.outputs.skip }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Work out the next version
+        id: next
+        shell: bash
+        run: bash scripts/next-version.sh >> "$GITHUB_OUTPUT"
+
+  release:
+    needs: version
+    if: needs.version.outputs.skip != 'true'
+    uses: ./.github/workflows/release.yml
+    with:
+      version: ${{ needs.version.outputs.version }}
+    secrets: inherit
