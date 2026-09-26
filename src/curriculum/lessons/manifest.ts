@@ -1684,6 +1684,119 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       "file": "cod_cpp_02_memory/14-smart-pointers.md"
     }
   ],
+  "cod_cpp_08_realtime": [
+    {
+      "id": "l01-real-time-and-worst-case-execution-time",
+      "title": "Real time and worst-case execution time",
+      "minutes": 26,
+      "covers": [
+        "Worst-case execution time: measurement, static analysis and their limits"
+      ],
+      "file": "cod_cpp_08_realtime/01-real-time-and-worst-case-execution-time.md"
+    },
+    {
+      "id": "l02-bounded-loops",
+      "title": "Bounded loops",
+      "minutes": 22,
+      "covers": [
+        "Bounded loops and why every loop needs a provable upper bound"
+      ],
+      "file": "cod_cpp_08_realtime/02-bounded-loops.md"
+    },
+    {
+      "id": "l03-stack-depth-and-no-recursion",
+      "title": "Stack depth and why flight code does not recurse",
+      "minutes": 27,
+      "covers": [
+        "Stack-depth analysis and static stack bounding; no recursion"
+      ],
+      "file": "cod_cpp_08_realtime/03-stack-depth-and-no-recursion.md"
+    },
+    {
+      "id": "l04-static-memory-pools-arenas-and-fixed-capacity",
+      "title": "Static memory, pools, arenas and fixed-capacity containers",
+      "minutes": 26,
+      "covers": [
+        "Static memory: pools, arenas, fixed-capacity containers, placement new at init"
+      ],
+      "file": "cod_cpp_08_realtime/04-static-memory-pools-arenas-and-fixed-capacity.md"
+    },
+    {
+      "id": "l05-interrupt-service-routines",
+      "title": "Interrupt service routines",
+      "minutes": 24,
+      "covers": [
+        "Interrupt service routines: what you may and may not do inside one"
+      ],
+      "file": "cod_cpp_08_realtime/05-interrupt-service-routines.md"
+    },
+    {
+      "id": "l06-watchdogs-heartbeats-and-health-monitoring",
+      "title": "Watchdogs, heartbeats and health monitoring",
+      "minutes": 24,
+      "covers": [
+        "Watchdogs, heartbeats and health monitoring"
+      ],
+      "file": "cod_cpp_08_realtime/06-watchdogs-heartbeats-and-health-monitoring.md"
+    },
+    {
+      "id": "l07-fault-detection-isolation-and-recovery",
+      "title": "Fault detection, isolation and recovery",
+      "minutes": 21,
+      "covers": [
+        "Fault detection, isolation and recovery; safe modes"
+      ],
+      "file": "cod_cpp_08_realtime/07-fault-detection-isolation-and-recovery.md"
+    },
+    {
+      "id": "l08-radiation-effects-and-software-mitigations",
+      "title": "Radiation effects and the software that survives them",
+      "minutes": 24,
+      "covers": [
+        "Radiation effects: SEU, SEL, TID, and the software mitigations (voting, checksums, scrubbing, resets)"
+      ],
+      "file": "cod_cpp_08_realtime/08-radiation-effects-and-software-mitigations.md"
+    },
+    {
+      "id": "l09-fixed-point-and-determinism",
+      "title": "Fixed-point arithmetic and bit-exact determinism",
+      "minutes": 22,
+      "covers": [
+        "Fixed-point arithmetic where floating point is unavailable or unqualified",
+        "Determinism and bit-exact reproducibility across compilers and platforms"
+      ],
+      "file": "cod_cpp_08_realtime/09-fixed-point-and-determinism.md"
+    },
+    {
+      "id": "l10-cross-compiling-and-linker-scripts",
+      "title": "Cross-compiling and linker scripts",
+      "minutes": 24,
+      "covers": [
+        "Cross-compiling to an embedded target with a CMake toolchain file",
+        "Linker scripts and memory regions; why you would move a function into RAM"
+      ],
+      "file": "cod_cpp_08_realtime/10-cross-compiling-and-linker-scripts.md"
+    },
+    {
+      "id": "l11-the-power-of-ten-rules",
+      "title": "The Power of Ten rules",
+      "minutes": 24,
+      "covers": [
+        "The NASA/JPL Power of Ten rules"
+      ],
+      "file": "cod_cpp_08_realtime/11-the-power-of-ten-rules.md"
+    },
+    {
+      "id": "l12-coding-standards-and-static-analysis",
+      "title": "Coding standards and static analysis",
+      "minutes": 22,
+      "covers": [
+        "MISRA C++:2023, which absorbs AUTOSAR C++14; JSF++ AV and its F-35 origin",
+        "Static analysis: clang-tidy, cppcheck, Polyspace, LDRA, Helix QAC"
+      ],
+      "file": "cod_cpp_08_realtime/12-coding-standards-and-static-analysis.md"
+    }
+  ],
   "cod_git_01_basics": [
     {
       "id": "l01-snapshots-and-the-object-model",
@@ -8710,26 +8823,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "cod_cpp_08_realtime": {
-    "covered": 0,
+    "covered": 15,
     "total": 15,
-    "complete": false,
-    "missing": [
-      "Worst-case execution time: measurement, static analysis and their limits",
-      "Static memory: pools, arenas, fixed-capacity containers, placement new at init",
-      "Stack-depth analysis and static stack bounding; no recursion",
-      "Bounded loops and why every loop needs a provable upper bound",
-      "Watchdogs, heartbeats and health monitoring",
-      "Fault detection, isolation and recovery; safe modes",
-      "Radiation effects: SEU, SEL, TID, and the software mitigations (voting, checksums, scrubbing, resets)",
-      "Interrupt service routines: what you may and may not do inside one",
-      "Cross-compiling to an embedded target with a CMake toolchain file",
-      "Linker scripts and memory regions; why you would move a function into RAM",
-      "Fixed-point arithmetic where floating point is unavailable or unqualified",
-      "Determinism and bit-exact reproducibility across compilers and platforms",
-      "The NASA/JPL Power of Ten rules",
-      "MISRA C++:2023, which absorbs AUTOSAR C++14; JSF++ AV and its F-35 origin",
-      "Static analysis: clang-tidy, cppcheck, Polyspace, LDRA, Helix QAC"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_cpp_09_eigen": {
     "covered": 0,
