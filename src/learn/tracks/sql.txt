@@ -33,18 +33,138 @@ INSERT INTO requests (id, user_id, model, input_tokens, output_tokens, cost_usd)
 
 === sql-01 | Your first query
 --- teach
-A relational database stores data in **tables**: rows of records, each with the same named **columns**. This lesson's database has two:
+This is the very first lesson on databases, and it starts from nothing. By the end of it you will have asked a real database a question and read its answer.
 
-- `users` — `id`, `email`, `plan` (`'free'` or `'pro'`), `created`
-- `requests` — one row per model call: `id`, `user_id`, `model`, `input_tokens`, `output_tokens`, `cost_usd`
+## A spreadsheet you can ask questions
 
-You ask a database questions in **SQL**. The simplest question is "show me everything in a table":
+Picture a class register, or a spreadsheet. Each line across is one pupil. Each line down is one kind of fact about them: a name, a birthday, a homeroom. Every pupil gets the same boxes filled in.
+
+A **[[database|databases-everywhere]]** is a program that keeps data like that for you — lots of it, safe and organised, so you can find what you want fast.
+
+Inside a database the data sits in **tables**. A **table** is one grid like that register, with a name of its own. The kind of database you are learning is called a **[[relational database|relational-name]]**: a database made of tables.
+
+Two words for the parts of a table:
+
+- A **[[row|table-parts]]** is one line across: one record, one thing. In a table of users, one row is one person.
+- A **column** is one line down: one kind of fact, with a name. Every row in a table has the same columns.
+
+## The two tables in this course
+
+The first table is called `users`. It has four rows, one per person, and four columns:
+
+| id | email | plan | created |
+| --- | --- | --- | --- |
+| 1 | ada@example.com | pro | 2025-01-04 |
+| 2 | lin@example.com | free | 2025-02-11 |
+| 3 | sam@example.com | free | 2025-03-20 |
+| 4 | kai@example.com | pro | 2025-03-28 |
+
+- `id` is each person's number.
+- `email` is their email address.
+- `plan` is what they pay for: `'free'` or `'pro'`.
+- `created` is the day they signed up, written year-month-day.
+
+The second table is called `requests`. Picture an app where people type a question and an [[AI model|model-requests]] writes an answer. Every time someone does that, the app saves one row here. Its columns are:
+
+- `id` — the request's own number.
+- `user_id` — which user sent it. This is an `id` from the `users` table.
+- `model` — which model answered: `'sonnet'` or `'haiku'`.
+- `input_tokens` — how much text went in.
+- `output_tokens` — how much text came back.
+- `cost_usd` — what it cost, in US dollars.
+
+## Asking a question: a query
+
+You do not scroll through a database looking for things. You ask it. A **query** is a question you send to a database; it answers with rows. You write queries in **[[SQL|sql-name]]**, the language that databases understand.
+
+The simplest question is "show me everything in the `requests` table":
 
 ```sql
 SELECT * FROM requests;
 ```
 
-`SELECT` says what you want, `*` means every column, `FROM` names the table. SQL keywords are conventionally written in capitals; the database does not care. End each statement with `;`.
+Read it one piece at a time:
+
+- `SELECT` means "give me". It starts the question and says what you want back.
+- `*`, the star, means "[[every column|star-for-looking]]".
+- `FROM requests` means "out of the table called `requests`".
+- `;`, the semicolon, marks the end of the [[statement|statement-end]], like a full stop at the end of a sentence.
+
+The database answers with every row and every column of the table:
+
+| id | user_id | model | input_tokens | output_tokens | cost_usd |
+| --- | --- | --- | --- | --- | --- |
+| 1 | 1 | sonnet | 1200 | 340 | 0.0087 |
+| 2 | 1 | sonnet | 5400 | 910 | 0.0298 |
+| 3 | 1 | haiku | 800 | 120 | 0.0012 |
+| 4 | 2 | sonnet | 15000 | 2100 | 0.0765 |
+| 5 | 2 | haiku | 300 | 80 | 0.0006 |
+| 6 | 4 | haiku | 2200 | 400 | 0.0034 |
+
+Nothing in the query leaves any rows out, so you get all six. Picking only some rows comes in a couple of lessons.
+
+## Capital letters
+
+Words that belong to SQL itself, like `SELECT` and `FROM`, are called **keywords**. People write them in capitals so they stand out from the names of tables and columns. That is only a habit: the database does not care, and `select * from requests;` works the same. Type table and column names the way this course spells them, in lowercase.
+
+**Watch out:** the table name has to be spelled exactly. The table is `users`, with an s. `SELECT * FROM user;` fails with the message `no such table: user`. When you see "no such table", check your spelling first.
+
+::: context databases-everywhere Databases are behind almost every app
+Almost every app you use keeps its data in a database. A messaging app has a table of messages, a game has a table of players and scores, a shop has tables of products and orders. Spacecraft teams do the same: flight telemetry — the stream of readings a rocket sends home, like temperatures and pressures — is saved in databases so engineers can search it after a flight. The skill you start today, asking a table a precise question, is one engineers use every working day.
+:::
+
+::: context relational-name Why "relational"?
+In 1970 a researcher at IBM named Edgar F. Codd wrote a paper describing how to store data as tables and ask questions of them with a small set of exact rules. In the mathematics he borrowed from, a table like this is called a **relation**, so databases built his way are called relational databases. His idea still runs most of the world's data: SQLite, PostgreSQL, MySQL and many others are all relational databases.
+:::
+
+::: context table-parts Rows across, columns down
+A row is one thing — here, one user. A column is one kind of fact, and it has the same name in every row. Where a row and a column cross, there is exactly one value: Lin's plan is `free`.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 170" font-family="Inter, Arial, sans-serif">
+  <text x="20" y="18" font-size="12" font-weight="bold" fill="#1f2a44">users</text>
+  <rect x="20" y="26" width="240" height="22" fill="#8fb8f0"/>
+  <rect x="200" y="48" width="60" height="88" fill="#f2b880"/>
+  <rect x="20" y="26" width="240" height="110" fill="none" stroke="#1f2a44" stroke-width="1.5"/>
+  <g stroke="#1f2a44" stroke-width="1">
+    <line x1="20" y1="48" x2="260" y2="48"/>
+    <line x1="20" y1="70" x2="260" y2="70"/>
+    <line x1="20" y1="92" x2="260" y2="92"/>
+    <line x1="20" y1="114" x2="260" y2="114"/>
+    <line x1="60" y1="26" x2="60" y2="136"/>
+    <line x1="200" y1="26" x2="200" y2="136"/>
+  </g>
+  <g font-size="11" fill="#1f2a44">
+    <text x="28" y="41" font-weight="bold">id</text><text x="68" y="41" font-weight="bold">email</text><text x="208" y="41" font-weight="bold">plan</text>
+    <text x="28" y="63">1</text><text x="68" y="63">ada@example.com</text><text x="208" y="63">pro</text>
+    <text x="28" y="85">2</text><text x="68" y="85">lin@example.com</text><text x="208" y="85">free</text>
+    <text x="28" y="107">3</text><text x="68" y="107">sam@example.com</text><text x="208" y="107">free</text>
+    <text x="28" y="129">4</text><text x="68" y="129">kai@example.com</text><text x="208" y="129">pro</text>
+  </g>
+  <rect x="20" y="70" width="240" height="22" fill="none" stroke="#1d6fd1" stroke-width="3"/>
+  <text x="270" y="41" font-size="11" fill="#6c7a93">column names</text>
+  <text x="270" y="80" font-size="11" fill="#1d6fd1">a row:</text>
+  <text x="270" y="94" font-size="11" fill="#1d6fd1">one user</text>
+  <text x="200" y="156" font-size="11" fill="#1f2a44">a column: plan</text>
+</svg>
+```
+:::
+
+::: context model-requests What the requests table records
+An AI model is a program that reads text and writes text back. Sonnet and Haiku are the names of two such models. They read and write text in **tokens**: small chunks of text, often a piece of a word. The service charges by the token, which is why each row stores how many went in, how many came out, and what the request cost. A real product keeps a table very like this one to know who used what and to send the right bills.
+:::
+
+::: context sql-name Three letters, two ways to say them
+SQL stands for Structured Query Language. It grew out of Codd's ideas at IBM in the 1970s, where its first version was called SEQUEL. That is why many people say "sequel"; others spell it out, "S-Q-L". Both are fine. SQL is shared by nearly every relational database, so what you learn here carries over. The database inside this course is SQLite, a small one that runs right in your browser, and it is also built into phones, web browsers and many other programs.
+:::
+
+::: context star-for-looking The star is for looking around
+`SELECT *` is the quickest way to see what is in a table, and people use it all the time to take a first look. Inside a real program, though, engineers usually name the exact columns they want instead. The next lesson shows you how, and why that is a good habit.
+:::
+
+::: context statement-end One statement, one semicolon
+A **statement** is one complete instruction to the database, the way a sentence is one complete thought. The semicolon says "this statement ends here". With one statement it is often optional, but when you write several in a row the database needs the semicolons to tell where each one stops. Ending every statement with one is a habit that never hurts.
+:::
 --- task
 Write a query that returns every row and every column of the `users` table.
 --- starter
@@ -53,25 +173,114 @@ Write a query that returns every row and every column of the `users` table.
 --- solution
 SELECT * FROM users;
 --- hint
-`SELECT * FROM <table>;`
+You want every column, so use the star, `*`. The table you want is `users`.
+--- hint
+It is the same shape as the example, with a different table name: `SELECT * FROM` the table, then a semicolon.
+--- hint
+Write `SELECT`, then `*`, then `FROM`, then `users`, then `;` — all on one line under the comment.
 --- check result | Returns all four users, every column
 [[1, "ada@example.com", "pro", "2025-01-04"], [2, "lin@example.com", "free", "2025-02-11"], [3, "sam@example.com", "free", "2025-03-20"], [4, "kai@example.com", "pro", "2025-03-28"]]
 
 === sql-02 | Choosing columns
 --- teach
-Instead of `*`, list the columns you want, in the order you want them:
+Last lesson you used `SELECT *` to get every column of a table. Often you only want two or three of them. This lesson shows you how to pick them, and how to make a new column out of the ones you have.
+
+## Pick the columns you want
+
+Picture copying a class register onto a fresh sheet, but only the names and the homerooms. You leave out the columns you do not need.
+
+In SQL you do that by writing column names where the star was. Put a comma between them:
 
 ```sql
 SELECT email, plan FROM users;
 ```
 
-`AS` gives a column a new name in the result — useful for computed columns:
+| email | plan |
+| --- | --- |
+| ada@example.com | pro |
+| lin@example.com | free |
+| sam@example.com | free |
+| kai@example.com | pro |
+
+You still get every row. You only get the [[columns you asked for|choosing-columns]].
+
+The columns come back in the order you write them. `SELECT plan, email FROM users;` gives the same data with `plan` first.
+
+## Work something out for each row
+
+A column in your answer does not have to be stored in the table. You can write a small sum, and the database works it out for each row. Here `+` means "add":
+
+```sql
+SELECT id, input_tokens + output_tokens FROM requests;
+```
+
+For request 1 that is 1200 + 340 = 1540. A column made this way is called a **[[computed column|computed-not-stored]]**: it is worked out when you ask, not kept in the table.
+
+You can also use `-` to subtract, `/` to [[divide|integer-division]] and `*` to multiply. Yes, the star again: after `SELECT` on its own it means "every column", but between two numbers it means "times".
+
+## Give a column a name with AS
+
+The answer from that query has a clumsy heading: the column is called `input_tokens + output_tokens`. The keyword `AS` gives a column a new name in the answer. A name given this way is called an **[[alias|alias-word]]**.
 
 ```sql
 SELECT id, input_tokens + output_tokens AS total_tokens FROM requests;
 ```
 
-Asking for only the columns you need is a habit worth keeping: on real tables it is faster, and the query says what it is for.
+| id | total_tokens |
+| --- | --- |
+| 1 | 1540 |
+| 2 | 6310 |
+| 3 | 920 |
+| 4 | 17100 |
+| 5 | 380 |
+| 6 | 2600 |
+
+The alias only changes the heading of your answer. The table itself is not changed.
+
+## A good habit
+
+Ask for only the columns you need. On real tables with millions of rows that is faster, and anyone reading your query can see what it is for.
+
+**Watch out:** check your commas. Every column needs a comma before the next one, and there is no comma after the last one. `SELECT id, model, FROM requests;` fails with `near "FROM": syntax error`. Worse, `SELECT id model FROM requests;` (comma forgotten) does not fail at all: it returns only the ids, in a column named `model`, because SQL reads the second word as an alias.
+
+::: context choosing-columns Choosing columns, as a picture
+The table stays as it is. Your query picks which columns go into the answer, and in what order.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">
+  <text x="10" y="16" font-size="11" fill="#6c7a93">the requests table</text>
+  <g font-size="11" fill="#1f2a44">
+    <rect x="10" y="24" width="56" height="26" fill="#8fb8f0" stroke="#1f2a44"/><text x="18" y="41">id</text>
+    <rect x="66" y="24" width="56" height="26" fill="#ffffff" stroke="#1f2a44"/><text x="72" y="41">user_id</text>
+    <rect x="122" y="24" width="56" height="26" fill="#ffffff" stroke="#1f2a44"/><text x="128" y="41">model</text>
+    <rect x="178" y="24" width="56" height="26" fill="#8fb8f0" stroke="#1f2a44"/><text x="184" y="41">input</text>
+    <rect x="234" y="24" width="56" height="26" fill="#8fb8f0" stroke="#1f2a44"/><text x="240" y="41">output</text>
+    <rect x="290" y="24" width="56" height="26" fill="#ffffff" stroke="#1f2a44"/><text x="296" y="41">cost</text>
+  </g>
+  <line x1="38" y1="50" x2="100" y2="104" stroke="#1d6fd1" stroke-width="2"/>
+  <line x1="206" y1="50" x2="206" y2="104" stroke="#1d6fd1" stroke-width="2"/>
+  <line x1="262" y1="50" x2="220" y2="104" stroke="#1d6fd1" stroke-width="2"/>
+  <text x="250" y="82" font-size="11" fill="#1d6fd1">added</text>
+  <g font-size="11" fill="#1f2a44">
+    <rect x="70" y="104" width="60" height="26" fill="#8fb8f0" stroke="#1f2a44"/><text x="93" y="121">id</text>
+    <rect x="130" y="104" width="110" height="26" fill="#f2b880" stroke="#1f2a44"/><text x="140" y="121">total_tokens</text>
+  </g>
+  <text x="70" y="146" font-size="11" fill="#6c7a93">your answer</text>
+</svg>
+```
+:::
+
+::: context computed-not-stored Why not store the total too?
+You could add a `total_tokens` column to the table itself, but then the same fact lives in two places. If someone fixes `input_tokens` and forgets the total, the two disagree, and nobody knows which one is right. Working the total out each time you ask means it can never be wrong. Engineers keep the raw readings — like the separate sensor values in a rocket's telemetry — and compute totals, averages and differences in the query.
+:::
+
+::: context integer-division Dividing whole numbers
+In SQLite, when both numbers in a division are whole numbers, the answer is a whole number too: the part after the point is thrown away. So `7 / 2` gives `3`, not `3.5`. Write one of them with a decimal point, `7 / 2.0`, and you get `3.5`. This surprises many people the first time they work out an average or a percentage by hand in a query.
+:::
+
+::: context alias-word "Alias" means another name
+An alias is a second name for something, like a nickname. In SQLite the word `AS` is actually optional: `input_tokens + output_tokens total_tokens` works too. That is exactly why a forgotten comma is so sneaky — the database thinks you meant an alias. Writing `AS` every time makes your intention plain. Aliases come back later in the course: you will use them to name totals, and to give whole tables short names when you combine two tables.
+:::
 --- task
 Return each request's `id`, its `model`, and its total tokens (input plus output) as a column named `total_tokens`.
 --- starter
@@ -79,7 +288,11 @@ SELECT * FROM requests;
 --- solution
 SELECT id, model, input_tokens + output_tokens AS total_tokens FROM requests;
 --- hint
-`input_tokens + output_tokens AS total_tokens`
+Replace the star with three things separated by commas: `id`, `model`, and the sum of the two token columns.
+--- hint
+The sum is `input_tokens + output_tokens`. To name it, put `AS` and the new name after it.
+--- hint
+The part between `SELECT` and `FROM` is `id, model, input_tokens + output_tokens AS total_tokens`.
 --- check result | id, model and total tokens for every request
 [[1, "sonnet", 1540], [2, "sonnet", 6310], [3, "haiku", 920], [4, "sonnet", 17100], [5, "haiku", 380], [6, "haiku", 2600]]
 --- check source | Names the column total_tokens
@@ -87,16 +300,124 @@ SELECT id, model, input_tokens + output_tokens AS total_tokens FROM requests;
 
 === sql-03 | Filtering with WHERE
 --- teach
-`WHERE` keeps only the rows that match a condition:
+Last lesson you chose which columns come back. This lesson you choose which **rows** come back, so you can ask for "only the pro users" or "only the big requests".
+
+## Keep only the rows that match
+
+Picture a teacher saying "stand up if you are in the pro plan". Everyone checks the same question about themselves. Only the people for whom the answer is yes stand up.
+
+In SQL, `WHERE` does that. It keeps only the rows where a **[[condition|condition-check]]** is true. A condition is a yes-or-no question asked about each row.
 
 ```sql
 SELECT * FROM users WHERE plan = 'pro';
-SELECT * FROM requests WHERE input_tokens > 1000;
 ```
 
-Text goes in single quotes. Compare with `=`, `<>` (not equal), `<`, `<=`, `>`, `>=`; combine with `AND`, `OR` and `NOT`; use brackets when mixing them. `IN ('a', 'b')` matches any of a list, and `LIKE 'ada%'` matches a pattern (`%` is any run of characters).
+| id | email | plan | created |
+| --- | --- | --- | --- |
+| 1 | ada@example.com | pro | 2025-01-04 |
+| 4 | kai@example.com | pro | 2025-03-28 |
+
+Here `=` means "is equal to". It asks a question; it does not change anything. Lin's plan is `free`, so that row is left out.
+
+## Text goes in quotes
+
+The word `pro` is written `'pro'`, in [[single quotes|quote-kinds]]. Quotes tell SQL "this is a piece of text", not the name of a column. Numbers need no quotes. The match is [[exact|exact-match]], letter for letter.
+
+## Comparing numbers
+
+`>` means "greater than":
+
+```sql
+SELECT id, input_tokens FROM requests WHERE input_tokens > 1000;
+```
+
+| id | input_tokens |
+| --- | --- |
+| 1 | 1200 |
+| 2 | 5400 |
+| 4 | 15000 |
+| 6 | 2200 |
+
+Here is every way to compare, and how to read each one:
+
+| Symbol | Read it as |
+| --- | --- |
+| `=` | is equal to |
+| `<>` | is not equal to |
+| `<` | is less than |
+| `<=` | is less than or equal to |
+| `>` | is greater than |
+| `>=` | is greater than or equal to |
+
+`<>` is worth a second look. It means "not equal":
+
+```sql
+SELECT email FROM users WHERE plan <> 'pro';
+```
+
+That returns `lin@example.com` and `sam@example.com`, the two users whose plan is not `pro`.
+
+## Where WHERE goes
+
+Each part of a query that starts with a keyword is called a **[[clause|clause-order]]**. The `WHERE` clause comes after the `FROM` clause: first say which table, then which rows.
+
+## Two conditions: AND
+
+Sometimes one question is not enough. `AND` joins two conditions, and a row is kept only if **both** are true:
+
+```sql
+SELECT id, model, input_tokens FROM requests WHERE model = 'haiku' AND input_tokens > 1000;
+```
+
+| id | model | input_tokens |
+| --- | --- | --- |
+| 6 | haiku | 2200 |
+
+Requests 3 and 5 are haiku too, but they have fewer than 1000 input tokens, so they fail the second question. Requests 1, 2 and 4 have more than 1000, but they are sonnet, so they fail the first.
+
+**Watch out:** forgetting the quotes around text. `WHERE model = sonnet` fails with `no such column: sonnet`, because without quotes SQL thinks `sonnet` is the name of a column. When you see "no such column" for a word that is really a value, add the quotes.
+
+::: context condition-check The database asks every row
+A `WHERE` clause is checked once for every row in the table. For each row the condition comes out true or false, and only the true rows go into the answer.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 140" font-family="Inter, Arial, sans-serif">
+  <text x="10" y="16" font-size="12" font-weight="bold" fill="#1f2a44">plan = 'pro' ?</text>
+  <g font-size="12" fill="#1f2a44">
+    <text x="10" y="44">ada · pro</text>
+    <text x="10" y="70">lin · free</text>
+    <text x="10" y="96">sam · free</text>
+    <text x="10" y="122">kai · pro</text>
+  </g>
+  <g font-size="12" font-weight="bold">
+    <text x="120" y="44" fill="#1d6fd1">true</text>
+    <text x="120" y="70" fill="#b4232c">false</text>
+    <text x="120" y="96" fill="#b4232c">false</text>
+    <text x="120" y="122" fill="#1d6fd1">true</text>
+  </g>
+  <line x1="165" y1="40" x2="225" y2="60" stroke="#1d6fd1" stroke-width="2"/>
+  <line x1="165" y1="118" x2="225" y2="84" stroke="#1d6fd1" stroke-width="2"/>
+  <rect x="230" y="46" width="118" height="50" fill="#ffffff" stroke="#1d6fd1" stroke-width="2"/>
+  <text x="240" y="66" font-size="12" fill="#1f2a44">ada · pro</text>
+  <text x="240" y="86" font-size="12" fill="#1f2a44">kai · pro</text>
+  <text x="230" y="114" font-size="11" fill="#6c7a93">the answer</text>
+</svg>
+```
+:::
+
+::: context quote-kinds Single quotes for text
+In SQL, single quotes `'…'` mark a piece of text, called a **string**. Double quotes `"…"` are meant for names, such as a column name with a space in it. SQLite will sometimes accept `"pro"` as text when no column has that name, but other databases will not, and it can quietly go wrong if a column with that name exists. Use single quotes for text every time.
+:::
+
+::: context exact-match Capitals count
+`=` compares text exactly, letter for letter. The models in this table are stored as `'sonnet'` and `'haiku'`, in lowercase, so `WHERE model = 'Sonnet'` finds no rows at all — and gives no error either, only an empty answer. When a filter you expected to match returns nothing, check the capitals and look for extra spaces in your text.
+:::
+
+::: context clause-order Clauses have a fixed order
+A query is built from clauses, and they always go in the same order. So far you have `SELECT`, then `FROM`, then `WHERE`. The next lesson adds two more at the end, `ORDER BY` and `LIMIT`, and later lessons slot a few more in between. Putting a clause in the wrong place gives a syntax error, so when you get one, check the order first.
+:::
 --- task
-Return the `id`, `user_id` and `input_tokens` of every **sonnet** request with **more than 2000** input tokens.
+Return the `id`, `user_id` and `input_tokens` of every request whose `model` is `'sonnet'` **and** that has **more than 2000** input tokens.
 --- starter
 SELECT id, user_id, input_tokens FROM requests;
 --- solution
@@ -104,19 +425,253 @@ SELECT id, user_id, input_tokens
 FROM requests
 WHERE model = 'sonnet' AND input_tokens > 2000;
 --- hint
-Two conditions joined with `AND`: `model = 'sonnet' AND input_tokens > 2000`.
+The starter already picks the right columns. Add a `WHERE` clause after `FROM requests`, before the semicolon.
+--- hint
+You need two conditions, and both must be true, so join them with `AND`. The model is text, so it needs quotes; 2000 is a number, so it does not.
+--- hint
+The clause is `WHERE model = 'sonnet' AND input_tokens > 2000`.
 --- check result | The two big sonnet requests
 [[2, 1, 5400], [4, 2, 15000]]
 
+=== sql-03b | More ways to match: OR, NOT, IN and LIKE
+--- teach
+Last lesson you filtered rows with `WHERE`, and joined two conditions with `AND`. This lesson adds four more tools: "either one", "not this", "any of a list", and "looks like this pattern".
+
+## Either one: OR
+
+`AND` keeps a row only when both conditions are true. `OR` keeps a row when **at least one** of them is true:
+
+```sql
+SELECT email, plan FROM users WHERE plan = 'free' OR email = 'ada@example.com';
+```
+
+| email | plan |
+| --- | --- |
+| ada@example.com | pro |
+| lin@example.com | free |
+| sam@example.com | free |
+
+Lin and Sam pass the first question. Ada fails it, but passes the second. Kai fails both, so that row is left out.
+
+## Turn it around: NOT
+
+`NOT` flips a condition: true becomes false and false becomes true.
+
+```sql
+SELECT id, model FROM requests WHERE NOT model = 'haiku';
+```
+
+That returns requests 1, 2 and 4, the sonnet ones. It means the same as `model <> 'haiku'`. `NOT` also has [[a couple of useful partners|not-pairs]].
+
+## Mixing AND and OR: use brackets
+
+When a condition has both `AND` and `OR`, the `AND` part is worked out first — [[the way times comes before plus|and-before-or]] in arithmetic. That can give you a different answer from the one you meant. Brackets `( )` make SQL do the part inside them first.
+
+Say you want haiku or sonnet requests, with more than 2000 input tokens. Without brackets:
+
+```sql
+SELECT id FROM requests WHERE model = 'haiku' OR model = 'sonnet' AND input_tokens > 2000;
+```
+
+That returns 2, 3, 4, 5 and 6: every haiku request, big or small, because SQL read it as "haiku, or (sonnet and big)". With brackets:
+
+```sql
+SELECT id FROM requests WHERE (model = 'haiku' OR model = 'sonnet') AND input_tokens > 2000;
+```
+
+That returns 2, 4 and 6, which is what you meant.
+
+## Any of a list: IN
+
+`IN` checks whether a value is one of a list. Put the list in brackets, with commas between the items:
+
+```sql
+SELECT id, email FROM users WHERE id IN (1, 3);
+```
+
+That returns Ada (id 1) and Sam (id 3). It means the same as `id = 1 OR id = 3`, only shorter. Text works too: `plan IN ('free', 'pro')`. Later in the course, [[IN comes back|in-later]] with lists that fill themselves in.
+
+## Looks like a pattern: LIKE
+
+Sometimes you do not know the whole value, only part of it — "emails that start with ada". `LIKE` compares text with a **pattern**: a piece of text with gaps in it. The `%` sign in a pattern means "any run of characters, even none at all".
+
+```sql
+SELECT email FROM users WHERE email LIKE 'ada%';
+```
+
+That returns `ada@example.com`. The pattern `'ada%'` reads as "`ada`, then anything". Put the `%` first and it means "ends with": `'%example.com'` matches all four emails. The pattern goes in single quotes, like any text. There is [[one more gap sign|like-underscore]] you can use in a pattern.
+
+**Watch out:** with `OR`, repeat the column in each condition. `email LIKE 'k%' OR 'l%'` does not mean "starts with k or l". SQL reads `'l%'` on its own as a condition, finds it is not true, and quietly returns Kai alone. Write it out in full: `email LIKE 'k%' OR email LIKE 'l%'`.
+
+::: context not-pairs NOT goes with IN and LIKE
+`NOT` can sit in front of any condition, but it pairs especially well with `IN` and `LIKE`. `model NOT IN ('haiku')` keeps every row whose model is not in the list. `email NOT LIKE 'ada%'` keeps every email that does not start with `ada`. Reading them aloud works: "email not like ada-anything". Engineers use `NOT IN` all the time to leave out a short list of test accounts from a report.
+:::
+
+::: context and-before-or Which part goes first
+In arithmetic, 2 + 3 × 4 is 14, not 20, because times is done before plus. SQL treats `AND` like times and `OR` like plus: `AND` is done first. So `A OR B AND C` means `A OR (B AND C)`.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 130" font-family="Inter, Arial, sans-serif">
+  <text x="10" y="18" font-size="11" fill="#6c7a93">without brackets, SQL reads</text>
+  <rect x="10" y="26" width="340" height="30" fill="#ffffff" stroke="#b4232c" stroke-width="2"/>
+  <text x="20" y="46" font-size="12" fill="#1f2a44">haiku OR ( sonnet AND tokens &gt; 2000 )</text>
+  <text x="300" y="46" font-size="12" font-weight="bold" fill="#b4232c">5 rows</text>
+  <text x="10" y="80" font-size="11" fill="#6c7a93">with brackets, you choose</text>
+  <rect x="10" y="88" width="340" height="30" fill="#ffffff" stroke="#1d6fd1" stroke-width="2"/>
+  <text x="20" y="108" font-size="12" fill="#1f2a44">( haiku OR sonnet ) AND tokens &gt; 2000</text>
+  <text x="300" y="108" font-size="12" font-weight="bold" fill="#1d6fd1">3 rows</text>
+</svg>
+```
+
+When you mix the two, write the brackets even if you think you know the rule. The next person to read your query will thank you.
+:::
+
+::: context in-later Lists that come from a query
+Here the list after `IN` is typed by hand. Later in the course you will meet **subqueries**: a query written inside another query. The list in `IN`'s brackets can be one of those, as in "users whose id is in the list of users who sent a sonnet request". That is where `IN` becomes really powerful.
+:::
+
+::: context like-underscore The other gap sign, and capitals
+Besides `%`, a pattern can use `_`, the underscore, which means "exactly one character". `'_in%'` matches `lin@example.com`: one character, then `in`, then anything. Also, unlike `=`, SQLite's `LIKE` ignores the difference between capital and small letters for plain English letters, so `'ADA%'` matches `ada@example.com` too. The search box on many websites started out as a `LIKE '%word%'` query.
+:::
+--- task
+Return the `id` and `email` of every user whose email starts with `k` **or** starts with `l`. Use `LIKE`.
+--- starter
+SELECT id, email FROM users;
+--- solution
+SELECT id, email
+FROM users
+WHERE email LIKE 'k%' OR email LIKE 'l%';
+--- hint
+"Starts with k" is a pattern: the letter `k`, then anything. In a `LIKE` pattern, `%` means "anything".
+--- hint
+You need two patterns, and a row should be kept if either one matches, so join them with `OR`. Remember to repeat `email LIKE` in both.
+--- hint
+Add `WHERE email LIKE 'k%' OR email LIKE 'l%'` before the semicolon.
+--- check result | Kai and Lin
+[[2, "lin@example.com"], [4, "kai@example.com"]]
+--- check source | Uses LIKE
+[Ll][Ii][Kk][Ee]
+
 === sql-04 | Sorting and limiting
 --- teach
-Rows come back in no guaranteed order unless you ask for one. `ORDER BY` sorts; `DESC` reverses; `LIMIT` keeps the first n:
+In the last two lessons you chose which rows come back. This lesson you choose the **order** they come back in, and **how many** you get. Together those answer questions like "what were the three most expensive requests?"
+
+## Rows have no order until you ask
+
+Picture a shoebox of receipts. They are in the box in no special order. To find the three biggest, you lay them out from biggest to smallest, then pick up the first three.
+
+A table is like that shoebox. Rows come back in [[no guaranteed order|no-promised-order]] unless you ask for one. Often it looks like the order they were saved in, but nothing promises that.
+
+## Sort with ORDER BY
+
+`ORDER BY` sorts the answer by a column:
+
+```sql
+SELECT email, created FROM users ORDER BY created;
+```
+
+| email | created |
+| --- | --- |
+| ada@example.com | 2025-01-04 |
+| lin@example.com | 2025-02-11 |
+| sam@example.com | 2025-03-20 |
+| kai@example.com | 2025-03-28 |
+
+The earliest date comes first. Smallest first is called **ascending** order, and it is what you get unless you say otherwise. Numbers go from small to big, text goes from A to Z, and these [[dates|iso-dates]] go from old to new.
+
+## Reverse it with DESC
+
+`DESC`, short for **descending**, flips the sort: biggest first. It goes right after the column name:
+
+```sql
+SELECT email, created FROM users ORDER BY created DESC;
+```
+
+Now Kai, who signed up last, comes first, and Ada comes last. (The word for ascending is `ASC`. You may see it written, but since it is the normal order you rarely need it.)
+
+## Keep the first few with LIMIT
+
+`LIMIT` keeps only the first so-many rows of the answer. It goes at the very end:
 
 ```sql
 SELECT email, created FROM users ORDER BY created DESC LIMIT 2;
 ```
 
-You can sort by several columns (`ORDER BY plan, email`) — the second breaks ties in the first. "Top n" questions are always `ORDER BY … DESC LIMIT n`.
+| email | created |
+| --- | --- |
+| kai@example.com | 2025-03-28 |
+| sam@example.com | 2025-03-20 |
+
+That answers "who are the two newest users?". Any "[[top n|top-n]]" question — the biggest, the newest, the most expensive — has this shape: `ORDER BY` the column `DESC`, then `LIMIT` how many.
+
+## Sort by two columns
+
+You can sort by more than one column, with commas between them. The second column only decides the order among rows that are [[tied|ties]] on the first:
+
+```sql
+SELECT plan, email FROM users ORDER BY plan, email;
+```
+
+| plan | email |
+| --- | --- |
+| free | lin@example.com |
+| free | sam@example.com |
+| pro | ada@example.com |
+| pro | kai@example.com |
+
+The rows are sorted by plan first. Inside each plan, they are sorted by email.
+
+## Where the clauses go
+
+The clauses always go in this order: `SELECT`, `FROM`, `WHERE`, `ORDER BY`, `LIMIT`. Here are all of them working together — the most expensive haiku request:
+
+```sql
+SELECT id, cost_usd FROM requests WHERE model = 'haiku' ORDER BY cost_usd DESC LIMIT 1;
+```
+
+That returns request 6, which cost 0.0034 dollars.
+
+**Watch out:** `LIMIT` without `ORDER BY` does not give you the top anything. It gives you whichever rows the database happened to hand back first. And `DESC` belongs only to the column right before it: `ORDER BY plan, email DESC` sorts plan A to Z and email Z to A.
+
+::: context no-promised-order Why the order is not promised
+A database is free to fetch rows whatever way is fastest, and the fastest way can change as the table grows. You can see it in this course's own data: the query `SELECT id, email FROM users WHERE email LIKE 'k%' OR email LIKE 'l%'` can give Kai before Lin, not in id order, because SQLite found those rows through its sorted list of emails. If the order matters to you, say so with `ORDER BY`.
+:::
+
+::: context iso-dates Dates that sort themselves
+The dates here are text written year-month-day, like `2025-03-20`. This style is an international standard called ISO 8601. Because the biggest unit comes first and every part has a fixed width, sorting the text A to Z also sorts the dates from old to new. A date written `3/20/2025` would not sort correctly as text. SQLite has no special date type, so apps store dates this way, and `<` and `>` on them work too: `created > '2025-03-01'` finds Sam and Kai.
+:::
+
+::: context top-n Top n, everywhere
+"Top n" means "the first n after sorting", where n is any number you choose. Here are the six request costs sorted biggest first; `LIMIT 3` keeps the blue ones.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 170" font-family="Inter, Arial, sans-serif">
+  <g font-size="11" fill="#1f2a44">
+    <text x="10" y="24">id 4</text><text x="10" y="48">id 2</text><text x="10" y="72">id 1</text>
+    <text x="10" y="96">id 6</text><text x="10" y="120">id 3</text><text x="10" y="144">id 5</text>
+  </g>
+  <rect x="50" y="13" width="200" height="14" fill="#1d6fd1"/>
+  <rect x="50" y="37" width="78" height="14" fill="#1d6fd1"/>
+  <rect x="50" y="61" width="23" height="14" fill="#1d6fd1"/>
+  <rect x="50" y="85" width="9" height="14" fill="#6c7a93"/>
+  <rect x="50" y="109" width="3" height="14" fill="#6c7a93"/>
+  <rect x="50" y="133" width="2" height="14" fill="#6c7a93"/>
+  <g font-size="11" fill="#1f2a44">
+    <text x="258" y="24">0.0765</text><text x="136" y="48">0.0298</text><text x="81" y="72">0.0087</text>
+    <text x="67" y="96">0.0034</text><text x="61" y="120">0.0012</text><text x="60" y="144">0.0006</text>
+  </g>
+  <line x1="10" y1="83" x2="350" y2="83" stroke="#b4232c" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <text x="290" y="78" font-size="11" fill="#b4232c">LIMIT 3</text>
+  <text x="10" y="164" font-size="11" fill="#6c7a93">cost_usd, sorted DESC</text>
+</svg>
+```
+
+Engineers write this shape all day: the five newest errors in a flight log, the ten biggest customers, the slowest pages on a website. For long lists, `LIMIT` has a partner, `OFFSET`, which skips rows first: `LIMIT 2 OFFSET 2` gives rows three and four, which is how an app shows results one page at a time.
+:::
+
+::: context ties Breaking ties
+When two rows have the same value in the column you sort by, they are tied, and the database may put either one first. It might even change its mind next time. Adding a second column settles it. Many engineers end every `ORDER BY` with a column that is never the same twice, like `id`, so the order is always the same and a page of results never skips or repeats a row.
+:::
 --- task
 Return the `id` and `cost_usd` of the **three most expensive** requests, most expensive first.
 --- starter
@@ -127,53 +682,274 @@ FROM requests
 ORDER BY cost_usd DESC
 LIMIT 3;
 --- hint
-`ORDER BY cost_usd DESC LIMIT 3`
+This is a "top n" question: sort by cost with the biggest first, then keep the first three rows.
+--- hint
+Sort with `ORDER BY cost_usd`, add `DESC` so the biggest comes first, then add `LIMIT` with the number of rows you want.
+--- hint
+After `FROM requests`, and before the semicolon, add `ORDER BY cost_usd DESC LIMIT 3`.
 --- check result | The top three, in order
 ordered
 [[4, 0.0765], [2, 0.0298], [1, 0.0087]]
 
 === sql-05 | Aggregates
 --- teach
-**Aggregate functions** turn many rows into one value:
+Last lesson you sorted rows with `ORDER BY` and kept the top few with `LIMIT`. Every answer so far has been a list of rows. This lesson lets you ask for **one number about many rows**: how many there are, what they add up to, which is biggest.
+
+Think of a shop receipt. It lists every item you bought, one per line. At the bottom there is one line that sums them all up: the total. That bottom line is a single value made from many lines.
+
+SQL does the same with an **[[aggregate function|aggregate-word]]**: a function that reads a whole column, many rows at once, and hands back one value. A **[[function|function-word]]** is a named operation with brackets after it; you put what it should work on inside the brackets.
+
+The first one is `COUNT(*)`. It means "count the rows". The `*` inside the brackets means "whole rows, whatever is in them".
 
 ```sql
-SELECT COUNT(*) FROM users;                 -- how many rows
-SELECT SUM(cost_usd) FROM requests;         -- total
-SELECT AVG(input_tokens) FROM requests;     -- mean
+SELECT COUNT(*) FROM users;
+```
+
+The answer is one row with one value: `4`, because there are four users.
+
+Next, `SUM(column)` adds up every value in a column. It is the total on the receipt:
+
+```sql
+SELECT SUM(cost_usd) FROM requests;
+```
+
+This gives `0.1202`: the six request costs added together, in dollars.
+
+`AVG(column)` gives the **average** (the mean): add everything up, then divide by how many there are.
+
+```sql
+SELECT AVG(input_tokens) FROM requests;
+```
+
+This gives `4150.0`. The six requests used 24900 input tokens between them, and 24900 divided by 6 is 4150. That is higher than most single requests, because one [[big request pulls the average up|mean-median]].
+
+`MIN(column)` gives the smallest value and `MAX(column)` the largest. They work on text and dates too. You can put several aggregates in one `SELECT`, separated by commas, and each becomes its own column:
+
+```sql
 SELECT MIN(created), MAX(created) FROM users;
 ```
 
-With `WHERE`, the aggregate only sees the rows that passed the filter. `ROUND(x, 4)` rounds to four decimal places — money in floating point needs it.
+| MIN(created) | MAX(created) |
+| --- | --- |
+| 2025-01-04 | 2025-03-28 |
+
+That is the first and the most recent sign-up date. The column names are the expressions themselves. You can rename them with `AS`, the same way you did in the Choosing columns lesson: `COUNT(*) AS calls`.
+
+Aggregates work with `WHERE`. The `WHERE` runs first and throws away rows that fail the test. The aggregate only sees the rows that passed:
+
+```sql
+SELECT COUNT(*) FROM requests WHERE model = 'haiku';
+```
+
+This gives `3`: only the three haiku requests are counted.
+
+The last new function is `ROUND(x, 4)`, which rounds `x` to four decimal places. Money needs it. Try adding up the sonnet costs:
+
+```sql
+SELECT SUM(cost_usd) FROM requests WHERE model = 'sonnet';
+```
+
+You would expect `0.115`. SQLite gives `0.11499999999999999`, because computers store decimals like `cost_usd` as [[floating-point numbers|floating-point]], which cannot hold most decimals exactly. Wrapping the sum in `ROUND` tidies it:
+
+```sql
+SELECT ROUND(SUM(cost_usd), 4) FROM requests WHERE model = 'sonnet';
+```
+
+Now the answer is `0.115`.
+
+**Watch out:** an aggregate cannot go inside `WHERE`. `SELECT id FROM requests WHERE cost_usd = MAX(cost_usd);` fails with "misuse of aggregate function MAX()". The reason is the [[order the parts run in|where-first]]: `WHERE` looks at one row at a time, before any aggregate has been worked out.
+
+::: context aggregate-word Why "aggregate"
+To aggregate means to gather many things into one lump. The word comes from Latin for "adding to the flock". In SQL it names the functions that gather a column into one value: `COUNT`, `SUM`, `AVG`, `MIN` and `MAX` are the five you will use most.
+
+```svg
+<svg viewBox="0 0 360 150" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <text x="20" y="18" font-size="12" fill="#6c7a93">cost_usd (6 rows)</text>
+  <g font-size="12" fill="#1f2a44">
+    <rect x="20" y="26" width="90" height="18" fill="#ffffff" stroke="#8fb8f0"/><text x="30" y="39">0.0087</text>
+    <rect x="20" y="44" width="90" height="18" fill="#ffffff" stroke="#8fb8f0"/><text x="30" y="57">0.0298</text>
+    <rect x="20" y="62" width="90" height="18" fill="#ffffff" stroke="#8fb8f0"/><text x="30" y="75">0.0012</text>
+    <rect x="20" y="80" width="90" height="18" fill="#ffffff" stroke="#8fb8f0"/><text x="30" y="93">0.0765</text>
+    <rect x="20" y="98" width="90" height="18" fill="#ffffff" stroke="#8fb8f0"/><text x="30" y="111">0.0006</text>
+    <rect x="20" y="116" width="90" height="18" fill="#ffffff" stroke="#8fb8f0"/><text x="30" y="129">0.0034</text>
+  </g>
+  <path d="M120 28 Q135 28 135 50 L135 70 Q135 80 148 80 Q135 80 135 90 L135 110 Q135 132 120 132" fill="none" stroke="#1f2a44" stroke-width="1.5"/>
+  <line x1="152" y1="80" x2="206" y2="80" stroke="#1d6fd1" stroke-width="2"/>
+  <polygon points="206,75 216,80 206,85" fill="#1d6fd1"/>
+  <text x="160" y="72" font-size="12" fill="#1d6fd1">SUM</text>
+  <rect x="222" y="66" width="110" height="28" fill="#ffffff" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="245" y="85" font-size="13" fill="#1f2a44">0.1202</text>
+  <text x="222" y="112" font-size="11" fill="#6c7a93">one row, one value</text>
+</svg>
+```
+:::
+
+::: context function-word What a function is
+A function is a small named job. You write its name, then brackets, and inside the brackets you put what it should work on: `ROUND(0.11499, 4)` takes a number and a count of decimal places and gives back `0.115`. The things in the brackets are called its **arguments**. Some functions look at one row at a time, like `ROUND`. Aggregate functions are special because they look at a whole column. You will meet more of both kinds, such as `COALESCE`, a few lessons from now.
+:::
+
+::: context mean-median One big value drags the average
+Four of the six requests used 2200 input tokens or fewer, yet the average is 4150. One request of 15000 tokens pulls it up. That is how an average (the mean) behaves: every value counts, so one giant pulls hard. The **median**, the middle value when you line them up, would ignore the giant more. SQLite has no `MEDIAN` function built in, which is why you will see `AVG` far more often. When an average looks odd, check `MIN` and `MAX` next to it.
+:::
+
+::: context floating-point Why money comes out ragged
+Computers store most decimal numbers in binary, in a format called floating point. Many simple decimals, like 0.1, have no exact binary form, the way one third has no exact decimal form (0.3333…). So tiny errors creep in: in SQLite, `SELECT 0.1 + 0.2;` gives `0.30000000000000004`. For a report, `ROUND` is enough. Systems that handle real money usually go further and store whole cents as an `INTEGER`. You will see a table do exactly that, with an `amount_cents` column, in the Creating tables lesson.
+:::
+
+::: context where-first The order a query runs in
+You write `SELECT` first, but the database does not run it first. It starts with `FROM` (which table), then `WHERE` (which rows to keep), and only then works out the `SELECT` part, aggregates included. So when `WHERE` is checking a row, `MAX(cost_usd)` does not exist yet. Next lesson adds `HAVING`, a filter that runs after the aggregates, which is exactly what fills this gap.
+:::
 --- task
-In one query, return three columns about **all** requests: how many there are, the total input tokens, and the highest single cost.
+In one query, return three columns about **all** the rows in `requests`:
+
+1. how many requests there are (`COUNT(*)`),
+2. the total of the `input_tokens` column,
+3. the highest single value in the `cost_usd` column.
 --- starter
 SELECT * FROM requests;
 --- solution
 SELECT COUNT(*), SUM(input_tokens), MAX(cost_usd) FROM requests;
 --- hint
-`SELECT COUNT(*), SUM(...), MAX(...) FROM requests;`
+You need three aggregate functions in one `SELECT`, separated by commas: one to count, one to add up, one to find the largest.
+--- hint
+Counting is `COUNT(*)`. Adding up a column is `SUM(...)`. The largest value is `MAX(...)`. No `WHERE` is needed, because the question is about all requests.
+--- hint
+The shape is `SELECT COUNT(*), SUM(input_tokens), MAX(...) FROM requests;` with the cost column in the last brackets.
 --- check result | 6 requests, 24900 input tokens, 0.0765 at most
 [[6, 24900, 0.0765]]
 
 === sql-06 | Grouping
 --- teach
-`GROUP BY` splits the rows into groups and runs the aggregates once per group:
+Last lesson each aggregate squashed a whole table into one row: six requests, one total. Often you want one answer **per kind** instead: spend per model, requests per user. This lesson shows how.
+
+Picture a pile of receipts from two shops. You sort them into two piles, one per shop, then add up each pile on its own. You end with one total per shop.
+
+In SQL that sorting step is **`GROUP BY`**: it splits the rows into groups that share the same value in a column, then runs each aggregate once per group. You get one result row per group.
 
 ```sql
-SELECT model, COUNT(*) AS calls, SUM(cost_usd) AS spend
+SELECT model, COUNT(*) AS calls
 FROM requests
 GROUP BY model;
 ```
 
-Every column in the `SELECT` must either be in the `GROUP BY` or be inside an aggregate. To filter **groups** (rather than rows), use `HAVING`, which runs after grouping:
+| model | calls |
+| --- | --- |
+| haiku | 3 |
+| sonnet | 3 |
+
+Each part of a query that starts with a keyword, like `FROM requests` or `GROUP BY model`, is called a **[[clause|clause-word]]**. The `GROUP BY` clause goes after `FROM` (and after `WHERE`, if there is one).
+
+You can run several aggregates on the [[same groups|group-picture]]. Here is the spend per model too, rounded as in the last lesson:
 
 ```sql
-... GROUP BY model HAVING COUNT(*) >= 3;
+SELECT model, COUNT(*) AS calls, ROUND(SUM(cost_usd), 4) AS spend
+FROM requests
+GROUP BY model;
 ```
 
-`WHERE` filters rows before they are grouped; `HAVING` filters the groups after.
+| model | calls | spend |
+| --- | --- | --- |
+| haiku | 3 | 0.0052 |
+| sonnet | 3 | 0.115 |
+
+There is one rule. **Every column in the `SELECT` must either be in the `GROUP BY` or be inside an aggregate.** `model` is fine: it is what you grouped by, so each group has one model. `COUNT(*)` is fine: it is an aggregate. But the haiku group holds three different `input_tokens` values. If you asked for plain `input_tokens`, which one should the row show? There is no good answer.
+
+Now the second new idea. **`HAVING`** filters **groups**, the way `WHERE` filters rows. It runs after the grouping, so it can test an aggregate:
+
+```sql
+SELECT model, COUNT(*) AS calls
+FROM requests
+GROUP BY model
+HAVING SUM(cost_usd) > 0.01;
+```
+
+Only `sonnet | 3` comes back. The haiku group spent 0.0052 in total, which is not more than 0.01, so the whole group is dropped.
+
+The two filters sit at [[different moments|run-order]]. `WHERE` filters rows before they are grouped. `HAVING` filters the groups after. You can use both in one query:
+
+```sql
+SELECT model, COUNT(*) AS calls
+FROM requests
+WHERE input_tokens > 1000
+GROUP BY model;
+```
+
+| model | calls |
+| --- | --- |
+| haiku | 1 |
+| sonnet | 3 |
+
+The `WHERE` threw out the small requests first, so only one haiku request was left to count.
+
+**Watch out:** SQLite does not stop you breaking the one rule. `SELECT model, input_tokens, COUNT(*) FROM requests GROUP BY model;` runs and quietly shows one `input_tokens` value picked from inside each group. It looks like an answer, but it is a meaningless one. [[Other databases|other-databases]] refuse the query outright.
+
+::: context clause-word Clauses, the parts of a query
+A clause is one part of a SQL statement, led by its keyword: the `SELECT` clause, the `FROM` clause, the `WHERE` clause, and now `GROUP BY` and `HAVING`. It is like the parts of a sentence. The clauses must come in a fixed written order: `SELECT`, `FROM`, `WHERE`, `GROUP BY`, `HAVING`, `ORDER BY`, `LIMIT`. Put `WHERE` after `GROUP BY` and SQLite reports a syntax error. You can leave out the ones you do not need.
+:::
+
+::: context group-picture Six rows, two piles
+`GROUP BY model` sorts the six requests into piles by their model, then each aggregate runs once per pile. The ids in each pile below come from the `requests` table.
+
+```svg
+<svg viewBox="0 0 360 170" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <text x="16" y="16" font-size="12" fill="#6c7a93">requests</text>
+  <g font-size="12" fill="#1f2a44">
+    <rect x="16" y="24" width="96" height="20" fill="#ffffff" stroke="#8fb8f0"/><text x="24" y="38">1  sonnet</text>
+    <rect x="16" y="46" width="96" height="20" fill="#ffffff" stroke="#8fb8f0"/><text x="24" y="60">2  sonnet</text>
+    <rect x="16" y="68" width="96" height="20" fill="#ffffff" stroke="#f2b880"/><text x="24" y="82">3  haiku</text>
+    <rect x="16" y="90" width="96" height="20" fill="#ffffff" stroke="#8fb8f0"/><text x="24" y="104">4  sonnet</text>
+    <rect x="16" y="112" width="96" height="20" fill="#ffffff" stroke="#f2b880"/><text x="24" y="126">5  haiku</text>
+    <rect x="16" y="134" width="96" height="20" fill="#ffffff" stroke="#f2b880"/><text x="24" y="148">6  haiku</text>
+  </g>
+  <line x1="120" y1="89" x2="160" y2="89" stroke="#1f2a44" stroke-width="1.5"/>
+  <polygon points="160,84 170,89 160,94" fill="#1f2a44"/>
+  <text x="118" y="80" font-size="11" fill="#6c7a93">GROUP BY</text>
+  <rect x="180" y="26" width="164" height="54" fill="#ffffff" stroke="#f2b880" stroke-width="2"/>
+  <text x="190" y="46" font-size="12" fill="#1f2a44">haiku pile: 3, 5, 6</text>
+  <text x="190" y="68" font-size="12" fill="#1d6fd1">COUNT(*) = 3</text>
+  <rect x="180" y="100" width="164" height="54" fill="#ffffff" stroke="#8fb8f0" stroke-width="2"/>
+  <text x="190" y="120" font-size="12" fill="#1f2a44">sonnet pile: 1, 2, 4</text>
+  <text x="190" y="142" font-size="12" fill="#1d6fd1">COUNT(*) = 3</text>
+</svg>
+```
+:::
+
+::: context run-order The order the clauses really run in
+You write `SELECT` first, but the database works in a different order. It fetches the table (`FROM`), drops rows (`WHERE`), makes the piles (`GROUP BY`), drops piles (`HAVING`), then builds each result row (`SELECT`), sorts (`ORDER BY`) and cuts (`LIMIT`). This order explains both filters: `WHERE` cannot test `COUNT(*)` because no piles exist yet, and `HAVING` can.
+
+```svg
+<svg viewBox="0 0 360 110" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <g font-size="12" fill="#1f2a44" text-anchor="middle">
+    <rect x="6" y="14" width="72" height="28" fill="#ffffff" stroke="#6c7a93"/><text x="42" y="32">FROM</text>
+    <rect x="96" y="14" width="72" height="28" fill="#ffffff" stroke="#b4232c" stroke-width="1.5"/><text x="132" y="32">WHERE</text>
+    <rect x="186" y="14" width="80" height="28" fill="#ffffff" stroke="#6c7a93"/><text x="226" y="32">GROUP BY</text>
+    <rect x="284" y="14" width="70" height="28" fill="#ffffff" stroke="#b4232c" stroke-width="1.5"/><text x="319" y="32">HAVING</text>
+    <rect x="50" y="68" width="72" height="28" fill="#ffffff" stroke="#1d6fd1"/><text x="86" y="86">SELECT</text>
+    <rect x="140" y="68" width="80" height="28" fill="#ffffff" stroke="#6c7a93"/><text x="180" y="86">ORDER BY</text>
+    <rect x="238" y="68" width="66" height="28" fill="#ffffff" stroke="#6c7a93"/><text x="271" y="86">LIMIT</text>
+  </g>
+  <g stroke="#1f2a44" stroke-width="1.5" fill="none">
+    <line x1="78" y1="28" x2="94" y2="28"/><line x1="168" y1="28" x2="184" y2="28"/><line x1="266" y1="28" x2="282" y2="28"/>
+    <path d="M319 42 L319 55 L86 55 L86 66"/>
+    <line x1="122" y1="82" x2="138" y2="82"/><line x1="220" y1="82" x2="236" y2="82"/>
+  </g>
+  <text x="96" y="10" font-size="11" fill="#b4232c">rows</text>
+  <text x="284" y="10" font-size="11" fill="#b4232c">groups</text>
+</svg>
+```
+:::
+
+::: context other-databases When SQLite lets it slide
+The rule about grouped columns comes from the SQL standard. PostgreSQL, a database used by many web apps, refuses a query that breaks it, with an error saying the column "must appear in the GROUP BY clause or be used in an aggregate function". SQLite is more forgiving and picks a value from one row of the group. Forgiving is not the same as right: write every grouped query as if the stricter database were checking it.
+:::
 --- task
-For each `user_id`, return the user id, their number of requests, and their total input tokens — but only for users with **more than one** request.
+Using the `requests` table, return one row **per `user_id`** with three columns:
+
+1. the `user_id`,
+2. how many requests that user made,
+3. the total of their `input_tokens`.
+
+Only include users with **more than one** request. Filter the groups with `HAVING`.
 --- starter
 SELECT user_id FROM requests;
 --- solution
@@ -182,7 +958,11 @@ FROM requests
 GROUP BY user_id
 HAVING COUNT(*) > 1;
 --- hint
-`GROUP BY user_id`, then `HAVING COUNT(*) > 1`.
+Group the rows with `GROUP BY user_id`, then put `COUNT(*)` and `SUM(input_tokens)` next to `user_id` in the `SELECT`.
+--- hint
+"More than one request" is a test on a group, so it goes in `HAVING`, after the `GROUP BY`: `HAVING COUNT(*) > 1`.
+--- hint
+The shape is `SELECT user_id, COUNT(*), SUM(input_tokens) FROM requests GROUP BY user_id HAVING ...;` with the count test at the end.
 --- check result | Users 1 and 2, with their counts and totals
 [[1, 3, 7400], [2, 2, 15300]]
 --- check source | Filters groups with HAVING
@@ -190,7 +970,13 @@ HAVING COUNT(*) > 1;
 
 === sql-07 | Joining tables
 --- teach
-`requests` only stores a `user_id`. To see the email next to each request, **join** the tables on the column they share:
+Last lesson you counted requests per `user_id`. But a `user_id` of 2 does not tell you who that is. The email [[lives in a different table|why-two-tables]], `users`. This lesson lets you pull both tables into one answer.
+
+Think of a class register and a mark book. The register lists each student's number and name. The mark book lists only student numbers next to marks. To see names beside marks, you take each number in the mark book and look it up in the register.
+
+The database is built the same way. Each row of `users` has an `id` that is different for every user. That column is the table's **[[primary key|primary-key]]**: a column whose value names exactly one row. Each row of `requests` has a `user_id`, which holds one of those ids. A column like that, holding another table's primary key, is a **[[foreign key|foreign-key]]**.
+
+A **`JOIN`** glues a row from one table to a row from another, side by side, when they match. **`ON`** gives the matching rule:
 
 ```sql
 SELECT users.email, requests.model
@@ -198,9 +984,92 @@ FROM requests
 JOIN users ON users.id = requests.user_id;
 ```
 
-`ON` says which rows belong together. Short aliases keep it readable: `FROM requests r JOIN users u ON u.id = r.user_id`, then `u.email`, `r.model`. An inner `JOIN` keeps only rows that have a match on both sides.
+Read it as: "take `requests`, and next to each request put the user whose `id` equals that request's `user_id`." The result has one row per request:
+
+| email | model |
+| --- | --- |
+| ada@example.com | sonnet |
+| ada@example.com | sonnet |
+| ada@example.com | haiku |
+| lin@example.com | sonnet |
+| lin@example.com | haiku |
+| kai@example.com | haiku |
+
+Notice the names with a dot. `users.email` means "the `email` column of the `users` table". Once two tables are in one query, you need this, because both tables have a column called `id`. Plain `id` would be ambiguous (it could mean either one), and SQLite would stop with "ambiguous column name: id".
+
+Writing `users.` and `requests.` every time gets long. An **alias** is a short nickname for a table. Put it right after the table name, then use it with the dot:
+
+```sql
+SELECT u.email, r.model
+FROM requests r
+JOIN users u ON u.id = r.user_id;
+```
+
+Here `r` stands for `requests` and `u` for `users`. It returns exactly the same rows. You may also write `requests AS r`; the `AS` is optional.
+
+After a join, `WHERE` works as before. You can filter on a column from either table:
+
+```sql
+SELECT u.email, r.id
+FROM requests r
+JOIN users u ON u.id = r.user_id
+WHERE u.plan = 'pro';
+```
+
+That gives ada's requests 1, 2 and 3 and kai's request 6, because ada and kai are the pro users.
+
+One more thing to notice. sam is in `users` but has never made a request, so no request row points at sam. A plain `JOIN` is an **[[inner join|inner-join]]**: it keeps only rows that have a match on both sides. So sam does not appear at all.
+
+**Watch out:** a wrong `ON` does not cause an error. It gives wrong rows. `ON u.id = r.id` matches a request's own id against a user's id, which means nothing, yet it returns 4 tidy-looking rows. Leave out `ON` completely and SQLite pairs [[every request with every user|row-count-check]]. Always check that `ON` links the foreign key to the primary key: `u.id = r.user_id`.
+
+::: context why-two-tables Why the email is not in requests
+Why not copy the email into every request row and skip the join? Because then ada's email would be written three times. If ada changes it, you must find and fix every copy, and missing one leaves the data disagreeing with itself. Storing each fact once and pointing to it with an id keeps it in one place. The cost is that you join when you want to see things side by side. Almost every real database, from an app's users and orders to a mission's vehicles and flight logs, is built this way.
+:::
+
+::: context primary-key One value, one row
+A primary key works like a student number or a passport number: no two rows share one, so it names exactly one row. In the course schema it is written `id INTEGER PRIMARY KEY`. Why not use the email? Emails change, and a number is short and fast to match. Apps almost always give each table an `id` like this.
+:::
+
+::: context foreign-key A column that points at another table
+`user_id` in `requests` is a foreign key: a copy of a primary key from another table. In the schema it is written `user_id INTEGER NOT NULL REFERENCES users(id)`. `REFERENCES` tells the database "this must match an `id` in `users`". SQLite only enforces that when foreign keys are switched on, with `PRAGMA foreign_keys = ON;`. Once they are, it refuses a request whose `user_id` is 99 when there is no user 99. You will build tables with `REFERENCES` yourself in the Creating tables lesson.
+:::
+
+::: context inner-join Who gets a line and who does not
+An inner join only keeps pairs that match. Each request's `user_id` draws a line to one user. sam, user 3, gets no line, so sam is not in the result. You can write `INNER JOIN` in full; plain `JOIN` means the same thing. Next lesson shows `LEFT JOIN`, which keeps sam anyway.
+
+```svg
+<svg viewBox="0 0 360 180" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <text x="16" y="16" font-size="12" fill="#6c7a93">requests (id, user_id)</text>
+  <text x="220" y="16" font-size="12" fill="#6c7a93">users (id, email)</text>
+  <g font-size="12" fill="#1f2a44">
+    <rect x="16" y="24" width="96" height="20" fill="#ffffff" stroke="#8fb8f0"/><text x="24" y="38">1  → 1</text>
+    <rect x="16" y="48" width="96" height="20" fill="#ffffff" stroke="#8fb8f0"/><text x="24" y="62">2  → 1</text>
+    <rect x="16" y="72" width="96" height="20" fill="#ffffff" stroke="#8fb8f0"/><text x="24" y="86">3  → 1</text>
+    <rect x="16" y="96" width="96" height="20" fill="#ffffff" stroke="#8fb8f0"/><text x="24" y="110">4  → 2</text>
+    <rect x="16" y="120" width="96" height="20" fill="#ffffff" stroke="#8fb8f0"/><text x="24" y="134">5  → 2</text>
+    <rect x="16" y="144" width="96" height="20" fill="#ffffff" stroke="#8fb8f0"/><text x="24" y="158">6  → 4</text>
+    <rect x="220" y="36" width="124" height="22" fill="#ffffff" stroke="#1d6fd1"/><text x="228" y="51">1  ada</text>
+    <rect x="220" y="72" width="124" height="22" fill="#ffffff" stroke="#1d6fd1"/><text x="228" y="87">2  lin</text>
+    <rect x="220" y="108" width="124" height="22" fill="#ffffff" stroke="#b4232c" stroke-dasharray="4 3"/><text x="228" y="123">3  sam</text>
+    <rect x="220" y="144" width="124" height="22" fill="#ffffff" stroke="#1d6fd1"/><text x="228" y="159">4  kai</text>
+  </g>
+  <g stroke="#1d6fd1" stroke-width="1.2">
+    <line x1="112" y1="34" x2="220" y2="47"/><line x1="112" y1="58" x2="220" y2="47"/><line x1="112" y1="82" x2="220" y2="47"/>
+    <line x1="112" y1="106" x2="220" y2="83"/><line x1="112" y1="130" x2="220" y2="83"/>
+    <line x1="112" y1="154" x2="220" y2="155"/>
+  </g>
+  <text x="290" y="123" font-size="11" fill="#b4232c">no line</text>
+</svg>
+```
+:::
+
+::: context row-count-check Count the rows after a join
+With no `ON`, SQLite pairs each of the 6 requests with each of the 4 users: 6 × 4 = 24 rows. That is called a **cross join**. A quick habit catches this and the wrong-`ON` mistake: before trusting a join, guess how many rows it should return, then check. Here every request has exactly one user, so a correct join of `requests` to `users` must give 6 rows, one per request. Engineers checking a large report do the same, comparing counts before and after each join.
+:::
 --- task
-Return each **haiku** request's user email, model and input tokens.
+Return one row for each **haiku** request, with three columns: the user's `email` (from `users`), the request's `model`, and its `input_tokens` (both from `requests`).
+
+Join `requests` to `users` on the user id, and keep only rows where the model is `'haiku'`.
 --- starter
 SELECT user_id, model, input_tokens FROM requests WHERE model = 'haiku';
 --- solution
@@ -209,7 +1078,11 @@ FROM requests r
 JOIN users u ON u.id = r.user_id
 WHERE r.model = 'haiku';
 --- hint
-`FROM requests r JOIN users u ON u.id = r.user_id`
+The email is in `users`, so you need a `JOIN`. Start from `requests`, give the tables aliases, and link them with `ON`.
+--- hint
+The join is `FROM requests r JOIN users u ON u.id = r.user_id`. Then choose `u.email, r.model, r.input_tokens` in the `SELECT`.
+--- hint
+Keep the `WHERE` from the starter, but put it after the join and use the alias: `WHERE r.model = 'haiku'`.
 --- check result | Three haiku requests with their emails
 [["ada@example.com", "haiku", 800], ["lin@example.com", "haiku", 300], ["kai@example.com", "haiku", 2200]]
 --- check source | Uses a JOIN
@@ -217,7 +1090,11 @@ WHERE r.model = 'haiku';
 
 === sql-08 | LEFT JOIN and NULL
 --- teach
-An inner join drops rows with no match — `sam` has never made a request, so sam vanishes from a join with `requests`. A **LEFT JOIN** keeps every row from the left table and fills the right side with `NULL` when there is no match:
+Last lesson you joined `requests` to `users`, and noticed that sam, who has never made a request, disappeared. An inner join keeps only rows with a match on both sides. This lesson shows how to keep sam, and what the database puts in the empty spaces.
+
+Picture the class register again. You copy each student's marks next to their name. A new student has no marks yet. You do not cross them off the register. You keep the line and leave the marks box blank.
+
+A **`LEFT JOIN`** does that (its [[longer name|outer-join]] is `LEFT OUTER JOIN`). It keeps **every** row from the [[left table|left-right]], the one named after `FROM`. When a row there has no match on the right, it still appears, and the right table's columns are filled with `NULL`:
 
 ```sql
 SELECT u.email, r.id
@@ -225,9 +1102,72 @@ FROM users u
 LEFT JOIN requests r ON r.user_id = u.id;
 ```
 
-`NULL` means "no value". It is not zero and not an empty string: test it with `IS NULL`, never `= NULL`. `COUNT(column)` skips NULLs (while `COUNT(*)` counts rows), and `COALESCE(x, 0)` replaces a NULL with 0.
+| email | id |
+| --- | --- |
+| ada@example.com | 1 |
+| ada@example.com | 2 |
+| ada@example.com | 3 |
+| kai@example.com | 6 |
+| lin@example.com | 4 |
+| lin@example.com | 5 |
+| sam@example.com | NULL |
+
+Notice the table order changed. `users` now comes first, after `FROM`, because users are the rows you want to keep. There are 7 rows: the 6 matched ones, plus one for sam.
+
+**`NULL`** means "no value here". It is [[not zero and not an empty string|null-meaning]]. Zero is a number. `''` is text with nothing in it. `NULL` is the blank box: nothing was ever written. Many tools display it as an empty cell.
+
+That difference matters when you count. Say you want the number of requests per user, including sam. There are two kinds of count:
+
+- `COUNT(*)` counts **rows**. sam's row is a row, so it counts as 1, even though it is filled with `NULL`.
+- `COUNT(column)` counts only the rows where that column is **not** `NULL`. So [[counting the request id gives sam 0|count-star]]: `COUNT(r.id)`.
+
+You can see the difference on the whole joined table:
+
+```sql
+SELECT COUNT(*), COUNT(r.id)
+FROM users u
+LEFT JOIN requests r ON r.user_id = u.id;
+```
+
+This gives `7` and `6`: seven rows, but only six of them hold a real request id.
+
+**Watch out:** after a `LEFT JOIN`, `COUNT(*)` quietly counts the empty rows. Grouped per user, it would say sam made 1 request. To count matches, count a column from the right table, like `COUNT(r.id)`. The next lesson shows how to test for `NULL` directly and how to swap it for a 0.
+
+::: context outer-join Inner and outer joins
+Joins come in two families. An **inner** join, the plain `JOIN` from last lesson, keeps only matched pairs. An **outer** join also keeps rows that found no partner, and fills the gaps with `NULL`. `LEFT JOIN` is short for `LEFT OUTER JOIN`; the word `OUTER` is optional and most people leave it out. There is also a `FULL OUTER JOIN`, which keeps unmatched rows from both sides; SQLite has supported it since version 3.39.0.
+:::
+
+::: context left-right Left and right are about writing order
+"Left" means the table written first, after `FROM`; "right" is the one after `LEFT JOIN`. Swap them and you keep a different table's rows. `FROM requests r LEFT JOIN users u` would keep every request, which here changes nothing, because every request has a user. SQLite (from version 3.39.0, in 2022) also has `RIGHT JOIN`, which keeps every row of the right table, but most people rewrite it as a `LEFT JOIN` with the tables swapped, so every query reads the same way.
+:::
+
+::: context null-meaning Missing is not the same as zero
+Think of a thermometer on a spacecraft. A reading of 0 degrees is real information. A missing reading, because the sensor did not report, is something else: you do not know the temperature. Writing 0 for "no reading" would be a lie that looks like data. `NULL` is how a database says "unknown" or "not there" honestly. For sam, the request id is not 0; there is no request at all.
+
+```svg
+<svg viewBox="0 0 360 100" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <g font-size="12" fill="#1f2a44" text-anchor="middle">
+    <rect x="14" y="20" width="96" height="40" fill="#ffffff" stroke="#1d6fd1" stroke-width="1.5"/>
+    <text x="62" y="45" font-size="14">0</text>
+    <text x="62" y="80">a number</text>
+    <rect x="132" y="20" width="96" height="40" fill="#ffffff" stroke="#1d6fd1" stroke-width="1.5"/>
+    <text x="180" y="45" font-size="14">''</text>
+    <text x="180" y="80">empty text</text>
+    <rect x="250" y="20" width="96" height="40" fill="#ffffff" stroke="#b4232c" stroke-width="1.5" stroke-dasharray="5 4"/>
+    <text x="298" y="45" font-size="14" fill="#b4232c">NULL</text>
+    <text x="298" y="80">no value at all</text>
+  </g>
+</svg>
+```
+:::
+
+::: context count-star Rows versus values
+`COUNT(*)` asks "how many rows are there?" `COUNT(r.id)` asks "how many rows have a value in `r.id`?" On ordinary tables the two agree. After a `LEFT JOIN` they differ, by exactly the number of unmatched rows. It is a good reason to always ask which one you mean. The other aggregates behave like `COUNT(column)`: `SUM`, `AVG`, `MIN` and `MAX` skip `NULL` values too.
+:::
 --- task
-Return **every** user's email with how many requests they have made — including users with none, who should show `0`.
+Return **every** user's `email` together with how many requests they have made. Users with no requests must still appear, with `0`.
+
+Start from `users`, keep every user with a `LEFT JOIN` to `requests`, group by user, and count something that is `NULL` for users with no requests.
 --- starter
 SELECT u.email, COUNT(*)
 FROM users u
@@ -239,11 +1179,126 @@ FROM users u
 LEFT JOIN requests r ON r.user_id = u.id
 GROUP BY u.id, u.email;
 --- hint
-Change `JOIN` to `LEFT JOIN` so sam is kept.
+Run the starter first: sam is missing. Change `JOIN` to `LEFT JOIN` so sam is kept.
 --- hint
-`COUNT(*)` counts sam's single NULL-filled row as 1. Count a column from `requests` instead: `COUNT(r.id)`.
+Now sam is there, but with 1. `COUNT(*)` counts sam's single `NULL`-filled row as 1. Count a column from `requests` instead.
+--- hint
+Replace `COUNT(*)` with `COUNT(r.id)`. `r.id` is `NULL` in sam's row, so it is not counted.
 --- check result | All four users, sam with 0
 [["ada@example.com", 3], ["lin@example.com", 2], ["sam@example.com", 0], ["kai@example.com", 1]]
+
+=== sql-08b | Testing for NULL
+--- teach
+Last lesson a `LEFT JOIN` kept sam, with `NULL` in the spaces where a request would be. This lesson shows how to find those `NULL`s on purpose, and how to swap a `NULL` for a real value.
+
+Picture a register with a blank box. You cannot ask whether the blank "equals" anything, because nothing is written there. The only fair question is: "Is this box blank?"
+
+SQL works the same way. You might try `WHERE r.id = NULL`. It looks right. It never matches anything, not even a `NULL`, because comparing anything with `NULL` gives an [[unknown answer|three-valued]], not true. `WHERE` keeps a row only when its test is true.
+
+```sql
+SELECT NULL = NULL;
+```
+
+This does not return true. It returns `NULL`: "unknown".
+
+The right test is **`IS NULL`**, which is true when the value is missing. Its opposite is **`IS NOT NULL`**, true when there is a value. Here `IS NOT NULL` keeps only the joined rows that really have a request:
+
+```sql
+SELECT u.email, r.id
+FROM users u
+LEFT JOIN requests r ON r.user_id = u.id
+WHERE r.id IS NOT NULL;
+```
+
+That gives ada's 1, 2 and 3, lin's 4 and 5, and kai's 6. sam's row is dropped, because its `r.id` is `NULL`.
+
+Turning that round, `IS NULL` finds the rows that had [[no match at all|anti-join]].
+
+The second tool swaps a `NULL` for a value you choose. **`COALESCE(x, 0)`** gives back `x`, unless `x` is `NULL`; then it gives `0`. You need it because adding up nothing does not give 0. For sam, [[there are no costs to add up|sum-of-nothing]], so `SUM` gives `NULL`:
+
+```sql
+SELECT u.email, SUM(r.cost_usd) AS spend
+FROM users u
+LEFT JOIN requests r ON r.user_id = u.id
+GROUP BY u.id, u.email;
+```
+
+sam's `spend` comes back `NULL`. Wrap the sum in [[this new function|coalesce-word]] to show 0 instead:
+
+```sql
+SELECT u.email, COALESCE(SUM(r.cost_usd), 0) AS spend
+FROM users u
+LEFT JOIN requests r ON r.user_id = u.id
+GROUP BY u.id, u.email;
+```
+
+| email | spend |
+| --- | --- |
+| ada@example.com | 0.0397 |
+| kai@example.com | 0.0034 |
+| lin@example.com | 0.0771 |
+| sam@example.com | 0 |
+
+**Watch out:** `= NULL` and `<> NULL` (`<>` is "not equal") are not errors. They run, return no rows, and look like "nothing found". Whenever you mean "is missing", write `IS NULL`; for "is not missing", write `IS NOT NULL`.
+
+::: context three-valued True, false and unknown
+Most tests in SQL give true or false. Any comparison with `NULL` gives a third answer, unknown, which SQL writes as `NULL`. That is why `5 = NULL` and even `NULL = NULL` are unknown: if you do not know two values, you cannot say they are equal. `WHERE` keeps a row only when its test is true, so false and unknown are both dropped.
+
+```svg
+<svg viewBox="0 0 360 130" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <g font-size="12" fill="#1f2a44">
+    <text x="14" y="16" fill="#6c7a93">test</text>
+    <text x="140" y="16" fill="#6c7a93">answer</text>
+    <text x="250" y="16" fill="#6c7a93">WHERE</text>
+    <text x="14" y="44">5 = 5</text>
+    <rect x="130" y="28" width="86" height="24" fill="#ffffff" stroke="#1d6fd1"/><text x="140" y="44">true</text>
+    <text x="250" y="44" fill="#1d6fd1">row kept</text>
+    <text x="14" y="78">5 = 6</text>
+    <rect x="130" y="62" width="86" height="24" fill="#ffffff" stroke="#6c7a93"/><text x="140" y="78">false</text>
+    <text x="250" y="78" fill="#b4232c">row dropped</text>
+    <text x="14" y="112">5 = NULL</text>
+    <rect x="130" y="96" width="86" height="24" fill="#ffffff" stroke="#b4232c" stroke-dasharray="4 3"/><text x="140" y="112">unknown</text>
+    <text x="250" y="112" fill="#b4232c">row dropped</text>
+  </g>
+</svg>
+```
+:::
+
+::: context anti-join Finding what has no partner
+`LEFT JOIN` followed by `WHERE <right table column> IS NULL` is a pattern with a name: an **anti-join**. It finds rows on the left with no partner on the right. Real teams use it all the time: users who signed up and never used the product, orders that were never shipped, satellites in a list that sent no telemetry today. Pick a right-hand column that can never be `NULL` in a real match, such as the primary key `r.id`. In the Subqueries and WITH lesson you will meet subqueries, which give you another way to ask the same question.
+:::
+
+::: context sum-of-nothing Why SUM of nothing is NULL
+`COUNT` of no rows is 0. But `SUM`, `AVG`, `MIN` and `MAX` of no values give `NULL`, because there is nothing to add, average or compare. SQL chose "no answer" over pretending. That is usually not what a report wants, so `COALESCE(SUM(...), 0)` is a very common line. SQLite also has its own function, `TOTAL(...)`, which works like `SUM` but gives `0.0` when there is nothing to add; other databases do not have it, so `COALESCE` is the habit that travels.
+:::
+
+::: context coalesce-word First value that is not missing
+To coalesce means to come together into one. `COALESCE` can take more than two arguments: it looks at them from left to right and gives back the first one that is not `NULL`. So `COALESCE(NULL, NULL, 5)` gives `5`. That makes it handy for fallbacks: use a nickname if there is one, otherwise the email, otherwise the text `'unknown'`.
+:::
+--- task
+Return the `email` of every user who has **never made a request**, and nothing else.
+
+Start from `users`, `LEFT JOIN` it to `requests` on the user id, and keep only the rows where the request's `id` is missing. Use `IS NULL` for the test.
+--- starter
+SELECT u.email
+FROM users u
+LEFT JOIN requests r ON r.user_id = u.id
+WHERE r.id = NULL;
+--- solution
+SELECT u.email
+FROM users u
+LEFT JOIN requests r ON r.user_id = u.id
+WHERE r.id IS NULL;
+--- hint
+Run the starter: it returns nothing. Look at the `WHERE` line. Which test never matches a `NULL`?
+--- hint
+`= NULL` is never true. The test for a missing value is `IS NULL`.
+--- hint
+Change the last line to `WHERE r.id IS NULL;` and leave the rest as it is.
+--- check result | Only sam has never made a request
+[["sam@example.com"]]
+--- check source | Tests for a missing value with IS NULL
+\b[Ii][Ss]\s+[Nn][Uu][Ll][Ll]\b
 
 === sql-09 | Inserting rows
 --- teach
