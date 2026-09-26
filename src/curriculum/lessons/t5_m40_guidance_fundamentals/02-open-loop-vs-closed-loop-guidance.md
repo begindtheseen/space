@@ -76,7 +76,7 @@ $$
 k_p = 0.5^2 = 0.25\,\mathrm{s^{-2}}, \qquad k_d = 2 \times 0.7 \times 0.5 = 0.70\,\mathrm{s^{-1}}.
 $$
 
-Step the motion forward in time for the same $20\,\mathrm{s}$, $1\,\mathrm{ms}$ at a time, with a standard Runge–Kutta step:
+Step the motion forward in time for the same $20\,\mathrm{s}$, $1\,\mathrm{ms}$ at a time, with a standard Runge–Kutta step (a careful way to step forward that averages four estimates of the slope in each step):
 
 ```python
 a_d, kp, kd = 0.5, 0.25, 0.70
