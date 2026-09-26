@@ -14,7 +14,7 @@ This lesson teaches that way of working, which is called **parametric feature-ba
 
 ## From drawing lines to stating rules
 
-In AutoCAD a line from $(0,0)$ to $(60,0)$ is just that line. If the part gets longer, you erase and redraw, or stretch it by hand, and every related line has to be fixed by hand too.
+In AutoCAD a line from $(0,0)$ to $(60,0)$ is exactly that line and nothing more. If the part gets longer, you erase and redraw, or stretch it by hand, and every related line has to be fixed by hand too.
 
 A **parametric** model stores the *reasons* instead. A **parameter** is a number the model is built from and that you are allowed to change, like the width of a plate. The software keeps a small list of rules and parameters, and each time something changes it re-solves the whole shape. The part of the program that does the re-solving is called the **[[constraint solver|constraint-solver]]** — the maths engine that finds positions for every point so that all the rules are true at once.
 
