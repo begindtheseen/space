@@ -1,7 +1,7 @@
 ---
 id: l05-annotation-and-paper-space
 title: Annotation, paper space and plotting
-minutes: 23
+minutes: 22
 covers:
   - 'Annotation: text styles, dimension styles, multileaders, annotative scaling'
   - Model space versus paper space; layouts, viewports and viewport scale; plot styles; sheet sets
@@ -27,7 +27,7 @@ You draw dimensions with commands like **DIMLINEAR** (alias DLI) for horizontal 
 
 ## Multileaders: a note with an arrow
 
-A **leader** is an arrow from a note to the thing it describes: "4X M6 THRU", "WELD ALL AROUND", "SEE DETAIL A". AutoCAD's modern version is the **multileader**, drawn with **MLEADER** (alias MLD) and styled with **MLEADERSTYLE** (alias MLS). One multileader holds the arrow, the landing line and the text or a block (such as a circled item number for a parts list) as one object, so moving the note keeps the arrow attached. Several arrows can come from one note.
+A **leader** is an arrow from a note to the thing it describes: "4X M6 THRU", "WELD ALL AROUND", "SEE DETAIL A". AutoCAD's modern version is the **multileader**, drawn with **MLEADER** (alias MLD) and styled with **MLEADERSTYLE** (alias MLS). One multileader holds the arrow, the landing line and the text or a block (such as a **[[circled item number|item-balloons]]** for a parts list) as one object, so moving the note keeps the arrow attached. Several arrows can come from one note.
 
 ::: key Annotation styles
 Text styles (STYLE) set font and height. Dimension styles (DIMSTYLE) set arrows, extension lines, text and precision. Multileader styles (MLEADERSTYLE) set the arrow-and-note objects made by MLEADER. Set them once in a template and every sheet matches.
@@ -55,7 +55,7 @@ $$
 \text{scale factor} = \frac{\text{paper length}}{\text{model length}} = \frac{1}{50} = 0.02.
 $$
 
-You set it in the viewport's properties, from the scale list on the status bar, or with a zoom typed inside the viewport, where `XP` means "times paper space":
+You set it in the viewport's properties, from the scale list on the status bar, or with a zoom typed inside the viewport, where `XP` means "[[times paper space|zoom-xp]]":
 
 ```text
 Command: ZOOM
@@ -63,7 +63,7 @@ Specify corner of window, enter a scale factor (nX or nXP), or
 [All/Center/Dynamic/Extents/Previous/Scale/Window/Object] <real time>: 1/50XP
 ```
 
-Then **lock** the viewport (its Display Locked property set to Yes). A locked viewport keeps its scale when someone zooms, which stops the most common way a sheet quietly stops being to scale.
+Then **[[lock|viewport-housekeeping]]** the viewport (its Display Locked property set to Yes). A locked viewport keeps its scale when someone zooms, which stops the most common way a sheet quietly stops being to scale.
 
 Pick scales from the **[[standard series|standard-scales]]**: 1:1, 1:2, 1:5, 1:10, 1:20, 1:50, 1:100, 1:200. A reader expects them, and scale rulers are made for them.
 
@@ -158,7 +158,7 @@ A CTB (color-dependent) plot style table sets print settings by object color. An
 
 ## Sheet sets: many layouts as one set
 
-A test-stand package might be thirty sheets in a dozen drawing files. The **Sheet Set Manager** (command **SHEETSET**) organizes layouts from many files into one named **sheet set**, stored in a **.dst** file. From one panel you can open any sheet, number them in order, make new sheets from a standard layout, fill each title block from the set's data (sheet number, sheet title, project name), build a sheet list table, and **PUBLISH** the whole set to PDF or to a printer in one go.
+A test-stand package might be thirty sheets in a dozen drawing files. The **Sheet Set Manager** (command **SHEETSET**) organizes layouts from many files into one named **sheet set**, stored in a **.dst** file. From one panel you can open any sheet, number them in order, make new sheets from a standard layout, **[[fill each title block|sheet-set-fields]]** from the set's data (sheet number, sheet title, project name), build a sheet list table, and **PUBLISH** the whole set to PDF or to a printer in one go.
 
 ::: key Sheet sets
 A sheet set (.dst, managed in the Sheet Set Manager) collects layouts from many drawings into one ordered set, feeds title-block data and publishes the whole set at once.
@@ -241,6 +241,24 @@ Annotative objects appear only in viewports whose annotation scale is on their o
 
 Every style, layer, title block and plot style you set up here should not be rebuilt by hand for each new drawing. The next lesson packs them into templates and standards files, compares DWG with DXF, and places AutoCAD exactly where it belongs in an aerospace company.
 
+::: context item-balloons Balloons that point at the parts list
+In the drawing-literacy module you met the bill of materials and the item numbers that tie each part on an assembly drawing to a row in it. On a sheet those item numbers sit in small circles, often called balloons, at the end of a leader. A multileader style can use a block with an attribute as its content, so each balloon is a circle whose number you type as you place it. The same attributes can then be read out with data extraction, the way the last lesson built a parts table from tags.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 120" font-family="Inter, Arial, sans-serif">
+  <rect x="30" y="50" width="120" height="50" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="90" y="80" font-size="11" text-anchor="middle" fill="#1f2a44">clamp</text>
+  <polygon points="120,62 130,56 128,66" fill="#1f2a44"/>
+  <line x1="126" y1="61" x2="220" y2="30" stroke="#1f2a44" stroke-width="1.5"/>
+  <line x1="220" y1="30" x2="240" y2="30" stroke="#1f2a44" stroke-width="1.5"/>
+  <circle cx="254" cy="30" r="14" fill="#fff" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="254" y="35" font-size="13" text-anchor="middle" fill="#1f2a44">3</text>
+  <text x="274" y="60" font-size="11" fill="#6c7a93">item 3 in the</text>
+  <text x="274" y="75" font-size="11" fill="#6c7a93">parts list</text>
+</svg>
+```
+:::
+
 ::: context what-lives-in-paper-space What goes on the paper, and what goes in the model
 The rule of thumb: anything that describes the real object lives in model space at full size; anything that describes the sheet lives in paper space at paper size. The border, the title block, the revision table, general notes and the scale bar belong to the sheet. The geometry belongs to the model. Dimensions can live in either: many offices dimension in model space with annotative styles, while others dimension on the layout over the viewport, where they measure the model correctly anyway.
 
@@ -262,8 +280,16 @@ The rule of thumb: anything that describes the real object lives in model space 
 ```
 :::
 
+::: context zoom-xp Zooming relative to the paper
+A plain `ZOOM 2X` doubles whatever you see now; it has no memory of the paper. The `XP` form is different: it sets the zoom relative to paper-space units, so `1/50XP` means "one fiftieth of paper size", which is exactly a 1:50 scale no matter how the view was zoomed before. That is why it is the reliable way to set a viewport's scale by typing. In practice most people pick the scale from the viewport's list instead, which does the same thing.
+:::
+
+::: context viewport-housekeeping Two habits that keep a sheet to scale
+First, lock every viewport once its scale is set. An unlocked viewport can be changed by one careless scroll of the mouse wheel while you are inside it, and the sheet still looks fine — only the scale label is now a lie. Second, put viewport borders on their own layer set not to plot, so the window frames do not print as boxes around each view. Many offices use a layer named for viewports with its plot state switched off, using the layer plot setting from the layers lesson.
+:::
+
 ::: context standard-scales Why these particular scales
-The standard series goes 1, 2, 5, 10, 20, 50 and so on, each step roughly doubling or two-and-a-half-timesing the last. That spacing means there is always a scale close to what you need, and every one is easy to do in your head, because dividing by 2, 5 or 10 is easy. International drawing standards list this series as the recommended one for technical drawings. Architects also use a few in-between scales such as 1:25, and US customary drawings use their own like 1/4 inch to the foot, which you will meet on older facility drawings.
+The standard series goes 1, 2, 5, 10, 20, 50 and so on, each step about two or two and a half times the last. That spacing means there is always a scale close to what you need, and every one is easy to do in your head, because dividing by 2, 5 or 10 is easy. International drawing standards list this series as the recommended one for technical drawings. Architects also use a few in-between scales such as 1:25, and US customary drawings use their own like 1/4 inch to the foot, which you will meet on older facility drawings.
 :::
 
 ::: context pens-and-colors Why color decides the lineweight
@@ -283,4 +309,8 @@ Color-dependent plotting comes from the days of pen plotters: a machine that dre
   <g font-size="11" fill="#1f2a44"><text x="306" y="44">thick</text><text x="306" y="74">medium</text><text x="306" y="104">thin</text></g>
 </svg>
 ```
+:::
+
+::: context sheet-set-fields Title blocks that fill themselves
+A field is a small piece of live text that reads a value from somewhere else: the file name, today's date, a sheet set property. Put fields in the title block's attributes and each sheet's number, title and project name come from the sheet set. Renumber the set and every title block follows. This matters on a big package, where a sheet numbered 12 on its title block but listed as 13 in the index is exactly the kind of error a checker is paid to catch, and fields make it impossible.
 :::

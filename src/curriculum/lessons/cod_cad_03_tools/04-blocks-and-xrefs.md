@@ -10,7 +10,7 @@ Think about a rubber stamp. Somebody carves the picture once — a star, a schoo
 
 Now picture a shared class photo that hangs in the hallway. Every classroom does not keep its own copy. Each room has a note that says "see the photo in the hallway". When the photo is replaced, every note points at the new one at once.
 
-AutoCAD has both ideas. The rubber stamp is a **block**. The note that points at a shared picture is an **external reference**. On a launch site, one P&ID can hold dozens of identical valve symbols, and one site plan can sit underneath twenty different sheets. Last lesson you controlled things by category with layers. This lesson is about drawing a thing once and using it everywhere, so one change shows up everywhere too.
+AutoCAD has both ideas. The rubber stamp is a **block**. The note that points at a shared picture is an **external reference**. On a launch site, one P&ID — a piping and instrumentation diagram, the map of a fluid system — can hold dozens of identical valve symbols, and one site plan can sit underneath twenty different sheets. Last lesson you controlled things by category with layers. This lesson is about drawing a thing once and using it everywhere, so one change shows up everywhere too.
 
 ## Blocks: define once, insert many
 
@@ -143,7 +143,7 @@ The quantities add to $4 + 6 + 2 = 12$, which matches the 12 tags on the sheet.
 
 ## Dynamic blocks: one block, many shapes
 
-Suppose you need strut channel in eight lengths, or a valve symbol in three types. A **dynamic block** is one block with built-in handles that change its shape or look, within rules you set.
+Suppose you need strut channel (the slotted steel rail that pipes and cables are clamped to) in eight lengths, or a valve symbol in three types. A **dynamic block** is one block with built-in handles that change its shape or look, within rules you set.
 
 You build it in the Block Editor with two kinds of pieces that work in pairs.
 
