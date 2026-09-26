@@ -10,7 +10,7 @@ You are reading a long book and stop for the night. You slip a bookmark between 
 
 Now imagine the library rebinds the book overnight into a thicker edition with bigger print. Your bookmark is still in the old cover, pointing at a page that no longer exists. Or imagine a different book, a ring binder. Someone adds new pages in the middle, but your bookmark is clipped to one particular sheet, so it still finds your page no matter what was added around it.
 
-An **iterator** is a bookmark into a container: a small object that marks one position and can move to the next. Every standard algorithm — sorting, searching, summing — talks to containers only through iterators. And whether your bookmark survives a change to the container depends entirely on how that container stores its elements. Lesson 01 showed the vector's version of this: a `push_back` past capacity moves everything. This lesson gives the whole picture: what an iterator can do, the five kinds of iterator, the half-open ranges every algorithm uses, and the exact rule, container by container, for when a bookmark goes bad.
+An **iterator** is a bookmark into a container: a small object that marks one position and can move to the next. Every standard algorithm talks to containers only through iterators. Whether your bookmark survives a change depends on how the container stores its elements; lesson 01 showed the vector's case. This lesson gives the whole picture: what an iterator can do, the five kinds, the half-open ranges every algorithm uses, and the rule, container by container, for when a bookmark goes bad.
 
 ## What an iterator does
 
@@ -20,11 +20,11 @@ An **[[iterator|iterator-name]]** supports, at least, three operations:
 - `++it` — read "plus plus it" — moves it to the next element.
 - `it == other` and `it != other` — do two iterators mark the same position?
 
-For a vector, an iterator behaves like a pointer, and in many library builds it is one in a thin wrapper. For a `std::list`, `++it` follows the node's "next" link. For a `std::map`, `++it` walks to the next larger key in the tree. The code using the iterator looks identical in all three cases. That is the whole point: one algorithm, written once, works on every container.
+For a vector, an iterator behaves like a pointer; in libstdc++ it is one in a thin wrapper. For a `std::list`, `++it` follows the node's "next" link. For a `std::map`, it walks to the next larger key in the tree. The code using the iterator looks identical in all three cases, so one algorithm, written once, works on every container.
 
-Every container hands out two special iterators. `c.begin()` marks the first element. `c.end()` marks the position **[[one past the end|one-past-end]]** — not the last element, but the empty spot just after it. You must never read `*c.end()`; it marks where the elements stop.
+Every container hands out two special iterators. `c.begin()` marks the first element. `c.end()` marks the position **[[one past the end|one-past-end]]** — not the last element, but the empty spot right after it. You must never read `*c.end()`; it marks where the elements stop.
 
-Two more pairs are worth knowing. `c.cbegin()` and `c.cend()` give **const iterators**, which can read elements but not change them. `c.rbegin()` and `c.rend()` give **reverse iterators**, for which `++` walks backward from the last element.
+Also: `c.cbegin()` and `c.cend()` give **const iterators**, which can read elements but not change them. `c.rbegin()` and `c.rend()` give **reverse iterators**, for which `++` walks backward from the last element.
 
 ## Half-open ranges: [begin, end)
 
@@ -33,12 +33,12 @@ An algorithm never takes a container. It takes two iterators, `first` and `last`
 Why leave the last one out? Because it makes three things fall out with no special cases:
 
 - **The empty range is easy.** When `first == last`, there are no elements. A loop `for (; first != last; ++first)` runs zero times.
-- **The size is a subtraction.** For a vector, `last - first` is the number of elements. `v.end() - v.begin()` is `v.size()`.
+- **The size is a subtraction.** For a vector, `last - first` is the element count, so `v.end() - v.begin()` is `v.size()`.
 - **Ranges split cleanly.** $[\text{a}, \text{m})$ and $[\text{m}, \text{b})$ together cover $[\text{a}, \text{b})$ with no gap and no overlap. Binary search, sorting and merging all rely on this.
 
-This choice has a long history among people who think carefully about **[[counting from zero|dijkstra-half-open]]**, and the whole library follows it. The design goes back to **[[the original STL|stepanov]]**.
+The convention is an old favorite of people who think carefully about **[[counting from zero|dijkstra-half-open]]**, and the whole library, back to **[[the original STL|stepanov]]**, follows it.
 
-The loop pattern below is the heart of every standard algorithm. A **function template** — read `template <typename It>` as "a template with a type parameter called `It`" — lets one function accept any iterator type. The compiler writes a separate version for each type it is used with. The next module teaches templates in full; this much is enough to read and write one.
+The loop below is the heart of every standard algorithm. A **function template** — read `template <typename It>` as "a template with a type parameter called `It`" — lets one function accept any iterator type; the compiler writes a version for each type used. The next module teaches templates in full.
 
 ::: example One loop, three containers
 ```cpp
@@ -84,11 +84,9 @@ empty range: 0
 v.end() - v.begin() = 5
 ```
 
-Walk through it. `count_above` never names a container. It only uses `!=`, `++` and `*` on whatever `It` turns out to be. Called with vector iterators, `++first` moves a pointer by 8 bytes. Called with list iterators, it follows a link to the next node. Same source, different machine code.
+Walk through it. `count_above` never names a container; it only uses `!=`, `++` and `*`. With vector iterators, `++first` moves a pointer by 8 bytes. With list iterators, it follows a link to the next node. Same source, different machine code.
 
-Check the counts. Above 5.0 in $3.1, 7.4, 9.9, 2.0, 8.8$ are $7.4$, $9.9$ and $8.8$: three, for all three containers.
-
-`v.begin() + 2` jumps two elements ahead, so the range is $9.9, 2.0, 8.8$, and two of those are above 5.0. `count_above(v.begin(), v.begin(), 5.0)` is an empty range: `first == last` at the start, so the loop never ran and the count is 0. And `v.end() - v.begin()` is 5, the vector's size, as the half-open rule promises.
+Check the counts. Above 5.0 are $7.4$, $9.9$ and $8.8$: three, for all three containers. `v.begin() + 2` jumps two elements ahead, so the range is $9.9, 2.0, 8.8$, two of them above 5.0. `count_above(v.begin(), v.begin(), 5.0)` is empty, `first == last`, so the loop never ran. And `v.end() - v.begin()` is 5, the size, as the half-open rule promises.
 
 Sanity check: `v.begin() + 2` worked on the vector. The same line with `l.begin() + 2` does not compile, and the next section explains why.
 :::
@@ -115,20 +113,20 @@ Iterator categories, weakest to strongest: input (one pass, read), forward (many
 
 ### Why the category matters
 
-Every algorithm asks for the weakest category it can live with. `std::find_if` needs only an input iterator, since it walks forward once. `std::sort` needs random access, because it jumps around the range. Hand `std::sort` two list iterators and it will not compile; the first error line from g++ 13 complains that it found no `operator-` for two `std::_List_iterator<double>` objects. `std::list` has its own member `l.sort()` for exactly this reason.
+Every algorithm asks for the weakest category it can live with. `std::find_if` needs only an input iterator, since it walks forward once. `std::sort` needs random access, because it jumps around. Hand it two list iterators and g++ 13 refuses: it finds no `operator-` for two `std::_List_iterator<double>` objects. That is why `std::list` has its own member `l.sort()`.
 
 The category also sets the cost of the helpers in `<iterator>`:
 
 - `std::distance(first, last)` counts the steps between two iterators. For random access it is one subtraction. For anything weaker it walks the whole way, $n$ steps.
 - `std::advance(it, n)`, `std::next(it, n)` and `std::prev(it, n)` move an iterator $n$ places: one jump for random access, $n$ single steps otherwise. `std::prev` needs at least bidirectional.
 
-So `std::next(l.begin(), 2)` is how you write `l.begin() + 2` for a list — and it costs two link-follows, not one jump. The code looks similar; the cost does not. The same goes for searching: `std::lower_bound` on map iterators compiles, but it must walk the tree step by step to find midpoints. Use the map's own `m.lower_bound(key)`, which follows the tree's shape in $O(\log n)$ steps. Lesson 07 comes back to this.
+So `std::next(l.begin(), 2)` is how you write `l.begin() + 2` for a list, at the cost of two link-follows. Likewise `std::lower_bound` on map iterators compiles but must walk the tree step by step to find midpoints; the map's own `m.lower_bound(key)` follows the tree's shape in about $\log_2 n$ steps. Lesson 07 comes back to this.
 
 ## Invalidation: when a bookmark goes bad
 
-An iterator, pointer or reference is **invalidated** when the element it marks has moved or been destroyed. Using an invalidated one is undefined behavior. It may seem to work, crash, or quietly read another element — and which one it does can change from build to build.
+An iterator, pointer or reference is **invalidated** when the element it marks has moved or been destroyed. Using one is undefined behavior: it may seem to work, crash, or quietly read another element, and which one can change from build to build.
 
-Whether a change invalidates your handle depends on how the container stores elements. Contiguous containers move elements to keep them side by side. Node-based containers — list, map, set — put each element in its own heap node, which never moves until that element is erased. Everything below follows from those two facts.
+It depends on storage. Contiguous containers move elements to keep them side by side. Node-based containers — list, map, set — put each element in its own heap node, which never moves until erased. Everything below follows from those two facts.
 
 **std::vector.** All elements live in one buffer.
 
@@ -162,7 +160,7 @@ vector: size versus capacity. size is how many elements exist; capacity is how m
 unordered_map: rehashing on growth invalidates all iterators, though not references or pointers to elements. deque: pushing at either end invalidates all iterators, though not references or pointers to elements. list, map and set: insertion invalidates nothing, and erasing invalidates only the erased element.
 :::
 
-Here is the whole thing on one card.
+The whole thing on one card:
 
 | Container | Insert | Erase |
 | --- | --- | --- |
@@ -179,11 +177,11 @@ A reference or pointer leads to the element's node, and the node stays where it 
 
 ## The two bugs you will actually write
 
-Invalidation bugs in real code nearly always come in two shapes.
+Real invalidation bugs nearly always come in two shapes.
 
-**Holding a handle across a growth.** A telemetry registry keeps `double*` pointers to entries in a `std::vector<Channel>`. It works for months. Then someone adds a channel at run time, the vector reallocates, and every stored pointer dangles. The fixes, from lesson 01: size the vector once at start-up with `reserve` and never grow it after, or store **[[indices instead of pointers|handles]]**. The flight-software habit of allocating everything at initialization makes this bug much rarer — one more reason for the rule.
+**Holding a handle across a growth.** A telemetry registry keeps pointers to entries in a `std::vector<Channel>`. It works for months. Then someone adds a channel at run time, the vector reallocates, and every stored pointer dangles. The fixes, from lesson 01: `reserve` once at start-up and never grow after, or store **[[indices instead of pointers|handles]]**. The flight-software habit of allocating everything at initialization makes this bug rare.
 
-**Erasing inside a loop.** You walk a container and erase the elements you do not want. The obvious loop, `for (auto it = m.begin(); it != m.end(); ++it) if (stale) m.erase(it);`, erases the element `it` marks — and then does `++it` on an invalidated iterator. The fix is that every standard container's `erase(it)` returns an iterator to the element *after* the erased one. Take it, and only step forward when you did not erase.
+**Erasing inside a loop.** You walk a container and erase the elements you do not want. The natural loop, `for (auto it = m.begin(); it != m.end(); ++it) if (stale) m.erase(it);`, erases the element `it` marks — and then does `++it` on an invalidated iterator. The fix: in every standard container that has it, `erase(it)` returns an iterator to the element *after* the erased one. Take it, and only step forward when you did not erase.
 
 ::: example Dropping stale telemetry channels from a map
 The buggy version first:
@@ -201,9 +199,9 @@ int main() {
 }
 ```
 
-Built with `g++ -std=c++20 -O2` and run three times, it died every time with `Segmentation fault` (exit status 139). Channel 2 is stale, so its node was erased and freed, and then `++it` tried to follow the links stored inside that freed node.
+Built with `g++ -std=c++20 -O2` and run three times, it died every time with `Segmentation fault`. Channel 2's node was erased and freed, and then `++it` tried to follow the links stored inside it.
 
-Surprise: built with AddressSanitizer, the same program printed `2 channels left` and reported nothing. The step to the next tree node runs inside **[[precompiled library code|asan-blind-spot]]** that ASan does not check. A tool that catches this is libstdc++'s **[[debug mode|debug-mode]]**, switched on with `-D_GLIBCXX_DEBUG`. It stopped the program at the bad step:
+Surprise: built with AddressSanitizer, it printed `2 channels left` and reported nothing. The step to the next tree node runs inside **[[precompiled library code|asan-blind-spot]]** that ASan does not check. A tool that catches this is libstdc++'s **[[debug mode|debug-mode]]**, switched on with `-D_GLIBCXX_DEBUG`. It stopped the program at the bad step:
 
 ```text
 Error: attempt to increment a singular iterator.
@@ -291,19 +289,19 @@ reserved: buckets 137 before, 137 after 128 inserts
 rehashed: buckets  67, order: 5 18 12 30
 ```
 
-Read it line by line. The map started with 13 buckets. Twenty more keys made 24 elements, and 24 elements in 13 buckets would be a load factor of about $1.85$, above the default maximum of $1.0$. So the map rehashed, to 29 buckets: $24 / 29 \approx 0.828$.
+Read it line by line. The map started with 13 buckets. With a maximum load factor of $1.0$, those hold at most 13 elements. Once the count passed 13, the map rehashed, and it ended with 29 buckets: $24 / 29 \approx 0.828$. (Had it stayed at 13 buckets, the load factor would be $24 / 13 \approx 1.85$.)
 
 The pointer `p` still found element 12, value $0.1 \times 12 = 1.2$, at the same address. Nodes do not move in a rehash, so pointers and references survive, exactly as the rule says.
 
-`reserve(128)` set up 137 buckets before anything was inserted — at least 128, and libstdc++ picks prime numbers. All 128 inserts then fit with no rehash: $128 / 137 \approx 0.934$, under $1.0$.
+`reserve(128)` set up 137 buckets in advance (libstdc++ picks primes), so all 128 inserts fit with no rehash: $128 / 137 \approx 0.934$.
 
-The last line is why iterators do not survive. The same four keys, spread over 67 buckets instead of 13, come out in a different order: `5 18 12 30` instead of `30 12 18 5`. An iterator in the middle of the old order has no meaningful "next" in the new one.
+The last line is why iterators do not survive. The same four keys, over 67 buckets instead of 13, come out in a different order: `5 18 12 30` instead of `30 12 18 5`. An iterator in the middle of the old order has no meaningful "next" in the new one.
 
 Sanity check: every bucket count printed is at least the element count divided by $1.0$, the maximum load factor.
 :::
 
 ::: warning Growing a container while you walk it
-A range-based `for` over a container holds iterators for the whole loop. Inserting into a vector, a deque or an unordered_map inside that loop may invalidate them: a reallocation, a rebuilt block index, or a rehash. It can work in every test and fail the day the container crosses a capacity or load limit. Collect new elements in a separate container and add them after the loop, or `reserve` enough room first and loop by index.
+A range-based `for` holds iterators for the whole loop. Inserting into a vector, deque or unordered_map inside it may invalidate them, and it can pass every test until the day the container crosses a capacity or load limit. Collect new elements separately and add them after the loop.
 :::
 
 ## Check yourself
@@ -313,7 +311,7 @@ You hold a reference `Channel& c = channels[7];`. Say whether it is still valid 
 :::
 
 ::: answer
-(a) Valid. The new element goes into spare capacity, nothing moves, and only `end()` is invalidated. (b) Invalid. The size exceeds the capacity, so the vector reallocates and every reference moves to freed memory. (c) Valid. Pushing at either end of a deque invalidates its *iterators*, but references to elements stay valid, because elements never move between blocks. Note that element 7 is now at index 8. (d) Valid. A rehash rebuilds the buckets, but the nodes holding the elements stay put, so references and pointers survive. Only iterators are invalidated.
+(a) Valid: the new element goes into spare capacity, nothing moves, and only `end()` is invalidated. (b) Invalid: the vector reallocates, and the reference now points into freed memory. (c) Valid: a push at either end of a deque invalidates *iterators*, but elements never move, so references survive (element 7 is now at index 8). (d) Valid: a rehash rebuilds the buckets, but the nodes stay put. Only iterators are invalidated.
 :::
 
 ::: check
@@ -321,7 +319,7 @@ Put these in order from weakest to strongest category, and name one container wh
 :::
 
 ::: answer
-Input (reading `std::istream_iterator`; no container), forward (`std::forward_list`, `std::unordered_map`), bidirectional (`std::list`, `std::map`, `std::set`), random access (`std::deque`), contiguous (`std::vector`, `std::array`, `std::string`). Each can do everything the one before it can. The vector's iterators are therefore also random-access, bidirectional, forward and input iterators, so a vector works with every algorithm.
+Input (`std::istream_iterator`, which reads a stream rather than a container), forward (`std::forward_list`, `std::unordered_map`), bidirectional (`std::list`, `std::map`), random access (`std::deque`), contiguous (`std::vector`, `std::array`). Each can do everything the ones before it can, so a vector works with every algorithm.
 :::
 
 ::: check
@@ -337,7 +335,7 @@ Why does `std::distance(l.begin(), l.end())` on a `std::list` with a million ele
 :::
 
 ::: answer
-`std::distance` uses one subtraction for random-access iterators, so on the vector it is a single step. A list's iterators are only bidirectional, so `std::distance` must walk from `begin` to `end` one node at a time: a million link-follows, each one probably a cache miss, since nodes are scattered around the heap. Call `l.size()` instead, which the list keeps up to date and returns in constant time.
+For random-access iterators `std::distance` is one subtraction. A list's iterators are only bidirectional, so it must walk from `begin` to `end` one node at a time: a million link-follows, most of them cache misses, since nodes are scattered around the heap. Call `l.size()`, which the list keeps up to date and returns in constant time.
 :::
 
 ::: check
@@ -345,11 +343,11 @@ This loop is meant to remove every negative reading from a `std::vector<double> 
 :::
 
 ::: answer
-Erasing from a vector invalidates every iterator at or after the erased position, including `it` itself, and then `++it` is applied to it. In practice, too, the element after the erased one slides into `it`'s slot and is skipped by the `++`, and if the last element is erased, `it` can step past `end()`. Correct version:
+Erasing from a vector invalidates every iterator at or after the erased position, including `it`, which then gets `++`. In practice the next element slides into `it`'s slot and is skipped, and erasing the last element lets `it` step past `end()`. Correct version:
 
 `for (auto it = v.begin(); it != v.end(); ) { if (*it < 0) it = v.erase(it); else ++it; }`
 
-`erase` returns an iterator to the element that moved into the erased slot. This is correct, but each `erase` shifts every later element, so it is slow for many removals; lesson 09's `std::erase_if(v, pred)` does the job in one pass.
+`erase` returns an iterator to the element that moved into the erased slot. Each `erase` still shifts every later element, so lesson 09's `std::erase_if(v, pred)` is the faster tool.
 :::
 
 ## Summary
@@ -359,10 +357,7 @@ Erasing from a vector invalidates every iterator at or after the erased position
 | Iterator | a bookmark into a container | `*it` reads, `++it` moves, `==` compares |
 | `begin()`, `end()` | first element; one past the last | never dereference `end()` |
 | Half-open range | $[\text{first}, \text{last})$ | empty when `first == last`; size `last - first` for random access |
-| Input, forward | one pass; many passes | forward-only |
-| Bidirectional | adds `--it` | list, map, set |
-| Random access | adds `it + n`, `it2 - it1`, `<` | deque; needed by `std::sort` |
-| Contiguous | random access, elements side by side | vector, array, string, span |
+| Categories | input, forward, bidirectional, random access, contiguous | each adds power; `std::sort` needs random access |
 | Invalidated | handle to a moved or destroyed element | using it is undefined behavior |
 | vector | reallocation on growth past capacity | invalidates everything; `reserve` prevents it |
 | deque | push at an end | all iterators, but no references |
@@ -448,7 +443,33 @@ The load factor is the number of elements divided by the number of buckets, so i
 :::
 
 ::: context handles Indices and handles
-An index is a position number, not an address. After a vector reallocates, index 7 still means "the eighth element", because it is worked out fresh from the new buffer each time. Many flight systems go one step further and keep all objects of a kind in one fixed-size table created at start-up, handing out small integer handles into it. A handle can also carry a generation count, so that a handle to a slot that has since been reused can be detected and refused instead of silently pointing at the wrong object.
+An index is a position number, not an address. After a vector reallocates, index 7 still means "the eighth element", because it is worked out fresh from the new buffer each time.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">
+  <text x="10" y="18" font-size="12" fill="#6c7a93">old buffer (freed)</text>
+  <g stroke="#6c7a93" stroke-width="1.5" fill="#ffffff" stroke-dasharray="4 3">
+    <rect x="10" y="26" width="40" height="26"/><rect x="50" y="26" width="40" height="26"/>
+    <rect x="90" y="26" width="40" height="26"/><rect x="130" y="26" width="40" height="26"/>
+  </g>
+  <text x="10" y="92" font-size="12" fill="#1f2a44">new buffer after push_back</text>
+  <g stroke="#1f2a44" stroke-width="1.5" fill="#8fb8f0">
+    <rect x="10" y="100" width="40" height="26"/><rect x="50" y="100" width="40" height="26"/>
+    <rect x="90" y="100" width="40" height="26"/><rect x="130" y="100" width="40" height="26"/>
+    <rect x="170" y="100" width="40" height="26"/>
+  </g>
+  <g stroke="#1f2a44" stroke-width="1.5" fill="#ffffff">
+    <rect x="210" y="100" width="40" height="26"/><rect x="250" y="100" width="40" height="26"/><rect x="290" y="100" width="40" height="26"/>
+  </g>
+  <line x1="210" y1="40" x2="152" y2="40" stroke="#b4232c" stroke-width="2"/>
+  <polygon points="150,40 160,35 160,45" fill="#b4232c"/>
+  <text x="216" y="36" font-size="12" fill="#b4232c">stale pointer to</text>
+  <text x="216" y="52" font-size="12" fill="#b4232c">old slot 3</text>
+  <text x="130" y="144" font-size="12" fill="#1d6fd1">index 3: v[3] finds the new slot</text>
+  <line x1="150" y1="132" x2="150" y2="128" stroke="#1d6fd1" stroke-width="2"/>
+</svg>
+```
+ Many flight systems go one step further and keep all objects of a kind in one fixed-size table created at start-up, handing out small integer handles into it. A handle can also carry a generation count, so that a handle to a slot that has since been reused can be detected and refused instead of silently pointing at the wrong object.
 :::
 
 ::: context asan-blind-spot Why AddressSanitizer missed it
@@ -460,5 +481,5 @@ With `-D_GLIBCXX_DEBUG` on the command line, libstdc++ swaps in checked versions
 :::
 
 ::: context singular What "singular" means
-The standard calls an iterator singular when it is not associated with any sequence: a default-constructed iterator that was never pointed at anything, or one whose element was erased. The only safe things to do with a singular iterator are to assign a new value to it or destroy it. Reading through it, stepping it, or even comparing it with another iterator is undefined behavior.
+The standard calls an iterator singular when it is not associated with any sequence, like a default-constructed iterator that was never pointed at anything. An invalidated iterator may be singular, and libstdc++'s debug mode treats an erased element's iterator exactly that way. The safe things to do with a singular iterator are to assign a new value to it or destroy it. Reading through it or stepping it is undefined behavior.
 :::

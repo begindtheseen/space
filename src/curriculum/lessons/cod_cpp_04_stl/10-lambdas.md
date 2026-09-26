@@ -10,7 +10,7 @@ You are going out for the day. You can pack your lunch and take it with you, or 
 
 A **lambda** — a small function you write right where you need it — makes exactly this choice about every outside variable it uses. It can pack a copy and carry it along, or it can carry a note that points back at the original. Both are useful. One of them is the source of a classic flight-software bug: a callback that fires later, after the thing its note points at is gone.
 
-You have already met lambdas twice. Lesson 9 of the last module showed that any object with an `operator()` can be called like a function, and lesson 12 used a quick lambda primer to build `std::visit` visitors. The algorithm lessons of this module passed short lambdas to `std::sort` and `std::find_if`. This lesson teaches them properly.
+You have already met lambdas twice. Lesson 9 of the last module showed that any object with an `operator()` can be called like a function, and lesson 12 used a quick lambda primer to build `std::visit` visitors. This module's algorithm lessons passed short ones to `std::sort` and `std::find_if`. Now for the full story.
 
 ## A class the compiler writes for you
 
@@ -185,7 +185,7 @@ twice(21);     // 42, an int
 twice(1.25);   // 2.5, a double
 ```
 
-Read `[](auto x)` as "a lambda taking `x` of any type". Under the hood the closure's `operator()` becomes a **[[template|generic-template]]**: the compiler writes a fresh version of the call for each argument type you use. `twice(21)` gets an `int` version; `twice(1.25)` gets a `double` version. Nothing is decided at run time, so there is no cost beyond an ordinary call.
+Read `[](auto x)` as "a lambda taking `x` of any type". Under the hood the closure's `operator()` becomes a **[[template|generic-template]]**: the compiler writes a fresh version of the call for each argument type you use. `twice(21)` gets an `int` version; `twice(1.25)` gets a `double` version. Nothing is decided at run time, so there is no cost beyond an ordinary call. Last lesson's `[](const auto& kv)` is the same idea with a `const` reference: a big element, such as a map entry, is read without a copy.
 
 Generic lambdas are what make the overloaded visitors of `std::visit` short, and they let one small comparison lambda work on `float` and `double` alike. C++20 adds an explicit form when you need to name the type: `[]<typename T>(T a, T b) { return a < b; }` insists that both arguments have the same type `T`. The next module, on templates, explains what "a fresh version for each type" really involves.
 
@@ -235,7 +235,7 @@ Step by step:
 2. `tick` was called twice and then once more inside the `printf`, so its private copy went $0 \to 1 \to 2 \to 3$. The outside `count` is still $0$. Two separate integers.
 3. `twice(21)` used the `int` version and gave $42$; `twice(1.25)` used the `double` version and gave $2.50$.
 
-Sanity check: if `buf` had said "still here", two things would own one buffer, which `unique_ptr` exists to prevent. "empty" is the only right answer.
+Sanity check: "still here" would mean two owners of one buffer, which `unique_ptr` exists to prevent.
 :::
 
 ## The stored lambda that outlives its scope

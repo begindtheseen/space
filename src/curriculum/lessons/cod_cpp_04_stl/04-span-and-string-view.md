@@ -38,7 +38,7 @@ A span builds itself automatically from a C array, a `std::array` or a `std::vec
 Once you have a span `s`, here is what it offers:
 
 - `s.size()` is the number of elements; `s.size_bytes()` is the number of bytes; `s.empty()` says whether there are none.
-- `s[i]` is element `i`, with **no bounds check** — just like a raw array. `s.front()` and `s.back()` are the first and last.
+- `s[i]` is element `i`, with **no bounds check** — the same as a raw array. `s.front()` and `s.back()` are the first and last.
 - `s.data()` is the raw pointer, for handing to an old C function.
 - `s.first(n)` is a new span of the first `n` elements, `s.last(n)` of the last `n`, and `s.subspan(offset, n)` of `n` elements starting at `offset`. None of them copies anything. They make a new sticky note that points at part of the same house.
 - A span works in a range-based `for` loop, and has `begin()` and `end()`, so it works with every standard algorithm.
@@ -122,7 +122,7 @@ Check by hand. The C array: $39.22 / 4 = 9.805$. The accel array: $9.7 / 3 \appr
 Sanity check: every mean near $9.8$ is close to $g_0 = 9.80665\,\mathrm{m/s^2}$, as an accelerometer sitting still on the pad should read.
 :::
 
-What happens if you call `norm2` with the wrong thing? Adding `std::array<double, 4> four` and `std::vector<double> vec` and calling `norm2(four)` and `norm2(vec)`, g++ 13 refuses both:
+What happens if you call `norm2` with the wrong thing? Declare `std::array<double, 4> four` and `std::vector<double> vec`, call `norm2(four)` and `norm2(vec)`, and g++ 13 refuses both:
 
 ```text
 error: could not convert 'four' from 'std::array<double, 4>' to 'std::span<const double, 3>'
@@ -205,7 +205,7 @@ C functions such as `printf("%s")` and `strlen` find the end of a string by look
 
 ## The dangling-view hazard
 
-Now the empty lot. A view does not keep anything alive. If the owner dies, or moves its elements somewhere else, the view still holds the old address. It is then a **dangling view**: it points at memory that no longer holds what you think. Reading through it is undefined behavior, the same use-after-free you met with raw pointers in the memory module — just better disguised, because the code looks innocent.
+Now the empty lot. A view does not keep anything alive. If the owner dies, or moves its elements somewhere else, the view still holds the old address. It is then a **dangling view**: it points at memory that no longer holds what you think. Reading through it is undefined behavior, the same use-after-free you met with raw pointers in the memory module, only better disguised, because the code looks innocent.
 
 ::: key
 Views do not own anything, so they dangle if the underlying storage dies or reallocates. Never store one in a member expecting the owner to outlive it unless that lifetime is documented and enforced.
@@ -367,7 +367,7 @@ Contiguous means the elements sit one right after another in memory, like houses
   <line x1="70" y1="100" x2="70" y2="68" stroke="#b4232c" stroke-width="2"/>
   <polygon points="70,64 65,74 75,74" fill="#b4232c"/>
   <text x="80" y="100" font-size="12" fill="#b4232c">subspan(1, 4): pointer to element 1, size 4</text>
-  <text x="80" y="118" font-size="12" fill="#6c7a93">no copy: the red frame is just an address and a count</text>
+  <text x="80" y="118" font-size="12" fill="#6c7a93">no copy: the red frame is only an address and a count</text>
 </svg>
 ```
 :::
@@ -399,7 +399,7 @@ The standard already used the word extent for the size of an array along one of 
 :::
 
 ::: context null-terminated The zero at the end
-C strings have no length stored anywhere. Instead, the last character is followed by a byte with value zero, written `'\0'`, and every C function walks forward until it hits it. A `std::string` always keeps that zero after its text, which is why `c_str()` is safe to hand to C. A view of part of a string has no zero at its own end: the next byte is simply the next character of the bigger string.
+C strings have no length stored anywhere. Instead, the last character is followed by a byte with value zero, written `'\0'`, and every C function walks forward until it hits it. A `std::string` always keeps that zero after its text, which is why `c_str()` is safe to hand to C. A view of part of a string has no zero at its own end: the next byte is the next character of the bigger string.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 100" font-family="Inter, Arial, sans-serif">

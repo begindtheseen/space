@@ -328,7 +328,7 @@ Your team needs a callback parameter for `for_each_channel(fn)`, which calls `fn
 :::
 
 ::: answer
-Good: a template parameter, `template <typename F> void for_each_channel(F fn)` — the lambda is inlined and nothing is stored, so there is no lifetime issue. Also good, if the function must live in a `.cpp` file: C++26's `std::function_ref<void(int)>`, which is non-owning and never allocates; it is safe here because the callable outlives the call. Poor: `std::function<void(int)>` — it may allocate every time a large enough lambda is passed, just to hold something that lives only for the call, and it blocks inlining.
+Good: a template parameter, `template <typename F> void for_each_channel(F fn)` — the lambda is inlined and nothing is stored, so there is no lifetime issue. Also good, if the function must live in a `.cpp` file: C++26's `std::function_ref<void(int)>`, which is non-owning and never allocates; it is safe here because the callable outlives the call. Poor: `std::function<void(int)>` — it may allocate every time a large enough lambda is passed, only to hold something that lives for the call, and it blocks inlining.
 :::
 
 ::: check

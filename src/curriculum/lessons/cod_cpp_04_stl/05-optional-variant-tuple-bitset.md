@@ -32,7 +32,6 @@ The value lives *inside* the optional object, next to a small flag that says whe
 
 ::: example A GPS fix that might not exist
 ```cpp
-#include <cmath>
 #include <cstdio>
 #include <optional>
 
@@ -99,7 +98,7 @@ Last, `value()` on an empty optional threw `std::bad_optional_access`, and the `
 :::
 
 ::: warning `optional<bool>` reads backwards
-`std::optional<bool> armed = false;` holds a value — the value `false`. So `if (armed)` is **true**, because the test asks "is there a value?", not "is it true?". The program printed `if (armed) is true: it has a value` for exactly that line. Write `if (armed.value_or(false))` or `if (armed == true)` to say what you mean. The same trap waits in `std::optional<int>` holding `0`.
+`std::optional<bool> armed = false;` holds a value — the value `false`. So `if (armed)` is **true**, because the test asks "is there a value?", not "is it true?". A short test built around exactly that line printed `if (armed) is true: it has a value`. Write `if (armed.value_or(false))` or `if (armed == true)` to say what you mean. The same trap waits in `std::optional<int>` holding `0`.
 :::
 
 C++23 adds `and_then`, `transform` and `or_else`, which chain steps that may each come back empty, but everything above works in C++20.
@@ -219,7 +218,7 @@ Sizes: a `pair<int, double>` is 4 bytes of `int`, 4 of padding so the `double` s
 :::
 
 ::: warning `first`, `second` and `get<2>` say nothing
-A function returning `std::tuple<double, double, int>` does not tell the reader which `double` is the minimum. Six months later someone swaps them and the code still compiles. For anything that crosses an interface, prefer a small struct with named members — `struct Stats { double min; double max; int n; };` — which structured bindings unpack just as neatly. Keep pairs and tuples for short-lived, local results, and for the places the standard library hands them to you.
+A function returning `std::tuple<double, double, int>` does not tell the reader which `double` is the minimum. Six months later someone swaps them and the code still compiles. For anything that crosses an interface, prefer a small struct with named members — `struct Stats { double min; double max; int n; };` — which structured bindings unpack as neatly. Keep pairs and tuples for short-lived, local results, and for the places the standard library hands them to you.
 :::
 
 ## std::bitset: a row of on-off flags
@@ -230,7 +229,7 @@ A car's dashboard does not have one light that says "something is wrong". It has
 
 - `b.set(i)`, `b.reset(i)`, `b.flip(i)` turn bit `i` on, off, or to its opposite. With no argument, they act on every bit.
 - `b.test(i)` reads bit `i`, and **checks** `i`: past the end, it throws `std::out_of_range`. `b[i]` reads or writes bit `i` with **no** check.
-- `b.count()` is how many bits are on; `b.any()`, `b.none()` and `b.all()` answer the obvious questions; `b.size()` is `N`.
+- `b.count()` is how many bits are on; `b.any()`, `b.none()` and `b.all()` ask whether any, none or all are on; `b.size()` is `N`.
 - `&`, `|`, `^` and `~` work bit by bit on whole bitsets, the same operators you would use on integers.
 - `b.to_ulong()` gives the bits back as an integer, ready to pack into a frame; `b.to_string()` gives them as `'0'` and `'1'` characters, highest bit first.
 
@@ -373,7 +372,7 @@ A teammate writes `std::optional<int> retries = 0; if (!retries) start_countdown
 | `std::bitset<N>` | `N` on-off bits, fixed size | `set`, `reset`, `test` (checked), `[]` (unchecked), `count`, `to_ulong` |
 | Health word | fault flags packed into an integer | name bits with an enum; count from the right |
 
-Next lesson: the pairs of iterators that `minmax_element` and `map::insert` just handed back. What an iterator really is, the five kinds, why a range is written as a half-open $[\text{begin}, \text{end})$, and — most important — which container operations leave your iterators, pointers and references safe to use.
+Next lesson: the iterators that `minmax_element` and `map::insert` handed back. What an iterator really is, the five kinds, why a range is written as a half-open $[\text{begin}, \text{end})$, and — most important — which container operations leave your iterators, pointers and references safe to use.
 
 ::: context sentinel The guard at the gate
 A sentinel is a guard, and in programming a sentinel value is a special value that stands guard to mean "stop" or "nothing here": $-1$ for "not found", $-999$ for "no reading", `NaN` (not a number) for "invalid". The trouble is that a sentinel has the same type as a real answer, so nothing forces a caller to check it. A $-999$ latitude slides into a navigation filter as easily as a real one. `NaN` is worse in one way: every comparison with it is false, so a range check like `lat < -90` does not catch it either.
