@@ -2388,7 +2388,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-python-basics",
       "title": "Python from zero: values, names and control flow",
-      "minutes": 20,
+      "minutes": 22,
       "covers": [
         "Python syntax, control flow, functions, classes"
       ],
@@ -2397,7 +2397,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-functions-modules",
       "title": "Functions, errors and modules",
-      "minutes": 20,
+      "minutes": 21,
       "covers": [
         "Python syntax, control flow, functions, classes"
       ],
@@ -2417,7 +2417,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-classes-and-pytest",
       "title": "Classes and pytest: a tested Vec3 and Quaternion",
-      "minutes": 20,
+      "minutes": 24,
       "covers": [
         "Python syntax, control flow, functions, classes",
         "pytest and test-driven numerical code"
@@ -2427,7 +2427,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-numpy-arrays",
       "title": "NumPy: arrays, broadcasting and vectorised thinking",
-      "minutes": 22,
+      "minutes": 23,
       "covers": [
         "NumPy arrays, broadcasting, vectorisation, dtypes, float64 semantics"
       ],
@@ -2436,7 +2436,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-floating-point",
       "title": "Floating point: machine epsilon and catastrophic cancellation",
-      "minutes": 20,
+      "minutes": 23,
       "covers": [
         "floating-point pitfalls: catastrophic cancellation, machine epsilon"
       ],
@@ -2454,7 +2454,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-matplotlib",
       "title": "matplotlib: figures a design review will accept",
-      "minutes": 21,
+      "minutes": 20,
       "covers": [
         "matplotlib and publication-grade plots"
       ],
@@ -2463,7 +2463,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-telemetry-csv-hdf5",
       "title": "Telemetry files: reading and plotting CSV and HDF5",
-      "minutes": 21,
+      "minutes": 22,
       "covers": [
         "reading and plotting CSV / HDF5 telemetry"
       ],
@@ -2474,7 +2474,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-vectors-norms-dot-product",
       "title": "Vectors, norms and the dot product",
-      "minutes": 19,
+      "minutes": 23,
       "covers": [
         "vectors, dot and cross products, norms, projections"
       ],
@@ -2483,7 +2483,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-matrices-as-linear-maps",
       "title": "Matrices as linear maps",
-      "minutes": 21,
+      "minutes": 25,
       "covers": [
         "matrix multiplication as composition of maps",
         "identity, inverse, transpose"
@@ -2493,7 +2493,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-gaussian-elimination-and-lu",
       "title": "Gaussian elimination and LU factorisation",
-      "minutes": 18,
+      "minutes": 20,
       "covers": [
         "Gaussian elimination and LU factorisation"
       ],
