@@ -1,22 +1,22 @@
 ---
 id: l04-lifetimes
 title: Lifetimes, or how long a borrow may last
-minutes: 22
+minutes: 24
 covers:
   - 'Lifetimes: elision rules, explicit annotations, lifetimes in structs, static'
 ---
 
-Think about a library book. When you check it out, the slip inside the cover has a due date. You can read the book, lend it to your sister for an afternoon, carry it to school. What you cannot do is keep it past the due date, because after that the library may give it to someone else. Every borrowed thing comes with a window of time during which you are allowed to use it.
+Think about a library book. When you check it out, the slip inside the cover has a due date. You can read it, lend it to your sister, carry it to school. What you cannot do is keep it past the due date, because then the library may give it to someone else. Every borrow comes with a window of time.
 
 Rust references work the same way. A `&f64` or a `&str` is a borrow, and every borrow has a due date: the moment its owner goes out of scope and the value is dropped. The borrow checker's job is to make sure no reference is ever used after its due date. The stretch of code during which a reference must stay valid is called its **lifetime**.
 
-Most of the time the compiler works lifetimes out on its own, and you never see them. This lesson is about the times you do. You will learn to read and write the notation `'a`, the three **elision rules** the compiler uses to fill lifetimes in for you, why a struct that holds a reference needs one, and what the special lifetime `'static` means. On a flight computer this is the machinery that lets you parse a telemetry packet in place, without copying it, and still be certain nothing points into a buffer that has been reused.
+Usually the compiler works lifetimes out by itself. This lesson is about the times it asks you: the notation `'a`, the three **elision rules** that fill lifetimes in for you, lifetimes in structs, and the special lifetime `'static`. On a flight computer this is what lets you parse a telemetry packet in place, without copying it, and still be certain nothing points into a buffer that has been reused.
 
 ## A lifetime is a stretch of code
 
-You already met a lifetime error in the last lesson, E0597: "`reading` does not live long enough". The compiler compared two stretches of code. One was the stretch where the owner, `reading`, existed. The other was the stretch where the reference, `latest`, was still going to be used. The second stretch reached past the end of the first, so the program was rejected.
+You met a lifetime error in the last lesson, E0597: "`reading` does not live long enough". The compiler compared two stretches of code: where the owner, `reading`, existed, and where the reference, `latest`, was still going to be used. The second reached past the end of the first, so the program was rejected.
 
-That comparison is all a lifetime ever is. A **[[lifetime is a region|lifetime-region]]** of the program — from the line where a borrow is created to the last line where it is used — and the rule is:
+That comparison is all a lifetime ever is. A lifetime is a **[[region|lifetime-region]]** of the program — from the line where a borrow is created to the last line where it is used — and the rule is:
 
 - a reference's lifetime must fit inside the lifetime of the value it points into.
 
@@ -107,16 +107,16 @@ Walk through it with the three points from lesson 03.
 2. The conflict is line 11: the closing brace drops `backup`.
 3. The borrow is still used on line 12, where `chosen` is printed.
 
-Now look at the call: `primary_ok` is `true`, so at runtime the function would have returned `primary`, which is perfectly alive. The compiler rejects it anyway. It did not run the function or look inside it. It read the signature, which says the result may come from either input, and it checked the worst case. Move `let backup` up next to `let primary` and the program compiles and prints `using IMU-B` when you pass `false`.
+Now look at the call: `primary_ok` is `true`, so at runtime the function would have returned `primary`, which is alive. The compiler rejects it anyway. It did not look inside the function; it read the signature, which says the result may come from either input, and checked the worst case. Move `let backup` up next to `let primary` and the program compiles.
 :::
 
 ::: warning An annotation cannot make anything live longer
-People new to lifetimes sometimes add `'a` everywhere, hoping the error goes away. It will not. Writing `'a` does not stretch the life of any value by a single line. Values still die at the end of their scope, exactly as the ownership rules say. The annotation only *describes* which inputs a returned reference depends on, so that the compiler can check your use of it. If the description is true and the program is still rejected, the program really does use something after its due date.
+People new to lifetimes sometimes add `'a` everywhere, hoping the error goes away. Writing `'a` does not stretch the life of any value by a single line; values still die at the end of their scope. The annotation only *describes* which inputs a returned reference depends on. If the description is true and the program is still rejected, the program really does use something after its due date.
 :::
 
 ## The elision rules: when you can leave them out
 
-If every reference needed an annotation, Rust code would be full of apostrophes. It is not, because the compiler fills in the common cases for you. Leaving a lifetime out and letting the compiler supply it is called **[[elision|elision-word]]**. The compiler follows three fixed rules, in order. They look only at the signature.
+If every reference needed an annotation, Rust code would be full of apostrophes. Instead, the compiler fills in the common cases. Leaving a lifetime out and letting the compiler supply it is called **[[elision|elision-word]]**. The compiler follows three fixed rules, in order. They look only at the signature.
 
 1. **Each input gets its own.** Every reference in the parameters that has no written lifetime gets a fresh, separate lifetime. So `fn f(a: &str, b: &str)` is read as `fn f<'x, 'y>(a: &'x str, b: &'y str)`.
 2. **One input, one answer.** If there is exactly one input lifetime, it is given to every reference in the output.
@@ -132,7 +132,7 @@ If none of the rules decides the output, elision fails and the compiler asks you
 When a function has several reference parameters and returns a reference, so the compiler cannot infer which input the output borrows from. Then you must annotate, which is also a design prompt: often the answer is to return an owned value.
 :::
 
-The phrase "design prompt" deserves a moment. When the compiler asks you which input the result borrows from, ask yourself whether it should borrow at all. Lesson 03 fixed `make_label` by returning a `String` instead of a `&str`. An owned result has no due date, so there is nothing to annotate. For small results, like a label, that is often the cleanest answer. For large ones, like a slice of a big buffer, borrowing is worth the annotation, because it avoids a copy.
+"Design prompt" means: when the compiler asks which input the result borrows from, ask whether it should borrow at all. Lesson 03 fixed `make_label` by returning a `String`. An owned result has no due date, so there is nothing to annotate. For small results, like a label, that is often cleanest. For a slice of a big buffer, borrowing is worth the annotation, because it avoids a copy.
 
 ::: example Annotating only the input that matters
 A telemetry record arrives as text, `ALT=10250.5,VEL=312.4,MODE=ASCENT`. You want a function that looks up one key and returns its value without copying it. It takes two references, the record and the key, so elision fails. But the answer only ever comes out of the record. The key is only compared against. So tag only the record:
@@ -207,7 +207,7 @@ error[E0597]: `key` does not live long enough
 :::
 
 ::: note Why the compiler reads only the signature
-It would be possible, in principle, for the compiler to look inside `find_value` and notice that the result always comes from `record`. Rust deliberately does not do this. The signature is a **[[contract|signature-contract]]** between the function and everyone who calls it. If callers were checked against the body, then editing the body, even in a way that looks harmless, could break code in some other crate that you have never seen. Checking against the signature means each function is verified once, on its own, and each caller is verified against a promise that only changes when you change the signature on purpose. It also keeps compile times sane: checking a call never requires re-analysing the function it calls.
+The compiler could, in principle, look inside `find_value` and notice that the result always comes from `record`. Rust deliberately does not. The signature is a **[[contract|signature-contract]]** with every caller. If callers were checked against the body, a harmless-looking edit to the body could break code in another crate you have never seen. Checking against the signature means each function is verified once, and callers depend only on a promise that changes when you change it on purpose.
 :::
 
 ## Lifetimes in structs
@@ -299,7 +299,7 @@ Check each number by hand.
 3. Length: bytes 4 and 5 read as one big-endian number are `0x0003` $= 3$. The field stores "length minus one", so there are $3 + 1 = 4$ data bytes.
 4. Data: bytes 6 through 9, `DE AD BE EF`. Four bytes, matching step 3, and $6 + 4 = 10$, the whole buffer.
 
-Two details in the code are worth reading aloud. `impl<'a> PacketView<'a>` says "for any lifetime `'a`, here are the methods of a view borrowing for `'a`"; you declare the lifetime after `impl` the same way you would declare a type parameter. And `data` returns `&'a [u8]`, not a reference tied to `&self`. That is a deliberate choice: the data slice points into the *buffer*, so it may outlive the small `PacketView` struct itself. Without the explicit `'a`, rule 3 would have tied it to `self` and made it shorter-lived than it needs to be.
+Two details are worth reading aloud. `impl<'a> PacketView<'a>` says "for any lifetime `'a`, here are the methods of a view borrowing for `'a`". And `data` returns `&'a [u8]`, not a reference tied to `&self`: the slice points into the *buffer*, so it may outlive the small `PacketView` struct itself. Without the explicit `'a`, rule 3 would have tied it to `self`.
 :::
 
 Now try to let the view outlive its buffer:
@@ -331,10 +331,10 @@ error[E0597]: `buffer` does not live long enough
    |                    ---------- borrow later used here
 ```
 
-(trimmed). It is the same E0597 you know, now protecting a struct. On a flight computer, the receive buffer for a radio or a serial port is typically reused for the next packet. A view that quietly survived into the next cycle would read the wrong packet's bytes. Here that mistake does not compile. This style of reading data in place, called **[[zero-copy parsing|zero-copy]]**, is popular in flight software precisely because it avoids allocation and copying — and in Rust it comes with the guarantee that the view cannot outlast the buffer. C++ has the same kind of view types, `std::string_view` and `std::span`, but with [[no due date in the type|cpp-lifetimebound]], so a view that outlives its buffer compiles without a word.
+(trimmed). The same E0597, now protecting a struct. On a flight computer, a radio's receive buffer is typically reused for the next packet, and a view that survived into the next cycle would read the wrong packet's bytes. Here that mistake does not compile. Reading data in place like this, **[[zero-copy parsing|zero-copy]]**, is popular in flight software because it avoids allocation and copying — and in Rust the view cannot outlast the buffer. C++ has the same kind of view types, `std::string_view` and `std::span`, but with [[no due date in the type|cpp-lifetimebound]], so a view that outlives its buffer compiles without a word.
 
 ::: warning A struct with a lifetime is a borrow, not a container
-`PacketView<'a>` does not own its bytes. Everything the borrow rules say about a `&[u8]` applies to the struct: while a view exists, the buffer cannot be modified or moved. If you find yourself wanting to keep a view around for a long time, or send it to another part of the program, that is the design prompt again: you probably want a struct that owns a `Vec<u8>` or a fixed array instead.
+`PacketView<'a>` does not own its bytes. While a view exists, the buffer cannot be modified or moved, exactly as for a `&[u8]`. If you want to keep a view for a long time, or send it elsewhere in the program, that is the design prompt again: you probably want a struct that owns a `Vec<u8>` or a fixed array.
 :::
 
 ## The lifetime called static
@@ -375,7 +375,7 @@ ORBIT-1 is in ASCENT
 logger thread owns 2 entries
 ```
 
-`mode_name` takes no references at all, yet it returns one. That is fine, because the result does not borrow from any input: it points at text baked into the program. The signature says so with `'static`.
+`mode_name` takes no references, yet returns one. That is fine: the result points at text baked into the program, and the signature says so with `'static`.
 
 A `&'static` parameter is a strong demand. This fails:
 
@@ -423,10 +423,10 @@ error[E0373]: closure may outlive the current function, but it borrows `log`, wh
 note: function requires argument type to outlive `'static`
 ```
 
-(trimmed). With `move`, the closure takes ownership of the `Vec`, contains no borrows, and passes the `'static` test. The vector is still dropped: at the end of the thread, when the closure is done with it. `'static` was a statement about borrows, not about how long the vector lives.
+(trimmed). With `move`, the closure owns the `Vec`, contains no borrows, and passes the `'static` test. The vector is still dropped, at the end of the thread. `'static` was a statement about borrows, not about how long the vector lives.
 
 ::: warning Do not reach for 'static to silence an error
-When the compiler says a borrow does not live long enough, changing a parameter to `&'static` feels like the strongest possible fix. It is usually the wrong one. It pushes the problem to every caller, who now can only pass literals or leaked memory. Ask instead: should this be an owned value (`String`, `Vec<u8>`)? Should the owner be declared in an outer scope? The honest uses of `'static` are string literals, constants, and data that really does live for the whole program, like a lookup table built once at startup. Lesson 05 shows `OnceLock`, the standard way to build that last kind.
+Changing a parameter to `&'static` feels like the strongest possible fix for "does not live long enough". It is usually the wrong one: every caller can now pass only literals or leaked memory. Ask instead: should this be an owned value? Should the owner move to an outer scope? The honest uses of `'static` are string literals, constants, and data that really does live for the whole program, like a lookup table built once at startup. Lesson 05 shows `OnceLock`, the standard way to build that last kind.
 :::
 
 ## Check yourself
@@ -444,7 +444,7 @@ A teammate adds `'a` to every reference in a function that fails with E0597, and
 :::
 
 ::: answer
-An annotation does not change how long anything lives. It only describes which inputs the output depends on. If the description is accurate and the program is still rejected, the program really does use a reference after the value it points into is dropped. Tagging *every* input with the same `'a` can even make things worse, because it tells callers the output depends on all of them, as the `find_value` example showed. The fix is to move the owner to an outer scope, shorten the use of the borrow, tag only the input the result truly comes from, or return an owned value.
+An annotation does not change how long anything lives; it only describes which inputs the output depends on. If the program is still rejected, it really does use a reference after its value is dropped. Tagging *every* input with the same `'a` can even make things worse, as the `find_value` example showed. The fix is to move the owner to an outer scope, shorten the use of the borrow, tag only the input the result truly comes from, or return an owned value.
 :::
 
 ::: check
@@ -452,7 +452,7 @@ Why does `struct Frame { payload: &[u8] }` need a lifetime, when `fn len(payload
 :::
 
 ::: answer
-The function returns a `usize`, which holds no borrow, so there is no output lifetime to relate to anything. The struct, though, stores a reference inside a value that can be passed around and kept. Its type must record how long that stored reference is valid, so the compiler can refuse to let a `Frame` outlive the buffer. Elision rules only apply to function signatures, never to struct fields, so you write `struct Frame<'a> { payload: &'a [u8] }`.
+The function returns a `usize`, which holds no borrow, so there is nothing to relate. The struct stores a reference inside a value that can be passed around and kept, so its type must record how long that reference is valid; then the compiler can refuse to let a `Frame` outlive the buffer. Elision never applies to struct fields, so you write `struct Frame<'a> { payload: &'a [u8] }`.
 :::
 
 ::: check
@@ -460,7 +460,7 @@ In `PacketView`, what would change if `data` were written `fn data(&self) -> &[u
 :::
 
 ::: answer
-With the elided form, rule 3 ties the result to the borrow of `self`, the view, instead of to the buffer. The slice could then not outlive the `PacketView` value. For example, a helper `fn payload_of(buf: &[u8]) -> &[u8] { PacketView::new(buf).unwrap().data() }` works with `-> &'a [u8]`, because the returned slice points into `buf`. With the elided version it fails with E0515, "cannot return value referencing temporary value": the view built inside the helper is dropped at the end of the function, and the result is now tied to it. The bytes are the same either way; only the promise differs.
+Rule 3 would tie the result to `self`, the view, instead of to the buffer, so the slice could not outlive the `PacketView`. A helper `fn payload_of(buf: &[u8]) -> &[u8] { PacketView::new(buf).unwrap().data() }` compiles with `-> &'a [u8]`, because the slice points into `buf`. With the elided version it fails with E0515, "cannot return value referencing temporary value": the view dies at the end of the helper, and the result is tied to it. Same bytes; different promise.
 :::
 
 ::: check
@@ -550,7 +550,7 @@ Zero-copy parsing means interpreting bytes in the buffer they arrived in, instea
 :::
 
 ::: context cpp-lifetimebound The same bug in C++
-C++17 added `std::string_view`, and C++20 added `std::span`: both are views, a pointer plus a length, just like a Rust `&str` or `&[u8]`. They are fast and useful, and they dangle silently if the string or vector they view goes away. C++ has no lifetime notation in its type system. Clang offers a partial patch, the `[[clang::lifetimebound]]` attribute, which you can put on a parameter to say "the return value refers to this argument", and the compiler then warns about some obvious dangling uses. It is the same idea as a Rust lifetime annotation, bolted on and checked far less thoroughly.
+C++17 added `std::string_view`, and C++20 added `std::span`: both are views, a pointer plus a length, like a Rust `&str` or `&[u8]`. They are fast and useful, and they dangle silently if the string or vector they view goes away. C++ has no lifetime notation in its type system. Clang offers a partial patch, the `clang::lifetimebound` attribute, which you can put on a parameter to say "the return value refers to this argument", and the compiler then warns about some obvious dangling uses. It is the same idea as a Rust lifetime annotation, bolted on and checked far less thoroughly.
 :::
 
 ::: context rodata Where a string literal lives
@@ -575,5 +575,5 @@ Because the literal is there for the whole run, a reference to it can safely be 
 :::
 
 ::: context outlives-bound One lifetime inside another
-Sometimes you need to say that one lifetime contains another. The notation is `'a: 'b`, read "tick a outlives tick b": everything valid for `'a` is valid at least as long as `'b`. `T: 'static` is the same notation with a type on the left. You will rarely write `'a: 'b` yourself, but you will read it in library signatures and in error notes such as "function requires argument type to outlive `'static`", which is exactly this relation spelled out.
+Sometimes you need to say that one lifetime contains another. The notation is `'a: 'b`, read "tick a outlives tick b": the region `'a` lasts at least as long as the region `'b`. `T: 'static` is the same notation with a type on the left. You will rarely write `'a: 'b` yourself, but you will read it in library signatures and in error notes such as "function requires argument type to outlive `'static`", which is exactly this relation spelled out.
 :::
