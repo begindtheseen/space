@@ -264,7 +264,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-what-self-study-builds",
       "title": "What self-study builds, and what it cannot buy",
-      "minutes": 18,
+      "minutes": 17,
       "covers": [
         "what this platform can do and what it cannot: it builds capability, not a credential"
       ],
@@ -273,7 +273,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-path-one-degree-parallel",
       "title": "Path 1: the degree, taken parallel",
-      "minutes": 21,
+      "minutes": 19,
       "covers": [
         "Path 1, degree-parallel: use the curriculum to be the strongest candidate in a graduating cohort, because the real differentiator is demonstrated shipped 6-DOF, estimation and guidance work that almost no new grad has",
         "accredited routes that fit alongside work: ABET-accredited part-time and online bachelor’s programmes, community college transfer, competency-based models"
@@ -292,7 +292,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-path-three-the-newspace-ladder",
       "title": "Path 3: the NewSpace ladder",
-      "minutes": 19,
+      "minutes": 18,
       "covers": [
         "Path 3, NewSpace ladder: Varda, Stoke, Firefly, Astra, True Anomaly, Impulse, Relativity and Intuitive Machines hire GNC with looser credential gates, and 2 to 3 years there converts to 5+ years professional GNC experience or 7+ years in lieu of a degree at SpaceX senior level"
       ],
@@ -301,7 +301,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-timelines-and-two-failure-modes",
       "title": "Timelines, and the two ways to waste them",
-      "minutes": 22,
+      "minutes": 21,
       "covers": [
         "realistic timelines for each path, stated in years",
         "the two failure modes: believing a portfolio replaces the degree, and believing nothing but the degree matters"
@@ -323,7 +323,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-the-verbatim-expectation",
       "title": "The verbatim expectation: you write the flight code",
-      "minutes": 19,
+      "minutes": 21,
       "covers": [
         "the verbatim expectation: implementation, validation, unit testing, and deployment of production software primarily in C++",
         "GNC engineers write flight code themselves rather than handing prototypes to a software team"
@@ -352,7 +352,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-the-machine-the-deadline-and-the-forbidden-list",
       "title": "The machine, the deadline, and why the loop forbids the heap",
-      "minutes": 22,
+      "minutes": 25,
       "covers": [
         "flight computers: embedded Linux, a roughly 3.2 series kernel with real-time patches, on Dragon, Falcon and Starship primary flight computers",
         "determinism, fixed-step integration and bounded execution time in a flight control loop",
