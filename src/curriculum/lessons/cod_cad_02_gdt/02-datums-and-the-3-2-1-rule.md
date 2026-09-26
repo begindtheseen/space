@@ -140,7 +140,7 @@ A bracket carries a hole $100\,\mathrm{mm}$ away from where it rests. A small **
 
 **Compare.** The narrow edge makes the same speck of dirt $12$ times worse: $0.2 / 0.0167 = 12$, which is also $120 / 10$.
 
-**Sanity check.** $0.2\,\mathrm{mm}$ would use up the whole position tolerance from the last lesson, just from a burr. And a $0.115^\circ$ tilt is almost six times a $0.02^\circ$ star tracker allowance. The big face is the right primary.
+**Sanity check.** $0.2\,\mathrm{mm}$ would use up the whole position tolerance from the last lesson, from a burr alone. And a $0.115^\circ$ tilt is almost six times a $0.02^\circ$ star tracker allowance. The big face is the right primary.
 :::
 
 This is also why drawings so often put a **flatness** control on the primary datum face. The flatter the face, the more surely its three high points are the same three points in the vehicle, and the better the measurement predicts the real assembly. You will meet flatness properly in the form lesson.

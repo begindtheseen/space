@@ -243,8 +243,8 @@ The lean is drawn hugely exaggerated. Left: A flat on the table, the wall touche
   <text x="95" y="172" font-size="11" text-anchor="middle" fill="#1f2a44">A first: pass (0.40)</text>
   <line x1="200" y1="160" x2="350" y2="160" stroke="#6c7a93" stroke-width="4"/>
   <line x1="202" y1="40" x2="202" y2="160" stroke="#6c7a93" stroke-width="4"/>
-  <polygon points="204,122 323,160 323,70 204,32" fill="#f2b880" stroke="#1f2a44" stroke-width="2"/>
-  <circle cx="252" cy="101" r="6" fill="#ffffff" stroke="#1f2a44" stroke-width="2"/>
+  <polygon points="204,139 322,160 338,71 204,48" fill="#f2b880" stroke="#1f2a44" stroke-width="2"/>
+  <circle cx="258" cy="112" r="6" fill="#ffffff" stroke="#1f2a44" stroke-width="2"/>
   <text x="275" y="182" font-size="11" text-anchor="middle" fill="#1f2a44">B first: fail (0.54)</text>
   <text x="180" y="22" font-size="11" text-anchor="middle" fill="#6c7a93">grey: table (A) and wall (B)</text>
 </svg>

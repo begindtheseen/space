@@ -1,7 +1,7 @@
 ---
 id: l07-tolerance-stack-up
 title: Tolerance stack-up — worst case and root-sum-square
-minutes: 23
+minutes: 24
 covers:
   - 'Tolerance stack-up: worst case versus root-sum-square'
 ---
@@ -34,7 +34,7 @@ A drawing marks a datum with a **datum feature symbol**: a capital letter in a b
 
 Datums decide how tolerances pile up. Suppose three holes sit in a row, $20\,\mathrm{mm}$ apart, each dimension $\pm 0.1\,\mathrm{mm}$.
 
-- **Chain dimensioning** gives each hole's distance from the hole before it. To find the third hole from the edge, you walk the chain: three dimensions, so a worst case of $3 	imes 0.1 = 0.3\,\mathrm{mm}$.
+- **Chain dimensioning** gives each hole's distance from the hole before it. To find the third hole from the edge, you walk the chain: three dimensions, so a worst case of $3 \times 0.1 = 0.3\,\mathrm{mm}$.
 - **Baseline dimensioning** gives every hole's distance straight from datum A. Each hole is then within $\pm 0.1\,\mathrm{mm}$ of the datum, with no piling up.
 
 So a stack-up always runs along the chain of dimensions that connects the two surfaces you care about. A good designer dimensions from the datums that matter for the part's job, to keep that chain short. The next module, on geometric dimensioning and tolerancing (GD&T), treats datums fully.
@@ -59,11 +59,11 @@ $$
 
 So the gap is $0.5 \pm 0.29\,\mathrm{mm}$: at least $0.21\,\mathrm{mm}$ and at most $0.79\,\mathrm{mm}$. The gap never closes, so the lid always fits. That is a guarantee. If every part passes inspection, every assembly works, with no exceptions.
 
-The price is that the guarantee is expensive. Suppose the design really needed the gap to stay within $\pm 0.15\,\mathrm{mm}$. Worst case would force you to shrink every part's tolerance roughly in half. Tighter tolerances mean slower machining, more scrapped parts and more inspection. With many parts in the chain, worst case can demand tolerances that nobody can build at a sensible price.
+The price is cost. If the gap had to stay within $\pm 0.15\,\mathrm{mm}$, worst case would force every tolerance roughly in half: slower machining, more scrap, more inspection. With many parts, worst case can demand tolerances nobody can build at a sensible price.
 
 ## Root-sum-square: assume real factories
 
-Think about the books again. For every book to be fat on the same day, you would need very bad luck. Most books are near the middle of their range. Some fat books and some thin books cancel each other out.
+Think about the books again. For every book to be fat at once, you would need very bad luck. Fat and thin books partly cancel.
 
 Real machined parts behave the same way. Most land near nominal, fewer land near the edges, and the size of one part has nothing to do with the size of the next. The shape that describes "most in the middle, fewer at the edges" is the **[[bell curve|bell-curve]]**, also called the **normal distribution**. And "has nothing to do with" has a name too: the parts are **[[independent|independent]]** — knowing one part's error tells you nothing about another's.
 
@@ -200,7 +200,7 @@ A star tracker's line of sight, its **boresight**, passes through four stacked m
 
 **Which to quote.** Four contributors is few, and the bracket base and arm are machined from one block in one setup, so their errors are likely correlated. A careful engineer would not trust the RSS number here. She would carry about $100\,\mathrm{arcsec}$ into the attitude error budget — or, better, ask for the tracker's real alignment to be measured after assembly.
 
-**Sanity check.** $100\,\mathrm{arcsec}$ is about $0.028^\circ$, close to the single-foot example above. Small numbers, but dozens of times a good tracker's own error.
+**Sanity check.** $100\,\mathrm{arcsec}$ is about $0.028^\circ$, close to the single-foot example above.
 :::
 
 ## Why a GNC engineer cares
@@ -321,21 +321,18 @@ The drawing is not to scale: the gap is enlarged so you can see it.
 The letter names the datum; the triangle touches the surface it belongs to.
 
 ```svg
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 140" font-family="Inter, Arial, sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 125" font-family="Inter, Arial, sans-serif">
   <rect x="40" y="70" width="280" height="40" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
-  <polygon points="170,110 190,110 180,122" fill="#1f2a44"/>
-  <line x1="180" y1="122" x2="180" y2="128" stroke="#1f2a44" stroke-width="1.5"/>
   <text x="180" y="100" font-size="12" text-anchor="middle" fill="#1f2a44">part</text>
   <rect x="140" y="20" width="24" height="24" fill="#fff" stroke="#1f2a44" stroke-width="1.5"/>
   <text x="152" y="37" font-size="13" text-anchor="middle" fill="#1f2a44">B</text>
   <line x1="152" y1="44" x2="152" y2="58" stroke="#1f2a44" stroke-width="1.5"/>
   <polygon points="142,70 162,70 152,58" fill="#1f2a44"/>
   <text x="200" y="37" font-size="11" fill="#1f2a44">datum B on the top face</text>
-  <text x="200" y="134" font-size="11" fill="#1f2a44">A on the bottom (box not drawn)</text>
 </svg>
 ```
 
-A filled or open triangle both appear in practice, depending on the standard's edition.
+Datum A would be marked the same way on the bottom face. Both filled and open triangles appear in practice.
 :::
 
 ::: context bell-curve The shape of a factory
