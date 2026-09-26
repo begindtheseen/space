@@ -7,7 +7,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-why-space-is-controlled",
       "title": "Why launch vehicles and spacecraft are export-controlled",
-      "minutes": 17,
+      "minutes": 20,
       "covers": [
         "why launch vehicles and spacecraft are ITAR-controlled under the US Munitions List"
       ],
@@ -16,7 +16,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-who-is-a-us-person",
       "title": "Who is a US person: the four eligible statuses",
-      "minutes": 19,
+      "minutes": 20,
       "covers": [
         "the four eligible statuses named verbatim in SpaceX postings"
       ],
@@ -25,7 +25,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-regulation-versus-preference",
       "title": "The residual clause, and regulation versus employer preference",
-      "minutes": 19,
+      "minutes": 20,
       "covers": [
         "what being eligible to obtain authorization from the US Department of State does and does not mean",
         "the difference between an ITAR restriction and an employer preference"
@@ -44,7 +44,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-the-recruiter-screen",
       "title": "Where eligibility actually gets confirmed",
-      "minutes": 17,
+      "minutes": 16,
       "covers": [
         "where in the pipeline eligibility is confirmed"
       ],
@@ -53,7 +53,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-clearance-testing-and-hours",
       "title": "Beyond the ITAR gate: clearance, testing, and hours",
-      "minutes": 19,
+      "minutes": 18,
       "covers": [
         "roles that additionally require obtaining and maintaining a Top Secret clearance",
         "pre-employment and random drug and alcohol testing",
@@ -64,7 +64,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-the-international-alternative",
       "title": "If the gate is closed, part one: non-ITAR and international employers",
-      "minutes": 21,
+      "minutes": 20,
       "covers": [
         "what a non-US-person can realistically target instead: non-ITAR employers, European, UK, Canadian, Australian and Japanese space sectors, academia, and a long-horizon immigration path"
       ],
@@ -73,7 +73,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-academia-and-the-long-path",
       "title": "If the gate is closed, part two: academia, immigration, and what transfers",
-      "minutes": 22,
+      "minutes": 21,
       "covers": [
         "what a non-US-person can realistically target instead: non-ITAR employers, European, UK, Canadian, Australian and Japanese space sectors, academia, and a long-horizon immigration path"
       ],
@@ -84,7 +84,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-the-gnc-org-and-the-family-map",
       "title": "The GNC org: why one title hides many jobs",
-      "minutes": 19,
+      "minutes": 22,
       "covers": [
         "the GNC org as SpaceX describes it: vehicle design, trajectory design and optimization, high-fidelity vehicle simulation, software and control algorithm development, plus launch and on-orbit operations support across multiple vehicle programs"
       ],
@@ -93,7 +93,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-starship-ascent-entry-and-landing",
       "title": "Starship: ascent, entry, and landing control",
-      "minutes": 20,
+      "minutes": 22,
       "covers": [
         "GNC Engineer (Starship): ascent, entry and landing control, 6-DOF simulation, flight control of the largest vehicle ever flown"
       ],
