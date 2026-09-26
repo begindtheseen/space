@@ -1,20 +1,28 @@
 ---
 id: l05-dunder-methods
 title: Dunder methods: behaving like a built-in type
-minutes: 16
+minutes: 20
 covers:
   - Dunder methods: __repr__, __eq__, __add__, __mul__, __len__, __iter__
 ---
 
-The class you wrote in the last lesson works, and then you put one in a list, print the list, and get three lines of hexadecimal. You compare two states that hold the same numbers and get `False`. You try to add two force vectors with `+` and get a `TypeError`. None of that is a defect in your class; it is the absence of the methods Python looks for when it needs those behaviours.
+Think of a wall socket. Any lamp, phone charger or kettle works in it, because each one has a plug of the agreed shape. The socket does not know or care what is on the other end of the cord. It only cares about the plug.
 
-Those methods have names with two leading and two trailing underscores — *dunder* methods, for double underscore. They are not magic and they are not called by you. They are the hooks Python's operators and built-in functions go through: `print(v)` consults `__repr__` or `__str__`, `a == b` consults `__eq__`, `a + b` consults `__add__`, `len(x)` consults `__len__`, and `for x in thing` consults `__iter__`. Implementing them is how a class of yours behaves like a class of Python's.
+Python's operators and built-in functions are sockets like that. `print(v)`, `a == b`, `a + b`, `len(x)` and `for x in thing` each look for one method with an agreed name on your object. If the method is there, your object plugs in and works like a list or a number. If it is not there, you get a default that is usually useless, or an error.
 
-Two of them carry traps sharp enough to have their own sections. `__eq__` on floating-point data is a flaky test waiting to happen, and defining `__eq__` at all silently makes your instances unhashable. Both are below, with the evidence.
+Those agreed names have two underscores on each side — `__repr__`, `__eq__`, `__add__` — so they are called **[[dunder methods|dunder-name]]**, for "double underscore". You rarely call them yourself. Python calls them when it needs the behavior:
+
+- `repr(v)`, and `print(v)` when there is no `__str__`, call `__repr__`;
+- `a == b` calls `__eq__`;
+- `a + b` calls `__add__`, and `a * b` calls `__mul__`;
+- `len(x)` calls `__len__`;
+- `for x in thing` calls `__iter__`.
+
+The class from the last lesson works, but put one in a list and print the list and you get lines of hexadecimal. Compare two states holding the same numbers and you get `False`. Add two force vectors with `+` and you get a `TypeError`. None of that is a bug in your class. The plugs are missing. This lesson adds them, and shows the two sharp traps in `__eq__`: exact float comparison, and the way defining `__eq__` silently makes your objects unhashable.
 
 ## __repr__ is for you at three in the morning
 
-Without a `__repr__`, an object prints as its type and its address:
+Without a `__repr__`, an object prints as its type and its address in memory:
 
 ```python
 # default_repr.py
@@ -31,14 +39,14 @@ print(str(v) == repr(v))
 
 ```bash
 python3 default_repr.py
-# <__main__.Vec3 object at 0x7f4d9c021610>
-# [<__main__.Vec3 object at 0x7f4d9c021610>, <__main__.Vec3 object at 0x7f4d9c021610>]
+# <__main__.Vec3 object at 0x7f39bc96d690>
+# [<__main__.Vec3 object at 0x7f39bc96d690>, <__main__.Vec3 object at 0x7f39bc96d690>]
 # True
 ```
 
-A list of a hundred of those tells you nothing. The address is not even useful for telling two objects apart in a log file, because it is reused after garbage collection.
+The `0x7f39...` is a **[[hexadecimal|hex-address]]** memory address. A list of a hundred of those tells you nothing. The address is not even reliable for telling two objects apart in a log file, because Python reuses an address once the old object is cleaned up.
 
-`__repr__` should return a string that says unambiguously what the object is, and by convention it should look like the call that would rebuild it. `__str__` is the separate, optional, human-facing form:
+`__repr__` (read "dunder repr") should return a string that says without ambiguity what the object is. By convention it looks like the call that would rebuild the object. `__str__` is a separate, optional, human-friendly form:
 
 ```python
 # repr_str.py
@@ -70,14 +78,22 @@ python3 repr_str.py
 # 410.0
 ```
 
-Read the third line: **a container always shows its elements' `repr`, never their `str`**. That is why `__repr__` is the one to write first and `__str__` the one you may never write at all. If you define only `__repr__`, `str()` falls back to it, and everything prints usefully; if you define only `__str__`, lists and dicts and tracebacks still show hexadecimal.
+Go through the output.
 
-The `!r` in the f-string is the conversion that applies `repr` to the field. It matters for strings — `f"Sensor({self.name})"` gives `Sensor(imu)` while `f"Sensor({self.name!r})"` gives `Sensor('imu')`, and only the second tells you the name was text and shows you a trailing space if there is one.
+1. `print(v)` used `__str__`: the friendly form with units.
+2. `repr(v)` used `__repr__`: the rebuild-me form.
+3. The list printed each element with `repr`, not `str`.
+4. The f-string used `str` for `{v}` and `repr` for `{v!r}`.
+5. `eval(repr(v))` rebuilt a `Vec3` from the text, and its `x` came back as 410.0.
 
-The `eval(repr(v))` on the last line is not something to do in real code; it is the test of whether the repr is faithful, and passing it is a good goal.
+Line 3 is the one to remember: **a container always shows its elements' `repr`, never their `str`**. That is why `__repr__` is the one to write first, and `__str__` the one you may never write at all. If you define only `__repr__`, `str()` falls back to it and everything prints usefully. If you define only `__str__`, lists, dicts and tracebacks still show hexadecimal.
+
+The `!r` inside the f-string (read "bang r") applies `repr` to that field. It matters most for strings. `f"Sensor({self.name})"` gives `Sensor(imu)`, while `f"Sensor({self.name!r})"` gives `Sensor('imu')`. Only the second tells you the name was text, and only the second would show a stray trailing space.
+
+The **[[`eval`|eval-danger]]** on the last line is not something to do in real code. It is a test of whether the repr is faithful, and passing that test is a good goal.
 
 ::: warning
-A `__repr__` that can raise is a liability, because the moment you most need it is when the object is in a state you did not expect:
+A `__repr__` that can crash is a liability, because you need it most when the object is in a state you did not expect:
 
 ```python
 # fragile_repr.py
@@ -104,12 +120,12 @@ python3 fragile_repr.py
 # IndexError raised by __repr__: list index out of range
 ```
 
-An empty run is exactly the case you were debugging, and the debugger cannot show it to you. Handle the degenerate cases inside `__repr__`, or print only fields that always exist.
+An empty run is exactly the case you were debugging, and now the debugger cannot show it to you. Handle the odd cases inside `__repr__`, or print only fields that always exist.
 :::
 
 ## __eq__, and the two things it changes
 
-Define `__eq__` and you get value comparison. You also, without being told, lose hashability:
+By default, `a == b` asks "are these the very same object?" Two separate vectors with the same numbers are not equal. Define `__eq__` and you get comparison by value instead. You also, without being told, lose **hashability** — the ability to go in a set or be a dict key:
 
 ```python
 # eq_hash.py
@@ -151,9 +167,11 @@ python3 eq_hash.py
 # True 1
 ```
 
-`Vec3Eq.__hash__` is `None`. Python sets it that way on purpose, because the rule for hashing is that objects which compare equal must hash equal, and it has no way to guess a hash consistent with your new equality. Leaving the inherited identity hash in place would put two equal vectors in different buckets of a dict, which is a much worse bug than a clear `TypeError`.
+Line by line: `a == b` is now `True` although `a is b` is `False` — equal values, different objects. `Vec3Eq.__hash__` is `None`. Putting `a` in a set, `{a}`, raises `TypeError: unhashable type`.
 
-So: if instances must go in a set or be dict keys, define `__hash__` too, over the same fields, and only if those fields do not change after construction. The last two lines show it working — `c == d` and the set of both has one element. If the object is mutable, leaving it unhashable is the correct answer, not an oversight.
+Python does that on purpose. A set or dict finds things by their **hash** — a whole number computed from the object, used like a locker number to decide which **[[bucket|hash-buckets]]** to look in. The rule is: *objects that compare equal must hash equal*. Otherwise two equal vectors could sit in different buckets, and `v in seen` could be `False` for a vector that is in `seen`. Python cannot guess a hash that matches your new idea of equality, so it removes the old one. A clear `TypeError` is much better than a set that quietly lies.
+
+So: if instances must go in a set or be dict keys, define `__hash__` too, over the same fields as `__eq__`. Do it only if those fields never change after construction. The last two lines show it working: `c == d`, and a set holding both has one element. If the object is meant to change, leaving it unhashable is the correct answer, not an oversight.
 
 ::: key
 Defining `__eq__` sets `__hash__` to `None` and makes instances unhashable. Define `__hash__` explicitly over the same fields — and only for objects whose fields do not change — or use a frozen dataclass, which does both for you.
@@ -161,7 +179,9 @@ Defining `__eq__` sets `__hash__` to `None` and makes instances unhashable. Defi
 
 ## __add__, __mul__ and NotImplemented
 
-Operators dispatch to dunder methods: `a + b` tries `type(a).__add__(a, b)`, and `a * k` tries `type(a).__mul__(a, k)`. When the left operand does not know what to do with the right, the correct response is to `return NotImplemented` — the singleton, not a raise. Python then tries the *reflected* operation on the right operand, `type(b).__radd__(b, a)`, and only if that also declines does it raise a `TypeError` naming both types.
+Operators go through dunder methods. `a + b` tries `type(a).__add__(a, b)`, and `a * k` tries `type(a).__mul__(a, k)`.
+
+What if the left operand does not know how to combine with the right one? The correct response is to `return NotImplemented`. That is a special built-in value meaning "not me — ask the other side". It is returned, not raised. Python then tries the **reflected** method on the right operand, `type(b).__radd__(b, a)` (read "dunder r-add"). Only if that also declines does Python raise a `TypeError` naming both types. The whole handshake is the **[[operator dispatch|dispatch-flow]]**.
 
 ```python
 # vec3.py
@@ -239,23 +259,37 @@ python3 vec3.py
 # TypeError: unsupported operand type(s) for +: 'Vec3' and 'int'
 ```
 
-`__rmul__ = __mul__` is the line that makes `0.5 * total` work. Scalar multiplication commutes, so the reflected method is the same function; for an operation that does not commute — a quaternion product, a matrix product — `__rmul__` must be written separately and must not simply call `__mul__`, or `q1 * q2` and `q2 * q1` will give the same answer and every rotation composed in the wrong order will be silently wrong.
+Walk through the output.
+
+1. `thrust + drag` called `__add__` and gave the sum, component by component: $(0 - 12{,}000,\ 0,\ 760{,}000 + 0)$.
+2. `abs(total)` called `__abs__`, the length: $\sqrt{12{,}000^2 + 760{,}000^2} \approx 760{,}095\,\mathrm{N}$. That is a hair more than the biggest component, as it should be for a mostly-vertical force.
+3. `total * 0.5 == 0.5 * total` is `True`. The left side used `__mul__`; the right side used `__rmul__`.
+4. `list(total)` went through `__iter__`, which is a generator yielding the three components. `len(total)` called `__len__`.
+5. `total + 1` failed with Python's own clear message.
+
+The line `__rmul__ = __mul__` is what makes `0.5 * total` work. When Python sees `0.5 * total`, it first asks the float `0.5` to multiply by a `Vec3`. The float has no idea how, so it returns `NotImplemented`. Python then asks `total.__rmul__(0.5)`.
+
+Scalar multiplication **commutes** — the order does not matter — so the reflected method can be the same function. For an operation that does *not* commute, such as a quaternion product or a matrix product, `__rmul__` must be written separately and must not call `__mul__`. Otherwise `q1 * q2` and `q2 * q1` give the same answer, and every rotation composed in the wrong order is silently wrong.
 
 ::: note
-The quaternion case is worth stating precisely, because you will implement it. A scalar-first quaternion is $q = w + x\,i + y\,j + z\,k$, with the basis relations $i^2 = j^2 = k^2 = ijk = -1$, from which $ij = k$, $jk = i$, $ki = j$ and each reversed product carries a minus sign. Writing $q = (w, \mathbf{v})$ with $\mathbf{v} = (x, y, z)$, the Hamilton product is
+The quaternion case is worth stating precisely, because you will build one in this module's exercise. A **[[quaternion|hamilton-bridge]]** is a four-part number used to store a spacecraft's attitude. Scalar first, it is $q = w + x\,i + y\,j + z\,k$, with the basis rules $i^2 = j^2 = k^2 = ijk = -1$. From those follow $ij = k$, $jk = i$, $ki = j$, and each reversed product gets a minus sign: $ji = -k$.
+
+Write $q = (w, \mathbf{v})$ with $\mathbf{v} = (x, y, z)$. The **Hamilton product** is
 
 $$q_1 q_2 = \left(w_1 w_2 - \mathbf{v}_1 \cdot \mathbf{v}_2,\; w_1 \mathbf{v}_2 + w_2 \mathbf{v}_1 + \mathbf{v}_1 \times \mathbf{v}_2\right)$$
 
-and the cross product is what makes it non-commutative: swapping the operands flips that term's sign and leaves the rest alone. The conjugate is $q^{*} = (w, -\mathbf{v})$, the norm is $\lVert q \rVert = \sqrt{w^2 + x^2 + y^2 + z^2}$, and $q q^{*} = (\lVert q \rVert^2, \mathbf{0})$ — which is the identity to test an implementation against, because it must come out with a zero vector part to within rounding.
+The cross product $\mathbf{v}_1 \times \mathbf{v}_2$ is what makes it non-commutative. Swapping the operands flips the sign of that term and leaves the rest alone.
 
-A unit quaternion represents a rotation, so `normalized()` is not tidying: it restores the constraint that makes the object mean anything, and normalising a zero quaternion is undefined and should raise rather than divide.
+The **conjugate** is $q^{*} = (w, -\mathbf{v})$. The **norm** is $\lVert q \rVert = \sqrt{w^2 + x^2 + y^2 + z^2}$. And $q q^{*} = (\lVert q \rVert^2, \mathbf{0})$. That last identity is the one to test an implementation against: the vector part must come out zero to within rounding. For $q = (1, 2, 3, 4)$, $\lVert q \rVert^2 = 1 + 4 + 9 + 16 = 30$, so $q q^{*} = (30, 0, 0, 0)$.
+
+A unit quaternion (norm 1) represents a rotation. So `normalized()` is not tidying: it restores the property that makes the object mean anything. Normalizing a zero quaternion is undefined and should raise rather than divide by zero. With the convention in the exercise, applying $q_1 q_2$ to a vector means applying $q_2$ first, then $q_1$ — the same right-to-left reading as matrices.
 :::
 
-The final `TypeError` came from Python, not from the class, and it names both types. That message is what `return NotImplemented` buys: had `__add__` raised `TypeError("expected a Vec3")` itself, Python would never have tried `int.__radd__`, and a future `Vec3 + numpy.ndarray` could not work either.
+The final `TypeError` came from Python, not from the class, and it names both types. That message is what `return NotImplemented` buys. Had `__add__` raised `TypeError("expected a Vec3")` itself, Python would never have tried `int.__radd__`. And a future `Vec3 + numpy.ndarray` could not work either.
 
 ## The float trap in __eq__
 
-`__eq__` built from `==` on floats is exact comparison, and computed floats are almost never exactly equal:
+`__eq__` built from `==` on floats is *exact* comparison. Computed floats are almost never exactly equal. Watch ten steps of 0.1:
 
 ```python
 # float_eq.py
@@ -281,12 +315,18 @@ python3 float_eq.py
 # -1.1102230246251565e-16
 ```
 
-Ten steps of 0.1 do not sum to 1.0, because 0.1 is not representable in binary; the result is short by about $1.1 \times 10^{-16}$, one unit in the last place. A test written as `assert state == expected` passes on your machine, fails on a machine whose libm rounds a sine differently, and gets marked flaky and retried.
+Ten steps of 0.1 do not add up to 1.0. The reason is that 0.1 cannot be written exactly in binary, the same way $1/3$ cannot be written exactly in decimal. Each step adds a tiny rounding error, and the sum ends up short by about $1.1 \times 10^{-16}$. That is **one [[ulp|ulp-picture]]** — one "unit in the last place", the smallest possible gap between two floats at that size.
 
-The resolution is not to make `__eq__` tolerant. A tolerant `==` breaks the rules the language relies on — it is not transitive, so `a == b` and `b == c` no longer imply `a == c`, and a dict lookup using it would be incoherent. Keep `__eq__` exact, and put the tolerance in a named method, as `Vec3.isclose` does in the class above: the call site then says which comparison it meant.
+A test written as `assert state == expected` might pass on your machine. Then it fails on a machine whose **[[math library|libm]]** rounds a sine slightly differently, and it gets labeled "flaky" and retried until it passes.
+
+The fix is *not* to make `__eq__` tolerant. A tolerant `==` breaks rules the language relies on. It is not **[[transitive|transitivity]]**: `a == b` and `b == c` no longer mean `a == c`, and a dict lookup built on it would give answers that depend on the order you inserted things. Keep `__eq__` exact, and put the tolerance in a named method, as `Vec3.isclose` does above. Then each call site says which comparison it meant.
+
+::: key
+Exact float comparison is the trap in `__eq__` on a state vector: two states that differ by one ulp compare unequal, so an equality test built for convenience becomes a flaky test. Keep `__eq__` exact and never use it for numerical checks; compare with a tolerance in an explicit method such as `isclose`. And defining `__eq__` sets `__hash__` to `None` unless you define it.
+:::
 
 ::: example Making a container behave like one
-`__len__` and `__iter__` are what turn a class that *holds* things into a class that *is* a sequence, so that `len`, `for`, `max`, `sum`, unpacking and truthiness all work on it.
+`__len__` and `__iter__` turn a class that *holds* things into a class that *is* a sequence. Then `len`, `for`, `max`, `sum`, unpacking and truth tests all work on it. Here is a trajectory: a list of (time, velocity) pairs.
 
 ```python
 # trajectory.py
@@ -352,13 +392,23 @@ python3 trajectory.py
 # Trajectory(empty) False
 ```
 
-Four dunder methods bought six behaviours that no caller had to be taught. `len(traj)` works. `bool(traj)` works and is `False` for an empty trajectory — Python asks `__len__` when there is no `__bool__`, which is why an empty container is falsy and why `if traj:` is the idiomatic emptiness test rather than `if len(traj) > 0:`. `for`, the generator expression inside `max`, and the list comprehension all go through `__iter__`. `traj[1]` and `traj[-1]` go through `__getitem__`, and negative indices work because the underlying list handles them.
+Step through what each line used.
 
-Note also what `__repr__` does inside the samples: the tuple prints its element with `repr`, so `Vec3(12.0, 0.0, 1.5)` appears rather than an address. A good repr on a small class pays off in every container that holds it.
+1. `print(traj)` used `__repr__`, which handles the empty case safely — the lesson of the warning above.
+2. `len(traj)` called `__len__` and gave 4. `bool(traj)` was `True`. There is no `__bool__`, so Python asked `__len__`: nonzero means true.
+3. `traj[1]` called `__getitem__` with 1 and returned the second sample.
+4. `traj[-1][0]` worked with a negative index, because `__getitem__` hands the index to a list, and lists understand $-1$ as "the last one".
+5. `max(abs(v) for _, v in traj)` looped through `__iter__`. The biggest speed is the last one: $\sqrt{43^2 + 4.8^2} \approx 43.27\,\mathrm{m/s}$. Sanity check: a bit more than 43, since the vertical part is small.
+6. The list comprehension also looped through `__iter__`.
+7. The empty trajectory printed safely and was **falsy** — treated as false by `if`.
+
+Four dunder methods bought all of that, and no caller had to be taught anything new. The falsy empty container is why `if traj:` is the natural way to test for emptiness, rather than `if len(traj) > 0:`.
+
+Notice also that the tuple printed its `Vec3` with `repr`, so `Vec3(12.0, 0.0, 1.5)` appears instead of an address. A good repr on a small class pays off in every container that holds it.
 :::
 
 ::: example Where NotImplemented earns its keep
-Adding a `Vec3` to something that is not a `Vec3` is the case you have to get right, because the wrong answer is a class that other people's types cannot interoperate with.
+Adding a `Vec3` to something that is not a `Vec3` is the case to get right. Get it wrong and other people's types can never work with yours.
 
 ```python
 # interop.py
@@ -392,7 +442,15 @@ python3 interop.py
 # TypeError: unsupported operand type(s) for +: 'Vec3' and 'str'
 ```
 
-`Offset` is a class `Vec3` has never heard of, and `v + Offset(...)` still works: `Vec3.__add__` declined by returning `NotImplemented`, so Python offered the operation to the right-hand operand's `__radd__`, which accepted. A class that raised instead of declining would have made this impossible, and with it every future interoperation — with a NumPy array, with a units library, with a colleague's frame-aware vector type.
+Here is the handshake for `v + Offset(0.5, 0.0, -1.0)`, one step at a time.
+
+1. Python calls `Vec3.__add__(v, offset)`. The other object is not a `Vec3`, so it returns `NotImplemented`.
+2. Python turns to the right operand and calls `Offset.__radd__(offset, v)`. That method does know what to do.
+3. It returns $(1 + 0.5,\ 2 + 0,\ 3 - 1) = (1.5, 2.0, 2.0)$, which is what printed.
+
+For `v + "north"`, step 1 declines, the string has no `__radd__` that accepts a `Vec3`, and Python raises its own clear error.
+
+`Offset` is a class `Vec3` has never heard of, and it still works. A `Vec3` that raised instead of declining would have made this impossible — and with it every future pairing: with a NumPy array, a units library, or a colleague's frame-aware vector type.
 :::
 
 ## Check yourself
@@ -402,9 +460,9 @@ A class defines `__str__` and not `__repr__`. What does a list of ten of them pr
 :::
 
 ::: answer
-It prints ten copies of the default `<module.Class object at 0x...>`. Containers format their elements with `repr`, never with `str`, so a class with only `__str__` looks informative when printed alone and useless in every list, dict, tuple, traceback and debugger watch window.
+It prints ten copies of the default `<module.Class object at 0x...>`. Containers format their elements with `repr`, never with `str`. So a class with only `__str__` looks informative when printed alone and useless in every list, dict, tuple, traceback and debugger window.
 
-The fallback runs the other way: if only `__repr__` is defined, `str(obj)` and `print(obj)` use it. So `__repr__` is the one to write first, and `__str__` is worth adding only when a distinct human-facing form — with units, with rounding — genuinely helps.
+The fallback runs the other way: if only `__repr__` is defined, `str(obj)` and `print(obj)` use it. So `__repr__` is the one to write first. `__str__` is worth adding only when a separate human-facing form — with units, with rounding — really helps.
 :::
 
 ::: check
@@ -412,11 +470,11 @@ You add `__eq__` to a `Waypoint` class. The next test run fails with `TypeError:
 :::
 
 ::: answer
-Defining `__eq__` sets `__hash__` to `None` on the class, so instances can no longer go in a set or be used as dict keys. The untouched code was doing exactly that — deduplicating waypoints, or keying a dict by one — and it worked before because the inherited default hashed by identity.
+Defining `__eq__` sets `__hash__` to `None` on the class, so instances can no longer go in a set or be dict keys. The untouched code was doing exactly that — removing duplicate waypoints with a set, or keying a dict by waypoint. It worked before because the inherited default hashed by identity.
 
-The reason for the behaviour is the invariant that equal objects must hash equal; the old identity hash would have put two now-equal waypoints in different buckets, so `wp in seen` could be `False` for a waypoint that equals one in the set.
+The reason for the behavior is the rule that equal objects must hash equal. The old identity hash would put two now-equal waypoints in different buckets, so `wp in seen` could be `False` for a waypoint equal to one in the set.
 
-Fix one: define `__hash__` over the same fields the `__eq__` uses, `return hash((self.lat, self.lon, self.alt))`, which is only correct if those fields never change after construction. Fix two: make the class a frozen dataclass, which generates a matching `__eq__` and `__hash__` and enforces the immutability the hash depends on. The next lesson does exactly that.
+Fix one: define `__hash__` over the same fields `__eq__` uses, `return hash((self.lat, self.lon, self.alt))`. That is correct only if those fields never change after construction. Fix two: make the class a frozen dataclass, which generates a matching `__eq__` and `__hash__` and enforces the unchangeability the hash depends on. The next lesson does exactly that.
 :::
 
 ::: check
@@ -424,9 +482,9 @@ Why should `__eq__` compare floats exactly rather than with a tolerance, given t
 :::
 
 ::: answer
-Because a tolerant equality is not an equivalence relation. With a tolerance of one millimetre, a point at 0 mm equals one at 0.9 mm and that one equals a point at 1.8 mm, but the first and last are not equal: transitivity fails. Every structure that relies on equality — sets, dict keys, `in`, `list.index`, `unique` — becomes order-dependent and incoherent.
+Because a tolerant equality breaks the rules of equality. With a tolerance of one millimeter, a point at 0 mm equals one at 0.9 mm, and that one equals a point at 1.8 mm — but the first and last are 1.8 mm apart, so they are not equal. Transitivity fails. Everything that relies on equality — sets, dict keys, `in`, `list.index`, `list.count` — then gives answers that depend on order.
 
-So `__eq__` stays exact, and the tolerance goes in a named method such as `isclose`, or in `math.isclose` and `numpy.allclose` at the call site. The benefit is that the call site states which comparison it meant, which is also what makes a failing test readable: "these differed by 3e-9 with a tolerance of 1e-12" is a diagnosis, where "not equal" is not.
+So `__eq__` stays exact, and the tolerance goes in a named method such as `isclose`, or in `math.isclose` or `numpy.allclose` at the call site. The call site then states which comparison it meant. That also makes a failing test readable: "these differed by 3e-9 with a tolerance of 1e-12" is a diagnosis, where "not equal" is not.
 :::
 
 ::: check
@@ -434,9 +492,9 @@ So `__eq__` stays exact, and the tolerance goes in a named method such as `isclo
 :::
 
 ::: answer
-Any right-hand operand that knows how to handle a `Vec3` itself. `Vec3 * SomeUnitsQuantity`, `Vec3 * numpy.ndarray`, or a colleague's `Dcm` class that defines `__rmul__` to rotate a vector: in each case Python's rule is to try the left operand's `__mul__`, and on `NotImplemented` to try the right operand's `__rmul__`. Raising from `__mul__` ends the protocol at step one, and the right operand never gets asked.
+Any right-hand operand that knows how to handle a `Vec3` itself. Think of `Vec3 * SomeUnitsQuantity`, `Vec3 * numpy.ndarray`, or a colleague's `Dcm` (rotation matrix) class that defines `__rmul__` to rotate a vector. In each case Python's rule is: try the left operand's `__mul__`, and on `NotImplemented`, try the right operand's `__rmul__`. Raising from `__mul__` ends the handshake at step one, and the right operand never gets asked.
 
-You also lose the standard error message. Python's own `TypeError: unsupported operand type(s) for *: 'Vec3' and 'str'` names both types and both the operator; a hand-written raise usually names neither well.
+You also lose the standard error message. Python's own `TypeError: unsupported operand type(s) for *: 'Vec3' and 'str'` names both types and the operator. A hand-written raise usually names neither well.
 :::
 
 ::: check
@@ -444,9 +502,9 @@ You also lose the standard error message. Python's own `TypeError: unsupported o
 :::
 
 ::: answer
-With `__len__` and no `__bool__`, `bool(traj)` calls `__len__` and treats zero as false, so `if traj:` is false for an empty trajectory and true otherwise — which is what you want and why `if traj:` is preferred to `if len(traj) > 0:`.
+With `__len__` and no `__bool__`, `bool(traj)` calls `__len__` and treats zero as false. So `if traj:` is false for an empty trajectory and true otherwise, which is what you want.
 
-If the class defined neither, every instance would be truthy, including the empty one, because the default for an object with no `__bool__` and no `__len__` is `True`. That is the failure mode where a guard clause meant to skip empty runs never skips anything, and the code downstream gets an empty trajectory it was written to assume away.
+If the class defined neither, every instance would be truthy, including the empty one. The default for an object with no `__bool__` and no `__len__` is `True`. That is the failure where a guard meant to skip empty runs never skips anything, and the code below it gets an empty trajectory it was written to assume away.
 :::
 
 ## Summary
@@ -459,10 +517,130 @@ If the class defined neither, every instance would be truthy, including the empt
 | `__hash__` | `set`, dict keys | Set to `None` automatically when you define `__eq__`; define it over the same fields |
 | `__add__` / `__radd__` | `a + b` | `NotImplemented` lets the other operand try; Python then raises a good `TypeError` |
 | `__mul__` / `__rmul__` | `a * b` | `__rmul__ = __mul__` only when the operation commutes |
-| `__abs__` | `abs(x)` | Natural home for a vector magnitude |
+| `__abs__` | `abs(x)` | Natural home for a vector's length |
 | `__len__` | `len(x)`, and `bool(x)` when there is no `__bool__` | Empty means falsy |
 | `__iter__` | `for`, comprehensions, `max`, `sum`, unpacking | Return an iterator, or be a generator with `yield` |
-| `__getitem__` | `x[i]` | Delegating to a list gives negative indices and slices for free |
-| Measured here | — | Ten additions of 0.1 gave 0.9999999999999999, short by $1.1\times 10^{-16}$ |
+| `__getitem__` | `x[i]` | Handing the index to a list gives negative indices and slices for free |
+| Measured here | — | Ten additions of 0.1 gave 0.9999999999999999, short by $1.1\times 10^{-16}$ (one ulp) |
 
-The next lesson removes most of the typing. `__init__`, `__repr__`, `__eq__` and a consistent `__hash__` over a fixed list of fields is such a common requirement that Python generates them for you, from annotations, with `@dataclass`.
+The next lesson removes most of the typing. `__init__`, `__repr__`, `__eq__` and a matching `__hash__` over a fixed list of fields is such a common need that Python can write them for you, from type annotations, with `@dataclass`.
+
+::: context dunder-name Why the double underscores
+The underscores mark names that belong to Python itself. No ordinary program would name a method `__len__` by accident, so the language can hook into those names without ever clashing with yours.
+
+Older books call these "magic methods" or "special methods". The official documentation says "special method names". Programmers shortened "double underscore len double underscore" to "dunder len", and the name stuck. Rule of thumb: write dunder methods to plug into Python, but do not invent new ones of your own — future Python versions may claim the name.
+:::
+
+::: context hex-address What the 0x number is
+`0x7f39bc96d690` is a number written in **hexadecimal** — base 16, using digits 0 to 9 and letters a to f. The `0x` in front says "this is hex". It is the object's address in your computer's memory, and `id(v)` gives the same value in ordinary decimal.
+
+Hex is used because every hex digit is exactly four binary bits, so memory addresses are shorter and tidier in hex. For debugging, though, an address says only *which* object, never *what* is in it — which is why a real `__repr__` beats it.
+:::
+
+::: context eval-danger Why eval stays in the test
+`eval(text)` runs a string as Python code. `eval("Vec3(410.0, -3.2, 88.0)")` builds a vector, but `eval` would run *any* code in that string, including code that deletes files. Never call it on text from a file, a network or a user.
+
+Here it serves only as a round-trip check: if pasting your repr back into Python gives an equal object, the repr is faithful. For reading data safely, use a real parser such as `json.loads`, or `ast.literal_eval` for plain numbers, strings, lists and dicts.
+:::
+
+::: context hash-buckets How a set finds things fast
+A set does not search item by item. It computes each item's hash and uses it to pick one bucket, then checks only the few items in that bucket with `==`.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 170" font-family="Inter, Arial, sans-serif">
+  <rect x="10" y="62" width="92" height="30" rx="5" fill="#fff" stroke="#1f2a44" stroke-width="2"/>
+  <text x="56" y="82" font-size="12" text-anchor="middle" fill="#1f2a44">Vec3(1,2,3)</text>
+  <line x1="102" y1="77" x2="140" y2="77" stroke="#1f2a44" stroke-width="2"/>
+  <polygon points="146,77 136,72 136,82" fill="#1f2a44"/>
+  <text x="124" y="68" font-size="11" text-anchor="middle" fill="#6c7a93">hash</text>
+  <g stroke="#1f2a44" stroke-width="1.5" fill="#fff">
+    <rect x="150" y="12" width="60" height="28"/>
+    <rect x="150" y="40" width="60" height="28"/>
+    <rect x="150" y="68" width="60" height="28" fill="#8fb8f0"/>
+    <rect x="150" y="96" width="60" height="28"/>
+    <rect x="150" y="124" width="60" height="28"/>
+  </g>
+  <g font-size="11" fill="#1f2a44" text-anchor="middle">
+    <text x="180" y="31">bucket 0</text><text x="180" y="59">bucket 1</text><text x="180" y="87">bucket 2</text>
+    <text x="180" y="115">bucket 3</text><text x="180" y="143">bucket 4</text>
+  </g>
+  <line x1="210" y1="82" x2="236" y2="82" stroke="#1d6fd1" stroke-width="2"/>
+  <rect x="240" y="68" width="110" height="28" rx="5" fill="#fff" stroke="#1d6fd1" stroke-width="2"/>
+  <text x="295" y="87" font-size="11" text-anchor="middle" fill="#1d6fd1">then check with ==</text>
+</svg>
+```
+
+If two equal objects had different hashes, they would land in different buckets, and the `==` check would never even run. That is why "equal must mean same hash" is not negotiable.
+:::
+
+::: context dispatch-flow The handshake behind a + b
+Every binary operator follows the same short script. Here it is for `a + b`:
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 200" font-family="Inter, Arial, sans-serif">
+  <rect x="100" y="10" width="160" height="30" rx="5" fill="#fff" stroke="#1f2a44" stroke-width="2"/>
+  <text x="180" y="30" font-size="12" text-anchor="middle" fill="#1f2a44">a.__add__(b)</text>
+  <line x1="180" y1="40" x2="180" y2="76" stroke="#b4232c" stroke-width="2"/>
+  <polygon points="180,82 175,72 185,72" fill="#b4232c"/>
+  <text x="188" y="62" font-size="11" fill="#b4232c">NotImplemented</text>
+  <rect x="100" y="84" width="160" height="30" rx="5" fill="#fff" stroke="#1f2a44" stroke-width="2"/>
+  <text x="180" y="104" font-size="12" text-anchor="middle" fill="#1f2a44">b.__radd__(a)</text>
+  <line x1="180" y1="114" x2="180" y2="150" stroke="#b4232c" stroke-width="2"/>
+  <polygon points="180,156 175,146 185,146" fill="#b4232c"/>
+  <text x="188" y="136" font-size="11" fill="#b4232c">NotImplemented</text>
+  <rect x="100" y="158" width="160" height="30" rx="5" fill="#fff" stroke="#b4232c" stroke-width="2"/>
+  <text x="180" y="178" font-size="12" text-anchor="middle" fill="#b4232c">raise TypeError</text>
+  <line x1="260" y1="25" x2="300" y2="25" stroke="#1d6fd1" stroke-width="2"/>
+  <text x="304" y="29" font-size="11" fill="#1d6fd1">result</text>
+  <line x1="260" y1="99" x2="300" y2="99" stroke="#1d6fd1" stroke-width="2"/>
+  <text x="304" y="103" font-size="11" fill="#1d6fd1">result</text>
+</svg>
+```
+
+Any other return value stops the script and becomes the answer. Raising an exception also stops it — which is why a method that raises too early shuts the right operand out. (One wrinkle: if `b`'s type is a subclass of `a`'s and provides its own reflected method, Python asks `b` first.)
+:::
+
+::: context hamilton-bridge A formula carved into a bridge
+The Irish mathematician William Rowan Hamilton spent years trying to multiply triples of numbers the way complex numbers multiply pairs. On 16 October 1843, walking along the Royal Canal in Dublin, he realized he needed *four* parts, not three. He carved $i^2 = j^2 = k^2 = ijk = -1$ into Broom Bridge on the spot. A plaque there marks it today.
+
+Quaternions later fell out of fashion, pushed aside by vector notation, until spacecraft attitude control and computer graphics revived them in the twentieth century. They describe a rotation with four numbers, never hit the "gimbal lock" dead spots that three angles can, and are cheap to renormalize, so flight software stores attitude as a unit quaternion.
+:::
+
+::: context ulp-picture How far apart floats are near 1
+A 64-bit float cannot hold every number. Between 0.5 and 1, neighboring floats are $2^{-53} \approx 1.1 \times 10^{-16}$ apart. Between 1 and 2 the gap doubles to $2^{-52} \approx 2.2 \times 10^{-16}$.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 110" font-family="Inter, Arial, sans-serif">
+  <line x1="10" y1="50" x2="350" y2="50" stroke="#1f2a44" stroke-width="2"/>
+  <g stroke="#1f2a44" stroke-width="2">
+    <line x1="60" y1="42" x2="60" y2="58"/><line x1="120" y1="42" x2="120" y2="58"/>
+    <line x1="180" y1="38" x2="180" y2="62"/><line x1="300" y1="42" x2="300" y2="58"/>
+  </g>
+  <circle cx="120" cy="50" r="5" fill="#b4232c"/>
+  <text x="120" y="30" font-size="11" text-anchor="middle" fill="#b4232c">0.9999999999999999</text>
+  <text x="180" y="78" font-size="12" font-weight="700" text-anchor="middle" fill="#1f2a44">1.0</text>
+  <text x="150" y="98" font-size="11" text-anchor="middle" fill="#1d6fd1">gap 2^-53</text>
+  <text x="245" y="30" font-size="11" text-anchor="middle" fill="#1d6fd1">gap 2^-52 (twice as wide)</text>
+</svg>
+```
+
+The sum of ten 0.1s landed on the float right below 1.0, exactly one gap short: $1 - 2^{-53}$. That one gap is what "one ulp" means in this lesson.
+:::
+
+::: context libm Why different machines disagree
+Functions like `sin`, `exp` and `log` are computed by a **math library**, usually called **libm** on Linux. The C standard does not require these functions to give the correctly rounded answer to the last bit, so different libraries — or different versions, or different processors — may return results that differ by an ulp.
+
+Basic arithmetic (`+`, `-`, `*`, `/`, square root) is different: the IEEE 754 standard requires it to be correctly rounded, so it agrees everywhere. The mismatch creeps in through the transcendental functions a simulation calls millions of times.
+:::
+
+::: context transitivity The three rules equality must keep
+Mathematicians call a proper "sameness" relation an **equivalence relation**. It must obey three rules:
+
+- **reflexive**: every `a == a`;
+- **symmetric**: if `a == b` then `b == a`;
+- **transitive**: if `a == b` and `b == c` then `a == c`.
+
+Sets, dicts and sorting all quietly assume these. A "within 1 mm" comparison keeps the first two and breaks the third, which is why it belongs in a method with its own name.
+
+One surprising exception: the float `nan` ("not a number") breaks the *first* rule, since `nan == nan` is `False`.
+:::
