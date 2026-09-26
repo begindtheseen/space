@@ -249,7 +249,7 @@ sum = 0.000000000000000000000...000000020237
 
 (the real line has several hundred zeros; trimmed). The debug build happened to find a harmless value in the memory after the array, so the sum still printed as $6$: the right answer, by luck. The release build printed a meaningless tiny number. Same source, two different results: that is what undefined behavior looks like, and it is why "it passed my test" proves nothing about unsafe code.
 
-`cargo +nightly miri run` runs the program in **[[Miri|miri]]**, an interpreter that checks every memory access against the rules:
+`cargo +nightly miri run` runs the program in **[[Miri|miri]]**, an interpreter that checks every memory access against the rules (this run used the nightly toolchain of 2026-09-25):
 
 ```text
 error: Undefined Behavior: memory access failed: attempting to access 8 bytes, but got alloc206+0x18 which is at or beyond the end of the allocation of size 24 bytes

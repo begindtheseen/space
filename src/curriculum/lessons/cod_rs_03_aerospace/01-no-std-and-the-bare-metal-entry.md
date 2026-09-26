@@ -7,7 +7,7 @@ covers:
   - 'Panic handlers; cortex-m and cortex-m-rt; the entry attribute, vector tables, memory.x'
 ---
 
-Think about the difference between staying in a hotel and camping. In a hotel, a lot happens without you. Someone turns on the lights, the water is hot, the front desk takes messages, and if something breaks you call down and it gets fixed. On a campsite there is nobody. You bring the tent, you light the stove, you decide where the water comes from. You can still cook a very good dinner. You just cannot call room service.
+Think about the difference between staying in a hotel and camping. In a hotel, a lot happens without you. Someone turns on the lights, the water is hot, the front desk takes messages, and if something breaks you call down and it gets fixed. On a campsite there is nobody. You bring the tent, you light the stove, you decide where the water comes from. You can still cook a very good dinner. You cannot call room service.
 
 Every Rust program you have written so far lived in the hotel. The hotel is the **operating system** — Linux, macOS or Windows, the program that runs underneath yours and hands it memory, files, a screen and a clock. Rust's **standard library**, `std`, is the front desk: `Vec`, `String`, `println!`, files and threads all quietly ask the operating system for help.
 

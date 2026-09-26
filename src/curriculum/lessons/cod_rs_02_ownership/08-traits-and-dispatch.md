@@ -1,7 +1,7 @@
 ---
 id: l08-traits-and-dispatch
 title: Traits, generics and dispatch
-minutes: 26
+minutes: 24
 covers:
   - 'Traits: definition, default methods, associated types versus generic parameters, where clauses, blanket impls, the orphan rule'
   - 'Static dispatch (impl Trait, generics) versus dynamic dispatch (dyn Trait, fat pointers)'
@@ -461,7 +461,7 @@ fn main() {
 }
 ```
 
-`std::hint::[[black_box|black-box]]` hides a value from the optimizer. Without it, the compiler can see that the `dyn Sensor` is really an `Accel` and turn the indirect call back into a direct one, which would make the comparison meaningless.
+The function [[black_box|black-box]], from `std::hint`, hides a value from the optimizer. Without it, the compiler can see that the `dyn Sensor` is really an `Accel` and turn the indirect call back into a direct one, which would make the comparison meaningless.
 
 ::: example Ten million reads, two ways
 Built with `cargo run --release` on a 2.1 GHz Intel Xeon, three runs gave:
