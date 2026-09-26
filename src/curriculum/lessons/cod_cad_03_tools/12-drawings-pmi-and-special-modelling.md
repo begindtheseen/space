@@ -1,13 +1,13 @@
 ---
 id: l12-drawings-pmi-and-special-modelling
 title: Drawings from models, PMI, sheet metal and the outer mould line
-minutes: 26
+minutes: 24
 covers:
   - 'Drawings from models; PMI and model-based definition'
   - 'Sheet metal, weldments and surfacing (awareness); outer mould line'
 ---
 
-Think of a shadow puppet. Your hand is the real thing. The shadow on the wall is a flat picture of it. Move your hand and the shadow moves with it, instantly, because the shadow is not a separate drawing — it is made from the hand, every moment.
+Think of a shadow puppet. Your hand is real; the shadow on the wall is a flat picture of it. Move your hand and the shadow moves with it, instantly, because the shadow is not a separate drawing — it is made from the hand, every moment.
 
 A drawing made in 3D CAD works the same way. You do not draw the part again on the sheet. You point the software at the solid model, and it casts the flat views for you: front, top, side, a cut-away. Change the model and the views change with it. That link is the first idea of this lesson. The second is the step past the sheet entirely, where the annotated model itself is the official description of the part.
 
@@ -15,32 +15,32 @@ Then we look at three special ways of modelling that you will meet around flight
 
 ## Drawings made from the model
 
-In the last few lessons you built parts from sketches and features, and put them together in assemblies. A **drawing** in NX, SolidWorks, Onshape or CATIA is a separate file (or a separate tab) that *looks at* a part or assembly and lays out views of it on a sheet with a title block.
+A **drawing** in NX, SolidWorks, Onshape or CATIA is a separate file (or tab) that *looks at* a part or assembly and lays out views of it on a sheet with a title block.
 
 ### Associative views
 
 The first view you place is the **base view** — usually the front view, at a scale you choose, such as 1:2 (half size). From it you drag out **projected views** (top, side), each lined up with the base view by the same projection rules you learned in the drawings module. Then you add a **section view** (the part sliced along a line you draw) and a **detail view** (a small area circled and blown up at a bigger scale).
 
-Every one of these views is **associative** — tied live to the model, so it updates when the model changes. Stretch the bracket by $20\,\mathrm{mm}$ and every view on the sheet grows by $20\,\mathrm{mm}$ at its own scale. Nobody redraws anything. This is the single biggest difference from the AutoCAD way of the first half of this module, where the drawing *is* the geometry and every change is made by hand.
+Every one of these views is **associative** — tied live to the model, so it updates when the model changes. Stretch the bracket by $20\,\mathrm{mm}$ and every view on the sheet grows by $20\,\mathrm{mm}$ at its own scale. This is the single biggest difference from the AutoCAD way of the first half of this module, where the drawing *is* the geometry and every change is made by hand.
 
 ### Two kinds of dimension on a drawing
 
 The dimensions on a model-made drawing come from two places.
 
-- **Model dimensions** are the driving dimensions you typed into sketches and features. The drawing can pull them straight in (SolidWorks calls this "model items", NX "inherit" or "retrieve"). They are two-way: in many programs, editing one on the drawing changes the model itself.
+- **Model dimensions** are the driving dimensions you typed into sketches and features. The drawing can pull them straight in. In many programs they are two-way: editing one on the drawing changes the model itself.
 - **Reference dimensions** are measured on the drawing by picking edges, the way you would measure with a ruler. They are one-way. They *read* the model and update when it changes, but you cannot change the model by editing them.
 
-Either way, the number on the sheet is the model's number. That is the whole promise: the drawing cannot quietly disagree with the part, because it is not allowed to hold numbers of its own.
+Either way, the number on the sheet is the model's number, so the drawing cannot quietly disagree with the part.
 
 ::: warning The dimension that lost its edge
-A reference dimension is attached to particular edges. If a model change deletes one of those edges — you replace a sharp corner with a fillet, say — the dimension has nothing to hang on to. CAD programs flag it as **[[dangling|dangling]]** (often drawn in a warning color) rather than deleting it. A dangling dimension that nobody notices can still be printed, showing the old number. Before you release a drawing, look for dangling annotations and fix every one.
+A reference dimension is attached to particular edges. If a model change deletes one of those edges — you replace a sharp corner with a fillet, say — the dimension has nothing to hang on to. CAD programs flag it as **[[dangling|dangling]]** (often drawn in a warning color) rather than deleting it. Before you release a drawing, find every dangling annotation and fix it.
 :::
 
 ### The title block fills itself in
 
 The title block is associative too. The part number, the revision, the material and the mass are stored as **properties** of the model. The drawing template has fields that read those properties. Change the material from aluminum to titanium in the model and the title block's material line changes.
 
-This is also why a drawing and its model are released together: the drawing's revision must describe the model revision it was made from. The next two lessons come back to how a company keeps that pairing straight.
+So a drawing and its model are released together, and the drawing's revision must match the model revision it was made from.
 
 ## PMI and model-based definition, from the tool side
 
@@ -48,9 +48,9 @@ In the drawings module you met **model-based definition** (MBD): under **ASME Y1
 
 Here is what that looks like inside the software.
 
-- **Where you find it.** NX has a PMI toolset built into the modelling application. SolidWorks has a separate MBD add-on. Onshape, CATIA and Creo each have their own. The buttons differ; the job is the same.
+- **Where you find it.** NX has a PMI toolset; SolidWorks has an MBD add-on; CATIA, Creo and Onshape have their own. The job is the same.
 - **Attached to faces.** You place a datum feature symbol by picking a face, and a feature control frame by picking the holes it controls. The software records those links. That link is what makes the PMI semantic.
-- **Saved views.** A 3D model with fifty annotations floating around it is unreadable. So you create **saved views** (NX and SolidWorks both use this idea): a named camera angle that shows only the annotations for one job, such as "datums" or "hole pattern". They play the role the separate views on a sheet used to play.
+- **Saved views.** Fifty annotations floating round a model are unreadable, so you create **saved views**: named camera angles that each show only the annotations for one job, such as "datums" or "hole pattern".
 - **The general note.** Every surface of a model has an exact position, so MBD models carry a general tolerance note covering any surface not otherwise toleranced, as you saw in the drawings module.
 - **Release and export.** The annotated model is released like a drawing. To reach a supplier on different software it travels as a neutral file that can carry semantic PMI — **STEP AP242** is the usual one. The next lesson covers what survives that trip.
 
@@ -58,11 +58,11 @@ Here is what that looks like inside the software.
 Under ASME Y14.41 the annotated 3D model is the authoritative definition. In the CAD tool, PMI is attached to faces (semantic), organized into saved views, backed by a general tolerance note, released under revision control and exported in a format such as STEP AP242 that can carry it.
 :::
 
-Model-made drawings and MBD are not rivals. Many programs make a 2D drawing from the model for the shop floor while the model stays the master. Others are fully MBD with no drawing at all. The rule from the drawings module still holds: find out which one is authoritative for *this* part before you trust any number.
+Some programs still make a 2D drawing from the model for the shop floor; others are fully MBD with no drawing at all. Either way, find out which is authoritative for *this* part before you trust any number.
 
 ## Sheet metal: parts made by bending
 
-Take a strip of cardboard and fold it sharply. Look at the fold edge-on. The outside of the fold has stretched. The inside has squashed. Somewhere in between is a layer that did neither — it kept its length.
+Take a strip of cardboard and fold it sharply. The outside of the fold has stretched. The inside has squashed. Somewhere in between is a layer that did neither — it kept its length.
 
 Sheet metal parts work exactly like that. An avionics box, a cable bracket, an electronics chassis, a cover plate: many are cut flat from a sheet and then bent in a press brake. CAD has a special **sheet metal** mode for them. You build the part as flanges and bends, and the software can **flatten** it back to the blank the shop has to cut, called the **flat pattern**.
 
@@ -112,7 +112,7 @@ An aluminum L-bracket is $T = 2\,\mathrm{mm}$ thick with an inside bend radius $
 
 **Step 5 — add up.** Flat length $= 36 + 26 + 4.52 = 66.52\,\mathrm{mm}$.
 
-**Sanity check.** Adding the outside legs gives $70\,\mathrm{mm}$, which counts the corner twice as if it were sharp. The real blank is shorter, about $66.5\,\mathrm{mm}$, because the bend is rounded. It is also longer than the inside path, as it must be, since the neutral axis lies outside the inside face. If the shop's K-factor were $0.33$ instead, $BA$ would be $4.18\,\mathrm{mm}$ and the blank $0.35\,\mathrm{mm}$ shorter — enough to put hole patterns across the bend out of position.
+**Sanity check.** Adding the outside legs gives $70\,\mathrm{mm}$, which counts the corner twice as if it were sharp. The real blank is shorter because the bend is rounded. If the shop's K-factor were $0.33$ instead, $BA$ would be $4.18\,\mathrm{mm}$ and the blank $0.35\,\mathrm{mm}$ shorter — enough to put hole patterns across the bend out of position.
 :::
 
 ::: example A 120-degree bend
@@ -131,15 +131,15 @@ A thin cover flange is bent through $\theta = 120^\circ$ from $T = 1.5\,\mathrm{
 Put $120$ into the formula instead of $2.0944$ and you get $BA = 120 \times 3.6 = 432\,\mathrm{mm}$ for a bend in a part a few centimetres long. The formula needs radians. Convert first, every time, and check the answer against the inside and outside arcs.
 :::
 
-In a real sheet metal tool you rarely type this by hand. You set $T$, $R$ and $K$ (or pick the shop's **bend table**) once for the part, and every flange and flat pattern uses them. What you must know is what those numbers mean, so you can tell when a default is wrong.
+In a real sheet metal tool you set $T$, $R$ and $K$ (or the shop's **bend table**) once per part, and every flat pattern uses them. Your job is to know what they mean, so you can spot a wrong default.
 
 ## Weldments: frames from a skeleton
 
-Picture building a climbing frame from lengths of pipe. You decide the shape first — a box with a diagonal brace — then you pick which pipe to use for each edge, then you cut every piece to length.
+Picture building a climbing frame from pipe: decide the shape, pick a pipe for each edge, cut every piece to length.
 
-A **weldment** in CAD is built the same way. You draw a **skeleton**: lines in 3D showing where each member runs. Then you pick a **structural profile** — square tube, angle, I-beam, round tube — and the software sweeps that profile along each line. You choose how corners meet (mitred or butted), and it trims the members to fit. It then writes a **cut list**: every member, its profile and its cut length, which the shop uses to saw the stock. Weld beads can be shown, and weld symbols from the drawings module go on the drawing.
+A **weldment** in CAD is built the same way. You draw a **skeleton**: lines in 3D showing where each member runs. Then you pick a **structural profile** — square tube, angle, I-beam, round tube — and the software sweeps that profile along each line. It trims the members where they meet and writes a **cut list** — every member, its profile and its cut length — for the shop. Weld symbols from the drawings module go on the drawing.
 
-Where do you meet weldments at a launch company? Mostly on the ground: test-stand frames, engine and stage handling fixtures, transport cradles, work platforms. That is the same ground support world where AutoCAD layouts live, but the frames themselves are usually modelled in 3D so their mass, loads and fit can be checked.
+At a launch company weldments live mostly on the ground: test-stand frames, handling fixtures, transport cradles, work platforms. They are modelled in 3D so their mass, loads and fit can be checked.
 
 ## Surfacing: shapes without thickness
 
@@ -153,9 +153,7 @@ You build curves, span surfaces between them, trim them and stitch them together
 
 ## The outer mould line
 
-Now the surface that matters most to a vehicle in flight.
-
-The **outer mould line** — the OML, in American documents usually spelled *outer mold line* — is the outside surface of the vehicle: the skin the air touches. On a rocket it is the barrel of each stage, the interstage, the fairing and the nose, plus everything that sticks out of them, such as cable raceways and fins. The matching inside surface of the structure is the **inner mould line** (IML). The name comes from the old practice of making skins and tools from moulds, where the mould set the outside shape.
+The **outer mould line** — the OML, in American documents usually spelled *outer mold line* — is the outside surface of the vehicle: the skin the air touches. On a rocket it is the barrel of each stage, the interstage, the fairing and the nose, plus everything that sticks out of them, such as cable raceways and fins. The matching inside surface of the structure is the **inner mould line** (IML). The word comes from shipbuilding, where full-size templates of a hull's shape were called moulds.
 
 Why does it get its own name? Because for the airflow, *only* the OML exists. Nothing inside it can change the pressure on the vehicle or the heat going into it.
 
@@ -163,7 +161,7 @@ Why does it get its own name? Because for the airflow, *only* the OML exists. No
 - **Thermal protection** protects what is inside the OML. On a vehicle with a heat shield or sprayed-on insulation, the OML is the outside of that protection, and the structure sits inside it. So the protection thickness sets where the structure can be.
 - **GNC** inherits the OML through the **aerodynamic database**: tables of force and moment coefficients, each computed on the OML and scaled by a **[[reference area|reference-area]]** and length. Your 6-DOF simulation reads those tables.
 
-So the OML is usually one of the most controlled pieces of geometry on a program. Changing it means re-running aerodynamics and heating, and the aero database the guidance and control engineers use.
+So the OML is one of the most tightly controlled shapes on a program: changing it means redoing the aerodynamics, the heating and the aero database.
 
 ::: key Outer mould line
 The OML is the outermost surface of the vehicle, the one the airflow sees, including the thermal protection and any protuberances. Aerodynamic forces, heating and the aero database are all computed on it; the structure lives inside it, bounded by the inner mould line.
@@ -182,7 +180,7 @@ Now suppose a $5\,\mathrm{mm}$ layer of sprayed-on insulation is added on the ou
 :::
 
 ::: warning The OML is not the structure
-The CAD model of a tank is usually modelled to the structure. The OML may include insulation, protection, raceways and fairings that belong to other teams' models. Taking the tank diameter as the OML, or the OML as the structure, is a classic interface mistake. Ask which one a model is.
+A tank's CAD model is usually the structure. The OML adds insulation, protection, raceways and fairings from other teams' models. Mixing the two up is a classic interface mistake, so ask which one a model is.
 :::
 
 ## Check yourself
@@ -216,7 +214,7 @@ Why is the K-factor less than $0.5$ for real bends, and why should a model use t
 :::
 
 ::: answer
-During bending the inside of the bend is squeezed and the outside stretched, and the layer that keeps its length ends up pulled toward the inside, so it sits less than halfway through the thickness. The exact position depends on material, thickness, radius and the bending method, which the shop knows and the software does not. A wrong K-factor gives a wrong flat blank, and features placed across the bend (holes, slots) end up in the wrong place.
+During bending the inside of the bend is squeezed and the outside stretched, and the layer that keeps its length ends up pulled toward the inside, so it sits less than halfway through the thickness. The exact value depends on material, thickness, radius and bending method, which the shop knows and the software does not. A wrong K-factor gives a wrong blank, and holes across the bend land in the wrong place.
 :::
 
 ::: check
@@ -232,7 +230,7 @@ Name three groups of engineers who work from the outer mould line and say what e
 :::
 
 ::: answer
-Aerodynamicists compute forces and moments on it, in CFD and with wind tunnel models. Thermal engineers size the protection that forms it and work out the heating across it. GNC engineers use the aero database computed on it, scaled by its reference area, inside their 6-DOF simulation. (Structures engineers also care: the structure must fit inside it, bounded by the inner mould line.)
+Aerodynamicists compute forces and moments on it, in CFD and with wind tunnel models. Thermal engineers size the protection that forms it and work out the heating across it. GNC engineers use the aero database computed on it, scaled by its reference area, inside their 6-DOF simulation.
 :::
 
 ## Summary
