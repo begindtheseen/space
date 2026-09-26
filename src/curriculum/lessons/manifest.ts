@@ -3528,8 +3528,8 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
   "t0_m11_optimization": [
     {
       "id": "l01-descent-and-line-search",
-      "title": "Unconstrained optimisation I: optimality conditions, gradient descent and line search",
-      "minutes": 20,
+      "title": "Finding the bottom: descent, line search and Newton's method",
+      "minutes": 24,
       "covers": [
         "unconstrained optimisation: gradient descent, Newton, BFGS, line search, trust region"
       ],
@@ -3537,8 +3537,8 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     },
     {
       "id": "l02-lagrange-and-kkt",
-      "title": "Constrained optimisation: Lagrange multipliers and the KKT conditions",
-      "minutes": 26,
+      "title": "Rules in the way: Lagrange multipliers and the KKT conditions",
+      "minutes": 19,
       "covers": [
         "constrained optimisation and Lagrange multipliers",
         "KKT conditions"
@@ -3548,7 +3548,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-convex-sets-and-functions",
       "title": "Convex sets and convex functions",
-      "minutes": 25,
+      "minutes": 23,
       "covers": [
         "convex sets and convex functions"
       ],
@@ -3566,7 +3566,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-linear-and-quadratic-programming",
       "title": "Linear and quadratic programming",
-      "minutes": 27,
+      "minutes": 24,
       "covers": [
         "linear and quadratic programming"
       ],
@@ -3575,7 +3575,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-second-order-cone-programming",
       "title": "Second-order cone programming and the convex landing problem",
-      "minutes": 30,
+      "minutes": 24,
       "covers": [
         "second-order cone programming"
       ],
@@ -3584,7 +3584,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-duality-and-the-dual-problem",
       "title": "Duality and the dual problem",
-      "minutes": 28,
+      "minutes": 22,
       "covers": [
         "duality and the dual problem"
       ],
@@ -3593,7 +3593,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-semidefinite-programming",
       "title": "Semidefinite programming",
-      "minutes": 28,
+      "minutes": 23,
       "covers": [
         "semidefinite programming"
       ],
@@ -3602,7 +3602,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-interior-point-methods",
       "title": "Interior-point methods",
-      "minutes": 30,
+      "minutes": 24,
       "covers": [
         "interior-point methods"
       ],
@@ -3611,7 +3611,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-sequential-quadratic-programming",
       "title": "Sequential quadratic programming",
-      "minutes": 30,
+      "minutes": 22,
       "covers": [
         "sequential quadratic programming"
       ],
@@ -3620,7 +3620,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-nonlinear-programming-solvers",
       "title": "Nonlinear programming solvers: IPOPT and SNOPT",
-      "minutes": 28,
+      "minutes": 22,
       "covers": [
         "nonlinear programming solvers (IPOPT, SNOPT)"
       ],
@@ -3628,8 +3628,8 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     },
     {
       "id": "l12-modelling-languages-and-solvers",
-      "title": "Modelling languages and solvers: CVXPY, ECOS, SCS, OSQP, Clarabel",
-      "minutes": 30,
+      "title": "Modeling languages and solvers: CVXPY, ECOS, SCS, OSQP, Clarabel",
+      "minutes": 22,
       "covers": [
         "modelling languages and solvers: CVXPY, ECOS, SCS, OSQP, Clarabel"
       ],
@@ -3638,7 +3638,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l13-real-time-embedded-convex-solvers",
       "title": "Real-time embedded convex solvers and code generation",
-      "minutes": 32,
+      "minutes": 24,
       "covers": [
         "real-time embedded convex solvers and code generation"
       ],
@@ -3658,7 +3658,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-values-references-const",
       "title": "Value semantics, references and const",
-      "minutes": 22,
+      "minutes": 24,
       "covers": [
         "value semantics, references, const-correctness"
       ],
@@ -3677,7 +3677,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-classes-inheritance-virtual-dispatch",
       "title": "Classes, inheritance and the cost of virtual dispatch",
-      "minutes": 24,
+      "minutes": 23,
       "covers": [
         "classes, inheritance, virtual dispatch and its cost"
       ],
