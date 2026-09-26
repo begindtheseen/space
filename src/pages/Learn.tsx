@@ -31,7 +31,7 @@ import {
   TerminalView,
   TestCases,
 } from '@/components/ide'
-import { IconArrowRight, IconCheck, IconChevronLeft, IconFlame, IconRefresh } from '@/components/icons'
+import { IconArrowRight, IconCheck, IconChevronLeft, IconClock, IconFlame, IconRefresh } from '@/components/icons'
 import { Bar, Button } from '@/components/ui'
 import { markLearned } from '@/engine/apply'
 import { useLearner } from '@/hooks/useLearner'
@@ -386,6 +386,7 @@ function CourseView({ track }: { track: LearnTrack }) {
           {done === 0 ? 'Start course' : done === total ? 'Review' : 'Continue'}
           <IconArrowRight size={13} />
         </button>
+        <FocusLink lessonId={next.id} />
       </div>
       <ol className="lm-outline">
         {track.lessons.map((l, i) => {
@@ -467,6 +468,7 @@ function LessonView({ track, lesson, index }: { track: LearnTrack; lesson: Learn
             />
           ))}
         </div>
+        <FocusLink lessonId={lesson.id} />
         <Streak />
       </div>
 
@@ -645,4 +647,20 @@ export function useNextLesson(lang: string): { lesson: LearnLesson; done: number
     if (!track) return null
     return { lesson: nextLesson(track, state.learn), done: passedCount(track, state.learn), total: track.lessons.length }
   }, [lang, state.learn])
+}
+
+/**
+ * Learn to code has its own focus block: this opens the Focus page on the
+ * coding side, pointed at this lesson. Hidden while a block is already running,
+ * since the strip at the bottom is then the way back to it.
+ */
+function FocusLink({ lessonId }: { lessonId: string }) {
+  const { state } = useLearner()
+  if (state.focus) return null
+  return (
+    <a className="lm-focus" href={`#/focus?on=code&lesson=${encodeURIComponent(lessonId)}`} title="Start a focus block on this lesson">
+      <IconClock size={13} />
+      Focus
+    </a>
+  )
 }

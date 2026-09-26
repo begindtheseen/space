@@ -20,8 +20,8 @@ import { startFocus, unpark } from '@/engine/apply'
 import { blockSummary, BLOCK_MINUTES, DEFAULT_BLOCK, type FocusPick } from '@/engine/focus'
 import { blocksToday, dayKey } from '@/engine/state'
 import { useLearner } from '@/hooks/useLearner'
-import { navigate } from '@/lib/router'
-import { nextUp } from '@/lib/nextUp'
+import { navigate, useRoute } from '@/lib/router'
+import { codePick, nextUp } from '@/lib/nextUp'
 import './focus.css'
 
 export function Focus() {
@@ -29,7 +29,13 @@ export function Focus() {
   const dag = useMemo(() => buildDag(), [])
   // Frozen for the life of the page: a pick that changed under her while she
   // was deciding how long to sit down for would be its own small betrayal.
-  const [pick] = useState<FocusPick>(() => nextUp(state, dag))
+  const route = useRoute()
+  const [pathPick] = useState<FocusPick>(() => nextUp(state, dag))
+  // Learn to code has its own focus: the lesson she is up to, or the one she
+  // came here from (Learn links to /focus?on=code&lesson=<id>).
+  const [code] = useState<FocusPick | null>(() => codePick(state, route.query.lesson))
+  const [on, setOn] = useState<'path' | 'code'>(() => (route.query.on === 'code' && code ? 'code' : 'path'))
+  const pick = on === 'code' && code ? code : pathPick
   const [minutes, setMinutes] = useState<number>(DEFAULT_BLOCK)
 
   const running = !!state.focus
@@ -78,6 +84,16 @@ export function Focus() {
         <Card index={0}>
           <CardHead icon={<IconClock size={15} />} title="Next up" divided />
           <div className="sect focus-pick">
+            {code ? (
+              <div className="focus-on" role="group" aria-label="What to focus on">
+                <button className="focus-len__opt" data-on={on === 'path'} aria-pressed={on === 'path'} onClick={() => setOn('path')}>
+                  Your path
+                </button>
+                <button className="focus-len__opt" data-on={on === 'code'} aria-pressed={on === 'code'} onClick={() => setOn('code')}>
+                  Learn to code
+                </button>
+              </div>
+            ) : null}
             <h2 className="focus-pick__title">{pick.title}</h2>
             <p className="focus-why">{pick.why}</p>
 
