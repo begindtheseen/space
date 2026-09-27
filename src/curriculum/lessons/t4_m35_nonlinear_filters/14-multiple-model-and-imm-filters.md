@@ -1,7 +1,7 @@
 ---
 id: l14-multiple-model-and-imm-filters
 title: Multiple-model and IMM filters
-minutes: 26
+minutes: 23
 covers:
   - Multiple-model and IMM filters
 ---

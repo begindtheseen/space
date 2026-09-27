@@ -238,7 +238,7 @@ A colleague's ESKF injects the correction correctly but forgets the reset line: 
 :::
 
 ::: answer
-The same correction is counted twice — and then again every cycle. Each cycle the leftover $\delta\hat{\mathbf x}$ is propagated and still treated as "error not yet applied", so it keeps getting added to a nominal that already contains it. The estimate is pushed further and further past the truth in the direction of the old corrections, while $\mathbf P$ (which knows nothing about the double counting) keeps claiming the filter is accurate. In telemetry you would see innovations that stay stubbornly one-sided and grow, instead of looking like zero-mean noise. The fix is the reset line itself: after injection the error estimate must be exactly zero.
+The same correction is counted twice — and then again, cycle after cycle. The leftover $\delta\hat{\mathbf x}$ is propagated and still treated as "error not yet applied", so it keeps being added to a nominal that already contains it. The measurements fight back, so the filter does not run away at once. Instead the estimate overshoots and jitters, and the innovations stop looking like the zero-mean noise the filter expects. Planting this bug in the pendulum code (30 runs, $3^\circ$ sensor) gives an RMS angle error of about $3.6^\circ$ while $\mathbf P$ still claims $2.4^\circ$ — the filter has become overconfident, and nothing in $\mathbf P$ warns you. The fix is the reset line itself: after injection the error estimate must be exactly zero.
 :::
 
 ::: check
