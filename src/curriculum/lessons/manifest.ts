@@ -323,7 +323,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-the-verbatim-expectation",
       "title": "The verbatim expectation: you write the flight code",
-      "minutes": 19,
+      "minutes": 21,
       "covers": [
         "the verbatim expectation: implementation, validation, unit testing, and deployment of production software primarily in C++",
         "GNC engineers write flight code themselves rather than handing prototypes to a software team"
@@ -333,7 +333,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-languages-and-the-model-boundary",
       "title": "Where each language lives, and the model-to-flight-code boundary",
-      "minutes": 18,
+      "minutes": 21,
       "covers": [
         "Python for analysis, tooling, pipelines and test infrastructure",
         "MATLAB and Simulink as secondary skills and why the curriculum is not MATLAB-first"
@@ -343,7 +343,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-reading-someone-elses-simulation",
       "title": "Reading a simulation someone else built",
-      "minutes": 19,
+      "minutes": 21,
       "covers": [
         "6-DOF simulation stacks and what high fidelity actually means"
       ],
@@ -363,7 +363,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-redundancy-voting-and-fault-management",
       "title": "Redundancy, voting, and fault management",
-      "minutes": 18,
+      "minutes": 19,
       "covers": [
         "redundancy, voting and fault management as first-class design concerns"
       ],
@@ -372,7 +372,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-monte-carlo-dispersion-campaigns",
       "title": "Monte Carlo dispersion campaigns: what they actually prove",
-      "minutes": 18,
+      "minutes": 19,
       "covers": [
         "Monte Carlo dispersion campaigns across tens of thousands of CPUs and what they are used to prove"
       ],
@@ -381,7 +381,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-infrastructure-behind-the-simulations",
       "title": "Infrastructure: the stack that keeps the fleet running",
-      "minutes": 17,
+      "minutes": 21,
       "covers": [
         "infrastructure: Linux, Docker, Kubernetes, Ansible, Puppet, Terraform, Bazel-class build systems"
       ],
@@ -390,7 +390,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-data-discipline-telemetry-time-units-and-frames",
       "title": "Data discipline: telemetry, time, units and frames",
-      "minutes": 21,
+      "minutes": 22,
       "covers": [
         "Python for analysis, tooling, pipelines and test infrastructure"
       ],
@@ -399,7 +399,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-tickets-traceability-and-the-unglamorous-majority",
       "title": "Tickets, traceability, and the unglamorous majority of the work",
-      "minutes": 16,
+      "minutes": 19,
       "covers": [
         "continuous integration for rocket and simulation software"
       ],
@@ -408,7 +408,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-version-control-and-code-review",
       "title": "Version control, code review, and what a reviewer is checking",
-      "minutes": 18,
+      "minutes": 20,
       "covers": [
         "version control, code review and what production-quality means at senior level"
       ],
@@ -417,7 +417,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-what-to-practice-now",
       "title": "What to practice now, alone, that actually transfers",
-      "minutes": 17,
+      "minutes": 19,
       "covers": [
         "6-DOF simulation stacks and what high fidelity actually means",
         "version control, code review and what production-quality means at senior level"
@@ -429,7 +429,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-portfolio-principles",
       "title": "Portfolio principles: few, deep, and defensible",
-      "minutes": 21,
+      "minutes": 22,
       "covers": [
         "portfolio principles: few, deep, documented, defensible, reproducible",
         "what not to build: tutorial follow-alongs, notebooks without validation, thirty shallow repositories"
@@ -439,7 +439,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-the-write-up-structure",
       "title": "The write-up: structure, and the ninety-second read",
-      "minutes": 19,
+      "minutes": 20,
       "covers": [
         "the write-up structure: problem, model, assumptions, verification, validation, results, limitations"
       ],
@@ -448,7 +448,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-verification-toolkit",
       "title": "How you know the result is right: the verification toolkit",
-      "minutes": 21,
+      "minutes": 23,
       "covers": [
         "stating how you know the result is right: analytic cases, conservation checks, convergence, cross-comparison"
       ],
@@ -457,7 +457,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-anchor-a-6dof-simulation",
       "title": "Anchor A: the 6-DOF launch vehicle simulation",
-      "minutes": 20,
+      "minutes": 21,
       "covers": [
         "anchor project A — 6-DOF launch vehicle simulation with a real atmosphere model and dispersion campaign"
       ],
@@ -475,7 +475,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-anchor-c-quaternion-ekf",
       "title": "Anchor C: the quaternion EKF, proved consistent",
-      "minutes": 22,
+      "minutes": 21,
       "covers": [
         "anchor project C — multiplicative quaternion EKF fusing IMU and star tracker, with NEES and NIS consistency checks"
       ],
@@ -502,7 +502,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-hardware-adjacent-work",
       "title": "Hardware-adjacent work: meeting real sensor reality",
-      "minutes": 20,
+      "minutes": 18,
       "covers": [
         "hardware-adjacent work: a real IMU, a thrust-vector-control testbed, a balancing robot, to evidence sensor reality"
       ],
@@ -511,7 +511,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-reproducibility",
       "title": "Reproducibility: seeded, one command, pinned, CI",
-      "minutes": 18,
+      "minutes": 19,
       "covers": [
         "reproducibility: seeded, one-command, CI, pinned dependencies"
       ],
@@ -520,7 +520,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-licensing-and-prior-employer-ip",
       "title": "Licensing, and what to do about prior-employer IP",
-      "minutes": 18,
+      "minutes": 22,
       "covers": [
         "open-sourcing, licensing, and what to do about prior-employer intellectual property"
       ],
@@ -528,8 +528,8 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     },
     {
       "id": "l12-feeding-the-past-project-defence",
-      "title": "How the portfolio feeds the past-project defence",
-      "minutes": 18,
+      "title": "How the portfolio feeds the past-project defense",
+      "minutes": 21,
       "covers": [
         "how the portfolio feeds the past-project presentation round"
       ],
@@ -540,7 +540,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-one-page-and-the-top-third",
       "title": "One page, reverse chronological: what goes in the top third",
-      "minutes": 19,
+      "minutes": 21,
       "covers": [
         "one page, reverse chronological, and what belongs in the top third"
       ],
@@ -558,8 +558,8 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     },
     {
       "id": "l03-quantified-bullets",
-      "title": "Bullets that name a problem, a method, and a result",
-      "minutes": 24,
+      "title": "Bullets that name an action, a method, and a result",
+      "minutes": 25,
       "covers": [
         "quantified bullets: what you did, how, and the measured result"
       ],
@@ -567,8 +567,8 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     },
     {
       "id": "l04-the-projects-section",
-      "title": "The projects section: the primary evidence, placed and labeled honestly",
-      "minutes": 17,
+      "title": "The projects section: your main evidence, placed and labeled honestly",
+      "minutes": 19,
       "covers": [
         "the projects section as the primary section for candidates without industry GNC experience"
       ],
@@ -577,7 +577,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-applicant-tracking-systems",
       "title": "Formatting so a parser reads it correctly",
-      "minutes": 16,
+      "minutes": 18,
       "covers": [
         "applicant tracking system parsing: no tables, no multi-column layouts, no images, standard headings, PDF"
       ],
@@ -605,7 +605,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-referrals",
       "title": "Referrals: what they do, and how to earn one",
-      "minutes": 18,
+      "minutes": 20,
       "covers": [
         "referrals: who can refer, how to ask, and what to give the referrer to make it easy"
       ],
@@ -614,7 +614,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-community-and-conferences",
       "title": "Community and conferences: building the presence a referral needs",
-      "minutes": 17,
+      "minutes": 18,
       "covers": [
         "community and conferences: AIAA and AAS Space Flight Mechanics, SmallSat, university seminars, open-source contribution"
       ],
@@ -623,7 +623,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-outreach-and-reapplying",
       "title": "LinkedIn outreach, and knowing when to reapply",
-      "minutes": 19,
+      "minutes": 22,
       "covers": [
         "recruiter outreach on LinkedIn done well and done badly",
         "reapplication cadence and what must change between attempts"
