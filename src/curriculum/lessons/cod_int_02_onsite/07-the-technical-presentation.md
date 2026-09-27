@@ -175,7 +175,7 @@ If each run fails with chance $p$, the chance that all $N$ runs pass is $(1-p)^N
 
 ## Handling hostile questions
 
-"Hostile" here does not mean rude. It means the questions are designed to find the weak spot. This is how engineering teams review work with each other, and the panel is showing you what a normal design review feels like. It is not personal.
+"Hostile" here does not mean rude. It means the questions are designed to find the weak spot. This is how engineering teams review work with each other, and the panel is showing you what a normal [[design review|design-review]] feels like. It is not personal.
 
 When a hard question lands, use four moves.
 
@@ -194,7 +194,7 @@ If a panel member finds a real flaw, do not defend it to the end. Say "You're ri
 
 The exercise for this module asks you to concede at least one real limitation **unprompted** — without anyone asking. Slide 4 and slide 11 are where you do it.
 
-A real limitation is one that could change the answer. "The font is small" is not one. "The model is 3-DOF, so it ignores attitude dynamics during the gravity turn" is. **3-DOF** means three degrees of freedom: the model tracks where the vehicle is, but not which way it points.
+A real limitation is one that could change the answer. "The font is small" is not one. "The model is 3-DOF, so it ignores attitude dynamics during the gravity turn" is. **[[3-DOF|three-dof]]** means three degrees of freedom: the model tracks where the vehicle is, but not which way it points.
 
 A good concession has three parts: what you left out, why you left it out, and what it might do to the result. "I used a 3-DOF model because the question was about propellant margin, not control. Attitude errors would add some steering losses, so the real margin is probably a bit smaller than slide 10 shows." Now the panel knows you see the edge of your own work. That is what they came to find out.
 
