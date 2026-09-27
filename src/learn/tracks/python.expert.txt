@@ -6,9 +6,11 @@
 
 === py4-01 | Debugging: closures and late binding
 --- teach
-The advanced course showed you how iterators, decorators and special methods work. This course goes further into the machinery (closures, descriptors, class hooks, coroutines), then into typing, testing and design for change, and ends with problems that need a real algorithm.
+The advanced course ended with binary search: throw away half the range at every step until the answer is pinned down. This expert course goes back inside Python itself. First comes the machinery serious code is built on (closures, descriptors, class hooks and coroutines; each gets its own lesson, so the names need not mean anything yet). Then typing, testing and designing code so it is easy to change. Last come hard problems that need a real algorithm.
 
-It starts with a bug that only makes sense once you know how a **closure** remembers variables. You met closures in the decorators lesson: a function defined inside another can use the outer function's variables, even after the outer one has returned:
+It opens with a bug. You make several functions that should each do something different, and they all do the same thing. To see why, you need to know exactly how a closure remembers.
+
+**A reminder: what a closure is.** You met closures in the decorators lesson. A function defined inside another function can keep using the outer function's variables, even after the outer function has returned. The inner function together with the variables it remembers is a **closure**.
 
 ```python
 def make_greeter(greeting):
@@ -17,29 +19,75 @@ def make_greeter(greeting):
     return greet
 
 hello = make_greeter("hello")
-hello("ada")          # 'hello, ada'
+print(hello("ada"))     # hello, ada
 ```
 
-Two rules about closures cause most of the bugs.
+By the time `hello("ada")` runs, `make_greeter` has already finished. Yet `greet` still knows `greeting`. Two rules about *how* it remembers cause most closure bugs.
 
-**1. Closures capture variables, not values.** The inner function looks the variable up *when it runs*, not when it was created. This is **late binding**. In a loop, every function you create shares the one loop variable, so by the time you call them, they all see its final value:
+**Rule 1: a closure keeps the variable, not the value.** Think of a variable as a labelled box. A closure does not take a photo of what is in the box when the function is made. It keeps the box itself, and opens it to look inside *each time the function runs*. Looking a name up when the function runs, instead of when it was made, is called **[[late binding|late-binding-name]]**.
+
+```python
+def make():
+    n = 1
+    def show():
+        return n
+    n = 2              # change the box after show was made
+    return show
+
+print(make()())        # 2, not 1
+```
+
+`show` was made while `n` was 1. But it only looks inside the box when it is called, and by then the box holds 2.
+
+**Where it bites: functions made in a loop.** Here a loop makes three small functions with a **[[lambda|lambda-recap]]**. Each one should return the loop number it was made in:
 
 ```python
 funcs = [lambda: i for i in range(3)]
-[f() for f in funcs]      # [2, 2, 2], not [0, 1, 2]
+print([f() for f in funcs])     # [2, 2, 2], not [0, 1, 2]
 ```
 
-The fix is to capture the *current value* at creation time, either with a default argument (defaults are evaluated when the function is defined) or with a factory function that gets its own variable per call:
+There is only **one** box called `i`. The loop puts 0 in it, then 1, then 2. All three lambdas share that one box. When you finally call them, the loop is over and the box holds 2, so every one of them says 2.
+
+**Fix A: a default argument.** Default values are **[[worked out once, when the function is defined|defaults-once]]**. So a default can take a snapshot of the value right now:
 
 ```python
-funcs = [lambda i=i: i for i in range(3)]      # default argument
-def make(i):
-    return lambda: i                            # factory: a new i each call
-funcs = [make(i) for i in range(3)]
-[f() for f in funcs]      # [0, 1, 2]
+funcs = [lambda i=i: i for i in range(3)]
+print([f() for f in funcs])     # [0, 1, 2]
 ```
 
-**2. Assigning to a name makes it local.** If an inner function *assigns* to a variable (including `+=`), Python treats that name as local to the inner function for the whole function body, so reading it first fails with `UnboundLocalError`. Declare `nonlocal count` to say "this is the outer function's variable":
+Read `lambda i=i: i` aloud as "a function with a parameter called `i`, whose default is the value the loop's `i` has at this moment". Each lambda now has its own `i`, filled in when it was made.
+
+**Fix B: a factory function.** A **factory** is a function whose job is to make and return another function. Every call to a function gets brand-new local variables, so every call to the factory makes a fresh box:
+
+```python
+def make(i):
+    return lambda: i        # this i belongs to this one call of make
+
+funcs = [make(i) for i in range(3)]
+print([f() for f in funcs])     # [0, 1, 2]
+```
+
+Both fixes work. The factory is the cleaner one, because it does not add an extra parameter a caller could fill in by mistake.
+
+This bug turns up most often when a program makes one **[[event handler|event-handlers]]** per button in a loop: every button ends up doing what the last one should.
+
+**Rule 2: assigning to a name makes it local.** Reading an outer variable is fine, as `greet` did with `greeting`. *Assigning* to it is different. Before a function runs, Python scans its body. Any name that is assigned anywhere inside it (with `=`, `+=` and friends) is treated as that function's own **local** variable for the *whole* body.
+
+```python
+def make_counter():
+    count = 0
+    def increment():
+        count += 1          # crashes
+        return count
+    return increment
+
+make_counter()()
+# UnboundLocalError: cannot access local variable 'count' where it is not associated with a value
+```
+
+`count += 1` means `count = count + 1`. That assignment makes `count` local to `increment`. So the right-hand side tries to read the *local* `count`, which has no value yet. Python stops with **[[UnboundLocalError|unbound-local]]**: a local variable was read before anything was put in it.
+
+The fix is one line. `nonlocal count` tells Python "`count` is not mine; it is the box belonging to the function around me":
 
 ```python
 def make_counter():
@@ -49,17 +97,108 @@ def make_counter():
         count += 1
         return count
     return increment
+
+c = make_counter()
+print(c(), c(), c())    # 1 2 3
 ```
 
-**The debugging method here:** when several functions "all return the same thing", suspect a shared variable. You can even look at what a closure captured: `f.__closure__[0].cell_contents` shows the current value of its first captured variable, and it is the same cell for every function made in the loop.
+Each call to `make_counter()` makes a new `count` box, so two counters never share a count.
+
+**How to debug it: look inside the closure.** When several functions "all return the same thing", suspect a shared variable. You can check. A function made inside another function has a `__closure__`: a tuple of **[[cells|closure-cells]]**, the boxes it remembers. `.cell_contents` shows what is in a box right now:
+
+```python
+funcs = [lambda: i for i in range(3)]
+print(funcs[0].__closure__[0].cell_contents)                 # 2
+print(funcs[0].__closure__[0] is funcs[2].__closure__[0])    # True: one shared box
+```
+
+`is` asks "is this the very same object?". `True` here proves the first and last function share one box. After the factory fix the same test prints `False`.
+
+**Watch out:** the bug hides if you test each function *inside* the loop, right after making it. At that moment the box still holds the "right" value, so everything looks fine. It only goes wrong later, once the loop has moved on. Always test the functions after the loop has finished, the way the real program will call them.
+
+::: context late-binding-name What "binding" means
+To **bind** a name is to connect it to a value. *Late* binding means Python makes that connection as late as possible: at the moment the line runs, not when the function was written or created.
+
+It is the same reason a function can use a variable that is only created further down the file, as long as the variable exists by the time the function is called. Python does not check names in advance; it looks them up at run time.
+
+Late binding is a feature, not a flaw. It is what lets `make_counter` update its count. It only becomes a bug when you expected a snapshot and got a live box instead.
+:::
+
+::: context lambda-recap A lambda is a one-line function
+You met `lambda` in the sorting lesson. `lambda x: x * 2` is a small function with no name. It is the same as writing:
+
+```python
+def double(x):
+    return x * 2
+```
+
+A lambda holds one expression and returns its value automatically. `lambda: i` takes no arguments at all and returns `i`.
+
+Lambdas follow exactly the same closure rules as `def` functions. They only look different; they remember variables the same way.
+:::
+
+::: context defaults-once The mutable-default lesson, turned into a tool
+In the intermediate course, a list used as a default argument surprised you: it was created once, when the `def` ran, and then shared by every call.
+
+That same fact, "defaults are worked out once, at definition time", is exactly what fixes late binding. `lambda i=i: i` copies the value of `i` into the default at the moment the lambda is made. The behaviour that caused one bug is the cure for another. Knowing *when* Python evaluates each thing is most of expert debugging.
+:::
+
+::: context event-handlers Buttons, handlers and ground stations
+An **event** is something that happens while a program runs: a click, a key press, a message arriving. An **event handler** is the function the program calls when that event happens.
+
+A mission-control screen might make one button per command from a list: "open valve", "arm", "abort". If each button's handler is a lambda made in the loop, every button can end up sending the last command in the list. A button labelled "open valve" that sends "abort" is a serious bug, and it is exactly this one. The task's `make_handlers` is a small model of it.
+:::
+
+::: context unbound-local Why Python decides "local" in advance
+Python reads a whole function before it runs it, and decides once which names are local. It does not decide line by line. So an assignment on the *last* line of a function makes the name local on the *first* line too.
+
+That is why the error is so confusing: the line that crashes looks like it only reads `count`. The cause is the assignment hidden inside `+=`.
+
+There are two keywords to override the rule. `nonlocal x` means "the `x` of the function around me". `global x` means "the `x` at the top level of the file". Reaching for `global` is usually a sign the design needs rethinking; `nonlocal` inside a closure is normal.
+:::
+
+::: context closure-cells One shared box versus a box each
+A **cell** is Python's name for the box a closure keeps. Functions made in a loop without a fix all point at one cell. With a factory, each call makes its own cell.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 170" font-family="Inter, Arial, sans-serif">
+  <text x="85" y="16" font-size="12" text-anchor="middle" fill="#b4232c">bug: one shared cell</text>
+  <g font-size="12" fill="#1f2a44" text-anchor="middle">
+    <rect x="15" y="28" width="40" height="24" rx="4" fill="#fff" stroke="#1f2a44"/><text x="35" y="44">f0</text>
+    <rect x="65" y="28" width="40" height="24" rx="4" fill="#fff" stroke="#1f2a44"/><text x="85" y="44">f1</text>
+    <rect x="115" y="28" width="40" height="24" rx="4" fill="#fff" stroke="#1f2a44"/><text x="135" y="44">f2</text>
+  </g>
+  <g stroke="#b4232c" stroke-width="1.5">
+    <line x1="35" y1="52" x2="78" y2="108"/><line x1="85" y1="52" x2="85" y2="108"/><line x1="135" y1="52" x2="92" y2="108"/>
+  </g>
+  <rect x="55" y="108" width="60" height="34" rx="4" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="85" y="130" font-size="13" text-anchor="middle" fill="#1f2a44">i = 2</text>
+  <line x1="180" y1="10" x2="180" y2="160" stroke="#6c7a93" stroke-dasharray="4 4"/>
+  <text x="270" y="16" font-size="12" text-anchor="middle" fill="#1d6fd1">fixed: a cell each</text>
+  <g font-size="12" fill="#1f2a44" text-anchor="middle">
+    <rect x="200" y="28" width="40" height="24" rx="4" fill="#fff" stroke="#1f2a44"/><text x="220" y="44">f0</text>
+    <rect x="250" y="28" width="40" height="24" rx="4" fill="#fff" stroke="#1f2a44"/><text x="270" y="44">f1</text>
+    <rect x="300" y="28" width="40" height="24" rx="4" fill="#fff" stroke="#1f2a44"/><text x="320" y="44">f2</text>
+  </g>
+  <g stroke="#1d6fd1" stroke-width="1.5">
+    <line x1="220" y1="52" x2="220" y2="108"/><line x1="270" y1="52" x2="270" y2="108"/><line x1="320" y1="52" x2="320" y2="108"/>
+  </g>
+  <g font-size="13" fill="#1f2a44" text-anchor="middle">
+    <rect x="198" y="108" width="44" height="34" rx="4" fill="#8fb8f0" stroke="#1f2a44"/><text x="220" y="130">0</text>
+    <rect x="248" y="108" width="44" height="34" rx="4" fill="#8fb8f0" stroke="#1f2a44"/><text x="270" y="130">1</text>
+    <rect x="298" y="108" width="44" height="34" rx="4" fill="#8fb8f0" stroke="#1f2a44"/><text x="320" y="130">2</text>
+  </g>
+</svg>
+```
+
+`__closure__` is a tuple because a closure can remember several variables: one cell per variable, in a fixed order.
+:::
 --- task
-**Bug report:**
+**Bug report:** three functions in this file misbehave. Fix all three.
 
-1. `make_multipliers(4)` should return four functions where the `k`th multiplies by `k`, but all of them multiply by 3.
-2. `make_handlers(["save", "open"])` should map each name to a function returning `"clicked <name>"`, but every handler says `"clicked open"`.
-3. `make_counter()` should return a function that counts 1, 2, 3… but calling it crashes with `UnboundLocalError`.
-
-Fix all three.
+1. `make_multipliers(4)` should return four functions, where the function at position `k` multiplies its argument by `k` (so the first multiplies by 0, the last by 3). Instead, all of them multiply by 3.
+2. `make_handlers(["save", "open"])` should return a dictionary mapping each name to a function that returns `"clicked <name>"`. Instead, every handler says `"clicked open"`.
+3. `make_counter()` should return a function that counts 1, 2, 3… each time it is called, but calling it crashes with `UnboundLocalError`. Two counters must count separately.
 --- starter
 def make_multipliers(n):
     return [lambda x: i * x for i in range(n)]
@@ -104,11 +243,11 @@ def make_counter():
 
     return increment
 --- hint
-Call each multiplier and look at `f.__closure__[0].cell_contents`. Are they separate variables or one shared one?
+Bugs 1 and 2 are late binding: every function shares one loop variable. Call one of the multipliers' `__closure__[0].cell_contents`, or compare two of their cells with `is`, to see it.
 --- hint
-Capture the value when each function is created: a default argument (`lambda name=name: ...`) or a small factory function that returns the lambda.
+Take a snapshot of the value when each function is made: either a default argument (`lambda name=name: ...`) or a small factory function defined inside `make_multipliers` that takes `k` and returns `lambda x: k * x`.
 --- hint
-The counter assigns to `count`, which makes it local to `increment`. Add `nonlocal count` as the first line of `increment`.
+Bug 3 is Rule 2: `count += 1` assigns to `count`, which makes it local to `increment`. Add `nonlocal count` as the first line inside `increment`.
 --- check case | Each multiplier uses its own k
 [f(10) for f in make_multipliers(4)]
 => [0, 10, 20, 30]
@@ -123,7 +262,37 @@ The counter assigns to `count`, which makes it local to `increment`. Add `nonloc
 
 === py4-02 | Descriptors: how @property really works
 --- teach
-When you write `obj.attr`, Python does not just look in the object's dictionary. It first checks whether the *class* has an attribute of that name that is a **descriptor**: an object with `__get__` (and maybe `__set__`). If so, Python calls it. That single rule is how `@property`, methods, `classmethod` and `staticmethod` all work.
+Last lesson showed exactly how a closure finds its variables. This one shows how Python finds an **attribute**: what really happens when you write `obj.attr`. In the intermediate course you used `@property` to check a value whenever it was set. Here you build the machinery underneath `@property` yourself, and then use it to write a checker once and reuse it on every field.
+
+**Step 1: every object has its own dictionary.** When you write `self.x = 3`, Python stores it in a dictionary that belongs to that one object, called `__dict__`. The built-in `vars(obj)` shows the same dictionary.
+
+```python
+class Point:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+p = Point(3, 4)
+print(p.__dict__)     # {'x': 3, 'y': 4}
+print(vars(p))        # {'x': 3, 'y': 4}
+```
+
+**Step 2: a class has attributes too.** A name set directly in the class body, not on `self`, is a **[[class attribute|class-vs-instance]]**. It belongs to the class and is shared by every object made from it. It does not appear in any object's `__dict__`.
+
+```python
+class Ship:
+    fleet = "Artemis"          # class attribute: one, shared
+    def __init__(self, name):
+        self.name = name       # instance attribute: one per object
+
+a = Ship("Orion")
+print(a.fleet)        # Artemis   (found on the class)
+print(vars(a))        # {'name': 'Orion'}
+```
+
+**Step 3: a descriptor answers for the attribute.** Picture a hotel. Usually, when you ask for something, you go and get it from your own room. But for a few things the hotel has put a receptionist at the front desk, and anyone who asks for *those* gets their answer from the receptionist instead.
+
+A **[[descriptor|descriptor-word]]** is that receptionist: an object with a `__get__` method, stored as a class attribute. When you read `obj.attr`, Python first checks the *class* for an attribute of that name. If it finds a descriptor there, Python calls its `__get__` and hands you whatever it returns.
 
 ```python
 class Loud:
@@ -133,18 +302,22 @@ class Loud:
 class Thing:
     greeting = Loud()     # a descriptor, stored on the CLASS
 
-Thing().greeting          # 'HELLO'   (Loud.__get__ was called)
+print(Thing().greeting)   # HELLO   (Loud.__get__ was called)
 ```
 
-The protocol:
+`__get__(self, obj, owner)` gets three things:
 
-- `__get__(self, obj, owner)`: called on read. `obj` is the instance, or `None` when read from the class itself (`Thing.greeting`); by convention return the descriptor itself then.
-- `__set__(self, obj, value)`: called on assignment. Having it makes a **data descriptor**, which wins over the instance's own `__dict__`.
-- `__set_name__(self, owner, name)`: called once when the class is created, telling the descriptor the name it was assigned to.
+- `self`: the descriptor itself (the `Loud` object).
+- `obj`: the object the attribute was read from. When it is read from the class itself, as in `Thing.greeting`, there is no object, so `obj` is `None`. By convention the descriptor then returns itself.
+- `owner`: the class (`Thing`).
 
-**Where does the value live?** Not on the descriptor! There is one descriptor per *class*, shared by every instance. Store per-object data in the instance: `obj.__dict__[self.name] = value`.
+**Step 4: `__set__` catches assignments.** Give a descriptor a `__set__(self, obj, value)` method too, and every `obj.attr = value` calls it instead of storing the value directly. A descriptor with `__set__` is a **data descriptor**, and it **[[wins over the object's own dictionary|lookup-order]]**: Python always asks it first.
 
-A reusable validator shows why descriptors exist. With `@property` you would repeat the same getter and setter for every field; a descriptor writes it once:
+**Step 5: `__set_name__` tells it its name.** When the class is created, Python calls `__set_name__(self, owner, name)` on each descriptor once, passing the name it was assigned to. For `username = NonEmpty()`, `name` is `"username"`. The descriptor saves it as `self.name` so it can use it later.
+
+**Step 6: where the value lives.** Not on the descriptor! There is one descriptor per *class*, shared by every object. Each object's value goes in that object's own `__dict__`, under the attribute's name, **[[written straight into the dictionary|why-dict-direct]]**: `obj.__dict__[self.name] = value`.
+
+Put together, here is a reusable "must not be empty" checker. With `@property` you would write the same getter and setter again for every field. A descriptor writes it once:
 
 ```python
 class NonEmpty:
@@ -165,18 +338,124 @@ class User:
     def __init__(self, username, email):
         self.username = username      # goes through NonEmpty.__set__
         self.email = email
+
+u = User("ada", "ada@example.com")
+print(vars(u))       # {'username': 'ada', 'email': 'ada@example.com'}
+User("", "x@example.com")
+# ValueError: username must not be empty
 ```
 
-A descriptor with only `__get__` is a **non-data descriptor**, and the instance's `__dict__` wins over it. That enables a neat trick: compute a value on first access, store it in the instance dict under the *same name*, and from then on Python finds the stored value first and never calls `__get__` again. That is exactly how `functools.cached_property` works.
+The check runs both when the object is made and on any later assignment such as `u.email = ""`.
 
-**Common mistake:** storing the value on `self` inside the descriptor (`self.value = value`). Every instance then shares one value, because there is only one descriptor.
+**Checking for a number.** `isinstance(value, (int, float))` is true when `value` is an `int` *or* a `float`: a tuple of types means "any of these". So `isinstance(2.5, (int, float))` is `True` and `isinstance("5", (int, float))` is `False`. One surprise: in Python **[[True counts as a whole number|bool-is-int]]**, so `isinstance(True, int)` is `True`. A careful number check also rejects `bool`.
+
+**Step 7: a descriptor with only `__get__`.** Without `__set__` it is a **non-data descriptor**, and now the object's own `__dict__` wins over it. That allows a neat trick: the first time the attribute is read, `__get__` computes the value and stores it in the object's `__dict__` under the *same name*. From then on Python finds the stored value first and never calls `__get__` again. The standard library's `functools.cached_property` works exactly this way, to **[[compute once, then remember|cached-property]]**:
+
+```python
+from functools import cached_property
+
+class Report:
+    @cached_property
+    def summary(self):
+        print("working...")
+        return "all systems go"
+
+r = Report()
+print(r.summary)    # prints working... and then all systems go
+print(r.summary)    # all systems go   (no "working..." this time)
+print(vars(r))      # {'summary': 'all systems go'}
+```
+
+`@cached_property` above a method works like any decorator: `summary = cached_property(summary)`. The class attribute `summary` is then the descriptor, and it is given the method to call.
+
+This one rule is how `@property` itself works: `property` is a data descriptor built into Python. Even plain **[[methods|methods-are-descriptors]]** are found this way.
+
+**Watch out:** storing the value on the descriptor, as `self.value = value` inside `__set__`. It looks fine with one object. But every object shares the one descriptor, so they all share one value: make a product priced 1, then one priced 2, and the first product's price is now 2 as well. Always store in `obj.__dict__`.
+
+::: context class-vs-instance One descriptor, many objects
+A class attribute lives on the class, once. Each object has its own `__dict__` for its own data. A descriptor is a class attribute, so every object uses the same descriptor, but each object's value lives in that object's dictionary.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 160" font-family="Inter, Arial, sans-serif">
+  <rect x="100" y="10" width="160" height="50" rx="6" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="180" y="30" font-size="13" text-anchor="middle" fill="#1f2a44">class Product</text>
+  <text x="180" y="48" font-size="12" text-anchor="middle" fill="#1f2a44">price = Positive()</text>
+  <line x1="150" y1="60" x2="90" y2="98" stroke="#1f2a44" stroke-width="1.5"/>
+  <line x1="210" y1="60" x2="270" y2="98" stroke="#1f2a44" stroke-width="1.5"/>
+  <rect x="15" y="98" width="150" height="50" rx="6" fill="#fff" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="90" y="118" font-size="12" text-anchor="middle" fill="#1f2a44">pen.__dict__</text>
+  <text x="90" y="137" font-size="12" text-anchor="middle" fill="#1d6fd1">{'price': 1.5}</text>
+  <rect x="195" y="98" width="150" height="50" rx="6" fill="#fff" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="270" y="118" font-size="12" text-anchor="middle" fill="#1f2a44">cup.__dict__</text>
+  <text x="270" y="137" font-size="12" text-anchor="middle" fill="#1d6fd1">{'price': 3}</text>
+</svg>
+```
+
+Changing a class attribute changes it for everyone at once, which is useful for shared settings and dangerous for anything that should be per object.
+:::
+
+::: context descriptor-word Why "descriptor"
+The object *describes* how an attribute behaves: what happens when it is read, set, or looked up on the class. The attribute itself is just a name; the descriptor is the set of rules behind it.
+
+The methods `__get__`, `__set__` and `__set_name__` are **special methods** (the double-underscore kind, sometimes called "dunder" methods, from "double underscore"), like `__repr__` and `__eq__` in the intermediate course. You never call them yourself; Python calls them at the right moment.
+:::
+
+::: context lookup-order The order Python searches in
+When you read `obj.attr`, Python checks in this order:
+
+1. A **data descriptor** (has `__set__`) named `attr` on the class. If there is one, its `__get__` answers.
+2. The object's own `__dict__`. If `attr` is there, that value is the answer.
+3. A **non-data descriptor** (only `__get__`), or a plain class attribute, on the class.
+4. Otherwise, `AttributeError`.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 80" font-family="Inter, Arial, sans-serif">
+  <g font-size="12" fill="#1f2a44" text-anchor="middle">
+    <rect x="5" y="20" width="100" height="40" rx="6" fill="#8fb8f0" stroke="#1f2a44"/><text x="55" y="37">1. data</text><text x="55" y="52">descriptor</text>
+    <rect x="130" y="20" width="100" height="40" rx="6" fill="#fff" stroke="#1f2a44"/><text x="180" y="37">2. obj.__dict__</text><text x="180" y="52">entry</text>
+    <rect x="255" y="20" width="100" height="40" rx="6" fill="#f2b880" stroke="#1f2a44"/><text x="305" y="37">3. non-data</text><text x="305" y="52">descriptor</text>
+  </g>
+  <g stroke="#1f2a44" stroke-width="1.5"><line x1="105" y1="40" x2="124" y2="40"/><line x1="230" y1="40" x2="249" y2="40"/></g>
+  <polygon points="129,40 121,36 121,44" fill="#1f2a44"/><polygon points="254,40 246,36 246,44" fill="#1f2a44"/>
+  <text x="180" y="76" font-size="11" text-anchor="middle" fill="#6c7a93">the first one found answers</text>
+</svg>
+```
+
+Data descriptors come first so a checker cannot be skipped by a value sitting in the dictionary. Non-data descriptors come after the dictionary, which is what lets a cached value hide the descriptor.
+:::
+
+::: context why-dict-direct Why not write obj.price = value?
+Inside `__set__`, it is tempting to store the value with `setattr(obj, self.name, value)` or `obj.price = value`. But that *is* an assignment to the attribute, so Python calls `__set__` again, which assigns again, which calls `__set__` again, forever, until Python gives up with `RecursionError`.
+
+Writing into `obj.__dict__[self.name]` is a plain dictionary assignment. It does not go through the descriptor, so it breaks the loop. Reading works the same way: `__get__` reads the dictionary directly, not `obj.price`.
+:::
+
+::: context bool-is-int True and False are secretly 1 and 0
+In Python, `bool` is a subclass of `int`: `True` behaves like 1 and `False` like 0. So `isinstance(True, int)` is `True`, and `True + True` is `2`.
+
+That means a check like "is it an `int` or `float` greater than 0?" would accept `True` as the number 1. A price of `True` is almost certainly a bug, so a careful check adds `or isinstance(value, bool)` to its list of things to reject.
+:::
+
+::: context cached-property Compute once, then remember
+Some values take real work to compute: parsing a large file, loading a star catalogue, fitting a curve to thousands of sensor readings. If the answer never changes for that object, there is no point computing it every time it is read.
+
+`cached_property` computes on the first read and stores the result in the object's `__dict__`. Later reads are ordinary dictionary look-ups. Deleting it (`del r.summary`) removes the stored value, so the next read computes it again.
+
+Only use it for values that really cannot change. If the data underneath changes, the cached answer quietly goes stale.
+:::
+
+::: context methods-are-descriptors Even methods are descriptors
+Every function has a `__get__` method, so a function stored in a class is a non-data descriptor. When you write `acct.deposit`, Python finds the function on the class and calls its `__get__`, which returns a **bound method**: the function with `acct` already filled in as `self`. That is how `self` gets its value without you ever passing it.
+
+Two decorators you will meet in other people's code are descriptors too: `@classmethod` hands the method the class instead of the object, and `@staticmethod` hands it neither.
+:::
 --- task
-Write two descriptors:
+Write two descriptors, then a class that uses them.
 
-- `Positive`: a data descriptor for numbers that must be greater than 0. Assigning anything else raises `ValueError`. Store the value in the instance's `__dict__` under the attribute's own name (use `__set_name__`). Reading it from the class returns the descriptor.
-- `lazy(func)`: a non-data descriptor used like a decorator on a method. The first read calls `func(obj)`, stores the result in the instance's `__dict__` under the same name, and returns it; later reads never call `func` again.
+- `Positive`: a data descriptor for numbers that must be greater than 0. Use `__set_name__` to remember the attribute's name. In `__set__`, assigning anything that is not an `int` or `float` greater than 0 raises `ValueError`; a good value is stored in the object's `__dict__` under the attribute's own name. `__get__` reads it back from there, and reading it from the class (when `obj` is `None`) returns the descriptor itself.
+- `lazy(func)`: a non-data descriptor (no `__set__`) that is used like a decorator on a method, the way `@cached_property` is. The first read calls `func(obj)`, stores the result in the object's `__dict__` under the same name, and returns it. Later reads never call `func` again.
 
-Then write `Product(name, price, quantity)`, where `price` and `quantity` are `Positive`, with a property `total` (price × quantity).
+Then write `Product(name, price, quantity)`, where `price` and `quantity` are `Positive` class attributes, with a property `total` that returns price × quantity.
 --- starter
 class Positive:
     pass
@@ -236,11 +515,11 @@ class Product:
     def total(self):
         return self.price * self.quantity
 --- hint
-`__set_name__(self, owner, name)` stores `self.name = name`. `__get__` returns `self` when `obj is None`, otherwise `obj.__dict__[self.name]`.
+`Positive` follows the `NonEmpty` example almost line for line: `__set_name__` saves `self.name = name`, and `__get__` returns `self` when `obj is None`, otherwise `obj.__dict__[self.name]`. Only the test in `__set__` is different.
 --- hint
-In `Positive.__set__`, check the value, then store it with `obj.__dict__[self.name] = value`, never on `self`.
+In `Positive.__set__`, raise `ValueError` if `not isinstance(value, (int, float))` or `value <= 0` (and, to be careful, if it is a `bool`). Otherwise store it with `obj.__dict__[self.name] = value`, never on `self`. In `Product`, add `price = Positive()` and `quantity = Positive()` in the class body.
 --- hint
-`lazy` has no `__set__`. Its `__get__` computes `self.func(obj)`, stores it in `obj.__dict__[self.name]`, and returns it; the instance dict then shadows the descriptor.
+`lazy` needs `__set_name__` and `__get__`, but no `__set__`. Its `__get__` returns `self` when `obj is None`; otherwise it computes `value = self.func(obj)`, stores it in `obj.__dict__[self.name]`, and returns it. The stored value then hides the descriptor on every later read.
 --- check case | A valid product
 (lambda p: (p.price, p.quantity, p.total))(Product("pen", 1.5, 4))
 => (1.5, 4, 6.0)
@@ -263,9 +542,52 @@ isinstance(Product.price, Positive)
 
 === py4-03 | Class hooks: __init_subclass__ and the plugin pattern
 --- teach
-Some programs are built from **plugins**: commands, file formats, payment providers. Each lives in its own class, and the core program finds them without a hand-kept list. Forget to add a new class to the list and it silently does not exist; the fix is to have classes **register themselves** the moment they are defined.
+Last lesson, Python called a descriptor's `__set_name__` at the moment its class was created. That was a **hook**: a method Python calls for you at a particular moment. This lesson uses another class-creation hook to solve a real design problem: letting new pieces of a program add themselves.
 
-Python gives base classes a hook for exactly that. `__init_subclass__` is called *on the base class* every time a subclass is created (it is implicitly a class method, so its first argument is the new subclass):
+**The problem.** Some programs are built from **[[plugins|plugins-real]]**: separate pieces that each add one feature, such as one command, one file format or one payment provider. Each lives in its own class, and the core program needs a list of them all. If a person keeps that list by hand, sooner or later someone writes a new class, forgets to add it to the list, and the feature silently does not exist.
+
+Think of a club. A secretary copying names onto a list will eventually miss someone. A sign-up sheet at the door, which every new member signs on the way in, never misses anyone. The fix for plugins is the sign-up sheet: each class **registers itself** the moment it is defined. The shared list is called a **registry**.
+
+**Step 1: a `class` statement is code that runs.** Python builds a class when it reaches the `class` line, the way it runs any other line, usually **[[at import|import-time]]**:
+
+```python
+print("before")
+class A:
+    print("building A")
+print("after")
+```
+
+```
+before
+building A
+after
+```
+
+So there *is* a moment when each class comes into existence, and Python can run code of yours at that moment.
+
+**Step 2: the hook.** If a base class defines `__init_subclass__`, Python calls it every time a **subclass** of it is created. Its first argument, `cls`, is **[[the brand-new class itself|cls-parameter]]**: the subclass (not an object made from it). `cls.__name__` is that class's name as a string.
+
+```python
+class Base:
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
+        print("new subclass:", cls.__name__)
+
+class Red(Base):
+    pass
+
+class Blue(Base):
+    pass
+```
+
+```
+new subclass: Red
+new subclass: Blue
+```
+
+The hook runs for `Red` and `Blue`, not for `Base` itself. The `super()` line is explained in Step 4.
+
+**Step 3: a registry.** Put a dictionary on the base class as a class attribute (last lesson: one, shared by everyone). The hook adds each new subclass to it:
 
 ```python
 class Exporter:
@@ -281,27 +603,118 @@ class CsvExporter(Exporter):
 class JsonExporter(Exporter):
     extension = "json"
 
-Exporter.formats     # {'csv': <class 'CsvExporter'>, 'json': <class 'JsonExporter'>}
+print(Exporter.formats)
+# {'csv': <class '__main__.CsvExporter'>, 'json': <class '__main__.JsonExporter'>}
 ```
 
-Things to get right:
+Nobody wrote `formats["csv"] = CsvExporter`. Defining the class was enough. The registry stores the *classes* themselves, so the program can later look one up by its extension and make an object from it: `Exporter.formats["csv"]()`.
 
-- **Register on the base class explicitly** (`Exporter.formats`), so every subclass shares one registry.
-- **Call `super().__init_subclass__(**kwargs)`** so the hook cooperates with other base classes.
-- **Validate at definition time.** The hook runs when the `class` statement runs, so a subclass that forgot its `extension`, or reused one, can raise an error immediately, at import, long before a user hits it.
+**Step 4: the three things to get right.**
 
-Subclasses can also pass keyword arguments to the hook: `class Csv(Exporter, extension="csv")` calls `__init_subclass__(extension="csv")`.
+- **Register on the base class by name** (`Exporter.formats`), so there is one registry that every subclass shares.
+- **Call `super().__init_subclass__(**kwargs)`**. `super()` means "the parent class", as in the exceptions lesson, and `**kwargs` passes along any keyword arguments you did not use yourself, as in the `*args, **kwargs` lesson. This lets your hook **[[cooperate|cooperative-super]]** with any other base class that has a hook of its own.
+- **Check at definition time.** The hook runs when the `class` statement runs. So a subclass that forgot its `extension`, or reused one that is already taken, can raise an error immediately, when the file is loaded, long before a user hits the problem.
 
-Before `__init_subclass__` existed, this took a **metaclass** (a class whose instances are classes). Metaclasses can do more, but they are harder to read and combine; reach for the hook first. A class decorator (`@register`) is the other alternative, at the cost of having to remember to write it.
+For the check, give the base class a default value, such as `extension = None`. A subclass that does not set its own inherits the parent's `None`, so the hook can test for it:
 
-Classes can also be created by calling `type(name, bases, namespace)` directly, and the hook still runs. That is how the checks below add plugins of their own.
+```python
+class Exporter:
+    formats = {}
+    extension = None
+
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
+        if not cls.extension:
+            raise TypeError(f"{cls.__name__} needs an extension")
+        Exporter.formats[cls.extension] = cls
+
+class Broken(Exporter):
+    pass
+# TypeError: Broken needs an extension
+```
+
+`if not cls.extension` catches both `None` and an empty string `""`. Checking for a duplicate is one more `if`: is `cls.extension` already a key `in Exporter.formats`?
+
+**A method subclasses must fill in.** The base class can list a method every plugin must provide, and make it fail loudly if a plugin forgets:
+
+```python
+def run(self, args):
+    raise NotImplementedError
+```
+
+`NotImplementedError` is the built-in exception for "a subclass was supposed to replace this method". Each plugin defines its own `run`, which replaces the base one.
+
+**Settings in the class line.** A subclass can also pass keyword arguments to the hook, right in its `class` line: `class Csv(Exporter, extension="csv")` calls `__init_subclass__` with `extension="csv"` as a keyword argument, which the hook can accept as a parameter.
+
+**Other ways to do this.** Before `__init_subclass__` existed, this took a **[[metaclass|metaclass-word]]**: a class whose objects are themselves classes. Metaclasses can do more, but they are harder to read and hard to combine; reach for the hook first. A class decorator (`@register` above each class) also works, but then every plugin author has to remember to write it, which is the very thing we were trying to avoid.
+
+**Making a class with a call.** A class can also be created without a `class` statement, by calling `type(name, bases, namespace)`: the name as a string, a tuple of parent classes, and a dictionary of its attributes. The hook still runs. These two do the same thing:
+
+```python
+class Echo(Base):
+    sound = "echo"
+
+Echo = type("Echo", (Base,), {"sound": "echo"})     # also prints: new subclass: Echo
+```
+
+The checks for this lesson use `type(...)` to add plugins of their own and see whether your registry picks them up.
+
+**Using the registry: a dispatcher.** A **dispatcher** reads a request and hands it to the right plugin. For typed commands, `line.split()` with no argument splits on any run of spaces and drops the empty bits, so `"add 1 2".split()` is `['add', '1', '2']` and `"   ".split()` is `[]`. The first word picks the plugin from the registry with `.get(...)`, and the rest of the words are its arguments.
+
+**Watch out:** a plugin registers itself only when its `class` statement runs. If it sits in a file that the program never imports, its class is never built, and it never appears in the registry. When a plugin "does not exist", first check that its file is actually imported.
+
+::: context plugins-real Plugins in real programs
+Plugin systems are everywhere. The testing tool `pytest` finds extra features through plugins. Web frameworks register each page's handler. Code editors load language support as plugins.
+
+Flight software uses the same idea. A spacecraft receives commands from the ground, each with a name or number, and a dispatcher looks the command up in a table and calls the code that handles it. Adding a new command means adding one handler, not editing the dispatcher. That is exactly the shape of this lesson's task.
+:::
+
+::: context import-time What "at import" means
+When Python loads a file, whether you run it directly or another file does `import` on it, it runs every top-level line from top to bottom. `def` and `class` statements are lines too: running them creates the function or class.
+
+So "import time" is the moment the file is loaded, usually right as the program starts. An error raised by a class hook at import time stops the program before it does any real work, which is exactly when you want to hear about a broken plugin: on the developer's screen, not in the middle of a user's session.
+:::
+
+::: context cls-parameter cls instead of self
+Ordinary methods receive the *object* as their first argument, and by convention it is called `self`. `__init_subclass__` receives a *class* instead, so by convention its first argument is called `cls`. (`class` itself is a keyword and cannot be a name.)
+
+Python makes `__init_subclass__` a **class method** automatically. Other methods can be made into class methods with the `@classmethod` decorator; you will see them used as extra ways to build an object, such as a method that builds a date from the text "2026-09-27".
+:::
+
+::: context cooperative-super Passing the call up the chain
+A class can have more than one parent. If two parents both define `__init_subclass__`, each one must call `super().__init_subclass__(**kwargs)`, or the chain stops and the other parent's hook never runs.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 110" font-family="Inter, Arial, sans-serif">
+  <g font-size="12" fill="#1f2a44" text-anchor="middle">
+    <rect x="10" y="35" width="90" height="36" rx="6" fill="#8fb8f0" stroke="#1f2a44"/><text x="55" y="57">your hook</text>
+    <rect x="135" y="35" width="90" height="36" rx="6" fill="#8fb8f0" stroke="#1f2a44"/><text x="180" y="57">other hook</text>
+    <rect x="260" y="35" width="90" height="36" rx="6" fill="#fff" stroke="#1f2a44"/><text x="305" y="57">object</text>
+  </g>
+  <g stroke="#1d6fd1" stroke-width="2">
+    <line x1="100" y1="53" x2="128" y2="53"/><line x1="225" y1="53" x2="253" y2="53"/>
+  </g>
+  <polygon points="134,53 124,48 124,58" fill="#1d6fd1"/>
+  <polygon points="259,53 249,48 249,58" fill="#1d6fd1"/>
+  <text x="180" y="95" font-size="12" text-anchor="middle" fill="#1f2a44">each arrow is one super().__init_subclass__(**kwargs)</text>
+</svg>
+```
+
+Passing `**kwargs` along matters too: a keyword meant for another hook must reach it. The chain ends at `object`, the class every class inherits from.
+:::
+
+::: context metaclass-word A class of classes
+Every object has a type: `type(3)` is `int`. Classes are objects too, so they have a type as well, and for ordinary classes it is `type`: `type(int)` is `type`, and so is `type(Red)`. A class whose objects are classes is called a **metaclass**, and `type` is the one Python uses by default.
+
+That is why calling `type(name, bases, namespace)` makes a new class: you are calling the metaclass, the class that makes classes. Writing your own metaclass lets you change how classes are built, which is powerful and rarely needed.
+:::
 --- task
-Build a tiny command system:
+Build a tiny command system.
 
-- `class Command` with a class attribute `registry = {}` and a method `run(self, args)` that subclasses override (`args` is a list of strings; it returns a string).
-- Every subclass registers itself in `Command.registry` under its class attribute `name`, via `__init_subclass__`. A subclass with no `name` (or an empty one) raises `TypeError`; a name that is already registered raises `ValueError`.
-- `Add` (name `"add"`) returns the sum of its integer arguments as a string; `Upper` (name `"upper"`) returns its arguments joined by spaces, uppercased.
-- `dispatch(line)` splits the line into words, finds the command by the first word, and returns `command().run(rest)`. An empty line returns `"error: empty command"`; an unknown name returns `"error: unknown command <name>"`.
+- `class Command` with a class attribute `registry = {}`, and a method `run(self, args)` that raises `NotImplementedError`. Subclasses override `run`: `args` is a list of strings, and `run` returns a string.
+- Every subclass registers itself in `Command.registry` under its class attribute `name`, using `__init_subclass__`. A subclass with no `name` (or an empty one) raises `TypeError`. A name that is already registered raises `ValueError`.
+- `Add` (name `"add"`) returns the sum of its arguments, turned into integers, as a string. `Upper` (name `"upper"`) returns its arguments joined by single spaces, uppercased.
+- `dispatch(line)` splits the line into words, finds the command class by the first word, and returns `command().run(rest)`, where `rest` is the list of the other words. An empty line returns `"error: empty command"`; an unknown name returns `"error: unknown command <name>"`.
 --- starter
 class Command:
     registry = {}
@@ -357,11 +770,11 @@ def dispatch(line):
         return f"error: unknown command {words[0]}"
     return command().run(words[1:])
 --- hint
-Give `Command` a class attribute `name = None`, so subclasses that forget theirs inherit `None` and you can test `if not cls.name`.
+Follow the `Exporter` example from Step 4. Give `Command` a class attribute `name = None`, so a subclass that forgets its own inherits `None` and the hook can test `if not cls.name`.
 --- hint
-In `__init_subclass__(cls, **kwargs)`, call `super().__init_subclass__(**kwargs)`, validate, then `Command.registry[cls.name] = cls`.
+In `__init_subclass__(cls, **kwargs)`: call `super().__init_subclass__(**kwargs)`, raise `TypeError` if `not cls.name`, raise `ValueError` if `cls.name in Command.registry`, then store `Command.registry[cls.name] = cls`. Remember to give `Add` its `name = "add"` and to write `Upper`.
 --- hint
-`dispatch`: `words = line.split()`, handle the empty case, look up `Command.registry.get(words[0])`, then `command().run(words[1:])`.
+`dispatch`: `words = line.split()`. If `words` is empty, return the empty-command error. Otherwise `command = Command.registry.get(words[0])`; if that is `None`, return the unknown-command error; else return `command().run(words[1:])`.
 --- check case | add sums its arguments
 dispatch("add 1 2 39")
 => "42"
@@ -381,9 +794,15 @@ dispatch("   ") == "error: empty command" and dispatch("fly away") == "error: un
 
 === py4-04 | Advanced generators: send and yield from
 --- teach
-A generator can do more than hand values out. It can also **receive** them, and it can **delegate** to another generator.
+The last two lessons were about how classes are built. Now back to generators, from the advanced course. There, `yield` handed a value *out* and paused the function, and `next()` woke it up again. So far that conversation only goes one way: the generator talks, and the caller listens. This lesson adds two things. A generator can also **receive** values, and it can **delegate**: hand its work over to another generator.
 
-**`send`.** `yield` is an expression. `x = yield value` hands out `value`, pauses, and when the caller resumes it with `g.send(something)`, that `something` becomes `x`:
+**Step 1: `yield` gives back a value.** `yield` is an **[[expression|expression-word]]**, so it can sit on the right of an `=`. The line
+
+```python
+x = yield value
+```
+
+does two things, with a pause in between. First it hands `value` out and pauses. Later, when the caller wakes it up with `g.send(something)`, the whole `yield value` part turns into `something`, and that is stored in `x`.
 
 ```python
 def echo_upper():
@@ -393,14 +812,64 @@ def echo_upper():
         reply = text.upper()
 
 g = echo_upper()
-next(g)             # run to the first yield ("prime" it); returns None
-g.send("hi")        # 'HI'
-g.send("there")     # 'THERE'
+print(next(g))            # None
+print(g.send("hi"))       # HI
+print(g.send("there"))    # THERE
 ```
 
-You must call `next(g)` (or `g.send(None)`) once before sending anything real, because a new generator has not reached a `yield` yet. A generator used like this is a small **stateful machine**: it keeps its local variables between messages, with no class needed.
+Follow it step by step:
 
-**`yield from`.** Inside a generator, `yield from other` passes through every value `other` yields (and every value sent in) until `other` finishes. It is how a recursive generator stays short:
+1. `next(g)` runs the body up to the first `yield`, hands out `reply` (still `None`), and pauses there.
+2. `g.send("hi")` wakes it. The paused `yield reply` becomes `"hi"`, so `text = "hi"`. Then `reply = "HI"`, the loop goes round, and the next `yield reply` hands out `"HI"`. That is what `send` returns.
+3. `g.send("there")` does the same again.
+
+`send` both *puts in* one value and *takes out* the next one.
+
+**Step 2: prime it first.** A brand-new generator has not run any of its body yet, so it is not paused at a `yield`, and there is nowhere for a sent value to go. You must call `next(g)` once (or `g.send(None)`, which is the same) to run it up to the first `yield`. This is called **[[priming|priming]]** the generator. Forget, and Python stops you:
+
+```python
+g = echo_upper()
+g.send("hi")
+# TypeError: can't send non-None value to a just-started generator
+```
+
+**Step 3: it remembers between messages.** A generator used with `send` keeps all its local variables between messages. That makes it a small **[[state machine|state-machine]]**, with no class needed. This one remembers the longest word it has been sent:
+
+```python
+def longest():
+    best = ""
+    while True:
+        word = yield best
+        if len(word) > len(best):
+            best = word
+
+g = longest()
+next(g)                   # prime it: hands out ''
+print(g.send("moon"))     # moon
+print(g.send("sun"))      # moon
+print(g.send("jupiter"))  # jupiter
+```
+
+A plain `x = yield`, with nothing after `yield`, hands out `None` and waits for a value. Use it when the generator only listens.
+
+**Step 4: `yield from` hands over.** Inside a generator, `yield from other` **[[delegates|delegation]]** to another generator: it passes out every value `other` yields, one by one, until `other` finishes. Then the outer generator carries on.
+
+```python
+def inner():
+    yield 1
+    yield 2
+
+def outer():
+    yield 0
+    yield from inner()
+    yield 3
+
+print(list(outer()))      # [0, 1, 2, 3]
+```
+
+For plain values, `yield from inner()` does the same as `for v in inner(): yield v`. But it also passes every `send` straight through to `inner`, which a `for` loop cannot do.
+
+**Step 5: recursion with `yield from`.** `yield from` keeps a recursive generator short. This one walks a list that has lists inside it, to any depth:
 
 ```python
 def walk(tree):
@@ -410,10 +879,12 @@ def walk(tree):
         else:
             yield node
 
-list(walk([1, [2, [3]], 4]))   # [1, 2, 3, 4]
+print(list(walk([1, [2, [3]], 4])))   # [1, 2, 3, 4]
 ```
 
-**Return values.** A generator can `return` a value. It arrives as the result of the `yield from` expression in the generator that delegated to it:
+To treat both lists and tuples as containers, pass a tuple of types: `isinstance(node, (list, tuple))` is true for either one.
+
+**Step 6: a generator can `return` a result.** When a generator reaches `return total`, it ends. If someone was driving it with `send`, that `send` raises `StopIteration`, and the returned value **[[rides along on it|stopiteration-value]]** as its `.value`:
 
 ```python
 def add_up():
@@ -424,20 +895,109 @@ def add_up():
             return total      # ends this generator with a result
         total += x
 
+g = add_up()
+next(g)
+g.send(3)
+g.send(4)
+try:
+    g.send(None)
+except StopIteration as stop:
+    print(stop.value)         # 7
+```
+
+Catching that by hand is clumsy. `yield from` does it for you: when the inner generator returns, the value becomes the result of the `yield from` expression itself.
+
+```python
 def outer(results):
     while True:
         results.append((yield from add_up()))
+
+results = []
+g = outer(results)
+next(g)
+g.send(3)
+g.send(4)
+g.send(None)     # add_up returns 7; outer appends it and starts a fresh add_up
+g.send(10)
+g.send(None)     # the second add_up returns 10
+print(results)   # [7, 10]
 ```
 
-This send-and-delegate machinery is the ancestor of `async`/`await`, which is the next lesson.
+Every `send` goes through `outer` straight into the current `add_up`. When `add_up` returns, `yield from add_up()` becomes 7, `outer` appends it, loops, and starts a new `add_up`, which runs to its first `yield` and waits. Note the extra brackets in `results.append((yield from add_up()))`: Python requires brackets around a `yield` expression used inside a call like this.
 
-**Common mistake:** when flattening, treating strings as nested lists. A string is iterable, and its characters are strings too, so recursing into strings never ends. Test for `list` and `tuple` explicitly.
+This send-and-delegate machinery is the ancestor of `async` and `await`, which are **[[the next lesson|async-bridge]]**.
+
+**Watch out:** when flattening, do not treat strings as containers. A string can be looped over, and each of its characters is itself a string, so a flatten that recurses into anything loopable **[[never stops|string-forever]]** and crashes with `RecursionError`. Test for `list` and `tuple` by name, so a string like `"ab"` is yielded whole.
+
+::: context expression-word Expressions and statements
+An **expression** is a piece of code that produces a value: `2 + 3`, `len(word)`, `x > 0`. A **statement** is an instruction that does something but has no value of its own, like `if`, `for` or `return`.
+
+In early Python, `yield` was only a statement: it could hand a value out, and that was all. Since Python 2.5 it has been an expression, so it can also produce a value: whatever the caller sends in. That small change is what makes everything in this lesson possible.
+:::
+
+::: context priming Why it is called priming
+Old hand pumps would not work dry. You first poured a little water in, called *priming* the pump, and only then did pumping bring water up. A new generator is the same: one `next()` gets it running to its first `yield`, and only then can it take a value.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 120" font-family="Inter, Arial, sans-serif">
+  <line x1="20" y1="60" x2="340" y2="60" stroke="#1f2a44" stroke-width="2"/>
+  <g font-size="12" text-anchor="middle" fill="#1f2a44">
+    <circle cx="40" cy="60" r="6" fill="#6c7a93"/><text x="40" y="85">created</text><text x="40" y="100">not started</text>
+    <circle cx="150" cy="60" r="6" fill="#1d6fd1"/><text x="150" y="85">paused at</text><text x="150" y="100">first yield</text>
+    <circle cx="290" cy="60" r="6" fill="#1d6fd1"/><text x="290" y="85">paused at</text><text x="290" y="100">next yield</text>
+  </g>
+  <text x="95" y="45" font-size="12" text-anchor="middle" fill="#b4232c">next(g)</text>
+  <text x="220" y="45" font-size="12" text-anchor="middle" fill="#1d6fd1">g.send(x)</text>
+</svg>
+```
+
+Sending before priming is like pumping a dry pump: nothing happens, except that Python raises a `TypeError`.
+:::
+
+::: context state-machine State machines on real vehicles
+A **state machine** is something that is always in one of a few states and moves between them when messages arrive. A traffic light is one: green, then amber, then red.
+
+Flight software is full of them. A rocket's flight computer might move from "on the pad" to "ascent" to "coast" to "landing", each move triggered by a sensor reading or a command. A generator that receives readings with `send` and keeps its current state in a local variable is a compact way to write a small one, and it is easy to test by sending in a list of made-up readings.
+:::
+
+::: context delegation Delegating is like transferring a phone call
+When a help-desk operator transfers your call to a specialist, you talk straight to the specialist until they are done; then the call comes back. `yield from` works like that. Values the inner generator yields go straight out to the caller, values the caller sends go straight in to the inner generator, and when the inner one finishes, the outer one picks the call back up, with the inner one's return value in hand.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 120" font-family="Inter, Arial, sans-serif">
+  <g font-size="12" fill="#1f2a44" text-anchor="middle">
+    <rect x="10" y="40" width="80" height="40" rx="6" fill="#fff" stroke="#1f2a44"/><text x="50" y="64">caller</text>
+    <rect x="140" y="40" width="80" height="40" rx="6" fill="#8fb8f0" stroke="#1f2a44"/><text x="180" y="64">outer</text>
+    <rect x="270" y="40" width="80" height="40" rx="6" fill="#f2b880" stroke="#1f2a44"/><text x="310" y="64">add_up</text>
+  </g>
+  <line x1="90" y1="30" x2="262" y2="30" stroke="#1d6fd1" stroke-width="2"/>
+  <polygon points="270,30 260,25 260,35" fill="#1d6fd1"/>
+  <text x="180" y="20" font-size="12" text-anchor="middle" fill="#1d6fd1">send(3), send(4) go straight in</text>
+  <line x1="270" y1="95" x2="228" y2="95" stroke="#b4232c" stroke-width="2"/>
+  <polygon points="220,95 230,90 230,100" fill="#b4232c"/>
+  <text x="250" y="113" font-size="12" text-anchor="middle" fill="#b4232c">return 7</text>
+</svg>
+```
+:::
+
+::: context stopiteration-value The value rides on StopIteration
+You met `StopIteration` in the iterators lesson: it is how an iterator says "no more values". A `for` loop catches it quietly and ends. When a generator ends with `return something`, Python raises `StopIteration` with that value attached as its `.value`. A `for` loop throws the value away; `yield from` catches the `StopIteration` and uses `.value` as its result. So you almost never handle it yourself.
+:::
+
+::: context async-bridge Where this is going next
+Before Python had `async` and `await`, programs that did many things at once (waiting on many network connections, for example) were written with generators: each task was a generator that paused with `yield` while it waited, and `yield from` let one task wait on another. That style became so common that Python 3.5 gave it its own keywords. `await` works much like `yield from`, in a clearer form, and you will use it in the next lesson.
+:::
+
+::: context string-forever Why strings recurse forever
+Loop over `"ab"` and you get `"a"` and `"b"`. Loop over `"a"` and you get `"a"` again: a one-letter string contains exactly itself. So a flatten that says "if it can be looped over, go inside" goes into `"a"`, finds `"a"`, goes inside again, and never reaches the bottom. Python stops it after about a thousand nested calls with `RecursionError`. Lists always get smaller as you go inside them; strings do not.
+:::
 --- task
-Write three generators:
+Write three generators, and a fourth that uses the third.
 
-- `averager()`: after priming with `next()`, each `send(x)` returns the average of all numbers sent so far.
-- `flatten(items)`: yields every non-list, non-tuple value from arbitrarily nested lists and tuples, in order, using `yield from`. Strings are values, not containers.
-- `tally()` receives numbers by `send` until it receives `None`, then **returns** the tuple `(count, total)`. `collect(results)` loops forever, appending the result of `yield from tally()` to the list `results` each time a tally finishes.
+- `averager()`: prime it with `next()`. After that, each `send(x)` returns the average of all the numbers sent so far.
+- `flatten(items)`: yields every value that is not a list or tuple from lists and tuples nested to any depth, in order, using `yield from`. Strings are values, not containers.
+- `tally()`: receives numbers by `send` until it receives `None`, then **returns** the tuple `(count, total)`: how many numbers it received and their sum.
+- `collect(results)`: loops forever, and each time a `yield from tally()` finishes, appends its result to the list `results`.
 --- starter
 def averager():
     yield 0
@@ -490,11 +1050,11 @@ def collect(results):
     while True:
         results.append((yield from tally()))
 --- hint
-In `averager`, keep a running total and count in local variables; the line `x = yield average` both hands out the latest average and receives the next number.
+`averager` has the same shape as `longest` in Step 3: keep a running `total`, a `count` and the latest `average` in local variables. The line `x = yield average` both hands out the latest average and receives the next number.
 --- hint
-`flatten` recurses with `yield from flatten(item)` when `isinstance(item, (list, tuple))`.
+`flatten` follows `walk` from Step 5: if `isinstance(item, (list, tuple))`, recurse with `yield from flatten(item)`; otherwise `yield item`.
 --- hint
-`tally` ends with `return (count, total)` when it receives `None`. In `collect`, `results.append((yield from tally()))` inside `while True:` (note the extra brackets).
+`tally` has the shape of `add_up` from Step 6, but keeps a count as well and ends with `return (count, total)` when it receives `None`. `collect` is `outer` with `tally` in place of `add_up`: `results.append((yield from tally()))` inside `while True:` (note the extra brackets).
 --- check case | averager keeps a running average
 (lambda g: (next(g), g.send(10), g.send(20), g.send(0))[1:])(averager())
 => (10.0, 15.0, 10.0)
