@@ -4293,7 +4293,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-upserts-and-data-quality",
       "title": "Upserts, duplicates and data quality",
-      "minutes": 25,
+      "minutes": 26,
       "covers": [
         "Upserts and idempotent ingest for duplicated downlink frames",
         "Data quality: gap detection, out-of-order packets, vehicle-to-ground clock skew, duplicate frames"
