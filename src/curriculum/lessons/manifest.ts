@@ -6709,7 +6709,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-what-feedback-buys",
       "title": "What feedback buys, and what it costs",
-      "minutes": 16,
+      "minutes": 19,
       "covers": [
         "Feedback fundamentals: disturbance rejection, noise attenuation, insensitivity to plant variation"
       ],
@@ -6718,7 +6718,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-pid-and-the-filtered-derivative",
       "title": "PID, term by term, and the derivative you can actually build",
-      "minutes": 17,
+      "minutes": 18,
       "covers": [
         "PID control: the physical meaning of each term, ideal vs practical form, derivative filtering"
       ],
@@ -6727,7 +6727,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-windup-anti-windup-and-mode-changes",
       "title": "Windup, anti-windup, bumpless transfer and setpoint weighting",
-      "minutes": 20,
+      "minutes": 21,
       "covers": [
         "Integrator windup, anti-windup schemes, bumpless transfer, setpoint weighting"
       ],
@@ -6736,7 +6736,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-three-ways-to-tune-a-pid",
       "title": "Three ways to tune a PID, and what each one optimises",
-      "minutes": 19,
+      "minutes": 22,
       "covers": [
         "PID tuning: Ziegler-Nichols, loop shaping, pole placement"
       ],
@@ -6745,7 +6745,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-root-locus",
       "title": "The root locus, and designing with it",
-      "minutes": 20,
+      "minutes": 23,
       "covers": [
         "Root locus construction rules and root-locus design"
       ],
@@ -6754,7 +6754,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-nyquist",
       "title": "The Nyquist plot and the Nyquist stability criterion",
-      "minutes": 19,
+      "minutes": 22,
       "covers": [
         "The Nyquist plot and the Nyquist stability criterion"
       ],
@@ -6763,7 +6763,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-the-four-margins",
       "title": "Gain, phase, delay and modulus margins",
-      "minutes": 17,
+      "minutes": 19,
       "covers": [
         "Gain margin, phase margin, delay margin, and the modulus (vector) margin"
       ],
@@ -6772,7 +6772,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-why-margins-can-lie",
       "title": "Why margins can lie",
-      "minutes": 22,
+      "minutes": 24,
       "covers": [
         "Why margins can lie: MIMO coupling, nonlinearity, simultaneous perturbations"
       ],
@@ -6781,7 +6781,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-lead-lag-compensators",
       "title": "Lead, lag and lead-lag compensators",
-      "minutes": 15,
+      "minutes": 17,
       "covers": [
         "Lead, lag and lead-lag compensators"
       ],
@@ -6790,7 +6790,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-notches-and-bending-modes",
       "title": "Notch filters, and gain versus phase stabilization",
-      "minutes": 20,
+      "minutes": 24,
       "covers": [
         "Notch filters for structural bending modes; gain stabilization vs phase stabilization"
       ],
@@ -6799,7 +6799,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-gain-phase-and-the-waterbed",
       "title": "The gain-phase relationship and the waterbed effect",
-      "minutes": 19,
+      "minutes": 21,
       "covers": [
         "The Bode gain-phase relationship, the Bode sensitivity integral, and the waterbed effect"
       ],
@@ -6808,7 +6808,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-cascade-rate-inside-attitude",
       "title": "Cascade control — a fast rate loop inside a slower attitude loop",
-      "minutes": 18,
+      "minutes": 21,
       "covers": [
         "Cascade architecture: a fast rate loop inside a slower attitude loop"
       ],
@@ -6817,7 +6817,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l13-feedforward-and-gain-scheduling",
       "title": "Feedforward, two-degree-of-freedom control, and gain scheduling",
-      "minutes": 19,
+      "minutes": 21,
       "covers": [
         "Feedforward and 2-DOF control; gain scheduling across flight regimes"
       ],
@@ -6846,7 +6846,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-z-transform-discrete-tf",
       "title": "The z-transform and discrete transfer functions",
-      "minutes": 17,
+      "minutes": 18,
       "covers": [
         "The z-transform and discrete transfer functions"
       ],
@@ -6855,7 +6855,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-s-plane-to-z-plane",
       "title": "Mapping the s-plane to the z-plane",
-      "minutes": 16,
+      "minutes": 20,
       "covers": [
         "Mapping the s-plane to the z-plane; the unit circle as the stability boundary"
       ],
@@ -6882,7 +6882,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-choosing-a-sample-rate",
       "title": "Choosing a sample rate",
-      "minutes": 20,
+      "minutes": 22,
       "covers": [
         "Choosing a sample rate: the 20-40x bandwidth rule of thumb and what drives the ends of that range"
       ],
@@ -6900,7 +6900,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-discrete-pid-realization-forms",
       "title": "Discrete PID realization forms",
-      "minutes": 20,
+      "minutes": 21,
       "covers": [
         "Discrete PID realization forms (direct, parallel, delta) and their numerical conditioning"
       ],
@@ -6909,7 +6909,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-biquad-sections",
       "title": "Biquad sections for discrete filters and notches",
-      "minutes": 19,
+      "minutes": 22,
       "covers": [
         "Biquad sections for discrete filters and notches"
       ],
@@ -6929,7 +6929,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-state-space-models-and-realizations",
       "title": "State-space models and their realizations",
-      "minutes": 19,
+      "minutes": 24,
       "covers": [
         "State-space representation and realizations: controllable canonical, observable canonical, modal"
       ],
@@ -6938,7 +6938,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-similarity-transformations-and-invariants",
       "title": "Similarity transformations and what survives them",
-      "minutes": 15,
+      "minutes": 22,
       "covers": [
         "Similarity transformations and what is invariant under them"
       ],
@@ -6956,7 +6956,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-controllability-rank-gramian-pbh",
       "title": "Controllability — the rank test, the Gramian and PBH",
-      "minutes": 19,
+      "minutes": 23,
       "covers": [
         "Controllability: the Kalman rank test, the controllability Gramian, the PBH test"
       ],
@@ -6983,7 +6983,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-luenberger-observers",
       "title": "Luenberger observers and the estimation error dynamics",
-      "minutes": 20,
+      "minutes": 19,
       "covers": [
         "Luenberger observers and the estimation error dynamics"
       ],
