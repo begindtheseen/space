@@ -48,6 +48,28 @@ Here is every sensor in this module, written in that one form.
 Every sensor is a measurement $\mathbf{z}$, a model $h(\mathbf{x})$ that predicts it from the state, and a noise covariance $\mathbf{R}$. The filter consumes each one through the innovation $\boldsymbol{\nu}=\mathbf{z}-h(\hat{\mathbf{x}}^-)$, weighted by how much the sensor is trusted.
 :::
 
+## Noise in the model's own units
+
+A model is only half the job. $\mathbf{R}$ must describe the noise *in the same units as the innovation*. A sensor's data sheet often gives noise in its own raw units instead, and converting it is part of writing the model.
+
+The camera is the clearest case. Its raw noise is in pixels: the centroid of a landmark wobbles by about $\sigma_{\text{px}}$ pixels. But pixels are not what the filter should compare. A better residual uses **normalized image coordinates**, $x_n = (u - c_x)/f_x$ and $y_n = (v - c_y)/f_y$: subtract the image center $(c_x, c_y)$ (the principal point from the camera lesson) and divide by the focal length measured in pixels. These equal $X/Z$ and $Y/Z$, the tangent of the angle off the camera's axis, so they no longer depend on the particular lens and chip. Dividing by $f$ divides the noise by $f$ too. Near the image center, where the tangent of a small angle is the angle itself,
+
+$$
+\sigma_{\text{angle}} \approx \frac{\sigma_{\text{px}}}{f},
+$$
+
+in radians, with $f$ in pixels. (Toward the image edges a pixel covers slightly less angle, so this is a slight overestimate there.)
+
+::: example A navigation camera's noise in radians
+A camera has $f = 2000$ pixels and centroids landmarks to $\sigma_{\text{px}} = 0.2$ pixel. The angular noise is $0.2/2000 = 0.0001\,\mathrm{rad}$. In arcseconds, multiply by $206{,}265$: about $20.6''$. For a crater $10\,\mathrm{km}$ away, that angle spans $0.0001 \times 10000 = 1$ meter sideways.
+
+**Sanity check.** A longer focal length spreads the same scene over more pixels, so each pixel covers a smaller angle and the same $0.2$-pixel wobble means less. Doubling $f$ halves the angular noise, as the formula says.
+:::
+
+::: key Noise in the model's units
+Write $\mathbf{R}$ in the units of the innovation. For a camera, express the residual in normalized image coordinates or as an angle, with $\sigma_{\text{angle}}\approx\sigma_{\text{px}}/f$ (focal length in pixels).
+:::
+
 ## Information adds up
 
 Two thermometers hang side by side. One is good, with a noise of $\sigma_1 = 1^\circ\mathrm{C}$. The other is cheap, with $\sigma_2 = 2^\circ\mathrm{C}$. How good is the best combination of the two?
@@ -293,6 +315,7 @@ The second star tracker. This lesson showed that a sensor far coarser than the a
 | --- | --- | --- |
 | $\mathbf{z}$, $h(\mathbf{x})$, $\mathbf{R}$ | Measurement, its predicted value, its noise | Every sensor in this module has this form |
 | Innovation | The surprise in a measurement | $\boldsymbol{\nu}=\mathbf{z}-h(\hat{\mathbf{x}}^-)$ |
+| $\sigma_{\text{angle}}\approx\sigma_{\text{px}}/f$ | Camera noise in the model's units | Residual in normalized image coordinates or as an angle; $f$ in pixels |
 | Information | One over variance | Adds across independent sensors: $1/\sigma^2=1/\sigma_1^2+1/\sigma_2^2$ |
 | Attitude information matrix | Centralized attitude fusion | $\mathbf{F}=\sum_i a_i(\mathbf{I}-\hat{\mathbf{b}}_i\hat{\mathbf{b}}_i^\mathsf{T})$, summed across sensor types |
 | Benefit capped by information | Coarse sensors cannot rescue fine axes | A $2^\circ$ sensor barely moves a $28''$ axis, whatever its geometry |
