@@ -1,7 +1,7 @@
 ---
 id: l10-the-error-state-kalman-filter
 title: The error-state (indirect) Kalman filter
-minutes: 26
+minutes: 18
 covers:
   - 'The error-state (indirect) Kalman filter: why the error state is small and nearly linear, injection and reset, the Jacobian of the reset'
 ---

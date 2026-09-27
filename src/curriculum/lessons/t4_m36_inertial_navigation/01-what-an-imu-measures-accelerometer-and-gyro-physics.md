@@ -10,7 +10,7 @@ Ride an elevator with your eyes shut. When it starts up, you feel heavier. On a 
 
 An **inertial measurement unit**, or **IMU**, is that idea turned into hardware: six sensors in a box, bolted to the vehicle. Three **accelerometers** sense push, and three **gyroscopes** sense turning, one of each along three axes at right angles. Everything an inertial navigator works out — which way the vehicle points, how fast it moves, where it is — comes from those six streams of numbers and nothing else. No signal comes in from outside.
 
-That is the great strength of an **inertial navigation system** (INS). It works in a tunnel, under radio jamming, inside a rocket fairing and on the far side of the Moon. It is also the great weakness. Every error the sensors make is kept, added up and compounded, until something from outside corrects it.
+That is the great strength of an **inertial navigation system** (INS): it works in a tunnel, under jamming, and on the far side of the Moon. It is also the great weakness. Every sensor error is kept and compounded until something from outside corrects it.
 
 So this module rests on knowing exactly what the six numbers mean, and neither sensor measures what its name suggests. This lesson builds both facts from Newton's law, then opens up the four gyro technologies — MEMS, fiber optic, ring laser and hemispherical resonator — with the accelerometers alongside.
 
@@ -35,7 +35,7 @@ Two cases fix the sign in your head.
 - **At rest on a bench.** Here $\mathbf{a} = 0$, so $\mathbf{f} = -\mathbf{g}_{grav}$. Gravity points down, so the accelerometer reads $9.81\,\mathrm{m/s^2}$ pointing **up**. The spring holds the mass up against gravity, and that is what it reports.
 - **In free fall.** Here $\mathbf{a} = \mathbf{g}_{grav}$, so $\mathbf{f} = 0$. The accelerometer reads nothing, even though the vehicle is speeding up at $9.81\,\mathrm{m/s^2}$.
 
-A spacecraft in orbit is in free fall forever. At the International Space Station's height, $420\,\mathrm{km}$, gravity is $\mu/r^2 = 3.986 \times 10^{14}/(6.798 \times 10^{6})^2 = 8.62\,\mathrm{m/s^2}$, about $88\%$ of its value on the ground. The station's accelerometers read only a few micro-$g$ of air drag and vibration. The $8.62\,\mathrm{m/s^2}$ that keeps it in orbit is invisible to them.
+A spacecraft in orbit falls forever. At the International Space Station's height, $420\,\mathrm{km}$, gravity is $\mu/r^2 = 3.986 \times 10^{14}/(6.798 \times 10^{6})^2 = 8.62\,\mathrm{m/s^2}$, about $88\%$ of its value on the ground. The station's accelerometers read only a few micro-$g$ of drag and vibration. The $8.62\,\mathrm{m/s^2}$ that keeps it in orbit is invisible to them.
 
 So the navigator must supply gravity itself. Flip the definition around:
 
@@ -43,7 +43,7 @@ $$
 \mathbf{a} = \mathbf{f} + \mathbf{g}_{grav}.
 $$
 
-This sum, not $\mathbf{f}$ alone, is what gets integrated into velocity. The gravity comes from a computer model, worked out at the computed position. Whatever the model gets wrong is added straight to the sensor reading, and nothing can tell the two apart. A gravity-model error looks exactly like an accelerometer bias. In axes that turn with the Earth, the centrifugal term from the rotating-frames module joins gravitation to make **gravity** $\mathbf{g}$, the direction a plumb line hangs, and a later lesson builds the full velocity equation from there.
+This sum, not $\mathbf{f}$ alone, is what gets integrated into velocity. The gravity comes from a computer model, worked out at the computed position. Its errors add straight to the reading, and nothing can tell the two apart: a gravity-model error looks exactly like an accelerometer bias. In axes that turn with the Earth, the centrifugal term from the rotating-frames module joins gravitation to make **gravity** $\mathbf{g}$, the direction a plumb line hangs, and a later lesson builds the full velocity equation from there.
 
 ::: key What an accelerometer measures
 Specific force, not acceleration: $\mathbf{f} = \mathbf{a} - \mathbf{g}_{grav}$. In free fall it reads zero; at rest on a bench it reads $+g$ upward. Gravity must be added analytically, $\mathbf{a} = \mathbf{f} + \mathbf{g}$, from a model evaluated at the computed position, which is why a gravity-model error is indistinguishable from an accelerometer bias.
@@ -95,7 +95,7 @@ A gyro good enough to sense that horizontal part can find north with no compass.
 $\omega_{ie} = 7.292115 \times 10^{-5}\,\mathrm{rad/s}$, about $15.041^\circ/\mathrm{h}$. A gyro whose bias instability is well below this can gyrocompass; a gyro whose bias is a large fraction of it cannot find north.
 :::
 
-Old navigators kept their sensors level on a platform held by motorized rings. A **[[strapdown|strapdown]]** IMU instead bolts the sensors straight to the vehicle and does the leveling in software. The computer integrates the gyros to keep track of $\mathbf{C}_b^n$, the direction cosine matrix that turns body axes into navigation axes. It then uses $\mathbf{C}_b^n$ to turn the specific force into the frame where gravity is added.
+Older systems held their sensors level on motorized rings. A **[[strapdown|strapdown]]** IMU bolts the sensors straight to the vehicle and levels in software. The computer integrates the gyros to track $\mathbf{C}_b^n$, the direction cosine matrix from body to navigation axes, and uses it to turn the specific force into the frame where gravity is added.
 
 So every attitude error tips gravity sideways into the horizontal channels. That chain — gyro error, attitude error, gravity leak, velocity error, position error — is the backbone of this module.
 
@@ -107,13 +107,13 @@ Three designs cover the market.
 - The **MEMS capacitive** accelerometer is the same idea carved into silicon. **MEMS** means micro-electro-mechanical systems: machines a fraction of a millimeter across. A tiny mass sits on folded springs, and comb-shaped fingers read its motion as a change in capacitance. Phone-grade parts run open loop; better tactical parts close the loop. Bias ranges from a few milli-$g$ down to about $100\,\mathrm{\mu g}$.
 - The **vibrating-beam** accelerometer hangs the proof mass on a quartz beam, like a guitar string. More load changes the beam's pitch, so the output is a frequency — digital from the start.
 
-Units: one micro-$g$ ($\mathrm{\mu g}$) is $9.80665 \times 10^{-6}\,\mathrm{m/s^2}$ and one milli-$g$ ($\mathrm{mg}$) is $9.80665 \times 10^{-3}\,\mathrm{m/s^2}$.
+One micro-$g$ ($\mathrm{\mu g}$) is $9.80665 \times 10^{-6}\,\mathrm{m/s^2}$ and one milli-$g$ ($\mathrm{mg}$) is $9.80665 \times 10^{-3}\,\mathrm{m/s^2}$.
 
-Here is a trade you will use constantly. Tilt a level accelerometer by a small angle $\delta\theta$ ("delta theta") and it picks up $g\sin\delta\theta \approx g\,\delta\theta$ of gravity sideways. So a bias of $1\,\mathrm{mg}$ looks exactly like a tilt of $1\,\mathrm{mrad}$, about $3.4$ arcminutes. Accelerometer bias and attitude error trade places throughout this module.
+A trade you will use constantly: tilt a level accelerometer by a small angle $\delta\theta$ ("delta theta") and it picks up $g\sin\delta\theta \approx g\,\delta\theta$ of gravity sideways. So a bias of $1\,\mathrm{mg}$ looks exactly like a tilt of $1\,\mathrm{mrad}$, about $3.4$ arcminutes. Accelerometer bias and attitude error trade places throughout this module.
 
 ## MEMS vibratory gyroscopes
 
-Picture walking straight across a spinning merry-go-round. You feel shoved sideways. That sideways shove is the **[[Coriolis acceleration|coriolis]]**, and a MEMS gyro is built to feel it.
+Walk straight across a spinning merry-go-round and you feel shoved sideways. That shove is the **[[Coriolis acceleration|coriolis]]**, and a MEMS gyro is built to feel it.
 
 A MEMS gyro has no spinning wheel. It has a proof mass shaken back and forth along one axis, the **drive** axis, at a few thousand to a few tens of thousands of times a second. When the case turns at rate $\Omega$ ("omega") about an axis at right angles to the shaking, the moving mass (velocity $\mathbf{v}_d$) feels
 
@@ -130,7 +130,7 @@ At a turn rate of $1^\circ/\mathrm{s} = 0.01745\,\mathrm{rad/s}$, the Coriolis a
 
 Now ask the gyro to feel the Earth turn. At $\omega_{ie} = 7.29 \times 10^{-5}\,\mathrm{rad/s}$ the Coriolis acceleration is $9.2 \times 10^{-5}\,\mathrm{m/s^2}$, and the motion is $2.3 \times 10^{-14}\,\mathrm{m}$: twenty-three **[[femtometers|femtometers]]**, smaller than thirty protons in a row.
 
-Compare an imperfection. If manufacturing leaks one part per million of the $10\,\mathrm{\mu m}$ drive swing into the sense axis, that is $10\,\mathrm{pm}$ of false motion — about $430$ times the Earth-rate signal. This leak is called **quadrature error**. It is a quarter-cycle ($90^\circ$) out of step with the Coriolis signal, so the electronics mostly reject it. But any small timing error lets a slice through as bias. That is why MEMS gyros are limited by bias, why their bias shifts with temperature, and why a phone-grade gyro cannot find north.
+Compare an imperfection. If manufacturing leaks one part per million of the $10\,\mathrm{\mu m}$ drive swing into the sense axis, that is $10\,\mathrm{pm}$ of false motion — about $430$ times the Earth-rate signal. This leak is called **quadrature error**. It is a quarter-cycle ($90^\circ$) out of step with the Coriolis signal, so the electronics mostly reject it. But any small timing error lets a slice through as bias. So MEMS gyros are bias-limited, their bias shifts with temperature, and a phone-grade gyro cannot find north.
 :::
 
 The scale factor is proportional to the drive speed, so a control loop holds the drive swing constant and the electronics are calibrated over temperature. Tactical MEMS gyros reach bias instabilities below $1^\circ/\mathrm{h}$ and angle random walk near $0.1^\circ/\sqrt{\mathrm{h}}$. Consumer parts are ten to a hundred times worse. The art of low-cost navigation is letting something else correct their bias faster than it wanders.
@@ -191,23 +191,23 @@ $$
 
 Earth rate gives a beat of $1.58 \times 10^{5} \times 7.29 \times 10^{-5} = 11.5\,\mathrm{Hz}$. One beat is $1/(1.58 \times 10^{5}) = 6.33\,\mathrm{\mu rad}$, about $1.3$ arcseconds, so a $90^\circ$ turn ($1.571\,\mathrm{rad}$) gives $248\,000$ counts.
 
-There is a catch. At low rates, light scattered by the mirrors pulls the two beams onto one shared frequency. Inside this **[[lock-in|lock-in]]** band, typically a few hundred degrees per hour wide, the output is zero. The cure is to shake the block back and forth through a small angle a few hundred times a second, so the rate is almost always outside the band, and then subtract the known shaking, which adds up to zero.
+The catch: at low rates, light scattered by the mirrors pulls both beams onto one frequency. Inside this **[[lock-in|lock-in]]** band, typically a few hundred degrees per hour wide, the output is zero. The cure is to shake the block through a small angle a few hundred times a second, keeping the rate outside the band, then subtract the known shaking, which adds up to zero.
 :::
 
 With bias of about $0.001$ to $0.01^\circ/\mathrm{h}$ and a scale factor steady to a few parts per million, the RLG has been the standard airliner gyro for forty years. Its costs: the gas discharge, precision mirrors, the shaking mechanism, and a lifetime limited by the discharge.
 
 ## The hemispherical resonator gyro
 
-Tap a wine glass and it rings. Its rim flexes into an oval, then into an oval turned $45^\circ$, back and forth. The places on the rim that do not move are called **nodes**.
+Tap a wine glass and it rings: its rim flexes into an oval, then an oval turned $45^\circ$, back and forth. The points on the rim that stay still are **nodes**.
 
-In 1890 the physicist G. H. Bryan noticed something odd. Turn the ringing glass on its stem, and the pattern of nodes stays fixed neither to the glass nor to the room. It lags behind the glass by a fixed fraction of the turn angle — about $0.3$ for a thin half-sphere — set only by the shape. This is the **[[Bryan factor|bryan]]**.
+In 1890 G. H. Bryan noticed that if you turn the ringing glass on its stem, the pattern of nodes stays fixed neither to the glass nor to the room. It lags behind the glass by a fixed fraction of the turn angle — about $0.3$ for a thin half-sphere — set only by the shape. This is the **[[Bryan factor|bryan]]**.
 
 The **hemispherical resonator gyro** (HRG) is that wine glass made precise: a fused-quartz half-sphere a few centimeters across, rung by electric forces in a vacuum, with electrodes around the rim reading where the pattern points.
 
 - In **whole-angle** mode the pattern is left free and its angle to the case is read directly. The output is total rotation, with a scale factor set by the shell's shape and no limit on rate.
 - In **force-rebalance** mode the electrodes hold the pattern fixed to the case, and the force needed is proportional to rate. This trades range for lower noise.
 
-With no light source, no gas and no bearings, and a quality factor in the millions (it rings for a long time after one tap), an HRG runs for decades without wearing out. That is why it flies on a large share of today's spacecraft and on several launch vehicles. Its bias and noise sit in the navigation-grade class.
+With no light source, gas or bearings, and a quality factor in the millions (it rings a long time after one tap), an HRG runs for decades without wear. So it flies on a large share of today's spacecraft and on several launch vehicles, with navigation-grade bias and noise.
 
 ## Grades, and what the grade buys
 
@@ -270,7 +270,7 @@ The drive swing of a MEMS gyro drifts by one percent because of a temperature ch
 ::: answer
 The Coriolis acceleration is $2\Omega v_d$, so a one percent change in drive speed is a one percent change in scale factor. At $1^\circ/\mathrm{s}$ the output is off by $0.01^\circ/\mathrm{s} = 36^\circ/\mathrm{h}$ — far bigger than the sensor's bias instability. At Earth rate the same one percent is only $0.15^\circ/\mathrm{h}$.
 
-Scale-factor error grows with the rate being measured: tiny when the sensor sits still, dominant in a fast maneuver. That is why the drive swing is held by a control loop, why the scale factor is calibrated over temperature, and why the next lesson treats scale factor as a separate error from bias.
+Scale-factor error grows with the rate being measured: tiny at rest, dominant in a fast maneuver. That is why the drive swing is servo-held, the scale factor is calibrated over temperature, and the next lesson treats scale factor separately from bias.
 :::
 
 ## Summary
