@@ -2,6 +2,7 @@
 @level advanced
 @title SQL · Advanced
 @name SQL, advanced: window functions, schema design and the database's own rules
+@plainvoice true
 @blurb Write the queries analysts reach for — CTEs, recursion, window functions — and design databases that protect themselves with constraints, indexes, transactions, upserts, views and triggers.
 @schema
 CREATE TABLE employees (
@@ -3504,7 +3505,40 @@ INSERT INTO raw_hits (page, ts) VALUES
   ('/blog',    '2024-07-01 12:05:00'),
   ('/blog',    '2024-07-01 13:00:00');
 --- teach
-Counters, settings and caches all need "insert this row, or if it already exists, update it". Doing it in two steps — `SELECT`, then `INSERT` or `UPDATE` — has a race: two requests can both see "no row" and both insert. **UPSERT** does it in one statement:
+Last lesson, Transactions: all or nothing, you grouped several changes so that they all happen or none do. This lesson handles [[one of the most common changes an app makes|upsert-uses]]: "add this row, or, if it is already there, update it". You will do it in one statement.
+
+### The picture
+
+Picture a tally sheet on a café wall, with one line per cake per day. When a slice sells, you look for today's line for that cake. If the line is there, you add to its count. If it is not, you start a new line. You never want two lines for the same cake on the same day.
+
+### The tables in this lesson
+
+`daily_views` counts visits to each page of a website, with one row per page per day. Its columns are `page`, `day` and `views`. Its primary key is `(page, day)`: the two columns together. So there can be only one row for `/pricing` on `2024-07-01`. It starts with two rows:
+
+| page | day | views |
+| --- | --- | --- |
+| /pricing | 2024-07-01 | 10 |
+| /docs | 2024-07-01 | 4 |
+
+`raw_hits` has one row per single visit: the `page`, and `ts`, a **timestamp** (a date and a time, like `'2024-07-01 22:10:00'`).
+
+### Why two statements are not enough
+
+The first idea most people have is two statements. First a `SELECT` to see whether the row exists, then an `INSERT` or an `UPDATE`.
+
+The trouble is that a busy website serves many visitors at the same moment. Two requests can both look, both see "no row yet", and both insert. That is a [[race condition|race]]: the result depends on which one gets there first.
+
+And a plain `INSERT` of a row that already exists fails. The primary key from the lesson Constraints: rules the database enforces refuses a second row with the same key:
+
+```sql
+INSERT INTO daily_views (page, day, views)
+VALUES ('/pricing', '2024-07-01', 3);
+-- Error: UNIQUE constraint failed: daily_views.page, daily_views.day
+```
+
+### Insert, or else update
+
+**[[UPSERT|upsert-name]]** is an `INSERT` that carries a plan for that clash. The word is "update" and "insert" squeezed together.
 
 ```sql
 INSERT INTO daily_views (page, day, views)
@@ -3512,11 +3546,43 @@ VALUES ('/pricing', '2024-07-01', 3)
 ON CONFLICT (page, day) DO UPDATE SET views = views + excluded.views;
 ```
 
-- `ON CONFLICT (page, day)` names the **unique** constraint that decides "already exists" — it must match a primary key or unique index exactly.
-- `excluded` is the row you tried to insert. `excluded.views` is the 3; plain `views` is the value already in the table.
-- `DO NOTHING` instead of `DO UPDATE` keeps the existing row and moves on.
+Read it aloud: "Try to insert this row. If it clashes on `(page, day)`, update the row that is already there instead." The `/pricing` row for `2024-07-01` goes from 10 to 13. No error, and still one row.
 
-You can upsert many rows at once from a query. One SQLite parsing quirk: when the rows come from a `SELECT`, SQLite cannot tell whether `ON` begins a join or the conflict clause, so the `SELECT` needs a `WHERE` before `ON CONFLICT` — `WHERE true` is the customary way:
+Run the same statement for `'/blog'` instead, and there is no clash. The row is inserted as normal, with `views` = 3.
+
+### ON CONFLICT names the rule
+
+A **conflict** is an insert that would break a "no two rows alike" rule: a primary key or a `UNIQUE` constraint. `ON CONFLICT (page, day)` names which rule you are handling.
+
+The columns in the brackets must match a primary key or `UNIQUE` constraint exactly. `ON CONFLICT (page)` on its own fails with "ON CONFLICT clause does not match any PRIMARY KEY or UNIQUE constraint", because no rule says a page may appear only once.
+
+### excluded: the row that did not get in
+
+During a conflict there are two rows in play: the one already in the table, and the one you tried to insert. The one you tried to insert was kept out, so SQL calls it **[[excluded|excluded-name]]**. Inside `DO UPDATE SET`:
+
+- `views` is the value already in the table: 10.
+- `excluded.views` is the value you tried to insert: 3.
+- `views + excluded.views` is 10 + 3 = 13.
+
+To overwrite instead of adding, write `SET views = excluded.views`.
+
+### DO NOTHING
+
+Sometimes you only want to make sure a row exists. Then the plan for a clash is "leave it alone":
+
+```sql
+INSERT INTO daily_views (page, day, views)
+VALUES ('/docs', '2024-07-01', 1)
+ON CONFLICT (page, day) DO NOTHING;
+```
+
+The `/docs` row stays at 4, and there is no error.
+
+### Many rows at once
+
+In the lesson Changing data with conditions you filled a table from a `SELECT` with `INSERT … SELECT`. An upsert works with that too: each row the `SELECT` returns is either inserted or folded into the row that is already there.
+
+There is one trap in how SQLite reads it. The word `ON` also starts a join's condition (`JOIN … ON …`). If the `SELECT` ends straight after its `FROM`, SQLite cannot tell whether `ON` begins a join condition or `ON CONFLICT`. It gives up with a syntax error. The fix is to always give that `SELECT` a `WHERE`. [[WHERE true|where-true]] keeps every row, because `true` is a condition that always holds:
 
 ```sql
 INSERT INTO t (a, b)
@@ -3524,9 +3590,61 @@ SELECT a, b FROM staging WHERE true
 ON CONFLICT (a) DO UPDATE SET b = excluded.b;
 ```
 
-Compare `INSERT OR REPLACE`: it *deletes* the old row and inserts a new one, so any columns you did not supply are lost, and delete triggers fire. UPSERT updates in place.
+Here `t` is the table being filled, with `a` as its key, and `staging` is a holding table where new rows wait. `WHERE` comes before `GROUP BY`, as always, so a grouped `SELECT` reads `FROM … WHERE true GROUP BY …`.
+
+### Not the same as INSERT OR REPLACE
+
+The lesson on constraints showed `INSERT OR REPLACE`. It looks similar but works differently: it **deletes** the old row, then inserts the new one. Any column you did not supply is lost, and comes back empty or as its default. An upsert [[updates the row in place|replace-vs-upsert]]: every column not named in `SET` keeps its value.
+
+**Watch out:** `views` and `excluded.views` are different values. A counter needs `SET views = views + excluded.views`. If you write `SET views = excluded.views`, the old count is thrown away: `/pricing` would show 3, not 13, and no error warns you.
+
+::: context upsert-uses Where upserts show up
+Any table that keeps "the latest" or "the total so far" for each thing needs this pattern. A website keeps a view count per page per day. A settings table keeps one row per user per setting, and saving a setting upserts it. A mission control ground station keeps one row per satellite with the last position heard, and every incoming radio packet upserts that satellite's row. The table stays small, one row per thing, however many packets arrive.
+:::
+
+::: context race Two requests, one gap
+Each request does two things: look, then write. Between the look and the write there is a tiny gap, and another request can slip into it. Here both requests look before either writes, so both decide to insert. With the primary key in place, the second insert fails with an error. Without a key, you would get two rows for one page and day. An upsert closes the gap: the look and the write are one statement, and the database does not let another writer in half-way through it.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">
+  <text x="8" y="44" font-size="12" fill="#1f2a44">request A</text>
+  <text x="8" y="104" font-size="12" fill="#1f2a44">request B</text>
+  <line x1="80" y1="40" x2="352" y2="40" stroke="#6c7a93"/>
+  <line x1="80" y1="100" x2="352" y2="100" stroke="#6c7a93"/>
+  <rect x="90" y="26" width="84" height="28" rx="4" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="132" y="44" font-size="11" fill="#1f2a44" text-anchor="middle">look: no row</text>
+  <rect x="130" y="86" width="84" height="28" rx="4" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="172" y="104" font-size="11" fill="#1f2a44" text-anchor="middle">look: no row</text>
+  <rect x="220" y="26" width="60" height="28" rx="4" fill="#fff" stroke="#1d6fd1"/>
+  <text x="250" y="44" font-size="11" fill="#1f2a44" text-anchor="middle">INSERT</text>
+  <rect x="270" y="86" width="80" height="28" rx="4" fill="#fff" stroke="#b4232c"/>
+  <text x="310" y="104" font-size="11" fill="#b4232c" text-anchor="middle">INSERT: clash</text>
+  <text x="180" y="140" font-size="11" fill="#6c7a93" text-anchor="middle">time runs left to right</text>
+</svg>
+```
+:::
+
+::: context upsert-name The same idea in other databases
+SQLite added `ON CONFLICT … DO UPDATE` in version 3.24, in 2018. It copied the spelling from PostgreSQL, which has had it since version 9.5, so the statement in this lesson runs in both, `excluded` included. MySQL writes the same idea as `INSERT … ON DUPLICATE KEY UPDATE`. The SQL standard has a bigger statement called `MERGE`, which some databases offer as well. The name "upsert" is not a keyword in any of them. It is the word engineers use when they talk about the pattern.
+:::
+
+::: context excluded-name Naming both rows plainly
+`excluded` is a made-up table name that only exists inside `DO UPDATE`. It always has the same columns as the table you are inserting into. The existing row can be named with the table's own name, which some people find easier to read: `SET views = daily_views.views + excluded.views` does exactly the same as `SET views = views + excluded.views`. You may also put a `WHERE` after the `SET`, for example `WHERE excluded.views > 0`, and then the update only happens when that condition holds.
+:::
+
+::: context where-true Why a harmless WHERE fixes it
+A computer reads SQL word by word, left to right, and decides what each word means as it goes. After `FROM staging`, the word `ON` could be the start of a join condition, so SQLite reads it that way and then trips over `CONFLICT`. Any clause between `FROM` and `ON` removes the doubt. A `WHERE` does, and so does a `GROUP BY`. The SQLite documentation recommends `WHERE true` for every `INSERT … SELECT … ON CONFLICT`, so you never have to work out whether you needed it. `true` is the number 1 in SQLite, and a condition of 1 holds for every row.
+:::
+
+::: context replace-vs-upsert Why REPLACE can surprise you
+Say a table `s` has a primary key `k`, plus `v` and `note`, and one row: `'a'`, 1, `'keep me'`. `INSERT OR REPLACE INTO s (k, v) VALUES ('a', 2)` deletes that row and inserts a fresh one, so `note` comes back NULL. The upsert `INSERT INTO s (k, v) VALUES ('a', 2) ON CONFLICT (k) DO UPDATE SET v = excluded.v` changes only `v`, and `'keep me'` survives. The delete inside a REPLACE can also set off other rules: a delete trigger, which the lesson after next introduces, runs for it if the setting `PRAGMA recursive_triggers` is on.
+:::
 --- task
-Fold the raw hits into the daily counters with **one** `INSERT … SELECT … ON CONFLICT` statement: count `raw_hits` per page and calendar day (`date(ts)`), add each count to the existing row for that page and day, and create a row where none exists yet.
+Fold the raw hits into the daily counters with **one** `INSERT … SELECT … ON CONFLICT` statement:
+
+- Count the rows of `raw_hits` for each page and calendar day. The day is `date(ts)`, which keeps only the date part of the timestamp.
+- Insert those counts into `daily_views` (`page`, `day`, `views`).
+- Where a row for that page and day already exists, add the count to its `views`. Where none exists, a new row is created.
 --- starter
 INSERT INTO daily_views (page, day, views)
 SELECT page, date(ts), COUNT(*)
@@ -3540,9 +3658,11 @@ WHERE true
 GROUP BY page, date(ts)
 ON CONFLICT (page, day) DO UPDATE SET views = views + excluded.views;
 --- hint
-Run the starter: it fails, because `/pricing` on 2024-07-01 already exists.
+Run the starter first. It fails with "UNIQUE constraint failed", because `/pricing` on `2024-07-01` already has a row. The statement needs a plan for that clash.
 --- hint
-Add `ON CONFLICT (page, day) DO UPDATE SET views = views + excluded.views` — and a `WHERE true` before `GROUP BY` so SQLite parses it.
+At the end, before the `;`, add `ON CONFLICT (page, day) DO UPDATE SET …`. The new count is `excluded.views`, and it should be added to the `views` already there.
+--- hint
+Add `WHERE true` between `FROM raw_hits` and `GROUP BY`, and finish with `ON CONFLICT (page, day) DO UPDATE SET views = views + excluded.views;`.
 --- check query | Existing counters were added to, new ones created
 SELECT page, day, views FROM daily_views ORDER BY page, day
 => [["/blog", "2024-07-01", 3], ["/docs", "2024-07-01", 4], ["/docs", "2024-07-02", 1], ["/pricing", "2024-07-01", 12], ["/pricing", "2024-07-02", 1]]
@@ -3551,28 +3671,136 @@ SELECT page, day, views FROM daily_views ORDER BY page, day
 
 === sql3-15 | Views: saved queries
 --- teach
-A **view** is a query with a name, stored in the database. You select from it like a table, but it holds no data: each time you use it, its query runs against the current tables.
+Last lesson you used an upsert to insert a row or update the one already there. That changed data. This lesson saves a *query* inside the database under a name, so that anyone can then use it as if it were a table.
+
+This lesson uses the course's `employees` table again: `name`, `title`, `dept`, `salary` and the rest.
+
+### The picture
+
+Picture a saved search in a shopping app: "red trainers under 50". The app does not keep a copy of the trainers. Each time you open the saved search, it searches again, so new trainers show up and sold-out ones drop away. What is saved is the *question*, not the answers.
+
+### Saving a query
+
+A **view** is a query with a name, stored in the database. You create one with `CREATE VIEW`, a name, `AS`, and a `SELECT`:
 
 ```sql
 CREATE VIEW eng_team AS
 SELECT name, title, salary FROM employees WHERE dept = 'eng';
-
-SELECT * FROM eng_team WHERE salary > 100000;
 ```
 
-What views are good for:
+Here `AS` means "is defined as". Running this returns no rows. It only saves the query under the name `eng_team`.
 
-- **One definition of a business number.** If "active customer" or "net revenue" is defined in one view, every report that uses the view agrees — and when the definition changes, it changes once.
-- **Simpler queries.** Hide a five-table join behind a name.
-- **A narrower surface.** Give a reporting tool the view, not the raw tables with salaries and emails.
+### Using it like a table
 
-Name the output columns clearly inside the view with `AS`, because those names are what everyone else sees.
+Now `eng_team` can go anywhere a table name can go, including after `FROM` with a `WHERE` of its own:
 
-A view is always up to date, because it is re-run every time. The price is that it is re-run every time: a slow query behind a view is still slow. (Other databases offer *materialized* views that store the result; in SQLite you build that yourself with a table and triggers.)
+```sql
+SELECT * FROM eng_team WHERE salary >= 150000;
+```
 
-To change a view, `DROP VIEW name;` and create it again.
+| name | title | salary |
+| --- | --- | --- |
+| Omar | CTO | 200000 |
+| Raj | Eng manager | 150000 |
+| Tess | Staff engineer | 150000 |
+
+The view gave the engineers, and this `WHERE` kept the ones earning at least 150000.
+
+### A view holds no data
+
+A view [[holds no data|no-data]] of its own. Each time you use it, its saved query runs again against the tables as they are right now. So a view is always up to date:
+
+```sql
+UPDATE employees SET salary = 160000 WHERE name = 'Raj';
+SELECT * FROM eng_team WHERE salary >= 150000;
+```
+
+Raj's row now shows 160000. You never touched the view.
+
+You have named a query before: [[a CTE|view-vs-cte]], from the lesson CTEs: a query in named steps. A CTE's name lasts for one statement. A view is saved in the database, so its name lasts until someone removes it, and every query and every person can use it.
+
+### What views are good for
+
+- **[[One definition of a business number|one-definition]].** If "active customer" or "net revenue" is defined in one view, every report that uses the view agrees. When the definition changes, it changes in one place.
+- **Simpler queries.** A five-table join can hide behind one short name.
+- **[[A narrower surface|narrow-surface]].** A reporting tool can be given the view, with only the columns it needs, instead of the raw tables with salaries and emails in them.
+
+### Name the columns
+
+The columns of a view are named by its `SELECT`. Those names are what everyone who uses the view sees and types. So give every worked-out column a clear name with `AS`:
+
+```sql
+SELECT dept, MAX(salary) AS top_salary FROM employees GROUP BY dept;
+```
+
+### The price: it runs every time
+
+A view is re-run every time you use it. That keeps it fresh, but a slow query behind a view is still slow, every time. Other databases offer [[materialized views|materialized]], which store the result. SQLite has none. There you build the same thing yourself, with a table and triggers.
+
+### Changing or removing a view
+
+SQLite has no command to edit a view. Creating `eng_team` a second time fails with "view eng_team already exists". To change it, remove it with `DROP VIEW`, then create it again:
+
+```sql
+DROP VIEW eng_team;
+```
+
+`DROP VIEW` removes only the saved query. The rows in `employees` are not touched. And [[you cannot write into a view|read-only]]: to change data, you change the tables underneath it.
+
+**Watch out:** a column with no `AS` is named after its own expression. `ROUND(AVG(salary))` is the average salary rounded to a whole number (`ROUND` with no second number rounds to 0 decimal places). Without a name it gives a column called `ROUND(AVG(salary))`, brackets and all, and everyone using the view has to type that. Name every worked-out column.
+
+::: context no-data What the database actually saves
+The database keeps the text of the query and nothing else. You can read it back from `sqlite_master`, SQLite's own table that lists everything in the database: `SELECT type, sql FROM sqlite_master WHERE name = 'eng_team';` gives the type `view` and the `CREATE VIEW` statement you wrote. When you select from the view, SQLite slots that saved query into yours and runs the lot against `employees`.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 120" font-family="Inter, Arial, sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#1f2a44"/>
+    </marker>
+  </defs>
+  <rect x="8" y="30" width="96" height="44" rx="4" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="56" y="50" font-size="12" fill="#1f2a44" text-anchor="middle">your SELECT</text>
+  <text x="56" y="65" font-size="11" fill="#1f2a44" text-anchor="middle">FROM eng_team</text>
+  <rect x="132" y="30" width="96" height="44" rx="4" fill="#fff" stroke="#1d6fd1" stroke-dasharray="4 3"/>
+  <text x="180" y="50" font-size="12" fill="#1f2a44" text-anchor="middle">eng_team</text>
+  <text x="180" y="65" font-size="11" fill="#6c7a93" text-anchor="middle">saved query, 0 rows</text>
+  <rect x="256" y="30" width="96" height="44" rx="4" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="304" y="50" font-size="12" fill="#1f2a44" text-anchor="middle">employees</text>
+  <text x="304" y="65" font-size="11" fill="#1f2a44" text-anchor="middle">11 real rows</text>
+  <line x1="104" y1="52" x2="130" y2="52" stroke="#1f2a44" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="228" y1="52" x2="254" y2="52" stroke="#1f2a44" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="180" y="106" font-size="11" fill="#6c7a93" text-anchor="middle">each use runs the saved query again</text>
+</svg>
+```
+:::
+
+::: context view-vs-cte View, CTE or table?
+All three give you something with a name that you can select from. A **CTE** lives for one statement: good for breaking up one long query. A **view** is saved in the database: good for a query many people or reports need. A **table** stores real rows: good for data that must be kept, or for a result that is too slow to work out every time. A view can use CTEs inside it, and a query can use views inside its CTEs, so they combine freely.
+:::
+
+::: context one-definition One number, one definition
+In a real company, "how many active users do we have?" can get three different answers from three teams. One counts anyone who logged in this month, another anyone who logged in this week, a third leaves out test accounts. The numbers disagree and meetings go in circles. The cure is to write the definition down once, as a view such as `active_users`, and have every dashboard read from it. Data teams call a view like this part of a "semantic layer": the place where business words get their exact SQL meaning.
+:::
+
+::: context narrow-surface Views as a guard rail
+Big database servers such as PostgreSQL let an administrator control who may read what, with the `GRANT` command. A common setup gives a reporting tool permission to read one view and nothing else. The view leaves out the salary and email columns, so the tool cannot leak them even by accident. SQLite has no user accounts, because it is a file used by one program, so there the same idea is a habit rather than a lock: the rest of the code agrees to read the view.
+:::
+
+::: context materialized Storing the answer
+A **materialized view** saves the result of its query as real rows, like a table, and refreshes them when asked. In PostgreSQL that is `CREATE MATERIALIZED VIEW` and later `REFRESH MATERIALIZED VIEW`. Reading it is fast, because nothing is worked out, but the rows can be out of date between refreshes. In SQLite you build the same thing with a summary table, filled with `INSERT … SELECT`, and kept up to date either by a scheduled job or by triggers, which are next lesson.
+:::
+
+::: context read-only Why you cannot insert into a view
+Try `UPDATE eng_team SET salary = 1;` and SQLite answers "cannot modify eng_team because it is a view". A view's rows are worked out from other tables, so the database would have to guess which real row an edit should land in. SQLite does offer a way to spell it out: an `INSTEAD OF` trigger on the view, which says exactly what to do to the real tables instead. Triggers are the next lesson.
+:::
 --- task
-Create a view named `dept_summary` with one row per department and the columns `dept`, `headcount`, `avg_salary` (the average salary, rounded to the nearest whole number) and `top_salary` (the highest salary).
+Create a view named `dept_summary` from `employees`, with one row per department and these four columns:
+
+- `dept`
+- `headcount`: the number of people in the department
+- `avg_salary`: the average salary, rounded to the nearest whole number
+- `top_salary`: the highest salary
 --- starter
 SELECT dept, COUNT(*) AS headcount
 FROM employees
@@ -3586,9 +3814,11 @@ SELECT dept,
 FROM employees
 GROUP BY dept;
 --- hint
-`CREATE VIEW dept_summary AS` followed by the `SELECT`.
+The starter is already the start of the view's query. Put `CREATE VIEW dept_summary AS` on the line above it.
 --- hint
-`ROUND(AVG(salary)) AS avg_salary, MAX(salary) AS top_salary`.
+Add two more columns to the `SELECT`, each with its own `AS` name. `AVG(salary)` gives the average, and `ROUND(…)` with no second number rounds to a whole number.
+--- hint
+The two new columns are `ROUND(AVG(salary)) AS avg_salary` and `MAX(salary) AS top_salary`, each after a comma.
 --- check query | The view gives one row per department
 SELECT dept, headcount, avg_salary, top_salary FROM dept_summary ORDER BY dept
 => [["eng", 7, 126429.0, 200000], ["exec", 1, 250000.0, 250000], ["finance", 3, 123333.0, 190000]]
@@ -3614,7 +3844,22 @@ CREATE TABLE order_lines (
   qty INTEGER NOT NULL
 );
 --- teach
-A **trigger** is SQL the database runs by itself when something happens to a table. It keeps derived data in step no matter which code made the change:
+Last lesson a view saved a query inside the database. This lesson saves an *action*: SQL that the database runs by itself whenever rows are added, changed or removed.
+
+### The picture
+
+Picture a porch light with a motion sensor. You never switch it on. Someone walks up the path, and the light comes on by itself. The walk is the [[event|event]], and the light is the reaction someone set up once, in advance.
+
+### The tables in this lesson
+
+- `products`: `id`, `name`, `stock` (how many are on the shelf). It starts with a Mug (id 1, stock 20) and a Lamp (id 2, stock 5).
+- `order_lines`: `id`, `product_id` (which product), `qty` (how many were ordered). It starts empty.
+
+Every time a line is added to an order, that product's stock should go down. You want this to happen whichever program adds the line.
+
+### A trigger
+
+A **trigger** is SQL the database runs by itself when something happens to a table. Here is one:
 
 ```sql
 CREATE TRIGGER line_added
@@ -3624,19 +3869,143 @@ BEGIN
 END;
 ```
 
-- **When:** `BEFORE` or `AFTER`, and the event: `INSERT`, `UPDATE` (or `UPDATE OF column`), `DELETE`.
-- **Which rows:** it runs once for each affected row.
-- **The row:** `NEW` is the row as inserted or updated; `OLD` is the row as it was before an update or delete. An insert has no `OLD`, a delete no `NEW`.
-- **The body** sits between `BEGIN` and `END;`, with a `;` after each statement inside.
+Line by line:
 
-A `WHEN` condition limits when it fires: `AFTER UPDATE OF price ON products WHEN NEW.price <> OLD.price`. And a `BEFORE` trigger can refuse a change with `SELECT RAISE(ABORT, 'message')`.
+- `CREATE TRIGGER line_added` gives the trigger a name.
+- `AFTER INSERT ON order_lines` says when it runs: after a row is inserted into `order_lines`.
+- `BEGIN` … `END;` wrap the **body**: the statements it runs. Each statement inside ends with its own `;`.
+- `NEW.qty` and `NEW.product_id` are columns of the row that was inserted.
 
-Use triggers sparingly. They are invisible to someone reading the application code, and a chain of triggers firing triggers is hard to reason about. They shine for rules that must hold whatever writes the data: stock counts, audit logs, `updated_at` stamps.
+This `BEGIN` is [[not the BEGIN of a transaction|two-begins]]. Here it only marks where the body starts.
+
+### Watching it fire
+
+Insert a line: 3 mugs.
+
+```sql
+INSERT INTO order_lines (product_id, qty) VALUES (1, 3);
+SELECT * FROM products;
+```
+
+| id | name | stock |
+| --- | --- | --- |
+| 1 | Mug | 17 |
+| 2 | Lamp | 5 |
+
+You never ran the `UPDATE`. The trigger did.
+
+### NEW and OLD
+
+Inside a trigger, two names stand for the row being changed:
+
+| event | `NEW` is | `OLD` is |
+| --- | --- | --- |
+| `INSERT` | the row as inserted | (none) |
+| `UPDATE` | the row after the change | the row before the change |
+| `DELETE` | (none) | the row as it was, right before it went |
+
+An insert has no `OLD`, because there was nothing before. A delete has no `NEW`, because there is nothing after.
+
+### Once for each row
+
+A trigger runs [[once for each row|each-row]] the statement touches. Insert two lines in one statement, and it fires twice:
+
+```sql
+INSERT INTO order_lines (product_id, qty) VALUES (1, 2), (2, 1);
+```
+
+The Mug goes from 17 to 15, and the Lamp from 5 to 4.
+
+### When it runs
+
+The timing is `BEFORE` or `AFTER` the change. The event is one of:
+
+- `INSERT`: a row is added.
+- `UPDATE`: a row is changed. `UPDATE OF price` narrows it to changes of the `price` column.
+- `DELETE`: a row is removed.
+
+### Only sometimes: WHEN
+
+A `WHEN` condition after the event limits when the trigger fires. This one is for a shop whose `products` table has a `price` column, plus a `price_log` table to keep a history:
+
+```sql
+CREATE TRIGGER price_changed
+AFTER UPDATE OF price ON products
+WHEN NEW.price <> OLD.price
+BEGIN
+  INSERT INTO price_log (product_id, old_price, new_price)
+  VALUES (NEW.id, OLD.price, NEW.price);
+END;
+```
+
+`<>` means "not equal". An `UPDATE` that sets a price to the value it already had writes no log row.
+
+### Refusing a change
+
+A `BEFORE` trigger can stop a change before it happens. `RAISE(ABORT, 'message')` cancels the statement with that error message. `RAISE` only works inside a trigger:
+
+```sql
+CREATE TRIGGER check_stock
+BEFORE INSERT ON order_lines
+WHEN NEW.qty > (SELECT stock FROM products WHERE id = NEW.product_id)
+BEGIN
+  SELECT RAISE(ABORT, 'not enough stock');
+END;
+```
+
+Ordering 9 lamps when only 4 are on the shelf now fails with "not enough stock", and nothing is inserted. The trigger runs inside the same statement as the change, so when it fails, the whole change is undone with it.
+
+### Use them sparingly
+
+Triggers are [[invisible to someone reading the application code|use-sparingly]]. A change seems to do more than it says, and a chain of triggers setting off more triggers is hard to follow. They shine for rules that must hold whatever program writes the data: stock counts, audit logs (a record of who changed what), and `updated_at` stamps (the time a row last changed).
+
+**Watch out:** a delete trigger must use `OLD`. `NEW` does not exist for a delete. SQLite accepts the trigger when you create it and only complains the first time a row is deleted, with "no such column: NEW.qty". So test a new trigger by firing it.
+
+::: context event What counts as an event
+In programming, an **event** is something that happens which code can react to: a click, a key press, a message arriving. For a table, the events are an insert, an update and a delete. Code that waits for an event and then runs is often called a *handler* or a *listener*. A trigger is the database's own kind of listener, and it cannot be skipped: a script, an admin tool and the app all set it off the same way.
+:::
+
+::: context two-begins Two different BEGINs
+In the lesson Transactions: all or nothing, `BEGIN;` on its own started a transaction, closed by `COMMIT` or `ROLLBACK`. Inside `CREATE TRIGGER`, `BEGIN` and `END` are only brackets around the body. They start no transaction. You do not need one: the trigger's work already belongs to the statement that set it off. If you ran that statement inside your own `BEGIN;` … `COMMIT;`, the trigger's changes are committed or rolled back with everything else.
+:::
+
+::: context each-row One firing per row
+One `INSERT` statement with two rows sets the trigger off twice, once with `NEW` as each row. The standard also has "statement-level" triggers that fire once per statement. PostgreSQL offers both, but SQLite only has the per-row kind. You may see `FOR EACH ROW` written after the event: in SQLite it is allowed and changes nothing.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 130" font-family="Inter, Arial, sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#1f2a44"/>
+    </marker>
+  </defs>
+  <rect x="8" y="14" width="120" height="28" rx="4" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="68" y="32" font-size="11" fill="#1f2a44" text-anchor="middle">row: Mug, qty 2</text>
+  <rect x="8" y="70" width="120" height="28" rx="4" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="68" y="88" font-size="11" fill="#1f2a44" text-anchor="middle">row: Lamp, qty 1</text>
+  <rect x="220" y="14" width="132" height="28" rx="4" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="286" y="32" font-size="11" fill="#1f2a44" text-anchor="middle">Mug stock 17 to 15</text>
+  <rect x="220" y="70" width="132" height="28" rx="4" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="286" y="88" font-size="11" fill="#1f2a44" text-anchor="middle">Lamp stock 5 to 4</text>
+  <line x1="128" y1="28" x2="218" y2="28" stroke="#1f2a44" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="128" y1="84" x2="218" y2="84" stroke="#1f2a44" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="174" y="22" font-size="11" fill="#6c7a93" text-anchor="middle">fires</text>
+  <text x="174" y="78" font-size="11" fill="#6c7a93" text-anchor="middle">fires</text>
+  <text x="180" y="122" font-size="11" fill="#6c7a93" text-anchor="middle">one INSERT, two rows, two firings</text>
+</svg>
+```
+:::
+
+::: context use-sparingly Why engineers are wary of triggers
+Someone reading the app's code sees `INSERT INTO order_lines` and has no hint that stock changed too. When a number looks wrong, the trigger is the last place anyone thinks to look. That is why many teams keep triggers few, short, and written down. Where they earn their place is an **audit log**: a flight-software team may keep every change to a configuration table in a history table, filled by triggers, so the record is complete even when someone edits the table by hand. By default SQLite also stops a trigger from setting itself off again, which is what lets an `updated_at` trigger update its own table without looping forever.
+:::
 --- task
 Create two triggers that keep `products.stock` in step with `order_lines`:
 
-- `order_line_added` — after a line is inserted, take its `qty` off the product's stock.
-- `order_line_removed` — after a line is deleted, put its `qty` back.
+- `order_line_added`: after a row is inserted into `order_lines`, take its `qty` off that product's `stock`.
+- `order_line_removed`: after a row is deleted from `order_lines`, add its `qty` back to that product's `stock`.
+
+The product is the one whose `id` equals the line's `product_id`.
 --- starter
 CREATE TRIGGER order_line_added
 AFTER INSERT ON order_lines
@@ -3656,9 +4025,11 @@ BEGIN
   UPDATE products SET stock = stock + OLD.qty WHERE id = OLD.product_id;
 END;
 --- hint
-Inside the first trigger: `UPDATE products SET stock = stock - NEW.qty WHERE id = NEW.product_id;`
+The first trigger is the lesson's `line_added` with a different name. Replace the starter's `SELECT 1;` with its `UPDATE`.
 --- hint
-The delete trigger uses `OLD`, because a deleted row has no `NEW`.
+The second trigger runs `AFTER DELETE ON order_lines`, and adds with `+` instead of taking away. A deleted row has no `NEW`, so it reads the row through `OLD`.
+--- hint
+Inside the second trigger: `UPDATE products SET stock = stock + OLD.qty WHERE id = OLD.product_id;`, between `BEGIN` and `END;`.
 --- check query | Adding lines takes stock
 INSERT INTO order_lines (id, product_id, qty) VALUES (1, 1, 3), (2, 2, 2), (3, 1, 4);
 SELECT id, stock FROM products ORDER BY id
@@ -3687,21 +4058,136 @@ INSERT INTO tickets (id, title, status, opened, closed) VALUES
   (4, 'Webhook retries',         'open',    '2024-07-03', NULL),
   (5, 'Dark mode contrast',      'pending', '2024-06-11', NULL);
 --- teach
-After an `INSERT`, `UPDATE` or `DELETE`, the app often needs to know what happened: the id the new row got, or which rows a bulk update touched. Without help that means a second query — and a second query can see a different world if another writer got in between. `RETURNING` hands the affected rows back from the same statement:
+Last lesson a trigger reacted to changes by itself. This last lesson of the course is about seeing a change: getting back the exact rows an `INSERT`, `UPDATE` or `DELETE` touched, from the same statement that touched them.
+
+### The picture
+
+Picture paying at a shop till. The receipt comes out of the same machine, at the same moment, and lists exactly what you bought. You do not walk back later and ask "what did I buy?", when the shop might have changed its prices in the meantime.
+
+### The table in this lesson
+
+`tickets` is a list of bug reports: `id`, `title`, `status` (`open`, `pending` or `closed`, and `open` by default), `opened` (the date it was reported) and `closed` (the date it was closed, or NULL while it is not).
+
+| id | title | status | opened | closed |
+| --- | --- | --- | --- | --- |
+| 1 | Login fails on Safari | open | 2024-06-02 | NULL |
+| 2 | Export is slow | open | 2024-06-20 | NULL |
+| 3 | Typo on pricing page | closed | 2024-06-05 | 2024-06-06 |
+| 4 | Webhook retries | open | 2024-07-03 | NULL |
+| 5 | Dark mode contrast | pending | 2024-06-11 | NULL |
+
+### The problem
+
+After a change, the app often needs to know what happened. Which [[id did the new row get|new-id]]? Which rows did a bulk update touch?
+
+Without help, that means a second query after the change. But on a busy system another program can write in between, so the second query can see [[a different table|another-writer]] from the one your change left behind.
+
+### RETURNING
+
+**`RETURNING`** is a clause you add to the end of an `INSERT`, `UPDATE` or `DELETE`. It hands back the rows that statement changed, as if the statement were also a `SELECT`.
 
 ```sql
 INSERT INTO tickets (title, opened) VALUES ('New bug', '2024-07-09')
-RETURNING id, status;          -- the generated id, and the default status
-
-DELETE FROM tickets WHERE status = 'closed'
-RETURNING id, title;           -- exactly what was deleted
+RETURNING id, status;
 ```
 
-`RETURNING` takes any expressions over the row's columns, the way a `SELECT` list does, and shows the row **after** the change (for a delete, as it was just before it went). It returns one row per affected row, and nothing if no row matched — useful in itself: "did that update find its row?"
+| id | status |
+| --- | --- |
+| 6 | open |
 
-It pairs well with the safe-change routine: the returned rows are your record of what the statement actually did.
+The insert left out `id` and `status`. `RETURNING` shows what the database filled in: the next id, 6, and the default status, `open`.
+
+### After a DELETE
+
+For a delete, `RETURNING` shows each row as it was right before it went:
+
+```sql
+DELETE FROM tickets WHERE status = 'closed'
+RETURNING id, title;
+```
+
+| id | title |
+| --- | --- |
+| 3 | Typo on pricing page |
+
+That is exactly what was deleted: a record you can log or show to the user.
+
+### After an UPDATE
+
+For an update, `RETURNING` shows each row **after** the change. `*` means "every column", as in a `SELECT`:
+
+```sql
+UPDATE tickets SET status = 'pending' WHERE id = 4
+RETURNING *;
+```
+
+| id | title | status | opened | closed |
+| --- | --- | --- | --- | --- |
+| 4 | Webhook retries | pending | 2024-07-03 | NULL |
+
+The list after `RETURNING` works like a `SELECT` list. It can name columns, use `*`, or work out values with `AS` names, such as `RETURNING id, title || ' is closed' AS message`, where `||` joins two pieces of text. There are [[a few limits|limits]] on what it may contain.
+
+### Nothing back is an answer too
+
+`RETURNING` gives one row for each row changed, and no rows at all if nothing matched:
+
+```sql
+UPDATE tickets SET status = 'closed' WHERE id = 42
+RETURNING id;
+```
+
+There is no ticket 42, so this returns nothing. That answers a real question: "did that update find its row?" In the lesson Transactions: all or nothing you asked the same with `SELECT changes()`. `RETURNING` tells you *which* rows, not only how many.
+
+### A receipt for the safe routine
+
+In the lesson Changing data with conditions you learned the safe routine: look with a `SELECT` first, then change, then check. `RETURNING` makes the check part of the change itself. Put it inside a transaction and you can [[look before you commit|with-transaction]].
+
+**Watch out:** `RETURNING` shows you what a statement did. It does not stop a wrong change. `WHERE opened < '2024-07-01'` on its own also catches ticket 3, already closed, and ticket 5, which is pending. Get the `WHERE` right first, with a `SELECT` as in the safe routine. Then read the returned rows to confirm.
+
+### What this course covered
+
+You started with CTEs: long queries as named steps. Recursive CTEs made queries that count, fill gaps and walk trees. Window functions ranked rows, kept running totals and compared each row with its neighbours. Then the course turned to design: constraints, foreign keys, normalising a flat table, indexes, transactions, upserts, views, triggers and now `RETURNING`. A database built this way [[protects its own data|next-course]], whatever program writes to it.
+
+::: context new-id Getting the new row's id
+When you insert without an `id`, SQLite fills in the `INTEGER PRIMARY KEY` itself, usually one more than the largest id so far. The app almost always needs that number next: to show "Ticket 6 created", or to insert rows in another table that point back to it with a foreign key. The older way to ask is `SELECT last_insert_rowid();`, which gives the id from this connection's most recent insert. `RETURNING id` gives it as part of the insert, and it also works when one `INSERT` adds several rows at once.
+:::
+
+::: context another-writer Why a second query can mislead you
+Say your app inserts a ticket and then runs `SELECT MAX(id) FROM tickets` to find its id. If another user's insert lands between the two, `MAX(id)` is their ticket, not yours, and your app now links things to the wrong row. Bugs like this appear only under load, when two things happen at nearly the same moment, which makes them hard to reproduce. It is the same gap as the race in the lesson UPSERT: insert or update. `RETURNING` closes it, because there is no second statement.
+:::
+
+::: context limits What RETURNING cannot do
+A few rules in SQLite. It can name only columns of the table being changed. It cannot use aggregate functions like `COUNT(*)` or window functions: `RETURNING count(*)` fails with "misuse of aggregate function count()". The rows come back in no promised order, so do not rely on them being sorted. And it shows the values as the statement itself set them: if an `AFTER` trigger then changes the same row, `RETURNING` does not show that later change. SQLite added `RETURNING` in version 3.35, in 2021. PostgreSQL has had it since 2006.
+:::
+
+::: context with-transaction Look, then decide
+A careful script can combine the last few lessons. `BEGIN;` starts a transaction. Then the `UPDATE … RETURNING id, title;` makes the change and shows the rows it touched. If they are the rows you meant, `COMMIT;` keeps them. If the list is too long or holds a surprise, `ROLLBACK;` puts every row back. Operations teams use this pattern for fixes made by hand on a live database, where a wrong `WHERE` could otherwise damage thousands of rows before anyone notices.
+:::
+
+::: context next-course Where SQL goes next
+The expert course builds on this one in three directions. Speed: reading the query plan and shaping indexes so slow queries become fast. Hard questions: the top few rows in every group, streaks, sessions, cohorts and funnels, all built from the CTEs and window functions you learned here. Trustworthy data: finding and repairing broken rows, where constraints, transactions and `RETURNING` all come back.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 110" font-family="Inter, Arial, sans-serif">
+  <rect x="8" y="20" width="106" height="44" rx="4" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="61" y="40" font-size="12" fill="#1f2a44" text-anchor="middle">CTEs and</text>
+  <text x="61" y="55" font-size="12" fill="#1f2a44" text-anchor="middle">recursion</text>
+  <rect x="127" y="20" width="106" height="44" rx="4" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="180" y="40" font-size="12" fill="#1f2a44" text-anchor="middle">window</text>
+  <text x="180" y="55" font-size="12" fill="#1f2a44" text-anchor="middle">functions</text>
+  <rect x="246" y="20" width="106" height="44" rx="4" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="299" y="40" font-size="12" fill="#1f2a44" text-anchor="middle">a database that</text>
+  <text x="299" y="55" font-size="12" fill="#1f2a44" text-anchor="middle">guards itself</text>
+  <text x="180" y="94" font-size="11" fill="#6c7a93" text-anchor="middle">the three parts of this course</text>
+</svg>
+```
+:::
 --- task
-Close every **open** ticket opened before `2024-07-01`: set its `status` to `'closed'` and `closed` to `'2024-07-10'`. In the same statement, return the `id` and `title` of each ticket you closed.
+Close every **open** ticket that was opened before `2024-07-01`, in one `UPDATE`:
+
+- Set its `status` to `'closed'` and its `closed` to `'2024-07-10'`.
+- Only tickets whose `status` is `'open'` change. The pending ticket and the already-closed one stay as they are.
+- In the same statement, return the `id` and `title` of each ticket you closed.
 --- starter
 UPDATE tickets
 SET status = 'closed', closed = '2024-07-10'
@@ -3712,9 +4198,11 @@ SET status = 'closed', closed = '2024-07-10'
 WHERE status = 'open' AND opened < '2024-07-01'
 RETURNING id, title;
 --- hint
-Only `open` tickets: the pending one and the already-closed one must not change.
+The starter's `WHERE` also catches ticket 3 (already closed) and ticket 5 (pending). It needs a second condition, joined with `AND`.
 --- hint
-End the `UPDATE` with `RETURNING id, title`.
+The `WHERE` becomes `status = 'open' AND opened < '2024-07-01'`. Then the statement needs one more clause at the end.
+--- hint
+Before the final `;`, add `RETURNING id, title`. It should give back tickets 1 and 2.
 --- check result | Returns tickets 1 and 2
 [[1, "Login fails on Safari"], [2, "Export is slow"]]
 --- check query | Exactly those two changed
