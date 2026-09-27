@@ -2547,6 +2547,25 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       "file": "cod_cpp_11_gtest/04-parameterised-tests.md"
     },
     {
+      "id": "l05-typed-tests-and-death-tests",
+      "title": "Typed tests and death tests",
+      "minutes": 23,
+      "covers": [
+        "Typed and type-parameterised tests for template code",
+        "Death tests for contract violations"
+      ],
+      "file": "cod_cpp_11_gtest/05-typed-tests-and-death-tests.md"
+    },
+    {
+      "id": "l06-dependency-injection",
+      "title": "Dependency injection — opening a seam for the test",
+      "minutes": 20,
+      "covers": [
+        "Dependency injection as the precondition for mockability"
+      ],
+      "file": "cod_cpp_11_gtest/06-dependency-injection.md"
+    },
+    {
       "id": "l07-googlemock-basics",
       "title": "GoogleMock, a pretend sensor that does what you say",
       "minutes": 20,
@@ -2554,6 +2573,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "GoogleMock: mocking an ISensor or HAL interface; EXPECT_CALL, matchers, cardinalities"
       ],
       "file": "cod_cpp_11_gtest/07-googlemock-basics.md"
+    },
+    {
+      "id": "l08-nice-strict-and-naggy-mocks",
+      "title": "Nice, naggy and strict mocks, and the calls nobody mentioned",
+      "minutes": 22,
+      "covers": [
+        "NiceMock, StrictMock and what an uninteresting call means"
+      ],
+      "file": "cod_cpp_11_gtest/08-nice-strict-and-naggy-mocks.md"
     }
   ],
   "cod_git_01_basics": [
@@ -10490,14 +10518,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_cpp_11_gtest": {
-    "covered": 5,
+    "covered": 9,
     "total": 14,
     "complete": false,
     "missing": [
-      "Typed and type-parameterised tests for template code",
-      "Death tests for contract violations",
-      "NiceMock, StrictMock and what an uninteresting call means",
-      "Dependency injection as the precondition for mockability",
       "gtest_discover_tests, CTest registration, test filters and labels",
       "Catch2 as the alternative and what it trades",
       "Coverage with gcov, lcov and llvm-cov; interpreting an uncovered branch",
