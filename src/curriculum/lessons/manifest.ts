@@ -3106,6 +3106,115 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       "file": "cod_mat_02_gnc_toolboxes/10-rotations-and-quaternion-convention.md"
     }
   ],
+  "cod_ops_01_docker": [
+    {
+      "id": "l01-images-containers-and-layers",
+      "title": "Images, containers and the layers inside them",
+      "minutes": 22,
+      "covers": [
+        "Images vs containers; layers and the union filesystem"
+      ],
+      "file": "cod_ops_01_docker/01-images-containers-and-layers.md"
+    },
+    {
+      "id": "l02-writing-a-dockerfile",
+      "title": "Writing a Dockerfile, one instruction at a time",
+      "minutes": 23,
+      "covers": [
+        "Dockerfile: FROM RUN COPY WORKDIR ENV ARG ENTRYPOINT CMD USER HEALTHCHECK"
+      ],
+      "file": "cod_ops_01_docker/02-writing-a-dockerfile.md"
+    },
+    {
+      "id": "l03-fast-rebuilds-and-slim-images",
+      "title": "Fast rebuilds and slim images",
+      "minutes": 22,
+      "covers": [
+        "Layer caching and instruction ordering for fast rebuilds",
+        "Multi-stage builds: compile fat, ship slim",
+        ".dockerignore and build context size"
+      ],
+      "file": "cod_ops_01_docker/03-fast-rebuilds-and-slim-images.md"
+    },
+    {
+      "id": "l04-choosing-a-base-image",
+      "title": "Choosing a base image, and the Alpine trap",
+      "minutes": 19,
+      "covers": [
+        "Base-image choice: debian-slim vs alpine and the musl trap for scientific Python"
+      ],
+      "file": "cod_ops_01_docker/04-choosing-a-base-image.md"
+    },
+    {
+      "id": "l05-volumes-networks-and-compose",
+      "title": "Volumes, networks and docker compose",
+      "minutes": 22,
+      "covers": [
+        "Volumes and bind mounts, networks, port publishing",
+        "docker compose for sim + database + dashboard stacks"
+      ],
+      "file": "cod_ops_01_docker/05-volumes-networks-and-compose.md"
+    },
+    {
+      "id": "l06-registries-tags-and-digests",
+      "title": "Registries, tags and digests",
+      "minutes": 21,
+      "covers": [
+        "Registries, tagging discipline, never :latest in a pipeline",
+        "Digest pinning and lockfiles for true reproducibility"
+      ],
+      "file": "cod_ops_01_docker/06-registries-tags-and-digests.md"
+    },
+    {
+      "id": "l07-dev-containers-and-kubernetes",
+      "title": "Dev containers for new teammates, and a first look at Kubernetes",
+      "minutes": 24,
+      "covers": [
+        "Dev Containers for onboarding",
+        "Kubernetes literacy: pods, deployments, services"
+      ],
+      "file": "cod_ops_01_docker/07-dev-containers-and-kubernetes.md"
+    },
+    {
+      "id": "l08-alternatives-podman-nix-spack-conda-uv",
+      "title": "Other ways to pin an environment: Podman, Nix, Spack, conda-lock and uv",
+      "minutes": 22,
+      "covers": [
+        "Alternatives: Podman, Nix, Spack, conda-lock, uv"
+      ],
+      "file": "cod_ops_01_docker/08-alternatives-podman-nix-spack-conda-uv.md"
+    }
+  ],
+  "cod_ops_02_ci": [
+    {
+      "id": "l01-what-ci-buys-a-simulation-team",
+      "title": "What continuous integration buys a simulation team",
+      "minutes": 22,
+      "covers": [
+        "What CI buys a simulation team, stated as failure modes it prevents"
+      ],
+      "file": "cod_ops_02_ci/01-what-ci-buys-a-simulation-team.md"
+    },
+    {
+      "id": "l02-github-actions-basics",
+      "title": "GitHub Actions: your first pipeline",
+      "minutes": 24,
+      "covers": [
+        "GitHub Actions: workflows, events, jobs, steps, runners"
+      ],
+      "file": "cod_ops_02_ci/02-github-actions-basics.md"
+    },
+    {
+      "id": "l03-matrices-caching-and-secrets",
+      "title": "Matrices, caches, artifacts and secrets",
+      "minutes": 26,
+      "covers": [
+        "Matrix builds across OS, compiler and interpreter version",
+        "Caching pip, cargo and ccache; artefacts; secrets; environments"
+      ],
+      "file": "cod_ops_02_ci/03-matrices-caching-and-secrets.md"
+    }
+  ],
   "cod_py_01_basics": [
     {
       "id": "l01-interpreter-repl-and-scripts",
@@ -10141,34 +10250,16 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_ops_01_docker": {
-    "covered": 0,
+    "covered": 13,
     "total": 13,
-    "complete": false,
-    "missing": [
-      "Images vs containers; layers and the union filesystem",
-      "Dockerfile: FROM RUN COPY WORKDIR ENV ARG ENTRYPOINT CMD USER HEALTHCHECK",
-      "Layer caching and instruction ordering for fast rebuilds",
-      "Multi-stage builds: compile fat, ship slim",
-      ".dockerignore and build context size",
-      "Base-image choice: debian-slim vs alpine and the musl trap for scientific Python",
-      "Volumes and bind mounts, networks, port publishing",
-      "docker compose for sim + database + dashboard stacks",
-      "Registries, tagging discipline, never :latest in a pipeline",
-      "Digest pinning and lockfiles for true reproducibility",
-      "Dev Containers for onboarding",
-      "Kubernetes literacy: pods, deployments, services",
-      "Alternatives: Podman, Nix, Spack, conda-lock, uv"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_ops_02_ci": {
-    "covered": 0,
+    "covered": 4,
     "total": 13,
     "complete": false,
     "missing": [
-      "What CI buys a simulation team, stated as failure modes it prevents",
-      "GitHub Actions: workflows, events, jobs, steps, runners",
-      "Matrix builds across OS, compiler and interpreter version",
-      "Caching pip, cargo and ccache; artefacts; secrets; environments",
       "Reusable workflows and composite actions",
       "Self-hosted runners for licensed tools and special hardware",
       "GitLab CI and Jenkins, still common in defence and aerospace",
