@@ -1,7 +1,7 @@
 ---
 id: l12-pid-anti-windup-and-running-median
 title: PID with anti-windup and the running median
-minutes: 22
+minutes: 20
 covers:
   - 'The engineering variants: binary protocol decommutation, telemetry dropout detection, two-rate time alignment, ring buffer, PID with anti-windup, running median over a stream'
 ---
@@ -40,19 +40,19 @@ $$
 I \leftarrow I + K_i\, e\, \Delta t, \qquad v = K_p\, e + I + K_d \, \frac{\Delta e}{\Delta t} .
 $$
 
-Read the arrow $\leftarrow$ as "becomes". Here $v$ is what the controller *asks for*. Many flight codes take the derivative of the measurement, $-\Delta y / \Delta t$, instead of the error, so that a sudden setpoint change does not cause a spike; this lesson's code does that.
+Read the arrow $\leftarrow$ as "becomes". Here $v$ is what the controller *asks for*. Many implementations take the **[[derivative of the measurement|derivative-kick]]**, $-\Delta y / \Delta t$, instead of the error, so that a sudden setpoint change does not cause a spike; this lesson's code does that.
 
 Each step costs a few multiplications and additions and keeps three numbers — the integrator, the last measurement and the time step — so a PID update is $O(1)$ time and $O(1)$ memory.
 
 ## Saturation and windup
 
-Every real **actuator** — the part that does the pushing, such as a motor, a valve or a thruster — has limits. A motor cannot spin harder than full voltage. A rocket engine gimbal cannot tilt more than a few degrees. So the command actually applied is the request clipped to the limits:
+Every real **actuator** — the part that does the pushing, such as a motor, a valve or a thruster — has limits. A motor cannot be driven harder than full voltage. A rocket engine gimbal cannot tilt more than a few degrees. So the command actually applied is the request clipped to the limits:
 
 $$
 u = \operatorname{clip}(v, -u_{\max}, u_{\max}) .
 $$
 
-When $v$ is outside the limits, the actuator is **[[saturated|saturation-real]]**: it is giving everything it has, and asking for more changes nothing.
+Read $u_{\max}$ as "u max", the largest command the actuator can carry out. When $v$ is outside the limits, the actuator is **[[saturated|saturation-real]]**: it is giving everything it has, and asking for more changes nothing.
 
 Now the problem. While saturated, the error stays large, because the plant cannot catch up. So the integrator keeps adding error, step after step, growing far bigger than anything useful. When the plant finally reaches the setpoint, the error flips sign, but the integrator is so large that $v$ is still above the limit. The actuator stays maxed out *past* the target until enough negative error has been added to unwind it. The result is a large overshoot and a slow settle — the cruise control after the hill.
 
@@ -70,7 +70,7 @@ $$
 I \leftarrow I + \big(K_i\, e + K_b\,(u - v)\big)\, \Delta t .
 $$
 
-When not saturated, $u = v$ and the extra term is zero. When saturated high, $u - v$ is negative and drains $I$ toward a sensible value. $K_b$, the **back-calculation gain**, sets how fast it drains.
+When not saturated, $u = v$ and the extra term is zero. When saturated high, $u - v$ is negative and drains $I$ toward a sensible value. $K_b$, the **[[back-calculation gain|kb-tracking]]**, sets how fast it drains.
 
 ::: warning Anti-windup lives in the integrator, not the output
 A common slip is to clip the output and think the job is done. Clipping $v$ to make $u$ is needed — the hardware demands it — but it does nothing to $I$. Windup is the integrator's state growing, so the fix has to touch the line that updates $I$. In an interview, point at that line.
@@ -142,7 +142,7 @@ Read the table row by row.
 - **Clamp.** Keeping $I$ within $\pm 1$ cuts the overshoot to 6.3%, but $I$ still sits at the limit of 1, more than the 0.7 needed, so some overshoot remains.
 - **Conditional.** Freezing $I$ while pushing on the limit gives no overshoot at all and settles in 3.67 s.
 - **Back-calculation.** Draining $I$ toward what the motor can really give leaves 1.4% overshoot and the fastest settle, 2.52 s.
-- **No limit** is a check, not a real option: a motor that could give 2.8 times full voltage. It overshoots 4.9%. So nearly all of the 23.7% in the first row came from windup, not from the gains.
+- **No limit** is a check, not a real option: a motor with no limit at all, which could give the 2.8 the controller asks for at first. It overshoots 4.9%. So nearly all of the 23.7% in the first row came from windup, not from the gains.
 
 Which fix is best depends on the plant and the tuning; on this one, conditional integration and back-calculation both beat clamping. The honest interview answer names all three, picks one, and says why.
 
@@ -172,7 +172,7 @@ That toughness is why telemetry software likes medians. A single corrupt reading
 
 The obvious ways are slow. Re-sorting everything after each reading costs $O(n \log n)$ per reading. Keeping a sorted list and inserting each new value in place is better at finding the spot — binary search finds it in $O(\log n)$ — but then every larger item has to shift over by one to make room, which is $O(n)$ per reading.
 
-The fast way uses two heaps from lesson 7. Split the readings into two halves:
+The fast way uses **[[two heaps|two-heaps-picture]]** from lesson 7. Split the readings into two halves:
 
 - **low**, a **max-heap** holding the smaller half, so its top is the largest of the small ones;
 - **high**, a **min-heap** holding the larger half, so its top is the smallest of the big ones.
@@ -268,7 +268,7 @@ python3 int01_l12_median.py
 
 Every line agrees with the slow check, including the empty stream, which returns `None` instead of crashing. **Complexity:** `add` is $O(\log n)$ time, `median` is $O(1)$, and the two heaps together hold all $n$ readings, $O(n)$ space.
 
-How big is the gap in practice? For $n = 100{,}000$ readings — under 17 minutes of a 100 Hz sensor — sorted insertion shifts about $n^2/4 = 2.5 \times 10^9$ items in total. The heaps do on the order of $n \log_2 n \approx 1.7 \times 10^6$ steps. That is roughly a thousand times less work.
+How big is the gap in practice? For $n = 100{,}000$ readings — under 17 minutes of a 100 Hz sensor — sorted insertion shifts about $n^2/4 = 2.5 \times 10^9$ items in total. The heaps do on the order of $n \log_2 n \approx 1.7 \times 10^6$ steps. That is more than a thousand times less work.
 
 ::: warning Three slips in the two-heap code
 First, forgetting to negate on the way out of **low**, so the "largest of the small half" comes back as a negative number. Second, comparing a new value with the wrong top, which puts it in the wrong half; the rebalance fixes the sizes but not a wrong split. Third, forgetting the empty case and the even case. Test an empty stream, one reading, two readings and a run of equal values before you say you are done.
@@ -317,7 +317,7 @@ A teammate keeps a running median by appending each reading and calling `sorted(
 :::
 
 ::: answer
-Sorting $i$ items costs about $i \log_2 i$ steps, and it is done for $i = 1$ up to 10,000. That is on the order of $n^2 \log n$ in total: roughly $10{,}000^2 / 2 \times 13 \approx 6.5 \times 10^8$ steps. Two heaps cost $O(\log n)$ per reading, about $10{,}000 \times 13 \approx 1.3 \times 10^5$ steps in total. So quote $O(n \log n)$ per reading for re-sorting and $O(\log n)$ per reading for the heaps, with $O(n)$ space for both. The heaps win by a factor of thousands.
+A general sort of $i$ items costs about $i \log_2 i$ steps, and it is done for $i = 1$ up to 10,000. That is on the order of $n^2 \log n$ in total: roughly $10{,}000^2 / 2 \times 13 \approx 6.5 \times 10^8$ steps. Two heaps cost $O(\log n)$ per reading, about $10{,}000 \times 13 \approx 1.3 \times 10^5$ steps in total. (Python's own sort notices that the list is already nearly sorted and gets closer to $O(n)$ per call, which is still far worse than $O(\log n)$.) So quote $O(n \log n)$ per reading for re-sorting in general and $O(\log n)$ per reading for the heaps, with $O(n)$ space for both. The heaps win by a factor of thousands.
 :::
 
 ## Summary
@@ -333,14 +333,22 @@ Sorting $i$ items costs about $i \log_2 i$ steps, and it is done for $i = 1$ up 
 | running median | max-heap of low half, min-heap of high half | add $O(\log n)$, median $O(1)$, space $O(n)$ |
 | slow medians | re-sort, or sorted insert | $O(n \log n)$ or $O(n)$ per reading |
 
-That completes all six engineering variants: the decommutator, the dropout detector, the ring buffer, the time aligner, the anti-windup PID and the running median. Next comes the onsite module, which builds on this one: the systems C++ round, live debugging, system design for simulation and telemetry, and the presentation and behavioral rounds.
+That completes all six engineering variants: the decommutator, the dropout detector, the ring buffer, the time aligner, the anti-windup PID and the running median. Next comes the **[[onsite module|onsite-bridge]]**, which builds on this one: the systems C++ round, live debugging, system design for simulation and telemetry, and the presentation and behavioral rounds.
 
 ::: context pid-history Older than computers
 The idea behind PID control is older than digital computers. In 1922 the engineer Nicolas Minorsky published an analysis of automatic ship steering for the US Navy, based on watching how skilled helmsmen reacted to the heading error, how long it had lasted, and how fast it was changing — the three terms of PID. Today the same three terms run everywhere: in thermostats, drones, disk drives, and in the inner loops of rocket and spacecraft attitude control, often as the fast layer underneath a more elaborate guidance law.
 :::
 
+::: context derivative-kick Why differentiate the measurement
+If the D term uses the error, and someone changes the setpoint in one step, the error jumps in one step too. Its rate of change for that one tick is enormous, and the D term fires a huge spike at the actuator — a "derivative kick". Since $e = r - y$ and the setpoint is usually constant between changes, the rate of change of $e$ equals minus the rate of change of $y$ at every other moment. So using $-\Delta y / \Delta t$ gives the same damping without the kick. It also means sensor noise, not setpoint changes, is what the D term must be protected from, usually with a small filter.
+:::
+
 ::: context saturation-real Limits on real vehicles
 Saturation is normal, not a rare failure. A reaction wheel has a maximum torque its motor can give and a maximum speed it can spin to. A rocket engine gimbal can tilt only a few degrees. A throttle cannot go past 100% or below its minimum. A large attitude maneuver commanded all at once will saturate the wheels for many seconds, which is exactly when an unprotected integrator winds up. That is why anti-windup is expected in any flight PID, and why interviewers ask about it.
+:::
+
+::: context kb-tracking How fast to drain
+$K_b$ has units of one over seconds, and its inverse $1/K_b$ is called the tracking time: roughly how long back-calculation takes to pull the integrator back to what the actuator can deliver. Too slow and windup creeps back; too fast and the integrator is reset so hard that the controller loses its memory of real, lasting errors. Control textbooks, such as Åström and Hägglund's, suggest a tracking time longer than the derivative time $K_d/K_p$ and shorter than the integral time $K_p/K_i$. In the simulation those are 0.05 s and about 1.33 s, and $K_b = 1$ gives a tracking time of 1 s, inside that range.
 :::
 
 ::: context time-constant What tau means in the picture
@@ -394,4 +402,43 @@ Suppose nine readings are all 20.0 and one bit error turns the tenth into 2,000.
   </g>
 </svg>
 ```
+:::
+
+::: context two-heaps-picture The two halves after five readings
+Here are the heaps after 5, 15, 1, 3, 2 from the example. The lower half sits in a max-heap with its largest value, 3, on top. The upper half sits in a min-heap with its smallest value, 5, on top. The two tops face each other across the middle of the sorted data, so the median is always within reach. Low has one extra item, so the count is odd and the median is low's top, 3.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">
+  <g stroke="#1f2a44" stroke-width="1.5">
+    <line x1="100" y1="45" x2="70" y2="95"/>
+    <line x1="100" y1="45" x2="130" y2="95"/>
+    <line x1="260" y1="45" x2="260" y2="95"/>
+  </g>
+  <g stroke="#1f2a44">
+    <circle cx="100" cy="45" r="16" fill="#1d6fd1"/>
+    <circle cx="70" cy="95" r="16" fill="#8fb8f0"/>
+    <circle cx="130" cy="95" r="16" fill="#8fb8f0"/>
+    <circle cx="260" cy="45" r="16" fill="#f2b880"/>
+    <circle cx="260" cy="95" r="16" fill="#ffffff"/>
+  </g>
+  <g font-size="13" fill="#1f2a44" text-anchor="middle">
+    <text x="100" y="50" fill="#ffffff">3</text>
+    <text x="70" y="100">2</text>
+    <text x="130" y="100">1</text>
+    <text x="260" y="50">5</text>
+    <text x="260" y="100">15</text>
+  </g>
+  <g font-size="11" fill="#1f2a44" text-anchor="middle">
+    <text x="100" y="18">low: max-heap</text>
+    <text x="260" y="18">high: min-heap</text>
+    <text x="180" y="49">median 3</text>
+    <text x="100" y="135">smaller half</text>
+    <text x="260" y="135">larger half</text>
+  </g>
+</svg>
+```
+:::
+
+::: context onsite-bridge Where this module leads
+The onsite module assumes everything here is automatic: patterns recognized in a couple of minutes, complexity said without being asked, and the six variants written from memory. It then moves to what the later rounds reportedly probe — a systems C++ round on pointers, memory and undefined behavior; finding a crash or leak in code you are handed; designing GNC simulation and telemetry systems; a technical presentation followed by a long question session; and behavioral rounds. Keep practicing timed problems out loud while you work through it, so this fluency does not fade.
 :::

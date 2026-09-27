@@ -2054,14 +2054,129 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       "file": "cod_int_01_algorithms/05-sorting-intervals-stacks-and-lists.md"
     },
     {
+      "id": "l06-trees-and-graphs",
+      "title": "Trees, graphs, BFS, DFS and topological sort",
+      "minutes": 24,
+      "covers": [
+        "Trees and BFS/DFS; graphs including topological sort; heaps; prefix sums; light dynamic programming; bit manipulation"
+      ],
+      "file": "cod_int_01_algorithms/06-trees-and-graphs.md"
+    },
+    {
       "id": "l07-heaps-prefix-sums-dp-and-bits",
       "title": "Heaps, prefix sums, light DP and bits",
-      "minutes": 27,
+      "minutes": 26,
       "covers": [
         "Trees and BFS/DFS; graphs including topological sort; heaps; prefix sums; light dynamic programming; bit manipulation",
         "What to skip: exotic dynamic programming, advanced graph theory, segment trees"
       ],
       "file": "cod_int_01_algorithms/07-heaps-prefix-sums-dp-and-bits.md"
+    },
+    {
+      "id": "l08-talking-and-testing",
+      "title": "Talking while solving, and testing before you are done",
+      "minutes": 21,
+      "covers": [
+        "Talking while solving: restate, clarify, state the approach and its complexity, then code",
+        "Testing your own solution before saying you are done"
+      ],
+      "file": "cod_int_01_algorithms/08-talking-and-testing.md"
+    },
+    {
+      "id": "l09-bytes-endianness-and-checksums",
+      "title": "Bytes, endianness and checksums",
+      "minutes": 24,
+      "covers": [
+        "struct, endianness and checksums in Python; bit twiddling in C++"
+      ],
+      "file": "cod_int_01_algorithms/09-bytes-endianness-and-checksums.md"
+    },
+    {
+      "id": "l10-decommutation-and-dropouts",
+      "title": "Decommutation and dropouts",
+      "minutes": 20,
+      "covers": [
+        "The engineering variants: binary protocol decommutation, telemetry dropout detection, two-rate time alignment, ring buffer, PID with anti-windup, running median over a stream",
+        "struct, endianness and checksums in Python; bit twiddling in C++"
+      ],
+      "file": "cod_int_01_algorithms/10-decommutation-and-dropouts.md"
+    },
+    {
+      "id": "l11-ring-buffers-and-time-alignment",
+      "title": "Ring buffers and time alignment",
+      "minutes": 20,
+      "covers": [
+        "The engineering variants: binary protocol decommutation, telemetry dropout detection, two-rate time alignment, ring buffer, PID with anti-windup, running median over a stream"
+      ],
+      "file": "cod_int_01_algorithms/11-ring-buffers-and-time-alignment.md"
+    },
+    {
+      "id": "l12-pid-anti-windup-and-running-median",
+      "title": "PID with anti-windup and the running median",
+      "minutes": 20,
+      "covers": [
+        "The engineering variants: binary protocol decommutation, telemetry dropout detection, two-rate time alignment, ring buffer, PID with anti-windup, running median over a stream"
+      ],
+      "file": "cod_int_01_algorithms/12-pid-anti-windup-and-running-median.md"
+    }
+  ],
+  "cod_int_02_onsite": [
+    {
+      "id": "l01-the-process-and-the-itar-gate",
+      "title": "The process end to end, and the ITAR gate",
+      "minutes": 19,
+      "covers": [
+        "The reported process: recruiter screen, a two to four hour take-home or timed challenge, technical rounds, a day-long onsite of four to six rounds, behavioural throughout",
+        "US person status under ITAR as a hard gate for essentially all roles"
+      ],
+      "file": "cod_int_02_onsite/01-the-process-and-the-itar-gate.md"
+    },
+    {
+      "id": "l02-the-systems-cpp-round",
+      "title": "The systems C++ round",
+      "minutes": 25,
+      "covers": [
+        "Systems C++ round: pointers and memory, double delete, RAII, rule of five, unique_ptr versus shared_ptr, virtual destructors, vtable layout, move semantics, undefined behaviour, static and const and volatile, data races, cache effects"
+      ],
+      "file": "cod_int_02_onsite/02-the-systems-cpp-round.md"
+    },
+    {
+      "id": "l03-live-debugging",
+      "title": "Live debugging",
+      "minutes": 26,
+      "covers": [
+        "Live debugging: here is code that crashes or leaks, find it"
+      ],
+      "file": "cod_int_02_onsite/03-live-debugging.md"
+    },
+    {
+      "id": "l04-designing-sim-and-telemetry-systems",
+      "title": "Designing a simulation system and a telemetry pipeline, aloud",
+      "minutes": 21,
+      "covers": [
+        "Engineering system design: GNC simulation infrastructure for a constellation; a telemetry pipeline for six thousand satellites; how you would verify this flight software; how you would architect a fault-tolerant flight computer"
+      ],
+      "file": "cod_int_02_onsite/04-designing-sim-and-telemetry-systems.md"
+    },
+    {
+      "id": "l05-verification-and-fault-tolerant-computers",
+      "title": "Verifying flight software and building a computer that survives faults",
+      "minutes": 22,
+      "covers": [
+        "Engineering system design: GNC simulation infrastructure for a constellation; a telemetry pipeline for six thousand satellites; how you would verify this flight software; how you would architect a fault-tolerant flight computer",
+        "Knowing the SpaceX answer: three dual-core x86 flight strings, per-string core cross-check, PowerPC actuator controllers judging three commands"
+      ],
+      "file": "cod_int_02_onsite/05-verification-and-fault-tolerant-computers.md"
+    },
+    {
+      "id": "l06-domain-rounds-and-fermi-estimates",
+      "title": "Domain rounds and Fermi estimates, out loud",
+      "minutes": 27,
+      "covers": [
+        "Domain rounds for GNC roles: PD control, orbit determination, frequency domain, aerodynamic drag with real examples",
+        "Fermi and order-of-magnitude estimation out loud"
+      ],
+      "file": "cod_int_02_onsite/06-domain-rounds-and-fermi-estimates.md"
     }
   ],
   "cod_lnx_01_shell": [
@@ -9367,32 +9482,19 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_int_01_algorithms": {
-    "covered": 8,
+    "covered": 12,
     "total": 12,
-    "complete": false,
-    "missing": [
-      "The engineering variants: binary protocol decommutation, telemetry dropout detection, two-rate time alignment, ring buffer, PID with anti-windup, running median over a stream",
-      "struct, endianness and checksums in Python; bit twiddling in C++",
-      "Talking while solving: restate, clarify, state the approach and its complexity, then code",
-      "Testing your own solution before saying you are done"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_int_02_onsite": {
-    "covered": 0,
+    "covered": 8,
     "total": 13,
     "complete": false,
     "missing": [
-      "The reported process: recruiter screen, a two to four hour take-home or timed challenge, technical rounds, a day-long onsite of four to six rounds, behavioural throughout",
-      "US person status under ITAR as a hard gate for essentially all roles",
-      "Systems C++ round: pointers and memory, double delete, RAII, rule of five, unique_ptr versus shared_ptr, virtual destructors, vtable layout, move semantics, undefined behaviour, static and const and volatile, data races, cache effects",
-      "Live debugging: here is code that crashes or leaks, find it",
-      "Engineering system design: GNC simulation infrastructure for a constellation; a telemetry pipeline for six thousand satellites; how you would verify this flight software; how you would architect a fault-tolerant flight computer",
-      "Knowing the SpaceX answer: three dual-core x86 flight strings, per-string core cross-check, PowerPC actuator controllers judging three commands",
-      "Domain rounds for GNC roles: PD control, orbit determination, frequency domain, aerodynamic drag with real examples",
       "The technical presentation: about twelve minutes of slides and twenty-plus minutes of debate",
       "Behavioural themes: mission alignment, extreme ownership, operating with ambiguity and speed, intellectual honesty about failure",
       "Saying what you personally modelled, coded, analysed, tuned, tested or debugged versus what the team did",
-      "Fermi and order-of-magnitude estimation out loud",
       "Building six to eight STAR stories from the capstones, each with a number in it",
       "Questions to ask that show you understand the work"
     ]

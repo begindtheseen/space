@@ -159,14 +159,14 @@ The output matches the hand trace. The last line shows the whole buffer is 32 by
 **Complexity:** push, pop and `at` are $O(1)$ time; memory is $O(N)$, fixed at compile time.
 
 ::: note A faster wrap when N is a power of two
-The `%` operator is a division, which is slower than most arithmetic on small processors. If $N$ is a power of two, $x \bmod N$ equals `x & (N - 1)`: keeping the low bits is the same as taking the remainder. That is the bit trick from lesson 7. Many flight and driver ring buffers pick capacities like 256 or 1024 for this reason. Mention it as an option; do not force it into an interview answer unless asked.
+The `%` operator is a division, which is slower than most arithmetic on small processors. If $N$ is a power of two, $x \bmod N$ equals `x & (N - 1)`: keeping the low bits is the same as taking the remainder. That is a mask, like the ones in lesson 7. Many ring buffers in embedded code and device drivers pick capacities like 256 or 1024 for this reason. Mention it as an option; do not force it into an interview answer unless asked.
 :::
 
 ### Your turn: the Python version
 
 The module's second exercise asks you to write the same thing in Python. Here is what it wants, so you can plan it before you open the editor.
 
-- `RingBuffer(capacity)` makes one list of `capacity` slots, once. A capacity below 1 raises `ValueError`.
+- `RingBuffer(capacity)` makes one list of `capacity` slots, once, kept in `self._buf` (the exercise's tests look for that name). A capacity below 1 raises `ValueError`.
 - `push(item)` adds an item, overwriting the oldest when full.
 - `pop_oldest()` removes and returns the oldest item, or returns `None` when empty.
 - `to_list()` returns the items oldest first.
