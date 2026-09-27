@@ -1157,34 +1157,178 @@ ordered
 
 === sql3-08 | Window frames: moving averages
 --- teach
-A window function sees a **frame**: the rows around the current one that it aggregates over. You can set the frame yourself:
+In the lesson "LAG and LEAD: comparing with neighbours", each row reached back to one other row. This lesson lets each row look at a small group of rows around it and average them. That smooths out a bumpy series, so you can see the trend underneath.
+
+### The picture
+
+Imagine a list of daily sales on paper, and a card with a slot cut in it, three lines tall. You lay the card on the list, read the three numbers through the slot, and write down their average. Then you slide the card down one line and do it again. Each position of the card gives one smoothed number.
+
+### The frame
+
+That slot has a name. A window function's **frame** is the set of rows, around the current row, that the function works on. The **current row** is the row the answer is being worked out for.
+
+You have already used frames without the name. In "Running totals with SUM() OVER", each row's frame was every row from the start up to that row. That is why the total grew as it went.
+
+You can set the frame yourself. It goes inside `OVER (...)`, after the `ORDER BY`:
+
+```sql
+SELECT day, amount,
+       AVG(amount) OVER (
+         ORDER BY day
+         ROWS BETWEEN 2 PRECEDING AND CURRENT ROW
+       ) AS moving_avg
+FROM daily_sales
+WHERE region = 'north';
+```
+
+Read the new line in words: "rows between two rows before this one, and this row". `PRECEDING` means "before", in the order the `ORDER BY` sets. So each row's frame is itself plus the two rows before it: three rows.
+
+An average over a frame like this is a **moving average**: an average whose frame [[slides along with the current row|sliding-frame]]. It is the standard way to [[smooth a noisy daily series|smoothing]].
+
+| day | amount | rows in the frame | moving_avg |
+| --- | --- | --- | --- |
+| 2024-07-01 | 120 | 120 | 120 |
+| 2024-07-02 | 80 | 120, 80 | 100 |
+| 2024-07-03 | 150 | 120, 80, 150 | 116.666… |
+| 2024-07-05 | 90 | 80, 150, 90 | 106.666… |
+| 2024-07-06 | 200 | 150, 90, 200 | 146.666… |
+| 2024-07-07 | 110 | 90, 200, 110 | 133.333… |
+
+Look at the first two rows. There are no rows before 1 July, so its frame holds only itself. 2 July has one row before it, so it averages two. The frame never reaches past the start, so [[the first rows use fewer numbers|edges]].
+
+Look at 5 July too. Its frame reaches back to 2 July, because the two rows before it are 2 and 3 July. As with `LAG`, a frame counts [[rows, not days|rows-not-days]].
+
+### The frame's two ends
+
+Each end of a frame is one of these five:
+
+- `UNBOUNDED PRECEDING`: from the first row of the partition. **Unbounded** means "with no limit". (The **partition** is the group of rows `PARTITION BY` makes, or the whole result when there is no `PARTITION BY`.)
+- `n PRECEDING`: n rows before the current row.
+- `CURRENT ROW`: the current row itself.
+- `n FOLLOWING`: n rows after the current row.
+- `UNBOUNDED FOLLOWING`: to the last row of the partition.
+
+The start goes after `BETWEEN`, the end after `AND`. For example, a frame centred on each row, one row either side:
+
+```sql
+AVG(amount) OVER (ORDER BY day ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING)
+```
+
+Frames can also give you "the rest of the partition", everything after the current row:
+
+```sql
+SUM(amount) OVER (ORDER BY day ROWS BETWEEN 1 FOLLOWING AND UNBOUNDED FOLLOWING)
+```
+
+For north that gives 630 on 1 July (the sales still to come that week), and NULL on 7 July, because nothing comes after the last row.
+
+### ROWS or RANGE
+
+The word at the start of the frame is the **frame type**. There are two you need.
+
+Think of a race's results list. "The two runners listed above me" counts places in the list. "Everyone whose time was the same as mine or faster" looks at the times themselves, so two runners who tie always come as a pair.
+
+- `ROWS` counts physical rows, like places in the list. `2 PRECEDING` means two rows back, whatever their values.
+- `RANGE` works on the sort value, like the times. It takes every row whose sort value falls in the range. Rows that tie on the sort value are called **peers**, and `RANGE` always takes [[peers together|peers]].
+
+### The default frame
+
+If `OVER` has an `ORDER BY` and no frame, SQL uses this one:
+
+```sql
+RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+```
+
+That is the running total from "Running totals with SUM() OVER": every row from the start up to this one. Because it is `RANGE`, two rows that tie on the sort value are peers. Both get a total that includes both, so the running total jumps two rows at once.
+
+When you want exactly one row at a time, say so with `ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW`, and give the `ORDER BY` a **tie-breaker**: one more column that makes the order unique, such as an `id`. The next lesson is a real bug caused by exactly this.
+
+(And, as before, with no `ORDER BY` inside `OVER` at all, the frame is the whole partition.)
+
+**Watch out:** leaving the frame out is not an error. `AVG(amount) OVER (ORDER BY day)` runs and gives a number on every row, so it looks fine. But it is a running average of every row so far, not a moving one: on 5 July it shows 110 (all four rows so far) instead of 106.7 (the last three). If you want a moving average, write the frame.
+
+::: context sliding-frame The frame slides one row at a time
+Each row gets its own frame. Move to the next row and the frame moves with it: the earliest row drops out on the left, and the next row joins on the right.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 160" font-family="Inter, Arial, sans-serif">
+  <rect x="12" y="30" width="50" height="26" fill="#fff" stroke="#1f2a44"/>
+  <text x="37" y="48" font-size="12" fill="#1f2a44" text-anchor="middle">120</text>
+  <rect x="70" y="30" width="50" height="26" fill="#fff" stroke="#1f2a44"/>
+  <text x="95" y="48" font-size="12" fill="#1f2a44" text-anchor="middle">80</text>
+  <rect x="128" y="30" width="50" height="26" fill="#fff" stroke="#1f2a44"/>
+  <text x="153" y="48" font-size="12" fill="#1f2a44" text-anchor="middle">150</text>
+  <rect x="186" y="30" width="50" height="26" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="211" y="48" font-size="12" fill="#1f2a44" text-anchor="middle">90</text>
+  <rect x="244" y="30" width="50" height="26" fill="#fff" stroke="#1f2a44"/>
+  <text x="269" y="48" font-size="12" fill="#1f2a44" text-anchor="middle">200</text>
+  <rect x="302" y="30" width="50" height="26" fill="#fff" stroke="#1f2a44"/>
+  <text x="327" y="48" font-size="12" fill="#1f2a44" text-anchor="middle">110</text>
+  <text x="37" y="22" font-size="11" fill="#6c7a93" text-anchor="middle">1 Jul</text>
+  <text x="95" y="22" font-size="11" fill="#6c7a93" text-anchor="middle">2 Jul</text>
+  <text x="153" y="22" font-size="11" fill="#6c7a93" text-anchor="middle">3 Jul</text>
+  <text x="211" y="22" font-size="11" fill="#6c7a93" text-anchor="middle">5 Jul</text>
+  <text x="269" y="22" font-size="11" fill="#6c7a93" text-anchor="middle">6 Jul</text>
+  <text x="327" y="22" font-size="11" fill="#6c7a93" text-anchor="middle">7 Jul</text>
+  <rect x="66" y="26" width="174" height="34" fill="none" stroke="#1d6fd1" stroke-width="2" stroke-dasharray="5 3"/>
+  <text x="180" y="78" font-size="12" fill="#1f2a44" text-anchor="middle">frame for 5 Jul: 80, 150, 90, average 106.7</text>
+  <rect x="12" y="96" width="50" height="26" fill="#fff" stroke="#1f2a44"/>
+  <text x="37" y="114" font-size="12" fill="#1f2a44" text-anchor="middle">120</text>
+  <rect x="70" y="96" width="50" height="26" fill="#fff" stroke="#1f2a44"/>
+  <text x="95" y="114" font-size="12" fill="#1f2a44" text-anchor="middle">80</text>
+  <rect x="128" y="96" width="50" height="26" fill="#fff" stroke="#1f2a44"/>
+  <text x="153" y="114" font-size="12" fill="#1f2a44" text-anchor="middle">150</text>
+  <rect x="186" y="96" width="50" height="26" fill="#fff" stroke="#1f2a44"/>
+  <text x="211" y="114" font-size="12" fill="#1f2a44" text-anchor="middle">90</text>
+  <rect x="244" y="96" width="50" height="26" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="269" y="114" font-size="12" fill="#1f2a44" text-anchor="middle">200</text>
+  <rect x="302" y="96" width="50" height="26" fill="#fff" stroke="#1f2a44"/>
+  <text x="327" y="114" font-size="12" fill="#1f2a44" text-anchor="middle">110</text>
+  <rect x="124" y="92" width="174" height="34" fill="none" stroke="#1d6fd1" stroke-width="2" stroke-dasharray="5 3"/>
+  <text x="180" y="146" font-size="12" fill="#1f2a44" text-anchor="middle">frame for 6 Jul: 150, 90, 200, average 146.7</text>
+</svg>
+```
+
+The orange box is the current row. The dashed blue box is its frame.
+:::
+
+::: context smoothing Why engineers smooth data
+Real measurements jump about. A sensor on a rocket engine reads temperature many times a second, and each reading wobbles a little from electrical noise. Plotted raw, the line looks like a saw blade, and a slow, real rise is hard to spot. A moving average replaces each point with the average of its neighbours, so the random wobbles partly cancel out and the trend shows. The price is delay: a smoothed line reacts to a real change a few points late. A wider frame is smoother but slower, so engineers pick the width to suit the job. Shops use 7-day averages for the same reason: they hide the weekly pattern of busy Saturdays.
+:::
+
+::: context edges The short frames at the start
+The first two rows of a 3-row moving average are averages of fewer numbers, so they wobble more than the rest. You can see which rows are short by counting the frame:
+
+```sql
+SELECT day,
+       COUNT(*) OVER (ORDER BY day ROWS BETWEEN 2 PRECEDING AND CURRENT ROW) AS n
+FROM daily_sales
+WHERE region = 'north';
+```
+
+`n` is 1, 2, then 3 on every other row. A chart often hides rows where `n` is below the full width, or marks them, so nobody reads too much into them. You will learn to filter on a window function's result in the expert course.
+:::
+
+::: context rows-not-days Moving over days instead of rows
+North has no row for 4 July, so a 3-row frame on 5 July reaches back to 2 July: that is four calendar days, not three. You have two fixes. One is to fill the gaps first with a calendar, as in "Recursive CTEs: generating a series". The other is a `RANGE` frame on a number that counts days, such as `julianday(day)`:
 
 ```sql
 AVG(amount) OVER (
-  ORDER BY day
-  ROWS BETWEEN 2 PRECEDING AND CURRENT ROW
+  ORDER BY julianday(day)
+  RANGE BETWEEN 2 PRECEDING AND CURRENT ROW
 )
 ```
 
-This averages the current row and the two before it — a 3-row **moving average**, the standard way to smooth a noisy daily series. Near the start there are fewer rows available, so the first row averages just itself and the second averages two.
+Now "2 preceding" means "up to two days earlier". On 5 July the frame holds only 3 and 5 July, so the average is 120.
+:::
 
-The frame parts:
-
-- `UNBOUNDED PRECEDING` — from the first row of the partition
-- `n PRECEDING` / `n FOLLOWING` — n rows before / after
-- `CURRENT ROW`
-- `UNBOUNDED FOLLOWING` — to the last row
-
-And the frame type:
-
-- `ROWS` counts physical rows.
-- `RANGE` works on *values*: it includes every row whose sort value is within the range, so ties (peers) are always included together.
-
-This is the default you met last lesson. With only `ORDER BY`, the frame is `RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW` — and if two rows tie on the sort key, both get the total including both, so a "running total" jumps by two rows at once. When you want exactly one row at a time, say `ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW`, and give the `ORDER BY` a tie-breaker.
-
-Frames also give you "the rest of the partition": `ROWS BETWEEN 1 FOLLOWING AND UNBOUNDED FOLLOWING`.
+::: context peers What RANGE does with ties
+Say three rows sort as 10, 20, 20. With `ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW`, the second row's frame is the first two rows. With `RANGE`, the second row's frame also takes the third row, because its sort value, 20, is the same: they are peers. The two 20 rows always get the same answer. SQLite also has a third frame type, `GROUPS`, which counts groups of peers instead of rows, but you will rarely need it.
+:::
 --- task
-For the `north` region, return `day`, `amount` and `moving_avg`: the average of that row and the two rows before it (fewer at the start), rounded to 1 decimal. Sort by day.
+For the `north` region, return `day`, `amount` and `moving_avg`: the average of that row and the two rows before it (fewer at the start), rounded to 1 decimal. Sort by `day`.
+
+Use `daily_sales`, and set the frame yourself inside `OVER`.
 --- starter
 SELECT day, amount,
        ROUND(AVG(amount) OVER (ORDER BY day), 1) AS moving_avg
@@ -1201,9 +1345,11 @@ FROM daily_sales
 WHERE region = 'north'
 ORDER BY day;
 --- hint
-The starter's default frame runs from the first row: it is a running average, not a moving one.
+Run the starter and look at 5 July. The starter uses the default frame, which runs from the first row: it is a running average, not a moving one.
 --- hint
-Add a frame inside `OVER`: `ROWS BETWEEN 2 PRECEDING AND CURRENT ROW`.
+The frame goes inside `OVER`, after `ORDER BY day`. It should hold the current row and the two rows before it.
+--- hint
+The `OVER` should read `OVER (ORDER BY day ROWS BETWEEN 2 PRECEDING AND CURRENT ROW)`. Keep the `ROUND(..., 1)` around the whole `AVG(...) OVER (...)`.
 --- check result | A three-row moving average
 ordered
 [["2024-07-01", 120.0, 120.0], ["2024-07-02", 80.0, 100.0], ["2024-07-03", 150.0, 116.7], ["2024-07-05", 90.0, 106.7], ["2024-07-06", 200.0, 146.7], ["2024-07-07", 110.0, 133.3]]
@@ -1228,19 +1374,144 @@ INSERT INTO ledger (id, account, day, amount) VALUES
   (7, 'bo',  '2024-07-03', 25),
   (8, 'bo',  '2024-07-03', -75);
 --- teach
-This lesson's table: `ledger` (`id`, `account`, `day`, `amount`) — one row per transaction, several on some days. `id` is the order they happened in.
+Last lesson ended on a warning: with only an `ORDER BY`, the default frame is a `RANGE` frame, and it takes tied rows, the peers, together. This lesson you meet that as a real bug on a real page, and you track it down step by step, the way you did in "Debugging: the join that double-counts".
 
-**The bug report.** The statement page shows each transaction with the account's balance after it. Ana's two payments on 2 July both show a balance of **50**; after the first one (−30) her balance was 70. Bo's three transactions on 3 July all show **100**. The balance at the end of each day is right.
+### This lesson's table
 
-The method is the one you used on queries in the intermediate course:
+Picture a bank book. Every time money goes in or out, the bank writes one line. That list of lines is a [[ledger|ledger]].
 
-1. **Reproduce it small.** Run the query for one account and read the raw rows next to the balance. Ana's lines 2 and 3 show the same number.
-2. **Look for the pattern in what is wrong.** Every wrong row shares its `day` with another row of the same account. Rows alone on their day are right. That points at how ties on `day` are handled.
-3. **Check your assumption.** The query assumes `SUM(...) OVER (... ORDER BY day)` adds one row at a time. It does not: with only an `ORDER BY`, the default frame is `RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW`, and `RANGE` takes every **peer** — every row with the same `day` — together (you met this in the window-frames lesson). So both of Ana's 2 July rows get the total after both.
-4. **Fix the cause, not the symptom.** The real problem is that `day` does not fully decide the order. Make the order unique with a tie-breaker, `ORDER BY day, id`, and say that you mean one row at a time with `ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW`. Hiding the repeated numbers on the page, or grouping by day, would treat the symptom and lose the per-transaction balance the page exists to show.
-5. **Check that the fix did not break what was right.** The balance at the end of each day must not change.
+This lesson has its own table, `ledger`, with one row per transaction:
+
+- `id`: the order the transactions happened in.
+- `account`: whose account, `ana` or `bo`.
+- `day`: the date.
+- `amount`: money in (positive) or out (negative).
+
+Some days have several rows. Here are the `ana` rows:
+
+| id | day | amount |
+| --- | --- | --- |
+| 1 | 2024-07-01 | 100 |
+| 2 | 2024-07-02 | -30 |
+| 3 | 2024-07-02 | -20 |
+| 4 | 2024-07-04 | 50 |
+
+An account's **balance** is how much money is in it: the running total of its amounts.
+
+### The bug report
+
+The statement page shows each transaction with the account's balance after it. This is its query:
+
+```sql
+SELECT id, account, day, amount,
+       SUM(amount) OVER (PARTITION BY account ORDER BY day) AS balance
+FROM ledger
+ORDER BY account, day, id;
+```
+
+Someone reports: "The `ana` account's two payments on 2 July both show a balance of **50**. After the first one (−30) the balance was 70. The `bo` account's three transactions on 3 July all show **100**. But the balance at the end of each day is right."
+
+### Step 1: reproduce it small
+
+Shrink the problem until you can read all of it. Add `WHERE account = 'ana'` and put the raw rows next to the balance:
+
+| id | day | amount | balance shown | should be |
+| --- | --- | --- | --- | --- |
+| 1 | 2024-07-01 | 100 | 100 | 100 |
+| 2 | 2024-07-02 | -30 | 50 | 70 |
+| 3 | 2024-07-02 | -20 | 50 | 50 |
+| 4 | 2024-07-04 | 50 | 100 | 100 |
+
+The bug is there: row 2 shows 50 instead of 70.
+
+### Step 2: look for the pattern in what is wrong
+
+Which rows are wrong? Only row 2. Rows 2 and 3 share a day. In `bo`'s rows, the three wrong ones all share 3 July. Every row that is alone on its day is right.
+
+So the bug has something to do with rows that tie on `day`.
+
+### Step 3: check your assumption
+
+The query assumes that `SUM(amount) OVER (... ORDER BY day)` adds one row at a time. Check that against what you learned in "Window frames: moving averages".
+
+With only an `ORDER BY`, the frame is `RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW`. `RANGE` takes every [[peer|peer-picture]] together: every row with the same `day`. So rows 2 and 3 both get the total after both of them: 100 − 30 − 20 = 50. The assumption was wrong.
+
+### Step 4: fix the cause, not the symptom
+
+The real cause: `day` does not fully decide the order. Two rows on 2 July, and nothing says which came first.
+
+The fix has two parts.
+
+First, a tie-breaker. `id` is the order the transactions happened, so sort the window by `day`, then `id`:
+
+```sql
+ORDER BY day, id
+```
+
+Now no two rows tie, so there are no peers left. Picking `id` is not a guess: it is [[the column that records the real order|tie-breaker]].
+
+Second, say that you mean one row at a time, with a `ROWS` frame:
+
+```sql
+ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+```
+
+Both parts go inside the window's `OVER (...)`, after `PARTITION BY account`. Writing both is [[belt and braces|both-parts]].
+
+What about hiding repeated numbers on the page, or grouping by day? Those treat the [[symptom|symptom]]. They would lose the balance after each transaction, which is the whole point of the page.
+
+### Step 5: check that the fix did not break what was right
+
+The end-of-day balances were right before, so they must not change. For `ana`: 100 after 1 July, 50 after 2 July, 100 after 4 July. For `bo`: 200 after 1 July, 100 after 3 July. After the fix, `bo`'s 3 July rows read 150, 175, 100, and the last is still 100.
+
+**Watch out:** the starter already ends with `ORDER BY account, day, id`, and it is still wrong. That last `ORDER BY` only sorts the finished rows for display. The window has its own `ORDER BY`, inside `OVER`, and that is the one that decides which rows go into each sum. The tie-breaker has to go there.
+
+::: context ledger An old word for a list that only grows
+A ledger was the big book a bookkeeper wrote every payment in, one line each, in the order they happened. Lines were never rubbed out: a mistake was fixed by writing a new line that undoes it. Software still works this way. Banks, shops and space missions keep **append-only** logs, where rows are only ever added. A mission's command log records every command sent to a spacecraft, in order, and nobody edits old lines. A balance, or the craft's current state, is then worked out by adding up the log, exactly as this lesson does with `SUM() OVER`.
+:::
+
+::: context peer-picture The frame for row 2, two ways
+Row 2 is the current row. Row 3 has the same day, so it is a peer of row 2.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 170" font-family="Inter, Arial, sans-serif">
+  <text x="180" y="18" font-size="12" fill="#1f2a44" text-anchor="middle">frames for row 2 (the current row)</text>
+  <rect x="110" y="30" width="140" height="24" fill="#fff" stroke="#1f2a44"/>
+  <text x="180" y="46" font-size="12" fill="#1f2a44" text-anchor="middle">1 · 07-01 · +100</text>
+  <rect x="110" y="58" width="140" height="24" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="180" y="74" font-size="12" fill="#1f2a44" text-anchor="middle">2 · 07-02 · -30</text>
+  <rect x="110" y="86" width="140" height="24" fill="#fff" stroke="#1f2a44"/>
+  <text x="180" y="102" font-size="12" fill="#1f2a44" text-anchor="middle">3 · 07-02 · -20</text>
+  <rect x="110" y="114" width="140" height="24" fill="#fff" stroke="#1f2a44"/>
+  <text x="180" y="130" font-size="12" fill="#1f2a44" text-anchor="middle">4 · 07-04 · +50</text>
+  <path d="M102 30 H92 V110 H102" fill="none" stroke="#b4232c" stroke-width="2"/>
+  <text x="48" y="66" font-size="12" fill="#b4232c" text-anchor="middle">RANGE</text>
+  <text x="48" y="82" font-size="12" fill="#b4232c" text-anchor="middle">sum 50</text>
+  <path d="M258 30 H268 V82 H258" fill="none" stroke="#1d6fd1" stroke-width="2"/>
+  <text x="312" y="52" font-size="12" fill="#1d6fd1" text-anchor="middle">ROWS</text>
+  <text x="312" y="68" font-size="12" fill="#1d6fd1" text-anchor="middle">sum 70</text>
+  <text x="180" y="160" font-size="12" fill="#1f2a44" text-anchor="middle">Row 3 shares row 2's day, so RANGE takes it too.</text>
+</svg>
+```
+
+The `ROWS` frame on the right assumes the tie-breaker is in place, so the window knows row 2 comes before row 3.
+:::
+
+::: context tie-breaker Choosing the tie-breaker
+A tie-breaker has to make the order unique, and it has to match the order you mean. `id` does both here: it is the primary key, so no two rows share it, and it counts up in the order the transactions happened. Sorting by `amount` as a tie-breaker would also make the order unique for these rows, but it would be the wrong order: a balance "after −30" would depend on the size of the payment, not on when it happened. You met the same idea in "Pagination with LIMIT and OFFSET": always end an `ORDER BY` with something that fully decides the order.
+:::
+
+::: context both-parts Why write both parts?
+With `ORDER BY day, id`, no two rows tie, so even the default `RANGE` frame would add one row at a time. And a `ROWS` frame alone, with only `ORDER BY day`, happens to give the right numbers on this data today. Neither is safe alone. Without the tie-breaker, `ROWS` still has to pick an order among rows on the same day, and nothing promises it will pick `id` order next time. Without `ROWS`, a future change to the `ORDER BY` could bring ties back. Writing both says exactly what you mean, so the next reader, and the database, cannot get it wrong. That habit of a second safety line is what "belt and braces" means.
+:::
+
+::: context symptom Symptom and cause
+A **symptom** is what you see going wrong: two identical balances on the page. The **cause** is why it happens: the window adds tied rows together. A doctor who only treats a symptom, say a fever, without finding the infection, leaves the patient ill. In code it is the same. If you hid the repeated numbers, the page would look tidier, but every balance on a busy day would still be wrong, and the next report built on this query would carry the same bug. Fix the cause, and the symptom goes away by itself.
+:::
 --- task
-Fix the statement query so `balance` is each account's running balance after **each** transaction, in the order they happened (`day`, then `id`). Keep the columns `id`, `account`, `day`, `amount`, `balance` and the sort order.
+Fix the statement query so `balance` is each account's running balance after **each** transaction, in the order they happened (`day`, then `id`).
+
+Keep the columns `id`, `account`, `day`, `amount`, `balance` and the final `ORDER BY account, day, id`. Change only the window inside `OVER (...)`.
 --- starter
 SELECT id, account, day, amount,
        SUM(amount) OVER (PARTITION BY account ORDER BY day) AS balance
@@ -1256,11 +1527,11 @@ SELECT id, account, day, amount,
 FROM ledger
 ORDER BY account, day, id;
 --- hint
-Look only at Ana's rows. Which rows show a wrong balance, and what do they have in common?
+Run the starter and look only at the `ana` rows. Which rows show a wrong balance, and what do they have in common?
 --- hint
-With only `ORDER BY day`, rows that share a day are peers and are summed together. The window needs to know which of them came first.
+With only `ORDER BY day` inside `OVER`, rows that share a day are peers and are summed together. The window needs to know which of them came first.
 --- hint
-Order the window by `day, id`, and add `ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW`.
+Inside `OVER`, keep `PARTITION BY account`, change the order to `ORDER BY day, id`, and add `ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW` after it.
 --- check result | A balance after every transaction, in order
 ordered
 [[1, "ana", "2024-07-01", 100, 100], [2, "ana", "2024-07-02", -30, 70], [3, "ana", "2024-07-02", -20, 50], [4, "ana", "2024-07-04", 50, 100], [5, "bo", "2024-07-01", 200, 200], [6, "bo", "2024-07-03", -50, 150], [7, "bo", "2024-07-03", 25, 175], [8, "bo", "2024-07-03", -75, 100]]
@@ -1273,7 +1544,19 @@ CREATE TABLE plans (
 );
 INSERT INTO plans (name, monthly_cents) VALUES ('free', 0), ('team', 1200), ('enterprise', 4900);
 --- teach
-Application code has bugs, runs in several versions at once, and is joined by scripts and admin tools that skip its checks. The only rule that holds for **every** writer is one the database enforces. That is what constraints are for:
+Last lesson you fixed a query that added up the wrong rows. The rest of this course turns from reading data to protecting it. This lesson: rules the database itself enforces, so bad rows never get in at all.
+
+### The picture
+
+Think of a post office counter. Whoever hands in a parcel form, the clerk checks it: an address filled in, a real postcode, a weight above zero. An incomplete form is handed back, however important the person is. Because every parcel goes through that one counter, no bad form gets past.
+
+### Why the database should check
+
+Your data is written by many hands. The **application code**, the program behind a website or app that talks to the database, has bugs. It may run [[in several versions at once|many-writers]]. Scripts and admin tools write to the same tables and skip its checks.
+
+The only rule that holds for **every** writer is one the database enforces. That rule is a **constraint**: a rule attached to a table that every inserted or changed row must pass.
+
+You met some constraints in the basics lesson "Creating tables". Here is a table that uses them all:
 
 ```sql
 CREATE TABLE accounts (
@@ -1284,6 +1567,47 @@ CREATE TABLE accounts (
 );
 ```
 
+Several constraints can stack after one column's type, with spaces between them. Now take them one at a time.
+
+### NOT NULL: a value is required
+
+`email TEXT NOT NULL` refuses a row with no email:
+
+```sql
+INSERT INTO accounts (email, plan) VALUES (NULL, 'free');
+```
+
+That fails with an error like `NOT NULL constraint failed: accounts.email`.
+
+### UNIQUE: no two rows share a value
+
+`email ... UNIQUE` refuses a second row with an email that is already there. If `ops@acme.io` exists, adding another `ops@acme.io` fails with `UNIQUE constraint failed`.
+
+One exception: [[NULLs do not count|unique-null]]. A `UNIQUE` column may hold NULL in many rows. (Here `email` is also `NOT NULL`, so that cannot happen.)
+
+### CHECK: any rule you can write as a condition
+
+`CHECK (condition)` refuses a row for which the condition is false. You write the condition like a `WHERE`:
+
+- `CHECK (plan IN ('free', 'team', 'enterprise'))`: `IN (...)` means "is one of these". A plan of `'gold'` is refused.
+- `CHECK (seats >= 1)`: `>=` means "at least". Zero seats are refused.
+
+### DEFAULT: a value to fill in
+
+`DEFAULT 1` is not a rule. It fills in the column when an insert leaves it out:
+
+```sql
+INSERT INTO accounts (email, plan) VALUES ('solo@acme.io', 'free');
+```
+
+This row gets `seats` = 1.
+
+### PRIMARY KEY: one row per key
+
+`PRIMARY KEY` refuses a second row with the same key. In SQLite, `INTEGER PRIMARY KEY` is special: it becomes [[the row's own id|rowid]], and SQLite fills it in when you leave it out. That is why the insert above did not give an `id`.
+
+### All five at a glance
+
 | constraint | refuses |
 | --- | --- |
 | `PRIMARY KEY` | a second row with the same key |
@@ -1292,18 +1616,94 @@ CREATE TABLE accounts (
 | `CHECK (expr)` | a row for which `expr` is false |
 | `DEFAULT v` | (not a rule) fills the column when an insert leaves it out |
 
-Constraints can also go at the end, covering several columns: `UNIQUE (team_id, email)` means one email per team, but the same email may join two teams.
+### A rule across several columns
 
-When a constraint is broken, the statement fails with an error and changes nothing. You can choose another reaction with `INSERT OR IGNORE` (skip the bad row silently) or `INSERT OR REPLACE` (delete the old row, then insert). The checks in this lesson use `INSERT OR IGNORE … RETURNING id`: a row that your table accepts comes back, and a row it refuses returns nothing.
+A constraint can also go at the end of the table, after the last column, and cover several columns together:
 
-In SQLite, `INTEGER PRIMARY KEY` is special: it becomes the row's own id, filled in automatically when you leave it out. And a column type is only a hint — SQLite happily stores `'abc'` in an `INTEGER` column — which is one more reason to write `CHECK`s for what matters.
+```sql
+UNIQUE (team_id, email)
+```
+
+This means one email per team. The same email may join two different teams, but not the same team twice.
+
+### What happens when a rule is broken
+
+The statement fails with an error and changes **nothing**. If one `INSERT` adds three rows and the third breaks a rule, none of the three is added.
+
+You can choose a different reaction:
+
+- `INSERT OR IGNORE`: skip the bad row without an error.
+- `INSERT OR REPLACE`: [[delete the old row that clashes, then insert|or-replace]].
+
+The checks in this lesson use `INSERT OR IGNORE ... RETURNING id`. [[RETURNING|returning]] hands back columns from the rows actually added. So a row your table accepts comes back, and a row it refuses returns nothing.
+
+### Column types are only a hint
+
+In SQLite, a column's type is a hint, not a rule. SQLite will store `'abc'` in an `INTEGER` column without complaint. That is one more reason to write `CHECK`s for [[what really matters|type-hint]].
+
+**Watch out:** a `CHECK` only refuses a row when its condition is **false**. When the value is NULL, the condition gives NULL, not false, and the row gets in. So `plan TEXT CHECK (plan IN (...))` on its own lets a row with no plan through. If a value is required, add `NOT NULL` as well.
+
+::: context many-writers One database, many writers
+A real app's database is rarely written by one program. While a new version rolls out, the old and new versions run side by side for a while. A support engineer fixes a customer's record with a one-off script. A nightly job imports data from a partner. Each of these is a separate writer, and a check that lives in only one of them protects nothing from the others.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">
+  <rect x="10" y="15" width="120" height="28" fill="#fff" stroke="#1f2a44"/>
+  <text x="70" y="33" font-size="12" fill="#1f2a44" text-anchor="middle">app, version 2</text>
+  <rect x="10" y="60" width="120" height="28" fill="#fff" stroke="#1f2a44"/>
+  <text x="70" y="78" font-size="12" fill="#1f2a44" text-anchor="middle">app, version 1</text>
+  <rect x="10" y="105" width="120" height="28" fill="#fff" stroke="#1f2a44"/>
+  <text x="70" y="123" font-size="12" fill="#1f2a44" text-anchor="middle">admin script</text>
+  <line x1="130" y1="29" x2="214" y2="29" stroke="#1d6fd1" stroke-width="2"/>
+  <polygon points="214,24 222,29 214,34" fill="#1d6fd1"/>
+  <line x1="130" y1="74" x2="214" y2="74" stroke="#1d6fd1" stroke-width="2"/>
+  <polygon points="214,69 222,74 214,79" fill="#1d6fd1"/>
+  <line x1="130" y1="119" x2="214" y2="119" stroke="#1d6fd1" stroke-width="2"/>
+  <polygon points="214,114 222,119 214,124" fill="#1d6fd1"/>
+  <rect x="222" y="8" width="128" height="134" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="286" y="34" font-size="12" fill="#1f2a44" text-anchor="middle">the database</text>
+  <text x="286" y="60" font-size="12" fill="#1f2a44" text-anchor="middle">NOT NULL</text>
+  <text x="286" y="80" font-size="12" fill="#1f2a44" text-anchor="middle">UNIQUE</text>
+  <text x="286" y="100" font-size="12" fill="#1f2a44" text-anchor="middle">CHECK</text>
+  <text x="286" y="126" font-size="12" fill="#1f2a44" text-anchor="middle">checks every write</text>
+</svg>
+```
+
+Every writer goes through the database, so that is where the rules belong.
+:::
+
+::: context unique-null Why UNIQUE lets NULLs repeat
+NULL means "unknown", not "empty". Two unknown values are not known to be equal, so `UNIQUE` does not count them as a clash. That is useful: think of an optional phone number column. Many users have not given one, and they should not all be refused because their NULLs "match". If you want at most one NULL as well, that needs a different rule, and if you want no NULLs at all, add `NOT NULL`. PostgreSQL behaves the same way by default.
+:::
+
+::: context rowid The row's own id
+Every ordinary SQLite table keeps a hidden whole number for each row, called the **rowid**, which it uses to find the row fast. A column declared exactly `INTEGER PRIMARY KEY` becomes another name for that rowid. When an insert leaves it out, SQLite picks a number one higher than the largest id in the table (it can reuse a deleted top number unless the column also says `AUTOINCREMENT`). Only the exact spelling `INTEGER` does this: `INT PRIMARY KEY` makes an ordinary column that is not filled in for you.
+:::
+
+::: context or-replace Why OR REPLACE can surprise you
+`INSERT OR REPLACE` does not update the old row. It deletes it and inserts a brand-new one. Any column you did not give in the new insert gets its default, not the old value. So replacing an account with only `email` and `plan` would reset `seats` to 1, and the customer's paid seats are gone. `OR IGNORE` has its own risk: a refused row disappears without an error, so a bug can hide. Later, the lesson "UPSERT: insert or update" shows a safer way to say "add it, or update the one that is there".
+:::
+
+::: context returning A first look at RETURNING
+`RETURNING` goes at the end of an `INSERT`, `UPDATE` or `DELETE` and hands back columns from the rows that statement changed, like a receipt. `INSERT ... RETURNING id` tells you which ids were really added, including ids SQLite filled in itself. With `OR IGNORE`, a refused row is not added, so it does not appear on the receipt. The lesson "RETURNING: see what you changed" covers it properly.
+:::
+
+::: context type-hint When the type is not enough
+Even `CHECK (seats >= 1)` does not stop `'abc'`. In SQLite, text always sorts above numbers, so `'abc' >= 1` is true and the row gets in. To insist on a whole number, check its type too:
+
+```sql
+seats INTEGER NOT NULL CHECK (typeof(seats) = 'integer' AND seats >= 1)
+```
+
+`typeof(x)` gives the kind of value stored: `'integer'`, `'real'`, `'text'`, `'blob'` or `'null'`. Newer SQLite versions also offer **STRICT** tables, written `CREATE TABLE ... ( ... ) STRICT;`, which refuse a value of the wrong type in every column.
+:::
 --- task
-Create a table `accounts` with:
+Create a table `accounts` with these four columns:
 
-- `id` — integer primary key
-- `email` — text, required, and unique
-- `plan` — text, required, and only `'free'`, `'team'` or `'enterprise'`
-- `seats` — integer, required, at least 1, defaulting to 1
+- `id`: integer primary key
+- `email`: text, required, and unique
+- `plan`: text, required, and only `'free'`, `'team'` or `'enterprise'`
+- `seats`: integer, required, at least 1, defaulting to 1
 --- starter
 CREATE TABLE accounts (
   id INTEGER PRIMARY KEY,
@@ -1319,9 +1719,11 @@ CREATE TABLE accounts (
   seats INTEGER NOT NULL DEFAULT 1 CHECK (seats >= 1)
 );
 --- hint
-Stack constraints after the type, space-separated: `email TEXT NOT NULL UNIQUE`.
+"Required" is `NOT NULL`. Stack a column's constraints after its type, with spaces between them: `email TEXT NOT NULL UNIQUE`.
 --- hint
-`CHECK (plan IN ('free', 'team', 'enterprise'))` and `seats INTEGER NOT NULL DEFAULT 1 CHECK (seats >= 1)`.
+"Only these values" is a `CHECK` with `IN`: `CHECK (plan IN ('free', 'team', 'enterprise'))`. Keep `NOT NULL` too, or a missing plan slips past the `CHECK`.
+--- hint
+The last column needs three constraints: `seats INTEGER NOT NULL DEFAULT 1 CHECK (seats >= 1)`.
 --- check query | A valid account is accepted
 INSERT OR IGNORE INTO accounts (id, email, plan, seats) VALUES (1, 'ops@acme.io', 'team', 5) RETURNING id
 => [[1]]
@@ -1349,7 +1751,17 @@ CREATE TABLE teams (
 );
 INSERT INTO teams (id, name) VALUES (1, 'Platform'), (2, 'Growth');
 --- teach
-A foreign key says "this column must point at a real row over there":
+Last lesson each constraint looked at one table on its own. This lesson's rule links two tables: a row in one must point at a real row in the other. You also decide what happens to the pointing rows when the row they point at is deleted.
+
+### The picture
+
+Think of a school's sports day. Every pupil wears a badge with a team number, and the team numbers match the list of teams on the noticeboard. A badge saying "team 7" when there are only teams 1 and 2 makes no sense: nobody knows where that pupil should stand.
+
+### The foreign key
+
+A **foreign key** is a column whose values must match the key of a row in another table. You met the word in the basics lesson "Creating tables". There it was a promise. Here you make the database keep it.
+
+This lesson's `teams` table already exists, with two teams: `1` Platform and `2` Growth. Here is a `members` table that points at it:
 
 ```sql
 CREATE TABLE members (
@@ -1359,27 +1771,114 @@ CREATE TABLE members (
 );
 ```
 
-With it, the database refuses a member whose `team_id` names no team — no more **orphans**, rows pointing at nothing, which every report then has to step around.
+Read `REFERENCES teams(id)` in words: "must match an `id` in `teams`". The table being pointed at, `teams`, is the [[parent|parent-child]]. The table doing the pointing, `members`, is the child.
 
-The `ON DELETE` part says what happens to members when their team is deleted:
+### No orphans
+
+With the foreign key on, the database refuses a member whose `team_id` names no team:
+
+```sql
+INSERT INTO members (id, team_id, email) VALUES (1, 99, 'ana@acme.io');
+```
+
+That fails with `FOREIGN KEY constraint failed`, because there is no team 99. So you never get [[orphans|orphans]]: rows that point at nothing.
+
+### ON DELETE: when the parent goes
+
+What should happen to members when their team is deleted? The `ON DELETE` part of the foreign key says:
 
 | action | effect |
 | --- | --- |
-| `NO ACTION` / `RESTRICT` (default) | refuse to delete a team that still has members |
+| `NO ACTION` (the default) or `RESTRICT` | refuse to delete a team that still has members |
 | `CASCADE` | delete its members too |
-| `SET NULL` | keep the members, set their `team_id` to NULL (the column must allow NULL) |
+| `SET NULL` | keep the members, and set their `team_id` to NULL (the column must allow NULL) |
 
-Choose by meaning. A team's memberships make no sense without the team: `CASCADE`. Invoices must survive a customer being removed: `RESTRICT`, and archive customers instead of deleting them.
+**Cascade** means "flow down", like a waterfall: the delete flows down from the team to its members. With `ON DELETE CASCADE`, this one statement removes team 1 and every member of team 1:
 
-**The SQLite catch:** for backwards compatibility, SQLite does *not* enforce foreign keys unless you switch them on, once per connection:
+```sql
+DELETE FROM teams WHERE id = 1;
+```
+
+Members of team 2 are untouched. To do this, SQLite first has to [[find every member of team 1|cascade-index]].
+
+### Choosing the action
+
+Choose by what the data means.
+
+- A team's memberships make no sense without the team, so `CASCADE`.
+- Invoices must survive a customer being removed, because the money was real. Use `RESTRICT`, and [[archive customers instead of deleting them|archive]].
+
+### The SQLite catch: switch it on
+
+For backwards compatibility, SQLite does **not** enforce foreign keys until you switch them on. You do that with a **PRAGMA**: a SQLite command that reads or changes a setting.
 
 ```sql
 PRAGMA foreign_keys = ON;
 ```
 
-Without it, `REFERENCES` is just documentation. Every app that uses SQLite should run this pragma as soon as it opens the database. `PRAGMA foreign_keys;` on its own tells you the current setting (1 is on).
+It lasts for one [[connection|connection]], so it must run again each time the database is opened. Without it, `REFERENCES` is only a note to the reader: the team-99 insert above would be accepted. Every app that uses SQLite should run this pragma as soon as it opens the database.
+
+The same pragma without `= ON` tells you the current setting:
+
+```sql
+PRAGMA foreign_keys;
+```
+
+It gives 1 when enforcement is on and 0 when it is off.
+
+**Watch out:** a missing pragma makes no noise. With enforcement off, nothing fails, so everything looks as if it works: orphans slip in and cascades never happen. Run `PRAGMA foreign_keys = ON;` first, before the statements you want checked, and check it with `PRAGMA foreign_keys;` if in doubt.
+
+::: context parent-child Parent and child tables
+The parent holds the rows being pointed at. The child holds the pointers. One team can have many members, but each member points at one team.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 170" font-family="Inter, Arial, sans-serif">
+  <text x="85" y="18" font-size="12" fill="#1f2a44" text-anchor="middle">members (child)</text>
+  <text x="275" y="18" font-size="12" fill="#1f2a44" text-anchor="middle">teams (parent)</text>
+  <rect x="20" y="30" width="130" height="24" fill="#fff" stroke="#1f2a44"/>
+  <text x="85" y="46" font-size="12" fill="#1f2a44" text-anchor="middle">ana · team_id 1</text>
+  <rect x="20" y="60" width="130" height="24" fill="#fff" stroke="#1f2a44"/>
+  <text x="85" y="76" font-size="12" fill="#1f2a44" text-anchor="middle">bo · team_id 1</text>
+  <rect x="20" y="90" width="130" height="24" fill="#fff" stroke="#1f2a44"/>
+  <text x="85" y="106" font-size="12" fill="#1f2a44" text-anchor="middle">cy · team_id 2</text>
+  <rect x="20" y="120" width="130" height="24" fill="#f2b880" stroke="#b4232c" stroke-dasharray="4 3"/>
+  <text x="85" y="136" font-size="12" fill="#1f2a44" text-anchor="middle">dee · team_id 99</text>
+  <rect x="210" y="45" width="130" height="24" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="275" y="61" font-size="12" fill="#1f2a44" text-anchor="middle">1 · Platform</text>
+  <rect x="210" y="95" width="130" height="24" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="275" y="111" font-size="12" fill="#1f2a44" text-anchor="middle">2 · Growth</text>
+  <line x1="150" y1="42" x2="210" y2="57" stroke="#1d6fd1" stroke-width="1.5"/>
+  <line x1="150" y1="72" x2="210" y2="57" stroke="#1d6fd1" stroke-width="1.5"/>
+  <line x1="150" y1="102" x2="210" y2="107" stroke="#1d6fd1" stroke-width="1.5"/>
+  <line x1="150" y1="132" x2="205" y2="150" stroke="#b4232c" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <text x="275" y="155" font-size="12" fill="#b4232c" text-anchor="middle">no team 99: refused</text>
+</svg>
+```
+
+The red row is the orphan the foreign key keeps out.
+:::
+
+::: context orphans Why orphans hurt
+An orphan row points at a parent that does not exist. Every report then has to step around it. An inner join quietly drops it, so totals come out too low. A left join shows it with NULLs where the team's name should be. Someone has to decide whether it is a bug or real data. In a mission's telemetry store, a reading tagged with a sensor id that is not in the sensors table cannot be turned into a temperature or pressure, because nobody knows which instrument sent it. Refusing orphans at the door is far cheaper than cleaning them up later.
+:::
+
+::: context cascade-index Foreign keys and indexes
+When you delete a team, SQLite has to find that team's members, to cascade the delete or to refuse it. Without help, it reads the whole `members` table to look for them. On a big table that is slow. The fix is an index on the child column, `CREATE INDEX members_team ON members(team_id);`, which lets SQLite jump straight to the matching rows. The SQLite documentation recommends one for nearly every foreign key. You will meet indexes properly in "Indexes and EXPLAIN QUERY PLAN".
+:::
+
+::: context archive Archive instead of delete
+Many real systems almost never delete important rows. Instead they add a column such as `archived_at TEXT` and fill in the date when a customer leaves. Everyday queries add `WHERE archived_at IS NULL` to hide archived customers, but their invoices still point at a real row, so the history stays complete and the foreign key stays happy. This is often called a **soft delete**. With `ON DELETE RESTRICT` as well, a real delete of a customer who has invoices is refused, so nobody can destroy that history by accident.
+:::
+
+::: context connection What a connection is
+A **connection** is one open line between a program and a database file, like one phone call. An app may open several at once, and each starts with SQLite's default settings, so each one needs its own `PRAGMA foreign_keys = ON;`. Two more details catch people. The pragma does nothing if it runs in the middle of a transaction (a group of changes saved as one, which comes later in this course), so run it first. And switching it on does not check rows that are already there. To find existing orphans, run `PRAGMA foreign_key_check;`, which lists every child row whose parent is missing.
+:::
 --- task
-Turn foreign key enforcement on, then create a table `members` with `id` (integer primary key), `team_id` (integer, required, referencing `teams(id)`, deleting a team deletes its members) and `email` (text, required).
+Turn foreign key enforcement on. Then create a table `members` with three columns:
+
+- `id`: integer primary key
+- `team_id`: integer, required, referencing `teams(id)`, where deleting a team deletes its members
+- `email`: text, required
 --- starter
 CREATE TABLE members (
   id INTEGER PRIMARY KEY,
@@ -1395,9 +1894,11 @@ CREATE TABLE members (
   email TEXT NOT NULL
 );
 --- hint
-`team_id INTEGER NOT NULL REFERENCES teams(id) ON DELETE CASCADE`.
+Enforcement is off until you run `PRAGMA foreign_keys = ON;`. Put it on the first line, before the `CREATE TABLE`.
 --- hint
-Enforcement is off until you run `PRAGMA foreign_keys = ON;` — put it first.
+The pointing goes on the `team_id` column, after `NOT NULL`: `REFERENCES teams(id)`.
+--- hint
+"Deleting a team deletes its members" is `ON DELETE CASCADE`. The whole column reads `team_id INTEGER NOT NULL REFERENCES teams(id) ON DELETE CASCADE`.
 --- check query | Foreign keys are enforced
 PRAGMA foreign_keys
 => [[1]]
