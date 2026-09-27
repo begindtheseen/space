@@ -1,21 +1,21 @@
 ---
 id: l11-testing-and-the-cpp-map
 title: Testing, and the map back to C++
-minutes: 30
+minutes: 25
 covers:
   - 'Testing: #[test], integration tests, criterion benchmarks, proptest, cargo-fuzz, miri'
   - 'Mapping each concept back to its C++ equivalent'
 ---
 
-Think about how a new car is checked before anyone drives it home. Each part is tested alone on a bench: does the brake caliper squeeze with the right force? Then the whole car goes around a test track, the way a customer would drive it. Someone times it with a stopwatch. A machine shakes it thousands of times in random ways, looking for the one bump that snaps something. And a technician X-rays the welds, looking for cracks you cannot see from outside, which have not broken anything yet but one day will.
+Think about how a new car is checked. Each part is tested alone on a bench. Then the whole car goes around a test track, the way a customer would drive it. Someone times it with a stopwatch. A machine shakes it thousands of times in random ways, looking for the one bump that snaps something. And a technician X-rays the welds for cracks that have not broken anything yet, but one day will.
 
 Rust has a tool for each of those jobs. **Unit tests** check one piece from the inside. **Integration tests** drive the whole library from the outside, as a user would. **Benchmarks** are the stopwatch. **Property tests** and **fuzzing** are the shaking machine: they invent inputs you would never think of. And **miri** is the X-ray: it finds undefined behavior in `unsafe` code even when the test passed.
 
-A GNC team needs all six, because each catches a different kind of mistake. This lesson runs each of them on the frame parser from the last lesson and on the code from earlier ones. It ends the module with a single map: every idea from these eleven lessons, next to the C++ you would write for it.
+Each catches a different kind of mistake, so a GNC team needs all six. This lesson runs each one on real code from this module, then ends with a single map: every idea from these eleven lessons next to the C++ you would write for it.
 
 ## Unit tests: one piece, from the inside
 
-You met the basics in the previous module: a function marked `#[test]` passes unless it panics, and a `#[cfg(test)] mod tests` block keeps tests out of the real build. Here is a rate limiter, the kind of block that stops a command from jumping faster than an actuator can follow, with three tests that show three different styles.
+You met the basics in the previous module: a `#[test]` function passes unless it panics, and `#[cfg(test)] mod tests` keeps tests out of the real build. Here is a rate limiter, which stops a command from changing faster than an actuator can follow, with tests in three styles.
 
 ```rust
 /// Moves an output toward a command by at most `max_step` per call.
@@ -69,7 +69,7 @@ mod tests {
 (The frame functions are the thiserror versions from lesson 10, in the same crate.)
 
 - **A test can return `Result`.** `hex_line_to_frame` returns `Result<(), FrameError>`, so it can use `?`. If any step returns `Err`, the test fails and prints the error. This keeps error-path tests free of `unwrap`.
-- **`#[should_panic(expected = "...")]`** passes only if the test panics *and* the panic message contains that text. Zero `max_step` is a programming mistake, so `new` asserts, and this test proves the assert is there. The `expected` part matters: without it, a panic for any other reason would also count as a pass.
+- **`#[should_panic(expected = "...")]`** passes only if the test panics *and* the message contains that text. Zero `max_step` is a programming mistake, so `new` asserts. Without `expected`, a panic for any other reason would also pass.
 - **`assert_eq!`** compares with `==` and prints both sides when they differ. The limiter starts at 0 and may move 0.5 per step: $0 \to 0.5 \to 1.0$, and then the command 0.8 is only $0.2$ away, so it arrives exactly.
 
 ```text
@@ -81,7 +81,7 @@ test tests::zero_step_limiter_is_a_bug - should panic ... ok
 test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
 ```
 
-Useful switches: `cargo test limiter` runs only tests whose names contain "limiter" (the rest show as "filtered out"). `cargo test -- --nocapture` shows what tests print, which is normally hidden. A test marked `#[ignore]`, for a slow one, runs only with `cargo test -- --ignored`. The tests run in parallel on several threads, so they must not depend on each other's order.
+Useful switches: `cargo test limiter` runs only tests whose names contain "limiter". `cargo test -- --nocapture` shows what tests print. A slow test marked `#[ignore]` runs only with `cargo test -- --ignored`. Tests run in parallel, so they must not depend on each other's order.
 
 ::: warning Never compare computed floats with assert_eq
 A test that adds two burns of 0.1 and 0.2 m/s and asserts the total `== 0.3` fails:
@@ -92,7 +92,7 @@ assertion `left == right` failed
  right: 0.3
 ```
 
-Neither 0.1 nor 0.2 is exact in binary, so their sum is off in the 17th digit. Compare with a tolerance that fits the physics: `assert!((total - 0.3).abs() < 1e-12, "total was {total}")`. The limiter test above could use `assert_eq!` only because $0.5$ and $1.0$ are exact in binary and the last step lands exactly on the command.
+Neither 0.1 nor 0.2 is exact in binary, so the sum is off in the 17th digit. Compare with a tolerance: `assert!((total - 0.3).abs() < 1e-12, "total was {total}")`. The limiter test gets away with `assert_eq!` because $0.5$ and $1.0$ are exact in binary and the last step lands on the command.
 :::
 
 ## Integration tests: the whole library, from outside
@@ -129,11 +129,11 @@ test a_logged_line_round_trips ... ok
 test garbage_hex_is_an_error_not_a_panic ... ok
 ```
 
-Why bother, when unit tests can already call everything? Because an integration test checks the thing a user actually gets: that the right items are public, that the names make sense together, and that a whole workflow works end to end. If you make `parse_hex_line` private by accident, every unit test still passes, and this file stops compiling. Helper code shared by several test files goes in `tests/common/mod.rs`; a subfolder like that is not compiled as a test of its own.
+Why bother, when unit tests can call everything? Because an integration test checks what a user actually gets: the right items public, and a whole workflow working end to end. Make `parse_hex_line` private by accident, and every unit test still passes while this file stops compiling. Helpers shared by several test files go in `tests/common/mod.rs`, which is not compiled as a test of its own.
 
 ## Benchmarks with criterion
 
-A **benchmark** measures how long code takes. Timing something once is almost worthless: the processor's clock speed changes, caches warm up, and other programs interrupt. The **criterion** crate handles that. It warms the code up, runs it many thousands of times, and reports a range with statistics. (Built with criterion 0.8.2.)
+A **benchmark** measures how long code takes. Timing something once is almost worthless: clock speeds change, caches warm up, other programs interrupt. The **criterion** crate warms the code up, runs it many thousands of times, and reports a range with statistics (criterion 0.8.2).
 
 The module's first exercise asks you to compare static and dynamic dispatch for a `Sensor` trait (lesson 08). Here is that benchmark. In `Cargo.toml`:
 
@@ -175,7 +175,7 @@ criterion_group!(benches, bench_dispatch);
 criterion_main!(benches);
 ```
 
-`mean_static` and `mean_dynamic` are the exercise's two functions: one generic over `S: Sensor`, one taking `&mut dyn Sensor`, each averaging 1000 reads. `Gyro::read` computes a sine and a cosine. `Counter::read` does almost nothing: it adds 1 to a number and returns it. **`black_box`** is a function that returns its argument unchanged while asking the optimizer to treat the value as unknown. (The standard library documents it as a best-effort hint, which is enough for benchmarks like this one.) Without it, the compiler could notice that the concrete type behind the `dyn` is known and turn the dynamic call back into a static one, and the benchmark would compare two copies of the same code.
+`mean_static` and `mean_dynamic` are the exercise's two functions, one generic over `S: Sensor` and one taking `&mut dyn Sensor`, each averaging 1000 reads. `Gyro::read` computes a sine and a cosine; `Counter::read` only adds 1 to a number. **`black_box`** returns its argument unchanged while asking the optimizer to treat the value as unknown (a best-effort hint, enough here). Without it, the compiler could see the concrete type behind the `dyn` and turn the dynamic call back into a static one.
 
 ::: example What dispatch really costs
 `cargo bench` builds in release mode and prints one line per benchmark (trimmed):
@@ -194,12 +194,12 @@ The middle number is criterion's best estimate; the outer two bound a **[[confid
 
 Why so different? In both cases the static version lets the compiler **[[inline|inlining]]** `read` into the loop and optimize them together. For the gyro, that saves little, because the sine and cosine take most of the 14 ns. For the counter, the whole read becomes one addition kept in a register, while the dynamic version must make a real call through the vtable every time and keep the counter in memory between calls.
 
-Sanity check: both pairs return identical averages (the exercise's test checks this), and the gap is largest exactly where the work per call is smallest. That is the lesson for a 1 kHz control loop: static dispatch never costs more, and it matters most for small, frequently called functions. These numbers come from one machine on one day; measure on your own target before you quote them.
+Sanity check: both versions return identical averages (the exercise's test checks this), and the gap is largest where the work per call is smallest. For a 1 kHz control loop, static dispatch never costs more, and matters most for small, frequently called functions. These numbers come from one machine; measure on your own target.
 :::
 
 ## Property tests with proptest
 
-A unit test checks examples you chose. A **property test** states a rule that must hold for *every* input, then tries hundreds of random inputs to break it. The **proptest** crate does this, and when it finds a failure it **[[shrinks|shrinking]]** it: it keeps simplifying the failing input while it still fails, so you get a small case to debug instead of a random mess. (Built with proptest 1.11.0.)
+A unit test checks examples you chose. A **property test** states a rule that must hold for *every* input, then tries hundreds of random inputs to break it. The **proptest** crate (1.11.0) does this, and **[[shrinks|shrinking]]** each failure: it keeps simplifying the failing input while it still fails, so you debug a small case instead of a random mess.
 
 Here is a helper that finds the midpoint of two timestamps in milliseconds, for interpolating between samples:
 
@@ -238,9 +238,9 @@ minimal failing input: a = 2055681604, b = 2239285692
 	successes: 0
 ```
 
-Look at the minimal input. Add the two: $2\,055\,681\,604 + 2\,239\,285\,692 = 4\,294\,967\,296 = 2^{32}$. A `u32` holds at most $2^{32} - 1$, so this is the smallest total that overflows. Shrinking did not find "small numbers"; it found the exact edge. And "successes: 0" says that random `u32` pairs overflow so often that the very first case failed: about half of all pairs have a sum of $2^{32}$ or more.
+Add the minimal input: $2\,055\,681\,604 + 2\,239\,285\,692 = 4\,294\,967\,296 = 2^{32}$. A `u32` holds at most $2^{32} - 1$, so this is the smallest total that overflows: shrinking found the exact edge. "successes: 0" means the very first case failed, which is no surprise: about half of all `u32` pairs sum to $2^{32}$ or more.
 
-The fix is to add in a wider type: `((a as u64 + b as u64) / 2) as u32`. The sum of two `u32` values always fits in a `u64`, and half of it always fits back in a `u32`. (The standard library also has `a.midpoint(b)` for this.) Run again:
+The fix adds in a wider type: `((a as u64 + b as u64) / 2) as u32`. Two `u32` values always fit in a `u64` sum, and half of it fits back in a `u32` (the standard library also has `a.midpoint(b)`). Run again:
 
 ```text
 running 1 test
@@ -254,7 +254,7 @@ When proptest finds a failure, it also saves the case's seed in a file ending in
 
 ## Fuzzing with cargo-fuzz
 
-**Fuzzing** is property testing's harder-working cousin, aimed at code that reads untrusted bytes. A **fuzzer** generates inputs, runs your code on each, and watches which branches of the code each input reaches. Inputs that reach new branches are kept and mutated further. Over millions of runs it works its way into corners that random bytes alone would never hit. **cargo-fuzz** connects Rust to **[[libFuzzer|fuzz-name]]**, the fuzzer built into the LLVM compiler project. It needs the nightly compiler. (cargo-fuzz 0.13.2, on nightly Rust 1.100.)
+**Fuzzing** is property testing's harder-working cousin, aimed at code that reads untrusted bytes. A **fuzzer** generates inputs, runs your code on each, and watches which branches each input reaches. Inputs that reach new branches are kept and mutated further, so over millions of runs it works into corners random bytes would never hit. **cargo-fuzz** connects Rust to **[[libFuzzer|fuzz-name]]**, the fuzzer in the LLVM compiler project, and needs the nightly compiler (cargo-fuzz 0.13.2, nightly Rust 1.100).
 
 Suppose version 2 of the frame format adds a length byte after the APID. Here is a first attempt, with its own small error enum (`TooShort`, `BadLength`, `BadChecksum`, no fields):
 
@@ -298,7 +298,7 @@ Output of `std::fmt::Debug`:
 	[10, 10, 10, 10]
 ```
 
-Four bytes, and the third one says the payload is 10 bytes long. The parser believed it, so it tried to slice bytes 3 to 13 of a 4-byte frame. On a spacecraft, one flipped bit in a length field would have been enough to crash the parser. The fuzzer saved the input under `fuzz/artifacts/`, so it can be replayed. The fix checks the length byte against the real length before using it:
+Four bytes, and the third says the payload is 10 bytes long. The parser believed it and tried to slice bytes 3 to 13 of a 4-byte frame. One flipped bit in a length field would crash it. The fuzzer saved the input under `fuzz/artifacts/` for replay. The fix checks the length byte against the real length first:
 
 ```rust
     let len = bytes[2] as usize;
@@ -307,7 +307,7 @@ Four bytes, and the third one says the payload is 10 bytes long. The parser beli
     }
 ```
 
-After that, a 30-second run (`cargo +nightly fuzz run parse_v2 -- -max_total_time=30`) ended with `Done 20530841 runs in 31 second(s)` and no crash: over 20 million inputs, about 660,000 per second. That is not a proof that the parser is correct, but it is strong evidence that no short input makes it panic.
+After that, a 30-second run (`cargo +nightly fuzz run parse_v2 -- -max_total_time=30`) ended with `Done 20530841 runs in 31 second(s)` and no crash: about 660,000 inputs per second. Not a proof, but strong evidence that no short input makes it panic.
 
 ::: key Match the tool to the question
 Unit tests check examples from the inside; integration tests check the public API from outside; criterion measures time with statistics; proptest checks a rule over random inputs and shrinks failures; cargo-fuzz drives a parser with millions of coverage-guided inputs, hunting panics; miri checks that `unsafe` code has no undefined behavior.
@@ -315,7 +315,7 @@ Unit tests check examples from the inside; integration tests check the public AP
 
 ## miri: the X-ray for unsafe code
 
-Every tool so far checks whether code gives the right *answer*. Undefined behavior can give the right answer and still be broken, because the answer depends on luck: on what the memory allocator happened to leave in freed memory, or on the optimizer. **miri** is an interpreter for Rust's **[[MIR|mir]]**, the compiler's simplified internal form of your program. Instead of running machine code, it runs your program one step at a time and tracks, for every byte of memory, whether it is allocated, initialized, and which pointers are allowed to touch it.
+Every tool so far checks the *answer*. Undefined behavior can give the right answer by luck: because of what the allocator left in freed memory, or what the optimizer did. **miri** is an interpreter for Rust's **[[MIR|mir]]**, the compiler's simplified internal form of your program. It runs the program step by step and tracks, for every byte of memory, whether it is allocated and initialized, and which pointers may touch it.
 
 ::: key What is miri for?
 An interpreter that detects undefined behaviour in unsafe code: out-of-bounds, misaligned access, invalid aliasing under Stacked Borrows, uninitialised reads. It is the Rust equivalent of running everything under a very strict sanitizer.
@@ -350,7 +350,7 @@ A normal `cargo test` says:
 test tests::returns_previous_sample ... ok
 ```
 
-It passes. `vec![...]` with four items has room for exactly four, so the push must move everything to a bigger buffer and free the old one. `prev` still points into the freed buffer. The allocator had not yet reused those bytes, so the old 0.4 was still sitting there.
+It passes. `vec![...]` with four items has room for exactly four, so the push moves everything to a bigger buffer and frees the old one. `prev` points into the freed buffer, where the old 0.4 happened to still be sitting.
 
 `cargo +nightly miri test` (nightly Rust 1.100, trimmed):
 
@@ -373,13 +373,13 @@ help: alloc39580 was deallocated here:
    |     ^^^^^^^^^^^
 ```
 
-miri names the three lines that matter: where the memory was allocated, where it was freed, and where the dangling pointer read it. The fix needs no `unsafe` at all: copy the `f64` out first, `let prev = log[log.len() - 1];`, then push and return `prev`.
+miri names the three lines that matter: where the memory was allocated, freed, and read through the dangling pointer. The fix needs no `unsafe`: copy the `f64` out first, `let prev = log[log.len() - 1];`, then push and return `prev`.
 :::
 
-miri is far slower than running natively, so teams run it on unit tests with small inputs, usually in a nightly CI job. It cannot run most calls into C libraries or real hardware. Within those limits, it is the check every crate containing `unsafe` should pass.
+miri is far slower than native code, so teams run it on unit tests with small inputs, often in a nightly CI job. It cannot run most calls into C libraries or real hardware. Within those limits, every crate containing `unsafe` should pass it.
 
 ::: warning A passing test proves nothing about undefined behavior
-The test above passed because of what the allocator happened to do. A different allocator, a different optimization level, or one more thread, and it returns garbage. That is why "the tests pass" is not enough for `unsafe` code, in Rust or in C++. You need a tool that checks the rules themselves: miri for Rust, and AddressSanitizer and UndefinedBehaviorSanitizer for C and C++.
+With a different allocator, optimization level or thread count, the test above could return garbage. So "the tests pass" is not enough for `unsafe` code, in Rust or C++. You need a tool that checks the rules themselves: miri for Rust, AddressSanitizer and UndefinedBehaviorSanitizer for C and C++.
 :::
 
 ## The map back to C++
@@ -412,12 +412,12 @@ This module promised to make you a better C++ programmer. Here is every idea fro
 
 Read down the right-hand column and one pattern stands out. In nearly every row, C++ already has the rule. A good C++ engineer already uses `unique_ptr` for single ownership, does not touch an object after `std::move`, does not keep a reference into a vector across a `push_back`, protects shared data with a lock, and avoids exceptions in flight code. What C++ does not do is *check*. The rules live in coding standards, code review and runtime sanitizers, and a single missed case compiles without a word.
 
-Rust turns those same rules into types that the compiler checks. That is why the errors in lesson 03 were worth reading slowly: each one was a C++ bug that would have compiled. The habit carries back. After this module, when you read `auto& first = v[0]; v.push_back(x);` in a C++ review, you will see the dangling reference at a glance, because you have spent weeks with a compiler that would not let you write it.
+Rust turns those same rules into types the compiler checks. That is why lesson 03's errors were worth reading slowly: each was a C++ bug that would have compiled. The habit carries back. When you read `auto& first = v[0]; v.push_back(x);` in a C++ review, you will see the dangling reference at a glance, after weeks with a compiler that would not let you write it.
 
 Two rows deserve a closer look. For `dyn Trait` against `virtual`: C++ stores a hidden vtable pointer inside every object of a class with virtual functions, so the cost is paid by every object, used polymorphically or not. Rust keeps the object plain and puts the vtable pointer in the reference, the fat pointer from lesson 08, so you pay only where you use dynamic dispatch. For `unsafe`: C++ has no keyword because nothing is checked; every line is implicitly the equivalent of an `unsafe` block. Rust's `unsafe` marks the few lines where a person, not the compiler, carries the proof, and miri and review can concentrate there.
 
 ::: note Why the checks cannot be added to C++ afterward
-Tools such as clang-tidy and the C++ Core Guidelines lifetime checks catch some of these bugs, and they are worth running. They cannot catch them all, for a structural reason. The C++ type `T&` does not say whether the reference is the only one, and a function signature does not say which argument a returned reference borrows from. A checker looking at one function at a time must either guess (and miss bugs) or assume the worst (and reject correct code). Rust puts exactly that missing information into the types: `&mut` means exclusive, and a lifetime names which input a result borrows from. With it, each function can be checked on its own and the results combine. That is the real content of "aliasing and lifetime rules made explicit".
+Tools such as clang-tidy catch some of these bugs, and are worth running. They cannot catch them all, for a structural reason. The C++ type `T&` does not say whether the reference is the only one, and a signature does not say which argument a returned reference borrows from. A checker looking at one function at a time must guess (and miss bugs) or assume the worst (and reject correct code). Rust puts that missing information into the types: `&mut` means exclusive, and a lifetime names which input a result borrows from. Then each function can be checked on its own, and the results combine.
 :::
 
 ## Check yourself
@@ -463,7 +463,7 @@ Your fuzz target for a star-tracker message parser has run for an hour with no c
 :::
 
 ::: answer
-It has shown that none of the inputs the fuzzer tried (for a small parser, often hundreds of millions in an hour) made the parser panic, and, if the target also checks results, that none broke those checks. It has not shown that the parser returns the *right* values for valid messages; a parser that returned `Err` for everything would never crash either. It has also not covered inputs longer than the fuzzer's maximum length, or rare branches it never reached. Pair it with unit tests of real messages, and look at the coverage report to see which branches were never hit.
+It has shown that none of the inputs tried (for a small parser, often hundreds of millions in an hour) made it panic. It has not shown that the parser returns the *right* values: a parser that returned `Err` for everything would never crash either. Nor has it covered inputs beyond the fuzzer's maximum length, or branches it never reached. Pair it with unit tests of real messages, and check coverage.
 :::
 
 ::: check
@@ -471,7 +471,7 @@ A C++ engineer asks why the Rust `&mut T` row in the map says "guaranteed exclus
 :::
 
 ::: answer
-Both let you change the value through the reference. The difference is what else may exist at the same time. While a `&mut T` is alive, the compiler guarantees that no other reference to that value can be used, so nothing can change or read it behind your back. A C++ `T&` makes no such promise: other references and pointers to the same object may exist and be used. The prevented bug is lesson 02's: in C++, holding `const T& first = v[0]` while calling `v.push_back(x)` compiles, and `first` dangles after the reallocation. In Rust, `push` needs `&mut v`, which cannot exist while `first` borrows `v`, so the program is rejected.
+Both let you change the value. The difference is what else may exist at the same time. While a `&mut T` is alive, the compiler guarantees no other reference to that value can be used, so nothing changes or reads it behind your back. A C++ `T&` makes no such promise. The prevented bug is lesson 02's: in C++, holding `const T& first = v[0]` across `v.push_back(x)` compiles, and `first` dangles after reallocation. In Rust, `push` needs `&mut v`, which cannot exist while `first` borrows `v`.
 :::
 
 ## Summary
