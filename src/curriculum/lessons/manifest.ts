@@ -5008,7 +5008,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-similarity-transformations-and-invariants",
       "title": "Similarity transformations and what survives them",
-      "minutes": 22,
+      "minutes": 19,
       "covers": [
         "Similarity transformations and what is invariant under them"
       ],
@@ -5017,7 +5017,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-solving-the-state-equation-and-discretisation",
       "title": "Solving the state equation, and the model your computer runs",
-      "minutes": 18,
+      "minutes": 21,
       "covers": [
         "Solution of xdot = Ax + Bu via the matrix exponential; the discrete-time equivalent"
       ],
@@ -5035,7 +5035,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-observability-duality-stabilizability-detectability",
       "title": "Observability, duality, stabilizability and detectability",
-      "minutes": 21,
+      "minutes": 23,
       "covers": [
         "Observability and duality; stabilizability and detectability"
       ],
@@ -5044,7 +5044,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-pole-placement",
       "title": "Pole placement — Ackermann, Bass-Gura and robust eigenstructure",
-      "minutes": 18,
+      "minutes": 20,
       "covers": [
         "Pole placement: Ackermann, Bass-Gura, and robust (eigenstructure) pole placement"
       ],
@@ -5062,7 +5062,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-the-separation-principle",
       "title": "The separation principle and exactly when it holds",
-      "minutes": 19,
+      "minutes": 20,
       "covers": [
         "The separation principle and the exact conditions under which it holds"
       ],
@@ -5071,7 +5071,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-integral-action-servo-design",
       "title": "Integral action in state feedback — servo and augmented-state design",
-      "minutes": 19,
+      "minutes": 18,
       "covers": [
         "Integral action in state feedback: servo and augmented-state design"
       ],
@@ -5080,7 +5080,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-mimo-transmission-zeros-rga",
       "title": "MIMO systems, transmission zeros and the relative gain array",
-      "minutes": 22,
+      "minutes": 26,
       "covers": [
         "MIMO systems, transmission zeros, and the relative gain array"
       ],
@@ -5089,7 +5089,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-model-reduction-balanced-truncation",
       "title": "Model reduction — balanced truncation and Hankel singular values",
-      "minutes": 21,
+      "minutes": 19,
       "covers": [
         "Model reduction: balanced truncation and Hankel singular values"
       ],
@@ -5100,7 +5100,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-quadratic-cost-functional",
       "title": "The linear quadratic cost functional",
-      "minutes": 18,
+      "minutes": 21,
       "covers": [
         "The linear quadratic cost functional and what Q, R and the cross term weight"
       ],
@@ -5109,7 +5109,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-hjb-and-calculus-of-variations",
       "title": "Two derivations of LQR: dynamic programming and the calculus of variations",
-      "minutes": 21,
+      "minutes": 19,
       "covers": [
         "LQR derived via dynamic programming (HJB) and via calculus of variations"
       ],
