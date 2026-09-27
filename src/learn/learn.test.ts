@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { buildProgram, checkFact, gradeRun, lessonShell, normalize, splitMarks, typeCheckFailures, typeLines } from './grade'
 import { MASTERY, PREREQUISITES, ROADMAPS, TRACKS, findLesson, nextLesson, streak, trackFor, tracksFor } from './index'
+import { givesAway } from './giveaway'
 import { LEARN_LANGS } from './platform'
 import { run as runShell } from '@/lib/shell'
 import { LessonFormatError, parseTrack } from './parse'
@@ -458,4 +459,25 @@ describe('context notes in Learn to code', () => {
       }
     })
   }
+})
+
+/**
+ * Lessons whose examples still give the answer away (see giveaway.ts). This
+ * list only shrinks: rewrite the example on different names and data, or show
+ * the pieces instead of the finished answer, then take the id out.
+ */
+const GIVES_AWAY = new Set<string>([])
+
+describe('examples leave the task to her', () => {
+  const lessons = TRACKS.flatMap((t) => t.lessons)
+  it('no example shows the answer word for word, or as a template to fill in', () => {
+    for (const l of lessons) if (!GIVES_AWAY.has(l.id)) expect(givesAway(l), `${l.id}: the example gives the answer away`).toBeNull()
+  })
+  it('the list of lessons still to fix has no stale entries', () => {
+    const ids = new Set(lessons.map((l) => l.id))
+    for (const id of GIVES_AWAY) {
+      expect(ids.has(id), `${id} is not a lesson`).toBe(true)
+      expect(givesAway(lessons.find((l) => l.id === id)!), `${id} is fixed: take it out of GIVES_AWAY`).not.toBeNull()
+    }
+  })
 })

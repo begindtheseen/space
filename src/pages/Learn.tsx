@@ -39,9 +39,10 @@ import { markLearned } from '@/engine/apply'
 import { useLearner } from '@/hooks/useLearner'
 import { buildProgram, gradeRun, lessonShell } from '@/learn/grade'
 import { LEARN_LANGS } from '@/learn/platform'
+import { stuckHelp } from '@/learn/stuck'
 import { MASTERY, ROADMAPS, currentTrack, findLesson, langName, nextLesson, passedCount, streak, trackFor, tracksFor } from '@/learn/index'
 import { editorLang, runLearn, warmUp } from '@/learn/platform'
-import { LEVEL_LABEL, type LearnGrade, type LearnLesson, type LearnTrack, type Roadmap } from '@/learn/types'
+import { LEVEL_LABEL, type CheckResult, type LearnGrade, type LearnLesson, type LearnTrack, type Roadmap } from '@/learn/types'
 import { onExplainRequested } from '@/lib/ctxBus'
 import type { ExplainSeed, LibraryLesson } from '@/lib/explain'
 import type { ShellState } from '@/lib/shell'
@@ -421,6 +422,9 @@ function LessonView({ track, lesson, index }: { track: LearnTrack; lesson: Learn
   const [passedNow, setPassedNow] = useState(false)
   const [hints, setHints] = useState(0)
   const [showSolution, setShowSolution] = useState(false)
+  // Runs that did not pass, and the latest check results, for the "Stuck?" help.
+  const [fails, setFails] = useState(0)
+  const [lastResults, setLastResults] = useState<CheckResult[] | null>(null)
   const winRef = useRef<HTMLDivElement | null>(null)
   const teachCode = useLessonCode(`learn:${lesson.id}:example`, lesson.teach, lesson.schema)
   const textRef = useRef<HTMLElement | null>(null)
@@ -445,6 +449,7 @@ function LessonView({ track, lesson, index }: { track: LearnTrack; lesson: Learn
   useEffect(() => onExplainRequested(setAsking), [])
 
   const passedBefore = !!state.learn[lesson.id]
+  const stuck = useMemo(() => stuckHelp(fails, lastResults, lesson.task, passedHere), [fails, lastResults, lesson.task, passedHere])
   const prev = track.lessons[index - 1]
   const next = track.lessons[index + 1]
   // At the end of a course, the way on is the next course in the language.
@@ -459,17 +464,23 @@ function LessonView({ track, lesson, index }: { track: LearnTrack; lesson: Learn
     requestAnimationFrame(() => winRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' }))
   }, [lesson.id, setState])
 
+  const onGraded = useCallback((passed: boolean, results: CheckResult[]) => {
+    setLastResults(results)
+    if (!passed) setFails((n) => n + 1)
+  }, [])
+
   /** Runs her code with the lesson's checks and shows every check as a test case. */
   const grade = useCallback(
     async (code: string, _stdin: string, onStatus: (s: string) => void): Promise<Graded> => {
       const result = await runLearn(lesson, buildProgram(lesson, code), { onStatus })
       const g = gradeRun(lesson, code, result)
+      onGraded(g.passed, g.results)
       return {
         run: { stdout: g.output, stderr: g.stderr, error: g.error, plots: [], result: null, tables: g.tables, ms: g.ms },
         tests: g.results,
       }
     },
-    [lesson],
+    [lesson, onGraded],
   )
 
   return (
@@ -526,7 +537,7 @@ function LessonView({ track, lesson, index }: { track: LearnTrack; lesson: Learn
 
         <div className="lm-work">
         {terminal ? (
-          <TerminalChallenge lesson={lesson} onPass={onPassed} />
+          <TerminalChallenge lesson={lesson} onPass={onPassed} onGraded={onGraded} />
         ) : (
           <PlaygroundEmbed
             lang={editorLang(lesson.lang)}
@@ -567,6 +578,39 @@ function LessonView({ track, lesson, index }: { track: LearnTrack; lesson: Learn
         </div>
 
         <div className="lm-help">
+          {stuck && !passedNow ? (
+            <div className="lm-stuck" role="status">
+              <div className="lm-stuck__title">Stuck? That is normal here.</div>
+              <p>
+                The check that is not passing yet: <strong>{stuck.miss.name}</strong>
+                {stuck.miss.hint ? <> — {stuck.miss.hint}</> : null}
+              </p>
+              <div className="lm-help__row">
+                <button type="button" className="lm-link" onClick={() => setAsking(stuck.seed)}>
+                  Explain what this check needs
+                </button>
+                {stuck.revisit ? (
+                  <a className="lm-link" href={`#/learn/${stuck.revisit.lessonId}`}>
+                    Look back at “{stuck.revisit.title}”
+                  </a>
+                ) : null}
+                {hints < lesson.hints.length ? (
+                  <button type="button" className="lm-link" onClick={() => setHints((n) => n + 1)}>
+                    Show the next hint
+                  </button>
+                ) : null}
+              </div>
+              {stuck.suggestSolution && !showSolution ? (
+                <p className="lm-stuck__solution">
+                  Still not passing after {fails} tries? Open the solution, read it line by line, then close it and type it
+                  yourself.{' '}
+                  <button type="button" className="lm-link" onClick={() => setShowSolution(true)}>
+                    Show the solution
+                  </button>
+                </p>
+              ) : null}
+            </div>
+          ) : null}
           {lesson.hints.slice(0, hints).map((h, i) => (
             <div className="lm-hint" key={i}>
               <span className="lm-hint__n">Hint {i + 1}</span>
@@ -615,7 +659,15 @@ function LessonView({ track, lesson, index }: { track: LearnTrack; lesson: Learn
 }
 
 /** A Terminal or Git challenge: the practice shell, a Check button, and the checks as test cases. */
-function TerminalChallenge({ lesson, onPass }: { lesson: LearnLesson; onPass: () => void }) {
+function TerminalChallenge({
+  lesson,
+  onPass,
+  onGraded,
+}: {
+  lesson: LearnLesson
+  onPass: () => void
+  onGraded: (passed: boolean, results: CheckResult[]) => void
+}) {
   const [shell, setShell] = useState<ShellState>(() => lessonShell(lesson))
   const [key, setKey] = useState(0)
   const [grade, setGrade] = useState<LearnGrade | null>(null)
@@ -628,6 +680,7 @@ function TerminalChallenge({ lesson, onPass }: { lesson: LearnLesson; onPass: ()
       const result = await runLearn(lesson, '', { shell })
       const g = gradeRun(lesson, '', result)
       setGrade(g)
+      onGraded(g.passed, g.results)
       if (g.passed) onPass()
     } finally {
       setRunning(false)

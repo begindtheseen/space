@@ -2328,51 +2328,52 @@ Your data is written by many hands. The **application code**, the program behind
 
 The only rule that holds for **every** writer is one the database enforces. That rule is a **constraint**: a rule attached to a table that every inserted or changed row must pass.
 
-You met some constraints in the basics lesson "Creating tables". Here is a table that uses them all:
+You met some constraints in the basics lesson "Creating tables". Here is a table of club members that uses them all:
 
 ```sql
-CREATE TABLE accounts (
+CREATE TABLE members (
   id INTEGER PRIMARY KEY,
-  email TEXT NOT NULL UNIQUE,
-  plan TEXT NOT NULL CHECK (plan IN ('free', 'team', 'enterprise')),
-  seats INTEGER NOT NULL DEFAULT 1 CHECK (seats >= 1)
+  username TEXT NOT NULL,
+  nickname TEXT UNIQUE,
+  role TEXT CHECK (role IN ('owner', 'admin', 'viewer')),
+  points INTEGER DEFAULT 0 CHECK (points >= 0)
 );
 ```
 
-Several constraints can stack after one column's type, with spaces between them. Now take them one at a time.
+Several constraints can stack after one column's type, with spaces between them, as on the `points` line. Now take them one at a time.
 
 ### NOT NULL: a value is required
 
-`email TEXT NOT NULL` refuses a row with no email:
+`username TEXT NOT NULL` refuses a row with no username:
 
 ```sql
-INSERT INTO accounts (email, plan) VALUES (NULL, 'free');
+INSERT INTO members (username, role) VALUES (NULL, 'viewer');
 ```
 
-That fails with an error like `NOT NULL constraint failed: accounts.email`.
+That fails with an error like `NOT NULL constraint failed: members.username`.
 
 ### UNIQUE: no two rows share a value
 
-`email ... UNIQUE` refuses a second row with an email that is already there. If `ops@acme.io` exists, adding another `ops@acme.io` fails with `UNIQUE constraint failed`.
+`nickname TEXT UNIQUE` refuses a second row with a nickname that is already there. If `ace` exists, adding another `ace` fails with `UNIQUE constraint failed`.
 
-One exception: [[NULLs do not count|unique-null]]. A `UNIQUE` column may hold NULL in many rows. (Here `email` is also `NOT NULL`, so that cannot happen.)
+One exception: [[NULLs do not count|unique-null]]. A `UNIQUE` column may hold NULL in many rows. `nickname` has no `NOT NULL`, so any number of members can have no nickname at all.
 
 ### CHECK: any rule you can write as a condition
 
 `CHECK (condition)` refuses a row for which the condition is false. You write the condition like a `WHERE`:
 
-- `CHECK (plan IN ('free', 'team', 'enterprise'))`: `IN (...)` means "is one of these". A plan of `'gold'` is refused.
-- `CHECK (seats >= 1)`: `>=` means "at least". Zero seats are refused.
+- `CHECK (role IN ('owner', 'admin', 'viewer'))`: `IN (...)` means "is one of these". A role of `'boss'` is refused.
+- `CHECK (points >= 0)`: `>=` means "at least". Negative points are refused.
 
 ### DEFAULT: a value to fill in
 
-`DEFAULT 1` is not a rule. It fills in the column when an insert leaves it out:
+`DEFAULT 0` is not a rule. It fills in the column when an insert leaves it out:
 
 ```sql
-INSERT INTO accounts (email, plan) VALUES ('solo@acme.io', 'free');
+INSERT INTO members (username, role) VALUES ('mo', 'viewer');
 ```
 
-This row gets `seats` = 1.
+This row gets `points` = 0.
 
 ### PRIMARY KEY: one row per key
 
@@ -2413,7 +2414,7 @@ The checks in this lesson use `INSERT OR IGNORE ... RETURNING id`. [[RETURNING|r
 
 In SQLite, a column's type is a hint, not a rule. SQLite will store `'abc'` in an `INTEGER` column without complaint. That is one more reason to write `CHECK`s for [[what really matters|type-hint]].
 
-**Watch out:** a `CHECK` only refuses a row when its condition is **false**. When the value is NULL, the condition gives NULL, not false, and the row gets in. So `plan TEXT CHECK (plan IN (...))` on its own lets a row with no plan through. If a value is required, add `NOT NULL` as well.
+**Watch out:** a `CHECK` only refuses a row when its condition is **false**. When the value is NULL, the condition gives NULL, not false, and the row gets in. So `role TEXT CHECK (role IN (...))`, as in the table above, lets a row with no role through. If a value is required, add `NOT NULL` as well.
 
 ::: context many-writers One database, many writers
 A real app's database is rarely written by one program. While a new version rolls out, the old and new versions run side by side for a while. A support engineer fixes a customer's record with a one-off script. A nightly job imports data from a partner. Each of these is a separate writer, and a check that lives in only one of them protects nothing from the others.
@@ -2461,10 +2462,10 @@ Every ordinary SQLite table keeps a hidden whole number for each row, called the
 :::
 
 ::: context type-hint When the type is not enough
-Even `CHECK (seats >= 1)` does not stop `'abc'`. In SQLite, text always sorts above numbers, so `'abc' >= 1` is true and the row gets in. To insist on a whole number, check its type too:
+Even `CHECK (points >= 0)` does not stop `'abc'`. In SQLite, text always sorts above numbers, so `'abc' >= 0` is true and the row gets in. To insist on a whole number, check its type too:
 
 ```sql
-seats INTEGER NOT NULL CHECK (typeof(seats) = 'integer' AND seats >= 1)
+points INTEGER CHECK (typeof(points) = 'integer' AND points >= 0)
 ```
 
 `typeof(x)` gives the kind of value stored: `'integer'`, `'real'`, `'text'`, `'blob'` or `'null'`. Newer SQLite versions also offer **STRICT** tables, written `CREATE TABLE ... ( ... ) STRICT;`, which refuse a value of the wrong type in every column.
@@ -2533,45 +2534,45 @@ Think of a school's sports day. Every pupil wears a badge with a team number, an
 
 A **foreign key** is a column whose values must match the key of a row in another table. You met the word in the basics lesson "Creating tables". There it was a promise. Here you make the database keep it.
 
-This lesson's `teams` table already exists, with two teams: `1` Platform and `2` Growth. Here is a `members` table that points at it:
+This lesson's `teams` table already exists, with two teams: `1` Platform and `2` Growth. Here is a `projects` table that points at it:
 
 ```sql
-CREATE TABLE members (
+CREATE TABLE projects (
   id INTEGER PRIMARY KEY,
-  team_id INTEGER NOT NULL REFERENCES teams(id) ON DELETE CASCADE,
-  email TEXT NOT NULL
+  title TEXT NOT NULL,
+  team_id INTEGER REFERENCES teams(id)
 );
 ```
 
-Read `REFERENCES teams(id)` in words: "must match an `id` in `teams`". The table being pointed at, `teams`, is the [[parent|parent-child]]. The table doing the pointing, `members`, is the child.
+Read `REFERENCES teams(id)` in words: "must match an `id` in `teams`". The table being pointed at, `teams`, is the [[parent|parent-child]]. The table doing the pointing, `projects`, is the child.
 
 ### No orphans
 
-With the foreign key on, the database refuses a member whose `team_id` names no team:
+With the foreign key on, the database refuses a project whose `team_id` names no team:
 
 ```sql
-INSERT INTO members (id, team_id, email) VALUES (1, 99, 'ana@acme.io');
+INSERT INTO projects (id, title, team_id) VALUES (1, 'Website', 99);
 ```
 
 That fails with `FOREIGN KEY constraint failed`, because there is no team 99. So you never get [[orphans|orphans]]: rows that point at nothing.
 
 ### ON DELETE: when the parent goes
 
-What should happen to members when their team is deleted? The `ON DELETE` part of the foreign key says:
+What should happen to a team's projects when the team is deleted? You say so with an `ON DELETE` part, written straight after `REFERENCES teams(id)` on the same line:
 
 | action | effect |
 | --- | --- |
-| `NO ACTION` (the default) or `RESTRICT` | refuse to delete a team that still has members |
-| `CASCADE` | delete its members too |
-| `SET NULL` | keep the members, and set their `team_id` to NULL (the column must allow NULL) |
+| `NO ACTION` (the default) or `RESTRICT` | refuse to delete a team that still has projects |
+| `CASCADE` | delete its projects too |
+| `SET NULL` | keep the projects, and set their `team_id` to NULL (the column must allow NULL) |
 
-**Cascade** means "flow down", like a waterfall: the delete flows down from the team to its members. With `ON DELETE CASCADE`, this one statement removes team 1 and every member of team 1:
+**Cascade** means "flow down", like a waterfall: the delete flows down from the team to its projects. If `team_id` ended in `ON DELETE CASCADE`, this one statement would remove team 1 and every project of team 1:
 
 ```sql
 DELETE FROM teams WHERE id = 1;
 ```
 
-Members of team 2 are untouched. To do this, SQLite first has to [[find every member of team 1|cascade-index]].
+Projects of team 2 would be untouched. To do this, SQLite first has to [[find every project of team 1|cascade-index]].
 
 ### Choosing the action
 
@@ -2601,7 +2602,7 @@ It gives 1 when enforcement is on and 0 when it is off.
 **Watch out:** a missing pragma makes no noise. With enforcement off, nothing fails, so everything looks as if it works: orphans slip in and cascades never happen. Run `PRAGMA foreign_keys = ON;` first, before the statements you want checked, and check it with `PRAGMA foreign_keys;` if in doubt.
 
 ::: context parent-child Parent and child tables
-The parent holds the rows being pointed at. The child holds the pointers. One team can have many members, but each member points at one team.
+The parent holds the rows being pointed at. The child holds the pointers. One team can have many projects, but each project points at one team.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 170" font-family="Inter, Arial, sans-serif">
@@ -2635,7 +2636,7 @@ An orphan row points at a parent that does not exist. Every report then has to s
 :::
 
 ::: context cascade-index Foreign keys and indexes
-When you delete a team, SQLite has to find that team's members, to cascade the delete or to refuse it. Without help, it reads the whole `members` table to look for them. On a big table that is slow. The fix is an index on the child column, `CREATE INDEX members_team ON members(team_id);`, which lets SQLite jump straight to the matching rows. The SQLite documentation recommends one for nearly every foreign key. You will meet indexes properly in "Indexes and EXPLAIN QUERY PLAN".
+When you delete a team, SQLite has to find that team's projects, to cascade the delete or to refuse it. Without help, it reads the whole `projects` table to look for them. On a big table that is slow. The fix is an index on the child column, `CREATE INDEX projects_team ON projects(team_id);`, which lets SQLite jump straight to the matching rows. The SQLite documentation recommends one for nearly every foreign key. You will meet indexes properly in "Indexes and EXPLAIN QUERY PLAN".
 :::
 
 ::: context archive Archive instead of delete
@@ -3025,11 +3026,11 @@ SEARCH orders USING INDEX idx_orders_customer (customer_id=?)
 
 ### The sort step
 
-Now ask for that customer's orders, newest first:
+Now ask for that customer's orders, biggest total first:
 
 ```sql
 EXPLAIN QUERY PLAN
-SELECT id, total FROM orders WHERE customer_id = 7 ORDER BY placed DESC;
+SELECT id, placed FROM orders WHERE customer_id = 7 ORDER BY total DESC;
 ```
 
 ```
@@ -3044,13 +3045,13 @@ The second line is new. It means the database found the rows, then had to sort t
 A **composite index** covers several columns. It is sorted by the first column, and then by the second among rows with the same first value. A phone book works like this: sorted by surname, then by first name among people with the same surname.
 
 ```sql
-CREATE INDEX idx_orders_customer_placed ON orders(customer_id, placed);
+CREATE INDEX idx_orders_customer_total ON orders(customer_id, total);
 ```
 
-Inside this index, all of customer 7's orders sit together, **already in date order**. So the plan loses its sort step:
+Inside this index, all of customer 7's orders sit together, **already in order of total**. So the plan loses its sort step:
 
 ```
-SEARCH orders USING INDEX idx_orders_customer_placed (customer_id=?)
+SEARCH orders USING INDEX idx_orders_customer_total (customer_id=?)
 ```
 
 `DESC` costs nothing extra. The database reads that stretch of the index from the end backwards.
@@ -3059,13 +3060,13 @@ SEARCH orders USING INDEX idx_orders_customer_placed (customer_id=?)
 
 Put the column you test with `=` first. Put the column you sort by, or compare with `<` and `>`, after it.
 
-The other way round, `(placed, customer_id)`, is like a phone book sorted by first name: the Smiths are scattered all through it. For this query that index gives the plan `SCAN orders USING INDEX …`, a walk through every entry.
+The other way round, `(total, customer_id)`, is like a phone book sorted by first name: the Smiths are scattered all through it. For this query that index gives the plan `SCAN orders USING INDEX …`, a walk through every entry.
 
 ### Indexes have a cost
 
 An index is not free. Each one takes space. And every `INSERT`, `UPDATE` and `DELETE` must [[keep every index in step|index-cost]], so each extra index slows writing a little. Index for the queries your app really runs, not for every column.
 
-**Watch out:** `USING INDEX` in a plan does not always mean fast. Read the first word. `SEARCH` jumps to the rows it needs. `SCAN … USING INDEX` still reads every entry; it only reads them in the index's order. An index on `(placed)` alone gives exactly that for this lesson's query.
+**Watch out:** `USING INDEX` in a plan does not always mean fast. Read the first word. `SEARCH` jumps to the rows it needs. `SCAN … USING INDEX` still reads every entry; it only reads them in the index's order. An index on `(total)` alone gives exactly that for the query above.
 
 ::: context primary-key-index Indexes you already have
 An `INTEGER PRIMARY KEY` is the row's own id, and SQLite stores the table sorted by it. So `EXPLAIN QUERY PLAN SELECT * FROM orders WHERE id = 7;` shows `SEARCH orders USING INTEGER PRIMARY KEY (rowid=?)` with no index created at all. `UNIQUE` and other primary keys get an index too: SQLite makes one automatically, named like `sqlite_autoindex_customers_1`, because it needs a fast way to spot a repeated value. That is how SQLite enforces `UNIQUE` on `email` in last lesson's `customers` table.
@@ -3182,17 +3183,17 @@ A phone book is sorted by surname. Finding "Smith" is fast: you open near S. Now
 
 ### A function hides the column
 
-In the lesson "Dates and times" you turned a date into its month with `strftime('%Y-%m', placed)`. Here is March's report written that way:
+In the lesson "Dates and times" you turned a date into its month with `strftime('%Y-%m', placed)`. Here is a June report written that way: how many orders, and the biggest one.
 
 ```sql
-SELECT COUNT(*) AS orders, SUM(total) AS takings
+SELECT COUNT(*) AS orders, MAX(total) AS biggest
 FROM orders
-WHERE strftime('%Y-%m', placed) = '2024-03';
+WHERE strftime('%Y-%m', placed) = '2024-06';
 ```
 
-| orders | takings |
+| orders | biggest |
 | --- | --- |
-| 217 | 13693.75 |
+| 210 | 124.5 |
 
 The answer is right. But put `EXPLAIN QUERY PLAN` in front, and the plan says:
 
@@ -3200,29 +3201,29 @@ The answer is right. But put `EXPLAIN QUERY PLAN` in front, and the plan says:
 SCAN orders
 ```
 
-A full scan, with the index sitting right there. The index holds `placed` values, sorted: `'2024-03-01'`, `'2024-03-02'` and so on. It does not hold `strftime('%Y-%m', placed)`. To find the rows whose month is `'2024-03'`, the database must [[work out strftime for every row|slow-later]] and compare. Wrapping a column in a function, or in any calculation, [[hides it from the index|sargable]].
+A full scan, with the index sitting right there. The index holds `placed` values, sorted: `'2024-06-01'`, `'2024-06-02'` and so on. It does not hold `strftime('%Y-%m', placed)`. To find the rows whose month is `'2024-06'`, the database must [[work out strftime for every row|slow-later]] and compare. Wrapping a column in a function, or in any calculation, [[hides it from the index|sargable]].
 
 ### Ask for the column as it is stored
 
 Say the same thing as a range on `placed` itself:
 
 ```sql
-SELECT COUNT(*) AS orders, SUM(total) AS takings
+SELECT COUNT(*) AS orders, MAX(total) AS biggest
 FROM orders
-WHERE placed >= '2024-03-01' AND placed < '2024-04-01';
+WHERE placed >= '2024-06-01' AND placed < '2024-07-01';
 ```
 
-`>=` means "on or after", and `<` means "before". As you saw in "Dates and times", dates written as `'YYYY-MM-DD'` text sort in time order, so this is every day in March. The answer is the same 217 orders and 13693.75. The plan is not:
+`>=` means "on or after", and `<` means "before". As you saw in "Dates and times", dates written as `'YYYY-MM-DD'` text sort in time order, so this is every day in June. The answer is the same 210 orders and 124.5. The plan is not:
 
 ```
 SEARCH orders USING INDEX idx_orders_placed (placed>? AND placed<?)
 ```
 
-The database jumps to `'2024-03-01'` in the index and reads forward until it reaches April. It never looks at the other months.
+The database jumps to `'2024-06-01'` in the index and reads forward until it reaches July. It never looks at the other months.
 
 ### Why "before the first of next month"
 
-You could write `placed <= '2024-03-31'`. For plain dates that works. But if `placed` ever holds a time too, `'2024-03-31 18:40:00'` sorts *after* `'2024-03-31'`, so an evening order on the last day would be missed. "Before the first of next month" catches every moment of March. It also saves you remembering how many days each month has. This shape is called a [[half-open range|half-open]].
+You could write `placed <= '2024-06-30'`. For plain dates that works. But if `placed` ever holds a time too, `'2024-06-30 18:40:00'` sorts *after* `'2024-06-30'`, so an evening order on the last day would be missed. "Before the first of next month" catches every moment of June. It also saves you remembering how many days each month has. This shape is called a [[half-open range|half-open]].
 
 **Watch out:** the same trap hides in arithmetic. `WHERE total * 2 > 100` cannot use an index on `total`, but `WHERE total > 50` asks the same question and can. Keep the column bare on one side of the comparison, and do the maths on the other side. When you truly need the calculated value, SQLite can also [[index the result of a function|expression-index]].
 
@@ -3231,11 +3232,11 @@ On 2,000 rows a full scan takes a blink, so this mistake hides while you build a
 :::
 
 ::: context sargable The word engineers use
-A condition the database can look up in an index is called **sargable**, a squashed form of "Search ARGument ABLE". `placed >= '2024-03-01'` is sargable: the index is sorted by `placed`, so the database can find the starting point. `strftime('%Y-%m', placed) = '2024-03'` is not, because the index is not sorted by that. You will hear the word in code reviews: "this `WHERE` isn't sargable" means "this condition forces a full scan".
+A condition the database can look up in an index is called **sargable**, a squashed form of "Search ARGument ABLE". `placed >= '2024-06-01'` is sargable: the index is sorted by `placed`, so the database can find the starting point. `strftime('%Y-%m', placed) = '2024-03'` is not, because the index is not sorted by that. You will hear the word in code reviews: "this `WHERE` isn't sargable" means "this condition forces a full scan".
 :::
 
 ::: context half-open Including the start, leaving out the end
-A **half-open range** includes its starting point and leaves out its end: `>=` at the start, `<` at the end. March is "from March 1st, up to but not including April 1st". The ranges fit end to end with no gap and no overlap: April starts exactly where March stops, so no order is counted twice or lost.
+A **half-open range** includes its starting point and leaves out its end: `>=` at the start, `<` at the end. June is "from June 1st, up to but not including July 1st". The ranges fit end to end with no gap and no overlap: July starts exactly where June stops, so no order is counted twice or lost.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 130" font-family="Inter, Arial, sans-serif">
@@ -3261,7 +3262,7 @@ SQLite can build an index on the result of a function instead of on a bare colum
 CREATE INDEX idx_orders_month ON orders(strftime('%Y-%m', placed));
 ```
 
-After that, the query with `WHERE strftime('%Y-%m', placed) = '2024-03'` gets a `SEARCH` plan too. This is called an **index on an expression**. The query must use exactly the same expression as the index, or the planner will not match them. Most of the time the range rewrite is simpler, and one index on `placed` serves every date range, not only whole months.
+After that, the query with `WHERE strftime('%Y-%m', placed) = '2024-06'` gets a `SEARCH` plan too. This is called an **index on an expression**. The query must use exactly the same expression as the index, or the planner will not match them. Most of the time the range rewrite is simpler, and one index on `placed` serves every date range, not only whole months.
 :::
 --- task
 The March report below scans the whole table. Rewrite its `WHERE` so it compares `placed` itself, as a range from `'2024-03-01'` up to, but not including, `'2024-04-01'`. Keep the same two columns, `orders` and `takings`, so the answer stays 217 orders and 13693.75. Do not use `strftime` anywhere.

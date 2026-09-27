@@ -1691,7 +1691,7 @@ Last lesson you read values out of a JSON payload with `->>`. That is fine for a
 
 ### The table
 
-This is the same `events` table as last lesson: `id`, `user_id`, `name` and `payload`, 5 rows. Only event 1 has a coupon, `SPRING`. Event 4's coupon is JSON `null`, and the others have no coupon key at all.
+This is the same `events` table as last lesson: `id`, `user_id`, `name` and `payload`, 5 rows. Only event 3, a page view, has a `path`: `/pricing`. The checkout events have no path key at all.
 
 ### The picture
 
@@ -1703,81 +1703,83 @@ Here is the lookup the app runs, with `EXPLAIN QUERY PLAN` in front, as in the l
 
 ```sql
 EXPLAIN QUERY PLAN
-SELECT id FROM events WHERE payload ->> '$.coupon' = 'SPRING';
+SELECT id FROM events WHERE payload ->> '$.path' = '/pricing';
 ```
 
 ```
 SCAN events
 ```
 
-A full scan. To find the coupon, SQLite must open every row's payload and read inside it.
+A full scan. To find the path, SQLite must open every row's payload and read inside it.
 
 ### Adding a column to a table
 
 **`ALTER TABLE`** changes a table that already exists. [[ADD COLUMN|alter-table]] adds one more column:
 
 ```sql
-ALTER TABLE events ADD COLUMN coupon TEXT;
+ALTER TABLE events ADD COLUMN page_path TEXT;
 ```
 
-But a plain new column is empty. Every existing row gets NULL, and a new event gets NULL too, unless someone remembers to fill it in. The coupon inside the payload and the coupon in the column would soon disagree.
+But a plain new column is empty. Every existing row gets NULL, and a new event gets NULL too, unless someone remembers to fill it in. The path inside the payload and the path in the column would soon disagree.
 
 ### A generated column
 
 A **generated column** is a column whose value SQLite works out from other columns in the same row. You give the rule once, and every row, old and new, follows it:
 
 ```sql
-ALTER TABLE events ADD COLUMN coupon TEXT GENERATED ALWAYS AS (payload ->> '$.coupon');
+ALTER TABLE events ADD COLUMN page_path TEXT GENERATED ALWAYS AS (payload ->> '$.path');
 ```
 
 Read it in parts:
 
-- `ADD COLUMN coupon TEXT` adds a text column named `coupon`.
+- `ADD COLUMN page_path TEXT` adds a text column named `page_path`.
 - `GENERATED ALWAYS AS (…)` says: never store a typed-in value here; always [[work it out|generated-picture]] with the expression in the brackets.
-- `payload ->> '$.coupon'` is that expression: the coupon read from this row's own payload.
+- `payload ->> '$.path'` is that expression: the path read from this row's own payload.
 
-Now `SELECT id, coupon FROM events;` gives:
+Now `SELECT id, page_path FROM events;` gives:
 
-| id | coupon |
+| id | page_path |
 | --- | --- |
-| 1 | SPRING |
+| 1 | NULL |
 | 2 | NULL |
-| 3 | NULL |
+| 3 | /pricing |
 | 4 | NULL |
 | 5 | NULL |
 
 This kind of generated column is [[worked out each time a row is read|virtual-stored]], so it takes no extra space.
 
-A new event fills its own coupon. Insert one whose payload has `"coupon": "WINTER"` and add `RETURNING coupon`, as in the lesson "RETURNING: see what you changed". It hands back `WINTER`.
+A new event fills in its own `page_path`. Insert one whose payload has `"path": "/about"` and add `RETURNING page_path`, as in the lesson "RETURNING: see what you changed". It hands back `/about`.
 
-You cannot write to a generated column yourself. `UPDATE events SET coupon = 'X' WHERE id = 2;` fails with "cannot UPDATE generated column "coupon"". To change the coupon, change the payload.
+You cannot write to a generated column yourself. `UPDATE events SET page_path = '/x' WHERE id = 2;` fails with "cannot UPDATE generated column "page_path"". To change the path, change the payload.
 
 ### Index the new column
 
 A generated column can have an index like any other column:
 
 ```sql
-CREATE INDEX idx_events_coupon ON events(coupon);
+CREATE INDEX IF NOT EXISTS idx_events_page_path ON events(page_path);
 ```
+
+`IF NOT EXISTS` means "only if there is no index with that name yet", so running the line twice does no harm. Without it, the index is made the same way.
 
 Now look up by the column:
 
 ```sql
 EXPLAIN QUERY PLAN
-SELECT id FROM events WHERE coupon = 'SPRING';
+SELECT id FROM events WHERE page_path = '/pricing';
 ```
 
 ```
-SEARCH events USING INDEX idx_events_coupon (coupon=?)
+SEARCH events USING INDEX idx_events_page_path (page_path=?)
 ```
 
-`SEARCH` instead of `SCAN`: SQLite jumps straight to the matching rows. The query also reads better. `WHERE coupon = 'SPRING'` says what it means.
+`SEARCH` instead of `SCAN`: SQLite jumps straight to the matching rows. The query also reads better. `WHERE page_path = '/pricing'` says what it means.
 
 ### Or a real column
 
-A generated column is the gentle fix: the app keeps sending JSON, and nothing else changes. The other fix is to make `coupon` an ordinary column that the app fills in itself, and stop putting it in the JSON. That is more work, but then the coupon is part of the table's [[schema|schema-word]], with its own type and its own constraints. Either way, the lesson is the same: JSON is flexible storage, not a substitute for a schema. Fields you filter on all the time belong in columns.
+A generated column is the gentle fix: the app keeps sending JSON, and nothing else changes. The other fix is to make `page_path` an ordinary column that the app fills in itself, and stop putting the path in the JSON. That is more work, but then the path is part of the table's [[schema|schema-word]], with its own type and its own constraints. Either way, the lesson is the same: JSON is flexible storage, not a substitute for a schema. Fields you filter on all the time belong in columns.
 
-**Watch out:** a plain `ADD COLUMN coupon TEXT` with an index on it looks finished. The query `WHERE coupon = 'SPRING'` runs fast, uses the index, gives no error, and returns nothing, because the column is NULL in every row. After adding a column, always `SELECT` it and check it holds what you expect.
+**Watch out:** a plain `ADD COLUMN page_path TEXT` with an index on it looks finished. The query `WHERE page_path = '/pricing'` runs fast, uses the index, gives no error, and returns nothing, because the column is NULL in every row. After adding a column, always `SELECT` it and check it holds what you expect.
 
 ::: context hot-path On every request
 A **request** is one message from an app to its server: "show me this page", "apply this coupon". A busy app handles thousands a second. A query that runs once a month for a report can afford to scan. A query that runs on every request cannot: a scan that takes 50 milliseconds on a big table, times thousands a second, is more work than the server can do. Engineers call the code that runs on every request the **hot path**, and it is where indexes matter most.
@@ -1788,7 +1790,7 @@ A **request** is one message from an app to its server: "show me this page", "ap
 :::
 
 ::: context generated-picture Like a formula in a spreadsheet
-A generated column works like a spreadsheet column with a formula. You type into the payload column. The coupon column is never typed into; it shows what the formula gives for that row. Change the payload, and the coupon follows.
+A generated column works like a spreadsheet column with a formula. You type into the payload column. The `page_path` column is never typed into; it shows what the formula gives for that row. Change the payload, and `page_path` follows.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">
@@ -1799,26 +1801,26 @@ A generated column works like a spreadsheet column with a formula. You type into
   <rect x="230" y="28" width="120" height="22" fill="#fff" stroke="#6c7a93"/>
   <text x="25" y="43" font-size="11" fill="#6c7a93" text-anchor="middle">id</text>
   <text x="135" y="43" font-size="11" fill="#6c7a93" text-anchor="middle">payload</text>
-  <text x="290" y="43" font-size="11" fill="#6c7a93" text-anchor="middle">coupon</text>
+  <text x="290" y="43" font-size="11" fill="#6c7a93" text-anchor="middle">page_path</text>
   <rect x="10" y="50" width="30" height="22" fill="#fff" stroke="#6c7a93"/>
   <rect x="40" y="50" width="190" height="22" fill="#fff" stroke="#6c7a93"/>
   <rect x="230" y="50" width="120" height="22" fill="#8fb8f0" stroke="#6c7a93"/>
   <text x="25" y="65" font-size="11" fill="#1f2a44" text-anchor="middle">1</text>
   <text x="135" y="65" font-size="11" fill="#1f2a44" text-anchor="middle">{…, "coupon": "SPRING"}</text>
-  <text x="290" y="65" font-size="11" fill="#1f2a44" text-anchor="middle">SPRING</text>
+  <text x="290" y="65" font-size="11" fill="#1f2a44" text-anchor="middle">NULL</text>
   <rect x="10" y="72" width="30" height="22" fill="#fff" stroke="#6c7a93"/>
   <rect x="40" y="72" width="190" height="22" fill="#fff" stroke="#6c7a93"/>
   <rect x="230" y="72" width="120" height="22" fill="#8fb8f0" stroke="#6c7a93"/>
   <text x="25" y="87" font-size="11" fill="#1f2a44" text-anchor="middle">3</text>
   <text x="135" y="87" font-size="11" fill="#1f2a44" text-anchor="middle">{"path": "/pricing"}</text>
-  <text x="290" y="87" font-size="11" fill="#1f2a44" text-anchor="middle">NULL</text>
+  <text x="290" y="87" font-size="11" fill="#1f2a44" text-anchor="middle">/pricing</text>
   <rect x="10" y="94" width="30" height="22" fill="#fff" stroke="#6c7a93"/>
   <rect x="40" y="94" width="190" height="22" fill="#fff" stroke="#6c7a93"/>
   <rect x="230" y="94" width="120" height="22" fill="#8fb8f0" stroke="#6c7a93"/>
   <text x="25" y="109" font-size="11" fill="#1f2a44" text-anchor="middle">4</text>
   <text x="135" y="109" font-size="11" fill="#1f2a44" text-anchor="middle">{…, "coupon": null}</text>
   <text x="290" y="109" font-size="11" fill="#1f2a44" text-anchor="middle">NULL</text>
-  <text x="180" y="140" font-size="11" fill="#6c7a93" text-anchor="middle">coupon = payload -&gt;&gt; '$.coupon', row by row</text>
+  <text x="180" y="140" font-size="11" fill="#6c7a93" text-anchor="middle">page_path = payload -&gt;&gt; '$.path', row by row</text>
 </svg>
 ```
 :::

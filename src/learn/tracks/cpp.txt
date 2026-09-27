@@ -27,13 +27,13 @@ A **[[compiler|compiler]]** is a program that translates your whole source file 
 
 ## The smallest complete program
 
-Here is a whole C++ program. The rest of the lesson walks through it one line at a time.
+Here is a whole C++ program. The rest of the lesson walks through it one line at a time. The grey words after `//` on line 4 are a note for you, not for the compiler; there is more about notes at the end of this lesson.
 
 ```cpp
 #include <iostream>
 
 int main() {
-    std::cout << "Launch in T-minus 10\n";
+    std::cout << "Launch in T-minus 10\n";   // prints one line
     return 0;
 }
 ```
@@ -67,7 +67,7 @@ A **function** is a named block of instructions. This one is called `main`, and 
 ### Line 4: printing a line
 
 ```cpp
-std::cout << "Launch in T-minus 10\n";
+std::cout << "Launch in T-minus 10\n";   // prints one line
 ```
 
 This is where the work happens. Take it piece by piece:
@@ -531,25 +531,25 @@ You have already met one function: `main`, where every program starts. Now you w
 Think of a vending machine. You put something in, it does its job, and something comes out. A function is the same: it takes some values in, works on them, and hands one value back.
 
 ```cpp
-int add(int a, int b) {
-    return a + b;
+int times(int a, int b) {
+    return a * b;
 }
 ```
 
 Read it from left to right:
 
 - `int` at the front is the **return type**: the kind of value the function hands back. Here, a whole number.
-- `add` is the function's **name**.
+- `times` is the function's **name**.
 - `(int a, int b)` are the **[[parameters|parameters-copies]]**: the inputs, each with its type and a name, separated by a comma. Inside the function, `a` and `b` work like variables.
 - `{ … }` is the **body**, the work the function does.
-- `return a + b;` works out `a + b` and hands that value back. `return` also ends the function straight away.
+- `return a * b;` works out `a * b` and hands that value back. The star `*` means "times", because a keyboard has no × sign. `return` also ends the function straight away.
 
 ## Calling a function
 
 To use a function, you **call** it: write its name with values in the parentheses.
 
 ```cpp
-add(2, 3)          // gives back 5
+times(2, 3)        // gives back 6
 ```
 
 The values a call passes in, `2` and `3` here, are the **arguments**. The first argument goes into the first parameter (`a` is 2) and the second into the second (`b` is 3).
@@ -559,12 +559,12 @@ A call can go anywhere a value can, for example straight into `std::cout`:
 ```cpp
 #include <iostream>
 
-int add(int a, int b) {
-    return a + b;
+int times(int a, int b) {
+    return a * b;
 }
 
 int main() {
-    std::cout << add(2, 3) << "\n";   // prints 5
+    std::cout << times(2, 3) << "\n";   // prints 6
     return 0;
 }
 ```
@@ -576,12 +576,12 @@ The function is written above `main`, so the compiler has seen it by the time `m
 The minus sign `-` subtracts, as it does on paper:
 
 ```cpp
-int stages_left(int stages, int dropped) {
-    return stages - dropped;
+int stages_left(int dropped) {
+    return 3 - dropped;
 }
 ```
 
-`stages_left(3, 1)` gives back `2`. Function names follow the same [[naming rules|names]] as variable names.
+This rocket has 3 stages, and the function takes one input: how many have been dropped. `stages_left(1)` gives back `2`. Function names follow the same [[naming rules|names]] as variable names.
 
 ## The checker brings its own main
 
@@ -596,7 +596,7 @@ error: redefinition of 'main'
 The other slip is leaving out the `return` line. Then the function hands back [[no proper value|missing-return]], and the compiler warns you about it.
 
 ::: context parameters-copies Parameters get copies
-When you call `add(2, 3)`, the function gets its own copies of the values: a new `a` holding 2 and a new `b` holding 3. If the function changed `a`, the caller's value would not change, the same way scribbling on a photocopy leaves the original clean. A parameter is the name in the recipe; an argument is the actual value you hand over. Later, in the lesson on references, you will see how a function can work on the caller's own variable instead of a copy.
+When you call `times(2, 3)`, the function gets its own copies of the values: a new `a` holding 2 and a new `b` holding 3. If the function changed `a`, the caller's value would not change, the same way scribbling on a photocopy leaves the original clean. A parameter is the name in the recipe; an argument is the actual value you hand over. Later, in the lesson on references, you will see how a function can work on the caller's own variable instead of a copy.
 :::
 
 ::: context names What you may call things
@@ -1260,16 +1260,17 @@ In your task the decision lives inside a function (you wrote your first ones in 
 #include <string>
 
 std::string fuel_status(int percent) {
-    if (percent >= 50) {
-        return "plenty";
-    } else if (percent >= 10) {
+    if (percent < 10) {
+        return "empty";
+    }
+    if (percent < 50) {
         return "low";
     }
-    return "empty";
+    return "plenty";
 }
 ```
 
-`fuel_status(80)` gives `"plenty"`, `fuel_status(30)` gives `"low"` and `fuel_status(5)` gives `"empty"`. The last `return` needs no `else` around it: the program only reaches that line when neither `if` returned first.
+`fuel_status(5)` gives `"empty"`, `fuel_status(30)` gives `"low"` and `fuel_status(80)` gives `"plenty"`. This one asks about the lowest band first, using `<`. The second `if` and the last `return` need no `else` in front of them: the program only reaches those lines when every `if` above them did not return.
 
 **Watch out:** one equals sign `=` **assigns** (puts a value into a variable); two, `==`, **compares**. `if (score = 70)` does not ask whether the score is 70. It *sets* the score to 70, and then treats 70 as true. The program still compiles and quietly does the wrong thing. clang, the [[compiler that builds your code|compiler-warnings]] on this page, prints a warning about it — one reason to read warnings, not only errors.
 

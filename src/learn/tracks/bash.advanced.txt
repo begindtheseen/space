@@ -53,12 +53,12 @@ Welcome to
 
 The second line looked up a variable called `planetbase`, which does not exist. In the same way, `${planet}s` gives `marss`, but `$planets` looks up a different variable called `planets`.
 
-The braces are always allowed, even when nothing follows. This makes a folder called `mars-base`:
+The braces are always allowed, even when nothing follows. This makes an empty file called `mars-notes.txt`:
 
 ```
-~/project $ mkdir "${planet}-base"
+~/project $ touch "${planet}-notes.txt"
 ~/project $ ls
-mars-base/
+mars-notes.txt
 ```
 
 ### Double quotes and single quotes
@@ -178,21 +178,21 @@ Picture a head chef handing a job to an assistant. The chef does not hand over e
 
 Every command you start (a script, `node`, `git`) runs as a separate [[process|process]]: a program that is running right now. Because your shell started it, it is called a **child process**, and your shell is its parent.
 
-To see this, you need a program to start. `bash greet.sh` runs the commands saved in the file `greet.sh` in a brand-new shell, a child of yours. Scripts get a full lesson later in this course; here the script is ready-made. It holds one line:
+To see this, you need a program to start. `bash next-stop.sh` runs the commands saved in the file `next-stop.sh` in a brand-new shell, a child of yours. Scripts get a full lesson later in this course; here the script is ready-made. It holds one line:
 
 ```
-~/project $ cat greet.sh
-echo "Hello, $NAME"
+~/project $ cat next-stop.sh
+echo "Next stop: $PLANET"
 ```
 
 ### Plain variables stay behind
 
-A variable you set with `NAME=Ada` lives in your shell only. The child does not get it, so inside the script `$NAME` is empty:
+A variable you set with `PLANET=Mars` lives in your shell only. The child does not get it, so inside the script `$PLANET` is empty:
 
 ```
-~/project $ NAME=Ada
-~/project $ bash greet.sh
-Hello,
+~/project $ PLANET=Mars
+~/project $ bash next-stop.sh
+Next stop:
 ```
 
 ### Exporting: putting it on the card
@@ -200,14 +200,14 @@ Hello,
 A child gets a copy of your **[[environment|environment]]**: the set of variables you have marked to be passed on. Marking a variable that way is called **exporting** it, and the command is `export`:
 
 ```
-~/project $ export NAME
-~/project $ bash greet.sh
-Hello, Ada
+~/project $ export PLANET
+~/project $ bash next-stop.sh
+Next stop: Mars
 ```
 
-`export NAME=Ada` sets the variable and exports it in one go.
+`export PLANET=Mars` sets the variable and exports it in one go.
 
-**Watch out:** `export` wants the name, with no dollar sign. `export $NAME` would first turn into `export Ada`, and export a variable called `Ada` instead.
+**Watch out:** `export` wants the name, with no dollar sign. `export $PLANET` would first turn into `export Mars`, and export a variable called `Mars` instead.
 
 ### Seeing the environment: env
 
@@ -216,7 +216,7 @@ Hello, Ada
 ```
 ~/project $ env
 HOME=/home/you
-NAME=Ada
+PLANET=Mars
 PATH=/usr/local/bin:/usr/bin:/bin
 SHELL=/bin/bash
 USER=you
@@ -226,26 +226,26 @@ On a real computer the list is longer, but it looks the same. By custom, these n
 
 ### For one command only
 
-Write `NAME=value` straight in front of a command, and the variable is set for that one command and nothing else. Your own `NAME` is left alone:
+Write `NAME=value` straight in front of a command, and the variable is set for that one command and nothing else. Your own `PLANET` is left alone:
 
 ```
-~/project $ NAME=Lin bash greet.sh
-Hello, Lin
-~/project $ echo $NAME
-Ada
+~/project $ PLANET=Venus bash next-stop.sh
+Next stop: Venus
+~/project $ echo $PLANET
+Mars
 ```
 
 You will see this a lot as `DEBUG=1 bash build.sh`: a way to [[switch on extra detail for one run|one-run]], without changing anything for later.
 
 ### The copy only travels one way
 
-A script that changes a variable changes its own copy. Your shell never sees the change. Here `NAME` is exported as `Ada`, and the script `rename.sh` holds two lines: `NAME=Zed`, then `echo "In the script: $NAME"`.
+A script that changes a variable changes its own copy. Your shell never sees the change. Here `PLANET` is exported as `Mars`, and the script `set-pluto.sh` holds two lines: `PLANET=Pluto`, then `echo "In the script: $PLANET"`.
 
 ```
-~/project $ bash rename.sh
-In the script: Zed
-~/project $ echo "Back in the shell: $NAME"
-Back in the shell: Ada
+~/project $ bash set-pluto.sh
+In the script: Pluto
+~/project $ echo "Back in the shell: $PLANET"
+Back in the shell: Mars
 ```
 
 This is how real configuration reaches programs: [[API keys|secrets]], `NODE_ENV=production` (which tells many web programs that they are running for real users), and `PATH`, [[the list of folders the shell searches for commands|path-list]].
@@ -257,11 +257,11 @@ A program sitting on the disk is a file, like a recipe in a book. A **process** 
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 170" font-family="Inter, Arial, sans-serif">
   <rect x="8" y="16" width="150" height="96" rx="8" fill="#fff" stroke="#1f2a44" stroke-width="1.5"/>
   <text x="83" y="36" font-size="12" text-anchor="middle" font-weight="bold" fill="#1f2a44">your shell (parent)</text>
-  <text x="18" y="62" font-size="11" fill="#1d6fd1">NAME=Ada  exported</text>
+  <text x="18" y="62" font-size="11" fill="#1d6fd1">PLANET=Mars  exported</text>
   <text x="18" y="88" font-size="11" fill="#6c7a93">planet=mars  plain</text>
   <rect x="202" y="16" width="150" height="96" rx="8" fill="#fff" stroke="#1f2a44" stroke-width="1.5"/>
-  <text x="277" y="36" font-size="12" text-anchor="middle" font-weight="bold" fill="#1f2a44">greet.sh (child)</text>
-  <text x="212" y="62" font-size="11" fill="#1d6fd1">NAME=Ada  a copy</text>
+  <text x="277" y="36" font-size="12" text-anchor="middle" font-weight="bold" fill="#1f2a44">next-stop.sh (child)</text>
+  <text x="212" y="62" font-size="11" fill="#1d6fd1">PLANET=Mars  a copy</text>
   <text x="212" y="88" font-size="11" fill="#6c7a93">no planet at all</text>
   <line x1="160" y1="58" x2="192" y2="58" stroke="#1d6fd1" stroke-width="2"/>
   <polygon points="200,58 190,53 190,63" fill="#1d6fd1"/>
@@ -1019,50 +1019,50 @@ Think of relabelling jars in a kitchen. You do not rewrite the whole label. You 
 
 ### Cutting off the end: %
 
-`${f%.jpeg}` means "`f` with `.jpeg` cut off the **end**". The `%` sign is the "cut from the end" instruction, and the curly brackets hold it all together. This is one kind of **[[parameter expansion|parameter-expansion]]**: the shell changes a variable's value on its way into the line.
+`${f%.txt}` means "`f` with `.txt` cut off the **end**". The `%` sign is the "cut from the end" instruction, and the curly brackets hold it all together. This is one kind of **[[parameter expansion|parameter-expansion]]**: the shell changes a variable's value on its way into the line.
 
 ```
-~/project $ f=beach.jpeg
-~/project $ echo "${f%.jpeg}"
-beach
-~/project $ echo "${f%.jpeg}.jpg"
-beach.jpg
+~/project $ f=log.txt
+~/project $ echo "${f%.txt}"
+log
+~/project $ echo "${f%.txt}.md"
+log.md
 ```
 
-In the second line, `.jpg` is stuck straight onto the trimmed name. The variable itself does not change. It still holds `beach.jpeg`:
+In the second line, `.md` is stuck straight onto the trimmed name. The variable itself does not change. It still holds `log.txt`:
 
 ```
 ~/project $ echo "$f"
-beach.jpeg
+log.txt
 ```
 
 If the end does not match, nothing is cut:
 
 ```
-~/project $ f=notes.txt
-~/project $ echo "${f%.jpeg}"
-notes.txt
+~/project $ f=photo.png
+~/project $ echo "${f%.txt}"
+photo.png
 ```
 
 ### Cutting off the start: #
 
-`${f#IMG_}` means "`f` with `IMG_` cut off the **start**". The `#` sign is "cut from the start". There is a [[keyboard trick|keyboard-trick]] for remembering which is which.
+`${f#draft_}` means "`f` with `draft_` cut off the **start**". The `#` sign is "cut from the start". There is a [[keyboard trick|keyboard-trick]] for remembering which is which.
 
 ```
-~/project $ f=IMG_beach.jpeg
-~/project $ echo "${f#IMG_}"
-beach.jpeg
+~/project $ f=draft_plan.txt
+~/project $ echo "${f#draft_}"
+plan.txt
 ```
 
 ### Putting it in a loop
 
-Now join it to last lesson's loop. For every `.jpeg` file, move it to the same name ending in `.jpg`:
+Now join it to last lesson's loop. For every file whose name starts with `draft_`, move it to the same name without the `draft_`:
 
 ```
-for f in *.jpeg; do mv "$f" "${f%.jpeg}.jpg"; done
+for f in draft_*; do mv "$f" "${f#draft_}"; done
 ```
 
-`mv` renames here, as it did in the basics course. Changing the [[file extension|file-extension]] only changes the name. What is inside the file stays exactly the same.
+`mv` renames here, as it did in the basics course. Changing a name, even the [[file extension|file-extension]] at the end of it, only changes the name. What is inside the file stays exactly the same.
 
 ### Rehearse first: the dry run
 
@@ -1070,16 +1070,16 @@ A loop that renames things changes many files in one go, so check it before it r
 
 ```
 ~/project $ ls
-beach.jpeg  old boat.jpeg  readme.txt  sunset.jpeg
-~/project $ for f in *.jpeg; do echo mv "$f" "${f%.jpeg}.jpg"; done
-mv beach.jpeg beach.jpg
-mv old boat.jpeg old boat.jpg
-mv sunset.jpeg sunset.jpg
+draft_map.png  draft_old list.txt  draft_plan.txt  readme.txt
+~/project $ for f in draft_*; do echo mv "$f" "${f#draft_}"; done
+mv draft_map.png map.png
+mv draft_old list.txt old list.txt
+mv draft_plan.txt plan.txt
 ```
 
-Nothing has moved yet. Each printed line is one `mv` the real loop would run. `readme.txt` is not in the list, because `*.jpeg` does not match it. A dry run can also show you [[two files heading for the same name|mv-overwrites]] before any harm is done.
+Nothing has moved yet. Each printed line is one `mv` the real loop would run. `readme.txt` is not in the list, because `draft_*` does not match it. A dry run can also show you [[two files heading for the same name|mv-overwrites]] before any harm is done.
 
-**Watch out:** keep the quotes, `"$f"` and `"${f%.jpeg}.jpg"`. A file called `old boat.jpeg` is one name. Unquoted, it is cut at the space into `old` and `boat.jpeg`, and `mv` is handed three names instead of two and stops with an error. The dry run cannot warn you about this, because `echo` prints the words the same way with or without the quotes. So check the quotes with your own eyes.
+**Watch out:** keep the quotes, `"$f"` and `"${f#draft_}"`. A file called `draft_old list.txt` is one name. Unquoted, it is cut at the space into `draft_old` and `list.txt`, and `mv` is handed three names instead of two and stops with an error. The dry run cannot warn you about this, because `echo` prints the words the same way with or without the quotes. So check the quotes with your own eyes.
 
 ::: context parameter-expansion The official name
 The shell calls a variable a **parameter**, and filling in its value is **expanding** it. Plain `$f` is the simplest parameter expansion. The curly-bracket forms do extra work on the way. A single `%` or `#` cuts the shortest match; doubled, `%%` and `##`, they cut the longest match. The pattern may hold wildcards too: with `f=a.tar.gz`, `${f%.*}` gives `a.tar` and `${f##*.}` gives `gz`. You will use `##` in the downloads-tidying lesson later in this course.
@@ -1116,7 +1116,7 @@ Launch teams rehearse too. Before a new rocket flies, NASA runs countdown rehear
 :::
 
 ::: context mv-overwrites mv does not ask
-`mv` replaces a file that already has the new name, without asking. If `beach.jpg` already existed, renaming `beach.jpeg` to it would quietly wipe out the old `beach.jpg`. `mv -n`, "no clobber", refuses to overwrite, and `mv -i`, "interactive", asks first. This is one more reason the dry run is worth the few seconds: you can spot two files heading for the same name before it happens.
+`mv` replaces a file that already has the new name, without asking. If `plan.txt` already existed, renaming `draft_plan.txt` to it would quietly wipe out the old `plan.txt`. `mv -n`, "no clobber", refuses to overwrite, and `mv -i`, "interactive", asks first. This is one more reason the dry run is worth the few seconds: you can spot two files heading for the same name before it happens.
 :::
 --- task
 Rename every `.jpeg` file in this folder so it ends in `.jpg` instead (`beach.jpeg` becomes `beach.jpg`), using **one** `for` loop and `${f%.jpeg}`. One of the files, `old boat.jpeg`, has a space in its name, and the files' contents must survive. Leave `readme.txt` alone.
@@ -1153,11 +1153,12 @@ You make choices like this every day: "if it is raining, take an umbrella; other
 **`if`** runs a command and looks at its exit status. A `0`, success, takes the **`then`** part. Anything else takes the **`else`** part. Each part is called a **[[branch|branch]]**. The whole thing ends with **`fi`**, which is [["if" backwards|fi-backwards]].
 
 ```
-~/project $ if grep -q ERROR app.log; then echo "look at the log"; else echo "all quiet"; fi
-look at the log
+~/project $ if cd reports; then echo "moved in"; else echo "no reports folder"; fi
+moved in
+~/project/reports $
 ```
 
-Read it aloud: "if grep finds ERROR in app.log, then echo look at the log, else echo all quiet. End of if." `grep -q` prints nothing; it only sets the status, as you saw in the exit-status lesson. The command after `if` is the **[[condition|condition]]**: the question being asked.
+Read it aloud: "if cd into reports works, then echo moved in, else echo no reports folder. End of if." The command after `if` is the **[[condition|condition]]**: the question being asked. A handy one is `grep -q`: it prints nothing; it only sets the status, as you saw in the exit-status lesson.
 
 The pieces are separated by `;`, like the loop: one before `then`, one before `else`, one before `fi`.
 
@@ -1166,8 +1167,8 @@ The pieces are separated by `;`, like the loop: one before `then`, one before `e
 The `else` part is optional. Leave it out, and when the condition fails, nothing happens:
 
 ```
-~/project $ if grep -q ERROR app.log; then echo "errors found"; fi
-errors found
+~/project $ if grep -q WARN server.log; then echo "warnings found"; fi
+warnings found
 ```
 
 ### Any command can be the question
@@ -1205,7 +1206,7 @@ all quiet
 
 The log has errors, yet it also says "all quiet". With `if`, exactly one branch runs, whatever happens inside it. This is how real [[scripts make go/no-go calls|go-no-go]].
 
-**Watch out:** every `if` needs its `fi`, and a `;` before `then`. Leave out the `;` in `if grep -q ERROR app.log then …`, and the shell hands `then` to `grep` as one more word. The line ends in `syntax error near unexpected token`, and nothing runs. When an `if` line fails that way, count the semicolons first.
+**Watch out:** every `if` needs its `fi`, and a `;` before `then`. Leave out the `;` in `if grep -q WARN server.log then …`, and the shell hands `then` to `grep` as one more word. The line ends in `syntax error near unexpected token`, and nothing runs. When an `if` line fails that way, count the semicolons first.
 
 ::: context branch A fork in the road
 A program usually runs straight down, one command after another. An `if` is a fork: the road splits in two, and the program goes down exactly one side before the roads meet again at `fi`. Programmers call each side a branch.
@@ -1697,27 +1698,27 @@ You have probably used "find and replace" in a word processor: type what to find
 **`sed`** is the **s**tream **ed**itor. It reads text line by line as it flows past, like water through a pipe, changes it, and prints the result. This flowing text is called a **[[stream|stream]]**. Its most used command is `s`, **substitute**:
 
 ```
-~/project $ cat settings.conf
-host=localhost
-debug=true
-port=5432
-~/project $ sed 's/localhost/db.internal/' settings.conf
-host=db.internal
-debug=true
-port=5432
+~/project $ cat game-setup.conf
+player=guest
+sound=on
+level=3
+~/project $ sed 's/guest/ada/' game-setup.conf
+player=ada
+sound=on
+level=3
 ```
 
-Read `s/localhost/db.internal/` as "substitute: find `localhost`, put `db.internal`". The slashes separate the three parts. The single quotes around it stop the shell from touching any of the characters inside.
+Read `s/guest/ada/` as "substitute: find `guest`, put `ada`". The slashes separate the three parts. The single quotes around it stop the shell from touching any of the characters inside.
 
 ### It prints; the file stays the same
 
 `sed` prints the changed text. The file itself is not changed:
 
 ```
-~/project $ cat settings.conf
-host=localhost
-debug=true
-port=5432
+~/project $ cat game-setup.conf
+player=guest
+sound=on
+level=3
 ```
 
 That is useful: you can look at the result safely, as many times as you like.
@@ -1727,12 +1728,12 @@ That is useful: you can look at the result safely, as many times as you like.
 `s` changes only the **first** match on each line. Add `g`, for "global", after the last slash to change every match:
 
 ```
-~/project $ cat url.txt
-http://localhost:5432/localhost
-~/project $ sed 's/localhost/db.internal/' url.txt
-http://db.internal:5432/localhost
-~/project $ sed 's/localhost/db.internal/g' url.txt
-http://db.internal:5432/db.internal
+~/project $ cat welcome-note.txt
+hello guest, bye guest
+~/project $ sed 's/guest/ada/' welcome-note.txt
+hello ada, bye guest
+~/project $ sed 's/guest/ada/g' welcome-note.txt
+hello ada, bye ada
 ```
 
 ### Changing the file itself: -i
@@ -1740,9 +1741,9 @@ http://db.internal:5432/db.internal
 `-i` means "**in place**": `sed` rewrites the file instead of printing. It prints nothing, so look with `cat` afterwards:
 
 ```
-~/project $ sed -i 's/localhost/db.internal/g' url.txt
-~/project $ cat url.txt
-http://db.internal:5432/db.internal
+~/project $ sed -i 's/hello/hi/' welcome-note.txt
+~/project $ cat welcome-note.txt
+hi guest, bye guest
 ```
 
 ### Patterns, not only words
@@ -1750,14 +1751,14 @@ http://db.internal:5432/db.internal
 What goes between the first two slashes is a **[[regular expression|regular-expression]]**, like the patterns you gave `grep`: `.` means any one character, `^` the start of a line, `$` the end of a line.
 
 ```
-~/project $ sed 's/^port/PORT/' settings.conf
-host=localhost
-debug=true
-PORT=5432
-~/project $ sed 's/true$/false/' settings.conf
-host=localhost
-debug=false
-port=5432
+~/project $ sed 's/^level/LEVEL/' game-setup.conf
+player=guest
+sound=on
+LEVEL=3
+~/project $ sed 's/on$/off/' game-setup.conf
+player=guest
+sound=off
+level=3
 ```
 
 ### Text with slashes in it
@@ -1772,12 +1773,12 @@ path=/opt/bin
 
 ### Deleting lines: d
 
-`/pattern/d` deletes every line that matches the pattern. Here, the line that starts with `debug`:
+`/pattern/d` deletes every line that matches the pattern. Here, the line that starts with `sound`:
 
 ```
-~/project $ sed '/^debug/d' settings.conf
-host=localhost
-port=5432
+~/project $ sed '/^sound/d' game-setup.conf
+player=guest
+level=3
 ```
 
 ### Printing only some lines: -n and p
@@ -1785,8 +1786,8 @@ port=5432
 `-n` means "**no** automatic printing", and `p` means "print". Together, `sed -n '/pattern/p'` prints only the lines that match, much like `grep`:
 
 ```
-~/project $ sed -n '/^port/p' settings.conf
-port=5432
+~/project $ sed -n '/^level/p' game-setup.conf
+level=3
 ```
 
 **Watch out:** there are two classic surprises. Forgetting `g` means only the first match on each line changes. Forgetting `-i` means the output looks right, but the file never changed. And because `-i` really does rewrite the file, [[check the command without -i first|check-before-i]], then add `-i` when the output is what you want.
@@ -1887,34 +1888,34 @@ ls: cannot access '*.tmp': No such file or directory
 
 ### A list from find
 
-`find`, from the intermediate course, prints the path of every match, at every depth, one per line. That makes it a perfect list for `xargs`. Build it one stage at a time: run `find` on its own and look, then add `| xargs rm`.
+`find`, from the intermediate course, prints the path of every match, at every depth, one per line. That makes it a perfect list for `xargs`. Build it one stage at a time: run `find` on its own and look, then add `| xargs` and the command.
 
 ```
-~/project $ find build -name "*.tmp"
-build/a.tmp
-build/css/b.tmp
-~/project $ find build -name "*.tmp" | xargs rm
-~/project $ find build -name "*.tmp"
-~/project $
+~/project $ find cache -name "*.bak"
+cache/old.bak
+cache/img/pic.bak
+~/project $ find cache -name "*.bak" | xargs ls -l
+-rw-r--r-- 1 you you 120 Mar  3 09:14 cache/img/pic.bak
+-rw-r--r-- 1 you you  64 Mar  2 17:40 cache/old.bak
 ```
 
-The last `find` prints nothing, because no `.tmp` files are left.
+`xargs` ran `ls -l cache/old.bak cache/img/pic.bak`, so you see the details of both files, however deep they sit.
 
 ### A list from a file
 
-The list can come from a file too. Here `folders.txt` names one folder per line:
+The list can come from a file too. Here `files.txt` names one file per line:
 
 ```
-~/project $ cat folders.txt
-assets
-assets/img
-logs
-~/project $ cat folders.txt | xargs mkdir -p
+~/project $ cat files.txt
+notes.txt
+todo.txt
+plan.txt
+~/project $ cat files.txt | xargs touch
 ~/project $ ls
-assets/  folders.txt  logs/
+files.txt  notes.txt  plan.txt  todo.txt
 ```
 
-`xargs` ran one command, `mkdir -p assets assets/img logs`. The `-p`, from the basics course, makes the parent folders too, and stays quiet if a folder is already there. You could get the same list with the `$(…)` from earlier in this course, but [[xargs has an edge|or-substitution]] on long lists.
+`xargs` ran one command, `touch notes.txt todo.txt plan.txt`, and made three empty files. Flags work after `xargs` too: they go right after the command's name, as they always do. You could get the same list with the `$(…)` from earlier in this course, but [[xargs has an edge|or-substitution]] on long lists.
 
 ### One item per run: -n 1
 
@@ -2015,7 +2016,7 @@ So "missing operand" is `rm`'s way of saying "you asked me to delete, but you di
 :::
 
 ::: context or-substitution xargs or $(…)?
-`rm $(find build -name "*.tmp")` does the same job: the shell runs `find` first and puts its output in the line, as you saw in the command substitution lesson. It splits at spaces in the same way, too.
+`ls -l $(find cache -name "*.bak")` does the same job: the shell runs `find` first and puts its output in the line, as you saw in the command substitution lesson. It splits at spaces in the same way, too.
 
 The difference shows with a huge list. A single command line has a size limit, and a folder with hundreds of thousands of files can go over it, so the `$(…)` version fails with `Argument list too long`. `xargs` knows the limit, and when the list is too long it splits the work into several runs of the command on its own.
 :::

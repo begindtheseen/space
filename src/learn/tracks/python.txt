@@ -18,8 +18,10 @@ A **program** is a list of instructions for the computer, written down in order.
 
 The first instruction everyone learns is `print`. It is Python's version of `echo`: it writes a line of text to the output. `print` is a **[[function|function]]** — a named action that Python already knows how to do. You tell it *what* to print by putting it inside the round brackets `(` and `)` right after the name.
 
+In the examples, the part after the `#` sign is a note for you, not for Python. It shows what the line prints. Python skips everything after a `#`; there is more about that at the end of this lesson.
+
 ```python
-print("Launch in T-minus 10")
+print("Launch in T-minus 10")   # Launch in T-minus 10
 ```
 
 Running that program shows one line:
@@ -31,8 +33,8 @@ Launch in T-minus 10
 Two `print` lines give two lines of output, in the same order as the code, top to bottom:
 
 ```python
-print("Engines armed")
-print("Launch in T-minus 10")
+print("Engines armed")          # Engines armed
+print("Launch in T-minus 10")   # Launch in T-minus 10
 ```
 
 ```
@@ -71,7 +73,7 @@ Anything after a `#` (the hash sign) on a line is a **comment** — a note for p
 print("Launch in T-minus 10")   # this line prints; the note after # does not
 ```
 
-From now on, the examples in these lessons use a comment to show the output right next to the line that makes it:
+That is why the examples in these lessons use a comment to show the output right next to the line that makes it:
 
 ```python
 print("Fuel:", 98, "percent")   # Fuel: 98 percent
@@ -1451,24 +1453,20 @@ You can put an `if` inside a loop's body. Then the loop makes a fresh decision o
 A handy test inside loops uses `%`, the remainder operator from py-03. `n % 3` is read "n remainder 3": what is left over after dividing `n` by 3. When the remainder is `0`, 3 goes into `n` exactly, so `n` is a **multiple** of 3. That makes `n % 3 == 0` read as "[[n is a multiple of 3|multiple-test]]".
 
 ```python
-for n in range(1, 9):
-    if n % 4 == 0:
-        print("Quad")
-    elif n % 2 == 0:
-        print("Duo")
+for n in range(1, 7):
+    if n % 2 == 0:
+        print(n, "is even")
     else:
-        print(n)
-# 1
-# Duo
-# 3
-# Quad
-# 5
-# Duo
-# 7
-# Quad
+        print(n, "is odd")
+# 1 is odd
+# 2 is even
+# 3 is odd
+# 4 is even
+# 5 is odd
+# 6 is even
 ```
 
-Notice the order of the tests. Every multiple of 4 is also a multiple of 2. If the `n % 2 == 0` test came first, `4` and `8` would print `Duo`, and the `Quad` line would never run, because Python stops at the first test that is true. Put the most specific test first, the same way py-05 checked the highest score band first.
+With `elif` you can add more tests, and then the order of the tests matters. Python stops at the first test that is true. Every multiple of 4 is also a multiple of 2, so if a loop tested `n % 2 == 0` first and `n % 4 == 0` second, the multiple-of-4 branch would never run: `4` and `8` would already have been caught by the first test. Put the most specific test first, the same way py-05 checked the highest score band first.
 
 ## More loops to come
 

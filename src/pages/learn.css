@@ -740,6 +740,28 @@ a.rmv-step__name:hover {
   border: 1px solid rgba(226, 192, 141, 0.3);
 }
 
+.lm-stuck {
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: rgba(79, 193, 255, 0.07);
+  border: 1px solid rgba(79, 193, 255, 0.3);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.lm-stuck p {
+  margin: 4px 0 6px;
+}
+
+.lm-stuck__title {
+  font-weight: 600;
+}
+
+.lm-stuck__solution {
+  color: var(--ink-3);
+  font-size: 12.5px;
+}
+
 .lm-solution p {
   margin: 0 0 8px;
   font-size: 12px;
