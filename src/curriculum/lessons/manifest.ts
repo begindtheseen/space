@@ -3815,6 +3815,24 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Events: terminal, direction, apogee and impact detection"
       ],
       "file": "cod_py_07_integration/06-events.md"
+    },
+    {
+      "id": "l10-discontinuities",
+      "title": "Staging, engine cutoff and restarting the solver",
+      "minutes": 22,
+      "covers": [
+        "Discontinuities: staging, thrust cutoff and why you restart the solver"
+      ],
+      "file": "cod_py_07_integration/10-discontinuities.md"
+    },
+    {
+      "id": "l11-fixed-step-real-time",
+      "title": "Fixed-step integration for real-time flight code",
+      "minutes": 20,
+      "covers": [
+        "Fixed-step integration for real-time and code generation"
+      ],
+      "file": "cod_py_07_integration/11-fixed-step-real-time.md"
     }
   ],
   "cod_rs_01_basics": [
@@ -10344,15 +10362,13 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_py_07_integration": {
-    "covered": 7,
+    "covered": 9,
     "total": 12,
     "complete": false,
     "missing": [
       "Stiffness: how to recognise it and when to switch to an implicit method",
       "Energy and Jacobi-constant drift as an independent accuracy check",
-      "Symplectic integrators and long-horizon propagation",
-      "Discontinuities: staging, thrust cutoff and why you restart the solver",
-      "Fixed-step integration for real-time and code generation"
+      "Symplectic integrators and long-horizon propagation"
     ]
   },
   "cod_py_08_performance": {
