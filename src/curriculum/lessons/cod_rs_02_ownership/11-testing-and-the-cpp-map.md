@@ -373,10 +373,10 @@ help: alloc39580 was deallocated here:
    |     ^^^^^^^^^^^
 ```
 
-miri names the three lines that matter: where the memory was allocated, where it was freed, and where the dangling pointer read it. The fix needs no `unsafe` at all: copy the `f64` out first, `let prev = log[log.len() - 1];`, then push and return `prev`.
+miri names the three lines that matter: where the memory was allocated, freed, and read through the dangling pointer. The fix needs no `unsafe`: copy the `f64` out first, `let prev = log[log.len() - 1];`, then push and return `prev`.
 :::
 
-miri is far slower than running natively, so teams run it on unit tests with small inputs, usually in a nightly CI job. It cannot run most calls into C libraries or real hardware. Within those limits, it is the check every crate containing `unsafe` should pass.
+miri is far slower than native code, so teams run it on unit tests with small inputs, often in a nightly CI job. It cannot run most calls into C libraries or real hardware. Within those limits, every crate containing `unsafe` should pass it.
 
 ::: warning A passing test proves nothing about undefined behavior
 The test above passed because of what the allocator happened to do. A different allocator, a different optimization level, or one more thread, and it returns garbage. That is why "the tests pass" is not enough for `unsafe` code, in Rust or in C++. You need a tool that checks the rules themselves: miri for Rust, and AddressSanitizer and UndefinedBehaviorSanitizer for C and C++.
