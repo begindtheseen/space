@@ -4242,6 +4242,24 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "SARGability: why wrapping an indexed column in a function kills the index"
       ],
       "file": "cod_sql_04_schema/09-sargability.md"
+    },
+    {
+      "id": "l10-partitioning-and-aggregates",
+      "title": "Partitioning by time and precomputed aggregates",
+      "minutes": 27,
+      "covers": [
+        "Range partitioning by time; clustering; materialised views and continuous aggregates"
+      ],
+      "file": "cod_sql_04_schema/10-partitioning-and-aggregates.md"
+    },
+    {
+      "id": "l11-columnar-storage-and-ingest",
+      "title": "Columnar storage, Parquet, batch and streaming",
+      "minutes": 24,
+      "covers": [
+        "Columnar storage and Parquet; batch versus streaming ingest"
+      ],
+      "file": "cod_sql_04_schema/11-columnar-storage-and-ingest.md"
     }
   ],
   "t0_m00_basecamp": [
@@ -10610,7 +10628,7 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_sql_04_schema": {
-    "covered": 6,
+    "covered": 8,
     "total": 18,
     "complete": false,
     "missing": [
@@ -10619,8 +10637,6 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
       "Index maintenance cost on a write-heavy ingest path",
       "EXPLAIN and EXPLAIN ANALYZE: sequential versus index versus bitmap heap scan; nested loop versus hash versus merge join",
       "Estimated versus actual rows as the tell for stale statistics",
-      "Range partitioning by time; clustering; materialised views and continuous aggregates",
-      "Columnar storage and Parquet; batch versus streaming ingest",
       "Upserts and idempotent ingest for duplicated downlink frames",
       "The telemetry lifecycle: vehicle, downlink, decommutation, time-series store, analysis, report",
       "Time-series stores: InfluxDB, TimescaleDB, ClickHouse; the reported Starlink stack of Kafka, HBase, HDFS on Docker and Kubernetes",

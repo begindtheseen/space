@@ -14,7 +14,7 @@ This lesson is about writing conditions the index can use. The ugly word for suc
 
 ## The table we will query
 
-Every plan in this lesson comes from one table in PostgreSQL 16: ninety days of telemetry from ten satellites, four channels each, one sample per minute. That is $10 \times 4 \times 1440 \times 90 = 5\,184\,000$ rows, about 338 MB on disk.
+Every plan in this lesson comes from one table in PostgreSQL 16: ninety days of telemetry from ten satellites, four channels each, one sample per minute. That is $10 \times 4 \times 1440 \times 90 = 5\,184\,000$ rows, about 354 MB on disk.
 
 ```sql
 CREATE TABLE telemetry (
@@ -247,7 +247,7 @@ CREATE INDEX downlink_file_path_pat ON downlink_file (path text_pattern_ops);
 In `LIKE 'sat03_pass%'`, the `_` matches *any* single character, so `sat03Xpass` would match too. To mean a literal underscore, escape it: `LIKE 'sat03\_pass%'`. A leading `_` is as bad as a leading `%` for the index.
 :::
 
-For searches that really need a wildcard in front — "any file for satellite 3" — a B-tree cannot help. That is the job of a trigram GIN index, from lesson 05, or of storing the satellite in its own column so the question becomes `sat_id = 3`.
+For searches that really need a wildcard in front — "any file for satellite 3" — a B-tree cannot help. That is the job of a trigram index (the `pg_trgm` extension, which builds a GIN index from lesson 05 over every three-character piece of the text), or of storing the satellite in its own column so the question becomes `sat_id = 3`.
 
 ## OR, IN and UNION
 
