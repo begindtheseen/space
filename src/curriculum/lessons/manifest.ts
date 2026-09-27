@@ -1684,6 +1684,300 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       "file": "cod_cpp_02_memory/14-smart-pointers.md"
     }
   ],
+  "cod_cpp_03_raii": [
+    {
+      "id": "l01-constructors",
+      "title": "Constructors, and the explicit keyword",
+      "minutes": 20,
+      "covers": [
+        "Constructors: default, parameterised, delegating, converting, explicit"
+      ],
+      "file": "cod_cpp_03_raii/01-constructors.md"
+    },
+    {
+      "id": "l02-member-initialiser-lists",
+      "title": "Member initialiser lists and initialisation order",
+      "minutes": 19,
+      "covers": [
+        "Member initialiser lists and the actual initialisation order (declaration order, not list order)"
+      ],
+      "file": "cod_cpp_03_raii/02-member-initialiser-lists.md"
+    },
+    {
+      "id": "l03-destructors-and-raii",
+      "title": "Destructors and RAII",
+      "minutes": 24,
+      "covers": [
+        "Destructors; virtual destructors for polymorphic bases"
+      ],
+      "file": "cod_cpp_03_raii/03-destructors-and-raii.md"
+    },
+    {
+      "id": "l04-copying-deep-and-shallow",
+      "title": "Copying objects, deep and shallow",
+      "minutes": 25,
+      "covers": [
+        "Copy constructor and copy assignment; deep versus shallow"
+      ],
+      "file": "cod_cpp_03_raii/04-copying-deep-and-shallow.md"
+    },
+    {
+      "id": "l05-move-semantics",
+      "title": "Moving objects instead of copying them",
+      "minutes": 24,
+      "covers": [
+        "Move constructor and move assignment; noexcept on moves and why containers check it"
+      ],
+      "file": "cod_cpp_03_raii/05-move-semantics.md"
+    },
+    {
+      "id": "l06-default-delete-and-generation-rules",
+      "title": "What the compiler writes for you, and how to say yes or no",
+      "minutes": 21,
+      "covers": [
+        "= default and = delete; the special-member generation rules"
+      ],
+      "file": "cod_cpp_03_raii/06-default-delete-and-generation-rules.md"
+    },
+    {
+      "id": "l07-rule-of-five-and-zero",
+      "title": "The rule of five, the rule of zero, and copy-and-swap",
+      "minutes": 24,
+      "covers": [
+        "Rule of five and rule of zero; copy-and-swap"
+      ],
+      "file": "cod_cpp_03_raii/07-rule-of-five-and-zero.md"
+    },
+    {
+      "id": "l08-const-static-and-friend",
+      "title": "const member functions, static members and friends",
+      "minutes": 22,
+      "covers": [
+        "const member functions and mutable",
+        "static members; friend functions"
+      ],
+      "file": "cod_cpp_03_raii/08-const-static-and-friend.md"
+    },
+    {
+      "id": "l09-operator-overloading",
+      "title": "Operator overloading",
+      "minutes": 22,
+      "covers": [
+        "Operator overloading: arithmetic, comparison and the spaceship operator, subscript, call, stream"
+      ],
+      "file": "cod_cpp_03_raii/09-operator-overloading.md"
+    },
+    {
+      "id": "l10-inheritance-and-slicing",
+      "title": "Inheritance, virtual functions and object slicing",
+      "minutes": 25,
+      "covers": [
+        "Inheritance, virtual, override, final; pure virtual and abstract classes",
+        "Object slicing and how to prevent it"
+      ],
+      "file": "cod_cpp_03_raii/10-inheritance-and-slicing.md"
+    },
+    {
+      "id": "l11-vtables-and-crtp",
+      "title": "How virtual calls work, what they cost, and CRTP",
+      "minutes": 25,
+      "covers": [
+        "vtables and the real cost of dynamic dispatch",
+        "Composition over inheritance; CRTP for static polymorphism"
+      ],
+      "file": "cod_cpp_03_raii/11-vtables-and-crtp.md"
+    },
+    {
+      "id": "l12-variant-visit-and-pimpl",
+      "title": "std::variant for fixed sets of types, and PIMPL for hiding a class's insides",
+      "minutes": 22,
+      "covers": [
+        "std::variant plus std::visit as a closed-set alternative to virtual dispatch",
+        "PIMPL for compilation firewalls"
+      ],
+      "file": "cod_cpp_03_raii/12-variant-visit-and-pimpl.md"
+    }
+  ],
+  "cod_cpp_04_stl": [
+    {
+      "id": "l01-sequence-containers",
+      "title": "Sequence containers: array, vector, deque and list",
+      "minutes": 24,
+      "covers": [
+        "array, vector (size vs capacity, reserve, iterator invalidation), deque, list"
+      ],
+      "file": "cod_cpp_04_stl/01-sequence-containers.md"
+    },
+    {
+      "id": "l02-map-and-set",
+      "title": "Ordered containers: map and set",
+      "minutes": 23,
+      "covers": [
+        "map and set (red-black tree, ordered, node-based, cache-hostile)"
+      ],
+      "file": "cod_cpp_04_stl/02-map-and-set.md"
+    },
+    {
+      "id": "l03-unordered-containers",
+      "title": "Hash tables: unordered_map and unordered_set",
+      "minutes": 24,
+      "covers": [
+        "unordered_map and unordered_set: hashing, load factor, worst case"
+      ],
+      "file": "cod_cpp_04_stl/03-unordered-containers.md"
+    },
+    {
+      "id": "l04-span-and-string-view",
+      "title": "Views - std::span and std::string_view",
+      "minutes": 24,
+      "covers": [
+        "span and string_view: non-owning views, and the dangling-view hazard"
+      ],
+      "file": "cod_cpp_04_stl/04-span-and-string-view.md"
+    },
+    {
+      "id": "l05-optional-variant-tuple-bitset",
+      "title": "Maybe, one-of, several-at-once, and flags - optional, variant, tuple, pair and bitset",
+      "minutes": 22,
+      "covers": [
+        "optional, variant, tuple, pair, bitset"
+      ],
+      "file": "cod_cpp_04_stl/05-optional-variant-tuple-bitset.md"
+    },
+    {
+      "id": "l06-iterators-and-invalidation",
+      "title": "Iterators, and when they stop being safe",
+      "minutes": 24,
+      "covers": [
+        "Iterators and their categories; per-container invalidation rules"
+      ],
+      "file": "cod_cpp_04_stl/06-iterators-and-invalidation.md"
+    },
+    {
+      "id": "l07-sorting-and-searching",
+      "title": "Sorting and searching",
+      "minutes": 24,
+      "covers": [
+        "Algorithms: sort, stable_sort, nth_element, lower_bound, binary_search, find_if"
+      ],
+      "file": "cod_cpp_04_stl/07-sorting-and-searching.md"
+    },
+    {
+      "id": "l08-transform-and-fold",
+      "title": "Transforming, combining and checking ranges",
+      "minutes": 23,
+      "covers": [
+        "transform, accumulate, reduce, copy_if, all_of/any_of/none_of, clamp, rotate, unique",
+        "numeric: iota, inner_product, partial_sum"
+      ],
+      "file": "cod_cpp_04_stl/08-transform-and-fold.md"
+    },
+    {
+      "id": "l09-erase-remove-and-parallel",
+      "title": "Removing elements, and running algorithms in parallel",
+      "minutes": 23,
+      "covers": [
+        "The erase-remove idiom and C++20 std::erase_if",
+        "Execution policies and parallel algorithms"
+      ],
+      "file": "cod_cpp_04_stl/09-erase-remove-and-parallel.md"
+    },
+    {
+      "id": "l10-lambdas",
+      "title": "Lambdas: small functions that carry what they need",
+      "minutes": 24,
+      "covers": [
+        "Lambdas: capture by value and reference, init-capture, mutable, generic lambdas"
+      ],
+      "file": "cod_cpp_04_stl/10-lambdas.md"
+    },
+    {
+      "id": "l11-std-function-and-callables",
+      "title": "std::function, templates and function pointers: three ways to pass a callable",
+      "minutes": 21,
+      "covers": [
+        "std::function versus templates versus function pointers, and its allocation"
+      ],
+      "file": "cod_cpp_04_stl/11-std-function-and-callables.md"
+    },
+    {
+      "id": "l12-chrono-and-random",
+      "title": "Clocks and random numbers you can trust",
+      "minutes": 24,
+      "covers": [
+        "chrono: steady_clock for intervals, system_clock for wall time, never mixed",
+        "random: engines, distributions, reproducible seeding for Monte Carlo"
+      ],
+      "file": "cod_cpp_04_stl/12-chrono-and-random.md"
+    },
+    {
+      "id": "l13-ranges-and-views",
+      "title": "Ranges and views",
+      "minutes": 26,
+      "covers": [
+        "C++20 ranges and views"
+      ],
+      "file": "cod_cpp_04_stl/13-ranges-and-views.md"
+    },
+    {
+      "id": "l14-error-handling",
+      "title": "Error handling: exceptions, error codes and expected",
+      "minutes": 28,
+      "covers": [
+        "Error handling: exceptions, error_code, expected, and why flight code disables exceptions"
+      ],
+      "file": "cod_cpp_04_stl/14-error-handling.md"
+    }
+  ],
+  "cod_cpp_05_templates": [
+    {
+      "id": "l01-function-and-class-templates",
+      "title": "Function and class templates",
+      "minutes": 24,
+      "covers": [
+        "Function and class templates; argument deduction; explicit and partial specialisation"
+      ],
+      "file": "cod_cpp_05_templates/01-function-and-class-templates.md"
+    },
+    {
+      "id": "l02-non-type-template-parameters",
+      "title": "Numbers as template parameters",
+      "minutes": 25,
+      "covers": [
+        "Non-type template parameters: the key to Matrix<double,3,3>"
+      ],
+      "file": "cod_cpp_05_templates/02-non-type-template-parameters.md"
+    },
+    {
+      "id": "l04-dependent-names-and-lookup",
+      "title": "Dependent names: typename, template, and two-phase lookup",
+      "minutes": 26,
+      "covers": [
+        "typename vs class; dependent names and the typename/template disambiguators",
+        "Two-phase name lookup"
+      ],
+      "file": "cod_cpp_05_templates/04-dependent-names-and-lookup.md"
+    },
+    {
+      "id": "l05-type-traits",
+      "title": "Type traits: asking the compiler questions about types",
+      "minutes": 24,
+      "covers": [
+        "Type traits: is_same, is_floating_point, conditional, decay, remove_cvref"
+      ],
+      "file": "cod_cpp_05_templates/05-type-traits.md"
+    },
+    {
+      "id": "l07-compile-time-computation",
+      "title": "Computing before the program runs, and if constexpr",
+      "minutes": 26,
+      "covers": [
+        "constexpr functions, consteval, constinit, compile-time computation",
+        "if constexpr for compile-time branching"
+      ],
+      "file": "cod_cpp_05_templates/07-compile-time-computation.md"
+    }
+  ],
   "cod_git_01_basics": [
     {
       "id": "l01-snapshots-and-the-object-model",
@@ -8970,66 +9264,24 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_cpp_03_raii": {
-    "covered": 0,
+    "covered": 16,
     "total": 16,
-    "complete": false,
-    "missing": [
-      "Constructors: default, parameterised, delegating, converting, explicit",
-      "Member initialiser lists and the actual initialisation order (declaration order, not list order)",
-      "Destructors; virtual destructors for polymorphic bases",
-      "Copy constructor and copy assignment; deep versus shallow",
-      "Move constructor and move assignment; noexcept on moves and why containers check it",
-      "= default and = delete; the special-member generation rules",
-      "Rule of five and rule of zero; copy-and-swap",
-      "const member functions and mutable",
-      "static members; friend functions",
-      "Operator overloading: arithmetic, comparison and the spaceship operator, subscript, call, stream",
-      "Inheritance, virtual, override, final; pure virtual and abstract classes",
-      "vtables and the real cost of dynamic dispatch",
-      "Object slicing and how to prevent it",
-      "Composition over inheritance; CRTP for static polymorphism",
-      "std::variant plus std::visit as a closed-set alternative to virtual dispatch",
-      "PIMPL for compilation firewalls"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_cpp_04_stl": {
-    "covered": 0,
+    "covered": 17,
     "total": 17,
-    "complete": false,
-    "missing": [
-      "array, vector (size vs capacity, reserve, iterator invalidation), deque, list",
-      "map and set (red-black tree, ordered, node-based, cache-hostile)",
-      "unordered_map and unordered_set: hashing, load factor, worst case",
-      "span and string_view: non-owning views, and the dangling-view hazard",
-      "optional, variant, tuple, pair, bitset",
-      "Iterators and their categories; per-container invalidation rules",
-      "Algorithms: sort, stable_sort, nth_element, lower_bound, binary_search, find_if",
-      "transform, accumulate, reduce, copy_if, all_of/any_of/none_of, clamp, rotate, unique",
-      "The erase-remove idiom and C++20 std::erase_if",
-      "numeric: iota, inner_product, partial_sum",
-      "Execution policies and parallel algorithms",
-      "Lambdas: capture by value and reference, init-capture, mutable, generic lambdas",
-      "std::function versus templates versus function pointers, and its allocation",
-      "chrono: steady_clock for intervals, system_clock for wall time, never mixed",
-      "random: engines, distributions, reproducible seeding for Monte Carlo",
-      "C++20 ranges and views",
-      "Error handling: exceptions, error_code, expected, and why flight code disables exceptions"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_cpp_05_templates": {
-    "covered": 0,
+    "covered": 7,
     "total": 14,
     "complete": false,
     "missing": [
-      "Function and class templates; argument deduction; explicit and partial specialisation",
-      "Non-type template parameters: the key to Matrix<double,3,3>",
       "Variadic templates, parameter packs, fold expressions",
-      "typename vs class; dependent names and the typename/template disambiguators",
-      "Two-phase name lookup",
       "SFINAE and enable_if, and the C++20 replacement: concepts and requires",
-      "Type traits: is_same, is_floating_point, conditional, decay, remove_cvref",
-      "constexpr functions, consteval, constinit, compile-time computation",
-      "if constexpr for compile-time branching",
       "CRTP revisited for static polymorphism",
       "Expression templates and lazy evaluation; how Eigen removes temporaries",
       "Template instantiation cost, build-time blow-up, extern template",
