@@ -818,9 +818,17 @@ ordered
 
 === sql2-05 | Subqueries: a value, or a list
 --- teach
-A subquery is a `SELECT` in brackets inside another statement. Where it goes depends on what it returns.
+Last lesson you sorted orders into monthly buckets. This lesson goes back to an idea from the end of the basics, the subquery, and gives it a second shape. Before, a subquery gave back one value. Now it can give back a whole list, and you can ask "is this row's id on that list?".
 
-A **scalar subquery** returns one row with one column, and can sit anywhere a single value can:
+### The picture
+
+Picture a party with a guest list at the door. The person at the door does not care how many times your name was written on the list. They only ask one question: is your name on it, yes or no? If yes, you go in, once.
+
+### A quick reminder: one value
+
+A **subquery** is a whole `SELECT` in round brackets, used inside another query. What it gives back decides where it can go.
+
+A subquery that gives back one row with one column is a **[[scalar|scalar-word]] subquery**: a single value. It can sit anywhere a single value can, even in the `SELECT` list:
 
 ```sql
 SELECT name, price,
@@ -828,18 +836,118 @@ SELECT name, price,
 FROM products;
 ```
 
-A subquery that returns **one column of many rows** is a list, and pairs with `IN`:
+The inner query works out the average price, 26.625, once. Then every product is compared with it:
+
+| name | price | above_avg |
+| --- | --- | --- |
+| Notebook | 4.5 | -22.125 |
+| Fountain pen | 32.0 | 5.375 |
+| Headphones | 89.0 | 62.375 |
+
+(Five more rows follow, one for each other product.)
+
+### The new shape: a list
+
+A subquery that gives back **one column of many rows** is a list. Run this one on its own first. It gives the customer id of every shipped order:
+
+```sql
+SELECT customer_id FROM orders WHERE status = 'shipped';
+```
+
+It returns `1`, `1`, `2`, `4`. Customer 1, Ada, shipped two orders, so 1 appears twice.
+
+A list pairs with `IN`. You met `IN ('paid', 'shipped')` in the basics: it means "matches any value in this list". Now the list is a subquery:
 
 ```sql
 SELECT name FROM customers
-WHERE id IN (SELECT customer_id FROM orders WHERE status = 'cancelled');
+WHERE id IN (SELECT customer_id FROM orders WHERE status = 'shipped');
 ```
 
-Why not just join? Because a join multiplies. Joining customers to their orders gives one row per *order*: a customer with three matching orders appears three times, and you end up bolting on `DISTINCT` (which drops duplicate rows — lesson 11) to undo it. `IN` asks a yes-or-no question — "is this customer's id in that list?" — so each customer appears at most once, however many times they match.
+| name |
+| --- |
+| Ada |
+| Ben |
+| Dev |
 
-Subqueries can nest. The inner list may itself be built from a join or another subquery; SQL does not mind, and it often reads closer to the question you were asked.
+For each customer, `IN` asks a yes-or-no question: is this customer's `id` [[on that list|membership]]? Ada's id, 1, is on it, so Ada is in the answer, once. It does not matter that 1 is on the list twice.
+
+### Why not a join?
+
+You could get the same names with a join. But a join multiplies:
+
+```sql
+SELECT c.name
+FROM customers c
+JOIN orders o ON o.customer_id = c.id
+WHERE o.status = 'shipped';
+```
+
+This gives Ada, Ada, Ben, Dev. A join makes one row per *matching order*, so a customer with two shipped orders [[appears twice|join-fanout]]. You could bolt on `DISTINCT`, which drops repeated rows (the lesson DISTINCT, UNION and UNION ALL covers it), to undo the damage. `IN` never makes the copies in the first place.
+
+### Subqueries inside subqueries
+
+The list can be built from anything: a join, or another subquery. SQL does not mind how deep it goes. Who bought the headphones, product 5?
+
+```sql
+SELECT name FROM customers
+WHERE id IN (
+  SELECT customer_id FROM orders
+  WHERE id IN (SELECT order_id FROM order_items WHERE product_id = 5)
+);
+```
+
+Read it from the inside out. The innermost query finds the orders that contain product 5 (orders 2 and 6). The middle one turns those orders into customer ids (1 and 4). The outer one turns ids into names: Ada and Dev. A query built like this often reads [[close to the question you were asked|real-questions]].
+
+**Watch out:** the list must hold the *same kind* of id as the column you test. `WHERE id IN (SELECT id FROM orders ...)` compares customer ids with **order** ids. SQLite gives no error; it quietly returns the wrong customers. Run the inner query on its own and ask: are these customer ids? A subquery in `IN` must also give back exactly one column. `IN (SELECT * FROM orders)` stops with the error `sub-select returns 5 columns - expected 1`.
+
+You may be wondering about [[the opposite, NOT IN|not-in-later]], for "not on the list". It exists, and it has a trap of its own.
+
+::: context scalar-word Where "scalar" comes from
+In maths and physics, a **scalar** is a single number, like a temperature or a mass. It is the opposite of a vector, which has several parts, like a velocity with a direction. The word comes from "scale": a scalar only makes things bigger or smaller. Databases borrowed it for "one single value". A scalar subquery is one that promises one row with one column. If it finds no rows at all, its value is NULL.
+:::
+
+::: context membership A list, not a count
+`IN` only checks membership: is the value there, yes or no. Duplicates on the list change nothing, and the list's order changes nothing.
+
+```svg
+<svg viewBox="0 0 360 150" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <text x="70" y="18" font-size="12" text-anchor="middle" fill="#1f2a44">customers</text>
+  <rect x="20" y="28" width="100" height="22" rx="4" fill="#8fb8f0"/>
+  <text x="70" y="43" font-size="12" text-anchor="middle" fill="#1f2a44">1 Ada</text>
+  <rect x="20" y="54" width="100" height="22" rx="4" fill="#8fb8f0"/>
+  <text x="70" y="69" font-size="12" text-anchor="middle" fill="#1f2a44">2 Ben</text>
+  <rect x="20" y="80" width="100" height="22" rx="4" fill="white" stroke="#6c7a93"/>
+  <text x="70" y="95" font-size="12" text-anchor="middle" fill="#6c7a93">3 Cleo</text>
+  <rect x="20" y="106" width="100" height="22" rx="4" fill="#8fb8f0"/>
+  <text x="70" y="121" font-size="12" text-anchor="middle" fill="#1f2a44">4 Dev</text>
+  <text x="280" y="18" font-size="12" text-anchor="middle" fill="#1f2a44">the list</text>
+  <rect x="240" y="28" width="80" height="100" rx="6" fill="white" stroke="#1d6fd1" stroke-width="1.5"/>
+  <text x="280" y="50" font-size="12" text-anchor="middle" fill="#1f2a44">1</text>
+  <text x="280" y="72" font-size="12" text-anchor="middle" fill="#1f2a44">1</text>
+  <text x="280" y="94" font-size="12" text-anchor="middle" fill="#1f2a44">2</text>
+  <text x="280" y="116" font-size="12" text-anchor="middle" fill="#1f2a44">4</text>
+  <text x="180" y="62" font-size="12" text-anchor="middle" fill="#1d6fd1">on it?</text>
+  <line x1="124" y1="70" x2="234" y2="70" stroke="#1d6fd1" stroke-width="1.5"/>
+  <text x="180" y="146" font-size="11" text-anchor="middle" fill="#1f2a44">yes: Ada, Ben, Dev once each · no: Cleo</text>
+</svg>
+```
+:::
+
+::: context join-fanout Rows that multiply
+A join pairs each row on the left with every matching row on the right. One customer with two matching orders becomes two rows. This is called **fan-out**, and it is behind many wrong reports: sums counted twice, customers listed twice. The lesson Debugging: the join that double-counts hunts down one of these. Whenever you only want to know *whether* a match exists, not *what* it is, a subquery with `IN` (or `EXISTS`, next lesson) avoids the problem.
+:::
+
+::: context real-questions How engineers use it
+Mission teams ask questions shaped exactly like this. "Which spacecraft had a critical alert this week?" is: spacecraft whose id is in the list of craft ids from this week's critical alerts. "Which users hit an error today?" is: users whose id is in the list of user ids from today's error log. Inside, databases like PostgreSQL often turn an `IN (subquery)` into a special join, called a semi-join, that stops at the first match. You write the clear version, and the database finds a fast way to run it.
+:::
+
+::: context not-in-later The opposite has a trap
+`NOT IN` keeps the rows whose value is *not* on the list. It works, until the list contains a NULL. Then it quietly returns no rows at all. The lesson Problem solving: finding what is missing shows why, and gives a safer way to ask.
+:::
 --- task
-Return the name of every customer who has bought at least one product in the `electronics` category (any order status), **each name once**, in alphabetical order. Use `IN` with a subquery.
+Return the `name` of every customer who has bought at least one product in the `'electronics'` category (any order status), **each name once**, in alphabetical order.
+
+Use `WHERE id IN (...)` on `customers`. Inside the brackets, build the list of customer ids from `orders`, `order_items` and `products`.
 --- starter
 SELECT c.name
 FROM customers c
@@ -860,9 +968,11 @@ WHERE id IN (
 )
 ORDER BY name;
 --- hint
-Run the starter: Ada appears twice because she bought electronics in two orders.
+Run the starter: Ada appears twice, because Ada bought electronics in two different orders. That is the join multiplying rows.
 --- hint
-Build the list of customer ids who bought electronics in a subquery, then `WHERE id IN (...)` on `customers`.
+Keep the starter's joins, but use them only to build a list. Change them into a subquery that selects `o.customer_id`, starting `FROM orders o`.
+--- hint
+The shape is `SELECT name FROM customers WHERE id IN (SELECT o.customer_id FROM orders o JOIN ... WHERE p.category = 'electronics') ORDER BY name;`.
 --- check result | Ada, Ben and Dev, once each
 ordered
 [["Ada"], ["Ben"], ["Dev"]]
@@ -871,7 +981,29 @@ ordered
 
 === sql2-06 | Correlated subqueries and EXISTS
 --- teach
-The subqueries so far ran once. A **correlated** subquery refers to the outer row, so it runs (conceptually) once *per* outer row:
+Last lesson a subquery built a list, and `IN` checked each customer against it. That subquery ran once and gave the same list to every row. This lesson meets a subquery that gives a *different* answer for each row, and a new word, `EXISTS`, that asks "is there at least one?".
+
+### The picture
+
+Picture a school where each class has its own average test score. To find the students who beat *their own class's* average, you cannot use one number for everyone. For each student you look up their class, work out that class's average, and compare. The scrap-paper step changes from row to row.
+
+### Averages per category
+
+Products come in three categories, and each has its own average price. You can see them with `GROUP BY`:
+
+```sql
+SELECT category, AVG(price) FROM products GROUP BY category;
+```
+
+| category | AVG(price) |
+| --- | --- |
+| electronics | 47.75 |
+| home | 21.0 |
+| stationery | 18.1666... |
+
+### A subquery that looks at the outer row
+
+Now find each product priced above the average *of its own category*:
 
 ```sql
 SELECT p.name, p.price
@@ -879,9 +1011,23 @@ FROM products p
 WHERE p.price > (SELECT AVG(x.price) FROM products x WHERE x.category = p.category);
 ```
 
-For each product `p`, the inner query averages the prices *in p's category*. The link is `x.category = p.category`: the inner query reaches out to the row being tested. The aliases matter — without two different names, SQL cannot tell the inner products from the outer one.
+| name | price |
+| --- | --- |
+| Fountain pen | 32.0 |
+| Desk lamp | 45.0 |
+| Headphones | 89.0 |
 
-`EXISTS (subquery)` is true when the subquery returns at least one row. It never looks at *what* the rows contain, so the convention is `SELECT 1`:
+The inner query mentions `p.category`, which belongs to the *outer* row. A subquery that reaches out to the outer row like this is a **[[correlated|correlated-word]] subquery**. It runs (in idea, at least) [[once for every outer row|per-row]].
+
+Walk through two rows. For the Fountain pen, `p.category` is `'stationery'`. The inner query averages the stationery prices: 18.17. Is 32 bigger? Yes, so it stays. For the Mug, `p.category` is `'home'`. The home average is 21. Is 9 bigger? No, so it goes.
+
+The two aliases matter. `products` appears twice, once outside as `p` and once inside as `x`. Without [[two different names|alias-clash]], SQL cannot tell the product being tested from the products being averaged.
+
+### EXISTS: is there at least one?
+
+Picture knocking on a door. You only want to know if anyone is home. You do not need to know who, or how many.
+
+`EXISTS (subquery)` is true when the subquery returns **at least one row**. It never looks at *what* is in the rows, so people write [[SELECT 1|select-one]] inside it: the 1 is a placeholder that means "a row, any row".
 
 ```sql
 SELECT c.name
@@ -889,9 +1035,75 @@ FROM customers c
 WHERE EXISTS (SELECT 1 FROM orders o WHERE o.customer_id = c.id AND o.status = 'refunded');
 ```
 
-`EXISTS` is almost always correlated, and it can stop at the first match, which makes it cheap. In SQLite it is also an expression with a value — 1 or 0 — so it can go in the `SELECT` list as a yes/no column.
+For each customer, the inner query looks for a refunded order of theirs. Only Eve has one, so the answer is Eve.
+
+`EXISTS` is nearly always correlated: here `o.customer_id = c.id` ties it to the outer customer. And it can stop at the first matching row, which makes it cheap.
+
+### EXISTS as a yes/no column
+
+In SQLite, `EXISTS (...)` is also a value: [[1 for yes, 0 for no|true-is-one]]. So it can go in the `SELECT` list and make a yes/no column:
+
+```sql
+SELECT c.name,
+       EXISTS (SELECT 1 FROM orders o WHERE o.customer_id = c.id) AS has_orders
+FROM customers c;
+```
+
+Ada, Ben, Cleo, Dev and Eve get `1`. Finn and Gus have no orders, so they get `0`.
+
+**Watch out:** the link to the outer row is what makes the subquery correlated. Leave out `o.customer_id = c.id` and the inner query no longer asks about *this* customer. It asks "is there a refunded order anywhere?", which is yes, so every customer comes back. When an `EXISTS` returns every row, check the link first.
+
+::: context correlated-word What "correlated" means
+To be correlated is to be connected: when one thing changes, the other changes with it. A correlated subquery is connected to the outer query: when the outer row changes, the inner query's answer changes too. The subqueries in the last lesson were not correlated. They could run on their own, pasted into an empty editor. A correlated one cannot, because `p.category` means nothing without an outer `p`. That is a quick test for which kind you have.
+:::
+
+::: context per-row Once for every row
+In idea, the database runs the inner query again for each outer row, with that row's values filled in.
+
+```svg
+<svg viewBox="0 0 360 150" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <text x="70" y="18" font-size="12" text-anchor="middle" fill="#1f2a44">outer row p</text>
+  <rect x="10" y="28" width="120" height="24" rx="4" fill="#8fb8f0"/>
+  <text x="70" y="44" font-size="11" text-anchor="middle" fill="#1f2a44">Fountain pen · 32</text>
+  <rect x="10" y="62" width="120" height="24" rx="4" fill="#8fb8f0"/>
+  <text x="70" y="78" font-size="11" text-anchor="middle" fill="#1f2a44">Mug · 9</text>
+  <rect x="10" y="96" width="120" height="24" rx="4" fill="#8fb8f0"/>
+  <text x="70" y="112" font-size="11" text-anchor="middle" fill="#1f2a44">Headphones · 89</text>
+  <text x="265" y="18" font-size="12" text-anchor="middle" fill="#1f2a44">inner AVG for p's category</text>
+  <line x1="132" y1="40" x2="196" y2="40" stroke="#1d6fd1" stroke-width="1.5"/>
+  <line x1="132" y1="74" x2="196" y2="74" stroke="#1d6fd1" stroke-width="1.5"/>
+  <line x1="132" y1="108" x2="196" y2="108" stroke="#1d6fd1" stroke-width="1.5"/>
+  <text x="200" y="44" font-size="11" fill="#1f2a44">stationery 18.17</text>
+  <text x="310" y="44" font-size="11" fill="#1d6fd1">keep</text>
+  <text x="200" y="78" font-size="11" fill="#1f2a44">home 21.00</text>
+  <text x="310" y="78" font-size="11" fill="#b4232c">drop</text>
+  <text x="200" y="112" font-size="11" fill="#1f2a44">electronics 47.75</text>
+  <text x="310" y="112" font-size="11" fill="#1d6fd1">keep</text>
+  <text x="180" y="142" font-size="11" text-anchor="middle" fill="#6c7a93">one inner run per outer row</text>
+</svg>
+```
+
+A real database is free to find a quicker route, as long as the answer is the same.
+:::
+
+::: context alias-clash When the names clash
+If you write `WHERE category = category` inside the subquery, SQL reads both names as the *inner* table's column, because a plain column name belongs to the nearest `FROM`. Every product equals itself, so the condition is always true and you get the average of all products, not of the category. No error warns you. Giving each copy its own alias, and prefixing every column with it, makes the link impossible to get wrong.
+:::
+
+::: context select-one Why SELECT 1
+`EXISTS` only counts whether rows come back, and ignores their contents. `SELECT *`, `SELECT o.id` or `SELECT 'hello'` would all give the same answer. Writing `SELECT 1` tells the next person who reads your query: the columns here do not matter. It is a habit, not a rule, and you will see it in almost every codebase that uses `EXISTS`.
+:::
+
+::: context true-is-one Yes and no as numbers
+SQLite has no separate true/false type. A condition that is true has the value 1, and false has the value 0. You can see it for yourself: `SELECT 5 > 3;` returns 1. That is why `EXISTS` can sit in the `SELECT` list. Its opposite, `NOT EXISTS`, comes back in the lesson Problem solving: finding what is missing, where it is the safest way to find rows with no match.
+:::
 --- task
-Return every product priced **above the average price of its own category**: its `name`, `category`, `price`, and a column `sold_shipped` that is `1` if the product appears in at least one `shipped` order and `0` otherwise. Use a correlated subquery for the average and `EXISTS` for `sold_shipped`.
+Return every product priced **above the average price of its own category**, with four columns:
+
+- `name`, `category` and `price`
+- `sold_shipped`: `1` if the product appears in at least one `'shipped'` order, `0` if not
+
+Use a correlated subquery for the category average, and `EXISTS` for `sold_shipped`. The `EXISTS` needs `order_items` joined to `orders`, so it can see each item's order status.
 --- starter
 SELECT name, category, price
 FROM products
@@ -907,9 +1119,11 @@ SELECT p.name, p.category, p.price,
 FROM products p
 WHERE p.price > (SELECT AVG(x.price) FROM products x WHERE x.category = p.category);
 --- hint
-The starter compares with the average of *all* products. Give the outer table an alias and add `WHERE x.category = p.category` inside.
+The starter compares every product with the average of *all* products. Give the outer table the alias `p`, the inner one the alias `x`, and add `WHERE x.category = p.category` inside the brackets.
 --- hint
-For the flag: `EXISTS (SELECT 1 FROM order_items oi JOIN orders o ON … WHERE oi.product_id = p.id AND o.status = 'shipped') AS sold_shipped`.
+For the flag, add a fourth column to the `SELECT`: `EXISTS (SELECT 1 FROM order_items oi JOIN orders o ON o.id = oi.order_id WHERE ...) AS sold_shipped`.
+--- hint
+Inside that `EXISTS`, link to the outer product and check the status: `WHERE oi.product_id = p.id AND o.status = 'shipped'`.
 --- check result | Fountain pen (never shipped), Desk lamp and Headphones
 [["Fountain pen", "stationery", 32.0, 0], ["Desk lamp", "home", 45.0, 1], ["Headphones", "electronics", 89.0, 1]]
 --- check source | Uses EXISTS
@@ -917,10 +1131,18 @@ For the flag: `EXISTS (SELECT 1 FROM order_items oi JOIN orders o ON … WHERE o
 
 === sql2-07 | CASE: decisions inside a query
 --- teach
-`CASE` turns conditions into values. The searched form checks each `WHEN` in order and returns the first match:
+Last lesson `EXISTS` gave you a yes/no column, 1 or 0. This lesson lets you choose *any* value from a condition: a label like `'premium'` or `'budget'`, worked out row by row.
+
+### The picture
+
+Picture a post office sorting parcels. The rule on the wall says: 20 kg or more goes to the heavy shelf; 5 kg or more goes to the medium shelf; everything else goes to the light shelf. The clerk reads the rules top to bottom and stops at the first one that fits.
+
+### The CASE expression
+
+`CASE` does the same inside a query. It checks conditions in order and gives back the value of the first one that is true:
 
 ```sql
-SELECT name,
+SELECT name, price,
        CASE
          WHEN price >= 50 THEN 'premium'
          WHEN price >= 10 THEN 'standard'
@@ -929,19 +1151,113 @@ SELECT name,
 FROM products;
 ```
 
-Order matters: a price of 89 is also `>= 10`, but the first true `WHEN` wins, so list the narrowest conditions first. Without an `ELSE`, anything that matches nothing becomes NULL — usually a sign you forgot a case, so write the `ELSE`.
+Read each part in words:
 
-There is a short form for comparing one expression with fixed values:
+- `CASE` starts the decision.
+- `WHEN price >= 50 THEN 'premium'` means "if the price is 50 or more, the answer is `'premium'`".
+- `ELSE 'budget'` is the answer when no `WHEN` was true.
+- `END` closes the decision, and `AS tier` names the new column.
+
+| name | price | tier |
+| --- | --- | --- |
+| Notebook | 4.5 | budget |
+| Fountain pen | 32.0 | standard |
+| Headphones | 89.0 | premium |
+
+(Five more products follow.) This form, with a full condition after each `WHEN`, is called the **[[searched|case-names]] CASE**.
+
+### The first true WHEN wins
+
+A price of 89 is `>= 50`, and it is also `>= 10`. Both are true, but `CASE` stops at the first. So order matters: put the [[narrowest condition first|if-else]]. Swap the two `WHEN`s and the headphones become `'standard'`, because `price >= 10` is now checked first.
+
+### Leaving out ELSE
+
+Without an `ELSE`, a row that matches no `WHEN` gets NULL:
 
 ```sql
-CASE status WHEN 'paid' THEN 'open' WHEN 'shipped' THEN 'done' ELSE 'closed' END
+SELECT name, CASE WHEN price >= 50 THEN 'premium' END AS tier
+FROM products;
 ```
 
-Boundaries are where bugs live. "Orders of 25 or more are medium" means `>= 25`, and an order of exactly 25.00 must land in medium. Decide each edge on purpose, then test the edge.
+Only Headphones gets `'premium'`. The other seven get NULL. That is usually a sign you forgot a case, so write the `ELSE`.
 
-`CASE` works anywhere an expression does — in `SELECT`, `ORDER BY`, inside `SUM(...)` — which makes it one of the most useful tools in SQL.
+### The short form
+
+When you compare one expression with fixed values, there is a shorter form. The expression goes straight after `CASE`, and each `WHEN` holds a value to compare it with:
+
+```sql
+SELECT id, status,
+       CASE status WHEN 'paid' THEN 'open' WHEN 'shipped' THEN 'done' ELSE 'closed' END AS stage
+FROM orders;
+```
+
+Orders 5 and 8 are `'open'`, the shipped orders are `'done'`, and the cancelled and refunded ones fall through to `'closed'`. The short form has [[one trap with NULL|case-null]].
+
+### CASE on a group
+
+`CASE` works anywhere an expression does: in `SELECT`, in `ORDER BY`, even inside `SUM(...)`. In a grouped query it can test an aggregate:
+
+```sql
+SELECT customer_id, COUNT(*) AS orders,
+       CASE WHEN COUNT(*) >= 2 THEN 'regular' ELSE 'new' END AS kind
+FROM orders
+GROUP BY customer_id;
+```
+
+Customers 1 and 2 have 3 and 2 orders, so they are `'regular'`. The other three are `'new'`. Put `CASE` inside `SUM` and you can [[count only some rows|conditional-sum]].
+
+### Edges on purpose
+
+Bugs live on the edges. "Orders of 25 or more are medium" means `>= 25`. An order of exactly 25.00 must land in medium. Decide each [[edge|half-open]] on purpose, then find a row that sits on it and check where it lands.
+
+**Watch out:** `>` and `>=` differ only on the edge, so a wrong one passes almost every test. `WHEN total > 25` sends an order of exactly 25.00 to the wrong bucket, and nothing warns you. Read the rule aloud: "25 or more" is `>= 25`; "more than 25" is `> 25`.
+
+::: context case-names Searched and simple
+The SQL standard names the two forms. The **searched** CASE has a full condition after each `WHEN`, so it can test anything: `price >= 50`, `city IS NULL`, `EXISTS (...)`. The **simple** CASE (the short form) names one expression after `CASE` and compares it with a value in each `WHEN`, using `=`. Every simple CASE can be written as a searched one, but not the other way round. When unsure, use the searched form.
+:::
+
+::: context if-else Like if, else if, else
+If you have written Python or JavaScript, `CASE` is an `if`, `else if`, `else` chain. There is one difference. In those languages an `if` is a statement: it *does* things. `CASE` is an expression: it *is* a value, like `2 + 3` is a value. That is why it can sit inside `SELECT`, `ORDER BY` or `SUM(...)`. The rule "narrowest first" is the same in every language: `if score >= 50` before `if score >= 10`, or the second test swallows everything.
+:::
+
+::: context case-null The short form and NULL
+The short form compares with `=`, and `NULL = NULL` is not true. So `CASE coupon WHEN NULL THEN 'none' ELSE coupon END` never gives `'none'`: for an order with no coupon, it falls through to `ELSE coupon`, which is NULL. Use the searched form for NULLs: `CASE WHEN coupon IS NULL THEN 'none' ELSE coupon END`. The lesson Debugging: the rows NULL made disappear digs into why NULL behaves this way.
+:::
+
+::: context conditional-sum Counting some rows
+`SUM(CASE WHEN status = 'shipped' THEN 1 ELSE 0 END)` adds 1 for every shipped order and 0 for the rest. On this shop it gives 4. With one such column per status, a single query makes a whole summary row: shipped, paid, cancelled, refunded side by side. Reports and dashboards are full of this pattern; people call it **conditional aggregation**. Engineers use it the same way, for example to count how many telemetry readings in each pass were in the warning range.
+:::
+
+::: context half-open Buckets without gaps
+The task's sizes are buckets on a number line. Each one includes its lower edge and stops right before the next one.
+
+```svg
+<svg viewBox="0 0 360 110" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <line x1="10" y1="50" x2="350" y2="50" stroke="#1f2a44" stroke-width="1.5"/>
+  <rect x="10" y="38" width="90" height="24" fill="#f2b880"/>
+  <rect x="100" y="38" width="160" height="24" fill="#8fb8f0"/>
+  <rect x="260" y="38" width="90" height="24" fill="#1d6fd1"/>
+  <text x="55" y="30" font-size="12" text-anchor="middle" fill="#1f2a44">small</text>
+  <text x="180" y="30" font-size="12" text-anchor="middle" fill="#1f2a44">medium</text>
+  <text x="305" y="30" font-size="12" text-anchor="middle" fill="#1f2a44">large</text>
+  <circle cx="100" cy="50" r="5" fill="#1f2a44"/>
+  <circle cx="260" cy="50" r="5" fill="#1f2a44"/>
+  <text x="100" y="82" font-size="12" text-anchor="middle" fill="#1f2a44">25</text>
+  <text x="260" y="82" font-size="12" text-anchor="middle" fill="#1f2a44">100</text>
+  <text x="180" y="102" font-size="11" text-anchor="middle" fill="#6c7a93">a filled dot belongs to the bucket on its right</text>
+</svg>
+```
+
+Every value lands in exactly one bucket, with no gaps and no overlaps. Mathematicians call a range like "25 up to, but not including, 100" half-open.
+:::
 --- task
-Return one row per order with its `id`, its `total` (the sum of `qty * unit_price`, rounded to 2 decimals) and a `size`: `'small'` under 25, `'medium'` from 25 up to (but not including) 100, and `'large'` at 100 or more. Sort by id.
+Return one row per order, from `order_items`, with three columns:
+
+- `id`: the order id
+- `total`: the sum of `qty * unit_price`, rounded to 2 decimals
+- `size`: `'small'` under 25, `'medium'` from 25 up to (but not including) 100, and `'large'` at 100 or more
+
+Sort by id. The starter already gives the first two columns.
 --- starter
 SELECT order_id AS id, ROUND(SUM(qty * unit_price), 2) AS total
 FROM order_items
@@ -959,38 +1275,135 @@ FROM order_items
 GROUP BY order_id
 ORDER BY order_id;
 --- hint
-Add a third column: `CASE WHEN … THEN … END AS size`.
+Add a third column to the `SELECT`: `CASE WHEN ... THEN ... END AS size`. It can test `SUM(qty * unit_price)`, like the `COUNT(*)` example tested a group.
 --- hint
-Test the largest bucket first: `WHEN SUM(qty * unit_price) >= 100 THEN 'large'`, then `>= 25`, then `ELSE 'small'`. Order 8 totals exactly 25.00.
+Put the narrowest bucket first: `WHEN SUM(qty * unit_price) >= 100 THEN 'large'`.
+--- hint
+Then `WHEN SUM(qty * unit_price) >= 25 THEN 'medium'`, then `ELSE 'small'`, then `END AS size`. Order 8 totals exactly 25.00, so check it says medium.
 --- check result | Eight orders sized, order 8 (exactly 25) is medium
 ordered
 [[1, 22.5, "small"], [2, 80.1, "medium"], [3, 32.0, "medium"], [4, 58.0, "medium"], [5, 37.8, "medium"], [6, 107.0, "large"], [7, 45.0, "medium"], [8, 25.0, "medium"]]
 
 === sql2-08 | Working with text
 --- teach
-Real text is messy: capitals, stray spaces, missing values. SQLite's text functions clean it up:
+Last lesson `CASE` turned numbers into labels. This lesson works on text itself. Real text is messy, with capitals, stray spaces and missing values, and a report on messy text quietly comes out wrong. Here you learn to clean text and cut pieces out of it.
 
-| Function | Does |
-| --- | --- |
-| `lower(s)`, `upper(s)` | change case |
-| `trim(s)` | remove spaces at both ends (`ltrim`, `rtrim` for one end) |
-| `length(s)` | number of characters |
-| `substr(s, start, n)` | the piece from `start` (counting from 1), `n` long; leave `n` out for "to the end" |
-| `instr(s, t)` | where `t` first appears in `s` (0 if it does not) |
-| `replace(s, a, b)` | every `a` replaced by `b` |
-| `a || b` | joins text |
+### The picture
 
-They combine. Everything after the `@` in an email:
+Picture a sign-up sheet where people wrote their own email addresses. One wrote in capitals. One left a space before it. One left it blank. Before you can count how many use each email provider, you tidy every line the same way.
+
+### Text functions
+
+A piece of text is called a **[[string|string-word]]**. A **function** is a named tool: you give it values in brackets and it gives one value back. You have used `COUNT`, `ROUND` and `substr` already. SQLite has a set of functions for strings. Here they are one at a time.
+
+### lower and upper: change case
+
+`lower(s)` gives the string `s` in small letters, and `upper(s)` in capitals. In SQLite they change [[only the plain letters A to Z|sqlite-ascii]]:
 
 ```sql
-SELECT substr(email, instr(email, '@') + 1) FROM customers;
+SELECT email, lower(email) FROM customers WHERE id = 2;
 ```
 
-Clean **before** you compare or group. `'Mail.com'`, `'mail.com'` and `'mail.com '` are three different strings to `GROUP BY`, so a report grouped on raw text quietly splits one bucket into three. Normalise with `lower(trim(...))` first.
+| email | lower(email) |
+| --- | --- |
+| BEN@Mail.com | ben@mail.com |
 
-Two more things to know. `LIKE` ignores case for plain letters in SQLite, but `=` does not. And every text function given NULL returns NULL — a missing email has no domain, and it will show up as a NULL group unless you filter it out.
+### trim: remove spaces at the ends
+
+`trim(s)` removes spaces from both ends of a string. `ltrim` removes them from the left end only, and `rtrim` from the right end only:
+
+```sql
+SELECT trim('  hi  '), ltrim('  hi  '), rtrim('  hi  ');
+```
+
+This gives `'hi'`, `'hi  '` and `'  hi'`.
+
+### length: count the characters
+
+`length(s)` counts the characters in `s`. Spaces count. That makes it a good way to *see* [[invisible spaces|stray-spaces]]:
+
+```sql
+SELECT email, length(email), length(trim(email)) FROM customers WHERE id IN (4, 6);
+```
+
+| email | length(email) | length(trim(email)) |
+| --- | --- | --- |
+|  dev@work.io | 12 | 11 |
+| finn@Work.io  | 13 | 12 |
+
+Dev's email has a space at the front and Finn's has one at the end. You cannot see them in the table, but `length` can.
+
+### substr: cut out a piece
+
+You met `substr(s, start, n)` when you grouped by month. It gives the piece of `s` that begins at position `start` and is `n` characters long. Positions [[count from 1|count-from-one]]. Leave out `n` and you get everything to the end:
+
+```sql
+SELECT substr('2024-03-20', 6, 2), substr('ada@mail.com', 5);
+```
+
+This gives `'03'` and `'mail.com'`.
+
+### instr: find where something is
+
+`instr(s, t)` gives the position where `t` first appears in `s`, or 0 if it does not appear at all. `instr('ada@mail.com', '@')` is 4, because `@` is the fourth character.
+
+### Putting them together
+
+Functions can go inside each other. The innermost one runs first. Here is everything after the `@` in each email:
+
+```sql
+SELECT email, substr(email, instr(email, '@') + 1) AS domain FROM customers;
+```
+
+For `'ada@mail.com'`, `instr` finds the `@` at position 4. Adding 1 gives 5. `substr` from position 5 to the end gives `'mail.com'`. That part after the `@` is called the **domain**.
+
+### Clean before you compare or group
+
+To `GROUP BY`, `'Mail.com'`, `'mail.com'` and `'Work.io '` (with a space) are all different strings. Group the raw domains and you get six groups, where there should be three providers:
+
+| domain | COUNT(*) |
+| --- | --- |
+| NULL | 1 |
+| Mail.com | 1 |
+| Work.io  | 1 |
+| mail.com | 2 |
+| post.org | 1 |
+| work.io | 1 |
+
+A report grouped on raw text quietly splits one bucket into several. **Normalise** first, which means making every value follow the same form: wrap it in `lower(trim(...))`.
+
+### NULL goes in, NULL comes out
+
+Look at that first group, NULL. Cleo has no email, and every text function given NULL [[gives back NULL|null-in-null-out]]. A missing email has no domain, so it makes a NULL group of its own. Filter it out with `WHERE email IS NOT NULL`.
+
+**Watch out:** clean the value in the same expression you group by. Writing `lower(...)` in the `SELECT` but grouping on the raw `email` still makes the split groups. Here, giving the cleaned expression a name with `AS domain` and then writing `GROUP BY domain` keeps the two the same.
+
+::: context string-word Why text is a "string"
+Programmers call text a string because it is a string of characters, one after another, like beads on a thread. A character is one letter, digit, space or symbol. The word is used in nearly every programming language: Python's `str`, JavaScript's `String`. In SQL you write a string between single quotes, `'like this'`. The quotes are not part of the string; they only show where it starts and ends.
+:::
+
+::: context sqlite-ascii Only plain letters change case
+In SQLite, `lower` and `upper` only change the 26 plain English letters, A to Z. Accented letters are left alone: `lower('ÉCOLE')` gives `'École'`. Other databases, like PostgreSQL, handle every alphabet. For email addresses this rarely matters. For people's names, like "Óscar" or "Zoë", it does, and it is worth knowing before you trust a cleaned column.
+:::
+
+::: context stray-spaces Where stray spaces come from
+Most stray spaces arrive by copy and paste: someone copies an address from an email and picks up a space at the end. Phones add them too, after an autocomplete. People cannot see them, but a computer compares every character, so `'finn@work.io'` and `'finn@work.io '` are different. That is why careful apps trim and lower-case an email when the user signs up, before storing it. Cleaning at the door is cheaper than cleaning every report afterwards.
+:::
+
+::: context count-from-one Counting from 1
+SQL counts positions in a string from 1: the first character is at position 1. Python and JavaScript count from 0, so the same first character is at index 0 there. Moving between languages, this is an easy slip that shifts every piece by one. In SQLite, `substr('ada', 1, 1)` is `'a'`. In Python, `'ada'[0]` is `'a'`.
+:::
+
+::: context null-in-null-out NULL passes through
+NULL means "no value known". Ask for the lower-case version of an unknown value, and the honest answer is still unknown. So `lower(NULL)`, `trim(NULL)`, `length(NULL)` and `substr(NULL, 1, 3)` all give NULL. The same rule holds for arithmetic: `NULL + 1` is NULL. It spreads quietly through a long expression, so one missing value can blank out a whole column. The lesson Debugging: the rows NULL made disappear shows how to catch and replace it.
+:::
 --- task
-Count customers per email **domain** (the part after the `@`), treating domains case-insensitively and ignoring stray spaces. Return `domain` (lower-case, trimmed) and `customers`, skipping customers with no email. Sort by `customers` descending, then `domain`.
+Count customers per email **domain**, the part after the `@`. Return two columns:
+
+- `domain`: the domain in lower case with stray spaces removed, using `lower(trim(...))`
+- `customers`: how many customers have that domain
+
+Skip customers with no email. Sort by `customers`, highest first, then by `domain`.
 --- starter
 SELECT substr(email, instr(email, '@') + 1) AS domain, COUNT(*) AS customers
 FROM customers
@@ -1004,12 +1417,150 @@ WHERE email IS NOT NULL
 GROUP BY domain
 ORDER BY customers DESC, domain;
 --- hint
-Run the starter: `Mail.com` and `mail.com` are counted apart, `Work.io ` has a trailing space, and Cleo's NULL email makes a group of its own.
+Run the starter. `Mail.com` and `mail.com` are counted apart, `Work.io ` has a space at the end, and Cleo's NULL email makes a group of its own.
 --- hint
-Wrap the domain in `lower(trim(...))` and add `WHERE email IS NOT NULL`.
+Wrap the whole `substr(...)` expression in `lower(trim(...))`, and keep `AS domain` after it.
+--- hint
+Add `WHERE email IS NOT NULL` between `FROM customers` and `GROUP BY domain`.
 --- check result | mail.com 3, work.io 2, post.org 1
 ordered
 [["mail.com", 3], ["work.io", 2], ["post.org", 1]]
+
+=== sql2-08b | Building text: joining, replacing and LIKE
+--- teach
+Last lesson you cleaned text and cut pieces out of it. This lesson goes the other way: gluing strings together and swapping one piece for another. It ends with how SQLite compares text, where `=` and `LIKE` do not agree about capitals.
+
+### The picture
+
+Picture filling in name badges: "Hello, my name is ____". The words on the badge are the same every time. Only the name changes. SQL can build text the same way, row by row, from fixed words and column values.
+
+### || joins strings
+
+Two bars, `||`, join two strings into one. Joining strings end to end is called **[[concatenation|concat-word]]**:
+
+```sql
+SELECT name || ' from ' || city AS badge FROM customers;
+```
+
+| badge |
+| --- |
+| Ada from London |
+| Ben from Paris |
+| NULL |
+| Dev from London |
+
+Notice the spaces inside `' from '`. `||` adds nothing of its own, so without them you would get `AdafromLondon`.
+
+The third row is Cleo, who has no city. A NULL anywhere in `||` [[makes the whole result NULL|concat-null]], the same as it did with the text functions.
+
+### replace swaps pieces
+
+`replace(s, a, b)` gives `s` with every `a` replaced by `b`:
+
+```sql
+SELECT replace('2024-03-20', '-', '/');
+```
+
+This gives `'2024/03/20'`: both dashes changed. If `a` does not appear, the string comes back unchanged.
+
+### Functions and || together
+
+You can mix them. The cleaned email of each customer, in angle brackets after the name, the way email programs show it:
+
+```sql
+SELECT name || ' <' || lower(trim(email)) || '>' AS sender
+FROM customers WHERE email IS NOT NULL;
+```
+
+Ben's row becomes `Ben <ben@mail.com>`.
+
+### = and LIKE disagree about capitals
+
+`=` compares strings exactly, character by character. Capitals count:
+
+```sql
+SELECT name FROM customers WHERE email = 'BEN@MAIL.COM';
+```
+
+This finds nobody, because Ben's email is stored as `'BEN@Mail.com'`.
+
+`LIKE` compares with a pattern. You met it in the basics, where `%` means "any run of characters". In SQLite, `LIKE` also [[ignores case for plain letters|like-case]]:
+
+```sql
+SELECT name FROM customers WHERE email LIKE 'BEN@MAIL.COM';
+```
+
+This finds Ben. With a `%`, `WHERE email LIKE '%@work.io%'` finds Dev and Finn, even with Finn's capital W and trailing space.
+
+So the two can give different answers on the same data. If you mean "equal, ignoring case", say so: `lower(email) = 'ben@mail.com'` works in every database.
+
+**Watch out:** one NULL in a chain of `||` blanks the whole result, with no error. Before you build text from a column, ask whether that column can be NULL. Filter those rows out with `IS NOT NULL`, or give the NULL a stand-in value, which the lesson Debugging: the rows NULL made disappear shows with `COALESCE`.
+
+In the task you put `||` and `replace` together to write email addresses in a form [[that hides them from spam robots|hide-from-bots]].
+
+::: context concat-word What "concatenation" means
+The word comes from Latin: *con*, "together", and *catena*, "chain". Concatenating is chaining strings together, end to end. Many databases also have a function for it, `concat(a, b, ...)`, and SQLite added one in version 3.44 (2023). The two differ on NULL: `concat` skips a NULL as if it were empty text, while `||` makes the whole result NULL. The bars `||` are the SQL standard's way, so you will see them everywhere.
+:::
+
+::: context concat-null How one NULL blanks the badge
+`||` works through the chain from left to right. Once a NULL joins in, every later step stays NULL.
+
+```svg
+<svg viewBox="0 0 360 120" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <rect x="10" y="20" width="70" height="28" rx="4" fill="#8fb8f0"/>
+  <text x="45" y="38" font-size="12" text-anchor="middle" fill="#1f2a44">'Cleo'</text>
+  <text x="95" y="38" font-size="12" text-anchor="middle" fill="#1f2a44">||</text>
+  <rect x="110" y="20" width="80" height="28" rx="4" fill="#8fb8f0"/>
+  <text x="150" y="38" font-size="12" text-anchor="middle" fill="#1f2a44">' from '</text>
+  <text x="205" y="38" font-size="12" text-anchor="middle" fill="#1f2a44">||</text>
+  <rect x="220" y="20" width="70" height="28" rx="4" fill="white" stroke="#b4232c" stroke-width="1.5"/>
+  <text x="255" y="38" font-size="12" text-anchor="middle" fill="#b4232c">NULL</text>
+  <line x1="150" y1="52" x2="150" y2="80" stroke="#1f2a44"/>
+  <polygon points="150,86 145,78 155,78" fill="#1f2a44"/>
+  <rect x="100" y="88" width="100" height="26" rx="4" fill="white" stroke="#b4232c" stroke-width="1.5"/>
+  <text x="150" y="105" font-size="12" text-anchor="middle" fill="#b4232c">NULL</text>
+  <text x="215" y="105" font-size="11" fill="#6c7a93">the whole badge is lost</text>
+</svg>
+```
+:::
+
+::: context like-case Why LIKE ignores case
+SQLite's `LIKE` ignores the difference between capital and small letters, but only for the 26 plain English letters. So `'x' LIKE 'X'` is true, while `'é' LIKE 'É'` is false. Other databases differ: in PostgreSQL, `LIKE` is case-sensitive, and it has a separate `ILIKE` for ignoring case. Because the behaviour depends on the database, `lower(...)` on both sides is the safe habit. One more pattern symbol: `_` in a `LIKE` pattern means "exactly one character", so `'abc' LIKE 'a_c'` is true.
+:::
+
+::: context hide-from-bots A real use for replace
+Web pages sometimes write email addresses as `ada at mail.com` instead of `ada@mail.com`. Programs that crawl the web collecting addresses for spam look for the `@`, so swapping it for `' at '` hides the address from the simplest of them, while a person can still read it. It is a small defence, not a strong one, but it is a neat example of `replace`, and it is exactly what the task builds.
+:::
+--- task
+Build a contact line for every customer who has an email. Return two columns:
+
+- `name`
+- `contact`: the name, then `': '`, then the email cleaned with `lower(trim(...))` and with every `'@'` replaced by `' at '`
+
+For Ada that is `Ada: ada at mail.com`. Skip customers with no email, and sort by name.
+--- starter
+SELECT name, email AS contact
+FROM customers
+ORDER BY name;
+--- solution
+SELECT name,
+       name || ': ' || replace(lower(trim(email)), '@', ' at ') AS contact
+FROM customers
+WHERE email IS NOT NULL
+ORDER BY name;
+--- hint
+Start with the email part on its own: `replace(lower(trim(email)), '@', ' at ')`. Try it in the `SELECT` and check Ben's row.
+--- hint
+Put the name and `': '` in front with `||`: `name || ': ' || replace(...)`, and name the column `AS contact`.
+--- hint
+Cleo has no email, so add `WHERE email IS NOT NULL` before `ORDER BY name`.
+--- check result | Six contact lines, cleaned, with at instead of @
+ordered
+[["Ada", "Ada: ada at mail.com"], ["Ben", "Ben: ben at mail.com"], ["Dev", "Dev: dev at work.io"], ["Eve", "Eve: eve at mail.com"], ["Finn", "Finn: finn at work.io"], ["Gus", "Gus: gus at post.org"]]
+--- check source | Joins text with ||
+\|\|
+--- check source | Uses replace
+[Rr][Ee][Pp][Ll][Aa][Cc][Ee]\s*\(
 
 === sql2-09 | Dates and times
 --- teach
