@@ -1,7 +1,7 @@
 ---
 id: l05-earth-and-horizon-sensors
 title: Earth and horizon sensors
-minutes: 18
+minutes: 16
 covers:
   - Earth and horizon sensors
 ---

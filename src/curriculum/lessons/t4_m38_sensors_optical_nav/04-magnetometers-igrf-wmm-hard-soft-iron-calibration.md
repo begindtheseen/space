@@ -18,7 +18,7 @@ Most spacecraft magnetometers are **[[fluxgates|fluxgate]]**. A fluxgate is a sm
 
 The unit is the **[[nanotesla|nanotesla]]** (nT), a billionth of a tesla. In low Earth orbit the field is about $20{,}000$ to $50{,}000\,\mathrm{nT}$.
 
-What does one reading tell you about attitude? Turn the reading into a direction in the body frame, $\hat{\mathbf{b}} = \mathbf{m}/\lVert\mathbf{m}\rVert$. (The hat, read "b hat", means a unit vector, length one. The double bars mean the length of a vector.) The field model tells you the same direction in the reference frame, $\hat{\mathbf{r}}$, at the spacecraft's current position. Matching the two is the same job as matching a star or the Sun.
+What does one reading tell you about attitude? Turn the reading into a direction in the body frame, $\hat{\mathbf{b}} = \mathbf{m}/\lVert\mathbf{m}\rVert$. (The hat, read "b hat", means a unit vector, length one. The double bars mean the length of a vector.) The field model tells you the same direction in the reference frame, $\hat{\mathbf{r}}_{\text{ref}}$, at the spacecraft's current position. Matching the two is the same job as matching a star or the Sun.
 
 Here is the catch. Picture the spacecraft skewered on a rod that points along the field. Spin it around that rod. The field still points along the rod, so the magnetometer reads exactly the same thing at every angle of the spin. The reading cannot see that rotation.
 
@@ -71,7 +71,7 @@ $$
 
 where $B_0 \approx 3\times10^4\,\mathrm{nT}$ is the field strength at the surface on the magnetic equator. (Earth's moment points roughly toward the geographic *south* pole, which is why the north end of a compass needle points north.)
 
-Read the formula in two places. Over the magnetic equator, $\hat{\mathbf{m}}\cdot\hat{\mathbf{r}} = 0$, so the bracket is $-\hat{\mathbf{m}}$, length $1$. Over a magnetic pole, $\hat{\mathbf{m}}\cdot\hat{\mathbf{r}} = \pm 1$, so the bracket is $3\hat{\mathbf{r}} - \hat{\mathbf{r}}$ or its negative, length $2$. So at a fixed height, **the field is twice as strong over the poles as over the equator**. And the $1/r^3$ out front means the field weakens fast with height. At geostationary altitude it is only about $100\,\mathrm{nT}$.
+Read the formula in two places. Over the magnetic equator, $\hat{\mathbf{m}}\cdot\hat{\mathbf{r}} = 0$, so the bracket is $-\hat{\mathbf{m}}$, length $1$. Over a magnetic pole, $\hat{\mathbf{r}} = \pm\hat{\mathbf{m}}$, so $3(\hat{\mathbf{m}}\cdot\hat{\mathbf{r}})\hat{\mathbf{r}} = 3\hat{\mathbf{m}}$ either way, and the bracket is $2\hat{\mathbf{m}}$, length $2$. So at a fixed height, **the field is twice as strong over the poles as over the equator**. And the $1/r^3$ out front means the field weakens fast with height. At geostationary altitude it is only about $100\,\mathrm{nT}$.
 
 Flight software carries the full model. The dipole is for understanding.
 
@@ -177,7 +177,7 @@ $$
 \mathbf{m}^\mathsf{T}\mathbf{Q}\,\mathbf{m} + \mathbf{p}^\mathsf{T}\mathbf{m} = k - \mathbf{b}^\mathsf{T}\mathbf{Q}\,\mathbf{b}, \qquad \mathbf{p} = -2\mathbf{Q}\,\mathbf{b}.
 $$
 
-Write $\mathbf{m} = (x, y, z)$. The left side is $Q_{xx}x^2 + Q_{yy}y^2 + Q_{zz}z^2 + 2Q_{xy}xy + 2Q_{xz}xz + 2Q_{yz}yz + p_x x + p_y y + p_z z$. Every term is a known number from the data times one unknown. So it is **linear** in nine unknowns: six entries of $\mathbf{Q}$ and three of $\mathbf{p}$. Scale the whole equation so the right side is $1$. (Any ellipsoid can be scaled that way.) Then each sample gives one row
+Write $\mathbf{m} = (x, y, z)$. The left side is $Q_{xx}x^2 + Q_{yy}y^2 + Q_{zz}z^2 + 2Q_{xy}xy + 2Q_{xz}xz + 2Q_{yz}yz + p_x x + p_y y + p_z z$. Every term is a known number from the data times one unknown. So it is **linear** in nine unknowns: six entries of $\mathbf{Q}$ and three of $\mathbf{p}$. Scale the whole equation so the right side is $1$; from here on $\mathbf{Q}$ and $\mathbf{p}$ mean the scaled versions. Then each sample gives one row
 
 $$
 \big(x^2,\ y^2,\ z^2,\ 2xy,\ 2xz,\ 2yz,\ x,\ y,\ z\big)\cdot(\text{nine unknowns}) = 1,
