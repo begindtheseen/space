@@ -704,16 +704,23 @@ That makes "is it the same both ways?" a one-liner. `std::equal(s.begin(), s.end
 
 ### Is it empty?
 
-`v.empty()` is `true` when a container has no elements. It means the same as `v.size() == 0`, but says what you mean. Strings have it too: `w.empty()` is `true` for `""`.
+`v.empty()` is `true` when a container has no elements. It means the same as `v.size() == 0`, but says what you mean. Strings have it too: `w.empty()` is `true` for `""`. Put `!` ("not", from the decisions lesson) in front to ask the opposite:
+
+```cpp
+std::string w = "ada";
+if (!w.empty()) {
+    // w has at least one character, so w[0] is safe
+}
+```
 
 **Watch out:** `end()` is not an element, so check before you follow an iterator that might be `end()`. On an empty vector, `std::max_element` gives back `end()`, and putting `*` in front of that is undefined behaviour. The same goes for `w[0]` on an empty string: there is no first letter there that you may change. Check `v.empty()` or `w.empty()` first.
 
 ::: context why-iterators One idea for every container
-A vector keeps its elements in one row, but a `std::map` keeps its keys in a tree, and other containers link elements together in chains. Each kind of container supplies its own iterators, and they all answer to the same `*`, `++`, `==` and `!=`. So one `std::find_if` or `std::count_if` works on all of them. This design is the heart of the Standard Template Library (STL), created by Alexander Stepanov and Meng Lee and accepted into C++ in 1994.
+A vector keeps its elements in one row, but a `std::map` usually keeps its keys in a tree, and other containers link elements together in chains. Each kind of container supplies its own iterators, and they all answer to the same `*`, `++`, `==` and `!=`. So one `std::find_if` or `std::count_if` works on all of them. This design is the heart of the Standard Template Library (STL), created by Alexander Stepanov and Meng Lee and voted into the draft C++ standard in 1994.
 :::
 
 ::: context half-open The stopping mark sits past the end
-For `{7, 3, 9}`, `begin()` marks the 7 and `end()` marks the empty spot after the 9. The number of elements is always `end() - begin()`, here 3, with no plus or minus one to remember. For an empty vector, both marks sit at the same spot.
+For `{7, 3, 9}`, `begin()` marks the 7 and `end()` marks the empty spot after the 9. For a vector, the number of elements is always `end() - begin()`, here 3, with no plus or minus one to remember. For an empty vector, both marks sit at the same spot.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">
