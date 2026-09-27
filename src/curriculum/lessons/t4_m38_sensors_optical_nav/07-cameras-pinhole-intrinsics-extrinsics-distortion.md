@@ -85,7 +85,7 @@ K = np.array([[fx, 0, cx], [0, fy, cy], [0, 0, 1]])
 for P_cam in (np.array([1.3, -0.6, 5.0]), np.array([6.5, -3.0, 25.0])):   # same ray, 5x farther
     uvw = K @ P_cam
     u, v = uvw[0] / uvw[2], uvw[1] / uvw[2]
-    print("point", P_cam, "-> pixel", (round(u, 3), round(v, 3)))
+    print("point", P_cam, f"-> pixel ({u:.1f}, {v:.1f})")
 
 x, y = (720.0 - cx) / fx, (416.0 - cy) / fy          # back from the pixel
 ray = np.array([x, y, 1.0]) / np.linalg.norm([x, y, 1.0])
@@ -170,12 +170,12 @@ for name, (x, y) in [("centre", (0.02, -0.01)), ("mid-frame", (0.25, 0.15)),
 # corner     r=0.849  moved 51.61 px
 ```
 
-Near the centre the lens is essentially perfect. At the corner the same lens moves a landmark by more than fifty pixels. The star tracker lessons worked hard to find star centres to a tenth of a pixel; an error of fifty would swamp all of that.
+Near the centre the lens is essentially perfect; at the corner it moves a landmark more than fifty pixels. Next to the tenth-of-a-pixel centroids of the star tracker lessons, that is enormous.
 :::
 
 ### Undoing distortion
 
-Going forward (true point to distorted point) is one line. Going backward has no neat formula, because the unknown $x$ appears inside the scale factor too. But a guess-and-improve loop works well:
+Going forward is one line. Going backward has no neat formula, because the unknown $x$ also sits inside the scale factor. A guess-and-improve loop works well:
 
 1. Guess that the true point equals the distorted one.
 2. Work out the scale factor at the guess.

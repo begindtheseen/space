@@ -139,7 +139,7 @@ $$
 \hat{\mathbf{b}}_i\cdot\hat{\mathbf{b}}_j = (\mathbf{A}\hat{\mathbf{r}}_i)^{\top}(\mathbf{A}\hat{\mathbf{r}}_j) = \hat{\mathbf{r}}_i^{\top}\mathbf{A}^{\top}\mathbf{A}\,\hat{\mathbf{r}}_j = \hat{\mathbf{r}}_i\cdot\hat{\mathbf{r}}_j,
 $$
 
-because a rotation matrix satisfies $\mathbf{A}^{\top}\mathbf{A} = \mathbf{I}$. The dot product of two unit vectors is the cosine of the angle between them. So the **interstar angle** — the angle between two stars — is the same in the image as in the catalog, whatever the attitude. The tracker never searches over attitudes. It measures angles between spots and looks them up in a table of catalog angles computed on the ground.
+because a rotation matrix satisfies $\mathbf{A}^{\top}\mathbf{A} = \mathbf{I}$. The dot product of two unit vectors is the cosine of the angle between them. So the **interstar angle** — the angle between two stars — is the same in the image as in the catalog, whatever the attitude. So the tracker never searches over attitudes; it measures angles between spots and looks them up in a table of catalog angles computed on the ground.
 
 ::: key The lost-in-space problem
 Identify stars with no prior attitude. The invariant used is the interstar angle, which does not change under rotation: match observed angle patterns against a precomputed catalog index.
