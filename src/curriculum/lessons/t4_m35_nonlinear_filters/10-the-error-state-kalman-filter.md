@@ -88,7 +88,7 @@ Angle tracking error of each filter, and the size of the no-reset filter's error
 
 With reset, the error state is exactly zero at the start of every cycle, and the tracking error stays around $1^\circ$ to $3^\circ$ — about the sensor's own noise.
 
-Without reset, the uncorrected nominal slowly drifts out of step with the real pendulum, because the real one gets random pushes the nominal never hears about, and because a **[[pendulum's period depends on how far it swings|pendulum-drift]]**. The error state has to describe that whole gap, and it swells to $75^\circ$. A linear model of a $75^\circ$ error is the "43% wrong" end of the list above, and the tracking error follows: over the last $20$ cycles its root-mean-square is $5.47^\circ$ against $2.53^\circ$ with reset. Across $200$ runs with different random noise, the same comparison gives $4.41^\circ$ against $2.53^\circ$.
+Without reset, the uncorrected nominal slowly drifts out of step with the real pendulum, because the real one gets random pushes the nominal never hears about, and because a **[[pendulum's period depends on how far it swings|pendulum-drift]]**. The error state has to describe that whole gap, and it swells to $75^\circ$. A linear model of a $75^\circ$ error is far past even the "43% wrong" end of the list above, and the tracking error follows: over the last $20$ cycles its root-mean-square is $5.47^\circ$ against $2.53^\circ$ with reset. Across $200$ runs with different random noise, the same comparison gives $4.41^\circ$ against $2.53^\circ$.
 
 Sanity check: nothing about the measurements, the noise or the true motion differs between the two filters. The only difference is whether the error was kept small.
 :::
@@ -284,16 +284,19 @@ Dead reckoning means working out where you are from where you started, how fast 
 The blue curve is the nominal: the big, curving path integrated from the dynamics. The dashed red curve is the truth. The short arrows between them are the error $\delta\mathbf x$ — the only thing the Kalman filter estimates. The picture's point is the scale: the path bends a lot, but the arrows stay short, so a straight-line model of how the *arrows* change is good even where the *path* is strongly curved.
 
 ```svg
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 170" font-family="Inter, Arial, sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 185" font-family="Inter, Arial, sans-serif">
   <path d="M20,140 C90,140 120,30 190,30 C260,30 290,110 340,110" fill="none" stroke="#1d6fd1" stroke-width="3"/>
   <path d="M20,130 C92,128 124,20 192,18 C262,18 292,96 340,98" fill="none" stroke="#b4232c" stroke-width="2" stroke-dasharray="6 4"/>
-  <g stroke="#1f2a44" stroke-width="1.5">
-    <line x1="60" y1="134" x2="60" y2="124"/><line x1="110" y1="85" x2="112" y2="75"/>
-    <line x1="190" y1="30" x2="191" y2="18"/><line x1="262" y1="55" x2="264" y2="43"/><line x1="320" y1="107" x2="321" y2="96"/>
+  <g stroke="#1f2a44" stroke-width="2">
+    <line x1="74" y1="116" x2="76" y2="105"/>
+    <line x1="128" y1="61" x2="131" y2="50"/>
+    <line x1="190" y1="30" x2="192" y2="18"/>
+    <line x1="266" y1="64" x2="267" y2="51"/>
+    <line x1="319" y1="105" x2="319" y2="92"/>
   </g>
-  <text x="200" y="60" font-size="12" fill="#1d6fd1">nominal (integrated exactly)</text>
-  <text x="30" y="160" font-size="12" fill="#b4232c">truth</text>
-  <text x="235" y="150" font-size="12" fill="#1f2a44">short lines: the error</text>
+  <text x="150" y="148" font-size="12" fill="#1d6fd1">blue: nominal, integrated exactly</text>
+  <text x="150" y="164" font-size="12" fill="#b4232c">red dashed: truth</text>
+  <text x="150" y="180" font-size="12" fill="#1f2a44">short dark lines: the error</text>
 </svg>
 ```
 :::
