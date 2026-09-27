@@ -1,7 +1,7 @@
 ---
 id: l14-scaling-and-conditioning
 title: "Scaling and conditioning: non-dimensionalise before you solve anything"
-minutes: 21
+minutes: 22
 covers:
   - "Scaling and conditioning: non-dimensionalising states, controls and constraints before you solve anything"
 ---
@@ -14,7 +14,7 @@ A trajectory solver lives on that map. It sees only numbers, never units. If you
 
 ## Why the units a solver sees matter
 
-A solver like IPOPT or an SQP code has a handful of habits. All of them quietly assume that every unknown, and every constraint, is about the same size:
+A solver like IPOPT, or an SQP (sequential quadratic programming) code, has a handful of habits. All of them quietly assume that every unknown, and every constraint, is about the same size:
 
 - **One step length for everything.** A line search (lesson 4) picks one number $\alpha$ ("alpha") and moves every unknown by $\alpha$ times its piece of the search direction. That single $\alpha$ must suit every unknown at once.
 - **One tolerance for everything.** "Converged" means every constraint residual is below, say, $10^{-8}$. A residual of $10^{-8}$ is superb for a radius measured in meters and useless for one measured in units of $7000\,\mathrm{km}$.
@@ -76,7 +76,7 @@ The worst case happens when $\mathbf{x}$ lies along the most-stretched direction
 
 Now the real thing. Recall the minimum-time orbit raise from lessons 4 and 8: a $1200\,\mathrm{kg}$ spacecraft with $T_{\max} = 100\,\mathrm{N}$ climbs from $r_0 = 7000\,\mathrm{km}$ to $r_1 = 9000\,\mathrm{km}$. Lesson 8 solved it by Hermite-Simpson collocation with $N = 20$ segments, from a straight-line guess, in under two seconds.
 
-That solve worked in **canonical units**: the length unit was $L = r_0$, and the time unit was
+That solve worked in **[[canonical units|canonical-units]]**: the length unit was $L = r_0$, and the time unit was
 
 $$
 T_U = \sqrt{\frac{r_0^3}{\mu}} = \sqrt{\frac{(7\times10^6)^3}{3.986\times10^{14}}} = 927.64\,\mathrm{s}.
@@ -347,6 +347,10 @@ Feed a matrix every arrow of length $1$ — a whole circle of them — and it ha
 Computers normally store a decimal number in "double precision": 64 bits, good for about 15 to 16 significant digits. Every sum and product is rounded to that many. It sounds like plenty — and it is, until a calculation magnifies the rounding. A condition number of $10^{9}$ can turn a rounding error in the 16th digit into an error in the 7th. Solvers then ask for tolerances like $10^{-8}$ that the arithmetic can no longer deliver, and they stall.
 :::
 
+::: context canonical-units Astrodynamicists did this first
+Astrodynamicists have long worked in "canonical units": one distance unit equal to a natural radius, and one time unit chosen so that the gravitational parameter $\mu$ equals exactly $1$. For Earth's surface radius, $6378\,\mathrm{km}$, that time unit is about $806.8\,\mathrm{s}$, and the speed unit is about $7.905\,\mathrm{km/s}$ — the speed of a circular orbit skimming the surface. This module's transfer uses the same idea with $7000\,\mathrm{km}$, so the starting circular speed is exactly $1$.
+:::
+
 ::: context cond-bars Three rulers, one descent
 The same Mars descent Jacobian, with its condition number drawn on a scale of powers of ten. Each tick is a factor of ten. Nothing changes between the bars except the units of the numbers the solver sees.
 
@@ -376,10 +380,6 @@ The same Mars descent Jacobian, with its condition number drawn on a scale of po
   <text x="336" y="97" font-size="11" fill="#ffffff" text-anchor="end">4.76 × 10⁹</text>
 </svg>
 ```
-:::
-
-::: context canonical-units Astronomers did this first
-Astrodynamicists have long worked in "canonical units": one distance unit equal to a natural radius, and one time unit chosen so that the gravitational parameter $\mu$ equals exactly $1$. For Earth's surface radius, $6378\,\mathrm{km}$, that time unit is about $806.8\,\mathrm{s}$, and the speed unit is about $7.905\,\mathrm{km/s}$ — the speed of a circular orbit skimming the surface. This module's transfer uses the same idea with $7000\,\mathrm{km}$, so the starting circular speed is exactly $1$.
 :::
 
 ::: context complex-step A derivative with no subtraction
