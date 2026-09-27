@@ -1,7 +1,7 @@
 ---
 id: l06-gdb-comfort-and-remote-debugging
 title: Making gdb comfortable, debugging remotely, and running backwards
-minutes: 26
+minutes: 23
 covers:
   - TUI mode, .gdbinit, pretty-printers for STL and Eigen
   - gdbserver and remote/embedded debugging; rr for reverse debugging
@@ -9,7 +9,7 @@ covers:
 
 Think about the difference between cooking in your own kitchen and cooking in a friend's. The recipe is the same, but at home the knives are where your hand expects them, the spices are labeled in your handwriting, and the timer is already on the counter. You cook faster and make fewer mistakes, not because you know more, but because the room is set up for you.
 
-gdb is the same. Everything in lessons 02 to 05 works straight out of the box, but out of the box gdb shows one line of source at a time, forgets your favorite settings every time it starts, and prints a `std::vector` as a pile of internal pointers. The first half of this lesson sets up the kitchen: a screen that shows the source around you, a startup file that remembers your settings, and **pretty-printers** that show containers and matrices the way you think of them.
+gdb is the same. Out of the box it shows one line of source at a time, forgets your settings every time it starts, and can print a `std::vector` as a pile of internal pointers. The first half of this lesson sets up the kitchen: a screen that shows the source around you, a startup file that remembers your settings, and **pretty-printers** that show containers and matrices the way you think of them.
 
 The second half goes where the program is not on your desk. Flight software runs on a flight computer, a board in a rack or a vehicle, often with a different processor from your laptop's. **gdbserver** lets gdb on your laptop control a program on that other computer. And some bugs happen once and then hide; **reverse debugging** records a run so you can go backwards through it and watch the moment a value went bad.
 
@@ -23,7 +23,7 @@ Plain gdb prints one source line per stop. That is fine for scripts and logs, bu
 - The arrow keys scroll whichever window has the **focus**. `focus cmd` gives them back to the command window, so Up recalls your previous command again; `focus src` gives them to the source.
 - If the program prints something and scrambles the screen, **Ctrl-l** redraws it.
 
-The TUI is built into gdb and uses the [[terminal drawing library|tui-screen]] that most Unix tools use, so it works over SSH on a bench computer with no graphics at all. That matters in a lab, where the machine next to the hardware often has only a text terminal.
+The TUI is built into gdb and uses a [[terminal drawing library|tui-screen]], so it works over SSH on a bench computer with no graphics at all.
 
 ## .gdbinit: a startup file that remembers you
 
@@ -78,7 +78,7 @@ R = Mat3 [0, -1, 0] [1, 0, 0] [0, 0, 1]
 $1 = Mat3 [0, -1, 0] [1, 0, 0] [0, 0, 1]
 ```
 
-Two command-line switches go with this. `gdb -nx` skips all startup files, which is useful when a setting in one of them is confusing you. `gdb -x cmds.gdb` runs an extra command file, which is how you script a repeatable session for a bug report. Adding `-batch` makes gdb exit when the commands are done, as in the run above.
+Two switches go with this. `gdb -nx` skips all startup files, useful when one of them is confusing you. `gdb -x cmds.gdb` runs an extra command file, a repeatable session for a bug report; `-batch` makes gdb exit when the commands are done.
 
 ## Pretty-printers: containers the way you think of them
 
@@ -134,7 +134,7 @@ $4 = {<std::_Vector_base<double, std::allocator<double> >> = {
         _M_end_of_storage = 0x55555556c2d0}, <No data fields>}}, <No data fields>}
 ```
 
-The numbers are all in there: `_M_start` is where the data begins, and `_M_finish` minus `_M_start` is `0x20`, which is 32 bytes, which is four 8-byte doubles. But you would never want to work it out like that every time. Raw output is still worth knowing: when a vector is corrupted, the pretty-printer may show nonsense or fail, and the raw pointers tell you why.
+The numbers are all in there: `_M_start` is where the data begins, and `_M_finish` minus `_M_start` is `0x20`, which is 32 bytes, or four 8-byte doubles. Raw output is still worth knowing: when a vector is corrupted, the pretty-printer may show nonsense, and the raw pointers tell you why.
 
 ::: key
 Pretty-printers are Python code that gdb runs to display a type. libstdc++'s printers for vector, string, map and the rest load automatically; `print/r` shows the raw layout; `info pretty-printer` lists what is loaded.
@@ -142,7 +142,7 @@ Pretty-printers are Python code that gdb runs to display a type. libstdc++'s pri
 
 ## Writing a pretty-printer for your own type
 
-Math libraries have the same problem as the standard library, only worse. **[[Eigen|eigen]]**, the C++ matrix library that much GNC code uses, stores a matrix as a flat array of numbers inside a few layers of templates. Printed raw, a 3×3 rotation matrix is a long line of nested braces ending in nine numbers, in an order that is not the one you write matrices in.
+Math libraries have the same problem, only worse. **[[Eigen|eigen]]**, the C++ matrix library much GNC code uses, stores a matrix as a flat array inside several layers of templates. Printed raw, a 3×3 rotation matrix is nested braces ending in nine numbers, in an order that is not the one you write matrices in.
 
 Our `Mat3` shows the order problem in miniature. Without help:
 
@@ -230,10 +230,10 @@ register_eigen_printers(None)
 end
 ```
 
-Everything between `python` and `end` runs as Python inside gdb. The path is wherever you unpacked Eigen's source.
+Everything between `python` and `end` runs as Python inside gdb.
 
 ::: warning A printer can lie
-A pretty-printer shows what its author thought the memory means. If the memory is corrupted, or the printer has a bug, you see a tidy, believable, wrong answer, or an error in place of the value. When a value looks impossible, check it with `print/r`, or turn printers off with `disable pretty-printer`, before you believe it. A printer that runs on a half-built object, for example before its constructor has run, can also show garbage: that is the memory, not a bug in your code.
+A pretty-printer shows what its author thought the memory means. If the memory is corrupted, or the printer has a bug, you see a tidy, believable, wrong answer, or an error in place of the value. When a value looks impossible, check it with `print/r`, or turn printers off with `disable pretty-printer`, before you believe it. A printer run on an object whose constructor has not run yet also shows garbage.
 :::
 
 ## gdbserver: debugging a program on another computer
@@ -242,7 +242,7 @@ Picture a remote-control car. The car does the driving, out in the yard. You hol
 
 **gdbserver** is the car's end. It is a small program that runs on the **target**, the computer where the program under test runs, such as a flight computer on a bench. It starts or attaches to the program and waits for a connection. The full gdb runs on the **host**, your workstation, and is the controller. It has the unstripped binary and the source files. The target needs neither; it only has to run the program and gdbserver. The two talk over a network connection or a serial line with gdb's [[remote protocol|remote-protocol]].
 
-A session looks like this. On the target:
+On the target:
 
 ```text
 target$ gdbserver :2345 ./nav_app
@@ -259,9 +259,9 @@ host$ gdb ./nav_app
 (gdb) continue
 ```
 
-`./nav_app` on the host is the same build as on the target, but with its debug information. `target remote` connects to the target's address and port. From then on, `break`, `continue`, `bt`, `print`, `finish`, `thread apply all bt` and the rest all work, with the host doing the thinking and the target doing the running. `target extended-remote` is a variant that keeps gdbserver alive between runs, so you can `run` the program again without restarting gdbserver.
+`./nav_app` on the host is the same build as on the target, but with its debug information. `target remote` connects to the target's address and port. From then on, every command in this module works, with the host doing the thinking and the target doing the running. `target extended-remote` is a variant that keeps gdbserver alive between runs, so you can `run` the program again without restarting gdbserver.
 
-When the target has a different processor from the host (an ARM flight computer and an x86 laptop, say), the host needs a gdb that understands that processor: either the gdb that came with the cross-compiler, such as `aarch64-linux-gnu-gdb`, or `gdb-multiarch`. It also needs copies of the target's shared libraries, pointed to with `set sysroot`, so it can make sense of calls into them.
+When the target has a different processor from the host (an ARM flight computer and an x86 laptop, say), the host needs a gdb that understands that processor: either the gdb that ships with the ARM cross-compiler toolchain, or `gdb-multiarch`, a build of gdb that knows many processors. It also needs copies of the target's shared libraries, pointed to with `set sysroot`, so it can make sense of calls into them.
 
 For a small microcontroller with no operating system at all, there is nowhere to run gdbserver. Instead a hardware **debug probe** plugs into the board's [[JTAG or SWD|jtag-swd]] pins, and a program on the host, such as OpenOCD, drives the probe and offers a gdb server to your gdb (OpenOCD listens on port 3333 by default). Then `target extended-remote :3333` connects, `monitor reset halt` passes a command straight to OpenOCD, and `load` writes the program into the chip's flash memory. Everything after that is ordinary gdb.
 
@@ -270,12 +270,12 @@ To debug a process on a flight computer you cannot rebuild: run gdbserver on the
 :::
 
 ::: warning gdbserver trusts whoever connects
-gdbserver has no password. Anyone who can reach its port can read and change the program's memory, and so run any code they like as that program's user. Use it on an isolated bench network, or bind it to the target's own loopback address and reach it through an SSH tunnel. Never leave it listening on a network other people share, and never leave it running on a vehicle.
+gdbserver has no password. Anyone who can reach its port can read and change the program's memory, and so run any code they like as that program's user. Use it on an isolated bench network, or reach it through an [[SSH tunnel|ssh-tunnel]]. Never leave it listening on a network other people share, and never leave it running on a vehicle.
 :::
 
 ## Reverse debugging: running the program backwards
 
-Some bugs are cruel. A value goes wrong at cycle 3, and nothing notices until cycle 5, when the output is already bad. You stop at the bad output, and the moment that matters is in the past. With ordinary gdb, you set a watchpoint and rerun, hoping the bug happens the same way again. For an intermittent bug, it may not.
+Some bugs are cruel. A value goes wrong at cycle 3, and nothing notices until cycle 5. You stop at the bad output, and the moment that matters is in the past. With ordinary gdb, you set a watchpoint and rerun, hoping the bug happens the same way again. For an intermittent bug, it may not.
 
 **Reverse debugging** records the run as it happens, so you can move backwards through it. The commands mirror the ones from lesson 04:
 
@@ -314,7 +314,7 @@ int main() {
 }
 ```
 
-Record from the start of `main`, run to the `printf` on line 19, then go backwards:
+Record from the start of `main`, run to the `printf` on line 19, then go backwards (a few lines of gdb chatter trimmed):
 
 ```text
 (gdb) break main
@@ -349,7 +349,7 @@ One `reverse-continue` went straight to the guilty line, in `update`, during cyc
 Now check the output makes sense. Cycles 0, 1 and 2 multiply each command by $0.8$; cycles 3 and 4 by $-0.8$. So `cmd[0]` ends as $1 \times 0.8^3 \times (-0.8)^2 = 0.8^5 = 0.32768$, and the program printed `cmd[0] = 0.3277`. The two minus signs cancelled, so the command looked healthy while the gain was wrong. This is why checking only the output would never have found this bug.
 :::
 
-**rr**, a tool first built at Mozilla for debugging Firefox, takes the same idea much further. `rr record ./gain` runs the program at close to full speed and saves everything needed to repeat the run exactly: every system call result, every signal, the order the threads ran in. `rr replay` then opens gdb on that recording. Inside, every command from this module works, including all the reverse ones, and you can replay the same run as many times as you like. Every replay has the same addresses, the same thread interleaving and the same bug.
+**rr**, a tool first built at Mozilla for debugging Firefox, takes the same idea much further. `rr record ./gain` runs the program with modest slowdown and saves everything needed to repeat the run exactly: every system call result, every signal, the order the threads ran in. `rr replay` then opens gdb on that recording, with every command from this module, reverse ones included. Every replay has the same addresses, the same thread order and the same bug.
 
 That makes rr the tool of choice for an **[[intermittent bug|heisenbug]]**: record in a loop until one run fails, then keep that one recording and study it at leisure. rr runs on Linux, on x86-64 processors (recent Intel, and AMD with some extra setup) and on some 64-bit ARM ones. It needs the processor's hardware performance counters, which many virtual machines and containers do not expose, so it is usually run on a real workstation.
 
@@ -372,7 +372,7 @@ A `.gdbinit` can run any command, including Python code, so running every one it
 :::
 
 ::: answer
-`print/r samples` shows the raw structure without the pretty-printer. Look at `_M_start`, `_M_finish` and `_M_end_of_storage`. For 3 doubles, `_M_finish` minus `_M_start` should be $3 \times 8 = 24$ bytes (`0x18`), and the end of storage should not be before the finish. Then `print *samples._M_impl._M_start@3` (from lesson 03) reads the elements from memory directly.
+`print/r samples` shows the raw structure without the pretty-printer. Look at `_M_start`, `_M_finish` and `_M_end_of_storage`. For 3 doubles, the two addresses printed for `_M_finish` and `_M_start` should differ by $3 \times 8 = 24$ bytes (`0x18`), and the end of storage should not be before the finish. Then `print *samples._M_impl._M_start@3` (from lesson 03) reads the elements from memory directly.
 :::
 
 ::: check
@@ -388,7 +388,7 @@ The flight computer is an ARM board on the bench network at 10.0.0.7; your works
 :::
 
 ::: answer
-On the board: `gdbserver :2345 ./flight_app`, or `gdbserver --attach :2345 PID` for a running process. On the workstation: a gdb that understands ARM (the cross toolchain's gdb or `gdb-multiarch`), given the unstripped binary of the same build (or the stripped one plus its debug file), with `set sysroot` pointing at copies of the board's libraries. Then `target remote 10.0.0.7:2345`. The board never needs the symbols or the source.
+On the board: `gdbserver :2345 ./flight_app`, or `gdbserver --attach :2345 PID` for a running process. On the workstation: a gdb that understands ARM (the cross toolchain's gdb, or `gdb-multiarch`), given the unstripped binary of the same build (or the stripped one plus its debug file), with `set sysroot` pointing at copies of the board's libraries. Then `target remote 10.0.0.7:2345`. The board never needs the symbols or the source.
 :::
 
 ::: check
@@ -438,11 +438,11 @@ The TUI is drawn with curses, a library that moves the cursor around a text term
 :::
 
 ::: context eigen The matrix library in a lot of GNC code
-Eigen is a free, header-only C++ library for vectors, matrices and the linear algebra on them: products, inverses, decompositions, quaternions. Many robotics and GNC codebases use it for their state vectors, covariance matrices and rotations. It gets its speed from templates that the compiler unrolls at build time, which is also why its types have long names and deep internal layers, and why a pretty-printer makes such a difference when debugging it. You will use it directly in the C++ numerics modules.
+Eigen is a free, header-only C++ library for vectors, matrices and the linear algebra on them: products, inverses, decompositions, quaternions. Many robotics and GNC codebases use it for their state vectors, covariance matrices and rotations. It gets its speed from templates that the compiler unrolls at build time, which is also why its types have long names and deep internal layers, and why a pretty-printer makes such a difference when debugging it. Its templates come back in the C++ templates module, where you will see why they make it fast.
 :::
 
 ::: context column-major Two ways to lay a grid in a line
-Memory is one long row of boxes, so a two-dimensional matrix has to be flattened. Row-major order (C arrays, NumPy's default) writes row 0, then row 1, then row 2. Column-major order (Eigen's default, Fortran, MATLAB) writes column 0, then column 1, then column 2. Neither is better; they are conventions. Bugs come from mixing them, and a mixed-up rotation matrix is its own transpose, which for a rotation is the rotation the other way.
+Memory is one long row of boxes, so a two-dimensional matrix has to be flattened. Row-major order (C arrays, NumPy's default) writes row 0, then row 1, then row 2. Column-major order (Eigen's default, Fortran, MATLAB) writes column 0, then column 1, then column 2. Neither is better; they are conventions. Bugs come from mixing them: reading one layout as the other gives the transpose of the matrix, and the transpose of a rotation is the same rotation the other way.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">
@@ -503,6 +503,10 @@ gdb's remote serial protocol is a simple text protocol: short packets such as "r
 
 ::: context jtag-swd Debug pins on the circuit board
 JTAG began as a standard way to test circuit boards: a handful of pins that let an outside device read and drive the chip's internals. Processor makers built debugging on top of it, so a probe can halt the processor, read its registers and write its flash, even when no software is running. SWD (Serial Wire Debug) is ARM's two-signal version of the same idea. Flight computer boards usually keep a debug header for use on the bench, and flight builds often lock or disable it.
+:::
+
+::: context ssh-tunnel Reaching a port safely
+An SSH tunnel carries a network connection inside an encrypted, logged-in SSH session. With gdbserver started on the target as `gdbserver localhost:2345 ./nav_app`, it accepts connections only from the target itself. On the host, `ssh -L 2345:localhost:2345 user@target` then makes port 2345 on your own machine lead to port 2345 on the target, and `target remote localhost:2345` connects through it. Only someone who can log in to the target can reach the debugger.
 :::
 
 ::: context heisenbug A bug that hides when you look

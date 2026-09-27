@@ -175,7 +175,7 @@ Breakpoint 1, main () at climb.cpp:22
 
 One `until` ran the three remaining passes and landed on line 24, after the loop. Had you typed `next` there, you would have gone back to line 20 instead.
 
-`until` also takes a place to stop: `until 24` means "run until you reach line 24 in this function, or until this function returns". A close relative, `advance 24`, does the same thing but does not stop when the current function returns.
+`until` also takes a place to stop: `until 24` means "run until you reach line 24 in this function, or until this function returns". A close relative, `advance 24`, works the same way, except that the place you name may be in a different function.
 
 ::: warning Breakpoints still fire during until, finish and next
 `until`, `finish` and `next` let the program run at full speed, and any breakpoint the program meets on the way stops it. In the session above, `delete 1` removed the breakpoint on line 22 first. Without that, `until` would have stopped on line 22 again in the very next pass. The same thing happens with `until 24` if a breakpoint sits on line 20: you land on line 20, not 24. If a "run to here" command stops somewhere unexpected, run `info breakpoints` before you suspect anything stranger.
@@ -329,7 +329,7 @@ You are on the last line of a loop body that will run 500 more times. What does 
 :::
 
 ::: answer
-`next` runs the line and stops at the next line to execute, which is the loop header, and then back at the top of the body: you would go around again. `until` refuses to stop at any line earlier in the program than where you are, so it lets all 500 remaining passes run and stops at the first line after the loop. (Any breakpoint inside the loop would still stop it.)
+`next` runs the line and stops at the loop header; one more `next` puts you back at the top of the body, and you go around again. `until` refuses to stop at any line earlier in the program than where you are, so it lets all 500 remaining passes run and stops at the first line after the loop. (Any breakpoint inside the loop would still stop it.)
 :::
 
 ::: check
