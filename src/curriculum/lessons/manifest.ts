@@ -1436,7 +1436,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-the-build-pipeline",
       "title": "From source to executable: the four build stages",
-      "minutes": 18,
+      "minutes": 22,
       "covers": [
         "Preprocess, compile, assemble, link: what each stage consumes and emits",
         "g++ and clang++ invocation; -Wall -Wextra -Wpedantic -Werror; -g; -O0 to -O3; -std=c++20"
@@ -1446,7 +1446,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-translation-units-and-the-odr",
       "title": "Translation units, headers and the one-definition rule",
-      "minutes": 20,
+      "minutes": 22,
       "covers": [
         "Translation units, headers vs sources, include guards and pragma once",
         "Declaration vs definition, the one-definition rule, inline, internal linkage"
@@ -1456,7 +1456,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-reading-linker-errors-and-make",
       "title": "Reading a linker error, and a Makefile that prevents them",
-      "minutes": 19,
+      "minutes": 21,
       "covers": [
         "Reading a linker error: undefined reference, multiple definition"
       ],
@@ -1465,7 +1465,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-fundamental-and-fixed-width-types",
       "title": "Fundamental types, cstdint and size_t",
-      "minutes": 19,
+      "minutes": 22,
       "covers": [
         "Fundamental types; fixed-width types from cstdint; size_t"
       ],
@@ -1474,7 +1474,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-promotion-conversion-and-undefined-behaviour",
       "title": "Integer promotion, signed versus unsigned, and undefined behaviour",
-      "minutes": 21,
+      "minutes": 22,
       "covers": [
         "Integer promotion, signed/unsigned pitfalls, signed overflow as undefined behaviour"
       ],
@@ -1483,7 +1483,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-values-references-and-python-names",
       "title": "Values, references, and what a variable really is",
-      "minutes": 17,
+      "minutes": 19,
       "covers": [
         "Values, references and the difference from Python names"
       ],
@@ -1492,7 +1492,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-const-constexpr-consteval-auto",
       "title": "const, constexpr, consteval and auto",
-      "minutes": 16,
+      "minutes": 22,
       "covers": [
         "const, constexpr, consteval, auto"
       ],
@@ -1501,7 +1501,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-functions-overloading-default-arguments",
       "title": "Functions, overloading and default arguments",
-      "minutes": 16,
+      "minutes": 19,
       "covers": [
         "Functions, overloading, default arguments"
       ],
@@ -1510,7 +1510,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-arrays-std-array-and-vector",
       "title": "Raw arrays, std::array, std::vector and range-based for",
-      "minutes": 18,
+      "minutes": 22,
       "covers": [
         "Arrays vs std::array vs std::vector; range-based for"
       ],
@@ -1519,7 +1519,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-enums-structs-classes-namespaces",
       "title": "enum class, struct and class, access and namespaces",
-      "minutes": 17,
+      "minutes": 22,
       "covers": [
         "enum class; struct and class; access specifiers; namespaces"
       ],
@@ -1528,7 +1528,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-scope-lifetime-and-storage",
       "title": "Scope, lifetime, and where objects live",
-      "minutes": 19,
+      "minutes": 24,
       "covers": [
         "Scope, lifetime, and stack vs heap vs static storage"
       ],
@@ -1537,7 +1537,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-strings-and-formatted-output",
       "title": "Strings and formatted output",
-      "minutes": 18,
+      "minutes": 22,
       "covers": [
         "std::string vs const char*; iostream and std::format"
       ],
@@ -1546,7 +1546,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l13-assert-and-static-assert",
       "title": "assert and static_assert",
-      "minutes": 19,
+      "minutes": 22,
       "covers": [
         "assert and static_assert"
       ],
@@ -1557,7 +1557,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-object-model-and-storage",
       "title": "The object model: storage, lifetime, and the address of a thing",
-      "minutes": 22,
+      "minutes": 24,
       "covers": [
         "Storage duration: automatic, static, thread-local, dynamic; lifetime and initialisation order"
       ],
@@ -1585,7 +1585,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-references-and-temporaries",
       "title": "References, value categories, and the lifetime of a temporary",
-      "minutes": 20,
+      "minutes": 23,
       "covers": [
         "References: lvalue and rvalue, binding rules, lifetime extension of temporaries"
       ],
@@ -2213,7 +2213,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-inheritance-composition-protocols",
       "title": "Inheritance, composition and Protocols",
-      "minutes": 16,
+      "minutes": 20,
       "covers": [
         "Inheritance vs composition; duck typing and Protocols"
       ],
@@ -2222,7 +2222,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-context-managers",
       "title": "Context managers: release on every path",
-      "minutes": 15,
+      "minutes": 18,
       "covers": [
         "Context managers: with, __enter__/__exit__, contextlib"
       ],
@@ -2231,7 +2231,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-decorators",
       "title": "Decorators, wraps and caching",
-      "minutes": 15,
+      "minutes": 21,
       "covers": [
         "Decorators, functools.wraps, functools.lru_cache"
       ],
@@ -2240,7 +2240,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-type-annotations-and-mypy",
       "title": "Type annotations and mypy",
-      "minutes": 17,
+      "minutes": 22,
       "covers": [
         "Type annotations, Optional, Sequence, npt.NDArray, and mypy"
       ],
@@ -2249,7 +2249,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-logging",
       "title": "Logging instead of print",
-      "minutes": 15,
+      "minutes": 20,
       "covers": [
         "logging instead of print; levels and handlers"
       ],
@@ -2258,7 +2258,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-argparse",
       "title": "Command-line tools with argparse",
-      "minutes": 15,
+      "minutes": 20,
       "covers": [
         "argparse for command-line tools"
       ],
@@ -2267,7 +2267,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l13-package-layout",
       "title": "Package layout and relative imports",
-      "minutes": 17,
+      "minutes": 20,
       "covers": [
         "Package layout: src/ layout, __init__.py, relative imports"
       ],

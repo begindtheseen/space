@@ -1,20 +1,22 @@
 ---
 id: l10-type-annotations-and-mypy
 title: Type annotations and mypy
-minutes: 17
+minutes: 22
 covers:
   - Type annotations, Optional, Sequence, npt.NDArray, and mypy
 ---
 
-A six-hour Monte Carlo fails in hour five with `TypeError: '>' not supported between instances of 'float' and 'str'`. The cause is a limit read from a configuration file and never converted, passed to a comparison that only the dispersed tail of the distribution reaches. No test covered that branch, because no test runs six hours.
+Picture a kitchen with a row of jars. One says SUGAR, one says SALT. The labels are useful, but a label does not stop anyone from pouring salt into the sugar jar. For the labels to protect the cake, somebody has to walk along the shelf and check that each jar holds what its label says — before the baking starts, not after the first bite.
 
-Type annotations are how you find that in a second instead. You write down what each parameter and each return value is supposed to be, and a checker — `mypy` here — reads every line of the module and every line of its callers and reports the mismatches, without running anything. It covers the branches your tests do not, which is most of them, and it says nothing whatever about whether your algorithm is right.
+Python's **type annotations** are those labels. You write down what kind of value each function input and output is meant to be: a float, a list of floats, a NumPy array. Python itself never reads them while the program runs. A separate tool called a **type checker** — in this lesson, **mypy** — walks the whole shelf. It reads every line of your module and of every module that calls it, compares each value with its label, and reports the mismatches. It does all that without running a single line.
 
-Annotations are also documentation that cannot drift, because a checker is comparing it against the code. That alone is worth the keystrokes on a module other people import. This lesson is the notation, the three pieces of it that matter most for numerical work — `Optional`, `Sequence`, and NumPy's array types — how to run mypy, and an honest account of what it does not catch.
+Why it matters: a six-hour **[[Monte Carlo|monte-carlo]]** run of a landing simulation fails in hour five with `TypeError: '>' not supported between instances of 'float' and 'str'`. The cause is a limit read from a configuration file as text and never turned into a number. It reached a comparison that only a rare, extreme case ever hits. No test covered that branch, because no test runs for six hours. With annotations, mypy points at that line in about a second.
 
-## The notation, and the fact that nothing enforces it
+This lesson teaches the notation, the three pieces that matter most for numerical work — `Optional`, `Sequence` and NumPy's array types — how to run mypy, and what it cannot catch.
 
-An annotation goes after a colon on a parameter, after an arrow for the return, and after a colon on a variable:
+## Writing an annotation, and the fact that nothing enforces it
+
+An annotation sits in three places. After a colon on a parameter. After an arrow `->` at the end of the `def` line, for the value the function gives back. And after a colon on a variable. Read `value: float` aloud as "value is a float", and read `-> float` as "returns a float".
 
 ```python
 # not_enforced.py
@@ -35,7 +37,13 @@ python3 not_enforced.py
 # {'value': <class 'float'>, 'factor': <class 'float'>, 'return': <class 'float'>}
 ```
 
-`scale("imu", 3)` returned `"imuimuimu"`. Python did not look at the annotations at all: it stored them in `__annotations__` and ran the multiplication that `str` and `int` happen to support. That is the rule — **annotations are metadata, never enforced by the interpreter** — and it is why a type checker is a separate tool you have to run.
+Walk through the three lines of output.
+
+1. `scale(9.81, 2.0)` gave `19.62`, as you would expect.
+2. `scale("imu", 3)` gave `"imuimuimu"`. The label said "float", the value was a string, and Python did not care. A string times a whole number repeats the string, so it did that.
+3. `scale.__annotations__` shows where the labels went. Python stored them in a dictionary on the function and otherwise ignored them.
+
+That is the central rule. **Annotations are metadata** — information *about* the code that the code itself never acts on. The interpreter does not enforce them. That is why a type checker is a separate program you have to run:
 
 ```bash
 python3 -m mypy not_enforced.py
@@ -43,17 +51,45 @@ python3 -m mypy not_enforced.py
 # Found 1 error in 1 file (checked 1 source file)
 ```
 
-One error, not two. `3` is an `int` and an `int` is acceptable wherever a `float` is wanted — the numeric tower is built into the type system, so you annotate `float` and get `int` for free. Do not write `int | float`.
+mypy named the file, the line (8) and the problem. The bracketed `[arg-type]` is the **error code** — a short name for the kind of mistake.
 
-Containers are annotated with their element types, using the built-in names since Python 3.9: `list[float]`, `dict[str, float]`, `set[int]`, `tuple[float, float, float]` for a fixed-length tuple, `tuple[float, ...]` for a variable-length one.
+Notice that mypy reported one error, not two. The `3` is an `int`, not a `float`, and mypy let it through. The type system has a built-in rule that an `int` is acceptable wherever a `float` is wanted, because every whole number is also a real number. So you annotate `float` and get `int` for free. Do not write `int | float`.
 
-::: key
-Annotations are read by tools, not by the interpreter. `mypy` checks them across a whole program without executing it, so it covers branches your tests never reach. It proves nothing about numerical correctness — only about interfaces.
+::: key Annotations are not enforced
+Python does not enforce type annotations at runtime. They are metadata, checked only by external tools such as mypy or pyright, or at runtime by libraries that choose to read them. Their value is catching interface mistakes before the simulation runs for an hour.
 :::
 
-## Optional is the one that pays for itself
+### Containers and "or"
 
-A function that sometimes has no answer returns `float | None` — written `Optional[float]` in older code, and the same thing. The value of saying so is that the checker then forces every caller to deal with the `None`:
+A container is labeled with the type of what it holds, in square brackets. Since **[[Python 3.9|annotation-history]]** you can use the built-in names directly:
+
+- `list[float]` — a list of floats;
+- `dict[str, float]` — a dictionary from strings (the keys) to floats (the values);
+- `set[int]` — a set of whole numbers;
+- `tuple[float, float, float]` — a tuple of exactly three floats;
+- `tuple[float, ...]` — a tuple of floats of any length. The three dots are real Python syntax, read "and so on".
+
+The vertical bar `|` inside an annotation means "or". Read `float | None` aloud as "float or None". You will meet it in the section after next.
+
+## What a checker sees that tests do not
+
+A test **executes** code. It feeds in some inputs, runs the function, and checks the answer. It can only tell you about the paths the program actually took on those inputs. A function with ten `if` statements has up to $2^{10} = 1024$ ways through it, and your tests take a handful.
+
+A **static** checker — static means "without running" — works differently. It **[[reads every branch|branch-coverage]]**, taken or not, and checks that at each step the kinds of value line up. The rare branch is as visible to it as the common one.
+
+That is its strength, and it tells you its limit too. mypy checks **interfaces** — what goes in and out of each function, and what each operation is handed. It says nothing about whether your arithmetic is right. A function annotated `-> float` that returns the wrong float passes mypy happily.
+
+::: key What mypy gives you
+mypy checks a whole program for interface mistakes without executing any code path, so it covers branches your tests never reach. It proves nothing about numerical correctness — only about interfaces.
+:::
+
+## Optional: saying "maybe nothing"
+
+Some functions sometimes have no answer. The largest value in an empty list, for example, does not exist. A common Python habit is to return `None` in that case.
+
+The annotation for that is `float | None`: "a float, or None". Older code writes the same thing as `Optional[float]`, imported from `typing`. The two spellings mean exactly the same. "Optional" here does not mean the argument is optional to pass. It means the *value* might be missing.
+
+Saying so pays for itself, because mypy then makes every caller deal with the `None`. Here is a small, fully annotated telemetry module:
 
 ```python
 # analysis.py
@@ -106,7 +142,9 @@ python3 -m mypy analysis.py
 # Success: no issues found in 1 source file
 ```
 
-The module is clean. Now a caller that is not:
+Check the output. The peak of the five samples is $14.2$, and the peak of an empty list is `None`. The samples above $10.0$ sit at positions 2 and 4. The vector $(3, 4, 0)$ has length $\sqrt{9 + 16} = 5$, and $(1, 2, 2)$ has length $\sqrt{1 + 4 + 4} = 3$. The margin is $15.0 - 14.2 = 0.8$, with the usual tiny floating-point leftover.
+
+Now a caller that is not clean:
 
 ```python
 # caller.py
@@ -129,17 +167,25 @@ python3 -m mypy caller.py
 # Found 2 errors in 1 file (checked 1 source file)
 ```
 
-The first error is the Monte Carlo failure from the opening, found without running anything: `peak` can return `None` and the subtraction does not handle it. The note even names the union. The fix is to handle the case, and mypy then accepts the code because it narrows the type inside the branch:
+Take the two errors one at a time.
+
+**Line 6.** `peak` can return `None`, and the code subtracts its result without checking. On this list it happens to work. On an empty record it would raise `TypeError`. mypy found that without an empty record ever existing.
+
+**Line 9.** This is the failure from the opening: a limit that arrived as the string `"10.0"` instead of the number `10.0`. Run the file and Python does crash on exactly this line, with `'>' not supported between instances of 'float' and 'str'`. mypy found it in a second, before anything ran.
+
+The fix for line 6 is to handle the missing case:
 
 ```python
 p = peak(az)
 headroom = None if p is None else 15.0 - p
 ```
 
-The second error is the configuration-file string. The third call, passing a tuple where a `Sequence[float]` is expected, produced no error at all — which is the next section.
+mypy accepts this, because it follows the test. After `p is None` turns out false, it knows `p` must be a `float`. This is called **[[narrowing|narrowing]]**: a check in the code shrinks the set of types a value can have on that branch.
+
+The third call passed a tuple where the annotation says `Sequence[float]`, and mypy said nothing at all. That is the next idea.
 
 ::: example Sequence in, list out
-Annotate a parameter `list[float]` and you have required a list. A tuple, a `deque`, a NumPy-free row from a CSV reader — all rejected, although every one of them would work:
+Annotate a parameter as `list[float]` and you have demanded a list. A tuple, a `deque`, a row from a CSV reader — all rejected, even though every one of them would work:
 
 ```python
 # sequence_vs_list.py
@@ -171,15 +217,30 @@ python3 sequence_vs_list.py
 # 10.666666666666666
 ```
 
-Both calls work at runtime and give the same number. mypy rejected only the one whose annotation was needlessly narrow.
+Step by step:
 
-The guidance, which is worth memorising because it applies to every function you annotate: **accept the most general type you can use, return the most specific type you have.** For a parameter you only read, index and take the length of, that is `Sequence[float]` from `collections.abc`; if you only iterate, it is `Iterable[float]`; if you only need membership and length, `Collection[float]`. For a return value, say `list[float]`, because the caller should be told exactly what they are getting and be free to sort it in place.
+1. Both functions have the same body. Only the label on `samples` differs.
+2. At runtime both calls work and give the same mean. Check it: $(9.81 + 9.79 + 12.4)/3 = 32.0/3 \approx 10.67$.
+3. mypy rejected only `mean_list(record)`. The tuple was fine for the body. The label was needlessly narrow.
 
-The same rule gives `Mapping[str, float]` for a dict parameter you only look things up in, and `dict[str, float]` for one you return. Requiring a `dict` when you only read it rules out a `defaultdict` wrapper, a read-only mapping proxy, and every test double.
+**`Sequence`**, from `collections.abc`, is the general idea "things in order, which you can index and take the length of". A list is one. So is a tuple, and so is a `range`. This gives a rule worth memorizing, because it applies to every function you annotate:
+
+> Accept the most general type you can use. Return the most specific type you have.
+
+For inputs, pick the loosest label the body needs:
+
+- if you only loop over it, use **`Iterable[float]`**;
+- if you loop and take the length, use `Collection[float]`;
+- if you also index it, use `Sequence[float]`;
+- for a dictionary you only look things up in, use `Mapping[str, float]`.
+
+For outputs, be exact: say `list[float]` or `dict[str, float]`. The caller then knows they may sort it in place or add to it.
+
+Requiring a `dict` when you only read it rules out a `defaultdict` wrapper, a read-only view of a dictionary, and every **[[test double|test-double]]** a colleague might hand you.
 :::
 
 ::: example NumPy arrays, and being honest about the limits
-NumPy ships its own typing module. `npt.NDArray[np.float64]` means "a NumPy array whose dtype is float64", and the idiom is to alias it once per module:
+NumPy ships its own typing module, `numpy.typing`, usually imported as `npt`. The label `npt.NDArray[np.float64]` means "a NumPy array whose **dtype** is float64". The dtype is the kind of number stored in every cell of the array; **[[float64|dtype]]** is the ordinary 8-byte decimal number. The habit is to give it a short alias once per module:
 
 ```python
 # nd_caught.py
@@ -204,9 +265,12 @@ python3 -m mypy nd_caught.py
 # Found 2 errors in 1 file (checked 1 source file)
 ```
 
-Those are the two real wins, and they are the two mistakes people actually make with arrays: handing a nested list to a function that will do array arithmetic on it, and assigning an array to something the rest of the code treats as a scalar.
+Those two catches are real wins, and they are the two mistakes people actually make with arrays:
 
-What it does **not** check is the shape:
+1. Line 12 hands a **nested list** to a function that does array arithmetic. Run it and Python crashes inside `rss`, because `v * v` means nothing for two lists.
+2. Line 13 stores an **array** in a variable that the rest of the code treats as a single number.
+
+What the label does **not** check is the **[[shape|array-shape]]** — how many rows and columns:
 
 ```python
 # shapes.py
@@ -243,13 +307,15 @@ python3 shapes.py
 # int64
 ```
 
-`rss` was written for an (N, 3) array of vectors. Given a flat six-element array it returned a single number, 13.93, which is the root-sum-square of all six components and means nothing. mypy said `Success`. The flat array passed because its dtype is float64 and the annotation constrains nothing else, and the third line shows the dtype parameter did not catch an integer array either, with this combination of numpy 2.4.6 and mypy 2.3.1.
+1. The correct (1, 3) input gave `[5.]` — one vector, length 5.
+2. `rss` was written for (N, 3) arrays of vectors. Given one flat row of six numbers, it returned a single number, $13.93$. That is $\sqrt{9 + 16 + 0 + 144 + 25 + 0} = \sqrt{194} \approx 13.93$: the length of all six numbers lumped together, which means nothing physically. mypy said `Success`.
+3. The last line stores an array of whole numbers (`int64`) under a float64 label. The dtype check did not catch that either, with this combination of NumPy 2.4.6 and mypy 2.3.1.
 
-So: annotate arrays, because the two errors above are worth catching, and keep the shape contract in the docstring and in an `assert v.shape[-1] == 3` where it matters. Anyone who tells you type checking makes shape bugs impossible has not run this file.
+So annotate arrays, because the first two catches are worth having. Keep the shape promise in the docstring, and where a wrong shape would be expensive, check it while the program runs with `assert v.shape[-1] == 3`.
 :::
 
-::: warning
-The largest single class of numerical bug — two arguments of the same type in the wrong order — is invisible to a type checker:
+::: warning Same type, wrong order
+The most common numerical bug of all — two arguments of the same type passed in the wrong order — is invisible to a type checker:
 
 ```python
 # newtype_units.py
@@ -290,41 +356,79 @@ python3 newtype_units.py
 # -5820.0
 ```
 
-The last call swapped altitude and terrain, both plain floats, and got a clearance of −5820 m. mypy reported nothing about it, because both arguments are floats and that is all the annotation said.
+The last call swapped altitude and terrain, both plain floats, and got a clearance of $-5820\,\mathrm{m}$: the aircraft is apparently far underground. mypy reported nothing, because both arguments are floats and that is all the labels said.
 
-`NewType` is the tool that buys you the distinction: `Metres` and `Feet` are both `float` at runtime — the third line of output cost nothing — but they are distinct to the checker, so mixing them is the one error it did report. Use it for the quantities your project confuses in practice: metres against feet, radians against degrees, body frame against inertial frame.
+**`NewType`** makes a new name for an existing type that the checker treats as different. `Metres` and `Feet` are both ordinary floats while the program runs — the second call happily computed $8420 - 9100 = -680$, mixing units. But to mypy they are distinct, so mixing them was the one error it did report. Use it for the quantities your project really does **[[confuse in practice|unit-mixups]]**: metres against feet, radians against degrees, body frame against inertial frame.
 :::
 
 ## Running mypy on a real module
 
-`python3 -m mypy path` checks a file and everything it imports that has annotations. Run it from the environment where your dependencies are installed, or it will report that it cannot find NumPy — the stubs ship with NumPy itself.
+`python3 -m mypy path` checks a file and follows its imports. Run it from the same Python environment where your packages are installed. Otherwise mypy reports that it cannot find NumPy, whose type information ships inside NumPy itself.
 
-Start permissive and tighten. On an existing module, annotate the public functions first and leave the internals; mypy checks what it can and stays quiet about the rest. `--strict` turns on every check at once, including "every function must be annotated", which is the right setting for a new module and an unproductive one for a legacy script. Configuration lives in `pyproject.toml` under `[tool.mypy]`, so the settings are the same for you, for your colleague and for the pipeline.
+One default surprises everyone. mypy does not look inside a function that has **no annotations at all**:
 
-Two things you will need early. A third-party package with no type information produces `import-untyped` errors; silence those per-module in the configuration rather than sprinkling `# type: ignore` through your code. And `# type: ignore[code]` with the specific error code in brackets is acceptable where you genuinely know better than the checker — the bare form, which silences everything on that line including the next mistake, is not.
+```python
+# untyped.py
+def f(x):
+    return 1 + "a"
+
+
+def g(x: int) -> int:
+    return 1 + "a"
+```
+
+```bash
+python3 -m mypy untyped.py
+# untyped.py:6: error: Unsupported operand types for + ("int" and "str")  [operator]
+# Found 1 error in 1 file (checked 1 source file)
+```
+
+Both functions contain the same bug. Only `g` has labels, so only `g` was checked. That lets you annotate an old script one function at a time without a flood of errors. The flag `--check-untyped-defs` tells mypy to look inside the unlabeled ones too.
+
+So start gentle and tighten. On an existing module, annotate the public functions first — the ones other files call. On a new module, use **`--strict`**, which turns on every check at once, including "every function must be annotated". It is also pickier: on `analysis.py` it flags `rss` with `no-any-return`, because NumPy's `np.sqrt` is labeled loosely and mypy cannot prove it returns a float64 array.
+
+Put the settings in the project's `pyproject.toml` under `[tool.mypy]`, so you, your colleague and the automatic build all check the same way:
+
+```toml
+[tool.mypy]
+python_version = "3.11"
+warn_unused_ignores = true
+
+[[tool.mypy.overrides]]
+module = ["yaml"]
+ignore_missing_imports = true
+```
+
+Two situations come up early.
+
+A third-party package that ships no type information produces an `import-untyped` error on the `import` line. With PyYAML, for example, mypy says `Library stubs not installed for "yaml"  [import-untyped]`. Silence that once, for that package, in the configuration — the `overrides` table above does exactly that.
+
+And when you truly know better than the checker on one line, write `# type: ignore[code]` with the specific error code in the brackets, such as `# type: ignore[assignment]`. That silences one kind of complaint. The bare `# type: ignore` silences everything on that line, including the next, different mistake someone makes there. Do not use the bare form.
 
 ## Check yourself
 
 ::: check
-`def scale(value: float, factor: float) -> float` is called as `scale("imu", 3)` and returns `"imuimuimu"`. Explain, and say what the annotation is for.
+`def scale(value: float, factor: float) -> float` is called as `scale("imu", 3)` and returns `"imuimuimu"`. Explain why, and say what the annotation is for.
 :::
 
 ::: answer
-Python evaluates the body without consulting the annotations at all. They are stored on the function as `__annotations__` and are otherwise inert, so `"imu" * 3` runs and produces the repeated string. Nothing in the interpreter checks types on function entry — that is what "annotations are not enforced at runtime" means.
+Python runs the body without looking at the annotations. They are stored on the function in `__annotations__` and otherwise do nothing. So `"imu" * 3` runs, and a string times a whole number repeats it three times. Nothing in the interpreter checks types when a function starts. That is what "annotations are not enforced at runtime" means.
 
-The annotation is for tools: mypy and other static checkers, editors offering completion and inline errors, `@dataclass` and similar libraries that read annotations deliberately, and human readers. Its value is that a checker compares it against every call site in the program, so a mismatch is found before anything runs. Some libraries do enforce annotations at runtime by choosing to inspect them — `pydantic` is the common example — but that is the library's behaviour, not the language's.
+The annotation is for tools and people: static checkers such as mypy and pyright, editors that underline mistakes as you type, libraries such as `@dataclass` that read annotations on purpose, and human readers.
+
+The value is that a checker compares the label against every call in the program, so a mismatch is found before anything runs. Some libraries check annotations at runtime by choosing to inspect them — `pydantic` is the common example — but that is the library's behavior, not the language's.
 :::
 
 ::: check
-Why does `def mean(samples: Sequence[float])` accept more callers than `def mean(samples: list[float])`, and what would you annotate the return value as?
+Why does `def mean(samples: Sequence[float])` accept more callers than `def mean(samples: list[float])`? What would you annotate the return value as?
 :::
 
 ::: answer
-`Sequence` is the abstract interface for "ordered, indexable, has a length". A list satisfies it, and so do a tuple, a `range`, a string of characters, and any custom container implementing `__getitem__` and `__len__` — including the `Trajectory` class from the dunder lesson. `list[float]` demands that exact concrete class and rejects all of them, although the function body would work with any.
+`Sequence` is the general interface "in order, indexable, has a length". A list satisfies it, and so do a tuple and a `range`. Your own class counts too if it inherits from `collections.abc.Sequence` — defining `__getitem__` and `__len__` alone is not enough for mypy, because `Sequence` is checked by name, not by shape. `list[float]` demands that one exact class and rejects all the others, although the body would work with any of them.
 
-The return value should be as specific as you can honestly make it: `float` for a mean, `list[float]` if you return a list. The caller benefits from knowing exactly what they have — that they may sort it in place, index it, append to it — and no caller is inconvenienced by being told more.
+The return value should be as specific as you can honestly make it: `float` for a mean, `list[float]` if you return a list. The caller then knows exactly what they have, and nobody is harmed by being told more.
 
-The rule is one line: be liberal in what you accept and specific in what you return. It applies to `Mapping` against `dict` and `Iterable` against `list` in the same way.
+The rule in one line: be generous in what you accept and specific in what you return. `Mapping` against `dict`, and `Iterable` against `list`, work the same way.
 :::
 
 ::: check
@@ -332,11 +436,11 @@ mypy reports `Unsupported operand types for - ("float" and "None")` on a line th
 :::
 
 ::: answer
-No. It has found a path your runs have not taken. The function on the right returns `float | None`, and the code subtracts the result without checking — so on every input seen so far the value was not `None`, and on the input that produces `None` it will raise `TypeError`. An empty telemetry record, a channel that never reported, a filtered list with nothing left: that is the input.
+No. It has found a path your runs have not taken. The function on the right of the minus returns `float | None`, and the code subtracts the result without checking. On every input seen so far the value was a float. On the input that produces `None`, the line raises `TypeError`. An empty telemetry record, a channel that never reported, a filtered list with nothing left: that is the input.
 
-This is the characteristic strength of static checking, and the reason it is worth running on numerical code: it covers branches by reading them, not by executing them, so the rare case is as visible as the common one.
+Static checking covers branches by reading them, not by running them, so the rare case is as visible as the common one.
 
-The fix is to handle the case explicitly, `p = peak(az)` then `if p is None:`; mypy narrows the type inside the branch and accepts the arithmetic afterwards. Do not silence it with `# type: ignore`, and do not reach for an assertion unless a `None` there really would be a programming error rather than a data condition.
+The fix is to handle the case: `p = peak(az)`, then `if p is None:` and decide what should happen. mypy narrows the type inside each branch and accepts the arithmetic where `p` must be a float. Do not silence it with `# type: ignore`. Do not reach for an `assert` either, unless a `None` there really would be a programming error rather than a normal data condition.
 :::
 
 ::: check
@@ -344,21 +448,21 @@ Does `npt.NDArray[np.float64]` on both parameters of `def cross(a, b)` guarantee
 :::
 
 ::: answer
-No. The annotation constrains the dtype and says nothing about the number of dimensions or the size of any of them. The measurement in this lesson is the evidence: a function written for an (N, 3) array was handed a flat six-element array, returned a meaningless scalar, and mypy reported `Success`.
+No. The label constrains the dtype and says nothing about how many dimensions the array has or how long each one is. The measurement in this lesson is the evidence: a function written for an (N, 3) array was handed one flat row of six numbers, returned a meaningless $13.93$, and mypy reported `Success`.
 
-What the annotation does catch is a list passed where an array is expected, and an array assigned to something declared a scalar — both common, both worth catching. Shape contracts belong in the docstring and, where getting them wrong would be expensive, in a runtime `assert a.shape == b.shape` or an explicit check that raises with a message naming both shapes.
+What the label does catch is a list passed where an array is expected, and an array stored where a single number is declared. Both are common, and both are worth catching. Shape promises belong in the docstring and, where a mistake would be expensive, in a runtime check such as `assert a.shape == b.shape`, or an explicit `if` that raises an error naming both shapes.
 :::
 
 ::: check
-A reviewer asks why `altitude_m: float` and `terrain_m: float` is not good enough, given that mypy is already running. What is the answer, and what does `NewType` cost at runtime?
+A reviewer asks why `altitude_m: float` and `terrain_m: float` is not good enough, since mypy is already running. What is your answer, and what does `NewType` cost at runtime?
 :::
 
 ::: answer
-Because both arguments are floats, so passing them in the wrong order is a perfectly valid call as far as the checker is concerned. The lesson's measurement shows exactly that: a swapped call produced a terrain clearance of −5820 m, and mypy said nothing. Annotating everything `float` catches string-for-float mistakes and no unit or ordering mistakes at all, and the latter are the ones that lose vehicles.
+Both arguments are floats, so passing them in the wrong order is a perfectly valid call as far as the checker knows. The lesson's run shows this: a swapped call produced a terrain clearance of $-5820\,\mathrm{m}$, and mypy said nothing. Labeling everything `float` catches a string passed as a number, but no unit mistakes and no order mistakes at all — and those are the ones that lose vehicles.
 
-`Metres = NewType("Metres", float)` gives the checker two distinct types while remaining a plain `float` at runtime: `Metres(8420.0)` is the identity function, the object stored is a float, and arithmetic on it is float arithmetic at float speed. The cost is a function call at each construction site and the discipline of writing `Metres(...)` when a raw number enters the typed world.
+`Metres = NewType("Metres", float)` gives the checker a distinct type while staying a plain `float` at runtime. `Metres(8420.0)` hands back the same float it was given, and arithmetic on it is ordinary float arithmetic at full speed. The cost is one small function call wherever a value is created, and the discipline of writing `Metres(...)` when a raw number enters the typed part of the code.
 
-Use it where the confusion is real and recurrent — metres and feet, radians and degrees, seconds and milliseconds, body frame and inertial frame — not on every parameter, or the noise will cost you more than the errors it prevents.
+Use it where the confusion is real and keeps happening — metres and feet, radians and degrees, seconds and milliseconds, body frame and inertial frame. Do not put it on every parameter, or the clutter will cost more than the errors it prevents.
 :::
 
 ## Summary
@@ -367,16 +471,141 @@ Use it where the confusion is real and recurrent — metres and feet, radians an
 | --- | --- |
 | Syntax | `def f(x: float, xs: list[float]) -> float:`; variables as `name: T = value` |
 | Enforcement | None at runtime; stored in `__annotations__` and read by tools |
-| `int` and `float` | `int` is acceptable wherever `float` is annotated; do not annotate a union of the two |
-| Optional | `Optional[T]`, or the same thing written as a union with `None`; forces callers to handle the missing case |
+| `int` and `float` | `int` is accepted wherever `float` is annotated; do not write a union of the two |
+| Optional | `Optional[T]`, the same as a union of `T` with `None`; forces callers to handle the missing case |
 | Narrowing | After `if p is None: ...`, the checker knows the other branch has a `float` |
 | `Sequence[float]` | Accept the general interface; `Iterable`, `Collection` and `Mapping` likewise |
 | Return types | Be specific: `list[float]`, `dict[str, float]` |
 | `npt.NDArray[np.float64]` | Catches lists passed as arrays and arrays assigned to scalars |
 | Not caught | Shapes, and swapped arguments of the same type |
 | `NewType("Metres", float)` | Distinct to the checker, a plain `float` at runtime |
-| Running it | `python3 -m mypy path`, from the environment holding your dependencies |
+| Unannotated functions | Not checked inside unless `--check-untyped-defs` |
+| Running it | `python3 -m mypy path`, from the environment holding your packages |
 | Configuration | `[tool.mypy]` in `pyproject.toml`; `--strict` for new modules |
 | Suppression | `# type: ignore[code]` with the specific code, never the bare form |
 
-The next lesson replaces the other half of the diagnostic story. Annotations tell you what the code means before it runs; logging tells you what it did while it ran, with levels you can turn up without editing anything.
+Annotations tell you what the code means before it runs. The next lesson covers the other half: **logging**, which records what the code actually did while it ran, with levels you can turn up and down without editing anything.
+
+::: context monte-carlo Why simulations roll dice
+A **Monte Carlo** run answers "what could happen?" by running the same simulation thousands of times. Each run nudges the inputs a little at random — wind, engine thrust, sensor noise, the mass of the propellant — within the ranges engineers expect. Then you look at the whole spread of results, and especially at the worst few percent.
+
+Those worst cases are the **dispersed tail**: the rare combinations far from normal. They are exactly where untested code paths hide, because they are the cases nobody writes a quick test for. The name comes from the casino in Monaco, because the method runs on chance.
+:::
+
+::: context annotation-history How the labels arrived, one version at a time
+Python did not get annotations all at once.
+
+- Python 3.0 (2008) allowed annotations on function parameters and returns, but said nothing about what they should mean.
+- PEP 484, in Python 3.5 (2015), gave them their meaning as type hints. It drew heavily on mypy, which Jukka Lehtosalo had started as a research project.
+- Python 3.6 added annotations on variables, like `az: list[float] = []`.
+- Python 3.9 let you write `list[float]` instead of importing `List` from `typing`.
+- Python 3.10 added `float | None` as a shorter spelling of `Optional[float]`.
+
+So in older code you will see `List[float]` and `Optional[float]`. They mean the same as the modern forms.
+:::
+
+::: context branch-coverage Tests walk some paths; a checker reads the map
+Think of a function as a set of forking paths. A test is one walk from the entrance to an exit. A type checker is someone reading the whole map.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 170" font-family="Inter, Arial, sans-serif">
+  <circle cx="40" cy="85" r="8" fill="#1f2a44"/>
+  <text x="40" y="112" font-size="11" text-anchor="middle" fill="#1f2a44">call</text>
+  <g stroke-width="3" fill="none">
+    <path d="M48 85 L130 50" stroke="#1d6fd1"/>
+    <path d="M48 85 L130 120" stroke="#8fb8f0"/>
+    <path d="M130 50 L230 30" stroke="#1d6fd1"/>
+    <path d="M130 50 L230 70" stroke="#8fb8f0"/>
+    <path d="M130 120 L230 105" stroke="#8fb8f0"/>
+    <path d="M130 120 L230 145" stroke="#b4232c" stroke-dasharray="6 4"/>
+  </g>
+  <g fill="#fff" stroke="#1f2a44" stroke-width="1.5">
+    <circle cx="130" cy="50" r="6"/><circle cx="130" cy="120" r="6"/>
+    <circle cx="230" cy="30" r="6"/><circle cx="230" cy="70" r="6"/>
+    <circle cx="230" cy="105" r="6"/><circle cx="230" cy="145" r="6"/>
+  </g>
+  <g font-size="11" fill="#1f2a44">
+    <text x="242" y="34">tested path</text>
+    <text x="242" y="74">never run</text>
+    <text x="242" y="109">never run</text>
+    <text x="242" y="149" fill="#b4232c">bug: float &gt; str</text>
+  </g>
+  <text x="180" y="165" font-size="11" text-anchor="middle" fill="#6c7a93">mypy reads all four endings; the test walked one</text>
+</svg>
+```
+
+The dark blue walk is what your test ran. The checker looks at every ending, including the dashed red one where the configuration string meets a number.
+:::
+
+::: context narrowing How the checker follows your if
+Before the test, `p` is labeled "float or None". The `if` splits the code into two branches, and on each branch the checker knows more.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">
+  <rect x="110" y="10" width="140" height="30" rx="6" fill="#fff" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="180" y="30" font-size="12" text-anchor="middle" fill="#1f2a44">p: float | None</text>
+  <text x="180" y="60" font-size="12" text-anchor="middle" fill="#1f2a44">if p is None:</text>
+  <line x1="150" y1="66" x2="80" y2="95" stroke="#1f2a44" stroke-width="1.5"/>
+  <line x1="210" y1="66" x2="280" y2="95" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="95" y="80" font-size="11" text-anchor="end" fill="#6c7a93">true</text>
+  <text x="265" y="80" font-size="11" fill="#6c7a93">false</text>
+  <rect x="20" y="98" width="120" height="30" rx="6" fill="#f2b880" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="80" y="118" font-size="12" text-anchor="middle" fill="#1f2a44">p: None</text>
+  <rect x="220" y="98" width="120" height="30" rx="6" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="280" y="118" font-size="12" text-anchor="middle" fill="#1f2a44">p: float</text>
+  <text x="280" y="145" font-size="11" text-anchor="middle" fill="#1f2a44">15.0 - p is fine here</text>
+</svg>
+```
+
+The same happens after `isinstance(x, str)`, after `if not samples:`, and after an early `return`.
+:::
+
+::: context test-double Stand-ins for the real thing
+A **test double** is a fake object used in a test in place of a real one, the way a stunt double stands in for an actor. Instead of a real telemetry database, a test might pass a small dictionary-like object holding three made-up values.
+
+If your function demands exactly `dict`, that stand-in fails the type check even though it would work. If it asks only for `Mapping[str, float]`, anything that behaves like a read-only dictionary passes. General input labels make code easier to test.
+:::
+
+::: context dtype What float64 means
+Every cell of a NumPy array holds the same kind of number, and the **dtype** ("data type") says which. `float64` is a decimal number stored in 64 bits, which is 8 bytes. It keeps about 15 to 16 significant digits, the same as a plain Python `float`.
+
+`int64` holds whole numbers in 8 bytes. `float32` uses 4 bytes and keeps only about 7 digits, which is why flight software that uses it must think carefully about rounding. `np.array([1, 2, 3])` picks `int64` on most machines because every number you gave it was whole.
+:::
+
+::: context array-shape Shape: how the numbers are arranged
+An array's **shape** lists how long it is along each direction. Two vectors of three numbers each make shape (2, 3): two rows, three columns. The same six numbers in one row make shape (6,).
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 130" font-family="Inter, Arial, sans-serif">
+  <text x="70" y="18" font-size="12" text-anchor="middle" fill="#1f2a44">shape (2, 3)</text>
+  <g stroke="#1f2a44" stroke-width="1.5" fill="#8fb8f0">
+    <rect x="25" y="28" width="30" height="26"/><rect x="55" y="28" width="30" height="26"/><rect x="85" y="28" width="30" height="26"/>
+    <rect x="25" y="54" width="30" height="26" fill="#f2b880"/><rect x="55" y="54" width="30" height="26" fill="#f2b880"/><rect x="85" y="54" width="30" height="26" fill="#f2b880"/>
+  </g>
+  <g font-size="12" fill="#1f2a44" text-anchor="middle">
+    <text x="40" y="46">3</text><text x="70" y="46">4</text><text x="100" y="46">0</text>
+    <text x="40" y="72">12</text><text x="70" y="72">5</text><text x="100" y="72">0</text>
+  </g>
+  <text x="70" y="100" font-size="11" text-anchor="middle" fill="#1f2a44">rss: 5 and 13</text>
+  <text x="250" y="18" font-size="12" text-anchor="middle" fill="#1f2a44">shape (6,)</text>
+  <g stroke="#1f2a44" stroke-width="1.5" fill="#fff">
+    <rect x="160" y="41" width="30" height="26"/><rect x="190" y="41" width="30" height="26"/><rect x="220" y="41" width="30" height="26"/>
+    <rect x="250" y="41" width="30" height="26"/><rect x="280" y="41" width="30" height="26"/><rect x="310" y="41" width="30" height="26"/>
+  </g>
+  <g font-size="12" fill="#1f2a44" text-anchor="middle">
+    <text x="175" y="59">3</text><text x="205" y="59">4</text><text x="235" y="59">0</text>
+    <text x="265" y="59">12</text><text x="295" y="59">5</text><text x="325" y="59">0</text>
+  </g>
+  <text x="250" y="100" font-size="11" text-anchor="middle" fill="#b4232c">rss: 13.93, one meaningless number</text>
+  <text x="180" y="124" font-size="11" text-anchor="middle" fill="#6c7a93">same numbers, same dtype; mypy sees no difference</text>
+</svg>
+```
+
+In mypy's message, `ndarray[tuple[Any, ...], dtype[float64]]`, the first slot is where a shape would go. `NDArray` fills it with "any shape", which is why shapes pass unchecked.
+:::
+
+::: context unit-mixups A spacecraft lost to units
+In September 1999, NASA's Mars Climate Orbiter was lost as it arrived at Mars. Ground software from one team reported thruster impulse in pound-force seconds. The navigation software of another team read those numbers as newton-seconds. One pound-force is about $4.45$ newtons, so every small thruster firing was understated by that factor.
+
+Over months of cruise, the error pushed the spacecraft's path far lower than planned, and it went too deep into the Martian atmosphere. Both numbers were plain floating-point values. No type checker could have told them apart — unless the code had given them different types, which is what `NewType` does.
+:::
