@@ -5367,7 +5367,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-values-references-const",
       "title": "Value semantics, references and const",
-      "minutes": 22,
+      "minutes": 25,
       "covers": [
         "value semantics, references, const-correctness"
       ],
@@ -5376,7 +5376,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-raii-ownership-and-moves",
       "title": "RAII, ownership, smart pointers and moves",
-      "minutes": 25,
+      "minutes": 24,
       "covers": [
         "RAII, ownership, smart pointers",
         "move semantics"
@@ -5395,7 +5395,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-templates-and-generic-programming",
       "title": "Templates and generic programming",
-      "minutes": 25,
+      "minutes": 24,
       "covers": [
         "templates and generic programming"
       ],
@@ -5404,7 +5404,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-stl-containers-algorithms-iterators",
       "title": "The STL: containers, algorithms and iterators",
-      "minutes": 24,
+      "minutes": 25,
       "covers": [
         "the STL: containers, algorithms, iterators"
       ],
@@ -5413,7 +5413,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-constexpr-compile-time",
       "title": "constexpr and compile-time computation",
-      "minutes": 25,
+      "minutes": 26,
       "covers": [
         "constexpr and compile-time computation"
       ],
@@ -5422,7 +5422,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-error-handling-without-exceptions",
       "title": "Error handling without exceptions",
-      "minutes": 24,
+      "minutes": 25,
       "covers": [
         "error handling without exceptions"
       ],
@@ -5431,7 +5431,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-memory-cache-hot-loops",
       "title": "Memory layout, the cache, and allocation-free hot loops",
-      "minutes": 27,
+      "minutes": 26,
       "covers": [
         "memory layout, cache behaviour, allocation-free hot loops"
       ],
@@ -5440,7 +5440,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-eigen-and-geometry",
       "title": "Eigen, including the Geometry module",
-      "minutes": 24,
+      "minutes": 26,
       "covers": [
         "Eigen, including the Geometry module"
       ],
@@ -5449,7 +5449,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-cmake-and-googletest",
       "title": "Building with CMake and testing with GoogleTest",
-      "minutes": 24,
+      "minutes": 22,
       "covers": [
         "CMake, with Bazel awareness",
         "GoogleTest"
@@ -5459,7 +5459,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-undefined-behaviour-and-sanitizers",
       "title": "Undefined behaviour, and the sanitizers that catch it",
-      "minutes": 25,
+      "minutes": 24,
       "covers": [
         "undefined behaviour",
         "profiling and sanitizers: perf, valgrind, ASan/UBSan"

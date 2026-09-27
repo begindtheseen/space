@@ -54,8 +54,6 @@ const WRITTEN_BEFORE_NOTES = new Set<string>([
   // Career
   'car_08_pipeline', 'car_09_screens', 'car_10_past_project_presentation', 'car_11_domain_round',
   'car_12_first_principles', 'car_13_behavioral_star',
-  // Coding
-  'cod_cpp_02_memory',
   // Tier 0
   't0_m12_cpp',
   // Tier 3

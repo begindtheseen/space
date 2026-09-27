@@ -417,8 +417,7 @@ describe('the streak', () => {
  */
 const WRITTEN_BEFORE_NOTES = new Set([
   'bash-advanced',
-  'git-advanced',
-  'python-intermediate', 'python-advanced', 'python-expert', 'python-projects',
+  'python-advanced', 'python-expert', 'python-projects',
   'sql-intermediate', 'sql-advanced', 'sql-expert', 'sql-projects',
   'cpp', 'cpp-intermediate', 'cpp-advanced', 'cpp-expert', 'cpp-projects',
 ])
