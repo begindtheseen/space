@@ -248,7 +248,7 @@ DETAIL:  Key (antenna, pass)=(SVALBARD-1, ["2026-03-05 10:09:00+00","2026-03-05 
 SAT-042's two passes are on different antennas, so the first three rows are fine. The fourth wants [[SVALBARD-1|svalbard]] from 10:09, but SAT-017 has it until 10:11. The brackets are half-open: `[` includes the start, `)` excludes the end, so passes that touch at 10:11 do not clash.
 
 ::: key GiST
-A tree whose signposts are regions, not sorted points. Use it for overlap and containment on ranges and geometry (`&&`, `@>`), for nearest-neighbour searches, and for EXCLUDE constraints such as "no two bookings of one antenna overlap".
+A tree whose signposts are regions, not sorted points. Use it for overlap and containment on ranges and geometry (`&&`, `@>`), for nearest-neighbor searches, and for EXCLUDE constraints such as "no two bookings of one antenna overlap".
 :::
 
 ## BRIN: a tiny index for data that arrives in order
@@ -385,7 +385,7 @@ A table of ground-station contacts has a column `station TEXT` and a B-tree inde
 :::
 
 ::: answer
-A B-tree helps with anything that is a place, or a stretch, in sorted order. `= 'AWARUA'` is a place: yes. `LIKE 'AWA%'` is the stretch from `AWA` to just before `AWB`: yes, if the index is built for prefix matching (the "C" collation or the `text_pattern_ops` operator class). `ORDER BY station` reads the leaves in order: yes. `LIKE '%RUA'` has its unknown part at the front, so there is no starting point: no.
+A B-tree helps with anything that is a place, or a stretch, in sorted order. `= 'AWARUA'` is a place: yes. `LIKE 'AWA%'` is the stretch from `AWA` to right before `AWB`: yes, if the index is built for prefix matching (the "C" collation or the `text_pattern_ops` operator class). `ORDER BY station` reads the leaves in order: yes. `LIKE '%RUA'` has its unknown part at the front, so there is no starting point: no.
 :::
 
 ::: check
@@ -481,6 +481,30 @@ The number of levels needed is the answer to "how many times must I multiply by 
 
 ::: context hash-word What a hash is
 A hash function turns any value into a fixed-size number in a way that looks random but is repeatable: the same input always gives the same number, and inputs that differ by one character give wildly different numbers. It is how a coat check works — your coat goes on hook 417, and the ticket, not the coat's color, tells the attendant where to look. Hashes turn up all over computing: in Python's `dict`, in git's commit ids, and in the checksums that catch corrupted downlink frames.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">
+  <g stroke="#1f2a44" fill="#8fb8f0">
+    <rect x="10" y="20" width="70" height="24"/><rect x="10" y="62" width="70" height="24"/><rect x="10" y="104" width="70" height="24"/>
+  </g>
+  <g font-size="11" fill="#1f2a44" text-anchor="middle">
+    <text x="45" y="36">12:00</text><text x="45" y="78">12:01</text><text x="45" y="120">12:02</text>
+  </g>
+  <g stroke="#1f2a44" fill="#ffffff">
+    <rect x="250" y="10" width="100" height="24"/><rect x="250" y="40" width="100" height="24"/><rect x="250" y="70" width="100" height="24"/>
+    <rect x="250" y="100" width="100" height="24"/>
+  </g>
+  <g font-size="11" fill="#1f2a44" text-anchor="middle">
+    <text x="300" y="26">bucket 0</text><text x="300" y="56">bucket 1</text><text x="300" y="86">bucket 2</text><text x="300" y="116">bucket 3</text>
+  </g>
+  <g stroke="#1d6fd1" stroke-width="1.5">
+    <line x1="80" y1="32" x2="248" y2="112"/>
+    <line x1="80" y1="74" x2="248" y2="22"/>
+    <line x1="80" y1="116" x2="248" y2="82"/>
+  </g>
+  <text x="180" y="144" font-size="11" fill="#6c7a93" text-anchor="middle">neighboring times land in unrelated buckets</text>
+</svg>
+```
 :::
 
 ::: context stemming Why "valve" becomes "valv"

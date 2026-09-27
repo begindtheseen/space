@@ -4235,6 +4235,35 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       "file": "cod_sql_04_schema/05-index-types.md"
     },
     {
+      "id": "l06-composite-and-covering-indexes",
+      "title": "Composite and covering indexes",
+      "minutes": 20,
+      "covers": [
+        "Composite indexes and the left-prefix rule; covering indexes and index-only scans"
+      ],
+      "file": "cod_sql_04_schema/06-composite-and-covering-indexes.md"
+    },
+    {
+      "id": "l07-partial-indexes-and-write-cost",
+      "title": "Partial indexes and what indexes cost",
+      "minutes": 21,
+      "covers": [
+        "Partial indexes; why a low-cardinality index is usually useless",
+        "Index maintenance cost on a write-heavy ingest path"
+      ],
+      "file": "cod_sql_04_schema/07-partial-indexes-and-write-cost.md"
+    },
+    {
+      "id": "l08-reading-explain",
+      "title": "Reading EXPLAIN plans",
+      "minutes": 22,
+      "covers": [
+        "EXPLAIN and EXPLAIN ANALYZE: sequential versus index versus bitmap heap scan; nested loop versus hash versus merge join",
+        "Estimated versus actual rows as the tell for stale statistics"
+      ],
+      "file": "cod_sql_04_schema/08-reading-explain.md"
+    },
+    {
       "id": "l09-sargability",
       "title": "SARGable predicates",
       "minutes": 23,
@@ -4260,6 +4289,16 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Columnar storage and Parquet; batch versus streaming ingest"
       ],
       "file": "cod_sql_04_schema/11-columnar-storage-and-ingest.md"
+    },
+    {
+      "id": "l12-upserts-and-data-quality",
+      "title": "Upserts, duplicates and data quality",
+      "minutes": 25,
+      "covers": [
+        "Upserts and idempotent ingest for duplicated downlink frames",
+        "Data quality: gap detection, out-of-order packets, vehicle-to-ground clock skew, duplicate frames"
+      ],
+      "file": "cod_sql_04_schema/12-upserts-and-data-quality.md"
     }
   ],
   "t0_m00_basecamp": [
@@ -10628,19 +10667,12 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_sql_04_schema": {
-    "covered": 8,
+    "covered": 15,
     "total": 18,
     "complete": false,
     "missing": [
-      "Composite indexes and the left-prefix rule; covering indexes and index-only scans",
-      "Partial indexes; why a low-cardinality index is usually useless",
-      "Index maintenance cost on a write-heavy ingest path",
-      "EXPLAIN and EXPLAIN ANALYZE: sequential versus index versus bitmap heap scan; nested loop versus hash versus merge join",
-      "Estimated versus actual rows as the tell for stale statistics",
-      "Upserts and idempotent ingest for duplicated downlink frames",
       "The telemetry lifecycle: vehicle, downlink, decommutation, time-series store, analysis, report",
       "Time-series stores: InfluxDB, TimescaleDB, ClickHouse; the reported Starlink stack of Kafka, HBase, HDFS on Docker and Kubernetes",
-      "Data quality: gap detection, out-of-order packets, vehicle-to-ground clock skew, duplicate frames",
       "Export control and retention for flight data; reproducibility of every published plot"
     ]
   },
