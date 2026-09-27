@@ -38,7 +38,7 @@ In words, phase margin says how much extra lag the loop can take before it oscil
 
 Not automatically. Here is the surprise. Take two systems that are each perfectly stable. Switch back and forth between them at the wrong rhythm, and the switched system can blow up. Every frozen instant looks fine, yet the real, moving system is not. You met this in the gain-scheduling material of the control curriculum; the [[swing|switching-swing]] shows how it happens.
 
-What rescues frozen-time analysis is a **slow-variation condition**. The vehicle's parameters must change slowly compared with how fast the loop itself reacts. Then, in the time the loop takes to respond to a bump, the plant it is responding to has barely moved from where you froze it. This is a rule of thumb, not a proven bound. So you should not just assert it. You should put a number on it, which the worked example below does.
+What rescues frozen-time analysis is a **slow-variation condition**. The vehicle's parameters must change slowly compared with how fast the loop itself reacts. Then, in the time the loop takes to respond to a bump, the plant it is responding to has barely moved from where you froze it. This is a rule of thumb, not a proven bound. So do not assert it. Put a number on it, which the worked example below does.
 
 And frozen-time analysis is never the only check. The dispersed nonlinear 6-DOF runs from earlier in this module fly the vehicle continuously through time, saturations and all. They are the cross-check that catches what the snapshots assume away.
 
@@ -214,7 +214,7 @@ Mass says how hard something is to push in a straight line. **Moment of inertia*
 :::
 
 ::: context decibels Why margins are quoted in decibels
-A **decibel** measures a ratio on a logarithmic scale: for a gain, $20\log_{10}$ of the ratio. Every factor of $10$ is $20\,\mathrm{dB}$, and a factor of $2$ is about $6\,\mathrm{dB}$ ($20\log_{10} 2 = 6.02$). So a gain margin of $16.7\,\mathrm{dB}$ means the loop gain could grow by a factor of $10^{16.7/20} \approx 6.8$ before instability, while $2.2\,\mathrm{dB}$ means only about $1.29$ — a $29\%$ rise. The log scale is handy because gains that multiply in a loop simply add in decibels.
+A **decibel** measures a ratio on a logarithmic scale: for a gain, $20\log_{10}$ of the ratio. Every factor of $10$ is $20\,\mathrm{dB}$, and a factor of $2$ is about $6\,\mathrm{dB}$ ($20\log_{10} 2 = 6.02$). So a gain margin of $16.7\,\mathrm{dB}$ means the loop gain could grow by a factor of $10^{16.7/20} \approx 6.8$ before instability, while $2.2\,\mathrm{dB}$ means only about $1.29$ — a $29\%$ rise. The log scale is handy because gains that multiply in a loop add in decibels.
 :::
 
 ::: context crossovers The two crossings on one plot
