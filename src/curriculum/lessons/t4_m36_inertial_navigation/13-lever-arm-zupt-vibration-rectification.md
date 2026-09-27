@@ -1,7 +1,7 @@
 ---
 id: l13-lever-arm-zupt-vibration-rectification
 title: Lever arm compensation, zero-velocity updates, and vibration rectification
-minutes: 26
+minutes: 21
 covers:
   - "Lever arm compensation, zero-velocity updates, vibration rectification"
 ---
@@ -238,7 +238,7 @@ The turn-only residual is a lever arm. It is proportional to turn rate, so it ap
 This closes the module. You have gone from what an accelerometer and a gyro physically sense, through their error models and noise, a full strapdown mechanization with coning and sculling, the Schuler oscillation and the free-inertial error budget, alignment, INS/GNSS fusion and the error-state filter, to the practical corrections of this lesson. The whole chain from six raw numbers to a trusted position is now built. The next module opens up the other half of that fusion, **[[the GNSS receiver|gnss-next]]** itself.
 
 ::: context rigid-body Same turn, different speeds
-On a rigid body every point turns at the same rate, but a point's speed grows with its distance from the axis: speed equals turn rate times distance. On a record turning at $0.5\,\mathrm{rad/s}$, a point $2\,\mathrm m$ out would move at $1\,\mathrm{m/s}$, and a point $1\,\mathrm m$ out at half that.
+On a rigid body every point turns at the same rate, but a point's speed grows with its distance from the axis: speed equals turn rate times distance. On a merry-go-round turning at $0.5\,\mathrm{rad/s}$, a point $2\,\mathrm m$ out would move at $1\,\mathrm{m/s}$, and a point $1\,\mathrm m$ out at half that.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 180" font-family="Inter, Arial, sans-serif">
@@ -251,8 +251,8 @@ On a rigid body every point turns at the same rate, but a point's speed grows wi
   <polygon points="160,62 155,72 165,72" fill="#1d6fd1"/>
   <line x1="200" y1="95" x2="200" y2="45" stroke="#b4232c" stroke-width="3"/>
   <polygon points="200,37 195,47 205,47" fill="#b4232c"/>
-  <path d="M60,40 A80,80 0 0 1 100,17" fill="none" stroke="#1f2a44" stroke-width="1.5"/>
-  <polygon points="104,16 94,12 96,23" fill="#1f2a44"/>
+  <path d="M100,17 A80,80 0 0 0 60,40" fill="none" stroke="#1f2a44" stroke-width="1.5"/>
+  <polygon points="52,49 63.7,43.4 56.3,36.6" fill="#1f2a44"/>
   <text x="120" y="118" font-size="12" fill="#1f2a44" text-anchor="middle">IMU</text>
   <text x="222" y="60" font-size="12" fill="#b4232c">antenna: 2 m out,</text>
   <text x="222" y="75" font-size="12" fill="#b4232c">twice as fast</text>
@@ -268,7 +268,7 @@ A GNSS antenna is a flat patch or a small dome, several centimetres across. The 
 :::
 
 ::: context foot-mounted One stop per step
-When you walk, each foot spends part of every step flat on the ground, not moving at all, for a few tenths of a second. An IMU strapped to a shoe can apply a ZUPT in every one of those moments, a few hundred times a minute. Between them the IMU coasts for well under a second, far too short for errors to grow much. This is why a shoe-mounted IMU can track a walker through a building with no GNSS at all, with errors often under a few percent of the distance walked — first shown convincingly by Eric Foxlin in 2005 for firefighter tracking.
+When you walk, each foot spends part of every step flat on the ground, not moving at all, for a few tenths of a second. An IMU strapped to a shoe can apply a ZUPT in every one of those moments, about once a second. Between them the IMU coasts for well under a second, far too short for errors to grow much. This is why a shoe-mounted IMU can track a walker through a building with no GNSS at all, with errors often under a few percent of the distance walked — first shown convincingly by Eric Foxlin in 2005 for firefighter tracking.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 110" font-family="Inter, Arial, sans-serif">
@@ -278,10 +278,9 @@ When you walk, each foot spends part of every step flat on the ground, not movin
   <rect x="180" y="45" width="40" height="30" fill="#8fb8f0" stroke="#1f2a44"/>
   <rect x="260" y="45" width="40" height="30" fill="#8fb8f0" stroke="#1f2a44"/>
   <path d="M60,60 Q80,25 100,60 M140,60 Q160,25 180,60 M220,60 Q240,25 260,60 M300,60 Q320,25 340,60" fill="none" stroke="#b4232c" stroke-width="2"/>
-  <text x="40" y="95" font-size="12" fill="#1d6fd1" text-anchor="middle">foot flat</text>
-  <text x="120" y="95" font-size="12" fill="#1d6fd1" text-anchor="middle">ZUPT</text>
+  <text x="120" y="95" font-size="12" fill="#1d6fd1" text-anchor="middle">blue: foot flat, apply a ZUPT</text>
   <text x="80" y="22" font-size="12" fill="#b4232c" text-anchor="middle">swing</text>
-  <text x="180" y="105" font-size="11" fill="#6c7a93" text-anchor="middle">time</text>
+  <text x="320" y="95" font-size="11" fill="#6c7a93" text-anchor="middle">time</text>
 </svg>
 ```
 :::
@@ -304,12 +303,12 @@ The blue curve swings evenly above and below zero, so it averages to zero. Squar
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 160" font-family="Inter, Arial, sans-serif">
   <line x1="20" y1="80" x2="340" y2="80" stroke="#6c7a93" stroke-width="1"/>
-  <polyline fill="none" stroke="#1d6fd1" stroke-width="2" points="20,30 40,34 60,45 80,62 100,80 120,98 140,115 160,126 180,130 200,126 220,115 240,98 260,80 280,62 300,45 320,34 340,30"/>
-  <polyline fill="none" stroke="#b4232c" stroke-width="2" points="20,30 40,33 60,40 80,51 100,65 120,80 140,94 160,105 180,112 200,115 220,112 240,105 260,94 280,80 300,65 320,51 340,30" transform="translate(0,0)"/>
+  <polyline fill="none" stroke="#1d6fd1" stroke-width="2" points="20,30.0 30,31.0 40,33.8 50,38.4 60,44.6 70,52.2 80,60.9 90,70.2 100,80.0 110,89.8 120,99.1 130,107.8 140,115.4 150,121.6 160,126.2 170,129.0 180,130.0 190,129.0 200,126.2 210,121.6 220,115.4 230,107.8 240,99.1 250,89.8 260,80.0 270,70.2 280,60.9 290,52.2 300,44.6 310,38.4 320,33.8 330,31.0 340,30.0"/>
+  <polyline fill="none" stroke="#b4232c" stroke-width="2" points="20,30.0 30,31.9 40,37.3 50,45.4 60,55.0 70,64.6 80,72.7 90,78.1 100,80.0 110,78.1 120,72.7 130,64.6 140,55.0 150,45.4 160,37.3 170,31.9 180,30.0 190,31.9 200,37.3 210,45.4 220,55.0 230,64.6 240,72.7 250,78.1 260,80.0 270,78.1 280,72.7 290,64.6 300,55.0 310,45.4 320,37.3 330,31.9 340,30.0"/>
   <line x1="20" y1="55" x2="340" y2="55" stroke="#b4232c" stroke-width="1.5" stroke-dasharray="5 4"/>
   <text x="344" y="84" font-size="11" fill="#6c7a93">0</text>
-  <text x="200" y="50" font-size="12" fill="#b4232c">average of the square = 1/2</text>
-  <text x="180" y="148" font-size="12" fill="#1d6fd1" text-anchor="middle">cos: average 0</text>
+  <text x="185" y="22" font-size="12" fill="#b4232c" text-anchor="middle">cos squared: average 1/2 (dashed)</text>
+  <text x="180" y="150" font-size="12" fill="#1d6fd1" text-anchor="middle">cos: average 0</text>
 </svg>
 ```
 :::

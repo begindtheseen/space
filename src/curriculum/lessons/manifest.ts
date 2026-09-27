@@ -8072,7 +8072,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-strapdown-mechanization-eci-ecef-ned",
       "title": "Strapdown mechanization in ECI, ECEF, and the local-level frame",
-      "minutes": 20,
+      "minutes": 18,
       "covers": [
         "Strapdown mechanization in ECI, ECEF and local-level (NED) frames"
       ],
@@ -8081,7 +8081,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-attitude-velocity-position-update",
       "title": "The mechanization loop: attitude, velocity, and position update",
-      "minutes": 13,
+      "minutes": 15,
       "covers": [
         "Attitude update, velocity update with Coriolis and gravity, position update"
       ],
@@ -8090,7 +8090,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-coning-sculling-multi-sample-algorithms",
       "title": "Coning and sculling corrections",
-      "minutes": 25,
+      "minutes": 23,
       "covers": [
         "Coning and sculling corrections and multi-sample algorithms"
       ],
@@ -8099,7 +8099,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-schuler-oscillation",
       "title": "The Schuler oscillation",
-      "minutes": 18,
+      "minutes": 20,
       "covers": [
         "The Schuler oscillation and why it bounds unaided INS horizontal error"
       ],
@@ -8108,7 +8108,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-free-inertial-error-propagation",
       "title": "Free-inertial error propagation",
-      "minutes": 17,
+      "minutes": 19,
       "covers": [
         "Free-inertial error propagation: how position error grows with time from each error source"
       ],
@@ -8117,7 +8117,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-initial-alignment",
       "title": "Initial alignment",
-      "minutes": 17,
+      "minutes": 24,
       "covers": [
         "Initial alignment: coarse leveling, gyrocompassing, fine alignment via Kalman filter, transfer and in-flight alignment"
       ],
@@ -8126,7 +8126,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-ins-gnss-integration-architectures",
       "title": "INS/GNSS integration architectures",
-      "minutes": 14,
+      "minutes": 20,
       "covers": [
         "INS/GNSS integration architectures: loosely, tightly, and ultra-tightly (deeply) coupled"
       ],
@@ -8135,7 +8135,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-error-state-filter-15-21-state",
       "title": "The error-state filter for INS",
-      "minutes": 15,
+      "minutes": 24,
       "covers": [
         "Error-state filter formulation for INS: the 15-state and 21-state models"
       ],
@@ -8144,7 +8144,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l13-lever-arm-zupt-vibration-rectification",
       "title": "Lever arm compensation, zero-velocity updates, and vibration rectification",
-      "minutes": 16,
+      "minutes": 21,
       "covers": [
         "Lever arm compensation, zero-velocity updates, vibration rectification"
       ],
