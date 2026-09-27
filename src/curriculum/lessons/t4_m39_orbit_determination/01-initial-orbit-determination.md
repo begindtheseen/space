@@ -1,7 +1,7 @@
 ---
 id: l01-initial-orbit-determination
 title: "Initial orbit determination: Gibbs, Herrick-Gibbs and Gauss angles-only"
-minutes: 25
+minutes: 26
 covers:
   - "Initial orbit determination: angles-only (Gauss, Laplace, double-r), three position vectors (Gibbs, Herrick-Gibbs), range and range-rate methods"
 ---
@@ -237,7 +237,7 @@ A near-circular orbit at about $600\,\mathrm{km}$ altitude ($a=6978.137\,\mathrm
 - a **good arc** at $t=(50,\,300,\,550)\,\mathrm s$, with elevations $11.4^\circ$, $90.0^\circ$, $11.3^\circ$;
 - a **short arc** at $t=(297,\,300,\,303)\,\mathrm s$, with elevations $87.9^\circ$, $90.0^\circ$, $87.9^\circ$.
 
-Both are ordinary optical passes. They differ only in how much sky they cover. First, with perfect angles:
+They differ only in how much sky they cover. First, with perfect angles:
 
 | Arc | $D_0$ | $\operatorname{cond}(\mathbf M)$ | first-guess error | after 12 refinements |
 | --- | --- | --- | --- | --- |
@@ -268,7 +268,7 @@ All three are angles-only methods, and all three suffer on a short arc. The cure
 
 ## A single look: range, range-rate and angles together
 
-A tracking radar can measure, at one instant, the slant range $\rho$, the **[[azimuth and elevation|az-el]]** angles $Az$ and $El$, and all three of their rates. That is six numbers describing the sightline *and* how it is changing. Turning them into an inertial state is not estimation at all. Six numbers map to six state components through a change of coordinates that can be run backward exactly, with no iteration.
+A tracking radar can measure, at one instant, the slant range $\rho$, the **[[azimuth and elevation|az-el]]** angles $Az$ and $El$, and all three of their rates: six numbers describing the sightline *and* how it is changing. Turning them into a state is not estimation at all, only an exactly reversible change of coordinates.
 
 Work in the station's local **East-North-Up** (ENU) frame. The slant-range vector is
 
