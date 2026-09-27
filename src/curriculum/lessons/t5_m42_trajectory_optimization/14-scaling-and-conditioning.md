@@ -1,7 +1,7 @@
 ---
 id: l14-scaling-and-conditioning
-title: "Scaling and conditioning: non-dimensionalise before you solve anything"
-minutes: 22
+title: "Scaling and conditioning: non-dimensionalize before you solve anything"
+minutes: 23
 covers:
   - "Scaling and conditioning: non-dimensionalising states, controls and constraints before you solve anything"
 ---
@@ -18,7 +18,7 @@ A solver like IPOPT, or an SQP (sequential quadratic programming) code, has a ha
 
 - **One step length for everything.** A line search (lesson 4) picks one number $\alpha$ ("alpha") and moves every unknown by $\alpha$ times its piece of the search direction. That single $\alpha$ must suit every unknown at once.
 - **One tolerance for everything.** "Converged" means every constraint residual is below, say, $10^{-8}$. A residual of $10^{-8}$ is superb for a radius measured in meters and useless for one measured in units of $7000\,\mathrm{km}$.
-- **One curvature model for everything.** The quasi-Newton updates that build up the Hessian learn curvature from the steps taken. Steps that are lopsided teach it lopsided curvature.
+- **One curvature model for everything.** The quasi-Newton updates that build up the Hessian (the solver's running estimate of curvature) learn curvature from the steps taken. Steps that are lopsided teach it lopsided curvature.
 
 Mix a radius in meters with an angle in radians and these habits break. A step small enough not to overshoot the angle does nothing visible to the radius. A step big enough to move the radius sends the angle spinning. There is no step that suits both.
 
@@ -192,12 +192,12 @@ def condition_number(L, V, M, F, TU):
         J[:, j] = defects(z + dz, L, V, M, F, TU).imag / 1e-30
     return np.linalg.cond(J)
 
-print(f"metres, kg, N, s   : {condition_number(1, 1, 1, 1, 1):.3g}")
+print(f"meters, kg, N, s   : {condition_number(1, 1, 1, 1, 1):.3g}")
 print(f"scaled (L, T, M)   : {condition_number(1500, 37.5, 1000, 937.5, 40):.3g}")
-print(f"millimetres, grams : {condition_number(1e-3, 1e-3, 1e-3, 1e-6, 1):.3g}")
-# metres, kg, N, s   : 4.87e+03
+print(f"millimeters, grams : {condition_number(1e-3, 1e-3, 1e-3, 1e-6, 1):.3g}")
+# meters, kg, N, s   : 4.87e+03
 # scaled (L, T, M)   : 100
-# millimetres, grams : 4.76e+09
+# millimeters, grams : 4.76e+09
 ```
 
 The loop builds the Jacobian one column at a time with the **[[complex-step trick|complex-step]]**, which gives slopes exact to rounding. The unknowns are always divided by their units, so the solver's view changes while the physics inside `f` stays in SI.
