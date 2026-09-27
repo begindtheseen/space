@@ -6,9 +6,18 @@
 
 === pyp-01 | Expense tracker 1: planning and parsing commands
 --- teach
-Welcome to the projects course. Everything here uses what the three courses before it taught: the idioms of the intermediate course, the classes and algorithms of the advanced one, and the design habits of the expert one (a pure core, a thin shell, injected dependencies, tests that catch bugs). Each of the first three projects is a real program built over four lessons, and **each lesson starts from where the last one finished**. Then come the capstones, where you get only a specification.
+The expert course ended with a calculator. A tokenizer cut `2 + 3 * 4` into pieces, and a recursive-descent parser worked out what the pieces meant. You now know every idea you need to build real programs. This projects course is where you build them.
 
-The first project is an **expense tracker** you drive with typed commands:
+Everything here uses what the three courses before it taught: the idioms of the intermediate course (comprehensions, sorting with `key=`, f-string formatting), the classes and algorithms of the advanced one (dataclasses, special methods), and the design habits of the expert one (a pure core, a thin shell, injected dependencies, tests that catch bugs).
+
+The course has two parts:
+
+- **Three projects**, each a real program built over four lessons. **Each lesson starts from where the last one finished**: the code in the editor is your finished program from the lesson before, and you add the next piece.
+- **Four capstones**, where you get only a [[specification|specification]] and design everything yourself.
+
+### The expense tracker
+
+Picture a small notebook where you write down every bit of money you spend: how much, on what, and a word about it. The first project is that notebook as a program. You drive it by typing commands:
 
 ```
 add 12.50 food lunch with Sam
@@ -17,26 +26,73 @@ total food
 report
 ```
 
-**Plan before you type.** A program this size has four jobs, and each gets its own lesson and its own layer of code:
+Line by line: spend 12.50 on food (the note says "lunch with Sam"); spend 3.20 on transport; ask how much went on food in total; ask for a summary of everything.
+
+### Plan before you type
+
+A program this size has four jobs. Each one gets its own lesson and its own [[layer of code|layers]]:
 
 1. **Parse**: turn a line of text into a structured command, or reject it with a clear reason.
 2. **Model**: store expenses and answer questions about them.
 3. **Report**: turn the stored data into readable output.
 4. **Run**: the loop that reads input, calls the layers above, and prints results.
 
-Keeping these apart means each can be tested on its own, and a change to the report format never breaks parsing.
+Keeping these apart means each one can be tested on its own. It also means a change to the report format never breaks parsing. This lesson writes layer 1.
 
-**Decide how to represent the data.** Money is the classic trap: `0.1 + 0.2` is not `0.3` in floating point. So this program stores every amount as a whole number of **cents** (`12.50` becomes `1250`) and only turns it back into a decimal string for display. Converting from text yourself is simple with `partition`:
+### Money is kept in whole cents
+
+You met the trap in the floating-point lesson: `0.1 + 0.2` is not `0.3` in floating point. Money must add up exactly. So this program stores every amount as a whole number of **cents**, an `int`: `12.50` becomes `1250`. It turns cents back into a decimal string only for display, in the next lesson. Storing money as [[whole cents|integer-money]] is what real payment systems do.
+
+### Turning text into cents, step by step
+
+The user types an amount as text, like `"12.5"`. You met `partition` in the intermediate course. It cuts a string at the first `.` and gives back [[three pieces|partition-pieces]]: the part before, the dot itself, and the part after. If there is no dot, the last two pieces are empty strings.
 
 ```python
 "12.5".partition(".")     # ('12', '.', '5')
 "12".partition(".")       # ('12', '', '')
-"5".ljust(2, "0")         # '50'  pad on the right: 5 tenths is 50 cents
 ```
 
-**Decide the error policy.** A command-line tool must never crash on a typo. Here, the parser raises `ValueError` with a message a user can act on (`usage: add <amount> <category> [note]`), and the run loop (lesson 4) will catch it and print it.
+The part after the dot needs one more step. `"5"` after the dot means 5 tenths, which is 50 cents, not 5 cents. The string method **`ljust`** ("left-justify") fixes that. `s.ljust(2, "0")` puts `s` on the left and pads it on the right with `"0"` until it is 2 characters long. A string that is already long enough is left alone.
 
-A parsed command is a small dict. The shape is your *contract* between the parser and the rest of the program:
+```python
+"5".ljust(2, "0")         # '50'  pad on the right: 5 tenths is 50 cents
+"50".ljust(2, "0")        # '50'  already 2 long, unchanged
+"".ljust(2, "0")          # '00'  no decimals at all: 0 cents
+```
+
+Now put it together. For `"12.5"`: the whole part is `"12"`, the padded fraction is `"50"`, so the cents are `12 * 100 + 50 = 1250`. Check it makes sense: twelve and a half dollars is 1250 cents.
+
+### Which amounts to reject
+
+An amount must be digits, with an optional `.` and at most two decimal places. Each bad example below breaks one rule. (Remember that `isdigit()` is `False` for an empty string.)
+
+- `"abc"`: the whole part is not digits.
+- `"-5"`: the minus sign is not a digit.
+- `"12.345"`: three decimal places.
+- `"1."`: there is a dot, but nothing after it, so the fraction is `""`.
+- `".5"`: nothing before the dot, so the whole part is `""`.
+- `"0"` and `"0.00"`: these read fine, but they come to zero cents. An expense of nothing is a mistake, so reject it too.
+
+### The error policy
+
+A command-line tool must never crash on a typo. So the parser **raises** `ValueError` with a message the user can act on, like `usage: add <amount> <category> [note]`. A message that shows the right way to type a command is called a [[usage message|usage-line]]. The parser does not print anything. The run loop (lesson 4) will catch the error and print it. `ValueError` is the [[right exception to raise here|why-valueerror]].
+
+### Reading one command line
+
+`line.split()` with no argument splits on any run of spaces and throws away spaces at both ends. So extra spaces never matter:
+
+```python
+"add 12.50 Food lunch   with Sam".split()
+# ['add', '12.50', 'Food', 'lunch', 'with', 'Sam']
+```
+
+The first word is the command. The rest are its **arguments**: the values that go with it. `add` needs at least two (an amount and a category), and everything after those is the note. `" ".join(words)` glues the note words back together with single spaces, and joining an empty list gives `""`.
+
+Commands are **case-insensitive**: `ADD`, `Add` and `add` all mean the same. Lowercase the word with `.lower()` before you compare it. Categories are lowercased too, so `Food` and `food` land in the same pile.
+
+### The shape of a parsed command
+
+A parsed command is a small dict. Its shape is your [[contract|contract]] between the parser and the rest of the program: the other layers will rely on exactly these keys.
 
 ```python
 {"cmd": "add", "amount": 1250, "category": "food", "note": "lunch with Sam"}
@@ -44,13 +100,101 @@ A parsed command is a small dict. The shape is your *contract* between the parse
 {"cmd": "report"}
 ```
 
-**Common mistake:** trying to handle every command in one long function that parses, stores and prints. It works for three commands and becomes impossible at ten.
+`total` with no category means "the total of everything", so its category is `None`.
+
+**Watch out:** trying to handle every command in one long function that parses, stores and prints. It works for three commands and becomes impossible to follow at ten. Parse here, and only parse.
+
+::: context specification What a specification is
+A **specification**, or "spec", is a written description of what a program must do, without saying how. It lists the inputs, the outputs, and what should happen in every case, including the awkward ones. Engineers write specs before they write code, so that everyone agrees on the goal. Flight software for spacecraft starts from requirements documents that can run to hundreds of pages, and every piece of code must trace back to a requirement. In the capstones you get a short spec and nothing else.
+:::
+
+::: context layers Four layers, each with one job
+The run loop is the only layer that meets the user. It hands each line to the parser, passes the parsed command to the model, and asks the report layer for text to show. None of the lower layers print or read anything.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 180" font-family="Inter, Arial, sans-serif">
+  <rect x="10" y="60" width="100" height="60" rx="8" fill="#8fb8f0" stroke="#1d6fd1" stroke-width="2"/>
+  <text x="60" y="86" font-size="13" font-weight="700" fill="#1f2a44" text-anchor="middle">4. Run</text>
+  <text x="60" y="104" font-size="11" fill="#1f2a44" text-anchor="middle">reads, prints</text>
+  <rect x="220" y="10" width="130" height="44" rx="8" fill="#ffffff" stroke="#1f2a44" stroke-width="2"/>
+  <text x="285" y="30" font-size="13" font-weight="700" fill="#1f2a44" text-anchor="middle">1. Parse</text>
+  <text x="285" y="46" font-size="11" fill="#1f2a44" text-anchor="middle">text to dict</text>
+  <rect x="220" y="68" width="130" height="44" rx="8" fill="#ffffff" stroke="#1f2a44" stroke-width="2"/>
+  <text x="285" y="88" font-size="13" font-weight="700" fill="#1f2a44" text-anchor="middle">2. Model</text>
+  <text x="285" y="104" font-size="11" fill="#1f2a44" text-anchor="middle">stores expenses</text>
+  <rect x="220" y="126" width="130" height="44" rx="8" fill="#ffffff" stroke="#1f2a44" stroke-width="2"/>
+  <text x="285" y="146" font-size="13" font-weight="700" fill="#1f2a44" text-anchor="middle">3. Report</text>
+  <text x="285" y="162" font-size="11" fill="#1f2a44" text-anchor="middle">data to lines</text>
+  <line x1="110" y1="80" x2="212" y2="34" stroke="#1f2a44" stroke-width="2"/>
+  <polygon points="218,31 208,31 212,39" fill="#1f2a44"/>
+  <line x1="110" y1="90" x2="212" y2="90" stroke="#1f2a44" stroke-width="2"/>
+  <polygon points="219,90 211,86 211,94" fill="#1f2a44"/>
+  <line x1="110" y1="100" x2="212" y2="146" stroke="#1f2a44" stroke-width="2"/>
+  <polygon points="218,149 212,141 208,149" fill="#1f2a44"/>
+</svg>
+```
+:::
+
+::: context integer-money Why money is counted in cents
+An `int` in Python is always exact, however big it gets. A float is only the nearest value it can store, so adding thousands of float prices lets tiny errors pile up until a total is off by a cent. That is why many payment systems store amounts as whole numbers of the smallest unit: cents, or pence, or yen. The expert course showed the other safe choice, `Decimal`. Cents are simpler here, because every amount in this program has at most two decimal places.
+:::
+
+::: context partition-pieces partition always gives three pieces
+`partition` never fails and never changes how many pieces it gives back: always three. That is why `whole, dot, frac = text.partition(".")` is safe for any text at all. The middle piece tells you whether the dot was found: it is `"."` if it was, and `""` if it was not.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 110" font-family="Inter, Arial, sans-serif">
+  <text x="10" y="32" font-size="13" fill="#1f2a44">"12.5"</text>
+  <text x="10" y="82" font-size="13" fill="#1f2a44">"12"</text>
+  <g fill="#ffffff" stroke="#1f2a44" stroke-width="2">
+    <rect x="90" y="12" width="80" height="30" rx="4"/><rect x="180" y="12" width="80" height="30" rx="4"/><rect x="270" y="12" width="80" height="30" rx="4"/>
+    <rect x="90" y="62" width="80" height="30" rx="4"/><rect x="180" y="62" width="80" height="30" rx="4"/><rect x="270" y="62" width="80" height="30" rx="4"/>
+  </g>
+  <g font-size="13" fill="#1d6fd1" text-anchor="middle">
+    <text x="130" y="32">'12'</text><text x="220" y="32">'.'</text><text x="310" y="32">'5'</text>
+    <text x="130" y="82">'12'</text><text x="220" y="82">''</text><text x="310" y="82">''</text>
+  </g>
+  <g font-size="11" fill="#6c7a93" text-anchor="middle">
+    <text x="130" y="106">whole</text><text x="220" y="106">dot</text><text x="310" y="106">frac</text>
+  </g>
+</svg>
+```
+:::
+
+::: context usage-line How to read a usage line
+Usage lines follow a convention that Unix tools have used for decades. Words in angle brackets, like `<amount>`, are placeholders: type a real value there, not the word "amount". Anything in square brackets, like `[note]`, is optional. Plain words, like `add`, are typed exactly as shown. So `usage: add <amount> <category> [note]` means "type add, then an amount, then a category, and a note if you like". Many command-line tools print a line of the same shape when you give them the wrong arguments.
+:::
+
+::: context why-valueerror The right type, the wrong value
+Python has many built-in exceptions, and picking the matching one tells the reader what went wrong. `ValueError` means "this is the right kind of thing, but its value is not acceptable". The amount is a string, as expected, but `"abc"` is not a valid amount. A `TypeError` would mean the wrong kind of thing altogether, like a list where a string belongs. Because every layer raises `ValueError` for bad input, the run loop can catch that one kind and let real bugs through.
+:::
+
+::: context contract A contract between two parts of a program
+In everyday life a contract is an agreement: I do this, you do that. In code it is an agreement about shapes. The parser promises that an `add` command always comes back as a dict with the keys `cmd`, `amount`, `category` and `note`, with the amount already in cents. The rest of the program promises to rely on nothing else. As long as both sides keep their promise, either side can be rewritten without breaking the other.
+:::
 --- task
-Write the parsing layer:
+Write the parsing layer: two functions.
 
-`to_cents(text)` turns a string amount into whole cents: `"12.50"` → `1250`, `"3"` → `300`, `"0.5"` → `50`. It raises `ValueError` for anything that is not digits with an optional `.` and at most two decimal places (`"abc"`, `"12.345"`, `"-5"`, `"1."`), and for zero.
+`to_cents(text)` turns a string amount into whole cents: `"12.50"` → `1250`, `"3"` → `300`, `"0.5"` → `50`. It raises `ValueError` for anything that is not digits with an optional `.` and at most two decimal places (such as `"abc"`, `"12.345"`, `"-5"`, `"1."`), and for zero.
 
-`parse_command(line)` returns one of the dicts shown above (command words are case-insensitive; categories are lowercased; the note is the rest of the words joined by single spaces, or `""`). It raises `ValueError` for: an empty line (`"empty command"`), `add` with fewer than two arguments (`"usage: add <amount> <category> [note]"`), `total` with more than one argument (`"usage: total [category]"`), `report` with any argument (`"usage: report"`), or an unknown command (`"unknown command: <word>"`).
+`parse_command(line)` returns one of the three dicts shown in the lesson:
+
+- Command words are case-insensitive, and categories are lowercased.
+- The note is the rest of the words joined by single spaces, or `""` if there are none.
+
+It raises `ValueError` with exactly these messages:
+
+- an empty line: `"empty command"`
+- `add` with fewer than two arguments: `"usage: add <amount> <category> [note]"`
+- `total` with more than one argument: `"usage: total [category]"`
+- `report` with any argument: `"usage: report"`
+- an unknown command: `"unknown command: <word>"`, with the word as it was typed.
+--- hint
+Two functions, two jobs. In `to_cents`, cut the text with `partition`, check the rules from the lesson one by one, and build the cents. In `parse_command`, split the line into words; the first word (lowercased) is the command and the rest are its arguments.
+--- hint
+`whole, dot, frac = text.partition(".")`. The text is bad if the whole part is not digits, or there was a dot and the fraction is not digits, or the fraction is longer than 2. Otherwise the cents are `int(whole) * 100 + int(frac.ljust(2, "0"))`; raise if that is not more than zero.
+--- hint
+In `parse_command`: `words = line.split()`; if the list is empty, raise `"empty command"`. Then `cmd, args = words[0].lower(), words[1:]`. Give each command its own `if` that checks `len(args)` before returning its dict. If no `if` matched, raise `f"unknown command: {words[0]}"`.
 --- starter
 # Expense tracker, step 1: understand one command.
 # Amounts are kept in whole cents (ints), never floats.
@@ -97,12 +241,6 @@ def parse_command(line):
             raise ValueError("usage: report")
         return {"cmd": "report"}
     raise ValueError(f"unknown command: {words[0]}")
---- hint
-For `to_cents`, `whole, dot, frac = text.partition(".")`. The whole part must be digits; if there was a dot, the fraction must be digits too, and at most 2 of them.
---- hint
-`int(frac.ljust(2, "0"))` turns `"5"` into 50 and `""` into 0. Check the total is more than zero at the end.
---- hint
-In `parse_command`, split the line into words, look at the first word (lowercased), and check how many arguments each command got before building its dict.
 --- check test | to_cents converts valid amounts
 [to_cents(t) for t in ("12.50", "3", "0.5", "0.05", "1200")] == [1250, 300, 50, 5, 120000]
 --- check test | to_cents rejects bad amounts
@@ -122,9 +260,13 @@ all(raises(ValueError, lambda l=l: parse_command(l)) for l in ("", "   ", "add 5
 
 === pyp-02 | Expense tracker 2: the ledger
 --- teach
-Now the model: somewhere to keep expenses and a set of questions you can ask about them.
+Last lesson you wrote the parser: a line of text goes in, a tidy dict comes out. Now comes layer 2, the model: somewhere to keep expenses, and a set of questions you can ask about them.
 
-**One record type, one owner.** Each expense is a small, fixed bundle of fields, which is exactly what a dataclass is for. The collection of expenses belongs to a `Ledger` class, and *every* change and question goes through its methods. That gives the rules one home: if you later need to reject duplicate entries or keep an audit log, there is exactly one place to change.
+Picture a club's cash book, kept by one treasurer. Anyone who spends club money tells the treasurer, and anyone who wants to know the balance asks the treasurer. Nobody else writes in the book. That way, if the club makes a new rule ("receipts over 50 need a signature"), only the treasurer has to learn it.
+
+### One record: a dataclass
+
+Each expense is a small, fixed bundle of fields: an amount, a category and a note. That is exactly what a [[dataclass|dataclass-recall]] is for:
 
 ```python
 from dataclasses import dataclass
@@ -136,31 +278,141 @@ class Expense:
     note: str = ""
 ```
 
-**Answer questions from the data, do not store answers.** It is tempting to keep a running `self.total` and update it on every `add`. But stored answers go stale the moment someone adds a `remove` method and forgets to update them. Computing `total()` from the list whenever you are asked is always right, and for a personal expense list it is plenty fast.
+`note: str = ""` gives the note a **default**: if you leave it out, it is `""`. So `Expense(300, "bus")` works, and its note is empty. The field with a default [[must come last|defaults-last]].
+
+### One owner: the Ledger
+
+The collection of expenses belongs to a class called `Ledger` (a ledger is an account book). It keeps a list, and *every* change and every question goes through its methods:
+
+```python
+class Ledger:
+    def __init__(self):
+        self.expenses = []
+```
+
+That gives the rules [[one home|encapsulation]]. If you later need to reject duplicate entries or keep an audit log, there is exactly one place to change.
+
+### Answer questions from the data, do not store answers
+
+It is tempting to keep a running `self.total` and update it on every `add`. But [[stored answers go stale|derived-data]] the moment someone adds a `remove` method and forgets to update them. Working out `total()` from the list whenever you are asked is always right. For a personal expense list, it is plenty fast.
 
 ```python
 def total(self, category=None):
     return sum(e.amount for e in self.expenses if category is None or e.category == category)
 ```
 
-**Formatting cents for people.** `divmod`-style arithmetic splits cents into whole units and the remainder, and the format spec does the rest:
+Read the `if` part aloud: "count this expense if no category was asked for, or if its category is the one asked for". So `total()` adds up everything, and `total("food")` adds up only food.
+
+### Categories: sorted, no duplicates
+
+A set keeps only one copy of each value, and `sorted` turns it into a list in alphabetical order. A set comprehension does both jobs in one line:
+
+```python
+sorted({c for c in ["rent", "food", "rent"]})    # ['food', 'rent']
+```
+
+### Formatting cents for people
+
+People want to read `1,234.56`, not `123456`. Two operators you know split the cents into whole units and the leftover cents:
 
 ```python
 cents = 123456
+cents // 100      # 1234   whole units
+cents % 100       # 56     cents left over
+```
+
+(That is the same pair `divmod(cents, 100)` gives.) Then an f-string formats each part:
+
+```python
 f"{cents // 100:,}.{cents % 100:02d}"    # '1,234.56'
 ```
 
-`:02d` pads the cents to two digits, so 5 cents shows as `.05`, not `.5`.
+- `:,` puts a comma between every group of three digits, the [[thousands separator|thousands-separator]].
+- `:02d` means: `d`, a whole number; `2`, at least 2 characters wide; `0`, fill any gap with zeros. This is **zero padding**. It makes 5 cents show as `.05`, [[not .5|zero-padding]].
 
-Defining `__len__` lets callers write `len(ledger)`, which reads naturally and is what Python programmers expect from a collection.
+### len() for your own class
 
-**Common mistake:** letting other code reach in and edit `ledger.expenses` directly. It works until the day the ledger needs to enforce a rule. Go through the methods.
+You met special methods in the advanced course. Defining `__len__` lets callers write `len(ledger)` to ask how many expenses there are. That reads naturally, and it is what Python programmers expect from anything that [[holds a collection|dunder-len]].
+
+**Watch out:** letting other code reach in and edit `ledger.expenses` directly, like `ledger.expenses.append(...)`. It works until the day the ledger needs to enforce a rule, and then that code slips past it. Go through the methods.
+
+::: context dataclass-recall What @dataclass writes for you
+You met dataclasses in the advanced course. The `@dataclass` line reads the annotated fields (`amount: int` and so on) and writes three methods for you: `__init__`, so `Expense(1250, "food", "lunch")` works; `__repr__`, so printing one shows `Expense(amount=1250, category='food', note='lunch')`; and `__eq__`, so two expenses with the same fields count as equal. That last one is what lets a check compare `ledger.add(...)` with `Expense(1250, "food", "lunch")`.
+:::
+
+::: context defaults-last Why the default goes on the last field
+The fields become the parameters of `__init__`, in the order you wrote them. A call like `Expense(300, "bus")` fills them from the left. If a field with a default came before one without, Python could not tell which values you meant to skip. So a dataclass refuses to be created: you get a `TypeError` saying a non-default argument follows a default argument. Ordinary functions have the same rule, which you met with default arguments in the intermediate course.
+:::
+
+::: context encapsulation One home for the rules
+Programmers call this **encapsulation**: the data lives inside an object, and the outside world may use it only through that object's methods. It is the treasurer and the cash book. The payoff comes later. In the library project you will add rules like "a member may not borrow more than three books", and each rule goes in one method instead of being copied to every place that touches the data.
+:::
+
+::: context derived-data A total that forgot to change
+A number you can work out from other data is called **derived data**. If you store it as well, you now have two copies of the truth, and they can disagree. Here, one expense was removed from the list, but the stored total was never updated.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 140" font-family="Inter, Arial, sans-serif">
+  <text x="90" y="20" font-size="12" fill="#6c7a93" text-anchor="middle">before remove</text>
+  <text x="270" y="20" font-size="12" fill="#6c7a93" text-anchor="middle">after remove</text>
+  <rect x="20" y="30" width="140" height="44" rx="6" fill="#ffffff" stroke="#1f2a44" stroke-width="2"/>
+  <text x="90" y="57" font-size="13" fill="#1f2a44" text-anchor="middle">list: 1250, 320</text>
+  <rect x="200" y="30" width="140" height="44" rx="6" fill="#ffffff" stroke="#1f2a44" stroke-width="2"/>
+  <text x="270" y="57" font-size="13" fill="#1f2a44" text-anchor="middle">list: 1250</text>
+  <rect x="20" y="86" width="140" height="40" rx="6" fill="#8fb8f0" stroke="#1d6fd1" stroke-width="2"/>
+  <text x="90" y="111" font-size="13" fill="#1f2a44" text-anchor="middle">self.total = 1570</text>
+  <rect x="200" y="86" width="140" height="40" rx="6" fill="#ffffff" stroke="#b4232c" stroke-width="2"/>
+  <text x="270" y="111" font-size="13" fill="#b4232c" text-anchor="middle">self.total = 1570</text>
+</svg>
+```
+
+Computing the total from the list each time gives 1250, the right answer, with nothing to forget.
+:::
+
+::: context thousands-separator Commas, dots and countries
+A **thousands separator** splits a long number into groups of three digits, so `1234567` reads at a glance as `1,234,567`. The `:,` format always uses a comma and a dot. Many countries swap them: in Germany the same amount is written `1.234,56`. Programs that serve people around the world use locale settings to pick the right style. This tracker keeps it simple, with one style everywhere.
+:::
+
+::: context zero-padding Why 5 cents needs a zero in front
+Without padding, 5 cents would be written `0.5`, and anyone reading that sees fifty cents. The `02` makes the cents part always two characters, filling the gap with a zero.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 110" font-family="Inter, Arial, sans-serif">
+  <text x="10" y="36" font-size="13" fill="#1f2a44">123456 cents</text>
+  <text x="10" y="86" font-size="13" fill="#1f2a44">5 cents</text>
+  <g fill="#ffffff" stroke="#1f2a44" stroke-width="2">
+    <rect x="130" y="16" width="90" height="30" rx="4"/><rect x="250" y="16" width="30" height="30" rx="4"/><rect x="280" y="16" width="30" height="30" rx="4"/>
+    <rect x="130" y="66" width="90" height="30" rx="4"/><rect x="250" y="66" width="30" height="30" rx="4"/><rect x="280" y="66" width="30" height="30" rx="4"/>
+  </g>
+  <g font-size="14" fill="#1f2a44" text-anchor="middle">
+    <text x="175" y="36">1,234</text><text x="235" y="36">.</text><text x="265" y="36">5</text><text x="295" y="36">6</text>
+    <text x="175" y="86">0</text><text x="235" y="86">.</text><text x="295" y="86">5</text>
+  </g>
+  <text x="265" y="86" font-size="14" font-weight="700" fill="#b4232c" text-anchor="middle">0</text>
+  <text x="330" y="86" font-size="11" fill="#b4232c">pad</text>
+</svg>
+```
+:::
+
+::: context dunder-len What len() really calls
+When you write `len(something)`, Python calls `something.__len__()` and hands back what it returns. Lists, strings, dicts and sets all have that method, which is why `len` works on all of them. Giving `Ledger` its own `__len__` makes it join that family. One bonus you get for free: an object with `__len__` and no `__bool__` counts as false in an `if` when its length is 0, so `if ledger:` means "if there are any expenses".
+:::
 --- task
-Add the model to your parser:
+Add the model to your parser. Keep `to_cents` and `parse_command` as they are, and add:
 
 - A dataclass `Expense` with `amount` (int cents), `category` (str) and `note` (str, default `""`).
-- `format_cents(cents)` returning a string with a thousands separator and two decimals: `1250` → `"12.50"`, `5` → `"0.05"`, `123456` → `"1,234.56"`.
-- A class `Ledger` with `add(amount, category, note="")` (stores and returns a new `Expense`), `total(category=None)` (cents, for one category or all), `categories()` (sorted, no duplicates) and `__len__`.
+- `format_cents(cents)`, returning a string with a thousands separator and two decimals: `1250` → `"12.50"`, `5` → `"0.05"`, `123456` → `"1,234.56"`.
+- A class `Ledger` with these methods:
+  - `add(amount, category, note="")` stores a new `Expense` and returns it;
+  - `total(category=None)` returns the cents for one category, or for all of them;
+  - `categories()` returns the categories sorted, without duplicates;
+  - `__len__` returns how many expenses are stored.
+--- hint
+Import `dataclass` at the top and declare the three annotated fields, with the default on the last one. The ledger keeps a list, `self.expenses`, that starts empty in `__init__`.
+--- hint
+`format_cents` is one f-string: `cents // 100` with `:,`, then a `.`, then `cents % 100` with `:02d`.
+--- hint
+`add` builds an `Expense`, appends it and returns it. `total` is the `sum` over a generator with an `if` from the lesson; `categories` is `sorted` of a set comprehension; `__len__` returns `len(self.expenses)`.
 --- starter
 # Expense tracker, step 1: understand one command.
 # Amounts are kept in whole cents (ints), never floats.
@@ -262,12 +514,6 @@ class Ledger:
 
     def __len__(self):
         return len(self.expenses)
---- hint
-Import `dataclass` at the top and declare the three annotated fields; the default goes on the last one.
---- hint
-`format_cents` is one f-string: `cents // 100` with `:,` then `cents % 100` with `:02d`.
---- hint
-The ledger keeps a list, `self.expenses`. `total` is a `sum` over a generator with an `if`; `categories` is `sorted` of a set comprehension.
 --- check test | format_cents
 [format_cents(c) for c in (1250, 5, 0, 100, 123456, 100000000)] == ["12.50", "0.05", "0.00", "1.00", "1,234.56", "1,000,000.00"]
 --- check test | add stores and returns an Expense
@@ -287,9 +533,21 @@ parse_command("add 1 food") == {"cmd": "add", "amount": 100, "category": "food",
 
 === pyp-03 | Expense tracker 3: reports
 --- teach
-A report answers "where did the money go?" at a glance. That takes three steps, and each is a standard technique.
+Last lesson the ledger learned to store expenses and total them. Now comes layer 3: a report that answers "where did the money go?" at a glance. Here is what the finished report looks like for four expenses:
 
-**1. Aggregate.** Group the expenses by category and sum each group. A plain dict with `get` does it in one pass:
+```
+rent          1,200.00
+food             57.50
+transport         3.20
+----------------------
+TOTAL         1,260.70
+```
+
+Making it takes three steps, and each is a standard technique.
+
+### Step 1: aggregate
+
+To **aggregate** means to gather things into groups and combine each group into one number. Here: group the expenses by category, and [[sum each group|aggregate]]. A plain dict with `get` does it in one pass through the list:
 
 ```python
 totals = {}
@@ -297,28 +555,120 @@ for e in expenses:
     totals[e.category] = totals.get(e.category, 0) + e.amount
 ```
 
-**2. Order.** Biggest spending first is most useful. For equal totals, order by name, so the report is the same every time you run it; a report whose rows shuffle randomly is hard to compare from month to month. One sort with a tuple key does both:
+`totals.get(e.category, 0)` means "the total so far for this category, or 0 if this is the first time we have seen it". For expenses of 1250 food, 320 bus and 4500 food, `totals` ends up as `{'food': 5750, 'bus': 320}`.
+
+### Step 2: order
+
+Biggest spending first is the most useful order. For equal totals, order by name, so the report comes out [[the same every time|deterministic]]. A report whose rows shuffle around is hard to compare from month to month.
+
+One sort with a **tuple key** does both. `totals.items()` gives `(category, total)` pairs; call each pair `kv`, for "key and value":
 
 ```python
 rows = sorted(totals.items(), key=lambda kv: (-kv[1], kv[0]))
 ```
 
-**3. Lay out.** Fixed-width columns make numbers line up so the eye can scan them. Left-align names, right-align amounts:
+The key for each pair is a tuple of two things, and Python [[compares tuples|tuple-key]] one item at a time:
+
+- `-kv[1]` is minus the total. `sorted` puts small keys first, and flipping the sign turns the biggest total into the smallest key. So the biggest spending comes first.
+- `kv[0]` is the category name. It only matters when two totals are equal, and then names go in alphabetical order.
+
+```python
+totals = {"food": 5750, "art": 500, "zoo": 500, "rent": 120000}
+sorted(totals.items(), key=lambda kv: (-kv[1], kv[0]))
+# [('rent', 120000), ('food', 5750), ('art', 500), ('zoo', 500)]
+```
+
+### Step 3: lay out
+
+**Fixed-width columns** make numbers [[line up|fixed-width]], so the eye can scan them. You met the format codes in the intermediate course. `:<12` means "left-align in 12 characters"; `:>10` means "right-align in 10 characters". Names go on the left; amounts go on the right, so their decimal points line up.
 
 ```python
 f"{'food':<12}{'57.50':>10}"     # 'food             57.50'
 ```
 
-**Return lines, do not print them.** `report()` returns a list of strings. Printing is the run loop's job. A method that returns data can be tested by comparing lists, reused in a different interface (a web page, an email), and combined with other output. A method that prints can only be looked at.
+That row is 12 + 10 = 22 characters wide. So the dividing rule under the rows is `"-" * 22`: a string times a number repeats it, giving 22 dashes.
 
-**Handle the empty case on purpose.** A report on no data should say so, rather than print a header, a rule and a total of zero, or crash on `max()` of an empty list.
+### Return lines, do not print them
 
-**Common mistake:** forgetting ties. Sorting only by amount makes the order of equal totals depend on insertion order, and your tests (and your users) see it change.
+`report()` returns a list of strings. Printing is the run loop's job. A method that returns data can be tested by comparing lists, reused in a different interface (a web page, an email), and combined with other output. A method that prints [[can only be looked at|return-not-print]].
+
+### Handle the empty case on purpose
+
+A report on no data should say so, instead of printing a header, a rule and a total of zero, or crashing on `max()` of an empty list. Deciding what happens with no data at all is one of the [[edge cases|edge-cases]] every program needs.
+
+**Watch out:** forgetting ties. Sorting only by amount makes the order of equal totals depend on the order they were added, and your tests (and your users) see it change.
+
+::: context aggregate Aggregating is everywhere
+"Aggregate" comes from Latin for "gathering into a flock". Every dashboard you have seen does it: steps per day, sales per month, fuel used per engine burn. Databases have it built in; in the SQL course you meet `GROUP BY`, which does exactly what this loop does. The loop needs only one pass through the list, however many categories there are, because the dict finds each running total straight away.
+:::
+
+::: context deterministic Same input, same output
+A program is **deterministic** when the same input always gives exactly the same output. It is what makes tests possible: a check that compares the report with an expected list only works if the report cannot come out in a different order next time. Flight software is held to this very strictly, because engineers must be able to replay a recorded flight in simulation and see the computer make exactly the same decisions it made in the air.
+:::
+
+::: context tuple-key How the tuple keys sort
+Tuples are compared item by item, like words in a dictionary. First the numbers are compared. Only when those are equal does Python look at the names. Here are the keys for the example, smallest first, which is the order `sorted` returns.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 170" font-family="Inter, Arial, sans-serif">
+  <g fill="#ffffff" stroke="#1f2a44" stroke-width="2">
+    <rect x="20" y="10" width="220" height="30" rx="4"/><rect x="20" y="50" width="220" height="30" rx="4"/>
+    <rect x="20" y="90" width="220" height="30" rx="4"/><rect x="20" y="130" width="220" height="30" rx="4"/>
+  </g>
+  <g font-size="13" fill="#1f2a44">
+    <text x="32" y="30">(-120000, 'rent')</text><text x="32" y="70">(-5750, 'food')</text>
+    <text x="32" y="110">(-500, 'art')</text><text x="32" y="150">(-500, 'zoo')</text>
+  </g>
+  <line x1="262" y1="14" x2="262" y2="150" stroke="#1d6fd1" stroke-width="2"/>
+  <polygon points="262,158 257,148 267,148" fill="#1d6fd1"/>
+  <text x="274" y="60" font-size="12" fill="#1d6fd1">smallest key</text>
+  <text x="274" y="76" font-size="12" fill="#1d6fd1">first</text>
+  <text x="274" y="128" font-size="11" fill="#b4232c">tie: art</text>
+  <text x="274" y="143" font-size="11" fill="#b4232c">before zoo</text>
+</svg>
+```
+:::
+
+::: context fixed-width Columns need a fixed-width font
+Fixed-width columns work because terminals use a **monospace** font, where every character, from `i` to `W`, takes the same width. Twelve characters are then always the same distance across the screen, whatever they are. The first column is padded to 12, the second to 10.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 110" font-family="Inter, Arial, sans-serif">
+  <rect x="20" y="40" width="192" height="34" fill="#ffffff" stroke="#1f2a44" stroke-width="2"/>
+  <rect x="212" y="40" width="128" height="34" fill="#8fb8f0" stroke="#1d6fd1" stroke-width="2"/>
+  <text x="28" y="62" font-size="14" fill="#1f2a44">food</text>
+  <text x="332" y="62" font-size="14" fill="#1f2a44" text-anchor="end">57.50</text>
+  <text x="116" y="28" font-size="12" fill="#1f2a44" text-anchor="middle">:&lt;12 left-aligned</text>
+  <text x="276" y="28" font-size="12" fill="#1d6fd1" text-anchor="middle">:&gt;10 right-aligned</text>
+  <text x="116" y="94" font-size="11" fill="#6c7a93" text-anchor="middle">12 characters</text>
+  <text x="276" y="94" font-size="11" fill="#6c7a93" text-anchor="middle">10 characters</text>
+</svg>
+```
+:::
+
+::: context return-not-print The pure core, again
+This is the design lesson from the expert course at work. `report()` is part of the pure core: data in, data out, no side effects. The list of lines it returns could be printed in a terminal, joined into an email, or turned into rows of a web page, and a test can compare it with an expected list in one line. If it printed instead, a test would have to capture the screen to see what happened.
+:::
+
+::: context edge-cases Edge cases
+An **edge case** is an input at the very edge of what is allowed: no data at all, exactly one item, the largest possible number, two things that are exactly equal. Programs are usually written with the ordinary middle case in mind, so the edges are where bugs hide. Good testers list the edge cases first. The empty ledger and the tie between equal totals are the two edge cases of this report, and each has its own check.
+:::
 --- task
 Add two methods to `Ledger`:
 
-- `by_category()` returns a dict from category to total cents.
-- `report()` returns a list of lines: one per category, highest total first and ties in alphabetical order, as the category left-aligned in 12 characters then `format_cents(total)` right-aligned in 10; then a line of 22 `-` characters; then `TOTAL` laid out the same way. An empty ledger's report is `["no expenses"]`.
+- `by_category()` returns a dict from each category to its total in cents.
+- `report()` returns a list of lines:
+  - one line per category, highest total first and ties in alphabetical order, as the category left-aligned in 12 characters then `format_cents(total)` right-aligned in 10;
+  - then a line of 22 `-` characters;
+  - then `TOTAL` laid out the same way, with the total of everything.
+
+An empty ledger's report is `["no expenses"]`.
+--- hint
+`by_category` is the `totals.get(category, 0) + amount` loop from step 1, over `self.expenses`.
+--- hint
+In `report`, sort `self.by_category().items()` with `key=lambda kv: (-kv[1], kv[0])`, and format each row with `f"{category:<12}{format_cents(total):>10}"`.
+--- hint
+Check for an empty ledger first and return `["no expenses"]`. After the rows, append `"-" * 22` and the TOTAL row, `f"{'TOTAL':<12}{format_cents(self.total()):>10}"`.
 --- starter
 # Expense tracker, step 2: a ledger that stores expenses.
 from dataclasses import dataclass
@@ -466,12 +816,6 @@ class Ledger:
         lines.append("-" * 22)
         lines.append(f"{'TOTAL':<12}{format_cents(self.total()):>10}")
         return lines
---- hint
-`by_category` is the `totals.get(category, 0) + amount` loop.
---- hint
-Sort `self.by_category().items()` with `key=lambda kv: (-kv[1], kv[0])`, and format each row with `f"{category:<12}{format_cents(total):>10}"`.
---- hint
-After the rows, append `"-" * 22` and the TOTAL row. Check for an empty ledger first.
 --- check case | by_category sums each category
 (lambda l: (l.add(1250, "food"), l.add(320, "bus"), l.add(4500, "food"), l.by_category())[-1])(Ledger())
 => {"food": 5750, "bus": 320}
@@ -487,7 +831,7 @@ Ledger().report()
 
 === pyp-04 | Expense tracker 4: the program
 --- teach
-The last piece is the loop that makes this a program: read commands, run them, print what happened.
+Last lesson the ledger learned to write its own report. Every layer exists now, but nothing joins them together yet. This lesson writes layer 4, the loop that makes them a program: read commands, run them, and collect what happened.
 
 ```python
 def run(lines):
@@ -498,11 +842,48 @@ def run(lines):
     return out
 ```
 
-**Where to catch errors.** Each layer below raises `ValueError` when something is wrong, and knows nothing about screens or users. The run loop is the **error boundary**: the one place that knows how to *report* a problem, so it catches the error, turns it into an `error: ...` line, and carries on with the next command. One typo must never lose the rest of someone's input.
+`run` gets a list of command lines and gives back a list of output lines. The `...` is what you fill in, one step at a time.
 
-Catch only what you expect (`ValueError` from parsing). An unexpected `TypeError` is a bug in *your* code, and hiding it would make it much harder to find.
+### Step 1: skip blank lines and comments
 
-**`run(lines)` returns output instead of printing** for the same reason as `report()`: it can be tested with a list of lines in and a list of lines out, with no keyboard involved. The real program is then a thin shell around it:
+First, `line.strip()` removes spaces from both ends. Then a blank line, or a line starting with `#`, is skipped with `continue` before it ever reaches the parser. So an input file can be laid out with blank lines and [[annotated for humans|comment-lines]]:
+
+```
+# September
+add 12.50 food lunch with Sam
+
+add 3.20 transport bus
+```
+
+### Step 2: the error boundary
+
+Picture a shop where every worker at the back can hand a problem up to the front desk, but only the front desk talks to customers. The layers below the loop work that way. Each one raises `ValueError` when something is wrong, and knows nothing about screens or users.
+
+The run loop is the **error boundary**: the [[one place that reports problems|error-boundary]]. It catches the error, turns it into an `error: ...` line, and carries on with the next command. One typo must never lose the rest of someone's input.
+
+```python
+try:
+    command = parse_command(line)
+except ValueError as err:
+    out.append(f"error: {err}")
+    continue
+```
+
+`f"error: {err}"` puts the exception's message into the line, so `add abc food` becomes `error: bad amount: abc`.
+
+Catch only what you expect: `ValueError` from parsing. An unexpected `TypeError` is a bug in *your* code, and [[hiding it|narrow-except]] would make it much harder to find.
+
+### Step 3: do each command
+
+Now `command` is one of the three dicts from lesson 1. Branch on `command["cmd"]`:
+
+- `add`: store it in the ledger, and produce `added 12.50 to food`.
+- `total`: the label is `total` when the category is `None`, or `total food` when there is one, then a colon and the amount.
+- `report`: the report is already a list of lines, so add them all to `out` with `out.extend(...)`. That [[adds each line separately|extend-vs-append]], where `append` would add the whole list as one item.
+
+### Step 4: the thin shell
+
+`run(lines)` returns output instead of printing, for the same reason as `report()`: it can be tested with a list of lines in and a list of lines out, with no keyboard involved. The real program is then a thin shell around it:
 
 ```python
 if __name__ == "__main__":
@@ -510,21 +891,85 @@ if __name__ == "__main__":
         print(line)
 ```
 
-`sys.stdin.read()` reads everything the user typed or piped in. The `__name__` guard means the loop runs when the file is executed as a program, but not when another file imports its functions.
+You met both parts in the expert course. `sys.stdin.read()` reads everything the user typed or piped in (it needs `import sys` at the top), and `.splitlines()` cuts it into a list of lines. The [[name guard|name-guard]] means the loop runs when the file is executed as a program, but not when another file imports its functions. In a real terminal you could [[feed it a whole file|redirect]] of commands.
 
-**Blank lines and comments** (`# September`) are skipped before parsing, so an input file can be laid out and annotated for humans.
+### Look back
 
-That is the whole program: four layers, each small, each testable, each with one job. Look back at how little each lesson needed to change the ones before it. That is what a good structure buys you.
+That is the whole program: four layers, each small, each testable, each with one job. Look back at how little each lesson needed to change the ones before it. That is [[what a good structure buys you|structure-pays]].
+
+**Watch out:** forgetting the `continue` after appending the error line. The loop then goes on to use `command`, which still holds the *previous* line's command. A typo after `add 5 food` would quietly add another 5 to food. On the very first line there is no previous command, and the program crashes.
+
+::: context comment-lines Why input files allow comments
+Many files that programs read allow comment lines that start with `#`: Python code itself, Bash scripts, `.gitignore` files and lots of settings files. The program skips them, but people reading the file see the notes. A month of expenses kept in a text file with `# September` and `# October` headings is easier to check by eye, and the program does not care.
+:::
+
+::: context error-boundary Errors travel up to one place
+When `to_cents` raises, Python leaves `to_cents`, then leaves `parse_command`, looking for a matching `except`. The first one it finds is in the run loop. That is the only layer that turns an error into output.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 190" font-family="Inter, Arial, sans-serif">
+  <rect x="20" y="14" width="150" height="40" rx="8" fill="#8fb8f0" stroke="#1d6fd1" stroke-width="2"/>
+  <text x="95" y="39" font-size="13" font-weight="700" fill="#1f2a44" text-anchor="middle">run loop</text>
+  <rect x="20" y="78" width="150" height="40" rx="8" fill="#ffffff" stroke="#1f2a44" stroke-width="2"/>
+  <text x="95" y="103" font-size="13" fill="#1f2a44" text-anchor="middle">parse_command</text>
+  <rect x="20" y="142" width="150" height="40" rx="8" fill="#ffffff" stroke="#1f2a44" stroke-width="2"/>
+  <text x="95" y="167" font-size="13" fill="#1f2a44" text-anchor="middle">to_cents</text>
+  <line x1="95" y1="142" x2="95" y2="126" stroke="#b4232c" stroke-width="2"/>
+  <polygon points="95,119 90,128 100,128" fill="#b4232c"/>
+  <line x1="95" y1="78" x2="95" y2="62" stroke="#b4232c" stroke-width="2"/>
+  <polygon points="95,55 90,64 100,64" fill="#b4232c"/>
+  <text x="104" y="136" font-size="11" fill="#b4232c">ValueError</text>
+  <text x="104" y="72" font-size="11" fill="#b4232c">ValueError</text>
+  <line x1="170" y1="34" x2="200" y2="34" stroke="#1f2a44" stroke-width="2"/>
+  <polygon points="207,34 199,30 199,38" fill="#1f2a44"/>
+  <text x="212" y="30" font-size="12" fill="#1f2a44">error: bad</text>
+  <text x="212" y="46" font-size="12" fill="#1f2a44">amount: abc</text>
+</svg>
+```
+:::
+
+::: context narrow-except Why not catch everything
+It is tempting to write `except Exception:` so that nothing can ever crash the loop. But then a typo in your own code, like a misspelled variable, turns into a polite `error:` line and the program carries on with wrong results. Nobody finds out until the totals are wrong. A crash with a traceback is annoying, but it points straight at the bug. Catch the errors you planned for, and let the rest be loud.
+:::
+
+::: context extend-vs-append append adds one item, extend adds many
+`out.append(x)` adds `x` as one new item, even when `x` is a list. `out.extend(x)` goes through `x` and adds each of its items separately.
+
+```python
+out = ["x"]; out.append(["a", "b"])    # ['x', ['a', 'b']]
+out = ["x"]; out.extend(["a", "b"])    # ['x', 'a', 'b']
+```
+
+With `append`, the whole report would sit inside `out` as one list, and printing it would show brackets and quotes instead of five neat lines.
+:::
+
+::: context name-guard The guard, once more
+When you run the file, Python sets `__name__` to `"__main__"`, so the guarded block runs and reads standard input. When a test file imports this one to call `run` or `parse_command`, `__name__` is the module's own name instead, and the block is skipped. Without the guard, importing the file would sit waiting for input that never comes.
+:::
+
+::: context redirect Feeding the program a file
+In the Terminal course you met redirection. If this program were saved as `tracker.py` and your commands as `september.txt`, the command `python3 tracker.py < september.txt` sends the file into standard input, as if you had typed every line. The `<` means "take input from this file". A pipe works too: `cat september.txt | python3 tracker.py`. In this editor, the Input box under your code plays the part of the file.
+:::
+
+::: context structure-pays Small changes are the sign of a good design
+Count what changed from lesson to lesson. Lesson 2 added a class without touching the parser. Lesson 3 added two methods without touching anything else. Lesson 4 added one function and four lines of shell. When adding a feature means changing only new code, a design is working. When every new feature means editing old code all over the program, bugs creep in. The next two projects follow the same shape, and in the capstones you will design it yourself.
+:::
 --- task
 Write `run(lines)`, returning the list of output lines:
 
 - Skip blank lines and lines starting with `#`.
-- A line that fails to parse produces `"error: <message>"`, and processing continues.
+- A line that fails to parse produces `"error: <message>"`, and processing continues with the next line.
 - `add` stores the expense and produces `"added 12.50 to food"`.
-- `total` produces `"total: <amount>"`; `total food` produces `"total food: <amount>"`.
+- `total` produces `"total: <amount>"`; `total food` produces `"total food: <amount>"`, with the amount formatted by `format_cents`.
 - `report` produces the report lines.
 
-Then add the entry point under `if __name__ == "__main__":` that runs the lines of standard input and prints each output line.
+Then add the entry point under `if __name__ == "__main__":` that runs the lines of standard input and prints each output line. (The Input box already holds a September of commands.)
+--- hint
+Inside the loop: strip the line, skip blanks and comments, then `try: command = parse_command(line)` / `except ValueError as err:` append the error line and `continue`.
+--- hint
+Then branch on `command["cmd"]`. For `add`, call `ledger.add(...)` with the three values from the dict. For `total`, the label is `"total"` or `f"total {category}"`. For `report`, `out.extend(ledger.report())`.
+--- hint
+You need `import sys` at the top for `sys.stdin.read().splitlines()`, and the entry point prints each line that `run` returns.
 --- starter
 # Expense tracker, step 3: reports.
 from dataclasses import dataclass
@@ -730,12 +1175,6 @@ total
 total food
 spend 5 fun
 report
---- hint
-Inside the loop: strip, skip blanks and comments, then `try: command = parse_command(line)` / `except ValueError as err:` append the error line and `continue`.
---- hint
-Then branch on `command["cmd"]`. For `total`, the label is `"total"` or `f"total {category}"`; for `report`, `out.extend(ledger.report())`.
---- hint
-You need `import sys` at the top for `sys.stdin.read().splitlines()`.
 --- check output | The program runs a whole session
 added 12.50 to food
 added 3.20 to transport
