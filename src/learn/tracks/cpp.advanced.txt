@@ -1734,9 +1734,94 @@ Fraction(1, 3) < Fraction(1, 2) && !(Fraction(1, 2) < Fraction(2, 4)) && Fractio
 
 === cpp3-08 | Virtual functions and interfaces
 --- teach
-Sometimes you want one piece of code to work with many kinds of thing: "add up the area of these shapes", whatever shapes they are. That is **runtime polymorphism**, and in C++ it takes three ingredients.
+Last lesson your `Fraction` behaved like a built-in number. A template, like your `Stack<T>`, works for many types, but each `Stack<int>` or `Stack<std::string>` is its own class, fixed while compiling, and holds only one type. Sometimes one piece of code must handle a **mix** of kinds at once: "add up the area of these shapes", whatever shapes they turn out to be.
 
-**An interface**: a base class with **pure virtual** functions (`= 0`). It cannot be instantiated; it only states what every shape can do.
+Picture a spacecraft's power system asking every device on board, "how much power do you need?" The camera, the heater and the radio each work out their answer in their own way. The question is the same; the answers depend on who is asked. Code that asks one question and gets the right answer from each kind of object, chosen while the program runs, is called **runtime [[polymorphism|polymorphism-word]]**. In C++ it takes three ingredients: a base class, classes built on it, and calls made through a pointer or reference. This lesson adds them one at a time.
+
+### One class built on another
+
+A class can be built on top of another one, taking everything it has and adding more:
+
+```cpp
+class Vehicle {
+public:
+    std::string id() const { return "V-1"; }
+};
+
+class Rover : public Vehicle {
+public:
+    int wheels() const { return 6; }
+};
+
+Rover r;
+r.id();       // "V-1": Rover got this from Vehicle
+r.wheels();   // 6: Rover's own
+```
+
+Read `class Rover : public Vehicle` as "a Rover is a kind of Vehicle". `Rover` **derives from** `Vehicle`: it has every member `Vehicle` has, plus its own. `Vehicle` is the **base class**, and `Rover` is a **derived class**. The word `public` there means the whole program may [[treat a Rover as a Vehicle|is-a]].
+
+### A base reference can refer to a derived object
+
+Because a `Rover` is a kind of `Vehicle`, a `Vehicle` reference or pointer may refer to one:
+
+```cpp
+Vehicle& v = r;    // v refers to the Rover r
+Vehicle* p = &r;   // p points at it
+```
+
+This is what lets one piece of code take "any vehicle": it takes a `Vehicle&`, and you hand it a rover, a lander, whatever derives from `Vehicle`.
+
+### Without virtual, the base version runs
+
+Now give both classes a `name()` and call it through a base reference:
+
+```cpp
+class Shape {
+public:
+    std::string name() const { return "shape"; }
+};
+
+class Circle : public Shape {
+public:
+    std::string name() const { return "circle"; }
+};
+
+Circle c;
+const Shape& s = c;
+s.name();   // "shape"! The compiler only knows s is a Shape.
+```
+
+The compiler picks the function from the type it can see, `Shape`, while compiling. It never looks at what `s` really refers to. The task's starter behaves exactly like this.
+
+### virtual: ask the real object
+
+Mark the function **`virtual`** in the base class:
+
+```cpp
+class Shape {
+public:
+    virtual std::string name() const { return "shape"; }
+};
+```
+
+Now `s.name()` gives `"circle"`. A **virtual function** is one where a call through a base pointer or reference runs the version for the object's *real* type, [[looked up while the program runs|vtable]]. That is the whole trick of runtime polymorphism.
+
+### override: let the compiler check your spelling
+
+In the derived class, write **`override`** after the function's parameters:
+
+```cpp
+class Circle : public Shape {
+public:
+    std::string name() const override { return "circle"; }
+};
+```
+
+`override` asks the compiler to check that there really is a virtual function with exactly this name, these parameters and this `const` in the base. Misspell the name, or forget the `const`, and it is a compile error, "marked 'override', but does not override". Without `override`, the mistake would compile quietly as a [[brand-new function|override-history]] that no call through a `Shape` ever reaches.
+
+### Pure virtual: a promise with no body
+
+Some base classes have no sensible answer of their own. What is the area of "a shape"? Write `= 0` instead of a body:
 
 ```cpp
 class Shape {
@@ -1747,7 +1832,11 @@ public:
 };
 ```
 
-**Implementations** that derive from it and **`override`** each function:
+Read `= 0` as "no body here: every derived class must supply one". A function like that is **pure virtual**. A class with one or more is **abstract**: you cannot make an object of it, so `Shape s;` does not compile. A base class made of pure virtual functions is an **interface**: it only states what every shape can do, and each derived class says how. This is how [[flight software is often organised|interfaces-in-flight]].
+
+### Implementing the interface
+
+A class that derives from `Shape` and overrides every pure virtual function is a real, complete class you can create:
 
 ```cpp
 class Circle : public Shape {
@@ -1760,30 +1849,121 @@ private:
 };
 ```
 
-`class Circle : public Shape` means `Circle` **derives from** `Shape`: it is a kind of `Shape` and has everything a `Shape` has. A derived constructor can pass arguments to its base's constructor in the initialiser list, for example `Square(double side) : Rectangle(side, side) {}`.
+A derived class that leaves any pure virtual function without a body is still abstract, and still cannot be created.
 
-**Access through a pointer or reference** to the base. A call to a `virtual` function then runs the version for the object's *real* type:
+### A virtual destructor
+
+The line `virtual ~Shape() = default;` in the interface is essential. `= default` means "the compiler writes the usual body", which here is empty. The `virtual` is what matters.
+
+You will hold shapes as `std::unique_ptr<Shape>`, and a `unique_ptr<Shape>` deletes its object through a `Shape*`. With a **virtual destructor** in the base, deleting a `Circle` through a `Shape*` runs `Circle`'s destructor too, then `Shape`'s. Without it, that delete is [[undefined behaviour|virtual-destructor]]. The rule: a class meant to be used through base pointers gets a virtual destructor.
+
+### Deriving from a derived class
+
+A derived class can itself be a base. A square *is a* rectangle with equal sides, so `Square` can derive from `Rectangle`, reuse its constructor, and override only `name()`. A derived constructor passes arguments to its base's constructor in the initialiser list, where members usually go:
+
+```cpp
+class Square : public Rectangle {
+public:
+    explicit Square(double side) : Rectangle(side, side) {}
+    std::string name() const override { return "square"; }
+};
+```
+
+`Square` gets `Rectangle`'s `area()` and `perimeter()` without writing them again: a 4 by 4 rectangle already knows its area is 16.
+
+### A collection of mixed shapes
+
+Now the payoff. One vector holds circles, rectangles and squares side by side, each owned by a `std::unique_ptr<Shape>`:
 
 ```cpp
 std::vector<std::unique_ptr<Shape>> shapes;
-shapes.push_back(std::make_unique<Circle>(1.0));
-for (const auto& s : shapes) total += s->area();   // Circle::area
+shapes.push_back(std::make_unique<Circle>(1.0));   // a unique_ptr<Circle> becomes a unique_ptr<Shape>
+shapes.push_back(std::make_unique<Square>(3.0));
+
+double total = 0;
+for (const auto& s : shapes) total += s->area();   // Circle::area, then Rectangle::area
 ```
 
-Why each detail matters:
+`s->area()` reads through the pointer, as in the smart pointers lesson, and `virtual` makes it run the right `area` for each shape. To keep track of one shape without owning it, use a plain pointer: `s.get()` gives the `Shape*` a `unique_ptr` holds, as in `const Shape* best = s.get();`.
 
-- `override` makes the compiler check that you really are overriding something. Misspell the name or forget a `const` and it is an error instead of a silent new function that never gets called.
-- A **virtual destructor** in the base means deleting a `Circle` through a `Shape*` (which `unique_ptr<Shape>` does) runs `Circle`'s destructor too. Without it, that is undefined behaviour.
-- A derived class can derive further: a `Square` *is a* `Rectangle` with equal sides, and can reuse its constructor, overriding only `name()`.
+**Watch out:** if you forget `virtual` in the base class, everything still compiles, and every call through a `Shape` quietly runs the base version: the starter's `"shape"` and `0`. Your guard is `override`. Put it on every function in a derived class that is meant to replace a base one; if the base function is not virtual, or the two do not match exactly, the compiler stops you. The next lesson shows one more way a derived object can [[lose its real type|square-rectangle]].
+
+::: context polymorphism-word Many shapes
+"Polymorphism" is Greek for "many shapes": *poly*, many, and *morphe*, shape. One call, `s->area()`, takes many shapes of behaviour depending on the object. C++ has two kinds. Templates give **compile-time** polymorphism: the compiler makes a separate function for each type, and each call is fixed before the program runs. Virtual functions give **runtime** polymorphism: one function call, and the choice is made each time it runs. Use the first when the types are known while compiling, and the second when a collection mixes kinds.
+:::
+
+::: context is-a "Is a kind of"
+Deriving says "every Rover is a Vehicle". Test a design by saying it aloud: "a circle is a shape" is true, so `Circle` may derive from `Shape`. "A rover is a wheel" is false: a rover *has* wheels, so a rover should hold them as members instead. The `public` in `: public Vehicle` makes the "is a" relationship visible to everyone, so a `Rover` can be passed wherever a `Vehicle&` is wanted. C++ also has `private` inheritance, where only the class itself knows, but it is rare; nearly every base you meet is public. The task's classes make a small family tree, each arrow pointing from a class to its base:
+
+```svg
+<svg viewBox="0 0 360 170" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <rect x="130" y="10" width="100" height="32" rx="6" fill="#ffffff" stroke="#1d6fd1" stroke-width="2" stroke-dasharray="6 4"/>
+  <text x="180" y="31" font-size="12" fill="#1f2a44" text-anchor="middle">Shape</text>
+  <rect x="30" y="72" width="100" height="32" rx="6" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="80" y="93" font-size="12" fill="#1f2a44" text-anchor="middle">Circle</text>
+  <rect x="230" y="72" width="100" height="32" rx="6" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="280" y="93" font-size="12" fill="#1f2a44" text-anchor="middle">Rectangle</text>
+  <rect x="230" y="128" width="100" height="32" rx="6" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="280" y="149" font-size="12" fill="#1f2a44" text-anchor="middle">Square</text>
+  <line x1="80" y1="72" x2="150" y2="46" stroke="#1f2a44" stroke-width="1.5"/>
+  <polygon points="155,43 145,43 149,51" fill="#1f2a44"/>
+  <line x1="280" y1="72" x2="210" y2="46" stroke="#1f2a44" stroke-width="1.5"/>
+  <polygon points="205,43 211,51 215,43" fill="#1f2a44"/>
+  <line x1="280" y1="128" x2="280" y2="110" stroke="#1f2a44" stroke-width="1.5"/>
+  <polygon points="280,104 275,112 285,112" fill="#1f2a44"/>
+  <text x="80" y="135" font-size="11" fill="#6c7a93" text-anchor="middle">dashed: abstract,</text>
+  <text x="80" y="150" font-size="11" fill="#6c7a93" text-anchor="middle">cannot be created</text>
+</svg>
+```
+:::
+
+::: context vtable How a virtual call finds its function
+The C++ standard does not say how, but every major compiler does it in the same basic way. Each class with virtual functions gets a table of the addresses of its versions, the **vtable**. Each object carries a hidden pointer to its class's table. A virtual call follows the object's pointer to the table and calls the address found there. That is why a virtual call costs a little more than a plain one, and why `sizeof` grows: with g++ on a 64-bit machine, a struct holding one `double` is 8 bytes, and 16 once it has a virtual function.
+
+```svg
+<svg viewBox="0 0 360 160" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <rect x="10" y="40" width="100" height="70" rx="6" fill="#ffffff" stroke="#1f2a44"/>
+  <text x="60" y="30" font-size="12" fill="#1f2a44" text-anchor="middle">a Circle object</text>
+  <rect x="20" y="50" width="80" height="24" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="60" y="66" font-size="11" fill="#1f2a44" text-anchor="middle">hidden ptr</text>
+  <rect x="20" y="78" width="80" height="24" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="60" y="94" font-size="11" fill="#1f2a44" text-anchor="middle">r_ = 1.0</text>
+  <line x1="100" y1="62" x2="160" y2="62" stroke="#1d6fd1" stroke-width="2"/>
+  <polygon points="158,57 168,62 158,67" fill="#1d6fd1"/>
+  <rect x="170" y="40" width="180" height="84" rx="6" fill="#ffffff" stroke="#1f2a44"/>
+  <text x="260" y="30" font-size="12" fill="#1f2a44" text-anchor="middle">Circle's vtable</text>
+  <text x="182" y="62" font-size="11" fill="#1f2a44">~Circle</text>
+  <text x="182" y="84" font-size="11" fill="#1f2a44">area   → Circle::area</text>
+  <text x="182" y="106" font-size="11" fill="#1f2a44">name → Circle::name</text>
+  <text x="180" y="148" font-size="11" fill="#6c7a93" text-anchor="middle">every Circle shares one table; a Square points at Square's</text>
+</svg>
+```
+:::
+
+::: context override-history A keyword added after the bugs
+`override` arrived in C++11, along with `final`, which forbids any further overriding. Before that, a derived function that did not quite match its base, a missing `const` or an `int` where the base had a `long`, compiled as a separate function with the same name. Every call through a base pointer then ran the base version, and nothing said why. Large codebases collected these bugs for years. Many coding standards now require `override` on every overriding function, and compilers can warn when it is missing.
+:::
+
+::: context interfaces-in-flight Interfaces in real flight software
+NASA JPL's open-source flight software framework, F Prime, flew on the Ingenuity helicopter on Mars. It is written in C++, and its pieces are built around this pattern: a tool generates a base class for each software component, and engineers write a class that derives from it and fills in its virtual functions. Components talk to each other only through typed connections called ports, never by reaching inside each other. So a component can be swapped for another with the same ports, for example a simulated sensor during ground tests, without changing the rest.
+:::
+
+::: context virtual-destructor Half a destruction
+Without a virtual destructor, deleting through a `Shape*` picks the destructor the way a non-virtual call does: from the type the compiler sees. So only `~Shape` would be considered, and whatever `Circle` owns, a buffer or a file, would never be released. The standard goes further and calls the whole delete undefined behaviour, so anything can happen. With `-Wall`, compilers warn in some of these cases, for example clang when a `unique_ptr` deletes such a class, but not all of them, so do not count on a warning. Write the virtual destructor.
+:::
+
+::: context square-rectangle Where this comes back
+The next lesson is about **object slicing**: copying a derived object into a variable of the base type keeps only the base part, and virtual calls stop working. That is one reason polymorphic objects live behind pointers, as in your vector of `unique_ptr<Shape>`. The square-is-a-rectangle design also has a famous catch. It works here because a shape never changes after it is made. Add `set_width` to `Rectangle`, and a `Square` could be given a width different from its height, breaking what a square is. The design lesson at the end of this course, "composition over inheritance", takes that up.
+:::
 --- task
-Complete the shapes. No `main`.
+Complete the shapes. No `main`: the checker supplies it. Use `3.141592653589793` for π.
 
-- `Shape` is the interface in the starter: make `area()`, `perimeter()` and `name()` pure virtual, and give it a virtual destructor.
-- `Circle(double r)` — name `"circle"`. Use `3.141592653589793` for π.
-- `Rectangle(double w, double h)` — name `"rectangle"`.
-- `Square(double side)` derives from `Rectangle` — name `"square"`.
-- `double total_area(const std::vector<std::unique_ptr<Shape>>& shapes)`.
-- `std::string largest_name(const std::vector<std::unique_ptr<Shape>>& shapes)` — the name of the shape with the largest area (the first one on a tie), or `""` if there are none.
+- `Shape` is the interface in the starter. Make `area()`, `perimeter()` and `name()` pure virtual (keep them `const`), and give `Shape` a virtual destructor.
+- `Circle(double r)` derives from `Shape`. Its area is π·r·r, its perimeter 2·π·r, and its name `"circle"`.
+- `Rectangle(double w, double h)` derives from `Shape`. Its area is w·h, its perimeter 2·(w + h), and its name `"rectangle"`.
+- `Square(double side)` derives from `Rectangle`, and its name is `"square"`. A `Square(4)` has area 16 and perimeter 16.
+- `double total_area(const std::vector<std::unique_ptr<Shape>>& shapes)` returns the sum of all their areas (0 for an empty vector).
+- `std::string largest_name(const std::vector<std::unique_ptr<Shape>>& shapes)` returns the name of the shape with the largest area. On a tie, the first of them wins. With no shapes, it returns `""`.
 --- starter
 #include <memory>
 #include <string>
@@ -1852,11 +2032,11 @@ std::string largest_name(const std::vector<std::unique_ptr<Shape>>& shapes) {
     return best ? best->name() : "";
 }
 --- hint
-Pure virtual: `virtual double area() const = 0;`. Add `virtual ~Shape() = default;`.
+In `Shape`, each function becomes pure virtual, like `virtual double area() const = 0;`, and add `virtual ~Shape() = default;`.
 --- hint
-Each derived class writes `double area() const override { … }` — the `const` must match the base exactly.
+Each derived class starts `class Circle : public Shape {` and writes its versions as `double area() const override { … }`. The `const` must match the base exactly, or `override` reports an error. Keep the sizes in private members set by the constructor.
 --- hint
-`Square(double side) : Rectangle(side, side) {}` reuses the rectangle; it only needs its own `name()`.
+`Square(double side) : Rectangle(side, side) {}` reuses the rectangle; it only needs its own `name()`. For `largest_name`, keep `const Shape* best = nullptr;`, and in the loop set `best = s.get();` when `best` is null or `s->area() > best->area()`. Using `>` and not `>=` keeps the first on a tie.
 --- check test | Shape is an abstract interface with a virtual destructor
 std::is_abstract_v<Shape> && std::has_virtual_destructor_v<Shape>
 --- check test | Areas and perimeters
@@ -3066,7 +3246,7 @@ The three shapes differ in how much they can carry back. A `bool` says only yes 
 :::
 
 ::: context check-at-the-edge Check once, where data comes in
-The edge of a program is where outside data arrives: a file, a keyboard, a radio link. Anything there can be wrong. If every function deep inside the program re-checked its inputs "just in case", the checks would be scattered, easy to forget and hard to test. Checking completely at the edge, and turning the text into a typed value like `Config`, means the rest of the code gets data that is already known to be good. Flight software works the same way with commands sent up from the ground: each command is checked when it arrives, before anything acts on it.
+The edge of a program is where outside data arrives: a file, a keyboard, a radio link. Anything there can be wrong. If every function deep inside the program re-checked its inputs to be safe, the checks would be scattered, easy to forget and hard to test. Checking completely at the edge, and turning the text into a typed value like `Config`, means the rest of the code gets data that is already known to be good. Flight software works the same way with commands sent up from the ground: each command is checked when it arrives, before anything acts on it.
 :::
 
 ::: context nodiscard-warning Making ignored results loud
@@ -3193,7 +3373,7 @@ Start with a `Config config;` (it already holds the defaults), a `bool have_host
 --- hint
 Split at `l.find('=')`: if that is `std::string::npos`, `return ConfigError{line, "expected key = value"};`. Otherwise trim `l.substr(0, eq)` as the key and `l.substr(eq + 1)` as the value, then use `if` / `else if` on the key. Any other key returns `ConfigError{line, "unknown key: " + key}`. The variant return type accepts the `ConfigError` or the `Config` as they are.
 --- hint
-For the port, a small helper `bool parse_port(const std::string& s, int& out)` keeps things tidy: false if `s` is empty or longer than 5, false on any non-digit, build the number with `n = n * 10 + (c - '0')`, false unless `1 <= n <= 65535`, otherwise store it in `out`. After the loop: `if (!have_host) return ConfigError{0, "missing host"};` and then `return config;`.
+For the port, a small helper `bool parse_port(const std::string& s, int& out)` keeps things tidy: false if `s` is empty or longer than 5, false on any non-digit, build the number with `n = n * 10 + (c - '0')`, false if `n < 1 || n > 65535`, otherwise store it in `out`. After the loop: `if (!have_host) return ConfigError{0, "missing host"};` and then `return config;`.
 --- check test | A full, valid config
 [] { auto r = parse_config("# server\nhost = example.org\nport=8080\n\nverbose = true\n"); auto* c = std::get_if<Config>(&r); return c && c->host == "example.org" && c->port == 8080 && c->verbose; }()
 --- check test | Defaults apply
@@ -3287,7 +3467,7 @@ std::stable_sort(w.begin(), w.end(), [](const std::string& a, const std::string&
 
 ### Only the top few
 
-Sometimes you want only the best few: a top 10 out of a million. Sorting all million is wasted work. **`std::partial_sort(first, middle, last, comp)`** puts just the elements from `first` up to `middle` in order: the smallest ones by your comparator, sorted. The rest are left in some unspecified order after them. It is [[cheaper than a full sort|partial-cost]] when the top part is small.
+Sometimes you want only the best few: a top 10 out of a million. Sorting all million is wasted work. **`std::partial_sort(first, middle, last, comp)`** puts only the elements from `first` up to `middle` in order: the smallest ones by your comparator, sorted. The rest are left in some unspecified order after them. It is [[cheaper than a full sort|partial-cost]] when the top part is small.
 
 ```cpp
 std::vector<int> s = {40, 95, 12, 77, 60, 88};
@@ -3338,7 +3518,7 @@ Two tuples compare the way a dictionary orders words: look at the first entries;
   <g font-size="12" fill="#1f2a44">
     <text x="12" y="40">a</text><text x="12" y="100">b</text>
   </g>
-  <text x="180" y="138" font-size="12" text-anchor="middle" fill="#1f2a44">so tie(a.last, a.first) &lt; tie(b.last, b.first) is true</text>
+  <text x="180" y="138" font-size="11" text-anchor="middle" fill="#1f2a44">so tie(a.last, a.first) &lt; tie(b.last, b.first) is true</text>
 </svg>
 ```
 :::
@@ -3705,11 +3885,30 @@ count_in_range({1, 5, 9}, 6, 8) == 0 && count_in_range({1, 5, 9}, 9, 1) == 0 && 
 
 === cpp3-16 | Design: composition over inheritance
 --- teach
-Inheritance says "**is a**": a `Circle` is a `Shape`. It is tempting to use it for "**has**" or "**can do**" too — and that is where designs rot.
+Last lesson was about finding answers fast. This last lesson of the course is about design: how to arrange classes so that a program stays easy to grow. It brings together interfaces, `unique_ptr` and moving, all from earlier in this course.
 
-Suppose robots can fly or swim. With inheritance you write `FlyingRobot` and `SwimmingRobot`. Then someone needs a robot that does both: `FlyingSwimmingRobot`, copying code from the other two. Add driving and you need `DrivingRobot`, `FlyingDrivingRobot`, `SwimmingDrivingRobot`, `FlyingSwimmingDrivingRobot`… Each new ability **doubles** the number of classes, and every copy is a chance for the copies to drift apart.
+### "Is a" and "has"
 
-**Composition** says "**has**": a robot *has* a list of abilities. Each ability is a small object behind an interface, and a robot is assembled from parts at run time:
+Think about how a spacecraft is built. Engineers do not design a new "spacecraft with a camera, two solar panels and a radio" from nothing each time. They take a spacecraft body and bolt parts onto it: a camera, panels, a radio. The spacecraft **has** a camera. It is not a kind of camera.
+
+Classes can be related in those same two ways.
+
+- **Inheritance** says "**is a**": a `Circle` *is a* `Shape`, as in the virtual functions lesson. `class Circle : public Shape` makes `Circle` a kind of `Shape`, usable anywhere a `Shape` is expected.
+- **Composition** says "**has**": an object holds other objects as its parts, and uses them to do its work.
+
+It is tempting to use inheritance for "has" or "can do" too. That is where designs [[rot|is-a-test]].
+
+### How inheritance gets out of hand
+
+Suppose robots can fly or swim. With inheritance you write a class for each: `FlyingRobot` and `SwimmingRobot`, both deriving from `Robot`.
+
+Then someone needs a robot that does both. You write `FlyingSwimmingRobot`, copying code from the other two.
+
+Add driving, and you need `DrivingRobot`, `FlyingDrivingRobot`, `SwimmingDrivingRobot`, `FlyingSwimmingDrivingRobot`… Each new ability [[doubles the number of classes|class-explosion]], and every copied piece of code is a chance for the copies to drift apart: fix a bug in one, forget the other.
+
+### A robot that has abilities
+
+With composition, a robot *has* a list of abilities. Each ability is a small object behind an interface:
 
 ```cpp
 class Ability {
@@ -3718,33 +3917,131 @@ public:
     virtual std::string verb() const = 0;
 };
 
+class Fly : public Ability {
+public:
+    std::string verb() const override { return "flies"; }
+};
+```
+
+That is exactly the shape of `Shape` in the virtual functions lesson: a pure virtual function (`= 0`) that every ability must provide, and a virtual destructor so that deleting a `Fly` through an `Ability` pointer runs the right destructor.
+
+The robot keeps its abilities in a vector of `unique_ptr<Ability>`, so it owns them, and they are deleted with it:
+
+```cpp
 class Robot {
 public:
+    explicit Robot(std::string name) : name_(std::move(name)) {}
+
     Robot& add(std::unique_ptr<Ability> a) {
         abilities_.push_back(std::move(a));
         return *this;               // returning *this lets calls chain
     }
+
 private:
+    std::string name_;
     std::vector<std::unique_ptr<Ability>> abilities_;
 };
+```
 
+A robot is now assembled from parts while the program runs:
+
+```cpp
 Robot r("Otto");
 r.add(std::make_unique<Fly>()).add(std::make_unique<Swim>());
 ```
 
-Now three abilities are three small classes, and any combination is free. Inheritance has not gone away — it is used for what it is good at, a narrow **interface** (`Ability`) with interchangeable implementations. What went away is inheritance used to **share code** between concrete classes.
+### Returning `*this` to chain calls
 
-A rule of thumb: inherit to be *used as* the base (polymorphism); compose to *reuse* behaviour. When you catch yourself naming a class after a combination of features, that is the signal.
+Inside a member function, **`this`** is a [[pointer to the object the function was called on|this-pointer]]. So `*this`, with the star read "the thing it points at", is that object itself.
 
-The starter uses two things you may not have met. `protected` members can be used by derived classes but not by outside code. `using Robot::Robot;` lets a derived class reuse its base's constructors. Neither survives the redesign.
+`add` returns `Robot&`, a reference to the same robot. That is why `r.add(…)` can be followed straight away by `.add(…)`: the second call runs on whatever the first returned, which is `r` again. Writing calls one after another like this is called **method chaining**.
+
+**Watch out:** a `unique_ptr` cannot be copied, only moved. `abilities_.push_back(a);` does not compile; the error mentions a "deleted function", the copy that `unique_ptr` forbids. Write `abilities_.push_back(std::move(a));`, as in the moving lesson.
+
+### Joining words with commas
+
+To describe a robot as `"Otto: flies, swims"`, you join the verbs with `", "` between them. Put the comma before every word except the first:
+
+```cpp
+std::vector<std::string> parts = {"flies", "swims", "drives"};
+std::string out;
+for (std::size_t i = 0; i < parts.size(); ++i) {
+    if (i > 0) out += ", ";   // no comma before the first word
+    out += parts[i];
+}
+// out is "flies, swims, drives"
+```
+
+### What changed, and what did not
+
+Now three abilities are three small classes, and any combination is free: no new class for "flies and drives". [[Inheritance has not gone away|composition-rule]]. It is still used for what it is good at: a narrow **interface** (`Ability`) with interchangeable implementations. What went away is inheritance used to **share code** between concrete classes.
+
+A rule of thumb: inherit to be *used as* the base (that is **polymorphism**, one piece of code working with many types); compose to *reuse* behaviour. When you catch yourself naming a class after a combination of features, like `FlyingSwimmingRobot`, that is the signal to compose instead.
+
+### Two things in the starter
+
+The starter uses two things you may not have met. Neither survives the redesign.
+
+- **`protected`** members can be used by derived classes but not by outside code. It sits between `public` and `private`. The starter's `name_` is `protected` so that `FlyingRobot` can read it. [[Many style guides avoid it|protected-data]].
+- **`using Robot::Robot;`** inside a derived class lets it reuse its base's constructors, so `FlyingRobot("Otto")` works without writing a constructor of its own.
+
+::: context is-a-test A test for "is a"
+A good test for inheritance: can the derived thing be used *everywhere* the base is expected, without surprising anyone? Computer scientist Barbara Liskov stated this idea in 1987, and it is now called the *Liskov substitution principle*; she later won the Turing Award, computing's highest prize. A `Circle` passes: any code that asks a `Shape` for its area works with a circle. "A flying robot is a robot" sounds right in words, but really it is a robot that *has* a way to fly. When the thing you want to share is an ability, not an identity, reach for composition.
+:::
+
+::: context class-explosion Counting the classes
+With one class per combination, every ability can be in or out, so n abilities give 2 × 2 × … × 2 = 2^n combinations. One more ability doubles the count. With composition, you write one class per ability, so the count only grows by one.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 170" font-family="Inter, Arial, sans-serif">
+  <line x1="40" y1="140" x2="340" y2="140" stroke="#1f2a44"/>
+  <g fill="#8fb8f0" stroke="#1f2a44">
+    <rect x="60" y="126" width="30" height="14"/>
+    <rect x="130" y="112" width="30" height="28"/>
+    <rect x="200" y="84" width="30" height="56"/>
+    <rect x="270" y="28" width="30" height="112"/>
+  </g>
+  <g fill="#f2b880" stroke="#1f2a44">
+    <rect x="92" y="133" width="20" height="7"/>
+    <rect x="162" y="126" width="20" height="14"/>
+    <rect x="232" y="119" width="20" height="21"/>
+    <rect x="302" y="112" width="20" height="28"/>
+  </g>
+  <g font-size="12" text-anchor="middle" fill="#1f2a44">
+    <text x="86" y="157">1 ability</text><text x="156" y="157">2</text><text x="226" y="157">3</text><text x="296" y="157">4</text>
+    <text x="75" y="120">2</text><text x="145" y="106">4</text><text x="215" y="78">8</text><text x="285" y="22">16</text>
+  </g>
+  <text x="40" y="20" font-size="11" fill="#1d6fd1">combinations</text>
+  <text x="40" y="36" font-size="11" fill="#b4232c">ability classes</text>
+</svg>
+```
+
+The blue bars count every combination, including "no abilities"; the orange bars count the ability classes composition needs: 1, 2, 3, 4.
+:::
+
+::: context this-pointer Where this comes from
+When you write `r.add(…)`, the compiler quietly passes the address of `r` into `add`, and inside the function that address is called `this`. That is how a member function knows *which* robot's `abilities_` to change: `abilities_` really means `this->abilities_`. Its type here is `Robot*`, a pointer to a robot. Returning `*this` by reference hands back the very same robot, not a copy, which is why the chained second `add` changes `r` too.
+:::
+
+::: context composition-rule An old piece of advice
+"Favor object composition over class inheritance" is one of the best-known lines in *Design Patterns* (1994), a book by Erich Gamma, Richard Helm, Ralph Johnson and John Vlissides. Flight software often follows the same idea. NASA JPL's F Prime framework, which ran on the Ingenuity helicopter on Mars, builds a program out of separate components connected through well-defined ports, rather than one deep family tree of classes. Game engines do the same: in Unity, a game object is given its behaviour by the components attached to it.
+:::
+
+::: context protected-data Why protected data is avoided
+`protected` data can be changed by every class that derives from the base, including ones written years later by someone else. So the base can no longer keep its own rules, the way the classes lesson in the intermediate course kept theirs with `private` members. The C++ Core Guidelines, a widely used rule book, say to avoid protected data for that reason. Protected *functions* are less of a problem, because the base still decides what they do.
+:::
 --- task
-Replace the starter's class hierarchy with composition. No `main`.
+Replace the starter's class hierarchy with composition. No `main`: the checker supplies it.
 
-- `class Ability` — an interface with `virtual std::string verb() const = 0;` and a virtual destructor.
-- `Fly`, `Swim` and `Drive` — their verbs are `"flies"`, `"swims"` and `"drives"`.
-- `class Robot` — `explicit Robot(std::string name)`; `Robot& add(std::unique_ptr<Ability> ability)` (returns `*this`); `std::size_t ability_count() const`; `std::string act() const` returning `"Name: flies, swims"` with the verbs in the order added, or `"Name: idles"` with none.
+- `class Ability`: an interface with `virtual std::string verb() const = 0;` and a virtual destructor.
+- `Fly`, `Swim` and `Drive`: three classes deriving from `Ability`, whose verbs are `"flies"`, `"swims"` and `"drives"`.
+- `class Robot`, with:
+  - `explicit Robot(std::string name)`;
+  - `Robot& add(std::unique_ptr<Ability> ability)`, which stores the ability and returns `*this`;
+  - `std::size_t ability_count() const`, the number of abilities added;
+  - `std::string act() const`, which returns the name, `": "` and the verbs in the order they were added, joined with `", "`: for example `"Otto: flies, swims"`. With no abilities it returns `"Otto: idles"`.
 
-No class may derive from `Robot`.
+No class may derive from `Robot`: delete `FlyingRobot`, `SwimmingRobot` and `FlyingSwimmingRobot`.
 --- starter
 #include <memory>
 #include <string>
@@ -3830,11 +4127,11 @@ private:
     std::vector<std::unique_ptr<Ability>> abilities_;
 };
 --- hint
-`Robot` stops being a base class: it holds `std::vector<std::unique_ptr<Ability>> abilities_;`.
+`Robot` stops being a base class. Give it a `private` member `std::vector<std::unique_ptr<Ability>> abilities_;` next to `name_`, and write `Ability`, `Fly`, `Swim` and `Drive` above it, the way `Shape` and `Circle` were written in the virtual functions lesson.
 --- hint
-`add` moves the pointer into the vector and returns `*this`, so `r.add(…).add(…)` chains.
+`add` moves the pointer into the vector with `abilities_.push_back(std::move(ability));` and then does `return *this;`, so `r.add(…).add(…)` chains. `ability_count` returns `abilities_.size()`.
 --- hint
-`act` joins each ability's `verb()` with `", "` after `"Name: "`.
+In `act`, return `name_ + ": idles"` if the vector is empty. Otherwise start from `name_ + ": "` and loop over the indexes: add `", "` when `i > 0`, then add `abilities_[i]->verb()`.
 --- check case | A robot with no abilities idles
 Robot("Idle").act()
 => "Idle: idles"
