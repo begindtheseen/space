@@ -17,7 +17,7 @@ This lesson is four small tools like those: the **heap**, which always knows the
 
 A **heap** is a container that can always hand you its smallest item quickly, and lets you add or remove items quickly too. It does not keep everything sorted. It keeps just enough order that the smallest item is always at the front.
 
-The trick is to picture the items as a **[[tree where every parent beats its children|heap-as-array]]**. In a **min-heap**, each parent is less than or equal to both of its children. So the root, at the top, is the smallest thing in the heap. The tree is stored in an ordinary list: the item at position $i$ has its children at positions $2i+1$ and $2i+2$.
+The trick is to picture the items as a **[[tree where no parent is bigger than its children|heap-as-array]]**. In a **min-heap**, each parent is less than or equal to both of its children. So the root, at the top, is the smallest thing in the heap. The tree is stored in an ordinary list: the item at position $i$ has its children at positions $2i+1$ and $2i+2$.
 
 - **Push** (add an item): put it at the end of the list, then swap it upward while it is smaller than its parent.
 - **Pop** (remove the smallest): take the root, move the last item into the root's place, then swap it downward past its smaller child until the rule holds again.
@@ -246,7 +246,7 @@ Read $W(n)$ as "W of n", the number of ways to reach step $n$. $W(0) = 1$ says t
 
 Written straight from the rule, the recursive function is correct and terribly slow. $W(10)$ calls $W(9)$ and $W(8)$; $W(9)$ calls $W(8)$ again; and the repeats multiply until the number of calls grows exponentially with $n$. DP fixes that in one of two ways.
 
-- **Memo** (top-down): keep the recursion, but remember each answer the first time you compute it. This is **[[memoization|memoization]]**. In Python, the decorator `@lru_cache` does it for you.
+- **Memo** (top-down): keep the recursion, but remember each answer the first time you compute it. This is **[[memoization|memoization]]**. In Python, writing `@lru_cache` on the line above the function does it for you.
 - **Table** (bottom-up): forget recursion. Fill in $W(0), W(1), W(2), \dots$ in order with a loop. Each entry needs only the two before it.
 
 ```python
