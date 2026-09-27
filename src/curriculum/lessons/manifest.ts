@@ -3704,6 +3704,33 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Property-based testing with Hypothesis; invariants over examples"
       ],
       "file": "cod_py_06_testing/06-property-based-testing.md"
+    },
+    {
+      "id": "l10-coverage",
+      "title": "Coverage, and why it is a floor",
+      "minutes": 19,
+      "covers": [
+        "Coverage with pytest-cov, and why coverage is a floor not a goal"
+      ],
+      "file": "cod_py_06_testing/10-coverage.md"
+    },
+    {
+      "id": "l11-linters-and-hooks",
+      "title": "Linters, formatters, type checkers and pre-commit hooks",
+      "minutes": 20,
+      "covers": [
+        "ruff, black, mypy and pre-commit hooks"
+      ],
+      "file": "cod_py_06_testing/11-linters-and-hooks.md"
+    },
+    {
+      "id": "l12-docstrings-and-doctest",
+      "title": "Docstrings in NumPy style, and doctest",
+      "minutes": 19,
+      "covers": [
+        "Docstrings in NumPy style and doctest"
+      ],
+      "file": "cod_py_06_testing/12-docstrings-and-doctest.md"
     }
   ],
   "cod_rs_01_basics": [
@@ -10227,16 +10254,13 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_py_06_testing": {
-    "covered": 7,
+    "covered": 10,
     "total": 13,
     "complete": false,
     "missing": [
       "Golden-file regression tests with explicit tolerances",
       "Testing numerical code: invariants, convergence order, conservation laws",
-      "Test doubles: fakes and mocks for sensors and hardware interfaces",
-      "Coverage with pytest-cov, and why coverage is a floor not a goal",
-      "ruff, black, mypy and pre-commit hooks",
-      "Docstrings in NumPy style and doctest"
+      "Test doubles: fakes and mocks for sensors and hardware interfaces"
     ]
   },
   "cod_py_07_integration": {
