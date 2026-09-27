@@ -357,7 +357,7 @@ In MESI terms, why do many threads *reading* one variable cost almost nothing, w
 :::
 
 ::: answer
-Readers can all hold the line in the Shared state at once; each reads its own copy and no message is needed. A write needs the line in Modified or Exclusive, the writer's copy being the only one, so the writer must invalidate every other copy first. With two writers on one line, each write invalidates the other core's copy, and that core's next write has to fetch the line back. The line crosses between cores on nearly every write.
+Readers can all hold the line in the Shared state at once, each reading its own copy, with no messages. A write needs the only copy (Modified or Exclusive), so the writer must first invalidate every other copy. With two writers on one line, each write invalidates the other's copy, and the other's next write fetches the line back: it crosses between cores on nearly every write.
 :::
 
 ::: check
@@ -381,7 +381,7 @@ A teammate adds `alignas(64)` to both indices of a ring buffer whose `push` read
 :::
 
 ::: answer
-Each push writes `head_` and reads `tail_`; each pop writes `tail_` and reads `head_`. So each index's line must move to the other core on nearly every operation whatever the layout. Packed, the two indices travel together as one line; padded, two lines travel, so the cost can go up. Make each side keep a private cached copy of the other side's index and reload the shared atomic only when the cache says "full" or "empty". Then, while the buffer has room, each side touches only its own line, and keeping those lines apart removes the ping-pong.
+Every push writes `head_` and reads `tail_`, and every pop does the reverse, so each index's line must cross to the other core on nearly every operation whatever the layout. Packed, the two indices travel together as one line; padded, two lines travel. Give each side a private cached copy of the other's index, reloaded only when it says "full" or "empty". Then each side mostly touches only its own line, and keeping the lines apart removes the ping-pong.
 :::
 
 ## Summary

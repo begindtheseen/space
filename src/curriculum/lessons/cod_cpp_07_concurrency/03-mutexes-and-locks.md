@@ -426,7 +426,7 @@ A telemetry thread reads `g_nav.alt_m` without locking, "because it only reads",
 :::
 
 ::: answer
-No. The read and the estimator's write touch the same memory location, one of them is a write, and the read holds no lock, so nothing orders the two: that is a data race and undefined behaviour. The mutex only creates order between threads that lock it. The reader must lock the same mutex — a `std::lock_guard`, or a `std::shared_lock` if `g_nav_mutex` is a `std::shared_mutex` — and ideally copy the state out and unlock at once.
+No. Same memory location, one access a write, and the reader holds no lock, so nothing orders them: a data race, undefined behaviour. A mutex only orders threads that lock it. The reader must lock the same mutex — a `std::lock_guard`, or a `std::shared_lock` if `g_nav_mutex` is a `std::shared_mutex` — and ideally copy the state out and unlock at once.
 :::
 
 ::: check
@@ -442,7 +442,7 @@ Which lock type fits each job? (a) Protect a counter for one statement. (b) Lock
 :::
 
 ::: answer
-The `throw` leaves the function before `g_m.unlock()` runs, so the mutex stays locked forever, and every later call to `log` from any thread waits forever. With `std::lock_guard<std::mutex> lock(g_m);` in place of the manual `lock()`, the guard's destructor runs during stack unwinding and unlocks the mutex on the exception path too — the same guarantee as the RAII module's `MutexLock`.
+The `throw` skips `g_m.unlock()`, so the mutex stays locked and every later call to `log` waits forever. With `std::lock_guard<std::mutex> lock(g_m);` in place of the manual `lock()`, the guard's destructor runs during stack unwinding and unlocks the mutex on the exception path too — the same guarantee as the RAII module's `MutexLock`.
 :::
 
 ::: check
@@ -450,7 +450,7 @@ A class method `update()` locks the class's `std::mutex` and calls `validate()`,
 :::
 
 ::: answer
-The hang is the thread waiting for a mutex it already holds. `std::recursive_mutex` would stop the hang, but it lets `validate()` run while `update()` may have the data half-changed, and hides who holds the lock. Better: move the body of `validate()` into a private `validate_locked()` that assumes the mutex is held; the public `validate()` locks and calls it, and `update()` calls `validate_locked()` directly under its own lock. Each public entry point then locks exactly once.
+The thread is waiting for a mutex it already holds. `std::recursive_mutex` would stop the hang, but would let `validate()` run while `update()` may have the data half-changed. Better: move the body of `validate()` into a private `validate_locked()` that assumes the mutex is held; the public `validate()` locks and calls it, and `update()` calls `validate_locked()` directly under its own lock. Each public entry point then locks exactly once.
 :::
 
 ::: check
