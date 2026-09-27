@@ -3947,6 +3947,36 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       "file": "cod_py_08_performance/09-bigger-than-memory.md"
     }
   ],
+  "cod_py_09_packaging": [
+    {
+      "id": "l01-packages-and-imports",
+      "title": "Packages, __init__.py and relative imports",
+      "minutes": 19,
+      "covers": [
+        "__init__.py, package versus namespace package, relative imports"
+      ],
+      "file": "cod_py_09_packaging/01-packages-and-imports.md"
+    },
+    {
+      "id": "l02-src-layout",
+      "title": "The src layout",
+      "minutes": 17,
+      "covers": [
+        "The src layout and why it prevents accidental local imports"
+      ],
+      "file": "cod_py_09_packaging/02-src-layout.md"
+    },
+    {
+      "id": "l03-pyproject-and-backends",
+      "title": "pyproject.toml and build backends",
+      "minutes": 20,
+      "covers": [
+        "pyproject.toml: project metadata, dependencies, optional-dependencies, build-system",
+        "Build backends: setuptools, hatchling, flit"
+      ],
+      "file": "cod_py_09_packaging/03-pyproject-and-backends.md"
+    }
+  ],
   "cod_rs_01_basics": [
     {
       "id": "l01-rustup-and-cargo",
@@ -10489,17 +10519,13 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "cod_py_09_packaging": {
-    "covered": 0,
+    "covered": 4,
     "total": 13,
     "complete": false,
     "missing": [
-      "The src layout and why it prevents accidental local imports",
-      "pyproject.toml: project metadata, dependencies, optional-dependencies, build-system",
-      "Build backends: setuptools, hatchling, flit",
       "Editable installs and what they actually do",
       "Wheels versus source distributions; manylinux",
       "Console entry points for command-line tools",
-      "__init__.py, package versus namespace package, relative imports",
       "Version pinning: exact pins for applications, ranges for libraries, lockfiles for both",
       "Semantic versioning and how to decide a bump",
       "Dependency resolution, extras, and the scientific-stack ABI problem",
