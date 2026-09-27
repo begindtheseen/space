@@ -1,5 +1,6 @@
 @track sql
 @level projects
+@plainvoice true
 @title SQL · Projects
 @name SQL projects: three real databases, then your own designs
 @blurb Build three working databases end to end — an online store, a product-analytics pipeline and a library — then design three more from a written specification, with nothing but the requirements to go on.
@@ -3142,23 +3143,129 @@ CREATE TABLE venues (
 );
 INSERT INTO venues (id, name, capacity) VALUES (1, 'Hall', 3), (2, 'Club', 100);
 --- teach
-**Capstones.** From here on there is no worked example and almost no starter: a specification, and checks that use your database the way the application would. How you get there — names of constraints, which checks, how the view is built — is yours to decide. The checks only rely on the **table names, column names and behaviour the spec states**, so extra columns are fine as long as they have defaults or allow NULL.
+Last lesson a trigger charged a fine the moment a late book came back, and the library was finished. That was the third project built step by step. Now come the three capstones promised at the start of the course. In each one you design a whole database yourself, from a written description.
 
-Work like you would on the job:
+### How a capstone works
 
-1. **Read the whole spec** and list the entities, their columns, and every rule.
-2. **Decide where each rule lives.** A rule the database can enforce (unique, required, range, reference) is a constraint. A number other people read is a view.
-3. **Write the tables, then try to break them.** Insert good rows, then bad ones, and see that each bad one is refused.
-4. **Build the view last** and check it by hand against a few rows.
+Until now, each lesson showed you the pieces and then asked for them. A capstone does not. You get a **specification**, or **spec**: a [[numbered list of what the database must do|spec]], with no code in it. There is no worked example, and the starter is almost empty.
 
-**The spec: a small ticketing system.** The venue list already exists (`venues`: `id`, `name`, `capacity`).
+The checks then use your database the way an app would. They insert good rows, try bad ones, and read your view. They rely only on what the spec states: the **table names, the column names and how things must behave**. Everything else is yours to decide: the names of your constraints, which checks you write, how you build the view.
 
-- Enforce foreign keys.
-- `events` — `id` (integer primary key), `venue_id` (required, a real venue), `title` (required), `starts_at` (required text timestamp).
-- `tickets` — `id` (integer primary key), `event_id` (required, a real event), `seat` (required text), `buyer_email` (required), `price_cents` (required integer, zero or more). **A seat can be sold only once per event** — the same seat at a different event is fine. Deleting an event deletes its tickets.
-- A view `event_sales` with one row per event — including events with no tickets sold — and the columns `event_id`, `title`, `sold` (tickets sold), `capacity` (the venue's), `remaining` (capacity minus sold) and `revenue_cents` (total ticket price; 0 when none sold).
+You may add extra columns of your own, as long as each one has a `DEFAULT` or allows NULL. The checks insert rows that name only the spec's columns, so any other column must be able to fill itself in.
+
+### Work like you would on the job
+
+1. **Read the whole spec first.** List the tables, their columns and every rule.
+2. **Decide where each rule lives.** A rule the database can enforce (a unique value, a required value, a range, a link to another table) becomes a constraint. A number other people read becomes a view.
+3. **Write the tables, then try to break them.** Insert good rows, then bad ones, and see each bad one refused.
+4. **Build the view last**, and check it by hand against a few rows.
+
+### The table you start with
+
+This spec is a small ticketing system: a venue hosts events, and people buy tickets for seats. The list of venues already exists, as `venues`:
+
+| id | name | capacity |
+| --- | --- | --- |
+| 1 | Hall | 3 |
+| 2 | Club | 100 |
+
+`capacity` is how many seats the venue has. The table has `CHECK (capacity > 0)`, so every venue has at least one seat.
+
+### The spec
+
+1. Foreign keys are enforced.
+2. `events`: `id` (integer primary key), `venue_id` (required, and it must be a real venue), `title` (required), `starts_at` (required; a timestamp stored as text, like `'2024-09-01 19:00'`).
+3. `tickets`: `id` (integer primary key), `event_id` (required, a real event), `seat` (required text, like `'A1'`), `buyer_email` (required), `price_cents` (required integer, zero or more).
+4. **A seat can be [[sold only once per event|one-seat]].** The same seat at a different event is fine.
+5. Deleting an event [[deletes its tickets|cancel-history]].
+6. A view `event_sales` with one row per event, **including events with no tickets sold**, and these columns:
+   - `event_id` and `title`
+   - `sold`: how many tickets the event has sold
+   - `capacity`: its venue's capacity
+   - `remaining`: capacity minus sold
+   - `revenue_cents`: the total of its ticket prices, and 0 when none are sold
+
+### Where each tool comes from
+
+You have met every tool this spec needs. Here is where:
+
+| spec | tool | lesson |
+| --- | --- | --- |
+| 1, 2, 3: a real venue, a real event | `PRAGMA foreign_keys = ON`, `REFERENCES` | "Foreign keys" |
+| 2, 3: required, zero or more | `NOT NULL`, `CHECK` | "Constraints: rules the database enforces" |
+| 4: once per event | a rule across two columns, `UNIQUE (…, …)` | "Constraints: rules the database enforces" |
+| 5: delete with the event | `ON DELETE CASCADE` | "Foreign keys" |
+| 6: the view | `CREATE VIEW` | "Views: saved queries" |
+| 6: unsold events too | `LEFT JOIN`, counting a column | "LEFT JOIN: where the filter goes" |
+| 6: 0, not NULL | `COALESCE` | "Testing for NULL" |
+
+"Store 1: the schema" used most of these together. It also stored money as whole cents, the same way `price_cents` does here.
+
+### Try to break it
+
+The quickest way to test a rule is to [[break it on purpose|break-it]]. From "Constraints: rules the database enforces": `INSERT OR IGNORE` skips a row that breaks a rule, and `RETURNING id` hands back only the rows that got in. Try it on `venues`, which refuses a capacity of 0:
+
+```sql
+INSERT OR IGNORE INTO venues (id, name, capacity) VALUES (3, 'Shed', 0) RETURNING id;
+```
+
+No rows come back: the row was refused. Change the capacity to 40 and run it again, and one row comes back: `3`.
+
+The checks test your tables in exactly this way. Write a bad insert for every rule in the spec, and watch each one come back empty. Then take your test inserts out before you run the checks: the checks add rows with their own ids, and a test row with the same id would get in their way.
+
+### Check the view by hand
+
+After a few test inserts, work out one row of the view yourself and compare. Say an event at the Hall has no tickets yet. Its row must still be there, with `sold` 0, `capacity` 3, `remaining` 3 and `revenue_cents` 0. If the event is missing, or shows 1 sold, or has NULL revenue, the view has a bug.
+
+**Watch out:** the unsold event is where views like this go wrong. An inner `JOIN` to `tickets` drops it completely. A `LEFT JOIN` keeps it, as one row with NULL in every ticket column. Then `COUNT(*)` counts that row and says 1 sold, while counting a ticket column, such as `COUNT(t.id)`, says 0. And `SUM` of nothing is NULL, not 0.
+
+::: context spec What a spec is for
+In a real team, the person who knows what is needed (a customer, a product manager, a mission planner) is rarely the person who writes the tables. They write down what the system must do, and engineers turn that into a design. That document is the specification. A good spec says *what* must be true, not *how* to build it, and it numbers each requirement so that each one can be tested. Spacecraft are built the same way: every requirement gets a number, and before launch each one is checked off by a test, an analysis or an inspection.
+:::
+
+::: context one-seat Why the database must be the referee
+On a busy sale, two people can click the same seat in the same second. The app asks "is A1 free?" for both, both answers are yes, and both try to buy. If the rule lived only in the app, both tickets would be written. A rule across the pair `(event_id, seat)` lets the database refuse the second sale, however the two requests are timed. The same seat at another event is a different pair, so it is allowed.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 180" font-family="Inter, Arial, sans-serif">
+  <defs>
+    <marker id="nx" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#b4232c"/>
+    </marker>
+  </defs>
+  <text x="20" y="69" font-size="12" fill="#1f2a44">event 10</text>
+  <rect x="90" y="50" width="44" height="28" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="112" y="69" font-size="12" fill="#1f2a44" text-anchor="middle">A1</text>
+  <rect x="140" y="50" width="44" height="28" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="162" y="69" font-size="12" fill="#1f2a44" text-anchor="middle">A2</text>
+  <rect x="190" y="50" width="44" height="28" fill="#fff" stroke="#6c7a93"/>
+  <text x="212" y="69" font-size="12" fill="#1f2a44" text-anchor="middle">A3</text>
+  <text x="20" y="119" font-size="12" fill="#1f2a44">event 11</text>
+  <rect x="90" y="100" width="44" height="28" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="112" y="119" font-size="12" fill="#1f2a44" text-anchor="middle">A1</text>
+  <rect x="140" y="100" width="44" height="28" fill="#fff" stroke="#6c7a93"/>
+  <text x="162" y="119" font-size="12" fill="#1f2a44" text-anchor="middle">A2</text>
+  <rect x="190" y="100" width="44" height="28" fill="#fff" stroke="#6c7a93"/>
+  <text x="212" y="119" font-size="12" fill="#1f2a44" text-anchor="middle">A3</text>
+  <rect x="262" y="50" width="84" height="28" fill="#fff" stroke="#b4232c" stroke-width="1.5"/>
+  <text x="304" y="69" font-size="12" fill="#b4232c" text-anchor="middle">new: 10, A1</text>
+  <text x="304" y="96" font-size="12" fill="#b4232c" text-anchor="middle">refused</text>
+  <path d="M 304 50 C 304 18, 112 18, 112 48" fill="none" stroke="#b4232c" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#nx)"/>
+  <text x="180" y="152" font-size="11" fill="#6c7a93" text-anchor="middle">blue = sold. Each (event, seat) pair can be sold once:</text>
+  <text x="180" y="168" font-size="11" fill="#6c7a93" text-anchor="middle">(10, A1) is taken, and (11, A1) is a different pair</text>
+</svg>
+```
+:::
+
+::: context cancel-history Deleting is not the only way
+In this spec, cancelling an event deletes its tickets, and `ON DELETE CASCADE` does that in one statement. Real ticket systems are often more careful. A sold ticket is a record of money paid, and a cancelled show usually means refunds. So many systems keep the rows and set a column such as `status` to `'cancelled'` instead. The history stays, and a report can still say how much must be paid back. Keeping a row but marking it as gone is called a **soft delete**. The appointment capstone, two lessons from now, uses exactly this idea.
+:::
+
+::: context break-it Test the refusals, not only the successes
+A test that only inserts good rows proves half the job: a table with no rules at all would pass it. Testers call the other half **negative tests**, inputs that must be refused. For each rule, try one row that breaks it and one that barely keeps it: a price of -1 and a price of 0, the same seat twice at one event and once at another. The edges are where mistakes hide, such as `>` written where `>=` was meant.
+:::
 --- task
-Implement the ticketing specification above: the `events` and `tickets` tables with every rule it states, foreign keys enforced, and the `event_sales` view.
+Build everything in the spec, rules 1 to 6: turn foreign keys on; create the `events` table (`id`, `venue_id`, `title`, `starts_at`) and the `tickets` table (`id`, `event_id`, `seat`, `buyer_email`, `price_cents`) with every rule the spec states for them; and create the view `event_sales` with the columns `event_id`, `title`, `sold`, `capacity`, `remaining` and `revenue_cents`.
 --- starter
 -- Ticketing: your schema goes here.
 --- solution
@@ -3191,9 +3298,11 @@ JOIN venues v ON v.id = e.venue_id
 LEFT JOIN tickets t ON t.event_id = e.id
 GROUP BY e.id, e.title, v.capacity;
 --- hint
-"Once per event" is a composite rule: a table-level `UNIQUE (event_id, seat)`.
+Go through the spec one rule at a time and match each to the table in "Where each tool comes from". "Once per event" is a rule across two columns: at the end of `tickets`, after the last column, write `UNIQUE (event_id, seat)`.
 --- hint
-The view starts from `events`, joins its venue, and LEFT JOINs tickets so an event with no sales still has a row; `COALESCE` the revenue.
+`event_id` in `tickets` needs `NOT NULL REFERENCES events(id) ON DELETE CASCADE`, and `price_cents` needs `CHECK (price_cents >= 0)`. Put `PRAGMA foreign_keys = ON;` first.
+--- hint
+The view starts from `events`, joins its venue, and LEFT JOINs `tickets`, so an event with no sales still has a row. Group by event; `sold` is `COUNT(t.id)`, `remaining` is `v.capacity - COUNT(t.id)`, and the revenue is `COALESCE(SUM(t.price_cents), 0)`.
 --- check query | Foreign keys are enforced
 PRAGMA foreign_keys
 => [[1]]
@@ -3223,17 +3332,132 @@ CREATE TABLE people (
 );
 INSERT INTO people (id, name) VALUES (1, 'Ana'), (2, 'Bo'), (3, 'Cy'), (4, 'Dee');
 --- teach
-**The spec: an app for splitting shared expenses** among a group of friends. Someone pays for dinner; the app records who owes what share of it; at any moment it can say who is up and who is down. The group already exists in `people` (`id`, `name`).
+Last lesson you built a ticketing system from a spec. This capstone is an app for splitting shared costs among a group of friends. Someone pays for dinner. The app records what share of it each person owes. At any moment it can say who is up and who is down. Work the same way as last time: read the whole spec, decide where each rule lives, build the tables, try to break them, and build the views last.
 
-- Enforce foreign keys.
-- `expenses` — `id` (integer primary key), `paid_by` (required, a real person), `description` (required), `amount_cents` (required integer, **more than zero**).
-- `shares` — who owes what part of an expense: `expense_id` (a real expense; deleting the expense deletes its shares), `person_id` (a real person), `share_cents` (required integer, zero or more). A person has **at most one share per expense**.
-- A view `balances` with one row for **every** person — including people with no expenses — and the columns `person_id`, `name`, `paid_cents` (total of the expenses they paid), `owed_cents` (total of their shares) and `net_cents` (paid minus owed: positive means the group owes them).
-- A view `unbalanced_expenses` listing every expense whose shares do not add up to its amount — including expenses with no shares at all — with the columns `expense_id`, `amount_cents` and `shared_cents` (the total of its shares, 0 if none).
+### The table you start with
 
-A warning from experience: `balances` joins people to two different one-to-many tables (expenses paid, shares owed). Build each total separately before combining them.
+The group already exists, as `people`:
+
+| id | name |
+| --- | --- |
+| 1 | Ana |
+| 2 | Bo |
+| 3 | Cy |
+| 4 | Dee |
+
+Each `name` is `UNIQUE`, so no two people share one.
+
+### The picture
+
+Picture the notebook a group keeps on a trip: a [[page of who paid for what|ledger]], and under each payment, who owes a piece of it. Ana pays 90.00 for dinner for three, and each of Ana, Bo and Cy owes 30.00 of it. In cents:
+
+| person | paid | owed | paid minus owed |
+| --- | --- | --- | --- |
+| Ana | 9000 | 3000 | 6000 |
+| Bo | 0 | 3000 | -3000 |
+| Cy | 0 | 3000 | -3000 |
+
+The last column is each person's **net balance**: what they paid minus what they owe. Ana is 6000 up, so the group owes her 60.00. Bo and Cy are each 3000 down. Add the three together: 6000 − 3000 − 3000 = 0. That is [[no accident|net-zero]]. When the friends [[settle up|settle-up]], Bo and Cy each pay Ana 30.00, and everyone is back to 0.
+
+### The spec
+
+1. Foreign keys are enforced.
+2. `expenses`: `id` (integer primary key), `paid_by` (required, a real person), `description` (required), `amount_cents` (required integer, **more than zero**).
+3. `shares`, one row for one person's part of one expense: `expense_id` (required, a real expense), `person_id` (required, a real person), `share_cents` (required integer, zero or more).
+4. Deleting an expense deletes its shares.
+5. A person has **at most one share per expense**.
+6. A view `balances` with one row for **every** person, including people with no expenses, and these columns:
+   - `person_id` and `name`
+   - `paid_cents`: the total of the expenses they paid
+   - `owed_cents`: the total of their shares
+   - `net_cents`: paid minus owed, so a positive number means the group owes them
+7. A view `unbalanced_expenses` listing every expense whose shares do not add up to its amount, **including expenses with no shares at all**, with the columns `expense_id`, `amount_cents` and `shared_cents` (the total of its shares, 0 if there are none).
+
+### Where each tool comes from
+
+| spec | tool | lesson |
+| --- | --- | --- |
+| 1, 2, 3, 4 | `PRAGMA foreign_keys = ON`, `REFERENCES`, `ON DELETE CASCADE` | "Foreign keys" |
+| 2, 3 | `NOT NULL`, `CHECK` | "Constraints: rules the database enforces" |
+| 5 | a primary key made of two columns | "Design: normalising a flat table" |
+| 6 | one total per step, joined at the end | "CTEs: a query in named steps", "Debugging: the join that double-counts" |
+| 6, 7 | `LEFT JOIN`, `COALESCE` | "LEFT JOIN: where the filter goes", "Testing for NULL" |
+| 7 | `HAVING`, `<>` | "Grouping", "Filtering with WHERE" |
+
+"Store 1: the schema" used the same two-column primary key for `order_items`: one line per product per order. Here it is one share per person per expense.
+
+### Two lists hanging off one person
+
+A warning from experience. `balances` links each person to **two** different one-to-many tables: the expenses they paid, and the shares they owe. You met this trap in "Debugging: the join that double-counts".
+
+Suppose Ana paid two expenses, of 9000 and 5000 cents, and owes two shares, of 3000 and 2500. Join both tables onto Ana in one query, and the join pairs [[every expense with every share|fan-out]]:
+
+| name | amount_cents | share_cents |
+| --- | --- | --- |
+| Ana | 9000 | 3000 |
+| Ana | 9000 | 2500 |
+| Ana | 5000 | 3000 |
+| Ana | 5000 | 2500 |
+
+`SUM(amount_cents)` now gives 28000, twice the real 14000. `SUM(share_cents)` gives 11000, twice the real 5500. Nothing errors. The numbers are only wrong.
+
+The fix is to **build each total separately** before combining them. One step adds up what each person paid, one row per person. Another adds up what each person owes, one row per person. Only then join both onto `people`. Each total has at most one row per person, so nothing can multiply.
+
+### The expenses that do not add up
+
+An expense is balanced when its shares add up to its amount. Here are three:
+
+| expense | amount_cents | its shares | shared_cents | listed? |
+| --- | --- | --- | --- | --- |
+| Dinner | 9000 | 3000, 3000, 3000 | 9000 | no |
+| Tickets | 5000 | 2500, 2000 | 4500 | yes |
+| Snacks | 1200 | none | 0 | yes |
+
+Tickets has 500 cents that nobody owes. Snacks has no shares at all, so its whole amount is unaccounted for. Both [[belong in the view|remainder-cent]]. In a query: group each expense's shares, then keep the groups whose total is `<>` ("not equal to") the amount. A filter on a group's total is a `HAVING`, from the lesson "Grouping".
+
+**Watch out:** Snacks is the row that goes missing. After a `LEFT JOIN`, an expense with no shares has a share total of NULL, not 0. And `NULL <> 1200` is not true: it is NULL, so `HAVING` quietly drops the group. Turn the NULL into 0 with `COALESCE` before you compare, and Snacks stays.
+
+::: context ledger A book of money in and out
+A **ledger** is a record of every amount of money that moved: who paid, how much, and what for. Shops, banks and space agencies all keep them. The rule that makes a ledger trustworthy is that entries are added, not rubbed out. That is why this spec stores each expense and each share as its own row, and works out the balances with a view. A balance stored in a column could drift away from the rows it came from. A view is worked out fresh from the rows every time.
+:::
+
+::: context net-zero Why the balances add up to zero
+Every cent in a fully shared expense appears twice: once as money paid, by the person who paid, and once as money owed, spread over the shares. Paid minus owed, added over the whole group, cancels to 0. So if you add up everyone's `net_cents` and do not get 0, some expense's shares do not match its amount. That is exactly what `unbalanced_expenses` finds. Accountants call this kind of cross-check **reconciliation**: two ways of counting the same money must agree.
+:::
+
+::: context settle-up How the app decides who pays whom
+Once the balances are known, the people below zero pay the people above zero until everyone is at 0. A simple way: take the person who owes the most, have them pay the person who is owed the most as much as they can, and repeat. Each payment brings at least one person to exactly 0, so a group of 4 never needs more than 3 payments. Real expense-splitting apps work out a short list of payments like this from the same balances you are about to build.
+:::
+
+::: context fan-out Why the join doubles every total
+The join finds every row that matches Ana on each side and pairs each one on the left with each one on the right. Two expenses times two shares gives four rows. Each expense now appears twice, once per share, and each share appears twice, once per expense. With three shares, each expense would be counted three times.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 170" font-family="Inter, Arial, sans-serif">
+  <text x="70" y="22" font-size="11" fill="#6c7a93" text-anchor="middle">Ana paid</text>
+  <text x="290" y="22" font-size="11" fill="#6c7a93" text-anchor="middle">Ana owes</text>
+  <rect x="20" y="40" width="100" height="28" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="70" y="59" font-size="12" fill="#1f2a44" text-anchor="middle">9000</text>
+  <rect x="20" y="100" width="100" height="28" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="70" y="119" font-size="12" fill="#1f2a44" text-anchor="middle">5000</text>
+  <rect x="240" y="40" width="100" height="28" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="290" y="59" font-size="12" fill="#1f2a44" text-anchor="middle">3000</text>
+  <rect x="240" y="100" width="100" height="28" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="290" y="119" font-size="12" fill="#1f2a44" text-anchor="middle">2500</text>
+  <line x1="120" y1="54" x2="240" y2="54" stroke="#1d6fd1" stroke-width="1.5"/>
+  <line x1="120" y1="54" x2="240" y2="114" stroke="#1d6fd1" stroke-width="1.5"/>
+  <line x1="120" y1="114" x2="240" y2="54" stroke="#1d6fd1" stroke-width="1.5"/>
+  <line x1="120" y1="114" x2="240" y2="114" stroke="#1d6fd1" stroke-width="1.5"/>
+  <text x="180" y="158" font-size="11" fill="#6c7a93" text-anchor="middle">2 × 2 = 4 joined rows: every number is counted twice</text>
+</svg>
+```
+:::
+
+::: context remainder-cent How an expense ends up unbalanced
+Often it is plain rounding. Split 1000 cents three ways and each share is 333, with 1 cent left over, because 3 × 333 = 999. An app has to give that last cent to someone, and a bug that forgets to leaves the expense 1 cent short. Other times a share was deleted, or someone was left out when the expense was entered. Listing every unbalanced expense, including the ones with no shares yet, lets the app ask a person to fix it before anyone settles up.
+:::
 --- task
-Implement the expense-splitting specification above: the `expenses` and `shares` tables with every rule, foreign keys enforced, and the `balances` and `unbalanced_expenses` views.
+Build everything in the spec, rules 1 to 7: turn foreign keys on; create the `expenses` table (`id`, `paid_by`, `description`, `amount_cents`) and the `shares` table (`expense_id`, `person_id`, `share_cents`) with every rule the spec states for them; and create the views `balances` (`person_id`, `name`, `paid_cents`, `owed_cents`, `net_cents`) and `unbalanced_expenses` (`expense_id`, `amount_cents`, `shared_cents`).
 --- starter
 -- Expense splitting: your schema goes here.
 --- solution
@@ -3275,11 +3499,11 @@ LEFT JOIN shares s ON s.expense_id = e.id
 GROUP BY e.id
 HAVING COALESCE(SUM(s.share_cents), 0) <> e.amount_cents;
 --- hint
-`shares` needs a composite primary key `(expense_id, person_id)` for "one share per person per expense".
+`shares` needs a primary key made of two columns, `PRIMARY KEY (expense_id, person_id)`, written after its last column: that is "one share per person per expense". `amount_cents` needs `CHECK (amount_cents > 0)`, and `expense_id` needs `ON DELETE CASCADE`.
 --- hint
-For `balances`, total the paid amounts per person and the owed shares per person in two separate CTEs, then LEFT JOIN both onto `people`.
+For `balances`, total the paid amounts per person and the owed shares per person in two separate CTEs (`WITH paid AS (…), owed AS (…)`), each grouped by person. Then start from `people` and LEFT JOIN both onto it, with `COALESCE(…, 0)` around each total.
 --- hint
-`unbalanced_expenses` LEFT JOINs shares onto expenses, groups by expense, and keeps groups with `HAVING` total ≠ amount.
+`unbalanced_expenses` LEFT JOINs `shares` onto `expenses`, groups by expense, and keeps the groups with `HAVING COALESCE(SUM(s.share_cents), 0) <> e.amount_cents`.
 --- check query | Foreign keys are enforced
 PRAGMA foreign_keys
 => [[1]]
@@ -3313,15 +3537,171 @@ CREATE TABLE staff (
 );
 INSERT INTO staff (id, name) VALUES (1, 'Dr Ng'), (2, 'Dr Oz');
 --- teach
-**The spec: bookings for a small clinic.** Clients book appointments with staff; the clinic needs to spot double bookings and see each day's workload. The staff list already exists (`staff`: `id`, `name`).
+Last lesson you split expenses, and kept two one-to-many totals from multiplying. This is the last capstone, and the [[last lesson of the SQL courses|what-next]]: bookings for a small clinic. Clients book appointments with staff. The clinic needs to spot [[double bookings|double-booking]] and see each day's workload.
 
-- `clients` — `id` (integer primary key), `email` (required, and unique **ignoring case**: `ANA@x.io` and `ana@x.io` are the same client), `name`.
-- `appointments` — `id` (integer primary key), `staff_id` (required, a real staff member), `client_id` (required, a real client), `starts_at` and `ends_at` (required text timestamps, `'YYYY-MM-DD HH:MM'`; an appointment must **end after it starts**), `status` (required; `'booked'` or `'cancelled'`; **defaults to `'booked'`**).
-- A view `double_bookings(staff_id, first_id, second_id)`: every pair of **booked** appointments for the same staff member whose times overlap, with `first_id` less than `second_id`. Two intervals overlap when each starts before the other ends; back-to-back appointments (one ends at 09:30, the next starts at 09:30) do **not** overlap. Cancelled appointments never count.
-- A view `daily_schedule(staff_id, day, appointments, booked_minutes)`: for each staff member and calendar day (`'YYYY-MM-DD'`) with booked appointments, how many and their total length in whole minutes.
-- An index that lets the app list one staff member's appointments in time order without a separate sort: its first column `staff_id`, its second `starts_at`.
+Most of the spec uses tools you have used before. Two are new: telling whether two time slots overlap, and listing each pair of rows only once. Each gets its own short step below, before you start.
+
+### The table you start with
+
+The staff list already exists, as `staff`:
+
+| id | name |
+| --- | --- |
+| 1 | Dr Ng |
+| 2 | Dr Oz |
+
+### The spec
+
+1. `clients`: `id` (integer primary key), `email` (required, and unique **ignoring case**: `ANA@x.io` and `ana@x.io` are the same client), `name`.
+2. `appointments`: `id` (integer primary key), `staff_id` (required, a real staff member), `client_id` (required, a real client), `starts_at` and `ends_at` (required timestamps stored as text, `'YYYY-MM-DD HH:MM'`), `status` (required; `'booked'` or `'cancelled'`; **defaults to `'booked'`**).
+3. An appointment must **end after it starts**.
+4. A view `double_bookings` with the columns `staff_id`, `first_id` and `second_id`: every pair of **booked** appointments for the same staff member whose times overlap, with `first_id` less than `second_id`. Two time slots overlap when each starts before the other ends. Back-to-back appointments (one ends at 09:30, the next starts at 09:30) do **not** overlap. Cancelled appointments never count.
+5. A view `daily_schedule` with the columns `staff_id`, `day`, `appointments` and `booked_minutes`: for each staff member and calendar day (`'YYYY-MM-DD'`) that has booked appointments, how many there are and their total length in whole minutes.
+6. An index that lets the app list one staff member's appointments [[in time order without a separate sort|index-order]]: its first column `staff_id`, its second `starts_at`.
+
+"A real staff member" and "a real client" are foreign keys, so turn foreign keys on first, as in the other capstones.
+
+### Where each tool comes from
+
+| spec | tool | lesson |
+| --- | --- | --- |
+| 1 | a unique index on `lower(email)` | "Deduplicating: keep the latest row" |
+| 2 | `REFERENCES`, `PRAGMA foreign_keys = ON` | "Foreign keys" |
+| 2 | `CHECK (… IN (…))`, `DEFAULT` | "Constraints: rules the database enforces" |
+| 3 | a `CHECK` comparing two columns | "Library 1: the schema" |
+| 4 | a self-join, plus the two new steps below | "Self-joins" |
+| 5 | `date()` | "Date arithmetic and date ranges" |
+| 5 | `unixepoch()` | "Sessionising events" |
+| 6 | an index on two columns | "Indexes and EXPLAIN QUERY PLAN" |
+
+### Same email, any capitals
+
+`lower(...)` turns text into lowercase:
+
+```sql
+SELECT lower('ANA@x.io');
+```
+
+```
+ana@x.io
+```
+
+In "Deduplicating: keep the latest row" you made a `CREATE UNIQUE INDEX` on an expression, so that no two rows could share its value. Build one on `lower(email)`. Then `'ANA@x.io'` and `'ana@x.io'` both become `'ana@x.io'` inside the index, and the second one is refused. A plain `UNIQUE` on `email` would not do it: to it, those are two different pieces of text. There is also [[another way to ignore case|nocase]].
+
+### New: do two time slots overlap?
+
+Picture two meetings in one diary. They clash when [[each one starts before the other ends|overlap-picture]]. For appointments A and B:
+
+- A starts before B ends, **and**
+- B starts before A ends.
+
+Timestamps written as `'YYYY-MM-DD HH:MM'` sort in time order, so `<` on them means "earlier than". Here is one appointment from 09:30 to 10:00, and another from 09:45 to 10:15 (the dates are left off to keep it short):
+
+```sql
+SELECT '09:30' < '10:15' AND '09:45' < '10:00' AS overlap;
+```
+
+| overlap |
+| --- |
+| 1 |
+
+Both tests are true, so they overlap. Now two back-to-back appointments, 09:00 to 09:30 and 09:30 to 10:00:
+
+```sql
+SELECT '09:00' < '10:00' AND '09:30' < '09:30' AS overlap;
+```
+
+| overlap |
+| --- |
+| 0 |
+
+The second test is false: 09:30 is not *before* 09:30. That is exactly what the spec wants. The strict `<` ("less than") lets back-to-back appointments through, where `<=` ("less than or equal to") would flag every one of them.
+
+### New: each pair only once
+
+To compare appointments with each other, join `appointments` to itself, as in "Self-joins". But a self-join pairs every row with every row: each row with itself, and each pair twice, once in each order. See it on `staff`:
+
+```sql
+SELECT a.name, b.name FROM staff a JOIN staff b ON a.id <> b.id;
+```
+
+| name | name |
+| --- | --- |
+| Dr Ng | Dr Oz |
+| Dr Oz | Dr Ng |
+
+`<>` ("not equal") removes each row paired with itself, but the pair still comes twice. Use `<` instead:
+
+```sql
+SELECT a.name, b.name FROM staff a JOIN staff b ON a.id < b.id;
+```
+
+| name | name |
+| --- | --- |
+| Dr Ng | Dr Oz |
+
+Now each pair comes once, with the smaller id first: the same rule as `first_id` less than `second_id`. It also keeps each appointment from being paired with itself, which matters here, because every appointment overlaps itself.
+
+### Minutes between two times
+
+In "Sessionising events", `unixepoch(...)` turned a moment into a count of seconds. Subtract two of them to get the seconds in between, and divide by 60 for minutes:
+
+```sql
+SELECT (unixepoch('2024-09-02 10:30') - unixepoch('2024-09-02 09:59')) / 60;
+```
+
+```
+31
+```
+
+Both numbers are whole, so the division gives a whole number, as in the note on dividing whole numbers in "Choosing columns". For the day, `date('2024-09-02 09:59')` gives `'2024-09-02'`, from "Date arithmetic and date ranges".
+
+**Watch out:** cancelled appointments must drop out of both views. In the self-join, test the status of **both** copies: `a.status = 'booked' AND b.status = 'booked'`. Test only `a`, and a cancelled `b` can still be reported as a clash.
+
+::: context what-next Where SQL goes from here
+Every lesson here has run on SQLite, a small database that lives inside the program using it. It is built into every Android phone and iPhone and into most web browsers. Bigger systems, with many users writing at once, often use a database server such as PostgreSQL or MySQL. The SQL you learned carries over almost unchanged: `SELECT`, joins, `GROUP BY`, window functions, constraints, views. What changes is small, like some function names for dates and times.
+:::
+
+::: context double-booking Refusing a clash, not only reporting it
+This spec only reports double bookings, with a view. Some databases can refuse them. PostgreSQL has an **exclusion constraint**, which refuses a new row whose time range overlaps a row already in the table. SQLite has nothing like that, but you could get close with what you learned in "Triggers: reacting to changes": a `BEFORE INSERT` trigger that looks for an overlapping booked appointment and calls `RAISE(ABORT, ...)` if it finds one. A clinic might still prefer a report, because sometimes a double booking is on purpose.
+:::
+
+::: context index-order Why the index saves a sort
+In "Indexes and EXPLAIN QUERY PLAN", listing one customer's orders by date needed an extra line in the plan, `USE TEMP B-TREE FOR ORDER BY`: the database found the rows, then sorted them. An index on two columns, sorted by the first and then by the second, holds each staff member's appointments side by side, already in time order. So a query like `SELECT * FROM appointments WHERE staff_id = 1 ORDER BY starts_at` loses that sort step. An app that shows a doctor's day runs that query all the time.
+:::
+
+::: context nocase Ignoring case in the column itself
+Instead of an index on `lower(email)`, you can tell SQLite that the column itself ignores case. Write `COLLATE NOCASE` after the type: `email TEXT NOT NULL UNIQUE COLLATE NOCASE`. A **collation** is a rule for comparing text, and `NOCASE` treats A to Z the same as a to z. Now `UNIQUE` sees `'ANA@x.io'` and `'ana@x.io'` as the same, and so does `=` in a `WHERE` on that column. One limit: `NOCASE` only knows the 26 English letters, so `'É'` and `'é'` still differ. Either way passes this lesson.
+:::
+
+::: context overlap-picture Overlapping, and only touching
+On this time line, appointment 2 runs from 09:30 to 10:00 and appointment 3 from 09:45 to 10:15. Each starts before the other ends, so they share the red stretch. Appointment 1 ends at 09:30, the very minute appointment 2 starts: the two touch, but share no time.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 170" font-family="Inter, Arial, sans-serif">
+  <rect x="180" y="30" width="50" height="94" fill="#b4232c" opacity="0.18"/>
+  <rect x="30" y="36" width="100" height="22" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="80" y="51" font-size="12" fill="#1f2a44" text-anchor="middle">1</text>
+  <rect x="130" y="66" width="100" height="22" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="155" y="81" font-size="12" fill="#1f2a44" text-anchor="middle">2</text>
+  <rect x="180" y="96" width="100" height="22" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="255" y="111" font-size="12" fill="#1f2a44" text-anchor="middle">3</text>
+  <line x1="30" y1="134" x2="330" y2="134" stroke="#6c7a93" stroke-width="1.5"/>
+  <line x1="30" y1="130" x2="30" y2="138" stroke="#6c7a93"/>
+  <line x1="130" y1="130" x2="130" y2="138" stroke="#6c7a93"/>
+  <line x1="230" y1="130" x2="230" y2="138" stroke="#6c7a93"/>
+  <line x1="330" y1="130" x2="330" y2="138" stroke="#6c7a93"/>
+  <text x="30" y="152" font-size="11" fill="#1f2a44" text-anchor="middle">09:00</text>
+  <text x="130" y="152" font-size="11" fill="#1f2a44" text-anchor="middle">09:30</text>
+  <text x="230" y="152" font-size="11" fill="#1f2a44" text-anchor="middle">10:00</text>
+  <text x="330" y="152" font-size="11" fill="#1f2a44" text-anchor="middle">10:30</text>
+  <text x="205" y="22" font-size="11" fill="#b4232c" text-anchor="middle">overlap</text>
+  <text x="180" y="166" font-size="11" fill="#6c7a93" text-anchor="middle">1 and 2 only touch; 2 and 3 overlap</text>
+</svg>
+```
+:::
 --- task
-Implement the booking specification above: the `clients` and `appointments` tables with every rule, the `double_bookings` and `daily_schedule` views, and the index.
+Build everything in the spec, rules 1 to 6: turn foreign keys on; create the `clients` table (`id`, `email`, `name`) and the `appointments` table (`id`, `staff_id`, `client_id`, `starts_at`, `ends_at`, `status`) with every rule the spec states for them; create the views `double_bookings` (`staff_id`, `first_id`, `second_id`) and `daily_schedule` (`staff_id`, `day`, `appointments`, `booked_minutes`); and create an index on `appointments` whose first column is `staff_id` and second is `starts_at`.
 --- starter
 -- Clinic bookings: your schema goes here.
 --- solution
@@ -3364,11 +3744,11 @@ FROM appointments
 WHERE status = 'booked'
 GROUP BY staff_id, date(starts_at);
 --- hint
-Case-insensitive uniqueness: a unique index on the expression `lower(email)`, as in the expert course's deduplication lesson. (Declaring the column `UNIQUE COLLATE NOCASE`, which makes it compare ignoring case, works too.)
+Case-insensitive uniqueness: a unique index on the expression `lower(email)`, as in the expert course's deduplication lesson: `CREATE UNIQUE INDEX clients_email_key ON clients(lower(email));`. (Declaring the column `UNIQUE COLLATE NOCASE`, which makes it compare ignoring case, works too.) "Ends after it starts" is `CHECK (ends_at > starts_at)` at the end of `appointments`, and the status is `status TEXT NOT NULL DEFAULT 'booked' CHECK (status IN ('booked', 'cancelled'))`.
 --- hint
-Overlap is a self-join: same staff, `a.id < b.id`, `a.starts_at < b.ends_at AND b.starts_at < a.ends_at`, both booked.
+Overlap is a self-join, `FROM appointments a JOIN appointments b ON …`: same staff, `a.id < b.id`, `a.starts_at < b.ends_at AND b.starts_at < a.ends_at`, and both booked. Select `a.staff_id`, `a.id AS first_id`, `b.id AS second_id`.
 --- hint
-Minutes: `(unixepoch(ends_at) - unixepoch(starts_at)) / 60`, summed per staff member and `date(starts_at)`.
+Minutes: `(unixepoch(ends_at) - unixepoch(starts_at)) / 60`, summed per staff member and `date(starts_at)`, keeping only booked rows. The index is `CREATE INDEX idx_appointments_staff_start ON appointments(staff_id, starts_at);`.
 --- check query | Clients can be added; the same email in other capitals is refused
 INSERT INTO clients (id, email, name) VALUES (1, 'ana@x.io', 'Ana'), (2, 'bo@x.io', 'Bo');
 INSERT OR IGNORE INTO clients (id, email, name) VALUES (3, 'ANA@x.io', 'Ana again');
