@@ -3,6 +3,7 @@
 @title C++ · Advanced
 @name C++, advanced: ownership, templates and polymorphism
 @blurb Design types that manage their own resources and behave like built-ins: RAII, copy and move, smart pointers, templates, operators, interfaces, variants, compile-time code and error handling without exceptions.
+@plainvoice true
 
 === cpp3-01 | RAII: let destructors clean up
 --- teach
