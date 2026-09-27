@@ -1972,43 +1972,211 @@ convert("```\n```")
 
 === pyp-09 | Library system 1: the data model
 --- teach
-The third project is a lending library: books, members, loans, rules, and saving everything to disk. It is the kind of program most business software is: a **domain model** with rules, plus persistence.
+Last lesson finished the Markdown converter: a pure `convert` function that turns text into HTML, with a one-line shell around it. The third project is bigger in a different way. It is a lending library: books, members, loans, rules, and saving everything to disk. You will build it over four lessons, one layer at a time. This first lesson builds the layer everything else stands on: the data.
 
-**Model the nouns.** Read a description of the problem and underline the nouns: *books*, *members*, *loans*, *the library*. Each is a candidate class. Then ask what identifies each one: a book by its **ISBN**, a member by a **member id**. Identifiers are what you use as dict keys and what you store in other records to point at things.
+Picture a small library before computers. There is a card for every book and a card for every member. Behind the desk sits a clerk. You never walk round the desk and scribble on the cards yourself; you ask the clerk, and the clerk follows the library's rules. Your program will work the same way.
+
+The classes and rules that describe the real-world thing a program is about (its **[[domain|domain-word]]**) are called a **domain model**. Most business software is exactly this: a domain model with rules, plus **persistence**, which means saving the data so it is still there after the program stops. Persistence is lesson 3.
+
+**Step 1: find the nouns.** Read a description of the problem and underline the nouns: *books*, *members*, *loans*, *the library*. Each noun is a candidate for a class. Loans are next lesson. This one builds books, members and the library.
+
+**Step 2: decide what identifies each one.** An **identifier** (an **id** for short) is a value that picks out exactly one record and never changes. A book is identified by its **[[ISBN|isbn]]**. A member is identified by a **member id**, such as `"m1"`. Ids are what you use as [[dict keys|ids-as-keys]], and what other records store when they need to point at something.
+
+A book is only data, so it is a dataclass. Remember from the advanced course: `@dataclass` reads the annotated fields and writes `__init__`, `__repr__` and `__eq__` for you.
 
 ```python
+from dataclasses import dataclass
+
 @dataclass
 class Book:
     isbn: str
     title: str
     author: str
     copies: int = 1
+
+print(Book("111", "Dune", "Frank Herbert"))
+# Book(isbn='111', title='Dune', author='Frank Herbert', copies=1)
 ```
 
-**One object owns the collections.** `Library` holds dicts of books and members keyed by their ids, and every change goes through its methods. That is where rules live: "a member id cannot be used twice", "adding a book that already exists adds copies".
+`copies` is how many physical copies of the book the library owns. It has a default of `1`, so it must come last: fields with defaults go after fields without. `Member` has the same shape with two fields, `member_id` and `name`.
 
-**A custom exception for the domain.** Callers need to tell "the library refused this" apart from a bug. A `LibraryError` class does that: the interface can catch `LibraryError` and show its message, while a real `TypeError` still stops the program.
+**Step 3: one object owns the collections.** The `Library` class is the clerk. It holds two dicts: `books` maps each ISBN to its `Book`, and `members` maps each member id to its `Member`. Every change goes [[through its methods|one-door]]. That is where the rules live, such as "a member id cannot be used twice" and "adding a book that already exists adds copies". A second delivery of *Dune* does not make a second card; it raises the count on the first one:
 
-**Protect your internals from aliasing.** If `add_book` stores the caller's `Book` object and later changes its `copies`, the caller's object changes too, which is the aliasing bug from the advanced course. `dataclasses.replace(book)` makes a copy (optionally with some fields changed), so the library owns its own record:
+```python
+lib = Library()
+lib.add_book(Book("111", "Dune", "Frank Herbert", 2))
+lib.add_book(Book("111", "Dune", "Frank Herbert", 3))
+print(lib.books["111"].copies)     # 5
+```
+
+**Step 4: an exception of your own.** When the library refuses something, the code that called it needs to tell "the library said no" apart from "there is a bug". You built exception classes in the intermediate course. Here one line of body is enough (`pass` means "nothing to add"):
+
+```python
+class LibraryError(Exception):
+    pass
+```
+
+Now the code that talks to the user can [[catch just this kind of failure|catching-one-kind]] and show its message:
+
+```python
+try:
+    lib.add_book(Book("222", "Emma", "Jane Austen", 0))
+except LibraryError as err:
+    print("refused:", err)     # refused: a book needs at least one copy
+```
+
+A real bug, like a `TypeError` from a typo, is not a `LibraryError`, so it is not caught. It still stops the program, and you get to see it.
+
+**Step 5: keep your own copy.** The advanced course's debugging lesson showed **aliasing**: two names pointing at one object, so a change through one shows through the other. If `add_book` stored the caller's own `Book` object, the library and the caller would [[share one object|aliasing-picture]]:
+
+```python
+store = {}
+mine = Book("111", "Dune", "Frank Herbert")
+store["111"] = mine              # the SAME object, not a copy
+store["111"].copies += 4
+print(mine.copies)               # 5: your Book changed too
+```
+
+It works the other way too: the caller could change the library's record without asking the clerk. The fix is `replace` from the `dataclasses` module. `replace(book)` makes a new object with the same fields. You can also change some fields as you copy, by naming them:
 
 ```python
 from dataclasses import replace
-stored = replace(book)          # a new Book with the same fields
+
+mine = Book("111", "Dune", "Frank Herbert")
+stored = replace(mine)           # a new Book with the same fields
+stored.copies += 4
+print(mine.copies, stored.copies)     # 1 5
+print(replace(mine, copies=4))
+# Book(isbn='111', title='Dune', author='Frank Herbert', copies=4)
 ```
 
-**Lookups that fail loudly.** `book(isbn)` returns the record or raises `LibraryError("no such book: ...")`. Every later method can then call it and trust the result, instead of repeating `if isbn not in self.books` everywhere.
+So the library stores `replace(book)`, and owns its [[own record|shallow-replace]].
 
-**Common mistake:** keying things by name. Two members can be called Sam, and titles change; ids do not.
+**Step 6: lookups that fail loudly.** `book(isbn)` returns the record, or raises `LibraryError("no such book: ...")` if there is none. `member(member_id)` does the same for members. Every later method can call these and trust the answer, instead of repeating `if isbn not in self.books` everywhere. Stopping with a clear message at the first sign of trouble is called [[failing fast|fail-fast]].
+
+```python
+lib.book("999")
+# LibraryError: no such book: 999
+```
+
+**Step 7: a search.** `find_by_author(text)` finds books whose author *contains* some text, ignoring upper and lower case. The trick is to lowercase both sides before using `in`:
+
+```python
+"austen" in "JANE AUSTEN".lower()     # True
+sorted(["Persuasion", "Emma"])        # ['Emma', 'Persuasion']
+```
+
+**Watch out:** keying things by name. Two members can both be called Sam, and titles get corrected. Ids do not change. With names as keys, the second Sam silently replaces the first, because assigning to an existing dict key overwrites it:
+
+```python
+members = {}
+members["Sam"] = Member("m1", "Sam")
+members["Sam"] = Member("m2", "Sam")    # the first Sam is gone
+print(len(members))                     # 1
+```
+
+::: context domain-word What "domain" means here
+A **domain** is the part of the real world a program is about. For this project it is lending books. For a bank it is accounts and payments. For a spacecraft's ground software it is commands, telemetry and passes over ground stations.
+
+Programmers who study a domain talk to the people who work in it, learn their words, and use the same words as class and method names. That is why the library's classes are called `Book`, `Member` and `Loan`, and not `Item`, `Person` and `Record`. When the code speaks the domain's language, the librarian and the programmer can read the rules together and spot a wrong one.
+:::
+
+::: context isbn The number above the barcode
+**ISBN** stands for International Standard Book Number. Look at the back of almost any book: the number above the barcode is its ISBN. Since 2007 it has 13 digits; older books have a 10-digit one.
+
+Each edition of a book gets its own ISBN, so the hardback and the paperback of the same novel have different numbers. That makes it a good identifier for this program: one ISBN, one kind of book on the shelf. Libraries and shops all over the world use it for exactly this. In the lessons the ISBNs are short, like `"111"`, to keep the examples easy to read.
+:::
+
+::: context ids-as-keys A dict is a card index
+A dict keyed by id works like a drawer of index cards sorted by number. Give it the key and it goes straight to the one card, without reading all the others.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">
+  <text x="20" y="22" font-size="13" fill="#1f2a44" font-weight="700">books</text>
+  <rect x="20" y="34" width="70" height="30" rx="4" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="55" y="54" font-size="13" fill="#1f2a44" text-anchor="middle">"111"</text>
+  <rect x="20" y="90" width="70" height="30" rx="4" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="55" y="110" font-size="13" fill="#1f2a44" text-anchor="middle">"222"</text>
+  <line x1="90" y1="49" x2="170" y2="49" stroke="#1f2a44" stroke-width="2"/>
+  <polygon points="176,49 166,44 166,54" fill="#1f2a44"/>
+  <line x1="90" y1="105" x2="170" y2="105" stroke="#1f2a44" stroke-width="2"/>
+  <polygon points="176,105 166,100 166,110" fill="#1f2a44"/>
+  <rect x="178" y="30" width="162" height="38" rx="4" fill="#ffffff" stroke="#1f2a44"/>
+  <text x="188" y="54" font-size="12" fill="#1f2a44">Book: Dune, 5 copies</text>
+  <rect x="178" y="86" width="162" height="38" rx="4" fill="#ffffff" stroke="#1f2a44"/>
+  <text x="188" y="110" font-size="12" fill="#1f2a44">Book: Emma, 1 copy</text>
+  <text x="55" y="142" font-size="11" fill="#6c7a93" text-anchor="middle">keys: ids</text>
+  <text x="259" y="142" font-size="11" fill="#6c7a93" text-anchor="middle">values: the records</text>
+</svg>
+```
+
+Next lesson a loan will store just the ISBN and the member id, and use them as keys to find the full records.
+:::
+
+::: context one-door One door in
+Making every change go through an object's methods is called **encapsulation**: the data is wrapped up, and the methods are the only door in. Python does not lock the door. Any code *could* write `lib.books["111"].copies = 0`. The convention is that it does not, and a good design gives it no reason to.
+
+The payoff is that each rule is written in one place. If the library later decides that no book may have more than 50 copies, you change `add_book`, and every part of the program obeys the new rule at once.
+:::
+
+::: context catching-one-kind Why one exception class helps
+`except LibraryError` catches `LibraryError` and any subclass of it, and nothing else. So the caller can write one `except` that handles every "the library refused" case, whether the book was missing, the member was unknown or a rule was broken.
+
+The alternative is worse in both directions. `except Exception` would also swallow real bugs and hide them. Catching `ValueError` would mix the library's refusals with errors from `int("abc")` and other unrelated code. Your own class draws a clear line around "failures that belong to this domain".
+:::
+
+::: context aliasing-picture Shared object or own copy
+On the left, two names point at one object, so a change through either name shows through both. On the right, `replace` made a second object, and each name has its own.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 170" font-family="Inter, Arial, sans-serif">
+  <text x="85" y="18" font-size="12" fill="#b4232c" text-anchor="middle" font-weight="700">aliasing</text>
+  <text x="270" y="18" font-size="12" fill="#1d6fd1" text-anchor="middle" font-weight="700">replace(mine)</text>
+  <text x="14" y="48" font-size="12" fill="#1f2a44">mine</text>
+  <text x="14" y="108" font-size="12" fill="#1f2a44">store["111"]</text>
+  <line x1="50" y1="44" x2="102" y2="70" stroke="#1f2a44" stroke-width="2"/>
+  <line x1="92" y1="104" x2="102" y2="92" stroke="#1f2a44" stroke-width="2"/>
+  <rect x="104" y="62" width="70" height="36" rx="4" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="139" y="78" font-size="11" fill="#1f2a44" text-anchor="middle">Book</text>
+  <text x="139" y="92" font-size="11" fill="#1f2a44" text-anchor="middle">copies 5</text>
+  <line x1="190" y1="10" x2="190" y2="160" stroke="#6c7a93" stroke-width="1"/>
+  <text x="204" y="54" font-size="12" fill="#1f2a44">mine</text>
+  <text x="204" y="124" font-size="12" fill="#1f2a44">stored</text>
+  <line x1="240" y1="50" x2="264" y2="50" stroke="#1f2a44" stroke-width="2"/>
+  <line x1="250" y1="120" x2="264" y2="120" stroke="#1f2a44" stroke-width="2"/>
+  <rect x="266" y="32" width="80" height="36" rx="4" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="306" y="48" font-size="11" fill="#1f2a44" text-anchor="middle">Book</text>
+  <text x="306" y="62" font-size="11" fill="#1f2a44" text-anchor="middle">copies 1</text>
+  <rect x="266" y="102" width="80" height="36" rx="4" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="306" y="118" font-size="11" fill="#1f2a44" text-anchor="middle">Book</text>
+  <text x="306" y="132" font-size="11" fill="#1f2a44" text-anchor="middle">copies 5</text>
+</svg>
+```
+
+You can test which case you are in with `is`: `stored is mine` is `False` after `replace`.
+:::
+
+::: context shallow-replace replace copies one level deep
+`replace` makes a **shallow** copy, like `list(x)` in the aliasing lesson: a new `Book`, but each field still points at the same value as before. For a `Book` that is fine. Its fields are strings and an int, and those can never be changed in place, only replaced. So nothing is left to share by accident.
+
+If a dataclass had a list field, say `tags`, the copy and the original would share that one list. Then you would need `copy.deepcopy`, which copies all the way down. Knowing which of your fields can change in place tells you which copy you need.
+:::
+
+::: context fail-fast Fail fast
+**Failing fast** means stopping with a clear message at the first moment something is wrong, instead of carrying on with bad data. A missing book found in `book()` gives "no such book: 999" right there. A missing book discovered three functions later gives a confusing `KeyError` or `None` somewhere else, and you have to work backwards to find the cause.
+
+Flight software follows the same idea through fault detection: a sensor reading that makes no sense is flagged at once and the system moves to a safe response, rather than letting the bad number travel on into the guidance calculations.
+:::
 --- task
 Write:
 
 - `class LibraryError(Exception)`.
 - Dataclasses `Book(isbn, title, author, copies=1)` and `Member(member_id, name)`.
-- `Library` with `books` and `members` dicts, and:
-  - `add_book(book)`: if the ISBN is new, store a **copy** of the book; if it exists, add `book.copies` to the stored copies. A book with fewer than 1 copy raises `LibraryError`. Returns the stored book.
-  - `add_member(member)`: a duplicate member id raises `LibraryError`.
-  - `book(isbn)` and `member(member_id)`: return the record, or raise `LibraryError` (`"no such book: <isbn>"`, `"no such member: <id>"`).
-  - `find_by_author(text)`: titles of books whose author contains `text`, ignoring case, sorted.
+- `Library` with `books` and `members` dicts, and these methods:
+  - `add_book(book)`: if the ISBN is new, store a **copy** of the book (use `replace`); if the ISBN is already there, add `book.copies` to the stored book's copies. A book with fewer than 1 copy raises `LibraryError`. Return the stored book.
+  - `add_member(member)`: store the member under its id. A member id that is already used raises `LibraryError`.
+  - `book(isbn)` and `member(member_id)`: return the record, or raise `LibraryError` with the message `"no such book: <isbn>"` or `"no such member: <id>"`.
+  - `find_by_author(text)`: the titles of the books whose author contains `text`, ignoring upper and lower case, sorted A to Z.
 --- starter
 # Library system, step 1: the data model.
 from dataclasses import dataclass
@@ -2078,11 +2246,11 @@ class Library:
         text = text.lower()
         return sorted(b.title for b in self.books.values() if text in b.author.lower())
 --- hint
-Two `@dataclass` classes with annotated fields; `copies: int = 1` goes last.
+Start with the two dataclasses, like `Book` in the explanation. Each is `@dataclass` over a class with annotated fields, and `copies: int = 1` goes last because it has a default.
 --- hint
-In `add_book`, validate first, then either increase `self.books[book.isbn].copies` or store `replace(book)` (import `replace` from `dataclasses`).
+In `add_book`, check the copies first and raise if there are fewer than 1. Then, if `book.isbn in self.books`, add to `self.books[book.isbn].copies`; otherwise store `replace(book)` (add `replace` to the `from dataclasses import` line). `add_member` is the same shape: check `member.member_id in self.members` before storing.
 --- hint
-`book(isbn)` checks `if isbn not in self.books:` and raises `LibraryError(f"no such book: {isbn}")`. `find_by_author` lowercases both sides and sorts the matching titles.
+`book(isbn)` checks `if isbn not in self.books:` and raises `LibraryError(f"no such book: {isbn}")`, then returns `self.books[isbn]`; `member` is the same with members. `find_by_author` lowercases `text` once, then returns `sorted(b.title for b in self.books.values() if text in b.author.lower())`.
 --- check test | add_book stores books by ISBN
 (lambda lib: (lib.add_book(Book("111", "Dune", "Frank Herbert")), lib.book("111").title)[1] == "Dune" and lib.book("111").copies == 1)(Library())
 --- check case | Adding the same ISBN again adds copies
@@ -2103,11 +2271,16 @@ raises(LibraryError, lambda: Library().book("nope")) and raises(LibraryError, la
 
 === pyp-10 | Library system 2: loans and rules
 --- teach
-A library exists to lend books, and lending comes with **rules**: a member can borrow at most three books, cannot borrow the same book twice, and cannot borrow a book with no copies left. Rules like these are the heart of most real software, and they deserve care.
+Last lesson built the library's data: `Book`, `Member`, and a `Library` that owns them and refuses bad changes with a `LibraryError`. But a library exists to *lend* books, and that is this lesson.
 
-**A loan is a record too.** It links a member to a book, with a due date:
+Lending comes with **[[rules|business-rules]]**. A member can borrow at most three books. A member cannot borrow the same book twice at once. Nobody can borrow a book when every copy is already out. Rules like these are the heart of most real software, and they deserve care. This lesson has five small ideas, one step each.
+
+**Step 1: a loan is a record too.** A **loan** links one member to one book, with a **due date**: the day the book must come back.
 
 ```python
+from dataclasses import dataclass
+from datetime import date
+
 @dataclass
 class Loan:
     member_id: str
@@ -2115,31 +2288,137 @@ class Loan:
     due: date
 ```
 
-It stores **ids**, not the `Member` and `Book` objects themselves. Ids are stable, easy to save to a file (next lesson), and there is only one copy of each book's data to keep up to date.
+Notice what it stores: the member's **id** and the book's **ISBN**, not the `Member` and `Book` objects themselves. Ids never change. They are easy to save to a file, which is next lesson. And the book's title and copies live in exactly one place, the `Book` in `library.books`, so there is only one copy of them to keep up to date. When you need the full record, you [[look it up by its id|lookup-by-id]].
 
-**Derive, do not duplicate.** How many copies are available? You could store an `available` count on each book and remember to change it on every checkout and return. Or you could compute it: copies minus loans of that ISBN. The computed version can never disagree with the loans, because it *is* the loans. Keep a single source of truth wherever you can.
+All the library's loans go in one list, `self.loans`, which starts empty.
 
-**Check every rule before changing anything.** `checkout` validates the member, the book, the duplicate, the limit and the availability, and only then appends the loan. If a check fails halfway after something was changed, the data is left half-updated.
+**Step 2: derive, do not duplicate.** How many copies of a book are available to borrow right now? You could store a number, `available`, on each book, and remember to change it on every checkout and every return. Or you could **derive** it, which means work it out from data you already have:
 
-**Time is an input.** A due date depends on today's date. Calling `date.today()` inside `checkout` would make it impossible to test ("does a loan made on 1 March fall due on 15 March?") except on 1 March. Pass `today` in, the dependency injection idea from the expert course:
+```
+available = copies - (number of loans of that ISBN)
+```
+
+In Python, counting the matching loans is a `sum` of one `1` for each match:
+
+```python
+sum(1 for loan in self.loans if loan.isbn == isbn)
+```
+
+The worked-out answer can never disagree with the loans, because it *is* the loans. A stored count can [[drift away from the truth|drift]] the first time someone forgets to update it. Keep a **single source of truth** wherever you can: each fact stored in one place only.
+
+**Step 3: check every rule before changing anything.** `checkout(member_id, isbn, today)` has five things to check: the member exists, the book exists, the member does not already have this book, the member has fewer than three loans, and a copy is available. Only after all five pass does it add the loan.
+
+The order matters. If the method added the loan first and checked afterwards, a failed check would leave a loan that should never have existed. When a method either does everything or [[changes nothing at all|all-or-nothing]], the data can never be left half-updated.
+
+`any(...)` is handy for the "already has this book" check. It is `True` if at least one item is true:
+
+```python
+any(loan.isbn == isbn for loan in current)    # does any current loan have this ISBN?
+```
+
+**Step 4: time is an input.** The due date is 14 days after today. You could call `date.today()` inside `checkout`. But then a test like "does a loan made on 1 March fall due on 15 March?" could only be run on 1 March. So `checkout` takes `today` as an argument. That is the dependency injection idea from the expert course's design lesson: the method is *given* the date instead of reaching for the clock.
+
+To add days to a date you need a **timedelta**: a length of time, such as "14 days". It lives in the same `datetime` module as `date`. A date plus a timedelta is a new date, and it [[knows about the calendar|calendar-aware]]:
 
 ```python
 from datetime import date, timedelta
-date(2026, 3, 1) + timedelta(days=14)     # datetime.date(2026, 3, 15)
+
+print(date(2026, 3, 1) + timedelta(days=14))     # 2026-03-15
+print(date(2026, 12, 25) + timedelta(days=14))   # 2027-01-08
 ```
 
-**Named constants** (`LOAN_DAYS = 14`, `MAX_LOANS = 3`) at the top of the file say what the numbers mean and give each rule one place to change.
+**Step 5: name your numbers.** `14` and `3` in the middle of a method say nothing about what they mean. **Named constants** at the top of the file do:
 
-**Common mistake:** returning `True`/`False` from `checkout` to mean success or failure. The caller has to check it, and will forget. Raising a `LibraryError` with a message cannot be ignored silently, and says *why*.
+```python
+LOAN_DAYS = 14
+MAX_LOANS = 3
+```
+
+The capital letters are a convention that says "this never changes while the program runs". Each rule now has [[one place to change it|magic-numbers]]: if the library moves to three-week loans, you edit one line.
+
+**Returning a book** is the checkout in reverse: find the loan with that member id and ISBN, take it out of the list, and give it back. `enumerate` gives you the position of each loan, and `self.loans.pop(i)` removes the item at position `i` and returns it. If no loan matches, that is a `LibraryError` too.
+
+**Watch out:** returning `True` or `False` from `checkout` to mean "it worked" or "it was refused". The caller has to check the answer, and one day will forget, and then the program carries on as if a refused loan went through. A raised `LibraryError` [[cannot be ignored silently|silent-failure]], and its message says *why* it was refused.
+
+::: context business-rules Where the rules come from
+Programmers call rules like "at most three loans" **business rules**: they come from the people who run the library, not from Python. A different library might allow five loans, or none at all for members who owe fines.
+
+That is why the rules deserve care. They change more often than anything else in the program, and getting one wrong costs real people something. Keeping them in named constants and a few clearly written methods means a librarian could read them with you and say "yes, that is our rule".
+:::
+
+::: context lookup-by-id Following an id to its record
+A loan says `isbn="111"`. To show the title, the program follows that id: `library.books["111"].title`. Databases do the same thing on a large scale. A table of loans stores a book's id in each row, and that stored id is called a **foreign key**, because it is the key of a row in a *different* table.
+
+The big advantage shows up when a record changes. If a title is corrected, it is corrected in one `Book`, and every loan that points at it sees the new title at once. Nothing has to be updated in the loans.
+:::
+
+::: context drift How a stored count goes wrong
+Here is a stored count drifting away from the truth. The checkout remembered to update it; the return forgot.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">
+  <text x="10" y="20" font-size="12" fill="#1f2a44" font-weight="700">event</text>
+  <text x="170" y="20" font-size="12" fill="#1f2a44" font-weight="700" text-anchor="middle">loans</text>
+  <text x="245" y="20" font-size="12" fill="#1d6fd1" font-weight="700" text-anchor="middle">derived</text>
+  <text x="315" y="20" font-size="12" fill="#b4232c" font-weight="700" text-anchor="middle">stored</text>
+  <line x1="10" y1="28" x2="350" y2="28" stroke="#6c7a93"/>
+  <text x="10" y="52" font-size="12" fill="#1f2a44">2 copies, start</text>
+  <text x="170" y="52" font-size="12" fill="#1f2a44" text-anchor="middle">0</text>
+  <text x="245" y="52" font-size="12" fill="#1d6fd1" text-anchor="middle">2</text>
+  <text x="315" y="52" font-size="12" fill="#b4232c" text-anchor="middle">2</text>
+  <text x="10" y="82" font-size="12" fill="#1f2a44">Ada borrows</text>
+  <text x="170" y="82" font-size="12" fill="#1f2a44" text-anchor="middle">1</text>
+  <text x="245" y="82" font-size="12" fill="#1d6fd1" text-anchor="middle">1</text>
+  <text x="315" y="82" font-size="12" fill="#b4232c" text-anchor="middle">1</text>
+  <text x="10" y="112" font-size="12" fill="#1f2a44">Ada returns</text>
+  <text x="170" y="112" font-size="12" fill="#1f2a44" text-anchor="middle">0</text>
+  <text x="245" y="112" font-size="12" fill="#1d6fd1" text-anchor="middle">2</text>
+  <rect x="298" y="98" width="34" height="20" rx="3" fill="#f2b880"/>
+  <text x="315" y="112" font-size="12" fill="#b4232c" text-anchor="middle">1</text>
+  <text x="180" y="140" font-size="11" fill="#6c7a93" text-anchor="middle">one forgotten update, and the stored count is wrong forever</text>
+</svg>
+```
+
+The derived count is worked out from the loans every time, so it cannot be left behind.
+:::
+
+::: context all-or-nothing Go or no-go before you commit
+Before a rocket launch, the launch director polls every team: range, weather, propulsion, guidance. Each answers "go" or "no go". Only when every answer is "go" does the countdown continue. Nobody fuels half the rocket and then asks the weather team.
+
+`checkout` works the same way: every check first, then one change. Databases have a name for an operation that either happens completely or not at all: a **transaction**. You will meet the word again whenever data is saved somewhere that must never be left half-written.
+:::
+
+::: context calendar-aware Dates handle the calendar for you
+Adding 14 to the day number by hand would give "32 March", which does not exist. A `date` plus a `timedelta` rolls over into the next month, and the next year, and gets February right in leap years:
+
+```python
+from datetime import date, timedelta
+print(date(2028, 2, 20) + timedelta(days=14))    # 2028-03-05
+```
+
+2028 is a leap year, so February has 29 days, and 14 days after 20 February is 5 March. Calendar arithmetic is full of traps like this, which is why engineers use the library instead of writing their own.
+:::
+
+::: context magic-numbers Magic numbers
+A bare number in the middle of code, like `if len(current) >= 3`, is nicknamed a **magic number**: it works, but nobody can tell why it is 3, or whether the 3 in some other method is the same rule or a different one.
+
+A named constant answers both questions. `MAX_LOANS` says what the number means, and every place that uses the rule uses the same name. Change it once, and the whole program follows.
+:::
+
+::: context silent-failure Refusals that cannot be missed
+Some older languages, such as C, often report failure by returning a special value, like `-1`. Nothing forces the caller to look at it, and forgotten checks of this kind are a well-known source of bugs: the program carries on with a result that never happened.
+
+An exception turns that around. If nobody catches a `LibraryError`, the program stops and prints it. The only way to ignore it is to write an `except` on purpose, and then you have at least decided to.
+:::
 --- task
-Add loans:
+Add loans to the library:
 
-- Constants `LOAN_DAYS = 14` and `MAX_LOANS = 3`, and a dataclass `Loan(member_id, isbn, due)`.
-- `Library.loans`, a list, starting empty.
-- `available(isbn)`: copies minus current loans of that book (unknown ISBN raises `LibraryError`).
-- `loans_of(member_id)`: that member's loans (unknown member raises `LibraryError`).
-- `checkout(member_id, isbn, today)`: checks, in this order, that the member and book exist, that the member does not already have this book, that they have fewer than `MAX_LOANS` loans, and that a copy is available, raising `LibraryError` otherwise. Then it records and returns a `Loan` due `LOAN_DAYS` after `today`.
-- `return_book(member_id, isbn)`: removes and returns that loan, or raises `LibraryError` if there is no such loan.
+- The constants `LOAN_DAYS = 14` and `MAX_LOANS = 3` at the top of the file, and a dataclass `Loan(member_id, isbn, due)`.
+- `Library.loans`: a list, starting empty in `__init__`.
+- `available(isbn)`: the book's copies minus the number of current loans of that book. An unknown ISBN raises `LibraryError`.
+- `loans_of(member_id)`: a list of that member's loans. An unknown member raises `LibraryError`.
+- `checkout(member_id, isbn, today)`: checks, in this order, that the member and the book exist, that the member does not already have this book, that they have fewer than `MAX_LOANS` loans, and that a copy is available. Any failed check raises `LibraryError`. Then it adds a `Loan` due `LOAN_DAYS` after `today` to `self.loans`, and returns it.
+- `return_book(member_id, isbn)`: removes that loan from `self.loans` and returns it, or raises `LibraryError` if that member has no loan of that book.
 --- starter
 # Library system, step 1: the data model.
 from dataclasses import dataclass, replace
@@ -2290,11 +2569,11 @@ class Library:
                 return self.loans.pop(i)
         raise LibraryError(f"{member_id} has not borrowed {isbn}")
 --- hint
-Import `date` and `timedelta` from `datetime`, add the `Loan` dataclass and `self.loans = []` in `__init__`.
+Start with the new pieces from the explanation: `from datetime import date, timedelta`, the two constants, the `Loan` dataclass, and `self.loans = []` in `__init__`.
 --- hint
-`available` is `self.book(isbn).copies` minus the number of loans with that ISBN. `loans_of` calls `self.member(member_id)` first so unknown members raise.
+Reuse the lookups from last lesson so unknown ids raise for free. `available` is `self.book(isbn).copies` minus `sum(1 for loan in self.loans if loan.isbn == isbn)`. `loans_of` calls `self.member(member_id)` first, then returns the loans whose `member_id` matches.
 --- hint
-In `checkout`, run every check first (reuse `loans_of`, `book` and `available`), then append `Loan(member_id, isbn, today + timedelta(days=LOAN_DAYS))`.
+In `checkout`, do every check before changing anything: `current = self.loans_of(member_id)`, then `self.book(isbn)`, then `any(...)` for a loan of this ISBN in `current`, then `len(current) >= MAX_LOANS`, then `self.available(isbn) < 1`. Only then make `Loan(member_id, isbn, today + timedelta(days=LOAN_DAYS))`, append it and return it. For `return_book`, loop with `for i, loan in enumerate(self.loans):` and `return self.loans.pop(i)` on a match; after the loop, raise.
 --- check case | A checkout is due 14 days later
 (lambda lib: (lib.add_book(Book("1", "Dune", "Frank Herbert")), lib.add_member(Member("m1", "Ada")), lib.checkout("m1", "1", date(2026, 3, 1)))[-1])(Library())
 => Loan("m1", "1", date(2026, 3, 15))
@@ -2314,39 +2593,199 @@ In `checkout`, run every check first (reuse `loans_of`, `book` and `available`),
 
 === pyp-11 | Library system 3: saving and loading with JSON
 --- teach
-A library that forgets everything when the program stops is not much use. The data needs to be **persisted**: written somewhere and read back later. JSON is the most common format for that: text, human-readable, and understood by every language.
+Last lesson the library learned to lend: loans with due dates, and rules checked before anything changes. But everything lives in the program's [[memory|memory-vs-disk]]. When the program stops, every book, member and loan is gone. A library that forgets everything overnight is not much use.
+
+The data needs to be **persisted**: written down somewhere, as text in a file, and read back later. Think of the clerk copying every card into a notebook at closing time, and copying them back onto fresh cards in the morning. This lesson writes the notebook. It takes seven small steps.
+
+**Step 1: meet JSON.** **[[JSON|json-history]]** is a way of writing data as plain text. It looks almost exactly like Python's dicts and lists, humans can read it, and nearly every programming language understands it. Python's `json` module turns data into JSON text and back:
 
 ```python
 import json
+
 text = json.dumps({"name": "Ada", "tags": ["x", "y"], "active": True})
-text                   # '{"name": "Ada", "tags": ["x", "y"], "active": true}'
-json.loads(text)       # back to a dict
+print(text)          # {"name": "Ada", "tags": ["x", "y"], "active": true}
+
+data = json.loads(text)
+print(data["tags"])  # ['x', 'y']
 ```
 
-JSON only knows **dicts (with string keys), lists, strings, numbers, booleans and null**. Anything else must be converted on the way out and rebuilt on the way in:
+`json.dumps` ("dump string") turns data into a string of JSON text. `json.loads` ("load string") reads JSON text and gives back dicts and lists. Notice one small change: Python's `True` is written `true` in JSON, and Python's `None` is written `null`.
+
+**Step 2: what JSON can hold.** JSON only knows six kinds of thing: **dicts (with string keys), lists, strings, numbers, booleans and null**. A `Book` or a `date` is none of those. So anything else must be converted on the way out, and rebuilt on the way in:
 
 | Python | Out (to JSON) | In (from JSON) |
 |---|---|---|
 | dataclass | `dataclasses.asdict(obj)` | `Book(**d)` |
-| `date` | `d.isoformat()` → `"2026-03-15"` | `date.fromisoformat(s)` |
+| `date` | `d.isoformat()` gives `"2026-03-15"` | `date.fromisoformat(s)` |
 | tuple, set | a list | rebuild if you need the type |
 
-**Design the file format deliberately.** Write down its shape, because other programs (and future versions of yours) will depend on it. Here, a dict of three lists: `books`, `members`, `loans`.
+Here are the first two rows in action. `asdict` turns a dataclass into a dict of its fields. Going back, `Book(**d)` uses the double star from the `*args, **kwargs` lesson: it spreads the dict out into keyword arguments, so it means `Book(isbn="1", title="Dune", ...)`.
 
-**Make output stable.** `json.dumps(data, indent=2, sort_keys=True)` produces the same text for the same data every time, which makes saved files readable and easy to compare.
+```python
+from dataclasses import asdict
 
-**The round trip is the test.** The essential property of save and load is that loading what you saved gives back the same library: `Library.from_json(lib.to_json())` must behave exactly like `lib`.
+d = asdict(Book("1", "Dune", "Frank Herbert", 2))
+print(d)          # {'isbn': '1', 'title': 'Dune', 'author': 'Frank Herbert', 'copies': 2}
+print(Book(**d))  # Book(isbn='1', title='Dune', author='Frank Herbert', copies=2)
+```
 
-**Loading is a trust boundary.** A save file can be truncated, hand-edited or from an older version. `json.loads` raises `json.JSONDecodeError` (a `ValueError`) on broken text; a missing key raises `KeyError`; a wrong field raises `TypeError` when you build the dataclass. Catch those and raise one clear `LibraryError("corrupt save file: ...")`, so the caller has one thing to handle. Writing `raise LibraryError(...) from err` keeps the original error attached as the cause, so a traceback still shows what really went wrong.
+A date becomes text written [[year first|iso-dates]], and comes back as a real `date`:
 
-**`@classmethod`** is the natural shape for "build a new object from something": `Library.from_json(text)` receives the class as `cls` and returns `cls()` filled in. It is an **alternative constructor**, like `date.fromisoformat`.
+```python
+from datetime import date
 
-**Common mistake:** loading by assigning the parsed dicts straight into `self.books`. Everything "works" until some code calls `book.title` on what is actually a dict. Rebuild real objects on load.
+print(date(2026, 3, 15).isoformat())           # 2026-03-15
+print(repr(date.fromisoformat("2026-03-15")))  # datetime.date(2026, 3, 15)
+```
+
+**Step 3: design the file format on purpose.** Write down the shape of your save file, because other programs, and future versions of yours, will [[depend on it|format-promise]]. Here it is a dict of three lists:
+
+```
+{"books": [...], "members": [...], "loans": [...]}
+```
+
+Books and members are dicts of their fields. A loan is `{"member_id": ..., "isbn": ..., "due": "YYYY-MM-DD"}`, with its date as text.
+
+**Step 4: make the output stable.** Two extra arguments to `json.dumps` make it write the same text for the same data, every time. `indent=2` puts each item on its own line, indented by two spaces. `sort_keys=True` writes the keys of every dict in A-to-Z order:
+
+```python
+print(json.dumps({"b": 2, "a": [1, 2]}, indent=2, sort_keys=True))
+# {
+#   "a": [
+#     1,
+#     2
+#   ],
+#   "b": 2
+# }
+```
+
+Stable text is easy to read, and easy to [[compare with an older save|stable-diffs]].
+
+**Step 5: build from the class.** Loading makes a brand-new library, so it cannot be an ordinary method: there is no library object yet to call it on. A **class method** is a method you call on the class itself. You write `@classmethod` above it, and its first parameter is the class, named **`cls`** by convention, instead of an object named `self`:
+
+```python
+class Library:
+    @classmethod
+    def from_json(cls, text):
+        library = cls()      # the same as Library(): a new, empty library
+        ...                  # fill it in
+        return library
+
+lib = Library.from_json(text)
+```
+
+A method like this, whose job is to build a new object from something, is called an **[[alternative constructor|cls-not-self]]**. You have already used one: `date.fromisoformat` builds a `date` from text.
+
+Fill the new library in by calling `add_book` and `add_member` with rebuilt objects, so that loaded data passes through the same rules as everything else.
+
+**Step 6: the round trip is the test.** The one property that matters most for saving and loading is this: load what you saved, and you get the same library back. `Library.from_json(lib.to_json())` must behave exactly like `lib`. Testing that [[there and back|round-trip]] catches almost every mistake at once.
+
+**Step 7: do not trust the file.** Code that reads a file crosses a **[[trust boundary|trust-boundary]]**: the data comes from outside your program. A save file can be cut off halfway, edited by hand, or written by an older version. Each kind of damage raises a different error:
+
+- broken text makes `json.loads` raise `json.JSONDecodeError`, which is a kind of `ValueError`;
+- a missing key, like `data["books"]` in `{}`, raises `KeyError`;
+- a wrong or missing field makes building the dataclass raise `TypeError`;
+- a bad date, like `date.fromisoformat("someday")`, raises `ValueError`.
+
+The caller should not have to know all of these. So catch them all, and raise one clear `LibraryError("corrupt save file: ...")`:
+
+```python
+try:
+    data = json.loads(text)
+    ...
+except (ValueError, KeyError, TypeError) as err:
+    raise LibraryError(f"corrupt save file: {err}") from err
+```
+
+A tuple of classes after `except` catches any of them. The words **`from err`** at the end [[keep the original error attached|raise-from]] as the cause, so if this ever shows up as a traceback, you still see what really went wrong inside.
+
+**Watch out:** loading by putting the parsed dicts straight into `self.books`. Everything seems to work, until some code asks for `book.title` on what is really a dict, and gets `AttributeError: 'dict' object has no attribute 'title'`. Always rebuild real `Book`, `Member` and `Loan` objects when you load.
+
+::: context memory-vs-disk Memory forgets, the disk remembers
+A running program keeps its variables in the computer's **memory** (RAM). It is very fast, but it is cleared when the program ends or the power goes off. A **file** on a disk or SSD survives both, but it can only hold bytes, such as text.
+
+So saving always means turning objects into text or bytes, and loading means turning them back. Spacecraft have the same split: fast working memory for the running software, and non-volatile storage for anything that must survive a reboot, such as logs and settings.
+:::
+
+::: context json-history Where JSON came from
+JSON stands for **JavaScript Object Notation**. It grew out of the way the JavaScript language writes objects, and Douglas Crockford described it and gave it its name in the early 2000s. It is now an official standard.
+
+It won because it is small: six kinds of value, a few pieces of punctuation, and nothing else. Web services send JSON to each other, programs keep their settings in it, and scientific and space tools use it too. Almost every language has a JSON reader built in or one install away.
+:::
+
+::: context iso-dates Why the year comes first
+`2026-03-15` is the international standard way to write a date, from a standard called **ISO 8601**. Biggest unit first: year, then month, then day, each padded with zeros.
+
+That order has a lovely property: sorting the text A to Z also sorts the dates from earliest to latest, because the most important part is compared first. `"2026-03-15" < "2026-11-02"` is `True`, and it is the right answer. It also avoids the confusion over whether `03/04` means 3 April or 4 March. Mission logs and spacecraft telemetry use this style for exactly those reasons.
+:::
+
+::: context format-promise A file format is a promise
+Once you have saved files in some format, you have made a promise: files from today must still load next year. If a later version renames `"copies"` to `"count"`, every old save file breaks.
+
+Real programs handle this by writing a version number into the file, such as `"version": 1`, and teaching the loader to read old versions too. You do not need that yet, but it is why the shape of the file deserves a moment's thought before the first save.
+:::
+
+::: context stable-diffs Comparing two saves
+Engineers often keep data files in Git, which shows the lines that changed between two versions. If the keys came out in a different order every time, every save would look completely changed, even when only one book was added.
+
+With `sort_keys=True` and `indent=2`, one new book adds a few lines and changes nothing else, so the difference between two saves shows exactly what really changed. Stable output also makes tests easy: two saves of the same data are the same string.
+:::
+
+::: context cls-not-self Why cls and not Library
+Inside a class method, `cls` is whichever class the method was called on. Writing `cls()` instead of `Library()` matters when someone makes a subclass later. If `class BranchLibrary(Library)` inherits `from_json`, then `BranchLibrary.from_json(text)` builds a `BranchLibrary`, because `cls` is `BranchLibrary` in that call.
+
+Alternative constructors are everywhere in Python's standard library: `date.fromisoformat`, `dict.fromkeys`, `int.from_bytes`. The name usually starts with "from", which is a good hint for yours.
+:::
+
+::: context round-trip There and back again
+A **round trip** sends data out and brings it back, then checks nothing was lost on the way.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 130" font-family="Inter, Arial, sans-serif">
+  <rect x="10" y="40" width="90" height="44" rx="6" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="55" y="66" font-size="13" fill="#1f2a44" text-anchor="middle">lib</text>
+  <rect x="135" y="40" width="90" height="44" rx="6" fill="#ffffff" stroke="#1f2a44"/>
+  <text x="180" y="66" font-size="13" fill="#1f2a44" text-anchor="middle">JSON text</text>
+  <rect x="260" y="40" width="90" height="44" rx="6" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="305" y="66" font-size="13" fill="#1f2a44" text-anchor="middle">new lib</text>
+  <line x1="100" y1="62" x2="127" y2="62" stroke="#1f2a44" stroke-width="2"/>
+  <polygon points="134,62 124,57 124,67" fill="#1f2a44"/>
+  <line x1="225" y1="62" x2="252" y2="62" stroke="#1f2a44" stroke-width="2"/>
+  <polygon points="259,62 249,57 249,67" fill="#1f2a44"/>
+  <text x="117" y="32" font-size="11" fill="#1f2a44" text-anchor="middle">to_json</text>
+  <text x="242" y="32" font-size="11" fill="#1f2a44" text-anchor="middle">from_json</text>
+  <path d="M55 84 Q55 118 180 118 Q305 118 305 84" fill="none" stroke="#b4232c" stroke-width="2" stroke-dasharray="5 4"/>
+  <text x="180" y="112" font-size="12" fill="#b4232c" text-anchor="middle">must behave the same</text>
+</svg>
+```
+
+A second test goes the other way: save the new library again, and the text must match the first save exactly. Stable output from step 4 makes that possible.
+:::
+
+::: context trust-boundary Where trusted data ends
+A **trust boundary** is any place where data enters your program from somewhere you do not control: a file, the keyboard, the network. Inside the boundary, your own methods made the data and it follows your rules. At the boundary, anything can arrive.
+
+So the boundary is where you check. Spacecraft software does this with every command uplinked from the ground: before acting on one, it checks the message is complete and correctly formed, and it rejects anything else. A save file deserves the same suspicion.
+:::
+
+::: context raise-from What "from err" keeps
+`raise NewError(...) from err` stores the old error on the new one, as its `__cause__`. If the new error is never caught, Python prints both tracebacks, joined by the line "The above exception was the direct cause of the following exception:".
+
+```python
+try:
+    Library.from_json("{}")
+except LibraryError as e:
+    print(e)                # corrupt save file: 'books'
+    print(repr(e.__cause__))  # KeyError('books')
+```
+
+So the caller gets one simple error to catch, and whoever is debugging still sees the real reason underneath.
+:::
 --- task
-Add persistence to `Library`:
+Add saving and loading to `Library`:
 
-- `to_json()` returns `json.dumps(data, indent=2, sort_keys=True)` where `data` is `{"books": [...], "members": [...], "loans": [...]}`: books and members as dicts of their fields (in the order they were added), and each loan as `{"member_id": ..., "isbn": ..., "due": "YYYY-MM-DD"}`.
-- The class method `Library.from_json(text)` rebuilds a `Library` with real `Book`, `Member` and `Loan` objects (with `date` due dates). Broken JSON, missing keys or bad fields raise `LibraryError`.
+- `to_json()` returns `json.dumps(data, indent=2, sort_keys=True)`, where `data` is `{"books": [...], "members": [...], "loans": [...]}`. Books and members are dicts of their fields (in the order they were added), and each loan is `{"member_id": ..., "isbn": ..., "due": "YYYY-MM-DD"}`.
+- The class method `Library.from_json(text)` builds a new `Library` with real `Book`, `Member` and `Loan` objects (with `date` due dates) and returns it. Broken JSON, missing keys and bad fields raise `LibraryError`.
 --- starter
 # Library system, step 2: loans and rules.
 from dataclasses import dataclass, replace
@@ -2560,11 +2999,11 @@ class Library:
             raise LibraryError(f"corrupt save file: {err}") from err
         return library
 --- hint
-`from dataclasses import asdict` turns a Book or Member into a dict. For loans, build the dict yourself so the date becomes `loan.due.isoformat()`.
+Start with `to_json`. Add `import json` and put `asdict` in the `from dataclasses import` line. Books and members are `[asdict(b) for b in self.books.values()]` and the same for members. For loans, build each dict yourself, so that the date becomes `loan.due.isoformat()`.
 --- hint
-`from_json` is a `@classmethod`: `library = cls()`, then add each book and member with `Book(**d)` / `Member(**d)`, and append a `Loan` for each loan with `date.fromisoformat(d["due"])`.
+`from_json` has `@classmethod` above it and takes `(cls, text)`. Inside: `data = json.loads(text)`, `library = cls()`, then `library.add_book(Book(**b))` for each `b` in `data["books"]`, `library.add_member(Member(**m))` for each member, and `library.loans.append(Loan(l["member_id"], l["isbn"], date.fromisoformat(l["due"])))` for each loan. Return `library` at the end.
 --- hint
-Wrap the whole of loading in `try:` and turn `ValueError`, `KeyError` and `TypeError` into `raise LibraryError(...) from err`.
+Put everything from `json.loads` to the last loan inside `try:`, then `except (ValueError, KeyError, TypeError) as err:` and `raise LibraryError(f"corrupt save file: {err}") from err`.
 --- check case | to_json writes the agreed format
 (lambda lib: (lib.add_book(Book("1", "Dune", "Frank Herbert", 2)), lib.add_member(Member("m1", "Ada")), lib.checkout("m1", "1", date(2026, 3, 1)), __import__("json").loads(lib.to_json()))[-1])(Library())
 => {"books": [{"isbn": "1", "title": "Dune", "author": "Frank Herbert", "copies": 2}], "members": [{"member_id": "m1", "name": "Ada"}], "loans": [{"member_id": "m1", "isbn": "1", "due": "2026-03-15"}]}
@@ -2581,34 +3020,135 @@ all(raises(LibraryError, lambda t=t: Library.from_json(t)) for t in ["not json",
 
 === pyp-12 | Library system 4: overdue loans and fines
 --- teach
-The last feature is the one that makes a library's day-to-day work possible: knowing what is overdue, what each member owes, and what is due back soon.
+Last lesson the library learned to save itself as JSON and load itself back, and to refuse a damaged save file with one clear `LibraryError`. This last lesson adds what a librarian needs every morning: which books are overdue, what each member owes, and which books are due back soon. All three are built on one question about dates, so that comes first.
 
-**Date arithmetic.** Subtracting two dates gives a `timedelta`, whose `.days` is a whole number that can be negative:
+**Step 1: subtracting dates.** In lesson 2 you added a `timedelta` to a date to get a new date. It works the other way too: one date minus another gives a `timedelta`, the length of time between them. Its **`.days`** is that length as a whole number of days. If the second date is later than the first, `.days` is negative:
 
 ```python
 from datetime import date
-(date(2026, 3, 20) - date(2026, 3, 15)).days     # 5   five days late
-(date(2026, 3, 10) - date(2026, 3, 15)).days     # -5  not due yet
+
+print((date(2026, 3, 20) - date(2026, 3, 15)).days)    # 5    five days late
+print((date(2026, 3, 10) - date(2026, 3, 15)).days)    # -5   not due yet
 ```
 
-A loan returned *on* its due date is not late: only positive differences count. `max(0, days)` expresses "late days, never negative" in one step.
+Read `today - loan.due` as "how far past the due date is today?".
 
-**One helper, used everywhere.** "How many days late is this loan?" is needed by the overdue list and by the fine. Write it once as `days_late(loan, today)`, and both features are guaranteed to agree. Two slightly different copies of the same calculation is how off-by-one disagreements happen.
+**Step 2: late days are never negative.** A loan that is not due yet is not "minus five days late"; it is just not late. And a book returned *on* its due date is not late either, because the difference is 0. Only positive differences count. `max(0, days)` says "the late days, but never below zero" in one step, because `max` picks the bigger of the two:
 
-**Reports are sorted on purpose.** The overdue list is most useful with the worst cases first, then by name and title, so that the same data always gives the same order.
+```python
+max(0, 5)      # 5
+max(0, -5)     # 0
+```
 
-**Money in cents, again.** The fine is 20 cents per day per late book, an integer. Formatting is the interface's business.
+**Step 3: one helper, used everywhere.** "How many days late is this loan?" is needed by the overdue list *and* by the fine. Write it once, as a method `days_late(loan, today)`, and call it from both. Then the two features are guaranteed to agree. Two slightly different copies of the same calculation, one with `>` and one with `>=`, is exactly how an [[off-by-one|off-by-one]] disagreement creeps in.
 
-**`today` stays an argument.** Every one of these methods depends on the date, and every one takes `today`. That is why testing them is easy: you can check "three days after the due date, the fine is 60" without waiting three days.
+**Step 4: the overdue report, sorted on purpose.** `overdue(today)` gives one tuple per late loan: `(member name, book title, days late)`. The loan only stores ids, so you look the names up, as you learned in lesson 2: `self.members[loan.member_id].name` and `self.books[loan.isbn].title`.
 
-With this lesson the library system is complete: a model with rules, persistence with a stable file format and validation, and time-based reports, all tested without touching a real disk or a real clock.
+A report is most useful with the worst cases first. Then, when two loans are equally late, by name, then by title, so that the same data [[always gives the same order|tie-breaks]]. That is the sort key trick from the sorting lesson: a tuple key, with a minus sign on the number you want largest-first:
+
+```python
+rows = [("Bo", "Emma", 1), ("Ada", "Dune", 5), ("Bo", "Ulysses", 5)]
+print(sorted(rows, key=lambda r: (-r[2], r[0], r[1])))
+# [('Ada', 'Dune', 5), ('Bo', 'Ulysses', 5), ('Bo', 'Emma', 1)]
+```
+
+`r[2]` is the days late, `r[0]` the name, `r[1]` the title. Ada and Bo are both 5 days late, so the name breaks the tie.
+
+**Step 5: fines in [[cents|cents-again]], again.** The fine is 20 cents for each day each book is late. Store it as a constant, `FINE_PER_DAY = 20`, and keep the total as a whole number of cents, like the expense tracker did. Turning cents into "$1.40" is the interface's job, not the library's.
+
+A worked example: Ada has two books. One was due on 15 March and the other on 18 March. On 20 March the first is 5 days late and the second 2 days late. That is 5 + 2 = 7 late days, and 7 × 20 = 140 cents. `fine` is the sum of `days_late(loan, today) * FINE_PER_DAY` over the member's loans, and `loans_of` already raises for an unknown member.
+
+**Step 6: due soon.** `due_soon(today, within=3)` lists the books that come back in the next few days, so the library can send reminders. Here you want the *opposite* subtraction, `loan.due - today`: how many days until the due date. A loan counts if that number is from 0 (due today) up to `within`, [[both ends included|inclusive-window]]. Python can write that as one chained comparison:
+
+```python
+0 <= (loan.due - today).days <= within
+```
+
+Sort the matching loans soonest first, by the tuple `(loan.due, title)`, and return just the titles. Dates compare the way you would hope: an earlier date is smaller.
+
+**Step 7: today stays an argument.** Every one of these methods depends on the date, and every one takes `today`. That is why testing them is easy: you can check "three days after the due date, the fine is 60" without [[waiting three days|fast-forward]].
+
+**Watch out:** the direction of the subtraction. `today - loan.due` is positive when a loan is *late*; `loan.due - today` is positive when it is *not due yet*. Swap them and every late book looks early. When unsure, try one date you can check in your head.
+
+With this lesson the library system is complete: a domain model with rules, saving and loading with a stable file format and a check on the way in, and reports that depend on time. And every part of it was tested without touching a real disk or a real clock.
+
+::: context off-by-one Off by one day
+An **off-by-one error** is a count that is wrong by exactly one: counting the posts of a fence instead of the gaps, or treating the due date itself as a late day. Here is how `max(0, (today - due).days)` counts around a due date of 15 March:
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 120" font-family="Inter, Arial, sans-serif">
+  <line x1="20" y1="50" x2="340" y2="50" stroke="#1f2a44" stroke-width="2"/>
+  <g stroke="#1f2a44" stroke-width="2">
+    <line x1="40" y1="44" x2="40" y2="56"/><line x1="90" y1="44" x2="90" y2="56"/>
+    <line x1="140" y1="40" x2="140" y2="60"/><line x1="190" y1="44" x2="190" y2="56"/>
+    <line x1="240" y1="44" x2="240" y2="56"/><line x1="290" y1="44" x2="290" y2="56"/>
+  </g>
+  <g font-size="12" fill="#1f2a44" text-anchor="middle">
+    <text x="40" y="34">13 Mar</text><text x="90" y="34">14 Mar</text>
+    <text x="140" y="34" font-weight="700">15 Mar</text><text x="190" y="34">16 Mar</text>
+    <text x="240" y="34">17 Mar</text><text x="290" y="34">18 Mar</text>
+  </g>
+  <g font-size="13" text-anchor="middle">
+    <text x="40" y="78" fill="#6c7a93">0</text><text x="90" y="78" fill="#6c7a93">0</text>
+    <text x="140" y="78" fill="#6c7a93">0</text><text x="190" y="78" fill="#b4232c">1</text>
+    <text x="240" y="78" fill="#b4232c">2</text><text x="290" y="78" fill="#b4232c">3</text>
+  </g>
+  <text x="140" y="104" font-size="11" fill="#1f2a44" text-anchor="middle">due date: not late</text>
+  <text x="250" y="104" font-size="11" fill="#b4232c" text-anchor="middle">days late</text>
+</svg>
+```
+
+Off-by-one errors are among the most common bugs of all, which is why the rule lives in one helper.
+:::
+
+::: context tie-breaks Why ties need a rule
+If you sorted only by days late, two loans that are both 5 days late could come out in either order, depending on the order the loans happen to be in the list. Run the report twice and the lines might swap.
+
+Adding the name and then the title as tie-breakers means every possible pair has a fixed order. The same data always prints the same report, which makes it easy to test, easy to compare with yesterday's, and less confusing for the person reading it.
+:::
+
+::: context cents-again Why money stays in whole cents
+The expense tracker stored money as whole cents because decimal fractions are not stored exactly as floats: `0.1 + 0.2` gives `0.30000000000000004`, not `0.3`. Add up thousands of fines as floats and the total can end up a fraction of a cent off.
+
+Whole numbers of cents are always exact, and `140` cents can be shown as "$1.40" at the very last moment, when it is printed. It is the same idea as keeping one unit throughout a calculation, which spacecraft engineers learned the hard way when a mix-up between pound-seconds and newton-seconds helped cause the loss of the Mars Climate Orbiter in 1999.
+:::
+
+::: context inclusive-window A window with both ends included
+With `today` on 12 March and `within=3`, the window runs from 12 March to 15 March, and both ends count.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 110" font-family="Inter, Arial, sans-serif">
+  <rect x="45" y="36" width="210" height="28" rx="4" fill="#8fb8f0"/>
+  <line x1="20" y1="50" x2="340" y2="50" stroke="#1f2a44" stroke-width="2"/>
+  <g fill="#1f2a44">
+    <circle cx="60" cy="50" r="5"/><circle cx="120" cy="50" r="5"/><circle cx="180" cy="50" r="5"/><circle cx="240" cy="50" r="5"/>
+  </g>
+  <circle cx="300" cy="50" r="5" fill="#ffffff" stroke="#6c7a93" stroke-width="2"/>
+  <g font-size="12" fill="#1f2a44" text-anchor="middle">
+    <text x="60" y="28">12 Mar</text><text x="120" y="28">13</text><text x="180" y="28">14</text><text x="240" y="28">15 Mar</text><text x="300" y="28">16</text>
+    <text x="60" y="84">0</text><text x="120" y="84">1</text><text x="180" y="84">2</text><text x="240" y="84">3</text>
+  </g>
+  <text x="300" y="84" font-size="12" fill="#6c7a93" text-anchor="middle">4</text>
+  <text x="150" y="104" font-size="11" fill="#1d6fd1" text-anchor="middle">due in 0 to 3 days: listed</text>
+  <text x="300" y="104" font-size="11" fill="#6c7a93" text-anchor="middle">not yet</text>
+</svg>
+```
+
+The numbers underneath are `(loan.due - today).days`. A loan due today has 0 and is listed; one already late has a negative number and is left out, because the overdue report covers it.
+:::
+
+::: context fast-forward Testing next week, today
+Because `today` is an argument, a test can jump to any date it likes: the due date, the day after, a year later. Real systems are tested this way too. Flight software is run in simulators where the clock is controlled by the test, so a team can jump straight to the moment before a planned engine burn, or run a whole day's schedule in minutes.
+
+The expert course's design lesson called this injecting a dependency. Your library never once asks the computer what day it is. Only the thin outer shell of a real program would call `date.today()` and pass the answer in.
+:::
 --- task
-Add `FINE_PER_DAY = 20` (cents) and these `Library` methods:
+Add the constant `FINE_PER_DAY = 20` (in cents) and these `Library` methods:
 
 - `days_late(loan, today)`: how many days after its due date `today` is, never negative.
-- `overdue(today)`: a list of `(member name, book title, days late)` for every loan that is late, most days late first, then by name, then by title.
-- `fine(member_id, today)`: the member's total fine in cents, `FINE_PER_DAY` for each day each of their loans is late.
-- `due_soon(today, within=3)`: titles of books on loan that are due between `today` and `within` days after it (inclusive), soonest first, then by title.
+- `overdue(today)`: a list of `(member name, book title, days late)` tuples, one for every loan that is late, sorted most days late first, then by name, then by title.
+- `fine(member_id, today)`: the member's total fine in cents: `FINE_PER_DAY` for each day each of their loans is late. An unknown member raises `LibraryError`.
+- `due_soon(today, within=3)`: the titles of the books on loan that are due between `today` and `within` days after it (both ends included), soonest first, then by title.
 --- starter
 # Library system, step 3: saving and loading.
 import json
@@ -2865,11 +3405,11 @@ class Library:
         soon = [l for l in self.loans if 0 <= (l.due - today).days <= within]
         return [self.books[l.isbn].title for l in sorted(soon, key=lambda l: (l.due, self.books[l.isbn].title))]
 --- hint
-`days_late` is `max(0, (today - loan.due).days)`.
+Start with the helper from step 2: `days_late` returns `max(0, (today - loan.due).days)`. Everything else calls it.
 --- hint
-`overdue` builds tuples for loans where `days_late(...) > 0`, looking up names and titles with `self.members[...]` and `self.books[...]`, then sorts with `key=lambda r: (-r[2], r[0], r[1])`.
+`overdue` builds a tuple `(self.members[l.member_id].name, self.books[l.isbn].title, self.days_late(l, today))` for each loan `l` in `self.loans` where `self.days_late(l, today) > 0`, then returns them sorted with `key=lambda r: (-r[2], r[0], r[1])`. `fine` is `sum(self.days_late(l, today) * FINE_PER_DAY for l in self.loans_of(member_id))`.
 --- hint
-For `due_soon`, keep loans where `0 <= (loan.due - today).days <= within`, sort them by `(loan.due, title)`, and return the titles.
+For `due_soon`, keep the loans where `0 <= (l.due - today).days <= within`, sort them with `key=lambda l: (l.due, self.books[l.isbn].title)`, and return a list of their titles.
 --- check test | days_late is never negative
 (lambda lib: (lib.add_book(Book("1", "Dune", "F")), lib.add_member(Member("a", "Ada")), lib.checkout("a", "1", date(2026, 3, 1)), [lib.days_late(lib.loans[0], date(2026, 3, d)) for d in (10, 15, 16, 20)])[-1] == [0, 0, 1, 5])(Library())
 --- check case | overdue lists the worst first
