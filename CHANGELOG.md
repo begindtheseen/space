@@ -8,6 +8,23 @@ the entry for the one you are running is what Settings shows you afterwards.
 Newest first. Each heading is exactly `## <version>` so both readers can find
 it.
 
+## 1.1.4
+
+**Almost every lesson is now in plain words.** 95 of the 108 modules are rewritten so each step
+comes one idea at a time, every new word is explained the first time it appears, and every
+lesson has context notes: tap an underlined phrase for what it means, why it matters and where
+it comes back. The same maths and code sit underneath. The last few modules (career, advanced
+guidance, the capstone and Simulink) still have their original text and follow in an update.
+
+**Learn to code is rewritten too.** Nineteen of the twenty-one courses (every Terminal, Git,
+Python and SQL course, and C++ up to advanced) now go one idea at a time, say what every symbol
+and flag means, and have notes in every lesson. Long lessons that crammed in several new things
+are split into shorter ones. Your progress is kept exactly as it was.
+
+**Fixes to flashcards and quizzes.** About fifty cards, quiz questions and exercises that said
+something slightly wrong are corrected, from how a failing shell pipeline reports its error to
+which way the Coriolis force pushes. Each one was checked by running the code or redoing the maths.
+
 ## 1.1.3
 
 **Highlight anything and press Explain.** Select a word, a formula or a sentence in a lesson and
