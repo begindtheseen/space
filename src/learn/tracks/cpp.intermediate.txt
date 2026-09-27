@@ -3,6 +3,7 @@
 @title C++ · Intermediate
 @name C++, intermediate: the standard library, classes and careful code
 @blurb Write everyday modern C++ with confidence: const-correct references, vectors and algorithms, maps and sets, small classes, optional and lambdas, plus the debugging habits that catch copies, off-by-ones, overflow and garbage values.
+@plainvoice true
 
 === cpp2-01 | const correctness
 --- teach
