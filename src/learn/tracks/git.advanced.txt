@@ -3,6 +3,7 @@
 @title Git · Advanced
 @name Git, advanced: rewriting history, hunting bugs and working with a team
 @blurb Copy, replay and squash commits, find the commit that broke something in a few steps, trace who changed a line, and share work through a remote the way real teams do — including getting out of the tangles that come with it.
+@plainvoice true
 
 === git3-01 | Copying one commit: cherry-pick
 --- teach
