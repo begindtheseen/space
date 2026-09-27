@@ -231,7 +231,7 @@ g++ 13 rejects the option its own note suggests: `unrecognized command-line opti
 
 ## The ring buffer's head and tail
 
-Last lesson's ring buffer has two indices. The producer writes `head_`; the consumer writes `tail_`. The exercise solution puts `alignas(64)` on both. Is that false sharing avoided, or true sharing that cannot be avoided?
+Last lesson's ring buffer has two indices. The producer writes `head_`; the consumer writes `tail_`. The ring, like the exercise solution, puts `alignas(64)` on both. Is that false sharing avoided, or true sharing that cannot be avoided?
 
 Both. Each side *must* read the other's index, because that is how the producer knows the buffer is not full and the consumer knows it is not empty. That is true sharing: the value has to travel. But each side also writes its own index on every operation. If the two indices share a line, every push invalidates the line the consumer is about to read, and every pop invalidates it for the producer.
 
@@ -335,7 +335,7 @@ Sanity check: in the padded run, $10^8 / 0.46\,\mathrm{s} \approx 2.2 \times 10^
 :::
 
 ::: warning Padding alone is not a guaranteed win: measure
-The exercise's simpler ring, which reads the *other* index on every push and pop, behaved the opposite way on this machine. With `head_` and `tail_` 8 bytes apart it moved 34 to 127 million items per second over three runs; with `alignas(64)` on both, 21 to 28 million. Why: when every operation reads the other side's index anyway, the line must travel every time no matter what. Padding then means two lines travel instead of one. Separating the lines pays only when each side stops reading the other's line most of the time, which is what the cached copies do. Performance advice about caches is a hypothesis until you have measured it on your processor.
+Last lesson's ring (the exercise solution), which reads the *other* index on every push and pop, behaved the opposite way on this machine in the same test. With `head_` and `tail_` 8 bytes apart it moved 34 to 127 million items per second over three runs; with `alignas(64)` on both, 21 to 28 million. Why: when every operation reads the other side's index anyway, the line must travel every time no matter what. Padding then means two lines travel instead of one. Separating the lines pays only when each side stops reading the other's line most of the time, which is what the cached copies do. Performance advice about caches is a hypothesis until you have measured it on your processor.
 :::
 
 ## Where this lives on a vehicle

@@ -203,6 +203,8 @@ Look at the two `alignas(64)` in the class. They put head and tail in different 
 
 The alignment changes speed, not correctness. The orderings above are what make the ring correct.
 
+It does not always change speed for the better, either. In this simple ring each side reads the *other* side's index on every push and pop, so that line bounces between the cores anyway. Lesson 10 measures it and finds that the padding only pays once each side keeps a private copy of the other's index and rereads it rarely. Measure before you trust the padding.
+
 ## Progress guarantees: lock-free is not wait-free
 
 "Lock-free" is used loosely to mean "has no mutex". It has a precise meaning, one of a ladder of **[[progress guarantees|herlihy]]** that say what can stop a thread from finishing.
