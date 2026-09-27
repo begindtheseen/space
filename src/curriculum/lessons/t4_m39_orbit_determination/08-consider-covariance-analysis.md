@@ -239,14 +239,38 @@ Earth is not a perfect ball. It bulges at the equator and has lumps of denser ro
 :::
 
 ::: context bias Where a station bias comes from
-A radar or antenna measures range by timing a signal's round trip. Anything that adds the same small delay to every measurement shows up as a range bias: the length of cable between the antenna and the electronics, a calibration done imperfectly, a small error in where the station's antenna really sits on the Earth. These errors do not change from one measurement to the next within a pass. That is exactly what makes them dangerous: averaging a thousand measurements does nothing to them. Stations are calibrated regularly, but some bias always survives.
+A radar or antenna measures range by timing a signal's round trip. Anything that adds the same small delay to every measurement shows up as a range bias: the length of cable between the antenna and the electronics, a calibration done imperfectly, a timing offset in the station clock. These errors do not change from one measurement to the next within a pass. That is exactly what makes them dangerous: averaging a thousand measurements does nothing to them. Stations are calibrated regularly, but some bias always survives.
 :::
 
 ::: context monte-carlo Checking a formula by brute force
 A Monte Carlo run answers "how much does the answer scatter?" by trying it many times with fresh random errors and measuring the scatter directly. The name comes from the casino in Monaco. It was the code name chosen in the 1940s by Stanislaw Ulam, John von Neumann and Nicholas Metropolis for random-sampling calculations at Los Alamos. It is slow, but it assumes nothing, which makes it the referee for formulas like the consider covariance.
 
 ```svg
-SVG4
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 200" font-family="Inter, Arial, sans-serif">
+  <line x1="50" y1="160" x2="340" y2="160" stroke="#1f2a44" stroke-width="1.5"/>
+  <line x1="50" y1="160" x2="50" y2="20" stroke="#1f2a44" stroke-width="1.5"/>
+  <line x1="50" y1="160" x2="50" y2="165" stroke="#1f2a44"/>
+  <text x="50" y="178" font-size="11" text-anchor="middle" fill="#1f2a44">1</text>
+  <line x1="122" y1="160" x2="122" y2="165" stroke="#1f2a44"/>
+  <text x="122" y="178" font-size="11" text-anchor="middle" fill="#1f2a44">10</text>
+  <line x1="195" y1="160" x2="195" y2="165" stroke="#1f2a44"/>
+  <text x="195" y="178" font-size="11" text-anchor="middle" fill="#1f2a44">100</text>
+  <line x1="268" y1="160" x2="268" y2="165" stroke="#1f2a44"/>
+  <text x="268" y="178" font-size="11" text-anchor="middle" fill="#1f2a44">1000</text>
+  <line x1="340" y1="160" x2="340" y2="165" stroke="#1f2a44"/>
+  <text x="340" y="178" font-size="11" text-anchor="middle" fill="#1f2a44">10000</text>
+  <text x="195" y="194" font-size="11" text-anchor="middle" fill="#1f2a44">number of readings N</text>
+  <text x="45" y="94" font-size="11" text-anchor="end" fill="#1f2a44">0.3 kg</text>
+  <line x1="47" y1="90.0" x2="50" y2="90.0" stroke="#1f2a44"/>
+  <text x="45" y="47" font-size="11" text-anchor="end" fill="#1f2a44">0.5 kg</text>
+  <line x1="47" y1="43.3" x2="50" y2="43.3" stroke="#1f2a44"/>
+  <text x="45" y="164" font-size="11" text-anchor="end" fill="#1f2a44">0</text>
+  <line x1="50" y1="90.0" x2="340" y2="90.0" stroke="#6c7a93" stroke-dasharray="4 3"/>
+  <polyline points="50.0,43.3 53.6,49.9 57.2,56.0 60.9,61.8 64.5,67.3 68.1,72.5 71.8,77.4 75.4,82.0 79.0,86.4 82.6,90.5 86.2,94.4 89.9,98.1 93.5,101.5 97.1,104.8 100.8,107.9 104.4,110.8 108.0,113.6 111.6,116.2 115.2,118.6 118.9,120.9 122.5,123.1 126.1,125.2 129.8,127.1 133.4,129.0 137.0,130.7 140.6,132.3 144.2,133.9 147.9,135.3 151.5,136.7 155.1,138.0 158.8,139.3 162.4,140.4 166.0,141.5 169.6,142.5 173.2,143.5 176.9,144.4 180.5,145.3 184.1,146.1 187.8,146.9 191.4,147.6 195.0,148.3 198.6,149.0 202.2,149.6 205.9,150.2 209.5,150.7 213.1,151.3 216.8,151.7 220.4,152.2 224.0,152.6 227.6,153.1 231.2,153.4 234.9,153.8 238.5,154.2 242.1,154.5 245.8,154.8 249.4,155.1 253.0,155.4 256.6,155.6 260.2,155.9 263.9,156.1 267.5,156.3 271.1,156.5 274.8,156.7 278.4,156.9 282.0,157.1 285.6,157.2 289.2,157.4 292.9,157.5 296.5,157.7 300.1,157.8 303.8,157.9 307.4,158.0 311.0,158.2 314.6,158.3 318.2,158.4 321.9,158.4 325.5,158.5 329.1,158.6 332.8,158.7 336.4,158.8 340.0,158.8" fill="none" stroke="#1d6fd1" stroke-width="2.2"/>
+  <polyline points="50.0,23.9 53.6,29.5 57.2,34.7 60.9,39.4 64.5,43.9 68.1,48.0 71.8,51.7 75.4,55.2 79.0,58.4 82.6,61.4 86.2,64.1 89.9,66.5 93.5,68.8 97.1,70.9 100.8,72.7 104.4,74.4 108.0,76.0 111.6,77.4 115.2,78.7 118.9,79.8 122.5,80.9 126.1,81.8 129.8,82.7 133.4,83.4 137.0,84.1 140.6,84.7 144.2,85.3 147.9,85.8 151.5,86.2 155.1,86.6 158.8,87.0 162.4,87.3 166.0,87.6 169.6,87.9 173.2,88.1 176.9,88.3 180.5,88.5 184.1,88.6 187.8,88.8 191.4,88.9 195.0,89.0 198.6,89.1 202.2,89.2 205.9,89.3 209.5,89.4 213.1,89.5 216.8,89.5 220.4,89.6 224.0,89.6 227.6,89.7 231.2,89.7 234.9,89.7 238.5,89.8 242.1,89.8 245.8,89.8 249.4,89.8 253.0,89.8 256.6,89.9 260.2,89.9 263.9,89.9 267.5,89.9 271.1,89.9 274.8,89.9 278.4,89.9 282.0,89.9 285.6,89.9 289.2,90.0 292.9,90.0 296.5,90.0 300.1,90.0 303.8,90.0 307.4,90.0 311.0,90.0 314.6,90.0 318.2,90.0 321.9,90.0 325.5,90.0 329.1,90.0 332.8,90.0 336.4,90.0 340.0,90.0" fill="none" stroke="#b4232c" stroke-width="2.2"/>
+  <text x="157" y="74" font-size="12" fill="#b4232c">consider: floor at 0.3 kg</text>
+  <text x="157" y="130" font-size="12" fill="#1d6fd1">naive: 0.5/√N, toward 0</text>
+</svg>
 ```
 
 The scale example as $N$ grows: the naive uncertainty keeps shrinking, but the true one stops at the scale's own offset uncertainty.
@@ -256,7 +280,16 @@ The scale example as $N$ grows: the naive uncertainty keeps shrinking, but the t
 A covariance matrix is **positive semi-definite**: for any direction you pick, the variance along that direction is zero or positive, never negative. The term $\mathbf S\mathbf P_{cc}\mathbf S^\mathsf T$ has this property too, because it is itself the covariance of $\mathbf S(\mathbf c - \bar{\mathbf c})$. Adding it can only make the uncertainty grow or stay the same, in every direction. Considering a parameter can never make you more confident.
 
 ```svg
-SVG5
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 200" font-family="Inter, Arial, sans-serif">
+  <polygon points="60,165 192.6,165 192.6,44.1" fill="#8fb8f0" fill-opacity="0.25" stroke="none"/>
+  <line x1="60" y1="165" x2="192.6" y2="165" stroke="#1d6fd1" stroke-width="3"/>
+  <line x1="192.6" y1="165" x2="192.6" y2="44.1" stroke="#f2b880" stroke-width="3"/>
+  <line x1="60" y1="165" x2="192.6" y2="44.1" stroke="#b4232c" stroke-width="3"/>
+  <polyline points="182.6,165 182.6,155 192.6,155" fill="none" stroke="#1f2a44" stroke-width="1"/>
+  <text x="126" y="183" font-size="12" text-anchor="middle" fill="#1d6fd1">noise part 0.204 m</text>
+  <text x="201" y="109" font-size="12" fill="#1f2a44">bias part 0.186 m</text>
+  <text x="116" y="93" font-size="12" text-anchor="end" fill="#b4232c">total 0.276 m</text>
+</svg>
 ```
 
 For independent errors the standard deviations add like the sides of a right triangle. Here is the first position component of the station-bias example: $\sqrt{0.204^2 + 0.186^2} \approx 0.276\,\mathrm m$.

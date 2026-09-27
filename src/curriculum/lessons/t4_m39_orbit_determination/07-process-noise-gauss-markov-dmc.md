@@ -1,7 +1,7 @@
 ---
 id: l07-process-noise-gauss-markov-dmc
 title: "Process noise for orbit determination: Gauss-Markov acceleration and DMC"
-minutes: 26
+minutes: 24
 covers:
   - "Process noise for orbit determination: Gauss-Markov acceleration and dynamic model compensation"
 ---
