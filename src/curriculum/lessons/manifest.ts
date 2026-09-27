@@ -10663,7 +10663,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-tail-risk-importance-sampling-and-worst-case",
       "title": "Tail risk, extreme-value estimation, and worst-case analysis",
-      "minutes": 19,
+      "minutes": 20,
       "covers": [
         "Extreme-value estimation and importance sampling when the failure probability is too small to sample directly",
         "Worst-case and corner-case analysis as a complement to, not a substitute for, Monte Carlo"
@@ -10683,7 +10683,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-three-sigma-is-not-the-99-73rd-percentile",
       "title": "Three sigma is not the 99.73rd percentile",
-      "minutes": 17,
+      "minutes": 18,
       "covers": [
         "Three sigma versus the 99.73rd percentile, and why they differ for anything non-Gaussian"
       ],
@@ -10692,7 +10692,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-sensitivity-analysis-and-envelope-coverage",
       "title": "Sensitivity analysis and flight-envelope coverage",
-      "minutes": 16,
+      "minutes": 18,
       "covers": [
         "Sensitivity analysis and driver identification: regression on the dispersion inputs, and scatter plots you actually look at",
         "Flight-envelope coverage and the difference between random coverage and designed coverage"
@@ -10702,7 +10702,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-stability-margins-across-the-envelope",
       "title": "Stability margins across the envelope",
-      "minutes": 16,
+      "minutes": 20,
       "covers": [
         "Stability margin verification across the envelope: frozen-time linearisation, gain, phase and delay margin against flight time"
       ],
@@ -10711,7 +10711,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-code-verification-and-static-analysis",
       "title": "Code verification and static analysis",
-      "minutes": 18,
+      "minutes": 21,
       "covers": [
         "Code verification: unit, integration and regression tests; statement, branch and MC-DC coverage",
         "Static analysis and formal methods: Coverity, Polyspace, model checking with SPIN",
@@ -10722,7 +10722,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-continuous-integration-and-closing-the-loop",
       "title": "Continuous integration and closing the loop",
-      "minutes": 19,
+      "minutes": 22,
       "covers": [
         "Continuous integration for flight and simulation software: what runs on every commit, what runs nightly, what runs before a release",
         "Test-as-you-fly, and the risk taken every time you deviate from it",
@@ -10735,7 +10735,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-system-decomposition-and-interfaces",
       "title": "System decomposition and interface contracts",
-      "minutes": 21,
+      "minutes": 20,
       "covers": [
         "System decomposition and the interface contracts between navigation, guidance, control and the vehicle"
       ],
@@ -10744,7 +10744,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-error-budgeting",
       "title": "Error budgeting for a landing-accuracy requirement",
-      "minutes": 20,
+      "minutes": 18,
       "covers": [
         "Error budgeting: allocating a landing-accuracy requirement across navigation, guidance and control"
       ],
@@ -10762,7 +10762,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-navigation-meets-guidance",
       "title": "Navigation in the loop: the multiplicative EKF meets guidance",
-      "minutes": 24,
+      "minutes": 25,
       "covers": [
         "A multiplicative extended Kalman filter on IMU, GNSS and radar altimeter, with error-state formulation and attitude error as a three-parameter local perturbation"
       ],
