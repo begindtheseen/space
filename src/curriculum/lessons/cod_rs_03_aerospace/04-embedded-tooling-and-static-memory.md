@@ -1,7 +1,7 @@
 ---
 id: l04-embedded-tooling-and-static-memory
 title: Logging, flashing and fixed-size memory on a chip
-minutes: 30
+minutes: 24
 covers:
   - 'defmt logging, probe-rs, cargo-embed, rtt-target'
   - 'heapless collections: Vec, String and spsc::Queue with static capacity'
@@ -10,19 +10,19 @@ covers:
 
 Think about an egg carton. It holds exactly twelve eggs. You know how much room it takes in the fridge before you go shopping, and you can never squeeze in a thirteenth: the carton is simply full. Compare that with a shopping bag, which stretches until something tears. A shopping bag is flexible, but you never quite know how much room it will need.
 
-A microcontroller program is a fridge with no spare shelf. In lesson 01 you gave up the heap, the stretchy shopping bag, because running out of heap in the middle of a mission is a failure you cannot test away. This lesson gives you the egg cartons: collections whose size is fixed when you compile. It also gives you two other things every piece of firmware needs on day one. The first is a way to *see* what the chip is doing, since there is no screen and no `println!`. The second is a way to share data safely between the main loop and an **interrupt**, and a way to have the compiler check facts about sizes and layouts before the code ever reaches the board.
+A microcontroller program is a fridge with no spare shelf. In lesson 01 you gave up the heap, the stretchy shopping bag. This lesson gives you the egg cartons: collections whose size is fixed when you compile. It also gives you a way to *see* what the chip is doing, since there is no screen and no `println!`, a safe way to share data with an interrupt, and compile-time checks on sizes and layouts.
 
-Everything here was built with Rust 1.94.1 for the `thumbv7em-none-eabihf` target you met in lesson 01 (a Cortex-M4 or M7 with a floating-point unit), using `defmt` 1.1.1, `defmt-rtt` 1.3.0, `panic-probe` 1.0.0, `rtt-target` 0.6.2, `heapless` 0.9.3, `critical-section` 1.2.0 and `static_assertions` 1.1.0. Every size and message quoted is from a real build.
+Everything here was built with Rust 1.94.1 for `thumbv7em-none-eabihf`, using `defmt` 1.1.1, `defmt-rtt` 1.3.0, `panic-probe` 1.0.0, `rtt-target` 0.6.2, `heapless` 0.9.3, `critical-section` 1.2.0 and `static_assertions` 1.1.0. Every size and message quoted is real.
 
 ## The debug probe: a cable into the chip
 
 On a laptop you run a program and read what it prints. A microcontroller on a circuit board has no screen, no keyboard and no files. So how do you even put a program onto it?
 
-You use a **[[debug probe|debug-probe]]** — a small adapter that plugs into your laptop by USB on one side and into two or three pins on the chip on the other. On Cortex-M those pins speak **SWD**, Serial Wire Debug, a wiring standard built into every Cortex-M core. Through them the probe can stop and start the processor, write the flash memory, and read or write any address in RAM while the program runs. Many development boards have a probe built in: ST's Nucleo boards carry an ST-LINK, and plenty of others carry a CMSIS-DAP probe. Stand-alone probes such as SEGGER's J-Link do the same job.
+You use a **[[debug probe|debug-probe]]** — a small adapter that plugs into your laptop by USB on one side and into two or three pins on the chip on the other. On Cortex-M those pins speak **SWD**, Serial Wire Debug. Through them the probe can stop and start the processor, write the flash memory, and read or write RAM while the program runs. Many development boards have one built in (ST's Nucleo boards carry an ST-LINK); stand-alone probes such as SEGGER's J-Link do the same job.
 
-**probe-rs** is a toolkit, written in Rust, that talks to all of these probes. It can flash a program, reset the chip, read memory, act as a server for a debugger like `gdb`, and print the log messages your firmware sends. You install it once with `cargo install probe-rs-tools --locked`, which gives you the `probe-rs` command and also `cargo embed`.
+**probe-rs** is a toolkit, written in Rust, that talks to all of these probes. It flashes, resets, reads memory, serves a debugger like `gdb`, and prints your firmware's log messages. `cargo install probe-rs-tools --locked` installs the `probe-rs` command and also `cargo embed`.
 
-The everyday way to use it is to make it the **runner** for your project. A runner is the command cargo uses when you type `cargo run`. On a laptop the runner is "execute the program here". For the chip you tell cargo, in `.cargo/config.toml`, to hand the finished program to probe-rs instead:
+The everyday way to use it is as the **runner** for your project: the command cargo uses when you type `cargo run`. In `.cargo/config.toml` you tell cargo to hand the finished program to probe-rs:
 
 ```toml
 [build]
@@ -33,9 +33,9 @@ runner = "probe-rs run --chip STM32F411RETx"
 rustflags = ["-C", "link-arg=-Tlink.x", "-C", "link-arg=-Tdefmt.x"]
 ```
 
-Now `cargo run --release` compiles for the chip, and then probe-rs flashes the program, resets the chip, and stays attached, printing every log message until you press Ctrl+C. The `--chip` name must match the exact part on your board, the same way `memory.x` must. (`-Tdefmt.x` is a second linker script that the `defmt` crate needs; you will see why in a moment.)
+Now `cargo run --release` compiles, flashes, resets the chip and stays attached, printing log messages until you press Ctrl+C. The `--chip` name must match the exact part on your board. (`-Tdefmt.x` is a linker script the `defmt` crate needs; more on it below.)
 
-**cargo-embed** is the other front end from the same project. Instead of command-line flags it reads a file called `Embed.toml` in your project, so a whole team shares one setup:
+**cargo-embed**, from the same project, reads its settings from an `Embed.toml` file, so a team shares one setup:
 
 ```toml
 [default.general]
@@ -48,7 +48,7 @@ enabled = true
 enabled = false
 ```
 
-Typing `cargo embed --release` builds, flashes, and opens a terminal showing the chip's messages. Turn `gdb` on and it also starts a debug server you can attach `gdb` to, for breakpoints and stepping on the real hardware.
+`cargo embed --release` builds, flashes and opens a terminal showing the chip's messages. Turn `gdb` on and it also starts a debug server for breakpoints on the real hardware.
 
 ::: warning A probe cannot rescue the wrong chip name
 `probe-rs run --chip` does not guess. Name a chip with a different flash layout and the flashing either fails or writes to the wrong place. When a board refuses to start, check the exact part number printed on the chip, then `--chip`, then `memory.x`, in that order.
@@ -58,9 +58,7 @@ Typing `cargo embed --release` builds, flashes, and opens a terminal showing the
 
 Now you can flash a program. How does the program talk back?
 
-The old way is a serial port: wire a pin to a USB-serial adapter and send text one bit at a time. It works, but it costs a pin, it is slow, and sending a long line can take longer than one pass of your control loop.
-
-**RTT**, Real-Time Transfer, is a cleverer trick invented by SEGGER, the company that makes J-Link probes. The firmware sets aside a small block of RAM with a known label on it: the **[[RTT control block|rtt-control-block]]**, holding one or more ring buffers. To "print", the firmware copies bytes into a buffer, which takes a few microseconds. The debug probe is already able to read any RAM address while the processor keeps running, so the laptop side keeps peeking at that buffer through the probe and pulls the new bytes out. No extra pin, no stopping the processor, no waiting for a slow wire.
+The old way is a serial port, which costs a pin and is slow. **RTT**, Real-Time Transfer, a scheme invented by SEGGER, is cleverer. The firmware sets aside a small block of RAM with a known label on it: the **[[RTT control block|rtt-control-block]]**, holding one or more ring buffers. To "print", the firmware copies bytes into a buffer, which takes microseconds. The probe can already read RAM while the processor runs, so the laptop keeps peeking at that buffer and pulls the new bytes out. No extra pin, no stopping the processor.
 
 The **rtt-target** crate is the plain-text way to use RTT from Rust:
 
@@ -89,7 +87,7 @@ fn main() -> ! {
 }
 ```
 
-`rtt_init_print!()` creates one "up" channel (chip to laptop) with a 1024-byte buffer, and `rprintln!` works like `println!`. (`black_box` stops the compiler from working out the whole calculation in advance, so the program really computes and prints a float.) This is easy and familiar. It has one cost, and on a chip the cost matters: to turn `rate` into the characters `15.1782`, the chip itself has to run Rust's full text-formatting machinery, `core::fmt`, and that code has to live in flash.
+`rtt_init_print!()` creates one "up" channel (chip to laptop) with a 1024-byte buffer, and `rprintln!` works like `println!`. (`black_box` stops the compiler from precomputing the float.) It is easy, with one cost: to turn `rate` into the characters `15.1782`, the chip itself must run Rust's text-formatting code, `core::fmt`, and that code lives in flash.
 
 ## defmt: send the number, not the sentence
 
@@ -123,9 +121,9 @@ fn main() -> ! {
 }
 ```
 
-The pieces fit together like this. `defmt` provides the logging macros. `defmt-rtt` is the **transport**: it carries defmt's compact bytes over an RTT buffer. `panic-probe` is a panic handler (lesson 01) that logs the panic message through defmt and then stops the chip. The `-Tdefmt.x` line in the runner config is the linker script that collects all the interned strings into their own section of the ELF.
+`defmt` provides the macros. `defmt-rtt` is the **transport**, carrying defmt's bytes over an RTT buffer. `panic-probe` is a panic handler (lesson 01) that logs the panic through defmt and stops the chip. `-Tdefmt.x` collects the strings into their own section of the ELF.
 
-Messages come in five **[[log levels|log-levels]]**: `trace`, `debug`, `info`, `warn` and `error`. You choose which ones are compiled in with the `DEFMT_LOG` environment variable, for example `DEFMT_LOG=info`. Levels below the one you pick are removed completely when you compile, so they cost nothing at all. If you set nothing, only `error` messages are kept, which surprises everyone the first time their `info!` lines print nothing.
+Messages come in five **[[log levels|log-levels]]**: `trace`, `debug`, `info`, `warn` and `error`. The `DEFMT_LOG` environment variable picks which are compiled in; lower levels are removed entirely and cost nothing. If you set nothing, only `error` is kept.
 
 Your own types can be logged too: put `#[derive(defmt::Format)]` on a struct or enum, the way you put `#[derive(Debug)]` on one for `println!`.
 
@@ -152,9 +150,9 @@ For the defmt version: $1024 + 6260 + 856 + 56 = 8196$ bytes.
 
 The ratio is $32784 / 8196 = 4.0$. The defmt build is a quarter of the size. Almost all of the saving is `core::fmt`, and especially the code for printing floats, which the chip no longer needs.
 
-On a chip with 512 KiB of flash, that is $32784 / 524288 \approx 6.3\%$ against $8196 / 524288 \approx 1.6\%$. On a small part with 32 KiB of flash, the text version would already have used the whole chip.
+On a chip with 512 KiB of flash, that is $32784 / 524288 \approx 6.3\%$ against $8196 / 524288 \approx 1.6\%$. A 32 KiB part could not hold the text version at all.
 
-Where did the words go? Searching the flashable image of the defmt build for `gyro_z` finds nothing. The string is still in the ELF file, as the name of a symbol in its symbol table (`llvm-nm` prints it):
+Where did the words go? The flashable image of the defmt build does not contain `gyro_z` at all. The string survives only in the ELF, as a symbol name (`llvm-nm` prints it):
 
 ```text
 00000006 N {"package":"fwdefmt","tag":"defmt_info","data":"tick {} gyro_z = {} rad/s","disambiguator":"8300568402406072548","crate_name":"fwdefmt"}
@@ -163,10 +161,10 @@ Where did the words go? Searching the flashable image of the defmt build for `gy
 The `00000006` is the index the chip sends. The laptop reads it, finds this entry, and fills in `{}` and `{}` with the bytes that followed.
 :::
 
-The bandwidth saving is just as real. The text line `tick 1234 gyro_z = 15.1782 rad/s` plus its newline is 33 characters. The defmt frame for it is an index and eight bytes of arguments, plus a little framing.
+The link saving is just as real: the text line `tick 1234 gyro_z = 15.1782 rad/s` with its newline is 33 bytes, while the defmt frame is an index plus eight bytes of arguments and a little framing.
 
 ::: warning Decode with the exact ELF you flashed
-The index numbers only mean something next to the ELF file from the same build. Flash one build, then decode its output with the ELF from a later build, and the laptop happily prints the wrong messages or garbage. Let `cargo run` or `cargo embed` do both steps from one build, and archive the ELF next to every binary you release, so logs from a unit in the field can still be read.
+The index numbers only mean something next to the ELF from the same build. Decode with the ELF from a later build and you get wrong messages or garbage. Archive the ELF next to every binary you release, so logs from a unit in the field can still be read.
 :::
 
 ## heapless: the egg-carton collections
@@ -177,9 +175,9 @@ In a `no_std` program without an allocator, `Vec` and `String` from the standard
 - `heapless::String<N>` — text of at most `N` bytes.
 - `heapless::spsc::Queue<T, N>` — a first-in, first-out queue for passing items from one part of the program to another.
 
-The `N` is a **const generic**, the same idea as `MovingAverage<N>` in lesson 01: a number that is part of the type and known when the code compiles. Because the size is known, the whole collection can live on the stack or in a `static`, and the memory it will ever need is counted in `.bss` before the chip is switched on.
+The `N` is a **const generic**, as in `MovingAverage<N>` in lesson 01: a number that is part of the type. Because the size is known, the collection can live in a `static`, counted in `.bss` before the chip is switched on.
 
-The other big difference is what happens when the carton is full. `std::Vec::push` never fails; it asks the heap for more room. `heapless::Vec::push` cannot grow, so it returns a `Result`. If there is room you get `Ok(())`. If not, you get `Err(item)`, with the item you tried to add handed back to you, so nothing is silently lost.
+The other difference is what happens when the carton is full. `std::Vec::push` asks the heap for more room. `heapless::Vec::push` cannot grow, so it returns a `Result`: `Ok(())` if there was room, or `Err(item)`, handing your item back so nothing is silently lost.
 
 ::: example Filling a Vec, a String and a Queue
 ```rust
@@ -217,7 +215,7 @@ fn main() {
 }
 ```
 
-This ran on the laptop (heapless works with or without `std`, which is exactly why you can unit-test firmware logic on a laptop):
+This ran on the laptop; heapless works with or without `std`, so you can unit-test firmware logic there:
 
 ```text
 stored 21.5
@@ -238,18 +236,18 @@ dequeue 101
 dequeue 102
 ```
 
-Walk through it. The fifth temperature does not fit in four slots, so `push` hands `23.9` back. `write!` works on a heapless `String` because it implements `core::fmt::Write`; the line is 11 bytes, well under 32. Adding 25 more bytes would make 36, over the limit, so `push_str` returns `Err(CapacityError)` and leaves the string as it was. The queue of type `Queue<u16, 4>` accepts only three items, and they come out in the order they went in.
+The fifth temperature does not fit, so `push` hands `23.9` back. `write!` works on a heapless `String` because it implements `core::fmt::Write`. Adding 25 bytes to the 11-byte line would make 36, over 32, so `push_str` fails and leaves the string as it was. The `Queue<u16, 4>` accepts only three items, which come out in the order they went in.
 :::
 
-Why does a `Queue<u16, 4>` hold only three? A queue like this is a [[ring buffer|one-empty-slot]]: a reading position chases a writing position around a fixed circle of slots. In heapless 0.9 one slot always stays empty, so the queue can tell "full" apart from "empty" by comparing the two positions. So `Queue<T, N>` holds `N - 1` items. Choose `N` one larger than the number you need.
+Why only three? The queue is a [[ring buffer|one-empty-slot]]: a reading position chases a writing position around a fixed circle of slots, and in heapless 0.9 one slot always stays empty so "full" and "empty" look different. So `Queue<T, N>` holds `N - 1` items.
 
-How big are these things? On the laptop, where `usize` is 8 bytes, `size_of` gave 24 bytes for `Vec<f32, 4>` (a length counter plus four 4-byte floats) and 40 for `String<32>` (a length plus 32 bytes). There is no pointer and no separate heap block: what you see is all there is. On a Cortex-M, where `usize` is 4 bytes, the same `Vec` is 20 bytes.
+How big are these? On a Cortex-M, where `usize` is 4 bytes, `size_of::<Vec<f32, 4>>()` is 20: a length counter plus four 4-byte floats. There is no pointer and no separate heap block.
 
 ### Splitting a queue between an interrupt and the main loop
 
 The "spsc" in `spsc::Queue` means **single producer, single consumer**: exactly one part of the program puts items in, and exactly one takes them out. That is the shape of most firmware. An interrupt handler receives bytes from a sensor and enqueues them; the main loop dequeues and processes them.
 
-`queue.split()` turns one queue into a `Producer`, which can only enqueue, and a `Consumer`, which can only dequeue. Each half goes to its own context. Because only one side ever moves the write position and only one side ever moves the read position, the two can run at the same time without a lock. The borrow checker does its part too: `split` borrows the queue mutably, so nobody else can touch it while the halves exist.
+`queue.split()` turns one queue into a `Producer`, which can only enqueue, and a `Consumer`, which can only dequeue. Only one side moves the write position and only one moves the read position, so the two can run at the same time without a lock. And `split` borrows the queue mutably, so nobody else can touch it while the halves exist.
 
 On a laptop you can rehearse this with a thread standing in for the interrupt:
 
@@ -287,7 +285,7 @@ fn main() {
 received 20 samples, sum = 210
 ```
 
-Twenty samples pass through a queue that holds seven at a time, and the sum $1 + 2 + \dots + 20 = 210$ proves none was lost or repeated. On a real chip the queue usually lives in a `static`, and the framework you met in lesson 03 hands the producer to the interrupt and the consumer to the main task.
+Twenty samples pass through a queue that holds seven at a time, and the sum $1 + 2 + \dots + 20 = 210$ shows none was lost or repeated. On a chip the queue lives in a `static`, and a framework from lesson 03 hands each half to its context.
 
 heapless has more cartons. The one you will want for the module exercise is `HistoryBuf<T, N>`, which keeps only the last `N` values written and quietly drops the oldest: write 10, 20, 30, 40, 50 into a `HistoryBuf<i32, 3>` and it holds 30, 40, 50.
 
@@ -296,14 +294,14 @@ heapless has more cartons. The one you will want for the module exercise is `His
 :::
 
 ::: warning Do not throw the error away
-`let _ = log.push(sample);` compiles, and silently drops samples when the list is full. Decide what "full" means for each buffer: drop the newest, drop the oldest (that is what `HistoryBuf` is for), count the drops in a health counter, or treat it as a fault. And keep big collections out of the stack: a `Vec<[f32; 6], 4096>` is 96 KiB, which will overflow a small stack before `main` gets going. Put it in a `static`.
+`let _ = log.push(sample);` compiles, and silently drops samples when full. Decide what "full" means for each buffer: drop the newest, drop the oldest (`HistoryBuf`), count drops in a health counter, or raise a fault. And keep big collections off the stack: a `Vec<[f32; 6], 4096>` is 96 KiB. Put it in a `static`.
 :::
 
 ## critical-section: sharing with an interrupt
 
 Picture a family with one bathroom and a lock on the door. Whoever is inside turns the lock; everyone else waits. The lock is only turned for a short time, and nobody has to agree on anything else.
 
-An **[[interrupt|interrupt]]** is a signal from hardware (a timer, a sensor saying "data ready") that makes the processor pause whatever it is doing, run a special function called an interrupt handler, and then carry on. The pause can come between any two instructions. So if the main loop is halfway through updating a shared struct when the handler fires and updates it too, the struct can end up half old and half new. That is a data race on one core, and `static mut` (lesson 07 of the last module) invites it.
+An **[[interrupt|interrupt]]** is a signal from hardware (a timer, a sensor saying "data ready") that makes the processor pause, run an interrupt handler, and then carry on. The pause can come between any two instructions. If the main loop is halfway through updating a shared struct when the handler updates it too, the struct ends up half old and half new: a data race on one core.
 
 A **critical section** is a stretch of code during which nothing else can run that could touch the shared data — the bathroom with the door locked. On a single-core Cortex-M the simplest way to get one is to switch interrupts off, do the short job, and switch them back on.
 
@@ -344,17 +342,17 @@ fn main() {
 latest frame seq = Some(7)
 ```
 
-Read it slowly. `critical_section::with` runs the closure you give it inside a critical section, and passes it `cs`, a **[[token|cs-token]]** of type `CriticalSection` that exists only while the section lasts. The crate's `Mutex` is not a lock that waits; it is a box whose `borrow(cs)` method needs that token. You cannot get at `LATEST`'s contents without being inside a critical section, and the compiler checks that for you. Inside, `RefCell` (lesson 05 of the last module) gives the mutable access.
+`critical_section::with` runs your closure inside a critical section and passes it `cs`, a **[[token|cs-token]]** of type `CriticalSection` that exists only while the section lasts. The crate's `Mutex` is not a lock that waits; it is a box whose `borrow(cs)` needs that token, so the compiler checks you are inside a critical section. `RefCell` (last module, lesson 05) then gives mutable access.
 
-Where does "switch interrupts off" come from? From exactly one place in the final program. Library crates only *call* `critical_section::with`. The application picks the **implementation** once, usually by turning on a feature: on a single-core Cortex-M it is `cortex-m = { version = "0.7", features = ["critical-section-single-core"] }`, which disables interrupts on entry and restores them on exit. An RTOS or a multi-core chip provides a different implementation. The example above ran on a laptop with the crate's `std` feature, which uses an ordinary lock. The same driver code works in all three.
+Where does "switch interrupts off" come from? Library crates only *call* `critical_section::with`. The final application picks the **implementation** once, by a feature: on a single-core Cortex-M, `cortex-m = { version = "0.7", features = ["critical-section-single-core"] }` disables interrupts on entry and restores them on exit. An RTOS or multi-core chip supplies another. The example above ran on a laptop with the crate's `std` feature, an ordinary lock. The driver code is the same in all three.
 
 ::: warning Keep the door locked for as short a time as possible
-While a critical section is open on a single-core chip, interrupts wait. Copy the data in or out and leave. Doing a long calculation, or waiting on a bus, inside `critical_section::with` delays every interrupt by that much, and a 1 kHz control loop driven by a timer interrupt will start to jitter or miss its deadline.
+While a critical section is open, interrupts wait. Copy the data in or out and leave. A long calculation or a bus wait inside `critical_section::with` delays every interrupt, and a 1 kHz control loop driven by a timer will jitter or miss its deadline.
 :::
 
 ## static_assertions: checks the compiler runs for you
 
-The frame above is sent over a radio link, and the ground software expects exactly 16 bytes. Suppose someone later adds a one-byte `health` field after `flags`. The code still compiles and runs, but every frame is now the wrong size, and the ground station reads nonsense. You would like the build to stop the moment that happens.
+The frame above goes over a radio link, and the ground software expects exactly 16 bytes. If someone adds a one-byte field, the code still runs but the ground station reads nonsense. You want the build to stop instead.
 
 The **static_assertions** crate gives you checks that run when the code compiles, not when it runs:
 
@@ -370,7 +368,7 @@ const_assert!(QUEUE_DEPTH.is_power_of_two());
 
 `assert_eq_size!(A, B)` fails the build unless the two types have the same size. `const_assert!(expr)` fails the build unless a condition the compiler can work out is true. (There is also `const_assert_eq!(a, b)` for two equal constants.) If the checks pass, they produce no code at all.
 
-Modern Rust can do the second kind with no crate: `const _: () = assert!(condition, "message");` forces the compiler to evaluate the `assert!` while compiling, and lets you write your own message. The crate is still common because `assert_eq_size!` and its friends read clearly and work on older compilers.
+Modern Rust can do the second kind with no crate: `const _: () = assert!(condition, "message");` makes the compiler evaluate the `assert!` while compiling, with your own message.
 
 ::: example A padding surprise caught at compile time
 Add `health: u8` after `flags` in `Frame`, and set `QUEUE_DEPTH` to 60. The build stops with these real messages (trimmed):
@@ -391,7 +389,7 @@ error[E0080]: attempt to compute `0_usize - 1_usize`, which would overflow
 17 | const_assert!(QUEUE_DEPTH.is_power_of_two());
 ```
 
-The second message is odd-looking, because the macro makes a false condition into an impossible subtraction; what matters is that it names the line. The built-in form is friendlier:
+The second message looks odd because the macro turns a false condition into an impossible subtraction; it still names the line. The built-in form reads better:
 
 ```text
 error[E0080]: evaluation panicked: QUEUE_DEPTH must be a power of two
@@ -413,7 +411,7 @@ Your firmware has `defmt::debug!("filter reset")` in it, but when you run it wit
 :::
 
 ::: answer
-defmt decides which levels to compile in from the `DEFMT_LOG` environment variable, and when it is not set, only `error` level is kept. The `debug!` line was removed completely when the code compiled. Set `DEFMT_LOG=debug` (for example in the `[env]` table of `.cargo/config.toml`) and rebuild. Levels you leave out cost nothing, which is why the default is so strict.
+`DEFMT_LOG` decides which levels are compiled in, and when it is unset only `error` is kept, so the `debug!` line was removed at compile time. Set `DEFMT_LOG=debug` (for example in the `[env]` table of `.cargo/config.toml`) and rebuild.
 :::
 
 ::: check
@@ -421,7 +419,7 @@ Explain in two or three sentences why a defmt build can be much smaller in flash
 :::
 
 ::: answer
-With `rprintln!` the chip formats the text itself, so it needs Rust's formatting code (including the large float-printing routines) and every format string in flash. With defmt the format strings stay in the ELF file on the laptop and are never flashed; the chip sends only an index and the raw argument bytes, and the laptop does the formatting. In the measured example that took flash from 32784 bytes to 8196 bytes.
+With `rprintln!` the chip formats text itself, so Rust's formatting code (including float printing) and every format string sit in flash. With defmt the strings stay in the ELF on the laptop; the chip sends an index and raw argument bytes, and the laptop formats. In the measured example flash fell from 32784 to 8196 bytes.
 :::
 
 ::: check
@@ -437,7 +435,7 @@ A driver crate calls `critical_section::with`. You build your application for a 
 :::
 
 ::: answer
-The final application is. It is the only crate that knows the whole system: whether the chip has one core or several, and whether an RTOS is running. On a single-core Cortex-M it turns on `cortex-m`'s `critical-section-single-core` feature, which disables and restores interrupts. If the driver chose, it would force one implementation on every chip it runs on, and two drivers could choose two different ones. Without any implementation the program cannot link, so the mistake is caught at build time.
+The final application is, because only it knows the whole system: one core or several, RTOS or not. On a single-core Cortex-M it turns on `cortex-m`'s `critical-section-single-core` feature. If drivers chose, each would force its choice on every chip, and two drivers could disagree. With no implementation the program fails to link, so the mistake is caught at build time.
 :::
 
 ::: check
