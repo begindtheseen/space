@@ -2568,7 +2568,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-googlemock-basics",
       "title": "GoogleMock, a pretend sensor that does what you say",
-      "minutes": 20,
+      "minutes": 21,
       "covers": [
         "GoogleMock: mocking an ISensor or HAL interface; EXPECT_CALL, matchers, cardinalities"
       ],
@@ -2577,11 +2577,31 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-nice-strict-and-naggy-mocks",
       "title": "Nice, naggy and strict mocks, and the calls nobody mentioned",
-      "minutes": 22,
+      "minutes": 21,
       "covers": [
         "NiceMock, StrictMock and what an uninteresting call means"
       ],
       "file": "cod_cpp_11_gtest/08-nice-strict-and-naggy-mocks.md"
+    },
+    {
+      "id": "l09-ctest-integration-and-catch2",
+      "title": "Every test by name in CTest, and a look at Catch2",
+      "minutes": 21,
+      "covers": [
+        "gtest_discover_tests, CTest registration, test filters and labels",
+        "Catch2 as the alternative and what it trades"
+      ],
+      "file": "cod_cpp_11_gtest/09-ctest-integration-and-catch2.md"
+    },
+    {
+      "id": "l10-coverage-and-sanitizers-in-the-test-matrix",
+      "title": "Coverage and sanitizers in the test matrix",
+      "minutes": 26,
+      "covers": [
+        "Coverage with gcov, lcov and llvm-cov; interpreting an uncovered branch",
+        "Sanitizer builds in the test matrix"
+      ],
+      "file": "cod_cpp_11_gtest/10-coverage-and-sanitizers-in-the-test-matrix.md"
     }
   ],
   "cod_git_01_basics": [
@@ -10518,14 +10538,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_cpp_11_gtest": {
-    "covered": 9,
+    "covered": 13,
     "total": 14,
     "complete": false,
     "missing": [
-      "gtest_discover_tests, CTest registration, test filters and labels",
-      "Catch2 as the alternative and what it trades",
-      "Coverage with gcov, lcov and llvm-cov; interpreting an uncovered branch",
-      "Sanitizer builds in the test matrix",
       "Testing numerical kernels: invariants, convergence, golden data"
     ]
   },
