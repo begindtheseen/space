@@ -537,6 +537,28 @@ A `.gitignore` file in the repository lists names git should never offer to trac
 build/
 ```
 
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 160" font-family="Inter, Arial, sans-serif">
+  <text x="16" y="22" font-size="12" fill="#1f2a44" font-weight="700">orbit_speed/</text>
+  <g stroke="#6c7a93" stroke-width="1.5" fill="none">
+    <path d="M24,28 V132"/><path d="M24,46 H40"/><path d="M24,68 H40"/><path d="M24,90 H40"/>
+    <path d="M24,132 H40"/><path d="M52,98 V124"/><path d="M52,110 H66"/><path d="M52,124 H66"/>
+  </g>
+  <text x="44" y="50" font-size="12" fill="#1d6fd1">CMakeLists.txt</text>
+  <text x="44" y="72" font-size="12" fill="#1d6fd1">main.cpp</text>
+  <text x="44" y="94" font-size="12" fill="#b4232c">build/</text>
+  <text x="70" y="114" font-size="11" fill="#b4232c">debug/</text>
+  <text x="70" y="128" font-size="11" fill="#b4232c">release/</text>
+  <text x="44" y="136" font-size="12" fill="#1d6fd1">.gitignore</text>
+  <rect x="190" y="36" width="160" height="42" rx="4" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1"/>
+  <text x="270" y="54" font-size="11" text-anchor="middle" fill="#1f2a44">blue: your files,</text>
+  <text x="270" y="69" font-size="11" text-anchor="middle" fill="#1f2a44">tracked by git</text>
+  <rect x="190" y="90" width="160" height="42" rx="4" fill="#f2b880" stroke="#1f2a44" stroke-width="1"/>
+  <text x="270" y="108" font-size="11" text-anchor="middle" fill="#1f2a44">red: generated,</text>
+  <text x="270" y="123" font-size="11" text-anchor="middle" fill="#1f2a44">ignored, deletable</text>
+</svg>
+```
+
 The slash at the end means "a folder with this name". With in-source builds you would need a line for `CMakeCache.txt`, `CMakeFiles/`, `Makefile`, `cmake_install.cmake`, and one for every file each generator produces, and the list would never be complete.
 :::
 

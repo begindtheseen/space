@@ -2425,6 +2425,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       "file": "cod_cpp_10_cmake/01-why-cmake-and-a-first-project.md"
     },
     {
+      "id": "l02-targets-libraries-and-executables",
+      "title": "Targets, libraries and executables",
+      "minutes": 22,
+      "covers": [
+        "add_library and add_executable; INTERFACE, STATIC and SHARED"
+      ],
+      "file": "cod_cpp_10_cmake/02-targets-libraries-and-executables.md"
+    },
+    {
       "id": "l03-usage-requirements-public-private-interface",
       "title": "Usage requirements: PUBLIC, PRIVATE and INTERFACE",
       "minutes": 24,
@@ -2437,12 +2446,21 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-project-layout-and-ctest",
       "title": "A project layout a stranger can build, and ctest",
-      "minutes": 24,
+      "minutes": 20,
       "covers": [
         "Canonical layout: apps, cmake, extern, include, src, tests",
         "ctest and test registration"
       ],
       "file": "cod_cpp_10_cmake/06-project-layout-and-ctest.md"
+    },
+    {
+      "id": "l07-cmake-presets",
+      "title": "CMake presets",
+      "minutes": 18,
+      "covers": [
+        "CMakePresets.json for reproducible configure and build commands"
+      ],
+      "file": "cod_cpp_10_cmake/07-cmake-presets.md"
     },
     {
       "id": "l09-toolchain-files-and-cross-compiling",
@@ -2452,6 +2470,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Toolchain files for cross-compiling to an embedded target"
       ],
       "file": "cod_cpp_10_cmake/09-toolchain-files-and-cross-compiling.md"
+    },
+    {
+      "id": "l10-install-and-export",
+      "title": "Install and export: letting other projects find you",
+      "minutes": 24,
+      "covers": [
+        "install and export so downstream projects can find_package you"
+      ],
+      "file": "cod_cpp_10_cmake/10-install-and-export.md"
     }
   ],
   "cod_git_01_basics": [
@@ -10382,15 +10409,12 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_cpp_10_cmake": {
-    "covered": 7,
+    "covered": 10,
     "total": 14,
     "complete": false,
     "missing": [
-      "add_library and add_executable; INTERFACE, STATIC and SHARED",
       "Generator expressions and per-configuration settings",
       "find_package and config packages; FetchContent versus submodules versus Conan or vcpkg",
-      "CMakePresets.json for reproducible configure and build commands",
-      "install and export so downstream projects can find_package you",
       "Sanitizer and coverage build configurations",
       "ccache and build-time hygiene"
     ]
