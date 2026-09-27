@@ -2719,11 +2719,50 @@ edit_distance("a" * 1000, "b" * 1000)
 
 === py4-12 | Problem solving: Dijkstra's shortest path
 --- teach
-BFS finds the fewest *steps*. When steps have different costs (road lengths, travel times, prices), the fewest steps can be the most expensive route. **Dijkstra's algorithm** finds the cheapest route when every cost is zero or more.
+Last lesson you filled a table to measure how far apart two strings are. This lesson goes back to a question from the advanced course: what is the best route from here to there? There you used **BFS**, which finds the route with the fewest moves. BFS works because every move costs the same: one step. Real maps are not like that. One road is 10 km long, another is 1 km. This lesson finds the *cheapest* route when steps have different costs. The same problem sits inside [[every maps app and every internet router|routing-real]].
 
-**The idea.** Like BFS, it grows outwards from the start, but in order of *total cost so far* instead of number of steps. It keeps a tentative best cost for every place it has reached, and always settles the **cheapest unsettled place next**. When a place is settled, its cost is final: any other route to it would have to pass through somewhere at least as expensive, and costs never go negative.
+## Fewest steps is not always cheapest
 
-**The data structure** that makes "cheapest next" fast is a heap:
+Picture four towns. From A there is a long road straight to B: 10 km. There is also a short road from A to C (1 km), one from C to D (1 km), and one from D to B (1 km).
+
+BFS would say "A to B is one step, done". But that one step costs 10 km. The three-step route A, C, D, B costs 1 + 1 + 1 = 3 km. More steps, much cheaper.
+
+In Python you can store this map as a dictionary. Each town maps to a list of `(neighbour, cost)` pairs, one pair for each road out of it:
+
+```python
+graph = {
+    "A": [("B", 10), ("C", 1)],
+    "C": [("D", 1)],
+    "D": [("B", 1)],
+}
+```
+
+A map like this is a **[[weighted graph|graph-words]]**. The places are **nodes**, the roads between them are **edges**, and the cost written on each edge is its **weight**.
+
+Two things to notice:
+
+- The roads here are one way. A lists a road to B, but B lists nothing, so you cannot go from B back to A.
+- B is not a key at all. A node with no roads out of it may be left out. So always read the roads with `graph.get(node, [])`, which means "the list for this node, or an empty list if it has none".
+
+## The idea: settle the cheapest place next
+
+**[[Dijkstra's algorithm|dijkstra-history]]** (say it "DIKE-stra") finds the cheapest route from a start to every place it can reach. It needs one promise: no cost is [[negative|negative-costs]].
+
+Think of water poured in at the start and spreading along pipes of different lengths. It reaches near places first and far places later. Dijkstra copies that. For every place reached so far, it keeps the **best cost found so far**, a number that may still get lower. Then, over and over:
+
+1. Pick the place with the lowest cost so far that is not yet settled.
+2. **Settle** it: its cost is now final.
+3. For each road out of it, check whether going through this place makes the neighbour cheaper. If it does, write down the new, lower cost.
+
+Step 3 has a name: **relaxing** an edge, which means checking whether that road gives a cheaper way to reach its end.
+
+Why is a settled cost final? Any other route to that place would have to leave the settled places through some place that is not settled yet, and every one of those already costs at least as much. Adding more roads can only add cost, because no cost is negative. So no other route can beat it.
+
+## The heap: "cheapest next", fast
+
+Step 1 asks "which place is cheapest right now?" again and again. In the heapq lesson you met the tool for exactly that question. A heap of `(cost, node)` tuples always keeps the smallest cost at the front, because tuples compare by their first item first. A heap used this way is called a **[[priority queue|priority-queue]]**.
+
+Here is Dijkstra finding the cheapest cost from the start to every place it can reach:
 
 ```python
 import heapq
@@ -2743,17 +2782,125 @@ def costs_from(graph, start):
     return best
 ```
 
-Details that matter:
+What each part does:
 
-- A node may be pushed several times as better routes appear. Instead of updating the heap in place, push the new entry and **skip stale entries** when they come off (`cost > best[node]`).
-- **To recover the route**, record for each node which node you reached it from (`previous[neighbour] = node`) whenever you improve it; then walk back from the goal and reverse.
-- You can **stop early** the moment the goal comes off the heap.
+- `best` holds the cheapest cost found so far for each place. The start costs 0.
+- `heapq.heappop(heap)` takes out the cheapest entry. That is steps 1 and 2.
+- The `for` loop is step 3. `new` is the cost of reaching the neighbour through this node.
+- `best.get(neighbour, float("inf"))` is the neighbour's cost so far, or [[infinity|infinity]] if it has not been reached yet, so any real cost beats it.
+- If `new` is lower, it goes into `best`, and the neighbour goes onto the heap.
 
-With a heap, Dijkstra is O(E log V) for E edges and V nodes. Scanning a plain list for the cheapest node each time is O(V²), hopeless for tens of thousands of nodes.
+On the four towns:
 
-**Common mistake:** marking a node finished when you *push* it, as in BFS. With weights, a later, longer-looking path can still be cheaper; only popping settles a node.
+```python
+costs_from(graph, "A")      # {'A': 0, 'B': 3, 'C': 1, 'D': 2}
+```
+
+B costs 3, by the long way round, as it should.
+
+## Old entries on the heap
+
+Here is the order the entries come off the heap for the four towns:
+
+```
+(0, 'A')   (1, 'C')   (2, 'D')   (3, 'B')   (10, 'B')
+```
+
+B came off twice. When A was settled, the road A to B gave B a cost of 10, so `(10, "B")` went onto the heap. Later, D found a way to B costing 3, so `(3, "B")` went on too.
+
+A heap cannot easily find and change an entry in its middle. So instead of updating the old entry, you push a new one and leave the old one where it is. The old entry is **stale**: out of date. When `(10, "B")` finally comes off, `cost > best[node]` asks "is 10 more than 3?", which is true, and `continue` skips it.
+
+## Getting the route, not only the cost
+
+To know the route, also remember where you came from. Each time you lower a neighbour's cost, write `previous[neighbour] = node`, which means "the cheapest way into this neighbour, so far, comes from this node".
+
+For the four towns, `previous` ends up as `{'B': 'D', 'C': 'A', 'D': 'C'}`. (B was first reached from A, then its entry was overwritten when D found a cheaper way.)
+
+Now walk backwards from the goal. B came from D, D came from C, C came from A. A has no entry, because it is the start. That gives B, D, C, A. Turn it around and you have the route:
+
+```python
+path = ["B"]
+node = "B"
+while node in previous:
+    node = previous[node]
+    path.append(node)
+path[::-1]       # ['A', 'C', 'D', 'B']
+```
+
+`path[::-1]` is the list read backwards: a slice with a step of minus one.
+
+## Stopping early
+
+If you only care about one goal, you can stop the moment the goal comes off the heap. It is settled then, so its cost is final, and the rest of the map does not matter.
+
+## Why the heap matters
+
+Each push or pop on a heap is O(log n). With a heap, Dijkstra is **[[O(E log V)|big-o-ev]]**, for E edges and V nodes. Without one, you would scan every place to find the cheapest each time, which is O(V²): for 20,000 places that is about 400 million steps, far too slow.
+
+**Watch out:** in BFS you marked a square as seen when you *added* it to the queue. Do not do that here. With weights, a route found later can still be cheaper: B was first found at a cost of 10, and later at 3. A place is only settled when it is *popped* off the heap.
+
+::: context routing-real Where Dijkstra runs every day
+Many internet routers run Dijkstra's algorithm. In a common routing system called OSPF ("Open Shortest Path First"), each router keeps a map of the network, with a cost on every link, and runs Dijkstra on it to decide where to send each packet next. Maps apps face the same question on road networks with millions of junctions. They use faster relatives of Dijkstra, such as A* (which also aims towards the goal) and tricks that pre-compute shortcuts, but the heart of all of them is today's idea: settle the cheapest place next.
+:::
+
+::: context graph-words Nodes, edges and weights
+In computing, a **graph** is not a chart with axes. It is a set of things (the **nodes**) and connections between them (the **edges**). Towns and roads, web pages and links, people and friendships are all graphs. Give each edge a number, such as a length, a time or a price, and it becomes a **weighted graph**. Here is the four-town map from the lesson, with the cheap route in blue:
+
+```svg
+<svg viewBox="0 0 360 160" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#1f2a44"/>
+    </marker>
+  </defs>
+  <line x1="58" y1="100" x2="300" y2="100" stroke="#6c7a93" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="53" y1="91" x2="115" y2="50" stroke="#1d6fd1" stroke-width="3" marker-end="url(#arrow)"/>
+  <line x1="148" y1="40" x2="210" y2="40" stroke="#1d6fd1" stroke-width="3" marker-end="url(#arrow)"/>
+  <line x1="243" y1="49" x2="305" y2="90" stroke="#1d6fd1" stroke-width="3" marker-end="url(#arrow)"/>
+  <circle cx="40" cy="100" r="16" fill="#ffffff" stroke="#1f2a44" stroke-width="2"/>
+  <circle cx="130" cy="40" r="16" fill="#ffffff" stroke="#1f2a44" stroke-width="2"/>
+  <circle cx="230" cy="40" r="16" fill="#ffffff" stroke="#1f2a44" stroke-width="2"/>
+  <circle cx="320" cy="100" r="16" fill="#ffffff" stroke="#1f2a44" stroke-width="2"/>
+  <text x="40" y="105" font-size="14" text-anchor="middle" fill="#1f2a44">A</text>
+  <text x="130" y="45" font-size="14" text-anchor="middle" fill="#1f2a44">C</text>
+  <text x="230" y="45" font-size="14" text-anchor="middle" fill="#1f2a44">D</text>
+  <text x="320" y="105" font-size="14" text-anchor="middle" fill="#1f2a44">B</text>
+  <text x="74" y="62" font-size="13" text-anchor="middle" fill="#1d6fd1">1</text>
+  <text x="180" y="32" font-size="13" text-anchor="middle" fill="#1d6fd1">1</text>
+  <text x="286" y="62" font-size="13" text-anchor="middle" fill="#1d6fd1">1</text>
+  <text x="180" y="118" font-size="13" text-anchor="middle" fill="#6c7a93">10</text>
+  <text x="180" y="148" font-size="12" text-anchor="middle" fill="#1f2a44">A to B: one step costs 10, three steps cost 3</text>
+</svg>
+```
+:::
+
+::: context dijkstra-history Twenty minutes at a café
+Edsger Dijkstra (1930 to 2002) was a Dutch computer scientist. In 1956 he wanted a problem to show off a new computer, the ARMAC, that people who were not mathematicians could understand: the shortest route between two Dutch cities. He later said he worked the algorithm out in about twenty minutes, sitting on a café terrace in Amsterdam, without pencil and paper. He published it in 1959 in a paper about three pages long. It is still one of the most used algorithms in the world.
+:::
+
+::: context negative-costs Why a negative cost breaks it
+Suppose A to B costs 2, A to C costs 5, and C to B costs minus 4. Dijkstra pops B first, at cost 2, and settles it. Only later does it pop C and find A, C, B, which costs 5 + (−4) = 1: cheaper, but B was already declared final. The promise "more roads can only add cost" was false. Graphs with negative weights need a different algorithm, such as Bellman–Ford, which is slower (about V × E steps) but copes with them. Real costs like distance and time are never negative, so Dijkstra fits most maps.
+:::
+
+::: context priority-queue A queue where the most urgent goes first
+An ordinary queue is first come, first served, like the line at a shop. A **priority queue** serves the most urgent item first, like a hospital emergency room that sees the worst injury first, whoever arrived earlier. In Python the heap is the usual way to build one. One detail: if two entries have the same cost, the tuples compare their second items, the nodes, to break the tie. `(3, "B")` comes before `(3, "C")`. So all the nodes must be things Python can compare with each other: all strings, or all tuples, not a mixture.
+:::
+
+::: context infinity A number bigger than every number
+`float("inf")` is a special floating-point value meaning infinity. Every ordinary number is smaller than it: `float("inf") > 10**100` is `True`, and `min(3, float("inf"))` is `3`. That makes it the perfect starting value for "the best cost so far" when you have not found any route yet: the first real cost always beats it. The `math` module has the same value under a shorter name, `math.inf`.
+:::
+
+::: context big-o-ev Reading O(E log V)
+The big-O lessons measured work in terms of one size, n. A graph has two sizes: V, the number of nodes, and E, the number of edges. Dijkstra looks at every edge once, and each look may push onto the heap, which costs about log V steps. So the total is about E times log V. For a grid of 20,000 places with about 80,000 edges, log₂ of 20,000 is about 14, so that is about 80,000 × 14, roughly a million small steps. Compare that with 400 million for the scanning version.
+:::
 --- task
-Write `cheapest(graph, start, goal)`. `graph` maps each node to a list of `(neighbour, cost)` pairs (costs are 0 or more; a node may appear only as a neighbour and not as a key). Return `(total_cost, path)` where `path` is the list of nodes from `start` to `goal` inclusive, or `None` if the goal cannot be reached. `cheapest(g, x, x)` is `(0, [x])`.
+Write `cheapest(graph, start, goal)`.
+
+- `graph` maps each node to a list of `(neighbour, cost)` pairs, like the four towns in the lesson. Costs are 0 or more.
+- A node may appear only as a neighbour and not as a key, so read the roads with `graph.get(node, [])`.
+- Return `(total_cost, path)`, where `path` is the list of nodes from `start` to `goal`, with both ends included.
+- If the goal cannot be reached, return `None`.
+- `cheapest(g, x, x)` is `(0, [x])`.
 
 It must handle a graph of about 20,000 nodes quickly.
 --- starter
@@ -2785,11 +2932,11 @@ def cheapest(graph, start, goal):
                 heapq.heappush(heap, (new, neighbour))
     return None
 --- hint
-Keep `best` (cheapest known cost per node), `previous` (where you came from) and a heap of `(cost, node)` starting with `(0, start)`.
+Keep three things: `best` (the cheapest known cost for each node), `previous` (where you came from) and a heap of `(cost, node)` entries, starting with `(0, start)`.
 --- hint
-Pop the cheapest entry; skip it if it is worse than `best[node]`; otherwise relax each neighbour, pushing it when you find a cheaper cost. Use `graph.get(node, [])` for nodes with no outgoing edges.
+Pop the cheapest entry. Skip it if its cost is more than `best[node]`. Otherwise, for each neighbour in `graph.get(node, [])`, work out the new cost; if it beats the neighbour's best so far, store it in `best`, set `previous[neighbour] = node` and push `(new, neighbour)`.
 --- hint
-When the goal is popped, follow `previous` back to the start, reverse the list, and return it with the cost.
+When the goal is popped, follow `previous` back to the start, reverse the list with `[::-1]`, and return it together with the cost. If the heap runs empty first, return `None`.
 --- check case | The cheaper route has more steps
 cheapest({"A": [("B", 10), ("C", 1)], "C": [("D", 1)], "D": [("B", 1)]}, "A", "B")
 => (3, ["A", "C", "D", "B"])
@@ -2812,40 +2959,170 @@ cheapest({(r, c): [((r + dr, c + dc), ((r + dr) * 7 + (c + dc) * 13) % 10 + 1) f
 
 === py4-13 | Problem solving: a tokenizer
 --- teach
-Over the next two lessons you will build a calculator that understands `2 * (3 + 4) - -1`, the same way real interpreters and compilers work, in two stages:
+Edit distance and Dijkstra were algorithms someone else invented, which you learned to write. The last lessons of this course build a small program the way real language tools are built: a calculator that understands text like `2 * (3 + 4) - -1`.
 
-1. **Tokenizing** (this lesson): turn the characters into a list of meaningful pieces, **tokens**: `2`, `*`, `(`, `3`, `+`, `4`, `)`, `-`, `-`, `1`.
-2. **Parsing** (next lesson): work out the structure of the tokens and compute the result.
+Think about how you read a sentence. First you see words and punctuation marks, not single letters. Then you work out how the words fit together. A calculator, and Python itself, and [[every interpreter and compiler|interpreters-too]], works in the same two stages:
 
-Splitting the job keeps each half simple: the parser never has to think about spaces or how many characters a number has.
+1. **Tokenizing** (this lesson): cut the text into meaningful pieces, called **[[tokens|token-word]]**. For `2 * (3 + 4) - -1` the tokens are `2`, `*`, `(`, `3`, `+`, `4`, `)`, `-`, `-`, `1`.
+2. **Parsing** (the next lessons): work out how the tokens fit together, and compute the answer.
 
-**How a tokenizer works.** Walk through the text with an index `i`. Look at the character there and decide what kind of token starts at that position:
+Splitting the job keeps each half simple. The parser never has to think about spaces, or about how many characters a number has. It gets a tidy list like `[12, "+", 3]`.
+
+## Walking through the text with an index
+
+Keep a number `i` that points at the current character, like a finger resting on the text. Look at the character under your finger and decide what kind of token starts there. Then move the finger past it.
+
+Here is a tokenizer for whole numbers, `+` and `-`:
 
 ```python
-i = 0
-while i < len(text):
-    ch = text[i]
-    if ch.isspace():
-        i += 1                      # skip it, no token
-    elif ch.isdigit():
-        start = i
-        while i < len(text) and text[i].isdigit():
-            i += 1                  # consume the whole number
-        tokens.append(int(text[start:i]))
-    elif ...
+def tokenize(text):
+    tokens = []
+    i = 0
+    while i < len(text):
+        ch = text[i]
+        if ch.isspace():
+            i += 1                      # a space: skip it, no token
+        elif ch.isdigit():
+            start = i
+            while i < len(text) and text[i].isdigit():
+                i += 1                  # move past the whole number
+            tokens.append(int(text[start:i]))
+        elif ch in "+-":
+            tokens.append(ch)
+            i += 1
+        else:
+            raise ValueError("unexpected character")
+    return tokens
+
+tokenize("12 + 3")        # [12, '+', 3]
 ```
 
-The key rule is **maximal munch**: always take the *longest* token that fits. `123` is one number, not three; `**` is one power operator, not two multiplications. So when you see `*`, peek at the next character before deciding.
+Step by step:
 
-**Report errors precisely.** When a character does not start any token, raise an error that says *what* and *where*: `unexpected character '$' at position 4`. That message is the difference between a tool people can use and one they give up on.
+- `ch.isspace()` is true for a space (or a tab or newline). Spaces make no token; the finger moves on by one.
+- `ch.isdigit()` is true for `0` to `9`. A number can be several digits long, so remember where it began (`start = i`), move `i` forward while you still see digits, and then cut out the whole run with the slice `text[start:i]`. `int` turns the text `"12"` into the number `12`.
+- `ch in "+-"` is true when `ch` is one of the characters in that string. An operator is one character, so it becomes a token by itself and `i` moves on by one.
+- Anything else is a character the calculator does not understand.
 
-**Common mistake:** writing `text = text[1:]` to move along. It works, but copies the rest of the string every time, making the tokenizer quadratic. Move an index instead.
+## Numbers with a decimal point
+
+Numbers like `4.5` have a dot. So a number may start with a digit *or* a dot (`.5` is a number too), and the number loop should accept dots as well as digits. Then look at the run you cut out before converting it:
+
+- `"4.5".count(".")` is `1`, so it is a decimal number: `float("4.5")` gives `4.5`.
+- `"12"` has no dot, so `int("12")` gives `12`.
+- `"1.2.3"` has two dots, and `"."` alone has no digits at all. Neither is a number, so they are errors.
+
+`float` also accepts a dot at either end: `float(".5")` is `0.5` and `float("5.")` is `5.0`.
+
+## Always take the longest token
+
+Python writes powers as `**`: `2 ** 3` is 8. So when you see `*`, you cannot decide yet. It might be a multiplication, or the first half of a power. You have to peek at the next character too.
+
+The rule tokenizers follow is called **[[maximal munch|maximal-munch]]**: always take the *longest* token that fits. `123` is one number, not three. `**` is one power operator, not two multiplications.
+
+A neat way to peek is `text.startswith("**", i)`. It asks: "does the text, starting at position `i`, begin with `**`?"
+
+```python
+"2**3".startswith("**", 1)     # True: position 1 starts "**"
+"2**3".startswith("**", 0)     # False: position 0 is "2"
+```
+
+Check for `**` *before* you check for a single `*`. Otherwise the single `*` wins first and the power is split in two. When you find `**`, move `i` on by 2, not 1.
+
+## Errors that say what and where
+
+When a character does not start any token, raise an error that says *what* the character was and *where* it is:
+
+```python
+ch = "$"
+i = 4
+raise ValueError(f"unexpected character {ch!r} at position {i}")
+# ValueError: unexpected character '$' at position 4
+```
+
+The [[`!r` inside the braces|repr-quotes]] puts quotes around the character, so you can see exactly what it was. The position is the index `i`, which [[counts from 0|position-zero]]. A message like this is the difference between a tool people can use and one they give up on.
+
+**Watch out:** do not move along by chopping the text, as in `text = text[1:]`. It gives the right tokens, but every chop copies the whole rest of the string. For long input that makes the tokenizer [[quadratic|quadratic-copies]]: twice the text, four times the work. Move the index `i` instead; the text itself never changes.
+
+::: context interpreters-too Python tokenizes your code too
+An **interpreter** reads a program and carries it out; a **compiler** translates a program into another form, often machine code, to be run later. Python is usually run by an interpreter, and the very first thing it does with your file is tokenize it. The standard library even lets you watch: the `tokenize` module turns the line `2**3*4` into the pieces `'2'`, `'**'`, `'3'`, `'*'`, `'4'`, plus markers for the end of the line and the end of the file. Your calculator follows the same plan, only smaller.
+:::
+
+::: context token-word Tokens, and the other names for this stage
+A **token** is one small meaningful piece, the way a word or a comma is in a sentence. The word comes from an old English word for a sign or symbol, and it is still used for things that stand for something else, like a bus token. Programmers also call this stage **lexing** or **scanning**, and a tokenizer a **lexer**, from "lexical", which means "to do with words". All three names mean the same job: turning a stream of characters into a list of tokens.
+:::
+
+::: context maximal-munch Taking the biggest bite
+"Munch" is the picture: at each position the tokenizer takes the biggest bite that is still a real token. Without the rule, `2**3` could be read two ways, and only one is right:
+
+```svg
+<svg viewBox="0 0 360 150" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <text x="10" y="38" font-size="13" fill="#1f2a44">right</text>
+  <rect x="70" y="18" width="40" height="30" fill="#ffffff" stroke="#1d6fd1" stroke-width="2"/>
+  <rect x="118" y="18" width="70" height="30" fill="#8fb8f0" stroke="#1d6fd1" stroke-width="2"/>
+  <rect x="196" y="18" width="40" height="30" fill="#ffffff" stroke="#1d6fd1" stroke-width="2"/>
+  <text x="90" y="39" font-size="15" text-anchor="middle" fill="#1f2a44">2</text>
+  <text x="153" y="39" font-size="15" text-anchor="middle" fill="#1f2a44">**</text>
+  <text x="216" y="39" font-size="15" text-anchor="middle" fill="#1f2a44">3</text>
+  <text x="250" y="38" font-size="12" fill="#1d6fd1">power: 8</text>
+  <text x="10" y="98" font-size="13" fill="#1f2a44">wrong</text>
+  <rect x="70" y="78" width="40" height="30" fill="#ffffff" stroke="#b4232c" stroke-width="2"/>
+  <rect x="118" y="78" width="31" height="30" fill="#ffffff" stroke="#b4232c" stroke-width="2"/>
+  <rect x="157" y="78" width="31" height="30" fill="#ffffff" stroke="#b4232c" stroke-width="2"/>
+  <rect x="196" y="78" width="40" height="30" fill="#ffffff" stroke="#b4232c" stroke-width="2"/>
+  <text x="90" y="99" font-size="15" text-anchor="middle" fill="#1f2a44">2</text>
+  <text x="133" y="99" font-size="15" text-anchor="middle" fill="#1f2a44">*</text>
+  <text x="172" y="99" font-size="15" text-anchor="middle" fill="#1f2a44">*</text>
+  <text x="216" y="99" font-size="15" text-anchor="middle" fill="#1f2a44">3</text>
+  <text x="250" y="98" font-size="12" fill="#b4232c">two times signs?</text>
+  <text x="180" y="138" font-size="12" text-anchor="middle" fill="#6c7a93">the tokenizer takes the longest token that fits</text>
+</svg>
+```
+
+C programmers meet it in a famous puzzle: `x+++y` means `x++ + y`, because the tokenizer grabs `++` first.
+:::
+
+::: context repr-quotes What !r does in an f-string
+Inside an f-string, `{ch}` puts in the character as it is, but `{ch!r}` puts in its **repr**, the way Python would write it in code, with quotes around it. That matters most for the characters that are hard to see. With `!r`, a space shows up as `' '` and a tab as `'\t'`, instead of an invisible gap in the middle of the message. `!r` does the same as calling `repr(ch)`.
+:::
+
+::: context position-zero Counting positions from zero
+Like every index in Python, the position counts from 0, so the first character is at position 0. In `3 + $`, the `$` is at position 4:
+
+```svg
+<svg viewBox="0 0 360 120" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <rect x="80" y="20" width="40" height="36" fill="#ffffff" stroke="#1f2a44" stroke-width="2"/>
+  <rect x="120" y="20" width="40" height="36" fill="#ffffff" stroke="#1f2a44" stroke-width="2"/>
+  <rect x="160" y="20" width="40" height="36" fill="#ffffff" stroke="#1f2a44" stroke-width="2"/>
+  <rect x="200" y="20" width="40" height="36" fill="#ffffff" stroke="#1f2a44" stroke-width="2"/>
+  <rect x="240" y="20" width="40" height="36" fill="#ffffff" stroke="#b4232c" stroke-width="3"/>
+  <text x="100" y="44" font-size="16" text-anchor="middle" fill="#1f2a44">3</text>
+  <text x="140" y="44" font-size="12" text-anchor="middle" fill="#6c7a93">space</text>
+  <text x="180" y="44" font-size="16" text-anchor="middle" fill="#1f2a44">+</text>
+  <text x="220" y="44" font-size="12" text-anchor="middle" fill="#6c7a93">space</text>
+  <text x="260" y="44" font-size="16" text-anchor="middle" fill="#b4232c">$</text>
+  <text x="100" y="76" font-size="13" text-anchor="middle" fill="#1d6fd1">0</text>
+  <text x="140" y="76" font-size="13" text-anchor="middle" fill="#1d6fd1">1</text>
+  <text x="180" y="76" font-size="13" text-anchor="middle" fill="#1d6fd1">2</text>
+  <text x="220" y="76" font-size="13" text-anchor="middle" fill="#1d6fd1">3</text>
+  <text x="260" y="76" font-size="13" text-anchor="middle" fill="#b4232c">4</text>
+  <text x="180" y="106" font-size="12" text-anchor="middle" fill="#1f2a44">unexpected character '$' at position 4</text>
+</svg>
+```
+
+Code editors usually number columns from 1, so the same `$` shows as column 5 there. Either is fine, as long as your message is consistent.
+:::
+
+::: context quadratic-copies Why chopping the string is slow
+Python strings cannot be changed, so `text[1:]` builds a brand-new string holding every character but the first. For 100,000 characters, the first chop copies 99,999 characters, the next 99,998, and so on down to 1. That adds up to about 5 billion character copies, where moving an index costs 100,000 small steps. Work that grows with the square of the input's length is called **quadratic**, O(n²) in the big-O lessons' language.
+:::
 --- task
-Write `tokenize(text)` returning a list of tokens:
+Write `tokenize(text)`, which returns a list of tokens:
 
-- Numbers: a run of digits with at most one `.`. With a `.` it becomes a `float`, otherwise an `int`. A run with two dots (`1.2.3`) or only a dot is a `ValueError`.
-- Operators and brackets as strings: `+`, `-`, `*`, `/`, `**`, `(`, `)`. `**` is one token.
-- Spaces are skipped. Any other character raises `ValueError` with a message containing its position, like `unexpected character '$' at position 4`.
+- **Numbers:** a run of digits with at most one `.` in it. With a `.` it becomes a `float`, otherwise an `int`. A run with two dots (`1.2.3`), or a dot on its own, is a `ValueError`.
+- **Operators and brackets**, as strings: `+`, `-`, `*`, `/`, `**`, `(`, `)`. `**` is one token.
+- **Spaces** are skipped.
+- **Any other character** raises `ValueError` with a message that names it and gives its position, like `unexpected character '$' at position 4`.
 --- starter
 def tokenize(text):
     return text.split()
@@ -2875,11 +3152,11 @@ def tokenize(text):
             raise ValueError(f"unexpected character {ch!r} at position {i}")
     return tokens
 --- hint
-Use a `while i < len(text)` loop with an index, and one branch per kind of token: space, number, `**`, single-character operator, anything else.
+Use a `while i < len(text)` loop with an index, and one branch for each kind of token: a space, a number, `**`, a single-character operator or bracket, and anything else.
 --- hint
-For a number, remember `start = i`, move `i` along while you see digits or dots, then look at `text[start:i]`: count the dots before converting.
+For a number, remember `start = i`, move `i` along while you see digits or dots, then look at `text[start:i]`. Count its dots before you convert it with `int` or `float`.
 --- hint
-Check for `**` with `text.startswith("**", i)` *before* the single `*` case, and move `i` on by 2.
+Check for `**` with `text.startswith("**", i)` *before* the single-character case, and move `i` on by 2. For the error, use `f"unexpected character {ch!r} at position {i}"`.
 --- check case | A mixed expression
 tokenize("3 + 4.5*(2-1)")
 => [3, "+", 4.5, "*", "(", 2, "-", 1, ")"]
@@ -2903,9 +3180,306 @@ raises(ValueError, lambda: tokenize("1.2.3")) and raises(ValueError, lambda: tok
 --- check test | 100,000 tokens
 len(tokenize("1+" * 50000 + "1")) == 100001
 
+=== py4-13b | Problem solving: a parser for + - * /
+--- teach
+Last lesson your tokenizer turned `2 + 3 * 4` into the list `[2, "+", 3, "*", 4]`. Now for the second stage: what does that list *mean*?
+
+It is not `(2 + 3) * 4 = 20`. You learned in maths that [[multiplication comes before addition|precedence-school]], so it is `2 + 12 = 14`. This lesson teaches your program that rule, for `+`, `-`, `*`, `/` and brackets. The next lesson adds minus signs in front of numbers, powers, and catching bad input.
+
+## Precedence
+
+**Precedence** means which operator is done first. `*` and `/` have higher precedence than `+` and `-`. Programmers say `*` **binds tighter** than `+`: it grabs the numbers next to it first.
+
+## A grammar: the rules written down
+
+A **grammar** is a short set of rules that says how pieces may fit together, like the grammar of English says how words make a sentence. Here is a [[grammar|grammar-history]] for sums with brackets:
+
+```
+expr  := term  (("+" | "-") term)*
+term  := atom  (("*" | "/") atom)*
+atom  := NUMBER  |  "(" expr ")"
+```
+
+How to read the symbols:
+
+- `:=` means "is made of".
+- `|` means "or".
+- Things in quotes, like `"+"`, are that exact token.
+- `NUMBER` means any number token.
+- `( ... )*` means "the part in brackets, zero or more times".
+
+So, in words:
+
+- An **expr** (short for expression) is a term, then any number of `+ term` or `- term` after it.
+- A **term** is an atom, then any number of `* atom` or `/ atom` after it.
+- An **atom** is a number, or a whole expr inside brackets.
+
+Look at `2 + 3 * 4` with these rules. The expr is made of two terms joined by `+`: the term `2`, and the term `3 * 4`. The multiplication lives *inside* a term, so it is worked out before the expr adds the terms. That is how the grammar puts precedence in: the [[operator worked out last sits highest|parse-tree]], in the first rule.
+
+## Recursive descent: one function per rule
+
+**Recursive descent** is a way to turn a grammar straight into code: [[one function for each rule|recursive-descent-real]], with the same name. Each function reads the tokens its rule matches and returns their value.
+
+All the functions share one list of tokens and one position in it, so put them in a class:
+
+```python
+class Parser:
+    def __init__(self, tokens):
+        self.tokens = tokens
+        self.pos = 0
+
+    def peek(self):
+        return self.tokens[self.pos] if self.pos < len(self.tokens) else None
+
+    def take(self):
+        token = self.peek()
+        self.pos += 1
+        return token
+```
+
+- `peek()` [[looks at the current token|lookahead]] without moving on. At the end of the list it returns `None`.
+- `take()` returns the current token *and* moves the position on by one.
+
+Here is the `expr` rule as a method. Compare it with the grammar line: a term, then "`+` or `-`, then a term" as many times as they appear:
+
+```python
+    def expr(self):
+        value = self.term()
+        while self.peek() in ("+", "-"):
+            op = self.take()
+            right = self.term()
+            value = value + right if op == "+" else value - right
+        return value
+```
+
+`term` has the same shape, with `atom` in place of `term` and `*` and `/` in place of `+` and `-`.
+
+`atom` takes one token. If it is a number, that is the value. If it is `(`, it calls `self.expr()` to work out everything inside the brackets, then takes the `)` that closes them.
+
+That call is the **recursion** in "recursive descent": `expr` calls `term`, `term` calls `atom`, and `atom` can call `expr` again for a bracket. Each bracket starts a fresh, complete expression. **Descent** is the other half of the name: you start at the top rule and go down through the rules to the numbers.
+
+To evaluate a text, tokenize it, make a `Parser`, and call `expr()`:
+
+```python
+Parser(tokenize("2 + 3 * 4")).expr()      # 14
+```
+
+## Left to right
+
+`8 - 3 - 2` is `(8 - 3) - 2 = 3`, not `8 - (3 - 2) = 7`. Operators of the same precedence are done **left to right**. The `while` loop gives you this for free. Follow it on `8 - 3 - 2`:
+
+1. `value` starts as `8`.
+2. It sees `-`, reads the term `3`, and [[folds it in|left-fold]]: `value` becomes `8 - 3 = 5`.
+3. It sees `-`, reads the term `2`: `value` becomes `5 - 2 = 3`.
+
+The same goes for `/`: `100 / 10 / 5` is `(100 / 10) / 5 = 2.0`.
+
+**Watch out:** a tempting way to write `expr` is "a term, then optionally `+` or `-` and another *expr*", calling `self.expr()` for the right side. It looks shorter, but it groups from the right: `8 - 3 - 2` becomes `8 - (3 - 2) = 7`. Use the loop.
+
+::: context precedence-school The same order as in maths
+In the signed-numbers lesson of the maths track the order was: brackets first, then powers, then multiply and divide from left to right, then add and subtract from left to right. Everyone follows the same order so that everyone gets the same answer from the same line. Python, calculators and spreadsheets all use it. Your parser only has to follow those same rules, and the grammar is where the rules are written down.
+:::
+
+::: context grammar-history Rules for writing rules
+This way of writing a grammar comes from **BNF**, short for Backus–Naur form. John Backus and Peter Naur used it around 1960 to describe the programming language ALGOL 60 exactly, so that everyone building ALGOL tools would agree on what a program meant. Today almost every language is described with some version of it. The `*` for "zero or more times" comes from a later extended version, and you will meet the same `*` again in regular expressions in the projects course.
+:::
+
+::: context parse-tree The shape hiding in the tokens
+Parsing finds a tree inside the flat list of tokens. For `2 + 3 * 4` it looks like this. Each operator works on the two things below it, so the lowest operators are worked out first:
+
+```svg
+<svg viewBox="0 0 360 200" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <line x1="180" y1="30" x2="100" y2="90" stroke="#1f2a44" stroke-width="2"/>
+  <line x1="180" y1="30" x2="260" y2="90" stroke="#1f2a44" stroke-width="2"/>
+  <line x1="260" y1="90" x2="220" y2="150" stroke="#1f2a44" stroke-width="2"/>
+  <line x1="260" y1="90" x2="300" y2="150" stroke="#1f2a44" stroke-width="2"/>
+  <circle cx="180" cy="30" r="17" fill="#ffffff" stroke="#1f2a44" stroke-width="2"/>
+  <circle cx="100" cy="90" r="17" fill="#ffffff" stroke="#1f2a44" stroke-width="2"/>
+  <circle cx="260" cy="90" r="17" fill="#8fb8f0" stroke="#1d6fd1" stroke-width="2"/>
+  <circle cx="220" cy="150" r="17" fill="#ffffff" stroke="#1f2a44" stroke-width="2"/>
+  <circle cx="300" cy="150" r="17" fill="#ffffff" stroke="#1f2a44" stroke-width="2"/>
+  <text x="180" y="35" font-size="15" text-anchor="middle" fill="#1f2a44">+</text>
+  <text x="100" y="95" font-size="15" text-anchor="middle" fill="#1f2a44">2</text>
+  <text x="260" y="95" font-size="15" text-anchor="middle" fill="#1f2a44">*</text>
+  <text x="220" y="155" font-size="15" text-anchor="middle" fill="#1f2a44">3</text>
+  <text x="300" y="155" font-size="15" text-anchor="middle" fill="#1f2a44">4</text>
+  <text x="20" y="35" font-size="12" fill="#6c7a93">expr: done last</text>
+  <text x="290" y="95" font-size="12" fill="#1d6fd1">term</text>
+  <text x="180" y="190" font-size="12" text-anchor="middle" fill="#1f2a44">3 * 4 = 12 first, then 2 + 12 = 14</text>
+</svg>
+```
+
+Your parser never builds this tree as data. Its function calls follow the tree's shape as they go.
+:::
+
+::: context recursive-descent-real Real compilers do it this way
+Recursive descent is not a toy. Clang, a widely used compiler for C and C++, has a hand-written recursive-descent parser, and GCC moved its C and C++ parsers to hand-written recursive descent in the 2000s. Engineers like it because the code reads like the grammar, and it can give clear error messages. Python itself, since version 3.9, uses a parser generated from a grammar file, and the generated code also works by recursive descent.
+:::
+
+::: context lookahead One token of lookahead
+`peek` lets the parser look one token ahead before deciding what to do, the way you glance at the next word when reading aloud. That single token is called **lookahead**. Your whole calculator needs only one token of lookahead at a time: seeing `+` or `-` tells `expr` to keep going, and seeing anything else tells it the expression is over. Grammars that work with one token of lookahead are simple to parse and fast, which is why language designers like them.
+:::
+
+::: context left-fold Folding the answer as you go
+"Fold" is the word for taking a list one item at a time and combining each new item into a running answer, the same idea as `functools.reduce` from the advanced course. Folding from the left builds this tree for `8 - 3 - 2`:
+
+```svg
+<svg viewBox="0 0 360 180" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <line x1="200" y1="30" x2="130" y2="85" stroke="#1f2a44" stroke-width="2"/>
+  <line x1="200" y1="30" x2="270" y2="85" stroke="#1f2a44" stroke-width="2"/>
+  <line x1="130" y1="85" x2="80" y2="140" stroke="#1f2a44" stroke-width="2"/>
+  <line x1="130" y1="85" x2="180" y2="140" stroke="#1f2a44" stroke-width="2"/>
+  <circle cx="200" cy="30" r="17" fill="#ffffff" stroke="#1f2a44" stroke-width="2"/>
+  <circle cx="130" cy="85" r="17" fill="#8fb8f0" stroke="#1d6fd1" stroke-width="2"/>
+  <circle cx="270" cy="85" r="17" fill="#ffffff" stroke="#1f2a44" stroke-width="2"/>
+  <circle cx="80" cy="140" r="17" fill="#ffffff" stroke="#1f2a44" stroke-width="2"/>
+  <circle cx="180" cy="140" r="17" fill="#ffffff" stroke="#1f2a44" stroke-width="2"/>
+  <text x="200" y="35" font-size="15" text-anchor="middle" fill="#1f2a44">-</text>
+  <text x="130" y="90" font-size="15" text-anchor="middle" fill="#1f2a44">-</text>
+  <text x="270" y="90" font-size="15" text-anchor="middle" fill="#1f2a44">2</text>
+  <text x="80" y="145" font-size="15" text-anchor="middle" fill="#1f2a44">8</text>
+  <text x="180" y="145" font-size="15" text-anchor="middle" fill="#1f2a44">3</text>
+  <text x="20" y="90" font-size="12" fill="#1d6fd1">8 - 3 = 5</text>
+  <text x="235" y="35" font-size="12" fill="#6c7a93">5 - 2 = 3</text>
+  <text x="180" y="172" font-size="12" text-anchor="middle" fill="#1f2a44">the tree leans left: (8 - 3) - 2</text>
+</svg>
+```
+:::
+--- task
+Your tokenizer from the last lesson is in the starter. Write `evaluate(text)`, which tokenizes `text` and works out its value by recursive descent, using the three-rule grammar above (`expr`, `term`, `atom`):
+
+- numbers, whole or decimal;
+- `+ - * /`, with `*` and `/` done before `+` and `-`, and operators of the same precedence done left to right;
+- `/` is true division, so `100 / 10 / 5` is `2.0`;
+- brackets, nested as deep as you like.
+
+Do not use `eval`. You do not need a minus sign in front of a number, `**`, or error checking yet: those come in the next lesson.
+--- starter
+def tokenize(text):
+    tokens = []
+    i = 0
+    while i < len(text):
+        ch = text[i]
+        if ch.isspace():
+            i += 1
+        elif ch.isdigit() or ch == ".":
+            start = i
+            while i < len(text) and (text[i].isdigit() or text[i] == "."):
+                i += 1
+            number = text[start:i]
+            if number.count(".") > 1 or number == ".":
+                raise ValueError(f"bad number {number!r} at position {start}")
+            tokens.append(float(number) if "." in number else int(number))
+        elif text.startswith("**", i):
+            tokens.append("**")
+            i += 2
+        elif ch in "+-*/()":
+            tokens.append(ch)
+            i += 1
+        else:
+            raise ValueError(f"unexpected character {ch!r} at position {i}")
+    return tokens
+
+
+def evaluate(text):
+    raise NotImplementedError
+--- solution
+def tokenize(text):
+    tokens = []
+    i = 0
+    while i < len(text):
+        ch = text[i]
+        if ch.isspace():
+            i += 1
+        elif ch.isdigit() or ch == ".":
+            start = i
+            while i < len(text) and (text[i].isdigit() or text[i] == "."):
+                i += 1
+            number = text[start:i]
+            if number.count(".") > 1 or number == ".":
+                raise ValueError(f"bad number {number!r} at position {start}")
+            tokens.append(float(number) if "." in number else int(number))
+        elif text.startswith("**", i):
+            tokens.append("**")
+            i += 2
+        elif ch in "+-*/()":
+            tokens.append(ch)
+            i += 1
+        else:
+            raise ValueError(f"unexpected character {ch!r} at position {i}")
+    return tokens
+
+
+class Parser:
+    def __init__(self, tokens):
+        self.tokens = tokens
+        self.pos = 0
+
+    def peek(self):
+        return self.tokens[self.pos] if self.pos < len(self.tokens) else None
+
+    def take(self):
+        token = self.peek()
+        self.pos += 1
+        return token
+
+    def expr(self):
+        value = self.term()
+        while self.peek() in ("+", "-"):
+            op = self.take()
+            right = self.term()
+            value = value + right if op == "+" else value - right
+        return value
+
+    def term(self):
+        value = self.atom()
+        while self.peek() in ("*", "/"):
+            op = self.take()
+            right = self.atom()
+            value = value * right if op == "*" else value / right
+        return value
+
+    def atom(self):
+        token = self.take()
+        if token == "(":
+            value = self.expr()
+            self.take()
+            return value
+        return token
+
+
+def evaluate(text):
+    return Parser(tokenize(text)).expr()
+--- hint
+Copy the `Parser` class with `peek()` and `take()` from the lesson, then add one method for each grammar rule: `expr`, `term` and `atom`.
+--- hint
+`term` is `expr` with `self.atom()` in place of `self.term()`, and `*` and `/` in place of `+` and `-`. In `atom`, `take()` a token: if it is `"("`, call `self.expr()`, then `take()` the `")"` and return the value; otherwise the token is a number, so return it.
+--- hint
+`evaluate(text)` is one line: `return Parser(tokenize(text)).expr()`.
+--- check case | Multiplication before addition
+evaluate("2 + 3 * 4")
+=> 14
+--- check test | Brackets, nested too
+evaluate("(2 + 3) * 4") == 20 and evaluate("2 * (3 + (4 - 1))") == 12 and evaluate("((7))") == 7
+--- check test | Left to right for - and /
+evaluate("8 - 3 - 2") == 3 and evaluate("100 / 10 / 5") == 2.0 and evaluate("7 - 2 * 3 + 1") == 2
+?? Use a while loop in expr and term that folds each new piece into the value so far.
+--- check test | Decimals work
+evaluate("0.5 * 4") == 2.0 and evaluate("1.5 + 1") == 2.5
+--- check test | Agrees with Python on a batch of expressions
+all(evaluate(e) == eval(e) for e in ["1+2*3-4/5", "((1))", "10/4*2", "3-(2-(1-0))", "4*(3+2)*2/5", "1 - 2 - 3 - 4", "2*(3+4)*(5-1)"])
+--- check test | Long input: 20,001 terms
+evaluate("1+" * 20000 + "1") == 20001 and evaluate("2*" * 30 + "1") == 2 ** 30
+--- check source absent | Does not use eval
+\beval\s*\(
+
 === py4-14 | Problem solving: a recursive-descent calculator
 --- teach
-You have tokens. Now: what does `2 + 3 * 4` mean? Not `(2 + 3) * 4`, because `*` binds tighter than `+`. A **grammar** writes those rules down, one rule per level of precedence, loosest first:
+Last lesson your parser learned `+ - * /` and brackets with three rules: `expr`, `term` and `atom`. Python's arithmetic has three more things your calculator needs: a minus sign in front of a number (`-1`, even `--3`), powers with `**`, and refusing input that makes no sense. This is the last lesson of the course, and it finishes the calculator.
+
+## The full grammar
+
+Two new rules slot in between `term` and `atom`. The loosest rule is still first:
 
 ```
 expr   := term   (("+" | "-") term)*
@@ -2915,39 +3489,125 @@ power  := atom   ("**" unary)?
 atom   := NUMBER  |  "(" expr ")"
 ```
 
-Read `*` as "zero or more times" and `?` as "optional". So an `expr` is terms separated by `+` or `-`; a term is unary pieces separated by `*` or `/`; and so on down to numbers and bracketed sub-expressions.
+One new symbol: `?` means "optional", zero times or once. So:
 
-**Recursive descent** turns each rule into one function with the same name. Each function consumes the tokens its rule matches and returns their value:
+- `term` now multiplies **unary** pieces instead of atoms.
+- A **unary** piece is a `-` followed by another unary piece, or else a power.
+- A **power** is an atom, optionally followed by `**` and a unary piece.
+
+`expr` and `atom` are the same as before, and `term` only changes which method it calls.
+
+## Unary minus
+
+The `-` sign has two jobs. In `5 - 2` it sits between two numbers and subtracts: that is **binary** minus. In `-2` it sits in front of one number and flips its sign: that is **[[unary minus|unary-binary]]**. The tokenizer makes the same `"-"` token for both. The grammar tells them apart by *where* the minus appears. `expr` only looks for `+` or `-` *after* a finished term, so any minus that starts a piece, like the second one in `2 * -3`, reaches `unary` instead.
 
 ```python
-def expr(self):
-    value = self.term()
-    while self.peek() in ("+", "-"):
-        op = self.take()
-        right = self.term()
-        value = value + right if op == "+" else value - right
-    return value
+def unary(self):
+    if self.peek() == "-":
+        self.take()
+        return -self.unary()
+    return self.power()
 ```
 
-Precedence falls out of the structure: `expr` only ever sees whole terms, so by the time it adds, every multiplication inside a term has already happened. Brackets work because `atom` calls back up to `expr`: that is the recursion in the name.
+`unary` calls itself after each minus, so any number of minuses work: `--3` is `-(-3)`, which is `3`.
 
-Two subtler rules, both matching Python itself:
+## Powers go right to left
 
-- **Left to right** for `+ - * /`: `8 - 3 - 2` is `(8 - 3) - 2 = 3`. The `while` loop gives you that, because it folds each new term into the value so far.
-- **Right to left** for `**`: `2 ** 3 ** 2` is `2 ** 9 = 512`. `power` calls `unary` for its right side, which can itself contain another `**`. And `-2 ** 2` is `-(2 ** 2) = -4`, because `unary` handles the minus *around* `power`.
+`+ - * /` go left to right. `**` is the exception: `2 ** 3 ** 2` is `2 ** (3 ** 2) = 2 ** 9 = 512`, not `(2 ** 3) ** 2 = 64`. An operator that groups from the right like this is **[[right-associative|right-assoc]]**. Python does it, and so does maths, where a tower of powers is worked out from the top down.
 
-**Errors.** A parser must reject nonsense rather than guess. Keep a position in the token list, and:
+```python
+def power(self):
+    base = self.atom()
+    if self.peek() == "**":
+        self.take()
+        return base ** self.unary()
+    return base
+```
 
-- when a rule needs a number or `(` and finds something else (or the end), raise `ValueError`;
-- when `atom` has parsed `( expr`, it must find `)`;
-- after parsing the whole `expr`, every token must have been used, or `1 2` would quietly evaluate to 1.
+The right side of `**` is parsed by calling `unary`, and that can itself contain another `**`. So the rightmost power is finished first. (Last lesson's Watch out showed that a rule calling itself on its right side groups from the right. For `**`, that is exactly what you want.)
 
-**Common mistake:** evaluating with Python's built-in `eval`. Apart from missing the point, `eval` on user input runs *any* Python code the user types.
+## Where the minus goes around a power
+
+`-2 ** 2` is `-(2 ** 2) = -4`, not `(-2) ** 2 = 4`, the [[same rule as in maths|minus-before-power]]. Follow it through: `unary` sees `-` and takes it. It then calls `unary` again, which finds no minus and calls `power`, which reads `2 ** 2 = 4`. Only then does the first `unary` flip the sign: `-4`.
+
+The right side of `**` goes through `unary` too, so `2 ** -1` works: it is `2 ** (-1) = 0.5`. And if you do want the minus inside, brackets say so: `(-2) ** 2` is `4`.
+
+Here is the order from tightest to loosest:
+
+| Rule | Handles | Example |
+| --- | --- | --- |
+| `atom` | numbers and brackets | `(1 + 2)` |
+| `power` | `**`, right to left | `2 ** 3 ** 2` is 512 |
+| `unary` | minus in front | `-2 ** 2` is -4 |
+| `term` | `*` and `/`, left to right | `100 / 10 / 5` is 2.0 |
+| `expr` | `+` and `-`, left to right | `8 - 3 - 2` is 3 |
+
+## Refusing nonsense
+
+A parser must [[reject bad input rather than guess|fail-loudly]]. Three checks catch every kind of nonsense in this grammar:
+
+- **`atom` needs a number or `(`.** If it takes anything else, raise `ValueError`. That includes `None`, which `take()` returns at the end of the tokens. So `2 +` fails (the text ends where a number should be), and so do `* 3` and `()`.
+- **After `( expr`, `atom` must find `)`.** If the next token taken is anything else, raise `ValueError`. That catches `(1 + 2`.
+- **After the whole `expr`, no token may be left over.** In `evaluate`, check that `peek()` is `None` once `expr()` returns. Without this, `1 2` would quietly give 1, and `1 + 2)` would quietly give 3.
+
+**Watch out:** do not use Python's built-in `eval` to compute the answer. Apart from skipping the whole exercise, [[`eval` on user input is dangerous|eval-danger]]: it runs *any* Python code the user types, not only arithmetic.
+
+Your parser works through recursion, so extremely deep brackets would eventually hit [[Python's recursion limit|recursion-limit]]. Long flat input is fine: the `while` loops handle 20,000 terms in a row without going any deeper. This calculator comes back in [[the projects course|projects-next]], where it grows into a small language of its own.
+
+::: context unary-binary One number or two
+**Unary** means "one" and **binary** means "two", as in unicycle and bicycle. A unary operator works on one value (`-x`); a binary operator works on two (`x - y`). Python also has a unary plus, so `+3` is allowed in Python, but your grammar leaves it out. The same symbol doing two jobs is common in programming languages; it is the grammar, not the tokenizer, that knows which job each one is doing.
+:::
+
+::: context right-assoc Why powers group from the right
+If `**` went left to right, `2 ** 3 ** 2` would be `(2 ** 3) ** 2`, which is `2 ** 6`: you could write that without a tower at all. Grouping from the right gives the tower its own meaning, which is why maths does it. The tree leans right:
+
+```svg
+<svg viewBox="0 0 360 180" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <line x1="160" y1="30" x2="90" y2="85" stroke="#1f2a44" stroke-width="2"/>
+  <line x1="160" y1="30" x2="230" y2="85" stroke="#1f2a44" stroke-width="2"/>
+  <line x1="230" y1="85" x2="180" y2="140" stroke="#1f2a44" stroke-width="2"/>
+  <line x1="230" y1="85" x2="280" y2="140" stroke="#1f2a44" stroke-width="2"/>
+  <circle cx="160" cy="30" r="18" fill="#ffffff" stroke="#1f2a44" stroke-width="2"/>
+  <circle cx="90" cy="85" r="17" fill="#ffffff" stroke="#1f2a44" stroke-width="2"/>
+  <circle cx="230" cy="85" r="18" fill="#8fb8f0" stroke="#1d6fd1" stroke-width="2"/>
+  <circle cx="180" cy="140" r="17" fill="#ffffff" stroke="#1f2a44" stroke-width="2"/>
+  <circle cx="280" cy="140" r="17" fill="#ffffff" stroke="#1f2a44" stroke-width="2"/>
+  <text x="160" y="35" font-size="14" text-anchor="middle" fill="#1f2a44">**</text>
+  <text x="90" y="90" font-size="15" text-anchor="middle" fill="#1f2a44">2</text>
+  <text x="230" y="90" font-size="14" text-anchor="middle" fill="#1f2a44">**</text>
+  <text x="180" y="145" font-size="15" text-anchor="middle" fill="#1f2a44">3</text>
+  <text x="280" y="145" font-size="15" text-anchor="middle" fill="#1f2a44">2</text>
+  <text x="262" y="72" font-size="12" fill="#1d6fd1">3 ** 2 = 9</text>
+  <text x="190" y="30" font-size="12" fill="#6c7a93">2 ** 9 = 512</text>
+  <text x="180" y="172" font-size="12" text-anchor="middle" fill="#1f2a44">the tree leans right: 2 ** (3 ** 2)</text>
+</svg>
+```
+:::
+
+::: context minus-before-power Not every program agrees
+In maths, −3² means −(3 × 3) = −9, as the signed-numbers lesson warned. Python follows maths: `-3 ** 2` is `-9`. But not every program does. In Microsoft Excel, the formula `=-3^2` gives 9, because Excel applies the minus sign before the power. So the same-looking line can give different answers in different tools. When it matters, and in flight software it always matters, write the brackets so no reader has to remember the rule.
+:::
+
+::: context fail-loudly Why a parser should not guess
+If a calculator quietly answers 1 for `1 2`, the person who typed it never learns that they forgot an operator, and the wrong number travels on into whatever they do next. An error that appears right away is cheap to fix: the person sees it, and fixes the typo. A wrong answer that looks right can go a long way before anyone notices. Engineers call this **failing loudly**, and it is one of the most useful habits in software that other people depend on.
+:::
+
+::: context eval-danger What eval would let a user do
+`eval` takes a string and runs it as Python. If that string comes from a user, the user is writing your program. Typing `__import__('os').remove('notes.txt')` into an eval-based calculator would delete a file, and worse is easily possible. This kind of attack is called **code injection**. When you really do need to read Python values from text, `ast.literal_eval` accepts only plain values like numbers, strings and lists, and refuses anything that would run code. For arithmetic, a parser like yours is the safe answer.
+:::
+
+::: context recursion-limit How deep the brackets can go
+Every bracket makes the parser go one level deeper: `atom` calls `expr`, which calls `term`, `unary`, `power` and `atom` again. That is five function calls per bracket. Python stops any chain of calls that gets about 1,000 deep, with a `RecursionError`, to protect itself from running out of memory. So this parser handles a little under 200 levels of nested brackets. People never type that many, but a parser for programs written by other programs must think about it.
+:::
+
+::: context projects-next Where the calculator goes next
+The projects course comes next. You build three real programs step by step, then four capstones where you get only a description and design the rest. One capstone is a **calculator language with variables**: `x = 3` on one line, `x * 2` on the next. It grows from exactly the tokenizer and recursive-descent parser you have now. Real interpreters take one more step you may meet later: instead of computing as they parse, they build the tree first, then run it.
+:::
 --- task
-Your tokenizer from the last lesson is in the starter. Write `evaluate(text)` that tokenizes `text` and computes its value using recursive descent with the grammar above:
+Your tokenizer from the last lessons is in the starter. Write `evaluate(text)`, which tokenizes `text` and computes its value by recursive descent, using the five-rule grammar above. You can start from your parser from last lesson.
 
-- `+ - * /` with the usual precedence, left to right; `/` is true division.
-- `**` binds tighter than unary minus on its left and is right-associative: `2 ** 3 ** 2` is `512`, `-2 ** 2` is `-4`, `2 ** -1` is `0.5`.
+- `+ - * /` with the usual precedence, left to right. `/` is true division.
+- `**` binds tighter than a unary minus on its left, and groups from the right: `2 ** 3 ** 2` is `512`, `-2 ** 2` is `-4`, `2 ** -1` is `0.5`.
 - Unary minus, any number of times: `--3` is `3`.
 - Brackets.
 - Anything malformed (empty, a missing number, unbalanced brackets, leftover tokens) raises `ValueError`. Dividing by zero may raise `ZeroDivisionError`. Do not use `eval`.
@@ -3068,11 +3728,11 @@ def evaluate(text):
         raise ValueError(f"unexpected {parser.peek()!r}")
     return value
 --- hint
-Make a small `Parser` class holding the tokens and a position, with `peek()` (the current token, or `None` at the end) and `take()` (return it and move on).
+Start from last lesson's `Parser` class, with `peek()` (the current token, or `None` at the end) and `take()` (return it and move on). Change `term` to call `self.unary()` instead of `self.atom()`.
 --- hint
-Write one method per grammar rule. `expr` and `term` are loops; `unary` calls itself after a `-`; `power` parses an atom and, if the next token is `**`, raises it to `self.unary()`; `atom` handles a number or `( expr )`.
+Add `unary` and `power` as shown in the lesson: `unary` calls itself after a `-`, otherwise it returns `self.power()`; `power` parses an atom and, if the next token is `**`, raises it to `self.unary()`.
 --- hint
-In `evaluate`, after `parser.expr()` returns, raise `ValueError` if any token is left over. In `atom`, raise `ValueError` if the token is not a number or `(`, and if the `)` is missing.
+In `atom`, raise `ValueError` if the token is neither a number nor `"("`, and if the token taken after the inner `expr` is not `")"`. In `evaluate`, after `parser.expr()` returns, raise `ValueError` if `parser.peek()` is not `None`.
 --- check test | Precedence and brackets
 evaluate("2 + 3 * 4") == 14 and evaluate("(2 + 3) * 4") == 20 and evaluate("2 * (3 + 4) - -1") == 15
 --- check test | Left to right for - and /
