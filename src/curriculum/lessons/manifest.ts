@@ -4197,6 +4197,42 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Normalisation to third normal form and deliberate denormalisation for analytics"
       ],
       "file": "cod_sql_04_schema/01-normalisation.md"
+    },
+    {
+      "id": "l02-star-schemas-and-keys",
+      "title": "Star schemas, surrogate keys and natural keys",
+      "minutes": 20,
+      "covers": [
+        "Star and snowflake schemas; surrogate versus natural keys"
+      ],
+      "file": "cod_sql_04_schema/02-star-schemas-and-keys.md"
+    },
+    {
+      "id": "l03-constraints",
+      "title": "Constraints: letting the database say no",
+      "minutes": 21,
+      "covers": [
+        "Constraints: NOT NULL, UNIQUE, CHECK, foreign keys with ON DELETE"
+      ],
+      "file": "cod_sql_04_schema/03-constraints.md"
+    },
+    {
+      "id": "l04-transactions-and-acid",
+      "title": "Transactions, isolation and deadlocks",
+      "minutes": 27,
+      "covers": [
+        "Transactions and ACID; isolation levels; deadlocks"
+      ],
+      "file": "cod_sql_04_schema/04-transactions-and-acid.md"
+    },
+    {
+      "id": "l05-index-types",
+      "title": "How an index works, and the kinds there are",
+      "minutes": 24,
+      "covers": [
+        "Index types: B-tree, hash, GIN and GiST, and BRIN for append-only time-ordered data"
+      ],
+      "file": "cod_sql_04_schema/05-index-types.md"
     }
   ],
   "t0_m00_basecamp": [
@@ -10565,14 +10601,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_sql_04_schema": {
-    "covered": 1,
+    "covered": 5,
     "total": 18,
     "complete": false,
     "missing": [
-      "Star and snowflake schemas; surrogate versus natural keys",
-      "Constraints: NOT NULL, UNIQUE, CHECK, foreign keys with ON DELETE",
-      "Transactions and ACID; isolation levels; deadlocks",
-      "Index types: B-tree, hash, GIN and GiST, and BRIN for append-only time-ordered data",
       "Composite indexes and the left-prefix rule; covering indexes and index-only scans",
       "Partial indexes; why a low-cardinality index is usually useless",
       "Index maintenance cost on a write-heavy ingest path",
