@@ -17,17 +17,62 @@ INSERT INTO orders (id, customer_id, created, total)
 SELECT i, i % 400 + 1, datetime('2024-03-01', '+' || (i * 37 % 44640) || ' minutes'), (i * 53 % 400) / 4.0 + 5 FROM n;
 CREATE INDEX idx_orders_created ON orders(created);
 --- teach
-The advanced course taught you to create indexes and read `EXPLAIN QUERY PLAN`. This course puts them to work on slow queries, then takes on the analyst's hardest questions and data that needs repairing. Each lesson brings its own tables; the lesson text says what they are. Here: `orders` (`id`, `customer_id`, `created` as `'YYYY-MM-DD HH:MM:SS'`, `total`) — 3,000 rows in March 2024 — with an index `idx_orders_created` on `created`.
+In the advanced course you built indexes and read `EXPLAIN QUERY PLAN`. In the lesson "Indexes: queries that skip them" you found that `strftime('%Y-%m', placed) = '2024-03'` made the database read the whole table, and you fixed it with a half-open range. This course puts indexes to work on slow queries, then takes on [[the analyst's hardest questions|analyst]], and ends with data that needs repairing. This first lesson turns last course's fix into a rule you can use on any condition.
 
-An index is sorted by the **stored value** of its columns. It can find `created >= '2024-03-15'` by jumping into the sorted list. But look at this:
+### How this course works
+
+Each lesson brings its own tables, and the lesson text says what they are. They are small enough to read, but big enough for the query plans to be real.
+
+### The table
+
+This lesson's `orders` table has 3,000 rows, all placed in March 2024. Its columns are `id`, `customer_id`, `created` and `total`. `created` holds a date **and** a time of day, written as text in the shape `'YYYY-MM-DD HH:MM:SS'`. Here are the first three orders of 15 March:
+
+| id | created | total |
+| --- | --- | --- |
+| 545 | 2024-03-15 00:05:00 | 26.25 |
+| 2958 | 2024-03-15 00:06:00 | 98.5 |
+| 1752 | 2024-03-15 00:24:00 | 19.0 |
+
+The table already has an index on `created`:
 
 ```sql
-SELECT COUNT(*) FROM orders WHERE date(created) = '2024-03-15';
+CREATE INDEX idx_orders_created ON orders(created);
 ```
 
-The index is sorted by `created`, not by `date(created)`. To know which rows match, the database has to compute `date()` for **every** row: a full scan, index ignored. `EXPLAIN QUERY PLAN` shows `SCAN orders`.
+### The picture
 
-A predicate the database can answer from an index is called **sargable** (from *Search ARGument ABLE*). The rule: leave the indexed column **bare** on one side of the comparison, and move all the computing to the other side:
+Picture a box of receipts, filed in time order. To pull out every receipt from the 15th, you flip to the first one of the 15th and take receipts until you reach the 16th. Easy. Now picture a helper who insists on a different method: take out every receipt in the box, cover up its time with a thumb, and check whether what is left says "15th". Same answer, but every receipt gets handled.
+
+### A function on the column
+
+Here is the second method, written in SQL:
+
+```sql
+SELECT id, created, total FROM orders WHERE date(created) = '2024-03-15';
+```
+
+`date()`, from the lesson "Date arithmetic and date ranges", keeps only the date part: `date('2024-03-15 00:05:00')` is `'2024-03-15'`. The query is right. It returns 117 orders. But `EXPLAIN QUERY PLAN` in front of it says:
+
+```
+SCAN orders
+```
+
+An index is sorted by the **stored value** of its column. This one is sorted by `created`, the full date and time. It is not sorted by `date(created)`. So to know which rows match, the database has to work out `date()` for **every** row, all 3,000 of them, and compare. That is a full scan, with the index ignored.
+
+### The name for it: sargable
+
+A **predicate** is one condition in a `WHERE`: a test that is true or false for each row. `date(created) = '2024-03-15'` is a [[predicate|predicate-word]].
+
+A predicate the database can answer from an index is called **sargable**, from *Search ARGument ABLE*. You met the word in a note last course. Here is the rule behind it:
+
+- Leave the indexed column **bare** on one side of the comparison. Bare means alone, with no function or arithmetic wrapped around it.
+- Move all the computing to the other side.
+
+The database will not do this move for you. It [[cannot run a function backwards|no-reverse]], so the rewrite is your job.
+
+### Four rewrites
+
+Each row of this table asks the same question two ways. The left one hides the column. The right one leaves it bare.
 
 | not sargable | sargable rewrite |
 | --- | --- |
@@ -36,11 +81,108 @@ A predicate the database can answer from an index is called **sargable** (from *
 | `total * 1.2 > 120` | `total > 100` |
 | `substr(sku, 1, 3) = 'MUG'` | `sku >= 'MUG' AND sku < 'MUH'` |
 
-Use a half-open range (`>=` start, `<` next start). `BETWEEN '2024-03-15' AND '2024-03-15 23:59:59'` works too, but is easy to get wrong at the edges.
+Read them one at a time:
 
-When you truly must search on an expression — say `lower(email)` — index the expression itself: `CREATE INDEX idx_email_lower ON users(lower(email));`. The query must then use exactly that expression.
+1. **One day.** Every moment of 15 March is on or after `'2024-03-15'` and before `'2024-03-16'`.
+2. **One year.** `strftime('%Y', created)`, from the lesson "Dates and times", gives the year as text. Every moment of 2024 is on or after 1 January 2024 and before 1 January 2025.
+3. **Arithmetic.** Divide both sides by 1.2: `total * 1.2 > 120` becomes `total > 100`. On this table both find the same 143 orders. The move is safe because 1.2 is a positive number.
+4. **The start of a text.** `substr(sku, 1, 3)`, from "Working with text", is the first three characters of a product code `sku`. Every code that starts with `MUG` sorts on or after `'MUG'` and before [[the text 'MUH'|prefix-range]]. (There is no `sku` in this lesson's table. Picture a shop's products table.)
 
-A view's plan is its query's plan, so `EXPLAIN QUERY PLAN SELECT * FROM some_view` shows how the view's query runs.
+### The day, as a half-open range
+
+Here is the first rewrite as a full query:
+
+```sql
+SELECT id, created, total FROM orders
+WHERE created >= '2024-03-15' AND created < '2024-03-16';
+```
+
+`>=` means "on or after", and `<` means "before". It returns the same 117 orders, starting with 545, 2958 and 1752. The plan is now:
+
+```
+SEARCH orders USING INDEX idx_orders_created (created>? AND created<?)
+```
+
+The database jumps to the first entry of the 15th in the index and reads forward until the 16th. The plan writes `created>?` even though you wrote `>=`. It only shows that there is a lower end and an upper end.
+
+This works with times in the column because text is compared character by character, and [[a bare date sorts before every time on that day|date-text-order]]. So `'2024-03-15'` sits right in front of the day's first order, and `'2024-03-16'` right after its last. As in the lesson "Indexes: queries that skip them", this is a half-open range: `>=` at the start, `<` at the next start.
+
+### Why not BETWEEN?
+
+`a BETWEEN x AND y` means `a >= x AND a <= y`: both ends included. So this works too:
+
+```sql
+WHERE created BETWEEN '2024-03-15' AND '2024-03-15 23:59:59'
+```
+
+Here it also gives 117 orders. But it is easy to get wrong at the edges. You have to write the very last moment of the day, and a time stored with a fraction of a second, like `'2024-03-15 23:59:59.5'`, sorts after that end and is quietly left out. The half-open range never needs "the last moment". It only needs the next start.
+
+### When you must search on an expression
+
+Sometimes the calculated value is what you really search on. Email addresses are a common case: people type them in any mix of capitals, so you look them up with `lower(email)`. Then you can index the expression itself, as you saw in a note last course. On a `users` table with an `email` column:
+
+```sql
+CREATE INDEX idx_email_lower ON users(lower(email));
+```
+
+Now `SELECT id, email FROM users WHERE lower(email) = 'ana@mail.com'` gets this plan:
+
+```
+SEARCH users USING INDEX idx_email_lower (<expr>=?)
+```
+
+`<expr>` stands for the indexed expression. The query must use **exactly** that expression. Write `lower(trim(email))` instead, and the plan goes back to `SCAN users`, because the index holds `lower(email)`, not `lower(trim(email))`.
+
+### A view has a plan too
+
+In the lesson "Views: saved queries", a view was a saved query that runs again every time you use it. So a view's plan is its query's plan. `EXPLAIN QUERY PLAN SELECT * FROM some_view` shows how the view's saved query runs. A view with a hidden column is slow for every report and [[dashboard|dashboard]] that reads it.
+
+**Watch out:** when the column holds times, never compare it with a bare date using `=` or `<=`. No order was placed at exactly `'2024-03-15'` (midnight with no time written), and every order of that day sorts *after* `'2024-03-15'`. So `created >= '2024-03-15' AND created <= '2024-03-15'` returns 0 rows, and `created = '2024-03-15'` returns 0 too. End the range with `<` and the next day.
+
+::: context analyst What an analyst does
+A **data analyst** answers questions with data: "which products sell best in each category?", "how many users came back a week after signing up?", "where do customers give up on the checkout?". This course's middle lessons are those questions, and their names are the ones analysts use: top N per group, streaks, sessions, pivots, cohorts and funnels. The same skills run a space program's ground systems, where engineers ask the telemetry database questions like "how many passes over the ground station had a dropout?".
+:::
+
+::: context predicate-word Where "predicate" comes from
+In grammar, the predicate is the part of a sentence that says something about the subject: in "the order *was placed on the 15th*", the italic part is the predicate. Logic borrowed the word for a statement that is true or false about a thing. SQL borrowed it again: `total > 100` is true for some rows and false for others. A `WHERE` with `AND` holds several predicates, and each one can be sargable or not on its own. Database manuals and query-plan tools use the word all the time.
+:::
+
+::: context no-reverse Why the database cannot rewrite it for you
+To use the index, the database would have to turn `date(created) = '2024-03-15'` into a range of `created` values. That means running `date()` backwards: "which inputs give this output?" For `date()` the answer is every time on that day, but the database does not know that. It knows only how to run a function forwards. Some functions have no neat backwards answer at all: `length(name) = 5` matches names scattered all through the alphabet. So SQLite treats every function call as a closed box, and only you, who know what the function means, can write the range.
+:::
+
+::: context prefix-range The next text after MUG
+Text is sorted one character at a time, like a dictionary. Every code that starts with `MUG`, such as `MUG-01` or `MUGBLUE`, sorts on or after `'MUG'`. To find the end, take the prefix and move its last letter up by one: G becomes H, so `'MUH'`. Everything that starts with `MUG` comes before `'MUH'`, and nothing else sits between. One catch: SQLite compares capitals and small letters as different characters by default, so `'mug-01'` is not in the range. The same is true of `substr(sku, 1, 3) = 'MUG'`, so both forms agree.
+:::
+
+::: context date-text-order Where the day's times sit
+Compare `'2024-03-15'` with `'2024-03-15 00:05:00'`. They agree for all ten characters of the shorter one. When one text runs out first, it sorts first. So the bare date comes before every time on that day, and `'2024-03-16'` comes after all of them. The half-open range from one bare date to the next catches the whole day.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">
+  <line x1="15" y1="70" x2="345" y2="70" stroke="#6c7a93" stroke-width="1.5"/>
+  <line x1="50" y1="70" x2="300" y2="70" stroke="#1d6fd1" stroke-width="6"/>
+  <circle cx="50" cy="70" r="6" fill="#1d6fd1" stroke="#1f2a44"/>
+  <circle cx="300" cy="70" r="6" fill="#fff" stroke="#1f2a44" stroke-width="1.5"/>
+  <line x1="90" y1="62" x2="90" y2="78" stroke="#1f2a44" stroke-width="2"/>
+  <line x1="120" y1="62" x2="120" y2="78" stroke="#1f2a44" stroke-width="2"/>
+  <line x1="265" y1="62" x2="265" y2="78" stroke="#1f2a44" stroke-width="2"/>
+  <text x="90" y="50" font-size="11" fill="#1f2a44" text-anchor="middle">00:05</text>
+  <text x="125" y="36" font-size="11" fill="#1f2a44" text-anchor="middle">00:06</text>
+  <text x="192" y="50" font-size="11" fill="#6c7a93" text-anchor="middle">… 117 orders …</text>
+  <text x="265" y="36" font-size="11" fill="#1f2a44" text-anchor="middle">last order</text>
+  <text x="50" y="98" font-size="12" fill="#1f2a44" text-anchor="middle">'2024-03-15'</text>
+  <text x="300" y="98" font-size="12" fill="#1f2a44" text-anchor="middle">'2024-03-16'</text>
+  <text x="50" y="116" font-size="11" fill="#1d6fd1" text-anchor="middle">&gt;= : included</text>
+  <text x="300" y="116" font-size="11" fill="#1f2a44" text-anchor="middle">&lt; : left out</text>
+  <text x="180" y="140" font-size="11" fill="#6c7a93" text-anchor="middle">each bare date sorts before every time on that day</text>
+</svg>
+```
+:::
+
+::: context dashboard What a dashboard is
+A **dashboard** is a screen of numbers and charts that updates itself: today's orders, sales this hour, the error rate. Like a car's dashboard, it is meant to be glanced at, so it re-runs its queries every few seconds or minutes, often for many people at once. A query that takes two seconds is fine once a day. Run by 50 open dashboards every 10 seconds, it keeps the database busy all day. Mission control screens are dashboards too, showing live telemetry from a vehicle, and they are built with the same care about query speed.
+:::
 --- task
 The dashboard lists the orders of 15 March 2024 with this slow query:
 
@@ -48,7 +190,9 @@ The dashboard lists the orders of 15 March 2024 with this slow query:
 SELECT id, created, total FROM orders WHERE date(created) = '2024-03-15';
 ```
 
-Create a view named `orders_mar_15` with the same columns (`id`, `created`, `total`) and the same rows, rewritten so it uses `idx_orders_created`.
+Create a view named `orders_mar_15` with the same columns (`id`, `created`, `total`) and the same rows, but rewrite the `WHERE` as a half-open range on `created` itself, so it can use the index `idx_orders_created`. It should still return 117 orders.
+
+Then check your work: `EXPLAIN QUERY PLAN SELECT * FROM orders_mar_15;` should say `SEARCH orders USING INDEX idx_orders_created`.
 --- starter
 CREATE VIEW orders_mar_15 AS
 SELECT id, created, total
@@ -60,9 +204,11 @@ SELECT id, created, total
 FROM orders
 WHERE created >= '2024-03-15' AND created < '2024-03-16';
 --- hint
-Run `EXPLAIN QUERY PLAN SELECT * FROM orders_mar_15;` on the starter: `SCAN orders`.
+Look at the plan first. Run the starter, then `EXPLAIN QUERY PLAN SELECT * FROM orders_mar_15;`. It says `SCAN orders`, because `date()` hides `created` from the index.
 --- hint
-Leave `created` bare: a range from `'2024-03-15'` (inclusive) to `'2024-03-16'` (exclusive).
+Only the `WHERE` line changes. Leave `created` bare: a range from `'2024-03-15'` (included, with `>=`) up to `'2024-03-16'` (left out, with `<`).
+--- hint
+Two comparisons joined with `AND`: `WHERE created >= '2024-03-15' AND created < '2024-03-16'`.
 --- check query | Same rows as the slow query: 117 orders worth 6561.00
 SELECT COUNT(*), ROUND(SUM(total), 2), MIN(created) >= '2024-03-15', MAX(created) < '2024-03-16' FROM orders_mar_15
 => [[117, 6561.0, 1, 1]]
@@ -85,11 +231,33 @@ WITH RECURSIVE n(i) AS (SELECT 1 UNION ALL SELECT i + 1 FROM n WHERE i < 3000)
 INSERT INTO orders (id, customer_id, status, total)
 SELECT i, i % 250 + 1, CASE i % 5 WHEN 0 THEN 'refunded' WHEN 1 THEN 'pending' ELSE 'paid' END, (i * 29 % 300) / 2.0 FROM n;
 --- teach
-This lesson's table: `orders` (`id`, `customer_id`, `status`, `total`), 3,000 rows, no indexes yet.
+Last lesson you kept a column bare so the database could search its index. In the advanced course, in "Indexes and EXPLAIN QUERY PLAN", you also built a composite index on `(customer_id, placed)` and saw its sort step disappear. This lesson goes one step further: an index that holds everything a query needs, so the table itself is never read.
 
-When a query uses an index, it normally does two lookups per row: find the entry in the index, then follow its pointer to the table row to fetch the other columns. If the index **already contains every column the query needs**, the second lookup disappears. That is a **covering index**, and the plan says so: `USING COVERING INDEX`.
+### The table
 
-Take the report every finance team wants:
+This lesson's `orders` table has 3,000 rows and no indexes yet. Its columns are `id`, `customer_id`, `status` and `total`. There are 250 customers. `status` is one of three words:
+
+| status | orders |
+| --- | --- |
+| paid | 1800 |
+| pending | 600 |
+| refunded | 600 |
+
+### The picture
+
+Picture a library's card catalogue. Each card names a book and the shelf it sits on. To find a book's page count, you find its card, then walk to the shelf and open the book. That is two trips. Now suppose the card already lists the page count. You read the card and you are done. You never walk to the shelf.
+
+### Two lookups per row
+
+When a query uses an index, it normally does two lookups for each row. First it finds the entry in the index. Then it [[follows the entry's pointer|two-lookups]] to the row in the table, to fetch the other columns the query asked for. That second trip is the walk to the shelf.
+
+### A covering index
+
+If the index **already contains every column the query needs**, the second lookup disappears. That is a **covering index**: it covers the whole query. The plan says so with the words `USING COVERING INDEX`.
+
+### The report
+
+Here is the report every finance team wants: for each customer, how many paid orders and how much they spent.
 
 ```sql
 SELECT customer_id, COUNT(*) AS orders, SUM(total) AS spent
@@ -98,25 +266,129 @@ WHERE status = 'paid'
 GROUP BY customer_id;
 ```
 
-It needs `status` (to filter), `customer_id` (to group) and `total` (to sum). The column **order** in the index decides what it can do:
+The first three rows of its answer:
 
-1. **Equality columns first.** `status = 'paid'` jumps to one contiguous block of the index only if `status` leads.
-2. **Then the grouping or sorting column.** Within the `status = 'paid'` block, entries are sorted by the next column. With `customer_id` next, rows arrive already grouped, so there is no `USE TEMP B-TREE FOR GROUP BY` step.
-3. **Then the columns you only read.** `total` rides along so the table is never touched.
+| customer_id | orders | spent |
+| --- | --- | --- |
+| 3 | 12 | 798.0 |
+| 4 | 12 | 972.0 |
+| 5 | 12 | 846.0 |
 
-Get the order wrong and the plan tells you. With `(customer_id, status, total)` the index still covers the query, but `status` is not first, so the database reads the whole index: `SCAN orders USING COVERING INDEX`. Better than a table scan — but still every entry.
+With no index, the plan is:
 
-Covering indexes are the sharpest tool for a hot query, and the most specific. Wide indexes cost space and write speed, so build them for the few queries that matter.
+```
+SCAN orders
+USE TEMP B-TREE FOR GROUP BY
+```
+
+`SCAN orders` reads every row. The second line is like the `USE TEMP B-TREE FOR ORDER BY` you met in the advanced course, but for grouping: the database builds a temporary sorted structure to gather each customer's rows together.
+
+The query needs three columns: `status` to filter, `customer_id` to group, and `total` to sum. The **order** of the columns in the index decides what the index can do. There are three rules, one per step below.
+
+### Rule 1: equality columns first
+
+An **equality column** is one tested with `=`, like `status = 'paid'`. With `status` first, the index is sorted by status, so all the paid orders sit in [[one contiguous block|contiguous]]. The database jumps to the start of the block and stops at its end. An index on `(status)` alone gives:
+
+```
+SEARCH orders USING INDEX idx_orders_status (status=?)
+USE TEMP B-TREE FOR GROUP BY
+```
+
+It searches instead of scanning. But the grouping step is still there.
+
+### Rule 2: then the grouping or sorting column
+
+Inside the `status = 'paid'` block, entries are sorted by the index's next column. Put `customer_id` next, and the paid rows [[arrive already grouped|group-in-one-pass]] by customer. An index on `(status, customer_id)` gives:
+
+```
+SEARCH orders USING INDEX idx_orders_status_customer (status=?)
+```
+
+No `USE TEMP B-TREE FOR GROUP BY`. But `USING INDEX`, not `USING COVERING INDEX`: for each of the 1,800 paid rows, the database still goes to the table to read `total`.
+
+### Rule 3: then the columns you only read
+
+`total` is not filtered or grouped. It is only read. Add it last, and it rides along in the index, so the table is never touched. An index on `(status, customer_id, total)` gives:
+
+```
+SEARCH orders USING COVERING INDEX idx_orders_status_customer_total (status=?)
+```
+
+One line: a search, a covering index, no grouping step.
+
+### Getting the order wrong
+
+The same three columns in another order give a worse plan, and the plan tells you so:
+
+| index columns | plan for the report |
+| --- | --- |
+| `(customer_id, status, total)` | `SCAN orders USING COVERING INDEX …` |
+| `(status, total, customer_id)` | `SEARCH orders USING COVERING INDEX … (status=?)`, then `USE TEMP B-TREE FOR GROUP BY` |
+| `(status, customer_id, total)` | `SEARCH orders USING COVERING INDEX … (status=?)` |
+
+With `(customer_id, status, total)` the index still covers the query, but `status` is not first, so the paid rows are scattered through it and the database reads the whole index. That is better than a table scan, because the index is smaller than the table, but it is still every entry. With `(status, total, customer_id)`, the paid block is sorted by `total`, not by customer, so the grouping step comes back.
+
+### A sharp, narrow tool
+
+A covering index is the sharpest tool for a [[hot query|hot-query]]. It is also the most specific: it is shaped for one query, and a query that needs one more column is not covered any more. Wide indexes cost space and [[slow down every write|index-writes]]. Build them for the few queries that really matter.
+
+**Watch out:** the word `COVERING` in a plan does not mean the index is right. Read the whole line. The first word must be `SEARCH`, not `SCAN`, and there should be no `USE TEMP B-TREE` line under it. `SCAN orders USING COVERING INDEX` still reads every entry.
+
+::: context two-lookups What the pointer is
+Each index entry holds its column values and the row's **rowid**, SQLite's internal number for the row. For a table with an `INTEGER PRIMARY KEY`, the rowid is the `id`. Following the pointer means searching the table by rowid, once per row found. A covering index skips that step entirely.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 180" font-family="Inter, Arial, sans-serif">
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#1d6fd1"/>
+    </marker>
+  </defs>
+  <text x="80" y="18" font-size="11" fill="#6c7a93" text-anchor="middle">index (status, customer_id)</text>
+  <rect x="15" y="26" width="130" height="26" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="80" y="43" font-size="12" fill="#1f2a44" text-anchor="middle">paid, 3 → id 2</text>
+  <text x="280" y="18" font-size="11" fill="#6c7a93" text-anchor="middle">table row id 2</text>
+  <rect x="215" y="26" width="130" height="26" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="280" y="43" font-size="12" fill="#1f2a44" text-anchor="middle">total 29.0</text>
+  <line x1="145" y1="39" x2="213" y2="39" stroke="#1d6fd1" stroke-width="1.5" marker-end="url(#ar)"/>
+  <text x="180" y="70" font-size="11" fill="#1f2a44" text-anchor="middle">two lookups: index, then table</text>
+  <text x="120" y="108" font-size="11" fill="#6c7a93" text-anchor="middle">covering index (status, customer_id, total)</text>
+  <rect x="15" y="116" width="210" height="26" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="120" y="133" font-size="12" fill="#1f2a44" text-anchor="middle">paid, 3, 29.0 → id 2</text>
+  <text x="180" y="165" font-size="11" fill="#1f2a44" text-anchor="middle">one lookup: the table is never touched</text>
+</svg>
+```
+:::
+
+::: context contiguous Side by side, no gaps
+**Contiguous** means touching, one after another with nothing in between, like the houses in a terrace. In an index sorted by `status`, the 1,800 `paid` entries sit together, so the database can read them in one sweep, start to end. In an index sorted by `customer_id` first, the paid entries are spread through the whole index, mixed in with every customer's pending and refunded ones. Reading a contiguous block is what makes a `SEARCH` fast: the work grows with the rows you want, not with the size of the table.
+:::
+
+::: context group-in-one-pass Grouping without sorting
+Think of counting coins that arrive already sorted: all the 1p coins, then all the 2p coins, then the 5p ones. You count as they come, and write down the total each time the coin changes. You never need a second pile. That is how SQLite groups rows that arrive in `customer_id` order: it keeps a running `COUNT` and `SUM`, and outputs a row whenever the customer changes. Rows in a jumbled order need a temporary sorted structure first, which is the `USE TEMP B-TREE FOR GROUP BY` step.
+:::
+
+::: context hot-query What makes a query hot
+A **hot** query is one that runs very often: the query behind an app's home screen, a check done on every login, or a dashboard tile that refreshes every few seconds. Saving a few milliseconds on a query run once a month is worth nothing. Saving them on a query run a thousand times a minute is worth a lot. Engineers find the hot queries by measuring what the database spends its time on, then tune those few with indexes like this one, and leave the rest alone. You will do this in the lesson "Problem solving: find and fix a slow query".
+:::
+
+::: context index-writes Why wide indexes slow down writing
+Every index is a second, sorted copy of some columns. When a row is inserted, updated or deleted, every index on the table has to change too. A covering index copies more columns, so it takes more space, and an update to any of those columns (here `status`, `customer_id` or `total`) must also move the entry inside the index. A table that is written constantly, such as a log of sensor readings arriving many times a second, can slow down noticeably with too many wide indexes. That is the trade: faster reading for one query, slower writing for all.
+:::
 --- task
-Create an index named `idx_orders_status_customer_total` that makes the report above search only the paid orders, read nothing from the table itself, and need no separate grouping step.
+Create an index named `idx_orders_status_customer_total` for the paid-orders report above. It must use the columns `status`, `customer_id` and `total`, in the order that makes the report search only the paid orders, read nothing from the table itself, and need no separate grouping step.
+
+When you are done, the report's plan should be one line: `SEARCH orders USING COVERING INDEX idx_orders_status_customer_total (status=?)`.
 --- starter
 CREATE INDEX idx_orders_status_customer_total ON orders(customer_id, status, total);
 --- solution
 CREATE INDEX idx_orders_status_customer_total ON orders(status, customer_id, total);
 --- hint
-Check the plan: `EXPLAIN QUERY PLAN SELECT customer_id, COUNT(*), SUM(total) FROM orders WHERE status = 'paid' GROUP BY customer_id;`
+Check the plan of the starter's index: `EXPLAIN QUERY PLAN SELECT customer_id, COUNT(*), SUM(total) FROM orders WHERE status = 'paid' GROUP BY customer_id;`. It says `SCAN`, because `status` is not first.
 --- hint
-Equality column first, then the grouping column, then the column you only read.
+Follow the three rules in order: the equality column first, then the grouping column, then the column you only read.
+--- hint
+Keep the index name and change only the order inside the brackets: `orders(status, customer_id, total)`.
 --- check query | The index columns are status, customer_id, total
 SELECT name FROM pragma_index_info('idx_orders_status_customer_total') ORDER BY seqno
 => [["status"], ["customer_id"], ["total"]]
@@ -145,11 +417,52 @@ INSERT INTO products (id, category, name, units_sold) VALUES
   (10, 'toys',  'Jigsaw',     NULL),
   (11, 'toys',  'Kite',       5);
 --- teach
-This lesson's table: `products` (`id`, `category`, `name`, `units_sold` — NULL when no sales have been recorded yet).
+The last two lessons made queries fast. This one starts the analyst's hard questions. In the lesson "Window functions: ranking" you gave rows places with `ROW_NUMBER()`, `RANK()` and `DENSE_RANK()`, and you found that `WHERE` cannot filter on a rank. That lesson promised this one: how to keep only the top rows of every group.
 
-"The best two sellers in **each** category" is one of the most asked questions in analytics, and `LIMIT` cannot answer it: `LIMIT` applies to the whole result, not per group. The pattern is: **rank within each group with a window function, then filter on the rank.**
+### The table
 
-Window functions are computed after `WHERE`, so you cannot filter on one in the same query. Rank in a CTE, filter outside it:
+This lesson's `products` table has 11 rows. Its columns are `id`, `category`, `name` and `units_sold`. `units_sold` is NULL when no sales have been recorded yet.
+
+| id | category | name | units_sold |
+| --- | --- | --- | --- |
+| 1 | books | Atlas | 50 |
+| 2 | books | Bestiary | 50 |
+| 3 | books | Cookbook | 30 |
+| 4 | books | Diary | 10 |
+| 5 | games | Echo | 80 |
+| 6 | games | Fable | 60 |
+| 7 | games | Gambit | 60 |
+| 8 | games | Hexa | 20 |
+| 9 | music | Intro | 15 |
+| 10 | toys | Jigsaw | NULL |
+| 11 | toys | Kite | 5 |
+
+### The picture
+
+Picture a school sports day with four events. The newsletter prints the top two of **each** event. Nobody would print the top two of the whole day, because then one event's stars would fill both spots and the other three events would not appear at all.
+
+### Why LIMIT cannot do it
+
+"The best two sellers in each category" is one of the most asked questions in [[analytics|analytics-word]]. `LIMIT` cannot answer it, because `LIMIT` applies to the whole result, not to each group:
+
+```sql
+SELECT category, name, units_sold FROM products
+ORDER BY units_sold DESC
+LIMIT 2;
+```
+
+| category | name | units_sold |
+| --- | --- | --- |
+| games | Echo | 80 |
+| games | Fable | 60 |
+
+Two games, and no books, music or toys. That is the whole-day list.
+
+### The pattern: rank, then filter
+
+The pattern has two steps: **rank within each group with a window function, then filter on the rank.**
+
+Window functions are worked out after `WHERE`, so you cannot filter on one in the same query. Work the rank out in a [[CTE|cte-or-subquery]], then filter outside it:
 
 ```sql
 WITH ranked AS (
@@ -160,15 +473,101 @@ WITH ranked AS (
 SELECT * FROM ranked WHERE pos <= 2;
 ```
 
-The choice of ranking function **is** the definition of "top 2", so make it on purpose:
+- Inside the CTE, `PARTITION BY category` starts a separate ranking for each category, and `ORDER BY units_sold DESC` gives the biggest seller place 1.
+- Outside, `WHERE pos <= 2` keeps places 1 and 2. `<=` means "less than or equal to".
 
-- `ROW_NUMBER()` — exactly two rows per category. Ties are cut arbitrarily unless you add a tie-breaker (`ORDER BY units_sold DESC, id`).
-- `RANK()` — everyone whose position is 1 or 2. If two tie for second, you get three rows; if two tie for *first*, the next one is third and is left out.
-- `DENSE_RANK()` — the top two **values**, and every product that has one of them.
+Sorted by category, then place, then name, the answer is:
 
-And decide what NULL means. In SQLite, NULL sorts *below* every number in `DESC` order — so a product with no data would rank after the real ones and could sneak into a top-2 for a small category. "No sales recorded" is not a ranking; filter it out before you rank.
+| category | name | units_sold | pos |
+| --- | --- | --- | --- |
+| books | Atlas | 50 | 1 |
+| books | Bestiary | 50 | 1 |
+| games | Echo | 80 | 1 |
+| games | Fable | 60 | 2 |
+| games | Gambit | 60 | 2 |
+| music | Intro | 15 | 1 |
+| toys | Kite | 5 | 1 |
+| toys | Jigsaw | NULL | 2 |
+
+Every category is there now. Two of these rows need a closer look: games has three products, and Jigsaw is "second" with no sales at all. The next two steps explain both.
+
+### The ranking function is the definition
+
+"Top 2" sounds exact, but ties make it a choice. The ranking function you pick **is** your definition of "top 2", so [[choose it on purpose|podium]]. Here are all three for books and games, with `id` as the tie-breaker for `ROW_NUMBER()`:
+
+| category | name | units_sold | `ROW_NUMBER()` | `RANK()` | `DENSE_RANK()` |
+| --- | --- | --- | --- | --- | --- |
+| books | Atlas | 50 | 1 | 1 | 1 |
+| books | Bestiary | 50 | 2 | 1 | 1 |
+| books | Cookbook | 30 | 3 | 3 | 2 |
+| books | Diary | 10 | 4 | 4 | 3 |
+| games | Echo | 80 | 1 | 1 | 1 |
+| games | Fable | 60 | 2 | 2 | 2 |
+| games | Gambit | 60 | 3 | 2 | 2 |
+| games | Hexa | 20 | 4 | 4 | 3 |
+
+Keep the rows numbered 1 or 2 in each column:
+
+- `ROW_NUMBER()` gives **exactly two rows** per category: Atlas and Bestiary, Echo and Fable. Ties are cut in no fixed order unless you add a tie-breaker, like `ORDER BY units_sold DESC, id`. Here Gambit loses to Fable only because its `id` is bigger.
+- `RANK()` gives **everyone whose place is 1 or 2**. If two tie for second, you get three rows: Echo, Fable and Gambit. If two tie for *first*, the next one is third and is left out: Atlas and Bestiary share 1st, so Cookbook is 3rd.
+- `DENSE_RANK()` gives **the top two values**, and every product that has one of them. For books that is 50 and 30, so Atlas, Bestiary and Cookbook.
+
+### NULL is not a ranking
+
+Now Jigsaw. In SQLite, [[NULL counts as smaller than every number|null-sorting]] when rows are sorted. So in `DESC` order a NULL comes last, after the real numbers. In a big category it would rank at the bottom and do no harm. But toys has only one real seller, so Jigsaw, with no data, lands in second place.
+
+"No sales recorded" is not a place in a ranking. Decide what NULL means, and here that means leaving it out. Filter it out **before** you rank, with `WHERE units_sold IS NOT NULL` inside the CTE. `WHERE` runs before the window function, so the NULL rows are gone by the time the places are handed out.
+
+**Watch out:** a window function's name cannot be used in the `WHERE` of the same `SELECT`. This looks natural, but fails:
+
+```sql
+SELECT category, name,
+       RANK() OVER (PARTITION BY category ORDER BY units_sold DESC) AS pos
+FROM products
+WHERE pos <= 2;   -- error
+```
+
+SQLite says `misuse of aliased window function pos`. The rank does not exist yet when `WHERE` runs. Rank in one step, filter in the next. The same rank-then-filter shape comes back in [[many real questions|top-n-uses]].
+
+::: context analytics-word What "analytics" means
+**Analytics** is using data to answer questions about what happened and why: which products sell, which pages people leave from, which week the most users signed up. An app records what its users do, and analysts run queries like this lesson's over those records. The same kind of question runs a mission: which three sensors reported the most errors on each subsystem, or which ground stations had the longest contact passes each day. The rest of this course is a tour of the questions analysts ask most.
+:::
+
+::: context cte-or-subquery A CTE or a subquery
+You met CTEs in "CTEs: a query in named steps". A subquery in `FROM` does exactly the same job: `SELECT * FROM (SELECT …, RANK() OVER (…) AS pos FROM products) WHERE pos <= 2`. Both run the ranking first and filter its rows afterwards. The CTE is usually easier to read, because the steps come in the order they happen and each has a name. Some databases also offer a `QUALIFY` clause that filters on window functions directly, but SQLite does not have it, so the two-step shape is the one that works everywhere.
+:::
+
+::: context podium Ties in the real world
+Sport has faced this question for a long time. At the Olympics, when two athletes tie for gold, both get gold and usually no silver is given: the next athlete gets bronze. That is `RANK()`. A shop's "top 2 products" banner with room for exactly two pictures needs `ROW_NUMBER()` with a tie-breaker. A report of "the two best sales figures and who reached them" is `DENSE_RANK()`. None of the three is wrong. What is wrong is picking one without deciding, then being surprised by the row count.
+:::
+
+::: context null-sorting Where NULL goes when you sort
+SQLite treats NULL as smaller than any number or text when sorting. So `ORDER BY units_sold` puts Jigsaw first, and `ORDER BY units_sold DESC` puts it last. Other databases disagree: PostgreSQL treats NULL as *larger* than everything, so there `DESC` puts NULL first, and Jigsaw would rank 1st among toys. You can say what you want in words: `ORDER BY units_sold DESC NULLS LAST` works in both. Filtering the NULLs out, as this lesson does, makes the question go away.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">
+  <text x="100" y="18" font-size="11" fill="#6c7a93" text-anchor="middle">toys, units_sold DESC</text>
+  <rect x="40" y="28" width="120" height="30" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="100" y="48" font-size="12" fill="#1f2a44" text-anchor="middle">1  Kite  5</text>
+  <rect x="40" y="58" width="120" height="30" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="100" y="78" font-size="12" fill="#1f2a44" text-anchor="middle">2  Jigsaw  NULL</text>
+  <line x1="30" y1="96" x2="170" y2="96" stroke="#b4232c" stroke-width="2" stroke-dasharray="5 3"/>
+  <text x="100" y="114" font-size="11" fill="#b4232c" text-anchor="middle">cut: pos &lt;= 2</text>
+  <text x="270" y="18" font-size="11" fill="#6c7a93" text-anchor="middle">NULLs removed first</text>
+  <rect x="210" y="28" width="120" height="30" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="270" y="48" font-size="12" fill="#1f2a44" text-anchor="middle">1  Kite  5</text>
+  <text x="180" y="140" font-size="11" fill="#6c7a93" text-anchor="middle">no data should not earn a place</text>
+</svg>
+```
+:::
+
+::: context top-n-uses Where you will meet it again
+Rank, then filter, answers a whole family of questions: the latest reading from each sensor (`ROW_NUMBER()` ordered by time, newest first, keep 1), each customer's first order, the three biggest errors per subsystem in a night's telemetry. Later in this course, "Deduplicating: keep the latest row" uses exactly this shape to throw away repeated rows and keep the newest copy of each. Whenever a question says "per" or "in each", with "top", "latest" or "first", think of this pattern.
+:::
 --- task
-Return the top two products per category by `units_sold`, keeping ties: every product whose `RANK()` in its category is 1 or 2. Ignore products with no recorded sales. Columns: `category`, `name`, `units_sold`, `pos` (the rank). Sort by category, then pos, then name.
+Return the top two products per category by `units_sold`, keeping ties: every product whose `RANK()` in its category is 1 or 2, with the biggest seller ranked 1. Leave out products with no recorded sales (`units_sold` is NULL) before you rank.
+
+Return four columns: `category`, `name`, `units_sold` and `pos` (the rank). Sort by `category`, then `pos`, then `name`.
 --- starter
 SELECT category, name, units_sold
 FROM products
@@ -186,9 +585,11 @@ FROM ranked
 WHERE pos <= 2
 ORDER BY category, pos, name;
 --- hint
-Compute `RANK() OVER (PARTITION BY category ORDER BY units_sold DESC)` in a CTE, then keep `pos <= 2` outside it.
+Use the rank-then-filter pattern: `LIMIT` works on the whole result, so it cannot give two rows per category.
 --- hint
-Filter `units_sold IS NOT NULL` inside the CTE, before ranking — otherwise Jigsaw ranks second among toys.
+In a CTE named `ranked`, compute `RANK() OVER (PARTITION BY category ORDER BY units_sold DESC) AS pos`, with `WHERE units_sold IS NOT NULL` inside the CTE. Otherwise Jigsaw ranks second among toys.
+--- hint
+Outside the CTE: `SELECT category, name, units_sold, pos FROM ranked WHERE pos <= 2 ORDER BY category, pos, name;`
 --- check result | Both tied books, three games (a tie for second), Intro and Kite alone
 ordered
 [["books", "Atlas", 50, 1], ["books", "Bestiary", 50, 1], ["games", "Echo", 80, 1], ["games", "Fable", 60, 2], ["games", "Gambit", 60, 2], ["music", "Intro", 15, 1], ["toys", "Kite", 5, 1]]
@@ -205,11 +606,39 @@ INSERT INTO logins (user_id, day) VALUES
   (2, '2024-07-01'), (2, '2024-07-03'), (2, '2024-07-04'), (2, '2024-07-05'), (2, '2024-07-06'),
   (3, '2024-07-10');
 --- teach
-This lesson's table: `logins` (`user_id`, `day`) — one row per login, and a user can log in more than once a day.
+Last lesson you numbered rows inside each group, then filtered on the number. This lesson uses the same `ROW_NUMBER()` for something that looks much harder: finding each user's runs of consecutive days, the way an app counts a login [[streak|streak-apps]].
 
-"How long is each user's streak of consecutive days?" is a **gaps-and-islands** problem: find the runs (islands) of consecutive values separated by gaps. It looks like it needs a loop. It needs one trick.
+### The table
 
-Number each user's days in order with `ROW_NUMBER()`. Within a run of consecutive days, the day goes up by 1 and the row number goes up by 1 — so **day minus row number stays constant** for the whole run, and jumps when there is a gap:
+This lesson's `logins` table has two columns, `user_id` and `day`. There is one row per login, and a user can log in more than once a day. Here are user 1's rows:
+
+| user_id | day |
+| --- | --- |
+| 1 | 2024-07-01 |
+| 1 | 2024-07-02 |
+| 1 | 2024-07-02 |
+| 1 | 2024-07-03 |
+| 1 | 2024-07-05 |
+| 1 | 2024-07-06 |
+| 1 | 2024-07-09 |
+
+User 1 logged in twice on 2 July. User 2 logged in on 1 July, then every day from 3 to 6 July. User 3 logged in once, on 10 July.
+
+### The picture
+
+Picture a wall calendar where you cross off each day you practised the piano. Look at July and the crosses form clumps: three days in a row, a blank, two in a row, two blanks, one on its own. Each clump is a streak. Each blank between clumps breaks one.
+
+### Gaps and islands
+
+"How long is each user's streak of consecutive days?" is a **gaps-and-islands** problem. The **islands** are the runs of consecutive values, and the **gaps** are the missing values between them. Here, for user 1, the islands are 1 to 3 July, 5 to 6 July, and 9 July on its own.
+
+It looks like it needs a [[loop|no-loop]]: walk through the days one by one, and start a new streak whenever a day is skipped. It needs one trick instead.
+
+### The trick: day minus row number
+
+Number each user's days in order with `ROW_NUMBER()`. Inside a run of consecutive days, the day goes up by 1 and the row number goes up by 1. So **the day minus the row number stays the same** for the whole run. When there is a gap, the day jumps by more than 1 but the row number still goes up by only 1, so the difference jumps too.
+
+Here is user 1, with one row per day:
 
 | day | row number | day − row number |
 | --- | --- | --- |
@@ -218,18 +647,107 @@ Number each user's days in order with `ROW_NUMBER()`. Within a run of consecutiv
 | 07-03 | 3 | 06-30 |
 | 07-05 | 4 | 07-01 |
 | 07-06 | 5 | 07-01 |
+| 07-09 | 6 | 07-03 |
 
-That constant is an **island key**. Group by user and key, and each group is one streak: `MIN(day)` starts it, `MAX(day)` ends it, `COUNT(*)` is its length.
+The last column is not a date anyone logged in. It is a label. Every day of the first streak gets 06-30, every day of the second gets 07-01, and the lone 9 July gets 07-03. That label is an **[[island key|island-key-picture]]**: a value that is the same for every row of one island and different for every other island.
+
+### Building the key in SQL
+
+To subtract days from a date, you use a modifier, from the lesson "Date arithmetic and date ranges": `date('2024-07-03', '-3 days')` is `'2024-06-30'`. The modifier is text, and the number in it has to come from `ROW_NUMBER()`. So you build the text with `||`, which joins pieces of text, from the lesson "Building text: joining, replacing and LIKE":
+
+```sql
+SELECT '-' || 3 || ' days';   -- '-3 days'
+```
+
+Put `ROW_NUMBER()` where the 3 is, and the key for every row is:
 
 ```sql
 date(day, '-' || ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY day) || ' days') AS grp
 ```
 
-The trap is **duplicates**. Two logins on 07-02 give that day two row numbers, the difference shifts by one, and the streak splits in the wrong place. Reduce the data to one row per user per day *first* (`SELECT DISTINCT`), then number it.
+Read it aloud: "number this user's days from the earliest, build the text 'minus that many days', and move the day back by it". `PARTITION BY user_id` gives each user their own numbering, starting at 1. `grp` is short for "group". There are [[other ways to build the key|modifier-text]].
 
-The same trick finds runs of consecutive ids, months without an outage, and any other "consecutive" question.
+### One group per island
+
+Now group by the user and the key, and each group is one streak:
+
+- `MIN(day)` is the day it starts.
+- `MAX(day)` is the day it ends.
+- `COUNT(*)` is its length in days.
+
+The key has to be worked out in one step, a CTE, and grouped in the next, because a window function cannot sit inside `GROUP BY`. For user 1 that gives three streaks: 1 to 3 July (3 days), 5 to 6 July (2 days) and 9 July (1 day).
+
+**Watch out:** duplicates. User 1 logged in twice on 07-02. Number the raw rows, and 07-02 gets two row numbers, 2 and 3. From there on, every difference shifts by one:
+
+| day | row number | day − row number |
+| --- | --- | --- |
+| 07-01 | 1 | 06-30 |
+| 07-02 | 2 | 06-30 |
+| 07-02 | 3 | 06-29 |
+| 07-03 | 4 | 06-29 |
+| 07-05 | 5 | 06-30 |
+| 07-06 | 6 | 06-30 |
+| 07-09 | 7 | 07-02 |
+
+The first streak splits in the wrong place, and worse, 5 and 6 July now share the key 06-30 with 1 and 2 July. Grouped, that gives a "streak" from 07-01 to 07-06 with 4 days, and another from 07-02 to 07-03. Both are wrong. Reduce the data to one row per user per day **first**, with `SELECT DISTINCT user_id, day` in its own CTE, and only then number it.
+
+### Not only days
+
+The same trick finds any run of consecutive values: consecutive ids in a table (id minus row number), months in a row without an [[outage|outage]], or days in a row a sensor reported. Whenever a question says "in a row" or "consecutive", think of islands.
+
+::: context streak-apps Streaks in real apps
+Language-learning apps, fitness trackers and games show a **streak**: how many days in a row you have used them. It is a strong habit-builder, because nobody wants to break a 100-day run, so the number sits right on the home screen. Behind it is exactly this question, asked of a table of logins or finished lessons. Engineers ask it of machines too: how many days in a row has this ground station made every scheduled contact, and when did the current run start?
+:::
+
+::: context no-loop Why SQL avoids loops
+A program in a language like Python would solve this with a loop: look at each day, compare it with the day before, add 1 to a counter or start a new streak. SQL is built the other way round. You describe the result you want for the whole set of rows, and the database decides how to get it. That lets it work on millions of rows at once, use indexes, and run parts in parallel. Tricks like this one turn a step-by-step idea into a set-at-a-time one. Recursive CTEs, from the advanced course, are SQL's way to loop when there truly is no trick.
+:::
+
+::: context island-key-picture Seeing the island key
+Each dot is a day user 1 logged in, with its row number under it. Move each dot back by its row number, and every dot of one island lands on the same date. That date is the key.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 160" font-family="Inter, Arial, sans-serif">
+  <line x1="15" y1="60" x2="345" y2="60" stroke="#6c7a93" stroke-width="1.5"/>
+  <text x="20" y="84" font-size="11" fill="#6c7a93" text-anchor="middle">1</text>
+  <text x="58" y="84" font-size="11" fill="#6c7a93" text-anchor="middle">2</text>
+  <text x="96" y="84" font-size="11" fill="#6c7a93" text-anchor="middle">3</text>
+  <text x="134" y="84" font-size="11" fill="#6c7a93" text-anchor="middle">4</text>
+  <text x="172" y="84" font-size="11" fill="#6c7a93" text-anchor="middle">5</text>
+  <text x="210" y="84" font-size="11" fill="#6c7a93" text-anchor="middle">6</text>
+  <text x="248" y="84" font-size="11" fill="#6c7a93" text-anchor="middle">7</text>
+  <text x="286" y="84" font-size="11" fill="#6c7a93" text-anchor="middle">8</text>
+  <text x="324" y="84" font-size="11" fill="#6c7a93" text-anchor="middle">9</text>
+  <text x="180" y="100" font-size="11" fill="#6c7a93" text-anchor="middle">July</text>
+  <circle cx="20" cy="60" r="7" fill="#1d6fd1" stroke="#1f2a44"/>
+  <circle cx="58" cy="60" r="7" fill="#1d6fd1" stroke="#1f2a44"/>
+  <circle cx="96" cy="60" r="7" fill="#1d6fd1" stroke="#1f2a44"/>
+  <circle cx="172" cy="60" r="7" fill="#f2b880" stroke="#1f2a44"/>
+  <circle cx="210" cy="60" r="7" fill="#f2b880" stroke="#1f2a44"/>
+  <circle cx="324" cy="60" r="7" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="20" y="40" font-size="11" fill="#1f2a44" text-anchor="middle">#1</text>
+  <text x="58" y="40" font-size="11" fill="#1f2a44" text-anchor="middle">#2</text>
+  <text x="96" y="40" font-size="11" fill="#1f2a44" text-anchor="middle">#3</text>
+  <text x="172" y="40" font-size="11" fill="#1f2a44" text-anchor="middle">#4</text>
+  <text x="210" y="40" font-size="11" fill="#1f2a44" text-anchor="middle">#5</text>
+  <text x="324" y="40" font-size="11" fill="#1f2a44" text-anchor="middle">#6</text>
+  <text x="58" y="128" font-size="12" fill="#1d6fd1" text-anchor="middle">key 06-30</text>
+  <text x="191" y="128" font-size="12" fill="#1f2a44" text-anchor="middle">key 07-01</text>
+  <text x="324" y="128" font-size="12" fill="#1f2a44" text-anchor="middle">key 07-03</text>
+  <text x="180" y="152" font-size="11" fill="#6c7a93" text-anchor="middle">#n = row number; day minus #n = the key</text>
+</svg>
+```
+:::
+
+::: context modifier-text Other ways to build the key
+The key only has to be the same inside an island and different between islands. It does not have to be a date. `julianday(day) - ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY day)` gives a plain number instead, and works equally well: for user 1's first streak it is 2460491.5 on all three days. Other databases have their own date arithmetic, such as `day - ROW_NUMBER() OVER (…) * INTERVAL '1 day'` in PostgreSQL. The idea travels unchanged: something that goes up by 1 per step, minus the row number.
+:::
+
+::: context outage What an outage is
+An **outage** is a stretch of time when a service or system is down: a website that will not load, a power cut, a lost radio link to a spacecraft. Operations teams track "days since the last outage" and "the longest run of months without one", and both are islands questions over a table of daily or monthly status. The reverse question, finding the gaps themselves, uses the same key: the missing days between two islands are the outage.
+:::
 --- task
-Return every login streak: `user_id`, `streak_start`, `streak_end` and `days` (its length). A single day on its own is a streak of 1. Sort by user, then start.
+Return every login streak in `logins`, with four columns: `user_id`, `streak_start` (its first day), `streak_end` (its last day) and `days` (its length in days). A single day on its own is a streak of 1. Remember that a user can log in more than once on the same day. Sort by `user_id`, then `streak_start`.
 --- starter
 SELECT user_id, MIN(day) AS streak_start, MAX(day) AS streak_end, COUNT(*) AS days
 FROM logins
@@ -247,11 +765,11 @@ FROM keyed
 GROUP BY user_id, grp
 ORDER BY user_id, streak_start;
 --- hint
-First reduce to one row per user per day with `SELECT DISTINCT user_id, day`.
+First reduce to one row per user per day, in a CTE: `SELECT DISTINCT user_id, day FROM logins`.
 --- hint
-The island key: `date(day, '-' || ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY day) || ' days')`. Consecutive days share it.
+In a second CTE, add the island key: `date(day, '-' || ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY day) || ' days') AS grp`. Consecutive days share it.
 --- hint
-Group by `user_id` and the key; `MIN`, `MAX` and `COUNT(*)` give each streak.
+Finally, `GROUP BY user_id, grp`, with `MIN(day) AS streak_start`, `MAX(day) AS streak_end` and `COUNT(*) AS days`, then `ORDER BY user_id, streak_start`.
 --- check result | Six streaks; the double login on 2 July does not split user 1's first streak
 ordered
 [[1, "2024-07-01", "2024-07-03", 3], [1, "2024-07-05", "2024-07-06", 2], [1, "2024-07-09", "2024-07-09", 1], [2, "2024-07-01", "2024-07-01", 1], [2, "2024-07-03", "2024-07-06", 4], [3, "2024-07-10", "2024-07-10", 1]]
