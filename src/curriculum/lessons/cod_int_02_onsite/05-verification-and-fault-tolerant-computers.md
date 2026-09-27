@@ -1,7 +1,7 @@
 ---
 id: l05-verification-and-fault-tolerant-computers
 title: Verifying flight software and building a computer that survives faults
-minutes: 22
+minutes: 18
 covers:
   - Engineering system design: GNC simulation infrastructure for a constellation; a telemetry pipeline for six thousand satellites; how you would verify this flight software; how you would architect a fault-tolerant flight computer
   - Knowing the SpaceX answer: three dual-core x86 flight strings, per-string core cross-check, PowerPC actuator controllers judging three commands
