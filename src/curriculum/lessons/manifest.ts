@@ -4299,6 +4299,25 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Data quality: gap detection, out-of-order packets, vehicle-to-ground clock skew, duplicate frames"
       ],
       "file": "cod_sql_04_schema/12-upserts-and-data-quality.md"
+    },
+    {
+      "id": "l13-the-telemetry-lifecycle",
+      "title": "From vehicle to report: the telemetry lifecycle",
+      "minutes": 24,
+      "covers": [
+        "The telemetry lifecycle: vehicle, downlink, decommutation, time-series store, analysis, report",
+        "Time-series stores: InfluxDB, TimescaleDB, ClickHouse; the reported Starlink stack of Kafka, HBase, HDFS on Docker and Kubernetes"
+      ],
+      "file": "cod_sql_04_schema/13-the-telemetry-lifecycle.md"
+    },
+    {
+      "id": "l14-export-control-retention-reproducibility",
+      "title": "Export control, retention and reproducible plots",
+      "minutes": 26,
+      "covers": [
+        "Export control and retention for flight data; reproducibility of every published plot"
+      ],
+      "file": "cod_sql_04_schema/14-export-control-retention-reproducibility.md"
     }
   ],
   "t0_m00_basecamp": [
@@ -10667,14 +10686,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_sql_04_schema": {
-    "covered": 15,
+    "covered": 18,
     "total": 18,
-    "complete": false,
-    "missing": [
-      "The telemetry lifecycle: vehicle, downlink, decommutation, time-series store, analysis, report",
-      "Time-series stores: InfluxDB, TimescaleDB, ClickHouse; the reported Starlink stack of Kafka, HBase, HDFS on Docker and Kubernetes",
-      "Export control and retention for flight data; reproducibility of every published plot"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_cad_01_drawings": {
     "covered": 15,

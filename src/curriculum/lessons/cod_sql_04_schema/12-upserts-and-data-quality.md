@@ -409,7 +409,7 @@ WHERE vehicle_ts < latest_before;
    5 | 2026-03-01 05:00:08+00 | 2026-03-01 05:00:09.93+00 | GS-A    | 2026-03-01 05:00:09+00
 ```
 
-Packet 6 (05:00:09) was already in when packet 5 (05:00:08) arrived. The rule: **analyse in vehicle time, diagnose the link in arrival time.**
+Packet 6 (05:00:09) was already in when packet 5 (05:00:08) arrived. The rule: **analyze in vehicle time, diagnose the link in arrival time.**
 
 ::: key Two clocks on every packet
 Vehicle time (`vehicle_ts`) is when the sample was taken; arrival time (`rx_ts`) is when the ground received it. Sort by vehicle time for analysis. A packet is out of order when an earlier arrival already carried a later vehicle time. Sequence steps are computed modulo the counter size, $(s_i - s_{i-1} + 2^{14}) \bmod 2^{14}$ for a 14-bit count: 1 is normal, 0 is a duplicate, more than 1 is a gap.
@@ -549,10 +549,10 @@ The query sorts by arrival (or insertion) order, and late packets — playback o
 | Counter wraparound | 14-bit count: step $= (s_i - s_{i-1} + 16384) \bmod 16384$ |
 | Duplicates | group by key, `HAVING count(*) > 1`; distinct values > 1 means conflicting |
 | Gaps | `LAG` on seq or time; wait a grace period before calling a gap final |
-| Out of order | earlier arrival already had later vehicle time; analyse in vehicle time |
+| Out of order | earlier arrival already had later vehicle time; analyze in vehicle time |
 | Clock skew | offset $= t_{rx} - t_{vehicle} - r/c$; fit offset and drift; 18 s means GPS vs UTC |
 
-Next lesson steps back to see the whole road these packets travel — from the sensor on the spacecraft, through packetisation, ground stations and decommutation, to a time-series store and a report — and the systems real fleets use to carry them.
+Next lesson steps back to see the whole road these packets travel — from the sensor on the spacecraft, through packetization, ground stations and decommutation, to a time-series store and a report — and the systems real fleets use to carry them.
 
 ::: context station-overlap Why two antennas hear the same pass
 A low-orbit satellite is visible from a ground station for only about ten minutes per pass, and only above a few degrees of elevation. Ground networks place stations so their circles of view overlap, which gives a second chance when one antenna has rain fade, a hardware fault or a network outage. The price is duplicate data from the overlap, which is exactly what idempotent ingest absorbs.
