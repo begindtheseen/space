@@ -763,7 +763,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-the-ninety-second-narrative",
       "title": "The ninety-second background narrative",
-      "minutes": 21,
+      "minutes": 22,
       "covers": [
         "the 90-second background narrative and how to end it on a specific role family"
       ],
@@ -790,7 +790,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-resume-depth",
       "title": "Three questions deep on every line",
-      "minutes": 27,
+      "minutes": 24,
       "covers": [
         "resume depth: expect to be asked to go deeper on any line you wrote"
       ],
@@ -826,7 +826,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-frequency-domain-out-loud",
       "title": "Phase margin, explained out loud",
-      "minutes": 23,
+      "minutes": 22,
       "covers": [
         "reported topics: PD control, orbit determination, frequency-domain analysis"
       ],
@@ -835,7 +835,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-orbit-determination-out-loud",
       "title": "Orbit determination, out loud",
-      "minutes": 27,
+      "minutes": 24,
       "covers": [
         "reported topics: PD control, orbit determination, frequency-domain analysis"
       ],
@@ -854,7 +854,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-questions-and-follow-up",
       "title": "Questions to ask, and what happens after",
-      "minutes": 28,
+      "minutes": 24,
       "covers": [
         "questions to ask the interviewing engineer",
         "follow-up etiquette and timelines"
@@ -866,7 +866,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-the-format-and-the-four-axes",
       "title": "The format, and what the panel is actually scoring",
-      "minutes": 18,
+      "minutes": 20,
       "covers": [
         "the format: submit roughly five topics, they choose one, 10 to 20 minutes to a panel of 5 to 10 engineers, then extensive Q and A",
         "the four evaluation axes: technical depth, communication clarity, simplicity of design approach, and defending engineering decisions under direct questioning"
@@ -876,7 +876,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-choosing-the-five",
       "title": "Choosing five topics you would be content to be handed",
-      "minutes": 19,
+      "minutes": 20,
       "covers": [
         "choosing five topics so that every one is defensible and each shows a different competency",
         "the trap of listing a project you cannot defend in depth"
@@ -886,7 +886,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-ip-and-export-hygiene",
       "title": "What is yours to present, and what is not",
-      "minutes": 18,
+      "minutes": 20,
       "covers": [
         "intellectual property and export-control hygiene about a previous employer’s work"
       ],
@@ -895,7 +895,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-talk-structure-and-the-clock",
       "title": "Seven parts, and what each one gets of the clock",
-      "minutes": 20,
+      "minutes": 22,
       "covers": [
         "talk structure: problem, why it was hard, approach, the key decision and the alternatives rejected, verification, result, what you would do differently"
       ],
@@ -904,7 +904,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-assertion-evidence-slides",
       "title": "Assertion-evidence: the headline makes the claim",
-      "minutes": 17,
+      "minutes": 19,
       "covers": [
         "assertion-evidence slide design: a sentence headline that states the claim, a figure that proves it, no bullet dumps"
       ],
@@ -913,7 +913,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-slide-count-and-the-carrying-diagram",
       "title": "How many slides, and the one diagram that carries the talk",
-      "minutes": 20,
+      "minutes": 22,
       "covers": [
         "how many slides for 10 to 20 minutes, and why fewer is safer"
       ],
@@ -922,7 +922,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-the-backup-appendix",
       "title": "The appendix that makes a hard question look expected",
-      "minutes": 16,
+      "minutes": 20,
       "covers": [
         "the backup-slide appendix for anticipated questions"
       ],
@@ -931,7 +931,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-the-room-of-eight",
       "title": "A room of eight: address the asker, return to the room",
-      "minutes": 18,
+      "minutes": 20,
       "covers": [
         "presenting to a panel of 5 to 10: address the asker, then return to the room"
       ],
@@ -949,7 +949,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-saying-i-do-not-know",
       "title": "I do not know — and here is how I would find out",
-      "minutes": 19,
+      "minutes": 22,
       "covers": [
         "saying I do not know, here is how I would find out"
       ],
@@ -2437,6 +2437,24 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "RTOS landscape: FreeRTOS, RTEMS, VxWorks, Linux PREEMPT_RT"
       ],
       "file": "cod_cpp_07_concurrency/12-priority-inversion-and-rtos.md"
+    },
+    {
+      "id": "l13-linux-real-time-setup",
+      "title": "Setting up Linux for a real-time loop",
+      "minutes": 26,
+      "covers": [
+        "sched_setscheduler, SCHED_FIFO, CPU pinning, mlockall"
+      ],
+      "file": "cod_cpp_07_concurrency/13-linux-real-time-setup.md"
+    },
+    {
+      "id": "l14-triple-redundancy-case-study",
+      "title": "Case study: three flight computers and a vote",
+      "minutes": 21,
+      "covers": [
+        "The SpaceX triple-redundancy architecture as a case study"
+      ],
+      "file": "cod_cpp_07_concurrency/14-triple-redundancy-case-study.md"
     }
   ],
   "cod_cpp_08_realtime": [
@@ -11485,13 +11503,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_cpp_07_concurrency": {
-    "covered": 15,
+    "covered": 17,
     "total": 17,
-    "complete": false,
-    "missing": [
-      "sched_setscheduler, SCHED_FIFO, CPU pinning, mlockall",
-      "The SpaceX triple-redundancy architecture as a case study"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_cpp_08_realtime": {
     "covered": 15,
