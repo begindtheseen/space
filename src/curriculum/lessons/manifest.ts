@@ -7989,7 +7989,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-the-error-state-kalman-filter",
       "title": "The error-state (indirect) Kalman filter",
-      "minutes": 26,
+      "minutes": 18,
       "covers": [
         "The error-state (indirect) Kalman filter: why the error state is small and nearly linear, injection and reset, the Jacobian of the reset"
       ],
@@ -8007,7 +8007,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-invariant-and-on-manifold-ekf",
       "title": "On-manifold and invariant EKF, equivariant filtering",
-      "minutes": 20,
+      "minutes": 19,
       "covers": [
         "On-manifold and invariant EKF (IEKF), equivariant filtering"
       ],
@@ -8016,7 +8016,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l13-consider-states-and-bias-augmentation",
       "title": "Consider states and bias augmentation",
-      "minutes": 24,
+      "minutes": 20,
       "covers": [
         "Consider states and bias augmentation"
       ],
@@ -8025,7 +8025,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l14-multiple-model-and-imm-filters",
       "title": "Multiple-model and IMM filters",
-      "minutes": 26,
+      "minutes": 23,
       "covers": [
         "Multiple-model and IMM filters"
       ],
@@ -8045,7 +8045,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-imu-error-models",
       "title": "IMU error models",
-      "minutes": 24,
+      "minutes": 21,
       "covers": [
         "IMU error models: turn-on and in-run bias, scale factor, non-orthogonality and misalignment, g-sensitivity, quantization"
       ],
@@ -8054,7 +8054,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-random-walk-bias-instability-rate-random-walk",
       "title": "Random walk, bias instability, and rate random walk",
-      "minutes": 17,
+      "minutes": 18,
       "covers": [
         "Angle random walk, velocity random walk, rate random walk, and bias instability"
       ],
@@ -8063,7 +8063,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-allan-deviation-temperature-and-calibration",
       "title": "The Allan deviation, temperature effects, and calibration",
-      "minutes": 20,
+      "minutes": 22,
       "covers": [
         "Allan variance for IMU characterization; temperature effects and calibration"
       ],
@@ -8072,7 +8072,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-strapdown-mechanization-eci-ecef-ned",
       "title": "Strapdown mechanization in ECI, ECEF, and the local-level frame",
-      "minutes": 16,
+      "minutes": 20,
       "covers": [
         "Strapdown mechanization in ECI, ECEF and local-level (NED) frames"
       ],
@@ -8090,7 +8090,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-coning-sculling-multi-sample-algorithms",
       "title": "Coning and sculling corrections",
-      "minutes": 17,
+      "minutes": 25,
       "covers": [
         "Coning and sculling corrections and multi-sample algorithms"
       ],

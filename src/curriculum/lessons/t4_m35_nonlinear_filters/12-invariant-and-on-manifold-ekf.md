@@ -1,7 +1,7 @@
 ---
 id: l12-invariant-and-on-manifold-ekf
 title: On-manifold and invariant EKF, equivariant filtering
-minutes: 22
+minutes: 19
 covers:
   - On-manifold and invariant EKF (IEKF), equivariant filtering
 ---
@@ -52,7 +52,7 @@ $$
 \boldsymbol\eta_L = \mathbf X_{\text{nom}}^{-1}\mathbf X_{\text{true}} \quad(\text{left-invariant}), \qquad \boldsymbol\eta_R = \mathbf X_{\text{true}}\mathbf X_{\text{nom}}^{-1} \quad(\text{right-invariant}).
 $$
 
-The left-invariant one is unchanged if you multiply both states on the left by the same element; the right-invariant one, on the right. Our body-frame error, $\mathbf X_{\text{true}} = \mathbf X_{\text{nom}}\exp(\boldsymbol\delta\xi^\wedge)$, gives $\mathbf X_{\text{nom}}^{-1}\mathbf X_{\text{true}} = \exp(\boldsymbol\delta\xi^\wedge)$: it is the **left-invariant** error, even though the correction multiplies on the *right*. That **[[naming trap|left-right-naming]]** catches many people.
+The left-invariant one is unchanged if you multiply both states on the left by the same element; the right-invariant one, on the right. Our body-frame error, $\mathbf X_{\text{true}} = \mathbf X_{\text{nom}}\exp(\boldsymbol\delta\xi^\wedge)$, gives $\mathbf X_{\text{nom}}^{-1}\mathbf X_{\text{true}} = \exp(\boldsymbol\delta\xi^\wedge)$: it is the **left-invariant** error, even though the correction multiplies on the *right*. That **[[naming trap|left-right-naming]]** catches many people. For a group-affine system both invariant errors propagate cleanly; which one to use is decided by the kind of measurement, as a Check yourself question below explores.
 
 ::: key Invariant EKF, one line
 Define the error on the Lie group (left- or right-invariant). For group-affine dynamics the error propagation is log-linear and independent of the estimate, which removes a major source of EKF inconsistency.
@@ -66,7 +66,7 @@ $$
 
 with $\mathbf F$ a function of the inputs $\mathbf u$ only, never of the estimate $\hat{\mathbf X}$. Barrau and Bonnabel showed more: without noise, this linear equation predicts the *true, nonlinear* error exactly, not only to first order. The propagated Jacobian is exact, even when the estimate is far off.
 
-The previous lesson's $\mathbf F$ already had this shape. For attitude, the error dynamics were $\boldsymbol\delta\dot\theta = -\boldsymbol\omega\times\boldsymbol\delta\theta$: only the gyro rate appears, never $\mathbf q_{\text{nom}}$. The MEKF is the $SO(3)$ special case. The IEKF is the discovery that the same estimate-independence holds for much bigger states — including the extended pose of a full inertial navigator — whenever the system is group-affine and the matching invariant error is used.
+The previous lesson's $\mathbf F$ already had this shape. For attitude, the error dynamics were $\boldsymbol\delta\dot\theta = -\boldsymbol\omega\times\boldsymbol\delta\theta$: only the gyro rate appears, never $\mathbf q_{\text{nom}}$. The MEKF is the $SO(3)$ special case. The IEKF is the discovery that the same estimate-independence holds for much bigger states — including the extended pose of a full inertial navigator — whenever the system is group-affine and an invariant error is used.
 
 ::: note Why attitude kinematics are group-affine
 A system $\dot{\mathbf X} = f_u(\mathbf X)$ on a matrix group is **group-affine** when, for any two elements $\mathbf A$ and $\mathbf B$,
@@ -102,7 +102,7 @@ Check the claim with numbers, not just algebra. Spin at a fixed rate $\boldsymbo
 | $(170,20,-60)^\circ$ | $6.5\times10^{-11}$ |
 | $(-150,80,10)^\circ$ | $1.2\times10^{-10}$ |
 
-The four Jacobians agree to about ten decimal places — the size of finite-difference rounding. It is the same matrix at every attitude. It also matches the exact answer $\exp(-\operatorname{skew}(\boldsymbol\omega)\Delta t)$ to $3\times10^{-10}$. The first-order shortcut $\mathbf I-\operatorname{skew}(\boldsymbol\omega)\Delta t$ is off by $5.4\times10^{-4}$, about the size of the next Taylor term, $\tfrac12(\|\boldsymbol\omega\|\Delta t)^2 = \tfrac12(0.0350)^2 = 6.1\times 10^{-4}$.
+The four Jacobians agree to about ten decimal places — the size of finite-difference rounding. It is the same matrix at every attitude. It also matches the exact answer $\exp(-\operatorname{skew}(\boldsymbol\omega)\Delta t)$ to $3\times10^{-10}$. The first-order shortcut $\mathbf I-\operatorname{skew}(\boldsymbol\omega)\Delta t$ is off by $5.4\times10^{-4}$, about the size of the next Taylor term, $\tfrac12(\|\boldsymbol\omega\|\Delta t)^2 = \tfrac12(0.0346)^2 = 6.0\times 10^{-4}$.
 
 Sanity check: nothing in the recipe used the nominal attitude except to build the test, so a filter using this Jacobian cannot be misled by a wrong attitude estimate during propagation.
 :::
@@ -237,7 +237,7 @@ What makes a system "group-affine", and which part of the MEKF already showed th
 :::
 
 ::: answer
-A system is group-affine when its dynamics satisfy $f_u(\mathbf A\mathbf B) = f_u(\mathbf A)\mathbf B + \mathbf A f_u(\mathbf B) - \mathbf A f_u(\mathbf I)\mathbf B$. The payoff is that the matching invariant error obeys $\dot{\boldsymbol\delta\xi}=\mathbf F(\mathbf u)\boldsymbol\delta\xi$, which depends only on the inputs $\mathbf u$ and never on the estimated state. The MEKF's attitude error dynamics, $\boldsymbol\delta\dot\theta = -\boldsymbol\omega_c\times\boldsymbol\delta\theta$, already had this form: only the gyro rate appears, and $\mathbf q_{\text{nom}}$ appears nowhere.
+A system is group-affine when its dynamics satisfy $f_u(\mathbf A\mathbf B) = f_u(\mathbf A)\mathbf B + \mathbf A f_u(\mathbf B) - \mathbf A f_u(\mathbf I)\mathbf B$. The payoff is that the invariant errors obey $\dot{\boldsymbol\delta\xi}=\mathbf F(\mathbf u)\boldsymbol\delta\xi$, which depends only on the inputs $\mathbf u$ and never on the estimated state. The MEKF's attitude error dynamics, $\boldsymbol\delta\dot\theta = -\boldsymbol\omega_c\times\boldsymbol\delta\theta$, already had this form: only the gyro rate appears, and $\mathbf q_{\text{nom}}$ appears nowhere.
 :::
 
 ::: check
@@ -257,11 +257,11 @@ Estimate-independence fixes one specific mechanism: the propagated Jacobian no l
 :::
 
 ::: check
-Suppose a system is group-affine and its nice error is the *right*-invariant one, $\mathbf X_{\text{true}}\mathbf X_{\text{nom}}^{-1}$. A filter is built with the left-invariant (body-frame) error anyway. What would you expect?
+For a group-affine system, both invariant errors have input-only dynamics. So what should decide between the left-invariant error $\mathbf X_{\text{nom}}^{-1}\mathbf X_{\text{true}}$ and the right-invariant one $\mathbf X_{\text{true}}\mathbf X_{\text{nom}}^{-1}$?
 :::
 
 ::: answer
-It would still be a valid multiplicative error-state filter: injection, reset and the rest all still work. But it would lose the property this lesson is about. Group-affine systems guarantee input-only error dynamics only for the invariant error that matches their structure; with the other one, the error dynamics generally pick up a dependence on the state. For inertial navigation with the world-frame gravity and position terms, for example, it is the right-invariant error on the extended pose that gives the clean result. The filter would not look obviously broken — it would simply give up the consistency and convergence benefits that motivated the design.
+The measurements. Barrau and Bonnabel showed that group-affine dynamics make *both* invariant errors log-linear, so propagation does not decide it. The update does. A measurement of the form $\mathbf Y = \mathbf X\mathbf b$ — for example a GNSS position, which picks the position column out of the extended pose — gives an update Jacobian that is constant when you use the left-invariant error. A measurement of the form $\mathbf Y = \mathbf X^{-1}\mathbf b$ — the body-frame reading of a known world direction, like a magnetometer or sun sensor — gives a constant Jacobian with the right-invariant error. Pick the other error and the filter still works, but its update Jacobian depends on the estimate again. That is exactly what happens in the MEKF: it uses the left-invariant (body-frame) error with vector sensors, and its $\mathbf H = \operatorname{skew}(\hat{\mathbf v})$ contains the predicted vector $\hat{\mathbf v}$, which comes from the estimate.
 :::
 
 ::: check
@@ -325,9 +325,9 @@ The exponential map takes a straight step in the flat algebra and wraps it onto 
   <circle cx="150" cy="100" r="60" fill="#fff" stroke="#1f2a44" stroke-width="2"/>
   <line x1="210" y1="20" x2="210" y2="170" stroke="#6c7a93" stroke-width="1.5"/>
   <line x1="210" y1="100" x2="210" y2="37" stroke="#1d6fd1" stroke-width="4"/>
-  <path d="M210,100 A60,60 0 0 0 182.4,49.5" fill="none" stroke="#b4232c" stroke-width="4"/>
+  <path d="M210,100 A60,60 0 0 0 179.9,48.0" fill="none" stroke="#b4232c" stroke-width="4"/>
   <circle cx="210" cy="100" r="4" fill="#1f2a44"/>
-  <circle cx="182.4" cy="49.5" r="4" fill="#b4232c"/>
+  <circle cx="179.9" cy="48.0" r="4" fill="#b4232c"/>
   <text x="218" y="104" font-size="12" fill="#1f2a44">identity</text>
   <text x="218" y="46" font-size="12" fill="#1d6fd1">step θ in the algebra</text>
   <text x="70" y="36" font-size="12" fill="#b4232c">exp: θ around the circle</text>

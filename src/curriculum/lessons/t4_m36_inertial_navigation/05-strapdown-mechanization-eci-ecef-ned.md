@@ -1,30 +1,76 @@
 ---
 id: l05-strapdown-mechanization-eci-ecef-ned
 title: Strapdown mechanization in ECI, ECEF, and the local-level frame
-minutes: 16
+minutes: 20
 covers:
   - "Strapdown mechanization in ECI, ECEF and local-level (NED) frames"
 ---
 
-A strapdown mechanization is the software that turns a stream of corrected gyro and accelerometer samples into a running estimate of attitude, velocity and position. It is a loop, not a formula: the current attitude estimate rotates the newly measured specific force into a navigation frame, gravity and any Coriolis-type terms are added, the result is integrated once into velocity and once more into position, and the updated velocity feeds back into the attitude update for the next step through the frame's own rotation rate. Every strapdown navigator ever flown is this loop, in one of a small number of reference frames, and the frame you pick changes the equations, the complexity, and what the output looks like when you print it — without changing the physics underneath.
+Close your eyes in the back seat of a car and try to keep track of where you are. You feel the car speed up, slow down and turn. If you remember which way you are facing, you can add up every push into a speed, and add up the speed into a distance travelled. That is dead reckoning with your inner ear, and it is exactly what an inertial navigator does — except that it does it hundreds of times a second, with instruments instead of an inner ear, and with no guessing.
 
-This lesson lays out the three frame choices this module works with — Earth-centred inertial (ECI), Earth-centred Earth-fixed (ECEF), and the local-level or north-east-down (NED) frame — and derives the mechanization equations' frame-dependent parts: the rotation rate each frame carries relative to inertial space, and, for the local-level frame, the geodesy that turns a velocity into a latitude and longitude. The rotating-frames module already built every tool this needs — the transport theorem, the definitions of ECI and ECEF, the construction of NED — so this lesson uses that machinery rather than rebuilding it, and spends its effort on what is specific to inertial navigation: which frame's own rotation shows up as an apparent force, and what that costs.
+A **strapdown mechanization** is the software that does this. Its inputs are the corrected gyro and accelerometer samples from the previous lessons. Its outputs are a running estimate of **attitude** (which way the vehicle faces), **velocity** and **position**. "Strapdown" means the sensors are bolted, or strapped, straight to the vehicle's body and turn with it, and "mechanization" is the old name for the equations that turn their readings into navigation.
+
+It is a loop, not a formula. Every strapdown navigator ever flown runs the same loop, in one of a few **reference frames** — a set of three axes you measure everything against. The frame you choose changes the equations, how hard they are, and what the answer looks like when you print it. It does not change the physics. This lesson lays out the three frames this module uses and works out what each one costs. The next lesson turns them into an actual step-by-step update.
+
+## The loop
+
+Here is one pass of the loop, in words:
+
+1. **Attitude.** Use the gyro reading to update which way the body faces relative to the navigation frame.
+2. **Rotate.** Use that attitude to turn the accelerometer's reading, the **specific force** $\mathbf f$ (everything pushing on the vehicle except gravity), from body axes into navigation axes.
+3. **Add what the accelerometer cannot feel.** Add gravity from a computer model. Add any extra terms the navigation frame's own rotation creates.
+4. **Integrate twice.** The sum is the rate of change of velocity. Step it once into velocity, and velocity once more into position.
+5. **Feed back.** The new position and velocity tell you how the navigation frame itself is turning, which the next attitude update needs.
+
+A word on notation, which this module uses throughout. A superscript says which axes a vector is written in: $\mathbf v^n$ is read "v in n", the velocity written in navigation axes. A pair of subscripts on a rate says what turns relative to what: $\boldsymbol\omega_{ie}$ is read "omega i e", the rate of the Earth frame $e$ relative to the inertial frame $i$. So $\boldsymbol\omega_{ie}^n$ is "omega i e, in n" — Earth's spin, written in navigation axes.
 
 ## Three frames, one transport theorem
 
-Recall the tool. For any vector $\mathbf x$ and two frames related by angular rate $\boldsymbol\omega$, the rotating-frames module's transport theorem gives
+Stand on a spinning merry-go-round and roll a ball straight out from the center. Someone on the ground sees it travel in a straight line. You, turning with the ride, see it curve away. Nothing pushed the ball sideways; your frame turned under it. Every rotating frame comes with this kind of bookkeeping.
+
+The rotating-frames module wrote that bookkeeping as the **transport theorem**. For any vector $\mathbf x$ and two frames, with frame $r$ turning at angular rate $\boldsymbol\omega_{ir}$ relative to frame $i$:
 
 $$
 \left.\frac{d\mathbf x}{dt}\right|_{\text{frame }i} = \left.\frac{d\mathbf x}{dt}\right|_{\text{frame }r} + \boldsymbol\omega_{ir}\times\mathbf x .
 $$
 
-Applied to position and then to velocity, this is the entire content of a strapdown mechanization's velocity equation: whatever frame you differentiate in that is not itself inertial picks up an extra $\boldsymbol\omega\times(\cdot)$ term the accelerometer never measures, because the accelerometer measures specific force in a frame that does not care about your choice of navigation frame at all. The three frames this module uses differ only in what $\boldsymbol\omega$ is.
+In words: the rate of change you see from frame $i$ equals the rate you see from the turning frame $r$, plus a cross-product term from the turning itself. Apply this to position, and then to velocity, and you have the whole content of a mechanization's velocity equation. Any frame that is not itself inertial picks up an extra $\boldsymbol\omega\times(\cdot)$ term, and the accelerometer never measures it, because the accelerometer does not care which navigation frame you chose. The three frames differ only in what $\boldsymbol\omega$ is.
 
-**ECI**, the J2000/GCRF frame the rotating-frames module defined, does not rotate relative to itself by construction, so a velocity resolved in ECI needs no such correction: $\dot{\mathbf v}^i = \mathbf f^i + \mathbf g_{grav}^i$, specific force rotated into ECI plus gravitation, full stop. This is the frame Newton's law was written in back in the sensor-physics lesson, and it is why guidance during ascent and orbit insertion is very often mechanized here — the equations of motion are literally the simplest possible.
+### ECI: nothing turns
 
-**ECEF** rotates with the Earth at $\boldsymbol\omega_{ie}$, so a velocity resolved in ECEF, which is what a GPS receiver reports and what a ground track is naturally described in, picks up one correction term when you differentiate: an apparent Coriolis acceleration $2\boldsymbol\omega_{ie}\times\mathbf v^e$ plus a centrifugal term that the rotating-frames module showed folds into the gravitation to make **gravity** $\mathbf g$ — the quantity the sensor-physics lesson already used. This is the natural frame for anything whose job is to answer "where is this, relative to the ground."
+The **Earth-centered inertial** frame (**[[ECI|eci-j2000]]**) has its origin at Earth's center and axes pointed at fixed directions among the stars. It does not rotate, by construction, so velocity in ECI needs no correction at all:
 
-**NED** goes one step further. It does not merely rotate with the Earth; it also tips as the vehicle moves, since "north" and "down" are defined relative to the vehicle's own changing position on a curved surface. Its rotation rate relative to inertial space is $\boldsymbol\omega_{in}^n = \boldsymbol\omega_{ie}^n + \boldsymbol\omega_{en}^n$: Earth rate, resolved in NED exactly as the sensor-physics lesson derived it, plus a second term, the **transport rate** $\boldsymbol\omega_{en}$, the rate at which NED rotates relative to ECEF because the vehicle is moving over a curved Earth. NED is the frame that outputs latitude, longitude and height directly and reads naturally to a human, at the cost of carrying this extra term — and, as the last section of this lesson shows, at the cost of becoming impractical at high enough speed.
+$$
+\dot{\mathbf v}^i = \mathbf f^i + \mathbf g_{grav}^i .
+$$
+
+Read $\dot{\mathbf v}^i$ as "v dot in i", the rate of change of velocity. It is specific force turned into ECI, plus **gravitation** $\mathbf g_{grav}$ — the pure pull of Earth's mass. That is Newton's law in its plainest form. It is why guidance during ascent and orbit insertion is very often mechanized in ECI: the equations of motion cannot be simpler.
+
+### ECEF: turning with the Earth
+
+The **Earth-centered Earth-fixed** frame (**ECEF**) is glued to the planet and spins with it, at Earth rate $\boldsymbol\omega_{ie}$. A GPS receiver reports position and velocity in ECEF, and a ground track is naturally described in it. Differentiating in this spinning frame adds two terms. One is the **[[Coriolis|coriolis]]** acceleration, $-2\boldsymbol\omega_{ie}\times\mathbf v^e$: the merry-go-round's sideways curve. The other is a centrifugal term, which the rotating-frames module showed folds into gravitation to make **gravity** $\mathbf g$ — the direction a plumb line actually hangs.
+
+$$
+\dot{\mathbf v}^e = \mathbf f^e - 2\boldsymbol\omega_{ie}\times\mathbf v^e + \mathbf g^e .
+$$
+
+ECEF is the natural frame for any question that starts "where is this, relative to the ground?"
+
+### NED: turning with the Earth and with you
+
+The **north-east-down** frame (**NED**), also called the **local-level** frame, goes one step further. Its axes point north, east and straight down *at the vehicle's current position*. So it does not only spin with the Earth — it also tips as the vehicle moves, because "north" and "down" change direction as you travel over a curved surface. Its rate relative to inertial space has two parts:
+
+$$
+\boldsymbol\omega_{in}^n = \boldsymbol\omega_{ie}^n + \boldsymbol\omega_{en}^n .
+$$
+
+The first is Earth rate, written in NED as the first lesson of this module derived it. The second is new: the **[[transport rate|transport-picture]]** $\boldsymbol\omega_{en}$, the rate at which NED turns relative to ECEF because the vehicle is moving over a curved Earth. The velocity equation picks it up:
+
+$$
+\dot{\mathbf v}^n = \mathbf f^n - (2\boldsymbol\omega_{ie}^n + \boldsymbol\omega_{en}^n)\times\mathbf v^n + \mathbf g^n .
+$$
+
+Notice that Earth rate appears **[[twice|why-twice]]** but the transport rate only once. NED earns its extra term by handing out latitude, longitude and height directly, in a form any person can read. As the last sections show, it also becomes impractical at very high speed.
 
 ::: key The velocity equation's shape, frame by frame
 $\dot{\mathbf v}^i = \mathbf f^i+\mathbf g_{grav}^i$ in ECI (no rotation term); $\dot{\mathbf v}^e = \mathbf f^e - 2\boldsymbol\omega_{ie}\times\mathbf v^e+\mathbf g^e$ in ECEF (Earth rate only); $\dot{\mathbf v}^n = \mathbf f^n-(2\boldsymbol\omega_{ie}^n+\boldsymbol\omega_{en}^n)\times\mathbf v^n+\mathbf g^n$ in NED (Earth rate plus transport rate). Each extra term is the transport theorem's $\boldsymbol\omega\times\mathbf v$, paid for the convenience of that frame's output.
@@ -32,76 +78,135 @@ $\dot{\mathbf v}^i = \mathbf f^i+\mathbf g_{grav}^i$ in ECI (no rotation term); 
 
 ## WGS84 geodesy: the two radii of curvature
 
-The transport rate needs to know how fast latitude and longitude change for a given velocity, and that depends on the Earth's shape, not only its rotation. WGS84 models the Earth as an ellipsoid of revolution, semi-major axis $a = 6\,378\,137\,\mathrm m$ and eccentricity squared $e^2 = 6.694\,38\times10^{-3}$, and a vehicle moving north or east at geodetic latitude $\varphi$ sees two different local radii of curvature, because a meridian (a north-south slice) and a parallel (an east-west circle) are not the same shape.
+To find the transport rate, you need to know how fast latitude and longitude change for a given speed. That depends on Earth's shape, not only its spin.
 
-The **meridian radius of curvature** $R_M$ governs north-south motion: moving north at speed $v_N$ changes latitude at $\dot\varphi = v_N/(R_M+h)$. The **transverse** (or normal) **radius of curvature** $R_N$ governs east-west motion at a given height: $\dot\lambda = v_E/[(R_N+h)\cos\varphi]$, the $\cos\varphi$ because a parallel's actual radius shrinks toward the poles. Both come from the ellipse's curvature:
+Earth is not a ball. It bulges at the equator and is squashed at the poles, like a slightly sat-on beach ball. The **WGS84** model — the one GPS uses — describes it as an **[[ellipsoid|ellipsoid]]**: an ellipse spun about Earth's axis. Two numbers define it. The **semi-major axis** $a = 6\,378\,137\,\mathrm m$ is the equator's radius. The **eccentricity squared** $e^2 = 6.694\,38\times10^{-3}$ says how squashed the ellipse is ($e^2 = 0$ would be a perfect sphere).
+
+On a squashed surface, "how curved is the ground here?" has two answers: one going north-south and another going east-west. Each is a **radius of curvature** — the radius of the circle that best hugs the surface in that direction.
+
+- The **meridian radius of curvature** $R_M$ ("R sub M") governs north-south motion. A **meridian** is a north-south line, like a line of longitude. Moving north at speed $v_N$, at height $h$ above the ellipsoid, changes latitude at $\dot\varphi = v_N/(R_M+h)$.
+- The **transverse radius of curvature** $R_N$ ("R sub N", also called the normal radius) governs east-west motion: $\dot\lambda = v_E/[(R_N+h)\cos\varphi]$. The $\cos\varphi$ is there because a circle of constant latitude, a **parallel**, shrinks toward the poles.
+
+Here $\varphi$ ("phi") is the **[[geodetic latitude|geodetic-latitude]]** and $\lambda$ ("lambda") the longitude. Both radii come from the curvature of the ellipse:
 
 $$
 R_M = \frac{a(1-e^2)}{(1-e^2\sin^2\varphi)^{3/2}}, \qquad R_N = \frac{a}{\sqrt{1-e^2\sin^2\varphi}}.
 $$
 
-At the equator, $R_N = a$ exactly — the transverse radius there is the semi-major axis itself, since a slice through the equator is a circle of that radius — while $R_M = 6\,335\,439\,\mathrm m$, smaller, because the meridian ellipse curves more tightly at the equator than a circle of radius $a$ would. At the poles the two coincide, both equal to the **polar radius of curvature** $a^2/b = 6\,399\,594\,\mathrm m$ (with $b=a\sqrt{1-e^2}$ the semi-minor axis), since every direction through the pole is equivalent. Between the two, $R_M < R_N$ everywhere except at the poles, and the gap is not small: at $45^\circ$ latitude $R_M = 6\,367\,382\,\mathrm m$ against $R_N = 6\,388\,838\,\mathrm m$, a difference of $21.5\,\mathrm{km}$ — using a single mean Earth radius in place of both, a shortcut that shows up in more textbooks than it should, misstates a $250\,\mathrm{m/s}$ aircraft's latitude rate by several parts in ten thousand, enough to matter over a long flight.
+Check the ends. **At the equator**, $\sin\varphi = 0$, so $R_N = a$ exactly. A slice through the equator is a perfect circle of radius $a$. Meanwhile $R_M = a(1-e^2) = 6\,335\,439\,\mathrm m$, smaller, because the north-south ellipse curves more tightly there than a circle of radius $a$ would. **At the poles**, the two are equal, both $a^2/b = 6\,399\,594\,\mathrm m$, where $b = a\sqrt{1-e^2}$ is the **semi-minor axis**, the polar radius. Every direction through a pole looks the same, so they must agree.
 
-::: example Two radii, one platform, at Cape Canaveral
+Everywhere between, $R_M < R_N$, and the gap is not small. At $45^\circ$ latitude $R_M = 6\,367\,382\,\mathrm m$ and $R_N = 6\,388\,838\,\mathrm m$, a difference of $21.5\,\mathrm{km}$. Using one "mean Earth radius" for both — a shortcut in more textbooks than it should be — misstates an aircraft's latitude rate by several parts in ten thousand, which adds up over a long flight.
 
-At $\varphi = 28.5^\circ$, the latitude this module has used throughout, $R_M = 6\,349\,951\,\mathrm m$ and $R_N = 6\,383\,003\,\mathrm m$, a gap of $33.1\,\mathrm{km}$. A ground vehicle moving due north at $20\,\mathrm{m/s}$ changes latitude at $\dot\varphi = 20/6\,349\,951 = 3.150\times10^{-6}\,\mathrm{rad/s}$, or $0.650^\circ/\mathrm{h}$; the same vehicle moving due east at $20\,\mathrm{m/s}$ changes longitude at $\dot\lambda = 20/(6\,383\,003\times\cos28.5^\circ) = 3.565\times10^{-6}\,\mathrm{rad/s} = 0.735^\circ/\mathrm{h}$ — eastward motion advances longitude $13\%$ faster than the same speed northward advances latitude, entirely because $R_N > R_M$ and the parallel is already narrower than the meridian at this latitude before the speed difference is even considered.
+::: example Two radii at Cape Canaveral
+Take $\varphi = 28.5^\circ$, the latitude this module keeps using. The formulas give $R_M = 6\,349\,951\,\mathrm m$ and $R_N = 6\,383\,003\,\mathrm m$, a gap of $33.1\,\mathrm{km}$. Take $h = 0$.
+
+**Going north.** A ground vehicle drives due north at $20\,\mathrm{m/s}$. Its latitude changes at
+
+$$
+\dot\varphi = \frac{20}{6\,349\,951} = 3.150\times10^{-6}\,\mathrm{rad/s}.
+$$
+
+Multiply by $180/\pi$ for degrees and by $3600$ for per hour: $0.650^\circ/\mathrm h$.
+
+**Going east.** The same vehicle drives due east at $20\,\mathrm{m/s}$. Now divide by $R_N$ and by $\cos28.5^\circ = 0.8788$:
+
+$$
+\dot\lambda = \frac{20}{6\,383\,003\times0.8788} = 3.565\times10^{-6}\,\mathrm{rad/s},
+$$
+
+which is $0.735^\circ/\mathrm h$.
+
+Sanity check: the same speed moves longitude about $13\%$ faster than latitude. Most of that is the $\cos\varphi$ — a parallel at $28.5^\circ$ is a smaller circle than a meridian — and a little is $R_N$ being larger than $R_M$, which pulls the other way.
 :::
 
 ## The transport rate
 
-Two contributions to $\boldsymbol\omega_{en}^n$, and each has a clean geometric source. Longitude rate $\dot\lambda$ is a rotation about the Earth's polar axis, exactly the same kind of rotation Earth rate itself is — so it resolves into NED by the identical projection the sensor-physics lesson used for $\boldsymbol\omega_{ie}^n$, with $\dot\lambda$ standing in for $\omega_{ie}$: $\dot\lambda(\cos\varphi,\,0,\,-\sin\varphi)$. Latitude rate $\dot\varphi$ is different in kind: it tips the local vertical forward as you move north, a rotation about the local **east** axis, contributing $\dot\varphi\,(0,\,-1,\,0)$ — negative because increasing latitude rotates north toward up, which is a negative rotation about east by the right-hand rule. Add the two and substitute $\dot\varphi = v_N/(R_M+h)$, $\dot\lambda = v_E/[(R_N+h)\cos\varphi]$:
+Picture walking north across a huge ball. Your "down" always points toward the ball's center, so as you walk, your down arrow slowly swings. The NED frame is carried along with you and swings the same way. That swinging is the transport rate. It has two parts, and each has a clean geometric source.
+
+**Longitude rate.** Changing longitude is a turn about Earth's polar axis — the same kind of turn as Earth's spin. So it goes into NED axes by exactly the same projection as Earth rate, with $\dot\lambda$ in place of $\omega_{ie}$: $\dot\lambda\,(\cos\varphi,\ 0,\ -\sin\varphi)$.
+
+**Latitude rate.** Changing latitude is different. Moving north over the curve, your forward (north) axis keeps tipping downward, toward the ground ahead, as the surface curves away beneath you. That is a turn about the local **east** axis. By the **[[right-hand rule|right-hand-rule]]**, a positive turn about east would tip north *up*, so tipping north down is a negative turn: $\dot\varphi\,(0,\ -1,\ 0)$.
+
+Add the two parts, then substitute $\dot\varphi = v_N/(R_M+h)$ and $\dot\lambda = v_E/[(R_N+h)\cos\varphi]$. In the north entry, $\dot\lambda\cos\varphi$ becomes $v_E/(R_N+h)$; in the down entry, $\dot\lambda\sin\varphi$ becomes $v_E\tan\varphi/(R_N+h)$, since $\sin\varphi/\cos\varphi = \tan\varphi$:
 
 $$
 \boldsymbol\omega_{en}^n = \left(\frac{v_E}{R_N+h},\ -\frac{v_N}{R_M+h},\ -\frac{v_E\tan\varphi}{R_N+h}\right).
 $$
 
-Differentiating the NED-to-ECEF direction cosine matrix directly and extracting its instantaneous rotation rate confirms this to thirteen significant figures for an arbitrary test velocity — the derivation above is exact, not an approximation valid only for small rates.
+Is this exact, or only good for small rates? Differentiating the NED-to-ECEF rotation matrix numerically, for an arbitrary test velocity, and pulling out its rotation rate gives the same three numbers to within the rounding of the numerical derivative. It is exact.
 
-::: example When transport rate is negligible, and when it is not
+::: example When the transport rate is negligible, and when it is not
+Compare everything with Earth rate, $\omega_{ie} = 7.292\times10^{-5}\,\mathrm{rad/s}$, at $45^\circ$ latitude.
 
-At $45^\circ$ latitude, a ship moving at $5\,\mathrm{m/s}$ ($\approx10\,\mathrm{kn}$) has $|\boldsymbol\omega_{en}| = 7.85\times10^{-7}\,\mathrm{rad/s}$, about $1.1\%$ of Earth rate $\omega_{ie}=7.292\times10^{-5}\,\mathrm{rad/s}$ — safely ignorable for anything but a strategic-grade system. An aircraft flying due north at $250\,\mathrm{m/s}$ ($\approx900\,\mathrm{km/h}$) has $|\boldsymbol\omega_{en}|=3.93\times10^{-5}\,\mathrm{rad/s}$, $54\%$ of Earth rate, and flying due east at the same speed gives $5.53\times10^{-5}\,\mathrm{rad/s}$, $76\%$ of Earth rate — an aircraft-grade INS that dropped this term would be dropping a correction comparable in size to the one every INS textbook insists on keeping. Push the speed to orbital, $7.7\,\mathrm{km/s}$, and $|\boldsymbol\omega_{en}|$ reaches $1.21\times10^{-3}\,\mathrm{rad/s}$, over sixteen times Earth rate: the local-level frame would be spinning faster than the vehicle can usefully track, which is the mechanical reason orbital mechanization is done in ECI rather than NED, not merely a matter of taste.
+**A ship.** Moving north at $5\,\mathrm{m/s}$ (about $10$ **[[knots|knots]]**), only the middle entry is nonzero: $5/6\,367\,382 = 7.85\times10^{-7}\,\mathrm{rad/s}$. That is about $1.1\%$ of Earth rate — safe to ignore for anything but the most precise systems.
+
+**An airliner.** Flying due north at $250\,\mathrm{m/s}$ (about $900\,\mathrm{km/h}$): $250/6\,367\,382 = 3.93\times10^{-5}\,\mathrm{rad/s}$, or $54\%$ of Earth rate. Flying due east at the same speed, two entries are nonzero, each $250/6\,388\,838 = 3.91\times10^{-5}\,\mathrm{rad/s}$ (at $45^\circ$, $\tan\varphi = 1$). Their combined size is $\sqrt2$ times that, $5.53\times10^{-5}\,\mathrm{rad/s}$, or $76\%$ of Earth rate. An airliner's INS that dropped this term would be dropping a correction as large as the one every textbook insists on keeping.
+
+**Orbital speed.** At $7.7\,\mathrm{km/s}$ due north, $|\boldsymbol\omega_{en}|$ reaches $1.21\times10^{-3}\,\mathrm{rad/s}$ — more than sixteen times Earth rate. The transport rate is no longer a correction. It is the main thing the frame is doing.
 :::
 
 ## Choosing a frame
 
-The choice is an engineering trade, not a rule. ECI costs nothing in rotation terms but hands back Cartesian inertial coordinates nobody on the ground finds readable, so it dominates during boost and orbital flight, where the vehicle's own guidance already thinks in orbital elements or inertial state vectors, and a ground display converts afterward. ECEF is the natural common frame for anything referenced against GPS, whose broadcast solution is ECEF by definition, and for long-range cruise where the destination is a fixed point on a rotating Earth rather than a fixed direction in inertial space. NED costs a second rotation term and the geodesy above, and earns it back by outputting latitude, longitude and height — what a pilot, a ship's navigator, or a ground operator actually wants to read — directly from the mechanization loop with no further conversion, provided the vehicle's speed keeps $\boldsymbol\omega_{en}$ inside a range the loop can still integrate accurately. Aircraft and most ground and marine systems mechanize in NED for exactly that reason; the module's own strapdown exercise does too.
+The choice is an engineering trade, not a rule.
 
-::: warning
-It is tempting to treat $\boldsymbol\omega_{en}$ as a small correction and linearize or drop it "for now." Its size scales with speed, not with any sensor grade, so whether it is negligible has nothing to do with whether the IMU is tactical or navigation grade and everything to do with how fast the vehicle is moving — the worked example above showed it reaching most of Earth rate for an ordinary airliner. Dropping it is a modelling decision about the vehicle, never a simplification that a better gyro makes safe.
+- **ECI** costs nothing in rotation terms, but its answers are Cartesian coordinates in space that nobody on the ground finds readable. It dominates during boost and in orbit, where guidance already thinks in orbits and inertial states, and a ground display converts afterward.
+- **ECEF** is the natural common frame for anything checked against GPS, whose solution is ECEF by definition, and for long-range flight to a fixed point on the spinning Earth.
+- **NED** pays for a second rotation term and the geodesy above. It earns that back by producing latitude, longitude and height — what a pilot, a ship's navigator or a ground operator wants to read — straight out of the loop. Aircraft and most ground and marine systems mechanize in NED for that reason, and so does this module's strapdown exercise.
+
+NED has two limits, both visible in the transport-rate formula. At high speed the transport rate grows until it dominates, as the orbital example showed. And the down entry holds $\tan\varphi$, which grows without limit near the **[[poles|pole-problem]]**, where "north" stops meaning anything. An orbit that crosses high latitudes runs into both, which is a real reason orbital navigation is done in ECI rather than NED, not merely a matter of taste.
+
+::: warning The transport rate is about speed, not sensor grade
+It is tempting to treat $\boldsymbol\omega_{en}$ as a small correction and drop it "for now". But its size scales with the vehicle's speed, not with the quality of the IMU. Whether it is negligible has nothing to do with whether the gyros are tactical or navigation grade, and everything to do with how fast the vehicle moves — the example showed it reaching three quarters of Earth rate for an ordinary airliner. Dropping it is a decision about the vehicle, never a simplification a better gyro makes safe.
 :::
 
 ## Check yourself
 
 ::: check
-Why is $R_N=a$ exactly at the equator, while $R_M$ is not?
+Why is $R_N = a$ exactly at the equator, while $R_M$ is not?
 :::
 
 ::: answer
-A slice through the equator perpendicular to the polar axis is, by the definition of an ellipsoid of revolution, a perfect circle of radius $a$ — the semi-major axis is the equatorial radius by construction, and the transverse radius of curvature at any point equals the distance from that point to the polar axis measured along the local normal, which at the equator is exactly $a$. The meridian, by contrast, is an ellipse, not a circle, and its radius of curvature at the equator is the ellipse's own curvature there, $a(1-e^2)$ scaled further by the $(1-e^2\sin^2\varphi)^{3/2}$ term — a genuinely different geometric quantity that happens to coincide with $a$ nowhere except in the limit $e\to0$, a sphere.
+A slice through the equator, square to the polar axis, is a perfect circle of radius $a$ — for an ellipsoid of revolution that is true by construction. The transverse radius at any point is the distance from the point to the polar axis measured along the local vertical, and at the equator that is exactly $a$.
+
+The meridian is an ellipse, not a circle. Its radius of curvature at the equator is the ellipse's own curvature there, $a(1-e^2)$, which is smaller than $a$. The two would agree only if $e = 0$ — a sphere.
 :::
 
 ::: check
-A submarine cruises at $10\,\mathrm{m/s}$ due east at $60^\circ$ latitude. Compute $\dot\lambda$ and compare the size of $\boldsymbol\omega_{en}^n$'s down component to its north component.
+A submarine cruises due east at $10\,\mathrm{m/s}$ at $60^\circ$ latitude, where $R_N = 6\,394\,209\,\mathrm m$. Find $\dot\lambda$, and compare the down and north entries of $\boldsymbol\omega_{en}^n$.
 :::
 
 ::: answer
-At $60^\circ$, $R_N = 6\,394\,209\,\mathrm m$ (transverse radius grows slowly with latitude). $\dot\lambda = v_E/[(R_N+h)\cos60^\circ] = 10/(6\,394\,209\times0.5) = 3.128\times10^{-6}\,\mathrm{rad/s}$. The down component is $-\dot\lambda\sin60^\circ = -2.709\times10^{-6}\,\mathrm{rad/s}$ and the north component, from a purely eastward velocity, is $v_E/(R_N+h)=\dot\lambda\cos60^\circ=1.564\times10^{-6}\,\mathrm{rad/s}$; the down component is larger because $\tan60^\circ>1$, and both grow toward the pole while the north component from eastward motion alone shrinks toward the equator's $\cos\varphi\to1$, $\sin\varphi\to0$ limit.
+Take $h = 0$ and $\cos60^\circ = 0.5$:
+
+$$
+\dot\lambda = \frac{v_E}{R_N\cos\varphi} = \frac{10}{6\,394\,209\times0.5} = 3.128\times10^{-6}\,\mathrm{rad/s}.
+$$
+
+North entry: $v_E/R_N = \dot\lambda\cos60^\circ = 1.564\times10^{-6}\,\mathrm{rad/s}$.
+
+Down entry: $-v_E\tan\varphi/R_N = -\dot\lambda\sin60^\circ = -2.709\times10^{-6}\,\mathrm{rad/s}$.
+
+The down entry is larger, by the factor $\tan60^\circ = 1.73$. The north entry barely changes with latitude (only through the slow change in $R_N$), while the down entry grows as $\tan\varphi$ toward the pole and vanishes at the equator.
 :::
 
 ::: check
-Explain, without doing any arithmetic, why an ECI mechanization needs no equivalent of $\boldsymbol\omega_{en}$ at all, not even a small one.
+Explain, without any arithmetic, why an ECI mechanization needs no equivalent of $\boldsymbol\omega_{en}$ at all — not even a small one.
 :::
 
 ::: answer
-$\boldsymbol\omega_{en}$ exists because the NED frame's own axes are defined relative to the vehicle's position on a rotating, curved surface, so the frame itself reorients as the vehicle moves, independent of anything the vehicle's attitude is doing. ECI's axes are fixed directions in inertial space by definition — they do not know or care where the vehicle is — so there is no mechanism by which the vehicle's motion could make the frame itself rotate. The transport theorem's $\boldsymbol\omega\times\mathbf x$ term is exactly zero for ECI because $\boldsymbol\omega_{ii}=\mathbf 0$ identically, not because the term has been made small.
+The transport rate exists because NED's axes are defined by the vehicle's position on a curved, spinning Earth, so the frame turns whenever the vehicle moves, whatever the vehicle's attitude is doing.
+
+ECI's axes are fixed directions in space by definition. They do not depend on where the vehicle is, so the vehicle's motion cannot make them turn. The transport theorem's $\boldsymbol\omega\times\mathbf x$ term is exactly zero for ECI, because the rate of the inertial frame relative to itself, $\boldsymbol\omega_{ii}$, is zero — not because the term has been made small.
 :::
 
 ::: check
-A navigation engineer proposes mechanizing a hypersonic glide vehicle, apogee speed near $6\,\mathrm{km/s}$, in NED throughout its flight "for consistency with the ground display." What number from this lesson would you show them, and what would you recommend instead?
+An engineer proposes mechanizing a hypersonic glide vehicle, with a top speed near $6\,\mathrm{km/s}$, in NED for its whole flight, "to match the ground display". What number from this lesson would you show them, and what would you recommend?
 :::
 
 ::: answer
-Scale the orbital-speed result: at $7.7\,\mathrm{km/s}$, $|\boldsymbol\omega_{en}|\approx16.6\,\omega_{ie}$, so at $6\,\mathrm{km/s}$ it is still on the order of $13\,\omega_{ie}\approx9.5\times10^{-4}\,\mathrm{rad/s}$ — a frame rotating roughly ten thousand times faster than the vehicle needs its ground display updated, which strains both the numerical integration of the attitude and the small-angle assumptions much of the mechanization relies on. The better answer is to mechanize in ECI or ECEF, where no such term appears or it is bounded by Earth rate alone, and convert to latitude, longitude and height only for the ground display, a coordinate transformation applied to the output rather than carried through the integration itself.
+Scale the orbital result. At $6\,\mathrm{km/s}$ due north the transport rate is about $9.4\times10^{-4}\,\mathrm{rad/s}$, roughly thirteen times Earth rate. The frame's own turning would be the largest rate in the whole attitude update, and on a trajectory that passes at high latitude the $\tan\varphi$ term would grow without limit.
+
+Better: mechanize in ECI or ECEF, where the rotation term is zero or bounded by Earth rate, and convert to latitude, longitude and height only for the display. That conversion is applied to the output; it never has to be carried through the integration.
 :::
 
 ## Summary
@@ -112,8 +217,85 @@ Scale the orbital-speed result: at $7.7\,\mathrm{km/s}$, $|\boldsymbol\omega_{en
 | $\dot{\mathbf v}^e=\mathbf f^e-2\boldsymbol\omega_{ie}\times\mathbf v^e+\mathbf g^e$ | ECEF velocity equation: Earth-rate Coriolis only |
 | $\dot{\mathbf v}^n=\mathbf f^n-(2\boldsymbol\omega_{ie}^n+\boldsymbol\omega_{en}^n)\times\mathbf v^n+\mathbf g^n$ | NED velocity equation: Earth rate plus transport rate |
 | $R_M=\dfrac{a(1-e^2)}{(1-e^2\sin^2\varphi)^{3/2}}$ | Meridian radius of curvature; governs north-south motion |
-| $R_N=\dfrac{a}{\sqrt{1-e^2\sin^2\varphi}}$ | Transverse radius of curvature; governs east-west motion; $R_N(0^\circ)=a$ |
-| $\boldsymbol\omega_{en}^n=\left(\dfrac{v_E}{R_N+h},\,-\dfrac{v_N}{R_M+h},\,-\dfrac{v_E\tan\varphi}{R_N+h}\right)$ | Transport rate: NED's own rotation from moving over a curved Earth |
-| ECI / ECEF / NED | Simplest dynamics / ground-referenced / human-readable, in order of increasing rotation-term cost |
+| $R_N=\dfrac{a}{\sqrt{1-e^2\sin^2\varphi}}$ | Transverse radius of curvature; governs east-west motion; $R_N=a$ at the equator |
+| $\boldsymbol\omega_{en}^n=\left(\dfrac{v_E}{R_N+h},\,-\dfrac{v_N}{R_M+h},\,-\dfrac{v_E\tan\varphi}{R_N+h}\right)$ | Transport rate: NED's own turning from moving over a curved Earth |
+| ECI / ECEF / NED | Simplest dynamics / ground-referenced / human-readable, in order of rising rotation-term cost |
 
-The next lesson takes these three velocity equations and turns each into an actual update algorithm — how the attitude, velocity and position states advance from one IMU sample to the next — including the gravity model this lesson has so far left as a symbol, $\mathbf g$.
+The next lesson takes the NED velocity equation and turns it into an actual update — how attitude, velocity and position step forward from one IMU sample to the next — and supplies the gravity model this lesson left as the symbol $\mathbf g$.
+
+::: context eci-j2000 Fixed to the stars, dated to the year 2000
+"Inertial" axes still need to point *somewhere*. The standard choice, called **J2000**, points the $z$ axis along Earth's spin axis and the $x$ axis toward the vernal equinox — the direction from Earth to the Sun on the first day of spring — both as they were at noon on 1 January 2000. The date matters because Earth's axis slowly wobbles, tracing a circle among the stars about once every $26\,000$ years, so "the direction of the pole" drifts. Freezing the axes at one moment makes them truly fixed. Its modern successor, the **GCRF**, is tied to distant quasars and matches J2000 to within a few hundredths of an arcsecond.
+:::
+
+::: context coriolis The sideways push of a spinning floor
+Gaspard-Gustave de Coriolis, a French engineer, worked out this term in 1835 while studying machines with spinning parts. It is why hurricanes spin: air rushing toward a low-pressure center is deflected sideways by Earth's rotation, to the right in the northern hemisphere, so the storm winds counterclockwise. It is why long-range artillery tables include an Earth-rotation correction. For a navigator it is small but not negligible: a car at $30\,\mathrm{m/s}$ at mid-latitude feels a Coriolis acceleration of about $3\times10^{-3}\,\mathrm{m/s^2}$ — around $300$ micro-$g$, larger than a navigation-grade accelerometer's bias.
+:::
+
+::: context transport-picture Down swings as you travel
+Walk over a curved surface and your "down" arrow keeps pointing at the center, so it swings as you go. NED swings with it.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 200" font-family="Inter, Arial, sans-serif">
+  <path d="M40,190 A160,160 0 0 1 320,190" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
+  <circle cx="180" cy="270" r="3" fill="#1f2a44"/>
+  <g stroke="#b4232c" stroke-width="2.5" fill="#b4232c">
+    <line x1="109" y1="98" x2="128" y2="132"/><polygon points="133,141 122,134 132,128"/>
+    <line x1="251" y1="98" x2="232" y2="132"/><polygon points="227,141 228,128 238,134"/>
+  </g>
+  <g stroke="#1d6fd1" stroke-width="2.5" fill="#1d6fd1">
+    <line x1="109" y1="98" x2="143" y2="79"/><polygon points="152,74 145,85 139,75"/>
+    <line x1="251" y1="98" x2="285" y2="117"/><polygon points="294,122 281,122 287,112"/>
+  </g>
+  <circle cx="109" cy="98" r="5" fill="#1f2a44"/>
+  <circle cx="251" cy="98" r="5" fill="#1f2a44"/>
+  <text x="70" y="90" font-size="12" fill="#1f2a44">start</text>
+  <text x="262" y="90" font-size="12" fill="#1f2a44">later</text>
+  <text x="150" y="60" font-size="12" fill="#1d6fd1">north</text>
+  <text x="140" y="152" font-size="12" fill="#b4232c">down</text>
+  <text x="180" y="180" font-size="12" fill="#1f2a44" text-anchor="middle">Earth (curvature exaggerated)</text>
+</svg>
+```
+
+The traveller has moved north over the curve. At the new spot, both the north (blue) and down (red) arrows have turned by the same angle, in the same sense. The rate of that turning is $v_N/(R_M+h)$.
+:::
+
+::: context why-twice Two Earth rates, one transport rate
+Here, $\mathbf v^n$ is velocity *relative to the Earth*, written in NED axes. To reach Newton's law you differentiate twice, and Earth's spin gets in each time. First, getting from position to Earth-relative velocity costs one $\boldsymbol\omega_{ie}\times\mathbf r$. Differentiating again brings in the spin a second time, once through the velocity and once through that first term; the part of the result that involves velocity is $2\boldsymbol\omega_{ie}\times\mathbf v$, and what is left, $\boldsymbol\omega_{ie}\times(\boldsymbol\omega_{ie}\times\mathbf r)$, is the centrifugal term that hides inside $\mathbf g$. The transport rate never enters the definition of the velocity. It only describes how the axes you *write* $\mathbf v$ in are turning relative to the Earth, so it appears once, in the last differentiation.
+:::
+
+::: context ellipsoid A squashed Earth
+Earth spins, and the spin flings the equator outward a little. The result is an ellipsoid whose equatorial radius is about $21.4\,\mathrm{km}$ longer than its polar radius: $a = 6\,378\,137\,\mathrm m$ against $b = 6\,356\,752\,\mathrm m$. That difference is only one part in $298$ — draw Earth as a circle $30\,\mathrm{cm}$ across and the squashing is about a millimetre, thinner than the pencil line. But navigation cares about metres, and $21\,\mathrm{km}$ is a lot of metres. **WGS84** (World Geodetic System 1984) is the version maintained by the US military for GPS, and nearly every navigation system on Earth uses it.
+:::
+
+::: context geodetic-latitude Which way is down?
+On an ellipsoid, the local vertical — the line straight down, square to the ground — does not point at Earth's center. **Geodetic latitude** is the angle that vertical makes with the equator's plane. It is what maps and GPS report.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 200" font-family="Inter, Arial, sans-serif">
+  <ellipse cx="170" cy="110" rx="140" ry="80" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
+  <line x1="20" y1="110" x2="330" y2="110" stroke="#6c7a93" stroke-width="1" stroke-dasharray="4,4"/>
+  <circle cx="170" cy="110" r="3" fill="#1f2a44"/>
+  <circle cx="269" cy="53" r="5" fill="#1f2a44"/>
+  <line x1="269" y1="53" x2="170" y2="110" stroke="#6c7a93" stroke-width="1.5"/>
+  <line x1="315" y1="7" x2="216" y2="110" stroke="#b4232c" stroke-width="2.5"/>
+  <text x="275" y="46" font-size="12" fill="#1f2a44">you</text>
+  <text x="222" y="104" font-size="12" fill="#b4232c">φ</text>
+  <text x="120" y="104" font-size="11" fill="#6c7a93">center</text>
+  <text x="300" y="30" font-size="11" fill="#b4232c" text-anchor="end">local vertical</text>
+</svg>
+```
+
+The red local vertical crosses the equator's plane off-center, at an angle $\varphi$ steeper than the grey line to the center (squashing exaggerated here). On the real Earth the two latitudes differ by at most about $0.19^\circ$, near $45^\circ$ — some $21\,\mathrm{km}$ on the ground.
+:::
+
+::: context right-hand-rule Which way is a positive turn?
+Point your right thumb along an axis. Your fingers curl in the direction of a positive turn about that axis. Try it with NED: point your thumb east, with north ahead of you and down toward the floor. Your fingers curl from north toward up — so a positive turn about east would tip the nose up. Moving north over a curved Earth tips "north" down instead, which is why the latitude part of the transport rate carries a minus sign.
+:::
+
+::: context knots A sailor's unit
+A **knot** is one nautical mile per hour, and a nautical mile is exactly $1852\,\mathrm m$ — chosen because it is very nearly one arcminute of latitude. So a ship at $10$ knots moves $18.5\,\mathrm{km}$ an hour, or about $5.1\,\mathrm{m/s}$, and changes its latitude by about ten arcminutes per hour if it heads due north. Aviation still uses knots and nautical miles for the same reason: they tie distance straight to latitude.
+:::
+
+::: context pole-problem Where north stops working
+At a pole every direction is south, so NED's north and east axes have no meaning, and $\tan\varphi$ in the transport rate — along with $1/\cos\varphi$ in the longitude rate — grows without limit. Real systems that must cross the poles, like transpolar airliners and polar-orbiting spacecraft, avoid this. Aircraft use a **wander-azimuth** frame: level like NED, but its horizontal axes are allowed to drift away from north, so they never need to spin wildly near the pole. Spacecraft simply stay in ECI.
+:::
