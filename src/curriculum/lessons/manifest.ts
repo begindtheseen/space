@@ -3916,6 +3916,35 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Cython and pybind11; calling a C++ simulation core from a Python harness"
       ],
       "file": "cod_py_08_performance/06-cython-and-pybind11.md"
+    },
+    {
+      "id": "l07-gil-threads-processes",
+      "title": "The GIL, threads and processes",
+      "minutes": 21,
+      "covers": [
+        "The GIL: what it does and does not block",
+        "Threads for I/O and released-GIL numerics, processes for CPU-bound Python"
+      ],
+      "file": "cod_py_08_performance/07-gil-threads-processes.md"
+    },
+    {
+      "id": "l08-parallel-monte-carlo",
+      "title": "Running a Monte Carlo on every core",
+      "minutes": 22,
+      "covers": [
+        "multiprocessing, concurrent.futures and joblib for embarrassingly parallel Monte Carlo",
+        "Serialisation cost and why passing large arrays between processes can dominate"
+      ],
+      "file": "cod_py_08_performance/08-parallel-monte-carlo.md"
+    },
+    {
+      "id": "l09-bigger-than-memory",
+      "title": "Telemetry bigger than memory",
+      "minutes": 23,
+      "covers": [
+        "numpy.memmap, chunking and Parquet for telemetry larger than memory"
+      ],
+      "file": "cod_py_08_performance/09-bigger-than-memory.md"
     }
   ],
   "cod_rs_01_basics": [
@@ -10451,15 +10480,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_py_08_performance": {
-    "covered": 6,
+    "covered": 11,
     "total": 13,
     "complete": false,
     "missing": [
-      "The GIL: what it does and does not block",
-      "Threads for I/O and released-GIL numerics, processes for CPU-bound Python",
-      "multiprocessing, concurrent.futures and joblib for embarrassingly parallel Monte Carlo",
-      "Serialisation cost and why passing large arrays between processes can dominate",
-      "numpy.memmap, chunking and Parquet for telemetry larger than memory",
       "Caching and precomputation: lookup tables, interpolators built once",
       "Benchmark methodology: warmup, repetitions, frequency scaling, noise"
     ]
