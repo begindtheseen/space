@@ -3425,6 +3425,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Linear algebra: solve, lstsq, eig, svd, norm, cond, and why not inv"
       ],
       "file": "cod_py_03_numpy/09-linear-algebra.md"
+    },
+    {
+      "id": "l10-floating-point-pitfalls",
+      "title": "Floating-point pitfalls",
+      "minutes": 20,
+      "covers": [
+        "Float pitfalls: allclose, catastrophic cancellation, float32 vs float64"
+      ],
+      "file": "cod_py_03_numpy/10-floating-point-pitfalls.md"
     }
   ],
   "cod_py_04_scipy": [
@@ -10139,11 +10148,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_py_03_numpy": {
-    "covered": 8,
+    "covered": 9,
     "total": 12,
     "complete": false,
     "missing": [
-      "Float pitfalls: allclose, catastrophic cancellation, float32 vs float64",
       "Random numbers: default_rng, seeding, reproducibility",
       "save, load, npz, memmap for big telemetry",
       "Vectorisation as the default, and when it genuinely does not apply"
