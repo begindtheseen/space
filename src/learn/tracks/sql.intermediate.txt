@@ -2,6 +2,7 @@
 @level intermediate
 @title SQL · Intermediate
 @name SQL, intermediate: joins, subqueries and honest numbers
+@plainvoice true
 @blurb Answer real business questions from several tables at once — every join type, grouping, subqueries, CASE, dates and text — and catch the NULLs and fan-outs that quietly make reports wrong.
 @schema
 CREATE TABLE customers (
@@ -177,7 +178,7 @@ Second, when two columns in the result would share a name, rename one with `AS`.
 **Watch out:** each `ON` must pair the right two columns. `JOIN customers c ON c.id = o.id` runs without any error, but it matches customer 1 to order 1, customer 2 to order 2, and so on, which means nothing. Read every `ON` aloud: "this table's `id` equals the column in the other table that points at it".
 
 ::: context timestamp Dates written as text
-A timestamp is a date and a time together, like `'2024-03-20 18:40:00'`: year, month, day, then hours, minutes and seconds. This shop stores them as text. The biggest part (the year) comes first and every part has a fixed width, with a zero in front where needed (`03`, not `3`). Because of that, sorting the text A-to-Z also sorts the moments from earliest to latest. This layout is an international standard called ISO 8601. Lesson 9 of this course shows the functions that do arithmetic with these dates.
+A timestamp is a date and a time together, like `'2024-03-20 18:40:00'`: year, month, day, then hours, minutes and seconds. This shop stores them as text. The biggest part (the year) comes first and every part has a fixed width, with a zero in front where needed (`03`, not `3`). Because of that, sorting the text A-to-Z also sorts the moments from earliest to latest. This layout is an international standard called ISO 8601. The lesson "Dates and times" shows the functions that do arithmetic with these dates.
 :::
 
 ::: context unit-price Why an order stores its own price
@@ -217,7 +218,7 @@ Each arrow below is a foreign key. A query that starts at `order_items` can reac
 :::
 
 ::: context one-row-per The grain of a query
-Engineers call "what one row stands for" the **grain** of a result. Here the grain is one order item. Deciding the grain first tells you which table goes in `FROM`. It also gives you a free test: count the rows before and after each join. If a join you expected to only add columns suddenly adds rows, a link is not one-to-one, and your totals will come out too big. Lesson 14 of this course is a whole bug hunt built on exactly that.
+Engineers call "what one row stands for" the **grain** of a result. Here the grain is one order item. Deciding the grain first tells you which table goes in `FROM`. It also gives you a free test: count the rows before and after each join. If a join you expected to only add columns suddenly adds rows, a link is not one-to-one, and your totals will come out too big. The lesson "Debugging: the join that double-counts" is a whole bug hunt built on exactly that.
 :::
 
 ::: context ambiguous-column The error you get without a prefix
@@ -324,11 +325,11 @@ The left table is the one written first, before the words `LEFT JOIN`. In `FROM 
 :::
 
 ::: context run-order Written order and running order
-You write `SELECT` first, but the database works out the rows starting from `FROM`. It builds the joined rows, then filters them with `WHERE`, then groups them. Lesson 4 of this course lists the whole order step by step. For this lesson, the key point is that `WHERE` only ever sees rows the joins have already built, NULL-filled ones included, and it can throw any of them away.
+You write `SELECT` first, but the database works out the rows starting from `FROM`. It builds the joined rows, then filters them with `WHERE`, then groups them. The lesson "GROUP BY in depth" lists the whole order step by step. For this lesson, the key point is that `WHERE` only ever sees rows the joins have already built, NULL-filled ones included, and it can throw any of them away.
 :::
 
 ::: context unknown True, false, and unknown
-In SQL a comparison has three possible results: true, false, or unknown. Any comparison with NULL is unknown, because the database cannot say whether a missing value equals something. Even `NULL = NULL` is unknown. You can see it in SQLite: `SELECT NULL IN ('paid', 'shipped');` returns NULL, not 0 or 1. `WHERE` keeps a row only when its condition is true, so both false and unknown rows are dropped. Lesson 10 is a debugging lesson built entirely on this.
+In SQL a comparison has three possible results: true, false, or unknown. Any comparison with NULL is unknown, because the database cannot say whether a missing value equals something. Even `NULL = NULL` is unknown. You can see it in SQLite: `SELECT NULL IN ('paid', 'shipped');` returns NULL, not 0 or 1. `WHERE` keeps a row only when its condition is true, so both false and unknown rows are dropped. The lesson "Debugging: the rows NULL made disappear" is a debugging lesson built entirely on this.
 :::
 
 ::: context on-never-drops ON matches, WHERE removes
@@ -361,7 +362,7 @@ The two clauses do different jobs. `ON` answers "which right-hand rows go with t
 </svg>
 ```
 
-Putting a right-table condition in `WHERE` quietly turns your LEFT JOIN back into an inner join. Lesson 17 lists this among the checks for any report.
+Putting a right-table condition in `WHERE` quietly turns your LEFT JOIN back into an inner join. The lesson "Design: choosing the joins for a report" lists this among the checks for any report.
 :::
 
 ::: context count-column Why COUNT(o.id) and not COUNT(*)
@@ -619,7 +620,7 @@ The four electronics rows come from three people. `COUNT(*)` counts every row; `
 </svg>
 ```
 
-Rows multiplying under a join is called fan-out. Lesson 9 counts orders with `COUNT(DISTINCT o.id)` for this reason, and lesson 14 hunts down a report that fan-out made wrong.
+Rows multiplying under a join is called fan-out. The lesson "Dates and times" counts orders with `COUNT(DISTINCT o.id)` for this reason, and the lesson "Debugging: the join that double-counts" hunts down a report that fan-out made wrong.
 :::
 --- task
 Using only orders whose `status` is `'paid'` or `'shipped'`, return one row per product `category` with four columns:
@@ -669,7 +670,7 @@ Picture sorting a year of receipts into monthly envelopes. You do not care about
 
 An **expression** is anything that works out a value: a column, a sum like `qty * unit_price`, or a function call. You can group by an expression, not only by a column.
 
-`substr(placed, 1, 10)` takes a piece of the text in `placed`: starting at character 1, 10 characters long. `substr` is short for "substring", a piece of a string (text). From `'2024-04-07 20:10:00'` it gives `'2024-04-07'`, the day. Lesson 8 covers text functions properly.
+`substr(placed, 1, 10)` takes a piece of the text in `placed`: starting at character 1, 10 characters long. `substr` is short for "substring", a piece of a string (text). From `'2024-04-07 20:10:00'` it gives `'2024-04-07'`, the day. The lesson "Working with text" covers text functions properly.
 
 ```sql
 SELECT substr(placed, 1, 10) AS day, COUNT(*) AS orders
@@ -736,11 +737,11 @@ The London group holds Ada and Dev, but only one name comes back, and nothing te
 **Watch out:** group by the piece you mean. `GROUP BY placed` makes one group per exact timestamp, and here every order has a different one, so every group holds a single order. To count per month, group by the [[month piece|month-buckets]].
 
 ::: context group-alias Grouping by the name you gave it
-In this lesson the whole expression is written again in `GROUP BY`. That works in every database. SQLite and PostgreSQL also let you group by the name you gave the column with `AS`, so `GROUP BY day` does the same job. You will see that shortcut in later lessons, such as `GROUP BY domain` in lesson 8. Some databases, such as Microsoft SQL Server, do not allow it, so writing the expression out is the safe habit.
+In this lesson the whole expression is written again in `GROUP BY`. That works in every database. SQLite and PostgreSQL also let you group by the name you gave the column with `AS`, so `GROUP BY day` does the same job. You will see that shortcut in later lessons, such as `GROUP BY domain` in the lesson "Working with text". Some databases, such as Microsoft SQL Server, do not allow it, so writing the expression out is the safe habit.
 :::
 
 ::: context null-group Why the NULLs stick together
-You learned that `NULL = NULL` is unknown, not true. So why do the NULLs share one group? Because the SQL standard makes a special rule for grouping: `GROUP BY` and `DISTINCT` treat all NULLs as the same value. Otherwise every NULL would get a group of its own, which would be useless. The NULL group is often a sign of missing data worth a look. In lesson 8 a missing email turns into exactly this kind of NULL group.
+You learned that `NULL = NULL` is unknown, not true. So why do the NULLs share one group? Because the SQL standard makes a special rule for grouping: `GROUP BY` and `DISTINCT` treat all NULLs as the same value. Otherwise every NULL would get a group of its own, which would be useless. The NULL group is often a sign of missing data worth a look. In the lesson "Working with text" a missing email turns into exactly this kind of NULL group.
 :::
 
 ::: context functional-dependency Why the primary key is enough
@@ -783,7 +784,7 @@ This is the task's grouping as a picture. Each order's timestamp is cut to its f
 </svg>
 ```
 
-Lesson 9 does the same with a date function, `strftime('%Y-%m', placed)`.
+The lesson "Dates and times" does the same with a date function, `strftime('%Y-%m', placed)`.
 :::
 --- task
 Return one row per month of orders, using every order whatever its status, with three columns:
@@ -2206,36 +2207,167 @@ ordered
 
 === sql2-13 | Changing data with conditions
 --- teach
-`UPDATE` and `DELETE` get their power from `WHERE`, and `WHERE` can use everything you have learned — including subqueries into other tables:
+Last lesson you showed products a page at a time. Every query in this course so far has only *read* the shop's data. In the basics you also *changed* data with `UPDATE` and `DELETE`. This lesson lets you change exactly the right rows, even when the rule for "the right rows" lives in another table. It also shows how to fill a table with rows copied out of a query.
+
+### The picture
+
+Picture a class register and a note from the bus company: "Bus 4 was late today." You do not mark the whole class late. You look up which students ride bus 4, and you mark only those. The rule, "rides bus 4", comes from a second list.
+
+A database works the same way. The **`WHERE` clause** is the part of an `UPDATE` or `DELETE` that picks which rows change. It can use everything you have learned so far, including a question put to another table.
+
+### A quick reminder
 
 ```sql
--- cancel paid orders from customers who have no email on file
+UPDATE orders SET status = 'shipped' WHERE id = 8;
+```
+
+`UPDATE orders` names the table. `SET status = 'shipped'` says what to write. `WHERE id = 8` says which rows get it. Leave out the `WHERE` and **every** row in the table changes.
+
+### Step 1: a rule that lives in another table
+
+Say the shop wants to cancel every `paid` order from a customer who has no email on file, because it cannot send them a receipt.
+
+Whether a customer has an email is stored in `customers`. The orders are in `orders`. A **[[subquery|subquery-recap]]** (a query inside brackets, inside another query) builds the list of customers with no email:
+
+```sql
+SELECT id FROM customers WHERE email IS NULL;
+```
+
+| id |
+| --- |
+| 3 |
+
+Only Cleo, id 3, has no email. `IN (…)` means "is one of the values in this list", and `AND` means "both must be true". So the whole change reads:
+
+```sql
 UPDATE orders SET status = 'cancelled'
 WHERE status = 'paid'
   AND customer_id IN (SELECT id FROM customers WHERE email IS NULL);
 ```
 
-`SET` can compute from the row's current values: `SET price = price * 1.1` uses each row's own price. Money is floating point here, so round what you store: `ROUND(price * 1.1, 2)`.
+Read the `WHERE` aloud: "the status is paid, and the customer is on the no-email list". Only order 5 passes both tests, so only order 5 changes.
 
-`INSERT` can take its rows from a query instead of `VALUES`:
+### Step 2: a new value worked out from the old one
+
+`SET` can calculate. It reads each row's own current value, works out the new one, and writes it back. Here is 10% off every `home` product. `*` means "times", and multiplying by 0.9 keeps 90% of the price:
+
+```sql
+UPDATE products
+SET price = ROUND(price * 0.9, 2)
+WHERE category = 'home';
+```
+
+| name | price before | price after |
+| --- | --- | --- |
+| Desk lamp | 45.00 | 40.50 |
+| Mug | 9.00 | 8.10 |
+| Bookends | 9.00 | 8.10 |
+
+Each row used its own price. To raise a price by 10% instead, multiply by 1.1: the old price plus a tenth of it.
+
+`ROUND(x, 2)` means "round x to 2 decimal places". Prices here are stored as [[floating-point numbers|floating-point]], which can come out of arithmetic with a long tail of digits. Round what you store, so the price stays in whole cents.
+
+### Step 3: new rows copied from a query
+
+`INSERT` usually takes its rows from `VALUES (…)`. It can take them from a `SELECT` instead: every row the query returns becomes a new row in the table.
 
 ```sql
 INSERT INTO newsletter (email, signed_up)
 SELECT lower(trim(email)), date('now') FROM customers WHERE city = 'Paris';
 ```
 
-The safe routine for any change:
+The `SELECT` part on its own returns two rows:
 
-1. Write the `SELECT` with the exact `WHERE` you plan to use, and check it returns exactly the rows you mean.
+| lower(trim(email)) | date('now') |
+| --- | --- |
+| ben@mail.com | today's date |
+| gus@post.org | today's date |
+
+The columns line up by position: the first result column goes into `email`, the second into `signed_up`. `lower(trim(…))` comes from the lesson Working with text, and `date('now')` from Dates and times. This is a common way of [[copying rows between tables|insert-select]].
+
+### Step 4: the safe routine
+
+A database has no undo button: once a change runs, the old values are gone unless you planned a way back in advance. So every change follows the same three steps:
+
+1. Write a `SELECT` with the exact `WHERE` you plan to use. Check it returns exactly the rows you mean.
 2. Change `SELECT …` to `UPDATE … SET …` or `DELETE`, keeping the `WHERE` word for word.
 3. Query again to confirm the effect.
 
-A subquery on the **same** table you are changing is allowed, but be careful: it sees the table as it was before the statement started.
---- task
-Make two changes:
+For the cancel rule, step 1 is:
 
-1. Raise the price of every `stationery` product by 10%, rounded to 2 decimals.
-2. Delete every newsletter row whose email (lower-cased and trimmed) belongs to a customer (compare the customer's email lower-cased and trimmed too) — they already hear from us.
+```sql
+SELECT id, status FROM orders
+WHERE status = 'paid'
+  AND customer_id IN (SELECT id FROM customers WHERE email IS NULL);
+```
+
+| id | status |
+| --- | --- |
+| 5 | paid |
+
+One row, as intended. Now step 2 is the `UPDATE` from Step 1, and step 3 is `SELECT id, status FROM orders WHERE id = 5;`, which should say `cancelled`. Step 1 is a [[dry run|dry-run]]: a rehearsal that changes nothing.
+
+### Step 5: a subquery on the same table
+
+A subquery may read the very table you are changing. It [[sees the table as it was|before-snapshot]] before the statement started, not half-way through:
+
+```sql
+UPDATE products SET price = price - 1
+WHERE price > (SELECT AVG(price) FROM products);
+```
+
+`AVG` works out the average of the eight prices once, from the prices before any change: 26.625. The Fountain pen (32.00), the Desk lamp (45.00) and the Headphones (89.00) are above it, so those three each drop by 1.
+
+**Watch out:** text that looks equal is not always equal. The customer Ben's email is stored as `'BEN@Mail.com'`, but the newsletter has `'ben@mail.com'`. So `WHERE email IN (SELECT email FROM customers)` only matches Ada's address. Put `lower(trim(…))` on **both** sides of the comparison. Also keep NULL emails out of the list with `WHERE email IS NOT NULL`: a NULL inside a list can do real damage, as the lesson Problem solving: finding what is missing shows.
+
+::: context subquery-recap Where you met subqueries
+The basics showed a subquery giving one value, like `(SELECT AVG(cost_usd) FROM requests)`. The lesson Subqueries: a value, or a list added the second kind: a subquery that returns a whole column, used after `IN`. That is the kind in Step 1. The database runs the inner query, gets its list (here only the number 3), and then checks each order's `customer_id` against it. You can always run the inner query on its own first, which is exactly what the safe routine asks you to do.
+:::
+
+::: context floating-point Why prices get long tails
+A **floating-point** number is how a computer stores a number with a decimal point. It stores it in binary (base 2), and most decimals, like 0.1, cannot be written exactly in binary, the same way 1/3 cannot be written exactly in decimal (0.3333…). The tiny errors usually hide, but sometimes they show: in SQLite, `SELECT 0.1 + 0.2 = 0.3;` returns 0, which means false. Rounding to 2 places after each calculation keeps prices tidy. Many real payment systems avoid the problem entirely by storing money as a whole number of cents in an `INTEGER` column: 32.00 becomes 3200.
+:::
+
+::: context insert-select How engineers use INSERT … SELECT
+Copying rows with a query is everyday work. A common nightly job copies last month's rows from a busy table into an archive table, then deletes them from the busy one, so the table the app reads stays small. Mission teams do the same with telemetry: raw sensor readings pour into one table, and a scheduled `INSERT … SELECT` writes one summary row per minute into another, which the charts then read. The query decides what goes in, so everything you know about `WHERE`, joins and `GROUP BY` works here too.
+:::
+
+::: context dry-run The safe routine, as a picture
+The `WHERE` is written once and never retyped between the rehearsal and the real change. That is what makes the rehearsal count.
+
+```svg
+<svg viewBox="0 0 360 130" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#1f2a44"/>
+    </marker>
+  </defs>
+  <rect x="6" y="20" width="100" height="56" rx="6" fill="white" stroke="#1d6fd1" stroke-width="1.5"/>
+  <text x="56" y="42" font-size="12" text-anchor="middle" fill="#1f2a44">1. SELECT</text>
+  <text x="56" y="60" font-size="11" text-anchor="middle" fill="#6c7a93">look at the rows</text>
+  <rect x="130" y="20" width="100" height="56" rx="6" fill="#8fb8f0" stroke="#1d6fd1" stroke-width="1.5"/>
+  <text x="180" y="42" font-size="12" text-anchor="middle" fill="#1f2a44">2. UPDATE</text>
+  <text x="180" y="60" font-size="11" text-anchor="middle" fill="#1f2a44">same WHERE</text>
+  <rect x="254" y="20" width="100" height="56" rx="6" fill="white" stroke="#1d6fd1" stroke-width="1.5"/>
+  <text x="304" y="42" font-size="12" text-anchor="middle" fill="#1f2a44">3. SELECT</text>
+  <text x="304" y="60" font-size="11" text-anchor="middle" fill="#6c7a93">check the effect</text>
+  <line x1="106" y1="48" x2="128" y2="48" stroke="#1f2a44" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="230" y1="48" x2="252" y2="48" stroke="#1f2a44" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="180" y="110" font-size="11" text-anchor="middle" fill="#b4232c">WHERE status = 'paid' AND customer_id IN (…)</text>
+</svg>
+```
+
+The advanced course adds two safety nets: the lesson Transactions: all or nothing lets you undo a change that failed its check, and the lesson RETURNING shows the changed rows as part of the change itself.
+:::
+
+::: context before-snapshot Why the average does not drift
+Imagine the database recomputed the average after each row changed. The Fountain pen drops to 31.00, so the average falls a little, and that might pull a different product over the line. The result would then depend on which row happened to be visited first. SQL avoids that by treating a statement as if every row changed at the same instant: all the conditions are judged against the table as it stood before the statement began. Here that average is the sum of the eight prices, 213.00, divided by 8, which is 26.625.
+:::
+--- task
+Make two changes, one after the other:
+
+1. Raise the price of every product whose `category` is `'stationery'` by 10%, rounded to 2 decimal places.
+2. Delete every row of `newsletter` whose email belongs to a customer: they already hear from the shop. Compare the emails lower-cased and trimmed on **both** sides (`lower(trim(email))`), and leave out customers whose `email` is NULL.
 --- starter
 -- 1. Raise stationery prices by 10%.
 
@@ -2250,9 +2382,11 @@ WHERE lower(trim(email)) IN (
   SELECT lower(trim(email)) FROM customers WHERE email IS NOT NULL
 );
 --- hint
-`UPDATE products SET price = ROUND(price * 1.1, 2) WHERE category = 'stationery';`
+Write two statements, each ending in `;`. The first is like Step 2, with `* 1.1` for "plus 10%" and `category = 'stationery'` in the `WHERE`.
 --- hint
-`DELETE FROM newsletter WHERE lower(trim(email)) IN (SELECT … FROM customers …);` — normalise both sides.
+The first is `UPDATE products SET price = ROUND(price * 1.1, 2) WHERE category = 'stationery';`. The second is a `DELETE FROM newsletter` whose `WHERE` uses `IN (SELECT … FROM customers …)`, as in Step 1.
+--- hint
+`DELETE FROM newsletter WHERE lower(trim(email)) IN (SELECT lower(trim(email)) FROM customers WHERE email IS NOT NULL);` Both sides are cleaned the same way, so `'BEN@Mail.com'` and `'ben@mail.com'` match.
 --- check query | Stationery prices went up 10%
 SELECT name, price FROM products WHERE category = 'stationery' ORDER BY id
 => [["Notebook", 4.95], ["Fountain pen", 35.2], ["Planner", 19.8]]
@@ -2265,17 +2399,95 @@ SELECT email FROM newsletter ORDER BY signed_up
 
 === sql2-14 | Debugging: the join that double-counts
 --- teach
-**The bug report.** Finance runs this report of what each customer ordered and what they paid. Ada's items come to 127.60 and she paid 127.60, but the report says she paid 175.10. Ben's numbers are both inflated too.
+Last lesson you changed rows on purpose. This lesson is a bug hunt, like the lesson Debugging: the rows NULL made disappear. That time a query returned too few rows. This time every row is there, but some totals are too big. You will see why a join can copy rows, and how to build a report where that cannot happen.
 
-The cause is called **fan-out**. Joining a table multiplies rows: an order with 2 items becomes 2 rows. Join payments on as well and an order with 2 items **and** 2 payments becomes 2 × 2 = 4 rows — every item paired with every payment. `SUM` then adds each payment once per item and each item once per payment.
+### The picture
 
-How to find it:
+A school survey puts each student's pets and each student's cousins on one sheet, with one line for every pet-and-cousin pair. A student with 2 pets and 3 cousins fills 2 × 3 = 6 lines. Count the pets on that sheet and you get 6, not 2: every pet was written down once per cousin.
 
-1. **Pick one wrong number and shrink the query to it.** Add `WHERE c.name = 'Ada'`.
-2. **Remove the aggregation and look at the raw rows** — `SELECT o.id, oi.product_id, p.amount …`. You will see the same payment repeated.
-3. **Count rows per key.** If a row you expected once appears several times, a join is fanning out.
+### The bug report
 
-The fix is not `DISTINCT` inside `SUM` — two genuinely different payments of the same amount would then merge. The fix is to **aggregate each child table down to one row per order first**, then join those one-row-per-order results. A `WITH` can hold several named steps, separated by commas:
+Finance runs this report: what each customer's orders were worth (`items_total`), and how much each customer paid (`paid_total`).
+
+```sql
+SELECT c.name,
+       ROUND(SUM(oi.qty * oi.unit_price), 2) AS items_total,
+       ROUND(SUM(p.amount), 2) AS paid_total
+FROM customers c
+JOIN orders o       ON o.customer_id = c.id
+JOIN order_items oi ON oi.order_id = o.id
+LEFT JOIN payments p ON p.order_id = o.id
+GROUP BY c.id;
+```
+
+| name | items_total | paid_total |
+| --- | --- | --- |
+| Ada | 127.6 | 175.1 |
+| Ben | 148.0 | 116.0 |
+| Cleo | 37.8 | 75.6 |
+| Dev | 107.0 | 214.0 |
+| Eve | 90.0 | 0.0 |
+
+Ada's items do come to 127.60. But Ada's three payments are 22.50 + 80.10 + 25.00 = 127.60, and the report says 175.10. Ben's numbers are both too big: really 90.00 of items and 58.00 paid. The query runs without any error. It is still wrong.
+
+### Step 1: shrink it to one wrong number
+
+Pick one wrong number and [[shrink the query|minimal-case]] down to it. Add `WHERE c.name = 'Ada'` before the `GROUP BY`. Five rows are far easier to read than a whole report.
+
+### Step 2: take the SUM away and look at the raw rows
+
+A `SUM` hides the rows it adds up. Remove it and select the pieces instead:
+
+```sql
+SELECT o.id AS order_id, oi.product_id, oi.qty * oi.unit_price AS item_total,
+       p.id AS payment_id, p.amount
+FROM customers c
+JOIN orders o       ON o.customer_id = c.id
+JOIN order_items oi ON oi.order_id = o.id
+LEFT JOIN payments p ON p.order_id = o.id
+WHERE c.name = 'Ada';
+```
+
+| order_id | product_id | item_total | payment_id | amount |
+| --- | --- | --- | --- | --- |
+| 1 | 1 | 13.5 | 1 | 22.5 |
+| 1 | 4 | 9.0 | 1 | 22.5 |
+| 2 | 5 | 80.1 | 2 | 80.1 |
+| 8 | 6 | 19.5 | 9 | 25.0 |
+| 8 | 1 | 5.5 | 9 | 25.0 |
+
+There it is. Payment 1 appears twice, and so does payment 9. Add the `amount` column: 22.5 + 22.5 + 80.1 + 25.0 + 25.0 = 175.1, the wrong total.
+
+### Step 3: name the cause
+
+This is **[[fan-out|fan-out-picture]]**: a join turning one row into several. You met the word in the lesson GROUP BY in depth.
+
+Order 1 has 2 items. Joining `order_items` turns order 1 into 2 rows, one per item. The payments join then gives **each** of those rows the order's payment, so payment 1 is copied onto both.
+
+Now both at once. Ben's order 4 has 2 items **and** 2 payments. Every item is paired with every payment: 2 × 2 = 4 rows. `SUM` then adds each payment once per item and each item once per payment:
+
+- items: 32.00 from order 3, plus 2 × (45.00 + 13.00) from order 4 = 148.00
+- paid: 2 × (30.00 + 28.00) = 116.00
+
+Counting rows per order shows the pattern at a glance: add `COUNT(*)` and `GROUP BY o.id` to the raw query. Orders 1, 5, 6, 7 and 8 give 2 rows each and order 4 gives 4, where one row per order would be honest. Order 7 has one item and two payments (45.00 and the refund of −45.00), which is why Eve's items doubled to 90.0.
+
+### Step 4: a shortcut that does not work
+
+`SUM(DISTINCT p.amount)` adds each *different* value only once. It would fix Ada's number today. But two real payments of the same amount, say two instalments of 30.00, would [[merge into one|sum-distinct]], and the total would quietly be 30.00 short.
+
+### Step 5: the fix, one row per order first
+
+The real fix: **add up each table to one row per order first**, then join those pieces. Here is the items step on its own:
+
+```sql
+SELECT order_id, SUM(qty * unit_price) AS items_total
+FROM order_items
+GROUP BY order_id;
+```
+
+It returns 8 rows, one per order: 22.5, 80.1, 32.0, 58.0, 37.8, 107.0, 45.0 and 25.0 for orders 1 to 8. The same step on `payments` returns 7 rows: order 3 was cancelled and never paid, so it has no row, and order 7 nets to 0.0 (45.00 − 45.00).
+
+In the basics, `WITH` named one step. It can hold [[several named steps|multi-step-with]], separated by commas:
 
 ```sql
 WITH items AS (
@@ -2285,15 +2497,80 @@ WITH items AS (
   SELECT order_id, SUM(amount) AS paid_total
   FROM payments GROUP BY order_id
 )
-SELECT …
+SELECT o.id, i.items_total, p.paid_total
 FROM orders o
 JOIN items i     ON i.order_id = o.id
 LEFT JOIN paid p ON p.order_id = o.id
+ORDER BY o.id;
 ```
 
-Joining one-to-one pieces cannot multiply anything. The general rule: never sum across two independent one-to-many joins at once.
+| id | items_total | paid_total |
+| --- | --- | --- |
+| 1 | 22.5 | 22.5 |
+| 2 | 80.1 | 80.1 |
+| 3 | 32.0 | NULL |
+| 4 | 58.0 | 58.0 |
+| 5 | 37.8 | 37.8 |
+| 6 | 107.0 | 107.0 |
+| 7 | 45.0 | 0.0 |
+| 8 | 25.0 | 25.0 |
+
+Each order meets exactly one `items` row and at most one `paid` row, so nothing can be copied. `paid` is a `LEFT JOIN` because order 3 has no payments: an inner join would drop order 3 and its 32.00 of items with it.
+
+The general rule: never add up across two separate [[one-to-many|one-to-many]] joins at once. Shrink each to one row per key first.
+
+**Watch out:** a query that runs without an error is not a query that is right. Before you trust a total, check one number by hand, as you did with Ada's payments.
+
+::: context minimal-case Shrinking a bug
+Engineers call this a **minimal reproduction**: the smallest input that still shows the bug. A report over thousands of customers hides the problem in a crowd. One customer with five rows shows it in seconds. The same habit works everywhere: a crashing program is cut down to the ten lines that still crash, and a flight-software team replays the one second of sensor data where a reading jumped. Pick a case where you already know the right answer, so you can tell the moment the query disagrees.
+:::
+
+::: context fan-out-picture Every item meets every payment
+Order 4 as the broken query sees it. Each line is one result row, so the order becomes four rows instead of one.
+
+```svg
+<svg viewBox="0 0 360 150" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <text x="70" y="18" font-size="12" text-anchor="middle" fill="#6c7a93">order_items</text>
+  <text x="290" y="18" font-size="12" text-anchor="middle" fill="#6c7a93">payments</text>
+  <rect x="10" y="30" width="120" height="32" rx="6" fill="white" stroke="#1f2a44"/>
+  <text x="70" y="51" font-size="12" text-anchor="middle" fill="#1f2a44">Desk lamp 45.00</text>
+  <rect x="10" y="84" width="120" height="32" rx="6" fill="white" stroke="#1f2a44"/>
+  <text x="70" y="105" font-size="12" text-anchor="middle" fill="#1f2a44">USB cable 13.00</text>
+  <rect x="240" y="30" width="100" height="32" rx="6" fill="#8fb8f0" stroke="#1d6fd1"/>
+  <text x="290" y="51" font-size="12" text-anchor="middle" fill="#1f2a44">30.00</text>
+  <rect x="240" y="84" width="100" height="32" rx="6" fill="#8fb8f0" stroke="#1d6fd1"/>
+  <text x="290" y="105" font-size="12" text-anchor="middle" fill="#1f2a44">28.00</text>
+  <line x1="130" y1="46" x2="240" y2="46" stroke="#b4232c" stroke-width="1.5"/>
+  <line x1="130" y1="46" x2="240" y2="100" stroke="#b4232c" stroke-width="1.5"/>
+  <line x1="130" y1="100" x2="240" y2="46" stroke="#b4232c" stroke-width="1.5"/>
+  <line x1="130" y1="100" x2="240" y2="100" stroke="#b4232c" stroke-width="1.5"/>
+  <text x="180" y="140" font-size="12" text-anchor="middle" fill="#1f2a44">2 items × 2 payments = 4 rows</text>
+</svg>
+```
+
+Summed over those four rows, the items come to 116.00 instead of 58.00, and the payments to 116.00 instead of 58.00.
+:::
+
+::: context sum-distinct Why DISTINCT is the wrong fix
+`DISTINCT` inside `SUM` throws away repeated *values*, not repeated *rows*. It cannot tell a payment that was copied by a join from a second, real payment that happens to be the same amount. Try it in SQLite:
+
+```sql
+SELECT SUM(amount), SUM(DISTINCT amount)
+FROM (SELECT 30.0 AS amount UNION ALL SELECT 30.0);
+```
+
+It returns 60.0 and 30.0. Two genuine instalments of 30.00 should total 60.00. The dangerous part is that the shortcut gives the right answer on today's data, so the bug waits until the day two payments match.
+:::
+
+::: context multi-step-with More than one named step
+Each step in a `WITH` is a **CTE**, short for common table expression: a named query that the rest of the statement can read like a table. Steps are separated by commas, and the word `WITH` appears only once, at the top. A later step may read an earlier one. The best part for debugging: you can run any step on its own, as you did with the items step, and check its rows before you trust it. The advanced course opens with a whole lesson on CTEs.
+:::
+
+::: context one-to-many One row here, many rows there
+A link is **one-to-many** when one row on one side can match many rows on the other: one order, many items; one order, many payments. Joining along one such link is fine; the grain becomes "one row per item". Joining along two separate ones from the same row multiplies them together. Real systems are full of these pairs: one flight with many sensor readings and many log messages, one app user with many logins and many purchases. The same trap comes back in the advanced course, in the lesson Debugging: the running balance that repeats.
+:::
 --- task
-Fix the report so each customer with orders shows their correct `items_total` and `paid_total` (both over all their orders, rounded to 2 decimals). Keep the columns `name`, `items_total`, `paid_total`. Customers whose orders have no payments at all should show `0` paid.
+Fix the report so each customer with orders shows the correct `items_total` and `paid_total` (each over all of that customer's orders, rounded to 2 decimals). Keep the columns `name`, `items_total`, `paid_total`. A customer whose orders have no payments at all should show `0` paid.
 --- starter
 SELECT c.name,
        ROUND(SUM(oi.qty * oi.unit_price), 2) AS items_total,
@@ -2322,11 +2599,11 @@ JOIN items i     ON i.order_id = o.id
 LEFT JOIN paid p ON p.order_id = o.id
 GROUP BY c.id;
 --- hint
-Add `WHERE c.name = 'Ada'` and select the raw rows without `SUM`. Which payment appears twice, and why?
+Start from the `WITH items AS (…), paid AS (…)` query in Step 5. It already gives one honest row per order.
 --- hint
-Sum `order_items` per order in one `WITH` step and `payments` per order in another; each then has one row per order.
+Add `JOIN customers c ON c.id = o.customer_id` (or start `FROM customers c` and join `orders` to it), then `GROUP BY c.id` and select `c.name`, `ROUND(SUM(i.items_total), 2)` and the paid sum.
 --- hint
-Join `orders` to both steps and sum those per customer. Ben's cancelled order has no payment, so wrap the paid sum in `COALESCE(…, 0)` only where it could be NULL.
+For the paid column, write `ROUND(COALESCE(SUM(p.paid_total), 0), 2) AS paid_total`. `COALESCE(…, 0)` turns a NULL sum into 0 for a customer with no payments at all.
 --- check result | Correct totals; Ben paid 58, Eve's refund nets to 0
 [["Ada", 127.6, 127.6], ["Ben", 90.0, 58.0], ["Cleo", 37.8, 37.8], ["Dev", 107.0, 107.0], ["Eve", 45.0, 0.0]]
 
@@ -2351,26 +2628,164 @@ INSERT INTO employees (id, name, dept, salary) VALUES
   (10, 'Jo',  'eng',     NULL),
   (11, 'Kit', 'design',  65000);
 --- teach
-This lesson's database has one table, `employees` (`id`, `name`, `dept`, `salary`). Contractors have a NULL salary.
+Last lesson you hunted down a bug. This lesson and the next are puzzles: questions where the first answer that comes to mind is wrong. You will practise a way of working through them, one step at a time.
 
-**The problem.** For each department, find the second-highest salary. "Second-highest" means the second-highest *distinct* amount: if two people share the top salary, the answer is the next amount below it. A department with fewer than two distinct salaries has no second-highest, and should show NULL rather than vanish.
+This lesson has its own database: one table, `employees`, with the columns `id`, `name`, `dept` (the department) and `salary`. The [[contractors|null-salary]] have a NULL salary. Here is every salary, sorted by department:
 
-How to approach a problem like this:
+| dept | salaries |
+| --- | --- |
+| design | 65000, 65000 |
+| eng | 120000, 120000, 95000, 80000, NULL |
+| ops | 60000 |
+| sales | 70000, 70000, 55000 |
 
-1. **Restate it with examples.** eng earns 120000, 120000, 95000, 80000 (and one NULL). The second-highest is 95000, not 120000.
-2. **Try the obvious answer and find where it breaks.** `ORDER BY salary DESC LIMIT 1 OFFSET 1` returns the second *row* — 120000 again, because of the tie. It also works on one department at a time only.
-3. **Rephrase.** "The second-highest salary" is "the highest salary that is below the highest salary". That is two MAXes, one inside the other:
+### The problem
+
+For each department, find the second-highest salary.
+
+Picture a podium where two runners tie for the fastest time. The next-fastest time is the one below theirs, not the second runner's. In the same way, "second-highest" here means the second-highest **[[distinct|distinct-levels]]** amount, where distinct means "different". If two people share the top salary, the answer is the next amount below it.
+
+A department with fewer than two different salaries has no second-highest. It should still appear, with NULL, rather than vanish from the result.
+
+### Step 1: restate it with examples
+
+Work the answer out by hand for each department before writing any SQL:
+
+- eng: the amounts are 120000 and 120000, then 95000. The second-highest is **95000**, not 120000.
+- sales: 70000 twice, then 55000. The answer is **55000**.
+- ops: one person, one amount. No answer: **NULL**.
+- design: everyone earns 65000. Only one different amount, so no answer: **NULL**.
+
+Now you know what a correct query must return.
+
+### Step 2: try the obvious answer and find where it breaks
+
+The lesson Pagination with LIMIT and OFFSET skipped rows. Skip one row, keep the next:
+
+```sql
+SELECT salary FROM employees
+WHERE dept = 'eng'
+ORDER BY salary DESC
+LIMIT 1 OFFSET 1;
+```
+
+It returns 120000. `OFFSET 1` skipped Ana's row, and Bo's row, with the same salary, came next. `OFFSET` counts rows, not different amounts. It also answers only one department at a time.
+
+### Step 3: say it another way
+
+"The second-highest salary" is the same as "the highest salary that is below the highest salary". That is two `MAX`es, one inside the other. The inner one runs first and gives one value:
+
+```sql
+SELECT MAX(salary) FROM employees;
+```
+
+That is 120000. Now ask for the highest salary below it:
 
 ```sql
 SELECT MAX(salary) FROM employees
 WHERE salary < (SELECT MAX(salary) FROM employees);
 ```
 
-4. **Generalise.** Make it per department with a correlated subquery, and drive the query from the list of departments so every department appears, even the ones with no answer. A subquery in `FROM` — `(SELECT DISTINCT dept FROM employees) d` — works like a table, as long as you give it an alias. `MAX` over no rows returns NULL — exactly the "no answer" you want.
+That gives 95000, for the whole company. `<` means "less than", so both 120000 rows are left out.
 
-5. **Check the edge cases against the data:** a tie at the top (eng, sales), a department with one person (ops), a department where everyone earns the same (design), and NULL salaries (MAX ignores them).
+### Step 4: one department
+
+Put the department in **both** queries, inner and outer:
+
+```sql
+SELECT MAX(salary) FROM employees
+WHERE dept = 'eng'
+  AND salary < (SELECT MAX(salary) FROM employees WHERE dept = 'eng');
+```
+
+That gives 95000, the answer from Step 1.
+
+### Step 5: every department
+
+To get one row per department, even for the ones with no answer, start from the list of departments:
+
+```sql
+SELECT DISTINCT dept FROM employees;
+```
+
+That gives four rows: eng, sales, ops, design. A subquery can stand in `FROM`, where it works like a table. Give it a short name, an alias, so you can point at its columns. Here it is called `d`, so its column is `d.dept`. This is called a **[[derived table|derived-table]]**.
+
+Then, for each department, ask a [[correlated subquery|correlated-recap]] that uses `d.dept` in place of `'eng'`. Here is the same shape with a simpler question, the *highest* salary in each department:
+
+```sql
+SELECT d.dept,
+       (SELECT MAX(e.salary) FROM employees e WHERE e.dept = d.dept) AS top_salary
+FROM (SELECT DISTINCT dept FROM employees) d
+ORDER BY d.dept;
+```
+
+| dept | top_salary |
+| --- | --- |
+| design | 65000 |
+| eng | 120000 |
+| ops | 60000 |
+| sales | 70000 |
+
+For the real answer, swap the inner `MAX` for the "highest below the highest" from Step 4, with `d.dept` in place of `'eng'` in both places.
+
+What about ops? No salary in ops is below 60000, so the "below the max" part finds no rows. `MAX` over no rows returns NULL, which is exactly the "no answer" you want. And ops still gets its row, because the query starts from the list of departments.
+
+### Step 6: check the edge cases
+
+Test your result against the awkward cases in the data, the **[[edge cases|edge-cases]]**:
+
+- a tie at the top: eng and sales;
+- a department with one person: ops;
+- a department where everyone earns the same: design;
+- NULL salaries: `MAX` ignores them, so Jo does not disturb eng.
+
+**Watch out:** the inner `MAX` needs `dept = d.dept` too. Without it, the inner query finds the whole company's top salary, 120000, and every department answers "my highest salary below 120000". Design would then get 65000 instead of NULL.
+
+::: context null-salary Why NULL and not 0
+A contractor is paid by an outside company, so there is no salary to record. NULL says "no value here". A 0 would be a lie: it would say "this person earns nothing", and it would drag down every average. Aggregates like `MAX`, `MIN`, `AVG` and `SUM` skip NULLs, which is why Jo does not change the answer for eng. `COUNT(salary)` skips them too, while `COUNT(*)` counts every row, NULL or not.
+:::
+
+::: context distinct-levels Second row or second amount
+The same five eng rows, seen two ways.
+
+```svg
+<svg viewBox="0 0 360 160" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <text x="90" y="18" font-size="12" text-anchor="middle" fill="#6c7a93">rows, highest first</text>
+  <text x="270" y="18" font-size="12" text-anchor="middle" fill="#6c7a93">different amounts</text>
+  <rect x="30" y="28" width="120" height="24" rx="4" fill="white" stroke="#1f2a44"/>
+  <text x="90" y="45" font-size="12" text-anchor="middle" fill="#1f2a44">1st: 120000</text>
+  <rect x="30" y="56" width="120" height="24" rx="4" fill="#f2b880" stroke="#b4232c"/>
+  <text x="90" y="73" font-size="12" text-anchor="middle" fill="#1f2a44">2nd: 120000</text>
+  <rect x="30" y="84" width="120" height="24" rx="4" fill="white" stroke="#1f2a44"/>
+  <text x="90" y="101" font-size="12" text-anchor="middle" fill="#1f2a44">3rd: 95000</text>
+  <rect x="30" y="112" width="120" height="24" rx="4" fill="white" stroke="#1f2a44"/>
+  <text x="90" y="129" font-size="12" text-anchor="middle" fill="#1f2a44">4th: 80000</text>
+  <text x="90" y="152" font-size="11" text-anchor="middle" fill="#6c7a93">(Jo's NULL sorts last)</text>
+  <rect x="210" y="28" width="120" height="24" rx="4" fill="white" stroke="#1f2a44"/>
+  <text x="270" y="45" font-size="12" text-anchor="middle" fill="#1f2a44">1st: 120000</text>
+  <rect x="210" y="56" width="120" height="24" rx="4" fill="#8fb8f0" stroke="#1d6fd1"/>
+  <text x="270" y="73" font-size="12" text-anchor="middle" fill="#1f2a44">2nd: 95000</text>
+  <rect x="210" y="84" width="120" height="24" rx="4" fill="white" stroke="#1f2a44"/>
+  <text x="270" y="101" font-size="12" text-anchor="middle" fill="#1f2a44">3rd: 80000</text>
+</svg>
+```
+
+`OFFSET 1` picks the orange box on the left. The question asks for the blue box on the right.
+:::
+
+::: context derived-table A table made by a query
+A **derived table** is a subquery in `FROM`. It exists only while the query runs. SQLite lets you leave off the alias, but then you cannot write `d.dept`, and some other databases (MySQL, and PostgreSQL before version 16) refuse a derived table with no alias at all. So always name it. Derived tables do the same job as `WITH` steps: `WITH d AS (SELECT DISTINCT dept FROM employees)` followed by `FROM d` gives the same rows.
+:::
+
+::: context correlated-recap A subquery that runs once per row
+You met these in the lesson Correlated subqueries and EXISTS. A **correlated** subquery mentions a column of the outer query, here `d.dept`, so it cannot run on its own: it runs once for each outer row, with that row's value filled in. For the eng row it asks about eng, for the ops row about ops. That is how one query answers four departments without you writing four queries.
+:::
+
+::: context edge-cases Testing at the edges
+An **edge case** is an input at the boundary of what the code expects: nothing, exactly one, a tie, a missing value. Most bugs live there, because the obvious examples are the ones everyone thinks of. Flight-software testers work the same way: zero fuel, one engine out, two sensors that disagree. A good habit is to put an edge case of each kind into your test data on purpose, as this table does. The advanced course solves this very problem again with a window function, `DENSE_RANK()`, which numbers tied amounts with the same rank.
+:::
 --- task
-Return one row per department: `dept` and `second_salary` (the second-highest distinct salary, or NULL if there is none). Sort by `dept`.
+Return one row per department, with two columns: `dept`, and `second_salary`, the second-highest **different** salary in that department (or NULL if there is none). Sort by `dept`.
 --- starter
 SELECT dept, salary AS second_salary
 FROM employees
@@ -2386,48 +2801,162 @@ SELECT d.dept,
 FROM (SELECT DISTINCT dept FROM employees) d
 ORDER BY d.dept;
 --- hint
-For one department: the MAX salary that is less than the MAX salary.
+Start from the `top_salary` query in Step 5. It already gives one row per department, sorted by `dept`.
 --- hint
-Drive the query from `(SELECT DISTINCT dept FROM employees) d`, so every department gets a row.
+Replace its inner `MAX` with Step 4's "highest salary below the highest salary", using `d.dept` wherever Step 4 said `'eng'`.
 --- hint
-Put the "max below the max" in a scalar subquery in the SELECT list, correlated on `e.dept = d.dept` (the inner MAX needs `dept = d.dept` too).
+The inner part becomes `(SELECT MAX(e.salary) FROM employees e WHERE e.dept = d.dept AND e.salary < (SELECT MAX(salary) FROM employees WHERE dept = d.dept)) AS second_salary`.
 --- check result | design NULL, eng 95000, ops NULL, sales 55000
 ordered
 [["design", null], ["eng", 95000], ["ops", null], ["sales", 55000]]
 
 === sql2-16 | Problem solving: finding what is missing
 --- teach
-**The problem.** Sales wants to win back customers who have never bought anything. "Bought" means an order that is `paid` or `shipped`: a customer whose only order was refunded or cancelled has not really bought.
+Last lesson you found a value by saying the question another way. This lesson's answer is harder to see: the rows that are *not* there. You will learn three ways to ask for a missing match, and the one that silently goes wrong.
 
-This is an **anti-join**: rows in one table with *no* match in another. You cannot find them with an ordinary join, because a join only produces rows that match. There are three standard ways to ask for a missing match:
+### The picture
+
+A teacher wants to know who has not handed in their homework. Staring at the pile of homework will never show it: the missing names are not in the pile. The teacher has to start from the class list and check each name against the pile.
+
+### The problem
+
+The shop wants to [[win back|win-back]] customers who have never bought anything. "Bought" means an order whose status is `paid` or `shipped`. A customer whose only order was refunded or cancelled has not really bought.
+
+Rows in one table with *no* match in another are found with an **[[anti-join|anti-join-picture]]**. An ordinary join cannot do it, because a join only produces rows that match.
+
+Start with a simpler question: customers with no orders at all. There are three standard ways to ask it. All three give Finn and Gus.
+
+### Way 1: NOT EXISTS
 
 ```sql
--- 1. NOT EXISTS: clearest, and safe with NULLs
 SELECT c.name FROM customers c
 WHERE NOT EXISTS (SELECT 1 FROM orders o WHERE o.customer_id = c.id);
+```
 
--- 2. LEFT JOIN, then keep the rows where the right side is missing
+You met `EXISTS` in the lesson Correlated subqueries and EXISTS: it is true when the subquery returns at least one row. `NOT EXISTS` is true when it returns none. The `1` after `SELECT` is [[a placeholder|select-one]]: only *whether* a row exists matters, not what is in it. Read it as: "keep the customer when there is no order whose `customer_id` is theirs".
+
+### Way 2: LEFT JOIN, then keep the empty side
+
+```sql
 SELECT c.name FROM customers c
 LEFT JOIN orders o ON o.customer_id = c.id
 WHERE o.id IS NULL;
+```
 
--- 3. NOT IN: works, until the list contains a NULL
+The `LEFT JOIN` keeps every customer and fills the order columns with NULL when nothing matches. Its last rows look like this:
+
+| name | o.id | o.status |
+| --- | --- | --- |
+| Eve | 7 | refunded |
+| Finn | NULL | NULL |
+| Gus | NULL | NULL |
+
+`WHERE o.id IS NULL` keeps only the customers whose order side came back empty.
+
+### Way 3: NOT IN
+
+```sql
 SELECT c.name FROM customers c
 WHERE c.id NOT IN (SELECT customer_id FROM orders);
 ```
 
-The trap in option 3: `x NOT IN (1, 2, NULL)` means `x <> 1 AND x <> 2 AND x <> NULL`, and the last comparison is *unknown*, so the whole condition is never true. Try "customers who never referred anyone":
+`NOT IN (…)` means "is none of the values in this list". It works here, until the list contains a NULL.
+
+### The trap in NOT IN
+
+`x NOT IN (1, 2, NULL)` means `x <> 1 AND x <> 2 AND x <> NULL` (`<>` is "not equal"). The last comparison is unknown, as the lesson Debugging: the rows NULL made disappear showed, because of **[[three-valued logic|three-valued-recap]]**. So the whole condition can never be true.
+
+Try "customers who never referred anyone". The `referred_by` column holds NULL, 1, 1, 2, NULL, 4, NULL:
 
 ```sql
 SELECT name FROM customers
-WHERE id NOT IN (SELECT referred_by FROM customers);  -- no rows at all!
+WHERE id NOT IN (SELECT referred_by FROM customers);
 ```
 
-`referred_by` is NULL for several customers, so the list contains NULL and the answer is empty — without any error. Prefer `NOT EXISTS`; it has no such trap.
+No rows at all, and [[no error to warn you|silent-wrong]]. The same question with `NOT EXISTS`:
 
-A wrong turn many people take first: `JOIN orders … WHERE status NOT IN ('paid', 'shipped')`. That finds customers who have *some* order that is not a purchase — a different question.
+```sql
+SELECT c.name FROM customers c
+WHERE NOT EXISTS (SELECT 1 FROM customers k WHERE k.referred_by = c.id);
+```
+
+| name |
+| --- |
+| Cleo |
+| Eve |
+| Finn |
+| Gus |
+
+That is right: only Ada (1), Ben (2) and Dev (4) ever referred anyone. Prefer `NOT EXISTS`. It has no NULL trap.
+
+### Back to the real question
+
+A tempting first try is `JOIN orders … WHERE status NOT IN ('paid', 'shipped')`. That finds customers who have *some* order that is not a purchase, which is a different question. It returns Ben and Eve. Ben is wrong, because Ben's order 4 was shipped. And Finn and Gus are missing: they have no orders to join.
+
+The right shape is Way 1, with the purchase rule inside the subquery, next to the link: keep the customer when no order exists that is theirs **and** is paid or shipped.
+
+**Watch out:** never use `NOT IN` with a subquery whose column can hold NULL. It returns nothing, with no error. Use `NOT EXISTS`.
+
+::: context win-back Anti-joins in real work
+"Who has not…?" is one of the most common questions a business asks: users who signed up but never bought, invoices with no payment, products that never sold. Engineers ask it too. A ground station might list every satellite that has sent no status message in the last hour, which is an anti-join between the list of satellites and the table of recent messages. Each of these is a list of rows that are *not* in some other table.
+:::
+
+::: context anti-join-picture The rows with no line
+Each customer, with a line to each of their orders. The anti-join keeps the customers with no line at all.
+
+```svg
+<svg viewBox="0 0 360 130" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <rect x="12" y="14" width="44" height="26" rx="4" fill="white" stroke="#1f2a44"/>
+  <text x="34" y="32" font-size="11" text-anchor="middle" fill="#1f2a44">Ada</text>
+  <rect x="61" y="14" width="44" height="26" rx="4" fill="white" stroke="#1f2a44"/>
+  <text x="83" y="32" font-size="11" text-anchor="middle" fill="#1f2a44">Ben</text>
+  <rect x="110" y="14" width="44" height="26" rx="4" fill="white" stroke="#1f2a44"/>
+  <text x="132" y="32" font-size="11" text-anchor="middle" fill="#1f2a44">Cleo</text>
+  <rect x="159" y="14" width="44" height="26" rx="4" fill="white" stroke="#1f2a44"/>
+  <text x="181" y="32" font-size="11" text-anchor="middle" fill="#1f2a44">Dev</text>
+  <rect x="208" y="14" width="44" height="26" rx="4" fill="white" stroke="#1f2a44"/>
+  <text x="230" y="32" font-size="11" text-anchor="middle" fill="#1f2a44">Eve</text>
+  <rect x="257" y="14" width="44" height="26" rx="4" fill="#f2b880" stroke="#b4232c" stroke-width="1.5"/>
+  <text x="279" y="32" font-size="11" text-anchor="middle" fill="#1f2a44">Finn</text>
+  <rect x="306" y="14" width="44" height="26" rx="4" fill="#f2b880" stroke="#b4232c" stroke-width="1.5"/>
+  <text x="328" y="32" font-size="11" text-anchor="middle" fill="#1f2a44">Gus</text>
+  <line x1="34" y1="40" x2="18" y2="80" stroke="#1d6fd1" stroke-width="1.5"/>
+  <line x1="34" y1="40" x2="34" y2="80" stroke="#1d6fd1" stroke-width="1.5"/>
+  <line x1="34" y1="40" x2="50" y2="80" stroke="#1d6fd1" stroke-width="1.5"/>
+  <text x="18" y="94" font-size="11" text-anchor="middle" fill="#1f2a44">1</text>
+  <text x="34" y="94" font-size="11" text-anchor="middle" fill="#1f2a44">2</text>
+  <text x="50" y="94" font-size="11" text-anchor="middle" fill="#1f2a44">8</text>
+  <line x1="83" y1="40" x2="75" y2="80" stroke="#1d6fd1" stroke-width="1.5"/>
+  <line x1="83" y1="40" x2="91" y2="80" stroke="#1d6fd1" stroke-width="1.5"/>
+  <text x="75" y="94" font-size="11" text-anchor="middle" fill="#1f2a44">3</text>
+  <text x="91" y="94" font-size="11" text-anchor="middle" fill="#1f2a44">4</text>
+  <line x1="132" y1="40" x2="132" y2="80" stroke="#1d6fd1" stroke-width="1.5"/>
+  <text x="132" y="94" font-size="11" text-anchor="middle" fill="#1f2a44">5</text>
+  <line x1="181" y1="40" x2="181" y2="80" stroke="#1d6fd1" stroke-width="1.5"/>
+  <text x="181" y="94" font-size="11" text-anchor="middle" fill="#1f2a44">6</text>
+  <line x1="230" y1="40" x2="230" y2="80" stroke="#1d6fd1" stroke-width="1.5"/>
+  <text x="230" y="94" font-size="11" text-anchor="middle" fill="#1f2a44">7</text>
+  <text x="303" y="64" font-size="11" text-anchor="middle" fill="#b4232c">no orders</text>
+  <text x="180" y="120" font-size="11" text-anchor="middle" fill="#6c7a93">numbers are order ids</text>
+</svg>
+```
+
+The opposite, "customers that *do* have a match", is called a **semi-join**, and `EXISTS` is the usual way to write it.
+:::
+
+::: context select-one Why SELECT 1
+Inside `EXISTS`, the columns you select are never looked at. People write `SELECT 1` to say so plainly; `SELECT *` would work the same. The database can also stop searching at the first matching row, because one row is already enough to answer "does any exist?". That makes `NOT EXISTS` a cheap question even against a large table, especially when the linking column has an index, which the advanced course covers.
+:::
+
+::: context three-valued-recap True, false and unknown
+In SQL a condition can be true, false or unknown, and any comparison with NULL is unknown. `AND` needs every part to be true. If one part is false, the whole thing is false. If none is false but one is unknown, the whole thing is unknown. So `3 NOT IN (1, 2, NULL)` is unknown, and `WHERE` throws the row away. You can see it in SQLite: `SELECT 3 NOT IN (1, 2, NULL);` returns NULL, not 1. `IN` on its own is kinder: `1 IN (1, 2, NULL)` is still true, because one match is enough.
+:::
+
+::: context silent-wrong Wrong answers without errors
+An error is annoying but honest: you know something broke. An empty result looks like a real answer, "nobody", and it can go into a report or a mailing list unnoticed. That is why experienced engineers are more afraid of silent bugs than loud ones. If you ever must use `NOT IN` with a subquery, filter the NULLs out inside it: `WHERE id NOT IN (SELECT referred_by FROM customers WHERE referred_by IS NOT NULL)` gives Cleo, Eve, Finn and Gus, the right answer.
+:::
 --- task
-Return the names of the customers who have **no** order with status `paid` or `shipped` (including customers with no orders at all), alphabetically.
+Return the names of the customers who have **no** order with status `paid` or `shipped`. Include customers with no orders at all. Sort them alphabetically.
 --- starter
 SELECT DISTINCT c.name
 FROM customers c
@@ -2443,36 +2972,182 @@ WHERE NOT EXISTS (
 )
 ORDER BY c.name;
 --- hint
-The starter finds Ben, who has bought (order 4), and misses Finn and Gus, who have no orders to join.
+The starter finds Ben, who has bought (order 4), and misses Finn and Gus, who have no orders to join. Start again from Way 1.
 --- hint
-Ask per customer whether a purchase exists: `WHERE NOT EXISTS (SELECT 1 FROM orders o WHERE o.customer_id = c.id AND …)`.
+Ask, per customer, whether a purchase exists: `WHERE NOT EXISTS (SELECT 1 FROM orders o WHERE o.customer_id = c.id AND …)`.
+--- hint
+Fill the gap with `o.status IN ('paid', 'shipped')`, and end with `ORDER BY c.name`.
 --- check result | Eve (refunded only), Finn and Gus
 ordered
 [["Eve"], ["Finn"], ["Gus"]]
 
 === sql2-17 | Design: choosing the joins for a report
 --- teach
-Every report is a set of decisions about joins. Make them on purpose, from the requirements, before you write a line:
+Last lesson you found the rows that were missing. This is the last lesson of the course, and it puts the joins together. You will choose each join on purpose, from what the report must show, before you write a line of SQL.
+
+### The picture
+
+Picture a list for a class trip. "Every student, with their permission slip if they have one" means you start from the class register, and a student with no slip still appears, with a blank. "Only the students who have a slip" is a different list. The words of the request decide the list, and in SQL they decide the join.
+
+### Step 1: turn the words into joins
+
+Read the [[requirements|requirements]] (what the report must show) and match them to a join:
 
 | The requirement says… | Use |
 | --- | --- |
 | "only X that have a Y" | `JOIN` (inner) |
 | "every X, with its Y if there is one" | `LEFT JOIN` from X |
-| "every X and every Y, matched where possible" | `FULL OUTER JOIN` (SQLite 3.39+) |
-| "every combination of X and Y" | `CROSS JOIN` — calendars, grids |
-| "X that has no Y" | `NOT EXISTS` / anti-join |
+| "every X and every Y, matched where possible" | `FULL OUTER JOIN` |
+| "every combination of X and Y" | `CROSS JOIN`: calendars, grids |
+| "X that has no Y" | `NOT EXISTS` (an anti-join) |
 
-Then three questions for each LEFT JOIN:
+You have used the inner `JOIN`, `LEFT JOIN` and `NOT EXISTS`. The other two are new.
 
-1. **Which rows must survive?** That is the table you start `FROM`. Everything else hangs off it.
-2. **Where does each filter go?** A condition on a LEFT-joined table goes in its `ON`, or it turns the join back into an inner join (lesson 2).
-3. **Could this join multiply rows?** If two one-to-many tables hang off the same row, aggregate one of them first (lesson 14). Count rows as you add each join.
+### FULL OUTER JOIN: keep both sides
 
-Then decide what "nothing" looks like: `COUNT(o.id)` gives 0 for no matches, `MAX(...)` gives NULL, and `SUM(...)` gives NULL unless you `COALESCE` it.
+A `FULL OUTER JOIN` keeps every row from **both** tables. Where a row has no partner, the other side is NULL. It works in [[SQLite 3.39 and later|full-outer-version]].
 
-Build the query one join at a time and run it after each step. A report that is wrong usually went wrong at one specific join, and you will see it the moment it happens.
+```sql
+SELECT c.name, n.email
+FROM customers c
+FULL OUTER JOIN newsletter n ON n.email = c.email;
+```
+
+It returns 11 rows: Ada matched to `ada@mail.com`, six customers with NULL in `email` (no newsletter row with their exact address), and four newsletter addresses with NULL in `name` (no customer).
+
+### CROSS JOIN: every pair
+
+A `CROSS JOIN` has no `ON`. It pairs every row of one table with every row of the other:
+
+```sql
+SELECT c.name, p.category
+FROM customers c
+CROSS JOIN (SELECT DISTINCT category FROM products) p
+WHERE c.id <= 2;
+```
+
+| name | category |
+| --- | --- |
+| Ada | stationery |
+| Ada | home |
+| Ada | electronics |
+| Ben | stationery |
+| Ben | home |
+| Ben | electronics |
+
+2 customers × 3 categories = 6 rows. It is how you build a grid with [[every day or every cell|cross-join-calendar]], even the empty ones.
+
+### Step 2: three questions for each LEFT JOIN
+
+1. **Which rows must survive?** That table goes in `FROM`, as the [[driving table|driving-table]]. Everything else hangs off it with `LEFT JOIN`.
+2. **Where does each filter go?** A condition on a LEFT-joined table goes in its `ON`. In `WHERE` it turns the join back into an inner join, as the lesson LEFT JOIN: where the filter goes showed.
+3. **Could this join multiply rows?** If two one-to-many tables hang off the same row, add one of them up first, as in the lesson Debugging: the join that double-counts. Count rows as you add each join.
+
+### Step 3: decide what "nothing" looks like
+
+For a customer with no matching rows, each aggregate gives something different:
+
+```sql
+SELECT c.name,
+       COUNT(oi.qty) AS item_lines,
+       SUM(oi.qty) AS units,
+       COALESCE(SUM(oi.qty), 0) AS units_or_zero,
+       MAX(o.placed) AS latest
+FROM customers c
+LEFT JOIN orders o       ON o.customer_id = c.id
+LEFT JOIN order_items oi ON oi.order_id = o.id
+WHERE c.name IN ('Dev', 'Finn')
+GROUP BY c.id, c.name;
+```
+
+| name | item_lines | units | units_or_zero | latest |
+| --- | --- | --- | --- | --- |
+| Dev | 2 | 3 | 3 | 2024-05-15 11:00:00 |
+| Finn | 0 | NULL | 0 | NULL |
+
+`COUNT(column)` gives 0 for no matches. `MAX(…)` gives NULL. `SUM(…)` gives NULL unless you wrap it in `COALESCE(…, 0)`. Decide [[which of these you want|empty-aggregates]] for every column.
+
+### Step 4: build it one join at a time
+
+Add one join, run the query, check the row count, then add the next. For a report on every customer:
+
+- `FROM customers c`: 7 rows.
+- add `LEFT JOIN customers r ON r.id = c.referred_by` (the referrer): still 7, because each customer has at most one referrer.
+- add a `LEFT JOIN` to the customer's live orders: 9 rows, because Ada has 3 live orders.
+- add `GROUP BY c.id`: back to 7, one per customer.
+
+Each count is what you expected, so each join is doing its job. A report that is wrong usually [[went wrong at one specific join|one-join-at-a-time]], and you see it the moment it happens.
+
+**Watch out:** "every customer" needs `LEFT JOIN` for **every** join off `customers`, not only the first. One inner `JOIN`, or one filter on a joined table in `WHERE`, and the customers with nothing to match quietly disappear.
+
+::: context requirements Reading the request carefully
+**Requirements** are the plain-language description of what a report or program must do. Small words carry big decisions: "every", "only", "at least one", "most recent". When a word is unclear, ask the person who wrote the request before you guess. Should a customer with no orders appear with 0, or not at all? Both are reasonable, and they need different joins. Engineers building mission software write requirements down and number them, so each one can be checked by a test.
+:::
+
+::: context full-outer-version FULL OUTER JOIN in SQLite
+SQLite added `RIGHT JOIN` and `FULL OUTER JOIN` in version 3.39.0, released in 2022. On older versions you build the same result from pieces you already know: a `LEFT JOIN` from the first table, then `UNION ALL` the rows of the second table that have no match, found with `NOT EXISTS`:
+
+```sql
+SELECT c.name, n.email FROM customers c
+LEFT JOIN newsletter n ON n.email = c.email
+UNION ALL
+SELECT NULL, n.email FROM newsletter n
+WHERE NOT EXISTS (SELECT 1 FROM customers c WHERE c.email = n.email);
+```
+
+It returns the same 11 rows.
+:::
+
+::: context cross-join-calendar Grids that show the zeros
+A sales chart per day has a problem: a day with no sales has no rows, so it is missing from the chart instead of showing 0. The fix is a `CROSS JOIN` that builds every day paired with every product first. Then you `LEFT JOIN` the real sales onto that grid, and the empty cells come out as 0 with `COALESCE`. A small grid, two days by the three home products:
+
+```sql
+SELECT d.day, p.name
+FROM (SELECT '2024-06-01' AS day UNION ALL SELECT '2024-06-02') d
+CROSS JOIN products p
+WHERE p.category = 'home';
+```
+
+That gives 2 × 3 = 6 rows.
+:::
+
+::: context driving-table The table everything hangs off
+The table in `FROM` is sometimes called the **driving table**: it decides which rows the report is about. Every `LEFT JOIN` hangs off it, and the row count never drops below its own.
+
+```svg
+<svg viewBox="0 0 360 120" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <rect x="10" y="42" width="110" height="36" rx="6" fill="#8fb8f0" stroke="#1d6fd1" stroke-width="1.5"/>
+  <text x="65" y="65" font-size="12" text-anchor="middle" fill="#1f2a44">customers c</text>
+  <rect x="220" y="10" width="130" height="36" rx="6" fill="white" stroke="#1f2a44"/>
+  <text x="285" y="33" font-size="12" text-anchor="middle" fill="#1f2a44">customers r</text>
+  <rect x="220" y="74" width="130" height="36" rx="6" fill="white" stroke="#1f2a44"/>
+  <text x="285" y="97" font-size="12" text-anchor="middle" fill="#1f2a44">orders o (live)</text>
+  <line x1="120" y1="54" x2="220" y2="28" stroke="#1f2a44" stroke-width="1.5"/>
+  <line x1="120" y1="66" x2="220" y2="92" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="170" y="30" font-size="11" text-anchor="middle" fill="#6c7a93">LEFT JOIN</text>
+  <text x="170" y="100" font-size="11" text-anchor="middle" fill="#6c7a93">LEFT JOIN</text>
+</svg>
+```
+
+Both joins start at `customers c`, so no customer can be lost.
+:::
+
+::: context empty-aggregates COUNT(*) counts the empty row
+After a `LEFT JOIN`, a customer with no matches still has one row, with NULLs on the joined side. `COUNT(*)` counts rows, so it gives 1 for that customer, not 0. `COUNT(o.id)` counts only the non-NULL values of `o.id`, so it gives 0. In this shop, `SELECT c.name, COUNT(*) FROM customers c LEFT JOIN orders o ON o.customer_id = c.id AND o.status IN ('paid', 'shipped') GROUP BY c.id;` wrongly shows 1 live order for Eve, Finn and Gus. Always count a column from the joined table.
+:::
+
+::: context one-join-at-a-time Why build in small steps
+When a query with five joins gives a wrong total, the bug could be in any of them. When you add joins one at a time and check the row count after each, you know the exact join where the count first went wrong. Engineers build systems the same way: small steps, each tested before the next, so a surprise can only come from the last change. The advanced course makes this even easier with `WITH` steps, where every step can be run and checked on its own.
+:::
 --- task
-Build the **account review**: one row for **every** customer, sorted by name, with columns `name`; `referrer` (the referring customer's name, or NULL); `live_orders` (their number of `paid` or `shipped` orders, 0 if none); and `last_order` (the date — `'YYYY-MM-DD'`, no time — of their most recent `paid` or `shipped` order, or NULL).
+Build the **account review**: one row for **every** customer, sorted by name, with four columns:
+
+- `name`;
+- `referrer`: the name of the customer who referred them, or NULL;
+- `live_orders`: their number of `paid` or `shipped` orders, 0 if none;
+- `last_order`: the date of their most recent `paid` or `shipped` order, written `'YYYY-MM-DD'` with no time, or NULL if none.
+
+`date(…)` from the lesson Dates and times keeps only the date part of a timestamp.
 --- starter
 SELECT c.name, r.name AS referrer, COUNT(o.id) AS live_orders, MAX(o.placed) AS last_order
 FROM customers c
@@ -2493,11 +3168,11 @@ LEFT JOIN orders o
 GROUP BY c.id, c.name, r.name
 ORDER BY c.name;
 --- hint
-"Every customer" means both joins must be `LEFT JOIN`s from `customers`.
+"Every customer" means both joins must be `LEFT JOIN`s from `customers`. The starter uses two inner joins and loses four customers.
 --- hint
-The status filter belongs in the orders join's `ON`, not in `WHERE`.
+The status filter belongs in the orders join's `ON`: `LEFT JOIN orders o ON o.customer_id = c.id AND o.status IN ('paid', 'shipped')`. Remove the `WHERE`.
 --- hint
-`date(MAX(o.placed))` drops the time; it stays NULL when there are no live orders.
+Wrap the latest timestamp in `date(…)`: `date(MAX(o.placed)) AS last_order`. It stays NULL when there are no live orders.
 --- check result | All seven customers, with NULLs and zeros where nothing matched
 ordered
 [["Ada", null, 3, "2024-06-01"], ["Ben", "Ada", 1, "2024-04-07"], ["Cleo", "Ada", 1, "2024-04-07"], ["Dev", "Ben", 1, "2024-05-15"], ["Eve", null, 0, null], ["Finn", "Dev", 0, null], ["Gus", null, 0, null]]
