@@ -5118,7 +5118,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-riccati-equations",
       "title": "The algebraic and differential Riccati equations",
-      "minutes": 18,
+      "minutes": 21,
       "covers": [
         "The algebraic and differential Riccati equations"
       ],
@@ -5154,7 +5154,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-lqr-with-integral-action",
       "title": "LQR with integral action",
-      "minutes": 18,
+      "minutes": 20,
       "covers": [
         "LQR with integral action"
       ],
@@ -5163,7 +5163,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-cheap-control-and-the-symmetric-root-locus",
       "title": "Cheap control and the asymptotic (Kalman) root locus",
-      "minutes": 19,
+      "minutes": 22,
       "covers": [
         "Cheap control and the asymptotic (Kalman) root locus"
       ],
@@ -5172,7 +5172,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-time-varying-lqr",
       "title": "Time-varying LQR for trajectory stabilization",
-      "minutes": 17,
+      "minutes": 19,
       "covers": [
         "Time-varying LQR along a nominal trajectory for trajectory stabilization"
       ],
@@ -5181,7 +5181,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-lqg-and-the-separation-principle",
       "title": "LQG and the stochastic separation principle",
-      "minutes": 19,
+      "minutes": 20,
       "covers": [
         "LQG = LQR + Kalman filter, and the stochastic separation principle"
       ],
@@ -5190,7 +5190,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-loop-transfer-recovery",
       "title": "Loop transfer recovery and what it costs",
-      "minutes": 18,
+      "minutes": 20,
       "covers": [
         "Loop transfer recovery and what it actually costs"
       ],
@@ -5199,7 +5199,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-discrete-time-lqr-and-the-dare",
       "title": "Discrete-time LQR and the DARE",
-      "minutes": 18,
+      "minutes": 17,
       "covers": [
         "Discrete-time LQR and the DARE"
       ],
@@ -5208,7 +5208,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l13-pontryagin-minimum-principle",
       "title": "The Hamiltonian and the Pontryagin minimum principle",
-      "minutes": 20,
+      "minutes": 22,
       "covers": [
         "The Hamiltonian and the Pontryagin minimum principle as the general frame"
       ],
@@ -5217,7 +5217,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l14-ilqr-and-ddp",
       "title": "iLQR and DDP, the nonlinear extension",
-      "minutes": 20,
+      "minutes": 22,
       "covers": [
         "iLQR and DDP as the nonlinear extension"
       ],
@@ -5255,7 +5255,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-hinf-synthesis-mixed-sensitivity",
       "title": "H-infinity synthesis and mixed sensitivity",
-      "minutes": 18,
+      "minutes": 22,
       "covers": [
         "H-infinity synthesis: mixed sensitivity S/KS/T weighting, the two-Riccati (DGKF) solution"
       ],
