@@ -4047,6 +4047,33 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Dependency resolution, extras, and the scientific-stack ABI problem"
       ],
       "file": "cod_py_09_packaging/09-dependency-resolution-and-abi.md"
+    },
+    {
+      "id": "l10-environment-tools",
+      "title": "Environments with venv, pip, uv and conda",
+      "minutes": 25,
+      "covers": [
+        "venv, pip, uv, conda and when each is the right answer"
+      ],
+      "file": "cod_py_09_packaging/10-environment-tools.md"
+    },
+    {
+      "id": "l11-docs-and-readme",
+      "title": "Docstrings, Sphinx and a README a stranger can run",
+      "minutes": 20,
+      "covers": [
+        "Sphinx and NumPy-style docstrings; README that lets a stranger run it"
+      ],
+      "file": "cod_py_09_packaging/11-docs-and-readme.md"
+    },
+    {
+      "id": "l12-publishing",
+      "title": "Publishing to PyPI and to private indexes",
+      "minutes": 24,
+      "covers": [
+        "Publishing internally versus on PyPI; private indexes"
+      ],
+      "file": "cod_py_09_packaging/12-publishing.md"
     }
   ],
   "cod_rs_01_basics": [
@@ -10588,14 +10615,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_py_09_packaging": {
-    "covered": 10,
+    "covered": 13,
     "total": 13,
-    "complete": false,
-    "missing": [
-      "venv, pip, uv, conda and when each is the right answer",
-      "Sphinx and NumPy-style docstrings; README that lets a stranger run it",
-      "Publishing internally versus on PyPI; private indexes"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_cpp_01_basics": {
     "covered": 15,
