@@ -3878,13 +3878,60 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       "file": "cod_rs_03_aerospace/04-embedded-tooling-and-static-memory.md"
     },
     {
+      "id": "l05-ffi-with-c-and-cpp",
+      "title": "Calling between Rust and C or C++",
+      "minutes": 20,
+      "covers": [
+        "FFI both directions: extern C, no_mangle, bindgen, cbindgen, and Rust modules inside an existing C or C++ flight codebase"
+      ],
+      "file": "cod_rs_03_aerospace/05-ffi-with-c-and-cpp.md"
+    },
+    {
+      "id": "l06-nalgebra-matrices",
+      "title": "nalgebra: matrices whose size is part of the type",
+      "minutes": 19,
+      "covers": [
+        "nalgebra: type-level dimensions, SMatrix versus DMatrix, and when it allocates"
+      ],
+      "file": "cod_rs_03_aerospace/06-nalgebra-matrices.md"
+    },
+    {
+      "id": "l07-nalgebra-geometry-and-neighbour-crates",
+      "title": "Turning things in space: nalgebra geometry and its neighbours",
+      "minutes": 28,
+      "covers": [
+        "nalgebra geometry: UnitQuaternion, Rotation3, Isometry3, slerp; no_std support",
+        "Neighbouring crates: ndarray, argmin, nyx-space, hifitime, micromath, libm"
+      ],
+      "file": "cod_rs_03_aerospace/07-nalgebra-geometry-and-neighbour-crates.md"
+    },
+    {
+      "id": "l08-certification-do-178c-and-ecss",
+      "title": "Allowed to fly: DO-178C, coverage, tool qualification and ECSS",
+      "minutes": 24,
+      "covers": [
+        "Certification: DO-178C DAL levels, structural coverage, DO-330 tool qualification, ECSS-Q-ST-80C"
+      ],
+      "file": "cod_rs_03_aerospace/08-certification-do-178c-and-ecss.md"
+    },
+    {
       "id": "l09-ferrocene-the-qualified-toolchain",
       "title": "Ferrocene: a Rust compiler you are allowed to trust",
-      "minutes": 21,
+      "minutes": 23,
       "covers": [
         "Ferrocene: the qualified Rust toolchain and exactly what its qualification covers"
       ],
       "file": "cod_rs_03_aerospace/09-ferrocene-the-qualified-toolchain.md"
+    },
+    {
+      "id": "l10-rust-in-space-the-evidence",
+      "title": "Rust in space: what the evidence actually says",
+      "minutes": 24,
+      "covers": [
+        "ESA activity: cRustacea in Space (DLR), the armv7-rtems-eabihf target, ADCSS 2024",
+        "What the evidence actually supports about Rust at SpaceX, and the fabricated claims to reject"
+      ],
+      "file": "cod_rs_03_aerospace/10-rust-in-space-the-evidence.md"
     }
   ],
   "cod_slk_01_models": [
@@ -10526,18 +10573,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_rs_03_aerospace": {
-    "covered": 9,
+    "covered": 16,
     "total": 16,
-    "complete": false,
-    "missing": [
-      "FFI both directions: extern C, no_mangle, bindgen, cbindgen, and Rust modules inside an existing C or C++ flight codebase",
-      "nalgebra: type-level dimensions, SMatrix versus DMatrix, and when it allocates",
-      "nalgebra geometry: UnitQuaternion, Rotation3, Isometry3, slerp; no_std support",
-      "Neighbouring crates: ndarray, argmin, nyx-space, hifitime, micromath, libm",
-      "Certification: DO-178C DAL levels, structural coverage, DO-330 tool qualification, ECSS-Q-ST-80C",
-      "ESA activity: cRustacea in Space (DLR), the armv7-rtems-eabihf target, ADCSS 2024",
-      "What the evidence actually supports about Rust at SpaceX, and the fabricated claims to reject"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_sql_01_select": {
     "covered": 10,
