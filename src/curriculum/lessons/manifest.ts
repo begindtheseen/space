@@ -3889,6 +3889,33 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Vectorisation as the default; when it costs more memory than it saves time"
       ],
       "file": "cod_py_08_performance/03-vectorisation-and-memory.md"
+    },
+    {
+      "id": "l04-numba-njit",
+      "title": "Numba – compiling the hot loop",
+      "minutes": 22,
+      "covers": [
+        "Numba njit: nopython mode, supported subset, cache=True, parallel and prange"
+      ],
+      "file": "cod_py_08_performance/04-numba-njit.md"
+    },
+    {
+      "id": "l05-when-numba-is-slower",
+      "title": "When @njit makes things slower",
+      "minutes": 18,
+      "covers": [
+        "Why an njit function can be slower: compile time, object mode fallback, unsupported types"
+      ],
+      "file": "cod_py_08_performance/05-when-numba-is-slower.md"
+    },
+    {
+      "id": "l06-cython-and-pybind11",
+      "title": "Cython and pybind11 – a compiled core with a Python harness",
+      "minutes": 20,
+      "covers": [
+        "Cython and pybind11; calling a C++ simulation core from a Python harness"
+      ],
+      "file": "cod_py_08_performance/06-cython-and-pybind11.md"
     }
   ],
   "cod_rs_01_basics": [
@@ -10424,13 +10451,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_py_08_performance": {
-    "covered": 3,
+    "covered": 6,
     "total": 13,
     "complete": false,
     "missing": [
-      "Numba njit: nopython mode, supported subset, cache=True, parallel and prange",
-      "Why an njit function can be slower: compile time, object mode fallback, unsupported types",
-      "Cython and pybind11; calling a C++ simulation core from a Python harness",
       "The GIL: what it does and does not block",
       "Threads for I/O and released-GIL numerics, processes for CPU-bound Python",
       "multiprocessing, concurrent.futures and joblib for embarrassingly parallel Monte Carlo",
