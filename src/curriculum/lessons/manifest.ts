@@ -1876,7 +1876,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l13-value-semantics-and-the-rules",
       "title": "Value semantics, reference semantics, and the rule of zero",
-      "minutes": 21,
+      "minutes": 26,
       "covers": [
         "Value semantics vs reference semantics; the rule of zero, three and five"
       ],
@@ -1885,7 +1885,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l14-smart-pointers",
       "title": "unique_ptr, shared_ptr, and why sharing is not the default",
-      "minutes": 25,
+      "minutes": 28,
       "covers": [
         "unique_ptr, make_unique, shared_ptr and its control block, weak_ptr and cycles"
       ],
