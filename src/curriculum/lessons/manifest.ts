@@ -3336,6 +3336,224 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       "file": "cod_py_05_plotting/12-decimation-for-plotting.md"
     }
   ],
+  "cod_rs_01_basics": [
+    {
+      "id": "l01-rustup-and-cargo",
+      "title": "Installing Rust, and running everything with Cargo",
+      "minutes": 25,
+      "covers": [
+        "rustup, toolchains, editions; cargo new, build, run, test, doc, clippy, fmt",
+        "Cargo.toml, dev and release profiles, workspaces, semver and feature flags"
+      ],
+      "file": "cod_rs_01_basics/01-rustup-and-cargo.md"
+    },
+    {
+      "id": "l02-variables-types-and-overflow",
+      "title": "Variables, types, and what happens when a number overflows",
+      "minutes": 22,
+      "covers": [
+        "Variables, mut, shadowing; scalar and compound types",
+        "Integer overflow: panics in debug, wraps in release; checked, wrapping and saturating operations"
+      ],
+      "file": "cod_rs_01_basics/02-variables-types-and-overflow.md"
+    },
+    {
+      "id": "l03-strings-and-control-flow",
+      "title": "Text as String and &str, and the ways a program repeats and decides",
+      "minutes": 21,
+      "covers": [
+        "String versus &str",
+        "Control flow; loop, while let, for"
+      ],
+      "file": "cod_rs_01_basics/03-strings-and-control-flow.md"
+    },
+    {
+      "id": "l04-structs-enums-and-match",
+      "title": "Structs, enums and match",
+      "minutes": 24,
+      "covers": [
+        "struct, enum as real sum types, impl blocks",
+        "Pattern matching and match exhaustiveness"
+      ],
+      "file": "cod_rs_01_basics/04-structs-enums-and-match.md"
+    },
+    {
+      "id": "l05-modules-and-collections",
+      "title": "Modules and collections",
+      "minutes": 24,
+      "covers": [
+        "Modules, pub, paths, use",
+        "Slices and arrays; Vec, HashMap, BTreeMap"
+      ],
+      "file": "cod_rs_01_basics/05-modules-and-collections.md"
+    },
+    {
+      "id": "l06-option-result-and-the-question-mark",
+      "title": "Option, Result and the question mark",
+      "minutes": 21,
+      "covers": [
+        "Option and Result, the absence of null, and the ? operator"
+      ],
+      "file": "cod_rs_01_basics/06-option-result-and-the-question-mark.md"
+    },
+    {
+      "id": "l07-iterators-and-closures",
+      "title": "Iterators and closures",
+      "minutes": 22,
+      "covers": [
+        "Iterators and adapters and their zero-cost nature",
+        "Closures: Fn, FnMut, FnOnce"
+      ],
+      "file": "cod_rs_01_basics/07-iterators-and-closures.md"
+    },
+    {
+      "id": "l08-derive-cfg-doc-tests-and-clippy",
+      "title": "derive, cfg, doc tests and clippy",
+      "minutes": 24,
+      "covers": [
+        "derive macros; cfg attributes; doc tests",
+        "clippy as a teaching tool"
+      ],
+      "file": "cod_rs_01_basics/08-derive-cfg-doc-tests-and-clippy.md"
+    }
+  ],
+  "cod_rs_02_ownership": [
+    {
+      "id": "l01-ownership-and-moves",
+      "title": "Ownership and moves",
+      "minutes": 20,
+      "covers": [
+        "The three ownership rules; move by default and Copy types"
+      ],
+      "file": "cod_rs_02_ownership/01-ownership-and-moves.md"
+    },
+    {
+      "id": "l02-borrowing-and-aliasing-xor-mutability",
+      "title": "Borrowing, and the rule of many readers or one writer",
+      "minutes": 22,
+      "covers": [
+        "Borrowing: shared &T versus exclusive &mut T",
+        "Aliasing XOR mutability and why it removes data races and iterator invalidation by construction"
+      ],
+      "file": "cod_rs_02_ownership/02-borrowing-and-aliasing-xor-mutability.md"
+    },
+    {
+      "id": "l03-reading-borrow-checker-errors",
+      "title": "Reading borrow-checker errors",
+      "minutes": 23,
+      "covers": [
+        "Reading borrow-checker errors instead of fighting them"
+      ],
+      "file": "cod_rs_02_ownership/03-reading-borrow-checker-errors.md"
+    },
+    {
+      "id": "l04-lifetimes",
+      "title": "Lifetimes, or how long a borrow may last",
+      "minutes": 24,
+      "covers": [
+        "Lifetimes: elision rules, explicit annotations, lifetimes in structs, static"
+      ],
+      "file": "cod_rs_02_ownership/04-lifetimes.md"
+    },
+    {
+      "id": "l05-interior-mutability-and-shared-ownership",
+      "title": "Interior mutability and shared ownership",
+      "minutes": 28,
+      "covers": [
+        "Interior mutability: Cell, RefCell and its runtime panics, Rc, Arc, Mutex, RwLock, OnceLock"
+      ],
+      "file": "cod_rs_02_ownership/05-interior-mutability-and-shared-ownership.md"
+    },
+    {
+      "id": "l06-send-sync-box-pin-and-drop",
+      "title": "Send, Sync, Box, Pin and Drop",
+      "minutes": 24,
+      "covers": [
+        "Send and Sync: thread safety as a type-system property",
+        "Box and Pin (awareness); Drop as Rust RAII"
+      ],
+      "file": "cod_rs_02_ownership/06-send-sync-box-pin-and-drop.md"
+    },
+    {
+      "id": "l07-unsafe-rust",
+      "title": "Unsafe Rust and the safe wrapper",
+      "minutes": 24,
+      "covers": [
+        "unsafe: the five superpowers, and the discipline of wrapping it in a safe abstraction with documented invariants"
+      ],
+      "file": "cod_rs_02_ownership/07-unsafe-rust.md"
+    },
+    {
+      "id": "l08-traits-and-dispatch",
+      "title": "Traits, generics and dispatch",
+      "minutes": 24,
+      "covers": [
+        "Traits: definition, default methods, associated types versus generic parameters, where clauses, blanket impls, the orphan rule",
+        "Static dispatch (impl Trait, generics) versus dynamic dispatch (dyn Trait, fat pointers)"
+      ],
+      "file": "cod_rs_02_ownership/08-traits-and-dispatch.md"
+    },
+    {
+      "id": "l09-the-standard-traits",
+      "title": "The standard traits",
+      "minutes": 22,
+      "covers": [
+        "Operator traits, From/Into, TryFrom, Display, Debug, Default, Iterator, Deref"
+      ],
+      "file": "cod_rs_02_ownership/09-the-standard-traits.md"
+    },
+    {
+      "id": "l10-errors-and-panics",
+      "title": "Errors and panics",
+      "minutes": 26,
+      "covers": [
+        "Error handling: custom error enums, thiserror for libraries, anyhow for applications",
+        "panic versus recoverable errors; unwrap and expect discipline; panic = abort"
+      ],
+      "file": "cod_rs_02_ownership/10-errors-and-panics.md"
+    },
+    {
+      "id": "l11-testing-and-the-cpp-map",
+      "title": "Testing, and the map back to C++",
+      "minutes": 30,
+      "covers": [
+        "Testing: #[test], integration tests, criterion benchmarks, proptest, cargo-fuzz, miri",
+        "Mapping each concept back to its C++ equivalent"
+      ],
+      "file": "cod_rs_02_ownership/11-testing-and-the-cpp-map.md"
+    }
+  ],
+  "cod_rs_03_aerospace": [
+    {
+      "id": "l01-no-std-and-the-bare-metal-entry",
+      "title": "no_std, no_main and how a microcontroller starts",
+      "minutes": 24,
+      "covers": [
+        "no_std and no_main; core versus alloc versus std",
+        "Panic handlers; cortex-m and cortex-m-rt; the entry attribute, vector tables, memory.x"
+      ],
+      "file": "cod_rs_03_aerospace/01-no-std-and-the-bare-metal-entry.md"
+    },
+    {
+      "id": "l02-embedded-hal-pacs-and-hals",
+      "title": "Registers, PACs, HALs and embedded-hal: one driver for every chip",
+      "minutes": 20,
+      "covers": [
+        "embedded-hal 1.0 as the driver ecosystem contract; PACs from svd2rust; HAL crates"
+      ],
+      "file": "cod_rs_03_aerospace/02-embedded-hal-pacs-and-hals.md"
+    },
+    {
+      "id": "l03-embassy-rtic-hubris-and-tock",
+      "title": "Many jobs, one processor: Embassy, RTIC, Hubris and Tock",
+      "minutes": 22,
+      "covers": [
+        "Embassy as the async-first embedded framework family, and RTIC for static-priority hard real time",
+        "Hubris (Oxide) and Tock as all-Rust microcontroller operating systems"
+      ],
+      "file": "cod_rs_03_aerospace/03-embassy-rtic-hubris-and-tock.md"
+    }
+  ],
   "cod_slk_01_models": [
     {
       "id": "l01-the-simulink-editor",
@@ -9961,60 +10179,22 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     ]
   },
   "cod_rs_01_basics": {
-    "covered": 0,
+    "covered": 15,
     "total": 15,
-    "complete": false,
-    "missing": [
-      "rustup, toolchains, editions; cargo new, build, run, test, doc, clippy, fmt",
-      "Cargo.toml, dev and release profiles, workspaces, semver and feature flags",
-      "Variables, mut, shadowing; scalar and compound types",
-      "Integer overflow: panics in debug, wraps in release; checked, wrapping and saturating operations",
-      "String versus &str",
-      "Control flow; loop, while let, for",
-      "Pattern matching and match exhaustiveness",
-      "struct, enum as real sum types, impl blocks",
-      "Modules, pub, paths, use",
-      "Slices and arrays; Vec, HashMap, BTreeMap",
-      "Option and Result, the absence of null, and the ? operator",
-      "Iterators and adapters and their zero-cost nature",
-      "Closures: Fn, FnMut, FnOnce",
-      "derive macros; cfg attributes; doc tests",
-      "clippy as a teaching tool"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_rs_02_ownership": {
-    "covered": 0,
+    "covered": 16,
     "total": 16,
-    "complete": false,
-    "missing": [
-      "The three ownership rules; move by default and Copy types",
-      "Borrowing: shared &T versus exclusive &mut T",
-      "Aliasing XOR mutability and why it removes data races and iterator invalidation by construction",
-      "Reading borrow-checker errors instead of fighting them",
-      "Lifetimes: elision rules, explicit annotations, lifetimes in structs, static",
-      "Interior mutability: Cell, RefCell and its runtime panics, Rc, Arc, Mutex, RwLock, OnceLock",
-      "Send and Sync: thread safety as a type-system property",
-      "Box and Pin (awareness); Drop as Rust RAII",
-      "unsafe: the five superpowers, and the discipline of wrapping it in a safe abstraction with documented invariants",
-      "Traits: definition, default methods, associated types versus generic parameters, where clauses, blanket impls, the orphan rule",
-      "Static dispatch (impl Trait, generics) versus dynamic dispatch (dyn Trait, fat pointers)",
-      "Operator traits, From/Into, TryFrom, Display, Debug, Default, Iterator, Deref",
-      "Error handling: custom error enums, thiserror for libraries, anyhow for applications",
-      "panic versus recoverable errors; unwrap and expect discipline; panic = abort",
-      "Testing: #[test], integration tests, criterion benchmarks, proptest, cargo-fuzz, miri",
-      "Mapping each concept back to its C++ equivalent"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_rs_03_aerospace": {
-    "covered": 0,
+    "covered": 5,
     "total": 16,
     "complete": false,
     "missing": [
-      "no_std and no_main; core versus alloc versus std",
-      "Panic handlers; cortex-m and cortex-m-rt; the entry attribute, vector tables, memory.x",
-      "embedded-hal 1.0 as the driver ecosystem contract; PACs from svd2rust; HAL crates",
-      "Embassy as the async-first embedded framework family, and RTIC for static-priority hard real time",
-      "Hubris (Oxide) and Tock as all-Rust microcontroller operating systems",
       "defmt logging, probe-rs, cargo-embed, rtt-target",
       "heapless collections: Vec, String and spsc::Queue with static capacity",
       "critical-section and static_assertions",
