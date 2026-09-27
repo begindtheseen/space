@@ -1,7 +1,7 @@
 ---
 id: l09-ferrocene-the-qualified-toolchain
 title: 'Ferrocene: a Rust compiler you are allowed to trust'
-minutes: 21
+minutes: 23
 covers:
   - 'Ferrocene: the qualified Rust toolchain and exactly what its qualification covers'
 ---
