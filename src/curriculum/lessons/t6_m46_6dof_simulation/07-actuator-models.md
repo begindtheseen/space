@@ -1,7 +1,7 @@
 ---
 id: l07-actuator-models
 title: Actuator models
-minutes: 26
+minutes: 27
 covers:
   - "Actuator models: thrust curves and start-up transients, TVC gimbal dynamics and rate limits, reaction wheel friction, thruster minimum impulse bit, valve delay"
 ---
@@ -10,7 +10,7 @@ Turn a shower handle. The handle only turns so far, and only so fast. The pipe t
 
 A rocket has the same problem with every part that moves. Those parts are its **actuators** — the pieces that turn a command into a push or a twist: a swiveling engine, a spinning wheel, a small thruster, a valve. In the five-box simulation, the **Actuators box** sits between GNC and the Plant. It takes the command GNC sent and hands the Plant the force and torque it would really get.
 
-You have already seen what happens when this box is made perfect: a saturated wheel that needed two minutes for a two-second job, a delay nobody modeled eating a loop's phase margin. This lesson takes the actuator errors one at a time — gimbal dynamics and rate limits, thrust transients, wheel friction, minimum impulse bit, valve delay — with every number computed, not guessed.
+Earlier lessons showed what a perfect Actuators box hides: a saturated wheel that needed two minutes for a two-second job, an unmodeled delay eating a loop's phase margin. This lesson takes the actuator errors one at a time — gimbal dynamics and rate limits, thrust transients, wheel friction, minimum impulse bit, valve delay — with every number computed.
 
 ## The gimbal is a servo with its own speed
 
@@ -52,9 +52,9 @@ Three more limits sit on top of these dynamics.
 
 ## The rate limit a linear analysis cannot see
 
-Try to follow a friend's waving hand with your own. Slow waves, you keep up. Fast, wide waves, and your hand moves in straight lines at its top speed, turning around late at each end. Your motion is smaller than hers, and it lags. That is a rate limit.
+Try to copy a friend's waving hand. Slow waves, you keep up. Fast, wide waves, and your hand moves at its top speed, turning around late at each end. Your motion is smaller than hers, and it lags. That is a rate limit.
 
-Here is the trouble. Bode plots and phase margins treat the actuator as **linear**: doubling the input doubles the output, and the phase lag never depends on signal size. A Bode plot has no amplitude axis. So the margin it reports is true only for commands small or slow enough that the limit never engages, and nothing in the analysis says where that boundary is.
+Here is the trouble. Bode plots and phase margins treat the actuator as **linear**: doubling the input doubles the output, and the lag never depends on signal size. A Bode plot has no amplitude axis. So its margin holds only for commands small or slow enough that the limit never engages, and nothing in it says where that boundary is.
 
 ### A rate limit in code, one step at a time
 
@@ -65,6 +65,8 @@ In a fixed-step simulation, a rate limit $R$ with step $\Delta t$ ("delta t") me
 3. The new output is prev plus the clipped change.
 
 Take $R = 6^\circ/\mathrm{s}$ and $\Delta t = 0.01\,\mathrm{s}$, so the most the gimbal can move in one step is $6 \times 0.01 = 0.06^\circ$. From rest at $0^\circ$, a command of $2^\circ$ gives $0.06^\circ$ after one step, $0.12^\circ$ after two, and reaches $2^\circ$ only after $2/0.06 \approx 33$ steps. A command of $0.04^\circ$ passes through untouched. A command of $-2^\circ$ is limited the same way downward: the limit is symmetric.
+
+In code this is a tiny function, often written `rate_limit(cmd, prev, max_rate, dt)`, that returns the new output. The caller feeds each output back in as the next step's `prev`. With prev $= 0$, a limit of $5^\circ/\mathrm{s}$ and $\Delta t = 0.1\,\mathrm{s}$, the biggest move is $0.5^\circ$: a command of $10^\circ$ gives $0.5^\circ$, $-10^\circ$ gives $-0.5^\circ$, and $0.2^\circ$ passes untouched.
 
 To price a rate limit, engineers use a **[[describing function|describing-function]]**. Drive the nonlinear part with a sine wave. Keep only the part of its output that repeats at the input's frequency — the **fundamental harmonic** — and ask what gain and phase lag a linear part would need to produce it. That gain and phase stand in for the nonlinearity, and they depend on amplitude.
 
@@ -110,7 +112,7 @@ for rho in [1.0, 0.6, 0.4]:
 # rho=0.40  |N|=0.5093  extra phase lag=-51.07 deg
 ```
 
-Each step moves the output toward the command, never faster than $\rho$; the last period is then projected onto $e^{-jt}$ to get the fundamental, of gain $|N|$.
+Each step moves the output toward the command, never faster than $\rho$. After 40 periods the start-up is long gone. The last line of the function multiplies the final period by $e^{-jt}$ and averages: that picks out the part of the output that repeats exactly once per period, the fundamental, as a single complex number whose size is the gain $|N|$ and whose angle is its phase. A plain $\sin t$ comes out of that recipe with an angle of $-90^\circ$, which is why the code measures the extra lag from a `baseline` of $-90^\circ$.
 
 Now put in real numbers. A gimbal rated at $R = 6^\circ/\mathrm{s}$ is asked for a $3^\circ$ correction at $\omega = 5\,\mathrm{rad/s}$, a plausible frequency for fighting a fast disturbance.
 
@@ -143,15 +145,13 @@ The pure triangle needs the command to fall away faster than $\rho$ after they m
 Gimbal bandwidth and damping, deflection limit, RATE limit, backlash, transport delay, thrust start-up and shutdown transients, and minimum impulse bit on a thruster. Rate limit is the one that produces limit cycles nobody predicted.
 :::
 
-That is why rate-limit oscillation is the disturbance "nobody predicted". Every small-signal tool is blind to it, and a design can fly for years of gentle maneuvers before an abort or a big gust asks for something the rate limit cannot give.
-
 ::: warning Checking a rate limit only against the design's nominal commands
-A rate limit that never engages in nominal maneuvers can still engage — and cost tens of degrees of phase — at the first large disturbance, aggressive retarget or abort. Checking it against nominal commands says nothing about off-nominal ones, and the describing-function numbers show how much margin can hide in that gap.
+This is why rate-limit oscillation is the disturbance "nobody predicted". Every small-signal tool is blind to it, so a design can fly for years of gentle maneuvers and then lose tens of degrees of phase at its first big gust, aggressive retarget or abort. Checking the limit against nominal commands says nothing about off-nominal ones, and the describing-function numbers show how much margin can hide in that gap.
 :::
 
 ## Thrust curves and start-up transients
 
-A hair dryer does not blow full force the instant you flip the switch, and it does not stop dead when you turn it off. A rocket engine is the same, and the shape of that ramp matters.
+A hair dryer does not blow full force the instant you flip the switch, or stop dead when you turn it off. Nor does a rocket engine, and the shape of its ramp matters.
 
 A **thrust curve** is thrust against time. The **start-up transient** is the ramp up to full thrust; the **tail-off** is the ramp down at shutdown. A **solid motor** has an ignition transient, then a curve set by the changing shape of its burning propellant grain. A **liquid engine**'s start-up is set by valve opening, ignition sequencing and chamber-pressure build-up, typically tens to a few hundred milliseconds, with a comparable tail-off as leftover propellant burns down.
 
@@ -194,14 +194,12 @@ Here $\tau$ ("tau") is a torque in N m, $\omega_{\text{wheel}}$ the wheel's spin
 
 Flight software fights this with a **friction feedforward** — adding its own friction estimate to each command — and by keeping wheels away from zero speed. Neither is tested unless the simulated wheel has friction.
 
-A fine-pointing controller sending corrections below the floor is not gently trimming the attitude. It is doing nothing, silently, every tick, until a big enough command or a disturbance breaks the wheel loose.
-
 ## Minimum impulse bit
 
 A salt shaker has a smallest amount one shake delivers; you cannot add "a third of a shake". A thruster's valve cannot open for as short a time as you like either: below some **minimum on-time**, pulses stop being repeatable. The smallest reliable push is the **minimum impulse bit** (MIB), thrust times minimum on-time.
 
 ::: example A thruster that cannot deliver the correction it is asked for
-A small **[[monopropellant|monopropellant]]** thruster rated at $22\,\mathrm{N}$ has a minimum controllable valve-open time of $20\,\mathrm{ms}$. Shorter pulses are not reliably repeatable, so the minimum impulse bit is
+A small **[[monopropellant|monopropellant]]** thruster rated at $22\,\mathrm{N}$ has a minimum on-time of $20\,\mathrm{ms}$, so the minimum impulse bit is
 
 $$
 \text{MIB} = 22\,\mathrm{N} \times 0.020\,\mathrm{s} = 0.44\,\mathrm{N\,s} .
@@ -235,9 +233,9 @@ If the simulated thruster delivers any impulse, however small, the MIB floor dis
 
 Turn on the hot tap in an old house and you wait for hot water. That wait is a **transport delay**: the output is the input, shifted later in time. A valve has one too. The **[[solenoid|solenoid]]** takes time to pull in, fluid in the lines takes time to move, and the digital-to-analog converter and driver add their own — usually a few to a few tens of milliseconds in all.
 
-In a fixed-step simulation, a delay of $\tau$ seconds is $n = \tau/\Delta t$ steps, modeled with a **delay line**: a queue holding the last $n$ commands. Each step the newest command goes in at the back and the output comes from the front — the command from $n$ steps ago, like buckets passed down a line of people.
+In a fixed-step simulation, a delay of $\tau$ seconds is $n = \tau/\Delta t$ steps, modeled with a **delay line**: a queue of recent commands, like buckets passed down a line of people. Each step the newest command goes in at the back and the output comes from the front — the command from $n$ steps ago. In code it is often `transport_delay(buffer, sample, n_delay)`, which adds the sample to the buffer (a Python list works) and returns the delayed output with the updated buffer, for the caller to pass in again next step.
 
-With $\Delta t = 5\,\mathrm{ms}$, a $15\,\mathrm{ms}$ valve delay is $n = 3$ steps. Feed in $10, 20, 30, 40, 50$ and the fifth output is $20$, the command from three steps earlier. Before the line fills there is no such command yet; the usual choice is to output the oldest one held, so the first output is $10$. Whatever the choice, write it down: it decides what the actuator does in the first milliseconds of every run. And if $\tau/\Delta t$ is not a whole number, the step or the delay has to change, and the configuration should say which.
+With $\Delta t = 5\,\mathrm{ms}$, a $15\,\mathrm{ms}$ valve delay is $n = 3$ steps. Feed in $10, 20, 30, 40, 50$ and the fifth output is $20$, the command from three steps earlier. Before the line fills there is no such command yet. The usual choice is to output the oldest one held, so the first output is $10$, and the five outputs in order are $10, 10, 10, 10, 20$. Whatever the start-up choice, write it down: it decides what the actuator does in the first milliseconds of every run. And if $\tau/\Delta t$ is not a whole number, the step or the delay must change, and the configuration should say which.
 
 This delay sits in series with the sensor latency the previous lesson priced, around the same loop. So that lesson's delay-margin tools — $\tau_{\text{crit}}$ for a simple loop, or the phase cost $-\omega\tau$ at crossover for a general one — apply to their **sum**.
 
@@ -277,7 +275,7 @@ A reaction wheel sitting at zero speed has a Coulomb friction floor of $1.0\,\ma
 ::: answer
 The wheel does nothing. $0.3\,\mathrm{mN\,m}$ is below the $1.0\,\mathrm{mN\,m}$ static friction floor, so the wheel does not start turning and the spacecraft gets no torque.
 
-This is not slowness. A slow response still fixes the error eventually; here the error stays put for as long as the command stays under the floor. And a controller that does not know about the dead zone cannot tell from its own command that nothing is happening.
+This is not slowness. A slow response still fixes the error eventually. Here the error stays put, silently, every tick, for as long as the command stays under the floor — and a controller that does not know about the dead zone cannot tell from its own command that nothing is happening.
 :::
 
 ::: check
@@ -297,7 +295,7 @@ A design budgets its whole delay margin against sensor latency and treats gimbal
 ::: answer
 The delay margin applies to the total transport delay around the loop. Sensor latency and valve delay sit in the same loop, in series, so their phase costs, $-\omega\tau$ each, add at every frequency.
 
-Calling actuator delay negligible without showing it understates the total, and a design with enough margin against sensor latency alone may have none left once the actuator's delay is added.
+Calling actuator delay negligible without showing it understates the total. Enough margin against sensor latency alone may be none once the actuator's delay is added.
 :::
 
 ::: check
@@ -305,9 +303,7 @@ A colleague says the rate limit's describing function shows reduced gain as well
 :::
 
 ::: answer
-Lower gain does, on its own, tend to help stability at that frequency. But stability depends on gain *and* phase together — in the Nyquist picture, on how close the loop's curve comes to the $-1$ point.
-
-A large phase lag can swing the loop toward $-1$ even with reduced gain. The two effects come together, and one cannot be trusted to cancel the other: a big enough lag wins regardless of the gain drop.
+Lower gain alone does tend to help stability at that frequency. But stability depends on gain *and* phase together — in the Nyquist picture, on how close the loop's curve comes to the $-1$ point. A large phase lag can swing the loop toward $-1$ even at reduced gain. The two effects arrive together, neither can be trusted to cancel the other, and a big enough lag wins regardless of the gain drop.
 :::
 
 ## Summary
