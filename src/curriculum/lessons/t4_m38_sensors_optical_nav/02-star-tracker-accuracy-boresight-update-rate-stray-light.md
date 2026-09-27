@@ -8,7 +8,7 @@ covers:
 
 Put a coin near the middle of a spinning **[[lazy Susan|lever-arm]]** and another at its edge. Give the tray a small twist. The coin at the edge moves a lot; the coin near the middle hardly moves. Now tip the whole tray a little instead: every coin moves by about the same amount.
 
-A star tracker's field of view is that tray. Last lesson's identification ended with an odd result: the attitude was good to $4.3''$ and $1.8''$ about two axes, but only $53.2''$ about the third — about thirteen times worse, from one instrument and one picture. That third axis was the **[[boresight|boresight-word]]**, the direction the camera looks. Turning about it is called **roll**, or **about-boresight** rotation. Tilting the boresight is **cross-boresight** rotation. Every star tracker's datasheet quotes both numbers, and roll is always worse, usually by five to ten times.
+A star tracker's field of view is that tray. Last lesson's identification ended with an odd result: the attitude was good to $4.3''$ and $1.8''$ about two axes, but only $53.2''$ about the third — twelve times worse than even the weaker of the other two, from one instrument and one picture. That third axis was the **[[boresight|boresight-word]]**, the direction the camera looks. Turning about it is called **roll**, or **about-boresight** rotation. Tilting the boresight is **cross-boresight** rotation. Every star tracker's datasheet quotes both numbers, and roll is always worse, usually by five to ten times.
 
 This lesson derives that ratio from geometry, so it stops looking like chance. Then it covers the other three promises on a tracker's datasheet: how often it reports, which parts of the sky it must never look at, and what happens when something bright wanders into the picture.
 
