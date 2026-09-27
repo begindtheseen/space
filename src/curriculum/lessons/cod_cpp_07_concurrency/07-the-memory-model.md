@@ -1,24 +1,22 @@
 ---
 id: l07-the-memory-model
 title: The C++ memory model
-minutes: 21
+minutes: 22
 covers:
   - The C++ memory model; is_lock_free; atomic_ref
 ---
 
-Think of a group chat with four friends. Each friend's own messages always arrive in the order that friend sent them. But if Ana and Ben both post at nearly the same moment, your phone might show Ana first while Carla's phone shows Ben first. Nobody's phone is broken. The chat only promises order *within* each sender, plus one more thing: if Ben replies to Ana's message, everyone sees Ana's message before the reply. A reply ties two people's timelines together.
+Think of a group chat. Each friend's own messages always arrive in the order that friend sent them. But if Ana and Ben post at nearly the same moment, your phone might show Ana first while Carla's shows Ben first. Nobody's phone is broken. The chat promises order *within* each sender, plus one more thing: if Ben replies to Ana, everyone sees Ana's message before the reply. A reply ties two timelines together.
 
-A multi-core computer behaves a lot like that chat. Each core keeps its own writes in order for itself, but other cores can see them late, or in a different order. The only orders every thread can count on are the ones a program deliberately ties together, the way a reply ties two messages.
+A multi-core computer behaves like that chat. Each core sees its own writes in order, but other cores can see them late, or in a different order. The only orders every thread can count on are the ones a program deliberately ties together.
 
-The **memory model** is the part of the C++ standard that says exactly which orders are promised. The last six lessons used pieces of it: data races (lesson 02), mutexes (lesson 03), and the memory orderings on atomics (lesson 06). This lesson puts the pieces into one picture, with the four relations the standard uses: sequenced-before, synchronizes-with, happens-before and modification order. Then it answers two practical questions for flight code. Is this atomic really done by the hardware, or by a hidden lock? And how do you make an access atomic when the variable sits in a plain struct you are not allowed to change?
+The **memory model** is the part of the C++ standard that says exactly which orders are promised. Earlier lessons used pieces of it: data races (lesson 02), mutexes (lesson 03), and the orderings on atomics (lesson 06). This lesson puts the pieces into one picture, built from four relations. Then it answers two practical questions for flight code. Is this atomic done by the hardware, or by a hidden lock? And how do you make an access atomic when the variable sits in a plain struct you may not change?
 
 ## Memory locations: what counts as "the same place"
 
-A race needs two threads touching the same place. So the first question is what "the same place" means.
+The standard's unit is the **memory location**: one object of a scalar type (an `int`, a `double`, a pointer, an `enum`), or one run of adjacent **[[bit-fields|bit-fields]]** that sit next to each other in a struct. Two threads may freely write two *different* memory locations at the same time, even neighboring bytes of one array. The compiler must not turn a write to `a[0]` into a read-modify-write of the whole word that also rewrites `a[1]`.
 
-The standard's unit is the **memory location**: one object of a scalar type (an `int`, a `double`, a pointer, an `enum`), or one run of adjacent **[[bit-fields|bit-fields]]** that sit next to each other in a struct. Two threads may freely write two *different* memory locations at the same time, even neighbouring bytes of the same array. The compiler must not turn a write to `a[0]` into a read-modify-write of the whole word that also rewrites `a[1]`.
-
-Bit-fields are the exception. `unsigned mode : 3; unsigned armed : 1;` pack into one memory location, because the hardware has no instruction that writes three bits alone. Writing `mode` really means "read the word, change three bits, write the word back". So one thread writing `mode` while another writes `armed` is a data race, even though the two fields have different names.
+Bit-fields are the exception. `unsigned mode : 3; unsigned armed : 1;` pack into one memory location, because no instruction writes three bits alone: writing `mode` means "read the word, change three bits, write it back". So one thread writing `mode` while another writes `armed` is a data race, despite the different names.
 
 ::: key Memory locations
 A memory location is one scalar object, or one maximal run of adjacent non-zero-width bit-fields. Different memory locations can be written by different threads with no synchronization. Adjacent bit-fields share a location, so writing them from two threads is a race.
@@ -26,21 +24,21 @@ A memory location is one scalar object, or one maximal run of adjacent non-zero-
 
 ## Why the orders need rules at all
 
-In one thread, a program appears to run line by line. It does not really. The compiler moves loads and stores around under the **[[as-if rule|as-if-rule]]**: any change is allowed as long as this thread cannot tell the difference. The processor reorders too. A store often sits for a while in a core's private **[[store buffer|store-buffer]]** before other cores can see it, while later loads race ahead.
+A program appears to run line by line. It does not. The compiler moves loads and stores under the **[[as-if rule|as-if-rule]]**: any change is allowed if this thread cannot tell. The processor reorders too: a store can wait in a core's private **[[store buffer|store-buffer]]** while later loads race ahead.
 
-None of that is visible from inside one thread. It is only visible to a second thread watching the same memory. So the standard does not say "your code runs in order". It says: here are the relations between actions, and here is what a thread is allowed to see, given those relations.
+None of that shows from inside one thread. Only a second thread watching the same memory can notice. So the standard does not promise "your code runs in order". It defines relations between actions, and says what a thread may see given those relations.
 
 ## Four relations
 
 ### Sequenced-before: order inside one thread
 
-**Sequenced-before** is the order of evaluation inside one thread. In `a = 1; b = 2;`, the write to `a` is sequenced before the write to `b`, because the first full statement finishes before the next begins. It is the program order you already think in. (Within one expression the rules are finer: in `f(x(), y())`, the calls to `x` and `y` are not sequenced with each other in either order.)
+**Sequenced-before** is the order of evaluation inside one thread. In `a = 1; b = 2;`, the write to `a` is sequenced before the write to `b`. It is the program order you already think in.
 
 Sequenced-before is a promise about *this* thread's view only. Another thread may still see `b == 2` while `a` is still `0`.
 
 ### Synchronizes-with: the thread-to-thread link
 
-**Synchronizes-with** is a link from an action in one thread to an action in another. It is the reply in the group chat. The standard lists exactly which pairs create one:
+**Synchronizes-with** is a link from an action in one thread to an action in another. It is the reply in the group chat. These are the pairs you will use most:
 
 - A **release store** to an atomic, and an **acquire load** of the same atomic that reads the value that store wrote (lesson 06).
 - An **unlock** of a mutex, and the next **lock** of the same mutex (lesson 03).
@@ -48,7 +46,7 @@ Sequenced-before is a promise about *this* thread's view only. Another thread ma
 - The end of a thread's function, and the return of `join()` on that thread.
 - Making a promise ready, and a `get()` on its future that sees the value (next lesson).
 
-Nothing else links two threads. Two plain writes and reads, however far apart in time, never synchronize.
+Plain reads and writes never create one, however far apart in time they are.
 
 ::: key What acquire guarantees
 If an acquire load reads a value written by a release store, the store synchronizes with the load. Everything the writing thread did before that store is then visible to the reading thread after the load. Acquire is a one-way barrier: later reads and writes cannot move above it.
@@ -66,7 +64,7 @@ Here is a chain, traced by hand. An estimator thread computes an attitude quater
 2. The release store synchronizes with the acquire load, because the load read the `true` that store wrote. (The link between threads.)
 3. The acquire load is sequenced before the controller's reads of `q`. (Program order inside the controller.)
 
-Chain the three: each write to `q` happens before each read of `q`. So the controller sees the finished quaternion. If the load had read `false` instead, there would be no step 2, no chain, and reading `q` would be a race. That is why the controller must check the flag *before* it reads.
+Chained, each write to `q` happens before each read of `q`, so the controller sees the finished quaternion. Had the load read `false`, there would be no step 2 and reading `q` would be a race. That is why the controller checks the flag *before* it reads.
 
 ### Why happens-before makes a program race-free
 
@@ -76,19 +74,19 @@ Now the formal definition from lesson 02 can be stated in these words. Two acces
 Two threads access the same memory location, at least one writes, at least one access is not atomic, and neither access happens before the other: the accesses are not ordered by a synchronization relationship. That is a data race. It is undefined behavior, so the whole program has no defined meaning, whatever it appears to do.
 :::
 
-The promise you get in return is strong. If your program has no data races, and uses only the default `seq_cst` ordering on its atomics, it behaves as if the threads' steps were shuffled together into one single sequence, with no reordering anyone can detect. That promise is called **[[sequential consistency for data-race-free programs|sc-drf]]**. All the reordering by the compiler and the processor becomes invisible. So the one thing you must get right is a happens-before arrow between every pair of conflicting plain accesses. Get that right and you can reason line by line again.
+The promise you get in return is strong. If your program has no data races and uses only the default `seq_cst` ordering, it behaves as if the threads' steps were shuffled into one single sequence, with no reordering anyone can detect. That promise is called **[[sequential consistency for data-race-free programs|sc-drf]]**. So the one thing you must get right is a happens-before arrow between every pair of conflicting plain accesses. Then you can reason line by line again.
 
 ::: warning "It happened earlier" is not "it happens before"
-A test that sleeps 10 ms between a write in one thread and a read in another does not create happens-before. The read is still a race, and the compiler is still free to keep the value in a register forever. Only the relations above order threads. Time does not.
+Sleeping 10 ms between a write in one thread and a read in another creates no happens-before. The read is still a race, and the compiler may still keep the value in a register forever. Only the relations above order threads; time does not.
 :::
 
 ### Modification order: one history per atomic variable
 
 The fourth relation is about atomic variables only. Every atomic object has a **modification order**: a single total order of all the writes ever made to it, and every thread agrees on that order. Even `memory_order_relaxed` keeps it.
 
-The standard then adds **coherence** rules, which boil down to this: once a thread has read a value from an atomic, it never later reads an *older* value of that same atomic. A thread's view of one variable only moves forward along its history, never backward.
+The **coherence** rules then boil down to this: once a thread has read a value from an atomic, it never later reads an *older* value of that atomic. Its view of one variable only moves forward.
 
-What the modification order does *not* give you is agreement across *different* variables. Two threads can disagree about whether `x` or `y` changed first, like the two phones in the group chat. Only `seq_cst` adds one global order for all `seq_cst` operations together, as lesson 06 showed.
+The modification order gives no agreement across *different* variables. Two threads can disagree about whether `x` or `y` changed first, like the two phones in the chat. Only `seq_cst` adds one global order across variables, as lesson 06 showed.
 
 ::: key What relaxed still gives you
 A relaxed operation is atomic, and it respects the variable's single modification order. It gives no ordering with respect to any other memory. That suits a statistics counter and is wrong for publishing data.
@@ -96,7 +94,7 @@ A relaxed operation is atomic, and it respects the variable's single modificatio
 
 ## Fences, briefly
 
-A **fence**, `std::atomic_thread_fence(order)`, is an ordering that is not attached to any one variable. A release fence followed by a relaxed store works like a release store. A relaxed load followed by an acquire fence works like an acquire load. The fence form helps when one fence can cover several relaxed atomics, or when the orderings of a loop's many loads should be paid once, after the loop.
+A **fence**, `std::atomic_thread_fence(order)`, is an ordering that is not attached to any one variable. A release fence followed by a relaxed store works like a release store. A relaxed load followed by an acquire fence works like an acquire load. One fence can cover several relaxed atomics at once.
 
 ```cpp
 #include <atomic>
@@ -125,36 +123,36 @@ int main() {
 }
 ```
 
-This is correct code, and it prints `q = [0.7071 0.0000 0.7071 0.0000]`. The fences line up the same happens-before chain as before, fence to fence.
+This is correct code. It prints `q = [0.7071 0.0000 0.7071 0.0000]`, and the fences form the same happens-before chain as before.
 
 ::: warning ThreadSanitizer does not understand fences in g++ 13
-Build the program above with `-fsanitize=thread` and g++ 13 warns at compile time: `warning: 'atomic_thread_fence' is not supported with '-fsanitize=thread' [-Wtsan]`. Run it and ThreadSanitizer reports four data races on `g_attitude`, one per element, on correct code. Prefer a release store and an acquire load on the flag itself. Your tools can check that form, and a reviewer can read it.
+Build the program above with `-fsanitize=thread` and g++ 13 warns at compile time: `warning: 'atomic_thread_fence' is not supported with '-fsanitize=thread' [-Wtsan]`. Run it and ThreadSanitizer reports four data races on `g_attitude`, one per element, on correct code. Prefer a release store and an acquire load on the flag itself: your tools can check that form.
 :::
 
-There is also `std::atomic_signal_fence`, which orders only the compiler, not the hardware. It is for a thread and a signal handler running on the same core.
+Its cousin `std::atomic_signal_fence` orders only the compiler, for a thread and its own signal handler.
 
 ## Is it really lock-free?
 
-`std::atomic<T>` works for any type `T` that can be copied byte by byte. But the hardware only has atomic instructions for some sizes. On x86-64 that means 1, 2, 4 and 8 bytes, suitably aligned. For anything else, the library quietly uses an internal lock: a small table of mutexes kept inside **[[libatomic|libatomic]]**.
+`std::atomic<T>` works for any type `T` that can be copied byte by byte. But the hardware has atomic instructions only for some sizes: on x86-64, aligned 1, 2, 4 and 8 bytes. For anything else the library quietly uses a lock, taken from a small table inside **[[libatomic|libatomic]]**.
 
-A locking atomic is still correct. It is not what you want in three places that flight code cares about:
+A locking atomic is still correct, but it is wrong for three places flight code cares about:
 
-- **An interrupt or signal handler.** If the handler interrupts a thread that holds the hidden lock, and then asks for the same lock, it waits forever.
-- **A hard real-time task.** A lock means the task can wait on another thread, and the task's worst-case time now depends on that thread.
-- **Memory shared between processes.** The hidden lock lives inside one process, so a second process cannot see it. Lock-free atomics are meant to be **[[address-free|address-free]]**, and those are the ones that work across processes.
+- **An interrupt or signal handler.** If it interrupts a thread holding the hidden lock and then asks for the same lock, it waits forever.
+- **A hard real-time task.** Its worst-case time now depends on whichever thread holds the lock.
+- **Memory shared between processes.** The hidden lock lives inside one process. Lock-free atomics are meant to be **[[address-free|address-free]]**, and only those work across processes.
 
 So C++ lets you ask.
 
-- **`std::atomic<T>::is_always_lock_free`** is a `static constexpr bool`, known at compile time. `true` means every build of this program, on every processor it targets, does the operation in hardware. You can `static_assert` it.
-- **`a.is_lock_free()`** is a member function, answered at run time. It can be `true` where `is_always_lock_free` is `false`, when the answer depends on which processor the program lands on.
-- For the built-in types there are macros too: `ATOMIC_INT_LOCK_FREE` and friends are `2` for "always", `1` for "sometimes", `0` for "never". `std::atomic_flag` is the one type the standard promises is always lock-free.
+- **`std::atomic<T>::is_always_lock_free`** is a `static constexpr bool`, known at compile time. `true` means the operation is done in hardware on every processor this build targets. You can `static_assert` it.
+- **`a.is_lock_free()`** answers at run time. It can be `true` where `is_always_lock_free` is `false`, if it depends on the processor.
+- Macros such as `ATOMIC_INT_LOCK_FREE` say `2` for "always", `1` for "sometimes", `0` for "never". `std::atomic_flag` is the one type always promised lock-free.
 
 ::: key is_lock_free and is_always_lock_free
 `is_always_lock_free` is a compile-time constant: true means the atomic never uses a lock on any target this build supports. `is_lock_free()` asks at run time for this object. Put `static_assert(std::atomic<T>::is_always_lock_free)` on every atomic used from an interrupt handler, a real-time task or shared memory.
 :::
 
 ::: example Which atomics are lock-free on this machine
-This program asks both questions for seven types, from 1 to 24 bytes, and also prints a number the next section needs.
+This program asks both questions for seven types, from 1 to 24 bytes, plus a number the next section needs.
 
 ```cpp
 #include <atomic>
@@ -207,21 +205,21 @@ Pos3      size 24  alignof 8  always false  now false  ref_align  8
 
 Read it row by row:
 
-1. **1, 2, 4 and 8 bytes are lock-free.** That includes `double` and the 8-byte struct `Vec2`: the hardware moves 8 bytes at once and does not care that they hold two floats.
+1. **1, 2, 4 and 8 bytes are lock-free**, including the 8-byte struct `Vec2`: the hardware moves 8 bytes at once, whatever they hold.
 2. **The 16-byte quaternion is not.** This processor does have a 16-byte compare-and-swap instruction, **[[cmpxchg16b|cmpxchg16b]]**, yet the library answers `false`. So a `std::atomic<Quat>` takes a hidden lock on every load and store.
-3. **The 24-byte position is not**, and no x86-64 instruction could make it so.
-4. **The last column is surprising for `Vec2`.** Its natural alignment is 4, but atomic access to it needs 8. The next section is about that number.
+3. **The 24-byte position is not**; no x86-64 instruction is that wide.
+4. **The last column is surprising for `Vec2`.** Its natural alignment is 4, but atomic access needs 8. The next section explains.
 
-Sanity check: 4 of the 7 types are 8 bytes or smaller, and exactly 5 rows say `true`, because `Vec2` is also 8 bytes. Every row of 8 bytes or less is lock-free, and every larger row is not, matching the rule that the hardware handles 1, 2, 4 and 8 bytes.
+Sanity check: 5 of the 7 types are 8 bytes or smaller, and exactly 5 rows say `true`. Every row of 8 bytes or less is lock-free and every larger row is not, which matches the rule that the hardware handles 1, 2, 4 and 8 bytes.
 :::
 
-The lesson for a flight engineer: to share an attitude quaternion between threads, do not reach for `std::atomic<Quat>`. It compiles, and it locks. Publish it through a ring buffer (lesson 09), a mutex you can see, or a pair of release and acquire operations on a flag, as above.
+So to share an attitude quaternion between threads, do not reach for `std::atomic<Quat>`: it compiles, and it locks. Publish it through a ring buffer (lesson 09), a mutex you can see, or a release-acquire flag, as above.
 
 ## `std::atomic_ref`: atomic access to a plain object
 
-Sometimes you cannot change a variable's type. The struct is defined in a C header shared with the ground software, or it lives in a buffer written by hardware through **[[direct memory access|dma]]**, or it must keep its exact layout for telemetry. You still need two threads to touch one field safely.
+Sometimes you cannot change a variable's type. The struct is defined in a C header shared with ground software, or lives in a buffer written by hardware through **[[direct memory access|dma]]**. You still need two threads to touch one field safely.
 
-C++20's **`std::atomic_ref<T>`**, read "atomic ref of T", is a small object that refers to a plain `T` and does atomic operations on it. It has the same member functions as `std::atomic<T>`: `load`, `store`, `exchange`, `compare_exchange_weak`, and `fetch_add` for integers and floating-point types. Copies of an `atomic_ref` all refer to the same object.
+C++20's **`std::atomic_ref<T>`**, read "atomic ref of T", is a small object that refers to a plain `T` and does atomic operations on it, with the same member functions as `std::atomic<T>` (`load`, `store`, `fetch_add` and the rest).
 
 It comes with three rules:
 
@@ -283,7 +281,7 @@ plain  ++: 2000000 (expected 2000000)
 atomic_ref: 2000000 (expected 2000000)
 ```
 
-Both counters are right. Now build it with `-fsanitize=thread -g -O2` and run it. The same three lines come out, but first ThreadSanitizer prints this (paths and the long stack frames trimmed):
+Both counters are right. Now build it with `-fsanitize=thread -g -O2` and run it. The same three lines come out, and ThreadSanitizer also prints this report (paths and the long stack frames trimmed):
 
 ```text
 WARNING: ThreadSanitizer: data race (pid=7341)
@@ -298,15 +296,16 @@ ThreadSanitizer: reported 1 warnings
 
 and the program exits with status 66 instead of 0. Walk through it:
 
-1. **Why the plain counter looked right.** At `-O2` the compiler turned the million-step loop into a single `frames_ok += n`, which it may do because no other thread is allowed to watch. The first thread then finished before the second got going. The right answer was luck.
-2. **Why it is still a race.** Line 14 is the `++`. Two threads read and write `frames_ok`, one memory location, and nothing orders them: no mutex, no atomic, no join between them. By the definition above, that is a data race, and the program is undefined whether or not the number came out right.
-3. **Why atomic_ref is clean.** Each `fetch_add` is an atomic read-modify-write, and conflicting accesses that are both atomic are never a data race. Relaxed is enough, because nothing else is published through this counter.
-4. **Why main may read the counters.** The `jthread`s were joined when their braces closed, and each join synchronizes with `main`. So every increment happens before the two `printf` lines.
-5. **Alignment.** `uint32_t` needs 4 and gets 4 as a struct member, so this `atomic_ref` is legal. The TSan report names only line 14. Sanity check: $2 \times 1{,}000{,}000 = 2{,}000{,}000$, and both counters show that number, which is exactly why a passing count proves nothing about a race.
+1. **Why the plain counter looked right.** At `-O2` the compiler turned the million-step loop into one `addl` instruction, `frames_ok += n` (the assembly shows it). It may, because no other thread is allowed to watch. The two threads' jobs were so short that they most likely never overlapped. The right answer was luck.
+2. **Why it is still a race.** Line 14 is the `++`. Two threads read and write `frames_ok`, one memory location, and nothing orders them. That is a data race, and the program is undefined whatever number came out.
+3. **Why atomic_ref is clean.** Conflicting accesses that are both atomic are never a data race. Relaxed is enough, because nothing else is published through this counter.
+4. **Why main may read the counters.** The `jthread`s were joined when their braces closed, and each join synchronizes with `main`, so every increment happens before the `printf` lines. The alignment is legal too: `uint32_t` needs 4 and a struct member gets 4.
+
+Sanity check: $2 \times 1{,}000{,}000 = 2{,}000{,}000$, and both counters show that number, which is exactly why a passing count proves nothing about a race.
 :::
 
 ::: warning Mixing plain and atomic access
-The `atomic_ref` rule is easy to break by accident: a logging function reads `g_health.frames_bad` directly while the counting thread is still running. That plain read is a race. Route every access through `atomic_ref` while the object is shared, including the reads.
+The `atomic_ref` rule is easy to break: a logging function reads `g_health.frames_bad` directly while the counting thread still runs. That plain read is a race. While the object is shared, every access goes through `atomic_ref`, reads included.
 :::
 
 ## Check yourself
@@ -316,7 +315,7 @@ A struct holds `unsigned heater_on : 1; unsigned valve_open : 1;`. The thermal t
 :::
 
 ::: answer
-With bit-fields it is a race. Adjacent non-zero-width bit-fields form one memory location, so both threads write the same location, and nothing orders the two writes. In practice each write reads the whole word, changes one bit and writes the word back, so one thread can undo the other's change. With two separate `bool` members, each is its own memory location, the two threads never touch the same location, and there is no race at all.
+With bit-fields it is a race. Adjacent non-zero-width bit-fields form one memory location, so both threads write the same location with nothing ordering them. In practice each write reads the whole word, changes one bit and writes the word back, so one thread can undo the other's change. Two separate `bool` members are two memory locations, so there is no race.
 :::
 
 ::: check
@@ -324,7 +323,7 @@ Thread A writes `x = 42;` then does `flag.store(1, std::memory_order_release);`.
 :::
 
 ::: answer
-Three links. The write to `x` is sequenced before the release store in thread A. The release store synchronizes with the acquire load in B, because the load read the 1 that store wrote. The load is sequenced before `use(x)` in B. Chained, the write happens before the read, so B sees 42 and there is no race. If the load reads 0, there is no synchronizes-with link, but B then skips `use(x)`, so it never reads `x` and there is still no race. The `if` is what keeps the program safe.
+Three links. The write to `x` is sequenced before the release store in A. The release store synchronizes with the acquire load in B, because the load read the 1 that store wrote. The load is sequenced before `use(x)` in B. Chained, the write happens before the read, so B sees 42. If the load reads 0, there is no link, but B skips `use(x)` and never reads `x`, so there is still no race. The `if` keeps the program safe.
 :::
 
 ::: check
@@ -340,15 +339,7 @@ Your code needs `std::atomic<Stamp>`, where `Stamp` is two `std::uint64_t` field
 :::
 
 ::: answer
-`static_assert(std::atomic<Stamp>::is_always_lock_free);` fails to compile, because `Stamp` is 16 bytes and 16-byte atomics are not lock-free with g++ 13 on x86-64. A locking atomic in a signal handler can deadlock if the handler interrupts a thread holding the hidden lock. Fixes: shrink the shared part to 8 bytes (for example pack a 32-bit sequence count and a 32-bit time offset into one `std::uint64_t`), or hand the stamps over through a lock-free ring buffer of plain structs, where only the 8-byte indices are atomic.
-:::
-
-::: check
-A telemetry buffer declares `Vec2 samples[64];` inside a struct you cannot change. You want to update `samples[5]` atomically with `std::atomic_ref<Vec2>`. What must be true of its address, and how would you check it at run time?
-:::
-
-::: answer
-It must be a multiple of `std::atomic_ref<Vec2>::required_alignment`, which is 8 on this machine, even though `alignof(Vec2)` is only 4. Since each `Vec2` is 8 bytes, every element is 8-aligned if the array's start is. Check with `assert(reinterpret_cast<std::uintptr_t>(&samples[5]) % std::atomic_ref<Vec2>::required_alignment == 0);`. If the array might start at an address that is 4 more than a multiple of 8, the `atomic_ref` is not allowed there; you would need to align the struct or copy through a lock.
+`static_assert(std::atomic<Stamp>::is_always_lock_free);` fails to compile, because 16-byte atomics are not lock-free with g++ 13 on x86-64. A locking atomic in a signal handler can deadlock if the handler interrupts a thread holding the hidden lock. Fixes: shrink the shared part to 8 bytes (pack a 32-bit sequence count and a 32-bit time offset into one `std::uint64_t`), or pass the stamps through a lock-free ring buffer, where only the 8-byte indices are atomic.
 :::
 
 ## Summary
@@ -415,8 +406,8 @@ Writing to the shared cache takes a while, so each core parks its stores in a sm
 ```
 :::
 
-::: context consume The ordering nobody uses
-`memory_order_consume` was meant to be a cheaper acquire that orders only the reads that depend on the loaded value, such as following a loaded pointer. It proved so hard to specify and implement that compilers treat it as acquire, and the standard committee has discouraged its use. Write acquire instead. The happens-before rules without consume are the ones in this lesson.
+::: context consume Why one ordering is left out
+Lesson 06 met `memory_order_consume` and set it aside: compilers treat it as acquire. The formal model pays for it with extra relations, "carries a dependency" and "dependency-ordered before", which make happens-before harder to state without making any real program faster today. Leave consume out, and happens-before is exactly the chains of sequenced-before and synchronizes-with described here.
 :::
 
 ::: context hb-picture The chain, drawn

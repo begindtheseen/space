@@ -1,7 +1,7 @@
 ---
 id: l04-deadlock
 title: Deadlock, and how to make it impossible
-minutes: 22
+minutes: 24
 covers:
   - "Deadlock: the four conditions, lock ordering, std::lock and scoped_lock"
 ---
@@ -10,13 +10,11 @@ Picture a narrow one-lane bridge with a car driving onto each end at the same mo
 
 Last lesson gave you the mutex: a lock that lets only one thread at a time into a piece of shared data. One mutex on its own is safe. The trouble starts when a thread needs *two* of them at once. Then the bridge story can happen inside your program: thread 1 holds lock A and waits for lock B, while thread 2 holds lock B and waits for lock A. That standstill is a **deadlock** — a set of threads each waiting for something another thread in the set holds, so none of them can ever continue.
 
-On a spacecraft this is not a slow program; it is a silent one. A navigation task that stops publishing, a telemetry task that stops sending, and eventually a **[[watchdog|watchdog-timer]]** that resets the whole computer because nothing is answering. This lesson shows you a real deadlock, how to read its fingerprints, the four conditions that must all hold for one to happen, and the tools that make it impossible by design: a global lock order, `std::lock`, and `std::scoped_lock`.
+On a spacecraft this is not a slow program; it is a silent one: a navigation task that stops publishing, and eventually a **[[watchdog|watchdog-timer]]** that resets the computer because nothing is answering. This lesson shows a real deadlock, how to read its fingerprints, the four conditions behind it, and the tools that make it impossible by design: a global lock order, `std::lock`, and `std::scoped_lock`.
 
 ## A real deadlock, on purpose
 
-Here are two tasks from a small flight program. The navigation task updates the navigation state and then copies a summary into the telemetry frame, so it needs both mutexes. The telemetry task formats the frame and reads the latest navigation state, so it needs both too. The only difference is the order in which they take them.
-
-The `sleep_for` calls hold each first lock for 50 ms, long enough that the bad timing happens every run instead of once a week. Without them the same bug exists; it only hides better.
+Two tasks from a small flight program each need both the navigation state and the telemetry frame. The only difference is the order in which they lock them. The `sleep_for` calls hold each first lock for 50 ms, so the bad timing happens every run instead of once a week.
 
 ::: example Two threads, two mutexes, one standstill
 ```cpp
@@ -75,10 +73,9 @@ Step by step, on the timeline:
 
 1. At $t = 0$ the navigation thread locks `nav_mutex` and the telemetry thread locks `tlm_mutex`. Both succeed, because each mutex was free.
 2. Both sleep for 50 ms, each still holding its first lock.
-3. At $t \approx 50$ ms the navigation thread asks for `tlm_mutex`. The telemetry thread holds it, so the navigation thread goes to sleep inside `lock()`.
-4. At the same moment the telemetry thread asks for `nav_mutex`. The navigation thread holds it. The telemetry thread goes to sleep too.
-5. Each is waiting for the other to release. Neither will ever run the code that releases. `finished` stays at 0.
-6. `main` plays **watchdog**: it checks `finished` every 10 ms, and after 1 s it gives up and calls `std::abort()`. It cannot call `join()`, because joining a thread that never ends would hang `main` too.
+3. At $t \approx 50$ ms the navigation thread asks for `tlm_mutex`, which the telemetry thread holds, so it sleeps inside `lock()`. The telemetry thread asks for `nav_mutex` and sleeps too.
+4. Each waits for the other to release. Neither will ever reach its release. `finished` stays at 0.
+5. `main` plays **watchdog**: it checks `finished` every 10 ms, and after 1 s it gives up and calls `std::abort()`. It cannot call `join()`, because joining a thread that never ends would hang `main` too.
 
 Sanity check: the watchdog reports 0 of 2 finished, not 1 of 2. That fits: neither task reached its `fetch_add`, because each is stuck on its *second* lock.
 :::
@@ -87,7 +84,7 @@ The `std::atomic<int>` counter is a preview of lesson 6. For now, read `finished
 
 ### Reading the fingerprints
 
-In the field you do not get to add a watchdog printout after the fact. You get a hung process and a debugger. The objective here is to recognise a deadlock from a set of thread **[[backtraces|backtrace-word]]** — the list of function calls each thread is in the middle of.
+In the field you get a hung process and a debugger. The skill is to recognise a deadlock from a set of thread **[[backtraces|backtrace-word]]** — the list of function calls each thread is in the middle of.
 
 Rebuild the same program with `-O1 -g` (so the debugger can see names and line numbers), run it under `gdb`, and when the watchdog aborts, ask for every thread's state. Trimmed to the lines that matter, this is the real output:
 
@@ -114,7 +111,7 @@ Read it like a detective:
 - Thread 3 is asleep in `futex_wait` on `nav_mutex`, from line 22 of `telemetry_task`. It wants `nav_mutex`.
 - The last two lines ask glibc which thread owns each mutex (the owner is stored inside the `pthread_mutex_t` that `std::mutex` wraps). `nav_mutex` is owned by thread 15011, which is thread 2. `tlm_mutex` is owned by 15012, thread 3.
 
-Draw it as arrows: thread 2 waits for a lock held by thread 3, and thread 3 waits for a lock held by thread 2. That closed loop of "waits for" arrows is a **[[wait-for cycle|wait-for-graph]]**, and a cycle is the signature of a deadlock. Two threads asleep on mutexes is normal. Two threads asleep on mutexes *each owned by the other* is a deadlock.
+Thread 2 waits for a lock held by thread 3, and thread 3 waits for a lock held by thread 2. That closed loop is a **[[wait-for cycle|wait-for-graph]]**, the signature of a deadlock. Two threads asleep on mutexes is normal; asleep on mutexes *each owned by the other* is a deadlock.
 
 ::: key
 A deadlock shows up in backtraces as threads blocked inside `lock()` (on Linux, in `futex_wait`) where each waits for a mutex another blocked thread owns. Follow "waits for, owned by" arrows; if they close into a cycle, it is a deadlock.
@@ -137,9 +134,9 @@ Mutual exclusion, hold and wait, no preemption, and circular wait. Breaking any 
 
 ### Breaking each one
 
-**Mutual exclusion.** Share nothing, or share it without a lock. Give each thread its own copy of the data, or pass messages between threads through a queue (lesson 5), or use atomics (lesson 6). When there is no lock to hold, there is nothing to deadlock on. This is often the best answer in flight code, but you cannot always have it.
+**Mutual exclusion.** Share nothing, or share without a lock: give each thread its own copy, pass messages through a queue (lesson 5), or use atomics (lesson 6). No lock, nothing to deadlock on.
 
-**Hold and wait.** Never hold one lock while asking for another. Either take every lock you need in a single, all-or-nothing step, or release what you hold before you ask for more. `std::lock` and `std::scoped_lock`, below, do the all-or-nothing version for you.
+**Hold and wait.** Never hold one lock while asking for another: take every lock you need in one all-or-nothing step (`std::lock` and `std::scoped_lock`, below), or release before asking for more.
 
 **No preemption.** Let a thread give up what it holds when it cannot get the next thing. With `try_lock` a thread can say "if B is busy, I will let go of A and try again later". That breaks the condition, at the cost of possible retries. Databases go further and abort a whole **[[transaction|preempt-transaction]]** to break a deadlock.
 
@@ -147,17 +144,17 @@ Mutual exclusion, hold and wait, no preemption, and circular wait. Breaking any 
 
 ## Lock ordering: one global rank
 
-The bridge had a deadlock because two cars came from opposite ends. If every car drove onto the bridge from the north end only, the standoff could never happen. Lock ordering is that rule for mutexes.
+If every car drove onto the bridge from the north end only, the standoff could never happen. Lock ordering is that rule for mutexes.
 
 Give every mutex in the program a **rank** — a number that says where it sits in the order. The rule: *a thread may only lock a mutex whose rank is lower than every mutex it already holds.* In words: always go down the ladder, never up.
 
-Why does that kill circular wait? Follow any chain of "waits for" arrows. Each thread in the chain is waiting for a mutex ranked lower than one it holds. So as you walk along the chain, the ranks go strictly down, step after step. To close a cycle you would need to come back to the rank you started from, which is higher. Strictly falling numbers can never return to where they started. No cycle, no deadlock.
+Why does that kill circular wait? Walk along any chain of "waits for" arrows and the ranks go strictly down at every step. To close a cycle you would have to climb back to where you started, and strictly falling numbers never do. No cycle, no deadlock.
 
 ::: note Why ranking is enough, stated carefully
 Suppose threads $T_1, \dots, T_k$ form a cycle: $T_1$ waits for a mutex held by $T_2$, $T_2$ waits for one held by $T_3$, and so on, until $T_k$ waits for one held by $T_1$. Let $h_i$ be the lowest rank $T_i$ currently holds, and $w_i$ the rank it is waiting for. The ranking rule says $w_i < h_i$. The mutex $T_i$ waits for is held by $T_{i+1}$, so $h_{i+1} \le w_i$. Put the two together: $h_{i+1} \le w_i < h_i$, so $h_{i+1} < h_i$. Going around the whole cycle gives $h_1 > h_2 > \dots > h_k > h_1$, which says $h_1 > h_1$. That is impossible, so no such cycle exists.
 :::
 
-You can make the compiler's run-time do the checking for you. Here is a **ranked mutex**: an ordinary `std::mutex` that knows its rank and refuses to be locked out of order.
+You can make the program check the rule for you. A **ranked mutex** is an ordinary `std::mutex` that knows its rank and refuses to be locked out of order. It works with `std::lock_guard`, because the lock wrappers only need a type with `lock()` and `unlock()`.
 
 ::: example A mutex that enforces the order
 ```cpp
@@ -226,20 +223,18 @@ What happens, step by step:
 3. Leaving the block, the guards unlock in reverse order, and each `unlock()` restores the previous rank, back to 1,000,000.
 4. Second block: `tlm_mutex` (100) is allowed, held rank becomes 100. Now `nav_mutex` asks for 200, and $200 \ge 100$, so the check fires *before* the thread would have blocked. The program stops with a message naming the two ranks.
 
-Sanity check: this caught the bug on a single thread, in a test that never deadlocked. The rank check fires on the *order*, not on the bad timing, which is exactly what you want in testing.
+Sanity check: this caught the bug on one thread, in a test that could not deadlock. The check fires on the *order*, not the timing.
 :::
 
-`std::lock_guard<RankedMutex>` works because `lock_guard` only needs a type with `lock()` and `unlock()`. Any such type is called **BasicLockable**, and all the standard lock wrappers accept it.
-
-On a real team the ranks live in one table, reviewed like an interface: "telemetry frame lock is below navigation lock is below mode-manager lock". New code that needs two locks looks up the table instead of guessing.
+On a real team the ranks live in one reviewed table, so new code that needs two locks looks them up instead of guessing.
 
 ::: warning Ordering by address is fragile in general code
-A common trick is "always lock the mutex at the lower address first". It works inside one function that holds both mutexes in hand. It breaks as soon as locks are taken in different functions, at different times, where the code cannot see both addresses. Use a written rank for locks that live in different modules, and let `std::scoped_lock` handle the case where you hold both in hand at once.
+"Always lock the lower address first" works only inside one function that has both mutexes in hand. Locks taken in different functions, at different times, need a written rank.
 :::
 
 ## Taking several locks at once: std::lock and std::scoped_lock
 
-Sometimes you cannot pick an order in advance. Last lesson's tank transfer was one: `transfer(fwd, aft, 3)` in one thread and `transfer(aft, fwd, 2)` in another. Each call wants "from" then "to", so the two threads ask in opposite orders. With two plain `lock_guard`s, that transfer program hangs; run under `timeout 5` on one machine it never finished and was killed after 5 s.
+Sometimes you cannot pick an order in advance. Last lesson's tank transfer was one: one thread moves propellant from `left` to `right` while another moves it back. Each call locks "from" then "to", so the two threads ask in opposite orders. Here is a variant that counts whole grams, with one thread running `transfer(fwd, aft, 3)` and another `transfer(aft, fwd, 2)`, a million times each. With two plain `lock_guard`s it hangs; run under `timeout 5` on one machine it never finished and was killed after 5 s.
 
 The standard library's answer is `std::lock(a, b, ...)`. It locks all the mutexes you give it, and it promises not to deadlock *among themselves*, whatever order you list them in and whatever order other `std::lock` calls use. The standard does not say how. libstdc++ (the GCC library) locks one, then *tries* the others; if any is busy it releases everything it took and starts again, this time waiting first on the one that was busy. That is breaking hold-and-wait: it never sleeps on one lock while holding another.
 
@@ -253,11 +248,11 @@ void transfer(Tank& from, Tank& to, long grams) {
 }
 ```
 
-Read `std::scoped_lock lock(from.m, to.m);` as "lock both of these for the rest of this block". The compiler works out the template arguments from the mutexes you pass (class template argument deduction, from the modern C++ module), so you do not write `std::scoped_lock<std::mutex, std::mutex>`.
+Read it as "lock both of these for the rest of this block". Class template argument deduction works out `std::scoped_lock<std::mutex, std::mutex>` for you.
 
-With that one line changed, the same two threads doing a million transfers each finish, and TSan (the ThreadSanitizer) reports nothing. Starting from 2,000,000 g in each tank, the result is `fwd = 1000000 g, aft = 3000000 g, total = 4000000 g`: one tank gave 3 g a million times and got 2 g back a million times, net 1,000,000 g moved, total unchanged.
+With that line, a million transfers each way finish, and ThreadSanitizer reports nothing. Starting from 2,000,000 g per tank, the result is `fwd = 1000000 g, aft = 3000000 g, total = 4000000 g`: 3 g out and 2 g back a million times is 1,000,000 g moved, total unchanged.
 
-Before C++17 you wrote the same thing in two steps, and you will meet both forms in older flight code:
+Older code writes the same thing in two steps:
 
 ```cpp
 std::lock(from.m, to.m);                                  // lock both, deadlock-free
@@ -273,7 +268,7 @@ std::unique_lock<std::mutex> l2(to.m,   std::defer_lock);
 std::lock(l1, l2);                                         // lock both now
 ```
 
-`std::adopt_lock` means "this mutex is already locked; just remember to unlock it". `std::defer_lock` means "do not lock it yet". In both, the destructors do the unlocking.
+`std::adopt_lock` means "already locked; you only unlock it". `std::defer_lock` means "do not lock it yet".
 
 ::: key
 `std::lock(m1, m2, ...)` locks several mutexes without deadlocking among them, whatever order callers list them in. `std::scoped_lock lock(m1, m2);` (C++17) does the same in its constructor and unlocks all of them in its destructor. With one mutex it behaves like `lock_guard`.
@@ -285,10 +280,8 @@ std::lock(l1, l2);                                         // lock both now
 
 ### What does not fix it
 
-People reach for three things that feel like fixes and are not.
-
-- **A recursive mutex.** `std::recursive_mutex` (last lesson) lets the *same* thread lock it again. Our deadlock is two *different* threads, each holding a different mutex. Recursion does nothing for it.
-- **A sleep between the two locks.** It changes the timing, so the deadlock becomes rarer, or more common. The cycle is still possible. A deadlock that happens once in ten thousand flights is worse than one that happens every test, because you will not see it until it matters.
+- **A recursive mutex.** `std::recursive_mutex` lets the *same* thread lock it again. Our deadlock is two *different* threads. Recursion does nothing for it.
+- **A sleep between the two locks.** It changes the odds, not the cycle. A deadlock that strikes once in ten thousand flights is worse than one that strikes every test, because you will not see it until it matters.
 - **Spinning on `try_lock` with no back-off.** Next section.
 
 ## try_lock, and its trap: livelock
@@ -309,9 +302,9 @@ int main() {
 
 This prints `try_lock returned 1; a is free again: yes`: position 1 (`b`) was busy, and `a` was released on the way out.
 
-`try_lock` breaks the "no preemption" condition: a thread that cannot get the second lock gives up the first. But two threads that do this in perfect step can fail forever without sleeping: both grab their first lock, both fail on the second, both release, both retry, in the same rhythm. That is a **[[livelock|livelock-hallway]]** — threads that are busy, using CPU, and making no progress. It is the hallway dance where two people step aside to the same side, again and again.
+`try_lock` breaks "no preemption": a thread that cannot get its second lock gives up the first. But two threads doing this in perfect step can fail forever: both grab their first lock, both fail on the second, both release, both retry. That is a **[[livelock|livelock-hallway]]** — threads busy using CPU and making no progress.
 
-The cure is to break the rhythm: back off for a short, *different* time before retrying, or better, use `std::lock`, which already does the retrying for you in a way the library has thought through. Save hand-written `try_lock` loops for cases where you truly want to do something else when the lock is busy, such as a 1 kHz control loop that must never wait: "if the telemetry frame is locked this cycle, skip the copy and try next cycle".
+The cure is to break the rhythm with a short, *different* back-off, or better, use `std::lock`. Keep hand-written `try_lock` for when you want to do something else if the lock is busy, such as a 1 kHz control loop that must never wait: "frame locked this cycle? skip the copy, try next cycle".
 
 ::: key
 `m.try_lock()` returns at once, `true` if it got the lock. `std::try_lock(a, b, ...)` returns `-1` on success, or the index of the first busy mutex after unlocking the rest. A retry loop without back-off can livelock: busy threads, no progress.
@@ -319,9 +312,7 @@ The cure is to break the rhythm: back off for a short, *different* time before r
 
 ## Letting a tool find the cycle: TSan
 
-The deadlock in the first example happened only because of the 50 ms sleeps. Take them out and it might strike once in a million runs. Testing by waiting for the hang is hopeless.
-
-ThreadSanitizer, which lesson 2 used to catch data races, also watches lock order. Every time a thread takes a mutex while holding another, TSan draws an arrow "held → taken" in a **lock-order graph**. If the arrows ever form a cycle, it reports a potential deadlock, even if the run itself never hung.
+Without the 50 ms sleeps the first deadlock might strike once in a million runs, so waiting for the hang is hopeless. ThreadSanitizer, which lesson 2 used for data races, also watches lock order. Every time a thread takes a mutex while holding another, TSan draws an arrow "held → taken" in a **lock-order graph**. If the arrows ever form a cycle, it reports a potential deadlock, even if the run itself never hung.
 
 ::: example TSan reports the inversion without the hang
 The same two tasks, without the sleeps, and run one after the other so this run *cannot* deadlock:
@@ -374,18 +365,17 @@ and the exit status is 66, TSan's way of failing a test.
 
 Reading it:
 
-1. `M0` and `M1` are TSan's names for the two mutexes. `M0 => M1` means "someone took M1 while holding M0".
-2. Line 10 is where T1 took `tlm_mutex` while holding `nav_mutex`. So M0 is `nav_mutex`, M1 is `tlm_mutex`.
-3. Line 15 is where T2 took `nav_mutex` while holding `tlm_mutex`: the arrow back, `M1 => M0`.
-4. The two arrows close a cycle. That is a circular wait waiting to happen.
+1. `M0 => M1` means "someone took M1 while holding M0".
+2. Line 10 took `tlm_mutex` while holding `nav_mutex`, so M0 is `nav_mutex` and M1 is `tlm_mutex`.
+3. Line 15 took them the other way: the arrow back, `M1 => M0`. The two arrows close a cycle, a circular wait waiting to happen.
 
-Sanity check: `finished without deadlock` printed. The report came from the *order*, not from a hang, which is why it works on a run where the timing was harmless.
+Sanity check: `finished without deadlock` printed. The report came from the order, not from a hang.
 :::
 
 Switch the tasks to `std::scoped_lock lock(nav_mutex, tlm_mutex);` and `std::scoped_lock lock(tlm_mutex, nav_mutex);` (opposite orders on purpose) and the report disappears. The library only *tries* the second mutex, and a try cannot block, so TSan draws no waiting arrow for it.
 
 ::: warning TSan only sees paths you ran
-TSan builds its graph from locks your test actually took. If one order lives in a fault-handling branch your test never reached, TSan cannot see that arrow. A lock-order check in the code itself (the ranked mutex) plus tests that cover the fault paths is the belt-and-braces approach.
+TSan draws arrows only for locks your test actually took. An order hidden in a fault branch the test never reached is invisible to it. Pair TSan with a ranked-mutex check and tests that cover the fault paths.
 :::
 
 ## Check yourself
@@ -399,11 +389,11 @@ Mutual exclusion (only one holder at a time), hold and wait (holding one resourc
 :::
 
 ::: check
-A hung process shows three threads in `futex_wait`. Thread A waits on mutex X, owned by thread B. Thread B waits on mutex Y, owned by thread C. Thread C waits on mutex Z, owned by nobody that is blocked (its owner is a fourth thread that is running). Is this a deadlock?
+A hung process shows three threads in `futex_wait`. Thread A waits on mutex X, owned by thread B. B waits on Y, owned by C. C waits on Z, owned by a fourth thread D, which is running, not blocked. Is this a deadlock?
 :::
 
 ::: answer
-Not from what you see. Follow the arrows: A → B → C → the fourth thread, which is running. The chain ends at a thread that can make progress, so there is no cycle. When the fourth thread releases Z, C continues, then releases Y, then B, then A. It may be slow, or the fourth thread may itself be stuck in a loop, but the lock picture alone shows no circular wait. A deadlock needs the arrows to close into a loop.
+Not from the lock picture. Follow the arrows: A → B → C → D, and D is running. The chain ends at a thread that can make progress, so there is no cycle. When D releases Z, C continues and releases Y, then B, then A. D might be stuck in an endless loop, which is a different bug, but a deadlock needs the arrows to close into a loop.
 :::
 
 ::: check
@@ -411,7 +401,7 @@ Mutexes are ranked: `mode_mutex` 300, `nav_mutex` 200, `tlm_mutex` 100. A functi
 :::
 
 ::: answer
-It may not lock 300 while holding 200, because ranks must go down. It must release `nav_mutex`, lock `mode_mutex` (300), then lock `nav_mutex` again (200). Because it let go of `nav_mutex` in between, it must re-read anything it learned while holding it: another thread may have changed the navigation state in the gap. If that is awkward, the design may want both taken together from the start with `std::scoped_lock lock(mode_mutex, nav_mutex);` in the code that knows it needs both.
+It may not lock 300 while holding 200, because ranks must go down. It must release `nav_mutex`, lock `mode_mutex`, then lock `nav_mutex` again. Anything it read under `nav_mutex` before must be re-read, because another thread may have changed it in the gap. Often the better design takes both from the start, in rank order.
 :::
 
 ::: check
@@ -423,11 +413,11 @@ Because `scoped_lock` does not lock "first argument, then second". It hands both
 :::
 
 ::: check
-Two threads each run: lock A; if `B.try_lock()` fails, unlock A and immediately go back to the start. They never sleep. What can go wrong, and how do you fix it?
+Thread 1 locks A, then tries B. Thread 2 locks B, then tries A. On failure, each unlocks what it holds and immediately starts again, never sleeping. What can go wrong, and how do you fix it?
 :::
 
 ::: answer
-Livelock. If they run in step, both take their first lock, both fail on the other's lock, both release, both retry, forever. The threads are busy and burn CPU, but neither makes progress. Fix it by backing off for a short, randomised or thread-specific time before retrying, so the rhythm breaks, or replace the whole loop with `std::scoped_lock lock(A, B);`, which does the retrying for you.
+Livelock. If they run in step, both take their first lock, both fail on the other's, both release, both retry, forever: busy CPUs, no progress. There is no deadlock, since nobody sleeps while holding, but nothing gets done. Fix it with a short, randomised or thread-specific back-off before retrying, or replace the whole loop with `std::scoped_lock lock(A, B);`.
 :::
 
 ## Summary
@@ -501,7 +491,7 @@ A normal global variable has one copy shared by every thread. A `thread_local` v
 :::
 
 ::: context livelock-hallway The hallway dance
-Two people meet in a corridor, A walking up and B walking down the page. Both step to their own left to let the other pass, which puts them in the same lane. Both step right. Both step left again. Each is being polite and moving, yet neither gets by. That is livelock: activity without progress. It ends when one of them waits a moment longer than the other.
+Two people meet in a corridor, A walking up the page and B walking down. Both step toward the same wall to let the other pass, so they are face to face again. Both switch to the other wall. And again. Each is being polite and moving, yet neither gets by. That is livelock: activity without progress. It ends when one of them waits a moment longer than the other.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">
