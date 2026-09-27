@@ -2,6 +2,7 @@
 @title C++
 @name C++, close to the machine
 @blurb Compiled for real by clang++ in your browser: from main() and std::cout to vectors, strings, references, classes and pointers.
+@plainvoice true
 
 === cpp-01 | Hello, main()
 --- teach
@@ -1253,7 +1254,7 @@ The first prints `go` only when both are true. Read the second as "if the engine
 
 ### Deciding inside a function
 
-In your task the decision lives inside a function (you met functions in lesson 3) that gives back a word. `return` hands the value back *and* leaves the function right away, so nothing below it runs:
+In your task the decision lives inside a function (you wrote your first ones in the lesson on writing your own function) that gives back a word. `return` hands the value back *and* leaves the function right away, so nothing below it runs:
 
 ```cpp
 #include <string>
@@ -1273,7 +1274,7 @@ std::string fuel_status(int percent) {
 **Watch out:** one equals sign `=` **assigns** (puts a value into a variable); two, `==`, **compares**. `if (score = 70)` does not ask whether the score is 70. It *sets* the score to 70, and then treats 70 as true. The program still compiles and quietly does the wrong thing. clang, the [[compiler that builds your code|compiler-warnings]] on this page, prints a warning about it — one reason to read warnings, not only errors.
 
 ::: context condition-bool Every condition is a bool
-In lesson 2 you met `bool`, the type that holds only `true` or `false`. A condition is any expression that works out to a bool. `temperature > 30` becomes `true` or `false` first, and only then does `if` look at it. So you can store a condition in a variable and use it later: `bool hot = temperature > 30;` and then `if (hot) { … }`.
+In the variables lesson you met `bool`, the type that holds only `true` or `false`. A condition is any expression that works out to a bool. `temperature > 30` becomes `true` or `false` first, and only then does `if` look at it. So you can store a condition in a variable and use it later: `bool hot = temperature > 30;` and then `if (hot) { … }`.
 
 Numbers can stand in as conditions too: 0 counts as false, and every other number counts as true. That rule is why `if (score = 70)` sneaks past the compiler — the assignment's value is 70, which is not 0, so the block always runs.
 :::
@@ -1364,7 +1365,7 @@ grade(12)
 --- teach
 Last lesson your program chose which lines to run. This lesson it runs the same lines again and again. That repeating is called a **loop**.
 
-Think of a countdown: "10, 9, 8, …, 1, liftoff." Nobody writes ten separate print lines for that. You describe the pattern once — "say the number, then make it one smaller, until you reach zero" — and the loop repeats it for you. You have met one loop already: `while (std::cin >> n)` in lesson 4 repeated once for every number in the input.
+Think of a countdown: "10, 9, 8, …, 1, liftoff." Nobody writes ten separate print lines for that. You describe the pattern once — "say the number, then make it one smaller, until you reach zero" — and the loop repeats it for you. You have met one loop already: `while (std::cin >> n)` in the lesson on reading input repeated once for every number in the input.
 
 ### The counting for loop
 
@@ -1447,11 +1448,11 @@ for (int i = 1; i <= 6; i++) {
 }
 ```
 
-This prints 1, 3 and 5. Remember `%` from lesson 3, the remainder: `i % 2 == 0` means "dividing `i` by 2 leaves nothing over", so `i` is even, and the even numbers are skipped.
+This prints 1, 3 and 5. Remember `%` from the arithmetic lesson, the remainder: `i % 2 == 0` means "dividing `i` by 2 leaves nothing over", so `i` is even, and the even numbers are skipped.
 
 ### A decision inside a loop
 
-Put an `if` chain from lesson 5 inside a loop, and the program makes a fresh decision on every pass:
+Put an `if` chain from the decisions lesson inside a loop, and the program makes a fresh decision on every pass:
 
 ```cpp
 for (int n = 1; n <= 4; n++) {
@@ -1463,7 +1464,7 @@ for (int n = 1; n <= 4; n++) {
 }
 ```
 
-This prints `1`, `even`, `3`, `even`. "`n` is a multiple of 3" works the same way: `n % 3 == 0`. That is all you need for your task, a counting game called [[FizzBuzz|fizzbuzz]]. Remember the rule from lesson 5: in an `else if` chain the *first* true question wins.
+This prints `1`, `even`, `3`, `even`. "`n` is a multiple of 3" works the same way: `n % 3 == 0`. That is all you need for your task, a counting game called [[FizzBuzz|fizzbuzz]]. Remember the rule from the decisions lesson: in an `else if` chain the *first* true question wins.
 
 **Watch out:** `<` and `<=` differ by one pass. `for (int i = 1; i < 5; i++)` stops at 4, because `5 < 5` is false. When a loop runs one time too many or one too few, it is called an [[off-by-one error|off-by-one]]. Check the last value by hand: "when `i` is 5, is the condition true?"
 
@@ -1537,10 +1538,10 @@ A fence 30 metres long with a post every 10 metres needs 4 posts, not 3: one at 
 </svg>
 ```
 
-In loops it shows up as `<` versus `<=`. It comes back in lesson 8: a list's positions start at 0, so a list of 5 items uses positions 0 to 4, and the loop is written `i < 5`.
+In loops it shows up as `<` versus `<=`. It comes back in the vector lesson: a list's positions start at 0, so a list of 5 items uses positions 0 to 4, and the loop is written `i < 5`.
 :::
 --- task
-Write a whole program (with `main`, as in lesson 4) that goes through the numbers 1 to 15 with a loop and prints one line for each number:
+Write a whole program (with `main`, as in the lesson on reading input) that goes through the numbers 1 to 15 with a loop and prints one line for each number:
 
 - `FizzBuzz` if the number is a multiple of both 3 and 5,
 - otherwise `Fizz` if it is a multiple of 3,
@@ -1598,7 +1599,7 @@ FizzBuzz
 
 === cpp-07 | Functions
 --- teach
-Since lesson 3 you have been writing functions like `average` and `grade`, and the checker has been calling them. This lesson looks at functions properly: what each part means, functions that give nothing back, and how to pick a type big enough for the answer.
+Since you wrote `add`, you have been writing functions like `average` and `grade`, and the checker has been calling them. This lesson looks at functions properly: what each part means, functions that give nothing back, and how to pick a type big enough for the answer.
 
 A **function** is a named piece of work you can run whenever you need it. It is like a recipe card with a title: write "pancakes" once, and from then on "make pancakes" is enough. Running a function is called **calling** it.
 
@@ -1613,7 +1614,7 @@ bool is_positive(int n) {
 - `bool` is the **return type**: the kind of value that comes back. Here, true or false.
 - `is_positive` is the name. Names for yes-or-no functions often start with `is_`, so a call reads like a question.
 - `(int n)` is the **parameter** list: each input's type and name.
-- `return n > 0;` works out the condition `n > 0` (a bool, from lesson 5) and hands it back.
+- `return n > 0;` works out the condition `n > 0` (a bool, from the decisions lesson) and hands it back.
 
 Now `is_positive(5)` is `true` and `is_positive(-3)` is `false`. You can [[call it|function-call]] anywhere a bool fits, such as `if (is_positive(altitude)) { … }`.
 
@@ -1681,7 +1682,7 @@ A function can even call itself. That is called **recursion**, and it works as l
 ::: context function-call What happens during a call
 When the program reaches `is_positive(altitude)`, it pauses where it is and jumps into the function. The parameter `n` is made as a fresh variable holding a **copy** of the value you passed in (the argument). The body runs until `return`. Then the program jumps back, and the returned value takes the place of the whole call — as if you had written `true` right there.
 
-Because `n` is a copy, changing it inside the function does not change `altitude` outside. Lesson 10 shows how to let a function change the caller's own variable, with references.
+Because `n` is a copy, changing it inside the function does not change `altitude` outside. The references lesson shows how to let a function change the caller's own variable, with references.
 :::
 
 ::: context declaration Declarations and header files
@@ -1903,7 +1904,7 @@ power(2, 40)
 
 === cpp-08 | std::vector
 --- teach
-Last lesson you wrote functions that take one number and give back one number. Real programs work with whole lists: every temperature reading from a flight, every mass on a cargo manifest. This lesson gives you C++'s list, the vector.
+In the last few lessons you wrote functions that take a number or two and give back one value. Real programs work with whole lists: every temperature reading from a flight, every mass on a cargo manifest. This lesson gives you C++'s list, the vector.
 
 Picture an egg carton that can stretch. The cups sit in one row, each cup holds one egg, and the cups are numbered from the left. When you need one more cup, the carton grows. That is a **vector**: a row of values of one type, stored side by side, that can [[get longer while the program runs|growing-in-flight]]. It is C++'s growable [[array|array-in-memory]], and it is the container to reach for first. Each value in it is called an **element**.
 
@@ -1957,7 +1958,7 @@ for (int x : v) {
 // total is 21
 ```
 
-It is the `for` loop from lesson 6 with the counting done for you.
+It is the `for` loop from the loops lesson with the counting done for you.
 
 ### Passing a vector to a function
 
@@ -1974,11 +1975,11 @@ There are two new pieces around the type:
 - The ampersand `&`, read "reference to", means "refer to the caller's vector" instead of copying it. Copying a vector of a million readings would be slow; a reference costs almost nothing.
 - `const` promises the function will not change the vector. If it tries, the program does not compile.
 
-So `const std::vector<int>& v` reads "v is a reference to a vector of ints that I promise not to change". Lesson 10 is all about references. Until then, write it this way whenever a function only reads a vector.
+So `const std::vector<int>& v` reads "v is a reference to a vector of ints that I promise not to change". The references lesson, coming soon, is all about them. Until then, write it this way whenever a function only reads a vector.
 
 **Watch out:** C++ does not check your index. On a vector with 4 elements, `v[4]` does not stop the program with a helpful error. It reads whatever memory happens to sit past the end, and from then on the program's behaviour is [[undefined|undefined-behaviour]]. So use `v[0]` only when you know the vector is not empty, and keep every index below `size()`.
 
-**Watch out, too:** dividing a whole-number total by `size()` is whole-number division, so it throws the remainder away, the same as `7 / 2` in lesson 3. Worse, `size()` gives back an [[unsigned|size-is-unsigned]] number, which breaks negative totals completely. To get an exact average, convert the total to a `double` first: `static_cast<double>(total) / v.size()`.
+**Watch out, too:** dividing a whole-number total by `size()` is whole-number division, so it throws the remainder away, the same as `7 / 2` in the arithmetic lesson. Worse, `size()` gives back an [[unsigned|size-is-unsigned]] number, which breaks negative totals completely. To get an exact average, convert the total to a `double` first: `static_cast<double>(total) / v.size()`.
 
 ::: context growing-in-flight Why flight code avoids growing
 When a vector runs out of room, it quietly asks the computer for a bigger block of memory and moves every element into it. That is handy on a laptop. On a spacecraft it is a risk: asking for memory takes an unknown amount of time, and it might fail. NASA JPL's "Power of Ten" rules for safety-critical code say: do not allocate memory after the program has started up. Flight programmers therefore set every list's size at startup, or use fixed-size arrays, so the memory a mission needs is known before launch.
@@ -2010,7 +2011,7 @@ An **array** is a row of same-sized boxes in the computer's memory, one right af
 :::
 
 ::: context one-type-inside One vector, one type
-The angle brackets make `std::vector` a **template**: a pattern the compiler fills in with a type. `std::vector<int>` holds ints, `std::vector<double>` holds decimals, `std::vector<std::string>` holds pieces of text. You cannot put a string into a `std::vector<int>`; the compiler refuses before the program exists. That strictness is the same static typing you met in lesson 2, and it is why every box in the row can be the same size.
+The angle brackets make `std::vector` a **template**: a pattern the compiler fills in with a type. `std::vector<int>` holds ints, `std::vector<double>` holds decimals, `std::vector<std::string>` holds pieces of text. You cannot put a string into a `std::vector<int>`; the compiler refuses before the program exists. That strictness is the same static typing you met in the variables lesson, and it is why every box in the row can be the same size.
 :::
 
 ::: context zero-index Why counting starts at 0
@@ -2137,7 +2138,7 @@ The header `<cctype>` has small functions that ask about, or change, one charact
 - `std::isspace(c)` is true for a space, a tab or a newline.
 - `std::isdigit(c)` is true for the digits `'0'` to `'9'`.
 
-These helpers [[come from C|from-c]], and they take and return an `int`, not a `char`. So you convert on the way in and on the way out, with the `static_cast` from lesson 3:
+These helpers [[come from C|from-c]], and they take and return an `int`, not a `char`. So you convert on the way in and on the way out, with the `static_cast` from the arithmetic lesson:
 
 ```cpp
 char c = 'a';
@@ -2284,7 +2285,7 @@ if (s.find("xyz") == std::string::npos) {
 }
 ```
 
-To keep the index for later, store it. `auto`, from lesson 2, lets the compiler write the type for you (it is `std::size_t`, the same unsigned whole-number type that `size()` gives):
+To keep the index for later, store it. `auto`, from the variables lesson, lets the compiler write the type for you (it is `std::size_t`, the same unsigned whole-number type that `size()` gives):
 
 ```cpp
 auto pos = s.find(' ');   // pos is 3
@@ -2419,7 +2420,7 @@ field_value("NOCOLON")
 
 === cpp-10 | References
 --- teach
-In lesson 8 you wrote `const std::vector<int>& v` and were promised more about that `&` later. This is later. Here you learn how a function can change a variable that belongs to whoever called it.
+In the vector lesson you wrote `const std::vector<int>& v` and were promised more about that `&` later. This is later. Here you learn how a function can change a variable that belongs to whoever called it.
 
 ### Functions get copies
 
@@ -2508,7 +2509,7 @@ The checks in this lesson look like this:
 That is a **lambda**: a small function with no name, [[defined and called on the spot|lambda-parts]]. The square brackets `[]` start it, the curly braces `{ … }` hold its body, and the `()` at the very end calls it right away. Inside, `int a = 1, b = 2;` declares two ints on one line. A lambda lets a check set up variables, call your function and test the result. You will write lambdas yourself later; here you only need to read them.
 
 ::: context bound-for-life A reference is bound for life
-A reference must be tied to a variable the moment it is made: `int& b;` on its own does not compile. After that it can never be moved to a different variable. `b = c;` does not make `b` a name for `c`; it copies the value of `c` into `a`, the variable `b` names. And there is no such thing as a reference to nothing. Pointers, in lesson 13, are the tool that can change what it points at and can point at nothing, which is exactly why they need more care.
+A reference must be tied to a variable the moment it is made: `int& b;` on its own does not compile. After that it can never be moved to a different variable. `b = c;` does not make `b` a name for `c`; it copies the value of `c` into `a`, the variable `b` names. And there is no such thing as a reference to nothing. Pointers, in the last lesson of this course, are the tool that can change what it points at and can point at nothing, which is exactly why they need more care.
 :::
 
 ::: context one-box-two-names Copies and references, side by side
