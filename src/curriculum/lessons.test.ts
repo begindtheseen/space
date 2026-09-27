@@ -54,14 +54,10 @@ const WRITTEN_BEFORE_NOTES = new Set<string>([
   // Career
   'car_08_pipeline', 'car_09_screens', 'car_10_past_project_presentation', 'car_11_domain_round',
   'car_12_first_principles', 'car_13_behavioral_star',
-  // Tier 0
-  't0_m12_cpp',
   // Tier 3
-  't3_m28_state_space', 't3_m29_optimal_control_lqr', 't3_m30_robust_control', 't3_m31_nonlinear_control',
   't3_m32_mpc',
   // Tier 4
-  't4_m35_nonlinear_filters', 't4_m36_inertial_navigation', 't4_m37_gnss', 't4_m38_sensors_optical_nav',
-  't4_m39_orbit_determination',
+  't4_m38_sensors_optical_nav', 't4_m39_orbit_determination',
   // Tiers 5–7
   't5_m40_guidance_fundamentals', 't5_m41_ascent_guidance', 't5_m42_trajectory_optimization',
   't5_m43_convex_guidance', 't6_m46_6dof_simulation', 't6_m47_vv_montecarlo', 't7_m48_capstone',

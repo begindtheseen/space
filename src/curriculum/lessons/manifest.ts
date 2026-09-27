@@ -2337,22 +2337,106 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       "file": "cod_cpp_07_concurrency/01-threads.md"
     },
     {
+      "id": "l02-data-races",
+      "title": "Data races",
+      "minutes": 26,
+      "covers": [
+        "Data races as undefined behaviour, not merely a wrong answer"
+      ],
+      "file": "cod_cpp_07_concurrency/02-data-races.md"
+    },
+    {
+      "id": "l03-mutexes-and-locks",
+      "title": "Mutexes and lock guards",
+      "minutes": 28,
+      "covers": [
+        "mutex, lock_guard, unique_lock, scoped_lock, shared_mutex, recursive_mutex"
+      ],
+      "file": "cod_cpp_07_concurrency/03-mutexes-and-locks.md"
+    },
+    {
       "id": "l04-deadlock",
       "title": "Deadlock, and how to make it impossible",
-      "minutes": 22,
+      "minutes": 24,
       "covers": [
         "Deadlock: the four conditions, lock ordering, std::lock and scoped_lock"
       ],
       "file": "cod_cpp_07_concurrency/04-deadlock.md"
     },
     {
+      "id": "l05-condition-variables",
+      "title": "Waiting for something to happen: condition variables",
+      "minutes": 23,
+      "covers": [
+        "condition_variable and spurious wakeups; the predicate form of wait"
+      ],
+      "file": "cod_cpp_07_concurrency/05-condition-variables.md"
+    },
+    {
+      "id": "l06-atomics-and-memory-orderings",
+      "title": "Atomics and memory orderings",
+      "minutes": 23,
+      "covers": [
+        "std::atomic and memory orderings: relaxed, acquire/release, seq_cst"
+      ],
+      "file": "cod_cpp_07_concurrency/06-atomics-and-memory-orderings.md"
+    },
+    {
       "id": "l07-the-memory-model",
       "title": "The C++ memory model",
-      "minutes": 21,
+      "minutes": 22,
       "covers": [
         "The C++ memory model; is_lock_free; atomic_ref"
       ],
       "file": "cod_cpp_07_concurrency/07-the-memory-model.md"
+    },
+    {
+      "id": "l08-futures-and-thread-pools",
+      "title": "Futures, promises and thread pools",
+      "minutes": 19,
+      "covers": [
+        "future, promise, packaged_task, async, and thread pools"
+      ],
+      "file": "cod_cpp_07_concurrency/08-futures-and-thread-pools.md"
+    },
+    {
+      "id": "l09-lock-free-ring-buffers",
+      "title": "Lock-free ring buffers for telemetry",
+      "minutes": 21,
+      "covers": [
+        "Lock-free single-producer single-consumer ring buffers for telemetry",
+        "Lock-free is not wait-free; progress guarantees"
+      ],
+      "file": "cod_cpp_07_concurrency/09-lock-free-ring-buffers.md"
+    },
+    {
+      "id": "l10-false-sharing",
+      "title": "False sharing: when two threads fight over one cache line",
+      "minutes": 22,
+      "covers": [
+        "False sharing and hardware_destructive_interference_size"
+      ],
+      "file": "cod_cpp_07_concurrency/10-false-sharing.md"
+    },
+    {
+      "id": "l11-real-time-and-scheduling",
+      "title": "Real time: deadlines, worst cases and rate-monotonic scheduling",
+      "minutes": 24,
+      "covers": [
+        "Hard, firm and soft real time; WCET and why average latency is irrelevant",
+        "Rate-monotonic scheduling and utilisation bounds"
+      ],
+      "file": "cod_cpp_07_concurrency/11-real-time-and-scheduling.md"
+    },
+    {
+      "id": "l12-priority-inversion-and-rtos",
+      "title": "Priority inversion, Mars Pathfinder, and real-time operating systems",
+      "minutes": 21,
+      "covers": [
+        "Priority inversion and priority inheritance; the Mars Pathfinder case",
+        "RTOS landscape: FreeRTOS, RTEMS, VxWorks, Linux PREEMPT_RT"
+      ],
+      "file": "cod_cpp_07_concurrency/12-priority-inversion-and-rtos.md"
     }
   ],
   "cod_cpp_08_realtime": [
@@ -2780,6 +2864,44 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Testing numerical kernels: invariants, convergence, golden data"
       ],
       "file": "cod_cpp_11_gtest/11-testing-numerical-kernels.md"
+    }
+  ],
+  "cod_dbg_01_gdb": [
+    {
+      "id": "l01-debugging-as-science",
+      "title": "Debugging as an experiment",
+      "minutes": 28,
+      "covers": [
+        "The scientific method of debugging; minimal reproducers"
+      ],
+      "file": "cod_dbg_01_gdb/01-debugging-as-science.md"
+    },
+    {
+      "id": "l02-gdb-breakpoints-and-backtraces",
+      "title": "gdb: stopping a program and reading its stack",
+      "minutes": 17,
+      "covers": [
+        "gdb: break, conditional breakpoints, watchpoints, run, bt, frame, up/down"
+      ],
+      "file": "cod_dbg_01_gdb/02-gdb-breakpoints-and-backtraces.md"
+    },
+    {
+      "id": "l03-inspecting-state-in-gdb",
+      "title": "Looking inside a stopped program",
+      "minutes": 19,
+      "covers": [
+        "info args, info locals, info registers, print, p *ptr@n, x/16xb"
+      ],
+      "file": "cod_dbg_01_gdb/03-inspecting-state-in-gdb.md"
+    },
+    {
+      "id": "l04-stepping-and-changing-state",
+      "title": "Stepping through code and changing it while it runs",
+      "minutes": 23,
+      "covers": [
+        "step vs next vs finish vs until; tbreak; display; set var"
+      ],
+      "file": "cod_dbg_01_gdb/04-stepping-and-changing-state.md"
     }
   ],
   "cod_git_01_basics": [
@@ -3582,6 +3704,55 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Caching pip, cargo and ccache; artefacts; secrets; environments"
       ],
       "file": "cod_ops_02_ci/03-matrices-caching-and-secrets.md"
+    },
+    {
+      "id": "l04-reuse-runners-and-other-ci-systems",
+      "title": "Reusing pipelines, choosing runners, and other CI systems",
+      "minutes": 24,
+      "covers": [
+        "Reusable workflows and composite actions",
+        "Self-hosted runners for licensed tools and special hardware",
+        "GitLab CI and Jenkins, still common in defence and aerospace"
+      ],
+      "file": "cod_ops_02_ci/04-reuse-runners-and-other-ci-systems.md"
+    },
+    {
+      "id": "l05-a-gnc-pipeline",
+      "title": "A pipeline for GNC code",
+      "minutes": 28,
+      "covers": [
+        "A GNC pipeline: lint, static analysis, unit tests, coverage gate, Debug+ASan and Release builds, regression sims with tolerances, benchmark thresholds, docs, artefacts"
+      ],
+      "file": "cod_ops_02_ci/05-a-gnc-pipeline.md"
+    },
+    {
+      "id": "l06-golden-files-and-nightly-monte-carlo",
+      "title": "Golden files and the nightly Monte Carlo",
+      "minutes": 26,
+      "covers": [
+        "Golden-file regression comparison with numerical tolerance",
+        "Nightly and scheduled long-running Monte Carlo jobs"
+      ],
+      "file": "cod_ops_02_ci/06-golden-files-and-nightly-monte-carlo.md"
+    },
+    {
+      "id": "l07-matlab-and-simulink-in-ci",
+      "title": "MATLAB and Simulink in CI",
+      "minutes": 24,
+      "covers": [
+        "MATLAB and Simulink in CI: setup-matlab, headless Simulink Test, licence servers"
+      ],
+      "file": "cod_ops_02_ci/07-matlab-and-simulink-in-ci.md"
+    },
+    {
+      "id": "l08-flaky-tests-protection-and-releases",
+      "title": "Flaky tests, protected branches and releases",
+      "minutes": 26,
+      "covers": [
+        "Flaky-test policy; quarantine rather than retry-until-green",
+        "Branch protection, required checks, release automation"
+      ],
+      "file": "cod_ops_02_ci/08-flaky-tests-protection-and-releases.md"
     }
   ],
   "cod_py_01_basics": [
@@ -8624,7 +8795,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-constraints-and-slack-variables",
       "title": "State and input constraints, softening and slacks",
-      "minutes": 24,
+      "minutes": 21,
       "covers": [
         "State and input constraints; soft constraints and slack variables"
       ],
@@ -9322,7 +9493,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-star-trackers-photons-to-quaternion",
       "title": "Star trackers: from photons to a quaternion",
-      "minutes": 27,
+      "minutes": 24,
       "covers": [
         "Star trackers: optics, centroiding, star catalogs, lost-in-space identification (triangle and pyramid algorithms), tracking mode"
       ],
@@ -9358,7 +9529,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-earth-and-horizon-sensors",
       "title": "Earth and horizon sensors",
-      "minutes": 18,
+      "minutes": 16,
       "covers": [
         "Earth and horizon sensors"
       ],
@@ -9367,7 +9538,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-radar-laser-altimeters-lidar",
       "title": "Radar altimeters, laser altimeters and lidar",
-      "minutes": 18,
+      "minutes": 20,
       "covers": [
         "Radar altimeters, laser altimeters and lidar"
       ],
@@ -9376,7 +9547,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-cameras-pinhole-intrinsics-extrinsics-distortion",
       "title": "Cameras for optical navigation: the pinhole model, intrinsics, extrinsics, distortion",
-      "minutes": 19,
+      "minutes": 25,
       "covers": [
         "Cameras for optical navigation: the pinhole model, intrinsics and extrinsics, distortion"
       ],
@@ -11119,30 +11290,16 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_ops_02_ci": {
-    "covered": 4,
+    "covered": 13,
     "total": 13,
-    "complete": false,
-    "missing": [
-      "Reusable workflows and composite actions",
-      "Self-hosted runners for licensed tools and special hardware",
-      "GitLab CI and Jenkins, still common in defence and aerospace",
-      "A GNC pipeline: lint, static analysis, unit tests, coverage gate, Debug+ASan and Release builds, regression sims with tolerances, benchmark thresholds, docs, artefacts",
-      "Golden-file regression comparison with numerical tolerance",
-      "Nightly and scheduled long-running Monte Carlo jobs",
-      "MATLAB and Simulink in CI: setup-matlab, headless Simulink Test, licence servers",
-      "Flaky-test policy; quarantine rather than retry-until-green",
-      "Branch protection, required checks, release automation"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_dbg_01_gdb": {
-    "covered": 0,
+    "covered": 4,
     "total": 15,
     "complete": false,
     "missing": [
-      "The scientific method of debugging; minimal reproducers",
-      "gdb: break, conditional breakpoints, watchpoints, run, bt, frame, up/down",
-      "info args, info locals, info registers, print, p *ptr@n, x/16xb",
-      "step vs next vs finish vs until; tbreak; display; set var",
       "Attaching to a running process; gdb -p",
       "Core dumps: ulimit -c unlimited, gdb ./bin ./core, thread apply all bt",
       "TUI mode, .gdbinit, pretty-printers for STL and Eigen",
@@ -11257,22 +11414,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_cpp_07_concurrency": {
-    "covered": 3,
+    "covered": 15,
     "total": 17,
     "complete": false,
     "missing": [
-      "Data races as undefined behaviour, not merely a wrong answer",
-      "mutex, lock_guard, unique_lock, scoped_lock, shared_mutex, recursive_mutex",
-      "condition_variable and spurious wakeups; the predicate form of wait",
-      "std::atomic and memory orderings: relaxed, acquire/release, seq_cst",
-      "future, promise, packaged_task, async, and thread pools",
-      "Lock-free single-producer single-consumer ring buffers for telemetry",
-      "Lock-free is not wait-free; progress guarantees",
-      "False sharing and hardware_destructive_interference_size",
-      "Hard, firm and soft real time; WCET and why average latency is irrelevant",
-      "Priority inversion and priority inheritance; the Mars Pathfinder case",
-      "RTOS landscape: FreeRTOS, RTEMS, VxWorks, Linux PREEMPT_RT",
-      "Rate-monotonic scheduling and utilisation bounds",
       "sched_setscheduler, SCHED_FIFO, CPU pinning, mlockall",
       "The SpaceX triple-redundancy architecture as a case study"
     ]
