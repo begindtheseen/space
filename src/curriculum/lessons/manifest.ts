@@ -3818,7 +3818,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-errors-and-panics",
       "title": "Errors and panics",
-      "minutes": 26,
+      "minutes": 25,
       "covers": [
         "Error handling: custom error enums, thiserror for libraries, anyhow for applications",
         "panic versus recoverable errors; unwrap and expect discipline; panic = abort"
@@ -3828,7 +3828,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-testing-and-the-cpp-map",
       "title": "Testing, and the map back to C++",
-      "minutes": 30,
+      "minutes": 25,
       "covers": [
         "Testing: #[test], integration tests, criterion benchmarks, proptest, cargo-fuzz, miri",
         "Mapping each concept back to its C++ equivalent"
@@ -3865,6 +3865,26 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Hubris (Oxide) and Tock as all-Rust microcontroller operating systems"
       ],
       "file": "cod_rs_03_aerospace/03-embassy-rtic-hubris-and-tock.md"
+    },
+    {
+      "id": "l04-embedded-tooling-and-static-memory",
+      "title": "Logging, flashing and fixed-size memory on a chip",
+      "minutes": 24,
+      "covers": [
+        "defmt logging, probe-rs, cargo-embed, rtt-target",
+        "heapless collections: Vec, String and spsc::Queue with static capacity",
+        "critical-section and static_assertions"
+      ],
+      "file": "cod_rs_03_aerospace/04-embedded-tooling-and-static-memory.md"
+    },
+    {
+      "id": "l09-ferrocene-the-qualified-toolchain",
+      "title": "Ferrocene: a Rust compiler you are allowed to trust",
+      "minutes": 21,
+      "covers": [
+        "Ferrocene: the qualified Rust toolchain and exactly what its qualification covers"
+      ],
+      "file": "cod_rs_03_aerospace/09-ferrocene-the-qualified-toolchain.md"
     }
   ],
   "cod_slk_01_models": [
@@ -10506,19 +10526,15 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_rs_03_aerospace": {
-    "covered": 5,
+    "covered": 9,
     "total": 16,
     "complete": false,
     "missing": [
-      "defmt logging, probe-rs, cargo-embed, rtt-target",
-      "heapless collections: Vec, String and spsc::Queue with static capacity",
-      "critical-section and static_assertions",
       "FFI both directions: extern C, no_mangle, bindgen, cbindgen, and Rust modules inside an existing C or C++ flight codebase",
       "nalgebra: type-level dimensions, SMatrix versus DMatrix, and when it allocates",
       "nalgebra geometry: UnitQuaternion, Rotation3, Isometry3, slerp; no_std support",
       "Neighbouring crates: ndarray, argmin, nyx-space, hifitime, micromath, libm",
       "Certification: DO-178C DAL levels, structural coverage, DO-330 tool qualification, ECSS-Q-ST-80C",
-      "Ferrocene: the qualified Rust toolchain and exactly what its qualification covers",
       "ESA activity: cRustacea in Space (DLR), the armv7-rtems-eabihf target, ADCSS 2024",
       "What the evidence actually supports about Rust at SpaceX, and the fabricated claims to reject"
     ]
