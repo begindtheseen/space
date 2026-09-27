@@ -88,18 +88,71 @@ INSERT INTO newsletter (email, signed_up) VALUES
 
 === sql2-01 | Joining three tables
 --- teach
-The basics joined two tables — `requests` to `users` — and grouped, filtered and changed their rows. This course asks harder questions of a bigger database, and on the way teaches the traps that make a report quietly wrong: NULLs, joins that multiply rows, and text that looks equal but is not.
+At the end of the basics you joined two tables: each row of `requests` found its user in `users` through `user_id`. You also grouped rows, kept users with LEFT JOIN, changed data and named steps with `WITH`. This course asks harder questions of a bigger database. This first lesson lets you join three or four tables in one query.
 
-It uses a small online shop. Its tables:
+Along the way, the course also teaches the traps that make a report quietly wrong: NULLs (empty values), joins that multiply rows, and text that looks equal but is not.
 
-- `customers` — `id`, `name`, `email`, `city`, `referred_by` (another customer's id, or NULL), `joined`
-- `products` — `id`, `name`, `category`, `price`
-- `orders` — `id`, `customer_id`, `placed` (a `'YYYY-MM-DD HH:MM:SS'` timestamp), `status` (`paid`, `shipped`, `cancelled`, `refunded`), `coupon`
-- `order_items` — one row per product in an order: `order_id`, `product_id`, `qty`, `unit_price` (what was actually charged, which can differ from today's price)
-- `payments` — `id`, `order_id`, `amount` (an order can have several; refunds are negative)
-- `newsletter` — `email`, `signed_up`
+### The shop
 
-Real questions usually cross more than two tables. You join them one link at a time, each `JOIN` with its own `ON`:
+The course uses a small online shop. Its database has six **tables**. A table is a grid: each **row** is one thing (one customer, one order), and each **column** is one fact about it (a name, a price).
+
+- `customers`: `id`, `name`, `email`, `city`, `referred_by` (another customer's id, or NULL), `joined`
+- `products`: `id`, `name`, `category`, `price`
+- `orders`: `id`, `customer_id`, `placed` (the moment it was ordered, written as a `'YYYY-MM-DD HH:MM:SS'` [[timestamp|timestamp]]), `status` (`paid`, `shipped`, `cancelled` or `refunded`), `coupon`
+- `order_items`: one row per product in an order: `order_id`, `product_id`, `qty` (how many), `unit_price` ([[what was actually charged|unit-price]] for one, which can differ from today's price)
+- `payments`: `id`, `order_id`, `amount` (an order can have several payments; refunds are negative)
+- `newsletter`: `email`, `signed_up`
+
+Look at the columns that end in `_id`. `customer_id` in `orders` holds the `id` of a row in `customers`. A column that points at a row in another table is a **[[foreign key|foreign-key]]**: a link from one table to another.
+
+### A receipt, followed back
+
+Picture a paper receipt. Each line names a product and a quantity. The receipt belongs to one order, and the order belongs to one customer. To read one line in full, "Ada bought 3 Notebooks", you [[follow the links|join-chain]]: from the line to its order, from the order to its customer, and from the line to its product.
+
+In the database, one line of a receipt is one row of `order_items`. On its own it holds only numbers. Here are its first three rows:
+
+| order_id | product_id | qty |
+| --- | --- | --- |
+| 1 | 1 | 3 |
+| 1 | 4 | 1 |
+| 2 | 5 | 1 |
+
+### One link at a time
+
+You follow each link with one `JOIN`, and each `JOIN` gets its own `ON`. The `ON` says which rows belong together. Start with one link, from items to orders:
+
+```sql
+SELECT oi.order_id, o.customer_id, oi.qty
+FROM order_items oi
+JOIN orders o ON o.id = oi.order_id;
+```
+
+`oi` and `o` are the short nicknames (aliases) you met in the basics. `ON o.id = oi.order_id` means "pair each item with the order whose `id` equals the item's `order_id`". Now each item knows its customer's id:
+
+| order_id | customer_id | qty |
+| --- | --- | --- |
+| 1 | 1 | 3 |
+| 1 | 1 | 1 |
+| 2 | 1 | 1 |
+
+Add a second `JOIN` to turn that id into a name:
+
+```sql
+SELECT oi.order_id, c.name, oi.qty
+FROM order_items oi
+JOIN orders o    ON o.id = oi.order_id
+JOIN customers c ON c.id = o.customer_id;
+```
+
+The new `ON` uses `o.customer_id`, a column that only arrived with the join before it. That is why the joins read as a chain, one link after another.
+
+| order_id | name | qty |
+| --- | --- | --- |
+| 1 | Ada | 3 |
+| 1 | Ada | 1 |
+| 2 | Ada | 1 |
+
+A third `JOIN` brings in the product. Here is the whole chain:
 
 ```sql
 SELECT o.id, c.name, p.name AS product
@@ -109,11 +162,69 @@ JOIN customers c ON c.id = o.customer_id
 JOIN products p  ON p.id = oi.product_id;
 ```
 
-Read it as a chain: every item belongs to one order, every order to one customer, every item names one product. Start from the table whose rows you want one of per result row (here, one row per item), then walk out along the foreign keys.
+Read it as a chain: every item belongs to one order, every order to one customer, and every item names one product.
 
-Two habits save a lot of confusion. First, give every table a short alias and prefix **every** column with it — `products.name` and `customers.name` would otherwise collide. Second, when two columns share a name in the result, rename one with `AS`.
+### Where to start
+
+Put in `FROM` the table you want [[one row per result row|one-row-per]]. Here you want one row per item, so start from `order_items`. Then walk out along the foreign keys. Each item has exactly one order, one customer and one product, so these joins add columns but never add rows: 13 items go in, 13 rows come out.
+
+### Two habits
+
+First, give every table a short alias and put it in front of **every** column: `c.name`, `p.name`. Both `customers` and `products` have a column called `name`. Without the prefix, the database cannot tell which one you mean, and it [[stops with an error|ambiguous-column]].
+
+Second, when two columns in the result would share a name, rename one with `AS`. `AS` means "call this column something else in the result". Above, `p.name AS product` keeps the product's name apart from the customer's `name`.
+
+**Watch out:** each `ON` must pair the right two columns. `JOIN customers c ON c.id = o.id` runs without any error, but it matches customer 1 to order 1, customer 2 to order 2, and so on, which means nothing. Read every `ON` aloud: "this table's `id` equals the column in the other table that points at it".
+
+::: context timestamp Dates written as text
+A timestamp is a date and a time together, like `'2024-03-20 18:40:00'`: year, month, day, then hours, minutes and seconds. This shop stores them as text. The biggest part (the year) comes first and every part has a fixed width, with a zero in front where needed (`03`, not `3`). Because of that, sorting the text A-to-Z also sorts the moments from earliest to latest. This layout is an international standard called ISO 8601. Lesson 9 of this course shows the functions that do arithmetic with these dates.
+:::
+
+::: context unit-price Why an order stores its own price
+Prices change. If an order only pointed at `products.price`, then raising the price of Headphones tomorrow would change what Ada paid last March, and every old report would shift. So the shop copies the price into `order_items` at the moment of sale. You can see the difference in this data: Headphones cost 89.00 today, but Ada's order 2 charged 80.10, because that order used the `SPRING10` coupon (10% off). Receipts, invoices and flight logs all work this way: record what happened, as it happened.
+:::
+
+::: context foreign-key Links between tables
+You met these in the basics, where `requests.user_id` pointed at `users.id` and `REFERENCES users(id)` in `CREATE TABLE` declared the link. A foreign key is only a column of numbers, but it is what makes joins possible: the `ON` of almost every join pairs a foreign key with the `id` it points at. In this shop, `orders.customer_id`, `order_items.order_id`, `order_items.product_id` and `payments.order_id` are all foreign keys. The advanced course has a whole lesson on making the database enforce them.
+:::
+
+::: context join-chain The shop as a chain of links
+Each arrow below is a foreign key. A query that starts at `order_items` can reach every other table by following arrows, one `JOIN` per arrow.
+
+```svg
+<svg viewBox="0 0 360 170" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#1f2a44"/>
+    </marker>
+  </defs>
+  <rect x="8" y="66" width="104" height="36" rx="6" fill="#8fb8f0" stroke="#1d6fd1"/>
+  <text x="60" y="89" font-size="13" text-anchor="middle" fill="#1f2a44">order_items</text>
+  <rect x="146" y="14" width="84" height="36" rx="6" fill="white" stroke="#1f2a44"/>
+  <text x="188" y="37" font-size="13" text-anchor="middle" fill="#1f2a44">orders</text>
+  <rect x="262" y="14" width="92" height="36" rx="6" fill="white" stroke="#1f2a44"/>
+  <text x="308" y="37" font-size="13" text-anchor="middle" fill="#1f2a44">customers</text>
+  <rect x="146" y="118" width="84" height="36" rx="6" fill="white" stroke="#1f2a44"/>
+  <text x="188" y="141" font-size="13" text-anchor="middle" fill="#1f2a44">products</text>
+  <line x1="112" y1="76" x2="145" y2="44" stroke="#1f2a44" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="64" y="50" font-size="11" fill="#6c7a93">order_id</text>
+  <line x1="230" y1="32" x2="261" y2="32" stroke="#1f2a44" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="250" y="66" font-size="11" text-anchor="middle" fill="#6c7a93">customer_id</text>
+  <line x1="112" y1="92" x2="145" y2="126" stroke="#1f2a44" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="56" y="128" font-size="11" fill="#6c7a93">product_id</text>
+</svg>
+```
+:::
+
+::: context one-row-per The grain of a query
+Engineers call "what one row stands for" the **grain** of a result. Here the grain is one order item. Deciding the grain first tells you which table goes in `FROM`. It also gives you a free test: count the rows before and after each join. If a join you expected to only add columns suddenly adds rows, a link is not one-to-one, and your totals will come out too big. Lesson 14 of this course is a whole bug hunt built on exactly that.
+:::
+
+::: context ambiguous-column The error you get without a prefix
+In SQLite, `SELECT name FROM order_items oi JOIN orders o ON o.id = oi.order_id JOIN customers c ON c.id = o.customer_id JOIN products p ON p.id = oi.product_id;` stops with `ambiguous column name: name`. "Ambiguous" means "could mean more than one thing". This error is a friendly one: it stops the query instead of guessing. Prefixing every column, even the ones that are not ambiguous today, keeps the query working if someone later adds a `name` column to another table.
+:::
 --- task
-For every item in a **shipped** order, return four columns: the order id, the customer's name, the product's name and the quantity. Sort by order id, then by product name.
+For every item in an order whose `status` is `'shipped'`, return four columns: the order id, the customer's name, the product's name and the quantity (`qty`). You will need `order_items`, `orders`, `customers` and `products`. Sort by order id, then by product name.
 --- starter
 SELECT oi.order_id, oi.product_id, oi.qty
 FROM order_items oi;
@@ -126,20 +237,48 @@ JOIN products p  ON p.id = oi.product_id
 WHERE o.status = 'shipped'
 ORDER BY o.id, p.name;
 --- hint
-Start `FROM order_items oi`, then `JOIN orders o ON o.id = oi.order_id`.
+Start from `order_items oi`, one row per item, and add one `JOIN` for each link: first `orders`, then `customers`, then `products`.
 --- hint
-Two more joins: `customers` through `o.customer_id` and `products` through `oi.product_id`. Filter with `WHERE o.status = 'shipped'`.
+The links are `JOIN orders o ON o.id = oi.order_id`, then `JOIN customers c ON c.id = o.customer_id`, then `JOIN products p ON p.id = oi.product_id`. Keep only shipped orders with `WHERE o.status = 'shipped'`.
 --- hint
-Sort with `ORDER BY o.id, p.name`.
+Select `o.id, c.name, p.name AS product, oi.qty`, and finish with `ORDER BY o.id, p.name`.
 --- check result | Seven items from orders 1, 2, 4 and 6, in order
 ordered
 [[1, "Ada", "Mug", 1], [1, "Ada", "Notebook", 3], [2, "Ada", "Headphones", 1], [4, "Ben", "Desk lamp", 1], [4, "Ben", "USB cable", 2], [6, "Dev", "Headphones", 1], [6, "Dev", "Mug", 2]]
 
 === sql2-02 | LEFT JOIN: where the filter goes
 --- teach
-A `LEFT JOIN` keeps every row of the left table, filling the right side with NULL when nothing matches. That promise has a catch that trips up almost everyone once.
+Last lesson every join was an inner `JOIN`: it keeps only rows that find a match. In the basics you also met `LEFT JOIN`, which keeps every row of the [[left table|left-table]] and fills the other side with NULL when nothing matches. This lesson shows where to put a filter in a LEFT JOIN. There is a catch here that trips up almost everyone once.
 
-Suppose you want every customer with their number of *live* orders (paid or shipped). This looks right:
+### The picture
+
+A teacher wants a list of every student with the number of homeworks they handed in on time, 0 for anyone with none. The teacher writes every student down, with each homework next to the name. Then every line where the homework was not on time gets crossed out. But a student with no homework at all has a blank on that line, and a blank is not "on time", so that line is crossed out too. Now they are missing from a list that was meant to include everyone.
+
+### The LEFT JOIN keeps everyone
+
+Here is every customer with their orders:
+
+```sql
+SELECT c.name, o.id, o.status
+FROM customers c
+LEFT JOIN orders o ON o.customer_id = c.id
+ORDER BY c.name, o.id;
+```
+
+The last four rows:
+
+| name | id | status |
+| --- | --- | --- |
+| Dev | 6 | shipped |
+| Eve | 7 | refunded |
+| Finn | NULL | NULL |
+| Gus | NULL | NULL |
+
+Finn and Gus have no orders, so the order columns are **NULL**, which means "no value here".
+
+### The query that looks right
+
+You want every customer with their number of *live* orders: orders whose status is `paid` or `shipped`. `IN ('paid', 'shipped')` means "is one of these values". This looks right:
 
 ```sql
 SELECT c.name, COUNT(o.id) AS live_orders
@@ -149,19 +288,87 @@ WHERE o.status IN ('paid', 'shipped')
 GROUP BY c.id, c.name;
 ```
 
-But `WHERE` runs **after** the join. A customer with no orders arrives with `o.status` = NULL, and `NULL IN ('paid', 'shipped')` is not true, so `WHERE` throws the row away. A customer whose only order was refunded is dropped the same way. The LEFT JOIN kept them; the WHERE undid it.
+It returns only four rows: Ada 3, Ben 1, Cleo 1, Dev 1. Eve, Finn and Gus are gone.
 
-The fix is to put conditions on the **right-hand** table inside the `ON`:
+### Why they vanish
+
+A **clause** is one part of a query that starts with a keyword: the `FROM` clause, the `WHERE` clause. The database does the `FROM` and `JOIN`s first, and the `WHERE` [[runs after the join|run-order]].
+
+So Finn reaches the `WHERE` with `o.status` = NULL. `NULL IN ('paid', 'shipped')` is not true. It is [[unknown|unknown]], and `WHERE` keeps only rows where the condition is true. Finn is thrown away. Gus goes the same way. Eve's only order was refunded, and `'refunded' IN ('paid', 'shipped')` is false, so Eve goes too. The LEFT JOIN kept them; the WHERE undid it.
+
+### The fix: put it in ON
+
+Put conditions about the **right-hand** table (the one after `LEFT JOIN`) inside its `ON`, joined with `AND`:
 
 ```sql
 LEFT JOIN orders o ON o.customer_id = c.id AND o.status IN ('paid', 'shipped')
 ```
 
-Now the condition decides which orders *match*. A customer with no matching orders still survives, with NULLs, and `COUNT(o.id)` counts them as 0.
+Now the condition decides which orders *match*. It no longer removes customers. Eve's refunded order does not match, so Eve [[stays with NULLs|on-never-drops]], like Finn and Gus:
 
-The rule of thumb: in a LEFT JOIN, conditions about the right table go in `ON`; conditions about the left table go in `WHERE`.
+| name | id | status |
+| --- | --- | --- |
+| Dev | 6 | shipped |
+| Eve | NULL | NULL |
+| Finn | NULL | NULL |
+| Gus | NULL | NULL |
+
+`COUNT(o.id)` skips NULLs, so those three [[count as 0|count-column]].
+
+The rule of thumb: in a LEFT JOIN, conditions about the right table go in `ON`; conditions about the left table go in `WHERE`. For example, `WHERE c.city = 'London'` is fine in `WHERE`: it picks which customers you want.
+
+**Watch out:** the wrong version gives no error and plausible numbers. It is only missing people. Count the rows you expect before you trust a result: 7 customers should give 7 rows.
+
+::: context left-table Which table is "left"
+The left table is the one written first, before the words `LEFT JOIN`. In `FROM customers c LEFT JOIN orders o`, `customers` is on the left and every customer is kept; `orders` is on the right and only fills in where it matches. Swap them and the promise swaps too. Read `LEFT JOIN` as "keep everything I already have, and add what matches".
+:::
+
+::: context run-order Written order and running order
+You write `SELECT` first, but the database works out the rows starting from `FROM`. It builds the joined rows, then filters them with `WHERE`, then groups them. Lesson 4 of this course lists the whole order step by step. For this lesson, the key point is that `WHERE` only ever sees rows the joins have already built, NULL-filled ones included, and it can throw any of them away.
+:::
+
+::: context unknown True, false, and unknown
+In SQL a comparison has three possible results: true, false, or unknown. Any comparison with NULL is unknown, because the database cannot say whether a missing value equals something. Even `NULL = NULL` is unknown. You can see it in SQLite: `SELECT NULL IN ('paid', 'shipped');` returns NULL, not 0 or 1. `WHERE` keeps a row only when its condition is true, so both false and unknown rows are dropped. Lesson 10 is a debugging lesson built entirely on this.
+:::
+
+::: context on-never-drops ON matches, WHERE removes
+The two clauses do different jobs. `ON` answers "which right-hand rows go with this left-hand row?" If the answer is "none", a LEFT JOIN still keeps the left row, with NULLs. `WHERE` answers "which finished rows stay?", and it can remove anything.
+
+```svg
+<svg viewBox="0 0 360 150" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <text x="90" y="18" font-size="12" text-anchor="middle" fill="#1f2a44">condition in WHERE</text>
+  <text x="270" y="18" font-size="12" text-anchor="middle" fill="#1f2a44">condition in ON</text>
+  <line x1="180" y1="8" x2="180" y2="146" stroke="#6c7a93" stroke-dasharray="4 3"/>
+  <rect x="20" y="30" width="140" height="24" rx="4" fill="#8fb8f0"/>
+  <text x="30" y="46" font-size="12" fill="#1f2a44">Dev  6  shipped</text>
+  <rect x="20" y="58" width="140" height="24" rx="4" fill="white" stroke="#b4232c"/>
+  <text x="30" y="74" font-size="12" fill="#b4232c">Eve  7  refunded</text>
+  <line x1="24" y1="70" x2="156" y2="70" stroke="#b4232c" stroke-width="1.5"/>
+  <rect x="20" y="86" width="140" height="24" rx="4" fill="white" stroke="#b4232c"/>
+  <text x="30" y="102" font-size="12" fill="#b4232c">Finn  NULL  NULL</text>
+  <line x1="24" y1="98" x2="156" y2="98" stroke="#b4232c" stroke-width="1.5"/>
+  <rect x="20" y="114" width="140" height="24" rx="4" fill="white" stroke="#b4232c"/>
+  <text x="30" y="130" font-size="12" fill="#b4232c">Gus  NULL  NULL</text>
+  <line x1="24" y1="126" x2="156" y2="126" stroke="#b4232c" stroke-width="1.5"/>
+  <rect x="200" y="30" width="140" height="24" rx="4" fill="#8fb8f0"/>
+  <text x="210" y="46" font-size="12" fill="#1f2a44">Dev  6  shipped</text>
+  <rect x="200" y="58" width="140" height="24" rx="4" fill="#8fb8f0"/>
+  <text x="210" y="74" font-size="12" fill="#1f2a44">Eve  NULL  NULL</text>
+  <rect x="200" y="86" width="140" height="24" rx="4" fill="#8fb8f0"/>
+  <text x="210" y="102" font-size="12" fill="#1f2a44">Finn  NULL  NULL</text>
+  <rect x="200" y="114" width="140" height="24" rx="4" fill="#8fb8f0"/>
+  <text x="210" y="130" font-size="12" fill="#1f2a44">Gus  NULL  NULL</text>
+</svg>
+```
+
+Putting a right-table condition in `WHERE` quietly turns your LEFT JOIN back into an inner join. Lesson 17 lists this among the checks for any report.
+:::
+
+::: context count-column Why COUNT(o.id) and not COUNT(*)
+You saw this in the basics. `COUNT(*)` counts rows, and Finn still has one row, full of NULLs, so `COUNT(*)` would give Finn 1. `COUNT(o.id)` counts only the rows where `o.id` is not NULL, so Finn gets 0. After a LEFT JOIN, count a column from the right-hand table, ideally its `id`, which is never NULL in a real match.
+:::
 --- task
-Return **every** customer's name and their number of orders whose status is `paid` or `shipped`, as a column named `live_orders` (0 for customers with none). Sort by name.
+Return **every** customer's name and their number of orders whose `status` is `'paid'` or `'shipped'`, as a column named `live_orders` (0 for customers with none). Use `customers` and `orders`. Sort by name.
 --- starter
 SELECT c.name, COUNT(o.id) AS live_orders
 FROM customers c
@@ -179,14 +386,40 @@ ORDER BY c.name;
 --- hint
 Run the starter: Eve, Finn and Gus are missing. Which clause removed them?
 --- hint
-Move the status condition out of `WHERE` and into the `ON`, joined with `AND`.
+The status condition is about the right-hand table, `orders`. Move it out of `WHERE` and into the `ON`.
+--- hint
+Delete the `WHERE` line and make the join read `LEFT JOIN orders o ON o.customer_id = c.id AND o.status IN ('paid', 'shipped')`.
 --- check result | All seven customers; Eve, Finn and Gus have 0
 ordered
 [["Ada", 3], ["Ben", 1], ["Cleo", 1], ["Dev", 1], ["Eve", 0], ["Finn", 0], ["Gus", 0]]
 
 === sql2-03 | Self-joins
 --- teach
-Sometimes a table points at itself. In `customers`, `referred_by` holds the id of the customer who brought this one in. To show the referrer's *name*, join the table to itself — using two different aliases, so SQL knows which copy you mean:
+Last lesson you kept every customer with a LEFT JOIN, even when no order matched. So far every join has linked two *different* tables. This lesson shows how to join a table to itself, for when a table [[points at itself|referral-tree]].
+
+### The picture
+
+Picture a class list where each student has a "buddy" column holding another student's number. To find out who Sam's buddy is by name, you read Sam's buddy number, then run your finger back up the *same* list to find that number. One list, used twice: once to read the student, once to look up the buddy.
+
+### A table that points at itself
+
+In `customers`, `referred_by` holds the id of the customer who brought this one in: someone who recommended the shop to them. That is a **[[referral|referral]]**.
+
+| id | name | referred_by |
+| --- | --- | --- |
+| 1 | Ada | NULL |
+| 2 | Ben | 1 |
+| 3 | Cleo | 1 |
+| 4 | Dev | 2 |
+| 5 | Eve | NULL |
+| 6 | Finn | 4 |
+| 7 | Gus | NULL |
+
+Ben's `referred_by` is 1, so Ada referred Ben. To show the referrer's *name* instead of a number, join `customers` to itself. This is a **self-join**: a table joined to itself.
+
+### Two aliases, two parts
+
+Give the table two different aliases, so SQL knows [[which copy you mean|two-aliases]]:
 
 ```sql
 SELECT c.name, r.name AS referrer
@@ -194,11 +427,71 @@ FROM customers c
 JOIN customers r ON r.id = c.referred_by;
 ```
 
-`c` is "the customer", `r` is "the referrer": the same table, playing two parts. Employees and their managers, categories and their parents, replies and the message they answer — they are all self-joins.
+`c` is "the customer", `r` is "the referrer": the same table, playing two parts. Read the `ON` aloud: "the referrer's `id` equals this customer's `referred_by`". The result:
 
-As with any join, an inner join drops rows with no match: customers nobody referred (`referred_by` is NULL) disappear. Whether that is right depends on the question. "Who referred whom?" — fine. "List every customer with their referrer" — use `LEFT JOIN`, and the missing referrers come back as NULL.
+| name | referrer |
+| --- | --- |
+| Ben | Ada |
+| Cleo | Ada |
+| Dev | Ben |
+| Finn | Dev |
+
+Employees and their managers, categories and their parent categories, replies and the message they answer: these are all self-joins.
+
+### Who goes missing
+
+As with any inner join, rows with no match are dropped. Ada, Eve and Gus have `referred_by` = NULL, and [[NULL matches nothing|null-no-match]], so they disappear. Whether that is right depends on the question:
+
+- "Who referred whom?" The inner join is fine.
+- "List every customer with their referrer." Use `LEFT JOIN`. The customers nobody referred come back, with `referrer` = NULL.
+
+**Watch out:** the direction of the `ON` matters. `ON c.id = r.referred_by` also runs, but it answers a different question: "whom did each customer refer?" It gives Ada twice (for Ben and for Cleo) and never mentions Eve. Say the `ON` in words before you run it.
+
+::: context referral-tree The referral chain as a picture
+Each arrow goes from the referrer to the customer they brought in. Ada started a chain three links long; Eve and Gus found the shop on their own.
+
+```svg
+<svg viewBox="0 0 360 150" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <defs>
+    <marker id="head" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#1d6fd1"/>
+    </marker>
+  </defs>
+  <rect x="10" y="44" width="56" height="28" rx="6" fill="#8fb8f0" stroke="#1d6fd1"/>
+  <text x="38" y="63" font-size="13" text-anchor="middle" fill="#1f2a44">Ada</text>
+  <rect x="100" y="14" width="56" height="28" rx="6" fill="white" stroke="#1f2a44"/>
+  <text x="128" y="33" font-size="13" text-anchor="middle" fill="#1f2a44">Ben</text>
+  <rect x="100" y="74" width="56" height="28" rx="6" fill="white" stroke="#1f2a44"/>
+  <text x="128" y="93" font-size="13" text-anchor="middle" fill="#1f2a44">Cleo</text>
+  <rect x="190" y="14" width="56" height="28" rx="6" fill="white" stroke="#1f2a44"/>
+  <text x="218" y="33" font-size="13" text-anchor="middle" fill="#1f2a44">Dev</text>
+  <rect x="280" y="14" width="56" height="28" rx="6" fill="white" stroke="#1f2a44"/>
+  <text x="308" y="33" font-size="13" text-anchor="middle" fill="#1f2a44">Finn</text>
+  <line x1="66" y1="52" x2="99" y2="32" stroke="#1d6fd1" stroke-width="1.5" marker-end="url(#head)"/>
+  <line x1="66" y1="66" x2="99" y2="86" stroke="#1d6fd1" stroke-width="1.5" marker-end="url(#head)"/>
+  <line x1="156" y1="28" x2="189" y2="28" stroke="#1d6fd1" stroke-width="1.5" marker-end="url(#head)"/>
+  <line x1="246" y1="28" x2="279" y2="28" stroke="#1d6fd1" stroke-width="1.5" marker-end="url(#head)"/>
+  <rect x="190" y="104" width="56" height="28" rx="6" fill="white" stroke="#6c7a93"/>
+  <text x="218" y="123" font-size="13" text-anchor="middle" fill="#6c7a93">Eve</text>
+  <rect x="280" y="104" width="56" height="28" rx="6" fill="white" stroke="#6c7a93"/>
+  <text x="308" y="123" font-size="13" text-anchor="middle" fill="#6c7a93">Gus</text>
+</svg>
+```
+:::
+
+::: context referral How apps use referrals
+Many apps reward you for inviting a friend: you both get credit when they sign up. To pay out that reward, the app stores who invited whom, usually exactly like this: a column on the users table holding another user's id. The same shape answers questions such as "which customers brought in the most new customers?" by joining the table to itself and grouping by the referrer.
+:::
+
+::: context two-aliases Why the aliases are required
+With two copies of the same table, every column name exists twice. In SQLite, `SELECT name FROM customers JOIN customers ON customers.id = customers.referred_by;` stops with `ambiguous column name: name`, because both copies are called `customers`. The aliases give each copy its own name. Pick aliases that say the part each copy plays, like `c` for customer and `r` for referrer, or `e` for employee and `m` for manager. Then the `ON` reads almost like a sentence.
+:::
+
+::: context null-no-match Why NULL never matches
+An inner join keeps a pair of rows only when its `ON` is true. For Ada, the `ON` asks whether `r.id = NULL`. As you saw last lesson, any comparison with NULL is unknown, never true, so no row of the second copy matches Ada's row. A LEFT JOIN keeps that row anyway and fills the referrer's columns with NULL. The same holds for any foreign key that can be empty: an employee with no manager, a top-level category with no parent.
+:::
 --- task
-Return **every** customer's name and the name of the customer who referred them, as a column named `referrer` (NULL when nobody did).
+Return **every** customer's name and the name of the customer who referred them, as a column named `referrer` (NULL when nobody did). Use `customers` twice, linking `referred_by` to `id`.
 --- starter
 SELECT c.name, r.name AS referrer
 FROM customers c
@@ -208,42 +501,135 @@ SELECT c.name, r.name AS referrer
 FROM customers c
 LEFT JOIN customers r ON r.id = c.referred_by;
 --- hint
-The starter loses Ada, Eve and Gus. Why do they have no match?
+Run the starter: Ada, Eve and Gus are missing. Look at their `referred_by`. Why can no row match it?
 --- hint
-Change the join so customers without a referrer stay in the result.
+You need a join that keeps every customer, even without a match. You met it last lesson.
+--- hint
+Change `JOIN customers r` to `LEFT JOIN customers r`. Keep the same `ON`.
 --- check result | Seven customers, NULL for the three nobody referred
 [["Ada", null], ["Ben", "Ada"], ["Cleo", "Ada"], ["Dev", "Ben"], ["Eve", null], ["Finn", "Dev"], ["Gus", null]]
 
 === sql2-04 | GROUP BY in depth
 --- teach
-You met `GROUP BY` and `HAVING` in the basics. Here is what happens underneath, in the order the database does it:
+Last lesson you joined a table to itself. In the basics you met `GROUP BY` and `HAVING`. This lesson opens them up: you will see the order the database runs a grouped query in, which tells you where each filter goes, and how to count correctly after a join. The next lesson adds a few more grouping tools.
+
+### The picture
+
+Picture a pile of paper orders on a desk, and a summary to write. First you throw out the cancelled ones. Then you sort the rest into piles, one per customer. Then you count each pile. Then you put away the piles that are too small. Only then do you write the summary sheet, and put its lines in order.
+
+### The order the database works in
+
+A grouped query runs [[in the same order|run-order]]:
 
 1. `FROM` and the `JOIN`s build one wide set of rows.
 2. `WHERE` drops rows.
-3. `GROUP BY` sorts the survivors into buckets.
-4. The aggregates run once per bucket.
+3. `GROUP BY` sorts the rows that are left into buckets, one bucket per value.
+4. The **aggregates** run once per bucket. An aggregate is a function that turns many rows into one value: `COUNT`, `SUM`, `AVG`, `MIN`, `MAX`.
 5. `HAVING` drops buckets.
 6. `SELECT` shapes the output, then `ORDER BY` sorts it.
 
-That order explains the rules. `WHERE` cannot use `SUM(...)` because the sums do not exist yet; `HAVING` can. And a condition that could go in either place (`category = 'home'`) belongs in `WHERE`, where it throws rows away early.
-
-Three more tools:
-
-- `COUNT(DISTINCT x)` counts different values. After a join, `COUNT(*)` counts joined rows — one per order *item* — which is rarely what you want to call "orders" or "customers".
-- You can group by an expression, such as `GROUP BY substr(placed, 1, 7)` — the first seven characters of the timestamp, like `'2024-03'` — for months. (Lesson 8 covers text functions.)
-- NULLs all fall into one group of their own.
-
-One refinement of the basics rule that every selected column is grouped or aggregated. Grouping by a table's **primary key** also lets you select that table's other columns: `GROUP BY c.id` with `c.name` in the `SELECT` is fine, because each group is exactly one customer and so has exactly one name. PostgreSQL accepts this too. SQLite goes further and lets you select *any* column that is neither grouped nor aggregated, silently picking a value from some row in the group. Other databases reject that, and so should you: when in doubt, add the column to the `GROUP BY`.
+Here it is on `orders` alone. `<>` means "not equal".
 
 ```sql
-SELECT p.category, COUNT(DISTINCT o.customer_id) AS buyers
+SELECT customer_id, COUNT(*) AS orders
+FROM orders
+WHERE status <> 'cancelled'
+GROUP BY customer_id
+HAVING COUNT(*) >= 2;
+```
+
+- `WHERE` drops order 3, Ben's cancelled one. Seven orders are left.
+- `GROUP BY` makes five buckets: customer 1 has orders 1, 2 and 8; customers 2, 3, 4 and 5 have one order each.
+- `COUNT(*)` counts each bucket: 3, 1, 1, 1, 1.
+- `HAVING` keeps buckets with at least 2.
+
+| customer_id | orders |
+| --- | --- |
+| 1 | 3 |
+
+### Where each filter goes
+
+That order explains the rules. `WHERE` cannot use `SUM(...)` or `COUNT(...)`, because at step 2 the sums [[do not exist yet|misuse-aggregate]]. `HAVING` runs at step 5, after they exist, so it can.
+
+A condition that does not need an aggregate, such as `category = 'home'`, could go in either place. Put it in `WHERE`, where it [[throws rows away early|filter-early]].
+
+### Counting different values
+
+`COUNT(DISTINCT x)` counts the *different* values of `x`. `DISTINCT` means "each value once".
+
+This matters after a join. Once `order_items` is joined in, there is one row per order *item*, so `COUNT(*)` counts items. That is rarely the number you want to call "orders" or "customers". Here are the buyers per category, over every order:
+
+```sql
+SELECT p.category, COUNT(*) AS item_rows, COUNT(DISTINCT o.customer_id) AS buyers
 FROM order_items oi
 JOIN orders o   ON o.id = oi.order_id
 JOIN products p ON p.id = oi.product_id
 GROUP BY p.category;
 ```
+
+| category | item_rows | buyers |
+| --- | --- | --- |
+| electronics | 4 | 3 |
+| home | 4 | 4 |
+| stationery | 5 | 3 |
+
+Ada bought two different electronics items, so Ada makes [[two rows but one buyer|count-distinct]].
+
+**Watch out:** after a join, `COUNT(*)` counts joined rows. It gives no error; the number is only too big. Ask "one row of what?" and use `COUNT(DISTINCT ...)` on the id you really mean.
+
+::: context run-order Why it runs in that order
+You write `SELECT` first because it reads well, not because it happens first. The order in this lesson is the *logical* order: the answer always comes out as if the steps ran like that. Inside, a real database may do things in a cleverer order to go faster, but it never changes the answer. When a query surprises you, walking these six steps with pencil and paper nearly always finds the reason.
+:::
+
+::: context misuse-aggregate The error you get
+Try `SELECT customer_id FROM orders WHERE COUNT(*) > 1 GROUP BY customer_id;` in SQLite. It stops with `misuse of aggregate: COUNT()`. The database is telling you it cannot count at the `WHERE` step, because the buckets have not been made yet. The fix is to move the condition to `HAVING`, which goes after `GROUP BY`.
+:::
+
+::: context filter-early Why WHERE is the better place
+Every row that `WHERE` drops is a row that never has to be sorted into a bucket. On this shop's 13 items that makes no difference. On a table of flight telemetry, with millions of readings, it does. A condition in `WHERE` can also let the database use shortcuts (indexes, which you meet in the advanced course) to skip unwanted rows without reading them at all. `HAVING` only sees the buckets after all that work is done.
+:::
+
+::: context count-distinct Rows, and different values
+The four electronics rows come from three people. `COUNT(*)` counts every row; `COUNT(DISTINCT o.customer_id)` counts each customer once.
+
+```svg
+<svg viewBox="0 0 360 160" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <text x="80" y="18" font-size="12" text-anchor="middle" fill="#1f2a44">electronics rows</text>
+  <rect x="10" y="28" width="140" height="24" rx="4" fill="#8fb8f0"/>
+  <text x="20" y="44" font-size="12" fill="#1f2a44">Ada · Headphones</text>
+  <rect x="10" y="56" width="140" height="24" rx="4" fill="white" stroke="#1f2a44"/>
+  <text x="20" y="72" font-size="12" fill="#1f2a44">Ben · USB cable</text>
+  <rect x="10" y="84" width="140" height="24" rx="4" fill="white" stroke="#1f2a44"/>
+  <text x="20" y="100" font-size="12" fill="#1f2a44">Dev · Headphones</text>
+  <rect x="10" y="112" width="140" height="24" rx="4" fill="#8fb8f0"/>
+  <text x="20" y="128" font-size="12" fill="#1f2a44">Ada · USB cable</text>
+  <text x="80" y="154" font-size="12" text-anchor="middle" fill="#1f2a44">COUNT(*) = 4</text>
+  <line x1="152" y1="40" x2="218" y2="54" stroke="#1d6fd1" stroke-width="1.5"/>
+  <line x1="152" y1="124" x2="218" y2="58" stroke="#1d6fd1" stroke-width="1.5"/>
+  <line x1="152" y1="68" x2="218" y2="86" stroke="#6c7a93" stroke-width="1.5"/>
+  <line x1="152" y1="96" x2="218" y2="114" stroke="#6c7a93" stroke-width="1.5"/>
+  <text x="280" y="18" font-size="12" text-anchor="middle" fill="#1f2a44">different buyers</text>
+  <rect x="220" y="44" width="120" height="24" rx="4" fill="#8fb8f0"/>
+  <text x="280" y="60" font-size="12" text-anchor="middle" fill="#1f2a44">Ada</text>
+  <rect x="220" y="74" width="120" height="24" rx="4" fill="white" stroke="#1f2a44"/>
+  <text x="280" y="90" font-size="12" text-anchor="middle" fill="#1f2a44">Ben</text>
+  <rect x="220" y="104" width="120" height="24" rx="4" fill="white" stroke="#1f2a44"/>
+  <text x="280" y="120" font-size="12" text-anchor="middle" fill="#1f2a44">Dev</text>
+  <text x="280" y="154" font-size="12" text-anchor="middle" fill="#1f2a44">COUNT(DISTINCT) = 3</text>
+</svg>
+```
+
+Rows multiplying under a join is called fan-out. Lesson 9 counts orders with `COUNT(DISTINCT o.id)` for this reason, and lesson 14 hunts down a report that fan-out made wrong.
+:::
 --- task
-Using only orders whose status is `paid` or `shipped`, return one row per product category with: the category, the number of **different customers** who bought from it (`buyers`), the total units (`units`), and the revenue — the sum of `qty * unit_price`, rounded to 2 decimals (`revenue`). Keep only categories with revenue of at least 60, highest revenue first.
+Using only orders whose `status` is `'paid'` or `'shipped'`, return one row per product `category` with four columns:
+
+- `category`
+- `buyers`: the number of **different customers** who bought from it
+- `units`: the total of `qty`
+- `revenue`: the sum of `qty * unit_price`, rounded to 2 decimals with `ROUND(..., 2)`
+
+You will need `order_items`, `orders` and `products`. Keep only categories with revenue of at least 60, and sort by revenue, highest first.
 --- starter
 SELECT p.category, COUNT(*) AS buyers, SUM(oi.qty) AS units
 FROM order_items oi
@@ -262,12 +648,173 @@ GROUP BY p.category
 HAVING SUM(oi.qty * oi.unit_price) >= 60
 ORDER BY revenue DESC;
 --- hint
-You need `orders` in the join too: for the status filter, and for `customer_id`.
+You need `orders` in the join too: for the status filter, and for `customer_id`. Add `JOIN orders o ON o.id = oi.order_id`.
 --- hint
-`COUNT(DISTINCT o.customer_id)` for buyers. The status filter goes in `WHERE`; the revenue threshold goes in `HAVING`.
+Buyers is `COUNT(DISTINCT o.customer_id)`. The status filter works on rows, so it goes in `WHERE`. The revenue threshold needs a `SUM`, so it goes in `HAVING`.
+--- hint
+Add `ROUND(SUM(oi.qty * oi.unit_price), 2) AS revenue` to the `SELECT`, then `HAVING SUM(oi.qty * oi.unit_price) >= 60` after `GROUP BY`, and finish with `ORDER BY revenue DESC`.
 --- check result | electronics then home; stationery (56.80) is left out
 ordered
 [["electronics", 3, 7, 201.6], ["home", 3, 4, 72.0]]
+
+=== sql2-04b | GROUP BY: expressions, NULLs and extra columns
+--- teach
+Last lesson you grouped by a column, `category`, and learned where `WHERE` and `HAVING` go. This lesson adds three more things about grouping: grouping by a value you work out, where NULLs land, and which extra columns you may put in the `SELECT`.
+
+### The picture
+
+Picture sorting a year of receipts into monthly envelopes. You do not care about the exact day or time on each receipt. You only read the month from the date, and that decides the envelope.
+
+### Grouping by an expression
+
+An **expression** is anything that works out a value: a column, a sum like `qty * unit_price`, or a function call. You can group by an expression, not only by a column.
+
+`substr(placed, 1, 10)` takes a piece of the text in `placed`: starting at character 1, 10 characters long. `substr` is short for "substring", a piece of a string (text). From `'2024-04-07 20:10:00'` it gives `'2024-04-07'`, the day. Lesson 8 covers text functions properly.
+
+```sql
+SELECT substr(placed, 1, 10) AS day, COUNT(*) AS orders
+FROM orders
+GROUP BY substr(placed, 1, 10);
+```
+
+Every order placed on 7 April lands in one bucket, whatever its time:
+
+| day | orders |
+| --- | --- |
+| 2024-03-02 | 1 |
+| 2024-03-20 | 1 |
+| 2024-03-21 | 1 |
+| 2024-04-07 | 2 |
+| 2024-05-15 | 1 |
+| 2024-05-28 | 1 |
+| 2024-06-01 | 1 |
+
+Notice that you [[repeat the expression|group-alias]] in `GROUP BY`. Take the first 7 characters instead and you get the month, like `'2024-03'`.
+
+### NULLs get one group of their own
+
+Some customers have no city. When you group by `city`, [[all the NULLs fall into one group|null-group]]:
+
+```sql
+SELECT city, COUNT(*) AS customers
+FROM customers
+GROUP BY city;
+```
+
+| city | customers |
+| --- | --- |
+| NULL | 2 |
+| Berlin | 1 |
+| London | 2 |
+| Paris | 2 |
+
+The NULL group is Cleo and Finn. If a report should not show it, filter it out with `WHERE city IS NOT NULL`.
+
+### Which extra columns you may select
+
+The rule from the basics: every column in the `SELECT` is either in the `GROUP BY` or inside an aggregate. Here is one refinement.
+
+A **primary key** is the column that tells every row apart, like `customers.id`: no two customers share one. Grouping by a table's primary key also lets you select that table's other columns:
+
+```sql
+SELECT c.id, c.name, COUNT(o.id) AS orders
+FROM customers c
+LEFT JOIN orders o ON o.customer_id = c.id
+GROUP BY c.id;
+```
+
+`c.name` is not grouped or aggregated, but this is fine. Each group is exactly one customer, so it has exactly one name. [[PostgreSQL accepts this too|functional-dependency]].
+
+SQLite goes further, and this part is a trap. It lets you select *any* column that is neither grouped nor aggregated, and it [[silently picks a value|bare-columns]] from some row in the group:
+
+```sql
+SELECT city, name, COUNT(*) FROM customers GROUP BY city;
+```
+
+The London group holds Ada and Dev, but only one name comes back, and nothing tells you which. Other databases reject this query, and so should you. When in doubt, add the column to the `GROUP BY`.
+
+**Watch out:** group by the piece you mean. `GROUP BY placed` makes one group per exact timestamp, and here every order has a different one, so every group holds a single order. To count per month, group by the [[month piece|month-buckets]].
+
+::: context group-alias Grouping by the name you gave it
+In this lesson the whole expression is written again in `GROUP BY`. That works in every database. SQLite and PostgreSQL also let you group by the name you gave the column with `AS`, so `GROUP BY day` does the same job. You will see that shortcut in later lessons, such as `GROUP BY domain` in lesson 8. Some databases, such as Microsoft SQL Server, do not allow it, so writing the expression out is the safe habit.
+:::
+
+::: context null-group Why the NULLs stick together
+You learned that `NULL = NULL` is unknown, not true. So why do the NULLs share one group? Because the SQL standard makes a special rule for grouping: `GROUP BY` and `DISTINCT` treat all NULLs as the same value. Otherwise every NULL would get a group of its own, which would be useless. The NULL group is often a sign of missing data worth a look. In lesson 8 a missing email turns into exactly this kind of NULL group.
+:::
+
+::: context functional-dependency Why the primary key is enough
+If you know a customer's `id`, you know their `name`, because only one row has that id. Database people say `name` is *functionally dependent* on `id`: one determines the other. The SQL standard allows selecting such columns, and PostgreSQL has accepted them since version 9.1 (2011). It only works for columns of the table whose primary key you grouped by; `o.status` would still be refused, because one customer can have many orders.
+:::
+
+::: context bare-columns SQLite's "bare columns"
+A column in a grouped query that is neither grouped nor aggregated is called a bare column. SQLite's documentation says a bare column takes its value from an arbitrary row of the group. There is one exception: with `MIN(...)` or `MAX(...)`, the bare columns come from the row that holds the minimum or maximum. So `SELECT city, name, MAX(joined) FROM customers GROUP BY city;` gives the newest customer in each city. That is handy, but it only works in SQLite and it is easy to misread. MySQL rejects bare columns by default, and PostgreSQL always does.
+:::
+
+::: context month-buckets Timestamps into months
+This is the task's grouping as a picture. Each order's timestamp is cut to its first 7 characters, and orders with the same piece share a bucket.
+
+```svg
+<svg viewBox="0 0 360 200" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <text x="10" y="22" font-size="11" fill="#1f2a44">2024-03-02 10:15</text>
+  <text x="10" y="44" font-size="11" fill="#1f2a44">2024-03-20 18:40</text>
+  <text x="10" y="66" font-size="11" fill="#1f2a44">2024-03-21 09:05</text>
+  <text x="10" y="88" font-size="11" fill="#1f2a44">2024-04-07 14:30</text>
+  <text x="10" y="110" font-size="11" fill="#1f2a44">2024-04-07 20:10</text>
+  <text x="10" y="132" font-size="11" fill="#1f2a44">2024-05-15 11:00</text>
+  <text x="10" y="154" font-size="11" fill="#1f2a44">2024-05-28 16:45</text>
+  <text x="10" y="176" font-size="11" fill="#1f2a44">2024-06-01 08:30</text>
+  <line x1="118" y1="18" x2="228" y2="40" stroke="#1d6fd1"/>
+  <line x1="118" y1="40" x2="228" y2="40" stroke="#1d6fd1"/>
+  <line x1="118" y1="62" x2="228" y2="40" stroke="#1d6fd1"/>
+  <line x1="118" y1="84" x2="228" y2="84" stroke="#1d6fd1"/>
+  <line x1="118" y1="106" x2="228" y2="84" stroke="#1d6fd1"/>
+  <line x1="118" y1="128" x2="228" y2="128" stroke="#1d6fd1"/>
+  <line x1="118" y1="150" x2="228" y2="128" stroke="#1d6fd1"/>
+  <line x1="118" y1="172" x2="228" y2="172" stroke="#1d6fd1"/>
+  <rect x="230" y="26" width="120" height="28" rx="6" fill="#8fb8f0" stroke="#1d6fd1"/>
+  <text x="290" y="45" font-size="12" text-anchor="middle" fill="#1f2a44">2024-03 · 3</text>
+  <rect x="230" y="70" width="120" height="28" rx="6" fill="#8fb8f0" stroke="#1d6fd1"/>
+  <text x="290" y="89" font-size="12" text-anchor="middle" fill="#1f2a44">2024-04 · 2</text>
+  <rect x="230" y="114" width="120" height="28" rx="6" fill="#8fb8f0" stroke="#1d6fd1"/>
+  <text x="290" y="133" font-size="12" text-anchor="middle" fill="#1f2a44">2024-05 · 2</text>
+  <rect x="230" y="158" width="120" height="28" rx="6" fill="#8fb8f0" stroke="#1d6fd1"/>
+  <text x="290" y="177" font-size="12" text-anchor="middle" fill="#1f2a44">2024-06 · 1</text>
+</svg>
+```
+
+Lesson 9 does the same with a date function, `strftime('%Y-%m', placed)`.
+:::
+--- task
+Return one row per month of orders, using every order whatever its status, with three columns:
+
+- `month`: the first 7 characters of `placed`, like `'2024-03'` (use `substr`)
+- `orders`: how many orders were placed that month
+- `customers`: how many **different** customers ordered that month
+
+Sort by month.
+--- starter
+SELECT placed, COUNT(*) AS orders
+FROM orders
+GROUP BY placed;
+--- solution
+SELECT substr(placed, 1, 7) AS month,
+       COUNT(*) AS orders,
+       COUNT(DISTINCT customer_id) AS customers
+FROM orders
+GROUP BY substr(placed, 1, 7)
+ORDER BY month;
+--- hint
+Run the starter: every row has a count of 1, because every timestamp is different. Group by the month piece instead of the whole `placed`.
+--- hint
+`substr(placed, 1, 7)` gives the month. Use it in the `SELECT` (with `AS month`) and in the `GROUP BY`.
+--- hint
+Add `COUNT(*) AS orders` and `COUNT(DISTINCT customer_id) AS customers`, then finish with `ORDER BY month`.
+--- check result | Four months: March 3 orders from 2 customers, then April, May, June
+ordered
+[["2024-03", 3, 2], ["2024-04", 2, 2], ["2024-05", 2, 2], ["2024-06", 1, 1]]
+--- check source | Works the month out of placed
+[Ss][Uu][Bb][Ss][Tt][Rr]|[Ss][Tt][Rr][Ff][Tt][Ii][Mm][Ee]
 
 === sql2-05 | Subqueries: a value, or a list
 --- teach
