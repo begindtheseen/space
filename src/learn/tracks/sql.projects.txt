@@ -527,19 +527,213 @@ INSERT INTO raw_events (id, received_at, body) VALUES
   (9,  '2024-07-02 12:00:01', '{"event_id": "e7", "user_id": 1, "name": "activate", "ts": "2024-07-02 12:00:00", "props": {"plan": "pro"}}'),
   (10, '2024-07-03 09:00:01', '{"user_id": 4, "name": "visit", "ts": "2024-07-03 09:00:00"}');
 --- teach
-**Project two: product analytics.** The app sends an event every time a user does something — `visit`, `signup`, `activate` — and the team wants daily actives, a signup funnel and retention. Four lessons: ingest, daily actives, funnel, retention.
+Last lesson finished the online store with a report on every customer. Now the second project begins: **product analytics** for an app. The app sends a small message every time a user does something, such as `visit` (opened the app), `signup` or `activate` (started really using it). Each message is an **event**: one thing one user did, at one moment. The team wants three numbers from them: daily active users, a signup funnel, and retention. That makes four lessons, and this first one gets the data in.
 
-Events arrive in `raw_events` exactly as the clients sent them: a JSON `body` per row. Raw data from the outside world is never clean, and the first job of any pipeline is to turn it into a table you can trust. Read the rows and you find:
+### The table
 
-- **Body that is not JSON at all** (row 5). `json_valid(body)` is 0 for it; every JSON function would error or return NULL.
-- **Client retries.** The phone lost signal and sent `e2` twice. The event carries its own id, so the id — not the row — decides what is a duplicate. Make `event_id` the primary key and load with `INSERT OR IGNORE`: the first copy wins, later copies are skipped.
-- **Missing required fields**: no `user_id` (row 6), no `event_id` (row 10). An event you cannot attribute or deduplicate is not usable; skip it (a real pipeline would also count what it skipped).
-- **Wrong types**: `"user_id": "3"` is a string. `CAST(… AS INTEGER)` fixes it — and `typeof(user_id)` in the result proves it.
-- **Inconsistent values**: `"Visit"` vs `"visit"`; a timestamp in ISO form with `T` and `Z`. `lower()`, and `datetime(ts)`, which turns `'2024-07-02T10:30:00Z'` into `'2024-07-02 10:30:00'`.
+Events arrive in `raw_events` exactly as the phones and browsers sent them. It has three columns:
 
-The rule of an ingest step: the output table has constraints strict enough that bad data **cannot** land in it, and the query does the cleaning that makes good data fit. Order the input by the raw row id, so "first copy wins" means the copy that arrived first.
+- `id`: the row's number, in the order the rows arrived;
+- `received_at`: when the server got the message;
+- `body`: the message itself, as [[JSON|json-text]] text.
+
+Here are a few of the ten bodies:
+
+```
+id  body
+1   {"event_id": "e1", "user_id": 1, "name": "visit", "ts": "2024-07-01 09:00:00"}
+5   not json at all
+7   {"event_id": "e5", "user_id": "3", "name": "Visit", "ts": "2024-07-02 08:00:00"}
+10  {"user_id": 4, "name": "visit", "ts": "2024-07-03 09:00:00"}
+```
+
+Each good body has four keys: `event_id` (the event's own id, made by the app), `user_id`, `name` and `ts` (the time it happened). Row 9 also carries an extra `props` key, which this project does not need.
+
+### The picture
+
+Think of a post room. Letters pour in all day. A few are torn and unreadable. Some have no name on them. One was sent twice. Before anyone delivers anything, a sorter checks each letter, fixes what can be fixed, and puts only good ones in the pigeonholes. The pigeonholes are built so that a bad letter does not fit.
+
+Loading raw data into a clean table is called **ingest**. It is the first step of every [[data pipeline|pipeline]]. The rule of an ingest step has two halves:
+
+1. The **output table** has constraints strict enough that bad data **cannot** land in it.
+2. The **query** does the cleaning that makes good data fit.
+
+The clean table is `events`, with `event_id` as its primary key, and `user_id`, `name` and `ts` all `NOT NULL`. Now read the raw rows. They have five kinds of problem.
+
+### Problem 1: a body that is not JSON
+
+Row 5's body is `not json at all`. The functions that read JSON stop with an error when they meet it. This query tries to read every row's name:
+
+```sql
+SELECT body ->> '$.name' FROM raw_events;
+```
+
+```
+Error: malformed JSON
+```
+
+One bad row, and the whole query fails. `->>`, from the lesson "JSON columns", reads one key out of the JSON as a plain value.
+
+The fix is a new function. `json_valid(body)` gives 1 when `body` is well-formed JSON and 0 when it is not. It never errors, so you can test it first:
+
+```sql
+SELECT id, json_valid(body) AS ok FROM raw_events WHERE id IN (4, 5, 6);
+```
+
+| id | ok |
+| --- | --- |
+| 4 | 1 |
+| 5 | 0 |
+| 6 | 1 |
+
+Put `json_valid(body)` first in the `WHERE`, and the bad row is dropped before anything else reads it.
+
+### Problem 2: missing required fields
+
+A key that is not in the JSON reads as NULL. Here are the ids of every valid row:
+
+```sql
+SELECT id, body ->> '$.event_id' AS event_id, body ->> '$.user_id' AS user_id
+FROM raw_events
+WHERE json_valid(body);
+```
+
+| id | event_id | user_id |
+| --- | --- | --- |
+| 1 | e1 | 1 |
+| 2 | e2 | 1 |
+| 3 | e2 | 1 |
+| 4 | e3 | 2 |
+| 6 | e4 | NULL |
+| 7 | e5 | 3 |
+| 8 | e6 | 2 |
+| 9 | e7 | 1 |
+| 10 | NULL | 4 |
+
+Row 6 has no `user_id`, and row 10 has no `event_id`. An event you cannot tie to a user, or cannot tell apart from a copy, is not usable. Skip both with `IS NOT NULL` tests in the `WHERE`. Test the event id yourself, even though it will be the primary key: in SQLite, [[a text primary key lets NULL in|null-key]]. A real pipeline would also [[count what it skipped|rejects]].
+
+### Problem 3: the wrong type
+
+Row 7 says `"user_id": "3"`, with quotes. That is the text `'3'`, not the number 3. `typeof(x)`, from "Constraints: rules the database enforces", shows the kind of value:
+
+```sql
+SELECT id,
+       typeof(body ->> '$.user_id') AS raw_type,
+       typeof(CAST(body ->> '$.user_id' AS INTEGER)) AS cast_type
+FROM raw_events
+WHERE id IN (2, 7);
+```
+
+| id | raw_type | cast_type |
+| --- | --- | --- |
+| 2 | integer | integer |
+| 7 | text | integer |
+
+`CAST(… AS INTEGER)`, from "Problem solving: cohort retention", turns it into a whole number. Run it on every row: a value that is already a number stays as it is.
+
+### Problem 4: the same thing written two ways
+
+Row 7's name is `"Visit"` with a capital V, and every other row says `"visit"`. `lower()`, from "Working with text", makes every name small letters.
+
+Row 8's time is `"2024-07-02T10:30:00Z"`, with a `T` between the date and the time and a `Z` at the end. Every other row uses the form `'2024-07-02 10:30:00'`. `datetime(x)` reads a time in [[either form|t-and-z]] and always writes it back in the plain one:
+
+```sql
+SELECT lower('Visit') AS name, datetime('2024-07-02T10:30:00Z') AS ts;
+```
+
+| name | ts |
+| --- | --- |
+| visit | 2024-07-02 10:30:00 |
+
+Now every name and every time is written one way, so grouping and comparing work later.
+
+### Problem 5: the same event twice
+
+Rows 2 and 3 are both event `e2`, eight seconds apart. The phone lost signal, never heard back, and [[sent it again|retries]]. It is one signup, not two.
+
+The event carries its own id, so the **id decides** what is a duplicate, not the row. Two parts do the work:
+
+- `event_id` is the primary key of `events`, so the table cannot hold `e2` twice.
+- `INSERT OR IGNORE`, from "Constraints: rules the database enforces", skips any row that breaks a rule, instead of stopping with an error. The first copy goes in. The later copy is skipped.
+
+"First" must mean the copy that arrived first. So put `ORDER BY id` at the end of the `SELECT`, and rows go in in the order they came.
+
+### Putting it together
+
+In "Store 2: loading the export" you filled a table with `INSERT … SELECT`: an `INSERT` whose rows come from a query instead of a `VALUES` list. The ingest has the same shape:
+
+```sql
+INSERT OR IGNORE INTO events (event_id, user_id, name, ts)
+SELECT …each field, cleaned…
+FROM raw_events
+WHERE …only rows you can use…
+ORDER BY id;
+```
+
+- The `SELECT` list reads each key with `->>` and cleans it: `CAST` for the user id, `lower` for the name, `datetime` for the time.
+- The `WHERE` keeps valid JSON with both ids present.
+- The primary key and `OR IGNORE` drop the retry.
+
+Ten raw rows go in and six clean events come out.
+
+**Watch out:** with a plain `INSERT`, the retried `e2` breaks the primary key, and SQLite answers `UNIQUE constraint failed: events.event_id`. A failed statement changes nothing, so not one row is loaded, not even the good ones. Leave out `json_valid(body)` and the same happens with `malformed JSON`. One bad row must never block the good ones: filter what you can see, and let `OR IGNORE` catch the rest.
+
+::: context json-text JSON, the language apps send
+**JSON** (JavaScript Object Notation) is a way to write data as text: keys in quotes, a colon, then a value, all inside curly brackets. Nearly every app and website sends its data this way, because any programming language can read and write it. You queried JSON columns in the lesson "JSON columns". Spacecraft ground systems use it too: many mission-control tools pass commands and telemetry between programs as JSON messages, and they check every message the same way this lesson does before trusting it.
+:::
+
+::: context pipeline A pipeline, one step at a time
+A **data pipeline** is a chain of steps that carries data from where it is made to where people read it. Each step reads one table and writes the next. Ingest is the front door: it takes whatever arrived and writes a table the later steps can trust. The next three lessons read only from `events`, never from `raw_events`, so they never have to worry about broken JSON again.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#1d6fd1"/>
+    </marker>
+  </defs>
+  <rect x="10" y="30" width="95" height="44" rx="4" fill="#fff" stroke="#6c7a93"/>
+  <text x="57" y="49" font-size="12" fill="#1f2a44" text-anchor="middle">raw_events</text>
+  <text x="57" y="65" font-size="11" fill="#6c7a93" text-anchor="middle">10 rows</text>
+  <rect x="133" y="30" width="95" height="44" rx="4" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="180" y="49" font-size="12" fill="#1f2a44" text-anchor="middle">ingest</text>
+  <text x="180" y="65" font-size="11" fill="#1f2a44" text-anchor="middle">check and clean</text>
+  <rect x="256" y="30" width="95" height="44" rx="4" fill="#fff" stroke="#1f2a44"/>
+  <text x="303" y="49" font-size="12" fill="#1f2a44" text-anchor="middle">events</text>
+  <text x="303" y="65" font-size="11" fill="#6c7a93" text-anchor="middle">6 rows</text>
+  <line x1="105" y1="52" x2="131" y2="52" stroke="#1d6fd1" stroke-width="1.5" marker-end="url(#ar)"/>
+  <line x1="228" y1="52" x2="254" y2="52" stroke="#1d6fd1" stroke-width="1.5" marker-end="url(#ar)"/>
+  <line x1="180" y1="74" x2="180" y2="98" stroke="#b4232c" stroke-width="1.5"/>
+  <text x="180" y="114" font-size="11" fill="#b4232c" text-anchor="middle">skipped: 1 bad JSON, 2 missing ids, 1 retry</text>
+  <text x="180" y="138" font-size="11" fill="#6c7a93" text-anchor="middle">later lessons read only the clean table</text>
+</svg>
+```
+:::
+
+::: context null-key A primary key that lets NULL in
+You might expect `PRIMARY KEY` to refuse NULL, as it does in most databases. In an ordinary SQLite table, only an `INTEGER PRIMARY KEY` is guaranteed never to be NULL. A `TEXT PRIMARY KEY` accepts NULL, and even accepts it twice, because NULL is never equal to anything, not even another NULL. It is an old bug that SQLite keeps so that older programs still work. So without the `IS NOT NULL` test, row 10 would land in `events` with no event id. Writing `event_id TEXT PRIMARY KEY NOT NULL` would close that door in the table too.
+:::
+
+::: context rejects Counting what you skipped
+Skipping a bad row quietly is fine for a lesson, but a real pipeline also keeps a tally: 10 received, 6 loaded, 4 skipped, and why. Some keep the skipped rows in a separate table so someone can look at them later. If the tally suddenly jumps, say half of today's events have no `user_id`, it usually means a new version of the app has a bug. Ground stations do the same with telemetry: every frame that fails its check is counted, and a rising count is an early warning that something is wrong with the radio link.
+:::
+
+::: context t-and-z What the T and the Z mean
+`2024-07-02T10:30:00Z` is the international standard way to write a time, called **ISO 8601**. The `T` only separates the date from the time. The `Z` means the time is in **UTC**, the world's reference clock (Z is said "Zulu" by pilots and mission controllers). The other rows here are in UTC too, so dropping the `Z` loses nothing. If a time carries an offset instead, like `+02:00`, `datetime()` converts it to UTC: `datetime('2024-07-02T12:30:00+02:00')` also gives `'2024-07-02 10:30:00'`.
+:::
+
+::: context retries Why phones send things twice
+A phone sends an event and waits for the server to say "got it". If the signal drops, the reply never arrives, so the phone cannot tell whether the event was lost or only the reply. The safe choice is to send it again. That means the server must expect copies. An operation that gives the same result however many times it runs is called **idempotent**. Giving each event its own id and ignoring an id already seen makes this load idempotent: run it twice and `events` still holds six rows.
+:::
 --- task
-Create `events` (`event_id` text primary key; `user_id` integer, required; `name` text, required; `ts` text, required) and load it from `raw_events`: only rows whose body is valid JSON and has both an `event_id` and a `user_id`; `user_id` as an integer; `name` lower-cased; `ts` normalised with `datetime()`; each `event_id` once (the first copy received).
+Load the clean `events` table from `raw_events`. The starter already creates `events`: `event_id` (text, primary key), `user_id` (integer, required), `name` (text, required) and `ts` (text, required). Keep it, and below it write one `INSERT OR IGNORE … SELECT` that:
+
+1. keeps only rows whose `body` is valid JSON (`json_valid`);
+2. keeps only rows that have both an `event_id` and a `user_id`;
+3. stores `user_id` as an integer (`CAST`);
+4. stores `name` in small letters (`lower`);
+5. stores `ts` in the plain form (`datetime`);
+6. stores each `event_id` once, keeping the first copy received (order by `id`).
 --- starter
 CREATE TABLE events (
   event_id TEXT PRIMARY KEY,
@@ -566,11 +760,11 @@ WHERE json_valid(body)
   AND body ->> '$.user_id' IS NOT NULL
 ORDER BY id;
 --- hint
-Filter first: `WHERE json_valid(body) AND body ->> '$.event_id' IS NOT NULL AND body ->> '$.user_id' IS NOT NULL`.
+Start with the `WHERE`: three tests joined with `AND`. The body is valid JSON, the `event_id` is not NULL, and the `user_id` is not NULL. Put `json_valid(body)` first.
 --- hint
-`INSERT OR IGNORE … SELECT … ORDER BY id` lets the primary key drop the retried copy.
+The `SELECT` list reads each key with `body ->> '$.key'` and cleans it: `CAST(body ->> '$.user_id' AS INTEGER)`, `lower(body ->> '$.name')`, `datetime(body ->> '$.ts')`. The event id needs no cleaning.
 --- hint
-Clean each field: `CAST(body ->> '$.user_id' AS INTEGER)`, `lower(body ->> '$.name')`, `datetime(body ->> '$.ts')`.
+The shape is `INSERT OR IGNORE INTO events (event_id, user_id, name, ts) SELECT … FROM raw_events WHERE json_valid(body) AND body ->> '$.event_id' IS NOT NULL AND body ->> '$.user_id' IS NOT NULL ORDER BY id;`. The primary key drops the second `e2`.
 --- check query | Six clean events: bad JSON, missing ids and the retry are gone
 SELECT event_id, user_id, name, ts FROM events ORDER BY event_id
 => [["e1", 1, "visit", "2024-07-01 09:00:00"], ["e2", 1, "signup", "2024-07-01 09:03:00"], ["e3", 2, "visit", "2024-07-01 10:00:00"], ["e5", 3, "visit", "2024-07-02 08:00:00"], ["e6", 2, "signup", "2024-07-02 10:30:00"], ["e7", 1, "activate", "2024-07-02 12:00:00"]]
@@ -583,24 +777,216 @@ INSERT OR IGNORE INTO events (event_id, user_id, name, ts) VALUES ('e1', 1, 'vis
 
 === sqlp-06 | Analytics 2: daily active users
 --- teach
-The clean `events` table (`event_id`, `user_id`, `name`, `ts`) now holds ten days of real traffic. The first number every product team watches: **daily active users** (DAU) — how many *different* users did anything each day — and alongside it, how many of them were **new** that day.
+Last lesson you loaded clean events and threw away the broken ones. From here on, every lesson in this project reads the clean `events` table. The first number every product team watches is how many people used the app each day. This lesson counts it honestly, with no missing days and no person counted twice.
 
-Two traps make naive DAU charts lie:
+### The table
 
-1. **Days with no events vanish.** `GROUP BY date(ts)` has no row for a day with no activity, so a chart simply skips it, and a dead day looks like nothing happened. Generate the calendar with a recursive CTE and LEFT JOIN onto it (the advanced course, lesson 2).
-2. **Activity is not users.** A user with five events is one active user: `COUNT(DISTINCT user_id)`.
+`events` has the columns from last lesson: `event_id`, `user_id`, `name` (`visit`, `signup` or `activate`) and `ts`, the time. It now holds 25 events from six users over ten days, 1 to 10 July 2024. Here are the users seen each day, one entry per event:
 
-"New" needs each user's **first-ever** day, which is a per-user `MIN`:
+| day | users, one per event |
+| --- | --- |
+| 2024-07-01 | 1, 1, 2, 2 |
+| 2024-07-02 | 1, 3, 3, 2 |
+| 2024-07-03 | 3, 1, 4, 4 |
+| 2024-07-04 | (no events) |
+| 2024-07-05 | 2, 5, 5, 1 |
+| 2024-07-06 | 4, 3 |
+| 2024-07-07 | 6, 6, 2 |
+| 2024-07-08 | 1 |
+| 2024-07-09 | 5, 3 |
+| 2024-07-10 | 4 |
+
+### The picture
+
+A shop door has a counter that clicks every time the door opens. At closing time it says 40. But one customer went in and out four times, so 40 clicks is not 40 customers. And on a day the shop was shut, the counter writes nothing at all, so a list of daily counts has no line for that day. This lesson fixes both.
+
+### Two numbers per day
+
+- **[[Daily active users|dau-word]]**, or **DAU**: how many *different* users did anything that day.
+- **New users**: how many of them were seen that day for the very first time.
+
+### Trap 1: activity is not users
+
+Counting rows per day counts events, like the door counter:
 
 ```sql
-SELECT user_id, MIN(date(ts)) AS first_day FROM events GROUP BY user_id
+SELECT date(ts) AS day, COUNT(*) AS dau
+FROM events
+GROUP BY day;
 ```
 
-Then a day's new users are the users whose `first_day` is that day. Because it is computed over *all* events, not just the report's week, a user first seen before the report starts is never counted as new inside it.
+On 1 July this says 4. But the table above shows only users 1 and 2 that day. `COUNT(DISTINCT user_id)` counts each different user once:
 
-Both measures hang off the calendar, and each is its own aggregate, so compute them in separate CTEs and join both onto the calendar — joining them together first would fan out.
+```sql
+SELECT date(ts) AS day, COUNT(DISTINCT user_id) AS dau
+FROM events
+GROUP BY date(ts);
+```
+
+| day | dau |
+| --- | --- |
+| 2024-07-01 | 2 |
+| 2024-07-02 | 3 |
+| 2024-07-03 | 3 |
+| 2024-07-05 | 3 |
+| 2024-07-06 | 2 |
+| 2024-07-07 | 2 |
+| 2024-07-08 | 1 |
+| 2024-07-09 | 2 |
+| 2024-07-10 | 1 |
+
+`date(ts)` keeps only [[the day part|whose-day]] of the time, as in "Date arithmetic and date ranges".
+
+### Trap 2: days with no events vanish
+
+Look at the list again: it jumps from 3 July to 5 July. `GROUP BY` makes a row only for a day that has events, so [[a dead day disappears|missing-day]] instead of showing 0.
+
+You met this in "Recursive CTEs: generating a series". The fix is a calendar: a recursive CTE with one row for every day, and the numbers joined onto it with `LEFT JOIN`. For the first week:
+
+```sql
+WITH RECURSIVE days(day) AS (
+  SELECT '2024-07-01'
+  UNION ALL
+  SELECT date(day, '+1 day') FROM days WHERE day < '2024-07-07'
+)
+SELECT day FROM days;
+```
+
+That gives seven rows, 1 to 7 July, with 4 July included.
+
+### New users: each user's first day
+
+"New on a day" needs each user's **first-ever** day. That is a per-user `MIN`:
+
+```sql
+SELECT user_id, MIN(date(ts)) AS first_day
+FROM events
+GROUP BY user_id;
+```
+
+| user_id | first_day |
+| --- | --- |
+| 1 | 2024-07-01 |
+| 2 | 2024-07-01 |
+| 3 | 2024-07-02 |
+| 4 | 2024-07-03 |
+| 5 | 2024-07-05 |
+| 6 | 2024-07-07 |
+
+A day's new users are the users whose `first_day` is that day. So wrap this query and count its rows per `first_day`:
+
+```sql
+SELECT first_day AS day, COUNT(*) AS new_users
+FROM (SELECT user_id, MIN(date(ts)) AS first_day FROM events GROUP BY user_id)
+GROUP BY first_day;
+```
+
+| day | new_users |
+| --- | --- |
+| 2024-07-01 | 2 |
+| 2024-07-02 | 1 |
+| 2024-07-03 | 1 |
+| 2024-07-05 | 1 |
+| 2024-07-07 | 1 |
+
+The `MIN` looks at **all** events, not only the week in the report. That matters: a user first seen before the report starts is [[never counted as new inside it|all-history]].
+
+### One calendar, two separate counts
+
+Now there are three pieces: the calendar, the DAU per day and the new users per day. Make each count its own CTE, grouped down to **one row per day**. Then join both onto the calendar:
+
+```sql
+FROM days d
+LEFT JOIN active a ON a.day = d.day
+LEFT JOIN firsts f ON f.day = d.day
+```
+
+Each count has at most one row per day, so every join matches [[one row to one row|one-to-one]], and nothing is repeated. The first week comes out like this:
+
+| day | dau | new_users |
+| --- | --- | --- |
+| 2024-07-01 | 2 | 2 |
+| 2024-07-02 | 3 | 1 |
+| 2024-07-03 | 3 | 1 |
+| 2024-07-04 | NULL | NULL |
+| 2024-07-05 | 3 | 1 |
+| 2024-07-06 | 2 | NULL |
+| 2024-07-07 | 2 | 1 |
+
+The NULLs are days where a count had no row. `COALESCE(x, 0)`, from "Testing for NULL", turns each one into 0. A quiet day should read 0, not "unknown".
+
+### Check it by hand
+
+On 6 July, users 4 and 3 were active, so DAU is 2. Both were first seen earlier, so there are 0 new users. On 7 July, users 6 and 2 were active, and user 6 was brand new: 2 and 1. The table agrees.
+
+**Watch out:** do not work out both numbers in one query over `events`. This looks tidy:
+
+```sql
+SELECT date(e.ts) AS day, COUNT(DISTINCT e.user_id) AS dau, COUNT(f.user_id) AS new_users
+FROM events e
+LEFT JOIN (SELECT user_id, MIN(date(ts)) AS first_day FROM events GROUP BY user_id) f
+  ON f.user_id = e.user_id AND f.first_day = date(e.ts)
+GROUP BY date(e.ts);
+```
+
+But it says 4 new users on 1 July, not 2. Each new user matches once **per event** they had that day, and users 1 and 2 had two events each. It is the fan-out from "Debugging: the join that double-counts". Counting in separate CTEs, one row per day each, avoids it.
+
+::: context dau-word DAU, WAU and MAU
+**DAU** is the number of different people who used a product on one day. Teams also count **WAU** (weekly) and **MAU** (monthly) the same way, over a longer window. A user active on all seven days of a week counts seven times in the week's daily numbers but only once in its WAU. Dividing DAU by MAU gives a rough "stickiness": the share of the month's users who show up on a typical day. Games and chat apps watch it closely, because it says whether people come back by habit.
+:::
+
+::: context whose-day Whose day is it?
+`date(ts)` cuts the day at midnight in whatever clock `ts` is written in, here UTC. For a user in Tokyo, 9 hours ahead, an evening visit at 20:00 local time is 11:00 UTC the same day, but a morning visit at 07:00 local time is 22:00 UTC the day before. Big apps pick one clock for their daily numbers and write it on the chart, so nobody compares one team's Monday with another team's.
+:::
+
+::: context missing-day A missing day tells a lie
+A chart draws what it is given. Give it the grouped rows and it places 3 July and 5 July side by side, and the day with no events is invisible. With the calendar, 4 July stays on the axis at 0, and anyone looking asks "what happened that day?". That question is often the most useful thing on the dashboard: an outage, a failed app release, a holiday.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 175" font-family="Inter, Arial, sans-serif">
+  <text x="180" y="16" font-size="11" fill="#6c7a93" text-anchor="middle">DAU, 1 to 7 July, joined onto a calendar</text>
+  <line x1="20" y1="130" x2="340" y2="130" stroke="#6c7a93" stroke-width="1.5"/>
+  <rect x="30" y="70" width="30" height="60" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="45" y="64" font-size="11" fill="#1f2a44" text-anchor="middle">2</text>
+  <rect x="74" y="40" width="30" height="90" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="89" y="34" font-size="11" fill="#1f2a44" text-anchor="middle">3</text>
+  <rect x="118" y="40" width="30" height="90" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="133" y="34" font-size="11" fill="#1f2a44" text-anchor="middle">3</text>
+  <line x1="162" y1="130" x2="192" y2="130" stroke="#b4232c" stroke-width="4"/>
+  <text x="177" y="122" font-size="12" fill="#b4232c" text-anchor="middle">0</text>
+  <rect x="206" y="40" width="30" height="90" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="221" y="34" font-size="11" fill="#1f2a44" text-anchor="middle">3</text>
+  <rect x="250" y="70" width="30" height="60" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="265" y="64" font-size="11" fill="#1f2a44" text-anchor="middle">2</text>
+  <rect x="294" y="70" width="30" height="60" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="309" y="64" font-size="11" fill="#1f2a44" text-anchor="middle">2</text>
+  <text x="45" y="146" font-size="11" fill="#1f2a44" text-anchor="middle">1</text>
+  <text x="89" y="146" font-size="11" fill="#1f2a44" text-anchor="middle">2</text>
+  <text x="133" y="146" font-size="11" fill="#1f2a44" text-anchor="middle">3</text>
+  <text x="177" y="146" font-size="11" fill="#b4232c" text-anchor="middle">4</text>
+  <text x="221" y="146" font-size="11" fill="#1f2a44" text-anchor="middle">5</text>
+  <text x="265" y="146" font-size="11" fill="#1f2a44" text-anchor="middle">6</text>
+  <text x="309" y="146" font-size="11" fill="#1f2a44" text-anchor="middle">7</text>
+  <text x="180" y="168" font-size="11" fill="#6c7a93" text-anchor="middle">without the calendar, day 4 would not be drawn at all</text>
+</svg>
+```
+:::
+
+::: context all-history Why "new" looks at all of history
+Suppose the report covered only 5 to 7 July, and the `MIN` looked only at those days. User 1 was active on 5 July, and inside that window it is their earliest day, so they would be counted as new, although they have used the app since 1 July. Every report window would "discover" old users again. Taking each user's first day over all events, and only then picking the days to show, gives each user exactly one new day, ever.
+:::
+
+::: context one-to-one Why each count gets its own CTE
+A join repeats a row once for every match. If both sides have at most one row per day, each day matches at most once, and the numbers stay as they were. That is why each count is grouped down to one row per day **before** it meets anything else. It is the same rule as pre-aggregating each order's total in "Store 4: the customer report": shrink each measure to the level of the report first, then join.
+:::
 --- task
-For every day from `2024-07-01` to `2024-07-07`, return `day`, `dau` (distinct users with any event that day) and `new_users` (users whose first-ever event was that day). Days with no activity show 0 for both. Sort by day.
+Write one query that returns one row for every day from `2024-07-01` to `2024-07-07`, with these columns:
+
+1. `day`: the date, as `'YYYY-MM-DD'`;
+2. `dau`: how many different users had any event that day;
+3. `new_users`: how many users had their first-ever event that day.
+
+A day with no activity shows 0 in both number columns. Sort by `day`.
 --- starter
 SELECT date(ts) AS day, COUNT(*) AS dau
 FROM events
@@ -625,18 +1011,67 @@ LEFT JOIN active a ON a.day = d.day
 LEFT JOIN firsts f ON f.day = d.day
 ORDER BY d.day;
 --- hint
-Build the seven-day calendar with a recursive CTE, and LEFT JOIN the numbers onto it.
+Three CTEs: a seven-day calendar (a recursive CTE, as in "Recursive CTEs: generating a series"), the DAU per day, and the new users per day. Then `LEFT JOIN` both counts onto the calendar.
 --- hint
-DAU per day is `COUNT(DISTINCT user_id)` grouped by `date(ts)`. New users: each user's `MIN(date(ts))`, then count users per first day.
+DAU per day is `COUNT(DISTINCT user_id)` grouped by `date(ts)`. New users: first each user's `MIN(date(ts))`, then count users per first day. Group each one down to one row per day.
+--- hint
+The last `SELECT` starts `FROM days d`, joins with `LEFT JOIN active a ON a.day = d.day` and `LEFT JOIN firsts f ON f.day = d.day`, wraps each count in `COALESCE(…, 0)`, and ends `ORDER BY d.day`.
 --- check result | Seven days; 4 July is empty
 ordered
 [["2024-07-01", 2, 2], ["2024-07-02", 3, 1], ["2024-07-03", 3, 1], ["2024-07-04", 0, 0], ["2024-07-05", 3, 1], ["2024-07-06", 2, 0], ["2024-07-07", 2, 1]]
 
 === sqlp-07 | Analytics 3: a signup funnel with a deadline
 --- teach
-Next: the **signup funnel**, visit → signup → activate. You built an ordered funnel in the expert course; this one adds a rule product teams care about — a **deadline**. Activation only counts if it happens **within 72 hours of signing up**. A user who activates a week later is a win, but not one the onboarding flow can take credit for.
+Last lesson you counted who used the app each day. Now the team asks where people give up. In "Problem solving: a conversion funnel" you built an ordered funnel for a shop. This one is the app's **signup funnel**, visit → signup → activate, with two new things: a **deadline** on the last step, and percentages measured against the **first** step.
 
-So each step has two conditions: it happens **after** the previous step, and (for activation) **no later than** a window after it:
+### The table
+
+The same `events` table as last lesson. Here are each user's first visit, signups and activation:
+
+| user_id | first visit | signup | activate |
+| --- | --- | --- | --- |
+| 1 | 07-01 09:00 | 07-01 09:05 | 07-02 08:00 |
+| 2 | 07-01 10:00 | 07-02 11:00 | 07-05 11:00 |
+| 3 | 07-02 09:00 | 07-02 09:02 | 07-03 15:00 |
+| 4 | 07-03 18:00 | 07-03 18:10 | 07-10 10:00 |
+| 5 | 07-05 11:00 | 07-05 11:30 | 07-09 09:00 |
+| 6 | 07-07 22:00 | 07-07 21:00 | (none) |
+
+All dates are July 2024. To **[[activate|activation]]** means to start really using the app after signing up.
+
+### The picture
+
+A shop hands you a coupon that says "valid for 72 hours". Use it on day two and you get the discount. Come back a week later and the coupon has run out, even though you did come back. The funnel's last step works like that coupon: activation only counts if it happens **within 72 hours of signing up**. A user who activates a week later is still a win, but not one the [[onboarding flow|onboarding]] can take credit for.
+
+### Steps 1 and 2: as before
+
+These work exactly as in "Problem solving: a conversion funnel". Each step is a CTE holding each user's time at that step:
+
+- `s1`: each user's first `visit`, `MIN(ts)` grouped by user.
+- `s2`: each user's first `signup` **after** their `s1` time. It joins `events` to `s1` and keeps `e.ts > s1.t`.
+
+`s1` holds all six users. `s2` holds five. User 6 signed up at 21:00 and first visited at 22:00: they came in through an [[invite link|invite]], signed up, and only then looked around. In an ordered funnel their signup does not follow a visit, so they stop at step 1.
+
+### Step 3 has two conditions
+
+An activation counts only if it is:
+
+1. **after** the signup, `e.ts > s2.t`, as before;
+2. **no later than** 72 hours after it. That is new.
+
+For the second condition you need the time between two moments. In "Sessionising events" you measured gaps with `unixepoch(ts)`, which turns a time into a whole number of seconds since [[1 January 1970|unix-time]]. Subtract two of them and you get the seconds in between, as an exact whole number.
+
+72 hours is `72 * 3600` seconds, where `*` means "times" and 3600 is the number of seconds in one hour. That is 259,200 seconds. Here is every user's gap from signup to activation:
+
+| user_id | seconds | hours | in time? |
+| --- | --- | --- | --- |
+| 1 | 82500 | about 22.9 | yes |
+| 3 | 107880 | about 30.0 | yes |
+| 2 | 259200 | exactly 72 | yes, on the line |
+| 5 | 336600 | 93.5 | no |
+| 4 | 575400 | about 159.8 | no |
+
+So step 3 adds one line to the usual shape:
 
 ```sql
 WHERE e.name = 'activate'
@@ -644,17 +1079,95 @@ WHERE e.name = 'activate'
   AND unixepoch(e.ts) - unixepoch(s2.t) <= 72 * 3600
 ```
 
-Measure the window in integer seconds with `unixepoch` — `72 * 3600` exactly — so an activation at precisely the 72-hour mark is included, as the rule says ("within" includes the boundary; write that decision down).
+`<=` means "less than or equal to". Users 1, 3 and 2 pass. Users 4 and 5 activated, but too late.
 
-Data details that decide the numbers here:
+### Exactly on the line
 
-- User 6 signed up *before* their first visit (they came from an invite link). In an ordered funnel their signup does not follow a visit, so they stop at step 1.
-- User 2 activated exactly 72 hours after signing up: in.
-- Users 4 and 5 activated, but too late: out.
+User 2 signed up at 11:00 on 2 July and activated at 11:00 on 5 July: exactly 259,200 seconds. Is that "within 72 hours"? The team decided yes: "within" includes the boundary. So the test is `<=`, not `<`.
 
-This time report each step's conversion against the **first** step (the share of visitors who got this far), which is how an overall funnel chart reads. `FIRST_VALUE(users) OVER (ORDER BY step)` gives step 1's count on every row.
+That is a decision, not a fact of nature. [[Write it down|boundary]] next to the report, so everyone reads the number the same way. Measuring in whole seconds is what lets the boundary be exact. A difference of `julianday` values is a fraction of a day, and as "Sessionising events" warned, turning it back into hours can land a hair off.
+
+### Stacking the counts
+
+As before, `UNION ALL` stacks one small row per step, each with its number, name and count:
+
+| step | name | users |
+| --- | --- | --- |
+| 1 | visit | 6 |
+| 2 | signup | 5 |
+| 3 | activate | 3 |
+
+### Percent of the first step
+
+In the shop funnel each step was measured against the step before, using `LAG`. This time the team wants each step against **step 1**: the share of all visitors who got this far. That is how an overall funnel chart reads.
+
+`FIRST_VALUE(x)` is a window function that gives `x` from the **first** row of the window, on every row. With `OVER (ORDER BY step)`, the first row is step 1:
+
+```sql
+SELECT step, name, users,
+       FIRST_VALUE(users) OVER (ORDER BY step) AS first_users,
+       LAG(users) OVER (ORDER BY step) AS prev_users
+FROM steps;
+```
+
+| step | name | users | first_users | prev_users |
+| --- | --- | --- | --- | --- |
+| 1 | visit | 6 | 6 | NULL |
+| 2 | signup | 5 | 6 | 6 |
+| 3 | activate | 3 | 6 | 5 |
+
+`first_users` is 6 on every row, so the percentage is `ROUND(100.0 * users / FIRST_VALUE(users) OVER (ORDER BY step), 1)`. Step 1 is 100.0, since it is measured against itself. Step 2 is 100.0 × 5 ÷ 6 = 83.3. Step 3 is 100.0 × 3 ÷ 6 = 50.0. Half the visitors [[activated in time|funnel-shape]].
+
+**Watch out:** with `<` instead of `<=`, user 2 drops out and step 3 shows 2 users, 33.3%. Nothing errors, and the number looks believable. Boundaries are where funnel numbers quietly go wrong, so test the user who sits exactly on the line, as this lesson did with user 2.
+
+::: context activation What "activation" means
+Signing up only creates an account. **Activation** is the moment a new user first does the thing the app is for: sends a first message, uploads a first photo, finishes a first lesson. Product teams choose one event to stand for it, here `activate`. They care because users who activate early tend to stay, and users who sign up and do nothing tend to leave. That is why the signup funnel ends at activation, not at signup.
+:::
+
+::: context onboarding The onboarding flow
+**Onboarding** is everything an app does to help a brand-new user get going: the welcome screens, the tips, the first-day emails. Its job is to turn a signup into an activation, fast. The 72-hour deadline measures exactly that. A user who comes back on their own after a week probably was not helped by the welcome screens, so counting them would make onboarding look better than it is.
+:::
+
+::: context invite An invite link
+An **invite link** is a link one user sends another, often opening a signup page straight away. So the invited person signs up before they have "visited" in the funnel's sense. Nothing is broken, the same as the deep link in "Problem solving: a conversion funnel". An ordered funnel leaves them at step 1 because its question is how people move through the steps in order. A team that cares about invited users often builds a separate funnel for them.
+:::
+
+::: context unix-time Seconds since 1970
+**Unix time** counts seconds from midnight UTC at the start of 1 January 1970, a date picked by the makers of the Unix operating system. `unixepoch('1970-01-01 00:00:00')` is 0, and `unixepoch('2024-07-02 11:00:00')` is 1719918000. Because it is one whole number, the difference of two moments is a plain subtraction, with no months or leap days to think about. Computers everywhere use it, and spacecraft often stamp telemetry with a similar count of seconds from their own chosen starting moment.
+:::
+
+::: context boundary Write the rule down
+"Within 72 hours" can be read two ways, and both are reasonable. Engineers settle it once and write it down, in a comment beside the query or on the dashboard: "activation counts if it is at most 259,200 seconds after signup". Aerospace does the same with limits. A sensor reading "within limits" must say whether the limit itself counts, because a reading that sits exactly on it will happen sooner or later, and two teams reading the rule differently will disagree about whether to abort.
+:::
+
+::: context funnel-shape The funnel against its first step
+Drawn against step 1, each bar shows the share of all visitors still in the funnel. The biggest drop here is from signup to activation: 5 users signed up, but only 3 activated in time. That is the step a team would look at first.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 140" font-family="Inter, Arial, sans-serif">
+  <rect x="80" y="20" width="192" height="26" fill="#8fb8f0" stroke="#1f2a44"/>
+  <rect x="80" y="56" width="160" height="26" fill="#8fb8f0" stroke="#1f2a44"/>
+  <rect x="80" y="92" width="96" height="26" fill="#8fb8f0" stroke="#1f2a44"/>
+  <line x1="272" y1="14" x2="272" y2="124" stroke="#6c7a93" stroke-width="1" stroke-dasharray="3 3"/>
+  <text x="72" y="37" font-size="12" fill="#1f2a44" text-anchor="end">visit</text>
+  <text x="72" y="73" font-size="12" fill="#1f2a44" text-anchor="end">signup</text>
+  <text x="72" y="109" font-size="12" fill="#1f2a44" text-anchor="end">activate</text>
+  <text x="280" y="37" font-size="11" fill="#1f2a44">6 · 100%</text>
+  <text x="248" y="73" font-size="11" fill="#1f2a44">5 · 83.3%</text>
+  <text x="184" y="109" font-size="11" fill="#b4232c">3 · 50.0%</text>
+  <text x="180" y="136" font-size="11" fill="#6c7a93" text-anchor="middle">each bar measured against step 1 (dashed line)</text>
+</svg>
+```
+:::
 --- task
-Return the funnel visit → signup → activate: `step` (1–3), `name`, `users` and `pct` (users as a percentage of step 1's users, rounded to 1 decimal). A user reaches step 1 at their first `visit`, step 2 at their first `signup` after that, and step 3 at their first `activate` after that signup and no more than 72 hours after it. Sort by step.
+Write one query that returns the funnel visit → signup → activate, one row per step, with these columns:
+
+1. `step`: 1, 2 or 3;
+2. `name`: `'visit'`, `'signup'` or `'activate'`;
+3. `users`: how many users reached that step;
+4. `pct`: `users` as a percentage of step 1's `users`, rounded to 1 decimal place.
+
+A user reaches step 1 at their first `visit`, and step 2 at their first `signup` after that. They reach step 3 at their first `activate` that is after that signup **and** no more than 72 hours after it (exactly 72 hours counts). Sort by `step`.
 --- starter
 SELECT name, COUNT(DISTINCT user_id) AS users
 FROM events
@@ -683,32 +1196,207 @@ SELECT step, name, users,
 FROM steps
 ORDER BY step;
 --- hint
-One CTE per step, each joined to the previous one and taking the earliest qualifying event after it.
+One CTE per step, as in "Problem solving: a conversion funnel": `s1`, `s2` and `s3`. Each joins the one before on `user_id` and takes `MIN(e.ts)` of the qualifying events after the previous step's time.
 --- hint
-The activation step adds `unixepoch(e.ts) - unixepoch(s2.t) <= 72 * 3600`.
+`s3` looks for `activate` events and has one extra condition next to `e.ts > s2.t`: `unixepoch(e.ts) - unixepoch(s2.t) <= 72 * 3600`.
 --- hint
-Stack the three counts with `UNION ALL`, then `FIRST_VALUE(users) OVER (ORDER BY step)` for the percentage.
+Stack the three counts in a CTE `steps` with `UNION ALL` (`SELECT 1 AS step, 'visit' AS name, COUNT(*) AS users FROM s1`, and so on). Then `ROUND(100.0 * users / FIRST_VALUE(users) OVER (ORDER BY step), 1) AS pct`. Check: 6, 5 and 3 users.
 --- check result | 6 visitors, 5 signed up after visiting, 3 activated in time
 ordered
 [[1, "visit", 6, 100.0], [2, "signup", 5, 83.3], [3, "activate", 3, 50.0]]
 
 === sqlp-08 | Analytics 4: day-N retention
 --- teach
-The last analytics question: **do people come back?** Day-N retention asks, for N = 1, 2, … 7: of the users who signed up, what share were active on the Nth calendar day after their signup day?
+Last lesson you followed users from their first visit to activation. The last analytics question is the one that decides whether an app survives: **do people come back?** In "Problem solving: cohort retention" you answered it by calendar month. This lesson asks it day by day, and meets a trap that the monthly report did not have to face.
 
-Build it from pieces you know:
+### The table
 
-1. **Each user's signup day** — `date(ts)` of their `signup` event.
-2. **Each user's active days** — `SELECT DISTINCT user_id, date(ts)`.
-3. **The offsets 1–7** — a recursive CTE generating a series.
-4. **Every (user, N) pair** — `CROSS JOIN` the signups with the offsets.
-5. For each pair, was the user active on `date(signup_day, '+' || N || ' days')`? `EXISTS` gives 1 or 0.
+The same `events` table. Each user's signup day, and every day they did anything:
 
-There is one subtlety that separates a correct retention table from a misleading one: **users who have not had day N yet.** The data ends on `2024-07-10`. User 6 signed up on 07-07; their day 7 is 07-14, which has not happened. Counting them as "not retained" on day 7 makes recent signups drag the curve down for no reason. Only users whose day N is on or before the last day of data are **eligible** for day N; they form the denominator.
+| user_id | signup day | active on (July 2024) |
+| --- | --- | --- |
+| 1 | 07-01 | 01, 02, 03, 05, 08 |
+| 2 | 07-02 | 01, 02, 05, 07 |
+| 3 | 07-02 | 02, 03, 06, 09 |
+| 4 | 07-03 | 03, 06, 10 |
+| 5 | 07-05 | 05, 09 |
+| 6 | 07-07 | 07 |
 
-So each row reports `eligible` (users whose day N has happened), `retained` (eligible users active on day N) and `pct`. Find the last day of data from the data itself (`MAX(date(ts))`), not by typing it in.
+The data ends on 10 July.
+
+### The picture
+
+A gym signs up a new member. The owner wonders: did they come back the next day? Two days later? A week later? Now ask that about every new member at once, and count what share came back on each of those days.
+
+### Day N
+
+A user's **day 0** is the calendar day they signed up. **Day N** is the Nth calendar day after it. User 1 signed up on 1 July, so their day 1 is 2 July and their day 7 is 8 July.
+
+**Day-N retention** asks, for N = 1, 2, … 7: of the users who signed up, what share were active on their day N? The day counts by the [[calendar, not by 24-hour periods|calendar-day]].
+
+### Building it from pieces
+
+Every piece is something you have used before. Each becomes one CTE.
+
+**Piece 1: each user's signup day.** The date of their `signup` event. Taking `MIN(ts)` makes sure a user who somehow signed up twice gets one day:
+
+```sql
+signups AS (
+  SELECT user_id, date(MIN(ts)) AS d0 FROM events WHERE name = 'signup' GROUP BY user_id
+)
+```
+
+It gives the six users and the signup days in the table above.
+
+**Piece 2: each user's active days.** `SELECT DISTINCT user_id, date(ts)` gives one row per user per day they did anything. User 1 had two events on 1 July, and `DISTINCT` keeps that day once.
+
+**Piece 3: the numbers 1 to 7.** A recursive CTE that counts, as in "Recursive CTEs: a query that counts":
+
+```sql
+n(day) AS (
+  SELECT 1 UNION ALL SELECT day + 1 FROM n WHERE day < 7
+)
+```
+
+Each value in `n` is one N.
+
+### Every user with every N
+
+The report needs a yes-or-no for **every pair** of a user and an N. In "Design: choosing the joins for a report" you met `CROSS JOIN`, which pairs every row of one table with every row of the other. `n CROSS JOIN signups` gives 7 × 6 = 42 pairs.
+
+### The date of day N
+
+For each pair you need the date of that user's day N. `date(d0, '+3 days')` moves a date three days forward, as in "Date arithmetic and date ranges". But here the 3 is a number from `n`, not typed text. `||`, from "Building text: joining, replacing and LIKE", glues pieces of text together, so you can build the modifier:
+
+```sql
+SELECT '+' || 3 || ' days' AS modifier,
+       date('2024-07-01', '+' || 3 || ' days') AS day_3;
+```
+
+| modifier | day_3 |
+| --- | --- |
+| +3 days | 2024-07-04 |
+
+In the query, `date(s.d0, '+' || n.day || ' days')` is user `s`'s day N.
+
+### Was the user active that day?
+
+`EXISTS (…)` is 1 when its subquery finds a row and 0 when it does not, as in "Problem solving: cohort retention". Call the flag `hit`:
+
+```sql
+EXISTS (SELECT 1 FROM active a
+        WHERE a.user_id = s.user_id
+          AND a.d = date(s.d0, '+' || n.day || ' days')) AS hit
+```
+
+Then `SUM(hit)` counts the yeses.
+
+### Users who have not had day N yet
+
+This is the trap. User 6 signed up on 7 July, so their day 7 is 14 July. The data ends on 10 July. Day 7 **has not happened yet** for user 6, so nobody knows whether they will come back then.
+
+Counting them as "not retained" on day 7 treats "not yet known" as "no". Every recent signup would drag the later days down, for no real reason. So only users whose day N is on or before the last day of data are **eligible** for day N. The eligible users are the denominator: the number you divide by. Statisticians call data that stops before the answer arrives [[censored|censored]].
+
+Find the last day of data from the data itself, not by typing `'2024-07-10'` into the query. [[A typed date goes stale|last-day]] the moment new events arrive.
+
+```sql
+last AS (SELECT MAX(date(ts)) AS d FROM events)
+```
+
+`last` has exactly one row. `CROSS JOIN last` adds its `d` column to every pair, without making more rows, because one row times one row is still one row. Then the pairs can keep only eligible ones:
+
+```sql
+WHERE date(s.d0, '+' || n.day || ' days') <= last.d
+```
+
+Here are the pairs for day 1 and day 7, after that filter:
+
+| day | user_id | day N date | hit |
+| --- | --- | --- | --- |
+| 1 | 1 | 2024-07-02 | 1 |
+| 1 | 2 | 2024-07-03 | 0 |
+| 1 | 3 | 2024-07-03 | 1 |
+| 1 | 4 | 2024-07-04 | 0 |
+| 1 | 5 | 2024-07-06 | 0 |
+| 1 | 6 | 2024-07-08 | 0 |
+| 7 | 1 | 2024-07-08 | 1 |
+| 7 | 2 | 2024-07-09 | 0 |
+| 7 | 3 | 2024-07-09 | 1 |
+| 7 | 4 | 2024-07-10 | 1 |
+
+Everyone has had day 1. Only users 1 to 4 have had day 7; users 5 and 6 are left out of it.
+
+### One row per N
+
+Group the pairs by `day`:
+
+- `COUNT(*)` counts the eligible users;
+- `SUM(hit)` counts the retained ones;
+- `ROUND(100.0 * SUM(hit) / COUNT(*), 1)` is the percentage.
+
+Day 7 is 3 retained of 4 eligible: 75.0. Put all seven days together and you have the app's [[retention curve|retention-curve]].
+
+**Watch out:** leave out the eligibility filter and day 7 reads 3 of 6, 50.0, instead of 75.0. Users 5 and 6 are counted as "did not come back" on a day that is still in the future. Days 4, 5 and 7 all come out too low, and the newest signups make the app look worse than it is.
+
+::: context calendar-day Calendar days, not 24 hours
+User 6 signed up at 21:00 on 7 July. Their day 1 is all of 8 July, which starts only three hours later. A user who signed up at 06:00 gets a day 1 that starts eighteen hours later. Counting in 24-hour periods instead would treat them equally, but it is harder to read on a chart, and "came back the next day" is what people mean. Like "calendar months" in "Problem solving: cohort retention", it is a choice, and the report should say which one it made.
+:::
+
+::: context censored Answers that have not arrived
+When the data stops before the answer is known, statisticians call the data **censored**: it was cut off, not answered "no". Doctors meet it in medical trials, where a patient who joined last month cannot yet say how they are doing after a year. Engineers meet it when testing how long parts last: a pump still running when the test ends has not failed, it has only not failed *yet*. The fix is always the same as here: count someone only for the times you could actually observe.
+:::
+
+::: context last-day Let the data say when it ends
+A date typed into a query is right on the day it is written. Tomorrow more events arrive, the real last day moves to 11 July, and the typed `'2024-07-10'` quietly leaves out a whole day of eligible users. `MAX(date(ts))` moves with the data, so the same query stays right every day it runs. Scheduled reports, the kind that rebuild a dashboard every morning, depend on this.
+:::
+
+::: context retention-curve The retention curve
+Drawn as bars, the seven percentages make this app's day-N retention curve. The small numbers underneath are the eligible users for each day. With only six users the curve jumps about: one person more or less changes a bar by about 17 to 25 percentage points. Real apps have thousands of users per day, and their curves are smooth. A curve that levels off instead of falling to zero means some people have found a reason to stay.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 190" font-family="Inter, Arial, sans-serif">
+  <text x="180" y="16" font-size="11" fill="#6c7a93" text-anchor="middle">retained, as a percentage of eligible users</text>
+  <line x1="20" y1="130" x2="340" y2="130" stroke="#6c7a93" stroke-width="1.5"/>
+  <rect x="30" y="96.7" width="30" height="33.3" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="45" y="90" font-size="11" fill="#1f2a44" text-anchor="middle">33.3</text>
+  <rect x="74" y="113.3" width="30" height="16.7" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="89" y="107" font-size="11" fill="#1f2a44" text-anchor="middle">16.7</text>
+  <rect x="118" y="96.7" width="30" height="33.3" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="133" y="90" font-size="11" fill="#1f2a44" text-anchor="middle">33.3</text>
+  <rect x="162" y="70" width="30" height="60" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="177" y="64" font-size="11" fill="#1f2a44" text-anchor="middle">60.0</text>
+  <rect x="206" y="110" width="30" height="20" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="221" y="104" font-size="11" fill="#1f2a44" text-anchor="middle">20.0</text>
+  <text x="265" y="124" font-size="11" fill="#b4232c" text-anchor="middle">0.0</text>
+  <rect x="294" y="55" width="30" height="75" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="309" y="49" font-size="11" fill="#1f2a44" text-anchor="middle">75.0</text>
+  <text x="45" y="146" font-size="11" fill="#1f2a44" text-anchor="middle">day 1</text>
+  <text x="89" y="146" font-size="11" fill="#1f2a44" text-anchor="middle">2</text>
+  <text x="133" y="146" font-size="11" fill="#1f2a44" text-anchor="middle">3</text>
+  <text x="177" y="146" font-size="11" fill="#1f2a44" text-anchor="middle">4</text>
+  <text x="221" y="146" font-size="11" fill="#1f2a44" text-anchor="middle">5</text>
+  <text x="265" y="146" font-size="11" fill="#1f2a44" text-anchor="middle">6</text>
+  <text x="309" y="146" font-size="11" fill="#1f2a44" text-anchor="middle">7</text>
+  <text x="45" y="162" font-size="11" fill="#6c7a93" text-anchor="middle">of 6</text>
+  <text x="89" y="162" font-size="11" fill="#6c7a93" text-anchor="middle">6</text>
+  <text x="133" y="162" font-size="11" fill="#6c7a93" text-anchor="middle">6</text>
+  <text x="177" y="162" font-size="11" fill="#6c7a93" text-anchor="middle">5</text>
+  <text x="221" y="162" font-size="11" fill="#6c7a93" text-anchor="middle">5</text>
+  <text x="265" y="162" font-size="11" fill="#6c7a93" text-anchor="middle">4</text>
+  <text x="309" y="162" font-size="11" fill="#6c7a93" text-anchor="middle">4</text>
+  <text x="180" y="184" font-size="11" fill="#6c7a93" text-anchor="middle">fewer users are eligible as N grows</text>
+</svg>
+```
+:::
 --- task
-Return one row for each N from 1 to 7: `day` (N), `eligible` (signed-up users whose day N is on or before the last day in `events`), `retained` (eligible users with any event on exactly their day N) and `pct` (retained as a percentage of eligible, rounded to 1 decimal). A user's day 0 is the date of their `signup` event. Sort by day.
+Write one query that returns one row for each N from 1 to 7, with these columns:
+
+1. `day`: N;
+2. `eligible`: how many signed-up users have a day N on or before the last day in `events`;
+3. `retained`: how many of those eligible users had any event on exactly their day N;
+4. `pct`: `retained` as a percentage of `eligible`, rounded to 1 decimal place.
+
+A user's day 0 is the date of their `signup` event, and day N is the Nth calendar day after it. Find the last day from the data with `MAX(date(ts))`, not by typing it. Sort by `day`.
 --- starter
 SELECT user_id, date(ts) AS signup_day
 FROM events
@@ -737,11 +1425,11 @@ FROM pairs
 GROUP BY day
 ORDER BY day;
 --- hint
-Four CTEs: the series 1–7, each user's signup day, each user's distinct active days, and the last day of data.
+Four CTEs first: `n`, the numbers 1 to 7; `signups`, each user's signup day `d0`; `active`, each user's distinct active days; and `last`, the one-row last day of data, `MAX(date(ts))`.
 --- hint
-`CROSS JOIN` the series with the signups, keep pairs whose day N (`date(d0, '+' || day || ' days')`) is on or before the last day, and flag each with `EXISTS (…)`.
+A fifth CTE, `pairs`: `FROM n CROSS JOIN signups s CROSS JOIN last`, keeping only pairs where `date(s.d0, '+' || n.day || ' days') <= last.d`. Flag each pair with `EXISTS (SELECT 1 FROM active a WHERE a.user_id = s.user_id AND a.d = …that same date…) AS hit`.
 --- hint
-Group by N: `COUNT(*)` is eligible, `SUM(hit)` is retained.
+Finish with `SELECT day, COUNT(*) AS eligible, SUM(hit) AS retained, ROUND(100.0 * SUM(hit) / COUNT(*), 1) AS pct FROM pairs GROUP BY day ORDER BY day`. Check day 7: 4 eligible, 3 retained, 75.0.
 --- check result | Seven days of retention, with shrinking eligibility
 ordered
 [[1, 6, 2, 33.3], [2, 6, 1, 16.7], [3, 6, 2, 33.3], [4, 5, 3, 60.0], [5, 5, 1, 20.0], [6, 4, 0, 0.0], [7, 4, 3, 75.0]]
