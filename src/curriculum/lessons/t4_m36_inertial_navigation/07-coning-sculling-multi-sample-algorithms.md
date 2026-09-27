@@ -214,7 +214,7 @@ The general fix samples the gyro and accelerometer $N$ times per interval and fi
 The engineering trade is between **sample rate** — which costs sensor bandwidth and processing — and **how fast a vibration** the mechanization can absorb without leaving a coning or sculling bias. A launch vehicle's structural modes run into the hundreds of hertz. That environment is what makes this trade a real one rather than a refinement.
 
 ::: warning The correction cannot fix aliasing
-Coning and sculling corrections fix a *modelling* error in how samples are combined. They cannot fix **[[aliasing|aliasing]]**, where the vibration is so fast compared with the sampling that the samples themselves no longer describe it. If the coning frequency in the first example rose to $95\,\mathrm{Hz}$ with the same $200\,\mathrm{Hz}$ sampling, there would be barely two samples per cycle. No coefficient rescues that. The fix is a faster sensor, not a better formula.
+Coning and sculling corrections fix a *modelling* error in how samples are combined. They cannot fix **[[aliasing|aliasing]]**, where the vibration approaches or passes half the sample rate, so the samples themselves no longer describe it. If the coning frequency in the first example rose to $95\,\mathrm{Hz}$ with the same $200\,\mathrm{Hz}$ sampling, there would be barely two samples per cycle. No coefficient rescues that. The fix is a faster sensor, not a better formula.
 :::
 
 ## Check yourself
@@ -246,7 +246,7 @@ A sculling test shows zero rectified velocity, even though a spectrum analyzer s
 :::
 
 ::: answer
-The rectified push comes from the average of $\boldsymbol\theta\times\mathbf f$ over a cycle. In the worked example, the rocking *angle* and the shaking force were in step (both $\propto\sin\Omega t$), so their product $\sin^2\Omega t$ never went negative and averaged to one half. If instead the angle and the force are a quarter cycle apart — for example angle $\propto\sin\Omega t$ and force $\propto\cos\Omega t$ — the product is $\sin\Omega t\cos\Omega t=\tfrac12\sin2\Omega t$, which averages to zero. Equivalently, the gyro's *rate* signal is then in phase or in anti-phase ($0^\circ$ or $180^\circ$) with the accelerometer signal, instead of a quarter cycle apart as in the example, which was chosen to give the largest effect. Physically this happens when the vibration drives rotation and translation through a path that makes the rocking rate and the shaking move together with no lag between them — for instance a mode that moves a component straight in and out while its rocking rate peaks at the same instants.
+The rectified push comes from the average of $\boldsymbol\theta\times\mathbf f$ over a cycle. In the worked example, the rocking *angle* and the shaking force were in step (both $\propto\sin\Omega t$), so their product $\sin^2\Omega t$ never went negative and averaged to one half. If instead the angle and the force are a quarter cycle apart — for example angle $\propto\sin\Omega t$ and force $\propto\cos\Omega t$ — the product is $\sin\Omega t\cos\Omega t=\tfrac12\sin2\Omega t$, which averages to zero. Equivalently, the gyro's *rate* signal is then in phase or in anti-phase ($0^\circ$ or $180^\circ$) with the accelerometer signal, instead of a quarter cycle apart as in the example, which was chosen to give the largest effect. Physically this happens when one vibration mode drives the rocking and the shaking through a path with no quarter-cycle lag between the rocking *rate* and the push — for instance a mode that rocks the IMU mount fastest at the very instants it is shoved hardest sideways.
 :::
 
 ::: check
@@ -325,12 +325,12 @@ A **solid angle** is the 3D version of an ordinary angle: how much of the sky a 
   <text x="228" y="100" font-size="12" fill="#b4232c">body axis</text>
   <text x="20" y="120" font-size="12" fill="#1f2a44">each loop leaves a</text>
   <text x="20" y="136" font-size="12" fill="#1f2a44">small net turn about</text>
-  <text x="20" y="152" font-size="12" fill="#1f2a44">the cone's axis</text>
+  <text x="20" y="152" font-size="12" fill="#1f2a44">the body axis itself</text>
   <text x="186" y="26" font-size="11" fill="#6c7a93">cone axis</text>
 </svg>
 ```
 
-The red body axis sweeps the blue cone (the angle $\alpha$ is drawn far larger than a real $1^\circ$). The loop encloses a solid angle of $2\pi(1-\cos\alpha)$, and that is the net turn about the cone's axis each cycle.
+The red body axis sweeps the blue cone (the angle $\alpha$ is drawn far larger than a real $1^\circ$). The loop encloses a solid angle of $2\pi(1-\cos\alpha)$, and that is the net turn about the body's own axis each cycle.
 :::
 
 ::: context sculling-word The rowing picture

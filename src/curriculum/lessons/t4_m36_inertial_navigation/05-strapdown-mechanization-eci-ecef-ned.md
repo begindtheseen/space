@@ -1,7 +1,7 @@
 ---
 id: l05-strapdown-mechanization-eci-ecef-ned
 title: Strapdown mechanization in ECI, ECEF, and the local-level frame
-minutes: 20
+minutes: 18
 covers:
   - "Strapdown mechanization in ECI, ECEF and local-level (NED) frames"
 ---
@@ -229,30 +229,50 @@ The next lesson takes the NED velocity equation and turns it into an actual upda
 
 ::: context coriolis The sideways push of a spinning floor
 Gaspard-Gustave de Coriolis, a French engineer, worked out this term in 1835 while studying machines with spinning parts. It is why hurricanes spin: air rushing toward a low-pressure center is deflected sideways by Earth's rotation, to the right in the northern hemisphere, so the storm winds counterclockwise. It is why long-range artillery tables include an Earth-rotation correction. For a navigator it is small but not negligible: a car at $30\,\mathrm{m/s}$ at mid-latitude feels a Coriolis acceleration of about $3\times10^{-3}\,\mathrm{m/s^2}$ — around $300$ micro-$g$, larger than a navigation-grade accelerometer's bias.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 190" font-family="Inter, Arial, sans-serif">
+  <circle cx="90" cy="95" r="65" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
+  <circle cx="270" cy="95" r="65" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
+  <path d="M60,28 A70,70 0 0 0 30,65" fill="none" stroke="#1f2a44" stroke-width="1.5"/>
+  <polygon points="28,72 25,61 35,64" fill="#1f2a44"/>
+  <path d="M240,28 A70,70 0 0 0 210,65" fill="none" stroke="#1f2a44" stroke-width="1.5"/>
+  <polygon points="208,72 205,61 215,64" fill="#1f2a44"/>
+  <line x1="90" y1="95" x2="140" y2="95" stroke="#b4232c" stroke-width="2.5"/>
+  <polygon points="150,95 139,90 139,100" fill="#b4232c"/>
+  <path d="M270,95 Q305,98 318,128" fill="none" stroke="#b4232c" stroke-width="2.5"/>
+  <polygon points="321,137 313,128 323,125" fill="#b4232c"/>
+  <circle cx="90" cy="95" r="4" fill="#1f2a44"/>
+  <circle cx="270" cy="95" r="4" fill="#1f2a44"/>
+  <text x="90" y="180" font-size="12" fill="#1f2a44" text-anchor="middle">seen from the ground</text>
+  <text x="270" y="180" font-size="12" fill="#1f2a44" text-anchor="middle">seen riding along</text>
+</svg>
+```
+
+The ride turns counterclockwise. A ball rolled straight out from the center goes straight for someone on the ground, but bends to its right for someone turning with the ride.
 :::
 
 ::: context transport-picture Down swings as you travel
 Walk over a curved surface and your "down" arrow keeps pointing at the center, so it swings as you go. NED swings with it.
 
 ```svg
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 200" font-family="Inter, Arial, sans-serif">
-  <path d="M40,190 A160,160 0 0 1 320,190" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
-  <circle cx="180" cy="270" r="3" fill="#1f2a44"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 212" font-family="Inter, Arial, sans-serif">
+  <path d="M40,190 A160,160 0 0 1 320,190 Z" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
   <g stroke="#b4232c" stroke-width="2.5" fill="#b4232c">
-    <line x1="109" y1="98" x2="128" y2="132"/><polygon points="133,141 122,134 132,128"/>
-    <line x1="251" y1="98" x2="232" y2="132"/><polygon points="227,141 228,128 238,134"/>
+    <line x1="112" y1="122" x2="126" y2="152"/><polygon points="130,161 122,155 131,150"/>
+    <line x1="248" y1="122" x2="234" y2="152"/><polygon points="230,161 229,150 238,155"/>
   </g>
   <g stroke="#1d6fd1" stroke-width="2.5" fill="#1d6fd1">
-    <line x1="109" y1="98" x2="143" y2="79"/><polygon points="152,74 145,85 139,75"/>
-    <line x1="251" y1="98" x2="285" y2="117"/><polygon points="294,122 281,122 287,112"/>
+    <line x1="112" y1="122" x2="142" y2="109"/><polygon points="150,105 144,113 140,104"/>
+    <line x1="248" y1="122" x2="278" y2="136"/><polygon points="286,140 275,141 280,132"/>
   </g>
-  <circle cx="109" cy="98" r="5" fill="#1f2a44"/>
-  <circle cx="251" cy="98" r="5" fill="#1f2a44"/>
-  <text x="70" y="90" font-size="12" fill="#1f2a44">start</text>
-  <text x="262" y="90" font-size="12" fill="#1f2a44">later</text>
-  <text x="150" y="60" font-size="12" fill="#1d6fd1">north</text>
-  <text x="140" y="152" font-size="12" fill="#b4232c">down</text>
-  <text x="180" y="180" font-size="12" fill="#1f2a44" text-anchor="middle">Earth (curvature exaggerated)</text>
+  <circle cx="112" cy="122" r="5" fill="#1f2a44"/>
+  <circle cx="248" cy="122" r="5" fill="#1f2a44"/>
+  <text x="104" y="112" font-size="12" fill="#1f2a44" text-anchor="end">start</text>
+  <text x="256" y="112" font-size="12" fill="#1f2a44">later</text>
+  <text x="150" y="96" font-size="12" fill="#1d6fd1">north</text>
+  <text x="142" y="176" font-size="12" fill="#b4232c">down</text>
+  <text x="180" y="206" font-size="12" fill="#1f2a44" text-anchor="middle">Earth (curvature exaggerated)</text>
 </svg>
 ```
 
@@ -272,16 +292,16 @@ On an ellipsoid, the local vertical — the line straight down, square to the gr
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 200" font-family="Inter, Arial, sans-serif">
-  <ellipse cx="170" cy="110" rx="140" ry="80" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
+  <ellipse cx="170" cy="110" rx="140" ry="90" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
   <line x1="20" y1="110" x2="330" y2="110" stroke="#6c7a93" stroke-width="1" stroke-dasharray="4,4"/>
   <circle cx="170" cy="110" r="3" fill="#1f2a44"/>
-  <circle cx="269" cy="53" r="5" fill="#1f2a44"/>
-  <line x1="269" y1="53" x2="170" y2="110" stroke="#6c7a93" stroke-width="1.5"/>
-  <line x1="315" y1="7" x2="216" y2="110" stroke="#b4232c" stroke-width="2.5"/>
-  <text x="275" y="46" font-size="12" fill="#1f2a44">you</text>
-  <text x="222" y="104" font-size="12" fill="#b4232c">φ</text>
-  <text x="120" y="104" font-size="11" fill="#6c7a93">center</text>
-  <text x="300" y="30" font-size="11" fill="#b4232c" text-anchor="end">local vertical</text>
+  <line x1="277" y1="52" x2="170" y2="110" stroke="#6c7a93" stroke-width="1.5"/>
+  <line x1="308" y1="12" x2="233" y2="110" stroke="#b4232c" stroke-width="2.5"/>
+  <circle cx="277" cy="52" r="5" fill="#1f2a44"/>
+  <text x="287" y="58" font-size="12" fill="#1f2a44">you</text>
+  <text x="246" y="104" font-size="12" fill="#b4232c">φ</text>
+  <text x="178" y="126" font-size="11" fill="#6c7a93">center</text>
+  <text x="300" y="16" font-size="11" fill="#b4232c" text-anchor="end">local vertical</text>
 </svg>
 ```
 
