@@ -374,47 +374,167 @@ The parameter becomes `std::vector<Item>& items` and the loop becomes `for (auto
 
 === cpp2-03 | std::vector and <algorithm>
 --- teach
-`<algorithm>` and `<numeric>` hold tested, named loops. Using them makes code say *what* it does instead of *how*, and removes a whole class of off-by-one mistakes. They all work on a **range**: a `begin()` and an `end()` iterator.
+Last lesson you fixed a loop that changed copies instead of the real elements. Most loops you will ever write do one of a handful of jobs: sort, find, count, change every element, add them all up. This lesson hands you ready-made versions of those jobs.
+
+### Loops with names
+
+Think of a toolbox. You could file a piece of wood flat by hand every time, or you could pick up the plane that was made for it. The headers `<algorithm>` and `<numeric>` are that toolbox. They hold tested, named loops called **algorithms**: each one is a recipe of steps for one job.
+
+Using them makes your code say *what* it does ("sort these") instead of *how* ("compare these two, swap them, move on…"). It also removes a whole class of [[off-by-one mistakes|off-by-one]], because you never write the counting yourself.
+
+### A range: begin() and end()
+
+Every algorithm works on a **range**: a `begin()` and an `end()` iterator. You met the pair in the const correctness lesson, with `std::min_element`. `v.begin()` marks the first element and `v.end()` marks the spot just past the last, so together they mean "the whole vector". The next lesson looks at iterators closely.
+
+### Sorting
+
+`std::sort` puts the elements of a range in order, smallest first. It [[changes the vector in place|how-sort-works]]:
 
 ```cpp
 #include <algorithm>
-#include <numeric>
 #include <vector>
 
 std::vector<int> v = {5, 1, 4, 2};
+std::sort(v.begin(), v.end());   // v is now {1, 2, 4, 5}
+```
 
-std::sort(v.begin(), v.end());                          // {1, 2, 4, 5}
-std::sort(v.begin(), v.end(), std::greater<int>());     // {5, 4, 2, 1}
+To put the largest first, hand `sort` a third thing: the rule for comparing. `std::greater<int>()`, from the header `<functional>`, is a [[ready-made "is a greater than b?"|function-objects]], so sorting with it puts the largest first:
 
-auto it = std::find_if(v.begin(), v.end(), [](int x) { return x > 3; });
-if (it != v.end()) { /* *it is the first element over 3 */ }
+```cpp
+#include <functional>
 
-auto n = std::count_if(v.begin(), v.end(), [](int x) { return x % 2 == 0; });   // 2
+std::sort(v.begin(), v.end(), std::greater<int>());   // v is now {5, 4, 2, 1}
+```
 
-std::vector<int> out(v.size());
-std::transform(v.begin(), v.end(), out.begin(), [](int x) { return x * 10; });
+### Adding them all up
+
+`std::accumulate`, from `<numeric>`, adds every element of a range to a starting value, and gives back the total:
+
+```cpp
+#include <numeric>
 
 long long total = std::accumulate(v.begin(), v.end(), 0LL);   // 12
 ```
 
-The `[](int x) { return x > 3; }` parts are **lambdas**: small unnamed functions written in place. You will meet them properly soon; for now read them as "given x, return this".
+The third argument, `0LL`, is the starting value: zero, written as a `long long`. A **long long** is a whole-number type that is wider than `int`. It takes 8 bytes and reaches about 9.2 quintillion. The letters `LL` on the end of a number make it a `long long`.
 
-Two traps:
+**Watch out:** `accumulate` adds in the type of its **starting value**. `0` means `int`, which [[overflows past about 2 billion|overflow]]; `0LL` means `long long`. Add up two readings of 2,000,000,000 starting from `0` and the answer is garbage. Start from `0LL` and it is 4,000,000,000.
 
-- `find_if` returns `end()` when nothing matches. Always compare before you use `*it`.
-- `accumulate` adds in the type of its **starting value**. `0` means `int`, which overflows past about 2 billion; `0LL` means `long long`.
+### Small rules: lambdas
 
-`std::greater<int>()` (from `<functional>`) is a ready-made "is a greater than b?", so sorting with it puts the largest first.
+The next algorithms each take a small rule, like "is this number over 3?". You write the rule as a **lambda**: a small unnamed function written right where you need it. You have been reading lambdas in the check lines since the references lesson.
 
-One more piece of syntax that the solutions use from here on is the **conditional operator**. `condition ? a : b` gives `a` when the condition is true and `b` when it is false, so `return it == v.end() ? -1 : *it;` is a short if/else that produces a value.
+```cpp
+[](int x) { return x > 3; }
+```
+
+Read it as "given an int `x`, return whether `x` is greater than 3". The `[]` starts it, `(int x)` is its parameter, and the body in `{ }` works out the answer. Lambdas get their own lesson later in this course; for now read each one as "given x, return this".
+
+### Finding the first match
+
+`std::find_if` walks the range and gives back an iterator to the first element for which the rule says `true`:
+
+```cpp
+auto it = std::find_if(v.begin(), v.end(), [](int x) { return x > 3; });
+if (it != v.end()) {
+    // *it is the first element over 3
+}
+```
+
+**Watch out:** when nothing matches, `find_if` returns `end()`, the stopping mark, which is not an element. Always compare with `v.end()` before you use `*it`.
+
+### Counting matches
+
+`std::count_if` counts the elements for which the rule says `true`. Here the rule uses `%` (remainder): `x % 2 == 0` means "x is even".
+
+```cpp
+auto n = std::count_if(v.begin(), v.end(), [](int x) { return x % 2 == 0; });   // 2
+```
+
+In `{5, 4, 2, 1}`, the even ones are 4 and 2, so `n` is 2. The count comes back as a wide signed whole-number type, so to return it from an `int` function, convert it: `static_cast<int>(n)`.
+
+### Using a variable from outside
+
+A lambda can only see its own parameters, unless you name an outside variable in its square brackets. This is called **capturing** the variable:
+
+```cpp
+int bar = 2;
+auto m = std::count_if(v.begin(), v.end(), [bar](int x) { return x >= bar; });   // 3
+```
+
+`[bar]` lets the lambda read `bar`. In `{5, 4, 2, 1}`, three values are at least 2. Leave out the `bar` in the brackets and clang stops with `variable 'bar' cannot be implicitly captured`.
+
+### Changing every element into a new vector
+
+`std::transform` reads each element, runs the rule on it, and writes the result somewhere else:
+
+```cpp
+std::vector<int> out(v.size());
+std::transform(v.begin(), v.end(), out.begin(), [](int x) { return x * 10; });
+// out is {50, 40, 20, 10}
+```
+
+The third argument, `out.begin()`, is where the writing starts. `transform` does not make room; it writes over elements that must already exist. So first make `out` the right size: `std::vector<int> out(v.size());` makes a vector holding `v.size()` zeros. [[Round brackets here, not curly ones|round-vs-curly]].
+
+### A short if/else that gives a value
+
+One more piece of syntax that the solutions use from here on is the **conditional operator**: `condition ? a : b`. Read the `?` as "if so" and the `:` as "otherwise". It gives `a` when the condition is true and `b` when it is false:
+
+```cpp
+int fuel = 12;
+std::string status = fuel < 10 ? "low" : "ok";   // "ok"
+```
+
+So `return it == v.end() ? -1 : *it;` is a short if/else that produces a value: `-1` when nothing was found, the element otherwise.
+
+::: context off-by-one Where off-by-one mistakes hide
+A hand-written loop has three places to slip: where it starts, where it stops, and how it steps. Use `<=` where you meant `<` and the loop reads one element past the end of the vector. An algorithm takes the whole range as `begin()` and `end()`, so there is no counter to get wrong. The debugging lesson "Debugging: off by one, out of range", later in this course, is all about the ones that still get through.
+:::
+
+::: context how-sort-works How fast is std::sort?
+Sorting by comparing neighbours over and over is slow on long lists: roughly n × n comparisons for n elements. Since C++11, `std::sort` must finish in about n × log₂(n) comparisons. For a million readings that is about 20 million comparisons instead of a trillion. Library writers usually build it as *introsort*, a mix of quicksort, heapsort and insertion sort. Equal elements may come out in any order; `std::stable_sort` keeps them in their original order when that matters.
+:::
+
+::: context function-objects Rules you can hand over
+`std::greater<int>` is a type whose objects can be called like a function: `std::greater<int>()(5, 2)` is `true`, because 5 is greater than 2. The `()` after `std::greater<int>` makes one such object, and `sort` calls it every time it needs to compare two elements. An object that acts like a function is called a *function object*. A lambda is a quick way to write one yourself, which is why the two can be used in the same places.
+:::
+
+::: context overflow Overflow, and a rocket lost to it
+An `int` holds at most 2,147,483,647. Going past that in a signed type is *overflow*, and in C++ it is undefined behaviour: the rules say nothing about the result. A `long long` reaches 9,223,372,036,854,775,807. On 4 June 1996, the first Ariane 5 rocket veered off course about 37 seconds after lift-off and destroyed itself. Its guidance software converted a 64-bit floating-point number (a decimal, like a `double`) into a 16-bit whole number, the value was too big to fit, and the error shut the guidance system down. The code had come from Ariane 4, whose slower flight never produced such a big number.
+:::
+
+::: context round-vs-curly Round brackets or curly braces
+For a vector of ints, the kind of bracket changes the meaning. `std::vector<int> out(4)` means "make 4 elements", all zero. `std::vector<int> out{4}` means "make a vector holding the one value 4". `transform` needs the first kind: slots that already exist, ready to be written over.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 130" font-family="Inter, Arial, sans-serif">
+  <text x="15" y="32" font-size="12" fill="#1f2a44">out(4)</text>
+  <rect x="90" y="15" width="40" height="28" fill="#8fb8f0" stroke="#1f2a44"/>
+  <rect x="130" y="15" width="40" height="28" fill="#8fb8f0" stroke="#1f2a44"/>
+  <rect x="170" y="15" width="40" height="28" fill="#8fb8f0" stroke="#1f2a44"/>
+  <rect x="210" y="15" width="40" height="28" fill="#8fb8f0" stroke="#1f2a44"/>
+  <g font-size="13" fill="#1f2a44" text-anchor="middle">
+    <text x="110" y="34">0</text><text x="150" y="34">0</text><text x="190" y="34">0</text><text x="230" y="34">0</text>
+  </g>
+  <text x="262" y="34" font-size="11" fill="#1d6fd1">4 elements</text>
+  <text x="15" y="87" font-size="12" fill="#1f2a44">out{4}</text>
+  <rect x="90" y="70" width="40" height="28" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="110" y="89" font-size="13" text-anchor="middle" fill="#1f2a44">4</text>
+  <text x="142" y="89" font-size="11" fill="#b4232c">1 element, holding 4</text>
+  <text x="15" y="122" font-size="11" fill="#6c7a93">transform writes over existing slots, so use round brackets</text>
+</svg>
+```
+:::
 --- task
-Write these five functions **without writing any loops** — use the algorithms. No `main`.
+Write these five functions **without writing any loops**: use the algorithms from the explanation. The checks look for `for (` and `while (` in your code, so a hand-written loop will not pass. No `main`.
 
 - `std::vector<int> sorted_descending(std::vector<int> v)` — the values, largest first.
-- `int count_at_least(const std::vector<int>& v, int bar)` — how many values are `>= bar`.
+- `int count_at_least(const std::vector<int>& v, int bar)` — how many values are `>= bar` (at least `bar`).
 - `long long sum_of(const std::vector<int>& v)` — the total, without overflowing.
 - `std::vector<int> doubled(const std::vector<int>& v)` — each value times two, in order.
 - `int first_over(const std::vector<int>& v, int limit)` — the first value `> limit`, or `-1` if there is none.
+
+The starter includes `<algorithm>` and `<numeric>`. Add `#include <functional>` for `std::greater`.
 --- starter
 #include <algorithm>
 #include <numeric>
@@ -469,11 +589,11 @@ int first_over(const std::vector<int>& v, int limit) {
     return it == v.end() ? -1 : *it;
 }
 --- hint
-`sorted_descending` takes its vector by value on purpose: sort that copy with `std::greater<int>()` and return it.
+Each function is one algorithm: `std::sort` with `std::greater<int>()`, `std::count_if`, `std::accumulate`, `std::transform` and `std::find_if`. `sorted_descending` takes its vector by value on purpose: it gets its own copy, which it may sort and return.
 --- hint
-A lambda can use a parameter if you name it in the brackets: `[bar](int x) { return x >= bar; }`.
+A lambda can use a parameter if you name it in the brackets: `[bar](int x) { return x >= bar; }`. Wrap the count in `static_cast<int>( … )`. For the sum, start from `0LL`.
 --- hint
-`transform` needs somewhere to write: create `std::vector<int> out(v.size());` first. For the sum, start from `0LL`.
+`transform` needs somewhere to write: create `std::vector<int> out(v.size());` first, then return `out`. For `first_over`, keep what `find_if` gives back in `auto it`, then `return it == v.end() ? -1 : *it;`.
 --- check case | sorted_descending({3, 1, 2})
 sorted_descending({3, 1, 2})
 => std::vector<int>{3, 2, 1}
@@ -500,12 +620,38 @@ first_over({1, 2, 3}, 10)
 
 === cpp2-04 | Iterators and range-for
 --- teach
-An **iterator** is a position in a container. It behaves like a pointer: `*it` is the element, `++it` moves to the next one. Every container gives you two:
+Last lesson every algorithm took `v.begin()` and `v.end()`, and `std::find_if` handed back an `it` that you compared with `v.end()` before using `*it`. This lesson opens those up: what an iterator is, and how the range-for loop you have used since the vector lesson is built out of them.
+
+### A bookmark in a container
+
+Picture a bookmark in a book. It is not a page; it marks one. You can read the page it marks, and you can move it forward one page at a time.
+
+An **iterator** is a bookmark for a container: a [[position in it|why-iterators]]. It behaves like a pointer from the pointers lesson:
+
+- `*it` is the element at that position. Read it "the thing it points at".
+- `++it` moves it to the next element. Read it "step it forward", like `i++` in a counting loop.
+
+```cpp
+std::vector<int> v = {7, 3, 9};
+auto it = v.begin();        // it marks the 7
+++it;                       // now it marks the 3
+std::cout << *it << "\n";   // prints 3
+```
+
+`auto` saves you writing the real type, which is `std::vector<int>::iterator`: "the iterator type from vector of int" (`::` is the scope operator, read "from").
+
+### begin() and end()
+
+Every container gives you two iterators:
 
 - `begin()` — the first element.
 - `end()` — one **past** the last. It is a stopping mark, never an element: do not `*` it.
 
-That half-open shape `[begin, end)` is why an empty container has `begin() == end()`, and why loops read "while not at the end":
+### The half-open range
+
+Maths has a short way to write "from here, up to but not including there": `[begin, end)`. The square bracket means "this one is included"; the round bracket means "stop just before this one". A range like this is called a **[[half-open range|half-open]]**.
+
+That shape is why an empty container has `begin() == end()`: with no elements, the first position and the stopping mark are the same place. It is also why loops read "while not at the end":
 
 ```cpp
 std::vector<int> v = {7, 3, 9};
@@ -514,28 +660,118 @@ for (auto it = v.begin(); it != v.end(); ++it) {
 }
 ```
 
-The **range-for** loop is exactly that loop, written for you:
+This is the counting `for` loop from the loops lesson, with an iterator in place of the counting number. It starts at `begin()`, keeps going while `it != v.end()` (`!=` is "is not equal to"), and steps with `++it`. It prints 7, 3 and 9, one per line.
+
+### Range-for is that loop, written for you
+
+The **range-for** loop is exactly that loop, [[written for you by the compiler|range-for-inside]]. Each time around, the loop variable is set from `*it`. So the way you declare the loop variable decides whether you get a copy:
 
 ```cpp
-for (int x : v)          // x is a copy of each element
-for (int& x : v)         // x IS each element: changes stick
+for (int x : v)               // x is a copy of each element
+for (int& x : v)              // x IS each element: changes stick
 for (const auto& s : names)   // no copy, read-only: the default for strings and bigger things
 ```
 
-Iterators are what algorithms return, so you often turn one back into a position with `std::distance`:
+Changing the elements through `int& x` is fine. Adding or removing elements while you loop is [[not fine at all|invalidation]].
+
+### From an iterator back to an index
+
+Algorithms give back iterators, but sometimes you want the position as a number, an index. `std::distance(a, b)`, from the header `<iterator>`, counts how many steps it takes to get from `a` to `b`:
 
 ```cpp
 auto it = std::max_element(v.begin(), v.end());   // points at 9
 auto index = std::distance(v.begin(), it);        // 2
 ```
 
-`rbegin()` and `rend()` walk backwards, which makes "is it the same both ways?" a one-liner: `std::equal(s.begin(), s.end(), s.rbegin())` compares the start going forwards with the end going backwards.
+If the largest value appears more than once, `std::max_element` points at the *first* one. Like `count_if`'s count, the distance comes back as a wide signed whole-number type, so convert it with `static_cast<int>` to return it from an `int` function.
+
+### Walking backwards
+
+`rbegin()` and `rend()` walk backwards (the `r` is for reverse). `rbegin()` marks the last element, `++` moves toward the front, and `rend()` is the stopping mark just before the first. A `std::string` is a container of characters, so it has all four:
+
+```cpp
+std::string s = "abc";
+for (auto it = s.rbegin(); it != s.rend(); ++it) {
+    std::cout << *it;   // prints cba
+}
+```
+
+### The same both ways?
+
+`std::equal(a, b, c)`, from `<algorithm>`, compares the range from `a` to `b`, element by element, with the range that starts at `c`. It gives `true` only if every pair matches.
+
+That makes "is it the same both ways?" a one-liner. `std::equal(s.begin(), s.end(), s.rbegin())` [[compares the start going forwards with the end going backwards|palindrome-pairs]]. It compares characters exactly, so `'L'` and `'l'` count as different.
+
+### Is it empty?
+
+`v.empty()` is `true` when a container has no elements. It means the same as `v.size() == 0`, but says what you mean. Strings have it too: `w.empty()` is `true` for `""`.
+
+**Watch out:** `end()` is not an element, so check before you follow an iterator that might be `end()`. On an empty vector, `std::max_element` gives back `end()`, and putting `*` in front of that is undefined behaviour. The same goes for `w[0]` on an empty string: there is no first letter there that you may change. Check `v.empty()` or `w.empty()` first.
+
+::: context why-iterators One idea for every container
+A vector keeps its elements in one row, but a `std::map` keeps its keys in a tree, and other containers link elements together in chains. Each kind of container supplies its own iterators, and they all answer to the same `*`, `++`, `==` and `!=`. So one `std::find_if` or `std::count_if` works on all of them. This design is the heart of the Standard Template Library (STL), created by Alexander Stepanov and Meng Lee and accepted into C++ in 1994.
+:::
+
+::: context half-open The stopping mark sits past the end
+For `{7, 3, 9}`, `begin()` marks the 7 and `end()` marks the empty spot after the 9. The number of elements is always `end() - begin()`, here 3, with no plus or minus one to remember. For an empty vector, both marks sit at the same spot.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">
+  <rect x="40" y="30" width="60" height="40" fill="#8fb8f0" stroke="#1f2a44"/>
+  <rect x="100" y="30" width="60" height="40" fill="#8fb8f0" stroke="#1f2a44"/>
+  <rect x="160" y="30" width="60" height="40" fill="#8fb8f0" stroke="#1f2a44"/>
+  <rect x="220" y="30" width="60" height="40" fill="#ffffff" stroke="#6c7a93" stroke-dasharray="4 3"/>
+  <g font-size="14" fill="#1f2a44" text-anchor="middle">
+    <text x="70" y="55">7</text><text x="130" y="55">3</text><text x="190" y="55">9</text>
+  </g>
+  <text x="250" y="55" font-size="11" text-anchor="middle" fill="#6c7a93">no element</text>
+  <line x1="70" y1="105" x2="70" y2="76" stroke="#1d6fd1" stroke-width="2"/>
+  <polygon points="70,72 65,82 75,82" fill="#1d6fd1"/>
+  <text x="70" y="122" font-size="12" text-anchor="middle" fill="#1d6fd1">begin()</text>
+  <line x1="250" y1="105" x2="250" y2="76" stroke="#b4232c" stroke-width="2"/>
+  <polygon points="250,72 245,82 255,82" fill="#b4232c"/>
+  <text x="250" y="122" font-size="12" text-anchor="middle" fill="#b4232c">end()</text>
+  <text x="160" y="145" font-size="12" text-anchor="middle" fill="#1f2a44">[begin, end): 7 and 3 and 9, then stop</text>
+</svg>
+```
+:::
+
+::: context range-for-inside What the compiler writes for you
+The range-for loop arrived in C++11. For `for (int x : v) { … }`, the compiler writes roughly this: take `v.begin()` and `v.end()`, then loop `for (auto it = v.begin(); it != v.end(); ++it) { int x = *it; … }`. Seen that way, it is clear why `int x` is a copy (it is a new `int` filled from `*it`) and why `int& x` is not (it is another name for `*it`). Anything with `begin()` and `end()` works in a range-for: vectors, strings, maps and sets.
+:::
+
+::: context invalidation Why you must not grow a vector while looping over it
+When a vector runs out of room, `push_back` moves every element to a bigger block of memory. Every iterator into the old block, including the hidden one inside a range-for, now marks memory that is no longer the vector's. Using it is undefined behaviour. This is called *iterator invalidation*. The safe habit: while looping over a container, change its elements, but do not add or remove any. Build a new vector instead, or collect the changes and make them after the loop.
+:::
+
+::: context palindrome-pairs Forwards and backwards at once
+`std::equal` moves two iterators together: one from `s.begin()` going forwards, one from `s.rbegin()` going backwards. For `"level"` it compares l with l, e with e, v with v, e with e, and l with l, all equal, so the answer is `true`. For `"ab"` the very first pair, a and b, differ, so it is `false`. An empty string has no pairs to disagree, so it counts as a palindrome.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">
+  <text x="15" y="42" font-size="12" fill="#1d6fd1">begin() →</text>
+  <text x="15" y="112" font-size="12" fill="#b4232c">rbegin() →</text>
+  <g font-size="16" fill="#1f2a44" text-anchor="middle">
+    <text x="120" y="42">l</text><text x="160" y="42">e</text><text x="200" y="42">v</text><text x="240" y="42">e</text><text x="280" y="42">l</text>
+    <text x="120" y="112">l</text><text x="160" y="112">e</text><text x="200" y="112">v</text><text x="240" y="112">e</text><text x="280" y="112">l</text>
+  </g>
+  <g stroke="#6c7a93" stroke-width="2">
+    <line x1="120" y1="52" x2="120" y2="94"/><line x1="160" y1="52" x2="160" y2="94"/><line x1="200" y1="52" x2="200" y2="94"/>
+    <line x1="240" y1="52" x2="240" y2="94"/><line x1="280" y1="52" x2="280" y2="94"/>
+  </g>
+  <text x="200" y="18" font-size="11" text-anchor="middle" fill="#6c7a93">s = "level" read forwards</text>
+  <text x="200" y="138" font-size="11" text-anchor="middle" fill="#6c7a93">the same s read backwards: every pair matches</text>
+</svg>
+```
+:::
 --- task
-Write three functions. No `main`.
+Write three functions. No `main`. The starter already includes `<algorithm>`, `<cctype>`, `<iterator>`, `<string>` and `<vector>`.
 
 - `int index_of_max(const std::vector<int>& v)` — the position of the largest value (the first one if it appears more than once), or `-1` for an empty vector.
-- `bool is_palindrome(const std::string& s)` — true if `s` reads the same backwards (`"level"`, `""`, `"a"`). Compare characters exactly.
-- `void capitalize_all(std::vector<std::string>& words)` — uppercase the first letter of every non-empty word, **in place**.
+- `bool is_palindrome(const std::string& s)` — `true` if `s` reads the same backwards, as `"level"`, `""` and `"a"` do. Compare characters exactly, so `"Level"` is not a palindrome.
+- `void capitalize_all(std::vector<std::string>& words)` — uppercase the first letter of every non-empty word, **in place**, so the caller's own words change. `{"ada", "", "grace"}` becomes `{"Ada", "", "Grace"}`.
+
+The starter's `capitalize_all` already has the right uppercasing line, the one from the string lesson, but its loop has a bug, and it forgets about empty words.
 --- starter
 #include <algorithm>
 #include <cctype>
@@ -581,11 +817,11 @@ void capitalize_all(std::vector<std::string>& words) {
     }
 }
 --- hint
-`std::max_element` already returns the *first* largest; `std::distance(v.begin(), it)` turns it into an index.
+`std::max_element` already points at the *first* largest value; `std::distance(v.begin(), it)` turns that into an index. Check `v.empty()` before anything else.
 --- hint
-`std::equal(s.begin(), s.end(), s.rbegin())` walks forwards through `s` and backwards at the same time.
+`std::equal(s.begin(), s.end(), s.rbegin())` walks forwards through `s` and backwards at the same time, so it is the whole body of `is_palindrome`.
 --- hint
-In `capitalize_all`, the loop variable must be a reference, and `w[0]` on an empty string is not a letter you may change — check `w.empty()` first.
+In `capitalize_all`, the loop variable must be a reference, `for (auto& w : words)`, and `w[0]` on an empty string is not a letter you may change: wrap the uppercasing line in `if (!w.empty()) { … }` (`!` is "not").
 --- check case | index_of_max finds the first largest
 index_of_max({4, 9, 2, 9})
 => 1
@@ -1242,39 +1478,178 @@ pad_left("toolong", 3)
 
 === cpp2-08 | enum class
 --- teach
-When a value can only be one of a few named things — a direction, a suit, a state — say so with an **enumeration**. Modern C++ uses `enum class`:
+Last lesson you gave several functions one name and let the compiler pick by type. This lesson makes a new kind of type: one whose values are a short list of names you choose.
+
+### A value that can only be one of a few things
+
+A traffic light is red, amber or green. Nothing else. A compass direction is north, east, south or west. A rocket is on the pad, climbing, coasting or landed.
+
+You could store these as numbers, 0 for red, 1 for amber, 2 for green, but then nothing stops a `7` sneaking in, and nobody reading `if (light == 2)` knows what 2 means. Better to give the values names and let the compiler check them.
+
+An **enumeration** is a type whose values are a fixed list of names. Each name in the list is an **enumerator**. Modern C++ writes one with `enum class`:
 
 ```cpp
 enum class Light { Red, Amber, Green };
 
-Light next(Light l) {
+Light now = Light::Red;
+```
+
+The first line makes a new type, `Light`, with exactly three values, and ends with `};` like a struct. The second makes a `Light` variable. `Light::Red` uses the scope operator `::`, read "from", as in `std::cout`: "Red from Light".
+
+### Scoped names
+
+The names live *inside* the enum, which is what "class" in `enum class` gives you: they are **scoped**. You must write `Light::Red`, never plain `Red`, so two enums can both have a `Red` without clashing:
+
+```cpp
+enum class Light { Red, Amber, Green };
+enum class Alarm { Green, Red };      // fine: Light::Red and Alarm::Red are different
+```
+
+The [[older plain enum|plain-enum]] does not do this, which is one reason modern code prefers `enum class`.
+
+### A number underneath, but not an int
+
+Underneath, each enumerator is a whole number, counting from 0 in the order you listed them: `Red` is 0, `Amber` is 1, `Green` is 2.
+
+But an `enum class` does **not** silently turn into an `int`. This does not compile:
+
+```cpp
+if (now == 2) { }    // compile error: a Light is not an int
+```
+
+That error catches real mistakes. When you do want the number, ask for it with `static_cast`, and turn a number back into the enum the same way:
+
+```cpp
+int n = static_cast<int>(Light::Amber);     // 1
+Light l = static_cast<Light>(2);            // Light::Green
+```
+
+### switch: one branch for each value
+
+To act on each value, use a **switch**. It compares one value with a list of `case` labels and jumps straight to the one that matches:
+
+```cpp
+std::string meaning(Light l) {
     switch (l) {
-        case Light::Red:   return Light::Green;
-        case Light::Green: return Light::Amber;
-        case Light::Amber: return Light::Red;
+        case Light::Red:   return "stop";
+        case Light::Amber: return "wait";
+        case Light::Green: return "go";
     }
-    return Light::Red;   // not reached; keeps the compiler happy
+    return "";
 }
 ```
 
-A **`switch`** compares one value with its `case` labels and jumps to the one that matches. End each case with `return` or `break`; without one, the code *falls through* into the next case. A `default:` label catches any value that is not listed.
+Read it as: "look at `l`; in the case it is `Light::Red`, return `"stop"`", and so on. Each label ends with a colon `:`.
 
-Why `enum class` rather than the older plain `enum`:
+A case that does not `return` must end with **break**, which jumps out of the switch. Without it, the code **falls through**: it carries on running the next case's code too.
 
-- The names are **scoped**: you write `Light::Red`, so two enums can both have a `Red`.
-- It does **not** silently turn into an `int`. `if (l == 2)` is a compile error, which catches real mistakes. When you do want the number, ask for it: `static_cast<int>(l)`, and back again with `static_cast<Light>(n)`.
+```cpp
+switch (l) {
+    case Light::Red:   std::cout << "stop\n"; break;
+    case Light::Amber: std::cout << "wait\n"; break;
+    case Light::Green: std::cout << "go\n";   break;
+}
+```
 
-A `switch` over an enum class is the natural way to act on each value. Leave out the `default:` label and clang warns (`-Wswitch`) when you forget a case — a free check every time someone adds a new value later.
+A `default:` label catches any value that no case lists.
 
-Turning left or right through four directions in order is arithmetic on the underlying number, wrapped with `% 4` (add 3 instead of subtracting 1, so it never goes negative).
+The `return "";` after the first switch is never reached, because every value has a case. It is there because a `Light` can be forced to hold a number that is not on the list, such as `static_cast<Light>(7)`, and some compilers (g++, for one) warn that the function could end without returning anything.
+
+### A free check from the compiler
+
+Leave out the `default:` label and the compiler checks your cases for you. If you forget one, clang and g++ both warn, with a warning called `-Wswitch`:
+
+```
+warning: enumeration value 'Amber' not handled in switch [-Wswitch]
+```
+
+That is a [[free check every time|wswitch-check]] someone adds a new value to the enum later: every switch that forgot it lights up.
+
+### Turning through the list with arithmetic
+
+Sometimes the order of the list means something. For compass directions listed as North, East, South, West, [[turning right is moving one step along the list|compass-numbers]], and turning left is one step back. From West, turning right wraps round to North.
+
+That is the wrapping you did on the clock, with 4 in place of 1440. Turn the enum into its number, add, wrap with `% 4`, and turn it back:
+
+```cpp
+enum class Direction { North, East, South, West };
+
+Direction right_of_west = static_cast<Direction>((static_cast<int>(Direction::West) + 1) % 4);
+// West is 3; 3 + 1 is 4; 4 % 4 is 0: North
+```
+
+To step back one, add 3 instead of subtracting 1. Three steps forward round a circle of four is the same as one step back, and it never goes negative. From North: 0 + 3 is 3, and 3 % 4 is 3, which is West. Subtracting would give 0 - 1, which is -1, and `-1 % 4` is `-1` in C++, which is not a direction at all.
+
+### An enum inside a struct
+
+An enum is a type like any other, so a struct can have one as a member, the way a spacecraft's record of its state might hold its [[current mode|flight-modes]] next to its position:
+
+```cpp
+struct Position {
+    int x;
+    int y;
+    Direction facing;
+};
+
+Position p{0, 0, Direction::North};   // at (0, 0), facing North
+p.y++;                                // one step north: now at (0, 1)
+p.facing = Direction::East;
+```
+
+On a grid, a step North is `y + 1`, South is `y - 1`, East is `x + 1` and West is `x - 1`.
+
+**Watch out:** forgetting `break` at the end of a case. The code compiles, and the program runs the next case as well. If the North case in a robot's switch forgot its `break`, an `'F'` while facing North would move the robot north *and then* east. Every case ends in `break` or `return`.
+
+::: context plain-enum The older plain enum
+Before C++11, C++ only had the plain `enum`, which it inherited from C: `enum Light { Red, Amber, Green };`. Its names spill out into the surrounding code, so you write plain `Red`, and a second enum with a `Red` in it will not compile. Its values also turn into `int` without asking, so `if (light == 2)` compiles happily. `enum class`, added in C++11, fixed both. You will still meet plain enums in older code and in C libraries.
+:::
+
+::: context wswitch-check Why leaving out default helps
+A `default:` label means "anything else", so it also catches a value you forgot, silently. Without one, the compiler knows the full list of enumerators and can tell you which ones have no case. This matters most in big programs: add `Flashing` to `Light` a year from now, and every switch on a `Light`, in every file, is flagged at the next build. The app compiles with `-Wall`, which turns this warning on. Flight-software teams often go further and treat every warning as an error, so the program will not build until each new value is handled everywhere.
+:::
+
+::: context compass-numbers Four directions, four numbers
+Put the numbers round a circle and turning becomes counting: right is +1, left is +3, and `% 4` brings 4 back to 0. The same idea works for any list that goes round in a loop, like the days of the week (`% 7`) or the clock's minutes (`% 1440`).
+
+```svg
+<svg viewBox="0 0 360 200" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <circle cx="180" cy="100" r="60" fill="none" stroke="#8fb8f0" stroke-width="3"/>
+  <circle cx="180" cy="40" r="16" fill="#1d6fd1" stroke="#1f2a44"/>
+  <circle cx="240" cy="100" r="16" fill="#8fb8f0" stroke="#1f2a44"/>
+  <circle cx="180" cy="160" r="16" fill="#8fb8f0" stroke="#1f2a44"/>
+  <circle cx="120" cy="100" r="16" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="180" y="45" font-size="13" fill="#ffffff" text-anchor="middle">0</text>
+  <text x="240" y="105" font-size="13" fill="#1f2a44" text-anchor="middle">1</text>
+  <text x="180" y="165" font-size="13" fill="#1f2a44" text-anchor="middle">2</text>
+  <text x="120" y="105" font-size="13" fill="#1f2a44" text-anchor="middle">3</text>
+  <text x="180" y="16" font-size="12" fill="#1f2a44" text-anchor="middle">North</text>
+  <text x="264" y="104" font-size="12" fill="#1f2a44">East</text>
+  <text x="180" y="194" font-size="12" fill="#1f2a44" text-anchor="middle">South</text>
+  <text x="96" y="104" font-size="12" fill="#1f2a44" text-anchor="end">West</text>
+  <text x="300" y="40" font-size="12" fill="#1d6fd1" text-anchor="middle">right: +1</text>
+  <text x="60" y="40" font-size="12" fill="#b4232c" text-anchor="middle">left: +3</text>
+  <text x="300" y="170" font-size="11" fill="#6c7a93" text-anchor="middle">then % 4</text>
+</svg>
+```
+:::
+
+::: context flight-modes Modes on a spacecraft
+Spacecraft software is often organised around a mode: a value from a short list such as launch, cruise, science and safe mode, with a switch that decides what the craft does in each one. **Safe mode** is the famous one: when something unexpected happens, the craft stops its normal work, turns its solar panels towards the Sun, keeps in touch with Earth, and waits for instructions. An `enum class` with a switch that the compiler checks is exactly how such a list of modes is written in modern C++.
+:::
 --- task
-The starter declares `enum class Direction { North, East, South, West };` and `struct Position { int x; int y; Direction facing; };`. Write:
+The starter declares:
 
-- `Direction turn_right(Direction d)` and `Direction turn_left(Direction d)`.
-- `std::string direction_name(Direction d)` — `"North"`, `"East"`, `"South"` or `"West"`.
-- `Position follow(const std::string& commands)` — a robot starts at (0, 0) facing North. `'L'` and `'R'` turn it; `'F'` moves one step forward (North is `y + 1`, East is `x + 1`). Ignore any other character.
+```cpp
+enum class Direction { North, East, South, West };
+struct Position { int x; int y; Direction facing; };
+```
 
-No `main`.
+Write these functions. No `main`: the checker supplies it.
+
+- `Direction turn_right(Direction d)`: the next direction clockwise. `turn_right(Direction::West)` is `Direction::North`.
+- `Direction turn_left(Direction d)`: the next direction the other way. `turn_left(Direction::North)` is `Direction::West`.
+- `std::string direction_name(Direction d)`: the name as text, `"North"`, `"East"`, `"South"` or `"West"`.
+- `Position follow(const std::string& commands)`: a robot starts at (0, 0) facing North and obeys each character of `commands` in turn. `'L'` turns it left and `'R'` turns it right. `'F'` moves it one step forward: North is `y + 1`, East is `x + 1`, South is `y - 1` and West is `x - 1`. Ignore any other character. Return where it ends up, and which way it faces. `follow("FFRFF")` ends at (2, 2) facing East.
 --- starter
 #include <string>
 
@@ -1336,9 +1711,11 @@ Position follow(const std::string& commands) {
     return p;
 }
 --- hint
-Turning right is "next in the list": `static_cast<Direction>((static_cast<int>(d) + 1) % 4)`. Turning left adds 3.
+Turning right is "one step along the list": turn `d` into its number, add 1, wrap with `% 4`, and turn it back. Turning left adds 3 instead of 1.
 --- hint
-`follow` keeps one `Position` and updates it for each character; a `switch` on `facing` decides which coordinate an `'F'` changes.
+`direction_name` is a switch on `d` with one `case` per direction, each returning its name, and a `return "";` after the switch.
+--- hint
+In `follow`, make `Position p{0, 0, Direction::North};` and loop over the characters. For `'L'` and `'R'`, set `p.facing` with your turn functions. For `'F'`, a switch on `p.facing` changes `p.x` or `p.y`, with `break` after each case. Return `p` at the end.
 --- check test | Turning right goes round the compass
 turn_right(Direction::North) == Direction::East && turn_right(Direction::West) == Direction::North
 --- check test | Turning left goes the other way
@@ -1355,34 +1732,147 @@ direction_name(turn_left(Direction::South))
 
 === cpp2-09 | std::optional: maybe a value
 --- teach
-Some functions cannot always answer. "Parse this text as a number" fails on `"abc"`. "Find this name" fails when it is not there. Old C++ code signals that with a magic value — `-1`, `0`, an empty string — which works until `-1` is a real answer.
+Last lesson, `enum class` let a value be exactly one of a few named things. This lesson handles a different kind of answer: one that might not exist at all.
 
-`std::optional<T>` says it in the type: either a `T`, or nothing.
+### When a function has no answer
+
+Picture asking a librarian for a book. Usually they hand it to you. Sometimes the honest answer is "we do not have it". A function can be in the same spot. "Read this text as a number" has no answer for `"abc"`. "Find this name in the list" has no answer when the name is not there.
+
+Older C++ code handles that with a **[[magic value|magic-values]]**: an ordinary-looking value, like `-1`, `0` or `""`, that everyone agrees to read as "no answer".
+
+```cpp
+int find_age(const std::string& name) {
+    if (name == "Ada") return 36;
+    return -1;   // magic value: "not found"
+}
+```
+
+That works until `-1` is a real answer. A temperature of −1 degrees is a real reading, not "missing".
+
+### A box that may be empty
+
+Now picture a parcel with a window in it. You can see at a glance whether something is inside or whether it is empty. **`std::optional<T>`** is that parcel: a value that either holds one `T` or holds nothing, where `T` stands for any type you choose. Read `std::optional<int>` as "maybe an int". The type inside goes in angle brackets, the way it does in `std::vector<int>`, and it needs `#include <optional>`. Optional is one of the [[newer parts of C++|optional-history]].
 
 ```cpp
 #include <optional>
+#include <string>
 
 std::optional<int> find_age(const std::string& name) {
-    if (name == "Ada") return 36;
-    return std::nullopt;             // "no value"
+    if (name == "Ada") return 36;    // a box holding 36
+    return std::nullopt;             // an empty box
 }
-
-auto age = find_age("Bob");
-if (age) {                           // true when there is a value
-    std::cout << *age;               // * gets it out
-}
-int years = find_age("Bob").value_or(0);   // a fallback when empty
 ```
 
-An optional compares directly with a value: `find_age("Ada") == 36` is true, and `find_age("Bob") == std::nullopt` is true.
+Returning `36` puts 36 in the box for you. **`std::nullopt`**, read "null optional", means the empty box: "no value".
 
-Two rules keep you safe. Never `*` an optional you have not checked — with no value inside that is undefined behaviour. And decide the edge cases *before* writing code: for a parser, is `""` a number? Is `"-"`? Is `" 7"`? Writing them down first is half the work.
+### Looking inside
+
+Before you use the value, ask whether there is one. An optional used as a condition is true when it holds a value:
+
+```cpp
+auto age = find_age("Bob");
+if (age) {                  // true only when there is a value
+    std::cout << *age;      // the star takes the value out
+}
+```
+
+The star `*` in front, read "the value in", takes the value out of the box. It is the same symbol you used to [[follow a pointer|star-again]] in the basics course.
+
+### A fallback value
+
+Often you want "the value, or else this". **`value_or`** gives exactly that: the value if there is one, otherwise the fallback you hand it.
+
+```cpp
+int years = find_age("Bob").value_or(0);   // 0: Bob has no age
+int ada = find_age("Ada").value_or(0);     // 36
+```
+
+### Comparing an optional
+
+An optional compares directly with a value, and with `std::nullopt`:
+
+```cpp
+find_age("Ada") == 36             // true
+find_age("Bob") == std::nullopt   // true
+find_age("Bob") == 0              // false: an empty box equals no number
+```
+
+**Watch out:** never put `*` in front of an optional you have not checked. With nothing inside, `*age` is **undefined behaviour**: C++ makes no promise about what happens, and [[no error message will tell you|empty-star]]. Check with `if (age)` first, or use `value_or`.
+
+### Decide the edge cases first
+
+Before you write a parser (a function that reads text and turns it into a value), decide which texts count. Is `""` a number? Is a lone `"-"`? Is `" 7"`, with a space in front? Write your answers down first. That is half the work, and each answer becomes a test.
+
+The parser in this lesson accepts an optional minus sign, then one to nine digits, and nothing else. Nine is the limit because [[ten digits can overflow an int|nine-digits]].
+
+### From digit characters to a number
+
+The text `"42"` is two characters, `'4'` and `'2'`, not the number 42. You already know `std::isdigit`, from `<cctype>`, which is true for a digit character; convert to `unsigned char` first, as in the basics strings lesson.
+
+To get a digit's value, subtract the character `'0'`. Because the digit characters are [[stored as numbers in order|digit-codes]], `'7' - '0'` is 7.
+
+Then build the number from left to right: multiply what you have so far by 10 and add the next digit.
+
+```cpp
+std::string s = "472";
+int value = 0;
+for (char c : s) {
+    value = value * 10 + (c - '0');
+}
+// value went 0, 4, 47, 472
+```
+
+For a leading minus, remember that you saw one, read the digits, and flip the sign at the end with the conditional operator from the algorithms lesson: `negative ? -value : value`.
+
+An optional can hold any type. A function that returns `std::optional<std::size_t>` puts an index in the box with an ordinary `return i;`, and returns `std::nullopt` when there is no index to give.
+
+::: context magic-values The trouble with magic values
+A value that secretly means "no answer" is also called a *sentinel*. You have met one already: `std::string::npos`, the huge number `find` returns for "not found". That one is safe, because no real string is that long. Most sentinels are not safe. If `-1` means "missing", a real −1 gets mistaken for missing. Worse, a caller who forgets to check does arithmetic with the −1 as if it were real, and the compiler cannot help, because −1 is an ordinary `int`. An `std::optional<int>` cannot be added to an `int` at all: you must take the value out first, which forces you to think about the empty case.
+:::
+
+::: context optional-history Where optional came from
+`std::optional` joined the standard library in C++17, the version of C++ published in 2017. It grew out of `boost::optional`, from the Boost libraries, a large free collection where many ideas are tried before they enter the standard. Other languages have the same idea under other names: Rust has `Option`, and Swift writes a maybe-int as `Int?`. The idea is always the same: the type itself says the value might be missing, so the missing case cannot be forgotten.
+:::
+
+::: context star-again The same star, a similar job
+In the pointers lesson, `*p` followed a pointer to the value it points at. Optional borrows that symbol on purpose, because the job is similar: `*age` means "the thing inside". An optional and a pointer can both be empty, and using `*` on an empty one is a mistake in both cases. The difference is where the value lives. An optional keeps its value inside itself, so there is no separate memory, no `new` and no `delete`.
+:::
+
+::: context empty-star Why the star does not check
+`*age` does no checking, for the same reason `v[i]` does no checking: checking costs a little time on every use, and C++ lets you skip it when you have already checked. There is a checked way, `age.value()`, which stops the program with an error when the box is empty, much like `v.at(i)` for vectors. Stopping loudly is far better than carrying on with a garbage number, which is why careful code checks first and uses `*` only inside the `if`.
+:::
+
+::: context nine-digits Why stop at nine digits
+The largest `int` is 2,147,483,647, which has ten digits. Every nine-digit number, up to 999,999,999, fits easily, but many ten-digit numbers, such as 9,999,999,999, do not. Building a number past the largest `int` is overflow, which is undefined behaviour. Allowing at most nine digits is a simple rule that makes overflow impossible, at the cost of turning away a few numbers that would fit. Overflow has cost rockets: in 1996, Ariane 5 Flight 501 was destroyed about 40 seconds after launch when a 64-bit floating-point value was converted to a 16-bit integer that could not hold it. A debugging lesson later in this course comes back to overflow.
+:::
+
+::: context digit-codes Characters are small numbers
+Inside the computer, every `char` is stored as a number, its *character code*. In ASCII, the code used for plain English text, `'0'` is 48, `'1'` is 49, and so on up to `'9'`, which is 57. So `'7' - '0'` is 55 − 48, which is 7. The C++ standard promises that the ten digit characters always sit next to each other in order, on every computer, so subtracting `'0'` is always correct. It makes no such promise for letters.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 130" font-family="Inter, Arial, sans-serif">
+  <g font-size="13" text-anchor="middle" fill="#1f2a44">
+    <rect x="15" y="30" width="330" height="32" fill="#fff" stroke="#1f2a44"/>
+    <rect x="246" y="30" width="33" height="32" fill="#8fb8f0" stroke="#1f2a44"/>
+    <rect x="15" y="30" width="33" height="32" fill="#f2b880" stroke="#1f2a44"/>
+    <text x="31" y="51">'0'</text><text x="64" y="51">'1'</text><text x="97" y="51">'2'</text><text x="130" y="51">'3'</text><text x="163" y="51">'4'</text>
+    <text x="196" y="51">'5'</text><text x="229" y="51">'6'</text><text x="262" y="51">'7'</text><text x="295" y="51">'8'</text><text x="328" y="51">'9'</text>
+  </g>
+  <g font-size="11" text-anchor="middle" fill="#6c7a93">
+    <text x="31" y="78">48</text><text x="64" y="78">49</text><text x="97" y="78">50</text><text x="130" y="78">51</text><text x="163" y="78">52</text>
+    <text x="196" y="78">53</text><text x="229" y="78">54</text><text x="262" y="78">55</text><text x="295" y="78">56</text><text x="328" y="78">57</text>
+  </g>
+  <text x="15" y="20" font-size="12" fill="#6c7a93">character codes</text>
+  <text x="180" y="112" font-size="13" text-anchor="middle" fill="#1d6fd1">'7' - '0'  =  55 - 48  =  7</text>
+</svg>
+```
+:::
 --- task
-Write three functions. No `main`.
+Write three functions. No `main`: the checker supplies it.
 
-- `std::optional<int> parse_int(const std::string& s)` — an optional `-` followed by one to nine digits and nothing else. Anything else (empty, `"-"`, spaces, letters, ten or more digits) is `std::nullopt`.
-- `std::optional<std::size_t> index_of(const std::vector<std::string>& v, const std::string& target)` — the position of the first `target`, or `std::nullopt`.
-- `int sum_valid(const std::vector<std::string>& items)` — the sum of the items that `parse_int` accepts, skipping the rest.
+- `std::optional<int> parse_int(const std::string& s)` reads `s` as a whole number. It accepts an optional `-` followed by one to nine digits, and nothing else. `parse_int("42")` is 42 and `parse_int("-7")` is −7. Anything else is `std::nullopt`: the empty string, a lone `"-"`, spaces (`" 5"`), letters (`"4x2"`), or ten or more digits.
+- `std::optional<std::size_t> index_of(const std::vector<std::string>& v, const std::string& target)` gives the position of the **first** `target` in `v`, or `std::nullopt` if it is not there. `index_of({"a", "b", "a"}, "a")` is 0.
+- `int sum_valid(const std::vector<std::string>& items)` adds up the items that `parse_int` accepts and skips the rest. `sum_valid({"3", "x", "-1", "", "10"})` is 12. Use `value_or(0)`.
 --- starter
 #include <cctype>
 #include <optional>
@@ -1438,11 +1928,11 @@ int sum_valid(const std::vector<std::string>& items) {
     return total;
 }
 --- hint
-Deal with the optional `-` first, then check how many characters are left (1 to 9) before looking at them.
+In `parse_int`, deal with the minus sign first: if the first character is `'-'`, remember that in a `bool` and move your index past it. Then count how many characters are left. If that is 0 or more than 9, return `std::nullopt` before looking at them.
 --- hint
-Build the number digit by digit: `value = value * 10 + (c - '0')`. Return `std::nullopt` the moment a character is not a digit.
+Go through the remaining characters. If one is not a digit (`std::isdigit` on the `unsigned char`), return `std::nullopt` at once. Otherwise build the number with `value = value * 10 + (s[i] - '0');`, and at the end return `negative ? -value : value`. `index_of` is a plain loop over the indexes that does `return i;` on the first match and `return std::nullopt;` after the loop.
 --- hint
-`sum_valid` is one line inside the loop with `value_or(0)`.
+`sum_valid` keeps a running `total` and, for each item, adds `parse_int(item).value_or(0)`: a string that does not parse adds 0.
 --- check test | Plain and negative numbers parse
 parse_int("42") == 42 && parse_int("-7") == -7 && parse_int("0") == 0
 --- check test | Empty, a lone minus and letters do not
@@ -1457,32 +1947,73 @@ sum_valid({"3", "x", "-1", "", "10"})
 
 === cpp2-10 | Lambdas and captures
 --- teach
-A **lambda** is a function you write where you need it:
+Last lesson, `std::optional` gave functions a way to say "no answer". You have been reading small unnamed functions since the basics course, in the checks, and you wrote a few for `count_if` and `find_if` in the algorithms lesson. This lesson covers them properly, including how they reach the variables around them.
+
+### A function written on the spot
+
+Picture a sticky note with one instruction on it, stuck right where you need it, instead of a full recipe filed away in a book. A **lambda** is that: a small function with no name, written right where it is used.
 
 ```cpp
 auto square = [](int x) { return x * x; };
-square(5);   // 25
+int s = square(5);   // 25
 ```
 
-The `[]` part is the **capture list**: which variables from around the lambda it can use.
+It has three parts. The square brackets `[]` are the **capture list** (more on that in a moment). The round brackets `(int x)` are the parameters, as in any function. The curly braces `{ … }` are the body. You can keep a lambda in an `auto` variable and call it like any function.
+
+### Capturing a copy
+
+A lambda's body cannot see the local variables around it unless you list them in the brackets. That list is the capture list: it says which outside variables the lambda may use. A plain name, like `[limit]`, **captures by copy**: the lambda keeps its own copy, taken at the moment the lambda is made.
+
+```cpp
+int limit = 10;
+auto over = [limit](int x) { return x > limit; };
+limit = 0;
+bool b = over(5);   // false: the lambda kept its own 10
+```
+
+Changing `limit` afterwards does not reach the lambda. Each lambda you make is an [[object that carries its captures|closure]] around with it.
+
+### Handing a lambda to an algorithm
+
+The everyday use is handing a lambda to an algorithm. **`std::copy_if`**, from `<algorithm>`, copies every element that passes a test. It takes the range (`begin()` and `end()`), a place to write, and the test:
+
+```cpp
+std::vector<int> v = {4, 15, 8, 23};
+int limit = 10;
+std::vector<int> out;
+std::copy_if(v.begin(), v.end(), std::back_inserter(out),
+             [limit](int x) { return x > limit; });
+// out is {15, 23}, in their original order
+```
+
+**`std::back_inserter(out)`**, from `<iterator>`, is the place to write: [[it calls push_back for you|back-inserter]], so `out` grows by one for each value that passes.
+
+### Capturing by reference
+
+Sometimes the lambda should change a variable outside it. Put `&` in front of the name, read "reference to", exactly as in the references lesson. Now the lambda uses the caller's own variable, not a copy:
+
+```cpp
+std::vector<int> v = {3, 1, 2};
+int calls = 0;
+std::sort(v.begin(), v.end(), [&calls](int a, int b) { ++calls; return a < b; });
+// calls now holds how many times sort compared two values
+```
+
+Here is every kind of capture in one table:
 
 | Capture | Meaning |
 | --- | --- |
-| `[]` | nothing |
-| `[limit]` | a copy of `limit`, taken when the lambda is created |
+| `[]` | nothing from outside |
+| `[limit]` | a copy of `limit`, taken when the lambda is made |
 | `[&total]` | a reference to `total`: the lambda can change it |
 | `[=]` / `[&]` | everything it uses, by copy / by reference |
 | `[n = 0]` | a new variable living inside the lambda |
 
-```cpp
-int limit = 10;
-auto big = std::count_if(v.begin(), v.end(), [limit](int x) { return x > limit; });
+The two short forms `[=]` and `[&]` save typing, but [[naming each capture|capture-all]] shows the reader exactly what the lambda touches.
 
-int calls = 0;
-std::sort(v.begin(), v.end(), [&calls](int a, int b) { ++calls; return a < b; });
-```
+### A lambda with its own memory
 
-A lambda's own captured copies are read-only unless you mark it `mutable`. That, plus an init capture, gives a lambda **state** that survives between calls:
+The last row is an **init capture**: `[n = 0]` makes a brand-new variable `n` that belongs to the lambda, starting at 0. The copies a lambda holds are read-only unless you mark the lambda **`mutable`**, which means "allowed to change its own copies". Together they give a lambda **state**: a value it remembers between calls.
 
 ```cpp
 auto next_id = [id = 100]() mutable { return id++; };
@@ -1490,15 +2021,85 @@ next_id();   // 100
 next_id();   // 101
 ```
 
-The mistake to avoid: capturing a local **by reference** and then keeping the lambda after that local is gone. The reference dangles. When a lambda outlives the function that made it — for instance when you return it — capture by value.
+Without `mutable`, clang stops with "cannot assign to a variable captured by copy in a non-mutable lambda". Two lambdas made separately each get their own `id`, so they count separately.
 
-Sorting with a lambda is the everyday use: the comparator returns true when `a` should come **before** `b`. Compare `std::abs(a - target)` values to sort by closeness, and break ties explicitly.
+A function can hand back a lambda. The lambda's type has no name you could write, so declare the function's return type as `auto` and let the compiler fill it in:
+
+```cpp
+auto make_greeter() {
+    return [](const std::string& name) { return "Hello, " + name; };
+}
+```
+
+**Watch out:** do not capture a local variable **by reference** in a lambda that outlives it. When the function that made the lambda ends, its local variables are gone, and the reference [[dangles|dangling]]: it names memory that no longer holds that variable. Using it is undefined behaviour, and it compiles without complaint.
+
+```cpp
+auto make_bad() {
+    int count = 0;
+    return [&count]() { return ++count; };   // count dies when make_bad ends
+}
+```
+
+When a lambda leaves the function that made it, for instance when you return it, capture by value or with an init capture.
+
+### Sorting with a lambda
+
+`std::sort` can take a third argument, a **comparator**: a lambda that gets two values `a` and `b` and returns true when `a` should come **before** `b`. With `a < b` you get the usual smallest-first order. Change the test, and you change the order.
+
+To sort by how close each value is to some target, compare distances. **`std::abs`**, from `<cstdlib>`, gives the size of a number without its sign: `std::abs(3 - 8)` is 5. And when two distances are equal, [[say which comes first|strict-order]], or the order of those two is up to `sort`. Here, sorting by closeness to 0 (the size of each value), with the smaller value first on a tie:
+
+```cpp
+std::vector<int> v = {3, -1, -3, 2};
+std::sort(v.begin(), v.end(), [](int a, int b) {
+    int da = std::abs(a);
+    int db = std::abs(b);
+    if (da != db) return da < db;   // closer to 0 comes first
+    return a < b;                   // same distance: smaller value first
+});
+// v is {-1, 2, -3, 3}
+```
+
+::: context closure What the compiler builds
+A lambda is shorthand. For each lambda, the compiler writes a small class with no name you can use: every captured variable becomes a member of it, and the body becomes the function that runs when you call it. The object made from that class is called a *closure*. That is why each counter made by the same code has its own count: each is its own object with its own member.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">
+  <text x="180" y="20" font-size="12" text-anchor="middle" fill="#1f2a44">two lambdas made from [n = 0]() mutable { return ++n; }</text>
+  <rect x="30" y="40" width="130" height="70" rx="6" fill="#fff" stroke="#1d6fd1" stroke-width="2"/>
+  <text x="95" y="60" font-size="12" text-anchor="middle" fill="#1d6fd1">lambda a</text>
+  <rect x="70" y="70" width="50" height="28" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="95" y="89" font-size="13" text-anchor="middle" fill="#1f2a44">n = 2</text>
+  <rect x="200" y="40" width="130" height="70" rx="6" fill="#fff" stroke="#b4232c" stroke-width="2"/>
+  <text x="265" y="60" font-size="12" text-anchor="middle" fill="#b4232c">lambda b</text>
+  <rect x="240" y="70" width="50" height="28" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="265" y="89" font-size="13" text-anchor="middle" fill="#1f2a44">n = 0</text>
+  <text x="95" y="132" font-size="11" text-anchor="middle" fill="#6c7a93">called twice</text>
+  <text x="265" y="132" font-size="11" text-anchor="middle" fill="#6c7a93">not called yet</text>
+</svg>
+```
+:::
+
+::: context back-inserter Writing past the end, safely
+Algorithms like `copy_if` write through an iterator: "put the value here, then move one along". If you passed `out.begin()` of an empty vector, there would be no room, and writing there would be undefined behaviour. The algorithms lesson avoided that by making `out` the right size first. When you do not know how many values will pass the test, that is impossible, so `std::back_inserter` gives a different kind of iterator: writing through it calls `out.push_back(value)`, and the vector grows exactly as needed.
+:::
+
+::: context capture-all Name what you capture
+`[=]` and `[&]` capture whatever the body happens to use, which hides from the reader what the lambda depends on. The C++ Core Guidelines, a widely used rule book, suggest capturing by reference for lambdas used right there, such as one handed straight to `std::sort`, and avoiding reference captures for lambdas that are stored or returned. Naming each capture makes that choice visible, one variable at a time.
+:::
+
+::: context dangling Why the reference dangles
+A function's local variables live in a piece of memory set aside for that call, and the piece is handed back the moment the function returns. A reference captured from inside still points at that spot, but the spot now belongs to whatever runs next. Reading it may give the old value, a stranger's number, or a crash; writing it can damage another function's data. Compilers often cannot see this mistake. Sanitizer tools, which add checks while the program runs, catch many cases, but the dependable fix is to capture by value.
+:::
+
+::: context strict-order The rules a comparator must follow
+`std::sort` trusts its comparator to behave like "less than". In particular, it must return false when `a` and `b` are equal. So write `<`, never `<=`: with `<=`, two equal values would each claim to come before the other, and the C++ rules call sorting with such a comparator undefined behaviour. Breaking ties with a second test, as here, keeps the comparator a proper "less than" and makes the result the same on every computer.
+:::
 --- task
-Write three functions. No `main`.
+Write three functions. No `main`: the checker supplies it.
 
-- `std::vector<int> keep_above(const std::vector<int>& v, int limit)` — the values greater than `limit`, in order (use `std::copy_if` with a lambda).
-- `void sort_by_distance(std::vector<int>& v, int target)` — sort in place so values closest to `target` come first; on a tie, the smaller value first.
-- `make_counter()` — returns a lambda that returns 1 the first time it is called, then 2, 3, … Each counter made counts on its own. (Declare it `auto make_counter()`.)
+- `std::vector<int> keep_above(const std::vector<int>& v, int limit)` returns the values greater than `limit`, in their original order. Use `std::copy_if` with `std::back_inserter` and a lambda that captures `limit`. `keep_above({5, 12, 3, 40, 10}, 10)` is `{12, 40}`.
+- `void sort_by_distance(std::vector<int>& v, int target)` sorts `v` in place so that values closest to `target` come first. On a tie, the smaller value comes first. Use `std::sort` with a lambda comparator that captures `target` and uses `std::abs`.
+- `auto make_counter()` returns a lambda. Calling that lambda returns 1 the first time, then 2, then 3, and so on. Each counter you make counts on its own.
 --- starter
 #include <algorithm>
 #include <cstdlib>
@@ -1540,11 +2141,11 @@ auto make_counter() {
     return [n = 0]() mutable { return ++n; };
 }
 --- hint
-`std::copy_if(v.begin(), v.end(), std::back_inserter(out), …)` appends each match to `out`.
+For `keep_above`, make an empty `std::vector<int> out;`, then call `std::copy_if(v.begin(), v.end(), std::back_inserter(out), …)` with a lambda `[limit](int x) { return x > limit; }` in place of the dots, and return `out`.
 --- hint
-The comparator captures `target` and compares distances first; only when they are equal does it compare the values.
+`sort_by_distance` is the closeness-to-0 example from the explanation, with the distances measured from `target` instead: `std::abs(a - target)`. The lambda needs `[target]` in its brackets to see it.
 --- hint
-The counter needs its own variable that it may change: an init capture plus `mutable`.
+The counter needs its own variable that it may change: an init capture plus `mutable`, as in `next_id`. Start it at 0 and return `++n`, so the first call gives 1.
 --- check case | keep_above keeps order
 keep_above({5, 12, 3, 40, 10}, 10)
 => std::vector<int>{12, 40}
@@ -1557,44 +2158,162 @@ keep_above({5, 12, 3, 40, 10}, 10)
 
 === cpp2-11 | Processing text with string streams
 --- teach
-Real input is messy text. Three tools handle most of it.
+Last lesson you handed small lambdas to algorithms. This lesson turns to text. Real input is messy: extra spaces, blank lines, fields separated by commas, a number with junk stuck to it. Here you learn to cut text into pieces, clean each piece, and check it.
 
-**`std::istringstream`** (from `<sstream>`) lets you read from a string exactly as you would from `std::cin`:
+### Reading from a string
+
+In the basics map lesson you read words out of a string with a **`std::istringstream`** (input string stream, from `<sstream>`). It reads from a string exactly as `std::cin` reads from the input, and `>>`, read "get from", reads any type:
 
 ```cpp
 std::istringstream in("3 apples 4.5");
-int n; std::string what; double w;
-in >> n >> what >> w;        // 3, "apples", 4.5
+int n;
+std::string what;
+double w;
+in >> n >> what >> w;   // n is 3, what is "apples", w is 4.5
 ```
 
-**`std::getline(stream, line)`** reads up to a newline; `std::getline(stream, field, ',')` reads up to any character you choose. Reading every line of a block of text:
+Each `>>` skips spaces, then reads the next piece as the type of its variable.
+
+### When a read fails
+
+If the next text is not a number, `in >> n` **fails**. A stream that has failed counts as false in a condition, so you can test a read directly. After a failed read, `n` is set to 0, and [[the stream stops reading|failed-read]].
+
+```cpp
+std::istringstream bad("abc");
+int n;
+if (!(bad >> n)) {
+    // "abc" is not a number: we get here
+}
+```
+
+The `!` means "not", so the condition reads "if the read did not work".
+
+### One line at a time
+
+`std::getline(stream, line)`, from the basics course, reads up to the end of a line. In a `while` loop it reads every line of a block of text, and stops when the lines run out:
 
 ```cpp
 std::istringstream text("first\nsecond\n");
 std::string line;
-while (std::getline(text, line)) { /* one line at a time */ }
+while (std::getline(text, line)) {
+    // runs twice: line is "first", then "second"
+}
 ```
 
-The reverse direction is **`std::ostringstream`**: write to it with `<<` just as you write to `std::cout`, then take the text out with `.str()`. With `<iomanip>`, `out << std::fixed << std::setprecision(1) << 3.14159` writes `3.1`, a fixed number of decimal places.
+The `\n` is the [[newline character|escapes]], written inside quotes as a backslash and `n`.
 
-**`find` and `substr`** cut strings by hand when you need exact control:
+### Up to any character
+
+Give `getline` a third argument, a `char`, and it reads up to that character instead of the end of the line. The separator itself is thrown away:
+
+```cpp
+std::istringstream row("ALT,4200,OK");
+std::string field;
+while (std::getline(row, field, ',')) {
+    // field is "ALT", then "4200", then "OK"
+}
+```
+
+**Watch out:** this way of splitting quietly [[drops a trailing empty field|trailing-field]]. Splitting `"a,b,"` gives two fields, `"a"` and `"b"`, not three, and splitting `""` gives none at all. When empty fields matter, cut the string yourself with `find` and `substr`.
+
+### Cutting by hand with find and substr
+
+You know `find` and `substr` from the basics course. Find the separator, then cut on either side of it:
 
 ```cpp
 std::string s = "key=value";
-auto eq = s.find('=');                 // 3, or std::string::npos
+auto eq = s.find('=');                 // 3, or std::string::npos if there is none
 std::string key = s.substr(0, eq);     // "key"
 std::string val = s.substr(eq + 1);    // "value"
 ```
 
-Know the edges. `getline` with a delimiter drops a trailing empty field: splitting `"a,b,"` that way gives two fields, not three. And checking that a whole field was a number takes two steps: `in >> n` must succeed, **and** there must be nothing left afterwards (`in >> std::ws` then `in.eof()`), or `"12abc"` sneaks through as 12.
+`find` can also take a second number: the index to start looking from. That lets you find the next separator after the one you already found:
 
-Whitespace to trim is spaces, tabs and newlines: `std::isspace` from `<cctype>` recognises all of them.
+```cpp
+std::string t = "a,b,c";
+t.find(',');      // 1
+t.find(',', 2);   // 3: starts looking at index 2
+```
+
+To split a whole string, keep a `start` index. Find the next separator from `start`, take the piece between them, and move `start` to just after the separator. When `find` gives `npos`, there are no more separators, and everything from `start` to the end is the last field, even if it is empty.
+
+### Trimming whitespace
+
+**Whitespace** means the invisible characters: spaces, tabs (`\t`) and newlines (`\n`). **Trimming** a string means removing whitespace from both ends and keeping everything between. `std::isspace` from `<cctype>` recognises [[all kinds of whitespace|whitespace-kinds]]; convert to `unsigned char` first, as always.
+
+The idea is two indexes that walk inward. One starts at the front and steps forward past whitespace:
+
+```cpp
+std::string s = "  hi";
+std::size_t a = 0;
+while (a < s.size() && std::isspace(static_cast<unsigned char>(s[a]))) ++a;
+// a is 2, so s.substr(a) is "hi"
+```
+
+The other starts at the end and steps backward the same way. What is left between them is the trimmed string.
+
+### Is the whole field a number?
+
+`>>` stops reading a number at the first character that is not part of it. So `"12abc"` reads as 12, and the read **succeeds**. To be sure the whole field was a number, check two things: the read worked, **and** nothing but spaces is left afterwards.
+
+```cpp
+std::istringstream num(" 42 ");
+int n;
+if (num >> n) {
+    num >> std::ws;      // skip any spaces after the number
+    if (num.eof()) {
+        // the whole field was a number
+    }
+}
+```
+
+`std::ws`, "skip white space", which you met in the basics course, eats spaces. Then **`eof()`**, short for [["end of file"|eof]], is true when the stream has reached the end of its text. For `"12abc"`, the `abc` is still there, so `eof()` is false and you know to reject it.
+
+::: context failed-read What a failed read does
+When `>>` cannot read what you asked for, the stream sets a "failed" flag inside itself. Since C++11, the variable you were reading into is set to 0. While the flag is set, every later `>>` on that stream also fails and reads nothing, until you call `in.clear()`. That is why `while (in >> w)` stops cleanly at the first bad piece or the end of the text. It is also why the check in this lesson gives each score its own small stream: one bad line cannot jam the reading of the next.
+:::
+
+::: context escapes Characters you cannot type in quotes
+Some characters cannot be typed straight into a string, so C++ writes them with a backslash and a letter, called an *escape sequence*. `\n` is the newline, `\t` a tab, `\\` a real backslash and `\"` a double quote inside a string. Each one is a single character, even though you type two: `"a\nb"` has three characters, and its `size()` is 3.
+:::
+
+::: context trailing-field The field that goes missing
+`getline` stops when there is nothing left to read. After `"a,b,"` it has read `a` and `b`, and the last comma leaves nothing after it, so the loop ends: there is no empty third field. In a spreadsheet file, though, `a,b,` means three columns with the third empty. Dropping it quietly shifts meaning. If a telemetry row lists readings in fixed columns and the last reading is missing, a program that loses the empty field may read the wrong number of columns and misplace everything after.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">
+  <text x="20" y="22" font-size="13" fill="#1f2a44">text: a,b,</text>
+  <text x="20" y="58" font-size="12" fill="#1d6fd1">split by hand</text>
+  <rect x="140" y="42" width="50" height="26" fill="#8fb8f0" stroke="#1f2a44"/>
+  <rect x="200" y="42" width="50" height="26" fill="#8fb8f0" stroke="#1f2a44"/>
+  <rect x="260" y="42" width="50" height="26" fill="#fff" stroke="#1f2a44" stroke-dasharray="4 3"/>
+  <text x="165" y="60" font-size="13" text-anchor="middle" fill="#1f2a44">a</text>
+  <text x="225" y="60" font-size="13" text-anchor="middle" fill="#1f2a44">b</text>
+  <text x="285" y="60" font-size="12" text-anchor="middle" fill="#6c7a93">""</text>
+  <text x="20" y="108" font-size="12" fill="#b4232c">getline with ','</text>
+  <rect x="140" y="92" width="50" height="26" fill="#f2b880" stroke="#1f2a44"/>
+  <rect x="200" y="92" width="50" height="26" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="165" y="110" font-size="13" text-anchor="middle" fill="#1f2a44">a</text>
+  <text x="225" y="110" font-size="13" text-anchor="middle" fill="#1f2a44">b</text>
+  <text x="285" y="110" font-size="12" text-anchor="middle" fill="#b4232c">missing</text>
+  <text x="180" y="140" font-size="11" text-anchor="middle" fill="#6c7a93">three fields by hand, two with getline</text>
+</svg>
+```
+:::
+
+::: context whitespace-kinds More whitespace than you think
+`std::isspace` is true for six characters: space, tab `\t`, newline `\n`, carriage return `\r`, and two rarely seen ones, vertical tab `\v` and form feed `\f`. The carriage return matters in practice. Text files saved on Windows end each line with `\r\n`, so `getline`, which stops at `\n`, leaves a stray `\r` at the end of every line. It is invisible when printed, but `"ALT\r"` is not equal to `"ALT"`. Trimming each field removes it.
+:::
+
+::: context eof Why "end of file"
+Streams were first used mostly for reading files, so reaching the end of the text is called *end of file*, even when the stream reads from a string. `eof()` becomes true only once a read has actually bumped into the end. That is why the check reads with `>> std::ws` first: skipping the trailing spaces runs into the end, and only then does `eof()` report it.
+:::
 --- task
-Write three functions. No `main`.
+Write three functions. No `main`: the checker supplies it.
 
-- `std::vector<std::string> split(const std::string& s, char sep)` — every field, **including empty ones**: `split("a,,b", ',')` is `{"a", "", "b"}`, `split("a,", ',')` is `{"a", ""}`, and `split("", ',')` is `{""}`.
-- `std::string trim(const std::string& s)` — `s` without leading and trailing whitespace.
-- `std::map<std::string, int> parse_scores(const std::string& text)` — each line looks like `name: score`, with any amount of whitespace around the name and the score. Store `name → score`. Skip lines that are blank, have no `:`, have an empty name, or whose score is not a whole number.
+- `std::vector<std::string> split(const std::string& s, char sep)` returns every field between the separators, **including empty ones**. `split("a,,b", ',')` is `{"a", "", "b"}`, `split("a,", ',')` is `{"a", ""}`, and `split("", ',')` is `{""}`. The starter's version uses `getline`, which drops empty fields at the end; rewrite it with `find` and `substr`.
+- `std::string trim(const std::string& s)` returns `s` without whitespace (spaces, tabs, newlines) at either end. `trim(" \t hello world \n")` is `"hello world"`, and `trim("   ")` is `""`.
+- `std::map<std::string, int> parse_scores(const std::string& text)` reads text with one entry per line, like `name: score`, with any amount of whitespace around the name and the score. Store `name → score` in the map, with the name trimmed. Skip any line that is blank, has no `:`, has an empty name, or whose score is not a whole number (such as `7x`).
 --- starter
 #include <cctype>
 #include <map>
@@ -1665,11 +2384,11 @@ std::map<std::string, int> parse_scores(const std::string& text) {
     return scores;
 }
 --- hint
-For `split`, loop with `s.find(sep, start)`: take the piece from `start` up to the separator, then carry on after it. When there are no more separators, the rest of the string is the last field — even if it is empty.
+For `split`, keep a `start` index at 0 and loop: `s.find(sep, start)` finds the next separator. If there is one at `at`, push `s.substr(start, at - start)` and set `start = at + 1`. If `find` gives `std::string::npos`, push `s.substr(start)`, the rest of the string, even if it is empty, and return.
 --- hint
-For `trim`, move one index forward past whitespace and another backward, then `substr` between them.
+For `trim`, keep one index `a` at the front and one index `b` at `s.size()`. Move `a` forward while `s[a]` is whitespace, move `b` backward while `s[b - 1]` is whitespace (never letting them cross), then return `s.substr(a, b - a)`.
 --- hint
-In `parse_scores`, read the score from its own `std::istringstream`; after `>> score` succeeds, `num >> std::ws` then `num.eof()` tells you nothing else was there.
+In `parse_scores`, read each line with `getline`. Find the `:`, and `continue` if it is missing. Trim the part before it and `continue` if that is empty. Read the part after it from its own `std::istringstream num(...)`: `continue` if `num >> score` fails, then do `num >> std::ws` and `continue` if `!num.eof()`. Only then store `scores[name] = score`.
 --- check case | split keeps empty fields in the middle
 split("a,,b", ',')
 => std::vector<std::string>{"a", "", "b"}
@@ -1689,24 +2408,220 @@ trim("   ")
 parse_scores("  ada : 90\n\nlin:75 \nno colon here\n: 5\nsam: 7x\n")
 => std::map<std::string, int>{{"ada", 90}, {"lin", 75}}
 
+=== cpp2-11b | Building text with std::ostringstream
+--- teach
+Last lesson you took text apart: splitting it, trimming it, and reading numbers out of it. This lesson goes the other way and builds text up, with numbers written exactly the way you want them.
+
+### Writing to a string
+
+Picture writing on a notepad instead of shouting across the room. `std::cout` sends text straight to the screen. A **`std::ostringstream`** (output string stream, from `<sstream>`) collects the text instead, and hands it over as a `std::string` when you ask. You write to it with `<<`, read "put to", exactly as you write to `std::cout`. Then **`.str()`** gives you everything written so far:
+
+```cpp
+std::ostringstream out;
+out << "ALT=" << 4200 << " m";
+std::string line = out.str();   // "ALT=4200 m"
+```
+
+Numbers turn into text on their own, the same way they do when you print them.
+
+### A fixed number of decimal places
+
+Readings often need a set number of decimal places. The header `<iomanip>` (input/output manipulators) has the tools. **`std::fixed`** says "write numbers with a decimal point, never in [[the e-notation style|scientific]]". **`std::setprecision(n)`**, with `std::fixed`, says "exactly `n` digits after the point". The number is rounded to fit:
+
+```cpp
+std::ostringstream out;
+out << std::fixed << std::setprecision(1) << 3.14159;
+// out.str() is "3.1"
+```
+
+These settings [[stay on the stream|sticky]] until you change them, so every later `double` written to `out` also gets one decimal place. They even add zeros: with `std::setprecision(2)`, the value 7.0 is written `7.00`.
+
+**Watch out:** `std::setprecision` without `std::fixed` means something else: the number of *significant* digits, counted from the first non-zero digit. With `std::setprecision(2)` alone, 3.14159 becomes `3.1`, which looks right, but 1234.5 becomes `1.2e+03`. Always put `std::fixed` in front when you mean decimal places.
+
+### A list with separators
+
+To write a list like `3, 1, 4`, put the separator **before** every item except the first. Then there is no stray separator at either end:
+
+```cpp
+std::vector<int> v = {3, 1, 4};
+std::ostringstream out;
+for (std::size_t i = 0; i < v.size(); ++i) {
+    if (i > 0) out << ", ";
+    out << v[i];
+}
+// out.str() is "3, 1, 4"
+```
+
+An empty vector writes nothing, and one value is written alone. You will use these tools again at the end of this course, when [[a report gets its own function|comes-back]].
+
+::: context scientific What 1.2e+03 means
+`1.2e+03` is *scientific notation*, the computer way of writing $1.2 \times 10^3$, which is 1200. The `e` stands for "exponent": the power of ten. Very large and very small numbers are easier to read this way: the distance to the Moon, about 384,400 km, is 3.844e+05 km. Without `std::fixed`, a stream switches to this style whenever a number has more digits before the point than the precision allows, or is very small, so a column of readings can suddenly change style halfway down. `std::fixed` stops that.
+:::
+
+::: context sticky Settings that stay
+`std::fixed` and `std::setprecision` change the stream itself, not just the next number, so they stay until you change them again. That is handy for writing a whole table. It is also a trap if you share `std::cout` with other code: set it to one decimal place, and every number printed afterwards has one decimal place. A fresh `std::ostringstream` for each piece of text keeps the settings from leaking. One manipulator is different: `std::setw`, which sets a column width, applies only to the next item.
+:::
+
+::: context comes-back Where this comes back
+The design lesson at the end of this course has you tidy up a program that builds a report of readings. Its summary line uses exactly these tools: an `std::ostringstream`, `std::fixed` and `std::setprecision(1)`. Building the text in a string first, instead of printing it straight away, also makes a function easy to test, because a check can compare the string it returns.
+:::
+--- task
+Write two functions that build text. No `main`: the checker supplies it.
+
+- `std::string reading(const std::string& name, double value)` returns the name, a colon and a space, then the value with exactly one decimal place. `reading("ALT", 4200.0)` is `"ALT: 4200.0"`, `reading("TEMP", -3.14159)` is `"TEMP: -3.1"`, and `reading("V", 2.96)` is `"V: 3.0"`.
+- `std::string join(const std::vector<int>& v, const std::string& sep)` returns the values written one after another with `sep` between them. `join({3, 1, 4}, ", ")` is `"3, 1, 4"`, `join({7}, "-")` is `"7"`, and `join({}, ",")` is `""`.
+
+Build both strings with a `std::ostringstream`.
+--- starter
+#include <iomanip>
+#include <sstream>
+#include <string>
+#include <vector>
+
+std::string reading(const std::string& name, double value) {
+    return "";
+}
+
+std::string join(const std::vector<int>& v, const std::string& sep) {
+    return "";
+}
+--- solution
+#include <iomanip>
+#include <sstream>
+#include <string>
+#include <vector>
+
+std::string reading(const std::string& name, double value) {
+    std::ostringstream out;
+    out << name << ": " << std::fixed << std::setprecision(1) << value;
+    return out.str();
+}
+
+std::string join(const std::vector<int>& v, const std::string& sep) {
+    std::ostringstream out;
+    for (std::size_t i = 0; i < v.size(); ++i) {
+        if (i > 0) out << sep;
+        out << v[i];
+    }
+    return out.str();
+}
+--- hint
+In each function, make a `std::ostringstream out;`, write to it with `<<`, and finish with `return out.str();`.
+--- hint
+For `reading`, write `name`, then `": "`, then `std::fixed` and `std::setprecision(1)`, then `value`, all in one chain of `<<`.
+--- hint
+For `join`, loop over the indexes. Before each value except the first (`if (i > 0)`), write `sep`; then write `v[i]`.
+--- check case | A whole number gets one decimal place
+reading("ALT", 4200.0)
+=> "ALT: 4200.0"
+--- check case | A long decimal is cut to one place
+reading("TEMP", -3.14159)
+=> "TEMP: -3.1"
+--- check case | Rounding can carry into the whole number
+reading("V", 2.96)
+=> "V: 3.0"
+--- check case | join puts the separator between values
+join({3, 1, 4}, ", ")
+=> "3, 1, 4"
+--- check case | join of one value has no separator
+join({7}, "-")
+=> "7"
+--- check case | join of nothing is empty
+join({}, ",")
+=> ""
+--- check source | Uses an ostringstream
+ostringstream
+
 === cpp2-12 | Debugging: off by one, out of range
 --- teach
-An **off-by-one** error means a loop runs one time too many or too few. In C++ it is dangerous, because `v[i]` does no checking: reading one past the end does not stop the program — it reads whatever memory happens to be there and carries on with a wrong number.
+Last lesson you built text with a string stream. This one is a debugging lesson: you get a bug report and a broken function, and your job is to find the cause and fix it there. The bug is the most common one in loops.
 
-A method for loops that misbehave:
+### The fence-post mistake
 
-1. **Reproduce small.** Pick an input where you can write the right answer by hand.
-2. **Trace the boundaries.** Write down the first and last value of every loop variable, and the largest index it will touch. For `v` of size 4, valid indexes are 0 to 3; anything that reaches 4 is a bug.
-3. **Check the edge inputs**: empty, one element, and the sizes where the loop condition flips.
-4. **Make out-of-range loud while you look.** `v.at(i)` checks the index; out of range it stops the program at once instead of returning garbage.
+A fence 10 metres long, with a post every metre, needs 11 posts, not 10: one at each end. Counting the gaps when you meant the posts, or the other way round, is so easy that it has a name. An **off-by-one** error means a loop runs one time too many, or one time too few. It is also called a [[fence-post error|fence-post]].
 
-There is a second, sneakier trap in C++: **unsigned wrap-around**. `v.size()` is a `std::size_t`, which cannot be negative. So when `v.size()` is 2 and `k` is 3, `v.size() - k` is not -1 — it wraps round to a *huge* number, and a loop like `for (i = 0; i <= v.size() - k; ++i)` runs almost forever, reading far outside the vector.
+In C++ it is dangerous, because `v[i]` does no checking, as you saw in the basics vector lesson. Reading one past the end does not stop the program. It reads [[whatever memory happens to be there|past-the-end]] (undefined behaviour) and carries on with a wrong number.
 
-The cause-level fix is to write the condition so it never subtracts below zero — for example `i + k <= v.size()` — and to handle the impossible cases (like `k == 0`) up front.
+### A method for loops that misbehave
+
+**1. Reproduce small.** Pick an input so small that you can work out the right answer by hand. `{1, 2, 3, 4}` is better than a thousand readings.
+
+**2. Trace the boundaries.** Write down the first and last value of every loop variable, and the largest index it touches. For a `v` of size 4, the valid indexes are 0 to 3. Anything that reaches 4 is a bug:
+
+```cpp
+for (std::size_t i = 0; i <= v.size(); ++i) {   // i runs 0, 1, 2, 3, 4
+    sum += v[i];                                // v[4] is past the end
+}
+```
+
+`<=`, "less than or equal", lets `i` reach `v.size()` itself. `<`, "less than", stops one earlier, at the last real index.
+
+**3. Check the edge inputs.** Try an empty vector, a vector of one element, and the sizes where the loop condition flips from true to false. Bugs cluster at the edges.
+
+**4. Make out-of-range loud while you look.** Swap `v[i]` for `v.at(i)`. `at` checks the index, and when it is out of range it [[stops the program at once|at-cost]] with an `std::out_of_range` error, instead of handing back garbage.
+
+### Windows of values
+
+The function in this lesson's bug report adds up **windows**: every run of `k` values that sit next to each other. For `{1, 2, 3, 4}` and `k` of 2, the windows are `{1, 2}`, `{2, 3}` and `{3, 4}`, and their sums are 3, 5 and 7.
+
+A window starting at index `i` uses `v[i]` up to `v[i + k - 1]`: exactly `k` values. A vector of size 4 has 4 − 2 + 1 = 3 windows of size 2, starting at 0, 1 and 2.
+
+### The sneakier trap: unsigned wrap-around
+
+`v.size()` gives a `std::size_t`, which is **unsigned**: it cannot be negative. So when an answer would go below zero, it does not. It [[wraps round to a huge number|wrap-around]] instead:
+
+```cpp
+std::vector<int> v = {1, 2};
+std::size_t k = 3;
+std::size_t gap = v.size() - k;   // not -1: 18446744073709551615
+```
+
+A loop like `for (i = 0; i <= v.size() - k; ++i)` then runs almost forever, reading far outside the vector.
+
+### Fix the cause
+
+The cause-level fix is to write the condition so it never subtracts at all. `i <= v.size() - k` and `i + k <= v.size()` say the same thing when nothing wraps, because you move `k` to the other side. The second form only adds, so it cannot go below zero, and when `k` is bigger than the vector it is false straight away.
+
+Then handle the impossible cases up front. A window of size 0 holds nothing, so when `k == 0`, return an empty result before the loop.
+
+**Watch out:** do not patch the symptom. Adding `if (k > v.size()) return {};` in front of the wrong condition makes the crash go away for today's input, but the risky subtraction is still there, one careless edit away from wrapping again. Rewrite the condition itself. And do not wait for the compiler: `-Wall -Wextra` gives no warning for either version, so the tracing is up to you.
+
+::: context fence-post Why "fence post"
+The name comes from exactly the puzzle in the explanation: a straight fence of 10 sections needs 11 posts. In code, it shows up whenever you mix up counting things with counting the gaps between them. A range from index 3 to index 7, both included, holds 7 − 3 + 1 = 5 values, not 4. The window count in this lesson, `size - k + 1`, has the same "+ 1" for the same reason.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 110" font-family="Inter, Arial, sans-serif">
+  <line x1="30" y1="50" x2="330" y2="50" stroke="#6c7a93" stroke-width="3"/>
+  <g fill="#1d6fd1">
+    <rect x="26" y="30" width="8" height="40"/><rect x="101" y="30" width="8" height="40"/>
+    <rect x="176" y="30" width="8" height="40"/><rect x="251" y="30" width="8" height="40"/>
+    <rect x="326" y="30" width="8" height="40"/>
+  </g>
+  <g font-size="11" text-anchor="middle" fill="#6c7a93">
+    <text x="67" y="25">gap 1</text><text x="142" y="25">gap 2</text><text x="217" y="25">gap 3</text><text x="292" y="25">gap 4</text>
+  </g>
+  <text x="180" y="95" font-size="12" text-anchor="middle" fill="#1f2a44">4 gaps need 5 posts</text>
+</svg>
+```
+:::
+
+::: context past-the-end What sits one past the end
+A vector's elements sit side by side in one block of memory. The bytes right after the last element belong to something else: spare room the vector has reserved, or another variable entirely. Reading there gives you whatever those bytes hold, and writing there can quietly damage other data. Tools called sanitizers catch many of these reads while the program runs; with g++ or clang you turn one on with `-fsanitize=address`. They slow the program down, so they are used while testing, not in the final build.
+:::
+
+::: context at-cost Why [] does not check
+Checking every index takes a comparison each time, and in a tight loop over millions of values C++ lets you skip it. `at` is the checked version for when you want safety over speed. Flight software aims to make the check unnecessary instead. NASA JPL's "Power of Ten" rules require every loop to have a fixed upper bound that a checking tool can prove, and ask code to check that the values handed to a function are valid. A loop whose bound can wrap around to 18 quintillion breaks both rules.
+:::
+
+::: context wrap-around A counter that rolls over
+Picture a car's trip counter rolling back from 000.0 to 999.9 when it goes backwards: an unsigned number going below 0 wraps to its largest value. On a 64-bit computer that is 18,446,744,073,709,551,615, which is 2⁶⁴ − 1. So 2 − 3 gives that number, not −1. C++ defines this wrap-around for unsigned numbers on purpose, so there is no warning. Many experts, including C++'s creator Bjarne Stroustrup, have said that making sizes unsigned was a mistake. C++20 added `std::ssize(v)`, which gives the size as a signed number that can go below zero.
+:::
 --- task
-**Bug report:** "`window_sums({1, 2, 3, 4}, 2)` should be `{3, 5, 7}` — the sums of each two neighbours — but the numbers are wrong. And with `k` bigger than the list, the program crashes."
+**Bug report:** "`window_sums({1, 2, 3, 4}, 2)` should be `{3, 5, 7}`, the sums of each pair of neighbours, but the numbers are wrong. And when `k` is bigger than the list, the program crashes."
 
-`window_sums(v, k)` returns the sum of every run of `k` consecutive values, in order. If `k` is 0 or larger than `v.size()`, it returns an empty vector. Find both bugs and fix their causes. No `main`.
+`window_sums(v, k)` returns the sum of every window of `k` values next to each other, in order. If `k` is 0 or bigger than `v.size()`, it returns an empty vector. `window_sums({1, 2, 3, 4}, 4)` is `{10}`, and `window_sums({5, -2, 8}, 1)` is `{5, -2, 8}`.
+
+There are two bugs. Find both and fix their causes, not the symptoms. No `main`: the checker supplies it.
 --- starter
 #include <vector>
 
@@ -1741,11 +2656,11 @@ std::vector<int> window_sums(const std::vector<int>& v, std::size_t k) {
     return out;
 }
 --- hint
-Trace `window_sums({1, 2, 3, 4}, 2)` by hand: how many values does the inner loop add each time?
+Reproduce small: trace `window_sums({1, 2, 3, 4}, 2)` by hand. For `k` of 2, which values of `j` does the inner loop run through, and how many values does it add each time? It should be exactly `k`.
 --- hint
-When `k > v.size()`, what is `v.size() - k` for an unsigned type? Rewrite the condition so nothing is subtracted.
+Now the crash: when `k` is bigger than `v.size()`, what is `v.size() - k` for an unsigned type? Rewrite the outer condition so nothing is subtracted, by moving `k` to the other side.
 --- hint
-`k == 0` would produce "windows" of nothing; return early.
+The inner loop should be `j < k`, and the outer one `i + k <= v.size()`. A window of size 0 makes no sense, so start the function with `if (k == 0) return out;`.
 --- check case | Pairs of neighbours
 window_sums({1, 2, 3, 4}, 2)
 => std::vector<int>{3, 5, 7}
