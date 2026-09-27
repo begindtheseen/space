@@ -221,25 +221,27 @@ Picture two machines in a factory. The first one picks out the parts you want. A
 **Step 1: the pipe.** The **pipe** is the `|` character (say "pipe"; on most keyboards it is Shift and the backslash key). Put it between two commands, and [[everything the left command prints goes into the right command|pipe-flow]], instead of to the screen. A line of commands joined by pipes is called a **pipeline**.
 
 ```
-~/project $ grep ERROR launch.log | wc -l
-2
+~/project $ cat launch.log | wc -l
+6
 ```
 
-`grep` keeps the two error lines. They never reach the screen: the pipe hands them to `wc -l`, which counts them and prints `2`.
+`cat` prints all six lines of the file. They never reach the screen: the pipe hands them to `wc -l`, which counts them and prints `6`. Any command can go on the left. Put one there that keeps only some lines, and `wc -l` counts only those.
 
 **Step 2: where the right-hand command reads from.** Notice that `wc -l` has no file name this time. A command such as `wc`, `head`, `sort` or `grep`, given no file name, reads the text arriving through the pipe instead. That incoming text is called its [[standard input|standard-input]].
 
 **Step 3: any reader can go on the right.** `head -n 2` shows the first two lines of whatever it is given, so it works on the right of a pipe too:
 
 ```
-~/project $ grep INFO launch.log | head -n 2
-09:00 INFO systems check
-09:01 INFO fuel loaded
+~/project $ ls | head -n 2
+launch.log
+notes.txt
 ```
+
+`ls` sends its list of names down the pipe, and `head -n 2` keeps the first two.
 
 Each tool does one small job well, and pipes let you [[chain them into something bigger|unix-philosophy]].
 
-**Watch out:** do not give the later command a file name as well. `grep ERROR server.log | wc -l server.log` counts every line of `server.log` and ignores the pipe completely. A command that is given a file name reads that file, not the pipe.
+**Watch out:** do not give the later command a file name as well. `grep INFO launch.log | wc -l launch.log` counts every line of `launch.log` and ignores the pipe completely. A command that is given a file name reads that file, not the pipe.
 
 ::: context big-logs Why engineers want this
 Real systems write a lot of text. A web server can log a line for every visit. A rocket engine on a test stand can have hundreds of sensors, each recording many readings every second. Nobody reads that by eye. Engineers ask it questions instead: how many errors, which one came first, which sensor complained most. Pipes let you answer those questions in one line, without writing a program.
@@ -311,25 +313,26 @@ Last lesson you joined two commands with a pipe. A pipeline can be longer: three
 
 Think of building a tower of blocks. If you stack ten blocks without looking and the tower falls, you cannot tell which block was crooked. If you look after each block, you spot the crooked one the moment you place it.
 
-**Step 1: a third stage.** `grep` can sit in the middle of a pipeline too. Given no file name, it [[filters|filter]] its standard input. Here the first `grep` keeps the INFO lines, the second keeps only those that mention `valve`, and `wc -l` counts what is left:
+**Step 1: a third stage.** `grep` can sit in the middle of a pipeline too. Given no file name, it [[filters|filter]] its standard input. Here `tail -n 4` keeps the last four lines of the log, `grep` keeps only the INFO lines among them, and `wc -l` counts what is left:
 
 ```
-~/project $ grep INFO launch.log | grep valve | wc -l
-1
+~/project $ tail -n 4 launch.log | grep INFO | wc -l
+2
 ```
 
 **Step 2: the method.** Build a pipeline one stage at a time, and look at the output after each stage:
 
 ```
-~/project $ grep INFO launch.log
-09:00 INFO systems check
-09:01 INFO fuel loaded
+~/project $ tail -n 4 launch.log
+09:02 ERROR valve 3 stuck
+09:03 INFO valve 3 reset
+09:04 ERROR sensor 7 offline
+09:05 INFO liftoff
+~/project $ tail -n 4 launch.log | grep INFO
 09:03 INFO valve 3 reset
 09:05 INFO liftoff
-~/project $ grep INFO launch.log | grep valve
-09:03 INFO valve 3 reset
-~/project $ grep INFO launch.log | grep valve | wc -l
-1
+~/project $ tail -n 4 launch.log | grep INFO | wc -l
+2
 ```
 
 You do not have to retype the pipeline each time. Press the up arrow key and your last command comes back. Add `| next-command` to its end and press Enter.
@@ -347,7 +350,7 @@ This is the fastest way to write a pipeline. Later, when an answer looks wrong, 
 
 `wc -l` does read its standard input, so it counts the three names `ls` sent it.
 
-**Watch out:** the mistake from last lesson hides well in a long pipeline. If a later stage names a file, as in `grep ERROR server.log | grep disk server.log`, the second `grep` reads the whole file again, and everything before it is thrown away. In pipelines like these, only the first stage names a file.
+**Watch out:** the mistake from last lesson hides well in a long pipeline. If a later stage names a file, as in `tail -n 4 launch.log | grep INFO launch.log`, `grep` reads the whole file again, and everything before it is thrown away. In pipelines like these, only the first stage names a file.
 
 ::: context filter Commands that let some text through
 A command that reads text in, changes it or picks from it, and writes text out is called a **filter**, like a coffee filter that lets the coffee through and holds the grounds back. `grep`, `head`, `tail`, `sort`, `uniq`, `wc` and `cut` are all filters, and most of this course is about them. Because a filter's output is plain text again, you can put another filter after it, as many times as you like.
@@ -571,9 +574,15 @@ seconds
 **Step 3: `tail -n +2` drops the header.** In the basics course, `tail -n 3` meant "the last three lines". A plus sign in front of the number changes the meaning: `tail -n +2` means "[[start from line 2|tail-plus]] and keep going to the end". That is every line except the first, so the header is gone.
 
 ```
-~/project $ tail -n +2 timing.txt | sort -n | head -n 1
+~/project $ tail -n +2 timing.txt
+71
+68
+80
 64
+75
 ```
+
+Five lap times, and no header. You can pipe that into anything you like.
 
 **Step 4: why the header matters.** `sort -n` treats a line that is [[not a number as 0|text-as-zero]]. So a header like `seconds` sorts as the smallest "number" of all, and `head -n 1` hands you the word instead of an answer:
 
@@ -776,24 +785,23 @@ src/lib/util.js
 
 **Step 2: where to start.** The first argument is the folder to start in. `.` (say "dot") means [[this folder, the one you are in|dot-folder]], so `find .` searches the whole project from here. Its results start with `./`, which means "from here".
 
-**Step 3: `-name` says what you want.** After the starting folder come **tests**: conditions something must pass to be printed. `-name config.json` passes only things called exactly `config.json`.
+**Step 3: `-name` says what you want.** After the starting folder come **tests**: conditions something must pass to be printed. `-name util.js` passes only things called exactly `util.js`.
 
 ```
-~/project $ find . -name config.json
-./config.json
-./api/config.json
+~/project $ find . -name util.js
+./src/lib/util.js
 ```
 
-**Step 4: `-type` picks folders or files.** `-type d` passes only **d**irectories (folders). `-type f` passes only ordinary **f**iles.
+**Step 4: `-type` picks folders or files.** `-type d` passes only **d**irectories (folders). `-type f` passes only ordinary **f**iles. This time the search starts in `src`, not `.`:
 
 ```
-~/project $ find . -type d -name tests
-./api/tests
+~/project $ find src -type d -name lib
+src/lib
 ```
 
-**Step 5: tests combine.** When you give several tests, something must pass [[all of them|find-tests]]. `-type d -name tests` means "a folder, and called `tests`". A *file* called `tests` fails the first test, so it is left out. (The folders here happen to be named `tests` too; that is a coincidence, not part of `find`.)
+**Step 5: tests combine.** When you give several tests, something must pass [[all of them|find-tests]]. `-type d -name lib` means "a folder, and called `lib`". A *file* called `lib` would fail the first test, so it would be left out.
 
-**Watch out:** `-name` matches the **whole** name, not part of it. `find . -name config` prints nothing here, because no file is called exactly `config`; the files are called `config.json`. To match part of a name you need a wildcard, and wildcards in `find` need quotes. That is the next lesson.
+**Watch out:** `-name` matches the **whole** name, not part of it. `find . -name util` prints nothing here, because no file is called exactly `util`; the file is called `util.js`. To match part of a name you need a wildcard, and wildcards in `find` need quotes. That is the next lesson.
 
 ::: context recursive Going all the way down
 **Recursive** means "doing the same thing again, one level further in". `find` looks in a folder; for each folder it finds there, it does the same again, and so on until there are no folders left. You met the same word in the basics course: `cp -r` and `rm -r` copy or remove a folder recursively, with everything inside it.
@@ -881,16 +889,16 @@ Without quotes, what happens depends on the files in this folder:
 find: paths must precede expression: `b.md'
 ```
 
-**Step 3: `-iname` ignores case.** File names on Linux are [[case-sensitive|case-sensitive]]: `Beach.JPG` and `beach.jpg` are different names, and `-name "*.jpg"` does not match `Beach.JPG`. `-iname` is `-name` that **i**gnores the difference between upper and lower case:
+**Step 3: `-iname` ignores case.** File names on Linux are [[case-sensitive|case-sensitive]]: `Map.PNG` and `map.png` are different names, and `-name "*.png"` does not match `Map.PNG`. `-iname` is `-name` that **i**gnores the difference between upper and lower case:
 
 ```
-~/project $ find . -iname "*.jpg"
-./cover.jpg
-./trip/day1/Beach.JPG
-./trip/day2/boat.jpg
+~/project $ find . -iname "*.png"
+./logo.png
+./trip/day1/Map.PNG
+./trip/day2/route.png
 ```
 
-It combines with other tests like any test does: `find . -type f -iname "*.jpg"` passes only files.
+It combines with other tests like any test does: `find . -type f -iname "*.png"` passes only files.
 
 **Watch out:** missing quotes do not always cause an error. When exactly one name in this folder matches, `find` runs happily and quietly returns too few results. Quote every pattern you give to `find`, every time.
 
@@ -959,57 +967,61 @@ The word you look for is called the **pattern**. `grep` has many **flags** (the 
 **Step 1: `-r`, search a whole folder.** On its own, `grep` reads files, not folders. Hand it a folder and it refuses:
 
 ```
-~/project $ grep TODO src
+~/project $ grep FIXME src
 grep: src: Is a directory
 ```
 
 `-r` means **recursive**: go into the folder, then into every [[folder inside it, and every folder inside those|recursive]], and search every file on the way. Because the hits can now come from many files, each line starts with the name of the file it was found in, then a colon (`:`):
 
 ```
-~/project $ grep -r TODO src
-src/api.js:// TODO: retry on failure
-src/lib/util.js:// TODO: cache results
+~/project $ grep -r FIXME src
+src/api.js:// FIXME: retry on failure
+src/lib/util.js:// FIXME: cache never empties
 ```
 
-Programmers leave [[TODO notes|todo-comments]] like these in their code for work they still have to do, and `grep -r` is how they round them up.
+Programmers leave [[notes like these|todo-comments]] in their code for work they still have to do, and `grep -r` is how they round them up.
 
 **Step 2: `-n`, show line numbers.** `-n` puts the **n**umber of the line in front of each hit, so you know exactly where to look:
 
 ```
-~/project $ grep -n TODO src/api.js
-3:// TODO: retry on failure
+~/project $ grep -n FIXME src/api.js
+3:// FIXME: retry on failure
 ```
 
-`TODO` is on line 3 of `src/api.js`.
+`FIXME` is on line 3 of `src/api.js`.
 
-**Step 3: combine flags.** Flags can be written together after one dash. `-rn` means `-r` and `-n` at once. Now every hit tells you the file, then the line number, then the line itself, with a colon between each part:
-
-```
-~/project $ grep -rn TODO src
-src/api.js:3:// TODO: retry on failure
-src/lib/util.js:2:// TODO: cache results
-```
-
-Read the first line as: "in `src/api.js`, on line 3, the line says `// TODO: retry on failure`."
-
-**Step 4: `-v`, keep the lines that do *not* match.** `-v` flips `grep` around (it stands for "in**v**ert"). Instead of keeping the lines that contain the pattern, it keeps all the others. That is how you clear away [[noise|log-levels]] in a log. Here `app.log` has three `DEBUG` lines, and `-v DEBUG` hides them:
+**Step 3: combine flags.** Flags can be written together after one dash. You met `-i` (ignore case) in the basics course. `-in` means `-i` and `-n` at once:
 
 ```
-~/project $ grep -v DEBUG app.log
-INFO ready
-WARN slow
-ERROR crash
-INFO restart
+~/project $ grep -in fixme src/api.js
+3:// FIXME: retry on failure
+```
+
+The pattern is in small letters, but `-i` finds `FIXME` anyway, and `-n` adds the line number. Any flags can join like this. When `-r` and `-n` are both on, every hit tells you the file, then the line number, then the line itself, with a colon between each part:
+
+```
+src/lib/util.js:2:// FIXME: cache never empties
+```
+
+Read it as: "in `src/lib/util.js`, on line 2, the line says `// FIXME: cache never empties`."
+
+**Step 4: `-v`, keep the lines that do *not* match.** `-v` flips `grep` around (it stands for "in**v**ert"). Instead of keeping the lines that contain the pattern, it keeps all the others. That is how you clear away [[noise|log-levels]] in a log. Here `test-run.log` has two `DEBUG` lines, and `-v DEBUG` hides them:
+
+```
+~/project $ grep -v DEBUG test-run.log
+INFO start
+WARN hot
+INFO done
 ```
 
 **Step 5: `-c`, count instead of print.** `-c` makes `grep` print **how many** lines it would have shown, instead of the lines themselves:
 
 ```
-~/project $ grep -c DEBUG app.log
-3
+~/project $ grep -c DEBUG test-run.log
+2
 ```
 
-`-c` works together with `-v` too. `grep -vc DEBUG app.log` counts the lines that are **not** DEBUG lines. You could also get the same number with a pipe, `grep -v DEBUG app.log | wc -l`, the way you counted with pipes earlier in this course.
+`-c` works together with `-v` too, and like any flags they can share one dash. Together they count the lines that are **not** DEBUG lines.
 
 **Watch out:** two mistakes catch everyone.
 
@@ -1099,32 +1111,32 @@ Picture a pile of notebooks. Sometimes you do not want every sentence that menti
 **Step 1: `-i`, ignore capitals.** You met `-i` in the basics course. To `grep`, `Fuel`, `FUEL` and `fuel` are three [[different words|upper-lower-case]], so a plain search misses two of them:
 
 ```
-~/project $ grep fuel notes/engine.txt
-~/project $ grep -i fuel notes/engine.txt
-Fuel pump checked
+~/project $ grep oxygen notes/engine.txt
+~/project $ grep -i oxygen notes/engine.txt
+Oxygen valve open
 ```
 
-The first search printed nothing, because the file says `Fuel` with a capital F. `-i` means "**i**gnore case": upper and lower case letters count as the same. (**Case** is the word for whether a letter is a capital or not.)
+The first search printed nothing, because the file says `Oxygen` with a capital O. `-i` means "**i**gnore case": upper and lower case letters count as the same. (**Case** is the word for whether a letter is a capital or not.)
 
 **Step 2: `-l`, list only the file names.** `-l` (a small letter L, for "**l**ist") makes `grep` print the **name** of each file that has at least one match, once, and not the lines themselves:
 
 ```
-~/project $ grep -rl fuel notes
+~/project $ grep -rl oxygen notes
 notes/tank.txt
 ```
 
 That is a short, [[tidy list|why-list-files]] you can read at a glance, however many times the word appears inside each file.
 
-**Step 3: put them together.** Flags [[combine|combining-flags]] after one dash, as `-rn` did last lesson. `-ril` means: search every folder (`-r`), ignore capitals (`-i`), and list only file names (`-l`):
+**Step 3: put them together.** Flags [[combine|combining-flags]] after one dash, as `-in` did last lesson. `-ri` means: search every folder (`-r`) and ignore capitals (`-i`):
 
 ```
-~/project $ grep -ril fuel notes
-notes/engine.txt
-notes/pad.txt
-notes/tank.txt
+~/project $ grep -ri oxygen notes
+notes/engine.txt:Oxygen valve open
+notes/pad.txt:OXYGEN line cold
+notes/tank.txt:oxygen tank full
 ```
 
-Now all three files show up, whichever way they spell `fuel`.
+Now all three files show up, whichever way they spell `oxygen`. But you get whole lines. Add `-l` to the same bundle, and `grep` prints only the file names instead.
 
 **Watch out:** `-l` is a small letter L, not the number 1 and not a capital I. And `-l` is not `-c`: `-c` prints a count of lines, `-l` prints file names.
 
@@ -1137,7 +1149,7 @@ Real projects can mention a word hundreds of times. When the question is "which 
 :::
 
 ::: context combining-flags Order does not matter here
-For these one-letter flags, `-ril`, `-lir`, `-r -i -l` and `-i -l -r` all mean the same thing: each letter switches one option on. What must come after the flags is the pattern (`fuel`) and then where to look (`notes`). A few flags take a value of their own, like `-n 3` for `head`, and those need the value right after them, so do not mix those into a bundle without care.
+For these one-letter flags, `-ril`, `-lir`, `-r -i -l` and `-i -l -r` all mean the same thing: each letter switches one option on. What must come after the flags is the pattern (`oxygen`) and then where to look (`notes`). A few flags take a value of their own, like `-n 3` for `head`, and those need the value right after them, so do not mix those into a bundle without care.
 :::
 --- task
 The `notes` folder has four files. Some mention fuel, written in different capitals: `Fuel`, `FUEL` or `fuel`. With **one** `grep`, list **only the names** of the files in `notes` that mention fuel, in **any** capitals.
@@ -1284,15 +1296,15 @@ Picture a kitchen with two hatches. Finished plates go out of one hatch to the d
 
 Those numbers are called [[file descriptors|file-descriptor]]. You will use them in a moment.
 
-**Step 2: `>` catches only standard output.** Here `ls` is asked to list a real folder, `reports`, and one that does not exist, `missing`. The listing goes into the file. The error does not: it still lands on your screen.
+**Step 2: `>` catches only standard output.** Here `ls` is asked to list a real folder, `photos`, and one that does not exist, `ghost`. The listing goes into the file. The error does not: it still lands on your screen.
 
 ```
-~/project $ ls reports missing > out.txt
-ls: cannot access 'missing': No such file or directory
-~/project $ cat out.txt
-reports:
-q1.txt
-q2.txt
+~/project $ ls photos ghost > list.txt
+ls: cannot access 'ghost': No such file or directory
+~/project $ cat list.txt
+photos:
+moon.jpg
+sun.jpg
 ```
 
 That is [[on purpose|why-two-outputs]]: the file gets clean results, and you still see that something went wrong.
@@ -1300,35 +1312,27 @@ That is [[on purpose|why-two-outputs]]: the file gets clean results, and you sti
 **Step 3: `2>`, send the errors to a file.** Put the stream number in front of the `>`. `2>` means "send stream 2, the errors, here":
 
 ```
-~/project $ ls reports missing 2> errors.txt
-reports:
-q1.txt  q2.txt
-~/project $ cat errors.txt
-ls: cannot access 'missing': No such file or directory
+~/project $ ls photos ghost 2> problems.txt
+photos:
+moon.jpg  sun.jpg
+~/project $ cat problems.txt
+ls: cannot access 'ghost': No such file or directory
 ```
 
-Now the listing is on the screen and the error is in the file. You can do both in one command, each stream to its own file:
+Now the listing is on the screen and the error is in the file. A command can have both redirections at once, one after the other, each stream to its own file. Then nothing is printed on the screen at all.
+
+**Step 4: `2>&1`, both into the same file.** Say it out loud as "send 2 to wherever 1 is going". The `&` tells the shell that `1` is a stream number, not a file called `1`. Here `cat` prints a real file, `notes.txt`, and complains about a missing one:
 
 ```
-~/project $ ls reports missing > found.txt 2> errors.txt
+~/project $ cat notes.txt ghost.txt > both.txt 2>&1
+~/project $ cat both.txt
+check engines
+cat: ghost.txt: No such file or directory
 ```
 
-Nothing is printed: the listing went into `found.txt` and the error into `errors.txt`.
+First `> both.txt` points stream 1 at the file. Then `2>&1` points stream 2 at the same place.
 
-**Step 4: `2>&1`, both into the same file.** Say it out loud as "send 2 to wherever 1 is going". The `&` tells the shell that `1` is a stream number, not a file called `1`:
-
-```
-~/project $ ls reports missing > all.txt 2>&1
-~/project $ cat all.txt
-ls: cannot access 'missing': No such file or directory
-reports:
-q1.txt
-q2.txt
-```
-
-First `> all.txt` points stream 1 at the file. Then `2>&1` points stream 2 at the same place.
-
-**Watch out:** the order matters. The shell sets up redirections [[from left to right|left-to-right]]. `2>&1 > all.txt` does the wrong thing: at the moment `2>&1` runs, stream 1 still goes to the screen, so errors are sent to the screen. Only afterwards is stream 1 moved to the file. Always write the file first, then `2>&1`.
+**Watch out:** the order matters. The shell sets up redirections [[from left to right|left-to-right]]. `2>&1 > both.txt` does the wrong thing: at the moment `2>&1` runs, stream 1 still goes to the screen, so errors are sent to the screen. Only afterwards is stream 1 moved to the file. Always write the file first, then `2>&1`.
 
 ::: context stream A stream of text
 A **stream** is text that flows out of (or into) a program a piece at a time, like water through a hose, instead of arriving all at once. A program does not need to know where its streams end up. The shell decides: the screen, a file, or another program through a pipe.
@@ -1358,7 +1362,7 @@ Imagine saving a list of sensor readings into a file, and a warning line sneaks 
 :::
 
 ::: context left-to-right The shell reads redirections in order
-Before a command runs, the shell goes through its redirections one at a time, from left to right. Each one changes where a stream points *at that moment*. `2>&1` copies wherever stream 1 points right then; it does not follow stream 1 if it moves later. So in `> all.txt 2>&1`, stream 1 already points at the file when stream 2 copies it. In `2>&1 > all.txt`, stream 2 copies "the screen", and then only stream 1 moves.
+Before a command runs, the shell goes through its redirections one at a time, from left to right. Each one changes where a stream points *at that moment*. `2>&1` copies wherever stream 1 points right then; it does not follow stream 1 if it moves later. So in `> both.txt 2>&1`, stream 1 already points at the file when stream 2 copies it. In `2>&1 > both.txt`, stream 2 copies "the screen", and then only stream 1 moves.
 :::
 --- task
 `ls reports missing` lists a real folder and a folder that does not exist, so it prints a listing **and** an error.
@@ -1394,15 +1398,13 @@ Last lesson you split a command's output into its two streams: `>` for the resul
 **Step 1: `/dev/null`, a bin with no bottom.** Sometimes you already know an error will appear, and you do not care about it. You want it gone. For that there is a special file called [[/dev/null|dev-null]]. Anything written to it disappears. So `2> /dev/null` means "send the errors nowhere":
 
 ```
-~/project $ cat mon.log tue.log wed.log
+~/project $ cat mon.log tue.log
 cat: tue.log: No such file or directory
 08:00 radio ok
 08:30 power ok
-11:00 heater ok
-~/project $ cat mon.log tue.log wed.log 2> /dev/null
+~/project $ cat mon.log tue.log 2> /dev/null
 08:00 radio ok
 08:30 power ok
-11:00 heater ok
 ```
 
 The second time, the error about the missing `tue.log` is gone and only the results are left.
@@ -1412,22 +1414,21 @@ The second time, the error about the missing `tue.log` is gone and only the resu
 **Step 2: pipes carry only standard output.** A pipe `|` works like `>`: it takes stream 1 and leaves stream 2 alone. So the error still reaches your screen, even though the results went into the next command:
 
 ```
-~/project $ cat mon.log tue.log wed.log | wc -l
+~/project $ cat mon.log tue.log | wc -l
 cat: tue.log: No such file or directory
-3
+2
 ```
 
-`wc -l` counted the 3 good lines. The error never went through the [[pipe|pipe-streams]], so it did not get counted. It went straight to the screen.
+`wc -l` counted the 2 good lines. The error never went through the [[pipe|pipe-streams]], so it did not get counted. It went straight to the screen.
 
-**Step 3: `&>`, both streams in one go.** Last lesson, `> all.txt 2>&1` sent both streams into `all.txt`. [[A shorter spelling|ampersand-shorthand]] does the same thing: `&>` followed by the file name.
+**Step 3: `&>`, both streams in one go.** Last lesson, `> both.txt 2>&1` sent both streams into `both.txt`. [[A shorter spelling|ampersand-shorthand]] does the same thing: `&>` followed by the file name.
 
 ```
-~/project $ cat mon.log tue.log wed.log &> both.txt
+~/project $ cat mon.log tue.log &> both.txt
 ~/project $ cat both.txt
 cat: tue.log: No such file or directory
 08:00 radio ok
 08:30 power ok
-11:00 heater ok
 ```
 
 Read `&>` as "both streams to this file".
@@ -1504,24 +1505,26 @@ That adds one line to `run.log` and keeps every line before it. Picking the wron
 **Step 2: `tee`, see it and save it.** When you send output into a file with `>`, you no longer see it on screen. Sometimes you want both. `tee` does that. It takes the text coming through a pipe, writes a copy into a file, and passes the same text on to the screen. It is named after a [[T-shaped pipe joint|tee-name]]:
 
 ```
-~/project $ sort -u logins.txt | tee users.txt
-ada
-sam
-~/project $ cat users.txt
-ada
-sam
+~/project $ sort planets.txt | tee sorted.txt
+earth
+mars
+venus
+~/project $ cat sorted.txt
+earth
+mars
+venus
 ```
 
-You saw the names, and they were saved in `users.txt` too.
+You saw the sorted names, and they were saved in `sorted.txt` too.
 
 **Step 3: `tee` in the middle of a pipeline.** `tee` passes the text on, so another command can [[come after it|tee-middle]]. Here the list is saved and counted in one line:
 
 ```
-~/project $ sort -u logins.txt | tee users.txt | wc -l
-2
+~/project $ sort planets.txt | tee sorted.txt | wc -l
+3
 ```
 
-`users.txt` gets the names; the screen shows only the count, because `wc -l` got the names next.
+`sorted.txt` gets the names; the screen shows only the count, because `wc -l` got the names next.
 
 **Step 4: `tee -a`, append.** Plain `tee` replaces the file, like `>`. `tee -a` (**a** for **a**ppend) adds to the end instead, like `>>`:
 

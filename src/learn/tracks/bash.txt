@@ -98,9 +98,9 @@ Picture a building. Making a folder is like building a new room. Moving into a f
 `mkdir` **m**a**k**es a **dir**ectory — a new folder. After the command, leave a space and type the folder's name. That name is an **[[argument|argument]]**: the extra word you give a command so it knows what to work on.
 
 ```
-~/project $ mkdir notes
+~/project $ mkdir mission-logs
 ~/project $ ls
-notes/
+mission-logs/
 ```
 
 `mkdir` prints nothing when it works. Silence means success in the terminal. Run `ls` to see the new folder.
@@ -108,14 +108,14 @@ notes/
 `cd` stands for **c**hange **d**irectory. It moves you into a folder. Watch the prompt: it changes to show where you are now.
 
 ```
-~/project $ cd notes
-~/project/notes $
+~/project $ cd mission-logs
+~/project/mission-logs $
 ```
 
 Two more ways to use `cd`. `cd ..` (cd, a space, then two dots) goes back up one level, to the folder that holds this one. The [[two dots|dot-dot]] always mean "the folder above".
 
 ```
-~/project/notes $ cd ..
+~/project/mission-logs $ cd ..
 ~/project $
 ```
 
@@ -126,10 +126,10 @@ And `cd` on its own, with nothing after it, takes you [[home|cd-home]]:
 ~ $
 ```
 
-**Watch out:** `mkdir notes` only builds the folder — it does not move you into it. You need `cd notes` as a second step. Also keep a space between the command and the name: `cdnotes` is not a command. And avoid [[spaces inside folder names|no-spaces]] for now.
+**Watch out:** `mkdir mission-logs` only builds the folder — it does not move you into it. You need `cd mission-logs` as a second step. Also keep a space between the command and the name: `cdmission-logs` is not a command. And avoid [[spaces inside folder names|no-spaces]] for now.
 
 ::: context argument Commands and their arguments
-A command is often a verb, and the argument is its object. In `mkdir notes`, "make a folder" is the verb and `notes` is what to make. The shell splits what you type at the spaces: the first word is the command, and each word after it is an argument. Some commands take none (`pwd`), some take one (`cd notes`), and some take several (you will meet `cp`, which takes two).
+A command is often a verb, and the argument is its object. In `mkdir mission-logs`, "make a folder" is the verb and `mission-logs` is what to make. The shell splits what you type at the spaces: the first word is the command, and each word after it is an argument. Some commands take none (`pwd`), some take one (`cd mission-logs`), and some take several (you will meet `cp`, which takes two).
 :::
 ::: context dot-dot Up one level
 Folders sit inside folders, like boxes inside boxes. `..` is the name of the box that holds the one you are in. Every folder has it, so `cd ..` always works (except at the very top, where there is nothing above).
@@ -139,7 +139,7 @@ Folders sit inside folders, like boxes inside boxes. `..` is the name of the box
   <rect x="20" y="15" width="320" height="100" rx="8" fill="white" stroke="#1f2a44" stroke-width="2"/>
   <text x="34" y="36" font-size="13" fill="#1f2a44">project</text>
   <rect x="150" y="45" width="170" height="55" rx="8" fill="#8fb8f0" stroke="#1d6fd1" stroke-width="2"/>
-  <text x="164" y="66" font-size="13" fill="#1f2a44">notes</text>
+  <text x="164" y="66" font-size="13" fill="#1f2a44">mission-logs</text>
   <text x="164" y="88" font-size="12" fill="#1f2a44">you are here</text>
   <path d="M150 80 C 110 80, 90 70, 70 55" fill="none" stroke="#b4232c" stroke-width="2"/>
   <polygon points="66,50 78,54 70,62" fill="#b4232c"/>
@@ -177,9 +177,9 @@ Last lesson you made folders and moved between them. Folders are only boxes, tho
 `touch` makes an empty file. Give it the file's name as the argument:
 
 ```
-~/project $ touch plan.txt
+~/project $ touch flight-plan.txt
 ~/project $ ls
-plan.txt
+flight-plan.txt
 ```
 
 The file is there, but blank — like a new, empty page.
@@ -194,22 +194,22 @@ Launch at dawn
 The second piece is the `>` sign (a greater-than sign, read "into"). It is a **[[redirect|redirect]]**: it takes what a command would have printed on the screen and sends it into a file instead.
 
 ```
-~/project $ echo "Launch at dawn" > plan.txt
+~/project $ echo "Launch at dawn" > flight-plan.txt
 ~/project $
 ```
 
-Nothing appears on screen this time. The words went into `plan.txt`. If the file did not exist yet, `>` makes it.
+Nothing appears on screen this time. The words went into `flight-plan.txt`. If the file did not exist yet, `>` makes it.
 
 Notice the **[[double quotes|quotes]]** around the text. The quotes keep it together as one piece. They also stop characters such as `>` or `&` (the and-sign, called an ampersand) inside your text from being read as part of the command.
 
 To read a file, use `cat`. It prints a file's contents on the screen, so you can [[check what you wrote|cat-name]]:
 
 ```
-~/project $ cat plan.txt
+~/project $ cat flight-plan.txt
 Launch at dawn
 ```
 
-**Watch out:** `>` **replaces** whatever the file held. If `plan.txt` had a hundred lines, `echo "hi" > plan.txt` leaves it holding only `hi`, and the old lines are [[gone for good|overwrite]]. Read the command before you press Enter.
+**Watch out:** `>` **replaces** whatever the file held. If `flight-plan.txt` had a hundred lines, `echo "hi" > flight-plan.txt` leaves it holding only `hi`, and the old lines are [[gone for good|overwrite]]. Read the command before you press Enter.
 
 ::: context redirect Where output goes
 Normally a command's output goes to the screen. A redirect points it somewhere else, the way you might redirect a letter to a new address. `>` sends it into a file. Later you will meet `>>`, which adds to the end of a file instead of replacing it, and `|`, which sends one command's output into another command. Engineers use redirects all the time to save test results and data readings into files they can study later.
@@ -509,10 +509,10 @@ Last lesson you deleted files. Before deleting, or before trusting a file at all
 
 Think of a long grocery receipt. You might glance at the top, check the total at the bottom, count the items, or hunt for one thing you bought. The terminal has a command for each of those.
 
-For the examples, here is a small file called `steps.txt`:
+For the examples, here is a small file called `pre-flight.txt`, a checklist to go through before a launch:
 
 ```
-~/project $ cat steps.txt
+~/project $ cat pre-flight.txt
 fuel
 power
 radio
@@ -523,7 +523,7 @@ go
 **The top of a file.** `head` shows the [[first lines|head-tail-picture]]. The flag `-n`, said "dash n", means **number of lines**, and the number after it says how many:
 
 ```
-~/project $ head -n 2 steps.txt
+~/project $ head -n 2 pre-flight.txt
 fuel
 power
 ```
@@ -531,7 +531,7 @@ power
 **The bottom of a file.** `tail` is the same idea from the other end. It shows the last lines:
 
 ```
-~/project $ tail -n 2 steps.txt
+~/project $ tail -n 2 pre-flight.txt
 weather
 go
 ```
@@ -539,20 +539,20 @@ go
 **Counting lines.** `wc` is short for **w**ord **c**ount. With the flag `-l`, said "dash l" (the letter, for **l**ines), it [[counts only the lines|wc-counts]] and prints the number, then the file name:
 
 ```
-~/project $ wc -l steps.txt
-5 steps.txt
+~/project $ wc -l pre-flight.txt
+5 pre-flight.txt
 ```
 
 **Finding lines.** `grep` prints only the lines that contain some text. You give it the text first, then the file. This is the command with the [[strangest name|grep-name]] in the lesson, and one of the most useful:
 
 ```
-~/project $ grep o steps.txt
+~/project $ grep "o" pre-flight.txt
 power
 radio
 go
 ```
 
-Every line with a letter `o` in it came out; the rest stayed hidden.
+Every line with a letter `o` in it came out; the rest stayed hidden. The quotes around the text are not needed for one plain word, but they are a good habit: with them, a search for two words still works.
 
 `grep` has two flags you will use often:
 
@@ -560,7 +560,7 @@ Every line with a letter `o` in it came out; the rest stayed hidden.
 - `-n`, "dash n": show the **line number** in front of each match, then a colon.
 
 ```
-~/project $ grep -n o steps.txt
+~/project $ grep -n "o" pre-flight.txt
 2:power
 3:radio
 5:go
@@ -600,8 +600,8 @@ If you leave out `-n` and a number, `head` and `tail` show 10 lines each.
 On its own, with no flag, `wc` prints three numbers: lines, words, and the size in bytes (for plain English text, about one byte per character, counting the invisible end-of-line character too).
 
 ```
-~/project $ wc steps.txt
-5 5 28 steps.txt
+~/project $ wc pre-flight.txt
+5 5 28 pre-flight.txt
 ```
 
 That is 5 lines, 5 words and 28 bytes. The flag `-l` keeps only the first number, and `-w` would keep only the words. Counting lines is by far the most common use, because in a log one line is usually one event.
@@ -651,19 +651,19 @@ Last lesson you looked inside files with `head`, `tail`, `wc` and `grep`. This l
 **Joining commands with "and then".** Think of a recipe: "crack the eggs, and then whisk them". If the eggs never got cracked, you would not start whisking. Two ampersands, `&&`, said "and", do the same for commands. The second command runs only if the first one [[worked|exit-status]]:
 
 ```
-~/project $ mkdir build && cd build
-~/project/build $
+~/project $ mkdir build && ls
+build/
 ```
 
-One line, two steps: make the folder, and then move into it. Now watch what happens when the first step fails:
+One line, two steps: make the folder, and then list what is here. Now watch what happens when the first step fails:
 
 ```
-~/project $ mkdir build && cd build
+~/project $ mkdir build && ls
 mkdir: cannot create directory 'build': File exists
 ~/project $
 ```
 
-`mkdir` failed because `build` was already there, so `cd` never ran. The prompt shows you did not move. That is the whole point of `&&`: [[nothing goes ahead on top of a failure|and-vs-semicolon]].
+`mkdir` failed because `build` was already there, so `ls` never ran. No list came out. That is the whole point of `&&`: [[nothing goes ahead on top of a failure|and-vs-semicolon]].
 
 **Adding to a file.** In the lesson on files you met the greater-than sign, `>`. It sends a command's output into a file, and it **replaces** whatever the file held. Two greater-than signs, `>>`, **append**: they add the new text to the end of the file and keep what was there.
 

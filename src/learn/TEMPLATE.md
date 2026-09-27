@@ -59,6 +59,7 @@ Last hint: the answer's shape, explained.
 - [ ] One new idea per step, each with its own tiny example. A dense lesson becomes two lessons (new id, same course, placed next to it) rather than one wall of text.
 - [ ] Every symbol and flag is said in words the first time (`-r` is "recursive: go into every folder inside").
 - [ ] The task only asks for what the explanation showed. Read it cold as a bright 12-year-old who just finished the lesson before.
+- [ ] **The examples never give the answer away.** Show the idea on different names, files, values and data from the task, and show the pieces one at a time rather than the finished answer. The task should make her adapt or combine what she saw, not copy it. **(checked: `giveaway.ts`, no solution word for word in an example, and no two-line-or-more solution that is an example with the names swapped)**
 - [ ] Two or three hints, from gentle to nearly the answer. **(checked: at least one)**
 
 **The context notes**

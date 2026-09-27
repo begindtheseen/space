@@ -1441,22 +1441,22 @@ Back to the class register. A student moves to a different form, so you cross ou
 **UPDATE** changes values in rows that already exist:
 
 ```sql
-UPDATE users SET plan = 'pro' WHERE id = 3;
+UPDATE users SET plan = 'free' WHERE id = 1;
 ```
 
 Read it left to right:
 
 - `UPDATE users` means "change rows in the `users` table".
-- `SET plan = 'pro'` means "make the `plan` column hold `'pro'`".
-- `WHERE id = 3` picks which rows to change, the same `WHERE` you have used since the lesson "Filtering with WHERE".
+- `SET plan = 'free'` means "make the `plan` column hold `'free'`".
+- `WHERE id = 1` picks which rows to change, the same `WHERE` you have used since the lesson "Filtering with WHERE".
 
-User 3 is sam. Before, sam's row said `free`. After:
+User 1 is ada. Before, ada's row said `pro`. After:
 
 | id | email | plan | created |
 | --- | --- | --- | --- |
-| 3 | sam@example.com | pro | 2025-03-20 |
+| 1 | ada@example.com | free | 2025-01-04 |
 
-Every other row is untouched, because only sam's row passed the `WHERE`. One `UPDATE` can also [[change more than one column|set-several]] at a time.
+Every other row is untouched, because only ada's row passed the `WHERE`. One `UPDATE` can also [[change more than one column|set-several]] at a time.
 
 **DELETE** removes whole rows:
 
@@ -1472,27 +1472,27 @@ There is no column list, because `DELETE` always takes away the [[whole row|one-
 Now the dangerous part. The `WHERE` is optional. Leave it out and the command runs on **every row** in the table:
 
 ```sql
-UPDATE users SET plan = 'pro';   -- all four users are now pro
+UPDATE users SET plan = 'free';  -- all four users are now free
 DELETE FROM requests;            -- every request is gone
 ```
 
 The database does not ask "are you sure?". It does what you wrote, and there is [[no undo button|no-undo]].
 
-So here is a good habit. Write the `SELECT` first, with the `WHERE` you plan to use, and look at what comes back. The `<` sign means "less than":
+So here is a good habit. Write the `SELECT` first, with the `WHERE` you plan to use, and look at what comes back. The `>` sign means "more than" (and `<` means "less than"):
 
 ```sql
-SELECT id, cost_usd FROM requests WHERE cost_usd < 0.002;
+SELECT id, cost_usd FROM requests WHERE cost_usd > 0.02;
 ```
 
 | id | cost_usd |
 | --- | --- |
-| 3 | 0.0012 |
-| 5 | 0.0006 |
+| 2 | 0.0298 |
+| 4 | 0.0765 |
 
 Two rows, and they are the ones you meant. Now keep the `WHERE` exactly as it is and [[swap the front of the statement|select-first]]:
 
 ```sql
-DELETE FROM requests WHERE cost_usd < 0.002;
+DELETE FROM requests WHERE cost_usd > 0.02;
 ```
 
 It removes exactly those two rows, the ones you saw a moment ago. (Many real apps go further and [[never delete important rows at all|soft-delete]].)
@@ -1612,9 +1612,9 @@ Now add rules. Here is a table for invoices, the bills a user has to pay:
 ```sql
 CREATE TABLE invoices (
   id INTEGER PRIMARY KEY,
-  user_id INTEGER NOT NULL REFERENCES users(id),
+  user_id INTEGER REFERENCES users(id),
   amount_cents INTEGER NOT NULL,
-  paid INTEGER NOT NULL DEFAULT 0
+  paid INTEGER DEFAULT 0
 );
 ```
 
@@ -1626,12 +1626,14 @@ The money is stored as a whole number of [[cents|cents]], and `paid` holds [[0 f
 - `DEFAULT 0`: the value used when an insert leaves this column out.
 - `UNIQUE`: no two rows may share the value. (You met it on `email` in the lesson "Inserting rows".)
 
+One column can carry more than one rule: write them one after another, after the type.
+
 These rules are the **constraints** from "Inserting rows", and now you are the one writing them. Constraints are rules the database enforces for every writer, forever. That is cheaper than remembering them in every piece of code.
 
-Here is `DEFAULT` at work. The insert names only three columns and leaves `paid` out:
+Here is `DEFAULT` at work. The insert names only two columns and leaves `id` and `paid` out. (An `INTEGER PRIMARY KEY` that is left out gets the next free number, here `1`.)
 
 ```sql
-INSERT INTO invoices (id, user_id, amount_cents) VALUES (1, 2, 1500);
+INSERT INTO invoices (user_id, amount_cents) VALUES (2, 1500);
 SELECT * FROM invoices;
 ```
 

@@ -18,20 +18,20 @@ In git that happens all the time. Someone fixes a bug on an experimental branch,
 **Step 1: find the commit.** `git log` with a branch name lists that branch's commits, even while you stand on another branch:
 
 ```
-~/project $ git log --oneline experiment
-4072ce9 (experiment) More fancy mode
-6f4d43c Fix crash on empty list
-bdfda2f Start the fancy mode
-fd796b8 (HEAD -> main) Add stats
+~/project $ git log --oneline sound-test
+4072ce9 (sound-test) More sound effects
+6f4d43c Fix the volume slider
+bdfda2f Start the sound test
+fd796b8 (HEAD -> main) Add scores
 ```
 
-The fix is `6f4d43c`. You can name it by its id. Or count back from the tip of the branch, the way you counted back from `HEAD`: `experiment~1` means "one commit before the newest commit on `experiment`". Here that is the fix.
+The fix is `6f4d43c`. You can name it by its id. Or count back from the tip of the branch, the way you counted back from `HEAD`: `sound-test~1` means "one commit before the newest commit on `sound-test`". Here that is the fix.
 
 **Step 2: copy it.** The command is **`git cherry-pick`**: it copies the change one commit made onto the branch you are on. [[Cherry-pick|cherry-pick-name]] means choosing only the one you want. Stand on the branch that should receive the copy, here `main`, and name the commit:
 
 ```
-~/project $ git cherry-pick experiment~1
-[main a1087a9] Fix crash on empty list
+~/project $ git cherry-pick sound-test~1
+[main a1087a9] Fix the volume slider
  1 file changed
 ```
 
@@ -41,21 +41,21 @@ Git takes the change that commit made, applies it on top of `main`, and records 
 
 ```
 ~/project $ git log --oneline
-a1087a9 (HEAD -> main) Fix crash on empty list
-fd796b8 Add stats
+a1087a9 (HEAD -> main) Fix the volume slider
+fd796b8 Add scores
 ~/project $ ls
-stats.py
+scores.py
 ```
 
-The fix is there. `fancy.py`, which `experiment` added in other commits, stayed behind. A cherry-pick copies one commit's change, nothing else.
+The fix is there. `sounds.py`, which `sound-test` added in other commits, stayed behind. A cherry-pick copies one commit's change, nothing else.
 
-**Step 4: the copy is a new commit.** Compare the ids. The original is `6f4d43c`; the copy on `main` is `a1087a9`. The copy has a different id because it has a [[different parent|new-id]]: it was built on top of `Add stats`, not on top of `Start the fancy mode`.
+**Step 4: the copy is a new commit.** Compare the ids. The original is `6f4d43c`; the copy on `main` is `a1087a9`. The copy has a different id because it has a [[different parent|new-id]]: it was built on top of `Add scores`, not on top of `Start the sound test`.
 
 Git keeps no link between the two. As far as git knows, they are two separate commits that happen to make the same change. That is fine for one urgent fix, the everyday job engineers call a [[backport|backport]]. It is a reason not to cherry-pick when a normal merge would do: if you later merge the two branches, the history can [[show the same change twice|twice]].
 
 **Step 5: when it does not fit.** If the lines around the change look different on your branch, git cannot tell where the change goes. The cherry-pick stops with a conflict, much like a merge conflict. The last lesson of this course walks through one.
 
-**Watch out:** a cherry-pick always lands on the branch you are standing on. Switch to the branch that should **receive** the fix first, here `main`. And `experiment~1` counts back from the tip of `experiment`, not from where you are. Run `git log --oneline experiment` first, so you know exactly which commit you are copying.
+**Watch out:** a cherry-pick always lands on the branch you are standing on. Switch to the branch that should **receive** the fix first, here `main`. And `sound-test~1` counts back from the tip of `sound-test`, not from where you are. Run `git log --oneline sound-test` first, so you know exactly which commit you are copying.
 
 ::: context cherry-pick-name Where the name comes from
 To cherry-pick is an everyday English phrase: picking only the best cherries off the tree and leaving the rest. It means choosing exactly the items you want. Git borrowed it for this command because you choose one commit out of a branch and leave the others hanging there. You will hear it as a verb on teams: "can you cherry-pick that fix onto the release branch?"
@@ -98,7 +98,7 @@ Real projects keep old versions alive. A team might release version 2.0 while cu
 :::
 
 ::: context twice Why the change can show up twice
-After the cherry-pick, `main` and `experiment` each hold a commit that fixes the crash, with different ids. If you later merge `experiment` into `main`, git usually sees that both sides made the identical change and merges them quietly. But `git log` now lists `Fix crash on empty list` twice, and if either side changed those lines again in between, you get a conflict over a fix you already have. So cherry-pick for one urgent commit. When you want all of a branch, merge it.
+After the cherry-pick, `main` and `sound-test` each hold a commit that fixes the slider, with different ids. If you later merge `sound-test` into `main`, git usually sees that both sides made the identical change and merges them quietly. But `git log` now lists `Fix the volume slider` twice, and if either side changed those lines again in between, you get a conflict over a fix you already have. So cherry-pick for one urgent commit. When you want all of a branch, merge it.
 :::
 --- task
 The `experiment` branch has a commit `Fix crash on empty list` that `main` needs now, but the rest of `experiment` is not ready. You are on `main`. Find the fix with `git log --oneline experiment`, then copy **only that commit** onto `main` with `git cherry-pick`.
@@ -299,57 +299,56 @@ Commits work the same way. While you work, small commits are good: `wip`, `wip 2
 
 Combining several commits into one is called **squashing**: the commits get squashed flat into a single one.
 
-**Step 1: count your commits.** You know this range from the intermediate course: `main..feature` lists what `feature` has and `main` does not.
+**Step 1: count your commits.** You know this range from the intermediate course: `main..dark-mode` lists what a branch called `dark-mode` has and `main` does not.
 
 ```
-~/project $ git log --oneline main..feature
-2ae3e38 (HEAD -> feature) wip 3
-d1514f1 fix typo
-8d0b63c wip 2
-c54734e wip
+~/project $ git log --oneline main..dark-mode
+5b0e7a1 (HEAD -> dark-mode) fix colour
+9c3f2d4 wip 2
+e81a6b0 wip
 ```
 
-Four commits to squash.
+Three commits to squash.
 
-**Step 2: undo them, keep the work.** You met `git reset --soft` among the reset modes. `--soft` moves the branch back but leaves every change staged. Go back four commits:
+**Step 2: undo them, keep the work.** You met `git reset --soft` among the reset modes. `--soft` moves the branch back but leaves every change staged. Go back three commits:
 
 ```
-~/project $ git reset --soft HEAD~4
+~/project $ git reset --soft HEAD~3
 ~/project $ git status
-On branch feature
+On branch dark-mode
 
 Changes to be committed:
-        new file:   search.css
-        new file:   search.html
+        new file:   dark.css
+        new file:   toggle.js
 ```
 
-The four commits are gone from the branch. Everything they changed together is waiting in the staging area, ready to commit.
+The three commits are gone from the branch. Everything they changed together is waiting in the staging area, ready to commit.
 
 **Step 3: commit once.** Now make the one commit, with a message that explains the idea:
 
 ```
-~/project $ git commit -m "Add the search box"
-[feature d99f6b6] Add the search box
+~/project $ git commit -m "Add a dark mode"
+[dark-mode d99f6b6] Add a dark mode
  2 files changed
 ~/project $ git log --oneline
-d99f6b6 (HEAD -> feature) Add the search box
+d99f6b6 (HEAD -> dark-mode) Add a dark mode
 a662549 (main) Start
 ```
 
-The new commit contains exactly what the four did together, and nothing of the messy steps along the way.
+The new commit contains exactly what the three did together, and nothing of the messy steps along the way.
 
 **In a real terminal.** There you will also meet `git rebase -i`, short for **interactive rebase**. It opens a text editor listing your commits, where you mark which to squash, reorder or reword. This practice terminal has no editor, so it answers with an error. That is no loss: `git reset --soft` is what a squash [[does underneath|interactive]] anyway. Some teams go one step further and let the website [[squash a whole branch|squash-merge]] at the moment it is merged.
 
 Squashing rewrites history, like every command in this part of the course. The same rule applies: squash commits **before** you push them to share with others, not after.
 
-**Watch out:** count carefully. `HEAD~4` must match the number of your own commits. Count too many, and you squash `main`'s commits into yours as well. Always list them first with `git log --oneline main..feature`, and run the reset on `feature`, never on `main`.
+**Watch out:** count carefully. The number after `HEAD~` must match the number of your own commits. Count too many, and you squash `main`'s commits into yours as well. Always list them first with `git log --oneline main..` and your branch's name, and run the reset on your branch, never on `main`.
 
 ::: context wip Save points while you work
 "WIP" is common programmer shorthand for work in progress. A `wip` commit says "this is not finished, but I want a save point". That is a good habit: if an experiment goes wrong, you can go back to the last save point instead of losing an afternoon. The trouble is only when the save points get shared as they are, because nobody reading the history later can tell what `wip 2` was for.
 :::
 
 ::: context one-idea Why one commit per idea
-A commit that holds one whole idea is easy to review: the reviewer sees the complete search box at once, not four half-steps. It is easy to undo: `git revert` on that one commit removes the whole search box and nothing else. And it helps bug hunts: when `git bisect` points at a commit, you want that commit to be a meaningful change with a message that says what it did. Many open-source projects ask contributors to squash their branch before it is merged, for exactly these reasons.
+A commit that holds one whole idea is easy to review: the reviewer sees the complete dark mode at once, not three half-steps. It is easy to undo: `git revert` on that one commit removes the whole dark mode and nothing else. And it helps bug hunts: when `git bisect` points at a commit, you want that commit to be a meaningful change with a message that says what it did. Many open-source projects ask contributors to squash their branch before it is merged, for exactly these reasons.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 170" font-family="Inter, Arial, sans-serif">
@@ -433,19 +432,19 @@ Picture copying your homework, page by page, into a new notebook. The new notebo
 
 A rebase works the same way. It [[replays your commits one at a time|one-at-a-time]]. If one of them changes lines that `main` also changed, git cannot choose, so the rebase **stops at that commit**. You met this kind of stop in the intermediate course, as a merge conflict. Most of what you learned there still works. Two things are different, and those are what trip people up.
 
-**Step 1: the rebase stops.** Here `main` added punctuation to `greeting.txt`, and your commit `Greet space` changed the word `world` to `space` on the same line:
+**Step 1: the rebase stops.** Here `main` added an exclamation mark to `welcome-sign.txt`, and your commit `Greet Mars` changed the word `Earth` to `Mars` on the same line:
 
 ```
 ~/project $ git rebase main
-CONFLICT (content): Merge conflict in greeting.txt
-error: could not apply 169d2b0... Greet space
+CONFLICT (content): Merge conflict in welcome-sign.txt
+error: could not apply 169d2b0... Greet Mars
 hint: Resolve the conflicts in the file(s), mark each resolved with
 hint: "git add <file>", then run "git rebase --continue".
 hint: You can instead skip this commit with "git rebase --skip".
 hint: To give up and go back to how things were, run "git rebase --abort".
 ```
 
-`could not apply 169d2b0... Greet space` names the commit it got stuck on. (Your ids will be different.) Read the `hint:` lines: git is already telling you your three ways out.
+`could not apply 169d2b0... Greet Mars` names the commit it got stuck on. (Your ids will be different.) Read the `hint:` lines: git is already telling you your three ways out.
 
 **Step 2: find out where you are.** `git status` explains:
 
@@ -458,7 +457,7 @@ You are currently rebasing branch 'feature' on '9124e26'.
 
 Unmerged paths:
   (use "git add <file>..." to mark resolution)
-        both modified:   greeting.txt
+        both modified:   welcome-sign.txt
 ```
 
 The first line says you are on a **[[detached HEAD|detached-head]]**: HEAD points straight at a commit, not at a branch. That is normal during a rebase. Git builds the new commits off to the side and only moves `feature` to them when the rebase finishes. `9124e26` is the tip of `main`, where the replay started.
@@ -468,12 +467,12 @@ The first line says you are on a **[[detached HEAD|detached-head]]**: HEAD point
 **Step 3: read the file.** The conflict markers are the same ones you met with merge:
 
 ```
-~/project $ cat greeting.txt
+~/project $ cat welcome-sign.txt
 <<<<<<< HEAD
-Hello, world!
+Welcome to Earth!
 =======
-Hello space
->>>>>>> 169d2b0 (Greet space)
+Welcome to Mars
+>>>>>>> 169d2b0 (Greet Mars)
 ```
 
 Here is the first difference. **[[The sides look swapped|swapped-sides]].** In a merge, `HEAD` was your branch. In a rebase, `HEAD` is `main` plus whatever has been replayed so far. The other side, below `=======`, is **your** commit, the one being replayed. Its id and message are on the `>>>>>>>` line, so read that line to tell whose is whose.
@@ -481,24 +480,24 @@ Here is the first difference. **[[The sides look swapped|swapped-sides]].** In a
 **Step 4: fix the file and stage it.** Write the file the way it should be, with all three marker lines gone. This practice terminal has no editor, so `echo` writes it. Then `git add` marks the conflict resolved, exactly as with a merge:
 
 ```
-~/project $ echo "Hello, space!" > greeting.txt
-~/project $ git add greeting.txt
+~/project $ echo "Welcome to Mars!" > welcome-sign.txt
+~/project $ git add welcome-sign.txt
 ```
 
 **Step 5: carry on with `--continue`.** Here is the second difference. You finish a merge with `git commit`. You finish a rebase step with **`git rebase --continue`** ("continue"). It records your resolved commit and goes on replaying the rest:
 
 ```
 ~/project $ git rebase --continue
-[detached HEAD 79a5d9d] Greet space
+[detached HEAD 79a5d9d] Greet Mars
 Successfully rebased and updated refs/heads/feature.
 ~/project $ git log --oneline
 77d425e (HEAD -> feature) Add launch
-79a5d9d Greet space
-9124e26 (main) Punctuate the greeting
-79c420a Add greeting
+79a5d9d Greet Mars
+9124e26 (main) Add an exclamation mark
+79c420a Add the sign
 ```
 
-The resolved commit keeps its message, `Greet space`. `Add launch` replayed with no trouble. `Successfully rebased` means `feature` has moved to the new commits, and you are back on your branch. If a later commit had conflicted too, the rebase would stop again there, and you would repeat steps 3 to 5.
+The resolved commit keeps its message, `Greet Mars`. `Add launch` replayed with no trouble. `Successfully rebased` means `feature` has moved to the new commits, and you are back on your branch. If a later commit had conflicted too, the rebase would stop again there, and you would repeat steps 3 to 5.
 
 **Step 6: two other ways out.** Instead of `--continue`:
 
@@ -523,10 +522,10 @@ A rebase starts by standing on the tip of `main`, then lays your commits down on
   <rect x="8" y="12" width="210" height="112" rx="6" fill="#ffffff" stroke="#1f2a44" stroke-width="1.5"/>
   <g font-size="11" fill="#1f2a44">
     <text x="18" y="32">&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD</text>
-    <text x="18" y="52">Hello, world!</text>
+    <text x="18" y="52">Welcome to Earth!</text>
     <text x="18" y="72" fill="#6c7a93">=======</text>
-    <text x="18" y="92">Hello space</text>
-    <text x="18" y="112">&gt;&gt;&gt;&gt;&gt;&gt;&gt; 169d2b0 (Greet space)</text>
+    <text x="18" y="92">Welcome to Mars</text>
+    <text x="18" y="112">&gt;&gt;&gt;&gt;&gt;&gt;&gt; 169d2b0 (Greet Mars)</text>
   </g>
   <line x1="226" y1="20" x2="226" y2="58" stroke="#1d6fd1" stroke-width="3"/>
   <line x1="226" y1="80" x2="226" y2="118" stroke="#b4232c" stroke-width="3"/>
@@ -597,7 +596,7 @@ Think of the guessing game "I'm thinking of a number from 1 to 100." You don't g
 
 That trick is called **[[binary search|binary-search]]**: test the middle, and each answer halves what is left. **`git bisect`** plays that game on your history. ("Bisect" means "cut in two".) It checks out the commit halfway between one you know is good and one you know is bad. You test it and say which it is. Git halves the range and picks a new middle. A thousand commits take about ten steps, because halving 1,000 ten times gets you down to one.
 
-**Step 1: pick your test.** Before you start, decide how you will tell a good commit from a bad one, and use the same test at every step. In this lesson's task, the test is looking at a file: `rocket.cfg` should say `safety = on`, but today it says `safety = off`.
+**Step 1: pick your test.** Before you start, decide how you will tell a good commit from a bad one, and use the same test at every step. Here the test is looking at a file: `robot-arm.cfg` should say `grip = gentle`, but today it says `grip = crush`.
 
 **Step 2: start, and give git the two ends.** Three commands:
 
@@ -606,13 +605,13 @@ That trick is called **[[binary search|binary-search]]**: test the middle, and e
 status: waiting for both good and bad commits
 ~/project $ git bisect bad
 status: waiting for good commit(s), bad commit known
-~/project $ git bisect good HEAD~12
+~/project $ git bisect good 3c1e9a0
 Bisecting: 5 revisions left to test after this (roughly 3 steps)
 ```
 
 - `git bisect start` begins the hunt.
 - `git bisect bad` on its own says "the commit I am on now is broken".
-- `git bisect good HEAD~12` says "this old commit was fine". Any name for a commit works here: an id from `git log --oneline`, a tag, or `HEAD~12` (twelve commits back).
+- `git bisect good 3c1e9a0` says "this old commit was fine". Any name for a commit works here: an id from `git log --oneline`, a tag, or `HEAD~12` (twelve commits back).
 
 As soon as git knows both ends, it checks out a commit in the middle. It tells you how many **[[revisions|revisions]]** (commits) are left and roughly how many steps that will take.
 
@@ -625,18 +624,18 @@ You are currently bisecting, started from branch 'main'.
   (use "git bisect reset" to get back to the original branch)
 
 nothing to commit, working tree clean
-~/project $ cat rocket.cfg
-safety = on
+~/project $ cat robot-arm.cfg
+grip = gentle
 ```
 
-**Step 4: answer.** `safety = on` means this commit is fine, so say so:
+**Step 4: answer.** `grip = gentle` means this commit is fine, so say so:
 
 ```
 ~/project $ git bisect good
 Bisecting: 2 revisions left to test after this (roughly 2 steps)
 ```
 
-Git throws away the older half and checks out a new middle commit. If the test had shown `safety = off`, you would answer `git bisect bad` instead. Then test again, and answer again. Repeat.
+Git throws away the older half and checks out a new middle commit. If the test had shown `grip = crush`, you would answer `git bisect bad` instead. Then test again, and answer again. Repeat.
 
 **Step 5: git names the culprit.** When only one commit is left, git announces it, with its message and the files it changed:
 
@@ -646,9 +645,9 @@ Git throws away the older half and checks out a new middle commit. If the test h
 commit 6a87e76
 Author: you
 
-    Tune the thrusters
+    Speed up the arm
 
- rocket.cfg | 2 +-
+ robot-arm.cfg | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 ```
 
@@ -657,16 +656,16 @@ Author: you
 **Step 6: tag it.** While you bisect, the name **`refs/bisect/bad`** points at the commit git currently believes is bad. Once the hunt is over, that is the culprit. It is a [[ref|refs]], a name git keeps for a commit, like a branch or a tag. So you can tag the culprit without copying its id:
 
 ```
-~/project $ git tag culprit refs/bisect/bad
+~/project $ git tag broke-it refs/bisect/bad
 ```
 
-`git tag culprit 6a87e76`, with the id git printed, does the same.
+`git tag broke-it 6a87e76`, with the id git printed, does the same.
 
 **Step 7: finish.** `git bisect reset` ends the hunt and puts you back on the branch you started from:
 
 ```
 ~/project $ git bisect reset
-Previous HEAD position was 6a87e76 Tune the thrusters
+Previous HEAD position was 6a87e76 Speed up the arm
 Switched to branch 'main'
 ```
 
@@ -1289,12 +1288,15 @@ Your branch is behind 'origin/main' by 1 commit, and can be fast-forwarded.
 
 The fetch line says the server's `main` moved from `fe3e14c` to `fe40901`, and your `origin/main` now matches it. "Behind by 1 commit" means the server has a commit your `main` does not. "Can be [[fast-forwarded|ff-again]]" means you have no new commits of your own, so git can slide your `main` forward to catch up.
 
-**Step 3: look before you take it.** `origin/main` works like any branch name in the commands you already know. From the intermediate course, `main..origin/main` means "commits on `origin/main` that are not on `main`":
+**Step 3: look before you take it.** `origin/main` works like any branch name in the commands you already know. Give it to `git log` and you see the server's history, as of your fetch:
 
 ```
-~/rocket $ git log --oneline main..origin/main
+~/rocket $ git log --oneline origin/main
 fe40901 (origin/main) Add the weather report
+fe3e14c (HEAD -> main) Start the rocket
 ```
+
+Your `main` sits one commit below `origin/main`. On a long history, the two-dot range from the intermediate course is handier: `A..B` lists only the commits on `B` that are not on `A`, and a name like `origin/main` can go on either side.
 
 And `git diff main origin/main` shows what that commit would change in your files:
 
@@ -1463,10 +1465,10 @@ and have 1 and 1 different commits each, respectively.
 
 **Step 3: what not to do.** `git push --force` ("force": push anyway) makes the server match you, and it does that by throwing away Sam's commit. It gets rid of the error by deleting your teammate's work. [[Do not use it here|force-push]].
 
-**Step 4: bring their work in with a rebase.** `git pull --rebase` fetches, then replays your unpushed commits on top of Sam's, like the rebase lesson earlier in this course. The history becomes a straight line:
+**Step 4: bring their work in with a rebase.** `git pull --rebase` fetches, then replays your unpushed commits on top of Sam's, like the rebase lesson earlier in this course. Here the remote and the branch are written out in full, `origin main`. Leave them off and git uses the ones your branch already tracks. The history becomes a straight line:
 
 ```
-~/rocket $ git pull --rebase
+~/rocket $ git pull --rebase origin main
 Successfully rebased and updated refs/heads/main.
 ~/rocket $ git log --oneline --graph
 * 78fe8b7 (HEAD -> main) Add the launch checklist
@@ -1627,46 +1629,38 @@ In git, `main` is the serving counter. Your station is a **branch**. The workflo
 Start every piece of work on a new branch, named for what it does:
 
 ```
-~/rocket $ git switch -c feature/countdown
-Switched to a new branch 'feature/countdown'
+~/rocket $ git switch -c feature/fuel-gauge
+Switched to a new branch 'feature/fuel-gauge'
 ```
 
-`-c` means "create". The name has a [[slash in it|slash-names]]: `feature/` says what kind of work it is, and `countdown` says which. (If `main` might be out of date, run `git pull` on `main` first, so your branch starts from the newest work.)
+`-c` means "create". The name has a [[slash in it|slash-names]]: `feature/` says what kind of work it is, and `fuel-gauge` says which. (If `main` might be out of date, run `git pull` on `main` first, so your branch starts from the newest work.)
 
 **Step 2: commit small, clear steps**
 
-Work as usual: make a change, `git add` it, commit it with a message that says what it does:
-
-```
-~/rocket $ echo "10 9 8" > countdown.txt
-~/rocket $ git add countdown.txt
-~/rocket $ git commit -m "Add the countdown"
-[feature/countdown 803a0bb] Add the countdown
- 1 file changed
-```
+Work as usual, with the commands from the first Git course: make a change, `git add` it, and commit it with a message that says what it does. Here the branch gets one commit, `Add the fuel gauge`, which adds a file `fuel-gauge.txt`. The commit lands on the branch you are on, so `main` does not see it yet.
 
 **Step 3: push the branch**
 
-The server has never heard of `feature/countdown`, so a plain `git push` does not know where to send it:
+The server has never heard of `feature/fuel-gauge`, so a plain `git push` does not know where to send it:
 
 ```
 ~/rocket $ git push
-fatal: The current branch feature/countdown has no upstream branch.
+fatal: The current branch feature/fuel-gauge has no upstream branch.
 To push the current branch and set the remote as upstream, use
 
-    git push --set-upstream origin feature/countdown
+    git push --set-upstream origin feature/fuel-gauge
 ```
 
 The first push of a new branch names the remote and the branch, and adds `-u`:
 
 ```
-~/rocket $ git push -u origin feature/countdown
+~/rocket $ git push -u origin feature/fuel-gauge
 To /home/you/server/rocket.git
- * [new branch]      feature/countdown -> feature/countdown
-branch 'feature/countdown' set up to track 'origin/feature/countdown'.
+ * [new branch]      feature/fuel-gauge -> feature/fuel-gauge
+branch 'feature/fuel-gauge' set up to track 'origin/feature/fuel-gauge'.
 ```
 
-`-u` is short for `--set-upstream`. It makes `origin/feature/countdown` this branch's **[[upstream|upstream-word]]**: the branch on the server it is linked to. From now on, a plain `git push` or `git pull` on this branch knows where to go.
+`-u` is short for `--set-upstream`. It makes `origin/feature/fuel-gauge` this branch's **[[upstream|upstream-word]]**: the branch on the server it is linked to. From now on, a plain `git push` or `git pull` on this branch knows where to go.
 
 Now teammates can see your branch. On GitHub, this is when you open a **[[pull request|pr-flow]]**: a page that asks the team to review the branch and merge it into `main`.
 
@@ -1677,7 +1671,7 @@ Once the branch is reviewed, switch to `main` and merge it. Many teams add `--no
 ```
 ~/rocket $ git switch main
 Switched to branch 'main'
-~/rocket $ git merge --no-ff feature/countdown
+~/rocket $ git merge --no-ff feature/fuel-gauge
 Merge made by the 'ort' strategy.
 ```
 
@@ -1685,20 +1679,16 @@ Here `main` had not moved, so a plain `git merge` would only slide the `main` la
 
 ```
 ~/rocket $ git log --oneline --graph
-*   36acddd (HEAD -> main) Merge branch 'feature/countdown'
+*   36acddd (HEAD -> main) Merge branch 'feature/fuel-gauge'
 |\
-| * 803a0bb (origin/feature/countdown, feature/countdown) Add the countdown
+| * 803a0bb (origin/feature/fuel-gauge, feature/fuel-gauge) Add the fuel gauge
 |/
 * 90cadef (origin/main) Start the rocket
 ```
 
 **Step 5: tag the release**
 
-On `main`, mark the merge commit with an annotated tag, the kind for releases (`-a` is "annotated", `-m` is "message"):
-
-```
-~/rocket $ git tag -a v1.1 -m "Countdown release"
-```
+On `main`, mark the merge commit with an annotated tag, the kind for releases, just as in the tags lesson: `-a` for "annotated", then a version name such as `v1.2`, and `-m` with a message such as `Fuel gauge release`.
 
 **Step 6: push main, then push the tag**
 
@@ -1708,23 +1698,23 @@ On `main`, mark the merge commit with an annotated tag, the kind for releases (`
 ~/rocket $ git push
 To /home/you/server/rocket.git
    90cadef..36acddd  main -> main
-~/rocket $ git push origin v1.1
+~/rocket $ git push origin v1.2
 To /home/you/server/rocket.git
- * [new tag]         v1.1 -> v1.1
+ * [new tag]         v1.2 -> v1.2
 ```
 
 `git push --tags` sends all your tags at once, if you have several.
 
-**Watch out:** the two pushes people forget. Pushing a brand-new branch without `-u origin <branch>` fails with "has no upstream branch". And pushing `main` without the tag leaves the release on your computer only: `git log` shows `tag: v1.1` for you, while your team sees no release at all. Read the push output. It says `[new tag]` only when a tag really went up.
+**Watch out:** the two pushes people forget. Pushing a brand-new branch without `-u origin <branch>` fails with "has no upstream branch". And pushing `main` without the tag leaves the release on your computer only: `git log` shows `tag: v1.2` for you, while your team sees no release at all. Read the push output. It says `[new tag]` only when a tag really went up.
 
 The reward for all six steps: `main` is [[always releasable|main-releasable]], because unfinished work lives on branches until it is ready.
 
 ::: context slash-names A slash in a branch name
-A slash in a branch name is allowed, and it is only part of the name: `feature/countdown` is one branch, not a branch inside a folder you have to make. Teams use the part before the slash as a label for the kind of work, such as `feature/`, `fix/` or `release/`, so a long branch list sorts itself into groups. Inside `.git`, git stores such a branch at `refs/heads/feature/countdown`, which is why you cannot have a branch called `feature` and another called `feature/countdown` at the same time.
+A slash in a branch name is allowed, and it is only part of the name: `feature/fuel-gauge` is one branch, not a branch inside a folder you have to make. Teams use the part before the slash as a label for the kind of work, such as `feature/`, `fix/` or `release/`, so a long branch list sorts itself into groups. Inside `.git`, git stores such a branch at `refs/heads/feature/fuel-gauge`, which is why you cannot have a branch called `feature` and another called `feature/fuel-gauge` at the same time.
 :::
 
 ::: context upstream-word Why "upstream"
-Think of a river. The server is further up the stream; your copy is downstream, and work flows between them. A branch's **upstream** is the branch on the remote it is paired with. Git uses the pair in three places: `git push` and `git pull` with no names, and `git status`, which says "Your branch is ahead of 'origin/feature/countdown' by 1 commit". `git branch -vv` (two v's, "very verbose") lists each branch with its upstream in square brackets. A branch you clone gets one automatically; a branch you make yourself gets one the first time you push it with `-u`.
+Think of a river. The server is further up the stream; your copy is downstream, and work flows between them. A branch's **upstream** is the branch on the remote it is paired with. Git uses the pair in three places: `git push` and `git pull` with no names, and `git status`, which says "Your branch is ahead of 'origin/feature/fuel-gauge' by 1 commit". `git branch -vv` (two v's, "very verbose") lists each branch with its upstream in square brackets. A branch you clone gets one automatically; a branch you make yourself gets one the first time you push it with `-u`.
 :::
 
 ::: context pr-flow What happens in a pull request
@@ -1732,7 +1722,7 @@ A pull request is a page on a site like GitHub, not a git command. It shows the 
 :::
 
 ::: context no-ff-picture Fast-forward or merge commit
-Both histories hold the same work. With a fast-forward, `main` slides along a straight line, and nothing records that `Add the countdown` came from a feature branch. With `--no-ff`, a merge commit ties the feature's commits together as one bundle. That makes it easy to see what each feature brought, and to undo a whole feature with one `git revert` of the merge commit.
+Both histories hold the same work. With a fast-forward, `main` slides along a straight line, and nothing records that `Add the fuel gauge` came from a feature branch. With `--no-ff`, a merge commit ties the feature's commits together as one bundle. That makes it easy to see what each feature brought, and to undo a whole feature with one `git revert` of the merge commit.
 
 ```svg
 <svg viewBox="0 0 360 190" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
@@ -1741,7 +1731,7 @@ Both histories hold the same work. With a fast-forward, `main` slides along a st
   <circle cx="60" cy="50" r="10" fill="#8fb8f0" stroke="#1f2a44" stroke-width="2"/>
   <circle cx="180" cy="50" r="10" fill="#8fb8f0" stroke="#1f2a44" stroke-width="2"/>
   <text x="60" y="78" font-size="11" text-anchor="middle" fill="#1f2a44">Start</text>
-  <text x="180" y="78" font-size="11" text-anchor="middle" fill="#1f2a44">Add the countdown</text>
+  <text x="180" y="78" font-size="11" text-anchor="middle" fill="#1f2a44">Add the fuel gauge</text>
   <text x="200" y="54" font-size="11" fill="#1d6fd1" font-weight="bold">main</text>
   <text x="10" y="108" font-size="12" font-weight="bold" fill="#1f2a44">git merge --no-ff</text>
   <line x1="60" y1="160" x2="300" y2="160" stroke="#6c7a93" stroke-width="3"/>
@@ -1751,7 +1741,7 @@ Both histories hold the same work. With a fast-forward, `main` slides along a st
   <circle cx="180" cy="128" r="10" fill="#f2b880" stroke="#1f2a44" stroke-width="2"/>
   <circle cx="300" cy="160" r="10" fill="#1d6fd1" stroke="#1f2a44" stroke-width="2"/>
   <text x="60" y="184" font-size="11" text-anchor="middle" fill="#1f2a44">Start</text>
-  <text x="180" y="116" font-size="11" text-anchor="middle" fill="#1f2a44">Add the countdown</text>
+  <text x="180" y="116" font-size="11" text-anchor="middle" fill="#1f2a44">Add the fuel gauge</text>
   <text x="300" y="184" font-size="11" text-anchor="middle" fill="#1f2a44">merge commit</text>
   <text x="318" y="164" font-size="11" fill="#1d6fd1" font-weight="bold">main</text>
 </svg>
@@ -1759,7 +1749,7 @@ Both histories hold the same work. With a fast-forward, `main` slides along a st
 :::
 
 ::: context tags-stay-home Why tags wait to be pushed
-Pushing a tag is announcing a release. Once `v1.1` is on the server, teammates, test teams and build machines may fetch it and rely on it meaning exactly that commit. So git lets you tag on your own computer, check that you tagged the right commit, and only then share it. That is also why you should never move or delete a tag that is already pushed: people may already have the old one. If you want tags to travel with your commits, `git push --follow-tags` sends your branch plus any annotated tags on the commits it pushes.
+Pushing a tag is announcing a release. Once `v1.2` is on the server, teammates, test teams and build machines may fetch it and rely on it meaning exactly that commit. So git lets you tag on your own computer, check that you tagged the right commit, and only then share it. That is also why you should never move or delete a tag that is already pushed: people may already have the old one. If you want tags to travel with your commits, `git push --follow-tags` sends your branch plus any annotated tags on the commits it pushes.
 :::
 
 ::: context main-releasable Why keep main releasable
@@ -1854,8 +1844,8 @@ HEAD detached at 8d0a4ee
 You can make a file, `git add` it and commit on a detached HEAD, and it looks almost normal. The only difference is inside the square brackets: `detached HEAD` stands where the branch name would be:
 
 ```
-~/project $ git commit -m "Sketch the wings"
-[detached HEAD 577c212] Sketch the wings
+~/project $ git commit -m "Sketch the tail"
+[detached HEAD 577c212] Sketch the tail
  1 file changed
 ```
 
@@ -1870,8 +1860,8 @@ Now switch back to `main`. HEAD moves to `main`, and nothing points at your new 
 Warning: you are leaving 2 commits behind, not connected to
 any of your branches:
 
-  4b9d2aa Sweep the wings back
-  577c212 Sketch the wings
+  4b9d2aa Paint the tail red
+  577c212 Sketch the tail
 
 If you want to keep them by creating a new branch, this may be a good time
 to do so with:
@@ -1881,7 +1871,7 @@ to do so with:
 Switched to branch 'main'
 ```
 
-The warning scrolls past easily. Afterwards, `git log` on `main` does not show the two commits, and `wings.txt` is gone from the folder. It looks like the work is lost.
+The warning scrolls past easily. Afterwards, `git log` on `main` does not show the two commits, and `tail.txt` is gone from the folder. It looks like the work is lost.
 
 It is not deleted — [[yet|not-deleted-yet]]. The commits are still stored in `.git`. They only have no name.
 
@@ -1892,41 +1882,41 @@ You met the reflog in the last lesson of the intermediate course: git's diary of
 ```
 ~/project $ git reflog
 45adbe2 (HEAD -> main) HEAD@{0}: checkout: moving from 4b9d2aa to main
-4b9d2aa HEAD@{1}: commit: Sweep the wings back
-577c212 HEAD@{2}: commit: Sketch the wings
+4b9d2aa HEAD@{1}: commit: Paint the tail red
+577c212 HEAD@{2}: commit: Sketch the tail
 8d0a4ee HEAD@{3}: checkout: moving from main to HEAD~1
 45adbe2 HEAD@{4}: commit: Try four fins
 8d0a4ee HEAD@{5}: commit (initial): First design
 ```
 
-Read it from the top. The newest entry, `checkout: moving from … to main`, is you switching back. The line just below it is the last commit you made while detached: `Sweep the wings back`, at `HEAD@{1}`.
+Read it from the top. The newest entry, `checkout: moving from … to main`, is you switching back. The line just below it is the last commit you made while detached: `Paint the tail red`, at `HEAD@{1}`.
 
 **Step 6: give the work a branch**
 
 A branch is a name for a commit. So make one at that spot. `git branch` followed by a name and a commit makes a branch there, without switching to it:
 
 ```
-~/project $ git branch wings HEAD@{1}
-~/project $ git log --oneline wings
-4b9d2aa (wings) Sweep the wings back
-577c212 Sketch the wings
+~/project $ git branch tail-work 4b9d2aa
+~/project $ git log --oneline tail-work
+4b9d2aa (tail-work) Paint the tail red
+577c212 Sketch the tail
 8d0a4ee First design
 ```
 
-Both commits have a name again. The id works too: `git branch wings 4b9d2aa`.
+Both commits have a name again. The reflog name, `HEAD@{1}`, works in place of the id too.
 
 **Step 7: bring it home**
 
-Now `wings` is an ordinary branch. Merge it into `main`, or carry on working on it:
+Now `tail-work` is an ordinary branch. Merge it into `main`, or carry on working on it:
 
 ```
-~/project $ git merge wings
+~/project $ git merge tail-work
 Merge made by the 'ort' strategy.
 ~/project $ git log --oneline --graph
-*   c999cc2 (HEAD -> main) Merge branch 'wings'
+*   c999cc2 (HEAD -> main) Merge branch 'tail-work'
 |\
-| * 4b9d2aa (wings) Sweep the wings back
-| * 577c212 Sketch the wings
+| * 4b9d2aa (tail-work) Paint the tail red
+| * 577c212 Sketch the tail
 * | 45adbe2 Try four fins
 |/
 * 8d0a4ee First design
@@ -2027,29 +2017,29 @@ Cherry-pick copies a commit's **change** — "this line became that line" — no
 
 This happens all the time with a **[[release branch|release-branch]]**: a branch that holds an older version you have already shipped, and only gets fixes. Copying a fix from `main` to an older release is called a **back-port**. `main` has moved on since the release, so the fix was written against lines the release does not have.
 
-Here `release-1` has the old launch steps. `main` has two newer commits:
+Here `release-1` has the old landing steps. `main` has two newer commits:
 
 ```
 ~/project $ git log --oneline main
-99be440 (main) Require 25% fuel
-b93ab09 Require 10% fuel
-c541e11 (HEAD -> release-1) Add launch steps
+99be440 (main) Open chute at 800 m
+b93ab09 Open chute at 500 m
+c541e11 (HEAD -> release-1) Add landing steps
 ```
 
-The safety fix is the tip of `main`, `Require 25% fuel`. It changed `check fuel >= 10` into `check fuel >= 25`. But `release-1` never got the 10% commit: its line still says `check fuel`.
+The safety fix is the tip of `main`, `Open chute at 800 m`. It changed `open chute at 500` into `open chute at 800`. But `release-1` never got the 500 m commit: its line still says `open chute`.
 
 **Step 3: the cherry-pick stops**
 
 ```
-~/project $ git cherry-pick main
-CONFLICT (content): Merge conflict in launch.sh
-error: could not apply 99be440... Require 25% fuel
+~/project $ git cherry-pick 99be440
+CONFLICT (content): Merge conflict in landing-steps.sh
+error: could not apply 99be440... Open chute at 800 m
 hint: Resolve the conflicts in the file(s), mark each resolved with
 hint: "git add <file>", then run "git cherry-pick --continue".
 hint: To give up and go back to how things were, run "git cherry-pick --abort".
 ```
 
-`main` is a branch name, and here it names its newest commit, the fix. Read git's hints: they already list every step of the way out. `git status` agrees, and names the cherry-pick in progress:
+`99be440` is the id of the fix, from the log. A branch name works too, because it names that branch's newest commit. Read git's hints: they already list every step of the way out. `git status` agrees, and names the cherry-pick in progress:
 
 ```
 ~/project $ git status
@@ -2060,7 +2050,7 @@ You are currently cherry-picking commit 99be440.
 
 Unmerged paths:
   (use "git add <file>..." to mark resolution)
-        both modified:   launch.sh
+        both modified:   landing-steps.sh
 ```
 
 **Step 4: read the markers**
@@ -2068,13 +2058,13 @@ Unmerged paths:
 The file has the same conflict markers as a merge conflict, with [[one change in the labels|picked-labels]]:
 
 ```
-~/project $ cat launch.sh
+~/project $ cat landing-steps.sh
 <<<<<<< HEAD
-check fuel
+open chute
 =======
-check fuel >= 25
->>>>>>> 99be440 (Require 25% fuel)
-launch
+open chute at 800
+>>>>>>> 99be440 (Open chute at 800 m)
+land
 ```
 
 - Between `<<<<<<< HEAD` and `=======` is your side: `HEAD`, the branch you are on, `release-1`.
@@ -2082,11 +2072,11 @@ launch
 
 **Step 5: resolve it for this branch**
 
-Write the file the way **the release** should look: usually the fix, adapted to the older code. Here the release needs the 25% check, and nothing else from `main`:
+Write the file the way **the release** should look: usually the fix, adapted to the older code. Here the release needs the 800 m height, and nothing else from `main`:
 
 ```
-~/project $ printf "check fuel >= 25\nlaunch\n" > launch.sh
-~/project $ git add launch.sh
+~/project $ printf "open chute at 800\nland\n" > landing-steps.sh
+~/project $ git add landing-steps.sh
 ```
 
 `git add` marks the file resolved, exactly as in a merge conflict.
@@ -2095,10 +2085,10 @@ Write the file the way **the release** should look: usually the fix, adapted to 
 
 ```
 ~/project $ git cherry-pick --continue
-[release-1 8a17697] Require 25% fuel
+[release-1 8a17697] Open chute at 800 m
 ~/project $ git log --oneline
-8a17697 (HEAD -> release-1) Require 25% fuel
-c541e11 Add launch steps
+8a17697 (HEAD -> release-1) Open chute at 800 m
+c541e11 Add landing steps
 ```
 
 `--continue` makes the commit, [[keeping the original message and author|keeps-author]]. `main` is untouched: it still has its three commits.

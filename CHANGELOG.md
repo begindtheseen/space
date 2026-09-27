@@ -16,6 +16,11 @@ needs, a link back to the earlier lesson that taught it, and the next hint. If i
 passing after a few more tries, it suggests opening the solution, reading it line by line, and
 then typing it yourself.
 
+**Examples no longer hand you the answer.** In 59 coding lessons, mostly Terminal and Git, the
+example in the explanation was the task's answer word for word, or the answer with the names
+changed. Those examples now show the idea on different files, names and data, and show the steps
+one at a time, so the task asks you to put them together yourself.
+
 ## 1.1.4
 
 **Almost every lesson is now in plain words.** 95 of the 108 modules are rewritten so each step

@@ -22,16 +22,18 @@ A folder git is watching is called a **[[repository|repository-word]]**, or "rep
 
 **Step 2: git init**
 
-`git init` turns the folder you are in into a repository. `init` is short for "initialize", which means "set up at the start".
+`git init` turns a folder into a repository. `init` is short for "initialize", which means "set up at the start". Here it is given a folder name, `game`, so it sets up that folder:
 
 ```
-~/project $ ls
-README.md
-~/project $ git init
-Initialized empty Git repository in /home/you/project/.git/
+~ $ ls game
+notes.txt
+~ $ git init game
+Initialized empty Git repository in /home/you/game/.git/
 ```
 
-Read the answer slowly. "Empty" does not mean your files are gone — `README.md` is still there. It means git has not saved any versions yet. You will learn to save one in a few lessons.
+Leave the folder name out, and `git init` sets up the folder you are in right now. That is the usual way: move into your project first, then run it.
+
+Read the answer slowly. "Empty" does not mean your files are gone — `notes.txt` is still there. It means git has not saved any versions yet. You will learn to save one in a few lessons.
 
 **Step 3: the hidden .git folder**
 
@@ -40,10 +42,10 @@ Where does git keep its notes? In a new folder inside your project, called `.git
 Its name starts with a dot, so it is **hidden**, like the hidden files you met in the Terminal course. Plain `ls` skips it. `ls -a` — "all" — shows it:
 
 ```
-~/project $ ls
-README.md
-~/project $ ls -a
-.  ..  .git/  README.md
+~/game $ ls
+notes.txt
+~/game $ ls -a
+.  ..  .git/  notes.txt
 ```
 
 That [[.git folder|dot-git]] is the whole memory of your project. Every saved version lives in there.
@@ -173,7 +175,7 @@ You will make a file staged in the next lesson, and modified a little after that
 Make a new file, ask again, and it joins the list:
 
 ```
-~/project $ touch notes.txt
+~/project $ touch todo-list.txt
 ~/project $ git status
 On branch main
 
@@ -182,10 +184,10 @@ No commits yet
 Untracked files:
         README.md
         main.py
-        notes.txt
+        todo-list.txt
 ```
 
-Git noticed `notes.txt` straight away. You did not have to tell it about the file.
+Git noticed `todo-list.txt` straight away. You did not have to tell it about the file.
 
 **Step 4: it only looks**
 
@@ -255,7 +257,7 @@ The saved version is a [[snapshot|snapshot-word]]: a picture of your files exact
 `git add` followed by a file name **stages** that file: it puts it in the box of changes the next save will include. Files you do not add are left out of the picture.
 
 ```
-~/project $ git add README.md
+~/project $ git add todo-list.txt
 ~/project $
 ```
 
@@ -272,13 +274,13 @@ On branch main
 No commits yet
 
 Changes to be committed:
-        new file:   README.md
+        new file:   todo-list.txt
 
 Untracked files:
-        main.py
+        game.py
 ```
 
-`README.md` has moved under **Changes to be committed** — it is staged. "New file" means it will be new in the history. `main.py` is still untracked, because you did not add it.
+`todo-list.txt` has moved under **Changes to be committed** — it is staged. "New file" means it will be new in the history. `game.py` is still untracked, because you did not add it.
 
 That box of chosen changes is called the **[[staging area|staging-area]]**.
 
@@ -295,8 +297,8 @@ Here `.` means "this folder" — the [[same dot you have seen before|dot-here]].
 To sum up:
 
 ```
-git add README.md     # stage this one file
-git add .             # stage everything in this folder
+git add todo-list.txt  # stage this one file
+git add .              # stage everything in this folder
 ```
 
 The `#` and the words after it are comments for you to read. Git ignores them.
@@ -305,7 +307,7 @@ The `#` and the words after it are comments for you to read. Git ignores them.
 
 Why not save everything, every time? Because choosing lets you [[save related changes together|one-idea]]. Say you fixed a bug in one file and started a new idea in another. You can stage only the bug fix and save it on its own, with a message about the fix. The half-done idea stays out until it is ready.
 
-**Watch out:** `git add .` grabs everything, including files you did not mean to save. When you want one file, type its name. And type it exactly: names are case-sensitive, so `git add readme.md` fails with `fatal: pathspec 'readme.md' did not match any files` — git's way of saying "no file by that name". Whichever way you add, check with `git status` afterwards.
+**Watch out:** `git add .` grabs everything, including files you did not mean to save. When you want one file, type its name. And type it exactly: names are case-sensitive, so `git add Todo-List.txt` fails with `fatal: pathspec 'Todo-List.txt' did not match any files` — git's way of saying "no file by that name". Whichever way you add, check with `git status` afterwards.
 
 ::: context snapshot-word Why programmers say "snapshot"
 A snapshot is a quick photo: it catches a scene exactly as it was, at one instant. Things can move afterwards, but the photo does not change.
@@ -342,7 +344,7 @@ You will also hear the staging area called the **index**. Same thing, older name
 ::: context dot-here The dot you already know
 In the Terminal course, `ls -a` listed `.` and `..` at the top. A single dot, `.`, is always "the folder I am in right now", and `..` is the folder above it.
 
-Git uses the same meaning. `git add .` is "add this folder" — so everything in it, including folders inside it. A dot in the middle of a name, as in `main.py`, is only part of the name.
+Git uses the same meaning. `git add .` is "add this folder" — so everything in it, including folders inside it. A dot in the middle of a name, as in `game.py`, is only part of the name.
 :::
 
 ::: context one-idea One commit, one idea
@@ -611,29 +613,29 @@ A file git already knows about is called a [[tracked|tracked-file]] file. When y
 On branch main
 
 Changes not staged for commit:
-        modified:   main.py
+        modified:   flight-plan.txt
 ```
 
 Then you stage it and commit it:
 
 ```
-~/project $ git add main.py
-~/project $ git commit -m "Add stage two"
-[main 717911e] Add stage two
+~/project $ git add flight-plan.txt
+~/project $ git commit -m "Add landing step"
+[main 717911e] Add landing step
  1 file changed
 ```
 
-The new commit does not replace the old one. Git now has [[both versions|both-versions]] of `main.py`: the one-line version in the first commit and the two-line version in the second. The history grows by one:
+The new commit does not replace the old one. Git now has [[both versions|both-versions]] of `flight-plan.txt`: the one-line version in the first commit and the two-line version in the second. The history grows by one:
 
 ```
 ~/project $ git log --oneline
-717911e (HEAD -> main) Add stage two
-5f89d36 Add main
+717911e (HEAD -> main) Add landing step
+5f89d36 Add flight plan
 ```
 
 The newest commit is at the top.
 
-Commit small and often: one commit per idea. *Add stage two*, then *Fix the timer*, rather than one enormous commit at the end of the day.
+Commit small and often: one commit per idea. *Add landing step*, then *Fix the timer*, rather than one enormous commit at the end of the day.
 
 Small commits are easy to read, easy for someone to [[review|small-review]], and easy to [[undo|undo-later]]. If one idea turns out to be wrong, you can take back that one commit and keep the rest.
 
@@ -653,8 +655,8 @@ Each commit is a full snapshot, so every version of every file you ever committe
   <line x1="246" y1="44" x2="112" y2="44" stroke="#1f2a44" stroke-width="2"/>
   <polygon points="104,44 114,39 114,49" fill="#1f2a44"/>
   <g font-size="12" fill="#1f2a44" text-anchor="middle">
-    <text x="90" y="80">5f89d36</text><text x="90" y="98">main.py: 1 line</text>
-    <text x="260" y="80">717911e</text><text x="260" y="98">main.py: 2 lines</text>
+    <text x="90" y="80">5f89d36</text><text x="90" y="98">flight-plan.txt: 1 line</text>
+    <text x="260" y="80">717911e</text><text x="260" y="98">flight-plan.txt: 2 lines</text>
   </g>
   <text x="260" y="18" font-size="12" fill="#b4232c" text-anchor="middle">HEAD -&gt; main</text>
 </svg>
@@ -702,40 +704,40 @@ Think of a checkpoint in a video game. You play on, fall off a cliff, and load t
 
 The command is **`git restore`**: it puts a file back the way it was in your last commit. You write the file's name after it.
 
-**Step 1: see what went wrong.** Say `config.txt` held the line `thrust = 100`, and a mistake overwrote it with `oops`. `git status` tells you the file is modified — changed since the last commit:
+**Step 1: see what went wrong.** Say `score.txt` held the line `best = 900`, and a mistake overwrote it with `oops`. `git status` tells you the file is modified — changed since the last commit:
 
 ```
 ~/project $ git status
 On branch main
 
 Changes not staged for commit:
-        modified:   config.txt
+        modified:   score.txt
 ```
 
 `git diff` shows exactly what changed. The good line was removed (`-`, minus) and the bad line added (`+`, plus):
 
 ```
 ~/project $ git diff
-diff --git a/config.txt b/config.txt
---- a/config.txt
-+++ b/config.txt
--thrust = 100
+diff --git a/score.txt b/score.txt
+--- a/score.txt
++++ b/score.txt
+-best = 900
 +oops
 ```
 
 **Step 2: restore the file.** Give `git restore` the file's name:
 
 ```
-~/project $ git restore config.txt
-~/project $ cat config.txt
-thrust = 100
+~/project $ git restore score.txt
+~/project $ cat score.txt
+best = 900
 ```
 
 `git restore` prints nothing when it works. `cat` proves the file is back. Git copied the good version out of [[the last commit|good-copy]] and wrote it over the broken one.
 
 Run `git status` once more and it says `nothing to commit, working tree clean`. The **[[working tree|working-tree]]** is git's name for the files in your folder, the ones you see and edit. "Clean" means they match the last commit exactly.
 
-In older tutorials you will see `git checkout -- config.txt` doing the same job. That is [[an older spelling|older-checkout]] of `git restore config.txt`; both work.
+In older tutorials you will see `git checkout -- score.txt` doing the same job. That is [[an older spelling|older-checkout]] of `git restore score.txt`; both work.
 
 **Watch out:** `git restore` throws your changes away for good. They were never committed, so git has no copy of them, and there is no undo for this undo. Before you restore, read `git diff` and make sure nothing in it is worth keeping. This is also why [[committing often|safety-net]] matters: every commit is one more checkpoint you can come back to.
 
@@ -746,15 +748,15 @@ When you commit, git stores a full copy of every file inside the hidden `.git` f
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 130" font-family="Inter, Arial, sans-serif">
   <rect x="10" y="30" width="130" height="70" rx="8" fill="#ffffff" stroke="#1d6fd1" stroke-width="2"/>
   <text x="75" y="22" font-size="12" text-anchor="middle" fill="#1d6fd1">.git: last commit</text>
-  <text x="75" y="60" font-size="12" text-anchor="middle" fill="#1f2a44">config.txt</text>
-  <text x="75" y="80" font-size="12" text-anchor="middle" fill="#1f2a44">thrust = 100</text>
+  <text x="75" y="60" font-size="12" text-anchor="middle" fill="#1f2a44">score.txt</text>
+  <text x="75" y="80" font-size="12" text-anchor="middle" fill="#1f2a44">best = 900</text>
   <rect x="220" y="30" width="130" height="70" rx="8" fill="#ffffff" stroke="#1f2a44" stroke-width="2"/>
   <text x="285" y="22" font-size="12" text-anchor="middle" fill="#1f2a44">your folder</text>
-  <text x="285" y="60" font-size="12" text-anchor="middle" fill="#1f2a44">config.txt</text>
+  <text x="285" y="60" font-size="12" text-anchor="middle" fill="#1f2a44">score.txt</text>
   <text x="285" y="80" font-size="12" text-anchor="middle" fill="#b4232c">oops</text>
   <line x1="142" y1="65" x2="208" y2="65" stroke="#1d6fd1" stroke-width="3"/>
   <polygon points="218,65 206,59 206,71" fill="#1d6fd1"/>
-  <text x="180" y="120" font-size="12" text-anchor="middle" fill="#1d6fd1">git restore config.txt</text>
+  <text x="180" y="120" font-size="12" text-anchor="middle" fill="#1d6fd1">git restore score.txt</text>
 </svg>
 ```
 
@@ -770,7 +772,7 @@ Git thinks about your project in layers. The saved history lives in `.git`. The 
 ::: context older-checkout Why there are two ways to write it
 For many years, `git checkout` did several different jobs: it put files back, and it also moved you between branches (you will meet those a couple of lessons from now). One command doing both confused a lot of people. So Git 2.23, released in 2019, added `git restore` for putting files back and `git switch` for moving between branches.
 
-In `git checkout -- config.txt`, the two dashes `--` mean "everything after this is a file name". Old guides and answers online still use it, so it helps to recognise it.
+In `git checkout -- score.txt`, the two dashes `--` mean "everything after this is a file name". Old guides and answers online still use it, so it helps to recognise it.
 :::
 
 ::: context safety-net Commits are your safety net
@@ -809,7 +811,7 @@ Picture packing a box to post. You put in a letter, a photo and a drawing that i
 
 You met that box in the staging lesson: `git add` puts a change in it, and `git commit` saves whatever is in it. Taking a change back out is called **un-staging**: the file leaves the box, and your edit stays in the folder.
 
-**Step 1: see what is staged.** Say you changed both `main.py` and `config.txt`, and ran `git add .`, which stages every change. `git status` lists both under **Changes to be committed**:
+**Step 1: see what is staged.** Say you changed both `game.py` and `level-map.txt`, and ran `git add .`, which stages every change. `git status` lists both under **Changes to be committed**:
 
 ```
 ~/project $ git add .
@@ -817,27 +819,27 @@ You met that box in the staging lesson: `git add` puts a change in it, and `git 
 On branch main
 
 Changes to be committed:
-        modified:   config.txt
-        modified:   main.py
+        modified:   level-map.txt
+        modified:   game.py
 ```
 
-**Step 2: un-stage one file.** The `config.txt` change is not ready yet. Add `--staged` to `git restore`. The [[flag|flag-word]] `--staged` means "work on the staged copy, the one in the box, not the file in the folder":
+**Step 2: un-stage one file.** The `level-map.txt` change is not ready yet. Add `--staged` to `git restore`. The [[flag|flag-word]] `--staged` means "work on the staged copy, the one in the box, not the file in the folder":
 
 ```
-~/project $ git restore --staged config.txt
+~/project $ git restore --staged level-map.txt
 ~/project $ git status
 On branch main
 
 Changes to be committed:
-        modified:   main.py
+        modified:   game.py
 
 Changes not staged for commit:
-        modified:   config.txt
+        modified:   level-map.txt
 ```
 
-`main.py` is still in the box. `config.txt` moved down to **Changes not staged for commit**: it is changed, but the next commit will leave it out. Your edit is still in the file; `cat config.txt` shows it. The box has a proper name: the [[staging area|staging-area]].
+`game.py` is still in the box. `level-map.txt` moved down to **Changes not staged for commit**: it is changed, but the next commit will leave it out. Your edit is still in the file; `cat level-map.txt` shows it. The box has a proper name: the [[staging area|staging-area]].
 
-**Watch out:** `git restore --staged config.txt` and `git restore config.txt` differ by one word, and they do very different things. With `--staged`, your edit is safe: only the box changes. Without it, git overwrites the file in your folder and your edit is gone. Read the command before you press Enter. Plain restore also has a detail worth knowing about [[which copy it brings back|restore-source]].
+**Watch out:** `git restore --staged level-map.txt` and `git restore level-map.txt` differ by one word, and they do very different things. With `--staged`, your edit is safe: only the box changes. Without it, git overwrites the file in your folder and your edit is gone. Read the command before you press Enter. Plain restore also has a detail worth knowing about [[which copy it brings back|restore-source]].
 
 This is also how you [[keep each commit about one idea|one-idea-commits]]: stage everything, then take out whatever belongs in a different commit.
 
@@ -872,7 +874,7 @@ Git's official name for the box is the **staging area**. You will also see it ca
 :::
 
 ::: context restore-source Which copy plain restore uses
-Plain `git restore config.txt` copies the file from the staging area into your folder. When nothing is staged, the staging area holds the same version as the last commit, which is why last lesson it brought back the committed file.
+Plain `git restore level-map.txt` copies the file from the staging area into your folder. When nothing is staged, the staging area holds the same version as the last commit, which is why last lesson it brought back the committed file.
 
 If you have staged a change, plain restore brings back that staged version instead. So if you wanted to undo both, un-stage first with `--staged`, then run plain restore. In real git, `git status` even prints a reminder of `git restore --staged` next to the staged files; older versions suggested `git reset HEAD <file>` for the same job.
 :::
@@ -934,15 +936,15 @@ In git that second notebook is a **branch**: a [[separate line of work|branch-wo
 **Step 2: make a branch and move onto it.** `git switch` moves you to a branch. The flag `-c` means "create": make the branch first, then move onto it. After it comes the new branch's name:
 
 ```
-~/project $ git switch -c feature
-Switched to a new branch 'feature'
+~/project $ git switch -c new-ending
+Switched to a new branch 'new-ending'
 ```
 
-**Step 3: check where you are.** List the branches again. There are two now, and the star has moved to `feature`:
+**Step 3: check where you are.** List the branches again. There are two now, and the star has moved to `new-ending`:
 
 ```
 ~/project $ git branch
-* feature
+* new-ending
   main
 ```
 
@@ -950,16 +952,16 @@ Your files did not change. A new branch [[starts from where you were|branch-is-a
 
 Why bother? Teams work this way so that [[main always works|main-always-works]]. New work happens on a branch, and only when it is ready does it go back into `main` — that is merging, two lessons from now.
 
-You will also see `git checkout -b feature`, where `-b` means "branch". It is the [[older spelling|checkout-history]] of `git switch -c feature` and does the same thing.
+You will also see `git checkout -b new-ending`, where `-b` means "branch". It is the [[older spelling|checkout-history]] of `git switch -c new-ending` and does the same thing.
 
-**Watch out:** `-c` is only for making a new branch. `git switch feature` without `-c`, when `feature` does not exist yet, fails:
+**Watch out:** `-c` is only for making a new branch. `git switch new-ending` without `-c`, when `new-ending` does not exist yet, fails:
 
 ```
-~/project $ git switch feature
-error: pathspec 'feature' did not match any branch
+~/project $ git switch new-ending
+error: pathspec 'new-ending' did not match any branch
 ```
 
-And `git switch -c feature` when `feature` already exists fails too (`a branch named 'feature' already exists`). Use `-c` the first time, and plain `git switch feature` after that.
+And `git switch -c new-ending` when `new-ending` already exists fails too (`a branch named 'new-ending' already exists`). Use `-c` the first time, and plain `git switch new-ending` after that.
 
 ::: context branch-word Why it is called a branch
 Draw your commits as dots joined in a line, oldest on the left. A new branch leaves that line at one dot and grows its own dots, like a branch growing out of a tree trunk.
@@ -975,7 +977,7 @@ Draw your commits as dots joined in a line, oldest on the left. A new branch lea
   <polyline points="120,45 160,100 280,100" fill="none" stroke="#1d6fd1" stroke-width="3"/>
   <circle cx="200" cy="100" r="10" fill="#ffffff" stroke="#1d6fd1" stroke-width="3"/>
   <circle cx="280" cy="100" r="10" fill="#ffffff" stroke="#1d6fd1" stroke-width="3"/>
-  <text x="325" y="105" font-size="12" text-anchor="middle" fill="#1d6fd1">feature</text>
+  <text x="325" y="105" font-size="12" text-anchor="middle" fill="#1d6fd1">new-ending</text>
   <text x="120" y="22" font-size="11" text-anchor="middle" fill="#6c7a93">branch starts here</text>
 </svg>
 ```
@@ -1037,10 +1039,10 @@ Back to the two notebooks. You write a new chapter in the second notebook. Then 
 **Step 1: commit on the branch.** Committing works the same as always: `git add`, then `git commit`. The new commit goes onto the branch you are on:
 
 ```
-~/project $ echo "thrust = 100" > engine.py
-~/project $ git add engine.py
-~/project $ git commit -m "Add the engine"
-[feature 9b8524b] Add the engine
+~/project $ echo "count down from 10" > launch-plan.txt
+~/project $ git add launch-plan.txt
+~/project $ git commit -m "Add the launch plan"
+[feature 9b8524b] Add the launch plan
  1 file changed
 ```
 
@@ -1055,7 +1057,7 @@ Switched to branch 'main'
 README.md
 ```
 
-`engine.py` is gone from the folder. When you switch, git [[swaps the files|how-switch-swaps]] in your folder to match the branch you move to, and `main` has never had `engine.py`.
+`launch-plan.txt` is gone from the folder. When you switch, git [[swaps the files|how-switch-swaps]] in your folder to match the branch you move to, and `main` has never had `launch-plan.txt`.
 
 **Step 3: switch to feature again.** The file comes back:
 
@@ -1063,7 +1065,7 @@ README.md
 ~/project $ git switch feature
 Switched to branch 'feature'
 ~/project $ ls
-README.md  engine.py
+README.md  launch-plan.txt
 ```
 
 This is the point of branches: `main` stays exactly as it was while you work on `feature`. Next lesson you will [[bring the work into main|merge-next]] when it is ready.
@@ -1079,8 +1081,8 @@ A branch is a label pointing at a commit. When you commit, only the label of the
   <circle cx="90" cy="75" r="12" fill="#ffffff" stroke="#1f2a44" stroke-width="3"/>
   <circle cx="250" cy="75" r="12" fill="#ffffff" stroke="#1d6fd1" stroke-width="3"/>
   <text x="90" y="112" font-size="12" text-anchor="middle" fill="#1f2a44">Start the project</text>
-  <text x="250" y="112" font-size="12" text-anchor="middle" fill="#1f2a44">Add the engine</text>
-  <text x="250" y="130" font-size="11" text-anchor="middle" fill="#6c7a93">has engine.py</text>
+  <text x="250" y="112" font-size="12" text-anchor="middle" fill="#1f2a44">Add the launch plan</text>
+  <text x="250" y="130" font-size="11" text-anchor="middle" fill="#6c7a93">has launch-plan.txt</text>
   <rect x="62" y="16" width="56" height="24" rx="6" fill="#ffffff" stroke="#1f2a44" stroke-width="2"/>
   <text x="90" y="33" font-size="12" text-anchor="middle" fill="#1f2a44">main</text>
   <line x1="90" y1="40" x2="90" y2="60" stroke="#1f2a44" stroke-width="2"/>
@@ -1096,13 +1098,13 @@ A branch is a label pointing at a commit. When you commit, only the label of the
 ::: context head-word HEAD: you are here
 **HEAD** is git's "you are here" marker, like the red dot on a map in a shopping centre. It usually points at a branch, the one you are on, and that branch points at a commit.
 
-You can see it in `git log --oneline`. On `feature` after the commit above, the newest line starts `9b8524b (HEAD -> feature) Add the engine`: HEAD is on `feature`. `git switch main` moves HEAD to `main`. In a later course you will meet a "detached HEAD", when HEAD points at a commit instead of a branch.
+You can see it in `git log --oneline`. On `feature` after the commit above, the newest line starts `9b8524b (HEAD -> feature) Add the launch plan`: HEAD is on `feature`. `git switch main` moves HEAD to `main`. In a later course you will meet a "detached HEAD", when HEAD points at a commit instead of a branch.
 :::
 
 ::: context how-switch-swaps What switching really does
 Every commit holds a full snapshot of the project. When you switch branches, git looks at the snapshot the new branch points at and makes your folder match it: it adds files that snapshot has, changes files that differ, and removes files that snapshot does not have.
 
-Nothing is deleted from git. `engine.py` is still stored in `.git`, inside the commit on `feature`. Your folder only ever shows one branch at a time.
+Nothing is deleted from git. `launch-plan.txt` is still stored in `.git`, inside the commit on `feature`. Your folder only ever shows one branch at a time.
 :::
 
 ::: context merge-next Where this goes next
@@ -1149,6 +1151,8 @@ ran ls
 --- teach
 Last lesson you built `engine.py` on the `feature` branch. Then you switched back to `main` and watched the file disappear, because `main` had never had it. This lesson brings that work home: you copy the branch's commits into `main`, so `main` has the engine too.
 
+In the examples below, the branch being merged is called `new-ending`, and its new commit adds a file `ending.txt`. Your own branch has a different name.
+
 Picture a school report with a clean copy and a draft copy. You write a new chapter in the draft. When the chapter is finished and checked, you add it to the clean copy. Git calls that step **merging**.
 
 **Merge** — take the commits from another branch and add them to the branch you are on. This is the moment [[finished work lands in main|merge-at-work]].
@@ -1159,7 +1163,7 @@ You always merge *into* the branch you are on. So first make sure you are on `ma
 
 ```
 ~/project $ git branch
-  feature
+  new-ending
 * main
 ```
 
@@ -1170,24 +1174,24 @@ The star is next to `main`, so you are in the right place.
 Now type `git merge` and the name of the branch whose work you want:
 
 ```
-~/project $ git merge feature
+~/project $ git merge new-ending
 Updating 6c3da20..9549a85
 Fast-forward
  1 file changed
 ```
 
-Read the command as "merge `feature` into the branch I am on". The `feature` branch itself [[is not changed or removed|after-the-merge]]. It still has its commits; `main` now has them too.
+Read the command as "merge `new-ending` into the branch I am on". The `new-ending` branch itself [[is not changed or removed|after-the-merge]]. It still has its commits; `main` now has them too.
 
-The first line of the answer names two short ids, the ones `git log --oneline` shows. The two dots, `..`, read as "to": `main` was at commit `6c3da20` and is now at commit `9549a85`. List the folder and the engine is there:
+The first line of the answer names two short ids, the ones `git log --oneline` shows. The two dots, `..`, read as "to": `main` was at commit `6c3da20` and is now at commit `9549a85`. List the folder and `ending.txt` is there:
 
 ```
 ~/project $ ls
-README.md  engine.py
+README.md  ending.txt
 ```
 
 **What "fast-forward" means**
 
-A branch name is a [[label stuck on one commit|branch-label]]: its newest one. Before the merge, `main` had not moved since you made `feature`. So `feature` was `main` plus one new commit, in a straight line. There was nothing to combine. Git only had to slide the `main` label forward to the newest commit of `feature`.
+A branch name is a [[label stuck on one commit|branch-label]]: its newest one. Before the merge, `main` had not moved since you made `new-ending`. So `new-ending` was `main` plus one new commit, in a straight line. There was nothing to combine. Git only had to slide the `main` label forward to the newest commit of `new-ending`.
 
 That is a **[[fast-forward|fast-forward-picture]]** — a merge where git moves the branch label forward along a straight line of commits, and makes no new commit of its own.
 
@@ -1195,20 +1199,20 @@ You can see it in the history. Both branch names now sit next to the same commit
 
 ```
 ~/project $ git log --oneline
-9549a85 (HEAD -> main, feature) Add the engine
+9549a85 (HEAD -> main, new-ending) Add the new ending
 6c3da20 Start the project
 ```
 
 The arrow in `HEAD -> main` says you are on `main`. [[HEAD|head-marker]] is git's name for "where you are now".
 
-**Watch out:** `git merge feature` brings `feature` into *whichever branch you are on*. If you were still on `feature` and typed `git merge main`, git would answer `Already up to date.` and `main` would not change at all. When a merge seems to do nothing, run `git branch`, check the star, then `git switch main` and merge again. You also see `Already up to date.` if you run the same merge twice: there is nothing new to bring over, and nothing is harmed.
+**Watch out:** `git merge new-ending` brings `new-ending` into *whichever branch you are on*. If you were still on `new-ending` and typed `git merge main`, git would answer `Already up to date.` and `main` would not change at all. When a merge seems to do nothing, run `git branch`, check the star, then `git switch main` and merge again. You also see `Already up to date.` if you run the same merge twice: there is nothing new to bring over, and nothing is harmed.
 
 ::: context merge-at-work Where merges happen on a real team
 On a team, nobody works straight on `main`. Each person makes a branch, commits there, and then asks for it to be merged. On GitHub this request is called a **pull request**. Teammates read the changes, comment, and ask for fixes. This is **code review**. Only when they approve does the branch get merged into `main`. NASA's open-source flight software framework, F´ (F Prime), which flew on the Ingenuity Mars helicopter, takes contributions exactly this way. The rule it protects: `main` always works.
 :::
 
 ::: context after-the-merge Tidying up a finished branch
-After a merge, the branch you merged still exists. Its commits are safe inside `main` now, so teams usually delete the old branch name to keep the list short. The command is `git branch -d feature` (`-d` is "delete"). Deleting a branch removes only the name, not the commits. Git also protects you: `-d` refuses to delete a branch whose work has not been merged into the branch you are on, and prints a warning instead. On GitHub, a "Delete branch" button appears right after a pull request is merged, for the same reason.
+After a merge, the branch you merged still exists. Its commits are safe inside `main` now, so teams usually delete the old branch name to keep the list short. The command is `git branch -d new-ending` (`-d` is "delete"). Deleting a branch removes only the name, not the commits. Git also protects you: `-d` refuses to delete a branch whose work has not been merged into the branch you are on, and prints a warning instead. On GitHub, a "Delete branch" button appears right after a pull request is merged, for the same reason.
 :::
 
 ::: context branch-label A branch is only a name for a commit
@@ -1216,7 +1220,7 @@ It feels as if a branch holds a pile of files, but it is much smaller than that.
 :::
 
 ::: context fast-forward-picture Sliding the label forward
-The name comes from the fast-forward button on a music or video player: you skip ahead along the same track. Nothing new is recorded. Here the `main` label jumps from the first commit to the newest commit of `feature`, and both names end up on the same commit. Some teams prefer a record that a branch was merged, so they run `git merge --no-ff feature` ("no fast-forward"), which makes a merge commit even when a fast-forward was possible. You meet merge commits in the next lesson.
+The name comes from the fast-forward button on a music or video player: you skip ahead along the same track. Nothing new is recorded. Here the `main` label jumps from the first commit to the newest commit of `new-ending`, and both names end up on the same commit. Some teams prefer a record that a branch was merged, so they run `git merge --no-ff new-ending` ("no fast-forward"), which makes a merge commit even when a fast-forward was possible. You meet merge commits in the next lesson.
 
 ```svg
 <svg viewBox="0 0 360 172" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
@@ -1227,7 +1231,7 @@ The name comes from the fast-forward button on a music or video player: you skip
   <text x="130" y="20" font-size="11" text-anchor="middle" fill="#1f2a44">Start the project</text>
   <text x="240" y="20" font-size="11" text-anchor="middle" fill="#1f2a44">Add the engine</text>
   <text x="130" y="68" font-size="12" text-anchor="middle" font-weight="bold" fill="#1d6fd1">main</text>
-  <text x="240" y="68" font-size="12" text-anchor="middle" font-weight="bold" fill="#b4232c">feature</text>
+  <text x="240" y="68" font-size="12" text-anchor="middle" font-weight="bold" fill="#b4232c">new-ending</text>
   <text x="12" y="124" font-size="12" fill="#6c7a93">After</text>
   <line x1="130" y1="120" x2="240" y2="120" stroke="#1f2a44" stroke-width="2"/>
   <circle cx="130" cy="120" r="10" fill="#8fb8f0" stroke="#1f2a44" stroke-width="2"/>
@@ -1237,13 +1241,13 @@ The name comes from the fast-forward button on a music or video player: you skip
   <line x1="140" y1="146" x2="200" y2="146" stroke="#6c7a93" stroke-width="2" stroke-dasharray="4 3"/>
   <polygon points="200,141 210,146 200,151" fill="#6c7a93"/>
   <text x="240" y="150" font-size="12" text-anchor="middle" font-weight="bold" fill="#1d6fd1">main</text>
-  <text x="240" y="166" font-size="12" text-anchor="middle" font-weight="bold" fill="#b4232c">feature</text>
+  <text x="240" y="166" font-size="12" text-anchor="middle" font-weight="bold" fill="#b4232c">new-ending</text>
 </svg>
 ```
 :::
 
 ::: context head-marker HEAD: the "you are here" marker
-On a shopping-center map, a dot says "you are here". In git that dot is called **HEAD**. Most of the time it points at a branch, and `HEAD -> main` in the log means "you are on `main`". When you run `git switch feature`, HEAD moves to `feature`, and git changes the files in your folder to match. HEAD lives in a small file, `.git/HEAD`, which holds a line like `ref: refs/heads/main`. You will see HEAD again and again in the next Git course, where it is how you point at "the commit I am on".
+On a shopping-center map, a dot says "you are here". In git that dot is called **HEAD**. Most of the time it points at a branch, and `HEAD -> main` in the log means "you are on `main`". When you run `git switch new-ending`, HEAD moves to `new-ending`, and git changes the files in your folder to match. HEAD lives in a small file, `.git/HEAD`, which holds a line like `ref: refs/heads/main`. You will see HEAD again and again in the next Git course, where it is how you point at "the commit I am on".
 :::
 --- task
 You are on `main`. The `feature` branch has a finished `engine.py` that `main` does not have yet. Merge `feature` into `main`.
@@ -1272,68 +1276,68 @@ git . commits == 2
 
 === git-11 | When both branches moved
 --- teach
-Last lesson, `main` stood still while you worked on `feature`. So the merge was a fast-forward: git slid the `main` label forward, and that was all. Real projects are busier. While you write a guide on a `docs` branch, someone adds the engine on `main`. This lesson shows what git does when both branches moved.
+Last lesson, `main` stood still while you worked on `feature`. So the merge was a fast-forward: git slid the `main` label forward, and that was all. Real projects are busier. While you add sound effects on a `sound-fx` branch, someone adds a new level on `main`. This lesson shows what git does when both branches moved.
 
 Picture a path that forks. Two hikers set off from the fork, one down each side, and both walk a little way. Neither one is "ahead" of the other on a single path. To get everyone back together, you need to join the two paths. Git can do that.
 
 **Step 1: where the branches split**
 
-Here is the project before the merge. Both branches share the first commit, *Start the project*. Then `docs` added `GUIDE.md` and `main` added `engine.py`:
+Here is the project before the merge. Both branches share the first commit, *Start the project*. Then `sound-fx` added `sounds.txt` and `main` added `level.py`:
 
 ```
 ~/project $ git log --oneline
-3021fa9 (HEAD -> main) Add the engine
+3021fa9 (HEAD -> main) Add a level
 6c3da20 Start the project
 ```
 
-`git log` shows only the history of the branch you are on, so *Add the guide* is not in this list yet. The commit both branches share is [[the split point|merge-base]]. Git starts from there.
+`git log` shows only the history of the branch you are on, so *Add the sounds* is not in this list yet. The commit both branches share is [[the split point|merge-base]]. Git starts from there.
 
 **Step 2: the same command as before**
 
 You merge the same way as last lesson. Stand on `main` and name the other branch:
 
 ```
-~/project $ git merge docs
+~/project $ git merge sound-fx
 Merge made by the 'ort' strategy.
 ```
 
-This time there was no straight line to slide along. So git looked at what `main` changed since the split, looked at what `docs` changed since the split, and applied both. The word *ort* in the answer is the name of [[the method git used|ort-strategy]]. It is a normal success message, not an error. (On a real computer, git may first open [[a text editor|merge-editor]] for you to confirm a message.)
+This time there was no straight line to slide along. So git looked at what `main` changed since the split, looked at what `sound-fx` changed since the split, and applied both. The word *ort* in the answer is the name of [[the method git used|ort-strategy]]. It is a normal success message, not an error. (On a real computer, git may first open [[a text editor|merge-editor]] for you to confirm a message.)
 
 **Step 3: the merge commit**
 
-To record the join, git made a new commit by itself. It is called a **merge commit** — a commit that ties two branches together. Its message is *Merge branch 'docs'*:
+To record the join, git made a new commit by itself. It is called a **merge commit** — a commit that ties two branches together. Its message is *Merge branch 'sound-fx'*:
 
 ```
 ~/project $ git log --oneline
-470bd6f (HEAD -> main) Merge branch 'docs'
-3021fa9 Add the engine
-7cf2961 (docs) Add the guide
+470bd6f (HEAD -> main) Merge branch 'sound-fx'
+3021fa9 Add a level
+7cf2961 (sound-fx) Add the sounds
 6c3da20 Start the project
 ```
 
-Every commit remembers the commit that came right before it. That earlier commit is its **parent**. An ordinary commit has one parent. A merge commit has [[two parents|two-parents]]: the newest commit of `main` and the newest commit of `docs`. That is how git knows both lines of work are now in `main`.
+Every commit remembers the commit that came right before it. That earlier commit is its **parent**. An ordinary commit has one parent. A merge commit has [[two parents|two-parents]]: the newest commit of `main` and the newest commit of `sound-fx`. That is how git knows both lines of work are now in `main`.
 
 List the folder and both sides' files are there:
 
 ```
 ~/project $ ls
-GUIDE.md  README.md  engine.py
+README.md  level.py  sounds.txt
 ```
 
 **Step 4: when the two sides clash**
 
-Here, `main` and `docs` changed **different files**, so git joined them on its own. Git works line by line, so it can also join changes to *different lines of the same file*.
+Here, `main` and `sound-fx` changed **different files**, so git joined them on its own. Git works line by line, so it can also join changes to *different lines of the same file*.
 
 When both branches changed the **same lines** of the same file, git cannot know which version you want. That is a **[[conflict|conflict-preview]]** — two changes to the same lines that git will not choose between for you. Git stops the merge, marks the clashing lines inside the file, and asks you to choose. Resolving a conflict has a lesson of its own in the next Git course.
 
-**Watch out:** `git log --oneline` puts the commits from both branches into one list, newest first. So *Add the guide* appears below *Add the engine*, as if it came first on the same line of work. It did not: it was made on `docs`. The flat list hides the fork. To [[see the real shape|graph-view]], you need a picture of the history, one of the first tools in the next course.
+**Watch out:** `git log --oneline` puts the commits from both branches into one list, newest first. So *Add the sounds* appears below *Add a level*, as if it came first on the same line of work. It did not: it was made on `sound-fx`. The flat list hides the fork. To [[see the real shape|graph-view]], you need a picture of the history, one of the first tools in the next course.
 
 **What comes next**
 
 That finishes this course. You can now start a repository, stage and commit, read a diff, undo a change, and work on branches that merge back together. The next course, *Git, intermediate*, builds on exactly this. It covers telling git which files to ignore (`.gitignore`), drawing the history as a graph (`git log --graph`), looking inside one commit (`git show`), comparing two branches before you merge, fixing your last commit (`--amend`), putting work aside (`git stash`), undoing commits (`git reset` and `git revert`), marking releases with tags, and resolving a merge conflict.
 
 ::: context merge-base The commit both branches share
-Git calls the split point the **merge base**: the newest commit that both branches have in their history. Here it is *Start the project*. Git compares each side against the merge base, not against each other. That is how it tells "`main` added `engine.py`" apart from "`docs` deleted `engine.py`": only the merge base shows which file was there before. In real git you can ask for it with `git merge-base main docs`, which prints that commit's id.
+Git calls the split point the **merge base**: the newest commit that both branches have in their history. Here it is *Start the project*. Git compares each side against the merge base, not against each other. That is how it tells "`main` added `level.py`" apart from "`sound-fx` deleted `level.py`": only the merge base shows which file was there before. In real git you can ask for it with `git merge-base main sound-fx`, which prints that commit's id.
 :::
 
 ::: context ort-strategy What "ort" stands for
@@ -1341,7 +1345,7 @@ Git has more than one method for combining two branches. It calls each one a **s
 :::
 
 ::: context merge-editor The editor that pops up on a real computer
-In this practice terminal the merge finishes straight away. On a real computer, `git merge docs` usually opens a text editor first, with the message *Merge branch 'docs'* already written in. Git is asking: "Is this message all right?" Save the file and close the editor, and the merge commit is made. The editor is often Vim, which surprises people. In Vim, type `:wq` and press Enter to save and quit. To skip the editor and keep git's message, run `git merge --no-edit docs`.
+In this practice terminal the merge finishes straight away. On a real computer, `git merge sound-fx` usually opens a text editor first, with the message *Merge branch 'sound-fx'* already written in. Git is asking: "Is this message all right?" Save the file and close the editor, and the merge commit is made. The editor is often Vim, which surprises people. In Vim, type `:wq` and press Enter to save and quit. To skip the editor and keep git's message, run `git merge --no-edit sound-fx`.
 :::
 
 ::: context two-parents A commit with two parents
@@ -1358,10 +1362,10 @@ Draw each commit as a dot and each parent link as a line. The history forks at *
   <circle cx="160" cy="145" r="10" fill="#f2b880" stroke="#1f2a44" stroke-width="2"/>
   <circle cx="250" cy="100" r="12" fill="#ffffff" stroke="#b4232c" stroke-width="3"/>
   <text x="50" y="126" font-size="11" text-anchor="middle" fill="#1f2a44">Start</text>
-  <text x="160" y="36" font-size="11" text-anchor="middle" fill="#1f2a44">Add the engine</text>
-  <text x="160" y="172" font-size="11" text-anchor="middle" fill="#1f2a44">Add the guide</text>
+  <text x="160" y="36" font-size="11" text-anchor="middle" fill="#1f2a44">Add a level</text>
+  <text x="160" y="172" font-size="11" text-anchor="middle" fill="#1f2a44">Add the sounds</text>
   <text x="100" y="64" font-size="12" text-anchor="middle" font-weight="bold" fill="#1d6fd1">main</text>
-  <text x="100" y="146" font-size="12" text-anchor="middle" font-weight="bold" fill="#1f2a44">docs</text>
+  <text x="100" y="146" font-size="12" text-anchor="middle" font-weight="bold" fill="#1f2a44">sound-fx</text>
   <text x="270" y="97" font-size="12" font-weight="bold" fill="#b4232c">merge</text>
   <text x="270" y="112" font-size="12" font-weight="bold" fill="#b4232c">commit</text>
 </svg>
@@ -1369,21 +1373,21 @@ Draw each commit as a dot and each parent link as a line. The history forks at *
 :::
 
 ::: context conflict-preview What a conflict looks like
-Say `main` changed a line to `thrust = 100` and `docs` changed the same line to `thrust = 120`. Git stops and writes both versions into the file between markers:
+Say `main` changed a line to `thrust = 100` and `sound-fx` changed the same line to `thrust = 120`. Git stops and writes both versions into the file between markers:
 
 ```
 <<<<<<< HEAD
 thrust = 100
 =======
 thrust = 120
->>>>>>> docs
+>>>>>>> sound-fx
 ```
 
 The top part is your branch, the bottom part is the other one. You edit the file to keep the right line, delete the markers, then `git add` and `git commit` to finish. Conflicts are normal on busy teams. They are not a sign you broke something; git is refusing to guess.
 :::
 
 ::: context graph-view Seeing the fork in the history
-In the next course you add one flag, `--graph`, and `git log --oneline --graph` draws the branches at the left of the list with little lines. For this project it shows the fork after *Start the project*, *Add the engine* and *Add the guide* on separate lines, and the merge commit joining them at the top. It works in this practice terminal too, if you want a peek now. On big projects with many people merging every day, the graph is often the only way to tell which work came from which branch.
+In the next course you add one flag, `--graph`, and `git log --oneline --graph` draws the branches at the left of the list with little lines. For this project it shows the fork after *Start the project*, *Add a level* and *Add the sounds* on separate lines, and the merge commit joining them at the top. It works in this practice terminal too, if you want a peek now. On big projects with many people merging every day, the graph is often the only way to tell which work came from which branch.
 :::
 --- task
 `main` and `docs` both have new commits since they split: `docs` added `GUIDE.md`, and `main` added `engine.py`. You are on `main`. Merge `docs` into `main`, then look at the history with `git log --oneline` and find the merge commit at the top.
