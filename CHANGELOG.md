@@ -8,6 +8,14 @@ the entry for the one you are running is what Settings shows you afterwards.
 Newest first. Each heading is exactly `## <version>` so both readers can find
 it.
 
+## 1.1.5
+
+**Stuck on a coding lesson? It notices.** After two tries that do not pass, the lesson shows
+which check is still failing and offers help beyond the next hint: an Explain of what that check
+needs, a link back to the earlier lesson that taught it, and the next hint. If it is still not
+passing after a few more tries, it suggests opening the solution, reading it line by line, and
+then typing it yourself.
+
 ## 1.1.4
 
 **Almost every lesson is now in plain words.** 95 of the 108 modules are rewritten so each step
