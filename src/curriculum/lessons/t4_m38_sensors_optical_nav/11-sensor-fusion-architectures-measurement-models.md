@@ -1,7 +1,7 @@
 ---
 id: l11-sensor-fusion-architectures-measurement-models
 title: Sensor fusion architectures and per-sensor measurement models
-minutes: 20
+minutes: 23
 covers:
   - Sensor fusion architectures and per-sensor measurement models
 ---
@@ -82,7 +82,7 @@ $$
 
 For the thermometers: $1/1^2 = 1$ and $1/2^2 = 0.25$, so the combined information is $1 + 0.25 = 1.25$. Turn that back into a noise: $1/\sqrt{1.25} = 0.894$ degrees. The cheap thermometer helped, but only a little — about 11 percent. It carried a fifth of the total information, so it could not do more.
 
-Push that further. A sensor with a hundred times the noise has ten thousand times less information. Added to a good sensor, it changes the answer by about one part in twenty thousand. Its geometry does not matter; its share of the information is simply too small.
+Push that further. A sensor with a hundred times the noise has ten thousand times less information. Added to a good sensor, it changes the answer by about one part in twenty thousand. Its geometry does not matter; its share of the information is too small.
 
 For attitude, the same rule works with matrices. Each direction measurement $\hat{\mathbf{b}}_i$, trusted with weight $a_i = 1/\sigma_i^2$, adds its own piece to the **attitude information matrix**
 
@@ -234,7 +234,7 @@ print("consistent (P_ci >= P_central)?", P_ci >= P_central, "   naive was overco
 # consistent (P_ci >= P_central)? True    naive was overconfident (P_naive < P_central)? True
 ```
 
-In one dimension, $1/P_{\text{CI}}$ is a straight-line function of $\omega$, so its best value sits at an end, $\omega = 0$ or $\omega = 1$. Covariance Intersection here simply keeps the more precise local estimate, A, and drops B. Its variance, $3.4483$, is larger than the correct $2.4931$: it pays some precision to be safe. Its real value shows in two or more dimensions, where one source can be strong along one axis and the other along another, and a blend keeps the best of both.
+In one dimension, $1/P_{\text{CI}}$ is a straight-line function of $\omega$, so its best value sits at an end, $\omega = 0$ or $\omega = 1$. Covariance Intersection here keeps the more precise local estimate, A, and drops B. Its variance, $3.4483$, is larger than the correct $2.4931$: it pays some precision to be safe. Its real value shows in two or more dimensions, where one source can be strong along one axis and the other along another, and a blend keeps the best of both.
 :::
 
 ::: note Why it has to be true

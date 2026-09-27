@@ -8283,7 +8283,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-star-trackers-photons-to-quaternion",
       "title": "Star trackers: from photons to a quaternion",
-      "minutes": 27,
+      "minutes": 24,
       "covers": [
         "Star trackers: optics, centroiding, star catalogs, lost-in-space identification (triangle and pyramid algorithms), tracking mode"
       ],
@@ -8292,7 +8292,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-star-tracker-accuracy-boresight-update-rate-stray-light",
       "title": "Star tracker accuracy: boresight geometry, update rate, and stray light",
-      "minutes": 28,
+      "minutes": 25,
       "covers": [
         "Star tracker accuracy: cross-boresight vs about-boresight, update rate, exclusion angles, stray light"
       ],
@@ -8301,7 +8301,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-sun-sensors-coarse-fine-albedo-error",
       "title": "Sun sensors: coarse and fine, and the Earth-albedo error",
-      "minutes": 27,
+      "minutes": 24,
       "covers": [
         "Sun sensors: coarse analog and fine digital, field of view, albedo error"
       ],
@@ -8319,7 +8319,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-earth-and-horizon-sensors",
       "title": "Earth and horizon sensors",
-      "minutes": 18,
+      "minutes": 16,
       "covers": [
         "Earth and horizon sensors"
       ],
@@ -8328,7 +8328,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-radar-laser-altimeters-lidar",
       "title": "Radar altimeters, laser altimeters and lidar",
-      "minutes": 18,
+      "minutes": 20,
       "covers": [
         "Radar altimeters, laser altimeters and lidar"
       ],
@@ -8337,7 +8337,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-cameras-pinhole-intrinsics-extrinsics-distortion",
       "title": "Cameras for optical navigation: the pinhole model, intrinsics, extrinsics, distortion",
-      "minutes": 19,
+      "minutes": 24,
       "covers": [
         "Cameras for optical navigation: the pinhole model, intrinsics and extrinsics, distortion"
       ],
@@ -8346,7 +8346,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-feature-tracking-terrain-relative-navigation-crater-matching",
       "title": "Feature detection and tracking, terrain relative navigation, and crater matching",
-      "minutes": 21,
+      "minutes": 24,
       "covers": [
         "Feature detection and tracking; terrain relative navigation; crater and landmark matching"
       ],
@@ -8355,7 +8355,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-hazard-detection-visual-inertial-odometry",
       "title": "Hazard detection and avoidance; visual-inertial odometry basics",
-      "minutes": 16,
+      "minutes": 24,
       "covers": [
         "Hazard detection and avoidance; visual-inertial odometry basics"
       ],
@@ -8363,8 +8363,8 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     },
     {
       "id": "l10-relative-navigation-docking-retroreflectors",
-      "title": "Relative navigation for docking: retroreflectors and the closing error ellipse",
-      "minutes": 17,
+      "title": "Docking navigation: retroreflectors and the closing error ellipse",
+      "minutes": 23,
       "covers": [
         "Relative navigation sensors for docking: retroreflector tracking and pattern recognition"
       ],
@@ -8373,7 +8373,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-sensor-fusion-architectures-measurement-models",
       "title": "Sensor fusion architectures and per-sensor measurement models",
-      "minutes": 15,
+      "minutes": 23,
       "covers": [
         "Sensor fusion architectures and per-sensor measurement models"
       ],
@@ -8382,7 +8382,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-sensor-calibration-alignment-fault-detection",
       "title": "Sensor calibration, alignment estimation, and fault detection",
-      "minutes": 14,
+      "minutes": 25,
       "covers": [
         "Sensor calibration, alignment estimation, and fault detection"
       ],
@@ -8393,7 +8393,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-initial-orbit-determination",
       "title": "Initial orbit determination: Gibbs, Herrick-Gibbs and Gauss angles-only",
-      "minutes": 27,
+      "minutes": 25,
       "covers": [
         "Initial orbit determination: angles-only (Gauss, Laplace, double-r), three position vectors (Gibbs, Herrick-Gibbs), range and range-rate methods"
       ],

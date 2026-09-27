@@ -10,13 +10,7 @@ A baseball player in the outfield hears the crack of the bat and looks up. She g
 
 Tracking a satellite starts the same way. A new piece of debris shows up on a radar. A satellite goes quiet after a fault and comes back. A payload separates from its rocket and needs a first fix before an antenna can be pointed at it. Each time, the tracking team has no earlier estimate to start from — only a few raw measurements taken over minutes to hours. **Initial orbit determination** (IOD) is the set of classic methods that turn that handful of measurements straight into a full state: a position and a velocity, six numbers, with no starting guess.
 
-The answer is deliberately rough. Its job is to seed the more careful fitting of the next lessons, which uses every observation and a full force model. But the classic methods are worth learning well. They are fast, they need no guess, and the exact way each one fails teaches what "enough data" and "good geometry" mean for every estimator in this module.
-
-There are three families:
-
-- **Three positions.** If a radar gives three position vectors of the same object, Gibbs' method or Herrick-Gibbs' method recovers the velocity.
-- **Angles only.** A telescope gives only a direction, no distance. The Gauss method (and its cousins, Laplace's method and the double-r method) recovers the missing distances from the way the observer moves between looks.
-- **One full radar look.** If a radar measures range, two angles and all their rates at once, no estimation is needed at all — only a change of coordinates.
+The answer is deliberately rough: it seeds the careful fitting of the next lessons. But the way each classic method fails teaches what "enough data" and "good geometry" mean for every estimator in this module. There are three families: three positions (Gibbs, Herrick-Gibbs), angles only (Gauss, Laplace, double-r), and one full radar look, which needs only a change of coordinates.
 
 ## Three positions, no clock: Gibbs' method
 
@@ -138,12 +132,7 @@ $$
 
 Look at its shape. With the gravity terms removed, and even spacing, it is $(\mathbf r_3-\mathbf r_1)/\Delta t_{31}$: the distance traveled divided by the time taken, like working out a car's speed from two photos. The $\mu/(12r_i^3)$ terms correct for the bend of the orbit between the photos.
 
-So Herrick-Gibbs has two errors, and they pull in opposite directions:
-
-- **Truncation error.** The Taylor series is cut off after a few terms. That is fine for points close together and poor for points far apart, where the orbit bends a lot.
-- **Noise and round-off.** It still divides a difference of positions by a time. Its sensitivity to input error grows like one over the separation. Gibbs' grows much faster — like one over the separation *squared* — because it multiplies small cross products together.
-
-Gibbs has no truncation error but blows up at small separation. Herrick-Gibbs is gentler at small separation but pays truncation error at large separation. Somewhere in between, the two must cross.
+So Herrick-Gibbs has two errors. **Truncation error** comes from cutting the Taylor series short; it is tiny for close points and grows as they spread, because the orbit bends more. **Noise sensitivity** comes from dividing a difference of positions by a time; it grows like one over the separation. Gibbs has no truncation error, but its noise sensitivity grows like one over the separation *squared*, because it multiplies small cross products together. Somewhere in between, the two must cross.
 
 ::: key Herrick-Gibbs' method
 Same three positions as Gibbs, plus their times. $\mathbf v_2$ is a weighted sum of $\mathbf r_1,\mathbf r_2,\mathbf r_3$, with $\mu/(12r_i^3)$ correction terms from the known two-body acceleration. It is a truncated Taylor expansion, so it wants SMALL separation: its error from input noise grows only like one over the separation, while its truncation error grows as the points spread. The crossover with Gibbs is usually quoted as one to five degrees of arc.
@@ -255,9 +244,7 @@ Both are ordinary optical passes. They differ only in how much sky they cover. F
 | good ($500\,\mathrm s$) | $-7.77\times10^{-5}$ | $3.51\times10^{4}$ | $3.5\,\mathrm{km}$, $25\,\mathrm{m/s}$ | $1\,\mathrm{\mu m}$, $2.5\times10^{-8}\,\mathrm{m/s}$ |
 | short ($6\,\mathrm s$) | $-1.30\times10^{-9}$ | $1.20\times10^{8}$ | $0.30\,\mathrm m$, $3.6\,\mathrm{mm/s}$ | $5\,\mathrm{mm}$, $6\times10^{-5}\,\mathrm{m/s}$ |
 
-The short arc's first guess is actually *better*, because the short-arc $f$ and $g$ are nearly exact over six seconds. The good arc starts kilometers off, and each refinement cuts its error about eightfold. The short arc cannot get below millimeters: round-off is being magnified by a condition number of a hundred million. Still, both look fine.
-
-But $D_0$ and $\operatorname{cond}(\mathbf M)$ — computed from the geometry alone, before any data is used — already differ by four orders of magnitude. Now add $1$ arcsecond ($1/3600$ of a degree) of random noise to each angle, a good optical precision, and run $300$ independent tries through the same solver:
+The short arc's first guess is actually *better*, because the short-arc $f$ and $g$ are nearly exact over six seconds; the good arc starts kilometers off, and each refinement cuts its error about eightfold. Both look fine. But $D_0$ and $\operatorname{cond}(\mathbf M)$, computed from the geometry alone, already differ by four orders of magnitude. Now add $1$ arcsecond ($1/3600$ of a degree) of random noise to each angle, a good optical precision, and run $300$ independent tries through the same solver:
 
 ```python
 # 1 arcsecond noise, 300 tries each, 12 refinements
@@ -266,16 +253,16 @@ But $D_0$ and $\operatorname{cond}(\mathbf M)$ — computed from the geometry al
 # short arc       155/300            591 km                 7250 m/s
 ```
 
-The good arc degrades to a rough but usable first orbit: tens of kilometers and hundreds of meters per second, exactly what the fitting of the next lesson is built to clean up. The short arc falls apart. Half the tries find no answer with positive slant ranges. The other half put the satellite a few kilometers above the telescope — $591\,\mathrm{km}$ from where it really is, which is almost exactly its true distance from the telescope. Nothing in the setup looked different between the two arcs. The condition number warned you; nothing else did.
+The good arc degrades to a rough but usable first orbit — exactly what the next lesson's fitting is built to clean up. The short arc falls apart. Half the tries find no answer with positive slant ranges. The other half put the satellite a few kilometers above the telescope, $591\,\mathrm{km}$ from where it really is. The condition number warned you; nothing else did.
 :::
 
 ## Laplace's method and the double-r method
 
 Two other classic angles-only methods trade things differently.
 
-**Laplace's method** uses one site tracking continuously. It fits a short curve to the sightline direction near the middle time to get its rate $\dot{\hat{\boldsymbol\rho}}$ ("rho hat dot") and its curvature $\ddot{\hat{\boldsymbol\rho}}$. Put those into Newton's law and the range falls out by algebra. It needs no separate second and third looks — only good derivatives of one track. The price is steep: estimating a *second* derivative from noisy angles magnifies the noise badly. So Laplace's method is more noise-sensitive than Gauss's at a typical tracking rate and is used less in operations, even though it needs less raw data in principle.
+**Laplace's method** uses one site tracking continuously. It fits a short curve to the sightline direction near the middle time to get its rate $\dot{\hat{\boldsymbol\rho}}$ ("rho hat dot") and curvature $\ddot{\hat{\boldsymbol\rho}}$, puts them into Newton's law, and solves for the range by algebra. The price is steep: estimating a *second* derivative from noisy angles magnifies the noise badly. So it is more noise-sensitive than Gauss's method and used less in operations.
 
-The **double-r method** guesses two distances directly, usually $r_1$ and $r_3$. It builds the two positions, asks how long an orbit through them would take to fly between them — a **Lambert**-style time-of-flight check — and compares that with the real $t_3-t_1$. Then it corrects both guesses together by Newton's method in two unknowns. It avoids the polynomial and tends to be more robust on longer arcs, where Gauss's short-arc starting guess is poorest. The cost is a heavier iteration.
+The **double-r method** guesses two distances directly, usually $r_1$ and $r_3$. It builds the two positions, asks how long an orbit through them would take to fly between them (a Lambert-style time-of-flight check), compares that with the real $t_3-t_1$, and corrects both guesses by Newton's method. It tends to be more robust on longer arcs, where Gauss's short-arc start is poorest, at the cost of a heavier iteration.
 
 All three are angles-only methods, and all three suffer on a short arc. The cure for all three is the same: spread the observations further apart in time. Changing algorithm does not fix a bad arc.
 
@@ -333,7 +320,7 @@ print(np.round(r/1e3, 3), "km")           # [2270.983 4457.293 4690.497] km
 print(np.round(v/1e3, 4), "km/s")         # [-7.0601  0.5652  2.9943] km/s
 ```
 
-The true state was $\mathbf r=(2270.980,\ 4457.293,\ 4690.496)\,\mathrm{km}$ and $\mathbf v=(-7.0601,\ 0.5652,\ 2.9943)\,\mathrm{km/s}$. The answer is off by $2.9\,\mathrm m$ and $0.05\,\mathrm{m/s}$ — and all of that comes from rounding the six inputs to the digits printed above. Fed the unrounded values, the same code agrees to under a nanometer. There is no crossover, no condition number to fear and no iteration. Each input error passes through once, at its own size: a thousandth of a degree of azimuth at $655\,\mathrm{km}$ is about $8\,\mathrm m$ sideways, times the $\cos El \approx 0.71$ factor.
+The true state was $\mathbf r=(2270.980,\ 4457.293,\ 4690.496)\,\mathrm{km}$ and $\mathbf v=(-7.0601,\ 0.5652,\ 2.9943)\,\mathrm{km/s}$. The answer is off by $2.9\,\mathrm m$ and $0.05\,\mathrm{m/s}$, all of it from rounding the six inputs as printed: a thousandth of a degree seen from $655\,\mathrm{km}$ is about $11\,\mathrm m$ sideways. Fed unrounded values, the code agrees to under a nanometer. No crossover, no iteration: each input error passes through once, at its own size.
 :::
 
 ::: warning What each family actually needs
@@ -347,7 +334,7 @@ A survey turns up three "position fixes" of one cataloged object, with a coplana
 :::
 
 ::: answer
-No. $4.2^\circ$ is far above the round-off level of a truly coplanar triple, which should read a few thousandths of a degree or less. Running Gibbs anyway returns a velocity for an orbit that does not exist. First check the data association: one fix may belong to a different object, be mistimed, or carry a large angle or timing error. Only after finding and fixing (or throwing out) the bad point does it make sense to run Gibbs on a truly coplanar set.
+No. $4.2^\circ$ is far above the round-off level of a truly coplanar triple (a few thousandths of a degree or less). Gibbs would return a velocity for an orbit that does not exist. First check the data association: one fix may belong to another object, be mistimed, or carry a large angle error. Find and fix (or discard) the bad point, then run Gibbs on a truly coplanar set.
 :::
 
 ::: check
@@ -355,7 +342,7 @@ The three input positions each carry $1\,\mathrm m$ of noise. When you halve the
 :::
 
 ::: answer
-Herrick-Gibbs' error roughly doubles; Gibbs' roughly quadruples. Herrick-Gibbs is, at heart, a difference of positions divided by a time, like $(\mathbf r_3-\mathbf r_1)/\Delta t_{31}$. Halve the time and the same position noise is divided by half as much, so the velocity error doubles: it grows like one over the separation. Gibbs builds $\mathbf D$ and $\mathbf N$ from cross products of nearly parallel vectors, and each shrinks in proportion to the separation. Dividing by $\sqrt{ND}$ and multiplying small differences together makes its error grow like one over the separation squared. The 1 m runs show it: from $1^\circ$ to $0.5^\circ$, Herrick-Gibbs went from $0.16$ to $0.31\,\mathrm{m/s}$, while Gibbs went from $17.9$ to $72\,\mathrm{m/s}$. Neither change is in the physics; both are how the computation magnifies input error.
+Herrick-Gibbs' error roughly doubles; Gibbs' roughly quadruples. Herrick-Gibbs is at heart $(\mathbf r_3-\mathbf r_1)/\Delta t_{31}$: halve the time and the same position noise is divided by half as much, so the error doubles. Gibbs builds $\mathbf D$ and $\mathbf N$ from cross products of nearly parallel vectors, each shrinking with the separation, and combining them makes its error grow like one over the separation squared. The 1 m runs show it: from $1^\circ$ to $0.5^\circ$, Herrick-Gibbs went from $0.16$ to $0.31\,\mathrm{m/s}$, Gibbs from $17.9$ to $72\,\mathrm{m/s}$.
 :::
 
 ::: check
@@ -363,7 +350,7 @@ In the Gauss example, $D_0$ for the short arc is about $60{,}000$ times smaller 
 :::
 
 ::: answer
-No. The determinant of $\mathbf M$ is $-c_1c_3D_0$, and $c_1$ and $c_3$ also change between the two arcs, because they depend on $\tau_1$ and $\tau_3$. More importantly, the condition number is the ratio of the largest to the smallest *singular value* — roughly, the matrix's strongest and weakest stretch. The determinant is the *product* of all of them. Squashing one direction of $\mathbf M$ shrinks the determinant and raises the condition number, but not in lockstep. Both numbers agree on what matters: the short arc is far worse conditioned.
+No. The determinant of $\mathbf M$ is $-c_1c_3D_0$, and $c_1$, $c_3$ change between the arcs too. More importantly, the condition number is the *ratio* of the largest to the smallest singular value — the matrix's strongest and weakest stretch — while the determinant is their *product*. Squashing one direction shrinks one and raises the other, but not in lockstep. Both agree on what matters: the short arc is far worse conditioned.
 :::
 
 ::: check
@@ -379,7 +366,7 @@ A colleague wants to skip Gauss's refinement and use the first short-arc guess, 
 :::
 
 ::: answer
-Against, if accuracy matters. On the good arc the first guess was about $3.5\,\mathrm{km}$ and $25\,\mathrm{m/s}$ off, even with perfect angles. Twelve refinements with the exact Lagrange coefficients brought that to about a micrometer and $2.5\times10^{-8}\,\mathrm{m/s}$. Each refinement is only one propagation and one $3\times3$ solve, so it is cheap. And Gauss's output usually seeds a fitting process that assumes it starts reasonably close; skipping refinement hands that fit a worse start for no saving. (With real 1-arcsecond noise the refined answer is still tens of kilometers off — but that is the noise, which refinement cannot remove, not the approximation, which it can.)
+Against. On the good arc the first guess was about $3.5\,\mathrm{km}$ and $25\,\mathrm{m/s}$ off even with perfect angles; twelve refinements brought that to about a micrometer and $2.5\times10^{-8}\,\mathrm{m/s}$. Each refinement is one propagation and one $3\times3$ solve — cheap. Gauss's output seeds a fit that assumes a reasonably close start, so skipping refinement gives it a worse start for no saving. (With 1-arcsecond noise the refined answer is still kilometers off, but that is noise, which refinement cannot remove, not approximation, which it can.)
 :::
 
 ## Summary
@@ -410,12 +397,12 @@ Gravity from a round Earth always pulls straight toward Earth's center. A pull t
   <line x1="185" y1="85" x2="185" y2="12" stroke="#b4232c" stroke-width="2"/>
   <polygon points="185,8 180,18 190,18" fill="#b4232c"/>
   <text x="193" y="20" font-size="12" fill="#b4232c">h</text>
-  <circle cx="98" cy="96" r="4" fill="#f2b880" stroke="#1f2a44"/>
-  <circle cx="160" cy="116" r="4" fill="#f2b880" stroke="#1f2a44"/>
-  <circle cx="240" cy="110" r="4" fill="#f2b880" stroke="#1f2a44"/>
-  <text x="80" y="90" font-size="11" fill="#1f2a44">r1</text>
-  <text x="150" y="132" font-size="11" fill="#1f2a44">r2</text>
-  <text x="246" y="124" font-size="11" fill="#1f2a44">r3</text>
+  <circle cx="98" cy="108" r="4" fill="#f2b880" stroke="#1f2a44"/>
+  <circle cx="149" cy="119" r="4" fill="#f2b880" stroke="#1f2a44"/>
+  <circle cx="236" cy="106" r="4" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="80" y="104" font-size="11" fill="#1f2a44">r1</text>
+  <text x="140" y="135" font-size="11" fill="#1f2a44">r2</text>
+  <text x="242" y="122" font-size="11" fill="#1f2a44">r3</text>
   <text x="20" y="152" font-size="11" fill="#6c7a93">all three fixes lie in the orbit plane, perpendicular to h</text>
 </svg>
 ```
@@ -444,7 +431,7 @@ Astronomers paint an imaginary globe around Earth and give every star two angles
 ::: context eighth-degree Why degree eight, and who first did it
 Write $\rho_2$ in terms of $r_2$ from the linear system: it comes out as $\rho_2 = A + \mu B/r_2^3$, with $A$ and $B$ fixed by the geometry. Then use the triangle Earth-center, telescope, satellite: $r_2^2 = R_2^2 + 2\rho_2(\mathbf R_2\cdot\hat{\boldsymbol\rho}_2) + \rho_2^2$. Substituting and multiplying through by $r_2^6$ gives $r_2^8 + a\,r_2^6 + b\,r_2^3 + c = 0$.
 
-Carl Friedrich Gauss built this method at age 24 to find the dwarf planet Ceres, which had been seen for only about six weeks in 1801 before it vanished into the Sun's glare. Using his predicted position, astronomers found it again that December.
+Carl Friedrich Gauss built the first version of this method at age 24 to find the dwarf planet Ceres, which had been seen for only about six weeks in 1801 before it vanished into the Sun's glare. Using his predicted position, astronomers found it again that December.
 :::
 
 ::: context condition-number How much a problem magnifies errors

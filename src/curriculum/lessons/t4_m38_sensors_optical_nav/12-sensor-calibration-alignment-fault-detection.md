@@ -1,14 +1,14 @@
 ---
 id: l12-sensor-calibration-alignment-fault-detection
 title: Sensor calibration, alignment estimation, and fault detection
-minutes: 24
+minutes: 25
 covers:
   - 'Sensor calibration, alignment estimation, and fault detection'
 ---
 
 Step on a bathroom scale with nothing in your hands and it reads $0.4\,\mathrm{kg}$ before you have even put your weight on it. You know what to do: subtract $0.4$ from everything it says, or turn the little wheel until it reads zero. Now picture a camera strapped to a bike helmet, tilted one degree to the side. Every video comes out tilted by that same degree, always the same way. And picture a friend who is usually reliable but one day tells you, perfectly calmly, that he saw a shark in the swimming pool.
 
-Those are the three problems of this lesson. The scale needs **calibration**: finding and removing a sensor's known quirks. The helmet camera has a **misalignment**: it is mounted a little crooked, so everything it reports is off by the same small turn. And the friend's shark is a **fault**: a reading that is simply wrong, delivered with the same confidence as a good one.
+Those are the three problems of this lesson. The scale needs **calibration**: finding and removing a sensor's known quirks. The helmet camera has a **misalignment**: it is mounted a little crooked, so everything it reports is off by the same small turn. And the friend's shark is a **fault**: a reading that is plain wrong, delivered with the same confidence as a good one.
 
 Every sensor in this module assumed its own numbers could be trusted: the intrinsics a camera was calibrated with, the hard-iron and soft-iron correction a magnetometer was fitted with, the direction a star tracker was mounted along. None of that trust survives a real vehicle unchecked. A lens's calibration drifts with temperature. A mounting bracket flexes by a few arcseconds between a cold eclipse and a sunlit orbit. And any sensor can fail in flight: a connector works loose, a detector pixel dies, a stray reflection convinces a ranging sensor of a range that is not there. This closing lesson takes up what a mission does about all three.
 
