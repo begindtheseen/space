@@ -22,9 +22,9 @@ Last lesson ended with two broken programs — a counter that lost counts and a 
 
 A `std::mutex` is 40 bytes on this Linux machine. It cannot be copied or moved — a copy of the key would defeat the point — so it usually lives as a member next to the data it protects, or as a global.
 
-The rule that makes a mutex work is a promise *you* keep: **every access to the shared data, reads as well as writes, happens while holding the same mutex**. The mutex does not know which data it guards. It only knows who holds it. That is why good code names the pairing in a comment, or keeps the data and its mutex together in one class with the data private.
+The rule that makes a mutex work is a promise *you* keep: **every access to the shared data, reads as well as writes, happens while holding the same mutex**. The mutex does not know which data it guards, so keep the data and its mutex together, in one class with the data private.
 
-What does it buy? Two things. **Mutual exclusion**: no two threads are in the critical section together, so a load-add-store can no longer interleave. And **ordering**: unlocking a mutex *happens before* the next lock of that same mutex by any thread. Everything the first thread wrote inside its critical section is visible to the next thread inside its own. That is the synchronisation last lesson said was missing, so the data race is gone and the program has defined behaviour again.
+It buys two things. **Mutual exclusion**: no two threads are in the critical section together, so load-add-store sequences can no longer interleave. And **ordering**: unlocking a mutex *happens before* the next lock of that same mutex, so what one thread wrote inside is visible to the next thread inside. That is the synchronisation last lesson said was missing: no data race, defined behaviour again.
 
 ::: key
 Unlocking a mutex happens before the next lock of the same mutex, so every write made while holding it is visible to the next thread that locks it. Every access to the protected data, reads included, must hold the same mutex.
@@ -80,9 +80,9 @@ int main() {
 
 Three runs at `-O2` each printed `frames = 2000000 (expected 2000000)`, and so did a build with `-fsanitize=thread`, which exited with status 0 and no report.
 
-Step by step: each pass of the loop creates `lock`, which locks `g_frames_mutex`. `++g_frames` runs with the mutex held, so the other thread cannot be between its load and its store. At the closing brace of the loop body `lock` is destroyed and unlocks. Two million lock-and-unlock pairs, two million increments, none lost.
+Step by step: each pass creates `lock`, which locks `g_frames_mutex`. `++g_frames` runs with the mutex held, so the other thread cannot be between its load and its store. At the closing brace `lock` is destroyed and unlocks. Two million increments, none lost.
 
-Sanity check: the compiler can no longer collapse the loop into one addition, because a lock and an unlock are synchronisation and every increment between them must really happen. The right answer now comes from the rules, not from timing luck — and TSan agrees.
+Sanity check: the right answer now comes from the rules, not from timing luck — and TSan agrees.
 :::
 
 The same tool fixes last lesson's power budget, where every access was locked but "check, then act" was two separate locked steps. The fix is to put the whole decision under one lock:
@@ -116,7 +116,7 @@ While one thread holds a mutex, every other thread that wants it waits. So do on
 - **unlock early** with `unlock()`, and lock again with `lock()`;
 - **move**: ownership of a held lock can be handed to another `std::unique_lock`, for instance returned from a function.
 
-The flag and a pointer make it 16 bytes against the lock guard's 8, and it checks the flag in its destructor. That is cheap, but not free, and the extra freedom is extra room for mistakes, so use `std::lock_guard` unless you need one of the powers above.
+The flag and a pointer make it 16 bytes against the lock guard's 8. The extra freedom is extra room for mistakes, so use `std::lock_guard` unless you need one of these powers.
 
 ::: example Four things a unique_lock can do
 ```cpp
@@ -338,7 +338,7 @@ void add_locked(int code) {                 // private; caller must hold m_
 }
 ```
 
-It printed `event 1`, `calling add_pair`, `event 2`, `event 3`, `done`, with a plain `std::mutex`. And now the pair is logged under one lock, so no other thread's event can land between 2 and 3 — something the recursive version did not promise either.
+It printed `event 1`, `calling add_pair`, `event 2`, `event 3`, `done`, with a plain `std::mutex`, and the pair is still logged under one lock, so no other thread's event can land between 2 and 3.
 
 ::: warning A recursive mutex does not prevent deadlock between threads
 Re-locking is allowed only for the thread that already owns the mutex. Two *different* threads that each hold one recursive mutex and want the other's are exactly as stuck as with plain mutexes. The cure for that is a consistent lock order or `std::scoped_lock`, which is next lesson.
@@ -408,7 +408,7 @@ Line 1 is the baseline: the volatile read and write alone. Line 3 is the honest 
 
 Line 2 is the trap. It is measured before any second thread existed, and glibc, the C library, skips the expensive **[[atomic instruction|atomic-instruction]]** a lock needs while the process has only ever had one thread. A benchmark with no threads flatters the mutex by a factor of about three.
 
-Line 4 is **contended**: four threads that each want the lock constantly. Each increment now costs about 72 ns of elapsed time, $72.1 / 19.0 \approx 3.8$ times slower than one thread doing all the work alone. The threads spend their time handing the lock between cores and, when it is taken, asking the operating system to put them to sleep and wake them.
+Line 4 is **contended**: four threads that each want the lock constantly. Each increment costs about 72 ns of elapsed time, $72.1 / 19.0 \approx 3.8$ times slower than one thread doing all the work alone, because the threads spend their time handing the lock between cores and sleeping and waking.
 
 Sanity check: 16.7 ns at the processor's rated 2.1 GHz is about 35 clock cycles, the right size for a couple of atomic instructions and a function call or two.
 :::

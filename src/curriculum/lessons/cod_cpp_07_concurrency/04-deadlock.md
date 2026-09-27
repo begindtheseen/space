@@ -234,7 +234,7 @@ On a real team the ranks live in one reviewed table, so new code that needs two 
 
 ## Taking several locks at once: std::lock and std::scoped_lock
 
-Sometimes you cannot pick an order in advance. Last lesson's tank transfer was one: one thread moves propellant from `left` to `right` while another moves it back. Each call locks "from" then "to", so the two threads ask in opposite orders. Here is a variant that counts whole grams, with one thread running `transfer(fwd, aft, 3)` and another `transfer(aft, fwd, 2)`, a million times each. With two plain `lock_guard`s it hangs; run under `timeout 5` on one machine it never finished and was killed after 5 s.
+Sometimes no order can be fixed in advance. Last lesson's tank transfer was one: one thread moves propellant from `left` to `right` while another moves it back. Each call locks "from" then "to", so the two threads ask in opposite orders. A variant counting whole grams has one thread running `transfer(fwd, aft, 3)` and another `transfer(aft, fwd, 2)`, a million times each. With two plain `lock_guard`s it hangs; run under `timeout 5` on one machine it never finished and was killed after 5 s.
 
 The standard library's answer is `std::lock(a, b, ...)`. It locks all the mutexes you give it, and it promises not to deadlock *among themselves*, whatever order you list them in and whatever order other `std::lock` calls use. The standard does not say how. libstdc++ (the GCC library) locks one, then *tries* the others; if any is busy it releases everything it took and starts again, this time waiting first on the one that was busy. That is breaking hold-and-wait: it never sleeps on one lock while holding another.
 
@@ -250,7 +250,7 @@ void transfer(Tank& from, Tank& to, long grams) {
 
 Read it as "lock both of these for the rest of this block". Class template argument deduction works out `std::scoped_lock<std::mutex, std::mutex>` for you.
 
-With that line, a million transfers each way finish, and ThreadSanitizer reports nothing. Starting from 2,000,000 g per tank, the result is `fwd = 1000000 g, aft = 3000000 g, total = 4000000 g`: 3 g out and 2 g back a million times is 1,000,000 g moved, total unchanged.
+With that line, both loops finish and ThreadSanitizer reports nothing. Starting from 2,000,000 g per tank, the result is `fwd = 1000000 g, aft = 3000000 g, total = 4000000 g`: 3 g out and 2 g back a million times is 1,000,000 g moved, total unchanged.
 
 Older code writes the same thing in two steps:
 
