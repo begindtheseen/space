@@ -6277,7 +6277,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-lamberts-problem-and-theorem",
       "title": "Lambert's problem and Lambert's theorem",
-      "minutes": 20,
+      "minutes": 19,
       "covers": [
         "Lambert's problem statement and Lambert's theorem"
       ],
@@ -6286,7 +6286,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-universal-variable-solver",
       "title": "Solving Lambert's problem: Gauss, universal variables, and Izzo",
-      "minutes": 22,
+      "minutes": 18,
       "covers": [
         "solution methods: Gauss, universal variables / Battin, Izzo"
       ],
@@ -6295,7 +6295,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-branches-short-long-multirev",
       "title": "Branches, honestly: short way, long way, and multiple revolutions",
-      "minutes": 21,
+      "minutes": 18,
       "covers": [
         "multi-revolution solutions and their multiplicity"
       ],
@@ -6304,7 +6304,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-the-180-degree-singularity",
       "title": "The 180-degree singularity",
-      "minutes": 20,
+      "minutes": 18,
       "covers": [
         "convergence and singular geometries near a 180 degree transfer"
       ],
@@ -6313,7 +6313,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-the-state-transition-matrix",
       "title": "The state transition matrix for two-body motion",
-      "minutes": 21,
+      "minutes": 18,
       "covers": [
         "the state transition matrix and its use in targeting"
       ],
@@ -6322,7 +6322,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-differential-correction",
       "title": "Targeting and differential correction",
-      "minutes": 22,
+      "minutes": 20,
       "covers": [
         "targeting and differential correction"
       ],
@@ -6331,7 +6331,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-b-plane-targeting",
       "title": "B-plane targeting",
-      "minutes": 19,
+      "minutes": 22,
       "covers": [
         "B-plane targeting"
       ],
@@ -6349,7 +6349,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-tcm-and-linear-covariance",
       "title": "Trajectory correction manoeuvres and linear covariance analysis",
-      "minutes": 24,
+      "minutes": 25,
       "covers": [
         "trajectory correction manoeuvres",
         "linear covariance analysis of targeting errors"
@@ -6361,7 +6361,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-relative-motion-frames",
       "title": "Relative motion frames: LVLH, Hill and RIC",
-      "minutes": 18,
+      "minutes": 21,
       "covers": [
         "relative motion frames: LVLH, Hill, RIC"
       ],
@@ -6370,7 +6370,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-deriving-clohessy-wiltshire",
       "title": "Deriving the Clohessy-Wiltshire equations",
-      "minutes": 19,
+      "minutes": 18,
       "covers": [
         "derivation of the Clohessy-Wiltshire equations"
       ],
@@ -6379,7 +6379,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-cw-state-transition-matrix",
       "title": "Solving CW — closed-form motion and the state transition matrix",
-      "minutes": 17,
+      "minutes": 15,
       "covers": [
         "the CW state transition matrix"
       ],
@@ -6397,7 +6397,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-secular-drift-and-the-counterintuitive-burn",
       "title": "Secular drift and the counterintuitive burn",
-      "minutes": 18,
+      "minutes": 17,
       "covers": [
         "secular in-track drift and why it dominates"
       ],
@@ -6406,7 +6406,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-football-orbits-and-circumnavigation",
       "title": "Football orbits and natural motion circumnavigation",
-      "minutes": 22,
+      "minutes": 19,
       "covers": [
         "football and drifting relative orbits",
         "natural motion circumnavigation"
@@ -6416,7 +6416,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-two-impulse-cw-targeting",
       "title": "Two-impulse CW rendezvous targeting",
-      "minutes": 17,
+      "minutes": 18,
       "covers": [
         "two-impulse CW rendezvous targeting"
       ],
@@ -6425,7 +6425,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-glideslope-algorithms",
       "title": "Glideslope algorithms",
-      "minutes": 18,
+      "minutes": 16,
       "covers": [
         "glideslope algorithms"
       ],
@@ -6434,7 +6434,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-vbar-rbar-passive-safety",
       "title": "V-bar and R-bar approaches and passive safety",
-      "minutes": 23,
+      "minutes": 26,
       "covers": [
         "V-bar and R-bar approaches and their safety properties",
         "passive safety and safety ellipses"
@@ -6444,7 +6444,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-corridors-keepout-and-aborts",
       "title": "Approach corridors, keep-out spheres and abort trajectories",
-      "minutes": 19,
+      "minutes": 21,
       "covers": [
         "approach corridors and keep-out spheres",
         "abort trajectories and collision avoidance manoeuvres"
@@ -6454,7 +6454,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-docking-vs-berthing-iss-profile",
       "title": "Docking vs berthing, and the ISS visiting-vehicle profile",
-      "minutes": 20,
+      "minutes": 16,
       "covers": [
         "docking vs berthing",
         "ISS visiting vehicle requirements"
@@ -6475,7 +6475,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-entry-interface-conditions",
       "title": "The entry interface and the entry state",
-      "minutes": 18,
+      "minutes": 20,
       "covers": [
         "entry interface conditions"
       ],
@@ -6484,7 +6484,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-ballistic-entry-and-the-allen-eggers-solution",
       "title": "Ballistic entry and the Allen-Eggers solution",
-      "minutes": 14,
+      "minutes": 19,
       "covers": [
         "ballistic entry and the Allen-Eggers solution"
       ],
@@ -6493,7 +6493,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-peak-deceleration-and-peak-heating",
       "title": "Peak deceleration and peak heating, derived and then measured",
-      "minutes": 18,
+      "minutes": 20,
       "covers": [
         "peak deceleration and peak heating relations"
       ],
@@ -6502,7 +6502,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-aerothermodynamics-and-thermal-protection",
       "title": "Aerothermodynamics and thermal protection",
-      "minutes": 17,
+      "minutes": 22,
       "covers": [
         "aerothermodynamics: convective and radiative heating, Sutton-Graves",
         "thermal protection systems, heat rate vs heat load"
@@ -6512,7 +6512,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-ballistic-coefficient-and-trajectory-shape",
       "title": "Ballistic coefficient and the shape of the trajectory",
-      "minutes": 14,
+      "minutes": 16,
       "covers": [
         "ballistic coefficient and its effect on the trajectory"
       ],
@@ -6521,7 +6521,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-the-entry-corridor",
       "title": "The entry corridor: undershoot and overshoot",
-      "minutes": 17,
+      "minutes": 18,
       "covers": [
         "the entry corridor: undershoot and overshoot boundaries"
       ],
@@ -6530,7 +6530,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-skip-entry-and-lifting-entry",
       "title": "Skip entry and lifting entry",
-      "minutes": 16,
+      "minutes": 22,
       "covers": [
         "skip entry",
         "lifting entry and bank-angle modulation"
@@ -6540,7 +6540,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-apollo-and-shuttle-entry-guidance",
       "title": "Apollo and Shuttle entry guidance",
-      "minutes": 16,
+      "minutes": 23,
       "covers": [
         "Apollo entry guidance and its descendants",
         "Shuttle drag-vs-energy entry guidance"
@@ -6550,7 +6550,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-hypersonic-aerodynamics-and-transonic-transition",
       "title": "Hypersonic aerodynamics and the transonic transition",
-      "minutes": 15,
+      "minutes": 19,
       "covers": [
         "hypersonic aerodynamics and the transonic transition"
       ],
@@ -6559,7 +6559,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-propulsive-descent-phases",
       "title": "Propulsive descent — entry burn, aerodynamic guidance, landing burn",
-      "minutes": 14,
+      "minutes": 18,
       "covers": [
         "propulsive descent: entry burn, aerodynamic guidance, landing burn"
       ],
@@ -6568,7 +6568,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-terminal-descent-sensors",
       "title": "Terminal descent sensors",
-      "minutes": 14,
+      "minutes": 19,
       "covers": [
         "terminal descent sensors: radar altimeter, lidar, terrain relative navigation"
       ],
@@ -6577,7 +6577,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-hoverslam-and-divert-capability",
       "title": "The hoverslam problem, divert capability, and propellant margin",
-      "minutes": 17,
+      "minutes": 27,
       "covers": [
         "landing burn timing and the hoverslam problem",
         "divert capability and the landing ellipse"
@@ -6587,7 +6587,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l13-mars-edl-and-reusable-booster-return",
       "title": "Mars EDL and reusable booster return modes",
-      "minutes": 16,
+      "minutes": 22,
       "covers": [
         "Mars EDL: thin atmosphere, supersonic parachutes, sky crane",
         "reusable booster return modes: RTLS vs droneship, boostback burns"
