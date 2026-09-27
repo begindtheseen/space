@@ -2337,22 +2337,124 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       "file": "cod_cpp_07_concurrency/01-threads.md"
     },
     {
+      "id": "l02-data-races",
+      "title": "Data races",
+      "minutes": 26,
+      "covers": [
+        "Data races as undefined behaviour, not merely a wrong answer"
+      ],
+      "file": "cod_cpp_07_concurrency/02-data-races.md"
+    },
+    {
+      "id": "l03-mutexes-and-locks",
+      "title": "Mutexes and lock guards",
+      "minutes": 28,
+      "covers": [
+        "mutex, lock_guard, unique_lock, scoped_lock, shared_mutex, recursive_mutex"
+      ],
+      "file": "cod_cpp_07_concurrency/03-mutexes-and-locks.md"
+    },
+    {
       "id": "l04-deadlock",
       "title": "Deadlock, and how to make it impossible",
-      "minutes": 22,
+      "minutes": 24,
       "covers": [
         "Deadlock: the four conditions, lock ordering, std::lock and scoped_lock"
       ],
       "file": "cod_cpp_07_concurrency/04-deadlock.md"
     },
     {
+      "id": "l05-condition-variables",
+      "title": "Waiting for something to happen: condition variables",
+      "minutes": 23,
+      "covers": [
+        "condition_variable and spurious wakeups; the predicate form of wait"
+      ],
+      "file": "cod_cpp_07_concurrency/05-condition-variables.md"
+    },
+    {
+      "id": "l06-atomics-and-memory-orderings",
+      "title": "Atomics and memory orderings",
+      "minutes": 23,
+      "covers": [
+        "std::atomic and memory orderings: relaxed, acquire/release, seq_cst"
+      ],
+      "file": "cod_cpp_07_concurrency/06-atomics-and-memory-orderings.md"
+    },
+    {
       "id": "l07-the-memory-model",
       "title": "The C++ memory model",
-      "minutes": 21,
+      "minutes": 22,
       "covers": [
         "The C++ memory model; is_lock_free; atomic_ref"
       ],
       "file": "cod_cpp_07_concurrency/07-the-memory-model.md"
+    },
+    {
+      "id": "l08-futures-and-thread-pools",
+      "title": "Futures, promises and thread pools",
+      "minutes": 19,
+      "covers": [
+        "future, promise, packaged_task, async, and thread pools"
+      ],
+      "file": "cod_cpp_07_concurrency/08-futures-and-thread-pools.md"
+    },
+    {
+      "id": "l09-lock-free-ring-buffers",
+      "title": "Lock-free ring buffers for telemetry",
+      "minutes": 21,
+      "covers": [
+        "Lock-free single-producer single-consumer ring buffers for telemetry",
+        "Lock-free is not wait-free; progress guarantees"
+      ],
+      "file": "cod_cpp_07_concurrency/09-lock-free-ring-buffers.md"
+    },
+    {
+      "id": "l10-false-sharing",
+      "title": "False sharing: when two threads fight over one cache line",
+      "minutes": 22,
+      "covers": [
+        "False sharing and hardware_destructive_interference_size"
+      ],
+      "file": "cod_cpp_07_concurrency/10-false-sharing.md"
+    },
+    {
+      "id": "l11-real-time-and-scheduling",
+      "title": "Real time: deadlines, worst cases and rate-monotonic scheduling",
+      "minutes": 24,
+      "covers": [
+        "Hard, firm and soft real time; WCET and why average latency is irrelevant",
+        "Rate-monotonic scheduling and utilisation bounds"
+      ],
+      "file": "cod_cpp_07_concurrency/11-real-time-and-scheduling.md"
+    },
+    {
+      "id": "l12-priority-inversion-and-rtos",
+      "title": "Priority inversion, Mars Pathfinder, and real-time operating systems",
+      "minutes": 21,
+      "covers": [
+        "Priority inversion and priority inheritance; the Mars Pathfinder case",
+        "RTOS landscape: FreeRTOS, RTEMS, VxWorks, Linux PREEMPT_RT"
+      ],
+      "file": "cod_cpp_07_concurrency/12-priority-inversion-and-rtos.md"
+    },
+    {
+      "id": "l13-linux-real-time-setup",
+      "title": "Setting up Linux for a real-time loop",
+      "minutes": 26,
+      "covers": [
+        "sched_setscheduler, SCHED_FIFO, CPU pinning, mlockall"
+      ],
+      "file": "cod_cpp_07_concurrency/13-linux-real-time-setup.md"
+    },
+    {
+      "id": "l14-triple-redundancy-case-study",
+      "title": "Case study: three flight computers and a vote",
+      "minutes": 21,
+      "covers": [
+        "The SpaceX triple-redundancy architecture as a case study"
+      ],
+      "file": "cod_cpp_07_concurrency/14-triple-redundancy-case-study.md"
     }
   ],
   "cod_cpp_08_realtime": [
@@ -10454,25 +10556,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_cpp_07_concurrency": {
-    "covered": 3,
+    "covered": 17,
     "total": 17,
-    "complete": false,
-    "missing": [
-      "Data races as undefined behaviour, not merely a wrong answer",
-      "mutex, lock_guard, unique_lock, scoped_lock, shared_mutex, recursive_mutex",
-      "condition_variable and spurious wakeups; the predicate form of wait",
-      "std::atomic and memory orderings: relaxed, acquire/release, seq_cst",
-      "future, promise, packaged_task, async, and thread pools",
-      "Lock-free single-producer single-consumer ring buffers for telemetry",
-      "Lock-free is not wait-free; progress guarantees",
-      "False sharing and hardware_destructive_interference_size",
-      "Hard, firm and soft real time; WCET and why average latency is irrelevant",
-      "Priority inversion and priority inheritance; the Mars Pathfinder case",
-      "RTOS landscape: FreeRTOS, RTEMS, VxWorks, Linux PREEMPT_RT",
-      "Rate-monotonic scheduling and utilisation bounds",
-      "sched_setscheduler, SCHED_FIFO, CPU pinning, mlockall",
-      "The SpaceX triple-redundancy architecture as a case study"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_cpp_08_realtime": {
     "covered": 15,
