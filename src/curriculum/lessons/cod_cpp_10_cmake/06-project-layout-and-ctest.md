@@ -1,7 +1,7 @@
 ---
 id: l06-project-layout-and-ctest
 title: A project layout a stranger can build, and ctest
-minutes: 24
+minutes: 20
 covers:
   - 'Canonical layout: apps, cmake, extern, include, src, tests'
   - ctest and test registration

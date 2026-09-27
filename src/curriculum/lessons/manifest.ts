@@ -2453,6 +2453,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       "file": "cod_cpp_10_cmake/04-generator-expressions-and-configurations.md"
     },
     {
+      "id": "l05-dependencies-find-package-and-fetchcontent",
+      "title": "Dependencies: find_package and FetchContent",
+      "minutes": 22,
+      "covers": [
+        "find_package and config packages; FetchContent versus submodules versus Conan or vcpkg"
+      ],
+      "file": "cod_cpp_10_cmake/05-dependencies-find-package-and-fetchcontent.md"
+    },
+    {
       "id": "l06-project-layout-and-ctest",
       "title": "A project layout a stranger can build, and ctest",
       "minutes": 20,
@@ -2465,11 +2474,21 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-cmake-presets",
       "title": "CMake presets",
-      "minutes": 18,
+      "minutes": 19,
       "covers": [
         "CMakePresets.json for reproducible configure and build commands"
       ],
       "file": "cod_cpp_10_cmake/07-cmake-presets.md"
+    },
+    {
+      "id": "l08-sanitizer-coverage-and-ccache-builds",
+      "title": "Sanitizer, coverage and ccache builds",
+      "minutes": 24,
+      "covers": [
+        "Sanitizer and coverage build configurations",
+        "ccache and build-time hygiene"
+      ],
+      "file": "cod_cpp_10_cmake/08-sanitizer-coverage-and-ccache-builds.md"
     },
     {
       "id": "l09-toolchain-files-and-cross-compiling",
@@ -2488,6 +2507,17 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "install and export so downstream projects can find_package you"
       ],
       "file": "cod_cpp_10_cmake/10-install-and-export.md"
+    }
+  ],
+  "cod_cpp_11_gtest": [
+    {
+      "id": "l01-first-tests-and-fixtures",
+      "title": "Your first tests, and fixtures that start fresh",
+      "minutes": 20,
+      "covers": [
+        "TEST and TEST_F; test suites and fixtures; SetUp and TearDown"
+      ],
+      "file": "cod_cpp_11_gtest/01-first-tests-and-fixtures.md"
     }
   ],
   "cod_git_01_basics": [
@@ -10418,21 +10448,16 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_cpp_10_cmake": {
-    "covered": 11,
+    "covered": 14,
     "total": 14,
-    "complete": false,
-    "missing": [
-      "find_package and config packages; FetchContent versus submodules versus Conan or vcpkg",
-      "Sanitizer and coverage build configurations",
-      "ccache and build-time hygiene"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_cpp_11_gtest": {
-    "covered": 0,
+    "covered": 1,
     "total": 14,
     "complete": false,
     "missing": [
-      "TEST and TEST_F; test suites and fixtures; SetUp and TearDown",
       "ASSERT_* versus EXPECT_* and when a fatal assertion is correct",
       "Floating-point assertions: EXPECT_NEAR, EXPECT_DOUBLE_EQ, and choosing the tolerance",
       "TEST_P parameterised tests and value generators",
