@@ -4152,6 +4152,17 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       "file": "cod_sql_03_windows/10-windows-versus-self-joins.md"
     }
   ],
+  "cod_sql_04_schema": [
+    {
+      "id": "l01-normalisation",
+      "title": "Normalisation, and when to break it",
+      "minutes": 23,
+      "covers": [
+        "Normalisation to third normal form and deliberate denormalisation for analytics"
+      ],
+      "file": "cod_sql_04_schema/01-normalisation.md"
+    }
+  ],
   "t0_m00_basecamp": [
     {
       "id": "l01-place-value-and-estimating",
@@ -10523,11 +10534,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_sql_04_schema": {
-    "covered": 0,
+    "covered": 1,
     "total": 18,
     "complete": false,
     "missing": [
-      "Normalisation to third normal form and deliberate denormalisation for analytics",
       "Star and snowflake schemas; surrogate versus natural keys",
       "Constraints: NOT NULL, UNIQUE, CHECK, foreign keys with ON DELETE",
       "Transactions and ACID; isolation levels; deadlocks",
