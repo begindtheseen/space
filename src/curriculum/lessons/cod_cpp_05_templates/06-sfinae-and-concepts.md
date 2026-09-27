@@ -14,7 +14,7 @@ You will see both, on the same flight-software problems, and you will read the r
 
 ## Substitution failure is not an error
 
-When you call a function that has several **overloads** (several functions with the same name), the compiler goes through a process called **overload resolution**: it collects every candidate, throws out the ones that cannot take these arguments, and picks the best of the rest.
+When you call a function that has several **overloads** (several functions with the same name), the compiler goes through a process called **[[overload resolution|overload-resolution]]**: it collects every candidate, throws out the ones that cannot take these arguments, and picks the best of the rest.
 
 For a function template, being a candidate takes two steps. First, **deduction**: work out the template arguments from the call, as lesson 1 showed. Second, **substitution**: paste those arguments into the template's *declaration* (its return type, its parameter types, its template parameters) to see what function signature comes out.
 
@@ -159,7 +159,7 @@ There is a second problem. The intent, "integers only", is hidden inside the ret
 
 ## Concepts: the sign at the gate
 
-C++20 added a direct way to say what a template needs. A **concept** is a named, compile-time requirement on types: a predicate that is true or false for a given type. The standard library provides many in the header `<concepts>`, including:
+C++20 added a direct way to say what a template needs. A **[[concept|concepts-history]]** is a named, compile-time requirement on types: a predicate that is true or false for a given type. The standard library provides many in the header `<concepts>`, including:
 
 - `std::integral<T>`: `T` is an integer type (`int`, `std::int16_t`, `char`, `bool`…);
 - `std::floating_point<T>`: `T` is `float`, `double` or `long double`;
@@ -307,7 +307,7 @@ h1.cpp:7:11: note: the required expression 's.step(dt)' is invalid
 cc1plus: note: set '-fconcepts-diagnostics-depth=' to at least 2 for more detail
 ```
 
-Every line is about *your* code: the call on line 32, the concept on line 6, and the exact requirement on line 7 that `Logger` fails. Sanity check: `Logger` really has no `step`, and that is the one thing the message complains about.
+Every line is about *your* code: the call on line 32, the concept on line 6, and **[[the exact requirement|diagnostics-depth]]** on line 7 that `Logger` fails. Sanity check: `Logger` really has no `step`, and that is the one thing the message complains about.
 :::
 
 ::: warning A concept checks only what you wrote down
@@ -486,10 +486,33 @@ What it buys is at build time: a misuse like `Matrix<std::string, 2, 2>` or `Mat
 | Subsumption | More constrained wins | Works through named concepts |
 | Benefit | Readable diagnosis at the call site | Same runtime code |
 
-Next lesson moves from checking types at compile time to *computing* at compile time: `constexpr` and `consteval` functions, `constinit`, and `if constexpr`, which chooses behavior on a type property like `std::is_floating_point_v<T>` without writing a single specialisation.
+Next lesson moves from checking types at compile time to *computing* at compile time: `constexpr` and `consteval` functions, `constinit`, and `if constexpr`, which chooses behavior on a type property like `std::is_floating_point_v<T>` **[[without writing a single specialisation|if-constexpr-bridge]]**.
+
+::: context overload-resolution How the compiler picks one function
+Overload resolution runs in three steps. Collect every function with the right name that lookup can see. Keep only the **viable** ones, those that can accept these arguments at all; this is where SFINAE and constraints remove candidates. Then rank the survivors: an exact match beats a promotion (such as `float` to `double`), which beats a conversion (such as `int` to `double`). If one candidate is best, it is called; if two tie, the call is ambiguous.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 110" font-family="Inter, Arial, sans-serif">
+  <rect x="10" y="30" width="96" height="44" rx="6" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="58" y="50" font-size="11" text-anchor="middle" fill="#1f2a44">1. collect</text>
+  <text x="58" y="65" font-size="11" text-anchor="middle" fill="#1f2a44">candidates</text>
+  <rect x="132" y="30" width="96" height="44" rx="6" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="180" y="50" font-size="11" text-anchor="middle" fill="#1f2a44">2. drop the</text>
+  <text x="180" y="65" font-size="11" text-anchor="middle" fill="#1f2a44">non-viable</text>
+  <rect x="254" y="30" width="96" height="44" rx="6" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="302" y="50" font-size="11" text-anchor="middle" fill="#1f2a44">3. rank,</text>
+  <text x="302" y="65" font-size="11" text-anchor="middle" fill="#1f2a44">pick the best</text>
+  <line x1="106" y1="52" x2="126" y2="52" stroke="#1f2a44" stroke-width="2"/>
+  <polygon points="131,52 123,48 123,56" fill="#1f2a44"/>
+  <line x1="228" y1="52" x2="248" y2="52" stroke="#1f2a44" stroke-width="2"/>
+  <polygon points="253,52 245,48 245,56" fill="#1f2a44"/>
+  <text x="180" y="96" font-size="11" text-anchor="middle" fill="#b4232c">SFINAE and concepts act here</text>
+</svg>
+```
+:::
 
 ::: context sfinae-name An acronym that stuck
-The phrase comes from the standard's own rule, and the acronym was popularised by David Vandevoorde and Nicolai Josuttis in their book *C++ Templates*, which this module lists as a resource. For about fifteen years, SFINAE was the main way to put conditions on templates, and whole libraries of tricks were built on it. Most of those tricks have a one-line concept equivalent today, but you will read SFINAE code for years, in older libraries and in any codebase still built as C++14 or C++17.
+The phrase comes from the standard's own rule, and the acronym was popularised by David Vandevoorde and Nicolai Josuttis in their book *C++ Templates*, which this module lists as a resource. For many years SFINAE was the main way to put conditions on templates, and whole libraries of tricks were built on it. Most of those tricks have a one-line concept equivalent today, but you will read SFINAE code for years, in older libraries and in any codebase still built as C++14 or C++17.
 :::
 
 ::: context adc-count What a raw count is
@@ -514,6 +537,14 @@ A sensor's analog-to-digital converter (ADC) turns a voltage into an integer. A 
 ```
 :::
 
+::: context concepts-history A feature that took twenty years
+Concepts were proposed for the standard that became C++11, and a large version was voted in and then taken out again in 2009, judged too complex to finish in time. A smaller design, nicknamed "Concepts Lite", was published first as a Technical Specification and then merged into C++20. The wait is one reason SFINAE tricks became so elaborate: for a long time they were the only tool available.
+:::
+
+::: context diagnostics-depth Asking g++ for more detail
+The last line of that report, `set '-fconcepts-diagnostics-depth=' to at least 2 for more detail`, is a real g++ option. By default g++ shows the first failed requirement and stops. With `-fconcepts-diagnostics-depth=2` or more, it opens up nested concepts and shows further failures. For a deep concept built from other concepts, raising it is often the fastest way to find which piece failed. clang++ has its own format, but also reports the unsatisfied requirement by name.
+:::
+
 ::: context interface-boundary Why the location of an error matters
 A template library is written by one team and used by many. The *interface* is what users see: names, parameter types, and now the constraints. The *implementation* is the loops and helpers inside. An error reported in the implementation asks the user to understand code they did not write; an error reported at the interface speaks their language.
 
@@ -534,4 +565,8 @@ A template library is written by one team and used by many. The *interface* is w
 ```
 
 Blue: where the constrained error is reported. Red: where the unconstrained one surfaces.
+:::
+
+::: context if-constexpr-bridge One template, two behaviors
+In this lesson, each type property got its own overload: one `to_dps` for integers, one for floating point. Lesson 7 shows `if constexpr (std::is_integral_v<T>)`, an ordinary-looking `if` evaluated at compile time. The branch not taken is not instantiated for that type, so one function body can scale counts for integers and pass values through for floats. Concepts decide *whether* a template may be used; `if constexpr` decides *what* it does once chosen.
 :::
