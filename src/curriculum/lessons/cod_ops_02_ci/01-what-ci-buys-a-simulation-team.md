@@ -1,7 +1,7 @@
 ---
 id: l01-what-ci-buys-a-simulation-team
 title: What continuous integration buys a simulation team
-minutes: 20
+minutes: 22
 covers:
   - What CI buys a simulation team, stated as failure modes it prevents
 ---
@@ -189,7 +189,7 @@ With the same simulation run by CI on each pull request, the hunt costs nothing:
 
 Six months after a design review, someone asks: "Can you rerun exactly the simulation that went into that report?" You check out the old commit. And it will not build, because the build steps lived in one person's head, or in a settings page of a build server that has since been reconfigured.
 
-The fix is to keep the pipeline's own definition **in the repository**, as a file, next to the code. This is called **[[pipeline as code|pipeline-as-code]]**. Every modern CI system works this way, including GitHub Actions in the next lesson. The payoff is large:
+The fix is to keep the pipeline's own definition **in the repository**, as a file, next to the code. This is called **[[pipeline as code|pipeline-as-code]]**. Every modern CI system supports this, and GitHub Actions in the next lesson is built around it. The payoff is large:
 
 - The pipeline is **versioned**. Checking out an old commit also checks out the pipeline that built it, so old commits still build the way they did.
 - It is **reviewed**. A change to the pipeline goes through a pull request like any other change, so nobody quietly switches a check off.
