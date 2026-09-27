@@ -1,7 +1,7 @@
 ---
 id: l11-gnss-in-the-launch-vehicle-environment
 title: GNSS in the launch vehicle environment
-minutes: 21
+minutes: 23
 covers:
   - "GNSS in a launch vehicle environment: acceleration, jerk, vibration, plume attenuation, antenna switching"
 ---
@@ -225,7 +225,7 @@ Why does switching antennas mid-flight cause more trouble for the carrier phase 
 :::
 
 ::: answer
-Both see the same sudden jump in path length, but they measure at very different scales. The code measurement is only good to about meters, so a jump of centimeters to a few meters sits inside what the code loop absorbs anyway. The carrier phase is precise to millimeters, with a $19\,\mathrm{cm}$ wavelength, so the same jump is many wavelengths. Unless the receiver is told about the switch, the jump looks exactly like a cycle slip and forces a fresh ambiguity solution.
+Both see the same sudden jump in path length, but they measure at very different scales. The code measurement is only good to a meter or so, so a jump of centimeters to a few meters sits inside what the code loop absorbs anyway. The carrier phase is precise to millimeters, with a $19\,\mathrm{cm}$ wavelength, so the same jump is many wavelengths. Unless the receiver is told about the switch, the jump looks exactly like a cycle slip and forces a fresh ambiguity solution.
 :::
 
 ::: check
