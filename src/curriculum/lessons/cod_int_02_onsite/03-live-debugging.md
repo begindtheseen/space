@@ -1,7 +1,7 @@
 ---
 id: l03-live-debugging
 title: Live debugging
-minutes: 26
+minutes: 20
 covers:
   - 'Live debugging: here is code that crashes or leaks, find it'
 ---
@@ -33,7 +33,7 @@ The most common mistake in this round is changing code before understanding the 
 ## The four tools
 
 - **`-g`** tells the compiler to include **[[debug information|debug-info]]** — a map from machine instructions back to your file names and line numbers. Without it, tools can only show raw addresses. It does not change what the program does.
-- **`-fsanitize=address,undefined`** builds the program with two **sanitizers**, checks the compiler adds to your code. **AddressSanitizer** (ASan) catches bad memory use — use-after-free, reading past the end of a buffer, double delete, and leaks at exit. **UndefinedBehaviorSanitizer** (UBSan) catches things like signed overflow. The program runs about twice as slow, and stops at the first error with a detailed report.
+- **`-fsanitize=address,undefined`** builds the program with two **sanitizers**, checks the compiler adds to your code. **[[AddressSanitizer|asan-redzones]]** (ASan) catches bad memory use — use-after-free, reading past the end of a buffer, double delete, and leaks at exit. **UndefinedBehaviorSanitizer** (UBSan) catches things like signed overflow. The program runs about twice as slow, and stops at the first error with a detailed report.
 - **valgrind** runs your unchanged program inside a simulated processor that watches every memory access. No rebuild is needed, but it runs many times slower. Its leak report is the classic one.
 - **gdb** is the debugger. For a crash, the one command to know is `bt`, for **[[backtrace|backtrace]]**: the chain of function calls that led to the crash, innermost first.
 
@@ -172,7 +172,7 @@ $$
 
 which is exactly where the buffer ends. That is why the report says "0 bytes after" the region, and why the read has size $8$: one whole `double`.
 
-Check with the addresses: the region runs from `0x503000000040` to `0x503000000060`, and `0x60 - 0x40` is $96 - 64 = 32$ in decimal. The bad read is at `0x...060`, the first byte past the end. Everything agrees.
+Check with the addresses: the region runs from `0x503000000040` to `0x503000000060`. The `0x` means the number is written in hexadecimal (base 16), so `0x60` is $6 \times 16 = 96$ and `0x40` is $4 \times 16 = 64$, and the difference is $96 - 64 = 32$. The bad read is at `0x...060`, the first byte past the end. Everything agrees.
 :::
 
 The `<=` should be `<`. Better still, remove the index, so there is no boundary to get wrong:
@@ -455,7 +455,7 @@ int main() {
 }
 ```
 
-Built with `-g` and run, it died with `Segmentation fault` — the operating system stopping a program that touched memory it may not use. In gdb, `run` and then `bt`:
+Built with `-g` and run, it died with a **[[segmentation fault|segfault]]** — the operating system stopping a program that touched memory it may not use. In gdb, `run` and then `bt`:
 
 ```text
 Program received signal SIGSEGV, Segmentation fault.
@@ -592,6 +592,30 @@ Git has this built in as `git bisect`, which halves the list of commits between 
 The compiler turns your source into machine instructions and, normally, throws away the names and line numbers. With `-g` it keeps a table on the side: this instruction came from that line of that file, this memory slot is the variable `seq`. Sanitizers, valgrind and gdb all read that table to turn addresses like `0x55af8cc3c474` into `main l03_uaf_bug.cpp:18`. It makes the file bigger, not the program different.
 :::
 
+::: context asan-redzones How ASan sees a bad access
+ASan keeps a small side map saying, for every 8 bytes of memory, whether they may be touched. It surrounds each heap block with poisoned **redzones** and poisons freed blocks for a while, so reading just past the end, or reading after a free, lands on poison and is reported on the spot.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 110" font-family="Inter, Arial, sans-serif">
+  <rect x="20" y="30" width="60" height="30" fill="#b4232c" fill-opacity="0.25" stroke="#b4232c" stroke-width="2"/>
+  <text x="50" y="50" font-size="11" fill="#b4232c" text-anchor="middle">redzone</text>
+  <g fill="#8fb8f0" stroke="#1f2a44" stroke-width="1">
+    <rect x="80" y="30" width="50" height="30"/><rect x="130" y="30" width="50" height="30"/>
+    <rect x="180" y="30" width="50" height="30"/><rect x="230" y="30" width="50" height="30"/>
+  </g>
+  <g font-size="11" fill="#1f2a44" text-anchor="middle">
+    <text x="105" y="50">v[0]</text><text x="155" y="50">v[1]</text><text x="205" y="50">v[2]</text><text x="255" y="50">v[3]</text>
+  </g>
+  <rect x="280" y="30" width="60" height="30" fill="#b4232c" fill-opacity="0.25" stroke="#b4232c" stroke-width="2"/>
+  <text x="310" y="50" font-size="11" fill="#b4232c" text-anchor="middle">redzone</text>
+  <text x="180" y="20" font-size="11" fill="#1f2a44" text-anchor="middle">32 bytes you own</text>
+  <line x1="310" y1="92" x2="310" y2="66" stroke="#b4232c" stroke-width="2"/>
+  <polygon points="310,60 304,72 316,72" fill="#b4232c"/>
+  <text x="300" y="102" font-size="11" fill="#b4232c" text-anchor="end">v[4] lands here: reported</text>
+</svg>
+```
+:::
+
 ::: context backtrace Reading a backtrace
 Every function call pushes a frame onto the stack; a backtrace lists them from the innermost out. Frame #0 is where the crash happened. Frame #1 called it.
 
@@ -613,6 +637,10 @@ Read up from your own code until you reach the first frame in *your* file: that 
 
 ::: context vector-growth Why a vector moves
 A `std::vector` keeps its elements side by side in one heap block. When the block is full, there is no guarantee the memory right after it is free, so `push_back` allocates a bigger block (commonly one and a half to two times the size, depending on the library), moves the elements over and frees the old block. That is why growth is fast on average and why every pointer into the old block becomes stale at that moment. Calling `reserve` up front avoids the reallocation.
+:::
+
+::: context segfault Where the name comes from
+Old computers split memory into **segments**, and touching one you had no right to was a "segmentation violation". Modern systems use pages instead, but the name stuck. The operating system sends the program a signal called SIGSEGV and, unless something catches it, the program stops. A null pointer is the most common cause, because address zero is deliberately left unmapped so that exactly this mistake is caught.
 :::
 
 ::: context output-buffering Why output waits

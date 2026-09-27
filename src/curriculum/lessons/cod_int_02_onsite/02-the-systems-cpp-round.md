@@ -372,9 +372,9 @@ The fix, covered in depth in the real-time module, is to allocate everything at 
 
 ## Cache effects
 
-The processor fetches memory a whole **[[cache line|cache-line]]** at a time — on typical x86 processors, 64 bytes, or eight `double`s — into a small, fast memory next to the core called the **cache**. Reading a neighbour of something you just read is nearly free. Jumping far away forces a slow trip to main memory.
+The processor fetches memory a whole **[[cache line|cache-line]]** at a time — on typical x86 processors, 64 bytes, or eight `double`s — into a small, fast memory next to the core called the **cache**. Reading a neighbor of something you just read is nearly free. Jumping far away forces a slow trip to main memory.
 
-A two-dimensional array in C++ is stored **row-major**: row 0 in full, then row 1, and so on. So walking along a row visits neighbours, and walking down a column jumps a whole row's width every step.
+A two-dimensional array in C++ is stored **row-major**: row 0 in full, then row 1, and so on. So walking along a row visits neighbors, and walking down a column jumps a whole row's width every step.
 
 ```cpp
 #include <chrono>

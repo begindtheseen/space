@@ -24,7 +24,7 @@ Here are the stages, in order.
 3. **Technical rounds with the hiring team.** Calls with engineers from the **[[hiring team|hiring-team]]** — the team that would hire you. These go deeper: algorithms (last module's material), systems C++, and questions about things you have built.
 4. **The onsite.** A day-long block of four to six rounds in a row, including a presentation you give to the team.
 
-Two more facts wrap around all four stages. First, behavioural questions — questions about how you work, how you handle failure, and why you want this job — are not one stage. They run through every stage. Second, the process can stop at any stage. There is no guarantee that passing one step gets you the next.
+Two more facts wrap around all four stages. First, behavioral questions — questions about how you work, how you handle failure, and why you want this job — are not one stage. They run through every stage. Second, the process can stop at any stage. There is no guarantee that passing one step gets you the next.
 
 ::: key The process end to end
 Recruiter screen, a roughly two to four hour take-home or timed challenge, technical rounds with the hiring team, then a day-long onsite of four to six rounds including a presentation to the team. Commonly five to eight touchpoints over four to six weeks, and it can stop at any stage.
@@ -49,10 +49,10 @@ It helps to know what each stage is *for*, because then you know what to show. T
   - **system design** (lessons 4 and 5), such as a simulation or telemetry system;
   - **domain rounds** for guidance, navigation and control roles (lesson 6);
   - the **technical presentation** (lesson 7), where the questions run longer than the talk;
-  - and the **behavioural** thread (lessons 8 and 9), reported to fill a large share of onsite time.
+  - and the **behavioral** thread (lessons 8 and 9), reported to fill a large share of onsite time.
 
 ::: note Why the same thing gets checked more than once
-You might wonder why behavioural questions keep coming back instead of getting one round of their own. A single conversation is a small, noisy sample. Asking about ownership and honesty in several rounds, with several interviewers, gives a much more reliable picture, the same way a thermometer reading is more trustworthy when three sensors agree. The practical lesson for you: every round is partly behavioural, so every answer should show how you work, not only what you know.
+You might wonder why behavioral questions keep coming back instead of getting one round of their own. A single conversation is a small, noisy sample. Asking about ownership and honesty in several rounds, with several interviewers, gives a much more reliable picture, the same way a thermometer reading is more trustworthy when three sensors agree. The practical lesson for you: every round is partly behavioral, so every answer should show how you work, not only what you know.
 :::
 
 ## Putting it on a calendar
@@ -204,7 +204,7 @@ A recruiter's job is to fill the role, so they want strong candidates to get thr
 :::
 
 ::: context take-home-vs-timed Two versions of the same stage
-A **take-home** is a problem you do on your own schedule and send back, often a small program that has to handle real-looking data. A **timed challenge** runs on a coding website with a clock, and usually has automatic tests. Both check the same thing: working code with nobody helping. The take-home also shows how you organise and explain a small project, so a short note on your design choices is worth writing.
+A **take-home** is a problem you do on your own schedule and send back, often a small program that has to handle real-looking data. A **timed challenge** runs on a coding website with a clock, and usually has automatic tests. Both check the same thing: working code with nobody helping. The take-home also shows how you organize and explain a small project, so a short note on your design choices is worth writing.
 :::
 
 ::: context hiring-team Who is on the other side
