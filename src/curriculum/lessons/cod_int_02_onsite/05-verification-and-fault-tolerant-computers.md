@@ -111,7 +111,7 @@ Say *why* each rung is there. Each one closes a gap the others leave open, and t
 
 ## Fault tolerance: two ways to survive radiation
 
-In space, a fast charged particle can pass through a chip and flip a bit — a $0$ becomes a $1$. This is a **single-event upset**. It is not permanent damage; the chip is fine afterwards. But if the flipped bit was in a register holding a thruster command, the command is wrong.
+In space, a fast charged particle can pass through a chip and flip a bit — a $0$ becomes a $1$. This is a **single-event upset**. It is not permanent damage; the chip is fine afterwards. But if the flipped bit was in a **register** (a tiny storage slot inside the processor) holding a thruster command, the command is wrong.
 
 There are two broad answers.
 
@@ -171,7 +171,7 @@ $$
 :::
 
 ::: note Why it has to be true
-Each string is up or down, like a coin that lands "failed" with chance $p$. For independent coins the chance of any specific pattern is the product: strings 1 and 2 down and string 3 up has chance $p \cdot p \cdot (1-p)$. There are $\binom{3}{2} = 3$ patterns with exactly two down, all with the same chance, so exactly two down has chance $3p^2(1-p)$. The one pattern with all three down has chance $p^3$. These patterns cannot happen at the same time, so their chances add. The single-string formula $p = 1 - e^{-\lambda t}$ comes from a constant failure rate: the chance of surviving each short moment multiplies up to $e^{-\lambda t}$.
+Each string is up or down, like a coin that lands "failed" with chance $p$. For independent coins the chance of any specific pattern is the product: strings 1 and 2 down and string 3 up has chance $p \cdot p \cdot (1-p)$. There are $\binom{3}{2} = 3$ (read "three choose two") patterns with exactly two down, all with the same chance, so exactly two down has chance $3p^2(1-p)$. The one pattern with all three down has chance $p^3$. These patterns cannot happen at the same time, so their chances add. The single-string formula $p = 1 - e^{-\lambda t}$ comes from a constant failure rate: the chance of surviving each short moment multiplies up to $e^{-\lambda t}$.
 :::
 
 The big weakness of this sketch is the word *independently*. A **[[common-cause failure|common-cause]]** — one bug in the software all three strings run, one power surge, one bad batch of chips — can take out all three at once, and then the tiny numbers are meaningless. Saying that out loud in an interview is worth as much as the arithmetic.

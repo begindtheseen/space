@@ -167,7 +167,7 @@ A strong answer does not stop at $\tfrac{1}{2}\rho v^2$. It says what that numbe
 
 - **$C_D$ is not a constant.** It changes with **Mach number** (speed divided by the local speed of sound) and rises sharply around Mach $1$, where shock waves form. So drag peaks in the **[[transonic|cd-mach]]** region, which is close to max-q.
 - **Loads.** Aerodynamic forces on the structure scale with $q$. Any angle between the rocket's nose and the oncoming air — from wind gusts, say — turns into a sideways bending load that also scales with $q$. That is why engineers watch the product of $q$ and that angle, and why many launchers throttle their engines down briefly through max-q.
-- **Control authority.** The guidance system must steer against aerodynamic turning moments. Near max-q those moments are largest, so the engine gimbal or fins have the least margin left. Grid fins on a returning booster work the other way: they need dynamic pressure to have any authority at all.
+- **Control authority.** The guidance system must steer against aerodynamic turning moments. Near max-q those moments are largest, so the engine **gimbal** (the swivel that steers the engine) or the fins have the least margin left. Grid fins on a returning booster work the other way: they need dynamic pressure to have any authority at all.
 
 ::: warning Treating drag as one fixed number
 Saying "drag is $\tfrac{1}{2}\rho v^2 C_D A$" and stopping is the answer the question is designed to go beyond. Name what varies — density with altitude, $C_D$ with Mach — and connect the peak to loads and control. That is the difference between recall and reasoning.

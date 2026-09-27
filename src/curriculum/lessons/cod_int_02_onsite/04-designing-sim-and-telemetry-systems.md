@@ -38,7 +38,7 @@ For a constellation, one sim is not enough. The team needs an **infrastructure**
 
 ### 1. Module boundaries and interfaces
 
-Split the world into boxes that match how the real vehicle is split: **dynamics** (how the satellite moves and rotates), **environment** (gravity, drag, sunlight), **sensors** (star trackers, gyros, GPS), **actuators** (reaction wheels, thrusters), and the **flight software** under test. Each box talks only through a defined interface: a struct of inputs and outputs, with units and frames written down.
+Split the world into boxes that match how the real vehicle is split: **dynamics** (how the satellite moves and rotates), **environment** (gravity, drag, sunlight), **sensors** (star trackers, gyros, GPS), **actuators** (reaction wheels, thrusters), and the **flight software** under test. Each box talks only through a defined interface: a **struct** (a bundle of named values) of inputs and outputs, with units and frames written down.
 
 Why so strict? Because then the flight-software box can be the *real* flight code, not a copy. And a sensor model can be swapped from "perfect" to "noisy" to "the real sensor on a bench" without touching anything else.
 
