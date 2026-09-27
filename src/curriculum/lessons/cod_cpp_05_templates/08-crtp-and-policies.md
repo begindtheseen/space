@@ -1,7 +1,7 @@
 ---
 id: l08-crtp-and-policies
 title: CRTP mixins, deducing this, and policy-based design
-minutes: 24
+minutes: 21
 covers:
   - CRTP revisited for static polymorphism
   - Policy-based design and when it beats inheritance
