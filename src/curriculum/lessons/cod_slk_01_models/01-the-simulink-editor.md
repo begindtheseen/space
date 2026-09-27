@@ -124,7 +124,7 @@ Double-click the Scope to open its plot window. You should see a flat line at 0 
 :::
 
 ::: warning The Scope may not show the whole run
-A Scope shows the last stretch of time given by its own time-span setting, and it rescales its axes only when you ask it to. If a plot looks cut off or flat, press the Scope's autoscale button before you decide the model is wrong. A Scope is a window for looking, not a record of the data. Lesson 3 shows how to keep the numbers.
+A Scope window has its own settings for how much time it shows and where its axis limits sit, and those may not fit your data. If a plot looks cut off or flat, press the Scope's autoscale button (it fits the axes to the data) before you decide the model is wrong. A Scope is a window for looking, not a record of the data. Lesson 3 shows how to keep the numbers.
 :::
 
 ## Building a model from a script
@@ -170,7 +170,7 @@ out.fuel.Data(end)       % 40
 
 **Step 4: reading it back.** The To Workspace block saves the Integrator's output under the name `fuel` inside the results object `out`, and `out.fuel.Data(end)` is its last value.
 
-**Sanity check.** At 12 kg/s the full 400 kg would last $400/12 \approx 33.3$ s, so after 30 s there should be a little left: 40 kg is a tenth of the tank, which fits. Open the model with `open_system(mdl)` and you will see three blocks in a row, laid out automatically.
+**Sanity check.** At 12 kg/s the full 400 kg would last $400/12 \approx 33.3$ s, so after 30 s there should be a little left: 40 kg is a tenth of the tank, which fits. Open the model with `open_system(mdl)` to see it. Blocks added by script without a position may land on top of each other, so drag them apart if you want a tidy picture.
 :::
 
 ::: warning Names with spaces and the port number

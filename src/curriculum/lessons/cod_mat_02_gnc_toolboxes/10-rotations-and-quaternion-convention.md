@@ -264,7 +264,7 @@ Someone writes `C = angle2dcm(30, 0, 0)` meaning a 30 degree yaw. What rotation 
 :::
 
 ::: answer
-The inputs are radians, so they get 30 rad of yaw. That is $30 \times 180/\pi = 1718.9^\circ$, and $1718.9 - 4 \times 360 = 278.9^\circ$ — a yaw of about 279 degrees, or 81 degrees to the left. It is still a valid rotation, so nothing errors. They could notice by checking the matrix: a 30 degree yaw must have $\cos 30^\circ = 0.866$ in the top-left corner, while this one has $\cos 278.9^\circ = 0.155$. Fix: `angle2dcm(deg2rad(30), 0, 0)`.
+The inputs are radians, so they get 30 rad of yaw. That is $30 \times 180/\pi = 1718.9^\circ$, and $1718.9 - 4 \times 360 = 278.9^\circ$ — a yaw of about 279 degrees, or 81 degrees to the left. It is still a valid rotation, so nothing errors. They could notice by checking the matrix: a 30 degree yaw must have $\cos 30^\circ = 0.866$ in the top-left corner, while this one has $\cos 278.9^\circ = 0.154$. Fix: `angle2dcm(deg2rad(30), 0, 0)`.
 :::
 
 ::: check
