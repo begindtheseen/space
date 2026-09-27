@@ -1,7 +1,7 @@
 ---
 id: l07-tolerance-stack-up
 title: Tolerance stack-up — worst case and root-sum-square
-minutes: 23
+minutes: 24
 covers:
   - 'Tolerance stack-up: worst case versus root-sum-square'
 ---
@@ -11,6 +11,23 @@ Stack five books on a shelf. Each book is "about 3 cm" thick, but no two are exa
 Engineers call this a **[[tolerance stack-up|stack-up-word]]** — working out how the small allowed errors of several parts add up along a chain of parts. Last lesson you met the **tolerance** on a single dimension: the amount a measured size may differ from its **nominal** (the ideal size written on the drawing) and still pass inspection. This lesson asks what happens when parts with tolerances are bolted together. There are two standard ways to add them up. One assumes the worst. The other assumes the statistics of real factories. Knowing which to quote, and when, is a judgment a good engineer has to be able to defend.
 
 For a guidance, navigation and control (GNC) engineer this is not a mechanical side issue. A star tracker — a camera that works out which way a spacecraft points by recognising star patterns — sits on a bracket, on a panel, on the spacecraft structure. Every one of those parts adds a little tilt. The sum of those tilts is how wrong the spacecraft's idea of its own direction can be, before any software runs at all.
+
+## Datums: where the measuring starts
+
+A stack-up needs a starting point. So does every measurement. When you measure your height, you start from the floor. On a drawing, that starting surface is called a **[[datum|datum-symbol]]** — a real surface or feature of the part that the drawing names as the reference everything else is measured and dimensioned from.
+
+A drawing marks a datum with a **datum feature symbol**: a capital letter in a box, attached by a short line to a small triangle that sits on the surface. A part usually has up to three. The **primary** datum, A, is the face the part rests on first. The **secondary**, B, is the next face it is pushed against. The **tertiary**, C, is the last. Think of setting a box into the corner of a room: floor, then one wall, then the other.
+
+Datums decide how tolerances pile up. Suppose three holes sit in a row, $20\,\mathrm{mm}$ apart, starting $20\,\mathrm{mm}$ from an edge that is datum A, each dimension $\pm 0.1\,\mathrm{mm}$.
+
+- **Chain dimensioning** gives each hole's distance from the hole before it. To find the third hole from the edge, you walk the chain of three dimensions. If each one is at its limit in the same direction, the third hole is off by $3 \times 0.1 = 0.3\,\mathrm{mm}$.
+- **Baseline dimensioning** gives every hole's distance straight from datum A. Each hole is then within $\pm 0.1\,\mathrm{mm}$ of the datum, with no piling up.
+
+So a stack-up always runs along the chain of dimensions that connects the two surfaces you care about. A good designer dimensions from the datums that matter for the part's job, to keep that chain short. The next module, on geometric dimensioning and tolerancing (GD&T), treats datums fully.
+
+::: warning Short chains, small stacks
+Every link in a dimension chain adds its tolerance. If two features must line up with each other, dimension one from the other, or both from the same datum. Do not route them through a long chain of unrelated dimensions.
+:::
 
 ## Adding up errors along a chain
 
@@ -42,11 +59,11 @@ $$
 
 So the gap is $0.5 \pm 0.29\,\mathrm{mm}$: at least $0.21\,\mathrm{mm}$ and at most $0.79\,\mathrm{mm}$. The gap never closes, so the lid always fits. That is a guarantee. If every part passes inspection, every assembly works, with no exceptions.
 
-The price is that the guarantee is expensive. Suppose the design really needed the gap to stay within $\pm 0.15\,\mathrm{mm}$. Worst case would force you to shrink every part's tolerance roughly in half. Tighter tolerances mean slower machining, more scrapped parts and more inspection. With many parts in the chain, worst case can demand tolerances that nobody can build at a sensible price.
+The price is cost. If the gap had to stay within $\pm 0.15\,\mathrm{mm}$, worst case would force every tolerance roughly in half: slower machining, more scrap, more inspection. With many parts, worst case can demand tolerances nobody can build at a sensible price.
 
 ## Root-sum-square: assume real factories
 
-Think about the books again. For every book to be fat on the same day, you would need very bad luck. Most books are near the middle of their range. Some fat books and some thin books cancel each other out.
+Think about the books again. For every book to be fat at once, you would need very bad luck. Fat and thin books partly cancel.
 
 Real machined parts behave the same way. Most land near nominal, fewer land near the edges, and the size of one part has nothing to do with the size of the next. The shape that describes "most in the middle, fewer at the edges" is the **[[bell curve|bell-curve]]**, also called the **normal distribution**. And "has nothing to do with" has a name too: the parts are **[[independent|independent]]** — knowing one part's error tells you nothing about another's.
 
@@ -108,9 +125,9 @@ If $n$ parts all have the same tolerance $t$, worst case gives $n\,t$ and RSS gi
 | 10 | 0.32 |
 | 25 | 0.20 |
 
-With many parts, RSS saves a lot. With two parts, it saves little, and — as the next section shows — that little is not even trustworthy.
+With many parts, RSS saves a lot. With two, it saves little — and, as the next section shows, that little is not trustworthy.
 
-You can watch RSS come true by building thousands of imaginary boxes on a computer. This is a **[[Monte Carlo|monte-carlo]]** simulation: pick random part sizes, add them, repeat, and count.
+You can test RSS by building imaginary boxes on a computer, a **[[Monte Carlo|monte-carlo]]** simulation: pick random part sizes, add them, repeat, and count.
 
 ```python
 import random
@@ -132,7 +149,7 @@ print(round(beyond, 2))   # percent of boxes beyond +/-0.15 mm
 # 0.28
 ```
 
-Out of 200,000 boxes, only about $0.28\%$ fell outside the RSS number of $\pm 0.15\,\mathrm{mm}$, and even the worst box of all ($0.248$) stayed inside the worst-case $0.29$. That is RSS doing exactly what it promises — when its assumptions hold.
+Out of 200,000 boxes, only about $0.28\%$ fell outside the RSS number of $\pm 0.15\,\mathrm{mm}$, and even the worst box of all ($0.248$) stayed inside the worst-case $0.29$.
 
 ## When to quote which
 
@@ -183,7 +200,7 @@ A star tracker's line of sight, its **boresight**, passes through four stacked m
 
 **Which to quote.** Four contributors is few, and the bracket base and arm are machined from one block in one setup, so their errors are likely correlated. A careful engineer would not trust the RSS number here. She would carry about $100\,\mathrm{arcsec}$ into the attitude error budget — or, better, ask for the tracker's real alignment to be measured after assembly.
 
-**Sanity check.** $100\,\mathrm{arcsec}$ is about $0.028^\circ$, close to the single-foot example above. Small numbers, but dozens of times a good tracker's own error.
+**Sanity check.** $100\,\mathrm{arcsec}$ is about $0.028^\circ$, close to the single-foot example above.
 :::
 
 ## Why a GNC engineer cares
@@ -194,7 +211,7 @@ Every error in this lesson ends up in a GNC **[[error budget|error-budget]]** �
 
 The spacecraft's navigation software, its **filter**, blends sensor readings into a best estimate of attitude (which way the body points). It assumes it knows how the star tracker sits on the body. If the tracker is really tilted $100\,\mathrm{arcsec}$ from where the drawing says, every tracker reading is off by that same fixed amount. The filter has nothing to compare against that would reveal it: the tracker is its most accurate sensor. So the filter reports the wrong attitude, confidently, forever. This is **attitude-knowledge error** — the gap between where the spacecraft thinks it points and where it really points.
 
-This is why teams measure alignments on the ground with optical instruments after assembly, and why a camera or antenna mounted elsewhere on the body must have its own alignment known relative to the tracker.
+This is why teams measure alignments with optical instruments after assembly.
 
 ### Control error: torques you did not ask for
 
@@ -298,6 +315,24 @@ Engineers draw a stack-up as a **loop**: start at one surface, walk across each 
 ```
 
 The drawing is not to scale: the gap is enlarged so you can see it.
+:::
+
+::: context datum-symbol The datum feature symbol
+The letter names the datum; the triangle touches the surface it belongs to.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 125" font-family="Inter, Arial, sans-serif">
+  <rect x="40" y="70" width="280" height="40" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="180" y="100" font-size="12" text-anchor="middle" fill="#1f2a44">part</text>
+  <rect x="140" y="20" width="24" height="24" fill="#fff" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="152" y="37" font-size="13" text-anchor="middle" fill="#1f2a44">B</text>
+  <line x1="152" y1="44" x2="152" y2="58" stroke="#1f2a44" stroke-width="1.5"/>
+  <polygon points="142,70 162,70 152,58" fill="#1f2a44"/>
+  <text x="200" y="37" font-size="11" fill="#1f2a44">datum B on the top face</text>
+</svg>
+```
+
+Datum A would be marked the same way on the bottom face. Both filled and open triangles appear in practice.
 :::
 
 ::: context bell-curve The shape of a factory
