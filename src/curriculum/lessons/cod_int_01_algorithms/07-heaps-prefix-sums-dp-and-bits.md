@@ -1,7 +1,7 @@
 ---
 id: l07-heaps-prefix-sums-dp-and-bits
 title: Heaps, prefix sums, light DP and bits
-minutes: 27
+minutes: 26
 covers:
   - Trees and BFS/DFS; graphs including topological sort; heaps; prefix sums; light dynamic programming; bit manipulation
   - 'What to skip: exotic dynamic programming, advanced graph theory, segment trees'
@@ -11,7 +11,7 @@ Think about a hospital emergency room. Patients do not get seen in the order the
 
 Now think about a car's trip odometer. If it read 1,200 km when you left home and 1,530 km when you arrived, you know the trip was 330 km without adding up every little stretch of road. One subtraction does it.
 
-This lesson is four small tools like those, each worth a handful of interview problems: the **heap**, which always knows the most urgent item; **prefix sums**, the odometer trick; **light dynamic programming**, which solves a big counting problem by reusing answers to smaller ones; and **bit manipulation**, which packs many yes/no flags into one number. It ends with the list of things you are allowed to skip. Last lesson covered trees and graphs; these four finish the high-yield pattern list.
+This lesson is four small tools like those: the **heap**, which always knows the most urgent item; **prefix sums**, the odometer trick; **light dynamic programming**, which reuses answers to smaller problems; and **bit manipulation**, which packs yes/no flags into one number. Then comes the list of things you may skip. Last lesson covered trees and graphs; these four finish the high-yield patterns.
 
 ## Heaps: always know the smallest
 
@@ -52,7 +52,7 @@ python3 int01_l07_heaps.py
 # pop order: [1, 2, 4, 7, 9]
 ```
 
-Notice the list itself, `[1, 2, 9, 7, 4]`, is not sorted. Only the front is guaranteed. Popping everything one at a time does come out in order, though.
+The list `[1, 2, 9, 7, 4]` is not sorted; only the front is guaranteed. Popping everything does come out in order.
 
 `heapq` only makes min-heaps. When you need the largest item on top, push the negative of each number, and flip the sign back when you pop. In C++, `std::priority_queue` is the other way round: it is a **max-heap** by default, and you ask for a min-heap with `std::priority_queue<int, std::vector<int>, std::greater<int>>`.
 
@@ -90,7 +90,7 @@ print("check:", heapq.nlargest(3, peaks))
 # check: [5.0, 4.7, 3.9]
 ```
 
-It may feel backwards to use a *min*-heap to find the *largest* values. The reason is that the item you need to throw out each time is the smallest of your current best, so that is the one you want on top.
+A *min*-heap to find the *largest* values may feel backwards. But the item you throw out each time is the smallest of your current best, so that is the one you want on top.
 
 ::: example How much does the small heap save?
 A vibration test logs $n = 1{,}000{,}000$ peak readings and you want the top $k = 10$.
@@ -142,7 +142,7 @@ Heaps come back in lesson 12, where **[[two heaps together|two-heaps-bridge]]** 
 
 ## Prefix sums: the odometer trick
 
-Suppose you have a list of numbers and you will be asked, again and again, "what is the total from position $l$ up to position $r$?" Adding the slice each time costs up to $n$ steps per question. With a thousand questions on a million samples, that is slow.
+Suppose you will be asked, again and again, "what is the total from position $l$ up to position $r$?" Adding the slice each time costs up to $n$ steps per question. That is slow for many questions on a long list.
 
 The fix is the odometer. Walk through the list once and write down the running total. Call it $P$, the **prefix sum** array:
 
@@ -168,7 +168,7 @@ With $P_0 = 0$, the sum of items $l$ through $r-1$ is $P_r - P_l$. If you want i
 
 ### Telemetry energy over a window
 
-Power telemetry is a common place to meet this. A power sensor reports watts at a fixed rate. Energy is power times time, so over one sample interval $\Delta t$ (read "delta t", the time between samples) the energy is about $p_i \, \Delta t$. The energy over a window of samples is the **[[sum of the samples times the interval|rectangle-sum]]**:
+A power sensor reports watts at a fixed rate. Energy is power times time, so over one sample interval $\Delta t$ (read "delta t", the time between samples) the energy is about $p_i \, \Delta t$. The energy over a window of samples is the **[[sum of the samples times the interval|rectangle-sum]]**:
 
 $$
 E \approx \Delta t \sum_{i=l}^{r-1} p_i = \Delta t \,(P_r - P_l).
@@ -226,7 +226,7 @@ python3 int01_l07_prefix.py
 # total energy: 945.0 J
 ```
 
-In NumPy the same array is `np.concatenate(([0], np.cumsum(power)))`. Prefix sums also count things: make $x_i$ equal to 1 when a reading is out of limits and 0 otherwise, and $P_r - P_l$ is how many bad readings fell in that window.
+In NumPy the same array is `np.concatenate(([0], np.cumsum(power)))`. Prefix sums also count: let $x_i$ be 1 when a reading is out of limits and 0 otherwise, and $P_r - P_l$ counts the bad readings in a window.
 
 ## Light dynamic programming
 
@@ -345,7 +345,7 @@ The recipe for light DP is always the same four questions, and saying them aloud
 
 ## Bit manipulation
 
-A light switch is on or off. A spacecraft has dozens of switches like that to report: heater on, GPS locked, safe mode active, battery low. Sending a whole byte for each would waste bandwidth. Instead, telemetry packs eight yes/no flags into one byte, one flag per **bit**. A number used this way is a **[[status word|status-word]]**.
+A light switch is on or off. A spacecraft has dozens of such switches to report: heater on, GPS locked, safe mode, battery low. Rather than a whole byte each, telemetry packs eight yes/no flags into one byte, one flag per **bit**. A number used this way is a **[[status word|status-word]]**.
 
 Number the bits from the right, starting at 0. Bit $k$ is worth $2^k$. The number with only bit $k$ set is written `1 << k`: read `<<` as "shifted left by". A number whose bits pick out the ones you care about is a **mask**.
 
@@ -436,7 +436,7 @@ print(popcount(x), [n for n in range(1, 70) if is_power_of_two(n)])
 # 4 [1, 2, 4, 8, 16, 32, 64]
 ```
 
-Two uses fall straight out. The loop above counts set bits in as many passes as there are ones, not as many as there are bits. And a power of two has exactly one bit set, so it is the positive number for which `x & (x - 1)` is zero.
+Two uses follow. The loop above counts set bits in one pass per 1, not one per bit. And a power of two has exactly one bit set, so `x & (x - 1)` is zero for it.
 
 ::: key Bit tricks to know cold
 Set with `x | (1 << k)`, clear with `x & ~(1 << k)`, toggle with `x ^ (1 << k)`, test with `(x >> k) & 1`. `x & (x - 1)` clears the lowest set bit; `x > 0 and x & (x - 1) == 0` tests for a power of two. Popcount is the number of set bits.
@@ -446,7 +446,7 @@ Lesson 9 puts these to work on real bytes: assembling numbers from a packet and 
 
 ## What to skip
 
-Every hour you spend has to come from somewhere. These topics are real, and some are beautiful, but a medium bar with real-world framing does not test them:
+These topics are real, and some are beautiful, but a medium bar with real-world framing does not test them:
 
 - **Exotic dynamic programming:** DP over subsets using bitmasks, DP on trees with several states, "digit DP", and anything whose table has three or more dimensions.
 - **Advanced graph theory:** maximum flow, strongly connected components, minimum-cost matching, and shortest paths with unusual constraints.
@@ -457,7 +457,7 @@ Every hour you spend has to come from somewhere. These topics are real, and some
 Exotic dynamic programming, advanced graph theory, segment trees and heavy competitive-programming material. They are not what a medium-level, real-world-flavoured bar tests.
 :::
 
-If a problem in your practice set needs one of these, note it in your log as "skipped on purpose" and move on. The hours are better spent making the patterns in lessons 3 to 7 automatic, and on the engineering variants in lessons 9 to 12.
+If a practice problem needs one of these, log it as "skipped on purpose" and move on. The hours are better spent on the patterns in lessons 3 to 7 and the engineering variants in lessons 9 to 12.
 
 ::: warning Skipping is not the same as refusing
 If an interviewer does ask for something on this list, do not freeze or say "I didn't study that". Say what you do know: a brute-force version, its complexity, and where you think the speed-up lives. A clear slow answer with honest complexity is worth far more than silence.
