@@ -139,13 +139,13 @@ fn main() {
 }
 ```
 
-A `u16` holds whole numbers from 0 to 65,535. Build it in the default debug mode and run it:
+A `u16` holds whole numbers from 0 to 65,535. Build it in the default debug mode with Rust 1.94.1 and run it (the number in brackets is a thread id and changes from run to run; the backtrace is trimmed):
 
 ```text
 frame 65535
-thread 'main' panicked at src/main.rs:3:5:
+
+thread 'main' (4626) panicked at src/main.rs:3:5:
 attempt to add with overflow
-note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 ```
 
 Build the same file with optimizations (`rustc -O`, or `cargo run --release`):
