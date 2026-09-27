@@ -1074,39 +1074,107 @@ list(flatten([]))
 
 === py4-05 | asyncio: concurrency with async and await
 --- teach
-Much of a program's time is spent **waiting**: for a network reply, a database, a timer. `asyncio` lets one thread start many waits and handle whichever finishes first, instead of waiting for each in turn. That is **concurrency** (juggling several tasks), not parallelism (doing several computations at the same instant).
+Last lesson a generator learned to pause at `yield`, take a value from `send`, and carry on later. This lesson uses that same pause-and-resume trick for something very practical: doing lots of **waiting** at once.
+
+Picture one cook making dinner. She puts the pasta on to boil. She does not stand and stare at the pot for ten minutes. She chops the salad while the water heats, and goes back to the pot when it is ready. One cook, several dishes on the go, and nobody standing idle.
+
+Programs spend a surprising amount of time [[waiting|why-programs-wait]]: for a reply from another computer, for a database, for a timer. Python's `asyncio` module lets one [[thread|what-a-thread-is]] (one cook) start many waits and deal with whichever finishes first, instead of finishing each wait before starting the next.
+
+That is called **concurrency**: juggling several tasks, switching between them while each one waits. It is not **parallelism**, which means doing several computations at the very same instant on several processors. The cook is concurrent, not parallel: she only ever does one thing at a time, but she never wastes the waiting.
+
+## Step 1: `async def` makes a coroutine
+
+Put `async` in front of `def` and you get a **coroutine function**: a function that is allowed to pause while it waits.
 
 ```python
 import asyncio
 
 async def fetch(name, delay):
-    await asyncio.sleep(delay)      # stand-in for a network call
+    await asyncio.sleep(delay)      # pretend this is a network call
     return f"{name} ready"
 ```
 
-- `async def` defines a **coroutine function**. Calling it runs nothing; it returns a coroutine object.
-- `await` runs a coroutine (or anything awaitable) and, while it is waiting, lets the event loop run other tasks.
-- `await` only works inside `async def`, or at the top level of the program in environments that allow it (this one does).
+`asyncio.sleep(delay)` waits `delay` seconds without blocking anything else. It is our stand-in for "wait for a reply from somewhere".
 
-**Running things at the same time.** Awaiting one after another is still one-at-a-time:
+Here is the surprise. Calling `fetch("a", 1)` does **not** run the function. It hands back a **[[coroutine|where-coroutine-comes-from]] object**, a paused function that has not started yet (just like calling a generator function gives you a generator that has not run yet):
+
+```python
+c = fetch("a", 1)
+type(c).__name__     # 'coroutine'   nothing has run yet
+```
+
+## Step 2: `await` runs it
+
+To actually run a coroutine and get its result, you **`await`** it. The word means "run this, and while it is waiting, let other tasks have a turn":
+
+```python
+a = await fetch("a", 1)     # a is now 'a ready'
+```
+
+Who hands out the turns? The **[[event loop|the-event-loop]]**: the part of `asyncio` that keeps a list of paused tasks and wakes each one up when the thing it was waiting for is done.
+
+Two rules about `await`:
+
+- It only works inside an `async def` function.
+- Or at the top level of a program, in environments that allow it. This editor does, so the code at the bottom of the task can say `await` directly.
+
+## Step 3: one at a time, or all at once
+
+Awaiting one coroutine after another is still one at a time. The second wait does not start until the first has finished:
 
 ```python
 a = await fetch("a", 1)     # 1 second
-b = await fetch("b", 1)     # another second: 2 in total
+b = await fetch("b", 1)     # another second: about 2 seconds in total
 ```
 
-`asyncio.gather` starts them all and waits for all of them, returning the results **in the order you passed them in**, whatever order they finished in:
+**`asyncio.gather`** starts all the coroutines you give it, lets them wait **side by side**, and hands back all their results once every one has finished:
 
 ```python
-a, b = await asyncio.gather(fetch("a", 1), fetch("b", 1))   # about 1 second
+a, b = await asyncio.gather(fetch("a", 1), fetch("b", 1))   # about 1 second in total
 ```
 
-**Producer and consumer.** When there is a stream of work and you want at most `n` jobs running at once, use an `asyncio.Queue` and `n` workers:
+The results come back **in the order you passed them in**, not the order they finished. So this list starts with the slow one, even though the fast one was done first:
+
+```python
+await asyncio.gather(fetch("slow", 0.3), fetch("fast", 0.1))
+# ['slow ready', 'fast ready']
+```
+
+The [[saving in time|picture-of-the-saving]] is the whole point: two one-second waits take about one second, not two.
+
+## Step 4: gather a whole list
+
+Often the jobs arrive as a list. `gather` wants each coroutine as a separate argument, so you build them with a generator expression and **spread** them with `*`, the star you met in the `*args` lesson ("take these items and pass each one as its own argument"):
+
+```python
+jobs = [("x", 0.2), ("y", 0.1)]
+await asyncio.gather(*(fetch(name, delay) for name, delay in jobs))
+# ['x ready', 'y ready']
+```
+
+Read the inside first: for each `(name, delay)` pair, make the coroutine `fetch(name, delay)`. The `*` then passes them all to `gather`.
+
+## Step 5: a queue and a fixed number of workers
+
+`gather` starts **everything** at once. Sometimes that is too many: a thousand downloads at the same moment might overload the other computer. Then you want "at most `n` jobs running at a time".
+
+Picture a restaurant: order tickets pile up on a counter, and three cooks each take the next ticket as soon as their hands are free. In `asyncio` the counter is an **`asyncio.Queue`**, a line of items waiting to be handled, first in, first out. The cooks are **worker tasks**.
+
+The pieces, one at a time:
+
+- `queue.put(item)` adds an item to the back of the line. You `await` it.
+- `queue.get()` takes the item at the front. If the line is empty, it waits until something arrives. You `await` it too.
+- `queue.task_done()` tells the queue "I have finished the item I took".
+- `queue.join()` waits until every item that was put in has been marked `task_done()`.
+- `asyncio.create_task(coro)` starts a coroutine running as a separate **task**, right away, without waiting for it. It gives you back the task so you can stop it later.
+- `task.cancel()` stops a task.
+
+Put together (here `handle` stands for whatever slow work each item needs):
 
 ```python
 async def worker(queue, results):
-    while True:
-        item = await queue.get()
+    while True:                        # a worker never stops by itself
+        item = await queue.get()       # take the next ticket (or wait for one)
         try:
             results.append(await handle(item))
         finally:
@@ -1117,23 +1185,80 @@ async def run(items, n):
     results = []
     workers = [asyncio.create_task(worker(queue, results)) for _ in range(n)]
     for item in items:
-        await queue.put(item)          # the producer
+        await queue.put(item)          # the producer fills the queue
     await queue.join()                 # wait until every item is task_done
     for w in workers:
-        w.cancel()                     # workers loop forever; stop them
+        w.cancel()                     # the workers loop forever; stop them
     return results
 ```
 
-**Common mistakes.** Forgetting `await` (you get a coroutine object and a warning, not a result). Calling `time.sleep` inside a coroutine, which freezes *everything*, because nothing else can run while the thread is blocked; use `await asyncio.sleep`. And forgetting `task_done()`, which leaves `queue.join()` waiting forever.
+The code that fills the queue is the **producer**; the workers are **consumers**. `task_done()` sits in a `finally` (the clean-up block from the exceptions lesson) so it runs even if `handle` raises an error. With 6 items that each take 0.1 seconds and 3 workers, the whole thing takes about 0.2 seconds: two rounds of three.
+
+Notice that the results come back in the order the workers *finished*, which may not match the order of `items`. If order matters, sort them afterwards.
+
+**Watch out** for three mistakes:
+
+- Forgetting `await`. You get a coroutine object and a warning ("coroutine was never awaited"), not a result.
+- Calling `time.sleep` inside a coroutine. It freezes **everything**, because while the one thread sleeps, the event loop cannot give anyone else a turn. Use `await asyncio.sleep` instead.
+- Forgetting `task_done()`. Then `queue.join()` waits forever for items that already finished.
+
+This machinery is how real programs talk to many things at once; see [[where engineers use it|asyncio-in-real-life]]. And it did not appear from nowhere: it [[grew out of generators|history-of-async]] like the ones from last lesson.
+
+::: context why-programs-wait Why a program waits so much
+A computer adds numbers in billionths of a second. A message to a server on another continent and back takes tens of milliseconds, and a slow database query can take much longer. To the processor, that reply takes forever: millions of steps it could have done in the meantime. So a program that talks to a network spends most of its life waiting, not computing. That waiting is what `asyncio` fills with useful work.
+:::
+
+::: context what-a-thread-is One line of work
+A **thread** is one line of work inside a running program: one "cook" following the instructions step by step. A program can have several threads, but `asyncio` normally uses just one. It gets its speed not from more cooks but from never letting the one cook stand idle. That also makes it simpler to reason about: two tasks never change the same variable at the very same instant, because only one of them runs at a time.
+:::
+
+::: context where-coroutine-comes-from Where the word comes from
+"Coroutine" was coined by the computer scientist Melvin Conway in the late 1950s. A normal subroutine is called, runs to the end and returns. Co-routines take turns as equals: each runs a while, pauses, and lets another continue from where it stopped. That is exactly what a Python generator does at `yield`, and what a coroutine does at `await`.
+:::
+
+::: context the-event-loop The traffic controller
+The event loop is a loop inside `asyncio` that repeats one job: "which paused tasks are ready to go on?" A task that reaches `await asyncio.sleep(1)` tells the loop "wake me in a second" and pauses. The loop runs another ready task in the meantime. When the second is up, it resumes the first one right after its `await`. It is the same pause-and-resume you saw with `send` last lesson, driven by the loop instead of by you.
+:::
+
+::: context picture-of-the-saving Two timelines side by side
+With plain `await`, each wait starts only when the one before has ended, so the total is the sum of the waits. With `gather`, all the waits start together, so the total is only as long as the longest one.
+
+```svg
+<svg viewBox="0 0 360 160" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <text x="10" y="18" font-size="12" fill="#1f2a44">one after another: about 2 s</text>
+  <rect x="20" y="28" width="140" height="18" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="90" y="41" font-size="11" fill="#1f2a44" text-anchor="middle">a (1 s)</text>
+  <rect x="160" y="50" width="140" height="18" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="230" y="63" font-size="11" fill="#1f2a44" text-anchor="middle">b (1 s)</text>
+  <text x="10" y="92" font-size="12" fill="#1f2a44">with gather: about 1 s</text>
+  <rect x="20" y="102" width="140" height="18" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="90" y="115" font-size="11" fill="#1f2a44" text-anchor="middle">a (1 s)</text>
+  <rect x="20" y="124" width="140" height="18" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="90" y="137" font-size="11" fill="#1f2a44" text-anchor="middle">b (1 s)</text>
+  <line x1="20" y1="152" x2="300" y2="152" stroke="#6c7a93"/>
+  <text x="20" y="150" font-size="11" fill="#6c7a93">0</text>
+  <text x="152" y="150" font-size="11" fill="#6c7a93">1 s</text>
+  <text x="292" y="150" font-size="11" fill="#6c7a93">2 s</text>
+</svg>
+```
+:::
+
+::: context asyncio-in-real-life Where engineers use it
+Anything that talks to many other machines at once is a good fit: a web server answering thousands of visitors, a scraper downloading pages, a ground-station tool polling many sensors or radios. Popular Python web frameworks such as FastAPI are built on it. The queue-and-workers pattern shows up whenever you must limit how many requests hit a service at once. It is not a fit for heavy number crunching: that keeps the one thread busy, and there is no waiting to fill.
+:::
+
+::: context history-of-async From generators to await
+`asyncio` arrived in Python 3.4, in 2014, and its first coroutines were plain generators that used `yield from`, the delegation you met last lesson. The dedicated keywords `async` and `await` came in Python 3.5, a year later, so that coroutines would look different from ordinary generators and be harder to mix up.
+:::
 --- task
-Write:
+Write four coroutines (each is an `async def` function):
 
-- `fetch(name, delay)`: a coroutine that waits `delay` seconds with `asyncio.sleep` and returns `f"{name}:{delay}"`.
-- `fetch_all(jobs)`: a coroutine taking a list of `(name, delay)` pairs, running every fetch **concurrently**, returning the results in the same order as `jobs`.
-- `square_slowly(x)`: a coroutine that waits `0.05` seconds and returns `x * x`.
-- `process(items, workers)`: a coroutine that squares every item with `square_slowly`, using an `asyncio.Queue` and exactly `workers` worker tasks, and returns the results sorted.
+- `fetch(name, delay)`: waits `delay` seconds with `asyncio.sleep` and returns `f"{name}:{delay}"`.
+- `fetch_all(jobs)`: takes a list of `(name, delay)` pairs, runs every fetch **at the same time** with `asyncio.gather`, and returns the results as a list, in the same order as `jobs`.
+- `square_slowly(x)`: waits `0.05` seconds and returns `x * x`.
+- `process(items, workers)`: squares every item with `square_slowly`, using an `asyncio.Queue` and exactly `workers` worker tasks, and returns the results **sorted**.
 
-The code at the bottom already runs them and times them; keep it.
+The code at the bottom of the starter already runs them and times them; keep it. The starter's `fetch_all` and `process` work, but one job at a time, which is too slow.
 --- starter
 import asyncio
 import time
@@ -1217,11 +1342,11 @@ squares = await process(list(range(20)), 5)
 process_seconds = time.perf_counter() - start
 print(results, round(fetch_seconds, 1))
 --- hint
-`await asyncio.gather(*coroutines)` runs them all at once. Build the coroutines with a generator expression and spread it with `*`.
+`fetch_all` is Step 4: build one `fetch(name, delay)` coroutine per job with a generator expression, spread them into `asyncio.gather` with `*`, and `await` the result. Wrap it in `list(...)`.
 --- hint
-For `process`: make a `Queue`, start `workers` tasks with `asyncio.create_task(worker())`, put every item, then `await queue.join()`.
+`process` is Step 5. Make a `Queue` and an empty `results` list, define a small `async def worker():` inside `process`, start `workers` of them with `asyncio.create_task(worker())`, `await queue.put(item)` for every item, then `await queue.join()`.
 --- hint
-Each worker loops forever: `item = await queue.get()`, compute, and call `queue.task_done()` in a `finally`. After `join()`, cancel the worker tasks.
+Each worker is `while True:` with `item = await queue.get()`, then `results.append(await square_slowly(item))` inside `try:`, and `queue.task_done()` inside `finally:`. After `join()`, call `.cancel()` on every task and return `sorted(results)`.
 --- check case | fetch_all returns results in the order of the jobs
 results
 => ["a:0.3", "b:0.1", "c:0.2"]
@@ -1241,49 +1366,188 @@ asyncio\.Queue\(
 
 === py4-06 | heapq and bisect: the right structure for speed
 --- teach
-Some questions come up again and again: "what is the smallest item right now?", "where does this value go in sorted order?". Answering them by sorting every time is O(n log n) per question. Two standard-library modules answer them far faster.
+In the Big-O lesson you learned that the right data structure can turn "never finishes" into "instant". Last lesson was about waiting less. This one is about *working* less, with two small standard-library modules.
 
-**`heapq`: the smallest item, always ready.** A *heap* is a list kept in a special partial order where `heap[0]` is always the smallest item. Adding and removing are O(log n):
+Some questions come up again and again while a program runs:
+
+- "What is the smallest item right now?"
+- "Where does this value belong in sorted order?"
+
+You could sort the list every time you ask. But sorting costs [[O(n log n)|cost-of-sorting]], and paying that on every question adds up fast. `heapq` answers the first question cheaply, and `bisect` answers the second.
+
+## `heapq`: the smallest item, always on top
+
+Picture a sports tournament bracket, upside down. The winner (the smallest number) always sits at the very top. Below it, each item only has to be smaller than the two items under it. Nobody cares about the order between cousins.
+
+That shape is a **[[heap|how-a-heap-sits-in-a-list]]**: a list kept in a special *partial* order where `heap[0]` is always the smallest item. You never arrange it yourself; the `heapq` functions do it for you.
+
+- `heapq.heappush(h, x)` adds `x` and keeps the heap order.
+- `heapq.heappop(h)` removes and returns the smallest item.
+
+Both cost only O(log n), because each only repairs one path from top to bottom.
 
 ```python
 import heapq
 h = []
 for x in [5, 1, 8, 3]:
     heapq.heappush(h, x)
+h                       # [1, 3, 8, 5]   partly ordered, not sorted
 h[0]                    # 1   the smallest, without sorting
 heapq.heappop(h)        # 1   removes and returns it
-heapq.heappop(h)        # 3
-heapq.nlargest(2, [5, 1, 8, 3, 9])       # [9, 8]
-list(heapq.merge([1, 4, 9], [2, 3, 10])) # [1, 2, 3, 4, 9, 10]
+heapq.heappop(h)        # 3   the next smallest moves to the top
 ```
 
-`heapq` only does *min*-heaps. For a max-heap, push negated numbers and negate again when you pop. Items can be tuples, `(priority, item)`, which compare by the first element first.
+Two ready-made helpers are worth knowing:
 
-**Two heaps make a running median.** Keep the smaller half of the numbers in a max-heap (`low`, stored negated) and the larger half in a min-heap (`high`). Keep their sizes within one of each other, and every number in `low` no bigger than any in `high`. Then the median is at the top of one heap, or halfway between the two tops. Each new number costs O(log n), instead of re-sorting everything.
+```python
+heapq.nlargest(2, [5, 1, 8, 3, 9])        # [9, 8]   largest first
+list(heapq.merge([1, 4, 9], [2, 3, 10]))  # [1, 2, 3, 4, 9, 10]
+```
 
-**`bisect`: positions in a sorted list.** `bisect_left(a, x)` is the binary search you wrote in the advanced course: the first index whose value is at least `x`. `bisect_right` gives the index just past any equal values. `insort` inserts while keeping the list sorted.
+`nlargest(k, items)` gives the `k` biggest, biggest first. `merge` joins lists that are **already sorted** into one sorted stream.
+
+## Largest on top instead: negate
+
+`heapq` only builds **min-heaps** (smallest on top). For a **max-heap** (largest on top), push each number [[negated|why-negating-works]], with a minus sign, and put the minus sign back when you take it out:
+
+```python
+m = []
+for x in [5, 1, 8]:
+    heapq.heappush(m, -x)      # stores -5, -1, -8
+-m[0]                          # 8   the largest
+```
+
+## Items with a priority
+
+Heap items can be tuples such as `(priority, item)`. Tuples [[compare by their first element first|how-tuples-compare]], so the lowest priority number comes out first. That makes a heap a **[[priority queue|priority-queues-in-real-code]]**: a to-do list that always hands you the most urgent job.
+
+```python
+todo = []
+heapq.heappush(todo, (2, "wash"))
+heapq.heappush(todo, (1, "launch"))
+heapq.heappush(todo, (3, "sleep"))
+heapq.heappop(todo)            # (1, 'launch')
+```
+
+## Two heaps make a running median
+
+The **[[median|what-a-median-is]]** is the middle value once the numbers are sorted: of 1, 3, 5 it is 3. With an even count there are two middle values, and the median is halfway between them: of 1, 3, 5, 15 it is (3 + 5) / 2 = 4.0.
+
+Suppose numbers arrive one at a time and you need the median after each. Re-sorting every time is slow. Instead, split the numbers into two halves:
+
+- `low` holds the **smaller half**, as a max-heap (stored negated), so its biggest is on top.
+- `high` holds the **larger half**, as a min-heap, so its smallest is on top.
+
+Keep two promises: every number in `low` is no bigger than any number in `high`, and `low` has the same size as `high` or one more. Then the middle of everything sits at the two tops:
+
+- If `low` has one more item, the median is the top of `low`.
+- If they are the same size, the median is halfway between the two tops.
+
+Watch it with 5, 15, 1, 3 arriving:
+
+| after adding | `low` (smaller half) | `high` (larger half) | median |
+|---|---|---|---|
+| 5 | 5 | (empty) | 5 |
+| 15 | 5 | 15 | 10.0 |
+| 1 | 1, 5 | 15 | 5 |
+| 3 | 1, 3 | 5, 15 | 4.0 |
+
+When 3 arrived, it went into `low`, which then had one too many, so its biggest (5) moved over to `high`. Each new number costs O(log n), instead of a whole re-sort.
+
+## `bisect`: positions in a sorted list
+
+In the advanced course you wrote `first_at_least` by hand with [[binary search|binary-search-again]]. The `bisect` module is that same function, built in. The list must already be sorted.
+
+- `bisect.bisect_left(a, x)` gives the first index whose value is at least `x`.
+- `bisect.bisect_right(a, x)` gives the index just **past** any values equal to `x`.
+
+They only differ when `x` is already in the list:
 
 ```python
 import bisect
-bisect.bisect_left([10, 20, 30], 20)     # 1
-bisect.bisect_right([10, 20, 30], 20)    # 2
+bisect.bisect_left([10, 20, 30], 20)     # 1   the position of the 20
+bisect.bisect_right([10, 20, 30], 20)    # 2   just after the 20
+bisect.bisect_left([10, 20, 30], 25)     # 2   25 would go between 20 and 30
 ```
 
-A classic use is mapping a number onto bands without an `if` chain:
+`bisect.insort(a, x)` inserts `x` into the list in its sorted place:
+
+```python
+a = [10, 20, 30]
+bisect.insort(a, 25)
+a                                        # [10, 20, 25, 30]
+```
+
+## Sorting a number into bands
+
+A classic use is putting a number into a band without a long `if`/`elif` chain. List the **breakpoints** (where one band ends and the next begins), and one label per band. There is always one more label than breakpoints:
 
 ```python
 breakpoints = [18.5, 25, 30]
 labels = ["under", "normal", "over", "obese"]
 labels[bisect.bisect_right(breakpoints, 22.0)]   # 'normal'
+labels[bisect.bisect_right(breakpoints, 25)]     # 'over'
 ```
 
-**Common mistake:** reading `h[1]` as "the second smallest". A heap is only partly ordered: `h[0]` is the minimum, and the rest is in no useful order.
+`bisect_right` counts how many breakpoints are less than or equal to the value: 22.0 is past one breakpoint, so it gets label 1. A value exactly on a breakpoint (25) counts as past it, so it lands in the higher band. That is why `bisect_right` is the right choice here.
+
+**Watch out:** do not read `h[1]` as "the second smallest". A heap is only partly ordered. Push 1, 4, 2, 3 and the list is `[1, 3, 2, 4]`: `h[1]` is 3, but the second smallest is 2. Only `h[0]` means something; to get the next one, `heappop`.
+
+::: context cost-of-sorting The price of one sort
+From the Big-O lesson: sorting n items takes about n × log n steps. For a million items that is roughly twenty million steps, a noticeable fraction of a second in Python. Once is fine. After every one of a hundred thousand new numbers, it becomes hours. A heap pays about log n per push or pop instead, which is around 20 steps for a million items.
+:::
+
+::: context how-a-heap-sits-in-a-list A tree hiding in a list
+A heap is a tree stored in an ordinary list. The item at index `i` has its two children at indexes `2*i + 1` and `2*i + 2`. The only rule is that every parent is no bigger than its children. The heap `[1, 3, 8, 5]` looks like this:
+
+```svg
+<svg viewBox="0 0 360 170" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <line x1="180" y1="40" x2="110" y2="90" stroke="#1f2a44"/>
+  <line x1="180" y1="40" x2="250" y2="90" stroke="#1f2a44"/>
+  <line x1="110" y1="90" x2="70" y2="140" stroke="#1f2a44"/>
+  <circle cx="180" cy="34" r="18" fill="#1d6fd1" stroke="#1f2a44"/>
+  <text x="180" y="39" font-size="14" fill="#ffffff" text-anchor="middle">1</text>
+  <circle cx="110" cy="90" r="18" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="110" y="95" font-size="14" fill="#1f2a44" text-anchor="middle">3</text>
+  <circle cx="250" cy="90" r="18" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="250" y="95" font-size="14" fill="#1f2a44" text-anchor="middle">8</text>
+  <circle cx="70" cy="144" r="18" fill="#ffffff" stroke="#1f2a44"/>
+  <text x="70" y="149" font-size="14" fill="#1f2a44" text-anchor="middle">5</text>
+  <text x="206" y="30" font-size="11" fill="#6c7a93">index 0</text>
+  <text x="40" y="86" font-size="11" fill="#6c7a93">index 1</text>
+  <text x="276" y="94" font-size="11" fill="#6c7a93">index 2</text>
+  <text x="96" y="148" font-size="11" fill="#6c7a93">index 3</text>
+</svg>
+```
+
+A push adds the item at the end and swaps it upward past any bigger parent. A pop moves the last item to the top and swaps it downward. Each walks one path, at most about log n levels.
+:::
+
+::: context why-negating-works Flipping the order with a minus sign
+A minus sign turns the order upside down: 8 is bigger than 5, but -8 is smaller than -5. So the smallest stored value, -8, is the negated largest original. The min-heap keeps -8 on top, and putting the minus back gives you 8. It is a little trick, but it is the standard way to get a max-heap in Python.
+:::
+
+::: context how-tuples-compare First element first
+Python compares tuples the way a dictionary orders words: look at the first elements; only if they are equal, look at the second, and so on. So `(1, "launch")` comes before `(2, "wash")` whatever the words say. If two priorities tie, the second elements get compared, and if those cannot be compared (two dicts, say) you get a `TypeError`. The usual fix is a middle element that always differs, such as a counter: `(priority, count, item)`.
+:::
+
+::: context priority-queues-in-real-code Where priority queues work
+Operating systems use them to decide which job runs next. Simulations use them to pull out the next event in time order. Route finders use them to explore the closest place first: you will use exactly this in the Dijkstra shortest-path lesson later in this course, where the heap holds `(distance, place)` pairs.
+:::
+
+::: context what-a-median-is Why the middle, not the average
+The median is the value in the middle once everything is sorted. Unlike the average, one wild value barely moves it: for 1, 3, 5, 1000 the average is 252.25, but the median is 4.0. That makes it a favourite for noisy sensor readings, where one glitch should not drag the answer far off.
+:::
+
+::: context binary-search-again The same search, built in
+`bisect_left(a, x)` answers the same question as the `first_at_least(nums, target)` you wrote: the first position whose value is at least `x`, found by halving the range each step, in O(log n). Knowing how it works inside is what lets you trust it and pick the right one of `bisect_left` and `bisect_right` for a job.
+:::
 --- task
 Write:
 
-- `k_largest(nums, k)`: the `k` largest numbers, largest first, using `heapq`.
-- `class RunningMedian` with `add(x)` and `median()`: the median of everything added so far (the average of the middle two when the count is even). `median()` with nothing added raises `ValueError`. Use two heaps, so 100,000 adds with a median after each are fast.
-- `grade(score)` using `bisect`: below 60 is `"F"`, 60 up to 70 is `"D"`, then `"C"`, `"B"`, and 90 or more is `"A"`.
+- `k_largest(nums, k)`: the `k` largest numbers, largest first, using `heapq`. If `k` is bigger than the list, return all of them, largest first.
+- `class RunningMedian` with `add(x)` and `median()`. `median()` returns the median of everything added so far (the average of the middle two when the count is even), and raises `ValueError` if nothing has been added yet. Use the two heaps `low` and `high` from the explanation, so that 100,000 adds, with a median after each, are fast.
+- `grade(score)` using `bisect`: below 60 is `"F"`, 60 up to (not including) 70 is `"D"`, 70 up to 80 is `"C"`, 80 up to 90 is `"B"`, and 90 or more is `"A"`.
 --- starter
 import bisect
 import heapq
@@ -1342,11 +1606,11 @@ class RunningMedian:
 def grade(score):
     return "FDCBA"[bisect.bisect_right([60, 70, 80, 90], score)]
 --- hint
-`heapq.nlargest(k, nums)` already returns them largest first.
+`heapq.nlargest(k, nums)` already returns them largest first, and copes with `k` bigger than the list. For `grade`, the breakpoints are `[60, 70, 80, 90]`, with labels `"F"`, `"D"`, `"C"`, `"B"`, `"A"`.
 --- hint
-Keep `low` (negated, so it acts as a max-heap) and `high`. Push the new number onto the correct side, then move one number across if `low` has more than one extra, or `high` has more than `low`.
+In `add`: if `low` is not empty and `x` is bigger than the top of `low` (`-self.low[0]`), push `x` onto `high`; otherwise push `-x` onto `low`. Then rebalance: if `low` has more than one extra, pop its top and push it (un-negated) onto `high`; if `high` is bigger than `low`, move its top over to `low` (negated).
 --- hint
-If `low` is bigger, the median is `-low[0]`; otherwise it is the average of `-low[0]` and `high[0]`. For `grade`, `bisect_right([60, 70, 80, 90], score)` gives 0 to 4, an index into `"FDCBA"`.
+In `median`: raise `ValueError` if `low` is empty. If `low` is bigger, return `-self.low[0]`; otherwise return `(-self.low[0] + self.high[0]) / 2`. For `grade`, `bisect.bisect_right([60, 70, 80, 90], score)` gives 0 to 4, which indexes straight into the string `"FDCBA"`.
 --- check case | k_largest, largest first
 k_largest([5, 1, 9, 3, 9, 7], 3)
 => [9, 9, 7]
@@ -1370,14 +1634,62 @@ bisect\.bisect
 
 === py4-07 | Typing: Protocols and generics
 --- teach
-Type hints describe what a function expects and returns. Python itself does not enforce them at run time; tools such as mypy and pyright read them and catch mistakes before the code runs, and editors use them for autocompletion. In a large codebase they are documentation that cannot go out of date without something complaining.
+Last lesson picked the right data structure for speed. This one is about making code easier for *people* (and tools) to understand, by writing down what kind of value each part expects.
+
+Picture the labels on a box of parts: "M3 screws, 10 mm". Nobody checks the label when you put the box on the shelf. But the label tells the next person what belongs inside, and a sharp-eyed helper can spot a bolt in the screw box straight away.
+
+## Step 1: type hints
+
+A **type hint** is that label, written in the code. After a parameter you write a colon and its type. After the brackets you write `->` ("returns") and the type of the result:
 
 ```python
 def mean(values: list[float]) -> float:
     return sum(values) / len(values)
+
+mean([1.0, 2.0, 4.5])     # 2.5
 ```
 
-**Protocols: typing by behaviour.** Python has always worked by *duck typing*: if it has an `area()` method, you can ask for its area. A `Protocol` puts that into the type system. It lists the methods something must have, and **any** class with those methods matches, with no inheritance needed:
+Read it aloud: "`mean` takes `values`, a list of floats, and returns a float."
+
+Python itself does **not** enforce hints at [[run time|two-moments-in-a-programs-life]]. This still runs, and only fails inside the function:
+
+```python
+def shout(text: str) -> str:
+    return text.upper() + "!"
+
+shout(42)     # AttributeError: 'int' object has no attribute 'upper'
+```
+
+So who reads the hints? A **[[type checker|type-checkers]]** such as mypy or pyright reads your code *without running it* and complains that `42` is not a `str`, before the bug ever runs. Editors use the same hints to suggest method names as you type. In a big codebase, hints are documentation that cannot quietly go out of date, because the checker complains when they stop matching the code.
+
+A function that returns nothing gets `-> None`. That includes `__init__`.
+
+## Step 2: hints that ask for as little as possible
+
+Sometimes a function does not need a list exactly. The `typing` module has names for "anything that behaves like...":
+
+- **`Iterable[X]`**: anything you can loop over with `for` that gives `X`s: a list, tuple, set, generator.
+- **`Sequence[X]`**: anything with a length that you can index with `[0]`: a list, tuple, or string.
+
+```python
+from typing import Iterable, Sequence
+
+def total(xs: Iterable[float]) -> float:
+    return sum(xs)                # only loops, so any iterable will do
+
+def last(xs: Sequence[str]) -> str:
+    return xs[-1]                 # needs indexing, so it asks for a Sequence
+
+last("xyz")                       # 'z'   a string is a sequence of strings
+```
+
+Ask for [[the least you need|ask-for-the-least]]: if a function only loops, `Iterable` lets callers pass a generator too.
+
+## Step 3: Protocols, typing by behaviour
+
+Python has always worked by **[[duck typing|where-duck-typing-comes-from]]**: if an object has an `area()` method, you can ask for its area. You never ask what class it is.
+
+A **Protocol** puts that idea into the type system. It is a class that only lists the methods something must have. **Any** class with those methods matches it, without inheriting from it:
 
 ```python
 from typing import Protocol, runtime_checkable
@@ -1393,9 +1705,17 @@ class File:
 isinstance(File(), Closeable)   # True, though File never mentions Closeable
 ```
 
-`@runtime_checkable` also makes `isinstance` work, but at run time it only checks that the methods *exist*, not their signatures.
+Line by line:
 
-**Generics: one class, many types.** A `Stack` of ints and a `Stack` of strings are the same code. A **type variable** says "some type, the same one throughout":
+- `class Closeable(Protocol):` says "this is a protocol, a list of required methods".
+- `def close(self) -> None: ...` lists one method. The body is [[three dots|the-ellipsis]], which means "nothing here, this is only a description".
+- `@runtime_checkable` is a decorator that makes `isinstance` work with the protocol.
+
+Matching by shape like this is called **[[structural typing|matching-by-shape]]**. `isinstance` at run time is only a rough check: it looks at whether the methods **exist**, not at their parameters. A class with `def close(self, loudly):` would still count as `Closeable`. The type checker is the one that checks the details.
+
+## Step 4: generics, one class for many types
+
+A stack of ints and a stack of strings are the same code. You want to say "a stack of *something*, and whatever goes in is what comes out". A **[[type variable|naming-type-variables]]** is that "something": a stand-in type that must be the same everywhere it appears.
 
 ```python
 from typing import Generic, TypeVar
@@ -1407,25 +1727,94 @@ class Box(Generic[T]):
     def get(self) -> T:
         return self.item
 
-def first(items: list[T]) -> T:      # returns the same type the list holds
-    return items[0]
-
 b: Box[int] = Box(3)
+b.get()          # 3   and the checker knows it is an int
 ```
 
-(Since Python 3.12 you can also write `class Box[T]:` and `def first[T](items: list[T]) -> T:` without the `TypeVar` line.)
+`class Box(Generic[T])` makes a **generic class**: a class with a type slot. `Box[int]` is "a box of ints", `Box[str]` "a box of strings", all from one class. A function can use `T` too:
 
-Hints are ordinary Python objects you can inspect: `typing.get_type_hints(first)` returns the annotations as a dict.
+```python
+def first(items: list[T]) -> T:      # returns the same type the list holds
+    return items[0]
+```
 
-**Common mistakes.** Making a class *inherit* from a protocol "to be safe" defeats the point: protocols exist so unrelated classes match by shape. And a hint is not a check; if you need validation at run time, write it.
+To label an attribute that starts empty, write the hint on the assignment: `self.items: list[T] = []`.
+
+(From Python 3.12 you can also write `class Box[T]:` and `def first[T](items: list[T]) -> T:` without the `TypeVar` line. The `TypeVar` form works on every recent version.)
+
+Hints are ordinary Python objects you can look at while the program runs. `typing.get_type_hints(first)` returns them as a dict:
+
+```python
+from typing import get_type_hints
+get_type_hints(mean)     # {'values': list[float], 'return': <class 'float'>}
+```
+
+**Watch out** for two mistakes:
+
+- Making a class *inherit* from a protocol "to be safe". That defeats the point: protocols exist so unrelated classes match by shape alone.
+- Treating a hint as a check. It is a label, not a guard. If you need to reject bad values while the program runs, write that check yourself.
+
+::: context two-moments-in-a-programs-life Check time and run time
+"Run time" means while the program is actually running. A type checker works at a different moment: before running, by reading the source code, much like a spell-checker reads an essay without acting it out. Python only looks at hints at run time if you ask it to, for example with `get_type_hints` or a library built on them. That is why a wrong type only blows up when the bad line runs, unless a checker caught it earlier.
+:::
+
+::: context type-checkers The tools that read the labels
+mypy was started by Jukka Lehtosalo around 2012, and Python 3.5 (2015) made hint syntax standard. pyright is Microsoft's checker and powers type hints in VS Code. You run one like any other tool, for example `mypy myfile.py`, and it lists every line where the labels do not fit. Large codebases, such as Dropbox's millions of lines of Python, adopted hints step by step so the checker could catch mistakes before they reached users.
+:::
+
+::: context ask-for-the-least Be generous in what you accept
+If `total` asked for `list[float]`, a caller holding a tuple or a generator would have to copy it into a list first, just to satisfy the label. Asking for `Iterable[float]` says honestly what the function needs: "something I can loop over". The same thinking makes functions easier to reuse and to test. Be exact in what you return, though, so callers know what they get.
+:::
+
+::: context where-duck-typing-comes-from If it quacks like a duck
+The name comes from the old saying: "If it walks like a duck and quacks like a duck, then it is probably a duck." Python does not ask an object what it *is*; it tries what it *does*. `len()` works on anything with a `__len__` method, and a `for` loop works on anything with `__iter__`, as you saw in the special-methods lesson.
+:::
+
+::: context the-ellipsis Three dots that mean "nothing here"
+`...` is a real Python value, called `Ellipsis`. As the body of a function it does nothing, like `pass`, but it reads as "left out on purpose". In a protocol the method never runs; it is only a description of what matching classes must have, so a body with real code in it would be pointless.
+:::
+
+::: context matching-by-shape Fits the shape, no family tree needed
+With inheritance, a class matches a type only if it says so: `class Square(Shape)`. With a protocol, a class matches if it has the right methods, whatever its family.
+
+```svg
+<svg viewBox="0 0 360 150" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <rect x="120" y="10" width="120" height="40" rx="6" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="180" y="28" font-size="12" fill="#1f2a44" text-anchor="middle">HasArea</text>
+  <text x="180" y="43" font-size="11" fill="#1f2a44" text-anchor="middle">needs area()</text>
+  <rect x="10" y="95" width="100" height="40" rx="6" fill="#ffffff" stroke="#1f2a44"/>
+  <text x="60" y="113" font-size="12" fill="#1f2a44" text-anchor="middle">Square</text>
+  <text x="60" y="128" font-size="11" fill="#1f2a44" text-anchor="middle">has area()</text>
+  <rect x="130" y="95" width="100" height="40" rx="6" fill="#ffffff" stroke="#1f2a44"/>
+  <text x="180" y="113" font-size="12" fill="#1f2a44" text-anchor="middle">Circle</text>
+  <text x="180" y="128" font-size="11" fill="#1f2a44" text-anchor="middle">has area()</text>
+  <rect x="250" y="95" width="100" height="40" rx="6" fill="#ffffff" stroke="#6c7a93"/>
+  <text x="300" y="113" font-size="12" fill="#6c7a93" text-anchor="middle">Rock</text>
+  <text x="300" y="128" font-size="11" fill="#6c7a93" text-anchor="middle">no area()</text>
+  <line x1="60" y1="95" x2="150" y2="50" stroke="#1d6fd1" stroke-width="2"/>
+  <line x1="180" y1="95" x2="180" y2="50" stroke="#1d6fd1" stroke-width="2"/>
+  <line x1="300" y1="95" x2="230" y2="50" stroke="#b4232c" stroke-width="2" stroke-dasharray="4 3"/>
+  <text x="96" y="70" font-size="11" fill="#1d6fd1">match</text>
+  <text x="272" y="70" font-size="11" fill="#b4232c">no match</text>
+</svg>
+```
+
+Neither Square nor Circle mentions `HasArea`; having `area()` is enough.
+:::
+
+::: context naming-type-variables Why the letter T
+`T` is short for "type", and it is only a convention, the same way `i` is the usual loop counter. When a function needs two independent type slots, people often use `K` and `V` for the keys and values of a dict, or `T` and `U`. `TypeVar("T")` must be given the same name as the variable it is stored in, so the checker can report it by name.
+:::
 --- task
-Write, with full type hints:
+Write, with type hints on every parameter and return value:
 
-- A runtime-checkable `Protocol` called `HasArea` with a method `area(self) -> float`.
-- Classes `Square(side)` and `Circle(radius)` with `area()` methods. They must **not** inherit from `HasArea`.
-- `total_area(shapes: Iterable[HasArea]) -> float`.
-- A generic `class Stack(Generic[T])` with `push(item)`, `pop()` (raises `IndexError` when empty), `peek()` (also `IndexError` when empty), and `__len__`.
-- `first(items: Sequence[T], default: T) -> T` returning the first item, or `default` if `items` is empty.
+- A runtime-checkable `Protocol` called `HasArea` with one method, `area(self) -> float`.
+- Classes `Square(side)` and `Circle(radius)`, each with an `area()` method (a circle's area is `math.pi * radius ** 2`). They must **not** inherit from `HasArea`.
+- `total_area(shapes: Iterable[HasArea]) -> float`, returning the sum of all the areas (0 for no shapes).
+- A generic `class Stack(Generic[T])` with `push(item)`, `pop()` (removes and returns the top item, or raises `IndexError` when empty), `peek()` (returns the top item without removing it, also `IndexError` when empty), and `__len__`.
+- `first(items: Sequence[T], default: T) -> T`, returning the first item, or `default` if `items` is empty.
+
+The starter already imports everything you need and defines `T`.
 --- starter
 import math
 from typing import Generic, Iterable, Protocol, Sequence, TypeVar, runtime_checkable
@@ -1496,11 +1885,11 @@ class Stack(Generic[T]):
 def first(items: Sequence[T], default: T) -> T:
     return items[0] if items else default
 --- hint
-A protocol is a class inheriting from `Protocol` whose method body is just `...`. Put `@runtime_checkable` above it.
+The protocol is Step 3: a class inheriting from `Protocol`, with `@runtime_checkable` above it, and one method `def area(self) -> float: ...`. `Square` and `Circle` are plain classes (no brackets after the name) that happen to have an `area` method.
 --- hint
-`Stack(Generic[T])` keeps a plain list inside; `pop` and `peek` check for emptiness first and raise `IndexError`.
+`Stack(Generic[T])` is Step 4: keep a plain list inside, `self._items: list[T] = []`. `pop` and `peek` first check `if not self._items:` and `raise IndexError(...)`; `peek` returns `self._items[-1]`.
 --- hint
-Annotate everything, including `-> None` on `__init__` and `push`, and `-> float` on `total_area`.
+Annotate everything, including `-> None` on `__init__` and `push`, `-> T` on `pop` and `peek`, and `-> int` on `__len__`. `total_area` can be `sum(shape.area() for shape in shapes)`, and `first` can be `items[0] if items else default`.
 --- check test | Squares and circles match the protocol without inheriting it
 isinstance(Square(2), HasArea) and isinstance(Circle(1), HasArea) and HasArea not in Square.__mro__ and not isinstance(object(), HasArea)
 --- check test | total_area adds up any mix of shapes
@@ -1519,30 +1908,73 @@ first([7, 8], 0) == 7 and first([], "none") == "none" and first("xyz", "?") == "
 
 === py4-08 | Testing: write the test that catches the bug
 --- teach
-A test is a small program that checks another program. The most valuable tests are the ones that **fail when the code is wrong**. A test that passes on buggy code is worse than none, because it makes you confident.
+Last lesson you labelled code so a checker could catch type mistakes. But a checker cannot tell you whether the *answer* is right: `2 + 2` returning `5` is a perfectly good `int`. For that you need tests.
 
-The shape of a test is **arrange, act, assert**:
+A **test** is a small program that checks another program. Picture a smoke alarm. Its whole job is to go off when there is a fire. An alarm that stays quiet during a fire is worse than no alarm at all, because you trust it and go back to sleep.
+
+Tests are the same. The valuable ones **fail when the code is wrong**. A test that passes on buggy code gives you confidence you have not earned.
+
+## Step 1: `assert`
+
+The tool for checking is the **[[assert statement|assert-in-real-code]]**, written `assert condition, message`. If the condition is true, nothing happens. If it is false, Python raises `AssertionError`, with your message:
+
+```python
+assert 2 + 2 == 4                      # true: nothing happens
+assert 2 + 2 == 5, "maths is broken"   # AssertionError: maths is broken
+```
+
+The message is optional; it helps you see which check failed.
+
+## Step 2: the shape of a test
+
+A test has three parts, called **arrange, act, assert**:
+
+- **arrange**: set up the input;
+- **act**: call the code you are testing;
+- **assert**: compare what came back with what it should be.
+
+For small functions all three fit on one line:
 
 ```python
 def test_slugify():
-    # arrange: an input; act: call the code; assert: compare with what it should be
-    assert slugify("Hello, World") == "hello-world"
+    assert slugify("Hello, World") == "hello-world"   # arrange, act, assert
     assert slugify("") == ""
 ```
 
-`assert condition, message` raises `AssertionError` (with the message) if the condition is false. Test runners such as `pytest` find functions whose names start with `test_`, run them, and report every `AssertionError`.
+Test runners such as **[[pytest|how-pytest-finds-tests]]** find every function whose name starts with `test_`, run it, and report each one that raised an `AssertionError`.
 
-**How to choose test cases.** Do not pick random examples; pick the cases that *break* implementations:
+## Step 3: choosing the cases
 
-- **Each rule in the specification** gets a case that only passes if that rule is implemented.
-- **Boundaries**: exactly at a limit, one either side of it. Off-by-one bugs live there.
-- **Exceptions to the rule, and exceptions to the exceptions.**
-- **Both outcomes**: a test that only ever expects `True` cannot catch a function that always returns `True`.
-- **Degenerate inputs**: empty, zero, one element, negative.
+Do not pick random examples. Pick the cases that *break* wrong code. Start from the **specification**, the exact rule the code is meant to follow, and go through this list:
 
-A useful habit: **imagine the likely bugs**, then make sure some case catches each one. Professionals check their tests exactly like that, by deliberately breaking the code ("mutation testing") and seeing whether any test notices.
+- **Each rule** in the specification gets a case that only passes if that rule is implemented.
+- **Boundaries**: a value exactly at a limit, and one just either side of it. [[Off-by-one|off-by-one-bugs]] bugs live there.
+- **Exceptions to the rule, and [[exceptions to the exceptions|why-leap-years-are-odd]].** The leap-year rule in the task is full of them.
+- **Both outcomes**: if a function answers yes or no, test some yeses *and* some nos. A test that only ever expects `True` cannot catch a function that always returns `True`.
+- **Degenerate inputs**: the smallest, emptiest cases: empty, zero, one element, negative.
 
-**Tests take the code as a parameter here.** To check your test, the checker calls it with several implementations, some correct and some broken:
+Here is one rule, "orders of 50 or more ship free", tested at its boundary and with both outcomes:
+
+```python
+def test_free_shipping(free_shipping):
+    assert free_shipping(49.99) is False   # just under the limit
+    assert free_shipping(50) is True       # exactly at the limit
+    assert free_shipping(80) is True       # well over it
+```
+
+A buggy version written with `>` instead of `>=` fails on `50`. A version that always says `True` fails on `49.99`.
+
+Notice `is True` and `is False` rather than a bare `assert free_shipping(50)`. A bare `assert` accepts anything truthy, such as `1` or `"yes"`, and even `== True` lets `1` through, because `1 == True` in Python. Writing `is True` is an [[exact check|why-is-true]]: it demands the real `True`.
+
+## Step 4: imagine the bugs
+
+A useful habit: before writing cases, **imagine the likely bugs**. "What if someone forgets this rule? Uses `>` instead of `>=`? Always returns `True`?" Then make sure at least one case catches each one.
+
+Professionals check their tests exactly like this, on purpose. They make small deliberate breaks in the code and see whether any test notices. That is called **[[mutation testing|mutation-testing]]**.
+
+## Step 5: here, the test takes the code as a parameter
+
+Normally a test calls a function by its name. In this lesson, your test receives the function to check as a [[parameter|passing-the-code-in]]. That lets the checker call your test several times, with a correct version and with broken ones:
 
 ```python
 def test_absolute(absolute):
@@ -1551,11 +1983,63 @@ def test_absolute(absolute):
     assert absolute(0) == 0       # the boundary between the two cases
 ```
 
-**Common mistakes.** Recomputing the expected value with the same logic as the code under test (then both are wrong together). Asserting on too little. And tests that depend on each other's order or on shared state.
---- task
-The rule for leap years: a year is a leap year if it is divisible by 4, **except** years divisible by 100, which are not, **except** years divisible by 400, which are.
+Called with Python's own `abs`, it passes. Called with `lambda x: -x` or `lambda x: x`, it raises `AssertionError`, which is exactly what a good test should do.
 
-Write `test_is_leap(is_leap)`. It takes a function `is_leap(year)` that should return `True` or `False`, and uses `assert` to check it. Your test must **pass** (return without error) for a correct implementation, and **raise `AssertionError`** for every buggy one the checker tries. Think about which bugs are likely.
+**Watch out** for three mistakes:
+
+- Working out the expected answer with the same logic as the code under test. If the logic is wrong, both are wrong together and the test still passes. Write the expected answer out by hand.
+- Asserting on too little: one happy example, and no boundary or "no" case.
+- Tests that depend on each other's order or share changing data. Each test should work on its own.
+
+::: context assert-in-real-code A statement that can be switched off
+`assert` is a statement, not a function, so do not put brackets round the whole thing: `assert (x, "msg")` asserts a tuple, which is always truthy, and never fails. Running Python with the `-O` flag ("optimise") removes every `assert`. That is why real programs never use `assert` to check user input, and use `if` plus `raise` instead. In tests, `assert` is exactly right.
+:::
+
+::: context how-pytest-finds-tests How a test runner works
+pytest is the most widely used test runner for Python. Run `pytest` in a folder and it looks for files named `test_*.py`, then for functions named `test_*` inside them, and calls each one. A test passes if it returns without an error. At the end you get a summary, and for each failure pytest shows the exact values on both sides of the `==` that went wrong.
+:::
+
+::: context off-by-one-bugs The fence-post mistake
+How many posts does a 10-metre fence need with one every metre? Eleven, not ten. Off-by-one bugs are that mistake in code: `<` where it should be `<=`, `range(n)` where it should be `range(n + 1)`. The code is right almost everywhere and wrong exactly at the edge, which is why a random example rarely catches it and a boundary case does.
+:::
+
+::: context why-leap-years-are-odd Why the leap-year rule has exceptions
+A year (from one spring to the next) is about 365.2422 days long. Adding a leap day every 4 years makes the average 365.25, a little too long, so the calendar slowly drifts. The Gregorian calendar, introduced in 1582, fixes that by skipping the leap day in century years, except those divisible by 400. That averages 365.2425 days.
+
+```svg
+<svg viewBox="0 0 360 170" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <rect x="10" y="10" width="340" height="150" rx="10" fill="#ffffff" stroke="#1f2a44"/>
+  <text x="20" y="28" font-size="12" fill="#1f2a44">all years: not leap (2023)</text>
+  <rect x="40" y="38" width="300" height="114" rx="10" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="50" y="56" font-size="12" fill="#1f2a44">divisible by 4: leap (2024)</text>
+  <rect x="80" y="66" width="250" height="78" rx="10" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="90" y="84" font-size="12" fill="#1f2a44">by 100: not leap (1900)</text>
+  <rect x="120" y="94" width="200" height="42" rx="10" fill="#1d6fd1" stroke="#1f2a44"/>
+  <text x="130" y="119" font-size="12" fill="#ffffff">by 400: leap (2000)</text>
+</svg>
+```
+
+Each box is an exception inside the one around it, and each needs its own test case.
+:::
+
+::: context why-is-true True, and nothing else
+In Python, `True == 1` is true, because `True` behaves like the number 1 in arithmetic. So a function that returns `1` passes both `assert f(x)` and `assert f(x) == True`. `is True` asks "is this the very same object as `True`?", and only `True` itself passes. When a function promises to return `True` or `False`, test that promise exactly.
+:::
+
+::: context mutation-testing Testing the tests
+A mutation-testing tool (for Python, `mutmut` is one) makes many small changes to your code, one at a time: `>` becomes `>=`, `+` becomes `-`, a condition is flipped. Each changed copy is a "mutant". It runs your tests against every mutant. If no test fails, that mutant "survived", which means your tests could not tell the broken code from the real code. The checks in this lesson do the same thing by hand.
+:::
+
+::: context passing-the-code-in Handing a test its target
+Passing the function in, instead of reaching for it by name, is a small case of **dependency injection**: giving code the things it depends on rather than letting it find them itself. It makes the test reusable with any implementation. The very next lesson, on design, uses the same idea for whole programs, so that the slow or risky parts can be swapped for simple stand-ins in tests.
+:::
+
+--- task
+Here is the rule for leap years: a year is a leap year if it is divisible by 4, **except** years divisible by 100, which are not, **except** years divisible by 400, which are.
+
+Write `test_is_leap(is_leap)`. It receives a function `is_leap(year)` that should return `True` or `False`, and uses `assert` to check it.
+
+Your test must **pass** (finish without an error) when given a correct `is_leap`, and **raise `AssertionError`** for every buggy one the checker tries. Before you write any cases, list the bugs someone could plausibly make with this rule, and make sure some case catches each one.
 --- starter
 def test_is_leap(is_leap):
     assert is_leap(2024)
@@ -1579,11 +2063,11 @@ def test_is_leap(is_leap):
     assert is_leap(2001) is False
     assert is_leap(1996) is True
 --- hint
-List the three rules, and for each one, write a year that is only right if that rule is implemented.
+List the three rules (by 4, by 100, by 400). For each one, write a year that only gets the right answer if that rule is implemented. Use `is True` and `is False`.
 --- hint
-Test both outcomes: some years that are leap years and some that are not. A test with only "True" cases cannot catch a function that always says True.
+Test both outcomes: some years that are leap years and some that are not. A test with only `True` cases cannot catch a function that always says `True`.
 --- hint
-Years such as 1900 and 2100 (divisible by 100) catch a missing century rule; 2000 and also 1600 or 2400 (divisible by 400) catch a missing or half-done 400 rule.
+Several years divisible by 100 but not 400 (such as 1900, 1800, 2100, 2200) catch a missing or half-done century rule. Several years divisible by 400 (2000, and also 1600 or 2400) catch a missing 400 rule, or one that only works for 2000.
 --- check test | Passes a correct implementation
 not raises(AssertionError, lambda: test_is_leap(lambda y: y % 4 == 0 and (y % 100 != 0 or y % 400 == 0)))
 --- check test | Passes the standard library's implementation
