@@ -2463,7 +2463,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-gdb-comfort-and-remote-debugging",
       "title": "Making gdb comfortable, debugging remotely, and running backwards",
-      "minutes": 26,
+      "minutes": 23,
       "covers": [
         "TUI mode, .gdbinit, pretty-printers for STL and Eigen",
         "gdbserver and remote/embedded debugging; rr for reverse debugging"
@@ -2478,6 +2478,36 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Python: pdb, breakpoint(), py-spy for a live process"
       ],
       "file": "cod_dbg_01_gdb/07-debugging-python.md"
+    },
+    {
+      "id": "l08-sanitizers-and-valgrind",
+      "title": "Sanitizers and Valgrind",
+      "minutes": 28,
+      "covers": [
+        "AddressSanitizer, UBSan, ThreadSanitizer, LeakSanitizer",
+        "Valgrind memcheck, helgrind, callgrind and when to prefer it over ASan"
+      ],
+      "file": "cod_dbg_01_gdb/08-sanitizers-and-valgrind.md"
+    },
+    {
+      "id": "l09-profiling-with-perf-and-benchmarks",
+      "title": "Finding where the time goes",
+      "minutes": 28,
+      "covers": [
+        "perf stat (IPC, cache misses, branch misses), perf record/report, flame graphs",
+        "hyperfine for wall clock, Google Benchmark for microbenchmarks"
+      ],
+      "file": "cod_dbg_01_gdb/09-profiling-with-perf-and-benchmarks.md"
+    },
+    {
+      "id": "l10-logging-and-post-flight-investigation",
+      "title": "Logs, ring buffers and the one dataset",
+      "minutes": 25,
+      "covers": [
+        "Logging strategy: levels, structured logs, flight-side ring buffers",
+        "Post-flight anomaly investigation: one dataset, no reruns"
+      ],
+      "file": "cod_dbg_01_gdb/10-logging-and-post-flight-investigation.md"
     }
   ],
   "cod_git_01_basics": [
@@ -10378,17 +10408,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_dbg_01_gdb": {
-    "covered": 9,
+    "covered": 15,
     "total": 15,
-    "complete": false,
-    "missing": [
-      "AddressSanitizer, UBSan, ThreadSanitizer, LeakSanitizer",
-      "Valgrind memcheck, helgrind, callgrind and when to prefer it over ASan",
-      "perf stat (IPC, cache misses, branch misses), perf record/report, flame graphs",
-      "hyperfine for wall clock, Google Benchmark for microbenchmarks",
-      "Logging strategy: levels, structured logs, flight-side ring buffers",
-      "Post-flight anomaly investigation: one dataset, no reruns"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_py_01_basics": {
     "covered": 12,
