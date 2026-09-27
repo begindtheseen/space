@@ -1043,35 +1043,179 @@ raises(AssertionError, lambda: test_is_leap(lambda y: y % 4 == 0 and (y % 100 !=
 
 === py4-09 | Design: pure logic, thin I/O, injected dependencies
 --- teach
-Look at almost any hard-to-test program and you find the same problem: the **logic is tangled with the input and output**. The function that decides *what* should happen also reads the keyboard, prints, sends email or looks at the clock. To test it, you would have to type input and read the screen.
+Last lesson you wrote tests that catch bugs. This lesson is about the other half of the job: writing code that is *easy* to test in the first place.
 
-The fix is an architecture sometimes called **functional core, imperative shell**:
+Think of a pocket calculator. You press keys and a number appears on the screen. But the chip inside that does the arithmetic does not care about keys or screens. It takes numbers in and hands a number back. A factory can test that chip by feeding it numbers down a wire, with nobody pressing anything. Good programs are built the same way.
 
-- A **pure core**: functions that take data and return data. No `input()`, no `print()`, no global state, no clock. Same input, same output, every time. Trivial to test.
+### The problem: logic tangled with input and output
+
+Look at almost any hard-to-test program and you find the same problem: the **logic is tangled with the input and output**. The function that decides *what* should happen also reads the keyboard, prints, sends email or looks at the clock. **Input and output** (people say **I/O**) means everything a program takes in from the outside world or sends back out to it.
+
+```python
+def check_temperature():
+    reading = float(input())      # reads the keyboard
+    if reading > 90:
+        print("too hot")          # writes to the screen
+```
+
+To test this, you would have to type a number and then read the screen. The decision (is it above 90?) is trapped between the reading and the printing.
+
+### Step 1: a pure function
+
+A **pure function** takes data in and returns data out, and does nothing else. Same input, same output, every time. Anything else a function does (printing, reading input, changing a variable outside itself, looking at the clock) is called a **[[side effect|side-effect]]**.
+
+Pull the decision out into a pure function:
+
+```python
+def too_hot(reading):
+    return reading > 90
+
+too_hot(95)     # True
+too_hot(20)     # False
+```
+
+Now a test is one line: `assert too_hot(95) is True`. No typing, no screen.
+
+### Step 2: a pure core inside a thin shell
+
+Do that for all the logic, and the program splits into two layers. This design is sometimes called **[[functional core, imperative shell|core-and-shell]]**:
+
+- A **pure core**: functions that take data and return data. No `input()`, no `print()`, no global state, no clock. Same input, same output, every time. Very easy to test.
 - A **thin shell**: a small layer that reads input, calls the core, and writes output. It has almost no logic, so it barely needs testing.
 
-**Dependency injection** is how the shell stays swappable. Instead of reaching out for `print` or the clock itself, a function *receives* them as parameters:
+### Step 3: hand the function its tools
+
+The shell still has to *do* something with the results: print them, or send an email. How can you test the part that does that without actually printing or emailing?
+
+Picture a plumber who brings her own wrench versus one who is handed a wrench at the door. Hand her a toy wrench and you can watch what she does without flooding the kitchen. **Dependency injection** means the same thing for code: instead of reaching out for `print` or the clock itself, a function *receives* them as parameters. A **dependency** is anything a function relies on from outside itself.
+
+This works because in Python [[a function is a value|functions-are-values]], like a number or a list. You can pass `print` into another function, and it calls whatever it was given:
 
 ```python
 def run(lines, notify):
     for line in lines:
-        ...
-        notify(f"alert: {line}")
+        if "ERROR" in line:
+            notify(f"alert: {line}")
 
-run(sys.stdin.read().splitlines(), print)    # the real program
+run(["ok", "ERROR disk full"], print)       # the real program: prints alert: ERROR disk full
 sent = []
-run(["a", "b"], sent.append)                 # a test: collect what would be sent
+run(["ok", "ERROR disk full"], sent.append) # a test: collect what would be sent
+sent                                        # ['alert: ERROR disk full']
 ```
 
-The same goes for time: `def is_overdue(due, today)` is testable for any date; `def is_overdue(due)` that calls `date.today()` inside is only testable today.
+In the test, `sent.append` stands in for `print`. It is a **[[fake|test-doubles]]**: a stand-in that records what happened instead of doing it for real. `run` cannot tell the difference, and it does not need to.
 
-**Reading input.** A program reads what the user types, or pipes in, from **standard input**: in this editor, the Input box. `input()` reads one line and returns it without the newline; `sys.stdin.read()` (after `import sys`) reads all of it at once as one string, and `.splitlines()` turns that into a list of lines. Only the shell reads input; the pure core is handed the lines.
+The same goes for time. Reading [[the clock|injected-time]] inside a function is a hidden input:
 
-**A program's entry point** goes under `if __name__ == "__main__":`. That block runs when the file is executed as a program, but not when another file imports it to reuse (or test) the functions.
+```python
+from datetime import date
 
-**Common mistake:** "injecting" by setting a global variable that the function reads. That still couples everything to one shared value; pass it in as an argument.
+def is_overdue(due, today):
+    return today > due
+
+is_overdue(date(2026, 1, 10), date(2026, 1, 11))    # True
+```
+
+(`date` comes from the standard library's `datetime` module; `date(2026, 1, 10)` is the 10th of January 2026.) Written like this, `is_overdue(due, today)` is testable for any date. A version `is_overdue(due)` that calls `date.today()` inside is only testable today.
+
+### Step 4: reading input
+
+A program reads what the user types, or what a pipe sends in, from **[[standard input|standard-streams]]**: in this editor, that is the Input box under your code. There are two ways to read it:
+
+- `input()` reads **one line** and returns it without the newline at the end.
+- `sys.stdin.read()` reads **all of it at once** as one string. You need `import sys` at the top first; `sys` is the standard library module for talking to the system Python runs on.
+
+Then `.splitlines()` turns that one string into a list of lines. If the Input box holds two lines, `widget 3 10` and `gizmo 25 5`:
+
+```python
+import sys
+
+lines = sys.stdin.read().splitlines()
+lines       # ['widget 3 10', 'gizmo 25 5']
+```
+
+Only the shell reads input. The pure core is handed the lines as an ordinary list, which is why a test can hand it a list it made up.
+
+### Step 5: the entry point
+
+The **entry point** is where a program starts doing things when you run it. In Python it goes under this line:
+
+```python
+if __name__ == "__main__":
+    run(sys.stdin.read().splitlines(), print)
+```
+
+Read it as "if this file is being run as a program". Python gives every file a [[hidden variable|dunder-name]] called `__name__`. That block runs when the file is executed as a program, but not when another file imports it to reuse (or test) the functions. So a test can import `run` without the program starting to read input.
+
+**Watch out:** "injecting" by setting a global variable that the function reads, like `NOTIFY = print` at the top of the file and `NOTIFY(...)` inside the function. That still couples everything to [[one shared value|globals-couple]]. Pass it in as an argument instead.
+
+::: context side-effect Side effects are not bad, only hard to test
+"Side effect" sounds like something a medicine does wrong, but in programming it means anything a function does besides handing back a value: printing, writing a file, changing a list it was given, moving a motor. A program with no side effects at all would be useless, because nobody could see its answer. The point is not to avoid them. It is to push them to the edges, into a few short functions, so that the part that thinks never has any.
+:::
+
+::: context core-and-shell A core you test, a shell you can see through
+"Imperative" means giving commands, like "print this" or "read that". "Functional" here means built from pure functions. The name was popularised by programmer Gary Bernhardt in a 2012 screencast. The shape is the calculator from the start of the lesson: data goes in through the shell, the core does all the deciding, and the shell sends the answer out.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 170" font-family="Inter, Arial, sans-serif">
+  <rect x="70" y="10" width="220" height="150" rx="14" fill="#ffffff" stroke="#1f2a44" stroke-width="2"/>
+  <text x="180" y="32" font-size="12" fill="#1f2a44" text-anchor="middle">thin shell: reads, calls, writes</text>
+  <rect x="110" y="50" width="140" height="80" rx="10" fill="#8fb8f0" stroke="#1d6fd1" stroke-width="2"/>
+  <text x="180" y="86" font-size="14" font-weight="700" fill="#1f2a44" text-anchor="middle">pure core</text>
+  <text x="180" y="106" font-size="12" fill="#1f2a44" text-anchor="middle">data in, data out</text>
+  <line x1="8" y1="150" x2="68" y2="150" stroke="#1f2a44" stroke-width="2"/>
+  <polygon points="68,150 60,146 60,154" fill="#1f2a44"/>
+  <text x="36" y="140" font-size="12" fill="#1f2a44" text-anchor="middle">input</text>
+  <line x1="292" y1="150" x2="350" y2="150" stroke="#1f2a44" stroke-width="2"/>
+  <polygon points="352,150 344,146 344,154" fill="#1f2a44"/>
+  <text x="322" y="140" font-size="12" fill="#1f2a44" text-anchor="middle">output</text>
+</svg>
+```
+:::
+
+::: context functions-are-values Passing print, not calling it
+You met this in the decorators lesson: a function can be stored in a variable and handed to another function. The difference is the brackets. `print` with no brackets is the function itself, the tool. `print("hi")` *uses* the tool, right now. So `run(lines, print)` hands `run` the tool, and `run` decides when to use it. `sent.append` works the same way: it is the `append` method of that one list, not yet called.
+:::
+
+::: context test-doubles Crash-test dummies for code
+Car makers do not test seat belts with real people. They use crash-test dummies that record every bump. Engineers call the code version a **test double**, and there are a few kinds: a *fake* does the job in a simpler way (a list instead of an email server), a *stub* returns fixed answers, and a *mock* checks that it was called in the right way. People mix the words up; what matters is that the real thing and the stand-in can be swapped because the function was handed its tools.
+:::
+
+::: context injected-time Flight software runs on a clock you can control
+A clock is an input that changes every time you look at it, so a test that reads the real clock may pass today and fail tomorrow. Spacecraft teams meet this problem at full size. Before launch, flight software is run for hours or days in simulation, where the sensors and the clock are simulated too. That only works if the software asks for the time through something that can be swapped, instead of reading the hardware clock directly. Then a test can jump to "ten seconds before engine cutoff" whenever it likes.
+:::
+
+::: context standard-streams Three streams every program gets
+Every program starts with three streams already open: **standard input** (stdin), where it reads; **standard output** (stdout), where `print` writes; and **standard error** (stderr), for error messages. You met the other end in the Terminal course: a pipe such as `cat stock.txt | python3 stock.py` connects one program's stdout to the next one's stdin. In this editor, the Input box plays the part of stdin.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 120" font-family="Inter, Arial, sans-serif">
+  <rect x="4" y="40" width="86" height="40" rx="6" fill="#ffffff" stroke="#1f2a44" stroke-width="2"/>
+  <text x="47" y="64" font-size="12" fill="#1f2a44" text-anchor="middle">Input box</text>
+  <line x1="90" y1="60" x2="136" y2="60" stroke="#1d6fd1" stroke-width="2"/>
+  <polygon points="140,60 132,56 132,64" fill="#1d6fd1"/>
+  <text x="115" y="50" font-size="12" fill="#1d6fd1" text-anchor="middle">stdin</text>
+  <rect x="140" y="35" width="90" height="50" rx="6" fill="#8fb8f0" stroke="#1d6fd1" stroke-width="2"/>
+  <text x="185" y="64" font-size="12" fill="#1f2a44" text-anchor="middle">your program</text>
+  <line x1="230" y1="60" x2="276" y2="60" stroke="#1d6fd1" stroke-width="2"/>
+  <polygon points="280,60 272,56 272,64" fill="#1d6fd1"/>
+  <text x="255" y="50" font-size="12" fill="#1d6fd1" text-anchor="middle">stdout</text>
+  <rect x="280" y="40" width="76" height="40" rx="6" fill="#ffffff" stroke="#1f2a44" stroke-width="2"/>
+  <text x="318" y="64" font-size="12" fill="#1f2a44" text-anchor="middle">screen</text>
+  <text x="185" y="108" font-size="12" fill="#6c7a93" text-anchor="middle">input() or sys.stdin.read() in, print() out</text>
+</svg>
+```
+:::
+
+::: context dunder-name What Python puts in __name__
+Before a file runs, Python sets a variable called `__name__` in it. When you run the file itself, the value is the string `"__main__"`, meaning "you are the main program". When another file imports it, for example with `import stock`, the value is the module's own name, `"stock"`, and the `if` block is skipped. Names with two underscores on each side are special names Python itself uses; programmers call them "dunder" names, short for "double underscore".
+:::
+
+::: context globals-couple Why a global is not really injected
+A global variable is one box that every function in the file can reach into. If a function reads `NOTIFY` from there, a test has to change that box before calling it and remember to put it back after. Forget, and the next test quietly uses the wrong tool. Two tests running at once would fight over the same box. An argument belongs to one call only, so each caller hands over its own tool and nothing leaks between them.
+:::
 --- task
-The stock checker works but is one tangled function. Refactor it so that the **output stays exactly the same** for the given input, into:
+The stock checker works but is one tangled function. Refactor it (change its shape, not what it does) so that the **output stays exactly the same** for the given input, into:
 
 - `parse_stock(lines)` → a list of `(name, stock, minimum)` tuples with ints, skipping blank lines.
 - `needs_reorder(items)` → only the items whose stock is **below** their minimum, in order.
@@ -1134,19 +1278,12 @@ def run(lines, notify):
 
 if __name__ == "__main__":
     run(sys.stdin.read().splitlines(), print)
---- stdin
-widget 3 10
-gizmo 25 5
-
-sprocket 0 1
-doohickey 7 7
-flange 40 12
 --- hint
-Pull out the pure pieces first: `parse_stock` (the loop that builds tuples), `needs_reorder` (a filter), `format_alert` (the f-string). None of them prints.
+Pull out the pure pieces first: `parse_stock` (the loop that builds tuples), `needs_reorder` (a filter), `format_alert` (the f-string). None of them prints; each one returns its result.
 --- hint
-`run(lines, notify)` wires them together and calls `notify(...)` where the old code called `print(...)`.
+`run(lines, notify)` wires them together and calls `notify(...)` where the old code called `print(...)`. The summary counts come from `len(...)` of the two lists, and `run` returns the number of alerts.
 --- hint
-The entry point is two lines: `if __name__ == "__main__":` and `run(sys.stdin.read().splitlines(), print)`.
+The entry point is two lines: `if __name__ == "__main__":` and `run(sys.stdin.read().splitlines(), print)`. Delete the old `main()` call at the bottom, or the program will run twice.
 --- check output | The program's output is unchanged
 REORDER widget: 3 left (minimum 10)
 REORDER sprocket: 0 left (minimum 1)
@@ -1166,10 +1303,19 @@ format_alert(("washer", 3, 10))
 --- check case | run with nothing to report
 (lambda sent: (run([], sent.append), sent))([])
 => (0, ["0 of 0 items need reordering"])
+--- stdin
+widget 3 10
+gizmo 25 5
+
+sprocket 0 1
+doohickey 7 7
+flange 40 12
 
 === py4-10 | Debugging: floating-point surprises
 --- teach
-This looks like a bug in Python:
+Last lesson you pulled logic out into pure functions so it could be tested. Sometimes a test of a pure function fails and the numbers themselves look impossible. This lesson is about that kind of bug.
+
+Try these, and it looks like Python is broken:
 
 ```python
 0.1 + 0.2            # 0.30000000000000004
@@ -1177,23 +1323,43 @@ This looks like a bug in Python:
 round(2.675, 2)      # 2.67, not 2.68
 ```
 
-It is not a bug; it is how floats work in every language. A `float` stores numbers in **binary**, and most decimal fractions, including 0.1, have no exact binary form, the same way 1/3 has no exact decimal form. Each float is the nearest representable value, and tiny errors appear when you add them up. `2.675` is actually stored as `2.67499999...`, which is why it rounds down.
+It is not a bug. It is how floats work in every language.
 
-**Diagnose it.** When a comparison of computed numbers fails "impossibly", print with `repr()` or with many digits: `f"{x:.20f}"`. If you see `...0000004` or `...9999998`, it is floating point.
+### Why it happens
 
-**Choose the right fix for the job:**
+Write 1/3 as a decimal and you get 0.3333… forever. You have to stop somewhere, so what you write down is a tiny bit wrong. Computers have the same problem, in a different place.
 
-1. **Measurements and science** (lengths, sensor readings, physics): floats are right, but never compare them with `==`. Compare with a tolerance:
+A `float` stores numbers in **[[binary|binary-fractions]]**: base two, using only the digits 0 and 1. Most decimal fractions, including 0.1, have no exact binary form, the same way 1/3 has no exact decimal form. So each float is **the [[nearest representable value|nearest-float]]**: the closest number the computer *can* store. Tiny errors appear, and they grow when you add many of them up. `2.675` is actually stored as `2.67499999...`, which is why it rounds down.
+
+### Diagnose it
+
+When a comparison of computed numbers fails "impossibly", look at more digits. Print with `repr()` (the exact form Python would type back to you) or with many digits, `f"{x:.20f}"`, where `.20f` means "20 digits after the point":
+
+```python
+print(f"{2.675:.20f}")     # 2.67499999999999982236
+print(repr(0.1 + 0.2))     # 0.30000000000000004
+```
+
+If you see `...0000004` or `...9999998` at the end, it is floating point. This matters for real: a [[tiny error in a tenth of a second|patriot-clock]] has cost lives.
+
+### Fix 1: measurements, compare with a tolerance
+
+For **measurements and science** (lengths, sensor readings, physics), floats are the right tool. But never compare them with `==`. Compare with a **[[tolerance|tolerance]]**: an amount of difference you agree to ignore.
+
+`math.isclose(a, b)` does that. By default it uses a **relative tolerance** of `1e-9` (read "one times ten to the minus nine", 0.000000001): the two numbers may differ by up to a billionth of their size.
 
 ```python
 import math
 math.isclose(0.1 + 0.2, 0.3)                       # True (relative tolerance 1e-9)
+math.isclose(1e-12, 0.0)                           # False
 math.isclose(1e-12, 0.0, abs_tol=1e-9)             # True: near zero you need abs_tol
 ```
 
-A relative tolerance alone never considers anything "close" to exactly 0, so add `abs_tol` when zero is a possible answer.
+A billionth of zero is zero. So a relative tolerance alone never considers anything "close" to exactly 0. When zero is a possible answer, also give an **absolute tolerance**, `abs_tol=`: a fixed amount of difference that is always allowed. You can set the relative one yourself too, with `rel_tol=`. The numbers count as close if they pass either one.
 
-2. **Money**: never use floats. Use `decimal.Decimal`, created **from strings**:
+### Fix 2: money, use Decimal
+
+For **money**, never use floats. A bank balance that is off by a millionth of a cent will, sooner or later, round the wrong way. Use `decimal.Decimal` instead, a number type that works in [[base ten, like people do|decimal-module]]. Create it **from strings**:
 
 ```python
 from decimal import Decimal
@@ -1201,11 +1367,78 @@ Decimal("0.10") + Decimal("0.20") == Decimal("0.30")    # True, exactly
 Decimal(0.1)      # Decimal('0.1000000000000000055511151231257827...')  the float's error, preserved
 ```
 
-Or work in whole cents as `int`.
+The second line is the trap. `0.1` without quotes is already a float, with its error baked in, and `Decimal` copies it faithfully. The string `"0.1"` never went through a float.
 
-3. **Exact fractions** (ratios, probabilities): `fractions.Fraction(1, 3) * 3 == 1` is exactly `True`.
+One more thing you will need. `sum()` starts adding from the int `0`. That is fine for a list of Decimals, but an **empty** list gives back the int `0`, not a Decimal. `sum` takes a second argument, the starting value, to fix that:
 
-**Splitting money** has its own trap: 10.00 split three ways is not three times 3.33, because a cent disappears. Work in cents, give everyone the rounded-down share, then hand out the leftover cents one each.
+```python
+sum([Decimal("1.5"), Decimal("2")])      # Decimal('3.5')
+sum([], Decimal("0"))                    # Decimal('0'), not the int 0
+```
+
+The other way to handle money is to work in **[[whole cents|integer-cents]]**, as an `int`: 10 dollars is `1000`. Ints are always exact.
+
+### Fix 3: exact fractions
+
+For **exact fractions** (ratios, probabilities), `fractions.Fraction` keeps the top and bottom as whole numbers, so nothing is ever rounded. `Fraction(1, 3) * 3 == 1` is exactly `True`.
+
+### Splitting money
+
+**Splitting money** has its own trap. 10.00 split three ways is not three times 3.33, because 3.33 × 3 = 9.99 and a cent disappears. The fix, step by step:
+
+1. Work in cents: 10.00 is `1000` cents.
+2. Give everyone the rounded-down share, and find the leftover cents.
+3. Hand out the leftover cents one each, to the first people.
+
+For step 2, `divmod(a, b)` does whole-number division and the remainder in one go. It gives back both as a pair, the same as `(a // b, a % b)`:
+
+```python
+divmod(1000, 3)      # (333, 1): 333 cents each, 1 cent left over
+```
+
+So the shares are 334, 333 and 333 cents: the first person gets the spare cent. To turn cents back into money, divide a Decimal by 100: `Decimal(334) / 100` is `Decimal('3.34')`. The shares add up to exactly 10.00.
+
+**Watch out:** `float(total)` or `Decimal(0.1)` anywhere in money code lets the float error back in. Every amount should start life as a string (`Decimal("0.10")`) or as whole cents.
+
+::: context binary-fractions Why 0.1 never ends in binary
+In decimal, the places after the point are tenths, hundredths, thousandths. In binary they are halves, quarters, eighths, sixteenths, and so on. A number has an exact binary form only if it can be built from a *finite* sum of those. 0.5 is one half, 0.75 is a half plus a quarter. But 0.1 written in binary is 0.000110011001100… with the "0011" repeating forever, just as 1/3 is 0.333… in decimal. The computer stops after a fixed number of binary digits, so the stored value is a hair off.
+:::
+
+::: context nearest-float Floats are dots on a line, with gaps between
+A Python float uses 64 bits, and 53 of them hold the digits, which gives about 15 to 17 significant decimal digits. So the numbers a float can hold are like dots on a number line with small gaps between them. Any real number that falls in a gap is stored as the nearest dot. The gaps grow with the size of the number: near 10^20 they are 16,384 wide, which is why `1e20 + 1 == 1e20` is `True`. (The picture is not to scale.)
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 110" font-family="Inter, Arial, sans-serif">
+  <line x1="12" y1="60" x2="348" y2="60" stroke="#1f2a44" stroke-width="2"/>
+  <g fill="#1d6fd1">
+    <circle cx="40" cy="60" r="5"/><circle cx="110" cy="60" r="5"/><circle cx="180" cy="60" r="5"/>
+    <circle cx="250" cy="60" r="5"/><circle cx="320" cy="60" r="5"/>
+  </g>
+  <line x1="196" y1="30" x2="196" y2="60" stroke="#b4232c" stroke-width="2"/>
+  <text x="200" y="24" font-size="12" fill="#b4232c" text-anchor="start">0.1 exactly (not a dot)</text>
+  <path d="M 194 72 Q 188 84 182 72" fill="none" stroke="#1f2a44" stroke-width="1.5"/>
+  <polygon points="182,70 179,78 186,76" fill="#1f2a44"/>
+  <text x="180" y="100" font-size="12" fill="#1f2a44" text-anchor="middle">stored as the nearest dot</text>
+  <text x="40" y="44" font-size="11" fill="#6c7a93" text-anchor="middle">floats</text>
+</svg>
+```
+:::
+
+::: context patriot-clock A tenth of a second that mattered
+In 1991, during the Gulf War, a Patriot missile battery at Dhahran, Saudi Arabia, failed to stop an incoming Scud missile, and 28 American soldiers were killed. Its computer counted time in tenths of a second and multiplied by 0.1 to get seconds, but 0.1 was stored in 24 binary digits, so every tick was off by about 0.000000095 seconds. After about 100 hours of running, the clock was off by about 0.34 seconds. A Scud travels more than half a kilometre in that time, so the system looked in the wrong place.
+:::
+
+::: context tolerance Engineers never ask for exactly
+No machined part is exactly 50 mm long. A drawing says "50 mm ± 0.05 mm", and any part inside that range passes. That range is the tolerance. Comparing floats works the same way: you decide how close counts as the same. A relative tolerance scales with the numbers, like "within 1 percent", which suits values from millimetres to kilometres. An absolute tolerance is a fixed amount, like "within 0.05 mm", which is what you need near zero.
+:::
+
+::: context decimal-module A calculator that counts in tens
+The `decimal` module does arithmetic the way you learned at school, digit by digit in base ten. So `Decimal("0.10")` really is ten hundredths, and adding money gives exactly what a person with a pencil would get. It still has a limit, 28 significant digits by default, so `Decimal(1) / 3` is rounded too. But for money, where every amount is a whole number of cents, it never needs to round. It is slower than float, which is why science code sticks with floats.
+:::
+
+::: context integer-cents Many payment systems count in cents
+Counting in the smallest unit is how a lot of real money software works. Stripe's payment API, for example, takes amounts as whole numbers in the currency's smallest unit, so 10.00 US dollars is sent as `1000`. An `int` in Python is always exact, however big, so adding and subtracting cents can never drift. You only turn cents into dollars and cents at the very end, when you show them to a person.
+:::
 --- task
 **Bug report** from the finance team:
 
@@ -1252,9 +1485,9 @@ def same_reading(a, b):
 --- hint
 Print `repr(balance(["0.10", "0.20", "-0.30"]))`. Then build each amount with `Decimal(a)` from the string, never from a float.
 --- hint
-`sum` starts from the int `0`; give it a `Decimal("0")` start so the result is always a `Decimal`, even for no amounts.
+`sum` starts from the int `0`; give it a `Decimal("0")` start so the result is always a `Decimal`, even for no amounts. For `same_reading`, use `math.isclose` with both `rel_tol=` and `abs_tol=`.
 --- hint
-For `split`, turn the total into whole cents, `divmod(cents, people)` gives each person's base share and the leftover cents; give one extra cent to each of the first `extra` people, then divide by 100 as a `Decimal`.
+For `split`, turn the total into whole cents with `int(Decimal(total) * 100)`. `divmod(cents, people)` gives each person's base share and the leftover cents; give one extra cent to each of the first `extra` people, then divide by 100 as a `Decimal`.
 --- check case | balance is exact
 balance(["0.10", "0.20"])
 => __import__("decimal").Decimal("0.30")
@@ -1272,35 +1505,130 @@ same_reading(0.1 + 0.2, 0.3) and not same_reading(1.0, 1.001) and same_reading(1
 
 === py4-11 | Problem solving: edit distance
 --- teach
-How different are two strings? Spell checkers, DNA comparison and `diff` all need a precise answer. The **edit distance** (Levenshtein distance) is the fewest single-character **insertions, deletions and substitutions** that turn one string into the other. `kitten` → `sitting` takes 3: substitute k→s, substitute e→i, insert g.
+Last lesson was about numbers that are almost equal. This one asks the same question about words: how different are two strings?
 
-**Restate as subproblems.** Let `d(i, j)` be the distance between the first `i` characters of `a` and the first `j` characters of `b`. Look at the last characters, `a[i-1]` and `b[j-1]`:
+Spell checkers, [[DNA comparison|diff-and-dna]] and `diff` all need a precise answer. When you type "teh", a spell checker suggests "the" because it is only a small change away. To make "small change" exact, count the edits.
 
-- If they are **equal**, they cost nothing: `d(i, j) = d(i-1, j-1)`.
-- Otherwise, the last step was one of three edits; take the cheapest:
+### The edit distance
+
+The **edit distance** (also called the **[[Levenshtein distance|levenshtein]]**) is the fewest single-character edits that turn one string into the other. Three kinds of edit are allowed:
+
+- an **insertion**: add one character;
+- a **deletion**: remove one character;
+- a **substitution**: swap one character for another.
+
+`kitten` → `sitting` takes 3:
+
+```
+kitten
+sitten     substitute k -> s
+sittin     substitute e -> i
+sitting    insert g at the end
+```
+
+No way does it in 2, so the distance is 3.
+
+### Restate it as smaller problems
+
+Like the coin problems in the dynamic programming lesson, the trick is to answer the big question using answers to smaller ones.
+
+Let `d(i, j)` be the distance between the first `i` characters of `a` and the first `j` characters of `b`. Those beginnings are called **[[prefixes|prefix]]**: `a[:i]` and `b[:j]`. The answer to the whole problem is `d(len(a), len(b))`.
+
+Now look at the last character of each prefix, `a[i-1]` and `b[j-1]` (the `- 1` is there because indexes start at 0):
+
+- If they are **equal**, they cost nothing. Leave them alone and solve the rest: `d(i, j) = d(i-1, j-1)`.
+- Otherwise, the last step was one of the three edits. Try all three and take the cheapest:
   - delete `a[i-1]`: `d(i-1, j) + 1`
   - insert `b[j-1]`: `d(i, j-1) + 1`
   - substitute: `d(i-1, j-1) + 1`
 
-**Base cases**: turning a prefix of length `i` into the empty string takes `i` deletions, so `d(i, 0) = i`, and `d(0, j) = j`.
+**Base cases.** Turning a prefix of length `i` into the empty string takes `i` deletions, so `d(i, 0) = i`. Turning the empty string into `b[:j]` takes `j` insertions, so `d(0, j) = j`.
 
-**Why not plain recursion?** Each call branches three ways and the same `(i, j)` pairs come up again and again: exponential. Memoisation fixes the repeats, but recursion depth grows to `len(a) + len(b)`, past Python's limit for long strings. So fill a table **bottom-up**, row by row:
+### Why not plain recursion?
+
+You could write `d` as a recursive function exactly as above, and it would be correct. But each call branches three ways, and the same `(i, j)` pairs come up again and again: the work grows [[exponentially|exponential-blowup]]. Two 10-letter strings with no letters in common already take over 3.7 million calls.
+
+Memoisation (`@lru_cache`) fixes the repeats. But the recursion gets as deep as `len(a) + len(b)` calls, past [[Python's limit|recursion-limit]] for long strings.
+
+### Fill a table, bottom-up
+
+So fill a table **bottom-up**, row by row, with loops. Row `i` is about `a[:i]`, column `j` is about `b[:j]`, and each cell holds `d(i, j)`. Here is the whole table for `kitten` and `sitting`:
 
 ```
         ""  s  i  t  t  i  n  g
     ""   0  1  2  3  4  5  6  7
     k    1  1  2  3  4  5  6  7
     i    2  2  1  2  3  4  5  6
-    ...
+    t    3  3  2  1  2  3  4  5
+    t    4  4  3  2  1  2  3  4
+    e    5  5  4  3  2  2  3  4
+    n    6  6  5  4  3  3  2  3
 ```
 
-Each cell needs only the cell to its left, the one above, and the one diagonally above-left. So you only need to keep **the previous row**, which cuts memory from `len(a) × len(b)` to `len(b)`.
+The top row and left column are the base cases: 0, 1, 2, 3… The answer is the bottom-right cell, 3.
 
-The table is `len(a) × len(b)` cells, O(n·m) time: fine for strings of a thousand or so characters each.
+Take one cell to see the rule work. Row `i`, column `s` (is `"ki"` → `"s"`): `i` and `s` differ, so it is 1 + the smallest of above (1), left (2) and diagonal (1), which is 2. Next cell, row `i`, column `i` (is `"ki"` → `"si"`): the letters match, so copy the diagonal, 1.
 
-**Common mistake:** an off-by-one between string indices and table indices. Row `i` of the table is about `a[:i]`, so the character it adds is `a[i - 1]`.
+### Keep only one row
+
+Each cell needs only [[three neighbours|three-neighbours]]: the cell to its left, the one above, and the one diagonally above-left. So you do not need the whole table. Keep only **the previous row**, and build the current row from it. That cuts memory from `len(a) × len(b)` to `len(b)`.
+
+The time is still one step per cell: `len(a) × len(b)` cells, which is O(n·m) time, where n and m are the two lengths. That is fine for strings of a thousand or so characters each, about a million cells.
+
+**Watch out:** an off-by-one between string indices and table indices. The table has one more row and column than the strings have letters, for the empty prefix. Row `i` of the table is about `a[:i]`, so the character it adds is `a[i - 1]`, not `a[i]`.
+
+::: context diff-and-dna Where the same table shows up
+The `git diff` you met in the Git courses finds the fewest line insertions and deletions that turn one version of a file into another. Its default method, Myers' algorithm from 1986, solves a close cousin of this problem with lines in place of letters. Biologists line up DNA the same way: the Needleman–Wunsch method from 1970 fills this kind of table, with scores for matches, mismatches and gaps, to compare genes letter by letter.
+:::
+
+::: context levenshtein Named after a Soviet mathematician
+Vladimir Levenshtein described this distance in 1965, while working on codes that correct errors in messages sent as strings of 0s and 1s. If noise can drop, add or flip a symbol, you want to know how many of those slips separate two messages. The same count turned out to be useful for words, DNA and files, so the name stuck everywhere. You will also see plain "edit distance", which is a family name: some versions allow only insertions and deletions, or also count swapping two neighbouring letters as one edit.
+:::
+
+::: context prefix Prefixes, and why the empty one counts
+A prefix is a beginning of a string. The prefixes of `"cat"` are `""`, `"c"`, `"ca"` and `"cat"`: four of them for three letters, because the empty string counts too. In Python, `a[:i]` is the prefix of length `i`. The empty prefix is what makes the base cases work. It is the starting point every edit sequence can be measured from, the same way `best[0] = 0` started the coin table.
+:::
+
+::: context exponential-blowup Three branches per call adds up fast
+Each call that does not match makes three more calls, and each of those makes three more. So the number of calls can grow like 3 × 3 × 3 … once per level, which is exponential growth: each extra letter multiplies the work instead of adding to it. Counting them for two 10-letter strings that share no letters gives 3,716,073 calls, most of them repeats of the same `(i, j)` pair. The table has only 11 × 11 = 121 cells, so the repeats are almost all of the work.
+:::
+
+::: context recursion-limit Python stops deep recursion on purpose
+Every function call that has not returned yet takes a slot on Python's **call stack**. To stop a runaway recursion from eating all the memory, Python raises `RecursionError` once the stack gets about 1,000 calls deep; `sys.getrecursionlimit()` shows the exact limit, which is 1000 by default. With 1,000-character strings, the memoised version would need up to 2,000 calls stacked at once. A loop has no such limit, which is one reason bottom-up tables are the usual choice.
+:::
+
+::: context three-neighbours Where each cell gets its answer
+Each arrow is one kind of last edit. Coming from above means a character of `a` was deleted. Coming from the left means a character of `b` was inserted. Coming along the diagonal means the last two characters were matched (free) or substituted (cost 1). All three neighbours are in the current row or the one before it.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 190" font-family="Inter, Arial, sans-serif">
+  <rect x="100" y="40" width="80" height="44" rx="4" fill="#ffffff" stroke="#1f2a44" stroke-width="2"/>
+  <rect x="210" y="40" width="80" height="44" rx="4" fill="#ffffff" stroke="#1f2a44" stroke-width="2"/>
+  <rect x="100" y="114" width="80" height="44" rx="4" fill="#ffffff" stroke="#1f2a44" stroke-width="2"/>
+  <rect x="210" y="114" width="80" height="44" rx="4" fill="#8fb8f0" stroke="#1d6fd1" stroke-width="2"/>
+  <g font-size="12" fill="#1f2a44" text-anchor="middle">
+    <text x="140" y="66">d(i-1, j-1)</text>
+    <text x="250" y="66">d(i-1, j)</text>
+    <text x="140" y="140">d(i, j-1)</text>
+    <text x="250" y="140" font-weight="700">d(i, j)</text>
+  </g>
+  <g font-size="12" text-anchor="middle">
+    <text x="140" y="30" fill="#b4232c">match or substitute</text>
+    <text x="250" y="30" fill="#b4232c">delete</text>
+    <text x="60" y="140" fill="#b4232c">insert</text>
+  </g>
+  <line x1="180" y1="84" x2="204" y2="108" stroke="#1d6fd1" stroke-width="2"/>
+  <polygon points="208,112 199.5,109.2 205.2,103.5" fill="#1d6fd1"/>
+  <line x1="250" y1="84" x2="250" y2="106" stroke="#1d6fd1" stroke-width="2"/>
+  <polygon points="250,112 246,104 254,104" fill="#1d6fd1"/>
+  <line x1="180" y1="136" x2="202" y2="136" stroke="#1d6fd1" stroke-width="2"/>
+  <polygon points="208,136 200,132 200,140" fill="#1d6fd1"/>
+  <text x="195" y="180" font-size="12" fill="#6c7a93" text-anchor="middle">previous row on top, current row below</text>
+</svg>
+```
+:::
 --- task
-Write `edit_distance(a, b)` returning the fewest insertions, deletions and substitutions that turn `a` into `b`. It must handle two strings of about 1,000 characters each in a few seconds.
+Write `edit_distance(a, b)` returning the fewest insertions, deletions and substitutions that turn `a` into `b`. It must handle two strings of about 1,000 characters each in a few seconds, so fill the table bottom-up and keep only the previous row.
 --- starter
 def edit_distance(a, b):
     if a == b:
@@ -1321,9 +1649,9 @@ def edit_distance(a, b):
 --- hint
 Start with the row for the empty prefix of `a`: `list(range(len(b) + 1))`, since turning `""` into `b[:j]` takes `j` insertions.
 --- hint
-Each new row starts with `i`. For each `j`, if `a[i - 1] == b[j - 1]` copy the diagonal (`previous[j - 1]`); otherwise take 1 + the smallest of above, left and diagonal.
+Each new row starts with `i`. For each `j`, if `a[i - 1] == b[j - 1]` copy the diagonal (`previous[j - 1]`); otherwise take 1 + the smallest of above (`previous[j]`), left (`current[j - 1]`) and diagonal.
 --- hint
-After the last row, the answer is its final entry, `previous[len(b)]`.
+At the end of each row, the current row becomes `previous`. After the last row, the answer is its final entry, `previous[len(b)]`.
 --- check case | kitten to sitting
 edit_distance("kitten", "sitting")
 => 3
