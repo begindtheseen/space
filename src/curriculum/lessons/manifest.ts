@@ -3676,6 +3676,352 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       "file": "cod_py_05_plotting/12-decimation-for-plotting.md"
     }
   ],
+  "cod_py_06_testing": [
+    {
+      "id": "l01-pytest-basics",
+      "title": "Your first pytest suite",
+      "minutes": 22,
+      "covers": [
+        "pytest discovery rules, plain assert, and the rewritten assertion output"
+      ],
+      "file": "cod_py_06_testing/01-pytest-basics.md"
+    },
+    {
+      "id": "l02-approx-and-allclose",
+      "title": "Comparing numbers that are only close",
+      "minutes": 22,
+      "covers": [
+        "pytest.approx and its rel/abs semantics; the 1e-6 relative default",
+        "numpy.testing assert_allclose and assert_array_equal"
+      ],
+      "file": "cod_py_06_testing/02-approx-and-allclose.md"
+    },
+    {
+      "id": "l03-parametrize",
+      "title": "One test, a whole table of cases",
+      "minutes": 20,
+      "covers": [
+        "parametrize for tables of cases; ids for readable failures"
+      ],
+      "file": "cod_py_06_testing/03-parametrize.md"
+    },
+    {
+      "id": "l04-fixtures",
+      "title": "Fixtures, scopes, conftest.py, tmp_path and monkeypatch",
+      "minutes": 22,
+      "covers": [
+        "Fixtures, scopes, conftest.py, tmp_path, monkeypatch"
+      ],
+      "file": "cod_py_06_testing/04-fixtures.md"
+    },
+    {
+      "id": "l05-markers-and-fast-suite",
+      "title": "Markers, choosing tests, and keeping the suite fast",
+      "minutes": 21,
+      "covers": [
+        "Markers, -k, -x, --lf, and keeping the fast suite fast"
+      ],
+      "file": "cod_py_06_testing/05-markers-and-fast-suite.md"
+    },
+    {
+      "id": "l06-property-based-testing",
+      "title": "Property-based testing with Hypothesis",
+      "minutes": 21,
+      "covers": [
+        "Property-based testing with Hypothesis; invariants over examples"
+      ],
+      "file": "cod_py_06_testing/06-property-based-testing.md"
+    },
+    {
+      "id": "l07-golden-files",
+      "title": "Golden-file regression tests",
+      "minutes": 22,
+      "covers": [
+        "Golden-file regression tests with explicit tolerances"
+      ],
+      "file": "cod_py_06_testing/07-golden-files.md"
+    },
+    {
+      "id": "l08-testing-numerical-code",
+      "title": "Testing numerical code without an answer key",
+      "minutes": 22,
+      "covers": [
+        "Testing numerical code: invariants, convergence order, conservation laws"
+      ],
+      "file": "cod_py_06_testing/08-testing-numerical-code.md"
+    },
+    {
+      "id": "l09-test-doubles",
+      "title": "Fakes and mocks for sensors and hardware",
+      "minutes": 21,
+      "covers": [
+        "Test doubles: fakes and mocks for sensors and hardware interfaces"
+      ],
+      "file": "cod_py_06_testing/09-test-doubles.md"
+    },
+    {
+      "id": "l10-coverage",
+      "title": "Coverage, and why it is a floor",
+      "minutes": 19,
+      "covers": [
+        "Coverage with pytest-cov, and why coverage is a floor not a goal"
+      ],
+      "file": "cod_py_06_testing/10-coverage.md"
+    },
+    {
+      "id": "l11-linters-and-hooks",
+      "title": "Linters, formatters, type checkers and pre-commit hooks",
+      "minutes": 20,
+      "covers": [
+        "ruff, black, mypy and pre-commit hooks"
+      ],
+      "file": "cod_py_06_testing/11-linters-and-hooks.md"
+    },
+    {
+      "id": "l12-docstrings-and-doctest",
+      "title": "Docstrings in NumPy style, and doctest",
+      "minutes": 19,
+      "covers": [
+        "Docstrings in NumPy style and doctest"
+      ],
+      "file": "cod_py_06_testing/12-docstrings-and-doctest.md"
+    }
+  ],
+  "cod_py_07_integration": [
+    {
+      "id": "l01-initial-value-problem",
+      "title": "The initial value problem and how integration errors pile up",
+      "minutes": 22,
+      "covers": [
+        "The initial value problem and local versus global truncation error"
+      ],
+      "file": "cod_py_07_integration/01-initial-value-problem.md"
+    },
+    {
+      "id": "l02-euler-rk2-rk4",
+      "title": "Euler, RK2 and RK4 by hand, and how to prove their order",
+      "minutes": 17,
+      "covers": [
+        "Euler, RK2, classic RK4 implemented by hand; order verification by step halving"
+      ],
+      "file": "cod_py_07_integration/02-euler-rk2-rk4.md"
+    },
+    {
+      "id": "l03-adaptive-step-size",
+      "title": "Embedded pairs and step sizes that choose themselves",
+      "minutes": 19,
+      "covers": [
+        "Embedded pairs and adaptive step size control"
+      ],
+      "file": "cod_py_07_integration/03-adaptive-step-size.md"
+    },
+    {
+      "id": "l04-solve-ivp-methods",
+      "title": "solve_ivp and its six methods",
+      "minutes": 21,
+      "covers": [
+        "solve_ivp methods: RK45, RK23, DOP853, Radau, BDF, LSODA"
+      ],
+      "file": "cod_py_07_integration/04-solve-ivp-methods.md"
+    },
+    {
+      "id": "l05-tolerances-and-output",
+      "title": "Choosing rtol and atol, and asking for output",
+      "minutes": 22,
+      "covers": [
+        "rtol and atol: what each controls and how to choose them from the state magnitudes",
+        "t_eval versus dense_output"
+      ],
+      "file": "cod_py_07_integration/05-tolerances-and-output.md"
+    },
+    {
+      "id": "l06-events",
+      "title": "Events: apogee, impact and other moments",
+      "minutes": 22,
+      "covers": [
+        "Events: terminal, direction, apogee and impact detection"
+      ],
+      "file": "cod_py_07_integration/06-events.md"
+    },
+    {
+      "id": "l07-stiffness",
+      "title": "Stiffness and when to switch to an implicit method",
+      "minutes": 21,
+      "covers": [
+        "Stiffness: how to recognise it and when to switch to an implicit method"
+      ],
+      "file": "cod_py_07_integration/07-stiffness.md"
+    },
+    {
+      "id": "l08-energy-and-jacobi-drift",
+      "title": "Energy and Jacobi-constant drift as an accuracy check",
+      "minutes": 20,
+      "covers": [
+        "Energy and Jacobi-constant drift as an independent accuracy check"
+      ],
+      "file": "cod_py_07_integration/08-energy-and-jacobi-drift.md"
+    },
+    {
+      "id": "l09-symplectic-integrators",
+      "title": "Symplectic integrators for long-horizon propagation",
+      "minutes": 19,
+      "covers": [
+        "Symplectic integrators and long-horizon propagation"
+      ],
+      "file": "cod_py_07_integration/09-symplectic-integrators.md"
+    },
+    {
+      "id": "l10-discontinuities",
+      "title": "Staging, engine cutoff and restarting the solver",
+      "minutes": 22,
+      "covers": [
+        "Discontinuities: staging, thrust cutoff and why you restart the solver"
+      ],
+      "file": "cod_py_07_integration/10-discontinuities.md"
+    },
+    {
+      "id": "l11-fixed-step-real-time",
+      "title": "Fixed-step integration for real-time flight code",
+      "minutes": 20,
+      "covers": [
+        "Fixed-step integration for real-time and code generation"
+      ],
+      "file": "cod_py_07_integration/11-fixed-step-real-time.md"
+    }
+  ],
+  "cod_py_08_performance": [
+    {
+      "id": "l01-measure-first",
+      "title": "Measure first, then change the code",
+      "minutes": 24,
+      "covers": [
+        "Measure first: timeit, cProfile, pstats, snakeviz, line_profiler, memory_profiler"
+      ],
+      "file": "cod_py_08_performance/01-measure-first.md"
+    },
+    {
+      "id": "l02-complexity-first",
+      "title": "Fix the algorithm before the details",
+      "minutes": 24,
+      "covers": [
+        "Algorithmic complexity before micro-optimisation"
+      ],
+      "file": "cod_py_08_performance/02-complexity-first.md"
+    },
+    {
+      "id": "l03-vectorisation-and-memory",
+      "title": "Vectorise by default, but watch the memory",
+      "minutes": 22,
+      "covers": [
+        "Vectorisation as the default; when it costs more memory than it saves time"
+      ],
+      "file": "cod_py_08_performance/03-vectorisation-and-memory.md"
+    },
+    {
+      "id": "l04-numba-njit",
+      "title": "Numba – compiling the hot loop",
+      "minutes": 22,
+      "covers": [
+        "Numba njit: nopython mode, supported subset, cache=True, parallel and prange"
+      ],
+      "file": "cod_py_08_performance/04-numba-njit.md"
+    },
+    {
+      "id": "l05-when-numba-is-slower",
+      "title": "When @njit makes things slower",
+      "minutes": 18,
+      "covers": [
+        "Why an njit function can be slower: compile time, object mode fallback, unsupported types"
+      ],
+      "file": "cod_py_08_performance/05-when-numba-is-slower.md"
+    },
+    {
+      "id": "l06-cython-and-pybind11",
+      "title": "Cython and pybind11 – a compiled core with a Python harness",
+      "minutes": 20,
+      "covers": [
+        "Cython and pybind11; calling a C++ simulation core from a Python harness"
+      ],
+      "file": "cod_py_08_performance/06-cython-and-pybind11.md"
+    },
+    {
+      "id": "l07-gil-threads-processes",
+      "title": "The GIL, threads and processes",
+      "minutes": 21,
+      "covers": [
+        "The GIL: what it does and does not block",
+        "Threads for I/O and released-GIL numerics, processes for CPU-bound Python"
+      ],
+      "file": "cod_py_08_performance/07-gil-threads-processes.md"
+    },
+    {
+      "id": "l08-parallel-monte-carlo",
+      "title": "Running a Monte Carlo on every core",
+      "minutes": 22,
+      "covers": [
+        "multiprocessing, concurrent.futures and joblib for embarrassingly parallel Monte Carlo",
+        "Serialisation cost and why passing large arrays between processes can dominate"
+      ],
+      "file": "cod_py_08_performance/08-parallel-monte-carlo.md"
+    },
+    {
+      "id": "l09-bigger-than-memory",
+      "title": "Telemetry bigger than memory",
+      "minutes": 23,
+      "covers": [
+        "numpy.memmap, chunking and Parquet for telemetry larger than memory"
+      ],
+      "file": "cod_py_08_performance/09-bigger-than-memory.md"
+    },
+    {
+      "id": "l10-caching-and-precomputation",
+      "title": "Caching and precomputation",
+      "minutes": 24,
+      "covers": [
+        "Caching and precomputation: lookup tables, interpolators built once"
+      ],
+      "file": "cod_py_08_performance/10-caching-and-precomputation.md"
+    },
+    {
+      "id": "l11-benchmark-methodology",
+      "title": "Benchmarks you can believe",
+      "minutes": 24,
+      "covers": [
+        "Benchmark methodology: warmup, repetitions, frequency scaling, noise"
+      ],
+      "file": "cod_py_08_performance/11-benchmark-methodology.md"
+    }
+  ],
+  "cod_py_09_packaging": [
+    {
+      "id": "l01-packages-and-imports",
+      "title": "Packages, __init__.py and relative imports",
+      "minutes": 19,
+      "covers": [
+        "__init__.py, package versus namespace package, relative imports"
+      ],
+      "file": "cod_py_09_packaging/01-packages-and-imports.md"
+    },
+    {
+      "id": "l02-src-layout",
+      "title": "The src layout",
+      "minutes": 17,
+      "covers": [
+        "The src layout and why it prevents accidental local imports"
+      ],
+      "file": "cod_py_09_packaging/02-src-layout.md"
+    },
+    {
+      "id": "l03-pyproject-and-backends",
+      "title": "pyproject.toml and build backends",
+      "minutes": 20,
+      "covers": [
+        "pyproject.toml: project metadata, dependencies, optional-dependencies, build-system",
+        "Build backends: setuptools, hatchling, flit"
+      ],
+      "file": "cod_py_09_packaging/03-pyproject-and-backends.md"
+    }
+  ],
   "cod_rs_01_basics": [
     {
       "id": "l01-rustup-and-cargo",
@@ -10314,76 +10660,31 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_py_06_testing": {
-    "covered": 0,
+    "covered": 13,
     "total": 13,
-    "complete": false,
-    "missing": [
-      "pytest discovery rules, plain assert, and the rewritten assertion output",
-      "pytest.approx and its rel/abs semantics; the 1e-6 relative default",
-      "numpy.testing assert_allclose and assert_array_equal",
-      "parametrize for tables of cases; ids for readable failures",
-      "Fixtures, scopes, conftest.py, tmp_path, monkeypatch",
-      "Markers, -k, -x, --lf, and keeping the fast suite fast",
-      "Property-based testing with Hypothesis; invariants over examples",
-      "Golden-file regression tests with explicit tolerances",
-      "Testing numerical code: invariants, convergence order, conservation laws",
-      "Test doubles: fakes and mocks for sensors and hardware interfaces",
-      "Coverage with pytest-cov, and why coverage is a floor not a goal",
-      "ruff, black, mypy and pre-commit hooks",
-      "Docstrings in NumPy style and doctest"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_py_07_integration": {
-    "covered": 0,
+    "covered": 12,
     "total": 12,
-    "complete": false,
-    "missing": [
-      "The initial value problem and local versus global truncation error",
-      "Euler, RK2, classic RK4 implemented by hand; order verification by step halving",
-      "Embedded pairs and adaptive step size control",
-      "solve_ivp methods: RK45, RK23, DOP853, Radau, BDF, LSODA",
-      "rtol and atol: what each controls and how to choose them from the state magnitudes",
-      "t_eval versus dense_output",
-      "Events: terminal, direction, apogee and impact detection",
-      "Stiffness: how to recognise it and when to switch to an implicit method",
-      "Energy and Jacobi-constant drift as an independent accuracy check",
-      "Symplectic integrators and long-horizon propagation",
-      "Discontinuities: staging, thrust cutoff and why you restart the solver",
-      "Fixed-step integration for real-time and code generation"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_py_08_performance": {
-    "covered": 0,
+    "covered": 13,
     "total": 13,
-    "complete": false,
-    "missing": [
-      "Measure first: timeit, cProfile, pstats, snakeviz, line_profiler, memory_profiler",
-      "Algorithmic complexity before micro-optimisation",
-      "Vectorisation as the default; when it costs more memory than it saves time",
-      "Numba njit: nopython mode, supported subset, cache=True, parallel and prange",
-      "Why an njit function can be slower: compile time, object mode fallback, unsupported types",
-      "Cython and pybind11; calling a C++ simulation core from a Python harness",
-      "The GIL: what it does and does not block",
-      "Threads for I/O and released-GIL numerics, processes for CPU-bound Python",
-      "multiprocessing, concurrent.futures and joblib for embarrassingly parallel Monte Carlo",
-      "Serialisation cost and why passing large arrays between processes can dominate",
-      "numpy.memmap, chunking and Parquet for telemetry larger than memory",
-      "Caching and precomputation: lookup tables, interpolators built once",
-      "Benchmark methodology: warmup, repetitions, frequency scaling, noise"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_py_09_packaging": {
-    "covered": 0,
+    "covered": 4,
     "total": 13,
     "complete": false,
     "missing": [
-      "The src layout and why it prevents accidental local imports",
-      "pyproject.toml: project metadata, dependencies, optional-dependencies, build-system",
-      "Build backends: setuptools, hatchling, flit",
       "Editable installs and what they actually do",
       "Wheels versus source distributions; manylinux",
       "Console entry points for command-line tools",
-      "__init__.py, package versus namespace package, relative imports",
       "Version pinning: exact pins for applications, ranges for libraries, lockfiles for both",
       "Semantic versioning and how to decide a bump",
       "Dependency resolution, extras, and the scientific-stack ABI problem",
