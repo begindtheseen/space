@@ -1,19 +1,71 @@
 ---
 id: l13-relative-od-and-autonomous-onboard-od
 title: Relative orbit determination and autonomous onboard OD
-minutes: 14
+minutes: 24
 covers:
   - "Relative orbit determination for constellations; autonomous onboard orbit determination"
 ---
 
-Every estimator this module has built treats one object at a time: an epoch state, a covariance, tracked from the ground. Two situations break that framing. A constellation or formation cares less about each member's absolute position than about its position *relative to its neighbours*, and that relative state can be determined far more precisely than either member's absolute state alone. And a spacecraft that has to know where it is without waiting for a ground-based fit — deep space, or operating faster than a ground loop can keep up with — needs orbit determination running onboard, with its own constraints. This closing lesson covers both, building on the whole module rather than introducing a new estimator.
+Two friends go hiking with copies of the same old paper map. The map was printed slightly wrong: everything on it sits $200\,\mathrm m$ east of where it really is. Each friend marks her position from the map, and each mark is $200\,\mathrm m$ off. But ask them how far apart they are, and the map's mistake vanishes. Both marks moved the same way, by the same amount, so the gap between the marks is exactly the real gap. Each friend knows her own position badly, and the distance between them perfectly.
+
+Every estimator in this module has so far treated one object at a time: one epoch state, one covariance, tracked from the ground. This closing lesson looks at two situations that break that pattern. The first is the hiking map. A **[[constellation|constellation]]** or a formation of spacecraft often cares less about where each member is than about where each one is *relative to its neighbours*, and that relative state can be known far better than either member's absolute state. The second is a spacecraft that has to know its own orbit without waiting for a ground team — in deep space, or when things change faster than a ground loop can keep up. Then orbit determination runs **onboard**, with its own limits.
+
+Neither needs a new estimator. Both reuse the whole module.
 
 ## Why relative accuracy can beat absolute accuracy
 
-Two satellites tracked by the same ground station share more than a coincidence of geometry — they share whatever systematic error that station's data carries. A station range bias, mismodelled tropospheric delay, an imperfectly known station location: each pulls *both* satellites' absolute fits in nearly the same direction, and an error that affects two quantities almost identically is exactly the kind of error that (mostly) cancels when one is subtracted from the other.
+### Errors that move together
+
+Two satellites tracked by the same ground station share more than a view of the sky. They share whatever systematic error that station's data carries: a range bias, a mismodeled delay through the lower atmosphere, a station location that is slightly off. Each of these pulls *both* satellites' fits in nearly the same direction. An error that hits two things almost equally is a **[[common-mode error|common-mode]]** — the hiking map again — and it mostly cancels when you subtract one from the other.
+
+To say that precisely, we need one more piece of statistics: how two errors move together. Take two numbers with errors $e_A$ and $e_B$, each with sigma $\sigma_A$ and $\sigma_B$. Their **correlation coefficient** $\rho$ (read "rho") says how closely the errors track each other: $\rho = 1$ means they always move identically, $\rho = 0$ means they are unrelated, and $\rho = -1$ means they always move oppositely. Then the difference $e_A - e_B$ has variance
+
+$$
+\sigma_{A-B}^2 = \sigma_A^2 + \sigma_B^2 - 2\rho\,\sigma_A\sigma_B.
+$$
+
+The first two terms are what you would get if the errors were unrelated. The last term is the reward for them being related. When $\rho$ is close to $1$ and the two sigmas are similar, it cancels almost all of the first two.
+
+::: example Two satellites, each known to four metres
+Two satellites are each known to $\sigma_A = \sigma_B = 4\,\mathrm m$ in some direction. Most of that error comes from a shared station bias, so the correlation between the two errors is $\rho = 0.99$.
+
+**Step 1: the variance of the difference.**
+
+$$
+\sigma_{A-B}^2 = 16 + 16 - 2 \times 0.99 \times 16 = 0.32\,\mathrm{m^2}.
+$$
+
+**Step 2: the sigma.** $\sigma_{A-B} = \sqrt{0.32} \approx 0.566\,\mathrm m$.
+
+**Step 3: the naive answer.** Treat the two fits as unrelated ($\rho = 0$) and you would get $\sqrt{32} \approx 5.66\,\mathrm m$ — ten times worse, and bigger than either satellite's own error.
+
+**Sanity check.** The separation is known to about half a metre while each position is known only to four. That is the hiking map in numbers.
+:::
+
+::: note Why it has to be true
+Assume both errors average to zero. The variance of the difference is the average of its square: $\mathbb E[(e_A - e_B)^2] = \mathbb E[e_A^2] + \mathbb E[e_B^2] - 2\,\mathbb E[e_A e_B]$. The first two averages are $\sigma_A^2$ and $\sigma_B^2$. The last, $\mathbb E[e_A e_B]$, is the **covariance** of the two errors, and the correlation coefficient is defined as that covariance divided by $\sigma_A\sigma_B$. So $\mathbb E[e_A e_B] = \rho\,\sigma_A\sigma_B$.
+
+For full state vectors the same algebra, with matrices, gives
+
+$$
+\operatorname{Cov}(\hat{\mathbf x}_A-\hat{\mathbf x}_B)=\operatorname{Cov}(\hat{\mathbf x}_A)+\operatorname{Cov}(\hat{\mathbf x}_B)-\operatorname{Cov}(\hat{\mathbf x}_A,\hat{\mathbf x}_B)-\operatorname{Cov}(\hat{\mathbf x}_A,\hat{\mathbf x}_B)^\mathsf T.
+$$
+
+The cross-covariance appears twice, once as itself and once transposed, because the product $(\mathbf e_A - \mathbf e_B)(\mathbf e_A - \mathbf e_B)^\mathsf T$ has two mixed terms, $\mathbf e_A\mathbf e_B^\mathsf T$ and $\mathbf e_B\mathbf e_A^\mathsf T$.
+:::
+
+### Where the correlation comes from
+
+The consider-covariance lesson showed how an unestimated parameter $\mathbf c$ — here, a station bias with covariance $\mathbf P_{cc}$ — leaks into a fit through the sensitivity matrix $\mathbf S$. If the *same* bias leaks into two fits, through $\mathbf S_A$ and $\mathbf S_B$, the two estimates share an error, and their **cross-covariance** is
+
+$$
+\operatorname{Cov}(\hat{\mathbf x}_A,\hat{\mathbf x}_B)=\mathbf S_A\mathbf P_{cc}\mathbf S_B^\mathsf T.
+$$
+
+That is the matrix version of $\rho\,\sigma_A\sigma_B$.
 
 ::: example A shared station bias, and what it does to relative accuracy
-Two satellites in the same orbit family, $237\,\mathrm{km}$ apart along-track, each independently fit from the same three-pass ground-tracking arc used throughout this module, with an unconsidered but shared station range bias of varying size (using the consider-covariance construction from earlier in the module, now with the *same* bias affecting both satellites' fits and a nonzero cross-covariance between them, $\operatorname{Cov}(\hat{\mathbf x}_A,\hat{\mathbf x}_B)=\mathbf S_A\mathbf P_{cc}\mathbf S_B^\mathsf T$):
+Two satellites in similar orbits, $237\,\mathrm{km}$ apart along-track, are each fitted from the module's three-pass ground-tracking arc. Both fits are hit by the same unestimated station range bias, whose size is varied. The table gives position sigmas (radial, in-track, cross-track, in metres), from a full simulation:
 
 ```python
 # sigma_bias    absolute sigma (A, m)         relative sigma, correct     relative sigma, naive
@@ -22,88 +74,236 @@ Two satellites in the same orbit family, $237\,\mathrm{km}$ apart along-track, e
 #  100 m        (3.74, 2.15, 1.62)             (0.34, 0.52, 0.14)          (5.15, 2.71, 2.32)
 ```
 
-As the shared bias grows from $5$ to $100\,\mathrm m$, each satellite's *absolute* position uncertainty grows in lockstep with it — to nearly four metres — but the *correctly computed relative* uncertainty barely moves at all, staying under half a metre throughout, because the dominant error source cancels almost exactly in the difference $\hat{\mathbf x}_A-\hat{\mathbf x}_B$. Treating the two fits as independent (the "naive" column, ignoring their shared-bias cross-covariance entirely) misses this cancellation completely and overstates the true relative uncertainty by up to $16\times$ at the largest bias tested.
+**Read down the absolute column.** As the bias grows from $5$ to $100\,\mathrm m$, satellite $A$'s own uncertainty grows with it, to nearly four metres radially.
+
+**Read down the correct relative column.** It barely moves, staying under about half a metre. The shared bias cancels almost exactly in $\hat{\mathbf x}_A - \hat{\mathbf x}_B$.
+
+**Read the naive column.** It treats the fits as independent and throws away the cross-covariance. It grows with the bias, just like the absolute column, and at the largest bias it overstates the true relative uncertainty by up to about $16$ times: $2.32 / 0.14 \approx 16.6$ in cross-track.
 :::
+
+::: warning Throwing away the cross-covariance
+It is easy to store each satellite's covariance on its own and forget the cross-covariance between them. Then the relative uncertainty you compute is the naive one: too big when the errors are shared, as here. It can also be too small when the errors run *opposite* ways ($\rho < 0$). Either way it is wrong. If two estimates came from shared data or shared models, keep their cross-covariance, or estimate them together in one fit.
+:::
+
+### Crosslinks: measuring the gap directly
+
+There is a more direct way to get relative accuracy: measure the gap itself. A **crosslink** range is a radio or laser distance measurement between the two spacecraft, the inter-satellite link of the measurement-types lesson:
+
+$$
+\rho_{AB} = \lVert\mathbf r_A - \mathbf r_B\rVert.
+$$
+
+Here $\rho_{AB}$ is a range, not a correlation — the letter does double duty in orbit work, and the subscript tells you which. Its partial derivatives with respect to the two positions are equal and opposite:
+
+$$
+\frac{\partial\rho_{AB}}{\partial\mathbf r_A} = \hat{\boldsymbol\rho}_{AB}^\mathsf T = -\frac{\partial\rho_{AB}}{\partial\mathbf r_B},
+$$
+
+where $\hat{\boldsymbol\rho}_{AB} = (\mathbf r_A - \mathbf r_B)/\rho_{AB}$ is the unit vector from $B$ to $A$. Now shift both satellites by the same small error vector $\boldsymbol\epsilon$ (read "epsilon"). The range changes by
+
+$$
+\hat{\boldsymbol\rho}_{AB}^\mathsf T\boldsymbol\epsilon - \hat{\boldsymbol\rho}_{AB}^\mathsf T\boldsymbol\epsilon = 0.
+$$
+
+Not approximately zero — exactly zero. A crosslink is **structurally blind** to a common-mode error: its sensitivity to one is zero by construction. And the blindness does not even depend on the shift being small, because moving both ends of a ruler by the same amount never changes its length.
 
 ::: example Exactly zero, not merely small
-For the same two satellites, applying an identical $2.6\,\mathrm{km}$ shift to *both* true positions at once — standing in for a shared ephemeris or gravity-field error large enough to matter operationally — and recomputing the crosslink range directly:
+This short script puts two satellites about $237\,\mathrm{km}$ apart, shifts both by the same $2.6\,\mathrm{km}$ error, and then shifts only one of them:
 
 ```python
-baseline_range_km = 237.05048434707467
-range_after_common_shift_km = 237.05048434707467      # identical, to every printed digit
-change_km = 0.0
+import numpy as np
 
-range_if_only_A_shifted_km = 238.31053625153518        # the SAME shift applied to one satellite only
-change_km_indep = 1.2600519044605107
+r_A = np.array([6798.0, 0.0, 0.0])        # km, satellite A
+r_B = np.array([6793.9, 236.9, 0.0])      # km, satellite B, a little way ahead
+shift = np.array([1.5, -2.0, 0.8])        # km, the same error for both
+
+def crosslink(rA, rB):
+    return np.linalg.norm(rA - rB)        # the range between them
+
+print(round(crosslink(r_A, r_B), 3))                   # 236.935  true range
+print(round(crosslink(r_A + shift, r_B + shift), 3))   # 236.935  both shifted
+print(round(crosslink(r_A + shift, r_B), 3))           # 238.967  only A shifted
+print(round(np.linalg.norm(shift), 3))                 # 2.625    size of the shift
 ```
 
-Shifting both satellites identically leaves the crosslink range completely unchanged — not approximately, exactly, to full floating-point precision — while shifting only one of them by the same amount changes it by $1.26\,\mathrm{km}$. A ground-tracked *absolute* fix has no such immunity: the same $2.6\,\mathrm{km}$ error would appear directly in either satellite's own position.
+**Both shifted.** The range is unchanged, to every digit.
+
+**Only one shifted.** The range changes by $238.967 - 236.935 = 2.032\,\mathrm{km}$ — most of the $2.6\,\mathrm{km}$ shift, since much of it lies along the line between them.
+
+**Compare with an absolute fix.** A ground-tracked position has no such protection. The same $2.6\,\mathrm{km}$ error would sit, in full, in each satellite's own position.
 :::
 
-A crosslink range or range-rate measurement between the two spacecraft — the inter-satellite link of the measurement-types lesson — is the practical way this cancellation is realized directly, rather than relying on correctly bookkeeping two separate absolute fits' cross-covariance after the fact. Because $\partial\rho_{AB}/\partial\mathbf r_A=-\partial\rho_{AB}/\partial\mathbf r_B$, a crosslink measures the relative geometry directly and is structurally blind to any error that shifts both spacecraft the same way — the same insensitivity the table above demonstrates through the covariance algebra, obtained here as a property of the measurement itself rather than of a careful joint estimate. This is the same principle behind differential and RTK GNSS positioning in the GNSS module: differencing two receivers' measurements of the same signal cancels whatever error source affects both nearly identically, leaving the relative baseline far better determined than either receiver's absolute fix.
+The same trick runs through the GNSS module. **[[Differential and RTK positioning|differencing]]** subtract two receivers' measurements of the same signal, so every error that hits both receivers nearly equally cancels, and the baseline between them comes out far better than either receiver's own fix. A crosslink does in one measurement what differencing does with two.
 
 ::: key Relative accuracy is not bounded by absolute accuracy
-Two objects can each be known to metres in an absolute sense while their *separation* is known to centimetres, whenever the dominant error sources act on both nearly identically. Crosslink measurements exploit this directly; a shared, correlated error between two independent absolute fits does the same thing more implicitly, provided the correlation is actually tracked rather than discarded by treating the two fits as independent.
+Two objects can each be known to metres in an absolute sense while their *separation* is known to centimetres, whenever the dominant errors act on both nearly equally. Crosslinks exploit this directly. Two separate absolute fits with a shared error do the same thing more quietly — but only if their cross-covariance is kept, not thrown away by treating the fits as independent.
 :::
 
-For spacecraft flying in a tight formation, the relative dynamics themselves are often worth modelling directly rather than as the difference of two absolute orbits — the Hill or Clohessy-Wiltshire equations, a linearization of relative motion about a circular reference orbit, are the standard tool for that regime and are out of scope here; what this lesson adds is the observability argument for *why* relative tracking is worth the extra modelling effort in the first place.
+For spacecraft flying close together, the relative motion itself is often worth modeling directly, instead of as the difference of two full orbits. The **[[Clohessy-Wiltshire equations|hill-cw]]**, from the earlier relative-motion module, do exactly that: a linearized model of one spacecraft's motion seen from another in a circular orbit. This lesson adds the reason to bother — relative tracking can see what absolute tracking cannot.
 
 ## Autonomous onboard orbit determination
 
-Everything built in this module runs identically whether the normal equations are solved on the ground or on the spacecraft itself — the difference is entirely in what measurements are available and how much computation and latency the platform can afford. A GNSS receiver on an orbiting spacecraft gives a direct navigation solution the same way a terrestrial receiver does, using the iterative least-squares construction the GNSS module derived in full (pseudoranges, the receiver clock bias as a fourth unknown, dilution of precision from the visible constellation's geometry) — with the added complication that a receiver above the GNSS constellation sees satellites through their side lobes, at lower signal strength and worse geometry, and tracks a faster-moving, higher-dynamics platform than a ground user. Feeding that GNSS-derived position (or the raw pseudoranges directly) into an onboard sequential filter — the EKF or UKF architecture from earlier in this module, built once in the nonlinear-filters module — gives a spacecraft a continuously updated state estimate with no ground contact required at all, the same architecture the inertial-navigation module used to fuse a GNSS-aided position fix with an IMU's own propagation.
+Every tool in this module works the same whether the normal equations are solved on the ground or on the spacecraft. What changes onboard is which measurements are available, how much computing power and memory there is, and how long you can wait for an answer. On the ground, a batch fit can crunch days of data on a fast computer, with analysts checking every residual. Onboard, a small radiation-hardened processor has to keep up in real time, with nobody watching. That is why onboard orbit determination is almost always sequential — the EKF or UKF of the sequential lesson — rather than batch.
 
-Where GNSS is unavailable — deep space, or a mission that must tolerate a GNSS outage — the same sequential-filter architecture runs on whatever measurements remain available onboard: crosslink ranging within a constellation, exactly as this lesson's opening example used it, gives a filter relative-state information without any ground link at all; star-tracker or optical landmark observations give angle-only information the same way the initial-orbit-determination lesson's angles-only methods did, now processed sequentially rather than as a one-time closed-form solution. None of this needs a new estimator — every predict/update step, every process-noise and consider-parameter choice, every observability caution from this module applies exactly as written, with the practical constraint that an onboard processor has to do it all with far less computation, memory and human oversight than a ground system does.
+### With GNSS
+
+A **GNSS** receiver (GPS, Galileo and their cousins) on a spacecraft works much like the one in a phone. It measures pseudoranges to the navigation satellites and solves for position and its own clock error by iterative least squares, as the GNSS module derived, with dilution of precision set by the geometry of the satellites in view. Space adds complications:
+
+- The receiver moves at about $7.7\,\mathrm{km/s}$ in low orbit, so the Doppler shifts are large and change fast.
+- A receiver *above* the GNSS constellation, around $20\,000\,\mathrm{km}$ up or higher, sees few signals, and mostly weak ones from the **[[side lobes|side-lobes]]** of antennas pointed at Earth, with poorer geometry.
+
+Feed the GNSS fixes — or the raw pseudoranges — into an onboard sequential filter with a good dynamics model, and the spacecraft carries a continuously updated state and covariance with no ground contact at all. It is the same architecture the inertial-navigation module used to fuse GNSS with an IMU.
+
+### Without GNSS
+
+In deep space, or when the mission must survive a GNSS outage, the same filter runs on whatever measurements remain:
+
+- **Crosslink ranges** inside a constellation give relative-state information with no ground link, exactly as in the first half of this lesson.
+- **Optical observations** — a camera or star tracker measuring the direction to a planet, a moon or a landmark against the stars — give angles-only information, as in the initial-orbit-determination lesson, now processed one at a time instead of in a one-off closed-form solve. NASA's Deep Space 1 flew this idea as **[[AutoNav|autonav]]**.
+- **No measurements at all.** Then the filter only predicts, and its covariance grows through the dynamics and the process noise.
+
+::: example How fast does an onboard estimate go stale?
+An onboard filter in the module's $420\,\mathrm{km}$ orbit loses GNSS. At that moment its estimate of the semi-major axis is off by $\delta a = 10\,\mathrm m$, and no other measurements arrive.
+
+**Step 1: drift per orbit.** From the maneuver lesson, an error $\delta a$ turns into an along-track drift of $3\pi\,\delta a$ each orbit: $3\pi \times 10 \approx 94.2\,\mathrm m$.
+
+**Step 2: drift per day.** At about $15.5$ orbits a day, that is $94.2 \times 15.5 \approx 1460\,\mathrm m$.
+
+**Result.** After one day without measurements, the onboard along-track error is about $1.5\,\mathrm{km}$, from an orbit-size error of only $10\,\mathrm m$. The radial and cross-track errors stay far smaller.
+
+**Sanity check.** This is the RIC lesson's cigar again: the in-track error grows steadily and the others do not. A filter whose covariance does not stretch in-track during an outage has a bad model.
+:::
 
 ::: warning Onboard autonomy does not relax any of this module's cautions
-A filter running without ground oversight cannot lean on an analyst noticing a rising edit rate or a suspicious residual trend the way the residual-editing lesson assumed — those checks either run autonomously too, or the risks they catch (an undetected manoeuvre, a badly observed short arc, an optimistic covariance) go unnoticed for longer, with no one watching. Autonomous onboard orbit determination is this module's machinery running with less supervision, not a reason to need less of it.
+A filter running without ground oversight has no analyst to notice a rising edit rate or a suspicious trend in the residuals. Those checks either run automatically on the spacecraft too, or the problems they catch — an undetected maneuver, a badly observed short arc, an optimistic covariance — go unnoticed longer. Autonomous onboard orbit determination is this module's machinery with less supervision. It needs more discipline, not less.
 :::
 
 ## Where this module leaves you
 
-Recovering an orbit from a handful of noisy measurements, the task this module opened with, turned out to need nearly everything built across it: closed-form methods to get started with nothing, the state transition matrix to turn one epoch state into a fit against measurements spread over days, sequential filtering for when the answer has to update in real time, honest accounting for every force and parameter the model does not solve for outright, and a discipline of checking — residuals, edit rates, RIC-frame shape, overlap comparisons — for the difference between a fit that converged and a fit that is correct. None of that discipline is specific to a single object tracked from the ground; it is the same discipline this lesson has applied to a pair of spacecraft, and to a spacecraft determining its own orbit with nobody watching at all.
+The module opened with a hard question: recover an orbit from a handful of noisy measurements. Answering it well took nearly everything built since. Closed-form methods get started from nothing. The state transition matrix turns one epoch state into a fit against measurements spread over days. Sequential filtering updates the answer in real time. Honest accounting covers every force and parameter the model does not solve for. And a habit of checking — residuals, edit rates, the RIC shape, overlap comparisons — separates a fit that converged from a fit that is right.
+
+None of that is special to one object tracked from the ground. It is the same discipline this lesson applied to a pair of spacecraft, and to a spacecraft working out its own orbit with nobody watching.
 
 ## Check yourself
 
 ::: check
-Explain why the "naive" relative-covariance column in the worked example grows proportionally with the shared bias while the correctly computed relative covariance does not.
+Explain why the naive relative sigma in the shared-bias example grows with the bias, while the correctly computed relative sigma does not.
 :::
 
 ::: answer
-The naive column adds the two satellites' absolute covariances, $\operatorname{Cov}(\hat{\mathbf x}_A)+\operatorname{Cov}(\hat{\mathbf x}_B)$, both of which include the full consider-covariance contribution from the shared bias and therefore both grow with $\sigma_{\text{bias}}$; adding two growing quantities gives a growing sum regardless of any relationship between them. The correct relative covariance additionally subtracts $2\operatorname{Cov}(\hat{\mathbf x}_A,\hat{\mathbf x}_B)=2\mathbf S_A\mathbf P_{cc}\mathbf S_B^\mathsf T$, and because $\mathbf S_A$ and $\mathbf S_B$ are similar (the same station affects both satellites in nearly the same way), this cross term grows at almost the same rate as the two diagonal terms, so the growing parts very nearly cancel, leaving only the (bias-independent) measurement-noise contribution behind.
+The naive version adds the two absolute covariances, $\operatorname{Cov}(\hat{\mathbf x}_A)+\operatorname{Cov}(\hat{\mathbf x}_B)$. Each contains the full consider contribution from the shared bias, so each grows with $\sigma_{\text{bias}}$, and so does their sum. The correct version also subtracts the cross-covariance and its transpose, built from $\mathbf S_A\mathbf P_{cc}\mathbf S_B^\mathsf T$. Because the same station affects both satellites in nearly the same way, $\mathbf S_A$ and $\mathbf S_B$ are similar, so the subtracted terms grow at almost the same rate as the added ones. The growing parts very nearly cancel, and what is left is mostly the measurement-noise part, which does not depend on the bias.
 :::
 
 ::: check
-Why is a crosslink range measurement described as "structurally blind" to a common-mode error, rather than merely "less sensitive" to one?
+Why is a crosslink range called "structurally blind" to a common-mode error, rather than just "less sensitive" to one?
 :::
 
 ::: answer
-The crosslink's partial derivatives with respect to the two spacecraft states are exactly equal and opposite, $\partial\rho_{AB}/\partial\mathbf r_A=-\partial\rho_{AB}/\partial\mathbf r_B$; any error that shifts both true positions by the same vector $\boldsymbol\epsilon$ changes the predicted crosslink range by $\partial\rho_{AB}/\partial\mathbf r_A\cdot\boldsymbol\epsilon+\partial\rho_{AB}/\partial\mathbf r_B\cdot\boldsymbol\epsilon=0$ exactly, not merely approximately — the measurement's sensitivity to a perfectly common shift is exactly zero by construction, which is a stronger statement than "small."
+Its partial derivatives with respect to the two positions are exactly equal and opposite, $\partial\rho_{AB}/\partial\mathbf r_A=-\partial\rho_{AB}/\partial\mathbf r_B$. A shift $\boldsymbol\epsilon$ applied to both positions changes the predicted range by $\hat{\boldsymbol\rho}_{AB}^\mathsf T\boldsymbol\epsilon - \hat{\boldsymbol\rho}_{AB}^\mathsf T\boldsymbol\epsilon = 0$, exactly. The sensitivity is zero by the structure of the measurement, not small by luck of the numbers — and since the range is the distance between the two points, an identical shift of both leaves it unchanged even when the shift is large.
 :::
 
 ::: check
-An autonomous onboard filter loses its GNSS signal for an extended period. Which specific machinery from this module, rather than the GNSS module, keeps it operating, and what does the tracking-geometry lesson say to expect from the result?
+Two satellites each have a $2\,\mathrm m$ along-track sigma. Find the sigma of their along-track separation if the correlation between their errors is $\rho = 0.9$, and again if $\rho = -0.5$.
 :::
 
 ::: answer
-The sequential-filtering architecture (predict/update with $\boldsymbol\Phi$ and $\mathbf Q$) continues to run on whatever measurements remain — crosslink ranges, star-tracker angles, or, at the least, dead-reckoning through the dynamics model with growing process-noise-driven uncertainty if no measurements are available at all. The tracking-geometry lesson's observability argument applies exactly as before: whatever measurements remain will constrain some combinations of the state far better than others (an angles-only sensor, for instance, contributes no range information at all, echoing the initial-orbit-determination lesson), so the resulting covariance should be expected to grow anisotropically, not uniformly, during the outage.
+With $\rho = 0.9$: $\sigma_{A-B}^2 = 4 + 4 - 2 \times 0.9 \times 4 = 0.8\,\mathrm{m^2}$, so $\sigma_{A-B} = \sqrt{0.8} \approx 0.894\,\mathrm m$ — better than either satellite alone.
+
+With $\rho = -0.5$: $\sigma_{A-B}^2 = 4 + 4 + 2 \times 0.5 \times 4 = 12\,\mathrm{m^2}$, so $\sigma_{A-B} = \sqrt{12} \approx 3.46\,\mathrm m$. When errors run in opposite directions, subtracting makes them add up, and the separation is known *worse* than either position.
 :::
 
 ::: check
-A mission designer argues that since relative orbit determination can reach centimetre-level accuracy, the absolute orbit determination effort for a constellation can be reduced. Evaluate this claim using this lesson's own result.
+An autonomous onboard filter loses its GNSS signal for a long time. Which machinery from this module keeps it working, and what does the tracking-geometry lesson say to expect of its covariance?
 :::
 
 ::: answer
-Not in general — the dramatic relative accuracy in this lesson's example came specifically from a *shared* error source cancelling between two satellites tracked in a correlated way; it says nothing about the *absolute* accuracy, which still depends on the same tracking geometry, arc length, and data quality every earlier lesson in this module addressed, and which an application like conjunction assessment against a *third*, independently tracked object still needs directly (the shared-error cancellation this lesson relies on does not apply to an object that does not share the same error sources at all). Relative and absolute orbit determination answer different operational questions, and doing one well does not substitute for the other.
+The sequential filter keeps running: predict with $\boldsymbol\Phi$ and the process noise $\mathbf Q$, and update with whatever measurements remain — crosslink ranges, star-tracker or camera angles. With no measurements at all it only predicts, and the covariance grows through the dynamics and $\mathbf Q$. The tracking-geometry lesson's point still holds: the remaining measurements pin some directions of the state much better than others. An angles-only sensor, for instance, gives no range information at all, as the initial-orbit-determination lesson showed. So the covariance should grow unevenly, not the same in every direction — and fastest in-track, as the outage example showed.
+:::
+
+::: check
+A mission designer argues that because relative orbit determination can reach centimetre accuracy, the constellation's absolute orbit determination effort can be cut back. Is that right?
+:::
+
+::: answer
+Not in general. The great relative accuracy came from a *shared* error cancelling between two satellites tracked the same way. It says nothing about absolute accuracy, which still depends on the tracking geometry, arc length and data quality of every earlier lesson. Some jobs need absolute accuracy directly — conjunction assessment against a third object tracked independently, for instance. That object does not share the constellation's errors, so nothing cancels. Relative and absolute orbit determination answer different questions, and doing one well does not replace the other.
 :::
 
 ## Summary
 
-| Symbol or formula | Meaning |
+| Symbol or idea | Meaning |
 | --- | --- |
-| $\operatorname{Cov}(\hat{\mathbf x}_A,\hat{\mathbf x}_B)=\mathbf S_A\mathbf P_{cc}\mathbf S_B^\mathsf T$ | Cross-covariance from a shared unconsidered error source between two fits |
-| $\operatorname{Cov}(\hat{\mathbf x}_A-\hat{\mathbf x}_B)=\operatorname{Cov}(\hat{\mathbf x}_A)+\operatorname{Cov}(\hat{\mathbf x}_B)-2\operatorname{Cov}(\hat{\mathbf x}_A,\hat{\mathbf x}_B)$ | Relative covariance; the cross term is what a naive independence assumption discards |
-| $\partial\rho_{AB}/\partial\mathbf r_A=-\partial\rho_{AB}/\partial\mathbf r_B$ | Why a crosslink is exactly, not approximately, insensitive to a common-mode shift |
-| Hill / Clohessy-Wiltshire equations | Standard linearized relative-motion dynamics for tight formations (name only; out of scope here) |
-| Onboard OD | The same predict/update architecture, run on GNSS, crosslink, or optical measurements, with less oversight, not less discipline |
+| $\sigma_{A-B}^2 = \sigma_A^2 + \sigma_B^2 - 2\rho\,\sigma_A\sigma_B$ | Variance of a difference; correlated errors cancel when $\rho$ is near $1$ |
+| $\operatorname{Cov}(\hat{\mathbf x}_A,\hat{\mathbf x}_B)=\mathbf S_A\mathbf P_{cc}\mathbf S_B^\mathsf T$ | Cross-covariance from a shared unestimated error between two fits |
+| $\operatorname{Cov}(\hat{\mathbf x}_A-\hat{\mathbf x}_B)$ | Sum of the two covariances minus the cross-covariance and its transpose |
+| Naive relative covariance | Drops the cross terms; wrong whenever the fits share data or models |
+| $\partial\rho_{AB}/\partial\mathbf r_A=-\partial\rho_{AB}/\partial\mathbf r_B$ | Why a crosslink is exactly blind to a common-mode shift |
+| Clohessy-Wiltshire equations | Linearized relative motion for close formations, from the relative-motion module |
+| Onboard OD | Sequential filter on GNSS, crosslinks or optical data; less supervision, same discipline |
+| $3\pi\,\delta a$ per orbit | Along-track drift of an unrefreshed onboard estimate |
 
-This module set out to recover an orbit from a handful of noisy measurements and to be honest about what that orbit, and its covariance, actually mean. Every lesson after the first built one more piece of that honesty — in the estimator, in the dynamics, in the frame the answer is read in, and in the judgement of a team that checks its own work rather than trusting a fit only because it converged.
+This module set out to recover an orbit from a handful of noisy measurements, and to be honest about what that orbit and its covariance really mean. Each lesson added one more piece of that honesty — in the estimator, the dynamics, the frame the answer is read in, and the judgement of a team that checks its own work instead of trusting a fit because it converged.
+
+::: context constellation Many satellites doing one job
+A **constellation** is a group of satellites spread around the Earth so that together they cover it: GPS keeps about thirty satellites in six orbit planes so that any spot on Earth sees several at once, and communication constellations such as Starlink fly thousands. A **formation** is tighter — a few spacecraft flying close together on purpose, often to act as one bigger instrument. For both, the operators constantly ask "where is each satellite compared with its neighbours?" as well as "where is each one?"
+:::
+
+::: context common-mode The same error in both places
+Both dots move by the same arrow, so the gap between them does not change.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">
+  <circle cx="60" cy="110" r="7" fill="#1d6fd1"/>
+  <circle cx="220" cy="110" r="7" fill="#1d6fd1"/>
+  <text x="60" y="136" font-size="12" fill="#1d6fd1" text-anchor="middle">A true</text>
+  <text x="220" y="136" font-size="12" fill="#1d6fd1" text-anchor="middle">B true</text>
+  <circle cx="120" cy="50" r="7" fill="#b4232c"/>
+  <circle cx="280" cy="50" r="7" fill="#b4232c"/>
+  <text x="120" y="30" font-size="12" fill="#b4232c" text-anchor="middle">A estimate</text>
+  <text x="280" y="30" font-size="12" fill="#b4232c" text-anchor="middle">B estimate</text>
+  <line x1="66" y1="104" x2="110" y2="60" stroke="#1f2a44" stroke-width="1.5"/>
+  <polygon points="114,56 103,60 110,67" fill="#1f2a44"/>
+  <line x1="226" y1="104" x2="270" y2="60" stroke="#1f2a44" stroke-width="1.5"/>
+  <polygon points="274,56 263,60 270,67" fill="#1f2a44"/>
+  <line x1="67" y1="110" x2="213" y2="110" stroke="#1d6fd1" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <line x1="127" y1="50" x2="273" y2="50" stroke="#b4232c" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <text x="140" y="96" font-size="11" fill="#1f2a44" text-anchor="middle">same gap, same direction</text>
+</svg>
+```
+
+Engineers borrowed "common mode" from electronics, where a common-mode signal is one that appears equally on two wires; a circuit that listens only to the *difference* between the wires ignores it. Differencing two measurements does the same with errors.
+:::
+
+::: context differencing Subtracting away the errors
+In the GNSS module, a receiver's error budget included satellite clock errors, orbit errors and delays through the upper and lower atmosphere. Two receivers a few kilometres apart see nearly the same values of all of these. Subtract their measurements of the same satellite — **differencing** — and those errors cancel. Real-time kinematic (**RTK**) positioning pushes this further with the phase of the radio carrier wave and reaches centimetre-level baselines. Surveyors and self-steering farm tractors rely on it; so do spacecraft pairs such as GRACE, which used differenced GPS to help measure their relative positions.
+:::
+
+::: context hill-cw Relative motion, from the Moon to rendezvous
+The equations are named after George William Hill, who wrote linearized equations of this kind in 1878 while studying the Moon's motion, and W. H. Clohessy and R. S. Wiltshire, who applied them to spacecraft rendezvous in 1960, early in the space race. They describe how one spacecraft drifts and loops as seen from another in a circular orbit, in the same radial, in-track and cross-track axes as this module's RIC frame. The relative-motion module derived them; a formation-flying filter can use them as its dynamics model in place of two full orbits.
+:::
+
+::: context side-lobes Listening to signals meant for someone else
+GNSS satellites point their antennas at Earth. Most of the power goes into a main beam a little wider than the Earth; weaker **side lobes** spill out at wider angles. A spacecraft far above the constellation can only hear the main beams that sneak past the edge of the Earth from satellites on the far side, plus the faint side lobes.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 200" font-family="Inter, Arial, sans-serif">
+  <circle cx="180" cy="130" r="40" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="180" y="134" font-size="12" fill="#1f2a44" text-anchor="middle">Earth</text>
+  <circle cx="180" cy="130" r="85" fill="none" stroke="#6c7a93" stroke-width="1.2" stroke-dasharray="5 4"/>
+  <text x="288" y="190" font-size="11" fill="#6c7a93" text-anchor="middle">GNSS orbits</text>
+  <circle cx="180" cy="215" r="6" fill="#1f2a44"/>
+  <line x1="180" y1="209" x2="148" y2="96" stroke="#1d6fd1" stroke-width="1.5"/>
+  <line x1="180" y1="209" x2="212" y2="96" stroke="#1d6fd1" stroke-width="1.5"/>
+  <polyline points="180,209 138,20" fill="none" stroke="#f2b880" stroke-width="2" stroke-dasharray="4 3"/>
+  <circle cx="130" cy="18" r="7" fill="#b4232c"/>
+  <text x="140" y="14" font-size="12" fill="#b4232c">high user</text>
+  <text x="96" y="70" font-size="11" fill="#1f2a44" text-anchor="end">main beam</text>
+  <text x="96" y="84" font-size="11" fill="#1f2a44" text-anchor="end">past Earth's edge</text>
+</svg>
+```
+
+Receivers built for this can still navigate: NASA's Magnetospheric Multiscale mission used GPS at about $187\,000\,\mathrm{km}$ from Earth, around halfway to the Moon.
+:::
+
+::: context autonav A spacecraft that navigated itself
+Deep Space 1, launched by NASA in 1998, carried an experiment called AutoNav. Its camera photographed asteroids against the background stars; the directions to them, fed into an onboard estimator, gave the spacecraft its own trajectory without waiting for tracking from Earth. It then planned small corrections to its ion-engine thrusting from that trajectory. Later missions used descendants of the same software for close flybys, where the time for a signal to travel to Earth and back is far too long to steer by.
+:::
