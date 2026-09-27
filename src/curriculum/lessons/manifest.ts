@@ -5347,7 +5347,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-phase-plane-and-equilibrium-classification",
       "title": "Phase-plane analysis and equilibrium classification",
-      "minutes": 20,
+      "minutes": 23,
       "covers": [
         "Phase-plane analysis and equilibrium classification"
       ],
@@ -5356,7 +5356,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-linearization-and-the-indirect-method",
       "title": "Linearization and the Lyapunov indirect method",
-      "minutes": 19,
+      "minutes": 20,
       "covers": [
         "Linearization and the Lyapunov indirect method, including its failure cases"
       ],
@@ -5365,7 +5365,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-lyapunov-direct-method-and-lasalle",
       "title": "The direct method, Lyapunov functions and LaSalle",
-      "minutes": 26,
+      "minutes": 22,
       "covers": [
         "The Lyapunov direct method, Lyapunov functions, LaSalle invariance principle"
       ],
@@ -5374,7 +5374,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-region-of-attraction-estimation",
       "title": "Estimating the region of attraction",
-      "minutes": 22,
+      "minutes": 19,
       "covers": [
         "Region of attraction estimation, including sum-of-squares approaches"
       ],
@@ -5383,7 +5383,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-input-to-state-stability",
       "title": "Input-to-state stability",
-      "minutes": 18,
+      "minutes": 17,
       "covers": [
         "Input-to-state stability"
       ],
@@ -5392,7 +5392,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-feedback-linearization-and-zero-dynamics",
       "title": "Feedback linearization, relative degree and zero dynamics",
-      "minutes": 21,
+      "minutes": 20,
       "covers": [
         "Feedback linearization (input-state and input-output), relative degree, internal and zero dynamics"
       ],
@@ -5401,7 +5401,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-sliding-mode-control",
       "title": "Sliding mode control, chattering and boundary layers",
-      "minutes": 24,
+      "minutes": 19,
       "covers": [
         "Sliding mode control: sliding surface design, reaching phase, chattering, boundary layers, higher-order sliding modes"
       ],
@@ -5410,7 +5410,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-backstepping",
       "title": "Backstepping",
-      "minutes": 20,
+      "minutes": 17,
       "covers": [
         "Backstepping"
       ],
@@ -5419,7 +5419,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-passivity-based-control",
       "title": "Passivity-based control and energy shaping",
-      "minutes": 24,
+      "minutes": 22,
       "covers": [
         "Passivity-based control and energy shaping"
       ],
@@ -5428,7 +5428,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-spacecraft-attitude-control",
       "title": "Nonlinear spacecraft attitude control: unwinding, MRPs, and tracking",
-      "minutes": 34,
+      "minutes": 22,
       "covers": [
         "Nonlinear spacecraft attitude control: quaternion feedback laws, the unwinding problem, MRP-based control, Lyapunov-derived tracking laws with proof"
       ],
@@ -5437,7 +5437,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-describing-functions",
       "title": "Describing functions for limit-cycle prediction",
-      "minutes": 24,
+      "minutes": 20,
       "covers": [
         "Describing functions for limit-cycle prediction"
       ],
@@ -5446,7 +5446,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l13-underactuated-systems",
       "title": "Control of underactuated systems",
-      "minutes": 25,
+      "minutes": 22,
       "covers": [
         "Control of underactuated systems"
       ],
@@ -5455,7 +5455,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l14-bang-bang-and-pwpf",
       "title": "Bang-bang and on-off thruster control: Schmitt trigger and PWPF",
-      "minutes": 26,
+      "minutes": 24,
       "covers": [
         "Bang-bang and on-off thruster control: Schmitt trigger and pulse-width pulse-frequency modulation"
       ],
@@ -5466,7 +5466,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-the-receding-horizon-principle",
       "title": "The receding horizon principle",
-      "minutes": 20,
+      "minutes": 21,
       "covers": [
         "The receding horizon principle"
       ],
@@ -5475,7 +5475,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-the-finite-horizon-problem",
       "title": "The finite-horizon constrained optimal control problem",
-      "minutes": 19,
+      "minutes": 20,
       "covers": [
         "The finite-horizon constrained optimal control problem"
       ],
@@ -5484,7 +5484,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-linear-mpc-as-a-quadratic-program",
       "title": "Linear MPC as a quadratic program",
-      "minutes": 16,
+      "minutes": 19,
       "covers": [
         "Linear MPC as a quadratic program; condensed vs sparse formulations"
       ],
@@ -5493,7 +5493,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-constraints-and-slack-variables",
       "title": "State and input constraints, softening and slacks",
-      "minutes": 21,
+      "minutes": 24,
       "covers": [
         "State and input constraints; soft constraints and slack variables"
       ],
