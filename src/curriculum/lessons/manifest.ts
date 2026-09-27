@@ -4669,6 +4669,87 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Build backends: setuptools, hatchling, flit"
       ],
       "file": "cod_py_09_packaging/03-pyproject-and-backends.md"
+    },
+    {
+      "id": "l04-editable-installs",
+      "title": "Editable installs and what they really do",
+      "minutes": 22,
+      "covers": [
+        "Editable installs and what they actually do"
+      ],
+      "file": "cod_py_09_packaging/04-editable-installs.md"
+    },
+    {
+      "id": "l05-wheels-and-sdists",
+      "title": "Wheels, source distributions and manylinux",
+      "minutes": 24,
+      "covers": [
+        "Wheels versus source distributions; manylinux"
+      ],
+      "file": "cod_py_09_packaging/05-wheels-and-sdists.md"
+    },
+    {
+      "id": "l06-entry-points",
+      "title": "Console entry points for command-line tools",
+      "minutes": 20,
+      "covers": [
+        "Console entry points for command-line tools"
+      ],
+      "file": "cod_py_09_packaging/06-entry-points.md"
+    },
+    {
+      "id": "l07-version-pinning",
+      "title": "Version pinning, ranges and lockfiles",
+      "minutes": 22,
+      "covers": [
+        "Version pinning: exact pins for applications, ranges for libraries, lockfiles for both"
+      ],
+      "file": "cod_py_09_packaging/07-version-pinning.md"
+    },
+    {
+      "id": "l08-semantic-versioning",
+      "title": "Semantic versioning and deciding a bump",
+      "minutes": 23,
+      "covers": [
+        "Semantic versioning and how to decide a bump"
+      ],
+      "file": "cod_py_09_packaging/08-semantic-versioning.md"
+    },
+    {
+      "id": "l09-dependency-resolution-and-abi",
+      "title": "Dependency resolution, extras and the ABI problem",
+      "minutes": 21,
+      "covers": [
+        "Dependency resolution, extras, and the scientific-stack ABI problem"
+      ],
+      "file": "cod_py_09_packaging/09-dependency-resolution-and-abi.md"
+    },
+    {
+      "id": "l10-environment-tools",
+      "title": "Environments with venv, pip, uv and conda",
+      "minutes": 25,
+      "covers": [
+        "venv, pip, uv, conda and when each is the right answer"
+      ],
+      "file": "cod_py_09_packaging/10-environment-tools.md"
+    },
+    {
+      "id": "l11-docs-and-readme",
+      "title": "Docstrings, Sphinx and a README a stranger can run",
+      "minutes": 20,
+      "covers": [
+        "Sphinx and NumPy-style docstrings; README that lets a stranger run it"
+      ],
+      "file": "cod_py_09_packaging/11-docs-and-readme.md"
+    },
+    {
+      "id": "l12-publishing",
+      "title": "Publishing to PyPI and to private indexes",
+      "minutes": 24,
+      "covers": [
+        "Publishing internally versus on PyPI; private indexes"
+      ],
+      "file": "cod_py_09_packaging/12-publishing.md"
     }
   ],
   "cod_rs_01_basics": [
@@ -11362,20 +11443,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_py_09_packaging": {
-    "covered": 4,
+    "covered": 13,
     "total": 13,
-    "complete": false,
-    "missing": [
-      "Editable installs and what they actually do",
-      "Wheels versus source distributions; manylinux",
-      "Console entry points for command-line tools",
-      "Version pinning: exact pins for applications, ranges for libraries, lockfiles for both",
-      "Semantic versioning and how to decide a bump",
-      "Dependency resolution, extras, and the scientific-stack ABI problem",
-      "venv, pip, uv, conda and when each is the right answer",
-      "Sphinx and NumPy-style docstrings; README that lets a stranger run it",
-      "Publishing internally versus on PyPI; private indexes"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_cpp_01_basics": {
     "covered": 15,
