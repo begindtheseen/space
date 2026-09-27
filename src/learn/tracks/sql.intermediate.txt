@@ -1564,26 +1564,128 @@ ordered
 
 === sql2-09 | Dates and times
 --- teach
-SQLite has no separate date type. Dates are stored as text in ISO format — `'2024-03-20'` or `'2024-03-20 18:40:00'` — and that is enough, because ISO text sorts in time order and a set of functions understands it:
+Last lesson, in Working with text, you cleaned up messy email addresses with `lower`, `trim` and `substr`. Now you meet the other kind of value almost every table has: dates and times. By the end of this lesson you will build a monthly sales report, with one row per month.
+
+Think of a pile of forms, each dated in the corner. If everyone writes the year first, then the month, then the day, always with two digits (2024-03-20), you can sort the pile alphabetically and it comes out in time order too.
+
+**Step 1: dates are stored as text.** SQLite has no separate date type. A date is stored as text in **[[ISO format|iso-8601]]**: the year, the month and the day, biggest part first, joined by dashes. A time can follow after a space, as hours:minutes:seconds on a 24-hour clock, so `18:40:00` is twenty to seven in the evening. Look at the `placed` column of `orders`:
 
 ```sql
-SELECT date('2024-03-20 18:40:00');              -- '2024-03-20'
-SELECT date('2024-03-20', '+10 days');           -- '2024-03-30'
-SELECT date('2024-03-20', 'start of month');     -- '2024-03-01'
-SELECT date('2024-01-31', '+1 month');           -- '2024-03-02' (no Feb 31st!)
-SELECT strftime('%Y-%m', '2024-03-20 18:40:00'); -- '2024-03'
-SELECT julianday('2024-03-20') - julianday('2024-03-02');  -- 18.0 days
+SELECT id, placed FROM orders;
 ```
 
-`strftime(format, time)` formats: `%Y` year, `%m` month, `%d` day, `%H` hour, `%W` week of the year, `%w` weekday (0 is Sunday). `date('now')` is today.
+| id | placed |
+| --- | --- |
+| 1 | 2024-03-02 10:15:00 |
+| 2 | 2024-03-20 18:40:00 |
+| 3 | 2024-03-21 09:05:00 |
+| … | … |
 
-For monthly reports, group by `strftime('%Y-%m', placed)`: every timestamp in March collapses to `'2024-03'`.
+Because the biggest part comes first and every part has a [[fixed width|fixed-width]], sorting this text A to Z also sorts it oldest to newest. `ORDER BY placed` works with no extra help.
 
-Beware the join trap from the grouping lesson: once `orders` is joined to `order_items`, there is one row per *item*, so `COUNT(*)` counts items. To count orders, use `COUNT(DISTINCT o.id)`.
+**Step 2: `strftime` pulls out pieces.** `strftime(format, time)` (say it "[[string-format-time|strftime-name]]") takes a time and writes it out in the shape you ask for. The format is text with **placeholders**: a `%` sign followed by a letter, each standing for one piece of the date.
 
-Comparing ranges works on the text directly: `placed >= '2024-04-01' AND placed < '2024-05-01'` is April — and, unlike wrapping the column in a function, a database can use an index for it. You will see why that matters when you meet indexes in the advanced course.
+| Placeholder | Means | For `'2024-03-20 18:40:00'` |
+| --- | --- | --- |
+| `%Y` | the year, 4 digits | 2024 |
+| `%m` | the month, 2 digits | 03 |
+| `%d` | the day of the month | 20 |
+| `%H` | the hour, 00 to 23 | 18 |
+| `%W` | the week of the year | 12 |
+| `%w` | the weekday, 0 is Sunday | 3 (a Wednesday) |
+
+Anything in the format that is not a placeholder is copied as it is, like the dash here. (Everything after `--` on a line is a **comment**: a note for people, which the database ignores. Here it shows the answer.)
+
+```sql
+SELECT strftime('%Y-%m', '2024-03-20 18:40:00');   -- '2024-03'
+```
+
+**Step 3: group by the month.** For a monthly report, give `GROUP BY` that expression. Every timestamp in March turns into the same text, `'2024-03'`, so all of March lands in one bucket. It is the same trick as grouping by `substr(placed, 1, 7)` in GROUP BY in depth. SQLite lets you group by [[the name you gave with AS|group-by-alias]]:
+
+```sql
+SELECT strftime('%Y-%m', placed) AS month, COUNT(*) AS orders
+FROM orders
+GROUP BY month;
+```
+
+| month | orders |
+| --- | --- |
+| 2024-03 | 3 |
+| 2024-04 | 2 |
+| 2024-05 | 2 |
+| 2024-06 | 1 |
+
+**Step 4: the join trap comes back.** Money lives in `order_items`, one row per item. Once you join `orders` to `order_items`, there is one row per *item*, so `COUNT(*)` counts items, not orders. `COUNT(DISTINCT o.id)` counts the *different* order ids instead. In March, order 1 has two items, so:
+
+```sql
+SELECT COUNT(*) AS item_rows, COUNT(DISTINCT o.id) AS orders
+FROM orders o
+JOIN order_items oi ON oi.order_id = o.id
+WHERE strftime('%Y-%m', o.placed) = '2024-03';
+```
+
+| item_rows | orders |
+| --- | --- |
+| 4 | 3 |
+
+This is how engineers build any [[report by time|time-buckets]]: turn each timestamp into its bucket, group, and count the right thing.
+
+**Watch out:** grouping by `placed` itself makes one group per exact second, so almost every order sits alone in its own group. Group by `strftime('%Y-%m', placed)` to get months.
+
+::: context iso-8601 A worldwide way to write dates
+ISO format is short for ISO 8601, an international standard for writing dates and times, first published in 1988. It fixes the order as year, month, day, from biggest unit to smallest, so 2024-03-02 can only mean 2 March 2024. That matters because 03/02/2024 means 2 March in Britain and 3 February in the United States. Flight software, mission logs and the web all use ISO 8601 for this reason: when a timestamp crosses from one team, country or program to another, nobody has to guess.
+:::
+
+::: context fixed-width Why the zeros matter
+Text is sorted one character at a time, from the left, the way a dictionary is. That only matches time order if every date has the same shape. Write September as `9` instead of `09` and it goes wrong: `'2024-10-01'` sorts before `'2024-9-30'`, because at the sixth character `1` comes before `9`. You can check it: `SELECT '2024-10-01' < '2024-9-30';` returns 1, meaning true. The leading zeros in `2024-09-30` keep every part the same width, so the comparison is always fair.
+:::
+
+::: context strftime-name An old name that stuck
+`strftime` is short for "string format time". The name, and the `%` codes, come from the C programming language's standard library, where a function called `strftime` has formatted dates since the 1980s. Many languages copied it, so the same codes work far beyond SQLite: Python's `datetime` objects have a `strftime` method that understands `%Y`, `%m` and `%d` in the same way. Learn the codes once and you can read date formats in a lot of code.
+:::
+
+::: context group-by-alias Naming a group once
+In SQLite you can write `GROUP BY month` after `AS month` in the `SELECT`, instead of repeating the whole `strftime('%Y-%m', placed)`. PostgreSQL and MySQL allow this too. Some databases do not: Microsoft SQL Server wants the full expression repeated in `GROUP BY`. If a query that works in SQLite fails somewhere else with "invalid column name", this is a likely reason. Repeating the expression always works everywhere.
+:::
+
+::: context time-buckets Buckets of time
+A spacecraft's computer might log a temperature reading every second. Nobody reads millions of rows one by one, so engineers group them into buckets (per minute, per hour, per orbit) and look at the count, average or maximum in each bucket. The pattern is the one in this lesson: turn each timestamp into its bucket, then group. `strftime('%Y-%m-%d %H', t)` makes hourly buckets.
+
+```svg
+<svg viewBox="0 0 360 150" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <text x="180" y="18" font-size="12" fill="#1f2a44" text-anchor="middle">8 order timestamps, grouped by month</text>
+  <circle cx="45" cy="45" r="6" fill="#1d6fd1"/>
+  <circle cx="60" cy="45" r="6" fill="#1d6fd1"/>
+  <circle cx="75" cy="45" r="6" fill="#1d6fd1"/>
+  <circle cx="135" cy="45" r="6" fill="#1d6fd1"/>
+  <circle cx="150" cy="45" r="6" fill="#1d6fd1"/>
+  <circle cx="220" cy="45" r="6" fill="#1d6fd1"/>
+  <circle cx="235" cy="45" r="6" fill="#1d6fd1"/>
+  <circle cx="312" cy="45" r="6" fill="#1d6fd1"/>
+  <rect x="20" y="62" width="75" height="44" fill="#ffffff" stroke="#1f2a44"/>
+  <rect x="105" y="62" width="75" height="44" fill="#ffffff" stroke="#1f2a44"/>
+  <rect x="190" y="62" width="75" height="44" fill="#ffffff" stroke="#1f2a44"/>
+  <rect x="275" y="62" width="75" height="44" fill="#ffffff" stroke="#1f2a44"/>
+  <text x="57" y="81" font-size="12" fill="#1f2a44" text-anchor="middle">2024-03</text>
+  <text x="142" y="81" font-size="12" fill="#1f2a44" text-anchor="middle">2024-04</text>
+  <text x="227" y="81" font-size="12" fill="#1f2a44" text-anchor="middle">2024-05</text>
+  <text x="312" y="81" font-size="12" fill="#1f2a44" text-anchor="middle">2024-06</text>
+  <text x="57" y="99" font-size="12" fill="#b4232c" text-anchor="middle">3</text>
+  <text x="142" y="99" font-size="12" fill="#b4232c" text-anchor="middle">2</text>
+  <text x="227" y="99" font-size="12" fill="#b4232c" text-anchor="middle">2</text>
+  <text x="312" y="99" font-size="12" fill="#b4232c" text-anchor="middle">1</text>
+  <text x="180" y="132" font-size="11" fill="#6c7a93" text-anchor="middle">one bucket per strftime('%Y-%m', placed)</text>
+</svg>
+```
+:::
 --- task
-Return a monthly sales report over orders whose status is `paid` or `shipped`: `month` (as `'YYYY-MM'`), `orders` (the number of different orders), and `revenue` (the sum of `qty * unit_price`, rounded to 2 decimals). Sort by month.
+Build a monthly sales report over the orders whose `status` is `'paid'` or `'shipped'` (`o.status IN ('paid', 'shipped')` keeps a row whose status is either one). Join `orders` to `order_items` and return three columns:
+
+- `month`: the month the order was placed, as `'YYYY-MM'`;
+- `orders`: the number of different orders in that month;
+- `revenue`: the sum of `qty * unit_price`, rounded to 2 decimals with `ROUND(…, 2)`.
+
+Sort by month.
 --- starter
 SELECT placed AS month, COUNT(*) AS orders
 FROM orders
@@ -1598,26 +1700,194 @@ WHERE o.status IN ('paid', 'shipped')
 GROUP BY month
 ORDER BY month;
 --- hint
-`strftime('%Y-%m', o.placed)` turns each timestamp into its month; group by that.
+Start with the month: `strftime('%Y-%m', o.placed) AS month`, and `GROUP BY month` instead of `GROUP BY placed`.
 --- hint
-Join `order_items` for revenue, and count orders with `COUNT(DISTINCT o.id)` — the join makes one row per item.
+Revenue needs `JOIN order_items oi ON oi.order_id = o.id`. After that join there is one row per item, so count orders with `COUNT(DISTINCT o.id)`, not `COUNT(*)`.
+--- hint
+The shape is: `SELECT month, COUNT(DISTINCT o.id) AS orders, ROUND(SUM(oi.qty * oi.unit_price), 2) AS revenue FROM orders o JOIN order_items oi … WHERE o.status IN ('paid', 'shipped') GROUP BY month ORDER BY month`, with the `strftime` expression in place of the first `month`.
 --- check result | Four months, with order counts and revenue
 ordered
 [["2024-03", 2, 102.6], ["2024-04", 2, 95.8], ["2024-05", 1, 107.0], ["2024-06", 1, 25.0]]
 
+=== sql2-09b | Date arithmetic and date ranges
+--- teach
+Last lesson you pulled the month out of a timestamp with `strftime` and grouped orders by it. This lesson does arithmetic with dates: moving a date forward or back, counting the days between two dates, and picking out every row inside a range of dates.
+
+Think of a wall calendar. You can put your finger on the 20th and count ten days forward, or jump back to the 1st of the month. SQLite's date functions do the same moves for you, and they know how long every month is.
+
+**Step 1: `date()` keeps the date part.** Given a timestamp, `date(...)` returns only the year-month-day. A `SELECT` with no `FROM` works out its values once and returns one row, which is a handy way to try a function:
+
+```sql
+SELECT date('2024-03-20 18:40:00');   -- '2024-03-20'
+```
+
+**Step 2: modifiers move the date.** Any extra text you pass after the time is a **modifier**: an instruction that moves the date before it is returned.
+
+```sql
+SELECT date('2024-03-20', '+10 days');        -- '2024-03-30'
+SELECT date('2024-03-20', '-1 day');          -- '2024-03-19'
+SELECT date('2024-03-20', 'start of month');  -- '2024-03-01'
+```
+
+**Step 3: months are uneven.** `'+1 month'` adds one to the month number and keeps the day. When that day does not exist, SQLite [[rolls over into the next month|month-rollover]]:
+
+```sql
+SELECT date('2024-01-31', '+1 month');   -- '2024-03-02' (no 31 February!)
+```
+
+31 February would be two days after 29 February (2024 is a leap year), so you land on 2 March.
+
+**Step 4: the days between two dates.** `julianday(time)` turns a date into one plain number: a count of days since a [[starting point long ago|julian-day]]. Subtract two of them and you get the days in between:
+
+```sql
+SELECT julianday('2024-03-20') - julianday('2024-03-02');   -- 18.0
+```
+
+The answer has a decimal point because times of day become fractions of a day: 18:00 is three quarters of the way through a day, so it adds 0.75.
+
+**Step 5: today.** `date('now')` is [[today's date|now-is-utc]]. Its answer changes every day, so it is great in an app and useless in a check with a fixed answer.
+
+**Step 6: a range of dates.** To pick every order placed in April, compare the text directly. `>=` means "greater than or equal to" and `<` means "less than":
+
+```sql
+SELECT id, placed FROM orders
+WHERE placed >= '2024-04-01' AND placed < '2024-05-01';
+```
+
+| id | placed |
+| --- | --- |
+| 4 | 2024-04-07 14:30:00 |
+| 5 | 2024-04-07 20:10:00 |
+
+This works because ISO text sorts in time order. Read it as "from the first moment of April, up to but not including the first moment of May". It is also faster on big tables than wrapping the column in a function such as `strftime('%Y-%m', placed) = '2024-04'`, because the database can use an [[index|index-preview]] for it.
+
+**Watch out:** `placed <= '2024-04-30'` looks like "up to the end of April", but it misses every order placed *during* 30 April. As text, `'2024-04-30 18:00:00'` is longer than `'2024-04-30'` and starts the same, so it sorts after it. End a range with `<` and the first moment you do *not* want, `'2024-05-01'`, as a [[half-open range|half-open]].
+
+::: context month-rollover Why dates roll over
+SQLite handles `'+1 month'` in two moves: add one to the month number, then fix any day that does not exist by counting on into the next month. From 31 January 2024 that gives "31 February", which is two days past 29 February, so 2 March. In 2023, which was not a leap year, the same step from 31 January lands on 3 March: `SELECT date('2023-01-31', '+1 month');` returns `'2023-03-03'`. For "the last day of this month" use `date(x, 'start of month', '+1 month', '-1 day')`, which never overflows.
+:::
+
+::: context julian-day Days counted from long ago
+A Julian day number counts days from noon on 1 January 4713 BC, a starting point astronomers chose centuries ago so that every recorded event gets a positive number. Astronomers still use it to time observations, because subtracting two numbers is easier than juggling months and leap years. `SELECT julianday('2024-03-20');` returns 2460389.5. The .5 is there because Julian days begin at noon, so midnight falls halfway through one.
+:::
+
+::: context now-is-utc Whose today?
+`date('now')` uses UTC, the world's reference clock (the time in London outside summer time). If you are in California late in the evening, it may already be tomorrow in UTC. Mission control centres and servers usually store every timestamp in UTC for this reason, so that events from different places line up, and only convert to local time when they show a time to a person. SQLite can do that too, with the `'localtime'` modifier.
+:::
+
+::: context index-preview A shortcut through a big table
+An **index** is like the index at the back of a book: a separate, sorted list that tells the database where to find rows with a given value, so it can jump straight to them instead of reading every row. A sorted list of `placed` values lets it jump to the first April order and stop at the first May one. If you wrap the column in a function, the sorted list no longer matches what you are asking about, so it reads every row. You will build indexes and watch this happen in the advanced course.
+:::
+
+::: context half-open Include the start, exclude the end
+A range that includes its start but not its end is called half-open. Written this way, April and May meet without a gap or an overlap: April ends exactly where May begins, so every moment belongs to one month only. The same habit shows up in programming, where a loop over 0 up to (not including) 10 runs ten times.
+
+```svg
+<svg viewBox="0 0 360 130" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <line x1="20" y1="60" x2="340" y2="60" stroke="#6c7a93" stroke-width="2"/>
+  <line x1="60" y1="60" x2="300" y2="60" stroke="#1d6fd1" stroke-width="6"/>
+  <circle cx="60" cy="60" r="7" fill="#1d6fd1"/>
+  <circle cx="300" cy="60" r="7" fill="#ffffff" stroke="#b4232c" stroke-width="3"/>
+  <text x="60" y="36" font-size="12" fill="#1f2a44" text-anchor="middle">2024-04-01</text>
+  <text x="300" y="36" font-size="12" fill="#1f2a44" text-anchor="middle">2024-05-01</text>
+  <text x="60" y="88" font-size="11" fill="#1d6fd1" text-anchor="middle">included (&gt;=)</text>
+  <text x="300" y="88" font-size="11" fill="#b4232c" text-anchor="middle">left out (&lt;)</text>
+  <text x="180" y="116" font-size="12" fill="#1f2a44" text-anchor="middle">every moment of April, 30 April 18:00 too</text>
+</svg>
+```
+:::
+--- task
+Return every order placed in April 2024. Pick them with a range on `placed`: `>=` the first day of April and `<` the first day of May. For each order return:
+
+- `id`;
+- `day`: the date part of `placed`, using `date(...)`;
+- `reply_by`: the date 14 days after `day`, using the `'+14 days'` modifier.
+
+Sort by `id`.
+--- starter
+SELECT id, placed
+FROM orders
+ORDER BY id;
+--- solution
+SELECT id,
+       date(placed) AS day,
+       date(placed, '+14 days') AS reply_by
+FROM orders
+WHERE placed >= '2024-04-01' AND placed < '2024-05-01'
+ORDER BY id;
+--- hint
+First the filter: `WHERE placed >= '2024-04-01' AND placed < '2024-05-01'` keeps exactly April.
+--- hint
+`date(placed) AS day` gives the date part. A modifier goes after the time inside the same brackets: `date(placed, '+14 days')`.
+--- hint
+The whole query is `SELECT id, date(placed) AS day, date(placed, '+14 days') AS reply_by FROM orders WHERE … ORDER BY id`, with the April range as the `WHERE`.
+--- check result | Orders 4 and 5, placed 7 April, reply by 21 April
+ordered
+[[4, "2024-04-07", "2024-04-21"], [5, "2024-04-07", "2024-04-21"]]
+--- check source | Ends the range with < the first of May
+<\s*'2024-05-01'
+?? End the April range with `placed < '2024-05-01'`, so every moment of 30 April is included.
+
 === sql2-10 | Debugging: the rows NULL made disappear
 --- teach
-**The bug report.** Marketing asked for every order that did **not** use the `SPRING10` coupon, with a readable coupon label. The query below returns two orders. There are eight orders and two used `SPRING10`, so six were expected.
+Last lesson you picked out a range of dates. This lesson is a debugging case: a query that returns too few rows, and the cause is NULL. You will see how `WHERE` really treats NULL, how to fix the filter, and two functions, `COALESCE` and `NULLIF`, that turn missing values into readable labels.
 
-How to debug a query that returns too few rows:
+A quick reminder from LEFT JOIN and NULL: **NULL** means "no value here". The box on the form was left empty. It is not zero, and it is not an empty piece of text. In `orders`, the `coupon` column is NULL for orders where no coupon was used.
 
-1. **Reproduce and count.** `SELECT COUNT(*) FROM orders` gives 8; the answer should be 8 − 2 = 6.
-2. **Look at what went missing.** `SELECT id, coupon FROM orders` — every missing order has `coupon` = NULL.
-3. **Check your assumption.** The query assumes `coupon != 'SPRING10'` is true for "no coupon". It is not.
+**The bug report.** Marketing asked for every order that did **not** use the `SPRING10` coupon, with a readable label for the coupon. This query came back with only two orders. (`!=` means "not equal to", and `<>` [[means the same thing|not-equal-signs]].)
 
-SQL uses **three-valued logic**: a comparison is true, false or *unknown*. Any comparison with NULL — `NULL = 'x'`, `NULL != 'x'`, even `NULL = NULL` — is unknown, and `WHERE` keeps only rows where the condition is **true**. So `coupon != 'SPRING10'` silently drops every order with no coupon. `NOT (…)` does not rescue it: not-unknown is still unknown.
+```sql
+SELECT id, coupon AS coupon_label
+FROM orders
+WHERE coupon != 'SPRING10'
+ORDER BY id;
+```
 
-Fixes, from most to least explicit:
+| id | coupon_label |
+| --- | --- |
+| 4 | WELCOME5 |
+| 7 | (blank) |
+
+There are eight orders and two used `SPRING10`, so six were expected. Here is a [[way to debug|debug-by-counting]] any query that returns too few rows.
+
+**Step 1: reproduce and count.** Count what should be there:
+
+```sql
+SELECT COUNT(*) FROM orders;   -- 8
+```
+
+8 − 2 = 6 were expected and 2 came back, so four orders went missing.
+
+**Step 2: look at what went missing.**
+
+```sql
+SELECT id, coupon FROM orders;
+```
+
+| id | coupon |
+| --- | --- |
+| 1 | NULL |
+| 2 | SPRING10 |
+| 3 | NULL |
+| 4 | WELCOME5 |
+| 5 | SPRING10 |
+| 6 | NULL |
+| 7 | (empty text) |
+| 8 | NULL |
+
+The missing orders are 1, 3, 6 and 8, and every one has `coupon` = NULL.
+
+**Step 3: check your assumption.** The query assumes `coupon != 'SPRING10'` is true when there is no coupon. Picture a clerk asked "is the coupon on this form something other than SPRING10?" when the coupon box is empty. The honest answer is "I don't know, nothing was written". SQL answers the same way.
+
+This is **[[three-valued logic|three-valued]]**: in SQL a comparison can be true, false, or **unknown**. Any comparison with NULL is unknown: `NULL = 'x'`, `NULL != 'x'`, even `NULL = NULL`. SQLite shows unknown as NULL:
+
+```sql
+SELECT NULL = NULL, NULL != 'x';   -- NULL, NULL
+```
+
+And `WHERE` keeps a row only when its condition is **true**. Unknown is thrown away exactly like false. So `coupon != 'SPRING10'` silently drops every order with no coupon. Adding `NOT` does not rescue it: `NOT (coupon = 'SPRING10')` is still unknown for those rows, because "not unknown" is still unknown.
+
+**Step 4: fix the filter.** Here are three fixes, the most explicit first:
 
 ```sql
 WHERE coupon IS NULL OR coupon <> 'SPRING10'
@@ -1625,9 +1895,90 @@ WHERE coupon IS NOT 'SPRING10'        -- SQLite: IS / IS NOT treat NULL as a val
 WHERE COALESCE(coupon, '') <> 'SPRING10'
 ```
 
-`COALESCE(a, b, …)` returns its first non-NULL argument, which also makes labels: `COALESCE(coupon, 'none')`. And watch for the cousin of NULL: the **empty string**. Order 7 has `coupon = ''`, which is *not* NULL, so COALESCE leaves it alone. `NULLIF(x, '')` turns `''` into NULL, so `COALESCE(NULLIF(trim(coupon), ''), 'none')` handles both.
+- The first says it out loud: keep the row if there is no coupon, or if the coupon is something else. `IS NULL` is always true or false, never unknown.
+- The second uses a SQLite shortcut. `IS` and `IS NOT` can compare with any value, and they treat NULL as an ordinary value, so an empty coupon "is not" SPRING10. Other databases spell this [[IS DISTINCT FROM|is-distinct-from]].
+- The third uses `COALESCE`, the next step.
+
+**Step 5: `COALESCE` fills a gap.** `COALESCE(a, b, …)` returns the first of its values that is not NULL. You met it as `COALESCE(x, 0)`. It also makes labels:
+
+```sql
+SELECT id, COALESCE(coupon, 'none') AS coupon_label FROM orders;
+```
+
+Orders 1, 3, 6 and 8 now say `none`. Order 7 still shows a blank.
+
+**Step 6: the empty string.** Order 7's coupon is `''`, the **[[empty string|empty-string]]**: text with no characters in it. That is not NULL. Something was written, it is only empty. So `COALESCE` leaves it alone. `NULLIF(x, y)` gives NULL when `x` equals `y`, and `x` otherwise, so `NULLIF(coupon, '')` turns `''` into NULL. Put `trim` inside so a coupon made only of spaces counts as blank too:
+
+```sql
+COALESCE(NULLIF(trim(coupon), ''), 'none')
+```
+
+Read it from the inside out: trim the spaces; if what is left is `''`, make it NULL; if it is NULL, use `'none'`.
+
+| coupon | trim, then NULLIF | label |
+| --- | --- | --- |
+| WELCOME5 | WELCOME5 | WELCOME5 |
+| NULL | NULL | none |
+| (empty text) | NULL | none |
+
+**Watch out:** `!=` or `<>` on a column that can be NULL quietly drops the NULL rows. Whenever a column may be NULL, ask "what should happen to rows with no value?" and write the answer into the `WHERE`.
+
+::: context not-equal-signs Two ways to write "not equal"
+`<>` is the "not equal" sign in the SQL standard: read it as "less than or greater than", which is another way of saying "different". `!=` comes from programming languages like C, Python and JavaScript. SQLite, PostgreSQL, MySQL and most other databases accept both, and they behave the same way, including with NULL. Pick one and use it consistently in a project.
+:::
+
+::: context debug-by-counting Count before you guess
+When a result looks wrong, the fastest path is rarely staring at the query. Work out how many rows there *should* be, count how many you got, then look at exactly the rows that went missing and ask what they have in common. Here every missing row had the same thing: an empty coupon. Engineers checking flight telemetry do the same: if a downlink should hold 600 frames and the database has 590, the first job is to find the ten missing frames, not to rewrite the code.
+:::
+
+::: context three-valued True, false and unknown
+Ordinary logic has two values. SQL adds a third, unknown, so that a missing value never pretends to be known. `AND` and `OR` still give a sure answer when they can: false `AND` anything is false, and true `OR` anything is true. `SELECT NULL OR 1;` returns 1 and `SELECT NULL AND 0;` returns 0. Otherwise unknown spreads. Orange cells are unknown.
+
+```svg
+<svg viewBox="0 0 360 190" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <text x="90" y="20" font-size="13" fill="#1f2a44" text-anchor="middle">AND</text>
+  <text x="270" y="20" font-size="13" fill="#1f2a44" text-anchor="middle">OR</text>
+  <g font-size="12" text-anchor="middle" fill="#1f2a44">
+    <text x="75" y="50">T</text><text x="105" y="50">F</text><text x="135" y="50">U</text>
+    <text x="45" y="80">T</text><text x="45" y="110">F</text><text x="45" y="140">U</text>
+    <text x="255" y="50">T</text><text x="285" y="50">F</text><text x="315" y="50">U</text>
+    <text x="225" y="80">T</text><text x="225" y="110">F</text><text x="225" y="140">U</text>
+  </g>
+  <g stroke="#1f2a44" fill="#ffffff">
+    <rect x="60" y="60" width="30" height="30"/><rect x="90" y="60" width="30" height="30"/><rect x="120" y="60" width="30" height="30" fill="#f2b880"/>
+    <rect x="60" y="90" width="30" height="30"/><rect x="90" y="90" width="30" height="30"/><rect x="120" y="90" width="30" height="30"/>
+    <rect x="60" y="120" width="30" height="30" fill="#f2b880"/><rect x="90" y="120" width="30" height="30"/><rect x="120" y="120" width="30" height="30" fill="#f2b880"/>
+    <rect x="240" y="60" width="30" height="30"/><rect x="270" y="60" width="30" height="30"/><rect x="300" y="60" width="30" height="30"/>
+    <rect x="240" y="90" width="30" height="30"/><rect x="270" y="90" width="30" height="30"/><rect x="300" y="90" width="30" height="30" fill="#f2b880"/>
+    <rect x="240" y="120" width="30" height="30"/><rect x="270" y="120" width="30" height="30" fill="#f2b880"/><rect x="300" y="120" width="30" height="30" fill="#f2b880"/>
+  </g>
+  <g font-size="12" text-anchor="middle" fill="#1f2a44">
+    <text x="75" y="80">T</text><text x="105" y="80">F</text><text x="135" y="80">U</text>
+    <text x="75" y="110">F</text><text x="105" y="110">F</text><text x="135" y="110">F</text>
+    <text x="75" y="140">U</text><text x="105" y="140">F</text><text x="135" y="140">U</text>
+    <text x="255" y="80">T</text><text x="285" y="80">T</text><text x="315" y="80">T</text>
+    <text x="255" y="110">T</text><text x="285" y="110">F</text><text x="315" y="110">U</text>
+    <text x="255" y="140">T</text><text x="285" y="140">U</text><text x="315" y="140">U</text>
+  </g>
+  <text x="180" y="178" font-size="11" fill="#6c7a93" text-anchor="middle">T true, F false, U unknown (NULL)</text>
+</svg>
+```
+:::
+
+::: context is-distinct-from The standard name for IS NOT
+The SQL standard writes the NULL-safe "not equal" as `a IS DISTINCT FROM b`: true when the two differ, counting NULL as a value of its own. PostgreSQL uses that spelling, and SQLite has accepted it too since version 3.39 (2022), so `WHERE coupon IS DISTINCT FROM 'SPRING10'` returns the same six orders. The short `IS NOT 'SPRING10'` form works in SQLite but not in PostgreSQL, so the long name is the one to reach for when a query has to run in more than one database.
+:::
+
+::: context empty-string Nothing written versus no answer
+NULL and the empty string are easy to mix up. Think of a form with a "middle name" box. NULL means the box was never filled in: we do not know the middle name. `''` means someone deliberately wrote "no middle name". Most databases keep the two apart, as SQLite does. Oracle Database is a famous exception: it stores an empty string as NULL, which surprises people who move queries between databases. Blank text often sneaks in from web forms and spreadsheets, which is why cleaning with `NULLIF(trim(x), '')` is a common habit.
+:::
 --- task
-Fix the query so it returns every order that did not use `SPRING10`: its `id` and a `coupon_label` that shows the coupon code, or `'none'` when the coupon is NULL or blank. Sort by id.
+Fix the starter query so it returns every order that did not use `SPRING10`: six orders. Return two columns:
+
+- `id`;
+- `coupon_label`: the coupon code, or `'none'` when the coupon is NULL or blank (empty, or only spaces).
+
+Sort by `id`.
 --- starter
 SELECT id, coupon AS coupon_label
 FROM orders
@@ -1639,25 +1990,46 @@ FROM orders
 WHERE coupon IS NULL OR coupon <> 'SPRING10'
 ORDER BY id;
 --- hint
-Look at the coupons of the missing orders with `SELECT id, coupon FROM orders`. What does `NULL != 'SPRING10'` evaluate to?
+Run `SELECT id, coupon FROM orders` and look at the orders that are missing from the starter's result. What is `NULL != 'SPRING10'`: true, false or unknown?
 --- hint
-Let NULL coupons through explicitly: `WHERE coupon IS NULL OR coupon <> 'SPRING10'`.
+Let the NULL coupons through on purpose: `WHERE coupon IS NULL OR coupon <> 'SPRING10'`.
 --- hint
-For the label, `COALESCE(...)` handles NULL but not `''`; wrap the coupon in `NULLIF(trim(coupon), '')` first.
+For the label, `COALESCE(coupon, 'none')` handles NULL but not `''`. Wrap the coupon first: `COALESCE(NULLIF(trim(coupon), ''), 'none') AS coupon_label`.
 --- check result | Six orders, blank and missing coupons labelled none
 ordered
 [[1, "none"], [3, "none"], [4, "WELCOME5"], [6, "none"], [7, "none"], [8, "none"]]
 
 === sql2-11 | DISTINCT, UNION and UNION ALL
 --- teach
-`SELECT DISTINCT` removes duplicate rows from a result — duplicates across **all** the selected columns, not just the first:
+Last lesson you made NULL and blank coupons behave. This lesson is about duplicates: how to remove repeated rows from a result, and how to stack two results into one list. By the end you will build one mailing list from two tables.
+
+Picture two guest lists for a party, one from you and one from a friend. You want a single list with everybody on it, and every name only once.
+
+**Step 1: `DISTINCT` removes repeats.** `SELECT DISTINCT` returns each different row once. `DISTINCT` means "different".
 
 ```sql
-SELECT DISTINCT city FROM customers;          -- London, Paris, NULL, Berlin
-SELECT DISTINCT city, referred_by FROM customers;  -- pairs, so more rows
+SELECT city FROM customers;            -- 7 rows
+SELECT DISTINCT city FROM customers;   -- 4 rows
 ```
 
-To stack two results on top of each other, use `UNION` or `UNION ALL`. Both need the same number of columns, and the column names come from the first `SELECT`:
+| city (DISTINCT) |
+| --- |
+| London |
+| Paris |
+| NULL |
+| Berlin |
+
+London, Paris and NULL each appeared twice. Notice that the two [[NULLs count as one|nulls-in-distinct]].
+
+**Step 2: `DISTINCT` looks at whole rows.** A row is a duplicate only when *every* selected column matches, not only the first:
+
+```sql
+SELECT DISTINCT city, referred_by FROM customers;   -- 7 rows
+```
+
+Ada is London with no referrer, and Dev is London referred by customer 2. Those are different pairs, so both stay. In fact all seven pairs differ, so nothing is removed.
+
+**Step 3: `UNION ALL` stacks two results.** `UNION ALL` puts the rows of a second `SELECT` underneath the rows of the first. The two `SELECT`s must return the [[same number of columns|same-shape]], and the column names come from the first one.
 
 ```sql
 SELECT email FROM customers
@@ -1665,14 +2037,69 @@ UNION ALL
 SELECT email FROM newsletter;
 ```
 
-- `UNION ALL` keeps every row, duplicates included. It is cheaper and the right choice when you want counts or know the parts cannot overlap.
-- `UNION` removes duplicates from the combined result, including duplicates *within* one side.
+This returns 12 rows: 7 from `customers` (Cleo's NULL email included) and then 5 from `newsletter`. `ada@mail.com` is on both lists, so it appears twice.
 
-An `ORDER BY` goes once, at the very end, and sorts the whole combined result.
+**Step 4: `UNION` stacks and removes repeats.** Leave out the `ALL` and `UNION` removes duplicate rows from the combined result, including duplicates that were both on the *same* side. The same query with `UNION` returns 11 rows, with `ada@mail.com` once.
 
-Deduplication compares values exactly. `'BEN@Mail.com'` and `'ben@mail.com'` are different strings, so neither `DISTINCT` nor `UNION` will merge them. When you mean "the same address", normalise inside each `SELECT` before the union does its work.
+Which to use? `UNION ALL` keeps every row, and it is [[cheaper|union-cost]] because it never checks for repeats. It is the right choice when you want to count everything, or when you know the parts cannot overlap. Use `UNION` when repeats should go.
+
+**Step 5: one `ORDER BY`, at the very end.** An `ORDER BY` after the last `SELECT` sorts the whole combined result. It uses the column names from the first `SELECT`:
+
+```sql
+SELECT email FROM customers
+UNION
+SELECT email FROM newsletter
+ORDER BY email;
+```
+
+**Step 6: repeats must match exactly.** `DISTINCT` and `UNION` compare values character by character. `'BEN@Mail.com'` and `'ben@mail.com'` are different strings, and so are `'Zoe@mail.com '` (with a space at the end) and `'zoe@mail.com'`. Neither will be merged. When you mean "the [[same address|email-case]]", clean each side first with `lower(trim(email))` from Working with text, so the union compares tidy values.
+
+**Watch out:** each `SELECT` in a union is separate. A `lower(trim(...))` or a `WHERE` written on the first `SELECT` does nothing to the second, so clean both sides.
+
+`UNION` also has [[two relatives|set-operations]], `INTERSECT` and `EXCEPT`, which combine whole results in other ways.
+
+::: context nulls-in-distinct NULL meets NULL
+Last lesson said `NULL = NULL` is unknown, not true. Yet `DISTINCT` keeps only one NULL city. That is on purpose: for removing duplicates, the SQL standard says two NULLs are "not distinct" from each other, so they count as the same. `GROUP BY` does the same thing, which is why all the NULLs landed in one group in GROUP BY in depth, and `UNION` does too. So the rule has two halves: comparisons with `=` treat NULL as unknown, while `DISTINCT`, `GROUP BY` and `UNION` treat NULLs as one value.
+:::
+
+::: context same-shape When the columns do not line up
+If the two sides have different numbers of columns, SQLite refuses to run the query and tells you why: "SELECTs to the left and right of UNION ALL do not have the same number of result columns". The column *names* on the second side do not matter, only how many there are and their order. So `SELECT name FROM products UNION ALL SELECT email FROM newsletter` runs happily and mixes product names with email addresses in one column. SQL trusts you to line up columns that mean the same thing.
+:::
+
+::: context union-cost Why removing repeats costs more
+To find duplicates, the database has to compare every row with the others. In practice it sorts all the rows or builds a lookup table of them, then drops the repeats. `UNION ALL` skips that work and passes the rows straight through. On a few rows the difference is invisible. On millions of log rows from a fleet of satellites it can be the difference between a quick query and a slow one.
+
+```svg
+<svg viewBox="0 0 360 170" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <text x="60" y="18" font-size="12" fill="#1f2a44" text-anchor="middle">side A</text>
+  <rect x="20" y="28" width="80" height="24" fill="#ffffff" stroke="#1d6fd1"/><text x="60" y="44" font-size="11" fill="#1f2a44" text-anchor="middle">ada</text>
+  <rect x="20" y="52" width="80" height="24" fill="#ffffff" stroke="#1d6fd1"/><text x="60" y="68" font-size="11" fill="#1f2a44" text-anchor="middle">eve</text>
+  <text x="60" y="100" font-size="12" fill="#1f2a44" text-anchor="middle">side B</text>
+  <rect x="20" y="110" width="80" height="24" fill="#ffffff" stroke="#f2b880"/><text x="60" y="126" font-size="11" fill="#1f2a44" text-anchor="middle">ada</text>
+  <rect x="20" y="134" width="80" height="24" fill="#ffffff" stroke="#f2b880"/><text x="60" y="150" font-size="11" fill="#1f2a44" text-anchor="middle">zoe</text>
+  <text x="180" y="18" font-size="12" fill="#1f2a44" text-anchor="middle">UNION ALL: 4</text>
+  <rect x="140" y="28" width="80" height="24" fill="#ffffff" stroke="#1d6fd1"/><text x="180" y="44" font-size="11" fill="#1f2a44" text-anchor="middle">ada</text>
+  <rect x="140" y="52" width="80" height="24" fill="#ffffff" stroke="#1d6fd1"/><text x="180" y="68" font-size="11" fill="#1f2a44" text-anchor="middle">eve</text>
+  <rect x="140" y="76" width="80" height="24" fill="#ffffff" stroke="#f2b880"/><text x="180" y="92" font-size="11" fill="#b4232c" text-anchor="middle">ada</text>
+  <rect x="140" y="100" width="80" height="24" fill="#ffffff" stroke="#f2b880"/><text x="180" y="116" font-size="11" fill="#1f2a44" text-anchor="middle">zoe</text>
+  <text x="300" y="18" font-size="12" fill="#1f2a44" text-anchor="middle">UNION: 3</text>
+  <rect x="260" y="28" width="80" height="24" fill="#ffffff" stroke="#1f2a44"/><text x="300" y="44" font-size="11" fill="#1f2a44" text-anchor="middle">ada</text>
+  <rect x="260" y="52" width="80" height="24" fill="#ffffff" stroke="#1f2a44"/><text x="300" y="68" font-size="11" fill="#1f2a44" text-anchor="middle">eve</text>
+  <rect x="260" y="76" width="80" height="24" fill="#ffffff" stroke="#1f2a44"/><text x="300" y="92" font-size="11" fill="#1f2a44" text-anchor="middle">zoe</text>
+  <text x="180" y="150" font-size="11" fill="#6c7a93" text-anchor="middle">the repeat (red) is kept</text>
+</svg>
+```
+:::
+
+::: context email-case Is BEN the same as ben?
+Strictly, the rules for email say the part before the `@` could be case-sensitive, so `BEN@` and `ben@` might be two mailboxes. In practice almost every email provider treats them as the same person, and the part after the `@` (the domain) is never case-sensitive. That is why mailing lists store addresses in lower case with no stray spaces. Sorting shows why cleaning matters: in SQLite, capital letters sort before lower-case ones and a space sorts before both, so an unclean list puts `' dev@work.io'` first and `'BEN@Mail.com'` before `'ada@mail.com'`.
+:::
+
+::: context set-operations Two more ways to combine
+`UNION` has two relatives that also stack whole results. `INTERSECT` keeps only the rows that appear on both sides, and `EXCEPT` keeps the rows of the first side that are not on the second. `SELECT lower(trim(email)) FROM newsletter EXCEPT SELECT lower(trim(email)) FROM customers` lists subscribers who are not customers yet. You will see `EXCEPT` again in the advanced course, checking that a redesigned set of tables still holds exactly the same data as the old one.
+:::
 --- task
-Build one mailing list from customers and newsletter subscribers: every **distinct** email address, lower-cased and trimmed, with no NULLs, as a single column named `email`, sorted alphabetically.
+Build one mailing list from `customers` and `newsletter`. Return a single column named `email` holding every **distinct** email address, lower-cased and trimmed (`lower(trim(email))`), with no NULLs, sorted alphabetically.
 --- starter
 SELECT email FROM customers
 UNION ALL
@@ -1683,38 +2110,80 @@ UNION
 SELECT lower(trim(email)) FROM newsletter
 ORDER BY email;
 --- hint
-`UNION` (without `ALL`) removes duplicates — but only exact ones. Normalise each side with `lower(trim(email))`.
+`UNION` (without `ALL`) removes repeats, but only exact ones. Clean each side with `lower(trim(email))`, and name the first one `AS email`.
 --- hint
-Filter Cleo's NULL out with `WHERE email IS NOT NULL` on the customers side, and put a single `ORDER BY email` at the end.
+Cleo's email is NULL: add `WHERE email IS NOT NULL` to the `customers` side.
+--- hint
+The shape: `SELECT lower(trim(email)) AS email FROM customers WHERE … UNION SELECT lower(trim(email)) FROM newsletter ORDER BY email`, with one `ORDER BY` at the very end.
 --- check result | Eight addresses, each once
 ordered
 [["ada@mail.com"], ["ben@mail.com"], ["dev@work.io"], ["eve@mail.com"], ["finn@work.io"], ["gus@post.org"], ["max@post.org"], ["zoe@mail.com"]]
 
 === sql2-12 | Pagination with LIMIT and OFFSET
 --- teach
-Apps show long lists a page at a time. `LIMIT n OFFSET k` skips `k` rows, then returns the next `n`. With a page size of 3, page `p` (counting from 1) is:
+Last lesson you built one long mailing list. Long lists are where this lesson comes in: apps show them a page at a time. You will fetch any page with `LIMIT` and `OFFSET`, learn why the sort needs a tie-breaker, and meet a faster way to reach deep pages.
+
+Think of search results: the first page shows results 1 to 10, and "next" shows 11 to 20. Splitting a long list into pages like this is called **[[pagination|pagination-apis]]**.
+
+**Step 1: `OFFSET` skips rows.** You know `LIMIT n` keeps the first `n` rows. `OFFSET k` skips `k` rows first. Together, `LIMIT n OFFSET k` means "skip `k` rows, then return the next `n`". Here are all eight products, most expensive first:
+
+| position | name | price |
+| --- | --- | --- |
+| 1 | Headphones | 89.00 |
+| 2 | Desk lamp | 45.00 |
+| 3 | Fountain pen | 32.00 |
+| 4 | Planner | 18.00 |
+| 5 | Bookends | 9.00 |
+| 6 | Mug | 9.00 |
+| 7 | USB cable | 6.50 |
+| 8 | Notebook | 4.50 |
+
+With 3 products per page, page 1 is positions 1 to 3, page 2 is 4 to 6, page 3 is 7 and 8. To reach page `p`, skip the pages before it: skip (`p` − 1) × 3 rows. Page 3 skips (3 − 1) × 3 = 6 rows:
 
 ```sql
 SELECT name, price FROM products
 ORDER BY price DESC, name
-LIMIT 3 OFFSET 3;   -- page 2: skip (2 - 1) * 3 rows
+LIMIT 3 OFFSET 6;   -- page 3: USB cable, Notebook
 ```
 
-The part people forget is the **tie-breaker**. If two products cost the same, `ORDER BY price DESC` alone does not say which comes first, and the database may choose differently from one query to the next. Then an item can show up on two pages, or on none. Always end the `ORDER BY` with something unique, or at least something that fully decides the order the user expects.
+Page 3 has only two rows. The last page is often short, and that is fine.
 
-`OFFSET` has a cost: to skip 10,000 rows the database still has to find and throw away 10,000 rows. For deep pages, **keyset pagination** is faster — remember the last row you showed and ask for what comes after it:
+**Step 2: the tie-breaker.** Bookends and Mug both cost 9.00. `ORDER BY price DESC` on its own does not say which comes first, so the database [[may choose differently from one query to the next|tie-order]]. With pages of 5, Mug could be position 5 when page 1 is fetched and Bookends position 5 when page 2 is fetched. Then Bookends appears on no page, and Mug on both.
+
+The fix is a **tie-breaker**: one more column at the end of the `ORDER BY` that settles every tie. `ORDER BY price DESC, name` means "by price, high to low, and where prices are equal, by name A to Z". Always end the `ORDER BY` with something unique, such as the name here or the `id` in general, so the order is fully decided.
+
+**Step 3: `OFFSET` has a cost.** To skip 10,000 rows, the database still has to find those 10,000 rows in order and throw them away. It is like reaching page 500 of a book by counting pages from the start, instead of opening it at a bookmark.
+
+**Step 4: keyset pagination.** The bookmark version is **[[keyset pagination|keyset-apis]]**: remember the last row you showed, and ask for the rows that come after it. Say the last row on page 2 was `('Mug', 9.0)`. In the order "price high to low, then name A to Z", a row comes after Mug if it is cheaper, or if it costs the same and its name comes [[later in the alphabet|text-order]]:
 
 ```sql
--- the last row on the previous page was ('Fountain pen', 32.0)
 SELECT name, price FROM products
-WHERE price < 32.0 OR (price = 32.0 AND name > 'Fountain pen')
+WHERE price < 9.0 OR (price = 9.0 AND name > 'Mug')
 ORDER BY price DESC, name
 LIMIT 3;
 ```
 
-It also stays correct when rows are inserted while someone is paging.
+The brackets keep the "same price and later name" parts together. The result is USB cable and Notebook, the same as page 3 above, with nothing skipped. Keyset pagination also stays correct when rows are added while someone is paging. With `OFFSET`, a new expensive product pushes every row down one place, so the reader sees one product twice.
+
+**Watch out:** `OFFSET` counts rows, not pages. Page 2 of 3 per page is `OFFSET 3`, not `OFFSET 2`. And without a tie-breaker, products with equal prices can repeat or vanish between pages.
+
+::: context pagination-apis Pages in real apps
+Almost every app that shows a list pages it, because sending ten thousand rows to a phone at once is slow and wasteful. Web services usually let the app ask for a page size. GitHub's public API, for example, takes a `per_page` setting, 30 by default and at most 100, and a `page` number. Behind a request like that is often a query shaped like this lesson's: `ORDER BY … LIMIT per_page OFFSET (page − 1) × per_page`.
+:::
+
+::: context tie-order Why ties have no fixed order
+SQL promises exactly the order you ask for, and nothing more. When two rows tie on every `ORDER BY` column, the database may return them either way, depending on how it happened to read the rows: which index it used, how the data sits on disk, or whether several workers read the table in parallel. The same query can give a different order after the table changes or the database is upgraded. A test that passes today can fail next month, which is why the tie-breaker is a habit, not an extra.
+:::
+
+::: context keyset-apis Cursors in real services
+Keyset pagination is also called the "seek method", and in web services it often appears as a **cursor**: a token that stands for "the last row you saw". Stripe's API, for example, takes a `starting_after` value holding the id of the last object on the previous page. Slack's API hands back a `next_cursor` to pass in the next request. Both let a client walk through huge lists quickly, without the service counting past every earlier row.
+:::
+
+::: context text-order How text compares
+`>` and `<` work on text by comparing one character at a time from the left, using each character's code number. `'Mug' > 'Bookends'` is true because M comes after B. In SQLite's normal comparison, every capital letter comes before every lower-case letter and a space comes before both, so `'Z' < 'a'` is true. That is why the product names here, which all start with a capital, sort in plain alphabetical order, and why messy text should be cleaned before it is compared.
+:::
 --- task
-Return **page 2** of the product list, 3 products per page, sorted by price from highest to lowest, with ties broken by name A to Z. Return `name` and `price`.
+Return **page 2** of the product list, 3 products per page. Sort by `price` from highest to lowest, with ties broken by `name` A to Z. Return `name` and `price`.
 --- starter
 SELECT name, price
 FROM products
@@ -1726,9 +2195,11 @@ FROM products
 ORDER BY price DESC, name
 LIMIT 3 OFFSET 3;
 --- hint
-Page 2 skips the first page: `OFFSET 3`.
+Page 2 skips page 1. How many rows is that with 3 per page? That number goes after `OFFSET`.
 --- hint
 Bookends and Mug cost the same. Add `name` after `price DESC` in the `ORDER BY` so their order is decided.
+--- hint
+The ending is `ORDER BY price DESC, name LIMIT 3 OFFSET 3`.
 --- check result | Planner, Bookends, Mug — in that order
 ordered
 [["Planner", 18.0], ["Bookends", 9.0], ["Mug", 9.0]]
