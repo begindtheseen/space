@@ -3,6 +3,7 @@
 @title Python · Expert
 @name Python, expert: the machinery, concurrency, testing and hard problems
 @blurb Understand the machinery serious Python code is built on (closures, descriptors, class hooks, coroutines), write code that is typed, tested and designed for change, and solve the kind of hard problems that need a real algorithm.
+@plainvoice true
 
 === py4-01 | Debugging: closures and late binding
 --- teach
