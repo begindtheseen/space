@@ -3649,6 +3649,63 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       "file": "cod_py_05_plotting/12-decimation-for-plotting.md"
     }
   ],
+  "cod_py_06_testing": [
+    {
+      "id": "l01-pytest-basics",
+      "title": "Your first pytest suite",
+      "minutes": 22,
+      "covers": [
+        "pytest discovery rules, plain assert, and the rewritten assertion output"
+      ],
+      "file": "cod_py_06_testing/01-pytest-basics.md"
+    },
+    {
+      "id": "l02-approx-and-allclose",
+      "title": "Comparing numbers that are only close",
+      "minutes": 22,
+      "covers": [
+        "pytest.approx and its rel/abs semantics; the 1e-6 relative default",
+        "numpy.testing assert_allclose and assert_array_equal"
+      ],
+      "file": "cod_py_06_testing/02-approx-and-allclose.md"
+    },
+    {
+      "id": "l03-parametrize",
+      "title": "One test, a whole table of cases",
+      "minutes": 20,
+      "covers": [
+        "parametrize for tables of cases; ids for readable failures"
+      ],
+      "file": "cod_py_06_testing/03-parametrize.md"
+    },
+    {
+      "id": "l04-fixtures",
+      "title": "Fixtures, scopes, conftest.py, tmp_path and monkeypatch",
+      "minutes": 22,
+      "covers": [
+        "Fixtures, scopes, conftest.py, tmp_path, monkeypatch"
+      ],
+      "file": "cod_py_06_testing/04-fixtures.md"
+    },
+    {
+      "id": "l05-markers-and-fast-suite",
+      "title": "Markers, choosing tests, and keeping the suite fast",
+      "minutes": 21,
+      "covers": [
+        "Markers, -k, -x, --lf, and keeping the fast suite fast"
+      ],
+      "file": "cod_py_06_testing/05-markers-and-fast-suite.md"
+    },
+    {
+      "id": "l06-property-based-testing",
+      "title": "Property-based testing with Hypothesis",
+      "minutes": 21,
+      "covers": [
+        "Property-based testing with Hypothesis; invariants over examples"
+      ],
+      "file": "cod_py_06_testing/06-property-based-testing.md"
+    }
+  ],
   "cod_rs_01_basics": [
     {
       "id": "l01-rustup-and-cargo",
@@ -10170,17 +10227,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_py_06_testing": {
-    "covered": 0,
+    "covered": 7,
     "total": 13,
     "complete": false,
     "missing": [
-      "pytest discovery rules, plain assert, and the rewritten assertion output",
-      "pytest.approx and its rel/abs semantics; the 1e-6 relative default",
-      "numpy.testing assert_allclose and assert_array_equal",
-      "parametrize for tables of cases; ids for readable failures",
-      "Fixtures, scopes, conftest.py, tmp_path, monkeypatch",
-      "Markers, -k, -x, --lf, and keeping the fast suite fast",
-      "Property-based testing with Hypothesis; invariants over examples",
       "Golden-file regression tests with explicit tolerances",
       "Testing numerical code: invariants, convergence order, conservation laws",
       "Test doubles: fakes and mocks for sensors and hardware interfaces",
