@@ -14,7 +14,7 @@ Your processor does exactly this with memory. It never moves single bytes betwee
 
 ## Memory comes in lines
 
-Main memory is slow compared with a core. Reading a value from the RAM chips takes on the order of a hundred nanoseconds, while a core running at 2 GHz can do hundreds of instructions in that time. So each core keeps a small, fast copy of the memory it has used recently, called its **[[cache|cache-word]]**. When the core reads an address, it looks in its cache first. Only on a miss does it fetch from further away.
+Main memory is slow compared with a core: a read from the RAM chips takes on the order of a hundred nanoseconds, time enough for hundreds of instructions. So each core keeps a small, fast copy of the memory it has used recently, called its **[[cache|cache-word]]**. When the core reads an address, it looks in its cache first. Only on a miss does it fetch from further away.
 
 The cache does not store single bytes. It stores memory in fixed blocks called **cache lines**. On x86-64 processors a line is 64 bytes. You can ask Linux directly:
 
@@ -29,7 +29,7 @@ That is the machine used for every number in this lesson: an Intel Xeon with 4 c
 
 A line always starts at an address that is a multiple of 64. So which line a byte belongs to is its address divided by 64, rounded down. Two `long` variables 8 bytes apart, the first at an address that is a multiple of 64, are in the same line. Two variables 64 bytes apart never are.
 
-When your code reads one `long`, the core fetches the whole 64-byte line around it. That is usually a gift: the next variable you touch is often right next door, already in the cache. For threads, it is also the source of the trouble.
+Reading one `long` fetches the whole 64-byte line around it. That is usually a gift, because the next variable you touch is often right next door. For threads, it is also the trouble.
 
 ::: key
 A cache line is the unit the processor moves between memory and caches: 64 bytes on x86-64 (`getconf LEVEL1_DCACHE_LINESIZE` prints 64 on this machine). A byte's line is its address divided by 64, rounded down.
@@ -47,8 +47,6 @@ Most processors use a scheme from the **[[MESI|mesi-name]]** family. Each core m
 - **I, Invalid.** "My copy is stale. Do not use it."
 
 The one rule that matters for us: **to write a line, a core must own it alone** — it must be in M or E. If other cores hold copies, the writing core first sends them a message that says "throw your copy away", and their copies become I. Next time one of those cores touches the line, it misses and must fetch the fresh line from the writer.
-
-Many cores may read a line at once; each keeps an S copy and nobody waits. Writes are what force the line to move.
 
 Now put two threads on two cores. Thread A keeps writing variable `a`; thread B keeps writing variable `b`; `a` and `b` are in the same line. Every write by A invalidates B's copy. B's next write must pull the line back and invalidate A's copy. The line **[[ping-pongs|ping-pong]]** between the cores, and each trip costs tens of nanoseconds. Neither thread ever reads the other's variable. The hardware cannot know that; it only tracks whole lines.
 
@@ -119,7 +117,7 @@ Reading it line by line:
 
 1. `Together` is 16 bytes: two 8-byte counters side by side, 8 bytes apart. In this build `together` landed at an address that is a multiple of 64 (`nm` on the program shows it), so both counters are in one line.
 2. `Apart` is 128 bytes: `alignas(64)` on each member pushed `b` to offset 64, and the struct's size was rounded up to a multiple of 64. Now each counter owns a line. The [[two layouts|sizeof-layouts]] are drawn in the note.
-3. The same work took 3.49 s together and 0.61 s apart, about 5.7 times longer when the counters share a line. Two more runs gave 5.5 and 5.4 times. Your numbers will differ with the machine and with whatever else is running, but the gap is large and it is always in the same direction.
+3. The same work took 3.49 s together and 0.61 s apart, about 5.7 times longer when the counters share a line. Two more runs gave 5.5 and 5.4 times. Your numbers will differ with the machine and the load, but the direction will not.
 4. Per increment: $3.49\,\mathrm{s} / 10^8 \approx 35\,\mathrm{ns}$ together, against $0.61\,\mathrm{s} / 10^8 \approx 6\,\mathrm{ns}$ apart. The extra 29 ns or so is, roughly, the price of pulling the line over from the other core.
 
 Sanity check: all four sums are exactly 100,000,000, so the slow version is not wrong, only slow. That fits: false sharing never breaks correctness. It only burns time.
@@ -146,7 +144,7 @@ PerThreadStats stats[4];                // one per core; sizeof(PerThreadStats) 
 static_assert(sizeof(PerThreadStats) == 64);
 ```
 
-The cost is memory: 64 bytes to hold 8. On a flight computer that is almost always a good trade for the few variables that are written from different threads at high rate. It is a bad trade for anything else, because padding everything spreads your data over more lines and makes the cache hold less of what you actually use.
+The cost is memory: 64 bytes to hold 8. That is a good trade for the few variables written from different threads at a high rate, and a bad one for everything else, because padding spreads your data over more lines and the cache holds less of what you use.
 
 ## The standard's constant: `hardware_destructive_interference_size`
 
@@ -212,7 +210,7 @@ indices.hpp:7:18: note: you can stabilize this value with '--param hardware_dest
 
 The same struct used only inside one `.cpp` file draws no warning.
 
-The worry is the **[[ABI|abi-word]]**, the agreement between separately compiled pieces of a program about how types are laid out in memory. The constant's value is a compiler's guess for the processor it is tuning for. Build one library with one compiler setting and another with a different setting, and `sizeof(Indices)` could differ between the two. If both then share an `Indices` object, they disagree about where `tail` is. That is a silent, horrible bug, and a header is exactly how one type gets compiled by several builds.
+The worry is the **[[ABI|abi-word]]**, the agreement between separately compiled pieces of a program about how types are laid out in memory. The constant is the compiler's guess for the processor it tunes for. Build two libraries with different settings and `sizeof(Indices)` can differ between them; if they share an `Indices` object, they disagree about where `tail` is. A header is exactly how one type gets compiled by several builds.
 
 Flight software usually settles it the plain way the note suggests: define your own constant, once, for [[the processor you fly|adjacent-line]], and write down where the number came from.
 
@@ -224,7 +222,7 @@ inline constexpr std::size_t kCacheLine = 64;
 ```
 
 ::: warning The command-line option in g++ 13's note is misspelled
-The note above suggests `--param hardware_destructive_interference_size=64`. On this machine g++ 13 rejects that exact option: `unrecognized command-line option '--param=hardware_destructive_interference_size=64'; did you mean '--param=destructive-interference-size='?`. The option that works is `--param destructive-interference-size=64`, with dashes and no `hardware_` prefix. Compiled with it, the warning goes away.
+g++ 13 rejects the option its own note suggests: `unrecognized command-line option '--param=hardware_destructive_interference_size=64'; did you mean '--param=destructive-interference-size='?`. The one that works, and silences the warning, is `--param destructive-interference-size=64`.
 :::
 
 ::: key
@@ -331,7 +329,7 @@ Step by step:
 1. The producer thread pushes the numbers 0 to 99,999,999; `main` is the consumer and pops them.
 2. The consumer checks each value is exactly one more than the last. Both runs print `sequence ok`, so both layouts are correct.
 3. Packed, 100 million items took 1.35 s. Padded, 0.46 s. Seven runs in all gave speed-ups between 2.9 and 4.5 times.
-4. Why: packed, `head_` (written by the producer on every push) and `tail_` (written by the consumer on every pop) are 16 bytes apart, and the private caches sit in the same line too. Every operation on either side steals the line from the other. Padded, the producer mostly touches only its own line and the slot it is filling, and the consumer only its own.
+4. Why: packed, `head_` (written on every push) and `tail_` (written on every pop) share a line with both private copies, so every operation steals the line from the other side. Padded, each side mostly touches only its own line and the slot it is using.
 
 Sanity check: in the padded run, $10^8 / 0.46\,\mathrm{s} \approx 2.2 \times 10^8$ items per second, the printed 216 million. Each item moves 8 bytes, so that is under 2 GB/s, far below what memory can carry. The limit is coordination between the cores, not bandwidth, which is what this lesson predicts.
 :::
@@ -342,9 +340,7 @@ The exercise's simpler ring, which reads the *other* index on every push and pop
 
 ## Where this lives on a vehicle
 
-A flight computer's control loop and its telemetry thread often run on different cores and hand data through a queue like the one above. Per-core statistics — packets received, checksum failures, cycle overruns — are exactly the "each thread writes its own counter" pattern of the first example. In both places the layout of a struct, which you never see in the code's logic, can decide whether the handoff costs 6 nanoseconds or 35.
-
-It also matters for timing, not only speed. A cache line bouncing between cores is a delay that depends on what the *other* core is doing at that instant. That makes the time of your loop depend on another thread, and that kind of variation is the subject of the next lesson.
+A flight computer's control loop and telemetry thread often run on different cores and hand data through a queue like the one above. Per-core statistics — packets received, checksum failures, cycle overruns — are the "each thread writes its own counter" pattern of the first example. In both, a struct's layout, invisible in the code's logic, can decide whether an update costs 6 nanoseconds or 35. And a line bouncing between cores is a delay that depends on what the *other* core is doing, so your loop's timing now depends on another thread. That kind of variation is the subject of the next lesson.
 
 ## Check yourself
 
@@ -438,14 +434,6 @@ Two cores, one line holding `a` and `b`. Each write by one core invalidates the 
 ```
 :::
 
-::: context feature-macro Asking the library what it has
-Every C++ library feature added since C++14 has a feature-test macro, a name like `__cpp_lib_hardware_interference_size` that is defined only if the library provides it. Its value is a date, `201703` meaning March 2017, the year and month the feature entered the draft standard. Testing it with `#ifdef` lets one source file build on compilers that have the feature and on ones that do not, which matters when flight code is built by several toolchains.
-:::
-
-::: context abi-word The contract between compiled pieces
-ABI stands for application binary interface. The API is what you can write in source code; the ABI is what compiled machine code relies on: the size of each type, the offset of each member, how functions pass arguments. Two object files built separately never compare notes; they only work together if they assumed the same layout. Change a member's offset in one build and not the other, and one side reads the wrong bytes with no error message at all.
-:::
-
 ::: context sizeof-layouts The two structs, byte by byte
 The first example's two layouts, drawn to scale over two 64-byte lines. `Together` puts both 8-byte counters in line 0. `Apart` starts `b` at offset 64, in line 1, and leaves 56 bytes of padding after `a`.
 
@@ -474,6 +462,14 @@ The first example's two layouts, drawn to scale over two 64-byte lines. `Togethe
 ```
 
 Each coloured box is one 8-byte counter, drawn to scale; the vertical line marks the boundary at byte 64.
+:::
+
+::: context feature-macro Asking the library what it has
+Every C++ library feature added since C++14 has a feature-test macro, a name like `__cpp_lib_hardware_interference_size` that is defined only if the library provides it. Its value is a date, `201703` meaning March 2017, the year and month the feature entered the draft standard. Testing it with `#ifdef` lets one source file build on compilers that have the feature and on ones that do not, which matters when flight code is built by several toolchains.
+:::
+
+::: context abi-word The contract between compiled pieces
+ABI stands for application binary interface. The API is what you can write in source code; the ABI is what compiled machine code relies on: the size of each type, the offset of each member, how functions pass arguments. Two object files built separately never compare notes; they only work together if they assumed the same layout. Change a member's offset in one build and not the other, and one side reads the wrong bytes with no error message at all.
 :::
 
 ::: context adjacent-line Why some libraries pad to 128

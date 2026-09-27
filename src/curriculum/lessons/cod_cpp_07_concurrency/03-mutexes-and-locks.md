@@ -6,7 +6,7 @@ covers:
   - mutex, lock_guard, unique_lock, scoped_lock, shared_mutex, recursive_mutex
 ---
 
-Some gas stations have one restroom and one key, chained to a big wooden paddle so nobody walks off with it. You ask for the key. If it is on the hook, you take it, go in, and bring it back when you are done. If someone else has it, you wait. Nobody ever opens the door on somebody else, because there is only one key.
+Some gas stations have one restroom and one key, chained to a big wooden paddle. If the key is on the hook, you take it, go in, and bring it back when you are done. If someone else has it, you wait. Nobody opens the door on somebody else, because there is only one key.
 
 That paddle is a **mutex**, short for **mutual exclusion**: an object that at most one thread can hold at a time. A thread **locks** it before touching shared data and **unlocks** it afterwards. A second thread that tries to lock it while it is held waits until it is free. Everything between the lock and the unlock is called a **[[critical section|critical-section]]**: code only one thread can be in at once.
 
@@ -175,7 +175,7 @@ Walk through it. `claim_bus` locks `g_bus` and returns the `std::unique_lock` by
 Sanity check: the one failure, the timed attempt, happened exactly while `main` held the lock, and a TSan build ran clean.
 :::
 
-The biggest reason `std::unique_lock` exists is not in that list. **A condition variable**, the tool for "sleep until another thread says the data is ready", must be able to unlock the mutex while it sleeps and lock it again when it wakes. It needs a lock it can unlock, so it takes a `std::unique_lock`. That is lesson 05.
+The biggest reason `std::unique_lock` exists is not in that list. A **condition variable**, the tool for "sleep until another thread says the data is ready", must unlock the mutex while it sleeps and relock it when it wakes, so it takes a `std::unique_lock`. That is lesson 05.
 
 ::: key
 `std::lock_guard`: locks for exactly one scope, cannot unlock early or move. `std::unique_lock`: can defer, try, time out, unlock early and move; it is the lock a condition variable requires.
@@ -231,7 +231,7 @@ With a single mutex, `std::scoped_lock lock(m);` behaves exactly like a `std::lo
 
 ## shared_mutex: many readers, one writer
 
-Think of the departures board at an airport. Hundreds of people can read it at once; reading does not disturb anyone. But when someone updates it, nobody should read a half-changed line. Readers can share; a writer needs the board alone.
+Think of an airport departures board. Hundreds of people can read it at once. But while someone updates it, nobody should read a half-changed line. Readers can share; a writer needs the board alone.
 
 That is the **[[readers–writer lock|readers-writers]]**, and in C++17 it is **`std::shared_mutex`**, from `<shared_mutex>`. It has two ways to be held:
 
@@ -290,9 +290,9 @@ altitude after write: 1200.0 m
 
 Then the one word `std::shared_lock` in `read_nav` was changed to `std::unique_lock`, making every reader exclusive. Twice it printed `took 201 ms in total`.
 
-The four readers held the lock at the same time, so four 50 ms reads took 50 ms. Made exclusive, they queued: $4 \times 50 = 200$ ms, plus about a millisecond of thread start-up. The write then took the lock alone, and the next read saw 1,200 m.
+The four readers held the lock together, so four 50 ms reads took 50 ms. Made exclusive, they queued: $4 \times 50 = 200$ ms, plus about a millisecond of start-up. The write then took the lock alone, and the next read saw 1,200 m.
 
-Sanity check: four readers on a four-core machine can all run at once, so 50 ms is the best possible, and 200 ms is exactly one after another.
+Sanity check: 50 ms is the best possible, all four at once; 200 ms is exactly one after another.
 :::
 
 A `std::shared_mutex` is not free. On the same machine, an uncontended shared lock-and-unlock took about 22 ns and an exclusive one about 30 ns, against about 19 ns for a plain `std::mutex`. It pays off only when reads are long or readers many; for a 24-byte `NavState` copied in a few nanoseconds, a plain mutex usually wins. The standard also leaves open whether a waiting writer goes ahead of newly arriving readers, so a design with a flood of readers must make sure it can **[[never starve its writer|writer-starvation]]**.
