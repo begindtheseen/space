@@ -72,7 +72,7 @@ The bug vanishes when you add a `printf`, or when you build with `-O0`, or when 
 Once you can reproduce the failure, run the scientific method on it. Each lap has four steps.
 
 1. **Observe.** Write down exactly what happens. Not "it breaks", but "it prints `final v_est=inf m/s` and exits with status 1 on `flight.log`".
-2. **Hypothesize.** Guess a cause. A **hypothesis** is a guess that could be wrong, stated clearly enough that you can find out.
+2. **Hypothesize.** Guess a cause. A **hypothesis** is a guess that could be wrong, stated precisely enough that you can find out.
 3. **Predict.** Say what you would see if the hypothesis were true, and what you would see if it were false. A hypothesis that predicts nothing is useless.
 4. **Test.** Run the experiment that tells the two apart. Then keep the hypothesis or cross it out.
 
@@ -406,7 +406,7 @@ First, the failure might not be deterministic, so one "good" verdict along the w
 | Hypothesis loop | observe, hypothesize, predict, test | write it down; change one thing at a time |
 | Bisection | halve the search space each test | at most $\lceil \log_2 N \rceil$ tests |
 | Minimal reproducer | smallest input that still fails | becomes the regression test |
-| `git bisect run` | bisect commits with a script | exit 0 good, 125 skip, other non-zero bad |
+| `git bisect run` | bisect commits with a script | exit 0 good, 125 skip, 1 to 127 bad |
 | Verify | reproducer passes with the fix, fails without | then run the whole suite |
 
 The method works with nothing but a shell. Lesson 02 adds the first real instrument, the debugger gdb: stopping a program at a chosen line, reading the call stack after a crash, and setting a trap that fires the moment a variable is corrupted.

@@ -1,7 +1,7 @@
 ---
 id: l02-gdb-breakpoints-and-backtraces
 title: 'gdb: stopping a program and reading its stack'
-minutes: 26
+minutes: 17
 covers:
   - 'gdb: break, conditional breakpoints, watchpoints, run, bt, frame, up/down'
 ---
@@ -75,12 +75,12 @@ $ g++ -g -O0 -Wall -Wextra -o nav nav.cpp
 $ ./nav
 k=0  rate=0.0080  alt=100.000
 k=1  rate=0.0080  alt=100.000
-Segmentation fault (core dumped)
+Segmentation fault
 $ echo $?
 139
 ```
 
-Two steps work, then the program dies with a **[[segmentation fault|segfault]]**: it touched memory it was not allowed to touch, and the operating system killed it. (Exactly how your shell words that last line varies; the exit status 139 does not.)
+Two steps work, then the program dies with a **[[segmentation fault|segfault]]**: it touched memory it was not allowed to touch, and the operating system killed it. (Exactly how your shell words that line varies; the exit status 139 does not.)
 
 ## run and bt: where did it crash?
 
@@ -147,11 +147,13 @@ The filter's `imu` field itself holds the garbage. Now go up once more to `main`
 38	        double rate = step(f, 0.010, residuals[k]);
 (gdb) print k
 $3 = 2
+(gdb) print imu
+$4 = {gyro_bias = 0.002, accel_scale = 1}
 (gdb) print &imu
 $5 = (Imu *) 0x7fffffffc940
 ```
 
-The real sensor object is at `0x7fffffffc940`, but `f.imu` holds `0x3f3a36e2eb1c432d`. Something overwrote the pointer. And it happened on step `k = 2`, the first step whose residual was not zero.
+The sensor object itself is fine, and it lives at `0x7fffffffc940`, but `f.imu` holds `0x3f3a36e2eb1c432d`. Something overwrote the pointer. And it happened on step `k = 2`, the first step whose residual was not zero.
 
 Now read the state printed in frame 1 as evidence. The residual was 0.4. The gains are 0.5, 0.2, 0.01 and 0.001. If `x[0]` had been updated, it would read $100 + 0.5 \times 0.4 = 100.2$, but it is still 100. Instead:
 
@@ -159,7 +161,7 @@ Now read the state printed in frame 1 as evidence. The residual was 0.4. The gai
 - `x[2]` $= 0 + 0.2 \times 0.4 = 0.08$: the gain meant for `x[1]`.
 - `x[3]` $= 1 + 0.01 \times 0.4 = 1.004$: the gain meant for `x[2]`.
 
-Every state got its neighbor's update, shifted by one. The fourth gain, $0.001 \times 0.4 = 0.0004$, went into a fifth slot, and there is no fifth slot. Right after `x[3]` in the `Filter` struct comes `imu`.
+Every state got its neighbor's update, shifted by one. The fourth gain, $0.001 \times 0.4 = 0.0004$, went into a fifth slot, and there is no fifth slot. Right after `x[3]` in the [[layout of the Filter struct|struct-layout]] comes `imu`.
 
 Sanity check: in lesson 03 you will look at those 8 bytes directly and see that `0x3f3a36e2eb1c432d` is exactly how the number 0.0004 is stored as a `double`. The pointer was overwritten by a filter state.
 :::
@@ -224,13 +226,15 @@ Breakpoint 1, update (f=..., K=0x7fffffffc8f0, residual=0) at nav.cpp:22
 22	        f.x[i] += K[i - 1] * residual;
 (gdb) print i
 $1 = 4
+(gdb) print f.x[i]
+$2 = 6.9533558071425219e-310
 (gdb) print &f.x[i]
 $3 = (double *) 0x7fffffffc9a0
 (gdb) print &f.imu
 $4 = (Imu **) 0x7fffffffc9a0
 ```
 
-It stops on the very first call. `i` is 4, so the loop does run one pass too far. And the two addresses are identical: `&f.x[4]` and `&f.imu` are both `0x7fffffffc9a0`. Writing to `f.x[4]` writes over the pointer. That is the defect, caught in the act.
+It stops on the very first call. `i` is 4, so the loop does run one pass too far. `f.x[4]` prints as a strange, tiny number, because gdb is reading the pointer's 8 bytes as if they were a `double`. And the two addresses are identical: `&f.x[4]` and `&f.imu` are both `0x7fffffffc9a0`. Writing to `f.x[4]` writes over the pointer. That is the defect, caught in the act.
 
 Why did the first two steps survive? Look at the residual in the stop line: `residual=0`. On steps 0 and 1 the loop wrote `x[4] += 0.001 * 0`, which puts the same bits back, so the pointer stayed valid. On step 2 the residual was 0.4 and the pointer's bits changed. A bug that is present on every pass but only visible on some is very common, and it is why "it worked for the first two samples" proves little.
 :::
@@ -284,7 +288,7 @@ update (f=..., K=0x7fffffffc8f0, residual=0.40000000000000002) at nav.cpp:21
 
 Caught. The pointer went from the good address to garbage inside `update`, with residual 0.4. Notice two things.
 
-1. gdb reports the line **after** the write. The processor only notices the change once the writing instruction has finished, so the program is stopped at the next thing to run, here the loop's `++i` on line 21. The guilty line is the one just before: line 22.
+1. gdb reports the line **after** the write. The processor only notices the change once the writing instruction has finished, so the program is stopped at the next thing to run, here the loop's `++i` on line 21. The guilty line is the one right before it: line 22.
 2. Steps 0 and 1 did not trigger it, even though line 22 wrote to that memory then too. A watchpoint fires when the **value changes**, and writing the same bits back is not a change.
 
 You did not need to suspect `update`, the loop, or MATLAB. You only needed to know which variable went bad.
@@ -318,7 +322,9 @@ k=4  rate=0.0080  alt=100.150
 
 Check the numbers. The rate is $0.010 - 0.002 = 0.008$ rad/s every step, as it should be. The altitude now moves: $100 + 0.5 \times 0.4 = 100.2$, then $100.2 + 0.5 \times (-0.2) = 100.1$, then $100.1 + 0.5 \times 0.1 = 100.15$. Before the fix, the altitude never moved at all. That was a second symptom of the same bug, sitting in plain sight in the printed output.
 
-Following lesson 01, the fix is not finished until a test would catch the bug again. Here, a test that checks `x[0]` after one update with a nonzero residual fails before the fix and passes after it. In lesson 08 you will also see AddressSanitizer-style tools and compiler warnings that catch many out-of-range writes automatically.
+Following lesson 01, the fix is not finished until a test would catch the bug again. Here, a test that checks `x[0]` after one update with a nonzero residual fails before the fix and passes after it.
+
+Could a tool have caught it sooner? Compiling the buggy file with `g++ -O2 -Wall` prints `warning: iteration 3 invokes undefined behavior` for line 22, because the optimizer notices the fourth pass indexes past the array. AddressSanitizer, from the memory module, does **not** catch it: the bad write stays inside the `Filter` object, in memory the program owns, so ASan only reports the crash in `read_gyro` afterwards. That is exactly why a watchpoint is worth knowing.
 
 ## Check yourself
 
@@ -351,7 +357,7 @@ In the watchpoint session, why did gdb report line 21 when the bad write happene
 :::
 
 ::: answer
-A hardware watchpoint triggers after the writing instruction has completed, because only then has the value changed. The program is stopped at the next instruction to execute, which belongs to the loop's `++i` on line 21. The rule: when a watchpoint fires, the culprit is the statement just before the one gdb shows.
+A hardware watchpoint triggers after the writing instruction has completed, because only then has the value changed. The program is stopped at the next instruction to execute, which belongs to the loop's `++i` on line 21. The rule: when a watchpoint fires, the culprit is the statement right before the one gdb shows.
 :::
 
 ::: check
@@ -383,7 +389,7 @@ gdb is part of the GNU Project, the free software effort started by Richard Stal
 :::
 
 ::: context debug-info What -g actually puts in the file
-With `-g`, the compiler writes extra sections into the executable in a standard format called DWARF. They hold a table from machine-code addresses to source file and line, the type of every variable, and where each variable lives (for example, "32 bytes below the frame's base"). The program's code is the same with or without it; the file is just bigger. That is why release builds are often compiled with `-g` and then the debug sections are split off into a separate file and archived, so a crash from the field can still be read later.
+With `-g`, the compiler writes extra sections into the executable in a standard format called DWARF. They hold a table from machine-code addresses to source file and line, the type of every variable, and where each variable lives (for example, "32 bytes below the frame's base"). The program's code is the same with or without it; the file is only bigger. That is why release builds are often compiled with `-g` and then the debug sections are split off into a separate file and archived, so a crash from the field can still be read later.
 :::
 
 ::: context segfault Segmentation fault and exit code 139
