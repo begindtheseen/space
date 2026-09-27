@@ -1,7 +1,7 @@
 ---
 id: l05-guaranteed-copy-elision
 title: Returning big objects without copying them
-minutes: 21
+minutes: 22
 covers:
   - Guaranteed copy elision and what it means for returning big objects
 ---
@@ -24,7 +24,7 @@ Counted r = make();
 
 Read by the C++14 rules, two things happen after `Counted{}` is built. First, it is moved into a temporary object, the function's return value. Second, that temporary is moved into `r`. Two moves, like the two truck trips.
 
-The C++98 and C++14 standards **allowed** compilers to skip both, and every serious compiler did, an optimisation called **[[return value optimisation|rvo-history]]**, or RVO. But it was only *allowed*. So the language still insisted that the move constructor (or copy constructor) exist and be accessible, just in case some compiler did not skip it. A class whose copy and move were both deleted could not be returned by value at all, even though no compiler would ever have called them.
+The C++98 and C++14 standards **allowed** compilers to skip both, and every serious compiler did, an optimisation called **[[return value optimisation|rvo-history]]**, or RVO. But it was only *allowed*. So the language still insisted that the move constructor (or copy constructor) exist and be accessible, in case some compiler did not skip it. A class whose copy and move were both deleted could not be returned by value at all, even though no compiler would ever have called them.
 
 GCC and Clang have a flag that turns the optional skipping off: `-fno-elide-constructors`. With it you can see the paper story. Compiled as C++14 with that flag, the `make()` above performs exactly 2 moves. Keep that number; you will see it again in a table.
 
@@ -117,7 +117,7 @@ Two errors, one for each of the two moves the C++14 rules describe on paper: int
 Sanity check: nothing in the program calls a move, and in C++17 it runs; in C++14 it is rejected for moves that no optimising compiler would ever have performed. That gap is exactly what C++17 closed.
 :::
 
-The same rule rescues standard types that cannot move. `std::atomic<int> a = 0;` is an error in C++14 ("use of deleted function 'std::atomic<int>::atomic(const std::atomic<int>&)'") and fine in C++17. A struct holding a `std::mutex` can be returned from a factory with `return Guarded{{}, 42};` in C++17, and not before.
+The same rule rescues standard types that cannot move. `std::atomic<int> a = 0;` is an error in C++14 (`use of deleted function 'std::atomic<int>::atomic(const std::atomic<int>&)'`) and fine in C++17. A struct holding a `std::mutex` can be returned from a factory with `return Guarded{{}, 42};` in C++17, and not before.
 
 ## Named return values: NRVO is still optional
 
@@ -174,7 +174,7 @@ int main() {
 }
 ```
 
-Built three ways with g++ 13 (`-Wall -Wextra -O2` each time), the counts are:
+Built three ways with g++ 13 (`-Wall -Wextra -O2` each time; the C++14 build also needs `-Wno-c++17-extensions`, because the counters are a C++17 `inline` variable), the counts are:
 
 | Case | C++17 | C++17, `-fno-elide-constructors` | C++14, `-fno-elide-constructors` |
 |---|---|---|---|

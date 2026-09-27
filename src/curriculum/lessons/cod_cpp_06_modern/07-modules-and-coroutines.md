@@ -7,11 +7,11 @@ covers:
   - Why coroutines are rare in flight code
 ---
 
-Imagine a country decides to switch to a new, better electrical plug. The new plug is safer and easier to use. Nobody argues about that. But the plug is the easy part. Every wall socket, every lamp, every phone charger, every hotel and every factory has to change too, and for years the old and the new have to live side by side. The better idea arrives slowly, not because it is bad, but because it touches everything.
+Imagine a country switching to a new, safer electrical plug. The plug is the easy part. Every wall socket, every lamp, every phone charger, every hotel and every factory has to change too, and for years the old and the new have to live side by side. The better idea arrives slowly, not because it is bad, but because it touches everything.
 
-Now picture a bookmark. You stop reading in the middle of a chapter, close the book, do something else, and later open it at exactly the right line. A bookmark is tiny. But it has to live somewhere, and if you lose it, you lose your place.
+Now picture a bookmark. You stop mid-chapter, do something else, and later open the book at exactly the right line. The bookmark is tiny, but it has to live somewhere.
 
-C++20 added two big features that match these pictures. **Modules** are the new plug: a better way for one source file to use code from another, which needs every compiler, build tool and library to change with it. **Coroutines** are the bookmark: functions that can stop part-way and carry on later, which need somewhere to keep their place. Lesson 06 named both in its tour of C++20. This lesson compiles real examples of each and explains why neither is common yet in flight software.
+C++20 added two features that match these pictures. **Modules** are the new plug: a better way for one file to use code from another, which needs every compiler, build tool and library to change with it. **Coroutines** are the bookmark: functions that can stop part-way and carry on later. Lesson 06 named both in its tour of C++20. This lesson compiles real examples of each and explains why neither is common yet in flight software.
 
 ## Headers: copy and paste, every time
 
@@ -28,17 +28,15 @@ How much text is that? You can ask g++ to stop after the preprocessor with `g++ 
 
 A file with `<vector>`, `<string>`, `<map>`, `<format>` and `<iostream>` and an empty `main` comes to 48,529 lines. On one machine it took about 0.6 s to compile, against about 0.02 s with no includes. Times vary, but almost all the work was reading the library — and every `.cpp` file that includes it reads it again, producing the same result each time.
 
-Speed is not the only problem. Pasting text means everything leaks:
+Pasting text also means everything leaks:
 
 - A **macro** — a `#define` name the preprocessor replaces with text — defined in one header changes the meaning of every header pasted after it. The order of your `#include` lines can matter.
 - Each header needs **[[include guards|include-guards]]** so that pasting it twice does no harm.
-- Every helper a header declares, even one meant to be private, is visible to everyone who includes it.
+- Every helper a header declares, even a private one, is visible to every includer.
 
 ## Modules: compile the interface once
 
-A module turns this around. You write the interface once, the compiler compiles it once into a summary, and other files read the summary instead of re-pasting text.
-
-Two new pieces of syntax do it. `export module units;`, read "export module units", starts a **module interface unit** — a source file that says "I am the module called `units`". Inside it, `export` in front of a declaration makes that declaration visible to users. Anything without `export` stays private to the module. In another file, `import units;`, read "import units", makes the exported names available. There is no `#` in front: `import` is part of the language, not a preprocessor command.
+A module turns this around: the interface is compiled once into a summary, and other files read the summary instead of re-pasting text. Two pieces of syntax do it. `export module units;`, read "export module units", starts a **module interface unit** — a source file that says "I am the module called `units`". Inside it, `export` in front of a declaration makes that declaration visible to users. Anything without `export` stays private to the module. In another file, `import units;`, read "import units", makes the exported names available. There is no `#` in front: `import` is part of the language, not a preprocessor command.
 
 When the compiler builds a module interface unit, it writes a **BMI** — a **built module interface**, a binary file holding the compiled summary of everything exported. Each compiler has its own format: g++ writes `.gcm` files into a folder called `gcm.cache`, clang writes `.pcm` files, and Microsoft's compiler writes `.ifc` files.
 
@@ -89,7 +87,7 @@ $ ./app
 90 deg = 1.570796 rad
 ```
 
-Step by step: the first command produced two files, `units.o` (the machine code, 1,328 bytes here) and `gcm.cache/units.gcm` (the BMI, 2,000 bytes). The second command read the BMI. The third linked the two object files, exactly as with ordinary files.
+The first command wrote `units.o` (machine code, 1,328 bytes) and `gcm.cache/units.gcm` (the BMI, 2,000 bytes). The second read the BMI. The third linked, as with ordinary files.
 
 Now try to call the private helper from `main`:
 
@@ -108,9 +106,9 @@ Sanity check: $90^\circ$ is a quarter turn, and a quarter turn is $\pi/2 \approx
 
 What does this buy, once it works everywhere?
 
-- **Build time.** The interface is compiled once. Importers read a compact summary instead of tens of thousands of lines of text.
-- **Isolation.** Macros defined inside a module do not leak out, and macros in your file do not reach into the module. The order of `import` lines does not change their meaning.
-- **A real public interface.** Only what is exported is visible. A private helper cannot be called by accident, because it cannot be named.
+- **Build time.** Importers read a compact summary, compiled once, instead of tens of thousands of lines of text.
+- **Isolation.** Macros do not leak into or out of a module, and the order of `import` lines does not matter.
+- **A real public interface.** Only what is exported can be named, so a private helper cannot be called by accident.
 
 ## Why adoption is slow
 
@@ -136,7 +134,7 @@ With clang 18 the same project configures and builds, and you can watch the extr
 [6/6] Linking CXX executable app
 ```
 
-Two scans, then a step that writes the discovered order down, and only then the compiles — module first, importer second.
+Two scans, a step that records the order, then the compiles — module first.
 
 The second problem is that **BMIs are not portable**. A BMI belongs to one compiler, often to one version of it, and can depend on the flags used. Hand g++'s `units.gcm` to clang and it refuses:
 
@@ -155,7 +153,7 @@ Why module adoption is slow: modules change the build model. Every build system,
 For flight software, add one more delay. Flight projects [[pin their compiler|pinned-toolchain]] and change it rarely, because a new compiler means re-running verification on the whole program. A team will not move to modules until its pinned compiler, build system, static analysis tools and coding standard all agree. So for years yet, the flight code you meet will use headers; lesson 09, on the flight subset, takes that for granted.
 
 ::: warning
-Do not read "compiled once" as "faster in every build". A module's importers cannot start until its BMI is built, so a long chain of modules can reduce how many files compile in parallel. The gains are real in large codebases, but measure your own build before promising a number.
+"Compiled once" does not mean "faster in every build". Importers wait for their module's BMI, so a long chain of modules can reduce how many files compile in parallel. Measure your own build before promising a speed-up.
 :::
 
 ## Coroutines: a function with a bookmark
@@ -170,10 +168,10 @@ C++20 makes a function a coroutine if its body uses any of three keywords:
 - `co_yield v` — read "co-yield v" — hand the value `v` out to the caller and pause.
 - `co_return v` — read "co-return v" — finish the coroutine, handing back a final result.
 
-What C++20 did *not* add is any ready-to-use coroutine type. The header `<coroutine>` gives only the machinery: `std::coroutine_handle<P>` (read "coroutine handle of P"), a pointer-like handle to one frame that can `resume()` it, ask `done()`, and `destroy()` it; and two ready-made **awaitables** — types `co_await` knows how to wait on — called `std::suspend_always` (always pause) and `std::suspend_never` (never pause). Everything else you write yourself. The coroutine's return type must contain a nested type called `promise_type`, which the compiler calls at each step: when the coroutine starts, when it yields, when it returns, and when it finishes.
+What C++20 did *not* add is any ready-to-use coroutine type. The header `<coroutine>` gives only the machinery: `std::coroutine_handle<P>` (read "coroutine handle of P"), a pointer-like handle to one frame that can `resume()` it, ask `done()`, and `destroy()` it; and two ready-made **awaitables** — types `co_await` knows how to wait on — called `std::suspend_always` (always pause) and `std::suspend_never` (never pause). The rest you write yourself: the coroutine's return type must contain a nested `promise_type`, whose functions the compiler calls when the coroutine starts, yields, returns and finishes.
 
 ::: example A generator that hands out throttle commands
-A **generator** is the simplest useful coroutine: a function that produces a sequence one value at a time, only when asked. This one ramps a throttle from 40% to 100% in three steps. To see where the frame lives, the `promise_type` provides its own `operator new` and `operator delete`, which the compiler uses to allocate the frame, and prints each call.
+A **generator** is the simplest useful coroutine: it produces a sequence one value at a time, only when asked. This one ramps a throttle from 40% to 100% in three steps. Its `promise_type` supplies its own `operator new` and `operator delete`, which the compiler uses for the frame, and prints each call.
 
 ```cpp
 #include <coroutine>
@@ -286,15 +284,13 @@ done
 No allocation at all. Clang could see that the frame never outlives `main`, so it kept the frame in `main`'s own stack frame. At `-O0`, clang allocates too (64 bytes). Same source, same standard, three different answers about the heap.
 :::
 
-C++23 adds a ready-made `std::generator<T>` in a header called `<generator>`, so you would not have to write the class above. g++ 13 does not have it: `#include <generator>` fails with `generator: No such file or directory`. It arrived in the library that ships with GCC 14.
+C++23 adds a ready-made `std::generator<T>` in `<generator>`, which would replace the class above. g++ 13 does not have it (`generator: No such file or directory`); it arrived with GCC 14.
 
 ## Why coroutines are rare in flight code
 
-The generator example already shows the first reason.
-
 **The frame usually lives on the heap.** The standard says the frame is allocated with `operator new` unless the compiler can prove it is safe not to. Removing that allocation is an optimisation, called **[[heap allocation elision|halo]]**, and the standard never promises it. You saw g++ 13 allocate every time, and clang skip it only when optimising. Flight code usually forbids heap allocation after start-up, because an allocation can fail and its time is not bounded. A feature whose memory behaviour changes with the compiler and the `-O` flag is hard to certify.
 
-There is a partial fix. As in the example, `promise_type` may supply its own `operator new`, which could hand out memory from a fixed pool. But the frame's size is decided by the compiler — 72 bytes with g++, 64 with clang at `-O0` for the same function — and you only learn it when the allocation happens. So the pool must be sized by measuring, and re-measured whenever the code or the compiler changes.
+A partial fix: `promise_type` may supply an `operator new` that hands out memory from a fixed pool. But the compiler picks the frame's size — 72 bytes with g++, 64 with clang at `-O0`, for the same function — so the pool must be sized by measuring, and re-measured whenever the code or compiler changes.
 
 **The control flow is harder to analyse.** Flight software must prove its **[[worst-case execution time|wcet]]** — the longest any piece of code can take — for every task in every cycle. An ordinary function's path is visible in its source. A coroutine's body is cut into pieces at every `co_await` and `co_yield`, and one call to `resume()` runs whichever piece comes next, according to a saved position inside a frame the compiler generated. Timing tools, coverage tools and human reviewers all find that harder to reason about.
 
@@ -420,14 +416,14 @@ result 0                    sizeof(ValveSequence) = 8 bytes
 
 Same behaviour, tick for tick. Check the wait: after "10%" at tick 1, the coroutine pauses twice more (ticks 2 and 3), and the state machine counts `waited` to 2 (ticks 2 and 3). Both open fully at tick 3.
 
-The coroutine reads more naturally; that is its whole appeal. But the state machine's memory is a plain 8-byte object (a 4-byte `enum class` and a 4-byte `int`) that you can put in a static array, and its state is a named variable you can send down in telemetry. The coroutine's state is a hidden resume point inside a frame whose size and location the compiler chooses.
+The coroutine reads more naturally; that is its whole appeal. But the state machine is a plain 8-byte object (a 4-byte `enum class` and a 4-byte `int`) that can sit in static storage, and its state is a named variable you can send down in telemetry — not a hidden resume point in a frame the compiler sized.
 :::
 
 ::: warning
 A coroutine copies its parameters into the frame, but a *reference* parameter copies only the reference. If you pass a temporary to a coroutine taking `const std::string&`, the temporary dies at the end of the calling statement while the frame still holds a reference to it. The next `resume()` reads freed memory. Take coroutine parameters by value.
 :::
 
-None of this makes coroutines bad. On the ground — a telemetry server juggling thousands of connections, a simulator — they make asynchronous code far easier to write, and heap and timing matter much less. The flight rule is narrower: inside a hard real-time task, prefer what you can see.
+None of this makes coroutines bad. On the ground — a telemetry server juggling thousands of connections — they make asynchronous code far easier to write. The flight rule is narrower: inside a hard real-time task, prefer what you can see.
 
 ## Check yourself
 
@@ -444,7 +440,7 @@ A library vendor asks, "Can we ship our module's `.gcm` file instead of source, 
 :::
 
 ::: answer
-Not in general. A BMI is compiler-specific, often version-specific and even flag-specific: clang rejects a g++ `.gcm` as "not a valid precompiled module file". The vendor ships the module interface source, and each user's build makes its own BMI. The machine code can still ship as a compiled library.
+Not in general. A BMI is compiler-specific, often version-specific and even flag-specific: clang rejects a g++ `.gcm` as "not a valid precompiled module file". The vendor ships the interface source; each user's build makes its own BMI.
 :::
 
 ::: check
@@ -482,7 +478,6 @@ Memory: the state machine is a small fixed-size object (8 bytes in the example) 
 | `import std;` | the whole standard library as one module | C++23; absent from g++ 13 and clang 18 with libstdc++ 13 |
 | Coroutine | a function that can suspend and resume | any of `co_await`, `co_yield`, `co_return` |
 | Coroutine frame | where a paused coroutine keeps its state | heap by default; elision is not guaranteed |
-| `std::generator` | a ready-made C++23 generator | not in g++ 13's library; arrived with GCC 14 |
 | Flight practice | a state machine run once per tick | fixed size, visible state |
 
 The next lesson turns to C++23: `std::expected` from the error-handling lesson, grown up, plus `std::mdspan` and `std::print` — and, once again, an honest look at what g++ 13 actually ships.
