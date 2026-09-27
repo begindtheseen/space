@@ -1,7 +1,7 @@
 ---
 id: l02-the-views-on-a-sheet
 title: The views on a sheet
-minutes: 18
+minutes: 20
 covers:
   - 'Views: front, top, right, auxiliary, section (full, half, offset, broken-out), detail, isometric'
 ---
@@ -62,7 +62,7 @@ A length on a tilted face, read from a principal view, is shorter than the real 
 
 ## Section views: cutting the part open
 
-Now the X-ray. Many parts are hollow: a housing around a bearing, a tube, a plate with a stepped hole. From the outside, all you see of the insides are dashed hidden lines, and a view full of dashes overlapping each other is hard to read.
+Now the X-ray. Many parts are hollow: [[a housing around a bearing|section-in-practice]], a tube, a plate with a stepped hole. From the outside, all you see of the insides are dashed hidden lines, and a view full of dashes overlapping each other is hard to read.
 
 A **section view** solves this. Imagine sawing the part in two along a flat plane, lifting away the piece nearest you, and looking straight at the cut. You see the inside shapes as crisp outlines. The surfaces where the saw went through solid material are filled with thin, evenly spaced slanted lines called **[[hatching|hatching-preview]]** (or section lining), so you can tell solid from empty at a glance.
 
@@ -216,6 +216,10 @@ A **hidden line** is a line of short dashes. It marks an edge you could not see 
 Hold a pencil in sunlight, square to the rays, and its shadow on a wall parallel to it is full length. Tilt it and the shadow shortens. The shadow's length is the pencil's length times the cosine of the tilt: that is what cosine measures, the "shadow fraction" of a slanted length. An orthographic view is a shadow cast by parallel rays, so every tilted length in it shrinks by exactly this factor.
 :::
 
+::: context section-in-practice Sections you will meet in GNC work
+Actuators and sensors are mostly insides. A reaction wheel is a spinning mass on bearings inside a sealed housing; an engine gimbal is a pivot with bearings and seals; a gyro sits in a machined cavity. The drawings that matter to you are therefore full of sections. The bearing seat, the preload spacer and the shoulder that sets where the spin axis sits all appear only in a section view. Reading those views is how you find out which surfaces set your sensor's or actuator's alignment.
+:::
+
 ::: context hatching-preview Section lining
 Hatching is drawn as thin parallel lines, usually at $45^\circ$. Where two different parts touch in a section, their hatching runs in different directions so you can see where one part ends. Lesson 3 covers the line weights and spacing. Some older drawings used different hatch patterns for different materials, but the material is always written in words elsewhere on the drawing, and that is what counts.
 :::
@@ -282,8 +286,4 @@ In an isometric view, the vertical edges stay vertical and the other two directi
   <text x="186" y="144" font-size="12" fill="#1f2a44">each pair</text>
 </svg>
 ```
-:::
-
-::: context section-in-practice Sections you will meet in GNC work
-Actuators and sensors are mostly insides. A reaction wheel is a spinning mass on bearings inside a sealed housing; an engine gimbal is a pivot with bearings and seals; a gyro sits in a machined cavity. The drawings that matter to you are therefore full of sections. The bearing seat, the preload spacer and the shoulder that sets where the spin axis sits all appear only in a section view. Reading those views is how you find out which surfaces set your sensor's or actuator's alignment.
 :::

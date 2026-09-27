@@ -1,16 +1,40 @@
 ---
 id: l09-fault-detection-isolation-recovery
 title: Fault detection, isolation and recovery
-minutes: 24
+minutes: 28
 covers:
   - "Fault detection, isolation and recovery: residual monitors, hypothesis tests, persistence counters and hysteresis"
 ---
 
-A watchdog catches a task that stops running. A voter catches one channel that disagrees with its peers. Neither catches the failure mode that matters most once those two are covered: a single sensor, running exactly on schedule, agreeing with nothing because it is the only source of its kind, quietly reporting a value that is wrong. Detecting that requires checking a measurement against something more principled than "does it look plausible" — against the filter's own model of what a healthy measurement should look like, expressed as a formal hypothesis test — and then deciding, from a stream of individually noisy test results, whether a real fault is present without either crying wolf on ordinary noise or taking too long to notice a real one. This lesson builds that pipeline: the residual monitor, the persistence counter, and the hysteresis that together make fault detection, isolation, and recovery (FDIR) a working piece of software rather than a single threshold check.
+Think about the smoke alarm in a kitchen. Burn one piece of toast and it shrieks, even though nothing is on fire. That is annoying, and people who get annoyed enough pull the battery out. But an alarm that waits too long before sounding is worse: by the time it goes off, the room is full of smoke. A good alarm has to tell "a puff of smoke for one second" from "smoke that keeps coming", and once it has stopped, it should not start and stop again every time a wisp drifts past.
+
+Flight software has the same problem, with sensors instead of smoke. A watchdog catches a task that stops running (lesson 8). A voter catches one channel that disagrees with its partners (lesson 6). Neither catches this one: a single sensor, running exactly on time, with nothing of its kind to compare against, quietly reporting a wrong value. Catching it needs a test with a real statistical footing, and then a rule for deciding, from a stream of noisy test results, whether a fault is truly there.
+
+This lesson builds that machinery: the **residual monitor**, the **persistence counter**, and **hysteresis**. Together they make **FDIR** — fault detection, isolation and recovery — a working piece of software rather than one threshold check.
 
 ## The residual as a hypothesis test
 
-Recall the innovation, or residual, from this curriculum's filtering lessons: the gap $\boldsymbol\nu = \mathbf z - h(\hat{\mathbf x})$ between a new measurement and what the filter's current state estimate predicted it should be. A correctly tuned filter's own model already predicts how large that gap should typically be — its innovation covariance $\mathbf S$ — and the **normalized innovation squared** (NIS), $\boldsymbol\nu^\top \mathbf S^{-1} \boldsymbol\nu$, measures the gap in units the filter's own uncertainty sets. Under the filter's assumptions, and with a healthy measurement, NIS follows a chi-squared distribution with degrees of freedom equal to the measurement's dimension — so its expected value under a healthy hypothesis is exactly that dimension, a number you can check against without any additional tuning.
+Recall the **[[innovation|innovation]]**, also called the **residual**, from the filtering lessons. It is the gap between a new measurement $\mathbf z$ and what the filter predicted that measurement would be:
+
+$$
+\boldsymbol\nu = \mathbf z - h(\hat{\mathbf x}).
+$$
+
+Read $\boldsymbol\nu$ as "nu". $\hat{\mathbf x}$ ("x hat") is the filter's current estimate of the state, and $h$ turns a state into the measurement you would expect from it.
+
+A well-tuned filter already predicts how big that gap should usually be. That prediction is the **innovation covariance** $\mathbf S$. So you can measure the gap in units of the filter's own expected spread. That is the **normalized innovation squared**, or **NIS**:
+
+$$
+\mathrm{NIS} = \boldsymbol\nu^\top \mathbf S^{-1} \boldsymbol\nu .
+$$
+
+Read it "nu transpose, S inverse, nu". For a single measurement it is $\nu^2 / S$: the residual squared, divided by its expected variance. A residual of two standard deviations gives $\mathrm{NIS} = 4$.
+
+If the filter's assumptions hold and the sensor is healthy, NIS follows a **[[chi-squared distribution|chi-squared]]** whose **degrees of freedom** equal the number of measurements in $\mathbf z$. The mean of that distribution is exactly the number of degrees of freedom. So for a healthy 3-axis measurement, NIS should average $3$ — a number you can check against with no extra tuning.
+
+::: key
+Normalised innovation squared: $\mathrm{NIS} = \boldsymbol\nu^\top \mathbf S^{-1} \boldsymbol\nu$, with $\boldsymbol\nu$ the filter innovation and $\mathbf S$ its covariance. Under the filter assumptions it is chi-squared with the measurement dimension as degrees of freedom, so its mean equals that dimension. The standard sensor and filter health monitor.
+:::
 
 ::: example NIS on three different residuals
 ```python
@@ -21,211 +45,389 @@ def nis(residual, S):
     S = np.atleast_2d(S)
     return float(residual @ np.linalg.solve(S, residual))
 
-print(nis(np.array([1.2, -0.8]), np.eye(2)))                       # 2.08, dof=2, E[NIS|H0]=2
-print(nis(np.array([0.3]), np.array([[0.09]])))                     # 1.0
-print(nis(np.array([2.5, 1.0, -0.5]), np.diag([1.0, 4.0, 0.25])))   # 7.5, dof=3, E[NIS|H0]=3
+print(round(nis(np.array([1.2, -0.8]), np.eye(2)), 4))                      # 2 measurements
+print(round(nis(np.array([0.3]), np.array([[0.09]])), 4))                   # 1 measurement
+print(round(nis(np.array([2.5, 1.0, -0.5]), np.diag([1.0, 4.0, 0.25])), 4)) # 3 measurements
 # 2.08
 # 1.0
 # 7.5
 ```
-The two-dimensional residual lands close to its expected value of 2 under a healthy hypothesis — unremarkable. The three-dimensional residual's NIS of 7.5 sits well above its expected value of 3 — worth a second look, though on its own, from a single sample, not yet worth declaring a fault. That "not yet" is the entire subject of the rest of this lesson.
+
+Work each by hand. First: $\mathbf S$ is the identity, so NIS is the sum of squares, $1.2^2 + 0.8^2 = 1.44 + 0.64 = 2.08$. The expected value for 2 measurements is $2$. Unremarkable.
+
+Second: $0.3^2 / 0.09 = 0.09 / 0.09 = 1.0$. A residual of exactly one standard deviation. Expected value $1$.
+
+Third: $\mathbf S$ is diagonal, so divide each square by its own variance: $\frac{2.5^2}{1} + \frac{1.0^2}{4} + \frac{0.5^2}{0.25} = 6.25 + 0.25 + 1.0 = 7.5$. That is well above the expected $3$. A chi-squared with 3 degrees of freedom exceeds $7.5$ about $5.8\%$ of the time, so it deserves a second look. But one sample, alone, is not yet a fault. That "not yet" is the rest of this lesson.
 :::
 
-This is a hypothesis test in the same sense any other statistical test is: $H_0$ is "the measurement is consistent with the filter's own model of a healthy sensor," $H_1$ is "it is not," and a threshold on the test statistic (NIS, or its square root for a scalar signal) separates accept from reject. Every hypothesis test carries two ways to be wrong, and both have names worth using precisely. A **false alarm** (Type I error) rejects $H_0$ — declares a fault — when the sensor was actually healthy and the large residual was ordinary noise. A **missed detection** (Type II error) fails to reject $H_0$ — declares nothing wrong — when the sensor is genuinely faulted but the residual on this particular sample happened to look unremarkable. Setting the threshold trades one against the other directly: raise it, and false alarms fall while missed detections (at any given fault size) rise; lower it, and the reverse.
+This is a **hypothesis test**, the same as any statistical test. $H_0$ (read "H nought", the **null hypothesis**) says "the measurement fits the filter's model of a healthy sensor". $H_1$ says "it does not". A threshold on the test statistic decides between them. For a single scalar, engineers often use the **[[whitened|whitened]]** residual $z = \nu / \sqrt{S}$ instead: a plain number of standard deviations.
+
+Every such test can be wrong in **[[two ways|two-errors]]**:
+
+- A **false alarm** (Type I error): declaring a fault when the sensor was healthy and the big residual was ordinary noise.
+- A **missed detection** (Type II error): declaring nothing wrong when the sensor really is faulty, because this sample happened to look normal.
+
+The threshold trades one against the other. Raise it and false alarms fall, but missed detections rise. Lower it and the reverse happens.
 
 ::: key
-A residual test has two error modes: a false alarm (Type I, declaring a healthy sensor faulted) and a missed detection (Type II, failing to declare a genuinely faulted sensor). Threshold, persistence count $N$, and hysteresis gap are the three knobs that trade between them; none can be chosen without deciding how much of each error the mission can tolerate.
+A residual test has two error modes: a false alarm (Type I, declaring a healthy sensor faulted) and a missed detection (Type II, failing to declare a faulted sensor). Threshold, persistence count $N$, and hysteresis gap are the three knobs that trade between them; none can be chosen without deciding how much of each error the mission can tolerate.
 :::
 
-## The single-sample false-alarm rate, and why it is not the end of the story
+## One sample at a time: why it is not enough
 
-For a scalar, whitened residual under a healthy hypothesis, the residual behaves like a standard normal random variable, and a threshold at $z = 3.5$ gives a small, computable false-alarm probability per sample.
+For a healthy sensor, the whitened residual $z$ behaves like a **standard normal** number: average $0$, standard deviation $1$. Set the threshold at $|z| > 3.5$. The chance that healthy noise alone crosses it on one sample is small.
 
+::: example Counting false alarms over one flight
 ```python
-from scipy import stats
-p_fa_1 = 2 * stats.norm.sf(3.5)
-print(f"{p_fa_1:.3e}")
-# 4.653e-04
+import math
+p_fa_1 = math.erfc(3.5 / math.sqrt(2))     # P(|z| > 3.5) for a standard normal z
+samples = int(20 * 600)                     # 20 Hz for ten minutes
+print(f"single-sample false alarm: {p_fa_1:.3e}")
+print(f"samples: {samples}, expected false alarms: {samples * p_fa_1:.1f}")
+# single-sample false alarm: 4.653e-04
+# samples: 12000, expected false alarms: 5.6
 ```
-Four and a half in ten thousand looks comfortably small, until you remember how many samples a real control loop produces: at 20 Hz over a ten-minute powered phase, that is 12,000 independent opportunities for a false alarm, and $12000 \times 4.653\times10^{-4} \approx 5.6$ — a single-sample threshold this tight would be expected to declare several false faults over one flight, on a sensor that never actually failed.
 
-## The persistence counter: requiring a run, not a sample
+Four or five in ten thousand sounds tiny. Now count the chances. At $20$ samples per second over a ten-minute powered flight, that is $20 \times 600 = 12{,}000$ samples. Multiply: $12{,}000 \times 4.653 \times 10^{-4} \approx 5.6$. A single-sample test this tight would be expected to declare about five or six false faults in one flight, on a sensor that never failed. That is the burnt-toast alarm.
+:::
 
-A **persistence counter** raises the bar from "one sample exceeded threshold" to "$N$ consecutive samples exceeded threshold," resetting to zero on any sample that does not. Because false alarms on independent, healthy samples are (to a good approximation) independent events, requiring $N$ in a row suppresses them roughly as $p_{fa,1}^{\,N}$ — a steep, multiplicative improvement for a small increase in $N$.
+## The persistence counter: a run, not a sample
+
+A **persistence counter** raises the bar from "one sample crossed the threshold" to "$N$ samples in a row crossed it". Any sample below the threshold resets the count to zero.
+
+Why does this help so much? Healthy noise samples are, to a good approximation, **[[independent|independent-samples]]** of each other. The chance of two independent unlikely things both happening is the product of their chances. So $N$ exceedances in a row happen with chance about $p_{fa,1}^{\,N}$, read "p f a one to the N" — the single-sample false-alarm chance, multiplied by itself $N$ times. With $p_{fa,1} \approx 5 \times 10^{-4}$, each extra sample in the run makes false alarms about two thousand times rarer.
 
 ::: example Persistence turns a near-certain false alarm into a vanishing one
+Simulate $4000$ healthy ten-minute flights and count how many ever trip.
+
 ```python
+import math
 import numpy as np
-rng = np.random.default_rng(20260101)
-FS, T_MISSION = 20.0, 600.0
-N_SAMPLES, TRIALS = int(FS * T_MISSION), 4000
-Z = 3.5
+
+Z, FS, T = 3.5, 20.0, 600.0
+n_samples, trials = int(FS * T), 4000
+p_fa_1 = math.erfc(Z / math.sqrt(2))
+rng = np.random.default_rng(2026)
+
+def trips_within(exceed, N):
+    # does any window of N consecutive samples all exceed? (row by row)
+    run = np.zeros(exceed.shape[0], dtype=int)
+    hit = np.zeros(exceed.shape[0], dtype=bool)
+    for col in exceed.T:
+        run = np.where(col, run + 1, 0)
+        hit |= run >= N
+    return hit
 
 for N in [1, 2, 3, 4]:
-    trips = 0
-    for _ in range(TRIALS):
-        exceed = np.abs(rng.standard_normal(N_SAMPLES)) > Z
-        run = 0
-        for e in exceed:
-            run = run + 1 if e else 0
-            if run == N:
-                trips += 1
-                break
-    print(f"N={N}: empirical P(>=1 false trip over the mission) = {trips/TRIALS:.4f}  "
-          f"(analytic ~ p_fa_1^N * samples = {min(1.0, p_fa_1**N * N_SAMPLES):.3e})")
-# N=1: empirical=0.9970  (analytic ~ 1.000e+00)
-# N=2: empirical=0.0030  (analytic ~ 2.598e-03)
-# N=3: empirical=0.0000  (analytic ~ 1.209e-06)
-# N=4: empirical=0.0000  (analytic ~ 5.623e-10)
+    exceed = np.abs(rng.standard_normal((trials, n_samples))) > Z
+    p_sim = trips_within(exceed, N).mean()
+    p_est = min(1.0, p_fa_1**N * n_samples)
+    print(f"N={N}: simulated P(false trip in 10 min) = {p_sim:.4f}   estimate p^N x samples = {p_est:.3e}")
+# N=1: simulated P(false trip in 10 min) = 0.9942   estimate p^N x samples = 1.000e+00
+# N=2: simulated P(false trip in 10 min) = 0.0025   estimate p^N x samples = 2.598e-03
+# N=3: simulated P(false trip in 10 min) = 0.0000   estimate p^N x samples = 1.209e-06
+# N=4: simulated P(false trip in 10 min) = 0.0000   estimate p^N x samples = 5.623e-10
 ```
-Requiring even two consecutive exceedances — one additional sample — collapses the false-alarm probability over the whole ten-minute phase from "virtually certain" (99.7% of trials saw at least one) to three in a thousand; requiring three or four drives it low enough that four thousand simulated missions produced not a single false trip. This is the entire appeal of a persistence counter: a tiny increase in the number of consecutive samples required buys an enormous reduction in nuisance faults.
+
+With $N = 1$, $99.4\%$ of healthy flights see at least one false fault — almost all of them. Requiring just two in a row drops that to $0.25\%$, a quarter of one percent. The rough estimate agrees: $(4.653 \times 10^{-4})^2 \times 12{,}000 \approx 2.6 \times 10^{-3}$. With three or four in a row, none of the $4000$ healthy flights tripped at all, as the estimates (about one in a million and less) predict. A tiny increase in $N$ buys an enormous cut in nuisance faults.
 :::
 
-That reduction is not free, and the cost is latency: a fault has to persist for at least $N$ samples before it can be declared at all, and how long it actually takes depends sharply on how far the fault has pushed the residual.
+That cut is not free. The price is **detection latency**: the delay between a fault starting and the monitor declaring it. A fault has to last at least $N$ samples before it can be declared. And how long it really takes depends heavily on how far the fault pushes the residual.
 
 ::: example Detection latency, by fault size and by N
+A fault adds a fixed offset of $\delta$ (read "delta") standard deviations to the residual. Measure the average number of samples until the monitor declares, giving up at $400$.
+
 ```python
-TRIALS_B, MAXWAIT = 5000, 400
-for delta in [2.0, 4.0, 6.0]:
+import numpy as np
+
+Z, trials, max_wait = 3.5, 5000, 400
+rng = np.random.default_rng(7)
+
+def samples_to_declare(exceed, N):
+    # for each row: 1-based index where N-in-a-row is first reached (max_wait if never)
+    run = np.zeros(exceed.shape[0], dtype=int)
+    when = np.full(exceed.shape[0], exceed.shape[1])
+    for i, col in enumerate(exceed.T):
+        run = np.where(col, run + 1, 0)
+        newly = (run == N) & (when == exceed.shape[1])
+        when[newly] = i + 1
+    return when
+
+for delta in [2.0, 4.0, 6.0]:          # fault size, in sigmas
     row = []
     for N in [1, 2, 3, 4]:
-        latencies = []
-        for _ in range(TRIALS_B):
-            exceed = np.abs(rng.standard_normal(MAXWAIT) + delta) > Z
-            run, hit = 0, None
-            for i, e in enumerate(exceed):
-                run = run + 1 if e else 0
-                if run == N:
-                    hit = i
-                    break
-            latencies.append((hit + 1) if hit is not None else MAXWAIT)
-        row.append((N, round(float(np.mean(latencies)), 1)))
-    print(f"delta={delta:.1f} sigma: mean samples to declare, by N -> {row}")
-# delta=2.0 sigma: mean samples to declare, by N -> [(1, 14.9), (2, 196.5), (3, 378.3), (4, 398.6)]
-# delta=4.0 sigma: mean samples to declare, by N -> [(1, 1.5), (2, 3.5), (3, 6.6), (4, 10.9)]
-# delta=6.0 sigma: mean samples to declare, by N -> [(1, 1.0), (2, 2.0), (3, 3.0), (4, 4.1)]
+        exceed = np.abs(rng.standard_normal((trials, max_wait)) + delta) > Z
+        row.append(f"N={N}: {samples_to_declare(exceed, N).mean():5.1f}")
+    print(f"fault {delta:.0f} sigma -> mean samples to declare  " + "  ".join(row))
+# fault 2 sigma -> mean samples to declare  N=1:  15.0  N=2: 194.4  N=3: 378.8  N=4: 398.6
+# fault 4 sigma -> mean samples to declare  N=1:   1.5  N=2:   3.6  N=3:   6.6  N=4:  10.9
+# fault 6 sigma -> mean samples to declare  N=1:   1.0  N=2:   2.0  N=3:   3.0  N=4:   4.1
 ```
-For a large, unambiguous fault (6 sigma), $N=4$ costs about four samples of latency — negligible. For a marginal fault (2 sigma, barely above the noise floor), the same $N=4$ costs nearly 400 samples — twenty seconds at this lesson's 20 Hz — because a fault this small only exceeds the threshold on a small fraction of samples even when it is genuinely present, and waiting for four of those in a row takes a long time. The false-alarm suppression persistence buys is real, but it is not uniformly cheap: the closer a fault sits to the noise floor, the more that same $N$ costs in the time before anyone finds out.
+
+For a big, obvious fault ($6$ sigma), almost every sample crosses the threshold, so $N = 4$ costs about four samples — a fifth of a second at $20\,\mathrm{Hz}$. Negligible.
+
+For a marginal fault ($2$ sigma), the residual only crosses $3.5$ when noise adds another $1.5$ sigma, about $6.7\%$ of samples. Runs of several such samples are rare. The $N = 3$ and $N = 4$ numbers sit near $400$ only because the simulation gave up there; most runs never declared at all. The exact average wait for $N$ in a row is $\frac{1 - p^N}{(1-p)\,p^N}$ samples, with $p = 0.0668$. For $N = 3$ that is about $3{,}600$ samples, three minutes. For $N = 4$ it is about $54{,}000$ samples — around $45$ minutes. The closer a fault sits to the noise, the more the same $N$ costs.
 :::
 
-## Why a slow drift is the case that embarrasses a fixed-threshold monitor
+::: key
+Why every fault monitor needs a persistence counter: noise crosses any threshold occasionally. Requiring $N$ consecutive exceedances trades detection latency against false-alarm rate; hysteresis on the clear side stops a unit oscillating in and out of the solution.
+:::
 
-Every result above assumed a fault that steps to its full size instantly. A slowly growing bias is a harder case, and it is worth seeing exactly how much harder, because "slow drift" is not merely "a small step" — its effective size at the moment detection would need to happen is still small, even though its eventual size is large.
+## Why a slow drift embarrasses a fixed-threshold monitor
 
-::: example A ramp takes far longer to declare than a step of the same eventual size
+Everything so far assumed a fault that jumps to full size at once — a **step**. Real sensors more often degrade by a slow **[[drift|bias-drift]]**. A drift is not simply a small step. Its size at the moment you most need to catch it is small, even if its final size is large.
+
+::: example A ramp takes far longer to declare than a step to the same size
+The fault grows steadily to $6$ sigma over a given time, then stays there. The monitor uses $N = 3$.
+
 ```python
-N, final_delta = 3, 6.0
-for ramp_T in [5.0, 20.0, 60.0]:
-    ramp_samples = int(ramp_T * FS)
-    lat = []
-    for _ in range(3000):
-        n_show = ramp_samples + 200
-        ramp = np.minimum(np.arange(n_show) / ramp_samples, 1.0) * final_delta
-        exceed = np.abs(rng.standard_normal(n_show) + ramp) > Z
-        run, hit = 0, None
-        for i, e in enumerate(exceed):
-            run = run + 1 if e else 0
-            if run == N:
-                hit = i
-                break
-        lat.append((hit + 1) if hit is not None else n_show)
-    print(f"ramp to {final_delta} sigma over {ramp_T:.0f} s: mean declare time = {np.mean(lat)/FS:.2f} s")
-# ramp to 6.0 sigma over  5 s: mean declare time = 3.08 s
-# ramp to 6.0 sigma over 20 s: mean declare time = 10.54 s
-# ramp to 6.0 sigma over 60 s: mean declare time = 28.41 s
-# (a step straight to 6.0 sigma, for comparison, declares in about 0.15 s)
+import numpy as np
+
+Z, FS, N, final_delta, trials = 3.5, 20.0, 3, 6.0, 3000
+rng = np.random.default_rng(11)
+
+def samples_to_declare(exceed, N):
+    run = np.zeros(exceed.shape[0], dtype=int)
+    when = np.full(exceed.shape[0], exceed.shape[1])
+    for i, col in enumerate(exceed.T):
+        run = np.where(col, run + 1, 0)
+        newly = (run == N) & (when == exceed.shape[1])
+        when[newly] = i + 1
+    return when
+
+for ramp_s in [0.0, 5.0, 20.0, 60.0]:
+    ramp_n = max(1, int(ramp_s * FS))
+    n = ramp_n + 200
+    size = np.minimum(np.arange(1, n + 1) / ramp_n, 1.0) * final_delta   # grows to 6 sigma, then stays
+    exceed = np.abs(rng.standard_normal((trials, n)) + size) > Z
+    t = samples_to_declare(exceed, N).mean() / FS
+    label = "step" if ramp_s == 0 else f"ramp over {ramp_s:.0f} s"
+    print(f"{label:>16}: mean time to declare = {t:6.2f} s")
+#             step: mean time to declare =   0.15 s
+#    ramp over 5 s: mean time to declare =   3.04 s
+#   ramp over 20 s: mean time to declare =  10.48 s
+#   ramp over 60 s: mean time to declare =  28.34 s
 ```
-A fault that steps immediately to six sigma is declared in about 0.15 seconds. The identical eventual magnitude, reached by a 60-second ramp instead, takes about 28.4 seconds to declare — nearly half the ramp's entire duration passes with the fault present, growing, and undeclared. If the phase of flight this monitor is protecting is shorter than that — a burn, an approach, a critical maneuver measured in tens of seconds — a slow drift can outlast the entire phase without ever crossing into a declared fault, even though a step of the same final size would have been caught almost immediately. This is precisely why a persistence-and-threshold monitor tuned and validated against step faults can pass every test on the bench and still miss the failure that matters in flight: real sensor degradation is far more often a drift than a step.
+
+A step to $6$ sigma is declared in $0.15\,\mathrm{s}$: three samples at $20\,\mathrm{Hz}$. The same final size, reached by a 60-second ramp, takes about $28\,\mathrm{s}$. Nearly half the ramp passes with the fault present, growing, and undeclared.
+
+Sanity check: at $28\,\mathrm{s}$ into a 60-second ramp, the fault is $6 \times 28/60 \approx 2.8$ sigma. That is roughly where a fault starts crossing $3.5$ often enough to string three in a row. So the result makes sense.
+
+If the flight phase you are protecting is shorter than that — a burn, a final approach — a slow drift can outlast the whole phase without ever being declared. A step of the same final size would have been caught almost at once.
 :::
 
 ::: warning
-A monitor's false-alarm rate and detection latency are usually characterized against step faults, because they are simple to inject and simple to reason about. Validate against a slow ramp too, at the size and rate a real degradation mode would plausibly produce — the worked example above shows the two cases are not remotely equivalent, and a monitor tuned only against steps can look excellent on paper while missing the fault that actually occurs.
+Monitors are usually characterized against step faults, because steps are easy to inject and easy to reason about. Test against a slow ramp too, at the size and rate a real degradation would plausibly have. The two are not remotely equivalent, and a monitor tuned only on steps can look excellent on paper while missing the fault that actually happens.
 :::
 
 ## Hysteresis: a second threshold to stop chattering
 
-A persistence counter controls how a fault is *declared*; it says nothing about how a fault is *cleared*. A residual hovering near the declare threshold — neither comfortably healthy nor comfortably faulted — can cross back and forth repeatedly if clearing uses the same threshold as declaring, flapping a downstream mode transition or a telemetry flag on and off many times a second. **Hysteresis** fixes this with two thresholds: a higher one to declare, a distinctly lower one to clear, so that once a fault is declared, the residual has to fall meaningfully further before the system considers it resolved.
+A persistence counter controls how a fault is *declared*. It says nothing about how a fault is *cleared*. Suppose a residual hovers right around the threshold. If the same threshold is used to declare and to clear, noise pushes it back and forth across the line, and the fault flag flips on and off many times a second. Engineers call this **chattering**.
 
-::: example Hysteresis gap versus how often the fault flag flips
+**Hysteresis** fixes it with two thresholds, the way a **[[thermostat|thermostat]]** does: a higher one to declare, and a clearly lower one to clear. Once a fault is declared, the residual must fall well below the declare line before the system calls it resolved.
+
+::: example Hysteresis gap versus how often the fault is re-declared
+The residual hovers exactly at the declare threshold, $3.5$ sigma — the worst case.
+
 ```python
-DUR, TRIALS_C = 2000, 800
-declare_z, mean_level = 3.5, 3.5   # worst case: residual hovers right at the declare threshold
+import numpy as np
+
+declare_z, level, duration, trials = 3.5, 3.5, 2000, 800   # residual hovers right at the threshold
+rng = np.random.default_rng(3)
+
 for gap in [0.0, 1.0, 2.0]:
     clear_z = declare_z - gap
-    flips_all = []
-    for _ in range(TRIALS_C):
-        state, flips = 0, 0
-        for v in rng.standard_normal(DUR) + mean_level:
-            if state == 0 and v > declare_z:
-                state, flips = 1, flips + 1
-            elif state == 1 and v < clear_z:
-                state = 0
-        flips_all.append(flips)
-    print(f"gap={gap:.1f} (declare={declare_z}, clear={clear_z:.1f}): mean flips over {DUR} samples = {np.mean(flips_all):.1f}")
-# gap=0.0 (declare=3.5, clear=3.5): mean flips over 2000 samples = 500.2
-# gap=1.0 (declare=3.5, clear=2.5): mean flips over 2000 samples = 241.4
-# gap=2.0 (declare=3.5, clear=1.5): mean flips over 2000 samples = 44.6
+    v = rng.standard_normal((trials, duration)) + level
+    state = np.zeros(trials, dtype=bool)
+    flips = np.zeros(trials, dtype=int)
+    for col in v.T:
+        declare = ~state & (col > declare_z)
+        clear = state & (col < clear_z)
+        flips += declare
+        state = (state | declare) & ~clear
+    print(f"gap {gap:.1f} (declare {declare_z}, clear {clear_z:.1f}): mean declarations in {duration} samples = {flips.mean():.1f}")
+# gap 0.0 (declare 3.5, clear 3.5): mean declarations in 2000 samples = 500.0
+# gap 1.0 (declare 3.5, clear 2.5): mean declarations in 2000 samples = 242.0
+# gap 2.0 (declare 3.5, clear 1.5): mean declarations in 2000 samples = 43.7
 ```
-With no gap at all, a residual sitting right at the boundary flips state about once every four samples — a fault flag chattering essentially continuously. Separating the clear threshold from the declare threshold by two sigma cuts that more than tenfold, because the residual now has to travel meaningfully further from its previous position before the state changes again. The right gap size, like the right $N$, is chosen against how much chattering the downstream logic (a mode transition, an isolation decision) can tolerate — not fixed by convention.
+
+With no gap, the monitor declares a fresh fault $500$ times in $2000$ samples — once every four samples, clearing in between. The flag is chattering almost continuously.
+
+With a gap of $2$ sigma (clear at $1.5$), that drops to about $44$, more than ten times fewer. The residual now has to travel much further before the state can change again. The right gap, like the right $N$, is chosen against how much chattering the downstream logic can stand — a mode transition, a decision to drop a sensor. It is not fixed by habit.
+:::
+
+## Check against something independent
+
+Some faults defeat every check a sensor can run on itself. A **[[star tracker|star-tracker]]** can report an attitude that is self-consistent, flagged healthy by its own electronics, and wrong by several degrees. Its health flag is its opinion of itself. A unit's self-reported health is never enough.
+
+Detection has to come from outside the unit: a **physically independent** measurement of the same quantity. For attitude, the natural partner is the gyro — integrate the gyro rates forward from the last good attitude and compare. The two sensors fail for different reasons, so a large, persistent residual between them means something. Then the full chain applies: a residual monitor with a persistence counter to ignore noise, and hysteresis so the unit does not flicker in and out of the solution.
+
+Once the bad unit is isolated, the filter stops using it and continues on the remaining sources. Its covariance grows honestly to reflect the lost information. And the event goes to telemetry, so the ground can decide what happened.
+
+::: warning
+When a residual monitor keeps complaining, it is tempting to increase the measurement noise the filter assumes for that sensor until the complaints stop. Do not. A bigger $\mathbf S$ makes NIS smaller, so the monitor goes quiet — while the bad data keeps flowing into the state estimate. You have not fixed the fault; you have switched off the alarm.
 :::
 
 ## FDIR as a pipeline, not a single check
 
-The three letters in FDIR name three distinct jobs this lesson has now built pieces of. **Detection** is the residual test and its persistence counter, deciding whether a fault is present. **Isolation** is deciding *which* source is responsible — trivial when only one sensor feeds a given quantity, and the actual subject of lesson 6's voter when several redundant sources are available to compare against each other. **Recovery** is what the software does once a fault is isolated — stop incorporating that source, fall back to a remaining one, or escalate toward the mode manager's safing transition from lesson 2 — and assigning that response systematically, failure mode by failure mode, is exactly what an FMEA is built to do, which is where lesson 10 goes next.
+The three letters of FDIR name three separate jobs.
+
+- **Detection** — a monitor says something is wrong. This lesson's residual test and persistence counter.
+- **Isolation** — decide *which* unit is to blame. Easy with a single sensor, since there is only one suspect. With several redundant sources it is lesson 6's voting problem, and lesson 7 showed where that breaks.
+- **Recovery** — reconfigure and continue: stop using the bad source, switch to a remaining one, or escalate to the mode manager's safe transition (lesson 2). Assigning that response, failure mode by failure mode, is the job of an FMEA, which comes next in lesson 10.
+
+A monitor that detects but cannot say which unit is at fault leaves the vehicle knowing only that *something* is wrong — it cannot reconfigure around it.
+
+::: key
+FDIR: Fault Detection, Isolation and Recovery. Detection: a monitor says something is wrong. Isolation: identify which unit. Recovery: reconfigure and continue. Detection without isolation is an alarm, not a fault management system.
+:::
 
 ## Check yourself
 
 ::: check
-A scalar, whitened residual has value $z = 2.6$ under a filter whose innovation variance model is correct. Is this, by itself, enough to declare a fault at a threshold of $z_{\text{thresh}} = 3.5$ with a persistence requirement of $N = 1$? What if $N = 3$ and this is the third consecutive sample above threshold?
+A whitened residual is $z = 2.6$, and the filter's noise model is correct. The threshold is $3.5$. Does this sample declare a fault with $N = 1$? What would have to be true for a sample to declare with $N = 3$?
 :::
 
 ::: answer
-With $z = 2.6$, the residual does not exceed a threshold of 3.5 at all, so neither case declares a fault from this sample — it is a routine, if slightly large, healthy-hypothesis residual. Had the sample instead been, say, $z = 3.9$, then with $N=1$ a single such sample would declare immediately; with $N=3$ it would only declare once two prior consecutive samples had also exceeded 3.5, and this lesson's persistence-counter example is exactly what such a requirement buys and costs.
+No. $2.6$ is below $3.5$, so the sample does not cross the threshold at all, with any $N$. It is a slightly large but ordinary healthy residual — healthy noise lands beyond $2.6$ about $1\%$ of the time. And because it is below the threshold, it would also reset any persistence count to zero. For a declaration with $N = 3$, a sample must exceed $3.5$ *and* be the third in an unbroken run of samples that all exceed $3.5$.
 :::
 
 ::: check
-Explain, without recomputing the simulation, why requiring two consecutive exceedances rather than one reduces the false-alarm probability over a mission by roughly the single-sample false-alarm probability itself, not merely by half.
+Without re-running the simulation, explain why requiring two consecutive exceedances instead of one cuts the false-alarm chance by roughly a factor of $p_{fa,1}$, not merely by half.
 :::
 
 ::: answer
-Treating consecutive healthy-hypothesis samples as approximately independent, the probability of two exceedances in a row is approximately the product of two single-sample probabilities, $p_{fa,1}\times p_{fa,1} = p_{fa,1}^2$ — for a small $p_{fa,1}$, that is a far smaller number than $p_{fa,1}$ itself, not merely half of it. Requiring $N$ in a row multiplies, rather than adds, the improvement with each additional required sample, which is why the false-alarm probability collapses geometrically in $N$ rather than linearly.
+Healthy samples are close to independent, so the chance of two exceedances in a row is the product of the two single chances, $p_{fa,1} \times p_{fa,1} = p_{fa,1}^2$. That is the old chance multiplied by $p_{fa,1}$ itself, about $5 \times 10^{-4}$ here — a cut of roughly two thousand times, not two. Each extra required sample multiplies by $p_{fa,1}$ again, so false alarms fall geometrically with $N$, not linearly.
 :::
 
 ::: check
-A monitor validated only against instantaneous step faults reports excellent detection latency in every test. A colleague argues this is sufficient evidence the monitor is well-tuned for flight. What does this lesson's ramp-versus-step result say about that argument?
+A monitor tested only against instant step faults shows excellent detection latency in every test. A colleague says this proves it is well tuned for flight. What does the ramp-versus-step result say?
 :::
 
 ::: answer
-It is not sufficient. This lesson's worked example shows a fault of the identical eventual magnitude, introduced as a slow ramp rather than an instantaneous step, can take many times longer to declare — nearly half the ramp's own duration, in the 60-second case shown — because the fault's effective size at any given moment during the ramp is far smaller than its eventual size. A monitor that has only ever been validated against steps has no evidence at all about how it behaves against the gradual degradation that real sensors more often exhibit, and could pass every bench test while missing exactly the failure that matters in flight.
+It proves nothing about drifts. A fault that reaches the same final size by a slow ramp can take many times longer to declare — in this lesson's 60-second case, about $28\,\mathrm{s}$ against $0.15\,\mathrm{s}$ — because for most of the ramp the fault is small. Real sensors usually degrade by drifting, so a monitor validated only on steps has no evidence about the failure most likely to happen, and can pass every bench test while missing it in flight.
 :::
 
 ::: check
-A residual monitor uses the same value for its declare and clear thresholds. Under what condition does this produce a fault flag that changes state many times per second, and what is wrong with that outcome even if every individual declaration was, technically, correct at the instant it fired?
+A monitor uses the same number for its declare and clear thresholds. When does its fault flag change state many times per second, and what is wrong with that even if each individual change was, by the rule, correct?
 :::
 
 ::: answer
-It happens when the residual hovers close to that single threshold, so ordinary sample-to-sample noise repeatedly pushes it back and forth across the boundary, each crossing correctly triggering a state change by the letter of the rule. The problem is not correctness at each instant but usability downstream: a fault flag that flips many times a second is not a signal any mode transition, telemetry display, or operator can act on sensibly, and hysteresis — a lower, separate clear threshold — is what turns a technically-correct-but-useless flapping signal into one that changes state only when the underlying condition has genuinely, meaningfully changed.
+It happens when the residual hovers near that single threshold, so ordinary noise pushes it back and forth across the line and each crossing correctly flips the flag. The trouble is not correctness at each instant but usefulness: a flag flipping many times a second cannot drive a mode change, a sensor switch, or a display anyone can act on. A separate, lower clear threshold — hysteresis — makes the flag change only when the underlying condition has really changed.
 :::
 
 ::: check
-Match each of detection, isolation, and recovery to the mechanism in this module that primarily implements it, and explain in one sentence why isolation is trivial for a single sensor but not for a triad of redundant ones.
+Match detection, isolation and recovery to the mechanism in this module that mainly implements each. In one sentence, why is isolation easy for a single sensor but not for a triad?
 :::
 
 ::: answer
-Detection is the residual test and persistence counter built in this lesson; isolation is voting among redundant sources, from lessons 6 and 7, when more than one source measures the same quantity; recovery is the systematic, failure-mode-by-failure-mode response assignment an FMEA produces, the subject of lesson 10. Isolation is trivial for a single sensor because there is only one candidate to blame the moment a fault is detected — there is no "which one" question to answer — while a triad requires deciding which of several disagreeing sources is the faulty one, which is exactly the comparison problem lessons 6 and 7 showed is solvable for an ordinary fault and specifically defeated by a common-mode or Byzantine one.
+Detection: the residual test and persistence counter from this lesson. Isolation: voting across redundant sources, from lessons 6 and 7. Recovery: the response assigned to each failure mode by an FMEA, lesson 10. Isolation is easy for one sensor because there is only one suspect the moment a fault is detected, whereas a triad must work out *which* of several disagreeing sources is wrong — solvable for an ordinary fault, and defeated by a common-mode or Byzantine one.
 :::
 
 ## Summary
 
 | Term | Meaning |
 | --- | --- |
-| Residual / innovation | Gap between a measurement and the filter's prediction of it |
-| NIS | $\boldsymbol\nu^\top\mathbf S^{-1}\boldsymbol\nu$; chi-squared under $H_0$, expected value equal to the measurement dimension |
+| Residual / innovation | $\boldsymbol\nu = \mathbf z - h(\hat{\mathbf x})$: measurement minus the filter's prediction of it |
+| NIS | $\boldsymbol\nu^\top\mathbf S^{-1}\boldsymbol\nu$; chi-squared under $H_0$, mean equal to the measurement dimension |
 | False alarm (Type I) | Declaring a fault when the sensor is healthy |
-| Missed detection (Type II) | Failing to declare when the sensor is genuinely faulted |
-| Persistence counter | Requires $N$ consecutive exceedances; suppresses false alarms roughly as $p_{fa,1}^N$, at the cost of latency |
-| Ramp versus step | A slow drift takes far longer to declare than a step of the same eventual size — the case a monitor tuned only on steps will miss |
-| Hysteresis | Separate, lower clear threshold; prevents chattering when a residual hovers near the declare threshold |
-| FDIR | Detection (this lesson) → isolation (voting, lessons 6–7) → recovery (FMEA-driven response, lesson 10) |
+| Missed detection (Type II) | Failing to declare when the sensor really is faulty |
+| Single-sample test | $4.65 \times 10^{-4}$ per sample at $3.5$ sigma; about $5.6$ false alarms in $12{,}000$ samples |
+| Persistence counter | $N$ in a row; false alarms fall roughly as $p_{fa,1}^N$, at the cost of latency |
+| Latency | Small for big faults; grows enormously as the fault nears the noise |
+| Ramp versus step | A slow drift takes far longer to declare than a step to the same size |
+| Hysteresis | A separate, lower clear threshold; stops chattering |
+| Independent cross-check | Self-reported health is never enough; compare with a physically independent source |
+| FDIR | Detection → isolation → recovery; detection alone is only an alarm |
 
-The next lesson turns detection into a systematic accounting: an FMEA that assigns every failure mode a detection means and a software response, a fault tree that combines basic-event probabilities into a top-event risk, and the abort decision that some of those responses ultimately feed.
+The next lesson turns detection into a systematic account: an FMEA that gives every failure mode a detection means and a software response, a fault tree that combines small probabilities into the risk of the worst outcome, and the abort decision that some of those responses finally feed.
+
+::: context innovation Why "innovation"
+The word means "the new part". A filter predicts each measurement before it arrives. Whatever the measurement contains that the prediction did not is the genuinely new information — the innovation. It is the only part of the measurement the filter learns anything from.
+
+That is also why it makes a good health check. If the filter's model is right, the innovations should look like pure noise of the size $\mathbf S$ predicts. Innovations that are too big, or that keep leaning one way, mean the model and the sensor no longer agree.
+:::
+
+::: context chi-squared The shape of healthy NIS
+Add up the squares of $k$ independent standard normal numbers and the total follows a chi-squared distribution with $k$ degrees of freedom. Its mean is $k$. NIS is exactly such a sum once the residual is whitened, so for healthy 3-axis data it averages $3$.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">
+  <line x1="30" y1="120" x2="340" y2="120" stroke="#1f2a44" stroke-width="1.5"/>
+  <polyline points="30,120.0 36,49.6 42,32.1 49,25.0 55,23.2 61,24.5 68,27.7 74,32.0 80,37.0 86,42.3 92,47.7 99,53.1 105,58.3 111,63.4 118,68.1 124,72.6 130,76.8 136,80.7 142,84.3 149,87.7 155,90.7 161,93.5 168,96.1 174,98.4 180,100.5 186,102.5 192,104.2 199,105.8 205,107.3 211,108.5 218,109.7 224,110.8 230,111.7 236,112.6 242,113.4 249,114.1 255,114.7 261,115.2 268,115.7 274,116.2 280,116.6 286,117.0 292,117.3 299,117.6 305,117.8 311,118.1 318,118.3 324,118.5 330,118.6" fill="none" stroke="#1d6fd1" stroke-width="2.5"/>
+  <line x1="105" y1="120" x2="105" y2="58" stroke="#1f2a44" stroke-width="1.5" stroke-dasharray="4,3"/>
+  <line x1="218" y1="120" x2="218" y2="90" stroke="#b4232c" stroke-width="2"/>
+  <g font-size="11" text-anchor="middle" fill="#1f2a44">
+    <text x="30" y="136">0</text><text x="105" y="136">3 (mean)</text><text x="330" y="136">12</text>
+  </g>
+  <text x="218" y="136" font-size="11" text-anchor="middle" fill="#b4232c">7.5</text>
+  <text x="222" y="84" font-size="11" fill="#b4232c">beyond here: 5.8%</text>
+</svg>
+```
+
+The curve has a long right tail, so single large values happen. The $7.5$ from the worked example sits in that tail: unusual, not impossible.
+:::
+
+::: context whitened What "whitened" means
+To **whiten** a residual is to divide it by its own expected standard deviation, so that a healthy value is a plain standard normal number: average $0$, spread $1$. Then "$z = 3.5$" means "three and a half standard deviations", the same meaning for a gyro in degrees per second or an altimeter in meters.
+
+The name comes from "white noise", noise with no pattern from one sample to the next and a standard size. For a scalar, $z^2$ is exactly the NIS.
+:::
+
+::: context two-errors The two ways to be wrong, drawn
+The healthy residual (blue) and the faulty residual (grey) are both spread out by noise. The threshold (red line) cuts between them.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">
+  <polygon points="177.5,84.1 186.2,92.7 195,99.2 203.8,103.7 212.5,106.5 221.2,108.2 230,109.1 247.5,109.8 247.5,110 177.5,110" fill="#b4232c" opacity="0.5"/>
+  <polygon points="107.5,109.8 116.2,109.6 125,109.1 133.8,108.2 142.5,106.5 151.2,103.7 160,99.2 168.8,92.7 177.5,84.1 177.5,110 107.5,110" fill="#f2b880"/>
+  <polyline points="20.0,109.1 28.8,108.2 37.5,106.5 46.2,103.7 55.0,99.2 63.8,92.7 72.5,84.1 81.2,73.5 90.0,61.6 98.8,49.8 107.5,39.6 116.2,32.7 125.0,30.2 133.8,32.7 142.5,39.6 151.2,49.8 160.0,61.6 168.8,73.5 177.5,84.1 186.2,92.7 195.0,99.2 203.8,103.7 212.5,106.5 221.2,108.2 230.0,109.1 238.8,109.6 247.5,109.8 256.2,109.9 265.0,110.0" fill="none" stroke="#1d6fd1" stroke-width="2"/>
+  <polyline points="90.0,110.0 98.8,109.9 107.5,109.8 116.2,109.6 125.0,109.1 133.8,108.2 142.5,106.5 151.2,103.7 160.0,99.2 168.8,92.7 177.5,84.1 186.2,73.5 195.0,61.6 203.8,49.8 212.5,39.6 221.2,32.7 230.0,30.2 238.8,32.7 247.5,39.6 256.2,49.8 265.0,61.6 273.8,73.5 282.5,84.1 291.2,92.7 300.0,99.2 308.8,103.7 317.5,106.5 326.2,108.2 335.0,109.1" fill="none" stroke="#6c7a93" stroke-width="2"/>
+  <line x1="20" y1="110" x2="340" y2="110" stroke="#1f2a44" stroke-width="1.5"/>
+  <line x1="177.5" y1="18" x2="177.5" y2="116" stroke="#b4232c" stroke-width="2"/>
+  <text x="125" y="22" font-size="11" text-anchor="middle" fill="#1d6fd1">healthy</text>
+  <text x="230" y="22" font-size="11" text-anchor="middle" fill="#6c7a93">faulty</text>
+  <text x="177.5" y="130" font-size="11" text-anchor="middle" fill="#b4232c">threshold</text>
+  <text x="250" y="143" font-size="11" text-anchor="middle" fill="#b4232c">false alarm</text>
+  <text x="105" y="143" font-size="11" text-anchor="middle" fill="#1f2a44">missed detection (orange)</text>
+</svg>
+```
+
+The red area is the healthy tail beyond the line: false alarms. The orange area is the faulty curve's tail short of the line: missed detections. Slide the line right and red shrinks while orange grows.
+:::
+
+::: context independent-samples Why the chances multiply
+Flip a coin twice. The chance of two heads is $\frac{1}{2} \times \frac{1}{2} = \frac{1}{4}$, because the second flip does not care about the first. Events like that are **independent**.
+
+Healthy sensor noise is close to independent from one sample to the next, so the same rule applies to exceedances. Real noise is not perfectly independent: vibration or a slowly wandering bias can make neighboring samples lean the same way. Then runs happen more often than $p^N$ predicts, which is why engineers confirm the false-alarm rate on real recorded data, not only on the formula.
+:::
+
+::: context bias-drift How real sensors degrade
+A gyro's **bias** is the small rate it reports when it is not rotating at all. Every gyro's bias wanders slowly, and a failing one — an aging light source in a fiber-optic gyro, a damaged mechanism in a vibrating one, a heater that stopped working — often shows up first as a bias creeping steadily away from its calibrated value.
+
+That creep is a ramp. For seconds or minutes it hides inside the noise, then climbs past it. The filter may even partly absorb it by estimating a bias state, which makes the residual smaller still. That is why drift is the case this module's FDIR exercise warns will embarrass you.
+:::
+
+::: context thermostat Hysteresis in your house
+A home thermostat set to $20^\circ\mathrm{C}$ does not switch the heater on at $19.99$ and off at $20.01$; the heater would click hundreds of times an hour. It turns on at, say, $19.5$ and off at $20.5$. The gap between the two is the hysteresis.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">
+  <line x1="20" y1="40" x2="340" y2="40" stroke="#b4232c" stroke-width="1.5" stroke-dasharray="6,4"/>
+  <line x1="20" y1="80" x2="340" y2="80" stroke="#1d6fd1" stroke-width="1.5" stroke-dasharray="6,4"/>
+  <text x="338" y="34" font-size="11" text-anchor="end" fill="#b4232c">declare</text>
+  <text x="338" y="94" font-size="11" text-anchor="end" fill="#1d6fd1">clear</text>
+  <polyline points="20,100 60,95 90,60 110,35 140,55 170,45 200,65 230,90 260,95 300,70 340,60" fill="none" stroke="#1f2a44" stroke-width="2"/>
+  <rect x="106" y="118" width="112" height="12" fill="#f2b880"/>
+  <text x="162" y="144" font-size="11" text-anchor="middle" fill="#1f2a44">fault flag on</text>
+</svg>
+```
+
+The flag turns on where the residual crosses the upper line and stays on while it wanders between the lines. It turns off only when the residual drops below the lower line. The later rise past the lower line alone does nothing.
+:::
+
+::: context star-tracker What a star tracker is
+A **star tracker** is a small camera that photographs the sky, matches the pattern of stars against a catalog, and reports which way the spacecraft is pointing, often to a few arcseconds. It is the most accurate attitude sensor most spacecraft carry.
+
+It can be fooled. Sunlight or Earth glare in the lens, a bright planet, or a stray reflection can lead it to match the wrong pattern — and a wrong match can look perfectly confident. A gyro cannot be fooled by glare, which is exactly why pairing the two makes a strong cross-check.
+:::

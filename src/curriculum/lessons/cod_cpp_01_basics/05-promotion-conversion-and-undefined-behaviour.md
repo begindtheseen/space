@@ -1,20 +1,22 @@
 ---
 id: l05-promotion-conversion-and-undefined-behaviour
 title: Integer promotion, signed versus unsigned, and undefined behaviour
-minutes: 21
+minutes: 22
 covers:
   - Integer promotion, signed/unsigned pitfalls, signed overflow as undefined behaviour
 ---
 
-In Python, `a + b` on two integers gives the mathematically correct integer, always. In C++, `a + b` first converts both operands to some common type according to a table you have never read, computes in that type, and may produce a result the type cannot hold — at which point the program's behaviour is either defined to wrap, or undefined entirely, depending on whether the type was unsigned or signed.
+Picture two small measuring cups and one big mixing bowl. You never mix inside the little cups. You pour both into the bowl, stir there, and then pour the result back into a cup. If there is more than the cup holds, some spills. The mixing was fine. The spill happened on the way back.
 
-Those rules are the origin of a large share of the defects that get found in flight software review. They are not hard, and they are fully mechanical. What makes them dangerous is that the wrong answer usually looks plausible: a counter that goes backwards, a loop that runs once too often, a check that is silently always true. There is no exception, no traceback, no line in a log.
+C++ integer arithmetic works like that kitchen, and the rules for which bowl you use are fixed and mechanical. In Python, `a + b` on two integers always gives the true answer. In C++, `a + b` first converts both sides to a common type, computes in that type, and may get a result the type cannot hold. What happens next depends on the type. For an unsigned type the answer wraps around, and that is defined. For a signed type the program has **undefined behaviour**, and the language says nothing at all about what it does.
 
-This lesson gives you the conversion rules, then treats undefined behaviour properly — what it is, why signed overflow is in that category, and how to find it. That last part needs care. You cannot demonstrate undefined behaviour by running a program and reporting what it printed, because what it printed is a fact about one build, not about C++. Everything below is either a measured result of a well-defined operation, or a diagnostic from a tool, and where a result is merely what this build happened to do, it says so.
+These rules cause a large share of the defects found in flight-software review. They are not hard, but the wrong answer looks reasonable: a counter that goes backwards, a loop that runs once too often, a check that is quietly always true. No exception, no log line.
+
+One caution. You cannot show undefined behaviour by running a program and reporting what it printed: that is a fact about one build, not about C++. So everything below is a measured result of a well-defined operation or a message from a tool, unless the lesson says otherwise. The toolchain is g++ 13.3.0 and clang++ 18.1.3 on x86-64 Linux.
 
 ## Integral promotion: narrow types do not do arithmetic
 
-Before any arithmetic operator sees its operands, every operand of a type narrower than `int` is converted to `int` — or to `unsigned int` if `int` cannot represent all values of the original type. This is *integral promotion*, and it applies to `bool`, `char`, `signed char`, `unsigned char`, `short`, `unsigned short`, and therefore to `std::int8_t`, `std::uint8_t`, `std::int16_t` and `std::uint16_t`.
+Here is the rule. Before any arithmetic operator sees its operands, every operand narrower than `int` is converted to `int` — or to `unsigned int` if `int` cannot hold all its values. This is **[[integral promotion|promotion-bowl]]**. It applies to `bool`, `char`, `signed char`, `unsigned char`, `short` and `unsigned short`, and so to `std::int8_t`, `std::uint8_t`, `std::int16_t` and `std::uint16_t`.
 
 ```cpp
 #include <cstdint>
@@ -49,37 +51,37 @@ int8_t 120 + 10 stored back = -126
 uint8_t 250 + 10 stored back = 4
 ```
 
-Read the first line again. Two `uint8_t` values added gave **300**, not 44. The sum did not wrap at 255 because the addition never happened in 8 bits: both operands became `int`, the sum is an `int`, and 300 fits comfortably. `sizeof` of the expression proves it — 4 bytes, not 1.
+Read the first line again. Two `uint8_t` values added to give **300**, not 44. The sum did not wrap at 255, because the addition never happened in 8 bits. Both operands were poured into `int`, and 300 fits. `sizeof` of the expression proves it: 4 bytes, not 1. (`decltype(a + b)`, read "decl-type of a plus b", names the type of an expression; `std::is_same_v` asks whether two types are the same.)
 
-The wrap happens on the way back. Storing 260 into a `uint8_t` keeps the value modulo 256, giving 4; storing 130 into an `int8_t` gives $130 - 256 = -126$. So a narrow type has two distinct moments where a value can change, and they follow different rules: the *operation* happens in `int`, and the *conversion back* is what truncates.
+The spill happens on the way back. Storing 260 into a `uint8_t` keeps the value **[[modulo 256|modulo-clock]]** — the remainder after taking out whole 256s — so $260 - 256 = 4$. Storing 130 into an `int8_t` gives $130 - 256 = -126$. So a narrow value can change at two moments, under two rules. The *operation* happens in `int`. The *conversion back* is what cuts.
 
 ::: warning
-Promotion can turn unsigned arithmetic into signed arithmetic, and with it introduce undefined behaviour into code where no signed type appears:
+Promotion can turn unsigned arithmetic into signed arithmetic, and bring undefined behaviour into code with no signed type in sight:
 
 ```cpp
 std::uint16_t a = 50000;              // an unsigned value
 std::uint32_t sq = a * a;             // but the multiply happens in int
 ```
 
-Both operands promote to `int`, so the product is computed in 32-bit *signed* arithmetic, and $50000^2 = 2\,500\,000\,000$ exceeds `INT_MAX` = 2 147 483 647. That is signed overflow. g++ 13.3.0 with `-Wall -Wextra` says nothing; UBSan says:
+Both operands promote to `int`, so the product is computed in 32-bit *signed* arithmetic. $50000^2 = 2{,}500{,}000{,}000$, and `INT_MAX` is $2{,}147{,}483{,}647$. That is signed overflow. g++ with `-Wall -Wextra` says nothing. UBSan, the run-time checker you will meet below, says:
 
 ```text
 sq.cpp:6:26: runtime error: signed integer overflow: 50000 * 50000 cannot be represented in type 'int'
 ```
 
-Write `static_cast<std::uint32_t>(a) * a` so the multiplication happens in a type wide enough — and unsigned, where wrap would at least be defined.
+Write `static_cast<std::uint32_t>(a) * a`, so the multiply happens in a type wide enough — and unsigned, where wrap would at least be defined.
 :::
 
 ## The usual arithmetic conversions
 
-After promotion, if the two operands still have different types, they are brought to a common type by this sequence, applied in order until one applies:
+After promotion, if the two operands still have different types, they are brought to one common type. Each integer type has a **rank**, its place in the order `int` < `long` < `long long`. Apply these steps in order until one fits:
 
-1. If both are signed, or both unsigned, the one of lower *rank* converts to the higher. Rank is the ordering `int` < `long` < `long long`.
-2. If the unsigned operand has rank greater than or equal to the signed one, the signed operand converts to **unsigned**.
-3. Otherwise, if the signed type can represent every value of the unsigned type, the unsigned operand converts to the **signed** type.
+1. If both are signed, or both unsigned, the lower rank converts to the higher.
+2. If the unsigned operand's rank is greater than or equal to the signed one's, the signed operand converts to **unsigned**.
+3. Otherwise, if the signed type can hold every value of the unsigned type, the unsigned operand converts to the **signed** type.
 4. Otherwise both convert to the unsigned version of the signed type.
 
-Rule 2 is the famous one:
+Rule 2 is the famous one. Here are some measured results:
 
 ```text
 (unsigned)-1      = 4294967295
@@ -91,11 +93,11 @@ int8_t from 200   = -56
 uint8_t from -1   = 255
 ```
 
-`-1 < 1u`: `-1` is an `int`, `1u` is an `unsigned int`, equal rank, so rule 2 sends the signed side to unsigned. $-1$ converts to $2^{32}-1 = 4294967295$, which is not less than 1, so the comparison is **false**. Nothing overflowed, nothing is undefined; the conversion is defined to be modular for unsigned destinations. The answer is simply not the one arithmetic would give.
+Walk through `-1 < 1u`. The suffix `u` makes `1u` an `unsigned int`. `-1` is an `int`. Same rank, one unsigned, so rule 2 sends the signed side to unsigned. $-1$ becomes $2^{32} - 1 = 4294967295$. That is not less than 1, so the comparison is **false**. Nothing overflowed and nothing is undefined. Conversion to an unsigned type is defined to wrap. The answer is not the one arithmetic would give.
 
-`-1L < 1u` is **true**, and that is the line to study. Here the signed operand is `long`, rank higher than `unsigned int`, and a 64-bit `long` can represent every 32-bit `unsigned int` value — so rule 3 applies, the *unsigned* side converts, and the comparison is the arithmetic one. The rule is not "unsigned wins"; it is "the type that can hold both wins, and if there is none, unsigned wins". On a platform where `long` is 32 bits, that same line would be false.
+`-1L < 1u` is **true**, and that is the line to study. `L` makes `-1L` a `long`, which outranks `unsigned int`. A 64-bit `long` can hold every 32-bit `unsigned int` value, so rule 3 applies: the *unsigned* side converts to `long`, and the comparison is ordinary arithmetic. The rule is not "unsigned wins". It is "the type that can hold both wins, and if none can, unsigned wins". On a platform where `long` is 32 bits, that same line would be false.
 
-g++ 13.3.0 with `-Wall -Wextra` flags the dangerous ones and stays quiet about the safe one:
+g++ with `-Wall -Wextra` flags the dangerous ones and stays quiet about the safe one:
 
 ```text
 conversions.cpp:7:47: warning: comparison of integer expressions of different signedness: 'int' and 'unsigned int' [-Wsign-compare]
@@ -112,13 +114,13 @@ The usual arithmetic conversions promote the signed operand to unsigned when the
 
 ### Converting a value that does not fit
 
-Assignment and casts convert too, and here the destination's signedness decides the rule.
+Assignment and casts convert too. Here the destination decides the rule.
 
-**To an unsigned type**: the result is the value modulo $2^N$. Always defined, always has been. `static_cast<std::uint8_t>(-1)` is $-1 + 256 = 255$.
+**To an unsigned type**, the result is the value modulo $2^N$, where $N$ is the width in bits. That has always been defined. `static_cast<std::uint8_t>(-1)` is $-1 + 256 = 255$.
 
-**To a signed type**: if the value fits, it is unchanged. If it does not, C++20 defines the result as the unique value congruent modulo $2^N$ — the two's-complement wrap — where C++17 and earlier left it implementation-defined. g++ 13.3.0 with `-std=c++20` gives $200 - 256 = -56$ for `static_cast<std::int8_t>(200)`, as the output above shows.
+**To a signed type**, a value that fits is unchanged. A value that does not fit is, since C++20, wrapped the same way — the **[[two's complement|twos-complement-history]]** result. Before C++20 the result was implementation-defined. `static_cast<std::int8_t>(200)` gives $200 - 256 = -56$, as the output shows.
 
-Neither of these is an error, and by default neither warns. `-Wconversion` makes g++ speak up:
+Neither is an error, and g++ does not warn by default. `-Wconversion` makes it speak up:
 
 ```bash
 g++ -std=c++20 -Wall -Wextra -Wconversion -c narrow.cpp -o /dev/null
@@ -130,9 +132,9 @@ narrow.cpp:4:21: warning: conversion from 'int' to 'int8_t' {aka 'signed char'} 
       |                     ^~~
 ```
 
-(Add `-Wpedantic` to that command and g++ 13.3.0 reports the same fact under a different name, `overflow in conversion ... [-Woverflow]`. Warning categories are not as stable as the flag names suggest, which is one more reason to read your own build's output rather than a remembered message.)
+(Add `-Wpedantic` and g++ reports the same fact under another name, `overflow in conversion ... [-Woverflow]`. Warning names shift, so read your own build's output rather than a remembered message.)
 
-clang++ 18.1.3 reports the same thing under `-Wall` alone, as `-Wconstant-conversion`, with its own wording. And there is a cheaper defence than any warning flag: **braces**. Initialise with `{}` and a narrowing conversion of a constant is a hard error in both compilers:
+clang++ warns about this constant case with no flags at all, as `-Wconstant-conversion`. And there is a cheaper defence than any flag: **braces**. Initialise with `{}` and narrowing a constant becomes a hard error in both compilers. g++, then clang++:
 
 ```text
 error: narrowing conversion of '200' from 'int' to 'int8_t' {aka 'signed char'} [-Wnarrowing]
@@ -143,30 +145,30 @@ error: constant expression evaluates to 200 which cannot be narrowed to type 'st
 note: insert an explicit cast to silence this issue
 ```
 
-Write `std::int8_t x{200};` rather than `std::int8_t x = 200;` and the compiler refuses to lose your data.
+Write `std::int8_t x{200};` instead of `std::int8_t x = 200;`, and the compiler refuses to lose your data. A conversion that does not fit has destroyed real vehicles; one note tells the **[[Ariane 5|ariane-501]]** story.
 
 ::: key
-`std::int8_t x = 200;` does not fit, so the value is converted; on this toolchain `x` holds $-56$, and `-Wconversion` warns. The lesson is to pick a type wide enough for the range, which is why flight code uses explicit fixed-width types.
+`std::int8_t x = 200;` does not fit, so the value is converted; since C++20 the conversion is defined as the value modulo $2^8$, so `x` holds $-56$, and `-Wconversion` warns. The lesson is to pick a type wide enough for the range, which is why flight code uses explicit fixed-width types.
 :::
 
 ## Unsigned wrap is defined. Signed overflow is not.
 
-Two operations that look identical are in completely different categories.
+Two operations that look alike live in different categories.
 
-**Unsigned overflow is defined**: the result is reduced modulo $2^N$. A `uint16_t` sequence counter going from 65535 to 0 is correct, portable, well-specified behaviour that you can design around.
+**Unsigned overflow is defined.** The result is reduced modulo $2^N$. A `uint16_t` counter going from 65535 to 0 is correct, portable behaviour you can design around.
 
-**Signed overflow is undefined behaviour**: the standard places no requirement on what the program does. Not "it wraps", not "it is implementation-defined" — no requirement at all.
+**Signed overflow is undefined behaviour.** The standard places no requirement on what the program does. Not "it wraps". Not "the compiler picks". No requirement at all.
 
-The historical reason is that not every machine used two's complement, and the committee refused to make one representation mandatory. C++20 finally fixed the *representation* as two's complement, but it deliberately left overflow undefined, because by then the optimisers depended on it.
+C++20 fixed how negatives are stored, but left overflow undefined on purpose, because optimisers depend on it.
 
-Here is what "the compiler may assume it never happens" means, concretely. Two functions that differ only in signedness:
+Here is what "the compiler may assume it never happens" means. Two functions differ only in signedness. Each asks "does adding 1 make the number smaller?":
 
 ```cpp
 bool wraps(int x) { return x + 1 < x; }
 bool wraps_u(unsigned x) { return x + 1u < x; }
 ```
 
-Compile at `-O2` and read the assembly. g++ 13.3.0:
+Compile at `-O2` and read the **[[assembly|reading-assembly]]**, the processor's own instructions. g++:
 
 ```text
 _Z5wrapsi:
@@ -183,30 +185,38 @@ _Z7wraps_uj:
 	ret
 ```
 
-clang++ 18.1.3 produces the same pair. The signed version does no arithmetic and no comparison: `xorl %eax, %eax` sets the return value to zero and returns. The compiler reasoned that if `x + 1` does not overflow then it is greater than `x`, and if it does overflow the program has no defined behaviour and therefore need not be catered for — so the function is `return false`, unconditionally, for every input including `INT_MAX`. The unsigned version is compiled as written, comparing against `0xFFFFFFFF`, because there the wrap is real and the answer for that one input is genuinely `true`.
+clang++ produces the same pair. The signed version does no addition and no comparison. `xorl %eax, %eax` sets the return value to zero, which is `false`, and returns. The compiler reasoned like this. If `x + 1` does not overflow, it is bigger than `x`, so the answer is false. If it does overflow, the program has no defined behaviour, so that case need not be handled. Therefore: `return false`, for every input, even `INT_MAX`. The unsigned version is compiled as written. It compares `x` with `0xFFFFFFFF` (written `$-1` in the assembly), because there the wrap is real and the answer for that one input really is `true`.
 
-That is the whole mechanism. Undefined behaviour is not a promise that something bad happens; it is permission for the compiler to assume something never happens, and to delete the code that would only run if it did. Bounds checks, null checks and overflow checks written *after* the operation they were meant to guard are the classic casualties.
+That is the whole mechanism. Undefined behaviour is not a promise that something bad happens. It is permission for the compiler to assume something never happens, and to delete code that would only run if it did. Overflow checks, bounds checks and null checks written *after* the operation they were meant to guard are the classic casualties.
 
 ::: warning
-"I ran it and it wrapped, so it wraps" is not evidence. It is one observation of one build at one optimisation level. The same source compiled at `-O2`, or next year, or by the other compiler, is free to behave differently — and the assembly above shows an optimiser doing exactly that. Never reason about undefined behaviour from experiment.
+"I ran it and it wrapped, so it wraps" is not evidence. It is one run of one build. The same source at `-O2`, or next year, or with the other compiler, may behave differently — the assembly above shows an optimiser doing exactly that. So a program that works unoptimised can fail optimised, and a team must test the build it ships. Optimisation can also change floating-point results in the last bits, for example by fusing `a*b + c` into one instruction with one rounding (called **contraction**). Never reason about undefined behaviour from experiment.
 :::
 
 ## What undefined behaviour is, and three instances
 
-**Undefined behaviour** is behaviour for which the standard imposes no requirements. A program that executes it has no defined meaning at all — not from that point on, and formally not before it either. The compiler is entitled to assume your program never does it, and to optimise on that assumption.
+Think of a board game's rulebook. It tells you what happens on every legal move. It says nothing about what happens if you flip the board over. The game is designed as if nobody ever does.
+
+**Undefined behaviour** is the flipped board. It is behaviour the standard puts no requirement on. A program that does it has no defined meaning at all — formally, not even for the steps before it. The compiler may assume your program never does it, and optimise on that basis.
 
 Three instances to be able to name:
 
 1. **Signed integer overflow.** `INT_MAX + 1`. Shown above.
-2. **Reading an uninitialised variable.** The `double sum;` from lesson 01. There is no "whatever was in memory" guarantee; the compiler may assume the read never happens and simplify accordingly.
-3. **Indexing past the end of an array.** `v[v.size()]` on a `std::vector`, or `buf[10]` on a `double buf[10]`. `operator[]` does not check; `at()` does and throws.
+2. **Reading an uninitialised variable.** The `double sum;` from lesson 01. You are not promised "whatever was in memory"; the compiler may assume the read never happens and simplify around it.
+3. **Indexing past the end of an array.** `v[v.size()]` on a `std::vector`, or `buf[10]` on `double buf[10]`. `operator[]` does not check. `at()` does, and throws an exception.
 
-Two more you will meet constantly: **dereferencing a null or dangling pointer** (lesson 11), and a **data race** — two threads touching the same object with no synchronisation and at least one writing.
+Two more you will meet constantly: **dereferencing a null or dangling pointer** (following a pointer that points at nothing, or at an object that has died — lesson 11), and a **[[data race|data-race]]**.
 
-Note what is *not* undefined: unsigned wrap, converting a `double` to an `int` when the value fits, and comparing two pointers into the same array. Knowing the boundary is what lets you use the defined parts confidently.
+Know what is *not* undefined: unsigned wrap, converting a `double` to an `int` when the value fits, and comparing two pointers into the same array.
+
+::: key
+Undefined behaviour is behaviour the standard places no requirement on, so the compiler may assume it never happens and optimise accordingly. Examples: signed integer overflow, reading an uninitialised variable, indexing past the end of an array, dereferencing a null or dangling pointer, and a data race. Unsigned arithmetic, by contrast, is defined to wrap modulo $2^N$.
+:::
 
 ::: example Catching signed overflow with the sanitizer
-The honest way to find undefined behaviour is to build with instrumentation that checks for it at run time. `-fsanitize=undefined` (UBSan) is one flag and costs a few per cent.
+The honest way to find undefined behaviour is to build with checks that watch for it while the program runs. `-fsanitize=undefined` turns on **[[UBSan|sanitizers]]**, the undefined-behaviour sanitizer. It is one flag.
+
+A timer counts microseconds in a signed 32-bit integer that is close to its top:
 
 ```cpp
 #include <cstdint>
@@ -220,6 +230,10 @@ int main() {
 }
 ```
 
+**Step 1: check by hand.** $2{,}147{,}483{,}000 + 1000 = 2{,}147{,}484{,}000$. The largest `int32_t` is $2{,}147{,}483{,}647$. The sum is 353 too big, so this is signed overflow.
+
+**Step 2: build with the sanitizer and run.**
+
 ```bash
 g++ -std=c++20 -Wall -Wextra -O0 -g -fsanitize=undefined overflow.cpp -o overflow
 ./overflow
@@ -230,22 +244,22 @@ overflow.cpp:7:16: runtime error: signed integer overflow: 2147483000 + 1000 can
 -2147483296
 ```
 
-The message came from g++ 13.3.0's UBSan at `-O0`, and it names the file, the line, the column, the two operands and the type. It says `'int'` rather than `'int32_t'` because on this platform they are the same type.
+**Step 3: read the message.** It names the file, line 7, column 16, the two operands and the type. It says `'int'`, not `'int32_t'`, because on this platform they are the same type.
 
-The `-2147483296` printed afterwards is **what this build did**, not what C++ says happens: UBSan reports and then continues by default. Do not learn that number. Add `-fno-sanitize-recover=all` and the program stops instead, exiting with status 1 — which is what you want in a test suite, because a check that reports and carries on is a check a test runner can miss.
+**Step 4: do not learn the second line.** `-2147483296` is what *this build* did, not what C++ says. UBSan reports and then carries on by default. Add `-fno-sanitize-recover=all` and the program stops at the error with exit status 1. That is what you want in a test suite, because a check that reports and carries on is one a test runner can miss.
 
-Two limits worth knowing. UBSan finds only what actually executes, so it is only as good as your test coverage. And it is a debug and test tool, not something you ship: the flight build has no sanitizer, which is precisely why the sanitized build has to be run over the whole test campaign.
+Two limits. UBSan finds only what actually runs, so it is only as good as your tests. And the flight build has no sanitizer, which is why the sanitized build must run the whole test campaign.
 :::
 
 ## The unsigned countdown loop
 
-Everything above converges on one loop that every C++ programmer writes once:
+Everything above meets in one loop every C++ programmer writes:
 
 ```cpp
 for (std::size_t i = v.size() - 1; i >= 0; --i) { /* ... */ }
 ```
 
-On an empty vector, `v.size() - 1` is `18446744073709551615`, as measured above — defined unsigned wrap, no warning from `-Wall`. And `i >= 0` is true for every possible value of an unsigned type, so the loop never ends by its own condition; it runs with an enormous index straight past the end of the container, which *is* undefined behaviour. On a non-empty vector it is no better: the last iteration decrements 0 to $2^{64}-1$ and the same thing happens.
+On an empty vector, `v.size() - 1` is `18446744073709551615`, as measured above: defined unsigned wrap, and `-Wall` says nothing. Then `i >= 0` is true for every value an unsigned type can hold, so the loop never ends by its own test. It indexes far past the end of the container, and *that* is undefined behaviour. A non-empty vector is no better. On the last pass, `--i` (read "minus minus i": subtract one from `i`) turns 0 into $2^{64} - 1$, and the same thing happens.
 
 `-Wextra` does catch the condition, through `-Wtype-limits`:
 
@@ -253,7 +267,7 @@ On an empty vector, `v.size() - 1` is `18446744073709551615`, as measured above 
 warning: comparison of unsigned expression in '>= 0' is always true [-Wtype-limits]
 ```
 
-The idiom that works keeps the decrement inside the condition, so the test happens while `i` is still positive:
+The idiom that works moves the decrement into the test, so the test happens while `i` is still positive:
 
 ```cpp
 #include <cstddef>
@@ -277,7 +291,7 @@ int main() {
 empty vector: loop body ran zero times
 ```
 
-`i-- > 0` tests the old value and leaves the decremented one for the body, so the body sees `size()-1` down to `0`, and on an empty container the very first test compares 0 with 0 and stops. Lesson 09 gives you the alternative that avoids indices altogether.
+Read `i-- > 0` as "i, then decrement, is greater than zero". It tests the **[[old value|postfix-countdown]]** and hands the body the decremented one. So the body sees `size() - 1` down to `0`. On an empty container the first test compares 0 with 0 and stops. Lesson 09 shows a way to avoid indices altogether.
 
 ::: example An integer bug in a descent timer
 A landing sequencer stores time-to-touchdown in milliseconds and counts down:
@@ -289,53 +303,59 @@ t_remaining_ms -= 10;
 if (t_remaining_ms < 500) { /* arm the legs */ }
 ```
 
-Run the cycle 3000 times and `t_remaining_ms` is 0. Run it once more and it is not $-10$: it is $2^{32} - 10 = 4294967286$. The comparison `< 500` becomes false, and the legs, having been armed, un-arm.
+**Count the cycles.** $30000 / 10 = 3000$ cycles bring `t_remaining_ms` to exactly 0. So far, fine: from 490 down, the legs are armed.
 
-Everything here is defined behaviour. Nothing overflowed in the undefined sense, nothing warns, and every test that ran the sequence for exactly the right duration passed. The defect is a design error about the *range* of a value, dressed as an arithmetic error.
+**One more cycle.** The value does not become $-10$. It wraps to $2^{32} - 10 = 4294967286$. Now `< 500` is false, and the test that armed the legs says they should not be armed.
 
-Three fixes, in increasing order of merit. Use a signed type, `std::int32_t`, so the value can legitimately go negative — but then decrementing far enough is genuinely undefined behaviour, so you have swapped a wrong answer for a worse one. Clamp before subtracting: `t_remaining_ms = (t_remaining_ms > 10) ? t_remaining_ms - 10 : 0;`, which is correct and explicit about what happens at the boundary. Or, best, do not accumulate at all: store the touchdown time and compute `t_touchdown_ms - now_ms` each cycle, which has no state to drift and makes the sign of the result meaningful — negative means you are late, which is information the old design threw away.
+**Classify it.** Everything here is defined behaviour. Nothing overflowed in the undefined sense, nothing warns, and every test that ran the sequence for exactly the planned time passed. The defect is a design error about the *range* of a value, dressed up as an arithmetic error.
+
+**Three fixes, from worst to best.**
+
+- Use a signed type, `std::int32_t`, so the value can go negative. But count down far enough and you hit genuine undefined behaviour, so you have traded a wrong answer for a worse one.
+- Clamp before subtracting: `t_remaining_ms = (t_remaining_ms > 10) ? t_remaining_ms - 10 : 0;`. Read `? :` as "if … then … else". This is correct and says plainly what happens at the boundary.
+- Best: do not keep a running count at all. Store the touchdown time and compute `t_touchdown_ms - now_ms` each cycle (in a signed type wide enough). There is no state to drift, and the sign means something: negative says you are late, information the old design threw away.
 :::
 
 ## Check yourself
 
 ::: check
-`std::uint8_t a = 200, b = 100;` and `a + b` printed 300. Explain why, and say what `std::uint8_t c = a + b;` would leave in `c`.
+`std::uint8_t a = 200, b = 100;` and `a + b` printed 300. Explain why, and say what `std::uint8_t c = a + b;` leaves in `c`.
 :::
 
 ::: answer
-Integral promotion converts both operands to `int` before the addition, because `int` can represent every `std::uint8_t` value. The addition therefore happens in 32-bit signed arithmetic, where 300 fits, and the type of `a + b` is `int` — `sizeof(a + b)` is 4. Assigning that `int` back to a `std::uint8_t` converts it modulo 256, so `c` holds $300 - 256 = 44$. The wrap belongs to the assignment, not to the addition, which is why `std::printf("%d", a + b)` and `std::printf("%d", c)` disagree.
+Integral promotion converts both operands to `int` before adding, because `int` can hold every `std::uint8_t` value. So the addition happens in 32-bit signed arithmetic, where 300 fits, and `a + b` has type `int` — `sizeof(a + b)` is 4. Storing that `int` into a `std::uint8_t` converts it modulo 256, so `c` holds $300 - 256 = 44$. The wrap belongs to the assignment, not the addition. That is why `std::printf("%d", a + b)` and `std::printf("%d", c)` disagree.
 :::
 
 ::: check
-`-1 < 1u` is false but `-1L < 1u` is true, on this platform. Give the rule, and say what would change on a 32-bit target.
+`-1 < 1u` is false but `-1L < 1u` is true, on this platform. Give the rule, and say what changes on a 32-bit target.
 :::
 
 ::: answer
-In `-1 < 1u` both operands have rank `int`, so the unsigned type's rank is not lower, and the signed operand converts to unsigned: $-1$ becomes $2^{32}-1$, which is not less than 1, so the result is false. In `-1L < 1u` the signed operand is `long`, which here is 64 bits and can represent every value of a 32-bit `unsigned int`, so the *unsigned* operand converts to `long` instead and the comparison is the ordinary arithmetic one, giving true. On a 32-bit target `long` is 32 bits and cannot represent all `unsigned int` values, so the second rule applies again and `-1L < 1u` becomes false. The same source, the same compiler, a different answer — which is why `-Wsign-compare` exists and why you should never leave signed and unsigned mixed in a comparison.
+In `-1 < 1u` both operands have the rank of `int`, so the unsigned rank is not lower and the signed operand converts to unsigned: $-1$ becomes $2^{32} - 1$, not less than 1, so false. In `-1L < 1u` the signed operand is a 64-bit `long`, which can hold every 32-bit `unsigned int` value. So the *unsigned* operand converts to `long`, and the comparison is ordinary arithmetic: true. On a 32-bit target `long` is 32 bits and cannot hold every `unsigned int` value, so the last rule applies — both go to `unsigned long` — and `-1L < 1u` becomes false. Same source, same compiler, different answer. That is why `-Wsign-compare` exists and why you should never mix signed and unsigned in a comparison.
 :::
 
 ::: check
-Why can the compiler legally turn `bool wraps(int x) { return x + 1 < x; }` into `return false;`, and why can it not do the same to the `unsigned` version?
+Why may the compiler turn `bool wraps(int x) { return x + 1 < x; }` into `return false;`, and why may it not do the same to the `unsigned` version?
 :::
 
 ::: answer
-For any `x` where `x + 1` does not overflow, `x + 1 < x` is false by arithmetic. The only remaining case is `x == INT_MAX`, where the addition is signed overflow and therefore undefined behaviour — so the standard places no requirement on the program for that input, and the compiler is entitled to assume the input never occurs. With that assumption the function is false for every input it must handle, so `return false` is a valid compilation. For `unsigned`, wrap is defined: at `x == UINT_MAX` the sum really is 0, which really is less than `x`, so `true` is the required answer for that input and the comparison must actually be performed. Both compilers emit exactly this difference, which makes the assembly a direct measurement of what "undefined" buys the optimiser.
+For every `x` where `x + 1` does not overflow, `x + 1 < x` is false by plain arithmetic. The only other case is `x == INT_MAX`, where the addition is signed overflow — undefined behaviour — so the standard requires nothing for that input and the compiler may assume it never comes. With that assumption the function is false for every input it must handle, so `return false` is a valid translation. For `unsigned`, wrap is defined: at `x == UINT_MAX` the sum really is 0, which really is less than `x`. So `true` is the required answer for that input, and the comparison must actually be done. Both compilers show exactly this difference in their assembly.
 :::
 
 ::: check
-A reviewer rejects `for (std::size_t i = n - 1; i >= 0; --i)` even though `n` is documented as always positive. Give two independent reasons.
+A reviewer rejects `for (std::size_t i = n - 1; i >= 0; --i)` even though `n` is documented as always positive. Give two separate reasons.
 :::
 
 ::: answer
-First, the loop condition is unconditionally true for an unsigned type, so the loop has no exit through its own test; `-Wtype-limits` under `-Wextra` says so. When `i` reaches 0 the `--i` wraps it to $2^{64}-1$ and the next iteration indexes far out of bounds, which is undefined behaviour. The documented positivity of `n` does not help, because the failure is at the *bottom* of the range, not the top. Second, "documented as always positive" is a comment, not a guarantee: the day someone calls it with `n == 0`, `n - 1` is $2^{64}-1$ and the loop starts out of bounds. A review standard that accepts loops whose correctness depends on a comment has no way to check itself. Write `for (std::size_t i = n; i-- > 0;)`, which is correct for `n == 0` with no special case.
+First, the loop test is always true for an unsigned type, so the loop has no exit through its own condition; `-Wtype-limits` under `-Wextra` says so. When `i` reaches 0, `--i` wraps it to $2^{64} - 1$, and the next pass indexes far out of bounds, which is undefined behaviour. The promise that `n` is positive does not help, because the failure is at the *bottom* of the range. Second, a comment is not a guarantee: the day someone passes `n == 0`, `n - 1` is $2^{64} - 1$ and the loop starts out of bounds. Write `for (std::size_t i = n; i-- > 0;)`, which is correct for `n == 0` with no special case.
 :::
 
 ::: check
-UBSan printed `signed integer overflow: 2147483000 + 1000 cannot be represented in type 'int'` and then the program printed `-2147483296`. Which of those two lines may you quote in a design review as a fact about C++, and why?
+UBSan printed `signed integer overflow: 2147483000 + 1000 cannot be represented in type 'int'`, and then the program printed `-2147483296`. Which of those two lines may you quote in a design review as a fact about the code, and why?
 :::
 
 ::: answer
-Only the first. The diagnostic is a statement that the program executed an operation the standard does not define, which is true of the program regardless of build. The `-2147483296` is what one compiler, at one optimisation level, on one machine, happened to produce; the standard requires nothing of it, so it is not a property of the code and citing it would encourage exactly the reasoning that gets people into trouble — designing around observed wrap. The only correct conclusion from the second line is that the program must be changed so the operation never happens: a wider type, an explicit range check, or unsigned arithmetic where wrap is genuinely intended.
+Only the first. The diagnostic says the program performed an operation the standard does not define, which is true whatever the build. The `-2147483296` is what one build happened to produce; the standard requires nothing of it, and quoting it encourages the wrong habit — designing around wrap you once observed. The only sound conclusion from the second line is that the code must change so the operation never happens: a wider type, an explicit range check, or unsigned arithmetic where wrap is really intended.
 :::
 
 ## Summary
@@ -357,4 +377,92 @@ Only the first. The diagnostic is a statement that the program executed an opera
 | `-fsanitize=undefined` | finds it at run time; add `-fno-sanitize-recover=all` in tests |
 | `for (std::size_t i = n; i-- > 0;)` | the countdown loop that is correct for `n == 0` |
 
-Lesson 06 turns from arithmetic to the object model: what a variable actually is in C++, how assignment differs from Python's name binding, and what a reference is.
+Lesson 06 turns from arithmetic to the object model: what a variable really is in C++, how assignment differs from Python's name binding, and what a reference is.
+
+::: context promotion-bowl Why arithmetic starts at int
+Processors do arithmetic in registers, and on most machines a register is at least as wide as `int`. There is usually no cheap "add two bytes" instruction. So C, and C++ after it, decided long ago that narrow values are widened to `int` first — the mixing bowl — and only cut back down when stored.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 130" font-family="Inter, Arial, sans-serif">
+  <rect x="20" y="20" width="40" height="26" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="40" y="38" font-size="12" text-anchor="middle" fill="#1f2a44">200</text>
+  <rect x="20" y="70" width="40" height="26" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="40" y="88" font-size="12" text-anchor="middle" fill="#1f2a44">100</text>
+  <text x="40" y="118" font-size="11" text-anchor="middle" fill="#6c7a93">uint8_t</text>
+  <line x1="62" y1="33" x2="112" y2="52" stroke="#1f2a44" stroke-width="1.5"/>
+  <line x1="62" y1="83" x2="112" y2="64" stroke="#1f2a44" stroke-width="1.5"/>
+  <rect x="115" y="44" width="130" height="28" fill="#f2b880" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="180" y="63" font-size="12" text-anchor="middle" fill="#1f2a44">int: 300</text>
+  <text x="180" y="92" font-size="11" text-anchor="middle" fill="#6c7a93">add happens here</text>
+  <line x1="247" y1="58" x2="290" y2="58" stroke="#1f2a44" stroke-width="1.5"/>
+  <polygon points="296,58 286,53 286,63" fill="#1f2a44"/>
+  <rect x="298" y="45" width="40" height="26" fill="#8fb8f0" stroke="#b4232c" stroke-width="2"/>
+  <text x="318" y="63" font-size="12" text-anchor="middle" fill="#b4232c">44</text>
+  <text x="318" y="92" font-size="11" text-anchor="middle" fill="#b4232c">spills here</text>
+</svg>
+```
+:::
+
+::: context modulo-clock Modulo is clock arithmetic
+A 12-hour clock already does modulo arithmetic. Five hours after 10 o'clock is 3 o'clock, not 15: you take away the whole 12 and keep the remainder. An 8-bit unsigned value is a clock with 256 positions, 0 to 255. Adding 10 to 250 goes round past 255 and lands on 4.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">
+  <circle cx="90" cy="75" r="55" fill="#fff" stroke="#1f2a44" stroke-width="2"/>
+  <g font-size="12" fill="#1f2a44" text-anchor="middle">
+    <text x="90" y="35">12</text><text x="112" y="41">1</text><text x="128" y="57">2</text><text x="134" y="79">3</text><text x="128" y="101">4</text><text x="112" y="117">5</text>
+    <text x="90" y="123">6</text><text x="68" y="117">7</text><text x="52" y="101">8</text><text x="46" y="79">9</text><text x="52" y="57">10</text><text x="68" y="41">11</text>
+  </g>
+  <line x1="90" y1="75" x2="65.8" y2="61.0" stroke="#1d6fd1" stroke-width="3"/>
+  <line x1="90" y1="75" x2="120.0" y2="75.0" stroke="#b4232c" stroke-width="3"/>
+  <circle cx="90" cy="75" r="3" fill="#1f2a44"/>
+  <text x="250" y="55" font-size="13" fill="#1d6fd1" text-anchor="middle">10 o'clock + 5 hours</text>
+  <text x="250" y="78" font-size="13" fill="#b4232c" text-anchor="middle">= 3 o'clock</text>
+  <text x="250" y="110" font-size="12" fill="#1f2a44" text-anchor="middle">uint8_t: 250 + 10 = 4</text>
+</svg>
+```
+
+In symbols, $260 \bmod 256 = 4$, read "260 modulo 256 is 4".
+:::
+
+::: context twos-complement-history Why C++ waited until 2020
+Older computers did not agree on how to store negative numbers. Some used **ones' complement**, where $-x$ is every bit of $x$ flipped, which gives two different zeros; the UNIVAC 1100 series and the CDC 6600 worked this way. Others used sign-and-magnitude. C and C++ were written to run on all of them, so the standards left signed conversions and overflow vague. By the 2010s every machine anyone targeted used two's complement, and C++20 finally made it the only representation. It still left signed overflow undefined, because compilers use that rule to optimise loops.
+:::
+
+::: context ariane-501 A conversion that destroyed a rocket
+On 4 June 1996 the first Ariane 5 broke up about 40 seconds after lift-off. Its inertial reference software, reused from Ariane 4, converted a 64-bit floating-point value (a horizontal velocity term) into a 16-bit signed integer. Ariane 5 flew a faster trajectory, the value no longer fit, and that particular conversion had been left unprotected. The Ada runtime raised an exception, both inertial units shut down, and the vehicle steered itself off course. The code had been correct for the rocket it was written for. The range of the value had changed underneath it — the same lesson as picking a type wide enough for the range.
+:::
+
+::: context reading-assembly How to read those four lines
+Assembly is the list of instructions the processor actually runs. In this syntax the source comes first and the destination last. `%edi` is the register holding the first argument, `x`. `%eax` is where a function leaves its return value, and `%al` is its lowest byte. `xorl %eax, %eax` XORs a register with itself, which always gives 0 — the cheapest way to write "return 0". `cmpl $-1, %edi` compares `x` with the bit pattern of $-1$, which is `0xFFFFFFFF`, the largest unsigned value. `sete %al` sets the result to 1 if they were equal. `endbr64` is a security marker for branch targets. The odd names like `_Z5wrapsi` are "mangled" function names that encode the argument types. Compiler Explorer (godbolt.org) shows this for any snippet.
+:::
+
+::: context data-race What a data race is
+A modern flight computer runs several threads at once: one for guidance, one for telemetry, one for sensors. A **data race** happens when two threads touch the same variable at the same time, at least one of them writes, and nothing makes them take turns. The reader might see half of an old value and half of a new one. C++ declares any data race undefined behaviour, so the compiler may assume a variable only your thread writes cannot change under you. Locks and `std::atomic` are the tools that prevent races; a later module covers them.
+:::
+
+::: context sanitizers Sanitizers: a checking build
+A **sanitizer** is extra checking code the compiler weaves into your program. UBSan (`-fsanitize=undefined`) checks arithmetic, shifts, conversions and more; AddressSanitizer (`-fsanitize=address`) catches out-of-bounds reads and use of freed memory; ThreadSanitizer (`-fsanitize=thread`) looks for data races. Both GCC and Clang support all three. They slow the program down — UBSan a little, AddressSanitizer typically about twice — so teams run them in continuous integration over the whole test suite and fly the build without them. The next module leans on AddressSanitizer every day.
+:::
+
+::: context postfix-countdown Tracing i-- > 0 by hand
+The **postfix** decrement `i--` gives back the value `i` had *before* it subtracted one. So the test checks the old value, and the body sees the new one. Here is a vector of size 3:
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">
+  <g font-size="12" fill="#1f2a44" font-weight="700">
+    <text x="20" y="20">i before</text><text x="110" y="20">test</text><text x="210" y="20">i in body</text>
+  </g>
+  <line x1="15" y1="27" x2="345" y2="27" stroke="#6c7a93" stroke-width="1"/>
+  <g font-size="12" fill="#1f2a44">
+    <text x="40" y="48">3</text><text x="110" y="48">3 &gt; 0 true</text><text x="230" y="48">2</text>
+    <text x="40" y="72">2</text><text x="110" y="72">2 &gt; 0 true</text><text x="230" y="72">1</text>
+    <text x="40" y="96">1</text><text x="110" y="96">1 &gt; 0 true</text><text x="230" y="96">0</text>
+  </g>
+  <g font-size="12" fill="#b4232c">
+    <text x="40" y="120">0</text><text x="110" y="120">0 &gt; 0 false</text><text x="210" y="120">loop ends</text>
+  </g>
+  <text x="20" y="143" font-size="11" fill="#6c7a93">i wraps only after the last test, and is never used again</text>
+</svg>
+```
+:::

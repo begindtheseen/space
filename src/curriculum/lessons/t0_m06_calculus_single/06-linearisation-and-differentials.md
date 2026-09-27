@@ -161,7 +161,7 @@ The sensitivity is $3/2$, the exponent.
 
 **Sanity check.** Recomputing $T$ exactly at $a + 1\,\mathrm{km}$ gives a change of $1.2290\,\mathrm{s}$. With $da/a = 1.5 \times 10^{-4}$, the remainder is invisible. Push $da$ to $100\,\mathrm{km}$: the linear estimate is $122.9\,\mathrm{s}$ against an exact $123.4\,\mathrm{s}$. Still within half a percent, because $a^{3/2}$ bends only gently.
 
-**Why it matters.** In one day the station makes $86\,400/5553.5 = 15.6$ orbits. A $1\,\mathrm{km}$ error in $a$ puts each lap $1.23\,\mathrm{s}$ off, and those add up to about $19\,\mathrm{s}$ a day. At $7.7\,\mathrm{km/s}$ that is roughly $150\,\mathrm{km}$ of **[[along-track|along-track]]** error. That is why orbit determination cares about the semi-major axis down to metres.
+**Why it matters.** In one day the station makes $86\,400/5553.5 = 15.6$ orbits. A $1\,\mathrm{km}$ error in $a$ puts each lap $1.23\,\mathrm{s}$ off, and those add up to about $19\,\mathrm{s}$ a day. At $7.7\,\mathrm{km/s}$ that is roughly $150\,\mathrm{km}$ of **[[along-track|along-track]]** error. That is why orbit determination cares about the semi-major axis down to meters.
 :::
 
 ::: example Drag about a flight condition
@@ -219,7 +219,7 @@ $$
 \ddot\theta \approx -\frac{g_0}{\ell}\,\theta.
 $$
 
-This is a linear equation. Its solutions are sine waves with angular frequency $\sqrt{g_0/\ell}$: $3.13\,\mathrm{rad/s}$ for a one-metre pendulum, which is a period of $2\pi/3.13 = 2.0\,\mathrm{s}$. The linear model holds while $\theta$ stays small. At a $30^\circ$ swing, the real pull back toward the middle is $4.5\%$ weaker than the linear model says ($\sin 30^\circ/0.5236 = 0.955$), so the true period is a little longer.
+This is a linear equation. Its solutions are sine waves with angular frequency $\sqrt{g_0/\ell}$: $3.13\,\mathrm{rad/s}$ for a one-meter pendulum, which is a period of $2\pi/3.13 = 2.0\,\mathrm{s}$. The linear model holds while $\theta$ stays small. At a $30^\circ$ swing, the real pull back toward the middle is $4.5\%$ weaker than the linear model says ($\sin 30^\circ/0.5236 = 0.955$), so the true period is a little longer.
 
 Now linearise about the *upside-down* equilibrium, $\theta_0 = \pi$. Write $\theta = \pi + \delta$, where $\delta$ is a small tilt away from straight up. Since $\sin(\pi + \delta) = -\sin\delta \approx -\delta$,
 
@@ -359,7 +359,7 @@ $$
 
 The total mass is $16\,130\,\mathrm{kg}$. The relative sensitivity is $3$ — the exponent — so $dm/m = 3\,dr/r = 3 \times 0.001/1.5 = 0.2\%$.
 
-Exact: $\tfrac43\pi\rho\big[(1.501)^3 - (1.5)^3\big] = 32.28\,\mathrm{kg}$. The differential is off by about $0.02\,\mathrm{kg}$, the $O(dr^2)$ remainder. Thirty kilograms per millimetre is why tank geometry is measured, not assumed, before propellant loads are worked out from level sensors.
+Exact: $\tfrac43\pi\rho\big[(1.501)^3 - (1.5)^3\big] = 32.28\,\mathrm{kg}$. The differential is off by about $0.02\,\mathrm{kg}$, the $O(dr^2)$ remainder. Thirty kilograms per millimeter is why tank geometry is measured, not assumed, before propellant loads are worked out from level sensors.
 :::
 
 ::: check
@@ -466,7 +466,7 @@ Numerical analysts call the same number the **condition number**. A problem with
 :::
 
 ::: context along-track Along-track error
-A satellite's position error is usually split three ways: **along-track** (ahead of or behind where it should be), **cross-track** (off to the side), and **radial** (too high or too low). A period error does not move the orbit sideways; it makes the satellite run early or late around the same path. So it shows up as along-track error, growing steadily lap after lap. That is why a prediction that is good today can put a satellite many kilometres from its true spot a few days later.
+A satellite's position error is usually split three ways: **along-track** (ahead of or behind where it should be), **cross-track** (off to the side), and **radial** (too high or too low). A period error does not move the orbit sideways; it makes the satellite run early or late around the same path. So it shows up as along-track error, growing steadily lap after lap. That is why a prediction that is good today can put a satellite many kilometers from its true spot a few days later.
 :::
 
 ::: context pendulum-picture Same pendulum, two operating points
