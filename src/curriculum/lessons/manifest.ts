@@ -10507,7 +10507,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-actuator-models",
       "title": "Actuator models",
-      "minutes": 26,
+      "minutes": 27,
       "covers": [
         "Actuator models: thrust curves and start-up transients, TVC gimbal dynamics and rate limits, reaction wheel friction, thruster minimum impulse bit, valve delay"
       ],
@@ -10516,7 +10516,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-mass-properties-against-time",
       "title": "Mass properties against time",
-      "minutes": 21,
+      "minutes": 20,
       "covers": [
         "Mass properties against time: propellant depletion, centre of mass migration, inertia tensor change"
       ],
@@ -10525,7 +10525,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-slosh-and-structural-flex",
       "title": "Slosh and structural flex",
-      "minutes": 20,
+      "minutes": 19,
       "covers": [
         "Slosh and structural flex models, and where they get inserted in the loop"
       ],
@@ -10606,7 +10606,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l18-configuration-management-of-the-simulation",
       "title": "Configuration management of the simulation",
-      "minutes": 19,
+      "minutes": 20,
       "covers": [
         "Configuration management of the sim: models, parameters and scenarios versioned separately from the code"
       ],
@@ -10617,7 +10617,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-verification-validation-and-the-matrix",
       "title": "Verification, validation, and the verification matrix",
-      "minutes": 20,
+      "minutes": 21,
       "covers": [
         "Requirements, verification and validation; the verification matrix that maps every requirement to its evidence",
         "Verification by analysis, test, inspection and demonstration, and choosing correctly between them"
@@ -10636,7 +10636,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-correlated-dispersions",
       "title": "Distributions, their justification, and correlated dispersions",
-      "minutes": 17,
+      "minutes": 20,
       "covers": [
         "Distributions and their justification; correlations between dispersed parameters and why ignoring them is not conservative"
       ],
@@ -10645,7 +10645,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-how-many-runs-buys-what-claim",
       "title": "How many runs buys what claim",
-      "minutes": 19,
+      "minutes": 18,
       "covers": [
         "Number of runs against the confidence in the claim; the zero-failure formula and its assumptions"
       ],
@@ -10654,7 +10654,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-defining-a-failed-case",
       "title": "Defining a failed case",
-      "minutes": 18,
+      "minutes": 16,
       "covers": [
         "Success criteria and scoring: defining what a failed case IS, before the campaign runs"
       ],
@@ -10673,7 +10673,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-linear-covariance-analysis",
       "title": "Linear covariance analysis, and where it breaks",
-      "minutes": 17,
+      "minutes": 19,
       "covers": [
         "Linear covariance analysis as the fast complement: one run gives the covariance a thousand runs would estimate",
         "Where LinCov is valid and where nonlinearity, saturation and discrete logic force you back to Monte Carlo"
