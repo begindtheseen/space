@@ -7980,7 +7980,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-gaussian-sum-filters",
       "title": "Gaussian sum filters",
-      "minutes": 22,
+      "minutes": 20,
       "covers": [
         "Gaussian sum filters"
       ],
@@ -7989,7 +7989,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-the-error-state-kalman-filter",
       "title": "The error-state (indirect) Kalman filter",
-      "minutes": 19,
+      "minutes": 26,
       "covers": [
         "The error-state (indirect) Kalman filter: why the error state is small and nearly linear, injection and reset, the Jacobian of the reset"
       ],
@@ -8025,7 +8025,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l14-multiple-model-and-imm-filters",
       "title": "Multiple-model and IMM filters",
-      "minutes": 19,
+      "minutes": 26,
       "covers": [
         "Multiple-model and IMM filters"
       ],
