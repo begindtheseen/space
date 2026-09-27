@@ -101,7 +101,7 @@ Successfully installed cmake-3.31.6 ninja-1.11.1.4 numpy-2.2.6
 {"outcome":"success","containerId":"6bbe7423…","remoteUser":"vscode","remoteWorkspaceFolder":"/workspaces/gncsim"}
 ```
 
-The CLI pulled the image, started a container, and ran the `postCreateCommand`, and pip downloaded the three pinned wheels: $16.5 + 27.8 + 0.422 \approx 44.7\,\mathrm{MB}$ in total. The final JSON line says it worked, which user you are, and where your source code landed inside the container: `/workspaces/gncsim`.
+The CLI pulled the image, started a container and ran the `postCreateCommand`. Pip downloaded the three pinned wheels: $16.5 + 27.8 + 0.422 \approx 44.7\,\mathrm{MB}$ in total. The final JSON line says it worked, which user you are, and where your source code landed inside the container: `/workspaces/gncsim`.
 
 Now run commands inside it:
 
@@ -131,9 +131,9 @@ A dev container is big on purpose: compilers, debuggers, editor helpers, maybe d
 
 ## From one container to a fleet
 
-Now zoom out. Your team's telemetry decoder is a container. So is the database that stores decoded frames, and the dashboard that plots them. On one laptop, `docker compose` starts all three. But a real ground system runs on many computers, has to keep running when one of them dies, and has to handle ten times the data during a launch.
+Now zoom out. A telemetry decoder, a database for decoded frames and a dashboard are three containers, and on one laptop `docker compose` starts them. But a real ground system runs on many computers, has to keep running when one of them dies, and has to handle ten times the data during a launch.
 
-Picture the manager of a large restaurant. The manager does not cook. The manager has a plan written on the wall — "four cooks on the grill, two at the fryer, one on dessert" — and walks around all night making the kitchen match the plan. A cook goes home sick, and the manager calls in a replacement. It gets busy, and the plan changes to six cooks on the grill.
+Picture the manager of a large restaurant. The manager does not cook, but has a plan on the wall — "four cooks on the grill, two at the fryer, one on dessert" — and walks around all night making the kitchen match the plan. A cook goes home sick, and the manager calls in a replacement. It gets busy, and the plan changes to six cooks on the grill.
 
 **Kubernetes** (often written **[[k8s|k8s-name]]**) is that manager for containers. It is an **orchestrator**: software that runs containers across a group of computers, called a **cluster**, and keeps them matching a written plan. Each computer in the cluster is a **node**. You never tell Kubernetes "start this container on that machine". You tell it what you want to exist, in a YAML file, and it works out the rest.
 
