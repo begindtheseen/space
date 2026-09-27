@@ -1,7 +1,7 @@
 ---
 id: l13-consider-states-and-bias-augmentation
 title: Consider states and bias augmentation
-minutes: 24
+minutes: 20
 covers:
   - Consider states and bias augmentation
 ---

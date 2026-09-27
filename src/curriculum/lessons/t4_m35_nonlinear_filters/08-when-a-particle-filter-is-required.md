@@ -260,7 +260,7 @@ Blue: the true belief, two sharp, equally likely peaks. Red dashed: the single b
   <g font-size="11" fill="#1f2a44" text-anchor="middle"><text x="100" y="160">6 km</text><text x="180" y="160">10 km</text><text x="260" y="160">14 km</text></g>
   <text x="112" y="40" font-size="11" fill="#1d6fd1">valley 1</text>
   <text x="272" y="40" font-size="11" fill="#1d6fd1">valley 2</text>
-  <text x="180" y="100" font-size="11" fill="#b4232c" text-anchor="middle">one bell: peak on the ridge</text>
+  <text x="180" y="104" font-size="11" fill="#b4232c" text-anchor="middle">one bell</text>
 </svg>
 ```
 

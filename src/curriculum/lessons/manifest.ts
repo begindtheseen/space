@@ -9019,7 +9019,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-gaussian-sum-filters",
       "title": "Gaussian sum filters",
-      "minutes": 22,
+      "minutes": 20,
       "covers": [
         "Gaussian sum filters"
       ],
@@ -9028,7 +9028,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-the-error-state-kalman-filter",
       "title": "The error-state (indirect) Kalman filter",
-      "minutes": 19,
+      "minutes": 18,
       "covers": [
         "The error-state (indirect) Kalman filter: why the error state is small and nearly linear, injection and reset, the Jacobian of the reset"
       ],
@@ -9046,7 +9046,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-invariant-and-on-manifold-ekf",
       "title": "On-manifold and invariant EKF, equivariant filtering",
-      "minutes": 20,
+      "minutes": 19,
       "covers": [
         "On-manifold and invariant EKF (IEKF), equivariant filtering"
       ],
@@ -9055,7 +9055,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l13-consider-states-and-bias-augmentation",
       "title": "Consider states and bias augmentation",
-      "minutes": 24,
+      "minutes": 20,
       "covers": [
         "Consider states and bias augmentation"
       ],
@@ -9064,7 +9064,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l14-multiple-model-and-imm-filters",
       "title": "Multiple-model and IMM filters",
-      "minutes": 19,
+      "minutes": 23,
       "covers": [
         "Multiple-model and IMM filters"
       ],
@@ -9084,7 +9084,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-imu-error-models",
       "title": "IMU error models",
-      "minutes": 24,
+      "minutes": 21,
       "covers": [
         "IMU error models: turn-on and in-run bias, scale factor, non-orthogonality and misalignment, g-sensitivity, quantization"
       ],
@@ -9093,7 +9093,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-random-walk-bias-instability-rate-random-walk",
       "title": "Random walk, bias instability, and rate random walk",
-      "minutes": 17,
+      "minutes": 18,
       "covers": [
         "Angle random walk, velocity random walk, rate random walk, and bias instability"
       ],
@@ -9102,7 +9102,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-allan-deviation-temperature-and-calibration",
       "title": "The Allan deviation, temperature effects, and calibration",
-      "minutes": 20,
+      "minutes": 22,
       "covers": [
         "Allan variance for IMU characterization; temperature effects and calibration"
       ],
@@ -9111,7 +9111,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-strapdown-mechanization-eci-ecef-ned",
       "title": "Strapdown mechanization in ECI, ECEF, and the local-level frame",
-      "minutes": 16,
+      "minutes": 18,
       "covers": [
         "Strapdown mechanization in ECI, ECEF and local-level (NED) frames"
       ],
@@ -9120,7 +9120,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-attitude-velocity-position-update",
       "title": "The mechanization loop: attitude, velocity, and position update",
-      "minutes": 13,
+      "minutes": 15,
       "covers": [
         "Attitude update, velocity update with Coriolis and gravity, position update"
       ],
@@ -9129,7 +9129,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-coning-sculling-multi-sample-algorithms",
       "title": "Coning and sculling corrections",
-      "minutes": 17,
+      "minutes": 23,
       "covers": [
         "Coning and sculling corrections and multi-sample algorithms"
       ],
@@ -9138,7 +9138,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-schuler-oscillation",
       "title": "The Schuler oscillation",
-      "minutes": 18,
+      "minutes": 20,
       "covers": [
         "The Schuler oscillation and why it bounds unaided INS horizontal error"
       ],
@@ -9147,7 +9147,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-free-inertial-error-propagation",
       "title": "Free-inertial error propagation",
-      "minutes": 17,
+      "minutes": 19,
       "covers": [
         "Free-inertial error propagation: how position error grows with time from each error source"
       ],
@@ -9156,7 +9156,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-initial-alignment",
       "title": "Initial alignment",
-      "minutes": 17,
+      "minutes": 24,
       "covers": [
         "Initial alignment: coarse leveling, gyrocompassing, fine alignment via Kalman filter, transfer and in-flight alignment"
       ],
@@ -9165,7 +9165,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-ins-gnss-integration-architectures",
       "title": "INS/GNSS integration architectures",
-      "minutes": 14,
+      "minutes": 20,
       "covers": [
         "INS/GNSS integration architectures: loosely, tightly, and ultra-tightly (deeply) coupled"
       ],
@@ -9174,7 +9174,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-error-state-filter-15-21-state",
       "title": "The error-state filter for INS",
-      "minutes": 15,
+      "minutes": 24,
       "covers": [
         "Error-state filter formulation for INS: the 15-state and 21-state models"
       ],
@@ -9183,7 +9183,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l13-lever-arm-zupt-vibration-rectification",
       "title": "Lever arm compensation, zero-velocity updates, and vibration rectification",
-      "minutes": 16,
+      "minutes": 21,
       "covers": [
         "Lever arm compensation, zero-velocity updates, vibration rectification"
       ],
@@ -9194,7 +9194,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-constellation-and-signal-structure",
       "title": "The constellation and the signal",
-      "minutes": 23,
+      "minutes": 22,
       "covers": [
         "GNSS constellation and signal structure: L1/L2/L5, C/A and P(Y) codes, CDMA, the navigation message"
       ],
@@ -9203,7 +9203,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-the-pseudorange-and-its-error-budget",
       "title": "The pseudorange and its error budget",
-      "minutes": 19,
+      "minutes": 20,
       "covers": [
         "The pseudorange measurement and its error budget"
       ],
@@ -9212,7 +9212,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-receiver-clock-bias-the-fourth-unknown",
       "title": "The receiver clock as the fourth unknown",
-      "minutes": 18,
+      "minutes": 21,
       "covers": [
         "Receiver clock bias as the fourth unknown"
       ],
@@ -9221,7 +9221,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-the-navigation-solution-by-least-squares",
       "title": "The navigation solution by least squares",
-      "minutes": 20,
+      "minutes": 22,
       "covers": [
         "The navigation solution by iterative least squares / Newton iteration"
       ],
@@ -9239,7 +9239,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-ionospheric-and-tropospheric-delay",
       "title": "Ionospheric and tropospheric delay",
-      "minutes": 24,
+      "minutes": 23,
       "covers": [
         "Ionospheric and tropospheric delay, their models, and the dual-frequency ionosphere-free combination"
       ],
@@ -9248,7 +9248,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-multipath-ephemeris-and-clock-errors",
       "title": "Multipath, ephemeris and clock errors",
-      "minutes": 24,
+      "minutes": 23,
       "covers": [
         "Multipath; ephemeris and satellite clock errors"
       ],
@@ -9257,7 +9257,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-carrier-phase-and-integer-ambiguity",
       "title": "Carrier phase and integer ambiguity resolution",
-      "minutes": 22,
+      "minutes": 21,
       "covers": [
         "Carrier phase measurements, cycle slips, integer ambiguity resolution with LAMBDA"
       ],
@@ -9266,7 +9266,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-differential-gnss-rtk-and-ppp",
       "title": "Differential GNSS, RTK and precise point positioning",
-      "minutes": 22,
+      "minutes": 17,
       "covers": [
         "Differential GNSS, RTK, and precise point positioning"
       ],
@@ -9275,7 +9275,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-gnss-above-the-constellation",
       "title": "GNSS above the constellation",
-      "minutes": 22,
+      "minutes": 21,
       "covers": [
         "Space-based GNSS: use above the constellation, side-lobe reception, high-dynamics tracking, Doppler"
       ],
@@ -9284,7 +9284,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-gnss-in-the-launch-vehicle-environment",
       "title": "GNSS in the launch vehicle environment",
-      "minutes": 21,
+      "minutes": 23,
       "covers": [
         "GNSS in a launch vehicle environment: acceleration, jerk, vibration, plume attenuation, antenna switching"
       ],
@@ -9293,7 +9293,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-integrity-jamming-and-spoofing",
       "title": "Integrity, jamming and spoofing",
-      "minutes": 24,
+      "minutes": 21,
       "covers": [
         "Jamming and spoofing; RAIM and integrity monitoring"
       ],
@@ -9302,7 +9302,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l13-receiver-tracking-loops",
       "title": "Receiver tracking loops",
-      "minutes": 17,
+      "minutes": 24,
       "covers": [
         "Receiver tracking loops (DLL, PLL, FLL) and the bandwidth/dynamics trade"
       ],
@@ -9311,7 +9311,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l14-vector-tracking-and-deep-coupling",
       "title": "Vector tracking and deep coupling",
-      "minutes": 22,
+      "minutes": 23,
       "covers": [
         "Vector tracking and deep coupling"
       ],
@@ -9322,7 +9322,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-star-trackers-photons-to-quaternion",
       "title": "Star trackers: from photons to a quaternion",
-      "minutes": 24,
+      "minutes": 27,
       "covers": [
         "Star trackers: optics, centroiding, star catalogs, lost-in-space identification (triangle and pyramid algorithms), tracking mode"
       ],
@@ -9349,7 +9349,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-magnetometers-igrf-wmm-hard-soft-iron-calibration",
       "title": "Magnetometers: the IGRF/WMM field model and hard- and soft-iron calibration",
-      "minutes": 20,
+      "minutes": 24,
       "covers": [
         "Magnetometers, the IGRF and WMM field models, residual dipole, hard-iron and soft-iron calibration"
       ],
@@ -9358,7 +9358,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-earth-and-horizon-sensors",
       "title": "Earth and horizon sensors",
-      "minutes": 14,
+      "minutes": 18,
       "covers": [
         "Earth and horizon sensors"
       ],
