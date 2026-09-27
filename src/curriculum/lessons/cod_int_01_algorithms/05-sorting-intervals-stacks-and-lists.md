@@ -76,7 +76,7 @@ The trick is sort first, then walk once:
 Why does sorting make this work? After sorting, a window can only overlap the one *most recently* merged. Everything earlier ended before that one began.
 
 ::: example Merging six passes
-Times are minutes after midnight UTC. Six passes: $[610, 622]$, $[95, 108]$, $[600, 615]$, $[100, 112]$, $[340, 351]$, $[112, 118]$.
+Times are minutes after midnight UTC (the world time standard that mission teams use). Six passes: $[610, 622]$, $[95, 108]$, $[600, 615]$, $[100, 112]$, $[340, 351]$, $[112, 118]$.
 
 ```python
 def merge(windows):

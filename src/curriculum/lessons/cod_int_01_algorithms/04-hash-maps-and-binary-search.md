@@ -205,7 +205,7 @@ The recipe has three parts:
 The total time is $O(n \log R)$, where $R$ is the size of the range: $\log_2 R$ halvings, each costing one $O(n)$ check.
 
 ::: example The smallest rover battery
-A rover has eight science tasks to do **in order**. Each needs a fixed amount of energy, in watt-hours (Wh): $120, 340, 210, 90, 400, 150, 260, 180$. Each night the solar panels recharge the battery to full. The team wants all eight tasks done in 3 **[[sols|sol]]** (Mars days). What is the smallest battery capacity that allows that?
+A rover has eight science tasks to do **in order**. Each needs a fixed amount of energy, in watt-hours (Wh; one watt-hour is one watt used for one hour): $120, 340, 210, 90, 400, 150, 260, 180$. Each night the solar panels recharge the battery to full. The team wants all eight tasks done in 3 **[[sols|sol]]** (Mars days). What is the smallest battery capacity that allows that?
 
 **The check.** For a given capacity, pack tasks into each sol greedily: keep adding the next task until it would not fit, then start a new sol. Count the sols. Doing as much as possible each day can never need *more* days, so the greedy count is the true minimum for that capacity.
 
