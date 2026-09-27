@@ -974,19 +974,176 @@ ordered
 
 === sql3-18 | Problem solving: everyone under every manager
 --- teach
-**The problem.** HR wants a table of every manager with the size and cost of the whole team beneath them: for each employee who manages anyone, the number of people below them **at any depth**, and the total salary of those people. Maya, the CEO, has everyone below her; Ivan has only his intern.
+Last lesson you carried a path down the categories tree. In the lesson "Recursive CTEs: walking an org chart" you walked down from **one** person. This lesson walks down from **every** person at once, and [[adds up what it finds|rollup]]. It is a problem-solving lesson, so you will work through it in steps, the way you did in "Problem solving: the second-highest salary".
 
-Lesson 3 walked the tree below *one* person. This asks for the same walk below *every* person at once. Work it through the problem-solving steps from the intermediate course:
+### The problem
 
-1. **Restate it with an example.** Omar manages Raj and Tess; Raj manages Ivan, Nora and Paul; Ivan manages Leo. So Omar's team is 6 people, and its payroll is their six salaries — not Omar's own.
-2. **Brute force first.** You could run lesson 3's query once per manager, changing the name each time. That gives the right numbers, but it is one query per manager, and a new manager means a new query.
-3. **Find the pattern.** Every walk starts the same way — a manager and their direct reports — and every step does the same thing: add the reports of the people found so far. The only difference between the walks is *whose* walk it is. So carry that along: make the recursive rows **pairs**, `(boss_id, emp_id)`, meaning "emp is somewhere under boss".
-   - Anchor: every direct link, `SELECT manager_id, id FROM employees WHERE manager_id IS NOT NULL`.
-   - Step: for each pair found, the people managed by `emp_id` are also under the same `boss_id`.
-4. **Then it is ordinary grouping.** Group the pairs by `boss_id`: `COUNT(*)` is the team size, and joining each `emp_id` back to `employees` gives the salaries to sum.
-5. **Check the edges.** People who manage nobody (Leo, Zara…) produce no pairs as a boss, so they do not appear — which is what the question asks. Every person appears once per boss above them, never twice under the same boss, because a tree has only one path upwards.
+HR wants one table about the managers. For each employee who manages anyone, it should show:
+
+- how many people are below them **at any depth**: their reports, their reports' reports, and so on down;
+- the total salary of those people. This is the team's **payroll**: the pay of everyone below the manager, not counting the manager.
+
+Maya, the CEO, has everyone else below. Ivan has only Leo, the intern.
+
+### Step 1: restate it with an example
+
+Pick one manager and work it out by hand. Here is Omar's part of the tree:
+
+```
+Omar
+├── Raj
+│   ├── Ivan
+│   │   └── Leo
+│   ├── Nora
+│   └── Paul
+└── Tess
+```
+
+Omar manages Raj and Tess. Raj manages Ivan, Nora and Paul. Ivan manages Leo. So Omar's team is 6 people. Its payroll is those six salaries added up:
+
+150000 + 150000 + 120000 + 120000 + 105000 + 40000 = 685000
+
+Omar's own salary is not in it. Now you have two numbers, 6 and 685000, to check your query against.
+
+### Step 2: brute force first
+
+**Brute force** means the plain, slow way that surely works. Here: take the query from "Recursive CTEs: walking an org chart", run it for Omar, then count and add up. Then change the name to Raj and run it again. Then Lena, Maya and Ivan.
+
+That gives the right numbers. But it is one query per manager. Five managers means five queries, and a new manager means you must remember to write another one. It is still [[worth having|brute-force]]: now you want one query that does all of them.
+
+### Step 3: find the pattern
+
+Line the five walks up side by side. Every walk starts the same way: a manager, and the people who report to them directly. Every step does the same thing: it adds the reports of the people found so far. The only difference is **whose** walk it is.
+
+So carry that along. Call the recursive CTE `under`, and make each of its rows a **pair** of two ids:
+
+- `boss_id`: whose walk this row belongs to;
+- `emp_id`: someone found below that boss.
+
+The row `(2, 6)` means "employee 6, Ivan, is somewhere under employee 2, Omar".
+
+**The anchor** is every direct link in the table. Each employee who has a manager gives one pair: (their manager, them). `IS NOT NULL` leaves out Maya, who has no manager:
+
+```sql
+SELECT manager_id, id FROM employees WHERE manager_id IS NOT NULL;
+```
+
+That gives 10 pairs, one for each employee except Maya. `(1, 2)` is Maya over Omar, `(2, 4)` is Omar over Raj, `(4, 6)` is Raj over Ivan, and so on.
+
+**The step** takes each pair found last round and moves one level down. It keeps the same `boss_id`, and finds the people managed by `emp_id`:
+
+```sql
+SELECT u.boss_id, e.id
+FROM under u
+JOIN employees e ON e.manager_id = u.emp_id
+```
+
+`u` is a short alias for `under`, the pairs found so far. Read the `ON` aloud: "an employee whose manager is the person this pair found". Take the pair `(2, 4)`, Omar over Raj. Raj manages Ivan, Nora and Paul, so the step makes `(2, 6)`, `(2, 7)` and `(2, 8)`: all three are under Omar too.
+
+Round by round, the pairs pile up:
+
+| Round | New pairs | For example |
+| --- | --- | --- |
+| anchor | 10 | (2, 4): Raj under Omar |
+| 1 | 8 | (2, 6): Ivan under Omar |
+| 2 | 4 | (2, 10): Leo under Omar |
+| 3 | 1 | (1, 10): Leo under Maya |
+| 4 | 0 | Leo manages nobody, so it stops |
+
+That makes 23 pairs in all. Here are Omar's, with the ids turned into names:
+
+| boss | emp |
+| --- | --- |
+| Omar | Raj |
+| Omar | Tess |
+| Omar | Ivan |
+| Omar | Nora |
+| Omar | Paul |
+| Omar | Leo |
+
+Six rows: the same six people as your count in step 1. This full list of "who is somewhere under whom" has a name: [[the transitive closure|closure]] of the tree.
+
+### Step 4: then it is ordinary grouping
+
+The hard part is done. The rest is `GROUP BY`, which you know well. Group the pairs by `boss_id`, and each group holds one boss's whole team:
+
+- `COUNT(*)`, "count the rows", is the team size.
+- For the payroll, join each `emp_id` to `employees` to get that person's salary, and `SUM` it.
+
+You need `employees` [[twice in the same query|join-twice]]: once as `b`, the boss, for the name, and once as `e`, the employee, for the salary. You did this in the lesson "Self-joins".
+
+### Step 5: check the edges
+
+An **edge case** is an unusual row that might trip the query up. Two to check here:
+
+- **People who manage nobody** (Leo, Nora, Tess, Zara…) never appear as a `boss_id`, so they get no row. That is right: the question asks only about managers.
+- **Nobody is counted twice.** Could Leo turn up twice under Maya? Only if there were [[two different routes up from Leo to Maya|one-way-up]]. In a tree each person has one manager, so there is only one route, and each pair appears once.
+
+Last, compare with step 1: Omar should show 6 and 685000.
+
+**Watch out:** do not count only the direct links. A plain self-join grouped by manager gives Maya 2, because only Omar and Lena report to Maya directly. The question says "at any depth", so Maya's number must be everyone below that row: 10. If your biggest number is small, the recursion is missing.
+
+::: context rollup Adding up a whole branch
+Engineers call this a **roll-up**: adding a number up through every level of a tree. A rocket's mass is worked out this way. Each part in the parts list has a mass, and the mass of a stage is the sum of every part below it, at any depth: engines, their pumps, the pumps' valves. The query shape is the one in this lesson. Pair each assembly with every part somewhere inside it, then group by the assembly and `SUM` the masses. Budgets, headcounts and file sizes in a folder are rolled up the same way.
+:::
+
+::: context brute-force Why start with the slow way
+A brute-force answer is easy to trust, because there is nothing clever in it to get wrong. That makes it a yardstick. Once you have the fast, clever query, run both and compare: if they disagree anywhere, the clever one has a bug. Engineers do this all the time. Software teams, flight software included, often keep a simple, slow version of a calculation next to the fast one they ship, and test the fast one against it over thousands of inputs.
+:::
+
+::: context closure Where "transitive" comes from
+A rule is **transitive** when it passes along a chain: if A is taller than B, and B is taller than C, then A is taller than C. "Is somewhere above" works the same way: Omar is above Raj, Raj is above Ivan, so Omar is above Ivan. The **transitive closure** is the list you get by following every chain to the end: every pair where the first is somewhere above the second. Here that is 23 pairs. Some databases store it as a table of its own, a **closure table**, so "everyone under Omar" becomes one quick lookup. The cost is that it must be updated whenever someone moves.
+:::
+
+::: context join-twice One table, two jobs
+Each pair holds two ids, and you need a different fact about each: the boss's name and the employee's salary. So the final query joins `employees` twice, under two aliases. Picture two copies of the same staff list on the desk. You look the boss up in one copy (`b.id = u.boss_id`) and the employee up in the other (`e.id = u.emp_id`). They are the same table; the aliases only let the query say which copy it means at each point. Group by `b.id` and `b.name`, so each boss is one group.
+:::
+
+::: context one-way-up Why a tree cannot double-count
+Each pair is made by walking one route down from the boss. In a tree, everyone has exactly one manager, so from Leo there is exactly one route up to Maya, and the pair (Maya, Leo) is made once. Not every structure is a tree. In a parts list, one valve type can sit inside both a tank and an engine. Then there are two routes from the stage down to it, and the pair (stage, valve) is made twice, so it is counted twice. Writing `UNION` instead of `UNION ALL` in the CTE throws such repeated rows away.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 200" font-family="Inter, Arial, sans-serif">
+  <line x1="90" y1="32" x2="90" y2="42" stroke="#1d6fd1" stroke-width="2"/>
+  <line x1="90" y1="64" x2="90" y2="74" stroke="#1d6fd1" stroke-width="2"/>
+  <line x1="90" y1="96" x2="90" y2="106" stroke="#1d6fd1" stroke-width="2"/>
+  <line x1="90" y1="128" x2="90" y2="138" stroke="#1d6fd1" stroke-width="2"/>
+  <rect x="60" y="10" width="60" height="22" rx="4" fill="#fff" stroke="#1f2a44"/>
+  <text x="90" y="25" font-size="12" fill="#1f2a44" text-anchor="middle">Maya</text>
+  <rect x="60" y="42" width="60" height="22" rx="4" fill="#fff" stroke="#1f2a44"/>
+  <text x="90" y="57" font-size="12" fill="#1f2a44" text-anchor="middle">Omar</text>
+  <rect x="60" y="74" width="60" height="22" rx="4" fill="#fff" stroke="#1f2a44"/>
+  <text x="90" y="89" font-size="12" fill="#1f2a44" text-anchor="middle">Raj</text>
+  <rect x="60" y="106" width="60" height="22" rx="4" fill="#fff" stroke="#1f2a44"/>
+  <text x="90" y="121" font-size="12" fill="#1f2a44" text-anchor="middle">Ivan</text>
+  <rect x="60" y="138" width="60" height="22" rx="4" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="90" y="153" font-size="12" fill="#1f2a44" text-anchor="middle">Leo</text>
+  <text x="90" y="184" font-size="11" fill="#1f2a44" text-anchor="middle">a tree: one route up</text>
+  <line x1="270" y1="32" x2="225" y2="74" stroke="#b4232c" stroke-width="2"/>
+  <line x1="270" y1="32" x2="315" y2="74" stroke="#b4232c" stroke-width="2"/>
+  <line x1="225" y1="96" x2="270" y2="138" stroke="#b4232c" stroke-width="2"/>
+  <line x1="315" y1="96" x2="270" y2="138" stroke="#b4232c" stroke-width="2"/>
+  <rect x="240" y="10" width="60" height="22" rx="4" fill="#fff" stroke="#1f2a44"/>
+  <text x="270" y="25" font-size="12" fill="#1f2a44" text-anchor="middle">Stage</text>
+  <rect x="195" y="74" width="60" height="22" rx="4" fill="#fff" stroke="#1f2a44"/>
+  <text x="225" y="89" font-size="12" fill="#1f2a44" text-anchor="middle">Tank</text>
+  <rect x="285" y="74" width="60" height="22" rx="4" fill="#fff" stroke="#1f2a44"/>
+  <text x="315" y="89" font-size="12" fill="#1f2a44" text-anchor="middle">Engine</text>
+  <rect x="240" y="138" width="60" height="22" rx="4" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="270" y="153" font-size="12" fill="#1f2a44" text-anchor="middle">Valve</text>
+  <text x="270" y="180" font-size="11" fill="#b4232c" text-anchor="middle">not a tree: two routes up,</text>
+  <text x="270" y="194" font-size="11" fill="#b4232c" text-anchor="middle">so Valve is counted twice</text>
+</svg>
+```
+:::
 --- task
-For every employee who manages at least one person, return `name`, `reports` (the number of people under them at any depth) and `team_payroll` (the total salary of those people, not counting the manager). Use one recursive CTE for all managers at once. Sort by `reports`, largest first, then name.
+For every employee who manages at least one person, return three columns:
+
+- `name`: the manager's name;
+- `reports`: the number of people under them at any depth;
+- `team_payroll`: the total salary of those people, not counting the manager.
+
+Use one recursive CTE of `(boss_id, emp_id)` pairs for all managers at once. Sort by `reports`, largest first, then by `name`.
 --- starter
 SELECT b.name, COUNT(*) AS reports, SUM(e.salary) AS team_payroll
 FROM employees e
@@ -1008,11 +1165,11 @@ JOIN employees e ON e.id = u.emp_id
 GROUP BY b.id, b.name
 ORDER BY reports DESC, b.name;
 --- hint
-The starter counts only direct reports: Maya shows 2, but everyone is under her. You need the whole tree below each manager.
+Run the starter first. It counts only direct reports: Maya shows 2, but everyone else is under Maya. You need the whole tree below each manager, which means recursion.
 --- hint
-Make the recursion build pairs `(boss_id, emp_id)`. The anchor is every direct link: `SELECT manager_id, id FROM employees WHERE manager_id IS NOT NULL`.
+Build the pairs in `WITH RECURSIVE under(boss_id, emp_id) AS ( … )`. The anchor is every direct link: `SELECT manager_id, id FROM employees WHERE manager_id IS NOT NULL`. After `UNION ALL`, the step keeps the boss and moves one level down: `SELECT u.boss_id, e.id FROM under u JOIN employees e ON e.manager_id = u.emp_id`.
 --- hint
-The step keeps the boss and moves one level down: `SELECT u.boss_id, e.id FROM under u JOIN employees e ON e.manager_id = u.emp_id`. Then group the pairs by boss and join `employees` twice, once for the boss's name and once for the salaries.
+After the closing bracket, read from `under u` and join `employees` twice: `JOIN employees b ON b.id = u.boss_id` for the boss's name, and `JOIN employees e ON e.id = u.emp_id` for the salaries. Then the starter's last three lines fit as they are: `SELECT b.name, COUNT(*) AS reports, SUM(e.salary) AS team_payroll`, `GROUP BY b.id, b.name`, `ORDER BY reports DESC, b.name`.
 --- check result | Five managers, with whole-tree headcounts and payrolls
 ordered
 [["Maya", 10, 1255000], ["Omar", 6, 685000], ["Raj", 4, 385000], ["Lena", 2, 180000], ["Ivan", 1, 40000]]
@@ -1021,30 +1178,296 @@ ordered
 
 === sql3-05 | Window functions: ranking
 --- teach
-`GROUP BY` collapses rows into one per group. A **window function** computes across a group of rows but keeps every row. The group is described by `OVER (...)`:
+Last lesson finished the recursion part of this course. Now you meet the second big tool [[analysts reach for|analyst-tool]]: **window functions**. This first lesson uses them to number and rank rows, like places in a race, while every row stays in the result.
+
+### The picture
+
+Think of the results board after a school race. Every runner keeps their own line: name and time. Next to each line, someone writes a place: 1st, 2nd, 3rd. To write "3rd" next to one runner, you must look at the other runners' times too. But no runner's line is thrown away.
+
+### What GROUP BY does instead
+
+You know `GROUP BY` well. It squashes each group into one row:
+
+```sql
+SELECT dept, COUNT(*) FROM employees GROUP BY dept;
+```
+
+| dept | COUNT(*) |
+| --- | --- |
+| eng | 7 |
+| exec | 1 |
+| finance | 3 |
+
+Eleven people went in, and three rows came out. The names are gone. That is right for "how many per department", but no use for the race board, where every runner keeps their line.
+
+### A window function keeps every row
+
+A **window function** works out a value for each row by looking at a set of other rows, and keeps every row in the result. The set of rows it looks at is its **[[window|window-word]]**.
+
+Here is the simplest one. `ROW_NUMBER()` gives the rows the numbers 1, 2, 3 and on. The word `OVER` is what makes it a window function, and the brackets after `OVER` describe the window:
+
+```sql
+SELECT name, salary,
+       ROW_NUMBER() OVER (ORDER BY salary DESC, name) AS pos
+FROM employees
+ORDER BY pos;
+```
+
+Read the `OVER` part aloud: "number the rows going from the highest salary down; when two salaries are equal, go by name". `DESC`, from the lesson "Sorting and limiting", means descending: biggest first.
+
+| name | salary | pos |
+| --- | --- | --- |
+| Maya | 250000 | 1 |
+| Omar | 200000 | 2 |
+| Lena | 190000 | 3 |
+| Raj | 150000 | 4 |
+| Tess | 150000 | 5 |
+| Ivan | 120000 | 6 |
+| Nora | 120000 | 7 |
+| Paul | 105000 | 8 |
+| Amy | 90000 | 9 |
+| Zara | 90000 | 10 |
+| Leo | 40000 | 11 |
+
+Eleven rows went in and eleven came out, each with its place written next to it. That is the race board.
+
+### Two ORDER BYs, two jobs
+
+That query has two `ORDER BY`s, and they do different jobs:
+
+- The one **inside** `OVER (...)` decides how the numbers are handed out. Here, the highest salary gets 1.
+- The one at the **end** of the query decides the order the rows are shown in, as always.
+
+They do not have to agree. End the query with `ORDER BY name` instead, and Amy is shown first, still with `pos` 9. The numbers stay the same; only the display order changes.
+
+### PARTITION BY: a separate ranking per group
+
+Often you want places within each group: the top earner in each department, not in the whole company. Picture three separate races, one per department, each with its own winner.
+
+`PARTITION BY dept` does that. A **partition** is one group of rows that gets its own numbering, starting again at 1. The rows are split up by `dept`, and each department is ranked [[on its own|partition-picture]]:
 
 ```sql
 SELECT name, dept, salary,
        RANK() OVER (PARTITION BY dept ORDER BY salary DESC) AS pos
-FROM employees;
+FROM employees
+ORDER BY dept, pos;
 ```
 
-- `PARTITION BY dept` — rank within each department separately (leave it out for one ranking over everything).
-- `ORDER BY salary DESC` — the order the ranking follows.
+`RANK()` is another numbering function; the next step shows how it differs from `ROW_NUMBER()`. Here are the exec and finance rows of the result:
 
-The three ranking functions differ only in how they treat **ties**. For salaries 150, 150, 120:
+| name | dept | salary | pos |
+| --- | --- | --- | --- |
+| Maya | exec | 250000 | 1 |
+| Lena | finance | 190000 | 1 |
+| Zara | finance | 90000 | 2 |
+| Amy | finance | 90000 | 2 |
 
-| function | gives | meaning |
+Each department starts again at 1, and the eng rows get their own numbering the same way. Nothing is squashed: all 11 rows are still there. Leave `PARTITION BY` out, and there is one ranking over everybody, as in the first example.
+
+### Three ways to number ties
+
+Zara and Amy both earn 90000, and both got 2. That is because of how `RANK()` treats **ties**: rows with the same value in the `ORDER BY` inside `OVER`. There are three numbering functions, and ties are the only place they differ.
+
+Here are all three side by side, over the whole company. Each column has its own `OVER (...)`: a query can hold as many window functions as you like.
+
+```sql
+SELECT name, salary,
+       ROW_NUMBER() OVER (ORDER BY salary DESC, name) AS rn,
+       RANK()       OVER (ORDER BY salary DESC) AS rnk,
+       DENSE_RANK() OVER (ORDER BY salary DESC) AS dense
+FROM employees
+ORDER BY rn;
+```
+
+These are the rows from the middle of the list, where Raj and Tess tie on 150000 and Ivan and Nora tie on 120000:
+
+| name | salary | rn | rnk | dense |
+| --- | --- | --- | --- | --- |
+| Lena | 190000 | 3 | 3 | 3 |
+| Raj | 150000 | 4 | 4 | 4 |
+| Tess | 150000 | 5 | 4 | 4 |
+| Ivan | 120000 | 6 | 6 | 5 |
+| Nora | 120000 | 7 | 6 | 5 |
+| Paul | 105000 | 8 | 8 | 6 |
+
+Look at Raj, Tess and Ivan in each column:
+
+| function | Raj, Tess, Ivan get | meaning |
 | --- | --- | --- |
-| `ROW_NUMBER()` | 1, 2, 3 | always distinct; ties broken arbitrarily unless you add a tie-breaker |
-| `RANK()` | 1, 1, 3 | ties share, then a gap — "third fastest" |
-| `DENSE_RANK()` | 1, 1, 2 | ties share, no gap — "second-highest salary" |
+| `ROW_NUMBER()` | 4, 5, 6 | always different numbers; a tie is split [[in no fixed order|arbitrary-ties]] unless you add a tie-breaker |
+| `RANK()` | 4, 4, 6 | ties share a place, then a number is skipped: "joint 4th, then 6th" |
+| `DENSE_RANK()` | 4, 4, 5 | ties share a place, and no number is skipped: "the 5th-highest salary" |
 
-Pick by the question. "Exactly one row per group" wants `ROW_NUMBER` with a tie-breaker in the `ORDER BY`, so the result is the same every run. "Everyone who shares the top spot" wants `RANK` or `DENSE_RANK`.
+A **tie-breaker** is a second column in the `ORDER BY` that settles ties, like `name` in the `rn` column above.
 
-Window functions run after `WHERE` and `GROUP BY`, so you cannot filter on them in the same query's `WHERE` — wrap the query in a CTE and filter outside. You will do that in the expert course.
+### Picking one
+
+Pick by [[the question you are answering|which-rank]]:
+
+- "Exactly one row per place" wants `ROW_NUMBER`, with a tie-breaker in its `ORDER BY`. Then the result is the same every time you run it.
+- "Everyone who shares the top spot" wants `RANK` or `DENSE_RANK`: both give tied rows the same number.
+- "The 3rd-highest salary, counting equal salaries once" wants `DENSE_RANK`, because it skips no numbers.
+
+### When the numbers are worked out
+
+A query runs in stages. `WHERE` throws rows away and `GROUP BY` squashes them, and only [[after those stages|query-order]] are window functions worked out. So `WHERE` cannot use them yet, and this fails:
+
+```sql
+SELECT name FROM employees
+WHERE RANK() OVER (ORDER BY salary DESC) = 1;   -- error
+```
+
+SQLite says `misuse of window function RANK()`. To filter on a rank, work the rank out in a CTE first, then filter the CTE's rows. You will do that in the expert course, in "Top N per group".
+
+**Watch out:** `ROW_NUMBER` without a tie-breaker. With only `ORDER BY salary DESC`, Raj and Tess tie, and which of them gets 4 and which gets 5 is up to the database. It can change when the data changes, and nothing warns you. Add a column that settles every tie, such as `name` or `id`.
+
+::: context analyst-tool What analysts use them for
+Window functions answer the questions that need a row and its neighbours at once: a leaderboard, each month's growth over the month before, a running bank balance, the latest reading from each sensor. They joined the SQL standard in the early 2000s, and SQLite has had them since version 3.25.0, in 2018. This lesson ranks rows. The next lessons add running totals and comparisons with the row before, and the expert course uses them for top-N-per-group, streaks and removing duplicates.
+:::
+
+::: context window-word Why it is called a window
+Picture each row looking out through a window at the rows around it. What it sees through the window is what its function uses. `GROUP BY` puts many rows in and gets one row per group out. A window function puts rows in and gets the same rows out, each with a new column. In later lessons the window moves with the row, like the view from a train: a running total sees every row up to the current one.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 180" font-family="Inter, Arial, sans-serif">
+  <text x="90" y="16" font-size="12" fill="#1f2a44" text-anchor="middle">GROUP BY</text>
+  <text x="270" y="16" font-size="12" fill="#1f2a44" text-anchor="middle">window function</text>
+  <rect x="20" y="26" width="50" height="8" fill="#8fb8f0" stroke="#1f2a44" stroke-width="0.5"/>
+  <rect x="20" y="37" width="50" height="8" fill="#8fb8f0" stroke="#1f2a44" stroke-width="0.5"/>
+  <rect x="20" y="48" width="50" height="8" fill="#8fb8f0" stroke="#1f2a44" stroke-width="0.5"/>
+  <rect x="20" y="59" width="50" height="8" fill="#8fb8f0" stroke="#1f2a44" stroke-width="0.5"/>
+  <rect x="20" y="70" width="50" height="8" fill="#8fb8f0" stroke="#1f2a44" stroke-width="0.5"/>
+  <rect x="20" y="81" width="50" height="8" fill="#8fb8f0" stroke="#1f2a44" stroke-width="0.5"/>
+  <rect x="20" y="92" width="50" height="8" fill="#8fb8f0" stroke="#1f2a44" stroke-width="0.5"/>
+  <rect x="20" y="103" width="50" height="8" fill="#f2b880" stroke="#1f2a44" stroke-width="0.5"/>
+  <rect x="20" y="114" width="50" height="8" fill="#fff" stroke="#1f2a44" stroke-width="0.5"/>
+  <rect x="20" y="125" width="50" height="8" fill="#fff" stroke="#1f2a44" stroke-width="0.5"/>
+  <rect x="20" y="136" width="50" height="8" fill="#fff" stroke="#1f2a44" stroke-width="0.5"/>
+  <line x1="76" y1="85" x2="96" y2="85" stroke="#1f2a44" stroke-width="1.5"/>
+  <path d="M96 81 L104 85 L96 89 z" fill="#1f2a44"/>
+  <rect x="110" y="70" width="50" height="8" fill="#8fb8f0" stroke="#1f2a44" stroke-width="0.5"/>
+  <rect x="110" y="81" width="50" height="8" fill="#f2b880" stroke="#1f2a44" stroke-width="0.5"/>
+  <rect x="110" y="92" width="50" height="8" fill="#fff" stroke="#1f2a44" stroke-width="0.5"/>
+  <text x="90" y="166" font-size="11" fill="#6c7a93" text-anchor="middle">11 rows in, 3 rows out</text>
+  <rect x="200" y="26" width="50" height="8" fill="#8fb8f0" stroke="#1f2a44" stroke-width="0.5"/>
+  <rect x="200" y="37" width="50" height="8" fill="#8fb8f0" stroke="#1f2a44" stroke-width="0.5"/>
+  <rect x="200" y="48" width="50" height="8" fill="#8fb8f0" stroke="#1f2a44" stroke-width="0.5"/>
+  <rect x="200" y="59" width="50" height="8" fill="#8fb8f0" stroke="#1f2a44" stroke-width="0.5"/>
+  <rect x="200" y="70" width="50" height="8" fill="#8fb8f0" stroke="#1f2a44" stroke-width="0.5"/>
+  <rect x="200" y="81" width="50" height="8" fill="#8fb8f0" stroke="#1f2a44" stroke-width="0.5"/>
+  <rect x="200" y="92" width="50" height="8" fill="#8fb8f0" stroke="#1f2a44" stroke-width="0.5"/>
+  <rect x="200" y="103" width="50" height="8" fill="#f2b880" stroke="#1f2a44" stroke-width="0.5"/>
+  <rect x="200" y="114" width="50" height="8" fill="#fff" stroke="#1f2a44" stroke-width="0.5"/>
+  <rect x="200" y="125" width="50" height="8" fill="#fff" stroke="#1f2a44" stroke-width="0.5"/>
+  <rect x="200" y="136" width="50" height="8" fill="#fff" stroke="#1f2a44" stroke-width="0.5"/>
+  <line x1="256" y1="85" x2="272" y2="85" stroke="#1f2a44" stroke-width="1.5"/>
+  <path d="M272 81 L280 85 L272 89 z" fill="#1f2a44"/>
+  <rect x="286" y="26" width="50" height="8" fill="#8fb8f0" stroke="#1f2a44" stroke-width="0.5"/>
+  <rect x="286" y="37" width="50" height="8" fill="#8fb8f0" stroke="#1f2a44" stroke-width="0.5"/>
+  <rect x="286" y="48" width="50" height="8" fill="#8fb8f0" stroke="#1f2a44" stroke-width="0.5"/>
+  <rect x="286" y="59" width="50" height="8" fill="#8fb8f0" stroke="#1f2a44" stroke-width="0.5"/>
+  <rect x="286" y="70" width="50" height="8" fill="#8fb8f0" stroke="#1f2a44" stroke-width="0.5"/>
+  <rect x="286" y="81" width="50" height="8" fill="#8fb8f0" stroke="#1f2a44" stroke-width="0.5"/>
+  <rect x="286" y="92" width="50" height="8" fill="#8fb8f0" stroke="#1f2a44" stroke-width="0.5"/>
+  <rect x="286" y="103" width="50" height="8" fill="#f2b880" stroke="#1f2a44" stroke-width="0.5"/>
+  <rect x="286" y="114" width="50" height="8" fill="#fff" stroke="#1f2a44" stroke-width="0.5"/>
+  <rect x="286" y="125" width="50" height="8" fill="#fff" stroke="#1f2a44" stroke-width="0.5"/>
+  <rect x="286" y="136" width="50" height="8" fill="#fff" stroke="#1f2a44" stroke-width="0.5"/>
+  <rect x="338" y="26" width="12" height="8" fill="#1d6fd1"/>
+  <rect x="338" y="37" width="12" height="8" fill="#1d6fd1"/>
+  <rect x="338" y="48" width="12" height="8" fill="#1d6fd1"/>
+  <rect x="338" y="59" width="12" height="8" fill="#1d6fd1"/>
+  <rect x="338" y="70" width="12" height="8" fill="#1d6fd1"/>
+  <rect x="338" y="81" width="12" height="8" fill="#1d6fd1"/>
+  <rect x="338" y="92" width="12" height="8" fill="#1d6fd1"/>
+  <rect x="338" y="103" width="12" height="8" fill="#1d6fd1"/>
+  <rect x="338" y="114" width="12" height="8" fill="#1d6fd1"/>
+  <rect x="338" y="125" width="12" height="8" fill="#1d6fd1"/>
+  <rect x="338" y="136" width="12" height="8" fill="#1d6fd1"/>
+  <text x="270" y="166" font-size="11" fill="#6c7a93" text-anchor="middle">11 rows in, 11 out, plus a column</text>
+</svg>
+```
+
+The colours are the three departments: eng, exec and finance.
+:::
+
+::: context partition-picture All three partitions
+Here is the whole result of the `PARTITION BY dept` query, drawn as three separate races. Each box is a partition, and each numbers its own rows from 1. Salaries are in thousands. The ties (Raj and Tess, Ivan and Nora, Zara and Amy) share a number, because this is `RANK()`.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 200" font-family="Inter, Arial, sans-serif">
+  <text x="70" y="18" font-size="12" fill="#1f2a44" text-anchor="middle">eng</text>
+  <text x="190" y="18" font-size="12" fill="#1f2a44" text-anchor="middle">exec</text>
+  <text x="300" y="18" font-size="12" fill="#1f2a44" text-anchor="middle">finance</text>
+  <rect x="10" y="26" width="120" height="150" rx="5" fill="#fff" stroke="#1d6fd1" stroke-width="1.5"/>
+  <rect x="140" y="26" width="100" height="30" rx="5" fill="#fff" stroke="#f2b880" stroke-width="1.5"/>
+  <rect x="250" y="26" width="100" height="70" rx="5" fill="#fff" stroke="#6c7a93" stroke-width="1.5"/>
+  <text x="22" y="46" font-size="12" fill="#1d6fd1">1</text>
+  <text x="40" y="46" font-size="12" fill="#1f2a44">Omar</text>
+  <text x="122" y="46" font-size="11" fill="#6c7a93" text-anchor="end">200</text>
+  <text x="22" y="66" font-size="12" fill="#1d6fd1">2</text>
+  <text x="40" y="66" font-size="12" fill="#1f2a44">Raj</text>
+  <text x="122" y="66" font-size="11" fill="#6c7a93" text-anchor="end">150</text>
+  <text x="22" y="86" font-size="12" fill="#1d6fd1">2</text>
+  <text x="40" y="86" font-size="12" fill="#1f2a44">Tess</text>
+  <text x="122" y="86" font-size="11" fill="#6c7a93" text-anchor="end">150</text>
+  <text x="22" y="106" font-size="12" fill="#1d6fd1">4</text>
+  <text x="40" y="106" font-size="12" fill="#1f2a44">Ivan</text>
+  <text x="122" y="106" font-size="11" fill="#6c7a93" text-anchor="end">120</text>
+  <text x="22" y="126" font-size="12" fill="#1d6fd1">4</text>
+  <text x="40" y="126" font-size="12" fill="#1f2a44">Nora</text>
+  <text x="122" y="126" font-size="11" fill="#6c7a93" text-anchor="end">120</text>
+  <text x="22" y="146" font-size="12" fill="#1d6fd1">6</text>
+  <text x="40" y="146" font-size="12" fill="#1f2a44">Paul</text>
+  <text x="122" y="146" font-size="11" fill="#6c7a93" text-anchor="end">105</text>
+  <text x="22" y="166" font-size="12" fill="#1d6fd1">7</text>
+  <text x="40" y="166" font-size="12" fill="#1f2a44">Leo</text>
+  <text x="122" y="166" font-size="11" fill="#6c7a93" text-anchor="end">40</text>
+  <text x="152" y="46" font-size="12" fill="#1d6fd1">1</text>
+  <text x="170" y="46" font-size="12" fill="#1f2a44">Maya</text>
+  <text x="232" y="46" font-size="11" fill="#6c7a93" text-anchor="end">250</text>
+  <text x="262" y="46" font-size="12" fill="#1d6fd1">1</text>
+  <text x="280" y="46" font-size="12" fill="#1f2a44">Lena</text>
+  <text x="342" y="46" font-size="11" fill="#6c7a93" text-anchor="end">190</text>
+  <text x="262" y="66" font-size="12" fill="#1d6fd1">2</text>
+  <text x="280" y="66" font-size="12" fill="#1f2a44">Zara</text>
+  <text x="342" y="66" font-size="11" fill="#6c7a93" text-anchor="end">90</text>
+  <text x="262" y="86" font-size="12" fill="#1d6fd1">2</text>
+  <text x="280" y="86" font-size="12" fill="#1f2a44">Amy</text>
+  <text x="342" y="86" font-size="11" fill="#6c7a93" text-anchor="end">90</text>
+  <text x="250" y="130" font-size="11" fill="#1f2a44">each box</text>
+  <text x="250" y="145" font-size="11" fill="#1f2a44">starts again at 1</text>
+</svg>
+```
+:::
+
+::: context arbitrary-ties Why a tie has no fixed order
+When two rows tie, the database hands out the numbers in whatever order it happens to meet the rows. That can depend on how the rows are stored on disk, which index it used, or how the data was loaded. Change any of those and Raj and Tess can swap places, even though no salary changed. A report that gives different answers on different days, from the same data, is confusing, and a test that checks it will pass one day and fail the next. A tie-breaker on a column that is different for every row, such as the primary key `id`, rules that out.
+:::
+
+::: context which-rank The same three rules in sport
+Sport uses all three. The Olympics mostly work like `RANK()`: if two swimmers tie for gold, both get gold, no silver is given, and the next swimmer gets bronze. This style is called "standard competition ranking", or "1224" ranking. `DENSE_RANK()` is "dense ranking", or "1223": no place is skipped. `ROW_NUMBER()` is like the order runners cross the line on a photo finish: everyone gets their own number, and something has to settle who was first.
+:::
+
+::: context query-order The order a query really runs in
+You write `SELECT` first, but the database does not start there. Roughly, it works in this order:
+
+1. `FROM` and the joins: gather the rows.
+2. `WHERE`: throw rows away.
+3. `GROUP BY`, then `HAVING`: squash rows into groups, then filter the groups.
+4. Window functions: number and total the rows that are left.
+5. `ORDER BY`, then `LIMIT`: sort and cut the result.
+
+So a window function sees only the rows that survived `WHERE`, and `WHERE` runs too early to see the window's numbers. The final `ORDER BY` comes after, which is why `ORDER BY pos` works.
+:::
 --- task
-For every employee in the `eng` department, return `name`, `salary`, and three rankings by salary (highest first): `rn` with `ROW_NUMBER()` (ties broken by name, A to Z), `rnk` with `RANK()` and `dense` with `DENSE_RANK()`. Sort by `rn`.
+For every employee in the `eng` department, return `name`, `salary`, and three rankings by salary, highest first:
+
+- `rn`, made with `ROW_NUMBER()`, with ties broken by `name` from A to Z;
+- `rnk`, made with `RANK()`;
+- `dense`, made with `DENSE_RANK()`.
+
+Sort the result by `rn`.
 --- starter
 SELECT name, salary
 FROM employees
@@ -1059,16 +1482,36 @@ FROM employees
 WHERE dept = 'eng'
 ORDER BY rn;
 --- hint
-Each ranking is its own column: `RANK() OVER (ORDER BY salary DESC) AS rnk`.
+The starter already keeps only the eng rows with `WHERE dept = 'eng'`, so you need no `PARTITION BY`. Add one window-function column per ranking, each with its own `OVER (...)`.
 --- hint
-`ROW_NUMBER` needs the tie-breaker: `OVER (ORDER BY salary DESC, name)`. Sort the final result by `rn`.
+One column looks like `RANK() OVER (ORDER BY salary DESC) AS rnk`. `DENSE_RANK()` is the same shape. `ROW_NUMBER()` also needs the tie-breaker: `OVER (ORDER BY salary DESC, name)`.
+--- hint
+Put the three columns after `name, salary` in the `SELECT`, separated by commas, and change the last line to `ORDER BY rn;`.
 --- check result | Ties share a RANK (with gaps) and a DENSE_RANK (without)
 ordered
 [["Omar", 200000, 1, 1, 1], ["Raj", 150000, 2, 2, 2], ["Tess", 150000, 3, 2, 2], ["Ivan", 120000, 4, 4, 3], ["Nora", 120000, 5, 4, 3], ["Paul", 105000, 6, 6, 4], ["Leo", 40000, 7, 7, 5]]
 
 === sql3-06 | Running totals with SUM() OVER
 --- teach
-Aggregates become window functions when you add `OVER`. With an `ORDER BY` inside, they accumulate — a **running total**:
+Last lesson you met window functions through ranking: `ROW_NUMBER`, `RANK` and `DENSE_RANK`. This lesson takes aggregates you already know, like `SUM` and `AVG`, and turns them into window functions too. That gives you running totals, and each row's share of a total, with every row kept.
+
+### The picture
+
+Think of a savings jar with a notebook beside it. Each time you put money in, you write a line: the day, the amount, and how much is in the jar now.
+
+| day | put in | in the jar |
+| --- | --- | --- |
+| Mon | 5 | 5 |
+| Wed | 3 | 8 |
+| Sat | 4 | 12 |
+
+Each line's last number is the line above plus this line's amount. That column is a **[[running total|running-uses]]**: the sum of every amount up to and including this line.
+
+### An aggregate with OVER
+
+An **aggregate**, such as `SUM(amount)`, squashes many rows into one number. Put `OVER (...)` after it and it becomes a window function instead: every row stays, and each row gets its own sum.
+
+Put an `ORDER BY` inside the `OVER`, and each row's sum covers the rows up to and including it, in that order:
 
 ```sql
 SELECT day, amount,
@@ -1077,23 +1520,176 @@ FROM daily_sales
 WHERE region = 'north';
 ```
 
-Each row's `so_far` is the sum of every row up to and including it, in day order. `PARTITION BY` restarts the running total for each group:
+| day | amount | so_far |
+| --- | --- | --- |
+| 2024-07-01 | 120 | 120 |
+| 2024-07-02 | 80 | 200 |
+| 2024-07-03 | 150 | 350 |
+| 2024-07-05 | 90 | 440 |
+| 2024-07-06 | 200 | 640 |
+| 2024-07-07 | 110 | 750 |
+
+Check one line: 200 + 150 = 350. Each `so_far` is the line above plus this row's `amount`, like the jar notebook. The last row, 750, is north's total for the whole week.
+
+### PARTITION BY restarts the total
+
+With both regions in the query, you want two notebooks, one per region. `PARTITION BY region`, which you met last lesson, [[starts the running total again|restart-picture]] for each region:
 
 ```sql
-SUM(amount) OVER (PARTITION BY region ORDER BY day)
+SELECT region, day, amount,
+       SUM(amount) OVER (PARTITION BY region ORDER BY day) AS so_far
+FROM daily_sales
+ORDER BY region, day;
 ```
 
-Without `ORDER BY` inside `OVER`, the window is the whole partition, so every row gets the partition's grand total — which is exactly what you want for "share of total":
+North's rows count up to 750, as before. Then south starts again from its own first row: 60, then 60 + 75 = 135, and so on up to 345. Without `PARTITION BY`, north and south would share one total, mixed together by date.
+
+### No ORDER BY: the total on every row
+
+Now leave the `ORDER BY` out of the `OVER`:
+
+```sql
+SELECT region, day, amount,
+       SUM(amount) OVER (PARTITION BY region) AS total
+FROM daily_sales
+ORDER BY region, day;
+```
+
+With no order inside `OVER`, there is no "so far". The window is the whole partition, so every row gets its partition's grand total: 750 on every north row, 345 on every south row.
+
+That looks dull, but it is exactly what you need for **share of total**: what part of the whole each row is. Divide the row's amount by the total, and multiply by 100 for a percentage:
 
 ```sql
 amount * 100.0 / SUM(amount) OVER (PARTITION BY region)
 ```
 
-The same works for `AVG`, `COUNT`, `MIN` and `MAX`: a running count, a best-so-far.
+For north on 1 July: 120 × 100.0 ÷ 750 = 16.0. That day brought in 16% of north's week. Write [[100.0, not 100|decimal-point]], so the division keeps its decimals. To show one decimal place, wrap the whole thing in `ROUND(…, 1)`, from the basics course.
 
-A subtle default: with `ORDER BY`, the window includes every row with the **same** sort value as the current one (its *peers*). If two rows tie on `day`, both show the total including both. When the order column is unique — here `(day, region)` is the primary key, so within a region `day` is unique — you never notice. The next lesson shows how to take control of this.
+So the `ORDER BY` inside `OVER` is the switch:
+
+- `OVER (PARTITION BY region ORDER BY day)` gives the total **so far**.
+- `OVER (PARTITION BY region)` gives the **whole** total.
+
+### Other aggregates work too
+
+`AVG`, `COUNT`, `MIN` and `MAX` work the same way. With `ORDER BY day` inside `OVER`:
+
+- `COUNT(*) OVER (ORDER BY day)` is a running count: 1, 2, 3 and on.
+- `MAX(amount) OVER (ORDER BY day)` is the [[best so far|best-so-far]]: the biggest amount on any day up to this one.
+
+```sql
+SELECT day, amount,
+       MAX(amount) OVER (ORDER BY day) AS best
+FROM daily_sales
+WHERE region = 'north';
+```
+
+| day | amount | best |
+| --- | --- | --- |
+| 2024-07-01 | 120 | 120 |
+| 2024-07-02 | 80 | 120 |
+| 2024-07-03 | 150 | 150 |
+| 2024-07-05 | 90 | 150 |
+| 2024-07-06 | 200 | 200 |
+| 2024-07-07 | 110 | 200 |
+
+`best` only changes when a new record is set.
+
+### A hidden rule: rows that tie
+
+One more rule, quiet but important. With an `ORDER BY` inside `OVER`, "up to and including this row" really means "up to and including every row with the **same** sort value as this row". Rows that tie on the sort value are called **peers**, and they always go into the total together.
+
+You can see it if you drop `PARTITION BY`, so both regions share one total ordered by `day`:
+
+```sql
+SELECT day, region, amount,
+       SUM(amount) OVER (ORDER BY day) AS so_far
+FROM daily_sales
+ORDER BY day, region;
+```
+
+Here are the first three rows:
+
+| day | region | amount | so_far |
+| --- | --- | --- | --- |
+| 2024-07-01 | north | 120 | 180 |
+| 2024-07-01 | south | 60 | 180 |
+| 2024-07-02 | north | 80 | 260 |
+
+Both 1 July rows show 180: north's 120 plus south's 60. The two rows share a `day`, so they are [[peers|peers-why]], and the total takes both at once.
+
+With `PARTITION BY region` you never meet this. `(day, region)` is the table's **primary key**, the columns that are different for every row. So within one region no two rows share a `day`, and there are no peers. The lesson "Window frames: moving averages" shows how to take control of this rule.
+
+**Watch out:** the `ORDER BY` inside `OVER` is what makes a total "running". The `ORDER BY` at the end of the query only sorts the rows you see. If every row in a region shows the same big number, you left the `ORDER BY` out of the `OVER`.
+
+::: context running-uses Running totals in the real world
+A bank statement's balance column is a running total of every payment in and out. So is the mileage on a car. In spaceflight, a flight computer keeps running totals as it goes: propellant used so far, for example, so it knows how much is left. On the ground, analysts rebuild the same numbers from logged telemetry with a query like this lesson's, ordered by time, to check what the vehicle reported.
+:::
+
+::: context restart-picture Two notebooks, not one
+Each box is one row's running total, and the grey number above it is that day's amount. North adds up to 750. `PARTITION BY region` then starts south from nothing, so south's first box is its own 60, not 750 + 60.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 170" font-family="Inter, Arial, sans-serif">
+  <text x="8" y="47" font-size="12" fill="#1f2a44">north</text>
+  <text x="8" y="113" font-size="12" fill="#1f2a44">south</text>
+  <text x="82" y="24" font-size="11" fill="#6c7a93" text-anchor="middle">120</text>
+  <text x="132" y="24" font-size="11" fill="#6c7a93" text-anchor="middle">+80</text>
+  <text x="182" y="24" font-size="11" fill="#6c7a93" text-anchor="middle">+150</text>
+  <text x="232" y="24" font-size="11" fill="#6c7a93" text-anchor="middle">+90</text>
+  <text x="282" y="24" font-size="11" fill="#6c7a93" text-anchor="middle">+200</text>
+  <text x="332" y="24" font-size="11" fill="#6c7a93" text-anchor="middle">+110</text>
+  <rect x="60" y="30" width="44" height="26" rx="4" fill="#8fb8f0" stroke="#1f2a44"/>
+  <rect x="110" y="30" width="44" height="26" rx="4" fill="#8fb8f0" stroke="#1f2a44"/>
+  <rect x="160" y="30" width="44" height="26" rx="4" fill="#8fb8f0" stroke="#1f2a44"/>
+  <rect x="210" y="30" width="44" height="26" rx="4" fill="#8fb8f0" stroke="#1f2a44"/>
+  <rect x="260" y="30" width="44" height="26" rx="4" fill="#8fb8f0" stroke="#1f2a44"/>
+  <rect x="310" y="30" width="44" height="26" rx="4" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="82" y="48" font-size="12" fill="#1f2a44" text-anchor="middle">120</text>
+  <text x="132" y="48" font-size="12" fill="#1f2a44" text-anchor="middle">200</text>
+  <text x="182" y="48" font-size="12" fill="#1f2a44" text-anchor="middle">350</text>
+  <text x="232" y="48" font-size="12" fill="#1f2a44" text-anchor="middle">440</text>
+  <text x="282" y="48" font-size="12" fill="#1f2a44" text-anchor="middle">640</text>
+  <text x="332" y="48" font-size="12" fill="#1f2a44" text-anchor="middle">750</text>
+  <text x="82" y="90" font-size="11" fill="#6c7a93" text-anchor="middle">60</text>
+  <text x="132" y="90" font-size="11" fill="#6c7a93" text-anchor="middle">+75</text>
+  <text x="182" y="90" font-size="11" fill="#6c7a93" text-anchor="middle">+75</text>
+  <text x="232" y="90" font-size="11" fill="#6c7a93" text-anchor="middle">+40</text>
+  <text x="282" y="90" font-size="11" fill="#6c7a93" text-anchor="middle">+95</text>
+  <rect x="60" y="96" width="44" height="26" rx="4" fill="#f2b880" stroke="#1f2a44"/>
+  <rect x="110" y="96" width="44" height="26" rx="4" fill="#f2b880" stroke="#1f2a44"/>
+  <rect x="160" y="96" width="44" height="26" rx="4" fill="#f2b880" stroke="#1f2a44"/>
+  <rect x="210" y="96" width="44" height="26" rx="4" fill="#f2b880" stroke="#1f2a44"/>
+  <rect x="260" y="96" width="44" height="26" rx="4" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="82" y="114" font-size="12" fill="#1f2a44" text-anchor="middle">60</text>
+  <text x="132" y="114" font-size="12" fill="#1f2a44" text-anchor="middle">135</text>
+  <text x="182" y="114" font-size="12" fill="#1f2a44" text-anchor="middle">210</text>
+  <text x="232" y="114" font-size="12" fill="#1f2a44" text-anchor="middle">250</text>
+  <text x="282" y="114" font-size="12" fill="#1f2a44" text-anchor="middle">345</text>
+  <text x="180" y="150" font-size="11" fill="#b4232c" text-anchor="middle">PARTITION BY region: south starts again</text>
+</svg>
+```
+:::
+
+::: context decimal-point Why 100.0 and not 100
+When SQLite divides one whole number by another, it throws the remainder away: `7 / 2` gives 3, not 3.5. That is called **integer division**. If even one side has a decimal point, the answer keeps its decimals: `7 * 100.0 / 20` gives 35.0. In this table `amount` is already a decimal number (its type is REAL), so 100 would happen to work here. Writing 100.0 is the safe habit, because the same formula on a column of whole numbers, like counts, would otherwise round many shares down to 0.
+:::
+
+::: context best-so-far Records and peaks
+A best-so-far column is how records work: a new record is set only when a value beats every value before it. Engineers track peaks the same way. During a launch, the air pushes hardest on the rocket at one moment, called **max Q**, the point of maximum dynamic pressure, often about a minute after liftoff. A running `MAX` over the pressure readings, ordered by time, shows when that peak was reached and that nothing later beat it.
+:::
+
+::: context peers-why Why tied rows go in together
+With only an `ORDER BY` inside `OVER`, the database cannot tell which of two same-day rows came "first": the sort value says they are level. Rather than guess, SQL gives every peer the same answer, the total after all of them. It is a fair rule, but it surprises people when they expected one row at a time. The lesson "Debugging: the running balance that repeats" is a real bug caused by it, and there you fix it with a tie-breaker and a frame.
+:::
 --- task
-For each region, return `region`, `day`, `amount`, `running` (the region's running total up to and including that day) and `pct` (that day's amount as a percentage of the region's total for the week, rounded to 1 decimal). Sort by region, then day.
+Return one row per row of `daily_sales`, with five columns:
+
+- `region`, `day` and `amount`;
+- `running`: the region's running total up to and including that day;
+- `pct`: that day's amount as a percentage of the region's total for the week, rounded to 1 decimal place.
+
+Sort by `region`, then by `day`.
 --- starter
 SELECT region, day, amount
 FROM daily_sales
@@ -1105,36 +1701,209 @@ SELECT region, day, amount,
 FROM daily_sales
 ORDER BY region, day;
 --- hint
-Running total: `SUM(amount) OVER (PARTITION BY region ORDER BY day)`.
+Both new columns use `SUM(amount)` with `OVER`, and both need `PARTITION BY region` so north and south stay apart. The difference is whether there is an `ORDER BY` inside the `OVER`.
 --- hint
-Region total: the same without `ORDER BY` — `SUM(amount) OVER (PARTITION BY region)`. Divide and round.
+The running total is `SUM(amount) OVER (PARTITION BY region ORDER BY day) AS running`. The region's whole total is the same without the `ORDER BY`: `SUM(amount) OVER (PARTITION BY region)`.
+--- hint
+The percentage is `ROUND(amount * 100.0 / SUM(amount) OVER (PARTITION BY region), 1) AS pct`. Add both columns after `amount` in the `SELECT`, with commas between.
 --- check result | Running totals restart per region
 ordered
 [["north", "2024-07-01", 120.0, 120.0, 16.0], ["north", "2024-07-02", 80.0, 200.0, 10.7], ["north", "2024-07-03", 150.0, 350.0, 20.0], ["north", "2024-07-05", 90.0, 440.0, 12.0], ["north", "2024-07-06", 200.0, 640.0, 26.7], ["north", "2024-07-07", 110.0, 750.0, 14.7], ["south", "2024-07-01", 60.0, 60.0, 17.4], ["south", "2024-07-03", 75.0, 135.0, 21.7], ["south", "2024-07-04", 75.0, 210.0, 21.7], ["south", "2024-07-05", 40.0, 250.0, 11.6], ["south", "2024-07-07", 95.0, 345.0, 27.5]]
 
 === sql3-07 | LAG and LEAD: comparing with neighbours
 --- teach
-"How did today compare with yesterday?" needs a value from **another row**. `LAG(x)` returns `x` from the previous row of the window; `LEAD(x)` from the next one:
+Last lesson each row's running total looked back at all the rows before it and added them up. This lesson looks back at only **one** row: the one right before. That answers questions like "[[how did today compare with yesterday?|day-over-day]]"
+
+### The picture
+
+Think of the height marks on a kitchen door frame. Each new mark comes with a question: how much taller than last time? To answer it, you look at the mark right below it. One mark on its own is not enough; you need its neighbour.
+
+In a normal query, each row sees only its own columns. North's 2 July row knows it sold 80. It cannot see that 1 July sold 120.
+
+### LAG: the row before
+
+`LAG(amount)` gives the `amount` from the **previous row** of the window. The `OVER (ORDER BY day)` says what "previous" means: the row before, in day order.
 
 ```sql
 SELECT day, amount,
-       LAG(amount) OVER (ORDER BY day) AS prev,
+       LAG(amount) OVER (ORDER BY day) AS prev
+FROM daily_sales
+WHERE region = 'north';
+```
+
+| day | amount | prev |
+| --- | --- | --- |
+| 2024-07-01 | 120 | NULL |
+| 2024-07-02 | 80 | 120 |
+| 2024-07-03 | 150 | 80 |
+| 2024-07-05 | 90 | 150 |
+| 2024-07-06 | 200 | 90 |
+| 2024-07-07 | 110 | 200 |
+
+Each `prev` is the `amount` one line up: the column has [[slid down by one row|slide-picture]]. The first row has no row before it, so `LAG` gives NULL there. **NULL**, as you know, means "no value".
+
+### The change from the row before
+
+Now subtract, to get the change:
+
+```sql
+SELECT day, amount,
        amount - LAG(amount) OVER (ORDER BY day) AS change
 FROM daily_sales
 WHERE region = 'north';
 ```
 
-The first row has no previous row, so `LAG` gives NULL (and so does the change). You can ask for a default instead — `LAG(amount, 1, 0)` — but think first: is "no previous day" really a change from zero? Usually NULL is the honest answer.
+On 2 July the change is 80 − 120 = −40: down 40. On 3 July it is 150 − 80 = 70: up 70. On 1 July it is NULL, because any sum with a NULL in it gives NULL.
 
-`LAG(x, n)` looks `n` rows back. And, as always, `PARTITION BY region` keeps north's rows from being compared with south's.
+### LEAD: the row after
 
-The catch: `LAG` means the previous **row**, not the previous **day**. North has no row for 4 July, so on 5 July the "previous" row is 3 July. That may be what you want (compare with the last recorded day), or not (then build a full calendar first, as in lesson 2). Either way, it is worth showing how far back the previous row was:
+`LEAD` is [[the mirror image|lag-lead-words]]. `LEAD(amount)` gives the `amount` from the **next** row. For north, 1 July's `LEAD(amount)` is 80, 2 July's is 150, and so on. The last row, 7 July, gets NULL: there is no row after it.
+
+### Further back, or a default
+
+`LAG` can take two more values inside its brackets:
+
+- `LAG(amount, 2)` looks **2** rows back instead of 1. On 3 July that gives 120, the amount from 1 July. In general, `LAG(x, n)` looks `n` rows back, and the first `n` rows get NULL.
+- `LAG(amount, 1, 0)` looks 1 row back, and gives **0** instead of NULL when there is no row there. The third value is the **default**: what to use when there is nothing to look at.
+
+`LEAD` takes the same two extras, counting forwards.
+
+Think before you use a default. Is "no previous day" really a sale of zero? With a default of 0, 1 July shows a change of +120, as if sales jumped, when really there was nothing to compare with. Usually [[NULL is the honest answer|null-honest]].
+
+### One region at a time
+
+With both regions in the query, "the row before" must stay inside one region. Otherwise a south row could be compared with a north row. `PARTITION BY region` keeps them apart, as it did for running totals:
 
 ```sql
-julianday(day) - julianday(LAG(day) OVER (ORDER BY day)) AS gap_days
+LAG(amount) OVER (PARTITION BY region ORDER BY day)
 ```
+
+Each region's first row then gets NULL, because nothing comes before it in its own region.
+
+### The previous row is not always yesterday
+
+Here is the catch. `LAG` means the previous **row**, not the previous **day**. North has no row for 4 July, so on 5 July the "previous" row is 3 July, two days earlier. The change of −60 on 5 July compares with 3 July.
+
+That may be what you want: a comparison with the last day that had sales. If it is not, build a full calendar first, as you did in "Recursive CTEs: generating a series", so every day has a row.
+
+Either way, it helps to show how far back the previous row was. `julianday`, from the lesson "Dates and times", turns a date into a [[day number|julian-day]], so subtracting two of them gives the days between. `LAG(day)` fetches the previous row's date, the same way `LAG(amount)` fetched its amount:
+
+```sql
+SELECT day,
+       julianday(day) - julianday(LAG(day) OVER (ORDER BY day)) AS gap_days
+FROM daily_sales
+WHERE region = 'north';
+```
+
+| day | gap_days |
+| --- | --- |
+| 2024-07-01 | NULL |
+| 2024-07-02 | 1.0 |
+| 2024-07-03 | 1.0 |
+| 2024-07-05 | 2.0 |
+| 2024-07-06 | 1.0 |
+| 2024-07-07 | 1.0 |
+
+The 2.0 on 5 July [[flags the missing day|gaps-real]]. The answers are decimal numbers, 1.0 rather than 1, because `julianday` gives decimals.
+
+### Naming a window
+
+When several columns use the same `OVER (...)`, you can write the window once and give it a name. The **WINDOW clause** does that. It goes after `WHERE` (and after any `GROUP BY`), and before the final `ORDER BY`:
+
+```sql
+SELECT day, amount,
+       LAG(amount)  OVER w AS prev,
+       LEAD(amount) OVER w AS next
+FROM daily_sales
+WHERE region = 'north'
+WINDOW w AS (ORDER BY day)
+ORDER BY day;
+```
+
+`OVER w` means "use the window called `w`". It saves typing, and when you change the window, you change it in one place. Writing `OVER (...)` out in full each time works the same.
+
+**Watch out:** a missing `PARTITION BY`. Without it, the window runs through both regions in day order, so many rows take their `prev` from the other region. South's 1 July row can get 120, north's amount from the same day, and no error warns you. Whenever the table holds several groups, ask: should "the row before" stay inside the same group?
+
+::: context day-over-day How analysts say it
+Comparing each period with the one before has names: **day-over-day**, week-over-week, month-over-month. Often it is given as a percentage change: (today − yesterday) ÷ yesterday × 100. For north on 3 July that is (150 − 80) ÷ 80 × 100 = 87.5, so sales rose 87.5%. Every sales dashboard has columns like this, and every one is built on `LAG`.
+:::
+
+::: context slide-picture The column slides down one row
+`LAG` copies each amount one row down into `prev`. The first row has nothing above it to copy, so it gets NULL. `LEAD` does the opposite: it slides the column up, and the last row gets NULL.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 200" font-family="Inter, Arial, sans-serif">
+  <defs>
+    <marker id="head" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#1d6fd1"/>
+    </marker>
+  </defs>
+  <text x="40" y="18" font-size="11" fill="#6c7a93" text-anchor="middle">day</text>
+  <text x="130" y="18" font-size="12" fill="#1f2a44" text-anchor="middle">amount</text>
+  <text x="250" y="18" font-size="12" fill="#1f2a44" text-anchor="middle">prev</text>
+  <text x="40" y="43" font-size="11" fill="#6c7a93" text-anchor="middle">07-01</text>
+  <text x="40" y="67" font-size="11" fill="#6c7a93" text-anchor="middle">07-02</text>
+  <text x="40" y="91" font-size="11" fill="#6c7a93" text-anchor="middle">07-03</text>
+  <text x="40" y="115" font-size="11" fill="#6c7a93" text-anchor="middle">07-05</text>
+  <text x="40" y="139" font-size="11" fill="#6c7a93" text-anchor="middle">07-06</text>
+  <text x="40" y="163" font-size="11" fill="#6c7a93" text-anchor="middle">07-07</text>
+  <rect x="100" y="28" width="60" height="22" rx="3" fill="#8fb8f0" stroke="#1f2a44"/>
+  <rect x="100" y="52" width="60" height="22" rx="3" fill="#8fb8f0" stroke="#1f2a44"/>
+  <rect x="100" y="76" width="60" height="22" rx="3" fill="#8fb8f0" stroke="#1f2a44"/>
+  <rect x="100" y="100" width="60" height="22" rx="3" fill="#8fb8f0" stroke="#1f2a44"/>
+  <rect x="100" y="124" width="60" height="22" rx="3" fill="#8fb8f0" stroke="#1f2a44"/>
+  <rect x="100" y="148" width="60" height="22" rx="3" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="130" y="43" font-size="12" fill="#1f2a44" text-anchor="middle">120</text>
+  <text x="130" y="67" font-size="12" fill="#1f2a44" text-anchor="middle">80</text>
+  <text x="130" y="91" font-size="12" fill="#1f2a44" text-anchor="middle">150</text>
+  <text x="130" y="115" font-size="12" fill="#1f2a44" text-anchor="middle">90</text>
+  <text x="130" y="139" font-size="12" fill="#1f2a44" text-anchor="middle">200</text>
+  <text x="130" y="163" font-size="12" fill="#1f2a44" text-anchor="middle">110</text>
+  <rect x="220" y="28" width="60" height="22" rx="3" fill="#fff" stroke="#b4232c" stroke-dasharray="4 3"/>
+  <rect x="220" y="52" width="60" height="22" rx="3" fill="#fff" stroke="#1f2a44"/>
+  <rect x="220" y="76" width="60" height="22" rx="3" fill="#fff" stroke="#1f2a44"/>
+  <rect x="220" y="100" width="60" height="22" rx="3" fill="#fff" stroke="#1f2a44"/>
+  <rect x="220" y="124" width="60" height="22" rx="3" fill="#fff" stroke="#1f2a44"/>
+  <rect x="220" y="148" width="60" height="22" rx="3" fill="#fff" stroke="#1f2a44"/>
+  <text x="250" y="43" font-size="11" fill="#b4232c" text-anchor="middle">NULL</text>
+  <text x="250" y="67" font-size="12" fill="#1f2a44" text-anchor="middle">120</text>
+  <text x="250" y="91" font-size="12" fill="#1f2a44" text-anchor="middle">80</text>
+  <text x="250" y="115" font-size="12" fill="#1f2a44" text-anchor="middle">150</text>
+  <text x="250" y="139" font-size="12" fill="#1f2a44" text-anchor="middle">90</text>
+  <text x="250" y="163" font-size="12" fill="#1f2a44" text-anchor="middle">200</text>
+  <line x1="162" y1="39" x2="217" y2="61" stroke="#1d6fd1" stroke-width="1.5" marker-end="url(#head)"/>
+  <line x1="162" y1="63" x2="217" y2="85" stroke="#1d6fd1" stroke-width="1.5" marker-end="url(#head)"/>
+  <line x1="162" y1="87" x2="217" y2="109" stroke="#1d6fd1" stroke-width="1.5" marker-end="url(#head)"/>
+  <line x1="162" y1="111" x2="217" y2="133" stroke="#1d6fd1" stroke-width="1.5" marker-end="url(#head)"/>
+  <line x1="162" y1="135" x2="217" y2="157" stroke="#1d6fd1" stroke-width="1.5" marker-end="url(#head)"/>
+  <text x="180" y="190" font-size="11" fill="#1f2a44" text-anchor="middle">each amount moves one row down; 110 has no row below</text>
+</svg>
+```
+:::
+
+::: context lag-lead-words Where the names come from
+To **lag** is to trail behind, like a runner at the back of the group; `LAG` reads a value from behind the current row. To **lead** is to be out in front; `LEAD` reads from ahead of it. Engineers use the same words for signals: a sensor reading that "lags" arrives a moment after the thing it measures. SQLite added both in version 3.25.0, together with its other window functions.
+:::
+
+::: context null-honest Zero and "unknown" are different
+Zero is a real measurement: the shop was open and sold nothing. NULL says "there is nothing to compare with". Mixing them up makes reports lie. With a default of 0, the first day looks like a jump of +120, and an average of the changes would count that fake jump. With NULL, `AVG` skips the first row, as it should. Use a default only when zero is truly the right answer, for example when every region really started the week at zero.
+:::
+
+::: context julian-day Counting days from long ago
+A **Julian day number** counts the days since a starting point astronomers chose long ago: noon on 1 January 4713 BC, in the old Julian calendar. Because it is one plain count, subtracting two of them gives the days between two dates, with no month lengths or leap years to worry about. `julianday('2024-07-05')` gives 2460496.5. The .5 is there because Julian days start at noon, so midnight is halfway through one. That is also why the answers come out as decimals, like 2.0.
+:::
+
+::: context gaps-real Gaps in real data
+A gap between two rows can be innocent, like a day with no sales. It can also mean data went missing. A spacecraft sends its telemetry in numbered frames, and ground software checks each frame's number against the one before; a jump means frames were lost on the way down. The query is this lesson's: `LAG` over the frame numbers or the timestamps, ordered by time, then a check on how big each step is.
+:::
 --- task
-For both regions, return `region`, `day`, `amount`, `change` (the amount minus the region's previous recorded amount; NULL for its first row) and `gap_days` (the number of days since the region's previous row, as a number; NULL for its first row). Sort by region, then day.
+For both regions, return one row per row of `daily_sales` with these columns:
+
+- `region`, `day` and `amount`;
+- `change`: the amount minus the region's previous recorded amount, and NULL for the region's first row;
+- `gap_days`: the number of days since the region's previous row, as a number, and NULL for the region's first row.
+
+Keep each region's rows apart: north's first row must not look at south, or south's at north. Sort by `region`, then by `day`.
 --- starter
 SELECT region, day, amount,
        amount - LAG(amount) OVER (ORDER BY day) AS change
@@ -1148,9 +1917,11 @@ FROM daily_sales
 WINDOW w AS (PARTITION BY region ORDER BY day)
 ORDER BY region, day;
 --- hint
-The starter compares north with south: its window has no `PARTITION BY region`.
+Run the starter and look at each region's first row, 1 July. Both should show NULL for `change`, but one of them has a number. The starter's window has no `PARTITION BY region`, so it compares one region with the other.
 --- hint
-`gap_days` is `julianday(day) - julianday(LAG(day) OVER (PARTITION BY region ORDER BY day))`. A named `WINDOW w AS (…)` saves repeating it.
+Use `OVER (PARTITION BY region ORDER BY day)` for the change. For `gap_days`, subtract the day numbers: `julianday(day) - julianday(LAG(day) OVER (PARTITION BY region ORDER BY day))`.
+--- hint
+To avoid writing the window twice, add `WINDOW w AS (PARTITION BY region ORDER BY day)` after `FROM daily_sales`, and write `OVER w` in both columns.
 --- check result | Changes and gaps within each region
 ordered
 [["north", "2024-07-01", 120.0, null, null], ["north", "2024-07-02", 80.0, -40.0, 1.0], ["north", "2024-07-03", 150.0, 70.0, 1.0], ["north", "2024-07-05", 90.0, -60.0, 2.0], ["north", "2024-07-06", 200.0, 110.0, 1.0], ["north", "2024-07-07", 110.0, -90.0, 1.0], ["south", "2024-07-01", 60.0, null, null], ["south", "2024-07-03", 75.0, 15.0, 2.0], ["south", "2024-07-04", 75.0, 0.0, 1.0], ["south", "2024-07-05", 40.0, -35.0, 1.0], ["south", "2024-07-07", 95.0, 55.0, 2.0]]
