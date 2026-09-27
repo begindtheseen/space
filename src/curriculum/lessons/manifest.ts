@@ -9373,7 +9373,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-terminal-cost-and-terminal-set",
       "title": "Terminal cost and terminal set",
-      "minutes": 22,
+      "minutes": 24,
       "covers": [
         "Terminal cost and terminal constraint set for stability guarantees"
       ],
@@ -9382,7 +9382,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-recursive-feasibility-and-invariant-sets",
       "title": "Feasibility, recursive feasibility and invariant sets",
-      "minutes": 21,
+      "minutes": 22,
       "covers": [
         "Feasibility, recursive feasibility, and the maximal control invariant set"
       ],
@@ -9391,7 +9391,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-robust-mpc-tubes-and-min-max",
       "title": "Robust MPC, tubes and min-max",
-      "minutes": 19,
+      "minutes": 24,
       "covers": [
         "Robust MPC: tube MPC and min-max formulations"
       ],
@@ -9400,7 +9400,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-explicit-mpc",
       "title": "Explicit MPC and multi-parametric programming",
-      "minutes": 17,
+      "minutes": 21,
       "covers": [
         "Explicit MPC and multi-parametric programming"
       ],
@@ -9409,7 +9409,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-nonlinear-and-economic-mpc",
       "title": "Nonlinear MPC and economic MPC",
-      "minutes": 25,
+      "minutes": 24,
       "covers": [
         "Nonlinear MPC",
         "Economic MPC"
@@ -9419,7 +9419,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-real-time-onboard-mpc",
       "title": "Real-time onboard MPC and embedded QP solvers",
-      "minutes": 25,
+      "minutes": 24,
       "covers": [
         "Real-time onboard MPC: warm starting, solver choice, worst-case iteration bounds, certifiable solve time",
         "Embedded QP solvers (OSQP, qpOASES, HPIPM) and code generation"
