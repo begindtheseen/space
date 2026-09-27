@@ -6802,8 +6802,8 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
   "t5_m40_guidance_fundamentals": [
     {
       "id": "l01-guidance-navigation-control-decomposition",
-      "title": "The guidance, navigation and control decomposition",
-      "minutes": 20,
+      "title": "The guidance, navigation and control split",
+      "minutes": 21,
       "covers": [
         "The guidance / navigation / control decomposition and the loop rate of each"
       ],
@@ -6812,7 +6812,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-open-loop-vs-closed-loop-guidance",
       "title": "Open-loop, reference-following and explicit guidance",
-      "minutes": 20,
+      "minutes": 22,
       "covers": [
         "Open-loop vs closed-loop guidance; reference-trajectory following vs explicit guidance"
       ],
@@ -6821,7 +6821,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-line-of-sight-and-pursuit-guidance",
       "title": "Line-of-sight and pursuit guidance",
-      "minutes": 20,
+      "minutes": 19,
       "covers": [
         "Line-of-sight guidance and pursuit guidance"
       ],
@@ -6857,7 +6857,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-optimal-guidance-lq-formulation",
       "title": "Optimal guidance from a linear-quadratic formulation",
-      "minutes": 22,
+      "minutes": 18,
       "covers": [
         "Optimal guidance from an LQ formulation and how PN emerges from it"
       ],
@@ -6866,7 +6866,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-zem-zev-guidance",
       "title": "Zero-effort-miss and zero-effort-velocity guidance",
-      "minutes": 23,
+      "minutes": 19,
       "covers": [
         "Zero-effort-miss and zero-effort-velocity guidance; the ZEM/ZEV feedback law for landing"
       ],
@@ -6875,7 +6875,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-miss-distance-and-adjoint-methods",
       "title": "Miss-distance analysis and the adjoint method",
-      "minutes": 24,
+      "minutes": 18,
       "covers": [
         "Miss-distance analysis and adjoint methods"
       ],
@@ -6893,7 +6893,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-gravity-turn-ascent",
       "title": "The gravity turn",
-      "minutes": 24,
+      "minutes": 22,
       "covers": [
         "Gravity turn ascent and zero-lift trajectories; the pitch program and open-loop pitch kick"
       ],
@@ -6902,7 +6902,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-terminal-midcourse-and-actuator-limits",
       "title": "Terminal versus midcourse guidance, and actuator limits",
-      "minutes": 23,
+      "minutes": 17,
       "covers": [
         "Terminal vs midcourse guidance; guidance under actuator limits"
       ],
@@ -6913,7 +6913,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-ascent-phases",
       "title": "The phases of an ascent",
-      "minutes": 20,
+      "minutes": 22,
       "covers": [
         "Ascent phases: liftoff, pitch kick, gravity turn, max-Q, staging, exoatmospheric closed loop"
       ],
@@ -6922,7 +6922,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-open-loop-atmospheric-steering",
       "title": "Open-loop steering and why the loop stays open in the atmosphere",
-      "minutes": 15,
+      "minutes": 18,
       "covers": [
         "Open-loop atmospheric steering (the pitch program) and why closed-loop guidance is avoided in dense atmosphere"
       ],
@@ -6931,7 +6931,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-linear-tangent-steering-law",
       "title": "The linear tangent steering law",
-      "minutes": 17,
+      "minutes": 21,
       "covers": [
         "Optimal exoatmospheric steering: the linear tangent law from Pontryagin and the calculus of variations"
       ],
@@ -6940,7 +6940,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-powered-explicit-guidance",
       "title": "Powered Explicit Guidance and UPFG",
-      "minutes": 21,
+      "minutes": 26,
       "covers": [
         "Powered Explicit Guidance and Unified Powered Flight Guidance; why explicit guidance needs no reference trajectory"
       ],
@@ -6949,7 +6949,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-two-phase-throttle-structure",
       "title": "The two-phase throttle structure",
-      "minutes": 15,
+      "minutes": 18,
       "covers": [
         "The two-phase throttle structure: constant thrust to a g-limit, then throttled constant acceleration"
       ],
@@ -6958,7 +6958,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-iterative-guidance-mode",
       "title": "Iterative Guidance Mode, Saturn V's explicit guidance",
-      "minutes": 13,
+      "minutes": 23,
       "covers": [
         "Iterative Guidance Mode as flown on Saturn V"
       ],
@@ -6967,7 +6967,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-target-orbit-specification",
       "title": "Target orbit specification and the terminal constraint set",
-      "minutes": 13,
+      "minutes": 19,
       "covers": [
         "Target orbit specification and the terminal constraint set"
       ],
@@ -6976,7 +6976,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-tvc-allocation-and-engine-out",
       "title": "Thrust vector control allocation and engine-out contingency",
-      "minutes": 20,
+      "minutes": 27,
       "covers": [
         "Thrust vector control allocation and engine-out contingency"
       ],
@@ -6985,7 +6985,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-load-relief-and-guidance",
       "title": "Load relief and its interaction with guidance",
-      "minutes": 14,
+      "minutes": 20,
       "covers": [
         "Load relief and its interaction with guidance"
       ],
@@ -6994,7 +6994,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-offline-trajectory-optimization",
       "title": "Ascent trajectory optimization as an offline problem",
-      "minutes": 14,
+      "minutes": 24,
       "covers": [
         "Ascent trajectory optimization as an offline problem feeding onboard guidance"
       ],
@@ -7003,7 +7003,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-day-of-launch-wind-updates",
       "title": "Day-of-launch trajectory updates from measured winds",
-      "minutes": 14,
+      "minutes": 20,
       "covers": [
         "Day-of-launch trajectory updates from measured winds"
       ],
@@ -7012,7 +7012,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-abort-modes",
       "title": "Abort modes and the decision logic behind them",
-      "minutes": 15,
+      "minutes": 21,
       "covers": [
         "Abort modes: RTLS, TAL, AOA and the decision logic"
       ],
@@ -7023,7 +7023,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-bolza-mayer-lagrange",
       "title": "The Bolza, Mayer and Lagrange cost forms",
-      "minutes": 16,
+      "minutes": 22,
       "covers": [
         "The general optimal control problem in Bolza, Mayer and Lagrange form, and how to convert between them"
       ],
@@ -7032,7 +7032,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-euler-lagrange-costates",
       "title": "The Euler-Lagrange conditions and costates as shadow prices",
-      "minutes": 17,
+      "minutes": 22,
       "covers": [
         "Indirect methods: the Hamiltonian, the Euler-Lagrange conditions, costates as shadow prices"
       ],
@@ -7041,7 +7041,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-pontryagin-transversality",
       "title": "Pontryagin's Minimum Principle: why minimise, and transversality in full",
-      "minutes": 18,
+      "minutes": 24,
       "covers": [
         "Pontryagin's Minimum Principle, the stationarity condition, and transversality conditions"
       ],
@@ -7050,7 +7050,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-shooting-and-brittleness",
       "title": "The two-point boundary value problem and why shooting is brittle",
-      "minutes": 20,
+      "minutes": 22,
       "covers": [
         "The two-point boundary value problem; single and multiple shooting; costate sensitivity and why indirect methods are brittle"
       ],
@@ -7077,7 +7077,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-direct-single-vs-multiple-shooting",
       "title": "Direct single shooting vs direct multiple shooting",
-      "minutes": 17,
+      "minutes": 23,
       "covers": [
         "Direct single shooting vs direct multiple shooting, and the conditioning difference between them"
       ],
@@ -7131,7 +7131,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l13-nlp-sparsity",
       "title": "NLP sparsity: the Jacobian and Hessian block pattern",
-      "minutes": 17,
+      "minutes": 20,
       "covers": [
         "NLP sparsity structure, the Jacobian and Hessian block pattern, and why sparsity decides solve time"
       ],
