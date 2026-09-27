@@ -10446,7 +10446,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-iterative-guidance-mode",
       "title": "Iterative Guidance Mode, Saturn V's explicit guidance",
-      "minutes": 13,
+      "minutes": 23,
       "covers": [
         "Iterative Guidance Mode as flown on Saturn V"
       ],
@@ -10538,7 +10538,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-shooting-and-brittleness",
       "title": "The two-point boundary value problem and why shooting is brittle",
-      "minutes": 20,
+      "minutes": 22,
       "covers": [
         "The two-point boundary value problem; single and multiple shooting; costate sensitivity and why indirect methods are brittle"
       ],
@@ -10565,7 +10565,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-direct-single-vs-multiple-shooting",
       "title": "Direct single shooting vs direct multiple shooting",
-      "minutes": 17,
+      "minutes": 23,
       "covers": [
         "Direct single shooting vs direct multiple shooting, and the conditioning difference between them"
       ],
@@ -10619,7 +10619,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l13-nlp-sparsity",
       "title": "NLP sparsity: the Jacobian and Hessian block pattern",
-      "minutes": 17,
+      "minutes": 20,
       "covers": [
         "NLP sparsity structure, the Jacobian and Hessian block pattern, and why sparsity decides solve time"
       ],
