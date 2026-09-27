@@ -1,155 +1,365 @@
 ---
 id: l07-multipath-ephemeris-and-clock-errors
 title: Multipath, ephemeris and clock errors
-minutes: 24
+minutes: 23
 covers:
   - Multipath; ephemeris and satellite clock errors
 ---
 
-Three entries remain in the error budget the pseudorange lesson opened, and none of them yield to the tricks the previous lesson used. The ionosphere and troposphere are physics the receiver can model or measure around; multipath, ephemeris error and satellite clock error are not atmosphere at all. Multipath is a second copy of the same signal, arriving late, that the receiver cannot always tell from the first. Ephemeris error is the control segment's prediction of where a satellite will be, wrong by the amount any prediction of the future is wrong. Satellite clock error is what a curve fit could not capture about a clock's behaviour between the moments it was checked. All three are why, even after a perfect ionosphere-free combination and a perfect tropospheric model, the pseudorange lesson's budget still carried the better part of a metre.
+Shout in an empty gym and you hear yourself twice: once straight from your mouth, then a split second later off the far wall. Now think of a friend giving you directions to a party from yesterday's bus timetable. The buses mostly run to plan, but not exactly. And think of the kitchen clock you set right every morning. By evening it is a little off, and not by an amount you could have guessed.
 
-This lesson derives what can be derived about each — the multipath bias a tracking loop settles on, how far an orbit error actually moves the range, how fast an unmodelled clock wanders — and is honest about the rest, which is empirical and cited as such.
+Those three everyday annoyances are the last three entries in the pseudorange error budget from lesson 2. **Multipath** is the echo: a second copy of the satellite's signal that bounced off something and arrives late. **Ephemeris error** is the timetable problem: the satellite's broadcast position is a forecast, and forecasts are wrong by a little. **Satellite clock error** is the kitchen clock: the part of the satellite clock's wandering that the broadcast correction could not predict.
 
-## Multipath: a second copy of the signal, delayed
+The previous lesson removed the ionosphere with two frequencies and modeled the troposphere. Neither trick touches these three. They are why, even after a perfect atmosphere correction, the budget still carried the better part of a meter. This lesson works out how big each one is and why. The multipath bias comes from the way a receiver lines up its code. The ephemeris error depends on which direction the orbit is wrong. The clock error grows with the time since the last correction. Where a number is measured rather than derived, the lesson says so.
 
-A signal reflects off the ground, a structure, or a vehicle's own fuselage, and arrives at the antenna a little later and a little weaker than the direct path, with a path-length difference $\Delta d$ (equivalently a delay $\Delta$, measured in chips of the code) and an amplitude ratio $\alpha < 1$ relative to the direct signal — a metal surface at a shallow grazing angle can put $\alpha$ close to $1$, while a diffuse or absorbing surface makes it small. The receiver's code tracking loop cannot separate the two; it correlates the incoming composite signal against its local code replica and locks where the correlation says to, and the reflection biases that point.
+## Multipath: the signal's echo
 
-Model the code's autocorrelation function as an ideal triangle, $R(x) = \max(1-|x|, 0)$ for $x$ in chips — a fair approximation for a receiver with wide enough front-end bandwidth. An early-minus-late discriminator with correlator spacing $d$ chips locks where
+A GPS signal can reach the antenna by two roads. The **direct path** runs straight from the satellite. A **reflected path** bounces off the ground, a building, or the vehicle's own body first, so it is a little longer. That extra road length is the path difference $\Delta d$. The echo that travels it is the **[[multipath|multipath-geometry]]** signal.
+
+Two numbers describe the echo:
+
+- the **delay** $\Delta$ (read "delta"), the extra path measured in **[[chips|chip]]** of the ranging code — one chip of C/A code is $293.05\,\mathrm{m}$, so $\Delta = \Delta d / 293.05\,\mathrm{m}$;
+- the **amplitude ratio** $\alpha$ (read "alpha"), how strong the echo is compared with the direct signal. It is less than $1$. A flat metal surface at a shallow angle can push $\alpha$ close to $1$. A rough or absorbing surface keeps it small.
+
+### How the receiver times the code
+
+To measure a pseudorange, the receiver slides its own copy of the code along the incoming signal until the two line up best. How well they match at each offset is the **autocorrelation**. For an ideal code it is a triangle:
 
 $$
-D(\tau) = \big[R(\tau-\tfrac{d}{2}) + \alpha R(\tau-\Delta-\tfrac{d}{2})\big] - \big[R(\tau+\tfrac{d}{2}) + \alpha R(\tau-\Delta+\tfrac{d}{2})\big] = 0.
+R(x) = \max(1 - |x|,\ 0),
 $$
 
-Without multipath ($\alpha=0$) this is zero exactly at $\tau=0$, since $R$ is even. With multipath present and a short delay ($0 \le \Delta \le d/2$), linearising $D(\tau)$ about $\tau=0$ — using $R'(x)=-\mathrm{sign}(x)$ on each linear piece — gives $D(0) = -2\alpha\Delta$ and $D'(0) = 2(1+\alpha)$, so the biased lock point is
+where $x$ is the offset in chips. Perfectly lined up ($x = 0$) gives $1$. One chip or more out gives $0$.
+
+Finding the exact top of a triangle is hard. Finding where two sides are equally high is easy. So the receiver measures the match at two points, one a little **early** and one a little **late**, spaced $d$ chips apart. It moves its copy until the early and late readings are equal. This is the **[[early-minus-late discriminator|early-late]]**, and $d$ is the **correlator spacing**. Call the receiver's timing offset $\tau$ (read "tau"). With an echo present, the early reading minus the late reading is
 
 $$
-\tau_e = -\frac{D(0)}{D'(0)} = \frac{\alpha\,\Delta}{1+\alpha}\ \ \text{(chips)}.
+D(\tau) = \big[R(\tau-\tfrac{d}{2}) + \alpha R(\tau-\Delta-\tfrac{d}{2})\big] - \big[R(\tau+\tfrac{d}{2}) + \alpha R(\tau-\Delta+\tfrac{d}{2})\big].
 $$
 
-A numerical root-find of $D(\tau)=0$ confirms this exactly across a range of $\alpha$, $\Delta$ and $d$ — for example $\alpha=0.5$, $\Delta=0.20$: the closed form gives $0.5\times0.20/1.5=0.0667\,\mathrm{chip}$, and solving $D(\tau)=0$ numerically gives the same $0.0667$ to five decimal places. Notice what is *not* in the formula: the correlator spacing $d$. For a delay shorter than half the spacing, the bias depends only on the reflection's strength and delay, not on how tightly the correlator is built.
+The receiver locks where $D(\tau) = 0$. With no echo ($\alpha = 0$) that is exactly $\tau = 0$, because the triangle is symmetric. The echo adds a smaller, later triangle. The sum leans to the late side, so the lock point slides late. Solving $D(\tau) = 0$ for a short delay gives the **multipath bias**
 
-::: example The envelope, and what a narrow correlator buys
-Scanning $\Delta$ from $0$ out past $1+d/2$ (where the reflected code no longer overlaps either correlator gate at all) traces out the full multipath error envelope. For a standard, one-chip-spacing correlator ($d=1$) and $\alpha=0.5$, the bias rises through the region the formula above covers, peaks at $0.25\,\mathrm{chip}$ near $\Delta \approx 0.75\,\mathrm{chip}$, and falls back to zero by $\Delta=1.5\,\mathrm{chip}$ — on C/A code, a peak of $0.25\times293.05=73.3\,\mathrm{m}$. Narrow the correlator spacing to $d=0.1\,\mathrm{chip}$, standard on modern receivers, and the same scan peaks at $0.025\,\mathrm{chip}$ near $\Delta\approx0.55\,\mathrm{chip}$, falling to zero by $\Delta=1.05\,\mathrm{chip}$: a peak of $7.3\,\mathrm{m}$, a full order of magnitude smaller, in exact proportion to the ten-fold reduction in $d$. The formula derived above explains why the improvement is not unlimited: a reflection delayed by only $0.02\,\mathrm{chip}$ — a reflector a couple of metres from the antenna — biases both correlators by essentially the same amount, $\alpha\Delta/(1+\alpha)$, regardless of how narrow $d$ is. Narrow correlators buy a great deal against a reflector metres to tens of metres away; they buy nothing against one bolted to the vehicle.
+$$
+\tau_e = \frac{\alpha\,\Delta}{1+\alpha}\ \ \text{(chips)}.
+$$
+
+Check it with $\alpha = 0.5$ and $\Delta = 0.20$ chip: $\tau_e = 0.5 \times 0.20/1.5 = 0.0667$ chip. A computer solving $D(\tau) = 0$ directly gets the same $0.0667$. On C/A code that is $0.0667 \times 293.05 = 19.5\,\mathrm{m}$ of range error from one echo.
+
+Look at what is missing from the formula: the correlator spacing $d$. For a short delay, the bias depends only on the echo's strength and delay. A tighter correlator does not change it.
+
+::: note Why it has to be true
+Each $R$ in $D(\tau)$ is a straight-line piece of the triangle near $\tau = 0$, sloping up on the left side and down on the right. So $D$ is a straight line in $\tau$ there, and one step of algebra finds its zero.
+
+At $\tau = 0$, the direct terms cancel ($R$ is symmetric). The echo terms give $\alpha[(1-\Delta-\tfrac{d}{2}) - (1-\tfrac{d}{2}+\Delta)] = -2\alpha\Delta$. So $D(0) = -2\alpha\Delta$.
+
+The slope of each piece is $\pm 1$. All four terms rise as $\tau$ grows, so $D'(0) = 2 + 2\alpha = 2(1+\alpha)$.
+
+A straight line crosses zero at $\tau_e = -D(0)/D'(0) = \alpha\Delta/(1+\alpha)$.
+
+The formula holds as long as the late echo gate stays on the falling side of the echo's triangle, $\tau_e \ge \Delta - \tfrac{d}{2}$. Put in $\tau_e$ and rearrange: $\Delta \le (1+\alpha)\tfrac{d}{2}$. At that edge the bias is $\alpha\Delta/(1+\alpha) = \alpha d/2$, the largest it gets.
 :::
 
-The carrier tracking loop faces the same interference in a different form. The composite signal is a phasor sum, direct plus reflection: $1\angle 0 + \alpha\angle\phi$, where $\phi$ is the carrier phase difference the extra path length produces — and because a carrier wavelength is centimetres, even a metre of geometry swings $\phi$ through many cycles, so treat $\phi$ as effectively unpredictable. The phase-lock loop tracks the argument of the sum,
+::: example The multipath envelope, and what a narrow correlator buys
+Take $\alpha = 0.5$ and slide the echo's delay $\Delta$ from $0$ outward. The curve of bias against delay is the **multipath error envelope**.
+
+**Standard correlator, $d = 1$ chip.** The bias follows $\alpha\Delta/(1+\alpha)$ up to $\Delta = (1+\alpha)d/2 = 0.75$ chip. There it peaks at $\alpha d/2 = 0.25$ chip. After that it falls, reaching zero at $\Delta = 1 + d/2 = 1.5$ chip, where the echo's triangle no longer touches either gate. The peak on C/A code is $0.25 \times 293.05 = 73.3\,\mathrm{m}$.
+
+**Narrow correlator, $d = 0.1$ chip**, standard on modern receivers. The same formula climbs until $\Delta = 1.5 \times 0.05 = 0.075$ chip, where it reaches $\alpha d/2 = 0.025$ chip. It stays flat at that value out to about $\Delta = 0.95$ chip, then drops to zero by $\Delta = 1.05$ chip. The peak is $0.025 \times 293.05 = 7.33\,\mathrm{m}$ — ten times smaller, exactly in proportion to the ten-times-smaller $d$.
+
+**The limit.** An echo delayed by only $0.02$ chip (about $6\,\mathrm{m}$ of extra path, from a reflector a few meters away) sits inside the short-delay zone for both correlators. Its bias is $0.5 \times 0.02/1.5 = 0.00667$ chip either way, which is $0.00667 \times 293.05 = 1.95\,\mathrm{m}$.
+
+Sanity check: both peaks are $\alpha d/2$, a quarter of $d$ when $\alpha = 0.5$, and both envelopes die out a little past one chip, where the triangles stop overlapping. Narrow correlators buy a lot against a reflector tens of meters away. They buy nothing against one bolted to the vehicle.
+:::
+
+### Multipath on the carrier
+
+The carrier wave under the code gets an echo too, but the damage is tiny. Picture each wave as an arrow spinning around a clock face — a **[[phasor|phasor]]**. The direct wave is an arrow of length $1$. The echo is an arrow of length $\alpha$, turned by some angle $\phi$ (read "phi") because of its longer path. The receiver's carrier loop tracks the direction of the sum of the two arrows, which is off by
 
 $$
-\theta(\phi) = \arctan\left(\frac{\alpha\sin\phi}{1+\alpha\cos\phi}\right),
+\theta(\phi) = \arctan\left(\frac{\alpha\sin\phi}{1+\alpha\cos\phi}\right).
 $$
 
-and the worst case over all $\phi$ is a clean closed form: $\max_\phi|\theta(\phi)| = \arcsin(\alpha)$, confirmed by a direct numerical search over $\phi$ for several values of $\alpha$ (for instance $\alpha=0.5$ gives a numerical maximum of $30.000^\circ$, matching $\arcsin(0.5)=30^\circ$ exactly). Converting phase to range, $\delta\rho = (\theta/2\pi)\lambda$, the *carrier* multipath error is bounded by
+A carrier wavelength is only centimeters, so a meter of geometry turns $\phi$ through many full circles. Treat $\phi$ as anything at all. The worst case over every $\phi$ has a clean answer: $\max_\phi |\theta| = \arcsin(\alpha)$. For $\alpha = 0.5$ a computer search finds $30.000^\circ$, and $\arcsin(0.5) = 30^\circ$ exactly.
+
+A full turn of phase is one wavelength $\lambda$ (read "lambda") of range, so the range error is $\delta\rho = (\theta/2\pi)\lambda$. The **carrier multipath** error is therefore bounded by
 
 $$
 \delta\rho_{\max} = \frac{\lambda}{2\pi}\arcsin(\alpha) \ \xrightarrow{\ \alpha\to1\ }\ \frac{\lambda}{4}.
 $$
 
-At $\alpha=0.99$ — a reflection almost as strong as the direct signal — the bound evaluates to $0.0433\,\mathrm{m}$ on L1, against the limiting value $\lambda/4=0.0476\,\mathrm{m}$ the formula approaches as $\alpha\to1$. Carrier multipath is bounded by a quarter of a wavelength no matter how strong the reflection, a few centimetres at most on any GNSS carrier — three orders of magnitude tighter than code multipath's tens of metres, which is the whole reason carrier-based positioning, taken up two lessons ahead, buys the precision it does.
+On L1, $\lambda = 19.03\,\mathrm{cm}$. At $\alpha = 0.99$, an echo nearly as strong as the direct signal, the bound is $0.0433\,\mathrm{m}$. It can never pass $\lambda/4 = 0.0476\,\mathrm{m}$. However strong the echo, carrier multipath stays under a quarter wavelength — a few centimeters on any GNSS carrier. Code multipath reaches tens of meters. That gap of about a thousand is the reason carrier-based positioning, the next two lessons, is so precise.
 
 ::: key
-Code multipath bias (short delay): $\tau_e = \alpha\Delta/(1+\alpha)$ chips, independent of correlator spacing; the full envelope peaks somewhere beyond $\Delta=d/2$ and vanishes past $\Delta=1+d/2$, with the peak scaling with $d$ — narrow correlators cut it roughly in proportion. Carrier multipath is bounded by $\delta\rho_{\max}=(\lambda/2\pi)\arcsin(\alpha) \le \lambda/4$: centimetres, never metres.
+Code multipath bias (short delay): $\tau_e = \alpha\Delta/(1+\alpha)$ chips, independent of correlator spacing $d$. The envelope peaks at $\alpha d/2$ and vanishes past $\Delta = 1 + d/2$, so narrow correlators cut the peak in proportion to $d$. Carrier multipath is bounded by $\delta\rho_{\max} = (\lambda/2\pi)\arcsin(\alpha) \le \lambda/4$: centimeters, never meters.
 :::
 
-Mitigation follows directly from the mechanism: narrow correlators for distant reflectors, choke-ring or pinwheel antennas that physically attenuate low-elevation and ground-reflected signals before they reach the front end, and site selection that keeps large flat reflectors away from the antenna. None of these help with multipath from the vehicle's own structure, which is why an antenna's placement on a launch vehicle or spacecraft is a geometry problem worked out at the same table as the structural and RF engineers.
+### Fighting multipath
 
-::: warning
-Carrier smoothing of the code — averaging the noisy code range using the much smoother carrier phase to track its trend — reduces thermal noise dramatically, but it does not remove multipath the way it removes noise. Static multipath from a nearby reflector is not white; it has a correlation time set by the reflector's geometry and the satellite's slow motion across the sky, often tens of seconds to minutes, so it survives smoothing over any shorter interval largely intact. A receiver bolted to a fixed structure can see the *same* multipath bias, repeating with the satellite geometry, day after day.
+The fixes follow from the mechanism. Narrow correlators shrink the envelope for distant reflectors. A **[[choke-ring antenna|choke-ring]]** blocks signals arriving from low angles and from below, where ground echoes come from. Careful siting keeps big flat reflectors away. None of these help against echoes from the vehicle's own structure. That is why antenna placement on a rocket or spacecraft is worked out at the same table by the structures, radio and navigation engineers.
+
+::: warning Smoothing does not remove multipath
+**Carrier smoothing** averages the noisy code range while using the much smoother carrier to follow its trend. It crushes random noise. It does not crush multipath the same way. An echo from a fixed reflector changes slowly — over tens of seconds to minutes, as the satellite creeps across the sky — so it survives any shorter averaging almost untouched. A receiver on a fixed mast can even see the same multipath error every day, repeating with the **[[daily repeat of the satellite geometry|sidereal-repeat]]**.
 :::
 
-## Ephemeris error: a prediction, wrong by the amount predictions are wrong
+## Ephemeris error: the position is a forecast
 
-The navigation message's ephemeris, the constellation lesson noted, is a curve fit to the satellite's *predicted* orbit, refreshed every couple of hours and valid a few hours either side of its reference time. The control segment tracks each satellite from monitor stations, fits its current position and velocity, and propagates that fit forward with a dynamics model to generate the curve broadcast for the next several hours — and any propagation of an uncertain state forward in time accumulates error, here from unmodelled solar radiation pressure variations, unpredicted manoeuvres, and the ordinary growth of orbit-determination uncertainty with prediction horizon.
+The **[[ephemeris|ephemeris-word]]** in the navigation message is the satellite's position, as a formula the receiver can evaluate at any moment. It is not a measurement. Ground monitor stations track each satellite. The control segment fits its current position and velocity, then runs a model of the forces on it forward in time, and uploads the result. The broadcast set is refreshed every couple of hours and is good for a few hours either side of its reference time.
 
-Decompose the resulting position error $\delta\mathbf{s}$ into radial, along-track and cross-track components at the satellite. The constellation lesson's Earth-subtense angle answers a question this lesson needs: how much of $\delta\mathbf{s}$ actually reaches the pseudorange? The line of sight from receiver to satellite, $\mathbf{e}_i$, makes an angle with the satellite's own radial direction $\hat{\mathbf{s}}=\mathbf{s}/\|\mathbf{s}\|$ equal to the nadir angle at the satellite — bounded by $13.9^\circ$, reached only when the receiver is exactly on the satellite's horizon. So
+Any forecast drifts. The force model misses small, changing pushes like **[[solar radiation pressure|sunlight-push]]**, and the starting state was never perfect. The result is a position error $\delta\mathbf{s}$ at the satellite, a small arrow from where the ephemeris says the satellite is to where it really is.
+
+Split that arrow into three directions, the way you would describe a car on a racetrack:
+
+- **radial**: up or down, toward or away from Earth's center;
+- **along-track**: forward or backward along the orbit;
+- **cross-track**: sideways, out of the orbit's plane.
+
+### How much of the error reaches the range
+
+Only the part of $\delta\mathbf{s}$ along the line of sight changes the range. So the question is the angle between the line of sight and each of those three directions.
+
+From a GPS satellite, Earth fills a cone of half-angle $13.9^\circ$ around straight down (lesson 1). Every receiver on the ground sits inside that cone. So the line of sight $\mathbf{e}_i$ always tilts from the satellite's radial direction $\hat{\mathbf{s}}$ by the **nadir angle** $\eta$ (read "eta"), and $\eta$ is at most $13.9^\circ$. The fraction of a radial error that reaches the range is $\cos\eta$. For a direction $\hat{\mathbf{t}}$ at right angles to $\hat{\mathbf{s}}$ (along-track or cross-track) it is at most $\sin\eta$:
 
 $$
-|\mathbf{e}_i\cdot\hat{\mathbf{s}}| \ge \cos(13.9^\circ) = 0.971, \qquad |\mathbf{e}_i\cdot\hat{\mathbf{t}}| \le \sin(13.9^\circ) = 0.240
+|\mathbf{e}_i\cdot\hat{\mathbf{s}}| \ge \cos(13.9^\circ) = 0.971, \qquad |\mathbf{e}_i\cdot\hat{\mathbf{t}}| \le \sin(13.9^\circ) = 0.240.
 $$
 
-for any direction $\hat{\mathbf{t}}$ perpendicular to $\hat{\mathbf{s}}$ — which covers both along-track and cross-track. A **radial** ephemeris error projects almost entirely onto the range, at $97\%$ efficiency or better; a **tangential** (along-track or cross-track) error of the same size projects at no more than $24\%$ efficiency, and typically much less once the actual azimuth of the along-track direction relative to the line of sight is accounted for.
+A radial error reaches the range at $97\%$ strength or more. A sideways error of the same size reaches it at $24\%$ or less, and usually much less, depending on which way the along-track direction points compared with the line of sight.
 
-::: example Radial against along-track, satellite by satellite
-Take the satellite at $(\mathrm{az},\mathrm{el})=(135^\circ,60^\circ)$ used throughout the navigation-solution and dilution-of-precision lessons. Its nadir angle as seen from Cape Canaveral is only $6.9^\circ$ (well inside the $13.9^\circ$ bound, since it is far from the horizon), so a $3.0\,\mathrm{m}$ radial ephemeris error produces a range error of $3.0\times\cos(6.9^\circ) = 2.98\,\mathrm{m}$ — $99\%$ efficient. A $3.0\,\mathrm{m}$ along-track error, for the along-track direction this satellite happens to have, produces only $3.0\times0.093=0.28\,\mathrm{m}$ of range error — roughly a tenth as much, for the identical error magnitude. Radial orbit error is more dangerous, metre for metre, than tangential error, which is exactly why orbit-determination systems are built to be best in the radial direction and can tolerate looser along-track knowledge.
+::: note Why it has to be true
+Draw the triangle made by Earth's center, the receiver and the satellite. The side from center to receiver is $R_E$. The side from center to satellite is $a$. The angle at the receiver, between straight up and the line to the satellite, is $90^\circ$ plus the elevation $\varepsilon$ (read "epsilon").
+
+The law of sines says each side over the sine of the angle opposite it is the same number:
+
+$$
+\frac{\sin\eta}{R_E} = \frac{\sin(90^\circ + \varepsilon)}{a} \quad\Longrightarrow\quad \sin\eta = \frac{R_E\cos\varepsilon}{a}.
+$$
+
+The biggest $\eta$ comes at elevation $0$, on the horizon: $\sin\eta = R_E/a$, which is the $13.9^\circ$ cone. The dot product of two unit arrows is the cosine of the angle between them, which gives $\cos\eta$ for the radial part and at most $\sin\eta$ for any perpendicular direction.
 :::
 
-Real broadcast-ephemeris error budgets exploit this directly: the "signal-in-space range error" figures the control segment and independent monitoring agencies publish weight the radial component near full strength and the tangential components by an empirically fitted, much smaller coefficient, reflecting both the geometric projection derived here and the way that projection averages over a satellite's full pass rather than any single instant. Modern GPS broadcast ephemerides achieve a line-of-sight range error from this source of roughly a metre or better — the pseudorange lesson's "ephemeris, along line of sight, about $1\,\mathrm{m}$" entry — down from several metres in the 1990s, before more monitor stations and better force models tightened the fit.
+::: example Radial against along-track for one satellite
+Take the satellite at azimuth $135^\circ$, elevation $60^\circ$ from Cape Canaveral, used in lessons 4 and 5. Its nadir angle comes from the formula in the note, with $\cos 60^\circ = 0.5$:
 
-::: warning
-A tangential error's weak projection is not the same as a negligible one. Along-track prediction error is typically several times larger in absolute terms than radial error, because along-track position along an orbit is inherently harder to pin down than the distance to Earth's centre — so even at ten or twenty percent efficiency, along-track mismodelling remains a real, non-negligible contributor to the total. The projection factor tells you how efficiently an error converts to range error, not whether the error itself is small.
+$$
+\sin\eta = \frac{6378 \times 0.5}{26560} = 0.120, \qquad \eta = 6.9^\circ.
+$$
+
+That is well inside the $13.9^\circ$ limit, as it should be for a satellite high in the sky.
+
+**Radial.** A $3.0\,\mathrm{m}$ radial error gives $3.0 \times 0.993 = 2.98\,\mathrm{m}$ of range error, since $\cos 6.9^\circ = 0.993$. Almost all of it gets through.
+
+**Along-track.** Suppose, for this pass, the along-track direction projects onto the line of sight at $0.093$ (below the limit $\sin 6.9^\circ = 0.120$). A $3.0\,\mathrm{m}$ along-track error gives $3.0 \times 0.093 = 0.28\,\mathrm{m}$.
+
+Same size of error, about a tenth of the damage. Meter for meter, radial orbit error is the dangerous kind. That is why orbit-determination systems are built to be best in the radial direction and can live with looser along-track knowledge.
 :::
 
-## Satellite clock error: what the quadratic fit could not see
+Published accuracy figures use exactly this. The **signal-in-space range error** that the control segment and independent monitors report weights the radial part nearly in full and the along-track and cross-track parts by a much smaller factor, fitted from data averaged over whole passes. Modern GPS broadcast ephemerides put about $0.6\,\mathrm{m}$ of error along the line of sight, the entry in lesson 2's budget. In the 1990s it was about $2\,\mathrm{m}$. More monitor stations and better force models closed the gap.
 
-The receiver-clock lesson's broadcast polynomial, $\delta t_{sat} = a_{f0}+a_{f1}(t-t_{oc})+a_{f2}(t-t_{oc})^2$, is a curve fit to a satellite clock's behaviour around the reference time $t_{oc}$, refreshed roughly every two hours. Like any curve fit, it captures the smooth, predictable part of the clock's drift and aging and leaves behind whatever is genuinely stochastic — the same random walk in fractional frequency the receiver-clock lesson quantified for a receiver's own oscillator, here for a satellite-class one.
+::: warning A weak projection is not a small error
+Along-track error is usually several times bigger than radial error, because a satellite's position along its orbit is harder to predict than its distance from Earth's center. So even at ten or twenty percent strength, along-track error still matters. The projection factor tells you how efficiently an error turns into range error, not whether the error itself is small.
+:::
 
-That lesson's clock-coasting formula, $c\,\sigma_y\,\Delta t$, applies without modification: it is the range-equivalent time error a clock of stability $\sigma_y$ accumulates over an interval $\Delta t$ during which nothing re-measures it. A satellite-class caesium clock has $\sigma_y \approx 10^{-13}$ — the same figure the receiver-clock lesson's oscillator table quoted — so over the interval between a clock's reference epoch and the edge of its two-hour validity window,
+## Satellite clock error: what the correction could not see
+
+Lesson 3 described the satellite clock correction broadcast in the navigation message. It is a short polynomial — a formula with a constant, a straight-line term and a curve term:
 
 $$
-c\,\sigma_y\,\Delta t = 299{,}792{,}458 \times 10^{-13} \times \Delta t,
+\delta t_{sat} = a_{f0} + a_{f1}(t - t_{oc}) + a_{f2}(t - t_{oc})^2.
 $$
 
-which gives $0.054\,\mathrm{m}$ at $\Delta t=1800\,\mathrm{s}$ (thirty minutes after upload), $0.108\,\mathrm{m}$ at one hour, and $0.216\,\mathrm{m}$ at two hours — a genuine, physically grounded piece of why the pseudorange lesson's budget carried $0.6\,\mathrm{m}$ of satellite-clock error even after applying the polynomial. It is a piece, not the whole: the rest comes from residual mismodelling of the deterministic terms themselves — the relativistic periodic correction the receiver-clock lesson's pseudorange example computed is itself only an approximation, the broadcast group delay $T_{GD}$ is a single calibrated number standing in for a mildly temperature- and aging-dependent hardware delay, and there is a small discontinuity every time a fresh polynomial is uploaded. None of these is under the receiver's control; all of them are why "after correction" in the error budget means "after the best correction available," not "corrected away."
+Read $a_{f0}$ as "a f zero": the clock's offset at the reference time $t_{oc}$ ("t o c", time of clock). $a_{f1}$ is its drift rate and $a_{f2}$ how that rate is changing. The control segment fits it to measurements and refreshes it about every two hours.
 
-::: example Rubidium, caesium, and why Galileo carries both
-Most GPS satellites carry rubidium clocks as their primary standard, with caesium as backup, at the $10^{-13}$-class stability used above; Galileo's satellites additionally carry passive hydrogen masers, roughly an order of magnitude more stable over the timescales that matter for a two-hour broadcast fit. At $\sigma_y=10^{-14}$ instead of $10^{-13}$, the same two-hour growth falls from $0.216\,\mathrm{m}$ to $0.0216\,\mathrm{m}$ — a tenth as much stochastic residual, for a receiver willing to track a second constellation to get it. The gain does not come free: a maser is heavier, more power-hungry, and more expensive than a rubidium standard, an ordinary satellite-design trade against the payload's mass and power budget.
+Like any fitted curve, it captures the smooth, predictable part: the steady drift and slow aging. It cannot capture the random wander. That wander is measured by the clock's **[[stability|allan]]** $\sigma_y$ (read "sigma y"), a fractional frequency error. Lesson 3 found how much range error a clock of stability $\sigma_y$ collects over an interval $\Delta t$ with nothing to correct it:
+
+$$
+c\,\sigma_y\,\Delta t.
+$$
+
+The same law applies to a satellite clock between fits. A satellite-class atomic clock has $\sigma_y$ of about $10^{-13}$:
+
+$$
+c\,\sigma_y\,\Delta t = 299{,}792{,}458 \times 10^{-13} \times \Delta t.
+$$
+
+That gives $0.054\,\mathrm{m}$ thirty minutes ($1800\,\mathrm{s}$) after a fit, $0.108\,\mathrm{m}$ at one hour, and $0.216\,\mathrm{m}$ at two hours. This is a real, physical piece of the $0.6\,\mathrm{m}$ that lesson 2's budget left for satellite clocks after the correction.
+
+It is only a piece. The rest comes from imperfect modeling of the predictable parts:
+
+- the relativity correction is itself an approximation;
+- the **group delay** $T_{GD}$, a calibrated number for the delay through the satellite's own electronics, changes a little with temperature and age;
+- each new upload starts a fresh polynomial, which leaves a small jump.
+
+None of these is under the receiver's control. In an error budget, "after correction" means "after the best correction available", never "corrected away".
+
+::: example Rubidium, caesium, and why Galileo carries masers
+Most GPS satellites fly rubidium clocks, and some carry a caesium clock too, at the $10^{-13}$-class stability used above. Europe's Galileo satellites also carry passive **[[hydrogen masers|maser]]**, about ten times steadier over the hours that matter for a two-hour fit.
+
+At $\sigma_y = 10^{-14}$, the two-hour growth becomes
+
+$$
+299{,}792{,}458 \times 10^{-14} \times 7200 = 0.0216\,\mathrm{m},
+$$
+
+a tenth of the $0.216\,\mathrm{m}$ a rubidium clock gives. Sanity check: ten times the stability, one tenth of the error, since the law is a straight line in $\sigma_y$. A receiver that tracks Galileo as well as GPS gets the benefit.
+
+The gain is not free. A maser is heavier, hungrier for power and more expensive than a rubidium clock. Choosing one is an ordinary satellite-design trade against the mass and power budget.
 :::
 
 ::: key
-Ephemeris error projects onto range by $\cos(\text{nadir angle})$ for the radial component (at least $0.971$) and by at most $\sin(\text{nadir angle})\le0.240$ for tangential (along- or cross-track) components — radial error is far more dangerous per metre. Satellite clock residual (after the broadcast polynomial) grows with time since the fit epoch as $c\,\sigma_y\,\Delta t$, the same clock-coasting law as a receiver's own oscillator, with a satellite-class clock's $\sigma_y\sim10^{-13}$ (rubidium/caesium) to $10^{-14}$ (hydrogen maser).
+Ephemeris error projects onto range by $\cos(\text{nadir angle})$ for the radial component (at least $0.971$) and by at most $\sin(\text{nadir angle}) \le 0.240$ for tangential (along- or cross-track) components — radial error is far more dangerous per meter. Satellite clock residual after the broadcast polynomial grows with time since the fit as $c\,\sigma_y\,\Delta t$, the same clock-coasting law as a receiver's oscillator, with $\sigma_y \sim 10^{-13}$ (rubidium or caesium) to $10^{-14}$ (hydrogen maser).
 :::
 
 ## Check yourself
 
 ::: check
-A reflection on L5 ($\lambda=25.48\,\mathrm{cm}$) has amplitude ratio $\alpha=0.4$ relative to the direct signal. What is the maximum possible carrier-tracking range error?
+An echo on L5 ($\lambda = 25.48\,\mathrm{cm}$) has amplitude ratio $\alpha = 0.4$. What is the largest carrier-tracking range error it can cause?
 :::
 
 ::: answer
-Maximum phase error is $\arcsin(0.4)=23.58^\circ$, or $23.58/360=0.0655$ cycles. Range error is $0.0655\times0.2548\,\mathrm{m}=0.0167\,\mathrm{m}$ — under two centimetres, illustrating again that carrier multipath stays small even for a fairly strong reflection.
+The largest phase error is $\arcsin(0.4) = 23.58^\circ$. As a fraction of a full turn that is $23.58/360 = 0.0655$ cycle. One cycle is one wavelength of range, so the error is $0.0655 \times 0.2548 = 0.0167\,\mathrm{m}$ — under two centimeters, even for a fairly strong echo.
 :::
 
 ::: check
-A receiver with a $0.5$-chip correlator spacing sees a reflection with $\alpha=0.4$ and a delay of $0.15\,\mathrm{chip}$ (short enough for the linear formula to apply). Compute the code-tracking bias in chips and in metres on C/A code.
+A receiver with $0.5$-chip correlator spacing sees an echo with $\alpha = 0.4$ and delay $0.15$ chip. Find the code bias in chips and in meters on C/A code.
 :::
 
 ::: answer
-$\tau_e = \alpha\Delta/(1+\alpha) = 0.4\times0.15/1.4 = 0.0429\,\mathrm{chip}$, which on C/A code ($293.05\,\mathrm{m/chip}$) is $12.6\,\mathrm{m}$.
+First check the short-delay formula applies: it holds up to $\Delta = (1+\alpha)d/2 = 1.4 \times 0.25 = 0.35$ chip, and $0.15$ is well inside. Then
+
+$$
+\tau_e = \frac{\alpha\Delta}{1+\alpha} = \frac{0.4 \times 0.15}{1.4} = 0.0429\ \text{chip}.
+$$
+
+On C/A code, at $293.05\,\mathrm{m}$ per chip, that is $0.0429 \times 293.05 = 12.6\,\mathrm{m}$.
 :::
 
 ::: check
-Why does narrowing the correlator spacing reduce the *peak* code multipath error but leave the short-delay bias formula $\tau_e=\alpha\Delta/(1+\alpha)$ unchanged?
+Why does narrowing the correlator spacing shrink the *peak* code multipath error but leave the short-delay bias $\alpha\Delta/(1+\alpha)$ unchanged?
 :::
 
 ::: answer
-The short-delay formula holds whenever the reflected code's autocorrelation still fully overlaps both the early and late correlator gates in the same way the direct signal does, which happens for any $\Delta$ up to roughly half the correlator spacing regardless of how large or small that spacing is — the bias in that regime depends only on how the reflection's strength and delay compare to the direct signal, not on the correlator geometry. The peak of the full envelope, by contrast, occurs near where the reflected signal starts to fall *off* one of the gates, a point set directly by the spacing $d$; shrinking $d$ moves that point closer to $\Delta=0$ and shrinks the whole envelope in proportion, but it cannot touch the always-present, spacing-independent bias from a very close-in reflector.
+In the short-delay zone, the echo's triangle sits under both gates on the same straight sides as the direct triangle, so the balance point depends only on how strong and how late the echo is. The spacing $d$ never enters. What $d$ does set is where that zone ends: at $\Delta = (1+\alpha)d/2$. There the bias reaches its peak, $\alpha d/2$. Shrink $d$ and the zone ends sooner, so the bias stops climbing at a smaller value, and the whole envelope shrinks in proportion to $d$. But an echo delayed less than that — a reflector very close to the antenna — gives the same $\alpha\Delta/(1+\alpha)$ whatever $d$ is.
 :::
 
 ::: check
-An ephemeris error has a $1.0\,\mathrm{m}$ radial component and a $4.0\,\mathrm{m}$ along-track component. For a satellite with a $12.0^\circ$ nadir angle as seen from the receiver, and an along-track efficiency for this particular geometry of $0.020$, compute each component's contribution to the range error.
+An ephemeris error has a $1.0\,\mathrm{m}$ radial part and a $4.0\,\mathrm{m}$ along-track part. The satellite's nadir angle is $12.0^\circ$, and for this geometry the along-track part projects at $0.020$. What does each part add to the range error?
 :::
 
 ::: answer
-Radial: $1.0\times\cos(12.0^\circ) = 1.0\times0.978 = 0.978\,\mathrm{m}$. Along-track: $4.0\times0.020=0.080\,\mathrm{m}$. Despite being four times larger, the along-track error contributes an order of magnitude less range error than the radial one, because its projection efficiency here is far below even the $\sin(12.0^\circ)=0.208$ worst-case bound for this nadir angle — the specific azimuth of the along-track direction relative to the line of sight happened to be favourable.
+Radial: $1.0 \times 0.978 = 0.978\,\mathrm{m}$, since $\cos 12.0^\circ = 0.978$. Along-track: $4.0 \times 0.020 = 0.080\,\mathrm{m}$. The along-track error is four times bigger but does about a twelfth of the damage. Its projection here is far below even the worst-case bound $\sin 12.0^\circ = 0.208$, because the along-track direction happens to point nearly across the line of sight.
 :::
 
 ::: check
-A satellite's clock polynomial is refreshed every two hours. Using a caesium-class stability of $\sigma_y=10^{-13}$, roughly how much stochastic clock error should you expect to have accumulated thirty minutes after a fresh upload, and is this the entire satellite-clock contribution to the error budget?
+A satellite's clock polynomial is refreshed every two hours. With a caesium-class stability of $\sigma_y = 10^{-13}$, how much random clock error has built up thirty minutes after a fresh upload? Is that the whole satellite-clock entry in the error budget?
 :::
 
 ::: answer
-$c\,\sigma_y\,\Delta t = 299{,}792{,}458\times10^{-13}\times1800 = 0.054\,\mathrm{m}$. This is only the stochastic piece; the remaining satellite-clock budget comes from imperfect modelling of the deterministic terms — the relativistic correction, the group delay calibration, and small discontinuities at each upload — none of which shrinks as the clock ages within its fit interval the way this term does.
+$c\,\sigma_y\,\Delta t = 299{,}792{,}458 \times 10^{-13} \times 1800 = 0.054\,\mathrm{m}$. It is not the whole entry. It is only the random part. The rest comes from imperfect modeling of the predictable terms — the relativity correction, the group-delay calibration, and the small jump at each upload. Those do not grow and shrink with time since the fit the way this term does.
 :::
 
 ## Summary
 
-| Item | Statement |
-| --- | --- |
-| Multipath geometry | Path delay $\Delta$ (chips), amplitude ratio $\alpha<1$ relative to direct signal |
-| Code multipath (short delay) | $\tau_e = \alpha\Delta/(1+\alpha)$ chips, independent of correlator spacing $d$ |
-| Code multipath envelope | Peaks beyond $\Delta=d/2$, vanishes past $\Delta=1+d/2$; peak scales with $d$ — a $10\times$ narrower correlator gives roughly a $10\times$ smaller peak |
-| Carrier multipath | $\delta\rho_{\max}=(\lambda/2\pi)\arcsin(\alpha) \le \lambda/4$; centimetres at most, on any carrier |
-| Ephemeris projection | Radial efficiency $\ge\cos(13.9^\circ)=0.971$; tangential (along-/cross-track) efficiency $\le\sin(13.9^\circ)=0.240$ |
-| Modern ephemeris budget | $\approx1\,\mathrm{m}$ along line of sight (control-segment SISRE); several metres in the 1990s |
-| Satellite clock residual | $c\,\sigma_y\,\Delta t$ since last upload; $\sigma_y\sim10^{-13}$ (Rb/Cs), $\sim10^{-14}$ (H-maser); $0.05$–$0.22\,\mathrm{m}$ over a two-hour fit interval |
+| Idea | Meaning | Formula or fact |
+| --- | --- | --- |
+| Multipath | An echo of the signal, delay $\Delta$ chips, strength $\alpha < 1$ | One C/A chip is $293.05\,\mathrm{m}$ |
+| Code multipath, short delay | Lock point slides late | $\tau_e = \alpha\Delta/(1+\alpha)$ chips, no $d$ in it, for $\Delta \le (1+\alpha)d/2$ |
+| Code multipath envelope | Bias against delay | Peak $\alpha d/2$; zero past $\Delta = 1 + d/2$; $10\times$ narrower $d$ gives $10\times$ smaller peak |
+| Carrier multipath | Echo turns the phase | $\delta\rho_{\max} = (\lambda/2\pi)\arcsin(\alpha) \le \lambda/4$: centimeters |
+| Ephemeris projection | Radial versus sideways orbit error | Radial $\ge \cos(13.9^\circ) = 0.971$; tangential $\le \sin(13.9^\circ) = 0.240$ |
+| Ephemeris budget | Line-of-sight error today | About $0.6\,\mathrm{m}$; about $2\,\mathrm{m}$ in the 1990s |
+| Satellite clock residual | Random wander since the fit | $c\,\sigma_y\,\Delta t$; $0.05$ to $0.22\,\mathrm{m}$ over two hours at $10^{-13}$ |
 
-Every term in the error budget the pseudorange lesson opened now has a derivation behind its size: clock, ionosphere, troposphere, multipath, ephemeris. The next lesson changes the measurement itself — from the code's metre-level ruler to the carrier's millimetre one — and shows what that buys, and what it costs, in the integer ambiguity every carrier-phase receiver has to resolve.
+Every entry in lesson 2's error budget now has a reason behind its size: clock, ionosphere, troposphere, multipath, ephemeris. The next lesson changes the measurement itself, from the code's meter-scale ruler to the carrier's millimeter one, and faces the whole-number puzzle every carrier-phase receiver has to solve.
+
+::: context multipath-geometry Two roads to one antenna
+The echo off the ground behaves like a reflection in a mirror. It arrives at the same angle it left the ground, so it looks as if it came from an image antenna buried below the surface. For an antenna at height $h$ and a satellite at elevation $\varepsilon$, the extra road is $2h\sin\varepsilon$.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 180" font-family="Inter, Arial, sans-serif">
+  <line x1="10" y1="150" x2="350" y2="150" stroke="#6c7a93" stroke-width="2"/>
+  <text x="20" y="168" font-size="11" fill="#6c7a93">ground</text>
+  <line x1="250" y1="72" x2="250" y2="150" stroke="#6c7a93" stroke-width="2"/>
+  <circle cx="250" cy="70" r="5" fill="#1f2a44"/>
+  <text x="260" y="66" font-size="12" fill="#1f2a44">antenna</text>
+  <line x1="146.1" y1="10" x2="250" y2="70" stroke="#1d6fd1" stroke-width="2.5"/>
+  <text x="120" y="40" font-size="12" fill="#1d6fd1">direct</text>
+  <line x1="33.5" y1="105" x2="111.4" y2="150" stroke="#f2b880" stroke-width="2.5"/>
+  <line x1="111.4" y1="150" x2="250" y2="70" stroke="#f2b880" stroke-width="2.5"/>
+  <text x="140" y="168" font-size="12" fill="#b4232c">reflected: longer, weaker</text>
+  <text x="258" y="115" font-size="12" fill="#1f2a44">h</text>
+</svg>
+```
+
+Both rays arrive from $30^\circ$ elevation here; the orange one bounces once.
+:::
+
+::: context chip What a chip is
+A **chip** is one step of the ranging code: one plus-or-minus flip. It is called a chip, not a bit, because it carries no message; it only marks time. The C/A code runs at $1.023$ million chips per second, so one chip lasts about $977.5$ nanoseconds. Light covers $293.05\,\mathrm{m}$ in that time, which is why a chip is also a length. Measuring delays in chips lets one formula work for every code, and you convert to meters at the end.
+:::
+
+::: context early-late Balancing two readings on a triangle
+The receiver never looks for the top of the correlation triangle directly. It keeps one reading a little early and one a little late, and nudges its timing until they match. An echo adds a smaller, later triangle and tips the balance point late.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 180" font-family="Inter, Arial, sans-serif">
+  <line x1="20" y1="150" x2="340" y2="150" stroke="#1f2a44" stroke-width="1.5"/>
+  <polyline points="80,150 180,50 280,150" fill="none" stroke="#1d6fd1" stroke-width="2.5"/>
+  <polyline points="110,150 210,100 310,150" fill="none" stroke="#f2b880" stroke-width="2.5" stroke-dasharray="6 4"/>
+  <line x1="130" y1="100" x2="130" y2="150" stroke="#6c7a93" stroke-width="1.5"/>
+  <line x1="230" y1="100" x2="230" y2="150" stroke="#6c7a93" stroke-width="1.5"/>
+  <circle cx="130" cy="100" r="4" fill="#1f2a44"/>
+  <circle cx="230" cy="100" r="4" fill="#1f2a44"/>
+  <text x="130" y="168" font-size="12" text-anchor="middle" fill="#1f2a44">early</text>
+  <text x="230" y="168" font-size="12" text-anchor="middle" fill="#1f2a44">late</text>
+  <text x="180" y="40" font-size="12" text-anchor="middle" fill="#1d6fd1">direct, height 1</text>
+  <text x="295" y="85" font-size="12" text-anchor="middle" fill="#b4232c">echo 0.5, late 0.3</text>
+</svg>
+```
+
+Gates one chip apart ($d = 1$) sit at equal heights on the blue triangle. The dashed echo raises the late side more, so the receiver slides late to rebalance.
+:::
+
+::: context phasor Why the worst angle is arcsin of alpha
+Draw the direct wave as an arrow of length $1$. The echo is an arrow of length $\alpha$ added to its tip, pointing any direction, so its tip can land anywhere on a circle of radius $\alpha$. The sum tilts most when the line from the start touches that circle at one point, and then $\sin\theta_{\max} = \alpha/1$.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">
+  <circle cx="220" cy="110" r="80" fill="none" stroke="#8fb8f0" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <line x1="60" y1="110" x2="220" y2="110" stroke="#1d6fd1" stroke-width="3"/>
+  <line x1="220" y1="110" x2="180" y2="40.72" stroke="#f2b880" stroke-width="3"/>
+  <line x1="60" y1="110" x2="180" y2="40.72" stroke="#b4232c" stroke-width="2.5"/>
+  <circle cx="60" cy="110" r="3" fill="#1f2a44"/>
+  <path d="M100,110 A40,40 0 0,0 94.64,90" fill="none" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="104" y="100" font-size="12" fill="#1f2a44">30°</text>
+  <text x="140" y="128" font-size="12" fill="#1d6fd1">direct, 1</text>
+  <text x="206" y="68" font-size="12" fill="#1f2a44">echo, 0.5</text>
+  <text x="70" y="62" font-size="12" fill="#b4232c">sum</text>
+</svg>
+```
+
+With $\alpha = 0.5$ the steepest tilt is $30^\circ$. As $\alpha$ nears $1$ it nears $90^\circ$, a quarter turn — the $\lambda/4$ limit.
+:::
+
+::: context choke-ring A cake pan that swallows echoes
+A **choke-ring antenna** sits in the middle of several deep, circular metal grooves, like a round cake pan with rings inside. Each groove is about a quarter of a wavelength deep. Signals sliding in from low angles or bouncing up from the ground set up currents in the grooves that cancel themselves. The direct signal from high in the sky is barely touched. Survey and reference stations use them. They are heavy and wide, far too bulky for most flight vehicles, which is why flight antennas rely on placement instead.
+:::
+
+::: context sidereal-repeat Why multipath comes back every day
+GPS satellites go around twice for every turn of Earth relative to the stars, a sidereal day of about $23\,\mathrm{h}\,56\,\mathrm{min}$. So each satellite traces the same path across a fixed antenna's sky every day, about four minutes earlier than the day before. Same satellite path, same reflector, same echo. Survey engineers use this: they subtract yesterday's residuals, shifted by four minutes, to cancel today's multipath. It is called sidereal filtering.
+:::
+
+::: context ephemeris-word A word from the astronomers
+**Ephemeris** comes from the Greek for "daily". For centuries an ephemeris was a printed book of tables giving where the Sun, Moon and planets would be on each day of the year. Sailors used them to navigate by the stars. A GPS ephemeris does the same job for one satellite over a few hours, in the form of a dozen or so numbers the receiver turns into a position. The plural is **ephemerides**.
+:::
+
+::: context sunlight-push Sunlight pushes
+Light carries momentum, so sunlight pushes on anything it hits. At Earth's distance from the Sun the push is about $4.6$ millionths of a newton on each square meter that absorbs it, twice that for a perfect mirror. On a GPS satellite with big solar panels it is tiny, but it never stops. Over hours it shifts the orbit by meters. It also changes as the satellite turns, as it passes into Earth's shadow, and as its surfaces age, which makes it the hardest force to model well.
+:::
+
+::: context allan How steady a clock is
+$\sigma_y$ is the clock's **Allan deviation**, named after the physicist David Allan who defined it in the 1960s. It is the typical fractional error in the clock's rate over a chosen averaging time. $\sigma_y = 10^{-13}$ means the clock's rate is typically off by one part in ten trillion. Multiply by the elapsed time to get a time error, and by $c$ to get meters. Real clocks have a different $\sigma_y$ at each averaging time; lesson 3 used one value per clock as a fair simplification.
+:::
+
+::: context maser Microwave cousin of the laser
+**Maser** stands for microwave amplification by stimulated emission of radiation. It came before the laser and works the same way, but with microwaves. A hydrogen maser keeps time with the hydrogen atom's natural microwave frequency, near $1420\,\mathrm{MHz}$ — the same line radio astronomers use to map hydrogen in the galaxy. A passive maser, like Galileo's, uses the atoms as a reference to steer a quartz oscillator instead of letting them oscillate on their own.
+:::

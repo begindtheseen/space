@@ -6,46 +6,86 @@ covers:
   - Differential GNSS, RTK, and precise point positioning
 ---
 
-The carrier-phase lesson promised that differencing between two receivers removes the clock terms and clears the way for integer ambiguity resolution, and left the details for here. Those details are also the entire basis of every technique that beats a single receiver's own error budget: differential GNSS, real-time kinematic positioning, and precise point positioning are three different answers to the same question — what do you do with a second source of information about the same errors? — and this lesson derives the differencing that all three start from before showing how each one uses it.
+You and a friend step on the same bathroom scale, one after the other. The scale reads $2\,\mathrm{kg}$ too heavy. Neither reading is right. But subtract one from the other and the difference between your weights is exactly right, because the same $2\,\mathrm{kg}$ error sat in both and cancelled.
+
+That is the whole idea of this lesson. Two GNSS receivers near each other see nearly the same errors: the same satellite clock error, the same orbit error, nearly the same atmosphere. Subtract their measurements and those shared errors cancel. The previous lesson promised that this subtraction also removes the clocks that stood in the way of finding the carrier's whole-number ambiguities. Here is how.
+
+There are [[three answers|accuracy-ladder]] to the question "what do you do with a second source of information about the same errors?":
+
+- **Differential GNSS (DGNSS)**: a nearby station at a known spot broadcasts corrections to the code ranges.
+- **Real-time kinematic (RTK)**: a nearby station shares its carrier-phase measurements, and the rover resolves the integers for centimeter accuracy.
+- **Precise point positioning (PPP)**: no nearby station at all; instead, very accurate satellite orbits and clocks computed by a worldwide network.
+
+All three start from the same subtraction, so that comes first.
 
 ## Single differences: cancel the satellite
 
-Take two receivers, $A$ and $B$, both tracking satellite $i$ at the same epoch. Subtracting their pseudorange equations,
+Take two receivers, $A$ and $B$, both tracking satellite $i$ at the same moment. The line between them is the **[[baseline|baseline-picture]]**. Write the pseudorange equation for each and subtract. The result is the **single difference** $\nabla\rho^i$ (read "[[nabla|nabla]] rho, superscript i"):
 
 $$
-\nabla\rho^i \equiv \rho_A^i - \rho_B^i = \big(\|\mathbf{s}_i-\mathbf{x}_A\| - \|\mathbf{s}_i-\mathbf{x}_B\|\big) + c(\delta t_A - \delta t_B) + (I_A^i-I_B^i) + (T_A^i-T_B^i) + (\varepsilon_A^i-\varepsilon_B^i),
+\nabla\rho^i \equiv \rho_A^i - \rho_B^i = \big(\|\mathbf{s}_i-\mathbf{x}_A\| - \|\mathbf{s}_i-\mathbf{x}_B\|\big) + c(\delta t_A - \delta t_B) + (I_A^i-I_B^i) + (T_A^i-T_B^i) + (\varepsilon_A^i-\varepsilon_B^i).
 $$
 
-the satellite clock term $c\,\delta t_{sat,i}$ cancels exactly — it was identical in both equations, since both receivers looked at the same satellite at (very nearly) the same instant. If the two receivers are close together, the ionospheric and tropospheric paths to the same satellite are nearly identical too, so $I_A^i-I_B^i$ and $T_A^i-T_B^i$ shrink toward zero as the baseline between $A$ and $B$ shortens; over a baseline of a few kilometres, in ordinary conditions, what is left of the atmosphere is a small residual rather than the metres either receiver saw alone. What survives in full is the *difference* of the two receiver clock biases, $c(\delta t_A-\delta t_B)$ — a single difference removes the satellite's contamination but not the receivers'.
+Superscripts name the satellite, subscripts the receiver. The sign $\equiv$ means "is defined as". Now go through what happened to each error.
+
+- **The satellite clock** $c\,\delta t_{sat,i}$ is gone. It was the same number in both equations, since both receivers heard the same satellite at (very nearly) the same moment.
+- **The atmosphere** shrinks. If $A$ and $B$ are close, their signal paths through the ionosphere and troposphere are nearly the same, so $I_A^i - I_B^i$ and $T_A^i - T_B^i$ are small. Over a few kilometers, in ordinary conditions, a few meters of delay become a small leftover.
+- **The receiver clocks** survive as $c(\delta t_A - \delta t_B)$. Each receiver has its own clock, so their errors are different numbers and do not cancel.
+
+A single difference removes the satellite's errors but not the receivers'.
 
 ## Double differences: cancel the receiver too
 
-Form a second single difference to a different satellite $j$ and subtract again:
+Form a second single difference to another satellite $j$, then subtract the two. The result is the **double difference** $\nabla\Delta\rho^{ij}$ (read "nabla delta rho, i j"):
 
 $$
 \nabla\Delta\rho^{ij} \equiv \nabla\rho^i - \nabla\rho^j = \Big[\big(\|\mathbf{s}_i-\mathbf{x}_A\|-\|\mathbf{s}_i-\mathbf{x}_B\|\big) - \big(\|\mathbf{s}_j-\mathbf{x}_A\|-\|\mathbf{s}_j-\mathbf{x}_B\|\big)\Big] + \big(\text{residual atmosphere}\big) + \big(\text{residual noise}\big).
 $$
 
-The receiver clock difference, common to both single differences, cancels exactly the same way the satellite clock did. What remains is pure geometry — a function only of the two satellite positions and the two receiver positions, with no clock of either kind anywhere in it — plus whatever atmosphere and multipath did not cancel, plus measurement noise. This is the **double difference**, and it is the equation every worked example in this lesson, and the whole of the previous lesson's ambiguity resolution, is built on: with the clocks gone, position (or more precisely, the baseline between the two receivers) is the only unknown structure left.
+The receiver clock difference $c(\delta t_A - \delta t_B)$ was the same in both single differences, so it cancels exactly, the way the satellite clock did. What is left is pure geometry — only satellite positions and receiver positions, no clock of any kind — plus whatever atmosphere and multipath did not cancel, plus noise. With the clocks gone, the only unknown left is the baseline between the receivers. This double difference is what every example below, and the whole of the previous lesson's integer search, is built on.
 
-Combining four one-way measurements with coefficients $(+1,-1,-1,+1)$ changes the noise. If each pseudorange carries independent noise of variance $\sigma^2$, a single difference has variance $2\sigma^2$ and a double difference $4\sigma^2$:
+### What subtraction does to the noise
+
+Subtraction cancels shared errors, but it adds up errors that are *not* shared. If each one-way pseudorange has independent noise of size $\sigma$ (its **variance** — the square of the typical error — is $\sigma^2$), then **[[variances add|variances-add]]** when you subtract: a single difference has variance $2\sigma^2$, a double difference $4\sigma^2$. Taking square roots:
 
 $$
-\sigma_{\nabla\rho} = \sqrt{2}\,\sigma, \qquad \sigma_{\nabla\Delta\rho} = 2\sigma,
+\sigma_{\nabla\rho} = \sqrt{2}\,\sigma, \qquad \sigma_{\nabla\Delta\rho} = 2\sigma.
 $$
 
-confirmed by simulating $500{,}000$ draws of eight independent noise terms ($\sigma=0.3\,\mathrm{m}$): the empirical single-difference variance comes out to $0.180\,\mathrm{m}^2$ against the predicted $2\times0.3^2=0.18\,\mathrm{m}^2$, and the empirical double-difference variance to $0.361\,\mathrm{m}^2$ against the predicted $4\times0.3^2=0.36\,\mathrm{m}^2$. A second consequence matters equally for how these measurements must be weighted: two double differences that share the same reference satellite are *correlated*, because both contain that satellite's single difference. For double differences $\nabla\Delta\rho^{ij}$ and $\nabla\Delta\rho^{ik}$ sharing reference satellite $i$, the same simulation gives an empirical covariance of $0.180\,\mathrm{m}^2$ against a predicted $2\sigma^2=0.18\,\mathrm{m}^2$ — exactly half the diagonal variance, a correlation coefficient of $0.5$ regardless of $\sigma$. The receiver-clock lesson warned that differencing correlates the noise; this is the exact size of it, and it is why a properly weighted double-difference solution needs the *full* covariance matrix the sibling module on least squares works with, not a diagonal approximation.
+A second effect matters just as much. Two double differences that share the same reference satellite $i$ both contain satellite $i$'s single difference. So their errors are linked — **correlated**. Their **covariance** (how much they vary together) is $2\sigma^2$, exactly half of each one's variance, so their correlation is $0.5$ whatever $\sigma$ is. A simulation with $\sigma = 0.3\,\mathrm{m}$ agrees:
 
-::: key
-Single difference (two receivers, one satellite) cancels the satellite clock; $\sigma_{\nabla\rho}=\sqrt2\,\sigma$. Double difference (two receivers, two satellites) additionally cancels the receiver clock difference, leaving pure geometry plus residual atmosphere; $\sigma_{\nabla\Delta\rho}=2\sigma$, and double differences sharing a reference satellite are correlated at $\mathrm{Cov}=2\sigma^2$ (correlation $0.5$).
+```python
+import numpy as np
+
+rng = np.random.default_rng(0)
+sigma = 0.3                                    # one-way noise, m
+e = rng.normal(0, sigma, size=(500_000, 6))    # A-i, B-i, A-j, B-j, A-k, B-k
+sd_i = e[:, 0] - e[:, 1]                       # single differences
+sd_j = e[:, 2] - e[:, 3]
+sd_k = e[:, 4] - e[:, 5]
+dd_ij, dd_ik = sd_i - sd_j, sd_i - sd_k        # double differences sharing i
+print(f"{sd_i.var():.3f} {dd_ij.var():.3f} {np.cov(dd_ij, dd_ik)[0, 1]:.3f}")
+# 0.180 0.360 0.180
+```
+
+The predictions are $2 \times 0.3^2 = 0.18$, $4 \times 0.3^2 = 0.36$ and $2 \times 0.3^2 = 0.18$ square meters. Lesson 3 warned that differencing correlates the noise; this is the exact size of it. A properly weighted double-difference solution needs the full covariance matrix, not only the diagonal.
+
+::: note Why it has to be true
+For independent errors, the variance of a sum or a difference is the sum of the variances: $\mathrm{Var}(a - b) = \mathrm{Var}(a) + \mathrm{Var}(b)$. A single difference combines two one-way errors, so $2\sigma^2$. A double difference combines four, with signs $(+1, -1, -1, +1)$, so $4\sigma^2$.
+
+For the covariance, write $\nabla\Delta\rho^{ij} = \nabla\rho^i - \nabla\rho^j$ and $\nabla\Delta\rho^{ik} = \nabla\rho^i - \nabla\rho^k$. The pieces from $j$ and $k$ are independent of everything else, so only the shared $\nabla\rho^i$ contributes: the covariance is $\mathrm{Var}(\nabla\rho^i) = 2\sigma^2$. Divide by the variance $4\sigma^2$ of each to get the correlation $0.5$.
 :::
 
-## DGNSS: code corrections from a point that already knows where it is
+::: key
+Single difference (two receivers, one satellite) cancels the satellite clock; $\sigma_{\nabla\rho} = \sqrt2\,\sigma$. Double difference (two receivers, two satellites) also cancels the receiver clock difference, leaving pure geometry plus residual atmosphere; $\sigma_{\nabla\Delta\rho} = 2\sigma$, and double differences sharing a reference satellite are correlated with $\mathrm{Cov} = 2\sigma^2$ (correlation $0.5$).
+:::
 
-A reference station at a precisely surveyed location computes, for each satellite, the pseudorange its own known position predicts, and compares that to what it actually measured. The difference — the *correction* — absorbs the satellite clock error, the ephemeris error, and (over a short enough baseline) most of the atmosphere, exactly the terms a single difference cancels; broadcasting it to a rover and adding it to the rover's own raw pseudorange is single-differencing implemented as a communication protocol rather than a simultaneous computation.
+## DGNSS: corrections from a station that knows where it is
 
-::: example A correction shrinking a four-metre error to decimetres
-A base station and a rover $5.4\,\mathrm{km}$ apart, both seeing a satellite at true ranges of $20{,}844{,}346.9\,\mathrm{m}$ and $20{,}843{,}278.3\,\mathrm{m}$, carrying a shared clock-plus-ephemeris-plus-atmosphere error of $4.6\,\mathrm{m}$, plus $\sigma=0.5\,\mathrm{m}$ of independent code noise and multipath at each site:
+A **[[reference station|reference-station]]** sits at a precisely surveyed spot. For each satellite it knows the true range, because it knows its own position and the satellite's. It compares that with the range it actually measures. The difference is the **correction**. It soaks up the satellite clock error, the ephemeris error and, over a short enough baseline, most of the atmosphere — the same terms a single difference cancels. The station broadcasts the correction, and a nearby **rover** (the receiver being positioned) adds it to its own raw range. DGNSS is a single difference done over a radio link instead of in one computer.
+
+::: example A correction shrinking a four-meter error
+A base and a rover are $5.4\,\mathrm{km}$ apart. Their true ranges to a satellite are $20{,}844{,}346.9\,\mathrm{m}$ and $20{,}843{,}278.3\,\mathrm{m}$. Both carry the same $4.6\,\mathrm{m}$ of clock, orbit and atmosphere error, and each has its own $0.5\,\mathrm{m}$ of independent noise and multipath:
 
 ```python
 import numpy as np
@@ -67,21 +107,31 @@ print("DGNSS-corrected rover error (m):", round(rho_B_corrected - true_range_B, 
 # DGNSS-corrected rover error (m): -0.26
 ```
 
-The shared $4.6\,\mathrm{m}$ error is gone; what is left is only the independent noise at each receiver, which does not cancel because it was never common to begin with. This is exactly the "metre to decimetre" figure attached to differential GNSS: it removes what two receivers share and leaves what they do not.
+**Step by step.** The base knows its true range, so its correction is true minus measured, about $-4.6\,\mathrm{m}$ plus its own noise. The rover adds that to its measurement. The shared $4.6\,\mathrm{m}$ cancels. What is left is the two receivers' independent noise, which never cancels because it was never shared.
+
+Sanity check: the leftover $0.26\,\mathrm{m}$ is about the size of one receiver's $0.5\,\mathrm{m}$ noise, not the $4.6\,\mathrm{m}$ common error. That is the "meter to decimeter" of DGNSS: it removes what two receivers share and leaves what they do not.
 :::
 
-The correction degrades with distance and with age: as the baseline grows, the atmosphere is no longer common, and as the correction ages, the satellite clock and ephemeris it captured have moved on — a rover applying a stale or distant correction is trusting a cancellation that has partly stopped holding.
+The correction weakens with distance and with age. As the baseline grows, the atmosphere stops being shared. As the correction gets older, the satellite clock it captured has drifted on. A rover using a distant or stale correction is trusting a cancellation that has partly stopped working.
 
-::: warning
-A differential correction is only as good as how recently, and from how nearby, it was computed. Applying a base station's correction across a baseline of hundreds of kilometres, or minutes after it was generated, does not fail outright — the correction still removes the bulk of the satellite clock error, which does not depend on location — but it silently reintroduces the atmospheric and orbital error the correction was supposed to remove, in proportion to distance and age, with no warning flag anywhere in the rover's own measurements.
+::: warning Stale and distant corrections fail quietly
+Use a correction from hundreds of kilometers away, or minutes old, and nothing breaks outright. It still removes most of the satellite clock error, which is the same everywhere. But it quietly lets back in the atmosphere and orbit error it was supposed to remove, growing with distance and age, and nothing in the rover's own measurements raises a flag.
 :::
 
-## RTK: carrier phase, a nearby base, and a resolved integer
+## RTK: carrier phase, a nearby base, and resolved integers
 
-Real-time kinematic positioning runs the identical double-difference machinery, but on carrier phase with its millimetre noise, and with the integer ambiguities the previous lesson resolved rather than left float. Solve for the baseline vector $\mathbf{b}=\mathbf{x}_B-\mathbf{x}_A$ directly — with both clocks gone, there is no fourth unknown, only the three components of $\mathbf{b}$, so the Jacobian row for a double difference against reference satellite $\mathrm{ref}$ is $\mathbf{e}_i(\mathbf{x}_B) - \mathbf{e}_{\mathrm{ref}}(\mathbf{x}_B)$, the difference of two of the same unit line-of-sight vectors the navigation-solution lesson built $\mathbf{G}$ from, now evaluated at the rover.
+**Real-time kinematic** positioning runs the same double-difference machinery on carrier phase, with its millimeter noise, and with the whole-number ambiguities from the previous lesson resolved. "Kinematic" means the rover may be moving.
 
-::: example A baseline recovered to a centimetre
-Six satellites, the well-spread geometry used throughout the module, a $5.4\,\mathrm{km}$ baseline, per-receiver carrier noise of $3\,\mathrm{mm}$, a shared (short-baseline) error of up to several metres per satellite that cancels in the double difference exactly as in the DGNSS example, and two different, unresolved receiver clock biases that also cancel:
+The unknown is the baseline vector $\mathbf{b} = \mathbf{x}_B - \mathbf{x}_A$. With both clocks gone there is no fourth unknown, only the three parts of $\mathbf{b}$. The row of the Jacobian (the table of slopes from lesson 4) for a double difference against a reference satellite is
+
+$$
+\mathbf{e}_i(\mathbf{x}_B) - \mathbf{e}_{\mathrm{ref}}(\mathbf{x}_B),
+$$
+
+the difference of two unit line-of-sight vectors from the rover — the same vectors lesson 4 built its geometry matrix $\mathbf{G}$ from.
+
+::: example A baseline recovered to a centimeter
+Use the six Cape Canaveral satellites from lessons 4 and 5 and a $5.4\,\mathrm{km}$ baseline. Give each receiver $3\,\mathrm{mm}$ of carrier noise, add a shared error of several meters per satellite, and give the two receivers very different clock errors. The ambiguities are taken as already resolved, so they are left out:
 
 ```python
 import numpy as np
@@ -137,72 +187,193 @@ print("error magnitude (mm):", round(np.linalg.norm(baseline_est - baseline_true
 # error magnitude (mm): 9.71
 ```
 
-Four iterations, and the recovered baseline is within $9.7\,\mathrm{mm}$ of the truth in three dimensions — from millimetre-noise measurements, a metres-scale common error that vanished entirely, and no clock unknown at all. This is what "resolve the ambiguity and you have centimetre positioning" means concretely: the same Gauss-Newton machinery the navigation-solution lesson built, applied to a measurement with three orders of magnitude less noise and one fewer unknown to solve for.
+**What happened.** Starting from a guess of zero baseline, four rounds of the same Gauss-Newton step as lesson 4 land within $9.7\,\mathrm{mm}$ of the truth in three dimensions. The meters of shared error vanished in the subtraction. The $25{,}840\,\mathrm{m}$ gap between the two clocks never appeared at all.
+
+Sanity check: $9.7\,\mathrm{mm}$ is a few times the $3\,\mathrm{mm}$ noise, which is what the noise growth ($2\sigma = 6\,\mathrm{mm}$ per double difference) and the geometry together should give. That is what "resolve the ambiguity and you have centimeter positioning" means in practice.
 :::
 
-The catch is the baseline length. As $A$ and $B$ move further apart, the residual atmosphere in the double difference grows, and a residual of even a few centimetres is enough to make the correlation-weighted integer search from the previous lesson land on the wrong candidate or fail its ratio test outright — an ambiguity fix needs the leftover error to be small compared to a fraction of a wavelength, a far tighter demand than DGNSS's metre-level target. This is why RTK baselines are conventionally kept to tens of kilometres, why network RTK services interpolate corrections from several reference stations to extend that range, and why, beyond a point, the only honest fallback is to stop trying to fix the integers and accept the float solution's decimetre-level accuracy instead.
+The catch is the baseline length. As $A$ and $B$ move apart, the atmosphere left in the double difference grows. A leftover of even a few centimeters is enough to send the previous lesson's integer search to the wrong candidate, or make it fail the ratio test. Fixing integers needs the leftover error to be small next to a fraction of a $19\,\mathrm{cm}$ wavelength — a far tighter demand than DGNSS's meter-level target. That is why RTK baselines are usually kept to a few tens of kilometers, why **[[network RTK|network-rtk]]** services blend corrections from several stations to reach farther, and why, beyond some distance, the honest fallback is to stop fixing integers and accept the float solution's decimeter accuracy.
 
 ## PPP: no base station, precise products instead
 
-Precise point positioning drops the second receiver entirely and instead replaces the broadcast ephemeris and clock — good to about a metre, the ephemeris-and-clock lesson found — with **precise** orbit and clock products, computed after the fact (or with a few hours' delay in real time) from a global tracking network, accurate to centimetres. Without a nearby reference receiver there is nothing to difference the atmosphere against, so PPP estimates the ionosphere directly (usually via the dual-frequency ionosphere-free combination) and carries the tropospheric zenith wet delay as an explicit unknown, updated over time — the estimated filter state the troposphere lesson flagged, typically a slowly varying random walk driven exactly the way the Kalman filtering module's process-noise models describe.
+**Precise point positioning** drops the second receiver. Instead, it replaces the broadcast orbits and clocks — good to about half a meter, lesson 7 found — with **[[precise orbit and clock products|precise-products]]**, computed from a worldwide tracking network and good to a few centimeters.
 
-That state is also why PPP converges slowly where RTK converges almost immediately. At a single epoch, the zenith wet delay maps onto every line of sight through the same elevation-dependent factor that maps vertical position onto it, and the receiver clock maps onto every line of sight through the same all-ones direction the dilution-of-precision lesson identified — three different unknowns (vertical position, clock, zenith delay) all leaning on nearly the same combination of measurements at any single instant, on top of the float carrier ambiguities riding along beside them. None of this is resolved by more satellites at one epoch; it is resolved by *time*, as the satellite geometry rotates through the sky over the following tens of minutes and the directions these unknowns lean on stop being so nearly parallel — precisely the kind of state estimation the Kalman filtering module builds, here applied to a filter state that includes position, clock, zenith wet delay and every tracked ambiguity together. The result, after that convergence, is decimetre accuracy with no reference station anywhere nearby; with fixed (rather than float) ambiguities, using additional fractional-cycle-bias products that let the same integer machinery from the previous lesson apply even without a local double difference, PPP can reach RTK-like precision, at the cost of the long convergence remaining.
+With no nearby receiver there is nothing to subtract the atmosphere against. So PPP handles it directly:
+
+- the **ionosphere** is removed with the dual-frequency ionosphere-free combination from lesson 6;
+- the **troposphere's wet part** is carried as an unknown to estimate — the **zenith wet delay**, the extra delay straight up caused by water vapor. It is modeled as a slowly wandering **[[random walk|random-walk]]**, exactly the kind of state the Kalman filter module handles.
+
+### Why PPP is slow to settle
+
+At any single moment, three unknowns look alike to the measurements.
+
+- The **receiver clock** adds the same amount to every satellite's range.
+- The **height** adds an amount to each range that grows with the satellite's elevation.
+- The **zenith wet delay** adds an amount that grows as the satellite gets *lower*, through the troposphere's mapping function from lesson 6.
+
+These three patterns are different, but not very different, over the handful of satellites in view at one instant. On top of them ride the float carrier ambiguities, one per satellite, each another constant to estimate. More satellites at one moment do not untangle this. **Time** does. Over the next tens of minutes the satellites move across the sky, the patterns stop looking alike, and a Kalman filter holding position, clock, zenith wet delay and every ambiguity gradually pins them all down.
+
+The result after that convergence is decimeter accuracy with no base station anywhere near. With extra **[[fractional-cycle-bias|fcb]]** products, PPP can also resolve its integers, even without a local double difference, and reach close to RTK precision. The long wait to converge remains.
 
 ::: key
-DGNSS: broadcast code corrections from a surveyed base, metre to decimetre, degrading with baseline distance and correction age. RTK: carrier phase, double-differenced against a nearby base, resolved integer ambiguities, centimetre — limited by how far the atmosphere can be trusted to cancel. PPP: precise orbit and clock products, no base station, estimated ionosphere and zenith wet delay, decimetre after a convergence of tens of minutes (faster, to comparable precision, with fixed ambiguities via fractional-cycle-bias products).
+DGNSS: broadcast code corrections from a surveyed base, meter to decimeter, degrading with baseline distance and correction age. RTK: carrier phase double-differenced against a nearby base, resolved integer ambiguities, centimeter — limited by how far the atmosphere can be trusted to cancel. PPP: precise orbit and clock products, no base station, estimated ionosphere and zenith wet delay, decimeter after a convergence of tens of minutes (close to RTK precision with fixed ambiguities via fractional-cycle-bias products).
+:::
+
+::: key DGNSS, RTK and PPP
+DGNSS: broadcast code corrections, meter to decimeter. RTK: carrier phase plus a nearby base station, centimeter, short baselines. PPP: precise orbit and clock products with no base station, decimeter after a long convergence.
 :::
 
 ## Check yourself
 
 ::: check
-Write the single-difference and double-difference pseudorange equations and state exactly what cancels in each.
+Write the single-difference and double-difference pseudorange equations, and say exactly what cancels in each.
 :::
 
 ::: answer
-Single difference, $\nabla\rho^i = \rho_A^i-\rho_B^i$: cancels the satellite clock term $c\,\delta t_{sat,i}$ exactly (identical in both receivers' measurements); leaves the receiver clock difference $c(\delta t_A-\delta t_B)$, and shrinks (but does not exactly cancel) the atmospheric terms as the baseline shortens. Double difference, $\nabla\Delta\rho^{ij}=\nabla\rho^i-\nabla\rho^j$: additionally cancels the receiver clock difference, since it is common to both single differences, leaving pure geometry plus residual atmosphere and noise.
+Single difference, $\nabla\rho^i = \rho_A^i - \rho_B^i$: the satellite clock term $c\,\delta t_{sat,i}$ cancels exactly, because it is identical in both receivers' measurements. The receiver clock difference $c(\delta t_A - \delta t_B)$ remains. The atmosphere terms shrink as the baseline shortens but do not cancel exactly.
+
+Double difference, $\nabla\Delta\rho^{ij} = \nabla\rho^i - \nabla\rho^j$: the receiver clock difference also cancels, since it is the same in both single differences. What is left is pure geometry plus residual atmosphere and noise.
 :::
 
 ::: check
-Pseudorange noise is $\sigma=0.4\,\mathrm{m}$ at each receiver. What are the single-difference and double-difference noise standard deviations?
+Pseudorange noise is $\sigma = 0.4\,\mathrm{m}$ at each receiver. What are the single-difference and double-difference noise levels?
 :::
 
 ::: answer
-$\sigma_{\nabla\rho}=\sqrt2\times0.4=0.566\,\mathrm{m}$; $\sigma_{\nabla\Delta\rho}=2\times0.4=0.8\,\mathrm{m}$.
+Single difference: $\sigma_{\nabla\rho} = \sqrt2 \times 0.4 = 0.566\,\mathrm{m}$. Double difference: $\sigma_{\nabla\Delta\rho} = 2 \times 0.4 = 0.8\,\mathrm{m}$. Subtraction removed the shared errors but doubled the independent noise.
 :::
 
 ::: check
-Two double differences share the same reference satellite. What is their covariance, in terms of the one-way pseudorange variance $\sigma^2$, and the resulting correlation coefficient?
+Two double differences share the same reference satellite. What is their covariance, in terms of the one-way variance $\sigma^2$, and their correlation?
 :::
 
 ::: answer
-$\mathrm{Cov}=2\sigma^2$, from the two shared one-way terms (the reference satellite's measurement at each receiver) that appear in both double differences. Since each double difference has variance $4\sigma^2$, the correlation coefficient is $2\sigma^2/4\sigma^2=0.5$, independent of $\sigma$ itself.
+Both contain the reference satellite's single difference, made of two one-way terms, so the shared part has variance $2\sigma^2$: $\mathrm{Cov} = 2\sigma^2$. Each double difference has variance $4\sigma^2$, so the correlation is $2\sigma^2 / 4\sigma^2 = 0.5$, whatever $\sigma$ is.
 :::
 
 ::: check
-Why does single-differencing fail to remove the receiver clock bias, when it does remove the satellite clock bias?
+Why does a single difference remove the satellite clock but not the receiver clock?
 :::
 
 ::: answer
-The satellite clock term is the same number in both receivers' equations, because both receivers observed the same satellite at (very nearly) the same instant, so subtracting one equation from the other cancels it exactly. The receiver clock bias is a *different* number at each receiver — each has its own independent oscillator — so subtracting the two equations leaves the difference of two different quantities rather than cancelling a shared one. Removing it requires a second subtraction against a second satellite, which is exactly what makes it a double difference.
+The satellite clock error is one number, the same in both receivers' equations, because both heard the same satellite at nearly the same moment. Subtracting cancels it. The receiver clock errors are two different numbers, one per receiver, each with its own oscillator. Subtracting leaves their difference. Removing that takes a second subtraction, against a second satellite — which is what makes a double difference.
 :::
 
 ::: check
-Why does RTK's ambiguity resolution demand much shorter baselines than DGNSS's code corrections tolerate, even though both rely on the same atmospheric cancellation over a short baseline?
+DGNSS and RTK both rely on the atmosphere cancelling over a short baseline. Why does RTK need much shorter baselines?
 :::
 
 ::: answer
-DGNSS only needs the residual (uncancelled) atmosphere to be small compared to its target accuracy of a metre or so — a fairly loose requirement. RTK's integer ambiguity resolution needs the residual atmosphere to be small compared to a *fraction of a carrier wavelength*, centimetres, because the correlation-weighted integer search from the previous lesson can only find the correct integer, and pass its ratio test, when the float solution is already close enough to the truth that the right integer is the clear winner. The same residual atmosphere that is negligible against a metre-level target can be large enough to flip which integer looks best, which is why RTK's usable baseline is measured in tens of kilometres while DGNSS corrections remain useful over distances an order of magnitude larger.
+DGNSS only needs the leftover atmosphere to be small next to its target of about a meter, a loose demand. RTK's integer search needs the leftover to be small next to a fraction of a carrier wavelength — centimeters — because it can only pick the right integer, and pass its ratio test, when the float solution is already close enough that the right integer clearly wins. A leftover that is harmless at the meter level can be big enough to flip which integer looks best. So RTK baselines are measured in tens of kilometers, while DGNSS corrections stay useful over distances about ten times larger.
 :::
 
 ## Summary
 
-| Item | Statement |
-| --- | --- |
-| Single difference | $\nabla\rho^i=\rho_A^i-\rho_B^i$; cancels satellite clock; $\sigma_{\nabla\rho}=\sqrt2\,\sigma$ |
-| Double difference | $\nabla\Delta\rho^{ij}=\nabla\rho^i-\nabla\rho^j$; additionally cancels receiver clock difference; $\sigma_{\nabla\Delta\rho}=2\sigma$; correlated ($\mathrm{Cov}=2\sigma^2$) with any other DD sharing the reference satellite |
-| DGNSS | Broadcast code corrections from a surveyed base; metre to decimetre; degrades with baseline and correction age |
-| RTK | Double-differenced carrier phase, resolved integer ambiguities, centimetre; baseline limited by how well the atmosphere still cancels |
-| PPP | Precise orbit/clock products, no base station; estimates ionosphere and zenith wet delay as filter states; decimetre after tens of minutes' convergence; fixed ambiguities (fractional-cycle-bias products) recover RTK-like precision |
-| Baseline Jacobian (RTK) | Row $i$: $\mathbf{e}_i(\mathbf{x}_B) - \mathbf{e}_{\mathrm{ref}}(\mathbf{x}_B)$; three unknowns, no clock |
+| Idea | Meaning | Formula or fact |
+| --- | --- | --- |
+| Single difference | Two receivers, one satellite | $\nabla\rho^i = \rho_A^i - \rho_B^i$; cancels satellite clock; $\sigma_{\nabla\rho} = \sqrt2\,\sigma$ |
+| Double difference | Two receivers, two satellites | $\nabla\Delta\rho^{ij} = \nabla\rho^i - \nabla\rho^j$; also cancels receiver clocks; $\sigma_{\nabla\Delta\rho} = 2\sigma$; $\mathrm{Cov} = 2\sigma^2$ with a shared reference |
+| DGNSS | Code corrections from a surveyed base | Meter to decimeter; worse with distance and age |
+| RTK | Double-differenced carrier, integers fixed | Centimeter; baseline limited by atmosphere |
+| PPP | Precise orbits and clocks, no base | Estimates ionosphere and zenith wet delay; decimeter after tens of minutes |
+| RTK baseline Jacobian | Slopes for the baseline | Row $i$: $\mathbf{e}_i(\mathbf{x}_B) - \mathbf{e}_{\mathrm{ref}}(\mathbf{x}_B)$; three unknowns, no clock |
 
-Every technique in this lesson assumed a receiver sitting still, or moving gently, on or near the Earth's surface. The next two lessons leave that assumption behind: a receiver above the constellation altogether, and a receiver riding a launch vehicle through the highest dynamics any GNSS receiver has to survive.
+Every technique here assumed a receiver sitting still or moving gently near Earth's surface. The next two lessons drop that assumption: first a receiver above the constellation, then one riding a launch vehicle through the harshest motion any GNSS receiver has to survive.
+
+::: context accuracy-ladder Four rungs of accuracy
+Each technique buys roughly a factor of ten over the one before. The bars show typical horizontal accuracy on a log scale, where each tick is ten times the last.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 170" font-family="Inter, Arial, sans-serif">
+  <line x1="80" y1="140" x2="300" y2="140" stroke="#1f2a44" stroke-width="1.5"/>
+  <g stroke="#1f2a44" stroke-width="1.5">
+    <line x1="80" y1="136" x2="80" y2="144"/><line x1="150" y1="136" x2="150" y2="144"/>
+    <line x1="220" y1="136" x2="220" y2="144"/><line x1="290" y1="136" x2="290" y2="144"/>
+  </g>
+  <g font-size="11" fill="#1f2a44" text-anchor="middle">
+    <text x="80" y="158">1 cm</text><text x="150" y="158">10 cm</text><text x="220" y="158">1 m</text><text x="290" y="158">10 m</text>
+  </g>
+  <g font-size="12" fill="#1f2a44" text-anchor="end">
+    <text x="72" y="30">standalone</text><text x="72" y="60">DGNSS</text><text x="72" y="90">PPP</text><text x="72" y="120">RTK</text>
+  </g>
+  <rect x="220" y="20" width="48.9" height="14" fill="#6c7a93"/>
+  <rect x="150" y="50" width="70" height="14" fill="#f2b880"/>
+  <rect x="128.9" y="80" width="42.2" height="14" fill="#8fb8f0"/>
+  <rect x="80" y="110" width="33.4" height="14" fill="#1d6fd1"/>
+</svg>
+```
+
+Standalone: 1 to 5 m. DGNSS: 10 cm to 1 m. PPP after convergence: 5 to 20 cm. RTK: 1 to 3 cm.
+:::
+
+::: context baseline-picture Two receivers, two satellites, four ranges
+A double difference uses four one-way ranges: each receiver to each satellite. The baseline $\mathbf{b}$ from base $A$ to rover $B$ is what RTK solves for.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 180" font-family="Inter, Arial, sans-serif">
+  <g stroke="#8fb8f0" stroke-width="2">
+    <line x1="90" y1="30" x2="120" y2="140"/><line x1="90" y1="30" x2="240" y2="140"/>
+    <line x1="270" y1="30" x2="120" y2="140"/><line x1="270" y1="30" x2="240" y2="140"/>
+  </g>
+  <rect x="82" y="22" width="16" height="16" fill="#1f2a44"/>
+  <rect x="262" y="22" width="16" height="16" fill="#1f2a44"/>
+  <text x="60" y="34" font-size="13" fill="#1f2a44">i</text>
+  <text x="290" y="34" font-size="13" fill="#1f2a44">j</text>
+  <line x1="120" y1="150" x2="228" y2="150" stroke="#b4232c" stroke-width="3"/>
+  <polygon points="240,150 228,144 228,156" fill="#b4232c"/>
+  <circle cx="120" cy="140" r="6" fill="#1d6fd1"/>
+  <circle cx="240" cy="140" r="6" fill="#1d6fd1"/>
+  <text x="120" y="172" font-size="12" text-anchor="middle" fill="#1f2a44">A (base)</text>
+  <text x="240" y="172" font-size="12" text-anchor="middle" fill="#1f2a44">B (rover)</text>
+  <text x="180" y="168" font-size="13" text-anchor="middle" fill="#b4232c">b</text>
+</svg>
+```
+
+Real satellites are about $20{,}000\,\mathrm{km}$ up and a baseline a few kilometers, so the two lines to each satellite are almost parallel — which is why their atmosphere nearly matches.
+:::
+
+::: context nabla Reading the triangles
+$\nabla$ is **nabla**, named after an ancient harp with a triangular frame. $\Delta$ is the Greek capital **delta**, the usual sign for "a difference". In this lesson $\nabla$ marks the difference between two receivers and $\Delta$ the difference between two satellites, so $\nabla\Delta$ is both at once. Books do not agree on which triangle means which; always check a text's own definition before reading its equations.
+:::
+
+::: context variances-add Why the noise grows by the square root of two
+Independent errors do not add like ordinary numbers, because they are as likely to partly cancel as to pile up. Their typical sizes combine like the sides of a right triangle: two errors of $0.3\,\mathrm{m}$ give a typical total of $\sqrt{0.3^2 + 0.3^2} = 0.424\,\mathrm{m}$, not $0.6\,\mathrm{m}$. Subtracting does the same as adding, because flipping the sign of a random error does not change its size. Four errors give $\sqrt{4} = 2$ times one.
+:::
+
+::: context reference-station Corrections by radio, over whole continents
+The base knows exactly where it is, so it can tell how wrong each satellite's range is and pass that on.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 160" font-family="Inter, Arial, sans-serif">
+  <rect x="172" y="12" width="16" height="16" fill="#1f2a44"/>
+  <text x="196" y="25" font-size="12" fill="#1f2a44">satellite</text>
+  <line x1="180" y1="28" x2="70" y2="110" stroke="#8fb8f0" stroke-width="2"/>
+  <line x1="180" y1="28" x2="290" y2="110" stroke="#8fb8f0" stroke-width="2"/>
+  <polygon points="62,120 78,120 70,104" fill="#1d6fd1"/>
+  <circle cx="290" cy="114" r="6" fill="#1d6fd1"/>
+  <line x1="84" y1="118" x2="272" y2="118" stroke="#b4232c" stroke-width="2" stroke-dasharray="6 4"/>
+  <polygon points="282,118 270,112 270,124" fill="#b4232c"/>
+  <text x="180" y="110" font-size="12" text-anchor="middle" fill="#b4232c">correction</text>
+  <text x="70" y="140" font-size="12" text-anchor="middle" fill="#1f2a44">base: known spot</text>
+  <text x="290" y="140" font-size="12" text-anchor="middle" fill="#1f2a44">rover</text>
+</svg>
+```
+
+The United States runs a network of more than a thousand continuously operating reference stations. Aircraft use a continent-wide version called WAAS, whose corrections come down from geostationary satellites.
+:::
+
+::: context network-rtk Many bases pretending to be one
+A single RTK base covers a circle a few tens of kilometers across. **Network RTK** links many bases. A central computer models how the atmosphere and orbit errors change across the region between them, then builds corrections for a *virtual* base right next to each rover. Farm tractors that steer themselves to within a couple of centimeters, road-building machines and survey crews use these services every day.
+:::
+
+::: context precise-products Better orbits, a little later
+The **International GNSS Service** (IGS), a voluntary federation of agencies and universities, runs hundreds of tracking stations worldwide. From their data it computes satellite orbits good to a few centimeters and clocks good to a fraction of a nanosecond. The most accurate "final" products come out about two weeks after the fact; faster versions follow within a day, and real-time streams are sent over the internet. A satellite's orbit determined after the fact beats any forecast.
+:::
+
+::: context random-walk A delay that wanders slowly
+A **random walk** is a quantity that each moment takes a small random step from wherever it was. Water vapor over a site changes like that: not jumping around, but drifting as weather moves through. Modeling the zenith wet delay as a random walk tells the Kalman filter "expect this to change a little, slowly". The size of the steps is the filter's process noise, the same idea the Kalman filter module used for any slowly changing state.
+:::
+
+::: context fcb Why PPP's integers are not whole numbers
+Each satellite's and receiver's electronics add a small delay to the carrier that is not a whole number of cycles. RTK's double difference cancels these delays. PPP has no second receiver to subtract, so its estimated ambiguities come out as whole numbers plus an unknown fraction. **Fractional-cycle-bias** products, computed by a network and published alongside the precise orbits and clocks, supply the satellite fractions. Remove them, and the leftover ambiguities are whole numbers again, ready for the same integer search as the previous lesson.
+:::
