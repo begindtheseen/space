@@ -2413,6 +2413,73 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       "file": "cod_cpp_09_eigen/12-numpy-mapping-and-neighbours.md"
     }
   ],
+  "cod_dbg_01_gdb": [
+    {
+      "id": "l01-debugging-as-science",
+      "title": "Debugging as an experiment",
+      "minutes": 28,
+      "covers": [
+        "The scientific method of debugging; minimal reproducers"
+      ],
+      "file": "cod_dbg_01_gdb/01-debugging-as-science.md"
+    },
+    {
+      "id": "l02-gdb-breakpoints-and-backtraces",
+      "title": "gdb: stopping a program and reading its stack",
+      "minutes": 17,
+      "covers": [
+        "gdb: break, conditional breakpoints, watchpoints, run, bt, frame, up/down"
+      ],
+      "file": "cod_dbg_01_gdb/02-gdb-breakpoints-and-backtraces.md"
+    },
+    {
+      "id": "l03-inspecting-state-in-gdb",
+      "title": "Looking inside a stopped program",
+      "minutes": 19,
+      "covers": [
+        "info args, info locals, info registers, print, p *ptr@n, x/16xb"
+      ],
+      "file": "cod_dbg_01_gdb/03-inspecting-state-in-gdb.md"
+    },
+    {
+      "id": "l04-stepping-and-changing-state",
+      "title": "Stepping through code and changing it while it runs",
+      "minutes": 23,
+      "covers": [
+        "step vs next vs finish vs until; tbreak; display; set var"
+      ],
+      "file": "cod_dbg_01_gdb/04-stepping-and-changing-state.md"
+    },
+    {
+      "id": "l05-attaching-and-core-dumps",
+      "title": "Attaching to a running program, and reading core dumps",
+      "minutes": 25,
+      "covers": [
+        "Attaching to a running process; gdb -p",
+        "Core dumps: ulimit -c unlimited, gdb ./bin ./core, thread apply all bt"
+      ],
+      "file": "cod_dbg_01_gdb/05-attaching-and-core-dumps.md"
+    },
+    {
+      "id": "l06-gdb-comfort-and-remote-debugging",
+      "title": "Making gdb comfortable, debugging remotely, and running backwards",
+      "minutes": 26,
+      "covers": [
+        "TUI mode, .gdbinit, pretty-printers for STL and Eigen",
+        "gdbserver and remote/embedded debugging; rr for reverse debugging"
+      ],
+      "file": "cod_dbg_01_gdb/06-gdb-comfort-and-remote-debugging.md"
+    },
+    {
+      "id": "l07-debugging-python",
+      "title": "Debugging Python: pdb, breakpoint() and py-spy",
+      "minutes": 24,
+      "covers": [
+        "Python: pdb, breakpoint(), py-spy for a live process"
+      ],
+      "file": "cod_dbg_01_gdb/07-debugging-python.md"
+    }
+  ],
   "cod_git_01_basics": [
     {
       "id": "l01-snapshots-and-the-object-model",
@@ -3213,6 +3280,55 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Caching pip, cargo and ccache; artefacts; secrets; environments"
       ],
       "file": "cod_ops_02_ci/03-matrices-caching-and-secrets.md"
+    },
+    {
+      "id": "l04-reuse-runners-and-other-ci-systems",
+      "title": "Reusing pipelines, choosing runners, and other CI systems",
+      "minutes": 24,
+      "covers": [
+        "Reusable workflows and composite actions",
+        "Self-hosted runners for licensed tools and special hardware",
+        "GitLab CI and Jenkins, still common in defence and aerospace"
+      ],
+      "file": "cod_ops_02_ci/04-reuse-runners-and-other-ci-systems.md"
+    },
+    {
+      "id": "l05-a-gnc-pipeline",
+      "title": "A pipeline for GNC code",
+      "minutes": 28,
+      "covers": [
+        "A GNC pipeline: lint, static analysis, unit tests, coverage gate, Debug+ASan and Release builds, regression sims with tolerances, benchmark thresholds, docs, artefacts"
+      ],
+      "file": "cod_ops_02_ci/05-a-gnc-pipeline.md"
+    },
+    {
+      "id": "l06-golden-files-and-nightly-monte-carlo",
+      "title": "Golden files and the nightly Monte Carlo",
+      "minutes": 25,
+      "covers": [
+        "Golden-file regression comparison with numerical tolerance",
+        "Nightly and scheduled long-running Monte Carlo jobs"
+      ],
+      "file": "cod_ops_02_ci/06-golden-files-and-nightly-monte-carlo.md"
+    },
+    {
+      "id": "l07-matlab-and-simulink-in-ci",
+      "title": "MATLAB and Simulink in CI",
+      "minutes": 24,
+      "covers": [
+        "MATLAB and Simulink in CI: setup-matlab, headless Simulink Test, licence servers"
+      ],
+      "file": "cod_ops_02_ci/07-matlab-and-simulink-in-ci.md"
+    },
+    {
+      "id": "l08-flaky-tests-protection-and-releases",
+      "title": "Flaky tests, protected branches and releases",
+      "minutes": 26,
+      "covers": [
+        "Flaky-test policy; quarantine rather than retry-until-green",
+        "Branch protection, required checks, release automation"
+      ],
+      "file": "cod_ops_02_ci/08-flaky-tests-protection-and-releases.md"
     }
   ],
   "cod_py_01_basics": [
@@ -10256,35 +10372,16 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_ops_02_ci": {
-    "covered": 4,
+    "covered": 13,
     "total": 13,
-    "complete": false,
-    "missing": [
-      "Reusable workflows and composite actions",
-      "Self-hosted runners for licensed tools and special hardware",
-      "GitLab CI and Jenkins, still common in defence and aerospace",
-      "A GNC pipeline: lint, static analysis, unit tests, coverage gate, Debug+ASan and Release builds, regression sims with tolerances, benchmark thresholds, docs, artefacts",
-      "Golden-file regression comparison with numerical tolerance",
-      "Nightly and scheduled long-running Monte Carlo jobs",
-      "MATLAB and Simulink in CI: setup-matlab, headless Simulink Test, licence servers",
-      "Flaky-test policy; quarantine rather than retry-until-green",
-      "Branch protection, required checks, release automation"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_dbg_01_gdb": {
-    "covered": 0,
+    "covered": 9,
     "total": 15,
     "complete": false,
     "missing": [
-      "The scientific method of debugging; minimal reproducers",
-      "gdb: break, conditional breakpoints, watchpoints, run, bt, frame, up/down",
-      "info args, info locals, info registers, print, p *ptr@n, x/16xb",
-      "step vs next vs finish vs until; tbreak; display; set var",
-      "Attaching to a running process; gdb -p",
-      "Core dumps: ulimit -c unlimited, gdb ./bin ./core, thread apply all bt",
-      "TUI mode, .gdbinit, pretty-printers for STL and Eigen",
-      "gdbserver and remote/embedded debugging; rr for reverse debugging",
-      "Python: pdb, breakpoint(), py-spy for a live process",
       "AddressSanitizer, UBSan, ThreadSanitizer, LeakSanitizer",
       "Valgrind memcheck, helgrind, callgrind and when to prefer it over ASan",
       "perf stat (IPC, cache misses, branch misses), perf record/report, flame graphs",

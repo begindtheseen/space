@@ -53,7 +53,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: matlab-actions/setup-matlab@v2
         with:
           release: R2024b
@@ -66,7 +66,7 @@ jobs:
           test-results-junit: reports/results.xml
           code-coverage-cobertura: reports/code-coverage.xml
           model-coverage-cobertura: reports/model-coverage.xml
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: matlab-reports
@@ -209,7 +209,7 @@ jobs:
     env:
       MLM_LICENSE_FILE: 27000@flexlm.gnc.example.com
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - run: matlab -batch "results = runtests('tests', 'IncludeSubfolders', true); assertSuccess(results)"
 ```
 

@@ -60,8 +60,8 @@ jobs:
   lint:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
       - name: Install tools
@@ -73,8 +73,8 @@ jobs:
     needs: lint
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
       - name: Install tools
@@ -95,7 +95,7 @@ Read it from the top. There are four levels of structure, from biggest to smalle
 A step is one of two kinds:
 
 - **`run:`** runs shell commands, exactly as you would type them in a terminal.
-- **`uses:`** runs an **action**: a ready-made, reusable step that someone packaged and published, often in its own GitHub repository. `actions/checkout@v4` is the action that copies your repository onto the runner. `actions/setup-python@v5` installs the Python version you ask for. The part after `@` is **[[the version you pin|pinning-actions]]**, so the action does not change under you. Settings for an action go under **`with:`**.
+- **`uses:`** runs an **action**: a ready-made, reusable step that someone packaged and published, often in its own GitHub repository. `actions/checkout@v7` is the action that copies your repository onto the runner. `actions/setup-python@v7` installs the Python version you ask for. The part after `@` is **[[the version you pin|pinning-actions]]**, so the action does not change under you. Settings for an action go under **`with:`**.
 
 A step may also have a `name:`, which is what the log shows. Without one, GitHub makes up a name from the command.
 
@@ -283,7 +283,7 @@ jobs:
     runs-on: ubuntu-24.04
     container: python:3.12-slim
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - run: python --version
 ```
 
@@ -402,7 +402,7 @@ GitHub's own reader treats `on` as a key, so the workflow works. But if you writ
 :::
 
 ::: context pinning-actions What the at-sign pins
-An action is code from someone else's repository, and `@v4` names a tag in it. Tags like `v4` are moved by the action's authors to the newest v4 release, so you get fixes but not breaking changes. Teams that want certainty pin the full 40-character commit hash instead, because a hash can never be moved, not even by someone who breaks into the author's account.
+An action is code from someone else's repository, and `@v7` names a tag in it. Tags like `v7` are moved by the action's authors to the newest v7 release, so you get fixes but not breaking changes. Teams that want certainty pin the full 40-character commit hash instead, because a hash can never be moved, not even by someone who breaks into the author's account.
 :::
 
 ::: context exit-codes Zero means all is well

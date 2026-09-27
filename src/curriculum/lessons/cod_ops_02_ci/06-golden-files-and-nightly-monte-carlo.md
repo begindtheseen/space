@@ -1,17 +1,17 @@
 ---
 id: l06-golden-files-and-nightly-monte-carlo
 title: Golden files and the nightly Monte Carlo
-minutes: 26
+minutes: 25
 covers:
   - Golden-file regression comparison with numerical tolerance
   - Nightly and scheduled long-running Monte Carlo jobs
 ---
 
-A baker who has perfected a cake keeps one thing above all: the recipe card with notes from the day it came out right. When a new helper bakes it, nobody expects the new cake to weigh exactly the same, down to the last crumb. The oven runs a degree hotter, the eggs are a little bigger. What the baker checks is that it is the same cake *within reason*: a few grams either way is fine, a cake half the height is not. And the baker decides in advance what "within reason" means.
+A baker who has perfected a cake keeps the recipe card from the day it came out right. When a helper bakes it again, nobody expects it to weigh exactly the same, down to the crumb: the oven runs a degree hotter, the eggs are a little bigger. The baker checks that it is the same cake *within reason*. A few grams either way is fine; half the height is not. And the baker decides in advance what "within reason" means.
 
 A simulation team keeps the same kind of record. A **golden file** is a saved output from a simulation run that the team reviewed and approved: the "cake that came out right". Every change to the code reruns the same scenario and compares the new output with the golden file. The comparison allows a small, stated difference called a **tolerance**, because computers, like ovens, are never exactly the same twice.
 
-The second half of this lesson is about the runs that are too big for every pull request: the **Monte Carlo** campaign that flies the same scenario hundreds of times with random errors. That job runs on a schedule, overnight, and publishes a report. Both halves share one idea: a simulation result is evidence, so it must be checked in a way that is honest about numbers and reproducible afterwards.
+The second half of this lesson is about runs too big for every pull request: the **[[Monte Carlo|monte-carlo-name]]** campaign that flies one scenario hundreds of times with random errors, overnight, and publishes a report. Both halves share one idea: a simulation result is evidence, so it must be checked honestly and be reproducible afterwards.
 
 ## A golden file for a reference orbit
 
@@ -82,23 +82,21 @@ Two details matter. First, `fmt="%.17g"` writes 17 significant digits, which is 
 
 ## Why "exactly equal" is the wrong test
 
-The tempting test is: run again, and check that every number is exactly the same. It fails for reasons that have nothing to do with bugs.
-
-In the last lesson, the same C++ source gave `0` at `-O0` and `5.55e-17` at `-O2`, because the optimizer fused a multiply and an add into one instruction with a single rounding. Floating-point results can shift in their last bits whenever something below your code changes:
+The tempting test is to check that every number is exactly the same. It fails for reasons that have nothing to do with bugs. In the last lesson, the same C++ source gave `0` at `-O0` and `5.55e-17` at `-O2`. Floating-point results can shift in their last bits whenever something below your code changes:
 
 - a different compiler, or the same compiler with different optimization flags;
-- a different version of the math library (**libm**), which computes `sqrt`, `sin`, `exp` and friends, each with its own tiny rounding choices;
+- a different version of the [[math library|libm]] (**libm**), which computes `sqrt`, `sin`, `exp` and friends;
 - **vectorization**, where the processor adds numbers four or eight at a time and so in a different order;
 - a different number of threads, which changes the order in which partial sums are added up.
 
-Each difference is around $10^{-16}$ of the value, the size of one rounding step for a double. None of them changes the physics. An exact comparison turns every one of them into a red build, and a team that sees red builds for no reason soon stops looking.
+Each difference is around $10^{-16}$ of the value, one rounding step for a double. None changes the physics. An exact comparison turns each into a red build, and a team that sees red builds for no reason soon stops looking.
 
 ::: key Why can a simulation regression test not use exact equality?
 Floating-point results differ across compilers, libm versions, vectorisation and thread counts. Compare with an explicit relative and absolute tolerance chosen from the physics, and record the tolerance as part of the test contract.
 :::
 
 ::: warning Two "fixes" that make it worse
-Rounding every output to, say, four decimal places before comparing does make the red go away. It also hides any real change smaller than the fourth decimal, which for a position in meters may be a big one. Turning on `-ffast-math` so that two platforms "agree" is worse still: it allows the compiler to reorder arithmetic freely and to assume there are no NaNs or infinities, so results get *less* reproducible and NaN checks can silently stop working. Choose a tolerance instead.
+Rounding every output to four decimals before comparing makes the red go away, and hides every real change smaller than the fourth decimal. It can even still fail, when a value sits right at a rounding boundary and two platforms land on different sides of it. Turning on `-ffast-math` so two platforms "agree" is worse: it lets the compiler reorder arithmetic freely and assume there are no NaNs or infinities, so results get *less* reproducible and NaN checks can silently stop working. Choose a tolerance instead.
 :::
 
 ## The tolerance rule
@@ -109,17 +107,17 @@ $$
 |\,\text{actual} - \text{desired}\,| \le \text{atol} + \text{rtol} \times |\,\text{desired}\,|
 $$
 
-Read it as: "the size of the error is at most the absolute tolerance plus the relative tolerance times the size of the expected value". It has two parts:
+The bars $|\,\cdot\,|$ are read "the absolute value of" and mean "the size, ignoring the sign". So the rule reads: "the size of the error is at most the absolute tolerance plus the relative tolerance times the size of the expected value".
 
 - **rtol**, the **relative tolerance**, scales with the value. With $\text{rtol} = 10^{-9}$, a position of $6\,778\,137\,\mathrm{m}$ may be off by $6\,778\,137 \times 10^{-9} \approx 6.78 \times 10^{-3}\,\mathrm{m}$, about 7 mm.
 - **atol**, the **absolute tolerance**, is a fixed floor in the column's own units. It matters when the expected value is zero or close to it, where the relative part shrinks to nothing.
 
-The exact behavior of `assert_allclose` is worth knowing by heart:
+Know its exact behavior by heart:
 
 - Its defaults are `rtol=1e-07` and `atol=0`. With `atol=0`, an expected value of exactly zero demands an actual value of exactly zero.
-- The tolerance is measured against `desired`, the second argument, not the first. Put the golden value second. The rule is not symmetric: with $\text{rtol} = 0.1$, `numpy.isclose(1.0, 1.11, rtol=0.1, atol=0)` is `True` but `numpy.isclose(1.11, 1.0, rtol=0.1, atol=0)` is `False`, because 10 percent of 1.11 is bigger than 10 percent of 1.0. (Python's `math.isclose` is symmetric; NumPy's functions are not.)
-- It has `equal_nan=True` by default: a NaN in the actual result matches a NaN in the same place in the expected one. This matters because in plain arithmetic `float("nan") == float("nan")` is `False`, so a hand-written comparison must test for NaN on its own, with `math.isnan(x)`, before comparing values.
-- It fails if **any** element is out of tolerance, and its message reports how many elements failed and the largest absolute and relative differences.
+- The tolerance is measured against `desired`, the second argument, so put the golden value second. The rule is not symmetric: `numpy.isclose(1.0, 1.11, rtol=0.1, atol=0)` is `True` but `numpy.isclose(1.11, 1.0, rtol=0.1, atol=0)` is `False`, because 10 percent of 1.11 is bigger than 10 percent of 1.0. (Python's `math.isclose` is symmetric.)
+- It has `equal_nan=True` by default: a NaN in the actual result matches a NaN in the same place in the expected one. In plain arithmetic `float("nan") == float("nan")` is `False`, so a hand-written comparison must test for NaN first, with `math.isnan(x)`.
+- It fails if **any** element is out of tolerance, and reports how many failed and the largest differences.
 - `numpy.isclose` uses the same formula but different defaults (`rtol=1e-05`, `atol=1e-08`, `equal_nan=False`). Always pass both tolerances explicitly, so nobody has to remember which default applies.
 
 ::: example Why the absolute tolerance is not optional
@@ -141,7 +139,7 @@ Max relative difference among violations: inf
 
 Check the first element by hand. The error is $|7000.0 - 7000.000001| = 1.0 \times 10^{-6}$. The allowance is $0 + 10^{-9} \times 7000.000001 = 7.0 \times 10^{-6}$. The error is smaller, so it passes.
 
-The second element fails. The expected value is $0$, so the allowance is $0 + 10^{-9} \times 0 = 0$, and nothing but an exact zero can pass. The "relative difference" is reported as `inf` because dividing by zero is infinite. Yet $3 \times 10^{-16}$ is a rounding crumb.
+The second element fails. The expected value is $0$, so the allowance is $0 + 10^{-9} \times 0 = 0$, and nothing but an exact zero can pass. The "relative difference" shows as `inf` because the error is divided by the expected value, which is zero. Yet $3 \times 10^{-16}$ is a rounding crumb.
 
 Add `atol=1e-12` and the same call passes: the second element's allowance becomes $10^{-12}$, and $3 \times 10^{-16}$ fits easily.
 
@@ -186,7 +184,7 @@ def test_reference_orbit_matches_golden():
 
 The `TOLERANCE` table is the **[[tolerance contract|tolerance-contract]]**. It is part of the test, reviewed like code, with units in the comments. Time must match exactly, because it is computed from whole numbers of steps. Positions may differ by $10^{-9}$ relative or 1 mm absolute, whichever allows more. Velocities get $10^{-9}$ relative or $10^{-6}\,\mathrm{m/s}$ absolute.
 
-::: example Four changes, measured against the tolerance
+::: example Three changes, measured against the tolerance
 Each change below was made to `orbit.py`, the test was run, and the differences from the golden file were measured.
 
 **1. A harmless rewrite.** The acceleration line becomes `a = -(MU / (rn * rn * rn)) * r`, with `rn` the length of `r`. Mathematically identical; the rounding happens in a different order. The largest position difference over the hour was $9.3 \times 10^{-10}\,\mathrm{m}$, the largest velocity difference $9.1 \times 10^{-13}\,\mathrm{m/s}$. Test result: `1 passed`. Exact comparison would have failed.
@@ -210,7 +208,7 @@ E           Max relative difference among violations: 8.60759112e-06
 
 A position error of 1.16 m after one hour, from dropping three digits.
 
-**4. Exact comparison, for contrast.** Setting every tolerance to zero fails change 1 as well as changes 2 and 3. It cannot tell a rounding crumb from a typo.
+**For contrast, exact comparison.** With every tolerance set to zero, the test fails change 1 as well as changes 2 and 3. It cannot tell a rounding crumb from a typo.
 
 Put the sizes on one line: rounding noise about $10^{-9}\,\mathrm{m}$, tolerance about $7 \times 10^{-3}\,\mathrm{m}$, a step-size change about $10^{-2}\,\mathrm{m}$, a wrong constant about $1\,\mathrm{m}$. The tolerance sits more than six factors of ten above the noise, and below every real change. That [[gap|tolerance-window]] is what makes the test trustworthy.
 :::
@@ -221,11 +219,11 @@ When a golden test fails, the tempting move is to loosen `rtol` until it passes.
 
 ## Updating a golden file on purpose
 
-Sometimes the new numbers are the right ones. The step size was halved for accuracy, or a better gravity model was added. Then the golden file must change. Do it as a deliberate, visible act:
+Sometimes the new numbers are the right ones: the step was halved for accuracy, or a better gravity model was added. Then change the golden file as a deliberate, visible act:
 
 1. Regenerate it with the same command that made it: `python3 orbit.py golden/reference_orbit.csv`.
-2. Look at the size of the change before committing. `git diff` shows the old and new rows; a small script can print the largest difference per column.
-3. Commit the new golden file in the same pull request as the code change, with a message that says why the numbers moved and by how much ("dt 10 s to 5 s: positions change by up to 12 mm").
+2. Check the size of the change per column before committing.
+3. Commit it in the same pull request as the code change, with a message saying why the numbers moved and by how much ("dt 10 s to 5 s: positions change by up to 12 mm").
 4. Let a reviewer who knows the physics approve it.
 
 Never let CI rewrite golden files by itself. A pipeline that "updates the golden file if the test fails" has no golden file at all.
@@ -240,9 +238,9 @@ print(worst_first[0])   # ('vz', 7, 4.1e-06)
 
 ## The nightly Monte Carlo
 
-A single reference orbit checks that the code does what it did yesterday. It does not tell you whether the vehicle is safe when things go a little wrong. For that, GNC teams run a **Monte Carlo** analysis, also called a **dispersion** run: the same scenario hundreds or thousands of times, each with random errors drawn from their expected sizes, to see the spread of outcomes and how often a requirement is broken.
+A reference orbit checks that the code does what it did yesterday, not whether the vehicle is safe when things go a little wrong. For that, GNC teams run a Monte Carlo analysis, also called a **dispersion** run: the same scenario hundreds or thousands of times, each with random errors of their expected sizes, to see the spread of outcomes and how often a requirement is broken.
 
-Here the question is: if the rocket puts the satellite into orbit slightly wrong, how low can the orbit dip in its first lap? Each **case** adds a random position error (1-sigma 200 m on each axis) and a random velocity error (1-sigma 2 m/s on each axis) to the reference state, propagates one orbit, and records the lowest altitude reached. The requirement, invented for this example, is to stay above 385 km.
+Here the question is: if the rocket puts the satellite into orbit slightly wrong, how low can the orbit dip in its first lap? Each **case** adds a random position error ([[1-sigma|one-sigma]] 200 m on each axis) and a random velocity error (1-sigma 2 m/s on each axis) to the reference state, propagates one orbit, and records the lowest altitude reached. The requirement, invented for this example, is to stay above 385 km.
 
 The heart of `dispersion.py` is one function that runs one case:
 
@@ -265,7 +263,7 @@ def run_case(base_seed, case_id):
 
 The script's `main` runs cases 0 to 499, finds the cases below the floor, sorts them lowest first with `np.argsort`, writes everything to `mc-report/report.json`, and exits with code 1 if any case broke the requirement, so the scheduled run shows red and someone looks.
 
-Why not run this on every pull request? This toy version takes 3.3 seconds. A real dispersion flies a full six-degree-of-freedom vehicle with engines, winds and sensor models, often thousands of cases, and takes hours. That is exactly the kind of job lesson 5 moved off the pull request and onto a schedule.
+This toy version takes 3.3 seconds. A real dispersion flies a full vehicle model with engines, winds and sensors, often for thousands of cases, and takes hours: exactly the kind of job lesson 5 moved off the pull request and onto a schedule.
 
 ## Seeds: random by design, reproducible by record
 
@@ -332,12 +330,24 @@ If the nightly run fails, rerunning it with fresh random numbers until it passes
 
 GitHub Actions starts a workflow on a timetable with the `schedule` event, written as a **cron** expression: five fields for minute, hour, day of the month, month and day of the week, where `*` means "every". Lesson 2 introduced it. `"23 3 * * *"` means minute 23, hour 3, every day: 03:23 every night.
 
-To check a timetable before trusting it, compute the next few times it fires. Starting from noon UTC on Friday 2 October 2026 (with the Python package croniter 6.2.4):
+To check a timetable before trusting it, compute the next few times it fires. This short script uses the Python package croniter (version 6.2.4):
+
+```python
+from datetime import datetime, timezone
+
+from croniter import croniter
+
+start = datetime(2026, 10, 2, 12, 0, tzinfo=timezone.utc)  # Friday noon UTC
+for expr in ["23 3 * * *", "23 3 * * 1-5", "40 5 * * 6"]:
+    it = croniter(expr, start)
+    times = [it.get_next(datetime).strftime("%a %d %b %H:%M") for _ in range(4)]
+    print(f"{expr:14} -> {', '.join(times)}")
+```
 
 ```text
-23 3 * * *     ->  Sat 03 Oct 03:23, Sun 04 Oct 03:23, Mon 05 Oct 03:23, Tue 06 Oct 03:23
-23 3 * * 1-5   ->  Mon 05 Oct 03:23, Tue 06 Oct 03:23, Wed 07 Oct 03:23, Thu 08 Oct 03:23
-40 5 * * 6     ->  Sat 03 Oct 05:40, Sat 10 Oct 05:40, Sat 17 Oct 05:40, Sat 24 Oct 05:40
+23 3 * * *     -> Sat 03 Oct 03:23, Sun 04 Oct 03:23, Mon 05 Oct 03:23, Tue 06 Oct 03:23
+23 3 * * 1-5   -> Mon 05 Oct 03:23, Tue 06 Oct 03:23, Wed 07 Oct 03:23, Thu 08 Oct 03:23
+40 5 * * 6     -> Sat 03 Oct 05:40, Sat 10 Oct 05:40, Sat 17 Oct 05:40, Sat 24 Oct 05:40
 ```
 
 The day-of-week field counts Sunday as 0, so `1-5` is Monday to Friday and skips the weekend, and `6` is Saturday.
@@ -401,10 +411,9 @@ jobs:
 
 Walk through the parts that are new:
 
-1. **Two triggers.** `schedule` runs it every night. `workflow_dispatch` adds a "Run workflow" button on GitHub's Actions page, with two boxes to fill in, so a person can rerun it with a chosen seed or case count.
-2. **Choosing the seed.** On a scheduled run there are no inputs, so `inputs.seed` is empty. The shell expression `${INPUT_SEED:-$(date -u +%Y%m%d)}` means "use `INPUT_SEED` if it is set and not empty, otherwise today's UTC date", which gives a new set of random cases each night, like `20260927`. Writing `SEED=...` into the file named by `$GITHUB_ENV` makes `SEED` an environment variable for every later step.
-3. **The case count.** `${{ inputs.cases || '500' }}` reads "the input, or 500 if it is empty".
-4. **Publishing, pass or fail.** The script exits with 1 when a case breaks the floor, which fails the job. The upload step has `if: always()`, so the report is published anyway, named with its seed, for example `mc-report-20260927`. `retention-days: 30` keeps a month of nightly reports.
+1. **Two triggers.** `schedule` runs it every night. `workflow_dispatch` adds a "Run workflow" button on GitHub's Actions page, with boxes for a seed and a case count.
+2. **Choosing the seed.** A scheduled run has no inputs, so `inputs.seed` is empty. The shell expression `${INPUT_SEED:-$(date -u +%Y%m%d)}` means "use `INPUT_SEED` if it is set and not empty, otherwise today's UTC date", so each night flies new cases under a seed like `20260927`. Writing `SEED=...` into the [[environment file|github-env]] named by `$GITHUB_ENV` makes `SEED` available to every later step. Likewise `${{ inputs.cases || '500' }}` reads "the input, or 500 if it is empty".
+3. **Publishing, pass or fail.** When a case breaks the floor the script exits with 1 and the job fails, and a failed step normally skips every later step. The upload step has `if: always()`, so the report is still published, named with its seed, for example `mc-report-20260927`, and kept for 30 days. Without it, the failing cases and their seed would vanish with the runner on exactly the nights they matter.
 
 Rerunning a failed night is then two clicks: press "Run workflow", type the seed from the report's name, and the same 500 cases fly again.
 
@@ -419,11 +428,11 @@ It fails. The allowance is $0 + 10^{-9} \times |0| = 0$, and $|-2 \times 10^{-17
 :::
 
 ::: check
-Your golden file was made on Linux. On a Mac the regression test fails, and the largest difference anywhere is $4 \times 10^{-16}$ relative. A colleague proposes rounding every output to 6 decimals. What do you say?
+The team replaces RK4 with a more accurate integrator, and the golden test now fails with position differences of up to 3 cm. A teammate suggests raising `rtol` to $10^{-8}$ so it passes. What should happen instead?
 :::
 
 ::: answer
-A relative difference of $4 \times 10^{-16}$ is about two rounding steps of a double: normal differences between math libraries and compilers, not a bug. The fix is an explicit relative tolerance suited to double precision, such as $10^{-9}$ (plus an absolute tolerance for values near zero), not rounding. Rounding to 6 decimals would hide any real change smaller than a micrometer in a position in meters, but, worse, it can still fail when a value sits near a rounding boundary and the two platforms round it different ways.
+The failure is correct: the results really changed, by more than the tolerance allows. Raising `rtol` would let the new code pass, but it would also weaken the test for every future change, including typos like the wrong $\mu$. Instead, keep the tolerance, regenerate the golden file with the same command that made it, check the size of the change per column, and commit it with the code change and a message that says why the numbers moved and by how much. A reviewer who understands the integrator approves it.
 :::
 
 ::: check
@@ -448,14 +457,6 @@ on:
 The fields are minute 47, hour 1, any day of the month, any month, day of the week 6 (Saturday). GitHub delays scheduled runs at busy times, and the start of the hour is the busiest, so a minute like 47 is less likely to be delayed than 00.
 :::
 
-::: check
-The nightly job's Monte Carlo finds violations, so the dispersion step exits with code 1. Without `if: always()` on the upload step, what would you lose, and why does that matter most on exactly these nights?
-:::
-
-::: answer
-A failed step stops the job, and later steps are skipped unless they say otherwise. Without `if: always()` the report would never be uploaded, so the list of failing cases, their altitudes and the base seed would vanish with the runner. Those are the nights the report matters most: it is the only record of which cases failed and the seed needed to rerun them.
-:::
-
 ## Summary
 
 | Idea | What it means | How you write it |
@@ -471,8 +472,16 @@ A failed step stops the job, and later steps are skipped unless they say otherwi
 
 The next lesson brings in the tool many GNC teams live in: MATLAB and Simulink, run headless in CI with a license server and Simulink Test.
 
+::: context monte-carlo-name Named after a casino
+The method of answering a question by running many random trials was developed at Los Alamos in the 1940s, by Stanislaw Ulam and John von Neumann among others, first for problems about neutrons in nuclear weapons. Their colleague Nicholas Metropolis suggested the code name Monte Carlo, after the casino in Monaco, because the method is at heart a game of chance played many times. In GNC work the word usually means a dispersion analysis: fly the mission many times with realistic random errors and look at the spread.
+:::
+
 ::: context seventeen-digits Why 17 digits
-A double stores about 15 to 17 significant decimal digits. Printing 17 significant digits is always enough to get back the very same double when the text is read in again. Fewer may not be: `1/3` printed with 15 digits and read back is a different double from `1/3`, while with 17 digits it comes back identical. That is why the golden file shows `0.10000000000000001` style numbers: the trailing digits are not noise added by the printout, they pin down exactly which double was stored.
+A double stores about 15 to 17 significant decimal digits. Printing 17 significant digits is always enough to get back the very same double when the text is read in again. Fewer may not be: `1/3` printed with 15 digits and read back is a different double from `1/3`, while with 17 digits it comes back identical. That is why numbers in a golden file carry long tails like `4763.3078885891819`: the trailing digits are not noise added by the printout, they pin down exactly which double was stored.
+:::
+
+::: context libm Where sin and exp come from
+Your code calls `sqrt` or `sin`, but the work is done by the system's math library, called libm on Unix-like systems. The floating-point standard, IEEE 754, requires the basic operations (add, subtract, multiply, divide, square root) to be correctly rounded, so every compliant machine gives the identical bits for them. It does not require that of functions like `sin`, `exp` or `pow`. Each library makes its own speed-versus-accuracy choices, usually within one unit in the last place. So Linux, macOS and Windows can differ in the last bit of a sine, and a new version of the same library can too.
 :::
 
 ::: context tolerance-contract A tolerance is part of the requirement
@@ -490,23 +499,66 @@ On a scale where each step is a factor of ten, the numbers from the example spre
     <line x1="100" y1="76" x2="100" y2="84" stroke="#6c7a93"/><text x="100" y="100">1e-7</text>
     <line x1="180" y1="76" x2="180" y2="84" stroke="#6c7a93"/><text x="180" y="100">1e-4</text>
     <line x1="260" y1="76" x2="260" y2="84" stroke="#6c7a93"/><text x="260" y="100">1e-1</text>
-    <line x1="340" y1="76" x2="340" y2="84" stroke="#6c7a93"/><text x="340" y="100">100 m</text>
+    <line x1="340" y1="76" x2="340" y2="84" stroke="#6c7a93"/><text x="330" y="100">1e2 m</text>
   </g>
-  <circle cx="22" cy="80" r="6" fill="#8fb8f0" stroke="#1f2a44"/>
-  <text x="22" y="60" font-size="11" fill="#1f2a44" text-anchor="start">rounding 9e-10</text>
-  <rect x="204" y="70" width="4" height="20" fill="#1d6fd1"/>
-  <text x="200" y="40" font-size="11" fill="#1d6fd1" text-anchor="middle">tolerance 7e-3</text>
-  <line x1="206" y1="46" x2="206" y2="68" stroke="#1d6fd1"/>
-  <circle cx="214" cy="80" r="6" fill="#f2b880" stroke="#1f2a44"/>
-  <text x="236" y="125" font-size="11" fill="#1f2a44" text-anchor="middle">dt change 1.2e-2</text>
-  <line x1="214" y1="87" x2="228" y2="114" stroke="#1f2a44"/>
-  <circle cx="282" cy="80" r="6" fill="#b4232c" stroke="#1f2a44"/>
+  <rect x="50" y="72" width="175" height="16" fill="#8fb8f0" opacity="0.5"/>
+  <circle cx="46" cy="80" r="6" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="46" y="60" font-size="11" fill="#1f2a44" text-anchor="middle">rounding 9.3e-10</text>
+  <rect x="227" y="68" width="4" height="24" fill="#1d6fd1"/>
+  <text x="200" y="36" font-size="11" fill="#1d6fd1" text-anchor="middle">tolerance 6.8e-3</text>
+  <line x1="229" y1="42" x2="229" y2="66" stroke="#1d6fd1"/>
+  <circle cx="235" cy="80" r="5" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="235" y="125" font-size="11" fill="#1f2a44" text-anchor="middle">dt change 1.2e-2</text>
+  <line x1="235" y1="86" x2="235" y2="113" stroke="#1f2a44"/>
+  <circle cx="288" cy="80" r="6" fill="#b4232c" stroke="#1f2a44"/>
   <text x="300" y="60" font-size="11" fill="#b4232c" text-anchor="middle">typo 1.16</text>
-  <text x="110" y="140" font-size="11" fill="#1f2a44" text-anchor="middle">six decades of empty space</text>
+  <text x="120" y="140" font-size="11" fill="#1f2a44" text-anchor="middle">almost seven decades of empty space</text>
+</svg>
+```
+:::
+
+::: context one-sigma What 1-sigma means
+Sigma, the Greek letter $\sigma$, is the standard deviation: the typical size of a random error. For the bell-shaped normal distribution that `rng.normal` draws from, about 68 percent of draws land within one sigma of the middle, about 95 percent within two sigma, and about 99.7 percent within three. So "1-sigma 2 m/s" means most velocity errors are under 2 m/s, a few reach 4 m/s, and in 500 cases one or two may reach 6 m/s on any one axis.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 180" font-family="Inter, Arial, sans-serif">
+  <polygon points="130,150 130,83 135,77 140,70 145,64 150,58 155,53 160,48 165,45 170,42 175,41 180,40 185,41 190,42 195,45 200,48 205,53 210,58 215,64 220,70 225,77 230,83 230,150" fill="#8fb8f0"/>
+  <polyline points="30,149 35,148 40,148 45,147 50,146 55,145 60,144 65,142 70,140 75,138 80,135 85,132 90,128 95,124 100,119 105,114 110,109 115,103 120,96 125,90 130,83 135,77 140,70 145,64 150,58 155,53 160,48 165,45 170,42 175,41 180,40 185,41 190,42 195,45 200,48 205,53 210,58 215,64 220,70 225,77 230,83 235,90 240,96 245,103 250,109 255,114 260,119 265,124 270,128 275,132 280,135 285,138 290,140 295,142 300,144 305,145 310,146 315,147 320,148 325,148 330,149" fill="none" stroke="#1f2a44" stroke-width="2"/>
+  <line x1="30" y1="150" x2="330" y2="150" stroke="#1f2a44" stroke-width="1.5"/>
+  <g font-size="11" fill="#1f2a44" text-anchor="middle">
+    <text x="30" y="166">-3σ</text><text x="80" y="166">-2σ</text><text x="130" y="166">-1σ</text>
+    <text x="180" y="166">0</text><text x="230" y="166">+1σ</text><text x="280" y="166">+2σ</text><text x="330" y="166">+3σ</text>
+  </g>
+  <text x="180" y="110" font-size="12" fill="#1f2a44" text-anchor="middle" font-weight="700">68%</text>
+  <text x="180" y="25" font-size="11" fill="#1d6fd1" text-anchor="middle">within one sigma of the middle</text>
 </svg>
 ```
 :::
 
 ::: context prng Numbers that only look random
 A computer's random numbers come from a pseudo-random number generator: a formula that turns a starting state, the seed, into a long sequence that passes statistical tests for randomness but is completely determined by the seed. NumPy's `default_rng` uses a generator called PCG64. Giving it a list such as `[20260927, 428]` mixes both numbers into the starting state, so every pair gives its own independent-looking stream. Deterministic "randomness" is exactly what a test campaign needs: random enough to explore, repeatable enough to debug.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">
+  <g font-size="11" fill="#1f2a44" text-anchor="middle">
+    <rect x="10" y="15" width="110" height="30" rx="5" fill="#ffffff" stroke="#1f2a44"/><text x="65" y="34">(20260927, 427)</text>
+    <rect x="10" y="60" width="110" height="30" rx="5" fill="#f2b880" stroke="#1f2a44"/><text x="65" y="79">(20260927, 428)</text>
+    <rect x="10" y="105" width="110" height="30" rx="5" fill="#ffffff" stroke="#1f2a44"/><text x="65" y="124">(20260927, 429)</text>
+    <rect x="150" y="15" width="70" height="30" rx="5" fill="#8fb8f0" stroke="#1f2a44"/><text x="185" y="34">generator</text>
+    <rect x="150" y="60" width="70" height="30" rx="5" fill="#8fb8f0" stroke="#1f2a44"/><text x="185" y="79">generator</text>
+    <rect x="150" y="105" width="70" height="30" rx="5" fill="#8fb8f0" stroke="#1f2a44"/><text x="185" y="124">generator</text>
+    <text x="290" y="34">errors of case 427</text>
+    <text x="290" y="79">errors of case 428</text>
+    <text x="290" y="124">errors of case 429</text>
+  </g>
+  <g stroke="#1f2a44" stroke-width="1.5">
+    <line x1="120" y1="30" x2="150" y2="30"/><line x1="120" y1="75" x2="150" y2="75"/><line x1="120" y1="120" x2="150" y2="120"/>
+    <line x1="220" y1="30" x2="236" y2="30"/><line x1="220" y1="75" x2="236" y2="75"/><line x1="220" y1="120" x2="236" y2="120"/>
+  </g>
+</svg>
+```
+:::
+
+::: context github-env Passing a value to later steps
+Each `run:` step starts a fresh shell, so a variable set with `export` in one step is gone in the next. GitHub Actions gives every job a file whose path is in the environment variable `GITHUB_ENV`. Any line `NAME=value` appended to that file becomes an environment variable in all the following steps of the same job, and `${{ env.NAME }}` can read it in the workflow file itself, which is how the artifact gets the seed in its name.
 :::
