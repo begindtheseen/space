@@ -1592,6 +1592,52 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Parametric feature-based modelling: sketches, constraints, fully defined sketches"
       ],
       "file": "cod_cad_03_tools/07-parametric-sketches.md"
+    },
+    {
+      "id": "l08-features",
+      "title": "Features that turn sketches into parts",
+      "minutes": 20,
+      "covers": [
+        "Features: extrude, revolve, sweep, loft, fillet, shell, rib, draft, hole wizard, patterns, configurations"
+      ],
+      "file": "cod_cad_03_tools/08-features.md"
+    },
+    {
+      "id": "l09-the-feature-tree-and-design-intent",
+      "title": "The feature tree and design intent",
+      "minutes": 21,
+      "covers": [
+        "The feature tree, parent-child relationships, design intent, robust versus fragile modelling"
+      ],
+      "file": "cod_cad_03_tools/09-the-feature-tree-and-design-intent.md"
+    },
+    {
+      "id": "l10-assemblies",
+      "title": "Assemblies, mates and clash checks",
+      "minutes": 23,
+      "covers": [
+        "Assemblies: mates, sub-assemblies, in-context design and its dangers, interference detection"
+      ],
+      "file": "cod_cad_03_tools/10-assemblies.md"
+    },
+    {
+      "id": "l11-mass-properties",
+      "title": "Mass properties for a 6-DOF simulation",
+      "minutes": 24,
+      "covers": [
+        "Mass properties: where the mass, centre of gravity and inertia tensor for a 6-DOF simulation come from"
+      ],
+      "file": "cod_cad_03_tools/11-mass-properties.md"
+    },
+    {
+      "id": "l12-drawings-pmi-and-special-modelling",
+      "title": "Drawings from models, PMI, sheet metal and the outer mould line",
+      "minutes": 24,
+      "covers": [
+        "Drawings from models; PMI and model-based definition",
+        "Sheet metal, weldments and surfacing (awareness); outer mould line"
+      ],
+      "file": "cod_cad_03_tools/12-drawings-pmi-and-special-modelling.md"
     }
   ],
   "cod_cpp_01_basics": [
@@ -2561,6 +2607,19 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Binary-file pain: model locking for Simulink and CAD assets"
       ],
       "file": "cod_git_02_collab/11-binary-files-and-locking.md"
+    }
+  ],
+  "cod_int_01_algorithms": [
+    {
+      "id": "l01-the-honest-calibration",
+      "title": "The honest calibration",
+      "minutes": 18,
+      "covers": [
+        "The honest calibration: medium level, not the main event, with real-world framing preferred",
+        "Preparing in C++ if targeting flight software; Python for the take-home",
+        "Roughly 120 to 150 problems is sufficient, grouped by pattern and timed"
+      ],
+      "file": "cod_int_01_algorithms/01-the-honest-calibration.md"
     }
   ],
   "cod_lnx_01_shell": [
@@ -4682,7 +4741,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-partial-derivatives",
       "title": "Functions of several variables and partial derivatives",
-      "minutes": 20,
+      "minutes": 25,
       "covers": [
         "partial derivatives"
       ],
@@ -4691,7 +4750,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-gradient",
       "title": "The gradient and the directional derivative",
-      "minutes": 21,
+      "minutes": 23,
       "covers": [
         "gradient and directional derivative"
       ],
@@ -4709,7 +4768,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-chain-rule-hessian",
       "title": "The chain rule for vector functions, and the Hessian",
-      "minutes": 26,
+      "minutes": 24,
       "covers": [
         "chain rule for vector functions",
         "Jacobian and Hessian"
@@ -5205,7 +5264,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-values-references-const",
       "title": "Value semantics, references and const",
-      "minutes": 24,
+      "minutes": 22,
       "covers": [
         "value semantics, references, const-correctness"
       ],
@@ -5224,7 +5283,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-classes-inheritance-virtual-dispatch",
       "title": "Classes, inheritance and the cost of virtual dispatch",
-      "minutes": 23,
+      "minutes": 24,
       "covers": [
         "classes, inheritance, virtual dispatch and its cost"
       ],
@@ -6938,7 +6997,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-similarity-transformations-and-invariants",
       "title": "Similarity transformations and what survives them",
-      "minutes": 22,
+      "minutes": 19,
       "covers": [
         "Similarity transformations and what is invariant under them"
       ],
@@ -6947,7 +7006,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-solving-the-state-equation-and-discretisation",
       "title": "Solving the state equation, and the model your computer runs",
-      "minutes": 18,
+      "minutes": 21,
       "covers": [
         "Solution of xdot = Ax + Bu via the matrix exponential; the discrete-time equivalent"
       ],
@@ -6965,7 +7024,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-observability-duality-stabilizability-detectability",
       "title": "Observability, duality, stabilizability and detectability",
-      "minutes": 21,
+      "minutes": 23,
       "covers": [
         "Observability and duality; stabilizability and detectability"
       ],
@@ -6974,7 +7033,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-pole-placement",
       "title": "Pole placement — Ackermann, Bass-Gura and robust eigenstructure",
-      "minutes": 18,
+      "minutes": 20,
       "covers": [
         "Pole placement: Ackermann, Bass-Gura, and robust (eigenstructure) pole placement"
       ],
@@ -6992,7 +7051,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-the-separation-principle",
       "title": "The separation principle and exactly when it holds",
-      "minutes": 19,
+      "minutes": 20,
       "covers": [
         "The separation principle and the exact conditions under which it holds"
       ],
@@ -7001,7 +7060,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-integral-action-servo-design",
       "title": "Integral action in state feedback — servo and augmented-state design",
-      "minutes": 19,
+      "minutes": 18,
       "covers": [
         "Integral action in state feedback: servo and augmented-state design"
       ],
@@ -7773,7 +7832,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-the-unscented-kalman-filter",
       "title": "The Unscented Kalman Filter",
-      "minutes": 26,
+      "minutes": 23,
       "covers": [
         "The Unscented Kalman Filter: the unscented transform, sigma point selection (alpha, beta, kappa), the square-root UKF"
       ],
@@ -7782,7 +7841,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-why-the-ukf-beats-the-ekf",
       "title": "Why the UKF beats the EKF for strong nonlinearity, and the cost",
-      "minutes": 20,
+      "minutes": 21,
       "covers": [
         "Why the UKF beats the EKF for strong nonlinearity, and the cost comparison"
       ],
@@ -7791,7 +7850,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-the-cubature-kalman-filter",
       "title": "The cubature Kalman filter",
-      "minutes": 16,
+      "minutes": 18,
       "covers": [
         "The cubature Kalman filter"
       ],
@@ -7800,7 +7859,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-particle-filters",
       "title": "Particle filters — sequential importance sampling and resampling",
-      "minutes": 23,
+      "minutes": 28,
       "covers": [
         "Particle filters: sequential importance sampling, resampling, degeneracy and sample impoverishment"
       ],
@@ -7809,7 +7868,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-when-a-particle-filter-is-required",
       "title": "When a particle filter is genuinely required",
-      "minutes": 20,
+      "minutes": 19,
       "covers": [
         "When a particle filter is genuinely required: multi-modal and non-Gaussian posteriors"
       ],
@@ -7818,7 +7877,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-gaussian-sum-filters",
       "title": "Gaussian sum filters",
-      "minutes": 17,
+      "minutes": 22,
       "covers": [
         "Gaussian sum filters"
       ],
@@ -7854,7 +7913,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l13-consider-states-and-bias-augmentation",
       "title": "Consider states and bias augmentation",
-      "minutes": 18,
+      "minutes": 24,
       "covers": [
         "Consider states and bias augmentation"
       ],
@@ -8349,8 +8408,8 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
   "t5_m40_guidance_fundamentals": [
     {
       "id": "l01-guidance-navigation-control-decomposition",
-      "title": "The guidance, navigation and control decomposition",
-      "minutes": 20,
+      "title": "The guidance, navigation and control split",
+      "minutes": 21,
       "covers": [
         "The guidance / navigation / control decomposition and the loop rate of each"
       ],
@@ -8359,7 +8418,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-open-loop-vs-closed-loop-guidance",
       "title": "Open-loop, reference-following and explicit guidance",
-      "minutes": 20,
+      "minutes": 22,
       "covers": [
         "Open-loop vs closed-loop guidance; reference-trajectory following vs explicit guidance"
       ],
@@ -8368,7 +8427,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-line-of-sight-and-pursuit-guidance",
       "title": "Line-of-sight and pursuit guidance",
-      "minutes": 20,
+      "minutes": 19,
       "covers": [
         "Line-of-sight guidance and pursuit guidance"
       ],
@@ -8404,7 +8463,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-optimal-guidance-lq-formulation",
       "title": "Optimal guidance from a linear-quadratic formulation",
-      "minutes": 22,
+      "minutes": 18,
       "covers": [
         "Optimal guidance from an LQ formulation and how PN emerges from it"
       ],
@@ -8413,7 +8472,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-zem-zev-guidance",
       "title": "Zero-effort-miss and zero-effort-velocity guidance",
-      "minutes": 23,
+      "minutes": 19,
       "covers": [
         "Zero-effort-miss and zero-effort-velocity guidance; the ZEM/ZEV feedback law for landing"
       ],
@@ -8422,7 +8481,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-miss-distance-and-adjoint-methods",
       "title": "Miss-distance analysis and the adjoint method",
-      "minutes": 24,
+      "minutes": 18,
       "covers": [
         "Miss-distance analysis and adjoint methods"
       ],
@@ -8440,7 +8499,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-gravity-turn-ascent",
       "title": "The gravity turn",
-      "minutes": 24,
+      "minutes": 22,
       "covers": [
         "Gravity turn ascent and zero-lift trajectories; the pitch program and open-loop pitch kick"
       ],
@@ -8449,7 +8508,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-terminal-midcourse-and-actuator-limits",
       "title": "Terminal versus midcourse guidance, and actuator limits",
-      "minutes": 23,
+      "minutes": 17,
       "covers": [
         "Terminal vs midcourse guidance; guidance under actuator limits"
       ],
@@ -8460,7 +8519,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-ascent-phases",
       "title": "The phases of an ascent",
-      "minutes": 20,
+      "minutes": 22,
       "covers": [
         "Ascent phases: liftoff, pitch kick, gravity turn, max-Q, staging, exoatmospheric closed loop"
       ],
@@ -8469,7 +8528,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-open-loop-atmospheric-steering",
       "title": "Open-loop steering and why the loop stays open in the atmosphere",
-      "minutes": 15,
+      "minutes": 18,
       "covers": [
         "Open-loop atmospheric steering (the pitch program) and why closed-loop guidance is avoided in dense atmosphere"
       ],
@@ -8478,7 +8537,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-linear-tangent-steering-law",
       "title": "The linear tangent steering law",
-      "minutes": 17,
+      "minutes": 21,
       "covers": [
         "Optimal exoatmospheric steering: the linear tangent law from Pontryagin and the calculus of variations"
       ],
@@ -8487,7 +8546,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-powered-explicit-guidance",
       "title": "Powered Explicit Guidance and UPFG",
-      "minutes": 21,
+      "minutes": 26,
       "covers": [
         "Powered Explicit Guidance and Unified Powered Flight Guidance; why explicit guidance needs no reference trajectory"
       ],
@@ -8496,7 +8555,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-two-phase-throttle-structure",
       "title": "The two-phase throttle structure",
-      "minutes": 15,
+      "minutes": 18,
       "covers": [
         "The two-phase throttle structure: constant thrust to a g-limit, then throttled constant acceleration"
       ],
@@ -8514,7 +8573,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-target-orbit-specification",
       "title": "Target orbit specification and the terminal constraint set",
-      "minutes": 13,
+      "minutes": 19,
       "covers": [
         "Target orbit specification and the terminal constraint set"
       ],
@@ -8523,7 +8582,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-tvc-allocation-and-engine-out",
       "title": "Thrust vector control allocation and engine-out contingency",
-      "minutes": 20,
+      "minutes": 27,
       "covers": [
         "Thrust vector control allocation and engine-out contingency"
       ],
@@ -8532,7 +8591,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-load-relief-and-guidance",
       "title": "Load relief and its interaction with guidance",
-      "minutes": 14,
+      "minutes": 20,
       "covers": [
         "Load relief and its interaction with guidance"
       ],
@@ -8541,7 +8600,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-offline-trajectory-optimization",
       "title": "Ascent trajectory optimization as an offline problem",
-      "minutes": 14,
+      "minutes": 24,
       "covers": [
         "Ascent trajectory optimization as an offline problem feeding onboard guidance"
       ],
@@ -8550,7 +8609,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-day-of-launch-wind-updates",
       "title": "Day-of-launch trajectory updates from measured winds",
-      "minutes": 14,
+      "minutes": 20,
       "covers": [
         "Day-of-launch trajectory updates from measured winds"
       ],
@@ -8559,7 +8618,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-abort-modes",
       "title": "Abort modes and the decision logic behind them",
-      "minutes": 15,
+      "minutes": 21,
       "covers": [
         "Abort modes: RTLS, TAL, AOA and the decision logic"
       ],
@@ -8570,7 +8629,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-bolza-mayer-lagrange",
       "title": "The Bolza, Mayer and Lagrange cost forms",
-      "minutes": 16,
+      "minutes": 22,
       "covers": [
         "The general optimal control problem in Bolza, Mayer and Lagrange form, and how to convert between them"
       ],
@@ -8579,7 +8638,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-euler-lagrange-costates",
       "title": "The Euler-Lagrange conditions and costates as shadow prices",
-      "minutes": 17,
+      "minutes": 22,
       "covers": [
         "Indirect methods: the Hamiltonian, the Euler-Lagrange conditions, costates as shadow prices"
       ],
@@ -8588,7 +8647,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-pontryagin-transversality",
       "title": "Pontryagin's Minimum Principle: why minimise, and transversality in full",
-      "minutes": 18,
+      "minutes": 24,
       "covers": [
         "Pontryagin's Minimum Principle, the stationarity condition, and transversality conditions"
       ],
@@ -9081,7 +9140,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-five-box-decomposition",
       "title": "The five-box decomposition",
-      "minutes": 20,
+      "minutes": 21,
       "covers": [
         "The five-box decomposition: plant, sensors, GNC, actuators, environment — and why the interfaces between them are the whole design"
       ],
@@ -9090,7 +9149,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-fixed-step-vs-variable-step-integration",
       "title": "Fixed-step vs. variable-step integration",
-      "minutes": 22,
+      "minutes": 19,
       "covers": [
         "Fixed-step vs variable-step integration, and why a closed loop with a digital controller wants a fixed step"
       ],
@@ -9099,7 +9158,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-two-rate-simulation-and-zoh",
       "title": "Two rates and the zero-order hold",
-      "minutes": 18,
+      "minutes": 16,
       "covers": [
         "Running the plant at a fine step while the flight software runs at its true rate, with zero-order hold between updates"
       ],
@@ -9108,7 +9167,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-frame-and-unit-discipline",
       "title": "Frame and unit discipline",
-      "minutes": 24,
+      "minutes": 23,
       "covers": [
         "Frame and unit discipline: naming every vector by its frame, and the conventions that stop a sign error becoming a three-week debugging session"
       ],
@@ -9126,7 +9185,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-sensor-models",
       "title": "Sensor models",
-      "minutes": 25,
+      "minutes": 22,
       "covers": [
         "Sensor models: noise, bias and bias instability, scale factor, misalignment, quantisation, latency, dropout, saturation, update rate"
       ],
@@ -9135,7 +9194,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-actuator-models",
       "title": "Actuator models",
-      "minutes": 24,
+      "minutes": 26,
       "covers": [
         "Actuator models: thrust curves and start-up transients, TVC gimbal dynamics and rate limits, reaction wheel friction, thruster minimum impulse bit, valve delay"
       ],
@@ -9162,7 +9221,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-staging-events-and-zero-crossing-detection",
       "title": "Staging events and zero-crossing detection",
-      "minutes": 19,
+      "minutes": 24,
       "covers": [
         "Staging and other discontinuous events; zero-crossing detection and bisection to the event time"
       ],
@@ -9171,7 +9230,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-flight-software-in-the-loop-boundary",
       "title": "The flight-software-in-the-loop boundary",
-      "minutes": 20,
+      "minutes": 18,
       "covers": [
         "The flight-software-in-the-loop boundary: compiling the actual flight code into the sim rather than a Python re-implementation of it"
       ],
@@ -9198,7 +9257,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l14-validation-analytic-solutions-and-conservation-laws",
       "title": "Validation: analytic solutions, conservation laws and flight data",
-      "minutes": 30,
+      "minutes": 24,
       "covers": [
         "Validation against analytic solutions, conservation laws, and eventually flight data"
       ],
@@ -9207,7 +9266,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l15-regression-testing-and-golden-files",
       "title": "Regression testing and golden files",
-      "minutes": 19,
+      "minutes": 17,
       "covers": [
         "Regression testing and golden-file comparison; what to do when a legitimate model improvement breaks every golden file"
       ],
@@ -9216,7 +9275,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l16-determinism-and-reproducibility",
       "title": "Determinism and reproducibility",
-      "minutes": 19,
+      "minutes": 22,
       "covers": [
         "Determinism and reproducibility: seeded random number streams, per-case seeds, and bit-exact replay of a single case out of a campaign"
       ],
@@ -10426,28 +10485,20 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_cad_03_tools": {
-    "covered": 10,
+    "covered": 16,
     "total": 19,
     "complete": false,
     "missing": [
-      "Features: extrude, revolve, sweep, loft, fillet, shell, rib, draft, hole wizard, patterns, configurations",
-      "The feature tree, parent-child relationships, design intent, robust versus fragile modelling",
-      "Assemblies: mates, sub-assemblies, in-context design and its dangers, interference detection",
-      "Mass properties: where the mass, centre of gravity and inertia tensor for a 6-DOF simulation come from",
-      "Drawings from models; PMI and model-based definition",
-      "Sheet metal, weldments and surfacing (awareness); outer mould line",
       "Interchange formats: STEP, IGES, Parasolid, JT, and translation fidelity",
       "The landscape: NX plus Teamcenter at SpaceX; CATIA at Boeing and Airbus; Creo in defence; SolidWorks at suppliers and startups; Onshape and Fusion as cloud-native newcomers",
       "PLM concepts: part numbers, revisions versus versions, effectivity, ECO and ECR, as-designed versus as-built versus as-flown"
     ]
   },
   "cod_int_01_algorithms": {
-    "covered": 0,
+    "covered": 3,
     "total": 12,
     "complete": false,
     "missing": [
-      "The honest calibration: medium level, not the main event, with real-world framing preferred",
-      "Preparing in C++ if targeting flight software; Python for the take-home",
       "High-yield patterns: arrays and two pointers, sliding window, hash maps, binary search including on the answer",
       "Sorting and intervals; stacks and queues; linked lists",
       "Trees and BFS/DFS; graphs including topological sort; heaps; prefix sums; light dynamic programming; bit manipulation",
@@ -10456,8 +10507,7 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
       "The engineering variants: binary protocol decommutation, telemetry dropout detection, two-rate time alignment, ring buffer, PID with anti-windup, running median over a stream",
       "struct, endianness and checksums in Python; bit twiddling in C++",
       "Talking while solving: restate, clarify, state the approach and its complexity, then code",
-      "Testing your own solution before saying you are done",
-      "Roughly 120 to 150 problems is sufficient, grouped by pattern and timed"
+      "Testing your own solution before saying you are done"
     ]
   },
   "cod_int_02_onsite": {

@@ -416,10 +416,10 @@ describe('the streak', () => {
  * course included, is held to the rule from the start.
  */
 const WRITTEN_BEFORE_NOTES = new Set([
-  'bash', 'bash-intermediate', 'bash-advanced',
-  'git', 'git-intermediate', 'git-advanced',
-  'python', 'python-intermediate', 'python-advanced', 'python-expert', 'python-projects',
-  'sql', 'sql-intermediate', 'sql-advanced', 'sql-expert', 'sql-projects',
+  'bash-advanced',
+  'git-advanced',
+  'python-intermediate', 'python-advanced', 'python-expert', 'python-projects',
+  'sql-intermediate', 'sql-advanced', 'sql-expert', 'sql-projects',
   'cpp', 'cpp-intermediate', 'cpp-advanced', 'cpp-expert', 'cpp-projects',
 ])
 const LEARN_NOTES_MIN = 3
