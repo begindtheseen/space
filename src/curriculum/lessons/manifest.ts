@@ -2253,6 +2253,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       "file": "cod_cpp_06_modern/02-uniform-initialisation.md"
     },
     {
+      "id": "l03-cpp14",
+      "title": "C++14: finishing what C++11 started",
+      "minutes": 23,
+      "covers": [
+        "C++14: generic lambdas, return type deduction, make_unique, variable templates"
+      ],
+      "file": "cod_cpp_06_modern/03-cpp14.md"
+    },
+    {
       "id": "l04-cpp17",
       "title": "C++17: the everyday upgrades",
       "minutes": 21,
@@ -2260,6 +2269,24 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "C++17: structured bindings, if/switch init statements, if constexpr, fold expressions, optional/variant/any, string_view, filesystem, parallel algorithms, guaranteed copy elision, CTAD"
       ],
       "file": "cod_cpp_06_modern/04-cpp17.md"
+    },
+    {
+      "id": "l05-guaranteed-copy-elision",
+      "title": "Returning big objects without copying them",
+      "minutes": 22,
+      "covers": [
+        "Guaranteed copy elision and what it means for returning big objects"
+      ],
+      "file": "cod_cpp_06_modern/05-guaranteed-copy-elision.md"
+    },
+    {
+      "id": "l06-cpp20",
+      "title": "C++20: the big update",
+      "minutes": 20,
+      "covers": [
+        "C++20: concepts, ranges, span, format, three-way comparison, designated initialisers, constinit/consteval, modules, coroutines, atomic_ref"
+      ],
+      "file": "cod_cpp_06_modern/06-cpp20.md"
     },
     {
       "id": "l07-modules-and-coroutines",
@@ -2270,6 +2297,62 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Why coroutines are rare in flight code"
       ],
       "file": "cod_cpp_06_modern/07-modules-and-coroutines.md"
+    },
+    {
+      "id": "l08-cpp23",
+      "title": "C++23: expected, mdspan and print",
+      "minutes": 22,
+      "covers": [
+        "C++23 highlights: expected, mdspan, print"
+      ],
+      "file": "cod_cpp_06_modern/08-cpp23.md"
+    },
+    {
+      "id": "l09-the-flight-subset",
+      "title": "The flight subset of C++",
+      "minutes": 22,
+      "covers": [
+        "The flight subset: typically C++11/14/17 core, no exceptions, no RTTI, no dynamic allocation after init, restricted standard library"
+      ],
+      "file": "cod_cpp_06_modern/09-the-flight-subset.md"
+    },
+    {
+      "id": "l10-modernising-legacy-code",
+      "title": "Modernising old C++ code safely",
+      "minutes": 19,
+      "covers": [
+        "Modernising legacy code: what to change first and how to justify each change"
+      ],
+      "file": "cod_cpp_06_modern/10-modernising-legacy-code.md"
+    }
+  ],
+  "cod_cpp_07_concurrency": [
+    {
+      "id": "l01-threads",
+      "title": "Processes and threads",
+      "minutes": 27,
+      "covers": [
+        "Processes vs threads; std::thread and jthread; join and detach"
+      ],
+      "file": "cod_cpp_07_concurrency/01-threads.md"
+    },
+    {
+      "id": "l04-deadlock",
+      "title": "Deadlock, and how to make it impossible",
+      "minutes": 22,
+      "covers": [
+        "Deadlock: the four conditions, lock ordering, std::lock and scoped_lock"
+      ],
+      "file": "cod_cpp_07_concurrency/04-deadlock.md"
+    },
+    {
+      "id": "l07-the-memory-model",
+      "title": "The C++ memory model",
+      "minutes": 21,
+      "covers": [
+        "The C++ memory model; is_lock_free; atomic_ref"
+      ],
+      "file": "cod_cpp_07_concurrency/07-the-memory-model.md"
     }
   ],
   "cod_cpp_08_realtime": [
@@ -10365,30 +10448,20 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_cpp_06_modern": {
-    "covered": 5,
+    "covered": 11,
     "total": 11,
-    "complete": false,
-    "missing": [
-      "C++14: generic lambdas, return type deduction, make_unique, variable templates",
-      "C++20: concepts, ranges, span, format, three-way comparison, designated initialisers, constinit/consteval, modules, coroutines, atomic_ref",
-      "C++23 highlights: expected, mdspan, print",
-      "Guaranteed copy elision and what it means for returning big objects",
-      "The flight subset: typically C++11/14/17 core, no exceptions, no RTTI, no dynamic allocation after init, restricted standard library",
-      "Modernising legacy code: what to change first and how to justify each change"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_cpp_07_concurrency": {
-    "covered": 0,
+    "covered": 3,
     "total": 17,
     "complete": false,
     "missing": [
-      "Processes vs threads; std::thread and jthread; join and detach",
       "Data races as undefined behaviour, not merely a wrong answer",
       "mutex, lock_guard, unique_lock, scoped_lock, shared_mutex, recursive_mutex",
-      "Deadlock: the four conditions, lock ordering, std::lock and scoped_lock",
       "condition_variable and spurious wakeups; the predicate form of wait",
       "std::atomic and memory orderings: relaxed, acquire/release, seq_cst",
-      "The C++ memory model; is_lock_free; atomic_ref",
       "future, promise, packaged_task, async, and thread pools",
       "Lock-free single-producer single-consumer ring buffers for telemetry",
       "Lock-free is not wait-free; progress guarantees",
