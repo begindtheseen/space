@@ -2413,6 +2413,47 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       "file": "cod_cpp_09_eigen/12-numpy-mapping-and-neighbours.md"
     }
   ],
+  "cod_cpp_10_cmake": [
+    {
+      "id": "l01-why-cmake-and-a-first-project",
+      "title": "Why CMake, and a first project",
+      "minutes": 22,
+      "covers": [
+        "cmake_minimum_required, project, and why a modern minimum matters",
+        "Out-of-source builds and CMAKE_BUILD_TYPE"
+      ],
+      "file": "cod_cpp_10_cmake/01-why-cmake-and-a-first-project.md"
+    },
+    {
+      "id": "l03-usage-requirements-public-private-interface",
+      "title": "Usage requirements: PUBLIC, PRIVATE and INTERFACE",
+      "minutes": 24,
+      "covers": [
+        "target_link_libraries with PUBLIC, PRIVATE and INTERFACE, and what each propagates",
+        "target_include_directories, target_compile_features, target_compile_options, target_compile_definitions"
+      ],
+      "file": "cod_cpp_10_cmake/03-usage-requirements-public-private-interface.md"
+    },
+    {
+      "id": "l06-project-layout-and-ctest",
+      "title": "A project layout a stranger can build, and ctest",
+      "minutes": 24,
+      "covers": [
+        "Canonical layout: apps, cmake, extern, include, src, tests",
+        "ctest and test registration"
+      ],
+      "file": "cod_cpp_10_cmake/06-project-layout-and-ctest.md"
+    },
+    {
+      "id": "l09-toolchain-files-and-cross-compiling",
+      "title": "Toolchain files and cross-compiling",
+      "minutes": 25,
+      "covers": [
+        "Toolchain files for cross-compiling to an embedded target"
+      ],
+      "file": "cod_cpp_10_cmake/09-toolchain-files-and-cross-compiling.md"
+    }
+  ],
   "cod_git_01_basics": [
     {
       "id": "l01-snapshots-and-the-object-model",
@@ -10341,22 +10382,15 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_cpp_10_cmake": {
-    "covered": 0,
+    "covered": 7,
     "total": 14,
     "complete": false,
     "missing": [
-      "cmake_minimum_required, project, and why a modern minimum matters",
       "add_library and add_executable; INTERFACE, STATIC and SHARED",
-      "target_link_libraries with PUBLIC, PRIVATE and INTERFACE, and what each propagates",
-      "target_include_directories, target_compile_features, target_compile_options, target_compile_definitions",
       "Generator expressions and per-configuration settings",
       "find_package and config packages; FetchContent versus submodules versus Conan or vcpkg",
       "CMakePresets.json for reproducible configure and build commands",
-      "Out-of-source builds and CMAKE_BUILD_TYPE",
-      "Toolchain files for cross-compiling to an embedded target",
       "install and export so downstream projects can find_package you",
-      "ctest and test registration",
-      "Canonical layout: apps, cmake, extern, include, src, tests",
       "Sanitizer and coverage build configurations",
       "ccache and build-time hygiene"
     ]
