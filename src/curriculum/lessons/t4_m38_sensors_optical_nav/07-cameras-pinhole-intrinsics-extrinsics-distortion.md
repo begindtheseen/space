@@ -1,7 +1,7 @@
 ---
 id: l07-cameras-pinhole-intrinsics-extrinsics-distortion
 title: 'Cameras for optical navigation: the pinhole model, intrinsics, extrinsics, distortion'
-minutes: 25
+minutes: 24
 covers:
   - 'Cameras for optical navigation: the pinhole model, intrinsics and extrinsics, distortion'
 ---
@@ -26,7 +26,7 @@ To write it down, put the hole at the origin and set up the **camera frame**:
 
 A point in front of the camera has coordinates $(X, Y, Z)$, with $Z$ its depth — how far in front of the camera it is, measured along the boresight.
 
-Now imagine the tracing paper one unit in *front* of the hole instead of behind it. The picture is the same, just right-side up. The straight line from the hole to the point crosses that sheet at the **normalized coordinates**
+Now imagine the tracing paper one unit in *front* of the hole instead of behind it. The picture is the same, only right-side up. The straight line from the hole to the point crosses that sheet at the **normalized coordinates**
 
 $$
 x = \frac{X}{Z}, \qquad y = \frac{Y}{Z}.
