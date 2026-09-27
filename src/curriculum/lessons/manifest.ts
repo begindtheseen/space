@@ -3434,6 +3434,33 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Float pitfalls: allclose, catastrophic cancellation, float32 vs float64"
       ],
       "file": "cod_py_03_numpy/10-floating-point-pitfalls.md"
+    },
+    {
+      "id": "l11-random-numbers",
+      "title": "Random numbers you can reproduce",
+      "minutes": 17,
+      "covers": [
+        "Random numbers: default_rng, seeding, reproducibility"
+      ],
+      "file": "cod_py_03_numpy/11-random-numbers.md"
+    },
+    {
+      "id": "l12-saving-loading-and-memmap",
+      "title": "Saving, loading and memory-mapping big telemetry",
+      "minutes": 19,
+      "covers": [
+        "save, load, npz, memmap for big telemetry"
+      ],
+      "file": "cod_py_03_numpy/12-saving-loading-and-memmap.md"
+    },
+    {
+      "id": "l13-vectorisation",
+      "title": "Vectorisation as the default",
+      "minutes": 18,
+      "covers": [
+        "Vectorisation as the default, and when it genuinely does not apply"
+      ],
+      "file": "cod_py_03_numpy/13-vectorisation.md"
     }
   ],
   "cod_py_04_scipy": [
@@ -4170,6 +4197,127 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Normalisation to third normal form and deliberate denormalisation for analytics"
       ],
       "file": "cod_sql_04_schema/01-normalisation.md"
+    },
+    {
+      "id": "l02-star-schemas-and-keys",
+      "title": "Star schemas, surrogate keys and natural keys",
+      "minutes": 20,
+      "covers": [
+        "Star and snowflake schemas; surrogate versus natural keys"
+      ],
+      "file": "cod_sql_04_schema/02-star-schemas-and-keys.md"
+    },
+    {
+      "id": "l03-constraints",
+      "title": "Constraints: letting the database say no",
+      "minutes": 21,
+      "covers": [
+        "Constraints: NOT NULL, UNIQUE, CHECK, foreign keys with ON DELETE"
+      ],
+      "file": "cod_sql_04_schema/03-constraints.md"
+    },
+    {
+      "id": "l04-transactions-and-acid",
+      "title": "Transactions, isolation and deadlocks",
+      "minutes": 27,
+      "covers": [
+        "Transactions and ACID; isolation levels; deadlocks"
+      ],
+      "file": "cod_sql_04_schema/04-transactions-and-acid.md"
+    },
+    {
+      "id": "l05-index-types",
+      "title": "How an index works, and the kinds there are",
+      "minutes": 24,
+      "covers": [
+        "Index types: B-tree, hash, GIN and GiST, and BRIN for append-only time-ordered data"
+      ],
+      "file": "cod_sql_04_schema/05-index-types.md"
+    },
+    {
+      "id": "l06-composite-and-covering-indexes",
+      "title": "Composite and covering indexes",
+      "minutes": 20,
+      "covers": [
+        "Composite indexes and the left-prefix rule; covering indexes and index-only scans"
+      ],
+      "file": "cod_sql_04_schema/06-composite-and-covering-indexes.md"
+    },
+    {
+      "id": "l07-partial-indexes-and-write-cost",
+      "title": "Partial indexes and what indexes cost",
+      "minutes": 21,
+      "covers": [
+        "Partial indexes; why a low-cardinality index is usually useless",
+        "Index maintenance cost on a write-heavy ingest path"
+      ],
+      "file": "cod_sql_04_schema/07-partial-indexes-and-write-cost.md"
+    },
+    {
+      "id": "l08-reading-explain",
+      "title": "Reading EXPLAIN plans",
+      "minutes": 22,
+      "covers": [
+        "EXPLAIN and EXPLAIN ANALYZE: sequential versus index versus bitmap heap scan; nested loop versus hash versus merge join",
+        "Estimated versus actual rows as the tell for stale statistics"
+      ],
+      "file": "cod_sql_04_schema/08-reading-explain.md"
+    },
+    {
+      "id": "l09-sargability",
+      "title": "SARGable predicates",
+      "minutes": 23,
+      "covers": [
+        "SARGability: why wrapping an indexed column in a function kills the index"
+      ],
+      "file": "cod_sql_04_schema/09-sargability.md"
+    },
+    {
+      "id": "l10-partitioning-and-aggregates",
+      "title": "Partitioning by time and precomputed aggregates",
+      "minutes": 27,
+      "covers": [
+        "Range partitioning by time; clustering; materialised views and continuous aggregates"
+      ],
+      "file": "cod_sql_04_schema/10-partitioning-and-aggregates.md"
+    },
+    {
+      "id": "l11-columnar-storage-and-ingest",
+      "title": "Columnar storage, Parquet, batch and streaming",
+      "minutes": 24,
+      "covers": [
+        "Columnar storage and Parquet; batch versus streaming ingest"
+      ],
+      "file": "cod_sql_04_schema/11-columnar-storage-and-ingest.md"
+    },
+    {
+      "id": "l12-upserts-and-data-quality",
+      "title": "Upserts, duplicates and data quality",
+      "minutes": 26,
+      "covers": [
+        "Upserts and idempotent ingest for duplicated downlink frames",
+        "Data quality: gap detection, out-of-order packets, vehicle-to-ground clock skew, duplicate frames"
+      ],
+      "file": "cod_sql_04_schema/12-upserts-and-data-quality.md"
+    },
+    {
+      "id": "l13-the-telemetry-lifecycle",
+      "title": "From vehicle to report: the telemetry lifecycle",
+      "minutes": 24,
+      "covers": [
+        "The telemetry lifecycle: vehicle, downlink, decommutation, time-series store, analysis, report",
+        "Time-series stores: InfluxDB, TimescaleDB, ClickHouse; the reported Starlink stack of Kafka, HBase, HDFS on Docker and Kubernetes"
+      ],
+      "file": "cod_sql_04_schema/13-the-telemetry-lifecycle.md"
+    },
+    {
+      "id": "l14-export-control-retention-reproducibility",
+      "title": "Export control, retention and reproducible plots",
+      "minutes": 26,
+      "covers": [
+        "Export control and retention for flight data; reproducibility of every published plot"
+      ],
+      "file": "cod_sql_04_schema/14-export-control-retention-reproducibility.md"
     }
   ],
   "t0_m00_basecamp": [
@@ -10148,14 +10296,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_py_03_numpy": {
-    "covered": 9,
+    "covered": 12,
     "total": 12,
-    "complete": false,
-    "missing": [
-      "Random numbers: default_rng, seeding, reproducibility",
-      "save, load, npz, memmap for big telemetry",
-      "Vectorisation as the default, and when it genuinely does not apply"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_py_04_scipy": {
     "covered": 11,
@@ -10542,28 +10686,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_sql_04_schema": {
-    "covered": 1,
+    "covered": 18,
     "total": 18,
-    "complete": false,
-    "missing": [
-      "Star and snowflake schemas; surrogate versus natural keys",
-      "Constraints: NOT NULL, UNIQUE, CHECK, foreign keys with ON DELETE",
-      "Transactions and ACID; isolation levels; deadlocks",
-      "Index types: B-tree, hash, GIN and GiST, and BRIN for append-only time-ordered data",
-      "Composite indexes and the left-prefix rule; covering indexes and index-only scans",
-      "Partial indexes; why a low-cardinality index is usually useless",
-      "Index maintenance cost on a write-heavy ingest path",
-      "EXPLAIN and EXPLAIN ANALYZE: sequential versus index versus bitmap heap scan; nested loop versus hash versus merge join",
-      "Estimated versus actual rows as the tell for stale statistics",
-      "SARGability: why wrapping an indexed column in a function kills the index",
-      "Range partitioning by time; clustering; materialised views and continuous aggregates",
-      "Columnar storage and Parquet; batch versus streaming ingest",
-      "Upserts and idempotent ingest for duplicated downlink frames",
-      "The telemetry lifecycle: vehicle, downlink, decommutation, time-series store, analysis, report",
-      "Time-series stores: InfluxDB, TimescaleDB, ClickHouse; the reported Starlink stack of Kafka, HBase, HDFS on Docker and Kubernetes",
-      "Data quality: gap detection, out-of-order packets, vehicle-to-ground clock skew, duplicate frames",
-      "Export control and retention for flight data; reproducibility of every published plot"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_cad_01_drawings": {
     "covered": 15,
