@@ -3706,6 +3706,33 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       "file": "cod_py_06_testing/06-property-based-testing.md"
     },
     {
+      "id": "l07-golden-files",
+      "title": "Golden-file regression tests",
+      "minutes": 22,
+      "covers": [
+        "Golden-file regression tests with explicit tolerances"
+      ],
+      "file": "cod_py_06_testing/07-golden-files.md"
+    },
+    {
+      "id": "l08-testing-numerical-code",
+      "title": "Testing numerical code without an answer key",
+      "minutes": 22,
+      "covers": [
+        "Testing numerical code: invariants, convergence order, conservation laws"
+      ],
+      "file": "cod_py_06_testing/08-testing-numerical-code.md"
+    },
+    {
+      "id": "l09-test-doubles",
+      "title": "Fakes and mocks for sensors and hardware",
+      "minutes": 21,
+      "covers": [
+        "Test doubles: fakes and mocks for sensors and hardware interfaces"
+      ],
+      "file": "cod_py_06_testing/09-test-doubles.md"
+    },
+    {
       "id": "l10-coverage",
       "title": "Coverage, and why it is a floor",
       "minutes": 19,
@@ -10254,14 +10281,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_py_06_testing": {
-    "covered": 10,
+    "covered": 13,
     "total": 13,
-    "complete": false,
-    "missing": [
-      "Golden-file regression tests with explicit tolerances",
-      "Testing numerical code: invariants, convergence order, conservation laws",
-      "Test doubles: fakes and mocks for sensors and hardware interfaces"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_py_07_integration": {
     "covered": 0,
