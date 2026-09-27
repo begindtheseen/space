@@ -67,32 +67,155 @@ INSERT INTO import_rows VALUES
   (1007, '2024-03-18 08:20:00', 'cy@mail.com',   'Cy Diaz',   'US', 'LAMP',  'Desk lamp',    'home',        '45.00', 1, 'shipped'),
   (1008, '2024-03-29 21:00:00', 'eli@mail.com',  'Eli Fox',   'US', 'MUG',   'Mug',          'home',        '9.00',  1, 'paid');
 --- teach
-This course puts the three SQL courses to work. First, three databases built step by step, each lesson carrying on from the last; then three capstones, where you design everything yourself from a written specification.
+The last course ended by finding and fixing a slow query. That was the last new tool. This course puts all three SQL courses to work on whole projects.
 
-**Project one: an online store's database**, from an empty file to the reports the owners read every Monday. Four lessons: the schema, loading the data, a revenue report, a customer report.
+First come three databases, built step by step, each lesson carrying on from the last. Then come three [[capstones|capstone]], where you design everything yourself from a written **specification**: a description of what the database must do, with no code in it.
 
-The shop has been running on spreadsheets. Its export is already here as `import_rows`: one row per order line, with the customer and product repeated on every line (you will load it next lesson). First, design where it will live. Four tables, each about one thing:
+### Project one: an online store
 
-- `customers` — who buys
-- `products` — what is sold
-- `orders` — one purchase: who, when, what state it is in
-- `order_items` — one product within one order: how many, at what price
+**Project one is an online store's database**, from an empty file to the reports the owners read every Monday. It takes five lessons: the schema, cleaning the export, loading the data, a revenue report and a customer report.
 
-Decisions worth making on purpose:
+This lesson is the first: the **schema**, meaning the set of tables, their columns and their rules. You write only `CREATE TABLE`s. No data goes in yet.
 
-- **Money in integer cents.** `0.1 + 0.2` is not `0.3` in floating point, and sums of prices drift by fractions of a cent. Store `price_cents INTEGER`, and divide by 100.0 only for display.
-- **The price charged lives on the order line** (`unit_cents`), separately from today's list price on `products`. Prices change; history must not.
-- **Natural keys stay unique.** The database assigns each customer an `id`, but an email may still belong to only one customer, and a SKU to one product — say so with `UNIQUE`.
-- **States are a closed list.** `CHECK (status IN (...))` stops `'Shipped '` and `'shiped'` from ever being stored.
-- **One line per product per order.** A composite primary key `(order_id, product_id)`; buying two mugs is `qty = 2`, not two lines.
-- **Children go with their parent.** Deleting an order should delete its lines (`ON DELETE CASCADE`), but deleting a product that has been sold should be refused (the default).
+### The table you start with
+
+The shop has been running on spreadsheets. Its export is already here, as a table called `import_rows`. Each row is one **order line**: one product in one order. Here are four of its 12 rows, with some columns left out:
+
+| order_ref | email | customer_name | sku | product_name | price | qty | status |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 1001 | ana@mail.com | Ana Ruiz | MUG | Mug | 9.00 | 2 | paid |
+| 1001 | ana@mail.com | Ana Ruiz | PEN | Fountain pen | 32.50 | 1 | paid |
+| 1002 | BO@mail.com | Bo Chen | LAMP | Desk lamp | 45.00 | 1 | SHIPPED |
+| 1006 | bo@mail.com | Bo Chen | HEAD | Headphones | 79.99 | 1 | paid |
+
+The customer and the product are copied onto every line. That is the "notebook" from the lesson "Design: normalising a flat table". The other columns are `placed` (when the order was made), `country` and `category`. You will clean this data in the next lesson and load it in the one after.
+
+### Four tables, each about one thing
+
+As in "Design: normalising a flat table", each fact goes in the table it describes:
+
+- `customers`: who buys.
+- `products`: what is sold.
+- `orders`: one purchase. Who made it, when, and what state it is in.
+- `order_items`: one product within one order. How many, and at what price.
+
+The next six steps are decisions about these tables. Each one is worth making on purpose.
+
+### Decision 1: money in whole cents
+
+In the lesson "Aggregates" you met floating-point numbers, and saw that `SELECT 0.1 + 0.2;` gives `0.30000000000000004`, not `0.3`. Decimals are stored as floating-point numbers, which cannot hold most decimals exactly. Add up thousands of prices, and the total drifts by fractions of a cent.
+
+Whole numbers do not drift. So store money as a whole number of cents, in an `INTEGER` column:
+
+```sql
+price_cents INTEGER NOT NULL CHECK (price_cents >= 0)
+```
+
+A 9.00 mug is stored as `900`. You divide by `100.0` only at the very end, when you show the number to a person: `900 / 100.0` gives `9.0`. This is how [[real payment systems|minor-units]] do it. The `CHECK` refuses a negative price.
+
+### Decision 2: the price charged lives on the order line
+
+`products` keeps today's **list price**, the price the shop is asking now, in `price_cents`. But each line in `order_items` keeps its own `unit_cents`: the price **charged** on that line, for one unit.
+
+Why both? Prices change, and history must not. In the export, the headphones sold for 89.99 in February and 79.99 in a March sale. If the old orders only pointed at today's price, a price change would rewrite what customers paid. This is the `unit_price` idea from "Design: normalising a flat table", now in cents.
+
+### Decision 3: natural keys stay unique
+
+Each customer gets an `id` that the database fills in. That `id` is what `orders` points at. But an email may still belong to only one customer, and a SKU to only one product. Say so with `UNIQUE`:
+
+```sql
+email TEXT NOT NULL UNIQUE
+```
+
+Without it, the same person could [[end up as two customers|two-customers]], each with half the orders. As you saw in "Design: normalising a flat table", an email or a SKU is a natural key, and the `id` is an invented one.
+
+### Decision 4: states are a closed list
+
+An order's `status` can only be `'paid'`, `'shipped'` or `'refunded'`. That is a **closed list**: a fixed set of allowed values, with nothing else accepted. A `CHECK` with `IN`, from the lesson "Constraints: rules the database enforces", enforces it:
+
+```sql
+status TEXT NOT NULL CHECK (status IN ('paid', 'shipped', 'refunded'))
+```
+
+Now `'Shipped '` (capital S, space at the end) and `'shiped'` (a typo) can never be stored. Try it, and the insert fails with `CHECK constraint failed`. A report that counts `'shipped'` orders can then [[trust the list|status-list]].
+
+### Decision 5: one line per product per order
+
+Buying two mugs is one line with `qty = 2`, not two lines. Make the database hold you to that with a composite primary key, written after the columns:
+
+```sql
+PRIMARY KEY (order_id, product_id)
+```
+
+The pair must be unique. Order 1001 can have a mug line and a pen line, but not two mug lines. A second mug line fails with `UNIQUE constraint failed`. A `CHECK (qty > 0)` makes sure every line has at least 1 of something.
+
+### Decision 6: children go with their parent
+
+Each line of `order_items` points at its order and at its product. In the lesson "Foreign keys" you chose what happens when the row being pointed at is deleted:
+
+- Deleting an order should delete its lines. A line means nothing without its order. That is `ON DELETE CASCADE` on `order_id`.
+- Deleting a product that has been sold should be refused. Those sales really happened. That is the default, `NO ACTION`, so `product_id` needs only `REFERENCES products(id)`.
+
+Here is [[what each rule does|cascade-picture]] when you delete. And remember the SQLite catch from that lesson: none of this is enforced until you run `PRAGMA foreign_keys = ON;`.
+
+**Watch out:** without `PRAGMA foreign_keys = ON;` every `REFERENCES` is only a comment. An order line can point at an order that does not exist, deleting an order leaves its lines behind, and nothing warns you. Put the pragma first, before any table is used.
+
+::: context capstone What a capstone is
+A **capstone** is the flat stone laid on top of a wall to finish it. Schools borrowed the word for the final project of a course, the one that uses everything learned before it. In this course's capstones, you get only a written list of what the database must do, the way a real job starts. Engineering teams work from specifications all the time: a spacecraft's flight software has a written list of requirements, and every one of them must be met and tested.
+:::
+
+::: context minor-units How payment systems store money
+Payment services such as Stripe take every amount as a whole number in the currency's smallest unit: 900 means 9.00 dollars or 9.00 euros. The smallest unit is called the **minor unit**. Some currencies have none: the Japanese yen has no cents, so an amount of 900 there means 900 yen. Whole numbers add up exactly, so a total of a million payments is right to the cent. Only the screen or the receipt divides by 100 and adds the decimal point.
+:::
+
+::: context two-customers Why an id alone is not enough
+An `id` is always unique, because the database hands out a new one for each row. So the `id` cannot stop the same person being added twice. Import the export carelessly, and Ana could become customer 1 and customer 6, with half her orders on each. Every report would then undercount her spending. `UNIQUE` on the email refuses the second copy at the door. That turns a silent mistake into a loud error that you fix once.
+:::
+
+::: context status-list Why a closed list pays off
+Spreadsheets let anyone type anything, which is how this export ended up with `'paid'`, `'Paid'`, `'SHIPPED'` and `'shipped'`. A report that counts `WHERE status = 'shipped'` quietly misses the `'SHIPPED'` one. With a closed list, every stored value is one of three exact words. Spacecraft software uses the same idea for its **modes**: a vehicle is in exactly one of a fixed set, such as launch, cruise or safe mode, never in a mode someone misspelled.
+:::
+
+::: context cascade-picture Deleting an order, deleting a product
+On the left, deleting order 1001 also deletes its two lines, because `order_id` has `ON DELETE CASCADE`. On the right, deleting the mug is refused with `FOREIGN KEY constraint failed`, because order lines still point at it and `product_id` uses the default, `NO ACTION`.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 190" font-family="Inter, Arial, sans-serif">
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#1f2a44"/>
+    </marker>
+  </defs>
+  <text x="85" y="18" font-size="12" font-weight="bold" fill="#1f2a44" text-anchor="middle">DELETE order 1001</text>
+  <rect x="25" y="30" width="120" height="26" rx="3" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="85" y="47" font-size="12" fill="#1f2a44" text-anchor="middle">order 1001</text>
+  <rect x="25" y="96" width="120" height="24" rx="3" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="85" y="112" font-size="11" fill="#1f2a44" text-anchor="middle">line: 1001, MUG</text>
+  <rect x="25" y="126" width="120" height="24" rx="3" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="85" y="142" font-size="11" fill="#1f2a44" text-anchor="middle">line: 1001, PEN</text>
+  <line x1="85" y1="58" x2="85" y2="93" stroke="#1f2a44" stroke-width="1.5" marker-end="url(#ar)"/>
+  <text x="92" y="80" font-size="11" fill="#1d6fd1">CASCADE</text>
+  <text x="85" y="172" font-size="11" fill="#b4232c" text-anchor="middle">all three deleted</text>
+  <text x="270" y="18" font-size="12" font-weight="bold" fill="#1f2a44" text-anchor="middle">DELETE product MUG</text>
+  <rect x="210" y="30" width="120" height="26" rx="3" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="270" y="47" font-size="12" fill="#1f2a44" text-anchor="middle">product MUG</text>
+  <rect x="210" y="96" width="120" height="24" rx="3" fill="#fff" stroke="#1f2a44"/>
+  <text x="270" y="112" font-size="11" fill="#1f2a44" text-anchor="middle">line: 1001, MUG</text>
+  <rect x="210" y="126" width="120" height="24" rx="3" fill="#fff" stroke="#1f2a44"/>
+  <text x="270" y="142" font-size="11" fill="#1f2a44" text-anchor="middle">line: 1003, MUG</text>
+  <line x1="270" y1="94" x2="270" y2="59" stroke="#1f2a44" stroke-width="1.5" marker-end="url(#ar)"/>
+  <text x="277" y="80" font-size="11" fill="#1d6fd1">NO ACTION</text>
+  <text x="270" y="172" font-size="11" fill="#b4232c" text-anchor="middle">refused: lines point at it</text>
+</svg>
+```
+:::
 --- task
-Turn foreign keys on, then create:
+Write the store's schema. The starter already turns foreign keys on and creates `customers`. Add the other three tables:
 
-- `customers` — `id` integer primary key; `email` text, required, unique; `name` text, required; `country` text, required
-- `products` — `id` integer primary key; `sku` text, required, unique; `name`, `category` text, required; `price_cents` integer, required, not negative
-- `orders` — `id` integer primary key; `customer_id` required, referencing `customers(id)`; `placed` text, required; `status` text, required, one of `'paid'`, `'shipped'`, `'refunded'`
-- `order_items` — `order_id` referencing `orders(id)` and deleted with its order; `product_id` referencing `products(id)`; `qty` integer, required, at least 1; `unit_cents` integer, required, not negative; primary key `(order_id, product_id)`
+1. Keep `PRAGMA foreign_keys = ON;` as the first line, and keep `customers` as it is: `id` integer primary key; `email` text, required, unique; `name` text, required; `country` text, required.
+2. `products`: `id` integer primary key; `sku` text, required, unique; `name` text, required; `category` text, required; `price_cents` integer, required, not negative (`>= 0`).
+3. `orders`: `id` integer primary key; `customer_id` integer, required, referencing `customers(id)`; `placed` text, required; `status` text, required, one of `'paid'`, `'shipped'`, `'refunded'`.
+4. `order_items`: `order_id` integer, required, referencing `orders(id)`, and deleted with its order (`ON DELETE CASCADE`); `product_id` integer, required, referencing `products(id)`; `qty` integer, required, at least 1 (`> 0`); `unit_cents` integer, required, not negative; primary key `(order_id, product_id)`.
 --- starter
 PRAGMA foreign_keys = ON;
 
@@ -132,9 +255,11 @@ CREATE TABLE order_items (
   PRIMARY KEY (order_id, product_id)
 );
 --- hint
-Model each table on `customers`. Checks go after the type: `price_cents INTEGER NOT NULL CHECK (price_cents >= 0)`.
+Model each table on `customers`: one column per line, the type, then its rules. Go through the lesson's six decisions and find the rule each one needs.
 --- hint
-`order_items` ends with a table constraint, `PRIMARY KEY (order_id, product_id)`, and its `order_id` has `REFERENCES orders(id) ON DELETE CASCADE`.
+Rules stack after the type, like `price_cents INTEGER NOT NULL CHECK (price_cents >= 0)` and `status TEXT NOT NULL CHECK (status IN ('paid', 'shipped', 'refunded'))`. A link is `customer_id INTEGER NOT NULL REFERENCES customers(id)`.
+--- hint
+In `order_items`, `order_id` is `INTEGER NOT NULL REFERENCES orders(id) ON DELETE CASCADE`. After the last column, add a comma and `PRIMARY KEY (order_id, product_id)`.
 --- check query | Foreign keys are on
 PRAGMA foreign_keys
 => [[1]]
@@ -163,6 +288,219 @@ SELECT "table", "from", on_delete FROM pragma_foreign_key_list('order_items') OR
 DELETE FROM orders WHERE id = 1;
 SELECT COUNT(*) FROM order_items
 => [[0]]
+
+=== sqlp-01b | Store 1b: cleaning the export
+--- schema
+CREATE TABLE import_rows (
+  order_ref INTEGER NOT NULL,
+  placed TEXT NOT NULL,
+  email TEXT NOT NULL,
+  customer_name TEXT NOT NULL,
+  country TEXT NOT NULL,
+  sku TEXT NOT NULL,
+  product_name TEXT NOT NULL,
+  category TEXT NOT NULL,
+  price TEXT NOT NULL,
+  qty INTEGER NOT NULL,
+  status TEXT NOT NULL
+);
+INSERT INTO import_rows VALUES
+  (1001, '2024-01-03 10:00:00', 'ana@mail.com',  'Ana Ruiz',  'ES', 'MUG',   'Mug',          'home',        '9.00',  2, 'paid'),
+  (1001, '2024-01-03 10:00:00', 'ana@mail.com',  'Ana Ruiz',  'ES', 'PEN',   'Fountain pen', 'stationery',  '32.50', 1, 'paid'),
+  (1002, '2024-01-15 12:30:00', 'BO@mail.com ',  'Bo Chen',   'UK', 'LAMP',  'Desk lamp',    'home',        '45.00', 1, 'SHIPPED'),
+  (1003, '2024-02-01 09:00:00', 'cy@mail.com',   'Cy Diaz',   'US', 'MUG',   'Mug',          'home',        '9.00',  4, 'shipped'),
+  (1003, '2024-02-01 09:00:00', 'cy@mail.com',   'Cy Diaz',   'US', 'NOTE',  'Notebook',     'stationery',  '4.35',  3, 'shipped'),
+  (1003, '2024-02-01 09:00:00', 'cy@mail.com',   'Cy Diaz',   'US', 'NOTE',  'Notebook',     'stationery',  '4.35',  3, 'shipped'),
+  (1004, '2024-02-14 18:00:00', ' ana@mail.com', 'Ana Ruiz',  'ES', 'HEAD',  'Headphones',   'electronics', '89.99', 1, 'Paid'),
+  (1005, '2024-02-20 11:11:00', 'dee@mail.com',  'Dee Evans', 'UK', 'PEN',   'Fountain pen', 'stationery',  '32.50', 2, 'refunded'),
+  (1006, '2024-03-05 16:45:00', 'bo@mail.com',   'Bo Chen',   'UK', 'HEAD',  'Headphones',   'electronics', '79.99', 1, 'paid'),
+  (1006, '2024-03-05 16:45:00', 'bo@mail.com',   'Bo Chen',   'UK', 'CABLE', 'USB cable',    'electronics', '6.50',  3, 'paid'),
+  (1007, '2024-03-18 08:20:00', 'cy@mail.com',   'Cy Diaz',   'US', 'LAMP',  'Desk lamp',    'home',        '45.00', 1, 'shipped'),
+  (1008, '2024-03-29 21:00:00', 'eli@mail.com',  'Eli Fox',   'US', 'MUG',   'Mug',          'home',        '9.00',  1, 'paid');
+--- teach
+Last lesson you designed the store's four tables, with strict rules on what they accept. Next lesson you will load the spreadsheet export into them. This lesson comes in between: you look hard at the export, find every problem in it, and write the expressions that fix each one. That way nothing reaches the tables until it is clean.
+
+### The table
+
+`import_rows` is the export from last lesson: 12 rows, one per order line. Its columns are `order_ref` (the order number), `placed`, `email`, `customer_name`, `country`, `sku`, `product_name`, `category`, `price`, `qty` and `status`.
+
+### Look before you load
+
+The first step of any load is to [[read the data with your own eyes|look-first]]:
+
+```sql
+SELECT order_ref, email, sku, price, qty, status FROM import_rows;
+```
+
+| order_ref | email | sku | price | qty | status |
+| --- | --- | --- | --- | --- | --- |
+| 1001 | ana@mail.com | MUG | 9.00 | 2 | paid |
+| 1001 | ana@mail.com | PEN | 32.50 | 1 | paid |
+| 1002 | BO@mail.com␣ | LAMP | 45.00 | 1 | SHIPPED |
+| 1003 | cy@mail.com | MUG | 9.00 | 4 | shipped |
+| 1003 | cy@mail.com | NOTE | 4.35 | 3 | shipped |
+| 1003 | cy@mail.com | NOTE | 4.35 | 3 | shipped |
+| 1004 | ␣ana@mail.com | HEAD | 89.99 | 1 | Paid |
+| 1005 | dee@mail.com | PEN | 32.50 | 2 | refunded |
+| 1006 | bo@mail.com | HEAD | 79.99 | 1 | paid |
+| 1006 | bo@mail.com | CABLE | 6.50 | 3 | paid |
+| 1007 | cy@mail.com | LAMP | 45.00 | 1 | shipped |
+| 1008 | eli@mail.com | MUG | 9.00 | 1 | paid |
+
+The `␣` marks a space. On screen, spaces [[do not show|invisible-spaces]], so they are drawn here. There are five problems in these 12 rows. The next five steps take them one at a time.
+
+### Problem 1: emails with capitals and spaces
+
+`'BO@mail.com '` has capitals and a space at the end. `' ana@mail.com'` has a space at the start. To the database, `'BO@mail.com '` and `'bo@mail.com'` are two different emails, so Bo would become two customers.
+
+The fix is the one from the lesson "Working with text": **normalise**, meaning make every value follow the same form. `trim` removes the spaces at both ends, and `lower` turns capitals into small letters:
+
+```sql
+SELECT email, lower(trim(email)) AS clean FROM import_rows WHERE order_ref IN (1002, 1004);
+```
+
+| email | clean |
+| --- | --- |
+| BO@mail.com␣ | bo@mail.com |
+| ␣ana@mail.com | ana@mail.com |
+
+### Problem 2: statuses in mixed case
+
+The status column holds `'SHIPPED'` and `'Paid'` next to `'shipped'` and `'paid'`. Your `orders` table has `CHECK (status IN ('paid', 'shipped', 'refunded'))`, so it would (rightly) refuse `'SHIPPED'`. The same fix works: `lower(trim(status))` gives `'shipped'` and `'paid'`.
+
+### Problem 3: prices are text, in dollars
+
+The `price` column is `TEXT`: `'79.99'` is a string of characters, not a number. Your tables want whole cents, as numbers.
+
+The first tool is **`CAST`**, which converts a value to another type. You met it in "Problem solving: cohort retention", turning a month's text into a number. You write the value, the word `AS`, and the type you want:
+
+```sql
+SELECT CAST('79.99' AS REAL), CAST('9.00' AS INTEGER);
+```
+
+| CAST('79.99' AS REAL) | CAST('9.00' AS INTEGER) |
+| --- | --- |
+| 79.99 | 9 |
+
+`REAL` is the type for numbers with decimals, and `INTEGER` for whole numbers. So `CAST(price AS REAL)` turns the text into a number of dollars. Times 100, that is cents. Or so you would think.
+
+### Problem 4: the floating-point trap
+
+Look at what multiplying by 100 really gives:
+
+```sql
+SELECT sku, price, CAST(price AS REAL) * 100 AS times_100
+FROM import_rows WHERE sku IN ('HEAD', 'NOTE');
+```
+
+| sku | price | times_100 |
+| --- | --- | --- |
+| NOTE | 4.35 | 434.99999999999994 |
+| NOTE | 4.35 | 434.99999999999994 |
+| HEAD | 89.99 | 8999.0 |
+| HEAD | 79.99 | 7998.999999999999 |
+
+The floating-point numbers from Decision 1 last lesson are back. 4.35 and 79.99 have no exact binary form, so times 100 they land a hair *below* the whole number.
+
+Now `CAST(… AS INTEGER)` makes it worse. Turning a decimal into an integer does not round. It [[truncates|truncate-picture]]: it chops off everything after the decimal point. So 7998.999999999999 becomes 7998, and the headphones lose a cent. The notebook becomes 434.
+
+The fix is to **round first**. `ROUND(x)` with no second argument rounds to the nearest whole number: `ROUND(7998.999999999999)` gives `7999.0`. That is still a `REAL`, so cast it to an integer at the end. Read this from the inside out:
+
+```sql
+CAST(ROUND(CAST(price AS REAL) * 100) AS INTEGER)
+```
+
+1. `CAST(price AS REAL)`: text to a number of dollars, 79.99.
+2. `* 100`: dollars to cents, 7998.999999999999.
+3. `ROUND(...)`: to the nearest whole number, 7999.0.
+4. `CAST(... AS INTEGER)`: to a whole-number type, 7999.
+
+Every price in the export comes out right: 900, 3250, 4500, 435, 8999, 7999 and 650.
+
+### Problem 5: a line that appears twice
+
+Order 1003 has two notebook lines, both `qty` 3 at 4.35. A customer who bought 6 notebooks would have one line with `qty` 6. So this is the export [[counting one line twice|export-duplicates]].
+
+`SELECT DISTINCT`, from the lesson "DISTINCT, UNION and UNION ALL", keeps one copy of each repeated row. The two notebook lines match in every column, so `DISTINCT` drops one.
+
+One more thing to notice, which is not a problem: the headphones sold at 89.99 in order 1004 and 79.99 in order 1006, a sale. Both are real. Each line keeps the price it was charged, as you decided last lesson.
+
+**Watch out:** `CAST(… AS INTEGER)` on money without `ROUND` gives no error and looks fine on most rows. 9.00 and 32.50 come out right, so a quick glance at a few rows says "works". Only 4.35 and 79.99 are a cent short. Always round before you cast.
+
+::: context look-first Most of the work is looking
+People who move data between systems say that most of the job is understanding and cleaning it, not writing the final `INSERT`. A quick way to find problems in a column is to group by it: `SELECT status, COUNT(*) FROM import_rows GROUP BY status;` gives five rows, `'Paid'`, `'SHIPPED'`, `'paid'`, `'refunded'` and `'shipped'`, where there should be three. The same habit helps with telemetry: before trusting a new sensor feed, engineers look at its raw values and hunt for gaps, repeats and impossible readings.
+:::
+
+::: context invisible-spaces Seeing what you cannot see
+A space at the end of a value is invisible in a result table. Two tricks make it show. `length(email)` counts the characters: `'BO@mail.com '` has 12, one more than the 11 you can see. Or glue brackets around the value with `||`, from the lesson "Building text: joining, replacing and LIKE": `'[' || email || ']'` shows `[BO@mail.com ]`, with the space inside the brackets.
+:::
+
+::: context truncate-picture Chopping versus rounding
+On the number line, 7998.999999999999 sits a tiny step to the left of 7999. `CAST(… AS INTEGER)` chops off the decimals, which moves it back to 7998. `ROUND` moves it to the nearest whole number, which is 7999. For negative numbers the chop goes towards zero: `CAST(-2.7 AS INTEGER)` gives -2.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 130" font-family="Inter, Arial, sans-serif">
+  <defs>
+    <marker id="tr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#b4232c"/>
+    </marker>
+    <marker id="rd" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#1d6fd1"/>
+    </marker>
+  </defs>
+  <line x1="20" y1="70" x2="340" y2="70" stroke="#6c7a93" stroke-width="1.5"/>
+  <line x1="50" y1="62" x2="50" y2="78" stroke="#1f2a44" stroke-width="1.5"/>
+  <line x1="310" y1="62" x2="310" y2="78" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="50" y="96" font-size="12" fill="#1f2a44" text-anchor="middle">7998</text>
+  <text x="310" y="96" font-size="12" fill="#1f2a44" text-anchor="middle">7999</text>
+  <circle cx="298" cy="70" r="5" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="250" y="116" font-size="11" fill="#1f2a44" text-anchor="middle">7998.999999999999</text>
+  <path d="M292 62 Q175 10 56 60" fill="none" stroke="#b4232c" stroke-width="1.5" marker-end="url(#tr)"/>
+  <text x="165" y="26" font-size="11" fill="#b4232c" text-anchor="middle">CAST chops: 7998</text>
+  <path d="M300 63 Q306 30 310 62" fill="none" stroke="#1d6fd1" stroke-width="1.5" marker-end="url(#rd)"/>
+  <text x="312" y="24" font-size="11" fill="#1d6fd1" text-anchor="middle">ROUND: 7999</text>
+</svg>
+```
+:::
+
+::: context export-duplicates Where duplicate lines come from
+Exports repeat rows more often than you would think. A script that fails halfway and is run again may write the first half twice. A join inside the export can fan out, the way you saw in "Debugging: the join that double-counts". Whatever the cause, a doubled line would count 3 notebooks as 6 and add 13.05 dollars of revenue that never happened. That is why a load checks for repeats, and why `order_items` has a primary key that would refuse the second copy anyway.
+:::
+--- task
+Write one `SELECT` that returns the export's lines, cleaned and ready to load, with these six columns in this order:
+
+1. `order_ref`, as it is.
+2. `email`: the email trimmed and in lower case.
+3. `sku`, as it is.
+4. `qty`, as it is.
+5. `cents`: the price in whole cents, rounded before it is cast to an integer.
+6. `status`: the status trimmed and in lower case.
+
+Use `SELECT DISTINCT` so the doubled notebook line appears once, and sort by `order_ref`, then `sku`. You should get 11 rows.
+--- starter
+SELECT order_ref, email, sku, qty, CAST(price AS REAL) * 100 AS cents, status
+FROM import_rows
+ORDER BY order_ref, sku;
+--- solution
+SELECT DISTINCT order_ref,
+       lower(trim(email)) AS email,
+       sku,
+       qty,
+       CAST(ROUND(CAST(price AS REAL) * 100) AS INTEGER) AS cents,
+       lower(trim(status)) AS status
+FROM import_rows
+ORDER BY order_ref, sku;
+--- hint
+Each problem has its own fix from the lesson: `lower(trim(...))` for the email and the status, `CAST` and `ROUND` for the price, and `DISTINCT` for the doubled line.
+--- hint
+Run the starter first and look at the `cents` column: the notebook shows 434.99999999999994. Wrap it: `CAST(ROUND(CAST(price AS REAL) * 100) AS INTEGER) AS cents`.
+--- hint
+Start with `SELECT DISTINCT order_ref, lower(trim(email)) AS email, sku, qty,`, then the cents expression, then `lower(trim(status)) AS status`. Keep `FROM import_rows ORDER BY order_ref, sku;`.
+--- check result | Eleven clean lines: normal emails and statuses, exact cents, no duplicate
+ordered
+[[1001, "ana@mail.com", "MUG", 2, 900, "paid"], [1001, "ana@mail.com", "PEN", 1, 3250, "paid"], [1002, "bo@mail.com", "LAMP", 1, 4500, "shipped"], [1003, "cy@mail.com", "MUG", 4, 900, "shipped"], [1003, "cy@mail.com", "NOTE", 3, 435, "shipped"], [1004, "ana@mail.com", "HEAD", 1, 8999, "paid"], [1005, "dee@mail.com", "PEN", 2, 3250, "refunded"], [1006, "bo@mail.com", "CABLE", 3, 650, "paid"], [1006, "bo@mail.com", "HEAD", 1, 7999, "paid"], [1007, "cy@mail.com", "LAMP", 1, 4500, "shipped"], [1008, "eli@mail.com", "MUG", 1, 900, "paid"]]
+--- check source | Rounds the price before converting it
+[Rr][Oo][Uu][Nn][Dd]\s*\(
 
 === sqlp-02 | Store 2: loading the export
 --- schema
@@ -219,26 +557,163 @@ INSERT INTO import_rows VALUES
   (1007, '2024-03-18 08:20:00', 'cy@mail.com',   'Cy Diaz',   'US', 'LAMP',  'Desk lamp',    'home',        '45.00', 1, 'shipped'),
   (1008, '2024-03-29 21:00:00', 'eli@mail.com',  'Eli Fox',   'US', 'MUG',   'Mug',          'home',        '9.00',  1, 'paid');
 --- teach
-The empty tables from last lesson are here, next to `import_rows`, the spreadsheet export. Loading it is `INSERT … SELECT`, one table at a time, **parents before children** so every foreign key has something to point at. Before writing any of it, **look at the data**. `SELECT * FROM import_rows` shows every problem you have to handle:
+Last lesson you found five problems in the export and wrote an expression to fix each one. Now you use those fixes to [[load the export|etl]] into the four tables you designed, so every fact lands once, in the right place.
 
-- **Emails with stray capitals and spaces**: `'BO@mail.com '` and `' ana@mail.com'`. Normalise with `lower(trim(email))` and group by that.
-- **Statuses in mixed case**: `'SHIPPED'`, `'Paid'`. `lower(trim(status))`, or the `CHECK` you wrote will (rightly) refuse the row.
-- **Prices as text in dollars.** Convert to cents — and watch floating point: `89.99 * 100` is `8998.999999999999`, and `CAST(… AS INTEGER)` truncates to 8998. **Round first**: `CAST(ROUND(CAST(price AS REAL) * 100) AS INTEGER)`.
-- **An exact duplicate line** (order 1003's notebooks appear twice — the export double-counted). `SELECT DISTINCT` drops it; the primary key would refuse it anyway.
-- **A product sold at two prices.** The headphones went for 89.99 and, on sale, 79.99. Each line keeps what it was charged; the product's list price is the highest price it has sold at.
+### The tables
 
-Grouping by the normalised email gives one row per customer, but the name and country columns are neither grouped nor aggregated. Every row of a customer carries the same name, so `MIN(customer_name)` is an honest way to pick it — an aggregate, so the query is valid in any database.
+The four tables from "Store 1: the schema" are here, empty: `customers`, `products`, `orders` and `order_items`, with all their rules. Next to them is `import_rows`, the same 12-row export as last lesson.
 
-Then the linking. `orders` needs a `customer_id`, which the export does not have — it has an email. Join back to the customers you just inserted on the normalised email to find the id. `order_items` finds its `product_id` the same way, through the SKU. The order's own id can simply be the export's `order_ref`.
+### Recap: the fixes
 
-Finish by reconciling: the total of the lines you loaded must equal the total in the export, minus the duplicate. Numbers that do not reconcile are a bug in the load, not a rounding curiosity.
+From last lesson:
+
+- Emails: `lower(trim(email))`. Statuses: `lower(trim(status))`.
+- Prices in cents: `CAST(ROUND(CAST(price AS REAL) * 100) AS INTEGER)`. Without `ROUND`, 79.99 becomes 7998.
+- The doubled notebook line in order 1003: `SELECT DISTINCT` drops it. The primary key on `order_items` would refuse it anyway.
+- The headphones sold at two prices, 89.99 and 79.99 on sale. Each line keeps what it was charged.
+
+### Parents before children
+
+Each table is filled with `INSERT … SELECT`, from the lesson "Design: normalising a flat table": the rows a `SELECT` returns are inserted. One table at a time, and **parents before children**. A **parent** is a table that others point at; a **child** points at it. An order points at a customer, so the customer must exist first, or the foreign key refuses the order. That gives [[this order|load-order]]: `customers` and `products`, then `orders`, then `order_items`.
+
+### Step 1: one customer per email
+
+Group by the cleaned email, and each customer becomes one group:
+
+```sql
+SELECT lower(trim(email)), MIN(customer_name), MIN(country)
+FROM import_rows
+GROUP BY lower(trim(email))
+ORDER BY MIN(order_ref);
+```
+
+| lower(trim(email)) | MIN(customer_name) | MIN(country) |
+| --- | --- | --- |
+| ana@mail.com | Ana Ruiz | ES |
+| bo@mail.com | Bo Chen | UK |
+| cy@mail.com | Cy Diaz | US |
+| dee@mail.com | Dee Evans | UK |
+| eli@mail.com | Eli Fox | US |
+
+Why `MIN(customer_name)`? The name is neither grouped nor inside an aggregate. As you saw in "GROUP BY: expressions, NULLs and extra columns", that is a bare column: SQLite would pick it from some row, and most other databases refuse the query. Every row of one customer carries the same name, so `MIN` of it is that name. It is [[an honest way to pick it|min-pick]], and because it is an aggregate, the query works in any database. `MIN(country)` is the same trick.
+
+`ORDER BY MIN(order_ref)` hands out the ids in the order customers first bought: Ana gets `id` 1, Bo 2, and so on. Put `INSERT INTO customers (email, name, country)` on the line above, and five customers go in.
+
+### Step 2: one product per SKU
+
+The same shape, grouped by `sku`. The product's `price_cents` is its list price. Here the rule is: the **highest price it has sold at**, so `MAX` of the cleaned cents.
+
+```sql
+SELECT sku, MIN(product_name), MIN(category),
+       MAX(CAST(ROUND(CAST(price AS REAL) * 100) AS INTEGER))
+FROM import_rows
+GROUP BY sku
+ORDER BY MIN(order_ref), sku;
+```
+
+That gives 6 products. The headphones get 8999, the higher of 8999 and 7999. That rule is [[a choice the shop makes|list-price]], and the task states it.
+
+### Step 3: orders, linked to their customer
+
+`orders` needs a `customer_id`. The export does not have one. It has an email. So join back to the customers you inserted in Step 1, on the cleaned email, and take their `id`:
+
+```sql
+SELECT DISTINCT r.order_ref, c.id, r.placed, lower(trim(r.status))
+FROM import_rows r
+JOIN customers c ON c.email = lower(trim(r.email));
+```
+
+| order_ref | id | placed | lower(trim(r.status)) |
+| --- | --- | --- | --- |
+| 1001 | 1 | 2024-01-03 10:00:00 | paid |
+| 1002 | 2 | 2024-01-15 12:30:00 | shipped |
+| 1003 | 3 | 2024-02-01 09:00:00 | shipped |
+| 1004 | 1 | 2024-02-14 18:00:00 | paid |
+| 1005 | 4 | 2024-02-20 11:11:00 | refunded |
+| 1006 | 2 | 2024-03-05 16:45:00 | paid |
+| 1007 | 3 | 2024-03-18 08:20:00 | shipped |
+| 1008 | 5 | 2024-03-29 21:00:00 | paid |
+
+- The order's own `id` can be the export's `order_ref`. It is already a unique number per order.
+- `DISTINCT` is needed because an order with two lines, like 1001, appears on two rows. Without it the second copy of 1001 clashes with the primary key, and the whole insert fails.
+- Orders 1002 and 1004, with the messy emails, found Bo and Ana, because the join cleans the email on the export's side too.
+
+`INSERT INTO orders (id, customer_id, placed, status)` goes on top.
+
+### Step 4: the order lines
+
+`order_items` finds its `product_id` the same way, through the SKU: `JOIN products p ON p.sku = r.sku`. Each line takes `r.order_ref` as its `order_id`, its `qty`, and its own price in cents as `unit_cents`. `SELECT DISTINCT` loads the doubled notebook line once. That makes 11 lines. The headphones line in order 1006 keeps 7999, the sale price, even though the product's list price is 8999.
+
+### Step 5: reconcile
+
+**Reconciling** means checking that two totals that should agree really do. Here: the money in the lines you loaded must equal the money in the export, minus the duplicate.
+
+- The whole export, duplicate included, is 46608 cents: `SELECT SUM(qty * CAST(ROUND(CAST(price AS REAL) * 100) AS INTEGER)) FROM import_rows;`
+- The doubled line is 3 notebooks at 435 cents: 1305 cents.
+- So the loaded lines must come to 46608 − 1305 = 45303 cents.
+
+```sql
+SELECT SUM(qty * unit_cents) FROM order_items;
+```
+
+| SUM(qty * unit_cents) |
+| --- |
+| 45303 |
+
+It matches. Numbers that do not reconcile are [[a bug in the load|reconcile]], not a rounding curiosity.
+
+**Watch out:** join on the *cleaned* email. With `JOIN customers c ON c.email = r.email`, the rows `'BO@mail.com '` and `' ana@mail.com'` match no customer. An inner join drops them without a word, and orders 1002 and 1004 are never loaded: 6 orders instead of 8. This is exactly the kind of mistake the reconcile step catches.
+
+::: context etl Extract, transform, load
+Moving data from one system into another has a name: **ETL**, for extract, transform, load. *Extract* is getting the data out, here the spreadsheet export. *Transform* is cleaning and reshaping it, last lesson's fixes. *Load* is writing it into the new tables, this lesson. Data teams run ETL jobs every night, and space missions run the same shape of job on telemetry: raw packets come down from the spacecraft, get decoded and checked, and land in tables that engineers query.
+:::
+
+::: context load-order Which table first
+Each arrow is a foreign key, pointing from the child to its parent. A table can only be filled once every table it points at is full. `customers` and `products` point at nothing, so they go first, in either order. `orders` needs `customers`. `order_items` needs both `orders` and `products`, so it goes last.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 170" font-family="Inter, Arial, sans-serif">
+  <defs>
+    <marker id="lo" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#1f2a44"/>
+    </marker>
+  </defs>
+  <rect x="15" y="20" width="110" height="30" rx="4" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="70" y="40" font-size="12" fill="#1f2a44" text-anchor="middle">1. customers</text>
+  <rect x="235" y="20" width="110" height="30" rx="4" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="290" y="40" font-size="12" fill="#1f2a44" text-anchor="middle">1. products</text>
+  <rect x="15" y="110" width="110" height="30" rx="4" fill="#fff" stroke="#1f2a44"/>
+  <text x="70" y="130" font-size="12" fill="#1f2a44" text-anchor="middle">2. orders</text>
+  <rect x="235" y="110" width="110" height="30" rx="4" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="290" y="130" font-size="12" fill="#1f2a44" text-anchor="middle">3. order_items</text>
+  <line x1="70" y1="108" x2="70" y2="53" stroke="#1f2a44" stroke-width="1.5" marker-end="url(#lo)"/>
+  <line x1="290" y1="108" x2="290" y2="53" stroke="#1f2a44" stroke-width="1.5" marker-end="url(#lo)"/>
+  <line x1="233" y1="125" x2="128" y2="125" stroke="#1f2a44" stroke-width="1.5" marker-end="url(#lo)"/>
+  <text x="180" y="160" font-size="11" fill="#6c7a93" text-anchor="middle">fill in number order: parents first</text>
+</svg>
+```
+:::
+
+::: context min-pick Why MIN, and not the bare column
+`MIN` on text picks the value that comes first in alphabetical order. When every row in the group holds the same value, the first is that value, so nothing is lost. If the rows ever disagreed, say Ana changed her name between orders, `MIN` would still pick one of them without an error. That is why a careful load checks first: `SELECT lower(trim(email)), COUNT(DISTINCT customer_name) FROM import_rows GROUP BY lower(trim(email));` should show 1 on every row. Here it does.
+:::
+
+::: context list-price A rule written down
+Nothing in the export says what a product's list price is. The owners chose "the highest price it has sold at", so that a past sale price does not become the price on the website. Another shop might choose the most recent price. Neither is wrong. What matters is that the choice is made on purpose and written down, in the task and in the load, so the next person who reads `price_cents` knows where it came from.
+:::
+
+::: context reconcile Totals that must agree
+Accountants reconcile every month: the money the books say came in must match the money the bank says came in. A difference of one cent means something is wrong, and they hunt it down. Data loads use the same test: count the rows and add up the money on both sides. Spacecraft ground systems do it too: they count the telemetry packets sent and the packets stored, and a gap means data was lost on the way.
+:::
 --- task
-Load `import_rows` into the four tables:
+Load `import_rows` into the four tables with four `INSERT … SELECT` statements, parents first:
 
-- one customer per normalised email (`lower(trim(email))`), with their name and country
-- one product per SKU, with `price_cents` the highest price it sold at, in cents
-- one order per `order_ref` (use it as the order `id`), linked to its customer, with the status lower-cased and trimmed
-- one line per order and product, with `unit_cents` the price on that line in cents — the duplicate line loaded once
+1. `customers`: one row per cleaned email, `lower(trim(email))`, with `MIN(customer_name)` as the name and `MIN(country)` as the country. Leave `id` out, so SQLite numbers them.
+2. `products`: one row per `sku`, with `MIN(product_name)`, `MIN(category)`, and `price_cents` the highest price it sold at, in whole cents.
+3. `orders`: one row per `order_ref`, using it as the order `id`, with the `customer_id` found by joining `customers` on the cleaned email, `placed`, and the status in lower case and trimmed.
+4. `order_items`: one row per order and product, with `order_id` from `order_ref`, the `product_id` found by joining `products` on `sku`, `qty`, and `unit_cents` the price on that line in whole cents. The doubled line goes in once.
+
+Then check your load: `SELECT SUM(qty * unit_cents) FROM order_items;` should give 45303.
 --- starter
 INSERT INTO customers (email, name, country)
 SELECT email, customer_name, country FROM import_rows;
@@ -265,11 +740,11 @@ SELECT DISTINCT r.order_ref, p.id, r.qty, CAST(ROUND(CAST(r.price AS REAL) * 100
 FROM import_rows r
 JOIN products p ON p.sku = r.sku;
 --- hint
-Customers: `SELECT lower(trim(email)), MIN(customer_name), MIN(country) FROM import_rows GROUP BY lower(trim(email))`. Products the same way, grouped by SKU, with `MAX(...)` of the price in cents.
+The lesson's Steps 1 to 4 are your four statements, in that order. Each one is `INSERT INTO table (columns)` on top of a `SELECT` from `import_rows`.
 --- hint
-Cents: `CAST(ROUND(CAST(price AS REAL) * 100) AS INTEGER)` — without `ROUND`, 89.99 becomes 8998.
+Customers: `INSERT INTO customers (email, name, country) SELECT lower(trim(email)), MIN(customer_name), MIN(country) FROM import_rows GROUP BY lower(trim(email));`. Products the same way, grouped by `sku`, with `MAX(CAST(ROUND(CAST(price AS REAL) * 100) AS INTEGER))` for the price.
 --- hint
-Orders and lines: `SELECT DISTINCT … FROM import_rows r JOIN customers c ON c.email = lower(trim(r.email))`, and `JOIN products p ON p.sku = r.sku` for the lines.
+Orders: `SELECT DISTINCT r.order_ref, c.id, r.placed, lower(trim(r.status)) FROM import_rows r JOIN customers c ON c.email = lower(trim(r.email))`. Lines: `SELECT DISTINCT r.order_ref, p.id, r.qty,` the cents expression on `r.price`, `FROM import_rows r JOIN products p ON p.sku = r.sku`.
 --- check query | 5 customers, 6 products, 8 orders, 11 lines
 SELECT (SELECT COUNT(*) FROM customers), (SELECT COUNT(*) FROM products), (SELECT COUNT(*) FROM orders), (SELECT COUNT(*) FROM order_items)
 => [[5, 6, 8, 11]]
@@ -349,19 +824,158 @@ INSERT INTO order_items (order_id, product_id, qty, unit_cents) VALUES
   (1007, 3, 1, 4500),
   (1008, 1, 1, 900);
 --- teach
-The store is loaded. (Its tables are here with the data from last lesson.) Now the owners' first question: **where does the money come from, month by month?**
+Last lesson you loaded the export and proved the load with a reconcile. The store's data is now clean and in its tables. Now the owners ask their first Monday question: **where does the money come from, month by month?**
 
-A report like this is a pipeline, and CTEs are its stages:
+### The tables
 
-1. **Line revenue** — join items to orders and products, drop refunded orders, compute `qty * unit_cents` per line, and tag each line with its month and category.
-2. **Aggregate** — sum per month and category.
-3. **Compare** — each category's share of its month, with a window function: `SUM(revenue) OVER (PARTITION BY month)` puts the month's total on every row of that month, without collapsing them.
+The four tables are here, filled with exactly the data from last lesson: 5 customers, 6 products, 8 orders and 11 order lines. In short:
 
-Keep the arithmetic in integer cents until the very end, then convert once: `ROUND(cents / 100.0, 2)`. Converting early and then summing reintroduces the floating-point drift you designed away.
+- `orders`: `id`, `customer_id`, `placed` (like `'2024-02-14 18:00:00'`) and `status` (`'paid'`, `'shipped'` or `'refunded'`). Order 1005 is the only refunded one.
+- `order_items`: `order_id`, `product_id`, `qty` and `unit_cents`.
+- `products`: `id`, `sku`, `name`, `category` (`'home'`, `'stationery'` or `'electronics'`) and `price_cents`.
 
-Refunds: a refunded order is money you gave back. Excluding it is the simplest honest choice for a revenue report; a finance report would show it as a negative line instead. Either way, decide it explicitly and say so in the column name or the report title — silent inclusion is how two dashboards end up disagreeing.
+The money is on the order lines. The month is on the order. The category is on the product. So the report needs all three tables.
+
+### A report is a pipeline
+
+Think of a car factory. The body is welded at one station, painted at the next, and the seats go in at a third. Each station does one job and hands its work on. You can stop the line after any station and inspect what it made.
+
+A report like this one is built the same way: a **pipeline** of stages, each taking the last one's rows. In SQL, each stage is a named step in a `WITH`, a CTE, as in the lesson "CTEs: a query in named steps". This report has three stages: line revenue, totals, and shares.
+
+### Stage 1: revenue per line
+
+Join each line to its order and its product. Drop refunded orders. Work out what each line brought in, `qty * unit_cents`, and tag it with its month and category:
+
+```sql
+WITH lines AS (
+  SELECT strftime('%Y-%m', o.placed) AS month, p.category, oi.qty * oi.unit_cents AS cents
+  FROM order_items oi
+  JOIN orders o   ON o.id = oi.order_id
+  JOIN products p ON p.id = oi.product_id
+  WHERE o.status <> 'refunded'
+)
+SELECT * FROM lines;
+```
+
+`strftime('%Y-%m', o.placed)` turns the order's time into its month, like `'2024-02'`, as in the lesson "Dates and times". `<>` means "not equal". Here are the first five of the 10 rows it returns (11 lines, minus the refunded one):
+
+| month | category | cents |
+| --- | --- | --- |
+| 2024-01 | home | 1800 |
+| 2024-01 | stationery | 3250 |
+| 2024-01 | home | 4500 |
+| 2024-02 | home | 3600 |
+| 2024-02 | stationery | 1305 |
+
+The first row is order 1001's two mugs: 2 × 900 = 1800 cents.
+
+### Stage 2: totals per month and category
+
+The second stage groups the first one's rows. Put a comma after Stage 1's closing bracket, add the new step, and change the last line to `SELECT * FROM totals;`:
+
+```sql
+totals AS (
+  SELECT month, category, SUM(cents) AS cents
+  FROM lines
+  GROUP BY month, category
+)
+```
+
+| month | category | cents |
+| --- | --- | --- |
+| 2024-01 | home | 6300 |
+| 2024-01 | stationery | 3250 |
+| 2024-02 | electronics | 8999 |
+| 2024-02 | home | 3600 |
+| 2024-02 | stationery | 1305 |
+| 2024-03 | electronics | 9949 |
+| 2024-03 | home | 5400 |
+
+January's home line is 1800 + 4500 = 6300 cents: the mugs, and Bo's desk lamp.
+
+### Stage 3: each category's share of its month
+
+"Share" means this category's percentage of the whole month. For that, each row needs its month's total next to it, without squashing the rows together. That is a window function, as in the lesson "Running totals with SUM() OVER":
+
+```sql
+SUM(cents) OVER (PARTITION BY month) AS month_cents
+```
+
+`PARTITION BY month` splits the rows into one group per month, and `SUM(cents) OVER (...)` puts that group's total [[on every row of the group|window-picture]]:
+
+| month | category | cents | month_cents |
+| --- | --- | --- | --- |
+| 2024-01 | home | 6300 | 9550 |
+| 2024-01 | stationery | 3250 | 9550 |
+| 2024-02 | electronics | 8999 | 13904 |
+| 2024-02 | home | 3600 | 13904 |
+| 2024-02 | stationery | 1305 | 13904 |
+| 2024-03 | electronics | 9949 | 15349 |
+| 2024-03 | home | 5400 | 15349 |
+
+The share is then `100.0 * cents / month_cents`. For January's home row that is 100.0 × 6300 ÷ 9550 = 65.968…, which `ROUND(…, 1)` makes 66.0. Put `100.0` at the front, as in "CTEs: a query in named steps": with only whole numbers, SQLite does integer division and `6300 / 9550` is 0.
+
+### Keep the cents until the very end
+
+Every stage so far has worked in whole cents. Convert to dollars once, in the last `SELECT`:
+
+```sql
+ROUND(cents / 100.0, 2) AS revenue
+```
+
+`9949 / 100.0` is 99.49. Again `100.0`, not `100`: `9949 / 100` is 99, and the cents are lost.
+
+Why only at the end? Converting each line to dollars first and then adding brings back the [[floating-point drift|drift]] you designed the schema to avoid.
+
+### Refunds: decide out loud
+
+A refunded order is money the shop gave back. This report leaves refunds out, which is the simplest honest choice for a revenue report. A finance report would show a refund as a negative line instead.
+
+Either way, decide it on purpose, and say so in the column name or the report's title. Including refunds silently is how [[two dashboards end up disagreeing|one-definition]].
+
+**Watch out:** `ROUND(cents / 100, 2)` gives no error, but `cents / 100` is integer division: 9949 becomes 99, and every revenue loses its cents. The same goes for the share. Put a real number, `100.0`, in every division.
+
+::: context window-picture The month's total on every row
+`GROUP BY month` would squash February's three rows into one. `SUM(cents) OVER (PARTITION BY month)` keeps all three and writes February's total, 13904, beside each. Each row can then divide its own cents by that total.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">
+  <rect x="20" y="30" width="200" height="90" fill="#fff" stroke="#1d6fd1" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <text x="120" y="22" font-size="11" fill="#1d6fd1" text-anchor="middle">partition: 2024-02</text>
+  <text x="30" y="55" font-size="12" fill="#1f2a44">electronics</text>
+  <text x="190" y="55" font-size="12" fill="#1f2a44" text-anchor="end">8999</text>
+  <text x="30" y="82" font-size="12" fill="#1f2a44">home</text>
+  <text x="190" y="82" font-size="12" fill="#1f2a44" text-anchor="end">3600</text>
+  <text x="30" y="109" font-size="12" fill="#1f2a44">stationery</text>
+  <text x="190" y="109" font-size="12" fill="#1f2a44" text-anchor="end">1305</text>
+  <rect x="250" y="40" width="80" height="22" rx="3" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="290" y="55" font-size="12" fill="#1f2a44" text-anchor="middle">13904</text>
+  <rect x="250" y="67" width="80" height="22" rx="3" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="290" y="82" font-size="12" fill="#1f2a44" text-anchor="middle">13904</text>
+  <rect x="250" y="94" width="80" height="22" rx="3" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="290" y="109" font-size="12" fill="#1f2a44" text-anchor="middle">13904</text>
+  <text x="290" y="30" font-size="11" fill="#1f2a44" text-anchor="middle">month_cents</text>
+  <text x="180" y="142" font-size="11" fill="#6c7a93" text-anchor="middle">8999 + 3600 + 1305 = 13904, on all three rows</text>
+</svg>
+```
+:::
+
+::: context drift Why the order of adding matters
+With floating-point numbers, even the order you add in can change the answer. In SQLite, `SELECT 0.1 + 0.2 + 0.3;` gives 0.6000000000000001, but `SELECT 0.3 + 0.2 + 0.1;` gives 0.6. A report that turns every line into dollars and then adds thousands of them can end up a fraction of a cent off, and a different fraction depending on the order the rows arrive in. Whole cents add up exactly, in any order. So the report divides by 100.0 once, on the final total.
+:::
+
+::: context one-definition One name, one meaning
+Suppose the sales team's dashboard counts refunded orders as revenue and the finance team's does not. Both say "February revenue", and they differ by 65 dollars. Now two meetings are spent working out why. Data teams avoid this by writing one agreed definition for each number, such as **gross revenue** (before refunds) and **net revenue** (after them), and naming columns to match. Engineering telemetry has the same rule: a column called `altitude` must say whether it is measured above sea level or above the ground.
+:::
 --- task
-Return revenue by month and category, excluding refunded orders: `month` (`'YYYY-MM'`), `category`, `revenue` (in dollars, rounded to 2 decimals) and `share` (the category's percentage of that month's revenue, rounded to 1 decimal). Sort by month, then revenue from highest to lowest.
+Write one query that returns revenue by month and category, leaving out refunded orders. Build it as a pipeline of CTEs, as the lesson did. Return four columns, in this order:
+
+1. `month`: the order's month, as `'YYYY-MM'`.
+2. `category`: the product's category.
+3. `revenue`: the total of `qty * unit_cents` for that month and category, turned into dollars and rounded to 2 decimals.
+4. `share`: that category's percentage of the month's revenue, rounded to 1 decimal.
+
+Sort by `month`, then by `revenue` from highest to lowest. You should get 7 rows.
 --- starter
 SELECT strftime('%Y-%m', o.placed) AS month, SUM(oi.qty * oi.unit_cents) AS revenue
 FROM orders o
@@ -385,9 +999,11 @@ SELECT month, category,
 FROM totals
 ORDER BY month, revenue DESC;
 --- hint
-First CTE: one row per line with its month, category and `qty * unit_cents`, refunded orders filtered out. Second: sum per month and category.
+Put Stage 1 (`lines`) and Stage 2 (`totals`) from the lesson into one `WITH`, separated by a comma. The final `SELECT` reads from `totals`.
 --- hint
-`share` is `100.0 * cents / SUM(cents) OVER (PARTITION BY month)`. Convert cents to dollars only in the final `SELECT`.
+In the final `SELECT`: `month, category, ROUND(cents / 100.0, 2) AS revenue`, and a share built from `SUM(cents) OVER (PARTITION BY month)`.
+--- hint
+`share` is `ROUND(100.0 * cents / SUM(cents) OVER (PARTITION BY month), 1)`. End with `FROM totals ORDER BY month, revenue DESC;`.
 --- check result | Seven month-and-category rows, refund excluded
 ordered
 [["2024-01", "home", 63.0, 66.0], ["2024-01", "stationery", 32.5, 34.0], ["2024-02", "electronics", 89.99, 64.7], ["2024-02", "home", 36.0, 25.9], ["2024-02", "stationery", 13.05, 9.4], ["2024-03", "electronics", 99.49, 64.8], ["2024-03", "home", 54.0, 35.2]]
@@ -456,19 +1072,191 @@ INSERT INTO order_items (order_id, product_id, qty, unit_cents) VALUES
   (1008, 1, 1, 900);
 INSERT INTO customers (id, email, name, country) VALUES (6, 'fay@mail.com', 'Fay Gold', 'ES');
 --- teach
-The second Monday question: **who are our customers, and how much are they worth?** The tables are the same as last lesson, plus Fay, who signed up yesterday and has not ordered yet.
+Last lesson's report answered "where does the money come from?". This lesson answers the owners' second Monday question: **who are our customers, and how much is each one worth?** It is the last lesson of the store project, and it brings back three traps from earlier courses at once.
 
-A customer report has to include **every** customer — including the ones who have not bought, because "signed up but never bought" is exactly who marketing wants to reach. That decides the shape: start from `customers` and LEFT JOIN everything else.
+### The tables
 
-Three traps, each from an earlier course:
+The tables are the same as last lesson, with one new row in `customers`: Fay (`id` 6, `fay@mail.com`), who signed up yesterday and has not ordered yet. So there are six customers:
 
-- **Condition placement.** Refunded orders must not count, but a customer whose only order was refunded must still appear. The status filter goes in the LEFT JOIN's `ON`.
-- **Fan-out.** Joining orders to their lines makes one row per *line*, so `COUNT(o.id)` counts lines. Count orders with `COUNT(DISTINCT o.id)`, or pre-aggregate each order's total in a CTE first.
-- **NULL is not zero.** A customer with no orders has `SUM(...)` = NULL. `COALESCE(…, 0)` makes the report say what it means.
+- Ana, Bo and Cy have two orders each, and Eli has one.
+- Dee's only order, 1005, was refunded.
+- Fay has no orders at all.
 
-Then a **segment**, so the numbers turn into action. A `CASE` on lifetime spend: big spenders are `'vip'`, anyone who has spent something is `'active'`, everyone else `'inactive'`. Write the boundaries into the task, and test the edges.
+### Every customer, so start from customers
+
+A customer report has to include **every** customer, including the ones who have not bought. "Signed up but never bought" is exactly who [[marketing wants to reach|win-back]].
+
+That decides the shape of the query. Start from `customers`, and `LEFT JOIN` everything else, as in the lesson "LEFT JOIN and NULL". A customer with no match still gets a row, with NULL in the joined columns.
+
+### Trap 1: where the refund filter goes
+
+Refunded orders must not count. But Dee, whose only order was refunded, must still appear. Put the filter in the `WHERE`, and watch what happens:
+
+```sql
+SELECT c.email, COUNT(o.id) AS orders
+FROM customers c
+LEFT JOIN orders o ON o.customer_id = c.id
+WHERE o.status <> 'refunded'
+GROUP BY c.id;
+```
+
+| email | orders |
+| --- | --- |
+| ana@mail.com | 2 |
+| bo@mail.com | 2 |
+| cy@mail.com | 2 |
+| eli@mail.com | 1 |
+
+Dee and Fay are gone. Fay's row has `o.status` = NULL, and `NULL <> 'refunded'` is not true, so the `WHERE` throws her away. Dee's only order is refunded, so she goes too. The `LEFT JOIN` kept them; the `WHERE` undid it.
+
+As in the lesson "LEFT JOIN: where the filter goes", the filter belongs in the `ON`:
+
+```sql
+LEFT JOIN orders o ON o.customer_id = c.id AND o.status <> 'refunded'
+```
+
+Now the refunded order finds no match, and Dee and Fay each appear with 0 orders.
+
+### Trap 2: fan-out
+
+The report also needs the money, and the money is on the order lines. Join them in, and each order becomes one row per *line*. That is **fan-out**, from the lesson "Debugging: the join that double-counts". Now `COUNT(o.id)` counts lines, not orders:
+
+```sql
+SELECT c.email, COUNT(o.id) AS lines_counted, COUNT(DISTINCT o.id) AS orders
+FROM customers c
+LEFT JOIN orders o ON o.customer_id = c.id AND o.status <> 'refunded'
+LEFT JOIN order_items oi ON oi.order_id = o.id
+GROUP BY c.id;
+```
+
+| email | lines_counted | orders |
+| --- | --- | --- |
+| ana@mail.com | 3 | 2 |
+| bo@mail.com | 3 | 2 |
+| cy@mail.com | 3 | 2 |
+| dee@mail.com | 0 | 0 |
+| eli@mail.com | 1 | 1 |
+| fay@mail.com | 0 | 0 |
+
+Ana has 2 orders, but order 1001 has [[two lines|fanout-ana]], so it is counted twice. `COUNT(DISTINCT o.id)` counts each order once.
+
+The other fix, and the one this report uses, is to **pre-aggregate**: shrink each order to one row, with its total, before joining. A CTE does it:
+
+```sql
+WITH order_totals AS (
+  SELECT o.id, o.customer_id, o.placed, SUM(oi.qty * oi.unit_cents) AS cents
+  FROM orders o
+  JOIN order_items oi ON oi.order_id = o.id
+  WHERE o.status <> 'refunded'
+  GROUP BY o.id
+)
+SELECT * FROM order_totals;
+```
+
+| id | customer_id | placed | cents |
+| --- | --- | --- | --- |
+| 1001 | 1 | 2024-01-03 10:00:00 | 5050 |
+| 1002 | 2 | 2024-01-15 12:30:00 | 4500 |
+| 1003 | 3 | 2024-02-01 09:00:00 | 4905 |
+| 1004 | 1 | 2024-02-14 18:00:00 | 8999 |
+| 1006 | 2 | 2024-03-05 16:45:00 | 9949 |
+| 1007 | 3 | 2024-03-18 08:20:00 | 4500 |
+| 1008 | 5 | 2024-03-29 21:00:00 | 900 |
+
+One row per order that counts. Order 1005, the refund, is not there. Here the `WHERE` is safe: it runs *inside* the CTE, before any `LEFT JOIN`. It only removes an order. When `customers` is later `LEFT JOIN`ed to `order_totals`, Dee finds no match and still gets her row.
+
+### Trap 3: NULL is not zero
+
+Join `customers` to `order_totals`, and add up each customer's orders:
+
+```sql
+SELECT c.email, COUNT(t.id) AS orders, SUM(t.cents) AS cents
+FROM customers c
+LEFT JOIN order_totals t ON t.customer_id = c.id
+GROUP BY c.id;
+```
+
+| email | orders | cents |
+| --- | --- | --- |
+| ana@mail.com | 2 | 14049 |
+| bo@mail.com | 2 | 14449 |
+| cy@mail.com | 2 | 9405 |
+| dee@mail.com | 0 | NULL |
+| eli@mail.com | 1 | 900 |
+| fay@mail.com | 0 | NULL |
+
+`COUNT(t.id)` is 0 for Dee and Fay, because `COUNT` skips NULLs. But `SUM` of nothing is NULL, not 0, as you saw in "Testing for NULL". A report should [[say what it means|null-zero]]: `COALESCE(SUM(t.cents), 0)` gives 0 when the sum is NULL.
+
+The last order's date works the same way. `MAX(t.placed)` is the latest order's time, and `date(...)`, from "Dates and times", keeps only the `'YYYY-MM-DD'` part: `date('2024-03-05 16:45:00')` is `'2024-03-05'`. For Dee and Fay it stays NULL, which is right: they have no last order.
+
+### A segment: turning numbers into action
+
+A **segment** is a group of customers who get the same treatment. Numbers alone do not tell the shop what to do. A label does. A `CASE`, from "CASE: decisions inside a query", sorts each customer by lifetime spend, in cents:
+
+```sql
+CASE WHEN cents >= 10000 THEN 'vip'
+     WHEN cents > 0 THEN 'active'
+     ELSE 'inactive' END AS segment
+```
+
+- `'vip'`: 10000 cents (100 dollars) or more.
+- `'active'`: anything above 0.
+- `'inactive'`: everyone else.
+
+`CASE` takes the first `WHEN` that is true, so the order matters. The boundaries are written into the task, and it is worth [[testing the edges|edge-tests]]: 10000 cents gives `'vip'`, 9999 gives `'active'`, and 0 gives `'inactive'`. These labels are a small version of a well-known way to [[score customers|rfm]].
+
+**Watch out:** write the `WHEN`s from the strictest down. With `WHEN cents > 0 THEN 'active'` first, Ana's 14049 cents is above 0, so she is labelled `'active'` and the `'vip'` line is never reached. No error, and no VIPs.
+
+::: context win-back Customers who have not bought yet
+Shops send special emails to people who signed up but never ordered, or who have not ordered for a while: a reminder, a discount, a "we miss you". Marketing teams call these **win-back** or re-engagement campaigns. They can only send them if the report lists those people. Drop the customers with no orders, and the very list marketing wanted is empty. That is why this report starts from `customers`, not from `orders`.
+:::
+
+::: context fanout-ana Ana's rows after the join
+Ana has two orders that count. Order 1001 has two lines, a mug and a pen, and order 1004 has one, the headphones. Joined to their lines, the two orders become three rows. `COUNT(o.id)` counts the id on every row: 1001, 1001, 1004 makes 3. `COUNT(DISTINCT o.id)` counts each different id once: 2.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 140" font-family="Inter, Arial, sans-serif">
+  <text x="70" y="18" font-size="11" fill="#6c7a93" text-anchor="middle">orders</text>
+  <text x="250" y="18" font-size="11" fill="#6c7a93" text-anchor="middle">rows after the join</text>
+  <rect x="20" y="30" width="100" height="26" rx="3" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="70" y="47" font-size="12" fill="#1f2a44" text-anchor="middle">1001</text>
+  <rect x="20" y="84" width="100" height="26" rx="3" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="70" y="101" font-size="12" fill="#1f2a44" text-anchor="middle">1004</text>
+  <rect x="190" y="26" width="120" height="24" rx="3" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="250" y="42" font-size="11" fill="#1f2a44" text-anchor="middle">1001, mug</text>
+  <rect x="190" y="56" width="120" height="24" rx="3" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="250" y="72" font-size="11" fill="#1f2a44" text-anchor="middle">1001, pen</text>
+  <rect x="190" y="86" width="120" height="24" rx="3" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="250" y="102" font-size="11" fill="#1f2a44" text-anchor="middle">1004, headphones</text>
+  <line x1="120" y1="43" x2="188" y2="38" stroke="#1f2a44" stroke-width="1.5"/>
+  <line x1="120" y1="43" x2="188" y2="68" stroke="#1f2a44" stroke-width="1.5"/>
+  <line x1="120" y1="97" x2="188" y2="98" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="180" y="132" font-size="11" fill="#b4232c" text-anchor="middle">2 orders, 3 rows: COUNT(o.id) says 3</text>
+</svg>
+```
+:::
+
+::: context null-zero Unknown versus nothing
+NULL means "no value", and 0 is a real number. For spending, the truth is "this customer spent nothing", which is 0. Leave the NULL in, and the report shows an empty cell that people read as "missing data". Worse, the NULL spreads: an average of spend skips NULL rows, so it would be taken over buyers only, not over all customers. `COALESCE` turns the NULL into the 0 you mean, so the report says what it means.
+:::
+
+::: context edge-tests Testing the boundaries
+Bugs gather at boundaries. Is "100 dollars or more" written `>=` or `>`? Only a customer with exactly 10000 cents can tell the two apart. So testers pick values right on each edge and one step either side: 9999, 10000 and 10001, then 0 and 1. The same habit runs through flight software: if an engine must shut down when a temperature *reaches* a limit, the test checks the reading exactly at the limit, not only far above it.
+:::
+
+::: context rfm Recency, frequency, money
+This report holds three classic measures of a customer. **Recency**: how long since the last order (`last_order`). **Frequency**: how many orders (`orders`). **Monetary value**: how much they spent (`spent`). Marketers call this **RFM**, and it has been used since long before online shops, by mail-order catalogues. Real RFM gives each measure a score, often 1 to 5, and combines them. This lesson's segment uses spend alone, which is a fine place to start.
+:::
 --- task
-Return one row per customer (all of them): `email`, `orders` (their non-refunded orders), `spent` (total of those orders in dollars, rounded to 2 decimals; 0 if none), `last_order` (date of the latest non-refunded order as `'YYYY-MM-DD'`, or NULL) and `segment` — `'vip'` for spend of 100 dollars or more, `'active'` for any spend above 0, else `'inactive'`. Sort by spent, highest first, then email.
+Write one query that returns one row per customer, all six of them, with these five columns in this order:
+
+1. `email`.
+2. `orders`: how many non-refunded orders they have.
+3. `spent`: the total of those orders in dollars, rounded to 2 decimals, and 0 if they have none.
+4. `last_order`: the date of their latest non-refunded order, as `'YYYY-MM-DD'`, or NULL if they have none.
+5. `segment`: `'vip'` for spend of 100 dollars (10000 cents) or more, `'active'` for any spend above 0, and `'inactive'` otherwise.
+
+Sort by `spent`, highest first, then by `email`. Dee and Fay should appear, both `'inactive'`.
 --- starter
 SELECT c.email, COUNT(o.id) AS orders
 FROM customers c
@@ -499,11 +1287,11 @@ SELECT email, orders,
 FROM per_customer
 ORDER BY spent DESC, email;
 --- hint
-Pre-aggregate: a CTE with one row per non-refunded order and its total in cents. That removes the fan-out.
+Start from the lesson's `order_totals` CTE: one row per non-refunded order, with its total in cents. That removes the fan-out.
 --- hint
-LEFT JOIN customers to that CTE, `COUNT(t.id)` for orders, `COALESCE(SUM(t.cents), 0)` for spend, `date(MAX(t.placed))` for the last order.
+Add a second CTE that starts `FROM customers c LEFT JOIN order_totals t ON t.customer_id = c.id` and groups by `c.id`. Its columns: `c.email`, `COUNT(t.id) AS orders`, `COALESCE(SUM(t.cents), 0) AS cents` and `date(MAX(t.placed)) AS last_order`.
 --- hint
-The segment is a `CASE` on cents: `>= 10000` is vip, `> 0` is active.
+The final `SELECT` reads that second CTE: `email, orders, ROUND(cents / 100.0, 2) AS spent, last_order`, and the segment `CASE` on `cents`, with `>= 10000` for `'vip'` first, then `> 0` for `'active'`. End with `ORDER BY spent DESC, email`.
 --- check result | Six customers; Dee (refund only) and Fay (no orders) are inactive
 ordered
 [["bo@mail.com", 2, 144.49, "2024-03-05", "vip"], ["ana@mail.com", 2, 140.49, "2024-02-14", "vip"], ["cy@mail.com", 2, 94.05, "2024-03-18", "active"], ["eli@mail.com", 1, 9.0, "2024-03-29", "active"], ["dee@mail.com", 0, 0.0, null, "inactive"], ["fay@mail.com", 0, 0.0, null, "inactive"]]
