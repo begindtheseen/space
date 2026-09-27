@@ -54,7 +54,7 @@ double pd_torque(double angle_err_rad, double rate_rad_s, double kp, double kd) 
                                                                     ^
 ```
 
-The line was longer than that style's 80 characters. The team settled the question once, in a two-line `.clang-format` file (`BasedOnStyle: Google` and `ColumnLimit: 100`), and the check passed. For Python, `ruff check` does the same job. Formatting is cheap, which is why it runs first: a failure costs seconds, and reviews stay about behavior instead of spaces.
+The line was longer than that style's 80 characters. The team settled the question once, in a two-line `.clang-format` file (`BasedOnStyle: Google` and `ColumnLimit: 100`), and the check passed. For Python, `ruff check` lints and `ruff format --check` checks the layout. Formatting is cheap, which is why it runs first: a failure costs seconds, and reviews stay about behavior instead of spaces.
 
 ## Station 2: static analysis
 
@@ -127,6 +127,11 @@ Exit code 2, so the job fails, and the report lists the lines that never ran: 18
 **Suite C: calls everything, checks nothing.** This test calls every function and throws the answers away:
 
 ```cpp
+#include <cstdio>
+#include <vector>
+
+#include "attitude.hpp"
+
 // Calls everything, checks nothing.
 int main() {
   const std::vector<double> gyro = {0.10, 0.12, 0.11, 0.13};

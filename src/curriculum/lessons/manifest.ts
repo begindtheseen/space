@@ -2920,6 +2920,65 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "step vs next vs finish vs until; tbreak; display; set var"
       ],
       "file": "cod_dbg_01_gdb/04-stepping-and-changing-state.md"
+    },
+    {
+      "id": "l05-attaching-and-core-dumps",
+      "title": "Attaching to a running program, and reading core dumps",
+      "minutes": 25,
+      "covers": [
+        "Attaching to a running process; gdb -p",
+        "Core dumps: ulimit -c unlimited, gdb ./bin ./core, thread apply all bt"
+      ],
+      "file": "cod_dbg_01_gdb/05-attaching-and-core-dumps.md"
+    },
+    {
+      "id": "l06-gdb-comfort-and-remote-debugging",
+      "title": "Making gdb comfortable, debugging remotely, and running backwards",
+      "minutes": 23,
+      "covers": [
+        "TUI mode, .gdbinit, pretty-printers for STL and Eigen",
+        "gdbserver and remote/embedded debugging; rr for reverse debugging"
+      ],
+      "file": "cod_dbg_01_gdb/06-gdb-comfort-and-remote-debugging.md"
+    },
+    {
+      "id": "l07-debugging-python",
+      "title": "Debugging Python: pdb, breakpoint() and py-spy",
+      "minutes": 24,
+      "covers": [
+        "Python: pdb, breakpoint(), py-spy for a live process"
+      ],
+      "file": "cod_dbg_01_gdb/07-debugging-python.md"
+    },
+    {
+      "id": "l08-sanitizers-and-valgrind",
+      "title": "Sanitizers and Valgrind",
+      "minutes": 28,
+      "covers": [
+        "AddressSanitizer, UBSan, ThreadSanitizer, LeakSanitizer",
+        "Valgrind memcheck, helgrind, callgrind and when to prefer it over ASan"
+      ],
+      "file": "cod_dbg_01_gdb/08-sanitizers-and-valgrind.md"
+    },
+    {
+      "id": "l09-profiling-with-perf-and-benchmarks",
+      "title": "Finding where the time goes",
+      "minutes": 28,
+      "covers": [
+        "perf stat (IPC, cache misses, branch misses), perf record/report, flame graphs",
+        "hyperfine for wall clock, Google Benchmark for microbenchmarks"
+      ],
+      "file": "cod_dbg_01_gdb/09-profiling-with-perf-and-benchmarks.md"
+    },
+    {
+      "id": "l10-logging-and-post-flight-investigation",
+      "title": "Logs, ring buffers and the one dataset",
+      "minutes": 25,
+      "covers": [
+        "Logging strategy: levels, structured logs, flight-side ring buffers",
+        "Post-flight anomaly investigation: one dataset, no reruns"
+      ],
+      "file": "cod_dbg_01_gdb/10-logging-and-post-flight-investigation.md"
     }
   ],
   "cod_git_01_basics": [
@@ -3775,7 +3834,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-golden-files-and-nightly-monte-carlo",
       "title": "Golden files and the nightly Monte Carlo",
-      "minutes": 26,
+      "minutes": 25,
       "covers": [
         "Golden-file regression comparison with numerical tolerance",
         "Nightly and scheduled long-running Monte Carlo jobs"
@@ -5191,6 +5250,25 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       "file": "cod_slk_02_solvers/01-how-a-solver-steps.md"
     },
     {
+      "id": "l02-variable-step-solvers-and-tolerances",
+      "title": "ode45, ode23, ode113 and the tolerances that steer them",
+      "minutes": 27,
+      "covers": [
+        "Continuous solvers: ode45 (Dormand-Prince, the default starting point), ode23, ode113",
+        "RelTol and AbsTol; max step size and when to constrain it"
+      ],
+      "file": "cod_slk_02_solvers/02-variable-step-solvers-and-tolerances.md"
+    },
+    {
+      "id": "l03-stiffness",
+      "title": "Stiff models and the implicit solvers",
+      "minutes": 23,
+      "covers": [
+        "Stiff solvers: ode15s, ode23s, ode23t, ode23tb; daessc"
+      ],
+      "file": "cod_slk_02_solvers/03-stiffness.md"
+    },
+    {
       "id": "l04-fixed-step-solvers",
       "title": "Fixed-step solvers: ode1 to ode8, and the step that keeps a loop stable",
       "minutes": 24,
@@ -5198,6 +5276,55 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Fixed-step solvers: ode1 (Euler), ode2, ode4 (classic RK4), ode5, ode8, ode14x, ode1be"
       ],
       "file": "cod_slk_02_solvers/04-fixed-step-solvers.md"
+    },
+    {
+      "id": "l05-zero-crossings",
+      "title": "Zero crossings: catching the exact moment something happens",
+      "minutes": 24,
+      "covers": [
+        "Zero-crossing detection: how it works, chattering, adaptive versus non-adaptive, the consecutive-crossing limit",
+        "Solver reset method Fast versus Robust",
+        "Fixed-step zero-crossing for real-time: bounded, deterministic event cost"
+      ],
+      "file": "cod_slk_02_solvers/05-zero-crossings.md"
+    },
+    {
+      "id": "l06-sample-times",
+      "title": "Sample times: the beat every block runs on",
+      "minutes": 22,
+      "covers": [
+        "Sample times: continuous, discrete, inherited, constant; colour coding"
+      ],
+      "file": "cod_slk_02_solvers/06-sample-times.md"
+    },
+    {
+      "id": "l07-multirate-and-rate-transitions",
+      "title": "Multirate models and the Rate Transition block",
+      "minutes": 24,
+      "covers": [
+        "Multirate models and Rate Transition blocks; data integrity versus determinism options"
+      ],
+      "file": "cod_slk_02_solvers/07-multirate-and-rate-transitions.md"
+    },
+    {
+      "id": "l08-algebraic-loops",
+      "title": "Algebraic loops: finding them, breaking them, paying for it",
+      "minutes": 23,
+      "covers": [
+        "Algebraic loops: what creates them, the Algebraic Constraint block, breaking them with a unit delay and its phase cost"
+      ],
+      "file": "cod_slk_02_solvers/08-algebraic-loops.md"
+    }
+  ],
+  "cod_slk_03_architecture": [
+    {
+      "id": "l01-virtual-and-atomic-subsystems",
+      "title": "Virtual and atomic subsystems",
+      "minutes": 23,
+      "covers": [
+        "Virtual versus atomic subsystems: execution ordering and code-generation consequences"
+      ],
+      "file": "cod_slk_03_architecture/01-virtual-and-atomic-subsystems.md"
     }
   ],
   "cod_sql_01_select": [
@@ -11529,22 +11656,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_dbg_01_gdb": {
-    "covered": 4,
+    "covered": 15,
     "total": 15,
-    "complete": false,
-    "missing": [
-      "Attaching to a running process; gdb -p",
-      "Core dumps: ulimit -c unlimited, gdb ./bin ./core, thread apply all bt",
-      "TUI mode, .gdbinit, pretty-printers for STL and Eigen",
-      "gdbserver and remote/embedded debugging; rr for reverse debugging",
-      "Python: pdb, breakpoint(), py-spy for a live process",
-      "AddressSanitizer, UBSan, ThreadSanitizer, LeakSanitizer",
-      "Valgrind memcheck, helgrind, callgrind and when to prefer it over ASan",
-      "perf stat (IPC, cache misses, branch misses), perf record/report, flame graphs",
-      "hyperfine for wall clock, Google Benchmark for microbenchmarks",
-      "Logging strategy: levels, structured logs, flight-side ring buffers",
-      "Post-flight anomaly investigation: one dataset, no reruns"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_py_01_basics": {
     "covered": 12,
@@ -11685,29 +11800,19 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_slk_02_solvers": {
-    "covered": 2,
+    "covered": 11,
     "total": 13,
     "complete": false,
     "missing": [
-      "Continuous solvers: ode45 (Dormand-Prince, the default starting point), ode23, ode113",
-      "Stiff solvers: ode15s, ode23s, ode23t, ode23tb; daessc",
-      "RelTol and AbsTol; max step size and when to constrain it",
-      "Solver reset method Fast versus Robust",
-      "Zero-crossing detection: how it works, chattering, adaptive versus non-adaptive, the consecutive-crossing limit",
-      "Fixed-step zero-crossing for real-time: bounded, deterministic event cost",
-      "Sample times: continuous, discrete, inherited, constant; colour coding",
-      "Multirate models and Rate Transition blocks; data integrity versus determinism options",
-      "Algebraic loops: what creates them, the Algebraic Constraint block, breaking them with a unit delay and its phase cost",
       "The Solver Profiler",
       "The golden rule for deployable models: fixed-step, cleanly multirate, no algebraic loops"
     ]
   },
   "cod_slk_03_architecture": {
-    "covered": 0,
+    "covered": 1,
     "total": 18,
     "complete": false,
     "missing": [
-      "Virtual versus atomic subsystems: execution ordering and code-generation consequences",
       "Enabled, triggered and function-call subsystems; If and Switch Case action subsystems; For Each",
       "Masking: parameters, icons, callbacks, self-documenting blocks",
       "Simulink.Bus objects as interface contracts; Bus Creator, Selector, Assignment; nested buses",

@@ -32,8 +32,8 @@ jobs:
         os: [ubuntu-latest, windows-latest, macos-latest]
         python-version: ["3.10", "3.11", "3.12"]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-version }}
       - run: python -m pip install -r requirements-dev.txt
@@ -119,7 +119,7 @@ The other kind of `include`, which adds keys to existing combinations, gives eac
       CC: ${{ matrix.cc }}
       CXX: ${{ matrix.cxx }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - run: cmake -S . -B build -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
       - run: cmake --build build -j 4
       - run: ctest --test-dir build --output-on-failure
@@ -153,7 +153,7 @@ Hold on to **"without changing what is built"**. A cache is only a shortcut: the
 The key should change whenever the cached thing would be different. For dependencies, the thing that decides them is the **[[lockfile|lockfiles]]** — `Cargo.lock`, or a requirements file with exact versions pinned. So the key includes a fingerprint of that file:
 
 ```yaml
-      - uses: actions/cache@v4
+      - uses: actions/cache@v6
         with:
           path: |
             ~/.cargo/registry/index/
@@ -194,7 +194,7 @@ A few rules of the pantry that are worth knowing:
 For Python, setup-python has caching built in. Add two lines to the step:
 
 ```yaml
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-version }}
           cache: pip
@@ -211,10 +211,10 @@ This saves pip's download cache, keyed on the OS, the Python version and the fin
     env:
       CCACHE_DIR: ${{ github.workspace }}/.ccache
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Install ccache
         run: sudo apt-get update && sudo apt-get install -y ccache
-      - uses: actions/cache@v4
+      - uses: actions/cache@v6
         with:
           path: .ccache
           key: ccache-${{ runner.os }}-${{ matrix.compiler }}-${{ matrix.build_type }}-${{ github.sha }}
@@ -249,7 +249,7 @@ When a job ends, its machine is deleted. Anything worth keeping — a test repor
 
 ```yaml
       - run: pytest -q --junitxml=report.xml
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: test-report-${{ matrix.os }}-py${{ matrix.python-version }}
@@ -262,10 +262,10 @@ When a job ends, its machine is deleted. Anything worth keeping — a test repor
 - `name:` is what the artifact is called on the run's page.
 - `retention-days: 14` deletes it after two weeks. Without it, the repository's default applies (90 days unless changed).
 
-A later job can fetch artifacts with `actions/download-artifact@v4`. This is the answer to the problem from the last lesson, where one job could not see another's files: the first job uploads, and the job that `needs:` it downloads.
+A later job can fetch artifacts with `actions/download-artifact@v8`. This is the answer to the problem from the last lesson, where one job could not see another's files: the first job uploads, and the job that `needs:` it downloads.
 
 ::: warning Artifact names must be unique within a run
-With `upload-artifact@v4`, two uploads with the same name in one run make the second one fail (unless the step asks to overwrite). In a matrix, every combination runs the same step. Put the matrix values into the name, as above, so the nine jobs make nine different artifacts.
+Since version 4 of `upload-artifact`, two uploads with the same name in one run make the second one fail (unless the step asks to overwrite). In a matrix, every combination runs the same step. Put the matrix values into the name, as above, so the nine jobs make nine different artifacts.
 :::
 
 A cache and an artifact both save files, but they are not the same thing:
@@ -329,7 +329,7 @@ A job opts in with one line:
     runs-on: ubuntu-24.04
     environment: results-server
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           pattern: test-report-*
           path: reports
@@ -392,10 +392,10 @@ GitHub's mask only hides the exact secret text, and the base64-encoded version i
 | Matrix | Runs a job for every combination | `strategy: matrix:`, `${{ matrix.os }}`, quote `"3.10"` |
 | `fail-fast` | Cancel the rest on first failure | Default `true`; use `false` for portability grids |
 | `exclude` / `include` | Remove or add combinations | `include` extends matching combinations if it changes no value |
-| Cache | Reuses setup work between runs | `actions/cache@v4`, `key` from `hashFiles(...)`, `restore-keys` |
+| Cache | Reuses setup work between runs | `actions/cache@v6`, `key` from `hashFiles(...)`, `restore-keys` |
 | pip cache | Keeps pip's downloads | `setup-python` with `cache: pip` |
 | ccache | Reuses compiled objects | key ends in `github.sha`, restore by prefix |
-| Artifact | Keeps a run's outputs | `upload-artifact@v4`, unique names, `retention-days` |
+| Artifact | Keeps a run's outputs | `upload-artifact@v7`, unique names, `retention-days` |
 | Secret | Encrypted value, masked in logs | `${{ secrets.NAME }}` in one step's `env:`; none for forks |
 | Environment | Named target with rules | `environment: name`, required reviewers, own secrets |
 

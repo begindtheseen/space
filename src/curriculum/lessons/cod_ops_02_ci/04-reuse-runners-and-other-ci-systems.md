@@ -98,7 +98,7 @@ The `./` means "a folder in this repository", so checkout must come first: until
 Leave out `shell: bash` on a `run:` step and the action fails to load, with an error saying `shell` is required. And a local action (`./...`) can only be found after `actions/checkout`, so a job that calls it as its first step fails with an error that it can't find `action.yml`, and a hint asking whether you forgot to run `actions/checkout`.
 :::
 
-The `@v7` in these files is a **[[version tag|version-pinning]]**. Lessons 2 and 3 used older tags of the same actions; both work, and a team upgrades on purpose, the way it pins a Python version.
+The `@v7` in these files is a **[[version tag|version-pinning]]**. Older major tags of the same actions still work; a team upgrades from one to the next on purpose, the way it pins a Python version.
 
 ## Reusable workflows: whole jobs, called like a function
 
