@@ -3993,6 +3993,33 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Build backends: setuptools, hatchling, flit"
       ],
       "file": "cod_py_09_packaging/03-pyproject-and-backends.md"
+    },
+    {
+      "id": "l07-version-pinning",
+      "title": "Version pinning, ranges and lockfiles",
+      "minutes": 22,
+      "covers": [
+        "Version pinning: exact pins for applications, ranges for libraries, lockfiles for both"
+      ],
+      "file": "cod_py_09_packaging/07-version-pinning.md"
+    },
+    {
+      "id": "l08-semantic-versioning",
+      "title": "Semantic versioning and deciding a bump",
+      "minutes": 23,
+      "covers": [
+        "Semantic versioning and how to decide a bump"
+      ],
+      "file": "cod_py_09_packaging/08-semantic-versioning.md"
+    },
+    {
+      "id": "l09-dependency-resolution-and-abi",
+      "title": "Dependency resolution, extras and the ABI problem",
+      "minutes": 21,
+      "covers": [
+        "Dependency resolution, extras, and the scientific-stack ABI problem"
+      ],
+      "file": "cod_py_09_packaging/09-dependency-resolution-and-abi.md"
     }
   ],
   "cod_rs_01_basics": [
@@ -10534,16 +10561,13 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_py_09_packaging": {
-    "covered": 4,
+    "covered": 7,
     "total": 13,
     "complete": false,
     "missing": [
       "Editable installs and what they actually do",
       "Wheels versus source distributions; manylinux",
       "Console entry points for command-line tools",
-      "Version pinning: exact pins for applications, ranges for libraries, lockfiles for both",
-      "Semantic versioning and how to decide a bump",
-      "Dependency resolution, extras, and the scientific-stack ABI problem",
       "venv, pip, uv, conda and when each is the right answer",
       "Sphinx and NumPy-style docstrings; README that lets a stranger run it",
       "Publishing internally versus on PyPI; private indexes"
