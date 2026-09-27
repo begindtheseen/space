@@ -57,7 +57,7 @@ Two habits keep the matrix honest.
 
 ## The four methods
 
-Suppose you just bought a used bike and want to know it is safe. You could look it over: are all the bolts there, is the seat at the right height? You could put it on a stand and measure how quickly the brakes stop the wheel. You could work out on paper whether the frame can hold your weight. Or you could ride it around the block. Those four are, almost exactly, the four ways engineers verify a requirement.
+Suppose you have bought a used bike and want to know it is safe. You could look it over: are all the bolts there, is the seat at the right height? You could put it on a stand and measure how quickly the brakes stop the wheel. You could work out on paper whether the frame can hold your weight. Or you could ride it around the block. Those four are, almost exactly, the four ways engineers verify a requirement.
 
 **Analysis** is computation: modeling, simulation, or calculation, applied to the system or a model of it. Its strength is reach. A **dispersion campaign** — thousands of simulated flights, each with the uncertain inputs nudged a little differently — can sweep hundreds of uncertain parameters and produce a probability statement that no amount of physical testing could produce directly, at a cost of computer-seconds instead of hardware. Its weakness: it is only as good as its model. An analysis result is a statement about the model. It becomes a statement about the vehicle only once the model has been **anchored** — checked against real data.
 

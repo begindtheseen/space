@@ -42,7 +42,7 @@ Every entry needs a **distribution**: a shape, a center, and a spread. And each 
 
 **Test data** is the strongest. It is a sample of real measurements — acceptance-test results across a production run, a series of hot-fire $I_{sp}$ measurements, a batch of IMU calibrations — fitted to a distribution with the estimation tools from the probability and statistics module. A parameter backed by test data carries a sample size, and the specification should state it. A distribution fitted to five measurements is a very different claim from one fitted to five hundred.
 
-**Heritage** borrows from a similar system that has already flown. A new engine closely related to an older one may inherit the older engine's measured thrust spread, adjusted by engineering judgment for whatever is really different. Heritage is weaker than direct test data on the actual hardware. The specification should name the **[[heritage system|heritage-trap]]** and describe the adjustment, not just assert a number.
+**Heritage** borrows from a similar system that has already flown. A new engine closely related to an older one may inherit the older engine's measured thrust spread, adjusted by engineering judgment for whatever is really different. Heritage is weaker than direct test data on the actual hardware. The specification should name the **[[heritage system|heritage-trap]]** and describe the adjustment, not merely assert a number.
 
 **Engineering judgment** covers everything else. A parameter with no tests and no close heritage still needs a distribution. The honest answer is a stated, documented and usually cautious bound — often a **uniform** distribution (every value in a range equally likely) or a **Gaussian** (bell curve) with a deliberately wide spread — with the reasoning written down so a reviewer can challenge it.
 
@@ -261,7 +261,7 @@ Real days depart from this curve by a few percent, and that departure is what th
 :::
 
 ::: context heritage-trap When heritage goes wrong
-On its first flight in 1996, Ariane 5 broke up about $40$ seconds after liftoff. Its inertial reference software was reused from Ariane 4, where it had worked perfectly. But Ariane 5 climbed on a different path, and one horizontal-velocity-related value grew larger than it ever had on Ariane 4. Converting it into a 16-bit integer overflowed, both inertial units shut down, and the vehicle lost its attitude reference. Nobody had checked that the heritage assumption still held on the new trajectory. That is why a specification must say what is different, not just name the heritage.
+On its first flight in 1996, Ariane 5 broke up about $40$ seconds after liftoff. Its inertial reference software was reused from Ariane 4, where it had worked perfectly. But Ariane 5 climbed on a different path, and one horizontal-velocity-related value grew larger than it ever had on Ariane 4. Converting it into a 16-bit integer overflowed, both inertial units shut down, and the vehicle lost its attitude reference. Nobody had checked that the heritage assumption still held on the new trajectory. That is why a specification must say what is different, not only name the heritage.
 :::
 
 ::: context rss-triangle Uncertainties add like the sides of a right triangle
