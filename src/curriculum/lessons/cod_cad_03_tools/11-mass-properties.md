@@ -128,7 +128,7 @@ Part A is an aluminum block, $0.2 \times 0.1 \times 0.1\,\mathrm{m}$, centred at
 
 **Add.** $I_{zz,cg} = 0.0225 + 0.0131 + 0.0426 + 0.0293 = 0.108\,\mathrm{kg\,m^2}$.
 
-**Check with the theorem the other way.** About the origin, A needs no shift and B shifts by $0.15$: $I_{zz,O} = 0.0225 + 0.0131 + 7.85 \times 0.15^2 = 0.212$. Subtract $M x_{cg}^2 = 13.25 \times 0.0889^2 = 0.105$: $0.212 - 0.105 = 0.108\,\mathrm{kg\,m^2}$. Same answer. Notice the tensor about the origin is about twice the one about the CG — hand the simulator the wrong one and the vehicle turns half as fast as it should.
+**Check with the theorem the other way.** About the origin, A needs no shift and B shifts by $0.15$: $I_{zz,O} = 0.0225 + 0.0131 + 7.85 \times 0.15^2 = 0.2122$. Subtract $M x_{cg}^2 = 13.25 \times 0.08887^2 = 0.1046$ (using the CG to one more digit, $0.08887\,\mathrm{m}$): $0.2122 - 0.1046 = 0.1076$, which rounds to $0.108\,\mathrm{kg\,m^2}$. Same answer. (Keep a fourth digit in the middle of a subtraction like this; rounding both sides to three first gives $0.107$, a false mismatch.) Notice the tensor about the origin is about twice the one about the CG — hand the simulator the wrong one and the vehicle turns half as fast as it should.
 :::
 
 ## Principal moments

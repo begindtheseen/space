@@ -1638,6 +1638,25 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Sheet metal, weldments and surfacing (awareness); outer mould line"
       ],
       "file": "cod_cad_03_tools/12-drawings-pmi-and-special-modelling.md"
+    },
+    {
+      "id": "l13-interchange-and-the-cad-landscape",
+      "title": "Moving models between programs, and who uses what",
+      "minutes": 22,
+      "covers": [
+        "Interchange formats: STEP, IGES, Parasolid, JT, and translation fidelity",
+        "The landscape: NX plus Teamcenter at SpaceX; CATIA at Boeing and Airbus; Creo in defence; SolidWorks at suppliers and startups; Onshape and Fusion as cloud-native newcomers"
+      ],
+      "file": "cod_cad_03_tools/13-interchange-and-the-cad-landscape.md"
+    },
+    {
+      "id": "l14-plm-revisions-and-effectivity",
+      "title": "Part numbers, revisions and which version is real",
+      "minutes": 20,
+      "covers": [
+        "PLM concepts: part numbers, revisions versus versions, effectivity, ECO and ECR, as-designed versus as-built versus as-flown"
+      ],
+      "file": "cod_cad_03_tools/14-plm-revisions-and-effectivity.md"
     }
   ],
   "cod_cpp_01_basics": [
@@ -3188,6 +3207,196 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Roughly 120 to 150 problems is sufficient, grouped by pattern and timed"
       ],
       "file": "cod_int_01_algorithms/01-the-honest-calibration.md"
+    },
+    {
+      "id": "l02-complexity-out-loud",
+      "title": "Complexity you can say out loud",
+      "minutes": 25,
+      "covers": [
+        "Complexity analysis you can say out loud, including the space term"
+      ],
+      "file": "cod_int_01_algorithms/02-complexity-out-loud.md"
+    },
+    {
+      "id": "l03-two-pointers-and-sliding-windows",
+      "title": "Two pointers and sliding windows",
+      "minutes": 23,
+      "covers": [
+        "High-yield patterns: arrays and two pointers, sliding window, hash maps, binary search including on the answer"
+      ],
+      "file": "cod_int_01_algorithms/03-two-pointers-and-sliding-windows.md"
+    },
+    {
+      "id": "l04-hash-maps-and-binary-search",
+      "title": "Hash maps and binary search",
+      "minutes": 22,
+      "covers": [
+        "High-yield patterns: arrays and two pointers, sliding window, hash maps, binary search including on the answer"
+      ],
+      "file": "cod_int_01_algorithms/04-hash-maps-and-binary-search.md"
+    },
+    {
+      "id": "l05-sorting-intervals-stacks-and-lists",
+      "title": "Sorting, intervals, stacks, queues and linked lists",
+      "minutes": 21,
+      "covers": [
+        "Sorting and intervals; stacks and queues; linked lists"
+      ],
+      "file": "cod_int_01_algorithms/05-sorting-intervals-stacks-and-lists.md"
+    },
+    {
+      "id": "l06-trees-and-graphs",
+      "title": "Trees, graphs, BFS, DFS and topological sort",
+      "minutes": 24,
+      "covers": [
+        "Trees and BFS/DFS; graphs including topological sort; heaps; prefix sums; light dynamic programming; bit manipulation"
+      ],
+      "file": "cod_int_01_algorithms/06-trees-and-graphs.md"
+    },
+    {
+      "id": "l07-heaps-prefix-sums-dp-and-bits",
+      "title": "Heaps, prefix sums, light DP and bits",
+      "minutes": 26,
+      "covers": [
+        "Trees and BFS/DFS; graphs including topological sort; heaps; prefix sums; light dynamic programming; bit manipulation",
+        "What to skip: exotic dynamic programming, advanced graph theory, segment trees"
+      ],
+      "file": "cod_int_01_algorithms/07-heaps-prefix-sums-dp-and-bits.md"
+    },
+    {
+      "id": "l08-talking-and-testing",
+      "title": "Talking while solving, and testing before you are done",
+      "minutes": 21,
+      "covers": [
+        "Talking while solving: restate, clarify, state the approach and its complexity, then code",
+        "Testing your own solution before saying you are done"
+      ],
+      "file": "cod_int_01_algorithms/08-talking-and-testing.md"
+    },
+    {
+      "id": "l09-bytes-endianness-and-checksums",
+      "title": "Bytes, endianness and checksums",
+      "minutes": 24,
+      "covers": [
+        "struct, endianness and checksums in Python; bit twiddling in C++"
+      ],
+      "file": "cod_int_01_algorithms/09-bytes-endianness-and-checksums.md"
+    },
+    {
+      "id": "l10-decommutation-and-dropouts",
+      "title": "Decommutation and dropouts",
+      "minutes": 20,
+      "covers": [
+        "The engineering variants: binary protocol decommutation, telemetry dropout detection, two-rate time alignment, ring buffer, PID with anti-windup, running median over a stream",
+        "struct, endianness and checksums in Python; bit twiddling in C++"
+      ],
+      "file": "cod_int_01_algorithms/10-decommutation-and-dropouts.md"
+    },
+    {
+      "id": "l11-ring-buffers-and-time-alignment",
+      "title": "Ring buffers and time alignment",
+      "minutes": 20,
+      "covers": [
+        "The engineering variants: binary protocol decommutation, telemetry dropout detection, two-rate time alignment, ring buffer, PID with anti-windup, running median over a stream"
+      ],
+      "file": "cod_int_01_algorithms/11-ring-buffers-and-time-alignment.md"
+    },
+    {
+      "id": "l12-pid-anti-windup-and-running-median",
+      "title": "PID with anti-windup and the running median",
+      "minutes": 20,
+      "covers": [
+        "The engineering variants: binary protocol decommutation, telemetry dropout detection, two-rate time alignment, ring buffer, PID with anti-windup, running median over a stream"
+      ],
+      "file": "cod_int_01_algorithms/12-pid-anti-windup-and-running-median.md"
+    }
+  ],
+  "cod_int_02_onsite": [
+    {
+      "id": "l01-the-process-and-the-itar-gate",
+      "title": "The process end to end, and the ITAR gate",
+      "minutes": 19,
+      "covers": [
+        "The reported process: recruiter screen, a two to four hour take-home or timed challenge, technical rounds, a day-long onsite of four to six rounds, behavioural throughout",
+        "US person status under ITAR as a hard gate for essentially all roles"
+      ],
+      "file": "cod_int_02_onsite/01-the-process-and-the-itar-gate.md"
+    },
+    {
+      "id": "l02-the-systems-cpp-round",
+      "title": "The systems C++ round",
+      "minutes": 25,
+      "covers": [
+        "Systems C++ round: pointers and memory, double delete, RAII, rule of five, unique_ptr versus shared_ptr, virtual destructors, vtable layout, move semantics, undefined behaviour, static and const and volatile, data races, cache effects"
+      ],
+      "file": "cod_int_02_onsite/02-the-systems-cpp-round.md"
+    },
+    {
+      "id": "l03-live-debugging",
+      "title": "Live debugging",
+      "minutes": 20,
+      "covers": [
+        "Live debugging: here is code that crashes or leaks, find it"
+      ],
+      "file": "cod_int_02_onsite/03-live-debugging.md"
+    },
+    {
+      "id": "l04-designing-sim-and-telemetry-systems",
+      "title": "Designing a simulation system and a telemetry pipeline, aloud",
+      "minutes": 21,
+      "covers": [
+        "Engineering system design: GNC simulation infrastructure for a constellation; a telemetry pipeline for six thousand satellites; how you would verify this flight software; how you would architect a fault-tolerant flight computer"
+      ],
+      "file": "cod_int_02_onsite/04-designing-sim-and-telemetry-systems.md"
+    },
+    {
+      "id": "l05-verification-and-fault-tolerant-computers",
+      "title": "Verifying flight software and building a computer that survives faults",
+      "minutes": 18,
+      "covers": [
+        "Engineering system design: GNC simulation infrastructure for a constellation; a telemetry pipeline for six thousand satellites; how you would verify this flight software; how you would architect a fault-tolerant flight computer",
+        "Knowing the SpaceX answer: three dual-core x86 flight strings, per-string core cross-check, PowerPC actuator controllers judging three commands"
+      ],
+      "file": "cod_int_02_onsite/05-verification-and-fault-tolerant-computers.md"
+    },
+    {
+      "id": "l06-domain-rounds-and-fermi-estimates",
+      "title": "Domain rounds and Fermi estimates, out loud",
+      "minutes": 25,
+      "covers": [
+        "Domain rounds for GNC roles: PD control, orbit determination, frequency domain, aerodynamic drag with real examples",
+        "Fermi and order-of-magnitude estimation out loud"
+      ],
+      "file": "cod_int_02_onsite/06-domain-rounds-and-fermi-estimates.md"
+    },
+    {
+      "id": "l07-the-technical-presentation",
+      "title": "The technical presentation",
+      "minutes": 23,
+      "covers": [
+        "The technical presentation: about twelve minutes of slides and twenty-plus minutes of debate"
+      ],
+      "file": "cod_int_02_onsite/07-the-technical-presentation.md"
+    },
+    {
+      "id": "l08-behavioural-themes-and-ownership",
+      "title": "Behavioural themes and saying what you did",
+      "minutes": 20,
+      "covers": [
+        "Behavioural themes: mission alignment, extreme ownership, operating with ambiguity and speed, intellectual honesty about failure",
+        "Saying what you personally modelled, coded, analysed, tuned, tested or debugged versus what the team did"
+      ],
+      "file": "cod_int_02_onsite/08-behavioural-themes-and-ownership.md"
+    },
+    {
+      "id": "l09-star-stories-and-your-questions",
+      "title": "STAR stories and the questions you ask",
+      "minutes": 19,
+      "covers": [
+        "Building six to eight STAR stories from the capstones, each with a number in it",
+        "Questions to ask that show you understand the work"
+      ],
+      "file": "cod_int_02_onsite/09-star-stories-and-your-questions.md"
     }
   ],
   "cod_lnx_01_shell": [
@@ -11915,50 +12124,22 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_cad_03_tools": {
-    "covered": 16,
+    "covered": 19,
     "total": 19,
-    "complete": false,
-    "missing": [
-      "Interchange formats: STEP, IGES, Parasolid, JT, and translation fidelity",
-      "The landscape: NX plus Teamcenter at SpaceX; CATIA at Boeing and Airbus; Creo in defence; SolidWorks at suppliers and startups; Onshape and Fusion as cloud-native newcomers",
-      "PLM concepts: part numbers, revisions versus versions, effectivity, ECO and ECR, as-designed versus as-built versus as-flown"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_int_01_algorithms": {
-    "covered": 3,
+    "covered": 12,
     "total": 12,
-    "complete": false,
-    "missing": [
-      "High-yield patterns: arrays and two pointers, sliding window, hash maps, binary search including on the answer",
-      "Sorting and intervals; stacks and queues; linked lists",
-      "Trees and BFS/DFS; graphs including topological sort; heaps; prefix sums; light dynamic programming; bit manipulation",
-      "What to skip: exotic dynamic programming, advanced graph theory, segment trees",
-      "Complexity analysis you can say out loud, including the space term",
-      "The engineering variants: binary protocol decommutation, telemetry dropout detection, two-rate time alignment, ring buffer, PID with anti-windup, running median over a stream",
-      "struct, endianness and checksums in Python; bit twiddling in C++",
-      "Talking while solving: restate, clarify, state the approach and its complexity, then code",
-      "Testing your own solution before saying you are done"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_int_02_onsite": {
-    "covered": 0,
+    "covered": 13,
     "total": 13,
-    "complete": false,
-    "missing": [
-      "The reported process: recruiter screen, a two to four hour take-home or timed challenge, technical rounds, a day-long onsite of four to six rounds, behavioural throughout",
-      "US person status under ITAR as a hard gate for essentially all roles",
-      "Systems C++ round: pointers and memory, double delete, RAII, rule of five, unique_ptr versus shared_ptr, virtual destructors, vtable layout, move semantics, undefined behaviour, static and const and volatile, data races, cache effects",
-      "Live debugging: here is code that crashes or leaks, find it",
-      "Engineering system design: GNC simulation infrastructure for a constellation; a telemetry pipeline for six thousand satellites; how you would verify this flight software; how you would architect a fault-tolerant flight computer",
-      "Knowing the SpaceX answer: three dual-core x86 flight strings, per-string core cross-check, PowerPC actuator controllers judging three commands",
-      "Domain rounds for GNC roles: PD control, orbit determination, frequency domain, aerodynamic drag with real examples",
-      "The technical presentation: about twelve minutes of slides and twenty-plus minutes of debate",
-      "Behavioural themes: mission alignment, extreme ownership, operating with ambiguity and speed, intellectual honesty about failure",
-      "Saying what you personally modelled, coded, analysed, tuned, tested or debugged versus what the team did",
-      "Fermi and order-of-magnitude estimation out loud",
-      "Building six to eight STAR stories from the capstones, each with a number in it",
-      "Questions to ask that show you understand the work"
-    ]
+    "complete": true,
+    "missing": []
   },
   "car_01_itar_gate": {
     "covered": 10,

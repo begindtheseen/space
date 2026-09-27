@@ -64,7 +64,7 @@ Some programs still make a 2D drawing from the model for the shop floor; others 
 
 Take a strip of cardboard and fold it sharply. The outside of the fold has stretched. The inside has squashed. Somewhere in between is a layer that did neither — it kept its length.
 
-Sheet metal parts work exactly like that. An avionics box, a cable bracket, an electronics chassis, a cover plate: many are cut flat from a sheet and then bent in a press brake. CAD has a special **sheet metal** mode for them. You build the part as flanges and bends, and the software can **flatten** it back to the blank the shop has to cut, called the **flat pattern**.
+Sheet metal parts work exactly like that. An avionics box, a cable bracket, an electronics chassis, a cover plate: many are cut flat from a sheet and then bent in a **press brake** — a long machine that clamps the sheet and folds it along a straight line. CAD has a special **sheet metal** mode for them. You build the part as flanges and bends, and the software can **flatten** it back to the blank the shop has to cut, called the **flat pattern**.
 
 ### The neutral axis and the K-factor
 
@@ -194,11 +194,11 @@ The views and dimensions are associative. The dimension that updated was attache
 :::
 
 ::: check
-What is the difference between graphic PMI and semantic PMI, and which one does a CMM program generator need?
+What is the difference between graphic PMI and semantic PMI, and which one does the software that writes a CMM (coordinate measuring machine) inspection program need?
 :::
 
 ::: answer
-Graphic PMI is text and symbols drawn in 3D for people to read; the software only knows it as a picture. Semantic PMI stores the tolerance type, value, modifiers, datum references and the faces it applies to as data linked to the geometry. A CMM (or CAM) program generator needs semantic PMI, because it has to know which faces to measure and what zone to check them against.
+Graphic PMI is text and symbols drawn in 3D for people to read; the software only knows it as a picture. Semantic PMI stores the tolerance type, value, modifiers, datum references and the faces it applies to as data linked to the geometry. That software (and CAM software, which writes machining programs) needs semantic PMI, because it has to know which faces to measure and what zone to check them against.
 :::
 
 ::: check
