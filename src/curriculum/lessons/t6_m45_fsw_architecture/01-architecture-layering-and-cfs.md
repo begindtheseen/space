@@ -1,51 +1,57 @@
 ---
 id: l01-architecture-layering-and-cfs
 title: Architecture layering, and NASA cFS as a reference
-minutes: 18
+minutes: 22
 covers:
   - "Layering: hardware abstraction, device managers, the GNC application, the mode manager, telemetry and command"
   - "NASA core Flight System as a public reference architecture: apps, the software bus, tables"
 ---
 
-Every flight vehicle you will ever work on runs software built from the same handful of layers, in the same order, for the same reasons. A guidance engineer who has only ever written estimators and controllers tends to picture flight software as one program: read the sensors, run the filter, run the controller, write the actuators, repeat. That picture is correct for a single control loop running by itself on a bench. It is not what ships. What ships separates "talk to this specific piece of hardware" from "know what a gyro measurement means" from "decide what the vehicle is trying to do" from "tell the ground what happened," and it separates them on purpose, as distinct pieces of software with a narrow, typed interface between each pair.
+Think about a busy restaurant. The chef does not unload the delivery truck. The prep cooks wash, chop and label the vegetables, so the chef gets "500 g diced onion" instead of a muddy sack. The manager decides whether the kitchen is serving breakfast, serving lunch, or closed because the fryer caught fire. The waiters take orders from the dining room and bring back news of how things are going. Orders travel on paper tickets clipped to a rail, so nobody has to shout across the kitchen.
 
-This lesson gives you the layering and the reasons for it, then grounds the whole discussion in a real, publicly available flight software architecture — NASA's core Flight System (cFS) — so that "layering" stops being an abstract diagram and becomes something you can clone, build, and read. Everything else in this module assumes you have this picture: the mode manager of lesson 2, the voting of lessons 5 through 7, and the fault detection of lessons 8 through 10 are all statements about *which layer* does *what*, and none of them make sense if the layers themselves are not clear first.
+Each person has one job, and each hands the next person something cleaner and more meaningful than what they received. Swap in a new onion supplier and the chef never notices. That is not an accident of this one restaurant. It is how every kitchen that works is organized.
 
-## The five layers, and what crosses each boundary
+Flight software is organized the same way. If you have written estimators and controllers, you may picture flight software as one program: read the sensors, run the filter, run the controller, write the actuators, repeat. That picture is right for one control loop on a bench. It is not what flies. What flies splits the work into **layers** — separate pieces of software, each with one job, stacked so that each talks only to its neighbors through a narrow, well-defined interface. This lesson gives you the layers and the reasons for them. Then it shows you a real, public flight software framework, NASA's **core Flight System (cFS)**, that you can download, build and read. Every later lesson in this module — the mode manager, the voting, the fault detection — is a statement about which layer does what.
 
-Read a flight software stack from the hardware up, and five layers appear, each with a distinct job and a distinct reason for existing as its own layer rather than as code folded into its neighbor.
+## The five layers
 
-**Hardware abstraction (HAL/BSP).** The lowest software layer above the silicon. It knows the register map of a specific microcontroller, the timing of a specific SPI or I2C bus, the interrupt vector table of a specific processor. Nothing above this layer should contain a register address or a bus timing constant. Its job is to turn "write these bits to this register at this address" into a small set of named operations — `spi_transfer`, `gpio_set`, `timer_read` — that look the same regardless of which processor is under them.
+Read a flight software stack from the hardware up, and **[[five layers|layer-cake]]** appear. Each has its own job and its own reason to exist as a separate piece.
 
-**Device managers.** One layer up, a device manager owns a specific physical instrument — a gyro, a GNSS receiver, a valve driver — and turns the HAL's raw bytes into a typed, validated, physical-unit measurement or command. This is where a raw ADC count becomes a rate in degrees per second, where a status byte becomes a boolean `health_ok`, where a bus timeout becomes an explicit "no data" rather than silence. A device manager also owns the parts of data integrity that are specific to *that* device: its own checksum format, its own valid range, its own units.
+**Hardware abstraction.** This is the lowest software above the chips. It is often called the **HAL** (hardware abstraction layer) or **BSP** (board support package). It knows the **[[register|registers]]** map of one specific processor, the timing of one specific wire protocol such as an **[[SPI or I2C bus|serial-buses]]**, and which interrupt goes where. Its job is to turn "write these bits to this address" into a few named operations — `spi_transfer`, `gpio_set`, `timer_read` — that look the same whatever processor sits underneath. Nothing above this layer should contain a register address or a bus timing constant.
 
-**The GNC application.** This is the physics-aware code: the state estimator, the guidance law, the controller. It receives typed, physical-unit, validated inputs from the device managers below it and produces typed, physical-unit commands for the device managers to send onward. It does not know whether the rate it is reading came from a MEMS gyro over SPI or a fiber-optic gyro over a serial bus, and it must not need to know — every lesson on estimation and control you have already done was written from inside this one layer.
+**Device managers.** A **device manager** owns one physical instrument — a gyro, a GNSS receiver, a valve driver — and turns the HAL's raw bytes into a typed, checked measurement in physical units. Here a raw **[[ADC count|adc-counts]]** becomes a rotation rate in degrees per second. A status byte becomes a true-or-false `health_ok`. A bus timeout becomes an explicit "no data" instead of silence. The device manager also owns the checks that belong to *that* device: its checksum format, its valid range, its units. It is the prep cook.
 
-**The mode manager.** Above the GNC application, something has to decide *which* GNC behavior is running right now — ascent guidance, coast attitude hold, entry guidance, safe mode — and to enforce that only sanctioned transitions between those behaviors happen. That decision is a supervisory one, distinct in kind from anything the estimator or controller computes, and lesson 2 builds it as an explicit state machine.
+**The GNC application.** This is the physics code: the state estimator, the guidance law, the controller. It receives typed, checked inputs in physical units and produces typed commands for the device managers to send out. It does not know whether a rate came from a tiny MEMS gyro on an SPI bus or a fiber-optic gyro on a serial line, and it must not need to know. Every estimation and control lesson you have done so far was written from inside this one layer. It is the chef.
 
-**Telemetry and command.** The boundary to the outside world. Telemetry packages internal state for a ground station or crew display; command accepts instructions from the ground or crew and turns them into internal requests. This is a shared service used by every other layer, not something each app or driver reinvents — lesson 3 covers its structure in detail.
+**The mode manager.** Something has to decide *which* GNC behavior runs right now — ascent guidance, coast attitude hold, entry guidance, safe mode — and make sure only allowed changes between them happen. That is a supervising decision, different in kind from anything the estimator computes. Lesson 2 builds it as an explicit state machine. It is the restaurant manager.
+
+**Telemetry and command.** This is the door to the outside world. **Telemetry** packages the vehicle's internal state and sends it to the ground or a crew display. **Command** accepts instructions from the ground or crew and turns them into internal requests. It is one shared service that every other layer uses, not something each piece reinvents. Lesson 3 covers it in detail. These are the waiters.
+
+Between the pieces runs a **message bus** — the ticket rail. Applications hand each other data by posting messages on it, never by reaching into each other's code.
 
 ::: key
-The five-layer stack, bottom to top: hardware abstraction (HAL/BSP) → device managers → the GNC application → the mode manager → telemetry and command. Each layer presents a narrower, more meaningful interface to the layer above it, and nothing above a layer needs to know how that layer does its job.
+Standard flight software layering: hardware abstraction, device managers, the GNC application, the mode manager, and command/telemetry services — with a message bus between them so applications do not call each other directly. Each layer gives the one above a narrower, more meaningful interface, and nothing above a layer needs to know how that layer does its job.
 :::
 
-## Why the boundary is a boundary, not a suggestion
+## Why a boundary is a boundary
 
-The reason to draw these lines is not aesthetic. Three concrete engineering properties fall out of keeping them sharp.
+The lines are not drawn to make a pretty diagram. Keeping them sharp buys three real engineering properties.
 
-**Reuse.** A guidance law tested against a simulated device manager — one that returns synthetic rates and positions instead of real sensor bytes — is the same code that flies. Swap the device manager underneath it for a different sensor model, or the vehicle underneath *that* for a different airframe with the same sensor suite, and the GNC application does not change. This is why a company that builds more than one vehicle keeps a shared estimator and controller codebase across vehicle programs: the layering is what makes that sharing safe rather than accidental.
+**Reuse.** A guidance law tested against a simulated device manager — one that returns made-up rates instead of real sensor bytes — is the same code that flies. Swap the device manager for a different sensor, or move the whole application to a different airframe with the same kind of sensors, and the GNC application does not change. That is why a company that builds several vehicles can share one estimator and controller codebase across them. The layering is what makes that sharing safe instead of lucky. (Reuse still demands that you re-check the old code's assumptions against the new vehicle — the most famous rocket loss caused by **[[reused code|ariane-501]]** is the proof.)
 
-**Independent verification.** Each layer can be reviewed, tested, and reasoned about against a narrower specification than the whole system. A device manager's job is fully specified by "accept these raw bytes, produce this typed value, and do these validity checks" — a reviewer can check it against that specification without understanding the guidance law it feeds. A guidance law's job is fully specified in terms of typed physical quantities — a reviewer can check its mathematics without knowing which bus the rate gyro sits on. Collapse the layers and every review has to hold the entire stack in mind at once.
+**Independent review.** Each layer can be checked against a narrower specification than the whole system. A device manager's job is fully described by "take these raw bytes, produce this typed value, run these validity checks." A reviewer can check that without understanding the guidance law it feeds. A guidance law's job is fully described in physical quantities, so its reviewer can check the mathematics without knowing which bus the gyro sits on. Collapse the layers, and every review must hold the entire stack in mind at once.
 
-**Fault containment.** When a device manager encounters malformed data, it can refuse to pass it upward rather than letting the GNC application try to make sense of garbage. When the GNC application is itself under test, faults injected below it — a stuck sensor, a dropped packet — arrive at its input exactly where a fault detector is meant to see them, not buried inside a monolith where nothing distinguishes "the sensor lied" from "the estimator has a bug."
+**Fault containment.** **Fault containment** means keeping a problem inside the piece where it started. When a device manager gets malformed data, it can refuse to pass it up, instead of letting the GNC application try to make sense of garbage. And when faults are injected in testing — a stuck sensor, a dropped packet — they arrive at the GNC application's input, exactly where a fault detector is meant to see them. In one big program, nothing separates "the sensor lied" from "the estimator has a bug."
 
-::: warning
-Layering is a statement about where code lives and what it is allowed to assume, not a fault-tolerance mechanism by itself. A software defect *inside* the GNC application layer — a sign error in a gain, a wrong frame transform — is not caught by the fact that the layer exists. Layering organizes the system so that fault detection and redundancy (lessons 5 through 10) have a clean place to attach; it does not perform that detection on its own.
+::: warning Layers organize; they do not detect
+Layering says where code lives and what it may assume. It is not a fault-tolerance mechanism by itself. A bug *inside* the GNC application — a sign error in a gain, a wrong frame transform — is not caught because the layer exists. Layering gives fault detection and redundancy (lessons 5 through 10) a clean place to attach. It does not do that detection for them.
 :::
 
 ## Hardware abstraction and device managers in code
 
-The value of the HAL/device-manager split is easiest to see by building two different drivers for physically different hardware and putting the same interface in front of both.
+The easiest way to see the value of the HAL and device-manager split is to write two drivers for two quite different gyros and put the same interface in front of both.
+
+The first gyro reports raw counts. Its data sheet says it produces 131 counts for every degree per second of rotation. So to get a rate you divide: a reading of 4213 counts means $4213 / 131 \approx 32.16$ degrees per second. The second gyro already does that arithmetic inside itself and sends a rate in degrees per second directly.
 
 ::: example Two gyro drivers, one device-manager interface
 ```python
@@ -83,14 +89,25 @@ for name, driver in [("GyroDriverA (SPI, raw counts)", GyroDriverA()),
 # GyroDriverA (SPI, raw counts): device manager reports 32.160 deg/s
 # GyroDriverB (serial, engineering units): device manager reports 32.150 deg/s
 ```
-Both drivers end up reporting close to the same physical rate through the same `gyro_rate_dps()` call, but they get there by entirely different means: one divides a raw count by a scale factor it alone knows, the other has no conversion to do at all. A GNC application built against `DeviceManager` cannot tell which is underneath, and a vehicle that changes gyro vendor between builds changes one driver class and nothing else.
+
+Walk through what happened. Driver A read 4213 counts and divided by 131, giving 32.160 deg/s. Driver B had no conversion to do and returned 32.150 deg/s. Both answers came out through the same call, `gyro_rate_dps()`.
+
+Now the sanity check. The two gyros measure the same spin and agree to within 0.01 deg/s, about 0.03 percent — the kind of small difference two real sensors always show. A GNC application written against `DeviceManager` cannot tell which gyro is underneath. If the vehicle changes gyro supplier between builds, one driver class changes and nothing else does.
 :::
 
-## A public, buildable reference: NASA's core Flight System
+## A real reference: NASA's core Flight System
 
-Abstract layering is easier to trust once you have seen it as real, running code rather than a diagram. NASA's core Flight System (cFS) is a flight software framework used across multiple NASA missions and released as open source; you can clone it, build it, and run its sample mission on a workstation. It is a direct, concrete instance of the layering above, and it makes one architectural decision explicit that the abstract picture leaves implicit: it draws the boundary between the GNC-application layer and everything around it as a boundary between separate *processes* (or, in the terminology cFS uses, separate *apps*), each with its own address space, each independently started, stopped, and restarted, communicating only through a message bus.
+A layer diagram is easier to trust once you have seen it as running code. NASA's **core Flight System** is a flight software framework built at NASA's Goddard Space Flight Center, **[[flown on real missions|cfs-history]]**, and released as open source. You can clone it, build it and run its sample mission on a laptop. It is a direct, concrete example of the layers above.
 
-cFS is built from a core flight executive (cFE) that provides four services common to every app — Executive Services (starting, stopping, and monitoring apps), the Software Bus (message passing), Table Services (loading and validating configuration data separately from code, the subject of lesson 12), and Time and Event Services (a shared time base and a shared logging/event-reporting path) — plus a platform support layer underneath that plays the HAL's role, and a set of independently developed apps on top that play the device-manager and GNC-application roles. Every app publishes the messages it produces and subscribes to the messages it needs; no app calls another app's internal functions, holds a pointer into another app's memory, or knows another app exists beyond the message identifiers it publishes and subscribes to.
+cFS has three tiers:
+
+- **At the bottom**, an **[[operating system abstraction layer and a platform support package|osal-psp]]**. Together these play the HAL's role. They hide which real-time operating system and which circuit board are underneath, so the same application code runs on a flight computer or on your laptop.
+- **In the middle**, the **core Flight Executive (cFE)**: a small set of services every application uses. **Executive Services** start, stop, restart and keep track of applications. The **Software Bus** carries messages between them. **Table Services** load and check configuration data kept separately from code. **Time Services** give everyone one shared clock. **Event Services** give everyone one shared path for reporting events ("valve 3 opened", "checksum failed"). A small File Services piece handles standard file headers.
+- **At the top**, the **apps**: independently written programs that play the device-manager, GNC, mode-manager and telemetry-and-command roles. The sample mission includes a Command Ingest app, which receives commands from the ground, and a Telemetry Output app, which sends packets down.
+
+### The software bus: publish and subscribe
+
+The rule that holds cFS together is simple. Every app **publishes** the messages it produces and **subscribes** to the messages it needs. Each kind of message has a number, its **message ID**. No app calls another app's functions, holds a pointer into another app's data, or even knows another app exists. It only knows the message IDs it sends and receives. That pattern is called **[[publish/subscribe|pub-sub]]**, and it is the ticket rail from the restaurant.
 
 ::: example A minimal publish/subscribe software bus
 ```python
@@ -126,62 +143,213 @@ delivered2 = bus.publish(MSG_ID_MODE_CHANGE, {"mode": "SAFE"})
 print(f"publish MODE_CHANGE -> delivered to: {delivered2}")
 # publish MODE_CHANGE -> delivered to: ['RECORDER']
 ```
-The mode manager app publishing `MODE_CHANGE` does not know or care that a recorder app exists, and would emit the identical call whether zero apps or ten were subscribed. A navigation app and an FDIR app subscribed to the same `GYRO_RATE` message both receive it, independently, on the same publish — which is exactly the shape you need for lesson 9's residual monitor to watch the same data the navigation filter consumes, without being wired into the navigation filter's internals.
+
+Step by step: the bus keeps a dictionary from each message ID to a list of subscribers. Three subscriptions go in — navigation and fault detection both want gyro rates, a recorder wants mode changes. Publishing a gyro rate walks that message's list and hands the payload to NAV and FDIR. Publishing a mode change reaches only the recorder.
+
+Notice what the publisher did *not* need. The app publishing `MODE_CHANGE` has no idea a recorder exists. It would make the identical call with zero subscribers or ten. And navigation and fault detection (FDIR, for fault detection, isolation and recovery) both receive the same gyro message independently. That is exactly the shape lesson 9 needs: a residual monitor that watches the same data the navigation filter uses, without being wired into the filter's insides.
 :::
 
-This publish/subscribe structure is what makes the reuse and fault-containment arguments from the previous section concrete rather than aspirational. An app that crashes takes down its own process; Executive Services can detect that and restart it without the rest of the system losing its own state, because no other app held a direct reference into the crashed app's memory in the first place. An app written for one mission is reused on the next by copying its source tree and relinking, because its only contract with the rest of the system is the message identifiers it publishes and subscribes to — never a function signature or a shared data structure. And Table Services gives every app a way to load tunable data — gains, limits, schedules — from a file that is validated on load and can be updated without recompiling or relinking the app itself, which is the mechanism lesson 12 returns to under the name configuration management.
+### What the software bus buys
+
+The publish/subscribe structure turns the three promises of layering into real mechanics.
+
+**Reuse.** An app's only contract with the rest of the system is its list of message IDs. So an app written for one mission can be copied to the next and rebuilt, with no function signatures or shared data structures to untangle.
+
+**Restart and containment.** Executive Services can stop, restart or reload one app without restarting the whole computer, because no other app depends on that app's internal state. There is an honest limit here. On most cFS platforms the apps are **[[tasks that share one memory space|threads-vs-processes]]**, not walled-off processes. A wild pointer in one app can still scribble on another app's memory. The message-only rule keeps apps from depending on each other *by design*; it does not make a memory bug physically impossible.
+
+**Tables.** Table Services lets every app load its tunable numbers — gains, limits, schedules — from a data file. The file is checked when it loads and can be replaced without recompiling or relinking the app. Lesson 12 returns to this under the name *configuration management*: "what the vehicle does" lives in the code, "how the vehicle is tuned" lives in tables, and the two change on different schedules.
+
+### The life of an app
+
+Every cFS app follows the same simple life story. Knowing it helps when you read real cFS code.
+
+1. **Register.** Executive Services starts the app, and the app registers itself.
+2. **Set up.** The app creates a **pipe** — its personal inbox on the software bus — subscribes to the message IDs it needs, and loads its tables.
+3. **Run.** The app enters its main loop: wait for a message on its pipe, handle it, publish any results, report that it is still running, and go back to waiting. Many apps are woken by a periodic "wake up" message from a scheduler app, which is how a 50 Hz control loop gets its beat.
+4. **Get watched.** Each app keeps counters that go up as it works. A **[[Health and Safety app|health-and-safety]]** checks those counters. If an app stops checking in, it can report the problem, restart the app, or in the worst case reset the processor.
+5. **Exit.** When commanded to stop, or on a fatal error, the app leaves its loop and Executive Services cleans up after it.
+
+::: warning A running app is not a correct app
+Step 4 only tells you that an app keeps looping. An app can check in on time, every time, while computing garbage — a bad gain, a flipped sign, a diverged filter. Lesson 8 makes this point about watchdog timers, and it applies to health counters just the same.
+:::
 
 ## Check yourself
 
 ::: check
-A device manager for a radar altimeter returns a Python `float` in meters, already validated to be non-negative and non-stale. What work did it do that the HAL beneath it did not, and why does the GNC application above it need that work already done?
+A device manager for a radar altimeter hands the GNC application a number in meters that it has already checked is not negative and not stale. What work did it do that the HAL below it did not? And why does the GNC application need that work already done?
 :::
 
 ::: answer
-The HAL's job stops at moving bytes across a bus reliably — it can hand the device manager a block of raw serial data, but it has no notion of what a "valid" or "stale" altimeter reading looks like, because that requires knowing what an altimeter is. The device manager parses those bytes into a physical quantity, checks it against the sensor's known-valid range and freshness bound, and only then hands a float upward. The GNC application needs that work finished before it sees the value because its estimator assumes every input it receives is already a meaningful, current measurement — building range and staleness checks into the estimator's own code would mean repeating that logic in every algorithm that ever touches altimeter data, and getting it wrong once would corrupt the filter with a value nothing between the sensor and the math has ever inspected.
+The HAL stops at moving bytes across a bus reliably. It can hand the device manager a block of raw serial data, but it has no idea what a "valid" or "stale" altimeter reading looks like — that needs knowing what an altimeter is. The device manager turns those bytes into a physical quantity, checks it against the sensor's valid range and freshness limit, and only then passes a number up.
+
+The GNC application needs that done first because its estimator assumes every input is already a meaningful, current measurement. Putting range and staleness checks inside the estimator would mean repeating them in every algorithm that ever touches altimeter data. Get one copy wrong, and a value nobody inspected goes straight into the filter.
 :::
 
 ::: check
-Two engineers argue about where the following code belongs: "if the last GNSS fix is more than 250 ms old, mark GNSS invalid." One says it belongs inside the navigation filter, because the filter is what cares whether the fix is valid. The other says it belongs in the GNSS device manager. Which is closer to the layering this lesson describes, and why?
+Two engineers argue about where this code belongs: "if the last GNSS fix is more than 250 ms old, mark GNSS invalid." One says inside the navigation filter, since the filter cares whether the fix is valid. The other says in the GNSS device manager. Which fits this lesson's layering better, and why?
 :::
 
 ::: answer
-The device manager. The filter cares about the *consequence* of a stale fix — it should not incorporate one — but the *test* for staleness depends only on the timestamp and the freshness bound, neither of which involves anything the filter's model knows. Placing the check in the device manager means every consumer of GNSS data receives the same validity flag through the same typed interface, computed once, in the one place that owns the sensor's timing characteristics; placing it inside the filter means every other consumer of GNSS data — an FDIR monitor, a telemetry formatter, a ground display — has to reimplement the same test or go without it. The general rule this illustrates: a check belongs at the lowest layer that has everything it needs to perform the check and nothing else.
+The device manager. The filter cares about the *consequence* of a stale fix — it should not use it. But the *test* for staleness needs only the timestamp and the 250 ms limit. Nothing in the filter's model is involved.
+
+Put in the device manager, the check runs once, in the one place that owns the sensor's timing, and every user of GNSS data gets the same validity flag through the same interface. Put inside the filter, every other user — a fault monitor, a telemetry formatter, a ground display — must copy the test or go without it. The general rule: a check belongs at the lowest layer that has everything it needs to do the check.
 :::
 
 ::: check
-In the software-bus example, `bus.publish(MSG_ID_MODE_CHANGE, ...)` was called with two apps subscribed to other message IDs and one subscribed to this one. If a third app were added later that also needed mode-change notifications, what would have to change in the mode manager app's code?
+In the software-bus example, a third app is added later that also wants mode-change messages. What must change in the mode manager's code?
 :::
 
 ::: answer
-Nothing. The mode manager's only action is `bus.publish(MSG_ID_MODE_CHANGE, payload)`; it has no list of recipients to update and no knowledge that a new subscriber exists. The new app calls `bus.subscribe(MSG_ID_MODE_CHANGE, ...)` on its own initiative, and the next publish reaches it along with everyone else. This is the concrete payoff of publish/subscribe over direct function calls: adding a consumer is a one-sided change confined to the new consumer's own code.
+Nothing. The mode manager's only action is `bus.publish(MSG_ID_MODE_CHANGE, payload)`. It keeps no list of recipients and does not know a new subscriber exists. The new app calls `bus.subscribe(MSG_ID_MODE_CHANGE, ...)` in its own setup, and the next publish reaches it along with everyone else. Adding a listener is a one-sided change made entirely in the listener's own code. That is the payoff of publish/subscribe over direct function calls.
 :::
 
 ::: check
-Why does cFS run each app as a separate process rather than as a function called from one big control loop, given that a single process would avoid the overhead of message passing between apps?
+cFS runs each app as its own separately started task with its own pipe, instead of as a function called from one big control loop. Message passing costs some time. What does the design buy in return? And what does it *not* buy on a platform where all the apps share one memory space?
 :::
 
 ::: answer
-Running apps as separate processes means a fault inside one app — a crash, a hang, memory corruption — cannot directly corrupt another app's memory, because they do not share an address space; the operating system's process boundary enforces the isolation that a shared-loop design could only enforce by convention. It also means Executive Services can detect a failed app (through the OS or a heartbeat) and restart only that app, rather than the fault taking down or requiring a restart of the entire flight computer. The message-passing overhead is the price paid for fault containment and for the reuse property described earlier in this lesson — an app's only contract with the rest of the system is its published and subscribed message identifiers, which is what lets it be dropped into a different mission's build.
+It buys independence. Each app can be started, stopped, restarted or reloaded by Executive Services on its own, without restarting the whole flight computer, because no other app depends on its internals. Its only contract is its list of published and subscribed message IDs, which is what lets it be dropped into another mission's build. Each task can also get its own priority and its own wake-up rate.
+
+It does not buy hardware memory protection. When the apps are tasks in one shared memory space, a memory-corrupting bug in one app can still damage another's data. The message-only interface removes *designed-in* dependence between apps; it cannot stop an accidental wild write. Walled-off memory needs an operating system that gives each app its own protected space.
 :::
 
 ::: check
-A reviewer is asked to verify a new guidance law before it flies. Under the layering this lesson describes, what does the reviewer need to know about the specific IMU model installed on the vehicle, and what does that depend on?
+A reviewer must approve a new guidance law before flight. Under this lesson's layering, what does the reviewer need to know about the specific IMU (inertial measurement unit) on the vehicle? What does that answer depend on?
 :::
 
 ::: answer
-In principle, nothing: the guidance law lives in the GNC application layer, which receives typed, physical-unit, validated state estimates and has no interface to any specific sensor. The reviewer's task is to check the guidance mathematics against its specification in those physical units. That independence holds only as long as the layering has actually been kept clean — if the guidance code contains a special case for one IMU's known quirk, or reads a raw field the device manager was supposed to abstract away, the reviewer now has to understand the sensor too, and the layer boundary has quietly been broken by the code that crossed it.
+In principle, nothing. The guidance law lives in the GNC application layer. It receives typed, checked state estimates in physical units and has no interface to any specific sensor. The reviewer checks the guidance mathematics against its specification in those units.
+
+That holds only while the layering is kept clean. If the guidance code has a special case for one IMU's known quirk, or reads a raw field the device manager was supposed to hide, the reviewer now has to understand the sensor too. The boundary has been quietly broken by the code that crossed it.
 :::
 
 ## Summary
 
-| Layer | Job | Does not know about |
+| Layer or idea | Job | Does not know about |
 | --- | --- | --- |
-| Hardware abstraction (HAL/BSP) | Talk to a specific bus and processor | Anything above raw registers and bytes |
-| Device manager | Typed, validated, physical-unit data for one instrument | Other devices, the GNC algorithms |
-| GNC application | Estimation, guidance, control | Which physical sensor or bus produced its inputs |
-| Mode manager | Supervises which GNC behavior is active | The internals of the estimator or controller |
-| Telemetry and command | Boundary to ground/crew | Which app produced or will consume a given value |
-| cFE (cFS core) | Executive, software bus, tables, time, events | App internals; delivers by message ID only |
+| Hardware abstraction (HAL/BSP) | Talk to one specific bus and processor | Anything above raw registers and bytes |
+| Device manager | Typed, checked, physical-unit data for one instrument | Other devices, the GNC algorithms |
+| GNC application | Estimation, guidance, control | Which sensor or bus produced its inputs |
+| Mode manager | Decides which GNC behavior is active | The insides of the estimator or controller |
+| Telemetry and command | The door to ground and crew | Which app produced or will use a value |
+| Message bus | Carries messages by ID; apps never call each other | What any subscriber does with a message |
+| cFE (cFS core) | Executive, software bus, tables, time, events | App internals |
 
-The next lesson takes the mode-manager layer named here and builds it as an explicit state machine — a table of states, guard conditions, and transitions — the first of the two demonstrations this module is built around.
+The next lesson takes the mode-manager layer named here and builds it as an explicit state machine: a table of states, guard conditions and transitions, with a guaranteed way to reach safe from everywhere.
+
+::: context layer-cake The stack at a glance
+Each layer talks down to the one below through a narrow interface and hands a cleaner, more meaningful product up. The bus on the side is how applications pass messages without calling each other.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 200" font-family="Inter, Arial, sans-serif">
+  <g stroke="#1f2a44" stroke-width="1.5">
+    <rect x="20" y="10" width="250" height="32" fill="#8fb8f0"/>
+    <rect x="20" y="46" width="250" height="32" fill="#fff"/>
+    <rect x="20" y="82" width="250" height="32" fill="#8fb8f0"/>
+    <rect x="20" y="118" width="250" height="32" fill="#fff"/>
+    <rect x="20" y="154" width="250" height="32" fill="#f2b880"/>
+    <rect x="290" y="10" width="50" height="176" fill="#fff"/>
+  </g>
+  <g font-size="12" fill="#1f2a44" text-anchor="middle">
+    <text x="145" y="31">Telemetry and command</text>
+    <text x="145" y="67">Mode manager</text>
+    <text x="145" y="103">GNC application</text>
+    <text x="145" y="139">Device managers</text>
+    <text x="145" y="175">Hardware abstraction</text>
+  </g>
+  <g font-size="11" fill="#1d6fd1" text-anchor="middle">
+    <text x="315" y="90">message</text>
+    <text x="315" y="104">bus</text>
+  </g>
+</svg>
+```
+:::
+
+::: context registers What a register is
+A **register** is a tiny storage slot built into a chip, usually 8, 16 or 32 bits wide, sitting at a fixed address. Writing a pattern of bits to one register might switch on a timer. Reading another might return the last byte a sensor sent. Each chip has its own map of which address does what, printed in its data sheet. Code full of those addresses works on exactly one chip, which is why the HAL keeps them all in one place.
+:::
+
+::: context serial-buses SPI and I2C
+Both are ways for a processor to talk to nearby chips over a few wires. **SPI** (serial peripheral interface) uses a clock wire, a wire in each direction and a "chip select" wire per device; it is fast and simple. **I2C** (inter-integrated circuit, said "I squared C") uses only two wires shared by many devices, each with an address; it is slower but saves pins. Flight hardware also uses sturdier buses such as RS-422 serial lines and MIL-STD-1553. The HAL hides which one a sensor uses.
+:::
+
+::: context adc-counts Where 131 counts per degree per second comes from
+An **ADC** (analog-to-digital converter) turns a voltage into a whole number, a **count**. A gyro with a 16-bit signed output has counts from −32,768 to +32,767. If the part is set to measure up to ±250 degrees per second, then
+
+$$
+\frac{32\,768}{250} \approx 131 \ \text{counts per deg/s}.
+$$
+
+Set it to a wider range and each count stands for more rotation. That scale factor lives in the device manager, and nowhere else.
+:::
+
+::: context ariane-501 When reused code met a new rocket
+On 4 June 1996, the first Ariane 5 broke up about 40 seconds after liftoff. Its inertial reference software had been reused from Ariane 4. One routine converted a horizontal-velocity value from a 64-bit floating-point number to a 16-bit integer. Ariane 5 flew a faster trajectory, the value no longer fit, and the conversion raised an error. The backup unit ran the same code on the same data and had already failed the same way. Reuse was not the mistake; reusing without re-checking the old assumptions against the new vehicle was. Lesson 6 explains why identical redundant copies give no protection against this kind of fault.
+:::
+
+::: context cfs-history Where cFS came from
+cFS grew out of flight software work at NASA's Goddard Space Flight Center in the 2000s. Its core executive first flew on the Lunar Reconnaissance Orbiter, launched in 2009, and the framework has since been used on many NASA missions and on university and commercial small satellites. Because it is public, it is one of the few real flight architectures you can read line by line. The module's reading exercise asks you to build it and trace one command in and one telemetry packet out.
+:::
+
+::: context osal-psp Two thin layers at the bottom
+The **OSAL** (operating system abstraction layer) gives apps one set of calls for tasks, queues, timers and files, whether the computer underneath runs VxWorks, RTEMS or Linux. The **PSP** (platform support package) handles the particular board: how it boots, where its memory is, how it resets. Together they are cFS's version of the HAL. They are why you can build the sample mission on a laptop running Linux and later run the same app code on a flight computer.
+:::
+
+::: context pub-sub Publish and subscribe, drawn
+Publishers post a message with an ID. The bus looks up who subscribed to that ID and delivers a copy to each. Nobody on either side knows who is on the other.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">
+  <g stroke="#1f2a44" stroke-width="1.5">
+    <rect x="10" y="30" width="80" height="30" fill="#8fb8f0"/>
+    <rect x="10" y="90" width="80" height="30" fill="#8fb8f0"/>
+    <rect x="140" y="20" width="60" height="110" fill="#fff"/>
+    <rect x="260" y="15" width="90" height="28" fill="#f2b880"/>
+    <rect x="260" y="60" width="90" height="28" fill="#f2b880"/>
+    <rect x="260" y="105" width="90" height="28" fill="#f2b880"/>
+  </g>
+  <g stroke="#1f2a44" stroke-width="1.5" fill="none">
+    <line x1="90" y1="45" x2="140" y2="45"/>
+    <line x1="90" y1="105" x2="140" y2="105"/>
+    <line x1="200" y1="45" x2="260" y2="29"/>
+    <line x1="200" y1="45" x2="260" y2="74"/>
+    <line x1="200" y1="105" x2="260" y2="119"/>
+  </g>
+  <g font-size="11" fill="#1f2a44" text-anchor="middle">
+    <text x="50" y="49">Gyro DM</text>
+    <text x="50" y="109">Mode mgr</text>
+    <text x="170" y="72">bus</text>
+    <text x="305" y="33">NAV</text>
+    <text x="305" y="78">FDIR</text>
+    <text x="305" y="123">Recorder</text>
+  </g>
+  <g font-size="11" fill="#6c7a93" text-anchor="middle">
+    <text x="115" y="38">GYRO</text>
+    <text x="115" y="98">MODE</text>
+  </g>
+</svg>
+```
+:::
+
+::: context threads-vs-processes Tasks, processes and memory walls
+A **process** gets its own private memory; the operating system, helped by the processor's memory-protection hardware, stops other processes from touching it. A **task** (or thread) runs its own sequence of instructions but can share memory with other tasks. cFS apps are usually tasks in one shared space, which is fast and works on small real-time operating systems. Some operating systems used in avionics add hard partitions between software pieces, so that one partition cannot write into another or steal its time. That is containment enforced by hardware rather than by convention.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 120" font-family="Inter, Arial, sans-serif">
+  <rect x="10" y="20" width="160" height="80" fill="#fff" stroke="#1f2a44" stroke-width="1.5"/>
+  <g fill="#8fb8f0" stroke="#1f2a44"><rect x="22" y="40" width="40" height="40"/><rect x="70" y="40" width="40" height="40"/><rect x="118" y="40" width="40" height="40"/></g>
+  <g fill="#fff" stroke="#1f2a44" stroke-width="1.5"><rect x="190" y="30" width="48" height="60"/><rect x="246" y="30" width="48" height="60"/><rect x="302" y="30" width="48" height="60"/></g>
+  <g fill="#f2b880" stroke="#1f2a44"><rect x="198" y="45" width="32" height="30"/><rect x="254" y="45" width="32" height="30"/><rect x="310" y="45" width="32" height="30"/></g>
+  <g font-size="11" fill="#1f2a44" text-anchor="middle">
+    <text x="90" y="14">tasks: one shared memory</text>
+    <text x="270" y="14">processes: separate walls</text>
+    <text x="90" y="112">a stray write can cross</text>
+    <text x="270" y="112">hardware blocks it</text>
+  </g>
+</svg>
+```
+:::
+
+::: context health-and-safety Who watches the apps
+The Health and Safety app is itself an ordinary cFS app. Each cycle it looks at every monitored app's execution counter. A counter that stops rising means that app has stopped looping. What happens next is set in a table: send an event to the ground, restart the app, or reset the processor. Lesson 8 treats the same idea in hardware as a watchdog timer, and explains why a reset is a real-time decision, not a free reflex.
+:::
