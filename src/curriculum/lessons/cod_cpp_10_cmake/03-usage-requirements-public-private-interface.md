@@ -147,7 +147,7 @@ Sanity check: the length of $(3, 4, 12)$ is $\sqrt{9 + 16 + 144} = \sqrt{169} = 
 :::
 
 ::: warning The library's own build will not catch this
-The broken version passed every build step *of the library itself*. If your library's continuous-integration job builds only the library, the mistake ships. The first person to see it is a consumer. That is why a well-run library project always builds at least one small program or test that links the library *the way a stranger would* — through `target_link_libraries` and nothing else.
+The broken version passed every build step *of the library itself*. If your library's **continuous integration** job — the server that builds and tests every change automatically — builds only the library, the mistake ships. The first person to see it is a consumer. That is why a well-run library project always builds at least one small program or test that links the library *the way a stranger would* — through `target_link_libraries` and nothing else.
 :::
 
 ### It travels more than one step
@@ -532,5 +532,29 @@ CMake itself dates from around 2000. For its first decade, projects configured c
 ::: context rebuild-ripple Why one flag can rebuild everything
 A build tool rebuilds a file when its inputs change, and the compile command counts as an input. Change a `-D` flag on one target and every file compiled with that flag has a new command, so every one is recompiled.
 
-A PRIVATE flag touches only the target's own files. A PUBLIC flag is copied onto every consumer and every consumer's consumer. On a flight-software project with hundreds of files, flipping one leaked debug macro can turn a ten-second rebuild into a coffee break.
+A PRIVATE flag touches only the target's own files. A PUBLIC flag is copied onto every consumer and every consumer's consumer.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 160" font-family="Inter, Arial, sans-serif">
+  <rect x="140" y="12" width="80" height="30" rx="5" fill="#f2b880" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="180" y="32" font-size="12" fill="#1f2a44" text-anchor="middle">gnc</text>
+  <rect x="30" y="70" width="80" height="30" rx="5" fill="#f2b880" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="70" y="90" font-size="12" fill="#1f2a44" text-anchor="middle">nav_app</text>
+  <rect x="140" y="70" width="80" height="30" rx="5" fill="#f2b880" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="180" y="90" font-size="12" fill="#1f2a44" text-anchor="middle">sim</text>
+  <rect x="250" y="70" width="80" height="30" rx="5" fill="#f2b880" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="290" y="90" font-size="12" fill="#1f2a44" text-anchor="middle">tests</text>
+  <rect x="140" y="124" width="80" height="30" rx="5" fill="#f2b880" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="180" y="144" font-size="12" fill="#1f2a44" text-anchor="middle">sim_tests</text>
+  <g stroke="#b4232c" stroke-width="2">
+    <line x1="160" y1="42" x2="80" y2="70"/>
+    <line x1="180" y1="42" x2="180" y2="70"/>
+    <line x1="200" y1="42" x2="280" y2="70"/>
+    <line x1="180" y1="100" x2="180" y2="124"/>
+  </g>
+  <text x="16" y="24" font-size="11" fill="#b4232c">PUBLIC -D flag</text>
+  <text x="16" y="38" font-size="11" fill="#b4232c">changed here</text><text x="250" y="130" font-size="11" fill="#b4232c">all orange</text><text x="250" y="144" font-size="11" fill="#b4232c">boxes rebuild</text>
+</svg>
+```
+ On a flight-software project with hundreds of files, flipping one leaked debug macro can turn a ten-second rebuild into a coffee break.
 :::

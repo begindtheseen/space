@@ -2455,7 +2455,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-dependencies-find-package-and-fetchcontent",
       "title": "Dependencies: find_package and FetchContent",
-      "minutes": 22,
+      "minutes": 20,
       "covers": [
         "find_package and config packages; FetchContent versus submodules versus Conan or vcpkg"
       ],
