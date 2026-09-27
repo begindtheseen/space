@@ -108,7 +108,7 @@ Combine that with the free-time condition from the last lesson. With no terminal
 For a time-invariant problem with no explicit terminal time cost, $H(t_f) = 0$. For a time-invariant problem, $H$ is constant along the whole optimal trajectory — a cheap numerical check on any solution.
 :::
 
-Use that check every time: evaluate $H$ at a dozen points along a computed trajectory. If the numbers wander, the costates are wrong, $H$ was built wrong, or the solution has not converged. Lesson four's orbit transfer passes it with $H(t_f) = -3.4\times10^{-13}$.
+Use that check every time: evaluate $H$ at a dozen points along a computed trajectory. If the numbers wander, the costates are wrong, $H$ was built wrong, or the solution has not converged. One catch: the check needs a problem whose rules do not depend on the clock. In lesson four's orbit transfer the mass is written as a function of time, so $H$ alone drifts along the way; only $H$ plus the mass-costate term stays constant. That transfer still ends with $H(t_f)$ at round-off level, about $10^{-12}$.
 
 ::: note Why it has to be true: the Hamiltonian does not change
 Take the time derivative of $H(\mathbf{x},\mathbf{u},\boldsymbol\lambda,t)$ along the flight with the chain rule. $H$ changes because the clock moves, the state moves, the costate moves and the control moves:
