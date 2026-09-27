@@ -103,7 +103,7 @@ The fixes follow from the mechanism. Narrow correlators shrink the envelope for 
 
 ## Ephemeris error: the position is a forecast
 
-The **[[ephemeris|ephemeris-word]]** in the navigation message is the satellite's position, as a formula the receiver can evaluate at any moment. It is not a measurement. Ground monitor stations track each satellite. The control segment fits its current position and velocity, then runs a model of the forces on it forward in time, and uploads the result. The broadcast set is refreshed every couple of hours and is good for a few hours either side of its reference time.
+The **[[ephemeris|ephemeris-word]]** in the navigation message is the satellite's position, as a formula the receiver can evaluate at any moment. It is not a measurement. Ground monitor stations track each satellite. The **control segment** — the people and ground stations that run GPS — fits its current position and velocity, then runs a model of the forces on it forward in time, and uploads the result. The broadcast set is refreshed every couple of hours and is good for a few hours either side of its reference time.
 
 Any forecast drifts. The force model misses small, changing pushes like **[[solar radiation pressure|sunlight-push]]**, and the starting state was never perfect. The result is a position error $\delta\mathbf{s}$ at the satellite, a small arrow from where the ephemeris says the satellite is to where it really is.
 
