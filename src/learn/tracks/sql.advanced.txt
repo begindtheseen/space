@@ -1933,37 +1933,184 @@ INSERT INTO orders_flat VALUES
   (104, '2024-06-02', 'bo@mail.com',  'Bo Chen',  'MUG-1', 'Mug',       10.00, 3),
   (104, '2024-06-02', 'bo@mail.com',  'Bo Chen',  'PEN-2', 'Pen',       3.50, 1);
 --- teach
-Spreadsheet exports often arrive as one wide table: every order line repeats the customer's name and the product's name. It works until it doesn't:
+The last two lessons, "Constraints: rules the database enforces" and "Foreign keys", gave you rules that guard a table and the links between tables. This lesson uses them to design. You take one wide, messy table and split it into four tidy ones, without losing a single fact.
 
-- **Update anomaly** — Ana changes her name; you must update every one of her rows, and missing one leaves her with two names.
-- **Insert anomaly** — you cannot record a new product until someone orders it.
-- **Delete anomaly** — delete Bo's only order and you lose the fact that Bo exists.
+### The picture
 
-**Normalising** splits the table so every fact is stored once, in the table it describes. Ask of each column: *what is this a fact about?*
+Imagine a shop that writes every sale in one notebook. Each line copies out the customer's name and email, and the product's name and price, even if the same customer bought something yesterday. It is quick to write. But say a customer changes the name on their account. Now you must find and fix every line that customer ever appears on.
 
-- `customer_name` is a fact about a customer → `customers`
-- `product_name` is a fact about a product → `products`
-- `placed` is a fact about an order → `orders`
-- `qty` is a fact about one product in one order → `order_items`
-- `unit_price`? Look at the data: the Mug cost 9.00 in May and 10.00 in June. It is what was **charged on that line**, so it belongs on `order_items`, not on `products`. Putting it on products would rewrite history.
+### The flat table
 
-Each table gets a key, and the links become foreign keys. Then fill the new tables from the old one with `INSERT … SELECT DISTINCT`:
+`orders_flat` is that notebook. Data exported from a spreadsheet often looks like this: one wide table, where each row is one **order line**, meaning one product in one order.
+
+| order_id | placed | customer_email | customer_name | sku | product_name | unit_price | qty |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 101 | 2024-05-01 | ana@mail.com | Ana Ruiz | MUG-1 | Mug | 9.0 | 2 |
+| 101 | 2024-05-01 | ana@mail.com | Ana Ruiz | PEN-2 | Pen | 3.5 | 4 |
+| 102 | 2024-05-03 | bo@mail.com | Bo Chen | MUG-1 | Mug | 9.0 | 1 |
+| 103 | 2024-05-09 | ana@mail.com | Ana Ruiz | LMP-3 | Desk lamp | 45.0 | 1 |
+| 104 | 2024-06-02 | bo@mail.com | Bo Chen | MUG-1 | Mug | 10.0 | 3 |
+| 104 | 2024-06-02 | bo@mail.com | Bo Chen | PEN-2 | Pen | 3.5 | 1 |
+
+A [[SKU|sku]] is the shop's code for one product, like `MUG-1`. Order 101 has two lines: two mugs and four pens. Count how many times "Ana Ruiz" and "Mug" are written out.
+
+### Three ways it goes wrong
+
+Copying one fact onto many rows invites **anomalies**: ways the data can end up wrong, or stuck.
+
+- **Update anomaly.** Ana Ruiz changes the name on the account. You must update every one of that customer's rows. Miss one, and the same customer now has two names.
+- **Insert anomaly.** You cannot record a new product until someone orders it, because every row has to be an order line.
+- **Delete anomaly.** Delete Bo Chen's orders, and you lose the fact that Bo Chen exists at all.
+
+### One fact, one place
+
+**Normalising** means splitting a table so that [[every fact is stored once|normal-forms]], in the table it describes. For each column, ask: *what is this a fact about?*
+
+- `customer_name` is a fact about a customer, so it goes in a `customers` table.
+- `product_name` is a fact about a product, so it goes in `products`.
+- `placed`, the date of the order, is a fact about an order, so it goes in `orders`.
+- `qty` is a fact about one product in one order, so it goes in `order_items`.
+
+### The tricky one: unit_price
+
+Is the price a fact about the product? Look at the data. The Mug cost 9.00 in May (orders 101 and 102) and 10.00 in June (order 104). So `unit_price` is what was **charged on that line**. It belongs on `order_items`.
+
+If the price lived on `products`, raising the Mug to 10.00 would [[rewrite history|price-history]]: old orders would suddenly seem to have cost more.
+
+### A key for every table
+
+Each new table needs a primary key: the column, or columns, that pick out exactly one row.
+
+- `customers` gets an `id` number. Leave an `INTEGER PRIMARY KEY` out of an insert, and SQLite numbers the rows 1, 2, 3 for you.
+- `products` uses the `sku`. It already names one product, so it can be the key. A key that comes from the data itself is called a [[natural key|natural-key]].
+- `orders` gets an `id` that holds the old `order_id`.
+- `order_items` has one row per product per order. Neither `order_id` nor `sku` is unique on its own, but the pair is. So the key is both columns together, a **composite primary key**. As in the lesson "Constraints: rules the database enforces", it goes at the end of the table, after the columns:
+
+```sql
+  PRIMARY KEY (order_id, sku)
+```
+
+The links between the tables become foreign keys, written with `REFERENCES` as in the lesson "Foreign keys". `orders.customer_id` points at `customers(id)`. `order_items` points at `orders(id)` and at `products(sku)`. Here is [[how the four tables fit together|table-map]].
+
+### Filling a table from a query
+
+You have used `INSERT … VALUES` to type rows in by hand. Here is the new idea: **`INSERT … SELECT`** takes its rows from a query instead. Whatever the `SELECT` returns is inserted, row by row.
 
 ```sql
 INSERT INTO customers (email, name)
 SELECT DISTINCT customer_email, customer_name FROM orders_flat;
 ```
 
-Leaving out an `INTEGER PRIMARY KEY` lets SQLite number the rows. To link orders to those new ids, join back on the natural key: `JOIN customers c ON c.email = f.customer_email`.
+`DISTINCT`, from the lesson "DISTINCT, UNION and UNION ALL", keeps one copy of each repeated row. So the `SELECT` returns 2 rows, not 6, and 2 customers go in. The `id` column is left out, so SQLite numbers them:
 
-The test that you lost nothing: joining the new tables back together must reproduce the flat table exactly.
+| id | email | name |
+| --- | --- | --- |
+| 1 | ana@mail.com | Ana Ruiz |
+| 2 | bo@mail.com | Bo Chen |
+
+Fill `products` the same way, from `sku` and `product_name`. That gives 3 products.
+
+### Finding the new ids
+
+`orders` needs a `customer_id`. But `orders_flat` only has the email, and the customer's number now lives in `customers`. So join back on the email, which is the same in both tables:
+
+```sql
+SELECT DISTINCT f.order_id, c.id, f.placed
+FROM orders_flat f
+JOIN customers c ON c.email = f.customer_email;
+```
+
+| order_id | id | placed |
+| --- | --- | --- |
+| 101 | 1 | 2024-05-01 |
+| 102 | 2 | 2024-05-03 |
+| 103 | 1 | 2024-05-09 |
+| 104 | 2 | 2024-06-02 |
+
+Put `INSERT INTO orders (id, customer_id, placed)` on the line above that `SELECT`, and every order is stored once, linked to its customer.
+
+`order_items` needs no join. Every line of `orders_flat` already has its `order_id`, `sku`, `qty` and `unit_price`, so all 6 lines go straight in.
+
+Fill the tables in this order: `customers` and `products` first, then `orders`, then `order_items`. A row can only point at a row that is already there.
+
+### Did you lose anything?
+
+Here is the test of a good split: [[joining the four tables back together|join-back]] must give exactly the rows of `orders_flat`. No row missing, no row extra, no value changed.
+
+**Watch out:** leave out `DISTINCT` and the insert fails. The `SELECT` then returns Ana Ruiz's email three times. `email` is `UNIQUE`, so the second copy is refused, and the whole statement stops with nothing inserted. The same happens with `orders`: order 101 is on two lines, and `id` is its primary key.
+
+::: context sku What SKU stands for
+SKU is short for **stock keeping unit**: a shop's own code for one thing it sells. A red mug and a blue mug get different SKUs, because the shop counts and restocks them separately. The codes here, `MUG-1`, `PEN-2` and `LMP-3`, were made up by this shop. That makes a SKU different from the number under a barcode, which is shared by every shop that sells the product. In a warehouse app, the SKU is how shelf labels, scanners and order lines all name the same product.
+:::
+
+::: context normal-forms Where "normalising" comes from
+Edgar F. Codd, a researcher at IBM, described the **relational model** in 1970: data kept in tables that are linked by keys. He also set out rules called **normal forms**, numbered first, second and third, each stricter than the last. You do not need the numbers. A saying from 1983, by William Kent, sums up the goal: every column should be a fact about "the key, the whole key, and nothing but the key". `qty` depends on the whole key `(order_id, sku)`. `product_name` depends on `sku` alone, which is why it moved out.
+:::
+
+::: context price-history Why receipts copy the price
+A paper receipt prints the price you paid, not a pointer to today's price list. Databases follow the same rule for anything that can change later. The price charged is copied onto the order line. The delivery address is often copied onto the order, because the customer may move. Many shops also keep a *current* price on the product, for the website to show, and copy it onto each new line at the moment of sale. Mission logs work the same way: a command log records the value that was really sent, not a link to today's setting.
+:::
+
+::: context natural-key Natural keys and invented numbers
+An email or a SKU is a **natural key**: it comes from the real world. Natural keys can change. People change emails, and shops rename products. If every other table pointed at the email, one change would mean updating rows all over the database. So many designs give each table an invented number as its key, called a **surrogate key**, and keep the natural key `UNIQUE`. That is exactly what `customers` does here: `id` is the key that `orders` points at, and `email` stays unique. When an email changes, one row changes.
+:::
+
+::: context table-map The four tables, drawn
+Each box is a table, and each arrow is a foreign key: it points from the column that holds a key to the table that key belongs to. `order_items` sits in the middle of the design. It is the table that links orders and products, one row for each product in each order.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 205" font-family="Inter, Arial, sans-serif">
+  <defs>
+    <marker id="fk" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#1f2a44"/>
+    </marker>
+  </defs>
+  <rect x="10" y="14" width="140" height="62" rx="4" fill="#fff" stroke="#1f2a44"/>
+  <text x="80" y="33" font-size="12" font-weight="bold" fill="#1f2a44" text-anchor="middle">customers</text>
+  <text x="80" y="51" font-size="11" fill="#1f2a44" text-anchor="middle">id, email,</text>
+  <text x="80" y="66" font-size="11" fill="#1f2a44" text-anchor="middle">name</text>
+  <rect x="210" y="14" width="140" height="62" rx="4" fill="#fff" stroke="#1f2a44"/>
+  <text x="280" y="33" font-size="12" font-weight="bold" fill="#1f2a44" text-anchor="middle">products</text>
+  <text x="280" y="51" font-size="11" fill="#1f2a44" text-anchor="middle">sku, name</text>
+  <rect x="10" y="112" width="140" height="62" rx="4" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="80" y="131" font-size="12" font-weight="bold" fill="#1f2a44" text-anchor="middle">orders</text>
+  <text x="80" y="149" font-size="11" fill="#1f2a44" text-anchor="middle">id, customer_id,</text>
+  <text x="80" y="164" font-size="11" fill="#1f2a44" text-anchor="middle">placed</text>
+  <rect x="210" y="112" width="140" height="62" rx="4" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="280" y="131" font-size="12" font-weight="bold" fill="#1f2a44" text-anchor="middle">order_items</text>
+  <text x="280" y="149" font-size="11" fill="#1f2a44" text-anchor="middle">order_id, sku,</text>
+  <text x="280" y="164" font-size="11" fill="#1f2a44" text-anchor="middle">qty, unit_price</text>
+  <line x1="80" y1="112" x2="80" y2="79" stroke="#1f2a44" stroke-width="1.5" marker-end="url(#fk)"/>
+  <text x="86" y="99" font-size="11" fill="#1d6fd1">customer_id</text>
+  <line x1="280" y1="112" x2="280" y2="79" stroke="#1f2a44" stroke-width="1.5" marker-end="url(#fk)"/>
+  <text x="286" y="99" font-size="11" fill="#1d6fd1">sku</text>
+  <line x1="210" y1="146" x2="153" y2="146" stroke="#1f2a44" stroke-width="1.5" marker-end="url(#fk)"/>
+  <text x="180" y="140" font-size="11" fill="#1d6fd1" text-anchor="middle">order_id</text>
+  <text x="180" y="196" font-size="11" fill="#6c7a93" text-anchor="middle">each arrow points at the table whose key it holds</text>
+</svg>
+```
+:::
+
+::: context join-back Proving nothing was lost
+`EXCEPT` sits between two queries and returns the rows of the first that are missing from the second. After your split, this returns no rows:
+
+```sql
+SELECT order_id, sku, qty FROM orders_flat
+EXCEPT
+SELECT order_id, sku, qty FROM order_items;
+```
+
+No rows means every line of the old table is in the new one. This lesson's checks do the same with all eight columns, joining `order_items` to `orders`, `customers` and `products` to rebuild each old row. Engineers run checks like this whenever they move data into a new design, before they delete the old table.
+:::
 --- task
-Split `orders_flat` into four tables and fill them from it:
+Split `orders_flat` into four tables, then fill them from it.
 
-- `customers` — `id` (integer primary key), `email` (text, required, unique), `name` (text, required)
-- `products` — `sku` (text primary key), `name` (text, required)
-- `orders` — `id` (integer primary key, the old `order_id`), `customer_id` (references `customers(id)`), `placed`
-- `order_items` — `order_id` (references `orders(id)`), `sku` (references `products(sku)`), `qty`, `unit_price`, with the primary key `(order_id, sku)`
+- `customers`: `id` (integer primary key), `email` (text, required, unique), `name` (text, required). The starter already has this one.
+- `products`: `sku` (text primary key), `name` (text, required). No price here.
+- `orders`: `id` (integer primary key, holding the old `order_id`), `customer_id` (integer, required, references `customers(id)`), `placed` (text, required).
+- `order_items`: `order_id` (integer, required, references `orders(id)`), `sku` (text, required, references `products(sku)`), `qty` (integer, required), `unit_price` (real, required), with the composite primary key `(order_id, sku)`.
+
+Then fill all four with `INSERT … SELECT` from `orders_flat`, in this order: customers, products, orders, order_items.
 --- starter
 -- Design the four tables, then fill them from orders_flat.
 CREATE TABLE customers (
@@ -2008,11 +2155,11 @@ JOIN customers c ON c.email = f.customer_email;
 INSERT INTO order_items (order_id, sku, qty, unit_price)
 SELECT order_id, sku, qty, unit_price FROM orders_flat;
 --- hint
-Create all four tables first. `order_items` ends with `PRIMARY KEY (order_id, sku)` as a table constraint.
+Write the three missing `CREATE TABLE`s first. `order_items` lists its four columns, then ends with `PRIMARY KEY (order_id, sku)` after a comma. `products` has only `sku` and `name`: the price stays on the order line.
 --- hint
-Fill customers and products with `INSERT … SELECT DISTINCT`, then orders by joining `orders_flat` to `customers` on the email to find each `customer_id`.
+Fill `customers` and `products` with `INSERT … SELECT DISTINCT` from `orders_flat`. For `orders`, use the lesson's `SELECT DISTINCT f.order_id, c.id, f.placed` with the join on the email.
 --- hint
-Keep `unit_price` on `order_items`: the Mug's price changed between orders.
+The last one needs no `DISTINCT` and no join: `INSERT INTO order_items (order_id, sku, qty, unit_price) SELECT order_id, sku, qty, unit_price FROM orders_flat;`
 --- check query | Each fact stored once: 2 customers, 3 products, 4 orders, 6 items
 SELECT (SELECT COUNT(*) FROM customers), (SELECT COUNT(*) FROM products), (SELECT COUNT(*) FROM orders), (SELECT COUNT(*) FROM order_items)
 => [[2, 3, 4, 6]]
@@ -2049,28 +2196,166 @@ WITH RECURSIVE n(i) AS (SELECT 1 UNION ALL SELECT i + 1 FROM n WHERE i < 2000)
 INSERT INTO orders (id, customer_id, placed, total)
 SELECT i, i % 200, date('2024-01-01', '+' || (i % 300) || ' days'), (i * 37 % 500) / 4.0 FROM n;
 --- teach
-Without help, finding one customer's orders means reading **every** row of the table — a *full scan*. An **index** is a separate, sorted copy of some columns with a pointer back to each row, like the index at the back of a book. The database jumps to the right place in it instead of reading everything.
+Last lesson you split one table into several. Real tables also grow: an app's `orders` table can hold millions of rows. This lesson is about finding rows fast, and about asking the database how it plans to find them.
+
+### The table
+
+This lesson's `orders` has 2,000 rows, with the columns `id`, `customer_id`, `placed` (the date) and `total`. There are 200 customers. Customer 7 has 10 orders.
+
+### The picture
+
+Think of a thick textbook. To find every page that mentions Mars, you could read the whole book, page by page. Or you could turn to the index at the back: every topic in alphabetical order, each with its page numbers. You find "Mars" in seconds and turn straight to those pages.
+
+### A full scan
+
+With no help, `WHERE customer_id = 7` makes the database read all 2,000 rows and keep the 10 that match. Reading a whole table like this is a **full scan**. For a small table it is fine. For millions of rows it is slow.
+
+Finding one order by its `id` is already fast, because [[the primary key works like an index|primary-key-index]].
+
+### An index
+
+An **index** is a separate, sorted copy of one or more columns, with a [[pointer back to each row|index-picture]]. Like the book's index, it lets the database jump to the right place instead of reading everything.
 
 ```sql
 CREATE INDEX idx_orders_customer ON orders(customer_id);
 ```
 
-To see what the database will actually do, put `EXPLAIN QUERY PLAN` in front of a query:
+- `CREATE INDEX` makes a new index.
+- `idx_orders_customer` is its name. Any name works. `idx_`, then the table, then the column, is a common habit.
+- `ON orders(customer_id)` says which table, and which column to sort by.
+
+An index never changes an answer. Every query returns the same rows as before, only faster. And you never tell a query to use it: [[the database decides by itself|planner]].
+
+### Asking for the plan
+
+To see what the database will do, put `EXPLAIN QUERY PLAN` in front of a query. It does not run the query. It describes how it would run it.
 
 ```sql
 EXPLAIN QUERY PLAN
 SELECT id, total FROM orders WHERE customer_id = 7;
 ```
 
-The `detail` column tells the story:
+The answer comes back as rows. Read the `detail` column. Before the index exists, it says:
 
-- `SCAN orders` — reads the whole table. Fine for tiny tables; slow for big ones.
-- `SEARCH orders USING INDEX idx_orders_customer (customer_id=?)` — jumps straight to the matching rows.
-- `USE TEMP B-TREE FOR ORDER BY` — had to sort the result itself afterwards.
+```
+SCAN orders
+```
 
-A **composite index** on several columns is sorted by the first, then the second within it — like a phone book by surname, then first name. An index on `(customer_id, placed)` can find one customer's orders **already in date order**, so `WHERE customer_id = ? ORDER BY placed` needs no sort step. The order of the columns matters: the column you test with `=` goes first; the one you sort or range over goes after it.
+After `CREATE INDEX idx_orders_customer`, it says:
 
-Indexes are not free: each one takes space and slows every insert and update a little, because it must be kept in step. Index for the queries you actually run.
+```
+SEARCH orders USING INDEX idx_orders_customer (customer_id=?)
+```
+
+- `SCAN orders` means "read the whole table".
+- `SEARCH orders USING INDEX …` means "jump straight to the matching rows through this index".
+- `(customer_id=?)` says what it looks up in the index. The [[question mark|placeholder]] stands for the value, here 7.
+
+### The sort step
+
+Now ask for that customer's orders, newest first:
+
+```sql
+EXPLAIN QUERY PLAN
+SELECT id, total FROM orders WHERE customer_id = 7 ORDER BY placed DESC;
+```
+
+```
+SEARCH orders USING INDEX idx_orders_customer (customer_id=?)
+USE TEMP B-TREE FOR ORDER BY
+```
+
+The second line is new. It means the database found the rows, then had to sort them itself afterwards. A **B-tree** is the sorted structure databases keep their indexes in. "Temp" means it built one for this query only, and threw it away after. For 10 rows that is quick. For a customer with 50,000 orders, it is a big sort on every run.
+
+### An index on two columns
+
+A **composite index** covers several columns. It is sorted by the first column, and then by the second among rows with the same first value. A phone book works like this: sorted by surname, then by first name among people with the same surname.
+
+```sql
+CREATE INDEX idx_orders_customer_placed ON orders(customer_id, placed);
+```
+
+Inside this index, all of customer 7's orders sit together, **already in date order**. So the plan loses its sort step:
+
+```
+SEARCH orders USING INDEX idx_orders_customer_placed (customer_id=?)
+```
+
+`DESC` costs nothing extra. The database reads that stretch of the index from the end backwards.
+
+### Column order matters
+
+Put the column you test with `=` first. Put the column you sort by, or compare with `<` and `>`, after it.
+
+The other way round, `(placed, customer_id)`, is like a phone book sorted by first name: the Smiths are scattered all through it. For this query that index gives the plan `SCAN orders USING INDEX …`, a walk through every entry.
+
+### Indexes have a cost
+
+An index is not free. Each one takes space. And every `INSERT`, `UPDATE` and `DELETE` must [[keep every index in step|index-cost]], so each extra index slows writing a little. Index for the queries your app really runs, not for every column.
+
+**Watch out:** `USING INDEX` in a plan does not always mean fast. Read the first word. `SEARCH` jumps to the rows it needs. `SCAN … USING INDEX` still reads every entry; it only reads them in the index's order. An index on `(placed)` alone gives exactly that for this lesson's query.
+
+::: context primary-key-index Indexes you already have
+An `INTEGER PRIMARY KEY` is the row's own id, and SQLite stores the table sorted by it. So `EXPLAIN QUERY PLAN SELECT * FROM orders WHERE id = 7;` shows `SEARCH orders USING INTEGER PRIMARY KEY (rowid=?)` with no index created at all. `UNIQUE` and other primary keys get an index too: SQLite makes one automatically, named like `sqlite_autoindex_customers_1`, because it needs a fast way to spot a repeated value. That is how SQLite enforces `UNIQUE` on `email` in last lesson's `customers` table.
+:::
+
+::: context index-picture What an index holds
+The index keeps `customer_id` values in sorted order, and next to each one, the id of the row it came from. All three of customer 7's entries shown here sit side by side in the index, even though their rows are far apart in the table. The database finds the first 7, reads along until the 7s end, and follows each pointer to its row.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 205" font-family="Inter, Arial, sans-serif">
+  <defs>
+    <marker id="pt" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#1d6fd1"/>
+    </marker>
+  </defs>
+  <text x="80" y="22" font-size="11" fill="#6c7a93" text-anchor="middle">index: customer_id → row</text>
+  <text x="285" y="22" font-size="11" fill="#6c7a93" text-anchor="middle">table rows, by id</text>
+  <rect x="20" y="32" width="120" height="24" fill="#fff" stroke="#6c7a93"/>
+  <text x="80" y="48" font-size="12" fill="#1f2a44" text-anchor="middle">6 → id 6</text>
+  <rect x="20" y="56" width="120" height="24" fill="#fff" stroke="#6c7a93"/>
+  <text x="80" y="72" font-size="12" fill="#1f2a44" text-anchor="middle">6 → id 206</text>
+  <rect x="20" y="80" width="120" height="24" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="80" y="96" font-size="12" fill="#1f2a44" text-anchor="middle">7 → id 7</text>
+  <rect x="20" y="104" width="120" height="24" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="80" y="120" font-size="12" fill="#1f2a44" text-anchor="middle">7 → id 207</text>
+  <rect x="20" y="128" width="120" height="24" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="80" y="144" font-size="12" fill="#1f2a44" text-anchor="middle">7 → id 407</text>
+  <rect x="20" y="152" width="120" height="24" fill="#fff" stroke="#6c7a93"/>
+  <text x="80" y="168" font-size="12" fill="#1f2a44" text-anchor="middle">8 → id 8</text>
+  <rect x="230" y="32" width="110" height="18" fill="#fff" stroke="#6c7a93"/>
+  <text x="285" y="45" font-size="11" fill="#1f2a44" text-anchor="middle">id 6</text>
+  <rect x="230" y="50" width="110" height="18" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="285" y="63" font-size="11" fill="#1f2a44" text-anchor="middle">id 7</text>
+  <rect x="230" y="68" width="110" height="18" fill="#fff" stroke="#6c7a93"/>
+  <text x="285" y="81" font-size="11" fill="#1f2a44" text-anchor="middle">id 8</text>
+  <text x="285" y="99" font-size="11" fill="#6c7a93" text-anchor="middle">…</text>
+  <rect x="230" y="104" width="110" height="18" fill="#fff" stroke="#6c7a93"/>
+  <text x="285" y="117" font-size="11" fill="#1f2a44" text-anchor="middle">id 206</text>
+  <rect x="230" y="122" width="110" height="18" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="285" y="135" font-size="11" fill="#1f2a44" text-anchor="middle">id 207</text>
+  <text x="285" y="153" font-size="11" fill="#6c7a93" text-anchor="middle">…</text>
+  <rect x="230" y="158" width="110" height="18" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="285" y="171" font-size="11" fill="#1f2a44" text-anchor="middle">id 407</text>
+  <line x1="140" y1="92" x2="228" y2="59" stroke="#1d6fd1" stroke-width="1.5" marker-end="url(#pt)"/>
+  <line x1="140" y1="116" x2="228" y2="131" stroke="#1d6fd1" stroke-width="1.5" marker-end="url(#pt)"/>
+  <line x1="140" y1="140" x2="228" y2="167" stroke="#1d6fd1" stroke-width="1.5" marker-end="url(#pt)"/>
+  <text x="180" y="196" font-size="11" fill="#6c7a93" text-anchor="middle">sorted entries point to rows spread through the table</text>
+</svg>
+```
+:::
+
+::: context planner The query planner
+The part of the database that chooses how to run a query is the **query planner**. For each query it looks at the indexes that exist and estimates what each way would cost: scan the table, or search this index, or that one. Then it picks the cheapest. That is why you create an index once and every matching query can use it. It is also why the planner sometimes ignores an index: when a condition matches most of the table, reading the whole table can be cheaper than jumping back and forth. `EXPLAIN QUERY PLAN` is how you see what it chose.
+:::
+
+::: context placeholder Why the plan shows a question mark
+The plan is about the *shape* of the query, not one value: it would be the same for customer 7 or customer 150, so SQLite writes `?`. The same mark has a second life in app code. Programs send queries like `SELECT id, total FROM orders WHERE customer_id = ?` and pass the value separately. That is called a **parameter**. It stops a user from sneaking their own SQL into a query by typing it into a form, an attack called **SQL injection**.
+:::
+
+::: context index-cost What an index costs
+Picture the textbook again. Every time a page is added, someone has to update the index at the back too. A database does that for every index on a table, on every insert, update and delete. Tables that are written constantly, like a log that stores thousands of telemetry readings a second, often keep only one or two indexes for that reason. An index you no longer need can be removed with `DROP INDEX idx_orders_customer;`. The table and its rows stay as they are.
+:::
 --- task
 The app's busiest query is:
 
@@ -2078,21 +2363,158 @@ The app's busiest query is:
 SELECT id, total FROM orders WHERE customer_id = 7 ORDER BY placed DESC;
 ```
 
-Create an index named `idx_orders_customer_placed` that lets it find the customer's rows **and** return them in order without a separate sort.
+Create an index named `idx_orders_customer_placed` that lets this query find the customer's rows **and** return them in date order with no separate sort step. When you are done, its plan should be one `SEARCH` line and no `USE TEMP B-TREE FOR ORDER BY`.
 --- starter
 CREATE INDEX idx_orders_customer_placed ON orders(placed);
 --- solution
 CREATE INDEX idx_orders_customer_placed ON orders(customer_id, placed);
 --- hint
-Look at the plan: `EXPLAIN QUERY PLAN SELECT id, total FROM orders WHERE customer_id = 7 ORDER BY placed DESC;`
+Look at the plan first. Run the starter, then `EXPLAIN QUERY PLAN SELECT id, total FROM orders WHERE customer_id = 7 ORDER BY placed DESC;` and read the `detail` column. It says `SCAN`.
 --- hint
-The column tested with `=` goes first in the index, the sort column second.
+You need a composite index. The column tested with `=` goes first, and the column you sort by goes second.
+--- hint
+Inside the brackets, two columns separated by a comma: `orders(customer_id, placed)`.
 --- check query | The index covers customer_id, then placed
 SELECT name FROM pragma_index_info('idx_orders_customer_placed') ORDER BY seqno
 => [["customer_id"], ["placed"]]
 --- check query | The query searches the index and needs no sort step
 EXPLAIN QUERY PLAN SELECT id, total FROM orders WHERE customer_id = 7 ORDER BY placed DESC
 => [[4, 0, 63, "SEARCH orders USING INDEX idx_orders_customer_placed (customer_id=?)"]]
+
+=== sql3-12b | Indexes: queries that skip them
+--- schema
+CREATE TABLE orders (
+  id INTEGER PRIMARY KEY,
+  customer_id INTEGER NOT NULL,
+  placed TEXT NOT NULL,
+  total REAL NOT NULL
+);
+WITH RECURSIVE n(i) AS (SELECT 1 UNION ALL SELECT i + 1 FROM n WHERE i < 2000)
+INSERT INTO orders (id, customer_id, placed, total)
+SELECT i, i % 200, date('2024-01-01', '+' || (i % 300) || ' days'), (i * 37 % 500) / 4.0 FROM n;
+CREATE INDEX idx_orders_placed ON orders(placed);
+--- teach
+Last lesson an index turned a full scan into a quick search. But an index only helps when the query asks for what the index holds. This lesson shows a common way to write a query that cannot use an index, and how to fix it. The lesson "Dates and times" promised you this one.
+
+### The table
+
+This is the same `orders` table as last lesson: 2,000 rows, with dates through 2024 in `placed`. This time it already has an index on the date:
+
+```sql
+CREATE INDEX idx_orders_placed ON orders(placed);
+```
+
+### The picture
+
+A phone book is sorted by surname. Finding "Smith" is fast: you open near S. Now try to find every surname that *ends* in "son". The sorting is no help at all, because it is by the start of the name. You have to read every page. A sorted list only speeds up the question it was sorted for.
+
+### A function hides the column
+
+In the lesson "Dates and times" you turned a date into its month with `strftime('%Y-%m', placed)`. Here is March's report written that way:
+
+```sql
+SELECT COUNT(*) AS orders, SUM(total) AS takings
+FROM orders
+WHERE strftime('%Y-%m', placed) = '2024-03';
+```
+
+| orders | takings |
+| --- | --- |
+| 217 | 13693.75 |
+
+The answer is right. But put `EXPLAIN QUERY PLAN` in front, and the plan says:
+
+```
+SCAN orders
+```
+
+A full scan, with the index sitting right there. The index holds `placed` values, sorted: `'2024-03-01'`, `'2024-03-02'` and so on. It does not hold `strftime('%Y-%m', placed)`. To find the rows whose month is `'2024-03'`, the database must [[work out strftime for every row|slow-later]] and compare. Wrapping a column in a function, or in any calculation, [[hides it from the index|sargable]].
+
+### Ask for the column as it is stored
+
+Say the same thing as a range on `placed` itself:
+
+```sql
+SELECT COUNT(*) AS orders, SUM(total) AS takings
+FROM orders
+WHERE placed >= '2024-03-01' AND placed < '2024-04-01';
+```
+
+`>=` means "on or after", and `<` means "before". As you saw in "Dates and times", dates written as `'YYYY-MM-DD'` text sort in time order, so this is every day in March. The answer is the same 217 orders and 13693.75. The plan is not:
+
+```
+SEARCH orders USING INDEX idx_orders_placed (placed>? AND placed<?)
+```
+
+The database jumps to `'2024-03-01'` in the index and reads forward until it reaches April. It never looks at the other months.
+
+### Why "before the first of next month"
+
+You could write `placed <= '2024-03-31'`. For plain dates that works. But if `placed` ever holds a time too, `'2024-03-31 18:40:00'` sorts *after* `'2024-03-31'`, so an evening order on the last day would be missed. "Before the first of next month" catches every moment of March. It also saves you remembering how many days each month has. This shape is called a [[half-open range|half-open]].
+
+**Watch out:** the same trap hides in arithmetic. `WHERE total * 2 > 100` cannot use an index on `total`, but `WHERE total > 50` asks the same question and can. Keep the column bare on one side of the comparison, and do the maths on the other side. When you truly need the calculated value, SQLite can also [[index the result of a function|expression-index]].
+
+::: context slow-later Fast in testing, slow for real
+On 2,000 rows a full scan takes a blink, so this mistake hides while you build an app. It shows up months later, when the table has millions of rows and a dashboard that used to load at once starts timing out. Engineers find these queries by looking at the slowest ones the database reports, then running `EXPLAIN QUERY PLAN` on each. A `SCAN` on a big table, where you expected a `SEARCH`, is the usual culprit, and the fix is often the rewrite in this lesson.
+:::
+
+::: context sargable The word engineers use
+A condition the database can look up in an index is called **sargable**, a squashed form of "Search ARGument ABLE". `placed >= '2024-03-01'` is sargable: the index is sorted by `placed`, so the database can find the starting point. `strftime('%Y-%m', placed) = '2024-03'` is not, because the index is not sorted by that. You will hear the word in code reviews: "this `WHERE` isn't sargable" means "this condition forces a full scan".
+:::
+
+::: context half-open Including the start, leaving out the end
+A **half-open range** includes its starting point and leaves out its end: `>=` at the start, `<` at the end. March is "from March 1st, up to but not including April 1st". The ranges fit end to end with no gap and no overlap: April starts exactly where March stops, so no order is counted twice or lost.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 130" font-family="Inter, Arial, sans-serif">
+  <line x1="15" y1="60" x2="345" y2="60" stroke="#6c7a93" stroke-width="1.5"/>
+  <line x1="70" y1="60" x2="290" y2="60" stroke="#1d6fd1" stroke-width="6"/>
+  <circle cx="70" cy="60" r="6" fill="#1d6fd1" stroke="#1f2a44"/>
+  <circle cx="290" cy="60" r="6" fill="#fff" stroke="#1f2a44" stroke-width="1.5"/>
+  <line x1="270" y1="52" x2="270" y2="68" stroke="#b4232c" stroke-width="2"/>
+  <text x="270" y="42" font-size="11" fill="#b4232c" text-anchor="middle">Mar 31, 18:40</text>
+  <text x="70" y="86" font-size="12" fill="#1f2a44" text-anchor="middle">Mar 1</text>
+  <text x="290" y="86" font-size="12" fill="#1f2a44" text-anchor="middle">Apr 1</text>
+  <text x="70" y="104" font-size="11" fill="#1d6fd1" text-anchor="middle">&gt;= : included</text>
+  <text x="290" y="104" font-size="11" fill="#1f2a44" text-anchor="middle">&lt; : left out</text>
+  <text x="180" y="124" font-size="11" fill="#6c7a93" text-anchor="middle">every moment of March is inside, April 1 is not</text>
+</svg>
+```
+:::
+
+::: context expression-index Indexing a calculation
+SQLite can build an index on the result of a function instead of on a bare column:
+
+```sql
+CREATE INDEX idx_orders_month ON orders(strftime('%Y-%m', placed));
+```
+
+After that, the query with `WHERE strftime('%Y-%m', placed) = '2024-03'` gets a `SEARCH` plan too. This is called an **index on an expression**. The query must use exactly the same expression as the index, or the planner will not match them. Most of the time the range rewrite is simpler, and one index on `placed` serves every date range, not only whole months.
+:::
+--- task
+The March report below scans the whole table. Rewrite its `WHERE` so it compares `placed` itself, as a range from `'2024-03-01'` up to, but not including, `'2024-04-01'`. Keep the same two columns, `orders` and `takings`, so the answer stays 217 orders and 13693.75. Do not use `strftime` anywhere.
+
+Then check your work: put `EXPLAIN QUERY PLAN` in front and look for `SEARCH … USING INDEX idx_orders_placed`.
+--- starter
+SELECT COUNT(*) AS orders, SUM(total) AS takings
+FROM orders
+WHERE strftime('%Y-%m', placed) = '2024-03';
+--- solution
+SELECT COUNT(*) AS orders, SUM(total) AS takings
+FROM orders
+WHERE placed >= '2024-03-01' AND placed < '2024-04-01';
+--- hint
+Only the `WHERE` line changes. The index is sorted by `placed`, so the condition must use `placed` on its own, with no function around it.
+--- hint
+Two comparisons joined with `AND`: one says "on or after the first of March", the other "before the first of April".
+--- hint
+`WHERE placed >= '2024-03-01' AND placed < '2024-04-01';`
+--- check result | 217 orders in March, 13693.75 taken
+[[217, 13693.75]]
+--- check source | Compares placed itself with >=
+placed\s*>=
+--- check source absent | Does not wrap placed in strftime
+strftime
 
 === sql3-13 | Transactions: all or nothing
 --- schema
@@ -2109,7 +2531,32 @@ CREATE TABLE transfers (
   amount INTEGER NOT NULL
 );
 --- teach
-A transfer of money is three statements: take from one account, add to another, record the transfer. If the program crashes after the first, money has vanished. A **transaction** makes several statements one unit — either all of them happen, or none do:
+The lessons since "Constraints: rules the database enforces" taught the database to guard single rows and to find them fast. Some jobs take several statements, and they must either all happen or not happen at all. This lesson shows how to tie statements together into one unit.
+
+### The picture
+
+Think of swapping trading cards with a friend. You hand yours over, and they hand theirs back. If only the first half happens, one of you has been robbed. The swap has to be both halves, or neither.
+
+### The tables
+
+- `accounts`: `id`, `owner`, `balance`. Ana (id 1) has 100, Bo (id 2) has 50, Cy (id 3) has 0.
+- `transfers`: `id`, `from_id`, `to_id`, `amount`. A record of each transfer. It starts empty.
+
+### A transfer is three statements
+
+Moving 30 from Ana to Bo takes three statements: take from one account, add to the other, and record the transfer.
+
+```sql
+UPDATE accounts SET balance = balance - 30 WHERE id = 1;
+UPDATE accounts SET balance = balance + 30 WHERE id = 2;
+INSERT INTO transfers (from_id, to_id, amount) VALUES (1, 2, 30);
+```
+
+Now say the program crashes right after the first line. Ana has lost 30, Bo got nothing, and no transfer was recorded. The money has vanished.
+
+### A transaction
+
+A **transaction** is a group of statements that the database treats as one unit: either all of them happen, or none do.
 
 ```sql
 BEGIN;
@@ -2119,20 +2566,111 @@ INSERT INTO transfers (from_id, to_id, amount) VALUES (1, 2, 30);
 COMMIT;
 ```
 
-- `BEGIN` starts the transaction.
-- `COMMIT` makes every change permanent, together.
-- `ROLLBACK` throws away every change since `BEGIN`, as if none had happened.
+- `BEGIN` starts the transaction. The changes after it are not final yet.
+- `COMMIT` makes every change since `BEGIN` permanent, all together.
 
-Until `COMMIT`, other connections do not see the changes, and if the process dies the database recovers to the state before `BEGIN`. That is the **A** (atomic) and **I** (isolated) in the *ACID* promise.
+After the `COMMIT`, the accounts are:
 
-In an app the pattern is always the same: begin, do the work, check that everything went as expected, then commit — or roll back on any error or failed check. A failed check here might be a balance going negative, or an `UPDATE` that changed 0 rows because the account id was wrong. `SELECT changes()` tells you how many rows the last statement changed.
+| id | owner | balance |
+| --- | --- | --- |
+| 1 | Ana | 70 |
+| 2 | Bo | 80 |
+| 3 | Cy | 0 |
 
-Transactions are also fast: SQLite writes to disk once per commit, so 10,000 inserts in one transaction can be hundreds of times faster than 10,000 separate ones.
+### Changing your mind: ROLLBACK
+
+`ROLLBACK` throws away every change since `BEGIN`, as if none of it had happened. Use it when something inside the transaction went wrong. Go back to the starting balances, with Ana at 100. Say Ana tries to send 500 to Cy:
+
+```sql
+BEGIN;
+UPDATE accounts SET balance = balance - 500 WHERE id = 1;
+UPDATE accounts SET balance = balance + 500 WHERE id = 3;
+SELECT balance FROM accounts WHERE id = 1;   -- -400
+ROLLBACK;
+```
+
+Inside the transaction, your own `SELECT` sees the change: Ana is at -400, which is not allowed. So instead of `COMMIT`, the transaction ends with `ROLLBACK`. Afterwards Ana is back at 100 and Cy at 0, as if the transfer had never started.
+
+### Nobody sees half a transfer
+
+Until `COMMIT`, [[other connections|connection]] to the database do not see any of the changes. And if the program dies in the middle, [[the database recovers|crash-recovery]] to exactly how it was before `BEGIN`.
+
+These two promises have names. **Atomic** means all or nothing: the unit cannot be split. **Isolated** means no one else sees it half-done. They are the A and the I in [[ACID|acid]], the promises a good database makes about every transaction.
+
+### The pattern in an app
+
+In a real program, every transaction follows the same steps:
+
+1. `BEGIN`.
+2. Do the work.
+3. Check that everything went as expected.
+4. `COMMIT` if it did. `ROLLBACK` on any error, or any failed check.
+
+A failed check might be a balance going below zero. Or it might be an `UPDATE` that changed 0 rows, because the account id was wrong. `SELECT changes();` tells you [[how many rows the last statement changed|changes]].
+
+### Faster, too
+
+A transaction also saves time. SQLite writes to disk once per commit, not once per statement. So [[10,000 inserts inside one transaction|batching]] can be hundreds of times faster than 10,000 inserts on their own.
+
+**Watch out:** without `BEGIN`, every statement is its own tiny transaction and is saved the moment it runs. If you forget `BEGIN` and later write `ROLLBACK`, SQLite answers `cannot rollback - no transaction is active`, and the money has already moved. `BEGIN` must come first.
+
+::: context connection What a connection is
+A **connection** is one program's open line to a database. Your code in this editor runs over one connection. A web app may open dozens at once, one for each request it is handling. Two connections are like two people looking at the same shared spreadsheet from two computers. While your transaction is open, the other connection keeps seeing the old balances, the ones from before your `BEGIN`. The moment you `COMMIT`, it sees all your changes at once, never half of them.
+:::
+
+::: context crash-recovery How SQLite survives a crash
+In its usual setup, SQLite keeps a second file next to the database, called a **journal**. Before it changes anything in the database file, it notes how to undo that change in the journal. If the power fails halfway through a transaction, the journal is still there the next time the database opens. SQLite reads it and puts every half-done change back. Here is a transfer that crashes before `COMMIT`:
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 130" font-family="Inter, Arial, sans-serif">
+  <defs>
+    <marker id="tm" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#1f2a44"/>
+    </marker>
+  </defs>
+  <rect x="8" y="20" width="70" height="32" rx="4" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="43" y="40" font-size="12" fill="#1f2a44" text-anchor="middle">BEGIN</text>
+  <rect x="98" y="20" width="70" height="32" rx="4" fill="#fff" stroke="#1f2a44"/>
+  <text x="133" y="40" font-size="12" fill="#1f2a44" text-anchor="middle">Ana −30</text>
+  <rect x="188" y="20" width="70" height="32" rx="4" fill="#fff" stroke="#1f2a44"/>
+  <text x="223" y="40" font-size="12" fill="#1f2a44" text-anchor="middle">Bo +30</text>
+  <rect x="278" y="20" width="74" height="32" rx="4" fill="#fff" stroke="#b4232c" stroke-width="2"/>
+  <text x="315" y="40" font-size="12" fill="#b4232c" text-anchor="middle">crash</text>
+  <line x1="78" y1="36" x2="96" y2="36" stroke="#1f2a44" stroke-width="1.5" marker-end="url(#tm)"/>
+  <line x1="168" y1="36" x2="186" y2="36" stroke="#1f2a44" stroke-width="1.5" marker-end="url(#tm)"/>
+  <line x1="258" y1="36" x2="276" y2="36" stroke="#1f2a44" stroke-width="1.5" marker-end="url(#tm)"/>
+  <rect x="60" y="78" width="240" height="30" rx="4" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="180" y="97" font-size="12" fill="#1f2a44" text-anchor="middle">after restart: Ana 100, Bo 50</text>
+  <text x="180" y="124" font-size="11" fill="#6c7a93" text-anchor="middle">no COMMIT, so the journal undoes both changes</text>
+</svg>
+```
+:::
+
+::: context acid The four ACID promises
+**Atomic**: all of a transaction happens, or none of it. **Consistent**: every rule, like your constraints and foreign keys, still holds after each transaction. **Isolated**: transactions running at the same time do not see each other's half-done work. **Durable**: once `COMMIT` has finished, the change survives even a power cut. Banks, airline seat bookings and spacecraft command logs all lean on these promises. Without them, two people could book the same seat, or a command could be half recorded.
+:::
+
+::: context changes Counting the rows you changed
+`changes()` returns the number of rows changed by the most recent `INSERT`, `UPDATE` or `DELETE` on this connection. Try it:
+
+```sql
+UPDATE accounts SET balance = balance + 10 WHERE id = 99;
+SELECT changes();   -- 0: there is no account 99
+```
+
+An `UPDATE` that matches no row is not an error. It succeeds, quietly, having done nothing. So a careful transfer checks that each `UPDATE` changed exactly 1 row, and rolls back if not. App code usually reads the same number from its database library, often under a name like `rowcount`.
+:::
+
+::: context batching Why one commit is faster than many
+A commit is only safe once the data has truly reached the disk, so on every commit SQLite waits for the disk to confirm. That wait is slow compared with the work itself. Commit after every insert, and you wait 10,000 times. Put all the inserts in one transaction, and you wait once. A flight data logger that saves many sensor readings a second can gather each second's readings into one transaction for exactly this reason.
+:::
 --- task
-Run two transfers, each as its own transaction:
+Run two transfers, each as its own transaction.
 
-1. Move **40** from Ana (id 1) to Cy (id 3): both balance updates and a row in `transfers`. Commit it.
-2. Start moving **80** from Bo (id 2) to Cy: begin, update both balances, then query Bo's balance — it is negative, so **roll the whole transfer back**.
+1. Move **40** from Ana (id 1) to Cy (id 3). Inside one transaction: take 40 from Ana's balance, add 40 to Cy's, and insert a row into `transfers` with `from_id` 1, `to_id` 3 and `amount` 40. Then commit it.
+2. Start moving **80** from Bo (id 2) to Cy (id 3). Begin a transaction, update both balances, then select Bo's balance. It is negative, so **roll the whole transfer back** instead of committing.
+
+When you finish, Ana should have 60, Bo 50 and Cy 40.
 --- starter
 UPDATE accounts SET balance = balance - 40 WHERE id = 1;
 UPDATE accounts SET balance = balance + 40 WHERE id = 3;
@@ -2154,9 +2692,11 @@ UPDATE accounts SET balance = balance + 80 WHERE id = 3;
 SELECT balance FROM accounts WHERE id = 2;
 ROLLBACK;
 --- hint
-Wrap the first transfer in `BEGIN;` … `COMMIT;`.
+The starter has the right statements but no transactions. The first three lines are transfer one: put `BEGIN;` above them and `COMMIT;` below.
 --- hint
-Wrap the second in `BEGIN;` … and, after the `SELECT` shows Bo at -30, end it with `ROLLBACK;` instead of `COMMIT;`.
+For transfer two, put `BEGIN;` above its two `UPDATE`s. Replace its `INSERT` with `SELECT balance FROM accounts WHERE id = 2;`, which shows Bo at -30.
+--- hint
+End transfer two with `ROLLBACK;` instead of `COMMIT;`, so both of its balance changes are thrown away.
 --- check query | Only the first transfer moved money
 SELECT id, balance FROM accounts ORDER BY id
 => [[1, 60], [2, 50], [3, 40]]
