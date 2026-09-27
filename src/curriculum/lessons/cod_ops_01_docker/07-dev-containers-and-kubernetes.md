@@ -15,9 +15,9 @@ The second half zooms out. Once a team has many containers running as real servi
 
 ## The onboarding problem
 
-When a new engineer joins a simulation team, the usual first week goes something like this. They clone the repository. They read a `README` that says "install CMake 3.28 or newer, Python 3.12, NumPy, and gdb". They install what their laptop's package manager offers, which is a slightly different CMake, a different Python patch version, and a NumPy built against a different math library. The build fails in a way nobody else has seen. A senior engineer loses an afternoon helping.
+When a new engineer joins a simulation team, the first week often goes like this. They clone the repository. They read a `README` that says "install CMake 3.28 or newer, Python 3.12, NumPy, and gdb". They install what their laptop's package manager offers, which is a slightly different CMake, a different Python patch version, and a NumPy built against a different math library. The build fails in a way nobody else has seen. A senior engineer loses an afternoon helping.
 
-This is called **[[onboarding|onboarding-word]]**: getting a new person from "just arrived" to "doing useful work". The slow part is rarely the person. It is the machine setup, because a `README` is a wish, not a guarantee. Nothing checks that the laptop matches it.
+This is called **[[onboarding|onboarding-word]]**: getting a new person from "first day" to "doing useful work". The slow part is rarely the person. It is the machine setup, because a `README` is a wish, not a guarantee. Nothing checks that the laptop matches it.
 
 You already know the fix from earlier in this module. A Dockerfile turns "install these things" into a recipe a computer follows exactly. A dev container points that same idea at the *development* machine instead of the shipped program.
 
@@ -73,7 +73,7 @@ ninja==1.11.1.4
 
 Take it one key at a time.
 
-- `"name"` is the label the editor shows. It changes nothing inside the container.
+- `"name"` is the label the editor shows.
 - `"image"` is the starting image. This one is a Microsoft-maintained Debian 12 ("bookworm") image with Python 3.12 and a ready-made non-root user. It is Debian-based, not Alpine, for the musl reason from the base-image lesson. If you need more system packages, you replace `"image"` with `"build": { "dockerfile": "Dockerfile" }` and write a normal Dockerfile next to the JSON file.
 - `"remoteUser"` says which user your terminal and tools run as. `vscode` is an ordinary user (uid 1000) that the image already contains. This is the `USER` lesson again: files you create in your mounted source folder are owned by a normal user, not by root.
 - `"containerEnv"` sets environment variables for the whole container. Setting `OMP_NUM_THREADS` to 1 stops math libraries from splitting work across a different number of threads on each laptop, which can change the last digits of a sum.
@@ -101,7 +101,7 @@ Successfully installed cmake-3.31.6 ninja-1.11.1.4 numpy-2.2.6
 {"outcome":"success","containerId":"6bbe7423…","remoteUser":"vscode","remoteWorkspaceFolder":"/workspaces/gncsim"}
 ```
 
-Read it step by step. The CLI pulled the image and started a container. Then it ran the `postCreateCommand`, and pip downloaded the three pinned wheels: $16.5 + 27.8 + 0.422 \approx 44.7\,\mathrm{MB}$ in total. The final JSON line says it worked, which user you are, and where your source code landed inside the container: `/workspaces/gncsim`.
+The CLI pulled the image, started a container, and ran the `postCreateCommand`, and pip downloaded the three pinned wheels: $16.5 + 27.8 + 0.422 \approx 44.7\,\mathrm{MB}$ in total. The final JSON line says it worked, which user you are, and where your source code landed inside the container: `/workspaces/gncsim`.
 
 Now run commands inside it:
 
@@ -147,7 +147,7 @@ Kubernetes does not schedule bare containers. Its smallest unit is a **pod**: on
 
 The name comes from a pod of whales, fitting the Docker whale logo, and from a pea pod: a few things in one shell. The **[[picture of a pod|pod-picture]]** helps.
 
-Pods are treated as disposable. When a node fails, its pods are gone; new ones are made elsewhere, with new names and new network addresses. You almost never create a pod by hand for that reason. You create something that *manages* pods.
+Pods are disposable. When a node fails, its pods are gone, and new ones are made elsewhere with new names and addresses. So you almost never create a pod by hand. You create something that *manages* pods.
 
 ## Deployments: "keep three of these running"
 
@@ -283,13 +283,11 @@ kubectl rollout undo deployment/telemetry-decoder
 
 When a result looks wrong and the data went through a cluster, `describe` and `logs` are where you start: they tell you which image a pod was really running and whether it restarted halfway through a pass.
 
-Why should a GNC engineer care at all? Because the path from the vehicle to your analysis notebook is increasingly run this way.
-
 ::: key Where Kubernetes enters an aerospace data story
 Starlink telemetry infrastructure is reported to run on Docker and Kubernetes alongside **[[Kafka, HBase and HDFS|kafka-hbase-hdfs]]**, so pods, deployments and services are literacy an engineer touching that pipeline needs, not a specialisation.
 :::
 
-You will not be asked to design a cluster. You will be asked why your replay of last night's telemetry has a gap at 02:14, and the answer may be "a decoder pod was rescheduled". Knowing the words lets you ask the right question.
+You will not be asked to design a cluster. You may be asked why a replay of last night's telemetry has a gap, and the answer may be "a decoder pod was rescheduled". Knowing the words lets you ask the right question.
 
 ## Check yourself
 
