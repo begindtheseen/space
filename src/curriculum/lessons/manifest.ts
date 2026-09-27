@@ -8155,7 +8155,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-constellation-and-signal-structure",
       "title": "The constellation and the signal",
-      "minutes": 23,
+      "minutes": 22,
       "covers": [
         "GNSS constellation and signal structure: L1/L2/L5, C/A and P(Y) codes, CDMA, the navigation message"
       ],
@@ -8164,7 +8164,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-the-pseudorange-and-its-error-budget",
       "title": "The pseudorange and its error budget",
-      "minutes": 19,
+      "minutes": 20,
       "covers": [
         "The pseudorange measurement and its error budget"
       ],
@@ -8173,7 +8173,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-receiver-clock-bias-the-fourth-unknown",
       "title": "The receiver clock as the fourth unknown",
-      "minutes": 18,
+      "minutes": 21,
       "covers": [
         "Receiver clock bias as the fourth unknown"
       ],
@@ -8182,7 +8182,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-the-navigation-solution-by-least-squares",
       "title": "The navigation solution by least squares",
-      "minutes": 20,
+      "minutes": 22,
       "covers": [
         "The navigation solution by iterative least squares / Newton iteration"
       ],
@@ -8200,7 +8200,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-ionospheric-and-tropospheric-delay",
       "title": "Ionospheric and tropospheric delay",
-      "minutes": 24,
+      "minutes": 23,
       "covers": [
         "Ionospheric and tropospheric delay, their models, and the dual-frequency ionosphere-free combination"
       ],
@@ -8209,7 +8209,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-multipath-ephemeris-and-clock-errors",
       "title": "Multipath, ephemeris and clock errors",
-      "minutes": 24,
+      "minutes": 23,
       "covers": [
         "Multipath; ephemeris and satellite clock errors"
       ],
@@ -8218,7 +8218,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-carrier-phase-and-integer-ambiguity",
       "title": "Carrier phase and integer ambiguity resolution",
-      "minutes": 22,
+      "minutes": 21,
       "covers": [
         "Carrier phase measurements, cycle slips, integer ambiguity resolution with LAMBDA"
       ],
@@ -8227,7 +8227,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-differential-gnss-rtk-and-ppp",
       "title": "Differential GNSS, RTK and precise point positioning",
-      "minutes": 22,
+      "minutes": 17,
       "covers": [
         "Differential GNSS, RTK, and precise point positioning"
       ],
@@ -8236,7 +8236,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-gnss-above-the-constellation",
       "title": "GNSS above the constellation",
-      "minutes": 22,
+      "minutes": 21,
       "covers": [
         "Space-based GNSS: use above the constellation, side-lobe reception, high-dynamics tracking, Doppler"
       ],
@@ -8245,7 +8245,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-gnss-in-the-launch-vehicle-environment",
       "title": "GNSS in the launch vehicle environment",
-      "minutes": 21,
+      "minutes": 23,
       "covers": [
         "GNSS in a launch vehicle environment: acceleration, jerk, vibration, plume attenuation, antenna switching"
       ],
@@ -8254,7 +8254,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-integrity-jamming-and-spoofing",
       "title": "Integrity, jamming and spoofing",
-      "minutes": 24,
+      "minutes": 21,
       "covers": [
         "Jamming and spoofing; RAIM and integrity monitoring"
       ],
@@ -8263,7 +8263,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l13-receiver-tracking-loops",
       "title": "Receiver tracking loops",
-      "minutes": 17,
+      "minutes": 24,
       "covers": [
         "Receiver tracking loops (DLL, PLL, FLL) and the bandwidth/dynamics trade"
       ],
@@ -8272,7 +8272,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l14-vector-tracking-and-deep-coupling",
       "title": "Vector tracking and deep coupling",
-      "minutes": 22,
+      "minutes": 23,
       "covers": [
         "Vector tracking and deep coupling"
       ],
@@ -8283,7 +8283,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-star-trackers-photons-to-quaternion",
       "title": "Star trackers: from photons to a quaternion",
-      "minutes": 24,
+      "minutes": 27,
       "covers": [
         "Star trackers: optics, centroiding, star catalogs, lost-in-space identification (triangle and pyramid algorithms), tracking mode"
       ],
@@ -8310,7 +8310,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-magnetometers-igrf-wmm-hard-soft-iron-calibration",
       "title": "Magnetometers: the IGRF/WMM field model and hard- and soft-iron calibration",
-      "minutes": 20,
+      "minutes": 24,
       "covers": [
         "Magnetometers, the IGRF and WMM field models, residual dipole, hard-iron and soft-iron calibration"
       ],
@@ -8319,7 +8319,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-earth-and-horizon-sensors",
       "title": "Earth and horizon sensors",
-      "minutes": 14,
+      "minutes": 18,
       "covers": [
         "Earth and horizon sensors"
       ],
