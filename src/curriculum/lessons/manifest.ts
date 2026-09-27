@@ -3344,6 +3344,98 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       "file": "cod_py_02_idiomatic/13-package-layout.md"
     }
   ],
+  "cod_py_03_numpy": [
+    {
+      "id": "l01-the-ndarray",
+      "title": "The ndarray: dtype, shape and strides",
+      "minutes": 21,
+      "covers": [
+        "ndarray: dtype, shape, ndim, strides, itemsize"
+      ],
+      "file": "cod_py_03_numpy/01-the-ndarray.md"
+    },
+    {
+      "id": "l02-creating-arrays",
+      "title": "Making arrays",
+      "minutes": 18,
+      "covers": [
+        "Creation: zeros, ones, full, arange, linspace, eye, default_rng"
+      ],
+      "file": "cod_py_03_numpy/02-creating-arrays.md"
+    },
+    {
+      "id": "l03-slicing-views-and-copies",
+      "title": "Slicing, views and copies",
+      "minutes": 20,
+      "covers": [
+        "Indexing and slicing; views vs copies; base; fancy indexing and boolean masks"
+      ],
+      "file": "cod_py_03_numpy/03-slicing-views-and-copies.md"
+    },
+    {
+      "id": "l04-fancy-indexing-and-masks",
+      "title": "Fancy indexing and boolean masks",
+      "minutes": 22,
+      "covers": [
+        "Indexing and slicing; views vs copies; base; fancy indexing and boolean masks"
+      ],
+      "file": "cod_py_03_numpy/04-fancy-indexing-and-masks.md"
+    },
+    {
+      "id": "l05-broadcasting",
+      "title": "Broadcasting",
+      "minutes": 24,
+      "covers": [
+        "Broadcasting rules, newaxis, and when shapes are incompatible"
+      ],
+      "file": "cod_py_03_numpy/05-broadcasting.md"
+    },
+    {
+      "id": "l06-axes-and-reductions",
+      "title": "Axes and reductions",
+      "minutes": 20,
+      "covers": [
+        "Axis semantics in reductions: sum, mean, std, min, argmax with axis="
+      ],
+      "file": "cod_py_03_numpy/06-axes-and-reductions.md"
+    },
+    {
+      "id": "l07-reshaping-and-stacking",
+      "title": "Reshaping, transposing and stacking",
+      "minutes": 21,
+      "covers": [
+        "reshape, ravel, transpose, stack, concatenate, C vs Fortran order"
+      ],
+      "file": "cod_py_03_numpy/07-reshaping-and-stacking.md"
+    },
+    {
+      "id": "l08-products-matmul-dot-cross-einsum",
+      "title": "Products: @, dot, cross and einsum",
+      "minutes": 21,
+      "covers": [
+        "matmul and @, dot, cross, einsum"
+      ],
+      "file": "cod_py_03_numpy/08-products-matmul-dot-cross-einsum.md"
+    },
+    {
+      "id": "l09-linear-algebra",
+      "title": "Linear algebra: solve, lstsq, eig, svd",
+      "minutes": 24,
+      "covers": [
+        "Linear algebra: solve, lstsq, eig, svd, norm, cond, and why not inv"
+      ],
+      "file": "cod_py_03_numpy/09-linear-algebra.md"
+    },
+    {
+      "id": "l10-floating-point-pitfalls",
+      "title": "Floating-point pitfalls",
+      "minutes": 20,
+      "covers": [
+        "Float pitfalls: allclose, catastrophic cancellation, float32 vs float64"
+      ],
+      "file": "cod_py_03_numpy/10-floating-point-pitfalls.md"
+    }
+  ],
   "cod_py_04_scipy": [
     {
       "id": "l01-root-finding",
@@ -4067,6 +4159,17 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "When a window function beats a self-join, and when it does not"
       ],
       "file": "cod_sql_03_windows/10-windows-versus-self-joins.md"
+    }
+  ],
+  "cod_sql_04_schema": [
+    {
+      "id": "l01-normalisation",
+      "title": "Normalisation, and when to break it",
+      "minutes": 23,
+      "covers": [
+        "Normalisation to third normal form and deliberate denormalisation for analytics"
+      ],
+      "file": "cod_sql_04_schema/01-normalisation.md"
     }
   ],
   "t0_m00_basecamp": [
@@ -10045,19 +10148,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_py_03_numpy": {
-    "covered": 0,
+    "covered": 9,
     "total": 12,
     "complete": false,
     "missing": [
-      "ndarray: dtype, shape, ndim, strides, itemsize",
-      "Creation: zeros, ones, full, arange, linspace, eye, default_rng",
-      "Indexing and slicing; views vs copies; base; fancy indexing and boolean masks",
-      "Broadcasting rules, newaxis, and when shapes are incompatible",
-      "Axis semantics in reductions: sum, mean, std, min, argmax with axis=",
-      "reshape, ravel, transpose, stack, concatenate, C vs Fortran order",
-      "Linear algebra: solve, lstsq, eig, svd, norm, cond, and why not inv",
-      "matmul and @, dot, cross, einsum",
-      "Float pitfalls: allclose, catastrophic cancellation, float32 vs float64",
       "Random numbers: default_rng, seeding, reproducibility",
       "save, load, npz, memmap for big telemetry",
       "Vectorisation as the default, and when it genuinely does not apply"
@@ -10448,11 +10542,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_sql_04_schema": {
-    "covered": 0,
+    "covered": 1,
     "total": 18,
     "complete": false,
     "missing": [
-      "Normalisation to third normal form and deliberate denormalisation for analytics",
       "Star and snowflake schemas; surrogate versus natural keys",
       "Constraints: NOT NULL, UNIQUE, CHECK, foreign keys with ON DELETE",
       "Transactions and ACID; isolation levels; deadlocks",
