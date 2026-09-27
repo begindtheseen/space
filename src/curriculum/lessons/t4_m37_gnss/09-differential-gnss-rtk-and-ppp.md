@@ -1,7 +1,7 @@
 ---
 id: l09-differential-gnss-rtk-and-ppp
 title: Differential GNSS, RTK and precise point positioning
-minutes: 22
+minutes: 17
 covers:
   - Differential GNSS, RTK, and precise point positioning
 ---
@@ -52,7 +52,7 @@ $$
 \sigma_{\nabla\rho} = \sqrt{2}\,\sigma, \qquad \sigma_{\nabla\Delta\rho} = 2\sigma.
 $$
 
-A second effect matters just as much. Two double differences that share the same reference satellite $i$ both contain satellite $i$'s single difference. So their errors are linked — **correlated**. Their **covariance** (how much they vary together) is $2\sigma^2$, exactly half of each one's variance, so their correlation is $0.5$ whatever $\sigma$ is. A simulation with $\sigma = 0.3\,\mathrm{m}$ agrees:
+A second effect matters as much. Two double differences that share the same reference satellite $i$ both contain satellite $i$'s single difference. So their errors are linked — **correlated**. Their **covariance** (how much they vary together) is $2\sigma^2$, exactly half of each one's variance, so their correlation is $0.5$ whatever $\sigma$ is. A simulation with $\sigma = 0.3\,\mathrm{m}$ agrees:
 
 ```python
 import numpy as np
@@ -151,7 +151,7 @@ sats = np.array([                                               # the module's s
 s_ref, sats_dd = sats[0], sats[1:]
 
 rng = np.random.default_rng(77)
-common_err = rng.normal(0, 5.0, size=6)                          # shared error, up to several metres
+common_err = rng.normal(0, 5.0, size=6)                          # shared error, up to several meters
 b_A, b_B = 18500.0, -7340.0                                       # different receiver clocks, m
 sigma_phi = 0.003                                                 # 3 mm carrier noise, resolved ambiguities
 
@@ -264,7 +264,7 @@ DGNSS and RTK both rely on the atmosphere cancelling over a short baseline. Why 
 :::
 
 ::: answer
-DGNSS only needs the leftover atmosphere to be small next to its target of about a meter, a loose demand. RTK's integer search needs the leftover to be small next to a fraction of a carrier wavelength — centimeters — because it can only pick the right integer, and pass its ratio test, when the float solution is already close enough that the right integer clearly wins. A leftover that is harmless at the meter level can be big enough to flip which integer looks best. So RTK baselines are measured in tens of kilometers, while DGNSS corrections stay useful over distances about ten times larger.
+DGNSS only needs the leftover atmosphere to be small next to its target of about a meter, a loose demand. RTK's integer search needs the leftover to be small next to a fraction of a carrier wavelength — centimeters — because it can only pick the right integer, and pass its ratio test, when the float solution is already close enough that the right integer stands out. A leftover that is harmless at the meter level can be big enough to flip which integer looks best. So RTK baselines are measured in tens of kilometers, while DGNSS corrections stay useful over distances about ten times larger.
 :::
 
 ## Summary

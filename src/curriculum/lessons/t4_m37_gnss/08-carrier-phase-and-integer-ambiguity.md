@@ -306,7 +306,7 @@ The **Costas loop** was invented by the American engineer John P. Costas at Gene
 :::
 
 ::: context search-ellipse Rounding looks at a square; the data draws an ellipse
-The dots are whole-number pairs. The ellipse is where the correlation-aware cost equals $0.12$ around the float estimate (the cross). The dot at $(3,-5)$ sits inside it; the rounded answer $(3,-4)$ sits just outside.
+The dots are whole-number pairs. The ellipse is where the correlation-aware cost equals $0.12$ around the float estimate (the cross). The dot at $(3,-5)$ sits inside it; the rounded answer $(3,-4)$ sits a little outside.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 200" font-family="Inter, Arial, sans-serif">
