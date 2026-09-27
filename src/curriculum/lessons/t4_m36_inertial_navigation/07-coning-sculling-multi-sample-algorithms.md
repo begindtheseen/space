@@ -1,7 +1,7 @@
 ---
 id: l07-coning-sculling-multi-sample-algorithms
 title: Coning and sculling corrections
-minutes: 25
+minutes: 23
 covers:
   - "Coning and sculling corrections and multi-sample algorithms"
 ---

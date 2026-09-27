@@ -1,7 +1,7 @@
 ---
 id: l10-initial-alignment
 title: Initial alignment
-minutes: 22
+minutes: 24
 covers:
   - "Initial alignment: coarse leveling, gyrocompassing, fine alignment via Kalman filter, transfer and in-flight alignment"
 ---
@@ -72,7 +72,7 @@ print(np.degrees(roll_est), np.degrees(pitch_est))
 # 4.999999999999999 -3.0000000000000004
 ```
 
-Roll and pitch come back exact (the tiny tails are computer rounding). The recovery never used the $40^\circ$ heading. Try any other heading and you get the same answer: gravity alone pins down only two of the three angles.
+Roll and pitch come back exact (the tiny tails are computer rounding), and the $40^\circ$ heading was never needed: gravity pins down only two of the three angles.
 
 What limits coarse leveling in practice is not the formula. It is the accelerometer. By the **[[bias-tilt equivalence|bias-tilt]]** from the error-model lesson, an accelerometer bias $\delta f$ looks exactly like a real tilt of $\delta f/g$ radians. This module's running accelerometer has a bias instability of $50\,\mu g$, which is $4.90\times10^{-4}\,\mathrm{m/s^2}$. Divide by $g$:
 
@@ -88,7 +88,7 @@ $$
 \frac{9.81\times10^{-4}}{\sqrt{10}} = 3.10\times10^{-4}\ \mathrm{m/s^2},
 $$
 
-already below the $4.90\times10^{-4}\,\mathrm{m/s^2}$ bias. The two cross at about $4\,\mathrm s$, the same crossover the random-walk lesson found. After that, more averaging buys almost nothing. It is the same floor the Allan-deviation lesson measured, now setting how well gravity alone can level a platform.
+already below the $4.90\times10^{-4}\,\mathrm{m/s^2}$ bias. The two cross at about $4\,\mathrm s$, the same crossover the random-walk lesson found. After that, more averaging buys almost nothing: this is the Allan-deviation floor, now limiting the level.
 :::
 
 ## Gyrocompassing: the Earth's spin finds north
@@ -107,7 +107,7 @@ $$
 \boldsymbol\omega_{ie}^n = \omega_{ie}\,(\cos\varphi,\ 0,\ -\sin\varphi).
 $$
 
-It has a north part and a vertical part, and no east part. The **[[horizontal part|earth-rate-split]]**, $\omega_{ie}\cos\varphi$, points exactly to true north. That is the whole trick: once the system is level, the horizontal Earth rate its gyros sense *is* an arrow pointing north.
+It has a north part and a vertical part, and no east part. The **[[horizontal part|earth-rate-split]]**, $\omega_{ie}\cos\varphi$, points exactly to true north. So once the system is level, the horizontal Earth rate its gyros sense *is* an arrow pointing north.
 
 ### Nulling the east gyro
 
@@ -174,9 +174,9 @@ The same gyro that gyrocompasses to $2.6$ arcminutes at $28.5^\circ$ gives about
 
 After coarse leveling and gyrocompassing, the platform is level and pointing roughly north, with errors somewhere between arcminutes and degrees. **Fine alignment** sharpens that. It uses the physics of the Schuler lesson and the tools of the Kalman filter module together.
 
-Here is the idea in everyday words. You know the vehicle is not moving. So any velocity the navigation computer calculates is pure error. And velocity error does not appear from nowhere: a tilt $\varepsilon$ ("epsilon") leaks gravity into the horizontal and makes velocity error grow, and a gyro bias $b$ makes the tilt grow. Watch the fake velocity for a while, and you can work backward to the tilt and the bias that caused it.
+The idea: the vehicle is not moving. So any velocity the navigation computer calculates is pure error. And velocity error does not appear from nowhere: a tilt $\varepsilon$ ("epsilon") leaks gravity into the horizontal and makes velocity error grow, and a gyro bias $b$ makes the tilt grow. Watch the fake velocity for a while, and you can work backward to the tilt and the bias that caused it.
 
-That measurement has a name. A **[[zero-velocity update|zupt-name]]** (ZUPT) feeds the Kalman filter the computed velocity as a measurement of velocity error, $z = \delta v$, because the true velocity is known to be zero. Its assumed noise is small, a few centimeters per second. The filter runs its usual predict-and-update recursion. Because tilt, velocity error and bias are linked by the Schuler dynamics, watching $\delta v$ over time lets it separate all three.
+A **[[zero-velocity update|zupt-name]]** (ZUPT) feeds the Kalman filter the computed velocity as a measurement of velocity error, $z = \delta v$, because the true velocity is known to be zero. Its assumed noise is small, a few centimeters per second. The filter runs its usual predict-and-update recursion. Because tilt, velocity error and bias are linked by the Schuler dynamics, watching $\delta v$ over time lets it separate all three.
 
 The dynamics are the Schuler lesson's driven loop, for the north-tilt and east-velocity pair:
 
@@ -235,7 +235,7 @@ The three-state example has no accelerometer bias and no heading error, and that
 :::
 
 ::: warning The zero has to be real
-The zero-velocity measurement is only true while the vehicle is truly still. A vehicle rocking on its suspension, a ship at a pier heaving in the swell, or an aircraft with engines running all move a little, for real. The filter cannot tell that real motion from velocity error, so feeding it in *spoils* the alignment instead of improving it. Real alignment procedures check the measured vibration level and stretch the alignment time, rather than trust a ZUPT taken in a rough environment.
+The zero-velocity measurement is only true while the vehicle is truly still. A vehicle rocking on its suspension, a ship at a pier heaving in the swell, or an aircraft with engines running all move a little, for real. The filter cannot tell that real motion from velocity error, so feeding it in *spoils* the alignment instead of improving it. Real procedures check the vibration level and stretch the alignment time instead.
 :::
 
 ## Transfer and in-flight alignment
@@ -258,13 +258,13 @@ $$
 0.524\times 5 = 2.62\ \mathrm{m/s}
 $$
 
-relative to the master. If the filter does not model that, it blames the $2.62\,\mathrm{m/s}$ on misalignment. A second trouble is **flexure**: a wing bends under load, so the "fixed" angle between master and slave is not fixed, and the reference itself is corrupted if the airframe is less rigid than the alignment assumes. The lever-arm compensation developed in this module's last lesson is exactly the correction transfer alignment depends on.
+relative to the master. If the filter does not model that, it blames the $2.62\,\mathrm{m/s}$ on misalignment. A second trouble is **flexure**: a wing bends under load, so the angle between master and slave is not truly fixed. The lever-arm compensation developed in this module's last lesson is exactly the correction transfer alignment depends on.
 
 ### In-flight alignment
 
 **In-flight alignment** drops the "sitting still" requirement completely. Instead of comparing the computed velocity with zero, it compares it with a velocity and position from a satellite receiver (GNSS). It is the same Kalman filter as fine alignment, with $\delta v$ measured against GNSS instead of against zero. It keeps fine alignment's great strength — using the Schuler dynamics to separate tilt from bias.
 
-It also brings a real limit. Some combinations of errors can only be seen if the vehicle **[[manoeuvres|observability-turn]]**. In straight, steady flight, an east-axis tilt and a north accelerometer bias make exactly the same velocity signature — the bias-tilt equivalence once more — and no amount of waiting separates them. A turn or an acceleration changes how the errors reach the measurement, and breaks the tie. That is why aircraft in-flight alignment procedures call for a specific manoeuvre, an S-turn or a series of banks, instead of trusting straight-and-level flight to align a system that straight-and-level flight cannot fully observe.
+It also brings a real limit. Some combinations of errors can only be seen if the vehicle **[[manoeuvres|observability-turn]]**. In straight, steady flight, an east-axis tilt and a north accelerometer bias make exactly the same velocity signature — the bias-tilt equivalence once more — and no amount of waiting separates them. A turn or an acceleration changes how the errors reach the measurement, and breaks the tie. That is why aircraft in-flight alignment procedures call for a specific manoeuvre, an S-turn or a series of banks.
 
 ## Check yourself
 
@@ -273,7 +273,7 @@ Why can coarse leveling recover roll and pitch from a single accelerometer readi
 :::
 
 ::: answer
-Gravity is a vertical vector with no horizontal part. Its direction in body axes says only how the body's own "down" is tipped away from true down, and that tipping is exactly roll and pitch. Heading is a turn about the vertical axis itself. Turning the body about that axis does not change how gravity projects onto the body axes at all (heading does not even appear in the formulas $f_x = g\sin\theta$, $f_y = -g\sin\phi\cos\theta$, $f_z = -g\cos\phi\cos\theta$). So the accelerometer reading carries no information about heading, and no accelerometer, however precise, can extract some.
+Gravity is a vertical vector with no horizontal part. Its direction in body axes says only how the body's own "down" is tipped away from true down, and that tipping is exactly roll and pitch. Heading is a turn about the vertical axis itself. Turning the body about that axis does not change how gravity projects onto the body axes at all. So the accelerometer reading carries no information about heading, and no accelerometer, however precise, can extract some.
 :::
 
 ::: check
@@ -295,7 +295,7 @@ A cheap MEMS gyro has a bias of $20^\circ/\mathrm h$. Can it gyrocompass anywher
 :::
 
 ::: answer
-No. The largest horizontal Earth rate anywhere is at the equator, where $\cos\varphi = 1$ and it equals the full $15.041^\circ/\mathrm h$. A $20^\circ/\mathrm h$ bias is bigger than that, so $b/(\omega_{ie}\cos\varphi)$ is more than one radian even at the equator: the bias swamps the whole signal. This is the Earth-rate rule: a gyro whose bias is not well below $15^\circ/\mathrm h$ cannot find north. Such a gyro needs a magnetometer, GNSS or a known starting direction for heading.
+No. The largest horizontal Earth rate anywhere is at the equator, where $\cos\varphi = 1$ and it equals the full $15.041^\circ/\mathrm h$. A $20^\circ/\mathrm h$ bias is bigger than that, so $b/(\omega_{ie}\cos\varphi)$ is more than one radian even at the equator: the bias swamps the whole signal. This is the Earth-rate rule: a gyro whose bias is not well below $15^\circ/\mathrm h$ cannot find north.
 :::
 
 ::: check
@@ -303,7 +303,7 @@ In the fine-alignment example, the tilt uncertainty falls by a factor of about s
 :::
 
 ::: answer
-The early updates work against a very poor starting guess (the $1^\circ$ prior). Each zero-velocity update removes a large fraction of a large uncertainty, and the drop looks dramatic. As the filter converges it works against an uncertainty that is already small. Further updates still help — the physics has not changed — but the absolute size of each improvement shrinks with the uncertainty itself. It is the same diminishing-returns shape any converging estimate shows once its starting guess no longer dominates. (In a real system the drop would stop entirely at the accelerometer-bias floor of about $10$ arcseconds, as the warning explains.)
+The early updates work against a very poor starting guess (the $1^\circ$ prior). Each zero-velocity update removes a large fraction of a large uncertainty, and the drop looks dramatic. As the filter converges it works against an uncertainty that is already small. Further updates still help — the physics has not changed — but the absolute size of each improvement shrinks with the uncertainty itself. (In a real system the drop would stop entirely at the accelerometer-bias floor of about $10$ arcseconds, as the warning explains.)
 :::
 
 ::: check

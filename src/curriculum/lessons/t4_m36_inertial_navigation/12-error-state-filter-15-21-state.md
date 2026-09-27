@@ -10,17 +10,17 @@ Think about a cheap wristwatch that runs a little fast. You do not take it apart
 
 An inertial navigator is built the same way. The mechanization from the frames and update lessons is the watch: it turns six streams of sensor numbers into attitude, velocity and position, hundreds of times a second, and it never stops. The Kalman filter is the note. It does not try to track the whole trajectory. It tracks only the **error state** — how far the mechanization has probably drifted from the truth — and it fixes that note up whenever an outside measurement, usually GNSS, comes in.
 
-This lesson builds that filter in full. Every earlier filter in this module was a small piece of it, drawn one axis at a time: the Schuler lesson's pair of tilt and velocity error, the alignment lesson's three states with a gyro bias added. Here all of them come together, in three axes at once: **fifteen states** in the standard form, **twenty-one** in the extended one. This is the filter the INS/GNSS lesson's architectures all run on.
+This lesson builds that filter in full. Every earlier filter in this module — the Schuler lesson's tilt and velocity pair, the alignment lesson's three states — was one axis of it. Here they come together in three axes: **fifteen states** in the standard form, **twenty-one** in the extended one.
 
 ## Why estimate the error, not the state itself
 
 The Kalman filter module built its machinery for systems that are **[[linear|linear-meaning]]** — where doubling a cause doubles its effect — or close enough to linear that one straight-line approximation holds for one step. The navigator's own state is none of that.
 
 - Its position sits on a curved Earth, millions of metres from the center.
-- Its attitude is a **[[quaternion|quaternion-norm]]**, four numbers that must always have length exactly one. A plain linear update does not respect that rule, and a quaternion nudged off length one no longer describes a rotation.
+- Its attitude is a **[[quaternion|quaternion-norm]]**, four numbers that must always have length exactly one — a rule no plain linear update respects.
 - Its velocity can be hundreds of metres per second, and the update equations that move it are strongly nonlinear over anything but a very short time.
 
-A filter that estimated this state directly would have to re-linearize a fast, curved, constrained trajectory at every step. That is the **extended Kalman filter** approach, and it is fragile.
+Estimating this state directly means re-linearizing a fast, curved, constrained trajectory at every step, the fragile **extended Kalman filter** approach.
 
 The error-state idea sidesteps the problem. Let the mechanization keep running exactly as this module built it, with no filter inside its loop. What it computes is called the **nominal state**: the navigator's best guess before any correction. Let the filter estimate only the difference between the nominal state and the truth. That difference is small:
 
@@ -28,7 +28,7 @@ The error-state idea sidesteps the problem. Let the mechanization keep running e
 - an attitude error of seconds of arc, against an attitude that may be tumbling;
 - a velocity error of centimetres per second, against hundreds of metres per second.
 
-Because it is small, it behaves almost exactly linearly. The Schuler lesson's whole derivation was this linearization, carried out for two of the fifteen states. The error state follows a **linear time-varying** system: linear in the errors, with coefficients that change as the vehicle's own acceleration and attitude change. The Kalman filter module's ordinary predict-and-update steps handle it with no changes.
+Because it is small, it behaves almost exactly linearly — the Schuler lesson's derivation was this linearization for two of the fifteen states. The error state follows a **linear time-varying** system: linear in the errors, with coefficients that change as the vehicle's own acceleration and attitude change. The Kalman filter module's ordinary predict-and-update steps handle it with no changes.
 
 We write the error as "computed minus true". Read $\delta\mathbf v$ as "delta v", the velocity error: $\delta\mathbf v=\hat{\mathbf v}-\mathbf v$, where the hat marks the computed value.
 
@@ -66,7 +66,7 @@ Read it as: the bias slowly relaxes back toward zero with a **correlation time**
 
 ### How the groups push on each other
 
-The filter needs the rule for how each group changes, written as $\dot{\delta\mathbf x}=\mathbf F\,\delta\mathbf x+\mathbf w$. The matrix $\mathbf F$ is built from five couplings. Each one is physics you have met already.
+The filter needs the rule $\dot{\delta\mathbf x}=\mathbf F\,\delta\mathbf x+\mathbf w$. The matrix $\mathbf F$ is built from five couplings, all physics you have met.
 
 1. **Velocity error moves position error.** $\dot{\delta\mathbf p}=\delta\mathbf v$. A wrong speed carries you to a wrong place.
 2. **Attitude error leaks specific force into velocity.** If the navigator thinks the body is turned by $\boldsymbol\phi$, it rotates the measured specific force the wrong way, and the leftover shows up as a false acceleration. Put the definition of $\boldsymbol\phi$ into the velocity update: the computed specific force in the navigation frame is $(\mathbf I+[\boldsymbol\phi\times])\mathbf C_b^n\mathbf f^b$, which is the true one plus $\boldsymbol\phi\times(\mathbf C_b^n\mathbf f^b)$. So
@@ -94,7 +94,7 @@ $$
 \begin{pmatrix}\delta\mathbf p\\ \delta\mathbf v\\ \boldsymbol\phi\\ \delta\mathbf b_a\\ \delta\mathbf b_g\end{pmatrix}+\mathbf w .
 $$
 
-Here $\mathbf f^n=\mathbf C_b^n\mathbf f^b$, and $-[\mathbf f^n\times]\boldsymbol\phi$ is the same thing as $\boldsymbol\phi\times\mathbf f^n$, written as a matrix times the state. $\mathbf F_{\phi v}$ holds the $1/R$ Schuler terms. $\mathbf F_{vv}$ holds the Coriolis terms from the velocity update. $\mathbf F_{vp}$ holds the change of gravity with height. $\mathbf F_{\phi p}$ and $\mathbf F_{\phi\phi}$ hold small Earth-rate terms. Fifteen rows, fifteen columns, and every entry comes from an equation this module already derived.
+Here $\mathbf f^n=\mathbf C_b^n\mathbf f^b$, and $-[\mathbf f^n\times]\boldsymbol\phi$ is the same thing as $\boldsymbol\phi\times\mathbf f^n$, written as a matrix times the state. $\mathbf F_{\phi v}$ holds the $1/R$ Schuler terms. $\mathbf F_{vv}$ holds the Coriolis terms from the velocity update. $\mathbf F_{vp}$ holds the change of gravity with height. $\mathbf F_{\phi p}$ and $\mathbf F_{\phi\phi}$ hold small Earth-rate terms. Every entry comes from an equation this module already derived.
 
 ::: example The single-axis block, checked by its eigenvalues
 Take one horizontal channel: north position and velocity error, the tilt about east, the east gyro bias that drives that tilt, and the north accelerometer bias that drives that velocity. That is five of the fifteen states. Every number comes from the Schuler lesson, at $28.5^\circ$ latitude. The bias correlation times are $T_g=100\,\mathrm s$ and $T_a=300\,\mathrm s$.
@@ -123,19 +123,19 @@ for e in sorted(np.linalg.eigvals(F), key=lambda z: (round(z.real, 6), z.imag)):
 
 Row 2 is coupling 2 at rest: $\mathbf f^n$ points up with size $g$, and $\boldsymbol\phi\times\mathbf f^n$ gives $-g\,\phi_E$ in the north velocity. Row 3 is couplings 3 and 5.
 
-Now read the five **[[eigenvalues|eigenvalue]]**. Each one names a way this block can move on its own.
+Now read the five **[[eigenvalues|eigenvalue]]**, each a way the block can move on its own.
 
 - $-1/T_g=-0.01\,\mathrm s^{-1}$ and $-1/T_a=-0.00333\,\mathrm s^{-1}$: the two biases relaxing with their correlation times, from the random-walk lesson.
 - $\pm i\,\omega_s$ with $\omega_s=1.2418\times10^{-3}\,\mathrm{rad/s}$: a pure oscillation. This is the Schuler frequency $\sqrt{g/R_M}$ to five figures, falling out of the block's own characteristic equation.
 - One exact zero: the position error. Nothing pulls it back toward any value. It only piles up whatever velocity error flows through it, the way a plain running total does.
 
-Sanity check: the Schuler period is $2\pi/\omega_s$, about $5060\,\mathrm s$ or $84.3$ minutes here, as it should be. The full filter is three copies of blocks like this one, with $R_N$ in place of $R_M$ for the east channel, plus the couplings between axes.
+Sanity check: the Schuler period $2\pi/\omega_s$ is about $5060\,\mathrm s$, or $84.3$ minutes, as it should be. The full filter is blocks like this one in each axis ($R_N$ in place of $R_M$ for the east channel), plus the couplings between them.
 :::
 
 ::: example The vertical channel does not oscillate
 The vertical channel is not a third copy of the horizontal pattern. Treating it as one is a standing trap.
 
-Gravity gets weaker as you go up, by about $2g/a$ per metre (the **[[free-air gradient|free-air]]** from the update lesson, with $a$ the Earth's equatorial radius). So suppose the computed height is too high. The navigator then computes gravity slightly too weak. It thinks the vehicle is being pulled down less than it really is, so it computes an upward drift that is not there. The computed height rises further, the computed gravity gets weaker still, and the error feeds itself. In the horizontal channels the same kind of feedback has the opposite sign and pulls the error back.
+Gravity gets weaker as you go up, by about $2g/a$ per metre (the **[[free-air gradient|free-air]]** from the update lesson, with $a$ the Earth's equatorial radius). Suppose the computed height is too high. The navigator then computes gravity slightly too weak, so it computes an upward drift that is not there. The computed height rises further, gravity gets weaker still, and the error feeds itself. In the horizontal channels the feedback has the opposite sign and pulls the error back.
 
 Build the two-state block for height error and down-velocity error:
 
@@ -166,7 +166,7 @@ $$
 =\begin{pmatrix}\mathbf I & \mathbf 0 & \mathbf 0 & \mathbf 0 & \mathbf 0\\ \mathbf 0 & \mathbf I & \mathbf 0 & \mathbf 0 & \mathbf 0\end{pmatrix}\delta\mathbf x+\boldsymbol\nu .
 $$
 
-That big matrix is $\mathbf H$, and $\boldsymbol\nu$ ("nu") is the GNSS noise. Notice that $\mathbf H$ only touches position and velocity. The filter never sees the attitude or the biases directly. It learns them through $\mathbf F$: a tilt shows up later as a velocity error, a bias shows up as a tilt or a velocity drift, and over many updates the filter works backward to the cause. That is the same trick the alignment lesson used with zero velocity, now with GNSS.
+That big matrix is $\mathbf H$, and $\boldsymbol\nu$ ("nu") is the GNSS noise. $\mathbf H$ touches only position and velocity. The filter learns attitude and biases through $\mathbf F$: a tilt shows up later as a velocity error, a bias as a tilt or a drift, and over many updates the filter works backward to the cause — the alignment lesson's trick, now with GNSS.
 
 Between measurements the filter runs its **predict** step, $\mathbf P\leftarrow\boldsymbol\Phi\mathbf P\boldsymbol\Phi^{\mathsf T}+\mathbf Q_d$. Here $\mathbf P$ is the **[[covariance|covariance]]**, the filter's own record of how unsure it is about each state, $\boldsymbol\Phi$ is the one-step transition matrix built from $\mathbf F$, and $\mathbf Q_d$ is the noise added over one step. When a measurement arrives, the **update** step shrinks $\mathbf P$.
 
@@ -212,28 +212,28 @@ for t in range(1, 421):
 # t=420 s  sigma_p= 0.44 m  sigma_v=0.036 m/s  sigma_tilt= 76.8 arcsec
 ```
 
-Step by step. The `expm` line is Van Loan's method: one matrix exponential turns the continuous $\mathbf F$ and noise strengths into the one-second $\boldsymbol\Phi$ and $\mathbf Q_d$. The noise strengths are the datasheet numbers per root second: $0.3^\circ/\sqrt{\mathrm h}$ is $0.3^\circ/60$ per $\sqrt{\mathrm s}$, because $\sqrt{3600}=60$. The bias noise $2\sigma^2/T$ keeps each bias at its datasheet size.
+The `expm` line is Van Loan's method: one matrix exponential turns the continuous $\mathbf F$ and noise strengths into the one-second $\boldsymbol\Phi$ and $\mathbf Q_d$. The noise strengths are datasheet numbers per root second: $0.3^\circ/\sqrt{\mathrm h}$ is $0.3^\circ/60$ per $\sqrt{\mathrm s}$, because $\sqrt{3600}=60$. The bias noise $2\sigma^2/T$ holds each bias at its datasheet size.
 
-Now read the output. With GNSS, the position uncertainty settles near $0.44\,\mathrm m$, smaller than a single $2\,\mathrm m$ fix, because the filter blends hundreds of fixes through a good motion model. In the tunnel it grows: $3.05\,\mathrm m$ after $30\,\mathrm s$, then $11.72\,\mathrm m$ after $60\,\mathrm s$. That is almost four times more for twice the time, the faster-than-linear growth the free-inertial lesson predicted from tilt and gyro bias. One fix after the tunnel pulls it back to $1.78\,\mathrm m$, and a minute later the filter is back where it started.
+Now read the output. With GNSS, the position uncertainty settles near $0.44\,\mathrm m$, smaller than one $2\,\mathrm m$ fix, because the filter blends hundreds of fixes through its motion model. In the tunnel it grows: $3.05\,\mathrm m$ after $30\,\mathrm s$, then $11.72\,\mathrm m$ after $60\,\mathrm s$. That is almost four times more for twice the time, the faster-than-linear growth the free-inertial lesson predicted from tilt and gyro bias. One fix after the tunnel pulls it back to $1.78\,\mathrm m$; a minute later it is back where it started.
 
 Sanity check: in $60\,\mathrm s$ a $0.036\,\mathrm{m/s}$ velocity error alone moves you about $2.2\,\mathrm m$, and a $76.7$ arcsecond tilt leaks $g$ into a further $6.5\,\mathrm m$ or so. Add the gyro bias and the total near $12\,\mathrm m$ is the right size.
 :::
 
 ## Injection and reset
 
-The filter never touches the nominal trajectory while it runs. It only holds an estimate $\delta\hat{\mathbf x}$ and a covariance $\mathbf P$. Every so often — at every measurement, in most systems — the estimate is **[[injected|injection-reset]]** into the nominal state, the way you nudge the watch's hands:
+The filter itself holds only an estimate $\delta\hat{\mathbf x}$ and a covariance $\mathbf P$. Every so often — at every measurement, in most systems — the estimate is **[[injected|injection-reset]]** into the nominal state, the way you nudge the watch's hands:
 
 - position, velocity and the two biases: subtract the estimated error, because error means "computed minus true": $\hat{\mathbf v}\leftarrow\hat{\mathbf v}-\delta\hat{\mathbf v}$, and the same for the others;
 - attitude: turn the computed frame back by the estimated small rotation, $\hat{\mathbf C}_b^n\leftarrow(\mathbf I-[\hat{\boldsymbol\phi}\times])\,\hat{\mathbf C}_b^n$, then renormalize so it stays a proper rotation.
 
-Right after injection, the error state is **reset** to zero. The nominal state has absorbed the best guess of where it was wrong, so there is nothing left for $\delta\hat{\mathbf x}$ to describe. The covariance $\mathbf P$ carries on unchanged, to the accuracy this filter works at: the reset is exactly an identity for every state except the attitude, and there it differs from the identity only by terms of second order in a small angle.
+Right after injection, the error state is **reset** to zero. The nominal state has absorbed the best guess of where it was wrong, so there is nothing left for $\delta\hat{\mathbf x}$ to describe. The covariance $\mathbf P$ carries on unchanged, to the accuracy this filter works at: the reset is exactly an identity for every state except the attitude, and there it differs from the identity only by terms of second order in a small angle. The whole nominal-and-error design, with every step written out for a quaternion navigator, is the subject of a well-known [[free paper by Joan Solà|sola]].
 
 ::: key The nominal/error split
 The mechanization (the frames, update and coning/sculling lessons, together) runs the full nonlinear trajectory open-loop and never sees the filter. The error-state filter estimates only the small, near-linear deviation from that trajectory, using the Kalman filter module's own predict/update recursion on the linear system this lesson derives. Injection feeds the estimate back into the nominal state at every update; reset zeroes the error state immediately after, so the filter is always estimating a small quantity, never a large one.
 :::
 
 ::: warning Signs of the attitude correction
-Whether you left-multiply by $(\mathbf I-[\hat{\boldsymbol\phi}\times])$ or right-multiply by $(\mathbf I+[\hat{\boldsymbol\phi}\times])$ depends on whether $\boldsymbol\phi$ was defined in the navigation frame or the body frame, and on "computed minus true" versus "true minus computed". Pick one definition, derive $\mathbf F$ and the injection from that same definition, and write it at the top of the code. A sign mixed between the two is the classic error-state bug: the filter converges in a quiet test and then pushes attitude the wrong way in the first turn.
+Left-multiplying by $(\mathbf I-[\hat{\boldsymbol\phi}\times])$ is right only for this lesson's definition: $\boldsymbol\phi$ in the navigation frame, error as "computed minus true". A body-frame or "true minus computed" definition changes the side or the sign. Pick one definition, derive $\mathbf F$ and the injection from it, and write it at the top of the code. A sign mixed between the two is the classic error-state bug: the filter converges in a quiet test and then pushes attitude the wrong way in the first turn.
 :::
 
 ## From fifteen states to twenty-one
@@ -252,7 +252,7 @@ Here $\operatorname{diag}(\delta\mathbf s_a)$ is the matrix with the three scale
 Position (3), velocity (3), attitude (3), accelerometer bias (3), gyro bias (3). Extend to 21 or more with scale factors and misalignments when the IMU grade and the mission justify it.
 :::
 
-Two things decide it. The **IMU grade** decides how big the leftover scale-factor error is: a navigation-grade unit may keep it to a few parts per million after calibration, while a low-cost MEMS unit may leave hundreds or thousands. The **mission** decides whether the filter can see it. A vehicle that spends its life under a steady, modest load gives the six extra states almost nothing to observe. A vehicle that swings through a wide range — an aircraft's climb and cruise, a launch vehicle's staged thrust profile — gives them real signal. A large leftover error *and* a wide dynamic range is when twenty-one pays. Add three more misalignment states per sensor triad and you reach twenty-seven, the "or more" of the rule.
+Two things decide it. The **IMU grade** decides how big the leftover scale-factor error is: a navigation-grade unit may keep it to a few parts per million after calibration, while a low-cost MEMS unit may leave hundreds or thousands. The **mission** decides whether the filter can see it. A vehicle under a steady, modest load gives the six extra states almost nothing to observe; one that swings through a wide range — an aircraft's climb and cruise, a launch vehicle's staged thrust — gives them real signal. A large leftover error *and* a wide dynamic range is when twenty-one pays. Add misalignment states as well and the count climbs to twenty-seven and beyond — the "or more" of the rule.
 
 ## Check yourself
 
@@ -261,7 +261,7 @@ Why can the attitude error $\boldsymbol\phi$ be three plain numbers, while the n
 :::
 
 ::: answer
-A rotation vector describes an orientation faithfully and without trouble only for small angles, as the attitude representations module showed. The nominal attitude can be anything — upside down, mid-tumble — so it needs a representation with no small-angle limit, such as a quaternion or a direction cosine matrix. The error $\boldsymbol\phi$ is small by the whole premise of the error state. For it, the small-angle limit costs nothing. Three numbers with no length rule are the natural, minimal, unconstrained choice, and they drop straight into a linear filter.
+A rotation vector describes an orientation faithfully and without trouble only for small angles, as the attitude representations module showed. The nominal attitude can be anything — upside down, mid-tumble — so it needs a representation with no small-angle limit, such as a quaternion or a direction cosine matrix. The error $\boldsymbol\phi$ is small by the premise of the error state, so the limit costs nothing, and three numbers with no length rule drop straight into a linear filter.
 :::
 
 ::: check
@@ -285,7 +285,7 @@ In the GNSS measurement model, $\mathbf H$ has zeros in every attitude and bias 
 :::
 
 ::: answer
-Through $\mathbf F$. A gyro bias makes the tilt grow ($\dot{\boldsymbol\phi}\ni\mathbf C_b^n\delta\mathbf b_g$), the tilt leaks specific force into velocity ($\dot{\delta\mathbf v}\ni\boldsymbol\phi\times\mathbf f^n$), and the velocity error is measured. The predict step spreads uncertainty from the bias into velocity through exactly these couplings, so the covariance links them. When a velocity residual keeps growing in the pattern a bias would cause, the update step assigns part of it to the bias. This is why a state that is never measured directly can still become well known — provided the chain of couplings from it to a measured state is not broken.
+Through $\mathbf F$. A gyro bias makes the tilt grow ($\dot{\boldsymbol\phi}\ni\mathbf C_b^n\delta\mathbf b_g$), the tilt leaks specific force into velocity ($\dot{\delta\mathbf v}\ni\boldsymbol\phi\times\mathbf f^n$), and the velocity error is measured. The predict step spreads uncertainty from the bias into velocity through exactly these couplings, so the covariance links them. When a velocity residual keeps growing in the pattern a bias would cause, the update step assigns part of it to the bias. A state never measured directly can still become well known, as long as a chain of couplings links it to a measured one.
 :::
 
 ::: check
@@ -293,7 +293,7 @@ A designer wants to drop the six scale-factor states because "the fifteen-state 
 :::
 
 ::: answer
-Two facts, neither of which the simulation supplies unless it was built to. First, the IMU grade: how large the residual scale-factor error is after calibration. Second, the mission's own dynamic profile: whether the vehicle's specific force and turn rate span a wide enough range for a scale-factor error to look different from a bias. The error-model lesson's example showed scale factor invisible at rest and dominant in a fast maneuver. A simulation that never flies that range, or that injects no scale-factor error, will show the fifteen-state filter doing fine whether or not twenty-one states are needed. The right test is a simulation of the real flight profile with the real sensor's residual errors.
+Two facts, neither of which the simulation supplies unless it was built to. First, the IMU grade: how large the residual scale-factor error is after calibration. Second, the mission's dynamic profile: whether the specific force and turn rate span a wide enough range for a scale-factor error to look different from a bias (the error-model lesson showed scale factor invisible at rest and dominant in a fast maneuver). A simulation that never flies that range, or injects no scale-factor error, will show fifteen states doing fine either way. The right test is a simulation of the real flight profile with the real sensor's residual errors.
 :::
 
 ## Summary
@@ -330,8 +330,8 @@ Point your thumb along the axis you turn about, and make the arrow as long as th
   <line x1="150" y1="150" x2="150" y2="30" stroke="#1f2a44" stroke-width="1.5"/>
   <line x1="150" y1="95" x2="150" y2="42" stroke="#b4232c" stroke-width="4"/>
   <polygon points="150,30 143,44 157,44" fill="#b4232c"/>
-  <path d="M205,110 A70,22 0 0 1 95,111" fill="none" stroke="#1d6fd1" stroke-width="2.5"/>
-  <polygon points="92,110 104,104 103,117" fill="#1d6fd1"/>
+  <path d="M95,111 A70,22 0 0 0 205,110" fill="none" stroke="#1d6fd1" stroke-width="2.5"/>
+  <polygon points="208,109 196,103 197,116" fill="#1d6fd1"/>
   <text x="162" y="50" font-size="12" fill="#b4232c">arrow along the axis</text>
   <text x="162" y="66" font-size="12" fill="#b4232c">length = angle (rad)</text>
   <text x="150" y="140" font-size="12" fill="#1d6fd1" text-anchor="middle">the turn</text>
