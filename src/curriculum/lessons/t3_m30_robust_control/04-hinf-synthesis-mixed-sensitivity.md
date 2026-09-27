@@ -14,7 +14,7 @@ What makes this practical, not merely elegant, is that the search has a solution
 
 Here you will set the problem up, turn specifications into weights, meet the DGKF solution, and read $\gamma$ on real designs — including one you can solve by hand.
 
-## The generalised plant
+## The generalized plant
 
 Every H-infinity problem is put into one shape first. Think of a wiring diagram with exactly two plugs on each side.
 
@@ -23,7 +23,7 @@ Every H-infinity problem is put into one shape first. Think of a wiring diagram 
 - $v$ is what the controller measures.
 - $u$ is what the controller commands.
 
-The fixed wiring of plant and weights is the **[[generalised plant|generalised-plant]]** $\mathbf{P}(s)$. It maps the two inputs to the two outputs:
+The fixed wiring of plant and weights is the **[[generalized plant|generalized-plant]]** $\mathbf{P}(s)$. It maps the two inputs to the two outputs:
 
 $$\begin{pmatrix} z \\ v\end{pmatrix} = \mathbf{P}(s)\begin{pmatrix} w \\ u\end{pmatrix} = \begin{pmatrix}\mathbf{P}_{11} & \mathbf{P}_{12} \\ \mathbf{P}_{21} & \mathbf{P}_{22}\end{pmatrix}\begin{pmatrix} w \\ u\end{pmatrix}, \qquad u = \mathbf{K}(s)\,v .$$
 
@@ -33,7 +33,7 @@ Now eliminate $u$ and $v$. What is left is the closed-loop map from $w$ to $z$. 
 
 $$\mathbf{N} = \mathcal{F}_l(\mathbf{P}, \mathbf{K}) = \mathbf{P}_{11} + \mathbf{P}_{12}\mathbf{K}(\mathbf{I} - \mathbf{P}_{22}\mathbf{K})^{-1}\mathbf{P}_{21}.$$
 
-The problem is: over all $\mathbf{K}$ that stabilise the loop internally (no signal anywhere inside the loop can grow without bound), make $\lVert\mathbf{N}\rVert_\infty$ as small as possible.
+The problem is: over all $\mathbf{K}$ that stabilize the loop internally (no signal anywhere inside the loop can grow without bound), make $\lVert\mathbf{N}\rVert_\infty$ as small as possible.
 
 This is the same algebraic object as the $\mathbf{M}$–$\boldsymbol{\Delta}$ loop of the small gain lesson, with the roles swapped. There the unknown block closed the loop. Here the controller does. That match is what lets the same machinery both test robustness and design controllers.
 
@@ -109,14 +109,14 @@ It is near $A_T$ at DC, which is no constraint at all. It rises through one at $
 
 ## The two-Riccati (DGKF) solution
 
-To solve the problem, write the generalised plant in state space. Here $x$ is its state: the plant's state and the weights' states together.
+To solve the problem, write the generalized plant in state space. Here $x$ is its state: the plant's state and the weights' states together.
 
 $$\dot{x} = \mathbf{A}x + \mathbf{B}_1 w + \mathbf{B}_2 u, \qquad z = \mathbf{C}_1 x + \mathbf{D}_{11}w + \mathbf{D}_{12}u, \qquad v = \mathbf{C}_2 x + \mathbf{D}_{21}w + \mathbf{D}_{22}u .$$
 
 The subscript 1 goes with $w$ and $z$; the subscript 2 goes with $u$ and $v$. The DGKF theorem rests on four standing assumptions. Each is a real requirement, not bookkeeping:
 
-1. $(\mathbf{A}, \mathbf{B}_2)$ is stabilisable and $(\mathbf{C}_2, \mathbf{A})$ detectable. Otherwise no stabilising controller exists at all.
-2. $\mathbf{D}_{12}$ has full column rank and $\mathbf{D}_{21}$ full row rank. In words: every control input is penalised in $z$, and every measurement carries noise. This is what $\mathbf{W}_2$ and the noise channel are for.
+1. $(\mathbf{A}, \mathbf{B}_2)$ is stabilisable and $(\mathbf{C}_2, \mathbf{A})$ detectable. Otherwise no stabilizing controller exists at all.
+2. $\mathbf{D}_{12}$ has full column rank and $\mathbf{D}_{21}$ full row rank. In words: every control input is penalized in $z$, and every measurement carries noise. This is what $\mathbf{W}_2$ and the noise channel are for.
 3. $\begin{pmatrix}\mathbf{A} - j\omega\mathbf{I} & \mathbf{B}_2 \\ \mathbf{C}_1 & \mathbf{D}_{12}\end{pmatrix}$ has full column rank for every $\omega$: no zeros on the imaginary axis in the control channel.
 4. The mirror-image condition on $\begin{pmatrix}\mathbf{A} - j\omega\mathbf{I} & \mathbf{B}_1 \\ \mathbf{C}_2 & \mathbf{D}_{21}\end{pmatrix}$: no imaginary-axis zeros in the measurement channel.
 
@@ -138,7 +138,7 @@ with $\hat{\mathbf{A}}_\infty = \mathbf{A} + \gamma^{-2}\mathbf{B}_1\mathbf{B}_1
 
 Read the shape. It is an observer plus state feedback, exactly like LQG, with two changes.
 
-- The state feedback gain $\mathbf{F}_\infty = -\mathbf{B}_2^\mathsf{T}\mathbf{X}_\infty$ comes from a Riccati equation with an extra $+\gamma^{-2}\mathbf{B}_1\mathbf{B}_1^\mathsf{T}$ term. That term is *destabilising*. It stands for the [[worst-case disturbance playing against you|worst-case-game]].
+- The state feedback gain $\mathbf{F}_\infty = -\mathbf{B}_2^\mathsf{T}\mathbf{X}_\infty$ comes from a Riccati equation with an extra $+\gamma^{-2}\mathbf{B}_1\mathbf{B}_1^\mathsf{T}$ term. That term is *destabilizing*. It stands for the [[worst-case disturbance playing against you|worst-case-game]].
 - The observer gain is scaled by $\mathbf{Z}_\infty$, which accounts for the estimator having to work against that same opponent.
 
 Now let $\gamma \to \infty$. Both extra terms vanish. The equations become the LQR and Kalman filter Riccati equations, the coupling condition is automatically true, and the central controller becomes the LQG controller. H-infinity synthesis contains H2 synthesis as its infinite-$\gamma$ limit. That is the cleanest statement of what the extra caution buys.
@@ -147,10 +147,10 @@ Now let $\gamma \to \infty$. Both extra terms vanish. The equations become the L
 
 The conditions answer "yes" or "no" for one fixed $\gamma$. To find the smallest $\gamma$, play a guessing game: **$\gamma$-iteration**, which is [[bisection|bisection]]. Guess a $\gamma$. If all three conditions hold, the best is at most that, so try smaller. If they fail, try larger. Halve the interval each time. Because the conditions fail steadily as $\gamma$ decreases and never come back, bisection is valid, and twenty or thirty steps reach three-figure accuracy.
 
-The resulting controller has the order of the generalised plant: the plant order plus the order of all the weights. A sixth-order flexible model with three first-order weights gives a ninth-order controller. So a [[model-order-reduction step|order-reduction]] before flight software is routine.
+The resulting controller has the order of the generalized plant: the plant order plus the order of all the weights. A sixth-order flexible model with three first-order weights gives a ninth-order controller. So a [[model-order-reduction step|order-reduction]] before flight software is routine.
 
 ::: warning Mixed sensitivity cancels stable plant dynamics
-The S/KS/T problem drives $\lvert S\rvert$ small at the plant's stable poles, and the algebra does it by putting controller zeros right on top of them. For a well-damped pole that is harmless. For a lightly damped [[bending mode|bending-mode]] it is a disaster. The nominal loop looks clean. But the true mode sits at a slightly different frequency, so the cancellation is not exact, and a huge internal signal builds up that the stack never shows you. The standard defences: include the mode in the uncertainty description so the cancellation is penalised; use a weight that keeps $\lvert S\rvert$ from going small in that band; or use a loop-shaping formulation with coprime-factor uncertainty, which does not cancel.
+The S/KS/T problem drives $\lvert S\rvert$ small at the plant's stable poles, and the algebra does it by putting controller zeros right on top of them. For a well-damped pole that is harmless. For a lightly damped [[bending mode|bending-mode]] it is a disaster. The nominal loop looks clean. But the true mode sits at a slightly different frequency, so the cancellation is not exact, and a huge internal signal builds up that the stack never shows you. The standard defences: include the mode in the uncertainty description so the cancellation is penalized; use a weight that keeps $\lvert S\rvert$ from going small in that band; or use a loop-shaping formulation with coprime-factor uncertainty, which does not cancel.
 :::
 
 ::: example Reading gamma on a spacecraft axis
@@ -175,11 +175,11 @@ Check them. $\lvert W_1\rvert$ is $10^3$ at DC, $0.5$ at high frequency, and cro
 
 **Try 3: push the bandwidth.** Take $\omega_n = 4\,\mathrm{rad/s}$ (so $k_p = 1920$, $k_d = 672$) with roll-off at $60\,\mathrm{rad/s}$. Now $\gamma = 1.203$, peaking at $50\,\mathrm{rad/s}$, and the effort channel peaks at $\lVert W_2KS\rVert_\infty = 1.065$. The scorecard names the culprit at once: actuator effort is binding, not tracking and not robustness. Move the roll-off back to $40\,\mathrm{rad/s}$ and $\gamma = 0.959$ at the same bandwidth.
 
-**Sanity check.** These are *achieved* values for hand-shaped controllers. A synthesis searches over every stabilising $\mathbf{K}$, so its $\gamma$ can only be smaller or equal.
+**Sanity check.** These are *achieved* values for hand-shaped controllers. A synthesis searches over every stabilizing $\mathbf{K}$, so its $\gamma$ can only be smaller or equal.
 :::
 
 ::: example An H-infinity optimum you can compute by hand
-One case has an exact answer, and it is the case that matters most. Take a stable plant with a single **right-half-plane zero** at $s = z$ (a zero with positive real part), and the one-row problem of minimising $\lVert W_1S\rVert_\infty$ alone.
+One case has an exact answer, and it is the case that matters most. Take a stable plant with a single **right-half-plane zero** at $s = z$ (a zero with positive real part), and the one-row problem of minimizing $\lVert W_1S\rVert_\infty$ alone.
 
 **Step 1: $S$ is pinned at the zero.** The plant has no gain at $z$: $G(z) = 0$. So $S(z) = 1/(1 + G(z)K(z)) = 1$, whatever the controller. The loop cannot touch that point.
 
@@ -187,7 +187,7 @@ One case has an exact answer, and it is the case that matters most. Take a stabl
 
 $$\lVert W_1S\rVert_\infty = \sup_\omega\lvert W_1(j\omega)S(j\omega)\rvert \ \ge\ \lvert W_1(z)S(z)\rvert = \lvert W_1(z)\rvert .$$
 
-No controller escapes this. It is also tight: with one such constraint, the best achievable (the infimum over stabilising controllers) equals $\lvert W_1(z)\rvert$ exactly.
+No controller escapes this. It is also tight: with one such constraint, the best achievable (the infimum over stabilizing controllers) equals $\lvert W_1(z)\rvert$ exactly.
 
 **Step 3: numbers.** A spacecraft axis with a non-collocated rate sensor (mounted away from the actuator, across flexible structure) has a right-half-plane zero at $z = 8\,\mathrm{rad/s}$. With $M = 2$ and $A = 10^{-3}$,
 
@@ -230,7 +230,7 @@ Why does the H-infinity Riccati equation for $\mathbf{X}_\infty$ carry a $+\gamm
 ::: answer
 The H-infinity problem is a game. The controller tries to make the weighted output small, while the disturbance tries to make it big, with a limited energy budget. The state-feedback half of the solution is the balance point of that game, and the worst-case disturbance turns out to be a state feedback itself: $w = \gamma^{-2}\mathbf{B}_1^\mathsf{T}\mathbf{X}_\infty x$. Putting it into the closed loop produces the $+\gamma^{-2}\mathbf{B}_1\mathbf{B}_1^\mathsf{T}\mathbf{X}$ term. The sign is plus because the disturbance pushes the state away, while $-\mathbf{B}_2\mathbf{B}_2^\mathsf{T}\mathbf{X}$ pulls it back.
 
-As $\gamma\to\infty$ the opponent's budget shrinks to nothing, the term vanishes, and you are left with the LQR equation. This also explains why the Riccati solution stops existing below some $\gamma$: the opponent's term eventually wins, no stabilising solution remains, and that is exactly what the $\gamma$-iteration detects.
+As $\gamma\to\infty$ the opponent's budget shrinks to nothing, the term vanishes, and you are left with the LQR equation. This also explains why the Riccati solution stops existing below some $\gamma$: the opponent's term eventually wins, no stabilizing solution remains, and that is exactly what the $\gamma$-iteration detects.
 :::
 
 ::: check
@@ -252,7 +252,7 @@ The plant is $G(s) = 1/(s^2 + 0.02s + 144)$: a lightly damped mode at $12\,\math
 :::
 
 ::: answer
-Mixed sensitivity makes $\lvert S\rvert$ small at the plant's stable poles by putting controller zeros on them. So the returned controller almost certainly has a lightly damped zero pair at $12\,\mathrm{rad/s}$, cancelling the plant's pole pair. The nominal $\gamma$ is then excellent, and the real loop is not. The physical mode sits a few percent away from $12\,\mathrm{rad/s}$ because the solar-array temperature or the propellant load has changed. The cancellation is incomplete, and what is left excites a mode with almost no damping and no loop authority over it.
+Mixed sensitivity makes $\lvert S\rvert$ small at the plant's stable poles by putting controller zeros on them. So the returned controller almost certainly has a lightly damped zero pair at $12\,\mathrm{rad/s}$, canceling the plant's pole pair. The nominal $\gamma$ is then excellent, and the real loop is not. The physical mode sits a few percent away from $12\,\mathrm{rad/s}$ because the solar-array temperature or the propellant load has changed. The cancellation is incomplete, and what is left excites a mode with almost no damping and no loop authority over it.
 
 Three tests to run: first, look at the controller's zeros. Second, compute $\lVert WT\rVert_\infty$ against a weight covering a $\pm 10\,\%$ shift in the mode frequency — it will be large. Third, check the internal signal from disturbance to the mode's state, which the stack does not include. This is the standard argument for coprime-factor loop shaping on flexible structures.
 :::
@@ -271,8 +271,8 @@ Tightening the allowed sensitivity peak from $2$ to $1.5$ has cut the achievable
 
 | Item | Statement |
 | --- | --- |
-| Generalised plant | $\mathbf{P}$ maps $(w, u)$ to $(z, v)$; closed loop $\mathbf{N} = \mathcal{F}_l(\mathbf{P},\mathbf{K}) = \mathbf{P}_{11} + \mathbf{P}_{12}\mathbf{K}(\mathbf{I}-\mathbf{P}_{22}\mathbf{K})^{-1}\mathbf{P}_{21}$ |
-| Mixed sensitivity | minimise $\lVert[\mathbf{W}_1\mathbf{S};\ \mathbf{W}_2\mathbf{K}\mathbf{S};\ \mathbf{W}_3\mathbf{T}]\rVert_\infty$ over stabilising $\mathbf{K}$ |
+| Generalized plant | $\mathbf{P}$ maps $(w, u)$ to $(z, v)$; closed loop $\mathbf{N} = \mathcal{F}_l(\mathbf{P},\mathbf{K}) = \mathbf{P}_{11} + \mathbf{P}_{12}\mathbf{K}(\mathbf{I}-\mathbf{P}_{22}\mathbf{K})^{-1}\mathbf{P}_{21}$ |
+| Mixed sensitivity | minimize $\lVert[\mathbf{W}_1\mathbf{S};\ \mathbf{W}_2\mathbf{K}\mathbf{S};\ \mathbf{W}_3\mathbf{T}]\rVert_\infty$ over stabilizing $\mathbf{K}$ |
 | Specification reading | $\gamma \le 1$ gives $\bar\sigma(\mathbf{S}) \le 1/\lvert W_1\rvert$, $\bar\sigma(\mathbf{K}\mathbf{S}) \le 1/\lvert W_2\rvert$, $\bar\sigma(\mathbf{T}) \le 1/\lvert W_3\rvert$ |
 | Reading $\gamma$ | $\gamma \le 1$: all met; $\gamma = 2$: a factor of two short somewhere — find the channel that peaks |
 | Performance weight | $W_1 = (s/M + \omega_B)/(s + \omega_BA)$: $\lvert S\rvert \le A$ at DC, $\le M$ at high frequency, crossing at $\omega_B/\sqrt{1 - 1/M^2}$ |
@@ -284,13 +284,13 @@ Tightening the allowed sensitivity peak from $2$ to $1.5$ has cut the achievable
 | Exact optimum | one RHP zero $z$: $\min\lVert W_1S\rVert_\infty = \lvert W_1(z)\rvert$; with $M = 2$ this gives $\omega_B \le z/2$ |
 | Pitfall | mixed sensitivity cancels stable plant poles, including lightly damped ones |
 
-The next lesson attacks the caution the small gain theorem left behind. When the uncertainty comes in separate blocks, the right measure of the smallest destabilising perturbation is not the largest singular value but the structured singular value $\mu$.
+The next lesson attacks the caution the small gain theorem left behind. When the uncertainty comes in separate blocks, the right measure of the smallest destabilizing perturbation is not the largest singular value but the structured singular value $\mu$.
 
 ::: context dgkf-paper The 1989 paper
-The paper is "State-space solutions to standard $H_2$ and $H_\infty$ control problems" by John Doyle, Keith Glover, Pramod Khargonekar and Bruce Francis, published in the *IEEE Transactions on Automatic Control* in 1989. The H-infinity idea itself goes back to George Zames in 1981. Early solutions worked with transfer functions and produced controllers of very high order. DGKF showed that the answer looks like a familiar observer-plus-state-feedback controller, the same size as the generalised plant, found from two Riccati equations. That made the method routine engineering.
+The paper is "State-space solutions to standard $H_2$ and $H_\infty$ control problems" by John Doyle, Keith Glover, Pramod Khargonekar and Bruce Francis, published in the *IEEE Transactions on Automatic Control* in 1989. The H-infinity idea itself goes back to George Zames in 1981. Early solutions worked with transfer functions and produced controllers of very high order. DGKF showed that the answer looks like a familiar observer-plus-state-feedback controller, the same size as the generalized plant, found from two Riccati equations. That made the method routine engineering.
 :::
 
-::: context generalised-plant One box, two plugs on each side
+::: context generalized-plant One box, two plugs on each side
 Every H-infinity problem, however messy, is redrawn as this picture. All the fixed parts — the vehicle, the sensors, the weights — go inside $\mathbf{P}$. The only thing left outside is the controller $\mathbf{K}$, which you get to choose.
 
 ```svg
@@ -352,7 +352,7 @@ Jacopo Riccati was an Italian mathematician of the early 1700s who studied a fam
 :::
 
 ::: context worst-case-game A tug-of-war with an opponent
-Picture a tug-of-war. You pull the state back toward zero through $\mathbf{B}_2$. An opponent pulls it away through $\mathbf{B}_1$, but the opponent has a limited amount of energy to spend, and $\gamma$ sets how much that energy counts against you. Large $\gamma$: a weak opponent, and your best play is the LQR play. Small $\gamma$: a strong opponent. Below some $\gamma$ the opponent always wins, and the Riccati equation has no stabilising solution. That boundary is the best $\gamma$ you can reach.
+Picture a tug-of-war. You pull the state back toward zero through $\mathbf{B}_2$. An opponent pulls it away through $\mathbf{B}_1$, but the opponent has a limited amount of energy to spend, and $\gamma$ sets how much that energy counts against you. Large $\gamma$: a weak opponent, and your best play is the LQR play. Small $\gamma$: a strong opponent. Below some $\gamma$ the opponent always wins, and the Riccati equation has no stabilizing solution. That boundary is the best $\gamma$ you can reach.
 :::
 
 ::: context bisection Halving the gap

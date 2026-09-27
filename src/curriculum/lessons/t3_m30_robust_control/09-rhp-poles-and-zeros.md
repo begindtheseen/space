@@ -16,7 +16,7 @@ That matters most for launch vehicles, which often have both. The **[[aerodynami
 
 First, the words. A **[[right-half-plane|rhp-picture]]** (RHP) pole is a pole with positive real part: a mode that grows by itself, like the falling broom. A right-half-plane zero is a zero with positive real part. It makes the response start off the wrong way, like the lurching video. Such a plant is called **non-minimum phase**.
 
-Take a loop $L = GK$ — plant times controller — that is **[[internally stable|internal-stability]]**, with sensitivity $S = 1/(1+L)$ and complementary sensitivity $T = 1 - S$. Internal stability forbids cancelling an unstable pole or an RHP zero between $G$ and $K$. So those factors survive into $L$. That single fact pins $S$ and $T$ down at specific points.
+Take a loop $L = GK$ — plant times controller — that is **[[internally stable|internal-stability]]**, with sensitivity $S = 1/(1+L)$ and complementary sensitivity $T = 1 - S$. Internal stability forbids canceling an unstable pole or an RHP zero between $G$ and $K$. So those factors survive into $L$. That single fact pins $S$ and $T$ down at specific points.
 
 **At an RHP zero $z$ of the plant**, $L(z) = 0$. So
 
@@ -84,7 +84,7 @@ Take the launch vehicle of the atmospheric flight module at maximum dynamic pres
 
 **Step 1: the pole.** $p = \sqrt{0.228} = 0.477\,\mathrm{rad/s}$. Its time to double is $\ln 2/p = 0.693/0.477 = 1.45\,\mathrm{s}$: left alone, any attitude error doubles every second and a half.
 
-**Step 2: the zero.** Load relief feeds back lateral acceleration from a sensor mounted forward of the centre of gravity, and that path has a **[[right-half-plane zero|wrong-way-sensor]]**. Suppose it sits at $z = 2.5\,\mathrm{rad/s}$.
+**Step 2: the zero.** Load relief feeds back lateral acceleration from a sensor mounted forward of the center of gravity, and that path has a **[[right-half-plane zero|wrong-way-sensor]]**. Suppose it sits at $z = 2.5\,\mathrm{rad/s}$.
 
 **Step 3: the peak bound.**
 
@@ -94,7 +94,7 @@ $$\lVert S\rVert_\infty \ \ge\ \frac{2.5 + 0.477}{2.5 - 0.477} = \frac{2.977}{2.
 
 **Step 5: the best possible disk margin.** Since $\lVert S - \tfrac{1}{2}\mathbf{I}\rVert_\infty \ge \lVert S\rVert_\infty - \tfrac{1}{2}$, the balanced disk margin obeys $\alpha \le 1/(1.472 - 0.5) = 1.029$. So no controller can give this vehicle better than $\pm 9.88\,\mathrm{dB}$ and $\pm 54.4^\circ$.
 
-**Now move the sensor forward**, which moves the zero down to $z = 1.5\,\mathrm{rad/s}$. The bound becomes $1.977/1.023 = 1.93 = 5.73\,\mathrm{dB}$, and $z/p = 3.14$. The window is now $0.955$ up to $0.750\,\mathrm{rad/s}$ — the floor is above the ceiling. **It is empty. There is no controller.** The vehicle cannot be both stabilised against its aerodynamic divergence and kept insensitive through that sensor. The trade must be made in the vehicle, not the software: move the accelerometer aft, blend it with an inertial measurement that has no such zero, or reduce $\mu_\alpha$ by shifting the centre of gravity.
+**Now move the sensor forward**, which moves the zero down to $z = 1.5\,\mathrm{rad/s}$. The bound becomes $1.977/1.023 = 1.93 = 5.73\,\mathrm{dB}$, and $z/p = 3.14$. The window is now $0.955$ up to $0.750\,\mathrm{rad/s}$ — the floor is above the ceiling. **It is empty. There is no controller.** The vehicle cannot be both stabilized against its aerodynamic divergence and kept insensitive through that sensor. The trade must be made in the vehicle, not the software: move the accelerometer aft, blend it with an inertial measurement that has no such zero, or reduce $\mu_\alpha$ by shifting the center of gravity.
 
 **For contrast**, the textbook pair $z = 6$, $p = 2$ gives $\lVert S\rVert_\infty \ge 8/4 = 2$ exactly, a $6.02\,\mathrm{dB}$ peak, with $z/p = 3$ and a window from $4$ down to $3\,\mathrm{rad/s}$ — also empty. That is what "uncomfortably small" means in numbers.
 :::
@@ -134,7 +134,7 @@ The fixed area is $\pi p = 1.500\,\mathrm{rad/s}$, in natural-log units.
 
 Check the middle row: $2.651/4.5 = 0.589$, and $e^{0.589} = 1.80$.
 
-So the requirement can only be met by spreading the penalty over a wide band — which means a high-bandwidth loop. And the RHP zero puts a ceiling on exactly that. The two constraints meet in the middle, and the design point is where they cross. This arithmetic, done on the back of an envelope before any controller exists, is often the most valuable half hour in a launch vehicle control programme.
+So the requirement can only be met by spreading the penalty over a wide band — which means a high-bandwidth loop. And the RHP zero puts a ceiling on exactly that. The two constraints meet in the middle, and the design point is where they cross. This arithmetic, done on the back of an envelope before any controller exists, is often the most valuable half hour in a launch vehicle control program.
 :::
 
 ## What an RHP zero does in time
@@ -208,7 +208,7 @@ Placing a controller zero on an unstable plant pole, or a controller pole on an 
 :::
 
 ::: warning The bounds are on the plant, not the controller
-$\lVert S\rVert_\infty \ge \lvert z+p\rvert/\lvert z-p\rvert$ contains no controller. A report claiming a design "achieved" a sensitivity peak below the bound means an error somewhere: a cancelled mode, a mislabelled zero, a frequency grid that missed the peak, or an analysis run on the wrong loop. Check the bound before trusting the design, every time.
+$\lVert S\rVert_\infty \ge \lvert z+p\rvert/\lvert z-p\rvert$ contains no controller. A report claiming a design "achieved" a sensitivity peak below the bound means an error somewhere: a canceled mode, a mislabeled zero, a frequency grid that missed the peak, or an analysis run on the wrong loop. Check the bound before trusting the design, every time.
 :::
 
 ## Check yourself
@@ -226,7 +226,7 @@ The move turns an impossible problem into a feasible one and cuts the unavoidabl
 
 The peak bound also caps the balanced disk margin, through $\alpha \le 1/(\lVert S\rVert_\infty - \tfrac{1}{2})$. The best achievable margin rises from $\alpha \le 1/1.7 = 0.588$ to $\alpha \le 1/0.9 = 1.111$, that is from $\pm 5.26\,\mathrm{dB}$ and $\pm 32.8^\circ$ to $\pm 10.88\,\mathrm{dB}$ and $\pm 58.1^\circ$.
 
-This is the calculation that justifies a hardware change to a programme: arithmetic on two numbers, and no amount of control design can stand in for it.
+This is the calculation that justifies a hardware change to a program: arithmetic on two numbers, and no amount of control design can stand in for it.
 :::
 
 ::: check
@@ -248,7 +248,7 @@ A design with a stable open loop achieves $\lvert S\rvert \le 0.01$ from $0$ to 
 ::: answer
 The open loop is stable, so $\int_0^\infty\ln\lvert S\rvert\,d\omega = 0$, provided the relative degree is at least two.
 
-The low band contributes at most $\ln(0.01)\times 1 = -4.605$. That negative area must be cancelled exactly by positive area. There are $10 - 1 = 9\,\mathrm{rad/s}$ between $1$ and $10$ to hold it, so the average of $\ln\lvert S\rvert$ there is at least $4.605/9 = 0.512$. That means an average $\lvert S\rvert$ of $e^{0.512} = 1.67$, and a peak of at least that.
+The low band contributes at most $\ln(0.01)\times 1 = -4.605$. That negative area must be canceled exactly by positive area. There are $10 - 1 = 9\,\mathrm{rad/s}$ between $1$ and $10$ to hold it, so the average of $\ln\lvert S\rvert$ there is at least $4.605/9 = 0.512$. That means an average $\lvert S\rvert$ of $e^{0.512} = 1.67$, and a peak of at least that.
 
 If the roll-off were faster, so that $\lvert S\rvert$ returned to one by $4\,\mathrm{rad/s}$, the same area would need $\ln M_s \ge 4.605/3 = 1.535$, a peak of at least $e^{1.535} = 4.64$ — a badly behaved loop.
 
@@ -274,7 +274,7 @@ A guidance engineer asks whether a faster inner loop would reduce the undershoot
 :::
 
 ::: answer
-No, and the identity says so directly. $\int_0^\infty y(t)e^{-zt}dt = 0$ holds for *any* internally stabilising controller, because it follows from $T(z) = 0$, which follows from the zero being in the plant.
+No, and the identity says so directly. $\int_0^\infty y(t)e^{-zt}dt = 0$ holds for *any* internally stabilizing controller, because it follows from $T(z) = 0$, which follows from the zero being in the plant.
 
 Making the loop faster shortens $\tau$, the time by which the response has settled. The bound $y_{us} \ge (1-\varepsilon)/(e^{z\tau}-1)$ then gets *larger*. At $z = 4$, settling to five percent in $1\,\mathrm{s}$ needs at least $0.95/(e^4 - 1) = 0.95/53.6 = 0.0177$. Settling in $0.3\,\mathrm{s}$ needs at least $0.95/(e^{1.2}-1) = 0.409$.
 
@@ -299,7 +299,7 @@ A faster loop trades a shorter wrong-way excursion for a much deeper one. The on
 The next lesson leaves the single frozen operating point behind. A launch vehicle's plant changes all through its flight, and designing a controller for each condition and blending between them is a practice with a well-known failure mode and a well-developed remedy.
 
 ::: context aero-instability Why a rocket is aerodynamically unstable
-Air pushes on a rocket at its **centre of pressure**. On most launch vehicles that point sits *ahead* of the centre of gravity. So when the nose tilts a little off the airflow, the air pushes it further off — like trying to throw a dart backwards. The strength of that push, per unit of tilt, is $\mu_\alpha$ (units $\mathrm{s^{-2}}$), and it makes the tilt grow like $e^{\sqrt{\mu_\alpha}\,t}$. It peaks near maximum dynamic pressure, a minute or so into flight, which is why that is where the control loop is hardest.
+Air pushes on a rocket at its **center of pressure**. On most launch vehicles that point sits *ahead* of the center of gravity. So when the nose tilts a little off the airflow, the air pushes it further off — like trying to throw a dart backwards. The strength of that push, per unit of tilt, is $\mu_\alpha$ (units $\mathrm{s^{-2}}$), and it makes the tilt grow like $e^{\sqrt{\mu_\alpha}\,t}$. It peaks near maximum dynamic pressure, a minute or so into flight, which is why that is where the control loop is hardest.
 :::
 
 ::: context rhp-picture Poles and zeros on the map
@@ -328,7 +328,7 @@ This is the booster example to scale: the unstable pole at $0.477$ (cross), the 
 :::
 
 ::: context internal-stability Internal stability
-A loop is **internally stable** when *every* signal inside it stays bounded — not only the output you are watching, but also the controller's command, the actuator position, everything. It is possible to build a loop whose output transfer function looks stable while an internal signal quietly grows, because an unstable factor was cancelled between plant and controller. Internal stability rules that out, and that is exactly why the plant's unstable poles and RHP zeros must survive into $L$.
+A loop is **internally stable** when *every* signal inside it stays bounded — not only the output you are watching, but also the controller's command, the actuator position, everything. It is possible to build a loop whose output transfer function looks stable while an internal signal quietly grows, because an unstable factor was canceled between plant and controller. Internal stability rules that out, and that is exactly why the plant's unstable poles and RHP zeros must survive into $L$.
 :::
 
 ::: context blaschke The Blaschke factor
@@ -344,7 +344,7 @@ Put frequency on a line. The unstable pole says "your bandwidth must be to the r
 :::
 
 ::: context wrong-way-sensor How a sensor's position can make a wrong-way response
-One way this happens: a sideways push at the tail of a long body moves the centre of gravity in the push's direction, but also rotates the body, swinging the nose the *other* way. A sensor near the tail feels the push direction. A sensor far enough forward — past a point called the **centre of percussion** — feels the nose swing first, the wrong way. That wrong-way start is the fingerprint of an RHP zero, and it comes from the sensor's position, not from any controller.
+One way this happens: a sideways push at the tail of a long body moves the center of gravity in the push's direction, but also rotates the body, swinging the nose the *other* way. A sensor near the tail feels the push direction. A sensor far enough forward — past a point called the **center of percussion** — feels the nose swing first, the wrong way. That wrong-way start is the fingerprint of an RHP zero, and it comes from the sensor's position, not from any controller.
 :::
 
 ::: context bode-integral-history Where the integral comes from

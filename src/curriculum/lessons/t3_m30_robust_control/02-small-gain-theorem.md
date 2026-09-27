@@ -8,7 +8,7 @@ covers:
 
 Hold a microphone near the loudspeaker it feeds. A small sound goes into the microphone, comes out of the speaker, and goes back into the microphone. If each trip round the loop makes the sound *quieter*, it fades away. If each trip makes it *louder*, it grows until the speaker squeals. What decides it is one number: how much the loop multiplies a sound on each trip. Below one, silence. Above one, a squeal.
 
-That is the whole idea of this lesson. You now have a set of plants and a weight that bounds it. The question the rest of the module answers, in more and more refined ways, is: does one controller stabilise *every* plant in that set? The **small gain theorem** is the first and bluntest answer, and every later test is a sharpened version of it. It says a feedback loop around a bounded uncertainty cannot go unstable if the gain round the loop is less than one at every frequency.
+That is the whole idea of this lesson. You now have a set of plants and a weight that bounds it. The question the rest of the module answers, in more and more refined ways, is: does one controller stabilize *every* plant in that set? The **small gain theorem** is the first and bluntest answer, and every later test is a sharpened version of it. It says a feedback loop around a bounded uncertainty cannot go unstable if the gain round the loop is less than one at every frequency.
 
 That sounds almost too simple to be useful. It becomes useful because of a rearrangement. Whatever the uncertainty description — additive, multiplicative at either end, or parameters pulled out as a block — the whole closed loop can be redrawn as exactly **[[two blocks in feedback|m-delta-picture]]**: the unknown $\boldsymbol{\Delta}$, and a known, stable transfer matrix $\mathbf{M}$ that contains the plant, the controller and the weights. All the robust-stability information is then in one number, $\lVert\mathbf{M}\rVert_\infty$, computed from things you know.
 
@@ -191,7 +191,7 @@ A peak above one means "not proven stable", not "unstable". A peak below one mea
 ## Check yourself
 
 ::: check
-A loop has $\lVert WT\rVert_\infty = 0.4$. By what factor can the modelled uncertainty be increased before robust stability is lost, and what does that factor mean physically?
+A loop has $\lVert WT\rVert_\infty = 0.4$. By what factor can the modeled uncertainty be increased before robust stability is lost, and what does that factor mean physically?
 :::
 
 ::: answer
@@ -201,7 +201,7 @@ Physically: if the weight said twenty percent relative error at low frequency an
 :::
 
 ::: check
-Your plant is $G(s) = 10/(s - 2)$, unstable, and you have a stabilising controller. A colleague proposes the set $G_p = (1 + W\Delta)G$ to model a $\pm 25\,\%$ error in the unstable pole location. What is wrong?
+Your plant is $G(s) = 10/(s - 2)$, unstable, and you have a stabilizing controller. A colleague proposes the set $G_p = (1 + W\Delta)G$ to model a $\pm 25\,\%$ error in the unstable pole location. What is wrong?
 :::
 
 ::: answer
@@ -239,7 +239,7 @@ Explain, using the tightness construction, why the small gain theorem is exact f
 ::: answer
 The construction picks $\boldsymbol{\Delta}(j\omega_0) = \mathbf{v}_1\mathbf{u}_1^\mathsf{H}$, built from the singular vectors of $\mathbf{M}(j\omega_0)$. That matrix is in general full — every entry nonzero — and complex.
 
-If the allowed set is all norm-bounded stable perturbations, this matrix is in it, the loop really does go marginally unstable, and the bound is reached. If the allowed set is diagonal and real, $\mathbf{v}_1\mathbf{u}_1^\mathsf{H}$ is almost never in it: the worst singular vectors would have to line up with the coordinate axes and the phases would have to come out real. So the smallest *allowed* destabilising perturbation is larger — possibly much larger — than $1/\lVert\mathbf{M}\rVert_\infty$, and the test rejects designs that are in fact safe. The structured singular value is defined as the reciprocal of the size of the smallest allowed destabilising perturbation, which makes it exact by construction.
+If the allowed set is all norm-bounded stable perturbations, this matrix is in it, the loop really does go marginally unstable, and the bound is reached. If the allowed set is diagonal and real, $\mathbf{v}_1\mathbf{u}_1^\mathsf{H}$ is almost never in it: the worst singular vectors would have to line up with the coordinate axes and the phases would have to come out real. So the smallest *allowed* destabilizing perturbation is larger — possibly much larger — than $1/\lVert\mathbf{M}\rVert_\infty$, and the test rejects designs that are in fact safe. The structured singular value is defined as the reciprocal of the size of the smallest allowed destabilizing perturbation, which makes it exact by construction.
 :::
 
 ## Summary
@@ -258,7 +258,7 @@ If the allowed set is all norm-bounded stable perturbations, this matrix is in i
 | Pessimism | free phase, free direction, ignored structure, and the weight's own slack |
 | Robustness margin | $1/\lVert\mathbf{M}\rVert_\infty$ is the factor by which the uncertainty can be scaled |
 
-The next lesson steps back to define the two norms this test is built on — the H-infinity norm used here, and the H2 norm that LQG minimises — and says exactly what physical quantity each one measures.
+The next lesson steps back to define the two norms this test is built on — the H-infinity norm used here, and the H2 norm that LQG minimizes — and says exactly what physical quantity each one measures.
 
 ::: context m-delta-picture Every robust-stability problem looks like this
 However the uncertainty was described, and however complicated the vehicle, the analysis redraws it as one loop with two boxes. The top box is everything you do not know, scaled to size one. The bottom box is everything you do know — plant model, controller, weights — lumped into one transfer matrix $\mathbf{M}$.
@@ -331,7 +331,7 @@ Combine a constant of size at most one (to set the magnitude) with an all-pass f
 :::
 
 ::: context booster-instability A rocket that is unstable only in the air
-Many launch vehicles are aerodynamically unstable: the centre of pressure, where the air's side force acts, sits ahead of the centre of mass. Any small angle of attack makes the air push the nose further off, like a dart thrown tail first. The engine gimbal has to hold it straight.
+Many launch vehicles are aerodynamically unstable: the center of pressure, where the air's side force acts, sits ahead of the center of mass. Any small angle of attack makes the air push the nose further off, like a dart thrown tail first. The engine gimbal has to hold it straight.
 
 That instability appears in the model as a right-half-plane pole whose size grows with dynamic pressure. Above the atmosphere the air is gone and the pole disappears, leaving a plain double integrator. A single uncertainty set covering both flight phases must allow the number of unstable poles to change, which the ordinary multiplicative form cannot do.
 :::

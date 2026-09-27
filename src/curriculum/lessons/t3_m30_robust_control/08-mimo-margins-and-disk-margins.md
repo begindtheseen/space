@@ -22,7 +22,7 @@ Here is the classical procedure. **[[Break the loop|loop-breaking]]** at one poi
 
 Three things are missing.
 
-**Only one kind of error at a time.** Each margin moves the Nyquist plot in one way only. An actuator that is $3\,\mathrm{dB}$ too strong *and* $30^\circ$ late is not covered by a $6\,\mathrm{dB}$ gain margin or by a $60^\circ$ phase margin. Yet it is completely ordinary hardware behaviour.
+**Only one kind of error at a time.** Each margin moves the Nyquist plot in one way only. An actuator that is $3\,\mathrm{dB}$ too strong *and* $30^\circ$ late is not covered by a $6\,\mathrm{dB}$ gain margin or by a $60^\circ$ phase margin. Yet it is completely ordinary hardware behavior.
 
 **Only one loop at a time.** On a coupled vehicle the other loops are not at nominal. They have their own errors, at the same moment. The classical procedure says nothing about that case.
 
@@ -77,11 +77,11 @@ The gain range comes from putting real values $\delta = \pm\alpha$ into $f$. For
 Read the two ranges carefully. They are the *edges* of the disk: the gain range is the disk's pure-gain errors, and the phase range is its pure-phase errors. Combinations of a gain error and a phase error are covered when the combined factor lies inside the disk — which is a lot of combinations, but not the extreme corner of "full gain error *and* full phase error". To test a particular combination, invert $f$ and check that $\lvert\delta\rvert < \alpha$.
 
 ::: note Why the phase range has to be ±2 arctan(α/2)
-The image disk crosses the real axis at the two ends of the gain range. So its centre $c$ is their average and its radius $R$ is half their difference:
+The image disk crosses the real axis at the two ends of the gain range. So its center $c$ is their average and its radius $R$ is half their difference:
 
 $$c = \frac{1}{2}\left(\frac{2-\alpha}{2+\alpha} + \frac{2+\alpha}{2-\alpha}\right) = \frac{4+\alpha^2}{4-\alpha^2}, \qquad R = \frac{1}{2}\left(\frac{2+\alpha}{2-\alpha} - \frac{2-\alpha}{2+\alpha}\right) = \frac{4\alpha}{4-\alpha^2}.$$
 
-The biggest phase any point of the disk can have is where a line from the origin barely touches the disk. That touching line, the radius to the touching point, and the line to the centre make a right triangle, so the angle is $\arcsin(R/c) = \arcsin\!\big(4\alpha/(4+\alpha^2)\big)$. Now use the identity $\sin(2\arctan x) = 2x/(1+x^2)$ with $x = \alpha/2$: $2(\alpha/2)/(1 + \alpha^2/4) = 4\alpha/(4 + \alpha^2)$. The two match, so the phase limit is exactly $2\arctan(\alpha/2)$.
+The biggest phase any point of the disk can have is where a line from the origin barely touches the disk. That touching line, the radius to the touching point, and the line to the center make a right triangle, so the angle is $\arcsin(R/c) = \arcsin\!\big(4\alpha/(4+\alpha^2)\big)$. Now use the identity $\sin(2\arctan x) = 2x/(1+x^2)$ with $x = \alpha/2$: $2(\alpha/2)/(1 + \alpha^2/4) = 4\alpha/(4 + \alpha^2)$. The two match, so the phase limit is exactly $2\arctan(\alpha/2)$.
 :::
 
 ### The skew and the two classical peaks
@@ -173,7 +173,7 @@ $$\text{gain } [0.496,\ 2.018] = \pm 6.10\,\mathrm{dB}, \qquad \text{phase } \pm
 
 The margin has fallen from $\pm 13.1\,\mathrm{dB}$ to $\pm 6.1\,\mathrm{dB}$, and from $\pm 65^\circ$ to $\pm 37^\circ$ — from comfortable to right at the traditional requirement — only by letting both channels be wrong at once.
 
-**The perturbation itself.** Better than a number is the error that breaks the loop. Search the disk at $\omega^*$ for the $\boldsymbol{\Delta}$ that makes $\det(\mathbf{I} - \mathbf{M}\boldsymbol{\Delta}) = 0$. Both $\delta_1$ and $\delta_2$ come out with size $0.675$ and phase $-121.1^\circ$. Through $f$, that is the **[[same factor on both channels|destabilising-pair]]**:
+**The perturbation itself.** Better than a number is the error that breaks the loop. Search the disk at $\omega^*$ for the $\boldsymbol{\Delta}$ that makes $\det(\mathbf{I} - \mathbf{M}\boldsymbol{\Delta}) = 0$. Both $\delta_1$ and $\delta_2$ come out with size $0.675$ and phase $-121.1^\circ$. Through $f$, that is the **[[same factor on both channels|destabilizing-pair]]**:
 
 $$f_1 = f_2 = 0.723\,\angle\,{-33.1^\circ}\quad(-2.81\,\mathrm{dB}).$$
 
@@ -183,7 +183,7 @@ Apply that to both actuators and $\det(\mathbf{I} + \mathbf{F}\mathbf{L}(j\omega
 :::
 
 ::: warning An infinite gain margin is a warning sign, not a result
-Any loop whose Nyquist plot never crosses the negative real axis reports an infinite gain margin, and every proportional-derivative loop on a rigid body does. The number comes from an idealised model with no actuator lag, no computation delay and no structural dynamics. Add any of them and it becomes finite. When a margin report contains an infinity, compute the disk margin instead, and check it against a model that includes the actuator.
+Any loop whose Nyquist plot never crosses the negative real axis reports an infinite gain margin, and every proportional-derivative loop on a rigid body does. The number comes from an idealized model with no actuator lag, no computation delay and no structural dynamics. Add any of them and it becomes finite. When a margin report contains an infinity, compute the disk margin instead, and check it against a model that includes the actuator.
 :::
 
 ::: warning Where you break the loop changes the answer
@@ -235,7 +235,7 @@ The multi-loop figure bounds what the vehicle can survive when both actuators ar
 
 The loop-at-a-time figures are still worth reporting as diagnostics. A big gap between them and the multi-loop number is itself information: it says the coupling is doing the damage, and it points the redesign at the coupling rather than at the individual loops.
 
-The right report: the multi-loop disk margin with its frequency, the loop-at-a-time margins per channel, the break point used, and the destabilising perturbation if the multi-loop number is close to the limit.
+The right report: the multi-loop disk margin with its frequency, the loop-at-a-time margins per channel, the break point used, and the destabilizing perturbation if the multi-loop number is close to the limit.
 :::
 
 ::: check
@@ -281,7 +281,7 @@ The upper bound came from $\lVert T\rVert_\infty$, so the complementary sensitiv
 | Multi-loop | $\alpha = 1/\sup_\omega\mu_{\boldsymbol{\Delta}}(\tfrac{1}{2}\mathbf{I} - \mathbf{T})$, $\boldsymbol{\Delta}$ diagonal complex; exact for three or fewer channels |
 | Mildly coupled example | per-axis PM $62.3^\circ$ and infinite GM; multi-loop $\alpha = 1.012$, $\pm 9.68\,\mathrm{dB}$, $\pm 53.7^\circ$ |
 | Momentum-bias example | per-axis PM $65.2^\circ$, loop-at-a-time $\pm 13.1\,\mathrm{dB}$; multi-loop $\pm 6.10\,\mathrm{dB}$, $\pm 37.3^\circ$ |
-| Destabilising pair | $0.723\angle{-33.1^\circ}$ on both channels together puts a pole at $0.14\,\mathrm{rad/s}$ |
+| Destabilizing pair | $0.723\angle{-33.1^\circ}$ on both channels together puts a pole at $0.14\,\mathrm{rad/s}$ |
 
 The next lesson turns from what the controller does to what no controller can do: the bandwidth and sensitivity limits set by right-half-plane poles and zeros.
 
@@ -317,7 +317,7 @@ No amount of extra gain pushes it through $-1$, so the gain margin is "infinite"
 :::
 
 ::: context frozen-envelope Margins across the whole flight
-A launch vehicle's aerodynamics, mass and bending modes change every second. A margin computed at one instant describes a vehicle that exists for that instant only. Flight programs compute margins at many **frozen** points along the trajectory and check every one, then run thousands of nonlinear simulations with randomised errors — Monte Carlo — to catch saturation, rate limits and slosh. The flight qualification lesson at the end of this module shows such a sweep.
+A launch vehicle's aerodynamics, mass and bending modes change every second. A margin computed at one instant describes a vehicle that exists for that instant only. Flight programs compute margins at many **frozen** points along the trajectory and check every one, then run thousands of nonlinear simulations with randomized errors — Monte Carlo — to catch saturation, rate limits and slosh. The flight qualification lesson at the end of this module shows such a sweep.
 :::
 
 ::: context skew What the skew does
@@ -360,7 +360,7 @@ The widest-phase points have a gain of exactly $1$, so $\pm 57.2^\circ$ is a pur
 Computing $\mu$ exactly is very hard in general, so tools compute an upper bound by searching over diagonal scalings $\mathbf{D}$. John Doyle proved in 1982 that this upper bound equals $\mu$ exactly when the structure is small enough — in particular, for up to three independent complex scalar blocks. A three-axis attitude loop, with one complex error per axis, falls inside that case. With four or more channels the bound can be pessimistic.
 :::
 
-::: context destabilising-pair Where the killer error sits
+::: context destabilizing-pair Where the killer error sits
 The multi-loop margin $\alpha = 0.675$ makes this disk of allowed factors $f$. The error that breaks the loop sits right on its edge, at $0.723\angle{-33.1^\circ}$ — the same on both channels.
 
 ```svg

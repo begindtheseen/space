@@ -24,7 +24,7 @@ $$\Pi = \{\,\mathbf{G}_p(s) : \mathbf{G}_p = \mathcal{F}(\mathbf{G}, \mathbf{W},
 
 Read it as: "every plant you get by plugging some $\boldsymbol{\Delta}$ of size at most one into the known wiring $\mathcal{F}$". Two agreements make this work.
 
-First, $\boldsymbol{\Delta}$ is **normalised** — scaled so that its size limit is exactly one. All the information about *how big* the error is, and *at which frequencies*, is moved into the **weight** $\mathbf{W}(s)$: a stable, known transfer function that you choose. The unknown is left as a plain "anything up to size one".
+First, $\boldsymbol{\Delta}$ is **normalized** — scaled so that its size limit is exactly one. All the information about *how big* the error is, and *at which frequencies*, is moved into the **weight** $\mathbf{W}(s)$: a stable, known transfer function that you choose. The unknown is left as a plain "anything up to size one".
 
 Second, $\boldsymbol{\Delta}$ is a **transfer function**, not a single number. It is an unknown stable system whose gain is at most one at every frequency:
 
@@ -42,7 +42,7 @@ The bluntest description: add an unknown piece of limited size.
 
 $$\mathbf{G}_p = \mathbf{G} + \mathbf{W}_A\,\boldsymbol{\Delta}, \qquad \lVert\boldsymbol{\Delta}\rVert_\infty \le 1.$$
 
-Picture it for a single-input plant. At each frequency, $G(j\omega)$ is one point in the complex plane. The true plant lies somewhere in a disk of radius $\lvert W_A(j\omega)\rvert$ centred on that point. The weight $W_A$ carries the **absolute** error — "off by this much" — so it has the same units as the plant. For a torque-to-angle plant that is $\mathrm{rad/(N\,m)}$.
+Picture it for a single-input plant. At each frequency, $G(j\omega)$ is one point in the complex plane. The true plant lies somewhere in a disk of radius $\lvert W_A(j\omega)\rvert$ centered on that point. The weight $W_A$ carries the **absolute** error — "off by this much" — so it has the same units as the plant. For a torque-to-angle plant that is $\mathrm{rad/(N\,m)}$.
 
 How big must the weight be? At every frequency, at least as big as the worst error in the set:
 
@@ -50,7 +50,7 @@ $$\lvert W_A(j\omega)\rvert \ \ge\ l_A(\omega) \ \equiv\ \max_{\mathbf{G}_p \in 
 
 The curve $l_A(\omega)$ is the **envelope**, the top edge of all the errors ($\equiv$ means "is defined as"). You fit a low-order transfer function above it. It must be stable and **[[minimum-phase|minimum-phase]]**, so that the analysis can invert it without creating right-half-plane trouble of its own. And it must sit above *everywhere*. A weight that dips below the envelope at one frequency leaves a plant uncovered. Robust stability is a promise about *every* plant in the set, and one uncovered plant breaks the promise.
 
-Additive form is the right choice where the nominal plant is small or zero: near an anti-resonance, or above the last mode you modelled. Its weakness: a five percent error on a plant with gain $10^4$ is an additive weight of $500$, a number that means nothing on its own.
+Additive form is the right choice where the nominal plant is small or zero: near an anti-resonance, or above the last mode you modeled. Its weakness: a five percent error on a plant with gain $10^4$ is an additive weight of $500$, a number that means nothing on its own.
 
 ## Multiplicative uncertainty, at the input and at the output
 
@@ -113,7 +113,7 @@ Back to the walk to school. Instead of "ten to fifteen minutes", you could say *
 
 **Parametric** uncertainty does the same for a plant. It keeps the model's equations and admits that some of its numbers are ranges, called **intervals**: inertia $J \in [102, 138]\,\mathrm{kg\,m^2}$, first bending mode $\omega_1 \in [10.8, 13.2]\,\mathrm{rad/s}$, damping $\zeta_1 \in [0.002, 0.01]$. The unknown block that comes out is **real** — an actual number, with no phase — and often **repeated**: one scalar $\delta_J \in [-1, 1]$ may appear in four places in the state-space model. It is not a full complex matrix.
 
-This is the most honest description there is, and the hardest to analyse — a tension that runs through the whole subject. Covering a set of real parameters with a complex disk of the same size is always *allowed*, but can be wildly pessimistic: the disk contains plants with any phase at every frequency, while the real family's phase is pinned by the parameter.
+This is the most honest description there is, and the hardest to analyze — a tension that runs through the whole subject. Covering a set of real parameters with a complex disk of the same size is always *allowed*, but can be wildly pessimistic: the disk contains plants with any phase at every frequency, while the real family's phase is pinned by the parameter.
 
 ::: example What covering a shifted resonance really costs
 Take one axis of a spacecraft with a rigid body and one solar-array mode:
@@ -238,14 +238,14 @@ Take the upper envelope over a dense grid of the uncertain parameters, fit a sta
 
 | Item | Statement |
 | --- | --- |
-| Plant set | $\Pi = \{\mathbf{G}_p = \mathcal{F}(\mathbf{G}, \mathbf{W}, \boldsymbol{\Delta}) : \lVert\boldsymbol{\Delta}\rVert_\infty \le 1\}$; the weight carries the size, $\boldsymbol{\Delta}$ is a normalised unknown transfer function |
+| Plant set | $\Pi = \{\mathbf{G}_p = \mathcal{F}(\mathbf{G}, \mathbf{W}, \boldsymbol{\Delta}) : \lVert\boldsymbol{\Delta}\rVert_\infty \le 1\}$; the weight carries the size, $\boldsymbol{\Delta}$ is a normalized unknown transfer function |
 | Additive | $\mathbf{G}_p = \mathbf{G} + \mathbf{W}_A\boldsymbol{\Delta}$; $\lvert W_A\rvert$ has the units of $\mathbf{G}$; use near plant zeros |
 | Output multiplicative | $\mathbf{G}_p = (\mathbf{I} + \mathbf{W}_O\boldsymbol{\Delta})\mathbf{G}$; sensor and alignment errors |
 | Input multiplicative | $\mathbf{G}_p = \mathbf{G}(\mathbf{I} + \mathbf{W}_I\boldsymbol{\Delta})$; actuator errors; differs from the output form for MIMO plants |
 | Envelope | $l_I(\omega) = \max_\Pi\bar{\sigma}((\mathbf{G}_p - \mathbf{G})\mathbf{G}^{-1})$; the weight must sit above it at every frequency |
 | Standard weight | $W(s) = (Ts + r_0)/((T/r_\infty)s + 1)$: $r_0$ at DC, $r_\infty$ at high frequency, corner near $1/T$ |
 | Actuator example | $k\in[0.8,1.2]$, $\tau\in[0,10]\,\mathrm{ms}$: $l_I(0) = 0.2$, reaches $1$ at $92.7\,\mathrm{rad/s}$, tops out at $2.2$; weight $(0.016s + 0.2)/(0.0064s + 1)$ reaches $1$ at $66.8\,\mathrm{rad/s}$ |
-| Parametric | real interval parameters in a fixed structure; $\boldsymbol{\Delta}$ real, possibly repeated; most honest, hardest to analyse |
+| Parametric | real interval parameters in a fixed structure; $\boldsymbol{\Delta}$ real, possibly repeated; most honest, hardest to analyze |
 | Unstructured | full complex block, any phase and direction; cheap tests, pessimistic verdicts |
 | Cost of covering | a $\pm 10\,\%$ shift of a $\zeta = 0.005$ mode at $12\,\mathrm{rad/s}$ reads as a relative error of $48.7$ at its anti-resonance |
 
@@ -270,7 +270,7 @@ So $\bar{\sigma}$ is the worst-case gain of the matrix over every input directio
 :::
 
 ::: context disk-versus-hardware The disk is far bigger than the hardware
-Here is the actuator from the worked example at one frequency, $100\,\mathrm{rad/s}$. The blue disk is everything the multiplicative description allows: centre $1$ (the nominal), radius $\lvert W(j100)\rvert = 1.36$. The orange patch is what the real actuator can do there: gain $k$ from $0.8$ to $1.2$, phase lag $\omega\tau$ from $0$ to $1\,\mathrm{rad}$.
+Here is the actuator from the worked example at one frequency, $100\,\mathrm{rad/s}$. The blue disk is everything the multiplicative description allows: center $1$ (the nominal), radius $\lvert W(j100)\rvert = 1.36$. The orange patch is what the real actuator can do there: gain $k$ from $0.8$ to $1.2$, phase lag $\omega\tau$ from $0$ to $1\,\mathrm{rad}$.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 200" font-family="Inter, Arial, sans-serif">

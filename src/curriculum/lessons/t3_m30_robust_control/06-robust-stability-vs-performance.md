@@ -49,7 +49,7 @@ because $L/(1 + L)$ is the complementary sensitivity $T$.
 
 $$S_p = \frac{S}{1 + W_IT\Delta}, \qquad \lvert W_PS_p\rvert = \frac{\lvert W_PS\rvert}{\lvert 1 + W_IT\Delta\rvert}.$$
 
-**Step 4: the worst case.** The top does not depend on $\Delta$. The bottom is a number $1 + W_IT\Delta$ that can sit anywhere in a [[disk centred on 1|worst-case-disk]] with radius $\lvert W_IT\rvert$. The worst $\Delta$ makes the bottom as small as possible, by pointing $W_IT\Delta$ straight at $-1$. Then $\lvert 1 + W_IT\Delta\rvert = 1 - \lvert W_IT\rvert$, which is positive exactly when robust stability holds. So
+**Step 4: the worst case.** The top does not depend on $\Delta$. The bottom is a number $1 + W_IT\Delta$ that can sit anywhere in a [[disk centered on 1|worst-case-disk]] with radius $\lvert W_IT\rvert$. The worst $\Delta$ makes the bottom as small as possible, by pointing $W_IT\Delta$ straight at $-1$. Then $\lvert 1 + W_IT\Delta\rvert = 1 - \lvert W_IT\rvert$, which is positive exactly when robust stability holds. So
 
 $$\sup_{\lvert\Delta\rvert\le 1}\lvert W_PS_p\rvert = \frac{\lvert W_PS\rvert}{1 - \lvert W_IT\rvert}.$$
 
@@ -135,7 +135,7 @@ the sum condition, derived a second way.
 
 **Checking it on the failing design.** Evaluate $\mathbf{N}$ at $16.05\,\mathrm{rad/s}$ and run a scaling computation: it returns $\mu = 1.2943$, agreeing with the sum to fourteen digits. Meanwhile $\bar{\sigma}(\mathbf{N}) = 1.639$ at the same frequency. Even here — two scalar blocks, the simplest structure there is — the unstructured test overstates the shortfall by twenty-seven percent ($1.639/1.294 = 1.27$). On a real multivariable problem the gap is larger, and $\mu$ is the only honest number.
 
-A related quantity worth knowing by name is **skewed $\mu$**, written $\mu_s$. Ordinary $\mu$ asks "is performance met for the whole uncertainty set?" and returns a scaled yes-or-no. Skewed $\mu$ holds the performance block at size one and asks how far the *uncertainty* can be scaled up or down before performance is lost. That is usually the number a programme actually wants: not "did we pass" but "by how much".
+A related quantity worth knowing by name is **skewed $\mu$**, written $\mu_s$. Ordinary $\mu$ asks "is performance met for the whole uncertainty set?" and returns a scaled yes-or-no. Skewed $\mu$ holds the performance block at size one and asks how far the *uncertainty* can be scaled up or down before performance is lost. That is usually the number a program actually wants: not "did we pass" but "by how much".
 
 ::: example Fixing it, and what the fix costs
 **Diagnose.** The failing design has $\lVert S\rVert_\infty = 1.488$. With $M = 2$ in the performance weight, that peak alone contributes about $1.488/2 = 0.744$ to the robust performance sum near crossover, leaving almost nothing for the uncertainty term.
@@ -150,7 +150,7 @@ and the robust performance sum peaks at $0.837$ at $25.9\,\mathrm{rad/s}$. That 
 
 **Sanity check.** The sum's peak ($0.837$) is less than the two separate peaks added ($0.532 + 0.312 = 0.844$), as it must be, because the two separate peaks happen at different frequencies.
 
-**What it cost.** High-frequency roll-off. The controller now has one pole of attenuation above $300\,\mathrm{rad/s}$ instead of two above $80\,\mathrm{rad/s}$. It passes more sensor noise to the actuator and offers less protection against unmodelled [[structural modes|structural-modes]] above a few hundred rad/s. That is the real trade, and the robust performance number found it. Slowing the loop down would have been the wrong answer.
+**What it cost.** High-frequency roll-off. The controller now has one pole of attenuation above $300\,\mathrm{rad/s}$ instead of two above $80\,\mathrm{rad/s}$. It passes more sensor noise to the actuator and offers less protection against unmodeled [[structural modes|structural-modes]] above a few hundred rad/s. That is the real trade, and the robust performance number found it. Slowing the loop down would have been the wrong answer.
 :::
 
 ::: warning Robust performance is not robust stability with a smaller number
@@ -176,7 +176,7 @@ A requirements document asks for $\lvert S\rvert < 0.1$ up to $30\,\mathrm{rad/s
 ::: answer
 The performance requirement means $\lvert W_P\rvert > 10$ up to $30\,\mathrm{rad/s}$. The uncertainty weight is above $1$ from $20\,\mathrm{rad/s}$ upward. So from $20$ to $30\,\mathrm{rad/s}$ both weights exceed one, $\min(\lvert W_P\rvert, \lvert W_I\rvert) > 1$, and robust performance is impossible for *any* controller.
 
-Nothing needs to be designed to know this; two magnitude plots settle it. The conversation to have is which number moves. Either tighten the actuator specification so $\lvert W_I\rvert$ crosses one above $30\,\mathrm{rad/s}$, or relax the performance bandwidth to below $20\,\mathrm{rad/s}$. This check catches a surprising number of requirement sets before a programme spends months failing to meet them.
+Nothing needs to be designed to know this; two magnitude plots settle it. The conversation to have is which number moves. Either tighten the actuator specification so $\lvert W_I\rvert$ crosses one above $30\,\mathrm{rad/s}$, or relax the performance bandwidth to below $20\,\mathrm{rad/s}$. This check catches a surprising number of requirement sets before a program spends months failing to meet them.
 :::
 
 ::: check
@@ -200,13 +200,13 @@ Lowering $\omega_B$ moves the corner of the weight down but leaves the high-freq
 :::
 
 ::: check
-A programme reports RS with $\mu = 0.6$ and RP with $\mu = 1.4$. A junior engineer suggests reporting only the RS figure, because "stability is the safety-critical property". How do you respond?
+A program reports RS with $\mu = 0.6$ and RP with $\mu = 1.4$. A junior engineer suggests reporting only the RS figure, because "stability is the safety-critical property". How do you respond?
 :::
 
 ::: answer
-Stability is necessary, not sufficient, and the RP figure is telling you something specific: there is a plant in the modelled set on which the loop is stable but the weighted performance is missed by a factor of $1.4$. If the performance weight encodes a pointing requirement, that is a mission failure rather than a lost vehicle — but it is still a failure, and it will be found in flight instead of in analysis.
+Stability is necessary, not sufficient, and the RP figure is telling you something specific: there is a plant in the modeled set on which the loop is stable but the weighted performance is missed by a factor of $1.4$. If the performance weight encodes a pointing requirement, that is a mission failure rather than a lost vehicle — but it is still a failure, and it will be found in flight instead of in analysis.
 
-The right report carries both numbers with their weights, plus the skewed-$\mu$ figure saying what fraction of the modelled uncertainty *can* be tolerated while still meeting performance. And if the performance weight was written more aggressively than the real requirement — common, because designers add margin into weights — the right action is to rewrite the weight to match the requirement and rerun, not to drop the test.
+The right report carries both numbers with their weights, plus the skewed-$\mu$ figure saying what fraction of the modeled uncertainty *can* be tolerated while still meeting performance. And if the performance weight was written more aggressively than the real requirement — common, because designers add margin into weights — the right action is to rewrite the weight to match the requirement and rerun, not to drop the test.
 :::
 
 ## Summary
@@ -232,7 +232,7 @@ A space telescope has to hold its aim while a camera exposure runs. The Hubble S
 :::
 
 ::: context worst-case-disk The worst perturbation, as a picture
-For each possible $\Delta$ with $\lvert\Delta\rvert \le 1$, the number $1 + W_IT\Delta$ lands somewhere in a disk centred on $1$ with radius $\lvert W_IT\rvert$. Drawn here for the failing design at $16.05\,\mathrm{rad/s}$, where the radius is $0.417$. The point of the disk closest to zero is at distance $1 - 0.417 = 0.583$, and that is the smallest the denominator can be.
+For each possible $\Delta$ with $\lvert\Delta\rvert \le 1$, the number $1 + W_IT\Delta$ lands somewhere in a disk centered on $1$ with radius $\lvert W_IT\rvert$. Drawn here for the failing design at $16.05\,\mathrm{rad/s}$, where the radius is $0.417$. The point of the disk closest to zero is at distance $1 - 0.417 = 0.583$, and that is the smallest the denominator can be.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 170" font-family="Inter, Arial, sans-serif">

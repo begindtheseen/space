@@ -8,9 +8,9 @@ covers:
 
 How loud is a rock concert? You could answer two ways. You could give the *average* loudness over the whole evening. Or you could give the *loudest single moment* — the one crash of the drums that made your ears ring. Both are honest. They answer different questions. The average tells you how tired your ears will be tomorrow. The loudest moment tells you whether something broke.
 
-A control engineer measures the "size" of a transfer function in the same two ways, and almost every modern control method is the minimisation of one of them. The **H2 norm** is the average kind: a **[[root-mean-square|rms]]** size, the typical output when the input is broadband noise that never stops — sensor noise, turbulence, the steady buzz of a reaction wheel. The **H-infinity norm** is the loudest-moment kind: the largest amplification of any single input of limited energy — one gust, one thruster misfire, one unknown perturbation shaped as if by an enemy to do the most harm.
+A control engineer measures the "size" of a transfer function in the same two ways, and almost every modern control method is the minimization of one of them. The **H2 norm** is the average kind: a **[[root-mean-square|rms]]** size, the typical output when the input is broadband noise that never stops — sensor noise, turbulence, the steady buzz of a reaction wheel. The **H-infinity norm** is the loudest-moment kind: the largest amplification of any single input of limited energy — one gust, one thruster misfire, one unknown perturbation shaped as if by an enemy to do the most harm.
 
-LQG minimises an H2 norm. Robust synthesis minimises an H-infinity norm. The small gain theorem of the last lesson is an H-infinity statement, and the weight-covering of the lesson before is an H-infinity statement in disguise. Knowing which norm a method optimises tells you at once what it protects you from and what it ignores. A design that is best on average can be terrible in the worst case. That one fact is why the "LQG has no guaranteed margins" result, and the loop-transfer-recovery patch for it, exist in the optimal control module.
+LQG minimizes an H2 norm. Robust synthesis minimizes an H-infinity norm. The small gain theorem of the last lesson is an H-infinity statement, and the weight-covering of the lesson before is an H-infinity statement in disguise. Knowing which norm a method optimises tells you at once what it protects you from and what it ignores. A design that is best on average can be terrible in the worst case. That one fact is why the "LQG has no guaranteed margins" result, and the loop-transfer-recovery patch for it, exist in the optimal control module.
 
 This lesson defines both norms, says what each one physically measures with units attached, gives closed forms for the systems you meet most, and shows how to compute both from a state-space model with only linear algebra.
 
@@ -22,7 +22,7 @@ Picture a signal as sound through a speaker. Its **energy** is the total "push" 
 
 $$\lVert y\rVert_2 = \left(\int_0^\infty y(t)^\mathsf{T}y(t)\,dt\right)^{1/2}.$$
 
-Here $y^\mathsf{T}y$ is the sum of the squares of the components. The integral is finite only for signals that die away. A gust, an impulse or a manoeuvre has finite energy. A step or a sinusoid that never stops has infinite energy.
+Here $y^\mathsf{T}y$ is the sum of the squares of the components. The integral is finite only for signals that die away. A gust, an impulse or a maneuver has finite energy. A step or a sinusoid that never stops has infinite energy.
 
 For signals that go on forever, the right measure is **power**: the average of $y^\mathsf{T}y$ over a long time, $\lim_{T\to\infty}\frac{1}{T}\int_0^T y^\mathsf{T}y\,dt$. Its square root is the RMS value.
 
@@ -195,7 +195,7 @@ $$\lVert G\rVert_2 = 1.068\ (\times\,1.51), \qquad \lVert G\rVert_\infty = 5.083
 
 **Where that comes from.** The mode on its own has $\lVert\cdot\rVert_\infty \approx 1/(2\zeta_1) = 1/0.004 = 250$ and $\lVert\cdot\rVert_2 = \sqrt{\omega_1/(4\zeta_1)} = \sqrt{12/0.008} = 38.7$. Scaled by $\varepsilon = 0.02$, these are $5.0$ and $0.77$. The peak adds almost directly to the rigid part's small gain at $12\,\mathrm{rad/s}$; the H2 parts add roughly as squares, $\sqrt{0.707^2 + 0.77^2} \approx 1.05$, close to the computed $1.068$. With $\zeta_1 = 0.005$ instead, the same $\varepsilon$ gives $\lVert G\rVert_\infty = 2.08$ and $\lVert G\rVert_2 = 0.883$.
 
-The lesson survives any choice of numbers. The H-infinity norm scales as $1/\zeta$ and the H2 norm as $1/\sqrt{\zeta}$. Halving the damping doubles one and multiplies the other by only $1.41$. An optimiser minimising an H2 cost sees a lightly damped mode as a modest part of a broadband average, and will happily leave it undamped near crossover. To H-infinity the same mode is the whole norm. That is the mechanism behind the LQG margin problem, and it is why flexible-structure designs are posed in H-infinity.
+The lesson survives any choice of numbers. The H-infinity norm scales as $1/\zeta$ and the H2 norm as $1/\sqrt{\zeta}$. Halving the damping doubles one and multiplies the other by only $1.41$. An optimiser minimizing an H2 cost sees a lightly damped mode as a modest part of a broadband average, and will happily leave it undamped near crossover. To H-infinity the same mode is the whole norm. That is the mechanism behind the LQG margin problem, and it is why flexible-structure designs are posed in H-infinity.
 :::
 
 ::: warning An H2 norm needs a strictly proper system
@@ -282,7 +282,7 @@ Damping is worth five times more to a worst-case specification than it is worth 
 | H-infinity norm | $\lVert\mathbf{G}\rVert_\infty = \sup_\omega\bar{\sigma}(\mathbf{G}(j\omega))$; SISO: peak of $\lvert G(j\omega)\rvert$ |
 | What it measures | worst-case energy gain, $\sup\lVert y\rVert_2/\lVert u\rVert_2$; induced, hence submultiplicative |
 | H2 norm | $\lVert\mathbf{G}\rVert_2^2 = \frac{1}{2\pi}\int\operatorname{tr}(\mathbf{G}^\mathsf{H}\mathbf{G})d\omega = \int_0^\infty\operatorname{tr}(\mathbf{g}^\mathsf{T}\mathbf{g})dt$ |
-| What it measures | RMS output for unit-intensity white noise; output RMS $=\sqrt{q}\lVert\mathbf{G}\rVert_2$; LQG minimises it |
+| What it measures | RMS output for unit-intensity white noise; output RMS $=\sqrt{q}\lVert\mathbf{G}\rVert_2$; LQG minimizes it |
 | H2 caveats | infinite unless strictly proper; not induced, not submultiplicative |
 | Closed forms | $a/(s+a)$: $\lVert\cdot\rVert_\infty = 1$, $\lVert\cdot\rVert_2 = \sqrt{a/2}$. Second order: $\lVert\cdot\rVert_\infty = 1/(2\zeta\sqrt{1-\zeta^2})$, $\lVert\cdot\rVert_2 = \sqrt{\omega_n/(4\zeta)}$ |
 | Computing H2 | $\mathbf{A}\mathbf{P}+\mathbf{P}\mathbf{A}^\mathsf{T}+\mathbf{B}\mathbf{B}^\mathsf{T}=\mathbf{0}$, then $\lVert\mathbf{G}\rVert_2^2 = \operatorname{tr}(\mathbf{C}\mathbf{P}\mathbf{C}^\mathsf{T})$ |
@@ -290,10 +290,10 @@ Damping is worth five times more to a worst-case specification than it is worth 
 | Worked spacecraft | $SG = 1/(120s^2+90s+40)$: $\lVert\cdot\rVert_2 = 0.01179$, $\lVert\cdot\rVert_\infty = 0.02531$; $2.43\,\mathrm{arcsec}$ RMS versus $522\,\mathrm{arcsec}$ worst case |
 | Damping sensitivity | $\lVert\cdot\rVert_\infty \propto 1/\zeta$ but $\lVert\cdot\rVert_2 \propto 1/\sqrt{\zeta}$ |
 
-The next lesson uses the H-infinity norm as a goal rather than a diagnosis: stack weighted copies of $\mathbf{S}$, $\mathbf{K}\mathbf{S}$ and $\mathbf{T}$, minimise the norm of the stack, and read the achieved value as a scorecard for every specification at once.
+The next lesson uses the H-infinity norm as a goal rather than a diagnosis: stack weighted copies of $\mathbf{S}$, $\mathbf{K}\mathbf{S}$ and $\mathbf{T}$, minimize the norm of the stack, and read the achieved value as a scorecard for every specification at once.
 
 ::: context rms Root, mean, square — read backwards
-**RMS** is a recipe you do in reverse order of its name: **square** every value, take the **mean** (average) of the squares, then take the square **root**. Squaring first stops the positive and negative swings from cancelling, so a signal that wiggles around zero still gets an honest size.
+**RMS** is a recipe you do in reverse order of its name: **square** every value, take the **mean** (average) of the squares, then take the square **root**. Squaring first stops the positive and negative swings from canceling, so a signal that wiggles around zero still gets an honest size.
 
 Wall power in the United States is "$120\,\mathrm{V}$" — that is its RMS value. The voltage actually swings between about $+170$ and $-170\,\mathrm{V}$, since for a sine wave the peak is $\sqrt{2}$ times the RMS. Same signal, two sizes: an average one and a peak one. That is the H2 and H-infinity story in miniature.
 :::
@@ -363,7 +363,7 @@ The H-infinity norm squared is the height of the tallest point, $6.41\times 10^{
 :::
 
 ::: context white-noise Why it is called white
-White light is a mix of every colour at equal strength. **White noise** is a signal with every frequency at equal strength: its power spectrum is flat. Sampled in time, it looks like a jagged hiss in which each instant has nothing to do with the last.
+White light is a mix of every color at equal strength. **White noise** is a signal with every frequency at equal strength: its power spectrum is flat. Sampled in time, it looks like a jagged hiss in which each instant has nothing to do with the last.
 
 True white noise would carry infinite power, so it is an idealisation. It works because every real system rolls off at high frequency: as long as the noise is flat over the band where the system responds, the system cannot tell the difference.
 :::
@@ -395,13 +395,13 @@ These are the four eigenvalues of $\mathbf{H}_\gamma$ for the spacecraft example
 </svg>
 ```
 
-With $\gamma = 0.030$, above the norm, all four sit off the imaginary axis (blue dots): the test passes. With $\gamma = 0.0252$, slightly below the norm, they have landed on the axis at $\pm j0.288$ and $\pm j0.145$ (red crosses). Those are the two frequencies where $\lvert G(j\omega)\rvert = 0.0252$ — on either side of the peak at $0.228$. Bisection squeezes $\gamma$ between these two behaviours.
+With $\gamma = 0.030$, above the norm, all four sit off the imaginary axis (blue dots): the test passes. With $\gamma = 0.0252$, slightly below the norm, they have landed on the axis at $\pm j0.288$ and $\pm j0.145$ (red crosses). Those are the two frequencies where $\lvert G(j\omega)\rvert = 0.0252$ — on either side of the peak at $0.228$. Bisection squeezes $\gamma$ between these two behaviors.
 :::
 
 ::: context wheel-imbalance Where the wheel's buzz comes from
-A reaction wheel spins at thousands of revolutions per minute. No wheel is perfectly balanced, so a tiny off-centre mass pulls the spacecraft around once per revolution, and the bearings add smaller tones at other multiples of the spin rate. As the controller speeds the wheel up and down, those tones sweep across the frequency range.
+A reaction wheel spins at thousands of revolutions per minute. No wheel is perfectly balanced, so a tiny off-center mass pulls the spacecraft around once per revolution, and the bearings add smaller tones at other multiples of the spin rate. As the controller speeds the wheel up and down, those tones sweep across the frequency range.
 
-Modelling all that as white noise is an averaging trick. It is fine for an RMS budget, but it hides the moment a sweeping tone lines up with a structural mode — which is a worst-case question, and an H-infinity one.
+Modeling all that as white noise is an averaging trick. It is fine for an RMS budget, but it hides the moment a sweeping tone lines up with a structural mode — which is a worst-case question, and an H-infinity one.
 :::
 
 ::: context arcsecond How small an arcsecond is

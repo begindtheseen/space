@@ -8,9 +8,9 @@ covers:
 
 Suppose you are testing a bike lock with three dials. A worried friend says: "A thief could have *any* tool at all — a saw, a magnet, a key copied from yours." That is a much scarier question than the real one. The real question is: "Can someone turning these three dials, each on its own, open it?" Ask the scary question and the lock always looks weak. Ask the right one and you might find it is fine.
 
-The small gain theorem asked the scary question. It asked whether *any* norm-bounded perturbation can destabilise the loop. What you wanted to know was whether any perturbation *your hardware can actually produce* can destabilise the loop. The two questions have the same answer only when the uncertainty is one single full complex block. As soon as the description is three independent actuator scale factors, or one real parameter that appears in four places, or an error at the input plus a separate error at the output, the theorem answers something harder than you asked. Its verdict comes back too gloomy.
+The small gain theorem asked the scary question. It asked whether *any* norm-bounded perturbation can destabilize the loop. What you wanted to know was whether any perturbation *your hardware can actually produce* can destabilize the loop. The two questions have the same answer only when the uncertainty is one single full complex block. As soon as the description is three independent actuator scale factors, or one real parameter that appears in four places, or an error at the input plus a separate error at the output, the theorem answers something harder than you asked. Its verdict comes back too gloomy.
 
-The **structured singular value**, written $\mu$ (the Greek letter "mu"), is the fix. It is defined as the answer to the right question: how small can an *allowed* perturbation be and still destabilise the loop? Take one over that size and you get a number that plays the role $\bar{\sigma}$ played in the small gain test, with the same "peak below one" pass mark, but without the needless gloom. The price is that $\mu$ is [[NP-hard|np-hard]] to compute, so in practice you compute an upper and a lower bound and report both.
+The **structured singular value**, written $\mu$ (the Greek letter "mu"), is the fix. It is defined as the answer to the right question: how small can an *allowed* perturbation be and still destabilize the loop? Take one over that size and you get a number that plays the role $\bar{\sigma}$ played in the small gain test, with the same "peak below one" pass mark, but without the needless gloom. The price is that $\mu$ is [[NP-hard|np-hard]] to compute, so in practice you compute an upper and a lower bound and report both.
 
 This lesson defines $\mu$, works out the special cases where it becomes something familiar, derives the scaling bound every tool uses, and describes D-K iteration — the back-and-forth procedure that turns $\mu$ from a test into a design method.
 
@@ -31,10 +31,10 @@ and $\mu_{\boldsymbol{\Delta}}(\mathbf{M}) = 0$ if no allowed $\boldsymbol{\Delt
 Read it from the inside out.
 
 - $\det(\mathbf{I} - \mathbf{M}\boldsymbol{\Delta}) = 0$ ("the determinant of I minus M Delta is zero") is exactly the condition for the closed loop to have a pole at that frequency. The [[determinant becomes zero|singular-means-pole]] when a signal can travel round the loop and come back exactly as big as it started.
-- So the bottom of the fraction is the size of the smallest *allowed* perturbation that destabilises the loop.
+- So the bottom of the fraction is the size of the smallest *allowed* perturbation that destabilizes the loop.
 - $\mu$ is one over that size.
 
-So $\mu = 2$ means a perturbation of size $0.5$ is enough to destabilise. $\mu = 0.4$ means you survive perturbations two and a half times larger than modelled. The number $1/\sup_\omega\mu$ is the **robustness margin**, in the same units the uncertainty weight was written in. That is what a $\mu$ analysis is really reporting.
+So $\mu = 2$ means a perturbation of size $0.5$ is enough to destabilize. $\mu = 0.4$ means you survive perturbations two and a half times larger than modeled. The number $1/\sup_\omega\mu$ is the **robustness margin**, in the same units the uncertainty weight was written in. That is what a $\mu$ analysis is really reporting.
 
 Three properties follow at once.
 
@@ -46,11 +46,11 @@ Three properties follow at once.
 
 Two extreme structures pin $\mu$ down.
 
-**One full complex block.** If every complex matrix of the right size is allowed, the smallest destabilising perturbation has size $1/\bar{\sigma}(\mathbf{M})$, by the singular-vector construction of the small gain lesson. So $\mu_{\boldsymbol{\Delta}}(\mathbf{M}) = \bar{\sigma}(\mathbf{M})$, and $\mu$ analysis becomes exactly the small gain test.
+**One full complex block.** If every complex matrix of the right size is allowed, the smallest destabilizing perturbation has size $1/\bar{\sigma}(\mathbf{M})$, by the singular-vector construction of the small gain lesson. So $\mu_{\boldsymbol{\Delta}}(\mathbf{M}) = \bar{\sigma}(\mathbf{M})$, and $\mu$ analysis becomes exactly the small gain test.
 
 **One repeated complex scalar**, $\boldsymbol{\Delta} = \delta\mathbf{I}$. Now $\det(\mathbf{I} - \delta\mathbf{M}) = 0$ needs $1/\delta$ to be an eigenvalue of $\mathbf{M}$. The smallest $\lvert\delta\rvert$ is then $1/\rho(\mathbf{M})$, where $\rho$ ("rho") is the **spectral radius** — the largest eigenvalue magnitude. So $\mu_{\boldsymbol{\Delta}}(\mathbf{M}) = \rho(\mathbf{M})$.
 
-Every other structure sits between these two. Allowing more perturbations can only make the smallest destabilising one smaller, so $\mu$ can only grow as the allowed set grows:
+Every other structure sits between these two. Allowing more perturbations can only make the smallest destabilizing one smaller, so $\mu$ can only grow as the allowed set grows:
 
 $$\rho(\mathbf{M})\ \le\ \mu_{\boldsymbol{\Delta}}(\mathbf{M})\ \le\ \bar{\sigma}(\mathbf{M}).$$
 
@@ -63,7 +63,7 @@ These are chosen so that $\mathbf{U}\boldsymbol{\Delta}$ is still allowed and $\
 
 $$\max_{\mathbf{U}}\ \rho(\mathbf{U}\mathbf{M})\ \le\ \mu_{\boldsymbol{\Delta}}(\mathbf{M})\ \le\ \inf_{\mathbf{D}}\ \bar{\sigma}(\mathbf{D}\mathbf{M}\mathbf{D}^{-1}).$$
 
-In fact the left side is *equal* to $\mu$ for complex structures, but that maximisation is bumpy, with many false peaks, so a search can get stuck below the true value.
+In fact the left side is *equal* to $\mu$ for complex structures, but that maximization is bumpy, with many false peaks, so a search can get stuck below the true value.
 
 ::: note Why it has to be true: the scaling bound
 Suppose an allowed $\boldsymbol{\Delta}$ makes $\mathbf{I} - \mathbf{M}\boldsymbol{\Delta}$ singular. Multiply by $\mathbf{D}$ on the left and $\mathbf{D}^{-1}$ on the right; a singular matrix stays singular. Since $\mathbf{D}\mathbf{D}^{-1} = \mathbf{I}$,
@@ -166,11 +166,11 @@ $$\rho(\mathbf{M}) = 0.772, \qquad \mu_{\boldsymbol{\Delta}}(\mathbf{M}) = 0.815
 
 **The spread.** The spectral radius understates $\mu$ by about $5\,\%$ ($0.772/0.815 = 0.947$). The largest singular value overstates it by $43\,\%$ ($1.162/0.815 = 1.43$).
 
-**As margins.** The small gain test says the loop tolerates $1/1.162 = 0.861$ times the modelled uncertainty — below one, a fail. $\mu$ says it tolerates $1/0.815 = 1.23$ times it — a pass. Same matrix, same hardware, opposite verdicts, and the $\mu$ verdict is the true one.
+**As margins.** The small gain test says the loop tolerates $1/1.162 = 0.861$ times the modeled uncertainty — below one, a fail. $\mu$ says it tolerates $1/0.815 = 1.23$ times it — a pass. Same matrix, same hardware, opposite verdicts, and the $\mu$ verdict is the true one.
 
 **Sanity check.** The order $0.772 \le 0.815 \le 1.162$ is the sandwich, as it must be.
 
-This is the routine situation on a three-axis vehicle, and it is why programmes that run only the unstructured test end up detuning loops that never needed it.
+This is the routine situation on a three-axis vehicle, and it is why programs that run only the unstructured test end up detuning loops that never needed it.
 :::
 
 ::: warning Report the structure, the bounds and the frequency
@@ -200,7 +200,7 @@ Three practical points decide whether it works for you.
 2. **The start matters.** The iteration is sensitive to its starting point, so it is normal to run it from several initial $\mathbf{D}$, including $\mathbf{D} = \mathbf{I}$, and keep the best.
 3. **Real blocks need care.** D-K iteration handles complex blocks naturally. A real parametric block must be treated by mixed-$\mu$ methods, or covered by a complex block, with the extra caution that implies.
 
-A rule of thumb from flight programmes: D-K iteration earns its complexity when the unstructured design misses by less than a factor of two. Beyond that, the problem is usually the plant or the specification, not the conservatism.
+A rule of thumb from flight programs: D-K iteration earns its complexity when the unstructured design misses by less than a factor of two. Beyond that, the problem is usually the plant or the specification, not the conservatism.
 
 ::: warning Structure does not make problems disappear
 $\mu$ removes needless pessimism; it does not remove physics. If the unstructured test fails by a factor of five, a $\mu$ analysis will very likely still fail, and the answer is a different bandwidth, a better sensor or a tighter hardware tolerance. Using $\mu$ to talk a marginal design into passing is the structured version of shrinking the weight.
@@ -213,7 +213,7 @@ A $\mu$ analysis of an attitude loop against three independent actuator uncertai
 :::
 
 ::: answer
-A peak $\mu$ of $1.6$ means there is an allowed perturbation — diagonal, one block per actuator, each of size at most $1/1.6 = 0.625$ in normalised units — that puts a closed-loop pole at $18\,\mathrm{rad/s}$. Robust stability fails, and it fails against uncertainty only $62.5\,\%$ as large as modelled. If the weight said $\pm 20\,\%$ scale factor, the loop goes unstable at about $0.625\times 20 = 12.5\,\%$.
+A peak $\mu$ of $1.6$ means there is an allowed perturbation — diagonal, one block per actuator, each of size at most $1/1.6 = 0.625$ in normalized units — that puts a closed-loop pole at $18\,\mathrm{rad/s}$. Robust stability fails, and it fails against uncertainty only $62.5\,\%$ as large as modeled. If the weight said $\pm 20\,\%$ scale factor, the loop goes unstable at about $0.625\times 20 = 12.5\,\%$.
 
 An unstructured figure of $2.4$ would say a *full complex* perturbation of size $1/2.4 = 0.417$ is enough. That is a weaker statement about a larger set of perturbations, most of which the hardware cannot produce. The gap between $2.4$ and $1.6$ is the pessimism the structure removes. The number to act on is $1.6$, and the action is to retune, because a $12.5\,\%$ actuator tolerance is not a tolerance anyone will sign.
 :::
@@ -225,7 +225,7 @@ Why is $\mu_{\boldsymbol{\Delta}}(\mathbf{M}) = \rho(\mathbf{M})$ when $\boldsym
 ::: answer
 With $\boldsymbol{\Delta} = \delta\mathbf{I}$, $\det(\mathbf{I} - \delta\mathbf{M}) = 0$ means $\delta\mathbf{M}$ has an eigenvalue equal to one, so $1/\delta$ is an eigenvalue of $\mathbf{M}$. The smallest allowed $\lvert\delta\rvert$ is therefore $1/\max_i\lvert\lambda_i(\mathbf{M})\rvert = 1/\rho(\mathbf{M})$, and one over that is $\rho(\mathbf{M})$.
 
-It is the smallest $\mu$ over all structures because $\delta\mathbf{I}$ is the most restricted allowed set — one complex number instead of a whole matrix — and shrinking the allowed set can only make the smallest destabilising perturbation larger. Since $\rho(\mathbf{M}) \le \bar{\sigma}(\mathbf{M})$ always, the gap between the repeated-scalar case and the full-block case is exactly the gap between the spectral radius and the largest singular value. That gap is zero for normal matrices (such as symmetric ones) and can be huge for strongly non-normal ones, like the one-way coupling matrix above ($\rho = 0$, $\bar{\sigma} = 100$).
+It is the smallest $\mu$ over all structures because $\delta\mathbf{I}$ is the most restricted allowed set — one complex number instead of a whole matrix — and shrinking the allowed set can only make the smallest destabilizing perturbation larger. Since $\rho(\mathbf{M}) \le \bar{\sigma}(\mathbf{M})$ always, the gap between the repeated-scalar case and the full-block case is exactly the gap between the spectral radius and the largest singular value. That gap is zero for normal matrices (such as symmetric ones) and can be huge for strongly non-normal ones, like the one-way coupling matrix above ($\rho = 0$, $\bar{\sigma} = 100$).
 :::
 
 ::: check

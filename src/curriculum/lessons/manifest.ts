@@ -5228,7 +5228,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-modelling-uncertainty",
       "title": "Modelling uncertainty",
-      "minutes": 22,
+      "minutes": 24,
       "covers": [
         "Modelling uncertainty: additive, multiplicative (input and output), parametric, unstructured"
       ],
@@ -5237,7 +5237,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-small-gain-theorem",
       "title": "The small gain theorem",
-      "minutes": 21,
+      "minutes": 22,
       "covers": [
         "The small gain theorem and its exact hypotheses"
       ],
@@ -5246,7 +5246,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-h2-and-hinf-norms",
       "title": "The H2 and H-infinity norms",
-      "minutes": 17,
+      "minutes": 18,
       "covers": [
         "The H2 and H-infinity norms and what each one measures"
       ],
@@ -5264,7 +5264,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-structured-singular-value-mu",
       "title": "The structured singular value and D-K iteration",
-      "minutes": 18,
+      "minutes": 20,
       "covers": [
         "The structured singular value mu and mu-synthesis by D-K iteration"
       ],
@@ -5282,7 +5282,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-mimo-singular-values-directionality",
       "title": "Singular values of a transfer matrix and directionality",
-      "minutes": 19,
+      "minutes": 20,
       "covers": [
         "Singular values of MIMO transfer matrices and input/output directionality"
       ],
@@ -5291,7 +5291,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-mimo-margins-and-disk-margins",
       "title": "MIMO margins and the disk margin",
-      "minutes": 22,
+      "minutes": 23,
       "covers": [
         "MIMO stability margins, disk margins, and why per-loop SISO margins mislead"
       ],
@@ -5300,7 +5300,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-rhp-poles-and-zeros",
       "title": "What right-half-plane poles and zeros forbid",
-      "minutes": 21,
+      "minutes": 23,
       "covers": [
         "Performance limitations imposed by right-half-plane poles and zeros"
       ],
@@ -5309,7 +5309,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-lpv-and-gain-scheduling",
       "title": "Gain scheduling with guarantees, and LPV control",
-      "minutes": 21,
+      "minutes": 24,
       "covers": [
         "Linear parameter-varying control and gain scheduling with guarantees"
       ],
@@ -5318,7 +5318,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-adaptive-control",
       "title": "Adaptive control and its use and abuse",
-      "minutes": 22,
+      "minutes": 23,
       "covers": [
         "Adaptive control (MRAC, L1 adaptive) and its use and abuse in aerospace"
       ],
@@ -5327,7 +5327,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-flight-qualification-metrics",
       "title": "Flight qualification metrics",
-      "minutes": 23,
+      "minutes": 24,
       "covers": [
         "Flight qualification metrics: stability margin requirements across the envelope, discrete-time mu analysis, handling-qualities criteria"
       ],
@@ -5338,7 +5338,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-nonlinear-phenomena",
       "title": "Four things a linear model cannot do",
-      "minutes": 19,
+      "minutes": 26,
       "covers": [
         "Nonlinear phenomena: multiple equilibria, limit cycles, finite escape time, bifurcation"
       ],

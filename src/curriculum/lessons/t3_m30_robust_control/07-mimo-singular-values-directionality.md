@@ -63,7 +63,7 @@ The **[[condition number|condition-number]]** $\gamma(\mathbf{G}) = \bar{\sigma}
 **It depends on units.** Change one actuator's units from newton-metres to millinewton-metres and the condition number changes. A large $\gamma$ computed on badly scaled data may be an artefact. The honest procedure is:
 
 - scale each input by its largest expected value, and each output by its allowed error, *before* computing anything;
-- if the number is to be compared across designs, report the **minimised condition number** — the smallest $\gamma$ over all diagonal rescalings.
+- if the number is to be compared across designs, report the **minimized condition number** — the smallest $\gamma$ over all diagonal rescalings.
 
 ### A measure that ignores units: the relative gain array
 
@@ -229,7 +229,7 @@ A disturbance hits the momentum-bias spacecraft as a constant-size torque rotati
 ::: answer
 The two senses of rotation are exactly the two singular directions. So the ratio of their effects is the condition number at that frequency: $\bar{\sigma}/\underline{\sigma} = 0.5556/0.02137 = 26.0$.
 
-The rotation that goes along with the nutation produces $26$ times the attitude swing of the opposing one, from the identical torque size. This is why momentum-bias vehicles are analysed in circular rather than $x$-$y$ coordinates for the transverse axes. The natural modes rotate, so the natural input and output directions rotate too. A per-axis $x$-$y$ plot mixes the two together and hides a factor of twenty-six.
+The rotation that goes along with the nutation produces $26$ times the attitude swing of the opposing one, from the identical torque size. This is why momentum-bias vehicles are analyzed in circular rather than $x$-$y$ coordinates for the transverse axes. The natural modes rotate, so the natural input and output directions rotate too. A per-axis $x$-$y$ plot mixes the two together and hides a factor of twenty-six.
 :::
 
 ::: check
