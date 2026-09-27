@@ -3434,6 +3434,33 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Float pitfalls: allclose, catastrophic cancellation, float32 vs float64"
       ],
       "file": "cod_py_03_numpy/10-floating-point-pitfalls.md"
+    },
+    {
+      "id": "l11-random-numbers",
+      "title": "Random numbers you can reproduce",
+      "minutes": 17,
+      "covers": [
+        "Random numbers: default_rng, seeding, reproducibility"
+      ],
+      "file": "cod_py_03_numpy/11-random-numbers.md"
+    },
+    {
+      "id": "l12-saving-loading-and-memmap",
+      "title": "Saving, loading and memory-mapping big telemetry",
+      "minutes": 19,
+      "covers": [
+        "save, load, npz, memmap for big telemetry"
+      ],
+      "file": "cod_py_03_numpy/12-saving-loading-and-memmap.md"
+    },
+    {
+      "id": "l13-vectorisation",
+      "title": "Vectorisation as the default",
+      "minutes": 18,
+      "covers": [
+        "Vectorisation as the default, and when it genuinely does not apply"
+      ],
+      "file": "cod_py_03_numpy/13-vectorisation.md"
     }
   ],
   "cod_py_04_scipy": [
@@ -10148,14 +10175,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_py_03_numpy": {
-    "covered": 9,
+    "covered": 12,
     "total": 12,
-    "complete": false,
-    "missing": [
-      "Random numbers: default_rng, seeding, reproducibility",
-      "save, load, npz, memmap for big telemetry",
-      "Vectorisation as the default, and when it genuinely does not apply"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_py_04_scipy": {
     "covered": 11,
