@@ -3602,7 +3602,7 @@ Every bracket makes the parser go one level deeper: `atom` calls `expr`, which c
 :::
 
 ::: context projects-next Where the calculator goes next
-The projects course comes next. You build three real programs step by step, then four capstones where you get only a description and design the rest. One capstone is a **calculator language with variables**: `x = 3` on one line, `x * 2` on the next. It grows from exactly the tokenizer and recursive-descent parser you have now. Real interpreters take one more step you may meet later: instead of computing as they parse, they build the tree first, then run it.
+The projects course comes next. You build three real programs step by step, then four capstones where you get only a description and design the rest. One capstone is a **calculator language with variables**: `let x = 3` on one line, `x * 2` on the next. It grows from exactly the tokenizer and recursive-descent parser you have now. Real interpreters take one more step you may meet later: instead of computing as they parse, they build the tree first, then run it.
 :::
 --- task
 Your tokenizer from the last lessons is in the starter. Write `evaluate(text)`, which tokenizes `text` and computes its value by recursive descent, using the five-rule grammar above. You can start from your parser from last lesson.

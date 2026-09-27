@@ -3,6 +3,7 @@
 @title Python · Projects
 @name Python projects: real programs, built step by step, then designed by you
 @blurb Build three real programs one step at a time (an expense tracker, a Markdown converter and a library system with saving and loading), then prove you can work alone on four capstones where you get only a specification and design everything yourself.
+@plainvoice true
 
 === pyp-01 | Expense tracker 1: planning and parsing commands
 --- teach
@@ -4598,7 +4599,7 @@ class Interpreter:
             return show(self.evaluate(line))
         except CalcError as err:
             return f"error: {err}"
-        except (OverflowError, ValueError, TypeError) as err:
+        except (OverflowError, ValueError, TypeError, ZeroDivisionError) as err:
             return f"error: {err}"
 --- hint
 Start from the tokenizer and parser of the expert course. Make each token a (kind, value) pair, add a `name` kind (the regular expression `[A-Za-z_]\w*` finds one) and a `,` operator.
