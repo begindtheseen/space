@@ -2157,6 +2157,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       "file": "cod_cpp_05_templates/02-non-type-template-parameters.md"
     },
     {
+      "id": "l03-variadic-templates",
+      "title": "Templates that take any number of arguments",
+      "minutes": 18,
+      "covers": [
+        "Variadic templates, parameter packs, fold expressions"
+      ],
+      "file": "cod_cpp_05_templates/03-variadic-templates.md"
+    },
+    {
       "id": "l04-dependent-names-and-lookup",
       "title": "Dependent names: typename, template, and two-phase lookup",
       "minutes": 26,
@@ -2176,14 +2185,174 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       "file": "cod_cpp_05_templates/05-type-traits.md"
     },
     {
+      "id": "l06-sfinae-and-concepts",
+      "title": "SFINAE, enable_if and concepts: putting rules on a template",
+      "minutes": 28,
+      "covers": [
+        "SFINAE and enable_if, and the C++20 replacement: concepts and requires"
+      ],
+      "file": "cod_cpp_05_templates/06-sfinae-and-concepts.md"
+    },
+    {
       "id": "l07-compile-time-computation",
       "title": "Computing before the program runs, and if constexpr",
-      "minutes": 26,
+      "minutes": 24,
       "covers": [
         "constexpr functions, consteval, constinit, compile-time computation",
         "if constexpr for compile-time branching"
       ],
       "file": "cod_cpp_05_templates/07-compile-time-computation.md"
+    },
+    {
+      "id": "l08-crtp-and-policies",
+      "title": "CRTP mixins, deducing this, and policy-based design",
+      "minutes": 21,
+      "covers": [
+        "CRTP revisited for static polymorphism",
+        "Policy-based design and when it beats inheritance"
+      ],
+      "file": "cod_cpp_05_templates/08-crtp-and-policies.md"
+    },
+    {
+      "id": "l09-expression-templates",
+      "title": "Expression templates and lazy evaluation",
+      "minutes": 24,
+      "covers": [
+        "Expression templates and lazy evaluation; how Eigen removes temporaries"
+      ],
+      "file": "cod_cpp_05_templates/09-expression-templates.md"
+    },
+    {
+      "id": "l10-build-cost-and-template-errors",
+      "title": "Build cost and reading template errors",
+      "minutes": 24,
+      "covers": [
+        "Template instantiation cost, build-time blow-up, extern template",
+        "Reading a template error message without despair"
+      ],
+      "file": "cod_cpp_05_templates/10-build-cost-and-template-errors.md"
+    }
+  ],
+  "cod_cpp_06_modern": [
+    {
+      "id": "l01-cpp11",
+      "title": "C++11: the release that made modern C++",
+      "minutes": 21,
+      "covers": [
+        "C++11: auto, range-for, lambdas, move semantics, nullptr, enum class, constexpr, smart pointers, thread, override/final, std::array, chrono"
+      ],
+      "file": "cod_cpp_06_modern/01-cpp11.md"
+    },
+    {
+      "id": "l02-uniform-initialisation",
+      "title": "Brace initialisation and the initializer_list trap",
+      "minutes": 22,
+      "covers": [
+        "Uniform initialisation and the initializer_list gotcha"
+      ],
+      "file": "cod_cpp_06_modern/02-uniform-initialisation.md"
+    },
+    {
+      "id": "l03-cpp14",
+      "title": "C++14: finishing what C++11 started",
+      "minutes": 23,
+      "covers": [
+        "C++14: generic lambdas, return type deduction, make_unique, variable templates"
+      ],
+      "file": "cod_cpp_06_modern/03-cpp14.md"
+    },
+    {
+      "id": "l04-cpp17",
+      "title": "C++17: the everyday upgrades",
+      "minutes": 21,
+      "covers": [
+        "C++17: structured bindings, if/switch init statements, if constexpr, fold expressions, optional/variant/any, string_view, filesystem, parallel algorithms, guaranteed copy elision, CTAD"
+      ],
+      "file": "cod_cpp_06_modern/04-cpp17.md"
+    },
+    {
+      "id": "l05-guaranteed-copy-elision",
+      "title": "Returning big objects without copying them",
+      "minutes": 22,
+      "covers": [
+        "Guaranteed copy elision and what it means for returning big objects"
+      ],
+      "file": "cod_cpp_06_modern/05-guaranteed-copy-elision.md"
+    },
+    {
+      "id": "l06-cpp20",
+      "title": "C++20: the big update",
+      "minutes": 20,
+      "covers": [
+        "C++20: concepts, ranges, span, format, three-way comparison, designated initialisers, constinit/consteval, modules, coroutines, atomic_ref"
+      ],
+      "file": "cod_cpp_06_modern/06-cpp20.md"
+    },
+    {
+      "id": "l07-modules-and-coroutines",
+      "title": "Modules and coroutines, and why flight code waits",
+      "minutes": 24,
+      "covers": [
+        "Why modules adoption is slow and what it will change",
+        "Why coroutines are rare in flight code"
+      ],
+      "file": "cod_cpp_06_modern/07-modules-and-coroutines.md"
+    },
+    {
+      "id": "l08-cpp23",
+      "title": "C++23: expected, mdspan and print",
+      "minutes": 22,
+      "covers": [
+        "C++23 highlights: expected, mdspan, print"
+      ],
+      "file": "cod_cpp_06_modern/08-cpp23.md"
+    },
+    {
+      "id": "l09-the-flight-subset",
+      "title": "The flight subset of C++",
+      "minutes": 22,
+      "covers": [
+        "The flight subset: typically C++11/14/17 core, no exceptions, no RTTI, no dynamic allocation after init, restricted standard library"
+      ],
+      "file": "cod_cpp_06_modern/09-the-flight-subset.md"
+    },
+    {
+      "id": "l10-modernising-legacy-code",
+      "title": "Modernising old C++ code safely",
+      "minutes": 19,
+      "covers": [
+        "Modernising legacy code: what to change first and how to justify each change"
+      ],
+      "file": "cod_cpp_06_modern/10-modernising-legacy-code.md"
+    }
+  ],
+  "cod_cpp_07_concurrency": [
+    {
+      "id": "l01-threads",
+      "title": "Processes and threads",
+      "minutes": 27,
+      "covers": [
+        "Processes vs threads; std::thread and jthread; join and detach"
+      ],
+      "file": "cod_cpp_07_concurrency/01-threads.md"
+    },
+    {
+      "id": "l04-deadlock",
+      "title": "Deadlock, and how to make it impossible",
+      "minutes": 22,
+      "covers": [
+        "Deadlock: the four conditions, lock ordering, std::lock and scoped_lock"
+      ],
+      "file": "cod_cpp_07_concurrency/04-deadlock.md"
+    },
+    {
+      "id": "l07-the-memory-model",
+      "title": "The C++ memory model",
+      "minutes": 21,
+      "covers": [
+        "The C++ memory model; is_lock_free; atomic_ref"
+      ],
+      "file": "cod_cpp_07_concurrency/07-the-memory-model.md"
     }
   ],
   "cod_cpp_08_realtime": [
@@ -10718,49 +10887,26 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_cpp_05_templates": {
-    "covered": 7,
+    "covered": 14,
     "total": 14,
-    "complete": false,
-    "missing": [
-      "Variadic templates, parameter packs, fold expressions",
-      "SFINAE and enable_if, and the C++20 replacement: concepts and requires",
-      "CRTP revisited for static polymorphism",
-      "Expression templates and lazy evaluation; how Eigen removes temporaries",
-      "Template instantiation cost, build-time blow-up, extern template",
-      "Policy-based design and when it beats inheritance",
-      "Reading a template error message without despair"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_cpp_06_modern": {
-    "covered": 0,
+    "covered": 11,
     "total": 11,
-    "complete": false,
-    "missing": [
-      "C++11: auto, range-for, lambdas, move semantics, nullptr, enum class, constexpr, smart pointers, thread, override/final, std::array, chrono",
-      "C++14: generic lambdas, return type deduction, make_unique, variable templates",
-      "C++17: structured bindings, if/switch init statements, if constexpr, fold expressions, optional/variant/any, string_view, filesystem, parallel algorithms, guaranteed copy elision, CTAD",
-      "C++20: concepts, ranges, span, format, three-way comparison, designated initialisers, constinit/consteval, modules, coroutines, atomic_ref",
-      "C++23 highlights: expected, mdspan, print",
-      "Uniform initialisation and the initializer_list gotcha",
-      "Guaranteed copy elision and what it means for returning big objects",
-      "Why modules adoption is slow and what it will change",
-      "Why coroutines are rare in flight code",
-      "The flight subset: typically C++11/14/17 core, no exceptions, no RTTI, no dynamic allocation after init, restricted standard library",
-      "Modernising legacy code: what to change first and how to justify each change"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_cpp_07_concurrency": {
-    "covered": 0,
+    "covered": 3,
     "total": 17,
     "complete": false,
     "missing": [
-      "Processes vs threads; std::thread and jthread; join and detach",
       "Data races as undefined behaviour, not merely a wrong answer",
       "mutex, lock_guard, unique_lock, scoped_lock, shared_mutex, recursive_mutex",
-      "Deadlock: the four conditions, lock ordering, std::lock and scoped_lock",
       "condition_variable and spurious wakeups; the predicate form of wait",
       "std::atomic and memory orderings: relaxed, acquire/release, seq_cst",
-      "The C++ memory model; is_lock_free; atomic_ref",
       "future, promise, packaged_task, async, and thread pools",
       "Lock-free single-producer single-consumer ring buffers for telemetry",
       "Lock-free is not wait-free; progress guarantees",

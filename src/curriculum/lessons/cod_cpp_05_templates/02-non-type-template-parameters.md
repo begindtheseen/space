@@ -27,7 +27,7 @@ double mean(const std::array<double, N>& xs) {
 
 Read the first line as "a template, for any size `N`". Instead of `typename`, the parameter has a real type, **[[std::size_t|size-t]]**, the unsigned integer type the standard library uses for sizes. `N` is a **non-type template parameter**: a template parameter that stands for a value rather than a type. Inside the template, `N` is a constant. You can use it anywhere a constant is allowed — as an array size, in a `static_assert`, in another template's arguments.
 
-And it can be deduced, just like a type. Call `mean(gyro)` with a `std::array<double, 4>`, and the compiler matches `std::array<double, N>` against `std::array<double, 4>` and solves `N = 4`.
+And it can be deduced, the same way a type is. Call `mean(gyro)` with a `std::array<double, 4>`, and the compiler matches `std::array<double, N>` against `std::array<double, 4>` and solves `N = 4`.
 
 ### What may be a non-type parameter
 

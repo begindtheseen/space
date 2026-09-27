@@ -427,7 +427,7 @@ Every function the compiler emits gets a name in the object file, and `nm` lists
 :::
 
 ::: context headers-why Why templates live in headers
-To instantiate `clamp_to<double>`, the compiler needs the template's body right there, in the file it is compiling. A normal function can be declared in a header and defined once in a `.cpp` file, because the caller only needs its signature and the linker finds the body later. A template's body is the recipe itself, so it has to travel with every file that uses it. That is why `<vector>` and `<algorithm>` are full of code, not just declarations. Lesson 10 shows the cost of this in build time, and `extern template`, the tool that recovers it.
+To instantiate `clamp_to<double>`, the compiler needs the template's body right there, in the file it is compiling. A normal function can be declared in a header and defined once in a `.cpp` file, because the caller only needs its signature and the linker finds the body later. A template's body is the recipe itself, so it has to travel with every file that uses it. That is why `<vector>` and `<algorithm>` are full of code, not only declarations. Lesson 10 shows the cost of this in build time, and `extern template`, the tool that recovers it.
 :::
 
 ::: context std-max The standard library hits the same wall
