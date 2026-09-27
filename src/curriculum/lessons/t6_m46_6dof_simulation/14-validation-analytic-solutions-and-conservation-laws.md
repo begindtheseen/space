@@ -162,7 +162,7 @@ Conservation laws and closed-form cases are the backbone, but three more tools r
 Every check so far compares the code against itself. Checking the *model* against reality needs data from something real. Each model has its own test:
 
 - an engine **hot fire** (a full-power firing on a test stand) for the thrust curve and its start-up transient;
-- a TVC frequency-response test for the gimbal dynamics;
+- a TVC (thrust vector control) frequency-response test, which wiggles the engine gimbal at many frequencies, for the gimbal dynamics;
 - wind tunnel runs, or CFD (computer airflow simulation), for the aerodynamic table;
 - a **[[modal survey|modal-survey]]** for the bending frequencies this module's flex model needs;
 - sensor bench characterization for the noise and bias figures a navigation filter is tuned against.
@@ -259,7 +259,7 @@ for dt2 in [5.0, 2.5, 1.25]:
 
 The specific energy, meanwhile, has already moved by $2.54\%$ — against a correct run that holds it to $3$ parts in $10^{15}$. Nothing in the position or velocity trace would make anyone look twice. The energy check is already screaming.
 
-**Truncation error, or a real bug?** One honest question remains: could $2.54\%$ be ordinary integrator error from a big $5\,\mathrm{s}$ step? The last three lines answer it, using the step-refinement test. For RK4, each step's error scales like $h^5$ (read "h to the fifth"). Over a fixed stretch of time there are $1/h$ steps, so the total error scales like $h^5 \times (1/h) = h^4$. Quartering the step should therefore shrink truncation error by about $4^4 = 256$.
+**Truncation error, or a real bug?** One honest question remains: could $2.54\%$ be ordinary integrator error from a big $5\,\mathrm{s}$ step? The last three lines answer it, using the step-refinement test: the same buggy run, carried to $50\,\mathrm{s}$, at three step sizes. For RK4, each step's error scales like $h^5$ (read "h to the fifth"). Over a fixed stretch of time there are $1/h$ steps, so the total error scales like $h^5 \times (1/h) = h^4$. Quartering the step should therefore shrink truncation error by about $4^4 = 256$.
 
 Instead, going from $5\,\mathrm{s}$ to $1.25\,\mathrm{s}$ moved the drift from $2.18\%$ to $1.85\%$: down by only $15\%$, nowhere near a factor of $256$. The drift is not coming from how finely the equations are integrated. It is a real force in the equations that is not the force physics has.
 
