@@ -11076,7 +11076,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-actuator-models",
       "title": "Actuator models",
-      "minutes": 26,
+      "minutes": 27,
       "covers": [
         "Actuator models: thrust curves and start-up transients, TVC gimbal dynamics and rate limits, reaction wheel friction, thruster minimum impulse bit, valve delay"
       ],
@@ -11085,7 +11085,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-mass-properties-against-time",
       "title": "Mass properties against time",
-      "minutes": 21,
+      "minutes": 20,
       "covers": [
         "Mass properties against time: propellant depletion, centre of mass migration, inertia tensor change"
       ],
@@ -11094,7 +11094,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-slosh-and-structural-flex",
       "title": "Slosh and structural flex",
-      "minutes": 20,
+      "minutes": 19,
       "covers": [
         "Slosh and structural flex models, and where they get inserted in the loop"
       ],
@@ -11175,7 +11175,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l18-configuration-management-of-the-simulation",
       "title": "Configuration management of the simulation",
-      "minutes": 19,
+      "minutes": 20,
       "covers": [
         "Configuration management of the sim: models, parameters and scenarios versioned separately from the code"
       ],
@@ -11186,7 +11186,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-verification-validation-and-the-matrix",
       "title": "Verification, validation, and the verification matrix",
-      "minutes": 20,
+      "minutes": 21,
       "covers": [
         "Requirements, verification and validation; the verification matrix that maps every requirement to its evidence",
         "Verification by analysis, test, inspection and demonstration, and choosing correctly between them"
@@ -11205,7 +11205,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-correlated-dispersions",
       "title": "Distributions, their justification, and correlated dispersions",
-      "minutes": 17,
+      "minutes": 20,
       "covers": [
         "Distributions and their justification; correlations between dispersed parameters and why ignoring them is not conservative"
       ],
@@ -11214,7 +11214,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-how-many-runs-buys-what-claim",
       "title": "How many runs buys what claim",
-      "minutes": 19,
+      "minutes": 18,
       "covers": [
         "Number of runs against the confidence in the claim; the zero-failure formula and its assumptions"
       ],
@@ -11223,7 +11223,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-defining-a-failed-case",
       "title": "Defining a failed case",
-      "minutes": 18,
+      "minutes": 16,
       "covers": [
         "Success criteria and scoring: defining what a failed case IS, before the campaign runs"
       ],
@@ -11232,7 +11232,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-tail-risk-importance-sampling-and-worst-case",
       "title": "Tail risk, extreme-value estimation, and worst-case analysis",
-      "minutes": 19,
+      "minutes": 20,
       "covers": [
         "Extreme-value estimation and importance sampling when the failure probability is too small to sample directly",
         "Worst-case and corner-case analysis as a complement to, not a substitute for, Monte Carlo"
@@ -11242,7 +11242,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-linear-covariance-analysis",
       "title": "Linear covariance analysis, and where it breaks",
-      "minutes": 17,
+      "minutes": 19,
       "covers": [
         "Linear covariance analysis as the fast complement: one run gives the covariance a thousand runs would estimate",
         "Where LinCov is valid and where nonlinearity, saturation and discrete logic force you back to Monte Carlo"
@@ -11252,7 +11252,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-three-sigma-is-not-the-99-73rd-percentile",
       "title": "Three sigma is not the 99.73rd percentile",
-      "minutes": 17,
+      "minutes": 18,
       "covers": [
         "Three sigma versus the 99.73rd percentile, and why they differ for anything non-Gaussian"
       ],
@@ -11261,7 +11261,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-sensitivity-analysis-and-envelope-coverage",
       "title": "Sensitivity analysis and flight-envelope coverage",
-      "minutes": 16,
+      "minutes": 18,
       "covers": [
         "Sensitivity analysis and driver identification: regression on the dispersion inputs, and scatter plots you actually look at",
         "Flight-envelope coverage and the difference between random coverage and designed coverage"
@@ -11271,7 +11271,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-stability-margins-across-the-envelope",
       "title": "Stability margins across the envelope",
-      "minutes": 16,
+      "minutes": 20,
       "covers": [
         "Stability margin verification across the envelope: frozen-time linearisation, gain, phase and delay margin against flight time"
       ],
@@ -11280,7 +11280,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-code-verification-and-static-analysis",
       "title": "Code verification and static analysis",
-      "minutes": 18,
+      "minutes": 21,
       "covers": [
         "Code verification: unit, integration and regression tests; statement, branch and MC-DC coverage",
         "Static analysis and formal methods: Coverity, Polyspace, model checking with SPIN",
@@ -11291,7 +11291,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-continuous-integration-and-closing-the-loop",
       "title": "Continuous integration and closing the loop",
-      "minutes": 19,
+      "minutes": 22,
       "covers": [
         "Continuous integration for flight and simulation software: what runs on every commit, what runs nightly, what runs before a release",
         "Test-as-you-fly, and the risk taken every time you deviate from it",
@@ -11304,7 +11304,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-system-decomposition-and-interfaces",
       "title": "System decomposition and interface contracts",
-      "minutes": 21,
+      "minutes": 20,
       "covers": [
         "System decomposition and the interface contracts between navigation, guidance, control and the vehicle"
       ],
@@ -11313,7 +11313,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-error-budgeting",
       "title": "Error budgeting for a landing-accuracy requirement",
-      "minutes": 20,
+      "minutes": 18,
       "covers": [
         "Error budgeting: allocating a landing-accuracy requirement across navigation, guidance and control"
       ],
@@ -11331,7 +11331,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-navigation-meets-guidance",
       "title": "Navigation in the loop: the multiplicative EKF meets guidance",
-      "minutes": 24,
+      "minutes": 25,
       "covers": [
         "A multiplicative extended Kalman filter on IMU, GNSS and radar altimeter, with error-state formulation and attitude error as a three-parameter local perturbation"
       ],

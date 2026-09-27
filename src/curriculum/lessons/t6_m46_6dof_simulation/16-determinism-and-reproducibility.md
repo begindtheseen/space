@@ -341,7 +341,7 @@ Each box depends only on the boxes above it, never on its neighbors.
 :::
 
 ::: context hex-float Printing a number's exact bits
-`float.hex()` writes a number in base 16 with its power of two: `0x1.b58a1f1f07674p+12` means $1.b58a1f1f07674_{16} \times 2^{12}$. The thirteen hex digits after the point are exactly the 52 stored digit bits (four bits per hex digit), so nothing is rounded for display. Ordinary printing rounds to a short decimal that is enough to rebuild the number, but it hides nothing only if you trust that rule. Hex hides nothing by construction, which is why it is handy when you are checking replay.
+`float.hex()` writes a number in base 16 with its power of two: `0x1.b58a1f1f07674p+12` means $1.b58a1f1f07674_{16} \times 2^{12}$. The thirteen hex digits after the point are exactly the 52 stored digit bits (four bits per hex digit), so nothing is rounded for display. Python's ordinary printing, `repr`, shows the shortest decimal that rebuilds the exact same bits, so it is also exact — but you have to know that rule to trust it. Hex shows the stored bits directly, with no rule to trust, which is why it is handy when you are checking replay.
 :::
 
 ::: context hash-map Why a hash map has no fixed order

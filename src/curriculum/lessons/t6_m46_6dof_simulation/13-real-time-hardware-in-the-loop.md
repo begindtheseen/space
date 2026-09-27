@@ -14,7 +14,7 @@ On a real program, this is the last big test stage before flight: the flight com
 
 ## The simulation host has to keep up too
 
-In SIL and PIL, the simulated clock only moves forward once each computation is finished, however long that took. The timeline waits for the slowest part, every time. There is nothing to fall behind.
+In SIL and PIL (software-in-the-loop and processor-in-the-loop, from the previous lesson), the simulated clock only moves forward once each computation is finished, however long that took. The timeline waits for the slowest part, every time. There is nothing to fall behind.
 
 On a HIL bench, that is no longer true. The **truth host** — the computer running the plant, environment, sensor and actuator models this whole module has built — must hand the flight computer a fresh truth state at the real rate, every cycle, with no exceptions. A job that must finish before a fixed moment, every time, is called **[[hard real-time|hard-real-time]]**. The time allowed for one cycle is the **budget**; the moment the cycle must be done by is the **deadline**.
 
@@ -154,7 +154,7 @@ $$
 \Delta t = \frac{2\,\Delta r}{c}.
 $$
 
-A $1\,\mathrm{m}$ height error is therefore $2 \times 1 / c = 6.67\,\mathrm{ns}$ of echo timing, and a $10\,\mathrm{m}$ error is $66.7\,\mathrm{ns}$. How tight the stimulator must be depends on the accuracy the altimeter is meant to deliver. Many altimeters are specified to a percentage of height, which is loose high up and tight near touchdown, so the tolerance is still nanoseconds, and must be checked rather than assumed.
+A $1\,\mathrm{m}$ height error is therefore $2 \times 1 / c = 6.67\,\mathrm{ns}$ of echo timing, and a $10\,\mathrm{m}$ error is $66.7\,\mathrm{ns}$. How tight the stimulator must be depends on the accuracy the altimeter is meant to deliver. Altimeter accuracy is usually specified in meters, or as a percentage of height, rather than the sub-meter figures a precision GNSS receiver is built for. So the altimeter's timing tolerance is usually looser than GNSS — tens of nanoseconds rather than a few — but it is still nanoseconds, it tightens near touchdown, and it must be checked rather than assumed.
 
 Both kinds of stimulator also meet the two-rate lesson's old constraint in a new costume. The display or signal generator has its own update rate and its own **latency** (delay between being told something and showing it). That is one more clock in the loop, and the truth host must stay in step with it. Otherwise the sensor is shown a scene, or given an echo, that describes where the vehicle *was*, not where it is.
 
