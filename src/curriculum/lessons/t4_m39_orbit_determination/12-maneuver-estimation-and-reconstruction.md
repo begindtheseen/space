@@ -139,7 +139,7 @@ Same contaminated three-pass arc as before, now fitted with a nine-number state:
 
 **The burn.** The errors, estimate minus truth, are $0.51$, $0.32$ and $1.83\,\mathrm{mm/s}$. Divide each by its formal sigma: $0.51/1.3 \approx 0.39$, $0.32/2.2 \approx 0.15$ and $1.83/2.6 \approx 0.70$. All under one sigma. The covariance is honest again.
 
-**The epoch state.** Position is now right to under half a metre, against $2.7\,\mathrm{km}$ before. Adding three columns to the model bought back a factor of several thousand.
+**The epoch state.** Position is now right to about half a metre, against about $3\,\mathrm{km}$ before. Adding three columns to the model bought back a factor of several thousand.
 :::
 
 In real operations the team that planned the burn usually shares it. Then the planned $\Delta\mathbf v$ becomes the fit's starting guess, with an a priori uncertainty sized to how well thrusters actually **[[perform the plan|execution-error]]**, and the tracking data corrects it.
