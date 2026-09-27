@@ -35,6 +35,11 @@ function seedFrom(selection: Selection, container: HTMLElement): ExplainSeed | n
   if (selection.isCollapsed || selection.rangeCount === 0) return null
   const range = selection.getRangeAt(0)
   if (!container.contains(range.commonAncestorContainer)) return null
+  // Not while she is selecting her own code: the editor, a text box, or
+  // anything marked data-no-explain. Terminal output stays explainable.
+  const at = range.commonAncestorContainer
+  const atEl = at instanceof Element ? at : at.parentElement
+  if (atEl?.closest('.cm-editor, textarea, input, [data-no-explain]')) return null
   const text = readableText(range.cloneContents())
   if (text.length < MIN_CHARS) return null
   const anchor = range.commonAncestorContainer

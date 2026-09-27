@@ -22,6 +22,9 @@ export interface IndexedNote {
   body: string
   /** Every phrase in the lesson marked with this note, as written there. */
   phrases: string[]
+  /** Learn to code notes only: the lesson's and the course's titles, for the link under the note. */
+  lt?: string
+  ct?: string
 }
 
 const HEADER_ID = /^---\r?\n[\s\S]*?^id:[ \t]*(.+?)[ \t]*$[\s\S]*?\r?\n---/m
@@ -42,6 +45,41 @@ export function notesOf(moduleId: string, source: string): IndexedNote[] {
   for (const m of source.matchAll(NOTE_BLOCK)) {
     const id = m[1]!
     out.push({ m: moduleId, l: lessonId, id, title: (m[2] ?? '').trim() || id, body: (m[3] ?? '').trim(), phrases: phrases.get(id) ?? [] })
+  }
+  return out
+}
+
+/**
+ * The notes in a Learn to code track file (src/learn/tracks/*.txt), one entry
+ * per note, filed under `m: 'learn'` and the lesson's id, which is unique
+ * across every track and is all a link to it needs.
+ */
+export function learnNotesOf(source: string): IndexedNote[] {
+  const out: IndexedNote[] = []
+  const course = /^@title[ \t]+(.+)$/m.exec(source)?.[1]?.trim() ?? ''
+  const parts = source.split(/^=== /m).slice(1)
+  for (const part of parts) {
+    const head = /^(\S+)\s*\|\s*(.+)$/m.exec(part)
+    const id = head?.[1]
+    if (!id) continue
+    const phrases = new Map<string, string[]>()
+    for (const m of part.matchAll(NOTE_REF)) {
+      const list = phrases.get(m[2]!) ?? []
+      if (!list.includes(m[1]!)) list.push(m[1]!)
+      phrases.set(m[2]!, list)
+    }
+    for (const m of part.matchAll(NOTE_BLOCK)) {
+      out.push({
+        m: 'learn',
+        l: id,
+        id: m[1]!,
+        title: (m[2] ?? '').trim() || m[1]!,
+        body: (m[3] ?? '').trim(),
+        phrases: phrases.get(m[1]!) ?? [],
+        lt: head[2]!.trim(),
+        ct: course,
+      })
+    }
   }
   return out
 }

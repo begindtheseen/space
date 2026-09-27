@@ -70,7 +70,18 @@ export function allCards(): CardHit[] {
   return cards
 }
 
-/** "Lesson title" and "Module" for a note's lesson, for the link under it. */
+/** Where a note's lesson opens: a module lesson, or a Learn to code lesson. */
+export function noteHref(note: Pick<IndexedNote, 'm' | 'l'>): string {
+  return note.m === 'learn' ? `#/learn/${note.l}` : `#/module/${note.m}?lesson=${note.l}`
+}
+
+/** "Lesson title" and "Module" (or course) for a note's lesson, for the link under it. */
+export function noteLabel(note: IndexedNote): { title: string; module: string } | null {
+  if (note.m === 'learn') return note.lt ? { title: note.lt, module: note.ct ? `Learn to code · ${note.ct}` : 'Learn to code' } : null
+  return lessonLabel(note.m, note.l)
+}
+
+/** "Lesson title" and "Module" for a module lesson. */
 export function lessonLabel(moduleId: string, lessonId: string): { title: string; module: string } | null {
   const mod = moduleById(moduleId)
   const meta = mod && lessonsFor(moduleId).find((l) => l.id === lessonId)

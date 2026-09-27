@@ -1,7 +1,7 @@
 ---
 id: l01-orthographic-projection
 title: Looking at a part straight on
-minutes: 17
+minutes: 20
 covers:
   - Orthographic projection; third-angle (US) versus first-angle (ISO) and the symbol that identifies which
 ---

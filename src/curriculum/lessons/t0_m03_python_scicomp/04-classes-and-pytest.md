@@ -110,7 +110,7 @@ class Vec3:
     def normalized(self):
         n = self.norm()
         if n == 0.0:
-            raise ZeroDivisionError("cannot normalise the zero vector")
+            raise ZeroDivisionError("cannot normalize the zero vector")
         return self * (1.0 / n)
 
 print(Vec3(1, 2, 3) + Vec3(4, 5, 6))   # Vec3(x=5, y=7, z=9)
@@ -252,7 +252,7 @@ class Quaternion:
 ```
 
 ::: key
-Why unit-test a quaternion normalisation routine: a quaternion that drifts off unit norm silently corrupts the **[[DCM|dcm-word]]** built from it — the rotation picks up a scale factor and stops being orthonormal, so every rotated vector is subtly wrong with no exception thrown. Nothing in the arithmetic complains; only a test that checks $|q| = 1$ and $|\mathbf{v}'| = |\mathbf{v}|$ does.
+Why unit-test a quaternion normalization routine: a quaternion that drifts off unit norm silently corrupts the **[[DCM|dcm-word]]** built from it — the rotation picks up a scale factor and stops being orthonormal, so every rotated vector is subtly wrong with no exception thrown. Nothing in the arithmetic complains; only a test that checks $|q| = 1$ and $|\mathbf{v}'| = |\mathbf{v}|$ does.
 :::
 
 **Orthonormal** means "keeps every length and right angle", as a pure turn does.
@@ -388,7 +388,7 @@ Three kinds of test cover most numerical routines:
 - **Known-answer tests** check one case you can work out by hand: $90^\circ$ about $\hat{\mathbf{z}}$ sends $\hat{\mathbf{x}}$ to $\hat{\mathbf{y}}$; $(1,2,3)\times(4,5,6) = (-3,6,-3)$; $i \otimes j = k$. They pin down **conventions** — agreed choices, such as right-handed axes or storing $w$ first — that invariants cannot see.
 - **Error tests** check that bad input raises an error: `Vec3(0,0,0).normalized()` raises `ZeroDivisionError` rather than returning `nan`.
 
-Length preservation is the most valuable single invariant for a rotation library. A turn *is* a length-keeping operation, so an un-normalised quaternion, a wrong sign inside `rotate`, or a rotation matrix used back-to-front all break it.
+Length preservation is the most valuable single invariant for a rotation library. A turn *is* a length-keeping operation, so an un-normalized quaternion, a wrong sign inside `rotate`, or a rotation matrix used back-to-front all break it.
 
 But it is not enough on its own. Suppose `rotate` is built from the sandwich product, and someone flips the sign of the whole cross term in the Hamilton product. Every sandwich then turns by $-\phi$ instead of $+\phi$. That is still a perfectly good turn — it keeps every length — but it sends $\hat{\mathbf{x}}$ to $-\hat{\mathbf{y}}$. Only a known-answer test sees it: here, $i \otimes j$ would come out $-k$. A suite with both kinds is what the module's exercise means by a test file that "earns its keep".
 
@@ -418,7 +418,7 @@ Running `pytest -q` gives `AttributeError: 'Vec3' object has no attribute 'norma
 :::
 
 ::: warning Tolerances chosen to pass
-If a test fails at `rel=1e-12` but passes at `rel=1e-6`, the arithmetic is telling you something — usually a quaternion not being re-normalised, or two conventions mixed. Find out why before touching the tolerance.
+If a test fails at `rel=1e-12` but passes at `rel=1e-6`, the arithmetic is telling you something — usually a quaternion not being re-normalized, or two conventions mixed. Find out why before touching the tolerance.
 :::
 
 ::: note Running tests in the playground

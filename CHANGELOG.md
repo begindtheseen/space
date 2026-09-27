@@ -18,6 +18,11 @@ words before, one tap away. It is instant, works offline and sends nothing anywh
 you have read covers it yet, it says so and shows you which lesson does. Every context note also
 has a "Still fuzzy?" button that shows where else the same idea comes up.
 
+**Learn to code gets the same help.** Coding lessons now have context notes and Explain too:
+highlight a word in a lesson, or an error in the terminal, and the panel shows what the course says
+about it. The Terminal, Git, Python, SQL and C++ courses are being rewritten in plain words, one
+idea at a time, with notes in every lesson, starting with Terminal.
+
 **Tap the underlined words for the story behind them.** Lessons now have context notes, like the
 explanations on a lyrics site: tap an underlined phrase and a panel opens beside the lesson with
 what it means, why it matters and, often, a picture. The lesson slides over so the panel never

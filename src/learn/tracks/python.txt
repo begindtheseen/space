@@ -2,22 +2,139 @@
 @title Python
 @name Python, a first language
 @blurb From print() to classes: the twelve ideas every Python program is built from.
+@plainvoice true
 
 === py-01 | Printing
 --- teach
-A Python program is a list of instructions, run top to bottom. The first instruction everyone learns is `print`, which writes a line of text to the output:
+In the Terminal course you typed one command, pressed Enter, and the computer answered straight away. `echo "Launch at dawn"` printed its text, then sat waiting for your next command. Now you will write your first **program**, and there is one big difference: you write *all* the instructions down first, and then the computer runs them together.
+
+Think of a recipe card. You do not stand in the kitchen and invent each step as you go. The steps are written on the card, in order, and the cook follows them from the top of the card to the bottom.
+
+### A program is a list of instructions
+
+A **program** is a list of instructions for the computer, written down in order. Python reads your program from the top line to the bottom line and does each one in turn. The editor on this page holds your program. When you press **Run Code**, Python runs it, and whatever the program shows appears on the page. That text is called the **[[output|output]]**.
+
+### print writes a line
+
+The first instruction everyone learns is `print`. It is Python's version of `echo`: it writes a line of text to the output. `print` is a **[[function|function]]** — a named action that Python already knows how to do. You tell it *what* to print by putting it inside the round brackets `(` and `)` right after the name.
 
 ```python
 print("Launch in T-minus 10")
 ```
 
-Text in quotes is a **string**. `print` can take several values separated by commas, and puts a space between them:
+Running that program shows one line:
+
+```
+Launch in T-minus 10
+```
+
+Two `print` lines give two lines of output, in the same order as the code, top to bottom:
+
+```python
+print("Engines armed")
+print("Launch in T-minus 10")
+```
+
+```
+Engines armed
+Launch in T-minus 10
+```
+
+### Text goes in quotes
+
+Text in quote marks is called a **[[string|string-beads]]** — a piece of text, with a quote mark `"` at each end. The quotes tell Python exactly where the text starts and where it stops. They are not printed: only the letters between them are.
+
+Every letter, space and punctuation mark inside the quotes comes out exactly as you typed it. `"hello"` prints `hello`, and `"Hello!"` prints `Hello!`.
+
+**Watch out:** every opening quote needs a closing quote. `print("Hello)` is missing the `"` before the `)`, so Python cannot tell where the text ends, and it stops with an error instead of running. If you forget the quotes altogether, as in `print(Hello)`, Python thinks `Hello` is a name for something else, cannot find it, and stops with an error that says `name 'Hello' is not defined`.
+
+### Several values in one print
+
+You can hand `print` more than one value. Put them all inside the brackets and separate them with commas `,`. Each value you hand over is called an **[[argument|argument]]**. `print` writes them all on one line and puts one space between each pair:
+
+```python
+print("Fuel:", 98, "percent")
+```
+
+```
+Fuel: 98 percent
+```
+
+Look at what happened. You did not type any spaces between the values, yet the output has a space after `Fuel:` and after `98`. `print` added them. Notice also that `98` has no quotes: it is a number, not text. You will meet numbers properly in the next two lessons.
+
+### Comments: notes for people
+
+Anything after a `#` (the hash sign) on a line is a **comment** — a note for people that Python skips completely. It does not run and it is not printed.
+
+```python
+# Countdown message for the crew
+print("Launch in T-minus 10")   # this line prints; the note after # does not
+```
+
+From now on, the examples in these lessons use a comment to show the output right next to the line that makes it:
 
 ```python
 print("Fuel:", 98, "percent")   # Fuel: 98 percent
 ```
 
-Anything after `#` on a line is a **comment** — Python ignores it. Comments are for the next person who reads your code, which is usually you.
+Comments are for the next person who reads your code, and that person is usually you, a week later, wondering what you meant. Good engineers [[write them on purpose|comments-apollo]].
+
+::: context output Where the output goes
+**Output** is anything a program shows to the outside world. In the Terminal course, `echo` and `cat` sent their output to the terminal screen, and `>` sent it into a file instead. A Python `print` sends its text to the same kind of place, which programmers call **standard output**. On this page it appears when you press Run Code. On a real computer, if you ran a Python file from the terminal, the output would land right there in the terminal, below your command.
+:::
+
+::: context function A function is a named action
+A **function** is a small machine with a name. You hand it something through the brackets, it does its job, and something happens. `print` takes the text you give it and writes it to the output. Writing the name followed by brackets, like `print(...)`, is called **calling** the function: you are asking it to do its job now. Python comes with many ready-made functions, and in a later lesson you will build your own.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 110" font-family="Inter, Arial, sans-serif">
+  <rect x="10" y="38" width="86" height="34" rx="6" fill="#ffffff" stroke="#1d6fd1" stroke-width="2"/>
+  <text x="53" y="60" font-size="13" text-anchor="middle" fill="#1f2a44">"Hello"</text>
+  <line x1="98" y1="55" x2="132" y2="55" stroke="#1f2a44" stroke-width="2"/>
+  <polygon points="140,55 130,50 130,60" fill="#1f2a44"/>
+  <rect x="142" y="28" width="80" height="54" rx="8" fill="#8fb8f0" stroke="#1f2a44" stroke-width="2"/>
+  <text x="182" y="60" font-size="14" text-anchor="middle" fill="#1f2a44">print</text>
+  <line x1="224" y1="55" x2="256" y2="55" stroke="#1f2a44" stroke-width="2"/>
+  <polygon points="264,55 254,50 254,60" fill="#1f2a44"/>
+  <rect x="266" y="30" width="84" height="50" rx="4" fill="#1f2a44"/>
+  <text x="308" y="60" font-size="13" text-anchor="middle" fill="#ffffff">Hello</text>
+  <text x="53" y="96" font-size="11" text-anchor="middle" fill="#6c7a93">what you hand in</text>
+  <text x="182" y="100" font-size="11" text-anchor="middle" fill="#6c7a93">the function</text>
+  <text x="308" y="96" font-size="11" text-anchor="middle" fill="#6c7a93">the output</text>
+</svg>
+```
+:::
+
+::: context string-beads Why text is called a string
+Picture beads threaded on a string, one after another. Python stores text the same way: a row of characters in order, where a **character** is one letter, digit, space or punctuation mark. So a piece of text is a "string of characters", and programmers shortened that to **string**. The space counts as a character too, so `"Go now"` is six beads long.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 90" font-family="Inter, Arial, sans-serif">
+  <line x1="20" y1="45" x2="340" y2="45" stroke="#6c7a93" stroke-width="2"/>
+  <circle cx="55" cy="45" r="20" fill="#ffffff" stroke="#1d6fd1" stroke-width="2"/>
+  <circle cx="105" cy="45" r="20" fill="#ffffff" stroke="#1d6fd1" stroke-width="2"/>
+  <circle cx="155" cy="45" r="20" fill="#ffffff" stroke="#1d6fd1" stroke-width="2"/>
+  <circle cx="205" cy="45" r="20" fill="#ffffff" stroke="#1d6fd1" stroke-width="2"/>
+  <circle cx="255" cy="45" r="20" fill="#ffffff" stroke="#1d6fd1" stroke-width="2"/>
+  <circle cx="305" cy="45" r="20" fill="#ffffff" stroke="#1d6fd1" stroke-width="2"/>
+  <text x="55" y="50" font-size="14" text-anchor="middle" fill="#1f2a44">G</text>
+  <text x="105" y="50" font-size="14" text-anchor="middle" fill="#1f2a44">o</text>
+  <text x="155" y="50" font-size="11" text-anchor="middle" fill="#6c7a93">space</text>
+  <text x="205" y="50" font-size="14" text-anchor="middle" fill="#1f2a44">n</text>
+  <text x="255" y="50" font-size="14" text-anchor="middle" fill="#1f2a44">o</text>
+  <text x="305" y="50" font-size="14" text-anchor="middle" fill="#1f2a44">w</text>
+  <text x="180" y="84" font-size="12" text-anchor="middle" fill="#1f2a44">"Go now": six characters in a row</text>
+</svg>
+```
+:::
+
+::: context argument The values you hand to a function
+An **argument** is a value you give a function to work with, placed inside its brackets. In `print("Fuel:", 98, "percent")` there are three arguments: `"Fuel:"`, `98` and `"percent"`, separated by commas. The word is borrowed from mathematics, where the number you feed into a formula is also called its argument. It has nothing to do with quarrelling. Some functions take one argument, some take several, and in the arithmetic lesson you will meet one that takes two numbers.
+:::
+
+::: context comments-apollo Comments in real flight software
+The program that guided the Apollo spacecraft to the Moon was written in the 1960s, and its full source code is now public for anyone to read online. It is packed with comments explaining what each part does, and a few jokes as well. Today, flight software teams at NASA and elsewhere follow written coding standards, and explaining tricky code in comments is a normal part of the job. Code is read far more often than it is written, and a comment is how you speak to the next reader.
+:::
 --- task
 Make the program print exactly these two lines:
 
@@ -25,6 +142,8 @@ Make the program print exactly these two lines:
 Hello, world!
 Python is running in your browser.
 ```
+
+Use one `print` for each line, with the text in quotes. Then press Run Code.
 --- starter
 # Write your two print() calls below.
 
@@ -32,9 +151,11 @@ Python is running in your browser.
 print("Hello, world!")
 print("Python is running in your browser.")
 --- hint
-Each line of output needs its own `print(...)`, with the text inside quotes.
+Each line of output needs its own `print(...)`. Put the text for each line inside quotes, inside the brackets.
 --- hint
-Capitals and punctuation count: `Hello, world!` has a comma and an exclamation mark.
+Copy the text exactly. Capitals and punctuation count: `Hello, world!` has a capital H, a comma, a space and an exclamation mark, and the second line ends with a full stop.
+--- hint
+The first line of your program is `print("Hello, world!")`. The second line has the same shape, with the second sentence inside the quotes.
 --- check output | Prints both lines, exactly
 Hello, world!
 Python is running in your browser.
@@ -42,7 +163,45 @@ Python is running in your browser.
 
 === py-02 | Variables and types
 --- teach
-A **variable** is a name for a value. You create one with `=`:
+Last lesson, every value you printed was typed right inside `print`. Real programs need to remember values and use them again: how much fuel is left, the name of the mission, whether the engines are on. This lesson shows you how to give a value a name so Python remembers it.
+
+Picture a jar in the kitchen with a label stuck on it that says "sugar". The label is how you find the jar again. You can empty the jar and fill it with something new, and the label still works.
+
+### A name for a value
+
+A **variable** is a name for a value. You create one with `=`, the equals sign:
+
+```python
+fuel = 98
+```
+
+Read that line aloud as "fuel **gets** 98", or "set fuel to 98". The equals sign here is not asking a question like in maths. It is an order: *take the value on the right and stick the name on the left onto it*. This is called **[[assignment|assignment]]** — giving a name its value.
+
+Once a variable exists, you can use its name anywhere you would use the value:
+
+```python
+fuel = 98
+print(fuel)             # 98
+print("Fuel:", fuel)    # Fuel: 98
+```
+
+**Watch out:** `print(fuel)` and `print("fuel")` do different things. With no quotes, `fuel` is a variable, so Python prints the value it holds: `98`. In quotes, `"fuel"` is a string, so Python prints the word itself: `fuel`.
+
+### Changing the value
+
+A variable can be given a new value at any time. This is called **reassigning** it. The name always refers to the most recent value, because Python runs the lines top to bottom:
+
+```python
+fuel = 98
+fuel = 75
+print(fuel)   # 75
+```
+
+The first line stuck the label on `98`. The second line moved the label onto `75`. By the time `print` runs, `fuel` means `75`. The old value is not kept anywhere under that name — [[the label has moved|label-moves]].
+
+### Values come in kinds
+
+Values do not all look alike. Here are four variables, each holding a different kind of value:
 
 ```python
 name = "Ada"
@@ -51,21 +210,56 @@ height_m = 1.65
 is_engineer = True
 ```
 
-Every value has a **type**: `"Ada"` is a `str` (string), `36` is an `int` (whole number), `1.65` is a `float` (decimal), and `True` is a `bool`. `type(x)` tells you which:
+- `"Ada"` is text, so it goes in quotes: a string, as in the last lesson.
+- `36` is a whole number. No quotes, and no commas inside it, even if it is big: two million is written `2000000`.
+- `1.65` is a number with a decimal point.
+- `True` is a yes-or-no value. There are only two: `True` and `False`. Each starts with a capital letter and has no quotes.
 
-```python
-print(type(age))   # <class 'int'>
+The kind of a value is called its **type**. In the next lesson you will learn the names Python gives these four types and how to ask Python which type a value is.
+
+### Choosing good names
+
+A variable name can use letters, digits and the underscore `_` (the low line you get with Shift and the minus key). It cannot contain spaces, and it cannot start with a digit. Capitals matter: `fuel` and `Fuel` are two different names.
+
+Python programmers write names in lowercase, with an underscore between words: `max_speed`, not `MaxSpeed`. This style is called **[[snake case|snake-case]]**. Pick names that say what the value is. `height_m` tells you it is a height and that it is [[measured in metres|units-in-names]]; `h` tells you almost nothing.
+
+::: context assignment The equals sign points left
+In maths, "x = 5" and "5 = x" say the same thing. In Python they do not. Python always works out the right-hand side first and then gives that value the name on the left. So `fuel = 98` works, and `98 = fuel` is an error: you cannot stick a label called `98` on anything.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 100" font-family="Inter, Arial, sans-serif">
+  <rect x="30" y="34" width="80" height="34" rx="6" fill="#f2b880" stroke="#1f2a44" stroke-width="2"/>
+  <text x="70" y="56" font-size="14" text-anchor="middle" fill="#1f2a44">fuel</text>
+  <line x1="236" y1="51" x2="122" y2="51" stroke="#1d6fd1" stroke-width="3"/>
+  <polygon points="112,51 124,45 124,57" fill="#1d6fd1"/>
+  <text x="175" y="40" font-size="12" text-anchor="middle" fill="#1d6fd1">=  (gets)</text>
+  <rect x="240" y="30" width="90" height="42" rx="4" fill="#ffffff" stroke="#1f2a44" stroke-width="2"/>
+  <text x="285" y="57" font-size="15" text-anchor="middle" fill="#1f2a44">98</text>
+  <text x="70" y="90" font-size="11" text-anchor="middle" fill="#6c7a93">the name (label)</text>
+  <text x="285" y="90" font-size="11" text-anchor="middle" fill="#6c7a93">the value</text>
+</svg>
 ```
+:::
 
-A variable can be reassigned, and it always refers to the most recent value. Names use lowercase with underscores: `max_speed`, not `MaxSpeed`.
+::: context label-moves What happens to the old value
+When you write `fuel = 75` after `fuel = 98`, Python does not scratch out the 98 and write 75 over it. It makes the value 75 and moves the name `fuel` onto it. The 98 is left with no name, so your program can no longer reach it, and Python quietly clears it away to free up the computer's memory. That is why the order of your lines matters so much: a name means whatever it was last given.
+:::
+
+::: context snake-case Why it is called snake case
+Words joined by underscores lie low and flat along the line, like a snake: `max_speed`, `fuel_left_kg`. That is the joke behind the name. Python's official style guide, called PEP 8, asks for snake case in variable names, so nearly all Python code you will read uses it. The other style, `MaxSpeed`, with a capital at the start of each word, has its own job in Python: it is used for the names of classes, which you will meet in the last lesson of this course.
+:::
+
+::: context units-in-names Why engineers put units in names
+A number without its unit is a trap. Is `height = 1.65` in metres or in feet? In 1999, NASA lost the Mars Climate Orbiter because one team's software produced numbers in US customary units (pound-force seconds) while another team's software expected metric units (newton-seconds). The spacecraft flew too close to Mars and was lost. Writing the unit into the name, as in `height_m` or `thrust_kn`, is a cheap habit that makes that kind of mix-up much easier to spot.
+:::
 --- task
 Create three variables:
 
 - `city` holding the string `"Houston"`
-- `population` holding the whole number `2300000`
+- `population` holding the whole number `2300000` (no quotes, no commas)
 - `is_capital` holding `False`
 
-Then print `city` and `population` on one line with a single `print`, so the output is `Houston 2300000`.
+Then print `city` and `population` on one line with a single `print`, putting both names inside the brackets with a comma between them. The output should be `Houston 2300000`.
 --- starter
 # Create city, population and is_capital, then print city and population.
 
@@ -75,9 +269,11 @@ population = 2300000
 is_capital = False
 print(city, population)
 --- hint
-`print(a, b)` prints both values with a space between them.
+Each variable is one line: the name, then `=`, then the value. For example, `city = "Houston"`.
 --- hint
-`False` has a capital F and no quotes — it is a bool, not a string.
+`False` has a capital F and no quotes. The number is written `2300000`, with no quotes and no commas.
+--- hint
+The last line is one `print` with two arguments: `print(city, population)`. No quotes around the names, because you want their values, not the words.
 --- check case | city is the string "Houston"
 city
 => "Houston"
@@ -90,23 +286,223 @@ is_capital
 --- check output | Prints: Houston 2300000
 Houston 2300000
 
+=== py-02b | What type is it?
+--- teach
+Last lesson you saw that values come in four kinds: text, whole numbers, numbers with a decimal point, and `True` or `False`. The kind of a value is its **type**. This lesson gives each type its Python name and shows you how to ask Python which type a value is.
+
+Think of the drawers in a toolbox. Screws go in one, nails in another, tape in a third. You would not try to hammer in a screw. Python sorts values the same way, because each type can do different things.
+
+### The four types and their names
+
+Python uses a short name for each type:
+
+| Value | Type name | Say it as | What it is |
+| --- | --- | --- | --- |
+| `"Ada"` | `str` | "string" | text, in quotes |
+| `36` | `int` | "int", short for integer | a whole number |
+| `1.65` | `float` | "float" | a number with a decimal point |
+| `True` | `bool` | "bool", short for boolean | `True` or `False` |
+
+An **integer** is a whole number with no fraction part: `36`, `0`, `-5`. A **[[float|float-name]]** is a number with a decimal point: `1.65`, `7.66`, even `2.0`. A **boolean**, or bool, is a yes-or-no value, and there are only two: `True` and `False`. The odd word [[comes from a person's name|boolean]].
+
+### Asking Python with type()
+
+The function `type` tells you the type of any value. Put the value, or a variable's name, inside its brackets, and `print` the answer:
+
+```python
+age = 36
+print(type(age))   # <class 'int'>
+```
+
+There are two pairs of brackets there. The inner call, `type(age)`, finds the type. The outer call, `print(...)`, shows it. Python works from the inside out, the same way you work out brackets in maths.
+
+The answer reads `<class 'int'>`. Ignore the `<class ...>` wrapping for now; the part in quotes, `int`, is the type name. The word [[class|class-word]] will make sense much later in the course.
+
+Here are all four:
+
+```python
+print(type("Ada"))   # <class 'str'>
+print(type(36))      # <class 'int'>
+print(type(1.65))    # <class 'float'>
+print(type(True))    # <class 'bool'>
+```
+
+**Watch out:** quotes change the type. `36` is an `int`, but `"36"` is a `str`: it is the two characters 3 and 6, not a number. `print` shows both as `36`, so they look the same on the screen, yet `type` tells them apart. Mixing up a number and text that looks like a number is one of the most common mistakes in programming, and [[types matter in flight too|ariane-5]].
+
+::: context float-name Why a decimal number is called a float
+The full name is **floating-point number**. The "point" is the decimal point, and it "floats" because the computer can slide it left or right. Scientists do the same thing when they write 3.0 × 10⁸ ("3 times ten to the eighth") instead of 300,000,000: the digits stay the same and the point moves. That is how one type can hold a tiny number like 0.000003 and a huge one like the distance to the Sun in metres.
+:::
+
+::: context boolean Named after a person
+The `bool` type is named after George Boole, an English mathematician of the 1800s. He worked out a kind of algebra where every value is either true or false, and where "and", "or" and "not" act like plus and times. About a century later, engineers found his algebra described exactly how switches in a circuit behave. The logic inside every computer chip is built on it, which is why programmers still say "boolean" for a yes-or-no value.
+:::
+
+::: context class-word What class means here
+In Python every type is described by something called a **class** — a kind of blueprint that says what a value of that type is and what it can do. So `<class 'int'>` means "this value was made from the int blueprint". You will build your own classes in the last lesson of this course. For now, read the part in quotes.
+:::
+
+::: context ariane-5 A rocket lost to a type
+On 4 June 1996, the first Ariane 5 rocket broke up about 40 seconds after launch. The cause was in its guidance software. A number stored as a 64-bit floating-point value was converted into a 16-bit integer, a type that can only hold whole numbers up to 32,767. The real value was bigger than that, the conversion failed, and the guidance system shut down. The rocket veered off course and was destroyed. One lesson engineers took from it: always know exactly what type each value is, and what it can hold.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 120" font-family="Inter, Arial, sans-serif">
+  <rect x="14" y="30" width="150" height="50" rx="6" fill="#8fb8f0" stroke="#1f2a44" stroke-width="2"/>
+  <text x="89" y="52" font-size="12" text-anchor="middle" fill="#1f2a44">64-bit float</text>
+  <text x="89" y="70" font-size="11" text-anchor="middle" fill="#1f2a44">very large range</text>
+  <line x1="168" y1="55" x2="226" y2="55" stroke="#b4232c" stroke-width="3"/>
+  <polygon points="236,55 224,49 224,61" fill="#b4232c"/>
+  <rect x="240" y="38" width="100" height="34" rx="6" fill="#ffffff" stroke="#1f2a44" stroke-width="2"/>
+  <text x="290" y="55" font-size="12" text-anchor="middle" fill="#1f2a44">16-bit int</text>
+  <text x="290" y="67" font-size="11" text-anchor="middle" fill="#1f2a44">max 32,767</text>
+  <text x="200" y="100" font-size="12" text-anchor="middle" fill="#b4232c">value too big to fit: conversion fails</text>
+</svg>
+```
+:::
+--- task
+The International Space Station flies about 408 kilometres up, at about 7.66 kilometres per second.
+
+1. Create a variable `altitude_km` holding the whole number `408`.
+2. Create a variable `speed_km_s` holding the decimal number `7.66`.
+3. Print the type of `altitude_km` on one line, then the type of `speed_km_s` on the next, using `print(type(...))` for each.
+
+The output should be:
+
+```
+<class 'int'>
+<class 'float'>
+```
+--- starter
+# Create altitude_km and speed_km_s, then print the type of each.
+
+--- solution
+altitude_km = 408
+speed_km_s = 7.66
+print(type(altitude_km))
+print(type(speed_km_s))
+--- hint
+Make the two variables first, one per line: the name, `=`, then the number, with no quotes.
+--- hint
+To show a type, put `type(...)` inside `print(...)`, with the variable's name inside `type`'s brackets.
+--- hint
+The first print line is `print(type(altitude_km))`. The second one has the same shape with `speed_km_s`.
+--- check test | altitude_km is the int 408
+type(altitude_km) is int and altitude_km == 408
+?? Write 408 with no quotes and no decimal point.
+--- check test | speed_km_s is the float 7.66
+type(speed_km_s) is float and speed_km_s == 7.66
+--- check source | Uses type()
+type\(
+?? Ask Python with type(...), rather than typing the answer in.
+--- check output | Prints int, then float
+<class 'int'>
+<class 'float'>
+
 === py-03 | Arithmetic
 --- teach
-Python does arithmetic with the operators you would expect, plus a few more:
+In the last lesson you met two kinds of number, `int` for whole numbers and `float` for numbers with a decimal point. Now you will make Python do sums with them. Python is a very fast, very careful calculator, and every engineering program you will ever write uses it that way.
 
-| Operator | Meaning | Example | Result |
-|---|---|---|---|
-| `+ - *` | add, subtract, multiply | `7 * 3` | `21` |
-| `/` | divide (always a float) | `7 / 2` | `3.5` |
-| `//` | whole-number division | `7 // 2` | `3` |
-| `%` | remainder | `7 % 2` | `1` |
-| `**` | power | `2 ** 10` | `1024` |
+Think of a calculator's keys: plus, minus, times, divide. Python has the same four, written with symbols from your keyboard.
 
-Brackets work as in maths: `(2 + 3) * 4` is `20`. `round(x, 2)` rounds to two decimal places.
+### The four basic operators
+
+A symbol that does a sum is called an **[[operator|operator]]**. Here are the four you know from maths:
+
+| Symbol | Say it as | Example | Result |
+| --- | --- | --- | --- |
+| `+` | "plus" | `7 + 3` | `10` |
+| `-` | "minus" | `7 - 3` | `4` |
+| `*` | "times" (the star, or asterisk) | `7 * 3` | `21` |
+| `/` | "divided by" (the slash) | `7 / 2` | `3.5` |
+
+Keyboards have no × or ÷ key, so Python uses the star `*` for times and the slash `/` for divide.
+
+```python
+print(7 * 3)       # 21
+print(7 / 2)       # 3.5
+```
+
+You can store the answer in a variable, the same way you stored plain values two lessons ago. Python works out the right-hand side first, then gives it the name:
+
+```python
+bottles = 3
+litres = bottles * 1.5
+print(litres)      # 4.5
+```
+
+### Dividing always gives a float
+
+The slash `/` always gives a `float`, even when the answer comes out whole:
+
+```python
+print(6 / 2)       # 3.0
+print(type(6 / 2)) # <class 'float'>
+```
+
+`6 / 2` is `3.0`, not `3`. The `.0` is Python telling you the answer's type is `float`.
+
+### Brackets and the order of operations
+
+When a sum has several steps, Python follows the same order you learned in maths: brackets first, then times and divide, then plus and minus.
+
+```python
+print(2 + 3 * 4)     # 14   (3 * 4 first, then add 2)
+print((2 + 3) * 4)   # 20   (the brackets first: 5 * 4)
+```
+
+**Watch out:** Python never guesses what you meant. `2 + 3 * 4` is `14`, not `20`, because the multiplication happens before the addition. If you want the addition first, you must write the brackets.
+
+### Rounding with round()
+
+Some answers come out with a long tail of digits, and some come out [[a tiny bit off|float-tails]] because of how computers store decimals. The function `round` tidies a number up. It takes two arguments: the number, then how many digits you want after the decimal point.
+
+```python
+print(round(3.14159, 2))   # 3.14
+print(0.1 + 0.2)           # 0.30000000000000004
+print(round(0.1 + 0.2, 2)) # 0.3
+```
+
+### Putting it together
+
+Here is a sum shaped like the one in the task. Three bottles of water cost 1.25 dollars each, and two apples cost 0.5 dollars each. What is the total?
+
+```python
+total = round(3 * 1.25 + 2 * 0.5, 2)
+print(total)   # 4.75
+```
+
+Read it from the inside out. `3 * 1.25` is `3.75`. `2 * 0.5` is `1.0`. The multiplications happen first, then the `+` adds them: `4.75`. Last of all, `round` keeps two digits after the point. Prices this small are fine, but [[very small numbers|tiny-numbers]] print in a surprising way, so it helps to know what to expect.
+
+::: context operator Where the word comes from
+An **operator** is a symbol that operates on values: it takes them and makes a new value. The values it works on are called **operands**. In `7 * 3`, the operator is `*` and the operands are `7` and `3`. You will meet many more operators in Python, including ones that compare values (is this bigger than that?) in the lesson on making decisions.
+:::
+
+::: context float-tails Why 0.1 + 0.2 is not quite 0.3
+Try writing one third as a decimal: 0.3333... The threes never end, so on paper you stop somewhere and accept a tiny error. Computers store numbers in binary (only 0s and 1s), and in binary, 0.1 is a never-ending pattern too. The computer keeps as many digits as fit and drops the rest. The tiny errors usually cancel or hide, but sometimes they peek out, as in `0.30000000000000004`. This happens in every programming language, not only Python. Engineers round results for display, and never test two floats for being exactly equal.
+:::
+
+::: context tiny-numbers How Python prints very small numbers
+Python switches to **scientific notation** for numbers smaller than 0.0001. So `print(0.000003)` shows `3e-06`, which you read as "3 times ten to the minus six", and written 3 × 10⁻⁶ in science books. The `e` means "times ten to the power of". It is the same number, written in a shorter way. Scientists and engineers use this all the time for very large and very small values.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 100" font-family="Inter, Arial, sans-serif">
+  <text x="90" y="40" font-size="18" text-anchor="middle" fill="#1f2a44">0.000003</text>
+  <line x1="160" y1="34" x2="196" y2="34" stroke="#1f2a44" stroke-width="2"/>
+  <polygon points="204,34 194,29 194,39" fill="#1f2a44"/>
+  <text x="262" y="40" font-size="18" text-anchor="middle" fill="#1d6fd1">3e-06</text>
+  <text x="90" y="76" font-size="12" text-anchor="middle" fill="#6c7a93">what you type</text>
+  <text x="262" y="76" font-size="12" text-anchor="middle" fill="#6c7a93">what print shows</text>
+  <text x="262" y="92" font-size="11" text-anchor="middle" fill="#6c7a93">3 times 10 to the minus 6</text>
+</svg>
+```
+:::
 --- task
-A request used `1250` input tokens and `380` output tokens. Input costs `0.000003` dollars per token and output costs `0.000015` per token.
+Services that run AI models, such as chatbots, charge by the **token**, which is a small chunk of text, roughly a short word or part of a word. The text you send in is counted as input tokens, and the reply is counted as output tokens.
 
-Set `input_tokens`, `output_tokens`, and `cost` (the total in dollars, rounded to 6 decimal places with `round`). Then print `cost`.
+A request used `1250` input tokens and `380` output tokens. Input costs `0.000003` dollars per token and output costs `0.000015` dollars per token.
+
+1. Set `input_tokens` to `1250` and `output_tokens` to `380`.
+2. Set `cost` to the total in dollars: the input tokens times their price, plus the output tokens times their price, rounded with `round` to 6 digits after the decimal point.
+3. Print `cost`.
 --- starter
 input_tokens = 0
 output_tokens = 0
@@ -118,9 +514,11 @@ output_tokens = 380
 cost = round(input_tokens * 0.000003 + output_tokens * 0.000015, 6)
 print(cost)
 --- hint
-Multiply each token count by its price, then add the two.
+Change the first two lines so the variables hold the real token counts. Then work on the `cost` line: multiply each token count by its price, then add the two.
 --- hint
-`round(value, 6)` keeps six digits after the decimal point.
+The sum inside is `input_tokens * 0.000003 + output_tokens * 0.000015`. The two multiplications happen before the addition, so you do not need extra brackets.
+--- hint
+Wrap the whole sum in `round(..., 6)`: the sum goes where the dots are, and `6` keeps six digits after the decimal point. The printed answer should be `0.00945`.
 --- check test | input_tokens and output_tokens are set
 input_tokens == 1250 and output_tokens == 380
 --- check test | cost is the total in dollars
@@ -132,36 +530,333 @@ abs(cost - 0.00945) < 1e-9
 --- check output | Prints the cost
 0.00945
 
+=== py-03b | Whole-number division, remainder and powers
+--- teach
+Last lesson you used `+`, `-`, `*` and `/`. Python has three more arithmetic operators that engineers use all the time. Each one gets its own step here.
+
+Picture 7 cookies shared between 2 friends, with no breaking cookies in half. Each friend gets 3 cookies, and 1 cookie is left over. Those two answers, "3 each" and "1 left over", are the first two operators in this lesson.
+
+### Whole-number division: //
+
+`//`, two slashes, means **whole-number division**: divide, then throw away anything after the decimal point, so you only keep the whole part. Say it as "whole-number divided by".
+
+```python
+print(7 / 2)    # 3.5  (ordinary division)
+print(7 // 2)   # 3    (whole-number division: 3 cookies each)
+```
+
+Programmers also call this **[[floor division|floor-division]]**.
+
+### Remainder: %
+
+`%`, the percent sign, gives the **remainder**: what is left over after whole-number division. Say it as "remainder after dividing by". It has nothing to do with percentages here.
+
+```python
+print(7 % 2)    # 1   (1 cookie left over)
+print(10 % 5)   # 0   (10 shares out evenly, nothing left)
+```
+
+`//` and `%` make a pair. Together they turn one big number into two smaller ones. For example, 200 minutes is how many hours and minutes? There are 60 minutes in an hour:
+
+```python
+print(200 // 60)   # 3    (3 whole hours)
+print(200 % 60)    # 20   (20 minutes left over)
+```
+
+So 200 minutes is 3 hours and 20 minutes. This is exactly how [[mission clocks|mission-clock]] turn seconds into a readable time.
+
+### Powers: **
+
+`**`, two stars, means **to the power of**: multiply a number by itself a number of times. `2 ** 3` is 2 to the power of 3, which is `2 * 2 * 2`, which is `8`.
+
+```python
+print(2 ** 3)    # 8
+print(3 ** 2)    # 9   (3 squared: 3 * 3)
+print(2 ** 10)   # 1024
+```
+
+Squaring, `** 2`, is the one you will use most. The area of a square with sides 4 metres long is `4 ** 2`, which is `16` square metres. Powers of two, like `2 ** 10`, [[show up everywhere in computers|powers-of-two]].
+
+**Watch out:** in some calculators and in school, `2^3` means 2 to the power of 3. In Python the `^` sign means something quite different, and `2 ^ 10` gives `8`, not `1024`. Python gives no error, only a wrong answer, so always use `**` for powers.
+
+### All seven together
+
+Here is every arithmetic operator from the last two lessons, in one table:
+
+| Operator | Meaning | Example | Result |
+| --- | --- | --- | --- |
+| `+ - *` | add, subtract, multiply | `7 * 3` | `21` |
+| `/` | divide (always a float) | `7 / 2` | `3.5` |
+| `//` | whole-number division | `7 // 2` | `3` |
+| `%` | remainder | `7 % 2` | `1` |
+| `**` | power | `2 ** 10` | `1024` |
+
+::: context floor-division Why it is called floor division
+The **floor** of a number is the nearest whole number at or below it: the floor of 3.5 is 3. `//` always rounds *down* to the floor. For positive numbers that is the same as chopping off the decimals. For negative numbers it is not: `-7 // 2` is `-4`, because -3.5 rounded down, towards the left of the number line, is -4.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 110" font-family="Inter, Arial, sans-serif">
+  <line x1="10" y1="55" x2="350" y2="55" stroke="#1f2a44" stroke-width="2"/>
+  <g stroke="#1f2a44" stroke-width="2">
+    <line x1="20" y1="48" x2="20" y2="62"/><line x1="60" y1="48" x2="60" y2="62"/><line x1="100" y1="48" x2="100" y2="62"/>
+    <line x1="140" y1="48" x2="140" y2="62"/><line x1="180" y1="48" x2="180" y2="62"/><line x1="220" y1="48" x2="220" y2="62"/>
+    <line x1="260" y1="48" x2="260" y2="62"/><line x1="300" y1="48" x2="300" y2="62"/><line x1="340" y1="48" x2="340" y2="62"/>
+  </g>
+  <g font-size="11" text-anchor="middle" fill="#1f2a44">
+    <text x="20" y="78">-4</text><text x="60" y="78">-3</text><text x="100" y="78">-2</text><text x="140" y="78">-1</text>
+    <text x="180" y="78">0</text><text x="220" y="78">1</text><text x="260" y="78">2</text><text x="300" y="78">3</text><text x="340" y="78">4</text>
+  </g>
+  <circle cx="320" cy="55" r="5" fill="#1d6fd1"/>
+  <path d="M320,44 Q310,28 300,44" fill="none" stroke="#1d6fd1" stroke-width="2"/>
+  <polygon points="300,46 296,37 305,39" fill="#1d6fd1"/>
+  <text x="320" y="22" font-size="11" text-anchor="middle" fill="#1d6fd1">3.5 to 3</text>
+  <circle cx="40" cy="55" r="5" fill="#b4232c"/>
+  <path d="M40,44 Q30,28 20,44" fill="none" stroke="#b4232c" stroke-width="2"/>
+  <polygon points="20,46 16,37 25,39" fill="#b4232c"/>
+  <text x="44" y="22" font-size="11" text-anchor="middle" fill="#b4232c">-3.5 to -4</text>
+  <text x="180" y="102" font-size="12" text-anchor="middle" fill="#1f2a44">// always moves left, to the floor</text>
+</svg>
+```
+:::
+
+::: context mission-clock How mission clocks use // and %
+During a launch, controllers watch **mission elapsed time**: the time since lift-off, shown in hours, minutes and seconds. The computer counts plain seconds, so software has to turn a count like 7384 seconds into a readable time. Whole-number division by 3600 (the seconds in an hour) gives the hours: `7384 // 3600` is `2`. The remainder, `7384 % 3600`, is `184` seconds, and splitting that the same way with 60 gives `3` minutes and `4` seconds. So 7384 seconds is 2 hours, 3 minutes and 4 seconds.
+:::
+
+::: context powers-of-two Why 1024 keeps turning up
+Computers store everything as bits, and a bit is a tiny switch that is either off or on: two choices. With 10 switches you can make `2 ** 10` different patterns, which is 1024. That is why memory sizes are so often powers of two. The number 1024 is close to 1000, which is why it has long been nicknamed a "kilo" in computing, even though a true kilo is exactly 1000.
+:::
+--- task
+Practise all three new operators.
+
+1. A test burn lasted `200` minutes. Set `hours` to the whole number of hours in 200 minutes, using `200 // 60`.
+2. Set `minutes` to the minutes left over, using `200 % 60`.
+3. A square solar panel has sides `3` metres long. Set `area` to its area, using `3 ** 2`.
+4. Print `hours` and `minutes` on one line with one `print`, then print `area` on the next line.
+
+The output should be:
+
+```
+3 20
+9
+```
+--- starter
+hours = 0
+minutes = 0
+area = 0
+print(hours, minutes)
+print(area)
+--- solution
+hours = 200 // 60
+minutes = 200 % 60
+area = 3 ** 2
+print(hours, minutes)
+print(area)
+--- hint
+Each of the first three lines gets the sum from the task on its right-hand side, in place of the `0`.
+--- hint
+`//` is whole-number division, `%` is the remainder, and `**` is "to the power of". So `hours = 200 // 60`.
+--- hint
+The three lines are `hours = 200 // 60`, `minutes = 200 % 60` and `area = 3 ** 2`. Leave the two print lines as they are.
+--- check test | hours and minutes are 3 and 20
+hours == 3 and minutes == 20
+?? 200 // 60 is 3 and 200 % 60 is 20.
+--- check test | area is 9
+area == 9
+--- check source | Uses whole-number division
+//
+--- check source | Uses the remainder operator
+%
+--- check source | Uses ** for the power
+\*\*
+?? Write 3 ** 2, with two stars.
+--- check output | Prints the hours and minutes, then the area
+3 20
+9
+
 === py-04 | Strings and f-strings
 --- teach
-Strings have useful methods — functions attached to the value:
+Last lesson you made Python do arithmetic with numbers. This lesson is about text: how to tidy it up, measure it, search it, and build sentences out of your variables.
+
+Picture a name typed into a sign-up form. People add extra spaces by accident, or type in capitals, or mix big and small letters. Before a program can use that name, it needs a [[wash|cleaning-text]]. Python gives every string a set of tools for exactly that.
+
+### Methods: tools that come with a value
+
+You have already met a few **functions**. A function is a named command you run by putting round brackets after its name, like `print(...)`, `type(...)` and `round(...)`.
+
+A **[[method|method]]** is a function that belongs to a value and does a job on that value. You use it by writing the value, then a dot `.`, then the method's name, then round brackets `()`:
+
+```python
+word = "Hello"
+print(word.upper())   # HELLO
+```
+
+Read `word.upper()` out loud as "word dot upper". It means: take `word` and use its `upper` tool. The brackets at the end are what make the tool actually run, the same way the brackets after `print` make it print.
+
+### Changing capitals: lower and upper
+
+`lower` gives back the text with every letter small. `upper` gives it back with every letter a capital. Spaces and punctuation stay as they are.
+
+```python
+s = "Hello World"
+print(s.lower())   # hello world
+print(s.upper())   # HELLO WORLD
+```
+
+This is handy when people type the same thing in different ways. `"ADA"`, `"Ada"` and `"ada"` all become `"ada"` after `.lower()`, so your program can treat them as the same name.
+
+### Trimming spaces: strip
+
+`strip` removes the spaces at both ends of a string. It leaves the spaces in the middle alone.
 
 ```python
 s = "  Hello World  "
-s.strip()      # "Hello World"     (removes spaces at the ends)
-s.lower()      # "  hello world  "
-s.upper()      # "  HELLO WORLD  "
-len(s)         # 15                (length, including spaces)
-"World" in s   # True
+print(s.strip())   # Hello World
 ```
 
-The cleanest way to build a string out of values is an **f-string** — put `f` before the quotes and variables inside `{}`:
+Spaces are invisible on the screen, so how can you be sure they went? The next tool lets you check.
+
+### Measuring: len
+
+`len`, short for "length", counts the **characters** in a string. A character is one letter, digit, space or punctuation mark. `len` is a plain function, like `print`, not a method: the string goes *inside* its brackets, not in front of a dot.
+
+```python
+s = "  Hello World  "
+print(len(s))           # 15
+print(len(s.strip()))   # 11
+print(len(s.lower()))   # 15
+```
+
+Count it out. `Hello World` is 11 characters (the space in the middle counts). The original has 2 spaces in front and 2 behind, so 2 + 11 + 2 = 15. After `strip` the 4 end spaces are gone, which leaves 11. After `lower` the letters are small but all the spaces are still there, so it is still 15.
+
+### Searching: in
+
+The word `in` asks a yes-or-no question: "is this piece of text somewhere inside that one?" The answer is `True` or `False`, the `bool` type from Lesson 2.
+
+```python
+s = "  Hello World  "
+print("World" in s)   # True
+print("world" in s)   # False
+```
+
+The second answer is `False` because Python is **[[case-sensitive|case-sensitive]]**: a capital `W` and a small `w` are different characters to it.
+
+### Chaining: one tool after another
+
+Every string method hands back a new string. So you can put another dot and another method straight after the first one. This is called **[[chaining|chaining]]**, and Python does the steps from left to right.
+
+```python
+raw = "  HeLLo World  "
+print(raw.strip().lower())   # hello world
+```
+
+Step by step: `raw.strip()` gives `"HeLLo World"`. Then `.lower()` works on that and gives `"hello world"`.
+
+**Watch out:** a method does not change the string you used it on. It hands back a [[changed copy|immutable]]. So a line like `name.strip()` on its own does nothing useful: the tidy copy is made and then thrown away. To keep it, store it in a variable with `=`:
+
+```python
+name = "  Ada  "
+name.strip()          # tidy copy made, then lost
+print(len(name))      # 7   (name still has its spaces)
+clean = name.strip()  # tidy copy kept in clean
+print(len(clean))     # 3
+```
+
+### f-strings: sentences with blanks to fill
+
+In Lesson 1 you printed several values with commas, like `print("Fuel:", 98, "percent")`. Python puts a space between each value. Sometimes you do not want that space, for example when a bracket should hug a number, as in `(3 new)`.
+
+Think of a form letter: "Dear ___, you have ___ new messages." An **[[f-string|f-string-name]]** is a string with blanks like that, which Python fills in for you. You make one in two steps:
+
+1. Put the letter `f` right in front of the opening quote.
+2. Inside the text, put a variable's name in **curly braces** `{ }` wherever you want its value.
 
 ```python
 name = "Ada"
 count = 3
-print(f"{name} has {count} new messages")
+print(f"{name} has {count} new messages")   # Ada has 3 new messages
+print(f"({count} new)")                     # (3 new)
 ```
 
-Inside the braces you can put any expression, like `{count * 2}` or `{name.upper()}`.
+In the second line, the round brackets are outside the curly braces, so they are ordinary text and get printed as they are. Only what is inside `{ }` gets swapped for a value.
+
+Careful: if you forget the `f`, Python prints the braces as plain text. `print("{name} has mail")` prints `{name} has mail`.
+
+### Anything can go inside the braces
+
+The braces can hold more than a variable name. They can hold any **[[expression|expression]]**, which means any piece of code that works out to a value: arithmetic from last lesson, a method, or `len`.
+
+```python
+name = "Ada"
+count = 3
+print(f"{count * 2} messages")            # 6 messages
+print(f"Hi {name.upper()}")               # Hi ADA
+print(f"{name} is {len(name)} letters")   # Ada is 3 letters
+```
+
+Here `*` is "times", from last lesson. Python works out each expression first, then drops the answer into the sentence.
+
+::: context cleaning-text Why programs clean text first
+To a computer, `"ARM"` and `"ARM "` (with a space on the end) are two different strings. If a program is waiting for the word `ARM` and gets the second one, it will not recognise it. So programs that read typed text almost always clean it first: trim the spaces, then turn everything into one case. Engineers call this **normalising** the input. It is one of the first things any program that talks to people does.
+:::
+
+::: context method Functions and methods
+A **function** is a named, ready-made piece of work you can run: `print`, `type`, `round` and `len` are all functions. You give it values inside the brackets and it does its job.
+
+A **method** is a function that lives on a value. Strings carry `upper`, `lower` and `strip`. Later you will see that lists have their own methods too, and in Lesson 8 you will write functions of your own. The dot is the sign: `value.method()` means "use this value's own tool".
+:::
+
+::: context case-sensitive Big and small letters are different characters
+"Case" is an old printing word. Printers kept capital letters in the upper case (a wooden tray) and small letters in the lower case, which is where `upper` and `lower` get their names. Inside the computer, every character is stored as a number, and `A` gets a different number from `a`. So `"World" in s` and `"world" in s` are really two different questions. If you want a search that ignores capitals, turn both strings to `.lower()` first.
+:::
+
+::: context chaining Reading a chain left to right
+A chain works like a little factory line. The string goes in on the left, each method does one job, and passes its result to the next.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 120" font-family="Inter, Arial, sans-serif">
+  <rect x="4" y="44" width="100" height="36" rx="6" fill="#ffffff" stroke="#1f2a44" stroke-width="2"/>
+  <text x="54" y="67" font-size="11" text-anchor="middle" fill="#1f2a44">"  HeLLo World  "</text>
+  <rect x="130" y="44" width="100" height="36" rx="6" fill="#ffffff" stroke="#1f2a44" stroke-width="2"/>
+  <text x="180" y="67" font-size="12" text-anchor="middle" fill="#1f2a44">"HeLLo World"</text>
+  <rect x="256" y="44" width="100" height="36" rx="6" fill="#8fb8f0" stroke="#1d6fd1" stroke-width="2"/>
+  <text x="306" y="67" font-size="12" text-anchor="middle" fill="#1f2a44">"hello world"</text>
+  <line x1="104" y1="62" x2="124" y2="62" stroke="#1d6fd1" stroke-width="2"/>
+  <polygon points="130,62 122,57 122,67" fill="#1d6fd1"/>
+  <line x1="230" y1="62" x2="250" y2="62" stroke="#1d6fd1" stroke-width="2"/>
+  <polygon points="256,62 248,57 248,67" fill="#1d6fd1"/>
+  <text x="117" y="32" font-size="12" text-anchor="middle" fill="#1d6fd1">.strip()</text>
+  <text x="243" y="32" font-size="12" text-anchor="middle" fill="#1d6fd1">.lower()</text>
+  <text x="54" y="104" font-size="11" text-anchor="middle" fill="#6c7a93">raw</text>
+  <text x="306" y="104" font-size="11" text-anchor="middle" fill="#6c7a93">result</text>
+</svg>
+```
+
+The order can matter. Here it does not, but with other methods it will, so read a chain in the order Python runs it: left to right.
+:::
+
+::: context immutable Strings never change
+Python strings are **immutable**, a word that means "cannot be changed". Once a string exists, no method can edit it. `strip`, `lower` and `upper` all build a brand-new string and hand it back. That is why you have to catch the result with `=`. It is also safe: if two variables hold the same string, tidying one can never mess up the other. In Lesson 6 you will meet lists, which *can* be changed in place, and the difference will matter.
+:::
+
+::: context f-string-name What the f stands for
+The `f` stands for "formatted". The full name is a *formatted string literal*, but everyone says f-string. They were added in Python 3.6, released in 2016. Before that, programmers glued text together in clumsier ways, and you will still see those in older code. Today f-strings are the usual way to build a message out of values, from a greeting to a line in a log file.
+:::
+
+::: context expression Expressions work out to a value
+An **expression** is any bit of code that Python can work out to one value. `3` is an expression. So is `count * 2`, and `name.upper()`, and `len(name)`. A line like `count = 3` is not an expression; it is an instruction that stores a value. The rule for braces is: if you could put it on the right of an `=`, you can put it inside `{ }`.
+:::
 --- task
-`raw` holds a messy user name. Make `clean` the stripped, lowercased version of it, then print exactly:
+The starter has a messy user name in `raw`: `"   Ada Lovelace  "`, with spaces at both ends.
+
+1. Change the line `clean = raw` so that `clean` holds `raw` with its end spaces stripped **and** turned to lowercase. Chain `strip` and `lower`.
+2. Change the `print` line so it uses an f-string to print exactly:
 
 ```
 user: ada lovelace (12 characters)
 ```
 
-using an f-string, where the name and the length come from `clean`.
+The name must come from `{clean}` and the number from `{len(clean)}`. Do not type the name or the 12 in yourself.
 --- starter
 raw = "   Ada Lovelace  "
 clean = raw
@@ -171,9 +866,11 @@ raw = "   Ada Lovelace  "
 clean = raw.strip().lower()
 print(f"user: {clean} ({len(clean)} characters)")
 --- hint
-Methods can be chained: `raw.strip().lower()`.
+Two ideas from the lesson: chaining methods for `clean`, and an f-string for the `print`. Do `clean` first.
 --- hint
-The length goes inside the f-string too: `{len(clean)}`.
+Methods can be chained: `clean = raw.strip().lower()`. The print starts `print(f"user: {clean} (` and goes on from there.
+--- hint
+The whole sentence is one f-string: the text `user: `, then `{clean}`, then a space and a round bracket `(`, then `{len(clean)}`, then ` characters)`. The round brackets outside the braces are plain text; the ones in `len(clean)` belong to `len`.
 --- check case | clean is stripped and lowercased
 clean
 => "ada lovelace"
@@ -184,7 +881,82 @@ user: ada lovelace (12 characters)
 
 === py-05 | Making decisions
 --- teach
-`if` runs a block of code only when a condition is true. The block is the indented lines underneath — Python uses indentation (4 spaces) instead of braces:
+Last lesson you tidied, measured and searched text. In every program so far, each line runs, top to bottom, every single time. Real programs need to choose. A heater thinks: *if* the room is too cold, turn on; *otherwise*, stay off. This lesson teaches your program to [[choose which lines to run|branching]].
+
+### Asking a yes-or-no question: comparisons
+
+A **comparison** asks a question whose answer is `True` or `False`, the [[bool type|boolean]] from Lesson 2.
+
+```python
+temperature = 31
+print(temperature > 30)   # True
+print(temperature < 30)   # False
+```
+
+Python has six comparison signs. Here they are with how to read each one out loud:
+
+| Sign | Say it as | Example | Answer |
+|---|---|---|---|
+| `==` | "is equal to" | `5 == 5` | `True` |
+| `!=` | "is not equal to" | `5 != 5` | `False` |
+| `<` | "is less than" | `3 < 5` | `True` |
+| `<=` | "is less than or equal to" | `5 <= 5` | `True` |
+| `>` | "is greater than" | `3 > 5` | `False` |
+| `>=` | "is greater than or equal to" | `70 >= 70` | `True` |
+
+In `!=` the `!` means "not". `>=` is the one to use for "or more" and "at least": a score of 70 *or more* is `score >= 70`.
+
+Comparisons work on strings too, and capitals still count, as you saw last lesson:
+
+```python
+print("ada" == "ada")   # True
+print("Ada" == "ada")   # False
+```
+
+**Watch out:** one `=` and two `==` are different. A single `=` **assigns**: it puts a value into a variable, as in `score = 70`. A double `==` **compares**: it asks "are these equal?". Mixing them up is the most common beginner mistake. If you write `if score = 70:`, Python stops with a `SyntaxError` and asks "Maybe you meant '=='". Read it as a [[friendly nudge|assign-vs-compare]].
+
+### if: run some lines only when the answer is True
+
+An `if` has four parts:
+
+1. the word `if`;
+2. a **condition**, which is a question with a `True` or `False` answer;
+3. a colon `:` at the end of the line;
+4. a **block**: the lines underneath that are pushed in by 4 spaces. They run only when the condition is `True`.
+
+```python
+temperature = 31
+if temperature > 30:
+    print("hot")
+print("done")
+# hot
+# done
+```
+
+The line `print("done")` is not pushed in, so it is not part of the block. It runs every time. If you change `temperature` to `20`, the condition is `False`, Python skips the block, and the output is only `done`.
+
+Pushing lines in like this is called **[[indentation|indentation]]**. Python uses it to see which lines belong to the `if`.
+
+**Watch out:** if you forget to push the block in, Python stops with `IndentationError: expected an indented block`. Use 4 spaces for every line of the block.
+
+### else: the other road
+
+`else` means "otherwise". Its block runs when the `if` condition was `False`. It has no condition of its own, only a colon.
+
+```python
+temperature = 20
+if temperature > 30:
+    print("hot")
+else:
+    print("not hot")
+# not hot
+```
+
+Exactly one of the two blocks runs, never both, never neither.
+
+### elif: more than two roads
+
+`elif` is short for **[["else if"|elif-name]]**. It adds another question, which Python asks only if every question above it was `False`.
 
 ```python
 temperature = 31
@@ -194,17 +966,139 @@ elif temperature > 15:
     print("mild")
 else:
     print("cold")
+# hot
 ```
 
-Comparisons: `==` (equal), `!=`, `<`, `<=`, `>`, `>=`. Combine conditions with `and`, `or`, `not`. Note `=` assigns and `==` compares — mixing them up is the most common beginner error.
+Python checks from the top and stops at the **first** `True`. With `31`, the first question is `True`, so it prints `hot` and skips the rest, even though `31 > 15` is also true. With `20`, the first question is `False`, the second is `True`: `mild`. With `5`, both are `False`, so the `else` runs: `cold`.
+
+That is why the order matters: check the highest band first.
+
+### Choosing what a variable holds
+
+A block can do more than print. It can set a variable. Then you print it once, at the end, after the `if` is finished:
+
+```python
+fuel = 40
+status = ""
+if fuel >= 50:
+    status = "full enough"
+else:
+    status = "refuel"
+print(status)   # refuel
+```
+
+`""` (two quotes with nothing between them) is an **empty string**: a string with no characters in it. Here it is a placeholder, and the `if` puts the real answer in.
+
+### Combining questions: and, or, not
+
+Sometimes one question is not enough. Three words let you [[combine them|and-or-not]]:
+
+- `and` is `True` only when **both** sides are `True`.
+- `or` is `True` when **at least one** side is `True`.
+- `not` flips the answer: `not True` is `False`.
+
+```python
+print(5 > 3 and 2 > 4)   # False  (the second part is False)
+print(5 > 3 or 2 > 4)    # True   (the first part is True)
+print(not True)          # False
+```
+
+In an `if` they read almost like English:
+
+```python
+temperature = 22
+raining = False
+if temperature >= 15 and not raining:
+    print("go outside")   # go outside
+```
+
+Engineers use exactly this kind of check to decide whether a [[launch can go ahead|go-no-go]].
+
+::: context branching Programs that choose
+Up to now your programs ran like a train on one straight track. An `if` adds a **branch**: a fork where the program takes one road or the other. Here is the `temperature` example as a map.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 200" font-family="Inter, Arial, sans-serif">
+  <rect x="10" y="12" width="170" height="34" rx="6" fill="#ffffff" stroke="#1f2a44" stroke-width="2"/>
+  <text x="95" y="34" font-size="12" text-anchor="middle" fill="#1f2a44">temperature &gt; 30 ?</text>
+  <rect x="250" y="12" width="100" height="34" rx="6" fill="#8fb8f0" stroke="#1d6fd1" stroke-width="2"/>
+  <text x="300" y="34" font-size="12" text-anchor="middle" fill="#1f2a44">print "hot"</text>
+  <line x1="180" y1="29" x2="242" y2="29" stroke="#1d6fd1" stroke-width="2"/>
+  <polygon points="250,29 241,24 241,34" fill="#1d6fd1"/>
+  <text x="214" y="22" font-size="11" text-anchor="middle" fill="#1d6fd1">True</text>
+  <rect x="10" y="84" width="170" height="34" rx="6" fill="#ffffff" stroke="#1f2a44" stroke-width="2"/>
+  <text x="95" y="106" font-size="12" text-anchor="middle" fill="#1f2a44">temperature &gt; 15 ?</text>
+  <rect x="250" y="84" width="100" height="34" rx="6" fill="#8fb8f0" stroke="#1d6fd1" stroke-width="2"/>
+  <text x="300" y="106" font-size="12" text-anchor="middle" fill="#1f2a44">print "mild"</text>
+  <line x1="180" y1="101" x2="242" y2="101" stroke="#1d6fd1" stroke-width="2"/>
+  <polygon points="250,101 241,96 241,106" fill="#1d6fd1"/>
+  <text x="214" y="94" font-size="11" text-anchor="middle" fill="#1d6fd1">True</text>
+  <line x1="95" y1="46" x2="95" y2="76" stroke="#b4232c" stroke-width="2"/>
+  <polygon points="95,84 90,75 100,75" fill="#b4232c"/>
+  <text x="104" y="66" font-size="11" fill="#b4232c">False</text>
+  <line x1="95" y1="118" x2="95" y2="148" stroke="#b4232c" stroke-width="2"/>
+  <polygon points="95,156 90,147 100,147" fill="#b4232c"/>
+  <text x="104" y="138" font-size="11" fill="#b4232c">False</text>
+  <rect x="45" y="156" width="100" height="34" rx="6" fill="#f2b880" stroke="#1f2a44" stroke-width="2"/>
+  <text x="95" y="178" font-size="12" text-anchor="middle" fill="#1f2a44">print "cold"</text>
+</svg>
+```
+
+Only one road is ever taken on each run.
+:::
+
+::: context boolean Named after George Boole
+The type `bool` is short for **Boolean**, named after George Boole, an English mathematician of the 1800s. He showed that "true" and "false" can be worked with like numbers, using rules for *and*, *or* and *not*. In the 1930s, engineers showed that his rules describe exactly how electric switches in a computer can be wired. Every `if` you write rests on his idea.
+:::
+
+::: context assign-vs-compare Why Python refuses if x = 5
+In some older languages, such as C, writing `if (x = 5)` is allowed. It quietly *stores* 5 in `x` and then carries on as if the answer were yes. That little slip has caused real bugs that were hard to find, because the program ran without complaint. Python's designers chose to make it an error, so the mistake is caught the moment you run the code. An error message that stops you is a helper, not a punishment.
+:::
+
+::: context indentation Indentation shows what belongs together
+Many languages, like C and JavaScript, mark a block with curly braces `{ }`, and the spaces are only for looks. Python uses the spaces themselves. The upside: the code always looks the way it runs. Python's official style guide asks for 4 spaces per level, and most code editors type 4 spaces for you when you press the Tab key. Blocks inside blocks get pushed in further, 8 spaces, then 12, and you will see that in the lesson on loops.
+:::
+
+::: context elif-name Why elif and not else if
+Python squeezes "else if" into one word, `elif`, to keep the code short and flat. You can have as many `elif` lines as you need between the `if` and the `else`, and the `else` at the end is optional. Without an `else`, if every question is `False`, no block runs at all. Think of `elif` as a list of questions asked in order, where the first "yes" wins.
+:::
+
+::: context and-or-not The and, or, not table
+Here is every possible answer, where `a` and `b` each stand for a condition that is `True` or `False`.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">
+  <rect x="10" y="8" width="340" height="26" fill="#8fb8f0"/>
+  <g font-size="12" text-anchor="middle" fill="#1f2a44">
+    <text x="55" y="26">a</text><text x="135" y="26">b</text><text x="220" y="26">a and b</text><text x="305" y="26">a or b</text>
+    <text x="55" y="52">True</text><text x="135" y="52">True</text><text x="220" y="52">True</text><text x="305" y="52">True</text>
+    <text x="55" y="78">True</text><text x="135" y="78">False</text><text x="305" y="78">True</text>
+    <text x="55" y="104">False</text><text x="135" y="104">True</text><text x="305" y="104">True</text>
+    <text x="55" y="130">False</text><text x="135" y="130">False</text>
+  </g>
+  <g font-size="12" text-anchor="middle" fill="#b4232c">
+    <text x="220" y="78">False</text><text x="220" y="104">False</text><text x="220" y="130">False</text><text x="305" y="130">False</text>
+  </g>
+  <line x1="10" y1="34" x2="350" y2="34" stroke="#1f2a44" stroke-width="1"/>
+  <line x1="175" y1="8" x2="175" y2="142" stroke="#6c7a93" stroke-width="1"/>
+  <rect x="10" y="8" width="340" height="134" fill="none" stroke="#1f2a44" stroke-width="1.5"/>
+</svg>
+```
+
+`and` is fussy: it needs every part to be `True`. `or` is easygoing: any one `True` is enough.
+:::
+
+::: context go-no-go Go or no-go
+Before a launch, NASA teams check a written list of **launch commit criteria**: rules such as limits on wind and a ban on launching when lightning is too close. Each rule is a yes-or-no question, and the launch goes only if every one of them passes, which is a giant `and`. Flight software is full of the same pattern, testing sensor readings against limits with `if` and deciding what to do next.
+:::
 --- task
-Write a function-free program that sets `label` based on `score`:
+The starter sets `score = 64` and `label = ""` (an empty string). Between those lines and `print(label)`, write an `if` / `elif` / `else` that sets `label` to:
 
-- `"pass"` if score is 70 or more
-- `"close"` if score is 60 to 69
-- `"fail"` otherwise
+- `"pass"` if `score` is 70 or more
+- `"close"` if `score` is 60 to 69
+- `"fail"` otherwise (anything below 60)
 
-Then print `label`. The starter has `score = 64`; your `if` must work for any score.
+Keep `print(label)` as the last line. With `score = 64` it should print `close`. Your `if` must work for any score: try `85` and `30` to test it, then set it back to `64` before you run the checks.
 --- starter
 score = 64
 label = ""
@@ -219,7 +1113,11 @@ else:
     label = "fail"
 print(label)
 --- hint
+Use the `fuel` example from the lesson, with three roads instead of two. "70 or more" is written with `>=`.
+--- hint
 Check the highest band first: `if score >= 70:`, then `elif score >= 60:`, then `else:`.
+--- hint
+Each of those three lines ends with a colon and has one line under it, pushed in by 4 spaces, like `    label = "pass"`. You do not need `score < 70` in the `elif`: Python only gets there if the first question was `False`.
 --- check output | Prints close for a score of 64
 close
 --- check source | Uses if / elif / else
@@ -230,26 +1128,197 @@ close
 
 === py-06 | Lists
 --- teach
-A **list** holds several values in order:
+Last lesson your program chose between roads with `if`. Now for a different problem: what if you have lots of values? A week of temperatures, the planets in order from the Sun, every reading from a sensor. You could make `temp1`, `temp2`, `temp3` and so on, but that gets out of hand fast.
+
+Think of a train. One engine pulls a line of carriages, and each carriage carries something. In Python that train is a **[[list|list-word]]**: one variable that holds several values in order.
+
+### Making a list
+
+Write the values between **square brackets** `[ ]`, with a comma between each one. Each value is called an **item**.
 
 ```python
 planets = ["Mercury", "Venus", "Earth"]
-planets[0]          # "Mercury"  (counting starts at 0)
-planets[-1]         # "Earth"    (negative counts from the end)
-len(planets)        # 3
-planets.append("Mars")
-planets[1:3]        # ["Venus", "Earth"]  (a slice: from 1 up to, not including, 3)
+print(planets)   # ['Mercury', 'Venus', 'Earth']
 ```
 
-Lists can hold any type, and `sum`, `min`, `max` and `sorted` work on lists of numbers.
+Python shows the strings with single quotes `' '` when it prints a list. That means exactly the same as double quotes.
+
+A list can hold any type: numbers, strings, bools, or a mix.
+
+```python
+readings = [18, 25, 11]
+mixed = [3, "go", True, 1.5]
+```
+
+### Getting one item: the index
+
+Every item has a position number, called its **[[index|index]]**. Counting starts at **0**, not 1. To get an item, write the list's name and then the index in square brackets. Read `planets[0]` as "planets at index 0".
+
+```python
+planets = ["Mercury", "Venus", "Earth"]
+print(planets[0])   # Mercury
+print(planets[1])   # Venus
+print(planets[2])   # Earth
+```
+
+So the first item is at index 0, the second at index 1, and so on. There is a [[reason it starts at 0|zero-start]].
+
+### Counting from the end: negative indexes
+
+A minus sign counts backwards from the end. `planets[-1]`, read "planets at minus one", is the last item. `-2` is the one before it.
+
+```python
+print(planets[-1])   # Earth
+print(planets[-2])   # Venus
+```
+
+This is useful when you want the newest reading and do not know how long the list is.
+
+### How many items: len
+
+`len`, the same function you used on strings, counts the items in a list:
+
+```python
+print(len(planets))   # 3
+```
+
+With 3 items the indexes are 0, 1 and 2. The last index is always one less than the length.
+
+**Watch out:** asking for an index that is not there stops the program. `planets[3]` on a 3-item list gives `IndexError: list index out of range`, because the indexes only go 0, 1, 2. It is an [[error|index-error]] almost everyone meets in their first week.
+
+### Adding to the end: append
+
+`append` is a method, like `strip` from Lesson 4. It adds one item to the end of the list.
+
+```python
+planets = ["Mercury", "Venus", "Earth"]
+planets.append("Mars")
+print(planets)        # ['Mercury', 'Venus', 'Earth', 'Mars']
+print(len(planets))   # 4
+```
+
+Here is a big difference from strings. A string method hands back a new copy and leaves the old string alone. `append` [[changes the list itself|in-place]]. So you write `planets.append("Mars")` on its own line, with no `=`.
+
+**Watch out:** do not write `planets = planets.append("Mars")`. `append` hands back nothing, which Python calls `None`, so that line would replace your whole list with `None`.
+
+### Taking a piece: slices
+
+A **[[slice|slice]]** copies out a run of items. Inside the square brackets put a start index, a colon `:`, and a stop index. Read `planets[1:3]` as "planets from 1 up to, but not including, 3".
+
+```python
+planets = ["Mercury", "Venus", "Earth", "Mars"]
+print(planets[1:3])   # ['Venus', 'Earth']
+```
+
+The start (1, Venus) is included. The stop (3, Mars) is left out. So you get 3 - 1 = 2 items.
+
+### Lists of numbers: sum, min, max, sorted
+
+Four functions work on a whole list of numbers at once:
+
+- `sum` adds up every item;
+- `min`, short for minimum, finds the smallest;
+- `max`, short for maximum, finds the largest;
+- `sorted` gives back a new list with the items in order, smallest first.
+
+```python
+temps = [18, 25, 11, 21]
+print(sum(temps))      # 75
+print(min(temps))      # 11
+print(max(temps))      # 25
+print(sorted(temps))   # [11, 18, 21, 25]
+print(temps)           # [18, 25, 11, 21]   (sorted made a new list)
+```
+
+The **[[average|mean]]**, also called the mean, is the total divided by how many there are. You have both pieces already: `sum` for the total and `len` for how many.
+
+```python
+temps = [18, 25, 11, 21]
+average = sum(temps) / len(temps)
+print(average)   # 18.75
+```
+
+Check it: 18 + 25 + 11 + 21 = 75, and 75 / 4 = 18.75. Remember from Lesson 3 that `/` always gives a decimal.
+
+::: context list-word Lists in real programs
+A list is Python's everyday way to keep many values together, and almost every real program has some. Mission software keeps sequences of values like this all the time: the last few seconds of readings from a sensor, the steps of a checklist, the waypoints on a route. In C and C++, the languages much flight software is written in, the closest thing is an **array**, whose size is usually fixed when the program is written. A Python list can grow as you add items, which makes it easier to learn with.
+:::
+
+::: context index Two ways to number the same list
+Every item has two addresses: one counting forward from 0, and one counting backward from -1.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 130" font-family="Inter, Arial, sans-serif">
+  <g font-size="12" text-anchor="middle" fill="#1d6fd1">
+    <text x="80" y="30">0</text><text x="180" y="30">1</text><text x="280" y="30">2</text>
+  </g>
+  <rect x="30" y="42" width="100" height="40" fill="#ffffff" stroke="#1f2a44" stroke-width="2"/>
+  <rect x="130" y="42" width="100" height="40" fill="#ffffff" stroke="#1f2a44" stroke-width="2"/>
+  <rect x="230" y="42" width="100" height="40" fill="#ffffff" stroke="#1f2a44" stroke-width="2"/>
+  <g font-size="13" text-anchor="middle" fill="#1f2a44">
+    <text x="80" y="67">"Mercury"</text><text x="180" y="67">"Venus"</text><text x="280" y="67">"Earth"</text>
+  </g>
+  <g font-size="12" text-anchor="middle" fill="#b4232c">
+    <text x="80" y="102">-3</text><text x="180" y="102">-2</text><text x="280" y="102">-1</text>
+  </g>
+  <text x="180" y="124" font-size="11" text-anchor="middle" fill="#6c7a93">blue: from the front   red: from the back</text>
+</svg>
+```
+
+`planets[2]` and `planets[-1]` are the same carriage, reached from different ends.
+:::
+
+::: context zero-start Why counting starts at 0
+Think of the index as "how many steps from the front". The first item is 0 steps from the front, the second is 1 step, and so on. Inside the computer the items sit side by side in memory, and the index tells it how far to jump from the start, so 0 is the natural first number. The computer scientist Edsger Dijkstra wrote a famous short note in 1982 arguing that numbering should start at zero. Most programming languages agree.
+:::
+
+::: context index-error Errors are messages, not disasters
+When Python cannot do what a line asks, it stops and prints an **error** with a name, like `IndexError`, and the line number. Read the last line of the message first: it usually says exactly what went wrong. In Lesson 11 you will learn to catch errors so a program can recover instead of stopping. Flight software is written with great care to avoid this very mistake, because reading past the end of a list of data can make a program use a wrong value.
+:::
+
+::: context in-place Changing a list in place
+Changing something "in place" means editing the thing itself, not making a copy. A list is like a whiteboard: `append` writes on the same board, and everyone looking at it sees the new item. A string is like a printed page: to change it you print a new page. That is why string methods need `=` to keep their result, and `append` does not. Programmers say lists are **mutable** (changeable) and strings are **immutable**.
+:::
+
+::: context slice Why the stop is left out
+Think of the indexes as fence posts *between* the items. A slice cuts at two posts and takes everything in between.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 140" font-family="Inter, Arial, sans-serif">
+  <line x1="105" y1="26" x2="255" y2="26" stroke="#1d6fd1" stroke-width="2"/>
+  <line x1="105" y1="20" x2="105" y2="32" stroke="#1d6fd1" stroke-width="2"/>
+  <line x1="255" y1="20" x2="255" y2="32" stroke="#1d6fd1" stroke-width="2"/>
+  <text x="180" y="18" font-size="12" text-anchor="middle" fill="#1d6fd1">planets[1:3]</text>
+  <rect x="30" y="44" width="75" height="40" fill="#ffffff" stroke="#1f2a44" stroke-width="2"/>
+  <rect x="105" y="44" width="75" height="40" fill="#8fb8f0" stroke="#1f2a44" stroke-width="2"/>
+  <rect x="180" y="44" width="75" height="40" fill="#8fb8f0" stroke="#1f2a44" stroke-width="2"/>
+  <rect x="255" y="44" width="75" height="40" fill="#ffffff" stroke="#1f2a44" stroke-width="2"/>
+  <g font-size="12" text-anchor="middle" fill="#1f2a44">
+    <text x="67" y="69">Mercury</text><text x="142" y="69">Venus</text><text x="217" y="69">Earth</text><text x="292" y="69">Mars</text>
+  </g>
+  <g font-size="12" text-anchor="middle" fill="#b4232c">
+    <text x="30" y="104">0</text><text x="105" y="104">1</text><text x="180" y="104">2</text><text x="255" y="104">3</text><text x="330" y="104">4</text>
+  </g>
+  <text x="180" y="128" font-size="11" text-anchor="middle" fill="#6c7a93">cut at post 1 and post 3: two items</text>
+</svg>
+```
+
+A handy result: the number of items is always stop minus start.
+:::
+
+::: context mean The mean, and why engineers use it
+There are a few kinds of "average", and the **mean** is the one most people mean: add them all up, divide by how many. Engineers use it constantly. A single sensor reading can be jumpy, so software often averages several readings to get a steadier number. It is also how you would sum up a set of measurements, like how long a system usually takes to answer, in one number.
+:::
 --- task
-`latencies` holds response times in milliseconds. Append one more measurement, `180`. Then set:
+`latencies` holds four response times in milliseconds: `[120, 95, 210, 143]`.
 
-- `fastest` to the smallest value
-- `slowest` to the largest
-- `average` to the mean (sum divided by count)
+1. Use `append` to add one more measurement, `180`, to the end of `latencies`.
+2. Set `fastest` to the smallest value, using `min`.
+3. Set `slowest` to the largest value, using `max`.
+4. Set `average` to the mean: the `sum` of `latencies` divided by its `len`.
+5. Print `fastest`, `slowest` and `average` in that order on one line, with one `print` and commas between them.
 
-and print them in that order on one line.
+Do steps 2 to 4 after the `append`, so all five measurements count.
 --- starter
 latencies = [120, 95, 210, 143]
 
@@ -261,7 +1330,11 @@ slowest = max(latencies)
 average = sum(latencies) / len(latencies)
 print(fastest, slowest, average)
 --- hint
-`min(latencies)`, `max(latencies)`, and `sum(latencies) / len(latencies)`.
+Step 1 is `latencies.append(180)` on its own line, with no `=`.
+--- hint
+Each of steps 2 to 4 is a variable set with `=`: `fastest = min(latencies)`, then the same shape with `max`, then `sum(...) / len(...)`.
+--- hint
+The last line is `print(fastest, slowest, average)`. The commas put a space between the three values.
 --- check case | 180 was appended
 latencies
 => [120, 95, 210, 143, 180]
@@ -274,25 +1347,186 @@ abs(average - 149.6) < 1e-9
 
 === py-07 | Loops
 --- teach
-A `for` loop runs its block once for every item in a list (or anything else you can iterate):
+Last lesson you kept many values together in one list. Now you will make Python do something with *every* item in a list, without writing the same line again and again. That is what a loop is for.
+
+Picture handing out flyers to a line of people. You do not write a separate plan for each person. Your plan is one sentence: "for each person in the line, hand them a flyer." A loop is that sentence, written in Python.
+
+## Doing something for each item
+
+A **`for` loop** runs the same lines of code once for every item in a list.
 
 ```python
 for name in ["ada", "lin", "sam"]:
     print("hello", name)
+# hello ada
+# hello lin
+# hello sam
 ```
 
-`range(n)` gives the numbers `0` to `n - 1`; `range(1, 6)` gives `1` to `5`:
+Read the first line aloud: "for each name in this list". Here is what each part does:
+
+- `for` starts the loop.
+- `name` is the **loop variable**: a [[variable that gets a new value on every pass|loop-variable]]. The first time round it holds `"ada"`, then `"lin"`, then `"sam"`.
+- `in` is followed by the list to walk through.
+- The colon `:` at the end says "the block comes next", the same as after `if` in py-05.
+
+The indented lines underneath are the loop's **body**: the lines that repeat. Like the block under an `if`, the body is pushed in by 4 spaces. Each run through the body is called a **pass** (engineers also say an **iteration**).
+
+A list is not the only thing you can loop over. You can loop over anything you can [[iterate|iterate]], which means "go through one piece at a time". A string, for example, gives you one letter per pass:
+
+```python
+for letter in "abc":
+    print(letter)
+# a
+# b
+# c
+```
+
+## Counting with range
+
+Often you want to count, not walk through a list. **`range`** makes the numbers for you.
+
+`range(n)` gives the whole numbers from `0` up to `n - 1`. It [[stops one short of n|range-stops-short]]:
+
+```python
+for i in range(3):
+    print(i)
+# 0
+# 1
+# 2
+```
+
+That is three numbers, `0`, `1` and `2`, and `3` itself is left out.
+
+Give `range` two numbers and the first is where to start. `range(1, 6)` gives `1`, `2`, `3`, `4`, `5`: it starts at `1` and stops before `6`.
+
+```python
+for n in range(1, 6):
+    print(n)
+# 1
+# 2
+# 3
+# 4
+# 5
+```
+
+## Keeping a running total
+
+To add up numbers with a loop, make a variable *before* the loop that starts at zero. On every pass, add the new number to it. This is called a [[running total|accumulator]].
 
 ```python
 total = 0
 for n in range(1, 6):
-    total = total + n      # or: total += n
+    total = total + n
 print(total)               # 15
 ```
 
-A `while` loop repeats as long as its condition is true — make sure something inside changes, or it never stops. Inside any loop, `break` leaves the loop early and `continue` skips straight to the next pass.
+Here is what `total` holds after each pass:
+
+| Pass | `n` | `total` after the pass |
+|---|---|---|
+| 1 | 1 | 0 + 1 = 1 |
+| 2 | 2 | 1 + 2 = 3 |
+| 3 | 3 | 3 + 3 = 6 |
+| 4 | 4 | 6 + 4 = 10 |
+| 5 | 5 | 10 + 5 = 15 |
+
+The line `total = total + n` looks strange if you read `=` as "equals". Remember from py-02 that `=` means "make this name hold". So it says: "work out `total + n`, then make `total` hold that new number."
+
+Adding to a variable is so common that Python has a shorter way to write it. `+=` is read "add to": `total += n` means exactly the same as `total = total + n`.
+
+```python
+total = 0
+for n in range(1, 6):
+    total += n             # same as: total = total + n
+print(total)               # 15
+```
+
+**Watch out:** the `print(total)` line is *not* indented, so it runs once, after the loop has finished. If you indent it by mistake, it becomes part of the body and prints on every pass: `1`, `3`, `6`, `10`, `15`. When a loop prints too much, check the indentation first.
+
+## A decision inside a loop
+
+You can put an `if` inside a loop's body. Then the loop makes a fresh decision on every pass. The lines under the `if` are pushed in one more step, 8 spaces in total, because they are a block inside a block.
+
+A handy test inside loops uses `%`, the remainder operator from py-03. `n % 3` is read "n remainder 3": what is left over after dividing `n` by 3. When the remainder is `0`, 3 goes into `n` exactly, so `n` is a **multiple** of 3. That makes `n % 3 == 0` read as "[[n is a multiple of 3|multiple-test]]".
+
+```python
+for n in range(1, 9):
+    if n % 4 == 0:
+        print("Quad")
+    elif n % 2 == 0:
+        print("Duo")
+    else:
+        print(n)
+# 1
+# Duo
+# 3
+# Quad
+# 5
+# Duo
+# 7
+# Quad
+```
+
+Notice the order of the tests. Every multiple of 4 is also a multiple of 2. If the `n % 2 == 0` test came first, `4` and `8` would print `Duo`, and the `Quad` line would never run, because Python stops at the first test that is true. Put the most specific test first, the same way py-05 checked the highest score band first.
+
+## More loops to come
+
+There is a second kind of loop, `while`, and two words, `break` and `continue`, that change how any loop runs. They get the next lesson to themselves.
+
+::: context loop-variable A name that is reused on every pass
+The loop variable is an ordinary variable. The only difference is that the `for` line gives it a new value at the start of every pass. You choose its name, and a good name says what one item is: `for name in names`, `for reading in readings`. Engineers often use `i` or `n` when the items are counting numbers.
+
+After the loop ends, the loop variable still holds the last value it was given. In the flyer loop, `name` is `"sam"` once the loop is done.
+:::
+
+::: context iterate What iterating means
+To **iterate** means to go through something one piece at a time, from the Latin word for "again". Anything Python can hand you one piece at a time is called an **iterable**. Lists, strings and `range` are all iterables. Later you will meet dictionaries and files, which you can loop over in the same way. That is why the `for` loop is the loop you will write most often in Python: one shape works for all of them.
+:::
+
+::: context range-stops-short Why range leaves out the end
+Lists count from `0` (py-06). A list with 3 items has positions `0`, `1` and `2`. `range(3)` gives exactly those three numbers. So `range(len(planets))` gives every position in the list `planets`, with nothing extra. The same "up to, but not including" rule is used by slices like `planets[1:3]`. A nice side effect: `range(1, 6)` has `6 - 1 = 5` numbers in it, so the length is always stop minus start.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 120" font-family="Inter, Arial, sans-serif">
+  <text x="180" y="18" font-size="13" text-anchor="middle" fill="#1f2a44" font-weight="700">range(1, 6)</text>
+  <rect x="20" y="34" width="40" height="36" rx="4" fill="#ffffff" stroke="#6c7a93" stroke-width="1.5"/>
+  <rect x="68" y="34" width="40" height="36" rx="4" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
+  <rect x="116" y="34" width="40" height="36" rx="4" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
+  <rect x="164" y="34" width="40" height="36" rx="4" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
+  <rect x="212" y="34" width="40" height="36" rx="4" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
+  <rect x="260" y="34" width="40" height="36" rx="4" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
+  <rect x="308" y="34" width="40" height="36" rx="4" fill="#ffffff" stroke="#b4232c" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <text x="40" y="57" font-size="14" text-anchor="middle" fill="#6c7a93">0</text>
+  <text x="88" y="57" font-size="14" text-anchor="middle" fill="#1f2a44">1</text>
+  <text x="136" y="57" font-size="14" text-anchor="middle" fill="#1f2a44">2</text>
+  <text x="184" y="57" font-size="14" text-anchor="middle" fill="#1f2a44">3</text>
+  <text x="232" y="57" font-size="14" text-anchor="middle" fill="#1f2a44">4</text>
+  <text x="280" y="57" font-size="14" text-anchor="middle" fill="#1f2a44">5</text>
+  <text x="328" y="57" font-size="14" text-anchor="middle" fill="#b4232c">6</text>
+  <text x="88" y="92" font-size="11" text-anchor="middle" fill="#1d6fd1">start</text>
+  <text x="184" y="92" font-size="11" text-anchor="middle" fill="#1d6fd1">5 numbers given</text>
+  <text x="328" y="92" font-size="11" text-anchor="middle" fill="#b4232c">stop:</text>
+  <text x="328" y="107" font-size="11" text-anchor="middle" fill="#b4232c">left out</text>
+</svg>
+```
+:::
+
+::: context accumulator The running-total pattern
+A running total is like a tally counter at a door: it starts at zero and clicks up once for each person. Programmers call a variable used this way an **accumulator**, because it accumulates (piles up) a result pass by pass. The pattern always has three parts: set it up before the loop, change it inside the loop, use it after the loop. You will use this shape constantly, for totals, counts, the biggest value seen so far, and more. Forget the first part, and Python stops with an error, because `total` does not exist yet when the loop first tries to add to it.
+:::
+
+::: context multiple-test Remainder zero means "fits exactly"
+Share 12 sweets among 3 friends: each gets 4 and none are left over, so `12 % 3` is `0`. Share 13 and one is left, so `13 % 3` is `1`. A remainder of zero is the test for "fits exactly". The same trick finds even numbers (`n % 2 == 0`) and is used in real programs to do something every so often, such as "save a log line on every 10th pass" with `n % 10 == 0`.
+:::
 --- task
-Print the numbers from 1 to 15, one per line, but print `Fizz` instead of multiples of 3, `Buzz` instead of multiples of 5, and `FizzBuzz` instead of multiples of both. Use a loop.
+Print the numbers from `1` to `15`, one per line, with three swaps:
+
+- multiples of `3` print `Fizz` instead of the number,
+- multiples of `5` print `Buzz` instead of the number,
+- multiples of both 3 and 5 print `FizzBuzz` instead of the number.
+
+Use a `for` loop over `range(1, 16)` (the `16` is left out, so it stops at `15`). Inside the loop, use `if`, `elif` and `else` with the `%` test. The output starts `1`, `2`, `Fizz`, `4`, `Buzz` and ends with `FizzBuzz` for 15.
 --- starter
 # FizzBuzz, 1 to 15.
 
@@ -307,9 +1541,11 @@ for n in range(1, 16):
     else:
         print(n)
 --- hint
-`n % 3 == 0` is true when n is a multiple of 3.
+Start with `for n in range(1, 16):` and put the tests in the indented body. `n % 3 == 0` is true when n is a multiple of 3.
 --- hint
-Check "multiple of both" (that is, of 15) first — otherwise 15 stops at Fizz.
+Check "multiple of both" first, like `Quad` came before `Duo` in the example. A number that is a multiple of both 3 and 5 is a multiple of 15, so the first test is `n % 15 == 0`. Otherwise 15 stops at Fizz.
+--- hint
+The shape is: `if n % 15 == 0:` print `"FizzBuzz"`, then `elif n % 3 == 0:` print `"Fizz"`, then `elif n % 5 == 0:` print `"Buzz"`, then `else:` print `n`. Every `print` is indented 8 spaces.
 --- check output | Prints FizzBuzz from 1 to 15
 1
 2
@@ -329,25 +1565,350 @@ FizzBuzz
 --- check source | Uses a loop
 \b(for|while)\b
 
-=== py-08 | Functions
+=== py-07b | While loops, break and continue
 --- teach
-A **function** packages code under a name so you can run it again with different inputs:
+Last lesson a `for` loop walked through a list or a `range`, so it knew from the start how many passes to make. Sometimes you do not know that. You want to keep going *until something happens*. This lesson gives you a loop for that, and two words that let you leave a loop early or skip a pass.
+
+Picture filling a glass from a jug. You do not count pours. You keep pouring *while* the glass is not full, and you stop the moment it is.
+
+## Repeating while something is true
+
+A **`while` loop** repeats its body for as long as its condition is true. The condition is a test, like the ones you wrote after `if` in py-05.
 
 ```python
-def greet(name, punctuation="!"):
+fuel = 10
+while fuel > 0:
+    print("fuel left:", fuel)
+    fuel = fuel - 4
+print("empty")
+# fuel left: 10
+# fuel left: 6
+# fuel left: 2
+# empty
+```
+
+Read the second line aloud: "while fuel is greater than 0, do the indented lines." Python [[checks the condition before every pass|while-check]]:
+
+1. `fuel` is 10. Is `10 > 0`? Yes, so print and take away 4. Now `fuel` is 6.
+2. Is `6 > 0`? Yes, so print and take away 4. Now `fuel` is 2.
+3. Is `2 > 0`? Yes, so print and take away 4. Now `fuel` is -2.
+4. Is `-2 > 0`? No, so the loop ends and Python goes on to `print("empty")`.
+
+**Watch out:** something inside the body must change the condition. If the line `fuel = fuel - 4` were missing, `fuel` would stay 10 forever, `10 > 0` would always be true, and the loop would [[never stop|infinite-loop]]. If your program seems frozen, look for a `while` loop whose variable never changes.
+
+## Leaving early with break
+
+**`break`** means "stop this loop right now". Python leaves the loop at once and carries on with the first line after it. It works in `for` loops and `while` loops.
+
+```python
+for temp in [20, 45, 130, 60]:
+    if temp > 100:
+        print("too hot:", temp)
+        break
+    print("ok:", temp)
+# ok: 20
+# ok: 45
+# too hot: 130
+```
+
+When `temp` is 130, the `if` is true, so the loop prints `too hot: 130` and breaks. The `60` is never looked at. This is how you [[stop at the first match|stop-at-first]].
+
+## Skipping a pass with continue
+
+**`continue`** means "skip the rest of this pass and go straight to the next item". The loop itself keeps going.
+
+```python
+for reading in [5, -1, 7]:
+    if reading < 0:
+        continue
+    print(reading)
+# 5
+# 7
+```
+
+When `reading` is -1, `continue` jumps back to the top of the loop, so the `print` line is skipped for that pass only. This is how programs step over a [[bad reading|bad-readings]].
+
+## Both in one loop
+
+Here is a loop that counts words. It skips empty strings with `continue` and stops at the word `"stop"` with `break`. The word `"stop"` is a [[marker that means "the end"|sentinel]].
+
+```python
+count = 0
+for word in ["go", "", "go", "stop", "go"]:
+    if word == "":
+        continue
+    if word == "stop":
+        break
+    count += 1
+print(count)   # 2
+```
+
+Pass by pass: `"go"` adds 1, `""` is skipped, `"go"` adds 1, `"stop"` breaks the loop. The last `"go"` is never reached, so `count` is 2.
+
+**Watch out:** `break` and `continue` are easy to mix up. `break` ends the *whole loop*. `continue` ends only *this pass*. If the example above used `break` for the empty string, the loop would quit at `""` and `count` would be 1.
+
+::: context while-check The loop asks before every pass
+A `while` loop asks its question at the top, every time round. If the answer is true, it runs the body and comes back to ask again. If the answer is false, it skips to the line after the loop. So if the condition is false the very first time, the body runs zero times.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 170" font-family="Inter, Arial, sans-serif">
+  <rect x="100" y="12" width="140" height="36" rx="18" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="170" y="35" font-size="13" text-anchor="middle" fill="#1f2a44">fuel &gt; 0 ?</text>
+  <line x1="170" y1="48" x2="170" y2="96" stroke="#1f2a44" stroke-width="2"/>
+  <polygon points="170,104 165,94 175,94" fill="#1f2a44"/>
+  <text x="178" y="80" font-size="11" fill="#1d6fd1">True</text>
+  <rect x="100" y="104" width="140" height="36" rx="4" fill="#ffffff" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="170" y="127" font-size="12" text-anchor="middle" fill="#1f2a44">run the body</text>
+  <path d="M100 122 H60 V30 H92" fill="none" stroke="#1f2a44" stroke-width="2"/>
+  <polygon points="100,30 90,25 90,35" fill="#1f2a44"/>
+  <text x="18" y="80" font-size="11" fill="#6c7a93">again</text>
+  <line x1="240" y1="30" x2="282" y2="30" stroke="#b4232c" stroke-width="2"/>
+  <polygon points="290,30 280,25 280,35" fill="#b4232c"/>
+  <text x="258" y="22" font-size="11" fill="#b4232c">False</text>
+  <text x="296" y="26" font-size="11" fill="#1f2a44">after</text>
+  <text x="296" y="40" font-size="11" fill="#1f2a44">the loop</text>
+</svg>
+```
+:::
+
+::: context infinite-loop Loops that never end
+A loop that never stops is called an **infinite loop**. By accident, it makes your program freeze until it is stopped from outside. When that happens, look for the variable that never changes.
+
+On purpose, it is how most embedded software is built. The small computers in a car, a drone or a spacecraft usually run one **main loop** written as `while True:` (the condition is always true). Each pass reads the sensors, decides what to do and sends commands, and then the loop starts again, for as long as the power is on.
+:::
+
+::: context stop-at-first Why stop early
+If you are searching a list for the first reading that is too high, there is no reason to keep looking once you have found it. `break` saves the work of checking the rest. With 4 items that hardly matters, but a spacecraft can log millions of readings, and a search that stops at the first match can finish long before one that checks them all.
+:::
+
+::: context bad-readings Sensors are not perfect
+Real sensors sometimes send nonsense: a loose wire, a moment of electrical noise, or a device that has not warmed up yet. Some systems use a special value, such as -1, to mean "I have no good reading right now". Flight software has to spot readings like these and leave them out, so one glitch does not throw off a total or an average. Skipping them with `continue` is the simplest version of that idea.
+:::
+
+::: context sentinel A value that means "stop here"
+A special value placed at the end of some data to mean "there is no more" is called a **sentinel**, after the guard who stands watch at a gate. The loop checks each item for the sentinel and breaks when it sees it. The sentinel must be a value that can never be real data. The word `"stop"` works in a list of commands, and a number like `999` works in a list of temperatures that can never be that high.
+:::
+--- task
+This task has two parts.
+
+**Part 1: a countdown.** The starter sets `count = 3`. Write a `while` loop that keeps going while `count > 0`. In the body, print `count`, then take 1 away from it with `count = count - 1`. After the loop, print `Liftoff!`.
+
+**Part 2: add up good readings.** The starter has `readings = [12, -1, 15, 9, 999, 14]` and `total = 0`. Write a `for` loop over `readings`:
+
+- if the reading is `-1` (a bad reading), use `continue` to skip it;
+- if the reading is `999` (the marker for "the end"), use `break` to stop the loop;
+- otherwise, add the reading to `total` with `total += reading`.
+
+The starter already prints `total` at the end. The whole output should be:
+
+```
+3
+2
+1
+Liftoff!
+36
+```
+--- starter
+count = 3
+# Part 1: count down with a while loop, then print Liftoff!
+
+
+readings = [12, -1, 15, 9, 999, 14]
+total = 0
+# Part 2: add up the good readings with a for loop
+
+
+print(total)
+--- solution
+count = 3
+while count > 0:
+    print(count)
+    count = count - 1
+print("Liftoff!")
+
+readings = [12, -1, 15, 9, 999, 14]
+total = 0
+for reading in readings:
+    if reading == -1:
+        continue
+    if reading == 999:
+        break
+    total += reading
+print(total)
+--- hint
+Part 1 looks like the fuel example: `while count > 0:`, then two indented lines, then an unindented `print("Liftoff!")`.
+--- hint
+Part 2 looks like the word-counting example: `for reading in readings:`, then `if reading == -1:` with `continue` under it, then `if reading == 999:` with `break` under it.
+--- hint
+The last line of the loop body is `total += reading`, indented 4 spaces so it runs on every pass that was not skipped or stopped. 12 + 15 + 9 = 36, and the 14 is never reached.
+--- check output | Counts down, then prints the total
+3
+2
+1
+Liftoff!
+36
+--- check test | total adds only the good readings before 999
+total == 36
+?? 12 + 15 + 9 = 36: skip the -1, stop at 999, and never reach the 14.
+--- check test | count ended at 0
+count == 0
+--- check source | Uses a while loop
+\bwhile\b
+--- check source | Uses break
+\bbreak\b
+--- check source | Uses continue
+\bcontinue\b
+
+=== py-08 | Functions
+--- teach
+In the last two lessons, loops repeated some lines right where they sat in your program. A function goes one step further: you write some code once, give it a name, and then use it from anywhere, as many times as you like, with different values each time.
+
+You have already used functions that Python gives you: `print`, `len`, `round`, `min`, `max`. Each one is like a button on a calculator. You press "square root", it does its steps, and an answer comes out. You do not need to know the steps to use the button. Now you will make buttons of your own.
+
+## Defining a function
+
+A **function** is a named block of code that you can run whenever you want. Making one is called **defining** it.
+
+```python
+def shout(word):
+    return word.upper() + "!"
+```
+
+Here is each part:
+
+- `def` is short for [[define|def-word]]. It says "a new function starts here".
+- `shout` is the function's name. Names follow the same rule as variables: lowercase, with underscores between words.
+- `(word)` lists the **parameters**: names for the values the function will be given. This function has one, called `word`.
+- The colon `:` says the block comes next.
+- The indented lines are the function's **body**, the code that runs each time it is used. In this body, `+` between two strings joins them into one, so `"GO" + "!"` is `"GO!"`.
+
+Defining a function does not run it. Python only notes, "there is now a function called `shout`." Nothing is printed yet.
+
+## Calling a function
+
+Using a function is called **calling** it. You write its name, then brackets holding the values to give it. The values you pass in are the **arguments**.
+
+```python
+print(shout("go"))      # GO!
+print(shout("launch"))  # LAUNCH!
+```
+
+On the first call, the argument `"go"` goes into the parameter `word`. The body runs with `word` holding `"go"`, and the answer is `"GO!"`. On the second call, `word` holds `"launch"` instead. [[Parameters and arguments|parameter-argument]] are two sides of the same hand-over: the parameter is the empty slot, and the argument is what you put in it.
+
+A function can have several parameters, separated by commas. The arguments fill them in order, first to first and second to second:
+
+```python
+def greet(name, punctuation):
     return f"Hello, {name}{punctuation}"
 
-greet("Ada")         # "Hello, Ada!"
 greet("Lin", "?")    # "Hello, Lin?"
 ```
 
-`def` starts the definition; the names in brackets are **parameters**; the values you pass when you call it (`"Lin"` and `"?"` above) are the **arguments**. `return` hands a value back to whoever called it. A parameter with `=` has a default. A function without `return` returns `None` — Python's value for "nothing".
+Here `"Lin"` goes into `name` and `"?"` goes into `punctuation`.
 
-`pass` is a statement that does nothing. It holds the place of a body you have not written yet, since a `def` cannot be left empty — you will see it in starters.
+## Handing back an answer with return
+
+**`return`** hands a value back to whoever called the function. The call is then replaced by that value, as if you had typed the answer there yourself.
+
+```python
+loud = shout("go")
+print(loud)          # GO!
+print(len(loud))     # 3
+```
+
+`shout("go")` became `"GO!"`, and `loud` now holds it. `return` also [[ends the function|return-ends]] at once: any lines after it in the body do not run.
+
+A function can return the result of a comparison. From py-05 you know a comparison like `n > 0` is already `True` or `False`, so you can return it directly:
+
+```python
+def is_positive(n):
+    return n > 0
+
+is_positive(5)       # True
+is_positive(-2)      # False
+```
+
+**Watch out:** `return` and `print` are not the same. `print` shows a value on the screen. `return` hands it back so the rest of your program can use it. If `shout` used `print` instead of `return`, you would see `GO!` on the screen, but `loud` would *not* hold the word. The checks in these lessons call your functions and look at what comes back, so [[hand the answer back|return-vs-print]] with `return`, not `print`.
+
+## A body to fill in later: pass
+
+A `def` must have at least one indented line under it. When you have not written the body yet, you put **`pass`** there. `pass` is a statement that does nothing. It only [[holds the place|pass-placeholder]].
+
+```python
+def is_even(n):
+    pass
+```
+
+You will see `pass` in starters. Replace it with your own lines.
+
+## One more tool: split
+
+Strings have a method called **`split`**. (A [[method|method]] is a function attached to a value, like `strip` and `lower` from py-04.) `text.split()` cuts a string at the spaces and gives you a list of the words:
+
+```python
+"a b c".split()              # ["a", "b", "c"]
+"  hi   there ".split()      # ["hi", "there"]
+"".split()                   # []
+```
+
+Extra spaces, and spaces at the ends, are ignored, so you never get empty words. An empty string gives an empty list. And `len` of a list (py-06) tells you how many items it holds, so `len("a b c".split())` is `3`.
+
+::: context def-word Why it is called def
+Programmers write "define a function" to mean "make a new one and say what it does", the way a dictionary defines a word. Python shortens "define" to `def` because it is typed so often. Other languages use other words: JavaScript uses `function`, and C and C++ start with the type of value the function returns. The idea is the same everywhere: a name, some parameters, and a body.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 120" font-family="Inter, Arial, sans-serif">
+  <text x="40" y="52" font-size="13" text-anchor="middle" fill="#1d6fd1">"go"</text>
+  <line x1="62" y1="60" x2="122" y2="60" stroke="#1f2a44" stroke-width="2"/>
+  <polygon points="130,60 120,55 120,65" fill="#1f2a44"/>
+  <text x="40" y="78" font-size="11" text-anchor="middle" fill="#6c7a93">argument</text>
+  <rect x="130" y="30" width="110" height="60" rx="8" fill="#8fb8f0" stroke="#1f2a44" stroke-width="2"/>
+  <text x="185" y="56" font-size="14" text-anchor="middle" fill="#1f2a44" font-weight="700">shout</text>
+  <text x="185" y="75" font-size="11" text-anchor="middle" fill="#1f2a44">(word)</text>
+  <line x1="240" y1="60" x2="292" y2="60" stroke="#1f2a44" stroke-width="2"/>
+  <polygon points="300,60 290,55 290,65" fill="#1f2a44"/>
+  <text x="325" y="52" font-size="13" text-anchor="middle" fill="#b4232c">"GO!"</text>
+  <text x="325" y="78" font-size="11" text-anchor="middle" fill="#6c7a93">returned</text>
+  <text x="185" y="110" font-size="11" text-anchor="middle" fill="#6c7a93">same machine, any input</text>
+</svg>
+```
+:::
+
+::: context parameter-argument Slot and value
+The two words are easy to mix up, so here is a way to keep them apart. A **parameter** is part of the definition: a name waiting for a value, like a blank on a form. An **argument** is part of the call: the real value you write in the blank. In `def shout(word)`, `word` is the parameter. In `shout("go")`, `"go"` is the argument. Each call can give a different argument, and the same parameter name holds it for that call only.
+:::
+
+::: context return-ends Return is the exit door
+When Python reaches `return`, it leaves the function immediately and hands the value back. That means you can put a `return` inside an `if` to finish early:
+
+```python
+def sign(n):
+    if n < 0:
+        return "negative"
+    return "not negative"
+```
+
+For `sign(-3)` the first `return` runs and the second is never reached.
+:::
+
+::: context return-vs-print Screen or hand-back
+Think of asking a friend to add up a bill. `print` is your friend saying the total out loud. `return` is your friend writing it on a card and handing it to you, so you can do something with it: split it, compare it, write it into a list. A program that only prints cannot use its own results. That is why almost every real function returns its answer and leaves printing to the code that called it.
+:::
+
+::: context pass-placeholder Why pass exists
+Python uses indentation to see where a block begins and ends, so an empty block would be invisible. `def is_even(n):` followed by nothing is an error. `pass` is a real line that does nothing, so the block exists and the program runs. Engineers use it while sketching a program: they write every function's name and parameters first, with `pass` bodies, and fill them in one at a time.
+:::
+
+::: context method A function that belongs to a value
+A **method** is a function that comes with a value and works on that value. You call it with a dot: `text.split()` means "the `split` that belongs to `text`". Compare `len(text)`, an ordinary function that you hand the value to. Strings, lists and many other kinds of value carry their own methods. You met `strip`, `lower` and `upper` in py-04, and `append` in py-06.
+:::
 --- task
-Write a function `word_count(text)` that returns how many words are in `text` (words are separated by spaces — `text.split()` gives you the list of words).
+Write two functions.
 
-Also write `is_even(n)` that returns `True` when n is even and `False` otherwise.
+1. `word_count(text)` returns how many words are in `text`. Words are separated by spaces, so `text.split()` gives you the list of words, and `len` of that list is the count. For example, `word_count("the quick brown fox")` returns `4`, and `word_count("")` returns `0`.
+2. `is_even(n)` returns `True` when `n` is even and `False` otherwise. A number is even when `n % 2 == 0`.
+
+Use `return` in both, not `print`. Replace each `pass` in the starter with your `return` line.
 --- starter
 def word_count(text):
     pass
@@ -363,9 +1924,11 @@ def word_count(text):
 def is_even(n):
     return n % 2 == 0
 --- hint
-`"a b c".split()` is `["a", "b", "c"]`, and `len` of that is 3.
+Each function needs one line in its body: a `return` followed by the answer. Replace `pass` with it, indented 4 spaces.
 --- hint
-`n % 2 == 0` is already True or False — you can return it directly.
+`"a b c".split()` is `["a", "b", "c"]`, and `len` of that is 3. So `word_count` returns `len(text.split())`.
+--- hint
+`n % 2 == 0` is already True or False, like `n > 0` in `is_positive`, so you can return it directly: `return n % 2 == 0`.
 --- check case | word_count("the quick brown fox") is 4
 word_count("the quick brown fox")
 => 4
@@ -382,26 +1945,294 @@ is_even(10)
 is_even(7)
 => False
 
-=== py-09 | Dictionaries
+=== py-08b | Default values and None
 --- teach
-A **dictionary** (`dict`) maps keys to values — like a lookup table:
+Last lesson you wrote functions with parameters, and every call had to give each parameter an argument. This lesson shows two more things about functions: how to give a parameter a value it uses when you leave it out, and what a function hands back when it has no `return`.
+
+Picture ordering a drink. If you do not say a size, you get a medium. You only say the size when you want something different. That "medium unless you say otherwise" is a default.
+
+## A default value
+
+A **default value** is the value a parameter uses when the call leaves it out. You write it in the `def` line with `=` after the parameter's name:
 
 ```python
-prices = {"input": 0.000003, "output": 0.000015}
-prices["input"]            # 0.000003
-prices["cached"] = 0.0000003
-"output" in prices         # True
-prices.get("missing", 0)   # 0 — .get gives a default instead of an error
+def greet(name, punctuation="!"):
+    return f"Hello, {name}{punctuation}"
+
+greet("Ada")         # "Hello, Ada!"
+greet("Lin", "?")    # "Hello, Lin?"
 ```
 
-Loop over keys and values together with `.items()`:
+Read `punctuation="!"` as "punctuation, which is `"!"` unless you say otherwise". The first call gives only one argument, so `punctuation` uses its default, `"!"`. The second call gives two arguments, so `"?"` replaces the default for that call.
+
+This `=` works like the `=` from py-02: it gives the name a value. It only happens when the caller does not give one.
+
+Defaults suit values that are almost always the same, such as the [[unit a number is measured in|units-default]].
+
+**Watch out:** parameters with a default must [[come after the ones without|defaults-last]]. `def greet(name, punctuation="!")` is fine. `def greet(punctuation="!", name)` is an error, and Python will not run the program.
+
+## None: the value for "nothing"
+
+Some functions do a job and have no answer to hand back, like one that prints a message. Such a function has no `return` line. When it finishes, it still hands something back: **`None`**, Python's value for "[[nothing|none-value]]".
+
+```python
+def say(text):
+    print(text)
+
+result = say("hi")   # prints: hi
+print(result)        # None
+```
+
+`say("hi")` printed `hi`, then finished without a `return`, so the call became `None`, and `result` holds `None`. `None` is written with a capital N and no quotes, like `True` and `False`.
+
+A function whose body is only `pass` also returns `None`. That is what the starter functions in py-08 gave back before you wrote them.
+
+**Watch out:** this is where [[mixing up the two|print-instead-of-return]] shows itself. If a function prints its answer instead of returning it, the call becomes `None`. When a value you expected turns out to be `None`, look for a missing `return`.
+
+::: context units-default Why engineers label units
+A default is a good place to write down the unit a number is measured in. In 1999 NASA's Mars Climate Orbiter was lost at Mars. One team's software reported thruster pushes in pound-force seconds, and the software that used those numbers expected newton-seconds. Every number was off by a factor of about 4.45. Engineers learned to keep the unit right next to every value, so a reader never has to guess.
+:::
+
+::: context defaults-last Why defaults go at the end
+Arguments fill parameters in order, first to first. If a parameter with a default came first, Python could not tell whether a single argument was meant for it or for the one after. Putting every default at the end removes the guess: the arguments fill the parameters from the left, and any left over at the end use their defaults.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 130" font-family="Inter, Arial, sans-serif">
+  <text x="180" y="18" font-size="12" text-anchor="middle" fill="#1f2a44">greet("Ada")</text>
+  <rect x="60" y="30" width="110" height="36" rx="4" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="115" y="53" font-size="12" text-anchor="middle" fill="#1f2a44">name</text>
+  <rect x="190" y="30" width="110" height="36" rx="4" fill="#ffffff" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="245" y="53" font-size="12" text-anchor="middle" fill="#1f2a44">punctuation</text>
+  <text x="115" y="90" font-size="13" text-anchor="middle" fill="#1d6fd1">"Ada"</text>
+  <text x="115" y="108" font-size="11" text-anchor="middle" fill="#6c7a93">from the call</text>
+  <text x="245" y="90" font-size="13" text-anchor="middle" fill="#b4232c">"!"</text>
+  <text x="245" y="108" font-size="11" text-anchor="middle" fill="#6c7a93">the default</text>
+</svg>
+```
+:::
+
+::: context none-value Nothing is not zero
+`None` is different from `0` and from the empty string `""`. Zero is a number and `""` is a string with no letters, but `None` means "there is no value here at all". Its type is called `NoneType`, and there is only one `None` in any program. You will meet it again as the result of a lookup that finds nothing, and as a starting value for a variable that will be filled in later.
+:::
+
+::: context print-instead-of-return The bug that hides
+A function that prints instead of returning looks as if it works: the right answer appears on the screen. The problem only shows up when other code tries to use the result. Adding one to it, for example, stops the program with an error, because Python cannot add a number to `None`. This is one of the most common bugs for new Python programmers, and an easy one to fix once you know the sign.
+:::
+
+--- task
+Write two functions.
+
+1. `format_speed(value, unit)` must give `unit` the default value `"m/s"`. It returns the value and the unit with one space between them, built with an f-string. So `format_speed(340)` returns `"340 m/s"`, and `format_speed(7.8, "km/s")` returns `"7.8 km/s"`.
+2. `announce(text)` prints `text` and has no `return` line.
+
+The last two lines of the starter call `announce("Engines on")` and print what it handed back. When both functions are right, the output is:
+
+```
+Engines on
+None
+```
+--- starter
+def format_speed(value, unit):
+    pass
+
+
+def announce(text):
+    pass
+
+
+result = announce("Engines on")
+print(result)
+--- solution
+def format_speed(value, unit="m/s"):
+    return f"{value} {unit}"
+
+
+def announce(text):
+    print(text)
+
+
+result = announce("Engines on")
+print(result)
+--- hint
+In the `def` line, change `unit` to `unit="m/s"`, the same way `greet` has `punctuation="!"`.
+--- hint
+The body of `format_speed` is one line: `return` and an f-string with `{value}`, a space, and `{unit}`.
+--- hint
+The body of `announce` is one line, `print(text)`, with no `return`. The call then gives back `None`, and the starter's last line prints it.
+--- check case | format_speed(340) uses the default unit
+format_speed(340)
+=> "340 m/s"
+--- check case | format_speed(7.8, "km/s") uses the unit given
+format_speed(7.8, "km/s")
+=> "7.8 km/s"
+--- check output | announce prints the text and returns None
+Engines on
+None
+
+=== py-09 | Dictionaries
+--- teach
+Last lesson you finished learning how functions hand values back. Now you will meet a new way to store values, and you will use it inside a function.
+
+In py-06 you found things in a list by their position: `planets[0]` is the first. That works when you know where something sits. But think of a contacts app on a phone. You do not look up "contact number 47". You look up a *name*, and it gives you the number. A dictionary lets Python [[look values up by name|named-values]].
+
+## Keys and values
+
+A **dictionary** (Python writes it `dict`) holds pairs. Each pair has a **key**, the thing you look up, and a **value**, what you get back. It works like a [[lookup table|lookup-table]].
+
+```python
+prices = {"input": 3, "output": 15}
+```
+
+Here is how to read it:
+
+- Curly braces `{` and `}` start and end the dictionary.
+- Each pair is written `key: value`. The colon `:` joins a key to its value.
+- Commas separate the pairs.
+
+This dictionary holds prices in dollars per million tokens (the token prices from py-03, scaled up to whole numbers). The key `"input"` goes with the value `3`, and the key `"output"` goes with the value `15`. `{}` on its own is an **empty dictionary**, with no pairs yet.
+
+## Looking a value up
+
+To get a value, put its key in square brackets, the way you put a position in square brackets for a list:
+
+```python
+prices["input"]      # 3
+prices["output"]     # 15
+```
+
+**Watch out:** if the key is not in the dictionary, Python stops with an error called a `KeyError`, one kind of [[error that stops a running program|keyerror]]. `prices["cached"]` fails, because there is no `"cached"` key yet. Keys must also match exactly: `"Input"` with a capital I is a different key from `"input"`.
+
+## Adding or changing a pair
+
+To add a pair, give a new key a value with `=`:
+
+```python
+prices["cached"] = 0.3
+print(prices)        # {'input': 3, 'output': 15, 'cached': 0.3}
+```
+
+If the key is already there, the same line replaces its value instead, because [[each key appears only once|unique-keys]]:
+
+```python
+prices["input"] = 4
+prices["input"]      # 4
+```
+
+Notice that `print` shows strings in a dictionary with single quotes. Single and double quotes mean the same thing in Python.
+
+## Is this key in there?
+
+`in`, which you used with strings in py-04, tells you whether a key is in a dictionary. It gives `True` or `False`:
+
+```python
+"output" in prices   # True
+"missing" in prices  # False
+```
+
+`in` looks at the keys, not the values. `15 in prices` is `False`, because `15` is a value, not a key.
+
+## A safe lookup with .get
+
+The method **`.get`** looks up a key, but instead of an error it gives you a fallback value when the key is missing. You give it the key, then the fallback:
+
+```python
+prices.get("output", 0)    # 15  (the key is there, so you get its value)
+prices.get("missing", 0)   # 0   (no such key, so you get the fallback)
+```
+
+Read `prices.get("missing", 0)` as "the value for `"missing"`, or `0` if there is none".
+
+## Looping over keys and values
+
+The method **`.items()`** gives you every pair in the dictionary. In a `for` loop you can take each pair apart into [[two loop variables at once|unpacking]], one for the key and one for the value:
 
 ```python
 for key, value in prices.items():
     print(key, value)
+# input 4
+# output 15
+# cached 0.3
 ```
+
+The pairs come out in the order they were added.
+
+## Counting with a dictionary
+
+Dictionaries are perfect for counting how many times each thing appears. Start with an empty dictionary. For each item, look up its count so far with `.get(item, 0)` (zero if it is new), add one, and store the result back. This is a [[tally|tally]].
+
+```python
+counts = {}
+for color in ["red", "blue", "red"]:
+    counts[color] = counts.get(color, 0) + 1
+print(counts)        # {'red': 2, 'blue': 1}
+```
+
+Pass by pass:
+
+| Pass | `color` | `counts.get(color, 0)` | `counts` after the pass |
+|---|---|---|---|
+| 1 | `"red"` | 0 | `{'red': 1}` |
+| 2 | `"blue"` | 0 | `{'red': 1, 'blue': 1}` |
+| 3 | `"red"` | 1 | `{'red': 2, 'blue': 1}` |
+
+You can put this inside a function and `return counts` at the end, the same way py-08 returned its answers. If the loop has nothing to go through, `counts` stays `{}`.
+
+::: context named-values Data with names on it
+Much of the data engineers handle is a set of named values: a weather report with `"wind"` and `"temperature"`, or a spacecraft status with `"altitude"` and `"battery"`. When programs send data like this to each other over the internet, they very often use a text format called **JSON**, which looks almost the same as a Python dictionary: `{"altitude": 408, "unit": "km"}`. Python's `json` module turns JSON text into dictionaries and back, so everything in this lesson works on it.
+:::
+
+::: context lookup-table Keys point to values
+A lookup table is a two-column list where you find a row by the left column and read the right one, like the table of contents in a book. In a dictionary the keys are the left column and the values are the right. Python finds a key very quickly, without reading through every pair, even when the dictionary holds millions of them.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 140" font-family="Inter, Arial, sans-serif">
+  <text x="100" y="18" font-size="12" text-anchor="middle" fill="#6c7a93">keys</text>
+  <text x="260" y="18" font-size="12" text-anchor="middle" fill="#6c7a93">values</text>
+  <rect x="45" y="28" width="110" height="30" rx="4" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="100" y="48" font-size="12" text-anchor="middle" fill="#1f2a44">"input"</text>
+  <rect x="45" y="68" width="110" height="30" rx="4" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="100" y="88" font-size="12" text-anchor="middle" fill="#1f2a44">"output"</text>
+  <rect x="45" y="108" width="110" height="30" rx="4" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="100" y="128" font-size="12" text-anchor="middle" fill="#1f2a44">"cached"</text>
+  <rect x="215" y="28" width="90" height="30" rx="4" fill="#ffffff" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="260" y="48" font-size="12" text-anchor="middle" fill="#1f2a44">3</text>
+  <rect x="215" y="68" width="90" height="30" rx="4" fill="#ffffff" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="260" y="88" font-size="12" text-anchor="middle" fill="#1f2a44">15</text>
+  <rect x="215" y="108" width="90" height="30" rx="4" fill="#ffffff" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="260" y="128" font-size="12" text-anchor="middle" fill="#1f2a44">0.3</text>
+  <line x1="155" y1="43" x2="205" y2="43" stroke="#1d6fd1" stroke-width="2"/>
+  <polygon points="213,43 203,38 203,48" fill="#1d6fd1"/>
+  <line x1="155" y1="83" x2="205" y2="83" stroke="#1d6fd1" stroke-width="2"/>
+  <polygon points="213,83 203,78 203,88" fill="#1d6fd1"/>
+  <line x1="155" y1="123" x2="205" y2="123" stroke="#1d6fd1" stroke-width="2"/>
+  <polygon points="213,123 203,118 203,128" fill="#1d6fd1"/>
+</svg>
+```
+:::
+
+::: context keyerror When Python stops with an error
+An error that happens while a program is running is called an **exception**. Python stops, and prints the kind of error and the line where it happened. `KeyError: 'cached'` means "you asked for the key `'cached'` and there is no such key". The message is a clue, not a disaster: it names the exact key that was missing. A later lesson shows how a program can catch an exception and carry on. Until then, `in` and `.get` let you avoid this one.
+:::
+
+::: context unique-keys One key, one value
+A dictionary can never hold the same key twice. Writing to a key that already exists replaces the old value; it does not add a second pair. That is what makes a lookup give one clear answer. Values do not have that rule: two different keys can hold the same value, like two friends who share a phone number.
+:::
+
+::: context unpacking Taking a pair apart
+`.items()` hands the loop one pair at a time, such as `("input", 4)`. Writing two names after `for`, separated by a comma, takes each pair apart: the first part goes into `key`, the second into `value`. This is called **unpacking**. The names are up to you: `for name, price in prices.items()` works the same way and reads better.
+:::
+
+::: context tally Counting like a tally sheet
+Picture counting cars by colour with a pencil. When a colour appears for the first time, you write it down with one mark. When it appears again, you add a mark next to it. The dictionary does the same: `.get(color, 0)` is "how many marks so far, or zero if it is not written down yet", and `+ 1` is the new mark. This counting pattern is one of the most used patterns in all of Python.
+:::
 --- task
-Write `count_words(text)` that returns a dict mapping each word to how many times it appears. Words are separated by spaces and should be compared in lowercase, so `"The the"` counts `the` twice.
+Write `count_words(text)` that returns a dictionary mapping each word to how many times it appears.
+
+- Make the text lowercase and split it into words with `text.lower().split()`, so `"The the"` counts `the` twice.
+- Loop over those words, and count each one with `counts[word] = counts.get(word, 0) + 1`, like the colour example.
+- Return `counts` at the end.
+
+For example, `count_words("to be or not to be")` returns `{"to": 2, "be": 2, "or": 1, "not": 1}`, and `count_words("")` returns `{}`. The starter already makes the empty dictionary and returns it.
 --- starter
 def count_words(text):
     counts = {}
@@ -413,9 +2244,11 @@ def count_words(text):
         counts[word] = counts.get(word, 0) + 1
     return counts
 --- hint
-Loop over `text.lower().split()`.
+Add a `for` loop between `counts = {}` and `return counts`. Loop over `text.lower().split()`.
 --- hint
-`counts[word] = counts.get(word, 0) + 1` adds one, starting from zero the first time.
+The loop is `for word in text.lower().split():`, and its body is indented 8 spaces, because it sits inside the function and inside the loop.
+--- hint
+The body is `counts[word] = counts.get(word, 0) + 1`, which adds one, starting from zero the first time a word is seen. Keep `return counts` indented 4 spaces, so it runs once, after the loop.
 --- check case | Counts repeated words
 count_words("to be or not to be")
 => {"to": 2, "be": 2, "or": 1, "not": 1}
@@ -428,20 +2261,183 @@ count_words("")
 
 === py-10 | List comprehensions
 --- teach
-Building a new list from an old one is so common that Python has a short form for it — the **list comprehension**:
+Last lesson you filled a dictionary with a `for` loop: start with an empty one, walk through the words one at a time, and add to it. This lesson shows a shorter way to write a loop whose only job is to build a new list (or a new dictionary) out of an old one.
+
+Picture a photocopier with settings. You feed in a stack of pages and say "copy every page, but make it bigger", or "copy only the pages that have pictures". The original stack stays as it was, and you walk away with a new stack. Python has a one-line way to give that kind of order.
+
+### The long way first
+
+Here is a loop you can already write. It makes a list of the squares of some numbers (a number times itself):
+
+```python
+numbers = [1, 2, 3, 4]
+squares = []
+for n in numbers:
+    squares.append(n * n)
+print(squares)    # [1, 4, 9, 16]
+```
+
+It works, but three of the four lines are plumbing: make an empty list, loop, append. Python programs do this all the time, so there is a shorter form.
+
+### The short way: a list comprehension
+
+```python
+numbers = [1, 2, 3, 4]
+squares = [n * n for n in numbers]
+print(squares)    # [1, 4, 9, 16]
+```
+
+This is a **[[list comprehension|comprehension-name]]** — a whole list-building loop written inside square brackets `[ ]`. Read it aloud as "n times n, for each n in numbers".
+
+It has two parts:
+
+- Before the word `for` is the **[[expression|expression]]** — the thing to put in the new list for each item. Here it is `n * n`, "n times n".
+- After it comes `for n in numbers`, the same words as the top line of a `for` loop, but with no colon at the end.
+
+The square brackets on the outside say "the answer is a list". Python builds [[a brand-new list|new-list]] and leaves `numbers` exactly as it was.
+
+The expression can be anything that makes a value, including a string method you already know:
+
+```python
+names = ["ada", "lin"]
+loud = [name.upper() for name in names]
+print(loud)       # ['ADA', 'LIN']
+```
+
+### Keeping only some items: add an `if`
+
+Put `if` and a condition at the end, and only the items that pass the condition make it into the new list:
 
 ```python
 numbers = [1, 2, 3, 4, 5, 6]
-squares = [n * n for n in numbers]          # [1, 4, 9, 16, 25, 36]
-evens   = [n for n in numbers if n % 2 == 0] # [2, 4, 6]
+evens = [n for n in numbers if n % 2 == 0]
+print(evens)      # [2, 4, 6]
 ```
 
-Read it as: "`n * n` for each `n` in `numbers`", optionally "if" a condition. The same idea builds dicts: `{name: len(name) for name in names}`.
---- task
-Using comprehensions:
+Read it as "n, for each n in numbers, if n divided by 2 leaves a remainder of 0". Remember from the arithmetic lesson that `%` means "the remainder after dividing", and `==` means "is equal to". Items where the condition is `False` are skipped. Keeping some items and dropping the rest is called **[[filtering|filtering]]**.
 
-- `long_words(words)` returns the words longer than 4 characters, uppercased.
-- `lengths(words)` returns a dict mapping each word to its length.
+Here the expression is `n` on its own, which means "keep the item as it is".
+
+### Changing and filtering at the same time
+
+You can use both parts at once. For each item, Python checks the `if` first. Only the items that pass go through the expression at the front:
+
+```python
+words = ["go", "rocket", "fuel", "orbit"]
+shout = [w.upper() for w in words if len(w) > 4]
+print(shout)      # ['ROCKET', 'ORBIT']
+```
+
+Read it as "w in capitals, for each w in words, if the length of w is greater than 4". `"go"` has 2 letters and `"fuel"` has 4, so they are dropped. (4 is not greater than 4.) `"rocket"` and `"orbit"` pass and come out in capitals.
+
+Notice that Python prints the strings in the list with [[single quotes|quote-style]]. That is only how it shows them; `'ROCKET'` and `"ROCKET"` are the same string.
+
+### The same trick for dictionaries
+
+Swap the square brackets for curly braces `{ }` and put a key, a colon `:`, and a value at the front. You get a **dictionary comprehension**, which builds a dictionary:
+
+```python
+planets = ["mars", "venus", "io"]
+sizes = {p: len(p) for p in planets}
+print(sizes)      # {'mars': 4, 'venus': 5, 'io': 2}
+```
+
+Read it as "p maps to the length of p, for each p in planets". The colon means "maps to", the same as when you wrote a dictionary by hand last lesson. Each word becomes a key, and its length becomes the value.
+
+A comprehension is for building one list or one dictionary. If your loop prints things, or does several steps for each item, keep the [[ordinary loop|when-to-loop]] — it will be easier to read.
+
+**Watch out:** the parts go in a fixed order: expression, then `for`, then `if`. The `if` always goes last. `[if len(w) > 4 w for w in words]` is a mistake, and Python stops with `SyntaxError: invalid syntax`. If you get that error, check the order first.
+
+::: context comprehension-name Why such an odd name
+In maths there is a way to describe a set by a rule instead of listing it: "the squares of n, for every n from 1 to 4". Mathematicians call that set-builder notation, and the rule that lets you build a set that way is known as comprehension. Python borrowed the idea (and the name) from other programming languages, especially one called Haskell. Here "comprehension" means "taking everything in that fits the rule", not "understanding".
+:::
+
+::: context expression A piece of code that gives a value
+An expression is any bit of code that Python can work out to a single value. `n * n` is an expression. So are `len(w)`, `w.upper()`, `3 + 4` and `"hello"`. A line like `squares = []` is not an expression; it is an instruction that stores something. A handy test: if you could put it inside `print( )` and see a value, it is an expression. The front of a comprehension must be an expression, because Python needs a value to put in the new list.
+:::
+
+::: context new-list The old list is not changed
+A comprehension never touches the list it reads from. It makes a separate list and fills it with the answers, one per item, in the same order. That is useful: you can keep the raw data and the worked-out data side by side, and check one against the other.
+
+```svg
+<svg viewBox="0 0 360 200" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <defs><marker id="nl-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#1f2a44"/></marker></defs>
+  <text x="20" y="60" font-size="13" fill="#1f2a44">numbers</text>
+  <rect x="120" y="40" width="36" height="30" fill="white" stroke="#1f2a44"/>
+  <rect x="160" y="40" width="36" height="30" fill="white" stroke="#1f2a44"/>
+  <rect x="200" y="40" width="36" height="30" fill="white" stroke="#1f2a44"/>
+  <rect x="240" y="40" width="36" height="30" fill="white" stroke="#1f2a44"/>
+  <text x="138" y="60" font-size="13" text-anchor="middle" fill="#1f2a44">1</text>
+  <text x="178" y="60" font-size="13" text-anchor="middle" fill="#1f2a44">2</text>
+  <text x="218" y="60" font-size="13" text-anchor="middle" fill="#1f2a44">3</text>
+  <text x="258" y="60" font-size="13" text-anchor="middle" fill="#1f2a44">4</text>
+  <text x="290" y="60" font-size="11" fill="#6c7a93">unchanged</text>
+  <line x1="198" y1="72" x2="198" y2="95" stroke="#1f2a44" stroke-width="1.5" marker-end="url(#nl-arrow)"/>
+  <rect x="138" y="97" width="120" height="30" rx="8" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="198" y="117" font-size="13" text-anchor="middle" fill="#1f2a44">n * n</text>
+  <line x1="198" y1="129" x2="198" y2="150" stroke="#1f2a44" stroke-width="1.5" marker-end="url(#nl-arrow)"/>
+  <text x="20" y="172" font-size="13" fill="#1f2a44">squares</text>
+  <rect x="120" y="152" width="36" height="30" fill="#8fb8f0" stroke="#1d6fd1"/>
+  <rect x="160" y="152" width="36" height="30" fill="#8fb8f0" stroke="#1d6fd1"/>
+  <rect x="200" y="152" width="36" height="30" fill="#8fb8f0" stroke="#1d6fd1"/>
+  <rect x="240" y="152" width="36" height="30" fill="#8fb8f0" stroke="#1d6fd1"/>
+  <text x="138" y="172" font-size="13" text-anchor="middle" fill="#1f2a44">1</text>
+  <text x="178" y="172" font-size="13" text-anchor="middle" fill="#1f2a44">4</text>
+  <text x="218" y="172" font-size="13" text-anchor="middle" fill="#1f2a44">9</text>
+  <text x="258" y="172" font-size="13" text-anchor="middle" fill="#1f2a44">16</text>
+</svg>
+```
+:::
+
+::: context filtering Throwing out the readings you cannot trust
+Filtering is everywhere in engineering. A temperature sensor on a test stand might now and then send a glitch, like 999 degrees, when the real value is about 22. Before working out an average, an engineer keeps only the readings inside a believable range and drops the rest. The rule is the `if` part; the kept readings are the new list.
+
+```svg
+<svg viewBox="0 0 360 170" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <defs><marker id="fl-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#1f2a44"/></marker></defs>
+  <rect x="30" y="15" width="36" height="28" fill="white" stroke="#1f2a44"/>
+  <rect x="80" y="15" width="36" height="28" fill="white" stroke="#1f2a44"/>
+  <rect x="130" y="15" width="36" height="28" fill="white" stroke="#1f2a44"/>
+  <rect x="180" y="15" width="36" height="28" fill="white" stroke="#1f2a44"/>
+  <rect x="230" y="15" width="36" height="28" fill="white" stroke="#1f2a44"/>
+  <rect x="280" y="15" width="36" height="28" fill="white" stroke="#1f2a44"/>
+  <text x="48" y="34" font-size="13" text-anchor="middle" fill="#1f2a44">1</text>
+  <text x="98" y="34" font-size="13" text-anchor="middle" fill="#1f2a44">2</text>
+  <text x="148" y="34" font-size="13" text-anchor="middle" fill="#1f2a44">3</text>
+  <text x="198" y="34" font-size="13" text-anchor="middle" fill="#1f2a44">4</text>
+  <text x="248" y="34" font-size="13" text-anchor="middle" fill="#1f2a44">5</text>
+  <text x="298" y="34" font-size="13" text-anchor="middle" fill="#1f2a44">6</text>
+  <rect x="30" y="62" width="286" height="28" rx="6" fill="white" stroke="#1d6fd1" stroke-width="1.5"/>
+  <text x="173" y="81" font-size="13" text-anchor="middle" fill="#1d6fd1">if n % 2 == 0</text>
+  <text x="48" y="112" font-size="14" text-anchor="middle" fill="#b4232c">x</text>
+  <text x="148" y="112" font-size="14" text-anchor="middle" fill="#b4232c">x</text>
+  <text x="248" y="112" font-size="14" text-anchor="middle" fill="#b4232c">x</text>
+  <line x1="98" y1="92" x2="98" y2="118" stroke="#1f2a44" stroke-width="1.5" marker-end="url(#fl-arrow)"/>
+  <line x1="198" y1="92" x2="198" y2="118" stroke="#1f2a44" stroke-width="1.5" marker-end="url(#fl-arrow)"/>
+  <line x1="298" y1="92" x2="298" y2="118" stroke="#1f2a44" stroke-width="1.5" marker-end="url(#fl-arrow)"/>
+  <rect x="80" y="120" width="36" height="28" fill="#8fb8f0" stroke="#1d6fd1"/>
+  <rect x="180" y="120" width="36" height="28" fill="#8fb8f0" stroke="#1d6fd1"/>
+  <rect x="280" y="120" width="36" height="28" fill="#8fb8f0" stroke="#1d6fd1"/>
+  <text x="98" y="139" font-size="13" text-anchor="middle" fill="#1f2a44">2</text>
+  <text x="198" y="139" font-size="13" text-anchor="middle" fill="#1f2a44">4</text>
+  <text x="298" y="139" font-size="13" text-anchor="middle" fill="#1f2a44">6</text>
+  <text x="30" y="164" font-size="11" fill="#6c7a93">odd numbers fail the test and are skipped</text>
+</svg>
+```
+:::
+
+::: context quote-style Single or double quotes
+Python accepts a string written with either kind of quote: `'orbit'` and `"orbit"` are exactly the same value. When Python prints a list or a dictionary, it has to show you where each string starts and ends, so it puts quotes around them, and it picks single quotes. When you `print` a string on its own, no quotes appear at all. In your own code, pick one style and stay with it.
+:::
+
+::: context when-to-loop Short is not always better
+Code is read many more times than it is written, often by a teammate at a bad moment, like when a test has failed. A one-line comprehension is easy to read when it says one thing: "these items, changed like this, if they pass this test". Once it grows a second `for` or a long condition, a plain `for` loop with a few named steps is kinder to the reader. In the intermediate course you will meet a third member of the family, the set comprehension, which uses curly braces with no colon.
+:::
+--- task
+Write two functions. Each one should `return` a comprehension. You can delete the starter lines inside them.
+
+- `long_words(words)` returns a list of the words in `words` that are longer than 4 characters, changed to capitals with `.upper()`. For example, `long_words(["rocket", "fuel", "orbit", "go"])` gives `["ROCKET", "ORBIT"]`.
+- `lengths(words)` returns a dictionary that maps each word to its length (use `len`). For example, `lengths(["ada", "lovelace"])` gives `{"ada": 3, "lovelace": 8}`.
 --- starter
 def long_words(words):
     result = []
@@ -458,7 +2454,11 @@ def long_words(words):
 def lengths(words):
     return {w: len(w) for w in words}
 --- hint
-`[w.upper() for w in words if len(w) > 4]`
+`long_words` both changes and filters, like the `shout` example. `lengths` builds a dictionary, like the `sizes` example. Each function can be one line: `return` followed by the comprehension.
+--- hint
+For `lengths`, use curly braces with "key: value" at the front: `{w: len(w) for w in words}`.
+--- hint
+For `long_words`, the expression is `w.upper()` and the condition goes at the end: `return [w.upper() for w in words if len(w) > 4]`.
 --- check case | long_words keeps and uppercases long words
 long_words(["rocket", "fuel", "orbit", "go"])
 => ["ROCKET", "ORBIT"]
@@ -471,31 +2471,156 @@ lengths(["ada", "lovelace"])
 
 === py-11 | Handling errors
 --- teach
-When something goes wrong at run time, Python **raises an exception**. Unhandled, it stops the program. `try` / `except` lets you handle it:
+Last lesson every list your comprehensions read was tidy. Real data is not. Someone types `forty-two` where you wanted a number, or a file is missing a line. This lesson is about what your program does when something goes wrong, instead of falling over.
+
+Think of a recipe with a backup plan: "Use two eggs. If you have no eggs, use a mashed banana instead." You try the normal way first, and you know in advance what to do if it fails. Python lets your code carry a backup plan in the same way.
+
+### What an error looks like
+
+`int(text)` turns text made of digits into a whole number:
+
+```python
+n = int("42")
+print(n + 1)      # 43
+```
+
+But text that is not a whole number cannot be turned into one:
+
+```python
+n = int("forty-two")
+```
+
+Python stops the whole program and prints:
+
+```
+ValueError: invalid literal for int() with base 10: 'forty-two'
+```
+
+When something goes wrong while the program is running (at **[[run time|run-time]]**), Python **raises an [[exception|exception-word]]**. An **exception** is an error message with a name, like `ValueError`, sent up to say "I could not do that". To **raise** it means to send it. `ValueError` means "the type was fine, but this value makes no sense here". If nothing deals with the exception, the program stops and prints a **[[traceback|traceback]]**: the list of lines it was running, then the exception's name and message.
+
+### Catching it: `try` and `except`
+
+To give your code a backup plan, wrap the risky line in `try` and say what to do in `except`:
 
 ```python
 try:
     n = int("forty-two")
 except ValueError:
     n = 0
+print(n)          # 0
 ```
 
-You can raise your own when your function is given something it cannot work with:
+Read it as: "try these indented lines. If a `ValueError` happens, run the lines under `except` instead." Both lines end with a colon, and the lines under each are indented, the same as `if` and `for`. Dealing with an exception like this is called **catching** or **handling** it. The program does not stop; it carries on after the `except` block.
+
+If nothing goes wrong, the `except` block is skipped:
+
+```python
+try:
+    n = int("42")
+except ValueError:
+    n = 0
+print(n)          # 42
+```
+
+When an error happens on a line inside `try`, Python does not finish the rest of the `try` block. It [[jumps straight to the except block|try-flow]].
+
+### Raising your own
+
+Sometimes Python is happy, but the value is still wrong for your job. Then you can raise an exception yourself, with the word `raise`, the exception's name, and a message in brackets:
 
 ```python
 def percent(part, whole):
     if whole == 0:
         raise ValueError("whole must not be zero")
     return part / whole * 100
+
+print(percent(3, 4))   # 75.0
+print(percent(3, 0))   # stops: ValueError: whole must not be zero
 ```
 
-Catch the specific exception you expect (`ValueError`, `KeyError`, `ZeroDivisionError`…) — a bare `except:` hides real bugs.
---- task
-Write `parse_port(text)`:
+`raise` ends the function at once, like `return`. But instead of handing back a value, it sends the exception to whoever called the function. Why do that? Because stopping with [[a clear message|fail-loudly]] at the spot where things went wrong is far better than carrying on with a wrong number.
 
-- return the text as an `int` if it is a whole number from 1 to 65535
-- if the text is not a number at all, return `None` (catch the `ValueError` that `int()` raises)
-- if it is a number outside 1–65535, raise `ValueError` yourself
+A common use is a range check. Here `or` means "if either of these is true":
+
+```python
+def fuel_level(percent):
+    if percent < 0 or percent > 100:
+        raise ValueError(f"fuel out of range: {percent}")
+    return percent
+
+print(fuel_level(80))    # 80
+print(fuel_level(120))   # stops: ValueError: fuel out of range: 120
+```
+
+### Catch the kind you expect
+
+Each kind of problem has its own exception name. Three you will meet often:
+
+| Exception | What went wrong | Example that raises it |
+| --- | --- | --- |
+| `ValueError` | the right type, but a value that makes no sense | `int("forty-two")` |
+| `KeyError` | a dictionary does not have that key | `{"a": 1}["b"]` |
+| `ZeroDivisionError` | dividing by zero | `5 / 0` |
+
+Always write the name you expect after `except`. It is possible to write `except:` with no name, which catches every exception there is. Do not do that: a bare `except:` [[hides real bugs|bare-except]], like a spelling mistake in your own code, behind your backup plan.
+
+Your task uses a **[[port number|port-number]]**: a whole number from 1 to 65535 that says which program on a computer a network message is for.
+
+**Watch out:** put only the risky line inside `try`. If you also put your own `raise ValueError(...)` inside the `try`, your own `except ValueError:` catches it straight away, and the error you meant to send out quietly disappears. Keep the `try` small, and do your range check after it.
+
+::: context run-time Two moments: writing and running
+There are two moments when Python can find a problem. Before your program starts, Python reads the whole file and checks the grammar: a missing colon or a bracket that is never closed is a `SyntaxError`, and nothing runs at all. Other problems can only show up while the program runs, because they depend on the values. Python cannot know `int(text)` will fail until it sees what `text` holds. Those are run-time errors, and they are what `try` is for.
+:::
+
+::: context exception-word An exception to the plan
+The name means an exception to the normal flow: the program was going line by line, and something happened that the normal plan does not cover. "Raise" comes from the picture of raising a flag or raising your hand: you signal the problem to whoever is in charge. In Python, "whoever is in charge" is the code that called your function, then the code that called that one, and so on up the chain, until something catches it or the program stops.
+:::
+
+::: context traceback Reading the red text from the bottom
+A traceback lists the lines Python was running when the exception happened, starting from the outside and ending at the exact line that failed. The most useful part is the very last line: the exception's name and its message. Read that first. Then read up to find the line of your own code where it happened. The intermediate course has a whole lesson on reading tracebacks, because it is the fastest way to find a bug.
+:::
+
+::: context try-flow Two paths out of a try
+Think of `try` as a fork in the road. If every line inside it works, Python skips the `except` block and carries on below. If a line raises the named exception, Python drops the rest of the `try` block, runs the `except` block, and then carries on below. Either way, the program keeps going.
+
+```svg
+<svg viewBox="0 0 360 180" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <defs><marker id="tf-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#1f2a44"/></marker></defs>
+  <rect x="10" y="20" width="130" height="40" rx="6" fill="white" stroke="#1d6fd1" stroke-width="1.5"/>
+  <text x="75" y="45" font-size="13" text-anchor="middle" fill="#1f2a44">try: int(text)</text>
+  <rect x="220" y="20" width="130" height="40" rx="6" fill="white" stroke="#b4232c" stroke-width="1.5"/>
+  <text x="285" y="45" font-size="12" text-anchor="middle" fill="#1f2a44">except ValueError:</text>
+  <rect x="115" y="125" width="130" height="40" rx="6" fill="#8fb8f0" stroke="#1d6fd1"/>
+  <text x="180" y="150" font-size="13" text-anchor="middle" fill="#1f2a44">carry on below</text>
+  <line x1="140" y1="40" x2="217" y2="40" stroke="#b4232c" stroke-width="1.5" marker-end="url(#tf-arrow)"/>
+  <text x="179" y="33" font-size="11" text-anchor="middle" fill="#b4232c">error</text>
+  <line x1="75" y1="60" x2="150" y2="122" stroke="#1f2a44" stroke-width="1.5" marker-end="url(#tf-arrow)"/>
+  <text x="62" y="100" font-size="11" text-anchor="middle" fill="#6c7a93">no error</text>
+  <line x1="285" y1="60" x2="210" y2="122" stroke="#1f2a44" stroke-width="1.5" marker-end="url(#tf-arrow)"/>
+  <text x="298" y="100" font-size="11" text-anchor="middle" fill="#6c7a93">handled</text>
+</svg>
+```
+:::
+
+::: context fail-loudly A rocket lost to one unhandled error
+On 4 June 1996, the first Ariane 5 rocket broke up about 37 seconds after lift-off. Its navigation software, reused from the smaller Ariane 4, tried to squeeze a measurement into a 16-bit whole number. Ariane 5 flew faster, the value was too big to fit, and the conversion raised an error that nothing handled. The navigation computer shut down (its backup had failed the same way a moment earlier), and the rocket veered off course and destroyed itself. Engineers still teach it as the reason to check ranges and to decide ahead of time what happens when something goes wrong.
+:::
+
+::: context bare-except Why a catch-everything is dangerous
+A bare `except:` catches every exception, not only the one you had in mind. If you misspell a variable name, Python raises a `NameError`, and a bare `except:` quietly runs your backup plan instead of telling you about the typo. It even catches the signal sent when you press Ctrl+C to stop a program. Naming the exception, like `except ValueError:`, means "I expected this one; anything else, tell me". In the intermediate course you will design exception types of your own.
+:::
+
+::: context port-number Numbered doors on a computer
+One computer runs many programs that talk over the network at once. The port number says which one a message is for, like a flat number on an envelope that already has the street address. Web servers usually listen on port 443 or 80, and test servers often use 8080. Ports are stored in 16 bits, so the largest is 65535 (that is 2 to the power of 16, minus 1). Port 0 is reserved and not used as a real address, which is why the range starts at 1.
+:::
+--- task
+Write a function `parse_port(text)` that turns text such as `"8080"` into a port number.
+
+1. Inside a `try`, turn the text into a whole number with `int(text)`. If that raises a `ValueError`, catch it with `except ValueError:` and `return None`.
+2. After the `try` / `except`, if the number is less than 1 or greater than 65535, `raise ValueError(...)` with a short message of your own, such as `f"port out of range: {port}"`.
+3. Otherwise, return the number.
+
+So `parse_port("8080")` gives `8080`, `parse_port("http")` gives `None`, and both `parse_port("70000")` and `parse_port("0")` raise `ValueError`.
 --- starter
 def parse_port(text):
     return int(text)
@@ -509,9 +2634,11 @@ def parse_port(text):
         raise ValueError(f"port out of range: {port}")
     return port
 --- hint
-Wrap only the `int(text)` in `try` / `except ValueError: return None`.
+Start with the backup plan: put only `port = int(text)` inside `try:`, and under `except ValueError:` write `return None`.
 --- hint
-After the conversion, check the range and `raise ValueError(...)` if it is outside 1–65535.
+Below the `try` / `except` (not indented under it), check the range with `if port < 1 or port > 65535:`, like the `fuel_level` example.
+--- hint
+Under that `if`, write `raise ValueError(f"port out of range: {port}")`. On the last line of the function, `return port`.
 --- check case | "8080" gives 8080
 parse_port("8080")
 => 8080
@@ -526,7 +2653,64 @@ raises(ValueError, lambda: parse_port("0"))
 
 === py-12 | Classes
 --- teach
-A **class** bundles data with the functions that work on it. Each object made from the class has its own data:
+Last lesson your functions learned to protect themselves from bad input. Up to now, your data (variables, lists, dictionaries) and the functions that work on it have lived apart. This lesson shows how to keep them together, in one new kind of value that you design yourself.
+
+Think of a bank. Every account has the same kind of information — who owns it and how much is in it — and the same actions, like putting money in. But each account has its own numbers. The bank has one plan for what an account is, and many real accounts made from that plan.
+
+### A class is a blueprint
+
+A **class** is that plan: a blueprint for a new kind of value. The word `class`, a name, and a colon start one:
+
+```python
+class Account:
+    pass
+
+acct = Account()
+```
+
+`pass` holds the place of a body, as you saw with functions. Writing the class name with brackets, `Account()`, builds one thing from the blueprint. That thing is called an **[[object|object-instance]]** — one real value made from a class. You can make as many objects from one class as you like.
+
+Class names start with a capital letter, and each new word gets a capital too: `Account`, `FuelTank`. This style is called **[[CamelCase|camel-case]]**. It is the one exception to the lowercase-with-underscores rule for names, and it tells a reader "this is a class".
+
+### Giving each object its own data
+
+An empty blueprint is not much use. To give every new object its data, write a function called `__init__` inside the class:
+
+```python
+class Account:
+    def __init__(self, owner, balance=0):
+        self.owner = owner
+        self.balance = balance
+
+acct = Account("ada")
+print(acct.owner)      # ada
+print(acct.balance)    # 0
+```
+
+A few new things here, one at a time.
+
+- A function written inside a class is called a **method**. You have used methods already: `.upper()` is a method of strings.
+- `__init__` is written with two underscores before and after. People read it as "[[dunder init|dunder]]", short for "double underscore init". It is a special method: Python runs it by itself every time a new object is created.
+- `self` is the new object itself. Every method takes **[[self|self-name]]** as its first parameter.
+- `self.owner = owner` means "store the value of `owner` inside this object, under the name `owner`". A value stored inside an object is called an **[[attribute|attribute]]**. You read it back with a dot: `acct.owner`.
+
+So `Account("ada")` does three things. Python makes a new, empty object. It runs `__init__` with `self` set to that object, `owner` set to `"ada"`, and `balance` set to its default, `0`. Then it hands you the finished object, which is stored in `acct`.
+
+Why both `owner` and `self.owner`? `owner` on its own is a parameter, and like every parameter it is gone when the method ends. `self.owner` is stored on the object, so it stays for as long as the object does.
+
+### Two objects, two sets of data
+
+Each object keeps its own attributes. Changing one does not change the other:
+
+```python
+a = Account("ada", 100)
+b = Account("lin")
+print(a.balance, b.balance)    # 100 0
+```
+
+### Methods that use the data
+
+Now add a method that changes the balance:
 
 ```python
 class Account:
@@ -539,18 +2723,73 @@ class Account:
         return self.balance
 
 acct = Account("ada")
-acct.deposit(50)      # 50
-acct.balance          # 50
+print(acct.deposit(50))    # 50
+print(acct.deposit(20))    # 70
+print(acct.balance)        # 70
 ```
 
-`__init__` runs when the object is created. `self` is the object itself — every method takes it first, and `self.x` is how an object stores its own data.
---- task
-Write a class `Counter` that:
+`+=` means "add to": `self.balance += amount` is a short way to write `self.balance = self.balance + amount`.
 
-- starts at `0` (or at a `start` value passed in)
-- has `increment()` that adds one and returns the new value
-- has `reset()` that sets it back to `0`
-- keeps the current value in `self.value`
+You call a method with a dot, the same as `name.upper()`. Look closely: `deposit` has two parameters, `self` and `amount`, but you call it with one value, `acct.deposit(50)`. Python fills in `self` for you with the object before the dot, here `acct`. So inside the method, `self.balance` is `acct.balance`.
+
+A method does not have to return anything. This one only changes the data:
+
+```python
+    def empty(self):
+        self.balance = 0
+```
+
+After `acct.empty()`, `acct.balance` is `0`. Like any function without `return`, it hands back `None`.
+
+**Watch out:** forgetting `self` is the mistake everyone makes. Leave it out of the `def` line, as in `def deposit(amount):`, and calling `acct.deposit(50)` stops with `TypeError: ... takes 1 positional argument but 2 were given` — Python passed the object and 50, and there was room for only one. Leave it out inside the method, writing `balance += amount` instead of `self.balance += amount`, and Python looks for an ordinary variable called `balance`, does not find one, and stops with an error.
+
+::: context object-instance One blueprint, many objects
+An object made from a class is also called an instance of that class: `acct` is an instance of `Account`. Every value you have used is an object of some class. `"hello"` is an instance of `str`, and `[1, 2]` is an instance of `list`. That is why `type(age)` printed `<class 'int'>` back in the variables lesson. Now you can make classes of your own.
+
+```svg
+<svg viewBox="0 0 360 170" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <defs><marker id="oi-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#1f2a44"/></marker></defs>
+  <rect x="10" y="55" width="130" height="60" rx="6" fill="white" stroke="#1d6fd1" stroke-width="1.5" stroke-dasharray="5 3"/>
+  <text x="75" y="80" font-size="13" text-anchor="middle" fill="#1d6fd1">class Account</text>
+  <text x="75" y="100" font-size="11" text-anchor="middle" fill="#6c7a93">owner, balance</text>
+  <rect x="210" y="12" width="140" height="62" rx="6" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="222" y="32" font-size="13" font-weight="bold" fill="#1f2a44">a</text>
+  <text x="222" y="50" font-size="12" fill="#1f2a44">owner: ada</text>
+  <text x="222" y="66" font-size="12" fill="#1f2a44">balance: 100</text>
+  <rect x="210" y="96" width="140" height="62" rx="6" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="222" y="116" font-size="13" font-weight="bold" fill="#1f2a44">b</text>
+  <text x="222" y="134" font-size="12" fill="#1f2a44">owner: lin</text>
+  <text x="222" y="150" font-size="12" fill="#1f2a44">balance: 0</text>
+  <line x1="140" y1="75" x2="207" y2="45" stroke="#1f2a44" stroke-width="1.5" marker-end="url(#oi-arrow)"/>
+  <line x1="140" y1="95" x2="207" y2="125" stroke="#1f2a44" stroke-width="1.5" marker-end="url(#oi-arrow)"/>
+  <text x="75" y="140" font-size="11" text-anchor="middle" fill="#6c7a93">the blueprint</text>
+</svg>
+```
+:::
+
+::: context camel-case Humps in the middle of a name
+The capitals in `FuelTank` stick up like the humps of a camel, which is where the name comes from. Python has an official style guide, called PEP 8, that most Python programmers follow. It says classes use CamelCase, and variables and functions use lowercase words joined by underscores, like `fuel_level`. Python does not force this, but following it means anyone can tell at a glance whether `Thing` is a class and `thing` is a value.
+:::
+
+::: context dunder Names Python calls for you
+Names with two underscores on each side are special: you write them, but Python calls them at the right moment. `__init__` is short for "initialise", which means "set up at the start". There are many others. In the intermediate course you will write `__repr__`, which Python calls to show an object, and `__eq__`, which Python calls when you compare two objects with `==`. The double underscores make these names hard to clash with your own by accident.
+:::
+
+::: context self-name Why self has to be written
+Many languages hide the "this object" parameter. Python makes you write it, because one of its guiding rules is "explicit is better than implicit": it is better to see what is happening than to have it happen out of sight. The name `self` is a habit, not a keyword. Any name would work, but every Python programmer uses `self`, so use it too.
+:::
+
+::: context attribute Data that belongs to an object
+An attribute is a named value that belongs to an object, the way "colour" and "size" belong to a shirt. The dot means "the one inside": `acct.balance` is "the balance inside `acct`". Flight software is often organised the same way. NASA's open-source F Prime framework, which ran on the Ingenuity helicopter on Mars, is built from components written as C++ classes, each keeping its own data and the methods that work on it.
+:::
+--- task
+Write a class called `Counter` that counts up, like a clicker.
+
+- `__init__(self, start=0)` stores the starting number in `self.value`. So `Counter()` starts at `0`, and `Counter(5)` starts at `5`.
+- `increment(self)` adds one to `self.value` and returns the new value.
+- `reset(self)` sets `self.value` back to `0`. It does not need to return anything.
+
+Replace the `pass` in the starter with these three methods.
 --- starter
 class Counter:
     pass
@@ -566,9 +2805,11 @@ class Counter:
     def reset(self):
         self.value = 0
 --- hint
-`def __init__(self, start=0): self.value = start`
+Copy the shape of `Account`: an `__init__` method first, then the other methods, each indented inside the class, each with `self` as its first parameter.
 --- hint
-`increment` changes `self.value`, then `return self.value`.
+`__init__` has one line: `self.value = start`. `reset` has one line too: `self.value = 0`, like the `empty` method.
+--- hint
+`increment` is like `deposit`, with 1 in place of `amount`: `self.value += 1`, then `return self.value`.
 --- check case | A new Counter starts at 0
 Counter().value
 => 0

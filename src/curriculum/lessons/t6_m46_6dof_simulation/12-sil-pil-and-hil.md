@@ -6,18 +6,41 @@ covers:
   - The SIL, PIL and HIL progression and what each step actually adds
 ---
 
-The previous lesson established that the GNC box should run the genuine flight binary, not a re-implementation. It did not say *where* that binary runs, and the answer turns out to have three increasingly demanding versions, each one exposing a class of defect the version before it structurally cannot. This lesson names them precisely — software-in-the-loop, processor-in-the-loop, hardware-in-the-loop — and, for each step up, asks what specifically becomes possible to find that was not possible before, with a number behind the answer, not only the name.
+Think about how a school play gets ready. First the cast sits around a table and reads the script aloud. That catches wrong lines and missing scenes. Next they rehearse on the real stage. Now they find out whether an actor can really cross from one side to the other before her next line. Last comes the dress rehearsal: real costumes, real lights, and a live band that keeps playing whether or not you are ready. That is when someone discovers the costume zipper sticks, or the spotlight cable is too short.
+
+Each rehearsal catches problems the one before it *could not* catch. Reading at a table can never reveal a stuck zipper, however many times you do it.
+
+Testing flight software works the same way. The previous lesson said the GNC box should run the genuine flight code, not a copy. It did not say *where* that code runs. There are three answers, each more demanding than the last:
+
+- **software-in-the-loop (SIL)** — the flight code runs on an ordinary development computer;
+- **processor-in-the-loop (PIL)** — it runs on the real flight processor;
+- **hardware-in-the-loop (HIL)** — it runs inside the real flight computer, wired to real or **[[stimulated|stimulator-word]]** sensors and actuators, against a real clock.
+
+For each step up, this lesson asks one question: what can you find now that you could not possibly find before? And it puts a number behind each answer.
 
 ## SIL: the algorithm, on a workstation
 
-Software-in-the-loop runs the compiled flight binary on an ordinary development workstation, inside the Python-orchestrated simulation this whole module has been building. Every architectural lesson so far — the two-rate loop, frame discipline, sensor and actuator models, event detection — is exercised in a SIL run, and SIL is where the overwhelming majority of GNC bugs are actually found, because it is fast, cheap to run thousands of times, and easy to instrument. What SIL cannot tell you anything about is how the *same binary*, or one built for a different target, behaves on hardware that is not a development workstation: a workstation's processor architecture, compiler, and floating-point behaviour are not the flight processor's, and the previous lesson's float-width example already showed how much even a difference this narrow can matter given enough run time.
+In **SIL**, the compiled flight code runs on a **workstation** — an ordinary desktop development computer — inside the Python-driven simulation this module has been building. Everything so far is exercised in a SIL run: the two-rate loop, frame discipline, the sensor and actuator models, event detection.
 
-## PIL: the real processor, still simulated I/O
+SIL is where the great majority of GNC bugs are actually found. It is fast. It is cheap, so you can run thousands of cases overnight. And you can see every internal signal, so a wrong sign, a mishandled edge case or a guidance logic error has nowhere to hide.
 
-Processor-in-the-loop moves the flight binary onto the actual flight processor — or a cycle-accurate emulation of it — while sensor and actuator data still come from the simulation rather than real hardware. What PIL adds is everything about *this specific processor executing this specific code*: its real instruction timing, its real memory footprint, its real behaviour under whatever fixed-point or floating-point arithmetic it actually implements, and, most consequentially for a real-time control system, whether the algorithm actually finishes within its allotted cycle time on hardware that is very often dramatically slower than the workstation it was developed on.
+What SIL cannot tell you is how the code behaves on hardware that is *not* a workstation. The workstation's processor, compiler and floating-point behavior are not the flight processor's. The previous lesson showed how much even number width alone can matter over a long run.
 
-::: example A margin that exists on a workstation and does not exist on the target
-Measure how long a representative piece of flight-software-style work — the matrix operations of a Kalman-style measurement update, state dimension 9, measurement dimension 6 — actually takes on an ordinary workstation, then ask what a full GNC cycle's worth of comparable work (sensor processing, navigation filter, guidance, control law, actuator allocation, perhaps eighteen operations of similar cost) would take on a processor two orders of magnitude slower, a representative gap between a development workstation and a radiation-hardened flight part:
+## PIL: the real processor, simulated inputs and outputs
+
+In **PIL**, the flight code moves onto the actual flight processor — or a **[[cycle-accurate emulator|cycle-accurate]]** of it, a program that imitates that processor instruction by instruction and clock tick by clock tick. The sensor data and actuator commands still come from and go to the simulation, not real hardware.
+
+What PIL adds is everything about *this processor running this code*:
+
+- its real instruction timing;
+- its real memory footprint — whether the code and data even fit;
+- its real arithmetic, fixed-point or floating-point, exactly as the chip does it;
+- and, most important for a control system, whether the code finishes within its **cycle budget** — the time allowed for one pass of the loop.
+
+That last one matters because flight processors are often much slower than a workstation. Flight chips are **[[radiation-hardened|rad-hard]]**: built to survive the radiation in space. That toughness costs speed.
+
+::: example A margin that exists on a workstation and not on the target
+Suppose the GNC loop runs at $100\,\mathrm{Hz}$, so the cycle budget is $1/100\,\mathrm{s} = 10\,\mathrm{ms}$. A typical heavy task is a **[[Kalman filter measurement update|kalman-update]]**, the step where a navigation filter blends a new measurement into its estimate. Here the state has 9 numbers and the measurement 6. Time it on a workstation, then imagine a full GNC cycle as about 18 tasks of similar cost — sensor processing, navigation, guidance, control, actuator allocation.
 
 ```python
 import time
@@ -64,17 +87,29 @@ print(f"full cycle, flight-representative processor: {cycle_flight_us/1000:.2f} 
 # full cycle, flight-representative processor: 11.24 ms (112.4% of budget)
 ```
 
-(This is a wall-clock measurement — running it again, on this machine or another, will give a different absolute number; the comparison against the budget is the point, not the exact microsecond figure.)
+This measures real time on whatever computer runs it, so your numbers will differ a little. The comparison with the budget is the point, not the exact microseconds.
 
-On the workstation, this cycle's worth of work costs about $321\,\mathrm{\mu s}$, a comfortable $3.2\%$ of a $10\,\mathrm{ms}$ control period — nothing here would ever raise a concern in a SIL run, however many times it were repeated. Scaled to a processor two orders of magnitude slower, the same work is estimated at $11.24\,\mathrm{ms}$ — over the budget before the tick even finishes. The scaling here is a crude clock-ratio estimate, not a substitute for real timing analysis on the actual target — cache behaviour, pipelining and instruction mix all matter too, which is exactly why PIL exists rather than a spreadsheet doing this multiplication being considered sufficient. But the direction of the result is the point: a margin that is invisible from a workstation can already be gone on the real processor, and only running the real binary on the real (or cycle-accurate) processor tells you which side of the line you are actually on.
+Step by step. One update took about $17.84\,\mathrm{\mu s}$ (microseconds, millionths of a second). Eighteen of them: $18 \times 17.838 \approx 321\,\mathrm{\mu s}$. As a share of the budget: $0.321 / 10 = 3.2\%$. Nothing in a SIL run would ever raise a concern.
+
+Now suppose the flight processor is about $35$ times slower — an illustrative gap. Then $321\,\mathrm{\mu s} \times 35 \approx 11.24\,\mathrm{ms}$. That is $112\%$ of the budget: the cycle is not finished when the next one is due.
+
+Be honest about how rough this is. Multiplying by a speed ratio ignores **cache** behavior (how often the chip finds data in its small fast memory), **pipelining** (how many instructions it overlaps), the mix of instructions, and whether the chip even has floating-point hardware. That is exactly why PIL exists, instead of this multiplication being good enough. But the direction is the lesson: a margin invisible from the workstation can already be gone on the real chip, and only running the real code on the real (or cycle-accurate) processor tells you which side of the line you are on.
 :::
 
-## HIL: real hardware, real time, real interfaces
+::: warning Treating a timing estimate as a certified margin
+The speed-ratio scaling above is a reason to go and run PIL, not a replacement for it. It knows nothing about cache misses, pipeline stalls, interrupts taking the processor away, or a dozen other things that make real execution time on real silicon differ from a multiplication. Treating a spreadsheet estimate as a certified timing margin is exactly the mistake PIL exists to prevent.
+:::
 
-Hardware-in-the-loop adds the actual flight computer box, real sensor electrical interfaces (or stimulators that drive them electrically the way the real sensor would), real actuator interfaces, and — critically — a real clock that nothing in the simulation controls. This is the qualitative jump SIL and PIL cannot make regardless of how faithfully either one models the software and the processor: a purely simulated clock, however carefully time-scaled, never actually races against wall-clock time, because the simulation is always free to let the tick advance exactly when the computation finishes, whatever that took. HIL cannot do that. If the flight computer's cycle overruns its budget, the next real tick arrives on schedule anyway, and the consequence — a stale command held an extra cycle, a dropped sample, a queued interrupt — is a genuine defect that nothing upstream of HIL could have produced, because nothing upstream of HIL has a real clock to overrun.
+## HIL: real hardware, real interfaces, real time
+
+**HIL** adds the actual flight computer box, the real electrical connections to sensors (or stimulators that drive those connections exactly as a real sensor would), the real actuator connections, and — most important — a clock that nothing in the simulation controls. That is **[[real time|real-time]]**: the next tick arrives when the wall clock says so, ready or not.
+
+This is a jump SIL and PIL cannot make, however well they model the software and processor. In SIL and PIL the simulation is always free to wait. It advances the tick only when the computation has finished, however long that took. So the code never actually races the clock.
+
+In HIL, it does. If a cycle overruns its budget, the next real tick arrives on schedule anyway. The result — a **stale command** (last cycle's actuator command held one cycle too long), a dropped sensor sample, an **[[interrupt|interrupt-word]]** left waiting in line — is a genuine defect. Nothing before HIL could have produced it, because nothing before HIL had a real clock to be late against.
 
 ::: example A defect that exists only when the clock is real
-Model, illustratively, ten thousand cycles of a flight computer's actual execution time — a steady baseline with a small, realistic probability of a longer cycle from bus contention or an interrupt, the kind of tail behaviour only real interrupt controllers and real bus arbitration produce, not a number measured from any specific hardware here, but built to have the right *shape* for the point being made:
+Model ten thousand cycles of a flight computer's execution time. Most cycles take about $9\,\mathrm{ms}$ (with a spread of $0.15\,\mathrm{ms}$). But $1.5\%$ of them get hit by **bus contention** — other hardware using the shared data connection at the same moment — or an interrupt, and take about $13\,\mathrm{ms}$ instead. These numbers are not measured from any particular hardware. They are built to have the right *shape*: the rare **[[long tail|long-tail]]** that real interrupt controllers and real bus sharing produce.
 
 ```python
 import numpy as np
@@ -99,79 +134,227 @@ print("SIL/PIL: stale-command ticks = 0 (every overrun above is invisible by con
 # SIL/PIL: stale-command ticks = 0 (every overrun above is invisible by construction)
 ```
 
-Out of ten thousand cycles, $121$ — about $1.2\%$ — exceed the $10\,\mathrm{ms}$ budget, one reaching $15.4\,\mathrm{ms}$. Running under HIL, with a real clock enforcing real deadlines, each of those $121$ cycles is a tick where the actuator held a stale command one cycle longer than intended — exactly the kind of intermittent, statistically rare timing defect a flight anomaly investigation looks for. Running the identical flight binary against the identical simulated dynamics under SIL or PIL, with the simulated tick advancing only once each computation finishes, produces *zero* stale-command ticks, not because the underlying computation is any different, but because nothing about SIL or PIL's clock can be late.
+Out of $10{,}000$ cycles, $121$ ran past $10\,\mathrm{ms}$: $121 / 10{,}000 = 1.21\%$. The worst took $15.4\,\mathrm{ms}$. (Slightly fewer than $1.5\%$, because the random draw happened to pick 121 contended cycles, and every one of them overran.)
+
+Under HIL, each of those $121$ cycles is a tick where an actuator held a **[[stale command|stale-command]]** one cycle too long. That is exactly the kind of rare, intermittent timing defect a flight anomaly investigation hunts for.
+
+Run the identical flight code against the identical simulated vehicle under SIL or PIL, where the tick waits for the computation, and you get *zero* stale commands. Not because the computation is different — it is the same — but because nothing about a SIL or PIL clock can be late.
 :::
+
+::: warning Assuming HIL only matters for exotic failures
+It is tempting to save HIL for unusual scenarios — a wiring fault, a rare sensor failure — and trust SIL and PIL for normal flight. The example shows an ordinary-sounding defect, a $1.2\%$ tail of overruns under normal load, that SIL and PIL cannot show by their very design. It appears only once a real clock is in charge. HIL is not a check for exotic cases. It is the only stage that tests the passing of real time at all.
+:::
+
+## What each step adds, and what none of them fixes
+
+Here is the whole **[[ladder|rungs-picture]]** in one place.
+
+- **SIL** checks the algorithm: is it correct? Fast, cheap, fully visible, and where most bugs are found.
+- **PIL** checks the algorithm on the real chip: does the correct code also finish in time, fit in memory, and compute the same numbers on real silicon?
+- **HIL** checks everything at the edges of the flight computer. Why does that need real hardware? Because in a pure software model, *you wrote both sides of every interface*. Your sensor model sends exactly the message your harness expects, because you made them match. Real hardware was built by someone else, to a document, and does not always do what the document says.
+
+So the defects HIL finds are mostly **integration defects**, not algorithm defects:
+
+- a message that arrives one frame later than the design assumed (real **bus timing** and latency);
+- a device **driver** — the low-level code that talks to one piece of hardware — that behaves differently under load;
+- an interrupt storm under a condition nobody modeled;
+- a byte-order or **scaling** mismatch (a value sent in one unit, or with one scale factor, and read with another);
+- a wiring mistake;
+- a sensor whose real electrical failure looks nothing like the model's neat failure;
+- a **power transient** — a brief dip or spike in voltage — when an actuator motor switches on.
+
+What HIL does *not* improve is the physics. If the simulation's equations of motion are wrong, or its **[[aerodynamic database|aero-database]]** is wrong, or its integrator is too coarse, plugging in real hardware changes none of that. The flight computer is real, but the vehicle it is flying is still the simulated one. Physics errors are caught by validation, which is the subject of a later lesson in this module.
 
 ::: key What each step actually adds
-SIL: the algorithm's correctness, on a workstation — fast, cheap, where most bugs are found. PIL: the real processor's real timing, memory and arithmetic — whether the algorithm that is correct also finishes in time and fits, on real silicon. HIL: real hardware, real electrical interfaces and a real clock — bus timing, driver behaviour, interrupt interaction, sensor failure modes and power transients, none of which any software model, however detailed, is even attempting to represent. Each step catches defects the step before it cannot produce, not merely defects it happened not to find.
-:::
-
-::: warning Treating PIL's timing estimate as a certified margin
-The clock-ratio scaling in the first example is a reason to go run PIL, not a substitute for running it: it says nothing about cache misses, pipeline stalls, interrupt preemption or any of the dozen other things that make real execution time on real silicon differ from a clock-speed multiplication. Treating a spreadsheet estimate as if it were a certified timing margin is precisely the mistake PIL exists to prevent.
-:::
-
-::: warning Assuming HIL only matters for exotic failure modes
-It is tempting to treat HIL as a check reserved for unusual scenarios — a wiring fault, a rare sensor failure — while trusting SIL and PIL for "normal" operation. The example above shows an entirely ordinary-sounding defect, a $1.2\%$ tail of cycle overruns under nominal load, that is invisible to both SIL and PIL by construction and appears only once a real clock is running the show. HIL is not a check for exotic scenarios; it is the only stage that tests the passage of real time at all.
+SIL: the algorithm's correctness, on a workstation — fast, cheap, where most bugs are found. PIL: the real processor's real timing, memory and arithmetic — whether correct code also finishes in time and fits, on real silicon. HIL: real hardware, real electrical interfaces and a real clock — bus timing, driver behavior, interrupt interaction, sensor failure modes and power transients, which no software model even attempts to represent. Each step catches defects the step before it *cannot produce*, not merely defects it happened to miss. None of them makes wrong physics right.
 :::
 
 ## Check yourself
 
 ::: check
-Why is SIL, despite being the least representative of the three stages, where the overwhelming majority of GNC bugs are actually found?
+SIL is the least realistic of the three stages. Why is it still where most GNC bugs are found?
 :::
 
 ::: answer
-SIL is fast and cheap to run — thousands of cases in the time a single HIL run takes — and gives complete visibility into every internal signal, which makes it the right tool for finding algorithmic defects: a wrong sign, a mishandled edge case, a logic error in the guidance or control law. It has no way to find defects that only exist because of real processor timing or real hardware behaviour, which is exactly why PIL and HIL exist as separate, later stages rather than SIL being expected to catch everything.
+It is fast and cheap — thousands of cases in the time one HIL run takes — and you can see every internal signal. That makes it the right tool for algorithm defects: a wrong sign, a mishandled edge case, a logic error in guidance or control.
+
+What it cannot find are defects that exist only because of real processor timing or real hardware. That is why PIL and HIL exist as separate, later stages, rather than SIL being expected to catch everything.
 :::
 
 ::: check
-The PIL example measured $321\,\mathrm{\mu s}$ on a workstation and estimated $11.24\,\mathrm{ms}$ on a flight-representative processor, against a $10\,\mathrm{ms}$ budget. Why is this estimate not sufficient by itself to conclude the design will actually violate its timing budget on the real target?
+The PIL example measured about $321\,\mathrm{\mu s}$ on a workstation and estimated $11.24\,\mathrm{ms}$ on a flight processor, against a $10\,\mathrm{ms}$ budget. Why is that estimate not enough, on its own, to conclude the design will break its budget on the real chip?
 :::
 
 ::: answer
-The estimate only scales by clock speed, which ignores everything else that differs between a development workstation and an embedded flight processor: cache size and hit rate, pipeline depth, whether the target has a hardware floating-point unit at all, instruction mix, and compiler code generation for that specific target. The true execution time could come in above or below this estimate for reasons the clock-ratio calculation cannot see, which is exactly why PIL — running the real binary on the real or cycle-accurate processor — is the stage that actually answers the question, not the estimate that motivates running it.
+The estimate scales only by a speed ratio. It ignores everything else that differs between a workstation and an embedded flight processor: cache size and hit rate, pipeline depth, whether the chip has floating-point hardware, the instruction mix, and how the compiler generates code for that particular chip. The real time could come out above or below $11.24\,\mathrm{ms}$ for reasons the multiplication cannot see.
+
+Running the real code on the real (or cycle-accurate) processor — PIL — is what answers the question. The estimate only tells you it is worth asking.
 :::
 
 ::: check
-In the HIL example, $121$ out of $10{,}000$ cycles exceeded the timing budget under the illustrative model. Explain precisely why the identical flight binary, executing the identical computations against identical simulated sensor data, produces zero such events under SIL or PIL.
+In the HIL example, $121$ of $10{,}000$ cycles overran. Explain exactly why the identical flight code, doing identical computations on identical simulated sensor data, shows zero overruns under SIL or PIL.
 :::
 
 ::: answer
-SIL and PIL both run against a simulated clock that advances the tick only once the computation for that tick has actually finished — there is no independent, ongoing wall-clock time for the computation to fall behind. HIL replaces that simulated clock with a real one that advances regardless of what the flight computer is doing, so a cycle that takes longer than its budget genuinely collides with the next real tick's arrival. The computation is identical in all three cases; only HIL has a clock capable of exposing a computation that runs too long.
+In SIL and PIL the clock is simulated. The simulation moves to the next tick only after the current tick's computation has finished, so there is no independent wall-clock time for the computation to fall behind.
+
+HIL replaces that with a real clock that moves on no matter what the flight computer is doing. A cycle that runs past its budget then really collides with the next tick. The computation is the same in all three. Only HIL has a clock that can expose a computation that runs too long.
 :::
 
 ::: check
-A programme runs extensive PIL testing, confirming the flight binary always finishes well within its timing budget on the real processor, and concludes HIL testing can be shortened significantly as a result. What specific class of defect would this decision leave unchecked?
+A program runs a lot of PIL testing, confirms the flight code always finishes well within budget on the real processor, and decides it can cut HIL testing short. What kind of defect does that leave unchecked?
 :::
 
 ::: answer
-PIL confirms timing and computation on the real processor, but sensor and actuator data are still simulated, so PIL says nothing about real bus timing, real driver behaviour under real interrupt load, real sensor electrical interfaces and their genuine failure modes, or real power transients during actuator commutation — all of which require real hardware, not only a real processor, to be present at all. Confirming the algorithm finishes in time on the real chip is a necessary condition for a working system, not a substitute for testing the hardware interfaces the chip actually has to talk to.
+PIL confirms timing and arithmetic on the real processor, but the sensor and actuator data are still simulated. So PIL says nothing about real bus timing, real driver behavior under real interrupt load, the real electrical sensor interfaces and how they really fail, wiring, byte order or scaling mistakes between real boxes, or power transients when actuators switch — all of which need real hardware to exist at all.
+
+Finishing in time on the real chip is necessary for a working system. It is not a substitute for testing the hardware the chip has to talk to.
 :::
 
 ::: check
-Why does the text describe HIL as "the only stage that tests the passage of real time at all," rather than saying PIL also does, given that PIL uses the real flight processor?
+The lesson calls HIL "the only stage that tests the passing of real time at all." PIL uses the real flight processor — so why doesn't PIL count?
 :::
 
 ::: answer
-PIL uses the real processor for computation, but its sensor and actuator data typically still come from the simulation on a schedule the simulation controls, which means the overall loop can still be run faster or slower than real time, or with the simulated clock waiting for the processor rather than racing against it. Only in HIL is every part of the loop — computation, interfaces, and the clock governing when the next input arrives — tied to actual, un-pausable, wall-clock time, which is what makes a genuine deadline miss possible in the first place.
+In PIL the processor is real, but the inputs usually still arrive on a schedule the simulation controls. The whole loop can run faster or slower than real time, and the simulated clock can wait for the processor instead of racing it.
+
+Only in HIL is every part of the loop — the computation, the interfaces, and the clock that decides when the next input arrives — tied to actual wall-clock time that cannot be paused. That is what makes a real missed deadline possible in the first place.
 :::
 
 ::: check
-Why is a $1.2\%$ rate of cycle-time overruns, as in the HIL example, a more operationally serious finding than a bug that causes every single cycle to fail?
+Why is a $1.2\%$ rate of overruns, as in the HIL example, a more serious operational finding than a bug that makes every single cycle fail?
 :::
 
 ::: answer
-A defect that fails every cycle is loud and immediate — it shows up on the very first test run and is straightforward to reproduce and isolate. A $1.2\%$ intermittent overrun can pass a short test campaign entirely by chance, appears only statistically over a long enough run, and is far closer to the signature of a real flight anomaly, which is typically rare, hard to reproduce on demand, and only found because someone ran the system long enough, under real timing conditions, for the tail of the distribution to show up at all.
+A bug that fails every cycle is loud. It shows up on the first test run and is easy to reproduce and track down.
+
+A $1.2\%$ intermittent overrun can pass a short test campaign by pure luck. It only shows up statistically, over a long enough run. That is much closer to what a real flight anomaly looks like: rare, hard to reproduce on demand, and found only because someone ran the real system long enough, under real timing, for the tail to appear.
 :::
 
 ## Summary
 
 | Stage | Runs on | What it adds |
 | --- | --- | --- |
-| SIL | Flight binary, development workstation, simulated everything | Algorithmic correctness; fast and cheap, where most bugs are found |
-| PIL | Flight binary, real (or cycle-accurate) flight processor, simulated I/O | Real timing, memory footprint and arithmetic on the actual target |
-| HIL | Flight binary, real processor, real interfaces, real clock | Bus timing, driver behaviour, interrupt interaction, sensor/actuator electrical failure modes, power transients — and genuine deadline misses |
-| PIL measured | $321\,\mathrm{\mu s}$ workstation $\to$ $11.24\,\mathrm{ms}$ estimated on a 35$\times$-slower processor, against a $10\,\mathrm{ms}$ budget | A margin invisible on the workstation, gone on the target |
-| HIL measured | $121/10{,}000$ ($1.2\%$) cycles over budget in an illustrative model | Stale-command ticks that SIL and PIL cannot produce, by construction |
+| SIL | Flight code on a workstation; everything else simulated | Algorithm correctness; fast and cheap; where most bugs are found |
+| PIL | Flight code on the real (or cycle-accurate) processor; simulated inputs and outputs | Real timing, memory footprint and arithmetic on the actual chip |
+| HIL | Flight code in the real flight computer, real interfaces, real clock | Bus timing, drivers, interrupts, electrical failure modes, power transients, wiring, byte order and scaling — and genuine missed deadlines |
+| Not fixed by any | — | Wrong physics: equations of motion, aerodynamic data, integration error |
+| PIL example | $321\,\mathrm{\mu s}$ on the workstation $\to$ about $11.24\,\mathrm{ms}$ on a $35\times$ slower chip, against $10\,\mathrm{ms}$ | A margin invisible on the workstation, gone on the target |
+| HIL example | $121 / 10{,}000$ ($1.2\%$) cycles over budget | Stale commands that SIL and PIL cannot produce |
 
-The next lesson goes further into what HIL specifically requires to run at all — real-time flight processors, motion tables, and the stimulators that make a real sensor believe it is flying, rather than sitting on a bench.
+The next lesson looks at what HIL needs in order to run at all: real-time computers, motion tables that physically turn the sensors, and the stimulators that make a real sensor believe it is flying while it sits on a bench.
+
+::: context stimulator-word Making a sensor believe it is flying
+A **stimulator** feeds a real sensor, or the wires it plugs into, the signals it would see in flight. A GPS receiver can be fed radio signals from a signal generator that pretends to be the satellites overhead. An IMU's electrical output can be replaced by a box producing the same voltages or digital messages the IMU would produce. The flight computer cannot tell the difference, which is the whole point. The next lesson covers these devices in detail.
+:::
+
+::: context cycle-accurate Emulating a chip, tick by tick
+An **emulator** is a program that pretends to be a different processor, running that processor's machine code on your own computer. A **cycle-accurate** emulator goes further: it also counts exactly how many clock ticks each instruction would take on the real chip. So it reports the true execution time, even though it may itself run much slower than the real thing. Teams use them when real flight processors are scarce or not yet built — there may be only a handful of flight-grade boards for a whole program.
+:::
+
+::: context rad-hard Why flight processors are slow
+In space, fast charged particles pass through chips. One can flip a stored bit or even trigger a damaging short circuit. A **radiation-hardened** processor is designed and built to resist this, with larger transistors, extra error checking and special manufacturing. Those choices, and the long qualification process, mean flight processors lag desktop chips by many years. The RAD750, flown on many NASA missions, runs at up to about $200\,\mathrm{MHz}$, while a desktop processor runs at several gigahertz with many cores. That is why "fast enough on my laptop" says little about the flight computer.
+:::
+
+::: context kalman-update The measurement update, in one breath
+A Kalman filter keeps a best guess of the state, $x$, and a matrix $P$ saying how unsure it is. When a measurement $z$ arrives, it compares $z$ with what it expected to see, $Hx$, and moves its guess part of the way toward the measurement. How far it moves is set by the gain $K$, which weighs how much it trusts its guess against how much it trusts the sensor (whose noise is $R$). Computing $K$ needs a matrix inverse, which is why this step is one of the most expensive in a navigation cycle. The navigation modules earlier in the course derive it fully.
+:::
+
+::: context real-time Two meanings of "real time"
+In everyday speech "real time" means "live". In engineering it has a sharper meaning: a **real-time system** must finish each job before a fixed deadline, every time. It does not have to be fast — only on time. A $100\,\mathrm{Hz}$ loop is real-time if it always finishes within $10\,\mathrm{ms}$. A system that finishes in $1\,\mathrm{ms}$ on average but occasionally takes $15\,\mathrm{ms}$ is *not*: for a control loop, the rare late cycle is the one that matters.
+:::
+
+::: context interrupt-word What an interrupt is
+An **interrupt** is a hardware signal that makes the processor drop what it is doing, run a short piece of code to deal with some event — a sensor message arriving, a timer going off — and then return. Interrupts let a computer react quickly without constantly checking every device. But they steal time from whatever was running. If many arrive at once (an "interrupt storm"), the main GNC task can be pushed past its deadline. A software simulation usually has no real interrupts at all, so this problem cannot appear until real hardware is attached.
+:::
+
+::: context long-tail The shape of the problem
+Cycle times from the example, counted in $1\,\mathrm{ms}$ bins. The height is on a *log scale* — each grid line is ten times the one below — because otherwise the tail would be invisible next to the nearly $10{,}000$ normal cycles.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 190" font-family="Inter, Arial, sans-serif">
+  <g stroke="#8fb8f0" stroke-width="1">
+    <line x1="40" y1="120" x2="330" y2="120"/><line x1="40" y1="90" x2="330" y2="90"/>
+    <line x1="40" y1="60" x2="330" y2="60"/><line x1="40" y1="30" x2="330" y2="30"/>
+  </g>
+  <g font-size="11" text-anchor="end" fill="#6c7a93">
+    <text x="36" y="154">1</text><text x="36" y="124">10</text><text x="36" y="94">100</text>
+    <text x="36" y="64">1000</text><text x="36" y="34">10⁴</text>
+  </g>
+  <g fill="#8fb8f0" stroke="#1f2a44" stroke-width="1">
+    <rect x="41" y="39" width="34" height="111"/><rect x="77" y="39.3" width="34" height="110.7"/>
+  </g>
+  <g fill="#b4232c" stroke="#1f2a44" stroke-width="1">
+    <rect x="113" y="135.7" width="34" height="14.3"/><rect x="149" y="126.5" width="34" height="23.5"/>
+    <rect x="185" y="101.1" width="34" height="48.9"/><rect x="221" y="100.2" width="34" height="49.8"/>
+    <rect x="257" y="111.6" width="34" height="38.4"/><rect x="293" y="131.9" width="34" height="18.1"/>
+  </g>
+  <line x1="40" y1="150" x2="330" y2="150" stroke="#1f2a44" stroke-width="2"/>
+  <line x1="112" y1="20" x2="112" y2="150" stroke="#1f2a44" stroke-width="2" stroke-dasharray="5,4"/>
+  <text x="116" y="18" font-size="11" fill="#1f2a44">10 ms budget</text>
+  <g font-size="11" text-anchor="middle" fill="#1f2a44">
+    <text x="40" y="166">8</text><text x="112" y="166">10</text><text x="184" y="166">12</text>
+    <text x="256" y="166">14</text><text x="328" y="166">16</text>
+  </g>
+  <text x="184" y="184" font-size="11" text-anchor="middle" fill="#1f2a44">cycle time (ms)</text>
+</svg>
+```
+
+Blue: $9{,}879$ normal cycles. Red: the $121$ that overran. A short test might easily contain none of them.
+:::
+
+::: context stale-command A late cycle on the timeline
+Ticks every $10\,\mathrm{ms}$. Each bar is one cycle's computation. The third cycle takes about $13.5\,\mathrm{ms}$, so it is still running when the $30\,\mathrm{ms}$ tick arrives.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 130" font-family="Inter, Arial, sans-serif">
+  <line x1="20" y1="90" x2="345" y2="90" stroke="#1f2a44" stroke-width="2"/>
+  <g stroke="#1f2a44" stroke-width="2">
+    <line x1="30" y1="30" x2="30" y2="96"/><line x1="100" y1="30" x2="100" y2="96"/>
+    <line x1="170" y1="30" x2="170" y2="96"/><line x1="240" y1="30" x2="240" y2="96"/>
+    <line x1="310" y1="30" x2="310" y2="96"/>
+  </g>
+  <g font-size="11" text-anchor="middle" fill="#1f2a44">
+    <text x="30" y="110">0</text><text x="100" y="110">10</text><text x="170" y="110">20</text>
+    <text x="240" y="110">30</text><text x="310" y="110">40 ms</text>
+  </g>
+  <rect x="30" y="60" width="63" height="18" fill="#8fb8f0" stroke="#1f2a44"/>
+  <rect x="100" y="60" width="63" height="18" fill="#8fb8f0" stroke="#1f2a44"/>
+  <rect x="170" y="60" width="94.5" height="18" fill="#b4232c" stroke="#1f2a44"/>
+  <text x="240" y="24" font-size="11" text-anchor="middle" fill="#b4232c">tick arrives, cycle not done</text>
+  <text x="290" y="126" font-size="11" text-anchor="middle" fill="#1f2a44">old command held</text>
+</svg>
+```
+
+The actuators keep acting on the previous command for another cycle. In SIL the $30\,\mathrm{ms}$ tick would wait.
+:::
+
+::: context rungs-picture What is real at each stage
+Filled circles are real; hollow circles are simulated.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">
+  <g font-size="11" fill="#1f2a44" text-anchor="middle">
+    <text x="120" y="22">flight code</text><text x="190" y="22">processor</text>
+    <text x="260" y="22">interfaces</text><text x="325" y="22">clock</text>
+  </g>
+  <g font-size="13" font-weight="700" fill="#1f2a44">
+    <text x="20" y="59">SIL</text><text x="20" y="99">PIL</text><text x="20" y="139">HIL</text>
+  </g>
+  <g stroke="#1f2a44" stroke-width="2">
+    <circle cx="120" cy="55" r="10" fill="#1d6fd1"/><circle cx="190" cy="55" r="10" fill="#fff"/>
+    <circle cx="260" cy="55" r="10" fill="#fff"/><circle cx="325" cy="55" r="10" fill="#fff"/>
+    <circle cx="120" cy="95" r="10" fill="#1d6fd1"/><circle cx="190" cy="95" r="10" fill="#1d6fd1"/>
+    <circle cx="260" cy="95" r="10" fill="#fff"/><circle cx="325" cy="95" r="10" fill="#fff"/>
+    <circle cx="120" cy="135" r="10" fill="#1d6fd1"/><circle cx="190" cy="135" r="10" fill="#1d6fd1"/>
+    <circle cx="260" cy="135" r="10" fill="#1d6fd1"/><circle cx="325" cy="135" r="10" fill="#1d6fd1"/>
+  </g>
+</svg>
+```
+
+Each row adds one more real column. The flight code is real in every row — that was the previous lesson's rule.
+:::
+
+::: context aero-database Why real hardware cannot fix a wrong model
+An **aerodynamic database** is a large table of the forces and moments the air puts on the vehicle, at each speed, angle and altitude, built from wind-tunnel tests and computer flow models. The simulation looks it up at every step. In HIL, the flight computer is real, but the air it is "flying" through is still that table. If the table is wrong, the flight computer gets exactly the same wrong answers it got in SIL. Only comparison with independent evidence — wind-tunnel data, analytic checks, and eventually flight data — can catch that.
+:::

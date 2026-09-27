@@ -6,25 +6,145 @@
 
 === term3-01 | Variables
 --- teach
-The intermediate course taught you to combine commands into pipelines. This course turns commands into programs: values kept in variables, decisions made from exit codes, loops over files, and scripts that take arguments and check them.
+The intermediate course taught you to combine commands into pipelines. This course turns commands into programs: values kept in variables, decisions made from exit codes, loops over files, and scripts that take arguments and check them. It starts with the smallest piece of all: giving a name to a value.
 
-A **variable** gives a name to a piece of text so you can reuse it:
+Think of a label on a jar. You write "sugar" on the label once. After that you can say "pass me the sugar" instead of describing the jar every time. A **variable** is a label like that: a name that holds a piece of text, so you can use the text again without typing it again.
+
+### Setting a variable
+
+Write the name, an equals sign `=`, and the value:
 
 ```
 ~/project $ planet=mars
-~/project $ echo "Next stop: $planet"
-Next stop: mars
-~/project $ mkdir "${planet}-base"
+~/project $
 ```
 
-- Set it with `name=value` — and **no spaces around `=`**. `planet = mars` does not set anything: the shell runs a command called `planet` with the arguments `=` and `mars`, and answers `planet: command not found`.
-- Read it with `$name`. Write `${name}` when letters follow straight after, as in `${planet}s` — `$planets` would look up a different variable.
-- **Double quotes** expand variables: `"Next stop: $planet"`. **Single quotes** keep everything exactly as typed: `'$planet'` prints `$planet`.
-- Names are case-sensitive, and a variable that was never set is simply empty — no error, which is why typos in variable names are sneaky.
+Nothing is printed. The [[shell|shell]] has quietly remembered that `planet` now holds the text `mars`.
 
-Variables are how scripts avoid repeating themselves: set a version number or a folder name once at the top, use it everywhere below.
+**Watch out:** no spaces around the `=`. With spaces, the shell reads `planet` as [[the name of a command to run|first-word]], and `=` and `mars` as its **arguments**: the extra words a command is given to work on. There is no command called `planet`, so nothing gets set:
+
+```
+~/project $ planet = mars
+planet: command not found
+```
+
+### Reading a variable
+
+To use the value, put a dollar sign `$` in front of the name. `$planet` is read "dollar planet", and it means "the text stored in `planet`". Before the command runs, the shell [[swaps it for that text|swap-in]], the same way it swapped `*.txt` for a list of file names in the wildcards lesson.
+
+```
+~/project $ echo "Next stop: $planet"
+Next stop: mars
+```
+
+`echo` never sees `$planet`. It receives `Next stop: mars` and prints it.
+
+### Where the name ends: curly braces
+
+After a `$`, the shell keeps reading the name for as long as it sees [[letters, digits or underscores|name-rules]]. So if letters follow straight after the name, they become part of it. Curly braces `{ }` mark where the name stops: `${planet}` is read "dollar, curly brace, planet, curly brace".
+
+```
+~/project $ echo "Welcome to ${planet}base"
+Welcome to marsbase
+~/project $ echo "Welcome to $planetbase"
+Welcome to
+```
+
+The second line looked up a variable called `planetbase`, which does not exist. In the same way, `${planet}s` gives `marss`, but `$planets` looks up a different variable called `planets`.
+
+The braces are always allowed, even when nothing follows. This makes a folder called `mars-base`:
+
+```
+~/project $ mkdir "${planet}-base"
+~/project $ ls
+mars-base/
+```
+
+### Double quotes and single quotes
+
+Until now, quotes only kept text together. Now the two kinds behave differently:
+
+- **Double quotes** `" "` let the shell fill in variables: `"Next stop: $planet"` becomes `Next stop: mars`.
+- **Single quotes** `' '` keep every character exactly as typed, the dollar sign too.
+
+```
+~/project $ echo 'Next stop: $planet'
+Next stop: $planet
+```
+
+### Two quiet rules
+
+Names are **case-sensitive**: capital and small letters count as different. `$Planet` is not `$planet`.
+
+A variable that was never set is empty, and the shell gives no error at all:
+
+```
+~/project $ echo "[$Planet]"
+[]
+```
+
+The square brackets are only there to show that nothing came out between them. Because there is no error message, a typo in a variable name is [[sneaky|silent-typos]]: the command still runs, with a blank where your value should be.
+
+Variables are how scripts avoid repeating themselves. You [[set a version number or a folder name once|set-once]] at the top and use it everywhere below.
+
+::: context shell The program that reads your commands
+The **shell** is the program that reads each line you type, works out what it means, and starts the commands. The one in this course is called **bash**. The terminal is the window; the shell is the program listening inside it.
+
+Everything in this lesson (remembering `planet`, swapping in `mars`) is the shell's work, not `echo`'s. That is why variables work with every command, not only with `echo`.
+:::
+
+::: context first-word Why the spaces break it
+The shell splits every line at its spaces into words. The first word is always the command to run, and the rest are its arguments. In `mkdir notes`, `mkdir` is the command and `notes` is its one argument.
+
+`planet=mars` is one word with an `=` inside, and the shell has a special rule for that shape: "set a variable". `planet = mars` is three words, so the special rule does not apply. The shell goes looking for a command called `planet` and hands it `=` and `mars`.
+:::
+
+::: context swap-in Filled in before the command runs
+The shell rewrites the line first and runs it second. By the time `echo` starts, every `$name` has already been replaced by its text, so `echo` has no idea a variable was ever there.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 160" font-family="Inter, Arial, sans-serif">
+  <rect x="20" y="12" width="320" height="34" rx="6" fill="#fff" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="34" y="34" font-size="13" fill="#1f2a44">echo "Next stop: <tspan fill="#1d6fd1" font-weight="bold">$planet</tspan>"</text>
+  <line x1="120" y1="48" x2="120" y2="72" stroke="#6c7a93" stroke-width="2"/>
+  <polygon points="120,80 114,70 126,70" fill="#6c7a93"/>
+  <text x="134" y="68" font-size="11" fill="#6c7a93">the shell swaps in the value</text>
+  <rect x="20" y="84" width="320" height="34" rx="6" fill="#fff" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="34" y="106" font-size="13" fill="#1f2a44">echo "Next stop: <tspan fill="#1d6fd1" font-weight="bold">mars</tspan>"</text>
+  <text x="34" y="144" font-size="12" fill="#6c7a93">only the second line ever reaches echo</text>
+</svg>
+```
+:::
+
+::: context name-rules What a name may look like
+A variable name may use letters, digits and the underscore `_`, and it may not start with a digit. So `planet`, `fuel_kg` and `stage2` are fine; `2stage` and `fuel-kg` are not.
+
+A dash can never be part of a name, which is why `$planet-base` would also give `mars-base`. The braces are still a good habit: they make it obvious where the name ends.
+
+By custom, variables the whole system shares are written in capitals (`HOME`, `PATH`), and your own in small letters, so the two never clash.
+:::
+
+::: context silent-typos Catching the typo that makes no noise
+A misspelled name does not crash anything. It quietly becomes an empty string, and the damage shows up later: a file saved under the wrong name, a folder that was never made.
+
+Near the end of this course you will debug a script with exactly this bug, and meet `set -u`. That line at the top of a script turns any use of an unset variable into an immediate error, so the typo is caught where it happens.
+:::
+
+::: context set-once One place to change
+Real build scripts start with a few lines like these:
+
+```
+version=2.4.1
+target=flight-computer
+```
+
+Everything below uses `$version` and `$target`. When the next release comes, one line changes, and every file name, folder and message follows. Without the variable, someone has to find every copy of `2.4.1` by hand, and the one they miss ships with the wrong number on it.
+:::
 --- task
-Set a variable `project` to `launchpad` and a variable `version` to `2`. Then, using only the variables (without typing `launchpad` or `2` again), print `launchpad v2 is ready` and make a folder called `launchpad-v2`.
+Set a variable called `project` to `launchpad` and a variable called `version` to `2`. Then, using only the variables (type `$project` and `$version`, never `launchpad` or `2` again):
+
+1. print the line `launchpad v2 is ready` with `echo`;
+2. make a folder called `launchpad-v2` with `mkdir`.
 --- starter
 --- solution
 project=launchpad
@@ -32,11 +152,11 @@ version=2
 echo "$project v$version is ready"
 mkdir "$project-v$version"
 --- hint
-`project=launchpad` — no spaces around the `=`.
+Set each one with `name=value` and no spaces around the `=`: `project=launchpad`, then `version=2`.
 --- hint
-`echo "$project v$version is ready"`: double quotes let the variables expand.
+Put the message in double quotes so the variables are filled in: `echo "$project v$version is ready"`.
 --- hint
-`mkdir "$project-v$version"` builds the folder name from both.
+A dash cannot be part of a name, so `mkdir "$project-v$version"` builds `launchpad-v2` from both variables.
 --- check shell | Both variables are set
 var project == launchpad
 var version == 2
@@ -49,27 +169,153 @@ used $version
 
 === term3-02 | Exporting variables to the programs you run
 --- teach
-Every command you start — a script, `node`, `git` — runs as a separate **child process**. It gets a copy of your **environment**: the variables you have **exported**. Plain variables stay behind in your shell.
+Last lesson you stored text in variables and used it in your own commands. This lesson is about who else can see those variables: the programs you start from your shell.
+
+Picture a head chef handing a job to an assistant. The chef does not hand over everything in their head. They write a few things on a card, and the assistant takes a copy of the card. Anything not on the card, the assistant never learns. And if the assistant scribbles on their copy, the chef's card stays the same.
+
+### A program you start is a child
+
+Every command you start (a script, `node`, `git`) runs as a separate [[process|process]]: a program that is running right now. Because your shell started it, it is called a **child process**, and your shell is its parent.
+
+To see this, you need a program to start. `bash greet.sh` runs the commands saved in the file `greet.sh` in a brand-new shell, a child of yours. Scripts get a full lesson later in this course; here the script is ready-made. It holds one line:
 
 ```
-~/project $ NAME=Ada          # set in this shell only
-~/project $ bash greet.sh     # the script cannot see NAME
+~/project $ cat greet.sh
+echo "Hello, $NAME"
+```
+
+### Plain variables stay behind
+
+A variable you set with `NAME=Ada` lives in your shell only. The child does not get it, so inside the script `$NAME` is empty:
+
+```
+~/project $ NAME=Ada
+~/project $ bash greet.sh
 Hello,
-~/project $ export NAME       # now it goes to every child
+```
+
+### Exporting: putting it on the card
+
+A child gets a copy of your **[[environment|environment]]**: the set of variables you have marked to be passed on. Marking a variable that way is called **exporting** it, and the command is `export`:
+
+```
+~/project $ export NAME
 ~/project $ bash greet.sh
 Hello, Ada
 ```
 
-- `export NAME=value` sets and exports in one go.
-- `env` lists everything that is exported.
-- `NAME=value command` sets a variable for that one command only: `DEBUG=1 bash build.sh`.
-- The copy only travels one way. A script that changes a variable changes its own copy; your shell never sees it.
+`export NAME=Ada` sets the variable and exports it in one go.
 
-`bash greet.sh` runs the commands saved in the file `greet.sh` in a new shell. Scripts get a full lesson later in this course; here the script is ready-made.
+**Watch out:** `export` wants the name, with no dollar sign. `export $NAME` would first turn into `export Ada`, and export a variable called `Ada` instead.
 
-This is how real configuration reaches programs: API keys, `NODE_ENV=production`, and `PATH`, the list of folders the shell searches for commands.
+### Seeing the environment: env
+
+`env` lists every variable that is exported, one per line, as `NAME=value`:
+
+```
+~/project $ env
+HOME=/home/you
+NAME=Ada
+PATH=/usr/local/bin:/usr/bin:/bin
+SHELL=/bin/bash
+USER=you
+```
+
+On a real computer the list is longer, but it looks the same. By custom, these names are [[in capital letters|capital-names]].
+
+### For one command only
+
+Write `NAME=value` straight in front of a command, and the variable is set for that one command and nothing else. Your own `NAME` is left alone:
+
+```
+~/project $ NAME=Lin bash greet.sh
+Hello, Lin
+~/project $ echo $NAME
+Ada
+```
+
+You will see this a lot as `DEBUG=1 bash build.sh`: a way to [[switch on extra detail for one run|one-run]], without changing anything for later.
+
+### The copy only travels one way
+
+A script that changes a variable changes its own copy. Your shell never sees the change. Here `NAME` is exported as `Ada`, and the script `rename.sh` holds two lines: `NAME=Zed`, then `echo "In the script: $NAME"`.
+
+```
+~/project $ bash rename.sh
+In the script: Zed
+~/project $ echo "Back in the shell: $NAME"
+Back in the shell: Ada
+```
+
+This is how real configuration reaches programs: [[API keys|secrets]], `NODE_ENV=production` (which tells many web programs that they are running for real users), and `PATH`, [[the list of folders the shell searches for commands|path-list]].
+
+::: context process A program that is running
+A program sitting on the disk is a file, like a recipe in a book. A **process** is that program actually running, like a cook following the recipe right now. The same program can run as many processes at once, each with its own memory.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 170" font-family="Inter, Arial, sans-serif">
+  <rect x="8" y="16" width="150" height="96" rx="8" fill="#fff" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="83" y="36" font-size="12" text-anchor="middle" font-weight="bold" fill="#1f2a44">your shell (parent)</text>
+  <text x="18" y="62" font-size="11" fill="#1d6fd1">NAME=Ada  exported</text>
+  <text x="18" y="88" font-size="11" fill="#6c7a93">planet=mars  plain</text>
+  <rect x="202" y="16" width="150" height="96" rx="8" fill="#fff" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="277" y="36" font-size="12" text-anchor="middle" font-weight="bold" fill="#1f2a44">greet.sh (child)</text>
+  <text x="212" y="62" font-size="11" fill="#1d6fd1">NAME=Ada  a copy</text>
+  <text x="212" y="88" font-size="11" fill="#6c7a93">no planet at all</text>
+  <line x1="160" y1="58" x2="192" y2="58" stroke="#1d6fd1" stroke-width="2"/>
+  <polygon points="200,58 190,53 190,63" fill="#1d6fd1"/>
+  <line x1="200" y1="96" x2="168" y2="96" stroke="#b4232c" stroke-width="2" stroke-dasharray="4 3"/>
+  <polygon points="160,96 170,91 170,101" fill="#b4232c"/>
+  <text x="180" y="140" font-size="12" text-anchor="middle" fill="#1f2a44">exported variables are copied into the child;</text>
+  <text x="180" y="158" font-size="12" text-anchor="middle" fill="#b4232c">changes in the child never come back</text>
+</svg>
+```
+:::
+
+::: context environment Why it is called the environment
+Your environment is everything around you that you did not choose: the room, the weather, the people. A process's environment is the same idea: the settings it finds around it when it starts, handed down by whoever started it.
+
+Every process has one, and every child starts with a copy of its parent's. That is how a setting you export once reaches every program you run afterwards.
+:::
+
+::: context capital-names Capitals for shared settings
+Nothing forces capitals, but nearly everyone follows the custom: variables in the environment, such as `HOME`, `USER` and `PATH`, are written in capitals, and a script's own working variables in small letters.
+
+The custom does a real job. You can tell at a glance which variables came from outside, and your own `path` or `user` can never overwrite the system's `PATH` or `USER` by accident, because the names differ in case.
+:::
+
+::: context one-run Settings for a single run
+Engineers use the one-command form all the time, because it leaves nothing behind:
+
+```
+DEBUG=1 bash build.sh
+```
+
+The build script checks `$DEBUG`, and if it is set, prints far more about what it is doing. The next time you run `bash build.sh`, it is quiet again. Test systems for flight software work the same way: a variable picks which simulator to talk to, or how much to log, for that one run.
+:::
+
+::: context secrets Keeping secrets out of the code
+An **API key** is a secret password that lets a program use an online service. If it is written inside the code, it ends up everywhere the code goes: shared with the team, uploaded, copied into backups.
+
+So programs read keys from the environment instead. The code says "use whatever is in `API_KEY`", and each computer that runs it sets its own. The key never has to be written in the code at all.
+:::
+
+::: context path-list How the shell finds a command
+When you type `ls`, the shell has to find a program file called `ls`. It looks through the folders listed in `PATH`, in order, and runs the first match. The folders are separated by colons:
+
+```
+~/project $ echo $PATH
+/usr/local/bin:/usr/bin:/bin
+```
+
+If a program is in none of those folders, you get `command not found`, even though the file exists. You will meet this again in the scripts lesson, where `./` tells the shell to run a script from the current folder.
+:::
 --- task
-`greet.sh` prints `Hello, ` followed by `$NAME`. `NAME` is already set to `Ada` in this shell, yet the script does not see it. Run the script with `bash greet.sh` to see the problem, fix it by **exporting** `NAME`, and run the script again so it prints `Hello, Ada`.
+`greet.sh` prints `Hello, ` followed by `$NAME`. `NAME` is already set to `Ada` in this shell, but it is a plain variable, so the script does not see it.
+
+1. Run the script with `bash greet.sh` and see the empty greeting.
+2. Export the variable with `export NAME`.
+3. Run `bash greet.sh` again, so it prints `Hello, Ada`.
 --- starter
 echo 'echo "Hello, $NAME"' > greet.sh
 NAME=Ada
@@ -78,9 +324,11 @@ bash greet.sh
 export NAME
 bash greet.sh
 --- hint
-`echo $NAME` shows the variable is set; the script still cannot see it, because it was never exported.
+`echo $NAME` shows that the variable is set in your shell. The script still cannot see it, because it was never exported.
 --- hint
-`export NAME`, then `bash greet.sh` again.
+Exporting takes the name without a dollar sign: `export NAME`.
+--- hint
+Then run `bash greet.sh` again; it should print `Hello, Ada`.
 --- check shell | NAME is exported
 env NAME == Ada
 --- check shell | The script saw it
@@ -89,32 +337,155 @@ ran bash greet.sh
 
 === term3-03 | Command substitution: $(…)
 --- teach
-`$(command)` runs a command and puts its output **right there** in the line, as if you had typed it. Trailing new lines are dropped.
+So far a variable has held text you typed yourself. This lesson lets a variable, or any part of a command, hold the **output** of another command.
+
+Think of a form with a blank in it: "There are ___ notes." You ask a friend to count the notes and write the number in the blank. You never type the number; it arrives from the counting.
+
+### Running a command inside a command
+
+`$(command)` is read "dollar, open bracket, command, close bracket". The shell runs the command inside the brackets first, then [[puts its output right there in the line|fill-the-blank]], as if you had typed it. This is called **command substitution**: the command is substituted, swapped, for what it printed.
+
+`whoami` is a small command that prints [[your user name|user-name]]. In this practice terminal, that is `you`:
+
+```
+~/project $ echo "Report for $(whoami)"
+Report for you
+```
+
+### Keeping the output in a variable
+
+The same thing works after `=`. Here a whole pipeline runs, and its answer is stored:
 
 ```
 ~/project $ count=$(ls *.txt | wc -l)
 ~/project $ echo "There are $count notes"
 There are 3 notes
-~/project $ echo "Report for $(whoami)"
-Report for you
 ```
 
-It works anywhere a word could go: in a variable, in an `echo`, in the argument of another command. Put it in double quotes, `"$(…)"`, when the output might contain spaces — otherwise the shell splits it into separate words.
+`wc -l` printed `3` and then a new line. The shell drops [[the new lines at the end|trailing-newlines]], so `count` holds only `3`, and the sentence stays on one line.
 
-You will also meet the old spelling with backticks, `` `ls | wc -l` ``. It does the same thing, but `$(…)` is easier to read and can be nested.
+### Anywhere a word could go
 
-Two mistakes: `count=ls | wc -l` never runs `ls` at all — it prints `0` and leaves `count` unset — and `count=(ls)` is a different feature altogether. The dollar and the brackets go together: `$(ls)`.
+A `$(…)` can sit anywhere you could type a word: after `=` for a variable, inside an `echo`, or as the argument of another command, such as the file name after `touch` or `mkdir`:
+
+```
+~/project $ mkdir "backup-$(whoami)"
+~/project $ ls
+backup-you/
+```
+
+### Double quotes keep the output whole
+
+If the output has spaces in it, the shell [[splits it into separate words|word-splitting]], unless it is inside double quotes. Here `name.txt` holds the text `old boat`:
+
+```
+~/project $ touch $(cat name.txt)
+~/project $ ls
+boat  name.txt  old
+~/project $ touch "$(cat name.txt)"
+~/project $ ls
+boat  name.txt  old  old boat
+```
+
+Without quotes, `touch` got two words and made two files. With quotes, `"$(…)"`, it got one name and made one file. So put it in double quotes when the output might contain spaces.
+
+### The old spelling: backticks
+
+In older scripts you will meet the same thing written with **backticks**, the slanted quote mark that sits under Esc on a US keyboard: `` `ls | wc -l` ``. It does exactly what `$(ls | wc -l)` does. The `$(…)` spelling is easier to read and [[can be nested|nesting]], one inside another, so use that one.
+
+**Watch out:** the dollar and the brackets always go together.
+
+- `count=ls | wc -l` never runs `ls` at all. It prints `0` and leaves `count` unset.
+- `count=(ls)` is a different feature altogether, a list variable, that this course does not use.
+
+Only `count=$(ls)` runs the command and keeps its output. This is how scripts [[pick up facts about the world|real-use]] while they run.
+
+::: context fill-the-blank The inside runs first
+The shell works from the inside out. It finds the `$(…)`, runs what is inside, and puts the output in its place. Only then does it run the outer command.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">
+  <rect x="10" y="12" width="340" height="34" rx="6" fill="#fff" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="20" y="34" font-size="12" fill="#1f2a44">echo "There are <tspan fill="#1d6fd1" font-weight="bold">$(ls *.txt | wc -l)</tspan> notes"</text>
+  <line x1="150" y1="48" x2="150" y2="72" stroke="#6c7a93" stroke-width="2"/>
+  <polygon points="150,80 144,70 156,70" fill="#6c7a93"/>
+  <text x="164" y="68" font-size="11" fill="#6c7a93">runs first, and prints 3</text>
+  <rect x="10" y="84" width="340" height="34" rx="6" fill="#fff" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="20" y="106" font-size="12" fill="#1f2a44">echo "There are <tspan fill="#1d6fd1" font-weight="bold">3</tspan> notes"</text>
+  <text x="20" y="140" font-size="12" fill="#6c7a93">then the outer command runs</text>
+</svg>
+```
+:::
+
+::: context user-name Who "you" is
+Every computer keeps a list of **user accounts**, one for each person (and some for programs). `whoami` prints the name of the account your shell is running as.
+
+In this practice terminal the account is called `you`, and your home folder is `/home/you`. On a real computer `whoami` prints your own login name, and your home folder is named after it.
+:::
+
+::: context trailing-newlines Why the ending is trimmed
+Almost every command ends its output with a new line, so that the next prompt starts on a fresh line. If `$(…)` kept that new line, `echo "There are $count notes"` would print `There are 3`, then break the line, then `notes`.
+
+So the shell removes every new line at the very end of the output. New lines in the middle stay where they are.
+:::
+
+::: context word-splitting The same split that breaks loops
+When an unquoted `$variable` or `$(…)` is filled in, the shell splits the result at every space into separate words. That is what went wrong with `old boat` above.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 120" font-family="Inter, Arial, sans-serif">
+  <text x="10" y="24" font-size="12" fill="#1f2a44">touch $(cat name.txt)</text>
+  <rect x="200" y="10" width="44" height="22" rx="4" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="222" y="25" font-size="12" text-anchor="middle" fill="#1f2a44">old</text>
+  <rect x="252" y="10" width="54" height="22" rx="4" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="279" y="25" font-size="12" text-anchor="middle" fill="#1f2a44">boat</text>
+  <text x="200" y="50" font-size="11" fill="#b4232c">two words, two files</text>
+  <text x="10" y="84" font-size="12" fill="#1f2a44">touch "$(cat name.txt)"</text>
+  <rect x="200" y="70" width="80" height="22" rx="4" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="240" y="85" font-size="12" text-anchor="middle" fill="#1f2a44">old boat</text>
+  <text x="200" y="110" font-size="11" fill="#1d6fd1">one word, one file</text>
+</svg>
+```
+
+It comes back in the loops lesson, where a file called `old boat.jpeg` breaks an unquoted `$f`, and in the debugging lesson at the end of the course.
+:::
+
+::: context nesting One inside another
+Nesting means putting one `$(…)` inside another. `pwd` prints the full path of the folder you are in, and `basename` keeps only its last part:
+
+```
+~/project $ echo "Inside: $(basename "$(pwd)")"
+Inside: project
+```
+
+The inner `$(pwd)` runs first and gives `/home/you/project`; then `basename` turns that into `project`. With backticks, the inner pair would have to be written with backslashes in front, which is hard to read and easy to get wrong.
+:::
+
+::: context real-use Stamping a build
+Scripts use `$(…)` to learn things they cannot know in advance: today's date, how many files there are, which version of the code they are building. A flight software build script might do this:
+
+```
+commit=$(git rev-parse --short HEAD)
+```
+
+That stores the short name of the exact git commit being built. The script then writes it into the finished program, so when the computer on a spacecraft reports its software version, engineers can tell exactly which code is running.
+:::
 --- task
-Store the number of `.txt` files in this folder in a variable called `count`, using `$(…)`. Then write the sentence `There are 3 notes` into `summary.txt`, using `$count` rather than typing the 3.
+This folder holds three `.txt` files and a picture.
+
+1. Store the number of `.txt` files in a variable called `count`, using `$(…)` around a pipeline of `ls` and `wc -l`.
+2. Write the sentence `There are 3 notes` into `summary.txt` with `echo` and `>`, using `$count` rather than typing the 3.
 --- starter
 touch a.txt b.txt c.txt picture.png
 --- solution
 count=$(ls *.txt | wc -l)
 echo "There are $count notes" > summary.txt
 --- hint
-`ls *.txt | wc -l` counts the files; wrap it: `count=$(ls *.txt | wc -l)`.
+First find the pipeline that counts them: `ls *.txt | wc -l` prints `3`.
 --- hint
-`echo "There are $count notes" > summary.txt`.
+Wrap it in `$(…)` and store it, with no spaces around the `=`: `count=$(ls *.txt | wc -l)`.
+--- hint
+Then `echo "There are $count notes" > summary.txt`, and `cat summary.txt` to check.
 --- check shell | count holds the number of notes
 var count == 3
 used $(
@@ -122,32 +493,297 @@ used $(
 file summary.txt == There are 3 notes
 used $count
 
-=== term3-04 | Exit codes: && and ||
+=== term3-04a | Exit status: did it work?
 --- teach
-Every command finishes with an **exit status** (also called an **exit code**), a number that says how it went: `0` means success, anything else means some kind of failure. Nothing is printed; `echo $?` shows the status of the last command.
+Back in the first Terminal course, `&&` ran its second command "only if the first worked". But how does the shell know a command worked? This lesson shows you the answer the shell reads, so that the next lesson can use it to make choices.
+
+Picture a helper who finishes each job and then, without a word, holds up a card: a thumbs-up if it went fine, or a number that says what went wrong. The card is always there, even when nothing is printed on the screen.
+
+### Every command leaves a number
+
+When a command finishes, it leaves behind a number called its **exit status** (also called its **exit code**): a number that says how it went.
+
+- `0` means success. It is [[the only number that means success|zero-success]].
+- Anything else, such as `1`, `2` or `127`, means [[some kind of failure|failure-codes]].
+
+The number is not printed. It is kept quietly by the shell.
+
+### Seeing it: $?
+
+`$?` is read "dollar question mark". It is a special variable that holds the exit status of [[the last command|last-command]]. You see it with `echo $?`:
+
+```
+~/project $ ls
+notes.txt
+~/project $ echo $?
+0
+~/project $ ls missing
+ls: cannot access 'missing': No such file or directory
+~/project $ echo $?
+2
+```
+
+The first `ls` worked, so its status is `0`. The second could not find `missing`, so its status is `2`.
+
+### grep answers with its status
+
+`grep` uses its exit status to tell you what it found:
+
+- `0` when it found at least one matching line;
+- `1` when it found none;
+- `2` when something went wrong, such as a file that does not exist.
+
+Here `deploy.log` contains the word `ERROR`:
+
+```
+~/project $ grep ERROR deploy.log
+ERROR: health check failed
+~/project $ echo $?
+0
+```
+
+### Asking quietly: grep -q
+
+Often you do not want to see the lines at all. You only want the yes-or-no answer. The flag `-q` means **quiet**: `grep` [[prints nothing and only sets its status|quiet-grep]].
 
 ```
 ~/project $ grep -q ERROR deploy.log
 ~/project $ echo $?
 0
+~/project $ grep -q WARN deploy.log
+~/project $ echo $?
+1
 ```
 
-`grep` is a good example: `0` when it found a match, `1` when it found none, `2` when something went wrong (like a missing file). `-q` makes it quiet — it prints nothing and just sets the status.
+The first found `ERROR`, so `0`. The second found no `WARN`, so `1`. Nothing else was printed.
 
-- `a && b` runs `b` only if `a` succeeded.
-- `a || b` runs `b` only if `a` failed.
+**Watch out:** `$?` is replaced after every command, and `echo $?` is a command too. So check it straight after the command you care about. Ask twice and the second answer is about the first `echo`, which worked:
 
-Together they make a compact either/or:
+```
+~/project $ ls missing
+ls: cannot access 'missing': No such file or directory
+~/project $ echo $?
+2
+~/project $ echo $?
+0
+```
+
+Exit statuses are what scripts, build tools and test systems use to decide whether to [[carry on|carry-on]]. In the next lesson you will use them with `&&` and `||`, and they come back in `if` and in scripts [[later in this course|comes-back]].
+
+::: context zero-success Why zero means it worked
+It looks backwards at first: in everyday life, zero sounds like "nothing happened". But think about how many ways a job can go. It can go right in only one way. It can go wrong in many: a file is missing, you are not allowed, the disk is full.
+
+So success gets the single number `0`, and all the other numbers are left free to say which kind of failure happened.
+:::
+
+::: context failure-codes Numbers you will see
+A few statuses come up again and again in bash:
+
+- `1`: a general failure, or "no" (as with `grep` finding nothing).
+- `2`: the command was used wrongly, or could not open something.
+- `126`: the file was found, but it is not allowed to run.
+- `127`: no command by that name. Try `nosuchcommand` and then `echo $?`.
+- `130`: you stopped the command with Ctrl-C.
+
+Each command's manual lists its own statuses, and they can differ from tool to tool. The one rule every command keeps is that `0` means success.
+:::
+
+::: context last-command Only the latest answer is kept
+`$?` is like a whiteboard that only has room for one number. Every command wipes it and writes its own.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 130" font-family="Inter, Arial, sans-serif">
+  <rect x="6" y="14" width="104" height="30" rx="6" fill="#fff" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="58" y="34" font-size="12" text-anchor="middle" fill="#1f2a44">ls missing</text>
+  <rect x="128" y="14" width="104" height="30" rx="6" fill="#fff" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="180" y="34" font-size="12" text-anchor="middle" fill="#1f2a44">echo $?</text>
+  <rect x="250" y="14" width="104" height="30" rx="6" fill="#fff" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="302" y="34" font-size="12" text-anchor="middle" fill="#1f2a44">echo $?</text>
+  <line x1="112" y1="29" x2="122" y2="29" stroke="#6c7a93" stroke-width="2"/>
+  <line x1="234" y1="29" x2="244" y2="29" stroke="#6c7a93" stroke-width="2"/>
+  <text x="58" y="66" font-size="11" text-anchor="middle" fill="#6c7a93">prints an error</text>
+  <text x="180" y="66" font-size="11" text-anchor="middle" fill="#6c7a93">prints 2</text>
+  <text x="302" y="66" font-size="11" text-anchor="middle" fill="#6c7a93">prints 0</text>
+  <rect x="28" y="84" width="60" height="30" rx="4" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="58" y="104" font-size="12" text-anchor="middle" fill="#1f2a44">$? = 2</text>
+  <rect x="150" y="84" width="60" height="30" rx="4" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="180" y="104" font-size="12" text-anchor="middle" fill="#1f2a44">$? = 0</text>
+  <rect x="272" y="84" width="60" height="30" rx="4" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="302" y="104" font-size="12" text-anchor="middle" fill="#1f2a44">$? = 0</text>
+</svg>
+```
+
+If you need a status later, save it straight away in a variable of your own: `result=$?`.
+:::
+
+::: context quiet-grep Why a quiet grep is useful
+Printing matching lines is for people. Scripts do not read the screen; they read the status. `grep -q` gives a script a clean yes-or-no, with nothing extra to clean up.
+
+It is also fast. With `-q`, `grep` stops reading the moment it finds the first match, because the answer cannot change after that. On a log of millions of lines, that can save a lot of time.
+
+One thing `-q` does not hide: if the file is missing, the error message still appears, because it is sent to standard error, not to standard output.
+:::
+
+::: context carry-on Go or no-go
+Before a launch, every station is polled and answers "go" or "no-go". One no-go stops the count. Software teams run their checks the same way. A **CI system** (continuous integration: a computer that builds and tests every change automatically) runs step after step, and reads each step's exit status. A test runner that finds a failing test exits with a non-zero status, and that is how the system knows to stop, before broken code goes any further.
+:::
+
+::: context comes-back Where you will see it next
+Exit statuses are the base of the rest of this course:
+
+- the next lesson uses them to choose between two commands with `&&` and `||`;
+- the `if` lesson runs a command and takes one branch or the other depending on its status;
+- in the last lesson you write a script that ends with `exit 2` or `exit 1` on purpose, so that other programs can tell what went wrong.
+:::
+--- task
+There are two deploy logs. `deploy-mon.log` contains the word `ERROR`; `deploy-tue.log` does not. There is no `deploy-wed.log` at all.
+
+1. Ask quietly whether `deploy-mon.log` contains `ERROR`, with `grep -q ERROR deploy-mon.log`. Then print its exit status with `echo $?`. You should see `0`.
+2. Do the same for `deploy-tue.log`. You should see `1`.
+3. Do the same for `deploy-wed.log`. You should see `2`.
+--- starter
+echo "build ok" > deploy-mon.log
+echo "upload ok" >> deploy-mon.log
+echo "ERROR: health check failed" >> deploy-mon.log
+echo "build ok" > deploy-tue.log
+echo "upload ok" >> deploy-tue.log
+echo "health ok" >> deploy-tue.log
+--- solution
+grep -q ERROR deploy-mon.log
+echo $?
+grep -q ERROR deploy-tue.log
+echo $?
+grep -q ERROR deploy-wed.log
+echo $?
+--- hint
+Each question takes two commands: the `grep -q` line, then `echo $?` straight after it.
+--- hint
+Start with `grep -q ERROR deploy-mon.log`. It prints nothing; `echo $?` then shows `0`.
+--- hint
+Repeat with `deploy-tue.log` and then `deploy-wed.log` in place of `deploy-mon.log`, running `echo $?` after each one.
+--- check shell | Monday's log has ERROR: status 0
+ran grep -q ERROR deploy-mon.log
+printed-exactly 0
+--- check shell | Tuesday's log has none: status 1
+ran grep -q ERROR deploy-tue.log
+printed-exactly 1
+--- check shell | A log that does not exist: status 2
+ran grep -q ERROR deploy-wed.log
+printed-exactly 2
+used $?
+
+=== term3-04 | Either-or: && and ||
+--- teach
+Last lesson you saw that every command leaves an exit status, and that `grep -q` answers with `0` for "found it" and `1` for "not found". Now you will use that answer to choose which command runs next.
+
+It is like a plan for the weekend: if it rains, go to the museum; otherwise, go to the beach. You check one thing, and the answer decides what happens.
+
+### && runs the next command on success
+
+You met `&&` in the first course. Now you can say exactly what it does: `a && b` runs `b` only if `a` finished with status `0`. People read `&&` as [["and"|and-or]].
+
+```
+~/project $ grep -q ERROR deploy.log && echo "found an error"
+found an error
+```
+
+`deploy.log` contains `ERROR`, so `grep` finished with `0`, and the `echo` ran.
+
+### || runs the next command on failure
+
+`||` is [[two vertical bars|two-bars]], read "or". `a || b` runs `b` only if `a` failed, that is, finished with any status other than `0`.
+
+```
+~/project $ grep -q WARN deploy.log || echo "no warnings"
+no warnings
+~/project $ grep -q ERROR deploy.log || echo "no errors"
+~/project $
+```
+
+There is no `WARN` in the log, so the first `grep` failed and the `echo` ran. There is an `ERROR`, so the second `grep` succeeded, and nothing was printed.
+
+### Together: an either-or
+
+Put both on one line and you get a compact [[either/or|either-or]]:
 
 ```
 grep -q ERROR deploy.log && echo "failed" || echo "ok"
 ```
 
-One caution: this is not a true if/else. If the middle command fails, the `||` part runs as well. `echo` never fails, so here it is fine; for anything bigger, use `if` (two lessons from now).
+Follow it for each case:
 
-Exit codes are what scripts, build tools and CI systems use to decide whether to carry on. A failing test runner exits with a non-zero status, and that is how the pipeline knows to stop.
+- The log contains `ERROR`: `grep` gives `0`, so `&& echo "failed"` runs and prints `failed`. That `echo` worked, so the `|| echo "ok"` part is skipped.
+- The log has no `ERROR`: `grep` gives `1`, so the `&&` part is skipped. The last status is still a failure, so `|| echo "ok"` runs and prints `ok`.
+
+**Watch out:** this is [[not a true if/else|not-if-else]]. If the middle command fails, the `||` part runs as well, and you get both answers. `echo` never fails, so here it is fine. For anything bigger, use `if`, two lessons from now.
+
+Exit codes are what scripts, build tools and CI systems use to decide whether to [[carry on|chain-stops]]. A failing test runner exits with a non-zero status, and that is how the pipeline knows to stop.
+
+::: context and-or Why "and" and "or"
+The names come from logic. "Make the folder **and** go into it": if the first part fails, there is no point trying the second. "Find an error **or** say all is well": if the first part succeeds, the second is not needed.
+
+The shell stops reading a chain as soon as it knows how things turned out. Engineers call this **short-circuiting**, and it is exactly why `b` sometimes never runs.
+:::
+
+::: context two-bars A pipe and an "or" look alike
+On a US keyboard the vertical bar `|` is on the backslash key, above Enter, typed with Shift. One bar is a pipe: it sends the first command's output into the second, and both always run. Two bars, `||`, send nothing anywhere; they only decide whether the second command runs.
+
+```
+~/project $ grep -q ERROR deploy.log | echo "pipe"
+pipe
+```
+
+With one bar, `echo` ran even though `grep` found the error. A missing bar is an easy typo, and the shell will not warn you about it.
+:::
+
+::: context either-or Two roads from one answer
+The status of the first command picks the road.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">
+  <rect x="90" y="10" width="180" height="32" rx="6" fill="#fff" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="180" y="31" font-size="12" text-anchor="middle" fill="#1f2a44">grep -q ERROR deploy.log</text>
+  <line x1="150" y1="44" x2="90" y2="92" stroke="#1d6fd1" stroke-width="2"/>
+  <polygon points="84,98 88,86 96,94" fill="#1d6fd1"/>
+  <line x1="210" y1="44" x2="270" y2="92" stroke="#b4232c" stroke-width="2"/>
+  <polygon points="276,98 264,94 272,86" fill="#b4232c"/>
+  <text x="96" y="66" font-size="11" text-anchor="end" fill="#1d6fd1">status 0</text>
+  <text x="264" y="66" font-size="11" fill="#b4232c">status not 0</text>
+  <rect x="14" y="102" width="150" height="32" rx="6" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="89" y="123" font-size="12" text-anchor="middle" fill="#1f2a44">&amp;&amp; echo "failed"</text>
+  <rect x="196" y="102" width="150" height="32" rx="6" fill="#f2b880" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="271" y="123" font-size="12" text-anchor="middle" fill="#1f2a44">|| echo "ok"</text>
+</svg>
+```
+
+Here "success" means `grep` found an error, so the good news is on the failure road. Read the status, not the word.
+:::
+
+::: context not-if-else When both sides run
+The commands `true` and `false` do nothing except succeed and fail. They make the problem easy to see:
+
+```
+~/project $ true && false || echo "this runs too"
+this runs too
+```
+
+`true` succeeded, so `false` ran. `false` failed, so `||` saw a failure and ran its part as well. With a real `if`, only one branch can ever run, whatever happens inside it. That is why `if` is the tool for anything that can fail.
+:::
+
+::: context chain-stops A chain that stops at the first failure
+Real projects chain their steps like this:
+
+```
+npm test && npm run build && npm run deploy
+```
+
+If a test fails, `npm test` exits with a non-zero status. The `&&` then skips the build and the deploy, so broken code never goes out. CI systems work on the same rule, one step after another, stopping at the first failure. Teams that build flight software lean on it hard: a build whose tests fail never gets as far as the hardware on the test bench.
+:::
 --- task
-There are two deploy logs. For each one, write **one line** using `grep -q`, `&&` and `||` that prints `deploy-mon: failed` if `deploy-mon.log` contains `ERROR` and `deploy-mon: ok` if it does not — and the same for `deploy-tue.log` with `deploy-tue`.
+There are two deploy logs. For each one, write **one line** using `grep -q`, `&&` and `||`:
+
+- for `deploy-mon.log`, print `deploy-mon: failed` if it contains `ERROR`, and `deploy-mon: ok` if it does not;
+- for `deploy-tue.log`, print `deploy-tue: failed` if it contains `ERROR`, and `deploy-tue: ok` if it does not.
 --- starter
 echo "build ok" > deploy-mon.log
 echo "upload ok" >> deploy-mon.log
@@ -159,9 +795,11 @@ echo "health ok" >> deploy-tue.log
 grep -q ERROR deploy-mon.log && echo "deploy-mon: failed" || echo "deploy-mon: ok"
 grep -q ERROR deploy-tue.log && echo "deploy-tue: failed" || echo "deploy-tue: ok"
 --- hint
-`grep -q ERROR deploy-mon.log` prints nothing; check `echo $?` straight after to see its answer.
+`grep -q ERROR deploy-mon.log` prints nothing. Run `echo $?` straight after to see its answer: `0` means it found `ERROR`.
 --- hint
-`grep -q ERROR deploy-mon.log && echo "deploy-mon: failed" || echo "deploy-mon: ok"`.
+The shape is `question && echo "…" || echo "…"`: the `&&` part runs on success, the `||` part on failure.
+--- hint
+`grep -q ERROR deploy-mon.log && echo "deploy-mon: failed" || echo "deploy-mon: ok"`, then the same line with `tue` in place of `mon`.
 --- check shell | Monday's deploy is reported as failed
 printed-line deploy-mon: failed
 not-printed deploy-mon: ok
@@ -173,42 +811,325 @@ used grep -q
 used &&
 used ||
 
-=== term3-05 | Loops: for
+=== term3-05a | Loops: for
 --- teach
-A `for` loop runs the same commands once for each item in a list:
+Last lesson, a command's exit status decided what ran next. This lesson is about something different: doing the same job many times without typing it many times.
+
+Picture a pile of letters that all need a stamp. Nobody writes new instructions for every letter. You say it once: "for each letter in the pile, stamp it." The shell can work the same way.
+
+A **[[loop|loop]]** is a set of commands the shell runs again and again. The **`for` loop** runs the same commands once for each item in a list:
 
 ```
-for planet in mercury venus earth; do mkdir "$planet"; done
-for f in *.txt; do echo "checking $f"; done
+~/project $ for planet in mercury venus earth; do echo "hello $planet"; done
+hello mercury
+hello venus
+hello earth
 ```
 
-Each time round, the variable (`planet`, `f`) holds the next item. The list can be plain words, a wildcard, or `$(…)`. It fits on one line, with `;` before `do` and before `done`, or spread over several lines in a script. The `;` separates commands on one line and runs them one after another, whether or not the first worked (unlike `&&`).
+Read it aloud: "for each planet in the list mercury, venus, earth, do: echo hello planet. Done."
 
-**Quote the variable**: `"$f"`. A file called `old boat.jpeg` is one name, but unquoted `$f` is split at the space into two words, `old` and `boat.jpeg`, and `mv` goes looking for two files that do not exist.
+Here is each part:
 
-Two tools make renaming easy. `${f%.jpeg}` is `f` with `.jpeg` cut off the **end**; `${f#IMG_}` cuts `IMG_` off the **start**:
+- `for planet in` names a variable, `planet`, like the ones you made in the variables lesson. Each time round, the loop puts the next item into it. One trip round the loop is called an **[[iteration|iteration]]**.
+- `mercury venus earth` is the **list**: the items, separated by spaces.
+- `do` … `done` wrap the **body**: the commands to repeat.
+- `;`, the **[[semicolon|semicolon]]**, ends one command so the next can follow on the same line. The loop needs one before `do` and one before `done`.
+
+### The semicolon on its own
+
+A `;` runs commands one after another, whether or not the first one worked. That is the difference from `&&`, which only goes on after a success:
 
 ```
-f=beach.jpeg
-echo "${f%.jpeg}.jpg"     # beach.jpg
+~/project $ echo one; echo two
+one
+two
+~/project $ ls nothing.txt; echo "still here"
+ls: cannot access 'nothing.txt': No such file or directory
+still here
 ```
 
-Before a loop changes anything, do a **dry run**: put `echo` in front of the real command, read the commands it prints, and only then run it for real.
+### More than one command in the body
+
+Separate them with `;`, and each iteration runs all of them, in order:
 
 ```
-for f in *.jpeg; do echo mv "$f" "${f%.jpeg}.jpg"; done
+~/project $ for planet in mercury venus earth; do mkdir "$planet"; echo "made $planet"; done
+made mercury
+made venus
+made earth
 ```
+
+### A wildcard as the list
+
+The list can be a wildcard. The shell turns `*.txt` into the matching names before the loop starts, as you saw in the wildcards lesson. Here `f` is short for "file"; any variable name works.
+
+```
+~/project $ ls
+checklist.txt  flight plan.txt
+~/project $ for f in *.txt; do echo "checking $f"; done
+checking checklist.txt
+checking flight plan.txt
+```
+
+### Command output as the list
+
+The list can also come from `$(…)`, the command substitution from earlier in this course:
+
+```
+~/project $ cat planets.txt
+mercury
+venus
+~/project $ for p in $(cat planets.txt); do echo "planet: $p"; done
+planet: mercury
+planet: venus
+```
+
+The output of `$(…)` is cut up at every space and new line, so this suits lists of single words. For file names, which can hold spaces, use a wildcard.
+
+### On several lines
+
+In a script (coming soon in this course), the same loop is often spread over lines. Where a line ends, no `;` is needed:
+
+```
+for f in *.txt
+do
+  echo "checking $f"
+done
+```
+
+This practice terminal takes one line at a time, so type the one-line form here.
+
+**Watch out:** quote the loop variable, `"$f"`, whenever you hand it to a command. A file called `flight plan.txt` is one name. But an unquoted `$f` is cut at the space into two words, `flight` and `plan.txt`. This is called **[[word splitting|word-splitting]]**, and `cp` goes looking for two files that do not exist:
+
+```
+~/project $ for f in *.txt; do cp $f backup/; done
+cp: cannot stat 'flight': No such file or directory
+cp: cannot stat 'plan.txt': No such file or directory
+~/project $ for f in *.txt; do cp "$f" backup/; done
+~/project $ ls backup
+checklist.txt  flight plan.txt
+```
+
+Loops are where the terminal starts to save [[real work|loops-for-real]]: ten files or ten thousand, the line is the same length.
+
+::: context loop Why it is called a loop
+Draw the steps as boxes with arrows between them, and a loop is where an arrow bends back to an earlier box. The shell checks for another item, runs the body, and comes back round. When the list runs out, it leaves the loop and carries on after `done`.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 180" font-family="Inter, Arial, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#1f2a44"/>
+    </marker>
+  </defs>
+  <rect x="16" y="46" width="118" height="44" rx="6" fill="#fff" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="75" y="66" font-size="12" text-anchor="middle" fill="#1f2a44">any items left</text>
+  <text x="75" y="81" font-size="12" text-anchor="middle" fill="#1f2a44">in the list?</text>
+  <rect x="212" y="20" width="132" height="52" rx="6" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="278" y="41" font-size="12" text-anchor="middle" fill="#1f2a44">put the next item</text>
+  <text x="278" y="57" font-size="12" text-anchor="middle" fill="#1f2a44">in planet, run body</text>
+  <line x1="134" y1="58" x2="210" y2="46" stroke="#1f2a44" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="172" y="42" font-size="12" text-anchor="middle" fill="#1d6fd1">yes</text>
+  <path d="M 278 72 Q 250 118 136 82" fill="none" stroke="#1f2a44" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="250" y="118" font-size="11" text-anchor="middle" fill="#6c7a93">back round</text>
+  <line x1="75" y1="90" x2="75" y2="126" stroke="#1f2a44" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="90" y="112" font-size="12" fill="#b4232c">no</text>
+  <rect x="30" y="128" width="90" height="34" rx="6" fill="#f2b880" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="75" y="150" font-size="12" text-anchor="middle" fill="#1f2a44">done</text>
+</svg>
+```
+:::
+
+::: context iteration One trip round
+**Iteration** comes from the Latin *iterum*, "again". Each trip round the loop is one iteration, so a list of three planets means three iterations, and the body runs three times.
+
+One surprise: if a wildcard matches nothing, the shell passes the pattern along unchanged, as the wildcards lesson showed. So in a folder with no `.png` files, `for f in *.png; do echo "found $f"; done` runs once and prints `found *.png`. That is worth remembering when a loop does something odd.
+:::
+
+::: context semicolon Three ways to join commands
+You now know three joins. `a ; b` runs `a`, then `b`, no matter what. `a && b` runs `b` only if `a` succeeded. `a || b` runs `b` only if `a` failed. The loop uses `;` because it is not asking a question; it only marks where one piece of the line ends and the next begins. Pressing Enter at the end of a line does the same job, which is why a loop written over several lines needs no semicolons.
+:::
+
+::: context word-splitting The shell cuts at spaces
+After the shell puts a variable's value into a line, it cuts the result into words at every space. Then each word is a separate argument. Double quotes stop the cutting: everything inside them stays one word.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 120" font-family="Inter, Arial, sans-serif">
+  <text x="10" y="24" font-size="12" fill="#1f2a44">cp $f backup/</text>
+  <rect x="10" y="32" width="40" height="26" rx="4" fill="#fff" stroke="#1f2a44"/>
+  <text x="30" y="50" font-size="12" text-anchor="middle" fill="#1f2a44">cp</text>
+  <rect x="58" y="32" width="60" height="26" rx="4" fill="#fff" stroke="#b4232c" stroke-width="2"/>
+  <text x="88" y="50" font-size="12" text-anchor="middle" fill="#b4232c">flight</text>
+  <rect x="126" y="32" width="72" height="26" rx="4" fill="#fff" stroke="#b4232c" stroke-width="2"/>
+  <text x="162" y="50" font-size="12" text-anchor="middle" fill="#b4232c">plan.txt</text>
+  <rect x="206" y="32" width="70" height="26" rx="4" fill="#fff" stroke="#1f2a44"/>
+  <text x="241" y="50" font-size="12" text-anchor="middle" fill="#1f2a44">backup/</text>
+  <text x="10" y="80" font-size="12" fill="#1f2a44">cp "$f" backup/</text>
+  <rect x="10" y="88" width="40" height="26" rx="4" fill="#fff" stroke="#1f2a44"/>
+  <text x="30" y="106" font-size="12" text-anchor="middle" fill="#1f2a44">cp</text>
+  <rect x="58" y="88" width="140" height="26" rx="4" fill="#8fb8f0" stroke="#1d6fd1" stroke-width="2"/>
+  <text x="128" y="106" font-size="12" text-anchor="middle" fill="#1f2a44">flight plan.txt</text>
+  <rect x="206" y="88" width="70" height="26" rx="4" fill="#fff" stroke="#1f2a44"/>
+  <text x="241" y="106" font-size="12" text-anchor="middle" fill="#1f2a44">backup/</text>
+  <text x="286" y="50" font-size="11" fill="#b4232c">4 words</text>
+  <text x="286" y="106" font-size="11" fill="#1d6fd1">3 words</text>
+</svg>
+```
+:::
+
+::: context loops-for-real How engineers use loops
+Real projects are full of "do this to every file" jobs. A flight software team might run the same test on every recorded telemetry file, convert every data file from one format to another, or check that every source file compiles. Written as a loop, the job works the same for three files as for three thousand, and nobody has to type the names. Later in this course you will put loops inside scripts and use one to tidy a whole downloads folder.
+:::
 --- task
-Rename every `.jpeg` file in this folder so it ends in `.jpg` instead (`beach.jpeg` becomes `beach.jpg`), with **one** `for` loop. One of the files has a space in its name, and the files' contents must survive.
+Make three folders, `mercury`, `venus` and `earth`, with **one** `for` loop. Then write a second `for` loop over `*.txt` that, for every `.txt` file, copies it into the `backup` folder and prints `copied` followed by its name (for example `copied checklist.txt`). One of the notes, `flight plan.txt`, has a space in its name.
+--- starter
+mkdir backup
+echo "fuel check" > "flight plan.txt"
+echo "go for launch" > checklist.txt
+--- solution
+for planet in mercury venus earth; do mkdir "$planet"; done
+for f in *.txt; do cp "$f" backup/; echo "copied $f"; done
+--- hint
+The first loop's list is the three names: `for planet in mercury venus earth; do …; done`, with `mkdir "$planet"` as the body.
+--- hint
+The second loop's list is the wildcard `*.txt`. Its body has two commands, `cp` and `echo`, with a `;` between them.
+--- hint
+`for f in *.txt; do cp "$f" backup/; echo "copied $f"; done`. Keep the quotes around `"$f"`, or `flight plan.txt` falls apart.
+--- check shell | The three planet folders exist
+dir mercury
+dir venus
+dir earth
+used for
+--- check shell | Every note was copied into backup, space and all
+count backup/*.txt == 2
+file backup/checklist.txt == go for launch
+printed-line copied checklist.txt
+printed-line copied flight plan.txt
+--- check shell | Done with loops
+used do
+used done
+ran cp
+
+=== term3-05 | Renaming many files: cutting the ends off names
+--- teach
+Last lesson, a `for` loop ran the same commands once for every file. Now you will make a loop **rename** files. To rename a file you need its new name, so this lesson shows how to build a new name out of the old one.
+
+Think of relabelling jars in a kitchen. You do not rewrite the whole label. You peel off the end, "jam (old)", and write a new ending. The shell can peel the end, or the start, off the text in a variable.
+
+### Cutting off the end: %
+
+`${f%.jpeg}` means "`f` with `.jpeg` cut off the **end**". The `%` sign is the "cut from the end" instruction, and the curly brackets hold it all together. This is one kind of **[[parameter expansion|parameter-expansion]]**: the shell changes a variable's value on its way into the line.
+
+```
+~/project $ f=beach.jpeg
+~/project $ echo "${f%.jpeg}"
+beach
+~/project $ echo "${f%.jpeg}.jpg"
+beach.jpg
+```
+
+In the second line, `.jpg` is stuck straight onto the trimmed name. The variable itself does not change. It still holds `beach.jpeg`:
+
+```
+~/project $ echo "$f"
+beach.jpeg
+```
+
+If the end does not match, nothing is cut:
+
+```
+~/project $ f=notes.txt
+~/project $ echo "${f%.jpeg}"
+notes.txt
+```
+
+### Cutting off the start: #
+
+`${f#IMG_}` means "`f` with `IMG_` cut off the **start**". The `#` sign is "cut from the start". There is a [[keyboard trick|keyboard-trick]] for remembering which is which.
+
+```
+~/project $ f=IMG_beach.jpeg
+~/project $ echo "${f#IMG_}"
+beach.jpeg
+```
+
+### Putting it in a loop
+
+Now join it to last lesson's loop. For every `.jpeg` file, move it to the same name ending in `.jpg`:
+
+```
+for f in *.jpeg; do mv "$f" "${f%.jpeg}.jpg"; done
+```
+
+`mv` renames here, as it did in the basics course. Changing the [[file extension|file-extension]] only changes the name. What is inside the file stays exactly the same.
+
+### Rehearse first: the dry run
+
+A loop that renames things changes many files in one go, so check it before it runs. A **[[dry run|dry-run]]** is a rehearsal: put `echo` in front of the real command. Then `echo` prints each command instead of running it. Read them, and only then run the loop again without the `echo`.
+
+```
+~/project $ ls
+beach.jpeg  old boat.jpeg  readme.txt  sunset.jpeg
+~/project $ for f in *.jpeg; do echo mv "$f" "${f%.jpeg}.jpg"; done
+mv beach.jpeg beach.jpg
+mv old boat.jpeg old boat.jpg
+mv sunset.jpeg sunset.jpg
+```
+
+Nothing has moved yet. Each printed line is one `mv` the real loop would run. `readme.txt` is not in the list, because `*.jpeg` does not match it. A dry run can also show you [[two files heading for the same name|mv-overwrites]] before any harm is done.
+
+**Watch out:** keep the quotes, `"$f"` and `"${f%.jpeg}.jpg"`. A file called `old boat.jpeg` is one name. Unquoted, it is cut at the space into `old` and `boat.jpeg`, and `mv` is handed three names instead of two and stops with an error. The dry run cannot warn you about this, because `echo` prints the words the same way with or without the quotes. So check the quotes with your own eyes.
+
+::: context parameter-expansion The official name
+The shell calls a variable a **parameter**, and filling in its value is **expanding** it. Plain `$f` is the simplest parameter expansion. The curly-bracket forms do extra work on the way. A single `%` or `#` cuts the shortest match; doubled, `%%` and `##`, they cut the longest match. The pattern may hold wildcards too: with `f=a.tar.gz`, `${f%.*}` gives `a.tar` and `${f##*.}` gives `gz`. You will use `##` in the downloads-tidying lesson later in this course.
+:::
+
+::: context keyboard-trick # left, % right
+On a standard US keyboard, look at the number keys 3, 4 and 5. The `#` is on the 3, to the left of the `$` on the 4. The `%` is on the 5, to its right. So `#` cuts from the left, the start, and `%` cuts from the right, the end.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 130" font-family="Inter, Arial, sans-serif">
+  <rect x="70" y="16" width="60" height="56" rx="8" fill="#fff" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="100" y="40" font-size="18" text-anchor="middle" fill="#1d6fd1">#</text>
+  <text x="100" y="62" font-size="12" text-anchor="middle" fill="#6c7a93">3</text>
+  <rect x="150" y="16" width="60" height="56" rx="8" fill="#fff" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="180" y="40" font-size="18" text-anchor="middle" fill="#1f2a44">$</text>
+  <text x="180" y="62" font-size="12" text-anchor="middle" fill="#6c7a93">4</text>
+  <rect x="230" y="16" width="60" height="56" rx="8" fill="#fff" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="260" y="40" font-size="18" text-anchor="middle" fill="#b4232c">%</text>
+  <text x="260" y="62" font-size="12" text-anchor="middle" fill="#6c7a93">5</text>
+  <text x="100" y="96" font-size="12" text-anchor="middle" fill="#1d6fd1">left of $</text>
+  <text x="100" y="114" font-size="12" text-anchor="middle" fill="#1d6fd1">cuts the start</text>
+  <text x="260" y="96" font-size="12" text-anchor="middle" fill="#b4232c">right of $</text>
+  <text x="260" y="114" font-size="12" text-anchor="middle" fill="#b4232c">cuts the end</text>
+</svg>
+```
+:::
+
+::: context file-extension The end of a name is only a label
+A **file extension** is the part of a name after the last dot: `.jpeg`, `.txt`, `.pdf`. It is a hint for people and programs about what kind of file it is, but it is still only part of the name. `.jpeg` and `.jpg` are two spellings for the same picture format, JPEG, so renaming one to the other changes nothing inside the file. That is why the task can promise the contents survive.
+:::
+
+::: context dry-run Rehearsals are an engineering habit
+Launch teams rehearse too. Before a new rocket flies, NASA runs countdown rehearsals where everything happens except the launch. Software tools copy the idea: many have a "dry run" flag that shows what would happen and changes nothing, like `rsync --dry-run` for copying files or `make -n` for builds. Putting `echo` in front of a command is the do-it-yourself version, and it works with any command.
+:::
+
+::: context mv-overwrites mv does not ask
+`mv` replaces a file that already has the new name, without asking. If `beach.jpg` already existed, renaming `beach.jpeg` to it would quietly wipe out the old `beach.jpg`. `mv -n`, "no clobber", refuses to overwrite, and `mv -i`, "interactive", asks first. This is one more reason the dry run is worth the few seconds: you can spot two files heading for the same name before it happens.
+:::
+--- task
+Rename every `.jpeg` file in this folder so it ends in `.jpg` instead (`beach.jpeg` becomes `beach.jpg`), using **one** `for` loop and `${f%.jpeg}`. One of the files, `old boat.jpeg`, has a space in its name, and the files' contents must survive. Leave `readme.txt` alone.
 --- starter
 echo "pixels" > beach.jpeg
 touch sunset.jpeg "old boat.jpeg" readme.txt
 --- solution
 for f in *.jpeg; do mv "$f" "${f%.jpeg}.jpg"; done
 --- hint
-Try a dry run first: `for f in *.jpeg; do echo mv "$f" "${f%.jpeg}.jpg"; done`.
+Try a dry run first: `for f in *.jpeg; do echo mv "$f" "${f%.jpeg}.jpg"; done`. It only prints.
 --- hint
-When the printed commands look right, run it again without the `echo`. Keep the quotes around `"$f"`.
+When the printed commands look right, run the same loop again without the `echo`. Keep the quotes around `"$f"` and around `"${f%.jpeg}.jpg"`.
+--- hint
+The real loop is the dry run minus the word `echo`: `for f in *.jpeg; do mv "$f" "${f%.jpeg}.jpg"; done`. Then `ls` should show three `.jpg` files and `readme.txt`.
 --- check shell | No .jpeg files are left
 count *.jpeg == 0
 --- check shell | Every photo is now a .jpg, contents and all
@@ -220,35 +1141,279 @@ used for
 used do
 used done
 
-=== term3-06 | Decisions: if and test
+=== term3-06a | Decisions: if
 --- teach
-`if` runs a command and looks at its exit status: `0` takes the `then` branch, anything else the `else` branch.
+In the exit-status lessons, `&&` and `||` let a command's status pick what ran next, and you were told that `a && b || c` is not a true either/or. This lesson gives you the real one: `if`.
+
+You make choices like this every day: "if it is raining, take an umbrella; otherwise, wear sunglasses." There is a question, and then one of two things happens, never both.
+
+### if, then, else, fi
+
+**`if`** runs a command and looks at its exit status. A `0`, success, takes the **`then`** part. Anything else takes the **`else`** part. Each part is called a **[[branch|branch]]**. The whole thing ends with **`fi`**, which is [["if" backwards|fi-backwards]].
 
 ```
-if grep -q ERROR app.log; then echo "look at the log"; else echo "all quiet"; fi
+~/project $ if grep -q ERROR app.log; then echo "look at the log"; else echo "all quiet"; fi
+look at the log
 ```
 
-The command you will put after `if` most often is `[ … ]`, a command (also called `test`) that checks something and exits with 0 for true:
+Read it aloud: "if grep finds ERROR in app.log, then echo look at the log, else echo all quiet. End of if." `grep -q` prints nothing; it only sets the status, as you saw in the exit-status lesson. The command after `if` is the **[[condition|condition]]**: the question being asked.
 
-- `[ -f notes.txt ]` — is there a file called that? `-d` asks about a folder, `-e` about either.
-- `[ "$mode" = "prod" ]` — are two strings equal? (`!=` for not equal.)
-- `[ -z "$name" ]` — is the string empty?
-- `[ "$count" -gt 10 ]` — number comparisons: `-eq -ne -lt -le -gt -ge`.
-- `!` in front negates: `[ ! -f config.txt ]`.
+The pieces are separated by `;`, like the loop: one before `then`, one before `else`, one before `fi`.
 
-The spaces matter. `[` is a command, so `[-f x]` is an attempt to run a command called `[-f` (command not found), and the closing `]` must be its own word too.
+### Without an else
 
-Quote variables inside the brackets. If `$mode` is empty, `[ $mode = prod ]` becomes `[ = prod ]` and fails with `unary operator expected`; `[ "$mode" = prod ]` stays a valid comparison.
+The `else` part is optional. Leave it out, and when the condition fails, nothing happens:
 
-`elif` adds more branches, and everything ends with `fi` ("if" backwards).
+```
+~/project $ if grep -q ERROR app.log; then echo "errors found"; fi
+errors found
+```
+
+### Any command can be the question
+
+`if` does not care what the command is. It only looks at the status:
+
+```
+~/project $ if mkdir review; then echo "made it"; else echo "could not"; fi
+made it
+~/project $ if mkdir review; then echo "made it"; else echo "could not"; fi
+mkdir: cannot create directory 'review': File exists
+could not
+```
+
+The second time, `mkdir` failed, because the folder was already there, so the `else` branch ran.
+
+### More than two choices: elif
+
+**`elif`**, short for "else if", adds another question. The shell asks them in order and runs the first branch whose condition succeeds. `else` catches everything left over:
+
+```
+~/project $ if grep -q ERROR radio.log; then echo "errors"; elif grep -q WARN radio.log; then echo "warnings"; else echo "clean"; fi
+clean
+```
+
+### Why not && and ||?
+
+In `a && b || c`, if `b` fails, `c` runs as well. Here `ls` fails in the middle, so both "sides" happen:
+
+```
+~/project $ grep -q ERROR app.log && ls nothing.txt || echo "all quiet"
+ls: cannot access 'nothing.txt': No such file or directory
+all quiet
+```
+
+The log has errors, yet it also says "all quiet". With `if`, exactly one branch runs, whatever happens inside it. This is how real [[scripts make go/no-go calls|go-no-go]].
+
+**Watch out:** every `if` needs its `fi`, and a `;` before `then`. Leave out the `;` in `if grep -q ERROR app.log then …`, and the shell hands `then` to `grep` as one more word. The line ends in `syntax error near unexpected token`, and nothing runs. When an `if` line fails that way, count the semicolons first.
+
+::: context branch A fork in the road
+A program usually runs straight down, one command after another. An `if` is a fork: the road splits in two, and the program goes down exactly one side before the roads meet again at `fi`. Programmers call each side a branch.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 190" font-family="Inter, Arial, sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#1f2a44"/>
+    </marker>
+  </defs>
+  <rect x="95" y="10" width="170" height="32" rx="6" fill="#fff" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="180" y="31" font-size="12" text-anchor="middle" fill="#1f2a44">grep -q ERROR app.log</text>
+  <line x1="150" y1="42" x2="88" y2="84" stroke="#1f2a44" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="210" y1="42" x2="272" y2="84" stroke="#1f2a44" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="96" y="62" font-size="11" text-anchor="middle" fill="#1d6fd1">status 0</text>
+  <text x="270" y="62" font-size="11" text-anchor="middle" fill="#b4232c">not 0</text>
+  <rect x="14" y="86" width="150" height="36" rx="6" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="89" y="102" font-size="11" text-anchor="middle" fill="#1f2a44">then</text>
+  <text x="89" y="116" font-size="11" text-anchor="middle" fill="#1f2a44">echo "look at the log"</text>
+  <rect x="196" y="86" width="150" height="36" rx="6" fill="#f2b880" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="271" y="102" font-size="11" text-anchor="middle" fill="#1f2a44">else</text>
+  <text x="271" y="116" font-size="11" text-anchor="middle" fill="#1f2a44">echo "all quiet"</text>
+  <line x1="89" y1="122" x2="160" y2="152" stroke="#1f2a44" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="271" y1="122" x2="200" y2="152" stroke="#1f2a44" stroke-width="1.5" marker-end="url(#arr)"/>
+  <rect x="150" y="154" width="60" height="28" rx="6" fill="#fff" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="180" y="173" font-size="12" text-anchor="middle" fill="#1f2a44">fi</text>
+</svg>
+```
+:::
+
+::: context fi-backwards Why fi, and why done
+The shell's grammar comes from the Bourne shell, which Stephen Bourne wrote at Bell Labs in the 1970s. He borrowed an idea from a language called ALGOL 68: close a block with its opening word spelled backwards. So `if` ends with `fi`, and `case`, a command you may meet later, ends with `esac`. ALGOL closed a loop's `do` with `od`, but `od` was already the name of a Unix command, so the shell's loops end with `done` instead.
+:::
+
+::: context condition The question an if asks
+A **condition** is a question with a yes-or-no answer. In most programming languages it is a comparison, like `x > 3` in Python. In the shell it is always a command, and the answer is its exit status: `0` means yes, anything else means no. Next lesson you meet a command built for asking questions about files, words and numbers, so your conditions can ask much more than "did grep find it?".
+:::
+
+::: context go-no-go Go or no-go
+Before a launch, the launch director polls each team, and each answers "go" or "no-go". One no-go and the count stops. Build scripts work the same way. A line like `if make test; then echo "go"; else echo "no-go"; exit 1; fi` runs the tests and stops the script unless they all pass. Continuous integration (CI) systems, which build and test every change automatically, rely on exactly these exit statuses to decide whether a change may go ahead.
+:::
 --- task
-Write a one-line `if` that prints `config found` when `config.txt` exists, and otherwise creates it containing `mode=dev` and prints `config created`. Run the same line **twice**: the first run creates the file, the second finds it.
+Write a one-line `if` that prints `app.log: look at the log` when `app.log` contains `ERROR`, and `app.log: all quiet` when it does not. Use `grep -q` as the condition. Then write the same line for `radio.log`, printing `radio.log: look at the log` or `radio.log: all quiet`.
+--- starter
+echo "08:00 INFO systems up" > app.log
+echo "08:02 ERROR disk almost full" >> app.log
+echo "08:00 INFO radio check ok" > radio.log
+echo "08:05 INFO signal strong" >> radio.log
+--- solution
+if grep -q ERROR app.log; then echo "app.log: look at the log"; else echo "app.log: all quiet"; fi
+if grep -q ERROR radio.log; then echo "radio.log: look at the log"; else echo "radio.log: all quiet"; fi
+--- hint
+The shape is `if CONDITION; then …; else …; fi`, and the condition is `grep -q ERROR app.log`.
+--- hint
+`if grep -q ERROR app.log; then echo "app.log: look at the log"; else echo "app.log: all quiet"; fi`
+--- hint
+For the second line, press the Up arrow to bring the first one back, and change `app.log` to `radio.log` in all three places.
+--- check shell | app.log's errors were spotted
+printed-line app.log: look at the log
+not-printed app.log: all quiet
+--- check shell | radio.log was reported as quiet
+printed-line radio.log: all quiet
+not-printed radio.log: look at the log
+--- check shell | Decided with if, on grep's exit status
+used if grep -q
+used then
+used else
+used fi
+
+=== term3-06 | Decisions: asking questions with [ … ]
+--- teach
+Last lesson, `if` ran a command and looked at its exit status. But often the question is not "did this command work?". It is "is there a file called `config.txt`?", or "is this number bigger than 10?". The shell has a command whose only job is to answer questions like those.
+
+Think of a yes-or-no quiz card. You hold it up, and the answer is a nod or a shake of the head. Nothing is said out loud.
+
+### The test command
+
+**`[ … ]`** is a command, also called **`test`**, that checks one thing. It prints nothing. It answers with its exit status: `0` for true, `1` for false. You can see the answer with `echo $?`:
+
+```
+~/project $ [ -f notes.txt ]
+~/project $ echo $?
+0
+~/project $ [ -f nope.txt ]
+~/project $ echo $?
+1
+```
+
+`[ -f notes.txt ]` and `test -f notes.txt` do exactly the same thing. Almost everyone writes the brackets, because they read well after `if`.
+
+### Questions about files
+
+- `-f` asks "is there a **file** with this name?"
+- `-d` asks "is there a **directory**, a folder, with this name?"
+- `-e` asks "does it **exist** at all, file or folder?"
+
+```
+~/project $ if [ -d logs ]; then echo "logs ready"; else mkdir logs; echo "logs made"; fi
+logs made
+~/project $ if [ -d logs ]; then echo "logs ready"; else mkdir logs; echo "logs made"; fi
+logs ready
+```
+
+The same line gives a different answer the second time, because the first run made the folder. The `else` branch holds two commands, joined by `;`.
+
+### Questions about words
+
+`=` asks "are these two strings equal?" A **string** is a piece of text. `!=` asks "are they different?"
+
+```
+~/project $ mode=prod
+~/project $ if [ "$mode" = "prod" ]; then echo "careful: production"; else echo "test mode"; fi
+careful: production
+```
+
+`-z` asks "is this string empty?", z for "zero length":
+
+```
+~/project $ name=""
+~/project $ if [ -z "$name" ]; then echo "no name given"; fi
+no name given
+```
+
+### Questions about numbers
+
+Numbers have their own two-letter operators, each with a dash in front:
+
+- `-eq` equal, `-ne` not equal
+- `-lt` less than, `-le` less than or equal
+- `-gt` greater than, `-ge` greater than or equal
+
+```
+~/project $ count=12
+~/project $ if [ "$count" -gt 10 ]; then echo "more than ten"; fi
+more than ten
+```
+
+You cannot use `>` here. The shell has already given `>` [[another job|why-not-greater-than]]. And `=` compares [[text, not amounts|strings-versus-numbers]].
+
+### Turning a question around: !
+
+A `!` in front flips the answer, so true becomes false and false becomes true. `[ ! -f config.txt ]` asks "is there **no** file called `config.txt`?":
+
+```
+~/project $ if [ ! -f config.txt ]; then echo "no config yet"; fi
+no config yet
+```
+
+### The spaces matter
+
+`[` is the name of a [[command|bracket-is-a-command]], so it needs a space after it, like any command name. `[-f x]` asks the shell to run a command called `[-f`, and you get `command not found`. The closing `]` must be its own word too: `[ -f x]` fails with an error saying the `]` is missing.
+
+**Watch out:** put double quotes around variables inside the brackets. If `$mode` is empty, `[ $mode = prod ]` turns into `[ = prod ]`. That is not a sensible question, and bash answers with [[an error about a unary operator|unary-operator]]: `unary operator expected`. With quotes, `[ "$mode" = prod ]` stays a proper comparison, between an empty string and `prod`, and it is false. You will use checks like these to make scripts [[refuse bad input|guard-clauses]].
+
+::: context why-not-greater-than Why -gt and not >
+The shell reads `>` as "send the output to a file" before `[` ever sees it. So `[ 12 > 10 ]` does not compare anything. It runs `[ 12 ]`, which is true because `12` is not an empty string, and it quietly creates an empty file called `10`. That is why numbers get their own letter operators: `-gt` can never be mistaken for a redirection.
+:::
+
+::: context strings-versus-numbers Text order and number order
+`=` and `!=` compare text, letter by letter. `-eq`, `-lt` and the rest compare amounts. The two can disagree. As numbers, 10 is bigger than 9, so `[ 10 -lt 9 ]` is false. As text, "10" comes before "9", because the first characters are compared first and "1" comes before "9". It is the same reason `sort` put 10 before 9 until you added `-n` in the intermediate course. When you mean numbers, use the number operators.
+:::
+
+::: context bracket-is-a-command [ really is a command
+On most Linux systems there is a program file called `[`, next to `ls` and `cp`, and bash also has its own copy built in. `type [` answers `[ is a shell builtin`. That is why the rules feel strict: the shell does not see brackets as punctuation. It sees a command named `[`, followed by arguments, and `[` insists that its last argument is `]`. Each part, `-f`, the name and `]`, has to be a separate word, with spaces between them.
+:::
+
+::: context unary-operator What "unary operator expected" means
+A **unary** operator works on one thing, like `-f notes.txt`. A **binary** operator sits between two things, like `a = b`. When `$mode` is empty and unquoted, it disappears completely, so `[` is left with `= prod`. It sees a lonely `=` at the front, where only a one-thing test could go, and complains.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 120" font-family="Inter, Arial, sans-serif">
+  <text x="10" y="22" font-size="12" fill="#1f2a44">[ $mode = prod ]   (mode is empty)</text>
+  <rect x="10" y="30" width="30" height="26" rx="4" fill="#fff" stroke="#1f2a44"/>
+  <text x="25" y="48" font-size="12" text-anchor="middle" fill="#1f2a44">[</text>
+  <rect x="48" y="30" width="30" height="26" rx="4" fill="#fff" stroke="#b4232c" stroke-width="2"/>
+  <text x="63" y="48" font-size="12" text-anchor="middle" fill="#b4232c">=</text>
+  <rect x="86" y="30" width="50" height="26" rx="4" fill="#fff" stroke="#1f2a44"/>
+  <text x="111" y="48" font-size="12" text-anchor="middle" fill="#1f2a44">prod</text>
+  <rect x="144" y="30" width="30" height="26" rx="4" fill="#fff" stroke="#1f2a44"/>
+  <text x="159" y="48" font-size="12" text-anchor="middle" fill="#1f2a44">]</text>
+  <text x="186" y="48" font-size="11" fill="#b4232c">= comes first: broken</text>
+  <text x="10" y="80" font-size="12" fill="#1f2a44">[ "$mode" = prod ]</text>
+  <rect x="10" y="88" width="30" height="26" rx="4" fill="#fff" stroke="#1f2a44"/>
+  <text x="25" y="106" font-size="12" text-anchor="middle" fill="#1f2a44">[</text>
+  <rect x="48" y="88" width="40" height="26" rx="4" fill="#8fb8f0" stroke="#1d6fd1" stroke-width="2" stroke-dasharray="4 3"/>
+  <text x="68" y="106" font-size="11" text-anchor="middle" fill="#1f2a44">empty</text>
+  <rect x="96" y="88" width="30" height="26" rx="4" fill="#fff" stroke="#1f2a44"/>
+  <text x="111" y="106" font-size="12" text-anchor="middle" fill="#1f2a44">=</text>
+  <rect x="134" y="88" width="50" height="26" rx="4" fill="#fff" stroke="#1f2a44"/>
+  <text x="159" y="106" font-size="12" text-anchor="middle" fill="#1f2a44">prod</text>
+  <rect x="192" y="88" width="30" height="26" rx="4" fill="#fff" stroke="#1f2a44"/>
+  <text x="207" y="106" font-size="12" text-anchor="middle" fill="#1f2a44">]</text>
+  <text x="234" y="106" font-size="11" fill="#1d6fd1">x = y: fine</text>
+</svg>
+```
+:::
+
+::: context guard-clauses Checking before doing
+Careful scripts ask their questions first. Is the config file there? Was a file name given? Is the number in a safe range? Only then do they start the real work. Engineers call these checks **guard clauses**. Flight software build and test scripts are full of them, because failing early with a clear message beats failing halfway with a confusing one. In the last lesson of this course you will write a tool that guards its own input this way.
+:::
+--- task
+Write a one-line `if` that uses `[ -f config.txt ]`. It prints `config found` when `config.txt` exists. Otherwise it creates `config.txt` containing `mode=dev` and then prints `config created`. Run the same line **twice**: the first run creates the file, the second finds it.
 --- starter
 --- solution
 if [ -f config.txt ]; then echo "config found"; else echo "mode=dev" > config.txt; echo "config created"; fi
 if [ -f config.txt ]; then echo "config found"; else echo "mode=dev" > config.txt; echo "config created"; fi
 --- hint
-The shape is `if [ -f config.txt ]; then …; else …; fi`.
+The shape is `if [ -f config.txt ]; then …; else …; fi`. Mind the spaces inside the brackets.
 --- hint
 The `else` branch has two commands: `echo "mode=dev" > config.txt; echo "config created"`.
 --- hint
@@ -260,30 +1425,242 @@ file config.txt == mode=dev
 printed-line config found
 used if [ -f
 
-=== term3-07 | Scripts: commands saved in a file
+=== term3-07a | Scripts: commands saved in a file
 --- teach
-A **script** is a text file of commands, one per line. Running it runs them in order, so a task you do often becomes one command.
+Your loops and `if` lines are getting long. Typing one again every time you need it would be slow, and easy to get wrong. So save it in a file.
+
+Think of a recipe card. You work out the steps once and write them down. After that, anyone can follow the card, as many times as they like, and get the same result.
+
+### A script
+
+A **[[script|script-word]]** is a text file of commands, one per line. `bash hello.sh` reads the file and runs its lines in order, as if you had typed them. You ran a ready-made one, `greet.sh`, in the export lesson. Now you will write your own.
+
+This practice terminal has no text editor, so build the file with `echo`, using `>` for the first line and `>>` to add each line after it:
 
 ```
-~/project $ bash backup.sh notes.txt
+~/project $ echo 'echo "Hello from a script"' > hello.sh
+~/project $ cat hello.sh
+echo "Hello from a script"
+~/project $ bash hello.sh
+Hello from a script
 ```
 
-Inside the script, `$1` is the first argument, `$2` the second, `$#` how many there are, and `"$@"` all of them. Scripts run in a **child** shell, so a `cd` inside one does not move you.
+The outer single quotes hold the whole line you want saved. Everything inside them, double quotes included, goes into the file exactly as typed.
 
-To run a script by its name, like a real program:
+### Arguments: $1, $2, …
 
-1. start it with a **shebang** line, `#!/bin/bash`, which says which program runs it;
-2. make it executable: `chmod +x backup.sh`;
-3. run it as `./backup.sh`. The `./` says "the one in this folder" — the shell does not look in the current folder for commands, so plain `backup.sh` gives `command not found`.
-
-This practice terminal has no text editor, so build files with `echo`. Use **single quotes** around each line: they stop `$1` from being expanded now, when you write the file, so it is expanded later, when the script runs.
+The words you type after the script's name are its **[[arguments|arguments]]**. Inside the script, `$1` means "the first argument", `$2` "the second", and so on:
 
 ```
-echo '#!/bin/bash' > hello.sh
-echo 'echo "Hello, $1"' >> hello.sh
+~/project $ echo 'echo "Hello, $1"' > hi.sh
+~/project $ bash hi.sh Ada
+Hello, Ada
+~/project $ bash hi.sh Lin
+Hello, Lin
 ```
+
+One script, different results, depending on what you give it.
+
+### How many: $#
+
+`$#` means "how many arguments there are":
+
+```
+~/project $ echo 'echo "You gave $# names"' > count.sh
+~/project $ bash count.sh Ada Lin Sam
+You gave 3 names
+```
+
+### All of them: "$@"
+
+`"$@"` means "all the arguments, each one kept whole". It fits perfectly as the list of a `for` loop:
+
+```
+~/project $ echo 'for name in "$@"; do echo "Hello, $name"; done' > all.sh
+~/project $ bash all.sh Ada "Sally Ride"
+Hello, Ada
+Hello, Sally Ride
+```
+
+`"Sally Ride"` is one argument, because you typed it in quotes, and `"$@"` keeps it as one. The [[quotes around it matter|quoted-at]].
+
+### A script runs in its own shell
+
+A script runs in a **child** shell, a copy of your shell, like the child processes from the export lesson. So a `cd` inside a script moves only that copy. When the script ends, you are still where you were:
+
+```
+~/project $ mkdir deep
+~/project $ echo 'cd deep' > move.sh
+~/project $ echo 'pwd' >> move.sh
+~/project $ bash move.sh
+/home/you/project/deep
+~/project $ pwd
+/home/you/project
+```
+
+**Watch out:** build each line with **single** quotes. Double quotes let the shell fill in `$1` **now**, while you are writing the file, and right now `$1` is empty. So it vanishes:
+
+```
+~/project $ echo "echo Hello, $1" > oops.sh
+~/project $ cat oops.sh
+echo Hello,
+```
+
+With single quotes, `$1` goes into the file untouched, and is filled in [[later, when the script runs|two-moments]]. `cat` shows you what really went into the file, so check with it.
+
+::: context script-word Why "script"
+In a theatre, the script tells the actors what to say and do, in order. A shell script does the same for the computer. People also call scripts "shell scripts" or "bash scripts", and give them names ending in `.sh`. The ending is only a label for people; `bash` will run the file whatever it is called. Most engineering projects keep a handful of them, with names like `build.sh` or `run_tests.sh`, so everyone on the team runs the same steps in the same way.
+:::
+
+::: context arguments The words after the name
+An **argument** is a piece of information you hand to a command. In `cp notes.txt backup/`, `cp` gets two arguments. The shell cuts the line at spaces, and quotes keep a phrase together. A script sees its arguments as numbered variables, and `$0` holds the script's own name.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 110" font-family="Inter, Arial, sans-serif">
+  <rect x="10" y="20" width="56" height="30" rx="4" fill="#fff" stroke="#6c7a93"/>
+  <text x="38" y="40" font-size="12" text-anchor="middle" fill="#6c7a93">bash</text>
+  <rect x="74" y="20" width="82" height="30" rx="4" fill="#fff" stroke="#1f2a44"/>
+  <text x="115" y="40" font-size="12" text-anchor="middle" fill="#1f2a44">greet.sh</text>
+  <rect x="164" y="20" width="56" height="30" rx="4" fill="#8fb8f0" stroke="#1d6fd1" stroke-width="1.5"/>
+  <text x="192" y="40" font-size="12" text-anchor="middle" fill="#1f2a44">Ada</text>
+  <rect x="228" y="20" width="120" height="30" rx="4" fill="#8fb8f0" stroke="#1d6fd1" stroke-width="1.5"/>
+  <text x="288" y="40" font-size="12" text-anchor="middle" fill="#1f2a44">Sally Ride</text>
+  <text x="115" y="70" font-size="12" text-anchor="middle" fill="#1f2a44">$0</text>
+  <text x="192" y="70" font-size="12" text-anchor="middle" fill="#1d6fd1">$1</text>
+  <text x="288" y="70" font-size="12" text-anchor="middle" fill="#1d6fd1">$2</text>
+  <text x="180" y="98" font-size="12" text-anchor="middle" fill="#1f2a44">$# is 2: the script's name is not counted</text>
+</svg>
+```
+:::
+
+::: context quoted-at Why "$@" needs its quotes
+Without quotes, `$@` gets cut at spaces like any other variable, so `"Sally Ride"` arrives in the loop as two names, `Sally` and `Ride`. With quotes, `"$@"` is special: it becomes one quoted word per argument, exactly as they were given. There is a cousin, `"$*"`, which glues all the arguments into one single word. For loops, `"$@"` is nearly always the one you want.
+:::
+
+::: context two-moments Two moments: writing and running
+A script line meets the shell twice. First when you write it with `echo`: your shell reads the line and fills in any variables not protected by single quotes. Later when the script runs: the new shell reads the saved line and fills in the variables again, this time with the script's arguments. Single quotes skip the first filling, so the variables wait for the second, where they belong.
+:::
 --- task
-Create `backup.sh`, a script that copies the file named in its first argument to the same name with `.bak` added, then prints `backed up <name>`. Run it on `notes.txt` with `bash`. Then make it executable and run it as `./backup.sh todo.txt`.
+Build a script called `greet.sh` with these three lines, adding them one at a time with `echo '…'` (`>` for the first, `>>` for the others):
+
+1. `echo "First up: $1"`
+2. `echo "You gave $# names"`
+3. `for name in "$@"; do echo "Hello, $name"; done`
+
+Then run it with three names: `bash greet.sh Ada Lin "Sally Ride"`.
+--- starter
+--- solution
+echo 'echo "First up: $1"' > greet.sh
+echo 'echo "You gave $# names"' >> greet.sh
+echo 'for name in "$@"; do echo "Hello, $name"; done' >> greet.sh
+bash greet.sh Ada Lin "Sally Ride"
+--- hint
+The first line is `echo 'echo "First up: $1"' > greet.sh`. The single quotes keep `$1` out of your shell's hands.
+--- hint
+Add the other two lines with `>>`. Then `cat greet.sh` should show all three lines, with every `$` still there.
+--- hint
+Run it with `bash greet.sh Ada Lin "Sally Ride"`, keeping the quotes around `Sally Ride` so it stays one name.
+--- check shell | The script uses its arguments
+file greet.sh contains $1
+file greet.sh contains $#
+file greet.sh contains "$@"
+--- check shell | Run with three names, it counts them and greets each one whole
+ran bash greet.sh
+printed-line First up: Ada
+printed-line You gave 3 names
+printed-line Hello, Lin
+printed-line Hello, Sally Ride
+
+=== term3-07 | Scripts you run by name: #!, chmod +x and ./
+--- teach
+Last lesson you wrote scripts and ran them with `bash greet.sh`. Real programs like `ls` or `git` you run by their name alone. This lesson makes your script work like that, in three steps.
+
+Think of a key card for a door. The card has to say which door it opens, the door has to be set to accept it, and you have to be standing at the right door. Scripts need the same three things.
+
+Recall the tools from last lesson: inside a script, `$1` is the first argument, `$2` the second, `$#` how many there are, and `"$@"` all of them. `"$1.bak"` is the first argument with `.bak` stuck on the end. And a script runs in a child shell, so a `cd` inside it does not move you.
+
+### Step 1: the shebang line
+
+The first line of the script should be `#!/bin/bash`. It says which program should run the file, here `bash`, which lives in the folder `/bin`. This line is called the **[[shebang|shebang]]**, from the names of its first two characters.
+
+```
+~/project $ echo '#!/bin/bash' > hi.sh
+~/project $ echo 'echo "Hello, $1"' >> hi.sh
+~/project $ cat hi.sh
+#!/bin/bash
+echo "Hello, $1"
+```
+
+Note the `>` for the shebang, so it lands on the very first line, and `>>` for the lines after it.
+
+### Step 2: make it executable
+
+Files are not allowed to run as programs until you say so. Each file carries **[[permissions|permissions]]**: who may read it, change it, or run it. A file that may be run is **executable**. `chmod +x hi.sh` makes it so. `chmod` is "change mode", and `+x` is "add execute permission".
+
+```
+~/project $ ./hi.sh Ada
+bash: ./hi.sh: Permission denied
+~/project $ chmod +x hi.sh
+~/project $ ./hi.sh Ada
+Hello, Ada
+```
+
+### Step 3: run it as ./
+
+`./hi.sh` means "the `hi.sh` in this folder". A single dot, `.`, means "this folder", the way `..` means "the folder above". You need it because the shell does not look in the current folder for commands. It only searches the folders listed in `PATH`, the variable you met in the export lesson. So plain `hi.sh` [[is not found|dot-slash]]:
+
+```
+~/project $ hi.sh Ada
+bash: hi.sh: command not found
+```
+
+`bash hi.sh` still works too. It runs the file with bash directly, so it needs neither the shebang nor `chmod`.
+
+**Watch out:** the shebang must be the **first line**, starting with the very first characters, `#!`. If you add it with `>>` after other lines, it is no longer at the top, and the shell reads it as an ordinary [[comment|comment]] and ignores it.
+
+Making a script executable is a real part of how teams [[share tools|executable-in-git]].
+
+::: context shebang Hash, bang: shebang
+Programmers call `#` "hash" and `!` "bang", so `#!` is "hash-bang", squeezed to "shebang". When you run `./hi.sh`, the operating system looks at the file's first two characters. If they are `#!`, it reads the rest of that line as the program to run, and hands it the file. You will also see `#!/usr/bin/env bash`, which asks the system to find `bash` wherever it is installed. Both are common.
+:::
+
+::: context permissions Read, write, execute
+`ls -l` shows each file's permissions as ten characters. The first says what it is: `-` for a file, `d` for a folder. Then come three groups of three: for the owner, for the owner's group, and for everyone else. Each group says `r` read, `w` write, `x` execute, or `-` for "not allowed".
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 130" font-family="Inter, Arial, sans-serif">
+  <rect x="30" y="20" width="30" height="36" rx="4" fill="#fff" stroke="#6c7a93" stroke-width="1.5"/>
+  <text x="45" y="44" font-size="16" text-anchor="middle" fill="#1f2a44">-</text>
+  <rect x="70" y="20" width="84" height="36" rx="4" fill="#8fb8f0" stroke="#1d6fd1" stroke-width="1.5"/>
+  <text x="112" y="44" font-size="16" text-anchor="middle" fill="#1f2a44">rwx</text>
+  <rect x="164" y="20" width="84" height="36" rx="4" fill="#fff" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="206" y="44" font-size="16" text-anchor="middle" fill="#1f2a44">r-x</text>
+  <rect x="258" y="20" width="84" height="36" rx="4" fill="#fff" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="300" y="44" font-size="16" text-anchor="middle" fill="#1f2a44">r-x</text>
+  <text x="45" y="76" font-size="11" text-anchor="middle" fill="#6c7a93">file</text>
+  <text x="112" y="76" font-size="11" text-anchor="middle" fill="#1d6fd1">owner</text>
+  <text x="206" y="76" font-size="11" text-anchor="middle" fill="#1f2a44">group</text>
+  <text x="300" y="76" font-size="11" text-anchor="middle" fill="#1f2a44">everyone else</text>
+  <text x="180" y="108" font-size="12" text-anchor="middle" fill="#1f2a44">r read   w write   x execute   - not allowed</text>
+</svg>
+```
+
+`-rwxr-xr-x` means: a file, which the owner may read, change and run, and everyone else may read and run.
+:::
+
+::: context dot-slash Why the shell ignores the current folder
+It is a safety rule. If the shell ran programs from whatever folder you happened to be in, someone could leave a fake program called `ls` in a shared folder, and you would run it the moment you typed `ls` there. So the shell only runs programs from the trusted folders in `PATH`, unless you point at one yourself with a path such as `./hi.sh`. `echo $PATH` shows the list, folder names separated by colons.
+:::
+
+::: context comment Lines the shell skips
+In bash, a `#` at the start of a word begins a **comment**: the shell ignores the rest of that line. Comments are notes for people, such as `# copy the file before changing it`. The shebang is a clever trick: to bash it looks like a comment, so bash skips it, while the operating system reads it as the instruction "run this with bash". That only works on the very first line.
+:::
+
+::: context executable-in-git Engineers share runnable scripts
+Git, the tool you will meet in the Git course, remembers whether a file is executable, not only what is in it. So when you run `chmod +x build.sh` and commit it, everyone who downloads the project gets a script they can run straight away with `./build.sh`. Flight software teams keep build, test and check scripts in the project this way, and CI systems run the very same scripts on every change.
+:::
+--- task
+Create `backup.sh`, a script that starts with the shebang line `#!/bin/bash`, then copies the file named in its first argument to the same name with `.bak` added, then prints `backed up <name>`. Run it on `notes.txt` with `bash`. Then make it executable and run it as `./backup.sh todo.txt`.
 --- starter
 echo "remember the fuel" > notes.txt
 echo "launch" > todo.txt
@@ -295,7 +1672,7 @@ bash backup.sh notes.txt
 chmod +x backup.sh
 ./backup.sh todo.txt
 --- hint
-Three lines, each with `echo '…'`: the shebang (`>`), then `cp "$1" "$1.bak"` and `echo "backed up $1"` (`>>`).
+Three lines, each with `echo '…'`: the shebang first (with `>`), then `cp "$1" "$1.bak"` and `echo "backed up $1"` (with `>>`).
 --- hint
 `bash backup.sh notes.txt` runs it. `cat backup.sh` shows what you wrote.
 --- hint
@@ -310,21 +1687,150 @@ ran ./backup.sh todo.txt
 
 === term3-08 | Find and replace: sed
 --- teach
-`sed` (the **s**tream **ed**itor) changes text as it flows through. Its most used command is `s`, substitute:
+Last lesson you built scripts out of lines of text. This lesson gives you a tool that changes the text inside files, with no editor at all.
+
+You have probably used "find and replace" in a word processor: type what to find, type what to put instead, press Replace. `sed` does the same from the command line.
+
+### Substitute: s/old/new/
+
+**`sed`** is the **s**tream **ed**itor. It reads text line by line as it flows past, like water through a pipe, changes it, and prints the result. This flowing text is called a **[[stream|stream]]**. Its most used command is `s`, **substitute**:
 
 ```
-sed 's/localhost/db.internal/' settings.conf
+~/project $ cat settings.conf
+host=localhost
+debug=true
+port=5432
+~/project $ sed 's/localhost/db.internal/' settings.conf
+host=db.internal
+debug=true
+port=5432
 ```
 
-- That **prints** the changed text. The file itself is unchanged until you add `-i` (in place): `sed -i 's/a/b/' file`.
-- `s` changes only the **first** match on each line. Add `g` at the end to change every match: `s/a/b/g`.
-- The pattern is a regular expression: `.` is any character, `^` the start of a line, `$` the end.
-- When the text contains slashes, pick another separator: `s|/usr/local|/opt|`.
-- `/pattern/d` deletes matching lines; `sed -n '/pattern/p'` prints only matching lines.
+Read `s/localhost/db.internal/` as "substitute: find `localhost`, put `db.internal`". The slashes separate the three parts. The single quotes around it stop the shell from touching any of the characters inside.
 
-The two classic surprises are forgetting `g` (only the first match changes) and forgetting `-i` (the output looks right, but the file never changed). Because `-i` really rewrites the file, check the command without `-i` first.
+### It prints; the file stays the same
+
+`sed` prints the changed text. The file itself is not changed:
+
+```
+~/project $ cat settings.conf
+host=localhost
+debug=true
+port=5432
+```
+
+That is useful: you can look at the result safely, as many times as you like.
+
+### Every match: g
+
+`s` changes only the **first** match on each line. Add `g`, for "global", after the last slash to change every match:
+
+```
+~/project $ cat url.txt
+http://localhost:5432/localhost
+~/project $ sed 's/localhost/db.internal/' url.txt
+http://db.internal:5432/localhost
+~/project $ sed 's/localhost/db.internal/g' url.txt
+http://db.internal:5432/db.internal
+```
+
+### Changing the file itself: -i
+
+`-i` means "**in place**": `sed` rewrites the file instead of printing. It prints nothing, so look with `cat` afterwards:
+
+```
+~/project $ sed -i 's/localhost/db.internal/g' url.txt
+~/project $ cat url.txt
+http://db.internal:5432/db.internal
+```
+
+### Patterns, not only words
+
+What goes between the first two slashes is a **[[regular expression|regular-expression]]**, like the patterns you gave `grep`: `.` means any one character, `^` the start of a line, `$` the end of a line.
+
+```
+~/project $ sed 's/^port/PORT/' settings.conf
+host=localhost
+debug=true
+PORT=5432
+~/project $ sed 's/true$/false/' settings.conf
+host=localhost
+debug=false
+port=5432
+```
+
+### Text with slashes in it
+
+If the text itself holds slashes, like a folder path, pick another separator. `sed` uses whatever character comes right after the `s`, so `s|/usr/local|/opt|` replaces `/usr/local` with `/opt`:
+
+```
+~/project $ echo "path=/usr/local/bin" > paths.conf
+~/project $ sed 's|/usr/local|/opt|' paths.conf
+path=/opt/bin
+```
+
+### Deleting lines: d
+
+`/pattern/d` deletes every line that matches the pattern. Here, the line that starts with `debug`:
+
+```
+~/project $ sed '/^debug/d' settings.conf
+host=localhost
+port=5432
+```
+
+### Printing only some lines: -n and p
+
+`-n` means "**no** automatic printing", and `p` means "print". Together, `sed -n '/pattern/p'` prints only the lines that match, much like `grep`:
+
+```
+~/project $ sed -n '/^port/p' settings.conf
+port=5432
+```
+
+**Watch out:** there are two classic surprises. Forgetting `g` means only the first match on each line changes. Forgetting `-i` means the output looks right, but the file never changed. And because `-i` really does rewrite the file, [[check the command without -i first|check-before-i]], then add `-i` when the output is what you want.
+
+`sed` is one of the oldest tools you have met, and it still turns up [[all over real projects|sed-for-real]].
+
+::: context stream Text that flows
+A **stream** is data that arrives a piece at a time, like water from a tap, rather than all at once. You met two streams in the intermediate course: standard output and standard error. `sed` takes one line in, applies its commands, sends the line out, and reads the next. It never needs the whole file in memory, so it can edit a file far bigger than the computer's memory, or text arriving through a pipe.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 120" font-family="Inter, Arial, sans-serif">
+  <defs>
+    <marker id="flow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#1f2a44"/>
+    </marker>
+  </defs>
+  <text x="10" y="40" font-size="11" fill="#1f2a44">host=localhost</text>
+  <text x="10" y="60" font-size="11" fill="#1f2a44">debug=true</text>
+  <text x="10" y="80" font-size="11" fill="#1f2a44">port=5432</text>
+  <line x1="102" y1="58" x2="130" y2="58" stroke="#1f2a44" stroke-width="1.5" marker-end="url(#flow)"/>
+  <rect x="132" y="30" width="100" height="56" rx="8" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="182" y="54" font-size="13" text-anchor="middle" fill="#1f2a44">sed</text>
+  <text x="182" y="72" font-size="11" text-anchor="middle" fill="#1f2a44">one line at a time</text>
+  <line x1="232" y1="58" x2="258" y2="58" stroke="#1f2a44" stroke-width="1.5" marker-end="url(#flow)"/>
+  <text x="262" y="40" font-size="11" fill="#1d6fd1">host=db.internal</text>
+  <text x="262" y="60" font-size="11" fill="#1f2a44">debug=true</text>
+  <text x="262" y="80" font-size="11" fill="#1f2a44">port=5432</text>
+  <text x="182" y="110" font-size="11" text-anchor="middle" fill="#6c7a93">s/localhost/db.internal/</text>
+</svg>
+```
+:::
+
+::: context regular-expression Patterns, again
+A **regular expression** is a small language for describing text: "a line that starts with port", "any character, then 3". `grep`, `sed` and most programming languages understand them. Because `.` means "any character", `s/5.3/X/` also matches `5a3` or `593`. To mean a real dot, put a backslash in front: `\.`. You will see `\.` in the downloads-tidying lesson later in this course.
+:::
+
+::: context check-before-i Test first, then write
+A `sed -i` command can change hundreds of lines in one go, and there is no undo. So engineers run it without `-i` first and read the output, or send it through `head` to see the first few lines. `sed -i.bak 's/a/b/' file` is another safety net: it writes the change and keeps the original as `file.bak`. On a Mac, plain `-i` needs an extra empty argument, `sed -i '' 's/a/b/' file`. On Linux, which this terminal copies, `-i` alone is fine.
+:::
+
+::: context sed-for-real Where sed shows up
+`sed` was written at Bell Labs in the early 1970s, and it is still on nearly every Linux and Mac computer. Build scripts use it to stamp a version number into a file, to switch a setting from a test value to a real one, or to clean up log files before counting their lines. When a job is "change this text in every file", the answer is often a `for` loop with a `sed -i` inside it.
+:::
 --- task
-In `settings.conf`, change **every** `localhost` to `db.internal` — one line has it twice — in the file itself. Then, also with `sed -i`, delete the line that starts with `debug`.
+In `settings.conf`, change **every** `localhost` to `db.internal`, in the file itself. One line has it twice. Then, also with `sed -i`, delete the line that starts with `debug`.
 --- starter
 echo "host=localhost" > settings.conf
 echo "url=http://localhost:5432/localhost" >> settings.conf
@@ -336,7 +1842,9 @@ sed -i '/^debug/d' settings.conf
 --- hint
 Try it without `-i` first: `sed 's/localhost/db.internal/g' settings.conf`. The `g` catches the second match on the url line.
 --- hint
-When it looks right, add `-i`. Then `sed -i '/^debug/d' settings.conf` removes the debug line.
+When the output looks right, add `-i` to change the file. Then use `/^debug/d`, also with `-i`, to delete the debug line.
+--- hint
+`sed -i 's/localhost/db.internal/g' settings.conf`, then `sed -i '/^debug/d' settings.conf`. `cat settings.conf` shows the result.
 --- check shell | Every localhost is now db.internal, and the debug line is gone
 file settings.conf ~= host=db.internal\nurl=http://db.internal:5432/db.internal\nport=5432
 --- check shell | Edited in place with sed
