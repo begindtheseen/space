@@ -1,7 +1,7 @@
 ---
 id: l04-choosing-a-base-image
 title: Choosing a base image, and the Alpine trap
-minutes: 20
+minutes: 19
 covers:
   - 'Base-image choice: debian-slim vs alpine and the musl trap for scientific Python'
 ---
@@ -27,7 +27,7 @@ Linux has two C libraries you will meet in containers:
 - **glibc**, the GNU C Library. Debian, Ubuntu, Red Hat and nearly every desktop and server Linux use it.
 - **musl** (pronounced "muscle"), a small, clean C library written from scratch. Alpine uses it, together with **[[BusyBox|busybox]]** for its command-line tools.
 
-Both are good pieces of software. They are simply not interchangeable for compiled code.
+Both are good pieces of software. They are not interchangeable for compiled code.
 
 ## Debian slim and Alpine side by side
 
@@ -149,7 +149,7 @@ real 0m 16.47s
 
 Read it line by line. `numpy-1.24.4.tar.gz` is the source archive, not a wheel: NumPy's first musllinux wheels came with the 1.25 series, so for 1.24.4 there was none to take. Pip then tried to build, found no C compiler, and failed after about 16 seconds.
 
-On a real team the next step is to add compilers and libraries to the Dockerfile with Alpine's package manager, `apk`, and try again. The build then really does compile NumPy's C code, which takes minutes where the wheel took seconds, and it repeats every time that layer's cache is invalidated. (The sandbox used for this lesson could not reach Alpine's package servers, so no build time is quoted here.)
+On a real team the next step is to add compilers and libraries to the Dockerfile with Alpine's package manager, `apk`, and try again. The build then really does compile NumPy's C code, which takes minutes where the wheel took seconds, and it repeats every time that layer's cache is invalidated.
 :::
 
 So does the trap still bite in 2026, now that NumPy and SciPy publish musllinux wheels? Asking pip directly, on Python 3.12 for x86-64, with `pip download --only-binary=:all:` (which refuses anything but a wheel):
@@ -196,9 +196,9 @@ Debian slim and Alpine are the two you will meet most, but not the only ones.
 - **Full Debian or Ubuntu images** (`python:3.12`, `ubuntu:24.04`): bigger, with more tools preinstalled. Good for build stages, where size does not matter because the stage is thrown away (lesson 3's multi-stage builds).
 - **Compiler images** such as `gcc:14`: the full toolchain, over 2 GB. Build stages only.
 - **[[Distroless|distroless]] images**: only your program's runtime and its libraries, with no shell and no package manager. Small and hard to attack, but you cannot open a shell inside to look around, so they suit a finished service more than a research image.
-- **Plain `debian:bookworm-slim` or `debian:trixie-slim`**: the floor for a C++ simulator's runtime stage. On this machine they unpack to 82 MiB and 84 MiB.
+- **Plain `debian:bookworm-slim` or `debian:trixie-slim`**: the floor for a C++ simulator's runtime stage. On x86-64 they unpack to 82 MiB and 84 MiB.
 
-Whichever you pick, write the Debian release into the tag: `python:3.12-slim-bookworm`, not just `python:3.12-slim`. A tag without it moves to the next Debian release when one comes out, and your glibc version moves with it. Lesson 6 takes that idea all the way.
+Whichever you pick, write the Debian release into the tag: `python:3.12-slim-bookworm`, not only `python:3.12-slim`. A tag without it moves to the next Debian release when one comes out, and your glibc version moves with it. Lesson 6 takes that idea all the way.
 
 ## Check yourself
 
@@ -215,7 +215,7 @@ A colleague says "NumPy has had Alpine wheels since 1.25, so the musl problem is
 :::
 
 ::: answer
-First, the image contains more than NumPy. Any one dependency without a musllinux wheel — on this machine that included Numba, llvmlite, scikit-learn, netCDF4 and CasADi — sends pip back to building from source. Second, a reproducibility lockfile often pins older versions, and an older release may predate the project's first musllinux wheel (NumPy 1.24.4 has none). A third reason: even when every wheel exists, musl and glibc have different math libraries, so results validated on one platform may differ in the last digits on the other.
+First, the image contains more than NumPy. Any one dependency without a musllinux wheel — for Python 3.12 on x86-64 in 2026 that included Numba, llvmlite, scikit-learn, netCDF4 and CasADi — sends pip back to building from source. Second, a reproducibility lockfile often pins older versions, and an older release may predate the project's first musllinux wheel (NumPy 1.24.4 has none). A third reason: even when every wheel exists, musl and glibc have different math libraries, so results validated on one platform may differ in the last digits on the other.
 :::
 
 ::: check

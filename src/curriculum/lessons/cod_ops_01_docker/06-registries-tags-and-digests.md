@@ -1,7 +1,7 @@
 ---
 id: l06-registries-tags-and-digests
 title: Registries, tags and digests
-minutes: 23
+minutes: 21
 covers:
   - 'Registries, tagging discipline, never :latest in a pipeline'
   - Digest pinning and lockfiles for true reproducibility
@@ -21,8 +21,8 @@ A full [[image reference|reference-parts]] names the registry, the repository an
 
 ```text
 ghcr.io/gnc-team/landing-mc:1.0.0
-└─────┘ └──────────────────┘ └───┘
-registry     repository        tag
+└─────┘ └─────────────────┘ └───┘
+registry    repository       tag
 ```
 
 When you leave parts out, Docker fills them in. `python:3.12-slim` is short for `docker.io/library/python:3.12-slim`: registry `docker.io` (Docker Hub), and the `library/` namespace that holds the official images. Leave out the tag entirely and Docker fills in `latest`.
@@ -36,6 +36,7 @@ docker push localhost:5000/gnc/landing-mc:1.0.0
 ```
 
 ```text
+...
 eb560cfa823c: Pushed
 6b37362b3da7: Pushed
 1.0.0: digest: sha256:d71b1bc801fd46951c9323a573102f1d87d09e9e98758dda6ec79c641fe091c4 size: 856
@@ -45,9 +46,9 @@ eb560cfa823c: Pushed
 
 ## Tags are sticky notes
 
-A **tag** is a human-readable name that points at one image in a repository. The registry keeps a small table: tag name on one side, digest on the other. Pushing a tag that already exists simply changes the table, so the tag points at the new image. Nothing stops it and nothing warns you.
+A **tag** is a human-readable name that points at one image in a repository. The registry keeps [[a small table|tag-table]]: tag name on one side, digest on the other. Pushing a tag that already exists changes the table, so the tag points at the new image. Nothing stops it and nothing warns you.
 
-Tags also overlap. One image can have many tags at once. Asking the registry which digest each tag points at today:
+Tags also overlap. One image can have many tags at once. Asking the registry which digest each tag points at today, with one command per tag:
 
 ```bash
 docker buildx imagetools inspect python:3.12-slim
@@ -157,7 +158,7 @@ docker image inspect python:3.12-slim --format '{{json .RepoDigests}}'
 A digest pin does not mean never updating. It means updating on purpose: someone changes the digest in a reviewed commit, the tests run, and the change is in git history with a reason. [[Bots can open those commits for you|update-bots]] when a new image appears.
 
 ::: warning A digest only helps if the image still exists
-A registry is not an archive. Many registries delete images that no tag points at any more, under a retention rule, and a public image can be withdrawn. For results that must be rerun in five years, also keep your own copy: push the exact image to a registry your organisation controls, and for the most important runs save it to a file with `docker save image@sha256:… -o image.tar` and store that with the results.
+A registry is not an archive. Many registries can be set to delete images that no tag points at any more, under a retention rule, and a public image can be withdrawn. For results that must be rerun in five years, also keep your own copy: push the exact image to a registry your organisation controls, and for the most important runs save it to a file with `docker save image@sha256:… -o image.tar` and store that with the results.
 :::
 
 ## Lockfiles: pinning what is inside
@@ -233,7 +234,7 @@ ENTRYPOINT ["python", "mc.py"]
 ```
 
 ::: example Hashing the output
-Build it, run it twice, and fingerprint each output file with `sha256sum`:
+Build it, run it twice, and fingerprint each output file with `sha256sum`.
 
 ```bash
 docker build -t landing-mc:1.0.0 .
@@ -266,7 +267,7 @@ numpy 2.2.6, sigma = 1842.7 m
 1fa0aaa402a5f3e78dcc47e78f3826bf6c35fcdd91055b4885a3d5597429f625  runB.csv
 ```
 
-The same hash, both times. Is that a contradiction of everything above? No. This program only draws random numbers and multiplies pairs of them. NumPy kept its random-number algorithm the same across these releases, and a single multiplication of two floats has exactly one correct answer under the floating-point standard. Nothing in it depends on the order of a long sum, on a math library, or on threads. A matching hash tells you the numbers did not change *for this program, this time*. It does not tell you the next NumPy upgrade is safe, and [[NumPy itself does not promise it|rng-stability]]. The only way to know is to rerun and compare, which is exactly what the pins make possible.
+The same hash, both times. Is that a contradiction of everything above? No. This program only draws random numbers and multiplies pairs of them. NumPy kept its random-number algorithm the same across these releases, and a single multiplication of two floats has exactly one correct answer under the floating-point standard. Nothing it writes depends on the order of a long sum or on threads, and both images sat on the same Debian C library. A matching hash tells you the numbers did not change *for this program, this time*. It does not tell you the next NumPy upgrade is safe, and [[NumPy itself does not promise it|rng-stability]]. The only way to know is to rerun and compare, which is exactly what the pins make possible.
 :::
 
 The example used all three ingredients, and each is needed:
@@ -332,7 +333,7 @@ The image digest, written into the results record; a copy of the image itself in
 | Registry | Server that stores images | Docker Hub, `ghcr.io`, ECR, `registry:2` |
 | Reference | registry / repository : tag @ digest | `ghcr.io/gnc-team/landing-mc:1.0.0` |
 | Tag | Movable name for an image | `3.12-slim`, `latest`, `1.0.0` |
-| `latest` | Default tag; just a name | Never in pipelines |
+| `latest` | Default tag; only a name | Never in pipelines |
 | Digest | SHA-256 of the image content; cannot move | `@sha256:f77ac9e4…` |
 | Image index | One digest covering several platforms | Pin this in `FROM` |
 | Lockfile | Every package at one version, with hashes | `pip install --require-hashes -r requirements.lock` |
@@ -350,7 +351,7 @@ Every image reference has the same parts, and Docker fills in whatever you leave
   <rect x="94" y="30" width="126" height="30" fill="#ffffff" stroke="#1f2a44" stroke-width="1.2"/>
   <text x="157" y="50" font-size="12" text-anchor="middle" fill="#1f2a44">library/python</text>
   <rect x="224" y="30" width="62" height="30" fill="#f2b880" stroke="#1f2a44" stroke-width="1.2"/>
-  <text x="255" y="50" font-size="12" text-anchor="middle" fill="#1f2a44">:3.12-slim</text>
+  <text x="255" y="50" font-size="11" text-anchor="middle" fill="#1f2a44">:3.12-slim</text>
   <rect x="290" y="30" width="60" height="30" fill="#b4232c" stroke="#1f2a44" stroke-width="1.2"/>
   <text x="320" y="50" font-size="12" text-anchor="middle" fill="#ffffff">@sha256:</text>
   <text x="50" y="80" font-size="11" text-anchor="middle" fill="#1f2a44">registry</text>
@@ -364,6 +365,30 @@ Every image reference has the same parts, and Docker fills in whatever you leave
 ```
 
 Typing `python:3.12-slim` really means `docker.io/library/python:3.12-slim`, with no digest, so Docker uses whatever the tag points at.
+:::
+
+::: context tag-table A tag is one row in a table
+Inside a registry, a repository keeps its tags as a lookup table from names to digests. The images themselves are stored by digest and never change. Pushing a tag again only rewrites one row, which is why it happens silently.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 160" font-family="Inter, Arial, sans-serif">
+  <rect x="10" y="60" width="80" height="30" fill="#f2b880" stroke="#1f2a44" stroke-width="1.2"/>
+  <text x="50" y="80" font-size="12" text-anchor="middle" fill="#1f2a44">tag 1.0.0</text>
+  <rect x="200" y="20" width="150" height="34" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.2"/>
+  <text x="275" y="35" font-size="11" text-anchor="middle" fill="#1f2a44">sha256:d71b1bc8…</text>
+  <text x="275" y="49" font-size="11" text-anchor="middle" fill="#1f2a44">Python 3.12.14</text>
+  <rect x="200" y="96" width="150" height="34" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.2"/>
+  <text x="275" y="111" font-size="11" text-anchor="middle" fill="#1f2a44">sha256:3dfb3064…</text>
+  <text x="275" y="125" font-size="11" text-anchor="middle" fill="#1f2a44">Python 3.13.15</text>
+  <line x1="90" y1="70" x2="198" y2="40" stroke="#6c7a93" stroke-width="1.5" stroke-dasharray="5,4"/>
+  <text x="130" y="42" font-size="11" fill="#6c7a93">first push</text>
+  <line x1="90" y1="80" x2="198" y2="112" stroke="#b4232c" stroke-width="2"/>
+  <text x="112" y="120" font-size="11" fill="#b4232c">second push</text>
+  <text x="275" y="150" font-size="11" text-anchor="middle" fill="#1f2a44">both images still exist</text>
+</svg>
+```
+
+After the second push, the old image is still reachable by its digest; only the name moved.
 :::
 
 ::: context semver Numbers that carry a promise

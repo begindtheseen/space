@@ -244,7 +244,7 @@ USER 1000:1000
 CMD ["python", "sim.py"]
 ```
 
-`psycopg` is the standard PostgreSQL driver for Python. (The sandbox this lesson was run in needed one extra line in the Dockerfile to trust its network proxy's certificate; it is left out here because your machine will not need it.)
+`psycopg` is the standard PostgreSQL driver for Python.
 
 ::: example Bringing the stack up and checking it
 Start everything in the background (`-d`, detached) under the project name `flightlog` (output trimmed to the main lines):
