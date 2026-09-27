@@ -4233,6 +4233,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Index types: B-tree, hash, GIN and GiST, and BRIN for append-only time-ordered data"
       ],
       "file": "cod_sql_04_schema/05-index-types.md"
+    },
+    {
+      "id": "l09-sargability",
+      "title": "SARGable predicates",
+      "minutes": 23,
+      "covers": [
+        "SARGability: why wrapping an indexed column in a function kills the index"
+      ],
+      "file": "cod_sql_04_schema/09-sargability.md"
     }
   ],
   "t0_m00_basecamp": [
@@ -10601,7 +10610,7 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_sql_04_schema": {
-    "covered": 5,
+    "covered": 6,
     "total": 18,
     "complete": false,
     "missing": [
@@ -10610,7 +10619,6 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
       "Index maintenance cost on a write-heavy ingest path",
       "EXPLAIN and EXPLAIN ANALYZE: sequential versus index versus bitmap heap scan; nested loop versus hash versus merge join",
       "Estimated versus actual rows as the tell for stale statistics",
-      "SARGability: why wrapping an indexed column in a function kills the index",
       "Range partitioning by time; clustering; materialised views and continuous aggregates",
       "Columnar storage and Parquet; batch versus streaming ingest",
       "Upserts and idempotent ingest for duplicated downlink frames",

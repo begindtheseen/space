@@ -195,7 +195,7 @@ READ COMMITTED gave A counts of 1 then 2. REPEATABLE READ gave 1 then 1. One sna
 
 The anomalies so far only confused readers. The next two lose or break data.
 
-A **lost update** happens when two transactions each read a value, compute a new one from it in the application, and write it back: the second write overwrites the first, and the [[first change vanishes|lost-update-picture]]. Two ingest workers each count frames they received from the Svalbard ground station. The `\gset` command is a [[psql feature|gset]] that stores a query's result in a variable, here `:frames`, standing in for a program that reads a value into its own memory.
+A **lost update** happens when two transactions each read a value, compute a new one from it in the application, and write it back: the second write overwrites the first, and the [[first change vanishes|lost-update-picture]]. Two ingest workers each count frames they received from the Svalbard ground station. The `\gset` command is a [[psql feature|gset]] that stores a query's result in a variable, here `:frames`, standing in for a program that reads a value into its own memory. `\echo` prints a line, and `\g /dev/null` runs the sleep and throws its output away.
 
 ::: example Two workers, one counter
 **The script each session runs** (A adds 50, B adds 30; B starts half a second later):
@@ -428,7 +428,7 @@ The three habits that keep deadlocks rare, and harmless when they happen:
 
 1. **Lock in a consistent order.** When one transaction touches several rows, sort them by key first. A batch update that sorts its input by `(sat_id, ts)` cannot deadlock with another batch doing the same.
 2. **Keep transactions short.** Locks are held until the end of the transaction. Never wait for a user, a network call or a long computation inside one. A frame-ingest transaction should take milliseconds.
-3. **Retry.** Deadlocks and serialization failures are normal in a busy system. Catch them by their error codes — `40P01` for a deadlock, `40001` for a serialization failure — roll back, wait a short random time, and rerun the whole transaction, a limited number of times.
+3. **Retry.** Deadlocks and serialization failures are normal in a busy system. Catch them by their **SQLSTATE**, the five-character code every SQL error carries — `40P01` for a deadlock, `40001` for a serialization failure — roll back, wait a short random time, and rerun the whole transaction, a limited number of times.
 
 ::: key Deadlocks
 A **deadlock** is two (or more) transactions each waiting for a lock the other holds. PostgreSQL detects it after `deadlock_timeout` (1 s by default) and aborts one with `ERROR: deadlock detected` (SQLSTATE `40P01`). Prevent it with a **consistent lock order** and **short transactions**; handle it by **retrying** the whole transaction.

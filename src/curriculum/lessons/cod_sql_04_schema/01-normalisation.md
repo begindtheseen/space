@@ -445,6 +445,27 @@ An orbit is a flat ellipse around Earth. Its **inclination** is the angle betwee
 
 ::: context atomic Atomic, as in "cannot be split"
 "Atom" comes from the Greek for "uncuttable". An atomic value is one the database treats as a single thing, not something it looks inside. The boundary is a design choice: a timestamp has a year, month and day inside it, but you still store it as one value because the database has operators for it. A comma-separated list in a text cell is not atomic in the useful sense, because the database cannot check, count or join its pieces. PostgreSQL arrays and JSON columns blur the line; use them for data you read as a whole, not for things you filter and join on.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 120" font-family="Inter, Arial, sans-serif">
+  <text x="70" y="16" font-size="11" fill="#b4232c" text-anchor="middle">not 1NF: a list in a cell</text>
+  <rect x="10" y="40" width="60" height="24" fill="#ffffff" stroke="#1f2a44"/>
+  <text x="40" y="56" font-size="11" fill="#1f2a44" text-anchor="middle">SAT-001</text>
+  <rect x="70" y="40" width="72" height="24" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="106" y="56" font-size="11" fill="#1f2a44" text-anchor="middle">.94,.91,.89</text>
+  <line x1="152" y1="52" x2="190" y2="52" stroke="#1f2a44" stroke-width="2"/>
+  <polygon points="198,52 189,47 189,57" fill="#1f2a44"/>
+  <text x="275" y="16" font-size="11" fill="#1d6fd1" text-anchor="middle">1NF: one value per cell</text>
+  <rect x="210" y="26" width="70" height="24" fill="#ffffff" stroke="#1f2a44"/><rect x="280" y="26" width="60" height="24" fill="#8fb8f0" stroke="#1f2a44"/>
+  <rect x="210" y="50" width="70" height="24" fill="#ffffff" stroke="#1f2a44"/><rect x="280" y="50" width="60" height="24" fill="#8fb8f0" stroke="#1f2a44"/>
+  <rect x="210" y="74" width="70" height="24" fill="#ffffff" stroke="#1f2a44"/><rect x="280" y="74" width="60" height="24" fill="#8fb8f0" stroke="#1f2a44"/>
+  <g font-size="11" fill="#1f2a44" text-anchor="middle">
+    <text x="245" y="42">SAT-001</text><text x="310" y="42">0.94</text>
+    <text x="245" y="66">SAT-001</text><text x="310" y="66">0.91</text>
+    <text x="245" y="90">SAT-001</text><text x="310" y="90">0.89</text>
+  </g>
+</svg>
+```
 :::
 
 ::: context transitive-dependency A chain of arrows
