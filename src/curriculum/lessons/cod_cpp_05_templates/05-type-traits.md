@@ -169,7 +169,7 @@ Whenever the type you are testing might carry a reference or a `const` (anything
 
 ## Changing a type: remove_cvref and decay
 
-The **cv-qualifiers** are `const` and `volatile`, the two words that can be stuck onto a type ("cv" is just their initials). `const` you know. **[[volatile|volatile-registers]]** tells the compiler that the value may change behind the program's back, as a hardware register does, so every read must really happen.
+The **cv-qualifiers** are `const` and `volatile`, the two words that can be stuck onto a type ("cv" is their initials). `const` you know. **[[volatile|volatile-registers]]** tells the compiler that the value may change behind the program's back, as a hardware register does, so every read must really happen.
 
 `std::remove_cvref_t<T>`, new in C++20, takes a type and removes, in this order, a reference (`&` or `&&`), and then any top-level `const` and `volatile`. What is left is the plain type underneath. It is the "take off the wrapping" trait.
 
@@ -286,7 +286,7 @@ Now the numbers. The `float` closest to $0.1$ is really $0.100000001490116\ldots
 
 ## static_assert with traits
 
-A **`static_assert`** is a check the compiler performs: `static_assert(condition, "message");` stops the build with your message if the condition is false. Put a trait in the condition and you have a rule about types that cannot be broken.
+A **`static_assert`** is a check the compiler performs: `static_assert(condition, "message");` stops the build with your message if the condition is false. Put a trait in the condition and you have **[[a rule about types that cannot be broken|eigen-static-assert]]**.
 
 A Kalman filter is the standard example. Its **[[gain|kalman-gain]]** is a ratio between $0$ and $1$, computed as $K = P / (P + R)$, where $P$ is how unsure the filter is about its estimate and $R$ is how noisy the sensor is. In integer arithmetic that division is **integer division**, which throws away the fraction. With $P = 1$ and $R = 1$, the gain is $1 / 2$, which in `int` is $0$. A gain of zero means the filter ignores every measurement forever. We tried it: an `int` version of the filter below, fed the readings 5, 6, 5 and 4, reported an estimate of 0 after every one. It compiled without a single warning.
 
@@ -467,6 +467,31 @@ The word describes information being lost. An array knows its length as part of 
 
 ::: context float-spacing Floats have gaps between them
 A `float` stores 24 significant binary digits. Between $65536$ and $131072$ that leaves room for steps of $2^{-7} = 0.0078125$, and nothing in between. So once the running total passes $65536$, each "add $0.1$" really adds $0.1$ rounded to a multiple of $0.0078125$, which is $0.1015625$. The total gets there after about $651{,}000$ additions, and the remaining $349{,}000$ each add $0.0015625$ too much: about $545$ of the $958$ error. Lower stretches have their own rounding, sometimes up and sometimes down. A `double` has 53 binary digits; at $100000$ its steps are about $1.5 \times 10^{-11}$, far too small to matter here.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 130" font-family="Inter, Arial, sans-serif">
+  <text x="180" y="16" font-size="11" text-anchor="middle" fill="#1f2a44">float grid above the old total (steps of 0.0078125)</text>
+  <line x1="20" y1="60" x2="340" y2="60" stroke="#1f2a44" stroke-width="2"/>
+  <g stroke="#1f2a44" stroke-width="2">
+    <line x1="40" y1="50" x2="40" y2="70"/><line x1="120" y1="50" x2="120" y2="70"/>
+    <line x1="200" y1="50" x2="200" y2="70"/><line x1="280" y1="50" x2="280" y2="70"/>
+  </g>
+  <g font-size="11" text-anchor="middle" fill="#1f2a44">
+    <text x="40" y="86">11</text><text x="120" y="86">12</text><text x="200" y="86">13</text><text x="280" y="86">14</text>
+  </g>
+  <line x1="184" y1="30" x2="184" y2="54" stroke="#1d6fd1" stroke-width="2"/>
+  <polygon points="184,57 179,47 189,47" fill="#1d6fd1"/>
+  <text x="176" y="36" font-size="11" text-anchor="end" fill="#1d6fd1">exact +0.1 = 12.8</text>
+  <circle cx="200" cy="60" r="6" fill="#b4232c"/>
+  <text x="200" y="112" font-size="11" text-anchor="middle" fill="#b4232c">stored: 13 steps = 0.1015625</text>
+</svg>
+```
+
+Near $100000$, the true sum lands $0.8$ of the way from step 12 to step 13, and rounds to 13.
+:::
+
+::: context eigen-static-assert How Eigen shouts at you
+Eigen, the matrix library used across GNC code, leans on `static_assert` for exactly this kind of rule. Add a fixed-size 3-vector to a 4-vector, and the build stops with a message spelled as one long capitalized identifier, such as `YOU_MIXED_MATRICES_OF_DIFFERENT_SIZES`. Mix `float` and `double` matrices in one expression and you get `YOU_MIXED_DIFFERENT_NUMERIC_TYPES__YOU_NEED_TO_USE_THE_CAST_METHOD_OF_MATRIXBASE_TO_CAST_NUMERIC_TYPES_EXPLICITLY`. The capital letters are deliberate: in a long template error, they are easy to spot.
 :::
 
 ::: context kalman-gain How much to trust the new reading
