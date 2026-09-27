@@ -3945,6 +3945,24 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "numpy.memmap, chunking and Parquet for telemetry larger than memory"
       ],
       "file": "cod_py_08_performance/09-bigger-than-memory.md"
+    },
+    {
+      "id": "l10-caching-and-precomputation",
+      "title": "Caching and precomputation",
+      "minutes": 24,
+      "covers": [
+        "Caching and precomputation: lookup tables, interpolators built once"
+      ],
+      "file": "cod_py_08_performance/10-caching-and-precomputation.md"
+    },
+    {
+      "id": "l11-benchmark-methodology",
+      "title": "Benchmarks you can believe",
+      "minutes": 24,
+      "covers": [
+        "Benchmark methodology: warmup, repetitions, frequency scaling, noise"
+      ],
+      "file": "cod_py_08_performance/11-benchmark-methodology.md"
     }
   ],
   "cod_py_09_packaging": [
@@ -10510,13 +10528,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_py_08_performance": {
-    "covered": 11,
+    "covered": 13,
     "total": 13,
-    "complete": false,
-    "missing": [
-      "Caching and precomputation: lookup tables, interpolators built once",
-      "Benchmark methodology: warmup, repetitions, frequency scaling, noise"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_py_09_packaging": {
     "covered": 4,
