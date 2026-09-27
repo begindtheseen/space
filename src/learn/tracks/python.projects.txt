@@ -3931,24 +3931,181 @@ raises(LibraryError, lambda: Library().fine("zz", date(2026, 1, 1)))
 
 === pyp-13 | Capstone: a to-do manager with undo
 --- teach
-From here on, you get a specification and an empty file. There are no step-by-step instructions, and the checks test only behaviour, so the design is yours. This is where you prove you can build things on your own.
+The library system is finished. For twelve lessons, every step was laid out for you, and the code in the editor was always your program from the lesson before. That changes now.
 
-**How to approach a specification:**
+The last four lessons are **capstones**: projects that show you can build something on your own. For each one you get a [[specification|spec-reading]] and an empty file. There are no step-by-step instructions, and the checks test only what your program *does*, never how it is built inside. So the design is yours.
 
-1. **Read it twice**, then write down every behaviour as a one-line example: `add("x") returns 1`, `undo() with nothing to undo returns False`.
-2. **Choose the data model first.** What do you store, and in what shape? Most of the difficulty of a program is decided here.
-3. **Build a skeleton**: the class and every method, each doing nothing yet. Then make one behaviour work at a time, trying it as you go.
-4. **Hunt for edge cases**: empty input, unknown ids, doing something twice, undoing when there is nothing to undo.
-5. **Refactor** once it works: name things well, remove repetition.
+This first capstone is a to-do list with an **undo** button.
 
-**Thinking about undo.** There are two classic designs:
+### How to approach a specification
 
-- **Snapshots**: before every change, save a copy of the whole state; undo restores the last copy. Simple and hard to get wrong. Costs memory, which does not matter for a to-do list. The copy must be *deep*, or the "saved" state changes along with the live one.
-- **Commands**: record each change as an object that knows how to reverse itself (`add` is undone by removing, `remove` by restoring the item). Cheaper, and more code.
+Think of a builder handed a drawing of a finished house. The drawing says what the house must look like. It does not say which wall to build first. That part is the builder's job, and here it is yours. Five steps help.
 
-Either is a good answer; choose one deliberately. Note what should *not* be undone: here, ids are never reused, even after undoing an `add`.
+**1. Read it twice, then write every behaviour as a one-line example.** A **behaviour** is one thing the program must do in one situation. Writing them down turns a paragraph of rules into a checklist you can tick off:
+
+```
+add("buy milk")                    returns 1
+add("   ")                         raises ValueError
+undo() with nothing to undo        returns False
+```
+
+**2. Choose the data model first.** The **data model** is what you store, and in what shape. Most of the difficulty of a program is [[decided right here|tables-first]]. For this to-do list, one good shape is a dict from each id to a small record, plus one counter holding the next id to hand out:
+
+```python
+items = {
+    1: {"title": "pay rent", "priority": "high", "tags": {"home"}, "done": False},
+    2: {"title": "email Sam", "priority": "normal", "tags": set(), "done": True},
+}
+next_id = 3
+```
+
+**3. Build a skeleton.** A **skeleton** is the class with every method written down but doing nothing yet: each body is `pass`. It already runs, so you can try it at once. Then make one behaviour work at a time, and try each one as you go.
+
+```python
+class TodoList:
+    def __init__(self):
+        pass
+
+    def add(self, title, priority="normal", tags=()):
+        pass
+```
+
+**4. Hunt for [[edge cases|edge-case]].** An edge case is an unusual input at the very edge of what is allowed: an empty title, an id that does not exist, marking something done twice, undoing when there is nothing left to undo. Bugs like to live there.
+
+**5. [[Refactor|refactor]] once it works.** Refactoring means changing how the code is written without changing what it does: clearer names, repeated code moved into one small helper.
+
+### Sorting the pending list
+
+`pending()` must list the most important items first, and the oldest first among items of the same priority. You met this in the expense tracker's report: sort with a **tuple key**, and Python compares the first parts, then uses the second parts to break ties. Priorities are words, so turn each word into a rank number first:
+
+```python
+rank = {"high": 0, "normal": 1, "low": 2}
+sorted([(rank["low"], 1), (rank["high"], 2)])     # [(0, 2), (2, 1)]
+```
+
+Ids count up, so a smaller id means an older item. A key of (rank, id) gives exactly the order the spec asks for.
+
+### What undo has to remember
+
+Undo means "put things back the way they were before my last change". Press it again and it goes back one more step. So the program must remember a whole history, newest last, and each undo takes the newest step off the end.
+
+A list used this way (add to the end, take from the end) is a [[stack|undo-stack]], which you met in the typing lesson of the expert course. `append` pushes a step on; `pop()` takes the last one back off.
+
+### Two ways to build undo
+
+There are two classic designs for what goes on that stack.
+
+**Snapshots.** Picture photographing a whiteboard before every change. To undo, you wipe the board and copy the last photo back onto it. In code: before every change, push a copy of the whole state; `undo()` pops the last copy and makes it the state again. It is simple and hard to get wrong. It costs memory, but a to-do list is tiny, so that does not matter here.
+
+**Commands.** Picture a notebook where you write down each change instead: "added item 3", "marked item 1 done". To undo, you read the last line and do the opposite. In code, each change is recorded as a [[small object that knows how to reverse itself|command-pattern]]: an `add` is undone by removing the item, a `remove` by putting the item back. It uses less memory, and it needs more code.
+
+Either is a good answer. Choose one on purpose, before you start typing.
+
+### A snapshot must be a deep copy
+
+If you choose snapshots, the copy has to be **deep**. The advanced course's aliasing lesson showed why. `dict(items)` makes a new outer dict, but the records inside it are the *same* objects as before. Change a record, and the "saved" one changes with it:
+
+```python
+import copy
+
+items = {1: {"title": "a", "done": False}}
+saved = dict(items)               # shallow copy: shares the inner record
+items[1]["done"] = True
+saved[1]["done"]                  # True: the saved copy changed too!
+
+items = {1: {"title": "a", "done": False}}
+saved = copy.deepcopy(items)      # deep copy: copies the records too
+items[1]["done"] = True
+saved[1]["done"]                  # False: the snapshot is safe
+```
+
+`copy.deepcopy` copies [[all the way down|deep-vs-shallow]], so nothing is shared.
+
+### What undo must not touch
+
+Not everything goes back. The spec says [[ids are never reused|ids-forever]], even after undoing an `add`. So keep the id counter *outside* the snapshots. Undoing an `add` removes the item, but the counter keeps counting: add "a" (id 1), add "b" (id 2), undo, add "c", and "c" gets id 3.
+
+And only changes that really happened can be undone. An operation that raised an error changed nothing, so it must leave nothing in the history.
+
+**Watch out:** saving the snapshot *before* checking the input. If `done(99)` pushes a snapshot and only then raises `KeyError`, the history now holds a step that changed nothing. The next `undo()` quietly "undoes" that empty step and returns `True`, and the change the user really wanted to undo is still there. Check everything first. Save the snapshot last, right before you change anything.
+
+::: context spec-reading Reading a spec like an engineer
+A specification says *what* a program must do, never *how*. Engineers read one slowly, sentence by sentence, because every word can be a requirement. NASA's requirements documents use the word "shall" for things that must be true ("the software shall reject an empty title"), and each "shall" is later checked by a test. The checks in these capstones play that part: each one tests a sentence of the spec. When a sentence could mean two things, a real engineer asks the person who wrote it. Here, the examples in the checks can settle it.
+:::
+
+::: context tables-first Show me your tables
+Fred Brooks, who led the team that built the operating system for IBM's System/360 computers in the 1960s, wrote in *The Mythical Man-Month* (1975): "Show me your flowchart and conceal your tables, and I shall continue to be mystified. Show me your tables, and I won't usually need your flowchart; it'll be obvious." His "tables" are what we now call the data model. Once the shape of the data is right, most methods become a few obvious lines. When the shape is wrong, every method has to fight it.
+:::
+
+::: context edge-case Where bugs hide
+Picture the allowed inputs as a field with a fence around it. Most inputs sit in the middle of the field, and most code handles them fine. The trouble is near the fence: an empty list, the first id, the last item, zero, doing something twice. Testers call this **boundary testing**: for every limit, try the value just inside it, exactly on it, and just outside it. For this to-do list the fence posts include an empty history, an unknown id, and a title that is only spaces.
+:::
+
+::: context refactor Changing the shape, not the behaviour
+The word was made popular by Martin Fowler's 1999 book *Refactoring*. The rule is strict: after a refactoring, the program must do exactly what it did before, only written more clearly. That is why you refactor *after* the checks pass. Run them again after every small change, and if one fails, you know the last change broke something. Tests are what make refactoring safe; without them, every tidy-up is a gamble.
+:::
+
+::: context undo-stack The history is a stack
+Each change pushes a snapshot onto the top of the history. Undo pops the top one, the newest, and makes it the state again. Last in, first out:
+
+```svg
+<svg viewBox="0 0 360 170" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <rect x="90" y="110" width="150" height="30" fill="#ffffff" stroke="#1f2a44" stroke-width="2"/>
+  <rect x="90" y="80" width="150" height="30" fill="#ffffff" stroke="#1f2a44" stroke-width="2"/>
+  <rect x="90" y="50" width="150" height="30" fill="#8fb8f0" stroke="#1d6fd1" stroke-width="2"/>
+  <text x="165" y="130" font-size="12" text-anchor="middle" fill="#1f2a44">before add "a": empty</text>
+  <text x="165" y="100" font-size="12" text-anchor="middle" fill="#1f2a44">before add "b": a</text>
+  <text x="165" y="70" font-size="12" text-anchor="middle" fill="#1f2a44">before done(1): a, b</text>
+  <line x1="60" y1="20" x2="60" y2="60" stroke="#1f2a44" stroke-width="2"/>
+  <polygon points="60,68 55,58 65,58" fill="#1f2a44"/>
+  <text x="60" y="14" font-size="12" text-anchor="middle" fill="#1f2a44">push</text>
+  <line x1="270" y1="60" x2="270" y2="24" stroke="#b4232c" stroke-width="2"/>
+  <polygon points="270,16 265,26 275,26" fill="#b4232c"/>
+  <text x="300" y="44" font-size="12" text-anchor="middle" fill="#b4232c">undo pops</text>
+  <text x="180" y="162" font-size="12" text-anchor="middle" fill="#6c7a93">the newest snapshot is always on top</text>
+</svg>
+```
+:::
+
+::: context command-pattern The Command pattern
+Recording each change as an object is a well-known design called the **Command pattern**. It was named in the 1994 book *Design Patterns* by Gamma, Helm, Johnson and Vlissides. Each command object has two methods: one that does the change and one that reverses it. Text editors use it for undo, and it also makes **redo** easy: keep the undone commands on a second stack and do them again. Snapshots can support redo too, with a second stack of snapshots.
+:::
+
+::: context deep-vs-shallow Shallow and deep, drawn
+A shallow copy makes a new outer dict, but its values still point at the same records. A deep copy makes new records too:
+
+```svg
+<svg viewBox="0 0 360 170" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <text x="90" y="16" font-size="12" text-anchor="middle" fill="#1f2a44">shallow</text>
+  <rect x="20" y="26" width="60" height="30" fill="#ffffff" stroke="#1f2a44" stroke-width="2"/>
+  <text x="50" y="46" font-size="12" text-anchor="middle" fill="#1f2a44">items</text>
+  <rect x="100" y="26" width="60" height="30" fill="#ffffff" stroke="#1f2a44" stroke-width="2"/>
+  <text x="130" y="46" font-size="12" text-anchor="middle" fill="#1f2a44">saved</text>
+  <rect x="45" y="106" width="90" height="32" fill="#f2b880" stroke="#b4232c" stroke-width="2"/>
+  <text x="90" y="127" font-size="12" text-anchor="middle" fill="#1f2a44">one record</text>
+  <line x1="50" y1="56" x2="80" y2="104" stroke="#1f2a44" stroke-width="2"/>
+  <line x1="130" y1="56" x2="100" y2="104" stroke="#1f2a44" stroke-width="2"/>
+  <text x="270" y="16" font-size="12" text-anchor="middle" fill="#1f2a44">deep</text>
+  <rect x="200" y="26" width="60" height="30" fill="#ffffff" stroke="#1f2a44" stroke-width="2"/>
+  <text x="230" y="46" font-size="12" text-anchor="middle" fill="#1f2a44">items</text>
+  <rect x="280" y="26" width="60" height="30" fill="#ffffff" stroke="#1f2a44" stroke-width="2"/>
+  <text x="310" y="46" font-size="12" text-anchor="middle" fill="#1f2a44">saved</text>
+  <rect x="195" y="106" width="70" height="32" fill="#8fb8f0" stroke="#1d6fd1" stroke-width="2"/>
+  <text x="230" y="127" font-size="12" text-anchor="middle" fill="#1f2a44">record</text>
+  <rect x="275" y="106" width="70" height="32" fill="#8fb8f0" stroke="#1d6fd1" stroke-width="2"/>
+  <text x="310" y="127" font-size="12" text-anchor="middle" fill="#1f2a44">copy</text>
+  <line x1="230" y1="56" x2="230" y2="104" stroke="#1f2a44" stroke-width="2"/>
+  <line x1="310" y1="56" x2="310" y2="104" stroke="#1f2a44" stroke-width="2"/>
+  <text x="180" y="162" font-size="12" text-anchor="middle" fill="#6c7a93">shared record: change one, both change</text>
+</svg>
+```
+:::
+
+::: context ids-forever Why an id is never handed out twice
+An id is a promise: "this number means this item". Other things may hold on to it: a reminder that says "item 2", a message, a line in a log. If item 2 is removed and a new item later gets id 2, all those old references now point at the wrong thing, and nothing warns you. So many systems never reuse an id, even when the item is gone. Many databases hand out ids from a counter that only ever goes up, for exactly this reason.
+:::
 --- task
-Build a class `TodoList`:
+Build a class `TodoList` to this specification. How you store things inside it is up to you.
 
 - `add(title, priority="normal", tags=())` adds an item and returns its id: 1, 2, 3, … Ids are never reused, even after `remove` or `undo`. The title is stripped; an empty title raises `ValueError`. `priority` must be `"low"`, `"normal"` or `"high"`, otherwise `ValueError`.
 - `done(item_id)` marks an item done; `remove(item_id)` deletes it. An unknown id raises `KeyError`.
@@ -4022,11 +4179,11 @@ class TodoList:
         done = sum(1 for item in self._items.values() if item["done"])
         return f"{len(self._items) - done} pending, {done} done"
 --- hint
-Decide your data model first. One option: a dict from id to a small record (title, priority, tags, done), plus a counter for the next id.
+Decide your data model first. One option: a dict from id to a small record (title, priority, tags, done), plus a counter for the next id. Then write the skeleton and make `add` work before anything else.
 --- hint
-For undo, the simplest correct design is to push a deep copy of your items onto a history list before every successful change, and pop it back on `undo()`. Keep the id counter out of the snapshot so ids are never reused.
+For undo, the simplest correct design is snapshots: push a `copy.deepcopy` of your items onto a history list before every successful change (after all the checks), and pop it back in `undo()`. Keep the id counter out of the snapshot so ids are never reused.
 --- hint
-For `pending`, sort by a tuple: a priority rank (high 0, normal 1, low 2), then the id.
+For `pending`, sort by a tuple: a priority rank (`{"high": 0, "normal": 1, "low": 2}`), then the id. `summary` counts the done items and subtracts from the total.
 --- check case | Ids count up from 1
 (lambda t: [t.add("a"), t.add("b"), t.add("c")])(TodoList())
 => [1, 2, 3]
@@ -4058,22 +4215,229 @@ raises(KeyError, lambda: TodoList().done(1)) and raises(KeyError, lambda: TodoLi
 
 === pyp-14 | Capstone: a calculator language with variables
 --- teach
-In the expert course you wrote a tokenizer and a recursive-descent parser for arithmetic. This capstone turns that into a tiny **language**: it has variables, functions, its own power operator and error messages instead of crashes. It is designed by you from a specification, like a real interpreter.
+The to-do list stored things and changed them. This capstone goes back to the calculator you built at the end of the expert course, and grows it into a tiny programming language.
 
-**Reuse the architecture, not just the code.** The same pipeline works: *tokenize → parse → evaluate*, with one grammar rule per precedence level. New features slot into it:
+Remember the pieces. The tokenizer lesson cut text like `2 * (3 + 4)` into tokens. The parser lessons turned those tokens into a value by **recursive descent**: one method per grammar rule, each calling the next one down.
 
-- **Names** are a new kind of token: a letter or underscore, then letters, digits or underscores. In `atom`, a name followed by `(` is a function call; otherwise it is a variable to look up.
-- **Function calls** parse a comma-separated list of expressions between brackets.
-- **Assignment** (`let x = ...`) is a *statement*, not part of the expression grammar. Recognise it first, then evaluate the right-hand side with the expression parser.
-- **State** (the variables) lives in the interpreter object and survives between lines.
+A calculator forgets everything after each answer. A language remembers. You will write an **[[interpreter|interpreter]]**: a program that reads lines one at a time, carries each one out, and keeps what it has learned for the next line. Here is a session with it (`>` marks what the user typed; the line under it is the reply):
 
-**Errors are part of the design.** An interactive calculator must answer every line. Use your own exception class inside the parser (so you can tell your deliberate errors from bugs), and convert it to an `error: ...` reply in one place, at the top.
+```
+> let rate = 1.5
+rate = 1.5
+> let hours = 8
+hours = 8
+> rate * hours
+12
+> max(rate, 2) ^ 2
+4
+> y + 1
+error: unknown variable y
+```
 
-**Specification details that are easy to miss:** `^` is right-associative; unary minus binds *less* tightly than `^` (so `-2 ^ 2` is `-4`); a failed `let` must not change the variable; results that are whole numbers print without `.0`.
+It has **variables** (names that hold values), **functions** like `max`, its own power operator `^`, and error messages instead of crashes. And it is designed by you, from the spec in the task.
 
-Plan the grammar on paper before writing code. Getting the grammar right is most of the work.
+### Same pipeline, new pieces
+
+The expert course's plan still works: **tokenize, then parse and evaluate**, with one grammar rule for each level of precedence. Your parser can still work out each value as it goes, so parsing and evaluating happen together. [[Reuse the plan, not only the code|pipeline]]: each new feature slots into one stage of it.
+
+### A new kind of token: names
+
+A **name** is a word like `rate` or `total_2`. The spec's rule is the one Python uses for [[its own names|identifiers]]: a letter or an underscore first, then any number of letters, digits or underscores. So `total_2` is a name. `2total` is not: it is the number `2` followed by the name `total`, two tokens in a row, which is a syntax error.
+
+As a regular expression, that rule is `[A-Za-z_]\w*`. Piece by piece: `[A-Za-z_]` is one letter or underscore; `\w` is one "word character", meaning a letter, a digit or an underscore; and `*` means zero or more of them.
+
+```python
+import re
+re.match(r"[A-Za-z_]\w*", "total_2 * 2").group()     # 'total_2'
+```
+
+You can also grow the `while` loop from your tokenizer instead, the same way it collects the digits of a number.
+
+### Tokens that say what kind they are
+
+In the expert course a token was either a number or a string like `"+"`. Now a string might be an operator or a name, and the parser has to tell `"max"` from `"("` at a glance. A clean fix is to [[tag every token with its kind|tagged-tokens]]: make each token a pair of (kind, value).
+
+```python
+[("name", "rate"), ("op", "*"), ("num", 2)]      # the tokens of: rate * 2
+```
+
+The parser then asks "is the kind `"name"`?" instead of guessing from the value. The comma between function arguments is one more operator token: `,`.
+
+### The grammar grows
+
+Here is the grammar from the calculator lesson, with `**` replaced by `^`, a bigger `atom` and one new rule, `args`:
+
+```
+expr   := term   (("+" | "-") term)*
+term   := unary  (("*" | "/") unary)*
+unary  := "-" unary  |  power
+power  := atom   ("^" unary)?
+atom   := NUMBER  |  NAME "(" args ")"  |  NAME  |  "(" expr ")"
+args   := expr  ("," expr)*
+```
+
+Only `atom` and `args` are new. In words:
+
+- An atom that starts with a NAME is a **function call** if the next token is `(`, and a **variable** otherwise. Take the name, then peek at the next token to find out which.
+- A call's `args` are one expression, then any number of "comma, expression". So `max(1, 7, 3)` has three arguments. `max()` has none, which this rule does not allow, so it is a syntax error.
+- A variable is looked up in the interpreter's dict of variables. A name that is not in the dict is the error `unknown variable NAME`.
+
+Everything above `atom` works as before. `^` groups from the right, so `2 ^ 3 ^ 2` is `2 ^ 9 = 512`. Unary minus is looser than `^`, so `-2 ^ 2` is `-(2 ^ 2) = -4`. And the right side of `^` goes through `unary`, so `2 ^ -1` is `0.5`.
+
+### Calling a Python function from your language
+
+Keep the functions in a dict from each name to the real Python function:
+
+```python
+import math
+FUNCTIONS = {"sqrt": math.sqrt, "abs": abs, "min": min, "max": max}
+```
+
+Your parser collects a call's arguments into a list. A `*` in front of a list, inside a call, [[spreads the list out|star-unpack]] into separate arguments:
+
+```python
+args = [1, 7, 3]
+FUNCTIONS["max"](*args)      # the same as max(1, 7, 3): 7
+```
+
+`sqrt` and `abs` take exactly one argument, so check how many you got before calling them. A name that is not in the dict is an unknown function.
+
+### let is a statement
+
+An **expression** is something that has a value, like `rate * 2`. A **statement** is an instruction that does something, like "store this value under this name". `let x = ...` is a [[statement|statement-expression]], so it is not part of the expression grammar at all. Recognise it first, before any parsing, with a regular expression:
+
+```python
+LET = re.compile(r"^let\s+([A-Za-z_]\w*)\s*=(.*)$")
+LET.match("let rate = 1.5").groups()      # ('rate', ' 1.5')
+LET.match("let 5 = 3")                    # None: 5 is not a name
+```
+
+Read the pattern left to right: `^let` means the line starts with `let`; `\s+` is one or more spaces; group 1 is a name; `\s*=` is any spaces and then an equals sign; group 2, `(.*)`, is everything after that. Group 2 is an ordinary expression, so hand it to your expression parser. A line that does not match is an expression line.
+
+Two more rules from the spec. `let` cannot assign to a function name, so `let sqrt = 4` is an error. And the order matters: **evaluate first, store second.** If the right side fails, you never reach the store, and the old value survives. That is what "a failed `let` leaves the variable unchanged" asks for.
+
+### State that lasts between lines
+
+The variables live in the `Interpreter` object, in a dict such as `self.variables`, so they are still there on the next call to `execute`. Each line gets a fresh parser, handed that same dict to read from.
+
+### Errors are part of the design
+
+An interactive calculator must answer every line, even nonsense. That takes two parts:
+
+1. **Your own exception class**, such as `class CalcError(Exception)`. Raise it for every deliberate error, with the exact messages the spec asks for, like `unknown variable y` and `division by zero`. Because the class is yours, a real bug (say a `NameError` from a typo in your code) cannot be mistaken for one of these.
+2. **One place that catches it**: `execute`. It wraps all the work in `try`, and turns the error into the reply `f"error: {err}"`. This is the [[error boundary|error-boundary]] from the expense tracker again.
+
+Check for division by zero yourself, in `term`, before you divide. Then the message is exactly `division by zero`. (Python's own message is different for floats: `1.0 / 0` says `float division by zero`.)
+
+Python's maths can also raise errors of its own, and `execute` must turn those into replies too:
+
+```python
+math.sqrt(-1)       # ValueError: math domain error
+2.0 ** 10000        # OverflowError: too big for a float
+0 ** -1             # ZeroDivisionError
+```
+
+### Showing the answer
+
+In Python, `7 / 2` is `3.5` and `6 / 2` is `3.0`. The spec wants `"3"`, not `"3.0"`: a float with a [[whole-number value|whole-floats]] prints without `.0`. A float can tell you whether it is whole:
+
+```python
+(3.0).is_integer()     # True
+(3.5).is_integer()     # False
+str(int(3.0))          # '3'
+```
+
+Ints already print without `.0`, so only floats need the check. Write it once, as a small helper that every reply goes through.
+
+**Watch out:** do not compute `^` with Python's `^`. In Python, `^` [[means something else entirely|caret-xor]]: `2 ^ 3` is `1`, not `8`. Your language spells power `^`, but your code must compute it with `**`.
+
+Plan the grammar on paper before you write code. Getting the grammar right is most of the work.
+
+::: context interpreter Interpreters you already use
+An **interpreter** reads a program and carries it out directly, line by line or piece by piece. Python is one: when you type `python3` with no file, it shows a `>>>` prompt, reads a line, runs it, prints the result, and waits for the next. That cycle is called a **REPL**: read, evaluate, print, loop. Many home computers of the late 1970s and 1980s started up straight into a BASIC interpreter, and a whole generation learned to program by typing lines at its prompt. Your `execute` is the "evaluate" part of a REPL.
+:::
+
+::: context pipeline The pipeline, one line at a time
+Every line goes through the same stages. `let` is spotted before parsing; the variables dict is what makes one line remember another:
+
+```svg
+<svg viewBox="0 0 360 150" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <rect x="6" y="20" width="76" height="40" rx="6" fill="#ffffff" stroke="#1f2a44" stroke-width="2"/>
+  <text x="44" y="44" font-size="12" text-anchor="middle" fill="#1f2a44">line</text>
+  <rect x="98" y="20" width="76" height="40" rx="6" fill="#ffffff" stroke="#1f2a44" stroke-width="2"/>
+  <text x="136" y="44" font-size="12" text-anchor="middle" fill="#1f2a44">tokenize</text>
+  <rect x="190" y="20" width="76" height="40" rx="6" fill="#8fb8f0" stroke="#1d6fd1" stroke-width="2"/>
+  <text x="228" y="38" font-size="12" text-anchor="middle" fill="#1f2a44">parse and</text>
+  <text x="228" y="52" font-size="12" text-anchor="middle" fill="#1f2a44">evaluate</text>
+  <rect x="282" y="20" width="72" height="40" rx="6" fill="#ffffff" stroke="#1f2a44" stroke-width="2"/>
+  <text x="318" y="44" font-size="12" text-anchor="middle" fill="#1f2a44">reply</text>
+  <line x1="82" y1="40" x2="92" y2="40" stroke="#1f2a44" stroke-width="2"/>
+  <polygon points="98,40 90,36 90,44" fill="#1f2a44"/>
+  <line x1="174" y1="40" x2="184" y2="40" stroke="#1f2a44" stroke-width="2"/>
+  <polygon points="190,40 182,36 182,44" fill="#1f2a44"/>
+  <line x1="266" y1="40" x2="276" y2="40" stroke="#1f2a44" stroke-width="2"/>
+  <polygon points="282,40 274,36 274,44" fill="#1f2a44"/>
+  <rect x="180" y="96" width="96" height="36" rx="6" fill="#f2b880" stroke="#1f2a44" stroke-width="2"/>
+  <text x="228" y="119" font-size="12" text-anchor="middle" fill="#1f2a44">variables</text>
+  <line x1="228" y1="60" x2="228" y2="90" stroke="#1f2a44" stroke-width="2"/>
+  <polygon points="228,96 224,88 232,88" fill="#1f2a44"/>
+  <polygon points="228,60 224,68 232,68" fill="#1f2a44"/>
+  <text x="120" y="119" font-size="11" text-anchor="middle" fill="#6c7a93">kept between lines</text>
+</svg>
+```
+:::
+
+::: context identifiers The rules for names
+Python's rule for a name is the one this language uses: start with a letter or underscore, then letters, digits or underscores. Names are **case-sensitive**, so `rate`, `Rate` and `RATE` are three different names. Most languages add one more rule: some words are **reserved** and cannot be names. In Python you cannot call a variable `if` or `for`. In this language, `let` plays that part, and so do the function names, which the spec forbids as `let` targets.
+:::
+
+::: context tagged-tokens Every token carries a label
+Tagging tokens is how real tokenizers work. Python's own `tokenize` module labels each piece of `rate * 2` with a type: `NAME` for `rate`, `OP` for `*`, `NUMBER` for `2`. The label lets the parser decide what to do from the kind alone, and the value is there when it needs the details. It also means `("op", "(")` can never be confused with a name, whatever characters a name might one day be allowed to contain.
+:::
+
+::: context star-unpack The star in a call
+You met `*args` in a function *definition*, where it gathers extra arguments into a tuple. In a function *call*, the star does the opposite: it spreads a list or tuple out into separate arguments. So `max(*[1, 7, 3])` is exactly `max(1, 7, 3)`. That is how your language can pass any number of arguments to `min` and `max` without knowing in advance how many there will be. A double star, `**`, does the same for a dict of keyword arguments.
+:::
+
+::: context statement-expression Statements and expressions
+In Python, `x = 3` is a statement: it does something and has no value, so `y = (x = 3)` is a syntax error. Python 3.8 added the "walrus" operator, `:=`, which is an assignment that is also an expression. The keyword `let` comes from BASIC, where assignments were written `LET X = 5`. Starting the line with a keyword makes a statement easy to spot before any parsing happens, which is exactly why your interpreter can check for it first.
+:::
+
+::: context error-boundary One place turns errors into replies
+Deep inside the parser, `atom` finds an unknown variable and raises. It does not know who is typing or how to show a message, and it should not. The error travels up through `power`, `unary`, `term` and `expr` untouched, until `execute` catches it and turns it into a reply. One catch, at the top, instead of error handling scattered through every method. The expense tracker's run loop was built the same way.
+:::
+
+::: context whole-floats Why 3.0 and 3 look different
+Python keeps `int` and `float` as different types, even when they hold the same value: `6 / 2` is the float `3.0`, while `2 + 1` is the int `3`. A float stores every whole number exactly up to 9,007,199,254,740,992, which is 2 to the power 53, so `is_integer()` gives a reliable answer for the numbers a calculator meets. Showing `3` for both keeps the replies tidy, the way a pocket calculator shows `3`, not `3.0`.
+:::
+
+::: context caret-xor What ^ really does in Python
+In Python, `^` is **exclusive or** (XOR), which works on the bits of whole numbers: each bit of the answer is 1 when the two bits differ. 2 is 010 in binary and 3 is 011, so `2 ^ 3` is 001, which is 1.
+
+```svg
+<svg viewBox="0 0 360 130" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <text x="60" y="30" font-size="13" text-anchor="end" fill="#1f2a44">2</text>
+  <text x="60" y="60" font-size="13" text-anchor="end" fill="#1f2a44">3</text>
+  <text x="60" y="100" font-size="13" text-anchor="end" fill="#1d6fd1">2 ^ 3</text>
+  <text x="120" y="30" font-size="15" text-anchor="middle" fill="#1f2a44">0</text>
+  <text x="150" y="30" font-size="15" text-anchor="middle" fill="#1f2a44">1</text>
+  <text x="180" y="30" font-size="15" text-anchor="middle" fill="#1f2a44">0</text>
+  <text x="120" y="60" font-size="15" text-anchor="middle" fill="#1f2a44">0</text>
+  <text x="150" y="60" font-size="15" text-anchor="middle" fill="#1f2a44">1</text>
+  <text x="180" y="60" font-size="15" text-anchor="middle" fill="#1f2a44">1</text>
+  <line x1="100" y1="74" x2="200" y2="74" stroke="#1f2a44" stroke-width="2"/>
+  <text x="120" y="100" font-size="15" text-anchor="middle" fill="#1d6fd1">0</text>
+  <text x="150" y="100" font-size="15" text-anchor="middle" fill="#1d6fd1">0</text>
+  <text x="180" y="100" font-size="15" text-anchor="middle" fill="#b4232c">1</text>
+  <text x="225" y="100" font-size="12" fill="#1f2a44">= 1, not 8</text>
+  <text x="225" y="60" font-size="12" fill="#6c7a93">1 where bits differ</text>
+</svg>
+```
+
+C, Java and JavaScript use `^` the same way. Spreadsheets and many calculators use `^` for power, which is why your language does.
+:::
 --- task
-Build a class `Interpreter` with a method `execute(line)` that returns a string.
+Build a class `Interpreter` with a method `execute(line)` that returns a string. The design inside is up to you.
 
 - `let NAME = EXPR` evaluates `EXPR`, stores it in variable `NAME`, and returns `"NAME = VALUE"`. Otherwise, the line is an expression and the reply is its value.
 - Expressions: numbers (`3`, `2.5`), variables, `+ - * /` with the usual precedence (left to right), `^` for power (right-associative, binding tighter than unary minus: `-2 ^ 2` is `-4`, `2 ^ -1` is `0.5`), unary minus, brackets, and the functions `sqrt(x)`, `abs(x)`, `min(a, b, ...)` and `max(a, b, ...)`.
@@ -4237,11 +4601,11 @@ class Interpreter:
         except (OverflowError, ValueError, TypeError) as err:
             return f"error: {err}"
 --- hint
-Start from the tokenizer and parser architecture of the expert course. Add a `name` token kind (a regular expression such as `[A-Za-z_]\w*` helps) and a `,` token.
+Start from the tokenizer and parser of the expert course. Make each token a (kind, value) pair, add a `name` kind (the regular expression `[A-Za-z_]\w*` finds one) and a `,` operator.
 --- hint
-Grammar, loosest first: expr (`+ -`), term (`* /`), unary (`-`), power (`atom ^ unary`), atom (number, name, call, or bracketed expr). Recognise `let NAME =` with a regular expression before parsing.
+Grammar, loosest first: expr (`+ -`), term (`* /`), unary (`-`), power (`atom ^ unary`), atom (number, name, call, or bracketed expr). In `execute`, check the line against `^let\s+([A-Za-z_]\w*)\s*=(.*)$` before parsing; evaluate group 2, and only then store it.
 --- hint
-Define your own exception class, raise it for every deliberate error (with the exact messages from the specification), and catch it once in `execute` to return `f"error: {err}"`.
+Define your own exception class, raise it for every deliberate error (with the exact messages from the specification), and catch it once in `execute` to return `f"error: {err}"`. Catch `ValueError`, `OverflowError` and `ZeroDivisionError` there too, and pass every value through one helper that turns a whole float like `3.0` into `"3"`.
 --- check case | Arithmetic with precedence
 (lambda i: [i.execute(l) for l in ["1 + 2 * 3", "(1 + 2) * 3", "10 - 4 - 3", "7 / 2", "6 / 2", "2.5 * 2"]])(Interpreter())
 => ["7", "9", "3", "3.5", "3", "5"]
@@ -4265,19 +4629,188 @@ Define your own exception class, raise it for every deliberate error (with the e
 
 === pyp-15 | Capstone: a bank ledger with validation
 --- teach
-Money software is unforgiving: a lost cent is a bug report, and a half-finished transfer is a disaster. This capstone is about **correctness under bad input**.
+Your interpreter had to answer every line, even nonsense, without crashing. This capstone asks for something stricter. Money software is unforgiving: a lost cent is a bug report, and a transfer that happens only halfway is a disaster. The theme is **correctness under bad input**: the program stays right, whatever it is given.
 
-**Validate at the boundary.** Every value that comes from outside (a user, a file, another system) is checked the moment it arrives, and turned into a trusted internal form. Here, amounts arrive as strings like `"12.34"`; check the format strictly, convert to integer cents once, and the rest of the code never sees a string or a float again. Strict means: reject `"12.345"`, `"-5"`, `"1e3"`, `" "`, and also a float like `12.5`, because accepting floats would invite exactly the rounding errors you are avoiding.
+You will build a small bank: accounts, deposits, withdrawals, transfers, and a statement for each account.
 
-**Atomic operations.** A transfer is two changes: take from one account, give to another. If the first happens and the second fails, money vanishes. The rule is: **check everything that can fail first, then make all the changes**, with nothing between them that can raise. A transfer to a missing account, or of more than the balance, must leave *both* accounts, and both statements, exactly as they were.
+### Check once, at the door
 
-**An audit trail.** Real ledgers never just overwrite a balance; they record every movement. A statement per account (a list of lines, each with the movement and the resulting balance) lets anyone check the arithmetic.
+Picture airport security. Every bag is checked once, at the entrance. After that, everyone inside the terminal is trusted, and nobody checks bags again at the café.
 
-**Distinct errors for distinct problems.** Bad input (`ValueError`), an unknown account (`KeyError`), and a refused withdrawal (`InsufficientFunds`, your own class) are different situations for the caller: a form shows a validation message, a missing account is probably a bug, and insufficient funds is a normal business outcome.
+Programs can work the same way. The **boundary** is the place where values arrive from outside: from a user, a file, or another program. **Validate at the boundary**: check each value the moment it arrives, and turn it into a trusted form that the rest of the code can rely on. Then the inside of the program never has to [[worry about it again|boundary-trust]].
 
-**Design questions to settle first:** how will you store an account? How will you generate account numbers? Where does validation live, so it is written once?
+Here, amounts arrive as strings like `"12.34"`. At the boundary you check the format strictly and convert it to whole cents, an `int`, once. After that, no other code ever sees a string or a float.
+
+### Strict means strict
+
+The spec allows digits, then optionally a `.` with one or two decimals, with spaces around them allowed. So `"12"`, `"12.3"` and `" 12.34 "` are fine. Each of these must be refused with `ValueError`:
+
+- `"12.345"`: three decimals.
+- `"-5"`, `"abc"`, `"5."`, `""` and `" "`: not digits in the right shape.
+- `"1e3"`: Python's `float("1e3")` reads it as `1000.0`, but it is not an amount in this format.
+- `12.5`, which is not a string at all. Accepting floats would [[invite the rounding errors|float-money]] that storing cents is meant to avoid.
+
+The expense tracker checked amounts piece by piece with `partition` and `isdigit()`. A regular expression can say the whole format in one line. It needs one new piece: `{1,2}` means "one or two times".
+
+```python
+import re
+AMOUNT = re.compile(r"\d+(\.\d{1,2})?")
+```
+
+In words: `\d+` is one or more digits; `\.` is a real dot (a bare `.` would mean "any character"); `\d{1,2}` is one or two digits; and the `( )?` around the dot part makes that whole part optional.
+
+### match or fullmatch
+
+Here is a trap. `match` only checks that the pattern fits at the **start** of the string. It is happy if more text follows. `fullmatch` checks that the pattern fits the **whole** string:
+
+```python
+bool(AMOUNT.fullmatch("12.34"))     # True
+bool(AMOUNT.fullmatch("12.345"))    # False: the 5 is left over
+bool(AMOUNT.match("12.345"))        # True: "12.34" fits at the start
+```
+
+For validation you want [[fullmatch|match-vs-fullmatch]].
+
+One step comes before the pattern: check that the value is a string at all, with `isinstance(amount, str)`. Otherwise `amount.strip()` on the float `12.5` crashes with `AttributeError`, not the `ValueError` the spec asks for.
+
+Once the format is right, convert to cents the way the expense tracker did, with `partition(".")` and `ljust(2, "0")`.
+
+### Showing cents as money
+
+Balances are shown with two decimals and no thousands separator: `123450` cents is `"1234.50"`. That is the expense tracker's formatting without the `,`:
+
+```python
+cents = 123450
+f"{cents // 100}.{cents % 100:02d}"      # '1234.50'
+```
+
+### Account numbers
+
+Account numbers are `"ACC-0001"`, `"ACC-0002"`, and so on. Keep a counter of accounts opened, and pad it with the format `:04d`, which means "a whole number, at least four digits wide, [[padded with zeros|zero-padding]] on the left":
+
+```python
+f"ACC-{7:04d}"       # 'ACC-0007'
+f"ACC-{123:04d}"     # 'ACC-0123'
+```
+
+### All or nothing
+
+A transfer is two changes: take money from one account, give it to another. If the first happens and the second fails, the money has vanished.
+
+An operation that happens completely or not at all is called **[[atomic|atomic]]**. The rule that makes an operation atomic: **check everything that can fail first, then make all the changes**, with nothing between the changes that can raise. For a transfer, that means: look up both accounts, check they are different, validate the amount, and check the balance. Only then change the two balances.
+
+Here is the wrong order:
+
+```python
+src["balance"] -= cents               # the money leaves the source...
+dst = self._account(target)           # ...then this raises KeyError
+```
+
+If `target` does not exist, the second line raises, and the money has left the source with nowhere to land. A failed transfer, whether to a missing account or for more than the balance, must leave *both* accounts, and both statements, exactly as they were.
+
+### An audit trail
+
+Real ledgers never overwrite a balance and forget. They record every movement. Here each account keeps a **statement**: a list of lines, one per movement, each ending with the balance after it:
+
+```
+open 10.00 -> 10.00
+deposit 5.50 -> 15.50
+withdraw 2.00 -> 13.50
+```
+
+Anyone can check the arithmetic line by line: 10.00 plus 5.50 is 15.50, minus 2.00 is 13.50. A record like this is called an [[audit trail|audit-trail]]. Add a line only after an operation has succeeded, so failed operations leave no trace.
+
+### Different errors for different problems
+
+The spec uses three kinds of error, because they mean three different things to the code that calls yours:
+
+- `ValueError`: bad input, like `"12.345"`. A form would show the user a message and let them try again.
+- `KeyError`: an account number that does not exist. That is probably a bug somewhere in the calling code.
+- `InsufficientFunds`: a withdrawal or transfer bigger than the balance. This is a [[normal business outcome|expected-errors]], not a mistake.
+
+`InsufficientFunds` is your own exception class, like `LibraryError` in the library system: `class InsufficientFunds(Exception):` with `pass` as its body.
+
+### Design questions to settle first
+
+Before you type, decide: How will you store an account (its name, its balance in cents, its statement lines)? How will you make account numbers? Where does validation live, so that it is written once and used by `open`, `deposit`, `withdraw` and `transfer`?
+
+**Watch out:** writing the amount check in four places, slightly differently each time. Sooner or later one of them lets `"12.345"` through. Write one function that validates a string and converts it to cents, and one that also insists on more than zero. Deposits, withdrawals and transfers use the second; `open` uses only the first, because an account may start at zero.
+
+::: context boundary-trust A spacecraft lost at a boundary
+In 1999, NASA's Mars Climate Orbiter was lost as it arrived at Mars. Software on the ground, built by one team, reported thruster impulse in pound-force seconds. The navigation software, built by another team, read those numbers as newton-seconds, which are about 4.45 times smaller. Nothing checked the numbers where they crossed from one system to the other, so the trajectory was wrong, and the orbiter came in far too low. The boundary between two programs is exactly where a value must be checked, and turned into one agreed form.
+:::
+
+::: context float-money The float version drifts
+One of this lesson's checks deposits 0.10 a thousand times, then withdraws 0.07 a thousand times. In whole cents that is exact: 10,000 minus 7,000 is 3,000 cents, which is 30.00. With floats, the tiny error in each step piles up:
+
+```python
+b = 0.0
+for _ in range(1000): b += 0.10
+for _ in range(1000): b -= 0.07
+b     # 30.00000000000196
+```
+
+Neither 0.10 nor 0.07 can be stored exactly in binary, as the floating-point lesson showed. A bank that did this across millions of accounts would be out by real money.
+:::
+
+::: context match-vs-fullmatch How much of the string has to match
+`match` is satisfied once the pattern fits somewhere starting at position 0. `fullmatch` needs it to fit from the first character to the last:
+
+```svg
+<svg viewBox="0 0 360 130" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <g font-size="16" text-anchor="middle" fill="#1f2a44">
+    <text x="110" y="36">1</text><text x="140" y="36">2</text><text x="170" y="36">.</text>
+    <text x="200" y="36">3</text><text x="230" y="36">4</text><text x="260" y="36">5</text>
+  </g>
+  <text x="20" y="72" font-size="12" fill="#1f2a44">match</text>
+  <rect x="96" y="58" width="148" height="20" fill="#8fb8f0" stroke="#1d6fd1" stroke-width="2"/>
+  <text x="300" y="72" font-size="12" fill="#1d6fd1">True</text>
+  <text x="20" y="108" font-size="12" fill="#1f2a44">fullmatch</text>
+  <rect x="96" y="94" width="178" height="20" fill="#ffffff" stroke="#b4232c" stroke-width="2"/>
+  <text x="300" y="108" font-size="12" fill="#b4232c">False</text>
+  <text x="260" y="52" font-size="11" text-anchor="middle" fill="#b4232c">left over</text>
+</svg>
+```
+
+Adding `$` to the end of a pattern is not quite enough: in Python `$` also matches just before a final newline, so `re.match(r"\d+$", "12\n")` succeeds. `fullmatch` has no such gap.
+:::
+
+::: context zero-padding Four digits is a minimum
+The `0` in `:04d` says "pad with zeros", and the `4` is a minimum width, not a limit. So `f"{12345:04d}"` is `'12345'`: the 12,345th account still gets its number, just one digit longer. Zero-padding makes numbers the same length, so they line up in lists and sort correctly as text: `"ACC-0010"` comes after `"ACC-0009"`, while `"ACC-10"` would sort before `"ACC-9"`.
+:::
+
+::: context atomic All or nothing
+The word comes from the Greek *atomos*, "uncuttable": an atomic operation cannot be split into a half that happened and a half that did not.
+
+```svg
+<svg viewBox="0 0 360 150" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <text x="20" y="24" font-size="12" fill="#1f2a44">change, then check</text>
+  <rect x="20" y="34" width="90" height="34" fill="#f2b880" stroke="#b4232c" stroke-width="2"/>
+  <text x="65" y="56" font-size="12" text-anchor="middle" fill="#1f2a44">Ada 7.00</text>
+  <rect x="150" y="34" width="90" height="34" fill="#ffffff" stroke="#b4232c" stroke-width="2" stroke-dasharray="5 4"/>
+  <text x="195" y="56" font-size="12" text-anchor="middle" fill="#b4232c">no account</text>
+  <text x="300" y="56" font-size="12" text-anchor="middle" fill="#b4232c">3.00 lost</text>
+  <text x="20" y="98" font-size="12" fill="#1f2a44">check, then change</text>
+  <rect x="20" y="108" width="90" height="34" fill="#8fb8f0" stroke="#1d6fd1" stroke-width="2"/>
+  <text x="65" y="130" font-size="12" text-anchor="middle" fill="#1f2a44">Ada 10.00</text>
+  <rect x="150" y="108" width="90" height="34" fill="#ffffff" stroke="#b4232c" stroke-width="2" stroke-dasharray="5 4"/>
+  <text x="195" y="130" font-size="12" text-anchor="middle" fill="#b4232c">no account</text>
+  <text x="300" y="130" font-size="12" text-anchor="middle" fill="#1d6fd1">nothing moved</text>
+</svg>
+```
+
+Databases give you this as a **transaction**: a group of changes that is either saved as a whole or rolled back as a whole. Atomicity is the A in ACID, the four promises a reliable database makes.
+:::
+
+::: context audit-trail Why ledgers keep every line
+Bookkeeping has worked this way for centuries. Luca Pacioli described double-entry bookkeeping in a mathematics book printed in 1494: every movement of money is written down twice, once where it left and once where it arrived, so the books can always be checked. Your transfer does the same with its `transfer-out` and `transfer-in` lines. Spacecraft keep audit trails too: every command sent and every event on board goes into a log, so that engineers can later work out exactly what happened and when.
+:::
+
+::: context expected-errors Errors that are not mistakes
+Not every exception means something went wrong in the code. "Not enough money" is a normal answer a bank gives every day, just as "that book is out on loan" was in the library system. A separate exception class lets the calling code pick exactly that case, `except InsufficientFunds:`, and show a friendly message, while a `KeyError` from a real bug still stops the program loudly, where a test will catch it. Catching every exception with one broad `except` would hide the bugs along with the business outcomes.
+:::
 --- task
-Build `class InsufficientFunds(Exception)` and `class Bank`:
+Build `class InsufficientFunds(Exception)` and `class Bank`, to this specification. The design inside is up to you.
 
 - Amounts are strings of digits with an optional `.` and one or two decimals (`"12"`, `"12.3"`, `"12.34"`), surrounding spaces allowed. Anything else (including non-strings) raises `ValueError`. Balances are always shown as strings with two decimals and no thousands separator, like `"1234.50"`.
 - `open(name, initial="0.00")` returns a new account number: `"ACC-0001"`, `"ACC-0002"`, … An empty name raises `ValueError`. The initial amount may be zero.
@@ -4377,11 +4910,11 @@ class Bank:
     def total(self):
         return fmt(sum(a["balance"] for a in self._accounts.values()))
 --- hint
-Write one function that validates and converts an amount string to integer cents (a regular expression such as `\d+(\.\d{1,2})?` with `fullmatch` is precise). Use it everywhere, and one function that formats cents for display.
+Validate at the boundary: write one function that checks an amount (`isinstance(text, str)` first, then `re.compile(r"\d+(\.\d{1,2})?")` with `fullmatch` on the stripped text) and converts it to integer cents. Use it everywhere, and write one function that formats cents for display.
 --- hint
-Store each account as a record with its name, balance in cents and a list of statement lines. Count opened accounts to make numbers with `f"ACC-{n:04d}"`.
+Store each account as a record with its name, balance in cents and a list of statement lines. Count opened accounts to make numbers with `f"ACC-{n:04d}"`. Add a statement line only after an operation has succeeded.
 --- hint
-In `transfer`, look up both accounts, check they differ, validate the amount and check the balance before you change either balance.
+In `transfer`, look up both accounts, check they differ, validate the amount and check the balance before you change either balance. Only then subtract, add, and record both lines.
 --- check case | Open, deposit, withdraw
 (lambda b: (lambda a: (b.deposit(a, "5.50"), b.withdraw(a, " 2 "), b.balance(a), b.statement(a)))(b.open("Ada", "10.00")))(Bank())[2:]
 => ("13.50", ["open 10.00 -> 10.00", "deposit 5.50 -> 15.50", "withdraw 2.00 -> 13.50"])
@@ -4407,21 +4940,193 @@ raises(ValueError, lambda: Bank().open("   "))
 
 === pyp-16 | Capstone: a text adventure state machine
 --- teach
-A text adventure is a **state machine**: the game is always in some state (which room you are in, what you carry, what is where), each command moves it to a new state, and the reply describes what happened. The same shape describes vending machines, network protocols, checkout flows and game AI.
+Your bank refused bad input and kept every account exactly right. This is the last capstone, and the last lesson of the whole Python ladder. It ends with a game, and the game is built on one of the most useful ideas in software.
 
-**Separate data from logic.** The rooms, exits and items are *data*: a dict you can read, edit or load from a file. The rules (how `go`, `take` and `drop` work) are *code*. Your code should work for any world with the same shape, not just the example: the checks try a different world too.
+A **text adventure** is a game played entirely in words. The game describes a room; you type a command like `go north` or `take key`; the game replies. Here is the start of a game in the world from the starter (`>` marks what the player typed):
 
-**Identify the state.** Before writing a line, list exactly what changes during play: the current room, the inventory, the items in each room, whether the game is over. Everything else (descriptions, exits, which exit needs which key) is fixed. Keep changing state in the game object.
+```
+> look
+A dusty hall. Exits: east, north. You see: lamp.
+> go north
+Shelves of old books. Exits: south. You see: key, map.
+> take key
+Taken: key.
+> inventory
+You carry: key.
+```
 
-**Do not modify the data you were given.** If two games are created from the same world dict and the first one's `take` removes an item from *the shared dict*, the second game starts with the item missing. That is the aliasing bug once more. Make a deep copy of the world when a game starts.
+### A state machine
 
-**A command parser, a dispatcher, and one method per verb.** Split the input into a verb and the rest; look the verb up; call its handler. Each handler checks its own preconditions ("is there such an exit?", "is it locked?", "is the item here?") and returns the reply.
+Think of a vending machine. At any moment it is in some **state**: waiting, holding 50 cents, handing out a drink. Each thing you do (put in a coin, press a button) moves it to a new state, and it shows you a reply. A program shaped like that is a **[[state machine|state-machine]]**: it is always in some state, each input moves it to a new state, and the reply describes what happened.
 
-**The end state.** Once the goal item is taken, the game is over and every command gets the same reply. Check that *first*, before any other command logic runs.
+A text adventure is one. Its state is which room you are in, what you carry, what lies in each room, and whether the game is over. Each command changes the state and gets a reply. The same shape runs vending machines, network connections, the checkout on a shopping site, and the characters in video games.
 
-**Precise output matters here**, as it does whenever another program (or a checker) reads your output. Follow the reply formats exactly, including full stops and the order of lists.
+### Data and logic, kept apart
+
+The rooms, exits and items are **data**: the `WORLD` dict in the starter. You could edit it, or load it from a JSON file the way the library system did, without touching any code. The rules, how `go`, `take` and `drop` work, are **logic**: your code.
+
+Keep them apart, and your code works for [[any world with the same shape|data-driven]], not only the example. The checks try a different world too, so no room or item name from `WORLD` should appear anywhere in your class.
+
+Here is one room from the starter:
+
+```python
+"kitchen": {
+    "description": "It smells of bread.",
+    "exits": {"west": "hall", "down": "cellar"},
+    "items": [],
+    "locked": {"down": "key"},
+},
+```
+
+`exits` maps each direction to the room it leads to. `locked` is optional: it maps a direction to the item you must carry to go that way. Here, going `down` from the kitchen needs the `key`.
+
+### Name the state before you code
+
+List exactly what changes during play:
+
+- the current room;
+- the **inventory**, the items you carry;
+- the items in each room, because taking and dropping move them;
+- whether the game is over.
+
+Everything else stays fixed: descriptions, exits, and which exit needs which item. Keep the changing state in the `Game` object, for example in `self.room`, `self.inventory` and `self.over`. The spec says `game.room` must be the name of the current room.
+
+### Do not change the world you were given
+
+Picture two games made from the same `WORLD` dict. The first player takes the lamp. If `take` removes `"lamp"` from the list inside the *shared* dict, the second game starts with the lamp already gone. That is [[the aliasing bug|aliasing-again]] from the advanced course, once more.
+
+So make your own deep copy of the world when a game starts, and change only your copy:
+
+```python
+import copy
+self.world = copy.deepcopy(world)
+```
+
+### Reading a command: parse, dispatch, handle
+
+Three small steps, like the command dispatcher in the expert course's plugin lesson.
+
+**1. Parse.** Lowercase the command, so `TAKE KEY` works too, and split it into words. The first word is the **verb**; the rest is what it acts on.
+
+```python
+"Go  North".lower().split()     # ['go', 'north']
+"".split()                      # []: nothing typed at all
+```
+
+**2. Dispatch.** Look at the verb and pick the method that handles it. An `if` chain works, and so does [[a dict from verb to method|dispatch-table]].
+
+**3. Handle.** Write one method per verb. Each one checks its own **preconditions** (the things that must be true before the action can happen: is there such an exit? is it locked? is the item here?) and returns the reply.
+
+Some commands do not fit any verb. A verb that needs a word but has none (`go` on its own), a verb that takes no word but got one (`look around`), an empty line and any unknown verb all get `"I don't understand."`.
+
+### Locked exits
+
+Most rooms have no `"locked"` key at all, so `room["locked"]` would raise `KeyError`. `.get` with a default handles the missing key: `room.get("locked", {})` gives an empty dict when there is none. A second `.get` then finds the item a direction needs, or `None`:
+
+```python
+room = {"exits": {"up": "rim"}, "items": []}
+room.get("locked", {}).get("up")       # None: nothing locks this way
+```
+
+So `go` checks, in order: does the exit exist? If it is locked, is its item in your inventory? Only then move, and reply with the new room's `look` text.
+
+### The end state
+
+Taking the goal item wins the game. From then on, every command gets the same reply, `"The game is over."`. So check "is the game over?" *first* in `do`, before any other logic runs. A check at the very top of a method that returns early is called a [[guard clause|guard-clause]].
+
+### Exact output
+
+The checker is a program, and it compares your replies [[character for character|exact-output]]: every full stop, every comma, every list in the right order. Read the spec closely for which lists are sorted:
+
+- the exits in `look`: sorted;
+- the items in a room: in the room's own order, with a dropped item added at the end;
+- the inventory: sorted.
+
+A room with no exits says `Exits: none.`. One tidy way to get that: `", ".join` of an empty list is `""`, and an empty string counts as false, so `or` moves on to its right side:
+
+```python
+", ".join(sorted({"north": "library", "east": "kitchen"})) or "none"    # 'east, north'
+", ".join(sorted({})) or "none"                                          # 'none'
+```
+
+**Watch out:** putting the "game over" check anywhere but the top of `do`. Then, after the win, `look` still describes the cellar and `take` still works. The spec wants every command after the win to reply `"The game is over."`, so the guard goes first.
+
+When this passes, you have climbed the whole Python ladder: from printing one line to a game engine that runs any world you give it. [[Where you go from here|where-next]] is up to you.
+
+::: context state-machine The game as a state machine
+Every command is an arrow from one state to the next. Most arrows lead back to "playing"; one leads to "over", and there is no arrow out of "over":
+
+```svg
+<svg viewBox="0 0 360 165" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <rect x="40" y="60" width="100" height="44" rx="22" fill="#8fb8f0" stroke="#1d6fd1" stroke-width="2"/>
+  <text x="90" y="87" font-size="13" text-anchor="middle" fill="#1f2a44">playing</text>
+  <rect x="240" y="60" width="100" height="44" rx="22" fill="#ffffff" stroke="#1f2a44" stroke-width="2"/>
+  <text x="290" y="87" font-size="13" text-anchor="middle" fill="#1f2a44">over</text>
+  <line x1="140" y1="82" x2="232" y2="82" stroke="#1f2a44" stroke-width="2"/>
+  <polygon points="240,82 230,77 230,87" fill="#1f2a44"/>
+  <text x="190" y="74" font-size="11" text-anchor="middle" fill="#1f2a44">take goal</text>
+  <path d="M70,60 C60,20 120,20 110,56" fill="none" stroke="#1f2a44" stroke-width="2"/>
+  <polygon points="110,60 106,50 115,52" fill="#1f2a44"/>
+  <text x="90" y="16" font-size="11" text-anchor="middle" fill="#1f2a44">go, take, drop, look</text>
+  <path d="M270,104 C260,144 320,144 310,108" fill="none" stroke="#6c7a93" stroke-width="2"/>
+  <polygon points="310,104 306,114 315,112" fill="#6c7a93"/>
+  <text x="290" y="158" font-size="11" text-anchor="middle" fill="#6c7a93">any command</text>
+</svg>
+```
+
+The expert course met the same idea in a generator that remembered what it had been sent. Flight software is full of state machines: a launch sequence moves through states such as countdown, liftoff and staging, and each state accepts only certain commands.
+:::
+
+::: context data-driven The world is data
+The first famous text adventure, *Colossal Cave Adventure*, was written by Will Crowther around 1976 and greatly expanded by Don Woods in 1977. Soon after, a group at MIT wrote *Zork*. When its authors founded Infocom to sell it, they wrote each game as a story file run by one small program, the "Z-machine", so the same games could be played on many different home computers. Separating the engine from the world is what lets one engine run any number of worlds, and it is why the checks can give your `Game` a world it has never seen.
+:::
+
+::: context aliasing-again Two games, one list
+Without a copy, both games hold the very same room lists, so one player's `take` empties the other player's room. With a deep copy, each game changes only its own lists, and `WORLD` itself stays as it was:
+
+```svg
+<svg viewBox="0 0 360 140" xmlns="http://www.w3.org/2000/svg" font-family="Inter, Arial, sans-serif">
+  <text x="90" y="16" font-size="12" text-anchor="middle" fill="#1f2a44">no copy</text>
+  <rect x="20" y="26" width="60" height="30" fill="#ffffff" stroke="#1f2a44" stroke-width="2"/>
+  <text x="50" y="46" font-size="12" text-anchor="middle" fill="#1f2a44">game 1</text>
+  <rect x="100" y="26" width="60" height="30" fill="#ffffff" stroke="#1f2a44" stroke-width="2"/>
+  <text x="130" y="46" font-size="12" text-anchor="middle" fill="#1f2a44">game 2</text>
+  <rect x="40" y="96" width="100" height="30" fill="#f2b880" stroke="#b4232c" stroke-width="2"/>
+  <text x="90" y="116" font-size="12" text-anchor="middle" fill="#1f2a44">hall items: []</text>
+  <line x1="50" y1="56" x2="80" y2="94" stroke="#1f2a44" stroke-width="2"/>
+  <line x1="130" y1="56" x2="100" y2="94" stroke="#1f2a44" stroke-width="2"/>
+  <text x="270" y="16" font-size="12" text-anchor="middle" fill="#1f2a44">deep copy</text>
+  <rect x="200" y="26" width="60" height="30" fill="#ffffff" stroke="#1f2a44" stroke-width="2"/>
+  <text x="230" y="46" font-size="12" text-anchor="middle" fill="#1f2a44">game 1</text>
+  <rect x="280" y="26" width="60" height="30" fill="#ffffff" stroke="#1f2a44" stroke-width="2"/>
+  <text x="310" y="46" font-size="12" text-anchor="middle" fill="#1f2a44">game 2</text>
+  <rect x="195" y="96" width="70" height="30" fill="#8fb8f0" stroke="#1d6fd1" stroke-width="2"/>
+  <text x="230" y="116" font-size="12" text-anchor="middle" fill="#1f2a44">[]</text>
+  <rect x="275" y="96" width="70" height="30" fill="#8fb8f0" stroke="#1d6fd1" stroke-width="2"/>
+  <text x="310" y="116" font-size="12" text-anchor="middle" fill="#1f2a44">["lamp"]</text>
+  <line x1="230" y1="56" x2="230" y2="94" stroke="#1f2a44" stroke-width="2"/>
+  <line x1="310" y1="56" x2="310" y2="94" stroke="#1f2a44" stroke-width="2"/>
+</svg>
+```
+:::
+
+::: context dispatch-table A table of handlers
+Methods are values, so a dict can hold them: `{"go": self.go, "take": self.take, "drop": self.drop}`. Dispatching is then one lookup, `handlers.get(verb)`, and `None` means an unknown verb. Adding a new verb means adding one method and one entry, without touching the dispatcher. Spacecraft handle commands from the ground the same way: each command has an id, a table maps ids to handlers, and an unknown id is rejected instead of guessed at.
+:::
+
+::: context guard-clause Guard clauses
+A **guard clause** is an `if` at the top of a function that handles a special case and returns at once. Everything after it can then assume the special case is gone: the rest of `do` never has to ask "but what if the game is over?" again. Guards keep code flat, instead of nesting the whole method inside an `if not self.over:` block, and they put the most important rule where a reader sees it first.
+:::
+
+::: context exact-output When a program is the reader
+People forgive a missing full stop; programs do not. Whenever output is read by another program, the format is part of the contract. Spacecraft send their measurements to the ground as **telemetry** in fixed formats, and ground software decodes every field by its exact position. If one field moves, every field after it is read wrong. The checks here compare whole strings, so `"Taken: key"` without its full stop fails just as surely as a wrong answer.
+:::
+
+::: context where-next After the Python ladder
+Python is everywhere in aerospace work on the ground: analysing test data, planning trajectories, running tests, and building the tools that talk to spacecraft. The software on board is usually written in C or C++, because it must run in tight memory with exactly predictable timing. NASA JPL's F Prime flight software framework, for example, is written in C++, and much of the tooling around it is Python. The C++ courses here start from the ideas you now know: variables, loops, functions, classes, and the habit of designing before you type.
+:::
 --- task
-The starter defines `WORLD`, an example world. Build a class `Game(world)` for any world of that shape (`start`, `goal`, and `rooms`, each with `description`, `exits`, `items` and optionally `locked`, which maps a direction to the item needed to go that way).
+The starter defines `WORLD`, an example world. Build a class `Game(world)` that works for any world of that shape: `start`, `goal`, and `rooms`, each room with `description`, `exits`, `items` and optionally `locked`, which maps a direction to the item needed to go that way.
 
 `game.room` is the current room's name. `game.do(command)` returns the reply (commands are case-insensitive):
 
@@ -4560,11 +5265,11 @@ class Game:
             return self.drop(rest)
         return "I don't understand."
 --- hint
-State that changes: the current room, the inventory, each room's items, and whether the game is over. Deep-copy the world in `__init__` so the items can change safely.
+State that changes: the current room, the inventory, each room's items, and whether the game is over. Deep-copy the world in `__init__` with `copy.deepcopy`, so the items can change safely.
 --- hint
-In `do`, check "game over" first, then split the command into a verb and the rest, and call one method per verb.
+In `do`, check "game over" first. Then `words = command.lower().split()`; the verb is `words[0]` and the rest is `" ".join(words[1:])`. Call one method per verb, and reply `"I don't understand."` when a verb is missing its word or has one it should not.
 --- hint
-For `go`, check the exit exists, then look in the room's `locked` dict (use `.get(..., {})`, since most rooms have none) for a required item.
+For `go`, check the exit exists, then look in the room's `locked` dict (use `.get("locked", {})`, since most rooms have none) for a required item that is not in your inventory. For `look`, `", ".join(sorted(exits)) or "none"` gives the exits part.
 --- check case | Looking around the start
 Game(WORLD).do("look")
 => "A dusty hall. Exits: east, north. You see: lamp."
