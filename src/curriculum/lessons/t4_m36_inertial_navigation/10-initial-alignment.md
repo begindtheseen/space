@@ -184,7 +184,7 @@ $$
 \dot\varepsilon = b - \frac{\delta v}{R}, \qquad \dot{\delta v} = g\,\varepsilon, \qquad \dot b = 0 .
 $$
 
-Read $\dot\varepsilon$ as "epsilon dot", the rate of change of the tilt. $R$ is the Earth's radius of curvature, and the bias is modelled as a constant.
+Read $\dot\varepsilon$ as "epsilon dot", the rate of change of the tilt. $R$ is the Earth's radius of curvature, and the bias is modeled as a constant.
 
 ::: example Watching a Kalman filter untangle tilt from bias
 Three states, $(\varepsilon, \delta v, b)$. A zero-velocity measurement arrives every $10\,\mathrm s$ with $5\,\mathrm{cm/s}$ assumed noise. The filter starts from a $1^\circ$ tilt uncertainty and a $10^\circ/\mathrm h$ uncertainty in the turn-on gyro bias:
@@ -221,7 +221,7 @@ Here `Phi` is the state-transition matrix for one $10\,\mathrm s$ step (a few te
 
 Read the output line by line:
 
-- **After one update (10 s)** the tilt uncertainty has already dropped from $1^\circ$ (3600 arcseconds) to about 117 arcseconds. A tilt of $1^\circ$ would build up nearly $2\,\mathrm{m/s}$ of fake velocity in ten seconds, far above the $5\,\mathrm{cm/s}$ noise, so it is seen at once. The bias has barely moved: in ten seconds it has hardly had time to do anything.
+- **After one update (10 s)** the tilt uncertainty has already dropped from $1^\circ$ (3600 arcseconds) to about 117 arcseconds. A tilt of $1^\circ$ would build up about $1.7\,\mathrm{m/s}$ of fake velocity in ten seconds, far above the $5\,\mathrm{cm/s}$ noise, so it is seen at once. The bias has barely moved: in ten seconds it has hardly had time to do anything.
 - **By 5 minutes** the tilt is down to $6.87$ arcseconds and the bias to $0.0365^\circ/\mathrm h$.
 - **By 25 minutes** the tilt is at half an arcsecond, and the bias uncertainty is six ten-thousandths of a degree per hour.
 
@@ -244,7 +244,7 @@ Not every IMU gets to sit still for twenty minutes.
 
 ### Transfer alignment
 
-Think of a smartphone copying the time from a trusted clock. **Transfer alignment** does that with attitude. A second, usually cheaper IMU — in a missile on a wing rail, a pointing sensor, a weapon bay — copies its alignment from an already-aligned master INS elsewhere on the same vehicle. The filter compares what the two units measure (their angular rates, or their velocities) during a short manoeuvre, and solves for the difference in their orientations. A missile cannot wait for a ZUPT-based fine alignment in flight, so this is how it starts.
+Think of a smartphone copying the time from a trusted clock. **Transfer alignment** does that with attitude. A second, usually cheaper IMU — in a missile on a wing rail, a pointing sensor, a weapon bay — copies its alignment from an already-aligned master INS elsewhere on the same vehicle. The filter compares what the two units measure (their angular rates, or their velocities) during a short maneuver, and solves for the difference in their orientations. A missile cannot wait for a ZUPT-based fine alignment in flight, so this is how it starts.
 
 The difficulty unique to transfer alignment is that the two units are in different places. A **[[lever arm|lever-arm-transfer]]** $\mathbf r$ — the vector from master to slave — turns the vehicle's rotation into a real velocity difference between them:
 
@@ -264,7 +264,7 @@ relative to the master. If the filter does not model that, it blames the $2.62\,
 
 **In-flight alignment** drops the "sitting still" requirement completely. Instead of comparing the computed velocity with zero, it compares it with a velocity and position from a satellite receiver (GNSS). It is the same Kalman filter as fine alignment, with $\delta v$ measured against GNSS instead of against zero. It keeps fine alignment's great strength — using the Schuler dynamics to separate tilt from bias.
 
-It also brings a real limit. Some combinations of errors can only be seen if the vehicle **[[manoeuvres|observability-turn]]**. In straight, steady flight, an east-axis tilt and a north accelerometer bias make exactly the same velocity signature — the bias-tilt equivalence once more — and no amount of waiting separates them. A turn or an acceleration changes how the errors reach the measurement, and breaks the tie. That is why aircraft in-flight alignment procedures call for a specific manoeuvre, an S-turn or a series of banks.
+It also brings a real limit. Some combinations of errors can only be seen if the vehicle **[[maneuvers|observability-turn]]**. In straight, steady flight, an east-axis tilt and a north accelerometer bias make exactly the same velocity signature — the bias-tilt equivalence once more — and no amount of waiting separates them. A turn or an acceleration changes how the errors reach the measurement, and breaks the tie. That is why aircraft in-flight alignment procedures call for a specific maneuver, an S-turn or a series of banks.
 
 ## Check yourself
 
@@ -311,7 +311,7 @@ Why is a lever arm a bigger practical problem for transfer alignment than for fi
 :::
 
 ::: answer
-Fine alignment of a single IMU has no second sensor location, so there is no lever-arm term at all, and a still vehicle has no rotation to multiply one anyway. Transfer alignment compares two IMUs at two different places on the vehicle. It usually relies on a manoeuvre, because rotation is what makes the misalignment visible in the first place. That same rotation, through $\boldsymbol\omega\times\mathbf r$, turns the distance between the two units into a real velocity difference — $2.62\,\mathrm{m/s}$ for $5\,\mathrm m$ at $30^\circ/\mathrm s$. Unless that term is modelled and removed, the filter mistakes where the sensors are mounted for how they are misaligned.
+Fine alignment of a single IMU has no second sensor location, so there is no lever-arm term at all, and a still vehicle has no rotation to multiply one anyway. Transfer alignment compares two IMUs at two different places on the vehicle. It usually relies on a maneuver, because rotation is what makes the misalignment visible in the first place. That same rotation, through $\boldsymbol\omega\times\mathbf r$, turns the distance between the two units into a real velocity difference — $2.62\,\mathrm{m/s}$ for $5\,\mathrm m$ at $30^\circ/\mathrm s$. Unless that term is modeled and removed, the filter mistakes where the sensors are mounted for how they are misaligned.
 :::
 
 ## Summary
@@ -324,7 +324,7 @@ Fine alignment of a single IMU has no second sensor location, so there is no lev
 | $\psi\approx b/(\omega_{ie}\cos\varphi)$ | Gyrocompassing heading accuracy; degrades as $1/\cos\varphi$, fails at the poles |
 | ZUPT: $z=\delta v$ with true $v = 0$ | Fine alignment's measurement; the Schuler coupling of $\varepsilon$, $\delta v$ and $b$ lets a Kalman filter separate them |
 | $\mathbf v_{\text{slave}} = \mathbf v_{\text{master}} + \boldsymbol\omega\times\mathbf r$ | Transfer alignment from a master INS; needs lever-arm and flexure compensation |
-| In-flight alignment | Same filter, GNSS in place of ZUPT; some errors need a manoeuvre to become observable |
+| In-flight alignment | Same filter, GNSS in place of ZUPT; some errors need a maneuver to become observable |
 
 Alignment gets the system started. The next two lessons cover what keeps it accurate afterward: how an INS is fused with GNSS once it is moving, in the architectures this lesson's in-flight case previewed, and the full 15-state and 21-state error-state filter that makes that fusion precise.
 
@@ -389,7 +389,7 @@ Stand at latitude $\varphi$. The Earth's spin axis points at the pole star, whic
 :::
 
 ::: context strategic-grade What "strategic grade" means
-Gyro grades are rough bands of bias: about $100^\circ/\mathrm h$ for consumer parts, $1^\circ/\mathrm h$ tactical, $0.01^\circ/\mathrm h$ navigation, $0.001^\circ/\mathrm h$ and better strategic. The name comes from the systems that need the best: ballistic-missile submarines and long-range strategic weapons, which must know their heading precisely after days or weeks with no outside help. Such a gyro can cost as much as a house.
+Gyro grades are rough bands of bias: about $100^\circ/\mathrm h$ for consumer parts, $1^\circ/\mathrm h$ tactical, $0.01^\circ/\mathrm h$ navigation, $0.001^\circ/\mathrm h$ and better strategic. The name comes from the systems that need the best: ballistic-missile submarines and long-range strategic weapons, which must know their heading precisely after days or weeks with no outside help.
 :::
 
 ::: context zupt-name Where the ZUPT comes back
