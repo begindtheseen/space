@@ -9364,7 +9364,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-constraints-and-slack-variables",
       "title": "State and input constraints, softening and slacks",
-      "minutes": 21,
+      "minutes": 24,
       "covers": [
         "State and input constraints; soft constraints and slack variables"
       ],
@@ -10071,7 +10071,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-star-tracker-accuracy-boresight-update-rate-stray-light",
       "title": "Star tracker accuracy: boresight geometry, update rate, and stray light",
-      "minutes": 28,
+      "minutes": 25,
       "covers": [
         "Star tracker accuracy: cross-boresight vs about-boresight, update rate, exclusion angles, stray light"
       ],
@@ -10080,7 +10080,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-sun-sensors-coarse-fine-albedo-error",
       "title": "Sun sensors: coarse and fine, and the Earth-albedo error",
-      "minutes": 27,
+      "minutes": 24,
       "covers": [
         "Sun sensors: coarse analog and fine digital, field of view, albedo error"
       ],
@@ -10116,7 +10116,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-cameras-pinhole-intrinsics-extrinsics-distortion",
       "title": "Cameras for optical navigation: the pinhole model, intrinsics, extrinsics, distortion",
-      "minutes": 25,
+      "minutes": 24,
       "covers": [
         "Cameras for optical navigation: the pinhole model, intrinsics and extrinsics, distortion"
       ],
@@ -10125,7 +10125,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-feature-tracking-terrain-relative-navigation-crater-matching",
       "title": "Feature detection and tracking, terrain relative navigation, and crater matching",
-      "minutes": 21,
+      "minutes": 24,
       "covers": [
         "Feature detection and tracking; terrain relative navigation; crater and landmark matching"
       ],
@@ -10134,7 +10134,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-hazard-detection-visual-inertial-odometry",
       "title": "Hazard detection and avoidance; visual-inertial odometry basics",
-      "minutes": 16,
+      "minutes": 24,
       "covers": [
         "Hazard detection and avoidance; visual-inertial odometry basics"
       ],
@@ -10142,8 +10142,8 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     },
     {
       "id": "l10-relative-navigation-docking-retroreflectors",
-      "title": "Relative navigation for docking: retroreflectors and the closing error ellipse",
-      "minutes": 17,
+      "title": "Docking navigation: retroreflectors and the closing error ellipse",
+      "minutes": 23,
       "covers": [
         "Relative navigation sensors for docking: retroreflector tracking and pattern recognition"
       ],
@@ -10152,7 +10152,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-sensor-fusion-architectures-measurement-models",
       "title": "Sensor fusion architectures and per-sensor measurement models",
-      "minutes": 15,
+      "minutes": 23,
       "covers": [
         "Sensor fusion architectures and per-sensor measurement models"
       ],
@@ -10161,7 +10161,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-sensor-calibration-alignment-fault-detection",
       "title": "Sensor calibration, alignment estimation, and fault detection",
-      "minutes": 14,
+      "minutes": 25,
       "covers": [
         "Sensor calibration, alignment estimation, and fault detection"
       ],
@@ -10172,7 +10172,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-initial-orbit-determination",
       "title": "Initial orbit determination: Gibbs, Herrick-Gibbs and Gauss angles-only",
-      "minutes": 27,
+      "minutes": 26,
       "covers": [
         "Initial orbit determination: angles-only (Gauss, Laplace, double-r), three position vectors (Gibbs, Herrick-Gibbs), range and range-rate methods"
       ],
@@ -10181,7 +10181,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-batch-least-squares-orbit-determination",
       "title": "Batch least-squares orbit determination with the state transition matrix",
-      "minutes": 16,
+      "minutes": 19,
       "covers": [
         "Batch least-squares orbit determination with the state transition matrix"
       ],
@@ -10190,7 +10190,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-variational-equations-stm-integration",
       "title": "The variational equations and computing the STM by integration",
-      "minutes": 16,
+      "minutes": 20,
       "covers": [
         "The variational equations and computing the STM by integration"
       ],
@@ -10199,7 +10199,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-sequential-orbit-determination-ekf-ukf",
       "title": "Sequential orbit determination with EKF and UKF",
-      "minutes": 16,
+      "minutes": 24,
       "covers": [
         "Sequential orbit determination with EKF and UKF"
       ],
@@ -10208,7 +10208,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-measurement-types-and-models",
       "title": "Measurement types and models: range, range-rate, angles, GNSS, VLBI, ISL",
-      "minutes": 13,
+      "minutes": 22,
       "covers": [
         "Measurement types and models: range, range-rate/Doppler, angles, GNSS, VLBI, inter-satellite links"
       ],
@@ -10217,7 +10217,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-tracking-geometry-and-observability",
       "title": "Station and tracking geometry and its effect on observability",
-      "minutes": 14,
+      "minutes": 19,
       "covers": [
         "Station and tracking geometry and its effect on observability"
       ],
@@ -10226,7 +10226,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-process-noise-gauss-markov-dmc",
       "title": "Process noise for orbit determination: Gauss-Markov acceleration and DMC",
-      "minutes": 16,
+      "minutes": 24,
       "covers": [
         "Process noise for orbit determination: Gauss-Markov acceleration and dynamic model compensation"
       ],
@@ -10235,7 +10235,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-consider-covariance-analysis",
       "title": "Consider-covariance analysis",
-      "minutes": 12,
+      "minutes": 19,
       "covers": [
         "Consider-covariance analysis"
       ],
@@ -10244,7 +10244,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-residual-editing-and-data-weighting",
       "title": "Residual editing and data weighting",
-      "minutes": 14,
+      "minutes": 24,
       "covers": [
         "Residual editing and data weighting"
       ],
@@ -10253,7 +10253,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-orbit-accuracy-ric-frame",
       "title": "Orbit accuracy metrics and covariance in the RIC frame",
-      "minutes": 13,
+      "minutes": 19,
       "covers": [
         "Orbit accuracy metrics and covariance in the RIC (radial, in-track, cross-track) frame"
       ],
@@ -10262,7 +10262,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-conjunction-assessment-collision-probability",
       "title": "Conjunction assessment and collision probability",
-      "minutes": 13,
+      "minutes": 21,
       "covers": [
         "Conjunction assessment and collision probability"
       ],
@@ -10271,7 +10271,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-maneuver-estimation-and-reconstruction",
       "title": "Maneuver estimation and reconstruction",
-      "minutes": 12,
+      "minutes": 24,
       "covers": [
         "Maneuver estimation and reconstruction"
       ],
@@ -10280,7 +10280,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l13-relative-od-and-autonomous-onboard-od",
       "title": "Relative orbit determination and autonomous onboard OD",
-      "minutes": 14,
+      "minutes": 23,
       "covers": [
         "Relative orbit determination for constellations; autonomous onboard orbit determination"
       ],

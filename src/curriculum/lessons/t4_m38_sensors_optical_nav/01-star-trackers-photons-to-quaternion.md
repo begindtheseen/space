@@ -43,7 +43,7 @@ Take $f = 28.5\,\mathrm{mm}$, $p = 7.4\,\mathrm{\mu m}$ and a $1024 \times 1024$
 
 **One star.** If we can locate a star's spot to $0.05$ pixel, we know that star's direction to $0.05 \times 53.6'' = 2.7''$.
 
-Sanity check: $15^\circ$ is about the width of your hand at arm's length. The rest of the lesson uses these numbers.
+Sanity check: $15^\circ$ is about the width of your hand at arm's length.
 :::
 
 How much light is there? Astronomers measure brightness in **[[magnitudes|magnitude-scale]]**, where bigger numbers mean fainter stars. A magnitude-0 star sends roughly $1000$ photons per second, per square centimetre, per ångström of wavelength band (an ångström is $10^{-10}\,\mathrm{m}$). A silicon detector uses about $3000$ ångströms well, so that is about $3\times10^6$ photons per second per square centimetre. Each step of one magnitude is a factor of $10^{0.4} = 2.512$ fainter. So a magnitude-6 star, near the faint limit of a typical onboard catalog, gives
