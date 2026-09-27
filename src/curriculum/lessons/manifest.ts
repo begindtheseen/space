@@ -635,7 +635,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-the-shape-of-the-process",
       "title": "The shape of the process, end to end",
-      "minutes": 19,
+      "minutes": 18,
       "covers": [
         "overall timeline: 5 to 8 weeks, up to roughly nine touchpoints"
       ],
@@ -644,7 +644,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-the-recruiter-screen",
       "title": "Stage 1: the recruiter screen",
-      "minutes": 17,
+      "minutes": 19,
       "covers": [
         "stage 1 — recruiter screen, 20 to 30 minutes: background, motivation, ITAR confirmation"
       ],
@@ -653,7 +653,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-the-technical-phone-screen",
       "title": "Stage 2: the technical phone screen",
-      "minutes": 17,
+      "minutes": 19,
       "covers": [
         "stage 2 — technical phone screen, 30 minutes and sometimes 60 to 90, with a team engineer or the hiring manager"
       ],
@@ -662,7 +662,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-the-take-home",
       "title": "Stage 3: the take-home exercise",
-      "minutes": 17,
+      "minutes": 19,
       "covers": [
         "stage 3 — take-home exercise for some software and firmware roles"
       ],
@@ -671,7 +671,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-the-onsite-day",
       "title": "Stage 4: the full-day onsite",
-      "minutes": 17,
+      "minutes": 18,
       "covers": [
         "stage 4 — full-day onsite: 5 to 7 back-to-back interviews, often 8+ hours, sometimes with a facility tour"
       ],
@@ -680,7 +680,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-rounds-on-what-you-have-built",
       "title": "The onsite rounds on what you have already built",
-      "minutes": 19,
+      "minutes": 21,
       "covers": [
         "onsite composition: past-project presentation, 2 to 3 coding rounds, 1 to 2 systems and architecture rounds, 1+ domain-knowledge round, abstract problem solving, physics puzzles and Fermi estimation"
       ],
@@ -689,7 +689,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-rounds-on-how-you-think",
       "title": "The onsite rounds on how you think",
-      "minutes": 18,
+      "minutes": 20,
       "covers": [
         "onsite composition: past-project presentation, 2 to 3 coding rounds, 1 to 2 systems and architecture rounds, 1+ domain-knowledge round, abstract problem solving, physics puzzles and Fermi estimation"
       ],
@@ -697,8 +697,8 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     },
     {
       "id": "l08-behavioural-and-culture",
-      "title": "Stage 5: behavioural and culture",
-      "minutes": 18,
+      "title": "Stage 5: behavioral and culture",
+      "minutes": 19,
       "covers": [
         "stage 5 — behavioural and culture, using STAR"
       ],
@@ -707,7 +707,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-reading-the-difficulty-rating",
       "title": "What a 2.8 out of 5 difficulty rating indicates",
-      "minutes": 17,
+      "minutes": 21,
       "covers": [
         "Glassdoor difficulty rating of 2.8 out of 5 for GNC Engineer, and what that really indicates"
       ],
@@ -716,7 +716,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-stamina-and-logistics",
       "title": "Logistics and stamina for an eight-hour day",
-      "minutes": 18,
+      "minutes": 19,
       "covers": [
         "logistics and stamina: sleep, food, water, breaks, and how to ask for one"
       ],
@@ -725,7 +725,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-what-to-ask-at-each-stage",
       "title": "What to ask at each stage, and what not to ask yet",
-      "minutes": 18,
+      "minutes": 19,
       "covers": [
         "what to ask at each stage, and what not to ask yet"
       ],
@@ -734,7 +734,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-debrief-and-decision",
       "title": "The debrief, and how mixed signals get weighed",
-      "minutes": 18,
+      "minutes": 21,
       "covers": [
         "debrief and decision; how a hiring committee weighs mixed signals"
       ],
@@ -743,7 +743,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l13-rejection-and-the-path-back",
       "title": "Rejection, and the path back in",
-      "minutes": 19,
+      "minutes": 22,
       "covers": [
         "handling rejection and the path back in"
       ],
@@ -754,7 +754,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-the-recruiter-screen",
       "title": "What the recruiter screen is actually confirming",
-      "minutes": 20,
+      "minutes": 21,
       "covers": [
         "recruiter screen structure and the questions actually asked: background, motivation, export-control eligibility, location and relocation, timeline, compensation expectations"
       ],
@@ -763,7 +763,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-the-ninety-second-narrative",
       "title": "The ninety-second background narrative",
-      "minutes": 23,
+      "minutes": 21,
       "covers": [
         "the 90-second background narrative and how to end it on a specific role family"
       ],
@@ -781,7 +781,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-the-technical-phone-screen",
       "title": "The technical phone screen: format and frame",
-      "minutes": 22,
+      "minutes": 24,
       "covers": [
         "the technical phone screen: 30 minutes, an engineer on the team or the hiring manager"
       ],
