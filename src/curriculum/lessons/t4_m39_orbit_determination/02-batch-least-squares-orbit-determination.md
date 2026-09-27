@@ -14,7 +14,7 @@ It is the nonlinear least-squares problem you met in the least-squares module, w
 
 ## The batch problem as nonlinear least squares
 
-Pick an **epoch** $t_0$ — the one moment whose state you will solve for. Call that state $\mathbf x_0$: position and velocity, six numbers for now. Flying $\mathbf x_0$ forward with your best force model gives the **reference trajectory** $\mathbf x_{\text{ref}}(t)$.
+Pick an **[[epoch|epoch-word]]** $t_0$ — the one moment whose state you will solve for. Call that state $\mathbf x_0$: position and velocity, six numbers for now. Flying $\mathbf x_0$ forward with your best force model gives the **reference trajectory** $\mathbf x_{\text{ref}}(t)$.
 
 Each measurement $y_i$, taken at time $t_i$, is modeled as
 
@@ -232,6 +232,10 @@ On one short pass, a constant offset in every range can be explained almost as w
 | Solve-for vs consider | Extra unknown with its own column, vs a fixed value whose uncertainty is still counted |
 
 This lesson treated $\boldsymbol\Phi$ as a black box. The next lesson opens it: the variational equations that generate it, why integrating them alongside the trajectory is the way to get it once real forces are added, and the free checks that tell you the integration is healthy.
+
+::: context epoch-word A timestamp you pin the answer to
+An epoch is just a chosen instant that the answer refers to, like writing "as of 9:00 a.m." on a weather report. The satellite never stops moving, so "where is it?" means nothing until you name a time. Orbit centers pick an epoch near the middle or start of the tracking arc and publish the state there; anyone who needs the state at another time flies it forward or backward with the same force model. The word comes from astronomy, where star catalogs are tagged with the epoch their positions were measured for.
+:::
 
 ::: context chain-rule Changes passed along a chain
 If turning a dial by one click moves a gear by three teeth, and one tooth of the gear moves a needle by two millimeters, then one click moves the needle six millimeters. Multiply the rates along the chain. Here the "dial" is the epoch state, the "gear" is the state at $t_i$, and the "needle" is the sensor reading.

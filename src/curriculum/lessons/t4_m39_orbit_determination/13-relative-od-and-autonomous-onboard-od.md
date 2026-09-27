@@ -1,7 +1,7 @@
 ---
 id: l13-relative-od-and-autonomous-onboard-od
 title: Relative orbit determination and autonomous onboard OD
-minutes: 24
+minutes: 23
 covers:
   - "Relative orbit determination for constellations; autonomous onboard orbit determination"
 ---
@@ -18,7 +18,7 @@ Neither needs a new estimator. Both reuse the whole module.
 
 Two satellites tracked by the same ground station share more than a view of the sky. They share whatever systematic error that station's data carries: a range bias, a mismodeled delay through the lower atmosphere, a station location that is slightly off. Each of these pulls *both* satellites' fits in nearly the same direction. An error that hits two things almost equally is a **[[common-mode error|common-mode]]** — the hiking map again — and it mostly cancels when you subtract one from the other.
 
-To say that precisely, we need one more piece of statistics: how two errors move together. Take two numbers with errors $e_A$ and $e_B$, each with sigma $\sigma_A$ and $\sigma_B$. Their **correlation coefficient** $\rho$ (read "rho") says how closely the errors track each other: $\rho = 1$ means they always move identically, $\rho = 0$ means they are unrelated, and $\rho = -1$ means they always move oppositely. Then the difference $e_A - e_B$ has variance
+To say that precisely, we need one more piece of statistics: how two errors move together. Take two numbers with errors $e_A$ and $e_B$, each with sigma $\sigma_A$ and $\sigma_B$. Their **[[correlation coefficient|correlation]]** $\rho$ (read "rho") says how closely the errors track each other: $\rho = 1$ means they always move identically, $\rho = 0$ means they are unrelated, and $\rho = -1$ means they always move oppositely. Then the difference $e_A - e_B$ has variance
 
 $$
 \sigma_{A-B}^2 = \sigma_A^2 + \sigma_B^2 - 2\rho\,\sigma_A\sigma_B.
@@ -143,7 +143,7 @@ For spacecraft flying close together, the relative motion itself is often worth 
 
 ## Autonomous onboard orbit determination
 
-Every tool in this module works the same whether the normal equations are solved on the ground or on the spacecraft. What changes onboard is which measurements are available, how much computing power and memory there is, and how long you can wait for an answer. On the ground, a batch fit can crunch days of data on a fast computer, with analysts checking every residual. Onboard, a small radiation-hardened processor has to keep up in real time, with nobody watching. That is why onboard orbit determination is almost always sequential — the EKF or UKF of the sequential lesson — rather than batch.
+Every tool in this module works the same whether the normal equations are solved on the ground or on the spacecraft. What changes onboard is which measurements are available, how much computing power and memory there is, and how long you can wait for an answer. On the ground, a batch fit can crunch days of data on a fast computer, with analysts checking every residual. Onboard, a small **[[radiation-hardened|rad-hard]]** processor has to keep up in real time, with nobody watching. That is why onboard orbit determination is almost always sequential — the EKF or UKF of the sequential lesson — rather than batch.
 
 ### With GNSS
 
@@ -273,6 +273,66 @@ Both dots move by the same arrow, so the gap between them does not change.
 Engineers borrowed "common mode" from electronics, where a common-mode signal is one that appears equally on two wires; a circuit that listens only to the *difference* between the wires ignores it. Differencing two measurements does the same with errors.
 :::
 
+::: context correlation Seeing a correlation
+Plot many pairs of errors, $e_A$ across and $e_B$ up, one dot per pair. The correlation coefficient describes the shape of the cloud.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">
+  <rect x="20" y="15" width="90" height="90" fill="#ffffff" stroke="#6c7a93" stroke-width="1"/>
+  <circle cx="93.6" cy="44.0" r="3" fill="#1d6fd1"/>
+  <circle cx="70.9" cy="56.9" r="3" fill="#1d6fd1"/>
+  <circle cx="58.7" cy="67.0" r="3" fill="#1d6fd1"/>
+  <circle cx="36.7" cy="87.9" r="3" fill="#1d6fd1"/>
+  <circle cx="52.9" cy="57.0" r="3" fill="#1d6fd1"/>
+  <circle cx="68.2" cy="58.5" r="3" fill="#1d6fd1"/>
+  <circle cx="61.1" cy="66.7" r="3" fill="#1d6fd1"/>
+  <circle cx="50.2" cy="75.7" r="3" fill="#1d6fd1"/>
+  <circle cx="71.7" cy="54.6" r="3" fill="#1d6fd1"/>
+  <circle cx="78.4" cy="48.1" r="3" fill="#1d6fd1"/>
+  <circle cx="65.3" cy="52.9" r="3" fill="#1d6fd1"/>
+  <circle cx="72.6" cy="55.0" r="3" fill="#1d6fd1"/>
+  <circle cx="62.4" cy="60.1" r="3" fill="#1d6fd1"/>
+  <circle cx="92.1" cy="35.4" r="3" fill="#1d6fd1"/>
+  <text x="65" y="124" font-size="12" fill="#1f2a44" text-anchor="middle">ρ near 1</text>
+  <rect x="135" y="15" width="90" height="90" fill="#ffffff" stroke="#6c7a93" stroke-width="1"/>
+  <circle cx="176.6" cy="46.0" r="3" fill="#1d6fd1"/>
+  <circle cx="167.6" cy="64.1" r="3" fill="#1d6fd1"/>
+  <circle cx="192.4" cy="51.9" r="3" fill="#1d6fd1"/>
+  <circle cx="181.3" cy="50.6" r="3" fill="#1d6fd1"/>
+  <circle cx="140.4" cy="45.7" r="3" fill="#1d6fd1"/>
+  <circle cx="166.6" cy="83.4" r="3" fill="#1d6fd1"/>
+  <circle cx="183.9" cy="50.2" r="3" fill="#1d6fd1"/>
+  <circle cx="173.8" cy="75.1" r="3" fill="#1d6fd1"/>
+  <circle cx="180.4" cy="60.7" r="3" fill="#1d6fd1"/>
+  <circle cx="199.7" cy="49.5" r="3" fill="#1d6fd1"/>
+  <circle cx="182.7" cy="44.4" r="3" fill="#1d6fd1"/>
+  <circle cx="177.1" cy="73.0" r="3" fill="#1d6fd1"/>
+  <circle cx="188.2" cy="51.8" r="3" fill="#1d6fd1"/>
+  <circle cx="177.0" cy="71.0" r="3" fill="#1d6fd1"/>
+  <text x="180" y="124" font-size="12" fill="#1f2a44" text-anchor="middle">ρ near 0</text>
+  <rect x="250" y="15" width="90" height="90" fill="#ffffff" stroke="#6c7a93" stroke-width="1"/>
+  <circle cx="298.2" cy="73.9" r="3" fill="#1d6fd1"/>
+  <circle cx="304.7" cy="67.0" r="3" fill="#1d6fd1"/>
+  <circle cx="272.1" cy="37.9" r="3" fill="#1d6fd1"/>
+  <circle cx="281.5" cy="43.9" r="3" fill="#1d6fd1"/>
+  <circle cx="266.5" cy="36.9" r="3" fill="#1d6fd1"/>
+  <circle cx="304.9" cy="64.4" r="3" fill="#1d6fd1"/>
+  <circle cx="264.8" cy="33.5" r="3" fill="#1d6fd1"/>
+  <circle cx="299.6" cy="67.0" r="3" fill="#1d6fd1"/>
+  <circle cx="317.3" cy="86.4" r="3" fill="#1d6fd1"/>
+  <circle cx="300.0" cy="69.3" r="3" fill="#1d6fd1"/>
+  <circle cx="314.7" cy="78.8" r="3" fill="#1d6fd1"/>
+  <circle cx="289.8" cy="62.6" r="3" fill="#1d6fd1"/>
+  <circle cx="318.5" cy="79.1" r="3" fill="#1d6fd1"/>
+  <circle cx="305.5" cy="65.0" r="3" fill="#1d6fd1"/>
+  <text x="295" y="124" font-size="12" fill="#1f2a44" text-anchor="middle">ρ near −1</text>
+  <text x="180" y="143" font-size="11" fill="#6c7a93" text-anchor="middle">across: error in A · up: error in B</text>
+</svg>
+```
+
+Near $+1$, the dots hug a rising line: when $A$ is off one way, $B$ is off the same way, so $A - B$ hardly varies. Near $0$ they form a round blob. Near $-1$ they hug a falling line, and the difference swings twice as hard. A shared station bias pushes two fits toward the left-hand picture.
+:::
+
 ::: context differencing Subtracting away the errors
 In the GNSS module, a receiver's error budget included satellite clock errors, orbit errors and delays through the upper and lower atmosphere. Two receivers a few kilometres apart see nearly the same values of all of these. Subtract their measurements of the same satellite — **differencing** — and those errors cancel. Real-time kinematic (**RTK**) positioning pushes this further with the phase of the radio carrier wave and reaches centimetre-level baselines. Surveyors and self-steering farm tractors rely on it; so do spacecraft pairs such as GRACE, which used differenced GPS to help measure their relative positions.
 :::
@@ -281,23 +341,28 @@ In the GNSS module, a receiver's error budget included satellite clock errors, o
 The equations are named after George William Hill, who wrote linearized equations of this kind in 1878 while studying the Moon's motion, and W. H. Clohessy and R. S. Wiltshire, who applied them to spacecraft rendezvous in 1960, early in the space race. They describe how one spacecraft drifts and loops as seen from another in a circular orbit, in the same radial, in-track and cross-track axes as this module's RIC frame. The relative-motion module derived them; a formation-flying filter can use them as its dynamics model in place of two full orbits.
 :::
 
+::: context rad-hard Why spacecraft computers are slow
+Above the atmosphere, fast charged particles from the Sun and from cosmic rays pass through electronics. One particle can flip a stored bit or, worse, latch a chip into a short circuit. **Radiation-hardened** processors are designed and tested to survive this, and the extra care leaves them years behind the chips in a phone. The RAD750, flown on the Curiosity and Perseverance Mars rovers, runs at up to about $200\,\mathrm{MHz}$. That is why flight software favors a compact sequential filter over a big batch fit.
+:::
+
 ::: context side-lobes Listening to signals meant for someone else
-GNSS satellites point their antennas at Earth. Most of the power goes into a main beam a little wider than the Earth; weaker **side lobes** spill out at wider angles. A spacecraft far above the constellation can only hear the main beams that sneak past the edge of the Earth from satellites on the far side, plus the faint side lobes.
+GNSS satellites point their antennas at Earth. Most of the power goes into a main beam a little wider than the Earth; weaker **side lobes** spill out at wider angles. A spacecraft far above the constellation hears mostly the edges of main beams from satellites on the far side of the Earth, sneaking past its rim, plus the faint side lobes. The picture is not to scale.
 
 ```svg
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 200" font-family="Inter, Arial, sans-serif">
-  <circle cx="180" cy="130" r="40" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
-  <text x="180" y="134" font-size="12" fill="#1f2a44" text-anchor="middle">Earth</text>
-  <circle cx="180" cy="130" r="85" fill="none" stroke="#6c7a93" stroke-width="1.2" stroke-dasharray="5 4"/>
-  <text x="288" y="190" font-size="11" fill="#6c7a93" text-anchor="middle">GNSS orbits</text>
-  <circle cx="180" cy="215" r="6" fill="#1f2a44"/>
-  <line x1="180" y1="209" x2="148" y2="96" stroke="#1d6fd1" stroke-width="1.5"/>
-  <line x1="180" y1="209" x2="212" y2="96" stroke="#1d6fd1" stroke-width="1.5"/>
-  <polyline points="180,209 138,20" fill="none" stroke="#f2b880" stroke-width="2" stroke-dasharray="4 3"/>
-  <circle cx="130" cy="18" r="7" fill="#b4232c"/>
-  <text x="140" y="14" font-size="12" fill="#b4232c">high user</text>
-  <text x="96" y="70" font-size="11" fill="#1f2a44" text-anchor="end">main beam</text>
-  <text x="96" y="84" font-size="11" fill="#1f2a44" text-anchor="end">past Earth's edge</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 210" font-family="Inter, Arial, sans-serif">
+  <polygon points="180,190 37.4,20 104.9,60" fill="#f2b880" opacity="0.5"/>
+  <polygon points="180,190 322.6,20 255.1,60" fill="#f2b880" opacity="0.5"/>
+  <line x1="180" y1="190" x2="37.4" y2="20" stroke="#1d6fd1" stroke-width="1.5"/>
+  <line x1="180" y1="190" x2="322.6" y2="20" stroke="#1d6fd1" stroke-width="1.5"/>
+  <circle cx="180" cy="120" r="70" fill="none" stroke="#6c7a93" stroke-width="1.2" stroke-dasharray="5 4"/>
+  <circle cx="180" cy="120" r="35" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="180" y="124" font-size="12" fill="#1f2a44" text-anchor="middle">Earth</text>
+  <text x="268" y="160" font-size="11" fill="#6c7a93">GNSS orbits</text>
+  <rect x="174" y="184" width="12" height="12" fill="#1f2a44"/>
+  <text x="196" y="200" font-size="11" fill="#1f2a44">GNSS satellite</text>
+  <circle cx="85.4" cy="54.8" r="6" fill="#b4232c"/>
+  <text x="96" y="46" font-size="12" fill="#b4232c">high user</text>
+  <text x="180" y="18" font-size="11" fill="#1f2a44" text-anchor="middle">Earth blocks the middle of the beam</text>
 </svg>
 ```
 

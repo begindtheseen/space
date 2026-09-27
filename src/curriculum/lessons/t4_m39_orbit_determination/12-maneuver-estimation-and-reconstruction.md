@@ -1,7 +1,7 @@
 ---
 id: l12-maneuver-estimation-and-reconstruction
 title: Maneuver estimation and reconstruction
-minutes: 25
+minutes: 24
 covers:
   - Maneuver estimation and reconstruction
 ---
@@ -142,7 +142,7 @@ Same contaminated three-pass arc as before, now fitted with a nine-number state:
 **The epoch state.** Position is now right to about half a metre, against about $3\,\mathrm{km}$ before. Adding three columns to the model bought back a factor of several thousand.
 :::
 
-In real operations the team that planned the burn usually shares it. Then the planned $\Delta\mathbf v$ becomes the fit's starting guess, with an a priori uncertainty sized to how well thrusters actually **[[perform the plan|execution-error]]**, and the tracking data corrects it.
+In real operations the team that planned the burn usually shares it. Then the planned $\Delta\mathbf v$ becomes the fit's starting guess, with an *a priori* uncertainty — one stated before any tracking data arrives — sized to how well thrusters actually **[[perform the plan|execution-error]]**, and the tracking data corrects it.
 
 ## Detecting it instead: splitting the arc
 
@@ -170,7 +170,7 @@ Two independent fits meet at a split time. Along-track, the "after" fit's veloci
 :::
 
 ::: warning Arc splitting needs enough data on each side
-Try this on the three-pass arc with the split before the third pass, and it fails. The "after" side has one isolated pass: $39$ observations, one station, one geometry. The tracking-geometry lesson already showed what that means. One lone pass leaves the normal equations with $\operatorname{cond}(\widetilde{\mathbf H})$ of order $10^9$ — some combinations of the state are barely seen at all. The fit diverges, whatever the starting guess.
+Try this on the three-pass arc with the split before the third pass, and it fails. The "after" side has one isolated pass: $39$ observations, one station, one geometry. The tracking-geometry lesson already showed what that means. One lone pass leaves the normal equations with a condition number $\operatorname{cond}(\widetilde{\mathbf H})$ of order $10^9$ — a sign that some combinations of the state are barely seen at all. The fit diverges, whatever the starting guess.
 
 That is not a flaw in the idea. It is the observability lesson again, now costing you a maneuver instead of an epoch state. Each side of a split has to be well observed *on its own* — several passes, or good station geometry — before comparing the two sides means anything. Solving for $\Delta\mathbf v$ directly does not have this weakness, because the whole arc, both sides at once, pins down the single set of burn parameters.
 :::
