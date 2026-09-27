@@ -348,7 +348,7 @@ The Sun's ultraviolet output cannot be measured from the ground, because the atm
 :::
 
 ::: context oblateness A planet with a waistline
-Earth spins once a day, and the spin makes it bulge at the equator: the equatorial radius is 6,378 km and the polar radius 6,357 km. The extra ring of mass pulls on a satellite a little toward the equator plane. Because the orbit is tilted, that sideways tug makes the orbit plane slowly turn, the way a spinning top wobbles. Sun-synchronous orbits use this on purpose: tilted just right, their plane turns once a year, keeping the same lighting below.
+Earth spins once a day, and the spin makes it bulge at the equator: the equatorial radius is 6,378 km and the polar radius 6,357 km. The extra ring of mass pulls on a satellite a little toward the equator plane. Because the orbit is tilted, that sideways tug makes the orbit plane slowly turn, the way a spinning top wobbles. Sun-synchronous orbits use this on purpose: tilted at the right angle, their plane turns once a year, keeping the same lighting below.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 170" font-family="Inter, Arial, sans-serif">
