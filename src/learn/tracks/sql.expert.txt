@@ -1399,27 +1399,269 @@ INSERT INTO activity (user_id, day) VALUES
   (6, '2024-02-11'), (6, '2024-04-20'),
   (7, '2024-04-01');
 --- teach
-This lesson's tables: `users` (`id`, `signed_up`) and `activity` (`user_id`, `day`) — one row each time a user was active.
+Last lesson you repaired broken data by measuring first. This lesson and the next are problem-solving lessons again: questions a real product team asks, worked through in steps, the way you did in "Problem solving: everyone under every manager". This one asks: do the people who sign up **come back**?
 
-**The problem.** Growth wants to know whether people stick around. Group users into **cohorts** by the month they signed up. For each cohort, report its size and the percentage of its users who were active **one month** after their signup month, and **two months** after. A user signing up in January is "month 1 active" if they were active at any time in February.
+### The tables
 
-Work it through the problem-solving steps:
+`users` has one row per person: `id`, and `signed_up`, the date they joined. There are 7 users.
 
-1. **Restate with an example.** January's cohort is users 1–4. In February, users 1 and 2 were active: 2 of 4, 50%. User 1 was active twice in February — that is still one user.
-2. **Find the key quantity:** for every activity, *how many months after signup* it happened. Turn a date into a month number, `year * 12 + month`, and subtract:
+| id | signed_up |
+| --- | --- |
+| 1 | 2024-01-05 |
+| 2 | 2024-01-20 |
+| 3 | 2024-01-31 |
+| 4 | 2024-01-15 |
+| 5 | 2024-02-02 |
+| 6 | 2024-02-10 |
+| 7 | 2024-03-03 |
+
+`activity` has one row each time a user was active, that is, used the app: `user_id` and `day`. A user can have many rows, or none. Here are its 11 rows, gathered by user:
+
+| user_id | active on |
+| --- | --- |
+| 1 | 2024-01-06, 2024-02-03, 2024-02-20, 2024-03-15 |
+| 2 | 2024-02-01 |
+| 3 | 2024-03-02 |
+| 4 | (never) |
+| 5 | 2024-03-01, 2024-04-10 |
+| 6 | 2024-02-11, 2024-04-20 |
+| 7 | 2024-04-01 |
+
+### The problem
+
+Picture a school chess club. Four kids join in January. How many are still turning up in February? In March? You follow the January group as one group, because they started together.
+
+A group of people who started at the same time is a **[[cohort|cohort-word]]**. The share of a cohort that is still active later is its **[[retention|retention-word]]**.
+
+The growth team wants a report:
+
+- Group users into cohorts by the **month** they signed up.
+- For each cohort, give its size.
+- Give the percentage of its users who were active **one month** after their signup month, and **two months** after.
+
+"One month after" means the next calendar month. A user who signed up in January is "month 1 active" if they were active at any time in February. "Two months after" is March.
+
+### Step 1: restate it with an example
+
+Work one cohort out by hand before writing any SQL. January's cohort is users 1, 2, 3 and 4: size 4.
+
+- **Month 1, February.** User 1 was active on 3 and 20 February. User 2 was active on 1 February. That is 2 users out of 4: 50%. User 1 was active twice, but is still **one** user.
+- **Month 2, March.** User 1 (15 March) and user 3 (2 March). Again 2 of 4: 50%.
+- **User 4** was never active. They still count in the size, 4, and never in the active users.
+
+So the January row must come out as `2024-01`, 4, 50.0, 50.0. Now you have a target to check against.
+
+Notice that user 2 counts for month 1 although 1 February is only 12 days after they joined. The question is about [[calendar months|calendar-months]], not 30-day periods.
+
+### Step 2: find the key number
+
+Everything depends on one number for each activity row: **how many months after the signup month** it happened. 0 means the same month, 1 the next month, 2 the month after that.
+
+The tempting way is to subtract the month parts: March (3) minus January (1) is 2. That works until the year changes. Sign up in December 2023, come back in January 2024, and "January minus December" is 1 − 12 = −11. The right answer is 1.
+
+The fix is to give every month its own **month number**, counting months from the year 0: `year * 12 + month`.
+
+- January 2024 is 2024 × 12 + 1 = 24289.
+- February 2024 is 24290.
+- December 2023 is 2023 × 12 + 12 = 24288, [[one less than January 2024|month-number]], as it should be.
+
+Subtract two month numbers and you get the months between them, even across the end of a year.
+
+### Step 3: turn text into a number with CAST
+
+In the lesson "Dates and times" you pulled pieces out of a date with `strftime`: `%Y` is the year and `%m` the month. But `strftime` always gives back **text**. `strftime('%m', '2024-03-02')` is the text `'03'`, not the number 3.
+
+To do arithmetic on it, convert it. `CAST(x AS INTEGER)` turns `x` into a whole number. **CAST** means "change the type"; `AS INTEGER` says which type you want.
 
 ```sql
-(CAST(strftime('%Y', a.day) AS INTEGER) * 12 + CAST(strftime('%m', a.day) AS INTEGER))
-- (CAST(strftime('%Y', u.signed_up) AS INTEGER) * 12 + CAST(strftime('%m', u.signed_up) AS INTEGER))
+SELECT strftime('%m', '2024-03-02') AS as_text,
+       CAST(strftime('%m', '2024-03-02') AS INTEGER) AS as_number;
 ```
 
-`strftime` returns text (`'03'`); `CAST(x AS INTEGER)` converts it to the number 3 so the arithmetic is done on numbers. Month numbers carry across years correctly, which "month minus month" would not (December to January is +1, not −11).
+| as_text | as_number |
+| --- | --- |
+| 03 | 3 |
 
-3. **Build in steps with CTEs:** users with their cohort; activity with its month offset; then per cohort, the **distinct** users with offset 1, and with offset 2.
-4. **Mind the edges.** Users with no activity at all (user 4) still count in the cohort size — so the cohort side must drive the query and activity must be LEFT-joined or counted with conditional aggregation. A cohort nobody came back to shows `0.0`, not NULL. Percentages are `100.0 * active / size`.
-5. **Check against the example** before you trust the rest.
+So the month number of a signup date is:
+
+```sql
+CAST(strftime('%Y', signed_up) AS INTEGER) * 12 + CAST(strftime('%m', signed_up) AS INTEGER)
+```
+
+With the `CAST`s, the sum is done [[on numbers, not text|why-cast]].
+
+### Step 4: build it in named steps
+
+As in "CTEs: a query in named steps", give each step a name.
+
+**Step `u`: each user with their cohort and month number.** `strftime('%Y-%m', …)` gives the cohort label, like `'2024-01'`. Call the month number `m0`, "month zero", the month they started.
+
+```sql
+u AS (
+  SELECT id,
+         strftime('%Y-%m', signed_up) AS cohort,
+         CAST(strftime('%Y', signed_up) AS INTEGER) * 12 + CAST(strftime('%m', signed_up) AS INTEGER) AS m0
+  FROM users
+)
+```
+
+| id | cohort | m0 |
+| --- | --- | --- |
+| 1 | 2024-01 | 24289 |
+| 2 | 2024-01 | 24289 |
+| 3 | 2024-01 | 24289 |
+| 4 | 2024-01 | 24289 |
+| 5 | 2024-02 | 24290 |
+| 6 | 2024-02 | 24290 |
+| 7 | 2024-03 | 24291 |
+
+**Step `a`: each activity with its offset.** The **offset** is how many months after the signup month the activity happened: the activity's month number minus `m0`. Join `activity` to `u` to reach `m0`:
+
+```sql
+a AS (
+  SELECT DISTINCT a.user_id,
+         CAST(strftime('%Y', a.day) AS INTEGER) * 12 + CAST(strftime('%m', a.day) AS INTEGER) - u.m0 AS offset
+  FROM activity a
+  JOIN u ON u.id = a.user_id
+)
+```
+
+`DISTINCT` keeps each (user, offset) pair once. User 1 was active twice in February, which gives the pair (1, 1) twice; `DISTINCT` keeps one.
+
+| user_id | offset |
+| --- | --- |
+| 1 | 0 |
+| 1 | 1 |
+| 1 | 2 |
+| 2 | 1 |
+| 3 | 2 |
+| 5 | 1 |
+| 5 | 2 |
+| 6 | 0 |
+| 6 | 2 |
+| 7 | 1 |
+
+Offset 0 means active in the signup month itself. The report does not ask about that, so those rows are never used.
+
+### Step 5: one yes or no per user
+
+In "Correlated subqueries and EXISTS" you saw that `EXISTS (…)` is a value in SQLite: 1 for yes, 0 for no. Ask it once per user: is there a row in `a` for this user with offset 1? With offset 2?
+
+```sql
+SELECT u.id, u.cohort,
+       EXISTS (SELECT 1 FROM a WHERE a.user_id = u.id AND a.offset = 1) AS m1,
+       EXISTS (SELECT 1 FROM a WHERE a.user_id = u.id AND a.offset = 2) AS m2
+FROM u;
+```
+
+| id | cohort | m1 | m2 |
+| --- | --- | --- | --- |
+| 1 | 2024-01 | 1 | 1 |
+| 2 | 2024-01 | 1 | 0 |
+| 3 | 2024-01 | 0 | 1 |
+| 4 | 2024-01 | 0 | 0 |
+| 5 | 2024-02 | 1 | 1 |
+| 6 | 2024-02 | 0 | 1 |
+| 7 | 2024-03 | 1 | 0 |
+
+Check January against step 1: `m1` is 1, 1, 0, 0. Two yeses out of four.
+
+### Step 6: group into cohorts
+
+Now `GROUP BY u.cohort`. In each group:
+
+- `COUNT(*)` counts the users, because `u` has one row per user. That is the cohort size.
+- `SUM` of the yes/no values counts the yeses. It is the conditional aggregation from "CASE: decisions inside a query", with `EXISTS` giving the 1 or 0 instead of a `CASE`.
+
+The percentage is `100.0 * active / size`. Put `100.0` first, so the division keeps its decimals, as you learned in "CTEs: a query in named steps". Then `ROUND(…, 1)` for one decimal place:
+
+```sql
+ROUND(100.0 * SUM(EXISTS (SELECT 1 FROM a WHERE a.user_id = u.id AND a.offset = 1)) / COUNT(*), 1) AS m1_pct
+```
+
+For January: 100.0 × 2 ÷ 4 = 50.0. The column for month 2 is the same with `a.offset = 2`.
+
+### Step 7: check the edges
+
+- **Users with no activity at all**, like user 4, must still count in the cohort size. That is why the final query starts `FROM u`: the users drive it, so every user is a row, active or not. (Another way that works: `LEFT JOIN` activity onto the users, from "LEFT JOIN and NULL", and count carefully.)
+- **A cohort nobody came back to** must show `0.0`, not NULL. The March cohort's month 2 is like that: user 7 came back in April, which is month 1 for them. Adding up 0s gives 0, so the percentage is 0.0, a real result that says "nobody". NULL would say "unknown".
+- **Check against step 1** before you trust the rest: January should read 4, 50.0, 50.0.
+
+**Watch out:** do not start from `activity` with a plain join and count. This query looks close:
+
+```sql
+SELECT strftime('%Y-%m', u.signed_up) AS cohort, COUNT(*) AS users
+FROM users u
+JOIN activity a ON a.user_id = u.id
+GROUP BY cohort;
+```
+
+| cohort | users |
+| --- | --- |
+| 2024-01 | 6 |
+| 2024-02 | 4 |
+| 2024-03 | 1 |
+
+January has 4 users, not 6. `COUNT(*)` counted activity rows, and user 1 alone has 4 of them. User 4, with no activity, dropped out of the join entirely. If a cohort comes out bigger than its number of users, look for this.
+
+::: context cohort-word Where the word comes from
+A **cohort** was a unit of the Roman army: about 480 soldiers, a tenth of a legion. They trained, marched and fought together. Today the word means any group that starts something at the same time: the pupils who begin school in the same year, the patients who start a treatment in the same month. In app analytics it is almost always "the users who signed up in the same week or month". Following each cohort separately stops a burst of new signups from hiding the fact that older users are leaving.
+:::
+
+::: context retention-word Why product teams watch retention
+Getting someone to sign up is only the start. If they never come back, the app has not really gained a user. **Retention** is the share who stay. Teams draw it as a curve for each cohort: 100% at signup, then month 1, month 2, and so on. A curve that keeps falling towards zero means people try the app and leave. A curve that flattens out means some people have found a reason to stay. Comparing cohorts shows whether a change to the app helped: a newer cohort whose curve sits higher is keeping more of its users.
+:::
+
+::: context calendar-months Calendar months or 30 days?
+This report counts **calendar months**: user 2 joined on 20 January and came back on 1 February, only 12 days later, and that is month 1. User 3 joined on 31 January and came back on 2 March, 31 days later, and that is month 2. A 30-day rule would give different answers. Neither is wrong. They are different questions, and a report must say which one it answers. The projects course asks the day-based question in "Analytics 4: day-N retention", where "day 1" means the calendar day after signup.
+:::
+
+::: context month-number Counting months in one long line
+Think of the month number as a ruler with one mark per month, running straight through the ends of years. Each mark is one more than the mark before, so December 2023 and January 2024 sit side by side, 1 apart. Subtracting "month minus month" would treat them as 11 apart, going backwards.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 130" font-family="Inter, Arial, sans-serif">
+  <defs>
+    <marker id="mn" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#1d6fd1"/>
+    </marker>
+  </defs>
+  <line x1="20" y1="70" x2="340" y2="70" stroke="#6c7a93" stroke-width="1.5"/>
+  <line x1="40" y1="62" x2="40" y2="78" stroke="#1f2a44" stroke-width="1.5"/>
+  <line x1="110" y1="62" x2="110" y2="78" stroke="#1f2a44" stroke-width="1.5"/>
+  <line x1="180" y1="62" x2="180" y2="78" stroke="#1f2a44" stroke-width="1.5"/>
+  <line x1="250" y1="62" x2="250" y2="78" stroke="#1f2a44" stroke-width="1.5"/>
+  <line x1="320" y1="62" x2="320" y2="78" stroke="#1f2a44" stroke-width="1.5"/>
+  <line x1="145" y1="50" x2="145" y2="90" stroke="#b4232c" stroke-width="1" stroke-dasharray="3 3"/>
+  <text x="145" y="120" font-size="11" fill="#b4232c" text-anchor="middle">new year</text>
+  <path d="M112 58 Q145 30 178 58" fill="none" stroke="#1d6fd1" stroke-width="1.5" marker-end="url(#mn)"/>
+  <text x="145" y="30" font-size="12" fill="#1d6fd1" text-anchor="middle">+1</text>
+  <text x="40" y="54" font-size="11" fill="#1f2a44" text-anchor="middle">Nov 23</text>
+  <text x="110" y="54" font-size="11" fill="#1f2a44" text-anchor="middle">Dec 23</text>
+  <text x="180" y="54" font-size="11" fill="#1f2a44" text-anchor="middle">Jan 24</text>
+  <text x="250" y="54" font-size="11" fill="#1f2a44" text-anchor="middle">Feb 24</text>
+  <text x="320" y="54" font-size="11" fill="#1f2a44" text-anchor="middle">Mar 24</text>
+  <text x="40" y="96" font-size="12" fill="#1f2a44" text-anchor="middle">24287</text>
+  <text x="110" y="96" font-size="12" fill="#1f2a44" text-anchor="middle">24288</text>
+  <text x="180" y="96" font-size="12" fill="#1f2a44" text-anchor="middle">24289</text>
+  <text x="250" y="96" font-size="12" fill="#1f2a44" text-anchor="middle">24290</text>
+  <text x="320" y="96" font-size="12" fill="#1f2a44" text-anchor="middle">24291</text>
+</svg>
+```
+:::
+
+::: context why-cast Text that looks like a number
+SQLite is relaxed about types. In arithmetic it quietly turns text into a number: `'2024' * 12` gives 24288. But a comparison does not. `strftime('%m', '2024-03-02') = 3` gives 0, "false", because the text `'03'` is never equal to the number 3. That mistake returns no rows and no error. `CAST` makes the conversion happen on purpose, where you can see it, and the result compares like a number. It also keeps the query working in databases such as PostgreSQL, which refuse to multiply text at all.
+:::
 --- task
-Return one row per signup cohort: `cohort` (`'YYYY-MM'`), `users` (cohort size), `m1_pct` and `m2_pct` — the percentage of the cohort's users active in the first and second month after their signup month, rounded to 1 decimal (0.0 when nobody). Sort by cohort.
+Write one query that returns one row per signup cohort, with these columns:
+
+- `cohort`: the signup month as `'YYYY-MM'`;
+- `users`: the cohort's size;
+- `m1_pct`: the percentage of the cohort's users who were active in the first month after their signup month;
+- `m2_pct`: the same for the second month after.
+
+Round both percentages to 1 decimal place. A cohort nobody came back to shows `0.0`. Sort by `cohort`.
 --- starter
 SELECT strftime('%Y-%m', signed_up) AS cohort, COUNT(*) AS users
 FROM users
@@ -1444,11 +1686,11 @@ FROM u
 GROUP BY u.cohort
 ORDER BY u.cohort;
 --- hint
-Give each user a month number `year * 12 + month` for their signup, and each activity the same; the difference is the month offset.
+Start with the month number, `year * 12 + month`, with a `CAST(… AS INTEGER)` around each `strftime` piece. Give each user one for their signup (`m0`) in a CTE `u`, and each activity one in a CTE `a`. The difference is the offset.
 --- hint
-Drive the final query from users (so inactive users count in the size), and for each user ask whether an activity with offset 1 (or 2) exists — `EXISTS` gives 1 or 0, which you can `SUM`.
+Drive the final query `FROM u`, so users with no activity still count in the size. For each user, `EXISTS (SELECT 1 FROM a WHERE a.user_id = u.id AND a.offset = 1)` is 1 or 0, and `SUM` of it counts the active users. Group by `u.cohort`.
 --- hint
-`ROUND(100.0 * SUM(…) / COUNT(*), 1)`. Check January: 4 users, 50.0 and 50.0.
+Each percentage is `ROUND(100.0 * SUM(EXISTS (…)) / COUNT(*), 1)`, once with `a.offset = 1` and once with `a.offset = 2`. Check January: 4 users, 50.0 and 50.0.
 --- check result | Jan 50/50, Feb 50/100, Mar 100/0
 ordered
 [["2024-01", 4, 50.0, 50.0], ["2024-02", 2, 50.0, 100.0], ["2024-03", 1, 100.0, 0.0]]
@@ -1470,33 +1712,219 @@ INSERT INTO events (user_id, ts, name) VALUES
   (6, '2024-07-01 13:07', 'checkout'), (6, '2024-07-01 13:09', 'purchase'), (6, '2024-07-01 13:30', 'purchase'),
   (7, '2024-07-01 14:00', 'view');
 --- teach
-This lesson's table: `events` (`user_id`, `ts`, `name`), where `name` is one of `view`, `cart`, `checkout`, `purchase`.
+Last lesson you followed groups of users from month to month. This lesson follows each user through a row of steps, in order, and counts how many make it to the end.
 
-**The problem.** The shop's funnel is **view → cart → checkout → purchase**. For each step, how many users reached it — *in order* — and what percentage of the previous step's users made it this far?
+### The table
 
-"In order" is the whole difficulty. User 3 added to cart *before* ever viewing a product (a deep link), then viewed, then checked out. Counting users per event name would credit them with cart and checkout; the funnel must not. User 5 only has a purchase — an import glitch — and must not count at any step. User 6 viewed twice and purchased twice: still one user per step.
+`events` has one row for each thing a user did in an online shop: `user_id`, `ts` (the time, as text like `'2024-07-01 10:05'`) and `name`, what they did. There are four names:
 
-Approach:
+- `view`: looked at a product;
+- `cart`: added it to the shopping cart;
+- `checkout`: started paying;
+- `purchase`: finished paying.
 
-1. **Restate precisely.** A user reaches step 1 at their first `view`. They reach step 2 at their first `cart` **after** that time; step 3 at their first `checkout` after *that*; and so on. Each step's time is the earliest qualifying event.
-2. **One CTE per step**, each built from the one before:
+Here are the 21 rows, gathered by user, in time order:
+
+| user_id | events, in time order |
+| --- | --- |
+| 1 | view 10:00, cart 10:05, checkout 10:10, purchase 10:12 |
+| 2 | view 10:00, cart 10:01, view 10:03 |
+| 3 | cart 09:00, view 09:05, checkout 09:10 |
+| 4 | view 11:00, cart 11:02, checkout 11:04 |
+| 5 | purchase 12:00 |
+| 6 | view 13:00, view 13:01, cart 13:05, checkout 13:07, purchase 13:09, purchase 13:30 |
+| 7 | view 14:00 |
+
+### The picture
+
+Think of a kitchen funnel: wide at the top, narrow at the bottom. Many people look at a product. Fewer put it in the cart. Fewer again start to pay, and fewer still finish. A **[[funnel|funnel-word]]** report counts how many people reach each step. The share of one step's people who make it to the next is the **conversion** rate.
+
+### The problem
+
+The shop's funnel is **view → cart → checkout → purchase**. For each step, the report needs:
+
+- how many users reached it **in order**;
+- what percentage of the previous step's users made it this far.
+
+### Step 1: try the obvious answer and see where it breaks
+
+Count the different users for each event name:
 
 ```sql
-s1 AS (SELECT user_id, MIN(ts) AS t FROM events WHERE name = 'view' GROUP BY user_id),
+SELECT name, COUNT(DISTINCT user_id) AS users
+FROM events
+GROUP BY name;
+```
+
+| name | users |
+| --- | --- |
+| cart | 5 |
+| checkout | 4 |
+| purchase | 3 |
+| view | 6 |
+
+"In order" is the whole difficulty, and this query ignores it:
+
+- **User 3** added to cart at 09:00, *before* ever viewing a product. They came in through a [[deep link|deep-link]], then viewed, then checked out. This query credits them with cart and checkout. The funnel must not.
+- **User 5** has only a purchase, with nothing before it. It is [[an import glitch|import-glitch]], and it must not count at any step.
+- **User 6** viewed twice and purchased twice. They are still one user at each step. `COUNT(DISTINCT user_id)` gets that part right.
+
+The rows also come out in alphabetical order, not funnel order.
+
+### Step 2: restate it precisely
+
+Say exactly what "reached a step" means:
+
+1. A user reaches step 1 at their **first** `view`.
+2. They reach step 2 at their first `cart` **after** that time.
+3. They reach step 3 at their first `checkout` after *that*.
+4. They reach step 4 at their first `purchase` after that.
+
+Each step's time is the earliest event that qualifies. Try it on the tricky users:
+
+- User 3: first `view` at 09:05. Is there a `cart` after 09:05? No, their only cart was at 09:00. So user 3 stops at step 1. Their checkout at 09:10 does not count, because step 3 needs step 2 first.
+- User 5: no `view` at all, so they never reach step 1, and so no step.
+- User 6: first `view` 13:00, then cart 13:05, checkout 13:07, purchase 13:09. One user at every step.
+
+"After" is a comparison of times: `e.ts > s1.t`, where `>` is "greater than", here "later than". As in "Dates and times", times written as [[fixed-width text|text-times]] sort in time order, so `>` on the text works.
+
+### Step 3: step 1 as a CTE
+
+Each user's first `view`: keep only the `view` rows, group by user, and take the smallest time with `MIN`.
+
+```sql
+s1 AS (SELECT user_id, MIN(ts) AS t FROM events WHERE name = 'view' GROUP BY user_id)
+```
+
+| user_id | t |
+| --- | --- |
+| 1 | 2024-07-01 10:00 |
+| 2 | 2024-07-01 10:00 |
+| 3 | 2024-07-01 09:05 |
+| 4 | 2024-07-01 11:00 |
+| 6 | 2024-07-01 13:00 |
+| 7 | 2024-07-01 14:00 |
+
+Six users. User 5 is not there.
+
+### Step 4: each step built from the one before
+
+Step 2 looks for `cart` events, but only for users in `s1`, and only after their `s1` time:
+
+```sql
 s2 AS (SELECT e.user_id, MIN(e.ts) AS t
        FROM events e JOIN s1 ON s1.user_id = e.user_id
        WHERE e.name = 'cart' AND e.ts > s1.t
-       GROUP BY e.user_id),
-…
+       GROUP BY e.user_id)
 ```
 
-Because each step joins only the users who reached the previous one, the counts can only shrink.
+- `JOIN s1` keeps only users who reached step 1.
+- `e.name = 'cart'` keeps only cart events.
+- `e.ts > s1.t` keeps only carts after that user's step 1 time.
+- `MIN(e.ts)` takes the first of those. That is this user's step 2 time.
 
-3. **Assemble the report** with a `UNION ALL` of one row per step (step number, name, count), then `LAG` over the step number gives the previous step's count for the percentage. The first step has no previous one, so its percentage is NULL.
+| user_id | t |
+| --- | --- |
+| 1 | 2024-07-01 10:05 |
+| 2 | 2024-07-01 10:01 |
+| 4 | 2024-07-01 11:02 |
+| 6 | 2024-07-01 13:05 |
 
-4. **Check by hand** against the data: six users viewed (everyone but user 5); four of them carted after viewing.
+Four users. User 3 has dropped out, as step 2 of the restating said.
+
+`s3` has the same shape: `checkout` events, joined to `s2`, after `s2.t`. It keeps users 1, 4 and 6. `s4` looks for `purchase` after `s3.t`, and keeps users 1 and 6.
+
+Because each step joins only the users who reached the step before, the counts can only shrink.
+
+### Step 5: stack the counts with UNION ALL
+
+The report needs one row per step. In "DISTINCT, UNION and UNION ALL" you stacked results with `UNION ALL`. Make one small row per step, with its number, its name and its count:
+
+```sql
+steps AS (
+  SELECT 1 AS step, 'view' AS name, COUNT(*) AS users FROM s1
+  UNION ALL SELECT 2, 'cart', COUNT(*) FROM s2
+  UNION ALL SELECT 3, 'checkout', COUNT(*) FROM s3
+  UNION ALL SELECT 4, 'purchase', COUNT(*) FROM s4
+)
+```
+
+The column names come from the first `SELECT`, so only it needs the `AS` names.
+
+| step | name | users |
+| --- | --- | --- |
+| 1 | view | 6 |
+| 2 | cart | 4 |
+| 3 | checkout | 3 |
+| 4 | purchase | 2 |
+
+### Step 6: the percentage with LAG
+
+Each step's percentage needs the **previous** row's `users`. That is `LAG`, from "LAG and LEAD: comparing with neighbours". `LAG(users) OVER (ORDER BY step)` gives the `users` of the row before, in step order:
+
+| step | name | users | LAG(users) |
+| --- | --- | --- | --- |
+| 1 | view | 6 | NULL |
+| 2 | cart | 4 | 6 |
+| 3 | checkout | 3 | 4 |
+| 4 | purchase | 2 | 3 |
+
+The percentage is `ROUND(100.0 * users / LAG(users) OVER (ORDER BY step), 1)`. For cart: 100.0 × 4 ÷ 6 = 66.7. Step 1 has no step before it, so `LAG` gives NULL, and anything divided by NULL is NULL. That is the right answer: step 1 has no percentage. Measuring each step against the one before is one way to read a funnel; [[measuring against the first step|funnel-later]] is another.
+
+### Step 7: check by hand
+
+Compare with the data: six users viewed (everyone but user 5). Four of them carted after viewing (1, 2, 4, 6). Three checked out after that (1, 4, 6). Two purchased (1 and 6). The percentages should read NULL, 66.7, 75.0, 66.7.
+
+**Watch out:** the time test is what makes the funnel ordered. Leave out `AND e.ts > s1.t` and `s2` becomes "users who viewed and also carted, at any time". User 3's early cart sneaks back in, and step 2 shows 5 instead of 4. Every later step needs the same test against the step before it.
+
+::: context funnel-word Why it is called a funnel
+Draw each step as a bar as wide as its number of users, and stack the bars in order. The picture narrows from top to bottom, like a funnel. Here are this lesson's numbers, with each step's conversion from the step before. Teams look for the step where the bar shrinks most: that is where people give up, and where a fix helps most.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 180" font-family="Inter, Arial, sans-serif">
+  <rect x="80" y="15" width="240" height="30" fill="#1d6fd1" stroke="#1f2a44"/>
+  <rect x="120" y="55" width="160" height="30" fill="#8fb8f0" stroke="#1f2a44"/>
+  <rect x="140" y="95" width="120" height="30" fill="#8fb8f0" stroke="#1f2a44"/>
+  <rect x="160" y="135" width="80" height="30" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="200" y="35" font-size="12" fill="#fff" text-anchor="middle">6</text>
+  <text x="200" y="75" font-size="12" fill="#1f2a44" text-anchor="middle">4</text>
+  <text x="200" y="115" font-size="12" fill="#1f2a44" text-anchor="middle">3</text>
+  <text x="200" y="155" font-size="12" fill="#1f2a44" text-anchor="middle">2</text>
+  <text x="10" y="35" font-size="12" fill="#1f2a44">view</text>
+  <text x="10" y="75" font-size="12" fill="#1f2a44">cart</text>
+  <text x="10" y="115" font-size="12" fill="#1f2a44">checkout</text>
+  <text x="10" y="155" font-size="12" fill="#1f2a44">purchase</text>
+  <text x="300" y="75" font-size="11" fill="#6c7a93">66.7%</text>
+  <text x="300" y="115" font-size="11" fill="#6c7a93">75.0%</text>
+  <text x="300" y="155" font-size="11" fill="#6c7a93">66.7%</text>
+</svg>
+```
+:::
+
+::: context deep-link Arriving in the middle
+A **deep link** is a link that opens a page deep inside a site or app, instead of its front page. A link in an email that says "your cart is waiting" is one: it drops the user straight into the cart. So the events really can arrive out of the funnel's order. Nothing is broken; the user skipped the start. An ordered funnel does not count that user as having walked the steps, because the report is about how people move through them in order.
+:::
+
+::: context import-glitch Rows that should not exist
+A purchase with no view, no cart and no checkout cannot happen in this shop. It can still appear in the data: a bug in an import, a test order someone forgot to delete, a clock that was set wrong. You met data like this in "Debugging: orphans and duplicates". A report cannot fix it, but it must not be fooled by it. The ordered funnel ignores user 5 on its own, because they never reach step 1. It is still worth telling whoever owns the import, so the glitch gets fixed at its source.
+:::
+
+::: context text-times Why comparing text works for times
+Text is compared letter by letter, from the left. `'2024-07-01 10:05'` and `'2024-07-01 10:00'` agree until the last digit, and 5 comes after 0, so the first is "greater": later. This only works because every part has a fixed width, with leading zeros. Write nine o'clock as `'9:05'` instead of `'09:05'`, and `'2024-07-01 9:05' > '2024-07-01 10:00'` is true, because the character 9 comes after the character 1. That is why logs and databases store times as `'YYYY-MM-DD HH:MM'`, always padded with zeros.
+:::
+
+::: context funnel-later Where this comes back
+The projects course builds a second funnel in "Analytics 3: a signup funnel with a deadline": visit → signup → activate. It adds one rule, that activation only counts within 72 hours of signing up, which is one more condition next to the `>` time test. It also measures each step against the **first** step instead of the previous one, using `FIRST_VALUE`, a window function that gives the first row's value on every row. Both views are common: "of those who carted, how many checked out?" and "of everyone who looked, how many bought?".
+:::
 --- task
-Return one row per funnel step: `step` (1–4), `name`, `users` (how many users reached it in order) and `pct` — `users` as a percentage of the previous step's users, rounded to 1 decimal (NULL for step 1). Sort by step.
+Write one query that returns one row per funnel step, with these columns:
+
+- `step`: 1 to 4 (`view`, `cart`, `checkout`, `purchase`);
+- `name`: the step's event name;
+- `users`: how many users reached that step **in order**;
+- `pct`: `users` as a percentage of the previous step's `users`, rounded to 1 decimal place (NULL for step 1).
+
+A user reaches step 1 at their first `view`, and each later step at their first event of that name **after** their time at the step before. Sort by `step`.
 --- starter
 SELECT name, COUNT(DISTINCT user_id) AS users
 FROM events
@@ -1530,11 +1958,11 @@ SELECT step, name, users,
 FROM steps
 ORDER BY step;
 --- hint
-Step 1 is each user's first `view`. Each later step is the first event of the next name **after** the previous step's time, for users who reached the previous step.
+Step 1 is each user's first `view`: `MIN(ts)` of the `view` rows, grouped by user. Each later step is the first event of the next name **after** the previous step's time, for users who reached the previous step.
 --- hint
-Write `s1` … `s4` as CTEs, each joining the one before. Then stack four count rows with `UNION ALL`.
+Write `s1`, `s2`, `s3` and `s4` as CTEs. Each one joins the one before on `user_id` and keeps `e.ts > ` the previous step's `t`. Then stack four count rows, `step`, `name` and `COUNT(*)`, with `UNION ALL` in a CTE called `steps`.
 --- hint
-`LAG(users) OVER (ORDER BY step)` gives the previous step's count for `pct`.
+The last `SELECT` reads from `steps`: `ROUND(100.0 * users / LAG(users) OVER (ORDER BY step), 1) AS pct`, then `ORDER BY step`. Check: 6, 4, 3, 2 users.
 --- check result | 6 viewed, 4 carted in order, 3 checked out, 2 purchased
 ordered
 [[1, "view", 6, null], [2, "cart", 4, 66.7], [3, "checkout", 3, 75.0], [4, "purchase", 2, 66.7]]
@@ -1564,23 +1992,198 @@ JOIN customers c ON c.id = o.customer_id
 WHERE lower(c.email) = 'user347@example.com'
   AND strftime('%Y-%m', o.created) = '2024-03';
 --- teach
-This lesson's tables: `customers` (`id`, `email` — unique, and a `CHECK` guarantees it is stored lower-case — `name`), 1,000 rows; `orders` (`id`, `customer_id`, `created`, `total`), 8,000 rows; and a view `customer_month` that the support tool calls on every page load.
+The last two lessons answered hard questions. This one is about speed. It puts together everything from "Indexes and EXPLAIN QUERY PLAN", "Indexes: queries that skip them", "Sargable predicates" and "Covering indexes and column order", on a real-looking slow query with two tables.
 
-**The report.** Support says the customer page got slower as the shop grew, and it is only going to grow. Nobody knows why.
+### The tables
 
-Finding a slow query is a method, not a hunch:
+- `customers`: `id`, `email` and `name`, 1,000 rows. `email` is `UNIQUE`, and a `CHECK` rule, `CHECK (email = lower(email))`, guarantees every email is stored in lower case.
+- `orders`: `id`, `customer_id`, `created` (a time like `'2024-03-31 16:02:00'`) and `total`, 8,000 rows.
 
-1. **Read the plan.** `EXPLAIN QUERY PLAN SELECT * FROM customer_month;` Every `SCAN` on a big table is a suspect; `AUTOMATIC INDEX` means SQLite found it worth building a throwaway index *for this one query* — a missing index, announced.
-2. **For each suspect, ask why the index is not used.** Is there no index on that column? Or is there one the predicate cannot use — a column wrapped in a function (lesson 1)?
-3. **Question every function.** Is `lower()` needed at all? Read the schema: if a constraint already guarantees the value, the function is doing nothing except blocking the index.
-4. **Fix one thing, re-read the plan,** until each table is reached by a `SEARCH`.
-5. **Prove the answer did not change.** A fast wrong query is worse than a slow right one — compare the rows before and after.
+There are no indexes except the ones SQLite makes by itself: the primary keys, and `sqlite_autoindex_customers_1` for the `UNIQUE` email.
 
-Indexes for a join: the table you *start* from needs an index on its filter column; the table you *join into* needs an index on the join column — and, if you also filter it by a range, the range column right after, so one index answers both.
+There is also a view, `customer_month`, that the support team's tool runs on every page load. It lists one customer's orders for March 2024:
 
-This shop names indexes after their columns: `idx_<table>_<column>_<column>`.
+```sql
+CREATE VIEW customer_month AS
+SELECT c.email, o.id AS order_id, o.created, o.total
+FROM orders o
+JOIN customers c ON c.id = o.customer_id
+WHERE lower(c.email) = 'user347@example.com'
+  AND strftime('%Y-%m', o.created) = '2024-03';
+```
+
+### The bug report
+
+Support says the customer page [[got slower as the shop grew|slower-growth]], and the shop is only going to grow. Nobody knows why.
+
+Think of a mechanic with a car that makes a noise. A good one does not guess and replace parts. They run the diagnostic, find the fault, fix one thing, and test again. Finding a slow query works the same way: a method, not a hunch.
+
+### Step 1: read the plan
+
+As you saw in "Sargable predicates", a view's plan is the plan of its query:
+
+```sql
+EXPLAIN QUERY PLAN SELECT * FROM customer_month;
+```
+
+```
+SCAN o
+SEARCH c USING INTEGER PRIMARY KEY (rowid=?)
+```
+
+A plan for a join has one line per table. The [[first line is the table it starts from|join-order]]. So the database reads **all 8,000 orders**. For each one it jumps to that order's customer by id, which is fast, but it does it 8,000 times. Then it checks the email and the month. All that work finds 2 rows.
+
+Every `SCAN` on a big table is a **suspect**: a place where the time might go.
+
+Look for one more thing in a plan: the word `AUTOMATIC`, as in `USING AUTOMATIC INDEX`. It means SQLite found it worth building a [[throwaway index|automatic-index]] for this one query. That is a missing index, announced. This plan has none, but when you see it, add the real index.
+
+### Step 2: for each suspect, ask why no index is used
+
+There are two possible answers:
+
+- **There is no index** on the column the query needs.
+- **There is one, but the condition cannot use it**, because the column is wrapped in a function. The condition is not sargable, as in "Sargable predicates".
+
+Go through the view's conditions:
+
+- `lower(c.email) = …`: there **is** an index on `email`, the one for `UNIQUE`. But `lower()` hides the column from it.
+- `strftime('%Y-%m', o.created) = '2024-03'`: `strftime` hides `created`. And there is no index on `created` anyway.
+- The join, `c.id = o.customer_id`: `customers` has its primary key, but `orders` has no index on `customer_id`.
+
+### Step 3: question every function
+
+Is `lower()` needed at all? Read the schema. The rule `CHECK (email = lower(email))`, from "Constraints: rules the database enforces", means every stored email is already lower case. The database refuses anything else:
+
+```sql
+INSERT INTO customers (id, email, name) VALUES (5000, 'Ann@Example.com', 'Ann');
+```
+
+```
+CHECK constraint failed: email = lower(email)
+```
+
+So `lower(c.email)` is always the same as `c.email`. The function [[changes nothing|trust-constraints]] except that it blocks the index. Take it out:
+
+```sql
+WHERE c.email = 'user347@example.com'
+```
+
+The month test gets the fix from "Indexes: queries that skip them": a half-open range on `created` itself. `>=` is "on or after", `<` is "before":
+
+```sql
+AND o.created >= '2024-03-01' AND o.created < '2024-04-01'
+```
+
+To change a view, remove it with `DROP VIEW customer_month;` and create it again with the same name and columns, as in "Views: saved queries".
+
+### Step 4: fix one thing, then read the plan again
+
+Change the email test first, and read the plan:
+
+```
+SEARCH c USING COVERING INDEX sqlite_autoindex_customers_1 (email=?)
+SCAN o
+```
+
+Progress. The planner now **starts from `customers`**, and jumps straight to the one customer through the email index. `COVERING` means that index holds everything the query needs from `customers`: the email, and the row id to join on, as in "Covering indexes and column order".
+
+But `orders` is still scanned. For that one customer, the database reads all 8,000 orders to find the ones with `customer_id` 347. Change the month test too, and the plan stays the same, because there is still no index on `orders` that fits. That is the next fix.
+
+### Step 5: the index a join needs
+
+Here is the rule for a join:
+
+- The table you **start from** needs an index on its **filter** column. Here that is `customers.email`, and it has one.
+- The table you **join into** needs an index on the **join** column. Here that is `orders.customer_id`.
+- If you also filter that table by a range, put the **range column right after** the join column, so one index answers both.
+
+It is the column order from "Indexes and EXPLAIN QUERY PLAN": the column tested with `=` first, the range column after. In an index on `(customer_id, created)`, all of customer 347's orders [[sit together, in date order|composite-picture]], and March is one short stretch inside them.
+
+This shop names its indexes after their columns: `idx_<table>_<column>_<column>`, the columns in index order. An index on `orders(customer_id)` alone would be `idx_orders_customer_id`. With it, the plan becomes:
+
+```
+SEARCH c USING COVERING INDEX sqlite_autoindex_customers_1 (email=?)
+SEARCH o USING INDEX idx_orders_customer_id (customer_id=?)
+```
+
+No scans. But this finds all 8 of the customer's orders, then checks each date. Add `created` as the second column, and the second line becomes `SEARCH o USING INDEX … (customer_id=? AND created>? AND created<?)`: straight to the 2 March orders. The plan writes `>` for your `>=`; it shows the shape of the lookup, not the exact test.
+
+Keep going until each table is reached by a `SEARCH`.
+
+### Step 6: prove the answer did not change
+
+A fast wrong query is worse than a slow right one: it gives wrong answers quickly, and nobody notices. So run the view before you change anything, and keep its rows:
+
+```sql
+SELECT * FROM customer_month ORDER BY order_id;
+```
+
+| email | order_id | created | total |
+| --- | --- | --- | --- |
+| user347@example.com | 1346 | 2024-03-31 16:02:00 | 13.0 |
+| user347@example.com | 6346 | 2024-03-03 11:22:00 | 113.0 |
+
+After every change, run it again and [[compare|compare-results]]. The rows must be exactly the same.
+
+**Watch out:** the easy way to change the answer is at the edge of the range. Write the month as `o.created <= '2024-03-31'` and order 1346 disappears. `'2024-03-31 16:02:00'` sorts *after* `'2024-03-31'`, so an afternoon order on the last day of the month is lost. The plan would look perfect. Only comparing the rows catches it. Use `< '2024-04-01'`.
+
+::: context slower-growth Why it got slower as the shop grew
+A scan reads every row, so its cost grows with the table: twice the orders, twice the work. A search through an index hardly grows at all. An index is a B-tree, and each step down it cuts the rows left to look at by a large factor, so a thousand times more rows adds only a step or two. At 8,000 orders the scan still feels quick. At 8 million, the same page would scan a thousand times more rows on every load, while the indexed version would barely notice. That is why slow queries so often appear months after launch.
+:::
+
+::: context join-order Reading a plan for a join
+SQLite runs a join as loops, one inside the other. The first line of the plan is the **outer** loop, the table it starts from. For each row found there, it runs the next line, the **inner** loop. So in `SCAN o` then `SEARCH c …`, the inner search runs once per order: 8,000 times. The planner picks the order itself. Once a table has a condition it can look up in an index, starting from that table is usually cheapest, which is why the plan flipped to start from `customers` as soon as the email test became sargable.
+:::
+
+::: context automatic-index The index SQLite builds for you
+When a join has no useful index, SQLite sometimes decides it is cheaper to build one on the spot, use it for this query, and throw it away. The plan then shows a line like `SEARCH t USING AUTOMATIC COVERING INDEX (cid=?)`. The query is faster than without it, but the index is built again **every time** the query runs. On a page that loads all day, that is a lot of repeated work. It is also a clue: SQLite has told you which column it wanted indexed. Create that index for real and the `AUTOMATIC` line goes away.
+:::
+
+::: context trust-constraints Let the schema do the work
+A constraint is a promise the database keeps for you. `CHECK (email = lower(email))` means no row with a capital letter can exist. So every `lower()` in a query on that column is defensive code that defends against nothing, and it costs you the index. Where there is no such constraint, the function may really be needed. Then the fix from "Sargable predicates" applies: index the expression itself, with `CREATE INDEX … ON customers(lower(email))`. Reading the schema before rewriting a query tells you which case you are in.
+:::
+
+::: context composite-picture Inside the two-column index
+The index on `(customer_id, created)` is sorted by customer, then by time within each customer. All 8 of customer 347's orders sit side by side, and their 2 March orders sit next to each other inside that stretch. The database jumps to the first entry with 347 and a time on or after 1 March, and reads until it reaches April.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 215" font-family="Inter, Arial, sans-serif">
+  <text x="100" y="16" font-size="11" fill="#6c7a93" text-anchor="middle">customer_id, created</text>
+  <rect x="20" y="24" width="160" height="22" fill="#fff" stroke="#6c7a93"/>
+  <text x="100" y="39" font-size="12" fill="#1f2a44" text-anchor="middle">346 · 2024-12-26</text>
+  <rect x="20" y="46" width="160" height="22" fill="#fff" stroke="#1f2a44"/>
+  <text x="100" y="61" font-size="12" fill="#1f2a44" text-anchor="middle">347 · 2024-01-24</text>
+  <rect x="20" y="68" width="160" height="22" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="100" y="83" font-size="12" fill="#1f2a44" text-anchor="middle">347 · 2024-03-03</text>
+  <rect x="20" y="90" width="160" height="22" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="100" y="105" font-size="12" fill="#1f2a44" text-anchor="middle">347 · 2024-03-31</text>
+  <rect x="20" y="112" width="160" height="22" fill="#fff" stroke="#1f2a44"/>
+  <text x="100" y="127" font-size="12" fill="#1f2a44" text-anchor="middle">347 · 2024-05-09</text>
+  <text x="100" y="147" font-size="12" fill="#6c7a93" text-anchor="middle">… 3 more …</text>
+  <rect x="20" y="154" width="160" height="22" fill="#fff" stroke="#1f2a44"/>
+  <text x="100" y="169" font-size="12" fill="#1f2a44" text-anchor="middle">347 · 2024-12-26</text>
+  <rect x="20" y="176" width="160" height="22" fill="#fff" stroke="#6c7a93"/>
+  <text x="100" y="191" font-size="12" fill="#1f2a44" text-anchor="middle">348 · 2024-01-24</text>
+  <path d="M190 48 L198 48 L198 174 L190 174" fill="none" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="206" y="150" font-size="11" fill="#1f2a44">customer 347:</text>
+  <text x="206" y="164" font-size="11" fill="#1f2a44">8 orders together</text>
+  <path d="M190 70 L198 70 L198 110 L190 110" fill="none" stroke="#1d6fd1" stroke-width="2"/>
+  <text x="206" y="87" font-size="11" fill="#1d6fd1">March: the 2 entries</text>
+  <text x="206" y="101" font-size="11" fill="#1d6fd1">the query reads</text>
+</svg>
+```
+:::
+
+::: context compare-results Comparing before and after
+With two rows you can compare by eye. With thousands you need the database's help. One way: save the old result in a table first, then use `EXCEPT` both ways, as in "Design: normalising a flat table". "Old rows except new rows" and "new rows except old rows" must both return nothing. Engineers call a change that breaks something that used to work a **regression**, and a check like this a regression test. Teams that tune queries on busy systems run exactly this kind of comparison before any faster version goes live.
+:::
 --- task
-Make `customer_month` fast without changing the rows it returns: recreate the view under the same name and columns with sargable predicates, and add whatever index it needs (named by the shop's convention), so that both tables are reached with `SEARCH` and nothing is scanned.
+Make `customer_month` fast without changing the rows it returns:
+
+1. Recreate the view with `DROP VIEW` and `CREATE VIEW`, under the same name, `customer_month`, with the same columns: `email`, `order_id`, `created`, `total`. Rewrite both conditions so they are sargable: no `lower()` around `c.email`, and March as a half-open range on `o.created` from `'2024-03-01'` up to, but not including, `'2024-04-01'`.
+2. Create the index `orders` needs for this join: the join column first, then the range column. Name it by the shop's convention, `idx_<table>_<column>_<column>`.
+
+When you are done, `EXPLAIN QUERY PLAN SELECT * FROM customer_month;` should show two `SEARCH` lines and no `SCAN`, and the view should still return orders 1346 and 6346.
 --- starter
 EXPLAIN QUERY PLAN SELECT * FROM customer_month;
 --- solution
@@ -1594,11 +2197,11 @@ WHERE c.email = 'user347@example.com'
 
 CREATE INDEX idx_orders_customer_id_created ON orders(customer_id, created);
 --- hint
-Run the starter and read the plan. Then read the `customers` schema: can `email` ever contain capitals?
+Run the starter and read the plan: `SCAN o`. Then read the `customers` schema. Can `email` ever contain capital letters? If not, what is `lower()` doing?
 --- hint
-Drop the `lower()` (the unique index on `email` can then be used), turn the month test into a range on `created`, and index orders by the join column and then the range column.
+Drop the `lower()`, so the `UNIQUE` index on `email` can be used. Turn the month test into a range on `created` with `>=` and `<`. Then index `orders` by the join column, `customer_id`, and then the range column, `created`.
 --- hint
-`DROP VIEW customer_month;` then create it again; the index is `idx_orders_customer_id_created ON orders(customer_id, created)`.
+`DROP VIEW customer_month;`, then `CREATE VIEW customer_month AS …` with the new `WHERE`. The index is `CREATE INDEX idx_orders_customer_id_created ON orders(customer_id, created);`.
 --- check query | The view returns the same rows as before
 SELECT email, order_id, created, total FROM customer_month ORDER BY order_id
 => [["user347@example.com", 1346, "2024-03-31 16:02:00", 13.0], ["user347@example.com", 6346, "2024-03-03 11:22:00", 113.0]]
