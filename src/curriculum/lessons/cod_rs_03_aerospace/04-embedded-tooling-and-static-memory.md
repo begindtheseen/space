@@ -8,7 +8,7 @@ covers:
   - 'critical-section and static_assertions'
 ---
 
-Think about an egg carton. It holds exactly twelve eggs. You know how much room it takes in the fridge before you go shopping, and you can never squeeze in a thirteenth: the carton is simply full. Compare that with a shopping bag, which stretches until something tears. A shopping bag is flexible, but you never quite know how much room it will need.
+Think about an egg carton. It holds exactly twelve eggs. You know how much room it takes in the fridge before you go shopping, and you can never squeeze in a thirteenth: the carton is full. Compare that with a shopping bag, which stretches until something tears. A shopping bag is flexible, but you never quite know how much room it will need.
 
 A microcontroller program is a fridge with no spare shelf. In lesson 01 you gave up the heap, the stretchy shopping bag. This lesson gives you the egg cartons: collections whose size is fixed when you compile. It also gives you a way to *see* what the chip is doing, since there is no screen and no `println!`, a safe way to share data with an interrupt, and compile-time checks on sizes and layouts.
 
@@ -161,7 +161,7 @@ Where did the words go? The flashable image of the defmt build does not contain 
 The `00000006` is the index the chip sends. The laptop reads it, finds this entry, and fills in `{}` and `{}` with the bytes that followed.
 :::
 
-The link saving is just as real: the text line `tick 1234 gyro_z = 15.1782 rad/s` with its newline is 33 bytes, while the defmt frame is an index plus eight bytes of arguments and a little framing.
+The link saving is as real: the text line `tick 1234 gyro_z = 15.1782 rad/s` with its newline is 33 bytes, while the defmt frame is an index plus eight bytes of arguments and a little framing.
 
 ::: warning Decode with the exact ELF you flashed
 The index numbers only mean something next to the ELF from the same build. Decode with the ELF from a later build and you get wrong messages or garbage. Archive the ELF next to every binary you release, so logs from a unit in the field can still be read.
