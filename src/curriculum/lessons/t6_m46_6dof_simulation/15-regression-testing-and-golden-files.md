@@ -175,6 +175,14 @@ The tolerance belongs to the whole regression suite and applies to every future 
 :::
 
 ::: check
+Why does this lesson insist that golden files be regenerated only *after* every diff is explained, instead of regenerating first and then looking into any diffs that still seem suspicious?
+:::
+
+::: answer
+Regenerating replaces the reference that every future comparison runs against. Once a buggy result becomes the new golden file, every future run is compared against a baseline that already contains the bug. No future golden-file diff will ever flag it, because from then on the buggy behavior *is* the expected behavior. Investigating after regeneration only covers the diffs someone happens to remember to recheck. Anything not specifically re-examined is absorbed into the baseline for good.
+:::
+
+::: check
 An inertia-tensor calculation is changed at the same time as an unrelated sensor-noise update, and every golden file involving rotation changes. How would you separate the two changes' effects using this lesson's method, without reverting either one first?
 :::
 
