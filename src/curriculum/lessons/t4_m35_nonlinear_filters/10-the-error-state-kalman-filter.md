@@ -88,7 +88,7 @@ Angle tracking error of each filter, and the size of the no-reset filter's error
 
 With reset, the error state is exactly zero at the start of every cycle, and the tracking error stays around $1^\circ$ to $3^\circ$ — about the sensor's own noise.
 
-Without reset, the uncorrected nominal slowly drifts out of step with the real pendulum, because a **[[pendulum's period depends on how far it swings|pendulum-drift]]**. The error state has to describe that whole gap, and it swells to $75^\circ$. A linear model of a $75^\circ$ error is the "43% wrong" end of the list above, and the tracking error follows: over the last $20$ cycles its root-mean-square is $5.47^\circ$ against $2.53^\circ$ with reset. Across $200$ runs with different random noise, the same comparison gives $4.41^\circ$ against $2.53^\circ$.
+Without reset, the uncorrected nominal slowly drifts out of step with the real pendulum, because the real one gets random pushes the nominal never hears about, and because a **[[pendulum's period depends on how far it swings|pendulum-drift]]**. The error state has to describe that whole gap, and it swells to $75^\circ$. A linear model of a $75^\circ$ error is the "43% wrong" end of the list above, and the tracking error follows: over the last $20$ cycles its root-mean-square is $5.47^\circ$ against $2.53^\circ$ with reset. Across $200$ runs with different random noise, the same comparison gives $4.41^\circ$ against $2.53^\circ$.
 
 Sanity check: nothing about the measurements, the noise or the true motion differs between the two filters. The only difference is whether the error was kept small.
 :::
@@ -307,7 +307,7 @@ A Kalman filter that linearizes about a fixed reference trajectory, and never co
 :::
 
 ::: context pendulum-drift Why the uncorrected nominal drifts away
-A pendulum swinging through a big arc takes a little longer per swing than one swinging through a small arc. For a $1\,\mathrm m$ pendulum the period is about $2.087\,\mathrm s$ from $45^\circ$ and $2.106\,\mathrm s$ from $50^\circ$ — only $0.02\,\mathrm s$ apart. But that gap adds up every swing. After $30\,\mathrm s$, about $14$ swings, the two are roughly an eighth of a period out of step.
+Two things pull the free-running nominal away from the real pendulum. First, the real pendulum gets small random pushes (the process noise), and the nominal never hears about them. Second, a pendulum swinging through a big arc takes a little longer per swing than one swinging through a small arc. For a $1\,\mathrm m$ pendulum the period is about $2.087\,\mathrm s$ from $45^\circ$ and $2.106\,\mathrm s$ from $50^\circ$ — only $0.02\,\mathrm s$ apart. That gap adds up every swing: with no noise at all, the $45^\circ$ and $50^\circ$ pendulums are already up to $35^\circ$ apart within $30\,\mathrm s$.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">
@@ -316,11 +316,11 @@ A pendulum swinging through a big arc takes a little longer per swing than one s
   <path d="M20,26 C34,26 41,124 57,124 C73,124 80,26 94,26 C108,26 115,124 131,124 C147,124 154,26 168,26 C182,26 189,124 205,124 C221,124 228,26 242,26 C256,26 263,124 279,124 C295,124 302,26 316,26 C330,26 337,90 340,100" fill="none" stroke="#b4232c" stroke-width="2" stroke-dasharray="5 3"/>
   <text x="22" y="18" font-size="11" fill="#1d6fd1">nominal, 45° swing</text>
   <text x="180" y="18" font-size="11" fill="#b4232c">truth, 50° swing: slower</text>
-  <text x="140" y="143" font-size="11" fill="#1f2a44">the peaks slide apart over time</text>
+  <text x="100" y="143" font-size="11" fill="#1f2a44">the peaks slide apart over time</text>
 </svg>
 ```
 
-Near the bottom of a swing the angle changes fast, so even a small time gap becomes a large angle gap — which is how the error state reached $75^\circ$.
+Near the bottom of a swing the angle changes fast, so even a small time gap becomes a large angle gap. Together with the random pushes, that is how the error state reached $75^\circ$.
 :::
 
 ::: context reset-jacobian Why the covariance goes through G twice
@@ -339,11 +339,11 @@ Lay a flat sheet of paper on a basketball. Near the touching point, the sheet is
   <circle cx="180" cy="100" r="60" fill="#fff" stroke="#1f2a44" stroke-width="2"/>
   <line x1="120" y1="40" x2="240" y2="40" stroke="#1d6fd1" stroke-width="3"/>
   <circle cx="180" cy="40" r="4" fill="#1d6fd1"/>
-  <line x1="197" y1="17.4" x2="282.6" y2="102.9" stroke="#b4232c" stroke-width="3"/>
+  <line x1="180.4" y1="15.6" x2="264.4" y2="99.6" stroke="#b4232c" stroke-width="3"/>
   <circle cx="222.4" cy="57.6" r="4" fill="#b4232c"/>
   <text x="96" y="30" font-size="12" fill="#1d6fd1">tangent sheet here</text>
-  <text x="256" y="72" font-size="12" fill="#b4232c">and here:</text>
-  <text x="256" y="88" font-size="12" fill="#b4232c">tilted</text>
+  <text x="262" y="62" font-size="12" fill="#b4232c">and here:</text>
+  <text x="262" y="78" font-size="12" fill="#b4232c">tilted</text>
   <text x="150" y="160" font-size="12" fill="#1f2a44">curved space</text>
 </svg>
 ```
