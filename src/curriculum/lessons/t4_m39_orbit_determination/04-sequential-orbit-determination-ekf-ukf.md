@@ -1,16 +1,16 @@
 ---
 id: l04-sequential-orbit-determination-ekf-ukf
 title: Sequential orbit determination with EKF and UKF
-minutes: 20
+minutes: 24
 covers:
   - Sequential orbit determination with EKF and UKF
 ---
 
-Think about a map app that follows a city bus. The bus only reports in when it passes a stop. Between stops, the app guesses: "it was going $30\,\mathrm{km/h}$ up Main Street, so by now it is about here." When the next stop report comes in, the app nudges the dot to where the bus really is and carries on. It never waits for the end of the day. It keeps one running best guess and fixes it a little every time news arrives.
+Think about a map app that follows a city bus. The bus only reports in when it passes a stop. Between stops, the app guesses: "it was going $30\,\mathrm{km/h}$ up Main Street, so by now it is about here." When the next stop report comes in, the app nudges the dot to where the bus really is and carries on. It keeps one running best guess and fixes it a little every time news arrives.
 
-There is another way. At the end of the day, collect every stop report and work out the one route that fits all of them best. That is slower, but it can look at the whole day at once.
+The other way is to wait for the end of the day, then work out the one route that fits every stop report at once.
 
-The second way is the **batch** orbit determination of the last two lessons: gather an entire arc of tracking, then fit one epoch state to all of it. The first way is **sequential orbit determination** — keeping a running estimate of the orbit and updating it each time a measurement arrives. Real operations need both. A collision-avoidance screen needs the freshest possible state the moment new tracking lands. A navigation computer on board a spacecraft has no arc to wait for at all, only a stream of measurements, one after another.
+The second way is the **batch** orbit determination of the last two lessons: gather an entire arc of tracking, then fit one epoch state to all of it. The first way is **sequential orbit determination** — keeping a running estimate of the orbit and updating it each time a measurement arrives. Real operations need both. A collision-avoidance screen needs the freshest state the moment new tracking lands, and a navigation computer on board a spacecraft has no arc to wait for at all.
 
 The tool for the sequential job is the **[[Kalman filter|kalman-history]]**, in the version for curved (nonlinear) problems called the **Extended Kalman Filter**, or **EKF**. The nonlinear-filters module derived it in full, so this lesson does not repeat the derivation. What is new here is how its pieces map onto an orbit, how its answer compares with batch, and one way it can fail where batch does not.
 
@@ -97,13 +97,13 @@ In the table, "error" is the true distance between the filter's position and the
 | 67 (after a 3.2 h gap) | 11.11 | 1.7 | 2.4 | 0.98 | 1.46 |
 | 99 (last look) | 11.20 | 0.8 | 0.9 | 0.84 | 0.83 |
 
-Read it top to bottom. During the long first coast, a $105\,\mathrm m$ start has grown to an $1807\,\mathrm m$ miss, and the filter knows it: its sigma has swelled to about $10\,\mathrm{km}$, which is honest (bigger than the real error, not smaller). The very first look cuts the error by a factor of about twenty. By the end of pass 1 the error is under $2\,\mathrm m$.
+During the long first coast, a $105\,\mathrm m$ start has grown to an $1807\,\mathrm m$ miss, and the filter knows it: its sigma has swelled to about $10\,\mathrm{km}$, which is honest (bigger than the real error, not smaller). The very first look cuts the error by a factor of about twenty. By the end of pass 1 the error is under $2\,\mathrm m$.
 
 Each gap makes both columns jump up a little — the **[[blind coast|blind-coast]]** between passes — and each new pass pulls them down again. By the last look, error and sigma are both under a metre and match each other closely. Over the run, the error fell by more than three orders of magnitude.
 
 **Against batch.** Map the final EKF state back to the epoch with the same dynamics, and compare with a batch fit of the same $99$ looks. They differ by only $2.3\,\mathrm{cm}$ in position and $0.046\,\mathrm{mm/s}$ in velocity. Both are about $0.9\,\mathrm m$ from the truth — that last metre is measurement noise, which no estimator can remove. So the two agree with *each other* about forty times more closely than either agrees with the truth.
 
-Even the reported uncertainties match. At the epoch, the EKF's position sigmas are $(0.635,\ 0.423,\ 0.412)\,\mathrm m$ and the batch's are $(0.635,\ 0.423,\ 0.412)\,\mathrm m$, equal to three figures. Two completely different computations, the same data, the same information.
+Even the reported uncertainties match. At the epoch, the EKF's position sigmas are $(0.635,\ 0.423,\ 0.412)\,\mathrm m$ and the batch's are $(0.635,\ 0.423,\ 0.412)\,\mathrm m$, equal to three figures.
 :::
 
 ::: note Why it has to be true: the filter and batch count the same information
@@ -131,14 +131,14 @@ A sequential filter gets no second try. At each look it makes a correction using
 ::: example The same rough start breaks a plain EKF
 Take the batch lesson's style of rough start: $3.9\,\mathrm{km}$ off in position and $2.7\,\mathrm{m/s}$ in velocity. Give it to the same batch code and the same EKF, with the same $99$ looks. The EKF's starting covariance now honestly says $3\,\mathrm{km}$ and $3\,\mathrm{m/s}$ per axis.
 
-**Batch.** It needs seven iterations. The first two corrections are about $14\,\mathrm{km}$ each, then about $0.2\,\mathrm{km}$, then $2\,\mathrm{cm}$, then almost nothing. It lands $0.90\,\mathrm m$ from the truth — the same noise-limited answer as before.
+**Batch.** The corrections from one iteration to the next run about $14\,\mathrm{km}$, $14\,\mathrm{km}$, $0.25\,\mathrm{km}$, $0.19\,\mathrm{km}$, $2\,\mathrm{cm}$, and then almost nothing. It lands $0.90\,\mathrm m$ from the truth — the same noise-limited answer as before.
 
 **EKF.** After the $6.2$-hour coast, the guess is $48\,\mathrm{km}$ from the truth. The first update brings it to about $2.9\,\mathrm{km}$, but the second one throws it out to about $21\,\mathrm{km}$: the straight-line approximation it used was made about a point that was far off. It never recovers. After the last look it is still $1.83\,\mathrm{km}$ wrong while reporting a sigma of about $1.0\,\mathrm m$.
 
-That last line is the dangerous part. The filter is not "honestly unsure"; it is **confidently wrong**, claiming metre-level accuracy for a state kilometres off. And making the starting covariance looser does not help: at $10\,\mathrm{km}$ and $10\,\mathrm{m/s}$ per axis, the same run ends about $410\,\mathrm{km}$ off. The starting error, not the random noise, is what breaks it.
+The filter is not "honestly unsure"; it is **confidently wrong**, claiming metre-level accuracy for a state kilometres off. And making the starting covariance looser does not help: at $10\,\mathrm{km}$ and $10\,\mathrm{m/s}$ per axis, the same run ends about $410\,\mathrm{km}$ off. The starting error, not the random noise, is what breaks it.
 :::
 
-This is not a flaw in the Kalman filter's mathematics. It is a mismatch between what a straight-line approximation can survive and what it was asked to survive. When the guess is far from the truth, the partials $\mathbf H$ and $\boldsymbol\Phi$ computed at the guess point in the wrong directions. The correction built from them lands somewhere else wrong. The next step linearizes about that wrong place, and the error feeds itself instead of shrinking.
+This is not a flaw in the Kalman filter's mathematics. When the guess is far from the truth, the partials $\mathbf H$ and $\boldsymbol\Phi$ computed at the guess point in the wrong directions. The correction built from them lands somewhere else wrong. The next step linearizes about that wrong place, and the error feeds itself instead of shrinking.
 
 The cure used in real operations is the one the first example quietly assumed: start a sequential filter from a state good enough for straight lines to be trusted. That usually means a short batch fit of the first data, or the tail of a longer batch solution. Raw initial-orbit-determination output, with all its roughness, is batch's starting point, not the filter's. A partial remedy is the **iterated EKF**, which re-linearizes several times inside a single update until the correction settles (the nonlinear-filters module covers it). It fixes a stale straight-line approximation at one moment, but it still cannot go back over the whole arc the way batch does.
 
@@ -257,12 +257,12 @@ Zoom in far enough on any smooth curve and it looks like a straight line. Linear
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">
   <path d="M20,130 Q180,-30 340,130" fill="none" stroke="#1f2a44" stroke-width="2"/>
-  <line x1="40" y1="130" x2="200" y2="10" stroke="#1d6fd1" stroke-width="2"/>
-  <circle cx="100" cy="85" r="4" fill="#1d6fd1"/>
-  <text x="108" y="100" font-size="11" fill="#1d6fd1">guess: tangent here</text>
-  <circle cx="260" cy="81" r="4" fill="#b4232c"/>
-  <text x="250" y="104" font-size="11" fill="#b4232c">truth: far away</text>
-  <text x="206" y="20" font-size="11" fill="#1d6fd1">tangent line</text>
+  <line x1="40" y1="100" x2="220" y2="10" stroke="#1d6fd1" stroke-width="2"/>
+  <circle cx="100" cy="70" r="4" fill="#1d6fd1"/>
+  <text x="104" y="90" font-size="11" fill="#1d6fd1">guess: tangent here</text>
+  <circle cx="260" cy="70" r="4" fill="#b4232c"/>
+  <text x="250" y="92" font-size="11" fill="#b4232c">truth: far away</text>
+  <text x="122" y="32" font-size="11" fill="#1d6fd1">tangent line</text>
   <text x="300" y="140" font-size="11" fill="#1f2a44">true curve</text>
 </svg>
 ```

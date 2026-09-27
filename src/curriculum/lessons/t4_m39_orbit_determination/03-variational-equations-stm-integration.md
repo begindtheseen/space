@@ -22,7 +22,7 @@ $$
 
 where $\mathbf x=(\mathbf r,\mathbf v)$ holds position and velocity, six numbers. Read $\dot{\mathbf x}$ as "x dot", the rate of change of $\mathbf x$. The function $\mathbf f$ is the force model: it says how fast each number is changing right now.
 
-A solution depends on two things: the time $t$, and where it started, $\mathbf x_0$. Write it $\mathbf x(t;\mathbf x_0)$. Then $\boldsymbol\Phi$ is, by definition, the **Jacobian** of that solution with respect to its starting point — the table of "how much does each number at time $t$ move, per unit nudge of each starting number":
+A solution depends on two things: the time $t$, and where it started, $\mathbf x_0$. Write it $\mathbf x(t;\mathbf x_0)$. Then $\boldsymbol\Phi$ is, by definition, the **[[Jacobian|jacobian]]** of that solution with respect to its starting point — the table of "how much does each number at time $t$ move, per unit nudge of each starting number":
 
 $$
 \boldsymbol\Phi(t,t_0) \equiv \frac{\partial\mathbf x(t;\mathbf x_0)}{\partial\mathbf x_0}.
@@ -63,7 +63,7 @@ Take the blocks one at a time:
 - **Bottom right.** Gravity $-\mu\mathbf r/r^3$ does not care how fast you are going, so this block is zero.
 - **Bottom left.** The only real work: how gravity changes when you move a little. This is $\mathbf G=\partial\dot{\mathbf v}/\partial\mathbf r$, the **[[gravity-gradient tensor|gravity-gradient]]**.
 
-To find $\mathbf G$, differentiate component $i$ of the acceleration with respect to component $j$ of position. Two facts do it. First, $\partial r_i/\partial r_j$ is $1$ when $i=j$ and $0$ otherwise; that pattern is written $\delta_{ij}$ (the **Kronecker delta**). Second, since $r^2=r_1^2+r_2^2+r_3^2$, we get $\partial r/\partial r_j = r_j/r$, so $\partial(r^{-3})/\partial r_j = -3r^{-4}\cdot r_j/r = -3r_j/r^5$. With the product rule:
+To find $\mathbf G$, differentiate component $i$ of the acceleration with respect to component $j$ of position. Two facts do it. First, $\partial r_i/\partial r_j$ is $1$ when $i=j$ and $0$ otherwise; that pattern is written $\delta_{ij}$ (the **[[Kronecker delta|kronecker-delta]]**). Second, since $r^2=r_1^2+r_2^2+r_3^2$, we get $\partial r/\partial r_j = r_j/r$, so $\partial(r^{-3})/\partial r_j = -3r^{-4}\cdot r_j/r = -3r_j/r^5$. With the product rule:
 
 $$
 \frac{\partial}{\partial r_j}\left(-\frac{\mu r_i}{r^3}\right) = -\mu\left(\frac{\delta_{ij}}{r^3} - \frac{3r_ir_j}{r^5}\right) = \frac{\mu}{r^3}\left(\frac{3r_ir_j}{r^2}-\delta_{ij}\right).
@@ -79,7 +79,7 @@ Read what it says. Move a little *outward* along $\hat{\mathbf r}$ and the matri
 
 Two properties are worth checking every time:
 
-- **Its trace is zero.** Summing the diagonal gives $\frac{\mu}{r^3}(3-3)=0$. That is Laplace's equation — what the second derivatives of gravity's potential must satisfy in empty space.
+- **Its trace is zero.** Summing the diagonal gives $\frac{\mu}{r^3}(3-3)=0$. That is [[Laplace's equation|laplace-equation]] — what the second derivatives of gravity's potential must satisfy in empty space.
 - **It is symmetric.** $\mathbf G$ is the matrix of second derivatives of the potential energy per unit mass, $-\mu/r$, and mixed second derivatives do not care about order.
 
 ::: key The variational equations and the two-body Jacobian
@@ -301,6 +301,10 @@ Yes. The determinant depends only on $\operatorname{tr}\mathbf A=\operatorname{t
 
 With $\boldsymbol\Phi$ fully in hand — what it means, its equation, and how to get it for any force model — the next lesson leaves the batch method behind. It processes observations one at a time instead of all at once, using the sequential filters of the nonlinear-filters module applied to orbits.
 
+::: context jacobian A table of sensitivities
+A Jacobian is a grid of rates. Row $i$, column $j$ answers one question: if input $j$ goes up a little, how fast does output $i$ change? For $\boldsymbol\Phi$ there are six inputs (the starting position and velocity) and six outputs (the position and velocity at time $t$), so $36$ answers in a $6\times6$ table. The name honors Carl Jacobi, a nineteenth-century German mathematician. You met the same object in the least-squares module as the matrix $\mathbf H$, the sensitivity of each measurement to each unknown.
+:::
+
 ::: context gravity-gradient The same stretch that makes tides
 Gravity is a little stronger on the side of an object nearer Earth and a little weaker on the far side. The difference stretches things along the line to Earth and squeezes them across it — exactly the $2$ and $-1$ pattern in $\mathbf G$.
 
@@ -325,6 +329,14 @@ Gravity is a little stronger on the side of an object nearer Earth and a little 
 ```
 
 The stretch arrows are twice as long as the squeeze arrows, and one stretch direction minus two squeeze directions gives the zero trace. Spacecraft feel this too: it slowly swings a long boom to point at Earth, a trick called gravity-gradient stabilization.
+:::
+
+::: context kronecker-delta A tiny identity matrix in symbols
+$\delta_{ij}$ is shorthand for "one if the two labels match, zero if they don't". So $\delta_{11}=1$ and $\delta_{12}=0$. Laid out as a $3\times3$ grid, the $\delta_{ij}$ are exactly the identity matrix $\mathbf I$ — which is why the $\delta_{ij}$ in the component formula becomes $\mathbf I$ in the matrix formula. It is named after Leopold Kronecker. It is the same Greek letter as the $\delta$ in $\delta\mathbf x$, but it means something different: that one is "a small change in".
+:::
+
+::: context laplace-equation Gravity spreads out, it does not pile up
+Laplace's equation says the three "curvatures" of the gravity potential, along $x$, $y$ and $z$, add to zero wherever there is no mass. In words: gravity's field lines spread out through empty space without starting or stopping. So if the pull strengthens along one direction as you move, it must weaken along the others to compensate — here, $+2$ along the radius and $-1$ in each of the two sideways directions. The same equation governs electric fields in empty space and the steady flow of heat. It becomes a working check: any gravity model you code, including J2 or a full spherical-harmonic field, should give a $\mathbf G$ with zero trace outside Earth.
 :::
 
 ::: context finite-difference Slope from two nearby points

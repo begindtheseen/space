@@ -234,7 +234,25 @@ On one short pass, a constant offset in every range can be explained almost as w
 This lesson treated $\boldsymbol\Phi$ as a black box. The next lesson opens it: the variational equations that generate it, why integrating them alongside the trajectory is the way to get it once real forces are added, and the free checks that tell you the integration is healthy.
 
 ::: context chain-rule Changes passed along a chain
-If turning a dial by one click moves a gear by three teeth, and one tooth of the gear moves a needle by two millimeters, then one click moves the needle six millimeters. Multiply the rates along the chain. Here the "dial" is the epoch state, the "gear" is the state at $t_i$, and the "needle" is the sensor reading. With many numbers at each stage, the rates become matrices, and "multiply" becomes matrix multiplication — in the order the chain runs, last link first.
+If turning a dial by one click moves a gear by three teeth, and one tooth of the gear moves a needle by two millimeters, then one click moves the needle six millimeters. Multiply the rates along the chain. Here the "dial" is the epoch state, the "gear" is the state at $t_i$, and the "needle" is the sensor reading.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 110" font-family="Inter, Arial, sans-serif">
+  <rect x="10" y="30" width="90" height="40" rx="6" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="55" y="54" font-size="12" text-anchor="middle" fill="#1f2a44">epoch x₀</text>
+  <rect x="135" y="30" width="90" height="40" rx="6" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="180" y="54" font-size="12" text-anchor="middle" fill="#1f2a44">state x(tᵢ)</text>
+  <rect x="260" y="30" width="90" height="40" rx="6" fill="#f2b880" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="305" y="54" font-size="12" text-anchor="middle" fill="#1f2a44">reading yᵢ</text>
+  <line x1="100" y1="50" x2="127" y2="50" stroke="#1f2a44" stroke-width="2"/>
+  <polygon points="135,50 125,45 125,55" fill="#1f2a44"/>
+  <line x1="225" y1="50" x2="252" y2="50" stroke="#1f2a44" stroke-width="2"/>
+  <polygon points="260,50 250,45 250,55" fill="#1f2a44"/>
+  <text x="117" y="22" font-size="12" text-anchor="middle" fill="#1d6fd1">Φ</text>
+  <text x="242" y="22" font-size="12" text-anchor="middle" fill="#b4232c">Hᵢ</text>
+  <text x="180" y="98" font-size="11" text-anchor="middle" fill="#1f2a44">total sensitivity: Hᵢ Φ (last link written first)</text>
+</svg>
+``` With many numbers at each stage, the rates become matrices, and "multiply" becomes matrix multiplication — in the order the chain runs, last link first.
 :::
 
 ::: context information-matrix Why "information"
