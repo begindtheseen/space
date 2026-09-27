@@ -76,7 +76,7 @@ Sanity check: the answer sits much closer to the $5\,\mathrm m$ radar than to th
 
 ### The one orbit-specific choice: Q
 
-Two-body motion, and even motion with $J_2$, has no random pushes in it. A filter that trusted its force model completely would run with $\mathbf Q=\mathbf 0$. Real filters almost never do, because real spacecraft always feel some force the model gets slightly wrong, such as air drag or sunlight pressure. Choosing $\mathbf Q$ well is the whole subject of the process-noise lesson later in this module. In this lesson the simulated "truth" follows exactly the same two-body dynamics as the filter, so $\mathbf Q = \mathbf 0$ is honest, and the comparison with batch stays in front.
+Two-body motion, even with $J_2$, has no random pushes in it, so a filter that trusted its force model completely would run with $\mathbf Q=\mathbf 0$. Real filters almost never do, because real spacecraft always feel some force the model gets slightly wrong, such as air drag. Choosing $\mathbf Q$ well is the whole subject of the process-noise lesson later in this module. In this lesson the simulated "truth" follows exactly the same two-body dynamics as the filter, so $\mathbf Q = \mathbf 0$ is honest, and the comparison with batch stays in front.
 
 ## A sequential fit that lands on the batch answer
 
@@ -124,7 +124,7 @@ That is the batch normal matrix $\boldsymbol\Lambda$, plus the filter's starting
 
 ## When the first guess is too rough
 
-Batch can start from a genuinely poor guess — kilometres off — because it goes over the *entire* arc again and again. A bad first straight-line approximation just produces a big correction. The next pass re-propagates from the better guess, re-linearizes along the new path, and tries again.
+Batch can start from a guess kilometres off, because it goes over the *entire* arc again and again. A bad first straight-line approximation just produces a big correction. The next pass re-propagates from the better guess, re-linearizes along the new path, and tries again.
 
 A sequential filter gets no second try. At each look it makes a correction using the straight-line approximation it has *right then*, and moves on. It never goes back.
 
@@ -152,7 +152,7 @@ Nothing about orbit determination forces the EKF's straight-line approximation. 
 
 The scouts are called **[[sigma points|sigma-points]]**. For a state with $n$ numbers there are $2n+1$ of them: one at the best guess, and a pair on either side of it along each main direction of $\mathbf P$, placed to match its spread. Each scout is flown through the *exact* nonlinear dynamics and the exact measurement function. Then the filter measures the new average and spread of the scouts. No partial derivatives are ever formed. The result captures the mean and covariance to second order, one step better than the EKF's first order. The full construction, and why it often beats the EKF when the problem is strongly curved, is the nonlinear-filters module's own subject.
 
-For orbit determination, the UKF's appeal shows up in exactly the failure above. A poorly known state carried across a long curved coast is where scouts, which sample the real spread of possible states, tend to degrade more gently than one straight-line approximation. The cost is flying $2n+1$ trajectories instead of one reference trajectory plus its $\boldsymbol\Phi$. For a six-number state that is $13$ trajectories. The cost matters more for a large state with many extra bias or consider parameters than for the six to ten states of a typical single-satellite filter.
+For orbit determination, the UKF's appeal shows up in exactly the failure above. A poorly known state carried across a long curved coast is where scouts, which sample the real spread of possible states, tend to degrade more gently than one straight-line approximation. The cost is flying $2n+1$ trajectories instead of one reference trajectory plus its $\boldsymbol\Phi$. For a six-number state that is $13$ trajectories. That matters more for a large state with many bias parameters than for a typical six-to-ten-state filter.
 
 ::: key Batch versus sequential
 Batch: every measurement in the arc at once, iterated with Gauss-Newton, best accuracy and easiest to diagnose from residuals, tolerant of a rough starting guess because it can re-linearize the whole arc — but offline; the natural choice for definitive orbit determination. Sequential (EKF/UKF): recursive, one measurement (or one look) at a time, real-time and onboard-capable, but each step commits to its local linearization — it needs a trustworthy starting point and careful process noise and numerical-conditioning treatment. Operations typically run both and compare: a periodic batch solution to anchor accuracy, a sequential filter to stay current between batch runs.

@@ -1,7 +1,7 @@
 ---
 id: l08-consider-covariance-analysis
 title: Consider-covariance analysis
-minutes: 20
+minutes: 19
 covers:
   - Consider-covariance analysis
 ---
