@@ -1,7 +1,7 @@
 ---
 id: l07-compile-time-computation
 title: Computing before the program runs, and if constexpr
-minutes: 26
+minutes: 24
 covers:
   - constexpr functions, consteval, constinit, compile-time computation
   - if constexpr for compile-time branching
@@ -97,7 +97,7 @@ ub2.cpp:3:45: error: overflow in constant expression [-fpermissive]
 
 At run time the same multiply would quietly wrap to a negative number on most machines. Here the build stops. That is a strong reason to write table builders and unit conversions as `constexpr` and to check them with `static_assert`: the compiler becomes a test harness that runs on every build.
 
-Compile-time evaluation also has a budget. g++ stops any single loop after 262,144 iterations during constant evaluation and says so ("`'constexpr' loop iteration count exceeds limit of 262144`"); the flag `-fconstexpr-loop-limit=` raises it. A table of a few thousand entries is far inside that.
+Compile-time evaluation has a budget: g++ stops any one loop after 262,144 iterations (`-fconstexpr-loop-limit=` raises it). A table of a few thousand entries is far inside that.
 
 ## `consteval`: no run-time version at all
 
@@ -181,7 +181,7 @@ Without `constinit`, that edit compiles cleanly and moves `g_mass_kg` into the d
 
 ## A rotation table built by the compiler
 
-Now the payoff: a table of sines and cosines, one entry per whole degree, computed inside the compiler and checked there. A table like this rotates a 2-D vector — a thrust direction, a sensor boresight, a ground-track heading — with two multiplies and an add per component and no call to a sine routine at all. On a small processor without fast floating-point sine it saves real time, and on any processor it gives the same bits every run.
+Now the payoff: a table of sines and cosines, one entry per whole degree, computed and checked inside the compiler. It rotates a 2-D vector — a thrust direction, a sensor boresight — with multiplies and adds and no call to a sine routine. On a small processor without fast sine that saves real time.
 
 The obvious plan fails at the first step. `std::sin` is not `constexpr` in the C++20 or C++23 standard. g++ 13.3 happens to accept `constexpr double h = std::sin(0.5235987755982988);` as an extension, even with `-pedantic`. clang++ 18.1.3 refuses: `non-constexpr function 'sin' cannot be used in a constant expression`. Code that must build on both cannot rely on it. So we write our own.
 
@@ -384,7 +384,7 @@ A plain `if` is decided while the program runs, so the compiler must type-check 
 `if constexpr`: the untaken branch is not instantiated, so it may contain code that would be ill-formed for that type. It replaces [[tag dispatch|tag-dispatch]] and much specialisation with an ordinary, readable `if`.
 :::
 
-The `static_assert(false)` in the last branch needs a word. For years the rule was that even a discarded `static_assert(false)` fired, so people wrote a condition that depended on `T` instead. A 2022 change to the standard, applied to earlier versions as a fix, made the plain form legal in a discarded branch. g++ 13 and clang++ 18 both accept it with `-std=c++20`. On an older compiler, write `static_assert(sizeof(T) == 0, "...")`, which is never true but depends on `T`.
+A note on `static_assert(false)` in the last branch. Older rules made it fire even when discarded, so people wrote a condition that depends on `T`, such as `sizeof(T) == 0`. A recent fix to the standard, applied to earlier versions too, made the plain form legal in a discarded branch; g++ 13 and clang++ 18 both accept it with `-std=c++20`.
 
 ::: warning Three ways `if constexpr` bites
 - **Every link of the chain needs `constexpr`.** Write `else if (std::is_integral_v<T>)` without it, and that `if` becomes a run-time one. Its branches are no longer discarded: `encode(12.5ms)` now fails with `invalid 'static_cast' from type 'std::chrono::duration<...>'`, and `encode(42)` trips the `static_assert`.
