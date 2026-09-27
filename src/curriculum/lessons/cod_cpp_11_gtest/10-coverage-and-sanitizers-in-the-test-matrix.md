@@ -7,20 +7,19 @@ covers:
   - 'Sanitizer builds in the test matrix'
 ---
 
-The morning after a snowfall, look out over a school playground. You can see exactly where people walked: paths to the doors, a circle around the swings. You can also see, with total certainty, the corners nobody visited. The snow cannot tell you whether the people who walked were paying attention. It can only tell you where nobody went.
+The morning after a snowfall, look out over a school playground. You can see exactly where people walked: paths to the doors, a circle around the swings. You can also see, with total certainty, the corners nobody visited.
 
-**Code coverage** is that snow for your program. While the tests run, counters record which lines and which branches ran. Afterwards you look for the untouched corners. On a flight computer those corners are often the most important code there is: the fault handlers, the "both sensors failed" paths, the code that runs once in a thousand flights. They are the corners tests forget, because nothing goes wrong in a normal run.
+**Code coverage** is that snow for your program. While the tests run, counters record which lines and which branches ran. Afterwards you look for the untouched corners. On a flight computer those corners are often the most important code there is: the fault handlers and the "both sensors failed" paths, which tests forget because nothing goes wrong in a normal run.
 
-Coverage finds code that no test reached. A second tool finds bugs in the code that *was* reached. Think of a soccer referee. The final score tells you who won, but a referee watches every play and blows the whistle on a foul the score would never show. A **sanitizer** is a referee inside your program. Your tests check the score — the answers. The sanitizer watches every memory access and every thread, and stops the game at the first foul. This lesson puts both into the **test matrix**, the set of builds that CI runs on every change.
+Coverage finds code that no test reached. A second tool finds bugs in the code that *was* reached. Think of a soccer referee: the final score never shows a foul, but the referee watches every play. A **sanitizer** is a referee inside your program. Your tests check the score — the answers. The sanitizer watches every memory access and every thread, and stops the game at the first foul. This lesson puts both into the **test matrix**, the set of builds that CI runs on every change.
 
 ## What the counters record
 
-The CMake module (lesson 08 there, *Sanitizer, coverage and ccache builds*) set up a `coverage` preset. It compiles with `--coverage -O0`. At compile time GCC writes a map of every branch into a `.gcno` file; when the tests run, the counts are written to a matching `.gcda` file. This lesson starts where that one stopped: reading the counts, by hand and with tools, and deciding what an untouched corner means.
+The CMake module (lesson 08 there, *Sanitizer, coverage and ccache builds*) set up a `coverage` preset. It compiles with `--coverage -O0`. At compile time GCC writes a map of every branch into a `.gcno` file; when the tests run, the counts are written to a matching `.gcda` file. This lesson reads those counts and decides what an untouched corner means.
 
-Our code under test is a small piece of a drone's altitude logic. It prefers the barometer, falls back to GPS, and reports "no source" if both have failed. A second function limits a throttle command to the range 0 to 1:
+Our code under test is a small piece of a drone's altitude logic. It prefers the barometer, falls back to GPS, and reports "no source" if both have failed. A second function limits a throttle command to the range 0 to 1. Here is `src/altitude.cpp`; the reports below number its lines from 1 at the `#include`:
 
 ```cpp
-// src/altitude.cpp
 #include <gnc/altitude.hpp>
 
 namespace gnc {
@@ -76,11 +75,11 @@ TEST(ClampThrottle, LimitsBothEnds) {
 }
 ```
 
-All three pass. The question coverage answers is: what did they *not* do?
+All three pass. What did they *not* do?
 
 ## gcov: the raw counts
 
-**gcov** is the program that ships with GCC and turns a `.gcno` map plus a `.gcda` count file into an annotated copy of your source. You point it at the `.gcda` file. The flag `-b` adds branch counts and `-c` prints them as numbers instead of percentages.
+**gcov** ships with GCC and turns a `.gcno` map plus a `.gcda` count file into an annotated copy of your source. The flag `-b` adds branch counts and `-c` prints them as numbers instead of percentages.
 
 ::: example Reading gcov's report line by line
 After `cmake --preset coverage`, a build and `ctest --preset coverage`, run gcov from the project folder:
@@ -113,22 +112,22 @@ branch  1 taken 3
     #####:   19:        c = 1.0;  // "just in case"
 ```
 
-Read the left column first. A number is how many times that line ran. A dash means the line holds no code (a brace, a blank line). **`#####`** means the line holds code that ran **zero** times. Two lines are marked: line 11, the fault return, and line 19, the "just in case" assignment.
+Read the left column first. A number is how many times that line ran. A dash means the line holds no code. **`#####`** means the line holds code that ran **zero** times: line 11, the fault return, and line 19, the "just in case" assignment.
 
-Now the branch lines. Each `if` has two roads, numbered 0 and 1. Branch 0 is the [[fallthrough|fallthrough]] road, into the body when the condition is true. On line 8, branch 0 was taken once (the GPS fallback test) and branch 1, the road to the final `else`, was taken **0** times. On line 18 it is the other way round: the body was never entered.
+Each `if` has two roads, numbered 0 and 1. Branch 0 is the [[fallthrough|fallthrough]] road, into the body. On line 8, branch 1, the road to the final `else`, was taken **0** times. On line 18 the body itself was never entered.
 
-The summary lines now make sense. "Branches executed: 100% of 10" means every condition was *evaluated* at least once. "Taken at least once: 80% of 10" means only 8 of the 10 roads were *driven*: $8/10 = 0.8$. And "Lines executed: 83.33% of 12" is 10 of 12 lines: $10/12 \approx 0.8333$.
+Now the summary: every condition was *evaluated* ("executed"), but only 8 of the 10 roads were *driven* ("taken"), $8/10 = 0.8$. And 10 of 12 lines ran, $10/12 \approx 0.8333$.
 
 **Sanity check.** There are five `if`-shaped decisions (two `if`s in `select_altitude`, two `?:` and one `if` in `clamp_throttle`), with two roads each, which is the 10 branches gcov counted. The [[run count at the top|runs-four]], 4, is one run of the test program per test, plus one more you did not ask for.
 :::
 
-Two words from that output deserve their own definitions. **Line coverage** is the fraction of lines that ran. **Branch coverage** is the fraction of branch roads that were taken. Branch coverage is the stricter one and the one worth watching, because a whole `if` can sit on a line that ran while one of its roads never did.
+**Line coverage** is the fraction of lines that ran. **Branch coverage** is the fraction of branch roads taken. Branch coverage is the stricter one and the one worth watching: an `if` can sit on a line that ran while one of its roads never did.
 
 ## lcov: one report for the whole library
 
-Reading `.gcov` files one at a time does not scale to a library of two hundred files. **lcov** runs gcov over a whole folder and gathers the results into one `.info` file; **genhtml** turns that into web pages, with untested lines in red.
+**lcov** runs gcov over a whole folder and gathers the results into one `.info` file; **genhtml** turns that into web pages, with untested lines in red.
 
-The obvious command points lcov at the whole build folder. With lcov 2.0 and GCC 13, which is what Ubuntu 24.04 ships, it stops with an error:
+Pointed at the whole build folder, lcov 2.0 with GCC 13 (what Ubuntu 24.04 ships) stops with an error:
 
 ```text
 $ lcov --rc branch_coverage=1 --capture --directory build/coverage --output-file all.info
@@ -140,8 +139,8 @@ geninfo: ERROR: mismatched end line for _ZN36SelectAltitude_PrefersBarometer_Tes
 
 (The path is shortened.) The error is about the *test* file, not the library. That long name is the function a `TEST` macro creates behind the scenes, and lcov 2.0 does not like the [[line numbers GCC records for it|mismatch]]. There are two ways past it, and this lesson uses the first:
 
-1. **Capture from the library's folder only.** We want the coverage of `gnc`, the code that flies, not of the tests. The library's counts live in `build/coverage/src`, and the macro-made functions are not there, so the error never arises. `--include` keeps only files under our own `src/`, which drops inline functions from system headers such as `<cmath>` that would otherwise appear in the report.
-2. **Tell lcov to downgrade the error to a warning** with `--ignore-errors mismatch`, capture everything, and then filter. This works too, but a whole-tree number mixes test code and GoogleTest's own header functions into the total: on this project it reported $29.8\%$ branch coverage, a meaningless figure.
+1. **Capture from the library's folder only.** We want the coverage of `gnc`, the code that flies, not of the tests. Its counts live in `build/coverage/src`, where no macro-made functions are, so the error never arises. `--include` keeps only files under our own `src/`, dropping inline functions from system headers such as `<cmath>`.
+2. **Downgrade the error to a warning** with `--ignore-errors mismatch` and capture everything. This works, but the whole-tree number mixes test code and GoogleTest's header functions into the total: $29.8\%$ branch coverage here, a meaningless figure.
 
 Here is the command we keep, and its output:
 
@@ -159,10 +158,10 @@ Summary coverage rate:
   branches...: 80.0% (8 of 10 branches)
 ```
 
-The same 10 of 12 lines and 8 of 10 branches gcov gave, now for the whole library in one number. `genhtml --branch-coverage build/coverage/gnc.info --output-directory build/coverage/html` makes the web version.
+The same numbers gcov gave, now for the whole library. `genhtml --branch-coverage build/coverage/gnc.info --output-directory build/coverage/html` makes the web version.
 
 ::: warning
-Counters **add up** across runs, and they belong to one particular compile of each file. Rebuild after editing a file without clearing the old counts and the test run prints `libgcov profiling error: ... overwriting an existing profile data with a different checksum`. The old `.gcda` no longer matches the new map, and the numbers after it cannot be trusted. Run `lcov --zerocounters --directory build/coverage` before every measured run, or start from a fresh build folder.
+Counters **add up** across runs, and they belong to one particular compile of each file. Rebuild after editing a file without clearing the old counts and the test run prints `libgcov profiling error: ... overwriting an existing profile data with a different checksum`. The numbers after it cannot be trusted. Run `lcov --zerocounters --directory build/coverage` before every measured run, or start from a fresh build folder.
 :::
 
 ## llvm-cov: Clang's source-based coverage
@@ -181,7 +180,7 @@ Filename           Functions  Missed Functions  Executed   Lines  Missed Lines  
 src/altitude.cpp           2                 0   100.00%      17             4  76.47%         10                2  80.00%
 ```
 
-(The path is shortened and the spacing narrowed.) Step by step: the flags make the compiler add counters and a map from counters to source regions. `LLVM_PROFILE_FILE` names the raw count file the program writes as it exits. `llvm-profdata merge` turns one or many raw files into an indexed profile. `llvm-cov report` prints the table, and `llvm-cov show ... -show-branches=count` prints the source with counts, like gcov's annotated file:
+(The path is shortened and the spacing narrowed.) The flags add counters and a map from counters to source regions. `LLVM_PROFILE_FILE` names the raw count file the program writes as it exits. `llvm-profdata merge` turns raw files into an indexed profile. `llvm-cov report` prints the table, and `llvm-cov show ... -show-branches=count` prints the source with counts, like gcov's annotated file:
 
 ```text
     8|      1|    } else if (gps.valid) {
@@ -197,22 +196,18 @@ src/altitude.cpp           2                 0   100.00%      17             4  
 
 The branches agree exactly with gcov: 10 branches, 2 never taken, $8/10 = 80\%$. The line numbers do not: llvm-cov counts 17 lines, gcov 12. Each tool decides differently which lines "hold code" (llvm-cov counts closing braces inside a region, for example). So compare coverage over time using **one** tool, and never compare a gcov percentage with an llvm-cov one.
 
-Which should you use? gcov and lcov come with GCC, which most embedded flight toolchains are built on. llvm-cov's regions are more precise about conditions inside one line, and Clang 18 can also measure [[MC/DC|mcdc]], the stricter criterion avionics standards ask for. Many teams run the coverage job with whichever compiler their CI already uses.
+gcov and lcov come with GCC, which most embedded flight toolchains are built on. llvm-cov is more precise about conditions inside one line, and Clang 18 can also measure [[MC/DC|mcdc]], the stricter criterion avionics standards ask for.
 
 ## Reading an uncovered branch
 
-Here is the real work. The report gives you two red lines. What do they mean?
-
-An uncovered branch has exactly two possible meanings. **Either** the branch can happen in real life and no test makes it happen — a **gap** in the tests. **Or** the branch can never happen, whatever the inputs — **dead code**, which is a defect of its own, because it claims to handle a case that does not exist and misleads everyone who reads it. Deciding which one you are looking at, and writing it down, is the actual job.
+The report shows two red lines. An uncovered branch has exactly two possible meanings. **Either** the branch can happen in real life and no test makes it happen — a **gap** in the tests. **Or** the branch can never happen, whatever the inputs — **dead code**, a defect of its own, because it claims to handle a case that does not exist. To decide, ask: *is there any input, state or sequence of events that reaches this road?* Then try to write the test that does it. If you can, it was a gap. If you can prove nothing reaches it, it is dead.
 
 ::: key
 A branch shows as uncovered: either a missing test for a reachable case, or dead logic that cannot be reached and should be removed. Both are findings; recording which one it is, is the actual work.
 :::
 
-To decide, ask: *is there any input, any state, any sequence of events that reaches this road?* Then try to write the test that does it. If you can, it was a gap. If you can prove no input reaches it, it is dead.
-
 ::: example Two red lines, two different findings
-**Line 8, the road to the final `else`.** Can the barometer and the GPS both be invalid at once? Of course: a GPS dropout during a pressure-port icing event, or a power glitch that resets both. This is a reachable fault path, the one the comment even names, and no test drove it. It is a **gap**. The fix is a test:
+**Line 8, the road to the final `else`.** Can the barometer and the GPS both be invalid at once? Yes: a GPS dropout during a pressure-port icing event, say. This reachable fault path had no test. It is a **gap**. The fix is a test:
 
 ```cpp
 TEST(SelectAltitude, ReportsNoneWhenBothFail) {
@@ -223,7 +218,13 @@ TEST(SelectAltitude, ReportsNoneWhenBothFail) {
 
 **Line 18, the "just in case" check.** Trace the values. After line 17, `c` is either $1.0$ or a value that was not greater than $1.0$. So `c > 1.0` can never be true afterwards. The branch is **dead**.
 
-But look harder before deleting it, because a dead branch often sits where its author sensed a real danger. What input could slip past both limits? A **[[NaN|nan]]** — "not a number", the value a floating-point calculation produces from something like $0/0$. Every comparison with NaN is false. So `NaN < 0.0` is false and `c` stays NaN; `NaN > 1.0` is false and `c` stays NaN; the dead check is false too. A NaN throttle command walks straight through all three. A test proves it:
+But look harder first: a dead branch often sits where its author sensed a real danger. What input could slip past both limits? A **[[NaN|nan]]** — "not a number", the value a floating-point calculation produces from something like $0/0$. Every comparison like `<` or `>` with a NaN is false. So `NaN < 0.0` is false and `c` stays NaN; `NaN > 1.0` is false and `c` stays NaN; the dead check is false too. A NaN throttle command walks straight through all three. A test proves it:
+
+```cpp
+TEST(ClampThrottle, NanCommandMeansIdle) {
+    EXPECT_EQ(gnc::clamp_throttle(std::nan("")), 0.0);
+}
+```
 
 ```text
 tests/test_altitude.cpp:33: Failure
@@ -245,7 +246,7 @@ double clamp_throttle(double cmd) {
 }
 ```
 
-With the two new tests (`ReportsNoneWhenBothFail` and `NanCommandMeansIdle`, which expects `0.0`), zeroed counters and a fresh run:
+With the two new tests (and `#include <cmath>` for `std::isnan` and `std::nan`), zeroed counters and a fresh run:
 
 ```text
 Summary coverage rate:
@@ -257,17 +258,17 @@ Summary coverage rate:
 **Sanity check.** The branch count is still 10, but they are different branches: 2 from `isnan`, 4 from the nested `?:`, and 4 from `select_altitude`, which is $2 + 4 + 4 = 10$. The line count fell from 12 to 10 because the dead `if` and its body are gone.
 :::
 
-Notice what the coverage number did *not* do. It did not tell us to add a NaN test. It pointed at a line, and a person asking "why is this here?" found a real hazard next to it. That is how coverage earns its keep.
+The coverage number did not tell us to add a NaN test. It pointed at a line, and a person asking "why is this here?" found a real hazard next to it.
 
 ::: warning
-There are three ways to make a red line go away without learning anything, and all three are common. **Deleting the branch because it is red** — without showing it is unreachable — can throw away the only code that handles a real fault. **Excluding the file**, or wrapping lines in lcov's `LCOV_EXCL_START` and `LCOV_EXCL_STOP` markers, hides the question instead of answering it. If an exclusion is truly justified (a defensive check for a hardware state you have proved impossible, say), it should be one line, with the reason written next to it, reviewed like code. **Lowering the team's coverage threshold** makes the number agree with the code instead of making the code worthy of the number. The goal is never the percentage; it is knowing what every untested road means.
+There are three ways to make a red line go away without learning anything, and all three are common. **Deleting the branch because it is red** — without showing it is unreachable — can throw away the only code that handles a real fault. **Excluding the file**, or wrapping lines in lcov's `LCOV_EXCL_START` and `LCOV_EXCL_STOP` markers, hides the question instead of answering it. A truly justified exclusion is one line, with the reason written next to it, reviewed like code. **Lowering the team's coverage threshold** makes the number agree with the code instead of the other way round. The goal is knowing what every untested road means.
 :::
 
 ## Sanitizers: turning hidden bugs into failures
 
-A test can pass while the code under it does something illegal. In C++, reading freed memory, overflowing a signed integer or two threads writing one variable at once are **undefined behavior**: the language makes no promise about what happens. Often "what happens" is that the program keeps going and gets the right answer anyway — today, on this machine, with this compiler. The bug is **latent**: present, but not showing.
+A test can pass while the code under it does something illegal. Reading freed memory, overflowing a signed integer or two threads writing one variable at once are **undefined behavior**: C++ makes no promise about what happens. Often the program gets the right answer anyway — today, on this machine. The bug is **latent**: present, but not showing.
 
-A sanitizer build adds checks around every risky operation. When one fires, the program stops with a report. So the tests you already have — which drive the code down its paths — become bug detectors for everything those paths touch.
+A sanitizer build adds checks around every risky operation, so the tests you already have become bug detectors for everything their paths touch.
 
 ::: key
 Why run the test suite under sanitizers in CI? Tests exercise the code paths, and sanitizers turn latent undefined behaviour on those paths into a deterministic failure. A green suite without sanitizers proves only that the bug did not manifest today.
@@ -314,7 +315,7 @@ The second `push_back` needs more room, so the vector allocates a bigger block, 
 [  PASSED  ] 1 test.
 ```
 
-It passes because the freed block still held the old bytes when the test read them. Built with `-fsanitize=address,undefined -fno-sanitize-recover=all -fno-omit-frame-pointer`:
+The freed block still held the old bytes. Built with `-fsanitize=address,undefined -fno-sanitize-recover=all -fno-omit-frame-pointer`:
 
 ```text
 ==10178==ERROR: AddressSanitizer: heap-use-after-free on address 0x503000000aa0 ...
@@ -328,7 +329,7 @@ freed by thread T0 here:
 
 (Trimmed.) ASan names the bug, the line that read (28), the line that freed (the `push_back` on line 14, called from line 26), and the exact spot: 16 bytes into a 24-byte `Event`.
 
-**Sanity check.** An `Event` is two 8-byte doubles and a 4-byte `int`, $8 + 8 + 4 = 20$ bytes, padded to 24 so the next event's doubles line up on 8-byte boundaries. `code` starts after the two doubles, at byte 16, and is 4 bytes long: the "READ of size 4" at offset 16. The fix is to return an index or a copy, not a reference into a container that can move.
+**Sanity check.** An `Event` is two 8-byte doubles and a 4-byte `int`, $8 + 8 + 4 = 20$ bytes, padded to 24 so the next event's doubles stay on 8-byte boundaries. `code` starts at byte 16 and is 4 bytes long: the "READ of size 4" at offset 16. The fix is to return an index or a copy, not a reference into a container that can move.
 :::
 
 ASan with UBSan is one sanitizer build. Concurrency bugs need a different one: **ThreadSanitizer** (TSan), which watches every memory access by every thread.
@@ -359,7 +360,7 @@ TEST(FrameCounter, CountsFramesFromTwoThreads) {
 }
 ```
 
-`++count_` is really three steps: read, add one, write back. If both threads read the same old value, one increment is lost. In the ordinary build, run 1,000 times in a row on a four-core machine, the test failed **72** times and passed 928. That is a **flaky** test, the worst kind: it fails about one run in fourteen ($1000/72 \approx 13.9$), gets re-run, passes, and the team learns to ignore it.
+`++count_` is really three steps: read, add one, write back. If both threads read the same old value, one increment is lost. In the ordinary build, run 1,000 times on a four-core machine, the test failed **72** times. That is a **flaky** test: it fails about one run in fourteen ($1000/72 \approx 13.9$), gets re-run, passes, and the team learns to ignore it.
 
 Built with `-fsanitize=thread -g`, it failed 50 runs out of 50:
 
@@ -375,7 +376,7 @@ SUMMARY: ThreadSanitizer: data race frame_counter_test.cpp:7 in FrameCounter::on
 ThreadSanitizer: reported 1 warnings
 ```
 
-Look closely: GoogleTest printed `OK` and `PASSED`, because this time the count did come out 2000. But TSan made the program [[exit with code 66|exit-code]], and CTest judges by the exit code, so `ctest --preset tsan` reported `83% tests passed, 1 tests failed out of 6`. TSan does not need the threads to collide; it sees that the two accesses had [[no ordering between them|happens-before]]. Changing `count_` to `std::atomic<int>` makes the test pass 100% of the time, with no report.
+Look closely: GoogleTest printed `OK` and `PASSED`, because this time the count did come out 2000. But TSan made the program [[exit with code 66|exit-code]], and CTest judges by the exit code. With this test added to the five altitude tests, `ctest --preset tsan` reported `83% tests passed, 1 tests failed out of 6`. TSan does not need the threads to collide; it sees that the two accesses had [[no ordering between them|happens-before]]. Changing `count_` to `std::atomic<int>` makes the test pass 100% of the time, with no report.
 
 **Sanity check.** $5$ of $6$ tests passed, and $5/6 \approx 0.833$, which CTest rounds to the $83\%$ it printed.
 :::
@@ -389,7 +390,7 @@ $ g++ -fsanitize=address,thread ...
 cc1plus: error: '-fsanitize=thread' is incompatible with '-fsanitize=address'
 ```
 
-Each sanitizer keeps its own bookkeeping about memory — ASan a [[shadow map|shadow-memory]] of which bytes are usable, TSan a record of which thread touched what — and the two layouts collide. Coverage wants `-O0` and clean counts, while sanitizers are usually run with optimization so the tests stay fast. So CI builds the *same* targets several ways and runs the same tests in each. That grid of builds is the **test matrix**:
+Each keeps its own bookkeeping about memory — ASan a [[shadow map|shadow-memory]] of which bytes are usable, TSan a record of which thread touched what — and the two layouts collide. Coverage wants `-O0` and clean counts. So CI builds the *same* targets several ways and runs the same tests in each. That grid of builds is the **test matrix**:
 
 | Preset | Flags added | Catches | Typical cost |
 | --- | --- | --- | --- |
@@ -399,9 +400,9 @@ Each sanitizer keeps its own bookkeeping about memory — ASan a [[shadow map|sh
 | `tsan` | `-fsanitize=thread` | data races | about 5 to 15x slower |
 | `coverage` | `--coverage -O0` | untested code (a report, not a bug) | slower, plus report time |
 
-The `release` row is there because undefined behavior sometimes only turns into a wrong answer once the optimizer takes advantage of it. The slowdowns are the figures the sanitizer projects themselves publish; your code may differ.
+The `release` row is there because undefined behavior sometimes only turns into a wrong answer once the optimizer exploits it. The slowdowns are the sanitizer projects' own published figures.
 
-The CMake options come from the CMake module's `gnc_build_options` target, with one more switch, `GNC_TSAN`, that adds `-fsanitize=thread` to the compile and link options in the same way. The presets then add environment settings for the test run:
+The CMake module's `gnc_build_options` target gains one more switch, `GNC_TSAN`, adding `-fsanitize=thread` to compile and link options the same way. The test presets add settings for the run:
 
 ```json
 { "name": "asan", "inherits": "base", "configurePreset": "asan",
@@ -411,7 +412,7 @@ The CMake options come from the CMake module's `gnc_build_options` target, with 
   "environment": { "TSAN_OPTIONS": "halt_on_error=1" } }
 ```
 
-These two entries go in the `testPresets` list; the hidden `base` test preset sets `"output": {"outputOnFailure": true}` so a failing test's report appears in the CI log. `detect_leaks=1` asks ASan to check for leaked memory at exit, and `halt_on_error=1` stops TSan at the first race.
+These entries go in the `testPresets` list, and the hidden `base` test preset sets `outputOnFailure` so a failing test's report appears in the CI log. `detect_leaks=1` asks ASan to check for leaked memory at exit; `halt_on_error=1` stops TSan at the first race.
 
 Finally, the CI file. In GitHub Actions a **matrix** runs one job description once per value:
 
@@ -451,12 +452,10 @@ jobs:
           path: build/coverage/html
 ```
 
-Five jobs run side by side, one per preset, from one description. The `if:` lines make the report steps run only in the coverage job. The **[[fail-fast|fail-fast]]** setting matters: with `fail-fast: false` every job runs to the end. Without it, the first failing job cancels the others, and you lose the very comparison the matrix exists for. "It fails under `tsan` only" is a diagnosis; "it failed and everything else was cancelled" is not.
-
-The presets and the commands in these steps were run for this lesson on a four-core Ubuntu 24.04 machine, preset by preset; all five passed with the fixed code.
+Five jobs run side by side, one per preset. The `if:` lines limit the report steps to the coverage job. The **[[fail-fast|fail-fast]]** setting matters: with `fail-fast: false` every job runs to the end, so you see that it fails under `tsan` only, which is a diagnosis.
 
 ::: warning
-A sanitizer only watches code that was *compiled* with it. The GoogleTest library installed by `libgtest-dev` was not, and neither is any other prebuilt library you link. For ASan and UBSan that mostly means bugs *inside* those libraries go unseen. TSan is touchier: code it cannot see can make it report races that are not there, or miss ones that are. When that bites, build GoogleTest from source in the sanitizer jobs (with `FetchContent`, as the CMake module showed) so it gets the same flags as everything else.
+A sanitizer only watches code that was *compiled* with it. The GoogleTest library from `libgtest-dev` was not, nor is any other prebuilt library you link, so bugs inside them go unseen. TSan is touchier: code it cannot see can make it report races that are not there. When that bites, build GoogleTest from source in the sanitizer jobs with `FetchContent`, so it gets the same flags as everything else.
 :::
 
 ## Check yourself
@@ -466,7 +465,7 @@ gcov prints "Branches executed: 100.00% of 10" and "Taken at least once: 80.00% 
 :::
 
 ::: answer
-"Executed" means each branching condition was *evaluated* at least once — the program arrived at every `if`. "Taken at least once" means each *road* out of those conditions was actually followed. You can evaluate an `if` a thousand times and always go the same way; then both of its branches count as executed, but only one as taken. Here 8 of the 10 roads were taken, $8/10 = 80\%$. Track the "taken" figure (lcov's "branches" line shows the same thing): an untaken road is exactly the untested case, such as a fault path.
+"Executed" means each condition was *evaluated* at least once — the program arrived at every `if`. "Taken" means each *road* out of it was followed. An `if` evaluated a thousand times that always goes the same way counts both branches as executed but only one as taken. Here 8 of 10 roads were taken, $8/10 = 80\%$. Track the "taken" figure (lcov's "branches" line): an untaken road is exactly the untested case.
 :::
 
 ::: check
@@ -474,23 +473,15 @@ A flight-mode handler switches over an `enum class Mode { Idle, Ascent, Coast, D
 :::
 
 ::: answer
-It depends on where the `Mode` value comes from. If every `Mode` in the program is created from the four named values, no input reaches `default:` and it looks dead. But if a `Mode` is ever made by casting a number — decoded from a telemetry uplink, read from memory after a reset, `static_cast<Mode>(raw_byte)` — then a corrupted byte such as 7 produces a `Mode` that matches no `case`, and `default:` is the only thing standing between that and undefined control behavior. Then it is a reachable fault path and a **gap**: write a test that casts an out-of-range value and checks that safe mode is commanded. If you can show no cast exists anywhere, record that reasoning; many teams still keep such a `default:` as a deliberate defensive check, excluded from coverage with a one-line written justification. Either way the decision and its reason get written down.
+It depends on where `Mode` values come from. If every `Mode` is made from the four named values, nothing reaches `default:` and it looks dead. But if a `Mode` is ever made by casting a number — `static_cast<Mode>(raw_byte)` on a decoded uplink, say — a corrupted byte such as 7 matches no `case`, and `default:` is all that stands between it and undefined control behavior. Then it is a reachable fault path and a **gap**: write a test that casts an out-of-range value and checks that safe mode is commanded. If you can show no such cast exists, record that reasoning; teams often keep the `default:` anyway as a deliberate defensive check, excluded with a one-line written justification.
 :::
 
 ::: check
-You rebuild the coverage configuration after editing one source file and run the tests again. The output contains `overwriting an existing profile data with a different checksum`. What happened, and what numbers are now in your report?
+The `asan` job of the matrix fails with `heap-use-after-free`, while the other four jobs are green. A teammate says "four out of five pass, it's probably a sanitizer false alarm". Why is that reasoning backwards?
 :::
 
 ::: answer
-The `.gcda` count file from the previous run belongs to the old compile of that file. After the edit, the new object file has a new map (`.gcno`) with a different checksum, so the runtime cannot add the new counts to the old file correctly and overwrites it, while other files' counters from the earlier run are still there and keep adding up. The report is a mix of two different programs' runs, and cannot be trusted. Zero the counters (`lcov --zerocounters --directory build/coverage`) or use a fresh build folder before every measured run.
-:::
-
-::: check
-The `asan` job of the matrix fails with `heap-use-after-free`, while the `debug`, `release` and `coverage` jobs are green. A teammate says "three out of four pass, it's probably a sanitizer false alarm". Why is that reasoning backwards?
-:::
-
-::: answer
-The three green jobs do not check memory at all, so they cannot disagree with ASan; they simply cannot see the problem. A use-after-free is undefined behavior: in those builds the freed memory happened to still hold the right bytes, so the answers came out right *today*. ASan reports an actual read of freed memory, with the line that read, the line that freed and the line that allocated. ASan false positives on code it fully instruments are rare. The failing job is the only one that looked. Fix the bug, for example by not keeping references into a container that can reallocate.
+None of the green jobs checks for use-after-free, so they cannot disagree with ASan; they cannot see the problem. In those builds the freed memory happened to still hold the right bytes, so the answers came out right *today*. ASan reports an actual read of freed memory, naming the lines that read, freed and allocated it, and its false positives on code it instruments are rare. The failing job is the only one that looked. Fix the bug.
 :::
 
 ::: check
@@ -498,7 +489,7 @@ Your team wants one CI job instead of five, built with `-fsanitize=address,threa
 :::
 
 ::: answer
-First, it will not compile: GCC reports that `-fsanitize=thread` is incompatible with `-fsanitize=address`, because each keeps its own incompatible bookkeeping about memory. Second, coverage and sanitizers pull in opposite directions: coverage wants `-O0` so each counted line is a real source line, and clean counts not disturbed by extra instrumented code, while sanitizer runs are slow and are usually optimized to keep test time sane. Separate presets, run as a matrix with `fail-fast: false`, cost one build folder each and tell you *which* instrument found the problem.
+First, it will not compile: GCC reports that `-fsanitize=thread` is incompatible with `-fsanitize=address`, because their bookkeeping about memory collides. Second, coverage wants `-O0` and clean counts, while sanitizer runs are slow and are usually optimized to keep test time sane. Separate presets, run as a matrix with `fail-fast: false`, cost one build folder each and tell you *which* instrument found the problem.
 :::
 
 ## Summary
@@ -507,11 +498,9 @@ First, it will not compile: GCC reports that `-fsanitize=thread` is incompatible
 | --- | --- |
 | gcov | `gcov -b -c file.gcda`: annotated source; `#####` is a line that never ran; branch 0 is the fallthrough road |
 | Executed vs taken | a condition evaluated vs each road actually followed; track "taken" |
-| lcov | capture from the library's folder (`--directory build/coverage/src --include ...`) to avoid the lcov 2.0 "mismatched end line" error on `TEST` functions; `--summary`, then genhtml |
-| Counters | add up across runs and belong to one compile; zero them before a measured run |
+| lcov | capture from the library's folder, which avoids lcov 2.0's "mismatched end line" error; zero counters first |
 | llvm-cov | `-fprofile-instr-generate -fcoverage-mapping`, then `llvm-profdata merge`, then `llvm-cov report` or `show`; do not compare its percentages with gcov's |
-| Uncovered branch | a missing test for a reachable case, or dead logic to remove; decide and record which |
-| Gaming the number | deleting, excluding or lowering the threshold hides the finding |
+| Uncovered branch | a missing test for a reachable case, or dead logic to remove; decide and record which; never game the number |
 | Sanitizers | turn latent undefined behavior on tested paths into a deterministic failure |
 | ASan and UBSan | memory errors and undefined arithmetic; about 2x slower |
 | TSan | data races, even when the threads did not collide this run; cannot combine with ASan |

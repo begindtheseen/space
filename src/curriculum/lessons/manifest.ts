@@ -2602,6 +2602,15 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "Sanitizer builds in the test matrix"
       ],
       "file": "cod_cpp_11_gtest/10-coverage-and-sanitizers-in-the-test-matrix.md"
+    },
+    {
+      "id": "l11-testing-numerical-kernels",
+      "title": "Testing numerical kernels",
+      "minutes": 26,
+      "covers": [
+        "Testing numerical kernels: invariants, convergence, golden data"
+      ],
+      "file": "cod_cpp_11_gtest/11-testing-numerical-kernels.md"
     }
   ],
   "cod_git_01_basics": [
@@ -10538,12 +10547,10 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_cpp_11_gtest": {
-    "covered": 13,
+    "covered": 14,
     "total": 14,
-    "complete": false,
-    "missing": [
-      "Testing numerical kernels: invariants, convergence, golden data"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_mat_01_core": {
     "covered": 17,
