@@ -2582,6 +2582,206 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
       "file": "cod_cpp_09_eigen/12-numpy-mapping-and-neighbours.md"
     }
   ],
+  "cod_cpp_10_cmake": [
+    {
+      "id": "l01-why-cmake-and-a-first-project",
+      "title": "Why CMake, and a first project",
+      "minutes": 22,
+      "covers": [
+        "cmake_minimum_required, project, and why a modern minimum matters",
+        "Out-of-source builds and CMAKE_BUILD_TYPE"
+      ],
+      "file": "cod_cpp_10_cmake/01-why-cmake-and-a-first-project.md"
+    },
+    {
+      "id": "l02-targets-libraries-and-executables",
+      "title": "Targets, libraries and executables",
+      "minutes": 22,
+      "covers": [
+        "add_library and add_executable; INTERFACE, STATIC and SHARED"
+      ],
+      "file": "cod_cpp_10_cmake/02-targets-libraries-and-executables.md"
+    },
+    {
+      "id": "l03-usage-requirements-public-private-interface",
+      "title": "Usage requirements: PUBLIC, PRIVATE and INTERFACE",
+      "minutes": 24,
+      "covers": [
+        "target_link_libraries with PUBLIC, PRIVATE and INTERFACE, and what each propagates",
+        "target_include_directories, target_compile_features, target_compile_options, target_compile_definitions"
+      ],
+      "file": "cod_cpp_10_cmake/03-usage-requirements-public-private-interface.md"
+    },
+    {
+      "id": "l04-generator-expressions-and-configurations",
+      "title": "Generator expressions and build configurations",
+      "minutes": 18,
+      "covers": [
+        "Generator expressions and per-configuration settings"
+      ],
+      "file": "cod_cpp_10_cmake/04-generator-expressions-and-configurations.md"
+    },
+    {
+      "id": "l05-dependencies-find-package-and-fetchcontent",
+      "title": "Dependencies: find_package and FetchContent",
+      "minutes": 20,
+      "covers": [
+        "find_package and config packages; FetchContent versus submodules versus Conan or vcpkg"
+      ],
+      "file": "cod_cpp_10_cmake/05-dependencies-find-package-and-fetchcontent.md"
+    },
+    {
+      "id": "l06-project-layout-and-ctest",
+      "title": "A project layout a stranger can build, and ctest",
+      "minutes": 20,
+      "covers": [
+        "Canonical layout: apps, cmake, extern, include, src, tests",
+        "ctest and test registration"
+      ],
+      "file": "cod_cpp_10_cmake/06-project-layout-and-ctest.md"
+    },
+    {
+      "id": "l07-cmake-presets",
+      "title": "CMake presets",
+      "minutes": 19,
+      "covers": [
+        "CMakePresets.json for reproducible configure and build commands"
+      ],
+      "file": "cod_cpp_10_cmake/07-cmake-presets.md"
+    },
+    {
+      "id": "l08-sanitizer-coverage-and-ccache-builds",
+      "title": "Sanitizer, coverage and ccache builds",
+      "minutes": 24,
+      "covers": [
+        "Sanitizer and coverage build configurations",
+        "ccache and build-time hygiene"
+      ],
+      "file": "cod_cpp_10_cmake/08-sanitizer-coverage-and-ccache-builds.md"
+    },
+    {
+      "id": "l09-toolchain-files-and-cross-compiling",
+      "title": "Toolchain files and cross-compiling",
+      "minutes": 24,
+      "covers": [
+        "Toolchain files for cross-compiling to an embedded target"
+      ],
+      "file": "cod_cpp_10_cmake/09-toolchain-files-and-cross-compiling.md"
+    },
+    {
+      "id": "l10-install-and-export",
+      "title": "Install and export: letting other projects find you",
+      "minutes": 21,
+      "covers": [
+        "install and export so downstream projects can find_package you"
+      ],
+      "file": "cod_cpp_10_cmake/10-install-and-export.md"
+    }
+  ],
+  "cod_cpp_11_gtest": [
+    {
+      "id": "l01-first-tests-and-fixtures",
+      "title": "Your first tests, and fixtures that start fresh",
+      "minutes": 20,
+      "covers": [
+        "TEST and TEST_F; test suites and fixtures; SetUp and TearDown"
+      ],
+      "file": "cod_cpp_11_gtest/01-first-tests-and-fixtures.md"
+    },
+    {
+      "id": "l02-assert-versus-expect",
+      "title": "ASSERT versus EXPECT, and failure messages that talk",
+      "minutes": 22,
+      "covers": [
+        "ASSERT_* versus EXPECT_* and when a fatal assertion is correct"
+      ],
+      "file": "cod_cpp_11_gtest/02-assert-versus-expect.md"
+    },
+    {
+      "id": "l03-floating-point-assertions",
+      "title": "Comparing floating-point results, and choosing the tolerance",
+      "minutes": 22,
+      "covers": [
+        "Floating-point assertions: EXPECT_NEAR, EXPECT_DOUBLE_EQ, and choosing the tolerance"
+      ],
+      "file": "cod_cpp_11_gtest/03-floating-point-assertions.md"
+    },
+    {
+      "id": "l04-parameterised-tests",
+      "title": "Parameterised tests — one test, many cases",
+      "minutes": 24,
+      "covers": [
+        "TEST_P parameterised tests and value generators"
+      ],
+      "file": "cod_cpp_11_gtest/04-parameterised-tests.md"
+    },
+    {
+      "id": "l05-typed-tests-and-death-tests",
+      "title": "Typed tests and death tests",
+      "minutes": 23,
+      "covers": [
+        "Typed and type-parameterised tests for template code",
+        "Death tests for contract violations"
+      ],
+      "file": "cod_cpp_11_gtest/05-typed-tests-and-death-tests.md"
+    },
+    {
+      "id": "l06-dependency-injection",
+      "title": "Dependency injection — opening a seam for the test",
+      "minutes": 20,
+      "covers": [
+        "Dependency injection as the precondition for mockability"
+      ],
+      "file": "cod_cpp_11_gtest/06-dependency-injection.md"
+    },
+    {
+      "id": "l07-googlemock-basics",
+      "title": "GoogleMock, a pretend sensor that does what you say",
+      "minutes": 21,
+      "covers": [
+        "GoogleMock: mocking an ISensor or HAL interface; EXPECT_CALL, matchers, cardinalities"
+      ],
+      "file": "cod_cpp_11_gtest/07-googlemock-basics.md"
+    },
+    {
+      "id": "l08-nice-strict-and-naggy-mocks",
+      "title": "Nice, naggy and strict mocks, and the calls nobody mentioned",
+      "minutes": 21,
+      "covers": [
+        "NiceMock, StrictMock and what an uninteresting call means"
+      ],
+      "file": "cod_cpp_11_gtest/08-nice-strict-and-naggy-mocks.md"
+    },
+    {
+      "id": "l09-ctest-integration-and-catch2",
+      "title": "Every test by name in CTest, and a look at Catch2",
+      "minutes": 21,
+      "covers": [
+        "gtest_discover_tests, CTest registration, test filters and labels",
+        "Catch2 as the alternative and what it trades"
+      ],
+      "file": "cod_cpp_11_gtest/09-ctest-integration-and-catch2.md"
+    },
+    {
+      "id": "l10-coverage-and-sanitizers-in-the-test-matrix",
+      "title": "Coverage and sanitizers in the test matrix",
+      "minutes": 26,
+      "covers": [
+        "Coverage with gcov, lcov and llvm-cov; interpreting an uncovered branch",
+        "Sanitizer builds in the test matrix"
+      ],
+      "file": "cod_cpp_11_gtest/10-coverage-and-sanitizers-in-the-test-matrix.md"
+    },
+    {
+      "id": "l11-testing-numerical-kernels",
+      "title": "Testing numerical kernels",
+      "minutes": 26,
+      "covers": [
+        "Testing numerical kernels: invariants, convergence, golden data"
+      ],
+      "file": "cod_cpp_11_gtest/11-testing-numerical-kernels.md"
+    }
+  ],
   "cod_git_01_basics": [
     {
       "id": "l01-snapshots-and-the-object-model",
@@ -10932,46 +11132,16 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_cpp_10_cmake": {
-    "covered": 0,
+    "covered": 14,
     "total": 14,
-    "complete": false,
-    "missing": [
-      "cmake_minimum_required, project, and why a modern minimum matters",
-      "add_library and add_executable; INTERFACE, STATIC and SHARED",
-      "target_link_libraries with PUBLIC, PRIVATE and INTERFACE, and what each propagates",
-      "target_include_directories, target_compile_features, target_compile_options, target_compile_definitions",
-      "Generator expressions and per-configuration settings",
-      "find_package and config packages; FetchContent versus submodules versus Conan or vcpkg",
-      "CMakePresets.json for reproducible configure and build commands",
-      "Out-of-source builds and CMAKE_BUILD_TYPE",
-      "Toolchain files for cross-compiling to an embedded target",
-      "install and export so downstream projects can find_package you",
-      "ctest and test registration",
-      "Canonical layout: apps, cmake, extern, include, src, tests",
-      "Sanitizer and coverage build configurations",
-      "ccache and build-time hygiene"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_cpp_11_gtest": {
-    "covered": 0,
+    "covered": 14,
     "total": 14,
-    "complete": false,
-    "missing": [
-      "TEST and TEST_F; test suites and fixtures; SetUp and TearDown",
-      "ASSERT_* versus EXPECT_* and when a fatal assertion is correct",
-      "Floating-point assertions: EXPECT_NEAR, EXPECT_DOUBLE_EQ, and choosing the tolerance",
-      "TEST_P parameterised tests and value generators",
-      "Typed and type-parameterised tests for template code",
-      "Death tests for contract violations",
-      "GoogleMock: mocking an ISensor or HAL interface; EXPECT_CALL, matchers, cardinalities",
-      "NiceMock, StrictMock and what an uninteresting call means",
-      "Dependency injection as the precondition for mockability",
-      "gtest_discover_tests, CTest registration, test filters and labels",
-      "Catch2 as the alternative and what it trades",
-      "Coverage with gcov, lcov and llvm-cov; interpreting an uncovered branch",
-      "Sanitizer builds in the test matrix",
-      "Testing numerical kernels: invariants, convergence, golden data"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_mat_01_core": {
     "covered": 17,
