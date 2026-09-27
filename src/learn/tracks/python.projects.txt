@@ -1201,52 +1201,246 @@ run(["", "# just a comment"])
 
 === pyp-05 | Markdown converter 1: inline formatting with regular expressions
 --- teach
-The second project converts **Markdown** (the plain-text format of READMEs and chat messages) into HTML. This lesson handles formatting *inside* a line; the next three handle the structure of the document.
+You finished the expense tracker: four small layers, each with one job and each tested on its own. The second project uses the same habits on a new kind of problem: turning text written in Markdown into a web page.
 
-| Markdown | HTML |
-|---|---|
-| `**bold**` | `<strong>bold</strong>` |
-| `*italic*` | `<em>italic</em>` |
-| `` `code` `` | `<code>code</code>` |
-| `[text](url)` | `<a href="url">text</a>` |
+**Markdown** is a plain-text way of marking up writing. You have probably typed it without knowing its name: put stars around a word in a chat message and it comes out bold. [[READMEs on code sites|markdown-origin]], chat apps and note apps all use it.
 
-**Regular expressions** are a small language for describing patterns in text, and the `re` module runs them:
+A web browser does not read Markdown, though. It reads **HTML**, the language web pages are written in. HTML wraps text in **[[tags|html-tags]]**, words inside angle brackets: `<strong>` means "bold starts here" and `</strong>`, with a slash, means "bold ends here".
+
+So the converter rewrites one into the other. Markdown on the left, HTML on the right:
+
+```
+**bold**        <strong>bold</strong>
+*italic*        <em>italic</em>
+`code`          <code>code</code>
+[text](url)     <a href="url">text</a>
+```
+
+The third line is a **code span**: text between two backticks (the ` key, top left on most keyboards), shown in a code font.
+
+Markdown has two kinds of formatting. **Inline** formatting happens *inside* a line, like making one word bold. **Block** structure is how lines group into headings, paragraphs, lists and code. This lesson does the inline kind. The next three lessons do the blocks.
+
+### Step 1: escape the text first
+
+Some characters mean something special in HTML. `<` starts a tag. So if your text says `a < b`, the browser tries to read `< b` as the start of a tag, and the text comes out broken.
+
+**[[Escaping|why-escape]]** means swapping each special character for a safe code that the browser shows as the plain character. These codes are called **entities**: a short name between `&` and `;`.
+
+| Character | Entity | Read it as |
+|---|---|---|
+| `&` | `&amp;` | ampersand |
+| `<` | `&lt;` | less than |
+| `>` | `&gt;` | greater than |
+| `"` | `&quot;` | quote |
+
+`str.replace` does each swap. The order matters: replace `&` **first**. Every entity you make contains an `&`, so if the `&` swap came later, it would turn each `&lt;` you had just made into `&amp;lt;`:
+
+```python
+"a < b".replace("<", "&lt;").replace("&", "&amp;")    # 'a &amp;lt; b'   wrong order
+"a < b".replace("&", "&amp;").replace("<", "&lt;")    # 'a &lt; b'       right
+```
+
+### Step 2: describe a shape, not exact text
+
+`replace` needs the exact text to look for. But `**bold**` could have any words between its stars. You need to describe a *shape*: "two stars, some text, two stars".
+
+A **[[regular expression|regex-history]]** (regex for short) is a small language for describing shapes of text. Python runs them with the `re` module, which you import at the top of the file:
 
 ```python
 import re
-re.findall(r"\d+", "3 cats and 12 dogs")          # ['3', '12']
-re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", "a **b** c")  # 'a <b>b</b> c'
+
+re.findall(r"\d+", "3 cats and 12 dogs")    # ['3', '12']
 ```
 
-The pieces you need:
+Read the pattern `\d+` piece by piece. `\d` means "one digit, 0 to 9". `+` means "one or more of the thing just before". So `\d+` is a run of digits, and `re.findall` returns every run it finds, in a list.
+
+The `r` in front of the quote makes a **[[raw string|raw-strings]]**: Python leaves every backslash alone and hands it to `re` untouched. Write every pattern as a raw string.
+
+### Step 3: find and replace, keeping a group
+
+`re.sub(pattern, replacement, text)` finds every match of the pattern in the text and replaces it. ("sub" is short for substitute.)
+
+```python
+re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", "a **b** c")    # 'a <b>b</b> c'
+```
+
+That pattern is a first try at bold. Piece by piece:
+
+- `\*` is a real star. A bare `*` in a pattern means "repeat", so a star you want to *find* needs a backslash in front. `\*\*` is two real stars.
+- `.` is any one character.
+- `+?` is "one or more, but as few as possible". Step 4 explains the `?`.
+- `( )` round brackets make a **group**: they capture the part of the match inside them. In the replacement, `\1` means "whatever group 1 captured".
+
+So it finds two stars, some text, two stars, and the replacement keeps only the text, wrapped in tags.
+
+Here are all the pieces this project uses:
 
 | Pattern | Matches |
 |---|---|
-| `\*` | a literal `*` (a bare `*` means "repeat") |
-| `.` | any character; `\S` any non-space character |
-| `+`, `*`, `?` | one or more, zero or more, optional |
-| `+?`, `*?` | the same, but as **few** as possible |
-| `( )` | a group you can refer to as `\1`, `\2` in the replacement |
-| `[^\]]` | any character except `]` |
+| `\*` | a real `*` (a bare `*` means "repeat") |
+| `.` | any one character |
+| `\S` | any one character that is not a space |
+| `+` | one or more of the thing before |
+| `*` | zero or more of the thing before |
+| `?` | the thing before is optional (zero or one) |
+| `+?`, `*?` | like `+` and `*`, but as **few** as possible |
+| `( )` | a group; the replacement calls it `\1`, `\2` and so on |
+| `[^\]]` | any one character except `]` |
 
-Write patterns as raw strings (`r"..."`) so Python does not treat the backslashes itself.
+### Step 4: greedy and lazy
 
-**Greedy vs lazy.** In `"**a** and **b**"`, the greedy `\*\*(.+)\*\*` matches from the first `**` to the *last*, swallowing ` and `. The lazy `.+?` stops at the first closing `**`.
+Plain `+` is **greedy**: it grabs as much text as it can. In `"**a** and **b**"`, a greedy pattern runs from the first `**` all the way to the *last* one, and swallows ` and ` into the bold:
 
-**Precision matters.** `5 * 3 * 2` is not italic, and Markdown agrees: emphasis needs a non-space character just inside each star. `\*(\S|\S.*?\S)\*` says exactly that: a star, then either a single non-space character, or a non-space, as little as possible, and another non-space; then a star. The `|` means "or", and the regex tries the left side first, which is why `*a* or *b*` gives two short matches instead of one long one.
+```python
+re.sub(r"\*\*(.+)\*\*", r"<b>\1</b>", "**a** and **b**")     # '<b>a** and **b</b>'
+re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", "**a** and **b**")    # '<b>a</b> and <b>b</b>'
+```
 
-**Escape first.** Text like `a < b` must become `a &lt; b`, or the browser reads `<` as the start of a tag. Replace `&` *first*, or you will turn the `&` of every `&lt;` you just made into `&amp;lt;`.
+Adding `?` after `+` makes it **[[lazy|greedy-lazy]]**: it takes as little as it can, so it stops at the first closing `**`.
 
-**Code spans are special:** nothing inside backticks is formatted. `re.split` with a *capturing* group keeps the separators, so the code spans land at the odd positions of the result:
+### Step 5: say exactly what counts as emphasis
+
+`5 * 3 * 2` is arithmetic, not italic. Markdown agrees: emphasis needs a non-space character just inside each star. A loose pattern gets this wrong:
+
+```python
+re.sub(r"\*(.+?)\*", r"<em>\1</em>", "5 * 3 * 2")    # '5 <em> 3 </em> 2'   wrong
+```
+
+This pattern states the rule exactly:
+
+```
+\*(\S|\S.*?\S)\*
+```
+
+Read it as: a star; then *either* a single non-space character, *or* a non-space, as little as possible of anything, and another non-space; then a star. The `|` bar means "or". The regex tries the left side first, which is why `*a* or *b*` gives two short matches instead of one long one.
+
+`re.compile(pattern)` turns a pattern into a **pattern object** you can keep in a variable and reuse. Its `.sub` works like `re.sub`, minus the pattern argument:
+
+```python
+EM = re.compile(r"\*(\S|\S.*?\S)\*")
+EM.sub(r"<em>\1</em>", "5 * 3 * 2")     # '5 * 3 * 2'   left alone
+EM.sub(r"<em>\1</em>", "*a* or *b*")    # '<em>a</em> or <em>b</em>'
+```
+
+A name in capitals, like `EM`, is Python's way of saying [[this is a constant|constants]]: set once at the top of the file and never changed.
+
+Bold uses the same idea with two stars on each side: `\*\*(\S|\S.*?\S)\*\*`. Run bold **before** italic. Otherwise the italic pattern takes the first star of `**bold**` as an opening star and makes a mess: `<em>*bold</em>*`.
+
+### Step 6: links
+
+A link is written `[text](url)`. Its pattern is
+
+```
+\[([^\]]+)\]\(([^)\s]+)\)
+```
+
+In pieces:
+
+- `\[` is a real `[`. Square brackets mean something in a pattern too, so a real one needs a backslash.
+- `([^\]]+)` is group 1, the link text: one or more characters that are not `]`. Square brackets with `^` just inside mean "any one character *except* these".
+- `\]\(` is a real `]` and then a real `(`.
+- `([^)\s]+)` is group 2, the URL: one or more characters that are not `)` and not a space (`\s` is any space character).
+- `\)` is a real `)`.
+
+The replacement puts group 2 in the tag and group 1 between the tags:
+
+```python
+LINK = re.compile(r"\[([^\]]+)\]\(([^)\s]+)\)")
+LINK.sub(r'<a href="\2">\1</a>', "see [the docs](https://example.com)")
+# 'see <a href="https://example.com">the docs</a>'
+```
+
+### Step 7: code spans are left alone
+
+A code span is never formatted: backticks around `a*b*c` must give `a*b*c`, stars and all, not italics. It is still escaped, though: a `<` inside code must still become `&lt;`, so the browser shows it as a plain `<`. So cut the code spans out *before* formatting anything.
+
+`re.split(pattern, text)` cuts the text wherever the pattern matches. Usually the matched parts are thrown away. But when the pattern is wrapped in a group, `re.split` **keeps** them in the list:
 
 ```python
 re.split(r"(`[^`]+`)", "use `a*b*c` here")    # ['use ', '`a*b*c`', ' here']
 ```
---- task
-Write:
 
-- `escape(text)`: replace `&`, `<`, `>` and `"` with `&amp;`, `&lt;`, `&gt;` and `&quot;`.
-- `inline(text)`: escape the text and convert `**strong**`, `*em*` (only when the characters just inside the stars are not spaces), `` `code` `` and `[text](url)` links. Text inside backticks is escaped but not otherwise formatted.
+Inside the group, the pattern is a backtick, then one or more characters that are not backticks, then a backtick: one code span. The list always takes turns: ordinary text, code, ordinary text, code, and so on. So the code spans land at the **[[odd positions|odd-positions]]** of the list: 1, 3, 5.
+
+That gives `inline` its shape. Loop over the pieces with `enumerate`. At an odd position (`i % 2 == 1`), cut off the two backticks with `part[1:-1]`, escape what is left and wrap it in `<code>` tags. At an even position, escape and then format: links, then bold, then italic. Finally join all the pieces with `"".join(...)`.
+
+**Watch out:** formatting first and escaping after. Then the `<strong>` tags you just added get escaped too, and the page shows the text `<strong>` instead of bold. Always escape first, then add tags.
+
+::: context markdown-origin Where Markdown came from
+John Gruber created Markdown in 2004, working with Aaron Swartz. The goal was writing that reads well as plain text *and* converts cleanly to HTML. It spread everywhere: the `README.md` at the top of almost every project on GitHub is Markdown, and so are posts on many forums and chat apps. Because the first description left gaps, different converters disagreed on odd cases, so in 2014 a group wrote **CommonMark**, a precise specification with hundreds of examples. Your converter handles the common core of it.
+:::
+
+::: context html-tags Opening tag, text, closing tag
+An HTML element is usually an opening tag, some content, and a closing tag with a slash. Tags can also carry **attributes**, extra settings written as `name="value"` inside the opening tag. A link's `href` attribute is the address it points to ("href" is short for hypertext reference).
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 120" font-family="Inter, Arial, sans-serif">
+  <rect x="20" y="30" width="96" height="34" rx="4" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="68" y="52" font-size="13" text-anchor="middle" fill="#1f2a44">&lt;strong&gt;</text>
+  <rect x="122" y="30" width="96" height="34" rx="4" fill="#fff" stroke="#1f2a44"/>
+  <text x="170" y="52" font-size="13" text-anchor="middle" fill="#1f2a44">bold</text>
+  <rect x="224" y="30" width="110" height="34" rx="4" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="279" y="52" font-size="13" text-anchor="middle" fill="#1f2a44">&lt;/strong&gt;</text>
+  <text x="68" y="88" font-size="12" text-anchor="middle" fill="#1f2a44">opening tag</text>
+  <text x="170" y="88" font-size="12" text-anchor="middle" fill="#1f2a44">content</text>
+  <text x="279" y="88" font-size="12" text-anchor="middle" fill="#1f2a44">closing tag</text>
+  <text x="279" y="106" font-size="11" text-anchor="middle" fill="#6c7a93">note the slash</text>
+</svg>
+```
+:::
+
+::: context why-escape Escaping keeps a page safe
+Escaping is not only about looks. Picture a website that shows visitors' comments without escaping them. Someone types a comment containing a `<script>` tag, and every browser that shows the page runs that person's program. This attack is called **cross-site scripting**, and it is one of the most common security bugs on the web. Escaping every piece of text before it goes into HTML shuts the door: the script shows up as harmless text.
+:::
+
+::: context regex-history An old idea in every toolbox
+The mathematician Stephen Kleene described "regular expressions" in the 1950s, as a way of writing down which strings a simple machine accepts. In 1968 Ken Thompson built them into a text editor, and later tools such as `grep` (a Unix command that finds lines matching a pattern) made them part of every programmer's toolbox. Today nearly every language has them. The details differ a little between languages, but `\d`, `+`, `*`, `?`, groups and square brackets mean the same thing almost everywhere.
+:::
+
+::: context raw-strings Why the r matters
+In an ordinary Python string, a backslash starts an escape: `"\n"` is a newline, and `"\b"` is a backspace character. In a regex, `\b` means something else (the edge of a word), so an ordinary string would quietly hand `re` the wrong thing. It is worse in a replacement: in an ordinary string `"\1"` becomes an invisible character with code 1, not "group 1". A raw string, `r"\1"`, keeps the backslash and the 1 exactly as typed. Newer versions of Python even warn you about backslashes they do not recognise in ordinary strings.
+:::
+
+::: context greedy-lazy Greedy grabs, lazy stops early
+Both patterns start at the first `**`. The greedy one keeps going to the last `**` it can find. The lazy one stops at the first `**` that ends a match, then starts looking again after it.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 130" font-family="Inter, Arial, sans-serif">
+  <text x="180" y="62" font-size="16" text-anchor="middle" fill="#1f2a44" font-family="monospace">**a** and **b**</text>
+  <text x="20" y="22" font-size="12" fill="#b4232c">greedy: one match</text>
+  <line x1="112" y1="38" x2="248" y2="38" stroke="#b4232c" stroke-width="3"/>
+  <line x1="112" y1="32" x2="112" y2="44" stroke="#b4232c" stroke-width="2"/>
+  <line x1="248" y1="32" x2="248" y2="44" stroke="#b4232c" stroke-width="2"/>
+  <line x1="112" y1="80" x2="156" y2="80" stroke="#1d6fd1" stroke-width="3"/>
+  <line x1="112" y1="74" x2="112" y2="86" stroke="#1d6fd1" stroke-width="2"/>
+  <line x1="156" y1="74" x2="156" y2="86" stroke="#1d6fd1" stroke-width="2"/>
+  <line x1="204" y1="80" x2="248" y2="80" stroke="#1d6fd1" stroke-width="3"/>
+  <line x1="204" y1="74" x2="204" y2="86" stroke="#1d6fd1" stroke-width="2"/>
+  <line x1="248" y1="74" x2="248" y2="86" stroke="#1d6fd1" stroke-width="2"/>
+  <text x="20" y="110" font-size="12" fill="#1d6fd1">lazy: two matches</text>
+</svg>
+```
+:::
+
+::: context constants Constants by agreement
+Python has no rule that stops you changing `EM` later. Capital letters are a promise between programmers: "this is set once; do not change it". The official Python style guide, PEP 8, asks for this naming. Compiling patterns once at the top also gives each pattern a name, so `STRONG.sub(...)` reads better than a long pattern in the middle of a function. (The `re` module also remembers recently used patterns, so compiling is mostly about clarity, not speed.)
+:::
+
+::: context odd-positions Why code always lands on odd positions
+`re.split` always puts the text *before* the first match at position 0, even when there is none. If the line starts with code, position 0 is an empty string:
+
+```python
+re.split(r"(`[^`]+`)", "`x` and `y`")
+# ['', '`x`', ' and ', '`y`', '']
+```
+
+So the pattern never shifts: even positions (0, 2, 4) are ordinary text, possibly empty, and odd positions (1, 3) are code. Formatting an empty string gives an empty string, so the empty pieces do no harm.
+:::
+--- task
+Write two functions.
+
+- `escape(text)`: replace `&`, `<`, `>` and `"` with `&amp;`, `&lt;`, `&gt;` and `&quot;`. Replace `&` first.
+- `inline(text)`: escape the text and convert `**strong**` to `<strong>`, `*em*` to `<em>` (only when the characters just inside the stars are not spaces), a code span between backticks to `<code>`, and `[text](url)` to `<a href="url">text</a>`. Text inside backticks is escaped but not otherwise formatted.
 --- starter
 # Markdown to HTML, step 1: inline formatting.
 import re
@@ -1290,11 +1484,11 @@ def inline(text):
             out.append(format_text(part))
     return "".join(out)
 --- hint
-Split the text with `re.split(r"(`[^`]+`)", text)`. Odd positions are code spans: strip the backticks and escape. Even positions get escaped and then formatted.
+`escape` is four `replace` calls in a chain, with `&` first. For `inline`, cut out the code spans first with `re.split` and the grouped pattern from Step 7. In the list you get back, the odd positions are code spans.
 --- hint
-Do the formatting with `re.sub` after escaping: links first, then `**strong**`, then `*em*` (so the strong stars are gone before the em pattern looks).
+A small helper can handle an ordinary piece of text: escape it, then run the link pattern, then strong, then em, each with `.sub`. The strong pattern is `r"\*\*(\S|\S.*?\S)\*\*"`, and em is the same with single stars.
 --- hint
-A strong pattern that refuses spaces just inside: `r"\*\*(\S|\S.*?\S)\*\*"`. The em pattern is the same with single stars.
+In `inline`, loop `for i, part in enumerate(parts):`. When `i % 2 == 1`, append `f"<code>{escape(part[1:-1])}</code>"`; otherwise append the helper's result. Return `"".join(out)`.
 --- check case | escape, with & first
 escape('a < b && "c" > d')
 => "a &lt; b &amp;&amp; &quot;c&quot; &gt; d"
@@ -1319,7 +1513,9 @@ inline("fish & chips")
 
 === pyp-06 | Markdown converter 2: headings and paragraphs
 --- teach
-Inline formatting works within a line. Now the document's **blocks**: headings and paragraphs.
+Last lesson, `inline` turned the formatting *inside* one line into HTML. Now the converter learns the document's **blocks**: the big pieces a page is built from. This lesson does two of them, headings and paragraphs.
+
+This Markdown
 
 ```
 # Title
@@ -1331,7 +1527,7 @@ that spans two lines.
 Another paragraph.
 ```
 
-becomes
+becomes this HTML:
 
 ```
 <h1>Title</h1>
@@ -1340,9 +1536,53 @@ becomes
 <p>Another paragraph.</p>
 ```
 
-The rules: a line starting with one to six `#` and a space is a heading of that level. Consecutive ordinary lines form one paragraph, joined with spaces. A blank line ends a paragraph. A heading also ends any paragraph before it.
+`<h1>` is a heading of [[level 1|heading-levels]], the biggest; `<h2>` is level 2, a size smaller; and so on down to `<h6>`. `<p>` is a paragraph.
 
-**Line-by-line processing with a buffer.** You cannot write a paragraph's HTML when you see its first line, because you do not yet know where it ends. So collect its lines in a list, and **flush** (write it out and clear it) when something ends it: a blank line, a heading, or the end of the input.
+The rules:
+
+- A line that starts with one to six `#` and then a space is a heading. The number of `#` is its level.
+- Ordinary lines that come one after another form one paragraph. Their text is joined with single spaces.
+- A blank line ends a paragraph. A heading also ends any paragraph before it.
+
+### Step 1: recognise a heading
+
+A regular expression can state the heading rule exactly:
+
+```
+^(#{1,6})\s+(.*)$
+```
+
+In pieces:
+
+- `^` means "the start of the line". It matches no character; it pins the pattern to the beginning.
+- `(#{1,6})` is group 1: between one and six `#`. Curly braces give a count: "at least 1, at most 6 of the thing before".
+- `\s+` is one or more spaces.
+- `(.*)` is group 2: the rest of the text.
+- `$` means "the end of the line".
+
+`pattern.match(line)` tries the pattern at the start of the line. It returns a **[[match object|match-objects]]** if the line fits, or `None` if it does not. A match object hands back the groups:
+
+```python
+HEADING = re.compile(r"^(#{1,6})\s+(.*)$")
+
+m = HEADING.match("## Part two")
+m.group(1)          # '##'
+len(m.group(1))     # 2, the level
+m.group(2)          # 'Part two'
+
+HEADING.match("#hashtag")          # None: no space after the #
+HEADING.match("####### seven")     # None: seven is too many
+```
+
+`None` counts as false in an `if`, so `if m:` reads "if the line is a heading".
+
+**Watch out:** matching headings with `line.startswith("#")`. Then `#hashtag` and `####### seven` become headings too. The regex says the rule exactly.
+
+### Step 2: a paragraph needs a buffer
+
+When you see the first line of a paragraph, you cannot write its `<p>` yet. You do not know where it ends. It is like a friend reading your texts aloud: they wait until you have finished the message, not after each word.
+
+So collect the paragraph's lines in a list, called a **[[buffer|buffer-word]]**: a holding place for data that is not ready to go out yet. When something ends the paragraph (a blank line, a heading, or the end of the input) you **flush** the buffer: write it out and empty it.
 
 ```python
 paragraph = []
@@ -1353,17 +1593,81 @@ def flush():
         paragraph.clear()
 ```
 
-`flush` is defined inside `convert` so it can see `html` and `paragraph`. It calls `paragraph.clear()` rather than `paragraph = []`, because assigning inside `flush` would create a new local variable instead of emptying the shared list. That is the closure rule from the expert course.
+`' '.join(paragraph)` glues the lines together with single spaces, and `inline` formats the result. The `if paragraph:` means an empty buffer writes nothing, so calling `flush()` is always safe.
 
-**Don't forget the end.** When the loop finishes, the last paragraph is still in the buffer. The most common bug in this kind of code is losing the final block.
+### Step 3: flush lives inside convert
 
-**Common mistake:** matching headings with `line.startswith("#")`. Then `#hashtag` and `####### seven` become headings. A regular expression can state the rule exactly: `^(#{1,6})\s+(.*)$`.
+`flush` is defined *inside* `convert`, so it can see `convert`'s lists `html` and `paragraph`. It is a closure, from the first lesson of the expert course.
+
+It empties the list with `paragraph.clear()`, not `paragraph = []`. That is [[the closure rule|closure-rule]] again: assigning to a name inside `flush` would make a brand-new local variable inside `flush`, and the shared list outside would never be emptied. `.clear()` changes the shared list itself, so no `nonlocal` is needed.
+
+### Step 4: the loop, and the end
+
+The main loop looks at each line once and decides what it is:
+
+```python
+for raw in md.splitlines():
+    line = raw.strip()
+    # blank line  -> flush()
+    # heading     -> flush(), then add the <h1> ... <h6> line
+    # anything else -> paragraph.append(line)
+flush()        # the last paragraph is still waiting
+```
+
+`raw.strip()` removes spaces at both ends, so an indented line and a line of only spaces are treated like the others.
+
+**Don't forget the end.** When the loop finishes, the [[last paragraph|last-block]] is still sitting in the buffer, because nothing came after it to end it. One more `flush()` after the loop writes it out. Losing the final block is the most common bug in this kind of code.
+
+At the very end, `"\n".join(html)` puts one block on each line of the result.
+
+::: context heading-levels Six levels, like an outline
+HTML has exactly six heading levels, `<h1>` to `<h6>`, and Markdown's one to six `#` map onto them. They work like an outline: `<h1>` is the title of the page, `<h2>` a section, `<h3>` a part of that section. Headings are not only for looks. Screen readers, the programs that read a page aloud for blind users, let people jump from heading to heading, and search engines use them to understand what a page is about.
+:::
+
+::: context match-objects match, search, and why ^ is still worth writing
+`pattern.match(text)` only looks for the pattern at the very start of the text. Its cousin `pattern.search(text)` looks anywhere. So with `match`, the `^` is not strictly needed, but writing it makes the pattern say "start of line" out loud to whoever reads it next. A match object's `group(0)` is the whole matched text; `group(1)`, `group(2)` are the round-bracket groups, counted by their opening bracket from the left.
+:::
+
+::: context buffer-word Buffers are everywhere
+A buffer is any holding area between something that produces data and something that uses it. A video app fills a buffer a few seconds ahead so the picture does not stutter. The text you type in a terminal sits in a buffer until you press Enter.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 140" font-family="Inter, Arial, sans-serif">
+  <text x="20" y="20" font-size="12" fill="#6c7a93">input lines</text>
+  <rect x="20" y="30" width="110" height="24" rx="4" fill="#fff" stroke="#1f2a44"/>
+  <text x="75" y="46" font-size="12" text-anchor="middle" fill="#1f2a44">One paragraph</text>
+  <rect x="20" y="60" width="110" height="24" rx="4" fill="#fff" stroke="#1f2a44"/>
+  <text x="75" y="76" font-size="12" text-anchor="middle" fill="#1f2a44">over two lines.</text>
+  <rect x="20" y="90" width="110" height="24" rx="4" fill="#fff" stroke="#6c7a93" stroke-dasharray="4 3"/>
+  <text x="75" y="106" font-size="12" text-anchor="middle" fill="#6c7a93">(blank)</text>
+  <line x1="130" y1="57" x2="165" y2="57" stroke="#1f2a44" stroke-width="1.5"/>
+  <polygon points="165,52 175,57 165,62" fill="#1f2a44"/>
+  <rect x="178" y="34" width="64" height="46" rx="4" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="210" y="61" font-size="12" text-anchor="middle" fill="#1f2a44">buffer</text>
+  <line x1="242" y1="57" x2="270" y2="57" stroke="#b4232c" stroke-width="1.5"/>
+  <polygon points="270,52 280,57 270,62" fill="#b4232c"/>
+  <text x="261" y="100" font-size="12" text-anchor="middle" fill="#b4232c">blank line: flush</text>
+  <rect x="284" y="44" width="66" height="26" rx="4" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="317" y="61" font-size="12" text-anchor="middle" fill="#1f2a44">&lt;p&gt;...&lt;/p&gt;</text>
+</svg>
+```
+:::
+
+::: context closure-rule Changing a list versus replacing it
+The rule from the closures lesson: if an inner function *assigns* to a name (`=` or `+=`), that name becomes local to the inner function, unless you write `nonlocal`. Calling a method like `.clear()` or `.append()` is not an assignment. It reaches the outer list through the name and changes the list itself, so it works without `nonlocal`. Next lesson you will meet a helper that really does assign, and then `nonlocal` is needed.
+:::
+
+::: context last-block Test the edges
+Losing the last item is a cousin of the "off by one" bug: the loop handles every line, but the work that happens *between* blocks never happens after the final one. The habit that catches it is to test the edges every time: empty input, a single block, and input that ends without a blank line. The checks for this lesson do exactly that, and so will the tests you write yourself in the capstones.
+:::
 --- task
-Write `convert(md)` returning the HTML as a string, one block per line (joined with `"\n"`):
+Write `convert(md)`. It returns the HTML as a string, one block per line (joined with `"\n"`):
 
-- `#` to `######` followed by a space: `<h1>`…`<h6>`, text trimmed and run through `inline`.
-- Consecutive other non-blank lines (each stripped): one `<p>`, joined with single spaces, run through `inline`.
+- A line of `#` to `######` followed by a space becomes `<h1>` to `<h6>`. Its text is trimmed and run through `inline`.
+- Other non-blank lines that come one after another (each stripped) become one `<p>`. Their text is joined with single spaces and run through `inline`.
 - Blank lines separate blocks and produce nothing themselves.
+
+Keep `escape`, `inline` and the patterns from last lesson.
 --- starter
 # Markdown to HTML, step 1: inline formatting.
 import re
@@ -1454,11 +1758,11 @@ def convert(md):
     flush()
     return "\n".join(html)
 --- hint
-Loop over `md.splitlines()`, strip each line, and decide: blank, heading (use a compiled `re` pattern), or paragraph text.
+Loop over `md.splitlines()`, strip each line, and decide: blank, heading (use a compiled pattern like `HEADING` above), or paragraph text.
 --- hint
-Keep a `paragraph` list and a nested `flush()` that writes it as a `<p>` and clears it. Call `flush()` on a blank line, before a heading, and once after the loop.
+Keep a `paragraph` list and a nested `flush()` that writes it as a `<p>` and clears it. Call `flush()` on a blank line, before a heading, and once more after the loop.
 --- hint
-The heading level is `len(match.group(1))`, the number of `#` characters.
+For a heading, the level is `len(match.group(1))`, the number of `#`. Append `f"<h{level}>{inline(match.group(2).strip())}</h{level}>"`, and return `"\n".join(html)` at the end.
 --- check case | A heading and a two-line paragraph
 convert("# Title\n\nOne paragraph\nover two lines.")
 => "<h1>Title</h1>\n<p>One paragraph over two lines.</p>"
@@ -1480,7 +1784,9 @@ convert("")
 
 === pyp-07 | Markdown converter 3: lists
 --- teach
-Lists add a second kind of block that spans several lines:
+Your converter now handles headings and paragraphs. Next comes a third kind of block that spans several lines: the list.
+
+This Markdown
 
 ```
 - milk
@@ -1490,7 +1796,7 @@ Lists add a second kind of block that spans several lines:
 2. bake
 ```
 
-becomes
+becomes this HTML:
 
 ```
 <ul>
@@ -1503,13 +1809,47 @@ becomes
 </ol>
 ```
 
-A line starting with `- ` or `* ` is a bullet item; a line starting with a number, a dot and a space is a numbered item. Consecutive items of the same kind are one list. Anything else (a blank line, a heading, ordinary text, or an item of the *other* kind) ends it.
+`<ul>` is a [[bullet list|list-tags]] ("unordered list"), `<ol>` is a numbered list ("ordered list"), and each `<li>` is one list item.
 
-**The converter now has state.** Besides the paragraph buffer, it must remember whether a list is open and which kind. That is a small **state machine**: the same line can mean different things depending on the current state. An item when no list is open starts one (`<ul>` then `<li>`); an item when the same kind is open just adds an `<li>`.
+The rules:
+
+- A line starting with `- ` or `* ` (a dash or star, then a space) is a bullet item.
+- A line starting with a number, a dot and a space is a numbered item.
+- Items of the same kind that come one after another form one list.
+- Anything else ends the list: a blank line, a heading, ordinary text, or an item of the *other* kind.
+
+### Step 1: two new patterns
+
+```
+^[-*]\s+(.*)$         a bullet item
+^\d+\.\s+(.*)$        a numbered item
+```
+
+`[-*]` is one character that is either `-` or `*`. Inside square brackets a star is only a star, so it needs no backslash. `\d+` is one or more digits, and `\.` is a real dot (a bare `.` would mean "any character"). In both, `\s+` insists on at least one space, and group 1 is the item's text.
+
+That space matters, because stars also mean italics. `* item`, star then space, is a bullet. `*word* starts here` is a paragraph that begins with an italic word:
 
 ```python
-list_kind = None      # None, "ul" or "ol"
+BULLET = re.compile(r"^[-*]\s+(.*)$")
+BULLET.match("* eggs").group(1)        # 'eggs'
+BULLET.match("*word* starts here")     # None: no space after the star
+```
 
+### Step 2: the converter remembers something
+
+Until now, each line decided its own fate. A list item is different: what to do with it depends on what came before. If no list is open, the item must *start* one (`<ul>`, then `<li>`). If a list of the same kind is already open, it only adds an `<li>`.
+
+A program where the same input means different things depending on what it remembers is a **[[state machine|state-machine]]**. What it remembers is its **state**. A phone's power button is an everyday one: the same press wakes a sleeping phone and locks an awake one.
+
+Here the state is one variable:
+
+```python
+list_kind = None      # None (no list open), "ul" or "ol"
+```
+
+### Step 3: a helper that changes the state
+
+```python
 def list_item(kind, text):
     nonlocal list_kind
     if list_kind != kind:
@@ -1519,17 +1859,81 @@ def list_item(kind, text):
     html.append(f"<li>{inline(text)}</li>")
 ```
 
-This time the helper *assigns* to `list_kind`, so it needs `nonlocal`. Extend `flush()` to close an open list as well as a paragraph, and every existing call to it (blank line, heading, end of input) now closes lists too, for free.
+If the open list is not this kind (no list, or the other kind), it flushes, opens a new list and records the new state. Then it adds the item.
 
-**Watch the overlap with emphasis.** `* item` (star then space) is a bullet, but `*word* starts here` is a paragraph with italics. The pattern `^[-*]\s+` requires the space.
+This helper *assigns* to `list_kind`, so it needs **[[nonlocal|nonlocal-again]]**, unlike `flush` last lesson, which only changed a list. Without it, `list_kind = kind` would make a new variable inside `list_item`.
 
-**Common mistake:** ordinary text right after a list being swallowed into the list, or the list never being closed. Test both.
+### Step 4: flush closes lists too
+
+Extend `flush()` so that after writing any paragraph it also closes an open list:
+
+```python
+if list_kind:
+    html.append(f"</{list_kind}>")
+    list_kind = None
+```
+
+`flush` now assigns to `list_kind` too, so it also needs `nonlocal list_kind` as its first line. The payoff: every place that already calls `flush()` (a blank line, a heading, the end of the input) now closes lists as well, without changing any of them.
+
+### Step 5: ordinary text right after a list
+
+One case is left. An ordinary line straight after a list goes into the paragraph buffer, and nothing has closed the list. When `flush()` runs later, it writes the paragraph first and closes the list second, so the paragraph lands *inside* the list:
+
+```
+<ul>
+<li>a</li>
+<p>then text</p>
+</ul>
+```
+
+The fix: in the "ordinary line" branch, if a list is open, call `flush()` first, then add the line to the paragraph.
+
+**Watch out:** the two ways lists go wrong are ordinary text being swallowed into the list, and a list that is never closed. Test both: text right after a list, and a list at the very end of the input.
+
+One variable and a few rules about when it changes: that is a whole state machine. The same shape, with more states, is how [[flight software|state-machines-later]] is organised.
+
+::: context list-tags The browser does the numbering
+In `<ol>` the browser numbers the items itself: 1, 2, 3. That is why your converter throws the typed numbers away. `22. two` becomes plain `<li>two</li>`, shown as number 2 if it is the second item. `<ul>`, `<ol>` and `<li>` are three of the oldest tags in HTML. Real Markdown also allows `+` as a bullet and lists inside lists (by indenting), which this converter leaves out.
+:::
+
+::: context state-machine Drawing the states
+A state machine is often drawn as circles for the states and arrows for what makes it change. Here, a bullet item moves the converter into the "ul" state, a numbered item into "ol", and a blank line, heading or ordinary text back to "none". An arrow from "ul" to "ol" closes one list and opens the other.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 170" font-family="Inter, Arial, sans-serif">
+  <ellipse cx="180" cy="36" rx="46" ry="22" fill="#fff" stroke="#1f2a44"/>
+  <text x="180" y="41" font-size="13" text-anchor="middle" fill="#1f2a44">none</text>
+  <ellipse cx="70" cy="132" rx="42" ry="22" fill="#8fb8f0" stroke="#1f2a44"/>
+  <text x="70" y="137" font-size="13" text-anchor="middle" fill="#1f2a44">ul</text>
+  <ellipse cx="290" cy="132" rx="42" ry="22" fill="#f2b880" stroke="#1f2a44"/>
+  <text x="290" y="137" font-size="13" text-anchor="middle" fill="#1f2a44">ol</text>
+  <line x1="145" y1="52" x2="92" y2="108" stroke="#1d6fd1" stroke-width="1.5"/>
+  <polygon points="88,113 92,101 99,108" fill="#1d6fd1"/>
+  <text x="84" y="76" font-size="11" fill="#1d6fd1">bullet</text>
+  <line x1="215" y1="52" x2="268" y2="108" stroke="#1d6fd1" stroke-width="1.5"/>
+  <polygon points="272,113 261,108 268,101" fill="#1d6fd1"/>
+  <text x="250" y="76" font-size="11" fill="#1d6fd1">number</text>
+  <line x1="112" y1="132" x2="242" y2="132" stroke="#b4232c" stroke-width="1.5"/>
+  <polygon points="248,132 238,127 238,137" fill="#b4232c"/>
+  <text x="180" y="124" font-size="11" text-anchor="middle" fill="#b4232c">number</text>
+  <text x="180" y="160" font-size="11" text-anchor="middle" fill="#6c7a93">blank, heading or text: back to none</text>
+</svg>
+```
+:::
+
+::: context nonlocal-again When nonlocal is needed
+Only for *assigning* to a name that belongs to the outer function. `flush` last lesson did `paragraph.clear()`, which changes a list and needs nothing. `list_kind = kind` gives the name a new value, so without `nonlocal list_kind` Python would treat `list_kind` as a fresh local variable inside the helper, and reading it on the line before would crash with `UnboundLocalError`, the same bug as the counter in the closures lesson.
+:::
+
+::: context state-machines-later State machines fly
+State machines are one of the most common shapes in real software, especially where safety matters. Flight software is usually organised into modes such as "on the pad", "ascent" or "coast", and a command or a sensor reading that is fine in one mode may be ignored or refused in another. Writing the modes down as explicit states makes it possible to check every case. You will build a bigger one yourself in the text adventure capstone at the end of this course.
+:::
 --- task
 Extend `convert` with lists:
 
-- `- item` or `* item`: a `<ul>`; `1. item` (any number): an `<ol>`.
-- Output `<ul>` / `<ol>`, each `<li>...</li>` and the closing tag on their own lines. Item text is run through `inline`.
-- A blank line, heading, ordinary line, or an item of the other kind closes the open list. Headings and paragraphs work as before.
+- `- item` or `* item` makes a `<ul>`; `1. item` (any number) makes an `<ol>`.
+- Output `<ul>` or `<ol>`, each `<li>...</li>`, and the closing tag, each on its own line. Item text is run through `inline`.
+- A blank line, a heading, an ordinary line, or an item of the other kind closes the open list. Headings and paragraphs work as before.
 --- starter
 # Markdown to HTML, step 2: headings and paragraphs.
 import re
@@ -1670,11 +2074,11 @@ def convert(md):
     flush()
     return "\n".join(html)
 --- hint
-Add two patterns: `r"^[-*]\s+(.*)$"` and `r"^\d+\.\s+(.*)$"`, and a `list_kind` variable that starts as `None`.
+Add two patterns, `r"^[-*]\s+(.*)$"` and `r"^\d+\.\s+(.*)$"`, and a `list_kind` variable that starts as `None`.
 --- hint
 Write a nested `list_item(kind, text)` that opens a new list when `list_kind != kind` (flushing first), then appends the `<li>`. It needs `nonlocal list_kind`.
 --- hint
-Make `flush()` also close an open list (append `</ul>` or `</ol>` and reset `list_kind`). An ordinary line after a list must flush before starting its paragraph.
+Make `flush()` also close an open list (append `</ul>` or `</ol>` and set `list_kind` back to `None`, with `nonlocal list_kind`). In the ordinary-line branch, call `flush()` first if a list is open.
 --- check case | A bullet list
 convert("- milk\n* eggs & *ham*")
 => "<ul>\n<li>milk</li>\n<li>eggs &amp; <em>ham</em></li>\n</ul>"
@@ -1696,46 +2100,144 @@ convert("# T\n\np1\np2")
 
 === pyp-08 | Markdown converter 4: code blocks and the command line
 --- teach
-The last feature is fenced **code blocks**:
+Your converter handles inline formatting, headings, paragraphs and lists. The last feature is the **fenced code block**: lines of code between two [[fences|fence-name]], each fence a line of three backticks. A language name may follow the opening fence. Here is a Markdown document with one code block; the line numbers on the left are only there to talk about, they are not part of the text:
 
-````
-```python
-if x < 3:
-    print("*not italic*")
 ```
-````
+line 1:  ```python
+line 2:  if x < 3:
+line 3:      print("*not italic*")
+line 4:  ```
+```
 
-Inside a fence, *nothing* is Markdown: no headings, no lists, no emphasis, and the indentation must survive. The only thing to do is escape it. The output is
+Line 1 is the opening fence, with the language `python`. Line 4 is the closing fence.
+
+Inside a fence, *nothing* is Markdown. No headings, no lists, no emphasis, and every space of indentation must survive, because in Python the indentation is part of the code. The only job is to escape it. The output is
 
 ```
 <pre><code class="language-python">if x &lt; 3:
     print(&quot;*not italic*&quot;)</code></pre>
 ```
 
-**A new mode.** In a code block, lines must not be stripped or interpreted, so the one-line-at-a-time `for` loop no longer fits: when you see an opening fence you want to *consume* every line up to the closing fence in one go. Switch to an index-based loop, where a branch can move the index as far as it needs:
+`<pre>` means "[[preformatted|pre-tag]]": show the text exactly as it is, spaces and line breaks included. The **[[class|language-class]]** attribute records the language. Without a language name, the tag is plain `<code>`.
+
+### Step 1: recognise a fence
+
+The opening fence is three backticks, maybe some spaces, maybe a language name. Its pattern:
+
+```
+^```\s*([\w+-]*)\s*$
+```
+
+In pieces:
+
+- `^` and `$` pin it to the whole line.
+- Three backticks are three real backticks. A backtick means nothing special in a regex, so it needs no backslash.
+- `\s*` is zero or more spaces.
+- `([\w+-]*)` is group 1, the language: zero or more characters that are `\w` (a "word character": a letter, a digit or `_`), `+` or `-`. The `+` and `-` let `c++` and `objective-c` through. The `*` means it may be empty, when there is no language.
 
 ```python
+FENCE = re.compile(r"^```\s*([\w+-]*)\s*$")
+FENCE.match("```python").group(1)    # 'python'
+FENCE.match("```").group(1)          # ''   no language
+FENCE.match("``` c++").group(1)      # 'c++'
+```
+
+### Step 2: a loop that can jump ahead
+
+Inside a code block, lines must not be stripped or read as Markdown. So the one-line-at-a-time `for` loop no longer fits. When you see an opening fence, you want to **[[consume|consume-lines]]** every line up to the closing fence in one go, and a `for` loop always hands you the very next line.
+
+The fix is the index loop from the tokenizer lesson: keep a number `i` pointing at the current line, like a finger on the page. A branch can then move the finger as far as it needs. Here is its shape (the `if` line is written in words):
+
+```python
+lines = md.splitlines()
 i = 0
 while i < len(lines):
     if opening fence:
-        i += 1
+        i += 1                                 # step past the opening fence
         while i < len(lines) and lines[i].strip() != "```":
-            code.append(escape(lines[i]))      # raw line, not stripped
+            code.append(escape(lines[i]))      # the raw line, not stripped
             i += 1
         ...
-    i += 1          # also steps past the closing fence
+    i += 1          # the next line; after a code block, this steps past the closing fence
 ```
 
-A fence that is never closed runs to the end of the document: the inner loop simply stops at the end.
+The rest of the branches (blank, heading, bullet, numbered, text) stay as they were. Only the loop around them changes, and every line of them still works on the stripped `line = lines[i].strip()`.
 
-**The command line.** Like the expense tracker, the converter becomes a program by adding a thin shell: read all of standard input, convert it, print it. Because `convert` takes a string and returns a string, the shell is one line, and everything that matters can be tested without it.
+### Step 3: a fence that is never closed
 
-With this lesson you have built a real tool: a document converter with inline formatting, block structure, state, modes and a command-line interface, in well under a hundred lines, each part testable on its own.
+If the closing fence never comes, the code block runs to the end of the document. You get that for free: the inner loop's first test, `i < len(lines)`, becomes false at the end and the loop stops. That test must come [[first|short-circuit]], before the word `and`, so that `lines[i]` is never read past the last line.
+
+### Step 4: build the block
+
+A code block closes any open paragraph or list first, so call `flush()` before collecting. When the inner loop ends, put the whole block into *one* entry of `html`: the opening tags, the code lines joined with `"\n"`, and the closing tags.
+
+```python
+attr = f' class="language-{language}"' if language else ""
+html.append(f"<pre><code{attr}>" + "\n".join(code) + "</code></pre>")
+```
+
+`attr` is either the class attribute (with a space in front) or nothing at all.
+
+**Watch out:** stripping the code lines, or running them through `inline`. Both are easy to do by accident, because every other branch uses the stripped `line`. Only the fence *test* strips (`lines[i].strip()`); what you store is `escape(lines[i])`, the raw line.
+
+### Step 5: the command line
+
+Like the expense tracker, the converter becomes a program by adding a thin shell. Read all of standard input, convert it, print it:
+
+```python
+if __name__ == "__main__":
+    print(convert(sys.stdin.read()))
+```
+
+You need `import sys` at the top. Because `convert` takes a string and returns a string, the shell is one line, and everything that matters can be tested without it. On a real computer you would [[pipe a file through it|pipes]].
+
+With this lesson you have built a real tool: a document converter with inline formatting, block structure, state, a mode for code, and a command-line interface. It is about a hundred lines, blank lines included, and each part can be tested on its own.
+
+::: context fence-name Why "fence"
+The three backticks stand like a fence around the code, marking where Markdown stops and starts again. Fenced code blocks were popularised by GitHub's version of Markdown and later written into CommonMark. The first Markdown had only one way to show code: indent every line by four spaces. Fences are easier to type and leave room for a language name. CommonMark also allows fences of three tildes (`~~~`), which this converter does not handle.
+:::
+
+::: context pre-tag Normally HTML ignores your spaces
+In ordinary HTML, the browser squashes any run of spaces and line breaks into a single space, which is why joining paragraph lines with spaces was fine. That would ruin code. Inside `<pre>`, spaces and line breaks are kept exactly, and the text is usually shown in a fixed-width font, where every character takes the same room so columns line up. That is also why the code lines are joined with `"\n"` inside a single `<pre>` element.
+:::
+
+::: context language-class What the class is for
+`class="language-python"` does not change anything by itself. It is a label that other programs read. Syntax highlighters, small programs that colour keywords, strings and comments, look for a class starting with `language-` to know which rules to use. CommonMark recommends exactly this form, so your converter's output works with the common highlighters.
+:::
+
+::: context consume-lines One index, jumping ahead
+The outer loop normally moves the index by one. The code branch moves it many lines at once, so the lines inside the fence are never seen by the other branches.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 180" font-family="Inter, Arial, sans-serif">
+  <g font-size="12" fill="#1f2a44">
+    <text x="16" y="24">0</text><rect x="34" y="10" width="150" height="22" rx="3" fill="#fff" stroke="#1f2a44"/><text x="42" y="25">text</text>
+    <text x="16" y="52">1</text><rect x="34" y="38" width="150" height="22" rx="3" fill="#8fb8f0" stroke="#1f2a44"/><text x="42" y="53" font-family="monospace">fence python</text>
+    <text x="16" y="80">2</text><rect x="34" y="66" width="150" height="22" rx="3" fill="#8fb8f0" stroke="#1f2a44"/><text x="42" y="81" font-family="monospace">if x &lt; 3:</text>
+    <text x="16" y="108">3</text><rect x="34" y="94" width="150" height="22" rx="3" fill="#8fb8f0" stroke="#1f2a44"/><text x="42" y="109" font-family="monospace">    print(x)</text>
+    <text x="16" y="136">4</text><rect x="34" y="122" width="150" height="22" rx="3" fill="#8fb8f0" stroke="#1f2a44"/><text x="42" y="137" font-family="monospace">fence</text>
+    <text x="16" y="164">5</text><rect x="34" y="150" width="150" height="22" rx="3" fill="#fff" stroke="#1f2a44"/><text x="42" y="165">after</text>
+  </g>
+  <path d="M190 49 C 250 49, 250 161, 190 161" fill="none" stroke="#b4232c" stroke-width="2"/>
+  <polygon points="190,161 200,156 200,166" fill="#b4232c"/>
+  <text x="250" y="100" font-size="12" fill="#b4232c">one branch:</text>
+  <text x="250" y="116" font-size="12" fill="#b4232c">i goes 1 to 5</text>
+</svg>
+```
+:::
+
+::: context short-circuit Why the order inside the and matters
+Python works out `a and b` from left to right, and stops as soon as the answer is known. If `a` is false, the whole thing is false, so `b` is never looked at. This is called **short-circuiting**. In the inner loop's test, `i < len(lines)` comes first. Once `i` reaches the end, that part is false, and `lines[i]` is never read. Swap the two parts and an unclosed fence crashes with `IndexError`.
+:::
+
+::: context pipes Using it for real
+Save the program as `md.py`. In a terminal, `python3 md.py < notes.md > notes.html` feeds the file `notes.md` into standard input with `<`, and sends everything printed into `notes.html` with `>`. With `|`, the "pipe", one program's output becomes the next one's input: `cat notes.md | python3 md.py`. The program never knows or cares where its text came from, which is the whole point of reading standard input.
+:::
 --- task
 Extend `convert`:
 
-- A line that is ` ``` ` optionally followed by a language name (after stripping) opens a code block; the next line that strips to ` ``` ` closes it (or the end of the input does).
-- Output the block as `<pre><code>` + the raw lines, escaped but not stripped or formatted, joined with `"\n"` + `</code></pre>` on one output entry. With a language, the opening tag is `<code class="language-NAME">`.
+- A line that is three backticks, optionally followed by a language name (after stripping), opens a code block. The next line that strips to exactly three backticks closes it, or the end of the input does.
+- Output the block as one entry: `<pre><code>`, then the raw lines, escaped but not stripped or formatted, joined with `"\n"`, then `</code></pre>`. With a language, the opening tag is `<code class="language-NAME">`.
 - A code block closes any open paragraph or list first.
 
 Then add the entry point under `if __name__ == "__main__":` that converts all of standard input and prints the result.
@@ -1938,11 +2440,11 @@ if total < 10:
 ```
 See [the map](https://example.com/map?a=1&b=2).
 --- hint
-Change the `for` loop into `i = 0` / `while i < len(lines):` with `i += 1` at the end of the body, so a branch can move `i` further.
+Change the `for` loop into `i = 0` and `while i < len(lines):`, with `i += 1` at the end of the body, so one branch can move `i` further. Set `line = lines[i].strip()` at the top of the body.
 --- hint
-Match the opening fence with `r"^```\s*([\w+-]*)\s*$"` on the stripped line; group 1 is the language (possibly empty). Flush, then collect escaped raw lines until a line strips to three backticks.
+Match the opening fence with the `FENCE` pattern from Step 1 on the stripped line; group 1 is the language, possibly empty. Flush, then collect `escape(lines[i])` until a line strips to three backticks.
 --- hint
-For the entry point you need `import sys`, then `print(convert(sys.stdin.read()))` under the `__name__` guard.
+Build the block with `attr = f' class="language-{language}"' if language else ""` and append `f"<pre><code{attr}>" + "\n".join(code) + "</code></pre>"`. For the entry point: `import sys`, then `print(convert(sys.stdin.read()))` under the `__name__` guard.
 --- check output | Converts a whole document from standard input
 <h1>Shopping <em>list</em></h1>
 <p>Things to buy <strong>today</strong>:</p>
