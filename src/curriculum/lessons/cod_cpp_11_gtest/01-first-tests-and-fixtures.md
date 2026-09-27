@@ -10,7 +10,7 @@ Before a pilot takes off, she walks around the airplane with a checklist. Tires 
 
 Flight software needs the same habit. A guidance program has thousands of small functions: one averages altimeter samples, one wraps an angle, one converts a sensor reading into a rate. Each of them can break when somebody edits it, or edits something it depends on. A **[[unit test|unit-test]]** — a small program that calls one piece of your code with known inputs and checks the answer — is one line of that checklist. Hundreds of them run in a few seconds, every time anyone changes anything.
 
-This module teaches **GoogleTest**, the C++ testing library most flight and robotics teams use, and its partner **GoogleMock**, which lets you test flight logic against a pretend sensor. In this first lesson you write your first tests with the `TEST` macro, group them into a **test suite**, and then meet the **test fixture** — a small class that gives every test a fresh, identical starting point. You already know how to build with CMake and register tests with `ctest` from the CMake module. Now you learn what goes inside a test.
+This module teaches **GoogleTest**, a C++ testing library that many flight and robotics teams use, and its partner **GoogleMock**, which lets you test flight logic against a pretend sensor. In this first lesson you write your first tests with the `TEST` macro, group them into a **test suite**, and then meet the **test fixture** — a small class that gives every test a fresh, identical starting point. You already know how to build with CMake and register tests with `ctest` from the CMake module. Now you learn what goes inside a test.
 
 ## A first test
 
@@ -483,7 +483,7 @@ The C preprocessor runs before the compiler and does text substitution. `TEST(Mo
   <text x="279" y="32" font-size="11" fill="#1f2a44" text-anchor="middle">class Suite_Name_Test</text>
   <text x="279" y="48" font-size="11" fill="#1f2a44" text-anchor="middle">: public testing::Test</text>
   <rect x="216" y="58" width="126" height="26" rx="4" fill="#ffffff"/>
-  <text x="279" y="75" font-size="11" fill="#1f2a44" text-anchor="middle">TestBody(): your code</text>
+  <text x="279" y="75" font-size="11" fill="#1f2a44" text-anchor="middle">TestBody(): runs it</text>
   <rect x="216" y="92" width="126" height="26" rx="4" fill="#f2b880"/>
   <text x="279" y="109" font-size="11" fill="#1f2a44" text-anchor="middle">registers itself</text>
   <text x="80" y="100" font-size="11" fill="#6c7a93" text-anchor="middle">what you write</text>

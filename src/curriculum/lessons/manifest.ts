@@ -2518,6 +2518,42 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "TEST and TEST_F; test suites and fixtures; SetUp and TearDown"
       ],
       "file": "cod_cpp_11_gtest/01-first-tests-and-fixtures.md"
+    },
+    {
+      "id": "l02-assert-versus-expect",
+      "title": "ASSERT versus EXPECT, and failure messages that talk",
+      "minutes": 22,
+      "covers": [
+        "ASSERT_* versus EXPECT_* and when a fatal assertion is correct"
+      ],
+      "file": "cod_cpp_11_gtest/02-assert-versus-expect.md"
+    },
+    {
+      "id": "l03-floating-point-assertions",
+      "title": "Comparing floating-point results, and choosing the tolerance",
+      "minutes": 22,
+      "covers": [
+        "Floating-point assertions: EXPECT_NEAR, EXPECT_DOUBLE_EQ, and choosing the tolerance"
+      ],
+      "file": "cod_cpp_11_gtest/03-floating-point-assertions.md"
+    },
+    {
+      "id": "l04-parameterised-tests",
+      "title": "Parameterised tests — one test, many cases",
+      "minutes": 24,
+      "covers": [
+        "TEST_P parameterised tests and value generators"
+      ],
+      "file": "cod_cpp_11_gtest/04-parameterised-tests.md"
+    },
+    {
+      "id": "l07-googlemock-basics",
+      "title": "GoogleMock, a pretend sensor that does what you say",
+      "minutes": 20,
+      "covers": [
+        "GoogleMock: mocking an ISensor or HAL interface; EXPECT_CALL, matchers, cardinalities"
+      ],
+      "file": "cod_cpp_11_gtest/07-googlemock-basics.md"
     }
   ],
   "cod_git_01_basics": [
@@ -10454,16 +10490,12 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_cpp_11_gtest": {
-    "covered": 1,
+    "covered": 5,
     "total": 14,
     "complete": false,
     "missing": [
-      "ASSERT_* versus EXPECT_* and when a fatal assertion is correct",
-      "Floating-point assertions: EXPECT_NEAR, EXPECT_DOUBLE_EQ, and choosing the tolerance",
-      "TEST_P parameterised tests and value generators",
       "Typed and type-parameterised tests for template code",
       "Death tests for contract violations",
-      "GoogleMock: mocking an ISensor or HAL interface; EXPECT_CALL, matchers, cardinalities",
       "NiceMock, StrictMock and what an uninteresting call means",
       "Dependency injection as the precondition for mockability",
       "gtest_discover_tests, CTest registration, test filters and labels",
