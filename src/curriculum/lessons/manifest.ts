@@ -7499,7 +7499,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-linear-least-squares-normal-equations-qr-svd",
       "title": "The linear least squares problem",
-      "minutes": 22,
+      "minutes": 20,
       "covers": [
         "The linear least squares problem; normal equations, QR, and SVD solutions"
       ],
@@ -7508,7 +7508,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-weighted-least-squares-and-the-information-matrix",
       "title": "Weighted least squares and the information matrix",
-      "minutes": 21,
+      "minutes": 18,
       "covers": [
         "Weighted least squares and the information matrix"
       ],
@@ -7517,7 +7517,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-minimum-variance-blue-gauss-markov",
       "title": "Minimum variance and BLUE: the Gauss-Markov theorem",
-      "minutes": 19,
+      "minutes": 16,
       "covers": [
         "Minimum variance and BLUE: the Gauss-Markov theorem"
       ],
@@ -7526,7 +7526,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-maximum-likelihood-equivalence-wls-gaussian",
       "title": "Maximum likelihood and its equivalence to WLS under Gaussian noise",
-      "minutes": 17,
+      "minutes": 19,
       "covers": [
         "Maximum likelihood and its equivalence to WLS under Gaussian noise"
       ],
@@ -7535,7 +7535,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-maximum-a-posteriori-estimation",
       "title": "Maximum a posteriori estimation",
-      "minutes": 19,
+      "minutes": 20,
       "covers": [
         "Maximum a posteriori estimation"
       ],
@@ -7544,7 +7544,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-nonlinear-least-squares-gauss-newton-levenberg-marquardt",
       "title": "Nonlinear least squares: Gauss-Newton and Levenberg-Marquardt",
-      "minutes": 20,
+      "minutes": 24,
       "covers": [
         "Nonlinear least squares: Gauss-Newton and Levenberg-Marquardt"
       ],
@@ -7553,7 +7553,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-recursive-least-squares-kalman-bridge",
       "title": "Recursive least squares and the bridge to the Kalman filter",
-      "minutes": 15,
+      "minutes": 21,
       "covers": [
         "Recursive least squares and the bridge to the Kalman filter"
       ],
@@ -7562,7 +7562,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-condition-number-observability-metric",
       "title": "The normal matrix condition number as an observability metric",
-      "minutes": 16,
+      "minutes": 18,
       "covers": [
         "The normal matrix condition number as an observability metric"
       ],
@@ -7571,7 +7571,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-residual-analysis-outlier-rejection-robust-estimation",
       "title": "Residual analysis, outlier rejection, and robust estimation",
-      "minutes": 19,
+      "minutes": 22,
       "covers": [
         "Residual analysis, outlier rejection, and robust estimation (Huber loss, RANSAC)"
       ],
@@ -7580,7 +7580,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-wahba-problem",
       "title": "The Wahba problem: aligning two sets of vector observations",
-      "minutes": 15,
+      "minutes": 19,
       "covers": [
         "The Wahba problem: find the rotation best aligning two sets of vector observations"
       ],
@@ -7589,7 +7589,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-wahba-solutions-triad-davenport-quest-svd",
       "title": "Wahba solutions: TRIAD, Davenport, QUEST, ESOQ, and SVD",
-      "minutes": 20,
+      "minutes": 22,
       "covers": [
         "Wahba solutions: TRIAD, Davenport q-method, QUEST, ESOQ, and the SVD method"
       ],
@@ -7598,7 +7598,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-attitude-covariance-sensor-geometry",
       "title": "Covariance of an attitude solution and the effect of sensor geometry",
-      "minutes": 18,
+      "minutes": 16,
       "covers": [
         "Covariance of an attitude solution and the effect of sensor geometry"
       ],
@@ -7609,7 +7609,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-the-stochastic-state-space-model",
       "title": "The stochastic state-space model, process noise Q and measurement noise R",
-      "minutes": 20,
+      "minutes": 22,
       "covers": [
         "The stochastic state-space model: process noise Q and measurement noise R"
       ],
@@ -7618,7 +7618,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-three-derivations-of-the-kalman-filter",
       "title": "Three derivations of the Kalman filter",
-      "minutes": 24,
+      "minutes": 20,
       "covers": [
         "Three derivations of the Kalman filter: minimum variance/orthogonality, Bayesian Gaussian conditioning, recursive least squares"
       ],
@@ -7627,7 +7627,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l03-the-predict-and-update-steps",
       "title": "The predict and update steps",
-      "minutes": 17,
+      "minutes": 18,
       "covers": [
         "The predict and update steps"
       ],
@@ -7636,7 +7636,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-the-kalman-gain-as-a-trust-ratio",
       "title": "The Kalman gain as a trust ratio between prediction and measurement",
-      "minutes": 18,
+      "minutes": 23,
       "covers": [
         "The Kalman gain as a trust ratio between prediction and measurement"
       ],
@@ -7645,7 +7645,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l05-covariance-propagation-and-the-discrete-riccati-equation",
       "title": "Covariance propagation and the discrete Riccati equation",
-      "minutes": 14,
+      "minutes": 18,
       "covers": [
         "Covariance propagation and the discrete Riccati equation"
       ],
@@ -7654,7 +7654,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l06-process-noise-tuning-and-getting-q-wrong",
       "title": "Process noise tuning and the consequences of getting Q wrong",
-      "minutes": 19,
+      "minutes": 22,
       "covers": [
         "Process noise tuning and the consequences of getting Q wrong"
       ],
@@ -7663,7 +7663,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l07-the-steady-state-kalman-filter",
       "title": "The steady-state Kalman filter",
-      "minutes": 19,
+      "minutes": 23,
       "covers": [
         "The steady-state Kalman filter"
       ],
@@ -7672,7 +7672,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l08-observability-and-filter-convergence",
       "title": "Observability and filter convergence",
-      "minutes": 16,
+      "minutes": 18,
       "covers": [
         "Observability and filter convergence"
       ],
@@ -7681,7 +7681,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l09-numerically-stable-formulations",
       "title": "Numerically stable formulations: Joseph form, square-root, and UD factorization",
-      "minutes": 24,
+      "minutes": 21,
       "covers": [
         "Numerically stable formulations: Joseph form, square-root (Potter, Carlson), UD factorization (Bierman-Thornton)"
       ],
@@ -7690,7 +7690,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l10-filter-divergence-causes-and-remedies",
       "title": "Filter divergence: causes and remedies",
-      "minutes": 23,
+      "minutes": 24,
       "covers": [
         "Filter divergence: causes and remedies (fading memory, Q inflation, covariance symmetrization)"
       ],
@@ -7699,7 +7699,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l11-consistency-testing",
       "title": "Consistency testing: innovation whiteness, NEES and NIS",
-      "minutes": 25,
+      "minutes": 18,
       "covers": [
         "Consistency testing: innovation whiteness, NEES and NIS chi-square tests, innovation autocorrelation"
       ],
@@ -7708,7 +7708,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l12-sequential-vs-batch-updates-and-gating",
       "title": "Sequential vs batch measurement updates; measurement editing and gating",
-      "minutes": 21,
+      "minutes": 19,
       "covers": [
         "Sequential vs batch measurement updates; measurement editing and gating"
       ],
@@ -7717,7 +7717,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l13-the-rauch-tung-striebel-smoother",
       "title": "The Rauch-Tung-Striebel smoother",
-      "minutes": 20,
+      "minutes": 19,
       "covers": [
         "The Rauch-Tung-Striebel smoother"
       ],
@@ -7726,7 +7726,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l14-the-information-filter-form",
       "title": "The information filter form and its use in sensor fusion",
-      "minutes": 22,
+      "minutes": 21,
       "covers": [
         "The information filter form and its use in sensor fusion"
       ],
@@ -7746,7 +7746,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l01-the-extended-kalman-filter",
       "title": "The Extended Kalman Filter — linearizing about the estimate",
-      "minutes": 21,
+      "minutes": 25,
       "covers": [
         "The Extended Kalman Filter: linearization about the current estimate, Jacobians F and H, first-order truncation error"
       ],
@@ -7755,7 +7755,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l02-continuous-discrete-and-iterated-ekf",
       "title": "The continuous-discrete EKF and the iterated EKF",
-      "minutes": 20,
+      "minutes": 18,
       "covers": [
         "Continuous-discrete EKF and the iterated EKF"
       ],
@@ -7773,7 +7773,7 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
     {
       "id": "l04-the-unscented-kalman-filter",
       "title": "The Unscented Kalman Filter",
-      "minutes": 22,
+      "minutes": 26,
       "covers": [
         "The Unscented Kalman Filter: the unscented transform, sigma point selection (alpha, beta, kappa), the square-root UKF"
       ],
