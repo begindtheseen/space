@@ -304,7 +304,11 @@ The result is perpendicular to both inputs, and its length is $|\mathbf u||\math
 :::
 
 ::: context bortz Where the equation comes from
-John Bortz published the rotation-vector differential equation in 1971, while working on strapdown attitude algorithms for spacecraft. Its value is that it describes the rotation vector directly, so a computer can build one rotation per compute interval from many gyro samples and apply it once. Almost every modern coning algorithm, including Savage's multi-sample families, starts from it.
+John Bortz published the rotation-vector differential equation in a 1971 paper on strapdown inertial navigation. Its value is that it describes the rotation vector directly, so a computer can build one rotation per compute interval from many gyro samples and apply it once. Almost every modern coning algorithm, including Savage's multi-sample families, starts from it. The $\tfrac12\boldsymbol\phi\times\boldsymbol\omega$ term is the first sign of non-commutativity; the long bracketed term only matters for turns of many degrees per interval.
+:::
+
+::: context solid-angle Solid angle and the turn you get for free
+A **solid angle** is the 3D version of an ordinary angle: how much of the sky a shape covers, as seen from a point. It is measured in steradians, and the whole sky is $4\pi$. A cone of half-angle $\alpha$ covers $2\pi(1-\cos\alpha)$ steradians. The surprising fact is geometric: carry a direction around a closed loop on a sphere without ever twisting it, and it comes back turned by the solid angle the loop encloses. A Foucault pendulum at latitude $\varphi$ is carried around a loop each day and turns by $2\pi\sin\varphi$ — the same effect, on a slower clock.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 200" font-family="Inter, Arial, sans-serif">
@@ -326,11 +330,7 @@ John Bortz published the rotation-vector differential equation in 1971, while wo
 </svg>
 ```
 
-The picture shows the coning motion the equation's correction term captures (the angle $\alpha$ is drawn much larger than a real $1^\circ$).
-:::
-
-::: context solid-angle Solid angle and the turn you get for free
-A **solid angle** is the 3D version of an ordinary angle: how much of the sky a shape covers, as seen from a point. It is measured in steradians, and the whole sky is $4\pi$. A cone of half-angle $\alpha$ covers $2\pi(1-\cos\alpha)$ steradians. The surprising fact is geometric: carry a direction around a closed loop on a sphere without ever twisting it, and it comes back turned by the solid angle the loop encloses. A Foucault pendulum at latitude $\varphi$ is carried around a loop each day and turns by $2\pi\sin\varphi$ — the same effect, on a slower clock.
+The red body axis sweeps the blue cone (the angle $\alpha$ is drawn far larger than a real $1^\circ$). The loop encloses a solid angle of $2\pi(1-\cos\alpha)$, and that is the net turn about the cone's axis each cycle.
 :::
 
 ::: context sculling-word The rowing picture
@@ -339,13 +339,13 @@ To scull is to drive a boat with one oar over the stern, sweeping it side to sid
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 180" font-family="Inter, Arial, sans-serif">
   <line x1="40" y1="45" x2="340" y2="45" stroke="#6c7a93" stroke-width="1"/>
-  <polyline fill="none" stroke="#1d6fd1" stroke-width="2" points="SCULL_THETA"/>
-  <polyline fill="none" stroke="#f2b880" stroke-width="2.5" stroke-dasharray="6,3" points="SCULL_F"/>
+  <polyline fill="none" stroke="#1d6fd1" stroke-width="2" points="40,45.0 45,40.8 50,36.9 55,33.2 60,30.1 65,27.7 70,26.0 75,25.1 80,25.1 85,26.0 90,27.7 95,30.1 100,33.2 105,36.9 110,40.8 115,45.0 120,49.2 125,53.1 130,56.8 135,59.9 140,62.3 145,64.0 150,64.9 155,64.9 160,64.0 165,62.3 170,59.9 175,56.8 180,53.1 185,49.2 190,45.0 195,40.8 200,36.9 205,33.2 210,30.1 215,27.7 220,26.0 225,25.1 230,25.1 235,26.0 240,27.7 245,30.1 250,33.2 255,36.9 260,40.8 265,45.0 270,49.2 275,53.1 280,56.8 285,59.9 290,62.3 295,64.0 300,64.9 305,64.9 310,64.0 315,62.3 320,59.9 325,56.8 330,53.1 335,49.2 340,45.0"/>
+  <polyline fill="none" stroke="#f2b880" stroke-width="2.5" stroke-dasharray="6,3" points="40,45.0 45,42.5 50,40.1 55,37.9 60,36.1 65,34.6 70,33.6 75,33.1 80,33.1 85,33.6 90,34.6 95,36.1 100,37.9 105,40.1 110,42.5 115,45.0 120,47.5 125,49.9 130,52.1 135,53.9 140,55.4 145,56.4 150,56.9 155,56.9 160,56.4 165,55.4 170,53.9 175,52.1 180,49.9 185,47.5 190,45.0 195,42.5 200,40.1 205,37.9 210,36.1 215,34.6 220,33.6 225,33.1 230,33.1 235,33.6 240,34.6 245,36.1 250,37.9 255,40.1 260,42.5 265,45.0 270,47.5 275,49.9 280,52.1 285,53.9 290,55.4 295,56.4 300,56.9 305,56.9 310,56.4 315,55.4 320,53.9 325,52.1 330,49.9 335,47.5 340,45.0"/>
   <text x="40" y="16" font-size="12" fill="#1d6fd1">rocking angle</text>
   <text x="150" y="16" font-size="12" fill="#1f2a44">and sideways push, in step</text>
   <line x1="40" y1="150" x2="340" y2="150" stroke="#6c7a93" stroke-width="1"/>
   <line x1="40" y1="130" x2="340" y2="130" stroke="#b4232c" stroke-width="1.2" stroke-dasharray="4,3"/>
-  <polyline fill="none" stroke="#1f2a44" stroke-width="2" points="SCULL_PROD"/>
+  <polyline fill="none" stroke="#1f2a44" stroke-width="2" points="40,150.0 45,148.3 50,143.4 55,136.2 60,127.9 65,120.0 70,113.8 75,110.4 80,110.4 85,113.8 90,120.0 95,127.9 100,136.2 105,143.4 110,148.3 115,150.0 120,148.3 125,143.4 130,136.2 135,127.9 140,120.0 145,113.8 150,110.4 155,110.4 160,113.8 165,120.0 170,127.9 175,136.2 180,143.4 185,148.3 190,150.0 195,148.3 200,143.4 205,136.2 210,127.9 215,120.0 220,113.8 225,110.4 230,110.4 235,113.8 240,120.0 245,127.9 250,136.2 255,143.4 260,148.3 265,150.0 270,148.3 275,143.4 280,136.2 285,127.9 290,120.0 295,113.8 300,110.4 305,110.4 310,113.8 315,120.0 320,127.9 325,136.2 330,143.4 335,148.3 340,150.0"/>
   <text x="40" y="98" font-size="12" fill="#1f2a44">their product: never below zero</text>
   <text x="250" y="172" font-size="11" fill="#b4232c">average = half the peak</text>
 </svg>
@@ -358,8 +358,18 @@ To scull is to drive a boat with one oar over the stern, sweeping it side to sid
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 130" font-family="Inter, Arial, sans-serif">
   <line x1="30" y1="70" x2="340" y2="70" stroke="#6c7a93" stroke-width="1"/>
-  <polyline fill="none" stroke="#1d6fd1" stroke-width="1.8" points="ALIAS_SIG"/>
-  ALIAS_DOTS
+  <polyline fill="none" stroke="#1d6fd1" stroke-width="1.8" points="30.0,70.0 31.9,64.4 33.9,59.1 35.8,54.1 37.8,49.6 39.7,45.9 41.6,43.0 43.6,41.0 45.5,40.1 47.4,40.2 49.4,41.3 51.3,43.4 53.2,46.4 55.2,50.3 57.1,54.8 59.1,59.9 61.0,65.3 62.9,70.9 64.9,76.4 66.8,81.8 68.8,86.7 70.7,91.0 72.6,94.6 74.6,97.4 76.5,99.2 78.4,100.0 80.4,99.7 82.3,98.4 84.2,96.2 86.2,93.0 88.1,89.0 90.1,84.4 92.0,79.3 93.9,73.8 95.9,68.2 97.8,62.7 99.7,57.4 101.7,52.6 103.6,48.4 105.6,44.9 107.5,42.3 109.4,40.6 111.4,40.0 113.3,40.4 115.2,41.9 117.2,44.3 119.1,47.6 121.1,51.7 123.0,56.4 124.9,61.6 126.9,67.1 128.8,72.6 130.8,78.1 132.7,83.4 134.6,88.1 136.6,92.2 138.5,95.6 140.4,98.0 142.4,99.5 144.3,100.0 146.2,99.4 148.2,97.8 150.1,95.3 152.1,91.8 154.0,87.6 155.9,82.8 157.9,77.6 159.8,72.1 161.8,66.5 163.7,61.0 165.6,55.9 167.6,51.2 169.5,47.2 171.4,44.0 173.4,41.7 175.3,40.3 177.2,40.0 179.2,40.8 181.1,42.5 183.1,45.2 185.0,48.8 186.9,53.1 188.9,58.0 190.8,63.3 192.7,68.8 194.7,74.4 196.6,79.8 198.6,84.9 200.5,89.5 202.4,93.4 204.4,96.5 206.3,98.6 208.2,99.8 210.2,99.9 212.1,99.0 214.1,97.1 216.0,94.3 217.9,90.6 219.9,86.2 221.8,81.2 223.8,75.9 225.7,70.3 227.6,64.7 229.6,59.3 231.5,54.3 233.4,49.9 235.4,46.1 237.3,43.1 239.2,41.1 241.2,40.1 243.1,40.1 245.1,41.2 247.0,43.3 248.9,46.3 250.9,50.1 252.8,54.6 254.7,59.6 256.7,65.0 258.6,70.6 260.6,76.1 262.5,81.5 264.4,86.4 266.4,90.8 268.3,94.4 270.2,97.2 272.2,99.1 274.1,99.9 276.1,99.8 278.0,98.5 279.9,96.3 281.9,93.2 283.8,89.3 285.8,84.7 287.7,79.6 289.6,74.1 291.6,68.5 293.5,63.0 295.4,57.7 297.4,52.8 299.3,48.6 301.2,45.1 303.2,42.4 305.1,40.7 307.1,40.0 309.0,40.4 310.9,41.8 312.9,44.1 314.8,47.4 316.8,51.4 318.7,56.1 320.6,61.3 322.6,66.8 324.5,72.4 326.4,77.9 328.4,83.1 330.3,87.9 332.2,92.0 334.2,95.4 336.1,97.9 338.1,99.5 340.0,100.0"/>
+  <circle cx="30.0" cy="70.0" r="3.5" fill="#b4232c"/>
+  <circle cx="61.0" cy="65.3" r="3.5" fill="#b4232c"/>
+  <circle cx="92.0" cy="79.3" r="3.5" fill="#b4232c"/>
+  <circle cx="123.0" cy="56.4" r="3.5" fill="#b4232c"/>
+  <circle cx="154.0" cy="87.6" r="3.5" fill="#b4232c"/>
+  <circle cx="185.0" cy="48.8" r="3.5" fill="#b4232c"/>
+  <circle cx="216.0" cy="94.3" r="3.5" fill="#b4232c"/>
+  <circle cx="247.0" cy="43.3" r="3.5" fill="#b4232c"/>
+  <circle cx="278.0" cy="98.5" r="3.5" fill="#b4232c"/>
+  <circle cx="309.0" cy="40.4" r="3.5" fill="#b4232c"/>
+  <circle cx="340.0" cy="100.0" r="3.5" fill="#b4232c"/>
   <text x="30" y="20" font-size="12" fill="#1f2a44">95 Hz vibration, 200 Hz samples (red), 50 ms shown</text>
   <text x="30" y="122" font-size="11" fill="#1f2a44">barely two samples per wiggle: the dots cannot show its shape</text>
 </svg>
