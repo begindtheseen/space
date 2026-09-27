@@ -19,7 +19,7 @@ In the drawings module you met **plus-or-minus tolerancing**, also called **coor
 
 Put two of those on one hole. The center of the hole must have its $x$ between $49.9$ and $50.1$, *and* its $y$ between $29.9$ and $30.1$. Draw every allowed position for the center and you get a square, $0.2\,\mathrm{mm}$ on a side. That region — the set of places a feature is allowed to be — is called a **tolerance zone**.
 
-Now ask what the hole is *for*. Say a bolt passes through it into a mating part. The bolt has some clearance around it. If the hole's center drifts $0.12\,\mathrm{mm}$ to the right, the bolt still fits, and it would still fit if the same drift pointed up, or down, or diagonally. The bolt does not care about $x$ and $y$ separately. It cares about the straight-line distance from where the hole should be — its **true position**, the exact, perfect location on the drawing — to where the hole really is. Everything at the same distance works equally well. The set of "good enough" places is a **circle**, just like the dartboard.
+Now ask what the hole is *for*. Say a bolt passes through it into a mating part. The bolt has some clearance around it. If the hole's center drifts $0.12\,\mathrm{mm}$ to the right, the bolt still fits, and it would still fit if the same drift pointed up, or down, or diagonally. The bolt does not care about $x$ and $y$ separately. It cares about the straight-line distance from where the hole should be — its **true position**, the exact, perfect location on the drawing — to where the hole really is. Everything at the same distance works equally well. The set of "good enough" places is a **circle**, like the dartboard.
 
 So the square is the wrong shape. And the mismatch is not small. The square's corners are farther from the center than its edges are. A hole at the corner of the square, off by $0.1$ in $x$ *and* $0.1$ in $y$, is really off by
 
@@ -75,7 +75,7 @@ People convert "$\pm 0.1$" into "a round zone of $0.2$" because the numbers look
 
 The square zone is the first problem. The second is sneakier. A plus-or-minus dimension says "$80$ from the left edge", but a real edge is never perfectly straight or perfectly square to the bottom. So *which* part of the edge do you measure from?
 
-Picture measuring your height against a door frame that leans a little. Stand at the bottom hinge side or at the top latch side and you get different numbers. Nobody lied. The frame just never promised to be straight, and nobody said where to put the ruler.
+Picture measuring your height against a door frame that leans a little. Stand at the bottom hinge side or at the top latch side and you get different numbers. Nobody lied. The frame never promised to be straight, and nobody said where to put the ruler.
 
 ::: example Three honest inspectors, three answers
 A plate's left edge is $100\,\mathrm{mm}$ tall. It leans: its top sits $0.10\,\mathrm{mm}$ farther left than its bottom corner. A hole is dimensioned $80 \pm 0.08\,\mathrm{mm}$ from the left edge, $60\,\mathrm{mm}$ up from the bottom. The hole was machined exactly $80.00\,\mathrm{mm}$ from the bottom corner. [[Three inspectors measure it|leaning-edge]].
@@ -112,7 +112,7 @@ A **feature control frame** is a row of boxes attached to a feature by a leader 
 
 (Each vertical bar is a wall between boxes. The first box holds the position symbol ⌖, a small circle with a cross through it.)
 
-**Box 1 — the geometric characteristic symbol.** What kind of control this is. The position symbol ⌖ says "this controls location". There are about a dozen symbols, in five families. You will meet each family in its own lesson:
+**Box 1 — the geometric characteristic symbol.** What kind of control this is. The position symbol ⌖ says "this controls location". There are fourteen classic symbols, in five families (the 2018 edition dropped two of them, concentricity and symmetry, as lesson 6 explains). You will meet each family in its own lesson:
 
 | Family | Symbols it contains | Controls |
 | --- | --- | --- |

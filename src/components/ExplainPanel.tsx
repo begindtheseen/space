@@ -27,7 +27,7 @@ import {
   type Passage,
   type RankedNote,
 } from '@/lib/explain'
-import { allCards, lessonLabel, libraryKeys, loadLibrary, loadNotes } from '@/lib/explainLibrary'
+import { allCards, libraryKeys, loadLibrary, loadNotes, noteHref, noteLabel } from '@/lib/explainLibrary'
 import { Markdown } from '@/lib/markdown'
 import './context-panel.css'
 
@@ -53,7 +53,7 @@ const WHERE: Record<RankedNote['where'], { label: string; tone: 'default' | 'blu
 }
 
 function NoteSource({ r }: { r: RankedNote }) {
-  const label = lessonLabel(r.note.m, r.note.l)
+  const label = noteLabel(r.note)
   if (!label) return null
   return (
     <div className="explain__from">
@@ -61,7 +61,7 @@ function NoteSource({ r }: { r: RankedNote }) {
       {r.where === 'here' ? (
         <span>From this lesson</span>
       ) : (
-        <a href={`#/module/${r.note.m}?lesson=${r.note.l}`}>
+        <a href={noteHref(r.note)}>
           {label.title} <span>· {label.module}</span>
         </a>
       )}
@@ -70,7 +70,18 @@ function NoteSource({ r }: { r: RankedNote }) {
   )
 }
 
-export function ExplainPanel({ seed, here, onClose }: { seed: ExplainSeed; here: LibraryLesson; onClose: () => void }) {
+export function ExplainPanel({
+  seed,
+  here,
+  extra,
+  onClose,
+}: {
+  seed: ExplainSeed
+  here: LibraryLesson
+  /** More lessons to quote from, e.g. the Learn to code lessons she has passed in this course. */
+  extra?: LibraryLesson[]
+  onClose: () => void
+}) {
   const { state } = useLearner()
   const [found, setFound] = useState<Found | null>(null)
   const [failed, setFailed] = useState(false)
@@ -102,7 +113,9 @@ export function ExplainPanel({ seed, here, onClose }: { seed: ExplainSeed; here:
     const s = stateRef.current
     const at = { moduleId: here.moduleId, lessonId: here.lessonId }
     const keys = libraryKeys(s, at)
-    const me = { here: at, read: new Set(Object.keys(s.read)), earlier: new Set(keys) }
+    // A passed Learn to code lesson counts as read, the same as a module lesson.
+    const read = new Set([...Object.keys(s.read), ...Object.keys(s.learn).map((id) => `learn::${id}`)])
+    const me = { here: at, read, earlier: new Set(keys) }
     const known = new Set(keys.map((k) => k.split('::')[0]))
     Promise.all([loadNotes(), loadLibrary(keys)])
       .then(([notes, library]) => {
@@ -112,14 +125,14 @@ export function ExplainPanel({ seed, here, onClose }: { seed: ExplainSeed; here:
           // Only cards from modules she is in or has read from: a card from far ahead
           // defines the word in a sense she has not met yet.
           cards: matchCards(seed, allCards().filter((c) => c.moduleId === here.moduleId || known.has(c.moduleId))),
-          passages: pickPassages(seed, library, 3),
+          passages: pickPassages(seed, [...library, ...(extra ?? [])], 3),
         })
       })
       .catch(() => alive && setFailed(true))
     return () => {
       alive = false
     }
-  }, [seed, here])
+  }, [seed, here, extra])
 
   const [best, ...more] = found?.notes ?? []
   const empty = found && !best && !found.cards.length && !found.passages.length
@@ -188,7 +201,7 @@ export function ExplainPanel({ seed, here, onClose }: { seed: ExplainSeed; here:
             <a
               key={`${p.lesson.moduleId}:${p.lesson.lessonId}:${p.text.slice(0, 24)}`}
               className="explain__passage"
-              href={`#/module/${p.lesson.moduleId}?lesson=${p.lesson.lessonId}`}
+              href={noteHref({ m: p.lesson.moduleId, l: p.lesson.lessonId })}
             >
               <Markdown className="explain__quote">{snippet(p.text, seed)}</Markdown>
               <span className="explain__passage-from">

@@ -22,6 +22,8 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { PlaygroundEmbed, type Graded } from '@/components/ide/Embed'
 import { useLessonCode } from '@/components/ide/lessonCode'
+import { ExplainPanel } from '@/components/ExplainPanel'
+import { SelectionAsk } from '@/components/SelectionAsk'
 import {
   CertificateMark,
   IdePanel,
@@ -40,6 +42,8 @@ import { LEARN_LANGS } from '@/learn/platform'
 import { MASTERY, ROADMAPS, currentTrack, findLesson, langName, nextLesson, passedCount, streak, trackFor, tracksFor } from '@/learn/index'
 import { editorLang, runLearn, warmUp } from '@/learn/platform'
 import { LEVEL_LABEL, type LearnGrade, type LearnLesson, type LearnTrack, type Roadmap } from '@/learn/types'
+import { onExplainRequested } from '@/lib/ctxBus'
+import type { ExplainSeed, LibraryLesson } from '@/lib/explain'
 import type { ShellState } from '@/lib/shell'
 import { Markdown } from '@/lib/markdown'
 import { navigate, useRoute } from '@/lib/router'
@@ -419,6 +423,26 @@ function LessonView({ track, lesson, index }: { track: LearnTrack; lesson: Learn
   const [showSolution, setShowSolution] = useState(false)
   const winRef = useRef<HTMLDivElement | null>(null)
   const teachCode = useLessonCode(`learn:${lesson.id}:example`, lesson.teach, lesson.schema)
+  const textRef = useRef<HTMLElement | null>(null)
+  const [asking, setAsking] = useState<ExplainSeed | null>(null)
+  const closeAsk = useCallback(() => setAsking(null), [])
+  // Explain reads this lesson, and the lessons of this course she has passed.
+  const here = useMemo<LibraryLesson>(
+    () => ({ moduleId: 'learn', moduleTitle: track.name, lessonId: lesson.id, title: lesson.title, body: `${lesson.teach}\n\n${lesson.task}` }),
+    [track.name, lesson],
+  )
+  const passedHere = useMemo<LibraryLesson[]>(
+    () =>
+      track.lessons
+        .filter((l) => l.id !== lesson.id && state.learn[l.id])
+        .map((l) => ({ moduleId: 'learn', moduleTitle: track.name, lessonId: l.id, title: l.title, body: `${l.teach}\n\n${l.task}` })),
+    // Only which lessons are passed matters, not her code in them.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [track, lesson.id, Object.keys(state.learn).join(',')],
+  )
+  useEffect(() => setAsking(null), [lesson.id])
+  // A note's "where else this comes up" arrives here.
+  useEffect(() => onExplainRequested(setAsking), [])
 
   const passedBefore = !!state.learn[lesson.id]
   const prev = track.lessons[index - 1]
@@ -472,7 +496,7 @@ function LessonView({ track, lesson, index }: { track: LearnTrack; lesson: Learn
         <Streak />
       </div>
 
-      <article className="lm-flow">
+      <article className="lm-flow" ref={textRef}>
         <div className="lm-text__kicker">
           <LangMark lang={track.lang} size={18} />
           Lesson {index + 1} of {track.lessons.length}
@@ -482,7 +506,9 @@ function LessonView({ track, lesson, index }: { track: LearnTrack; lesson: Learn
 
         {/* The explanation, with its examples runnable where they stand. */}
         <div className="lm-teach">
-          <Markdown renderCode={teachCode}>{lesson.teach}</Markdown>
+          <Markdown renderCode={teachCode} notes>
+            {lesson.teach}
+          </Markdown>
         </div>
 
         {/* Then her turn, in the same place. */}
@@ -582,6 +608,8 @@ function LessonView({ track, lesson, index }: { track: LearnTrack; lesson: Learn
           ) : null}
         </div>
       </article>
+      <SelectionAsk container={textRef} onAsk={setAsking} />
+      {asking ? <ExplainPanel seed={asking} here={here} extra={passedHere} onClose={closeAsk} /> : null}
     </div>
   )
 }

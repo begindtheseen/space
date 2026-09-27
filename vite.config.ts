@@ -3,15 +3,16 @@ import path from 'node:path'
 import { fileURLToPath, URL } from 'node:url'
 import react from '@vitejs/plugin-react'
 import { defineConfig, type Plugin } from 'vite'
-import { notesOf } from './src/curriculum/lessons/notesIndex.ts'
+import { learnNotesOf, notesOf } from './src/curriculum/lessons/notesIndex.ts'
 
 // The version the app is running, so it can show what this build changed.
 // package.json is the one place it is written down.
 const version: string = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8')).version
 
 /**
- * `virtual:context-notes`: every context note in every lesson, gathered at
- * build time into one module that the app imports lazily (src/lib/explain.ts).
+ * `virtual:context-notes`: every context note in every lesson and every Learn
+ * to code lesson, gathered at build time into one module that the app imports
+ * lazily (src/lib/explain.ts).
  * Rebuilt whenever a lesson changes under the dev server.
  */
 function contextNotes(): Plugin {
@@ -31,6 +32,13 @@ function contextNotes(): Plugin {
           this.addWatchFile(file)
           notes.push(...notesOf(mod.name, readFileSync(file, 'utf8')))
         }
+      }
+      const tracks = fileURLToPath(new URL('./src/learn/tracks', import.meta.url))
+      for (const f of readdirSync(tracks).sort()) {
+        if (!f.endsWith('.txt')) continue
+        const file = path.join(tracks, f)
+        this.addWatchFile(file)
+        notes.push(...learnNotesOf(readFileSync(file, 'utf8')))
       }
       return `export default ${JSON.stringify(notes)}`
     },

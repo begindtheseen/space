@@ -1,38 +1,56 @@
 ---
 id: l08-error-handling-without-exceptions
 title: Error handling without exceptions
-minutes: 24
+minutes: 25
 covers:
   - error handling without exceptions
 ---
 
-Python reports every failure the same way: it raises, the exception climbs the call stack until an `except` catches it, and if nothing does, the program prints a traceback and dies. C++ has the same mechanism — `throw`, `try`, `catch` — and its standard library uses it: `std::vector::at` throws on a bad index, `new` throws when memory runs out, `std::stoi` throws on bad text. And almost every flight software project compiles with exceptions switched off. This lesson explains why, and then teaches what flight code does instead: errors as values, checked at every call, with assertions that record faults rather than crash.
+Picture two ways a restaurant kitchen could deal with a problem. In the first, when a cook finds the fish has gone bad, they pull the fire alarm. Everyone stops, the building empties, and somebody far away decides what happens next. In the second, the cook walks the plate back to the head chef and says, "No fish tonight." The head chef, who knows the menu, offers the chicken. Dinner service goes on.
 
-The unifying idea is that an error is data. A sensor timeout, a checksum failure, an out-of-range command are ordinary outcomes of ordinary functions, returned the way any other result is returned and handled by whichever caller has enough context to decide. Nothing happens behind the caller's back. A reviewer can read a function and see every path out of it, which is the property a hidden-control-flow mechanism like exceptions takes away.
+Python works like the fire alarm. When something fails, it **raises an exception**: the error jumps up through every function that was waiting on the answer until some `except` catches it, and if nothing does, the program prints a traceback and stops. C++ has the same machinery — `throw`, `try`, `catch` — and its standard library uses it. `std::vector::at` throws on a bad index. `new` throws when memory runs out. `std::stoi` throws on text that is not a number.
 
-Two of the Power of Ten rules you will meet in full in the next lesson live here: check the return value of every non-void function, and put at least two assertions in every function. Both are unenforceable with exceptions and natural without them.
+And yet almost every flight software project switches exceptions off. This lesson explains why, and then teaches the second kitchen: **errors as values**. A sensor timeout, a failed checksum, a command out of range are ordinary outcomes. They are returned the way any other result is returned, checked at every call, and handled by whichever caller has the context to decide. Nothing happens behind the caller's back. A reviewer can read a function and see every path out of it.
+
+Two of the Power of Ten rules from NASA's Jet Propulsion Laboratory live here: check the return value of every function that returns one, and put at least two assertions in every function. You will read all ten rules in the next lesson. Both of these are impossible to enforce with exceptions and natural without them.
 
 ## What exceptions are, and why flight code turns them off
 
-`throw obj;` creates an exception object and starts *unwinding*: the run-time walks back up the call stack, running the destructor of every local along the way (which is why RAII and exceptions were designed together), until it finds a `catch` whose type matches. Modern compilers implement this with a "zero-cost" model: the non-throwing path pays nothing, and the throwing path pays for everything by consulting tables that describe each function's frame.
+`throw obj;` creates an **exception object** and starts **[[unwinding|unwinding-picture]]**. The run-time walks back up the chain of waiting functions — the **call stack** — running the destructor of every local object on the way. (That is why RAII and exceptions were designed together.) It stops at the first `catch` whose type matches. Modern compilers use a "zero-cost" design: the normal path pays nothing, and the throwing path pays for everything by searching tables that describe each function.
 
-That model is precisely the problem for a hard-real-time system.
+That design is exactly the problem for a **hard-real-time** system — one where every cycle must finish before a deadline, every time.
 
-1. **Unbounded, unanalysable time.** The unwinder's running time depends on how deep the stack is, how many destructors run, and which tables it must search. There is no worst-case number to give a scheduler.
-2. **Hidden control flow.** Any call may not return. A reviewer reading `angle += rate * dt;` cannot see that `rate` came from a function that might have thrown three frames down, and there is no way to enforce "check every error" when the errors bypass the call site.
-3. **Memory and code size.** The exception object is allocated by the run-time (in libstdc++, through the heap with an emergency pool), and the unwind tables add to the binary.
-4. **Toolchain support.** Compilers for flight processors and the real-time operating systems they run on have historically supported exceptions poorly or not at all.
+1. **Unbounded, unanalysable time.** How long unwinding takes depends on how deep the stack is, how many destructors run, and which tables must be searched. There is no worst-case number to hand to the scheduler.
+2. **Hidden control flow.** Any call might not return. A reviewer reading `angle += rate * dt;` cannot see that `rate` came from a function that might have thrown three levels down. There is no way to enforce "check every error" when errors skip right past the place they would be checked.
+3. **Memory and code size.** The run-time allocates the exception object (in the GNU library, from the heap, with an emergency pool as a fallback), and the unwind tables make the program bigger.
+4. **Toolchain support.** The **[[toolchains|toolchain]]** for flight processors, and the real-time operating systems they run, have often supported exceptions poorly or not at all.
 
-The compiler flag is `-fno-exceptions`. With it, a `throw` in your own code is a compile error — `error: exception handling disabled, use '-fexceptions' to enable` — and library code that would have thrown calls `std::terminate` instead, which aborts the program:
+The compiler flag is `-fno-exceptions`. With it, a `throw` in your own code does not build: `error: exception handling disabled, use '-fexceptions' to enable`. Library code that throws still throws, but nothing can ever catch it, so the program calls `std::terminate` and aborts:
+
+```cpp
+#include <array>
+#include <cstdio>
+
+int main(int argc, char**) {
+  std::array<int, 4> a{1, 2, 3, 4};
+  const std::size_t i = 5 + static_cast<std::size_t>(argc);   // 6 when run with no arguments
+  std::printf("about to index %zu\n", i);
+  std::fflush(stdout);
+  return a.at(i);                                             // checked access: throws
+}
+```
 
 ```text
 $ g++ -std=c++20 -fno-exceptions noexc.cpp -o noexc && ./noexc
 about to index 6
 terminate called after throwing an instance of 'std::out_of_range'
   what():  array::at: __n (which is 6) >= _Nm (which is 4)
+Aborted
 ```
 
-Read that carefully. The bad index did not become a recoverable error; it became a crash. Under `-fno-exceptions` every throwing operation in the standard library is a latent abort, so flight code does not call them with inputs it has not already validated: `[]` after your own bounds check instead of `.at()`, a checked accessor of your own instead of `std::optional::value()`, no `std::stoi`. Exceptions remain the right tool in the code around the flight software — ground tooling, the simulation harness, the pybind11 layer that turns C++ errors into Python exceptions, the tests — and you will use `try`/`catch` there without apology.
+Read that carefully. The bad index did not become an error the program could recover from. It became a crash. With `-fno-exceptions`, every throwing call in the standard library is a hidden abort waiting for a bad input. So flight code does not call them with inputs it has not already checked: `[]` after its own bounds check instead of `.at()`, its own checked accessor instead of `std::optional::value()`, and no `std::stoi`.
+
+Exceptions remain the right tool in the code *around* the flight software — ground tools, the simulation harness, the tests, and the pybind11 layer that turns C++ errors into Python exceptions. Use `try` and `catch` there without apology.
 
 ::: key
 Flight code compiles with `-fno-exceptions` because unwinding has no bounded worst-case time, because exceptions hide control flow so that no reviewer can verify that every error is checked, and because they cost memory and toolchain support. With the flag set, library code that would throw terminates the program instead, so validate before you call anything that can throw.
@@ -40,7 +58,12 @@ Flight code compiles with `-fno-exceptions` because unwinding has no bounded wor
 
 ## Errors as values: status codes
 
-The plainest replacement is an enumeration returned from every function that can fail, with the actual result delivered through a reference parameter. Two attributes make the pattern safe. `[[nodiscard]]` on the return type makes the compiler warn wherever a caller drops the status, and `-Werror` turns that warning into a build failure — so the Power of Ten rule "check every return value" is enforced by the toolchain rather than by review. And an `enum class` with a fixed underlying type gives a status that packs into a telemetry word.
+The plainest replacement is the head chef's note. Every function that can fail returns a small code saying how it went, and hands its actual result back through a reference parameter. The codes live in an **enumeration** — a type whose values are a fixed list of names.
+
+Two touches make the pattern safe.
+
+- **`[[nodiscard]]`** on the function is an **[[attribute|attribute-brackets]]** — a note to the compiler — that says "warn anyone who ignores what I return". Add `-Werror`, which turns every warning into a build failure, and the Power of Ten rule "check every return value" is enforced by the tools instead of by a tired reviewer.
+- An `enum class` with a fixed underlying type, such as `std::uint8_t`, gives a status that is one byte and packs neatly into a telemetry word.
 
 ::: example A status enumeration, propagated by early return
 ```cpp
@@ -100,18 +123,34 @@ int main() {
 // 3 faults, last good angle held
 ```
 
-Every path is visible. `update_attitude` checks `read_gyro`'s status, returns it unchanged if it is not `Ok`, and only then touches the angle — so a failed read leaves the estimate exactly where it was, the "hold last good value" behaviour a control loop wants during a one-cycle dropout. The caller counts faults and could equally switch to a redundant gyro after three in a row. Delete the check in `main` and the compiler says:
+Walk through it. The fake gyro drops out whenever `cycle % 7 == 3` — the remainder after dividing by 7 is 3 — which happens at cycle 3. Its rate is $0.01 \times \text{cycle}$ rad/s, and anything above $0.05$ counts as out of range, which happens from cycle 6 on.
+
+`update_attitude` checks `read_gyro`'s status. If it is not `Ok`, it hands the same status straight back and never touches the angle. Only on success does it add $\text{rate} \times dt$. Check cycle 4: the rate is $0.04$ rad/s, times $dt = 0.1$ s is $0.004$ rad, and $0.0030 + 0.004 = 0.0070$. That matches.
+
+So a failed read leaves the estimate exactly where it was. That is the **[[hold last good value|hold-last-good]]** behaviour a control loop wants during a one-cycle dropout. The caller counts faults, and could equally switch to a **[[redundant gyro|redundant-sensors]]** after three in a row.
+
+Every path is visible. Now try to cheat: call `update_attitude(cycle, 0.1, angle);` as a bare statement, throwing the status away. The compiler says
 
 ```text
-warning: ignoring return value of 'Status arm_igniter()', declared with attribute 'nodiscard' [-Wunused-result]
+warning: ignoring return value of 'Status update_attitude(int, double, double&)', declared with attribute 'nodiscard' [-Wunused-result]
 ```
 
-which `-Werror` makes a build failure. Note also `to_string(s).data()`: `printf` needs a C string, and a `std::string_view` of a literal provides one.
+and `-Werror` makes that a failed build. One small detail: `to_string(s).data()` is there because `printf` wants a C-style string, and a `std::string_view` of a string literal can provide one.
 :::
 
 ## std::optional: a value or nothing
 
-Some functions have no result without anything having gone *wrong*. A GPS receiver with three satellites has no fix. A table lookup outside the table has no entry. `std::find` may find nothing. For these, `std::optional` holds either a value or `std::nullopt`, in place, with no heap: `sizeof` a `std::optional` of `double` is 16 bytes, the value plus a flag. `has_value()` or a test in boolean context asks whether a value is present; `*` and `->` reach it; `value_or(fallback)` gives a default. The one member to avoid in flight code is `.value()`, which throws when empty — and under `-fno-exceptions`, terminates.
+Some functions have no answer without anything having gone *wrong*. Ask a friend for the time when they are not wearing a watch: nothing is broken, but they have nothing to tell you. A GPS receiver that can see only three satellites has no position fix. A table lookup outside the table has no entry.
+
+For these, **`std::optional`** holds either a value or the marker `std::nullopt`, meaning "nothing". It stores the value in place, with no heap: `sizeof` a `std::optional` of `double` is 16 bytes — the 8-byte value, a flag saying whether it is there, and padding.
+
+The parts you use:
+
+- `has_value()`, or testing it like a `bool`, asks whether a value is there;
+- `*` and `->` reach the value;
+- `value_or(fallback)` gives the value, or a default you choose.
+
+The one to avoid in flight code is `.value()`. It throws when the optional is empty — and under `-fno-exceptions` it terminates.
 
 ::: example Absent, but not an error
 ```cpp
@@ -162,12 +201,22 @@ int main() {
 // sizeof(std::optional<double>) = 16
 ```
 
-The `if (const auto fix = latest_fix(sats); fix.has_value())` form declares the optional and tests it in one statement, so the name `fix` exists only where it is known to hold something. `value_or(0.0)` supplies a fallback density where there is none — a choice the caller makes explicitly, in view, rather than a silent zero from an uninitialised variable. Between 0 and 10 km the interpolation gives $1.225 + 0.5 \times (0.4135 - 1.225) = 0.819\,\mathrm{kg/m^3}$ at 5 km.
+A GPS receiver needs at least four satellites to solve for its three position coordinates and its clock error, so three satellites give `std::nullopt`. The line `if (const auto fix = latest_fix(sats); fix.has_value())` declares the optional and tests it in one statement. The name `fix` then exists only inside the branch where it is known to hold something.
+
+The density table holds air density every 10 km from the standard atmosphere. At 5 km the code interpolates halfway between the first two entries:
+
+$$
+1.225 + 0.5 \times (0.4135 - 1.225) = 0.819\,\mathrm{kg/m^3} .
+$$
+
+That is roughly two-thirds of sea-level density, sensible for the height of a tall mountain. At 55 km there is no entry, and `value_or(0.0)` supplies a fallback. The caller makes that choice openly, in view — not a silent zero from a variable nobody set.
 :::
 
 ## A Result type: a value or the reason there is none
 
-When the caller must know *why* a value is missing — which of several checks a telemetry packet failed — `std::optional` is not enough. C++23 adds `std::expected` for exactly this, holding either a value or an error; in C++20 you write a small equivalent over `std::variant`, which stores one of a fixed set of types in place. The shape is the same as `optional` with an error attached, and propagation is one line: if the callee's result is not ok, return its error.
+Sometimes "nothing" is not enough. If a telemetry packet is rejected, the caller wants to know *why*: wrong length, bad checksum, or a reading out of range? Each means something different about the radio link or the sensor.
+
+C++23 adds `std::expected` for this: it holds either a value or an error. In C++20 you write a small equivalent on top of **`std::variant`**, a type that stores exactly one of a fixed list of types **[[in place|variant-in-place]]**. The result works like `optional` with a reason attached, and passing an error upward is one line: if the result is not OK, return its error.
 
 ::: example Decoding a packet through a chain of checks
 ```cpp
@@ -240,7 +289,11 @@ int main() {
 // sizeof(Result<double>) = 16
 ```
 
-`0x2710` is 10 000, so the good packet decodes to 10.000 bar; its checksum `0x37` is the byte sum $0x10 + 0x27$. `tank_pressure_bar` neither knows nor cares which check `decode` failed — it forwards the `Error` — and `main` is the level with the context to print it, or in flight to log it and mark the sensor suspect. `std::get` on the wrong alternative throws, which is why `value()` and `error()` document their preconditions and callers test `ok()` first; a flight version would assert those preconditions with the mechanism in the next section.
+Check the good packet by hand. Its four payload bytes are stored lowest byte first, so the value is $0x2710$, and $0x2710 = 2 \times 4096 + 7 \times 256 + 1 \times 16 = 10\,000$. At 1 mbar per count that is $10.000$ bar. Its checksum is the byte sum $0x10 + 0x27 = 0x37$, which matches. The "corrupt" packet carries $0x38$ instead, so it fails. The "huge" packet decodes to $0x100000 = 1\,048\,576$ mbar, about $1049$ bar, which is over the 400 bar limit.
+
+Notice the division of labour. `tank_pressure_bar` neither knows nor cares which check `decode` failed; it forwards the `Error`. `main` is the level with the context to print it — or, in flight, to log it and mark the sensor suspect.
+
+`std::get` on the wrong alternative throws. That is why `value()` and `error()` state their preconditions and callers test `ok()` first. A flight version would check those preconditions with the kind of assertion in the next section.
 :::
 
 ::: key
@@ -249,9 +302,14 @@ Errors are values. A `[[nodiscard]]` status enumeration, with `-Werror`, enforce
 
 ## Assertions that record instead of crash
 
-Status codes are for failures you *expect* — a sensor will time out sooner or later. Assertions are for conditions that should be impossible if the code is correct: a negative time step, a covariance that is not symmetric, a mode index outside the enumeration. The standard `assert` from `cassert` prints a message and aborts when its condition is false, and is removed entirely when the program is compiled with `-DNDEBUG`. Both properties are wrong for flight. A crash in flight is the worst possible response to a bad value, and the flight build *is* the optimised build, so an assertion that disappears under `NDEBUG` protects only the developer's laptop.
+Status codes are for failures you *expect*. A sensor will time out sooner or later. **Assertions** are for things that should be impossible if the code is right: a negative time step, a covariance matrix that is not symmetric, a mode number outside the list of modes. An assertion states "this must be true here" and checks it.
 
-Flight projects therefore define their own assertion, which is the one preprocessor macro every coding standard permits. It never compiles out. When it fires, it records the fault — a counter, the failed expression, the line — for telemetry and for the fault manager, and it lets the function continue with a safe value so that the loop meets its deadline and the vehicle keeps flying while a higher level decides what to do.
+The standard `assert`, from the `cassert` header, prints a message and aborts when its condition is false. It is also removed completely when the program is compiled with `-DNDEBUG` ("no debug"). Both of those are wrong for flight:
+
+- A crash in flight is the worst possible response to one bad value. **[[Ariane 5's first flight|ariane-501]]** was lost that way.
+- The flight build *is* the optimised build, where `NDEBUG` is usually defined. An assertion that vanishes there protects only the developer's laptop.
+
+So flight projects define their own assertion, as a macro — the one use of the preprocessor every flight coding standard allows. It never compiles out. When it fires, it *records* the fault — a counter, the failed expression, the line number — for telemetry and for the fault manager. Then it lets the function carry on with a safe value, so the loop meets its deadline and the vehicle keeps flying while a higher level decides what to do.
 
 ::: example A flight-style assertion beside the standard one
 ```cpp
@@ -286,12 +344,12 @@ int main() {
   std::printf("reached the end (so NDEBUG was defined)\n");
   return 0;
 }
-// Output, built with -O2:
+// Output in a terminal, built with -O2:
 // cmd = 0.40
 // cmd = 1.70
 // faults = 2, last = "cmd >= min_frac && cmd <= 1.0" at line 19
-// fswassert: fswassert.cpp:28: int main(): Assertion `g_faults.count == 0 && "..."' failed.
-// (aborted)
+// fswassert: fswassert.cpp:28: int main(): Assertion `g_faults.count == 0 && "standard assert: aborts unless compiled with -DNDEBUG"' failed.
+// Aborted
 //
 // Output, built with -O2 -DNDEBUG:
 // cmd = 0.40
@@ -300,10 +358,16 @@ int main() {
 // reached the end (so NDEBUG was defined)
 ```
 
-The second call violates a precondition (a 170 % throttle demand), and the postcondition catches the consequence too — two faults recorded, the function still returned, the program still ran. The `#cond` in the macro turns the expression into a string so that telemetry can name the check that failed. Then the standard `assert` shows its two faces: in the plain build it aborts the program on a condition that is merely a recorded fault, and with `-DNDEBUG` it vanishes and the program runs to the end. Neither behaviour belongs on a vehicle. Note also that a real `throttle_command` would *saturate* the bad demand to a legal value after recording the fault rather than return 1.70; the example leaves the value alone so that the postcondition has something to catch.
+The function has three assertions: two **preconditions** (what must be true on the way in) and one **postcondition** (what must be true on the way out). The first call asks for 30 % throttle with a 40 % minimum, so the command is raised to 0.40 and every check passes.
+
+The second call asks for 170 % throttle — impossible. The precondition on `demand_frac` fires. The command stays 1.70, so the postcondition `cmd <= 1.0` fires too. Two faults are recorded, the function still returned, and the program still ran. The `#cond` in the macro turns the checked expression into text, so telemetry can name exactly which check failed. (The **[[do and while wrapper|macro-wrapper]]** around the macro body is a standard trick that makes it behave like one statement.)
+
+Then the standard `assert` shows its two faces. In the plain build it aborts the whole program over a condition that was only a recorded fault. With `-DNDEBUG` it vanishes and the program runs to the end. Neither belongs on a vehicle.
+
+One honest note: a real `throttle_command` would **saturate** the bad demand — clamp it to the legal range — after recording the fault, instead of returning 1.70. The example leaves the value alone so that the postcondition has something to catch.
 :::
 
-The Power of Ten asks for at least two assertions per function, checking preconditions, postconditions and invariants; asks that assertions be free of side effects; and asks that every assertion failure have an explicit recovery action. The fault log above is the recording half of that; the recovery half is a fault manager that reads it and, for example, switches to a redundant sensor, saturates a command, or commands a safe mode. What it never does is `abort()`.
+The Power of Ten asks for at least two assertions per function, checking preconditions, postconditions and **invariants** (promises that must always hold). It asks that assertions have no side effects — they must only look, never change anything. And it asks that every assertion failure have an explicit recovery action. The fault log above is the recording half. The recovery half is a fault manager that reads the log and, for example, switches to a redundant sensor, saturates a command, or commands **[[safe mode|safe-mode]]**. What it never does is `abort()`.
 
 ::: warning
 Under `-fno-exceptions`, `std::optional::value()`, `std::vector::at()`, `std::get` on the wrong `variant` alternative and `std::stoi` on bad text all terminate the program. Test before you take: `has_value()` then `*`, a bounds check then `[]`, `ok()` then `value()`. In tooling code that compiles with exceptions, the same calls throw and are fine.
@@ -330,7 +394,9 @@ Under `-fno-exceptions`, what happens when `std::vector::at` is called with an o
 :::
 
 ::: answer
-With exceptions disabled the library cannot throw `std::out_of_range`, so it calls `std::terminate`, which aborts the program — the message `terminate called after throwing an instance of 'std::out_of_range'` appears and the process dies. A recoverable error has become a crash. Flight code checks the index itself, `if (i < v.size())`, and then indexes with `[]`; the failed check becomes a status code or a recorded fault that the caller handles, and nothing can terminate the loop.
+The library throws `std::out_of_range`, but with exceptions disabled nothing can catch it, so `std::terminate` runs and the program aborts. The message `terminate called after throwing an instance of 'std::out_of_range'` appears and the process dies. A recoverable error has become a crash.
+
+Flight code checks the index itself, `if (i < v.size())`, and only then uses `[]`. The failed check becomes a status code or a recorded fault that the caller handles, and nothing can end the loop.
 :::
 
 ::: check
@@ -338,7 +404,9 @@ A GPS receiver reports no fix; a telemetry packet fails its checksum. Which type
 :::
 
 ::: answer
-`latest_fix` returns `std::optional` of a fix: with too few satellites there is legitimately nothing to report, no reason needs attaching, and the caller's response — hold the last estimate — does not depend on why. `decode` returns a `Result` with an error enumeration: a packet can fail for several distinct reasons (length, checksum, range), the caller needs to know which one to log it, count it against the right fault, or decide whether to trust the link, and `optional` cannot carry that distinction.
+`latest_fix` returns a `std::optional` of a fix. With too few satellites there is legitimately nothing to report. No reason needs to be attached, and the caller's response — hold the last estimate — does not depend on why.
+
+`decode` returns a `Result` with an error enumeration. A packet can fail for several different reasons (length, checksum, range). The caller needs to know which, to log it, count it against the right fault, or decide whether to trust the link. An `optional` cannot carry that difference.
 :::
 
 ::: check
@@ -346,7 +414,11 @@ Give the two reasons exceptions are excluded from a hard-real-time control loop,
 :::
 
 ::: answer
-First, unwinding has no bounded worst-case time: it walks tables and runs destructors up the stack, and the time depends on the depth and the types involved, so the loop's deadline cannot be proven. Second, exceptions hide control flow: any call may fail to return, so a reviewer cannot see the error paths. The return-value rule depends on errors coming back *to the call site*, where they can be checked and their handling reviewed; an exception bypasses the call site entirely, which is why the rule and the mechanism cannot coexist.
+First, unwinding has no bounded worst-case time. It searches tables and runs destructors up the stack, and the time depends on the depth and the types involved, so nobody can prove the loop meets its deadline.
+
+Second, exceptions hide control flow. Any call may fail to return, so a reviewer cannot see the error paths.
+
+The return-value rule depends on errors coming back *to the call site*, where they can be checked and where their handling can be reviewed. An exception skips the call site entirely. That is why the rule and the mechanism cannot live together.
 :::
 
 ::: check
@@ -354,7 +426,9 @@ A function checks one precondition with the standard `assert`. Name three things
 :::
 
 ::: answer
-It would use the project's flight assertion macro, which is never compiled out by `NDEBUG`, so the check exists in the flight build. It would record the failure — count, expression, line — rather than abort, and continue with a safe value so that the loop completes. And it would not be alone: the rule asks for at least two assertions per function, typically a precondition and a postcondition or an invariant, each free of side effects and each with an explicit recovery action defined for the case where it fires.
+1. Use the project's flight assertion macro, which `NDEBUG` never removes, so the check exists in the flight build.
+2. Record the failure — count, expression, line — instead of aborting, and carry on with a safe value so the loop completes.
+3. Do not leave it alone. The rule asks for at least two assertions per function, typically a precondition and a postcondition or invariant, each free of side effects and each with an explicit recovery action for when it fires.
 :::
 
 ::: check
@@ -362,7 +436,9 @@ It would use the project's flight assertion macro, which is never compiled out b
 :::
 
 ::: answer
-The compiler emits `warning: ignoring return value of 'Status arm_igniter()', declared with attribute 'nodiscard' [-Wunused-result]`, and `-Werror` promotes it to an error, so the code does not build. The toolchain is enforcing the Power of Ten rule that the return value of every non-void function is checked. The fix is to receive the status and act on it — `if (const Status s = arm_igniter(); s != Status::Ok) { ... }` — never to cast the result to `void` to silence the warning, which would defeat the purpose of marking the function in the first place.
+The compiler warns `ignoring return value of 'Status arm_igniter()', declared with attribute 'nodiscard' [-Wunused-result]`, and `-Werror` turns the warning into an error, so the code does not build.
+
+The toolchain is enforcing the Power of Ten rule that the return value of every non-void function is checked. The fix is to receive the status and act on it — `if (const Status s = arm_igniter(); s != Status::Ok) { ... }`. Never cast the result to `void` to silence the warning: that defeats the reason the function was marked in the first place.
 :::
 
 ## Summary
@@ -381,3 +457,92 @@ The compiler emits `warning: ignoring return value of 'Status arm_igniter()', de
 | exceptions belong in | tooling, simulation harness, tests, the pybind11 layer |
 
 The next lesson collects the remaining rules of the hot loop — where memory lives, how the cache sees it, and why nothing in the loop may allocate — and reads the Power of Ten in full.
+
+::: context unwinding-picture Climbing back up the stack
+Each function that calls another waits on a pile, like trays stacked in a cafeteria. When the deepest one throws, the run-time lifts trays off one by one, cleaning up each function's local objects, until it reaches a function with a matching `catch`. How many trays, and how much cleaning, depends on the program's state at that moment — so the time cannot be known in advance.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 170" font-family="Inter, Arial, sans-serif">
+  <rect x="30" y="20" width="180" height="28" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="120" y="39" font-size="12" text-anchor="middle" fill="#1f2a44">control_loop()  catch</text>
+  <rect x="30" y="52" width="180" height="28" fill="#fff" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="120" y="71" font-size="12" text-anchor="middle" fill="#1f2a44">update_attitude()</text>
+  <rect x="30" y="84" width="180" height="28" fill="#fff" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="120" y="103" font-size="12" text-anchor="middle" fill="#1f2a44">read_gyro()</text>
+  <rect x="30" y="116" width="180" height="28" fill="#f2b880" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="120" y="135" font-size="12" text-anchor="middle" fill="#1f2a44">parse_frame()  throw</text>
+  <line x1="240" y1="130" x2="240" y2="44" stroke="#b4232c" stroke-width="2.5"/>
+  <polygon points="240,36 234,48 246,48" fill="#b4232c"/>
+  <text x="252" y="80" font-size="11" fill="#b4232c">unwind:</text>
+  <text x="252" y="95" font-size="11" fill="#b4232c">run each</text>
+  <text x="252" y="110" font-size="11" fill="#b4232c">destructor</text>
+  <text x="120" y="162" font-size="11" text-anchor="middle" fill="#6c7a93">deepest call at the bottom</text>
+</svg>
+```
+:::
+
+::: context toolchain What a toolchain is
+A toolchain is the set of programs that turn source code into something a particular processor can run: the compiler, the assembler, the linker, and the standard library that comes with them. A laptop's toolchain targets its own chip. Flight computers often use radiation-tolerant processors, such as the LEON and PowerPC-based chips in many spacecraft, with their own toolchains — sometimes qualified for safety-critical use, often years behind the newest compilers, and sometimes shipped with only a reduced C++ library.
+:::
+
+::: context attribute-brackets The double square brackets
+`[[nodiscard]]` is a C++ **attribute**: extra information for the compiler, written in double square brackets, that does not change what the code computes. Others you may meet are `[[maybe_unused]]` (stop warning that this variable is unused), `[[fallthrough]]` (yes, this `switch` case falls into the next one on purpose) and `[[likely]]`. Since C++20 you can add a reason: `[[nodiscard("check the igniter status")]]`, and the reason appears in the warning.
+:::
+
+::: context hold-last-good Why freezing for one cycle is fine
+A control loop running at 100 Hz sees the vehicle move very little in 10 milliseconds. If one gyro reading is missing, using the previous estimate for one more cycle costs almost nothing — the attitude error grows by the rate times one time step. What would be dangerous is feeding in a zero or a garbage value, which the controller would treat as real. The risk grows the longer the hold lasts, which is why flight code counts consecutive faults and acts when the count passes a limit.
+:::
+
+::: context redundant-sensors Three gyros and a vote
+Flight vehicles often carry three or more copies of an important sensor. Each cycle the software compares them. If two agree and one is far off, the odd one out is voted off and ignored. With only two, you can tell something is wrong but not which one; with three, a majority can decide. Many launch vehicles carry redundant inertial units for exactly this reason.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 140" font-family="Inter, Arial, sans-serif">
+  <rect x="20" y="15" width="90" height="28" rx="5" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="65" y="34" font-size="12" text-anchor="middle" fill="#1f2a44">gyro A 0.040</text>
+  <rect x="20" y="56" width="90" height="28" rx="5" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="65" y="75" font-size="12" text-anchor="middle" fill="#1f2a44">gyro B 0.041</text>
+  <rect x="20" y="97" width="90" height="28" rx="5" fill="#f2b880" stroke="#b4232c" stroke-width="2"/>
+  <text x="65" y="116" font-size="12" text-anchor="middle" fill="#1f2a44">gyro C 0.900</text>
+  <line x1="110" y1="29" x2="195" y2="66" stroke="#1f2a44" stroke-width="1.5"/>
+  <line x1="110" y1="70" x2="195" y2="70" stroke="#1f2a44" stroke-width="1.5"/>
+  <line x1="110" y1="111" x2="195" y2="74" stroke="#b4232c" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <rect x="195" y="52" width="60" height="36" rx="6" fill="#fff" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="225" y="75" font-size="12" text-anchor="middle" fill="#1f2a44">vote</text>
+  <line x1="255" y1="70" x2="290" y2="70" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="322" y="66" font-size="12" text-anchor="middle" fill="#1d6fd1">use</text>
+  <text x="322" y="80" font-size="12" text-anchor="middle" fill="#1d6fd1">A and B</text>
+  <text x="200" y="120" font-size="11" fill="#b4232c">C voted out</text>
+</svg>
+```
+:::
+
+::: context variant-in-place One box, two possible contents
+A `std::variant<double, Error>` reserves one space big enough for the larger choice, plus a small tag saying which choice is stored right now. No heap, no pointer: the whole thing is one block of 16 bytes here. `std::holds_alternative` reads the tag; `std::get` reads the contents after checking the tag.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 120" font-family="Inter, Arial, sans-serif">
+  <rect x="20" y="30" width="160" height="34" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="100" y="52" font-size="12" text-anchor="middle" fill="#1f2a44">8 bytes: double or Error</text>
+  <rect x="180" y="30" width="20" height="34" fill="#f2b880" stroke="#1f2a44" stroke-width="1.5"/>
+  <text x="190" y="52" font-size="11" text-anchor="middle" fill="#1f2a44">t</text>
+  <rect x="200" y="30" width="140" height="34" fill="#fff" stroke="#6c7a93" stroke-width="1" stroke-dasharray="4 3"/>
+  <text x="270" y="52" font-size="11" text-anchor="middle" fill="#6c7a93">padding</text>
+  <text x="20" y="20" font-size="11" fill="#1f2a44">0</text>
+  <text x="340" y="20" font-size="11" text-anchor="end" fill="#1f2a44">16 bytes</text>
+  <text x="180" y="95" font-size="11" text-anchor="middle" fill="#1f2a44">t = 1-byte tag: 0 means a value, 1 means an error</text>
+</svg>
+```
+:::
+
+::: context ariane-501 The rocket that crashed on an exception
+On 4 June 1996, about 37 seconds after lift-off, the first Ariane 5 veered off course and broke up. Inside each of its two inertial reference units, a conversion of a 64-bit floating-point value into a 16-bit integer overflowed — the rocket was faster sideways than the Ariane 4 the code was written for. The Ada run-time raised an exception nobody handled, and the policy for an unhandled exception was to shut the unit down. Both units failed the same way. The flight computer then read diagnostic data as if it were attitude data and swung the nozzles hard over. The code that failed was an alignment routine with no job to do after lift-off.
+:::
+
+::: context macro-wrapper Why do { ... } while (false)
+A macro is pasted into the code as text before compiling. If its body were a bare `if (...) { ... }`, then writing `if (x) FSW_ASSERT(y); else ...` would glue the `else` onto the macro's hidden `if` instead of yours. Wrapping the body in `do { ... } while (false)` makes the whole thing one statement that needs its own semicolon, and runs it exactly once. It is a decades-old C idiom.
+:::
+
+::: context safe-mode What a spacecraft does in safe mode
+Safe mode is the "stop and wait for help" state. A spacecraft that detects a fault it cannot fix on its own turns off anything non-essential, points its solar panels at the Sun so it keeps power, points an antenna toward Earth, and waits for the ground team to work out what happened. It is designed to be reachable from almost any failure and to keep the vehicle alive for days or weeks. Launch vehicles, which cannot pause, use abort modes instead.
+:::

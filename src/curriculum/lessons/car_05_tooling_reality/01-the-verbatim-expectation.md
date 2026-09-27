@@ -1,79 +1,140 @@
 ---
 id: l01-the-verbatim-expectation
 title: "The verbatim expectation: you write the flight code"
-minutes: 19
+minutes: 21
 covers:
   - "the verbatim expectation: implementation, validation, unit testing, and deployment of production software primarily in C++"
   - GNC engineers write flight code themselves rather than handing prototypes to a software team
 ---
 
-A GNC curriculum built from textbooks teaches you to derive a control law, prove it stable, and simulate it until the numbers look right. That is real and necessary work, and it is also not the job. The job, as postings in this field describe it with unusual consistency, is implementation, validation, unit testing, and deployment of production software, primarily in C++ — four specific, named activities, not one. Read that phrase again slowly, because it is doing more work than it looks like it is doing: it is telling you, in the plainest language a hiring process ever uses, that the person who derives the guidance law is the same person who ships it, tests it, and watches it run on real hardware.
+Imagine you design a new kind of paper airplane. You work out on paper why it should glide far. That is a good start. But nobody gives you credit until you have folded it, thrown it a dozen times, written down what happened, and handed it to a friend who can fold the same plane from your instructions. The idea on paper and the plane that flies are two different jobs, and in this field the same person does both.
 
-This lesson exists to close a gap that catches almost everyone studying alone: the gap between "I can derive this" and "I can be trusted to ship this." Nobody sets out to skip the second half. It happens by default, because a self-study plan naturally optimizes for what is easy to check — does the trajectory look right, does the Bode plot have the expected margins — and the four verbs above are exactly the part that is hard to check yourself, so they quietly fall out of the plan. The rest of this module is about what fills that gap in an actual working week. This lesson is about the plainest fact underneath all of it: nobody hands your work to someone else to make real.
+A course built from textbooks teaches you to work out a **control law** — the rule that turns "where the rocket is" into "how to steer it" — prove it is stable, and simulate it until the numbers look right. That is real and necessary work. It is also not the whole job. Job [[postings|job-postings]] for **GNC** engineers (GNC is guidance, navigation and control, said letter by letter, "G-N-C") describe the job with unusual consistency, in one phrase: *implementation, validation, unit testing, and deployment of production software, primarily in C++*. **C++** is a programming language, said "see plus plus". **Production software** is code that runs for real, on the real vehicle, rather than code written to try an idea once.
 
-## The four verbs, and what each one actually costs
+Read that phrase again slowly. It names four separate activities, not one. And it tells you, in the plainest words a hiring process ever uses, that the person who works out the guidance law is the same person who writes it as flight code, tests it, and watches it run on real hardware.
 
-"Implementation" means the algorithm exists as a function with a name, a signature, and defined behavior at its edges — not as a cell in a notebook that only works if you run the cells above it in the right order. It has a unit system, a stated valid input range, and a return value for the cases you did not want to think about (a negative mass, a not-a-number sensor reading, an angle wrapped the wrong way). Writing this version takes longer than writing the version that only has to work once, for you, today, and that difference in time is the single biggest gap between coursework practice and the job.
+This lesson closes a gap that catches almost everyone who studies alone: the gap between "I can derive this" and "I can be trusted to ship this". Nobody skips the second half on purpose. A self-study plan drifts toward what is easy to check alone — does the plot look right? — and the four activities are exactly the part that is hard to check alone, so they quietly fall out.
 
-"Validation" means showing the implementation is checked against something independent of itself: a hand-worked case with a known answer, a conservation law that has to hold regardless of the details, a comparison against a trusted existing result. A function that has only ever been checked by reading its own source code and deciding it looks right has not been validated — it has been proofread, which catches typos and catches almost nothing else, because the author's mental model of what the code does and what the code actually does share the same blind spots.
+## The four verbs, one at a time
 
-"Unit testing" means small, automated, specific checks that run in seconds and that somebody — often not the original author — runs before trusting a change. A unit test is not the same thing as validation: validation asks whether the algorithm is right in general; a unit test pins down specific behavior at specific inputs so that if anybody, ever, changes that behavior without meaning to, something turns red immediately instead of six weeks later during a review of flight data. You will see this distinction sharpen considerably once regression suites enter the picture later in this module.
+Think of baking a cake for a bake sale. Writing the recipe is not the same as baking it, tasting it, and getting it safely to the sale table. Each step catches a different kind of problem. The four verbs work the same way.
 
-"Deployment" means the code is not finished when it passes on your machine. It has to build in the shared environment, pass the shared review, and actually run where it needs to run — which, for GNC work, eventually means a real flight computer with real timing constraints, not a laptop with a forgiving operating system doing whatever it wants with your process's scheduling.
+### Implementation
+
+**Implementation** means the algorithm exists as a real **function** — a named, reusable piece of code — with a clear list of inputs and outputs, and defined behavior at its edges. It is not a cell in a [[notebook|notebooks]] that only works if you run the cells above it in the right order.
+
+A real implementation has:
+
+- a stated unit system (meters? degrees? seconds?);
+- a stated range of inputs it is meant to handle;
+- an answer for the awkward cases you would rather not think about — a negative mass, a sensor reading that is "not a number", an angle wrapped the wrong way around.
+
+This version takes longer to write than one that only has to work once, for you, today. That extra time is the biggest difference between coursework and the job.
+
+### Validation
+
+**Validation** means checking the implementation against something *independent of itself*. That could be a case you worked out by hand with a known answer, a **conservation law** (a quantity such as energy that must stay the same whatever the details), or a comparison against a trusted result someone else produced.
+
+A function that has only been checked by its author reading the code and deciding it looks right has not been validated. It has been proofread. Proofreading catches typos and not much else, because what the author *thinks* the code does and what it *actually* does share the same blind spots.
+
+### Unit testing
+
+A **unit test** is a small, automatic check that feeds one piece of code specific inputs and confirms it gives specific outputs. It runs in seconds. Someone — often not the original author — runs the whole set before trusting any change.
+
+A unit test is not the same as validation. Validation asks, "Is this algorithm right in general?" A unit test pins down behavior at particular inputs, so that if anybody ever changes that behavior by accident, a check [[turns red|red-green]] immediately instead of six weeks later during a review of flight data. This difference sharpens later in the module, when groups of such tests, called regression suites, run on every change.
+
+### Deployment
+
+**Deployment** means the code is not finished when it passes on your laptop. It has to build in the team's shared setup, pass the team's review, and run where it actually needs to run. For GNC work, that eventually means a real **[[flight computer|flight-computer]]** with strict timing rules, not a laptop whose operating system schedules your program whenever it likes.
 
 ::: key
 The verbatim expectation names four activities, not one: implementation (a real function with defined edge behavior), validation (checked against something independent of itself), unit testing (specific automated checks that catch an unintended change), and deployment (running correctly in the shared, constrained target environment). A result that has only been implemented has done a quarter of the job.
 :::
 
-## Why the algorithm work and the flight-code work are not split across two people
+::: key
+SpaceX GNC production software is written primarily in C++. Postings describe implementation, validation, unit testing, and deployment of production software primarily in C++, with Python for analysis, tooling and pipelines.
+:::
 
-In some parts of the software industry, and in some corners of engineering generally, there is a real division between the person who works out what a system should do and the person who writes the production code that does it — a research team hands off a specification, or a working prototype, and a separate software engineering organization turns it into something deployable. It is a reasonable model in the right context, and it is worth naming explicitly because it is the model most people unconsciously assume, and GNC hiring in this field does not generally use it. The posting language above is direct about this: the same person derives the control law, writes the C++ that flies it, tests it, and is the one whose name is on the change when it goes to review.
+## One person, from derivation to flight
 
-The reason is not tradition; it is that a handoff at that boundary loses exactly the information a flight code reviewer most needs. The discretization step size, the units at every interface, which edge cases the physics actually allows and which ones are pure software paranoia, why the filter was tuned the way it was — none of that survives a handoff cleanly unless the person receiving it re-derives most of it anyway, at which point the handoff bought nothing but a delay and a second chance to introduce a translation error. Keeping implementation with derivation keeps that knowledge in one head, where it is available at review time and at 2 a.m. six months later when telemetry does something nobody predicted.
+In some kinds of software work there is a real split. One team works out what a system should do. A second team writes the production code that does it. The first team hands over a written specification, or a rough working version called a **prototype**, and the second team turns it into something that can ship. That is a reasonable model in the right setting. It is also the model most people assume without thinking — and GNC hiring in this field generally does not use it.
 
-This does not mean GNC engineers work alone. Code review, discussed later in this module, is exactly the mechanism that gets a second set of eyes onto the work without requiring a second team to reimplement it. And the pattern is not universal — a large, mature spacecraft bus platform maintained by a dedicated software organization, or a company where GNC algorithms genuinely are handed to a separate flight-software team, both exist in this industry, and which one you land in depends on the employer and the program. What is safe to treat as general is narrower and more useful than either extreme: in this field, expect to own your algorithm past the point where it is merely correct, through to the point where it is a tested, reviewable, deployable artifact, and do not build your practice around the assumption that someone else does that part for you.
+The posting language is direct. The same engineer derives the control law, writes the C++ that flies it, tests it, and is the one whose name is on the change when it goes to **code review** (other engineers reading the change before it is accepted).
+
+### Why not hand it off?
+
+The reason is not tradition. A handoff at that boundary loses exactly the information a reviewer of flight code most needs:
+
+- the step size used when the smooth math was turned into steps a computer can take;
+- the units at every connection between pieces of code;
+- which awkward inputs the physics can really produce, and which are only defensive worry;
+- why the filter was tuned the way it was.
+
+None of that survives a handoff unless the receiver re-derives most of it — and then the handoff bought only a delay and a second chance for a translation mistake. Keeping the code with the person who derived it keeps that knowledge in one head. It is there at review time, and it is there at [[2 a.m. six months later|two-am]] when telemetry — the stream of measurements the vehicle sends home — does something nobody predicted.
+
+::: key
+GNC engineers write the flight code. The postings describe GNC engineers owning implementation, validation, unit testing and deployment themselves, rather than prototyping an algorithm and handing it to a separate software organization.
+:::
+
+### Not alone, and not everywhere
+
+This does not mean GNC engineers work alone. Code review, covered later in this module, puts a second pair of eyes on the work without a second team rewriting it.
+
+And the pattern is not universal. Some large, mature spacecraft platforms are maintained by a dedicated software organization. Some companies genuinely hand GNC algorithms to a separate flight-software team. Which one you land in depends on the employer and the program. What is safe to treat as general is narrower and more useful: in this field, expect to own your algorithm past the point where it is merely correct, all the way to a tested, reviewable, deployable piece of software. Do not build your practice around the idea that someone else does that part.
 
 ::: example Turning a clamp into flight code
-A guidance routine computes a commanded gimbal deflection angle and needs to keep it inside the actuator's physical travel limit of six degrees either way. The quick, notebook version of this logic is a single inline expression: whatever the commanded angle works out to be, use it. That version has no name, no documented unit, and no behavior defined for what happens at the limit — it exists once, inline, wherever someone happened to need it.
+A guidance routine computes a commanded **gimbal** angle — how far to tilt the engine to steer. The engine can physically tilt at most $6$ degrees either way, so the command must be kept inside $-6$ to $+6$ degrees. Keeping a number inside limits like this is called **clamping**.
 
-The implemented version is a function with a contract:
+The quick notebook version is one line wherever someone needed it: use whatever angle came out. It has no name, no stated unit, and nothing defined for what happens at the limit.
+
+The implemented version is a function with a clear promise — a **contract**:
 
 ```python
 def clamp_command(angle_deg, limit_deg=6.0):
     return max(-limit_deg, min(limit_deg, angle_deg))
 ```
 
-Implementation alone gets you a function that runs. Validation and unit testing get you evidence about what it does at the values that matter — inside the limit, exactly at the limit, and past it on both sides:
+Read it from the inside out. `min(limit_deg, angle_deg)` keeps the smaller of $6$ and the command, so nothing goes above $+6$. Then `max(-limit_deg, ...)` keeps the larger of $-6$ and that result, so nothing goes below $-6$.
+
+Implementation gives you a function that runs. Testing gives you evidence about what it does at the values that matter: inside the limit, exactly at the limit, and past it on both sides.
 
 ```python
 tests = [4.0, 6.0, 9.4, -9.4]
 for cmd in tests:
     print(cmd, "->", clamp_command(cmd))
 # 4.0 -> 4.0      inside the limit, unchanged
-# 6.0 -> 6.0       exactly at the limit, unchanged
-# 9.4 -> 6.0       past the limit, correctly clamped
-# -9.4 -> -6.0      past the limit on the negative side, correctly clamped
+# 6.0 -> 6.0      exactly at the limit, unchanged
+# 9.4 -> 6.0      past the limit, clamped
+# -9.4 -> -6.0    past the limit on the negative side, clamped
 ```
 
-Compare that against a version with an easy, common mistake — clamping only the upper bound and forgetting the lower one:
+Now a version with an easy, common mistake — it clamps the top and forgets the bottom:
 
 ```python
 def clamp_command_buggy(angle_deg, limit_deg=6.0):
     return min(limit_deg, angle_deg)   # no lower bound at all
 
 print(clamp_command_buggy(-9.4))
-# -9.4      unclamped: a real command 3.4 degrees past the actuator's travel limit
+# -9.4   unclamped: 3.4 degrees past the actuator's travel limit
 ```
 
-`clamp_command_buggy` looks identical to the correct version on every test case where the commanded angle happens to be positive. A test suite that only ever tried positive commands would ship it. The boundary and negative-side cases in the test above are not decoration; they are the entire reason the test exists, and writing them down before trusting the function is the unit-testing half of the verbatim expectation in miniature.
+Check the size of the miss: $-9.4 - (-6.0) = -3.4$, so the command is $3.4$ degrees beyond what the engine can do.
+
+On every positive input, `clamp_command_buggy` gives exactly the same answer as the correct version. A test set that only tried positive commands would ship it. The negative and boundary cases are not decoration — they are the whole reason the test exists. Writing them down before trusting the function is the unit-testing part of the verbatim expectation in miniature.
 :::
 
 ## "It ran and printed a number" is not evidence
 
-The most common habit that self-study builds, and that this module exists partly to un-build, is treating a script that runs to completion and prints a plausible-looking number as if that were the same thing as a correct result. It is not, and the gap between the two is exactly where real defects live, because a wrong number does not usually look wrong — it looks like a number.
+The most common habit self-study builds — and the one this module works to undo — is treating a script that runs to the end and prints a sensible-looking number as if that were a correct result. It is not. A wrong number usually does not look wrong. It looks like a number.
 
 ::: example A silent wrong answer versus a caught one
-A quick delta-v check for a burn uses the rocket equation, $\Delta v = I_{sp}\, g_0 \ln\!\left(\dfrac{m_0}{m_f}\right)$, where $I_{sp}$ is the specific impulse in seconds, $g_0 = 9.80665\ \mathrm{m/s^2}$, $m_0$ is the wet mass and $m_f$ the mass after the burn:
+A quick check of how much a burn can change a rocket's speed, its **delta-v** ($\Delta v$, said "delta vee"), uses the [[rocket equation|rocket-equation]]:
+
+$$
+\Delta v = I_{sp}\, g_0 \ln\!\left(\dfrac{m_0}{m_f}\right)
+$$
+
+Here $I_{sp}$ ("I sub s p") is the specific impulse in seconds, a measure of engine efficiency; $g_0 = 9.80665\ \mathrm{m/s^2}$ is standard gravity; $m_0$ ("m nought") is the mass before the burn and $m_f$ ("m sub f") the mass after; $\ln$ is the natural logarithm.
 
 ```python
 import math
@@ -87,9 +148,11 @@ print(delta_v(100_000.0, 10_000.0))   # 7903.2   correct: m0 > mf
 print(delta_v(10_000.0, 100_000.0))   # -7903.2  arguments swapped
 ```
 
-Swapping the two arguments is an easy slip once this function is called from three other places in a larger script. The correct call and the swapped call return numbers of exactly the same magnitude, so a glance at "does this look like a reasonable delta-v" will not catch it — a negative number can even look intentional to someone skimming a printout, as if it meant a retrograde burn. Nothing about running the swapped call throws an error or looks broken.
+Step by step for the correct call: $m_0/m_f = 100\,000/10\,000 = 10$, $\ln 10 \approx 2.3026$, and $350 \times 9.80665 \times 2.3026 \approx 7903\ \mathrm{m/s}$. Sanity check: about $7.9\ \mathrm{km/s}$ is roughly the speed needed to orbit Earth, a sensible size for a big burn with a mass ratio of $10$.
 
-A validated version of the same function checks its own precondition instead of trusting the caller:
+Swapping the two arguments is an easy slip once this function is called from three other places. The swapped call gives $\ln(0.1) \approx -2.3026$, so the answer has exactly the same size with a minus sign. A glance asking "is this a reasonable delta-v?" will not catch it. A negative number can even look deliberate to someone skimming a printout, as if it meant a burn pointed backward. Nothing throws an error. Nothing looks broken.
+
+A validated version checks its own **precondition** — what must be true of the inputs — instead of trusting the caller:
 
 ```python
 def delta_v_checked(m0, mf, isp=Isp):
@@ -101,18 +164,24 @@ delta_v_checked(10_000.0, 100_000.0)
 # ValueError: need m0 > mf > 0, got m0=10000.0, mf=100000.0
 ```
 
-The checked version turns a silent wrong answer into a loud, specific, immediate failure, at the exact call site where the mistake was made — which is the entire point of writing the check. The unchecked version would have carried a sign error four layers deeper into a trajectory design before anyone noticed the vehicle was, on paper, accelerating the wrong way.
+The checked version turns a silent wrong answer into a loud, specific failure right at the line where the mistake was made. That is the entire point of writing the check. The unchecked version would have carried a sign error four layers deeper into a trajectory design before anyone noticed the vehicle was, on paper, speeding up in the wrong direction.
 :::
 
 ::: warning A folder of notebooks is not a portfolio of engineering
-Forty exploratory notebooks that each run once, on one machine, with no test proving what they compute is right, demonstrate that you can explore — a real and useful skill — but they do not demonstrate the verbatim expectation. A reviewer looking for evidence of implementation, validation, unit testing and deployment will not find it in a notebook with no function boundaries, no test, and no record of what was checked. Building even a handful of small projects the way this module describes is worth more than a much larger pile of scripts that were only ever run by their author.
+Forty exploratory notebooks that each ran once, on one machine, with no test showing what they compute is right, prove you can explore. That is a real and useful skill. They do not prove the verbatim expectation. A reviewer looking for implementation, validation, unit testing and deployment will not find them in a notebook with no function boundaries, no test and no record of what was checked. A handful of small projects built this way is worth more than a big pile of scripts only ever run by their author.
 :::
 
-## What this means for how you practice, starting now
+## How to practice, starting now
 
-Every exercise in this module and in the ones that follow can be done two ways: as a script that produces an answer, or as a small piece of software that has a name, a tested boundary, and a validated result. The second version takes longer. It is also the only one that resembles what a reviewer will actually ask to see, because "does it work" is never the real question in this field — the real question is always "how do you know it works," and a script with no tests has no answer to that question beyond "I looked at it."
+Every exercise in this course can be done two ways: as a script that produces an answer, or as a small piece of software with a name, tested edges and a checked result. The second takes longer. It is also the only one a reviewer will want to see, because "does it work?" is never the real question in this field. The real question is always "how do you know it works?" — and a script with no tests has no answer beyond "I looked at it".
 
-This is not a claim that you need production-grade infrastructure to practice — nobody expects a self-study portfolio to have the review process or the deployment pipeline of a real flight program. It is a claim about habit: write the function with a real signature, write down the cases that would catch you being wrong, and run them, every time, starting with the smallest exercise in this course. That habit is the actual transferable skill this lesson is trying to install, and every later lesson in this module assumes you are building it.
+This does not mean you need a real flight program's review process or deployment pipeline to practice. Nobody expects that of a self-study [[portfolio|portfolio]]. It is about habit:
+
+1. Write the function with a real signature — its name, inputs and output.
+2. Write down the cases that would catch you being wrong: the edges, both signs, the awkward inputs.
+3. Run them, every time, starting with the smallest exercise in this course.
+
+That habit is the skill this lesson is trying to build, and every later lesson in this module assumes you are building it.
 
 ## Check yourself
 
@@ -121,7 +190,7 @@ State the four activities the verbatim expectation names, in order, and say in o
 :::
 
 ::: answer
-Implementation: the algorithm exists as a real function with a defined signature and defined edge behavior, not an inline expression. Validation: the implementation is checked against something independent of itself — a hand-worked case, a conservation law, a trusted comparison — rather than only proofread by its own author. Unit testing: specific, automated, repeatable checks exist so that an unintended future change is caught immediately rather than discovered later. Deployment: the code is shown to build and run correctly in the shared, constrained target environment, not merely on the author's own machine.
+Implementation: the algorithm exists as a real function with a defined signature and defined edge behavior, not an inline expression. Validation: the implementation is checked against something independent of itself — a hand-worked case, a conservation law, a trusted comparison — rather than only proofread by its own author. Unit testing: specific, automated, repeatable checks exist, so that an unintended future change is caught immediately rather than discovered later. Deployment: the code is shown to build and run correctly in the shared, constrained target environment, not only on the author's own machine.
 :::
 
 ::: check
@@ -129,31 +198,39 @@ A learner argues: "In a lot of software jobs, a research or algorithms team work
 :::
 
 ::: answer
-In this field, GNC engineers generally own their work from derivation through implementation, testing and deployment themselves, rather than handing an algorithm to a separate software team — though the split-team model does exist elsewhere in the industry and at some employers, so it is not a universal law, only the pattern to plan around. The reason ownership stays with one person is that a handoff loses exactly the context a reviewer or a future maintainer most needs: why a discretization step was chosen, what units cross each interface, which edge cases the physics genuinely allows versus which are defensive padding. That context rarely survives a handoff intact, so keeping implementation with derivation keeps it available when it is needed.
+In this field, GNC engineers generally own their work from derivation through implementation, testing and deployment themselves, rather than handing an algorithm to a separate software team. The split-team model does exist elsewhere in the industry and at some employers, so it is not a universal law — only the pattern to plan around.
+
+Ownership stays with one person because a handoff loses exactly the context a reviewer or a future maintainer most needs: why a discretization step was chosen, what units cross each interface, which edge cases the physics really allows and which are defensive padding. That context rarely survives a handoff intact. Keeping implementation with derivation keeps it available when it is needed.
 :::
 
 ::: check
-In the rocket-equation example, `delta_v(10_000.0, 100_000.0)` returns a number rather than an error. Explain specifically why this is more dangerous than a version that crashes immediately, and what change turns it back into an immediate, loud failure.
+In the rocket-equation example, `delta_v(10_000.0, 100_000.0)` returns a number rather than an error. Explain why this is more dangerous than a version that crashes immediately, and what change turns it back into an immediate, loud failure.
 :::
 
 ::: answer
-It is more dangerous because a returned number looks like a valid result — it is negative, but a negative delta-v does not read as nonsensical on a quick look, so nothing about the output signals that anything went wrong. A crash, by contrast, stops exactly where the mistake happened and says so. Adding a precondition check — `if not (m0 > mf > 0): raise ValueError(...)` — turns the silent wrong answer into an immediate, specific exception at the call site where the arguments were actually swapped, rather than a wrong number that has to be traced back through however many downstream calculations use it before anyone notices.
+A returned number looks like a valid result. It is negative, but a negative delta-v does not read as nonsense on a quick look, so nothing in the output signals that anything went wrong. A crash, by contrast, stops exactly where the mistake happened and says so.
+
+Adding a precondition check — `if not (m0 > mf > 0): raise ValueError(...)` — turns the silent wrong answer into an immediate, specific error at the call where the arguments were swapped. Otherwise the wrong number has to be traced back through every downstream calculation that used it before anyone notices.
 :::
 
 ::: check
-Why does a test that only tries positive commanded angles fail to catch the bug in `clamp_command_buggy`, and what does that imply about how boundary and sign cases should be chosen for a unit test?
+Why does a test that only tries positive commanded angles fail to catch the bug in `clamp_command_buggy`, and what does that tell you about how to choose unit-test cases?
 :::
 
 ::: answer
-`clamp_command_buggy` only omits the lower bound, so for any positive input it behaves identically to the correct version — the missing behavior only shows up once a negative, out-of-range input is tried. This implies that test cases have to be chosen to specifically exercise the boundary and both signs of a quantity, not chosen at random or chosen to be "reasonable" inputs; the whole value of a unit test is in the cases most likely to expose a specific kind of mistake, and a symmetric bound like this one needs a case on each side of zero to have any chance of catching an asymmetric bug.
+`clamp_command_buggy` only leaves out the lower bound. For any positive input it behaves exactly like the correct version, so the missing behavior shows up only when a negative, out-of-range input such as $-9.4$ is tried.
+
+So test cases must be chosen on purpose to exercise the boundaries and both signs of a quantity — not picked at random or picked to be "reasonable" inputs. The value of a unit test lies in the cases most likely to expose a specific mistake. A limit that is symmetric about zero needs a case on each side of zero to have any chance of catching a lopsided bug.
 :::
 
 ::: check
-A learner has forty Jupyter notebooks from a semester of self-study, each of which runs top to bottom and produces plots that look right. Evaluate this body of work specifically against the verbatim expectation, and name the single most valuable change that would move it closer to that standard.
+A learner has forty Jupyter notebooks from a semester of self-study, each of which runs top to bottom and produces plots that look right. Judge this work against the verbatim expectation, and name the single most valuable change that would move it closer.
 :::
 
 ::: answer
-The notebooks demonstrate implementation in the loosest sense — code that runs and produces output — but demonstrate essentially none of validation, unit testing or deployment: there is no record of what was checked against an independent standard, no automated test that would catch a future change breaking prior behavior, and nothing that resembles running correctly in a shared or constrained environment. The single most valuable change is not more notebooks; it is converting even a few of the existing ones into functions with real signatures and a small set of written, automated tests that check boundary and sign cases, which starts building direct evidence for exactly the four verbs a reviewer will be looking for.
+The notebooks show implementation only in the loosest sense — code that runs and produces output. They show almost nothing of validation, unit testing or deployment. There is no record of what was checked against an independent standard, no automated test that would catch a future change breaking earlier behavior, and nothing like running correctly in a shared or constrained environment.
+
+The most valuable change is not more notebooks. It is converting even a few of the existing ones into functions with real signatures and a small set of written, automated tests that check the boundary and sign cases. That starts building direct evidence for exactly the four verbs a reviewer will look for.
 :::
 
 ## Summary
@@ -165,5 +242,72 @@ The notebooks demonstrate implementation in the loosest sense — code that runs
 | Unit testing | Specific, automated checks that catch an unintended change | A one-time "it ran" observation |
 | Deployment | Runs correctly in the shared, constrained target environment | Working on the author's own machine |
 | Ownership | One person carries an algorithm from derivation through deployment | A handoff from an algorithms team to a software team |
+| Language | Production GNC software is primarily C++, with Python for analysis, tooling and pipelines | Whatever language the prototype happened to be in |
 
-The next lesson turns to where each language fits in that path — Python, MATLAB and Simulink, and C++ — and draws the line between the model that proves an algorithm is right and the flight code that actually flies it.
+The next lesson asks where each language fits on that path — Python, MATLAB and Simulink, and C++ — and draws the line between the model that proves an algorithm is right and the flight code that actually flies it.
+
+::: context job-postings Reading a job posting like a spec
+A **job posting** (also called a job ad or listing) is the public description a company writes when it wants to hire. It usually has a list of duties, then "basic qualifications" — what you must have to be considered — and "preferred qualifications" — what helps. Engineers learn to read postings the way they read a requirements document: every repeated phrase is a signal. When dozens of GNC postings use the same exact words, "implementation, validation, unit testing, and deployment", that repetition is the closest thing to an official job description this course can point to. That is why this module calls it the *verbatim* expectation: verbatim means "in exactly the same words".
+:::
+
+::: context notebooks What a notebook is
+A **notebook** — Jupyter is the most common kind, named for the languages Julia, Python and R — is a document that mixes small boxes of code, called cells, with their output and plots. You can run one cell, change it, and run it again. That makes notebooks wonderful for exploring. The catch is hidden state: each cell sees whatever the earlier cells left behind, in whatever order you happened to run them. Run them in a different order, or on a fresh machine, and the answer can change or break. Production code is written so that the same inputs always give the same outputs, no matter what ran before.
+:::
+
+::: context red-green Why tests "turn red"
+Most test tools print passing tests in green and failing ones in red, so engineers say a test "goes red" when it fails. A test set is useful exactly because it is boring: every day it stays green, until the moment someone breaks something, and then it points at the spot. Programmers sometimes work in a loop called red–green: write a test that fails (red), write the code that makes it pass (green), then tidy up.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 110" font-family="Inter, Arial, sans-serif">
+  <rect x="10" y="30" width="95" height="44" rx="8" fill="#ffffff" stroke="#b4232c" stroke-width="2"/>
+  <text x="57" y="57" font-size="13" fill="#b4232c" text-anchor="middle">1. test fails</text>
+  <rect x="133" y="30" width="95" height="44" rx="8" fill="#ffffff" stroke="#1d6fd1" stroke-width="2"/>
+  <text x="180" y="57" font-size="13" fill="#1d6fd1" text-anchor="middle">2. code passes</text>
+  <rect x="256" y="30" width="95" height="44" rx="8" fill="#ffffff" stroke="#1f2a44" stroke-width="2"/>
+  <text x="303" y="57" font-size="13" fill="#1f2a44" text-anchor="middle">3. tidy up</text>
+  <line x1="105" y1="52" x2="127" y2="52" stroke="#1f2a44" stroke-width="2"/>
+  <polygon points="133,52 125,47 125,57" fill="#1f2a44"/>
+  <line x1="228" y1="52" x2="250" y2="52" stroke="#1f2a44" stroke-width="2"/>
+  <polygon points="256,52 248,47 248,57" fill="#1f2a44"/>
+  <path d="M303 74 L303 96 L57 96 L57 80" fill="none" stroke="#6c7a93" stroke-width="2"/>
+  <polygon points="57,74 52,82 62,82" fill="#6c7a93"/>
+  <text x="180" y="20" font-size="12" fill="#1f2a44" text-anchor="middle">next small change: repeat</text>
+</svg>
+```
+:::
+
+::: context flight-computer The computer on board
+A **flight computer** is the computer on the vehicle that reads the sensors, runs guidance, navigation and control, and sends commands to the engines and fins, many times per second. Unlike your laptop, it must finish each round of work before a fixed deadline, every single time. A later lesson in this module looks at the flight computers on Dragon, Falcon and Starship, and at why that deadline bans some ordinary programming habits from the control loop.
+:::
+
+::: context two-am The engineer at 2 a.m.
+"Someone should be able to fix this at 2 a.m." is a common saying in engineering teams. It means: write code and notes clear enough that a tired person who did not write them — maybe you, months later — can understand and change them safely under pressure. Vehicle problems do not wait for office hours. A later lesson lists this as part of what "production quality" means.
+:::
+
+::: context rocket-equation The rocket equation in one picture
+The rocket equation, first published by Konstantin Tsiolkovsky in 1903, says how much speed a rocket gains by throwing mass out the back. The key quantity is the mass ratio $m_0/m_f$: how many times heavier the full rocket is than the emptied one. Because of the logarithm, doubling the mass ratio does not double $\Delta v$; it adds a fixed amount.
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" font-family="Inter, Arial, sans-serif">
+  <line x1="40" y1="120" x2="340" y2="120" stroke="#1f2a44" stroke-width="1.5"/>
+  <line x1="40" y1="120" x2="40" y2="15" stroke="#1f2a44" stroke-width="1.5"/>
+  <rect x="70" y="95" width="40" height="25" fill="#8fb8f0"/>
+  <rect x="145" y="70" width="40" height="50" fill="#8fb8f0"/>
+  <rect x="220" y="45" width="40" height="75" fill="#8fb8f0"/>
+  <rect x="295" y="20" width="40" height="100" fill="#1d6fd1"/>
+  <g font-size="11" fill="#1f2a44" text-anchor="middle">
+    <text x="90" y="136">ratio 2</text><text x="165" y="136">ratio 4</text>
+    <text x="240" y="136">ratio 8</text><text x="315" y="136">ratio 16</text>
+    <text x="90" y="90">2.38</text><text x="165" y="65">4.76</text>
+    <text x="240" y="40">7.14</text><text x="315" y="14">9.52</text>
+  </g>
+  <text x="34" y="70" font-size="11" fill="#6c7a93" text-anchor="middle" transform="rotate(-90 34 70)">km/s</text>
+</svg>
+```
+
+The bars use $I_{sp} = 350\ \mathrm{s}$: each doubling of the mass ratio adds the same $2.38\ \mathrm{km/s}$.
+:::
+
+::: context portfolio What a portfolio is
+A **portfolio** is a small collection of your own projects that shows an employer what you can do, the way an artist brings sketches to an interview. For an engineer it is usually a set of code repositories on a site such as GitHub, each with a short explanation. Reviewers look less at how impressive the topic sounds and more at signs of craft: clear functions, tests, and a note on how you checked the answer. This course's build exercises are designed to become portfolio pieces.
+:::

@@ -5,6 +5,7 @@ import { LEARN_LANGS } from './platform'
 import { run as runShell } from '@/lib/shell'
 import { LessonFormatError, parseTrack } from './parse'
 import { LEVELS, type LearnLesson } from './types'
+import { noteRefs, notePicture, pictureProblem, splitNotes } from '@/lib/contextNotes'
 
 const lesson = (over: Partial<LearnLesson>): LearnLesson => ({
   id: 'x-01',
@@ -122,8 +123,8 @@ describe('the tracks', () => {
   it('continue goes to the first lesson not yet passed', () => {
     const py = TRACKS.find((t) => t.lang === 'python')!
     expect(nextLesson(py, {}).id).toBe('py-01')
-    expect(nextLesson(py, { 'py-01': 'x', 'py-02': 'x' }).id).toBe('py-03')
-    expect(findLesson('py-03')?.index).toBe(2)
+    expect(nextLesson(py, { 'py-01': 'x' }).id).toBe('py-02')
+    expect(findLesson('py-02')?.index).toBe(1)
   })
 })
 
@@ -404,4 +405,60 @@ describe('the streak', () => {
     expect(streak({ a: at('2026-05-07') }, now)).toBe(0)
     expect(streak({}, now)).toBe(0)
   })
+})
+
+/*
+ * Every Learn to code lesson carries context notes in its teach section, the
+ * same Genius-style notes as the module lessons (src/learn/TEMPLATE.md).
+ * These courses were written before that rule and are being rewritten; a
+ * course joins the rule when its rewrite lands with `@plainvoice true` in its
+ * header, and this list only ever shrinks. A course not on it, every new
+ * course included, is held to the rule from the start.
+ */
+const WRITTEN_BEFORE_NOTES = new Set([
+  'bash-advanced',
+  'python-advanced', 'python-expert', 'python-projects',
+  'sql-intermediate', 'sql-advanced', 'sql-expert', 'sql-projects',
+  'cpp', 'cpp-intermediate', 'cpp-advanced', 'cpp-expert', 'cpp-projects',
+])
+const LEARN_NOTES_MIN = 3
+const LEARN_NOTES_MAX = 10
+
+describe('context notes in Learn to code', () => {
+  it('holds every course not written before the rule to it', () => {
+    const loose = TRACKS.filter((t) => !t.plainVoice && !WRITTEN_BEFORE_NOTES.has(t.id)).map((t) => t.id)
+    expect(loose, 'new courses carry @plainvoice true and notes in every lesson').toEqual([])
+  })
+
+  for (const t of TRACKS) {
+    it(`${t.id}: notes are complete, at the end of the explanation, and safe`, () => {
+      for (const l of t.lessons) {
+        const where = `${t.id} ${l.id}`
+        const { body, notes } = splitNotes(l.teach)
+        const refs = noteRefs(body)
+        expect([...new Set(refs)].filter((id) => !notes.has(id)), `${where}: marked phrases with no note`).toEqual([])
+        expect([...notes.keys()].filter((id) => !refs.includes(id)), `${where}: notes nothing points to`).toEqual([])
+        expect(noteRefs(l.task), `${where}: marks go in the explanation, not the task`).toEqual([])
+        if (notes.size) {
+          const first = l.teach.search(/^\s*:::\s*context\s/m)
+          const after = l.teach.slice(first).replace(/^[ \t]*:::[ \t]*context[\s\S]*?^[ \t]*:::[ \t]*$/gm, '').trim()
+          expect(after, `${where}: notes go at the very end of the explanation`).toBe('')
+        }
+        for (const n of notes.values()) {
+          const words = n.body.replace(/```[\s\S]*?```/g, ' ').split(/\s+/).filter((w) => /[A-Za-z0-9]/.test(w)).length
+          expect(words, `${where}: note "${n.id}" 15–260 words`).toBeGreaterThanOrEqual(15)
+          expect(words, `${where}: note "${n.id}" 15–260 words`).toBeLessThanOrEqual(260)
+          const svg = notePicture(n.body)
+          if (svg) expect(pictureProblem(svg), `${where}: note "${n.id}" picture`).toBeNull()
+        }
+        if (t.plainVoice) {
+          expect(notes.size, `${where}: ${LEARN_NOTES_MIN}–${LEARN_NOTES_MAX} context notes`).toBeGreaterThanOrEqual(LEARN_NOTES_MIN)
+          expect(notes.size, `${where}: ${LEARN_NOTES_MIN}–${LEARN_NOTES_MAX} context notes`).toBeLessThanOrEqual(LEARN_NOTES_MAX)
+        }
+        for (const part of [l.teach, l.task, ...l.hints]) {
+          expect(/[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]/.test(part), `${where}: a control character (a TeX or escape lost its backslash)`).toBe(false)
+        }
+      }
+    })
+  }
 })
