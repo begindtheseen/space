@@ -2260,6 +2260,35 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "The scalar-first quaternion convention in MathWorks Aerospace products"
       ],
       "file": "cod_mat_02_gnc_toolboxes/10-rotations-and-quaternion-convention.md"
+    },
+    {
+      "id": "l11-atmosphere-gravity-magnetism",
+      "title": "The air, gravity and magnetic field around the vehicle",
+      "minutes": 24,
+      "covers": [
+        "Atmosphere models: atmosisa, atmoscoesa (valid to 86 km), atmosnrlmsise00",
+        "Gravity and magnetic models: gravitywgs84, gravitysphericalharmonic, wrldmagm"
+      ],
+      "file": "cod_mat_02_gnc_toolboxes/11-atmosphere-gravity-magnetism.md"
+    },
+    {
+      "id": "l12-turbulence-wind-and-units",
+      "title": "Wind, turbulence and unit conversions",
+      "minutes": 21,
+      "covers": [
+        "Dryden and von Karman turbulence; wind shear",
+        "Unit conversion helpers: convang, convvel, convforce, convmass, convlength"
+      ],
+      "file": "cod_mat_02_gnc_toolboxes/12-turbulence-wind-and-units.md"
+    },
+    {
+      "id": "l13-satellite-scenario",
+      "title": "Orbits, ground tracks and access with satelliteScenario",
+      "minutes": 21,
+      "covers": [
+        "satelliteScenario for orbits, access and ground tracks"
+      ],
+      "file": "cod_mat_02_gnc_toolboxes/13-satellite-scenario.md"
     }
   ],
   "cod_py_01_basics": [
@@ -2509,6 +2538,111 @@ export const LESSON_MANIFEST: Record<string, LessonMeta[]> = {
         "The Simulink Editor, Library Browser and block search"
       ],
       "file": "cod_slk_01_models/01-the-simulink-editor.md"
+    },
+    {
+      "id": "l02-signals-and-basic-blocks",
+      "title": "Signals, lines and the five blocks in every model",
+      "minutes": 23,
+      "covers": [
+        "Signals and lines; Constant, Gain, Sum, Product, Integrator"
+      ],
+      "file": "cod_slk_01_models/02-signals-and-basic-blocks.md"
+    },
+    {
+      "id": "l03-sources-and-sinks",
+      "title": "Sources and sinks: feeding a model and keeping what comes out",
+      "minutes": 19,
+      "covers": [
+        "Sources: Step, Ramp, Sine Wave, Clock, Signal Editor",
+        "Sinks: Scope, Display, To Workspace; the Simulation Data Inspector"
+      ],
+      "file": "cod_slk_01_models/03-sources-and-sinks.md"
+    },
+    {
+      "id": "l04-checking-against-the-analytic-answer",
+      "title": "Checking a model against the answer you already know",
+      "minutes": 21,
+      "covers": [
+        "Comparing a model result to an analytic solution as the first habit"
+      ],
+      "file": "cod_slk_01_models/04-checking-against-the-analytic-answer.md"
+    },
+    {
+      "id": "l05-transfer-fcn-state-space-and-the-derivative-trap",
+      "title": "Transfer Fcn, State-Space, and the Derivative trap",
+      "minutes": 22,
+      "covers": [
+        "Transfer Fcn and State-Space blocks",
+        "Why the Derivative block is a trap in a feedback loop"
+      ],
+      "file": "cod_slk_01_models/05-transfer-fcn-state-space-and-the-derivative-trap.md"
+    },
+    {
+      "id": "l06-mux-buses-selector-demux",
+      "title": "Mux, buses, Selector and Demux",
+      "minutes": 18,
+      "covers": [
+        "Mux versus Bus Creator, and never using Mux for dissimilar signals",
+        "Selector and Demux"
+      ],
+      "file": "cod_slk_01_models/06-mux-buses-selector-demux.md"
+    },
+    {
+      "id": "l07-nonlinear-blocks",
+      "title": "Nonlinear blocks and the limits every real actuator has",
+      "minutes": 19,
+      "covers": [
+        "Nonlinear blocks: Saturation, Rate Limiter, Dead Zone, Quantizer, Switch, Relay, MinMax"
+      ],
+      "file": "cod_slk_01_models/07-nonlinear-blocks.md"
+    },
+    {
+      "id": "l08-lookup-tables",
+      "title": "Lookup tables for aerodynamic and engine data",
+      "minutes": 17,
+      "covers": [
+        "Lookup Table (n-D) for aerodynamic and engine data"
+      ],
+      "file": "cod_slk_01_models/08-lookup-tables.md"
+    },
+    {
+      "id": "l09-matlab-function-block",
+      "title": "MATLAB code inside a model",
+      "minutes": 16,
+      "covers": [
+        "MATLAB Function block (code-generation-compatible subset) versus Interpreted MATLAB Function"
+      ],
+      "file": "cod_slk_01_models/09-matlab-function-block.md"
+    },
+    {
+      "id": "l10-parameters-and-diagnostics",
+      "title": "Where parameters live, and how to read a model error",
+      "minutes": 22,
+      "covers": [
+        "Model parameters in the base workspace versus mask parameters",
+        "The Diagnostic Viewer and reading a model error"
+      ],
+      "file": "cod_slk_01_models/10-parameters-and-diagnostics.md"
+    }
+  ],
+  "cod_slk_02_solvers": [
+    {
+      "id": "l01-how-a-solver-steps",
+      "title": "How a solver steps: fixed or variable",
+      "minutes": 24,
+      "covers": [
+        "Variable-step versus fixed-step: error control and zero-crossing detection versus determinism"
+      ],
+      "file": "cod_slk_02_solvers/01-how-a-solver-steps.md"
+    },
+    {
+      "id": "l04-fixed-step-solvers",
+      "title": "Fixed-step solvers: ode1 to ode8, and the step that keeps a loop stable",
+      "minutes": 24,
+      "covers": [
+        "Fixed-step solvers: ode1 (Euler), ode2, ode4 (classic RK4), ode5, ode8, ode14x, ode1be"
+      ],
+      "file": "cod_slk_02_solvers/04-fixed-step-solvers.md"
     }
   ],
   "cod_sql_01_select": [
@@ -9040,46 +9174,24 @@ export const LESSON_COVERAGE: Record<string, LessonCoverage> = {
     "missing": []
   },
   "cod_mat_02_gnc_toolboxes": {
-    "covered": 12,
+    "covered": 17,
     "total": 17,
-    "complete": false,
-    "missing": [
-      "Atmosphere models: atmosisa, atmoscoesa (valid to 86 km), atmosnrlmsise00",
-      "Gravity and magnetic models: gravitywgs84, gravitysphericalharmonic, wrldmagm",
-      "Dryden and von Karman turbulence; wind shear",
-      "Unit conversion helpers: convang, convvel, convforce, convmass, convlength",
-      "satelliteScenario for orbits, access and ground tracks"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_slk_01_models": {
-    "covered": 1,
+    "covered": 14,
     "total": 14,
-    "complete": false,
-    "missing": [
-      "Signals and lines; Constant, Gain, Sum, Product, Integrator",
-      "Why the Derivative block is a trap in a feedback loop",
-      "Transfer Fcn and State-Space blocks",
-      "Sources: Step, Ramp, Sine Wave, Clock, Signal Editor",
-      "Sinks: Scope, Display, To Workspace; the Simulation Data Inspector",
-      "Mux versus Bus Creator, and never using Mux for dissimilar signals",
-      "Selector and Demux",
-      "Nonlinear blocks: Saturation, Rate Limiter, Dead Zone, Quantizer, Switch, Relay, MinMax",
-      "Lookup Table (n-D) for aerodynamic and engine data",
-      "MATLAB Function block (code-generation-compatible subset) versus Interpreted MATLAB Function",
-      "Model parameters in the base workspace versus mask parameters",
-      "The Diagnostic Viewer and reading a model error",
-      "Comparing a model result to an analytic solution as the first habit"
-    ]
+    "complete": true,
+    "missing": []
   },
   "cod_slk_02_solvers": {
-    "covered": 0,
+    "covered": 2,
     "total": 13,
     "complete": false,
     "missing": [
-      "Variable-step versus fixed-step: error control and zero-crossing detection versus determinism",
       "Continuous solvers: ode45 (Dormand-Prince, the default starting point), ode23, ode113",
       "Stiff solvers: ode15s, ode23s, ode23t, ode23tb; daessc",
-      "Fixed-step solvers: ode1 (Euler), ode2, ode4 (classic RK4), ode5, ode8, ode14x, ode1be",
       "RelTol and AbsTol; max step size and when to constrain it",
       "Solver reset method Fast versus Robust",
       "Zero-crossing detection: how it works, chattering, adaptive versus non-adaptive, the consecutive-crossing limit",
